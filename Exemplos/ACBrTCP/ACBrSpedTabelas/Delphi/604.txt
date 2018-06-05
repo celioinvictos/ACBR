@@ -1,0 +1,25 @@
+versão=4 INF_ADIC, DESC_INF, DT_INI, DT_FIM
+TO450001|VALOR DA MÉDIA DO ICMS RECOLHIDO ANTERIORMENTE A EXPANSÃO, NO CASO DE BENEFICIÁRIO DO PROSPERAR|01012009|31102010
+TO450001|MÉDIA DO ICMS RECOLHIDO ANTERIORMENTE A EXPANSÃO, NO CASO DE BENEFICIÁRIO DO PROSPERAR|01112010|
+TO450002|VALOR DA PARCELA SUJEITA AO INCENTIVO DO PROSPERAR|01012009|31102010
+TO450002|ARCELA SUJEITA AO INCENTIVO DO PROSPERAR|01112010|
+TO450003|VALOR DA PARCELA INCENTIVADA PELO PROSPERAR|01012009|31102010
+TO450003|PARCELA INCENTIVADA PELO PROSPERAR|01112010|
+TO450004|VALOR DA SUBVENÇÃO (5% DA PARCELA INCENTIVADA PELO PROSPERAR)|01012009|31102010
+TO450004|SUBVENÇÃO de até 95% de redução do valor, para liquidação antecipada, a título de subvenção para investimentos, na conformidade do regulamento. Lei nº 1.355/02, art. 9º, inc. III alínea “b”.|01112010|
+TO450005|REDUÇÃO de 50% do valor do ICMS incidente sobre o consumo de energia elétrica e serviços de comunicação, em favor de empresa credenciada pelo órgão estadual de turismo. Lei nº 1.355/02, art. 9º, inc. III, alínea “a”|01092010|
+TO450010|CONTRIBUIÇÃO PARA CUSTEIO DO FUNDO ESTADUAL DE DESENVOLVIMENTO ECONÔMICO, equivalente a 0,3% aplicado sobre o valor do faturamento mensal.|01092010|
+TO450020|REDUÇÃO DA BASE DE CÁLCULO, de forma que a carga tributária seja o equivalente a 5% para empresas da área de relacionamento no setor de telecomunicações, em substituição ao regime normal de apuração do ICMS. Lei n.º 1.400/2003 - art. 1º.|01092010|
+TO450030|REDUÇÃO DA BASE DE CÁLCULO, operações em que os contribuintes com atividade econômica no comércio atacadista de medicamentos importem do exterior, mercadorias para revenda, de forma que a carga tributária efetiva do ICMS resulte da aplicação do percentual de 2%. Lei 1.790/07, art. 1º, inc. II.|01092010|
+TO450040|BASE DE CÁLCULO SUBSTITUIÇÃO TRIBUTÁRIA, 80%, para os medicamentos genéricos e similares. Lei 1.790/07, art. 2º, inc. I.|01092010|
+TO450050|BASE DE CÁLCULO SUBSTITUIÇÃO TRIBUTÁRIA, valor adicionado correspondente ao percentual de 42,85%, para medicamentos, exceto genérico e similares. Lei 1.790/07, art. 2º, inc. II.|01092010|
+TO450045|REDUÇÃO DA BC-p/ emp. operad. de logística e de transp. aéreo de carga, resultando carga tributária efetiva de 3% nas saídas internas de comb. de aviação, destin. aos vôos de que trata o inc. II,Art.5º, desde que a abastecedora, conceda o desc. equiv. ao imp.dispens. e indique o vlr do desc. no doc. fiscal. Art. 4º,II, “a” e “b”, Lei 2679/12|26122012|
+TO450060|REDUÇÃO DA BC ST-Art. 2º, II,Lei 1790/07, rev.p/ Lei 2671/12|01012009|01012013
+TO450070|REDUÇÃO DA BC-nas operaç. de import.de merc.do exterior de forma que a carga tributária do ICMS resulte da aplic. do percent. de 1% p/ revenda e 2% por conta e ordem de terceiros. Lei 1201/00 Art 1º, II. Red. dada p/ Lei 2712/13.|01012013|
+TO450073|REDUÇÃO DA BC-7% nas oper.da ind.ou do com., nas saídas de embarcações. Inc. II do § 2º do art 1º da Lei 1303/02(Red. dada p/ Lei 2891/14.|19082014|
+TO450074|REDUÇÃO DA BC-7% nas oper.internas c/ prod.classif.nas posições 2204, 2205, 2208 e nas subposições 2206.00.10, 8506.10.10, 9613.10.00, 8212.10.20, 3506.10.10 da NCM, Sist.Harmonização-NCM/SH, Inc. V,§ 1º,art 1º da Lei 1303/02(Red.dada p/ Lei 2.934/14)|23122014|
+TO450075|REDUÇÃO DA BC-12% p/ contrib.da ind.e do com., até 31/12/15; Inc. IX, § 1º, art 1º da Lei 1303/02(Red.dada p/ Lei 2818/13.|30122013|
+TO450076|REDUÇÃO DA BC-8% até 31.12.14 nas oper. com:-a) caminhão, promov.por concessionários ou revended. autorizados, mantido o crédito do ICMS da oper. anterior; b) reboque e semirreboque, classif. no cód.8716 da NCM/SH; Lei 1303/02 c/ red. dada p/ Lei 2894/14, Art.1º, §1º,X.|01012014|
+TO450077|REDUÇÃO DA BC-1,5% até 31.12.14, nas oper. com máq. e equip. rodoviários, previsto no RICMS. Lei 1303/02 c/ red. dada p/ Lei 2894/14 Art.1º, §1º,XI.|01012014|
+TO450080|APROPRIAÇÃO DE CRÉDITO, NÃO SE APLICA (contrib.optantes p/Lei 1201/00) decorrente das vendas a consumidor final. Lei 1201/00. Art. 2º V. Red.dada p/ Lei 1584/05|01012009|
+TO450090|APROPRIAÇÃO DE CRÉDITO, NÃO SE APLICA (contrib.optantes p/Lei 1790/07) decorrente das vendas a consumidor final. Lei 1790/07, art. 4º,V. Red.Lei 2671/12.|01012013|

@@ -1,0 +1,30 @@
+versão=2 TIPO_UTIL, DESC_TIPO, DT_INI, DT_FIM
+RS01|Dedução|01012009|31122011
+RS21|Compensação|01012009|31122011
+RS41|Transferência|01012009|31122011
+RS61|Restituição|01012009|31122011
+RS81|Estorno|01012009|31122011
+RS99|Outros|01012009|31122011
+RS01|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 01, a, 1|01012012|01012012
+RS02|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 01, a, 2|01012012|01012012
+RS03|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 01, b|01012012|01012012
+RS04|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 02|01012012|01012012
+RS05|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 05, a|01012012|01012012
+RS06|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 05, b|01012012|01012012
+RS07|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 07|01012012|01012012
+RS08|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 08|01012012|01012012
+RS09|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 09|01012012|01012012
+RS10|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, Nota 10|01012012|01012012
+RS01|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 01, a, 1|02012012|
+RS02|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 01, a, 2|02012012|
+RS03|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 01, b|02012012|
+RS04|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 02|02012012|
+RS05|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 05, a|02012012|
+RS06|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 05, b|02012012|
+RS07|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 07|02012012|
+RS08|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 08|02012012|
+RS09|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 09|02012012|
+RS10|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §2°, "d", 2, Nota 10|02012012|
+RS11|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §8°|01012012|
+RS12|Transferência do crédito controlado extra-apuração para a apuração com base no RICMS, Livro I, art. 37, §10|01012012|
+RS99|Transferência do crédito controlado extra-apuração para a apuração com base em outro amparo legal|01012012|
