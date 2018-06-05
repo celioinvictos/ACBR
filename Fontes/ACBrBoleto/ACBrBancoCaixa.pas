@@ -408,7 +408,8 @@ begin
                FormatDateTime('ddmmyyyy', Now)         + //144 a 151 - Data do de geração do arquivo
                FormatDateTime('hhmmss', Now)           + //152 a 157 - Hora de geração do arquivo
                PadLeft(IntToStr(NumeroRemessa), 6, '0')   + //158 a 163 - Número seqüencial do arquivo
-               '050'                                   + //164 a 166 - Número da versão do layout do arquivo
+//               '050'                                   + //164 a 166 - Número da versão do layout do arquivo  //celio alterou Leiaute de Remessa SIGCB240 67.118 v009 m
+               '101'                                   + //164 a 166 - Número da versão do layout do arquivo
                PadRight('',  5, '0')                       + //167 a 171 - Densidade de gravação do arquivo (BPI)
                Space(20)                               + // 172 a 191 - Uso reservado do banco
                PadRight(AMensagemReservada, 20, ' ')       + // 192 a 211 - Uso reservado da empresa
@@ -424,7 +425,8 @@ begin
                'R'                                     + //9 - Tipo de operação: R (Remessa) ou T (Retorno)
                '01'                                    + //10 a 11 - Tipo de serviço: 01 (Cobrança)
                '00'                                    + //12 a 13 - Forma de lançamento: preencher com ZEROS no caso de cobrança
-               '030'                                   + //14 a 16 - Número da versão do layout do lote
+//               '030'                                   + //14 a 16 - Número da versão do layout do lote //celio alterou Leiaute de Remessa SIGCB240 67.118 v009 m
+               '060'                                   + //14 a 16 - Número da versão do layout do lote
                ' '                                     + //17 - Uso exclusivo FEBRABAN/CNAB
                ATipoInscricao                          + //18 - Tipo de inscrição do cedente
                PadLeft(OnlyNumber(CNPJCPF), 15, '0')      + //19 a 33 -Número de inscrição do cedente

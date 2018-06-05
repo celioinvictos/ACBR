@@ -87,6 +87,7 @@ begin
    fpTamanhoMaximoNossoNum  := 12;
    fpTamanhoCarteira        := 3;
    fpTamanhoConta           := 11;
+   fpCodigosMoraAceitos     := '123456';
 end;
 
 function TACBrBancoSantander.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -390,6 +391,19 @@ begin
         raise Exception.Create('Espécie de documento informada incorretamente!');
 
       sEspecie := EspecieDoc;
+    end;
+
+    if CodigoMora = '' then
+    begin
+      CodigoMora := '3'; //assume como cjIsento
+       // cjValorDia, cjTaxaMensal, cjIsento
+      if ValorMoraJuros > 0 then // Se tem juro atribuido, mudar de acordo com o tipo que o banco processa
+      begin
+        if  CodigoMoraJuros = cjValorDia then
+          CodigoMora :='1'
+        else if  CodigoMoraJuros = cjTaxaMensal then
+          CodigoMora :='2';
+      end;
     end;
 
     if (ValorMoraJuros > 0) then

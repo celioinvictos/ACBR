@@ -359,6 +359,10 @@ object frmDemo_ACBrMDFe: TfrmDemo_ACBrMDFe
         object TabSheet3: TTabSheet
           Caption = 'WebService'
           ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object GroupBox4: TGroupBox
             Left = 0
             Top = 4
@@ -1064,6 +1068,10 @@ object frmDemo_ACBrMDFe: TfrmDemo_ACBrMDFe
       object TabSheet9: TTabSheet
         Caption = 'MDFe'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object trvwMDFe: TTreeView
           Left = 0
           Top = 0
