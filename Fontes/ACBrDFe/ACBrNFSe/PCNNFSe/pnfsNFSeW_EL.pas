@@ -170,10 +170,11 @@ begin
   else
     Gerador.wCampoNFSe(tcStr, '#35', 'IndicacaoCpfCnpj', 01, 001, 1, '2', '');
 
-  // Gumercino 19/01/2018
   Gerador.wCampoNFSe(tcStr, '#36', 'InscricaoMunicipal', 01, 015, 0, NFSe.Tomador.IdentificacaoTomador.InscricaoMunicipal, '');
   Gerador.wCampoNFSe(tcStr, '#37', 'InscricaoEstadual', 01, 015, 0, NFSe.Tomador.IdentificacaoTomador.InscricaoEstadual, '');
+
   Gerador.wGrupoNFSe('/IdentificacaoTomador');
+
   Gerador.wCampoNFSe(tcStr, '#38', 'RazaoSocial', 01, 115, 0, NFSe.Tomador.RazaoSocial, '');
   Gerador.wCampoNFSe(tcStr, '#39', 'NomeFantasia', 01, 115, 0, NFSe.Tomador.RazaoSocial, '');
 
@@ -242,10 +243,10 @@ begin
     Gerador.wCampoNFSe(tcStr, '#59', 'CodigoCnae'             , 01, 007, 0, NFSe.Servico.CodigoCnae, '');
     Gerador.wCampoNFSe(tcStr, '#60', 'CodigoServico116'       , 01, 005, 1, NFSe.Servico.ItemListaServico, '');
     Gerador.wCampoNFSe(tcStr, '#61', 'CodigoServicoMunicipal' , 01, 020, 1, NFSe.Servico.CodigoTributacaoMunicipio, '');
-    Gerador.wCampoNFSe(tcInt, '#62', 'Quantidade'             , 01, 005, 1, NFSe.Servico.ItemServico[i].Quantidade, '');
-    Gerador.wCampoNFSe(tcStr, '#63', 'Unidade'                , 01, 020, 1, 'UN', '');
+    Gerador.wCampoNFSe(tcDe4, '#62', 'Quantidade'             , 01, 005, 1, NFSe.Servico.ItemServico[i].Quantidade, '');
+    Gerador.wCampoNFSe(tcStr, '#63', 'Unidade'                , 01, 020, 1, NFSe.Servico.ItemServico[i].Unidade, '');
     Gerador.wCampoNFSe(tcStr, '#64', 'Descricao'              , 01, 255, 1, NFSe.Servico.ItemServico[i].Discriminacao, '');
-    Gerador.wCampoNFSe(tcDe2, '#65', 'Aliquota'               , 01, 005, 1, NFSe.Servico.ItemServico[i].Aliquota/100, '');
+    Gerador.wCampoNFSe(tcDe4, '#65', 'Aliquota'               , 01, 005, 1, NFSe.Servico.ItemServico[i].Aliquota / 100, '');
     Gerador.wCampoNFSe(tcDe4, '#66', 'ValorServico'           , 01, 015, 1, NFSe.Servico.ItemServico[i].ValorServicos, '');
     Gerador.wCampoNFSe(tcDe4, '#67', 'ValorIssqn'             , 01, 015, 1, NFSe.Servico.ItemServico[i].ValorIss, '');
     Gerador.wCampoNFSe(tcDe2, '#68', 'ValorDesconto'          , 01, 015, 0, NFSe.Servico.ItemServico[i].ValorDeducoes, '');
@@ -270,8 +271,6 @@ begin
   Gerador.wCampoNFSe(tcDe2, '#78', 'ValorOutrasRetencoes', 01, 05, 0, NFSe.Servico.Valores.OutrasRetencoes, '');
   Gerador.wCampoNFSe(tcDe2, '#79', 'ValorLiquidoNfse'    , 01, 15, 0, NFSe.Servico.Valores.ValorLiquidoNfse, '');
   Gerador.wCampoNFSe(tcDe2, '#80', 'ValorIssRetido'      , 01, 15, 0, NFSe.Servico.Valores.ValorIssRetido, '');
-
-  // Gumercino 16/01/2018 - Provedor EL
   Gerador.wCampoNFSe(tcDe2, '#81', 'OutrosDescontos'     , 01, 15, 0, NFSe.Servico.Valores.OutrosDescontos, '');
 
   Gerador.wGrupoNFSe('/Valores');

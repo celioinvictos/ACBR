@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -96,6 +96,7 @@ type
     FIdeVinculo: TIdeVinculo;
     FInsalPeric: TInsalPeric;
     FAposentEsp: TAposentEsp;
+    FACBreSocial: TObject;
 
     procedure GerarInsalPeric(objInsalPeric: TInsalPeric);
     procedure GerarIniInsalPeric(objIniInsPer: TiniInsalPeric);
@@ -105,13 +106,15 @@ type
     procedure GerarIniAposentEsp(objIniApoEsp: TiniAposentEsp);
     procedure GerarAltAposentEsp(objAltApoEsp: TaltAposentEsp);
     procedure GerarFimAposentEsp(objFimApoEsp: TfimAposentEsp);
-    procedure GerarInfoAmb(Sender: TInsPerApo; objInfoAmb: TInfoAmbCollection);
+    procedure GerarInfoAmb(Sender: TInsPerApo; objInfoAmb: TInfoAmbCollection;
+         Grupo: String = 'infoAmb');
     procedure GerarFatRisco(objFatRisco: TFatRiscoCollection);
   public
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -197,6 +200,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2241CollectionItem }
 
 constructor TS2241CollectionItem.Create(AOwner: TComponent);
@@ -278,12 +285,31 @@ begin
   inherited;
 end;
 
+{ TS2241Collection }
+
+function TS2241Collection.Add: TS2241CollectionItem;
+begin
+  Result := TS2241CollectionItem(inherited Add);
+  Result.Create(TComponent(Self.Owner));
+end;
+
+function TS2241Collection.GetItem(Index: Integer): TS2241CollectionItem;
+begin
+  Result := TS2241CollectionItem(inherited GetItem(Index));
+end;
+
+procedure TS2241Collection.SetItem(Index: Integer; Value: TS2241CollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
 { TEvtInsApo }
 
 constructor TEvtInsApo.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo := TIdeVinculo.Create;
@@ -306,9 +332,9 @@ procedure TEvtInsApo.GerarAltAposentEsp(objAltApoEsp: TaltAposentEsp);
 begin
   Gerador.wGrupo('altAposentEsp');
 
-  Gerador.wCampo(tcDat, '', 'dtaltCondicao', 10, 10, 1, objAltApoEsp.dtAltCondicao);
+  Gerador.wCampo(tcDat, '', 'dtAltCondicao', 10, 10, 1, objAltApoEsp.dtAltCondicao);
 
-  GerarInfoAmb(objAltApoEsp, objAltApoEsp.InfoAmb);
+  GerarInfoAmb(objAltApoEsp, objAltApoEsp.InfoAmb, 'infoamb');
 
   Gerador.wGrupo('/altAposentEsp');
 end;
@@ -317,9 +343,9 @@ procedure TEvtInsApo.GerarAltInsalPeric(objAltInsPer: TaltInsalPeric);
 begin
   Gerador.wGrupo('altInsalPeric');
 
-  Gerador.wCampo(tcDat, '', 'dtaltCondicao', 10, 10, 1, objAltInsPer.dtAltCondicao);
+  Gerador.wCampo(tcDat, '', 'dtAltCondicao', 10, 10, 1, objAltInsPer.dtAltCondicao);
 
-  GerarInfoAmb(objAltInsPer, objAltInsPer.InfoAmb);
+  GerarInfoAmb(objAltInsPer, objAltInsPer.InfoAmb, 'infoamb');
 
   Gerador.wGrupo('/altInsalPeric');
 end;
@@ -379,24 +405,25 @@ begin
   Gerador.wGrupo('/fimInsalPeric');
 end;
 
-procedure TEvtInsApo.GerarInfoAmb(Sender: TInsPerApo; objInfoAmb: TInfoAmbCollection);
+procedure TEvtInsApo.GerarInfoAmb(Sender: TInsPerApo; objInfoAmb: TInfoAmbCollection;
+   Grupo: String);
 var
   i: Integer;
 begin
   for i := 0 to objInfoAmb.count - 1 do
   begin
-    Gerador.wGrupo('infoAmb');
+    Gerador.wGrupo(Grupo);
 
     Gerador.wCampo(tcStr, '', 'codAmb', 1, 30, 1, objInfoAmb.items[i].codAmb);
 
     if (not ((Sender is TfimAposentEsp) or (Sender is TfimInsalPeric))) then
       GerarFatRisco(objInfoAmb.items[i].FatRisco);
 
-    Gerador.wGrupo('/infoAmb');
+    Gerador.wGrupo('/' + Grupo);
   end;
 
   if objInfoAmb.Count > 99 then
-    Gerador.wAlerta('', 'infoAmb', 'Lista de Informações Ambientais', ERR_MSG_MAIOR_MAXIMO + '99');
+    Gerador.wAlerta('', Grupo, 'Lista de Informações Ambientais', ERR_MSG_MAIOR_MAXIMO + '99');
 end;
 
 procedure TEvtInsApo.GerarIniAposentEsp(objIniApoEsp: TiniAposentEsp);
@@ -437,11 +464,12 @@ begin
   Gerador.wGrupo('/insalPeric');
 end;
 
-function TEvtInsApo.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtInsApo.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtInsApo');
     Gerador.wGrupo('evtInsApo Id="' + Self.Id + '"');
@@ -470,22 +498,252 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
-{ TS2241Collection }
-
-function TS2241Collection.Add: TS2241CollectionItem;
+function TEvtInsApo.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I, J: Integer;
 begin
-  Result := TS2241CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
-end;
+  Result := False;
 
-function TS2241Collection.GetItem(Index: Integer): TS2241CollectionItem;
-begin
-  Result := TS2241CollectionItem(inherited GetItem(Index));
-end;
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
-procedure TS2241Collection.SetItem(Index: Integer; Value: TS2241CollectionItem);
-begin
-  inherited SetItem(Index, Value);
+    with Self do
+    begin
+      sSecao := 'evtInsApo';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+
+      sSecao := 'iniInsalPeric';
+      InsalPeric.iniInsalPeric.DtiniCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with InsalPeric.iniInsalPeric.infoAmb.Add do
+        begin
+          codAmb := sFim;
+
+          J := 1;
+          while true do
+          begin
+            // de 001 até 999
+            sSecao := 'fatRisco' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
+            sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with fatRisco.Add do
+            begin
+              codFatRis := sFim;
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'altInsalPeric';
+      InsalPeric.altInsalPeric.DtaltCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtAltCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with InsalPeric.altInsalPeric.infoAmb.Add do
+        begin
+          codAmb := sFim;
+
+          J := 1;
+          while true do
+          begin
+            // de 001 até 999
+            sSecao := 'fatRisco' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
+            sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with fatRisco.Add do
+            begin
+              codFatRis := sFim;
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'fimInsalPeric';
+      InsalPeric.fimInsalPeric.dtFimCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with InsalPeric.fimInsalPeric.infoAmb.Add do
+        begin
+          codAmb := sFim;
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'iniAposentEsp';
+      AposentEsp.iniAposentEsp.DtiniCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with AposentEsp.iniAposentEsp.infoAmb.Add do
+        begin
+          codAmb := sFim;
+
+          J := 1;
+          while true do
+          begin
+            // de 001 até 999
+            sSecao := 'fatRisco' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
+            sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with fatRisco.Add do
+            begin
+              codFatRis := sFim;
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'altAposentEsp';
+      AposentEsp.altAposentEsp.DtaltCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtAltCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with AposentEsp.altAposentEsp.infoAmb.Add do
+        begin
+          codAmb := sFim;
+
+          J := 1;
+          while true do
+          begin
+            // de 001 até 999
+            sSecao := 'fatRisco' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
+            sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with fatRisco.Add do
+            begin
+              codFatRis := sFim;
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'fimAposentEsp';
+      AposentEsp.fimAposentEsp.DtfimCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with AposentEsp.fimAposentEsp.infoAmb.Add do
+        begin
+          codAmb := sFim;
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

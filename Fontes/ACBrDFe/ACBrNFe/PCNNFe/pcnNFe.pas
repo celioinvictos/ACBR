@@ -686,7 +686,7 @@ type
     property nRECOPI: String read FnRECOPI write FnRECOPI;
     property nFCI: String read FnFCI write FnFCI;
     property CEST: String read FCEST write FCEST;
-    property indEscala: TpcnIndEscala read FindEscala write FindEscala;
+    property indEscala: TpcnIndEscala read FindEscala write FindEscala default ieNenhum;
     property CNPJFab: String read FCNPJFab write FCNPJFab;
     property cBenef: String read FcBenef write FcBenef;
   end;
@@ -1740,9 +1740,12 @@ type
     FCNPJ: String;
     FtBand: TpcnBandeiraCartao;
     FcAut: String;
+    FindPag: TpcnIndicadorPagamento;
   public
+    constructor Create(AOwner: TCollection); override;
     procedure Assign(Source: TPersistent); override;
   published
+    property indPag: TpcnIndicadorPagamento read FindPag write FindPag default ipNenhum;
     property tPag: TpcnFormaPagamento read FtPag write FtPag;
     property vPag: Currency read FvPag write FvPag;
     property tpIntegra: TtpIntegra read FtpIntegra write FtpIntegra;
@@ -2323,6 +2326,8 @@ end;
 constructor TProd.Create(AOwner: TDetcollectionItem);
 begin
   inherited Create;
+  FindEscala := ieNenhum;
+
   FDI := TDICollection.Create(Self);
   FNVE := TNVECollection.Create(self);
   FdetExport := TdetExportCollection.Create(Self);
@@ -2460,6 +2465,7 @@ begin
   if Source is Tcomb then
   begin
     cProdANP := Tcomb(Source).cProdANP;
+    descANP := Tcomb(Source).descANP;
     pMixGN := Tcomb(Source).pMixGN;
     CODIF := Tcomb(Source).CODIF;
     qTemp := Tcomb(Source).qTemp;
@@ -3484,6 +3490,7 @@ begin
     detExport.Assign(TProd(Source).detExport);
     veicProd.Assign(TProd(Source).veicProd);
     med.Assign(TProd(Source).med);
+    rastro.Assign(TProd(Source).rastro);
     arma.Assign(TProd(Source).arma);
     comb.Assign(TProd(Source).comb);
     nRECOPI := TProd(Source).nRECOPI;
@@ -4004,6 +4011,7 @@ procedure TpagCollectionItem.Assign(Source: TPersistent);
 begin
   if Source is TpagCollectionItem then
   begin
+    indPag := TpagCollectionItem(Source).indPag;
     tPag := TpagCollectionItem(Source).tPag;
     vPag := TpagCollectionItem(Source).vPag;
     tpIntegra := TpagCollectionItem(Source).tpIntegra;
@@ -4013,6 +4021,12 @@ begin
   end
   else
     inherited;
+end;
+
+constructor TpagCollectionItem.Create(AOwner: TCollection);
+begin
+  inherited Create(AOwner);
+  FindPag := ipNenhum;
 end;
 
 { TobsContCollectionItem }

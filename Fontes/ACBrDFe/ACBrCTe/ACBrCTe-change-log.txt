@@ -47,9 +47,60 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+11/05/2018
+-- ACBrCTe --
+[*] Incluido a lipeza das classes de envio e retorno antes do envio.
+   Por: Italo Jurisato Junior
+
+23/04/2018
+-- pcteCTeR --
+[*] Alterado a posição da leitura da tag indAlteraToma.
+  Por: Nellien
+-- pcteCTe / pcteCTeW / pcteCTeR --
+[+] Acrescentado os campos para informar os dados referente ao seguro para o 
+    modal Multimodal.
+  Por: Italo Jurisato Junior
+
+19/04/2018
+-- ACBrCTeWebServices --
+[-] Correção na montagem da Mensagem de retorno da consulta.
+  Por: Italo Jurisato Junior
+
+16/04/2018
+-- pcteEventoCTe --
+[*] Modificação nos métodos "Getters" para não disparar exception no caso de
+    erros ou conversão inválida, assumindo valores vazios ou nulos.
+  Por: Italo Jurisato Junior
+
+-- ACBrCTeWebServices --
+[-] Correção na execução do serviço de consulta de cadastro, para retornar o
+    FPBodyElement padrão após uma consulta de cadastro dos estados do RS e
+    estados usuários da SVRS.
+  Por: Italo Jurisato Junior
+
+11/04/2018
+-- pcteEventoCTe --
+[*] https://www.projetoacbr.com.br/forum/topic/42534-consulta-situa%C3%A7%C3%A3o-ct-e-erro-descri%C3%A7%C3%A3o-do-evento-n%C3%A3o-implementado/?do=findComment&comment=280732
+   Por: Douglas wf
+
+09/04/2018
+-- pcteEventoCTe --
+[*] https://www.projetoacbr.com.br/forum/topic/42534-consulta-situa%C3%A7%C3%A3o-ct-e-erro-descri%C3%A7%C3%A3o-do-evento-n%C3%A3o-implementado/?do=findComment&comment=280692
+   Por: Douglas wf
+
+29/03/2018
+-- ACBrCTeConhecimentos --
+[*] https://www.projetoacbr.com.br/forum/topic/42445-ref-a-protocolo-n%C3%A3o-carregado-de-cteos-loadfromstring/?do=findComment&comment=279702
+   Por: Leandro Vignoto
+
+26/02/2018
+-- ACBrCTeWebServices --
+[*] Comentado a linha que permite gerar um XML de evento com acentos.
+   Por: Italo Jurisato Junior
+
 14/02/2018
 -- pcteProcCTe / pcteCTeW --
-[*] Remção de funções em duplicidade e a troca das chamadas das funções antigas
+[*] Remoção de funções em duplicidade e a troca das chamadas das funções antigas
     pelas novas
    Por: Italo Jurisato Junior
 

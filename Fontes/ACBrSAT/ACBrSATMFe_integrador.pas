@@ -238,7 +238,7 @@ begin
   FIntegrador.NomeComponente := cNomeComponente;
   FIntegrador.NomeMetodo := 'ConfigurarInterfaceDeRedeMFE';
   FIntegrador.Parametros.Values['codigoDeAtivacao']  := codigoDeAtivacao;
-  FIntegrador.Parametros.Values['dadosConfiguracao'] := '<![CDATA[' +AjustaComando(dadosConfiguracao)+ ']]>';
+  FIntegrador.Parametros.Values['dadosConfiguracao'] := '<![CDATA[' +AjustaComando(dadosConfiguracao)+ '|||]]>';
   Result := FIntegrador.Enviar;
 end ;
 
@@ -337,7 +337,10 @@ begin
   try
     Result := FIntegrador.EnviarPagamento(Pagamento);
   finally
-    TACBrSAT(Owner).FinalizaComando( Result.XML );
+    if Assigned(Result) then
+      TACBrSAT(Owner).FinalizaComando(Result.XML)
+    else
+      TACBrSAT(Owner).FinalizaComando('');
   end;
 end;
 
@@ -351,7 +354,10 @@ begin
   try
     Result := FIntegrador.EnviarStatusPagamento(StatusPagamento);
   finally
-    TACBrSAT(Owner).FinalizaComando( Result.XML );
+    if Assigned(Result) then
+      TACBrSAT(Owner).FinalizaComando(Result.XML)
+    else
+      TACBrSAT(Owner).FinalizaComando('');
   end;
 end;
 
@@ -366,7 +372,10 @@ begin
   try
     Result := FIntegrador.VerificarStatusValidador(AVerificarStatusValidador);
   finally
-    TACBrSAT(Owner).FinalizaComando( Result.XML );
+    if Assigned(Result) then
+      TACBrSAT(Owner).FinalizaComando(Result.XML)
+    else
+      TACBrSAT(Owner).FinalizaComando('');
   end;
 end;
 
@@ -380,7 +389,10 @@ begin
   try
     Result := FIntegrador.RespostaFiscal(ARespostaFiscal);
   finally
-    TACBrSAT(Owner).FinalizaComando( Result.XML );
+    if Assigned(Result) then
+      TACBrSAT(Owner).FinalizaComando(Result.XML)
+    else
+      TACBrSAT(Owner).FinalizaComando('');
   end;
 end;
 

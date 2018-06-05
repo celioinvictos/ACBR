@@ -75,7 +75,7 @@ object Form1: TForm1
     NumbersOnly = True
     TabOrder = 3
   end
-  object ACBrNcms1: TACBrNCMs
+  object ACBrNcms1: TACBrNcms
     ProxyPort = '8080'
     UrlConsulta = 'http://www4.receita.fazenda.gov.br/simulador/PesquisarNCM.jsp?'
     Left = 744

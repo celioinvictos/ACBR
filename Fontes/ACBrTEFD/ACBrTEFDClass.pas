@@ -409,6 +409,10 @@ type
     FAutorizacao: String;
     FBandeira: String;
     FCNPJCredenciadora: String;
+    FDonoCartao : string;
+    FDataExpiracao : string;
+    FUltimosQuatroDigitos : string;
+
    public
     procedure Clear;
 
@@ -416,6 +420,10 @@ type
     property CNPJCredenciadora: String read FCNPJCredenciadora write FCNPJCredenciadora;
     property Bandeira: String read FBandeira write FBandeira;
     property Autorizacao: String read FAutorizacao write FAutorizacao;
+    property DonoCartao : string read FDonoCartao write FDonoCartao;
+    property DataExpiracao : string read FDataExpiracao write FDataExpiracao;
+    property UltimosQuatroDigitos : string read FUltimosQuatroDigitos write FUltimosQuatroDigitos;
+
    end;
 
 
@@ -498,6 +506,7 @@ type
      fpIdRespostaFiscal : LongInt;
      fpSerialPOS: String;
      fpCodigoBandeiraPadrao: String;
+     fpEstabelecimento: String;
 
      procedure SetCNFEnviado(const AValue : Boolean);
      procedure SetIndiceFPG_ECF(const AValue : String);
@@ -602,6 +611,7 @@ type
      property IdPagamento : Integer read fpIdPagamento  write fpIdPagamento ;
      property IdRespostaFiscal : Integer read fpIdRespostaFiscal  write fpIdRespostaFiscal ;
      property SerialPOS : String read fpSerialPOS  write fpSerialPOS ;
+     property Estabelecimento : String read fpEstabelecimento  write fpEstabelecimento ;
    end;
 
    { TACBrTEFDRespTXT }
@@ -1188,7 +1198,7 @@ end;
 
 procedure TACBrTEFDReq.SetNSU(const AValue : String);
 begin
-  fNSU := OnlyNumber(AValue);
+  fNSU := Trim(AValue);
   fConteudo.GravaInformacao(12,0,fNSU);
 end;
 
@@ -1379,6 +1389,7 @@ begin
    fpIdPagamento := 0;
    fpIdRespostaFiscal := 0;
    fpSerialPOS := '';
+   fpEstabelecimento := '';
 end;
 
 procedure TACBrTEFDResp.LeArquivo(const NomeArquivo : String);
@@ -1427,10 +1438,10 @@ end;
 
 procedure TACBrTEFDRespTXT.ConteudoToProperty;
 var
-   Linha : TACBrTEFDLinha ;
-   I     : Integer;
-   Parc  : TACBrTEFDRespParcela;
-   Usar711, Usar713, Usar715, TemParcelas : Boolean ;
+   Linha: TACBrTEFDLinha ;
+   I : Integer;
+   Parc: TACBrTEFDRespParcela;
+   Usar711, Usar713, Usar715, Usar29, TemParcelas: Boolean ;
 
    function AjustaLinhaImagemComprovante( Linha: AnsiString ) : AnsiString;
    begin
@@ -1450,6 +1461,7 @@ begin
    Usar713     := False;
    Usar715     := False;
    TemParcelas := False;
+   Usar29      := False;
 
    for I := 0 to Conteudo.Count - 1 do
    begin
@@ -1468,8 +1480,11 @@ begin
        9   : fpStatusTransacao            := Linha.Informacao.AsString;
        10  :
          begin
-           if Linha.Sequencia = 0 then
-             fpRede := Linha.Informacao.AsString;
+           case Linha.Sequencia of
+             0 : fpRede := Linha.Informacao.AsString;
+             4 : fpBin  := Linha.Informacao.AsString; //Seis primeiros digitos do cartão
+             5 : fpNFCeSAT.UltimosQuatroDigitos  := Linha.Informacao.AsString; 
+           end;
          end;
        11  : fpTipoTransacao              := Linha.Informacao.AsInteger;
        12  : fpNSU                        := Linha.Informacao.AsString;
@@ -1501,21 +1516,43 @@ begin
          begin
            if not (Usar711 or Usar713) then
            begin
-              fpImagemComprovante1aVia.Clear;
-              fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
+             fpImagemComprovante1aVia.Clear;
+             fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
            end;
 
            if not Usar715 then
-              fpImagemComprovante2aVia.Clear;
+             fpImagemComprovante2aVia.Clear;
+
+           if (Linha.Sequencia = 1) then
+           begin
+             Usar29 := True;
+             fpImagemComprovante1aVia.Clear;
+             fpImagemComprovante2aVia.Clear;
+             fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
+           end;
          end;
-       29  :
+         
+       29 : 
          begin
-            if not (Usar711 or Usar713) then
+           if Usar29 then
+           begin
+             if (Linha.Sequencia <= fpQtdLinhasComprovante) then
+               fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) )
+             else
+               fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+
+           end
+           else
+           begin
+             if not (Usar711 or Usar713) then
                fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
 
-            if not Usar715 then
+             if not Usar715 then
                fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+           end;
          end;
+         
+
        30  : fpTextoEspecialOperador := Linha.Informacao.AsString;
        31  : fpTextoEspecialCliente  := Linha.Informacao.AsString;
        32  : fpAutenticacao          := Linha.Informacao.AsString;
@@ -1530,6 +1567,17 @@ begin
        131 : fpInstituicao           := Linha.Informacao.AsString;
        132 : fpCodigoBandeiraPadrao  := Linha.Informacao.AsString;
        136 : fpBin                   := Linha.Informacao.AsString;
+
+       300 : case Linha.Sequencia of
+               1 : fpNFCeSAT.DataExpiracao := Linha.Informacao.AsString;
+               2 : fpNFCeSAT.DonoCartao    := Linha.Informacao.AsString;
+             end;
+
+       600 : fpNFCeSAT.CNPJCredenciadora := Linha.Informacao.AsString;
+       601 : fpNFCeSAT.Bandeira          := Linha.Informacao.AsString;
+       602 : fpNFCeSAT.Autorizacao       := Linha.Informacao.AsString;
+       603 : fpNFCeSAT.CodCredenciadora := Linha.Informacao.AsString;
+
        707 : fpValorOriginal         := Linha.Informacao.AsFloat;
        708 : fpSaque                 := Linha.Informacao.AsFloat;
        709 : fpDesconto              := Linha.Informacao.AsFloat;
@@ -1537,40 +1585,43 @@ begin
          begin
            if Linha.Informacao.AsInteger > 0 then
            begin
-              Usar711 := True;
-              fpImagemComprovante1aVia.Clear;
-              fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
+             Usar711 := True;
+             fpImagemComprovante1aVia.Clear;
+             fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
            end;
          end;
        711 :
          begin
-            if Usar711 then
-               fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+           if Usar711 then
+             fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
          end;
        712 :
          begin
+           if Linha.Informacao.AsInteger > 0 then
+             Usar711 := False;
+
            if not Usar711 then
            begin
-              Usar713 := True;
-              fpImagemComprovante1aVia.Clear;
-              fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
+             Usar713 := True;
+             fpImagemComprovante1aVia.Clear;
+             fpQtdLinhasComprovante := Linha.Informacao.AsInteger;
            end;
          end;
        713 :
          begin
            if Usar713 then
-              fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+             fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
          end ;
        714 :
          if Linha.Informacao.AsInteger > 0 then
          begin
-            Usar715 := True;
-            fpImagemComprovante2aVia.Clear;
+           Usar715 := True;
+           fpImagemComprovante2aVia.Clear;
          end;
        715 :
          begin
            if Usar715 then
-              fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+             fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
          end;
        899 :  // Tipos de Uso Interno do ACBrTEFD
         begin
@@ -1582,6 +1633,7 @@ begin
             500 : fpIdPagamento      := Linha.Informacao.AsInteger ;
             501 : fpIdRespostaFiscal := Linha.Informacao.AsInteger ;
             502 : fpSerialPOS        := Linha.Informacao.AsString ;
+            503 : fpEstabelecimento  := Linha.Informacao.AsString ;
           end;
         end;
        999 : fpTrailer           := Linha.Informacao.AsString ;
@@ -3115,6 +3167,9 @@ begin
   FAutorizacao       := '';
   FBandeira          := '';
   FCNPJCredenciadora := '';
+  FDonoCartao        := '';
+  FDataExpiracao     := '';
+  FUltimosQuatroDigitos := '';
 end;
 
 end.

@@ -29,6 +29,7 @@ type
     bTagsTesteInvalidas: TButton;
     bTagsTestePagCodigo: TButton;
     bImpLinhaALinha: TButton;
+    bTagsTestePageMode: TButton;
     Button1: TButton;
     cbCortarPapel: TCheckBox;
     cbHRI: TCheckBox;
@@ -109,6 +110,7 @@ type
     procedure bTagsCodBarrasClick(Sender: TObject);
     procedure bTagsTestePagCodigoClick(Sender: TObject);
     procedure bImpLinhaALinhaClick(Sender: TObject);
+    procedure bTagsTestePageModeClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure cbControlePortaChange(Sender: TObject);
     procedure cbCortarPapelChange(Sender: TObject);
@@ -287,7 +289,7 @@ begin
   mImp.Lines.Add('Exemplo de QRCode para NFCe');
   mImp.Lines.Add('<qrcode_error>0</qrcode_error><qrcode>https://www.homologacao.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx?chNFe=35150805481336000137650220000000711000001960&nVersao=100&tpAmb=2&dhEmi=323031352D30382D31395432323A33333A32352D30333A3030&vNF=3.00&vICMS=0.12&digVal=776967396F2B665861706673396878776E64594C396F61654C35493D&cIdToken=000001&cHashQRCode=9BD312D558823E1EC68CEDB338A39B6150B0480E</qrcode>');
   mImp.Lines.Add('Exemplo de QRCode para SAT');
-  mImp.Lines.Add('<qrcode_error>0</qrcode_error><qrcode>35150811111111111111591234567890001672668828|20150820201736|118.72|05481336000137|TCbeD81ePUpMvso4VjFqRTvs4ovqmR1ZG3bwSCumzHtW8bbMedVJjVnww103v3LxKfgckAyuizcR/9pXaKay6M4Gu8kyDef+6VH5qONIZV1cB+mFfXiaCgeZALuRDCH1PRyb6hoBeRUkUk6lOdXSczRW9Y83GJMXdOFroEbzFmpf4+WOhe2BZ3mEdXKKGMfl1EB0JWnAThkGT+1Er9Jh/3En5YI4hgQP3NC2BiJVJ6oCEbKb85s5915DSZAw4qB/MlESWViDsDVYEnS/FQgA2kP2A9pR4+agdHmgWiz30MJYqX5Ng9XEYvvOMzl1Y6+7/frzsocOxfuQyFsnfJzogw==hygljwuohmmoewarfnmighlxzke7k2bjlto4sb2vltorgm26khhangknnfvpzydt5terudyw5vuvtzlhlqs3qrzvplfnlvw==</qrcode>');
+  mImp.Lines.Add('<qrcode_error>0</qrcode_error><qrcode>35150811111111111111591234567890001672668828|20150820201736|118.72|05481336000137|TCbeD81ePUpMvso4VjFqRTvs4ovqmR1ZG3bwSCumzHtW8bbMedVJjVnww103v3LxKfgckAyuizcR/9pXaKay6M4Gu8kyDef+6VH5qONIZV1cB+mFfXiaCgeZALuRDCH1PRyb6hoBeRUkUk6lOdXSczRW9Y83GJMXdOFroEbzFmpf4+WOhe2BZ3mEdXKKGMfl1EB0JWnAThkGT+1Er9Jh/3En5YI4hgQP3NC2BiJVJ6oCEbKb85s5915DSZAw4qB/MlESWViDsDVYEnS/FQgA2kP2A9pR4+agdHmgWiz30MJYqX5Ng9XEYvvOMzl1Y6+7/frzsocOxfuQyFsnfJzogw==</qrcode>');
   mImp.Lines.Add('</corte_total>');
 end;
 
@@ -301,7 +303,7 @@ begin
   mImp.Lines.Add('<n>FONTE NEGRITO</N>');
   mImp.Lines.Add('<e>FONTE EXPANDIDA</e>');
   mImp.Lines.Add('<a>FONTE ALT.DUPLA</a>');
-  mImp.Lines.Add('<c>FONTE CONDENSADA</e>');
+  mImp.Lines.Add('<c>FONTE CONDENSADA</c>');
   mImp.Lines.Add('<in>FONTE INVERTIDA</in>');
   mImp.Lines.Add('<S>FONTE SUBLINHADA</s>');
   mImp.Lines.Add('<i>FONTE ITALICO</i>');
@@ -311,7 +313,7 @@ begin
   mImp.Lines.Add('<n>FONTE NEGRITO</N>');
   mImp.Lines.Add('<e>FONTE EXPANDIDA</e>');
   mImp.Lines.Add('<a>FONTE ALT.DUPLA</a>');
-  mImp.Lines.Add('<c>FONTE CONDENSADA</e>');
+  mImp.Lines.Add('<c>FONTE CONDENSADA</c>');
   mImp.Lines.Add('<in>FONTE INVERTIDA</in>');
   mImp.Lines.Add('<S>FONTE SUBLINHADA</s>');
   mImp.Lines.Add('<i>FONTE ITALICO</i>');
@@ -321,7 +323,7 @@ begin
   mImp.Lines.Add('<n>FONTE NEGRITO</N>');
   mImp.Lines.Add('<e>FONTE EXPANDIDA</e>');
   mImp.Lines.Add('<a>FONTE ALT.DUPLA</a>');
-  mImp.Lines.Add('<c>FONTE CONDENSADA</e>');
+  mImp.Lines.Add('<c>FONTE CONDENSADA</c>');
   mImp.Lines.Add('<in>FONTE INVERTIDA</in>');
   mImp.Lines.Add('<S>FONTE SUBLINHADA</s>');
   mImp.Lines.Add('<i>FONTE ITALICO</i>');
@@ -446,6 +448,44 @@ begin
   ACBrPosPrinter1.ImprimirLinha('</FA>FONTE TIPO A');
   ACBrPosPrinter1.ImprimirLinha('</FN>FONTE NORMAL');
   ACBrPosPrinter1.ImprimirLinha('</corte_total>');
+end;
+
+procedure TFrPosPrinterTeste.bTagsTestePageModeClick(Sender: TObject);
+begin
+  mImp.Lines.Add('</zera><barra_mostrar>0</barra_mostrar><barra_largura>2</barra_largura><barra_altura>40</barra_altura>');
+  mImp.Lines.Add('<mp><mp_direcao>0</mp_direcao><mp_topo>0</mp_topo><mp_esquerda>0</mp_esquerda><mp_largura>257</mp_largura><mp_altura>740</mp_altura><mp_espaco>50</mp_espaco></mp_configurar>');
+  mImp.Lines.Add('<c><n>CONDENSADA/NEGRITO</n></c>');
+  mImp.Lines.Add('<e>EXPANDIDO</e>');
+  mImp.Lines.Add('<in>INVERTIDA</in>');
+  mImp.Lines.Add('');
+  mImp.Lines.Add('<inter>1234567890</inter>');
+  mImp.Lines.Add('<qrcode>http://www.projetoacbr.com.br/forum/index.php?/page/SAC/sobre_o_sac.html</qrcode>');
+  mImp.Lines.Add('<mp_direcao>1</mp_direcao><mp_topo>0</mp_topo><mp_esquerda>210</mp_esquerda><mp_largura>400</mp_largura><mp_altura>500</mp_altura><mp_espaco>25</mp_espaco></mp_configurar>');
+  mImp.Lines.Add('<c><n>CONDENSADA/NEGRITO</n></c>');
+  mImp.Lines.Add('<e>EXPANDIDO</e>');
+  mImp.Lines.Add('<in>INVERTIDA</in>');
+  mImp.Lines.Add('');
+  mImp.Lines.Add('<inter>1234567890</inter>');
+  mImp.Lines.Add('<qrcode>http://www.projetoacbr.com.br/forum/index.php?/page/SAC/sobre_o_sac.html</qrcode>');
+  mImp.Lines.Add('</mp>');
+  mImp.Lines.Add('MODO PAGINA DESLIGADO');
+  mImp.Lines.Add('<mp><mp_direcao>3</mp_direcao><mp_topo>0</mp_topo><mp_esquerda>0</mp_esquerda><mp_largura>400</mp_largura><mp_altura>500</mp_altura><mp_espaco>25</mp_espaco></mp_configurar>');
+  mImp.Lines.Add('<c><n>CONDENSADA/NEGRITO</n></c>');
+  mImp.Lines.Add('<e>EXPANDIDO</e>');
+  mImp.Lines.Add('<in>INVERTIDA</in>');
+  mImp.Lines.Add('');
+  mImp.Lines.Add('<inter>1234567890</inter>');
+  mImp.Lines.Add('<qrcode>http://www.projetoacbr.com.br/forum/index.php?/page/SAC/sobre_o_sac.html</qrcode>');
+  mImp.Lines.Add('<mp_direcao>2</mp_direcao><mp_topo>0</mp_topo><mp_esquerda>350</mp_esquerda><mp_largura>257</mp_largura><mp_altura>740</mp_altura><mp_espaco>50</mp_espaco></mp_configurar>');
+  mImp.Lines.Add('<c><n>CONDENSADA/NEGRITO</n></c>');
+  mImp.Lines.Add('<e>EXPANDIDO</e>');
+  mImp.Lines.Add('<in>INVERTIDA</in>');
+  mImp.Lines.Add('');
+  mImp.Lines.Add('<inter>1234567890</inter>');
+  mImp.Lines.Add('<qrcode>http://www.projetoacbr.com.br/forum/index.php?/page/SAC/sobre_o_sac.html</qrcode>');
+  mImp.Lines.Add('</mp>');
+  mImp.Lines.Add('');
+  mImp.Lines.Add('</corte_total>');
 end;
 
 procedure TFrPosPrinterTeste.Button1Click(Sender: TObject);

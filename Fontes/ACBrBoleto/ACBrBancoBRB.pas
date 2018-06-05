@@ -262,12 +262,9 @@ begin
      { Juros de Mora }
      if ValorMoraJuros > 0 then
       begin
-        TipoJuros := '51';
-        //Instrucao1 := '01'; // 01- Não Dispensar Juros de Mora
-        //Prazo1 := '01';
-        { ajustes para homologar Casa dos Vidros Protocolo 39907 }
-        Instrucao1 := '03'; // Cobrar multa de ...% sobre o valor do título;
-        Prazo1 := '00';
+        TipoJuros := '50';
+        Instrucao1 := '01'; // 01- Não Dispensar Juros de Mora
+        Prazo1 := '01';
       end
      else
       begin
@@ -279,11 +276,8 @@ begin
      { Multa }
      if PercentualMulta > 0 then
       begin
-       //Instrucao2 := '03'; // 03- Cobrar multa de ...% sobre o valor do título
-       //Prazo2 := '01';
-
-       Instrucao2 := '09'; // 94: Não receber após ... dias;
-       Prazo2 := '05';
+       Instrucao2 := '03'; // 03- Cobrar multa de ...% sobre o valor do título
+       Prazo2 := '01';
       end
      else
       begin
@@ -366,7 +360,7 @@ begin
                  Prazo1                                                                 + // Prazo da 1º Instrução 00 (Se não houver 1ª Instrução)
                  Instrucao2                                                             + // Código da 2º Instrução
                  Prazo2                                                                 + // Prazo da 2º Instrução 00 (Se não houver 1ª Instrução)
-                 FormatCurr('00000', PercentualMulta * 100)                             + // Taxa r ef, a uma das duas Inst. 00000 (Se não houver Instrução ou Taxa) Confirmar a formatação - 5% coloquei assim 00500
+                 FormatCurr('00000', PercentualMulta * 100)                             + // Taxa ref, a uma das duas Inst. 00000 (Se não houver Instrução ou Taxa) Confirmar a formatação - 5% coloquei assim 00500
                  PadRight(Cedente.Nome,40)                                              + // Emitente do Título
                  Space(40)                                                              + // Mensagem Livre (Observações)
                  Space(32)                                                              ; // Brancos
@@ -466,8 +460,7 @@ begin
   ChaveASBACESemDigito := ChaveASBACESemDigito + PadLeft(OnlyNumber(ACBrTitulo.ACBrBoleto.Cedente.Conta), 6, '0');
   ChaveASBACESemDigito := ChaveASBACESemDigito + PadLeft(ACBrTitulo.ACBrBoleto.Cedente.ContaDigito, 1, '0');
   ChaveASBACESemDigito := ChaveASBACESemDigito + PadRight(trim(ACBrTitulo.ACBrBoleto.Cedente.Modalidade), 1); //Categoria da Cobrança
-  ChaveASBACESemDigito := ChaveASBACESemDigito + PadLeft(RightStr(ACBrTitulo.NossoNumero, 6), 6, '0');
-  //ChaveASBACESemDigito := ChaveASBACESemDigito + PadLeft(ACBrTitulo.NossoNumero, 6, '0');
+  ChaveASBACESemDigito := ChaveASBACESemDigito + PadLeft(ACBrTitulo.NossoNumero, 6, '0');
   ChaveASBACESemDigito := ChaveASBACESemDigito + PadLeft(IntToStr(Numero), 3, '0');
   Result := ChaveASBACESemDigito + CalculaDigitosChaveASBACE(ChaveASBACESemDigito);
 end;

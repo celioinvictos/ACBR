@@ -51,7 +51,8 @@ interface
 uses
   SysUtils, Classes,
   ACBrUtil, pcnAuxiliar, pcnConversao, pcnLeitor,
-  pcesCommon, pcesRetornoClass, pcesConversaoeSocial;
+  pcesCommon, pcesRetornoClass, pcesConversaoeSocial,
+  pcesS5001, pcesS5002, pcesS5011, pcesS5012;
 
 type
   TtotCollection = class;
@@ -75,9 +76,13 @@ type
   private
     Ftipo: String;
     FXML: AnsiString;
+    FEvento: IEventoeSocial;
+
   public
     property tipo: String read Ftipo write Ftipo;
     property XML: AnsiString read FXML write FXML;
+    property Evento: IEventoeSocial read FEvento write FEvento;
+
   end;
 
   TRetEventosCollection = class(TCollection)
@@ -279,8 +284,7 @@ begin
       begin
         Status.cdResposta := Leitor.rCampo(tcInt, 'cdResposta');
         Status.descResposta := Leitor.rCampo(tcStr, 'descResposta');
-        Status.tempoEstimadoConclusao :=
-          Leitor.rCampo(tcInt, 'tempoEstimadoConclusao');
+        Status.tempoEstimadoConclusao := Leitor.rCampo(tcInt, 'tempoEstimadoConclusao');
 
         if Leitor.rExtrai(3, 'ocorrencias') <> '' then
         begin
@@ -307,8 +311,7 @@ begin
       end;
 
       if Leitor.rExtrai(2, 'dadosProcessamentoLote') <> '' then
-        DadosProcLote.versaoAplicProcLote :=
-          FLeitor.rCampo(tcStr, 'versaoAplicativoProcessamentoLote');
+        DadosProcLote.versaoAplicProcLote := FLeitor.rCampo(tcStr, 'versaoAplicativoProcessamentoLote');
 
       if Leitor.rExtrai(2, 'retornoEventos') > '' then
       begin
@@ -392,7 +395,7 @@ begin
                   begin
                     RetEventos.Items[i].Recibo.Contrato.infoCeletista.DtAdm    := Leitor.rCampo(tcDat, 'dtAdm');
                     RetEventos.Items[i].Recibo.Contrato.infoCeletista.TpRegJor := eSStrToTpRegJor(ok, Leitor.rCampo(tcStr, 'tpRegJor'));
-                    RetEventos.Items[i].Recibo.Contrato.infoCeletista.dtBase   := Leitor.rCampo(tcDat, 'dtBase');
+                    RetEventos.Items[i].Recibo.Contrato.infoCeletista.dtBase   := Leitor.rCampo(tcInt, 'dtBase');
                     RetEventos.Items[i].Recibo.Contrato.infoCeletista.cnpjSindCategProf := Leitor.rCampo(tcStr, 'cnpjSindCategProf');
                   end;
 
@@ -461,7 +464,7 @@ begin
                       RetEventos.Items[i].Recibo.Contrato.horContratual.horario.Items[j].perHorFlexivel := FLeitor.rCampo(tcStr, 'perHorFlexivel');
 
                       k := 0;
-                      while Leitor.rExtrai(10, 'horarioIntervalo', '', j + 1) <> '' do
+                      while Leitor.rExtrai(10, 'horarioIntervalo', '', k + 1) <> '' do
                       begin
                         RetEventos.Items[i].Recibo.Contrato.horContratual.horario.Items[j].horarioIntervalo.Add;
                         RetEventos.Items[i].Recibo.Contrato.horContratual.horario.Items[j].horarioIntervalo.Items[k].tpInterv   := eSStrToTpIntervalo(ok, FLeitor.rCampo(tcStr, 'tpInterv'));
@@ -478,7 +481,7 @@ begin
                 end;
               end;
             end;
-            // Verifica se a necessidade da leitura do grupo <Signature>
+            // ToDo: Verifica se a necessidade da leitura do grupo <Signature>
           end;
 
           j := 0;
@@ -487,6 +490,31 @@ begin
             RetEventos.Items[i].tot.Add;
             RetEventos.Items[i].tot.Items[j].tipo := FLeitor.rAtributo('tipo=', 'tot');
             RetEventos.Items[i].tot.Items[j].XML := RetornarConteudoEntre(Leitor.Grupo, '>', '</tot');
+
+            if RetEventos.Items[i].tot.Items[j].tipo = 'S5001' then
+            begin
+              RetEventos.Items[i].tot.Items[j].Evento := TS5001.Create;
+              RetEventos.Items[i].tot.Items[j].Evento.Xml := RetEventos.Items[i].tot.Items[j].XML;
+            end;
+
+            if RetEventos.Items[i].tot.Items[j].tipo = 'S5002' then
+            begin
+              RetEventos.Items[i].tot.Items[j].Evento := TS5002.Create;
+              RetEventos.Items[i].tot.Items[j].Evento.Xml := RetEventos.Items[i].tot.Items[j].XML;
+            end;
+
+            if RetEventos.Items[i].tot.Items[j].tipo = 'S5011' then
+            begin
+              RetEventos.Items[i].tot.Items[j].Evento := TS5011.Create;
+              RetEventos.Items[i].tot.Items[j].Evento.Xml := RetEventos.Items[i].tot.Items[j].XML;
+            end;
+
+            if RetEventos.Items[i].tot.Items[j].tipo = 'S5012' then
+            begin
+              RetEventos.Items[i].tot.Items[j].Evento := TS5012.Create;
+              RetEventos.Items[i].tot.Items[j].Evento.Xml := RetEventos.Items[i].tot.Items[j].XML;
+            end;
+
             inc(j);
           end;
 

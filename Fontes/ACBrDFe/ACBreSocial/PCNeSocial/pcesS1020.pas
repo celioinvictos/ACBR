@@ -49,7 +49,7 @@ unit pcesS1020;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, ACBrUtil,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -125,6 +125,7 @@ type
     fIdeEvento: TIdeEvento;
     fIdeEmpregador: TIdeEmpregador;
     fInfoLotacao: TInfoLotacao;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarIdeLotacao;
@@ -136,7 +137,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property IdeEvento: TIdeEvento read FIdeEvento write FIdeEvento;
@@ -229,6 +231,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1020Collection }
 
 function TS1020Collection.Add: TS1020CollectionItem;
@@ -274,6 +280,7 @@ constructor TevtTabLotacao.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   fIdeEvento := TIdeEvento.Create;
   fIdeEmpregador := TIdeEmpregador.Create;
   fInfoLotacao := TInfoLotacao.Create;
@@ -347,44 +354,38 @@ end;
 procedure TevtTabLotacao.GerarInfoProcJudTerceiros;
 var
   i: Integer;
-  objProcJudTer: TProcJudTerceiroCollectionItem;
 begin
   if (infoLotacao.dadosLotacao.fPasLotacao.infoProcJudTerceiros.procJudTerceiro.Count > 0) then
   begin
-    objProcJudTer := infoLotacao.dadosLotacao.fPasLotacao.infoProcJudTerceiros.procJudTerceiro.Items[0];
-
-    if objProcJudTer.codTerc <> EmptyStr then
+    Gerador.wGrupo('infoProcJudTerceiros');
+    with infoLotacao.dadosLotacao.fPasLotacao.infoProcJudTerceiros do
     begin
-      Gerador.wGrupo('infoProcJudTerceiros');
-
-      for i := 1 to infoLotacao.dadosLotacao.fPasLotacao.infoProcJudTerceiros.procJudTerceiro.Count - 1 do
+      for i := 0 to procJudTerceiro.Count-1 do
       begin
-        objProcJudTer := infoLotacao.dadosLotacao.fPasLotacao.infoProcJudTerceiros.procJudTerceiro.Items[i];
-
         Gerador.wGrupo('procJudTerceiro');
 
-        Gerador.wCampo(tcStr, '', 'codTerc',   1,  4, 1, objProcJudTer.codTerc);
-        Gerador.wCampo(tcStr, '', 'nrProcJud', 1, 20, 1, objProcJudTer.nrProcJud);
+        Gerador.wCampo(tcStr, '', 'codTerc',   1,  4, 1, procJudTerceiro.Items[i].codTerc);
+        Gerador.wCampo(tcStr, '', 'nrProcJud', 1, 20, 1, procJudTerceiro.Items[i].nrProcJud);
 
-        if trim(objProcJudTer.codSusp) <> '' then
-          Gerador.wCampo(tcInt, '', 'codSusp', 1, 14, 1, objProcJudTer.codSusp);
+        if trim(procJudTerceiro.Items[i].codSusp) <> '' then
+          Gerador.wCampo(tcInt, '', 'codSusp', 1, 14, 1, procJudTerceiro.Items[i].codSusp);
 
         Gerador.wGrupo('/procJudTerceiro');
       end;
 
-      if infoLotacao.dadosLotacao.fPasLotacao.infoProcJudTerceiros.procJudTerceiro.Count > 99 then
+      if procJudTerceiro.Count > 99 then
         Gerador.wAlerta('', 'infoProcJudTerceiros', 'Lista de Processos Judic. Terceiros', ERR_MSG_MAIOR_MAXIMO + '99');
-
-      Gerador.wGrupo('/infoProcJudTerceiros');
     end;
+    Gerador.wGrupo('/infoProcJudTerceiros');
   end;
 end;
 
-function TevtTabLotacao.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TevtTabLotacao.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabLotacao');
     Gerador.wGrupo('evtTabLotacao Id="' + Self.Id + '"');
@@ -421,6 +422,96 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TevtTabLotacao.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabLotacao';
+      Id             := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideLotacao';
+      infoLotacao.ideLotacao.codLotacao := INIRec.ReadString(sSecao, 'codLotacao', EmptyStr);
+      infoLotacao.ideLotacao.IniValid   := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoLotacao.ideLotacao.FimValid   := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosLotacao';
+        infoLotacao.dadosLotacao.tpLotacao := INIRec.ReadString(sSecao, 'tpLotacao', EmptyStr);
+        infoLotacao.dadosLotacao.tpInsc    := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+        infoLotacao.dadosLotacao.nrInsc    := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+        sSecao := 'fpasLotacao';
+        infoLotacao.dadosLotacao.fpasLotacao.fpas         := INIRec.ReadString(sSecao, 'fpas', EmptyStr);
+        infoLotacao.dadosLotacao.fpasLotacao.codTercs     := INIRec.ReadString(sSecao, 'codTercs', EmptyStr);
+        infoLotacao.dadosLotacao.fpasLotacao.codTercsSusp := INIRec.ReadString(sSecao, 'codTercsSusp', EmptyStr);
+
+        I := 1;
+        while true do
+        begin
+          // de 01 até 99
+          sSecao := 'procJudTerceiro' + IntToStrZero(I, 2);
+          sFim   := INIRec.ReadString(sSecao, 'codTerc', 'FIM');
+
+          if (sFim = 'FIM') or (Length(sFim) <= 0) then
+            break;
+
+          with infoLotacao.dadosLotacao.fpasLotacao.infoProcJudTerceiros.procJudTerceiro.Add do
+          begin
+            codTerc   := sFim;
+            nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', '');
+            codSusp   := INIRec.ReadString(sSecao, 'codSusp', '');
+          end;
+
+          Inc(I);
+        end;
+
+        sSecao := 'infoEmprParcial';
+        infoLotacao.dadosLotacao.infoEmprParcial.tpInscContrat := eSStrTotpInscContratante(Ok, INIRec.ReadString(sSecao, 'tpInscContrat', '1'));
+        infoLotacao.dadosLotacao.infoEmprParcial.nrInscContrat := INIRec.ReadString(sSecao, 'nrInscContrat', EmptyStr);
+        infoLotacao.dadosLotacao.infoEmprParcial.tpInscProp    := eSStrToTpInscProp(Ok, INIRec.ReadString(sSecao, 'tpInscProp', '1'));
+        infoLotacao.dadosLotacao.infoEmprParcial.nrInscProp    := INIRec.ReadString(sSecao, 'nrInscProp', EmptyStr);
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoLotacao.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoLotacao.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 { TDadosLotacao }
@@ -523,7 +614,6 @@ end;
 constructor TInfoProcJudTerceiros.create;
 begin
   FProcJudTerceiro := TProcJudTerceiroCollection.create;
-  FProcJudTerceiro.Add();
 end;
 
 destructor TInfoProcJudTerceiros.destroy;

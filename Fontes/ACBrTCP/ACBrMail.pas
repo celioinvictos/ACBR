@@ -440,6 +440,7 @@ procedure TACBrMail.AddEmailWithDelimitersToList(aEmail: String; aList: TStrings
 var
   sDelimiter: Char;
 begin
+  aEmail := Trim(aEmail);
   sDelimiter := FindDelimiterInText(aEmail);
 
   if (sDelimiter = ' ') then
@@ -504,15 +505,15 @@ begin
   fSubject := '';
 
   fReplyTo := TStringList.Create;
-  {$IFDEF FPC}
+  {$IfDef HAS_STRICTDELIMITER}
   fReplyTo.StrictDelimiter := True;
-  {$ENDIF}
+  {$EndIf}
   fReplyTo.Delimiter := ';';
 
   fBCC := TStringList.Create;
-  {$IFDEF FPC}
+  {$IfDef HAS_STRICTDELIMITER}
   fBCC.StrictDelimiter := True;
-  {$ENDIF}
+  {$EndIf}
   fBCC.Delimiter := ';';
 
   // NOTAR ISSO: fSMTP.Sock.OnStatus := ;

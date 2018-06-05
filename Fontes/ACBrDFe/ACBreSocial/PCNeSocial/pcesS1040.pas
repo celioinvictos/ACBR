@@ -89,6 +89,7 @@ type
     fIdeEvento: TIdeEvento;
     fIdeEmpregador: TIdeEmpregador;
     fInfoFuncao: TInfoFuncao;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarDadosFuncao;
@@ -97,7 +98,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property IdeEvento: TIdeEvento read fIdeEvento write fIdeEvento;
@@ -146,6 +148,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS1040Collection }
 
@@ -234,6 +240,7 @@ constructor TEvtTabFuncao.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   fIdeEvento := TIdeEvento.Create;
   fIdeEmpregador := TIdeEmpregador.Create;
   fInfoFuncao := TInfoFuncao.Create;
@@ -269,11 +276,12 @@ begin
   Gerador.wGrupo('/ideFuncao');
 end;
 
-function TEvtTabFuncao.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTabFuncao.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabFuncao');
     Gerador.wGrupo('evtTabFuncao Id="' + Self.Id + '"');
@@ -310,6 +318,63 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtTabFuncao.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabFuncao';
+      Id             := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideFuncao';
+      infoFuncao.ideFuncao.codFuncao := INIRec.ReadString(sSecao, 'codFuncao', EmptyStr);
+      infoFuncao.ideFuncao.IniValid  := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoFuncao.ideFuncao.FimValid  := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosFuncao';
+        infoFuncao.dadosFuncao.dscFuncao := INIRec.ReadString(sSecao, 'dscFuncao', EmptyStr);
+        infoFuncao.dadosFuncao.codCBO    := INIRec.ReadString(sSecao, 'codCBO', '1');
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoFuncao.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoFuncao.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

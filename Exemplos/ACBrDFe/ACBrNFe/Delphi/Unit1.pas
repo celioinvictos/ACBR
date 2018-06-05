@@ -484,7 +484,7 @@ begin
          Salvar           := ckSalvar.Checked;
        end;
 
-      cbUF.ItemIndex        := cbUF.Items.IndexOf(Ini.ReadString( 'WebService','UF','MS')) ;
+      cbUF.ItemIndex        := cbUF.Items.IndexOf(Ini.ReadString( 'WebService','UF','SP')) ;
       rgTipoAmb.ItemIndex   := Ini.ReadInteger( 'WebService','Ambiente'  ,0) ;
       cbxVisualizar.Checked  := Ini.ReadBool(    'WebService','Visualizar',False) ;
       cbxSalvarSOAP.Checked := Ini.ReadBool(    'WebService','SalvarSOAP',False) ;
@@ -2253,10 +2253,10 @@ begin
   NotaF.NFe.Avulsa.dPag    := now;
 }
 
-  NotaF.NFe.Dest.CNPJCPF           := '11758339000178';
-  NotaF.NFe.Dest.IE                := '283593180';
+  NotaF.NFe.Dest.CNPJCPF           := '05481336000137';
+  NotaF.NFe.Dest.IE                := '687138770110';
   NotaF.NFe.Dest.ISUF              := '';
-  NotaF.NFe.Dest.xNome             := 'Invictos Tecnologia Ltda ME';
+  NotaF.NFe.Dest.xNome             := 'D.J. COM. E LOCAÇÃO DE SOFTWARES LTDA - ME';
 
   NotaF.NFe.Dest.EnderDest.Fone    := '1532599600';
   NotaF.NFe.Dest.EnderDest.CEP     := 18270170;
@@ -2264,9 +2264,9 @@ begin
   NotaF.NFe.Dest.EnderDest.nro     := '973';
   NotaF.NFe.Dest.EnderDest.xCpl    := '';
   NotaF.NFe.Dest.EnderDest.xBairro := 'Centro';
-  NotaF.NFe.Dest.EnderDest.cMun    := 5003702;
-  NotaF.NFe.Dest.EnderDest.xMun    := 'Dourados';
-  NotaF.NFe.Dest.EnderDest.UF      := 'MS';
+  NotaF.NFe.Dest.EnderDest.cMun    := 3554003;
+  NotaF.NFe.Dest.EnderDest.xMun    := 'Tatui';
+  NotaF.NFe.Dest.EnderDest.UF      := 'SP';
   NotaF.NFe.Dest.EnderDest.cPais   := 1058;
   NotaF.NFe.Dest.EnderDest.xPais   := 'BRASIL';
 
@@ -2699,20 +2699,20 @@ begin
                                     // a inclusão de serviços na NFe
       Emit.CRT               := crtRegimeNormal;// (1-crtSimplesNacional, 2-crtSimplesExcessoReceita, 3-crtRegimeNormal)
 
-      Dest.CNPJCPF           := '11758339000178';
+      Dest.CNPJCPF           := '05481336000137';
 //      Dest.IE                := '687138770110'; //NFC-e não aceita IE
       Dest.ISUF              := '';
-      Dest.xNome             := 'Invictos Tecnologia Ltda ME';
+      Dest.xNome             := 'D.J. COM. E LOCAÇÃO DE SOFTWARES LTDA - ME';
 
       Dest.EnderDest.Fone    := '1533243333';
-      Dest.EnderDest.CEP     := 79800000;
+      Dest.EnderDest.CEP     := 18270170;
       Dest.EnderDest.xLgr    := 'Rua Coronel Aureliano de Camargo';
       Dest.EnderDest.nro     := '973';
       Dest.EnderDest.xCpl    := '';
       Dest.EnderDest.xBairro := 'Centro';
-      Dest.EnderDest.cMun    := 11758339000178;
-      Dest.EnderDest.xMun    := 'Dourados';
-      Dest.EnderDest.UF      := 'MS';
+      Dest.EnderDest.cMun    := 3554003;
+      Dest.EnderDest.xMun    := 'Tatuí';
+      Dest.EnderDest.UF      := 'SP';
       Dest.EnderDest.cPais   := 1058;
       Dest.EnderDest.xPais   := 'BRASIL';
 

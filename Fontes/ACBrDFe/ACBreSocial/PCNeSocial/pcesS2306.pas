@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao,
+  pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -89,6 +89,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FideTrabSemVinc: TideTrabSemVinc;
     FinfoTSVAlteracao : TinfoTSVAlteracao;
+    FACBreSocial: TObject;
 
     procedure GerarideTrabSemVinc(obj : TideTrabSemVinc);
     procedure GerarInfoTSVAlteracao(obj: TinfoTSVAlteracao);
@@ -98,11 +99,13 @@ type
     procedure GerarageIntegracao(obj: TageIntegracao);
     procedure GerarsupervisorEstagio(obj: TsupervisorEstagio);
     procedure GerarcargoFuncao(obj: TcargoFuncao);
+    procedure GerarRemuneracao(obj: TRemuneracao);
   public
     constructor Create(AACBreSocial: TObject); overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -120,7 +123,7 @@ type
     destructor  Destroy; override;
 
     property dtAlteracao : TDateTime read FdtAlteracao write FdtAlteracao;
-    property natAtivididade : tpNatAtividade read FnatAtividade write FnatAtividade;
+    property natAtividade : tpNatAtividade read FnatAtividade write FnatAtividade;
     property infoComplementares : TinfoComplementares read FinfoComplementares write FinfoComplementares;
   end;
 
@@ -139,6 +142,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS2306Collection }
 
@@ -178,12 +185,49 @@ begin
   FEvtTSVAltContr.Assign(Value);
 end;
 
+{ TinfoComplementares }
+
+constructor TinfoComplementares.Create;
+begin
+  inherited;
+
+  FcargoFuncao := TcargoFuncao.Create;
+  FRemuneracao := TRemuneracao.Create;
+  FinfoEstagiario := TinfoEstagiario.Create;
+end;
+
+destructor TinfoComplementares.Destroy;
+begin
+  FcargoFuncao.Free;
+  FRemuneracao.Free;
+  FinfoEstagiario.Free;
+
+  inherited;
+end;
+
+{ TinfoTSVAlteracao }
+
+constructor TinfoTSVAlteracao.Create;
+begin
+  inherited;
+
+  FinfoComplementares := TinfoComplementares.Create;
+end;
+
+destructor TinfoTSVAlteracao.Destroy;
+begin
+  FinfoComplementares.Free;
+
+  inherited;
+end;
+
 { TEvtTSVAltContr }
 
 constructor TEvtTSVAltContr.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FideTrabSemVinc := TideTrabSemVinc.Create;
@@ -283,7 +327,19 @@ begin
   Gerador.wGrupo('infoTSVAlteracao');
 
   Gerador.wCampo(tcDat, '', 'dtAlteracao',  10, 10, 1, obj.dtAlteracao);
-  Gerador.wCampo(tcStr, '', 'natAtividade',  1,  1, 0, ord(obj.natAtivididade) + 1);
+
+  //    Validação: **Preenchimento obrigatório** para as categorias de avulso, cooperado e dirigente sindical.
+  //               Não deve ser preenchido para as categorias Diretor não empregado, servidor público indicado a conselho, membro de conselho tutelar e estagiário.
+
+  if
+    (Self.FideTrabSemVinc.codCateg <> 305) and // Servidor Publico Indicado a Conselho
+    (Self.FideTrabSemVinc.codCateg <> 721) and // Diretor não empregado com FGTS
+    (Self.FideTrabSemVinc.codCateg <> 722) and // Diretor não empregado sem FGTS
+    (Self.FideTrabSemVinc.codCateg <> 771) and // Membro conselho tutelar
+    (Self.FideTrabSemVinc.codCateg <> 901) and // Estagiario
+    (obj.natAtividade <> navNaoInformar)
+  then
+    Gerador.wCampo(tcStr, '', 'natAtividade',  1,  1, 0, eSNatAtividadeToStr(obj.natAtividade));
 
   GerarinfoComplementares(obj.infoComplementares);
 
@@ -309,6 +365,20 @@ begin
   end;
 end;
 
+procedure TEvtTSVAltContr.GerarRemuneracao(obj: TRemuneracao);
+begin
+  if obj.vrSalFx > 0 then
+  begin
+    Gerador.wGrupo('remuneracao');
+
+    Gerador.wCampo(tcDe2, '', 'vrSalFx',    1,  14, 1, obj.vrSalFx);
+    Gerador.wCampo(tcStr, '', 'undSalFixo', 1,   1, 1, eSUndSalFixoToStr(obj.undSalFixo));
+    Gerador.wCampo(tcStr, '', 'dscSalVar',  1, 255, 0, obj.dscSalVar);
+
+    Gerador.wGrupo('/remuneracao');
+  end;
+end;
+
 procedure TEvtTSVAltContr.GerarsupervisorEstagio(obj: TsupervisorEstagio);
 begin
   if obj.cpfSupervisor <> EmptyStr then
@@ -322,11 +392,12 @@ begin
   end;
 end;
 
-function TEvtTSVAltContr.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTSVAltContr.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTSVAltContr');
     Gerador.wGrupo('evtTSVAltContr Id="' + Self.Id + '"');
@@ -350,40 +421,93 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
-{ TinfoComplementares }
-
-constructor TinfoComplementares.Create;
+function TEvtTSVAltContr.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
 begin
-  inherited;
+  Result := False;
 
-  FcargoFuncao := TcargoFuncao.Create;
-  FRemuneracao := TRemuneracao.Create;
-  FinfoEstagiario := TinfoEstagiario.Create;
-end;
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
-destructor TinfoComplementares.Destroy;
-begin
-  FcargoFuncao.Free;
-  FRemuneracao.Free;
-  FinfoEstagiario.Free;
+    with Self do
+    begin
+      sSecao := 'evtTSVAltContr';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
-  inherited;
-end;
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
-{ TinfoTSVAlteracao }
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
 
-constructor TinfoTSVAlteracao.Create;
-begin
-  inherited;
+      sSecao := 'ideTrabSemVinculo';
+      ideTrabSemVinc.CpfTrab    := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideTrabSemVinc.NisTrab    := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideTrabSemVinc.codCateg   := INIRec.ReadInteger(sSecao, 'codCateg', 0);
 
-  FinfoComplementares := TinfoComplementares.Create;
-end;
+      sSecao := 'infoTSVAlteracao';
+      infoTSVAlteracao.dtAlteracao    := StringToDateTime(INIRec.ReadString(sSecao, 'dtAlteracao', '0'));
+      infoTSVAlteracao.natAtividade := eSStrToNatAtividade(Ok, INIRec.ReadString(sSecao, 'natAtividade', '1'));
 
-destructor TinfoTSVAlteracao.Destroy;
-begin
-  FinfoComplementares.Free;
+      sSecao := 'infoComplementares';
+      infoTSVAlteracao.infoComplementares.cargoFuncao.CodCargo  := INIRec.ReadString(sSecao, 'codCargo', '');
+      infoTSVAlteracao.infoComplementares.cargoFuncao.CodFuncao := INIRec.ReadString(sSecao, 'codFuncao', '');
 
-  inherited;
+      sSecao := 'remuneracao';
+      infoTSVAlteracao.infoComplementares.remuneracao.VrSalFx    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSalFx', ''), 0);
+      infoTSVAlteracao.infoComplementares.remuneracao.UndSalFixo := eSStrToUndSalFixo(Ok, INIRec.ReadString(sSecao, 'undSalFixo', ''));
+      infoTSVAlteracao.infoComplementares.remuneracao.DscSalVar  := INIRec.ReadString(sSecao, 'dscSalVar', '');
+
+      sSecao := 'infoEstagiario';
+      infoTSVAlteracao.infoComplementares.infoEstagiario.natEstagio  := eSStrToTpNatEstagio(Ok, INIRec.ReadString(sSecao, 'natEstagio', 'O'));
+      infoTSVAlteracao.infoComplementares.infoEstagiario.nivEstagio  := eSStrTotpNivelEstagio(Ok, INIRec.ReadString(sSecao, 'nivEstagio', '1'));
+      infoTSVAlteracao.infoComplementares.infoEstagiario.areaAtuacao := INIRec.ReadString(sSecao, 'areaAtuacao', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.nrApol      := INIRec.ReadString(sSecao, 'nrApol', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.vlrBolsa    := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrBolsa', ''), 0);
+      infoTSVAlteracao.infoComplementares.infoEstagiario.dtPrevTerm  := StringToDateTime(INIRec.ReadString(sSecao, 'dtPrevTerm', '0'));
+
+      sSecao := 'instEnsino';
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.cnpjInstEnsino := INIRec.ReadString(sSecao, 'cnpjInstEnsino', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.nmRazao        := INIRec.ReadString(sSecao, 'nmRazao', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.dscLograd      := INIRec.ReadString(sSecao, 'dscLograd', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.nrLograd       := INIRec.ReadString(sSecao, 'nrLograd', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.bairro         := INIRec.ReadString(sSecao, 'bairro', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.Cep            := INIRec.ReadString(sSecao, 'cep', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.codMunic       := INIRec.ReadInteger(sSecao, 'codMunic', 0);
+      infoTSVAlteracao.infoComplementares.infoEstagiario.instEnsino.uf             := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'uf', 'SP'));
+
+      sSecao := 'ageIntegracao';
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.cnpjAgntInteg := INIRec.ReadString(sSecao, 'cnpjAgntInteg', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.nmRazao       := INIRec.ReadString(sSecao, 'nmRazao', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.dscLograd     := INIRec.ReadString(sSecao, 'dscLograd', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.nrLograd      := INIRec.ReadString(sSecao, 'nrLograd', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.bairro        := INIRec.ReadString(sSecao, 'bairro', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.Cep           := INIRec.ReadString(sSecao, 'cep', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.codMunic      := INIRec.ReadInteger(sSecao, 'codMunic', 0);
+      infoTSVAlteracao.infoComplementares.infoEstagiario.ageIntegracao.uf            := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'uf', 'SP'));
+
+      sSecao := 'supervisorEstagio';
+      infoTSVAlteracao.infoComplementares.infoEstagiario.supervisorEstagio.cpfSupervisor := INIRec.ReadString(sSecao, 'cpfSupervisor', '');
+      infoTSVAlteracao.infoComplementares.infoEstagiario.supervisorEstagio.nmSuperv      := INIRec.ReadString(sSecao, 'nmSuperv', '');
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

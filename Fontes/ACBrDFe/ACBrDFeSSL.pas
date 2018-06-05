@@ -41,7 +41,7 @@ interface
 
 uses
   Classes, SysUtils, Contnrs,
-  blcksock;
+  blcksock, syncobjs;
 
 Const
   CBufferSize = 32768;
@@ -176,6 +176,8 @@ type
     property ListaCertificados: TListaCertificados read FpListaCertificados;
   end;
 
+  TDFeSSLHttpClassOf = class of TDFeSSLHttpClass;
+
   { TDFeSSLHttpClass }
 
   TDFeSSLHttpClass = class
@@ -193,6 +195,7 @@ type
 
     function Enviar(const ConteudoXML: String; const AURL: String;
       const ASoapAction: String; AMimeType: String = ''): String; virtual;
+    procedure Abortar; virtual;
 
     property HTTPResultCode: Integer read GetHTTPResultCode;
     property InternalErrorCode: Integer read GetInternalErrorCode;
@@ -230,6 +233,28 @@ type
      const docElement, infElement, SignatureNode, SelectionNamespaces,
      IdSignature: String) of object;
 
+  { TDFeSendThread }
+
+  TDFeSendThread = class(TThread)
+  private
+    FSSLHttp: TDFeSSLHttpClass;
+    FConteudoXML: String;
+    FURL: String;
+    FSoapAction: String;
+    FMimeType: String;
+    FResponse: String;
+    FHtttpDone: Boolean;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(ADFeSSL: TDFeSSL; SSLHttpClass: TDFeSSLHttpClassOf; AConteudoXML, AURL,
+       ASoapAction, AMimeType: String); reintroduce;
+    destructor Destroy; override;
+
+    procedure Abort;
+    property Response: String read FResponse;
+  end;
+
   { TDFeSSL }
 
   TDFeSSL = class(TPersistent)
@@ -255,6 +280,7 @@ type
     FStoreLocation: TSSLStoreLocation;
     FStoreName: String;
     FTimeOut: Integer;
+    FTimeOutPorThread: Boolean;
     FUseCertificateHTTP: Boolean;
     FSSLDgst: TSSLDgst;
 
@@ -397,6 +423,7 @@ type
     property ProxyPass: String read FProxyPass write FProxyPass;
 
     property TimeOut: Integer read FTimeOut write FTimeOut default 5000;
+    property TimeOutPorThread: Boolean read FTimeOutPorThread write FTimeOutPorThread default False;
     property NameSpaceURI: String read FNameSpaceURI write FNameSpaceURI;
 
     property UseCertificateHTTP: Boolean read FUseCertificateHTTP write FUseCertificateHTTP default True;
@@ -405,16 +432,22 @@ type
   end;
 
 
+var
+  HttpSendCriticalSection : TCriticalSection;
+
 implementation
 
 uses
-  strutils,
+  strutils, dateutils,
   synacode,
   ACBrDFeUtil, ACBrValidador, ACBrUtil, ACBrDFeException
   {$IfNDef DFE_SEM_OPENSSL}
-   ,ACBrDFeOpenSSL, ACBrDFeHttpOpenSSL, ACBrDFeXsLibXml2
+   ,ACBrDFeOpenSSL, ACBrDFeHttpOpenSSL
    {$IfNDef DFE_SEM_XMLSEC}
     ,ACBrDFeXsXmlSec
+   {$EndIf}
+   {$IfNDef DFE_SEM_LIBXML2}
+    ,ACBrDFeXsLibXml2
    {$EndIf}
   {$EndIf}
   {$IfNDef DFE_SEM_CAPICOM}
@@ -432,6 +465,63 @@ uses
     ,ACBrDFeXsMsXml
    {$EndIf}
   {$EndIf};
+
+{ TDFeSendThread }
+
+constructor TDFeSendThread.Create(ADFeSSL: TDFeSSL;
+  SSLHttpClass: TDFeSSLHttpClassOf; AConteudoXML, AURL, ASoapAction,
+  AMimeType: String);
+begin
+  FreeOnTerminate := True ;
+  if (not Assigned(ADFeSSL)) or EstaVazio(AConteudoXML) or EstaVazio(AURL) then
+    raise EACBrDFeException.Create('TDFeSendThread, parâmetros inválidos');
+
+  FSSLHttp      := SSLHttpClass.Create(ADFeSSL);
+  FConteudoXML  := AConteudoXML;
+  FURL          := AURL;
+  FSoapAction   := ASoapAction;
+  FMimeType     := AMimeType;
+  FResponse     := '';
+  FHtttpDone    := True;
+
+  inherited Create(False);  // Run Now
+
+  Priority := tpNormal;
+end;
+
+destructor TDFeSendThread.Destroy;
+begin
+  FHtttpDone := True;
+  FSSLHttp.Free;
+
+  inherited Destroy;
+end;
+
+procedure TDFeSendThread.Execute;
+begin
+  HttpSendCriticalSection.Acquire;
+  try
+    FHtttpDone := False;
+    FResponse := FSSLHttp.Enviar(FConteudoXML, FURL, FSoapAction, FMimeType);
+  finally
+    FHtttpDone := True;
+    HttpSendCriticalSection.Release;
+  end;
+
+  while not Terminated do
+    Sleep(10);
+end;
+
+procedure TDFeSendThread.Abort;
+begin
+  if (not FHtttpDone) then
+  begin
+    FHtttpDone := True;
+    FSSLHttp.Abortar;
+  end;
+
+  Terminate;
+end;
 
 { TDadosCertificado }
 
@@ -484,7 +574,7 @@ begin
     begin
       Result := OnlyNumber(copy(SubjectName, P+1, 14));
       // Evita pegar CPF ou outro Documento, do SubjectName (comuns em EPP)
-      if (ValidarCNPJ(Result) <> '') then
+      if (ValidarCNPJ(Result) <> '') and (ValidarCPF(Result) <> '') then
         Result := '';
     end;
   end;
@@ -731,6 +821,11 @@ begin
   raise EACBrDFeException.Create('Método "Enviar" não implementado em: '+ClassName);
 end;
 
+procedure TDFeSSLHttpClass.Abortar;
+begin
+  {}
+end;
+
 
 { TDFeSSLXmlSignClass }
 
@@ -927,6 +1022,7 @@ begin
   FSSLCryptLib := cryNone;
   FSSLHttpLib  := httpNone;
   FTimeOut     := 5000;
+  FTimeOutPorThread := False;
   FNameSpaceURI:= '';
 
   FSSLType       := LT_all;
@@ -1018,6 +1114,9 @@ end;
 
 function TDFeSSL.Enviar(var ConteudoXML: String; const AURL: String;
   const ASoapAction: String; AMimeType: String): String;
+var
+  SendThread : TDFeSendThread;
+  EndTime : TDateTime ;
 begin
   // Nota: ConteudoXML, DEVE estar em UTF8 //
   if UseCertificateHTTP then
@@ -1026,7 +1125,32 @@ begin
   if AMimeType = '' then
     AMimeType := 'application/soap+xml; charset=utf-8';
 
-  Result := FSSLHttpClass.Enviar(ConteudoXML, AURL, ASoapAction, AMimeType);
+  if TimeOutPorThread then
+  begin
+    EndTime := IncSecond(now,TruncFix(TimeOut/1000));
+    SendThread := TDFeSendThread.Create( Self,
+                                         TDFeSSLHttpClassOf(FSSLHttpClass.ClassType),
+                                         ConteudoXML, AURL, ASoapAction, AMimeType);
+    try
+      while (SendThread.Response = '') and (Now <= EndTime) do
+        Sleep(50);
+    finally
+      Result := SendThread.Response;
+      SendThread.Abort;
+    end;
+
+    if EstaVazio(Result) then
+      raise EACBrDFeException.Create('Timeout - Não foi possível obter a resposta do servidor');
+  end
+  else
+  begin
+    HttpSendCriticalSection.Acquire;
+    try
+      Result := FSSLHttpClass.Enviar(ConteudoXML, AURL, ASoapAction, AMimeType);
+    finally
+      HttpSendCriticalSection.Release;
+    end;
+  end;
 end;
 
 function TDFeSSL.Validar(const ConteudoXML: String; ArqSchema: String;
@@ -1503,10 +1627,10 @@ begin
 
     xsLibXml2:
     begin
-      {$IfNDef DFE_SEM_OPENSSL}
+      {$IfNDef DFE_SEM_LIBXML2}
        FSSLXmlSignClass := TDFeSSLXmlSignLibXml2.Create(Self);
       {$Else}
-       raise EACBrDFeException.Create('Suporte a "xsXmlSec" foi desativado por compilação {$DEFINE DFE_SEM_OPENSSL}');
+       raise EACBrDFeException.Create('Suporte a "xsLibXml2" foi desativado por compilação {$DEFINE DFE_SEM_OPENSSL} ou {$DEFINE DFE_SEM_LIBXML2}');
       {$EndIf}
     end;
 
@@ -1516,6 +1640,13 @@ begin
 
   FSSLXmlSignLib := ASSLXmlSignLib;
 end;
+
+
+initialization
+  HttpSendCriticalSection := TCriticalSection.Create;
+
+finalization;
+  HttpSendCriticalSection.Free;
 
 end.
 

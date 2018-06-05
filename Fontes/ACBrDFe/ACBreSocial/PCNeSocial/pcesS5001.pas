@@ -50,12 +50,11 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnLeitor,
+  pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
 type
-  TS5001Collection = class;
-  TS5001CollectionItem = class;
+  TS5001 = class;
   TInfoCpCalcCollection = class;
   TInfoCpCalcCollectionItem = class;
   TInfoCp = class;
@@ -67,30 +66,29 @@ type
   TInfoBaseCSCollectionItem = class;
   TCalcTercCollection = class;
   TCalcTercCollectionItem = class;
-
   TEvtBasesTrab = class;
 
-  TS5001Collection = class(TOwnedCollection)
-  private
-    function GetItem(Index: Integer): TS5001CollectionItem;
-    procedure SetItem(Index: Integer; Value: TS5001CollectionItem);
-  public
-    function Add: TS5001CollectionItem;
-    property Items[Index: Integer]: TS5001CollectionItem read GetItem write SetItem; default;
-  end;
-
-  TS5001CollectionItem = class(TCollectionItem)
+  TS5001 = class(TInterfacedObject, IEventoeSocial)
   private
     FTipoEvento: TTipoEvento;
     FEvtBasesTrab: TEvtBasesTrab;
 
-    procedure setEvtBasesTrab(const Value: TEvtBasesTrab);
+    function GetXml : string;
+    procedure SetXml(const Value: string);
+    function GetTipoEvento : TTipoEvento;
+    procedure SetEvtBasesTrab(const Value: TEvtBasesTrab);
+
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create;
     destructor Destroy; override;
+
+    function GetEvento : TObject;
+
   published
-    property TipoEvento: TTipoEvento read FTipoEvento;
+    property Xml: String read GetXml write SetXml;
+    property TipoEvento: TTipoEvento read GetTipoEvento;
     property EvtBasesTrab: TEvtBasesTrab read FEvtBasesTrab write setEvtBasesTrab;
+
   end;
 
   TInfoCpCalcCollection = class(TCollection)
@@ -109,19 +107,21 @@ type
     FvrCpSeg: Double;
     FvrDescSeg: Double;
   public
-    property tpCR: string read FtpCR write FtpCR;
-    property vrCpSeg: Double read FvrCpSeg write FvrCpSeg;
-    property vrDescSeg: Double read FvrDescSeg write FvrDescSeg;
+    property tpCR: string read FtpCR;
+    property vrCpSeg: Double read FvrCpSeg;
+    property vrDescSeg: Double read FvrDescSeg;
   end;
 
   TInfoCp = class(TPersistent)
   private
     FIdeEstabLot: TIdeEstabLotCollection;
+
+    procedure SetIdeEstabLot(const Value: TIdeEstabLotCollection);
   public
     constructor Create(AOwner: TEvtBasesTrab);
     destructor Destroy; override;
 
-    property IdeEstabLot: TIdeEstabLotCollection read FIdeEstabLot write FIdeEstabLot;
+    property IdeEstabLot: TIdeEstabLotCollection read FIdeEstabLot write SetIdeEstabLot;
   end;
 
   TIdeEstabLotCollection = class(TCollection)
@@ -140,14 +140,15 @@ type
     FCodLotacao: string;
     FTpInsc: TpTpInsc;
     FInfoCategIncid: TInfoCategIncidCollection;
+
     procedure SetInfoCategIncid(const Value: TInfoCategIncidCollection);
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
 
-    property tpInsc: TpTpInsc read FTpInsc write FTpInsc;
-    property nrInsc: string read FNrInsc write FNrInsc;
-    property codLotacao: string read FCodLotacao write FCodLotacao;
+    property tpInsc: TpTpInsc read FTpInsc;
+    property nrInsc: string read FNrInsc;
+    property codLotacao: string read FCodLotacao;
     property InfoCategIncid: TInfoCategIncidCollection read FInfoCategIncid write SetInfoCategIncid;
   end;
 
@@ -168,15 +169,16 @@ type
     FindSimples: tpIndSimples;
     FInfoBaseCS: TInfoBaseCSCollection;
     FCalcTerc: TCalcTercCollection;
+
     procedure SetInfoBaseCS(const Value: TInfoBaseCSCollection);
     procedure SetCalcTerc(const Value: TCalcTercCollection);
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
 
-    property matricula: string read FMatricula write FMatricula;
-    property codCateg: Integer read FcodCateg write FcodCateg;
-    property indSimples: tpIndSimples read FindSimples write FindSimples;
+    property matricula: string read FMatricula;
+    property codCateg: Integer read FcodCateg;
+    property indSimples: tpIndSimples read FindSimples;
     property InfoBaseCS: TInfoBaseCSCollection read FInfoBaseCS write SetInfoBaseCS;
     property CalcTerc: TCalcTercCollection read FCalcTerc write SetCalcTerc;
   end;
@@ -197,9 +199,9 @@ type
     FtpValor: Integer;
     Fvalor: Double;
   public
-    property ind13: Integer read Find13 write Find13;
-    property tpValor: Integer read FtpValor write FtpValor;
-    property valor: Double read Fvalor write Fvalor;
+    property ind13: Integer read Find13;
+    property tpValor: Integer read FtpValor;
+    property valor: Double read Fvalor;
   end;
 
   TCalcTercCollection = class(TCollection)
@@ -218,9 +220,9 @@ type
     FvrCsSegTerc: Double;
     FvrDescTerc: Double;
   public
-    property tpCR: Integer read FtpCR write FtpCR;
-    property vrCsSegTerc: Double read FvrCsSegTerc write FvrCsSegTerc;
-    property vrDescTerc: Double read FvrDescTerc write FvrDescTerc;
+    property tpCR: Integer read FtpCR;
+    property vrCsSegTerc: Double read FvrCsSegTerc;
+    property vrDescTerc: Double read FvrDescTerc;
   end;
 
   TEvtBasesTrab = class(TPersistent)
@@ -234,68 +236,79 @@ type
     FIdeTrabalhador: TIdeTrabalhador3;
     FInfoCpCalc: TInfoCpCalcCollection;
     FInfoCp: TInfoCp;
+
+    procedure SetInfoCpCalc(const Value: TInfoCpCalcCollection);
   public
-    constructor Create(AACBreSocial: TObject); overload;
+    constructor Create;
     destructor  Destroy; override;
 
     function LerXML: boolean;
+    function SalvarINI: boolean;
 
     property IdeEvento: TIdeEvento5 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
     property IdeTrabalhador: TIdeTrabalhador3 read FIdeTrabalhador write FIdeTrabalhador;
-    property InfoCpCalc: TInfoCpCalcCollection read FInfoCpCalc write FInfoCpCalc;
+    property InfoCpCalc: TInfoCpCalcCollection read FInfoCpCalc write SetInfoCpCalc;
     property InfoCp: TInfoCp read FInfoCp write FInfoCp;
   published
     property Leitor: TLeitor read FLeitor write FLeitor;
-    property Id: String      read FId     write FId;
-    property XML: String     read FXML    write FXML;
+    property Id: String      read FId;
+    property XML: String     read FXML;
   end;
 
 implementation
 
-{ TS5001Collection }
+uses
+  IniFiles;
 
-function TS5001Collection.Add: TS5001CollectionItem;
-begin
-  Result := TS5001CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
-end;
+{ TS5001 }
 
-function TS5001Collection.GetItem(Index: Integer): TS5001CollectionItem;
-begin
-  Result := TS5001CollectionItem(inherited GetItem(Index));
-end;
-
-procedure TS5001Collection.SetItem(Index: Integer;
-  Value: TS5001CollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TS5001CollectionItem }
-
-constructor TS5001CollectionItem.Create(AOwner: TComponent);
+constructor TS5001.Create;
 begin
   FTipoEvento := teS5001;
-  FEvtBasesTrab := TEvtBasesTrab.Create(AOwner);
+  FEvtBasesTrab := TEvtBasesTrab.Create;
 end;
 
-destructor TS5001CollectionItem.Destroy;
+destructor TS5001.Destroy;
 begin
   FEvtBasesTrab.Free;
 
   inherited;
 end;
 
-procedure TS5001CollectionItem.setEvtBasesTrab(
-  const Value: TEvtBasesTrab);
+function TS5001.GetEvento : TObject;
+begin
+  Result := self;
+end;
+
+function TS5001.GetXml : string;
+begin
+  Result := FEvtBasesTrab.XML;
+end;
+
+procedure TS5001.SetXml(const Value: string);
+begin
+  if Value = FEvtBasesTrab.XML then Exit;
+
+  FEvtBasesTrab.FXML := Value;
+  FEvtBasesTrab.Leitor.Arquivo := Value;
+  FEvtBasesTrab.LerXML;
+
+end;
+
+function TS5001.GetTipoEvento : TTipoEvento;
+begin
+  Result := FTipoEvento;
+end;
+
+procedure TS5001.SetEvtBasesTrab(const Value: TEvtBasesTrab);
 begin
   FEvtBasesTrab.Assign(Value);
 end;
 
 { TEvtBasesTrab }
 
-constructor TEvtBasesTrab.Create(AACBreSocial: TObject);
+constructor TEvtBasesTrab.Create();
 begin
   FLeitor := TLeitor.Create;
 
@@ -317,6 +330,11 @@ begin
   FInfoCp.Free;
 
   inherited;
+end;
+
+procedure TEvtBasesTrab.SetInfoCpCalc(const Value: TInfoCpCalcCollection);
+begin
+  FInfoCpCalc := Value;
 end;
 
 { TInfoCpCalcCollection }
@@ -355,6 +373,11 @@ begin
   FIdeEstabLot.Free;
 
   inherited;
+end;
+
+procedure TInfoCp.SetIdeEstabLot(const Value: TIdeEstabLotCollection);
+begin
+  FIdeEstabLot := Value;
 end;
 
 { TIdeEstabLotCollection }
@@ -512,7 +535,7 @@ var
 begin
   Result := False;
   try
-    XML := Leitor.Arquivo;
+    FXML := Leitor.Arquivo;
 
     if leitor.rExtrai(1, 'evtBasesTrab') <> '' then
     begin
@@ -549,9 +572,9 @@ begin
       while Leitor.rExtrai(2, 'infoCpCalc', '', i + 1) <> '' do
       begin
         infoCpCalc.Add;
-        infoCpCalc.Items[i].tpCR      := leitor.rCampo(tcStr, 'tpCR');
-        infoCpCalc.Items[i].vrCpSeg   := leitor.rCampo(tcDe2, 'vrCpSeg');
-        infoCpCalc.Items[i].vrDescSeg := leitor.rCampo(tcDe2, 'vrDescSeg');
+        infoCpCalc.Items[i].FtpCR      := leitor.rCampo(tcStr, 'tpCR');
+        infoCpCalc.Items[i].FvrCpSeg   := leitor.rCampo(tcDe2, 'vrCpSeg');
+        infoCpCalc.Items[i].FvrDescSeg := leitor.rCampo(tcDe2, 'vrDescSeg');
         inc(i);
       end;
 
@@ -561,35 +584,35 @@ begin
         while Leitor.rExtrai(3, 'ideEstabLot', '', i + 1) <> '' do
         begin
           infoCp.IdeEstabLot.Add;
-          infoCp.IdeEstabLot.Items[i].tpInsc     := eSStrToTpInscricao(ok, leitor.rCampo(tcStr, 'tpInsc'));
-          infoCp.IdeEstabLot.Items[i].nrInsc     := leitor.rCampo(tcStr, 'nrInsc');
-          infoCp.IdeEstabLot.Items[i].codLotacao := leitor.rCampo(tcStr, 'codLotacao');
+          infoCp.IdeEstabLot.Items[i].FtpInsc     := eSStrToTpInscricao(ok, leitor.rCampo(tcStr, 'tpInsc'));
+          infoCp.IdeEstabLot.Items[i].FnrInsc     := leitor.rCampo(tcStr, 'nrInsc');
+          infoCp.IdeEstabLot.Items[i].FcodLotacao := leitor.rCampo(tcStr, 'codLotacao');
 
           j := 0;
           while Leitor.rExtrai(4, 'infoCategIncid', '', j + 1) <> '' do
           begin
             infoCp.IdeEstabLot.Items[i].InfoCategIncid.Add;
-            infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].matricula  := leitor.rCampo(tcStr, 'matricula');
-            infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].codCateg   := leitor.rCampo(tcInt, 'codCateg');
-            infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].indSimples := eSStrToIndSimples(ok, leitor.rCampo(tcStr, 'indSimples'));
+            infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].Fmatricula  := leitor.rCampo(tcStr, 'matricula');
+            infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].FcodCateg   := leitor.rCampo(tcInt, 'codCateg');
+            infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].FindSimples := eSStrToIndSimples(ok, leitor.rCampo(tcStr, 'indSimples'));
 
             k := 0;
             while Leitor.rExtrai(5, 'infoBaseCS', '', k + 1) <> '' do
             begin
               infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Add;
-              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Items[k].ind13   := leitor.rCampo(tcInt, 'ind13');
-              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Items[k].tpValor := leitor.rCampo(tcInt, 'tpValor');
-              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Items[k].valor   := leitor.rCampo(tcDe2, 'valor');
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Items[k].Find13   := leitor.rCampo(tcInt, 'ind13');
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Items[k].FtpValor := leitor.rCampo(tcInt, 'tpValor');
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoBaseCS.Items[k].Fvalor   := leitor.rCampo(tcDe2, 'valor');
               inc(k);
             end;
 
             k := 0;
-            while Leitor.rExtrai(5, 'calcTer', '', k + 1) <> '' do
+            while Leitor.rExtrai(5, 'calcTerc', '', k + 1) <> '' do
             begin
               infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Add;
-              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Items[k].tpCR        := leitor.rCampo(tcInt, 'tpCR');
-              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Items[k].vrCsSegTerc := leitor.rCampo(tcDe2, 'vrCsSegTerc');
-              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Items[k].vrDescTerc  := leitor.rCampo(tcDe2, 'vrDescTerc');
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Items[k].FtpCR        := leitor.rCampo(tcInt, 'tpCR');
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Items[k].FvrCsSegTerc := leitor.rCampo(tcDe2, 'vrCsSegTerc');
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].CalcTerc.Items[k].FvrDescTerc  := leitor.rCampo(tcDe2, 'vrDescTerc');
               inc(k);
             end;
 
@@ -605,6 +628,107 @@ begin
     end;
   except
     Result := False;
+  end;
+end;
+
+function TEvtBasesTrab.SalvarINI: boolean;
+var
+  AIni: TMemIniFile;
+  sSecao: String;
+  i, j, k: Integer;
+begin
+  Result := False;
+
+  AIni := TMemIniFile.Create('');
+  try
+    Result := True;
+
+    with Self do
+    begin
+      sSecao := 'evtBasesTrab';
+      AIni.WriteString(sSecao, 'Id', Id);
+
+      sSecao := 'ideEvento';
+      AIni.WriteString(sSecao, 'nrRecArqBase', IdeEvento.nrRecArqBase);
+      AIni.WriteString(sSecao, 'IndApuracao',  eSIndApuracaoToStr(IdeEvento.IndApuracao));
+      AIni.WriteString(sSecao, 'perApur',      IdeEvento.perApur);
+
+      sSecao := 'ideEmpregador';
+      AIni.WriteString(sSecao, 'tpInsc', eSTpInscricaoToStr(IdeEmpregador.TpInsc));
+      AIni.WriteString(sSecao, 'nrInsc', IdeEmpregador.nrInsc);
+
+      sSecao := 'ideTrabalhador';
+      AIni.WriteString(sSecao, 'cpfTrab', ideTrabalhador.cpfTrab);
+
+      for i := 0 to IdeTrabalhador.procJudTrab.Count -1 do
+      begin
+        sSecao := 'procJudTrab' + IntToStrZero(I, 2);
+
+        AIni.WriteString(sSecao, 'nrProcJud', IdeTrabalhador.procJudTrab.Items[i].nrProcJud);
+        AIni.WriteInteger(sSecao, 'codSusp',  IdeTrabalhador.procJudTrab.Items[i].codSusp);
+      end;
+
+      for i := 0 to infoCpCalc.Count -1 do
+      begin
+        sSecao := 'infoCpCalc' + IntToStrZero(I, 1);
+
+        AIni.WriteString(sSecao, 'tpCR',     infoCpCalc.Items[i].tpCR);
+        AIni.WriteFloat(sSecao, 'vrCpSeg',   infoCpCalc.Items[i].vrCpSeg);
+        AIni.WriteFloat(sSecao, 'vrDescSeg', infoCpCalc.Items[i].vrDescSeg);
+      end;
+
+      for i := 0 to infoCp.IdeEstabLot.Count -1 do
+      begin
+        with infoCp.IdeEstabLot.Items[i] do
+        begin
+          sSecao := 'ideEstabLot' + IntToStrZero(I, 2);
+
+          AIni.WriteString(sSecao, 'tpInsc',     eSTpInscricaoToStr(tpInsc));
+          AIni.WriteString(sSecao, 'nrInsc',     nrInsc);
+          AIni.WriteString(sSecao, 'codLotacao', codLotacao);
+
+          for j := 0 to infoCategIncid.Count -1 do
+          begin
+            with InfoCategIncid.Items[j] do
+            begin
+              sSecao := 'infoCategIncid' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+
+              AIni.WriteString(sSecao, 'matricula',  matricula);
+              AIni.WriteInteger(sSecao, 'codCateg',  codCateg);
+              AIni.WriteString(sSecao, 'indSimples', eSIndSimplesToStr(indSimples));
+
+              for k := 0 to infoBaseCS.Count -1 do
+              begin
+                with infoBaseCS.Items[k] do
+                begin
+                  sSecao := 'infoBaseCS' + IntToStrZero(I, 2) +
+                                     IntToStrZero(J, 2) + IntToStrZero(k, 2);
+
+                  AIni.WriteInteger(sSecao, 'ind13',   ind13);
+                  AIni.WriteInteger(sSecao, 'tpValor', tpValor);
+                  AIni.WriteFloat(sSecao, 'valor',     valor);
+                end;
+              end;
+
+              for k := 0 to CalcTerc.Count -1 do
+              begin
+                with CalcTerc.Items[k] do
+                begin
+                  sSecao := 'calcTerc' + IntToStrZero(I, 2) +
+                                     IntToStrZero(J, 2) + IntToStrZero(k, 1);
+
+                  AIni.WriteInteger(sSecao, 'tpCR',      tpCR);
+                  AIni.WriteFloat(sSecao, 'vrCsSegTerc', vrCsSegTerc);
+                  AIni.WriteFloat(sSecao, 'vrDescTerc',  vrDescTerc);
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;
+  finally
+    AIni.Free;
   end;
 end;
 

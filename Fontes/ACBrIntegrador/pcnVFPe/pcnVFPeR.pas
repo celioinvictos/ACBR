@@ -138,8 +138,14 @@ begin
 
   RespostaStatusPagamento.Clear;
 
-  RespostaStatusPagamento.Retorno := Leitor.rCampo(tcStr, 'retorno');
-  RespostaStatusPagamento.IntegradorResposta.LerResposta(Leitor.Grupo);
+  if (Pos(UpperCase('retorno'),UpperCase(Leitor.Arquivo)) <= 0) and
+     (Pos(UpperCase('Integrador'),UpperCase(Leitor.Arquivo)) <= 0) then
+    RespostaStatusPagamento.Retorno := Leitor.Arquivo
+  else
+  begin
+    RespostaStatusPagamento.Retorno := Leitor.rCampo(tcStr, 'retorno');
+    RespostaStatusPagamento.IntegradorResposta.LerResposta(Leitor.Grupo);
+  end;
 
   Result := True;
 end;
@@ -176,6 +182,7 @@ begin
   RespostaVerificarStatusValidador.ValorPagamento := Leitor.rCampo(tcDe2, 'ValorPagamento');
   RespostaVerificarStatusValidador.idFila := Leitor.rCampo(tcInt, 'idFila');
   RespostaVerificarStatusValidador.Tipo := Leitor.rCampo(tcStr, 'Tipo');
+  RespostaVerificarStatusValidador.Retorno := Leitor.rCampo(tcStr, 'retorno');
 
   RespostaVerificarStatusValidador.IntegradorResposta.LerResposta(Leitor.Grupo);
 end;
@@ -203,6 +210,7 @@ begin
   RespostaPagamento.IDPagamento     := Leitor.rCampo(tcInt, 'IDPagamento');
   RespostaPagamento.Mensagem        := Leitor.rCampo(tcStr, 'Mensagem');
   RespostaPagamento.StatusPagamento := Leitor.rCampo(tcStr, 'StatusPagamento');
+  RespostaPagamento.Retorno         := Leitor.rCampo(tcStr, 'retorno');
 
   RespostaPagamento.IntegradorResposta.LerResposta(Leitor.Arquivo);
 end;

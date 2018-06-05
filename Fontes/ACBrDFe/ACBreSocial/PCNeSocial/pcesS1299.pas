@@ -88,6 +88,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeRespInf : TIdeRespInf;
     FInfoFech: TInfoFech;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarInfoFech;
@@ -95,7 +96,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -126,6 +128,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS1299Collection }
 
@@ -169,6 +175,7 @@ constructor TEvtFechaEvPer.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeRespInf := TIdeRespInf.Create;
@@ -207,11 +214,12 @@ begin
   Gerador.wGrupo('/infoFech');
 end;
 
-function TEvtFechaEvPer.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtFechaEvPer.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtFechaEvPer');
     Gerador.wGrupo('evtFechaEvPer Id="' + Self.Id + '"');
@@ -245,6 +253,60 @@ end;
 destructor TInfoFech.destroy;
 begin
   inherited;
+end;
+
+function TEvtFechaEvPer.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtFechaEvPer';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideRespInf';
+      ideRespInf.nmResp   := INIRec.ReadString(sSecao, 'nmResp', EmptyStr);
+      ideRespInf.cpfResp  := INIRec.ReadString(sSecao, 'cpfResp', EmptyStr);
+      ideRespInf.telefone := INIRec.ReadString(sSecao, 'telefone', EmptyStr);
+      ideRespInf.email    := INIRec.ReadString(sSecao, 'email', EmptyStr);
+
+      sSecao := 'infoFech';
+      infoFech.evtRemun        := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtRemun', 'S'));
+      infoFech.evtPgtos        := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtPgtos', 'S'));
+      infoFech.evtAqProd       := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtAqProd', 'S'));
+      infoFech.evtComProd      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtComProd', 'S'));
+      infoFech.evtContratAvNP  := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtContratAvNP', 'S'));
+      infoFech.evtInfoComplPer := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtInfoComplPer', 'S'));
+      infoFech.compSemMovto    := INIRec.ReadString(sSecao, 'compSemMovto', '');
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

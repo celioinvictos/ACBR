@@ -49,7 +49,7 @@ unit pcesS1050;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, ACBrUtil,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -90,6 +90,7 @@ type
     fIdeEvento: TIdeEvento;
     fIdeEmpregador: TIdeEmpregador;
     fInfoHorContratual: TInfoHorContratual;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarDadosHorContratual;
@@ -99,7 +100,8 @@ type
     constructor Create(AACBreSocial: TObject); overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property IdeEvento: TIdeEvento read fIdeEvento write fIdeEvento;
@@ -158,6 +160,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1050Collection }
 
 function TS1050Collection.Add: TS1050CollectionItem;
@@ -207,7 +213,7 @@ end;
 
 destructor TdadosHorContratual.destroy;
 begin
-  FHorarioIntervalo.Free;
+  FreeAndNil(FHorarioIntervalo);
 
   inherited;
 end;
@@ -260,6 +266,7 @@ constructor TEvtTabHorTur.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   fIdeEvento := TIdeEvento.Create;
   fIdeEmpregador := TIdeEmpregador.Create;
   fInfoHorContratual := TInfoHorContratual.Create;
@@ -327,11 +334,12 @@ begin
   Gerador.wGrupo('/ideHorContratual');
 end;
 
-function TEvtTabHorTur.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTabHorTur.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabHorTur');
     Gerador.wGrupo('evtTabHorTur Id="' + Self.Id + '"');
@@ -370,5 +378,86 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '') 
 end;
 
+function TEvtTabHorTur.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabHorTur';
+      Id             := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideHorContratual';
+      infoHorContratual.ideHorContratual.codHorContrat := INIRec.ReadString(sSecao, 'codHorContrat', EmptyStr);
+      infoHorContratual.ideHorContratual.IniValid      := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoHorContratual.ideHorContratual.FimValid      := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosHorContratual';
+        infoHorContratual.dadosHorContratual.hrEntr         := INIRec.ReadString(sSecao, 'hrEntr', EmptyStr);
+        infoHorContratual.dadosHorContratual.hrSaida        := INIRec.ReadString(sSecao, 'hrSaida', EmptyStr);
+        infoHorContratual.dadosHorContratual.durJornada     := INIRec.ReadInteger(sSecao, 'durJornada', 0);
+        infoHorContratual.dadosHorContratual.perHorFlexivel := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'perHorFlexivel', 'S'));
+
+        I := 1;
+        while true do
+        begin
+          // de 01 até 99
+          sSecao := 'horarioIntervalo' + IntToStrZero(I, 2);
+          sFim   := INIRec.ReadString(sSecao, 'tpInterv', 'FIM');
+
+          if (sFim = 'FIM') or (Length(sFim) <= 0) then
+            break;
+
+          with infoHorContratual.dadosHorContratual.horarioIntervalo.Add do
+          begin
+            tpInterv   := eSStrToTpIntervalo(Ok, sFim);
+            durInterv  := INIRec.ReadInteger(sSecao, 'durInterv', 0);
+            iniInterv  := INIRec.ReadString(sSecao, 'iniInterv', '');
+            termInterv := INIRec.ReadString(sSecao, 'termInterv', '');
+          end;
+
+          Inc(I);
+        end;
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoHorContratual.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoHorContratual.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
+end;
+
 end.
- 
+

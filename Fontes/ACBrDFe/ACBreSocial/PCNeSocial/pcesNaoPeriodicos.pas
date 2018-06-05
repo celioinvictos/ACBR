@@ -49,7 +49,7 @@ unit pcesNaoPeriodicos;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, synautil,
   ACBrUtil, pcesConversaoeSocial,
   pcesS2190, pcesS2200, pcesS2220, pcesS2230, pcesS2240,
   pcesS2241, pcesS2205, pcesS2206, pcesS2210, pcesS2250,
@@ -106,6 +106,8 @@ type
     procedure GerarXMLs;
     procedure SaveToFiles;
     procedure Clear;
+    function LoadFromString(AXMLString: String): Boolean;
+    function LoadFromIni(AIniString: String): Boolean;
 
   published
     property Count: Integer read GetCount;
@@ -234,122 +236,337 @@ var
   i: Integer;
 begin
   for I := 0 to Self.S2190.Count - 1 do
-    Self.S2190.Items[i].EvtAdmPrelim.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2190.Items[i].EvtAdmPrelim.GerarXML;
 
   for I := 0 to Self.S2200.Count - 1 do
-    Self.S2200.Items[i].EvtAdmissao.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2200.Items[i].EvtAdmissao.GerarXML;
 
   for I := 0 to Self.S2205.Count - 1 do
-    Self.S2205.Items[i].EvtAltCadastral.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2205.Items[i].EvtAltCadastral.GerarXML;
 
   for I := 0 to Self.S2206.Count - 1 do
-    Self.S2206.Items[i].EvtAltContratual.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2206.Items[i].EvtAltContratual.GerarXML;
 
   for I := 0 to Self.S2210.Count - 1 do
-    Self.S2210.Items[i].EvtCAT.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2210.Items[i].EvtCAT.GerarXML;
 
   for I := 0 to Self.S2220.Count - 1 do
-    Self.S2220.Items[i].EvtASO.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2220.Items[i].evtMonit.GerarXML;
 
   for I := 0 to Self.S2230.Count - 1 do
-    Self.S2230.Items[i].EvtAfastTemp.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2230.Items[i].EvtAfastTemp.GerarXML;
 
   for I := 0 to Self.S2240.Count - 1 do
-    Self.S2240.Items[i].EvtExpRisco.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2240.Items[i].EvtExpRisco.GerarXML;
 
   for I := 0 to Self.S2241.Count - 1 do
-    Self.S2241.Items[i].EvtInsApo.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2241.Items[i].EvtInsApo.GerarXML;
 
   for I := 0 to Self.S2250.Count - 1 do
-    Self.S2250.Items[i].EvtAvPrevio.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2250.Items[i].EvtAvPrevio.GerarXML;
 
   for I := 0 to Self.S2260.Count - 1 do
-    Self.S2260.Items[i].EvtConvInterm.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2260.Items[i].EvtConvInterm.GerarXML;
 
   for I := 0 to Self.S2298.Count - 1 do
-    Self.S2298.Items[i].EvtReintegr.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2298.Items[i].EvtReintegr.GerarXML;
 
   for I := 0 to Self.S2299.Count - 1 do
-    Self.S2299.Items[i].EvtDeslig.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2299.Items[i].EvtDeslig.GerarXML;
 
   for I := 0 to Self.S2300.Count - 1 do
-    Self.S2300.Items[i].EvtTSVInicio.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2300.Items[i].EvtTSVInicio.GerarXML;
 
   for I := 0 to Self.S2306.Count - 1 do
-    Self.S2306.Items[i].EvtTSVAltContr.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S2306.Items[i].EvtTSVAltContr.GerarXML;
 
   for I := 0 to Self.S2399.Count - 1 do
-      Self.S2399.Items[i].EvtTSVTermino.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+      Self.S2399.Items[i].EvtTSVTermino.GerarXML;
 
   for I := 0 to Self.S2400.Count - 1 do
-      Self.S2400.Items[i].EvtCdBenPrRP.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+      Self.S2400.Items[i].EvtCdBenPrRP.GerarXML;
 
   for I := 0 to Self.S3000.Count - 1 do
-    Self.S3000.Items[i].EvtExclusao.GerarXML(TACBreSocial(Self.Owner).Eventos.TipoEmpregador);
+    Self.S3000.Items[i].EvtExclusao.GerarXML;
 end;
 
 procedure TNaoPeriodicos.SaveToFiles;
 var
   i: integer;
-  Path: String;
+  Path, PathName: String;
 begin
-//  Path := TACBreSocial(Self.Owner).Configuracoes.Arquivos.PathSalvar;
   with TACBreSocial(Self.Owner) do
     Path := PathWithDelim(Configuracoes.Arquivos.GetPatheSocial(Now, Configuracoes.Geral.IdEmpregador));
 
   for I := 0 to Self.S2190.Count - 1 do
-    Self.S2190.Items[i].EvtAdmPrelim.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2190.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2190.Items[i].EvtAdmPrelim.Id) + '-' +
+     TipoEventoToStr(Self.S2190.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2190.Items[i].EvtAdmPrelim.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2190;
+      PathNome := PathName;
+      XML := Self.S2190.Items[i].EvtAdmPrelim.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2200.Count - 1 do
-    Self.S2200.Items[i].EvtAdmissao.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2200.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2200.Items[i].EvtAdmissao.Id) + '-' +
+     TipoEventoToStr(Self.S2200.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2200.Items[i].EvtAdmissao.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2200;
+      PathNome := PathName;
+      XML := Self.S2200.Items[i].EvtAdmissao.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2205.Count - 1 do
-    Self.S2205.Items[i].EvtAltCadastral.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2205.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2205.Items[i].EvtAltCadastral.Id) + '-' +
+     TipoEventoToStr(Self.S2205.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2205.Items[i].EvtAltCadastral.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2205;
+      PathNome := PathName;
+      XML := Self.S2205.Items[i].EvtAltCadastral.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2206.Count - 1 do
-    Self.S2206.Items[i].EvtAltContratual.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2206.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2206.Items[i].EvtAltContratual.Id) + '-' +
+     TipoEventoToStr(Self.S2206.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2206.Items[i].EvtAltContratual.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2206;
+      PathNome := PathName;
+      XML := Self.S2206.Items[i].EvtAltContratual.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2210.Count - 1 do
-    Self.S2210.Items[i].EvtCAT.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2210.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2210.Items[i].EvtCAT.Id) + '-' +
+     TipoEventoToStr(Self.S2210.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2210.Items[i].EvtCAT.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2210;
+      PathNome := PathName;
+      XML := Self.S2210.Items[i].EvtCAT.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2220.Count - 1 do
-    Self.S2220.Items[i].EvtASO.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2220.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2220.Items[i].evtMonit.Id) + '-' +
+     TipoEventoToStr(Self.S2220.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2220.Items[i].evtMonit.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2220;
+      PathNome := PathName;
+      XML := Self.S2220.Items[i].evtMonit.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2230.Count - 1 do
-    Self.S2230.Items[i].EvtAfastTemp.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2230.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2230.Items[i].EvtAfastTemp.Id) + '-' +
+     TipoEventoToStr(Self.S2230.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2230.Items[i].EvtAfastTemp.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2230;
+      PathNome := PathName;
+      XML := Self.S2230.Items[i].EvtAfastTemp.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2240.Count - 1 do
-    Self.S2240.Items[i].EvtExpRisco.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2240.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2240.Items[i].EvtExpRisco.Id) + '-' +
+     TipoEventoToStr(Self.S2240.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2240.Items[i].EvtExpRisco.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2240;
+      PathNome := PathName;
+      XML := Self.S2240.Items[i].EvtExpRisco.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2241.Count - 1 do
-    Self.S2241.Items[i].EvtInsApo.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2241.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2241.Items[i].EvtInsApo.Id) + '-' +
+     TipoEventoToStr(Self.S2241.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2241.Items[i].EvtInsApo.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2241;
+      PathNome := PathName;
+      XML := Self.S2241.Items[i].EvtInsApo.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2250.Count - 1 do
-    Self.S2250.Items[i].EvtAvPrevio.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2250.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2250.Items[i].EvtAvPrevio.Id) + '-' +
+     TipoEventoToStr(Self.S2250.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2250.Items[i].EvtAvPrevio.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2250;
+      PathNome := PathName;
+      XML := Self.S2250.Items[i].EvtAvPrevio.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2260.Count - 1 do
-    Self.S2260.Items[i].EvtConvInterm.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2260.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2260.Items[i].EvtConvInterm.Id) + '-' +
+     TipoEventoToStr(Self.S2260.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2260.Items[i].EvtConvInterm.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2260;
+      PathNome := PathName;
+      XML := Self.S2260.Items[i].EvtConvInterm.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2298.Count - 1 do
-    Self.S2298.Items[i].EvtReintegr.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2298.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2298.Items[i].EvtReintegr.Id) + '-' +
+     TipoEventoToStr(Self.S2298.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2298.Items[i].EvtReintegr.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2298;
+      PathNome := PathName;
+      XML := Self.S2298.Items[i].EvtReintegr.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2299.Count - 1 do
-    Self.S2299.Items[i].EvtDeslig.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2299.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2299.Items[i].EvtDeslig.Id) + '-' +
+     TipoEventoToStr(Self.S2299.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2299.Items[i].EvtDeslig.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2299;
+      PathNome := PathName;
+      XML := Self.S2299.Items[i].EvtDeslig.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2300.Count - 1 do
-    Self.S2300.Items[i].EvtTSVInicio.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2300.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2300.Items[i].EvtTSVInicio.Id) + '-' +
+     TipoEventoToStr(Self.S2300.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2300.Items[i].EvtTSVInicio.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2300;
+      PathNome := PathName;
+      XML := Self.S2300.Items[i].EvtTSVInicio.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2306.Count - 1 do
-      Self.S2306.Items[i].EvtTSVAltContr.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2306.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2306.Items[i].EvtTSVAltContr.Id) + '-' +
+     TipoEventoToStr(Self.S2306.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2306.Items[i].EvtTSVAltContr.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2306;
+      PathNome := PathName;
+      XML := Self.S2306.Items[i].EvtTSVAltContr.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2399.Count - 1 do
-    Self.S2399.Items[i].EvtTSVTermino.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2399.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2399.Items[i].EvtTSVTermino.Id) + '-' +
+     TipoEventoToStr(Self.S2399.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2399.Items[i].EvtTSVTermino.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2399;
+      PathNome := PathName;
+      XML := Self.S2399.Items[i].EvtTSVTermino.XML;
+    end;
+  end;
 
   for I := 0 to Self.S2400.Count - 1 do
-    Self.S2400.Items[i].EvtCdBenPrRP.SaveToFile(Path+'\'+TipoEventoToStr(Self.S2400.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S2400.Items[i].EvtCdBenPrRP.Id) + '-' +
+     TipoEventoToStr(Self.S2400.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S2400.Items[i].EvtCdBenPrRP.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS2400;
+      PathNome := PathName;
+      XML := Self.S2400.Items[i].EvtCdBenPrRP.XML;
+    end;
+  end;
 
   for I := 0 to Self.S3000.Count - 1 do
-    Self.S3000.Items[i].EvtExclusao.SaveToFile(Path+'\'+TipoEventoToStr(Self.S3000.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S3000.Items[i].EvtExclusao.Id) + '-' +
+     TipoEventoToStr(Self.S3000.Items[i].TipoEvento) + '-' + IntToStr(i);
+
+    Self.S3000.Items[i].EvtExclusao.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS3000;
+      PathNome := PathName;
+      XML := Self.S3000.Items[i].EvtExclusao.XML;
+    end;
+  end;
 end;
 
 procedure TNaoPeriodicos.setS2190(const Value: TS2190Collection);
@@ -440,6 +657,62 @@ end;
 procedure TNaoPeriodicos.setS3000(const Value: TS3000Collection);
 begin
   FS3000.Assign(Value);
+end;
+
+function TNaoPeriodicos.LoadFromString(AXMLString: String): Boolean;
+var
+ Ok: Boolean;
+begin
+  case StrEventoToTipoEvento(Ok, AXMLString) of
+    teS2190: Self.S2190.Add.EvtAdmPrelim.XML := AXMLString;
+    teS2200: Self.S2200.Add.EvtAdmissao.XML := AXMLString;
+    teS2205: Self.S2205.Add.EvtAltCadastral.XML := AXMLString;
+    teS2206: Self.S2206.Add.EvtAltContratual.XML := AXMLString;
+    teS2210: Self.S2210.Add.EvtCAT.XML := AXMLString;
+    teS2220: Self.S2220.Add.evtMonit.XML := AXMLString;
+    teS2230: Self.S2230.Add.EvtAfastTemp.XML := AXMLString;
+    teS2240: Self.S2240.Add.EvtExpRisco.XML := AXMLString;
+    teS2241: Self.S2241.Add.EvtInsApo.XML := AXMLString;
+    teS2250: Self.S2250.Add.EvtAvPrevio.XML := AXMLString;
+    teS2260: Self.S2260.Add.EvtConvInterm.XML := AXMLString;
+    teS2298: Self.S2298.Add.EvtReintegr.XML := AXMLString;
+    teS2299: Self.S2299.Add.EvtDeslig.XML := AXMLString;
+    teS2300: Self.S2300.Add.EvtTSVInicio.XML := AXMLString;
+    teS2306: Self.S2306.Add.EvtTSVAltContr.XML := AXMLString;
+    teS2399: Self.S2399.Add.EvtTSVTermino.XML := AXMLString;
+    teS2400: Self.S2400.Add.EvtCdBenPrRP.XML := AXMLString;
+    teS3000: Self.S3000.Add.EvtExclusao.XML := AXMLString;
+  end;
+
+  Result := (GetCount > 0);
+end;
+
+function TNaoPeriodicos.LoadFromIni(AIniString: String): Boolean;
+var
+  Ok: Boolean;
+begin
+  case StringToTipoEvento(Ok, AIniString) of
+    teS2190: Self.S2190.Add.EvtAdmPrelim.LerArqIni(AIniString);
+    teS2200: Self.S2200.Add.EvtAdmissao.LerArqIni(AIniString);
+    teS2205: Self.S2205.Add.EvtAltCadastral.LerArqIni(AIniString);
+    teS2206: Self.S2206.Add.EvtAltContratual.LerArqIni(AIniString);
+    teS2210: Self.S2210.Add.EvtCAT.LerArqIni(AIniString);
+    teS2220: Self.S2220.Add.evtMonit.LerArqIni(AIniString);
+    teS2230: Self.S2230.Add.EvtAfastTemp.LerArqIni(AIniString);
+    teS2240: Self.S2240.Add.EvtExpRisco.LerArqIni(AIniString);
+    teS2241: Self.S2241.Add.EvtInsApo.LerArqIni(AIniString);
+    teS2250: Self.S2250.Add.EvtAvPrevio.LerArqIni(AIniString);
+    teS2260: Self.S2260.Add.EvtConvInterm.LerArqIni(AIniString);
+    teS2298: Self.S2298.Add.EvtReintegr.LerArqIni(AIniString);
+    teS2299: Self.S2299.Add.EvtDeslig.LerArqIni(AIniString);
+    teS2300: Self.S2300.Add.EvtTSVInicio.LerArqIni(AIniString);
+    teS2306: Self.S2306.Add.EvtTSVAltContr.LerArqIni(AIniString);
+    teS2399: Self.S2399.Add.EvtTSVTermino.LerArqIni(AIniString);
+    teS2400: Self.S2400.Add.EvtCdBenPrRP.LerArqIni(AIniString);
+    teS3000: Self.S3000.Add.EvtExclusao.LerArqIni(AIniString);
+  end;
+
+  Result := (GetCount > 0);
 end;
 
 end.

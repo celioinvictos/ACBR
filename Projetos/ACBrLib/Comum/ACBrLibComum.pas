@@ -337,11 +337,10 @@ end;
 function LIB_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
 begin
   try
-    VerificarLibInicializada;
-    pLib.GravarLog('LIB_UltimoRetorno', logNormal);
+    if Assigned(pLib) then pLib.GravarLog('LIB_UltimoRetorno', logNormal);
     MoverStringParaPChar(pLibRetorno.Mensagem, sMensagem, esTamanho);
     Result := pLibRetorno.Codigo;
-    if pLib.Config.Log.Nivel >= logCompleto then
+    if Assigned(pLib) and (pLib.Config.Log.Nivel >= logCompleto) then
       pLib.GravarLog('   Codigo:' + IntToStr(Result) + ', Mensagem:' + strpas(sMensagem), logCompleto, True);
   except
     on E: EACBrLibException do
@@ -439,7 +438,7 @@ begin
     Valor := strpas(eValor);
     pLib.GravarLog('LIB_ConfigGravarValor(' + Sessao + ', ' + Chave + ', ' + Valor + ')', logNormal);
 
-    pLib.Config.GravarValor(Chave, Sessao, Valor);
+    pLib.Config.GravarValor(Sessao, Chave, Valor);
     Result := SetRetorno(ErrOK);
   except
     on E: EACBrLibException do
@@ -456,8 +455,6 @@ end;
 
 procedure VerificarLibInicializada;
 begin
-  SetRetorno(ErrOK);
-
   if not Assigned(pLib) then
   begin
     if (LIB_Inicializar('', '') <> ErrOK) then
@@ -499,9 +496,8 @@ begin
   pLibRetorno.Mensagem := AMensagem;
 
   if Assigned(pLib) then
-    pLib.GravarLog('   SetRetorno(' + IntToStr(ACodigo) + ', ' + AMensagem + ')', logParanoico);
+    pLib.GravarLog('   SetRetorno(' + IntToStr(pLibRetorno.Codigo) + ', ' + pLibRetorno.Mensagem + ')', logParanoico);
 end;
-
 
 function LerArquivoParaString(AArquivo: String): AnsiString;
 var

@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao,
+  pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -87,13 +87,15 @@ type
     FIdeEvento: TIdeEvento;
     FIdeEmpregador: TIdeEmpregador;
     FInfoRegPrelim: TInfoRegPrelim;
+    FACBreSocial: TObject;
 
     procedure GerarInfoRegPrelim;
   public
-    constructor Create(AACBreSocial: TObject);
+    constructor Create(AACBreSocial: TObject); overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -112,6 +114,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS2190Collection }
 
@@ -152,10 +158,11 @@ begin
 end;
 
 { TEvtAdmissao }
-constructor TEvtAdmPrelim.create;
+constructor TEvtAdmPrelim.create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoRegPrelim := TInfoRegPrelim.Create;
@@ -181,11 +188,12 @@ begin
   Gerador.wGrupo('/infoRegPrelim');
 end;
 
-function TEvtAdmPrelim.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtAdmPrelim.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtAdmPrelim');
     Gerador.wGrupo('evtAdmPrelim Id="' + Self.Id + '"');
@@ -206,6 +214,48 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtAdmPrelim.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtAdmPrelim';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'infoRegPrelim';
+      infoRegPrelim.cpfTrab  := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      infoRegPrelim.dtNascto := StringToDateTime(INIRec.ReadString(sSecao, 'dtNascto', '0'));
+      infoRegPrelim.dtAdm    := StringToDateTime(INIRec.ReadString(sSecao, 'dtAdm', '0'));
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

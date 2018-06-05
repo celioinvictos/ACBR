@@ -64,7 +64,7 @@ type
   TpcnFormatoGravacao = (fgXML, fgTXT);
   TpcnTagAssinatura = (taSempre, taNunca, taSomenteSeAssinada, taSomenteParaNaoAssinada);
 
-  TpcnIndicadorPagamento = (ipVista, ipPrazo, ipOutras);
+  TpcnIndicadorPagamento = (ipVista, ipPrazo, ipOutras, ipNenhum);
   TpcnTipoImpressao = (tiSemGeracao, tiRetrato, tiPaisagem, tiSimplificado,
                        tiNFCe, tiMsgEletronica);
   TpcnPercentualTributos = (ptValorProdutos, ptValorNF, ptPersonalizado);
@@ -86,7 +86,7 @@ type
   TpcnDeterminacaoBaseIcmsST = (dbisPrecoTabelado, dbisListaNegativa, dbisListaPositiva, dbisListaNeutra, dbisMargemValorAgregado, dbisPauta);
   TpcnMotivoDesoneracaoICMS = (mdiTaxi, mdiDeficienteFisico, mdiProdutorAgropecuario, mdiFrotistaLocadora, mdiDiplomaticoConsular,
                                mdiAmazoniaLivreComercio, mdiSuframa, mdiVendaOrgaosPublicos, mdiOutros, mdiDeficienteCondutor,
-                               mdiDeficienteNaoCondutor, mdiOrgaoFomento, mdiOlimpiadaRio2016 );
+                               mdiDeficienteNaoCondutor, mdiOrgaoFomento, mdiOlimpiadaRio2016, mdiSolicitadoFisco );
   TpcnCstIpi = (ipi00, ipi49, ipi50, ipi99, ipi01, ipi02, ipi03, ipi04, ipi05, ipi51, ipi52, ipi53, ipi54, ipi55);
   TpcnCstPis = (pis01, pis02, pis03, pis04, pis05, pis06, pis07, pis08, pis09, pis49, pis50, pis51, pis52, pis53,
                 pis54, pis55, pis56, pis60, pis61, pis62, pis63, pis64, pis65, pis66, pis67, pis70, pis71, pis72,
@@ -108,7 +108,7 @@ type
   TPosRecibo = (prCabecalho, prRodape);
   TpcteModeloNF = (moNF011AAvulsa, moNFProdutor);
 
-  TpcnTpEvento = (teCCe, teCancelamento, teManifDestConfirmacao,
+  TpcnTpEvento = (teNaoMapeado, teCCe, teCancelamento, teManifDestConfirmacao,
                   teManifDestCiencia, teManifDestDesconhecimento, teManifDestOperNaoRealizada,
                   teEncerramento, teEPEC, teInclusaoCondutor,
                   teMultiModal, teRegistroPassagem, teRegistroPassagemBRId,
@@ -119,7 +119,12 @@ type
                   teEventoFiscoPP2, teEventoFiscoCPP1, teEventoFiscoCPP2,
                   teRegistroPassagemNFe, teConfInternalizacao, teCTeAutorizado,
                   teMDFeAutorizado, tePrestDesacordo, teGTV, teMDFeAutorizado2,
-                  teNaoEmbarque, teMDFeCancelado2,teMDFeAutorizadoComCTe);
+                  teNaoEmbarque, teMDFeCancelado2,teMDFeAutorizadoComCTe,
+                  teRegPasNfeProMDFe, teRegPasNfeProMDFeCte, teRegPasAutMDFeComCte,
+                  teCancelamentoMDFeAutComCTe, teAverbacaoExportacao, teAutCteComplementar,
+                  teCancCteComplementar,teCTeSubstituicao,teCTeAnulacao,teLiberacaoEPEC,teLiberacaoPrazoCanc,
+                  teAutorizadoRedespacho,teautorizadoRedespIntermed,teAutorizadoSubcontratacao,
+                  teautorizadoServMultimodal);
 
   TpcnIndicadorEmissor = (ieTodos, ieRaizCNPJDiferente);
   TpcnIndicadorContinuacao = (icNaoPossuiMaisDocumentos, icPossuiMaisDocumentos);
@@ -168,19 +173,24 @@ type
 
   TIndicador = (tiSim, tiNao);
 const
-  TpcnTpEventoString : array[0..36] of String =('110110', '110111', '210200',
-                                                '210210', '210220', '210240',
-                                                '110112', '110113', '110114',
-                                                '110160', '310620', '510620',
-                                                '110140', '610600', '610501',
-                                                '610550', '610601', '610611',
-                                                '990900', '111500', '111501',
-                                                '111502', '111503', '411500',
-                                                '411501', '411502', '411503',
-                                                '610500', '990910', '000000',
-                                                '610610', '610110', '110170',
-                                                '310610', '110115', '310611',
-                                                '610614');
+  TpcnTpEventoString : array[0..52] of String =('-99999', '110110', '110111',
+                                                '210200', '210210', '210220',
+                                                '210240', '110112', '110113',
+                                                '110114', '110160', '310620',
+                                                '510620', '110140', '610600',
+                                                '610501', '610550', '610601',
+                                                '610611', '990900', '111500',
+                                                '111501', '111502', '111503',
+                                                '411500', '411501', '411502',
+                                                '411503', '610500', '990910',
+                                                '000000', '610610', '610110',
+                                                '110170', '310610', '110115',
+                                                '310611', '610614', '610510',
+                                                '610514', '610554', '610615',
+                                                '790700', '240130', '240131',
+                                                '240140', '240150', '240160',
+                                                '240170', '440130', '440140',
+                                                '440150', '440160');
 
   DFeUF: array[0..26] of String =
   ('AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
@@ -428,12 +438,12 @@ end;
 // Indicador do Tipo de pagamento **********************************************
 function IndpagToStr(const t: TpcnIndicadorPagamento): string;
 begin
-  result := EnumeradoToStr(t, ['0', '1', '2'], [ipVista, ipPrazo, ipOutras]);
+  result := EnumeradoToStr(t, ['0', '1', '2', ''], [ipVista, ipPrazo, ipOutras, ipNenhum]);
 end;
 
 function StrToIndpag(out ok: boolean; const s: string): TpcnIndicadorPagamento;
 begin
-  result := StrToEnumerado(ok, s, ['0', '1', '2'], [ipVista, ipPrazo, ipOutras]);
+  result := StrToEnumerado(ok, s, ['0', '1', '2', ''], [ipVista, ipPrazo, ipOutras, ipNenhum]);
 end;
 
 // B21 - Formato de Impressão do DANFE *****************************************
@@ -725,17 +735,22 @@ begin
   // ID -> N10b - Grupo de informação do ICMS ST devido para a UF de destino,nas operações interestaduais de produtos que tiveram retenção antecipada de ICMS por ST na UF do remetente. Repasse via Substituto Tributário. (v2.0)
   // ID -> N11  - ICMS devido para outras UF
   // ID -> N12  - Outros
-  result := EnumeradoToStr(t, ['00' , '10' , '20' , '30' , '40' , '41' , '50' , '51' ,
-                               '60' , '70' , '80' , '81', '90', '10', '90', '41', '90', 'SN', '60'],
-                              [cst00, cst10, cst20, cst30, cst40, cst41, cst50, cst51,
-                              cst60, cst70, cst80, cst81, cst90, cstPart10 , cstPart90 ,
-                              cstRep41, cstICMSOutraUF, cstICMSSN, cstRep60]);
+  result := EnumeradoToStr(t, ['', '00' , '10' , '20' , '30' , '40' , '41' , '50' , '51' ,
+                               '60' , '70' , '80' , '81', '90', '91', 'SN',
+                               '10', '90', '41', '60'],
+                              [cstVazio, cst00, cst10, cst20, cst30, cst40, cst41, cst50, cst51,
+                              cst60, cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN,
+                              cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
 
 function StrToCSTICMS(out ok: boolean; const s: string): TpcnCSTIcms;
 begin
-  result := StrToEnumerado(ok, s, ['00', '10', '20', '30', '40', '41', '50', '51', '60', '70', '80', '81', '90', '91', 'SN'],
-    [cst00, cst10, cst20, cst30, cst40, cst41, cst50, cst51, cst60, cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN]);
+  result := StrToEnumerado(ok, s, ['00', '10', '20', '30', '40', '41', '50', '51', '60',
+                                   '70', '80', '81', '90', '91', 'SN',
+                                   '10part', '90part', '41rep', '60rep'],
+                                  [cst00, cst10, cst20, cst30, cst40, cst41, cst50, cst51, cst60,
+                                   cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN,
+                                   cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
 
 function CSTICMSToStrTagPos(const t: TpcnCSTIcms): string;
@@ -835,20 +850,20 @@ begin
     // 11 – Deficiente não Condutor (Convênio ICMS 38/12). (v3.1)
     // 12 - Orgão Fomento
     // 16 - Olimpiadas Rio 2016
-  result := EnumeradoToStr(t, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '16'],
+  result := EnumeradoToStr(t, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '16', '90'],
     [mdiTaxi, mdiDeficienteFisico, mdiProdutorAgropecuario, mdiFrotistaLocadora,
      mdiDiplomaticoConsular, mdiAmazoniaLivreComercio, mdiSuframa, mdiVendaOrgaosPublicos,
      mdiOutros, mdiDeficienteCondutor, mdiDeficienteNaoCondutor, mdiOrgaoFomento,
-     mdiOlimpiadaRio2016]);
+     mdiOlimpiadaRio2016, mdiSolicitadoFisco]);
 end;
 
 function StrTomotDesICMS(out ok: boolean; const s: string): TpcnMotivoDesoneracaoICMS;
 begin
-  result := StrToEnumerado(ok, s, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '16'],
+  result := StrToEnumerado(ok, s, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '16', '90'],
     [mdiTaxi, mdiDeficienteFisico, mdiProdutorAgropecuario, mdiFrotistaLocadora,
      mdiDiplomaticoConsular, mdiAmazoniaLivreComercio, mdiSuframa, mdiVendaOrgaosPublicos,
      mdiOutros, mdiDeficienteCondutor, mdiDeficienteNaoCondutor, mdiOrgaoFomento,
-     mdiOlimpiadaRio2016]);
+     mdiOlimpiadaRio2016, mdiSolicitadoFisco]);
 end;
 
 // CST IPI *********************************************************************
@@ -1037,19 +1052,25 @@ end;
 function TpEventoToDescStr(const t: TpcnTpEvento): string;
 begin
   result := EnumeradoToStr(t,
-             ['CCe', 'Cancelamento', 'Confirmacao', 'Ciencia',
-              'Desconhecimento', 'NaoRealizada',
-              'Encerramento', 'EPEC', 'IncCondutor', 'Multimodal',
-              'RegPassagem', 'RegPassagemBRId', 'EPEC',
-              'RegCTe', 'RegPassagemNFeCancelado',
-              'RegPassagemNFeRFID', 'CTeCancelado', 'MDFeCancelado',
+             ['NaoMapeado', 'CCe', 'Cancelamento', 'ManifDestConfirmacao', 'ManifDestCiencia',
+              'ManifDestDesconhecimento', 'ManifDestOperNaoRealizada',
+              'Encerramento', 'EPEC', 'InclusaoCondutor', 'MultiModal',
+              'RegistroPassagem', 'RegistroPassagemBRId', 'EPECNFe',
+              'RegistroCTe', 'RegistroPassagemNFeCancelado',
+              'RegistroPassagemNFeRFID', 'CTeCancelado', 'MDFeCancelado',
               'VistoriaSuframa', 'PedProrrog1', 'PedProrrog2',
               'CanPedProrrog1', 'CanPedProrrog2', 'EventoFiscoPP1',
               'EventoFiscoPP2', 'EventoFiscoCPP1', 'EventoFiscoCPP2',
-              'RegPassagemNFe', 'ConfInternalizacao', 'CTeAutorizado',
+              'RegistroPassagemNFe', 'ConfInternalizacao', 'CTeAutorizado',
               'MDFeAutorizado', 'PrestDesacordo', 'GTV', 'MDFeAutorizado2',
-              'NaoEmbarque', 'MDFeCancelado2','MDFeAutorizadoComCTe'],
-             [teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
+              'NaoEmbarque', 'MDFeCancelado2', 'MDFeAutorizadoComCTe',
+              'RegPasNfeProMDFe', 'RegPasNfeProMDFeCte', 'RegPasAutMDFeComCte',
+              'CancelamentoMDFeAutComCTe', 'AverbacaoExportacao', 'AutCteComplementar',
+              'CancCteComplementar', 'CTeSubstituicao',
+              'CTeAnulacao', 'LiberacaoEPEC', 'LiberacaoPrazoCanc',
+              'AutorizadoRedespacho', 'AutorizadoRedespIntermed', 'AutorizadoSubcontratacao',
+              'AutorizadoServMultimodal' ],
+             [teNaoMapeado, teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
               teManifDestDesconhecimento, teManifDestOperNaoRealizada,
               teEncerramento, teEPEC, teInclusaoCondutor, teMultiModal,
               teRegistroPassagem, teRegistroPassagemBRId, teEPECNFe,
@@ -1060,7 +1081,13 @@ begin
               teEventoFiscoPP2, teEventoFiscoCPP1, teEventoFiscoCPP2,
               teRegistroPassagemNFe, teConfInternalizacao, teCTeAutorizado,
               teMDFeAutorizado, tePrestDesacordo, teGTV, teMDFeAutorizado2,
-              teNaoEmbarque, teMDFeCancelado2, teMDFeAutorizadoComCTe]);
+              teNaoEmbarque, teMDFeCancelado2, teMDFeAutorizadoComCTe,
+              teRegPasNfeProMDFe, teRegPasNfeProMDFeCte, teRegPasAutMDFeComCte,
+              teCancelamentoMDFeAutComCTe, teAverbacaoExportacao, teAutCteComplementar,
+              teCancCteComplementar, teCTeSubstituicao,
+              teCTeAnulacao, teLiberacaoEPEC, teLiberacaoPrazoCanc,
+              teAutorizadoRedespacho, teautorizadoRedespIntermed, teAutorizadoSubcontratacao,
+              teautorizadoServMultimodal]);
 end;
 
 
