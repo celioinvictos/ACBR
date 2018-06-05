@@ -50,39 +50,38 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnLeitor,
+  pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
 type
-  TS5012Collection = class;
-  TS5012CollectionItem = class;
+  TS5012 = class;
   TInfoIRRF = class;
   TInfoCRContribCollection = class;
   TInfoCRContribCollectionItem = class;
 
   TEvtIrrf = class;
 
-  TS5012Collection = class(TOwnedCollection)
-  private
-    function GetItem(Index: Integer): TS5012CollectionItem;
-    procedure SetItem(Index: Integer; Value: TS5012CollectionItem);
-  public
-    function Add: TS5012CollectionItem;
-    property Items[Index: Integer]: TS5012CollectionItem read GetItem write SetItem; default;
-  end;
-
-  TS5012CollectionItem = class(TCollectionItem)
+  TS5012 = class(TInterfacedObject, IEventoeSocial)
   private
     FTipoEvento: TTipoEvento;
     FEvtIrrf: TEvtIrrf;
 
-    procedure setEvtIrrf(const Value: TEvtIrrf);
+    function GetXml : string;
+    procedure SetXml(const Value: string);
+    function GetTipoEvento : TTipoEvento;
+    procedure SetEvtIrrf(const Value: TEvtIrrf);
+
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create;
     destructor Destroy; override;
+
+    function GetEvento : TObject;
+
   published
-    property TipoEvento: TTipoEvento read FTipoEvento;
+    property Xml: String read GetXml write SetXml;
+    property TipoEvento: TTipoEvento read GetTipoEvento;
     property EvtIrrf: TEvtIrrf read FEvtIrrf write setEvtIrrf;
+
   end;
 
   TInfoCRContribCollection = class(TCollection)
@@ -100,8 +99,8 @@ type
     FtpCR: String;
     FvrCR: Double;
   public
-    property tpCR: String read FtpCR write FtpCR;
-    property vrCR: Double read FvrCR write FvrCR;
+    property tpCR: String read FtpCR;
+    property vrCR: Double read FvrCR;
   end;
 
   TInfoIRRF = class(TPersistent)
@@ -109,10 +108,15 @@ type
     FnrRecArqBase: String;
     FindExistInfo: Integer;
     FInfoCRContrib: TInfoCRContribCollection;
+
+    procedure SetInfoCRContrib(const Value: TInfoCRContribCollection);
   public
-    property nrRecArqBase: String read FnrRecArqBase write FnrRecArqBase;
-    property indExistInfo: Integer read FindExistInfo write FindExistInfo;
-    property InfoCRContrib: TInfoCRContribCollection read FInfoCRContrib write FInfoCRContrib;
+    constructor Create; reintroduce;
+    destructor Destroy; override;
+
+    property nrRecArqBase: String read FnrRecArqBase;
+    property indExistInfo: Integer read FindExistInfo;
+    property InfoCRContrib: TInfoCRContribCollection read FInfoCRContrib write SetInfoCRContrib;
   end;
 
   TEvtIrrf = class(TPersistent)
@@ -125,65 +129,74 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FInfoIRRF: TInfoIRRF;
   public
-    constructor Create(AACBreSocial: TObject); overload;
+    constructor Create;
     destructor  Destroy; override;
 
     function LerXML: Boolean;
+    function SalvarINI: boolean;
 
     property IdeEvento: TIdeEvento5 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
     property InfoIRRF: TInfoIRRF read FInfoIRRF write FInfoIRRF;
   published
     property Leitor: TLeitor read FLeitor write FLeitor;
-    property Id: String      read FId     write FId;
-    property XML: String     read FXML    write FXML;
+    property Id: String      read FId;
+    property XML: String     read FXML;
   end;
 
 implementation
 
-{ TS5012Collection }
+uses
+  IniFiles;
 
-function TS5012Collection.Add: TS5012CollectionItem;
-begin
-  Result := TS5012CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
-end;
+{ TS5012 }
 
-function TS5012Collection.GetItem(Index: Integer): TS5012CollectionItem;
-begin
-  Result := TS5012CollectionItem(inherited GetItem(Index));
-end;
-
-procedure TS5012Collection.SetItem(Index: Integer;
-  Value: TS5012CollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TS5012CollectionItem }
-
-constructor TS5012CollectionItem.Create(AOwner: TComponent);
+constructor TS5012.Create;
 begin
   FTipoEvento := teS5012;
-  FEvtIrrf := TEvtIrrf.Create(AOwner);
+  FEvtIrrf := TEvtIrrf.Create;
 end;
 
-destructor TS5012CollectionItem.Destroy;
+destructor TS5012.Destroy;
 begin
   FEvtIrrf.Free;
 
   inherited;
 end;
 
-procedure TS5012CollectionItem.setEvtIrrf(
-  const Value: TEvtIrrf);
+function TS5012.GetEvento : TObject;
+begin
+  Result := self;
+end;
+
+function TS5012.GetXml : string;
+begin
+  Result := FEvtIrrf.XML;
+end;
+
+procedure TS5012.SetXml(const Value: string);
+begin
+  if Value = FEvtIrrf.XML then Exit;
+
+  FEvtIrrf.FXML := Value;
+  FEvtIrrf.Leitor.Arquivo := Value;
+  FEvtIrrf.LerXML;
+
+end;
+
+function TS5012.GetTipoEvento : TTipoEvento;
+begin
+  Result := FTipoEvento;
+end;
+
+procedure TS5012.SetEvtIrrf(const Value: TEvtIrrf);
 begin
   FEvtIrrf.Assign(Value);
 end;
 
 { TEvtIrrf }
 
-constructor TEvtIrrf.Create(AACBreSocial: TObject);
+constructor TEvtIrrf.Create;
 begin
   FLeitor := TLeitor.Create;
 
@@ -227,6 +240,25 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+{ TInfoIRRF }
+
+constructor TInfoIRRF.Create;
+begin
+   FInfoCRContrib := TInfoCRContribCollection.Create;
+end;
+
+destructor TInfoIRRF.Destroy;
+begin
+  FInfoCRContrib.Free;
+
+  inherited;
+end;
+
+procedure TInfoIRRF.SetInfoCRContrib(const Value: TInfoCRContribCollection);
+begin
+  FInfoCRContrib := Value;
+end;
+
 function TEvtIrrf.LerXML: Boolean;
 var
   ok: Boolean;
@@ -234,7 +266,7 @@ var
 begin
   Result := False;
   try
-    XML := Leitor.Arquivo;
+    FXML := Leitor.Arquivo;
 
     if leitor.rExtrai(1, 'evtIrrf') <> '' then
     begin
@@ -251,15 +283,15 @@ begin
 
       if leitor.rExtrai(2, 'infoIRRF') <> '' then
       begin
-        infoIRRF.nrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
-        infoIRRF.indExistInfo := leitor.rCampo(tcInt, 'indExistInfo');
+        infoIRRF.FnrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
+        infoIRRF.FindExistInfo := leitor.rCampo(tcInt, 'indExistInfo');
 
         i := 0;
         while Leitor.rExtrai(3, 'infoCRContrib', '', i + 1) <> '' do
         begin
           infoIRRF.infoCRContrib.Add;
-          infoIRRF.infoCRContrib.Items[i].tpCR := leitor.rCampo(tcStr, 'tpCR');
-          infoIRRF.infoCRContrib.Items[i].vrCR := leitor.rCampo(tcDe2, 'vrCR');
+          infoIRRF.infoCRContrib.Items[i].FtpCR := leitor.rCampo(tcStr, 'tpCR');
+          infoIRRF.infoCRContrib.Items[i].FvrCR := leitor.rCampo(tcDe2, 'vrCR');
           inc(i);
         end;
       end;
@@ -271,4 +303,49 @@ begin
   end;
 end;
 
+function TEvtIrrf.SalvarINI: boolean;
+var
+  AIni: TMemIniFile;
+  sSecao: String;
+  i: Integer;
+begin
+  Result := False;
+
+  AIni := TMemIniFile.Create('');
+  try
+    Result := True;
+
+    with Self do
+    begin
+      sSecao := 'evtIrrf';
+      AIni.WriteString(sSecao, 'Id', Id);
+
+      sSecao := 'ideEvento';
+      AIni.WriteString(sSecao, 'perApur', IdeEvento.perApur);
+
+      sSecao := 'ideEmpregador';
+      AIni.WriteString(sSecao, 'tpInsc', eSTpInscricaoToStr(IdeEmpregador.TpInsc));
+      AIni.WriteString(sSecao, 'nrInsc', IdeEmpregador.nrInsc);
+
+      sSecao := 'infoIRRF';
+      AIni.WriteString(sSecao, 'nrRecArqBase',  infoIRRF.nrRecArqBase);
+      AIni.WriteInteger(sSecao, 'indExistInfo', infoIRRF.indExistInfo);
+
+      for i := 0 to infoIRRF.InfoCRContrib.Count -1 do
+      begin
+        sSecao := 'InfoCRContrib' + IntToStrZero(I, 1);
+
+        with infoIRRF.InfoCRContrib.Items[i] do
+        begin
+          AIni.WriteString(sSecao, 'tpCR', tpCR);
+          AIni.WriteFloat(sSecao, 'vrCR',  vrCR);
+        end;
+      end;
+    end;
+  finally
+    AIni.Free;
+  end;
+end;
+
 end.
+

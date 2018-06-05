@@ -64,6 +64,7 @@ const
   CChaveUsuario = 'Usuario';
   CChaveSenha = 'Senha';
   CChavePorta = 'Porta';
+  CChaveDevice = 'Device';
 
   CSessaoSistema = 'Sistema';
   CChaveVersao = 'Versao';
@@ -79,7 +80,7 @@ const
   CChaveEmailConfirmacao = 'Confirmacao';
   CChaveEmailSegundoPlano = 'SegundoPlano';
 
-  CSessaoSwHouse = 'SofwareHouse';
+  CSessaoSwHouse = 'SoftwareHouse';
   CSessaoEmissor = 'Emissor';
 
   CChaveNomeFantasia = 'NomeFantasia';
@@ -119,8 +120,8 @@ resourcestring
   SErrLibNaoFinalizada = '%s não foi finalizada';
 
   SErrDiretorioInvalido = 'Diretório Invalido: %s';
-  SErrConfSessaoNaoExiste = 'Sessão não existe no arquuvo de configuração';
-  SErrConfChaveNaoExiste = 'Chave não existe no arquuvo de configuração';
+  SErrConfSessaoNaoExiste = 'Sessão não existe no arquivo de configuração';
+  SErrConfChaveNaoExiste = 'Chave não existe no arquivo de configuração';
 
   SErrArquivoNaoExiste = 'Arquivo % não encontrado';
 

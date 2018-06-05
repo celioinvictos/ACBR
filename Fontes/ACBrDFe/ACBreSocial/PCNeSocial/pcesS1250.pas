@@ -41,6 +41,8 @@
 |*  - Doação do componente para o Projeto ACBr
 |* 01/03/2016: Guilherme Costa
 |*  - Alterações para validação com o XSD
+|* 07/03/2018:Edmar Frazão
+|*  Linha 335 conversão eSIdAquisStr para string
 ******************************************************************************}
 {$I ACBr.inc}
 
@@ -50,7 +52,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -91,6 +93,7 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FInfoAquisProd: TInfoAquisProd;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarInfoAquisProd;
@@ -102,7 +105,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -195,6 +199,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1250Collection }
 
 function TS1250Collection.Add: TS1250CollectionItem;
@@ -238,6 +246,7 @@ constructor TEvtAqProd.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoAquisProd := TInfoAquisProd.create;
@@ -327,7 +336,7 @@ begin
   begin
     Gerador.wGrupo('tpAquis');
 
-    Gerador.wCampo(tcStr, '', 'indAquis',    1,  1, 1, InfoAquisProd.IdeEstabAdquir.TpAquis.Items[i].indAquis);
+    Gerador.wCampo(tcStr, '', 'indAquis',    1,  1, 1, eSIdAquisStr(InfoAquisProd.IdeEstabAdquir.TpAquis.Items[i].indAquis));
     Gerador.wCampo(tcDe2, '', 'vlrTotAquis', 1, 14, 1, InfoAquisProd.IdeEstabAdquir.TpAquis.Items[i].vlrTotAquis);
 
     GerarIdeProdutor(InfoAquisProd.IdeEstabAdquir.TpAquis.Items[i].IdeProdutor);
@@ -339,11 +348,12 @@ begin
     Gerador.wAlerta('', 'tpAquis', 'Lista de Aquisições', ERR_MSG_MAIOR_MAXIMO + '3');
 end;
 
-function TEvtAqProd.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtAqProd.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtAqProd');
     Gerador.wGrupo('evtAqProd Id="' + Self.Id + '"');
@@ -466,6 +476,145 @@ begin
   FInfoProcJud.Free;
 
   inherited;
+end;
+
+function TEvtAqProd.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I, J, K: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtAqProd';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideEstabAdquir';
+      InfoAquisProd.IdeEstabAdquir.tpInscAdq := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInscAdq', '1'));
+      InfoAquisProd.IdeEstabAdquir.nrInscAdq := INIRec.ReadString(sSecao, 'nrInscAdq', '');
+
+      I := 1;
+      while true do
+      begin
+        // de 1 até 3
+        sSecao := 'tpAquis' + IntToStrZero(I, 1);
+        sFim   := INIRec.ReadString(sSecao, 'indAquis', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with InfoAquisProd.IdeEstabAdquir.tpAquis.Add do
+        begin
+          indAquis    := eSStrToIdAquis(Ok, sFim);
+          vlrTotAquis := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrTotAquis', ''), 0);
+
+          J := 1;
+          while true do
+          begin
+            // de 0001 até 9999
+            sSecao := 'ideProdutor' + IntToStrZero(I, 1) + IntToStrZero(J, 4);
+            sFim   := INIRec.ReadString(sSecao, 'tpInscProd', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with ideProdutor.Add do
+            begin
+              tpInscProd  := eSStrToTpInscricao(Ok, sFim);
+              nrInscProd  := INIRec.ReadString(sSecao, 'nrInscProd', EmptyStr);
+              vlrBruto    := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrBruto', ''), 0);
+              vrCPDescPR  := StringToFloatDef(INIRec.ReadString(sSecao, 'vrCPDescPR', ''), 0);
+              vrRatDescPR := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRatDescPR', ''), 0);
+              vrSenarDesc := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSenarDesc', ''), 0);
+
+              K := 1;
+              while true do
+              begin
+                // de 0000 até 9999
+                sSecao := 'nfs' + IntToStrZero(I, 1) + IntToStrZero(J, 4) +
+                               IntToStrZero(K, 4);
+                sFim   := INIRec.ReadString(sSecao, 'serie', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with nfs.Add do
+                begin
+                  serie       := sFim;
+                  nrDocto     := INIRec.ReadString(sSecao, 'nrDocto', EmptyStr);
+                  dtEmisNF    := StringToDateTime(INIRec.ReadString(sSecao, 'dtEmisNF', '0'));
+                  vlrBruto    := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrBruto', ''), 0);
+                  vrCPDescPR  := StringToFloatDef(INIRec.ReadString(sSecao, 'vrCPDescPR', ''), 0);
+                  vrRatDescPR := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRatDescPR', ''), 0);
+                  vrSenarDesc := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSenarDesc', ''), 0);
+                end;
+
+                Inc(K);
+              end;
+
+              K := 1;
+              while true do
+              begin
+                // de 00 até 10
+                sSecao := 'infoProcJud' + IntToStrZero(I, 1) + IntToStrZero(J, 4) +
+                               IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'nrProcJud', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with infoProcJud.Add do
+                begin
+                  nrProcJud   := sFim;
+                  codSusp     := INIRec.ReadInteger(sSecao, 'codSusp', 0);
+                  vrCPNRet    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrCPNRet', ''), 0);
+                  vrRatNRet   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRatNRet', ''), 0);
+                  vrSenarNRet := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSenarNRet', ''), 0);
+                end;
+
+                Inc(K);
+              end;
+
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

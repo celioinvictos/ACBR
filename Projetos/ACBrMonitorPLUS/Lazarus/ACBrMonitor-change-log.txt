@@ -43,6 +43,102 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+28/05/2018 - ACBrMonior
+[-] Ajuste na gravação dos dados aba ( Software House )
+   por: José M. S. Junior
+
+24/05/2018 - ACBrMonior
+[+] Adicionado Método (gerarimpressaofiscalmfe) aos métodos SAT
+para retornar geração fiscal MFe
+   por: José M. S. Junior
+
+22/05/2018 - ACBrMonior
+[-] Ajustes Leitura .INI para manter compatibilidade configuração Boleto
+https://www.projetoacbr.com.br/forum/topic/43517-boleto-dados-cedente-mudou-bug/
+   por: José M. S. Junior
+
+[-] Ajustes na geração Arquivo de Respostas
+https://www.projetoacbr.com.br/forum/topic/32678-acbrmonitorplus-sac/
+   por: José M. S. Junior
+
+22/05/2018 - ACBrMonior
+[-] Ajustes na validação no Monitoramento de Pasta
+   por: José M. S. Junior
+
+15/05/2018 - ACBrMonior
+[*] Ajustes quanto ao valor da propriedade ACBrSedex.Servico
+[*] Adicionado novas constantes referentes ao Reinf
+   Por: Italo Jurisato Junior
+
+15/05/2018 - ACBrMonitor
+[*] Ajustes referente remoção da propriedade IncluirQRCodeXMLNFCe
+
+14/05/2018 - ACBrMonitor Versão 1.2.0.0
+[*] Inicio Refactory no ACBrMonitorPlus, iniciando pelo componente MDFe
+Adicionado as classes: DoACBrDFeUnit, ACBrMonitorConsts, ACBrMonitorConfig
+Alterações significativas classes: DoACBrMDFeUnit, ACBrMonitor1, CMDUnit, UtilUnit
+
+[+] Adicionados funcionalidades para o componente e-Social no ACBrMonitor nos
+moldes das classes Refactory. Adicionado a Classe DoACBreSocialUnit
+
+07/04/2018
+[*] Ajuste nos métodos que utilizam parâmetros para Visualizar Impressão
+       por: José M. S. Junior
+
+03/04/2018
+[*] Atualização de campos na Função de Geração do .INI através da leitura do XML
+       por: José M. S. Junior
+
+02/04/2018
+[*] Validação e Ajustes na leitura de Respostas do Integrador Fiscal
+       por: José M. S. Junior
+
+19/03/2018
+[*] Ajustes na configuração - Integrador Fiscal
+       Validação Tipo de Documento (NFCe) para validar Integrador
+       por: José M. S. Junior
+
+09/03/2018
+[+] Atualização Componente PosPrinter
+       Adicionado Campos para configurações Gaveta em tela
+       Atualização metodos ESCPOS (Consultar Manual)
+       por: José M. S. Junior
+
+09/03/2018
+[+] Atualização Componente Etiqueta
+       Adicionado Campos para configurações Etiqueta em tela
+       Adicionado Parâmetros: ImprimirReverso / ExibeCodigo (Consultar Manual)
+       Adicionado os métodos:
+       IniciarEtiqueta / FinalizarEtiqueta
+       Unidade / SetUnidade
+       DPI / SetDPI
+       Origem / SetOrigem
+       BackFeed / SetBackFeed
+       Velodicade / SetVelocidade
+       MargemEsquerda / SetMargemEsquerda
+       por: José M. S. Junior
+
+27/02/2018
+[*] Adicionado Menu de Configurações - Integrador Fiscal
+       Adicionado flag em DFe / WebService / NFCe (Usar Integrador Fiscal)
+       Para utilização da NFCe com Integrador Fiscal
+       por: José M. S. Junior
+
+[*] Ajuste Métodos Componente IBGE
+       por: José M. S. Junior
+
+20/02/2018
+[*] Ajuste no Método "GerarChave", conforme alterações do ACBrDFe
+       por: José M. S. Junior
+
+16/02/2018
+[+] Adicionado Métodos de Distribuição para CTe e MDFe
+        CTe.DistribuicaoDFePorNSU(cUF, cCNPJ, nNSU)
+        CTe.DistribuicaoDFePorUltNSU(cUF, cCNPJ, nUltNSU)
+        MDFe.DistribuicaoDFePorNSU(cUF, cCNPJ, nNSU)
+        MDFe.DistribuicaoDFePorUltNSU(cUF, cCNPJ, nUltNSU)
+	por: Italo Jurissato Junior
+
 05/02/2018
 [+] Adicionado Parâmetro "Utilizar Separador para Path PDF" em DFe / Diretórios
         Define se utiliza a mesma Estrutura de diretório definida para XML, se não

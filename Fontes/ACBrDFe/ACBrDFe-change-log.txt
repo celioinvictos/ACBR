@@ -44,6 +44,97 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+30/05/2018
+-- ACBrDFeSSL --
+[-] Ajuste em TDFeSendThread, para evitar A.V. em algumas situações
+    (por: DSA)
+
+02/04/2018
+-- ACBrDFeConfiguracoes --
+[*] Ajuste no método "CalcSSLLib" para definir corretamente a propriedade 
+    quando SSLXmlSignLib for xsLibXML2.
+    (por: BigWings)
+
+16/03/2018
+-- ACBrDFeXsLibXml2 --
+[-] Correção da assinatura do lote das NFSe.
+    (por Rafael Dias)
+[+] Melhoria no carregamento dos schemas para validação da Xml.
+    (por Rafael Dias)
+
+14/03/2018
+-- ACBrDFeConfiguracoes, ACBrDFeSSL --
+[*] Ajuste para commit do dia 06/03/2018, considerando que o suporte a OpenSSL
+    ou LibXML2 estejam desativados
+
+06/03/2018
+-- ACBrDFeConfiguracoes --
+[*] TGeralConf.SSLLib, modificado para que quando tiver o valor "libWinCrypt",
+    assuma a seguinte configuração:
+        SSLCryptLib := cryWinCrypt;
+        SSLHttpLib := httpWinHttp;
+        SSLXmlSignLib := xsLibXml2;
+    Modificando o uso de xsMsXml para xsLibXml2
+    (por: DSA)
+
+[+] Adicionada a propriedade: "TWebServicesConf.TimeOutPorThread: Boolean default False".
+    Se ativa o ACBrDFe, usará uma Thread para medir o Tempo total de transmissão
+    e abandonará a conexão quando o TimeOut ocorrer... Isso pode ajudar em uma
+    medição mais acurada, do tempo de Timeout...
+
+[-] Método: "TWebServicesConf.Assign", corrigido para copiar todas as propriedades
+[*] Métodos "LerIni" e "GravarIni", modificados para salvar o valor de "TimeOutPorThread"
+
+-- ACBrDFeSSL --
+[+] Classe "TDFeSSLHttpClass", adicionado o método "Abortar". Que permite
+    interromper uma conexão HTTP em andamento...
+[+] Adicionada a classe "TDFeSendThread", para permitir o funcionamento da
+    propriedade "TWebServicesConf.TimeOutPorThread"
+[*] Método "TDFeSSL.Enviar", modificado para funcionar de acordo com o valor de
+    "TWebServicesConf.TimeOutPorThread"
+
+-- ACBrDFeHttpOpenSSL, ACBrDFeHttpWinApi, ACBrDFeHttpIndy --
+[+] Implementado suporte ao método "Abortar"
+    (Por André Moraes e DSA)
+
+05/03/2018
+-- ACBrDFeXsLibXml2 --
+[-] Remoção de warnings.
+    (por Waldir)
+
+01/03/2018
+-- ACBrDFe --
+[*] Visibilidade dos métodos: "NomeServicoToNomeSchema" e "AchaArquivoSchema",
+    modificada de Public para Protected
+[*] Método "AchaArquivoSchema", modificado para Zerar a lista de Schemas carregados
+    na memória, sempre que detectar mudanças em: "Configuracoes.Arquivos.PathSchemas"
+[+] Adicionados os métodos Protected
+    function ExtrairVersaoNomeArquivoSchema(ArqSchema: String): String; virtual;
+    function VersaoSchemaDoubleToString(AVersao: Double): String; virtual;
+    function VersaoSchemaStringToDouble(AVersao: String): Double; virtual;
+    Para permitir a sobrecarga em classes que usem uma numeração de Schema
+    diferente do padrão
+
+-- ACBreSocial --
+[+] Implementado sobrecarga nos métodos "VersaoSchemaDoubleToString" e
+    "VersaoSchemaStringToDouble" para conseguir encontrar corretamente as
+    versões nos arquivos de Schema do eSocial
+    (por: DSA)
+
+27/02/2018
+-- ACBrDFeHttpOpenSSL --
+[-] Melhorias na definição de TimeOut de Conexão
+    (por: André Moraes e DSA)
+-- ACBrDFeWinCrypt --
+[*] Remoção de constantes não necessárias
+    (por: DSA)
+
+26/02/2018
+-- ACBrDFeXsLibXml2 --
+[-] Corrigido bug de assinatura do xml quando a URI é vazia.
+    https://www.projetoacbr.com.br/forum/topic/41682-assinatura-a3-e-a1-instalado-na-m%C3%A1quina/
+    (por Rafael Dias e Paulo Aguiar Junior)
+
 15/01/2018
 -- ACBrDFeSSL --
 [+] Adicionado suporte as diretivas {$DEFINE DFE_SEM_MSXML} e {$DEFINE DFE_SEM_INDY}
@@ -125,7 +216,7 @@ Símbolo : Significado
        const Hash: AnsiString;
        const Assinado: Boolean =  False): Boolean; overload;
    Que permite verificar Hashs, Assinados ou não, gerados pelo comando "CalcHash"
-   (por: Rafael Teno)
+   (por: Rafael Dias)
 
 [+] Adicionada Unit: ACBrDFeXsLibXml2.pas, contendo nova classe para Assinatura
     e verificação de XML, usando apenas a LibXML2 (não depende da LibXMLSec).
@@ -134,7 +225,7 @@ Símbolo : Significado
     TDFeSSL.SSLXmlSignClass = "xsLibXml2".
     Compatível com OpenSSL e WinCrypt, poderá usar Certificados A1 e A3.
     Eliminando em definitivo a dependencia da MSXML (TDFeSSLXmlSignMsXml)
-   (por: Rafael Teno e DSA)
+   (por: Rafael Dias e DSA)
 
 27/10/2017
 -- ACBrDFeSSL, ACBrDFeXsMsXml, ACBrDFeXsXmlSec, ACBrDFeXsMsXmlCapicom --

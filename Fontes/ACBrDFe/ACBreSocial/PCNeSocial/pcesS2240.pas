@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -93,6 +93,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FinfoExpRisco: TinfoExpRisco;
+    FACBreSocial: TObject;
 
     procedure GerarInfoExpRisco(objInfoExpRisco: TInfoExpRisco);
     procedure GerariniExpRisco(objiniExpRisco: TiniExpRisco);
@@ -108,7 +109,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -190,6 +192,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2240Collection }
 
 function TS2240Collection.Add: TS2240CollectionItem;
@@ -235,6 +241,7 @@ constructor TEvtExpRisco.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo := TIdeVinculo.Create;
@@ -438,11 +445,12 @@ begin
   Gerador.wGrupo('/iniExpRisco');
 end;
 
-function TEvtExpRisco.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtExpRisco.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtExpRisco');
     Gerador.wGrupo('evtExpRisco Id="' + Self.Id + '"');
@@ -552,6 +560,283 @@ procedure TRespRegCollection.SetItem(Index: Integer;
   Value: TRespRegItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TEvtExpRisco.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I, J, K: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtExpRisco';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+
+      sSecao := 'iniExpRisco';
+      infoExpRisco.iniExpRisco.dtCondicao     := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoExpRisco.iniExpRisco.infoAmb.Add do
+        begin
+          codAmb := sFim;
+
+          sSecao := 'infoAtiv' + IntToStrZero(I, 2);
+          infoAtiv.dscAtivDes := INIRec.ReadString(sSecao, 'dscAtivDes', EmptyStr);
+
+          J := 1;
+          while true do
+          begin
+            // de 001 até 999
+            sSecao := 'fatRisco' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
+            sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with fatRisco.Add do
+            begin
+              codFatRis  := sFim;
+              intConc    := INIRec.ReadString(sSecao, 'intConc', EmptyStr);
+              tecMedicao := INIRec.ReadString(sSecao, 'tecMedicao', EmptyStr);
+
+              epcEpi.utilizEPC := eSStrTotpUtilizEPC(Ok, INIRec.ReadString(sSecao, 'utilizEPC', '0'));
+              epcEpi.utilizEPI := eSStrTotpUtilizEPI(Ok, INIRec.ReadString(sSecao, 'utilizEPI', '0'));
+
+              K := 1;
+              while true do
+              begin
+                // de 00 até 50
+                sSecao := 'epc' + IntToStrZero(I, 2) + IntToStrZero(J, 3) +
+                             IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'dscEpc', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with epcEpi.epc.Add do
+                begin
+                  dscEpc  := sFim;
+                  eficEpc := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'eficEpc', 'S'));
+                end;
+
+                Inc(K);
+              end;
+
+              K := 1;
+              while true do
+              begin
+                // de 00 até 50
+                sSecao := 'epi' + IntToStrZero(I, 2) + IntToStrZero(J, 3) +
+                             IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'caEPI', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with epcEpi.epi.Add do
+                begin
+                  caEPI         := sFim;
+                  eficEpi       := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'eficEpi', 'S'));
+                  medProtecao   := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'medProtecao', 'S'));
+                  condFuncto    := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'condFuncto', 'S'));
+                  przValid      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'przValid', 'S'));
+                  periodicTroca := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'periodicTroca', 'S'));
+                  higienizacao  := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'higienizacao', 'S'));
+                end;
+
+                Inc(K);
+              end;
+
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'altExpRisco';
+      infoExpRisco.altExpRisco.dtCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtAltCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoExpRisco.iniExpRisco.infoAmb.Add do
+        begin
+          codAmb := sFim;
+
+          sSecao := 'infoAtiv' + IntToStrZero(I, 2);
+          infoAtiv.dscAtivDes := INIRec.ReadString(sSecao, 'dscAtivDes', EmptyStr);
+
+          J := 1;
+          while true do
+          begin
+            // de 001 até 999
+            sSecao := 'fatRisco' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
+            sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with fatRisco.Add do
+            begin
+              codFatRis  := sFim;
+              intConc    := INIRec.ReadString(sSecao, 'intConc', EmptyStr);
+              tecMedicao := INIRec.ReadString(sSecao, 'tecMedicao', EmptyStr);
+
+              epcEpi.utilizEPC := eSStrTotpUtilizEPC(Ok, INIRec.ReadString(sSecao, 'utilizEPC', '0'));
+              epcEpi.utilizEPI := eSStrTotpUtilizEPI(Ok, INIRec.ReadString(sSecao, 'utilizEPI', '0'));
+
+              K := 1;
+              while true do
+              begin
+                // de 00 até 50
+                sSecao := 'epc' + IntToStrZero(I, 2) + IntToStrZero(J, 3) +
+                             IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'dscEpc', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with epcEpi.epc.Add do
+                begin
+                  dscEpc  := sFim;
+                  eficEpc := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'eficEpc', 'S'));
+                end;
+
+                Inc(K);
+              end;
+
+              K := 1;
+              while true do
+              begin
+                // de 00 até 50
+                sSecao := 'epi' + IntToStrZero(I, 2) + IntToStrZero(J, 3) +
+                             IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'caEPI', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with epcEpi.epi.Add do
+                begin
+                  caEPI         := sFim;
+                  eficEpi       := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'eficEpi', 'S'));
+                  medProtecao   := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'medProtecao', 'S'));
+                  condFuncto    := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'condFuncto', 'S'));
+                  przValid      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'przValid', 'S'));
+                  periodicTroca := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'periodicTroca', 'S'));
+                  higienizacao  := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'higienizacao', 'S'));
+                end;
+
+                Inc(K);
+              end;
+
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'fimExpRisco';
+      infoExpRisco.fimExpRisco.dtFimCondicao := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimCondicao', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'infoAmb' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'codAmb', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoExpRisco.fimExpRisco.infoAmb.Add do
+        begin
+          codAmb := sFim;
+        end;
+
+        Inc(I);
+      end;
+
+      I := 1;
+      while true do
+      begin
+        // de 1 até 9
+        sSecao := 'respReg' + IntToStrZero(I, 1);
+        sFim   := INIRec.ReadString(sSecao, 'dtIni', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoExpRisco.respReg.Add do
+        begin
+          dtIni   := StringToDateTime(sFim);
+          dtFim   := StringToDateTime(INIRec.ReadString(sSecao, 'dtFim', '0'));
+          nisResp := INIRec.ReadString(sSecao, 'nisResp', EmptyStr);
+          nrOc    := INIRec.ReadString(sSecao, 'nrOc', EmptyStr);
+          ufOC    := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufOC', 'SP'));
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

@@ -397,6 +397,7 @@ type
     FCnpjEmitente: string;
     FModelo: SmallInt;
     FNumeroArquivoSubstituido: SmallInt;
+    FNomeArquivoMestre: string;
     function GetVersao: string;
     procedure SetSalvarEm(const Value: string);
     procedure DoGerarMestre;
@@ -410,6 +411,7 @@ type
     procedure Clear;
     procedure Gerar;
     property Mestre: TACBrConvenio115Mestres read FMestre;
+    property NomeArquivoMestre: string read FNomeArquivoMestre write FNomeArquivoMestre;
   published
     property Versao: string read GetVersao;
     property SalvarEm: string read FSalvarEm write SetSalvarEm;
@@ -786,18 +788,20 @@ procedure TACBrConvenio115.DoGerarMestre;
 var
   I: Integer;
   OStr: TStringList;
+  lNomeArquivo: string;
 begin
   if Ordernar then
     Mestre.Sort(SortMestre);
 
   OStr := TStringList.Create;
   try
+    lNomeArquivo := DoNomeArquivo(c115taMestre);
     for I := 0 to FMestre.Count - 1 do
     begin
       OStr.Add(FMestre[I].RegistroEAssinatura(_VersaoAntiga).Registro +
                FMestre[I].RegistroEAssinatura(_VersaoAntiga).Assinatura);
     end;
-    OStr.SaveToFile(DoNomeArquivo(c115taMestre));
+    OStr.SaveToFile(lNomeArquivo);
   finally
     OStr.Free;
   end;
@@ -840,6 +844,9 @@ begin
     c115taitem: Result := Result + 'I';
     c115taDestinatario:  Result := Result + 'D';
   end;
+
+  if TipoArquivo =  c115taMestre then
+    FNomeArquivoMestre := Result + '.001';
 
   Result := SalvarEm + Result + '.001'; // Pode ter 1 milhão de registros
 end;
@@ -970,14 +977,37 @@ begin
     SRec := SRec +
           {16} PadLeft(TiraPontos(FormatFloat('#,##0.000', QtdeContratada)), 12, '0') +
           {17} PadLeft(TiraPontos(FormatFloat('#,##0.000', QtdePrestada)), 12, '0');
+
+    if ValorTotal < 0 then
+      SRec := SRec + '-' +
+        {18} PadLeft(TiraPontos(FormatFloat('#,##0.00', ValorTotal)), 10, '0')
+    else
+      SRec := SRec +
+            {18} PadLeft(TiraPontos(FormatFloat('#,##0.00', ValorTotal)), 11, '0');
+
+
     SRec := SRec +
-          {18} PadLeft(TiraPontos(FormatFloat('#,##0.00', ValorTotal)), 11, '0') +
           {19} PadLeft(TiraPontos(FormatFloat('#,##0.00', Desconto)), 11, '0') +
-          {20} PadLeft(TiraPontos(FormatFloat('#,##0.00', AcrescimosDespAcessorias)), 11, '0') +
+          {20} PadLeft(TiraPontos(FormatFloat('#,##0.00', AcrescimosDespAcessorias)), 11, '0');
+
+    if ICMSBaseCalculo < 0 then
+      begin
+        SRec := SRec +
+          {21} '-' + PadLeft(TiraPontos(FormatFloat('#,##0.00', ICMSBaseCalculo)), 10, '0') +
+          {22} '-' + PadLeft(TiraPontos(FormatFloat('#,##0.00', ICMSValor)), 10, '0') +
+          {23} '-' + PadLeft(TiraPontos(FormatFloat('#,##0.00', IsentoNaoTributados)), 10, '0') +
+          {24} '-' + PadLeft(TiraPontos(FormatFloat('#,##0.00', OutrosValores)), 10, '0');
+      end
+    else
+      begin
+        SRec := SRec +
           {21} PadLeft(TiraPontos(FormatFloat('#,##0.00', ICMSBaseCalculo)), 11, '0') +
           {22} PadLeft(TiraPontos(FormatFloat('#,##0.00', ICMSValor)), 11, '0') +
           {23} PadLeft(TiraPontos(FormatFloat('#,##0.00', IsentoNaoTributados)), 11, '0') +
-          {24} PadLeft(TiraPontos(FormatFloat('#,##0.00', OutrosValores)), 11, '0') +
+          {24} PadLeft(TiraPontos(FormatFloat('#,##0.00', OutrosValores)), 11, '0');
+      end;
+
+    SRec := SRec +
           {25} PadLeft(TiraPontos(FormatFloat('#,##0.00', ICMSAliquota)), 4, '0') +
           {26} TSituacaoNFConv115ID[Ord(Situacao)] +
           {27} AnoMesApuracao;

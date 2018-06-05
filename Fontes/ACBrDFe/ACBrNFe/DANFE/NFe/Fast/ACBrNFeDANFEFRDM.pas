@@ -78,9 +78,6 @@ uses
   ACBrDelphiZXingQrCode, Graphics;
 
 type
-  ArrOfStr = Array of String;
-  TSplitResult = array of string;
-
   TACBrNFeFRClass = class
   private
     FDANFEClassOwner: TACBrNFeDANFEClass;
@@ -164,10 +161,7 @@ type
     procedure CarregaInformacoesAdicionais;
     function QuebraLinha: String;
 
-    function SubstrCount(const ASubString, AString: string): Integer;
-    function Split(const ADelimiter, AString: string): TSplitResult;
     function CollateBr(Str: String): String;
-    function Explode(sPart, sInput: String): ArrOfStr;
     function ManterVprod(dVProd, dvDesc: Double): String;
     function ManterdvTotTrib(dvTotTrib: Double):  String;
     function ManterVDesc(dvDesc: Currency; dVUnCom , dQCom : double ) : Double;
@@ -231,18 +225,6 @@ uses ACBrNFe, ACBrDFeUtil, StrUtils, Math, DateUtils, pcnConversaoNFe,
 
 { TACBrNFeFRClass }
 
-function TACBrNFeFRClass.SubstrCount(const ASubString, AString: string): Integer;
-var
-  i: integer;
-begin
-  Result := -1;
-  i := 0;
-  repeat
-    Inc(Result);
-    i := PosEx(ASubString, AString, i + 1);
-  until i = 0;
-end;
-
 procedure TACBrNFeFRClass.SetDataSetsToFrxReport;
 begin
   frxReport.EnabledDataSets.Clear;
@@ -264,38 +246,6 @@ begin
   frxReport.EnabledDataSets.Add(FfrxParametros);
   frxReport.EnabledDataSets.Add(FfrxDuplicatas);
   frxReport.EnabledDataSets.Add(FfrxInutilizacao);
-end;
-
-function TACBrNFeFRClass.Split(const ADelimiter, AString: string): TSplitResult;
-var
-  vRows: TStrings;
-  vI: Integer;
-begin
-  vRows := TStringList.Create;
-  try
-    vRows.Delimiter := ADelimiter[1];
-    vRows.DelimitedText := AString;
-    SetLength(Result, vRows.Count);
-
-    for vI := 0 to vRows.Count - 1 do
-      Result[vI] := vRows.Strings[vI];
-
-  finally
-    FreeAndNil(vRows);
-  end;
-end;
-
-function TACBrNFeFRClass.Explode(sPart, sInput: String): ArrOfStr;
-begin
-  while Pos(sPart, sInput) <> 0 do
-    begin
-      SetLength(Result, Length(Result) + 1);
-      Result[Length(Result) - 1] := Copy(sInput, 0, Pos(sPart, sInput) - 1);
-      Delete(sInput, 1, Pos(sPart, sInput));
-    end;
-
-  SetLength(Result, Length(Result) + 1);
-  Result[Length(Result) - 1] := sInput;
 end;
 
 function TACBrNFeFRClass.CollateBr(Str: String): String;
@@ -632,10 +582,10 @@ begin
       cdsEmitente.FieldByName('DADOS_ENDERECO').AsString    := cdsEmitente.FieldByName('DADOS_ENDERECO').AsString + ' - ' +
   										  	                                      Trim(FieldByName('XBairro').AsString) + ' - ' +
                                                                 Trim(FieldByName('XMun').AsString) + ' - ' +
-                                                                Trim(FieldByName('UF').AsString) + #13 +
-		  	  				  				                                    'Fone: ' + Trim(FieldByName('Fone').AsString) +
-                                                                IfThen(trim(FDANFEClassOwner.Fax) <> '', ' - FAX: ' + FormatarFone(trim(FDANFEClassOwner.Fax)),'')+
-                                                                ' - CEP: ' + Trim(FieldByName('CEP').AsString);
+                                                                Trim(FieldByName('UF').AsString) +
+                                                                ' - CEP: ' + Trim(FieldByName('CEP').AsString) + #13 +
+		  	  				  				                                    ' Fone: ' + Trim(FieldByName('Fone').AsString) +
+                                                                IfThen(trim(FDANFEClassOwner.Fax) <> '', ' - FAX: ' + FormatarFone(trim(FDANFEClassOwner.Fax)),'');
       if trim(FDANFEClassOwner.Site) <> '' then
         cdsEmitente.FieldByName('DADOS_ENDERECO').AsString  := cdsEmitente.FieldByName('DADOS_ENDERECO').AsString + #13 +
                                                                 trim(FDANFEClassOwner.Site);
@@ -772,7 +722,10 @@ begin
           FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
       end;
 
-      FieldByName('URL').AsString := TACBrNFe(DANFEClassOwner.ACBrNFe).GetURLConsultaNFCe(FNFe.Ide.cUF, FNFe.Ide.tpAmb, FNFe.infNFe.Versao);
+      if EstaVazio(FNFe.infNFeSupl.urlChave) then
+        FieldByName('URL').AsString := TACBrNFe(DANFEClassOwner.ACBrNFe).GetURLConsultaNFCe(FNFe.Ide.cUF, FNFe.Ide.tpAmb, FNFe.infNFe.Versao)
+      else
+        FieldByName('URL').AsString := FNFe.infNFeSupl.urlChave;
     end
     else
     begin
@@ -831,10 +784,11 @@ begin
     Append;
     with FNFe.Total.ISSQNtot do
     begin
-      FieldByName('vSERV').AsFloat  := VServ;
-      FieldByName('vBC').AsFloat    := VBC;
-      FieldByName('vISS').AsFloat   := VISS;
-      FieldByName('vDescIncond').AsFloat := vDescIncond;
+      FieldByName('vSERV').AsFloat        := VServ;
+      FieldByName('vBC').AsFloat          := VBC;
+      FieldByName('vISS').AsFloat         := VISS;
+      FieldByName('vDescIncond').AsFloat  := vDescIncond;
+      FieldByName('vISSRet').AsFloat      := vISSRet;
     end;
     Post;
   end;
@@ -1722,6 +1676,7 @@ begin
          FieldDefs.Add('vBC', ftFloat);
          FieldDefs.Add('vISS', ftFloat);
          FieldDefs.Add('vDescIncond', ftFloat);
+         FieldDefs.Add('vISSRet', ftFloat);
          CreateDataSet;
       end;
    end;

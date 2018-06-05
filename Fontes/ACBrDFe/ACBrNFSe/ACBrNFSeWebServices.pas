@@ -1229,6 +1229,9 @@ begin
     if (FPLayout in [LayNFSeGerar, LayNfseConsultaLote]) or ((FPLayout = LayNfseConsultaNfseRps) and (FProvedor = proISSNET)) then
       FNotasFiscais.Items[ii].NFSe.Situacao := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Situacao;
 
+    { Márcio - Como a questão do link é tratada no reader do XML, acho que aqui
+      pode pegar direto, sem validar provedor }
+    FNotasFiscais.Items[ii].NFSe.Link              := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Link;
     FNotasFiscais.Items[ii].NFSe.CodigoVerificacao := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.CodigoVerificacao;
     FNotasFiscais.Items[ii].NFSe.Numero            := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Numero;
     FNotasFiscais.Items[ii].NFSe.Competencia       := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Competencia;
@@ -1358,8 +1361,22 @@ begin
     if (FProvedor = ProTecnos) and (DateToStr(FDataRecebimento) = '01/01/0001') then
       FDataRecebimento := 0;
 
-    if FProvedor in [proGovDigital, proInfisc, proInfiscv11, proNFSeBrasil,
-                     proTecnos, proVersaTecnologia] then
+    if FProvedor in [proGovDigital, proInfisc, proInfiscv11, proNFSeBrasil, proVersaTecnologia] then
+      FProtocolo := FRetornoNFSe.ListaNFSe.CompNFSe[0].NFSe.Protocolo;
+
+    { Márcio - O provedor Tecnos está no 'in' acima e eu retirei. Isso estava
+      gerando problema, pois FRetornoNFSe.ListaNFSe.CompNFSe[0].NFSe.Protocolo
+      estava vindo com '0' e como o protocolo é usado no nome do XML do resultado
+      da consulta de lote, acabava que todas as consultas ficavam com o mesmo
+      nome, pois o arquivo era sempre sobresvrevido. Temos clientes que usam
+      esses aquivos, então tem que ficar com o nome do protocolo.
+
+      O protocolo é usado no XML de envio da consulta, então não sei se existe
+      chance de ele estar vazio, pois já no envio ele é necessário. Coloquei
+      então uma validação específica para o provedor Tecnos, assim, se em outras
+      consultas ele estiver vazio ele será preenchido.
+      }
+    if (FProtocolo = '') = (FProvedor in [proTecnos]) then
       FProtocolo := FRetornoNFSe.ListaNFSe.CompNFSe[0].NFSe.Protocolo;
   end
   else
@@ -1702,10 +1719,10 @@ begin
        begin
          case FProvedor of
            proAbaco: begin
-//                       // Manaus
-//                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
-//                         FTagI := '<'+FTagGrupo+'>'
-//                       else // Outros
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
                          FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
                      end;
 
@@ -1742,8 +1759,13 @@ begin
     LayNfseConsultaSitLoteRps:
        begin
         case FProvedor of
-           proDBSeller: FTagI := '<ConsultarSituacaoLoteRps>' +
-                                  '<' + FTagGrupo + FNameSpaceDad + '>';
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
 
            proEquiplano: FTagI := '<' + FTagGrupo +
                                     ' xmlns:es="http://www.equiplano.com.br/esnfs" ' +
@@ -1772,6 +1794,14 @@ begin
     LayNfseConsultaLote:
        begin
         case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proAgili: FTagI := '<' + FTagGrupo + FNameSpaceDad + '>' +
                                '<UnidadeGestora>' +
                                OnlyNumber(FPConfiguracoesNFSe.Geral.CNPJPrefeitura) +
@@ -1804,6 +1834,14 @@ begin
     LayNfseConsultaNfseRps:
        begin
          case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proDBSeller: FTagI := '<ConsultarNfsePorRps>' +
                                   '<' + FTagGrupo + FNameSpaceDad + '>';
 
@@ -1833,6 +1871,14 @@ begin
     LayNfseConsultaNfse:
        begin
          case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proEL,
            proInfisc,
            proInfiscv11,
@@ -1851,6 +1897,16 @@ begin
     LayNfseCancelaNfse:
        begin
          case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>' +
+                                     '<' + FPrefixo3 + 'Pedido>' +
+                                        '<' + FPrefixo4 + 'InfPedidoCancelamento' + ifThen(FPConfiguracoesNFSe.Geral.ConfigGeral.Identificador <> '', ' ' + FPConfiguracoesNFSe.Geral.ConfigGeral.Identificador + '="' + FURI + '"', '') + '>';
+                     end;
+
            proAgili: FTagI := '<' + FTagGrupo + FNameSpaceDad + '>' +
                                '<UnidadeGestora>' +
                                  OnlyNumber(FPConfiguracoesNFSe.Geral.CNPJPrefeitura) +
@@ -2012,9 +2068,6 @@ begin
 
          if FProvedor in [proFISSLex, proSMARAPD, proIPM] then
            FTagF := '';
-
-         if FProvedor in [proDBSeller] then
-           FTagF := FTagF + '</ConsultarSituacaoLoteRps>';
        end;
 
     LayNfseConsultaLote:
@@ -2469,6 +2522,7 @@ begin
 
       if FProvedor = proCONAM then
       begin
+        AliquotaSN     := FNotasFiscais.Items[0].NFSe.Servico.Valores.AliquotaSN;
         AliquotaIss    := FNotasFiscais.Items[0].NFSe.Servico.Valores.Aliquota;
         TipoTributacao := '4';
         QtdTributos    := iTributos;
@@ -2525,7 +2579,7 @@ begin
                                    FPConfiguracoesNFSe.Geral.ConfigAssinar.Lote,
                                    xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
     // Incluido a linha abaixo por após realizar a assinatura esta gerando o
     // atributo xmlns vazio.
@@ -2591,15 +2645,16 @@ begin
         proGoverna: FNotasFiscais.Items[i].NFSe.Numero := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
 
         proIPM: begin
-                  FNotasFiscais.Items[i].NFSe.Numero := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
+                  FNotasFiscais.Items[i].NFSe.Numero            := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
                   FNotasFiscais.Items[i].NFSe.CodigoVerificacao := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.CodigoVerificacao;
+                  FNotasFiscais.Items[i].NFSe.Link              := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Link;
                 end;
 
         proCTA,
         proSP,
         ProNotaBlu: begin
-                      if (FProvedor in [proCTA, proSP]) or
-                         ((FProvedor = ProNotaBlu) and (RetEnvLote.InfRec.InformacoesLote.QtdNotasProcessadas > 0)) then
+                      if (FProvedor in [proCTA]) or
+                         ((FProvedor in [ProNotaBlu, proSP]) and (RetEnvLote.InfRec.InformacoesLote.QtdNotasProcessadas > 0)) then
                       begin
                         FNotasFiscais.Items[i].NFSe.Numero := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
                         FNotasFiscais.Items[i].NFSe.CodigoVerificacao := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.CodigoVerificacao;
@@ -2819,7 +2874,7 @@ begin
                                    FPConfiguracoesNFSe.Geral.ConfigAssinar.Lote,
                                    xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
     if FPConfiguracoesNFSe.Geral.ConfigSchemas.Validar then
       FNotasFiscais.ValidarLote(FPDadosMsg,
@@ -3026,7 +3081,7 @@ begin
                                   FPConfiguracoesNFSe.Geral.ConfigAssinar.Lote,
                                   xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
     if FPConfiguracoesNFSe.Geral.ConfigSchemas.Validar then
       TNFSeEnviarSincrono(Self).FNotasFiscais.ValidarLote(FPDadosMsg,
@@ -3294,7 +3349,7 @@ begin
                               FPConfiguracoesNFSe.Geral.ConfigAssinar.LoteGerar,
                               xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
    if FPConfiguracoesNFSe.Geral.ConfigSchemas.Validar then
       TNFSeGerarNFSe(Self).FNotasFiscais.ValidarLote(FPDadosMsg,
@@ -3443,7 +3498,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar Situação do Lote: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
   
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsSit_IncluiEncodingDados);
@@ -3706,7 +3761,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar Lote de RPS: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
 
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsLote_IncluiEncodingDados);
@@ -3920,7 +3975,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar NFSe por RPS: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsNFSeRps_IncluiEncodingDados);
@@ -4027,6 +4082,7 @@ begin
       proAgiliv2,
       proPVH,
       proTecnos,
+      proSmarAPDABRASF,
       proSystemPro: FTagGrupo := 'ConsultarNfseFaixaEnvio';
 
       proSP, 
@@ -4080,7 +4136,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar NFSe: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsNFSe_IncluiEncodingDados);
@@ -4425,7 +4481,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FdocElemento, FinfElemento, 'Falha ao Assinar - Cancelar NFS-e: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
 
   if FProvedor = proBetha then
@@ -4677,7 +4733,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FdocElemento, FinfElemento, 'Falha ao Assinar - Cancelar NFS-e: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   FPDadosMsg := '<' + FPrefixo3 + 'SubstituirNfseEnvio' + FNameSpaceDad + '>' +
@@ -4842,7 +4898,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Abrir Sessão: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.AbrirSessao_IncluiEncodingDados);
@@ -4996,7 +5052,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Fechar Sessão: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
 
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.FecharSessao_IncluiEncodingDados);
@@ -5303,25 +5359,38 @@ begin
 
     FConsLote.FProtocolo := FEnviarSincrono.Protocolo;
 
-    if (TACBrNFSe(FACBrNFSe).Configuracoes.Geral.ConsultaLoteAposEnvio) and (Result) then
+    with TACBrNFSe(FACBrNFSe) do
     begin
-      if ProvedorToVersaoNFSe(TACBrNFSe(FACBrNFSe).Configuracoes.Geral.Provedor) = ve100 then
+      if (Configuracoes.Geral.ConsultaLoteAposEnvio) and (Result) then
       begin
-        Result := FConsSitLoteRPS.Executar;
+        if ProvedorToVersaoNFSe(Configuracoes.Geral.Provedor) = ve100 then
+        begin
+          Result := FConsSitLoteRPS.Executar;
+
+          if not (Result) then
+            FConsSitLoteRPS.GerarException( FConsSitLoteRPS.Msg );
+        end;
+
+        case Configuracoes.Geral.Provedor of
+          proInfisc,
+          proInfiscv11: Result := True
+        else
+          begin
+            if (Configuracoes.Geral.Provedor = pro4R) and
+               (Configuracoes.WebServices.Ambiente = taHomologacao) then
+              Result := True
+            else
+            begin
+              Sleep(Configuracoes.WebServices.AguardarConsultaRet);
+
+              Result := FConsLote.Executar;
+            end;
+          end;
+        end;
 
         if not (Result) then
-          FConsSitLoteRPS.GerarException( FConsSitLoteRPS.Msg );
+          FConsLote.GerarException( FConsLote.Msg );
       end;
-
-      case TACBrNFSe(FACBrNFSe).Configuracoes.Geral.Provedor of
-        proInfisc,
-        proInfiscv11: Result := True
-      else
-        Result := FConsLote.Executar;
-      end;
-
-      if not (Result) then
-        FConsLote.GerarException( FConsLote.Msg );
     end;
   end;
 end;

@@ -50,13 +50,13 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
   TS2220Collection = class;
   TS2220CollectionItem = class;
-  TEvtASO = class;
+  TevtMonit = class;
   TAso = class;
   TExameColecaoItem = class;
   TExameColecao = class;
@@ -77,23 +77,24 @@ type
   TS2220CollectionItem = class(TCollectionItem)
   private
     FTipoEvento: TTipoEvento;
-    FEvtASO: TEvtASO;
+    FevtMonit: TevtMonit;
 
-    procedure setEvtASO(const Value: TEvtASO);
+    procedure setevtMonit(const Value: TevtMonit);
   public
     constructor Create(AOwner: TComponent); reintroduce;
     destructor Destroy; override;
   published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtASO: TEvtASO read FEvtASO write setEvtASO;
+    property evtMonit: TevtMonit read FevtMonit write setevtMonit;
   end;
 
-  TEvtASO = class(TeSocialEvento)
+  TevtMonit = class(TeSocialEvento)
   private
     FIdeEvento: TIdeEvento2;
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FAso: TAso;
+    FACBreSocial: TObject;
 
     procedure GerarExame;
     procedure GerarMedico;
@@ -105,7 +106,8 @@ type
     constructor Create(AACBreSocial: TObject); overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -217,6 +219,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2220Collection }
 
 function TS2220Collection.Add: TS2220CollectionItem;
@@ -241,19 +247,19 @@ end;
 constructor TS2220CollectionItem.Create(AOwner: TComponent);
 begin
   FTipoEvento := teS2220;
-  FEvtASO     := TEvtASO.Create(AOwner);
+  FevtMonit     := TevtMonit.Create(AOwner);
 end;
 
 destructor TS2220CollectionItem.Destroy;
 begin
-  FEvtASO.Free;
+  FevtMonit.Free;
 
   inherited;
 end;
 
-procedure TS2220CollectionItem.setEvtASO(const Value: TEvtASO);
+procedure TS2220CollectionItem.setevtMonit(const Value: TevtMonit);
 begin
-  FEvtASO.Assign(Value);
+  FevtMonit.Assign(Value);
 end;
 
 { TAso }
@@ -312,143 +318,6 @@ begin
   inherited;
 end;
 
-{ TEvtASO }
-
-constructor TEvtASO.Create(AACBreSocial: TObject);
-begin
-  inherited;
-
-  FIdeEvento := TIdeEvento2.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeVinculo := TIdeVinculo.Create;
-  FAso := TAso.Create;
-end;
-
-destructor TEvtASO.destroy;
-begin
-  FIdeEvento.Free;
-  FIdeEmpregador.Free;
-  FIdeVinculo.Free;
-  FAso.Free;
-
-  inherited;
-end;
-
-procedure TEvtASO.GerarAso;
-begin
-  Gerador.wGrupo('aso');
-
-  Gerador.wCampo(tcDat, '', 'dtAso',  10, 10, 1, self.Aso.DtAso);
-  Gerador.wCampo(tcStr, '', 'tpAso',   1,  1, 1, eSTpAsoToStr(self.Aso.tpAso));
-  Gerador.wCampo(tcStr, '', 'resAso',  1,  1, 1, eSResAsoToStr(self.Aso.ResAso));
-
-  GerarExame;
-  GerarIdeServSaude;
-
-  Gerador.wGrupo('/aso');
-end;
-
-procedure TEvtASO.GerarCRM;
-begin
-  Gerador.wGrupo('crm');
-
-  Gerador.wCampo(tcStr, '', 'nrCRM', 1, 8, 1, self.Aso.IdeServSaude.Medico.CRM.NrCRM);
-  Gerador.wCampo(tcStr, '', 'ufCRM', 2, 2, 1, eSufToStr(self.Aso.IdeServSaude.Medico.CRM.UfCRM));
-
-  Gerador.wGrupo('/crm');
-end;
-
-procedure TEvtASO.GerarExame;
-var
-  i: integer;
-begin
-  for i:= 0 to self.Aso.Exame.Count-1 do
-  begin
-    Gerador.wGrupo('exame');
-
-    Gerador.wCampo(tcDat, '', 'dtExm',         10,  10, 1, self.Aso.Exame.Items[i].dtExm);
-    Gerador.wCampo(tcStr, '', 'procRealizado',  1,   8, 0, self.Aso.Exame.Items[i].procRealizado);
-    Gerador.wCampo(tcStr, '', 'obsProc',        1, 200, 0, self.Aso.Exame.Items[i].obsProc);
-    Gerador.wCampo(tcInt, '', 'interprExm',     1,   1, 1, eSInterprExmToStr(self.Aso.Exame.Items[i].interprExm));
-    Gerador.wCampo(tcInt, '', 'ordExame',       1,   1, 1, eSOrdExameToStr(self.Aso.Exame.Items[i].ordExame));
-    Gerador.wCampo(tcDat, '', 'dtIniMonit',    10,  10, 1, self.Aso.Exame.Items[i].dtIniMonit);
-    Gerador.wCampo(tcDat, '', 'dtFimMonit',    10,  10, 0, self.Aso.Exame.Items[i].dtFimMonit);
-    Gerador.wCampo(tcInt, '', 'indResult',      1,   1, 0, eSIndResultToStr(self.Aso.Exame.Items[i].indResult));
-
-    GerarRespMonit(self.Aso.Exame.Items[i].respMonit);
-
-    Gerador.wGrupo('/exame');
-  end;
-
-  if self.Aso.Exame.Count > 99 then
-    Gerador.wAlerta('', 'exame', 'Lista de Exames', ERR_MSG_MAIOR_MAXIMO + '99');
-end;
-
-procedure TEvtASO.GerarIdeServSaude;
-begin
-  Gerador.wGrupo('ideServSaude');
-
-  Gerador.wCampo(tcStr, '', 'codCNES', 1,   7, 0, self.Aso.IdeServSaude.CodCNES);
-  Gerador.wCampo(tcStr, '', 'frmCtt',  1, 100, 1, self.Aso.IdeServSaude.FrmCtt);
-  Gerador.wCampo(tcStr, '', 'email',   1,  60, 0, self.Aso.IdeServSaude.Email);
-
-  GerarMedico;
-
-  Gerador.wGrupo('/ideServSaude');
-end;
-
-procedure TEvtASO.GerarMedico;
-begin
-  Gerador.wGrupo('medico');
-
-  Gerador.wCampo(tcStr, '', 'nmMed', 1, 70, 1, self.Aso.IdeServSaude.Medico.NmMed);
-
-  GerarCRM;
-
-  Gerador.wGrupo('/medico');
-end;
-
-procedure TEvtASO.GerarRespMonit(pRespMonit: TRespMonit);
-begin
-  Gerador.wGrupo('respMonit');
-
-  Gerador.wCampo(tcStr, '', 'nisResp',      1, 11, 1, pRespMonit.nisResp);
-  Gerador.wCampo(tcStr, '', 'nrConsClasse', 1,  8, 1, pRespMonit.NrConsClasse);
-
-  if (eSufToStr(pRespMonit.UfConsClasse) <> '') then
-    Gerador.wCampo(tcStr, '', 'ufConsClasse', 2, 2, 0, eSufToStr(pRespMonit.UfConsClasse));
-
-  Gerador.wGrupo('/respMonit');
-end;
-
-function TEvtASO.GerarXML(ATipoEmpregador: TEmpregador): boolean;
-begin
-  try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
-
-    GerarCabecalho('evtMonit');
-    Gerador.wGrupo('evtMonit Id="' + Self.Id + '"');
-
-    GerarIdeEvento2(self.IdeEvento);
-    GerarIdeEmpregador(self.IdeEmpregador);
-    GerarIdeVinculo(self.IdeVinculo);
-    GerarAso;
-
-    Gerador.wGrupo('/evtMonit');
-
-    GerarRodape;
-
-    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtMonit');
-
-    Validar(schevtMonit);
-  except on e:exception do
-    raise Exception.Create(e.Message);
-  end;
-
-  Result := (Gerador.ArquivoFormatoXML <> '')
-end;
-
 { TMedico }
 
 constructor TMedico.create;
@@ -477,5 +346,234 @@ begin
   inherited;
 end;
 
+{ TevtMonit }
+
+constructor TevtMonit.Create(AACBreSocial: TObject);
+begin
+  inherited;
+
+  FACBreSocial := AACBreSocial;
+  FIdeEvento := TIdeEvento2.Create;
+  FIdeEmpregador := TIdeEmpregador.Create;
+  FIdeVinculo := TIdeVinculo.Create;
+  FAso := TAso.Create;
+end;
+
+destructor TevtMonit.destroy;
+begin
+  FIdeEvento.Free;
+  FIdeEmpregador.Free;
+  FIdeVinculo.Free;
+  FAso.Free;
+
+  inherited;
+end;
+
+procedure TevtMonit.GerarAso;
+begin
+  Gerador.wGrupo('aso');
+
+  Gerador.wCampo(tcDat, '', 'dtAso',  10, 10, 1, self.Aso.DtAso);
+  Gerador.wCampo(tcStr, '', 'tpAso',   1,  1, 1, eSTpAsoToStr(self.Aso.tpAso));
+  Gerador.wCampo(tcStr, '', 'resAso',  1,  1, 1, eSResAsoToStr(self.Aso.ResAso));
+
+  GerarExame;
+  GerarIdeServSaude;
+
+  Gerador.wGrupo('/aso');
+end;
+
+procedure TevtMonit.GerarCRM;
+begin
+  Gerador.wGrupo('crm');
+
+  Gerador.wCampo(tcStr, '', 'nrCRM', 1, 8, 1, self.Aso.IdeServSaude.Medico.CRM.NrCRM);
+  Gerador.wCampo(tcStr, '', 'ufCRM', 2, 2, 1, eSufToStr(self.Aso.IdeServSaude.Medico.CRM.UfCRM));
+
+  Gerador.wGrupo('/crm');
+end;
+
+procedure TevtMonit.GerarExame;
+var
+  i: integer;
+begin
+  for i:= 0 to self.Aso.Exame.Count-1 do
+  begin
+    Gerador.wGrupo('exame');
+
+    Gerador.wCampo(tcDat, '', 'dtExm',         10,  10, 1, self.Aso.Exame.Items[i].dtExm);
+    Gerador.wCampo(tcStr, '', 'procRealizado',  1,   8, 0, self.Aso.Exame.Items[i].procRealizado);
+    Gerador.wCampo(tcStr, '', 'obsProc',        1, 200, 0, self.Aso.Exame.Items[i].obsProc);
+    Gerador.wCampo(tcInt, '', 'interprExm',     1,   1, 1, eSInterprExmToStr(self.Aso.Exame.Items[i].interprExm));
+    Gerador.wCampo(tcInt, '', 'ordExame',       1,   1, 1, eSOrdExameToStr(self.Aso.Exame.Items[i].ordExame));
+    Gerador.wCampo(tcDat, '', 'dtIniMonit',    10,  10, 1, self.Aso.Exame.Items[i].dtIniMonit);
+    Gerador.wCampo(tcDat, '', 'dtFimMonit',    10,  10, 0, self.Aso.Exame.Items[i].dtFimMonit);
+    Gerador.wCampo(tcInt, '', 'indResult',      1,   1, 0, eSIndResultToStr(self.Aso.Exame.Items[i].indResult));
+
+    GerarRespMonit(self.Aso.Exame.Items[i].respMonit);
+
+    Gerador.wGrupo('/exame');
+  end;
+
+  if self.Aso.Exame.Count > 99 then
+    Gerador.wAlerta('', 'exame', 'Lista de Exames', ERR_MSG_MAIOR_MAXIMO + '99');
+end;
+
+procedure TevtMonit.GerarIdeServSaude;
+begin
+  Gerador.wGrupo('ideServSaude');
+
+  Gerador.wCampo(tcStr, '', 'codCNES', 1,   7, 0, self.Aso.IdeServSaude.CodCNES);
+  Gerador.wCampo(tcStr, '', 'frmCtt',  1, 100, 1, self.Aso.IdeServSaude.FrmCtt);
+  Gerador.wCampo(tcStr, '', 'email',   1,  60, 0, self.Aso.IdeServSaude.Email);
+
+  GerarMedico;
+
+  Gerador.wGrupo('/ideServSaude');
+end;
+
+procedure TevtMonit.GerarMedico;
+begin
+  Gerador.wGrupo('medico');
+
+  Gerador.wCampo(tcStr, '', 'nmMed', 1, 70, 1, self.Aso.IdeServSaude.Medico.NmMed);
+
+  GerarCRM;
+
+  Gerador.wGrupo('/medico');
+end;
+
+procedure TevtMonit.GerarRespMonit(pRespMonit: TRespMonit);
+begin
+  Gerador.wGrupo('respMonit');
+
+  Gerador.wCampo(tcStr, '', 'nisResp',      1, 11, 1, pRespMonit.nisResp);
+  Gerador.wCampo(tcStr, '', 'nrConsClasse', 1,  8, 1, pRespMonit.NrConsClasse);
+
+  if (eSufToStr(pRespMonit.UfConsClasse) <> '') then
+    Gerador.wCampo(tcStr, '', 'ufConsClasse', 2, 2, 0, eSufToStr(pRespMonit.UfConsClasse));
+
+  Gerador.wGrupo('/respMonit');
+end;
+
+function TevtMonit.GerarXML: boolean;
+begin
+  try
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
+
+    GerarCabecalho('evtMonit');
+    Gerador.wGrupo('evtMonit Id="' + Self.Id + '"');
+
+    GerarIdeEvento2(self.IdeEvento);
+    GerarIdeEmpregador(self.IdeEmpregador);
+    GerarIdeVinculo(self.IdeVinculo);
+    GerarAso;
+
+    Gerador.wGrupo('/evtMonit');
+
+    GerarRodape;
+
+    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtMonit');
+
+    Validar(schevtMonit);
+  except on e:exception do
+    raise Exception.Create(e.Message);
+  end;
+
+  Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TevtMonit.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtMonit';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+
+      sSecao := 'aso';
+      aso.DtAso  := StringToDateTime(INIRec.ReadString(sSecao, 'dtAso', '0'));
+      aso.tpAso  := eSStrToTpAso(Ok, INIRec.ReadString(sSecao, 'tpAso', '0'));
+      aso.ResAso := eSStrToResAso(Ok, INIRec.ReadString(sSecao, 'resAso', '1'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'exame' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'dtExm', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with aso.exame.Add do
+        begin
+          dtExm         := StringToDateTime(sFim);
+          ProcRealizado := INIRec.ReadInteger(sSecao, 'procRealizado', 0);
+          obsProc       := INIRec.ReadString(sSecao, 'obsProc', EmptyStr);
+          interprExm    := eSStrToInterprExm(Ok, INIRec.ReadString(sSecao, 'interprExm', '1'));
+          ordExame      := eSStrToOrdExame(Ok, INIRec.ReadString(sSecao, 'ordExame', '1'));
+          dtIniMonit    := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniMonit', '0'));
+          dtFimMonit    := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimMonit', '0'));
+          indResult     := eSStrToIndResult(Ok, INIRec.ReadString(sSecao, 'indResult', '1'));
+
+          sSecao := 'respMonit' + IntToStrZero(I, 2);
+          respMonit.NisResp      := INIRec.ReadString(sSecao, 'nisResp', EmptyStr);
+          respMonit.NrConsClasse := INIRec.ReadString(sSecao, 'nrConsClasse', EmptyStr);
+          respMonit.UfConsClasse := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufConsClasse', 'SP'));
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'ideServSaude';
+      Aso.ideServSaude.CodCNES := INIRec.ReadString(sSecao, 'codCNES', EmptyStr);
+      Aso.ideServSaude.FrmCtt  := INIRec.ReadString(sSecao, 'frmCtt', EmptyStr);
+      Aso.ideServSaude.Email   := INIRec.ReadString(sSecao, 'email', EmptyStr);
+
+      sSecao := 'medico';
+      Aso.ideServSaude.medico.NmMed     := INIRec.ReadString(sSecao, 'nmMed', EmptyStr);
+      Aso.ideServSaude.medico.CRM.NrCRM := INIRec.ReadString(sSecao, 'nrCRM', EmptyStr);
+      Aso.ideServSaude.medico.CRM.UfCRM := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufCRM', 'SP'));
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
+end;
+
 end.
- 
+

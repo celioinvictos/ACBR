@@ -49,11 +49,36 @@ unit ACBreSocialEventos;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, synautil,
   pcesIniciais, pcesTabelas, pcesNaoPeriodicos, pcesPeriodicos,
   pcesConversaoeSocial;
 
 type
+  TEventos = class;
+  TGeradosCollection = class;
+  TGeradosCollectionItem = class;
+
+  TGeradosCollection = class(TCollection)
+  private
+    function GetItem(Index: Integer): TGeradosCollectionItem;
+    procedure SetItem(Index: Integer; Value: TGeradosCollectionItem);
+  public
+    constructor create(AOwner: TEventos);
+    function Add: TGeradosCollectionItem;
+    property Items[Index: Integer]: TGeradosCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TGeradosCollectionItem = class(TCollectionItem)
+  private
+    FTipoEvento: TTipoEvento;
+    FPathNome: String;
+    FXML: String;
+  public
+    property TipoEvento: TTipoEvento read FTipoEvento write FTipoEvento;
+    property PathNome: String read FPathNome write FPathNome;
+    property XML: String read FXML write FXML;
+  end;
+
   TEventos = class(TComponent)
   private
     FIniciais: TIniciais;
@@ -61,12 +86,14 @@ type
     FNaoPeriodicos: TNaoPeriodicos;
     FPeriodicos: TPeriodicos;
     FTipoEmpregador: TEmpregador;
+    FGerados: TGeradosCollection;
 
     procedure SetIniciais(const Value: TIniciais);
     procedure SetNaoPeriodicos(const Value: TNaoPeriodicos);
     procedure SetPeriodicos(const Value: TPeriodicos);
     procedure SetTabelas(const Value: TTabelas);
     function GetCount: integer;
+    procedure SetGerados(const Value: TGeradosCollection);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;//verificar se será necessário, se TIniciais for TComponent;
@@ -75,12 +102,19 @@ type
     procedure SaveToFiles;
     procedure Clear;
 
+    function LoadFromFile(CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
+    function LoadFromStream(AStream: TStringStream): Boolean;
+    function LoadFromString(AXMLString: String): Boolean;
+    function LoadFromStringINI(AINIString: String): Boolean;
+    function LoadFromIni(AIniString: String): Boolean;
+
     property Count:          Integer        read GetCount;
     property Iniciais:       TIniciais      read FIniciais       write SetIniciais;
     property Tabelas:        TTabelas       read FTabelas        write SetTabelas;
     property NaoPeriodicos:  TNaoPeriodicos read FNaoPeriodicos  write SetNaoPeriodicos;
     property Periodicos:     TPeriodicos    read FPeriodicos     write SetPeriodicos;
     property TipoEmpregador: TEmpregador    read FTipoEmpregador write FTipoEmpregador;
+    property Gerados: TGeradosCollection    read FGerados        write SetGerados;
   end;
 
 implementation
@@ -88,6 +122,30 @@ implementation
 uses
   dateutils,
   ACBrUtil, ACBrDFeUtil, ACBreSocial;
+
+{ TGeradosCollection }
+
+function TGeradosCollection.Add: TGeradosCollectionItem;
+begin
+  Result := TGeradosCollectionItem(inherited add());
+//  Result.Create;
+end;
+
+constructor TGeradosCollection.create(AOwner: TEventos);
+begin
+  Inherited create(TGeradosCollectionItem);
+end;
+
+function TGeradosCollection.GetItem(Index: Integer): TGeradosCollectionItem;
+begin
+  Result := TGeradosCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TGeradosCollection.SetItem(Index: Integer;
+  Value: TGeradosCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
 
 { TEventos }
 
@@ -97,15 +155,18 @@ begin
   FTabelas.Clear;
   FNaoPeriodicos.Clear;
   FPeriodicos.Clear;
+  FGerados.Clear;
 end;
 
 constructor TEventos.Create(AOwner: TComponent);
 begin
   inherited;
+
   FIniciais := TIniciais.Create(AOwner);
   FTabelas := TTabelas.Create(AOwner);
   FNaoPeriodicos := TNaoPeriodicos.Create(AOwner);
   FPeriodicos := TPeriodicos.Create(AOwner);
+  FGerados := TGeradosCollection.create(Self);
 end;
 
 destructor TEventos.Destroy;
@@ -114,11 +175,14 @@ begin
   FTabelas.Free;
   FNaoPeriodicos.Free;
   FPeriodicos.Free;
+  FGerados.Free;
+  
   inherited;
 end;
 
 procedure TEventos.GerarXMLs;
 begin
+  FTipoEmpregador := TACBreSocial(Self.Owner).Configuracoes.Geral.TipoEmpregador;
   Self.Iniciais.GerarXMLs;
   Self.Tabelas.GerarXMLs;
   Self.NaoPeriodicos.GerarXMLs;
@@ -135,10 +199,18 @@ end;
 
 procedure TEventos.SaveToFiles;
 begin
+  // Limpa a lista para não ocorrer duplicidades.
+  Gerados.Clear;
+
   Self.Iniciais.SaveToFiles;
   Self.Tabelas.SaveToFiles;
   Self.NaoPeriodicos.SaveToFiles;
   Self.Periodicos.SaveToFiles;
+end;
+
+procedure TEventos.SetGerados(const Value: TGeradosCollection);
+begin
+  FGerados := Value;
 end;
 
 procedure TEventos.SetIniciais(const Value: TIniciais);
@@ -159,6 +231,87 @@ end;
 procedure TEventos.SetPeriodicos(const Value: TPeriodicos);
 begin
   FPeriodicos.Assign(Value);
+end;
+
+function TEventos.LoadFromFile(CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
+var
+  ArquivoXML: TStringList;
+  XML: String;
+  XMLOriginal: AnsiString;
+begin
+  Result := False;
+  
+  ArquivoXML := TStringList.Create;
+  try
+    ArquivoXML.LoadFromFile(CaminhoArquivo);
+    XMLOriginal := ArquivoXML.Text;
+
+    // Converte de UTF8 para a String nativa da IDE //
+    XML := DecodeToString(XMLOriginal, True);
+
+    if ArqXML then
+      Result := LoadFromString(XML)
+    else
+      Result := LoadFromStringINI(XML);
+
+  finally
+    ArquivoXML.Free;
+  end;
+end;
+
+function TEventos.LoadFromStream(AStream: TStringStream): Boolean;
+var
+  XMLOriginal: AnsiString;
+begin
+  AStream.Position := 0;
+  XMLOriginal := ReadStrFromStream(AStream, AStream.Size);
+
+  Result := Self.LoadFromString(String(XMLOriginal));
+end;
+
+function TEventos.LoadFromString(AXMLString: String): Boolean;
+var
+  AXML: AnsiString;
+  P: integer;
+
+  function PoseSocial: integer;
+  begin
+    Result := pos('</eSocial>', AXMLString);
+  end;
+
+begin
+  Result := False;
+  P := PoseSocial;
+
+  while P > 0 do
+  begin
+    AXML := copy(AXMLString, 1, P + 9);
+    AXMLString := Trim(copy(AXMLString, P + 10, length(AXMLString)));
+
+    Result := Self.Iniciais.LoadFromString(AXML) or
+              Self.Tabelas.LoadFromString(AXML) or
+              Self.NaoPeriodicos.LoadFromString(AXML) or
+              Self.Periodicos.LoadFromString(AXML);
+    SaveToFiles;
+
+    P := PoseSocial;
+  end;
+end;
+
+function TEventos.LoadFromStringINI(AINIString: String): Boolean;
+begin
+  Result := Self.Iniciais.LoadFromIni(AIniString) or
+            Self.Tabelas.LoadFromIni(AIniString) or
+            Self.NaoPeriodicos.LoadFromIni(AIniString) or
+            Self.Periodicos.LoadFromIni(AIniString);
+  SaveToFiles;
+end;
+
+function TEventos.LoadFromIni(AIniString: String): Boolean;
+begin
+  // O valor False no segundo parâmetro indica que o conteudo do arquivo não é
+  // um XML.
+  Result := LoadFromFile(AIniString, False);
 end;
 
 end.

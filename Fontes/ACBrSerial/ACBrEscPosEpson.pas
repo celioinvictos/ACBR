@@ -64,6 +64,7 @@ type
       override;
     function ComandoLogo: AnsiString; override;
     function ComandoGaveta(NumGaveta: Integer = 1): AnsiString; override;
+    function ComandoConfiguraModoPagina: AnsiString; override;
 
     procedure LerStatus(var AStatus: TACBrPosPrinterStatus); override;
     function LerInfo: String; override;
@@ -233,7 +234,10 @@ begin
     AlinhadoDireita         := ESC + 'a' + #2;
     CorteTotal              := GS  + 'V' + #0;
     CorteParcial            := GS  + 'V' + #1;
-    Beep                    := ESC + '(A' + #4 + #0 + #48 + #55 + #03 + #10;
+    Beep                    := ESC + '(A' + #5 + #0 + #97 + #100 + #1 + #50 + #50;
+    LigaModoPagina          := ESC + 'L';
+    DesligaModoPagina       := ESC + 'S';
+    ImprimePagina           := ESC + FF;
   end;
   {*)}
 
@@ -382,6 +386,31 @@ begin
   end;
 end;
 
+function TACBrEscPosEpson.ComandoConfiguraModoPagina: AnsiString;
+var
+  CharDir: AnsiChar;
+begin
+  with fpPosPrinter.ConfigModoPagina do
+  begin
+    //https://stackoverflow.com/questions/42597358/esc-pos-set-page-size-esc-w-cmd
+    case Direcao of
+      dirBaixoParaTopo: CharDir := #1;
+      dirDireitaParaEsquerda: CharDir := #2;
+      dirTopoParaBaixo: CharDir := #3;
+    else
+      CharDir := #0;
+    end;
+
+    Result := ESC + 'T' + CharDir +                 // Ajusta a Direcao
+              ComandoEspacoEntreLinhas(EspacoEntreLinhas) +
+              {GS + '$' + AnsiChr(0)+ AnsiChr(0) +}  // Ajusta posição Vertical Absoluta em 0
+              ESC + 'W' + IntToLEStr(Esquerda) +    // Ajusta a Regiao
+                          IntToLEStr(Topo) +
+                          IntToLEStr(Largura) +
+                          IntToLEStr(Altura);
+  end;
+end;
+
 procedure TACBrEscPosEpson.LerStatus(var AStatus: TACBrPosPrinterStatus);
 var
   B: Byte;
@@ -499,4 +528,6 @@ begin
 end;
 *)
 end.
+
+
 

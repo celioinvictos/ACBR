@@ -1,8 +1,8 @@
 object FExemploEsocial: TFExemploEsocial
-  Left = 198
-  Top = 86
+  Left = 201
+  Top = 130
   Caption = 'Exemplo eSocial'
-  ClientHeight = 604
+  ClientHeight = 603
   ClientWidth = 1021
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object FExemploEsocial: TFExemploEsocial
     Left = 281
     Top = 0
     Width = 740
-    Height = 604
+    Height = 603
     Align = alClient
     TabOrder = 0
     object pgcEventos: TPageControl
@@ -91,16 +91,16 @@ object FExemploEsocial: TFExemploEsocial
           TabOrder = 5
         end
         object Checb_ZeraBase: TCheckBox
-          Left = 205
-          Top = 12
+          Left = 278
+          Top = 10
           Width = 138
           Height = 17
           Caption = 'Zera Base Homologa'#231#227'o'
           TabOrder = 6
         end
         object cbS1040: TCheckBox
-          Left = 350
-          Top = 12
+          Left = 374
+          Top = 33
           Width = 156
           Height = 17
           Caption = 'S-1040 Tabela de Fun'#231#245'es'
@@ -109,8 +109,8 @@ object FExemploEsocial: TFExemploEsocial
           TabOrder = 7
         end
         object cbS1050: TCheckBox
-          Left = 350
-          Top = 33
+          Left = 374
+          Top = 54
           Width = 248
           Height = 17
           Caption = 'S-1050 Tabela de Hor'#225'rios/Turnos de Trabalho'
@@ -119,8 +119,8 @@ object FExemploEsocial: TFExemploEsocial
           TabOrder = 8
         end
         object cbS1060: TCheckBox
-          Left = 350
-          Top = 54
+          Left = 374
+          Top = 75
           Width = 228
           Height = 17
           Caption = 'S-1060 Tabela de Ambientes de Trabalho'
@@ -129,8 +129,8 @@ object FExemploEsocial: TFExemploEsocial
           TabOrder = 9
         end
         object cbS1070: TCheckBox
-          Left = 350
-          Top = 75
+          Left = 374
+          Top = 96
           Width = 168
           Height = 17
           Caption = 'S-1070 - Tabela de Processos'
@@ -139,8 +139,8 @@ object FExemploEsocial: TFExemploEsocial
           TabOrder = 10
         end
         object cbS1080: TCheckBox
-          Left = 350
-          Top = 97
+          Left = 374
+          Top = 118
           Width = 224
           Height = 17
           Caption = 'S-1080 - Tabela de Operadores Portu'#225'rios'
@@ -152,10 +152,6 @@ object FExemploEsocial: TFExemploEsocial
       object tbsEventosPeriodicos: TTabSheet
         Caption = 'Eventos Peri'#243'dicos'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object cbS1200: TCheckBox
           Left = 12
           Top = 12
@@ -272,10 +268,7 @@ object FExemploEsocial: TFExemploEsocial
       object tbsEventosNaoPeriodicos: TTabSheet
         Caption = 'Eventos N'#227'o Peri'#243'dicos'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 289
         object cbS2190: TCheckBox
           Left = 12
           Top = 12
@@ -361,8 +354,8 @@ object FExemploEsocial: TFExemploEsocial
           TabOrder = 8
         end
         object cbAviso: TComboBox
-          Left = 138
-          Top = 219
+          Left = 476
+          Top = 12
           Width = 145
           Height = 21
           Style = csDropDownList
@@ -374,8 +367,8 @@ object FExemploEsocial: TFExemploEsocial
             'Cancelamento')
         end
         object cbS2250: TCheckBox
-          Left = 12
-          Top = 219
+          Left = 350
+          Top = 12
           Width = 120
           Height = 17
           Caption = 'S-2250 - Aviso Pr'#233'vio'
@@ -385,7 +378,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS3000: TCheckBox
           Left = 350
-          Top = 150
+          Top = 196
           Width = 175
           Height = 17
           Caption = 'S-3000 - Exclus'#227'o de Eventos'
@@ -395,7 +388,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS2400: TCheckBox
           Left = 350
-          Top = 127
+          Top = 173
           Width = 321
           Height = 17
           Caption = 'S-2400 - Cadastro de Benef'#237'cios Previd'#234'nci'#225'rios - RPPS'
@@ -403,7 +396,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS2399: TCheckBox
           Left = 350
-          Top = 104
+          Top = 150
           Width = 248
           Height = 17
           Caption = 'S-2399 - Trabalhador Sem V'#237'nculo - T'#233'rmino'
@@ -411,7 +404,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS2306: TCheckBox
           Left = 350
-          Top = 81
+          Top = 127
           Width = 311
           Height = 17
           Caption = 'S-2306 - Trabalhador Sem V'#237'nculo - Altera'#231#227'o Contratual'
@@ -419,7 +412,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS2300: TCheckBox
           Left = 350
-          Top = 58
+          Top = 104
           Width = 233
           Height = 17
           Caption = 'S-2300 - Trabalhador Sem V'#237'nculo - In'#237'cio'
@@ -427,7 +420,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS2299: TCheckBox
           Left = 350
-          Top = 35
+          Top = 81
           Width = 135
           Height = 17
           Caption = 'S-2299 - Desligamento'
@@ -435,7 +428,7 @@ object FExemploEsocial: TFExemploEsocial
         end
         object cbS2298: TCheckBox
           Left = 350
-          Top = 12
+          Top = 58
           Width = 153
           Height = 17
           Caption = 'S-2298 - Reintegra'#231#227'o'
@@ -443,19 +436,28 @@ object FExemploEsocial: TFExemploEsocial
           ParentCtl3D = False
           TabOrder = 17
         end
+        object cbs2260: TCheckBox
+          Left = 350
+          Top = 39
+          Width = 332
+          Height = 17
+          Caption = 'S-2260 Convoca'#231#227'o para Trabalho Intermitente'
+          TabOrder = 18
+        end
       end
     end
     object pgWebservice: TPageControl
       Left = 1
-      Top = 338
+      Top = 259
       Width = 738
-      Height = 265
+      Height = 343
       ActivePage = tsComandos
       Align = alBottom
       TabOrder = 1
       object tsComandos: TTabSheet
         Caption = 'Comandos'
         ImageIndex = 5
+        ExplicitHeight = 237
         object btnGerar: TButton
           Left = 10
           Top = 12
@@ -466,8 +468,8 @@ object FExemploEsocial: TFExemploEsocial
           OnClick = btnGerarClick
         end
         object btnConsultar: TButton
-          Left = 240
-          Top = 12
+          Left = 250
+          Top = 43
           Width = 109
           Height = 25
           Caption = 'Consultar'
@@ -475,22 +477,46 @@ object FExemploEsocial: TFExemploEsocial
           OnClick = btnConsultarClick
         end
         object btnEnviar: TButton
-          Left = 125
-          Top = 12
+          Left = 10
+          Top = 43
           Width = 109
           Height = 25
           Caption = 'Enviar'
           TabOrder = 2
           OnClick = btnEnviarClick
         end
+        object btnCarregarXML: TButton
+          Left = 130
+          Top = 12
+          Width = 109
+          Height = 25
+          Caption = 'Carregar XML'
+          TabOrder = 3
+          OnClick = btnCarregarXMLClick
+        end
+        object btnCarregarINI: TButton
+          Left = 250
+          Top = 12
+          Width = 109
+          Height = 25
+          Caption = 'Carregar INI'
+          TabOrder = 4
+          OnClick = btnCarregarINIClick
+        end
+        object btnGerarEnviar: TButton
+          Left = 130
+          Top = 43
+          Width = 109
+          Height = 25
+          Caption = 'Gerar e Enviar'
+          TabOrder = 5
+          OnClick = btnGerarEnviarClick
+        end
       end
       object tsFormaEnvio: TTabSheet
         Caption = 'Forma de Envio'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 237
         object rdgGrupo: TRadioGroup
           Left = 0
           Top = 0
@@ -545,84 +571,74 @@ object FExemploEsocial: TFExemploEsocial
       object tsResposta: TTabSheet
         Caption = 'Resposta'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 237
         object MemoResp: TMemo
           Left = 0
           Top = 0
           Width = 730
-          Height = 237
+          Height = 315
           Align = alClient
           TabOrder = 0
+          ExplicitHeight = 237
         end
       end
       object tsLog: TTabSheet
         Caption = 'Log'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 237
         object memoLog: TMemo
           Left = 0
           Top = 0
           Width = 730
-          Height = 237
+          Height = 315
           Align = alClient
           TabOrder = 0
+          ExplicitHeight = 237
         end
       end
       object tsXmlEnvio: TTabSheet
         Caption = 'XML de Envio'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 237
         object MemoXmlEnvio: TMemo
           Left = 0
           Top = 0
           Width = 730
-          Height = 237
+          Height = 315
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
+          ExplicitHeight = 237
         end
       end
       object tsXmlRetorno: TTabSheet
         Caption = 'XML Retorno'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 237
         object MemoXmlRetorno: TMemo
           Left = 0
           Top = 0
           Width = 730
-          Height = 237
+          Height = 315
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
+          ExplicitHeight = 237
         end
       end
       object tsDados: TTabSheet
         Caption = 'Dados'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        ExplicitHeight = 237
         object MemoDados: TMemo
           Left = 0
           Top = 0
           Width = 730
-          Height = 237
+          Height = 315
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
+          ExplicitHeight = 237
         end
       end
     end
@@ -631,7 +647,7 @@ object FExemploEsocial: TFExemploEsocial
     Left = 0
     Top = 0
     Width = 281
-    Height = 604
+    Height = 603
     Align = alLeft
     TabOrder = 1
     object lblColaborador: TLabel
@@ -911,10 +927,6 @@ object FExemploEsocial: TFExemploEsocial
       end
       object TabSheet2: TTabSheet
         Caption = 'Certificado'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Label6: TLabel
           Left = 35
           Top = 16
@@ -1207,10 +1219,6 @@ object FExemploEsocial: TFExemploEsocial
       object TabSheet5: TTabSheet
         Caption = 'WebService'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object GroupBox4: TGroupBox
           Left = 0
           Top = 4
@@ -1427,10 +1435,6 @@ object FExemploEsocial: TFExemploEsocial
       object TabSheet7: TTabSheet
         Caption = 'Arquivos'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object sbPatheSocial: TSpeedButton
           Left = 240
           Top = 142
@@ -1567,8 +1571,8 @@ object FExemploEsocial: TFExemploEsocial
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
     OnTransmissaoEventos = ACBreSocial1TransmissaoEventos
-    Left = 760
-    Top = 280
+    Left = 336
+    Top = 368
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '*-nfe.XML'
@@ -1576,7 +1580,7 @@ object FExemploEsocial: TFExemploEsocial
       'Arquivos NFE (*-nfe.XML)|*-nfe.XML|Arquivos XML (*.XML)|*.XML|To' +
       'dos os Arquivos (*.*)|*.*'
     Title = 'Selecione a NFe'
-    Left = 816
-    Top = 280
+    Left = 416
+    Top = 368
   end
 end

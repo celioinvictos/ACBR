@@ -1,7 +1,7 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
+{ Projeto: Componente ACBrReinf                                                }
+{  Biblioteca multiplataforma de componentes Delphi para envio de eventos do   }
+{ Reinf                                                                        }
 
 { Direitos Autorais Reservados (c) 2017 Leivio Ramos de Fontenele              }
 {                                                                              }
@@ -37,178 +37,227 @@
 |*  - Compatibilizado Fonte com Delphi 7
 *******************************************************************************}
 
+{$I ACBr.inc}
+
 unit ACBrReinfEventos;
 
 interface
 
-uses Classes, Sysutils, pcnGerador, pcnConversaoReinf, ACBrReinfEventosBase, ACBrDFe,
-  ACBrReinfR1000, ACBrReinfR1070, ACBrReinfR2010, ACBrReinfR2020,
-  ACBrReinfR2030, ACBrReinfR2040, ACBrReinfR2050,
-  ACBrReinfR2060, ACBrReinfR2070, ACBrReinfR2098, ACBrReinfR2099,
-  ACBrReinfR3010, ACBrReinfR9000;
+uses
+  SysUtils, Classes, synautil,
+  pcnGerador, pcnEventosReinf, pcnConversaoReinf;
 
 type
+  TEventos = class;
+  TGeradosCollection = class;
+  TGeradosCollectionItem = class;
 
-  TEventos = class
+  TGeradosCollection = class(TCollection)
   private
-    FXML: string;
-    FEventos: TEventoReinfs;
-    FACBrReinf: TACBrDFe;
+    function GetItem(Index: Integer): TGeradosCollectionItem;
+    procedure SetItem(Index: Integer; Value: TGeradosCollectionItem);
   public
-    procedure AfterConstruction; override;
-    procedure BeforeDestruction; override;
-    function AddR1000: TR1000;
-    function AddR1070: TR1070;
-    function AddR2010: TR2010;
-    function AddR2020: TR2020;
-    function AddR2030: TR2030;
-    function AddR2040: TR2040;
-    function AddR2050: TR2050;
-    function AddR2060: TR2060;
-    function AddR2070: TR2070;
-    function AddR2098: TR2098;
-    function AddR2099: TR2099;
-    function AddR3010: TR3010;
-    function AddR9000: TR9000;
-    function GetXml: AnsiString;
-    constructor Create(AACBrReinf: TACBrDFe); reintroduce;
-    property Items: TEventoReinfs read FEventos;
+    constructor create(AOwner: TEventos);
+    function Add: TGeradosCollectionItem;
+    property Items[Index: Integer]: TGeradosCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TGeradosCollectionItem = class(TCollectionItem)
+  private
+    FTipoEvento: TTipoEvento;
+    FPathNome: String;
+    FXML: String;
+  public
+    property TipoEvento: TTipoEvento read FTipoEvento write FTipoEvento;
+    property PathNome: String read FPathNome write FPathNome;
+    property XML: String read FXML write FXML;
+  end;
+
+  TEventos = class(TComponent)
+  private
+    FReinfEventos: TReinfEventos;
+    FTipoContribuinte: TContribuinte;
+    FGerados: TGeradosCollection;
+
+    procedure SetReinfEventos(const Value: TReinfEventos);
+    function GetCount: integer;
+    procedure SetGerados(const Value: TGeradosCollection);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;//verificar se será necessário, se TReinfEventos for TComponent;
+
+    procedure GerarXMLs;
+    procedure SaveToFiles;
+    procedure Clear;
+
+    function LoadFromFile(CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
+    function LoadFromStream(AStream: TStringStream): Boolean;
+    function LoadFromString(AXMLString: String): Boolean;
+    function LoadFromStringINI(AINIString: String): Boolean;
+    function LoadFromIni(AIniString: String): Boolean;
+
+    property Count:        Integer           read GetCount;
+    property ReinfEventos: TReinfEventos     read FReinfEventos     write SetReinfEventos;
+    property TipoContribuinte: TContribuinte read FTipoContribuinte write FTipoContribuinte;
+    property Gerados: TGeradosCollection    read FGerados        write SetGerados;
   end;
 
 implementation
 
-{ TEventoReinf }
-uses pcnAuxiliar, ACBrUtil, pcnLeitor, ACBrReinf, ACBrReinfUtils, pcnConversao,
-  DateUtils;
+uses
+  dateutils,
+  ACBrUtil, ACBrDFeUtil, ACBrReinf;
+
+{ TGeradosCollection }
+
+function TGeradosCollection.Add: TGeradosCollectionItem;
+begin
+  Result := TGeradosCollectionItem(inherited add());
+//  Result.Create;
+end;
+
+constructor TGeradosCollection.create(AOwner: TEventos);
+begin
+  Inherited create(TGeradosCollectionItem);
+end;
+
+function TGeradosCollection.GetItem(Index: Integer): TGeradosCollectionItem;
+begin
+  Result := TGeradosCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TGeradosCollection.SetItem(Index: Integer;
+  Value: TGeradosCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
 
 { TEventos }
 
-function TEventos.AddR1000: TR1000;
+procedure TEventos.Clear;
 begin
-  Result := TR1000(FEventos.Items[FEventos.Add(TR1000.Create(FACBrReinf))]);
+  FReinfEventos.Clear;
+  FGerados.Clear;
 end;
 
-function TEventos.AddR1070: TR1070;
-begin
-  Result := TR1070(FEventos.Items[FEventos.Add(TR1070.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2010: TR2010;
-begin
-  Result := TR2010(FEventos.Items[FEventos.Add(TR2010.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2020: TR2020;
-begin
-  Result := TR2020(FEventos.Items[FEventos.Add(TR2020.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2030: TR2030;
-begin
-  Result := TR2030(FEventos.Items[FEventos.Add(TR2030.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2040: TR2040;
-begin
-  Result := TR2040(FEventos.Items[FEventos.Add(TR2040.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2050: TR2050;
-begin
-  Result := TR2050(FEventos.Items[FEventos.Add(TR2050.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2060: TR2060;
-begin
-  Result := TR2060(FEventos.Items[FEventos.Add(TR2060.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2070: TR2070;
-begin
-  Result := TR2070(FEventos.Items[FEventos.Add(TR2070.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2098: TR2098;
-begin
-  Result := TR2098(FEventos.Items[FEventos.Add(TR2098.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR2099: TR2099;
-begin
-  Result := TR2099(FEventos.Items[FEventos.Add(TR2099.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR3010: TR3010;
-begin
-  Result := TR3010(FEventos.Items[FEventos.Add(TR3010.Create(FACBrReinf))]);
-end;
-
-function TEventos.AddR9000: TR9000;
-begin
-  Result := TR9000(FEventos.Items[FEventos.Add(TR9000.Create(FACBrReinf))]);
-end;
-
-procedure TEventos.AfterConstruction;
+constructor TEventos.Create(AOwner: TComponent);
 begin
   inherited;
-  FEventos := TEventoReinfs.Create;
+
+  FReinfEventos := TReinfEventos.Create(AOwner);
+  FGerados := TGeradosCollection.create(Self);
 end;
 
-procedure TEventos.BeforeDestruction;
+destructor TEventos.Destroy;
 begin
+  FReinfEventos.Free;
+  FGerados.Free;
+
   inherited;
-  FEventos.Free;
 end;
 
-constructor TEventos.Create(AACBrReinf: TACBrDFe);
+procedure TEventos.GerarXMLs;
 begin
-  Inherited Create;
-  FACBrReinf := AACBrReinf;
+  FTipoContribuinte := TACBrReinf(Self.Owner).Configuracoes.Geral.TipoContribuinte;
+  Self.ReinfEventos.GerarXMLs;
 end;
 
-function TEventos.GetXml: AnsiString;
+function TEventos.GetCount: integer;
+begin
+  Result :=  Self.ReinfEventos.Count;
+end;
+
+procedure TEventos.SaveToFiles;
+begin
+  // Limpa a lista para não ocorrer duplicidades.
+  Gerados.Clear;
+
+  Self.ReinfEventos.SaveToFiles;
+end;
+
+procedure TEventos.SetGerados(const Value: TGeradosCollection);
+begin
+  FGerados := Value;
+end;
+
+procedure TEventos.SetReinfEventos(const Value: TReinfEventos);
+begin
+  FReinfEventos.Assign(Value);
+end;
+
+function TEventos.LoadFromFile(CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
 var
-  Xml: AnsiString;
-  J, i: Integer;
-  Eventosxml: string;
-  Path: string;
+  ArquivoXML: TStringList;
+  XML: String;
+  XMLOriginal: AnsiString;
 begin
-  if Items.Count >  0 then
+  Result := False;
+  
+  ArquivoXML := TStringList.Create;
+  try
+    ArquivoXML.LoadFromFile(CaminhoArquivo);
+    XMLOriginal := ArquivoXML.Text;
+
+    // Converte de UTF8 para a String nativa da IDE //
+    XML := DecodeToString(XMLOriginal, True);
+
+    if ArqXML then
+      Result := LoadFromString(XML)
+    else
+      Result := LoadFromStringINI(XML);
+
+  finally
+    ArquivoXML.Free;
+  end;
+end;
+
+function TEventos.LoadFromStream(AStream: TStringStream): Boolean;
+var
+  XMLOriginal: AnsiString;
+begin
+  AStream.Position := 0;
+  XMLOriginal := ReadStrFromStream(AStream, AStream.Size);
+
+  Result := Self.LoadFromString(String(XMLOriginal));
+end;
+
+function TEventos.LoadFromString(AXMLString: String): Boolean;
+var
+  AXML: String;
+  P: integer;
+
+  function PosReinf: integer;
   begin
-    for J := 0 to Items.Count - 1 do
-      Items.Items[J].GerarXML(True, J + 1);
+    Result := pos('</Reinf>', AXMLString);
+  end;
 
-    Eventosxml := EmptyStr;
-    Xml := '<Reinf xmlns="http://www.reinf.esocial.gov.br/schemas/envioLoteEventos/'+ TACBrReinf( FACBrReinf ).Versao +'">' +
-      '<loteEventos>';
+begin
+  Result := False;
+  P := PosReinf;
 
-     for i := 0 to Items.Count - 1 do
-       Eventosxml := Eventosxml + '<evento id="'+ Items.Items[i].Id(i + 1) +'"> ' +  StringReplace(string(Items.Items[i].XML), '<' + ENCODING_UTF8 + '>', '', []) + '</evento>';
+  while P > 0 do
+  begin
+    AXML := copy(AXMLString, 1, P + 7);
+    AXMLString := Trim(copy(AXMLString, P + 8, length(AXMLString)));
 
-    Xml := Xml + AnsiString(Eventosxml);
-    Xml := Xml +
-      '</loteEventos>' +
-    '</Reinf>';
+    Result := Self.ReinfEventos.LoadFromString(AXML);
+    SaveToFiles;
 
-    FXML := string(AnsiToUtf8(Xml));
-    result := Xml;
-    if TACBrReinf(FACBrReinf).Configuracoes.Geral.Salvar then
-    begin
-      Path := TACBrReinf(FACBrReinf).Configuracoes.Arquivos.PathSalvar;
-      if (Path <> EmptyStr) and not DirectoryExists(Path) then
-        ForceDirectories(Path);
+    P := PosReinf;
+  end;
+end;
 
-      with TStringList.Create do
-      try
-        Text := FXml;
-        SaveToFile(Path+'\'+'ReinfLoteEventos'+'-'+ IntTostr(Dayof(Now)) + IntTostr(MonthOf(Now)) + IntTostr(YearOf(Now))+ '_'+ IntTostr(HourOf(Now))+ IntTostr(MinuteOf(Now))+IntTostr(SecondOf(Now)) + '_' +IntTostr(MilliSecondOf(Now)) + '.xml');
-      finally
-        Free;
-      end;
-    end;
-  end
-  else
-    raise EACBReinfException.Create('Nenhum evento adicionado.');
+function TEventos.LoadFromStringINI(AINIString: String): Boolean;
+begin
+  Result := Self.ReinfEventos.LoadFromIni(AIniString);
+  SaveToFiles;
+end;
+
+function TEventos.LoadFromIni(AIniString: String): Boolean;
+begin
+  // O valor False no segundo parâmetro indica que o conteudo do arquivo não é
+  // um XML.
+  Result := LoadFromFile(AIniString, False);
 end;
 
 end.

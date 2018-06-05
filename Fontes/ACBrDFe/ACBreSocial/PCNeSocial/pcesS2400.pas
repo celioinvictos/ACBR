@@ -48,7 +48,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao,
+  pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -90,6 +90,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeBenef: TIdeBenef;
     FInfoBeneficio: TInfoBeneficio;
+    FACBreSocial: TObject;
 
     procedure GerarIdeBenef(pIdeBenef: TIdeBenef);
     procedure GerarDadosBenef(pDadosBenef: TDadosBenef);
@@ -101,7 +102,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -199,6 +201,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2400Collection }
 
 function TS2400Collection.Add: TS2400CollectionItem;
@@ -235,134 +241,6 @@ end;
 procedure TS2400CollectionItem.setEvtCdBenPrRP(const Value: TEvtCdBenPrRP);
 begin
   FEvtCdBenPrRP.Assign(Value);
-end;
-
-{ TEvtCdBenPrRP }
-
-constructor TEvtCdBenPrRP.Create(AACBreSocial: TObject);
-begin
-  inherited;
-
-  FIdeEvento := TIdeEvento2.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeBenef := TIdeBenef.Create;
-  FInfoBeneficio := TInfoBeneficio.Create;
-end;
-
-destructor TEvtCdBenPrRP.destroy;
-begin
-  FIdeEvento.Free;
-  FIdeEmpregador.Free;
-  FIdeBenef.Free;
-  FInfoBeneficio.Free;
-
-  inherited;
-end;
-
-procedure TEvtCdBenPrRP.GerarDadosBenef(pDadosBenef: TDadosBenef);
-begin
-  Gerador.wGrupo('dadosBenef');
-
-  GerarNascimento(pDadosBenef.dadosNasc, 'dadosNasc');
-
-  GerarEndereco(pDadosBenef.endereco, Assigned(pDadosBenef.endereco.Exterior));
-
-  Gerador.wGrupo('/dadosBenef');
-end;
-
-procedure TEvtCdBenPrRP.GerarIdeBenef(pIdeBenef: TIdeBenef);
-begin
-  Gerador.wGrupo('ideBenef');
-
-  Gerador.wCampo(tcStr, '', 'cpfBenef',  11, 11, 1, pIdeBenef.cpfBenef);
-  Gerador.wCampo(tcStr, '', 'nmBenefic',  0, 70, 1, pIdeBenef.nmBenefic);
-
-  GerarDadosBenef(pIdeBenef.dadosBenef);
-
-  Gerador.wGrupo('/ideBenef');
-end;
-
-procedure TEvtCdBenPrRP.GerarInfoPenMorte(pInfoPenMorte: TInfoPenMorte);
-begin
-  Gerador.wGrupo('infoPenMorte');
-
-  Gerador.wCampo(tcStr, '', 'idQuota',  1, 30, 1, pInfoPenMorte.idQuota);
-  Gerador.wCampo(tcStr, '', 'cpfInst', 11, 11, 1, pInfoPenMorte.cpfInst);
-
-  Gerador.wGrupo('/infoPenMorte');
-end;
-
-procedure TEvtCdBenPrRP.GerarBeneficio(pBeneficio: TBeneficio; pGroupName: String);
-begin
-  Gerador.wGrupo(pGroupName);
-
-  Gerador.wCampo(tcInt, '', 'tpBenef',     1,  2, 1, pBeneficio.tpBenef);
-  Gerador.wCampo(tcStr, '', 'nrBenefic',   1, 20, 1, pBeneficio.nrBenefic);
-  Gerador.wCampo(tcDat, '', 'dtIniBenef', 10, 10, 1, pBeneficio.dtIniBenef);
-  Gerador.wCampo(tcDe2, '', 'vrBenef',     1, 14, 1, pBeneficio.vrBenef);
-
-  if pBeneficio.infoPenMorteInst then
-    GerarInfoPenMorte(pBeneficio.infoPenMorte);
-
-  Gerador.wGrupo('/' + pGroupName);
-end;
-
-procedure TEvtCdBenPrRP.GerarFimBeneficio(pFimBeneficio: TFimBeneficio);
-begin
-  Gerador.wGrupo('fimBeneficio');
-
-  Gerador.wCampo(tcInt, '', 'tpBenef',     1,  2, 1, pFimBeneficio.tpBenef);
-  Gerador.wCampo(tcStr, '', 'nrBenefic',   1, 20, 1, pFimBeneficio.nrBenefic);
-  Gerador.wCampo(tcDat, '', 'dtFimBenef', 10, 10, 1, pFimBeneficio.dtFimBenef);
-  Gerador.wCampo(tcInt, '', 'mtvFim',      1,  2, 1, pFimBeneficio.mtvFim);
-
-  Gerador.wGrupo('/fimBeneficio');
-end;
-
-procedure TEvtCdBenPrRP.GerarInfoBeneficio(pInfoBeneficio: TInfoBeneficio);
-begin
-  Gerador.wGrupo('infoBeneficio');
-
-  Gerador.wCampo(tcStr, '', 'tpPlanRP', 1, 1, 1, eSTpPlanRPToStr(pInfoBeneficio.tpPlanRP));
-
-  if pInfoBeneficio.iniBeneficioInst then
-    GerarBeneficio(pInfoBeneficio.iniBeneficio, 'iniBeneficio');
-
-  if pInfoBeneficio.altBeneficioInst then
-    GerarBeneficio(pInfoBeneficio.altBeneficio, 'altBeneficio');
-
-  if pInfoBeneficio.fimBeneficioInst then
-    GerarFimBeneficio(pInfoBeneficio.fimBeneficio);
-
-  Gerador.wGrupo('/infoBeneficio');
-end;
-
-function TEvtCdBenPrRP.GerarXML(ATipoEmpregador: TEmpregador): boolean;
-begin
-  try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
-
-    GerarCabecalho('evtCdBenPrRP');
-    Gerador.wGrupo('evtCdBenPrRP Id="' + Self.Id + '"');
-
-    GerarIdeEvento2(self.IdeEvento);
-    GerarIdeEmpregador(self.IdeEmpregador);
-    GerarIdeBenef(ideBenef);
-    GerarInfoBeneficio(infoBeneficio);
-
-    Gerador.wGrupo('/evtCdBenPrRP');
-
-    GerarRodape;
-
-    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtCdBenPrRP');
-
-    Validar(schevtCdBenPrRP);
-  except on e:exception do
-    raise Exception.Create(e.Message);
-  end;
-
-  Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
 { TBeneficio }
@@ -442,6 +320,242 @@ constructor TDadosBenef.Create;
 begin
   FDadosNasc := TNascimento.Create;
   FEndereco := TEndereco.Create;
+end;
+
+{ TEvtCdBenPrRP }
+
+constructor TEvtCdBenPrRP.Create(AACBreSocial: TObject);
+begin
+  inherited;
+
+  FACBreSocial := AACBreSocial;
+  FIdeEvento := TIdeEvento2.Create;
+  FIdeEmpregador := TIdeEmpregador.Create;
+  FIdeBenef := TIdeBenef.Create;
+  FInfoBeneficio := TInfoBeneficio.Create;
+end;
+
+destructor TEvtCdBenPrRP.destroy;
+begin
+  FIdeEvento.Free;
+  FIdeEmpregador.Free;
+  FIdeBenef.Free;
+  FInfoBeneficio.Free;
+
+  inherited;
+end;
+
+procedure TEvtCdBenPrRP.GerarDadosBenef(pDadosBenef: TDadosBenef);
+begin
+  Gerador.wGrupo('dadosBenef');
+
+  GerarNascimento(pDadosBenef.dadosNasc, 'dadosNasc');
+
+  GerarEndereco(pDadosBenef.endereco, (pDadosBenef.endereco.Exterior.PaisResid <> ''));
+
+  Gerador.wGrupo('/dadosBenef');
+end;
+
+procedure TEvtCdBenPrRP.GerarIdeBenef(pIdeBenef: TIdeBenef);
+begin
+  Gerador.wGrupo('ideBenef');
+
+  Gerador.wCampo(tcStr, '', 'cpfBenef',  11, 11, 1, pIdeBenef.cpfBenef);
+  Gerador.wCampo(tcStr, '', 'nmBenefic',  0, 70, 1, pIdeBenef.nmBenefic);
+
+  GerarDadosBenef(pIdeBenef.dadosBenef);
+
+  Gerador.wGrupo('/ideBenef');
+end;
+
+procedure TEvtCdBenPrRP.GerarInfoPenMorte(pInfoPenMorte: TInfoPenMorte);
+begin
+  Gerador.wGrupo('infoPenMorte');
+
+  Gerador.wCampo(tcStr, '', 'idQuota',  1, 30, 1, pInfoPenMorte.idQuota);
+  Gerador.wCampo(tcStr, '', 'cpfInst', 11, 11, 1, pInfoPenMorte.cpfInst);
+
+  Gerador.wGrupo('/infoPenMorte');
+end;
+
+procedure TEvtCdBenPrRP.GerarBeneficio(pBeneficio: TBeneficio; pGroupName: String);
+begin
+  Gerador.wGrupo(pGroupName);
+
+  Gerador.wCampo(tcInt, '', 'tpBenef',     1,  2, 1, pBeneficio.tpBenef);
+  Gerador.wCampo(tcStr, '', 'nrBenefic',   1, 20, 1, pBeneficio.nrBenefic);
+  Gerador.wCampo(tcDat, '', 'dtIniBenef', 10, 10, 1, pBeneficio.dtIniBenef);
+  Gerador.wCampo(tcDe2, '', 'vrBenef',     1, 14, 1, pBeneficio.vrBenef);
+
+  if pBeneficio.infoPenMorteInst then
+    GerarInfoPenMorte(pBeneficio.infoPenMorte);
+
+  Gerador.wGrupo('/' + pGroupName);
+end;
+
+procedure TEvtCdBenPrRP.GerarFimBeneficio(pFimBeneficio: TFimBeneficio);
+begin
+  Gerador.wGrupo('fimBeneficio');
+
+  Gerador.wCampo(tcInt, '', 'tpBenef',     1,  2, 1, pFimBeneficio.tpBenef);
+  Gerador.wCampo(tcStr, '', 'nrBenefic',   1, 20, 1, pFimBeneficio.nrBenefic);
+  Gerador.wCampo(tcDat, '', 'dtFimBenef', 10, 10, 1, pFimBeneficio.dtFimBenef);
+  Gerador.wCampo(tcInt, '', 'mtvFim',      1,  2, 1, pFimBeneficio.mtvFim);
+
+  Gerador.wGrupo('/fimBeneficio');
+end;
+
+procedure TEvtCdBenPrRP.GerarInfoBeneficio(pInfoBeneficio: TInfoBeneficio);
+begin
+  Gerador.wGrupo('infoBeneficio');
+
+  Gerador.wCampo(tcStr, '', 'tpPlanRP', 1, 1, 1, eSTpPlanRPToStr(pInfoBeneficio.tpPlanRP));
+
+  if pInfoBeneficio.iniBeneficioInst then
+    GerarBeneficio(pInfoBeneficio.iniBeneficio, 'iniBeneficio');
+
+  if pInfoBeneficio.altBeneficioInst then
+    GerarBeneficio(pInfoBeneficio.altBeneficio, 'altBeneficio');
+
+  if pInfoBeneficio.fimBeneficioInst then
+    GerarFimBeneficio(pInfoBeneficio.fimBeneficio);
+
+  Gerador.wGrupo('/infoBeneficio');
+end;
+
+function TEvtCdBenPrRP.GerarXML: boolean;
+begin
+  try
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
+
+    GerarCabecalho('evtCdBenPrRP');
+    Gerador.wGrupo('evtCdBenPrRP Id="' + Self.Id + '"');
+
+    GerarIdeEvento2(self.IdeEvento);
+    GerarIdeEmpregador(self.IdeEmpregador);
+    GerarIdeBenef(ideBenef);
+    GerarInfoBeneficio(infoBeneficio);
+
+    Gerador.wGrupo('/evtCdBenPrRP');
+
+    GerarRodape;
+
+    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtCdBenPrRP');
+
+    Validar(schevtCdBenPrRP);
+  except on e:exception do
+    raise Exception.Create(e.Message);
+  end;
+
+  Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtCdBenPrRP.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtCdBenPrRP';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideBenef';
+      ideBenef.cpfBenef  := INIRec.ReadString(sSecao, 'cpfBenef', EmptyStr);
+      ideBenef.nmBenefic := INIRec.ReadString(sSecao, 'nmBenefic', EmptyStr);
+
+      sSecao := 'dadosNasc';
+      ideBenef.dadosBenef.dadosNasc.dtNascto   := StringToDateTime(INIRec.ReadString(sSecao, 'dtNascto', '0'));
+      ideBenef.dadosBenef.dadosNasc.codMunic   := INIRec.ReadInteger(sSecao, 'codMunic', 0);
+      ideBenef.dadosBenef.dadosNasc.UF         := INIRec.ReadString(sSecao, 'uf', '');
+      ideBenef.dadosBenef.dadosNasc.PaisNascto := INIRec.ReadString(sSecao, 'paisNascto', '');
+      ideBenef.dadosBenef.dadosNasc.PaisNac    := INIRec.ReadString(sSecao, 'paisNac', '');
+      ideBenef.dadosBenef.dadosNasc.NmMae      := INIRec.ReadString(sSecao, 'nmMae', '');
+      ideBenef.dadosBenef.dadosNasc.NmPai      := INIRec.ReadString(sSecao, 'nmPai', '');
+
+      sSecao := 'enderecoBrasil';
+      ideBenef.dadosBenef.Endereco.Brasil.TpLograd    := INIRec.ReadString(sSecao, 'tpLograd', '');
+      ideBenef.dadosBenef.Endereco.Brasil.DscLograd   := INIRec.ReadString(sSecao, 'dscLograd', '');
+      ideBenef.dadosBenef.Endereco.Brasil.NrLograd    := INIRec.ReadString(sSecao, 'nrLograd', '');
+      ideBenef.dadosBenef.Endereco.Brasil.Complemento := INIRec.ReadString(sSecao, 'complemento', '');
+      ideBenef.dadosBenef.Endereco.Brasil.Bairro      := INIRec.ReadString(sSecao, 'bairro', '');
+      ideBenef.dadosBenef.Endereco.Brasil.Cep         := INIRec.ReadString(sSecao, 'cep', '');
+      ideBenef.dadosBenef.Endereco.Brasil.CodMunic    := INIRec.ReadInteger(sSecao, 'codMunic', 0);
+      ideBenef.dadosBenef.Endereco.Brasil.UF          := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'uf', 'SP'));
+
+      sSecao := 'enderecoExterior';
+      if Trim(INIRec.ReadString(sSecao, 'paisResid', '')) <> '' then
+      begin
+        ideBenef.dadosBenef.Endereco.Exterior.PaisResid   := INIRec.ReadString(sSecao, 'paisResid', '');
+        ideBenef.dadosBenef.Endereco.Exterior.DscLograd   := INIRec.ReadString(sSecao, 'dscLograd', '');
+        ideBenef.dadosBenef.Endereco.Exterior.NrLograd    := INIRec.ReadString(sSecao, 'nrLograd', '');
+        ideBenef.dadosBenef.Endereco.Exterior.Complemento := INIRec.ReadString(sSecao, 'complemento', '');
+        ideBenef.dadosBenef.Endereco.Exterior.Bairro      := INIRec.ReadString(sSecao, 'bairro', '');
+        ideBenef.dadosBenef.Endereco.Exterior.NmCid       := INIRec.ReadString(sSecao, 'nmCid', '');
+        ideBenef.dadosBenef.Endereco.Exterior.CodPostal   := INIRec.ReadString(sSecao, 'codPostal', '');
+      end;
+
+      sSecao := 'infoBeneficio';
+      infoBeneficio.tpPlanRP := eSStrToTpPlanRP(Ok, INIRec.ReadString(sSecao, 'dtTerm', '1'));
+
+      sSecao := 'iniBeneficio';
+      infoBeneficio.iniBeneficio.tpBenef    := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
+      infoBeneficio.iniBeneficio.nrBenefic  := INIRec.ReadString(sSecao, 'nrBenefic', '');
+      infoBeneficio.iniBeneficio.dtIniBenef := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniBenef', '0'));
+      infoBeneficio.iniBeneficio.vrBenef    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBenef', ''), 0);
+
+      sSecao := 'infoPenMorte';
+      if INIRec.ReadString(sSecao, 'idQuota', '') <> '' then
+      begin
+        infoBeneficio.iniBeneficio.infoPenMorte.idQuota := INIRec.ReadString(sSecao, 'idQuota', '');
+        infoBeneficio.iniBeneficio.infoPenMorte.cpfInst := INIRec.ReadString(sSecao, 'cpfInst', '');
+      end;
+
+      sSecao := 'altBeneficio';
+      infoBeneficio.altBeneficio.tpBenef    := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
+      infoBeneficio.altBeneficio.nrBenefic  := INIRec.ReadString(sSecao, 'nrBenefic', '');
+      infoBeneficio.altBeneficio.dtIniBenef := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniBenef', '0'));
+      infoBeneficio.altBeneficio.vrBenef    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBenef', ''), 0);
+
+      sSecao := 'infoPenMorte';
+      infoBeneficio.altBeneficio.infoPenMorte.idQuota := INIRec.ReadString(sSecao, 'idQuota', '');
+      infoBeneficio.altBeneficio.infoPenMorte.cpfInst := INIRec.ReadString(sSecao, 'cpfInst', '');
+
+      sSecao := 'fimBeneficio';
+      infoBeneficio.fimBeneficio.tpBenef    := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
+      infoBeneficio.fimBeneficio.nrBenefic  := INIRec.ReadString(sSecao, 'nrBenefic', '');
+      infoBeneficio.fimBeneficio.dtFimBenef := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimBenef', '0'));
+      infoBeneficio.fimBeneficio.mtvFim     := INIRec.ReadInteger(sSecao, 'mtvFim', 0);
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

@@ -382,6 +382,8 @@ type
 
   TCTeConsultaCadastro = class(TCTeWebService)
   private
+    FOldBodyElement: String;
+
     Fversao: String;
     FverAplic: String;
     FcStat: Integer;
@@ -399,11 +401,13 @@ type
     procedure SetCPF(const Value: String);
     procedure SetIE(const Value: String);
   protected
+    procedure InicializarServico; override;
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
     procedure DefinirDadosMsg; override;
     procedure DefinirEnvelopeSoap; override;
     function TratarResposta: Boolean; override;
+    procedure FinalizarServico; override;
 
     function GerarMsgLog: String; override;
     function GerarUFSoap: String; override;
@@ -1937,9 +1941,9 @@ begin
                              'Descrição do status: %s ' + LineBreak +
                              'Protocolo: %s ' + LineBreak +
                              'Data/Hora do registro: %s '),
-                     [IntToStr(InfEvento.nSeqEvento),
-                      TpEventoToStr(InfEvento.TpEvento),
-                      InfEvento.DescEvento,
+                     [IntToStr(retEvento.Items[J].RetInfEvento.nSeqEvento),
+                      TpEventoToStr(retEvento.Items[J].RetInfEvento.TpEvento),
+                      retEvento.Items[J].RetInfEvento.xEvento,
                       IntToStr(retEvento.Items[J].RetInfEvento.cStat),
                       retEvento.Items[J].RetInfEvento.xMotivo,
                       retEvento.Items[J].RetInfEvento.nProt,
@@ -2374,6 +2378,13 @@ begin
   inherited Destroy;
 end;
 
+procedure TCTeConsultaCadastro.FinalizarServico;
+begin
+  inherited FinalizarServico;
+
+  FPBodyElement := FOldBodyElement;
+end;
+
 procedure TCTeConsultaCadastro.Clear;
 begin
   inherited Clear;
@@ -2541,6 +2552,19 @@ end;
 function TCTeConsultaCadastro.GerarUFSoap: String;
 begin
   Result := '<cUF>' + IntToStr(UFparaCodigo(FUF)) + '</cUF>';
+end;
+
+procedure TCTeConsultaCadastro.InicializarServico;
+begin
+  inherited InicializarServico;
+
+  FOldBodyElement := FPBodyElement;
+
+  if (FPConfiguracoesCTe.Geral.VersaoDF >= ve300) and
+    ((UpperCase(FUF) = 'RS') or (Pos('svrs.rs.gov.br', FPURL) > 0)) then
+  begin
+    FPBodyElement := 'consultaCadastro';
+  end;
 end;
 
 { TCTeEnvEvento }
@@ -2769,7 +2793,7 @@ begin
     EventoCTe.Versao := FPVersaoServico;
 
     AjustarOpcoes( EventoCTe.Gerador.Opcoes );
-    EventoCTe.Gerador.Opcoes.RetirarAcentos := False;  // Não funciona sem acentos
+//    EventoCTe.Gerador.Opcoes.RetirarAcentos := False;  // Não funciona sem acentos
 
     EventoCTe.GerarXML;
 
@@ -3319,6 +3343,9 @@ end;
 
 function TWebServices.Envia(ALote: String): Boolean;
 begin
+  FEnviar.Clear;
+  FRetorno.Clear;
+
   FEnviar.Lote := ALote;
 
   if not Enviar.Executar then
@@ -3339,6 +3366,9 @@ end;
 
 function TWebServices.EnviaOS(ALote: String): Boolean;
 begin
+  FEnviar.Clear;
+  FRetorno.Clear;
+
   FEnviar.Lote := ALote;
 
   if not Enviar.Executar then

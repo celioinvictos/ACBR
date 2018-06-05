@@ -123,8 +123,7 @@ type
     FProtocolo: String;
   public
     property dhRecepcao: TDateTime read FdhRecepcao write FdhRecepcao;
-    property versaoAplicRecepcao: String read FversaoAplicRecepcao
-      write FversaoAplicRecepcao;
+    property versaoAplicRecepcao: String read FversaoAplicRecepcao write FversaoAplicRecepcao;
     property Protocolo: String read FProtocolo write FProtocolo;
   end;
 
@@ -132,8 +131,7 @@ type
   private
     FversaoAplicProcLote: String;
   public
-    property versaoAplicProcLote: String read FversaoAplicProcLote
-      write FversaoAplicProcLote;
+    property versaoAplicProcLote: String read FversaoAplicProcLote write FversaoAplicProcLote;
   end;
 
   TRecepcao = class
@@ -220,12 +218,12 @@ type
   private
     FDtAdm: TDateTime;
     FTpRegJor: tpTpRegJor;
-    FdtBase: TDateTime;
+    FdtBase: Integer;
     FcnpjSindCategProf: string;
   public
     property DtAdm: TDateTime read FDtAdm write FDtAdm;
     property TpRegJor: tpTpRegJor read FTpRegJor write FTpRegJor;
-    property dtBase: TDateTime read FdtBase write FdtBase;
+    property dtBase: Integer read FdtBase write FdtBase;
     property  cnpjSindCategProf: string read FcnpjSindCategProf write FcnpjSindCategProf;
   end;
 
@@ -386,8 +384,8 @@ type
     FcdResposta: Integer;
     FdescResposta: String;
   public
-    property cdResposta: Integer read FcdResposta write FcdResposta;
-    property descResposta: String read FdescResposta write FdescResposta;
+    property cdResposta: Integer read FcdResposta;
+    property descResposta: String read FdescResposta;
   end;
 
   TStatusEnvLote = class(TStatusRetorno);
@@ -396,7 +394,7 @@ type
   private
     FTmpConclusao: Integer;
   public
-    property TmpConclusao: Integer read FTmpConclusao write FTmpConclusao;
+    property TmpConclusao: Integer read FTmpConclusao;
   end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -508,7 +506,7 @@ end;
 
 destructor THorarioConsultaCollectionItem.destroy;
 begin
-  FhorarioIntervalo.Free;
+  FreeAndNil(FhorarioIntervalo);
 
   inherited;
 end;
