@@ -87,6 +87,7 @@ const
 type
   TSetOfChars = set of AnsiChar;
   TFormatMask = (msk4x2, msk7x2, msk9x2, msk10x2, msk13x2, msk15x2, msk6x3, msk6x4, mskAliq);
+  TSplitResult = array of string;
   {$IfNDef FPC}
    TLibHandle = THandle;
 
@@ -106,6 +107,7 @@ function ConverteXMLtoNativeString(const AXML: String): String;
 function ObtemDeclaracaoXML(const AXML: String): String;
 function RemoverDeclaracaoXML(const AXML: String): String;
 
+function Split(const ADelimiter: Char; const AString: string): TSplitResult;
 function DecodeToString( const ABinaryString : AnsiString; const StrIsUTF8: Boolean ) : String ;
 function SeparaDados( const AString : String; const Chave : String; const MantemChave : Boolean = False ) : String;
 function SeparaDadosArray( const AArray : Array of String;const AString : String; const MantemChave : Boolean = False ) : String;
@@ -347,7 +349,7 @@ function MatchText(const AText: String; const AValues: array of String): Boolean
 
 function FindDelimiterInText( const AText: String; ADelimiters: String = ''): Char;
 function AddDelimitedTextToList( const AText: String; const ADelimiter: Char;
-   AStringList: TStrings): Integer;
+   AStringList: TStrings; const AQuoteChar: Char = '"'): Integer;
 
 function UnZip(S: TStream): AnsiString; overload;
 function UnZip(const ABinaryString: AnsiString): AnsiString; overload;
@@ -3648,13 +3650,19 @@ end;
 {------------------------------------------------------------------------------
   Quebra a String "AText", em várias linhas, separando-a de acordo com a ocorrência
   de "ADelimiter", e adiciona os Itens encontrados em "AStringList".
-  Retorna o número de Itens Inseridos
+  Retorna o número de Itens Inseridos.
+  Informe #0 em "AQuoteChar", para que as Aspas Duplas sejam ignoradas na divisão
+  Se AQuoteChar for diferente de #0, ele será considerado, para evitar os delimitadores
+  que estão dentro de um contexto do QuoteChar...
+  Veja exemplos de uso e retorno em: "ACBrUtilTeste"
  ------------------------------------------------------------------------------}
 function AddDelimitedTextToList(const AText: String; const ADelimiter: Char;
-  AStringList: TStrings): Integer;
+  AStringList: TStrings; const AQuoteChar: Char): Integer;
 var
   SL: TStringList;
-  ADelimitedText: String;
+  {$IfNDef HAS_STRICTDELIMITER}
+   L, Pi, Pf, Pq: Integer;
+  {$EndIf}
 begin
   Result := 0;
   if (AText = '') then
@@ -3662,16 +3670,48 @@ begin
 
   SL := TStringList.Create;
   try
-    SL.Delimiter := ADelimiter;
-    {$IFDEF FPC}
+    {$IfDef HAS_STRICTDELIMITER}
+     SL.Delimiter := ADelimiter;
+     SL.QuoteChar := AQuoteChar;
      SL.StrictDelimiter := True;
-     ADelimitedText := AText;
-    {$ELSE}
-     ADelimitedText := '"' + StringReplace(AText, ADelimiter,
-                            '"' + ADelimiter + '"', [rfReplaceAll]) +
-                       '"';
-    {$ENDIF}
-    SL.DelimitedText := ADelimitedText;
+     SL.DelimitedText := AText;
+    {$Else}
+     L  := Length(AText);
+     Pi := 1;
+     if (ADelimiter = AQuoteChar) then
+       Pq := L+1
+     else
+     begin
+       Pq := Pos(AQuoteChar, AText);
+       if Pq = 0 then
+         Pq := L+1;
+     end;
+
+     while Pi <= L do
+     begin
+       if (Pq = Pi) then
+       begin
+         Inc(Pi);  // Pula o Quote
+         Pf := PosEx(AQuoteChar, AText, Pi);
+         Pq := Pf;
+       end
+       else
+         Pf := PosEx(ADelimiter, AText, Pi);
+
+       if Pf = 0 then
+         Pf := L+1;
+
+       SL.Add(Copy(AText, Pi, Pf-Pi));
+
+       if (Pq = Pf) then
+       begin
+         Pq := PosEx(AQuoteChar, AText, Pq+1);
+         Inc(Pf);
+       end;
+
+       Pi := Pf + 1;
+     end;
+    {$EndIf}
     Result := SL.Count;
 
     AStringList.AddStrings(SL);
@@ -3698,6 +3738,22 @@ end;
 function Zip(const ABinaryString: AnsiString): AnsiString;
 begin
  Result := ACBrCompress.ZLibCompress(ABinaryString);
+end;
+
+function Split(const ADelimiter: Char; const AString: string): TSplitResult;
+var
+  i, ACount: Integer;
+  vRows: TStrings;
+begin
+  vRows := TStringList.Create;
+  try
+    ACount := AddDelimitedTextToList(AString, ADelimiter, vRows);
+    SetLength(Result, ACount);
+    for i := 0 to ACount - 1 do
+      Result[i] := vRows.Strings[i];
+  finally
+    FreeAndNil(vRows);
+  end;
 end;
 
 {------------------------------------------------------------------------------
@@ -4071,6 +4127,11 @@ begin
   end;
 
   Result := FormatFloatBr(AValue, Mask);
+  {$IfDef FPC}
+  // Workround para BUG em FPC
+  if (AValue > 999) and (pos(',', Mask) > 0) and (pos('.', Result) = 0) then
+    Result := FormatFloatBr(AValue);
+  {$EndIf}
 end;
 
 //*****************************************************************************************

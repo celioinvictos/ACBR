@@ -43,6 +43,73 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+23/04/2018
+[*] Ajuste no método "CriarCFe" do ACBrSAT
+[*] Ajuste no método "ImprimirDANFEPDF" validar protocoloNf em ACBrNFe
+[+] Adicionado Método SetDiretorioArquivo para informar diretório para geração de
+    arquivos via comando no componente ACBrBoleto
+[*] Validação do nome e path do arquivo na geração de Remessa do componente Boleto
+[*] Adicionado tag DataMoraJuros na leitura de retorno do componente Boleto
+       por: José M. S. Junior
+
+18/04/2018
+[*] Ajuste nos métodos que utilizam parâmetros para Visualizar Impressão
+       por: José M. S. Junior
+
+03/04/2018
+[*] Atualização de campos na Função de Geração do .INI através da leitura do XML
+       por: José M. S. Junior
+
+02/04/2018
+[*] Validação e Ajustes na leitura de Respostas do Integrador Fiscal
+       por: José M. S. Junior
+
+19/03/2018
+[*] Ajustes na configuração - Integrador Fiscal
+       Validação Tipo de Documento (NFCe) para validar Integrador
+       por: José M. S. Junior
+
+09/03/2018
+[+] Atualização Componente PosPrinter
+       Adicionado Campos para configurações Gaveta em tela
+       Atualização metodos ESCPOS (Consultar Manual)
+       por: José M. S. Junior
+
+09/03/2018
+[+] Atualização Componente Etiqueta
+       Adicionado Campos para configurações Etiqueta em tela
+       Adicionado Parâmetros: ImprimirReverso / ExibeCodigo (Consultar Manual)
+       Adicionado os métodos:
+       IniciarEtiqueta / FinalizarEtiqueta
+       Unidade / SetUnidade
+       DPI / SetDPI
+       Origem / SetOrigem
+       BackFeed / SetBackFeed
+       Velodicade / SetVelocidade
+       MargemEsquerda / SetMargemEsquerda
+       por: José M. S. Junior
+
+27/02/2018
+[*] Adicionado Menu de Configurações - Integrador Fiscal
+       Adicionado flag em DFe / WebService / NFCe (Usar Integrador Fiscal)
+       Para utilização da NFCe com Integrador Fiscal
+       por: José M. S. Junior
+
+[*] Ajuste Métodos Componente IBGE
+       por: José M. S. Junior
+
+20/02/2018
+[*] Ajuste no Método "GerarChave", conforme alterações do ACBrDFe
+       por: José M. S. Junior
+
+16/02/2018
+[+] Adicionado Métodos de Distribuição para CTe e MDFe
+        CTe.DistribuicaoDFePorNSU(cUF, cCNPJ, nNSU)
+        CTe.DistribuicaoDFePorUltNSU(cUF, cCNPJ, nUltNSU)
+        MDFe.DistribuicaoDFePorNSU(cUF, cCNPJ, nNSU)
+        MDFe.DistribuicaoDFePorUltNSU(cUF, cCNPJ, nUltNSU)
+	por: Italo Jurissato Junior
+
 05/02/2018
 [+] Adicionado Parâmetro "Utilizar Separador para Path PDF" em DFe / Diretórios
         Define se utiliza a mesma Estrutura de diretório definida para XML, se não

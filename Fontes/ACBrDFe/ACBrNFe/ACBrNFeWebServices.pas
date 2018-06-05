@@ -391,6 +391,8 @@ type
 
   TNFeConsultaCadastro = class(TNFeWebService)
   private
+    FOldBodyElement: String;
+
     Fversao: String;
     FverAplic: String;
     FcStat: integer;
@@ -408,11 +410,13 @@ type
     procedure SetCPF(const Value: String);
     procedure SetIE(const Value: String);
   protected
+    procedure InicializarServico; override;
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
     procedure DefinirDadosIntegrador; override;
     procedure DefinirDadosMsg; override;
     function TratarResposta: Boolean; override;
+    procedure FinalizarServico; override;
 
     function GerarMsgLog: String; override;
     function GerarUFSoap: String; override;
@@ -1720,6 +1724,10 @@ end;
 procedure TNFeRetRecepcao.FinalizarServico;
 begin
   // Sobrescrito, para não liberar para stIdle... não ainda...;
+
+  // Retornar configurações anteriores
+  FPDFeOwner.SSL.SSLType := FOldSSLType;
+  FPHeaderElement := FOldHeaderElement;
 end;
 
 function TNFeRetRecepcao.GerarMsgLog: String;
@@ -2181,6 +2189,7 @@ begin
     FprotNFe.digVal := NFeRetorno.protNFe.digVal;
     FprotNFe.cStat := NFeRetorno.protNFe.cStat;
     FprotNFe.xMotivo := NFeRetorno.protNFe.xMotivo;
+    FprotNFe.Versao := NFeRetorno.protNFe.Versao;
 
     {(*}
     if Assigned(NFeRetorno.procEventoNFe) and (NFeRetorno.procEventoNFe.Count > 0) then
@@ -2320,6 +2329,7 @@ begin
             NFe.procNFe.digVal := NFeRetorno.protNFe.digVal;
             NFe.procNFe.cStat := NFeRetorno.cStat;
             NFe.procNFe.xMotivo := NFeRetorno.xMotivo;
+            NFe.procNFe.Versao := NFeRetorno.protNFe.Versao;
 
             if TACBrNFe(FPDFeOwner).CstatCancelada(NFeRetorno.CStat) and
                FPConfiguracoesNFe.Geral.AtualizarXMLCancelado then
@@ -2331,7 +2341,9 @@ begin
               try
                 AProcNFe.XML_NFe := RemoverDeclaracaoXML(XMLOriginal);
                 AProcNFe.XML_Prot := NFeRetorno.XMLprotNFe;
-                AProcNFe.Versao := FPVersaoServico;
+                AProcNFe.Versao := NFeRetorno.protNFe.Versao;
+                if AProcNFe.Versao = '' then
+                  AProcNFe.Versao := FPVersaoServico;
                 AjustarOpcoes( AProcNFe.Gerador.Opcoes );
                 AProcNFe.GerarXML;
 
@@ -2685,6 +2697,12 @@ begin
   inherited Destroy;
 end;
 
+procedure TNFeConsultaCadastro.FinalizarServico;
+begin
+  inherited FinalizarServico;
+  FPBodyElement := FOldBodyElement;
+end;
+
 procedure TNFeConsultaCadastro.Clear;
 begin
   inherited Clear;
@@ -2805,6 +2823,13 @@ begin
     ConCadNFe.GerarXML;
 
     FPDadosMsg := ConCadNFe.Gerador.ArquivoFormatoXML;
+
+    if (FPConfiguracoesNFe.Geral.VersaoDF >= ve400) and
+      ((UpperCase(FUF) = 'RS') or (Pos('svrs.rs.gov.br', FPURL) > 0)) then
+    begin
+      FPDadosMsg := '<nfeDadosMsg>' + FPDadosMsg + '</nfeDadosMsg>';
+    end;
+
   finally
     ConCadNFe.Free;
   end;
@@ -2848,6 +2873,17 @@ end;
 function TNFeConsultaCadastro.GerarUFSoap: String;
 begin
   Result := '<cUF>' + IntToStr(UFparaCodigo(FUF)) + '</cUF>';
+end;
+
+procedure TNFeConsultaCadastro.InicializarServico;
+begin
+  inherited InicializarServico;
+  FOldBodyElement := FPBodyElement;
+  if (FPConfiguracoesNFe.Geral.VersaoDF >= ve400) and
+    ((UpperCase(FUF) = 'RS') or (Pos('svrs.rs.gov.br', FPURL) > 0)) then
+  begin
+    FPBodyElement := 'consultaCadastro';
+  end;
 end;
 
 { TNFeEnvEvento }
@@ -2920,16 +2956,16 @@ begin
     UF := CUFtoUF(ExtrairUFChaveAcesso(FEvento.Evento.Items[0].InfEvento.chNFe));
   end;
 
-  if not (FEvento.Evento.Items[0].InfEvento.tpEvento in [teCCe, teCancelamento, tePedProrrog1, tePedProrrog2, teCanPedProrrog1, teCanPedProrrog2]) then
+  if (FEvento.Evento.Items[0].InfEvento.tpEvento = teEPECNFe) and
+     (FPConfiguracoesNFe.WebServices.UFCodigo = 35) and  // Apenas SP tem EPEC para NFCe, pois não permite off-line
+     (FPConfiguracoesNFe.Geral.ModeloDF = moNFCe) then
+  begin
+    FPLayout := LayNFCeEPEC;
+  end
+  else if not (FEvento.Evento.Items[0].InfEvento.tpEvento in [teCCe, teCancelamento, tePedProrrog1, tePedProrrog2, teCanPedProrrog1, teCanPedProrrog2]) then
   begin
     FPLayout := LayNFeEventoAN;
     UF       := 'AN';
-  end
-  else if (FEvento.Evento.Items[0].InfEvento.tpEvento = teEPECNFe) and
-          (FPConfiguracoesNFe.WebServices.UFCodigo = 35) and  // Apenas SP tem EPEC para NFCe, pois não permite off-line
-          (FPConfiguracoesNFe.Geral.ModeloDF = moNFCe) then
-  begin
-    FPLayout := LayNFCeEPEC;
   end;
 
   FPURL := '';

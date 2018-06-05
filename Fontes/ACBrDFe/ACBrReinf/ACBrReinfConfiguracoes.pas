@@ -1,7 +1,7 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
+{ Projeto: Componente ACBrReinf                                                }
+{  Biblioteca multiplataforma de componentes Delphi para envio de eventos do   }
+{ Reinf                                                                        }
 
 { Direitos Autorais Reservados (c) 2017 Leivio Ramos de Fontenele              }
 {                                                                              }
@@ -39,16 +39,59 @@ interface
 
 
 uses
-  Classes, SysUtils, ACBrDFeConfiguracoes, pcnConversaoReinf;
+  Classes, SysUtils, IniFiles,
+  ACBrDFeConfiguracoes, pcnConversao,
+  pcnConversaoReinf;
 
 type
 
+  { TGeralConfReinf }
+  TGeralConfReinf = class(TGeralConf)
+  private
+    FVersaoDF: TVersaoReinf;
+    FIdContribuinte: string;
+    FTipoContribuinte: TtpInsc;
+
+    procedure SetVersaoDF(const Value: TVersaoReinf);
+    procedure SetTipoContribuinte(const Value: TtpInsc);
+
+  public
+    constructor Create(AOwner: TConfiguracoes); override;
+    procedure Assign(DeGeralConfReinf: TGeralConfReinf); reintroduce;
+    procedure GravarIni(const AIni: TCustomIniFile); override;
+    procedure LerIni(const AIni: TCustomIniFile); override;
+
+  published
+    property VersaoDF: TVersaoReinf read FVersaoDF write SetVersaoDF default v1_02_00;
+    property IdContribuinte: string read FIdContribuinte write FIdContribuinte;
+    property TipoContribuinte: TtpInsc read FTipoContribuinte write SetTipoContribuinte default tiCNPJ;
+  end;
+
+  { TArquivosConfReinf }
+  TArquivosConfReinf = class(TArquivosConf)
+  private
+    FEmissaoPathReinf: Boolean;
+    FPathReinf: String;
+
+  public
+    constructor Create(AOwner: TConfiguracoes); override;
+
+    procedure Assign(DeArquivosConfReinf: TArquivosConfReinf); reintroduce;
+    procedure GravarIni(const AIni: TCustomIniFile); override;
+    procedure LerIni(const AIni: TCustomIniFile); override;
+
+    function GetPathReinf(Data: TDateTime = 0; CNPJ: String = ''): String;
+
+  published
+    property EmissaoPathReinf: Boolean read FEmissaoPathReinf write FEmissaoPathReinf default False;
+    property PathReinf: String read FPathReinf write FPathReinf;
+  end;
+
+  { TConfiguracoesReinf }
   TConfiguracoesReinf = class(TConfiguracoes)
   private
-    FVersaoReinf: TpcnVersaoReinf;
-    function GetArquivos: TArquivosConf;
-    function GetGeral: TGeralConf;
-    procedure SetVersaoReinf(const Value: TpcnVersaoReinf);
+    function GetArquivos: TArquivosConfReinf;
+    function GetGeral: TGeralConfReinf;
   protected
     procedure CreateGeralConf; override;
     procedure CreateArquivosConf; override;
@@ -56,56 +99,142 @@ type
     constructor Create(AOwner: TComponent); override;
     procedure Assign(DeConfiguracoesReinf: TConfiguracoesReinf); reintroduce;
   published
-    property VersaoReinf: TpcnVersaoReinf read FVersaoReinf write SetVersaoReinf default v1_02_00;
-    property Geral: TGeralConf read GetGeral;
-    property Arquivos: TArquivosConf read GetArquivos;
+    property Geral: TGeralConfReinf read GetGeral;
+    property Arquivos: TArquivosConfReinf read GetArquivos;
     property WebServices;
     property Certificados;
   end;
 
 implementation
 
+uses
+  ACBrReinf;
+
 { TConfiguracoesReinf }
+
+constructor TConfiguracoesReinf.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  FPSessaoIni := 'Reinf';
+  WebServices.ResourceName := 'ACBrReinfServicos';
+end;
 
 procedure TConfiguracoesReinf.Assign(DeConfiguracoesReinf: TConfiguracoesReinf);
 begin
-  VersaoReinf := DeConfiguracoesReinf.VersaoReinf;
   Geral.Assign(DeConfiguracoesReinf.Geral);
   WebServices.Assign(DeConfiguracoesReinf.WebServices);
   Certificados.Assign(DeConfiguracoesReinf.Certificados);
   Arquivos.Assign(DeConfiguracoesReinf.Arquivos);
 end;
 
-constructor TConfiguracoesReinf.Create(AOwner: TComponent);
+function TConfiguracoesReinf.GetArquivos: TArquivosConfReinf;
 begin
-  inherited Create(AOwner);
-  WebServices.ResourceName := 'ACBrReinfServices';
+  Result := TArquivosConfReinf(FPArquivos);
 end;
 
-procedure TConfiguracoesReinf.CreateArquivosConf;
+function TConfiguracoesReinf.GetGeral: TGeralConfReinf;
 begin
-  FPArquivos := TArquivosConf.Create(self);
+  Result := TGeralConfReinf(FPGeral);
 end;
 
 procedure TConfiguracoesReinf.CreateGeralConf;
 begin
-  FPGeral := TGeralConf.Create(Self);
-  FVersaoReinf := v1_02_00;
+  FPGeral := TGeralConfReinf.Create(Self);
 end;
 
-function TConfiguracoesReinf.GetArquivos: TArquivosConf;
+procedure TConfiguracoesReinf.CreateArquivosConf;
 begin
-  Result := TArquivosConf(FPArquivos);
+  FPArquivos := TArquivosConfReinf.Create(self);
 end;
 
-function TConfiguracoesReinf.GetGeral: TGeralConf;
+{ TGeralConfReinf }
+
+constructor TGeralConfReinf.Create(AOwner: TConfiguracoes);
 begin
-  Result := TGeralConf(FPGeral);
+  inherited Create(AOwner);
+
+  FVersaoDF := v1_02_00;
+  FIdContribuinte := '';
+  FTipoContribuinte := tiCNPJ;
 end;
 
-procedure TConfiguracoesReinf.SetVersaoReinf(const Value: TpcnVersaoReinf);
+procedure TGeralConfReinf.Assign(DeGeralConfReinf: TGeralConfReinf);
 begin
-  FVersaoReinf := Value;
+  inherited Assign(DeGeralConfReinf);
+
+  VersaoDF := DeGeralConfReinf.VersaoDF;
+  IdContribuinte := DeGeralConfReinf.IdContribuinte;
+  TipoContribuinte := DeGeralConfReinf.TipoContribuinte;
+end;
+
+procedure TGeralConfReinf.SetTipoContribuinte(const Value: TtpInsc);
+begin
+  FTipoContribuinte := Value;
+end;
+
+procedure TGeralConfReinf.SetVersaoDF(const Value: TVersaoReinf);
+begin
+  FVersaoDF := Value;
+end;
+
+procedure TGeralConfReinf.GravarIni(const AIni: TCustomIniFile);
+begin
+  inherited GravarIni(AIni);
+
+  AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'VersaoDF', Integer(VersaoDF));
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'IdContribuinte', IdContribuinte);
+  AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'TipoContribuinte', Integer(TipoContribuinte));
+end;
+
+procedure TGeralConfReinf.LerIni(const AIni: TCustomIniFile);
+begin
+  inherited LerIni(AIni);
+
+  VersaoDF := TVersaoReinf(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'VersaoDF', Integer(VersaoDF)));
+  IdContribuinte := AIni.ReadString(fpConfiguracoes.SessaoIni, 'IdContribuinte', IdContribuinte);
+  TipoContribuinte := TtpInsc(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'TipoContribuinte', Integer(TipoContribuinte)));
+end;
+
+{ TArquivosConfReinf }
+
+constructor TArquivosConfReinf.Create(AOwner: TConfiguracoes);
+begin
+  inherited Create(AOwner);
+
+  FEmissaoPathReinf := False;
+  FPathReinf := '';
+end;
+
+procedure TArquivosConfReinf.Assign(
+  DeArquivosConfReinf: TArquivosConfReinf);
+begin
+  inherited Assign(DeArquivosConfReinf);
+
+  EmissaoPathReinf := DeArquivosConfReinf.EmissaoPathReinf;
+  PathReinf        := DeArquivosConfReinf.PathReinf;
+end;
+
+function TArquivosConfReinf.GetPathReinf(Data: TDateTime;
+  CNPJ: String): String;
+begin
+  Result := GetPath(PathReinf, ACBRREINF_MODELODF, CNPJ, Data, ACBRREINF_MODELODF);
+end;
+
+procedure TArquivosConfReinf.GravarIni(const AIni: TCustomIniFile);
+begin
+  inherited GravarIni(AIni);
+
+  AIni.WriteBool(fpConfiguracoes.SessaoIni, 'EmissaoPathReinf', EmissaoPathReinf);
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'PathReinf', PathReinf);
+end;
+
+procedure TArquivosConfReinf.LerIni(const AIni: TCustomIniFile);
+begin
+  inherited LerIni(AIni);
+
+  EmissaoPathReinf := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'EmissaoPathReinf', EmissaoPathReinf);
+  PathReinf := AIni.ReadString(fpConfiguracoes.SessaoIni, 'PathReinf', PathReinf);
 end;
 
 end.

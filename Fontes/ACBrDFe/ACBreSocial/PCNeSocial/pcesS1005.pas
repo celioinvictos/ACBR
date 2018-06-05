@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes, Controls,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -81,7 +81,6 @@ type
 
   TS1005CollectionItem = class(TCollectionItem)
   private
-//    FIniciais : TComponent;
     FTipoEvento: TTipoEvento;
     FevtTabEstab: TevtTabEstab;
   public
@@ -227,12 +226,11 @@ type
 
   TEvtTabEstab = class(TeSocialEvento)
   private
-//    FIniciais: TComponent;
-//    FXMLAssinado: String;
     FModoLancamento: TModoLancamento;
     FIdeEvento: TIdeEvento;
     FIdeEmpregador: TIdeEmpregador;
     FInfoEstab: TInfoEstab;
+    FACBreSocial: TObject;
 
     {. Geradores especificos desta classe .}
     procedure GerarInfoEntEduc;
@@ -247,7 +245,8 @@ type
     constructor Create(AACBreSocial: TObject); overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property ideEvento: TIdeEvento read FIdeEvento write FIdeEvento;
@@ -256,6 +255,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TDadosEstab }
 
@@ -395,6 +398,7 @@ constructor TEvtTabEstab.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoEstab := TInfoEstab.Create;
@@ -415,7 +419,7 @@ begin
 
   Gerador.wCampo(tcStr, '', 'cnaePrep', 1, 7, 1, infoEstab.DadosEstab.cnaePrep);
 
-  GerarAliqGilRat(infoEstab.DadosEstab.aliqGilrat, 'aliqGilrat');
+  GerarAliqGilRat(FIdeEmpregador, infoEstab.DadosEstab.aliqGilrat, 'aliqGilrat');
   GerarInfoCaepf;
   GerarInfoObra;
   GerarInfoTrab;
@@ -519,11 +523,12 @@ begin
   end;
 end;
 
-function TEvtTabEstab.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTabEstab.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabEstab');
     Gerador.wGrupo('evtTabEstab Id="' + Self.Id + '"');
@@ -560,6 +565,114 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtTabEstab.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabEstab';
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideEstab';
+      infoEstab.ideEstab.tpInsc   := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      infoEstab.ideEstab.NrInsc   := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+      infoEstab.ideEstab.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoEstab.ideEstab.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (FModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosEstab';
+        infoEstab.DadosEstab.cnaePrep   := INIRec.ReadString(sSecao, 'cnaePrep', EmptyStr);
+
+        sSecao := 'aliqGilrat';
+        infoEstab.DadosEstab.aliqGilrat.AliqRat      :=eSStrToAliqRat(Ok, INIRec.ReadString(sSecao, 'aliqRat', '1'));
+        infoEstab.DadosEstab.aliqGilrat.Fap          := StringToFloatDef(INIRec.ReadString(sSecao, 'fap', ''), 0);
+        infoEstab.DadosEstab.aliqGilrat.AliqRatAjust := StringToFloatDef(INIRec.ReadString(sSecao, 'aliqRatAjust', ''), 0);
+
+        sSecao := 'procAdmJudRat';
+        infoEstab.DadosEstab.aliqGilrat.ProcAdmJudRat.tpProc  := eSStrToTpProcesso(Ok, INIRec.ReadString(sSecao, 'tpProc', '1'));
+        infoEstab.DadosEstab.aliqGilrat.ProcAdmJudRat.nrProc  := INIRec.ReadString(sSecao, 'nrProc', EmptyStr);
+        infoEstab.DadosEstab.aliqGilrat.ProcAdmJudRat.codSusp := INIRec.ReadString(sSecao, 'codSusp', EmptyStr);
+
+        sSecao := 'procAdmJudFap';
+        infoEstab.DadosEstab.aliqGilrat.ProcAdmJudFap.tpProc  := eSStrToTpProcesso(Ok, INIRec.ReadString(sSecao, 'tpProc', '1'));
+        infoEstab.DadosEstab.aliqGilrat.ProcAdmJudFap.nrProc  := INIRec.ReadString(sSecao, 'nrProc', EmptyStr);
+        infoEstab.DadosEstab.aliqGilrat.ProcAdmJudFap.codSusp := INIRec.ReadString(sSecao, 'codSusp', EmptyStr);
+
+        sSecao := 'infoCaepf';
+        infoEstab.DadosEstab.infoCaepf.tpCaepf := eSStrTotpCaepf(Ok, INIRec.ReadString(sSecao, 'tpCaepf', '1'));
+
+        sSecao := 'infoObra';
+        infoEstab.DadosEstab.InfoObra.indSubstPatrObra := eSStrToIndSubstPatronalObra(Ok, INIRec.ReadString(sSecao, 'indSubstPatrObra', '1'));
+
+        sSecao := 'infoTrab';
+        infoEstab.DadosEstab.infoTrab.regPt := eSStrToTpRegPt(Ok, INIRec.ReadString(sSecao, 'regPt', '0'));
+
+        sSecao := 'infoApr';
+        infoEstab.DadosEstab.infoTrab.infoApr.contApr   := eSStrToTpContApr(Ok, INIRec.ReadString(sSecao, 'contApr', '0'));
+        infoEstab.DadosEstab.infoTrab.infoApr.nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', EmptyStr);
+        infoEstab.DadosEstab.infoTrab.infoApr.contEntEd := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'contEntEd', 'S'));
+
+        I := 1;
+        while true do
+        begin
+          // de 01 até 99
+          sSecao := 'infoEntEduc' + IntToStrZero(I, 2);
+          sFim   := INIRec.ReadString(sSecao, 'nrInsc', 'FIM');
+
+          if (sFim = 'FIM') or (Length(sFim) <= 0) then
+            break;
+
+          with infoEstab.DadosEstab.infoTrab.infoApr.FInfoEntEduc.Add do
+          begin
+            nrInsc := sFim;
+          end;
+
+          Inc(I);
+        end;
+
+        sSecao := 'infoPCD';
+        infoEstab.DadosEstab.infoTrab.infoPCD.contPCD   := eSStrToTpContPCD(Ok, INIRec.ReadString(sSecao, 'contPCD', '0'));
+        infoEstab.DadosEstab.infoTrab.infoPCD.nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', EmptyStr);
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoEstab.NovaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoEstab.NovaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;  
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 { TS1005CollectionItem }

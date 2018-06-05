@@ -1,7 +1,7 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
+{ Projeto: Componente ACBrReinf                                                }
+{  Biblioteca multiplataforma de componentes Delphi para envio de eventos do   }
+{ Reinf                                                                        }
 
 { Direitos Autorais Reservados (c) 2017 Leivio Ramos de Fontenele              }
 {                                                                              }
@@ -41,11 +41,11 @@ unit ACBrReinfEventos;
 
 interface
 
-uses Classes, Sysutils, pcnGerador, pcnConversaoReinf, ACBrReinfEventosBase, ACBrDFe,
-  ACBrReinfR1000, ACBrReinfR1070, ACBrReinfR2010, ACBrReinfR2020,
-  ACBrReinfR2030, ACBrReinfR2040, ACBrReinfR2050,
-  ACBrReinfR2060, ACBrReinfR2070, ACBrReinfR2098, ACBrReinfR2099,
-  ACBrReinfR3010, ACBrReinfR9000;
+uses
+  Classes, Sysutils, pcnGerador, pcnConversaoReinf, ACBrReinfEventosBase, ACBrDFe,
+  pcnReinfR1000, pcnReinfR1070, pcnReinfR2010, pcnReinfR2020, pcnReinfR2030,
+  pcnReinfR2040, pcnReinfR2050, pcnReinfR2060, pcnReinfR2070, pcnReinfR2098,
+  pcnReinfR2099, pcnReinfR3010, pcnReinfR9000;
 
 type
 
@@ -72,14 +72,14 @@ type
     function AddR9000: TR9000;
     function GetXml: AnsiString;
     constructor Create(AACBrReinf: TACBrDFe); reintroduce;
+
     property Items: TEventoReinfs read FEventos;
   end;
 
 implementation
 
-{ TEventoReinf }
-uses pcnAuxiliar, ACBrUtil, pcnLeitor, ACBrReinf, ACBrReinfUtils, pcnConversao,
-  DateUtils;
+uses
+  pcnAuxiliar, ACBrUtil, pcnLeitor, ACBrReinf, pcnConversao, DateUtils;
 
 { TEventos }
 
@@ -171,7 +171,7 @@ var
   Xml: AnsiString;
   J, i: Integer;
   Eventosxml: string;
-  Path: string;
+//  Path: string;
 begin
   if Items.Count >  0 then
   begin
@@ -179,33 +179,43 @@ begin
       Items.Items[J].GerarXML(True, J + 1);
 
     Eventosxml := EmptyStr;
-    Xml := '<Reinf xmlns="http://www.reinf.esocial.gov.br/schemas/envioLoteEventos/'+ TACBrReinf( FACBrReinf ).Versao +'">' +
-      '<loteEventos>';
+    Xml := '<Reinf xmlns="http://www.reinf.esocial.gov.br/schemas/envioLoteEventos/v' +
+              VersaoReinfToStr(TACBrReinf( FACBrReinf ).Configuracoes.Geral.VersaoDF) +'">' +
+             '<loteEventos>';
 
-     for i := 0 to Items.Count - 1 do
-       Eventosxml := Eventosxml + '<evento id="'+ Items.Items[i].Id(i + 1) +'"> ' +  StringReplace(string(Items.Items[i].XML), '<' + ENCODING_UTF8 + '>', '', []) + '</evento>';
+    for i := 0 to Items.Count - 1 do
+      Eventosxml := Eventosxml +
+                    '<evento id="' + Items.Items[i].Id(i + 1) + '">' +
+                      StringReplace(string(Items.Items[i].XML), '<' + ENCODING_UTF8 + '>', '', []) +
+                    '</evento>';
 
     Xml := Xml + AnsiString(Eventosxml);
-    Xml := Xml +
-      '</loteEventos>' +
-    '</Reinf>';
+    Xml := Xml + '</loteEventos>' +
+              '</Reinf>';
 
     FXML := string(AnsiToUtf8(Xml));
     result := Xml;
-    if TACBrReinf(FACBrReinf).Configuracoes.Geral.Salvar then
+    (*
+    with TACBrReinf(FACBrReinf) do
     begin
-      Path := TACBrReinf(FACBrReinf).Configuracoes.Arquivos.PathSalvar;
-      if (Path <> EmptyStr) and not DirectoryExists(Path) then
-        ForceDirectories(Path);
+      if Configuracoes.Geral.Salvar then
+      begin
+        Path := PathWithDelim(Configuracoes.Arquivos.GetPathReinf(Now, Configuracoes.Geral.IdContribuinte));
 
-      with TStringList.Create do
-      try
-        Text := FXml;
-        SaveToFile(Path+'\'+'ReinfLoteEventos'+'-'+ IntTostr(Dayof(Now)) + IntTostr(MonthOf(Now)) + IntTostr(YearOf(Now))+ '_'+ IntTostr(HourOf(Now))+ IntTostr(MinuteOf(Now))+IntTostr(SecondOf(Now)) + '_' +IntTostr(MilliSecondOf(Now)) + '.xml');
-      finally
-        Free;
+        with TStringList.Create do
+        try
+          Text := FXml;
+
+          SaveToFile(Path + '\' + 'ReinfLoteEventos' + '-' + IntTostr(Dayof(Now)) +
+                   IntTostr(MonthOf(Now)) + IntTostr(YearOf(Now)) + '_' +
+                   IntTostr(HourOf(Now)) + IntTostr(MinuteOf(Now)) +
+                   IntTostr(SecondOf(Now)) + '_' + IntTostr(MilliSecondOf(Now)) + '.xml');
+        finally
+          Free;
+        end;
       end;
     end;
+    *)
   end
   else
     raise EACBReinfException.Create('Nenhum evento adicionado.');

@@ -2,7 +2,7 @@
 { Projeto: Componente ACBreSocial }
 { Biblioteca multiplataforma de componentes Delphi para envio dos eventos do }
 { eSocial - http://www.esocial.gov.br/ }
-{  }
+{ }
 { Direitos Autorais Reservados (c) 2008 Wemerson Souto }
 { Daniel Simoes de Almeida }
 { André Ferreira de Moraes }
@@ -49,7 +49,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, IniFiles, ShellAPI, StdCtrls, Buttons, DateUtils, Spin, ExtCtrls,
   ComCtrls,
-  ACBrBase, ACBrDFe, ACBrUtil, ACBreSocial, ACBrMail, pcesConversaoeSocial,
+  ACBrBase, ACBrDFe, ACBrUtil, ACBreSocial, ACBrMail,
+  pcesConversaoeSocial, pcesS5001, pcesS5002, pcesS5011, pcesS5012,
   pcnConversao,
   ufrmStatus;
 
@@ -220,6 +221,10 @@ type
     memoLog: TMemo;
     Label7: TLabel;
     cbTEmpregador: TComboBox;
+    btnCarregarXML: TButton;
+    btnCarregarINI: TButton;
+    btnGerarEnviar: TButton;
+    cbs2260: TCheckBox;
 
     procedure btnGerarClick(Sender: TObject);
 
@@ -260,6 +265,9 @@ type
     procedure btnConsultarClick(Sender: TObject);
     procedure ACBreSocial1TransmissaoEventos(const AXML: AnsiString;
       ATipo: TeSocialEventos);
+    procedure btnCarregarXMLClick(Sender: TObject);
+    procedure btnCarregarINIClick(Sender: TObject);
+    procedure btnGerarEnviarClick(Sender: TObject);
   private
     { Private declarations }
     // procedures eventos de tabela
@@ -300,6 +308,7 @@ type
     procedure GerareSocial2240;
     procedure GerareSocial2241;
     procedure GerareSocial2250;
+    procedure GerareSocial2260;
     procedure GerareSocial2298;
     procedure GerareSocial2299;
     procedure GerareSocial2300;
@@ -331,8 +340,7 @@ const
   SELDIRHELP = 1000;
 
 {$R *.dfm}
-
-{ TFExemploEsocial }
+  { TFExemploEsocial }
 
 procedure TFExemploEsocial.GerareSocial1000;
 var
@@ -1224,7 +1232,7 @@ begin
     with EvtPgtos.ideBenef.InfoPgto.Add do
     begin
       DtPgto := StrToDate('10/06/2015');
-      tpPgto := tpPgtoFl;
+      tpPgto := tpPgtoRemun1200;
       IndResBr := tpNao;
       // -OS GRUPOS ABAIXO SÃO OPCIONAIS
       // grupo detPgtoFl agora é um collection
@@ -1355,8 +1363,7 @@ begin
       indAquis := tpIdAquis(0);
       vlrTotAquis := 520000.80;
 
-      with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-        .IdeProdutor.Add do
+      with IdeProdutor.Add do
       begin
         tpInscProd := tiCNPJ;
         nrInscProd := '98765432100015';
@@ -1365,8 +1372,7 @@ begin
         vrRatDescPR := 500.30;
         vrSenarDesc := 2500.30;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[0].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '64896549898789';
@@ -1377,8 +1383,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[0].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1389,8 +1394,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[0].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1401,8 +1405,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[0].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1413,8 +1416,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[0].InfoProcJud.Add do
+        with InfoProcJud.Add do
         begin
           nrProcJud := '56464897';
           codSusp := 333;
@@ -1424,8 +1426,7 @@ begin
         end;
       end;
 
-      with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-        .IdeProdutor.Add do
+      with IdeProdutor.Add do
       begin
         tpInscProd := tiCNPJ;
         nrInscProd := '98765432100015';
@@ -1434,8 +1435,7 @@ begin
         vrRatDescPR := 500.30;
         vrSenarDesc := 2500.30;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[1].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1446,8 +1446,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[1].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1458,8 +1457,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[1].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1470,8 +1468,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[1].Nfs.Add do
+        with Nfs.Add do
         begin
           serie := '00004';
           nrDocto := '648965498987894';
@@ -1482,8 +1479,7 @@ begin
           vrSenarDesc := 2500.30;
         end;
 
-        with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
-          .IdeProdutor.Items[0].InfoProcJud.Add do
+        with InfoProcJud.Add do
         begin
           nrProcJud := '56464897';
           codSusp := 222;
@@ -1494,6 +1490,153 @@ begin
       end;
 
     end;
+
+    with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Add do
+    begin
+      indAquis := tpIdAquis(1);
+      vlrTotAquis := 520000.80;
+
+      with IdeProdutor.Add do
+      begin
+        tpInscProd := tiCPF;
+        nrInscProd := '74913476653';
+        vlrBruto := 4000.54;
+        vrCPDescPR := 3850.32;
+        vrRatDescPR := 500.30;
+        vrSenarDesc := 2500.30;
+
+
+        with Nfs.Add do
+        begin
+          serie := '00004';
+          nrDocto := '64896549898789';
+          dtEmisNF := Now;
+          vlrBruto := 4000.54;
+          vrCPDescPR := 3850.32;
+          vrRatDescPR := 500.30;
+          vrSenarDesc := 2500.30;
+        end;
+
+        with Nfs.Add do
+        begin
+          serie := '00004';
+          nrDocto := '648965498987894';
+          dtEmisNF := Now;
+          vlrBruto := 4000.54;
+          vrCPDescPR := 3850.32;
+          vrRatDescPR := 500.30;
+          vrSenarDesc := 2500.30;
+        end;
+
+
+        with InfoProcJud.Add do
+        begin
+          nrProcJud := '00000002';
+          codSusp := 222;
+          vrCPNRet := 22222.22;
+          vrRatNRet := 22222.22;
+          vrSenarNRet := 22222.22;
+        end;
+      end;
+
+      with IdeProdutor.Add do
+      begin
+        tpInscProd := tiCPF;
+        nrInscProd := '00003476653';
+        vlrBruto := 4000.54;
+        vrCPDescPR := 3850.32;
+        vrRatDescPR := 500.30;
+        vrSenarDesc := 2500.30;
+
+
+
+        with IdeProdutor.Items[0].InfoProcJud.Add do
+        begin
+          nrProcJud := '33333333';
+          codSusp := 333;
+          vrCPNRet := 33333.99;
+          vrRatNRet := 33333.88;
+          vrSenarNRet := 33333.77;
+        end;
+      end;
+
+    end;
+
+
+
+    //3o
+    with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Add do
+    begin
+      indAquis := tpIdAquis(2);
+      vlrTotAquis := 33300.80;
+
+      with EvtAqProd.InfoAquisProd.IdeEstabAdquir.TpAquis.Items[0]
+        .IdeProdutor.Add do
+      begin
+        tpInscProd := tiCPF;
+        nrInscProd := '74913476653';
+        vlrBruto := 4000.54;
+        vrCPDescPR := 3850.32;
+        vrRatDescPR := 500.30;
+        vrSenarDesc := 2500.30;
+
+
+        with Nfs.Add do
+        begin
+          serie := '00004';
+          nrDocto := '64896549898789';
+          dtEmisNF := Now;
+          vlrBruto := 4000.54;
+          vrCPDescPR := 3850.32;
+          vrRatDescPR := 500.30;
+          vrSenarDesc := 2500.30;
+        end;
+
+        with Nfs.Add do
+        begin
+          serie := '00004';
+          nrDocto := '648965498987894';
+          dtEmisNF := Now;
+          vlrBruto := 4000.54;
+          vrCPDescPR := 3850.32;
+          vrRatDescPR := 500.30;
+          vrSenarDesc := 2500.30;
+        end;
+
+
+        with InfoProcJud.Add do
+        begin
+          nrProcJud := '00000002';
+          codSusp := 222;
+          vrCPNRet := 22222.22;
+          vrRatNRet := 22222.22;
+          vrSenarNRet := 22222.22;
+        end;
+      end;
+
+      with IdeProdutor.Add do
+      begin
+        tpInscProd := tiCPF;
+        nrInscProd := '00003476653';
+        vlrBruto := 4000.54;
+        vrCPDescPR := 3850.32;
+        vrRatDescPR := 500.30;
+        vrSenarDesc := 2500.30;
+
+
+
+        with InfoProcJud.Add do
+        begin
+          nrProcJud := '33333333';
+          codSusp := 333;
+          vrCPNRet := 33333.99;
+          vrRatNRet := 33333.88;
+          vrSenarNRet := 33333.77;
+        end;
+      end;
+
+    end;
+
   end;
 end;
 
@@ -1990,7 +2133,7 @@ begin
 
     with EvtAdmissao.Trabalhador.Dependente.Add do
     begin
-      tpDep := tdFilhoOuEnteadoAte21Anos;
+      tpDep := tdFilhoOuEnteado;
       nmDep := 'Dependente 2';
       DtNascto := date;
       cpfDep := '12345678901';
@@ -2233,7 +2376,7 @@ begin
 
     with EvtAltCadastral.Trabalhador.Dependente.Add do
     begin
-      tpDep := tdFilhoOuEnteadoAte21Anos;
+      tpDep := tdFilhoOuEnteado;
       nmDep := 'Dependente 2';
       DtNascto := date;
       cpfDep := '12345678901';
@@ -2532,7 +2675,8 @@ begin
     EvtAfastTemp.IdeVinculo.Matricula := 'A123';
 
     EvtAfastTemp.infoAfastamento.iniAfastamento.DtIniAfast := Now;
-    EvtAfastTemp.infoAfastamento.iniAfastamento.codMotAfast := mtvAcidenteDoencaTrabalho;
+    EvtAfastTemp.infoAfastamento.iniAfastamento.codMotAfast :=
+      mtvAcidenteDoencaTrabalho;
     EvtAfastTemp.infoAfastamento.iniAfastamento.infoMesmoMtv := tpNao;
     EvtAfastTemp.infoAfastamento.iniAfastamento.tpAcidTransito := tpatOutros;
     EvtAfastTemp.infoAfastamento.iniAfastamento.observacao :=
@@ -2821,6 +2965,49 @@ begin
   end;
 end;
 
+procedure TFExemploEsocial.GerareSocial2260;
+begin
+ with ACBreSocial1.Eventos.NaoPeriodicos.S2260.Add do
+  begin
+
+    EvtConvInterm.id                    := '1';
+    EvtConvInterm.IdeEvento.indRetif    := tpIndRetificacao(0);
+    //EvtConvInterm.IdeEvento.NrRecibo := '65.5454.987798798798';
+    EvtConvInterm.IdeEvento.TpAmb       := taProducaoRestrita;
+    EvtConvInterm.IdeEvento.ProcEmi     := TpProcEmi(0);
+    EvtConvInterm.IdeEvento.VerProc     := '1.0';
+
+
+    EvtConvInterm.IdeEmpregador.TpInsc := tpTpInsc(1);
+    EvtConvInterm.IdeEmpregador.NrInsc := '12345678901234';
+
+
+
+    EvtConvInterm.IdeVinculo.CpfTrab      := '04855800392';
+    EvtConvInterm.IdeVinculo.NisTrab      := '16179749354';
+    EvtConvInterm.IdeVinculo.matricula    := '54546';
+
+    EvtConvInterm.InfoConvInterm.codConv  := '1';
+    EvtConvInterm.InfoConvInterm.dtInicio := now;
+    EvtConvInterm.InfoConvInterm.dtFim    := now+3;
+
+    EvtConvInterm.InfoConvInterm.jornada.codHorContrat := '1';
+    EvtConvInterm.InfoConvInterm.jornada.dscJornada    := 'Descrição da Jornada';
+
+
+    EvtConvInterm.InfoConvInterm.localTrab.indLocal                    := '1';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.TpLograd    := 'Rua';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.DscLograd   := '1o Abril';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.NrLograd    := '10';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.Complemento := 'compl';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.Bairro      := 'Bairro';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.Cep         := '35570000';
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.CodMunic    := 3126109;
+    EvtConvInterm.InfoConvInterm.localTrab.localTrabInterm.UF          := ufMG
+  end;
+
+end;
+
 procedure TFExemploEsocial.GerareSocial2298;
 begin
   with ACBreSocial1.Eventos.NaoPeriodicos.S2298.Add do
@@ -2883,9 +3070,12 @@ begin
 
     EvtDeslig.InfoDeslig.indCumprParc := cpaCumprimentoTotal;
 
-    // Obsercação opcional
-    EvtDeslig.InfoDeslig.observacao :=
-      'Anotações relevantes sobre o desligamento que não tenham campo próprio';
+    // Obsercação opcional - versão 2.04.01
+    EvtDeslig.InfoDeslig.observacao := 'Anotações relevantes sobre o desligamento que não tenham campo próprio';
+
+    // Obsercação opcional - versão 2.04.02
+    with EvtDeslig.InfoDeslig.observacoes.Add do
+     observacao := 'Anotações relevantes sobre o desligamento que não tenham campo próprio';
 
     EvtDeslig.InfoDeslig.SucessaoVinc.cnpjEmpregAnt := '12345678912345';
     // Corrigir nome do campo ou mudar classe.
@@ -2972,9 +3162,13 @@ begin
 
     EvtDeslig.InfoDeslig.Quarentena.dtFimQuar := Now;
 
-    EvtDeslig.InfoDeslig.consigFGTS.idConsig := tpSim;
-    EvtDeslig.InfoDeslig.consigFGTS.insConsig := '12345';
-    EvtDeslig.InfoDeslig.consigFGTS.nrContr := '123456';
+    with EvtDeslig.InfoDeslig.consigFGTS.Add do
+    begin
+      idConsig := tpSim;
+      insConsig := '12345';
+      nrContr := '123456';
+    end;
+
   end;
 end;
 
@@ -3081,7 +3275,7 @@ begin
 
     with EvtTSVInicio.Trabalhador.Dependente.Add do
     begin
-      tpDep := tdFilhoOuEnteadoAte21Anos;
+      tpDep := tdFilhoOuEnteado;
       nmDep := 'Dependente 2';
       DtNascto := date;
       cpfDep := '99999999909';
@@ -3096,7 +3290,7 @@ begin
 
     EvtTSVInicio.infoTSVInicio.CodCateg := 101;
     EvtTSVInicio.infoTSVInicio.dtInicio := date;
-    EvtTSVInicio.infoTSVInicio.natAtivididade := navUrbano;
+    EvtTSVInicio.infoTSVInicio.natAtividade := navUrbano;
 
     EvtTSVInicio.infoTSVInicio.InfoComplementares.cargoFuncao.CodCargo := '001';
     EvtTSVInicio.infoTSVInicio.InfoComplementares.cargoFuncao.CodFuncao
@@ -3208,7 +3402,7 @@ begin
     EvtTSVAltContr.IdeTrabSemVinc.CodCateg := 555;
 
     EvtTSVAltContr.infoTSVAlteracao.dtAlteracao := date;
-    EvtTSVAltContr.infoTSVAlteracao.natAtivididade := navUrbano;
+    EvtTSVAltContr.infoTSVAlteracao.natAtividade := navUrbano;
 
     EvtTSVAltContr.infoTSVAlteracao.InfoComplementares.cargoFuncao.
       CodCargo := '001';
@@ -3455,18 +3649,16 @@ procedure TFExemploEsocial.btnGerarClick(Sender: TObject);
 begin
   SelecionaEventos;
 
-  ACBreSocial1.Eventos.TipoEmpregador := ACBreSocial1.Configuracoes.Geral.TipoEmpregador;
   ACBreSocial1.Eventos.GerarXMLs;
   ACBreSocial1.Eventos.SaveToFiles;
-  ACBreSocial1.Eventos.Clear;
 
   MemoResp.Lines.Add('XML de Eventos Gerados com Sucesso!');
   pgWebservice.ActivePageIndex := 3;
 end;
 
-procedure TFExemploEsocial.btnEnviarClick(Sender: TObject);
+procedure TFExemploEsocial.btnGerarEnviarClick(Sender: TObject);
 var
-  I: Integer;
+  i: Integer;
 begin
   if chkClear.Checked then
     LimparDocsPasta;
@@ -3496,17 +3688,77 @@ begin
           Add(' - TpInsc: ' + eSTpInscricaoToStr(IdeTransmissor.TpInsc));
           Add(' - NrInsc: ' + IdeTransmissor.NrInsc);
           Add('dadosRecepcaoLote');
-          Add(' - dhRecepcao..............: ' + DateTimeToStr(dadosRecLote.dhRecepcao));
-          Add(' - versaoAplicativoRecepcao: ' + dadosRecLote.versaoAplicRecepcao);
+          Add(' - dhRecepcao..............: ' +
+            DateTimeToStr(dadosRecLote.dhRecepcao));
+          Add(' - versaoAplicativoRecepcao: ' +
+            dadosRecLote.versaoAplicRecepcao);
           Add(' - protocoloEnvio..........: ' + dadosRecLote.Protocolo);
         end
         else
         begin
-          for I := 0 to Status.Ocorrencias.Count - 1 do
+          for i := 0 to Status.Ocorrencias.Count - 1 do
           begin
-            with Status.Ocorrencias.Items[I] do
+            with Status.Ocorrencias.Items[i] do
             begin
-              Add(' Ocorrencia ' + IntToStr(I));
+              Add(' Ocorrencia ' + IntToStr(i));
+              Add('   Código.....: ' + IntToStr(Codigo));
+              Add('   Descrição..: ' + Descricao);
+              Add('   Tipo.......: ' + IntToStr(Tipo));
+              Add('   Localização: ' + Localizacao);
+            end;
+          end;
+        end;
+      end;
+    end;
+
+    pgWebservice.ActivePageIndex := 3;
+  finally
+    ACBreSocial1.Eventos.Clear;
+  end;
+end;
+
+procedure TFExemploEsocial.btnEnviarClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  if chkClear.Checked then
+    LimparDocsPasta;
+
+  try
+    ACBreSocial1.Enviar(TESocialGrupo(rdgGrupo.ItemIndex + 1));
+    Sleep(3000);
+
+    MemoResp.Lines.Text := ACBreSocial1.WebServices.EnvioLote.RetWS;
+    with MemoDados.Lines do
+    begin
+      with ACBreSocial1.WebServices.EnvioLote.RetEnvioLote do
+      begin
+        Add('');
+        Add('Código Retorno: ' + IntToStr(Status.cdResposta));
+        Add('Mensagem: ' + Status.descResposta);
+
+        if Status.cdResposta in [201, 202] then
+        begin
+          Add('ideEmpregador');
+          Add(' - TpInsc: ' + eSTpInscricaoToStr(IdeEmpregador.TpInsc));
+          Add(' - NrInsc: ' + IdeEmpregador.NrInsc);
+          Add('ideTransmissor');
+          Add(' - TpInsc: ' + eSTpInscricaoToStr(IdeTransmissor.TpInsc));
+          Add(' - NrInsc: ' + IdeTransmissor.NrInsc);
+          Add('dadosRecepcaoLote');
+          Add(' - dhRecepcao..............: ' +
+            DateTimeToStr(dadosRecLote.dhRecepcao));
+          Add(' - versaoAplicativoRecepcao: ' +
+            dadosRecLote.versaoAplicRecepcao);
+          Add(' - protocoloEnvio..........: ' + dadosRecLote.Protocolo);
+        end
+        else
+        begin
+          for i := 0 to Status.Ocorrencias.Count - 1 do
+          begin
+            with Status.Ocorrencias.Items[i] do
+            begin
+              Add(' Ocorrencia ' + IntToStr(i));
               Add('   Código.....: ' + IntToStr(Codigo));
               Add('   Descrição..: ' + Descricao);
               Add('   Tipo.......: ' + IntToStr(Tipo));
@@ -3526,10 +3778,15 @@ end;
 procedure TFExemploEsocial.btnConsultarClick(Sender: TObject);
 var
   Protocolo: string;
-  I, J: Integer;
+  i, J: Integer;
+  evtS5001: TS5001;
+  evtS5002: TS5002;
+  evtS5011: TS5011;
+  evtS5012: TS5012;
 begin
   Protocolo := '';
-  if not(InputQuery('WebServices: Consulta Protocolo', 'Protocolo', Protocolo)) then
+  if not(InputQuery('WebServices: Consulta Protocolo', 'Protocolo', Protocolo))
+  then
     Exit;
 
   if ACBreSocial1.Consultar(Protocolo) then
@@ -3554,44 +3811,93 @@ begin
           Add(' - TpInsc: ' + eSTpInscricaoToStr(IdeTransmissor.TpInsc));
           Add(' - NrInsc: ' + IdeTransmissor.NrInsc);
           Add('dadosRecepcaoLote');
-          Add(' - dhRecepcao..............: ' + DateTimeToStr(dadosRecLote.dhRecepcao));
-          Add(' - versaoAplicativoRecepcao: ' + dadosRecLote.versaoAplicRecepcao);
+          Add(' - dhRecepcao..............: ' +
+            DateTimeToStr(dadosRecLote.dhRecepcao));
+          Add(' - versaoAplicativoRecepcao: ' +
+            dadosRecLote.versaoAplicRecepcao);
           Add(' - protocoloEnvio..........: ' + dadosRecLote.Protocolo);
 
-          for I := 0 to retEventos.Count - 1 do
+          for i := 0 to retEventos.Count - 1 do
           begin
             Add('Processamento');
-            Add(' - cdResposta.........: ' + IntToStr(retEventos.Items[I].Processamento.cdResposta));
-            Add(' - descResposta.......: ' + retEventos.Items[I].Processamento.descResposta);
-            Add(' - versaoAplicProcLote: ' + retEventos.Items[I].Processamento.versaoAplicProcLote);
-            Add(' - dhProcessamento....: ' + DateTimeToStr(retEventos.Items[I].Processamento.dhProcessamento));
+            Add(' - cdResposta.........: ' +
+              IntToStr(retEventos.Items[i].Processamento.cdResposta));
+            Add(' - descResposta.......: ' + retEventos.Items[i]
+              .Processamento.descResposta);
+            Add(' - versaoAplicProcLote: ' + retEventos.Items[i]
+              .Processamento.versaoAplicProcLote);
+            Add(' - dhProcessamento....: ' + DateTimeToStr(retEventos.Items[i]
+              .Processamento.dhProcessamento));
 
-            if retEventos.Items[I].Processamento.Ocorrencias.Count > 0 then
+            if retEventos.Items[i].Processamento.Ocorrencias.Count > 0 then
             begin
               Add('Ocorrencias do Processamento');
-              for J := 0 to retEventos.Items[I].Processamento.Ocorrencias.Count - 1 do
+              for J := 0 to retEventos.Items[i].Processamento.Ocorrencias.
+                Count - 1 do
               begin
                 Add(' Ocorrencia ' + IntToStr(J));
-                Add('   Código.....: ' + IntToStr(retEventos.Items[I].Processamento.Ocorrencias.Items[J].Codigo));
-                Add('   Descrição..: ' + retEventos.Items[I].Processamento.Ocorrencias.Items[J].Descricao);
-                Add('   Tipo.......: ' + IntToStr(retEventos.Items[I].Processamento.Ocorrencias.Items[J].Tipo));
-                Add('   Localização: ' + retEventos.Items[I].Processamento.Ocorrencias.Items[J].Localizacao);
+                Add('   Código.....: ' +
+                  IntToStr(retEventos.Items[i].Processamento.Ocorrencias.Items
+                  [J].Codigo));
+                Add('   Descrição..: ' + retEventos.Items[i]
+                  .Processamento.Ocorrencias.Items[J].Descricao);
+                Add('   Tipo.......: ' +
+                  IntToStr(retEventos.Items[i].Processamento.Ocorrencias.Items
+                  [J].Tipo));
+                Add('   Localização: ' + retEventos.Items[i]
+                  .Processamento.Ocorrencias.Items[J].Localizacao);
+              end;
+            end;
+
+            for J := 0 to retEventos.Items[i].tot.Count - 1 do
+            begin
+              Add(' Tot ' + IntToStr(J));
+              Add('   Tipo.........: ' + retEventos.Items[i].tot[J].Tipo);
+              case retEventos.Items[i].tot[J].Evento.TipoEvento of
+                teS5001:
+                  begin
+                    evtS5001 := TS5001(retEventos.Items[i].tot[J].Evento.GetEvento);
+                    Add('   Id...........: ' + evtS5001.EvtBasesTrab.Id);
+                    Add('   nrRecArqBase.: ' +
+                      evtS5001.EvtBasesTrab.IdeEvento.nrRecArqBase);
+                  end;
+                teS5002:
+                  begin
+                    evtS5002 := TS5002(retEventos.Items[i].tot[J].Evento.GetEvento);
+                    Add('   Id...........: ' + evtS5002.EvtirrfBenef.Id);
+                    Add('   nrRecArqBase.: ' +
+                      evtS5002.EvtirrfBenef.IdeEvento.nrRecArqBase);
+                  end;
+                teS5011:
+                  begin
+                    evtS5011 := TS5011(retEventos.Items[i].tot[J].Evento.GetEvento);
+                    Add('   Id...........: ' + evtS5011.EvtCS.Id);
+                    Add('   nrRecArqBase.: ' +
+                      evtS5011.EvtCS.IdeEvento.nrRecArqBase);
+                  end;
+                teS5012:
+                  begin
+                    evtS5012 := TS5012(retEventos.Items[i].tot[J].Evento.GetEvento);
+                    Add('   Id...........: ' + evtS5012.EvtIrrf.Id);
+                    Add('   nrRecArqBase.: ' +
+                      evtS5012.EvtIrrf.IdeEvento.nrRecArqBase);
+                  end;
               end;
             end;
 
             Add('Recibo');
-            Add(' - nrRecibo: ' + retEventos.Items[I].Recibo.nrRecibo);
-            Add(' - hash....: ' + retEventos.Items[I].Recibo.hash);
+            Add(' - nrRecibo: ' + retEventos.Items[i].Recibo.NrRecibo);
+            Add(' - hash....: ' + retEventos.Items[i].Recibo.hash);
           end;
 
         end
         else
         begin
-          for I := 0 to Status.Ocorrencias.Count - 1 do
+          for i := 0 to Status.Ocorrencias.Count - 1 do
           begin
-            with Status.Ocorrencias.Items[I] do
+            with Status.Ocorrencias.Items[i] do
             begin
-              Add(' Ocorrencia ' + IntToStr(I));
+              Add(' Ocorrencia ' + IntToStr(i));
               Add('   Código.....: ' + IntToStr(Codigo));
               Add('   Descrição..: ' + Descricao);
               Add('   Tipo.......: ' + IntToStr(Tipo));
@@ -3861,6 +4167,7 @@ begin
   end;
   Application.ProcessMessages;
 end;
+
 procedure TFExemploEsocial.ACBreSocial1TransmissaoEventos
   (const AXML: AnsiString; ATipo: TeSocialEventos);
 begin
@@ -4273,6 +4580,9 @@ begin
     GerareSocial2241;
   if (cbS2250.Checked) then
     GerareSocial2250;
+  if (cbS2260.Checked) then
+    GerareSocial2260;
+
   if (cbS2298.Checked) then
     GerareSocial2298;
   if (cbS2299.Checked) then
@@ -4287,6 +4597,36 @@ begin
     GerareSocial2400;
   if (cbS3000.Checked) then
     GerareSocial3000;
+end;
+
+procedure TFExemploEsocial.btnCarregarXMLClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Selecione o Evento (Arquivo XML)';
+  OpenDialog1.DefaultExt := '*.xml';
+  OpenDialog1.Filter :=
+    'Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ACBreSocial1.Configuracoes.Arquivos.PathSalvar;
+
+  if OpenDialog1.Execute then
+    ACBreSocial1.Eventos.LoadFromFile(OpenDialog1.FileName);
+
+  MemoResp.Lines.Add('XML de Eventos Carregado com Sucesso!');
+  pgWebservice.ActivePageIndex := 3;
+end;
+
+procedure TFExemploEsocial.btnCarregarINIClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Selecione o Evento (Arquivo INI)';
+  OpenDialog1.DefaultExt := '*.ini';
+  OpenDialog1.Filter :=
+    'Arquivos INI (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ACBreSocial1.Configuracoes.Arquivos.PathSalvar;
+
+  if OpenDialog1.Execute then
+    ACBreSocial1.Eventos.LoadFromINI(OpenDialog1.FileName);
+
+  MemoResp.Lines.Add('INI de Eventos Carregado com Sucesso!');
+  pgWebservice.ActivePageIndex := 3;
 end;
 
 end.

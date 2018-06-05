@@ -50,12 +50,11 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnLeitor,
+  pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
 type
-  TS5002Collection = class;
-  TS5002CollectionItem = class;
+  TS5002 = class;
   TInfoDep = class;
 
   TInfoIrrfCollection = class;
@@ -65,41 +64,28 @@ type
   TirrfCollection = class;
   TirrfCollectionItem = class;
   TidePgtoExt = class;
-
-
-//  TInfoCp = class;
-//  TIdeEstabLotCollection = class;
-//  TIdeEstabLotCollectionItem = class;
-//  TInfoCategIncidCollection = class;
-//  TInfoCategIncidCollectionItem = class;
-//  TInfoBaseCSCollection = class;
-//  TInfoBaseCSCollectionItem = class;
-//  TCalcTercCollection = class;
-//  TCalcTercCollectionItem = class;
-
   TEvtIrrfBenef = class;
 
-  TS5002Collection = class(TOwnedCollection)
-  private
-    function GetItem(Index: Integer): TS5002CollectionItem;
-    procedure SetItem(Index: Integer; Value: TS5002CollectionItem);
-  public
-    function Add: TS5002CollectionItem;
-    property Items[Index: Integer]: TS5002CollectionItem read GetItem write SetItem; default;
-  end;
-
-  TS5002CollectionItem = class(TCollectionItem)
+  TS5002 = class(TInterfacedObject, IEventoeSocial)
   private
     FTipoEvento: TTipoEvento;
-    FEvtIrrfBenef: TEvtIrrfBenef;
+    FEvtirrfBenef: TEvtirrfBenef;
 
-    procedure setEvtIrrfBenef(const Value: TEvtIrrfBenef);
+    function GetXml : string;
+    procedure SetXml(const Value: string);
+    function GetTipoEvento : TTipoEvento;
+    procedure SetEvtirrfBenef(const Value: TEvtirrfBenef);
+
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create;
     destructor Destroy; override;
+
+    function GetEvento : TObject;
+
   published
-    property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtIrrfBenef: TEvtIrrfBenef read FEvtIrrfBenef write setEvtIrrfBenef;
+    property Xml: String read GetXml write SetXml;
+    property TipoEvento: TTipoEvento read GetTipoEvento;
+    property EvtirrfBenef: TEvtirrfBenef read FEvtirrfBenef write setEvtirrfBenef;
   end;
 
   TInfoDep = class(TPersistent)
@@ -199,10 +185,11 @@ type
     FInfoDep: TInfoDep;
     FInfoIrrf: TInfoIrrfCollection;
   public
-    constructor Create(AACBreSocial: TObject); overload;
+    constructor Create;
     destructor  Destroy; override;
 
     function LerXML: boolean;
+    function SalvarINI: boolean;
 
     property IdeEvento: TIdeEvento5 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -217,49 +204,57 @@ type
 
 implementation
 
-{ TS5002Collection }
+uses
+  IniFiles;
 
-function TS5002Collection.Add: TS5002CollectionItem;
-begin
-  Result := TS5002CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
-end;
+{ TS5002 }
 
-function TS5002Collection.GetItem(Index: Integer): TS5002CollectionItem;
-begin
-  Result := TS5002CollectionItem(inherited GetItem(Index));
-end;
-
-procedure TS5002Collection.SetItem(Index: Integer;
-  Value: TS5002CollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TS5002CollectionItem }
-
-constructor TS5002CollectionItem.Create(AOwner: TComponent);
+constructor TS5002.Create;
 begin
   FTipoEvento := teS5002;
-  FEvtIrrfBenef := TEvtIrrfBenef.Create(AOwner);
+  FEvtIrrfBenef := TEvtIrrfBenef.Create;
 end;
 
-destructor TS5002CollectionItem.Destroy;
+destructor TS5002.Destroy;
 begin
   FEvtIrrfBenef.Free;
 
   inherited;
 end;
 
-procedure TS5002CollectionItem.setEvtIrrfBenef(
-  const Value: TEvtIrrfBenef);
+function TS5002.GetEvento : TObject;
+begin
+  Result := self;
+end;
+
+function TS5002.GetXml : string;
+begin
+  Result := FEvtIrrfBenef.XML;
+end;
+
+procedure TS5002.SetXml(const Value: string);
+begin
+  if Value = FEvtIrrfBenef.XML then Exit;
+
+  FEvtIrrfBenef.XML := Value;
+  FEvtIrrfBenef.Leitor.Arquivo := Value;
+  FEvtIrrfBenef.LerXML;
+
+end;
+
+function TS5002.GetTipoEvento : TTipoEvento;
+begin
+  Result := FTipoEvento;
+end;
+
+procedure TS5002.SetEvtIrrfBenef(const Value: TEvtIrrfBenef);
 begin
   FEvtIrrfBenef.Assign(Value);
 end;
 
 { TEvtIrrfBenef }
 
-constructor TEvtIrrfBenef.Create(AACBreSocial: TObject);
+constructor TEvtIrrfBenef.Create;
 begin
   FLeitor := TLeitor.Create;
 
@@ -472,6 +467,81 @@ begin
     end;
   except
     Result := False;
+  end;
+end;
+
+function TEvtIrrfBenef.SalvarINI: boolean;
+var
+  AIni: TMemIniFile;
+  sSecao: String;
+  i, j: Integer;
+begin
+  Result := False;
+
+  AIni := TMemIniFile.Create('');
+  try
+    Result := True;
+
+    with Self do
+    begin
+      sSecao := 'evtIrrfBenef';
+      AIni.WriteString(sSecao, 'Id', Id);
+
+      sSecao := 'ideEvento';
+      AIni.WriteString(sSecao, 'nrRecArqBase', IdeEvento.nrRecArqBase);
+      AIni.WriteString(sSecao, 'perApur',      IdeEvento.perApur);
+
+      sSecao := 'ideEmpregador';
+      AIni.WriteString(sSecao, 'tpInsc', eSTpInscricaoToStr(IdeEmpregador.TpInsc));
+      AIni.WriteString(sSecao, 'nrInsc', IdeEmpregador.nrInsc);
+
+      sSecao := 'ideTrabalhador';
+      AIni.WriteString(sSecao, 'cpfTrab', ideTrabalhador.cpfTrab);
+
+      sSecao := 'infoDep';
+      AIni.WriteFloat(sSecao, 'vrDedDep', infoDep.vrDedDep);
+
+      for i := 0 to infoIrrf.Count -1 do
+      begin
+        sSecao := 'infoIrrf' + IntToStrZero(I, 1);
+
+        AIni.WriteInteger(sSecao, 'codCateg', infoIrrf.Items[i].CodCateg);
+        AIni.WriteString(sSecao, 'indResBr',  infoIrrf.Items[i].indResBr);
+
+        for j := 0 to InfoIrrf.Items[i].baseIrrf.Count -1 do
+        begin
+          sSecao := 'baseIrrf' + IntToStrZero(I, 1) + IntToStrZero(j, 2);
+
+          AIni.WriteInteger(sSecao, 'tpValor', InfoIrrf.Items[i].baseIrrf.Items[j].tpValor);
+          AIni.WriteFloat(sSecao, 'valor',     InfoIrrf.Items[i].baseIrrf.Items[j].valor);
+        end;
+
+        for j := 0 to InfoIrrf.Items[i].irrf.Count -1 do
+        begin
+          sSecao := 'irrf' + IntToStrZero(I, 1) + IntToStrZero(j, 2);
+
+          AIni.WriteString(sSecao, 'tpCR',      InfoIrrf.Items[i].irrf.Items[j].tpCR);
+          AIni.WriteFloat(sSecao, 'vrIrrfDesc', InfoIrrf.Items[i].irrf.Items[j].vrIrrfDesc);
+        end;
+
+        sSecao := 'idePais' + IntToStrZero(I, 1);
+
+        AIni.WriteString(sSecao, 'codPais',  infoIrrf.Items[i].idePgtoExt.idePais.codPais);
+        AIni.WriteString(sSecao, 'indNIF',   eSIndNIFToStr(infoIrrf.Items[i].idePgtoExt.idePais.indNIF));
+        AIni.WriteString(sSecao, 'nifBenef', infoIrrf.Items[i].idePgtoExt.idePais.nifBenef);
+
+        sSecao := 'endExt' + IntToStrZero(I, 1);
+
+        AIni.WriteString(sSecao, 'dscLograd', infoIrrf.Items[i].idePgtoExt.endExt.dscLograd);
+        AIni.WriteString(sSecao, 'nrLograd',  infoIrrf.Items[i].idePgtoExt.endExt.nrLograd);
+        AIni.WriteString(sSecao, 'complem',   infoIrrf.Items[i].idePgtoExt.endExt.complem);
+        AIni.WriteString(sSecao, 'bairro',    infoIrrf.Items[i].idePgtoExt.endExt.bairro);
+        AIni.WriteString(sSecao, 'nmCid',     infoIrrf.Items[i].idePgtoExt.endExt.nmCid);
+        AIni.WriteString(sSecao, 'codPostal', infoIrrf.Items[i].idePgtoExt.endExt.codPostal);
+      end;
+    end;
+  finally
+    AIni.Free;
   end;
 end;
 

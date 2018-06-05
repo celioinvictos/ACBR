@@ -49,7 +49,7 @@ unit pcesS1080;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, ACBrUtil,
   pcnConversao,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -89,6 +89,7 @@ type
     fIdeEvento: TIdeEvento;
     fIdeEmpregador: TIdeEmpregador;
     fInfoOperPortuario: TInfoOperPortuario;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarIdeOperPortuario;
@@ -97,7 +98,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property IdeEvento: TIdeEvento read fIdeEvento write fIdeEvento;
@@ -148,6 +150,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS1080Collection }
 
@@ -237,6 +243,7 @@ constructor TEvtTabOperPort.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   fIdeEvento := TIdeEvento.Create;
   fIdeEmpregador := TIdeEmpregador.Create;
   fInfoOperPortuario := TInfoOperPortuario.Create;
@@ -273,11 +280,12 @@ begin
   Gerador.wGrupo('/ideOperPortuario');
 end;
 
-function TEvtTabOperPort.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTabOperPort.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabOperPort');
     Gerador.wGrupo('evtTabOperPort Id="' + Self.Id + '"');
@@ -314,6 +322,63 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtTabOperPort.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabOperPort';
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideOperPortuario';
+      infoOperPortuario.ideOperPortuario.cnpjOpPortuario := INIRec.ReadString(sSecao, 'cnpjOpPortuario', EmptyStr);
+      infoOperPortuario.ideOperPortuario.IniValid        := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoOperPortuario.ideOperPortuario.FimValid        := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosOperPortuario';
+        infoOperPortuario.dadosOperPortuario.aliqRat      := eSStrToAliqRat(Ok, INIRec.ReadString(sSecao, 'aliqRat', '1'));
+        infoOperPortuario.dadosOperPortuario.fap          := INIRec.ReadFloat(sSecao, 'fap', 0.0);
+        infoOperPortuario.dadosOperPortuario.aliqRatAjust := INIRec.ReadFloat(sSecao, 'aliqRatAjust', 0.0);
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoOperPortuario.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoOperPortuario.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

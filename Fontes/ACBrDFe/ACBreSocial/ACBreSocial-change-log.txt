@@ -48,6 +48,361 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/04/2018
+-- pcesS3000 --
+[*] https://www.projetoacbr.com.br/forum/topic/42988-erro-ao-excluir-evento-s-1200-atrav%C3%A9s-do-evento-s-3000/
+   Por: ghv Oliveira
+
+25/04/2018
+--  pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42949-corre%C3%A7%C3%A3o-s-1000/
+   Por: Paulo Aguiar Junior
+
+23/04/2018
+-- pcesS2230 / pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42896-corre%C3%A7%C3%A3o-s-2230/
+   Por: Paulo Aguiar Junior
+
+20/04/2018
+-- pcesS2260 --
+[*] https://www.projetoacbr.com.br/forum/topic/42872-falta-de-campo-dtprevpgto-no-s2260/
+   Por: Renato E
+
+18/04/2018
+-- pcesS2306 --
+[*] https://www.projetoacbr.com.br/forum/topic/41671-alterar-s2300-campo-natatividade-n%C3%A3o-pode-ser-informado-para-determinadas-categorias/?do=findComment&comment=282067
+   Por: Gustavo Ribeiro Croscato
+
+17/04/2018
+-- pcesS2300 / pcesS2306 --
+[*] https://www.projetoacbr.com.br/forum/topic/41671-alterar-s2300-campo-natatividade-n%C3%A3o-pode-ser-informado-para-determinadas-categorias/?do=findComment&comment=281822
+   Por: Gustavo Ribeiro Croscato
+
+16/04/2018
+-- pcesS1020 / pcesS1070 / pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/42743-altera%C3%A7%C3%A3o-infoprocjudterceiros-evento-s-1020/
+   Por: Arce
+-- pcesS1210 --
+[*] https://www.projetoacbr.com.br/forum/topic/42760-adicionar-campo-matricula-no-grupo-detpgtofer-do-evento-s-1210/
+   Por: Joceandro Perin
+
+13/04/2018
+-- pcesCommon / pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/42715-erro-s2200-e-s2300-exterior/?do=findComment&comment=281388
+   Por: Renato E
+-- pcesS1200 --
+[*] https://www.projetoacbr.com.br/forum/topic/42702-ajuste-ao-gerar-grupo-infotrabinterm-e-infocomplcont-do-evento-s-1200/?do=findComment&comment=281433
+   Por: Joceandro Perin
+
+12/04/2018
+-- pcesS2299 --
+[*] Refeito a geração do grupo <consigFGTS> em função das versões 2.04.01 e 2.04.02
+   Por: Italo Jurisato Junior
+-- pcesS2230 / pcesS2300 --
+[*] https://www.projetoacbr.com.br/forum/topic/42678-valor-do-campo-infonus-s2300/?do=findComment&comment=281148
+-- pcesS1200 --
+[*] https://www.projetoacbr.com.br/forum/topic/42702-ajuste-ao-gerar-grupo-infotrabinterm-e-infocomplcont-do-evento-s-1200/
+   Por: Joceandro Perin
+
+10/04/2018
+-- pcesS1210 / pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42629-ajuste-no-campo-tppgto-do-evento-s-1210-e-valida%C3%A7%C3%B5es/
+  Por: Joceandro Perin
+-- pcesS2300 / pcesS2306 --
+[-] Correção na nomenclatura da propriedade natAtividade.
+  Por: Hudson G Leite
+
+05/04/2018
+-- ACBreSocialWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/42564-ideempregador-nrinsc-com-8-posi%C3%A7%C3%B5es/
+   Por: Márcio M Gomes
+-- pcesS5001 / pcesS5002 / pcesS5011 / pcesS5012 --
+[+] Implementação da gravação do arquivo INI referente aos eventos de retornos:
+    S-5001, S-5002, S-5011 e S-5012.
+   Por: Italo Jurisato Junior
+
+04/04/2018
+-- pcesGerador --
+[*] Incluido a função de conversão de tipos para o campo tpInsc.
+   Por: Italo Jurisato Junior
+
+>>>>>>> .r14977
+03/04/2018
+-- pcesS1050 --
+[-] Correção de erro "Argument out of range" na geração do evento S-1050.
+    https://www.projetoacbr.com.br/forum/topic/42490-problema-inclus%C3%A3o-de-intervalos-na-s-1050/
+  Por: CarlosSolla / BigWings
+
+02/04/2018
+-- pcesCommon / pcesGerador --
+[*] Correção do tipo do campo qtdHrsSem de Integer para Double.
+   Por: Renato E
+-- pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/39746-erro-ao-assinar-xml-no-esocial/?do=findComment&comment=279903
+   Por: Leandro JLM
+-- pcesGerador / pcesS2306 --
+[*] A geração do grupo Remuneração nos eventos 2200 e 2206 é obrigatória, já nos eventos 2300 e 2306
+    é opcional, na unit pcesGerador foi removido o IF e na unit 2306 foi criado a procedure para gerar o 
+    grupo.
+   Por: Italo Jurisato Junior
+-- pcesS2306 / pcesS2399 / pcesS2400 / pcesS3000 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-2306, 
+    S-2399, S-2400 e S-3000.
+   Por: Italo Jurisato Junior
+
+29/03/2018
+-- pcesS2299 / pcesS2300 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-2299 e 
+    S-2300.
+-- pcesS2240 / pcesS2241 / pcesS2250 / pcesS2260 / pcesS2298 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-2240, 
+    S-2241, S-2250, S-2260 e S-2298.
+   Por: Italo Jurisato Junior
+
+28/03/2018
+-- pcesS2299 --
+[*] https://www.projetoacbr.com.br/forum/topic/42296-s2299-desligamento-adi%C3%A7%C3%A3o-de-campo/?do=findComment&comment=279595
+   Por: Hudson G Leite
+
+-- pcesS2206 / pcesS2210 / pcesS2220 / pcesS2230 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-2206, 
+    S-2210, S-2220 e S-2230.
+   Por: Italo Jurisato Junior
+
+27/03/2018
+-- pcesS2190 / pcesS2200 / pcesS2205 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-2190, 
+    S-2200, S-2205.
+   Por: Italo Jurisato Junior
+-- pcesS2300 --
+[*] https://www.projetoacbr.com.br/forum/topic/41671-alterar-s2300-campo-natatividade-n%C3%A3o-pode-ser-informado-para-determinadas-categorias/?do=findComment&comment=279323
+   Por: croscato
+-- pcesS1270 / pcesS1280 / pcesS1295 / pcesS1298 / pcesS1299 / pcesS1300 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-1270, 
+    S-1280, S-1295, S-1298, S-1299, S-1300.
+   Por: Italo Jurisato Junior
+
+26/03/2018
+-- pcesS1210 / pcesS1250 / pcesS1260 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-1210, S-1250, S-1260.
+   Por: Italo Jurisato Junior
+
+22/03/2018
+-- pcesS2299 / pcesCommon --
+[*] https://www.projetoacbr.com.br/forum/topic/42296-s2299-desligamento-adi%C3%A7%C3%A3o-de-campo/
+   Por: Hudson G Leite
+
+21/03/2018
+-- pcesS2300 --
+[*] https://www.projetoacbr.com.br/forum/topic/42253-ajuste-no-campo-tpregjor-e-natatividade/?do=findComment&comment=278585
+   Por: Joceandro Perin
+-- pcesS2206 / pcesS2300 / pcesS2306 --
+[*] https://www.projetoacbr.com.br/forum/topic/42253-ajuste-no-campo-tpregjor-e-natatividade/
+   Por: Joceandro Perin
+
+20/03/2018
+-- pcesS1200 / pcesS1202 / pcesS1207 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-1200, S-1202, S-1207.
+   Por: Italo Jurisato Junior
+
+19/03/2018
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42199-s2200-adicionando-parametro/?do=findComment&comment=278080
+    https://www.projetoacbr.com.br/forum/topic/42199-s2200-adicionando-parametro/?do=findComment&comment=278117
+   Por: Renato E
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42223-ajuste-no-tptptributo/
+   Por: Joceandro Perin
+
+16/03/2018
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42199-s2200-adicionando-parametro/
+   Por: Renato E
+
+15/03/2018
+-- ACBreSocialLoteEventos --
+[-] Com o refactoring na função GetIDEvento foi removido o prefixo ID indevidamente.
+   Por: Italo Jurisato Junior
+
+14/03/2018
+-- ACBreSocial --
+[*] Alteração na formatação do nome dos XMLs referente aos eventos.
+    Agora os eventos são gravados no seguinte formato:
+    <ID da chave>-S-xxxx-n.xml onde xxxx é o numero do evento e n é o indice
+    do mesmo na lista.
+   Por: Italo Jurisato Junior
+[*] https://www.projetoacbr.com.br/forum/topic/42081-layout-2402/?do=findComment&comment=277369
+    Por: arce
+-- pcesRetornoClass / pcesS1050 --
+[*] https://www.projetoacbr.com.br/forum/topic/41444-execut%C3%A1vel-preso-em-mem%C3%B3ria/?do=findComment&comment=277360
+    Por: Joceandro Perin
+-- ACBreSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/42081-layout-2402/
+    Por: arce
+
+13/03/2018
+-- pcesS1040 / pcesS1050 / pcesS1060 / pcesS1070 / pcesS1080--
+[+] Implementação da leitura do arquivo INI referente aos eventos S-1040, S-1050, S-1060, S-1070, S-1080.
+   Por: Italo Jurisato Junior
+-- pcesS1010 / pcesS1020 / pcesS1030 / pcesS1035 --
+[+] Implementação da leitura do arquivo INI referente aos eventos S-1010, S-1020, S-1030, S-1035.
+   Por: Italo Jurisato Junior
+
+12/03/2018
+-- ACBreSocial --
+[-] Corrigido erros de compilação com o D7.
+    https://www.projetoacbr.com.br/forum/topic/42062-erro-na-instala%C3%A7%C3%A3o/?tab=comments#comment-276975
+    Por: arce
+
+[-] Correção para usar interfaces em delphi abaixo do 2010, foi adicionado o metodo GetEvento que retorna a instancia do objeto para fazer cast.
+    Por: Rafael Dias.
+
+09/03/2018
+-- ACBreSocial --
+[*] Inicio da adquação do componente para a versão 2.04.02
+   Por: Italo Jurisato Junior
+
+08/03/2018
+-- pcesS3000 --
+[*] https://www.projetoacbr.com.br/forum/topic/41930-alterar-s-3000-campo-opcional/
+   Por: Edmar Frazao
+-- pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/41934-campo-codmotafast-do-registro-s-2200/
+   Por: Joceandro Perin
+-- pcesS1250 --
+[*] https://www.projetoacbr.com.br/forum/topic/41938-alterar-s-1250-convers%C3%A3o-indaquis/
+   Por: Edmar Frazao
+
+07/03/2018
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/41915-s1010-adicionar/
+   Por: Renato E
+-- pcesGerador / pcesS2260 --
+[-] Correção na geração do endereço do local de trabalho intermitente
+   Por: Italo Jurisato Junior
+
+06/03/2018
+-- pcesGerador --
+[-] https://www.projetoacbr.com.br/forum/topic/41891-s-2230-afastamento-tsv-alterar-svn/
+   Por: Edmar Frazao
+
+01/03/2018
+-- pcesS1200 --
+[*] https://www.projetoacbr.com.br/forum/topic/41795-analisar-para-alterar-s1200-natatividade/?do=findComment&comment=275608
+   Por: Edmar Frazao
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/41816-ajuste-no-campo-tpavprevio-do-evento-s-2250/
+   Por: Joceandro Perin
+-- pcesRetConsultaLote / pcesRetornoClass --
+[*] Correção no tipo da tag <dtBase> de TDateTime para Integer, pois essa tag
+   só contem o mês.
+   Por: Italo Jurisato Junior
+-- ACBreSocial --
+[*] Acrescentado o valor navNaoInformar para o campo natAtividade.
+   Por: Italo Jurisato Junior
+-- pcesRetConsultaLote --
+[*] Correção na variável usada para a leitura da lista do grupo <horarioIntervalo>
+   Por: Italo Jurisato Junior
+
+28/02/2018
+-- pcesGerador --
+[-] Corrigido geração do identificação do empregador quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41753-c%C3%B3digo-inv%C3%A1lido-utilizando-ecpf/
+   (Por: Rafael Dias e Joceandro Perin).
+[-] Corrigido geração do evento S-1005 quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41784-ajuste-no-evento-s-1005-campos-exclusivos-para-pj/
+   (Por: Joceandro Perin). 
+   
+-- ACBreSocialLoteEventos --
+[-] Corrigido geração do lote quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41753-c%C3%B3digo-inv%C3%A1lido-utilizando-ecpf/
+   (Por: Joceandro Perin).
+   
+-- ACBreSocialWebServices --
+[-] Corrigido geração do lote quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41753-c%C3%B3digo-inv%C3%A1lido-utilizando-ecpf/
+   (Por: Joceandro Perin).
+   
+-- pcesS1000 --
+[-] Corrigido geração do evento S-1000 quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41753-c%C3%B3digo-inv%C3%A1lido-utilizando-ecpf/
+   (Por: Joceandro Perin).
+   
+-- pcesS1005 --
+[-] Corrigido geração do evento S-1005 quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41784-ajuste-no-evento-s-1005-campos-exclusivos-para-pj/
+   (Por: Joceandro Perin).
+   
+-- ACBreSocialLoteEventos --
+[-] Corrigido geração do identificação do empregador quando é pessoa fisica.
+	https://www.projetoacbr.com.br/forum/topic/41776-ajuste-no-evento-s-1000-campos-exclusivos-para-pj/
+   (Por: Joceandro Perin).
+
+27/02/2018
+-- pcesGerador --
+[-] Corrigido geração da chave quando o empregador é pessoa fisica.
+   (Por: Rafael Dias).
+[-] S-2206 - Correção (clauAssec).
+	https://www.projetoacbr.com.br/forum/topic/41760-s-2206-corre%C3%A7%C3%A3o-clauassec/
+   (Por: Alisson Souza Pereira).
+
+-- ACBreSocialWebServices --
+[-] Corrigido o nome do arquivo dos eventos S5001, S5002, S50011 e S5012 na hora de salvar.
+   (Por: Rafael Dias).
+
+-- PCN --
+[-] Corrigido erro na leitura do xml dos eventos S5001, S5002, S50011 e S5012.
+   (Por: Rafael Dias).
+
+26/02/2018
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/41710-ajuste-pcesconversaoesocial/?do=findComment&comment=274982
+   Por: Joceandro Perin
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/41710-ajuste-pcesconversaoesocial/
+   Por: Paulo Aguiar Junior
+-- pcesS2299 --
+[*] https://www.projetoacbr.com.br/forum/topic/41712-alterar-s-2200-tag-opcional/
+   Por: Edmar Frazao
+[+] Implementado a leitura dos eventos S5001, S5002, S50011 e S5012 após obter
+   o retorno da consulta.
+   Por: Rafael Dias e Italo Jurisato Junior.
+ 
+23/02/2018
+-- ACBreSocialWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/41683-ajuste-em-rotina-de-envio-com-transmissor-utilizando-ecpf-com-procura%C3%A7%C3%A3o/
+   Por:  Iuri
+-- pcesS2300 --
+[*] https://www.projetoacbr.com.br/forum/topic/41671-alterar-s2300-campo-natatividade-n%C3%A3o-pode-ser-informado-para-determinadas-categorias/
+   Por:  Edmar Frazao
+
+-- pcesConversaoeSocial --
+[*] Acrescentado o valor idRMS ao enum: tpIdeOC
+   Por:  Edmar Frazao
+
+22/02/2018
+-- pceS1005 --
+[+] Implementado o método LerArqIni que permite ler os dados pertinentes ao evento 
+    contidos em um arquivo INI, esse recurso será útil no futuro caso o componente 
+    venha ser adicionado no ACBrMonitor.
+    Com o passar do tempo iremos implementar para os demais eventos.
+  Por: Italo Jurisato Junior
+
+21/02/2018
+-- ACBreSocial --
+[+] Implementado os métodos: LoadFromFile, LoadFromStream e LoadFromString na classe TEventos.
+    Através desses métodos será possível carregar os XMLs dos eventos previamente gerados
+    e assinados e depois envia-los através do método Enviar.
+[+] Inicio da implementação do método LoadFromIni na classe TEventos.
+    Através desse método será possível ler os dados pertinentes a um evento contidos em um
+    arquivo INI, esse recurso será útil no futuro caso o componente venha ser adicionado no
+    ACBrMonitor.
+    Na pasta: ...\Exemplos\ACBrDFe\ACBreSocial\ArqINI temos o arquivo: S1000.ini a titulo de
+    exemplo.
+    No momento só foi implementado esse recurso para o evento S1000 em breve vamos implementar
+    para os demais.
+  Por: Italo Jurisato Junior
+
 19/02/2018
 -- pcesConversaoeSocial --
 [*] https://www.projetoacbr.com.br/forum/topic/41531-alterar-s-2299-desligamento-indicador-cumprimento-de-aviso/?do=findComment&comment=273743

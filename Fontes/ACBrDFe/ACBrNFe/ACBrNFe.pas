@@ -115,6 +115,7 @@ type
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
     function GetAbout: String; override;
+    function NomeServicoToNomeSchema(const NomeServico: String): String; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -145,7 +146,6 @@ type
       IndEmi: TpcnIndicadorEmissor; ultNSU: String): Boolean;
     function Download: Boolean;
 
-    function NomeServicoToNomeSchema(const NomeServico: String): String; override;
     procedure LerServicoDeParams(LayOutServico: TLayOut; var Versao: Double;
       var URL: String; var Servico: String; var SoapAction: String); reintroduce; overload;
     function LerVersaoDeParams(LayOutServico: TLayOut): String; reintroduce; overload;
@@ -156,7 +156,7 @@ type
     function GetURLQRCode(const CUF: integer; const TipoAmbiente: TpcnTipoAmbiente;
       const AChaveNFe, Destinatario: String; const DataHoraEmissao: TDateTime;
       const ValorTotalNF, ValorTotalICMS: currency; const DigestValue: String;
-      const Versao: Double): String;
+      const Versao: Double; const VersaoQrCode: Integer = 0): String;
 
     function IdentificaSchema(const AXML: String): TSchemaNFe;
     function GerarNomeArqSchema(const ALayOut: TLayOut; VersaoServico: Double
@@ -348,7 +348,7 @@ function TACBrNFe.EhAutorizacao( AVersao: TpcnVersaoDF; AModelo: TpcnModeloDF;
 begin
   Result := (AVersao >= ve310);
 
-  if AModelo = moNFCe then
+  if (AModelo = moNFCe) and (AVersao = ve310) then
     Result := not (AUFCodigo in [13]); // AM
 end;
 
@@ -543,10 +543,11 @@ begin
   Result := LerURLDeParams('NFCe', CUFtoUF(CUF), TipoAmbiente, 'URL-ConsultaNFCe', Versao);
 end;
 
-function TACBrNFe.GetURLQRCode(const CUF: integer; const TipoAmbiente: TpcnTipoAmbiente;
-  const AChaveNFe, Destinatario: String; const DataHoraEmissao: TDateTime;
-  const ValorTotalNF, ValorTotalICMS: currency; const DigestValue: String;
-  const Versao: Double): String;
+function TACBrNFe.GetURLQRCode(const CUF: integer;
+  const TipoAmbiente: TpcnTipoAmbiente; const AChaveNFe, Destinatario: String;
+  const DataHoraEmissao: TDateTime; const ValorTotalNF,
+  ValorTotalICMS: currency; const DigestValue: String; const Versao: Double;
+  const VersaoQrCode: Integer): String;
 var
   idNFe, sdhEmi_HEX, sdigVal_HEX, sNF, sICMS, cIdCSC, cCSC, sCSC,
   sEntrada, cHashQRCode, urlUF, cDest: String;
@@ -567,29 +568,49 @@ begin
   end;
 
   // Passo 3 e 4
-  cIdCSC := IntToStrZero(StrToIntDef(Configuracoes.Geral.IdCSC,0),6);
   cCSC := Configuracoes.Geral.CSC;
 
   if EstaVazio(cCSC) then
     cCSC := Copy(idNFe, 7, 8) + '20' + Copy(idNFe, 3, 2) + Copy(cIdCSC, 3, 4);
 
+  if VersaoQrCode >= 2 then
+    cIdCSC := IntToStr(StrToIntDef(Configuracoes.Geral.IdCSC,0))
+  else
+    cIdCSC := IntToStrZero(StrToIntDef(Configuracoes.Geral.IdCSC,0),6);
+
   sCSC := cIdCSC + cCSC;
   sNF := FloatToString( ValorTotalNF, '.', FloatMask(2, False));
   sICMS := FloatToString( ValorTotalICMS, '.', FloatMask(2, False));
 
-  sEntrada := 'chNFe=' + idNFe + '&nVersao=100&tpAmb=' +
-    TpAmbToStr(TipoAmbiente) + IfThen(cDest = '', '', '&cDest=' +
-    cDest) + '&dhEmi=' + sdhEmi_HEX + '&vNF=' + sNF + '&vICMS=' +
-    sICMS + '&digVal=' + sdigVal_HEX + '&cIdToken=';
+  if VersaoQrCode >= 2 then
+  begin
+    if ExtrairTipoEmissaoChaveAcesso(idNFe) = 9 then
+      sEntrada := idNFe + '|' + IntToStr(VersaoQrCode)+ '|' +
+        TpAmbToStr(TipoAmbiente) + '|'+ IntToStr(DayOf(DataHoraEmissao)) + '|' +
+        sNF + '|' + sdigVal_HEX + '|'
+    else
+      sEntrada := idNFe + '|' + IntToStr(VersaoQrCode)+  '|'  +
+        TpAmbToStr(TipoAmbiente) + '|';
+  end
+  else
+    sEntrada := 'chNFe=' + idNFe + '&nVersao=100&tpAmb=' +
+      TpAmbToStr(TipoAmbiente) + IfThen(cDest = '', '', '&cDest=' +
+      cDest) + '&dhEmi=' + sdhEmi_HEX + '&vNF=' + sNF + '&vICMS=' +
+      sICMS + '&digVal=' + sdigVal_HEX + '&cIdToken=';
 
   // Passo 5 calcular o SHA-1 da string sEntrada
   cHashQRCode := AsciiToHex(SHA1(sEntrada + sCSC));
 
   // Passo 6
-  if Pos('?', urlUF) > 0 then
-    Result := urlUF + '&' + sEntrada + cIdCSC + '&cHashQRCode=' + cHashQRCode
+  if VersaoQrCode >= 2 then
+    Result := urlUF + sEntrada + cIdCSC + cHashQRCode
   else
-    Result := urlUF + '?' + sEntrada + cIdCSC + '&cHashQRCode=' + cHashQRCode;
+  begin
+    if Pos('?', urlUF) > 0 then
+      Result := urlUF + '&' + sEntrada + cIdCSC + '&cHashQRCode=' + cHashQRCode
+    else
+      Result := urlUF + '?' + sEntrada + cIdCSC + '&cHashQRCode=' + cHashQRCode;
+  end;
 end;
 
 procedure TACBrNFe.SetStatus(const stNewStatus: TStatusACBrNFe);

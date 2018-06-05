@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -94,6 +94,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FAso: TAso;
+    FACBreSocial: TObject;
 
     procedure GerarExame;
     procedure GerarMedico;
@@ -105,7 +106,8 @@ type
     constructor Create(AACBreSocial: TObject); overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -217,6 +219,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2220Collection }
 
 function TS2220Collection.Add: TS2220CollectionItem;
@@ -312,12 +318,41 @@ begin
   inherited;
 end;
 
+{ TMedico }
+
+constructor TMedico.create;
+begin
+  FCRM := TCRM.Create;
+end;
+
+destructor TMedico.destroy;
+begin
+  FCRM.Free;
+
+  inherited;
+end;
+
+{ TIdeServSaude }
+
+constructor TIdeServSaude.create;
+begin
+  FMedico := TMedico.create;
+end;
+
+destructor TIdeServSaude.destroy;
+begin
+  FMedico.Free;
+
+  inherited;
+end;
+
 { TEvtASO }
 
 constructor TEvtASO.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo := TIdeVinculo.Create;
@@ -421,11 +456,12 @@ begin
   Gerador.wGrupo('/respMonit');
 end;
 
-function TEvtASO.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtASO.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtMonit');
     Gerador.wGrupo('evtMonit Id="' + Self.Id + '"');
@@ -449,33 +485,94 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
-{ TMedico }
-
-constructor TMedico.create;
+function TEvtASO.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
 begin
-  FCRM := TCRM.Create;
-end;
+  Result := False;
 
-destructor TMedico.destroy;
-begin
-  FCRM.Free;
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
-  inherited;
-end;
+    with Self do
+    begin
+      sSecao := 'evtMonit';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
-{ TIdeServSaude }
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
-constructor TIdeServSaude.create;
-begin
-  FMedico := TMedico.create;
-end;
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
 
-destructor TIdeServSaude.destroy;
-begin
-  FMedico.Free;
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
 
-  inherited;
+      sSecao := 'aso';
+      aso.DtAso  := StringToDateTime(INIRec.ReadString(sSecao, 'dtAso', '0'));
+      aso.tpAso  := eSStrToTpAso(Ok, INIRec.ReadString(sSecao, 'tpAso', '0'));
+      aso.ResAso := eSStrToResAso(Ok, INIRec.ReadString(sSecao, 'tpAso', '1'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'exame' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'dtExm', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with aso.exame.Add do
+        begin
+          dtExm         := StringToDateTime(sFim);
+          ProcRealizado := INIRec.ReadInteger(sSecao, 'procRealizado', 0);
+          obsProc       := INIRec.ReadString(sSecao, 'obsProc', EmptyStr);
+          interprExm    := eSStrToInterprExm(Ok, INIRec.ReadString(sSecao, 'interprExm', '1'));
+          ordExame      := eSStrToOrdExame(Ok, INIRec.ReadString(sSecao, 'ordExame', '1'));
+          dtIniMonit    := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniMonit', '0'));
+          dtFimMonit    := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimMonit', '0'));
+          indResult     := eSStrToIndResult(Ok, INIRec.ReadString(sSecao, 'indResult', '1'));
+
+          sSecao := 'respMonit' + IntToStrZero(I, 2);
+          respMonit.NisResp      := INIRec.ReadString(sSecao, 'nisResp', EmptyStr);
+          respMonit.NrConsClasse := INIRec.ReadString(sSecao, 'nrConsClasse', EmptyStr);
+          respMonit.UfConsClasse := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufConsClasse', 'SP'));
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'ideServSaude';
+      Aso.ideServSaude.CodCNES := INIRec.ReadString(sSecao, 'codCNES', EmptyStr);
+      Aso.ideServSaude.FrmCtt  := INIRec.ReadString(sSecao, 'frmCtt', EmptyStr);
+      Aso.ideServSaude.Email   := INIRec.ReadString(sSecao, 'email', EmptyStr);
+
+      sSecao := 'medico';
+      Aso.ideServSaude.medico.NmMed     := INIRec.ReadString(sSecao, 'nmMed', EmptyStr);
+      Aso.ideServSaude.medico.CRM.NrCRM := INIRec.ReadString(sSecao, 'nrCRM', EmptyStr);
+      Aso.ideServSaude.medico.CRM.UfCRM := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufCRM', 'SP'));
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.
- 
+

@@ -409,6 +409,10 @@ type
     FAutorizacao: String;
     FBandeira: String;
     FCNPJCredenciadora: String;
+    FDonoCartao : string;
+    FDataExpiracao : string;
+    FUltimosQuatroDigitos : string;
+
    public
     procedure Clear;
 
@@ -416,6 +420,10 @@ type
     property CNPJCredenciadora: String read FCNPJCredenciadora write FCNPJCredenciadora;
     property Bandeira: String read FBandeira write FBandeira;
     property Autorizacao: String read FAutorizacao write FAutorizacao;
+    property DonoCartao : string read FDonoCartao write FDonoCartao;
+    property DataExpiracao : string read FDataExpiracao write FDataExpiracao;
+    property UltimosQuatroDigitos : string read FUltimosQuatroDigitos write FUltimosQuatroDigitos;
+
    end;
 
 
@@ -498,6 +506,7 @@ type
      fpIdRespostaFiscal : LongInt;
      fpSerialPOS: String;
      fpCodigoBandeiraPadrao: String;
+     fpEstabelecimento: String;
 
      procedure SetCNFEnviado(const AValue : Boolean);
      procedure SetIndiceFPG_ECF(const AValue : String);
@@ -602,6 +611,7 @@ type
      property IdPagamento : Integer read fpIdPagamento  write fpIdPagamento ;
      property IdRespostaFiscal : Integer read fpIdRespostaFiscal  write fpIdRespostaFiscal ;
      property SerialPOS : String read fpSerialPOS  write fpSerialPOS ;
+     property Estabelecimento : String read fpEstabelecimento  write fpEstabelecimento ;
    end;
 
    { TACBrTEFDRespTXT }
@@ -1188,7 +1198,7 @@ end;
 
 procedure TACBrTEFDReq.SetNSU(const AValue : String);
 begin
-  fNSU := OnlyNumber(AValue);
+  fNSU := Trim(AValue);
   fConteudo.GravaInformacao(12,0,fNSU);
 end;
 
@@ -1379,6 +1389,7 @@ begin
    fpIdPagamento := 0;
    fpIdRespostaFiscal := 0;
    fpSerialPOS := '';
+   fpEstabelecimento := '';
 end;
 
 procedure TACBrTEFDResp.LeArquivo(const NomeArquivo : String);
@@ -1427,10 +1438,10 @@ end;
 
 procedure TACBrTEFDRespTXT.ConteudoToProperty;
 var
-   Linha : TACBrTEFDLinha ;
-   I     : Integer;
-   Parc  : TACBrTEFDRespParcela;
-   Usar711, Usar713, Usar715, TemParcelas : Boolean ;
+   Linha: TACBrTEFDLinha ;
+   I, Linha2801: Integer;
+   Parc: TACBrTEFDRespParcela;
+   Usar711, Usar713, Usar715, TemParcelas: Boolean ;
 
    function AjustaLinhaImagemComprovante( Linha: AnsiString ) : AnsiString;
    begin
@@ -1450,6 +1461,7 @@ begin
    Usar713     := False;
    Usar715     := False;
    TemParcelas := False;
+   Linha2801   := 0;
 
    for I := 0 to Conteudo.Count - 1 do
    begin
@@ -1468,8 +1480,11 @@ begin
        9   : fpStatusTransacao            := Linha.Informacao.AsString;
        10  :
          begin
-           if Linha.Sequencia = 0 then
-             fpRede := Linha.Informacao.AsString;
+           case Linha.Sequencia of
+             0 : fpRede := Linha.Informacao.AsString;
+             4 : fpBin  := Linha.Informacao.AsString; //Seis primeiros digitos do cartão
+             5 : fpNFCeSAT.UltimosQuatroDigitos  := Linha.Informacao.AsString; 
+           end;
          end;
        11  : fpTipoTransacao              := Linha.Informacao.AsInteger;
        12  : fpNSU                        := Linha.Informacao.AsString;
@@ -1507,15 +1522,31 @@ begin
 
            if not Usar715 then
               fpImagemComprovante2aVia.Clear;
-         end;
-       29  :
-         begin
-            if not (Usar711 or Usar713) then
-               fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
 
-            if not Usar715 then
-               fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+           if (Linha.Sequencia = 1) then
+              Linha2801 := Linha.Informacao.AsInteger;
          end;
+         
+       29 : 
+         begin 
+            if (Linha2801 = 0) then
+            begin
+               if not (Usar711 or Usar713) then
+                 fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+
+               if not Usar715 then
+                 fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+            end
+            else
+            begin
+               if (Linha.Sequencia <= Linha2801) then
+                 fpImagemComprovante1aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) )
+               else
+                 fpImagemComprovante2aVia.Add( AjustaLinhaImagemComprovante( Linha.Informacao.AsString ) );
+            end;
+         end;
+         
+
        30  : fpTextoEspecialOperador := Linha.Informacao.AsString;
        31  : fpTextoEspecialCliente  := Linha.Informacao.AsString;
        32  : fpAutenticacao          := Linha.Informacao.AsString;
@@ -1530,6 +1561,17 @@ begin
        131 : fpInstituicao           := Linha.Informacao.AsString;
        132 : fpCodigoBandeiraPadrao  := Linha.Informacao.AsString;
        136 : fpBin                   := Linha.Informacao.AsString;
+
+       300 : case Linha.Sequencia of
+               1 : fpNFCeSAT.DataExpiracao := Linha.Informacao.AsString;
+               2 : fpNFCeSAT.DonoCartao    := Linha.Informacao.AsString;
+             end;
+
+       600 : fpNFCeSAT.CNPJCredenciadora := Linha.Informacao.AsString;
+       601 : fpNFCeSAT.Bandeira          := Linha.Informacao.AsString;
+       602 : fpNFCeSAT.Autorizacao       := Linha.Informacao.AsString;
+       603 : fpNFCeSAT.CodCredenciadora := Linha.Informacao.AsString;
+
        707 : fpValorOriginal         := Linha.Informacao.AsFloat;
        708 : fpSaque                 := Linha.Informacao.AsFloat;
        709 : fpDesconto              := Linha.Informacao.AsFloat;
@@ -1582,6 +1624,7 @@ begin
             500 : fpIdPagamento      := Linha.Informacao.AsInteger ;
             501 : fpIdRespostaFiscal := Linha.Informacao.AsInteger ;
             502 : fpSerialPOS        := Linha.Informacao.AsString ;
+            503 : fpEstabelecimento  := Linha.Informacao.AsString ;
           end;
         end;
        999 : fpTrailer           := Linha.Informacao.AsString ;
@@ -3115,6 +3158,9 @@ begin
   FAutorizacao       := '';
   FBandeira          := '';
   FCNPJCredenciadora := '';
+  FDonoCartao        := '';
+  FDataExpiracao     := '';
+  FUltimosQuatroDigitos := '';
 end;
 
 end.

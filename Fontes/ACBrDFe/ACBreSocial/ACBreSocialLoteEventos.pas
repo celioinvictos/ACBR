@@ -291,7 +291,6 @@ procedure TLoteEventos.GerarXML(const AGrupo: TeSocialGrupo);
 var
   i: Integer;
   Eventosxml: AnsiString;
-//  Path: string;
 begin
   CarregarXmlEventos;
 
@@ -302,8 +301,8 @@ begin
   '<eSocial xmlns="http://www.esocial.gov.br/schema/lote/eventos/envio/v1_1_1">'+
     '<envioLoteEventos grupo="' + Inttostr(ord(AGrupo)) + '">'+
       '<ideEmpregador>'+
-        '<tpInsc>' + Inttostr(ord(FIdeEmpregador.TpInsc) + 1) +'</tpInsc>'+
-        '<nrInsc>' + Copy(FIdeEmpregador.NrInsc, 1,8) +'</nrInsc>'+
+        '<tpInsc>' + Inttostr(ord(FIdeEmpregador.TpInsc) + 1) + '</tpInsc>'+
+        '<nrInsc>' + IIf(FIdeEmpregador.TpInsc <> tiCNPJ, FIdeEmpregador.NrInsc, Copy(FIdeEmpregador.NrInsc, 1, 8)) +'</nrInsc>'+
       '</ideEmpregador>'+
       '<ideTransmissor>'+
         '<tpInsc>' + Inttostr(ord(FIdeTransmissor.TpInsc) + 1) +'</tpInsc>'+
@@ -340,6 +339,7 @@ var
   i: integer;
 begin
   Result := False;
+  
   ArquivoXML := TStringList.Create;
   try
     ArquivoXML.LoadFromFile(CaminhoArquivo);
@@ -440,17 +440,10 @@ function TItemLoteEventos.GetIDEvento: string;
 var
   Ini: Integer;
 begin
-  // 	<evtInfoEmpregador Id="ID1012345678900002017071908065532932">
   Result := EmptyStr;
   Ini := pos('Id=', XML);
   if ini > 0 then
-  begin
-    Result := Copy(XML, Ini + 4, 38);
-    Result := StringReplace(Result, '"', '', []);
-    Result := StringReplace(Result, '>', '', []);
-    Result := StringReplace(Result, '<', '', []);
-    Result := StringReplace(Result, '=', '', []);
-  end;
+    Result := 'ID' + OnlyNumber(Copy(XML, Ini + 4, 38));
 end;
 
 procedure TItemLoteEventos.SetXML(const Value: AnsiString);

@@ -1121,6 +1121,7 @@ object frmDemo_ACBrMDFe: TfrmDemo_ACBrMDFe
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
+    DAMDFE = ACBrMDFeDAMDFEFR1
     Left = 466
     Top = 297
   end
@@ -1134,5 +1135,24 @@ object frmDemo_ACBrMDFe: TfrmDemo_ACBrMDFe
     IDECharset = CP1252
     Left = 383
     Top = 341
+  end
+  object ACBrMDFeDAMDFEFR1: TACBrMDFeDAMDFEFR
+    ACBrMDFe = ACBrMDFe1
+    ImprimirHoraSaida = False
+    MostrarPreview = True
+    MostrarStatus = True
+    TipoDAMDFe = tiSemGeracao
+    TamanhoPapel = tpA4
+    NumCopias = 1
+    MargemInferior = 0.800000000000000000
+    MargemSuperior = 0.800000000000000000
+    MargemEsquerda = 0.600000000000000000
+    MargemDireita = 0.510000000000000000
+    MDFeCancelada = False
+    MDFeEncerrado = False
+    SelecionaImpressora = False
+    EspessuraBorda = 1
+    Left = 422
+    Top = 227
   end
 end

@@ -47,6 +47,154 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/04/2018
+-- ACBrNFeWebServices --
+[-] Correção em "TNFeRetRecepcao" para retornar o valor das propriedades 
+    modificadas pelo componente, na finalização do serviço.
+  https://www.projetoacbr.com.br/forum/topic/42900-ref-a-erro-no-retorno-da-nf-e-autorizada/
+  Por: BigWings
+
+23/04/2018
+-- ACBrNFeServicos --
+[*] Atualização de URLs NFe 4.00 MS homologação.
+  Por: BigWings
+
+20/04/2018
+-- ACBrNFeServicos --
+[*] Inclusão das URL NFCe 4.00 SP produção.
+[*] Atualização das URL de consulta por QRCode e chave de acesso NFCe 4.00 SP.
+[*] Atualização das URL de consulta de cadastro NFe 4.00 RS e SVRS 
+    homologação.
+  Por: BigWings
+
+18/04/2018
+-- ACBrNFeDANFEClass --
+[+] Adicionada a propriedade READONLY: TACBrNFeDANFEClass.ArquivoPDF: String
+    Útil para LER o nome do arquivo PDF que foi gerado.
+    (por: DSA)
+
+-- ACBrDANFCeFortesFr --
+[+] Adicionado suporte ao método "ImprimirEventoPDF"
+[*] Refatoração de código, removendo código repetido
+    (por: DSA)
+
+-- ACBrDANFCeFortesFr, ACBrDANFCeFortesFrA4, ACBrNFeDANFEFR, ACBrNFeDANFeRLClass --
+[+] Publicando o nome do PDF gerado em: TACBrNFeDANFEClass.ArquivoPDF
+    (por: DSA)
+
+16/04/2018
+-- pcnEventoNFe --
+[*] Modificação nos métodos "Getters" para não disparar exception no caso de
+    erros ou conversão inválida, assumindo valores vazios ou nulos.  (por: DSA)
+
+-- ACBrNFeWebServices --
+[-] Correção na execução do serviço de consulta de cadastro, para retornar o
+    FPBodyElement padrão após uma consulta de cadastro dos estados do RS e
+    estados usuários da SVRS.
+  Por: BigWings
+
+13/04/2014
+-- ACBrDANFCeFortesFr --
+[*] Adicionado o método "DiminuirFonteSeNecessario", para permitir ajuste do
+    tamanho da fonte, em Labels que não são quebrados em várias lihnhas, por não
+    possuir espaços no texto. Exemplo: "lURLConsulta"
+    (Por: DSA)
+
+12/04/2018
+-- ACBrNFeDANFeESCPOS --
+[*] Ajuste no método: ImprimirDANFECancelado, para considerar o número de 
+    cópias. (por: DSA)
+
+06/04/2018
+-- ACBrNFeNotasFiscais --
+[+] Adicionado Função que gera .INI a partir da leitura do XML da NFe
+  Por: José M. S. Junior
+
+06/04/2018
+-- ACBrNFeServicos --
+[*] Inclusão de URLs QRCode e consulta NFCe 4.00 BA.
+  https://www.projetoacbr.com.br/forum/topic/42578-nfce-urls-invalidas/
+  Por: BigWings
+
+05/04/2018
+-- pcnNFeW --
+[*] https://www.projetoacbr.com.br/forum/topic/42563-gera%C3%A7%C3%A3o-da-chave-de-nf-e-avulsa/
+  Por: BSoft
+
+-- ACBrNFeServicos --
+[*] Inclusão de URLs NFe 4.00 SVC-RS homologação.
+[*] Atualização de URLs NFe 4.00 homologação (BA, MS) e produção RS.
+  Por: BigWings
+
+-- ACBrNFeWebServices --
+[*] Ajuste para serviço de consulta de cadastro NFe 4.00 RS e SVRS onde o WSDL 
+  do serviço está fora do padrão.
+[-] Correção da versão do layout da NFe gerada no protocolo de autorização
+  ao efetuar a consulta.
+  Por: BigWings
+
+22/03/2018
+-- ACBrNFeDANFEClass --
+[*] Ajuste no manter Codigo.
+	https://www.projetoacbr.com.br/forum/topic/42326-corre%C3%A7%C3%A3o-no-m%C3%A9todo-mantercodigo-para-imprimir-o-c%C3%B3digo-e-n%C3%A3o-sem-gtin-nfce-40/
+  Por: HLeoRj
+
+21/03/2018
+-- ACBrNFeServicos --
+[*] Inclusão das URLs NFe 4.00 PE produção.
+  Por: BigWings
+
+19/03/2018
+-- ACBrNFeWebservices --
+[-] Correção no método "DefinirURL" para ajustar o layout do serviço corretamente
+  no envio de evento EPEC NFCe SP.
+  Por: BigWings
+
+17/03/2048
+-- ACBrNFeDANFeESCPOS --
+[+] Destaque separado do Valor do Frete, quando existente
+    (por: DSA)
+[+] Impressão do Valor do Documento, no Evento de Cancelamento
+    https://www.projetoacbr.com.br/forum/topic/41579-nfce-corre%C3%A7%C3%A3o-para-imprimir-valor-cancelamento-esc-pos/
+
+16/03/2018
+-- pcnNFeR --
+[*] https://www.projetoacbr.com.br/forum/topic/41734-xml-de-nfe-versao-310-com-grupo-de-repasse-de-substituicao-tributaria/?do=findComment&comment=275811
+   Por: Giovane Preis
+
+15/03/2018
+-- ACBrNFe --
+[*] Ajuste no método "EhAutorizacao" para definir corretamente a URL para
+    NFCe 4.00 AM.
+   https://www.projetoacbr.com.br/forum/topic/40618-nfc-e-40-amazonas
+   Por: BigWings / Afranio Lucas
+
+-- ACBrNFeServicos --
+[*] Atualização de URLs NFe 4.00 CE.
+  Por: BigWings
+
+13/03/2018
+-- pcnNFeW --
+[*] Comentado a alteração que atribui a string "SEM GTIN" quando os campos
+    cEAN e cEANTrib forem vazios (A validação esta prevista para 01/12/2018).
+   Por: Italo Jurisato Junior
+
+05/03/2018
+-- ACBrNFeServicos --
+[-] Remoção do ajuste do SoapAction para webservices da NFe BA homologação.
+   Por: BigWings
+
+01/03/2018
+-- pcnNFeW --
+[*] Incluido uma condição para a versão 4.00 se o produto não possuir o codigo
+    de barras deve ser informado "SEM GTIN" nos campos cEAN e cEANTrib.
+   Por: Italo Jurisato Junior
+
+20/02/2018
+-- ACBrNFeServicos --
+[*] Incluido as URLs NFCe ambiente de produção RS - versão 4.0 
+   (por: Jose M. S. Junior)
+
 14/02/2018
 -- pcnNFeRTXT / pcnNFeW / pcnNFeR --
 [*] Remção de funções em duplicidade e a troca das chamadas das funções antigas

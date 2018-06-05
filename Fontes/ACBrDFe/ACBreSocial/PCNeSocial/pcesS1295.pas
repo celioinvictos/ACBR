@@ -86,13 +86,15 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FIdeRespInf : TIdeRespInf;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
   public
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -100,6 +102,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS1295Collection }
 
@@ -143,6 +149,7 @@ constructor TEvtTotConting.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeRespInf := TIdeRespInf.Create;
@@ -157,11 +164,12 @@ begin
   inherited;
 end;
 
-function TEvtTotConting.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTotConting.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTotConting');
     Gerador.wGrupo('evtTotConting Id="' + Self.Id + '"');
@@ -182,6 +190,50 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtTotConting.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtInfoComplPer';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideRespinf';
+      ideRespinf.nmResp   := INIRec.ReadString(sSecao, 'nmResp', '');
+      ideRespinf.cpfResp  := INIRec.ReadString(sSecao, 'cpfResp', '');
+      ideRespinf.telefone := INIRec.ReadString(sSecao, 'telefone', '');
+      ideRespinf.email    := INIRec.ReadString(sSecao, 'email', '');
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

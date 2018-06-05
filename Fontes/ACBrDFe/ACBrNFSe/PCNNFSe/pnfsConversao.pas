@@ -63,7 +63,8 @@ type
 
   TnfseStatusNFSe = ( snNormal, snCancelado );
 
-  TnfseNaturezaOperacao = ( no1, no2, no3, no4, no5, no6, no7, no9, no11, no12, no14,
+  TnfseNaturezaOperacao = ( no0, no1, no2, no3, no4, no5, no6, no7, no8,
+                            no9, no10, no11, no12, no13, no14, no15,
                             no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
                             no60, no61, no62, no63, no64, no65, no66, no67, no68, no69,
                             no70, no71, no72, no78, no79, no101, no102, no103, no104, no105,
@@ -85,7 +86,7 @@ type
 
   TnfseSimNao = ( snSim, snNao );
   TnfseCondicaoPagamento = (cpAVista, cpNaApresentacao, cpAPrazo, cpCartaoCredito, cpCartaoDebito);
-  TnfseTipoRPS = ( trRPS, trNFConjugada, trCupom );
+  TnfseTipoRPS = ( trRPS, trNFConjugada, trCupom, trNone );
   TnfseIndicacaoCpfCnpj = ( iccCPF, iccCNPJ, iccNaoInformado );
   TnfseSituacaoLoteRPS = ( slrNaoRecibo, slrNaoProcessado, slrProcessadoErro, slrProcessadoSucesso );
 
@@ -108,7 +109,7 @@ type
                     proBethav2, proActconv2, proInfiscv11, proFriburgo, proCTA,
                     proNotaBlu, proSMARAPD, proSmarAPDABRASF, proActconv201,
                     proActconv202, proSigep, proSafeWeb, proSH3, proSIAPNet,
-                    proIPM, proBelford, proISSJoinville, proAsten);
+                    proIPM, proBelford, proISSJoinville, proAsten, proELv2);
 
   TnfseAcao = (acRecepcionar, acConsSit, acConsLote, acConsNFSeRps, acConsNFSe,
                acCancelar, acGerar, acRecSincrono, acConsSecRps, acSubstituir);
@@ -303,7 +304,8 @@ end;
 function NaturezaOperacaoToStr(const t: TnfseNaturezaOperacao): String;
 begin
   result := EnumeradoToStr(t,
-                           ['1', '2', '3', '4', '5', '6', '7', '9', '11', '12', '14',
+                           ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                            '9', '10', '11', '12', '13', '14', '15',
                             '50', '51', '52', '53', '54', '55', '56', '57', '58', '59',
                             '60', '61', '62', '63', '64', '65', '66', '67', '68', '69',
                             '70', '71', '72', '78', '79', '101', '102', '105', '107',
@@ -313,7 +315,8 @@ begin
                             '712', '901', '902', '911', '912', '921', '931', '951',
                             '952', '971', '981', '991'
                            ],
-                           [no1, no2, no3, no4, no5, no6, no7, no9, no11, no12, no14,
+                           [no0, no1, no2, no3, no4, no5, no6, no7, no8,
+                            no9, no10, no11, no12, no13, no14, no15,
                             no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
                             no60, no61, no62, no63, no64, no65, no66, no67, no68, no69,
                             no70, no71, no72, no78, no79, no101, no102, no105, no107,
@@ -328,7 +331,8 @@ end;
 function StrToNaturezaOperacao(out ok: boolean; const s: String): TnfseNaturezaOperacao;
 begin
   result := StrToEnumerado(ok, s,
-                          ['1', '2', '3', '4', '5', '6', '7', '9', '11', '12', '14',
+                          ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                            '9', '10', '11', '12', '13', '14', '15',
                             '50', '51', '52', '53', '54', '55', '56', '57', '58', '59',
                             '60', '61', '62', '63', '64', '65', '66', '67', '68', '69',
                             '70', '71', '72', '78', '79', '101', '102', '105', '107',
@@ -338,7 +342,8 @@ begin
                             '712', '901', '902', '911', '912', '921', '931', '951',
                             '952', '971', '981', '991'
                            ],
-                           [no1, no2, no3, no4, no5, no6, no7, no9, no11, no12, no14,
+                           [no0, no1, no2, no3, no4, no5, no6, no7, no8,
+                            no9, no10, no11, no12, no13, no14, no15,
                             no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
                             no60, no61, no62, no63, no64, no65, no66, no67, no68, no69,
                             no70, no71, no72, no78, no79, no101, no102, no105, no107,
@@ -432,15 +437,15 @@ end;
 function TipoRPSToStr(const t: TnfseTipoRPS): String;
 begin
   result := EnumeradoToStr(t,
-                           ['1','2','3'],
-                           [trRPS, trNFConjugada, trCupom]);
+                           ['1', '2', '3', '0'],
+                           [trRPS, trNFConjugada, trCupom, trNone]);
 end;
 
 function StrToTipoRPS(out ok: boolean; const s: String): TnfseTipoRPS;
 begin
   result := StrToEnumerado(ok, s,
-                           ['1','2','3'],
-                           [trRPS, trNFConjugada, trCupom]);
+                           ['1', '2', '3', '0'],
+                           [trRPS, trNFConjugada, trCupom, trNone]);
 end;
 
 // Indicacao CPF/CNPJ **********************************************************
@@ -495,7 +500,7 @@ begin
          'Pronimv2', 'ABase', 'VersaTecnologia', 'CIGA', 'Siam', 'Agiliv2',
          'Bethav2', 'Actconv2', 'Infisc-v11', 'Friburgo', 'CTA', 'NotaBlu',
          'Smarapd', 'SmarAPDABRASF', 'Actconv201', 'Actconv202', 'Sigep', 'SafeWeb',
-         'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten'],
+         'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -511,7 +516,7 @@ begin
          proBethav2, proActconv2, proInfiscv11, proFriburgo, proCTA, proNotaBlu,
          proSMARAPD, proSmarAPDABRASF, proActconv201, proActconv202, proSigep,
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
-         proAsten]);
+         proAsten, proELv2]);
 end;
 
 function StrToProvedor(out ok: boolean; const s: String): TnfseProvedor;
@@ -530,7 +535,7 @@ begin
          'Pronimv2', 'ABase', 'VersaTecnologia', 'CIGA', 'Siam', 'Agiliv2',
          'Bethav2', 'Actconv2', 'Infisc-v11', 'Friburgo', 'CTA', 'NotaBlu',
          'Smarapd', 'SmarAPDABRASF', 'Actconv201', 'Actconv202', 'Sigep', 'SafeWeb',
-         'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten'],
+         'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -546,7 +551,7 @@ begin
          proBethav2, proActconv2, proInfiscv11, proFriburgo, proCTA, proNotaBlu,
          proSMARAPD, proSmarAPDABRASF, proActconv201, proActconv202, proSigep,
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
-         proAsten]);
+         proAsten, proELv2]);
 end;
 
 // Condição de pagamento ******************************************************
@@ -7336,7 +7341,7 @@ var
       2200707: CodSiafi := '1013'; // Anisio De Abreu/PI';
       2200806: CodSiafi := '1015'; // Antonio Almeida/PI';
       2200905: CodSiafi := '1017'; // Aroazes/PI';
-      2200954: CodSiafi := '';     // Aroeiras Do Itaim/PI';
+      2200954: CodSiafi := '1188'; // Aroeiras Do Itaim/PI';
       2201002: CodSiafi := '1019'; // Arraial/PI';
       2201051: CodSiafi := '0270'; // Assuncao Do Piaui/PI';
       2201101: CodSiafi := '1021'; // Avelino Lopes/PI';
@@ -8204,7 +8209,7 @@ var
       2605202: CodSiafi := '2403'; // Escada/PE';
       2605301: CodSiafi := '2405'; // Exu/PE';
       2605400: CodSiafi := '2407'; // Feira Nova/PE';
-      2605459: CodSiafi := '';     // Fernando De Noronha/PE';
+      2605459: CodSiafi := '3001'; // Fernando De Noronha/PE';
       2605509: CodSiafi := '2409'; // Ferreiros/PE';
       2605608: CodSiafi := '2411'; // Flores/PE';
       2605707: CodSiafi := '2413'; // Floresta/PE';
@@ -11879,7 +11884,7 @@ var
       5003702: CodSiafi := '9073'; // Dourados/MS';
       5003751: CodSiafi := '9173'; // Eldorado/MS';
       5003801: CodSiafi := '9075'; // Fatima Do Sul/MS';
-      5003900: CodSiafi := '';     // Figueirao/MS';
+      5003900: CodSiafi := '1178'; // Figueirao/MS';
       5004007: CodSiafi := '9079'; // Gloria De Dourados/MS';
       5004106: CodSiafi := '9081'; // Guia Lopes Da Laguna/MS';
       5004304: CodSiafi := '9085'; // Iguatemi/MS';
@@ -11979,8 +11984,8 @@ var
       5104104: CodSiafi := '9887'; // Guaranta Do Norte/MT';
       5104203: CodSiafi := '9083'; // Guiratinga/MT';
       5104500: CodSiafi := '9877'; // Indiavai/MT';
-      5104526: CodSiafi := '';     // Ipiranga Do Norte/MT';
-      5104542: CodSiafi := '';     // Itanhanga/MT';
+      5104526: CodSiafi := '1184'; // Ipiranga Do Norte/MT';
+      5104542: CodSiafi := '1186'; // Itanhanga/MT';
       5104559: CodSiafi := '9901'; // Itauba/MT';
       5104609: CodSiafi := '9091'; // Itiquira/MT';
       5104807: CodSiafi := '9095'; // Jaciara/MT';
@@ -12265,8 +12270,8 @@ var
       5217609: CodSiafi := '9595'; // Planaltina/GO';
       5217708: CodSiafi := '9549'; // Pontalina/GO';
       5218003: CodSiafi := '9555'; // Porangatu/GO';
-      5218052: CodSiafi := '9557'; // Porteirao/GO';
-      5218102: CodSiafi := '';     // Portelandia/GO';
+      5218052: CodSiafi := '1060'; // Porteirao/GO';
+      5218102: CodSiafi := '9557'; // Portelandia/GO';
       5218300: CodSiafi := '9561'; // Posse/GO';
       5218391: CodSiafi := '0051'; // Professor Jamil/GO';
       5218508: CodSiafi := '9563'; // Quirinopolis/GO';
@@ -18373,7 +18378,7 @@ begin
     proSisPMJP, proSystemPro, proTecnos, proVirtual, proVitoria, proWebISSv2,
     proActconv201, proActconv202, proVersaTecnologia, proSigep, proSafeWeb,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
-    proAsten: Result := loABRASFv2;
+    proAsten, proELv2: Result := loABRASFv2;
 
     proAgili,
     proAgiliv2:     Result := loAgili;
@@ -18408,7 +18413,7 @@ begin
     proSisPMJP, proSystemPro, proTecnos, proVirtual, proVitoria, proNFSEBrasil,
     proVersaTecnologia, proActconv201, proSafeWeb, proActconv202, proWebISSv2,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
-    proAsten: Result := ve200;
+    proAsten, proELv2: Result := ve200;
 
     proInfiscv11: Result := ve110;
   else

@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -92,6 +92,7 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FInfoComProd: TInfoComProd;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarInfoComProd;
@@ -103,7 +104,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -190,6 +192,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1260Collection }
 
 function TS1260Collection.Add: TS1260CollectionItem;
@@ -225,137 +231,6 @@ end;
 procedure TS1260CollectionItem.setEvtComProd(const Value: TEvtComProd);
 begin
   FEvtComProd.Assign(Value);
-end;
-
-{ TEvtComProd }
-constructor TEvtComProd.Create(AACBreSocial: TObject);
-begin
-  inherited;
-
-  FIdeEvento     := TIdeEvento3.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
-  FInfoComProd   := TInfoComProd.create;
-end;
-
-destructor TEvtComProd.destroy;
-begin
-  FIdeEvento.Free;
-  FIdeEmpregador.Free;
-  FInfoComProd.Free;
-
-  inherited;
-end;
-
-procedure TEvtComProd.GerarInfoComProd;
-begin
-  Gerador.wGrupo('infoComProd');
-
-  GerarIdeEstabel;
-
-  Gerador.wGrupo('/infoComProd');
-end;
-
-procedure TEvtComProd.GerarIdeEstabel;
-begin
-  Gerador.wGrupo('ideEstabel');
-
-  Gerador.wCampo(tcStr, '', 'nrInscEstabRural', 1, 15, 1, InfoComProd.IdeEstabel.nrInscEstabRural);
-
-  GerarTpComerc(InfoComProd.IdeEstabel.TpComerc);
-
-  Gerador.wGrupo('/ideEstabel');
-end;
-
-procedure TEvtComProd.GerarIdeAdquir(pIdeAdquir: TIdeAdquirColecao);
-var
-  i: integer;
-begin
-  for i := 0 to pIdeAdquir.Count - 1 do
-  begin
-    Gerador.wGrupo('ideAdquir');
-
-    Gerador.wCampo(tcStr, '', 'tpInsc',   1,  1, 1, eSTpInscricaoToStr(pIdeAdquir.Items[i].tpInsc));
-    Gerador.wCampo(tcStr, '', 'nrInsc',   1, 15, 1, pIdeAdquir.Items[i].nrInsc);
-    Gerador.wCampo(tcDe2, '', 'vrComerc', 1, 14, 1, pIdeAdquir.Items[i].vrComerc);
-
-    if pIdeAdquir.Items[i].nfsInst() then
-      GerarNfs(pIdeAdquir.Items[i].nfs);
-
-    Gerador.wGrupo('/ideAdquir');
-  end;
-
-  if pIdeAdquir.Count > 9999 then
-    Gerador.wAlerta('', 'ideAdquir', 'Lista de Adquirentes de Produção', ERR_MSG_MAIOR_MAXIMO + '9999');
-end;
-
-procedure TEvtComProd.GerarInfoProcJud(pInfoProcJud: TInfoProcJudCollection);
-var
-  i : Integer;
-begin
-  for i := 0 to pInfoProcJud.Count - 1 do
-  begin
-    Gerador.wGrupo('infoProcJud');
-
-    Gerador.wCampo(tcStr, '', 'tpProc',      1,  1, 1, pInfoProcJud.Items[i].tpProc);
-    Gerador.wCampo(tcStr, '', 'nrProc',      1, 20, 1, pInfoProcJud.Items[i].nrProcJud);
-    Gerador.wCampo(tcInt, '', 'codSusp',     1, 14, 1, pInfoProcJud.Items[i].codSusp);
-    Gerador.wCampo(tcDe2, '', 'vrCPSusp',    1, 14, 0, pInfoProcJud.Items[i].vrCPSusp);
-    Gerador.wCampo(tcDe2, '', 'vrRatSusp',   1, 14, 0, pInfoProcJud.Items[i].vrRatSusp);
-    Gerador.wCampo(tcDe2, '', 'vrSenarSusp', 1, 14, 0, pInfoProcJud.Items[i].vrSenarSusp);
-
-    Gerador.wGrupo('/infoProcJud');
-  end;
-
-  if pInfoProcJud.Count > 10 then
-    Gerador.wAlerta('', 'infoProcJud', 'Lista de Informações de Processos', ERR_MSG_MAIOR_MAXIMO + '10');
-end;
-
-procedure TEvtComProd.GerarTpComerc(pTpComerc: TTpComercColecao);
-var
-  i: Integer;
-begin
-  for i := 0 to pTpComerc.Count - 1 do
-  begin
-    Gerador.wGrupo('tpComerc');
-
-    Gerador.wCampo(tcStr, '', 'indComerc', 1,  1, 1, eSIndComercStr(pTpComerc.Items[i].indComerc));
-    Gerador.wCampo(tcDe2, '', 'vrTotCom',  1, 14, 1, pTpComerc.Items[i].vrTotCom);
-
-    GerarIdeAdquir(pTpComerc.Items[i].IdeAdquir);
-    GerarInfoProcJud(pTpComerc.Items[i].InfoProcJud);
-
-    Gerador.wGrupo('/tpComerc');
-  end;
-
-  if pTpComerc.Count > 4 then
-    Gerador.wAlerta('', 'tpComerc', 'Lista de Comercialização', ERR_MSG_MAIOR_MAXIMO + '4');
-end;
-
-function TEvtComProd.GerarXML(ATipoEmpregador: TEmpregador): boolean;
-begin
-  try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
-
-    GerarCabecalho('evtComProd');
-    Gerador.wGrupo('evtComProd Id="' + Self.Id + '"');
-
-    GerarIdeEvento3(self.IdeEvento);
-    GerarIdeEmpregador(self.IdeEmpregador);
-    GerarInfoComProd;
-
-    Gerador.wGrupo('/evtComProd');
-
-    GerarRodape;
-
-    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtComProd');
-
-    Validar(schevtComProd);
-  except on e:exception do
-    raise Exception.Create(e.Message);
-  end;
-
-  Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
 { TTpComercColecao }
@@ -472,6 +347,274 @@ begin
   FTpComerc.Free;
 
   inherited;
+end;
+
+{ TEvtComProd }
+constructor TEvtComProd.Create(AACBreSocial: TObject);
+begin
+  inherited;
+
+  FACBreSocial := AACBreSocial;
+  FIdeEvento     := TIdeEvento3.Create;
+  FIdeEmpregador := TIdeEmpregador.Create;
+  FInfoComProd   := TInfoComProd.create;
+end;
+
+destructor TEvtComProd.destroy;
+begin
+  FIdeEvento.Free;
+  FIdeEmpregador.Free;
+  FInfoComProd.Free;
+
+  inherited;
+end;
+
+procedure TEvtComProd.GerarInfoComProd;
+begin
+  Gerador.wGrupo('infoComProd');
+
+  GerarIdeEstabel;
+
+  Gerador.wGrupo('/infoComProd');
+end;
+
+procedure TEvtComProd.GerarIdeEstabel;
+begin
+  Gerador.wGrupo('ideEstabel');
+
+  Gerador.wCampo(tcStr, '', 'nrInscEstabRural', 1, 15, 1, InfoComProd.IdeEstabel.nrInscEstabRural);
+
+  GerarTpComerc(InfoComProd.IdeEstabel.TpComerc);
+
+  Gerador.wGrupo('/ideEstabel');
+end;
+
+procedure TEvtComProd.GerarIdeAdquir(pIdeAdquir: TIdeAdquirColecao);
+var
+  i: integer;
+begin
+  for i := 0 to pIdeAdquir.Count - 1 do
+  begin
+    Gerador.wGrupo('ideAdquir');
+
+    Gerador.wCampo(tcStr, '', 'tpInsc',   1,  1, 1, eSTpInscricaoToStr(pIdeAdquir.Items[i].tpInsc));
+    Gerador.wCampo(tcStr, '', 'nrInsc',   1, 15, 1, pIdeAdquir.Items[i].nrInsc);
+    Gerador.wCampo(tcDe2, '', 'vrComerc', 1, 14, 1, pIdeAdquir.Items[i].vrComerc);
+
+    if pIdeAdquir.Items[i].nfsInst() then
+      GerarNfs(pIdeAdquir.Items[i].nfs);
+
+    Gerador.wGrupo('/ideAdquir');
+  end;
+
+  if pIdeAdquir.Count > 9999 then
+    Gerador.wAlerta('', 'ideAdquir', 'Lista de Adquirentes de Produção', ERR_MSG_MAIOR_MAXIMO + '9999');
+end;
+
+procedure TEvtComProd.GerarInfoProcJud(pInfoProcJud: TInfoProcJudCollection);
+var
+  i : Integer;
+begin
+  for i := 0 to pInfoProcJud.Count - 1 do
+  begin
+    Gerador.wGrupo('infoProcJud');
+
+    Gerador.wCampo(tcStr, '', 'tpProc',      1,  1, 1, pInfoProcJud.Items[i].tpProc);
+    Gerador.wCampo(tcStr, '', 'nrProc',      1, 20, 1, pInfoProcJud.Items[i].nrProcJud);
+    Gerador.wCampo(tcInt, '', 'codSusp',     1, 14, 1, pInfoProcJud.Items[i].codSusp);
+    Gerador.wCampo(tcDe2, '', 'vrCPSusp',    1, 14, 0, pInfoProcJud.Items[i].vrCPSusp);
+    Gerador.wCampo(tcDe2, '', 'vrRatSusp',   1, 14, 0, pInfoProcJud.Items[i].vrRatSusp);
+    Gerador.wCampo(tcDe2, '', 'vrSenarSusp', 1, 14, 0, pInfoProcJud.Items[i].vrSenarSusp);
+
+    Gerador.wGrupo('/infoProcJud');
+  end;
+
+  if pInfoProcJud.Count > 10 then
+    Gerador.wAlerta('', 'infoProcJud', 'Lista de Informações de Processos', ERR_MSG_MAIOR_MAXIMO + '10');
+end;
+
+procedure TEvtComProd.GerarTpComerc(pTpComerc: TTpComercColecao);
+var
+  i: Integer;
+begin
+  for i := 0 to pTpComerc.Count - 1 do
+  begin
+    Gerador.wGrupo('tpComerc');
+
+    Gerador.wCampo(tcStr, '', 'indComerc', 1,  1, 1, eSIndComercStr(pTpComerc.Items[i].indComerc));
+    Gerador.wCampo(tcDe2, '', 'vrTotCom',  1, 14, 1, pTpComerc.Items[i].vrTotCom);
+
+    GerarIdeAdquir(pTpComerc.Items[i].IdeAdquir);
+    GerarInfoProcJud(pTpComerc.Items[i].InfoProcJud);
+
+    Gerador.wGrupo('/tpComerc');
+  end;
+
+  if pTpComerc.Count > 4 then
+    Gerador.wAlerta('', 'tpComerc', 'Lista de Comercialização', ERR_MSG_MAIOR_MAXIMO + '4');
+end;
+
+function TEvtComProd.GerarXML: boolean;
+begin
+  try
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
+
+    GerarCabecalho('evtComProd');
+    Gerador.wGrupo('evtComProd Id="' + Self.Id + '"');
+
+    GerarIdeEvento3(self.IdeEvento);
+    GerarIdeEmpregador(self.IdeEmpregador);
+    GerarInfoComProd;
+
+    Gerador.wGrupo('/evtComProd');
+
+    GerarRodape;
+
+    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtComProd');
+
+    Validar(schevtComProd);
+  except on e:exception do
+    raise Exception.Create(e.Message);
+  end;
+
+  Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtComProd.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I, J, K: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtComProd';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideEstabel';
+      InfoComProd.IdeEstabel.nrInscEstabRural := INIRec.ReadString(sSecao, 'nrInscEstabRural', '');
+
+      I := 1;
+      while true do
+      begin
+        // de 1 até 4
+        sSecao := 'tpComerc' + IntToStrZero(I, 1);
+        sFim   := INIRec.ReadString(sSecao, 'indComerc', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with InfoComProd.IdeEstabel.tpComerc.Add do
+        begin
+          indComerc := eSStrToIndComerc(Ok, sFim);
+          vrTotCom  := StringToFloatDef(INIRec.ReadString(sSecao, 'vrTotCom', ''), 0);
+
+          J := 1;
+          while true do
+          begin
+            // de 0000 até 9999
+            sSecao := 'ideAdquir' + IntToStrZero(I, 1) + IntToStrZero(J, 4);
+            sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with ideAdquir.Add do
+            begin
+              tpInsc   := eSStrToTpInscricao(Ok, sFim);
+              nrInsc   := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+              vrComerc := StringToFloatDef(INIRec.ReadString(sSecao, 'vrComerc', ''), 0);
+
+              K := 1;
+              while true do
+              begin
+                // de 0000 até 9999
+                sSecao := 'nfs' + IntToStrZero(I, 1) + IntToStrZero(J, 4) +
+                               IntToStrZero(K, 4);
+                sFim   := INIRec.ReadString(sSecao, 'serie', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with nfs.Add do
+                begin
+                  serie       := sFim;
+                  nrDocto     := INIRec.ReadString(sSecao, 'nrDocto', EmptyStr);
+                  dtEmisNF    := StringToDateTime(INIRec.ReadString(sSecao, 'dtEmisNF', '0'));
+                  vlrBruto    := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrBruto', ''), 0);
+                  vrCPDescPR  := StringToFloatDef(INIRec.ReadString(sSecao, 'vrCPDescPR', ''), 0);
+                  vrRatDescPR := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRatDescPR', ''), 0);
+                  vrSenarDesc := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSenarDesc', ''), 0);
+                end;
+
+                Inc(K);
+              end;
+
+              K := 1;
+              while true do
+              begin
+                // de 00 até 10
+                sSecao := 'infoProcJud' + IntToStrZero(I, 1) + IntToStrZero(J, 4) +
+                               IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'nrProc', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with infoProcJud.Add do
+                begin
+                  tpProc      := eSStrToTpProcesso(Ok, INIRec.ReadString(sSecao, 'tpProc', '1'));
+                  nrProcJud   := sFim;
+                  codSusp     := INIRec.ReadInteger(sSecao, 'codSusp', 0);
+                  vrCPSusp    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrCPSusp', ''), 0);
+                  vrRatSusp   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRatSusp', ''), 0);
+                  vrSenarSusp := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSenarSusp', ''), 0);
+                end;
+
+                Inc(K);
+              end;
+
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

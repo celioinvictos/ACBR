@@ -1,7 +1,7 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
+{ Projeto: Componente ACBrReinf                                                }
+{  Biblioteca multiplataforma de componentes Delphi para envio de eventos do   }
+{ Reinf                                                                        }
 
 { Direitos Autorais Reservados (c) 2017 Leivio Ramos de Fontenele              }
 {                                                                              }
@@ -41,7 +41,9 @@ unit ACBrReinfEventosBase;
 
 interface
 
-uses Classes, Sysutils, pcnGerador, pcnConversaoReinf, ACBrReinfClasses, ACBrDFe, Contnrs, TypInfo;
+uses
+  Classes, Sysutils, Contnrs, TypInfo,
+  pcnGerador, pcnConversaoReinf, pcnReinfClasses, ACBrDFe;
 
 type
 
@@ -65,7 +67,7 @@ type
     FXML: AnsiString;
     FSchema: TReinfSchema;
     FErros: string;
-    FTipoOperacao: TTypeOperacao;
+    FTipoOperacao: TindOperacao;
     FNovaValidade: TIdePeriodo;
     function GetXML: AnsiString;
   protected
@@ -75,21 +77,22 @@ type
     procedure GerarIdeEvento(ApEvt: TIdeEvento; const AGeraGrupo: boolean = True);
     procedure GerarIdeContribuinte(AContribuinte: TIdeContribuinte);
     procedure GerarEventoXML; virtual; abstract; {Geração do conteudo do evento}
-    procedure GerarModoFechamento(AOperacao: TTypeOperacao);
-    procedure GerarModoAbertura(AOperacao: TTypeOperacao);
+    procedure GerarModoFechamento(AOperacao: TindOperacao);
+    procedure GerarModoAbertura(AOperacao: TindOperacao);
     procedure GerarIdePeriodo(AIdePeriodo: TidePeriodo; const GroupName: string = 'idePeriodo');
   public
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
     function  GerarXML(AValidar: Boolean = True; ASequencial: integer = 0): boolean; virtual;
     procedure SaveToFile(const ACaminhoArquivo: string);
-    function  Assinar(AXMLEvento, ANomeEvento: AnsiString): AnsiString;
+    function  Assinar(AXMLEvento, ANomeEvento: String): AnsiString;
     procedure ValidarEventos(AEvento: string);
+
     property Erros: string read FErros;
     property Gerador: TGerador  read FGerador write FGerador;
     property Schema: TReinfSchema read FSchema;
     property XML: AnsiString read GetXML write FXML;
-    property TipoOperacao: TTypeOperacao read FTipoOperacao write FTipoOperacao;
+    property TipoOperacao: TindOperacao read FTipoOperacao write FTipoOperacao;
     property NovaValidade: TIdePeriodo read FNovaValidade write FNovaValidade;
   end;
 
@@ -100,6 +103,7 @@ type
     procedure SetItem(Index: Integer; const Value: TEventoReinf);
   public
     function New(AACBrReinf: TACBrDFe): TEventoReinf;
+
     property Items[Index: Integer]: TEventoReinf read GetItem write SetItem;
   end;
 
@@ -126,7 +130,9 @@ type
 
 implementation
 
-uses pcnAuxiliar, ACBrUtil, pcnLeitor, ACBrReinf, ACBrReinfUtils, pcnConversao, ACBrDFeUtil, DateUtils;
+uses
+  pcnAuxiliar, ACBrUtil, pcnLeitor, ACBrReinf, pcnConversao,
+  ACBrDFeUtil, DateUtils;
 
 procedure TEventoReinf.AfterConstruction;
 begin
@@ -139,21 +145,24 @@ begin
   FGerador.Opcoes.DecimalChar := ',';
 end;
 
-function TEventoReinf.Assinar(AXMLEvento, ANomeEvento: AnsiString): AnsiString;
+function TEventoReinf.Assinar(AXMLEvento, ANomeEvento: String): AnsiString;
 var
-  XMLAss: string;
-  ArqXML: string;
+  XMLAss, ArqXML, Path: String;
 begin
   Result := '';
 
-  ArqXML := string(AXMLEvento);
+  ArqXML := AXMLEvento;
 
   ArqXML := ConverteXMLtoUTF8(ArqXML);
   FXMLOriginal := ArqXML;
 
   with TACBrReinf(FACBrReinf) do
   begin
-    XMLAss := SSL.Assinar(ArqXML, 'Reinf', String(ANomeEvento), '', '', '', 'id');
+    Path := Configuracoes.Arquivos.PathSalvar;
+    if trim(Path) = '' then
+      Path := PathWithDelim(Configuracoes.Arquivos.GetPathReinf(Now, Configuracoes.Geral.IdContribuinte));
+
+    XMLAss := SSL.Assinar(ArqXML, 'Reinf', ANomeEvento, '', '', '', 'id');
 
     FXMLAssinado := XMLAss;
     FXMLOriginal := XMLAss;
@@ -161,22 +170,12 @@ begin
     XMLAss := StringReplace(XMLAss, '<' + ENCODING_UTF8_STD + '>', '', [rfReplaceAll]);
     XMLAss := StringReplace(XMLAss, '<' + XML_V01 + '>', '', [rfReplaceAll]);
 
-    ANomeEvento := ANomeEvento + '-' + FId + '.xml';
+    ANomeEvento := FId + '-' + ANomeEvento + '.xml';
 
     if Configuracoes.Arquivos.Salvar then
-       Gravar(string(ANomeEvento), XMLAss,Configuracoes.Arquivos.PathSalvar);
+       Gravar(ANomeEvento, XMLAss, Path);
 
     Result := AnsiString(XMLAss);
-
-    {$IFDEF DEBUG}
-      With TStringList.Create do
-      try
-        Text := XMLAss;
-        SaveToFile(IncludeTrailingPathDelimiter(ExtractFileDir(ParamStr(0))) + 'Docs\' + ANomeEvento);
-      finally
-        Free;
-      end;
-    {$ENDIF}
   end;
 end;
 
@@ -191,25 +190,28 @@ procedure TEventoReinf.GerarCabecalho(ANamespace: string);
 var
   NameSpaceURI: string;
 begin
-  NameSpaceURI := 'http://www.reinf.esocial.gov.br/schemas/' + ANamespace +'/' + TACBrReinf( FACBrReinf ).Versao;
+  NameSpaceURI := 'http://www.reinf.esocial.gov.br/schemas/' + ANamespace +'/v' +
+         VersaoReinfToStr(TACBrReinf( FACBrReinf ).Configuracoes.Geral.VersaoDF);
   FACBrReinf.SSL.NameSpaceURI := NameSpaceURI;
-  Gerador.wGrupo(ENCODING_UTF8, '', False);
+
   Gerador.wGrupo('Reinf xmlns="' + NameSpaceURI + '"');
 end;
 
 procedure TEventoReinf.GerarIdeContribuinte(AContribuinte: TIdeContribuinte);
 begin
   Gerador.wGrupo('ideContri');
-    Gerador.wCampo(tcStr, '', 'tpInsc', 0, 0, 1, Ord(AContribuinte.TpInsc));
-    if AContribuinte.OrgaoPublico then
-      Gerador.wCampo(tcStr, '', 'nrInsc', 0, 0, 1, AContribuinte.NrInsc)
-    else
-      Gerador.wCampo(tcStr, '', 'nrInsc', 0, 0, 1, Copy(AContribuinte.NrInsc, 1, 8));
+
+  Gerador.wCampo(tcStr, '', 'tpInsc', 1, 1, 1, TpInscricaoToStr(AContribuinte.TpInsc));
+
+  if AContribuinte.OrgaoPublico then
+    Gerador.wCampo(tcStr, '', 'nrInsc', 14, 14, 1, AContribuinte.NrInsc)
+  else
+    Gerador.wCampo(tcStr, '', 'nrInsc', 8, 8, 1, Copy(AContribuinte.NrInsc, 1, 8));
 
   // Controle para registros onde existem eventos dentro de Contrib
-  if not ( FSchema in [ rsevtAssocDespRec,           // R-2030 - Recursos Recebidos por Associação Desportiva
-                        rsevtAssocDespRep,           // R-2040 - Recursos Repassados para Associação Desportiva
-                        rsevtEspDesportivo ] ) then  // R-3010 - Receita de Espetáculo Desportivo
+  if not ( FSchema in [ schevtAssocDespRec,           // R-2030 - Recursos Recebidos por Associação Desportiva
+                        schevtAssocDespRep,           // R-2040 - Recursos Repassados para Associação Desportiva
+                        schevtEspDesportivo ] ) then  // R-3010 - Receita de Espetáculo Desportivo
     Gerador.wGrupo('/ideContri');
 end;
 
@@ -220,22 +222,21 @@ begin
 
   if Self.InheritsFrom(TEventoReinfRet) then
   begin
-    Gerador.wCampo(tcStr, '', 'indRetif', 0, 0, 1, ord(TEventoReinfRet(Self).indRetif));
-    if TEventoReinfRet(Self).nrRecibo <> EmptyStr then
-      Gerador.wCampo(tcStr, '', 'nrRecibo', 0, 0, 1, TEventoReinfRet(Self).nrRecibo);
+    Gerador.wCampo(tcStr, '', 'indRetif', 1,  1, 1, IndRetificacaoToStr(TEventoReinfRet(Self).indRetif));
+    Gerador.wCampo(tcStr, '', 'nrRecibo', 1, 52, 0, TEventoReinfRet(Self).nrRecibo);
   end;
 
   if Self.InheritsFrom(TEventoReinfR) then
   begin
     if ( TEventoReinfRet(Self).dtApuracao > 0 ) then
-      Gerador.wCampo(tcDat, '', 'dtApuracao', 0, 0, 1, TEventoReinfRet(Self).dtApuracao)
+      Gerador.wCampo(tcDat, '', 'dtApuracao', 10, 10, 1, TEventoReinfRet(Self).dtApuracao)
     else
-      Gerador.wCampo(tcStr, '', 'perApur', 0, 0, 1, TEventoReinfRet(Self).perApur);
+      Gerador.wCampo(tcStr, '', 'perApur', 7, 7, 1, TEventoReinfRet(Self).perApur);
   end;
 
-  Gerador.wCampo(tcInt, '', 'tpAmb', 0, 0, 0, ord(ApEvt.TpAmb));
-  Gerador.wCampo(tcInt, '', 'procEmi', 0, 0, 0, Ord(ApEvt.ProcEmi));
-  Gerador.wCampo(tcStr, '', 'verProc', 0, 0, 0, ApEvt.VerProc);
+  Gerador.wCampo(tcStr, '', 'tpAmb',   1,  1, 1, tpAmbReinfToStr(ApEvt.TpAmb));
+  Gerador.wCampo(tcStr, '', 'procEmi', 1,  1, 1, ProcEmiReinfToStr(ApEvt.ProcEmi));
+  Gerador.wCampo(tcStr, '', 'verProc', 1, 20, 1, ApEvt.VerProc);
 
   if AGeraGrupo then
   	Gerador.wGrupo('/ideEvento');
@@ -244,12 +245,14 @@ end;
 procedure TEventoReinf.GerarIdePeriodo(AIdePeriodo: TidePeriodo; const GroupName: string);
 begin
   Gerador.wGrupo(GroupName);
-    Gerador.wCampo(tcStr, '', 'iniValid', 0, 0, 1, AIdePeriodo.IniValid);
-    Gerador.wCampo(tcStr, '', 'fimValid', 0, 0, 0, AIdePeriodo.FimValid);
+
+  Gerador.wCampo(tcStr, '', 'iniValid', 7, 7, 1, AIdePeriodo.IniValid);
+  Gerador.wCampo(tcStr, '', 'fimValid', 7, 7, 0, AIdePeriodo.FimValid);
+
   Gerador.wGrupo('/'+GroupName);
 end;
 
-procedure TEventoReinf.GerarModoAbertura(AOperacao: TTypeOperacao);
+procedure TEventoReinf.GerarModoAbertura(AOperacao: TindOperacao);
 begin
   case AOperacao of
     toAlteracao: Gerador.wGrupo('alteracao');
@@ -259,7 +262,7 @@ begin
   end;
 end;
 
-procedure TEventoReinf.GerarModoFechamento(AOperacao: TTypeOperacao);
+procedure TEventoReinf.GerarModoFechamento(AOperacao: TindOperacao);
 begin
   case AOperacao of
     toAlteracao: Gerador.wGrupo('/alteracao');
@@ -276,44 +279,44 @@ end;
 
 function TEventoReinf.GerarXML(AValidar: Boolean = True; ASequencial: integer = 0): boolean;
 var
-  SchemaStr: string;
+  SchemaStr, Versao: String;
 begin
   try
-    SchemaStr := GetEnumName(TypeInfo(TReinfSchema), Ord(FSchema));
-    SchemaStr := Copy( SchemaStr, 3, Length(SchemaStr) - 2 );
+    SchemaStr := SchemaReinfToStr(FSchema);
 
-    // Gerar Corpo do evento   evtInfoContribuinte
+    // Gerar Corpo do evento
     GerarCabecalho(TReinfSchemaStr[ord(FSchema)]);
-      Gerador.wGrupo(SchemaStr + ' id="'+ Self.Id(ASequencial) +'"');
-        GerarIdeEvento(TACBrReinf(FACBrReinf).IdeEvento);
-        GerarIdeContribuinte(TACBrReinf(FACBrReinf).ideContri);
-      GerarEventoXML;
 
-      // Controle para registros onde existem eventos dentro de Contrib
-      if ( FSchema in [ rsevtAssocDespRec,           // R-2030 - Recursos Recebidos por Associação Desportiva
-                        rsevtAssocDespRep,           // R-2040 - Recursos Repassados para Associação Desportiva
-                        rsevtEspDesportivo ] ) then  // R-3010 - Receita de Espetáculo Desportivo
-        Gerador.wGrupo('/ideContri');
+    Gerador.wGrupo(SchemaStr + ' id="'+ Self.Id(ASequencial) +'"');
 
-      Gerador.wGrupo('/' + SchemaStr);
+    GerarIdeEvento(TACBrReinf(FACBrReinf).IdeEvento);
+    GerarIdeContribuinte(TACBrReinf(FACBrReinf).ideContri);
+
+    GerarEventoXML;
+
+    // Controle para registros onde existem eventos dentro de Contrib
+    if ( FSchema in [ schevtAssocDespRec,           // R-2030 - Recursos Recebidos por Associação Desportiva
+                      schevtAssocDespRep,           // R-2040 - Recursos Repassados para Associação Desportiva
+                      schevtEspDesportivo ] ) then  // R-3010 - Receita de Espetáculo Desportivo
+      Gerador.wGrupo('/ideContri');
+
+    Gerador.wGrupo('/' + SchemaStr);
+
     GerarRodape;
+
     {Assinar XML}
     XML := Assinar(Gerador.ArquivoFormatoXML, AnsiString(SchemaStr));
-    {$IFDEF DEBUG}
-    with TStringList.Create do
-    try
-       Text := XML;
-       SaveToFile(IncludeTrailingPathDelimiter(TACBrReinf(FACBrReinf).Configuracoes.Arquivos.PathSalvar) + Copy(Self.ClassName, 2, Length( Self.ClassName ) ) +
-                  '-'+ IntTostr(Dayof(Now)) + IntTostr(MonthOf(Now)) + IntTostr(YearOf(Now))+ '_'+ IntTostr(HourOf(Now))+ IntTostr(MinuteOf(Now))+IntTostr(SecondOf(Now)) + '_' +IntTostr(MilliSecondOf(Now)) + '.xml');
-    finally
-      Free;
+
+    if AValidar then
+    begin
+      Versao := VersaoReinfToStr(TACBrReinf( FACBrReinf ).Configuracoes.Geral.VersaoDF);
+      ValidarEventos(TReinfSchemaStr[ord(FSchema)] + PrefixVersao + Versao);
     end;
-    {$ENDIF}
-    if AValidar then // evtInfoContribuinte-v1_01_01.xsd
-      ValidarEventos(TReinfSchemaStr[ord(FSchema)] + PrefixVersao + Copy( TACBrReinf( FACBrReinf ).Versao, 2, ( Length( TACBrReinf( FACBrReinf ).Versao ) ) ) );
+
   except on e:exception do
     raise Exception.Create(e.Message);
   end;
+
   Result := (Gerador.ArquivoFormatoXML <> '');
 end;
 
@@ -365,7 +368,7 @@ begin
     begin
       FErros := ACBrStr('Falha na validação dos dados do evento: ') + AEvento + sLineBreak;
       FErros := FErros + sLineBreak + Erro;
-
+      (*
       {$IFDEF DEBUG}
       with TStringList.Create do
       try
@@ -376,6 +379,7 @@ begin
         Free;
       end;
       {$ENDIF}
+      *)
       raise EACBReinfException.Create(FErros);
     end;
   end;

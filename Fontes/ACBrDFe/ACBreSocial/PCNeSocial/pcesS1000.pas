@@ -118,7 +118,8 @@ type
     constructor Create(AACBreSocial: TObject); overload;
     destructor  Destroy; override;
 
-    function  GerarXML(ATipoEmpregador: TEmpregador): Boolean; override;
+    function GerarXML: Boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property ideEvento: TIdeEvento read FIdeEvento write FIdeEvento;
@@ -328,6 +329,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1000Collection }
 
 function TS1000Collection.Add: TS1000CollectionItem;
@@ -389,6 +394,7 @@ end;
 procedure TevtInfoEmpregador.GerarContato;
 begin
   Gerador.wGrupo('contato');
+
   Gerador.wCampo(tcStr, '', 'nmCtt',     1, 70, 1, Self.infoEmpregador.infoCadastro.Contato.NmCtt);
   Gerador.wCampo(tcStr, '', 'cpfCtt',   11, 11, 1, Self.infoEmpregador.infoCadastro.Contato.CpfCtt);
   Gerador.wCampo(tcStr, '', 'foneFixo',  1, 13, 0, Self.infoEmpregador.infoCadastro.Contato.FoneFixo);
@@ -473,12 +479,20 @@ begin
 
   Gerador.wCampo(tcStr, '', 'nmRazao',          1, 100, 1, Self.infoEmpregador.infoCadastro.NmRazao);
   Gerador.wCampo(tcStr, '', 'classTrib',        2, 002, 1, tpClassTribToStr(Self.infoEmpregador.infoCadastro.ClassTrib));
-  Gerador.wCampo(tcStr, '', 'natJurid',         4, 004, 0, Self.infoEmpregador.infoCadastro.NatJurid); // criar enumerador
-  Gerador.wCampo(tcStr, '', 'indCoop',          1, 001, 0, eSIndCooperativaToStr(Self.infoEmpregador.infoCadastro.IndCoop));
-  Gerador.wCampo(tcStr, '', 'indConstr',        1, 001, 0, eSIndConstrutoraToStr(Self.infoEmpregador.infoCadastro.IndConstr));
+
+  if (Self.ideEmpregador.TpInsc = tiCNPJ) then
+  begin
+    Gerador.wCampo(tcStr, '', 'natJurid',       4, 004, 0, Self.infoEmpregador.infoCadastro.NatJurid); // criar enumerador
+    Gerador.wCampo(tcStr, '', 'indCoop',        1, 001, 0, eSIndCooperativaToStr(Self.infoEmpregador.infoCadastro.IndCoop));
+    Gerador.wCampo(tcStr, '', 'indConstr',      1, 001, 0, eSIndConstrutoraToStr(Self.infoEmpregador.infoCadastro.IndConstr));
+  end;
+
   Gerador.wCampo(tcStr, '', 'indDesFolha',      1, 001, 1, eSIndDesFolhaToStr(Self.infoEmpregador.infoCadastro.IndDesFolha));
   Gerador.wCampo(tcStr, '', 'indOptRegEletron', 1, 001, 1, eSIndOptRegEletronicoToStr(Self.infoEmpregador.infoCadastro.IndOptRegEletron));
-  Gerador.wCampo(tcStr, '', 'indEntEd',         1, 001, 0, eSSimNaoToStr(Self.infoEmpregador.infoCadastro.IndEntEd));
+
+  if (Self.ideEmpregador.TpInsc = tiCNPJ) then
+    Gerador.wCampo(tcStr, '', 'indEntEd',       1, 001, 0, eSSimNaoToStr(Self.infoEmpregador.infoCadastro.IndEntEd));
+
   Gerador.wCampo(tcStr, '', 'indEtt',           1, 001, 1, eSSimNaoToStr(Self.infoEmpregador.infoCadastro.IndEtt));
   Gerador.wCampo(tcStr, '', 'nrRegEtt',         0, 030, 0, Self.infoEmpregador.infoCadastro.nrRegEtt);
 
@@ -545,6 +559,7 @@ begin
   for i := 0 to infoEmpregador.infoCadastro.SoftwareHouse.Count - 1 do
   begin
     Gerador.wGrupo('softwareHouse');
+    
     Gerador.wCampo(tcStr, '', 'cnpjSoftHouse', 14,  14, 1, infoEmpregador.infoCadastro.SoftwareHouse[i].CnpjSoftHouse);
     Gerador.wCampo(tcStr, '', 'nmRazao',        1, 100, 1, infoEmpregador.infoCadastro.SoftwareHouse[i].NmRazao);
     Gerador.wCampo(tcStr, '', 'nmCont',         1,  70, 1, infoEmpregador.infoCadastro.SoftwareHouse[i].NmCont);
@@ -558,11 +573,12 @@ begin
     Gerador.wAlerta('', 'softwareHouse', 'Lista de Software House', ERR_MSG_MAIOR_MAXIMO + '99');
 end;
 
-function TevtInfoEmpregador.GerarXML(ATipoEmpregador: TEmpregador): Boolean;
+function TevtInfoEmpregador.GerarXML: Boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtInfoEmpregador');
     Gerador.wGrupo('evtInfoEmpregador Id="' + Self.Id + '"');
@@ -598,6 +614,131 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '');
+end;
+
+function TevtInfoEmpregador.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtInfoEmpregador';
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'idePeriodo';
+      infoEmpregador.idePeriodo.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoEmpregador.idePeriodo.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'infoCadastro';
+        infoEmpregador.infoCadastro.NmRazao          := INIRec.ReadString(sSecao, 'nmRazao', EmptyStr);
+        infoEmpregador.infoCadastro.ClassTrib        := StrTotpClassTrib(Ok, INIRec.ReadString(sSecao, 'classTrib', '00'));
+        infoEmpregador.infoCadastro.NatJurid         := INIRec.ReadString(sSecao, 'natJurid', EmptyStr);
+        infoEmpregador.infoCadastro.IndCoop          := eSStrToIndCooperativa(Ok, INIRec.ReadString(sSecao, 'indCoop', '0'));
+        infoEmpregador.infoCadastro.IndConstr        := eSStrToIndConstrutora(Ok, INIRec.ReadString(sSecao, 'indConstr', '0'));
+        infoEmpregador.infoCadastro.IndDesFolha      := eSStrToIndDesFolha(Ok, INIRec.ReadString(sSecao, 'indDesFolha', '0'));
+        infoEmpregador.infoCadastro.IndOptRegEletron := eSStrToIndOptRegEletronico(Ok, INIRec.ReadString(sSecao, 'indOptRegEletron', '0'));
+        infoEmpregador.infoCadastro.IndEntEd         := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indEntEd', 'S'));
+        infoEmpregador.infoCadastro.IndEtt           := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indEtt', 'S'));
+        infoEmpregador.infoCadastro.nrRegEtt         := INIRec.ReadString(sSecao, 'nrRegEtt', EmptyStr);
+
+        sSecao := 'dadosIsencao';
+        infoEmpregador.infoCadastro.DadosIsencao.IdeMinLei    := INIRec.ReadString(sSecao, 'ideMinLei', EmptyStr);
+        infoEmpregador.infoCadastro.DadosIsencao.nrCertif     := INIRec.ReadString(sSecao, 'nrCertif', EmptyStr);
+        infoEmpregador.infoCadastro.DadosIsencao.dtEmisCertif := StringToDateTime(INIRec.ReadString(sSecao, 'dtEmisCertif', '0'));
+        infoEmpregador.infoCadastro.DadosIsencao.dtVencCertif := StringToDateTime(INIRec.ReadString(sSecao, 'dtVencCertif', '0'));
+        infoEmpregador.infoCadastro.DadosIsencao.nrProtRenov  := INIRec.ReadString(sSecao, 'nrProtRenov', EmptyStr);
+        infoEmpregador.infoCadastro.DadosIsencao.dtProtRenov  := StringToDateTime(INIRec.ReadString(sSecao, 'dtProtRenov', '0'));
+        infoEmpregador.infoCadastro.DadosIsencao.dtDou        := StringToDateTime(INIRec.ReadString(sSecao, 'dtDou', '0'));
+        infoEmpregador.infoCadastro.DadosIsencao.pagDou       := INIRec.ReadString(sSecao, 'pagDou', EmptyStr);
+
+        sSecao := 'contato';
+        infoEmpregador.infoCadastro.Contato.NmCtt    := INIRec.ReadString(sSecao, 'nmCtt', EmptyStr);
+        infoEmpregador.infoCadastro.Contato.cpfCtt   := INIRec.ReadString(sSecao, 'cpfCtt', EmptyStr);
+        infoEmpregador.infoCadastro.Contato.foneFixo := INIRec.ReadString(sSecao, 'foneFixo', EmptyStr);
+        infoEmpregador.infoCadastro.Contato.foneCel  := INIRec.ReadString(sSecao, 'foneCel', EmptyStr);
+        infoEmpregador.infoCadastro.Contato.email    := INIRec.ReadString(sSecao, 'email', EmptyStr);
+
+        sSecao := 'infoOP';
+        infoEmpregador.infoCadastro.InfoOp.nrSiafi := INIRec.ReadString(sSecao, 'nrSiafi', EmptyStr);
+
+        sSecao := 'infoEFR';
+        infoEmpregador.infoCadastro.InfoOp.infoEFR.ideEFR  := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'ideEFR', 'S'));
+        infoEmpregador.infoCadastro.InfoOp.infoEFR.cnpjEFR := INIRec.ReadString(sSecao, 'cnpjEFR', EmptyStr);
+
+        sSecao := 'infoEnte';
+        infoEmpregador.infoCadastro.InfoOp.infoEnte.nmEnte    := INIRec.ReadString(sSecao, 'nmEnte', EmptyStr);
+        infoEmpregador.infoCadastro.InfoOp.infoEnte.uf        := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'uf', 'SP'));
+        infoEmpregador.infoCadastro.InfoOp.infoEnte.codMunic  := INIRec.ReadInteger(sSecao, 'codMunic', 0);
+        infoEmpregador.infoCadastro.InfoOp.infoEnte.indRPPS   := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indRPPS', 'S'));
+        infoEmpregador.infoCadastro.InfoOp.infoEnte.subteto   := eSStrToIdeSubteto(Ok, INIRec.ReadString(sSecao, 'subteto', '1'));
+        infoEmpregador.infoCadastro.InfoOp.infoEnte.vrSubteto := StringToFloatDef(INIRec.ReadString(sSecao, 'vrSubteto', ''), 0);
+
+        sSecao := 'infoOrgInternacional';
+        infoEmpregador.infoCadastro.InfoOrgInternacional.IndAcordoIsenMulta := eSStrToIndAcordoIsencaoMulta(Ok, INIRec.ReadString(sSecao, 'indAcordoIsenMulta', '0'));
+
+        I := 1;
+        while true do
+        begin
+          // de 01 até 99
+          sSecao := 'softwareHouse' + IntToStrZero(I, 2);
+          sFim   := INIRec.ReadString(sSecao, 'cnpjSoftHouse', 'FIM');
+
+          if (sFim = 'FIM') or (Length(sFim) <= 0) then
+            break;
+
+          with infoEmpregador.infoCadastro.SoftwareHouse.Add do
+          begin
+            CnpjSoftHouse := sFim;
+            nmRazao       := INIRec.ReadString(sSecao, 'nmRazao', '');
+            nmCont        := INIRec.ReadString(sSecao, 'nmCont', '');
+            telefone      := INIRec.ReadString(sSecao, 'telefone', '');
+            email         := INIRec.ReadString(sSecao, 'email', '');
+          end;
+
+          Inc(I);
+        end;
+
+        sSecao := 'infoComplementares';
+        infoEmpregador.infoCadastro.InfoComplementares.SituacaoPJ.IndSitPJ := eSStrToIndSitPJ(Ok, INIRec.ReadString(sSecao, 'indSitPJ', '0'));
+        infoEmpregador.infoCadastro.InfoComplementares.SituacaoPF.IndSitPF := eSStrToTpIndSitPF(Ok, INIRec.ReadString(sSecao, 'indSitPF', '0'));
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoEmpregador.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoEmpregador.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 { TInfoEmpregador }

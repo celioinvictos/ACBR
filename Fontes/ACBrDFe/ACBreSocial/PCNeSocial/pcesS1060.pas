@@ -49,7 +49,7 @@ unit pcesS1060;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, ACBrUtil,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -92,6 +92,7 @@ type
     FIdeEvento: TIdeEvento;
     FIdeEmpregador: TIdeEmpregador;
     FInfoAmbiente: TInfoAmbiente;
+    FACBreSocial: TObject;
 
     procedure GerarIdeAmbiente;
     procedure GerarFatorRisco;
@@ -100,7 +101,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property ideEvento: TIdeEvento read FIdeEvento write FIdeEvento;
@@ -177,6 +179,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS1060Collection }
 
@@ -310,6 +316,7 @@ constructor TEvtTabAmbiente.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoAmbiente := TInfoAmbiente.create;
@@ -369,11 +376,12 @@ begin
   Gerador.wGrupo('/ideAmbiente');
 end;
 
-function TEvtTabAmbiente.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTabAmbiente.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabAmbiente');
     Gerador.wGrupo('evtTabAmbiente Id="' + Self.Id + '"');
@@ -410,6 +418,83 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtTabAmbiente.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabAmbiente';
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideAmbiente';
+      infoAmbiente.ideAmbiente.codAmb   := INIRec.ReadString(sSecao, 'codAmb', EmptyStr);
+      infoAmbiente.ideAmbiente.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoAmbiente.ideAmbiente.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosAmbiente';
+        infoAmbiente.dadosAmbiente.dscAmb   := INIRec.ReadString(sSecao, 'dscAmb', EmptyStr);
+        infoAmbiente.dadosAmbiente.localAmb := eSStrToLocalAmb(Ok, INIRec.ReadString(sSecao, 'localAmb', '1'));
+        infoAmbiente.dadosAmbiente.tpInsc   := eSStrTotpTpInscAmbTab(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+        infoAmbiente.dadosAmbiente.nrInsc   := INIRec.ReadString(sSecao, 'nrInsc', '');
+
+        I := 1;
+        while true do
+        begin
+          // de 001 até 999
+          sSecao := 'fatorRisco' + IntToStrZero(I, 3);
+          sFim   := INIRec.ReadString(sSecao, 'codFatRis', 'FIM');
+
+          if (sFim = 'FIM') or (Length(sFim) <= 0) then
+            break;
+
+          with infoAmbiente.dadosAmbiente.fatorRisco.Add do
+          begin
+            codFatRis := sFim;
+          end;
+
+          Inc(I);
+        end;
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoAmbiente.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoAmbiente.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

@@ -49,7 +49,7 @@ unit pcesS1030;
 interface
 
 uses
-  SysUtils, Classes, DateUtils, Controls,
+  SysUtils, Classes, DateUtils, Controls, ACBrUtil,
   pcnConversao,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -91,6 +91,7 @@ type
     fIdeEvento: TIdeEvento;
     fIdeEmpregador: TIdeEmpregador;
     fInfoCargo: TInfoCargo;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarIdeCargo;
@@ -101,7 +102,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
     property IdeEvento: TIdeEvento read fIdeEvento write fIdeEvento;
@@ -186,6 +188,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS1030Collection }
 
@@ -273,6 +279,7 @@ constructor TEvtTabCargo.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   fIdeEvento := TIdeEvento.Create;
   fIdeEmpregador := TIdeEmpregador.Create;
   fInfoCargo := TInfoCargo.Create;
@@ -337,11 +344,12 @@ begin
   Gerador.wGrupo('/leiCargo');
 end;
 
-function TEvtTabCargo.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtTabCargo.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabCargo');
     Gerador.wGrupo('evtTabCargo Id="' + Self.Id + '"');
@@ -378,6 +386,72 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtTabCargo.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtTabCargo';
+      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideCargo';
+      infoCargo.ideCargo.codCargo := INIRec.ReadString(sSecao, 'codCargo', EmptyStr);
+      infoCargo.ideCargo.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+      infoCargo.ideCargo.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+
+      if (ModoLancamento <> mlExclusao) then
+      begin
+        sSecao := 'dadosCargo';
+        infoCargo.dadosCargo.nmCargo := INIRec.ReadString(sSecao, 'nmCargo', EmptyStr);
+        infoCargo.dadosCargo.codCBO  := INIRec.ReadString(sSecao, 'codCBO', '1');
+
+        sSecao := 'cargoPublico';
+        infoCargo.dadosCargo.cargoPublico.acumCargo   := eSStrToAcumCargo(Ok, INIRec.ReadString(sSecao, 'acumCargo', '1'));
+        infoCargo.dadosCargo.cargoPublico.contagemEsp := eSStrToContagemEsp(Ok, INIRec.ReadString(sSecao, 'contagemEsp', '1'));
+        infoCargo.dadosCargo.cargoPublico.dedicExcl   := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'dedicExcl', 'S'));
+
+        sSecao := 'leiCargo';
+        infoCargo.dadosCargo.cargoPublico.leiCargo.nrLei    := INIRec.ReadString(sSecao, 'nrLei', '');
+        infoCargo.dadosCargo.cargoPublico.leiCargo.dtLei    := StringToDateTime(INIRec.ReadString(sSecao, 'dtLei', '0'));
+        infoCargo.dadosCargo.cargoPublico.leiCargo.sitCargo := eSStrToSitCargo(Ok, INIRec.ReadString(sSecao, 'sitCargo', '1'));
+
+        if ModoLancamento = mlAlteracao then
+        begin
+          sSecao := 'novaValidade';
+          infoCargo.novaValidade.IniValid := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
+          infoCargo.novaValidade.FimValid := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
+        end;
+      end;
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 { TCargoPublico }
@@ -421,4 +495,4 @@ begin
 end;
 
 end.
- 
+

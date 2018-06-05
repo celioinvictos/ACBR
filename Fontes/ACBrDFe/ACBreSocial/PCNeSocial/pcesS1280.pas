@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -92,6 +92,7 @@ type
     FInfoSubstPatr: TInfoSubstPatr;
     FInfoAtivConcom: TInfoAtivConcom;
     FInfoSubstPatrOpPort: TInfoSubstPatrOpPortColecao;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarInfoSubstPatr;
@@ -101,7 +102,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -147,6 +149,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1280Collection }
 
 function TS1280Collection.Add: TS1280CollectionItem;
@@ -189,6 +195,7 @@ constructor TEvtInfoComplPer.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoSubstPatr := TInfoSubstPatr.Create;
@@ -247,11 +254,12 @@ begin
     Gerador.wAlerta('', 'infoSubstPatrOpPort', 'Lista de Operadores Portuarios', ERR_MSG_MAIOR_MAXIMO + '9999');
 end;
 
-function TEvtInfoComplPer.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtInfoComplPer.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtInfoComplPer');
     Gerador.wGrupo('evtInfoComplPer Id="' + Self.Id + '"');
@@ -295,6 +303,72 @@ end;
 procedure TInfoSubstPatrOpPortColecao.SetItem(Index: Integer; const Value: TInfoSubstPatrOpPortItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TEvtInfoComplPer.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtInfoComplPer';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'infoSubstPatr';
+      infoSubstPatr.indSubstPatr   := eSStrToIndSubstPatrOpPort(Ok, INIRec.ReadString(sSecao, 'indSubstPatr', '1'));
+      infoSubstPatr.percRedContrib := StringToFloatDef(INIRec.ReadString(sSecao, 'percRedContrib', ''), 0);
+
+      I := 1;
+      while true do
+      begin
+        // de 0000 até 9999
+        sSecao := 'infoSubstPatrOpPort' + IntToStrZero(I, 4);
+        sFim   := INIRec.ReadString(sSecao, 'cnpjOpPortuario', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoSubstPatrOpPort.Add do
+        begin
+          cnpjOpPortuario := sFim;
+          InfoAtivConcom.fatorMes := StringToFloatDef(INIRec.ReadString(sSecao, 'fatorMes', ''), 0);
+          InfoAtivConcom.fator13  := StringToFloatDef(INIRec.ReadString(sSecao, 'fator13', ''), 0);
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

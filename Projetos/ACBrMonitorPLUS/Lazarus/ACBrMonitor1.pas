@@ -44,12 +44,12 @@ uses
   ACBrPosPrinter, ACBrSocket, ACBrCEP, ACBrIBGE, blcksock, ACBrValidador,
   ACBrGIF, ACBrEAD, ACBrMail, ACBrSedex, ACBrNCMs, ACBrNFe, ACBrNFeDANFeESCPOS,
   ACBrDANFCeFortesFr, ACBrNFeDANFeRLClass, ACBrBoleto, ACBrBoletoFCFortesFr,
-  Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo, PrintersDlgs,
-  IpHtml, pcnConversao, pcnConversaoNFe, pcteConversaoCTe, ACBrSAT,
+  Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo, PrintersDlgs, IpHtml,
+  pcnConversao, pcnConversaoNFe, pcteConversaoCTe, ACBrSAT,
   ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede,
   ACBrDFeSSL, ACBrGNRE2, ACBrGNReGuiaRLClass, ACBrBlocoX, ACBrMDFe,
-  ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types,
-  fileinfo, ACBrDFeConfiguracoes, LazHelpCHM, pmdfeConversaoMDFe;
+  ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types, fileinfo,
+  ACBrDFeConfiguracoes, ACBrIntegrador, LazHelpCHM, pmdfeConversaoMDFe;
 
 const
   //{$I versao.txt}
@@ -95,6 +95,7 @@ type
     ACBrGNRE1: TACBrGNRE;
     ACBrGNREGuiaRL1: TACBrGNREGuiaRL;
     ACBrIBGE1: TACBrIBGE;
+    ACBrIntegrador1: TACBrIntegrador;
     ACBrMail1: TACBrMail;
     ACBrMDFe1: TACBrMDFe;
     ACBrMDFeDAMDFeRL1: TACBrMDFeDAMDFeRL;
@@ -128,6 +129,7 @@ type
     Bevel2: TBevel;
     Bevel3: TBevel;
     btnBoletoRelatorioRetorno: TPanel;
+    btnIntegrador: TPanel;
     bvCadastro: TBevel;
     bExecECFTeste: TBitBtn;
     bGAVAbrir: TBitBtn;
@@ -229,9 +231,14 @@ type
     bvCadastro3: TBevel;
     bvCadastro4: TBevel;
     bvCadastro5: TBevel;
+    cbBackFeed: TComboBox;
+    cbDPI: TComboBox;
+    cbETQModelo: TComboBox;
+    cbETQPorta: TComboBox;
     cbFormaEmissaoCTe: TComboBox;
     cbFormaEmissaoMDFe: TComboBox;
     cbFormaEmissaoGNRe: TComboBox;
+    cbGavetaSinalInvertido: TCheckBox;
     cbMostrarNaBarraDeTarefas: TCheckBox;
     cbBALModelo: TComboBox;
     cbBALPorta: TComboBox;
@@ -249,8 +256,6 @@ type
     cbEmailThread: TCheckBox;
     cbEmailSsl: TCheckBox;
     cbEmailTls: TCheckBox;
-    cbETQModelo: TComboBox;
-    cbETQPorta: TComboBox;
     cbGAVAcaoAberturaAntecipada: TComboBox;
     cbGAVModelo: TComboBox;
     cbGAVPorta: TComboBox;
@@ -265,6 +270,7 @@ type
     cbModoEmissao: TCheckBox;
     cbModoXML: TCheckBox;
     cbMonitorarPasta: TCheckBox;
+    cbOrigem: TComboBox;
     cbRetirarAcentosNaResposta: TCheckBox;
     cbPreview: TCheckBox;
     cbRetirarAcentos: TCheckBox;
@@ -363,8 +369,14 @@ type
     chkExibeRazaoSocial: TCheckBox;
     cbSSLLib: TComboBox;
     CHMHelpDatabase1: TCHMHelpDatabase;
+    ckMemoria: TCheckBox;
+    ckNFCeUsarIntegrador: TCheckBox;
     deBolDirRetornoRel: TDirectoryEdit;
     deUSUDataCadastro: TDateEdit;
+    eAvanco: TEdit;
+    eCopias: TEdit;
+    edMFEInput: TEdit;
+    edMFEOutput: TEdit;
     edtArquivoPFX: TEdit;
     edtArquivoWebServicesGNRe: TEdit;
     edtBOLEmailAssunto: TEdit;
@@ -376,18 +388,24 @@ type
     edtEmailAssuntoNFe: TEdit;
     edTimeZoneStr: TEdit;
     edtLogoMarcaNFCeSAT: TEdit;
+    eMargemEsquerda: TEdit;
+    eTemperatura: TEdit;
+    eVelocidade: TEdit;
     fspeLarguraNFCe: TSpinEdit;
     edtNumeroSerie: TEdit;
     edtSenha: TEdit;
     edtTimeoutWebServices: TSpinEdit;
     gbExtratoSAT: TGroupBox;
+    gbGavetaConfig: TGroupBox;
     GroupBox10: TGroupBox;
     GroupBox11: TGroupBox;
+    gbImpressao: TGroupBox;
     GroupBox2: TGroupBox;
     GroupBox3: TGroupBox;
     GroupBox5: TGroupBox;
     gbxConfigSSL: TGroupBox;
     GroupBox6: TGroupBox;
+    gbConfigImp: TGroupBox;
     Image2: TImage;
     imgLogoBanco: TImage;
     Label109: TLabel;
@@ -402,12 +420,15 @@ type
     Label179: TLabel;
     Label180: TLabel;
     Label181: TLabel;
+    Label189: TLabel;
     Label190: TLabel;
     Label191: TLabel;
     Label192: TLabel;
     Label193: TLabel;
     Label194: TLabel;
     Label195: TLabel;
+    Label196: TLabel;
+    Label197: TLabel;
     Label198: TLabel;
     Label199: TLabel;
     Label200: TLabel;
@@ -420,6 +441,15 @@ type
     Label209: TLabel;
     Label210: TLabel;
     Label211: TLabel;
+    Label212: TLabel;
+    Label213: TLabel;
+    Label60: TLabel;
+    Label61: TLabel;
+    lbAvanco: TLabel;
+    lbBackFeed: TLabel;
+    lbBackFeed1: TLabel;
+    lbCopias: TLabel;
+    lbDPI: TLabel;
     lblBOLLogoEmpresa: TLabel;
     Label205: TLabel;
     Label206: TLabel;
@@ -434,6 +464,9 @@ type
     lblArquivoPFX: TLabel;
     lblNumeroSerie: TLabel;
     lblSenha: TLabel;
+    lbMargem: TLabel;
+    lbTemperatura: TLabel;
+    lbTemperatura2: TLabel;
     LCaption: TLabel;
     Label141: TLabel;
     Label142: TLabel;
@@ -444,7 +477,6 @@ type
     lblFonteEndereco: TLabel;
     LHelpConnector1: TLHelpConnector;
     lsvArqsRetorno: TListView;
-    MainMenu1: TMainMenu;
     mBOLRelatorio: TMemo;
     meUSUHoraCadastro: TMaskEdit;
     mmEmailMsgCTe: TMemo;
@@ -462,6 +494,9 @@ type
     sbLogoMarcaNFCeSAT: TSpeedButton;
     sbNumeroSerieCert: TSpeedButton;
     ScrollBox: TScrollBox;
+    seGavetaTempoOFF: TSpinEdit;
+    seGavetaTempoON: TSpinEdit;
+    seMFETimeout: TSpinEdit;
     seUSUCROCadastro: TSpinEdit;
     seUSUGTCadastro: TFloatSpinEdit;
     seUSUNumeroCadastro: TSpinEdit;
@@ -506,6 +541,7 @@ type
     sbArquivoWebServicesNFe: TSpeedButton;
     sbArquivoWebServicesCTe: TSpeedButton;
     TabSheet1: TTabSheet;
+    tsIntegrador: TTabSheet;
     tsRelatorio: TTabSheet;
     tsImpCTe: TTabSheet;
     tsTesteMDFe: TTabSheet;
@@ -815,8 +851,6 @@ type
     Label58: TLabel;
     Label59: TLabel;
     Label6: TLabel;
-    Label60: TLabel;
-    Label61: TLabel;
     Label62: TLabel;
     Label63: TLabel;
     Label64: TLabel;
@@ -1146,6 +1180,7 @@ type
     procedure btnImprimirClick(Sender: TObject);
     procedure btnImprimirCTeClick(Sender: TObject);
     procedure btnImprimirMDFeClick(Sender: TObject);
+    procedure btnIntegradorClick(Sender: TObject);
     procedure btnInutilizarClick(Sender: TObject);
     procedure btnInutilizarCTeClick(Sender: TObject);
     procedure btnLeitorSerialClick(Sender: TObject);
@@ -1459,7 +1494,7 @@ type
 
     procedure LerIni;
     procedure SalvarIni;
-    procedure ConfiguraDANFe(GerarPDF, MostrarPreview : Boolean);
+    procedure ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);
     procedure VerificaDiretorios;
     procedure LimparResp;
     procedure ExibeResp(Documento: ansistring);
@@ -1478,6 +1513,8 @@ type
     procedure AntesDeImprimir(ShowPreview: Boolean = true);
     procedure DepoisDeImprimir;
     procedure HelptabSheet;
+    procedure ValidarIntegradorNFCe(ChaveNFe: String = '');
+    function RespostaIntegrador():String;
   end;
 
 var
@@ -1541,6 +1578,13 @@ var
   Y: TSSLType;
   IFormaEmissaoNFe, IFormaEmissaoCTe, IFormaEmissaoGNRe,
     IFormaEmissaoMDFe: TpcnTipoEmissao;
+  iETQModelo : TACBrETQModelo ;
+  iETQDPI: TACBrETQDPI;
+  iETQUnidade: TACBrETQUnidade;
+  iETQBackFeed: TACBrETQBackFeed;
+  iETQOrigem: TACBrETQOrigem;
+  M: Integer;
+  K: Integer;
 begin
   {$IFDEF MSWINDOWS}
   WindowState := wsMinimized;
@@ -1732,6 +1776,44 @@ begin
 
   Application.OnException := @TrataErrosSAT ;
 
+  {ETQ}
+  cbETQModelo.Items.Clear ;
+  For iETQModelo := Low(TACBrETQModelo) to High(TACBrETQModelo) do
+     cbETQModelo.Items.Add( GetEnumName(TypeInfo(TACBrETQModelo), integer(iETQModelo) ) ) ;
+
+  cbDPI.Items.Clear ;
+  For iETQDPI := Low(TACBrETQDPI) to High(TACBrETQDPI) do
+     cbDPI.Items.Add( GetEnumName(TypeInfo(TACBrETQDPI), integer(iETQDPI) ) ) ;
+
+  cbBackFeed.Items.Clear ;
+  For iETQBackFeed := Low(TACBrETQBackFeed) to High(TACBrETQBackFeed) do
+     cbBackFeed.Items.Add( GetEnumName(TypeInfo(TACBrETQBackFeed), integer(iETQBackFeed) ) ) ;
+
+  cbOrigem.Items.Clear ;
+  For iETQOrigem := Low(TACBrETQOrigem) to High(TACBrETQOrigem) do
+     cbOrigem.Items.Add( GetEnumName(TypeInfo(TACBrETQOrigem), integer(iETQOrigem) ) ) ;
+
+  cbETQPorta.Items.Clear;
+  ACBrETQ1.Device.AcharPortasSeriais( cbETQPorta.Items );
+  cbETQPorta.Items.Add('LPT1') ;
+  cbETQPorta.Items.Add('LPT2') ;
+  cbETQPorta.Items.Add('\\localhost\L42') ;
+  cbETQPorta.Items.Add('c:\temp\ecf.txt') ;
+  cbETQPorta.Items.Add('TCP:192.168.0.31:9100') ;
+
+  For M := 0 to Printer.Printers.Count-1 do
+    cbETQPorta.Items.Add('RAW:'+Printer.Printers[M]);
+
+  cbETQPorta.Items.Add('/dev/ttyS0') ;
+  cbETQPorta.Items.Add('/dev/ttyS1') ;
+  cbETQPorta.Items.Add('/dev/ttyUSB0') ;
+  cbETQPorta.Items.Add('/dev/ttyUSB1') ;
+  cbETQPorta.Items.Add('/tmp/ecf.txt') ;
+
+  cbDPI.ItemIndex := 0;
+  cbETQModelo.ItemIndex := 3;
+  cbETQPorta.ItemIndex := 0;
+
   {PosPrinter}
   cbxModelo.Items.Clear;
   for iImpressoraESCPOS := Low(TACBrPosPrinterModelo) to High(TACBrPosPrinterModelo) do
@@ -1743,7 +1825,22 @@ begin
 
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais(cbxPorta.Items);
-  cbxPorta.Items.Add('LPT1');
+  cbxPorta.Items.Add('LPT1') ;
+  cbxPorta.Items.Add('LPT2') ;
+  cbxPorta.Items.Add('\\localhost\Epson') ;
+  cbxPorta.Items.Add('c:\temp\ecf.txt') ;
+  cbxPorta.Items.Add('TCP:192.168.0.31:9100') ;
+
+  For K := 0 to Printer.Printers.Count-1 do
+    cbxPorta.Items.Add('RAW:'+Printer.Printers[K]);
+
+  cbxPorta.Items.Add('/dev/ttyS0') ;
+  cbxPorta.Items.Add('/dev/ttyS1') ;
+  cbxPorta.Items.Add('/dev/ttyUSB0') ;
+  cbxPorta.Items.Add('/dev/ttyUSB1') ;
+  cbxPorta.Items.Add('/tmp/ecf.txt') ;
+
+  {cbxPorta.Items.Add('LPT1');
   cbxPorta.Items.Add('LPT2');
   cbxPorta.Items.Add('/dev/ttyS0');
   cbxPorta.Items.Add('/dev/ttyS1');
@@ -1751,7 +1848,7 @@ begin
   cbxPorta.Items.Add('/dev/ttyUSB1');
   cbxPorta.Items.Add('\\localhost\Epson');
   cbxPorta.Items.Add('c:\temp\ecf.txt');
-  cbxPorta.Items.Add('/temp/ecf.txt');
+  cbxPorta.Items.Add('/temp/ecf.txt');  }
 
   cbFormaEmissaoNFe.Items.Clear;
   for IFormaEmissaoNFe := Low(TpcnTipoEmissao) to High(TpcnTipoEmissao) do
@@ -2141,7 +2238,7 @@ begin
         with Cidades[I] do
         begin
           AMsg := AMsg + 'Cod UF: ' + IntToStr(CodUF) + sLineBreak +
-            'UF: ' + UF + sLineBreak + 'Cod.Município: ' + IntToStr(CodMunicio) +
+            'UF: ' + UF + sLineBreak + 'Cod.Município: ' + IntToStr(CodMunicipio) +
             sLineBreak + 'Município: ' + Municipio + sLineBreak +
             'Área: ' + FormatFloat('0.00', Area) + sLineBreak + sLineBreak;
         end;
@@ -2654,7 +2751,7 @@ begin
   begin
     ACBrNFe1.NotasFiscais.Clear;
     ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
-    ConfiguraDANFe(True, False);
+    ConfiguraDANFe(True, '0');
 
     vPara := '';
     if not (InputQuery('Enviar Email', 'Email de Destino', vPara)) then
@@ -2813,7 +2910,7 @@ begin
   begin
     ACBrNFe1.NotasFiscais.Clear;
     ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
-    ConfiguraDANFe(False, False);
+    ConfiguraDANFe(False, '0');
 
     try
       AntesDeImprimir(False);
@@ -2852,6 +2949,12 @@ begin
     ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
     ACBrMDFe1.Manifestos.Imprimir;
   end;
+end;
+
+procedure TFrmACBrMonitor.btnIntegradorClick(Sender: TObject);
+begin
+  SetColorButtons(Sender);
+  pgConfig.ActivePage := tsIntegrador;
 end;
 
 procedure TFrmACBrMonitor.btnInutilizarClick(Sender: TObject);
@@ -3184,6 +3287,10 @@ end;
 procedure TFrmACBrMonitor.cbxModeloSATChange(Sender: TObject);
 begin
   try
+    if (cbxModeloSAT.ItemIndex = 3) then
+      ACBrSAT1.Integrador:= ACBrIntegrador1
+    else
+      ACBrSAT1.Integrador:= nil;
     ACBrSAT1.Modelo := TACBrSATModelo( cbxModeloSAT.ItemIndex ) ;
   except
     cbxModeloSAT.ItemIndex := Integer( ACBrSAT1.Modelo ) ;
@@ -3888,6 +3995,14 @@ begin
     cbETQModelo.ItemIndex := Ini.ReadInteger('ETQ', 'Modelo', 0);
     cbETQModeloChange(Self);
     cbETQPorta.Text := Ini.ReadString('ETQ', 'Porta', '');
+    cbDPI.ItemIndex := Ini.ReadInteger('ETQ', 'DPI', 0);
+    ckMemoria.Checked:= Ini.ReadBool('ETQ', 'LimparMemoria', True);
+    eTemperatura.Text:= IntToStr(Ini.ReadInteger('ETQ', 'Temperatura', 10));
+    eVelocidade.Text := IntToStr(Ini.ReadInteger('ETQ', 'Velocidade', -1));
+    cbBackFeed.ItemIndex:= Ini.ReadInteger('ETQ', 'BackFeed', -1);
+    eMargemEsquerda.Text:= IntToStr(Ini.ReadInteger('ETQ', 'MargemEsquerda', 10));
+    cbOrigem.ItemIndex  := Ini.ReadInteger('ETQ', 'Origem', -1);
+    eCopias.Text  := IntToStr(Ini.ReadInteger('ETQ', 'Copias', 1));
 
     { Parametros do TC }
     cbxTCModelo.ItemIndex := Ini.ReadInteger('TC', 'Modelo', 0);
@@ -3980,6 +4095,7 @@ begin
     edtIdToken.Text := Ini.ReadString('NFCe', 'IdToken', '');
     edtToken.Text := Ini.ReadString('NFCe', 'Token', '');
     chbTagQrCode.Checked := Ini.ReadBool('NFCe', 'TagQrCode', True);
+    ckNFCeUsarIntegrador.Checked := Ini.ReadBool('NFCe', 'UsarIntegrador', False);
 
         {Parametros NFe}
     ACBrNFeDANFeESCPOS1.PosPrinter.Device.Desativar;
@@ -4149,6 +4265,14 @@ begin
       ACBrGNRE1.GNREGuia       :=ACBrGNREGuiaRL1;
     end;
 
+    if ckNFCeUsarIntegrador.Checked then
+    begin
+      ACBrNFe1.Integrador := ACBrIntegrador1;
+      ACBrNFe1.Configuracoes.Geral.ModeloDF := moNFCe;
+    end
+    else
+      ACBrNFe1.Integrador := nil;
+
     ACBrCTeDACTeRL1.TamanhoPapel := TpcnTamanhoPapel(rgTamanhoPapelDacte.ItemIndex);
 
     rgModeloDANFeNFCE.ItemIndex := Ini.ReadInteger('NFCe', 'Modelo', 0);
@@ -4311,6 +4435,10 @@ begin
     edRedeProxyUser.Text      := INI.ReadString('SATRede','proxy_user','');
     edRedeProxySenha.Text     := INI.ReadString('SATRede','proxy_senha','');
 
+    edMFEInput.Text           := INI.ReadString('SATIntegrador','Input','c:\Integrador\Input\');
+    edMFEOutput.Text          := INI.ReadString('SATIntegrador','Output','c:\Integrador\Output\');
+    seMFETimeout.Value        := INI.ReadInteger('SATIntegrador','Timeout',30);
+
     AjustaACBrSAT;
 
     {Parâmetro PosPrinter}
@@ -4342,6 +4470,10 @@ begin
     seLogoKC2.Value    := INI.ReadInteger('Logo', 'KC2', ACBrPosPrinter1.ConfigLogo.KeyCode2);
     seLogoFatorX.Value := INI.ReadInteger('Logo', 'FatorX', ACBrPosPrinter1.ConfigLogo.FatorX);
     seLogoFatorY.Value := INI.ReadInteger('Logo', 'FatorY', ACBrPosPrinter1.ConfigLogo.FatorY);
+
+    seGavetaTempoON.Value   := INI.ReadInteger('Gaveta', 'TempoON', ACBrPosPrinter1.ConfigGaveta.TempoON);
+    seGavetaTempoOFF.Value  := INI.ReadInteger('Gaveta', 'TempoOFF', ACBrPosPrinter1.ConfigGaveta.TempoOFF);
+    cbGavetaSinalInvertido.Checked  := INI.ReadBool('Gaveta', 'SinalInvertido', ACBrPosPrinter1.ConfigGaveta.SinalInvertido);
 
     DefineTextoTrayTitulo;
 
@@ -4465,8 +4597,19 @@ begin
   with ACBrETQ1 do
   begin
     Desativar;
-    Modelo := TACBrETQModelo(cbETQModelo.ItemIndex);
-    Porta := cbETQPorta.Text;
+
+    DPI           := TACBrETQDPI(cbDPI.ItemIndex);
+    Modelo        := TACBrETQModelo(cbETQModelo.ItemIndex);
+    Porta         :=  cbETQPorta.Text;
+    LimparMemoria := ckMemoria.Checked;
+    Temperatura   := StrToIntDef(eTemperatura.Text,10);
+    Velocidade    := StrToIntDef(eVelocidade.Text,-1);
+    BackFeed      := TACBrETQBackFeed(cbBackFeed.ItemIndex);
+    Unidade       := etqMilimetros;
+    MargemEsquerda:= StrToIntDef(eMargemEsquerda.Text, 0);
+    Origem        := TACBrETQOrigem(cbOrigem.ItemIndex);
+
+
     Ativo := ETQAtivado;
   end;
 
@@ -4825,6 +4968,14 @@ begin
     { Parametros do ETQ }
     Ini.WriteInteger('ETQ', 'Modelo', cbETQModelo.ItemIndex);
     Ini.WriteString('ETQ', 'Porta', cbETQPorta.Text);
+    Ini.WriteInteger('ETQ', 'DPI', cbDPI.ItemIndex);
+    Ini.WriteBool('ETQ', 'LimparMemoria', ckMemoria.Checked);
+    Ini.WriteInteger('ETQ', 'Temperatura', StrToIntDef(eTemperatura.Text, 10));
+    Ini.WriteInteger('ETQ', 'Velocidade', StrToIntDef(eVelocidade.Text, -1));
+    Ini.WriteInteger('ETQ', 'BackFeed', cbBackFeed.ItemIndex);
+    Ini.WriteInteger('ETQ', 'MargemEsquerda', StrToIntDef(eMargemEsquerda.Text, 10));
+    Ini.WriteInteger('ETQ', 'Origem', cbOrigem.ItemIndex);
+    Ini.WriteInteger('ETQ', 'Copias', StrToIntDef(eCopias.Text, 1));
 
     { Parametros do CEP }
     Ini.WriteInteger('CEP', 'WebService', cbCEPWebService.ItemIndex);
@@ -4918,6 +5069,7 @@ begin
     Ini.WriteString('NFCe', 'IdToken', edtIdToken.Text);
     Ini.WriteString('NFCe', 'Token', edtToken.Text);
     Ini.WriteBool('NFCe', 'TagQrCode', chbTagQrCode.Checked);
+    Ini.WriteBool('NFCe', 'UsarIntegrador', ckNFCeUsarIntegrador.Checked );
 
     Ini.WriteString('NFe', 'CNPJContador', edtCNPJContador.Text);
 
@@ -5061,6 +5213,10 @@ begin
     INI.WriteString('SATRede','proxy_user',edRedeProxyUser.Text);
     INI.WriteString('SATRede','proxy_senha',edRedeProxySenha.Text);
 
+    INI.WriteString('SATIntegrador','Input',edMFEInput.Text);
+    INI.WriteString('SATIntegrador','Output',edMFEOutput.Text);
+    INI.WriteInteger('SATIntegrador','Timeout',seMFETimeout.Value);
+
     {Parâmetros PosPrinter}
     INI.WriteInteger('PosPrinter', 'Modelo', cbxModelo.ItemIndex);
     INI.WriteString('PosPrinter', 'Porta', cbxPorta.Text);
@@ -5089,6 +5245,10 @@ begin
     INI.WriteInteger('Logo', 'KC2', seLogoKC2.Value);
     INI.WriteInteger('Logo', 'FatorX', seLogoFatorX.Value);
     INI.WriteInteger('Logo', 'FatorY', seLogoFatorY.Value);
+
+    INI.WriteInteger('Gaveta', 'TempoON', seGavetaTempoON.Value);
+    INI.WriteInteger('Gaveta', 'TempoOFF', seGavetaTempoOFF.Value);
+    INI.WriteBool('Gaveta', 'SinalInvertido', cbGavetaSinalInvertido.Checked);
 
   finally
     Ini.Free;
@@ -7292,6 +7452,17 @@ procedure TFrmACBrMonitor.AjustaACBrSAT;
 begin
   with ACBrSAT1 do
   begin
+    if (cbxModeloSAT.ItemIndex = 3) then
+    begin
+      ACBrIntegrador1.PastaInput  := edMFEInput.Text;
+      ACBrIntegrador1.PastaOutput := edMFEOutput.Text;
+      ACBrIntegrador1.Timeout     := seMFETimeout.Value;
+
+      Integrador := ACBrIntegrador1;
+    end
+    else
+      Integrador := Nil;
+
     Modelo  := TACBrSATModelo( cbxModeloSAT.ItemIndex ) ;
     ArqLOG  := edSATLog.Text;
     NomeDLL := edNomeDLL.Text;
@@ -7316,6 +7487,7 @@ begin
     ConfigArquivos.SalvarEnvio := cbxSATSalvarEnvio.Checked;
     ConfigArquivos.SepararPorCNPJ := cbxSATSepararPorCNPJ.Checked;
     ConfigArquivos.SepararPorMes := cbxSATSepararPorMES.Checked;
+
   end;
 
   ConfiguraRedeSAT;
@@ -7590,7 +7762,7 @@ begin
   end;
 end;
 
-procedure TFrmACBrMonitor.ConfiguraDANFe(GerarPDF, MostrarPreview: Boolean);
+procedure TFrmACBrMonitor.ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview: String);
 var
   OK: boolean;
 begin
@@ -7705,9 +7877,12 @@ begin
     end;
   end;
 
-  ACBrNFe1.DANFE.MostrarPreview := (not GerarPDF) and
-                                   (cbxMostrarPreview.Checked or MostrarPreview) and
-                                   (ACBrNFe1.DANFE <> ACBrNFeDANFeESCPOS1);
+  ACBrNFe1.DANFE.MostrarPreview := False;
+  if ((not GerarPDF) and (ACBrNFe1.DANFE <> ACBrNFeDANFeESCPOS1)) then
+    if EstaVazio(MostrarPreview) then
+      ACBrNFe1.DANFE.MostrarPreview := cbxMostrarPreview.Checked
+    else
+      ACBrNFe1.DANFE.MostrarPreview := StrToBoolDef(MostrarPreview, False);
 
   //if ACBrNFe1.DANFE.MostrarPreview or MostrarPreview then
   //  ForceForeground(Self.Handle);
@@ -8047,6 +8222,10 @@ begin
     ACBrPosPrinter1.ConfigLogo.KeyCode1 := seLogoKC1.Value;
     ACBrPosPrinter1.ConfigLogo.KeyCode2 := seLogoKC2.Value;
 
+    ACBrPosPrinter1.ConfigGaveta.TempoON := seGavetaTempoON.Value;
+    ACBrPosPrinter1.ConfigGaveta.TempoOFF:= seGavetaTempoOFF.Value;
+    ACBrPosPrinter1.ConfigGaveta.SinalInvertido:= cbGavetaSinalInvertido.Checked;
+
     if NaoEstaVazio(SerialParams) then
       ACBrPosPrinter1.Device.ParamsString := SerialParams;
   finally
@@ -8144,6 +8323,7 @@ begin
     TConfiguracoesNFe(Configuracoes).Arquivos.SalvarApenasNFeProcessadas := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+
   end
   else if Configuracoes is TConfiguracoesCTe then
   begin
@@ -8499,6 +8679,44 @@ begin
     FrmACBrMonitor.HelpKeyword := 'ACBrMonitor/Monitor.htm';
   end;
 
+end;
+
+procedure TFrmACBrMonitor.ValidarIntegradorNFCe(ChaveNFe: String = '');
+var
+  Modelo: Integer;
+begin
+  if (FrmACBrMonitor.ckNFCeUsarIntegrador.Checked) then
+  begin
+    if NaoEstaVazio(ChaveNFe) then
+      Modelo:= StrToIntDef(copy(OnlyNumber(ChaveNFe),21,2),55);
+    if (ACBrNFe1.Configuracoes.Geral.ModeloDF = moNFe) and (Modelo <> 65) then
+      ACBrNFe1.Integrador := nil
+    else
+      ACBrNFe1.Integrador := ACBrIntegrador1;
+  end;
+
+end;
+
+function TFrmACBrMonitor.RespostaIntegrador: String;
+begin
+   Result := '';
+   if (ACBrSAT1.Integrador= ACBrIntegrador1) or
+     (ACBrNFe1.Integrador= ACBrIntegrador1) then
+   begin
+     if (ACBrIntegrador1.ComandoIntegrador.IntegradorResposta.Codigo <> '') then
+     begin
+       Result := sLineBreak+'[Integrador]'+sLineBreak;
+       Result := Result + 'Codigo='+ ACBrIntegrador1.ComandoIntegrador.
+                                     IntegradorResposta.Codigo + sLineBreak;
+       Result := Result + 'Valor='+ ACBrIntegrador1.ComandoIntegrador.
+                                   IntegradorResposta.Valor ;
+
+       ACBrIntegrador1.ComandoIntegrador.IntegradorResposta.Codigo:= '';
+       ACBrIntegrador1.ComandoIntegrador.IntegradorResposta.Valor:= '';
+
+     end;
+
+   end;
 end;
 
 procedure TFrmACBrMonitor.sbSerialClick(Sender: TObject);

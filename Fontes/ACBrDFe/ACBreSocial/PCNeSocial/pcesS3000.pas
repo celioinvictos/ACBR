@@ -41,6 +41,8 @@
 |*  - Doação do componente para o Projeto ACBr
 |* 01/03/2016: Guilherme Costa
 |*  - Passado o namespace para geração do cabeçalho
+|* 07/03/2018:Edmar Frazão
+|* Linha 220 Somente pode enviar CPF ou Periodo não os dois ao mesmo tempo
 ******************************************************************************}
 {$I ACBr.inc}
 
@@ -50,7 +52,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao,
+  pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -86,13 +88,15 @@ type
     FIdeEvento: TIdeEvento;
     FIdeEmpregador: TIdeEmpregador;
     FInfoExclusao: TInfoExclusao;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
   public
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -116,6 +120,10 @@ type
   end;
 
 implementation
+
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
 
 { TS3000Collection }
 
@@ -180,6 +188,7 @@ constructor TEvtExclusao.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoExclusao := TInfoExclusao.Create;
@@ -194,11 +203,12 @@ begin
   inherited;
 end;
 
-function TEvtExclusao.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtExclusao.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtExclusao');
     Gerador.wGrupo('evtExclusao Id="' + Self.Id + '"');
@@ -210,9 +220,20 @@ begin
 
     Gerador.wCampo(tcStr, '', 'tpEvento', 1,  6, 1, TipoEventoToStr(self.InfoExclusao.tpEvento));
     Gerador.wCampo(tcStr, '', 'nrRecEvt', 1, 40, 1, self.InfoExclusao.nrRecEvt);
-
-    GerarIdeTrabalhador2(self.InfoExclusao.IdeTrabalhador, True);
-    GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto);
+                                 
+    if ( self.InfoExclusao.tpEvento In [teS1200,teS1202,teS1210] ) then
+      begin 
+        GerarIdeTrabalhador2(self.InfoExclusao.IdeTrabalhador, True);
+        GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto);
+      end
+    else 
+      begin
+        if ( self.InfoExclusao.IdeFolhaPagto.perApur = '' ) then
+           GerarIdeTrabalhador2(self.InfoExclusao.IdeTrabalhador, True)
+        else
+           GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto);
+      end;
+    
 
     Gerador.wGrupo('/infoExclusao');
     Gerador.wGrupo('/evtExclusao');
@@ -227,6 +248,54 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtExclusao.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtExclusao';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'infoExclusao';
+      infoExclusao.tpEvento := StrToTipoEvento(Ok, INIRec.ReadString(sSecao, 'tpEvento', EmptyStr));
+      infoExclusao.nrRecEvt := INIRec.ReadString(sSecao, 'nrRecEvt', EmptyStr);
+
+      sSecao := 'ideTrabalhador';
+      infoExclusao.ideTrabalhador.cpfTrab := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      infoExclusao.ideTrabalhador.nisTrab := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+
+      sSecao := 'ideFolhaPagto';
+      infoExclusao.ideFolhaPagto.indApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      infoExclusao.ideFolhaPagto.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

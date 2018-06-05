@@ -173,6 +173,7 @@ type
   TObservacoesCollectionItem = class;
   TObservacoesCollection = class;
   TtransfDom = class;
+  IEventoeSocial = Interface;
 
   TeSocial = class(TPersistent)
   private
@@ -559,7 +560,7 @@ type
 
   THorContratual = class(TPersistent)
   private
-    FQtdHrsSem: integer;
+    FQtdHrsSem: Double;
     FTpJornada: tpTpJornada;
     FDscTpJorn: string;
     FTMPParc: tpTmpParc;
@@ -568,7 +569,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    property QtdHrsSem: integer read FQtdHrsSem write FQtdHrsSem;
+    property QtdHrsSem: Double read FQtdHrsSem write FQtdHrsSem;
     property TpJornada: tpTpJornada read FTpJornada write FTpJornada;
     property DscTpJorn: string read FDscTpJorn write FDscTpJorn;
     property tmpParc: tpTmpParc read FTMPParc write FTMPParc;
@@ -861,11 +862,13 @@ type
     FMatricAnt: string;
     FdtTransf: TDateTime;
     FObservacao: string;
+    FCnpjEmpSucessora: string;
   public
     constructor Create;
     destructor Destroy; override;
 
     property cnpjEmpregAnt: string read FCnpjEmpregAnt write FCnpjEmpregAnt;
+    property CnpjEmpSucessora: string read FCnpjEmpSucessora write FCnpjEmpSucessora;
     property MatricAnt: string read FMatricAnt write FMatricAnt;
     property dtTransf: TDateTime read FdtTransf write FdtTransf;
     property Observacao: string read FObservacao write FObservacao;
@@ -915,6 +918,7 @@ type
     FDependente: TDependenteCollection;
     FAposentadoria: TAposentadoria;
     FContato: TContatoTrabalhador;
+    FExtrangeiroSN : Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -936,6 +940,7 @@ type
     property Dependente: TDependenteCollection read FDependente write FDependente;
     property Aposentadoria: TAposentadoria read FAposentadoria write FAposentadoria;
     property Contato: TContatoTrabalhador read FContato write FContato;
+    property ExtrangeiroSN: Boolean read FExtrangeiroSN write FExtrangeiroSN;
   end;
 
   TTrabEstrangeiro = class
@@ -1790,7 +1795,7 @@ type
     function GetItem(Index: Integer): TObservacoesCollectionItem;
     procedure SetItem(Index: Integer; Value: TObservacoesCollectionItem);
   public
-    constructor Create(AOwner: TInfoContrato);
+    constructor Create; reintroduce;
     function Add: TObservacoesCollectionItem;
     property Items[Index: Integer]: TObservacoesCollectionItem read GetItem write SetItem; default;
   end;
@@ -1802,6 +1807,16 @@ type
     constructor create; reintroduce;
 
     property observacao: string read Fobservacao write Fobservacao;
+  end;
+
+  IEventoeSocial = Interface(IInterface)
+    function GetXml : string;
+    procedure SetXml(const Value: string);
+    function GetTipoEvento : TTipoEvento;
+    function GetEvento : TObject;
+
+    property Xml: String read GetXml write SetXml;
+    property TipoEvento: TTipoEvento read GetTipoEvento;
   end;
 
 implementation
@@ -2075,7 +2090,7 @@ begin
   FInfoAtivDesemp:= TInfoAtivDesemp.Create;
   FFiliacaoSindical:= TFiliacaoSindical.Create;
   FAlvaraJudicial:= TAlvaraJudicial.Create;
-  Fobservacoes := TobservacoesCollection.Create(Self);
+  Fobservacoes := TobservacoesCollection.Create;
 end;
 
 destructor TInfoContrato.Destroy;
@@ -2915,7 +2930,7 @@ begin
   Result := TObservacoesCollectionItem(inherited Add);
 end;
 
-constructor TObservacoesCollection.Create(AOwner: TInfoContrato);
+constructor TObservacoesCollection.Create();
 begin
   inherited Create(TObservacoesCollectionItem);
 end;

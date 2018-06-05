@@ -1229,6 +1229,9 @@ begin
     if (FPLayout in [LayNFSeGerar, LayNfseConsultaLote]) or ((FPLayout = LayNfseConsultaNfseRps) and (FProvedor = proISSNET)) then
       FNotasFiscais.Items[ii].NFSe.Situacao := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Situacao;
 
+    { Márcio - Como a questão do link é tratada no reader do XML, acho que aqui
+      pode pegar direto, sem validar provedor }
+    FNotasFiscais.Items[ii].NFSe.Link              := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Link;
     FNotasFiscais.Items[ii].NFSe.CodigoVerificacao := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.CodigoVerificacao;
     FNotasFiscais.Items[ii].NFSe.Numero            := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Numero;
     FNotasFiscais.Items[ii].NFSe.Competencia       := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Competencia;
@@ -1358,8 +1361,22 @@ begin
     if (FProvedor = ProTecnos) and (DateToStr(FDataRecebimento) = '01/01/0001') then
       FDataRecebimento := 0;
 
-    if FProvedor in [proGovDigital, proInfisc, proInfiscv11, proNFSeBrasil,
-                     proTecnos, proVersaTecnologia] then
+    if FProvedor in [proGovDigital, proInfisc, proInfiscv11, proNFSeBrasil, proVersaTecnologia] then
+      FProtocolo := FRetornoNFSe.ListaNFSe.CompNFSe[0].NFSe.Protocolo;
+
+    { Márcio - O provedor Tecnos está no 'in' acima e eu retirei. Isso estava
+      gerando problema, pois FRetornoNFSe.ListaNFSe.CompNFSe[0].NFSe.Protocolo
+      estava vindo com '0' e como o protocolo é usado no nome do XML do resultado
+      da consulta de lote, acabava que todas as consultas ficavam com o mesmo
+      nome, pois o arquivo era sempre sobresvrevido. Temos clientes que usam
+      esses aquivos, então tem que ficar com o nome do protocolo.
+
+      O protocolo é usado no XML de envio da consulta, então não sei se existe
+      chance de ele estar vazio, pois já no envio ele é necessário. Coloquei
+      então uma validação específica para o provedor Tecnos, assim, se em outras
+      consultas ele estiver vazio ele será preenchido.
+      }
+    if (FProtocolo = '') = (FProvedor in [proTecnos]) then
       FProtocolo := FRetornoNFSe.ListaNFSe.CompNFSe[0].NFSe.Protocolo;
   end
   else
@@ -1702,10 +1719,10 @@ begin
        begin
          case FProvedor of
            proAbaco: begin
-//                       // Manaus
-//                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
-//                         FTagI := '<'+FTagGrupo+'>'
-//                       else // Outros
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
                          FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
                      end;
 
@@ -1742,6 +1759,14 @@ begin
     LayNfseConsultaSitLoteRps:
        begin
         case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proDBSeller: FTagI := '<ConsultarSituacaoLoteRps>' +
                                   '<' + FTagGrupo + FNameSpaceDad + '>';
 
@@ -1772,6 +1797,14 @@ begin
     LayNfseConsultaLote:
        begin
         case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proAgili: FTagI := '<' + FTagGrupo + FNameSpaceDad + '>' +
                                '<UnidadeGestora>' +
                                OnlyNumber(FPConfiguracoesNFSe.Geral.CNPJPrefeitura) +
@@ -1804,6 +1837,14 @@ begin
     LayNfseConsultaNfseRps:
        begin
          case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proDBSeller: FTagI := '<ConsultarNfsePorRps>' +
                                   '<' + FTagGrupo + FNameSpaceDad + '>';
 
@@ -1833,6 +1874,14 @@ begin
     LayNfseConsultaNfse:
        begin
          case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
+                     end;
+
            proEL,
            proInfisc,
            proInfiscv11,
@@ -1851,6 +1900,16 @@ begin
     LayNfseCancelaNfse:
        begin
          case FProvedor of
+           proAbaco: begin
+                       // Manaus
+                       if (FPConfiguracoesNFSe.Geral.CodigoMunicipio = 1302603) then
+                         FTagI := '<'+FTagGrupo+'>'
+                       else // Outros
+                         FTagI := '<' + FTagGrupo + FNameSpaceDad + '>' +
+                                     '<' + FPrefixo3 + 'Pedido>' +
+                                        '<' + FPrefixo4 + 'InfPedidoCancelamento' + ifThen(FPConfiguracoesNFSe.Geral.ConfigGeral.Identificador <> '', ' ' + FPConfiguracoesNFSe.Geral.ConfigGeral.Identificador + '="' + FURI + '"', '') + '>';
+                     end;
+
            proAgili: FTagI := '<' + FTagGrupo + FNameSpaceDad + '>' +
                                '<UnidadeGestora>' +
                                  OnlyNumber(FPConfiguracoesNFSe.Geral.CNPJPrefeitura) +
@@ -2591,15 +2650,16 @@ begin
         proGoverna: FNotasFiscais.Items[i].NFSe.Numero := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
 
         proIPM: begin
-                  FNotasFiscais.Items[i].NFSe.Numero := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
+                  FNotasFiscais.Items[i].NFSe.Numero            := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
                   FNotasFiscais.Items[i].NFSe.CodigoVerificacao := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.CodigoVerificacao;
+                  FNotasFiscais.Items[i].NFSe.Link              := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Link;
                 end;
 
         proCTA,
         proSP,
         ProNotaBlu: begin
-                      if (FProvedor in [proCTA, proSP]) or
-                         ((FProvedor = ProNotaBlu) and (RetEnvLote.InfRec.InformacoesLote.QtdNotasProcessadas > 0)) then
+                      if (FProvedor in [proCTA]) or
+                         ((FProvedor in [ProNotaBlu, proSP]) and (RetEnvLote.InfRec.InformacoesLote.QtdNotasProcessadas > 0)) then
                       begin
                         FNotasFiscais.Items[i].NFSe.Numero := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.Numero;
                         FNotasFiscais.Items[i].NFSe.CodigoVerificacao := RetEnvLote.InfRec.ListaChaveNFeRPS[I].ChaveNFeRPS.CodigoVerificacao;
@@ -4027,6 +4087,7 @@ begin
       proAgiliv2,
       proPVH,
       proTecnos,
+      proSmarAPDABRASF,
       proSystemPro: FTagGrupo := 'ConsultarNfseFaixaEnvio';
 
       proSP, 

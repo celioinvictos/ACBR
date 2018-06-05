@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao,
+  pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -90,6 +90,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FInfoAvPrevio: TInfoAvPrevio;
+    FACBreSocial: TObject;
 
     procedure GerarInfoAvPrevio;
     procedure GerarDetAvPrevio;
@@ -98,7 +99,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -144,6 +146,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2250Collection }
 
 function TS2250Collection.Add: TS2250CollectionItem;
@@ -184,12 +190,29 @@ begin
   FEvtAvPrevio.Assign(Value);
 end;
 
+{ TInfoAvPrevio }
+
+constructor TInfoAvPrevio.create;
+begin
+  FDetAvPrevio  := TDetAvPrevio.create;
+  FCancAvPrevio := TCancAvPrevio.Create;
+end;
+
+destructor TInfoAvPrevio.destroy;
+begin
+  FDetAvPrevio.Free;
+  FCancAvPrevio.Free;
+
+  inherited;
+end;
+
 { TEvtAvPrevio }
 
 constructor TEvtAvPrevio.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo := TIdeVinculo.Create;
@@ -243,11 +266,12 @@ begin
   Gerador.wGrupo('/infoAvPrevio');
 end;
 
-function TEvtAvPrevio.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtAvPrevio.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtAvPrevio');
     Gerador.wGrupo('evtAvPrevio Id="' + Self.Id + '"');
@@ -271,21 +295,58 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
-{ TInfoAvPrevio }
-
-constructor TInfoAvPrevio.create;
+function TEvtAvPrevio.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
 begin
-  FDetAvPrevio  := TDetAvPrevio.create;
-  FCancAvPrevio := TCancAvPrevio.Create;
-end;
+  Result := False;
 
-destructor TInfoAvPrevio.destroy;
-begin
-  FDetAvPrevio.Free;
-  FCancAvPrevio.Free;
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
-  inherited;
+    with Self do
+    begin
+      sSecao := 'evtAvPrevio';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+
+      sSecao := 'detAvPrevio';
+      InfoAvPrevio.detAvPrevio.dtAvPrv      := StringToDateTime(INIRec.ReadString(sSecao, 'dtAvPrv', '0'));
+      InfoAvPrevio.detAvPrevio.dtPrevDeslig := StringToDateTime(INIRec.ReadString(sSecao, 'dtPrevDeslig', '0'));
+      InfoAvPrevio.DetAvPrevio.tpAvPrevio   := eSStrToTpAvPrevio(Ok, INIRec.ReadString(sSecao, 'tpAvPrevio', '1'));
+      InfoAvPrevio.DetAvPrevio.observacao   := INIRec.ReadString(sSecao, 'observacao', EmptyStr);
+
+      sSecao := 'cancAvPrevio';
+      InfoAvPrevio.cancAvPrevio.dtCancAvPrv     := StringToDateTime(INIRec.ReadString(sSecao, 'dtCancAvPrv', '0'));
+      InfoAvPrevio.cancAvPrevio.observacao      := INIRec.ReadString(sSecao, 'observacao', EmptyStr);
+      InfoAvPrevio.cancAvPrevio.mtvCancAvPrevio := eSStrToMtvCancAvPrevio(Ok, INIRec.ReadString(sSecao, 'mtvCancAvPrevio', '1'));
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.
-

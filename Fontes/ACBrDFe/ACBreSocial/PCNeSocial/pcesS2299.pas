@@ -52,7 +52,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -69,7 +69,8 @@ type
   TIdeADCItem = class;
   TIdePeriodoCollection = class;
   TIdePeriodoItem = class;
-  TconsigFGTS = class;
+  TConsigFGTSCollection = class;
+  TConsigFGTSItem = class;
   TtransfTit = class;
   TInfoTrabIntermCollection = class;
   TInfoTrabIntermItem = class;
@@ -102,6 +103,7 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FInfoDeslig: TInfoDeslig;
+    FACBreSocial: TObject;
 
     procedure GerarInfoDeslig(obj: TInfoDeslig);
     procedure GerarSucessaoVinc(obj: TSucessaoVinc);
@@ -111,14 +113,15 @@ type
     procedure GerarInfoPerAnt(pInfoPerAnt: TInfoPerAnt);
     procedure GerarIdeADC(pIdeADC: TIdeADCCollection);
     procedure GerarIdePeriodo(pIdePeriodo: TIdePeriodoCollection);
-    procedure GerarconsigFGTS(obj: TconsigFGTS);
+    procedure GerarconsigFGTS(obj: TConsigFGTSCollection);
     procedure GerarTransfTit(obj: TtransfTit);
     procedure GerarInfoTrabInterm(obj: TInfoTrabIntermCollection);
   public
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -138,13 +141,15 @@ type
     FnrCertObito : String;
     FnrProcTrab : String;
     FIndCumprParc: tpCumprParcialAviso;
-    FObservacao : String;
+    FObservacao : String; // Descontinuado na versão 2.4.02
+    Fobservacoes: TobservacoesCollection;
     FSucessaoVinc : TSucessaoVinc;
     FVerbasResc : TVerbasRescS2299;
     FQuarentena: TQuarentena;
-    FconsigFGTS: TconsigFGTS;
+    FconsigFGTS: TConsigFGTSCollection;
     FInfoASO: TInfoASO;
     FtransfTit: TtransfTit;
+    FQtdDiasInterm: Integer;
 
     function getVerbasResc: TVerbasRescS2299;
   public
@@ -164,12 +169,14 @@ type
     property nrProcTrab : String read FnrProcTrab write FnrProcTrab;
     property indCumprParc: tpCumprParcialAviso read FIndCumprParc write FIndCumprParc;
     property Observacao : String read FObservacao write FObservacao;
+    property observacoes: TobservacoesCollection read Fobservacoes write Fobservacoes;
     property SucessaoVinc : TSucessaoVinc read FSucessaoVinc write FSucessaoVinc;
     property VerbasResc : TVerbasRescS2299 read getVerbasResc write FVerbasResc;
     property Quarentena: TQuarentena read FQuarentena write FQuarentena;
-    property consigFGTS: TconsigFGTS read FconsigFGTS write FconsigFGTS;
+    property consigFGTS: TConsigFGTSCollection read FconsigFGTS write FconsigFGTS;
     property InfoASO : TInfoASO read FInfoASO write FInfoASO;
     property transfTit: TtransfTit read FtransfTit write FtransfTit;
+    property QtdDiasInterm: Integer read FQtdDiasInterm write FQtdDiasInterm;
   end;
 
   TIdePeriodoCollection = class(TCollection)
@@ -287,7 +294,17 @@ type
     property dmDev: TDmDevCollection read FDmDev write FDmDev;
   end;
 
-  TconsigFGTS = class(TPersistent)
+  TConsigFGTSCollection = class(TCollection)
+  private
+    function GetItem(Index: Integer): TConsigFGTSItem;
+    procedure SetItem(Index: Integer; Value: TConsigFGTSItem);
+  public
+    constructor Create; reintroduce;
+    function Add: TConsigFGTSItem;
+    property Items[Index: Integer]: TConsigFGTSItem read GetItem write SetItem; default;
+  end;
+
+  TConsigFGTSItem = class(TCollectionItem)
   private
     FidConsig: tpSimNao;
     FinsConsig: string;
@@ -326,6 +343,10 @@ type
 
 implementation
 
+uses
+  IniFiles,StrUtils,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS2299Collection }
 
 function TS2299Collection.Add: TS2299CollectionItem;
@@ -344,251 +365,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TEvtDeslig }
-
-constructor TEvtDeslig.Create(AACBreSocial: TObject);
-begin
-  inherited;
-
-  FIdeEvento := TIdeEvento2.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeVInculo := TIdeVinculo.Create;
-  FInfoDeslig := TInfoDeslig.Create;
-end;
-
-destructor TEvtDeslig.destroy;
-begin
-  FIdeEvento.Free;
-  FIdeEmpregador.Free;
-  FIdeVinculo.Free;
-  FInfoDeslig.Free;
-
-  inherited;
-end;
-
-procedure TEvtDeslig.GerarInfoDeslig(obj: TInfoDeslig);
-begin
-  Gerador.wGrupo('infoDeslig');
-
-  Gerador.wCampo(tcStr, '', 'mtvDeslig',    1,  2, 1, obj.mtvDeslig);
-  Gerador.wCampo(tcDat, '', 'dtDeslig',    10, 10, 1, obj.dtDeslig);
-  Gerador.wCampo(tcStr, '', 'indPagtoAPI',  1,  1, 1, eSSimNaoToStr(obj.indPagtoAPI));
-
-  if (obj.indPagtoAPI=tpSim) then
-    Gerador.wCampo(tcDat, '', 'dtProjFimAPI', 10, 10, 0, obj.dtProjFimAPI);
-
-  Gerador.wCampo(tcStr, '', 'pensAlim',    1,  1, 1, obj.pensAlim);
-  Gerador.wCampo(tcDe2, '', 'percAliment', 1,  5, 0, obj.percAliment);
-  Gerador.wCampo(tcDe2, '', 'vrAlim',      1, 14, 0, obj.vrAlim);
-
-  if ((obj.mtvDeslig='09') or (obj.mtvDeslig='10')) then
-    Gerador.wCampo(tcStr, '', 'nrCertObito', 1, 32, 0, obj.nrCertObito);
-
-  if (obj.mtvDeslig='17') then
-    Gerador.wCampo(tcStr, '', 'nrProcTrab', 1, 20, 0, obj.nrProcTrab);
-
-  Gerador.wCampo(tcStr, '', 'indCumprParc', 1,   1, 1, eSTpCumprParcialAvisoToStr(obj.indCumprParc));
-  Gerador.wCampo(tcStr, '', 'observacao',   1, 255, 0, obj.Observacao);
-
-  GerarSucessaoVinc(obj.SucessaoVinc);
-  if obj.transfTit.cpfSubstituto <> '' then
-    GerarTransfTit(obj.transfTit);
-
-  if obj.verbasRescInst then
-    GerarVerbasResc(obj.VerbasResc);
-
-  GerarQuarentena(obj.Quarentena);
-  GerarconsigFGTS(obj.consigFGTS);
-
-  Gerador.wGrupo('/infoDeslig');
-end;
-
-procedure TEvtDeslig.GerarSucessaoVinc(obj: TSucessaoVinc);
-begin
-  if obj.cnpjEmpregAnt <> EmptyStr then
-  begin
-    Gerador.wGrupo('sucessaoVinc');
-
-    Gerador.wCampo(tcStr, '', 'cnpjSucessora', 14, 14, 1, obj.cnpjEmpregAnt);
-
-    Gerador.wGrupo('/sucessaoVinc');
-  end;
-end;
-
-procedure TEvtDeslig.GerarInfoPerApur(pInfoPerApur: TInfoPerApur);
-begin
-  Gerador.wGrupo('infoPerApur');
-
-  GerarIdeEstabLot(pInfoPerApur.ideEstabLot);
-
-  Gerador.wGrupo('/infoPerApur');
-end;
-
-procedure TEvtDeslig.GerarIdePeriodo(pIdePeriodo: TIdePeriodoCollection);
-var
-  i: Integer;
-begin
-  for i := 0 to pIdePeriodo.Count -1 do
-  begin
-    Gerador.wGrupo('idePeriodo');
-
-    Gerador.wCampo(tcStr, '', 'perRef', 7, 7, 1, pIdePeriodo[i].perRef);
-
-    GerarIdeEstabLot(pIdePeriodo[i].ideEstabLot);
-
-    Gerador.wGrupo('/idePeriodo');
-  end;
-
-  if pIdePeriodo.Count > 180 then
-    Gerador.wAlerta('', 'idePeriodo', 'Lista de Identificação de Periodos', ERR_MSG_MAIOR_MAXIMO + '180');
-end;
-
-procedure TEvtDeslig.GerarIdeADC(pIdeADC: TIdeADCCollection);
-var
-  i: integer;
-begin
-  for i := 0 to pIdeADC.Count - 1 do
-  begin
-    Gerador.wGrupo('ideADC');
-
-    Gerador.wCampo(tcDat, '', 'dtAcConv',   10,  10, 1, pIdeADC[i].dtAcConv);
-    Gerador.wCampo(tcStr, '', 'tpAcConv',    1,   1, 1, eSTpAcConvToStr(pIdeADC[i].tpAcConv));
-    Gerador.wCampo(tcStr, '', 'compAcConv',  7,   7, 0, pIdeADC[i].compAcConv);
-    Gerador.wCampo(tcDat, '', 'dtEfAcConv', 10,  10, 1, pIdeADC[i].dtEfAcConv);
-    Gerador.wCampo(tcStr, '', 'dsc',         1, 255, 1, pIdeADC[i].dsc);
-
-    GerarIdePeriodo(pIdeADC[i].idePeriodo);
-
-    Gerador.wGrupo('/ideADC');
-  end;
-
-  if pIdeADC.Count > 8 then
-    Gerador.wAlerta('', 'ideADC', 'Lista de Identificação de ADC', ERR_MSG_MAIOR_MAXIMO + '8');
-end;
-
-procedure TEvtDeslig.GerarInfoPerAnt(pInfoPerAnt: TInfoPerAnt);
-begin
-  Gerador.wGrupo('infoPerAnt');
-
-  GerarIdeADC(pInfoPerAnt.ideADC);
-
-  Gerador.wGrupo('/infoPerAnt');
-end;
-
-procedure TEvtDeslig.GerarDmDev(pDmDev: TDmDevCollection);
-var
-  i: integer;
-begin
-  for i := 0 to pDmDev.Count - 1 do
-  begin
-    Gerador.wGrupo('dmDev');
-
-    Gerador.wCampo(tcStr, '', 'ideDmDev', 1, 30, 1, pDmDev[i].ideDmDev);
-
-    if pDmDev[i].infoPerAntInst then
-      GerarInfoPerApur(pDmDev[i].infoPerApur);
-
-    if pDmDev[i].infoPerAntInst then
-      GerarInfoPerAnt(pDmDev[i].infoPerAnt);
-
-    GerarInfoTrabInterm(pDmDev[i].infoTrabInterm);
-
-    Gerador.wGrupo('/dmDev');
-  end;
-
-  if pDmDev.Count > 50 then
-    Gerador.wAlerta('', 'dmDev', 'Lista de Demonstrativos', ERR_MSG_MAIOR_MAXIMO + '50');
-end;
-
-procedure TEvtDeslig.GerarVerbasResc(obj: TVerbasRescS2299);
-begin
-  Gerador.wGrupo('verbasResc');
-
-  GerarDmDev(obj.dmDev);
-  GerarProcJudTrab(obj.ProcJudTrab);
-
-  if obj.infoMVInst then
-    GerarInfoMV(obj.infoMV);
-
-  Gerador.wGrupo('/verbasResc');
-end;
-
-function TEvtDeslig.GerarXML(ATipoEmpregador: TEmpregador): boolean;
-begin
-  try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
-
-    GerarCabecalho('evtDeslig');
-    Gerador.wGrupo('evtDeslig Id="' + Self.Id + '"');
-
-    GerarIdeEvento2(self.IdeEvento);
-    GerarIdeEmpregador(self.IdeEmpregador);
-    GerarIdeVinculo(self.IdeVinculo);
-    GerarInfoDeslig(Self.InfoDeslig);
-
-    Gerador.wGrupo('/evtDeslig');
-
-    GerarRodape;
-
-    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtDeslig');
-
-    Validar(schevtDeslig);
-  except on e:exception do
-    raise Exception.Create(e.Message);
-  end;
-
-  Result := (Gerador.ArquivoFormatoXML <> '')
-end;
-
-procedure TEvtDeslig.GerarconsigFGTS(obj: TconsigFGTS);
-begin
-  Gerador.wGrupo('consigFGTS');
-  Gerador.wCampo(tcStr, '', 'idConsig',  1,  1, 1, eSSimNaoToStr(obj.idConsig));
-  Gerador.wCampo(tcStr, '', 'insConsig', 0,  5, 0, obj.insConsig);
-  Gerador.wCampo(tcStr, '', 'nrContr',   0, 15, 0, obj.nrContr);
-  Gerador.wGrupo('/consigFGTS');
-end;
-
-procedure TEvtDeslig.GerarTransfTit(obj: TtransfTit);
-begin
-  Gerador.wGrupo('transfTit');
-
-  Gerador.wCampo(tcStr, '', 'cpfSubstituto', 11, 11, 1, obj.cpfSubstituto);
-  Gerador.wCampo(tcDat, '', 'dtNascto',      10, 10, 1, obj.dtNascto);
-
-  Gerador.wGrupo('/transfTit');
-end;
-
-procedure TEvtDeslig.GerarInfoTrabInterm(obj: TInfoTrabIntermCollection);
-var
-  i: integer;
-begin
-  for i := 0 to obj.Count - 1 do
-  begin
-    Gerador.wGrupo('infoTrabInterm');
-
-    Gerador.wCampo(tcStr, '', 'codConv', 1, 30, 1, obj[i].codConv);
-
-    Gerador.wGrupo('/infoTrabInterm');
-  end;
-
-  if obj.Count > 99 then
-    Gerador.wAlerta('', 'infoTrabInterm', 'Lista de Trabalhos Intermitente', ERR_MSG_MAIOR_MAXIMO + '99');
-end;
-
 { TInfoDeslig }
 
 constructor TInfoDeslig.Create;
 begin
   inherited;
-
   FSucessaoVinc := TSucessaoVinc.Create;
-  FVerbasResc := nil;
-  FQuarentena := TQuarentena.Create;
-  FconsigFGTS := TconsigFGTS.Create;
-  FInfoASO := TInfoASO.Create;
-  FtransfTit := TtransfTit.Create;
+  FVerbasResc   := nil;
+  FQuarentena   := TQuarentena.Create;
+  FInfoASO      := TInfoASO.Create;
+  FtransfTit    := TtransfTit.Create;
+  Fobservacoes  := TobservacoesCollection.Create;
+  FconsigFGTS   := TConsigFGTSCollection.Create;
 end;
 
 destructor TInfoDeslig.destroy;
@@ -596,10 +384,10 @@ begin
   FSucessaoVinc.Free;
   FreeAndNil(FVerbasResc);
   FQuarentena.Free;
-  FconsigFGTS.Free;
   FInfoASO.Free;
   FtransfTit.Free;
-
+  Fobservacoes.Free;
+  FreeAndNil(FconsigFGTS);
   inherited;
 end;
 
@@ -830,6 +618,662 @@ procedure TInfoTrabIntermCollection.SetItem(Index: Integer;
   Value: TInfoTrabIntermItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+{ TConsigFGTSCollection }
+
+function TConsigFGTSCollection.Add: TConsigFGTSItem;
+begin
+  Result := TConsigFGTSItem(inherited Add);
+end;
+
+constructor TConsigFGTSCollection.Create;
+begin
+  inherited Create(TConsigFGTSItem);
+end;
+
+function TConsigFGTSCollection.GetItem(Index: Integer): TConsigFGTSItem;
+begin
+  Result := TConsigFGTSItem(inherited GetItem(Index));
+end;
+
+procedure TConsigFGTSCollection.SetItem(Index: Integer; Value: TConsigFGTSItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+{ TEvtDeslig }
+
+constructor TEvtDeslig.Create(AACBreSocial: TObject);
+begin
+  inherited;
+
+  FACBreSocial := AACBreSocial;
+  FIdeEvento := TIdeEvento2.Create;
+  FIdeEmpregador := TIdeEmpregador.Create;
+  FIdeVInculo := TIdeVinculo.Create;
+  FInfoDeslig := TInfoDeslig.Create;
+end;
+
+destructor TEvtDeslig.destroy;
+begin
+  FIdeEvento.Free;
+  FIdeEmpregador.Free;
+  FIdeVinculo.Free;
+  FInfoDeslig.Free;
+
+  inherited;
+end;
+
+procedure TEvtDeslig.GerarInfoDeslig(obj: TInfoDeslig);
+begin
+  Gerador.wGrupo('infoDeslig');
+
+  Gerador.wCampo(tcStr, '', 'mtvDeslig',    1,  2, 1, obj.mtvDeslig);
+  Gerador.wCampo(tcDat, '', 'dtDeslig',    10, 10, 1, obj.dtDeslig);
+  Gerador.wCampo(tcStr, '', 'indPagtoAPI',  1,  1, 1, eSSimNaoToStr(obj.indPagtoAPI));
+
+  if (obj.indPagtoAPI=tpSim) then
+    Gerador.wCampo(tcDat, '', 'dtProjFimAPI', 10, 10, 0, obj.dtProjFimAPI);
+
+  Gerador.wCampo(tcStr, '', 'pensAlim',    1,  1, 1, obj.pensAlim);
+  Gerador.wCampo(tcDe2, '', 'percAliment', 1,  5, 0, obj.percAliment);
+  Gerador.wCampo(tcDe2, '', 'vrAlim',      1, 14, 0, obj.vrAlim);
+
+  if ((obj.mtvDeslig='09') or (obj.mtvDeslig='10')) then
+    Gerador.wCampo(tcStr, '', 'nrCertObito', 1, 32, 0, obj.nrCertObito);
+
+  if (obj.mtvDeslig='17') then
+    Gerador.wCampo(tcStr, '', 'nrProcTrab', 1, 20, 0, obj.nrProcTrab);
+
+  Gerador.wCampo(tcStr, '', 'indCumprParc', 1,   1, 1, eSTpCumprParcialAvisoToStr(obj.indCumprParc));
+
+  If (obj.QtdDiasInterm > 0) And (VersaoDF <> ve02_04_01) Then
+     Gerador.wCampo(tcInt, '', 'qtdDiasInterm', 1,   2, 0, obj.QtdDiasInterm);
+
+  if (VersaoDF = ve02_04_01) then
+    Gerador.wCampo(tcStr, '', 'observacao',   1, 255, 0, obj.Observacao)
+  else
+    GerarObservacoes(obj.observacoes);
+  if (StrToIntDef(obj.mtvDeslig,0) in [11, 12, 13, 25, 28, 29, 30]) then
+     GerarSucessaoVinc(obj.SucessaoVinc);
+  if (obj.transfTit.cpfSubstituto <> '') And (obj.mtvDeslig='34') then
+    GerarTransfTit(obj.transfTit);
+
+  if obj.verbasRescInst then
+    GerarVerbasResc(obj.VerbasResc);
+
+  GerarQuarentena(obj.Quarentena);
+  GerarconsigFGTS(obj.consigFGTS);
+
+  Gerador.wGrupo('/infoDeslig');
+end;
+
+procedure TEvtDeslig.GerarSucessaoVinc(obj: TSucessaoVinc);
+begin
+  if obj.CnpjEmpSucessora <> EmptyStr then
+  begin
+    Gerador.wGrupo('sucessaoVinc');
+
+    Gerador.wCampo(tcStr, '', 'cnpjSucessora', 14, 14, 1, obj.CnpjEmpSucessora);
+
+    Gerador.wGrupo('/sucessaoVinc');
+  end;
+end;
+
+procedure TEvtDeslig.GerarInfoPerApur(pInfoPerApur: TInfoPerApur);
+begin
+  Gerador.wGrupo('infoPerApur');
+
+  GerarIdeEstabLot(pInfoPerApur.ideEstabLot);
+
+  Gerador.wGrupo('/infoPerApur');
+end;
+
+procedure TEvtDeslig.GerarIdePeriodo(pIdePeriodo: TIdePeriodoCollection);
+var
+  i: Integer;
+begin
+  for i := 0 to pIdePeriodo.Count -1 do
+  begin
+    Gerador.wGrupo('idePeriodo');
+
+    Gerador.wCampo(tcStr, '', 'perRef', 7, 7, 1, pIdePeriodo[i].perRef);
+
+    GerarIdeEstabLot(pIdePeriodo[i].ideEstabLot);
+
+    Gerador.wGrupo('/idePeriodo');
+  end;
+
+  if pIdePeriodo.Count > 180 then
+    Gerador.wAlerta('', 'idePeriodo', 'Lista de Identificação de Periodos', ERR_MSG_MAIOR_MAXIMO + '180');
+end;
+
+procedure TEvtDeslig.GerarIdeADC(pIdeADC: TIdeADCCollection);
+var
+  i: integer;
+begin
+  for i := 0 to pIdeADC.Count - 1 do
+  begin
+    Gerador.wGrupo('ideADC');
+
+    Gerador.wCampo(tcDat, '', 'dtAcConv',   10,  10, 1, pIdeADC[i].dtAcConv);
+    Gerador.wCampo(tcStr, '', 'tpAcConv',    1,   1, 1, eSTpAcConvToStr(pIdeADC[i].tpAcConv));
+    Gerador.wCampo(tcStr, '', 'compAcConv',  7,   7, 0, pIdeADC[i].compAcConv);
+    Gerador.wCampo(tcDat, '', 'dtEfAcConv', 10,  10, 1, pIdeADC[i].dtEfAcConv);
+    Gerador.wCampo(tcStr, '', 'dsc',         1, 255, 1, pIdeADC[i].dsc);
+
+    GerarIdePeriodo(pIdeADC[i].idePeriodo);
+
+    Gerador.wGrupo('/ideADC');
+  end;
+
+  if pIdeADC.Count > 8 then
+    Gerador.wAlerta('', 'ideADC', 'Lista de Identificação de ADC', ERR_MSG_MAIOR_MAXIMO + '8');
+end;
+
+procedure TEvtDeslig.GerarInfoPerAnt(pInfoPerAnt: TInfoPerAnt);
+begin
+  Gerador.wGrupo('infoPerAnt');
+
+  GerarIdeADC(pInfoPerAnt.ideADC);
+
+  Gerador.wGrupo('/infoPerAnt');
+end;
+
+procedure TEvtDeslig.GerarDmDev(pDmDev: TDmDevCollection);
+var
+  i: integer;
+begin
+  for i := 0 to pDmDev.Count - 1 do
+  begin
+    Gerador.wGrupo('dmDev');
+
+    Gerador.wCampo(tcStr, '', 'ideDmDev', 1, 30, 1, pDmDev[i].ideDmDev);
+    if pDmDev[i].infoPerApurInst then
+      GerarInfoPerApur(pDmDev[i].infoPerApur);
+
+    if pDmDev[i].infoPerAntInst then
+      GerarInfoPerAnt(pDmDev[i].infoPerAnt);
+
+    GerarInfoTrabInterm(pDmDev[i].infoTrabInterm);
+
+    Gerador.wGrupo('/dmDev');
+  end;
+
+  if pDmDev.Count > 50 then
+    Gerador.wAlerta('', 'dmDev', 'Lista de Demonstrativos', ERR_MSG_MAIOR_MAXIMO + '50');
+end;
+
+procedure TEvtDeslig.GerarVerbasResc(obj: TVerbasRescS2299);
+begin
+  Gerador.wGrupo('verbasResc');
+
+  GerarDmDev(obj.dmDev);
+  GerarProcJudTrab(obj.ProcJudTrab);
+
+  if obj.infoMVInst then
+    GerarInfoMV(obj.infoMV);
+
+  Gerador.wGrupo('/verbasResc');
+end;
+
+function TEvtDeslig.GerarXML: boolean;
+begin
+  try
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
+
+    GerarCabecalho('evtDeslig');
+    Gerador.wGrupo('evtDeslig Id="' + Self.Id + '"');
+
+    GerarIdeEvento2(self.IdeEvento);
+    GerarIdeEmpregador(self.IdeEmpregador);
+    GerarIdeVinculo(self.IdeVinculo);
+    GerarInfoDeslig(Self.InfoDeslig);
+              
+    Gerador.wGrupo('/evtDeslig');
+
+    GerarRodape;
+
+    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtDeslig');
+
+    Validar(schevtDeslig);
+  except on e:exception do
+    raise Exception.Create(e.Message);
+  end;
+
+  Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+procedure TEvtDeslig.GerarconsigFGTS(obj: TConsigFGTSCollection);
+var
+  i: Integer;
+begin
+  if VersaoDF = ve02_04_01 then
+  begin
+    // Na versão 02.04.01 o grupo <consigFGTS> é obrigatório e a quantidade de
+    // ocorrências é 1
+    if obj.Count = 1 then
+    begin
+      Gerador.wGrupo('consigFGTS');
+
+      Gerador.wCampo(tcStr, '', 'idConsig',  1,  1, 1, eSSimNaoToStr(obj[0].idConsig));
+      Gerador.wCampo(tcStr, '', 'insConsig', 0,  5, 0, obj[0].insConsig);
+      Gerador.wCampo(tcStr, '', 'nrContr',   0, 40, 0, obj[0].nrContr);
+
+      Gerador.wGrupo('/consigFGTS');
+    end;
+  end
+  else
+  begin
+    // Na versão 02.04.02 o grupo <consigFGTS> é opcional e a quantidade de
+    // ocorrências é 9
+    for i := 0 to obj.Count -1 do
+    begin
+       Gerador.wGrupo('consigFGTS');
+
+       Gerador.wCampo(tcStr, '', 'insConsig', 0,  5, 0, obj[i].insConsig);
+       Gerador.wCampo(tcStr, '', 'nrContr',   0, 40, 0, obj[i].nrContr);
+
+       Gerador.wGrupo('/consigFGTS');
+    end;
+
+    if obj.Count > 9 then
+      Gerador.wAlerta('', 'consigFGTS', 'Informações sobre operação de crédito consignado com garantia de FGTS', ERR_MSG_MAIOR_MAXIMO + '9')
+  end;
+end;
+
+procedure TEvtDeslig.GerarTransfTit(obj: TtransfTit);
+begin
+  Gerador.wGrupo('transfTit');
+
+  Gerador.wCampo(tcStr, '', 'cpfSubstituto', 11, 11, 1, obj.cpfSubstituto);
+  Gerador.wCampo(tcDat, '', 'dtNascto',      10, 10, 1, obj.dtNascto);
+
+  Gerador.wGrupo('/transfTit');
+end;
+
+procedure TEvtDeslig.GerarInfoTrabInterm(obj: TInfoTrabIntermCollection);
+var
+  i: integer;
+begin
+  for i := 0 to obj.Count - 1 do
+  begin
+    Gerador.wGrupo('infoTrabInterm');
+
+    Gerador.wCampo(tcStr, '', 'codConv', 1, 30, 1, obj[i].codConv);
+
+    Gerador.wGrupo('/infoTrabInterm');
+  end;
+
+  if obj.Count > 99 then
+    Gerador.wAlerta('', 'infoTrabInterm', 'Lista de Trabalhos Intermitente', ERR_MSG_MAIOR_MAXIMO + '99');
+end;
+
+function TEvtDeslig.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I, J, K, L, M, N: Integer;
+begin
+  Result := False;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with Self do
+    begin
+      sSecao := 'evtDeslig';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+
+      sSecao := 'infoDeslig';
+      infoDeslig.mtvDeslig    := INIRec.ReadString(sSecao, 'mtvDeslig', EmptyStr);
+      infoDeslig.dtDeslig     := StringToDateTime(INIRec.ReadString(sSecao, 'dtDeslig', '0'));
+      infoDeslig.indPagtoAPI  := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indPagtoAPI', 'S'));
+      infoDeslig.dtProjFimAPI := StringToDateTime(INIRec.ReadString(sSecao, 'dtProjFimAPI', '0'));
+      infoDeslig.pensAlim     := eSStrToTpPensaoAlim(Ok, INIRec.ReadString(sSecao, 'pensAlim', '0'));
+      infoDeslig.percAliment  := StringToFloatDef(INIRec.ReadString(sSecao, 'percAliment', ''), 0);
+      infoDeslig.vrAlim       := StringToFloatDef(INIRec.ReadString(sSecao, 'vrAlim', ''), 0);
+      infoDeslig.nrCertObito  := INIRec.ReadString(sSecao, 'nrCertObito', EmptyStr);
+      infoDeslig.nrProcTrab   := INIRec.ReadString(sSecao, 'nrProcTrab', EmptyStr);
+      infoDeslig.indCumprParc := eSStrToTpCumprParcialAviso(Ok, INIRec.ReadString(sSecao, 'indCumprParc', '0'));
+      infoDeslig.Observacao   := INIRec.ReadString(sSecao, 'observacao', EmptyStr);
+
+      sSecao := 'sucessaoVinc';
+      infoDeslig.sucessaoVinc.CnpjEmpSucessora := INIRec.ReadString(sSecao, 'cnpjEmpSucessora', EmptyStr);
+
+      sSecao := 'transfTit';
+      infoDeslig.transfTit.cpfSubstituto := INIRec.ReadString(sSecao, 'cpfSubstituto', EmptyStr);
+      infoDeslig.transfTit.dtNascto      := StringToDateTime(INIRec.ReadString(sSecao, 'dtNascto', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 50
+        sSecao := 'dmDev' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'ideDmDev', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoDeslig.VerbasResc.dmDev.Add do
+        begin
+          ideDmDev := sFim;
+
+          J := 1;
+          while true do
+          begin
+            // de 01 até 24
+            sSecao := 'ideEstabLot' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+            sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with infoPerApur.ideEstabLot.Add do
+            begin
+              tpInsc     := eSStrToTpInscricao(Ok, sFim);
+              NrInsc     := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+              codLotacao := INIRec.ReadString(sSecao, 'codLotacao', EmptyStr);
+
+              K := 1;
+              while true do
+              begin
+                // de 001 até 200
+                sSecao := 'detVerbas' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                            IntToStrZero(K, 3);
+                sFim   := INIRec.ReadString(sSecao, 'codRubr', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with detVerbas.Add do
+                begin
+                  codRubr    := sFim;
+                  ideTabRubr := INIRec.ReadString(sSecao, 'ideTabRubr', EmptyStr);
+                  qtdRubr    := StringToFloatDef(INIRec.ReadString(sSecao, 'qtdRubr', ''), 0);
+                  fatorRubr  := StringToFloatDef(INIRec.ReadString(sSecao, 'fatorRubr', ''), 0);
+                  vrUnit     := StringToFloatDef(INIRec.ReadString(sSecao, 'vrUnit', ''), 0);
+                  vrRubr     := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRubr', ''), 0);
+                end;
+
+                Inc(K);
+              end;
+
+              K := 1;
+              while true do
+              begin
+                // de 01 até 99
+                sSecao := 'detOper' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                            IntToStrZero(K, 2);
+                sFim   := INIRec.ReadString(sSecao, 'cnpjOper', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with infoSaudeColet.detOper.Add do
+                begin
+                  cnpjOper := sFim;
+                  regANS   := INIRec.ReadString(sSecao, 'regANS', EmptyStr);
+                  vrPgTit  := StringToFloatDef(INIRec.ReadString(sSecao, 'vrPgTit', ''), 0);
+
+                  L := 1;
+                  while true do
+                  begin
+                    // de 01 até 99
+                    sSecao := 'detPlano' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                                IntToStrZero(K, 2) + IntToStrZero(L, 2);
+                    sFim   := INIRec.ReadString(sSecao, 'tpDep', 'FIM');
+
+                    if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                      break;
+
+                    with detPlano.Add do
+                    begin
+                      tpDep    := eSStrToTpDep(Ok, sFim);
+                      cpfDep   := INIRec.ReadString(sSecao, 'cpfDep', EmptyStr);
+                      nmDep    := INIRec.ReadString(sSecao, 'nmDep', EmptyStr);
+                      dtNascto := StringToDateTime(INIRec.ReadString(sSecao, 'dtNascto', '0'));
+                      vlrPgDep := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrPgDep', ''), 0);
+
+                    end;
+
+                    Inc(L);
+                  end;
+
+                end;
+
+                Inc(K);
+              end;
+
+              sSecao := 'infoAgNocivo' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+              infoAgNocivo.grauExp := eSStrToGrauExp(Ok, INIRec.ReadString(sSecao, 'grauExp', '1'));
+
+              sSecao := 'infoSimples' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+              infoSimples.indSimples := eSStrToIndSimples(Ok, INIRec.ReadString(sSecao, 'indSimples', '1'));
+
+              K := 1;
+              while true do
+              begin
+                // de 1 até 8
+                sSecao := 'ideADC' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                            IntToStrZero(K, 1);
+                sFim   := INIRec.ReadString(sSecao, 'dtAcConv', 'FIM');
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with infoPerAnt.ideADC.Add do
+                begin
+                  dtAcConv   := StringToDateTime(sFim);
+                  tpAcConv   := eSStrToTpAcConv(Ok, INIRec.ReadString(sSecao, 'tpAcConv', 'A'));
+                  compAcConv := INIRec.ReadString(sSecao, 'compAcConv', EmptyStr);
+                  dtEfAcConv := StringToDateTime(INIRec.ReadString(sSecao, 'dtEfAcConv', '0'));
+                  dsc        := INIRec.ReadString(sSecao, 'dsc', EmptyStr);
+
+                  L := 1;
+                  while true do
+                  begin
+                    // de 001 até 180
+                    sSecao := 'idePeriodo' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                                IntToStrZero(K, 1) + IntToStrZero(L, 3);
+                    sFim   := INIRec.ReadString(sSecao, 'perRef', 'FIM');
+
+                    if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                      break;
+
+                    with idePeriodo.Add do
+                    begin
+                      perRef := sFim;
+
+                      M := 1;
+                      while true do
+                      begin
+                        // de 01 até 24
+                        sSecao := 'ideEstabLot' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                                    IntToStrZero(K, 1) + IntToStrZero(L, 3) +
+                                    IntToStrZero(M, 1);
+                        sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
+
+                        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                          break;
+
+                        with ideEstabLot.Add do
+                        begin
+                          tpInsc     := eSStrToTpInscricao(Ok, sFim);
+                          NrInsc     := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+                          codLotacao := INIRec.ReadString(sSecao, 'codLotacao', EmptyStr);
+
+                          N := 1;
+                          while true do
+                          begin
+                            // de 001 até 200
+                            sSecao := 'detVerbas' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
+                                    IntToStrZero(K, 1) + IntToStrZero(L, 3) +
+                                    IntToStrZero(M, 1) + IntToStrZero(N, 3);
+                            sFim   := INIRec.ReadString(sSecao, 'codRubr', 'FIM');
+
+                            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                              break;
+
+                            with detVerbas.Add do
+                            begin
+                              codRubr    := sFim;
+                              ideTabRubr := INIRec.ReadString(sSecao, 'ideTabRubr', EmptyStr);
+                              qtdRubr    := StringToFloatDef(INIRec.ReadString(sSecao, 'qtdRubr', ''), 0);
+                              fatorRubr  := StringToFloatDef(INIRec.ReadString(sSecao, 'fatorRubr', ''), 0);
+                              vrUnit     := StringToFloatDef(INIRec.ReadString(sSecao, 'vrUnit', ''), 0);
+                              vrRubr     := StringToFloatDef(INIRec.ReadString(sSecao, 'vrRubr', ''), 0);
+                            end;
+
+                            Inc(N);
+                          end;
+
+                        end;
+
+                        Inc(M);
+                      end;
+
+                    end;
+
+                    Inc(L);
+                  end;
+
+                end;
+
+                Inc(K);
+              end;
+
+              sSecao := 'infoAgNocivo' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+              infoAgNocivo.grauExp := eSStrToGrauExp(Ok, INIRec.ReadString(sSecao, 'grauExp', '1'));
+
+              sSecao := 'infoSimples' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+              infoSimples.indSimples := eSStrToIndSimples(Ok, INIRec.ReadString(sSecao, 'indSimples', '1'));
+
+            end;
+
+            Inc(J);
+          end;
+
+          J := 1;
+          while true do
+          begin
+            // de 00 até 99
+            sSecao := 'infoTrabInterm' + IntToStrZero(I, 2) + IntToStrZero(J, 2);
+            sFim   := INIRec.ReadString(sSecao, 'codConv', 'FIM');
+
+            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+              break;
+
+            with infoTrabInterm.Add do
+            begin
+              codConv := sFim;
+            end;
+
+            Inc(J);
+          end;
+
+        end;
+
+        Inc(I);
+      end;
+
+      I := 1;
+      while true do
+      begin
+        // de 00 até 99
+        sSecao := 'procJudTrab' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'tpTrib', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoDeslig.VerbasResc.procJudTrab.Add do
+        begin
+          tpTrib    := eSStrToTpTributo(Ok, sFim);
+          nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', EmptyStr);
+          codSusp   := INIRec.ReadInteger(sSecao, 'codSusp', 0);
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'infoMV';
+      infoDeslig.VerbasResc.infoMV.indMV := eSStrToIndMV(Ok, INIRec.ReadString(sSecao, 'indMV', '1'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 10
+        sSecao := 'remunOutrEmpr' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoDeslig.VerbasResc.infoMV.remunOutrEmpr.Add do
+        begin
+          TpInsc     := eSStrToTpInscricao(Ok, sFim);
+          NrInsc     := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+          codCateg   := INIRec.ReadInteger(sSecao, 'codCateg', 0);
+          vlrRemunOE := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrRemunOE', ''), 0);
+        end;
+
+        Inc(I);
+      end;
+
+      sSecao := 'quarentena';
+      infoDeslig.quarentena.dtFimQuar := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimQuar', '0'));
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 10
+        sSecao := 'consigFGTS' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'idConsig', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with infoDeslig.consigFGTS.Add do
+        begin
+          idConsig  := eSStrToSimNao(Ok, sFim);
+          insConsig := INIRec.ReadString(sSecao, 'insConsig', EmptyStr);
+          nrContr   := INIRec.ReadString(sSecao, 'nrContr', EmptyStr);
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

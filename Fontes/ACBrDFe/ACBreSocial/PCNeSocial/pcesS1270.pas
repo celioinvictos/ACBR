@@ -50,7 +50,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnGerador,
+  pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -88,6 +88,7 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FRemunAvNp: TRemunAvNPColecao;
+    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarRemunAvNP(pRemunAvNPColecao: TRemunAvNPColecao);
@@ -95,7 +96,8 @@ type
     constructor Create(AACBreSocial: TObject);overload;
     destructor Destroy; override;
 
-    function GerarXML(ATipoEmpregador: TEmpregador): boolean; override;
+    function GerarXML: boolean; override;
+    function LerArqIni(const AIniString: String): Boolean;
 
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
@@ -139,6 +141,10 @@ type
 
 implementation
 
+uses
+  IniFiles,
+  ACBreSocial, ACBrDFeUtil;
+
 { TS1270Collection }
 
 function TS1270Collection.Add: TS1270CollectionItem;
@@ -177,11 +183,34 @@ begin
   FEvtContratAvNP.Assign(Value);
 end;
 
+{ TRemunAvNPColecao }
+function TRemunAvNPColecao.Add: TRemunAvNPItem;
+begin
+  Result := TRemunAvNPItem(inherited Add);
+end;
+
+constructor TRemunAvNPColecao.Create(AOwner: TPersistent);
+begin
+  inherited Create(TRemunAvNPItem);
+end;
+
+function TRemunAvNPColecao.GetItem(Index: Integer): TRemunAvNPItem;
+begin
+  Result := TRemunAvNPItem(inherited GetItem(Index));
+end;
+
+procedure TRemunAvNPColecao.SetItem(Index: Integer;
+  const Value: TRemunAvNPItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
 { TEvtContratAvNP }
 constructor TEvtContratAvNP.Create(AACBreSocial: TObject);
 begin
   inherited;
 
+  FACBreSocial := AACBreSocial;
   FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FRemunAvNp     := TRemunAvNPColecao.Create(FRemunAvNp);
@@ -222,11 +251,12 @@ begin
     Gerador.wAlerta('', 'remunAvNP', 'Lista de Remuneração', ERR_MSG_MAIOR_MAXIMO + '999');
 end;
 
-function TEvtContratAvNP.GerarXML(ATipoEmpregador: TEmpregador): boolean;
+function TEvtContratAvNP.GerarXML: boolean;
 begin
   try
-    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc,
-     self.Sequencial, ATipoEmpregador);
+    Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
+     
+    Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtContratAvNP');
     Gerador.wGrupo('evtContratAvNP Id="' + Self.Id + '"');
@@ -249,26 +279,73 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
-{ TRemunAvNPColecao }
-function TRemunAvNPColecao.Add: TRemunAvNPItem;
+function TEvtContratAvNP.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
 begin
-  Result := TRemunAvNPItem(inherited Add);
-end;
+  Result := False;
 
-constructor TRemunAvNPColecao.Create(AOwner: TPersistent);
-begin
-  inherited Create(TRemunAvNPItem);
-end;
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
-function TRemunAvNPColecao.GetItem(Index: Integer): TRemunAvNPItem;
-begin
-  Result := TRemunAvNPItem(inherited GetItem(Index));
-end;
+    with Self do
+    begin
+      sSecao := 'evtContratAvNP';
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
-procedure TRemunAvNPColecao.SetItem(Index: Integer;
-  const Value: TRemunAvNPItem);
-begin
-  inherited SetItem(Index, Value);
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
+      ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
+      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      I := 1;
+      while true do
+      begin
+        // de 001 até 999
+        sSecao := 'remunAvNP' + IntToStrZero(I, 3);
+        sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with remunAvNP.Add do
+        begin
+          TpInsc     := eSStrToTpInscricao(Ok, sFim);
+          NrInsc     := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+          codLotacao := INIRec.ReadString(sSecao, 'codLotacao', EmptyStr);
+          vrBcCp00   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBcCp00', ''), 0);
+          vrBcCp15   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBcCp15', ''), 0);
+          vrBcCp20   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBcCp20', ''), 0);
+          vrBcCp25   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBcCp25', ''), 0);
+          vrBcCp13   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBcCp13', ''), 0);
+          vrBcFgts   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBcFgts', ''), 0);
+          vrDescCP   := StringToFloatDef(INIRec.ReadString(sSecao, 'vrDescCP', ''), 0);
+        end;
+
+        Inc(I);
+      end;
+
+    end;
+
+    GerarXML;
+
+    Result := True;
+  finally
+     INIRec.Free;
+  end;
 end;
 
 end.

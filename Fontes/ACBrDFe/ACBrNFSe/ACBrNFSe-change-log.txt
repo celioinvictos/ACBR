@@ -47,6 +47,131 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/04/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Alteração para que a tag <Aliquota> seja gerada com 4 casas decimais para o provedor
+    Fiorilli.
+   Por: Italo Jurisato Junior
+
+19/04/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Correção na geração do grupo <Rps> quando o valor de IdentificacaoRps.Tipo é trNone.
+   Por: Italo Jurisato Junior
+
+13/04/2018
+-- pnfsNFSeW_CONAM --
+[*] https://www.projetoacbr.com.br/forum/topic/42675-provedor-conam-duplicando-rps/?do=findComment&comment=281135
+   Por: SoftPro Sistemas
+-- pnfsNFSeG / pnfsNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/42667-provedor-conam-alqisssn_ip/?do=findComment&comment=281396
+   Por: Mauro Augusto Souza Lima
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/17101-nfs-e-sert%C3%A3ozinho/?do=findComment&comment=281311
+   Por: Weber de Paula
+-- ACBrNFSeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/42731-erro-na-gera%C3%A7%C3%A3o-de-xml-de-cancelamento-do-provedor-abaco/
+   Por: Marcio st
+
+09/04/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido a geração da tag <InformacoesComplementares> para o provedor SmarAPDABRASF.
+   Por: Italo Jurisato Junior
+
+05/04/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido uma condição para determinar se será gerado ou não o grupo <CpfCnpj>.
+   Por: Davi
+
+28/03/2018
+-- pnfsNFSeW_Agili, pnfsNFSeR --
+[*] Ajustes visando permitir informar valores diferentes para as tags
+    "CodigoAtividadeEconomica" e "CodigoCnae" para o provedor Agili.
+  https://www.projetoacbr.com.br/forum/topic/42250-nfs-e-provedor-agiliv2/  
+  Por: BigWings
+
+27/03/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Alterações, visando o provedor Bethav2
+   Por: Davi
+
+23/03/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Alterações, foi removido a declaração de namespace, tentativa para ser se vai
+    funcionar com a cidade de Cabo Frio, provedor ISSDigital
+   Por: Italo Jurisato Junior
+
+21/03/2018
+-- ACBrNFSeWebServices --
+[*] Condicionado a inclusão do NameSpace - provedor Ábaco - cidade Manaus/AM.
+   Por: Italo Jurisato Junior
+
+20/03/2018
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/42217-acbrnfse-n%C3%A3o-esta-saindo-valor-liquido/?do=findComment&comment=278218
+   Por: Tiago Passarella
+-- ACBrNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/42237-ajuste-na-busca-de-link-do-provedor-tecnos/
+   Por: Marcio st
+
+19/03/2018
+--pnfsNFSeG / pnfsNFSeW_ABRASFv2 --
+[*] Correções visando atender o provedor ELv2
+   Por: Italo Jurisato Junior
+--pnfsNFSeG / pnfsNFSeW_ABRASFv1 --
+[*] Removido o prefixo do ID do RPS e do Lote para o provedor Abaco.
+   Por: Augelias
+
+13/03/2018
+-- ACBrNFSeWebServices --
+[*] Corrigido o nome da tag para realizar a consulta da NFSe para o provedor SmarAPDABRASF.
+   Por: Italo Jurisato Junior
+
+09/03/2018
+-- pnfsNFSeW_ABRASFv2 / pnfsConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/41020-rps-n%C3%A3o-obrigat%C3%B3rio-systempro/
+   Por: Augusto Fontana
+  
+05/03/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Estava gerando a tag <aliquota> mesmo com o valor zero, neste caso não é para gerar.
+   Por: Italo Jurisato Junior
+-- ACBrNFSeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/41822-mudan%C3%A7a-em-c%C3%B3digos-de-servi%C3%A7o-prefeitura-sp/
+   Por: drsmoreira
+
+27/02/2018
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/41744-altera%C3%A7%C3%A3o-de-provedor-no-munic%C3%ADpio-de-alvoradars/
+   Por: Marciost
+-- pnfsNFSeW_ABRASFv2 --
+[*] https://www.projetoacbr.com.br/forum/topic/41748-provedor-actconv201governador-valadares-mg-3127701/
+   Por: Hugo Vinicius
+
+26/02/2018
+-- pnfsNFSeW_EL --
+[*] https://www.projetoacbr.com.br/forum/topic/38558-provedor-el-inclus%C3%A3o-da-cidade-aracruzes/?do=findComment&comment=274415
+   Por: Henrique Sandri Zimermam
+-- pnfsNFSeW_ABRASFv2 --
+[*] https://www.projetoacbr.com.br/forum/topic/26039-abrasf-202-provedor-pronim-guarapuava-pr/?do=findComment&comment=274463
+   Por: Henrique Sandri Zimermam
+-- pnfsConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/39786-nfse-provedor-ipm-guaramirim-e-massaranduba-sc/?do=findComment&comment=274585
+   Por: Léo
+
+22/02/2018
+-- pnfsConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/41623-adicionamos-c%C3%B3digos-de-cidade-no-padr%C3%A3o-siaf-%C3%A0-emiss%C3%A3o-de-nf-de-servi%C3%A7o/
+   Por: Renato Henrique
+
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/39857-provedor-issdsf-sorocaba-sp/?do=findComment&comment=274318
+   Por: Rubenstz
+
+21/02/2018
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/39786-nfse-provedor-ipm-guaramirim-e-massaranduba-sc/?do=findComment&comment=274208
+   Por: Léo
+
 19/02/2018
 -- ACBrNFSeWebServices --
 [*] Simplificação de código.

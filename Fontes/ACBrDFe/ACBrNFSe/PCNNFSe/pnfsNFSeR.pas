@@ -392,6 +392,7 @@ begin
        (Leitor.rExtrai(2, 'Tomador') <> '') or (Leitor.rExtrai(2, 'TomadorServico') <> '') then
     begin
       NFSe.Tomador.RazaoSocial := Leitor.rCampo(tcStr, 'RazaoSocial');
+      NFSe.Tomador.IdentificacaoTomador.InscricaoEstadual := Leitor.rCampo(tcStr, 'InscricaoEstadual');
 
       NFSe.Tomador.Endereco.Endereco := Leitor.rCampo(tcStr, 'Endereco');
       if Copy(NFSe.Tomador.Endereco.Endereco, 1, 10) = '<Endereco>' then
@@ -827,7 +828,8 @@ begin
     end;
 
     NFSe.Producao := _StrToSimNao(ok, Leitor.rCampo(tcStr, 'Producao'));
-    NFSe.Servico.CodigoCnae := Leitor.rCampo(tcStr, 'CodigoAtividadeEconomica');
+    NFSe.Servico.CodigoTributacaoMunicipio := Leitor.rCampo(tcStr, 'CodigoAtividadeEconomica');
+    NFSe.Servico.CodigoCnae := codCNAE;
     NFSe.Servico.ItemListaServico := codLCServ;
 
     if TabServicosExt then
@@ -1327,6 +1329,9 @@ begin
 
     if Nivel > 0 then
     begin
+      if FProvedor = proTecnos then
+         NFSe.Link := Leitor.rCampo(tcStr, 'LinkNota');
+
       NFSe.Numero            := Leitor.rCampo(tcStr, 'Numero');
       NFSe.SeriePrestacao    := Leitor.rCampo(tcStr, 'Serie');
       NFSe.CodigoVerificacao := Leitor.rCampo(tcStr, 'CodigoVerificacao');
@@ -1607,6 +1612,7 @@ begin
   if (Leitor.rExtrai(Nivel +1, 'Tomador') <> '') or (Leitor.rExtrai(Nivel +1, 'TomadorServico') <> '') then
   begin
     NFSe.Tomador.RazaoSocial := Leitor.rCampo(tcStr, 'RazaoSocial');
+    NFSe.Tomador.IdentificacaoTomador.InscricaoEstadual := Leitor.rCampo(tcStr, 'InscricaoEstadual');
 
     NFSe.Tomador.Endereco.Endereco := Leitor.rCampo(tcStr, 'EnderecoDescricao');
     if NFSe.Tomador.Endereco.Endereco = '' then
@@ -1721,7 +1727,7 @@ begin
     NFSe.ValoresNfse.ValorIss         := Leitor.rCampo(tcDe2, 'ValorIss');
     NFSe.ValoresNfse.ValorLiquidoNfse := Leitor.rCampo(tcDe2, 'ValorLiquidoNfse');
 
-    if (FProvedor = proCoplan) then
+    if (FProvedor in [proCoplan, proWebISSv2]) then
     begin
       NFSe.Servico.Valores.BaseCalculo      := Leitor.rCampo(tcDe2, 'BaseCalculo');
       NFSe.Servico.Valores.Aliquota         := Leitor.rCampo(tcDe3, 'Aliquota');
@@ -1934,14 +1940,18 @@ begin
         NFSe.Servico.Valores.ValorIr         := Leitor.rCampo(tcDe2, 'ValorIr');
         NFSe.Servico.Valores.ValorCsll       := Leitor.rCampo(tcDe2, 'ValorCsll');
         NFSe.Servico.Valores.OutrasRetencoes := Leitor.rCampo(tcDe2, 'OutrasRetencoes');
-        NFSe.Servico.Valores.ValorIss        := Leitor.rCampo(tcDe2, 'ValorIss');
 //        NFSe.Servico.Valores.BaseCalculo            := Leitor.rCampo(tcDe2, 'BaseCalculo');
-        NFSe.Servico.Valores.Aliquota        := Leitor.rCampo(tcDe3, 'Aliquota');
+
+        if NFSe.Servico.Valores.ValorIss = 0 then
+          NFSe.Servico.Valores.ValorIss := Leitor.rCampo(tcDe2, 'ValorIss');
+
+        if NFSe.Servico.Valores.Aliquota = 0 then
+          NFSe.Servico.Valores.Aliquota := Leitor.rCampo(tcDe3, 'Aliquota');
 
         if (FProvedor in [proActconv202]) then
           NFSe.Servico.Valores.Aliquota := (NFSe.Servico.Valores.Aliquota * 100);
 
-        if (FProvedor in [proActconv202, proISSe, proVersaTecnologia, proNEAInformatica, proFiorilli, proPronimv2, proVitoria]) then
+        if (FProvedor in [proActconv202, proISSe, proVersaTecnologia, proNEAInformatica, proFiorilli, proPronimv2, proVitoria, proSmarAPDABRASF]) then
         begin
           if NFSe.Servico.Valores.IssRetido = stRetencao then
             NFSe.Servico.Valores.ValorIssRetido := Leitor.rCampo(tcDe2, 'ValorIss')
@@ -2313,7 +2323,8 @@ begin
       NFSe.Servico.CodigoMunicipio := IntToStr(NFSe.Servico.MunicipioIncidencia);
     end;
 
-    NFSe.Servico.CodigoCnae := Leitor.rCampo(tcStr, 'CodigoAtividadeEconomica');
+    NFSe.Servico.CodigoTributacaoMunicipio := Leitor.rCampo(tcStr, 'CodigoAtividadeEconomica');
+    NFSe.Servico.CodigoCnae := codCNAE;
     NFSe.Servico.ItemListaServico := codLCServ;
 
     if TabServicosExt then
@@ -2650,11 +2661,27 @@ begin
     end;
   end;
 
+  (**** calculo anterior
   FNFSe.Servico.Valores.ValorLiquidoNfse := (FNfse.Servico.Valores.ValorServicos -
                                             (FNfse.Servico.Valores.ValorDeducoes +
                                              FNfse.Servico.Valores.DescontoCondicionado+
                                              FNfse.Servico.Valores.DescontoIncondicionado+
                                              FNFSe.Servico.Valores.ValorIssRetido));
+  *)
+
+  // Correção para o cálculo de VALOR LIQUIDO da NFSE - estavam faltando PIS, COFINS, INSS, IR e CSLL
+  NFSe.Servico.Valores.ValorLiquidoNfse := NFSe.Servico.Valores.ValorServicos -
+                                            (NFSe.Servico.Valores.ValorPis +
+                                             NFSe.Servico.Valores.ValorCofins +
+                                             NFSe.Servico.Valores.ValorInss +
+                                             NFSe.Servico.Valores.ValorIr +
+                                             NFSe.Servico.Valores.ValorCsll +
+                                             FNfse.Servico.Valores.ValorDeducoes +
+                                             FNfse.Servico.Valores.DescontoCondicionado+
+                                             FNfse.Servico.Valores.DescontoIncondicionado+
+                                             FNFSe.Servico.Valores.ValorIssRetido);
+
+
   FNfse.Servico.Valores.BaseCalculo := NFSe.Servico.Valores.ValorLiquidoNfse;
 
   Result := True;
@@ -2866,12 +2893,27 @@ begin
     end;
 
     // Como o valor líquido não esta no layout deve refazer o cálculo
+    (*
     NFSe.Servico.Valores.ValorLiquidoNfse := NFSe.Servico.Valores.ValorServicos - (NFSe.Servico.Valores.ValorPis +
                                              NFSe.Servico.Valores.ValorCofins +
                                              NFSe.Servico.Valores.ValorInss +
                                              NFSe.Servico.Valores.ValorIr +
                                              NFSe.Servico.Valores.ValorCsll +
                                              valorIssRetido);
+    *)
+
+    NFSe.Servico.Valores.ValorLiquidoNfse := NFSe.Servico.Valores.ValorServicos -
+                                              (NFSe.Servico.Valores.ValorPis +
+                                               NFSe.Servico.Valores.ValorCofins +
+                                               NFSe.Servico.Valores.ValorInss +
+                                               NFSe.Servico.Valores.ValorIr +
+                                               NFSe.Servico.Valores.ValorCsll +
+                                               FNfse.Servico.Valores.ValorDeducoes +
+                                               FNfse.Servico.Valores.DescontoCondicionado+
+                                               FNfse.Servico.Valores.DescontoIncondicionado+
+                                               FNFSe.Servico.Valores.ValorIssRetido);
+
+
 
     NFSe.PrestadorServico.RazaoSocial   := Leitor.rCampo(tcStr, 'RazaoSocialPrestador');
     NFSe.PrestadorServico.Contato.Email := Leitor.rCampo(tcStr, 'EmailPrestador');
@@ -3040,12 +3082,12 @@ begin
           NFSe.Servico.Valores.IssRetido      := StrToSituacaoTributaria( vOk, IntToStr( AnsiIndexStr( Leitor.rCampo( tcStr, 'situacao_tributaria' ), [ '1', '0', '2' ] ) + 1 ) );
           ValorServicos                       := Leitor.rCampo( tcDe2, 'valor_tributavel');
           ValorDeducoes                       := Leitor.rCampo( tcDe2, 'valor_deducao');
-          ValorIss                            := Leitor.rCampo( tcDe2, 'valor_issrf');
           BaseCalculo                         := Leitor.rCampo( tcDe2, 'valor_tributavel');
-          NFSe.Servico.Valores.ValorIssRetido := NFSe.Servico.Valores.ValorIssRetido + ValorIss;
+          ValorIss                            := BaseCalculo * Aliquota / 100;
+          NFSe.Servico.Valores.ValorIssRetido := NFSe.Servico.Valores.ValorIssRetido + Leitor.rCampo( tcDe2, 'valor_issrf');
           NFSe.Servico.Valores.BaseCalculo    := NFSe.Servico.Valores.BaseCalculo + BaseCalculo;
+          NFSe.Servico.Valores.ValorIss       := NFSe.Servico.Valores.ValorIss + ValorIss;
         end;
-
         Inc( I );
       end;
     end;
