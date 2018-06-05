@@ -222,6 +222,17 @@ const
   cTagQRCodeLargura = '<qrcode_largura>';
   cTagQRCodeError = '<qrcode_error>';
 
+  cTagModoPaginaLiga       = '<mp>';
+  cTagModoPaginaDesliga    = '</mp>';
+  cTagModoPaginaImprimir   = '</mp_imprimir>';
+  cTagModoPaginaDirecao    = '<mp_direcao>';
+  cTagModoPaginaPosEsquerda= '<mp_esquerda>';
+  cTagModoPaginaPosTopo    = '<mp_topo>';
+  cTagModoPaginaLargura    = '<mp_largura>';
+  cTagModoPaginaAltura     = '<mp_altura>';
+  cTagModoPaginaEspaco     = '<mp_espaco>';
+  cTagModoPaginaConfigurar = '</mp_configurar>';
+
   cTAGS_BARRAS: array[0..15] of String = (
     cTagBarraEAN8, cTagBarraEAN13, cTagBarraStd, cTagBarraInter, cTagBarraCode11,
     cTagBarraCode39, cTagBarraCode93, cTagBarraCode128, 

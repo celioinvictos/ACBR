@@ -172,6 +172,8 @@ type
     cbSSLType: TComboBox;
     lblSSLLib1: TLabel;
     ACBrNFSeDANFSeRL1: TACBrNFSeDANFSeRL;
+    Label1: TLabel;
+    edtFraseSecWeb: TEdit;
     procedure btnCaminhoCertClick(Sender: TObject);
     procedure btnGetCertClick(Sender: TObject);
     procedure sbtnLogoMarcaClick(Sender: TObject);
@@ -228,7 +230,7 @@ type
     procedure ConfiguraComponente;
     procedure AtualizaSSLLibsCombo;
     procedure LoadXML(MyMemo: TMemo; MyWebBrowser: TWebBrowser);
-    procedure AlimentaComponente(NumNFSe: String);
+    procedure AlimentaComponente(NumNFSe, NumLote: String);
     procedure AtualizaCidades;
   public
     { Public declarations }
@@ -293,6 +295,7 @@ begin
     Ini.WriteBool('WebService', 'Visualizar', chkVisualizar.Checked);
     Ini.WriteString('WebService', 'SenhaWeb', edtSenhaWeb.Text);
     Ini.WriteString('WebService', 'UserWeb', edtUserWeb.Text);
+    Ini.WriteString('WebService', 'FraseSecWeb', edtFraseSecWeb.Text);
     Ini.WriteBool('WebService', 'SalvarSoap', chkSalvarSOAP.Checked);
     Ini.WriteInteger('WebService', 'TimeOut', seTimeOut.Value);
     Ini.WriteInteger('WebService', 'SSLType', cbSSLType.ItemIndex);
@@ -385,6 +388,7 @@ begin
     chkVisualizar.Checked := Ini.ReadBool('WebService', 'Visualizar', False);
     edtSenhaWeb.Text := Ini.ReadString('WebService', 'SenhaWeb', '');
     edtUserWeb.Text := Ini.ReadString('WebService', 'UserWeb', '');
+    edtFraseSecWeb.Text := Ini.ReadString('WebService', 'FraseSecWeb', '');
     chkSalvarSOAP.Checked := Ini.ReadBool('WebService', 'SalvarSoap', False);
     seTimeOut.Value        := Ini.ReadInteger('WebService','TimeOut'  ,5000) ;
     cbSSLType.ItemIndex    := Ini.ReadInteger( 'WebService','SSLType' , 0) ;
@@ -418,7 +422,6 @@ var
   IniFile: String;
   Ini: TIniFile;
   Cidades: TStringList;
-  StreamMemo: TMemoryStream;
   I: Integer;
   sNome, sCod, sUF: String;
 begin
@@ -498,7 +501,7 @@ begin
 
   ACBrNFSe1.Configuracoes.Geral.Emitente.WebUser := edtUserWeb.Text;
   ACBrNFSe1.Configuracoes.Geral.Emitente.WebSenha := edtSenhaWeb.Text;
-  ACBrNFSe1.Configuracoes.Geral.Emitente.WebFraseSecr := '';
+  ACBrNFSe1.Configuracoes.Geral.Emitente.WebFraseSecr := edtFraseSecWeb.Text;
 
   ACBrNFSe1.Configuracoes.WebServices.Salvar := chkSalvarSOAP.Checked;
   ACBrNFSe1.Configuracoes.WebServices.Ambiente :=
@@ -551,17 +554,19 @@ begin
   MyWebBrowser.Navigate(ExtractFileDir(Application.ExeName) + 'temp.xml');
 end;
 
-procedure TfrmDemo_ACBrNFSe.AlimentaComponente(NumNFSe: String);
+procedure TfrmDemo_ACBrNFSe.AlimentaComponente(NumNFSe, NumLote: String);
 var
   ValorISS: Double;
 begin
   with ACBrNFSe1 do
   begin
-    NotasFiscais.NumeroLote := '1';
+    NotasFiscais.NumeroLote := NumLote;
     NotasFiscais.Transacao := True;
 
     with NotasFiscais.Add.NFSe do
     begin
+      NumeroLote := NumLote;
+
       IdentificacaoRps.Numero := FormatFloat('#########0', StrToInt(NumNFSe));
 
       // Para o provedor ISS.NET em ambiente de Homologação mudar a série para '8'
@@ -693,8 +698,8 @@ begin
       Prestador.InscricaoMunicipal := edtEmitIM.Text;
 
       // Para o provedor ISSDigital deve-se informar também:
-      Prestador.Senha := 'senha';
-      Prestador.FraseSecreta := 'frase secreta';
+      Prestador.Senha := edtSenhaWeb.Text;
+      Prestador.FraseSecreta := edtFraseSecWeb.Text;
       Prestador.cUF := 33;
 
       PrestadorServico.Endereco.CodigoMunicipio := edtCodCidade.Text;
@@ -858,8 +863,6 @@ begin
 end;
 
 procedure TfrmDemo_ACBrNFSe.btn9Click(Sender: TObject);
-var
-  Erro, AName: String;
 begin
   with ACBrNFSe1.SSL do
   begin
@@ -871,7 +874,6 @@ begin
     MemoResp.Lines.Add(CertNumeroSerie);
     pgRespostas.ActivePageIndex := 0;
   end;
-
 end;
 
 procedure TfrmDemo_ACBrNFSe.btnCaminhoCertClick(Sender: TObject);
@@ -1006,7 +1008,7 @@ begin
   for I := 1 to iQtde do
   begin
     sAux := IntToStr(iAux);
-    AlimentaComponente(sAux);
+    AlimentaComponente(sAux, vNumLote);
     inc(iAux);
   end;
 
@@ -1252,8 +1254,7 @@ begin
       TipoRPSToStr(ACBrNFSe1.NotasFiscais.Items[0].NFSe.IdentificacaoRps.Tipo));
 
     MemoResp.Lines.Text := UTF8Encode(ACBrNFSe1.WebServices.ConsNfseRps.RetWS);
-    memoRespWS.Lines.Text :=
-      UTF8Encode(ACBrNFSe1.WebServices.ConsNfseRps.RetWS);
+    memoRespWS.Lines.Text := UTF8Encode(ACBrNFSe1.WebServices.ConsNfseRps.RetWS);
     LoadXML(MemoResp, WBResposta);
   end;
 end;
@@ -1380,7 +1381,7 @@ begin
     exit;
 
   ACBrNFSe1.NotasFiscais.Clear;
-  AlimentaComponente(vNumRPS);
+  AlimentaComponente(vNumRPS, '1');
 
   ACBrNFSe1.Gerar(StrToInt(vNumRPS));
   sNomeArq := ACBrNFSe1.NotasFiscais.Items[0].NomeArq;
@@ -1469,7 +1470,7 @@ begin
     exit;
 
   ACBrNFSe1.NotasFiscais.Clear;
-  AlimentaComponente(vAux);
+  AlimentaComponente(vAux, vNumLote);
   ACBrNFSe1.GerarLote(vNumLote);
 
   ShowMessage('Arquivo gerado em: ' + ACBrNFSe1.NotasFiscais.Items[0].NomeArq);
@@ -1496,7 +1497,7 @@ begin
     exit;
 
   ACBrNFSe1.NotasFiscais.Clear;
-  AlimentaComponente(vAux);
+  AlimentaComponente(vAux, vNumLote);
   ACBrNFSe1.EnviarSincrono(vNumLote);
 
   ACBrNFSe1.NotasFiscais.Clear;
@@ -1504,7 +1505,6 @@ end;
 
 procedure TfrmDemo_ACBrNFSe.btnVerificarCidadeClick(Sender: TObject);
 var
-  Ok: Boolean;
   NomeArqParams: String;
   IniParams: TMemIniFile;
   vAux, provedor: String;
@@ -1533,7 +1533,7 @@ begin
   if not(InputQuery('Substituir NFS-e', 'Numero do novo RPS', vAux)) then
     exit;
   ACBrNFSe1.NotasFiscais.Clear;
-  AlimentaComponente(vAux);
+  AlimentaComponente(vAux, '1');
 
   // Codigo de Cancelamento
   // 1 - Erro de emissão

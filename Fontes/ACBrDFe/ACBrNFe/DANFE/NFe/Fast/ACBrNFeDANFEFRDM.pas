@@ -582,10 +582,10 @@ begin
       cdsEmitente.FieldByName('DADOS_ENDERECO').AsString    := cdsEmitente.FieldByName('DADOS_ENDERECO').AsString + ' - ' +
   										  	                                      Trim(FieldByName('XBairro').AsString) + ' - ' +
                                                                 Trim(FieldByName('XMun').AsString) + ' - ' +
-                                                                Trim(FieldByName('UF').AsString) + #13 +
-		  	  				  				                                    'Fone: ' + Trim(FieldByName('Fone').AsString) +
-                                                                IfThen(trim(FDANFEClassOwner.Fax) <> '', ' - FAX: ' + FormatarFone(trim(FDANFEClassOwner.Fax)),'')+
-                                                                ' - CEP: ' + Trim(FieldByName('CEP').AsString);
+                                                                Trim(FieldByName('UF').AsString) +
+                                                                ' - CEP: ' + Trim(FieldByName('CEP').AsString) + #13 +
+		  	  				  				                                    ' Fone: ' + Trim(FieldByName('Fone').AsString) +
+                                                                IfThen(trim(FDANFEClassOwner.Fax) <> '', ' - FAX: ' + FormatarFone(trim(FDANFEClassOwner.Fax)),'');
       if trim(FDANFEClassOwner.Site) <> '' then
         cdsEmitente.FieldByName('DADOS_ENDERECO').AsString  := cdsEmitente.FieldByName('DADOS_ENDERECO').AsString + #13 +
                                                                 trim(FDANFEClassOwner.Site);
@@ -722,7 +722,10 @@ begin
           FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
       end;
 
-      FieldByName('URL').AsString := TACBrNFe(DANFEClassOwner.ACBrNFe).GetURLConsultaNFCe(FNFe.Ide.cUF, FNFe.Ide.tpAmb, FNFe.infNFe.Versao);
+      if EstaVazio(FNFe.infNFeSupl.urlChave) then
+        FieldByName('URL').AsString := TACBrNFe(DANFEClassOwner.ACBrNFe).GetURLConsultaNFCe(FNFe.Ide.cUF, FNFe.Ide.tpAmb, FNFe.infNFe.Versao)
+      else
+        FieldByName('URL').AsString := FNFe.infNFeSupl.urlChave;
     end
     else
     begin

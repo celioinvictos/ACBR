@@ -74,6 +74,7 @@ type
   TtransfTit = class;
   TInfoTrabIntermCollection = class;
   TInfoTrabIntermItem = class;
+  TProcCS = class;
 
   TS2299Collection = class(TOwnedCollection)
   private
@@ -108,6 +109,7 @@ type
     procedure GerarInfoDeslig(obj: TInfoDeslig);
     procedure GerarSucessaoVinc(obj: TSucessaoVinc);
     procedure GerarVerbasResc(obj: TVerbasRescS2299);
+    procedure GerarProcCS(obj: TProcCS);
     procedure GerarDmDev(pDmDev: TDmDevCollection);
     procedure GerarInfoPerApur(pInfoPerApur: TInfoPerApur);
     procedure GerarInfoPerAnt(pInfoPerAnt: TInfoPerAnt);
@@ -288,10 +290,13 @@ type
   TVerbasRescS2299 = class(TVerbasResc)
   private
     FDmDev: TDmDevCollection;
+    FProcCS: TProcCS;
   public
     constructor Create; reintroduce;
+    destructor Destroy; override;
 
     property dmDev: TDmDevCollection read FDmDev write FDmDev;
+    property ProcCS: TProcCS read FProcCS write FProcCS;
   end;
 
   TConsigFGTSCollection = class(TCollection)
@@ -339,6 +344,13 @@ type
     FcodConv: string;
   public
     property codConv: string read FcodConv write FcodConv;
+  end;
+
+  TProcCS = class(TPersistent)
+  private
+    FnrProcJud: String;
+  public
+    property nrProcJud: String read FnrProcJud write FnrProcJud;
   end;
 
 implementation
@@ -593,6 +605,14 @@ begin
   inherited;
 
   FDmDev := TDmDevCollection.Create;
+  ProcCS := TProcCS.Create;
+end;
+
+destructor TVerbasRescS2299.Destroy;
+begin
+  ProcCS.Free;
+
+  inherited;
 end;
 
 { TInfoTrabIntermCollection }
@@ -815,6 +835,9 @@ begin
   if obj.infoMVInst then
     GerarInfoMV(obj.infoMV);
 
+  if (VersaoDF >= ve02_04_02) then
+    GerarProcCS(obj.ProcCS);
+
   Gerador.wGrupo('/verbasResc');
 end;
 
@@ -912,6 +935,15 @@ begin
     Gerador.wAlerta('', 'infoTrabInterm', 'Lista de Trabalhos Intermitente', ERR_MSG_MAIOR_MAXIMO + '99');
 end;
 
+procedure TEvtDeslig.GerarProcCS(obj: TProcCS);
+begin
+  Gerador.wGrupo('ProcCS');
+
+  Gerador.wCampo(tcStr, '', 'nrProcJud', 1, 20, 1, obj.nrProcJud);
+
+  Gerador.wGrupo('/ProcCS');
+end;
+
 function TEvtDeslig.LerArqIni(const AIniString: String): Boolean;
 var
   INIRec: TMemIniFile;
@@ -928,6 +960,7 @@ begin
     with Self do
     begin
       sSecao := 'evtDeslig';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
       Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
       sSecao := 'ideEvento';
@@ -1113,7 +1146,7 @@ begin
                         // de 01 até 24
                         sSecao := 'ideEstabLot' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
                                     IntToStrZero(K, 1) + IntToStrZero(L, 3) +
-                                    IntToStrZero(M, 1);
+                                    IntToStrZero(M, 2);
                         sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
 
                         if (sFim = 'FIM') or (Length(sFim) <= 0) then
@@ -1131,7 +1164,7 @@ begin
                             // de 001 até 200
                             sSecao := 'detVerbas' + IntToStrZero(I, 2) + IntToStrZero(J, 2) +
                                     IntToStrZero(K, 1) + IntToStrZero(L, 3) +
-                                    IntToStrZero(M, 1) + IntToStrZero(N, 3);
+                                    IntToStrZero(M, 2) + IntToStrZero(N, 3);
                             sFim   := INIRec.ReadString(sSecao, 'codRubr', 'FIM');
 
                             if (sFim = 'FIM') or (Length(sFim) <= 0) then
@@ -1242,6 +1275,9 @@ begin
 
         Inc(I);
       end;
+
+      sSecao := 'ProcCS';
+      infoDeslig.VerbasResc.ProcCS.nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', '');
 
       sSecao := 'quarentena';
       infoDeslig.quarentena.dtFimQuar := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimQuar', '0'));

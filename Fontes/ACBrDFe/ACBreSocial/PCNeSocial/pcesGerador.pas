@@ -59,7 +59,7 @@ interface
 uses
   SysUtils, Classes, StrUtils, variants,
   ACBrUtil,
-  pcnGerador, pcnConversao, pcnAuxiliar,
+  pcnGerador, pcnLeitor, pcnConversao, pcnAuxiliar,
   pcesCommon, pcesConversaoeSocial;
 
 type
@@ -79,6 +79,7 @@ type
     FGerador: TGerador;
     FSchema: TeSocialSchema;
     FXML: AnsiString;
+    procedure SetXML(const Value: AnsiString);
   public
     constructor Create(AACBreSocial: TObject); overload;//->recebe a instancia da classe TACBreSocial
     destructor Destroy; override;
@@ -150,7 +151,7 @@ type
     procedure GerarRic(pRic: TRic);
     procedure GerarOC(pOc: TOC);
     procedure GerarSucessaoVinc(pSucessaoVinc: TSucessaoVinc);
-    procedure GerarTrabalhador(pTrabalhador: TTrabalhador; const GroupName: string = 'trabalhador'; const Tipo: Integer = 1);
+    procedure GerarTrabalhador(pTrabalhador: TTrabalhador; const GroupName: string = 'trabalhador'; const Tipo: Integer = 1; const Categoria: Integer = 0);
     procedure GerarTrabEstrangeiro(pTrabEstrangeiro: TTrabEstrangeiro);
     procedure GerarTrabTemporario(pTrabTemporario: TTrabTemporario);
     procedure GerarInfoASO(pInfoASO: TInfoASO);
@@ -186,7 +187,7 @@ type
   published
     property Gerador: TGerador  read FGerador write FGerador;
     property schema: TeSocialSchema read Fschema write Fschema;
-    property XML: AnsiString read FXML write FXML;
+    property XML: AnsiString read FXML write SetXML;
   end;
 
   TGeradorOpcoes = class(TPersistent)
@@ -213,7 +214,7 @@ type
 implementation
 
 uses
-  ACBreSocial, ACBreSocialEventos, ACBrDFeSSL;
+  ACBreSocial, ACBreSocialEventos, ACBrDFeSSL, ACBrDFeUtil;
 
 {TeSocialEvento}
 
@@ -293,6 +294,31 @@ begin
   end;
 end;
 
+procedure TeSocialEvento.SetXML(const Value: AnsiString);
+var
+  NomeEvento: String;
+  Ok: Boolean;
+  Leitor: TLeitor;
+begin
+  FXML := Value;
+
+  if not XmlEstaAssinado(FXML) then
+  begin
+    NomeEvento := TipoEventoToStrEvento(StrEventoToTipoEvento(Ok, FXML));
+    FXML := Assinar(FXML, NomeEvento);
+
+    Leitor := TLeitor.Create;
+    try
+      Leitor.Grupo := FXML;
+      Self.Id := Leitor.rAtributo('Id=');
+    finally
+      Leitor.Free;
+    end;
+
+    Validar(TipoEventiToSchemaReinf(StrEventoToTipoEvento(Ok, FXML)));
+  end;
+end;
+
 procedure TeSocialEvento.Validar(Schema: TeSocialSchema);
 var
   Erro, AXML: String;
@@ -300,7 +326,9 @@ var
   Evento: string;
 begin
   AXML := FXMLAssinado;
-  Evento := SchemaESocialToStr(Schema);
+  Evento := SchemaeSocialToStr(Schema) + PrefixoVersao +
+          VersaoeSocialToStr(TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF);
+
 
   if EstaVazio(AXML) then
   begin
@@ -376,10 +404,15 @@ begin
   else
     Result := Result + IntToStr(2);
 
-  if TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador in [teOrgaoPublico, tePessoaFisica] then
-    Result := Result + copy(OnlyNumber(CNPJF) + '00000000000000', 1, 14)
-  else
-    Result := Result + copy(OnlyNumber(Copy(CNPJF, 1, 8)) + '00000000000000', 1, 14);
+  with TACBreSocial(FACBreSocial) do
+  begin
+    if Configuracoes.Geral.TipoEmpregador in [tePessoaFisica,
+               teOrgaoPublicoExecutivoFederal, teOrgaoPublicoLegislativoFederal,
+               teOrgaoPublicoJudiciarioFederal, teOrgaoPublicoAutonomoFederal] then
+      Result := Result + copy(OnlyNumber(CNPJF) + '00000000000000', 1, 14)
+    else
+      Result := Result + copy(OnlyNumber(Copy(CNPJF, 1, 8)) + '00000000000000', 1, 14);
+  end;
 
   Result := Result + IntToStrZero(nAno, 4);
   Result := Result + IntToStrZero(nMes, 2);
@@ -744,14 +777,22 @@ begin
   end;
 end;
 
-procedure TeSocialEvento.GerarTrabalhador(pTrabalhador: TTrabalhador; const GroupName: string;const tipo: Integer);
+procedure TeSocialEvento.GerarTrabalhador(pTrabalhador: TTrabalhador; const GroupName: string; const tipo: Integer; const Categoria: Integer);
 begin
   Gerador.wGrupo(GroupName);
 
   if (GroupName = 'trabalhador') then
     Gerador.wCampo(tcStr, '', 'cpfTrab', 11, 11, 1, pTrabalhador.CpfTrab);
 
-  Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 1, pTrabalhador.NisTrab);
+  // Preencher com o Número de Identificação Social - NIS, o qual pode ser o PIS,
+  // PASEP ou NIT.
+  // Validação: O preenchimento é obrigatório, exceto se o código de categoria do
+  // trabalhador for igual a [901, 903, 904].
+  if ((Categoria = 901) or (Categoria = 903) or (Categoria = 904)) then
+    Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 0, pTrabalhador.NisTrab)
+  else
+    Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 1, pTrabalhador.NisTrab);
+
   Gerador.wCampo(tcStr, '', 'nmTrab',  1, 70, 1, pTrabalhador.NmTrab);
   Gerador.wCampo(tcStr, '', 'sexo',    1,  1, 1, pTrabalhador.Sexo);
   Gerador.wCampo(tcStr, '', 'racaCor', 1,  1, 1, pTrabalhador.RacaCor);
@@ -916,7 +957,9 @@ begin
 
   Gerador.wCampo(tcStr, '', 'tpInsc', 1, 1, 1, eSTpInscricaoToStr(pEmp.TpInsc));
 
-  if (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador in [teOrgaoPublico, tePessoaFisica]) then
+  if (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador in [tePessoaFisica,
+                                                                        teOrgaoPublicoExecutivoFederal, teOrgaoPublicoLegislativoFederal,
+                                                                        teOrgaoPublicoJudiciarioFederal, teOrgaoPublicoAutonomoFederal]) then
     Gerador.wCampo(tcStr, '', 'nrInsc', 14, 14, 1, pEmp.NrInsc)
   else
     Gerador.wCampo(tcStr, '', 'nrInsc', 8, 8, 1, Copy(pEmp.NrInsc, 1, 8));
@@ -1590,11 +1633,14 @@ end;
 
 procedure TeSocialEvento.GerarInfoSimples(obj: TinfoSimples);
 begin
-  Gerador.wGrupo('infoSimples');
+  if obj.indSimples <> idsNenhum then
+  begin
+    Gerador.wGrupo('infoSimples');
 
-  Gerador.wCampo(tcStr, '', 'indSimples', 1, 1, 1, obj.indSimples);
+    Gerador.wCampo(tcStr, '', 'indSimples', 1, 1, 1, obj.indSimples);
 
-  Gerador.wGrupo('/infoSimples');
+    Gerador.wGrupo('/infoSimples');
+  end;
 end;
 
 procedure TeSocialEvento.GerarIdeEstabLot(pIdeEstabLot: TideEstabLotCollection);

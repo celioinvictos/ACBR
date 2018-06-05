@@ -1767,9 +1767,6 @@ begin
                          FTagI := '<' + FTagGrupo + FNameSpaceDad + '>';
                      end;
 
-           proDBSeller: FTagI := '<ConsultarSituacaoLoteRps>' +
-                                  '<' + FTagGrupo + FNameSpaceDad + '>';
-
            proEquiplano: FTagI := '<' + FTagGrupo +
                                     ' xmlns:es="http://www.equiplano.com.br/esnfs" ' +
                                     'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
@@ -2071,9 +2068,6 @@ begin
 
          if FProvedor in [proFISSLex, proSMARAPD, proIPM] then
            FTagF := '';
-
-         if FProvedor in [proDBSeller] then
-           FTagF := FTagF + '</ConsultarSituacaoLoteRps>';
        end;
 
     LayNfseConsultaLote:
@@ -2528,6 +2522,7 @@ begin
 
       if FProvedor = proCONAM then
       begin
+        AliquotaSN     := FNotasFiscais.Items[0].NFSe.Servico.Valores.AliquotaSN;
         AliquotaIss    := FNotasFiscais.Items[0].NFSe.Servico.Valores.Aliquota;
         TipoTributacao := '4';
         QtdTributos    := iTributos;
@@ -2584,7 +2579,7 @@ begin
                                    FPConfiguracoesNFSe.Geral.ConfigAssinar.Lote,
                                    xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
     // Incluido a linha abaixo por após realizar a assinatura esta gerando o
     // atributo xmlns vazio.
@@ -2879,7 +2874,7 @@ begin
                                    FPConfiguracoesNFSe.Geral.ConfigAssinar.Lote,
                                    xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
     if FPConfiguracoesNFSe.Geral.ConfigSchemas.Validar then
       FNotasFiscais.ValidarLote(FPDadosMsg,
@@ -3086,7 +3081,7 @@ begin
                                   FPConfiguracoesNFSe.Geral.ConfigAssinar.Lote,
                                   xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
     if FPConfiguracoesNFSe.Geral.ConfigSchemas.Validar then
       TNFSeEnviarSincrono(Self).FNotasFiscais.ValidarLote(FPDadosMsg,
@@ -3354,7 +3349,7 @@ begin
                               FPConfiguracoesNFSe.Geral.ConfigAssinar.LoteGerar,
                               xSignatureNode, xDSIGNSLote, xIdSignature);
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
 
    if FPConfiguracoesNFSe.Geral.ConfigSchemas.Validar then
       TNFSeGerarNFSe(Self).FNotasFiscais.ValidarLote(FPDadosMsg,
@@ -3503,7 +3498,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar Situação do Lote: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
   
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsSit_IncluiEncodingDados);
@@ -3766,7 +3761,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar Lote de RPS: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
 
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsLote_IncluiEncodingDados);
@@ -3980,7 +3975,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar NFSe por RPS: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsNFSeRps_IncluiEncodingDados);
@@ -4141,7 +4136,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Consultar NFSe: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsNFSe_IncluiEncodingDados);
@@ -4486,7 +4481,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FdocElemento, FinfElemento, 'Falha ao Assinar - Cancelar NFS-e: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
 
   if FProvedor = proBetha then
@@ -4738,7 +4733,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FdocElemento, FinfElemento, 'Falha ao Assinar - Cancelar NFS-e: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   FPDadosMsg := '<' + FPrefixo3 + 'SubstituirNfseEnvio' + FNameSpaceDad + '>' +
@@ -4903,7 +4898,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Abrir Sessão: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
     
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.AbrirSessao_IncluiEncodingDados);
@@ -5057,7 +5052,7 @@ begin
   begin
     AssinarXML(FPDadosMsg, FTagGrupo, '', 'Falha ao Assinar - Fechar Sessão: ');
 
-    AlterarURIAssinatura;
+//    AlterarURIAssinatura;
   end;
 
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.FecharSessao_IncluiEncodingDados);
@@ -5364,25 +5359,38 @@ begin
 
     FConsLote.FProtocolo := FEnviarSincrono.Protocolo;
 
-    if (TACBrNFSe(FACBrNFSe).Configuracoes.Geral.ConsultaLoteAposEnvio) and (Result) then
+    with TACBrNFSe(FACBrNFSe) do
     begin
-      if ProvedorToVersaoNFSe(TACBrNFSe(FACBrNFSe).Configuracoes.Geral.Provedor) = ve100 then
+      if (Configuracoes.Geral.ConsultaLoteAposEnvio) and (Result) then
       begin
-        Result := FConsSitLoteRPS.Executar;
+        if ProvedorToVersaoNFSe(Configuracoes.Geral.Provedor) = ve100 then
+        begin
+          Result := FConsSitLoteRPS.Executar;
+
+          if not (Result) then
+            FConsSitLoteRPS.GerarException( FConsSitLoteRPS.Msg );
+        end;
+
+        case Configuracoes.Geral.Provedor of
+          proInfisc,
+          proInfiscv11: Result := True
+        else
+          begin
+            if (Configuracoes.Geral.Provedor = pro4R) and
+               (Configuracoes.WebServices.Ambiente = taHomologacao) then
+              Result := True
+            else
+            begin
+              Sleep(Configuracoes.WebServices.AguardarConsultaRet);
+
+              Result := FConsLote.Executar;
+            end;
+          end;
+        end;
 
         if not (Result) then
-          FConsSitLoteRPS.GerarException( FConsSitLoteRPS.Msg );
+          FConsLote.GerarException( FConsLote.Msg );
       end;
-
-      case TACBrNFSe(FACBrNFSe).Configuracoes.Geral.Provedor of
-        proInfisc,
-        proInfiscv11: Result := True
-      else
-        Result := FConsLote.Executar;
-      end;
-
-      if not (Result) then
-        FConsLote.GerarException( FConsLote.Msg );
     end;
   end;
 end;

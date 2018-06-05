@@ -33,11 +33,13 @@ Agradecimentos:
 - André Ferreira de Moraes
 
 * Desenvolvedores:
-* dd/mm/aaaa: 
+* Leivio Ramos de Fontenele
+* Renato Rubinho
+* 24/10/2017: 
 *  - Doação do componente para o Projeto ACBr
 
 {******************************************************************************
-|* ACBreSocial
+|* ACBrReinf
 |*
 |* PROPÓSITO: Registro de Alterações
 ******************************************************************************}
@@ -47,6 +49,77 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+30/05/2018
+-- pcnReinfRetConsulta --
+[*] Tentativa de eliminar erro de Violação de Acesso.
+   Por: Italo Jurisato Junior
+
+29/05/2018
+-- pcnReinfRetEventos --
+[*] https://www.projetoacbr.com.br/forum/topic/42398-acbrreinf-retorno-de-eventos/?do=findComment&comment=287690
+   Por: Luis tsiufpr
+
+28/05/2018
+-- pcnReinfRetEventos --
+[*] https://www.projetoacbr.com.br/forum/topic/43627-reinf-retorno-de-eventos/
+   Por: Danilo Ziza
+
+25/05/2018
+-- ACBrReinf --
+[*] Realizada modificações visando a leitura de XML de terceiros.
+    Ao carregar um XML de terceiros através do método LoadFromFile, o componente
+    checa para saber se o XML esta assinado, caso não esteja, será realizado a
+    assinatura e a validação do mesmo e por fim deixa-lo na fila de eventos para
+    ser enviado através do método Enviar.
+   Por: Italo Jurisato Junior
+
+21/05/2018
+-- pcnReinfRetConsulta --
+[*] Simplificação do código.
+   Por: Italo Jurisato Junior
+-- ACBrReinfWebServices / pcnCommonReinf / pcnReinfRetConsulta / pcnReinfRetEventos --
+[*] Refeito a leitura dos retornos de Envio e Consulta.
+   Por: Italo Jurisato Junior
+
+16/05/2018
+-- pcnReinfR5001 / pcnReinfR5011 --
+[*] Ajustes para a versão 1.03.02
+   Por: Italo Jurisato Junior
+
+11/05/2018
+-- ACBrReinf --
+[*] Melhorias no componente tais como, simplificação de código e lipeza das
+   classes de envio antes do envio.
+   Por: Italo Jurisato Junior
+
+-- ACBrReinfServicos --
+[*] Atualização das URLs de Produção.
+   Por: Renato Rubinho / Italo Jurisato Junior
+
+10/05/2018
+-- pcnReinfR5011 --
+[*] Possível correção na leitura do evento R-5011.
+   Por: Italo Jurisato Junior
+
+07/05/2018
+-- ACBrReinf --
+[*] https://www.projetoacbr.com.br/forum/topic/43138-e-social-reinf-lerarqini/
+   Por: Leandro LJM
+-- ACBrReinfEventos / pcnEventosReinf --
+[*] Incluido na Classe Gerados a propriedade XML que contem o XML do evento gerado.
+   Por: Italo Jurisato Junior  
+
+04/05/2018
+-- ACBrReinfEventos / pcnEventosReinf --
+[*] Criado a Classe Gerados para conter o tipo e o Path completo do XML
+   gerado.
+   Por: Italo Jurisato Junior  
+
+09/04/2018
+-- ACBrReinf --
+[*] Inicio do Refactoring no componente para deixa-lo semelhante ao eSocial.
+   Por: Italo Jurisato Junior  
 
 22/03/2018
 -- pcnReinfRetConsulta / ACBrReinfWebServices -- 

@@ -51,7 +51,7 @@ Uses
   ACBrConsts,
   {$IfDef COMPILER6_UP} StrUtils, DateUtils {$Else} ACBrD5, FileCtrl {$EndIf}
   {$IfDef FPC}
-    ,dynlibs, LazUTF8, LConvEncoding
+    ,dynlibs, LazUTF8, LConvEncoding, LCLType
     {$IfDef USE_LCLIntf} ,LCLIntf {$EndIf}
   {$EndIf}
   {$IfDef MSWINDOWS}
@@ -324,7 +324,7 @@ function FlushFileToDisk(const sFile: string): boolean;
 Procedure DesligarMaquina(Reboot: Boolean = False; Forcar: Boolean = False;
    LogOff: Boolean = False) ;
 {$IfNDef NOGUI}
-function ForceForeground(AppHandle:THandle): boolean;
+function ForceForeground(AppHandle:{$IfDef FPC}LCLType.HWND{$Else}THandle{$EndIf}): boolean;
 {$EndIf}
 
 Procedure WriteToFile( const Arq: String; ABinaryString : AnsiString);
@@ -3185,7 +3185,7 @@ end;
 {$IfNDef NOGUI}
 {$IfDef MSWINDOWS}
 // Origem: https://www.experts-exchange.com/questions/20294536/WM-ACTIVATE.html
-function ForceForeground(AppHandle:THandle): boolean;
+function ForceForeground(AppHandle:{$IfDef FPC}LCLType.HWND{$Else}THandle{$EndIf}): boolean;
 const
   SPI_GETFOREGROUNDLOCKTIMEOUT = $2000;
   SPI_SETFOREGROUNDLOCKTIMEOUT = $2001;
@@ -3255,7 +3255,7 @@ begin
   end;
 end;
 {$Else}
-function ForceForeground(AppHandle:THandle): boolean;
+function ForceForeground(AppHandle: {$IfDef FPC}LCLType.HWND{$Else}THandle{$EndIf}): boolean;
 begin
   Application.Restore;
   Application.BringToFront;
@@ -3287,19 +3287,30 @@ var
   FS : TFileStream ;
   LineBreak : AnsiString ;
   VDirectory : String;
+  ArquivoExiste: Boolean;
 begin
-  if EstaVazio(ArqTXT) or (Length(ABinaryString) = 0) then
+  if EstaVazio(ArqTXT) then
     Exit;
 
-  if ForceDirectory then
+  ArquivoExiste := FileExists(ArqTXT);
+
+  if ArquivoExiste then
   begin
-    VDirectory := ExtractFileDir(ArqTXT);
-    if NaoEstaVazio(VDirectory) and (not DirectoryExists(VDirectory)) then
-      ForceDirectories(VDirectory);
+    if (Length(ABinaryString) = 0) then
+      Exit;
+  end
+  else
+  begin
+     if ForceDirectory then
+     begin
+       VDirectory := ExtractFileDir(ArqTXT);
+       if NaoEstaVazio(VDirectory) and (not DirectoryExists(VDirectory)) then
+         ForceDirectories(VDirectory);
+     end;
   end;
 
   FS := TFileStream.Create( ArqTXT,
-               IfThen( AppendIfExists and FileExists(ArqTXT),
+               IfThen( AppendIfExists and ArquivoExiste,
                        Integer(fmOpenReadWrite), Integer(fmCreate)) or fmShareDenyWrite );
   try
      FS.Seek(0, {$IFDEF COMPILER23_UP}soEnd{$ELSE}soFromEnd{$ENDIF});  // vai para EOF

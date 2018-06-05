@@ -529,7 +529,7 @@ begin
     GerarIdeEvento2(self.IdeEvento);
     GerarIdeEmpregador(self.IdeEmpregador);
 
-    GerarTrabalhador(self.Trabalhador, 'trabalhador', 3);
+    GerarTrabalhador(self.Trabalhador, 'trabalhador', 3, Self.FinfoTSVInicio.codCateg);
     GerarInfoTSVInicio(self.infoTSVInicio);
 
     Gerador.wGrupo('/evtTSVInicio');
@@ -562,6 +562,7 @@ begin
     with Self do
     begin
       sSecao := 'evtTSVInicio';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
       Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
       sSecao := 'ideEvento';
@@ -627,7 +628,7 @@ begin
       trabalhador.documentos.CNH.ufCnh        := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufCnh', 'SP'));
       trabalhador.documentos.CNH.DtValid      := StringToDateTime(INIRec.ReadString(sSecao, 'dtValid', '0'));
       trabalhador.documentos.CNH.dtPriHab     := StringToDateTime(INIRec.ReadString(sSecao, 'dtPriHab', '0'));
-      trabalhador.documentos.CNH.categoriaCnh := eSStrToCnh(Ok, INIRec.ReadString(sSecao, 'dtPriHab', 'A'));
+      trabalhador.documentos.CNH.categoriaCnh := eSStrToCnh(Ok, INIRec.ReadString(sSecao, 'categoriaCnh', 'A'));
 
       sSecao := 'enderecoBrasil';
       trabalhador.Endereco.Brasil.TpLograd    := INIRec.ReadString(sSecao, 'tpLograd', '');

@@ -21,11 +21,11 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="1"/>
-      <BuildNr Value="50"/>
+      <MinorVersionNr Value="2"/>
+      <BuildNr Value="8"/>
       <Language Value="0416"/>
       <CharSet Value="04B0"/>
-      <StringTable CompanyName="ACBr" FileDescription="ACBrMonitorPLUS" ProductVersion=""/>
+      <StringTable CompanyName="ACBr" FileDescription="ACBrMonitorPLUS" ProductVersion="1.2.0.1"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Debug" Default="True"/>
@@ -38,6 +38,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="..\..\ACBrLib\MDFe;..\..\ACBrLib\Comum;..\..\ACBrLib\eSocial;..\..\ACBrLib\Reinf"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Linking>
@@ -68,100 +69,109 @@
         <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="30">
+    <RequiredPackages Count="33">
       <Item1>
-        <PackageName Value="lhelpcontrolpkg"/>
+        <PackageName Value="ACBr_Reinf"/>
       </Item1>
       <Item2>
-        <PackageName Value="TurboPowerIPro"/>
+        <PackageName Value="ACBr_Integrador"/>
       </Item2>
       <Item3>
-        <PackageName Value="frce"/>
+        <PackageName Value="ACBre_Social"/>
       </Item3>
       <Item4>
-        <PackageName Value="ACBr_GNREGuiaRL"/>
+        <PackageName Value="lhelpcontrolpkg"/>
       </Item4>
       <Item5>
-        <PackageName Value="ACBr_GNRE"/>
+        <PackageName Value="TurboPowerIPro"/>
       </Item5>
       <Item6>
-        <PackageName Value="ACBr_BlocoX"/>
+        <PackageName Value="frce"/>
       </Item6>
       <Item7>
-        <PackageName Value="Printer4Lazarus"/>
+        <PackageName Value="ACBr_GNREGuiaRL"/>
       </Item7>
       <Item8>
-        <PackageName Value="ACBr_MDFe_DAMDFeRL"/>
+        <PackageName Value="ACBr_GNRE"/>
       </Item8>
       <Item9>
-        <PackageName Value="ACBr_MDFe"/>
+        <PackageName Value="ACBr_BlocoX"/>
       </Item9>
       <Item10>
-        <PackageName Value="ACBr_CTe_DACTeRL"/>
+        <PackageName Value="Printer4Lazarus"/>
       </Item10>
       <Item11>
-        <PackageName Value="ACBr_CTe"/>
+        <PackageName Value="ACBr_MDFe_DAMDFeRL"/>
       </Item11>
       <Item12>
-        <PackageName Value="ACBr_SAT_Extrato_Fortes"/>
+        <PackageName Value="ACBr_MDFe"/>
       </Item12>
       <Item13>
-        <PackageName Value="ACBr_SAT_Extrato_ESCPOS"/>
+        <PackageName Value="ACBr_CTe_DACTeRL"/>
       </Item13>
       <Item14>
-        <PackageName Value="ACBr_SAT"/>
+        <PackageName Value="ACBr_CTe"/>
       </Item14>
       <Item15>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="ACBr_SAT_Extrato_Fortes"/>
       </Item15>
       <Item16>
-        <PackageName Value="FCL"/>
+        <PackageName Value="ACBr_SAT_Extrato_ESCPOS"/>
       </Item16>
       <Item17>
-        <PackageName Value="ACBr_NFe_DanfeRL"/>
+        <PackageName Value="ACBr_SAT"/>
       </Item17>
       <Item18>
-        <PackageName Value="ACBr_NFe_DanfeESCPOS"/>
+        <PackageName Value="SynEdit"/>
       </Item18>
       <Item19>
-        <PackageName Value="ACBr_NFCe_DanfeRL"/>
+        <PackageName Value="FCL"/>
       </Item19>
       <Item20>
-        <PackageName Value="ACBr_NFe"/>
+        <PackageName Value="ACBr_NFe_DanfeRL"/>
       </Item20>
       <Item21>
-        <PackageName Value="ACBr_BoletoFC_Fortes"/>
+        <PackageName Value="ACBr_NFe_DanfeESCPOS"/>
       </Item21>
       <Item22>
-        <PackageName Value="ACBr_Boleto"/>
+        <PackageName Value="ACBr_NFCe_DanfeRL"/>
       </Item22>
       <Item23>
-        <PackageName Value="ACBrSerial"/>
+        <PackageName Value="ACBr_NFe"/>
       </Item23>
       <Item24>
-        <PackageName Value="ACBrTCP"/>
+        <PackageName Value="ACBr_BoletoFC_Fortes"/>
       </Item24>
       <Item25>
-        <PackageName Value="ACBrOpenSSL"/>
+        <PackageName Value="ACBr_Boleto"/>
       </Item25>
       <Item26>
-        <PackageName Value="ACBrDiversos"/>
+        <PackageName Value="ACBrSerial"/>
       </Item26>
       <Item27>
-        <PackageName Value="ACBrDFeComum"/>
+        <PackageName Value="ACBrTCP"/>
       </Item27>
       <Item28>
-        <PackageName Value="ACBrComum"/>
+        <PackageName Value="ACBrOpenSSL"/>
       </Item28>
       <Item29>
-        <PackageName Value="LCLBase"/>
-        <MinVersion Major="1" Release="1" Valid="True"/>
+        <PackageName Value="ACBrDiversos"/>
       </Item29>
       <Item30>
-        <PackageName Value="LCL"/>
+        <PackageName Value="ACBrDFeComum"/>
       </Item30>
+      <Item31>
+        <PackageName Value="ACBrComum"/>
+      </Item31>
+      <Item32>
+        <PackageName Value="LCLBase"/>
+        <MinVersion Major="1" Release="1" Valid="True"/>
+      </Item32>
+      <Item33>
+        <PackageName Value="LCL"/>
+      </Item33>
     </RequiredPackages>
-    <Units Count="31">
+    <Units Count="41">
       <Unit0>
         <Filename Value="ACBrMonitor.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -276,33 +286,76 @@
         <IsPartOfProject Value="True"/>
       </Unit25>
       <Unit26>
-        <Filename Value=".txt"/>
+        <Filename Value="DoACBrGNReUnit.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
       <Unit27>
-        <Filename Value="DoACBrGNReUnit.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit27>
-      <Unit28>
         <Filename Value="acbrboletorelatorioretorno.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmACBrBoletoRelatorioRet"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ACBrBoletoRelatorioRetorno"/>
-      </Unit28>
-      <Unit29>
+      </Unit27>
+      <Unit28>
         <Filename Value="DoPosPrinterUnit.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit29>
-      <Unit30>
+      </Unit28>
+      <Unit29>
         <Filename Value="selecionarcertificado.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frSelecionarCertificado"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="SelecionarCertificado"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="ACBrMonitorConfig.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit30>
+      <Unit31>
+        <Filename Value="ACBrMonitorConsts.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="DoACBrDFeUnit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="DoACBreSocialUnit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DoACBrESocialUnit"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="..\..\ACBrLib\eSocial\acbrlibesocialrespostas.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ACBrLibeSocialRespostas"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="..\..\ACBrLib\eSocial\acbrlibesocialconsts.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ACBrLibeSocialConsts"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="..\..\ACBrLib\MDFe\ACBrLibMDFeRespostas.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="..\..\ACBrLib\MDFe\ACBrLibMDFeConsts.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="DoACBrReinfUnit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="..\..\ACBrLib\Reinf\ACBrLibReinfConsts.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit39>
+      <Unit40>
+        <Filename Value="..\..\ACBrLib\Reinf\ACBrLibReinfRespostas.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit40>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -313,6 +366,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="..\..\ACBrLib\MDFe;..\..\ACBrLib\Comum;..\..\ACBrLib\eSocial;..\..\ACBrLib\Reinf"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

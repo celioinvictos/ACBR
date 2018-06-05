@@ -63,7 +63,9 @@ type
     FCorteParcial: AnsiString;
     FDesligaAlturaDupla: AnsiString;
     FDesligaInvertido: AnsiString;
+    FDesligaModoPagina: AnsiString;
     FEspacoEntreLinhasPadrao: AnsiString;
+    FImprimePagina: AnsiString;
     FLigaAlturaDupla: AnsiString;
     FLigaInvertido: AnsiString;
     FFonteNormal: AnsiString;
@@ -79,6 +81,7 @@ type
     FFonteA: AnsiString;
     FFonteB: AnsiString;
     FLigaItalico: AnsiString;
+    FLigaModoPagina: AnsiString;
     FLigaNegrito: AnsiString;
     FLigaSublinhado: AnsiString;
     FPuloDeLinha: AnsiString;
@@ -121,6 +124,10 @@ type
     property CorteTotal: AnsiString read FCorteTotal write FCorteTotal;
     property CorteParcial: AnsiString read FCorteParcial write FCorteParcial;
     property PuloDeLinha: AnsiString read FPuloDeLinha write FPuloDeLinha;
+
+    property LigaModoPagina: AnsiString read FLigaModoPagina write FLigaModoPagina;
+    property DesligaModoPagina: AnsiString read FDesligaModoPagina write FDesligaModoPagina;
+    property ImprimePagina: AnsiString read FImprimePagina write FImprimePagina;
   end;
 
   TACBrPosTipoFonte = (ftNormal, ftCondensado, ftExpandido, ftNegrito,
@@ -129,6 +136,7 @@ type
 
   TACBrPosTipoAlinhamento = (alEsquerda, alCentro, alDireita);
   TACBrPosPaginaCodigo = (pcNone, pc437, pc850, pc852, pc860, pcUTF8, pc1252);
+  TACBrPosDirecao = (dirEsquerdaParaDireita, dirTopoParaBaixo, dirDireitaParaEsquerda, dirBaixoParaTopo);
 
   TACBrPosTipoStatus = (stErro, stNaoSerial, stPoucoPapel, stSemPapel,
                         stGavetaAberta, stImprimindo, stOffLine, stTampaAberta,
@@ -179,6 +187,7 @@ type
     function ComandoInicializa: AnsiString; virtual;
     function ComandoPuloLinhas(NLinhas: Integer): AnsiString; virtual;
     function ComandoFonte(TipoFonte: TACBrPosTipoFonte; Ligar: Boolean): AnsiString; virtual;
+    function ComandoConfiguraModoPagina: AnsiString; virtual;
 
     procedure Configurar; virtual;
     procedure LerStatus(var AStatus: TACBrPosPrinterStatus); virtual;
@@ -251,6 +260,30 @@ type
       property TempoOFF: Byte read FTempoOFF write FTempoOFF default 200;
   end;
 
+  { TACBrConfigRegion }
+
+  { TACBrConfigModoPagina }
+
+  TACBrConfigModoPagina = class(TPersistent)
+    private
+      FDirecao: TACBrPosDirecao;
+      FEspacoEntreLinhas: Byte;
+      FLargura: Integer;
+      FAltura: Integer;
+      FEsquerda: Integer;
+      FTopo: Integer;
+    public
+      constructor Create;
+
+    published
+      property Largura: Integer read FLargura write FLargura default 0;
+      property Altura: Integer read FAltura write FAltura default 0;
+      property Esquerda: Integer read FEsquerda write FEsquerda default 0;
+      property Topo: Integer read FTopo write FTopo default 0;
+      property Direcao: TACBrPosDirecao read FDirecao write FDirecao default dirEsquerdaParaDireita;
+      property EspacoEntreLinhas: Byte read FEspacoEntreLinhas write FEspacoEntreLinhas default 0;
+  end;
+
   { TACBrPosPrinter }
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
@@ -261,6 +294,7 @@ type
     FConfigBarras: TACBrECFConfigBarras;
     FConfigLogo: TACBrConfigLogo;
     FConfigQRCode: TACBrConfigQRCode;
+    FConfigModoPagina: TACBrConfigModoPagina;
     FControlePorta: Boolean;
     FDevice: TACBrDevice;
     FEspacoEntreLinhas: byte;
@@ -279,6 +313,7 @@ type
     FBuffer: TStringList;
     FTipoAlinhamento: TACBrPosTipoAlinhamento;
     FFonteStatus: TACBrPosFonte;
+    FModoPaginaLigado: Boolean;
     FInicializada: Boolean;
     FVerificarImpressora: Boolean;
 
@@ -351,6 +386,7 @@ type
     property FonteStatus: TACBrPosFonte read FFonteStatus;
     property Alinhamento: TACBrPosTipoAlinhamento read FTipoAlinhamento;
     property Inicializada: Boolean read FInicializada;
+    property ModoPagina: Boolean read FModoPaginaLigado;
 
     property TagsNaoSuportadas: TStringList read GetTagsNaoSuportadas;
 
@@ -370,6 +406,7 @@ type
     property ConfigQRCode: TACBrConfigQRCode read FConfigQRCode write FConfigQRCode;
     property ConfigLogo: TACBrConfigLogo read FConfigLogo write FConfigLogo;
     property ConfigGaveta: TACBrConfigGaveta read FConfigGaveta write FConfigGaveta;
+    property ConfigModoPagina: TACBrConfigModoPagina read FConfigModoPagina write FConfigModoPagina;
 
     property LinhasEntreCupons: Integer read FLinhasEntreCupons
       write FLinhasEntreCupons default 21;
@@ -393,6 +430,20 @@ uses
   strutils, Math, typinfo,
   ACBrUtil, ACBrConsts,
   ACBrEscPosEpson, ACBrEscBematech, ACBrEscDaruma, ACBrEscElgin, ACBrEscDiebold, ACBrEscEpsonP2;
+
+{ TACBrConfigModoPagina }
+
+constructor TACBrConfigModoPagina.Create;
+begin
+  inherited;
+
+  FLargura := 0;
+  FAltura := 0;
+  FEsquerda := 0;
+  FTopo := 0;
+  FDirecao := dirEsquerdaParaDireita;
+  FEspacoEntreLinhas := 0;
+end;
 
 { TACBrPosComandos }
 
@@ -592,6 +643,11 @@ begin
   end;
 end;
 
+function TACBrPosPrinterClass.ComandoConfiguraModoPagina: AnsiString;
+begin
+  Result := '';
+end;
+
 procedure TACBrPosPrinterClass.Configurar;
 begin
   {nada aqui, método virtual}
@@ -634,11 +690,13 @@ begin
   FTipoAlinhamento := alEsquerda;
   FFonteStatus := [ftNormal];
   FInicializada := False;
+  FModoPaginaLigado := False;
 
   FConfigBarras := TACBrECFConfigBarras.Create;
   FConfigQRCode := TACBrConfigQRCode.Create;
   FConfigLogo   := TACBrConfigLogo.Create;
   FConfigGaveta := TACBrConfigGaveta.Create;
+  FConfigModoPagina := TACBrConfigModoPagina.Create;
 
   FTagProcessor := TACBrTagProcessor.Create;
   FTagProcessor.AddTags(cTAGS_CARACTER, cTAGS_CARACTER_HELP, False);
@@ -700,6 +758,64 @@ begin
     Nome := cTagQRCodeError;
     Ajuda := 'Configura o Error Level do QRCode: 0 a 3';
     EhBloco := True;
+  end;
+
+  // Tags de Região e configuração do Região //
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaLiga;
+    Ajuda := 'Liga Modo de Impressão em Página (em memória)';
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaDesliga;
+    Ajuda := 'Desliga Modo de Impressão Página (em memória)';
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaImprimir;
+    Ajuda := 'Comanda a Impressão da Página na memória';
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaDirecao;
+    Ajuda := 'Direção Texto no Modo Página: 0-Esquerda/Direta, 1-Topo/Baixo, 2-Direita/Esquerda, 3-Baixo/Topo';
+    EhBloco := True;
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaPosEsquerda;
+    Ajuda := 'Posição Inicial Horizontal Modo Página (Esquerda)';
+    EhBloco := True;
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaPosTopo;
+    Ajuda := 'Posição Inicial Vertical Modo Página (Topo)';
+    EhBloco := True;
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaLargura;
+    Ajuda := 'Largura da Região no Modo Página';
+    EhBloco := True;
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaAltura;
+    Ajuda := 'Altura da Região no Modo Página';
+    EhBloco := True;
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaEspaco;
+    Ajuda := 'Espaço entre Linhas na Região no Modo Página';
+    EhBloco := True;
+  end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaConfigurar;
+    Ajuda := 'Envia a configuração de Coordenadas da Região e direção do Modo Página';
   end;
 
   // Tags de configuração do LogoTipo //
@@ -768,6 +884,7 @@ begin
   FConfigQRCode.Free;
   FConfigLogo.Free;
   FConfigGaveta.Free;
+  FConfigModoPagina.Free;
   FDevice.Free;
 
   inherited Destroy;
@@ -1062,6 +1179,29 @@ begin
   begin
     TagTraduzida := FPosPrinterClass.Cmd.AlinhadoCentro;
     FTipoAlinhamento := alCentro;
+  end
+
+  else if ATag = cTagModoPaginaLiga then
+  begin
+    TagTraduzida := FPosPrinterClass.Cmd.LigaModoPagina;
+    FModoPaginaLigado := True;
+  end
+
+  else if ATag = cTagModoPaginaDesliga then
+  begin
+    TagTraduzida := FPosPrinterClass.Cmd.ImprimePagina +
+                    FPosPrinterClass.Cmd.DesligaModoPagina;
+    FModoPaginaLigado := False;
+  end
+
+  else if ATag = cTagModoPaginaImprimir then
+  begin
+    TagTraduzida := FPosPrinterClass.Cmd.ImprimePagina;
+  end
+
+  else if ATag = cTagModoPaginaConfigurar then
+  begin
+    TagTraduzida := FPosPrinterClass.ComandoConfiguraModoPagina;
   end;
 
   GravarLog(AnsiString('TraduzirTag(' + ATag + ') -> ') + TagTraduzida, True);
@@ -1109,6 +1249,42 @@ begin
     else if ATag = cTagQRCode then
     begin
       BlocoTraduzido := FPosPrinterClass.ComandoQrCode(ConteudoBloco);
+    end
+
+    else if ATag = cTagModoPaginaDirecao then
+    begin
+      BlocoTraduzido := '';
+      ConfigModoPagina.Direcao := TACBrPosDirecao(StrToIntDef(ConteudoBloco, 0));
+    end
+
+    else if ATag = cTagModoPaginaPosEsquerda then
+    begin
+      BlocoTraduzido := '';
+      ConfigModoPagina.Esquerda := StrToIntDef(ConteudoBloco, ConfigModoPagina.Esquerda);
+    end
+
+    else if ATag = cTagModoPaginaPosTopo then
+    begin
+      BlocoTraduzido := '';
+      ConfigModoPagina.Topo := StrToIntDef(ConteudoBloco, ConfigModoPagina.Topo);
+    end
+
+    else if ATag = cTagModoPaginaAltura then
+    begin
+      BlocoTraduzido := '';
+      ConfigModoPagina.Altura := StrToIntDef(ConteudoBloco, ConfigModoPagina.Altura);
+    end
+
+    else if ATag = cTagModoPaginaEspaco then
+    begin
+      BlocoTraduzido := '';
+      ConfigModoPagina.EspacoEntreLinhas := StrToIntDef(ConteudoBloco, ConfigModoPagina.EspacoEntreLinhas);
+    end
+
+    else if ATag = cTagModoPaginaLargura then
+    begin
+      BlocoTraduzido := '';
+      ConfigModoPagina.Largura := StrToIntDef(ConteudoBloco, ConfigModoPagina.Largura);
     end
 
     else if ATag = cTagBarraMostrar then

@@ -37,22 +37,29 @@
 |*  - Implementados registros que faltavam e isoladas as respectivas classes 
 *******************************************************************************}
 
+{$I ACBr.inc}
+
 unit pcnReinfR5001;
 
 interface
 
 uses
   Classes, Sysutils, pcnGerador, pcnLeitor,
-  pcnConversaoReinf, pcnReinfClasses, ACBrReinfEventosBase;
+  pcnCommonReinf, pcnConversaoReinf;
 
 type
 
   TR5001 = class;
+  TinfoTotal = class;
   TEvtTotal = class;
   TRRecRepADCollection = class;
   TRRecRepADCollectionItem = class;
   TRCPRBCollection = class;
   TRCPRBCollectionItem = class;
+  TinfoCRTomCollection = class;
+  TinfoCRTomCollectionItem = class;
+  TRComlCollection = class;
+  TRComlCollectionItem = class;
 
   TInfoRecEv = class(TPersistent)
   private
@@ -62,11 +69,11 @@ type
     FidEv: String;
     Fhash: String;
   public
-    property nrProtEntr: String read FnrProtEntr write FnrProtEntr;
-    property dhProcess: TDateTime read FdhProcess write FdhProcess;
-    property tpEv: String read FtpEv write FtpEv;
-    property idEv: String read FidEv write FidEv;
-    property hash: String read Fhash write Fhash;
+    property nrProtEntr: String read FnrProtEntr;
+    property dhProcess: TDateTime read FdhProcess;
+    property tpEv: String read FtpEv;
+    property idEv: String read FidEv;
+    property hash: String read Fhash;
   end;
 
   TRTom = class(TPersistent)
@@ -77,13 +84,20 @@ type
     FvlrTotalRetAdic: Double;
     FvlrTotalNRetPrinc: Double;
     FvlrTotalNRetAdic: Double;
+    FinfoCRTom: TinfoCRTomCollection;
+
+    procedure SetinfoCRTom(const Value: TinfoCRTomCollection);
   public
-    property cnpjPrestador: String read FcnpjPrestador write FcnpjPrestador;
-    property vlrTotalBaseRet: Double read FvlrTotalBaseRet write FvlrTotalBaseRet;
-    property vlrTotalRetPrinc: Double read FvlrTotalRetPrinc write FvlrTotalRetPrinc;
-    property vlrTotalRetAdic: Double read FvlrTotalRetAdic write FvlrTotalRetAdic;
-    property vlrTotalNRetPrinc: Double read FvlrTotalNRetPrinc write FvlrTotalNRetPrinc;
-    property vlrTotalNRetAdic: Double read FvlrTotalNRetAdic write FvlrTotalNRetAdic;
+    constructor Create(AOwner: TinfoTotal);
+    destructor Destroy; override;
+
+    property cnpjPrestador: String read FcnpjPrestador;
+    property vlrTotalBaseRet: Double read FvlrTotalBaseRet;
+    property vlrTotalRetPrinc: Double read FvlrTotalRetPrinc;
+    property vlrTotalRetAdic: Double read FvlrTotalRetAdic;
+    property vlrTotalNRetPrinc: Double read FvlrTotalNRetPrinc;
+    property vlrTotalNRetAdic: Double read FvlrTotalNRetAdic;
+    property infoCRTom: TinfoCRTomCollection read FinfoCRTom write SetinfoCRTom;
   end;
 
   TRPrest = class(TPersistent)
@@ -96,16 +110,26 @@ type
     FvlrTotalNRetPrinc: Double;
     FvlrTotalNRetAdic: Double;
   public
-    property tpInscTomador: TtpInsc read FtpInscTomador write FtpInscTomador;
-    property nrInscTomador: String read FnrInscTomador write FnrInscTomador;
-    property vlrTotalBaseRet: Double read FvlrTotalBaseRet write FvlrTotalBaseRet;
-    property vlrTotalRetPrinc: Double read FvlrTotalRetPrinc write FvlrTotalRetPrinc;
-    property vlrTotalRetAdic: Double read FvlrTotalRetAdic write FvlrTotalRetAdic;
-    property vlrTotalNRetPrinc: Double read FvlrTotalNRetPrinc write FvlrTotalNRetPrinc;
-    property vlrTotalNRetAdic: Double read FvlrTotalNRetAdic write FvlrTotalNRetAdic;
+    property tpInscTomador: TtpInsc read FtpInscTomador;
+    property nrInscTomador: String read FnrInscTomador;
+    property vlrTotalBaseRet: Double read FvlrTotalBaseRet;
+    property vlrTotalRetPrinc: Double read FvlrTotalRetPrinc;
+    property vlrTotalRetAdic: Double read FvlrTotalRetAdic;
+    property vlrTotalNRetPrinc: Double read FvlrTotalNRetPrinc;
+    property vlrTotalNRetAdic: Double read FvlrTotalNRetAdic;
   end;
 
-  TRComl = class(TPersistent)
+  TRComlCollection = class(TCollection)
+  private
+    function GetItem(Index: Integer): TRComlCollectionItem;
+    procedure SetItem(Index: Integer; Value: TRComlCollectionItem);
+  public
+    constructor Create; reintroduce;
+    function Add: TRComlCollectionItem;
+    property Items[Index: Integer]: TRComlCollectionItem read GetItem write SetItem;
+  end;
+
+  TRComlCollectionItem = class(TCollectionItem)
   private
     FvlrCPApur: Double;
     FvlrRatApur: Double;
@@ -113,24 +137,36 @@ type
     FvlrCPSusp: Double;
     FvlrRatSusp: Double;
     FvlrSenarSusp: Double;
+    FCRComl: String;
+    FvlrCRComl: Double;
+    FvlrCRComlSusp: Double;
   public
-    property vlrCPApur: Double read FvlrCPApur write FvlrCPApur;
-    property vlrRatApur: Double read FvlrRatApur write FvlrRatApur;
-    property vlrSenarApur: Double read FvlrSenarApur write FvlrSenarApur;
-    property vlrCPSusp: Double read FvlrCPSusp write FvlrCPSusp;
-    property vlrRatSusp: Double read FvlrRatSusp write FvlrRatSusp;
-    property vlrSenarSusp: Double read FvlrSenarSusp write FvlrSenarSusp;
+    property vlrCPApur: Double read FvlrCPApur;
+    property vlrRatApur: Double read FvlrRatApur;
+    property vlrSenarApur: Double read FvlrSenarApur;
+    property vlrCPSusp: Double read FvlrCPSusp;
+    property vlrRatSusp: Double read FvlrRatSusp;
+    property vlrSenarSusp: Double read FvlrSenarSusp;
+    property CRComl: String read FCRComl;
+    property vlrCRComl: Double read FvlrCRComl;
+    property vlrCRComlSusp: Double read FvlrCRComlSusp;
   end;
 
-  TRRecEspetDest = class(TPersistent)
+  TRRecEspetDesp = class(TPersistent)
   private
     FvlrReceitaTotal: Double;
     FvlrCPApurTotal: Double;
     FvlrCPSuspTotal: Double;
+    FCRRecEspetDesp: String;
+    FvlrCRRecEspetDesp: Double;
+    FvlrCRRecEspetDespSusp: Double;
   public
-    property vlrReceitaTotal: Double read FvlrReceitaTotal write FvlrReceitaTotal;
-    property vlrCPApurTotal: Double read FvlrCPApurTotal write FvlrCPApurTotal;
-    property vlrCPSuspTotal: Double read FvlrCPSuspTotal write FvlrCPSuspTotal;
+    property vlrReceitaTotal: Double read FvlrReceitaTotal;
+    property vlrCPApurTotal: Double read FvlrCPApurTotal;
+    property vlrCPSuspTotal: Double read FvlrCPSuspTotal;
+    property CRRecEspetDesp: String read FCRRecEspetDesp;
+    property vlrCRRecEspetDesp: Double read FvlrCRRecEspetDesp;
+    property vlrCRRecEspetDespSusp: Double read FvlrCRRecEspetDespSusp;
   end;
 
   TInfoTotal = class(TPersistent)
@@ -139,23 +175,24 @@ type
     FRTom: TRTom;
     FRPrest: TRPrest;
     FRRecRepAD: TRRecRepADCollection;
-    FRComl: TRComl;
+    FRComl: TRComlCollection;
     FRCPRB: TRCPRBCollection;
-    FRRecEspetDest: TRRecEspetDest;
+    FRRecEspetDesp: TRRecEspetDesp;
 
     procedure SetRRecRepAD(const Value: TRRecRepADCollection);
     procedure SetRCPRB(const Value: TRCPRBCollection);
+    procedure SetRComl(const Value: TRComlCollection);
   public
     constructor Create(AOwner: TEvtTotal);
     destructor Destroy; override;
 
-    property nrRecArqBase: String read FnrRecArqBase write FnrRecArqBase;
+    property nrRecArqBase: String read FnrRecArqBase;
     property RTom: TRTom read FRTom write FRTom;
     property RPrest: TRPrest read FRPrest write FRPrest;
     property RRecRepAD: TRRecRepADCollection read FRRecRepAD write SetRRecRepAD;
-    property RComl: TRComl read FRComl write FRComl;
+    property RComl: TRComlCollection read FRComl write SetRComl;
     property RCPRB: TRCPRBCollection read FRCPRB write SetRCPRB;
-    property RRecEspetDest: TRRecEspetDest read FRRecEspetDest write FRRecEspetDest;
+    property RRecEspetDesp: TRRecEspetDesp read FRRecEspetDesp write FRRecEspetDesp;
   end;
 
   TR5001 = class(TInterfacedObject, IEventoReinf)
@@ -163,15 +200,15 @@ type
     FTipoEvento: TTipoEvento;
     FEvtTotal: TEvtTotal;
 
-    function GetXml : string;
+    function GetXml: string;
     procedure SetXml(const Value: string);
-    function GetTipoEvento : TTipoEvento;
+    function GetTipoEvento: TTipoEvento;
     procedure SetEvtTotal(const Value: TEvtTotal);
   public
     constructor Create;
     destructor Destroy; override;
-    function GetEvento: TObject;
 
+    function GetEvento: TObject;
   published
     property Xml: String read GetXml write SetXml;
     property TipoEvento: TTipoEvento read GetTipoEvento;
@@ -194,11 +231,17 @@ type
     FvlrTotalRep: Double;
     FvlrTotalRet: Double;
     FvlrTotalNRet: Double;
+    FCRRecRepAD: String;
+    FvlrCRRecRepAD: Double;
+    FvlrCRRecRepADSusp: Double;
   public
-    property cnpjAssocDesp: string read FcnpjAssocDesp write FcnpjAssocDesp;
-    property vlrTotalRep: Double read FvlrTotalRep write FvlrTotalRep;
-    property vlrTotalRet: Double read FvlrTotalRet write FvlrTotalRet;
-    property vlrTotalNRet: Double read FvlrTotalNRet write FvlrTotalNRet;
+    property cnpjAssocDesp: string read FcnpjAssocDesp;
+    property vlrTotalRep: Double read FvlrTotalRep;
+    property vlrTotalRet: Double read FvlrTotalRet;
+    property vlrTotalNRet: Double read FvlrTotalNRet;
+    property CRRecRepAD: String read FCRRecRepAD;
+    property vlrCRRecRepAD: Double read FvlrCRRecRepAD;
+    property vlrCRRecRepADSusp: Double read FvlrCRRecRepADSusp;
   end;
 
   TRCPRBCollection = class(TCollection)
@@ -216,10 +259,37 @@ type
     FcodRec: Integer;
     FvlrCPApurTotal: Double;
     FvlrCPRBSusp: Double;
+    FCRCPRB: String;
+    FvlrCRCPRB: Double;
+    FvlrCRCPRBSusp: Double;
   public
-    property codRec: Integer read FcodRec write FcodRec;
-    property vlrCPApurTotal: Double read FvlrCPApurTotal write FvlrCPApurTotal;
-    property vlrCPRBSusp: Double read FvlrCPRBSusp write FvlrCPRBSusp;
+    property codRec: Integer read FcodRec;
+    property vlrCPApurTotal: Double read FvlrCPApurTotal;
+    property vlrCPRBSusp: Double read FvlrCPRBSusp;
+    property CRCPRB: String read FCRCPRB;
+    property vlrCRCPRB: Double read FvlrCRCPRB;
+    property vlrCRCPRBSusp: Double read FvlrCRCPRBSusp;
+  end;
+
+  TinfoCRTomCollection = class(TCollection)
+  private
+    function GetItem(Index: Integer): TinfoCRTomCollectionItem;
+    procedure SetItem(Index: Integer; Value: TinfoCRTomCollectionItem);
+  public
+    constructor Create(AOwner: TRTom);
+    function Add: TinfoCRTomCollectionItem;
+    property Items[Index: Integer]: TinfoCRTomCollectionItem read GetItem write SetItem;
+  end;
+
+  TinfoCRTomCollectionItem = class(TCollectionItem)
+  private
+    FCRTom: string;
+    FVlrCRTom: Double;
+    FVlrCRTomSusp: Double;
+  public
+    property CRTom: string read FCRTom;
+    property VlrCRTom: Double read FVlrCRTom;
+    property VlrCRTomSusp: Double read FVlrCRTomSusp;
   end;
 
   TEvtTotal = class(TPersistent)
@@ -238,6 +308,7 @@ type
     destructor  Destroy; override;
 
     function LerXML: boolean;
+    function SalvarINI: boolean;
 
     property IdeEvento: TIdeEvento1 read FIdeEvento write FIdeEvento;
     property IdeContrib: TIdeContrib read FIdeContrib write FIdeContrib;
@@ -246,14 +317,14 @@ type
     property InfoTotal: TInfoTotal read FInfoTotal write FInfoTotal;
   published
     property Leitor: TLeitor read FLeitor write FLeitor;
-    property Id: String      read FId     write FId;
-    property XML: String     read FXML    write FXML;
+    property Id: String      read FId;
+    property XML: String     read FXML;
   end;
 
 implementation
 
 uses
-  pcnAuxiliar, ACBrUtil, pcnConversao, DateUtils;
+  IniFiles, pcnAuxiliar, ACBrUtil, pcnConversao, DateUtils;
 
 { TR5001 }
 
@@ -279,7 +350,7 @@ procedure TR5001.SetXml(const Value: string);
 begin
   if Value = FEvtTotal.XML then Exit;
 
-  FEvtTotal.XML := Value;
+  FEvtTotal.FXML := Value;
   FEvtTotal.Leitor.Arquivo := Value;
   FEvtTotal.LerXML;
 end;
@@ -304,6 +375,7 @@ end;
 function TRRecRepADCollection.Add: TRRecRepADCollectionItem;
 begin
   Result := TRRecRepADCollectionItem(inherited Add);
+//  Result.Create;
 end;
 
 constructor TRRecRepADCollection.Create;
@@ -328,6 +400,7 @@ end;
 function TRCPRBCollection.Add: TRCPRBCollectionItem;
 begin
   Result := TRCPRBCollectionItem(inherited Add);
+//  Result.Create;
 end;
 
 constructor TRCPRBCollection.Create(AOwner: TInfoTotal);
@@ -347,17 +420,65 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+{ TinfoCRTomCollection }
+
+function TinfoCRTomCollection.Add: TinfoCRTomCollectionItem;
+begin
+  Result := TinfoCRTomCollectionItem(inherited Add);
+//  Result.Create;
+end;
+
+constructor TinfoCRTomCollection.Create(AOwner: TRTom);
+begin
+  inherited create(TinfoCRTomCollectionItem);
+end;
+
+function TinfoCRTomCollection.GetItem(
+  Index: Integer): TinfoCRTomCollectionItem;
+begin
+  Result := TinfoCRTomCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TinfoCRTomCollection.SetItem(Index: Integer;
+  Value: TinfoCRTomCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+{ TRComlCollection }
+
+function TRComlCollection.Add: TRComlCollectionItem;
+begin
+  Result := TRComlCollectionItem(inherited Add);
+//  Result.Create;
+end;
+
+constructor TRComlCollection.Create;
+begin
+  inherited create(TRcomlCollectionItem);
+end;
+
+function TRComlCollection.GetItem(Index: Integer): TRComlCollectionItem;
+begin
+  Result := TRComlCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TRComlCollection.SetItem(Index: Integer; Value: TRComlCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
 { TEvtTotal }
 
 constructor TEvtTotal.Create();
 begin
   FLeitor := TLeitor.Create;
 
-  FIdeEvento := TIdeEvento1.Create;
+  FIdeEvento  := TIdeEvento1.Create;
   FIdeContrib := TIdeContrib.Create;
-  FIdeStatus := TIdeStatus.Create;
-  FInfoRecEv := TInfoRecEv.Create;
-  FInfoTotal := TInfoTotal.Create(Self);
+  FIdeStatus  := TIdeStatus.Create;
+  FInfoRecEv  := TInfoRecEv.Create;
+  FInfoTotal  := TInfoTotal.Create(Self);
 end;
 
 destructor TEvtTotal.Destroy;
@@ -377,12 +498,12 @@ end;
 
 constructor TInfoTotal.Create(AOwner: TEvtTotal);
 begin
-  FRTom := TRTom.Create;
-  FRPrest := TRPrest.Create;
-  FRRecRepAD := TRRecRepADCollection.Create;
-  FRComl := TRComl.Create;
-  FRCPRB := TRCPRBCollection.Create(Self);
-  FRRecEspetDest := TRRecEspetDest.Create;
+  FRTom          := TRTom.Create(Self);
+  FRPrest        := TRPrest.Create;
+  FRRecRepAD     := TRRecRepADCollection.Create;
+  FRComl         := TRComlCollection.Create;
+  FRCPRB         := TRCPRBCollection.Create(Self);
+  FRRecEspetDesp := TRRecEspetDesp.Create;
 end;
 
 destructor TInfoTotal.Destroy;
@@ -392,9 +513,14 @@ begin
   FRRecRepAD.Free;
   FRComl.Free;
   FRCPRB.Free;
-  FRRecEspetDest.Free;
+  FRRecEspetDesp.Free;
 
   inherited;
+end;
+
+procedure TInfoTotal.SetRComl(const Value: TRComlCollection);
+begin
+  FRComl := Value;
 end;
 
 procedure TInfoTotal.SetRCPRB(const Value: TRCPRBCollection);
@@ -407,6 +533,25 @@ begin
   FRRecRepAD := Value;
 end;
 
+{ TRTom }
+
+constructor TRTom.Create(AOwner: TinfoTotal);
+begin
+  FinfoCRTom := TinfoCRTomCollection.Create(Self);
+end;
+
+destructor TRTom.Destroy;
+begin
+  FinfoCRTom.Free;
+
+  inherited;
+end;
+
+procedure TRTom.SetinfoCRTom(const Value: TinfoCRTomCollection);
+begin
+  FinfoCRTom := Value;
+end;
+
 function TEvtTotal.LerXML: boolean;
 var
   ok: Boolean;
@@ -414,7 +559,7 @@ var
 begin
   Result := False;
   try
-    XML := Leitor.Arquivo;
+    FXML := Leitor.Arquivo;
 
     if leitor.rExtrai(1, 'evtTotal') <> '' then
     begin
@@ -451,74 +596,112 @@ begin
 
       if leitor.rExtrai(2, 'infoRecEv') <> '' then
       begin
-        infoRecEv.nrProtEntr := leitor.rCampo(tcStr, 'nrProtEntr');
-        infoRecEv.dhProcess  := leitor.rCampo(tcDat, 'dhProcess');
-        infoRecEv.tpEv       := leitor.rCampo(tcStr, 'tpEv');
-        infoRecEv.idEv       := leitor.rCampo(tcStr, 'idEv');
-        infoRecEv.hash       := leitor.rCampo(tcStr, 'hash');
+        infoRecEv.FnrProtEntr := leitor.rCampo(tcStr, 'nrProtEntr');
+        infoRecEv.FdhProcess  := leitor.rCampo(tcDatHor, 'dhProcess');
+        infoRecEv.FtpEv       := leitor.rCampo(tcStr, 'tpEv');
+        infoRecEv.FidEv       := leitor.rCampo(tcStr, 'idEv');
+        infoRecEv.Fhash       := leitor.rCampo(tcStr, 'hash');
       end;
 
       if leitor.rExtrai(2, 'infoTotal') <> '' then
       begin
-        infoTotal.nrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
+        infoTotal.FnrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
 
         if leitor.rExtrai(3, 'RTom') <> '' then
         begin
-          infoTotal.RTom.cnpjPrestador     := leitor.rCampo(tcStr, 'cnpjPrestador');
-          infoTotal.RTom.vlrTotalBaseRet   := leitor.rCampo(tcDe2, 'vlrTotalBaseRet');
-          infoTotal.RTom.vlrTotalRetPrinc  := leitor.rCampo(tcDe2, 'vlrTotalRetPrinc');
-          infoTotal.RTom.vlrTotalRetAdic   := leitor.rCampo(tcDe2, 'vlrTotalRetAdic');
-          infoTotal.RTom.vlrTotalNRetPrinc := leitor.rCampo(tcDe2, 'vlrTotalNRetPrinc');
-          infoTotal.RTom.vlrTotalNRetAdic  := leitor.rCampo(tcDe2, 'vlrTotalNRetAdic');
+          infoTotal.RTom.FcnpjPrestador     := leitor.rCampo(tcStr, 'cnpjPrestador');
+          infoTotal.RTom.FvlrTotalBaseRet   := leitor.rCampo(tcDe2, 'vlrTotalBaseRet');
+          infoTotal.RTom.FvlrTotalRetPrinc  := leitor.rCampo(tcDe2, 'vlrTotalRetPrinc');
+          infoTotal.RTom.FvlrTotalRetAdic   := leitor.rCampo(tcDe2, 'vlrTotalRetAdic');
+          infoTotal.RTom.FvlrTotalNRetPrinc := leitor.rCampo(tcDe2, 'vlrTotalNRetPrinc');
+          infoTotal.RTom.FvlrTotalNRetAdic  := leitor.rCampo(tcDe2, 'vlrTotalNRetAdic');
+
+          // Versão 1.03.02
+          i := 0;
+          while Leitor.rExtrai(4, 'infoCRTom', '', i + 1) <> '' do
+          begin
+            infoTotal.RTom.infoCRTom.Add;
+            infoTotal.RTom.infoCRTom.Items[i].FCRTom        := leitor.rCampo(tcStr, 'CRTom');
+            infoTotal.RTom.infoCRTom.Items[i].FVlrCRTom     := leitor.rCampo(tcDe2, 'VlrCRTom');
+            infoTotal.RTom.infoCRTom.Items[i].FVlrCRTomSusp := leitor.rCampo(tcDe2, 'VlrCRTomSusp');
+
+            inc(i);
+          end;
         end;
 
         if leitor.rExtrai(3, 'RPrest') <> '' then
         begin
-          infoTotal.RPrest.tpInscTomador := StrToTpInscricao(ok, leitor.rCampo(tcStr, 'tpInscTomador'));
-          infoTotal.RPrest.nrInscTomador := leitor.rCampo(tcStr, 'nrInscTomador');
-          infoTotal.RPrest.vlrTotalBaseRet   := leitor.rCampo(tcDe2, 'vlrTotalBaseRet');
-          infoTotal.RPrest.vlrTotalRetPrinc  := leitor.rCampo(tcDe2, 'vlrTotalRetPrinc');
-          infoTotal.RPrest.vlrTotalRetAdic   := leitor.rCampo(tcDe2, 'vlrTotalRetAdic');
-          infoTotal.RPrest.vlrTotalNRetPrinc := leitor.rCampo(tcDe2, 'vlrTotalNRetPrinc');
-          infoTotal.RPrest.vlrTotalNRetAdic  := leitor.rCampo(tcDe2, 'vlrTotalNRetAdic');
+          infoTotal.RPrest.FtpInscTomador := StrToTpInscricao(ok, leitor.rCampo(tcStr, 'tpInscTomador'));
+          infoTotal.RPrest.FnrInscTomador := leitor.rCampo(tcStr, 'nrInscTomador');
+          infoTotal.RPrest.FvlrTotalBaseRet   := leitor.rCampo(tcDe2, 'vlrTotalBaseRet');
+          infoTotal.RPrest.FvlrTotalRetPrinc  := leitor.rCampo(tcDe2, 'vlrTotalRetPrinc');
+          infoTotal.RPrest.FvlrTotalRetAdic   := leitor.rCampo(tcDe2, 'vlrTotalRetAdic');
+          infoTotal.RPrest.FvlrTotalNRetPrinc := leitor.rCampo(tcDe2, 'vlrTotalNRetPrinc');
+          infoTotal.RPrest.FvlrTotalNRetAdic  := leitor.rCampo(tcDe2, 'vlrTotalNRetAdic');
         end;
 
         i := 0;
         while Leitor.rExtrai(3, 'RRecRepAD', '', i + 1) <> '' do
         begin
           infoTotal.RRecRepAD.Add;
-          infoTotal.RRecRepAD.Items[i].cnpjAssocDesp := leitor.rCampo(tcStr, 'cnpjAssocDesp');
-          infoTotal.RRecRepAD.Items[i].vlrTotalRep   := leitor.rCampo(tcDe2, 'vlrTotalRep');
-          infoTotal.RRecRepAD.Items[i].vlrTotalRet   := leitor.rCampo(tcDe2, 'vlrTotalRet');
-          infoTotal.RRecRepAD.Items[i].vlrTotalNRet  := leitor.rCampo(tcDe2, 'vlrTotalNRet');
+          infoTotal.RRecRepAD.Items[i].FcnpjAssocDesp     := leitor.rCampo(tcStr, 'cnpjAssocDesp');
+          infoTotal.RRecRepAD.Items[i].FvlrTotalRep       := leitor.rCampo(tcDe2, 'vlrTotalRep');
+          infoTotal.RRecRepAD.Items[i].FvlrTotalRet       := leitor.rCampo(tcDe2, 'vlrTotalRet');
+          infoTotal.RRecRepAD.Items[i].FvlrTotalNRet      := leitor.rCampo(tcDe2, 'vlrTotalNRet');
+
+          // Versão 1.03.02
+          infoTotal.RRecRepAD.Items[i].FCRRecRepAD        := leitor.rCampo(tcStr, 'CRRecRepAD');
+          infoTotal.RRecRepAD.Items[i].FvlrCRRecRepAD     := leitor.rCampo(tcDe2, 'vlrCRRecRepAD');
+          infoTotal.RRecRepAD.Items[i].FvlrCRRecRepADSusp := leitor.rCampo(tcDe2, 'vlrCRRecRepADSusp');
+
           inc(i);
         end;
 
-        if leitor.rExtrai(3, 'RComl') <> '' then
+        i := 0;
+        while Leitor.rExtrai(3, 'RComl', '', i + 1) <> '' do
         begin
-          infoTotal.RComl.vlrCPApur    := leitor.rCampo(tcDe2, 'vlrCPApur');
-          infoTotal.RComl.vlrRatApur   := leitor.rCampo(tcDe2, 'vlrRatApur');
-          infoTotal.RComl.vlrSenarApur := leitor.rCampo(tcDe2, 'vlrSenarApur');
-          infoTotal.RComl.vlrCPSusp    := leitor.rCampo(tcDe2, 'vlrCPSusp');
-          infoTotal.RComl.vlrRatSusp   := leitor.rCampo(tcDe2, 'vlrRatSusp');
-          infoTotal.RComl.vlrSenarSusp := leitor.rCampo(tcDe2, 'vlrSenarSusp');
+          infoTotal.RComl.Add;
+          infoTotal.RComl.Items[i].FvlrCPApur    := leitor.rCampo(tcDe2, 'vlrCPApur');
+          infoTotal.RComl.Items[i].FvlrRatApur   := leitor.rCampo(tcDe2, 'vlrRatApur');
+          infoTotal.RComl.Items[i].FvlrSenarApur := leitor.rCampo(tcDe2, 'vlrSenarApur');
+          infoTotal.RComl.Items[i].FvlrCPSusp    := leitor.rCampo(tcDe2, 'vlrCPSusp');
+          infoTotal.RComl.Items[i].FvlrRatSusp   := leitor.rCampo(tcDe2, 'vlrRatSusp');
+          infoTotal.RComl.Items[i].FvlrSenarSusp := leitor.rCampo(tcDe2, 'vlrSenarSusp');
+
+          // Versão 1.03.02
+          infoTotal.RComl.Items[i].FCRComl        := leitor.rCampo(tcStr, 'CRComl');
+          infoTotal.RComl.Items[i].FvlrCRComl     := leitor.rCampo(tcDe2, 'vlrCRComl');
+          infoTotal.RComl.Items[i].FvlrCRComlSusp := leitor.rCampo(tcDe2, 'vlrCRComlSusp');
+
+          inc(i);
         end;
 
         i := 0;
         while Leitor.rExtrai(3, 'RCPRB', '', i + 1) <> '' do
         begin
           infoTotal.RCPRB.Add;
-          infoTotal.RCPRB.Items[i].codRec         := leitor.rCampo(tcInt, 'codRec');
-          infoTotal.RCPRB.Items[i].vlrCPApurTotal := leitor.rCampo(tcDe2, 'vlrCPApurTotal');
-          infoTotal.RCPRB.Items[i].vlrCPRBSusp    := leitor.rCampo(tcDe2, 'vlrCPRBSusp');
+          infoTotal.RCPRB.Items[i].FcodRec         := leitor.rCampo(tcInt, 'codRec');
+          infoTotal.RCPRB.Items[i].FvlrCPApurTotal := leitor.rCampo(tcDe2, 'vlrCPApurTotal');
+          infoTotal.RCPRB.Items[i].FvlrCPRBSusp    := leitor.rCampo(tcDe2, 'vlrCPRBSusp');
+
+          // Versão 1.03.02
+          infoTotal.RCPRB.Items[i].FCRCPRB        := leitor.rCampo(tcStr, 'CRCPRB');
+          infoTotal.RCPRB.Items[i].FvlrCRCPRB     := leitor.rCampo(tcDe2, 'vlrCRCPRB');
+          infoTotal.RCPRB.Items[i].FvlrCRCPRBSusp := leitor.rCampo(tcDe2, 'vlrCRCPRBSusp');
+
           inc(i);
         end;
 
-        if leitor.rExtrai(3, 'RRecEspetDest') <> '' then
+        if leitor.rExtrai(3, 'RRecEspetDesp') <> '' then
         begin
-          infoTotal.RRecEspetDest.vlrReceitaTotal := leitor.rCampo(tcDe2, 'vlrReceitaTotal');
-          infoTotal.RRecEspetDest.vlrCPApurTotal  := leitor.rCampo(tcDe2, 'vlrCPApurTotal');
-          infoTotal.RRecEspetDest.vlrCPSuspTotal  := leitor.rCampo(tcDe2, 'vlrCPSuspTotal');
+          infoTotal.RRecEspetDesp.FvlrReceitaTotal := leitor.rCampo(tcDe2, 'vlrReceitaTotal');
+          infoTotal.RRecEspetDesp.FvlrCPApurTotal  := leitor.rCampo(tcDe2, 'vlrCPApurTotal');
+          infoTotal.RRecEspetDesp.FvlrCPSuspTotal  := leitor.rCampo(tcDe2, 'vlrCPSuspTotal');
+
+          // Versão 1.03.02
+          infoTotal.RRecEspetDesp.FCRRecEspetDesp        := leitor.rCampo(tcStr, 'CRRecEspetDesp');
+          infoTotal.RRecEspetDesp.FvlrCRRecEspetDesp     := leitor.rCampo(tcDe2, 'vlrCRRecEspetDesp');
+          infoTotal.RRecEspetDesp.FvlrCRRecEspetDespSusp := leitor.rCampo(tcDe2, 'vlrCRRecEspetDespSusp');
         end;
       end;
 
@@ -526,6 +709,145 @@ begin
     end;
   except
     Result := False;
+  end;
+end;
+
+function TEvtTotal.SalvarINI: boolean;
+var
+  AIni: TMemIniFile;
+  sSecao: String;
+  i: Integer;
+begin
+  Result := False;
+
+  AIni := TMemIniFile.Create('');
+  try
+    Result := True;
+
+    with Self do
+    begin
+      sSecao := 'evtTotal';
+      AIni.WriteString(sSecao, 'Id', Id);
+
+      sSecao := 'ideEvento';
+      AIni.WriteString(sSecao, 'perApur', IdeEvento.perApur);
+
+      sSecao := 'ideContri';
+      AIni.WriteString(sSecao, 'tpInsc', TpInscricaoToStr(IdeContrib.TpInsc));
+      AIni.WriteString(sSecao, 'nrInsc', IdeContrib.nrInsc);
+
+      sSecao := 'ideStatus';
+      AIni.WriteString(sSecao, 'cdRetorno', ideStatus.cdRetorno);
+      AIni.WriteString(sSecao, 'descRetorno', ideStatus.descRetorno);
+
+      for i := 0 to ideStatus.regOcorrs.Count -1 do
+      begin
+        sSecao := 'regOcorrs' + IntToStrZero(I, 3);
+
+        AIni.WriteInteger(sSecao, 'tpOcorr',       ideStatus.regOcorrs.Items[i].tpOcorr);
+        AIni.WriteString(sSecao, 'localErroAviso', ideStatus.regOcorrs.Items[i].localErroAviso);
+        AIni.WriteString(sSecao, 'codResp',        ideStatus.regOcorrs.Items[i].codResp);
+        AIni.WriteString(sSecao, 'dscResp',        ideStatus.regOcorrs.Items[i].dscResp);
+      end;
+
+      sSecao := 'infoRecEv';
+      AIni.WriteString(sSecao, 'nrProtEntr', infoRecEv.nrProtEntr);
+      AIni.WriteString(sSecao, 'dhProcess',  DateToStr(infoRecEv.dhProcess));
+      AIni.WriteString(sSecao, 'tpEv',       infoRecEv.tpEv);
+      AIni.WriteString(sSecao, 'idEv',       infoRecEv.idEv);
+      AIni.WriteString(sSecao, 'hash',       infoRecEv.hash);
+
+      with InfoTotal do
+      begin
+        sSecao := 'infoTotal';
+        AIni.WriteString(sSecao, 'nrRecArqBase', nrRecArqBase);
+
+        sSecao := 'RTom';
+        AIni.WriteString(sSecao, 'cnpjPrestador',    RTom.cnpjPrestador);
+        AIni.WriteFloat(sSecao, 'vlrTotalBaseRet',   RTom.vlrTotalBaseRet);
+        AIni.WriteFloat(sSecao, 'vlrTotalRetPrinc',  RTom.vlrTotalRetPrinc);
+        AIni.WriteFloat(sSecao, 'vlrTotalRetAdic',   RTom.vlrTotalRetAdic);
+        AIni.WriteFloat(sSecao, 'vlrTotalNRetPrinc', RTom.vlrTotalNRetPrinc);
+        AIni.WriteFloat(sSecao, 'vlrTotalNRetAdic',  RTom.vlrTotalNRetAdic);
+
+        // Versão 1.03.02
+        for i := 0 to RTom.infoCRTom.Count -1 do
+        begin
+          sSecao := 'infoCRTom' + IntToStrZero(I, 1);
+
+          AIni.WriteString(sSecao, 'CRTom',       RTom.infoCRTom.Items[i].CRTom);
+          AIni.WriteFloat(sSecao, 'VlrCRTom',     RTom.infoCRTom.Items[i].VlrCRTom);
+          AIni.WriteFloat(sSecao, 'VlrCRTomSusp', RTom.infoCRTom.Items[i].VlrCRTomSusp);
+        end;
+
+        sSecao := 'RPrest';
+        AIni.WriteString(sSecao, 'tpInscTomador',    TpInscricaoToStr(RPrest.tpInscTomador));
+        AIni.WriteString(sSecao, 'nrInscTomador',    RPrest.nrInscTomador);
+        AIni.WriteFloat(sSecao, 'vlrTotalBaseRet',   RPrest.vlrTotalBaseRet);
+        AIni.WriteFloat(sSecao, 'vlrTotalRetPrinc',  RPrest.vlrTotalRetPrinc);
+        AIni.WriteFloat(sSecao, 'vlrTotalRetAdic',   RPrest.vlrTotalRetAdic);
+        AIni.WriteFloat(sSecao, 'vlrTotalNRetPrinc', RPrest.vlrTotalNRetPrinc);
+        AIni.WriteFloat(sSecao, 'vlrTotalNRetAdic',  RPrest.vlrTotalNRetAdic);
+
+        for i := 0 to RRecRepAD.Count -1 do
+        begin
+          sSecao := 'RRecRepAD' + IntToStrZero(I, 3);
+
+          AIni.WriteString(sSecao, 'cnpjAssocDesp', RRecRepAD.Items[i].cnpjAssocDesp);
+          AIni.WriteFloat(sSecao, 'vlrTotalRep',    RRecRepAD.Items[i].vlrTotalRep);
+          AIni.WriteFloat(sSecao, 'vlrTotalRet',    RRecRepAD.Items[i].vlrTotalRet);
+          AIni.WriteFloat(sSecao, 'vlrTotalNRet',   RRecRepAD.Items[i].vlrTotalNRet);
+
+          // Versão 1.03.02
+          AIni.WriteString(sSecao, 'CRRecRepAD',       RRecRepAD.Items[i].CRRecRepAD);
+          AIni.WriteFloat(sSecao, 'vlrCRRecRepAD',     RRecRepAD.Items[i].vlrCRRecRepAD);
+          AIni.WriteFloat(sSecao, 'vlrCRRecRepADSusp', RRecRepAD.Items[i].vlrCRRecRepADSusp);
+        end;
+
+        for i := 0 to RComl.Count -1 do
+        begin
+          sSecao := 'RComl' + IntToStrZero(I, 1);
+
+          AIni.WriteFloat(sSecao, 'vlrCPApur',    RComl.Items[i].vlrCPApur);
+          AIni.WriteFloat(sSecao, 'vlrRatApur',   RComl.Items[i].vlrRatApur);
+          AIni.WriteFloat(sSecao, 'vlrSenarApur', RComl.Items[i].vlrSenarApur);
+          AIni.WriteFloat(sSecao, 'vlrCPSusp',    RComl.Items[i].vlrCPSusp);
+          AIni.WriteFloat(sSecao, 'vlrRatSusp',   RComl.Items[i].vlrRatSusp);
+          AIni.WriteFloat(sSecao, 'vlrSenarSusp', RComl.Items[i].vlrSenarSusp);
+
+          // Versão 1.03.02
+          AIni.WriteString(sSecao, 'CRComl',       RComl.Items[i].CRComl);
+          AIni.WriteFloat(sSecao, 'vlrCRComl',     RComl.Items[i].vlrCRComl);
+          AIni.WriteFloat(sSecao, 'vlrCRComlSusp', RComl.Items[i].vlrCRComlSusp);
+        end;
+
+        for i := 0 to RCPRB.Count -1 do
+        begin
+          sSecao := 'RCPRB' + IntToStrZero(I, 1);
+
+          AIni.WriteInteger(sSecao, 'codRec',       RCPRB.Items[i].codRec);
+          AIni.WriteFloat(sSecao, 'vlrCPApurTotal', RCPRB.Items[i].vlrCPApurTotal);
+          AIni.WriteFloat(sSecao, 'vlrCPRBSusp',    RCPRB.Items[i].vlrCPRBSusp);
+
+          // Versão 1.03.02
+          AIni.WriteString(sSecao, 'CRCPRB',       RCPRB.Items[i].CRCPRB);
+          AIni.WriteFloat(sSecao, 'vlrCRCPRB',     RCPRB.Items[i].vlrCRCPRB);
+          AIni.WriteFloat(sSecao, 'vlrCRCPRBSusp', RCPRB.Items[i].vlrCRCPRBSusp);
+        end;
+
+        sSecao := 'RRecEspetDesp';
+        AIni.WriteFloat(sSecao, 'vlrReceitaTotal', RRecEspetDesp.vlrReceitaTotal);
+        AIni.WriteFloat(sSecao, 'vlrCPApurTotal',  RRecEspetDesp.vlrCPApurTotal);
+        AIni.WriteFloat(sSecao, 'vlrCPSuspTotal',  RRecEspetDesp.vlrCPSuspTotal);
+
+        // Versão 1.03.02
+        AIni.WriteString(sSecao, 'CRRecEspetDesp',       RRecEspetDesp.CRRecEspetDesp);
+        AIni.WriteFloat(sSecao, 'vlrCRRecEspetDesp',     RRecEspetDesp.vlrCRRecEspetDesp);
+        AIni.WriteFloat(sSecao, 'vlrCRRecEspetDespSusp', RRecEspetDesp.vlrCRRecEspetDespSusp);
+      end;
+    end;
+  finally
+    AIni.Free;
   end;
 end;
 

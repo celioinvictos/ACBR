@@ -43,16 +43,45 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
-23/04/2018
-[*] Ajuste no método "CriarCFe" do ACBrSAT
-[*] Ajuste no método "ImprimirDANFEPDF" validar protocoloNf em ACBrNFe
-[+] Adicionado Método SetDiretorioArquivo para informar diretório para geração de
-    arquivos via comando no componente ACBrBoleto
-[*] Validação do nome e path do arquivo na geração de Remessa do componente Boleto
-[*] Adicionado tag DataMoraJuros na leitura de retorno do componente Boleto
-       por: José M. S. Junior
+28/05/2018 - ACBrMonior
+[-] Ajuste na gravação dos dados aba ( Software House )
+   por: José M. S. Junior
 
-18/04/2018
+24/05/2018 - ACBrMonior
+[+] Adicionado Método (gerarimpressaofiscalmfe) aos métodos SAT
+para retornar geração fiscal MFe
+   por: José M. S. Junior
+
+22/05/2018 - ACBrMonior
+[-] Ajustes Leitura .INI para manter compatibilidade configuração Boleto
+https://www.projetoacbr.com.br/forum/topic/43517-boleto-dados-cedente-mudou-bug/
+   por: José M. S. Junior
+
+[-] Ajustes na geração Arquivo de Respostas
+https://www.projetoacbr.com.br/forum/topic/32678-acbrmonitorplus-sac/
+   por: José M. S. Junior
+
+22/05/2018 - ACBrMonior
+[-] Ajustes na validação no Monitoramento de Pasta
+   por: José M. S. Junior
+
+15/05/2018 - ACBrMonior
+[*] Ajustes quanto ao valor da propriedade ACBrSedex.Servico
+[*] Adicionado novas constantes referentes ao Reinf
+   Por: Italo Jurisato Junior
+
+15/05/2018 - ACBrMonitor
+[*] Ajustes referente remoção da propriedade IncluirQRCodeXMLNFCe
+
+14/05/2018 - ACBrMonitor Versão 1.2.0.0
+[*] Inicio Refactory no ACBrMonitorPlus, iniciando pelo componente MDFe
+Adicionado as classes: DoACBrDFeUnit, ACBrMonitorConsts, ACBrMonitorConfig
+Alterações significativas classes: DoACBrMDFeUnit, ACBrMonitor1, CMDUnit, UtilUnit
+
+[+] Adicionados funcionalidades para o componente e-Social no ACBrMonitor nos
+moldes das classes Refactory. Adicionado a Classe DoACBreSocialUnit
+
+07/04/2018
 [*] Ajuste nos métodos que utilizam parâmetros para Visualizar Impressão
        por: José M. S. Junior
 

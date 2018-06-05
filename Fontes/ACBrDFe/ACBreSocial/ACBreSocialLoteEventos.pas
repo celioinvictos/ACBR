@@ -182,9 +182,12 @@ begin
   {S1020}
   for i := 0 to FEventos.Tabelas.S1020.Count - 1 do
     LoadFromString(FEventos.Tabelas.S1020[i].EvtTabLotacao.XML);
-  {S2100}
+  {S1030}
   for i := 0 to FEventos.Tabelas.S1030.Count - 1 do
     LoadFromString(FEventos.Tabelas.S1030[i].EvtTabCargo.XML);
+  {S1035}
+  for i := 0 to FEventos.Tabelas.S1035.Count - 1 do
+    LoadFromString(FEventos.Tabelas.S1035[i].evtTabCarreira.XML);
   {S1040}
   for i := 0 to FEventos.Tabelas.S1040.Count - 1 do
     LoadFromString(FEventos.Tabelas.S1040[i].EvtTabFuncao.XML);
@@ -220,7 +223,7 @@ begin
     LoadFromString(FEventos.NaoPeriodicos.S2210[i].EvtCAT.XML);
   {S2220}
   for i := 0 to FEventos.NaoPeriodicos.S2220.Count - 1 do
-    LoadFromString(FEventos.NaoPeriodicos.S2220[i].EvtASO.XML);
+    LoadFromString(FEventos.NaoPeriodicos.S2220[i].evtMonit.XML);
   {S2230}
   for i := 0 to FEventos.NaoPeriodicos.S2230.Count - 1 do
     LoadFromString(FEventos.NaoPeriodicos.S2230[i].EvtAfastTemp.XML);
@@ -371,7 +374,7 @@ end;
 function TLoteEventos.LoadFromString(AXMLString: String): Boolean;
 var
   AXML: AnsiString;
-  P, N: integer;
+  P: integer;
 
   function PoseSocial: integer;
   begin
@@ -379,29 +382,16 @@ var
   end;
 
 begin
-  N := PoseSocial;
+  P := PoseSocial;
 
-  while N > 0 do
+  while P > 0 do
   begin
-    P := pos('</eSocial>', AXMLString);
+    AXML := copy(AXMLString, 1, P + 9);
+    AXMLString := Trim(copy(AXMLString, P + 10, length(AXMLString)));
 
-    if P > 0 then
-    begin
-      AXML := copy(AXMLString, 1, P + 9);
-      AXMLString := Trim(copy(AXMLString, P + 10, length(AXMLString)));
-    end
-    else
-    begin
-      AXML := copy(AXMLString, 1, N + 6);
-      AXMLString := Trim(copy(AXMLString, N + 6, length(AXMLString)));
-    end;
+    Self.Add.FXML := AXML;
 
-    with Self.Add do
-    begin
-      FXML := AXML;
-    end;
-
-    N := PoseSocial;
+    P := PoseSocial;
   end;
 
   Result := Self.Count > 0;

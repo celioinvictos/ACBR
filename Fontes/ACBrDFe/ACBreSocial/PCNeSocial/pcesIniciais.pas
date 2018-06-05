@@ -130,20 +130,40 @@ end;
 procedure TIniciais.SaveToFiles;
 var
   i: integer;
-  Path: String;
+  Path, PathName: String;
 begin
   with TACBreSocial(Self.Owner) do
     Path := PathWithDelim(Configuracoes.Arquivos.GetPatheSocial(Now, Configuracoes.Geral.IdEmpregador));
 
   for I := 0 to Self.S1000.Count - 1 do
-    Self.S1000.Items[i].evtInfoEmpregador.SaveToFile(Path + '\' +
-     OnlyNumber(Self.S1000.Items[i].evtInfoEmpregador.Id) + '-' +
-     TipoEventoToStr(Self.S1000.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S1000.Items[i].evtInfoEmpregador.Id) + '-' +
+     TipoEventoToStr(Self.S1000.Items[i].TipoEvento)+'-'+IntToStr(i);
+
+    Self.S1000.Items[i].evtInfoEmpregador.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS1000;
+      PathNome := PathName;
+      XML := Self.S1000.Items[i].evtInfoEmpregador.XML;
+    end;
+  end;
 
   for I := 0 to Self.S1005.Count - 1 do
-    Self.S1005.Items[i].evtTabEstab.SaveToFile(Path +'\' +
-     OnlyNumber(Self.S1005.Items[i].evtTabEstab.Id) + '-' +
-     TipoEventoToStr(Self.S1005.Items[i].TipoEvento)+'-'+IntToStr(i));
+  begin
+    PathName := Path + OnlyNumber(Self.S1005.Items[i].evtTabEstab.Id) + '-' +
+     TipoEventoToStr(Self.S1005.Items[i].TipoEvento)+'-'+IntToStr(i);
+
+    Self.S1005.Items[i].evtTabEstab.SaveToFile(PathName);
+
+    with TACBreSocial(Self.Owner).Eventos.Gerados.Add do
+    begin
+      TipoEvento := teS1005;
+      PathNome := PathName;
+      XML := Self.S1005.Items[i].evtTabEstab.XML;
+    end;
+  end;
 end;
 
 procedure TIniciais.setS1000(const Value: TS1000Collection);
@@ -172,7 +192,7 @@ function TIniciais.LoadFromIni(AIniString: String): Boolean;
 var
   Ok: Boolean;
 begin
-  case StrEventoToTipoEvento(Ok, AIniString) of
+  case StringToTipoEvento(Ok, AIniString) of
     teS1000: Self.S1000.Add.evtInfoEmpregador.LerArqIni(AIniString);
     teS1005: Self.S1005.Add.evtTabEstab.LerArqIni(AIniString);
   end;

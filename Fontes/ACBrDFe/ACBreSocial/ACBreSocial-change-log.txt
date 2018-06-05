@@ -48,6 +48,124 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+05/06/2018
+-- pcesS1030 --
+[*] Imposta uma condição para gerar ou não o grupo <cargoPublico> na leitura do
+    arquivo INI do evento 1030.
+   Por: Italo Jurisato Junior
+-- pcesS1280 --
+[*] Alterado o tipo de tcDec4 para tcDec2 - tag <fatorMes>.
+   Por: Joceandro Perin
+
+04/06/2018
+-- pcesS2299 / pcesS1210 / pcesCommon --
+[*] https://www.projetoacbr.com.br/forum/topic/43520-adicionar-novos-campos-s-1210-e-s-2299/
+   Por: Italo Jurisato Junior
+
+29/05/2018
+-- ACBreSocialWebServices / pcesGerador / pcesConversaoeSocial --
+[*] Ateração na montagem do caminho mais o nome do schema levando em consideração
+    a versão do layout acrescentada no final do nome do arquivo XSD.
+   Por: Italo Jurisato Junior
+
+-- pcesS5011 / pcesS5012 --
+[*] https://www.projetoacbr.com.br/forum/topic/43675-lerxml-eventos-s-5011-e-s-5012/
+   Por: arce
+
+25/05/2018
+-- ACBreSocial --
+[*] Realizada modificações visando a leitura de XML de terceiros.
+    Ao carregar um XML de terceiros através do método LoadFromFile, o componente
+    checa para saber se o XML esta assinado, caso não esteja, será realizado a
+    assinatura e a validação do mesmo e por fim deixa-lo na fila de eventos para
+    ser enviado através do método Enviar.
+   Por: Italo Jurisato Junior
+
+23/05/2018
+-- pcesGerador --
+[*] Incluido os novos enumeradores na checagem do tipo de empregador ao gerar o 
+    grupo <ideEmpregador>.
+   Por: Italo Jurisato Junior
+
+22/05/2018
+-- pcesConversaoeSocial / pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/43058-esocial-org%C3%A3os-p%C3%BAblicos/?do=findComment&comment=286755
+   Por: Italo Jurisato Junior
+
+18/05/2018
+-- pcesS1200--
+[*] https://www.projetoacbr.com.br/forum/topic/43367-s-1200-tsv-erro-tag-infocomplcont/?do=findComment&comment=286184
+   Por: Alisson Souza Pereira
+
+11/05/2018
+-- pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/38499-esocial/?do=findComment&comment=285106
+   Por: Leandro LJM
+
+09/05/2018
+-- pcesS2241 / pcesS2400--
+[*] Correções necessárias para poder gerar corretamente os XML dos eventos através
+   da leitura de seus dados em arquivos INI.
+   Por: Italo Jurisato Junior
+
+-- pcesS5002 --
+[*] https://www.projetoacbr.com.br/forum/topic/43021-retorno-do-s-1210-evento-s-5002-com-erro-no-componente/?do=findComment&comment=284580
+   Por: Arce
+
+08/05/2018
+-- ACBreSocialLoteEventos / pcesNaoPeriodicos / pcesS2220 / pcesS2210 --
+[*] Correções necessárias para poder gerar corretamente os XML dos eventos através
+   da leitura de seus dados em arquivos INI.
+   Por: Italo Jurisato Junior
+
+07/05/2018
+-- ACBreSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/43138-e-social-reinf-lerarqini/
+   Por: Leandro LJM
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/43113-valor-do-campo-s2298-lei-anistia/?do=findComment&comment=284372
+   Por: Renato E
+-- ACBreSocialEventos / pcesIniciais / pcesNaoPeriodicos / pcesPeriodicos / pcesTabelas --
+[*] Incluido na Classe Gerados a propriedade XML que contem o XML do evento gerado.
+   Por: Italo Jurisato Junior  
+
+04/05/2018
+-- pcesNaoPeriodicos / pcesPeriodicos / pcesTabelas / pcesS1299 / pcesS1300 --
+[*] Correções necessárias para poder gerar corretamente os XML dos eventos através
+   da leitura de seus dados em arquivos INI.
+   Por: Italo Jurisato Junior
+
+03/05/2018
+-- ACBreSocialEventos / pcesConversaoeSocial / pcesIniciais / pcesS1200 / pcesS1202 / pcesS1207 / pcesS2298 --
+[*] Correções necessárias para poder gerar corretamente os XML dos eventos através
+   da leitura de seus dados em arquivos INI.
+   Por: Italo Jurisato Junior
+
+-- pcesS5001 / pcesS5002 / pcesS5011 / pcesS5012 --
+[*] Tentativa de eliminar o erro interno relatado por Edmar Frazao.
+    https://www.projetoacbr.com.br/forum/topic/43021-retorno-do-s-1210-evento-s-5002-com-erro-no-componente/
+   Por: Italo Jurisato Junior
+
+02/05/2018
+-- ACBreSocialLoteEventos / pcesConversaoeSocial / pcesS1080 --
+[*] Correções necessárias para poder gerar corretamente os XML dos eventos através
+   da leitura de seus dados em arquivos INI.
+   Por: Italo Jurisato Junior
+-- pcesGerador / pcesS2300 --
+[*] https://www.projetoacbr.com.br/forum/topic/43062-registro-s-2300-campo-nistrab/
+   Por: Gustavo Ribeiro Croscato
+
+30/04/2018
+-- eSocial --
+[*] Correções em várias Units para que os tipos de eventos salvos em arquivos INI
+    sejam identificados de forma correta.
+   Por: Italo Jurisato Junior
+
+27/04/2018
+-- pcesS1280 --
+[*] https://www.projetoacbr.com.br/forum/topic/43026-ajuste-no-evento-s-1280/
+   Por: Joceandro Perin
+
 26/04/2018
 -- pcesS3000 --
 [*] https://www.projetoacbr.com.br/forum/topic/42988-erro-ao-excluir-evento-s-1200-atrav%C3%A9s-do-evento-s-3000/

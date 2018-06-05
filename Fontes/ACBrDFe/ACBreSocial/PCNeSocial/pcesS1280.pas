@@ -98,6 +98,10 @@ type
     procedure GerarInfoSubstPatr;
     procedure GerarInfoSubstPatrOpPort;
     procedure GerarInfoAtivConcom;
+    function getInfoAtivConcom: TInfoAtivConcom;
+    function getInfoSubstPatr: TInfoSubstPatr;
+    function getInfoSubstPatrOpPort: TInfoSubstPatrOpPortColecao;
+
   public
     constructor Create(AACBreSocial: TObject);overload;
     destructor  Destroy; override;
@@ -105,11 +109,15 @@ type
     function GerarXML: boolean; override;
     function LerArqIni(const AIniString: String): Boolean;
 
+    function infoAtivConcomInst(): Boolean;
+    function infoSubstPatrInst(): Boolean;
+    function infoSubstPatrOpPortInst(): Boolean;
+
     property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
-    property InfoSubstPatr: TInfoSubstPatr read FInfoSubstPatr write FInfoSubstPatr;
-    property InfoAtivConcom: TInfoAtivConcom read FInfoAtivConcom write FInfoAtivConcom;
-    property InfoSubstPatrOpPort: TInfoSubstPatrOpPortColecao read FInfoSubstPatrOpPort write FInfoSubstPatrOpPort;
+    property InfoSubstPatr: TInfoSubstPatr read getInfoSubstPatr write FInfoSubstPatr;
+    property InfoAtivConcom: TInfoAtivConcom read getInfoAtivConcom write FInfoAtivConcom;
+    property InfoSubstPatrOpPort: TInfoSubstPatrOpPortColecao read getInfoSubstPatrOpPort write FInfoSubstPatrOpPort;
   end;
 
   TInfoSubstPatr = class(TPersistent)
@@ -198,9 +206,9 @@ begin
   FACBreSocial := AACBreSocial;
   FIdeEvento := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FInfoSubstPatr := TInfoSubstPatr.Create;
-  FInfoSubstPatrOpPort := TInfoSubstPatrOpPortColecao.Create;
-  FInfoAtivConcom := TInfoAtivConcom.Create;
+  FInfoSubstPatrOpPort := nil;
+  FInfoSubstPatr := nil;
+  FInfoAtivConcom := nil;
 end;
 
 destructor TEvtInfoComplPer.destroy;
@@ -218,7 +226,7 @@ procedure TEvtInfoComplPer.GerarInfoAtivConcom;
 begin
   Gerador.wGrupo('infoAtivConcom');
 
-  Gerador.wCampo(tcDe4, '', 'fatorMes', 1, 5, 1, InfoAtivConcom.fatorMes);
+  Gerador.wCampo(tcDe2, '', 'fatorMes', 1, 5, 1, InfoAtivConcom.fatorMes);
   Gerador.wCampo(tcDe2, '', 'fator13',  1, 5, 1, InfoAtivConcom.fator13);
 
   Gerador.wGrupo('/infoAtivConcom');
@@ -266,9 +274,13 @@ begin
 
     GerarIdeEvento3(self.IdeEvento);
     GerarIdeEmpregador(self.IdeEmpregador);
-    GerarInfoSubstPatr;
-    GerarInfoSubstPatrOpPort;
-    GerarInfoAtivConcom;
+
+    if (infoSubstPatrInst) then
+      GerarInfoSubstPatr;
+    if (infoSubstPatrOpPortInst) then
+      GerarInfoSubstPatrOpPort;
+    if (infoAtivConcomInst) then
+      GerarInfoAtivConcom;
 
     Gerador.wGrupo('/evtInfoComplPer');
 
@@ -282,6 +294,42 @@ begin
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
+end;
+
+function TEvtInfoComplPer.getInfoAtivConcom: TInfoAtivConcom;
+begin
+  if not (Assigned(FInfoAtivConcom)) then
+    FInfoAtivConcom := TInfoAtivConcom.Create;
+  Result := FInfoAtivConcom;
+end;
+
+function TEvtInfoComplPer.getInfoSubstPatr: TInfoSubstPatr;
+begin
+  if not (Assigned(FInfoSubstPatr)) then
+    FInfoSubstPatr := TInfoSubstPatr.Create;
+  Result := FInfoSubstPatr;
+end;
+
+function TEvtInfoComplPer.getInfoSubstPatrOpPort: TInfoSubstPatrOpPortColecao;
+begin
+  if not (Assigned(FInfoSubstPatrOpPort)) then
+    FInfoSubstPatrOpPort := TInfoSubstPatrOpPortColecao.Create;
+  Result := FInfoSubstPatrOpPort;
+end;
+
+function TEvtInfoComplPer.infoAtivConcomInst: Boolean;
+begin
+  Result := Assigned(FInfoAtivConcom);
+end;
+
+function TEvtInfoComplPer.infoSubstPatrInst: Boolean;
+begin
+  Result := Assigned(FInfoSubstPatr);
+end;
+
+function TEvtInfoComplPer.infoSubstPatrOpPortInst: Boolean;
+begin
+  Result := Assigned(FInfoSubstPatrOpPort);
 end;
 
 { TInfoSubstPatrOpPortColecao }
@@ -321,6 +369,7 @@ begin
     with Self do
     begin
       sSecao := 'evtInfoComplPer';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
       Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
       sSecao := 'ideEvento';

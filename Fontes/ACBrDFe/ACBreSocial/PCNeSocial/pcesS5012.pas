@@ -99,8 +99,8 @@ type
     FtpCR: String;
     FvrCR: Double;
   public
-    property tpCR: String read FtpCR write FtpCR;
-    property vrCR: Double read FvrCR write FvrCR;
+    property tpCR: String read FtpCR;
+    property vrCR: Double read FvrCR;
   end;
 
   TInfoIRRF = class(TPersistent)
@@ -108,10 +108,15 @@ type
     FnrRecArqBase: String;
     FindExistInfo: Integer;
     FInfoCRContrib: TInfoCRContribCollection;
+
+    procedure SetInfoCRContrib(const Value: TInfoCRContribCollection);
   public
-    property nrRecArqBase: String read FnrRecArqBase write FnrRecArqBase;
-    property indExistInfo: Integer read FindExistInfo write FindExistInfo;
-    property InfoCRContrib: TInfoCRContribCollection read FInfoCRContrib write FInfoCRContrib;
+    constructor Create; reintroduce;
+    destructor Destroy; override;
+
+    property nrRecArqBase: String read FnrRecArqBase;
+    property indExistInfo: Integer read FindExistInfo;
+    property InfoCRContrib: TInfoCRContribCollection read FInfoCRContrib write SetInfoCRContrib;
   end;
 
   TEvtIrrf = class(TPersistent)
@@ -135,8 +140,8 @@ type
     property InfoIRRF: TInfoIRRF read FInfoIRRF write FInfoIRRF;
   published
     property Leitor: TLeitor read FLeitor write FLeitor;
-    property Id: String      read FId     write FId;
-    property XML: String     read FXML    write FXML;
+    property Id: String      read FId;
+    property XML: String     read FXML;
   end;
 
 implementation
@@ -173,7 +178,7 @@ procedure TS5012.SetXml(const Value: string);
 begin
   if Value = FEvtIrrf.XML then Exit;
 
-  FEvtIrrf.XML := Value;
+  FEvtIrrf.FXML := Value;
   FEvtIrrf.Leitor.Arquivo := Value;
   FEvtIrrf.LerXML;
 
@@ -235,6 +240,25 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+{ TInfoIRRF }
+
+constructor TInfoIRRF.Create;
+begin
+   FInfoCRContrib := TInfoCRContribCollection.Create;
+end;
+
+destructor TInfoIRRF.Destroy;
+begin
+  FInfoCRContrib.Free;
+
+  inherited;
+end;
+
+procedure TInfoIRRF.SetInfoCRContrib(const Value: TInfoCRContribCollection);
+begin
+  FInfoCRContrib := Value;
+end;
+
 function TEvtIrrf.LerXML: Boolean;
 var
   ok: Boolean;
@@ -242,7 +266,7 @@ var
 begin
   Result := False;
   try
-    XML := Leitor.Arquivo;
+    FXML := Leitor.Arquivo;
 
     if leitor.rExtrai(1, 'evtIrrf') <> '' then
     begin
@@ -259,15 +283,15 @@ begin
 
       if leitor.rExtrai(2, 'infoIRRF') <> '' then
       begin
-        infoIRRF.nrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
-        infoIRRF.indExistInfo := leitor.rCampo(tcInt, 'indExistInfo');
+        infoIRRF.FnrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
+        infoIRRF.FindExistInfo := leitor.rCampo(tcInt, 'indExistInfo');
 
         i := 0;
         while Leitor.rExtrai(3, 'infoCRContrib', '', i + 1) <> '' do
         begin
           infoIRRF.infoCRContrib.Add;
-          infoIRRF.infoCRContrib.Items[i].tpCR := leitor.rCampo(tcStr, 'tpCR');
-          infoIRRF.infoCRContrib.Items[i].vrCR := leitor.rCampo(tcDe2, 'vrCR');
+          infoIRRF.infoCRContrib.Items[i].FtpCR := leitor.rCampo(tcStr, 'tpCR');
+          infoIRRF.infoCRContrib.Items[i].FvrCR := leitor.rCampo(tcDe2, 'vrCR');
           inc(i);
         end;
       end;

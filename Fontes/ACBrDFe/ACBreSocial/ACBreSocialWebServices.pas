@@ -373,7 +373,7 @@ begin
                          'Versão Aplicativo: %s ' + LineBreak +
                          'Status Código: %s ' + LineBreak +
                          'Status Descrição: %s ' + LineBreak),
-                 ['2.4.01',
+                 [VersaoeSocialToStr(TACBreSocial(FPDFeOwner).Configuracoes.Geral.VersaoDF),
                   TpAmbToStr(TACBreSocial(FPDFeOwner).Configuracoes.WebServices.Ambiente),
                   FRetEnvioLote.dadosRecLote.versaoAplicRecepcao,
                   IntToStr(FRetEnvioLote.Status.cdResposta),
@@ -491,7 +491,7 @@ begin
                          'Versão Aplicativo: %s ' + LineBreak +
                          'Status Código: %s ' + LineBreak +
                          'Status Descrição: %s ' + LineBreak),
-                 ['2.4.01',
+                 [VersaoeSocialToStr(TACBreSocial(FPDFeOwner).Configuracoes.Geral.VersaoDF),
                   TpAmbToStr(TACBreSocial(FPDFeOwner).Configuracoes.WebServices.Ambiente),
                   FRetConsultaLote.dadosRecLote.versaoAplicRecepcao,
                   IntToStr(FRetConsultaLote.Status.cdResposta),
@@ -557,6 +557,8 @@ end;
 
 function TWebServices.Envia(AGrupo: TeSocialGrupo): Boolean;
 begin
+  FEnvioLote.Clear;
+
 {$IFDEF FPC}
   Result := False;
 {$ENDIF}

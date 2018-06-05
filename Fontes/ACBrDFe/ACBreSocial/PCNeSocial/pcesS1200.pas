@@ -122,6 +122,7 @@ type
 
     function getInfoPerApur: TInfoPerApur;
     function getInfoPerAnt: TInfoPerAnt;
+    function getInfoComplCont: TInfoComplCont;
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
@@ -136,7 +137,7 @@ type
     property infoPerApur: TInfoPerApur read getInfoPerApur write FInfoPerApur;
     property infoPerAnt: TInfoPerAnt read getInfoPerAnt write FInfoPerAnt;
     property infoTrabInterm: TinfoTrabIntermCollection read FinfoTrabInterm write FinfoTrabInterm;
-    property infoComplCont: TInfoComplCont read FinfoComplCont write FinfoComplCont;
+    property infoComplCont: TInfoComplCont read getInfoComplCont write FinfoComplCont;
   end;
 
   TEvtRemun = class(TeSocialEvento)
@@ -713,14 +714,16 @@ constructor TDMDevCollectionItem.Create;
 begin
   FinfoTrabInterm := TinfoTrabIntermCollection.Create;
 
-  FInfoPerApur := nil;
-  FInfoPerAnt := nil;
+  FInfoPerApur   := nil;
+  FInfoPerAnt    := nil;
+  FinfoComplCont := nil;
 end;
 
 destructor TDMDevCollectionItem.Destroy;
 begin
   FreeAndNil(FInfoPerApur);
   FreeAndNil(FInfoPerAnt);
+  FreeAndNil(FinfoComplCont);
   FinfoTrabInterm.Free;
 
   inherited;
@@ -741,6 +744,13 @@ end;
 function TDMDevCollectionItem.infoTrabIntermInst: boolean;
 begin
   Result := Assigned(FinfoTrabInterm);
+end;
+
+function TDMDevCollectionItem.getInfoComplCont: TInfoComplCont;
+begin
+  if not(Assigned(FInfoComplCont)) then
+    FInfoComplCont := TInfoComplCont.Create;
+  Result := FInfoComplCont;
 end;
 
 function TDMDevCollectionItem.getInfoPerAnt: TInfoPerAnt;
@@ -1000,7 +1010,7 @@ begin
 
     Gerador.wCampo(tcStr, '', 'matricula', 1, 30, 0, objRemunPer.Items[i].matricula);
 
-    if ord(objRemunPer.Items[i].indSimples) > 0 then
+    if objRemunPer.Items[i].indSimples <> idsNenhum then
       Gerador.wCampo(tcStr, '', 'indSimples', 1, 1, 0, eSIndSimplesToStr(objRemunPer.Items[i].indSimples));
 
     GerarItensRemun(objRemunPer.Items[i].itensRemun, 'itensRemun');
@@ -1069,7 +1079,8 @@ begin
     with Self do
     begin
       sSecao := 'evtRemun';
-      Sequencial     := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
 
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
@@ -1351,7 +1362,7 @@ begin
                           begin
                             // de 001 até 200
                             sSecao := 'itensRemun' + IntToStrZero(I, 2) +
-                                        IntToStrZero(J, 3) + IntToStrZero(K, 1) +
+                                        IntToStrZero(J, 1) + IntToStrZero(K, 3) +
                                         IntToStrZero(L, 3) + IntToStrZero(M, 1) +
                                         IntToStrZero(N, 3);
                             sFim   := INIRec.ReadString(sSecao, 'codRubr', 'FIM');
@@ -1373,7 +1384,7 @@ begin
                           end;
 
                           sSecao := 'infoAgNocivo' + IntToStrZero(I, 2) +
-                                        IntToStrZero(J, 3) + IntToStrZero(K, 1) +
+                                        IntToStrZero(J, 1) + IntToStrZero(K, 3) +
                                         IntToStrZero(L, 3) + IntToStrZero(M, 1);
                           infoAgNocivo.grauExp := eSStrToGrauExp(Ok, INIRec.ReadString(sSecao, 'grauExp', '1'));
 

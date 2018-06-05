@@ -16,7 +16,11 @@ uses
   DoECFObserver, DoECFUnit, DoETQUnit, DoGAVUnit, DoLCBUnit, Sobre,
   DoBoletoUnit, DoCEPUnit, DoIBGEUnit, DoEmailUnit, DoNcmUnit, DoACBrNFeUnit,
   DoACBrCTeUnit, DoACBrMDFeUnit, DoSATUnit, DoACBrGNReUnit,
-  ACBrBoletoRelatorioRetorno, DoPosPrinterUnit, SelecionarCertificado;
+  ACBrBoletoRelatorioRetorno, DoPosPrinterUnit, SelecionarCertificado,
+  DoACBrESocialUnit, DoACBrDFeUnit, ACBrMonitorConsts, ACBrMonitorConfig,
+  DoACBrReinfUnit, ACBrLibeSocialConsts, ACBrLibeSocialRespostas,
+  ACBrLibMDFeConsts, ACBrLibMDFeRespostas, ACBrLibReinfConsts,
+  ACBrLibReinfRespostas;
 
 {$R *.res}
 var

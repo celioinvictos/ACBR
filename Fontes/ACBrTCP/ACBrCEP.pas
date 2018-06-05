@@ -39,6 +39,10 @@
 |*
 |* 12/08/2010: Primeira Versao
 |*    Daniel Simoes de Almeida e André Moraes
+|*
+|* 24/05/2018: Versão X
+|*    Igor de Bastos Costa
+|*    Atualizacao dos comandos do CEPAberto que alterou a API para versao 3.0
 ******************************************************************************}
 
 unit ACBrCEP ;
@@ -48,13 +52,13 @@ unit ACBrCEP ;
 interface
 
 uses
-  Classes, SysUtils, contnrs, ACBrSocket, ACBrIBGE;
+  Classes, SysUtils, contnrs, ACBrSocket, ACBrIBGE, Jsons;
 
 type
   TACBrCEPWebService = ( wsNenhum, wsBuscarCep, wsCepLivre, wsRepublicaVirtual,
                          wsBases4you, wsRNSolucoes, wsKingHost, wsByJG,
                          wsCorreios, wsDevMedia, wsViaCep, wsCorreiosSIGEP,
-                         wsCepAberto) ;
+                         wsCepAberto, wsWSCep) ;
 
   EACBrCEPException = class ( Exception );
 
@@ -327,6 +331,15 @@ TACBrWSDevMedia = class(TACBrCEPWSClass)
     Procedure BuscarPorLogradouro( AMunicipio, ATipo_Logradouro,ALogradouro, AUF, ABairro : String ); override;
   end ;
 
+  { TACBrWSWSCEP } // WSCep é o nome do servico
+
+  TACBrWSWSCEP = class(TACBrCEPWSClass)
+  private
+    procedure ProcessaResposta ;
+  public
+    constructor Create( AOwner : TACBrCEP ) ; override ;
+    Procedure BuscarPorCEP( ACEP : String ) ; override ;
+  end ;
 
 implementation
 
@@ -422,6 +435,7 @@ begin
     wsViaCep           : fACBrCEPWS := TACBrWSViaCEP.Create(Self);
     wsCorreiosSIGEP    : fACBrCEPWS := TACBrWSCorreiosSIGEP.Create(Self);
     wsCepAberto        : fACBrCEPWS := TACBrWSCEPAberto.Create(Self);
+    wsWSCep            : fACBrCEPWS := TACBrWSWSCEP.Create(Self);
   else
      fACBrCEPWS := TACBrCEPWSClass.Create( Self ) ;
   end ;
@@ -1594,8 +1608,6 @@ begin
     fOwner.OnBuscaEfetuada(Self);
 end;
 
-{ TACBrWSCEPAberto }
-
 procedure TACBrWSCEPAberto.BuscarPorLogradouro(AMunicipio, ATipo_Logradouro,
   ALogradouro, AUF, ABairro: String);
 var
@@ -1611,25 +1623,24 @@ begin
   if AMunicipio = '' then
      raise EACBrCEPException.Create('Munícipio deve ser informado.');
 
-  if ALogradouro = '' then
-     raise EACBrCEPException.Create('Logradouro deve ser informado.');
-
   AUF         := fOwner.AjustaParam(AUF);
   AMunicipio  := fOwner.AjustaParam(AMunicipio);
   ALogradouro := fOwner.AjustaParam(ALogradouro);
   ABairro     := fOwner.AjustaParam(ABairro);
 
-  // estado, cidade e logradouro são obrigatórios
+  // estado e cidade são obrigatórios
   Parametros := 'estado=' + AUF +
-                '&cidade=' + AMunicipio +
-                '&logradouro=' + ALogradouro;
+                '&cidade=' + AMunicipio;
 
-  if ABairro <> '' then
+  if(Trim(ABairro) <> '')then
     Parametros := Parametros + '&bairro=' + ABairro;
+
+  if(Trim(ALogradouro) <> '')then
+    Parametros := Parametros + '&logradouro=' + ALogradouro;
 
   fOwner.HTTPSend.Clear;
   fOwner.HTTPSend.Headers.Add('Authorization: Token token="'+fOwner.ChaveAcesso+'"');
-  fOwner.HTTPMethod('GET', fpURL+'ceps.xml?' + Parametros);
+  fOwner.HTTPMethod('GET', fpURL+'estado' + Parametros);
 
   ProcessaResposta;
 end;
@@ -1639,7 +1650,7 @@ begin
   inherited Create(AOwner);
 
   fOwner.ParseText := False;
-  fpURL := 'http://www.cepaberto.com/api/v2/';
+  fpURL := 'http://www.cepaberto.com/api/v3/';
 end;
 
 procedure TACBrWSCEPAberto.BuscarPorCEP(ACEP: String);
@@ -1654,7 +1665,7 @@ begin
 
   fOwner.HTTPSend.Clear;
   fOwner.HTTPSend.Headers.Add('Authorization: Token token="'+fOwner.ChaveAcesso+'"');
-  fOwner.HTTPMethod('GET', fpURL+'ceps.xml?cep=' + ACEP);
+  fOwner.HTTPMethod('GET', fpURL+'cep?cep=' + ACEP);
 
   ProcessaResposta;
 end;
@@ -1665,9 +1676,35 @@ var
   s: string;
   i: Integer;
   SL1: TStringList;
+
+  function LerTagJson(AJsonStr, ATag: String): string;
+  var
+    VJson: TJson;
+    VTag, VTag2: string;
+  begin
+    VJson := TJson.Create;
+    try
+      VJson.Parse(AJsonStr);
+
+      if(Pos('->', ATag) > 0)then
+      begin
+        VTag := LeftStr(ATag, Pos('->', ATag)-1);
+        VTag2 := Copy(ATag, Length(VTag)+3, MaxInt);
+        ATag := VTag;
+      end;
+
+      //Se for um objeto de valores, entra na recursao
+      if(VJson.Get(ATag).ValueType = jvObject)then
+        Result := LerTagJson(VJson.Get(ATag).Stringify, VTag2)
+      else
+        Result := VJson.Get(ATag).AsString;
+    finally
+      VJson.Free;
+    end;
+  end;
+
 begin
   SL1 := TStringList.Create;
-
   try
     Buffer := fOwner.RespHTTP.Text;
 
@@ -1681,25 +1718,84 @@ begin
     begin
       s := SL1.Strings[i];
 
-      if LerTagXML(s, 'cep') <> '' then
+      if LerTagJson(s, 'cep') <> '' then
       begin
         with fOwner.Enderecos.New do
         begin
-          CEP             := LerTagXML(s, 'cep');
-          Logradouro      := LerTagXML(s, 'logradouro');
-          Complemento     := LerTagXML(s, 'complemento');
-          Bairro          := LerTagXML(s, 'bairro');
-          Municipio       := LerTagXML(s, 'cidade');
-          UF              := LerTagXML(s, 'estado');
-          IBGE_Municipio  := LerTagXML(s, 'ibge');
-          Altitude        := LerTagXML(s, 'altitude');
-          Latitude        := LerTagXML(s, 'latitude');
-          Longitude       := LerTagXML(s, 'longitude');
+          CEP             := LerTagJson(s, 'cep');
+          Logradouro      := LerTagJson(s, 'logradouro');
+          Complemento     := LerTagJson(s, 'complemento');
+          Bairro          := LerTagJson(s, 'bairro');
+          Municipio       := LerTagJson(s, 'cidade->nome');
+          UF              := LerTagJson(s, 'estado->sigla');
+          IBGE_Municipio  := LerTagJson(s, 'cidade->ibge');
+          Altitude        := LerTagJson(s, 'altitude');
+          Latitude        := LerTagJson(s, 'latitude');
+          Longitude       := LerTagJson(s, 'longitude');
         end;
       end;
     end;
   finally
     SL1.Free;
+  end;
+
+  if Assigned(fOwner.OnBuscaEfetuada) then
+    fOwner.OnBuscaEfetuada(Self);
+end;
+
+{ TACBrWSWSCEP }
+
+procedure TACBrWSWSCEP.BuscarPorCEP(ACEP: String);
+begin
+  ACEP := OnlyNumber( ACEP );
+
+  if ACEP = '' then
+    raise EACBrCEPException.Create('CEP deve ser informado');
+
+  if(Trim(fOwner.ChaveAcesso) = '')then
+    raise EACBrCEPException.Create('O WebService WSCep necessita de uma Chave de Acesso.'+#13+'Acesse o site, crie uma conta e pegue sua Chave de Acesso! Use a chave "free" para ter acesso ate 30 consultas por dia');
+
+  fOwner.HTTPSend.Clear;
+  fOwner.HTTPMethod('GET', Format(fpURL, [fOwner.ChaveAcesso, ACEP]));
+
+  ProcessaResposta;
+end;
+
+constructor TACBrWSWSCEP.Create(AOwner: TACBrCEP);
+begin
+  inherited Create(AOwner);
+
+  fOwner.ParseText := False;
+  fpURL := 'http://api.wscep.com/cep?key=%s&val=%s';
+end;
+
+procedure TACBrWSWSCEP.ProcessaResposta;
+var
+  Buffer: string;
+begin
+  try
+    Buffer := fOwner.RespHTTP.Text;
+
+    Buffer := StringReplace(Buffer, '<?xml version="1.0" encoding="UTF-8"?>'+ sLineBreak+'<cep>', '<?xml version="1.0" encoding="UTF-8"?>'+ sLineBreak+'<resposta>', [rfReplaceAll]);
+    Buffer := StringReplace(Buffer, '</estado>'+ sLineBreak+'</cep>', '</estado>'+ sLineBreak+'</resposta>', [rfReplaceAll]);
+    Buffer := StringReplace(Buffer, sLineBreak, '', [rfReplaceAll]);
+
+    if LerTagXML(Buffer, 'cep') <> '' then
+    begin
+      with fOwner.Enderecos.New do
+      begin
+        CEP             := LerTagXML(Buffer, 'cep');
+        Logradouro      := LerTagXML(Buffer, 'logradouro');
+        Bairro          := LerTagXML(Buffer, 'bairro');
+        Municipio       := LerTagXML(Buffer, 'cidade');
+        UF              := LerTagXML(Buffer, 'uf');
+        IBGE_Municipio  := LerTagXML(Buffer, 'cod_ibge_municipio');
+        Altitude        := LerTagXML(Buffer, 'alt');
+        Latitude        := LerTagXML(Buffer, 'lat');
+        Longitude       := LerTagXML(Buffer, 'lng');
+      end;
+    end;
+  finally
   end;
 
   if Assigned(fOwner.OnBuscaEfetuada) then

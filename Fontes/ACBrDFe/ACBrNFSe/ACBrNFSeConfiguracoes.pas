@@ -69,7 +69,6 @@ type
     RPS: Boolean;
     Lote: Boolean;
     URI: Boolean;
-    Recepcionar: Boolean;
     ConsSit: Boolean;
     ConsLote: Boolean;
     ConsNFSeRps: Boolean;
@@ -77,7 +76,6 @@ type
     Cancelar: Boolean;
     RpsGerar: Boolean;
     LoteGerar: Boolean;
-    RecSincrono: Boolean;
     Substituir: Boolean;
     AbrirSessao: Boolean;
     FecharSessao: Boolean;
@@ -398,7 +396,7 @@ type
 implementation
 
 uses
-  ACBrUtil, 
+  ACBrUtil, ACBrNFSe,
   DateUtils;
 
 { TEmitenteConfNFSe }
@@ -581,7 +579,6 @@ begin
   FConfigAssinar.RPS := FPIniParams.ReadBool('Assinar', 'RPS', False);
   FConfigAssinar.Lote := FPIniParams.ReadBool('Assinar', 'Lote', False);
   FConfigAssinar.URI := FPIniParams.ReadBool('Assinar', 'URI', False);
-  FConfigAssinar.Recepcionar := FPIniParams.ReadBool('Assinar', 'Recepcionar', False);
   FConfigAssinar.ConsSit := FPIniParams.ReadBool('Assinar', 'ConsSit', False);
   FConfigAssinar.ConsLote := FPIniParams.ReadBool('Assinar', 'ConsLote', False);
   FConfigAssinar.ConsNFSeRps := FPIniParams.ReadBool('Assinar', 'ConsNFSeRps', False);
@@ -589,7 +586,6 @@ begin
   FConfigAssinar.Cancelar := FPIniParams.ReadBool('Assinar', 'Cancelar', False);
   FConfigAssinar.RpsGerar := FPIniParams.ReadBool('Assinar', 'RpsGerar', False);
   FConfigAssinar.LoteGerar := FPIniParams.ReadBool('Assinar', 'LoteGerar', False);
-  FConfigAssinar.RecSincrono := FPIniParams.ReadBool('Assinar', 'RecSincrono', False);
   FConfigAssinar.Substituir := FPIniParams.ReadBool('Assinar', 'Substituir', False);
   FConfigAssinar.AbrirSessao := FPIniParams.ReadBool('Assinar', 'AbrirSessao', False);
   FConfigAssinar.FecharSessao := FPIniParams.ReadBool('Assinar', 'FecharSessao', False);
@@ -743,26 +739,26 @@ begin
   FConfigEnvelope.Recepcionar_CabecalhoStr := FPIniParams.ReadBool('Recepcionar', 'CabecalhoStr', FConfigXML.CabecalhoStr);
   FConfigEnvelope.Recepcionar_DadosStr := FPIniParams.ReadBool('Recepcionar', 'DadosStr', FConfigXML.DadosStr);
 
-  if(FProvedor = proNotaBlu) Then
+  if (FProvedor = proNotaBlu) Then
+  begin
+    Texto := '';
+    I := 1;
+    while true do
     begin
-      Texto := '';
-      I := 1;
-      while true do
-      begin
-        sCampo := 'Texto' + IntToStr(I);
-        sFim   := FPIniParams.ReadString('Teste', sCampo, 'FIM');
-        if (sFim = 'FIM') or (Length(sFim) <= 0) then
-          break;
-        Texto := Texto + sFim;
-        Inc(I);
-      end;
-      FConfigEnvelope.Teste := Texto;
-
-      FConfigEnvelope.Teste_IncluiEncodingCab := FPIniParams.ReadBool('Teste', 'IncluiEncodingCab', False);
-      FConfigEnvelope.Teste_IncluiEncodingDados := FPIniParams.ReadBool('Teste', 'IncluiEncodingDados', False);
-      FConfigEnvelope.Teste_CabecalhoStr := FPIniParams.ReadBool('Teste', 'CabecalhoStr', FConfigXML.CabecalhoStr);
-      FConfigEnvelope.Teste_DadosStr := FPIniParams.ReadBool('Teste', 'DadosStr', FConfigXML.DadosStr);
+      sCampo := 'Texto' + IntToStr(I);
+      sFim   := FPIniParams.ReadString('Teste', sCampo, 'FIM');
+      if (sFim = 'FIM') or (Length(sFim) <= 0) then
+        break;
+      Texto := Texto + sFim;
+      Inc(I);
     end;
+    FConfigEnvelope.Teste := Texto;
+
+    FConfigEnvelope.Teste_IncluiEncodingCab := FPIniParams.ReadBool('Teste', 'IncluiEncodingCab', False);
+    FConfigEnvelope.Teste_IncluiEncodingDados := FPIniParams.ReadBool('Teste', 'IncluiEncodingDados', False);
+    FConfigEnvelope.Teste_CabecalhoStr := FPIniParams.ReadBool('Teste', 'CabecalhoStr', FConfigXML.CabecalhoStr);
+    FConfigEnvelope.Teste_DadosStr := FPIniParams.ReadBool('Teste', 'DadosStr', FConfigXML.DadosStr);
+  end;
 
   Texto := '';
   I := 1;
@@ -944,6 +940,7 @@ begin
   FConfigEnvelope.FecharSessao_IncluiEncodingDados := FPIniParams.ReadBool('FecharSessao', 'IncluiEncodingDados', False);
   FConfigEnvelope.FecharSessao_CabecalhoStr := FPIniParams.ReadBool('FecharSessao', 'CabecalhoStr', FConfigXML.CabecalhoStr);
   FConfigEnvelope.FecharSessao_DadosStr := FPIniParams.ReadBool('FecharSessao', 'DadosStr', FConfigXML.DadosStr);
+
   Texto := '';
   I := 1;
   while true do
@@ -966,9 +963,6 @@ begin
     FConfigGeral.HomLinkNFSe := StringReplace(FPIniParams.ReadString('LinkNFSe', 'Homologacao_' + CodIBGE, ''), '%NomeURL_H%', FxNomeURL_P, [rfReplaceAll])
   else
     FConfigGeral.HomLinkNFSe := StringReplace(FPIniParams.ReadString('LinkNFSe', 'Homologacao', ''), '%NomeURL_H%', FxNomeURL_H, [rfReplaceAll]);
-
-//  FConfigGeral.ProLinkNFSe := StringReplace(FPIniParams.ReadString('LinkNFSe', 'Producao'   , ''), '%NomeURL_P%', FxNomeURL_P, [rfReplaceAll]);
-//  FConfigGeral.HomLinkNFSe := StringReplace(FPIniParams.ReadString('LinkNFSe', 'Homologacao', ''), '%NomeURL_H%', FxNomeURL_H, [rfReplaceAll]);
 
   Texto := '';
   I := 1;
@@ -1034,25 +1028,66 @@ function TArquivosConfNFSe.GetPathGer(Data: TDateTime;
   CNPJ: String): String;
 begin
   Result := GetPath(FPathGer, 'NFSe', CNPJ, Data);
-//  Result := GetPath(FPathGer, 'Ger', CNPJ, Data);
 end;
 
 function TArquivosConfNFSe.GetPathRPS(Data: TDateTime;
   CNPJ: String): String;
+var
+  Dir: String;
 begin
-  Result := GetPath(FPathRPS, 'Recibos', CNPJ, Data);
+  if FPathGer <> '' then
+    Result := GetPath(FPathGer, 'Recibos', CNPJ, Data)
+  else
+  begin
+    Dir := GetPath(FPathGer, 'NFSe', CNPJ, Data);
+
+    Dir := PathWithDelim(Dir) + 'Recibos';
+
+    if not DirectoryExists(Dir) then
+      ForceDirectories(Dir);
+
+    Result := Dir;
+  end;
 end;
 
 function TArquivosConfNFSe.GetPathNFSe(Data: TDateTime = 0;
   CNPJ: String = ''): String;
+var
+  Dir: String;
 begin
-  Result := GetPath(FPathNFSe, 'Notas', CNPJ, Data);
+  if FPathGer <> '' then
+    Result := GetPath(FPathGer, 'Notas', CNPJ, Data)
+  else
+  begin
+    Dir := GetPath(FPathGer, 'NFSe', CNPJ, Data);
+
+    Dir := PathWithDelim(Dir) + 'Notas';
+
+    if not DirectoryExists(Dir) then
+      ForceDirectories(Dir);
+
+    Result := Dir;
+  end;
 end;
 
 function TArquivosConfNFSe.GetPathCan(Data: TDateTime = 0;
   CNPJ: String = ''): String;
+var
+  Dir: String;
 begin
-  Result := GetPath(FPathCan, 'Can', CNPJ, Data);
+  if FPathCan <> '' then
+    Result := GetPath(FPathCan, 'Can', CNPJ, Data)
+  else
+  begin
+    Dir := GetPath(FPathGer, 'NFSe', CNPJ, Data);
+
+    Dir := PathWithDelim(Dir) + 'Can';
+
+    if not DirectoryExists(Dir) then
+      ForceDirectories(Dir);
+
+    Result := Dir;
+  end;
 end;
 
 end.

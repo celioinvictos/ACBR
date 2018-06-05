@@ -292,7 +292,7 @@ begin
     // Homologação: 01/10/2015
     // Produção: 03/11/2015
 
-    if (NFe.Ide.modelo = 65) and (Configuracoes.Geral.IncluirQRCodeXMLNFCe) then
+    if (NFe.Ide.modelo = 65) then
     begin
       with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
       begin
@@ -301,7 +301,7 @@ begin
                                   trim(IfThen(NFe.Dest.idEstrangeiro <> '', NFe.Dest.idEstrangeiro, NFe.Dest.CNPJCPF)),
                                   NFe.Ide.dEmi, NFe.Total.ICMSTot.vNF,
                                   NFe.Total.ICMSTot.vICMS, NFe.signature.DigestValue,
-                                  NFe.infNFe.Versao, Configuracoes.Geral.VersaoQRCode);
+                                  NFe.infNFe.Versao);
 
         if NFe.infNFe.Versao >= 4 then
           NFe.infNFeSupl.urlChave := GetURLConsultaNFCe(NFe.Ide.cUF, NFe.Ide.tpAmb, NFe.infNFe.Versao);
@@ -1626,14 +1626,14 @@ begin
           begin
             sSecao := IfThen( INIRec.SectionExists('Medicamento'+IntToStrZero(I,3)+IntToStrZero(J,3)), 'Medicamento', 'med');
             sSecao := sSecao+IntToStrZero(I,3)+IntToStrZero(J,3) ;
-            sFim     := INIRec.ReadString(sSecao,'nLote','FIM') ;
+            sFim     := INIRec.ReadString(sSecao,'cProdANVISA','FIM') ;
             if (sFim = 'FIM') or (Length(sFim) <= 0) then
               break;
 
             with Prod.med.Add do
             begin
-              nLote := sFim;
-              cProdANVISA:=  INIRec.ReadString( sSecao,'cProdANVISA','');
+              nLote := INIRec.ReadString(sSecao,'nLote','FIM') ;
+              cProdANVISA:=  sFim;
               qLote := StringToFloatDef(INIRec.ReadString( sSecao,'qLote',''),0) ;
               dFab  := StringToDateTime(INIRec.ReadString( sSecao,'dFab','0')) ;
               dVal  := StringToDateTime(INIRec.ReadString( sSecao,'dVal','0')) ;
