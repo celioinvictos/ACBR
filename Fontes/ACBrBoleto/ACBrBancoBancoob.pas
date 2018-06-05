@@ -385,7 +385,8 @@ begin
                   FormatDateTime( 'ddmmyy', DataDocumento )               +  // 32 Data de Emissão
                   PadLeft(AInstrucao1, 2, '0')                            +  // 33 Primeira instrução (SEQ 34) = 00 e segunda (SEQ 35) = 00, não imprime nada.
                   PadLeft(AInstrucao2, 2, '0')                            +  // 34 Primeira instrução (SEQ 34) = 00 e segunda (SEQ 35) = 00, não imprime nada.
-                  IntToStrZero( Round( (ValorMoraJuros * 30) *10000 ), 6) +  // Taxa de mora mês
+                  //IntToStrZero( Round( (ValorMoraJuros * 30) *10000 ), 6) +  // Taxa de mora mês
+                  IntToStrZero( Round( ValorMoraJuros  * 10000 ), 6) +  // Taxa de mora mês
                   IntToStrZero( Round( PercentualMulta * 10000 ), 6)      +  // Taxa de multa
                   strCarteiraEnvio                                        +  // Responsabilidade Distribuição
                   strDataDesconto                                         +  // Data do Primeiro Desconto, Preencher com zeros quando não for concedido nenhum desconto.
@@ -562,11 +563,15 @@ begin
                DataOcorrencia := StringToDateTimeDef( Copy(Linha,138,2)+'/'+
                                                       Copy(Linha,140,2)+'/'+
                                                       Copy(Linha,142,4),0, 'DD/MM/YYYY' );
-
+            { invictos }
             if StrToIntDef(Copy(Linha,146,6),0) <> 0 then
                DataCredito:= StringToDateTimeDef( Copy(Linha,146,2)+'/'+
                                                   Copy(Linha,148,2)+'/'+
-                                                  Copy(Linha,150,4),0, 'DD/MM/YYYY' );
+                                                  Copy(Linha,150,4),0, 'DD/MM/YYYY' )
+            else
+               DataCredito:= StringToDateTimeDef( Copy(Linha,138,2)+'/'+
+                                                  Copy(Linha,140,2)+'/'+
+                                                  Copy(Linha,142,4),0, 'DD/MM/YYYY' );
 
             ValorMoraJuros       := StrToFloatDef(Copy(Linha,18,15),0)/100;
             ValorDesconto        := StrToFloatDef(Copy(Linha,33,15),0)/100;
@@ -875,8 +880,8 @@ begin
                'P'                                                           + //14 - Código do segmento do registro detalhe
                ' '                                                           + //15 - Uso exclusivo FEBRABAN/CNAB: Branco
                ATipoOcorrencia                                               + //16 a 17 - Código de movimento
-               '0'                                                           + // 18
-               PadLeft(OnlyNumber(ACBrBoleto.Cedente.Agencia),4,'0')         + //19 a 22 - Agência mantenedora da conta
+               //'0'                                                           + // 18
+               PadLeft(OnlyNumber(ACBrBoleto.Cedente.Agencia),5,'0')         + //18 a 22 - Agência mantenedora da conta
                PadLeft(ACBrBoleto.Cedente.AgenciaDigito, 1, '0')             + //23 Digito agencia
                PadLeft(OnlyNumber(ACBrBoleto.Cedente.Conta), 12, '0')        + //24 a 35 - Número da Conta Corrente
                PadLeft(ACBrBoleto.Cedente.ContaDigito , 1, '0')              + //36 - Dígito da Conta Corrente
@@ -923,9 +928,9 @@ begin
                          DiasProtesto                                     + // 222 a 223 - Prazo para protesto (em dias corridos)
                          '0'                                              + // 224 - Código de Baixa
                          space(3)                                         + // 225 A 227 - Dias para baixa
-                         '09'                                             + //
-                         '0000000000'                                     + // Numero contrato da operação
-                         ' ';
+                         '09'                                             + // 228 A 229
+                         '0000000000'                                     + // 230 a 239 Numero contrato da operação
+                         ' ';                                               // 240
         Inc(i);
       {SEGMENTO Q}
       {Pegando tipo de pessoa do Sacado}

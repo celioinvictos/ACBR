@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 325
-  Top = 98
+  Left = 271
+  Top = 49
   Caption = 'ACBrNFe - Demonstra'#231#227'o'
   ClientHeight = 608
   ClientWidth = 876
@@ -122,12 +122,16 @@ object Form1: TForm1
       TabOrder = 1
       object TabSheet1: TTabSheet
         Caption = 'Configura'#231#245'es'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PageControl4: TPageControl
           Left = 0
           Top = 0
           Width = 275
           Height = 476
-          ActivePage = TabSheet4
+          ActivePage = TabSheet3
           Align = alClient
           MultiLine = True
           TabOrder = 0
@@ -622,6 +626,10 @@ object Form1: TForm1
           object TabSheet7: TTabSheet
             Caption = 'WebService'
             ImageIndex = 2
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object GroupBox4: TGroupBox
               Left = 0
               Top = 4
@@ -1781,6 +1789,19 @@ object Form1: TForm1
             OnClick = btnCriarEnviarNFCeClick
           end
         end
+        object Celio: TTabSheet
+          Caption = 'Celio'
+          ImageIndex = 2
+          object btConsultaChave: TButton
+            Left = 17
+            Top = 7
+            Width = 177
+            Height = 25
+            Caption = 'Consultar Chave'
+            TabOrder = 0
+            OnClick = btConsultaChaveClick
+          end
+        end
       end
     end
     object pgRespostas: TPageControl
@@ -1838,6 +1859,10 @@ object Form1: TForm1
       object TabSheet9: TTabSheet
         Caption = 'NFe'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object trvwNFe: TTreeView
           Left = 0
           Top = 0
@@ -1864,6 +1889,10 @@ object Form1: TForm1
       object Dados: TTabSheet
         Caption = 'Dados'
         ImageIndex = 5
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object MemoDados: TMemo
           Left = 0
           Top = 0
@@ -1880,6 +1909,10 @@ object Form1: TForm1
       object TabSheet11: TTabSheet
         Caption = 'RetornoConsulta NFe 2.01'
         ImageIndex = 6
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object TreeViewRetornoConsulta: TTreeView
           Left = 0
           Top = 0

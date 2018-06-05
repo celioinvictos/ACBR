@@ -944,6 +944,35 @@ begin
    MemoResp.Lines.Text   := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
    memoRespWS.Lines.Text := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
    LoadXML(MemoResp, WBResposta);
+  end
+  else begin
+    ACBrMDFe1.Manifestos.Clear;
+    ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
+
+    ACBrMDFe1.EventoMDFe.Evento.Clear;
+
+    with ACBrMDFe1.EventoMDFe.Evento.Add do
+    begin
+      infEvento.chMDFe   := Copy(ACBrMDFe1.Manifestos.Items[0].MDFe.infMDFe.ID, 5, 44);
+      infEvento.CNPJ     := edtEmitCNPJ.Text;
+      infEvento.dhEvento := now;
+      //  TpcnTpEvento = (teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
+      //                  teManifDestDesconhecimento, teManifDestOperNaoRealizada,
+      //                  teEncerramento);
+      infEvento.tpEvento   := teEncerramento;
+      infEvento.nSeqEvento := 1;
+
+      infEvento.detEvento.nProt := ACBrMDFe1.Manifestos.Items[0].MDFe.procMDFe.nProt;
+      infEvento.detEvento.dtEnc := Date;
+      infEvento.detEvento.cUF   := StrToInt(Copy(IntToStr(ACBrMDFe1.Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga),1,2));
+      infEvento.detEvento.cMun  := ACBrMDFe1.Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga;
+    end;
+
+    ACBrMDFe1.EnviarEvento( 1 ); // 1 = Numero do Lote
+
+    MemoResp.Lines.Text   := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
+    memoRespWS.Lines.Text := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
+    LoadXML(MemoResp, WBResposta);
   end;
 end;
 

@@ -8,226 +8,234 @@
   resources were bound to the produced executable.
 */
 
-#define Datasnap_MidConst_SNoDataSets 64896
-#define Datasnap_MidConst_SRecConstFail 64897
-#define Datasnap_MidConst_SFieldConstFail 64898
-#define Datasnap_MidConst_SDefExprFail 64899
-#define Datasnap_MidConst_SArrayElementError 64900
-#define Datasnap_MidConst_SNoTableName 64901
-#define Datasnap_MidConst_SNoEditsAllowed 64902
-#define Datasnap_MidConst_SNoDeletesAllowed 64903
-#define Datasnap_MidConst_SNoInsertsAllowed 64904
-#define Datasnap_MidConst_SCannotChangeCommandText 64905
-#define Datasnap_MidConst_SConnectionMissing 64906
-#define Datasnap_MidConst_SNoCircularConnection 64907
-#define Datasnap_MidConst_SInvalidDataPacket 64912
-#define Datasnap_MidConst_SRefreshError 64913
-#define Datasnap_MidConst_SAggsNoSuchLevel 64914
-#define Datasnap_MidConst_SNoCircularReference 64915
-#define Datasnap_MidConst_SErrorLoadingMidas 64916
-#define Datasnap_MidConst_SCannotCreateDataSet 64917
-#define Datasnap_MidConst_SNoConnectToBroker 64918
-#define Datasnap_MidConst_SNoParentConnection 64919
-#define Datasnap_MidConst_SInvalidResponse 64920
-#define Datasnap_MidConst_STooManyRecordsModified 64921
-#define Datasnap_MidConst_SInvalidOptParamType 64922
-#define Datasnap_MidConst_SMissingDataSet 64923
-#define Datasnap_MidConst_SConstraintFailed 64924
-#define Datasnap_MidConst_SField 64925
-#define Datasnap_MidConst_SReadOnlyProvider 64926
-#define Datasnap_MidConst_SNoKeySpecified 64927
-#define Vcl_VDBConsts_SPriorRecord 64928
-#define Vcl_VDBConsts_SNextRecord 64929
-#define Vcl_VDBConsts_SLastRecord 64930
-#define Vcl_VDBConsts_SInsertRecord 64931
-#define Vcl_VDBConsts_SDeleteRecord 64932
-#define Vcl_VDBConsts_SEditRecord 64933
-#define Vcl_VDBConsts_SPostEdit 64934
-#define Vcl_VDBConsts_SCancelEdit 64935
-#define Vcl_VDBConsts_SRefreshRecord 64936
-#define Vcl_VDBConsts_SApplyUpdates 64937
-#define Vcl_VDBConsts_SCancelUpdates 64938
-#define Vcl_VDBConsts_SRemoteLogin 64939
-#define Vcl_Imaging_JConsts_sChangeJPGSize 64940
-#define Vcl_Imaging_JConsts_sJPEGError 64941
-#define Vcl_Imaging_JConsts_sJPEGImageFile 64942
-#define Datasnap_MidConst_SNoDataProvider 64943
-#define Data_DBConsts_SBadFieldType 64944
-#define Data_DBConsts_SAggActive 64945
-#define Data_DBConsts_SProviderSQLNotSupported 64946
-#define Data_DBConsts_SProviderExecuteNotSupported 64947
-#define Data_DBConsts_SExprNoAggOnCalcs 64948
-#define Data_DBConsts_SRecordChanged 64949
-#define Data_DBConsts_SDataSetUnidirectional 64950
-#define Data_DBConsts_SUnassignedVar 64951
-#define Data_DBConsts_SRecordNotFound 64952
-#define Data_DBConsts_SBcdOverflow 64953
-#define Data_DBConsts_SInvalidBcdValue 64954
-#define Data_DBConsts_SCouldNotParseTimeStamp 64955
-#define Data_DBConsts_SInvalidSqlTimeStamp 64956
-#define Web_WebConst_sErrorDecodingURLText 64957
-#define Web_WebConst_sInvalidURLEncodedChar 64958
-#define Vcl_VDBConsts_SFirstRecord 64959
-#define Data_DBConsts_SExprBadNullTest 64960
-#define Data_DBConsts_SExprRangeError 64961
-#define Data_DBConsts_SExprIncorrect 64962
-#define Data_DBConsts_SExprNothing 64963
-#define Data_DBConsts_SExprTypeMis 64964
-#define Data_DBConsts_SExprBadScope 64965
-#define Data_DBConsts_SExprNoArith 64966
-#define Data_DBConsts_SExprNotAgg 64967
-#define Data_DBConsts_SExprBadConst 64968
-#define Data_DBConsts_SExprNoAggFilter 64969
-#define Data_DBConsts_SExprEmptyInList 64970
-#define Data_DBConsts_SInvalidKeywordUse 64971
-#define Data_DBConsts_STextFalse 64972
-#define Data_DBConsts_STextTrue 64973
-#define Data_DBConsts_SParameterNotFound 64974
-#define Data_DBConsts_SInvalidVersion 64975
-#define Data_DBConsts_SNoNestedMasterSource 64976
-#define Data_DBConsts_SDataSetOpen 64977
-#define Data_DBConsts_SNotEditing 64978
-#define Data_DBConsts_SDataSetClosed 64979
-#define Data_DBConsts_SDataSetEmpty 64980
-#define Data_DBConsts_SDataSetReadOnly 64981
-#define Data_DBConsts_SNestedDataSetClass 64982
-#define Data_DBConsts_SExprTermination 64983
-#define Data_DBConsts_SExprNameError 64984
-#define Data_DBConsts_SExprStringError 64985
-#define Data_DBConsts_SExprInvalidChar 64986
-#define Data_DBConsts_SExprNoLParen 64987
-#define Data_DBConsts_SExprNoRParen 64988
-#define Data_DBConsts_SExprNoRParenOrComma 64989
-#define Data_DBConsts_SExprExpected 64990
-#define Data_DBConsts_SExprBadField 64991
-#define Data_DBConsts_SFieldOutOfRange 64992
-#define Data_DBConsts_SFieldRequired 64993
-#define Data_DBConsts_SDataSetMissing 64994
-#define Data_DBConsts_SInvalidCalcType 64995
-#define Data_DBConsts_SFieldReadOnly 64996
-#define Data_DBConsts_SFieldIndexError 64997
-#define Data_DBConsts_SNoFieldIndexes 64998
-#define Data_DBConsts_SNotIndexField 64999
-#define Data_DBConsts_SIndexFieldMissing 65000
-#define Data_DBConsts_SDuplicateIndexName 65001
-#define Data_DBConsts_SNoIndexForFields 65002
-#define Data_DBConsts_SIndexNotFound 65003
-#define Data_DBConsts_SDBDuplicateName 65004
-#define Data_DBConsts_SCircularDataLink 65005
-#define Data_DBConsts_SLookupInfoError 65006
-#define Data_DBConsts_SDataSourceChange 65007
-#define Data_DBConsts_SInvalidFieldSize 65008
-#define Data_DBConsts_SInvalidFieldKind 65009
-#define Data_DBConsts_SUnknownFieldType 65010
-#define Data_DBConsts_SFieldNameMissing 65011
-#define Data_DBConsts_SDuplicateFieldName 65012
-#define Data_DBConsts_SFieldNotFound 65013
-#define Data_DBConsts_SFieldAccessError 65014
-#define Data_DBConsts_SFieldValueError 65015
-#define Data_DBConsts_SFieldRangeError 65016
-#define Data_DBConsts_SBcdFieldRangeError 65017
-#define Data_DBConsts_SInvalidIntegerValue 65018
-#define Data_DBConsts_SInvalidBoolValue 65019
-#define Data_DBConsts_SInvalidFloatValue 65020
-#define Data_DBConsts_SFieldTypeMismatch 65021
-#define Data_DBConsts_SFieldSizeMismatch 65022
-#define Data_DBConsts_SInvalidVarByteArray 65023
-#define Soap_SOAPConst_SBcdStringTooBig 65024
-#define Soap_SOAPConst_SInvalidHexValue 65025
-#define Soap_SOAPConst_SInvalidHTTPRequest 65026
-#define Soap_SOAPConst_SWideStringOutOfBounds 65027
-#define Soap_SOAPConst_SEmptyURL 65028
-#define Soap_SOAPConst_SInvalidURL 65029
-#define Soap_SOAPConst_SUnsupportedVariant 65030
-#define Soap_SOAPConst_SNoVarDispatch 65031
-#define Soap_SOAPConst_SNoErrorDispatch 65032
-#define Soap_SOAPConst_SEmptyStream 65033
-#define Soap_SOAPConst_SMethodNotSupported 65034
-#define Soap_SOAPConst_SInvalidMethod 65035
-#define Soap_SOAPConst_SInvalidContentLength 65036
-#define Soap_SOAPConst_SMimeReadError 65037
-#define Soap_SOAPConst_STempFileAccessError 65038
-#define Soap_SOAPConst_SCantLoadLocation 65039
-#define Soap_SOAPConst_SNoMsgProcessingNode 65040
-#define Soap_SOAPConst_SHeaderAttributeError 65041
-#define Soap_SOAPConst_SNoRTTI 65042
-#define Soap_SOAPConst_SNoRTTIParam 65043
-#define Soap_SOAPConst_SInvalidDateString 65044
-#define Soap_SOAPConst_SInvalidTimeString 65045
-#define Soap_SOAPConst_SInvalidMinute 65046
-#define Soap_SOAPConst_SInvalidMillisecond 65047
-#define Soap_SOAPConst_SInvalidFractionalSecond 65048
-#define Soap_SOAPConst_SInvalidHourOffset 65049
-#define Soap_SOAPConst_SInvalidDuration 65050
-#define Soap_SOAPConst_SInvalidTimeOffset 65051
-#define Soap_SOAPConst_SInvalidDecimalString 65052
-#define Soap_SOAPConst_SNoSciNotation 65053
-#define Soap_SOAPConst_SNoNAN 65054
-#define Soap_SOAPConst_SInvalidBcd 65055
-#define Soap_SOAPConst_sCantGetURL 65056
-#define Soap_SOAPConst_SDataTypeNotSupported 65057
-#define Soap_SOAPConst_SNoSerializeGraphs 65058
-#define Soap_SOAPConst_SUnsuportedClassType 65059
-#define Soap_SOAPConst_SUnexpectedDataType 65060
-#define Soap_SOAPConst_SInvalidContentType 65061
-#define Soap_SOAPConst_SArrayTooManyElem 65062
-#define Soap_SOAPConst_SWrongDocElem 65063
-#define Soap_SOAPConst_SNoArrayElemRTTI 65064
-#define Soap_SOAPConst_SInvalidResponse 65065
-#define Soap_SOAPConst_SNoInterfacesInClass 65066
-#define Soap_SOAPConst_SVariantCastNotSupported 65067
-#define Soap_SOAPConst_SHeaderError 65068
-#define Soap_SOAPConst_SMissingSoapReturn 65069
-#define Soap_SOAPConst_SInvalidPointer 65070
-#define Soap_SOAPConst_SNoMessageConverter 65071
-#define Xml_XMLConst_SNoContentModel 65072
-#define Xml_XMLConst_SNoFacetsAllowed 65073
-#define Xml_XMLConst_SNotBuiltInType 65074
-#define Xml_XMLConst_SInvalidTargetNS 65075
-#define Xml_XMLConst_SUndefinedTargetNS 65076
-#define Soap_SOAPConst_SUnsupportedEncodingSyle 65077
-#define Soap_SOAPConst_SInvalidSoapRequest 65078
-#define Soap_SOAPConst_SInvalidSoapResponse 65079
-#define Soap_SOAPConst_SMultiBodyNotSupported 65080
-#define Soap_SOAPConst_SRemTypeNotRegistered 65081
-#define Soap_SOAPConst_STypeMismatchInParam 65082
-#define Soap_SOAPConst_SNoSuchMethod 65083
-#define Soap_SOAPConst_SNoWSDL 65084
-#define Soap_SOAPConst_SWSDLError 65085
-#define Soap_SOAPConst_SEmptyWSDL 65086
-#define Soap_SOAPConst_sNoWSDLURL 65087
-#define Xml_XMLConst_SNoDOMParseOptions 65088
-#define Xml_XMLConst_SMissingItemTag 65089
-#define Xml_XMLConst_SNodeReadOnly 65090
-#define Xml_XMLConst_SNoRefresh 65091
-#define Xml_XMLConst_SMissingFileName 65092
-#define Xml_XMLConst_SLine 65093
-#define Xml_XMLConst_SInvalidSchema 65094
-#define Xml_XMLConst_SNoLocalTypeName 65095
-#define Xml_XMLConst_SUnknownDataType 65096
-#define Xml_XMLConst_SInvalidGroupDecl 65097
-#define Xml_XMLConst_SMissingName 65098
-#define Xml_XMLConst_SInvalidDerivation 65099
-#define Xml_XMLConst_SNoNameOnRef 65100
-#define Xml_XMLConst_SNoGlobalRef 65101
-#define Xml_XMLConst_SNoRefPropSet 65102
-#define Xml_XMLConst_SSetGroupRefProp 65103
+#define Datasnap_MidConst_SNoInsertsAllowed 64880
+#define Datasnap_MidConst_SCannotChangeCommandText 64881
+#define Datasnap_MidConst_SConnectionMissing 64882
+#define Datasnap_MidConst_SNoCircularConnection 64883
+#define Datasnap_MidConst_SInvalidResponse 64896
+#define Datasnap_MidConst_STooManyRecordsModified 64897
+#define Datasnap_MidConst_SInvalidOptParamType 64898
+#define Datasnap_MidConst_SMissingDataSet 64899
+#define Datasnap_MidConst_SConstraintFailed 64900
+#define Datasnap_MidConst_SField 64901
+#define Datasnap_MidConst_SReadOnlyProvider 64902
+#define Datasnap_MidConst_SNoKeySpecified 64903
+#define Datasnap_MidConst_SNoDataSets 64904
+#define Datasnap_MidConst_SRecConstFail 64905
+#define Datasnap_MidConst_SFieldConstFail 64906
+#define Datasnap_MidConst_SDefExprFail 64907
+#define Datasnap_MidConst_SArrayElementError 64908
+#define Datasnap_MidConst_SNoTableName 64909
+#define Datasnap_MidConst_SNoEditsAllowed 64910
+#define Datasnap_MidConst_SNoDeletesAllowed 64911
+#define Vcl_VDBConsts_SRefreshRecord 64912
+#define Vcl_VDBConsts_SApplyUpdates 64913
+#define Vcl_VDBConsts_SCancelUpdates 64914
+#define Vcl_VDBConsts_SRemoteLogin 64915
+#define Vcl_Imaging_JConsts_sChangeJPGSize 64916
+#define Vcl_Imaging_JConsts_sJPEGError 64917
+#define Vcl_Imaging_JConsts_sJPEGImageFile 64918
+#define Datasnap_MidConst_SNoDataProvider 64919
+#define Datasnap_MidConst_SInvalidDataPacket 64920
+#define Datasnap_MidConst_SRefreshError 64921
+#define Datasnap_MidConst_SAggsNoSuchLevel 64922
+#define Datasnap_MidConst_SNoCircularReference 64923
+#define Datasnap_MidConst_SErrorLoadingMidas 64924
+#define Datasnap_MidConst_SCannotCreateDataSet 64925
+#define Datasnap_MidConst_SNoConnectToBroker 64926
+#define Datasnap_MidConst_SNoParentConnection 64927
+#define Data_DBConsts_SRecordNotFound 64928
+#define Data_DBConsts_SBcdOverflow 64929
+#define Data_DBConsts_SInvalidBcdValue 64930
+#define Data_DBConsts_SCouldNotParseTimeStamp 64931
+#define Data_DBConsts_SInvalidSqlTimeStamp 64932
+#define Web_WebConst_sErrorDecodingURLText 64933
+#define Web_WebConst_sInvalidURLEncodedChar 64934
+#define Vcl_VDBConsts_SFirstRecord 64935
+#define Vcl_VDBConsts_SPriorRecord 64936
+#define Vcl_VDBConsts_SNextRecord 64937
+#define Vcl_VDBConsts_SLastRecord 64938
+#define Vcl_VDBConsts_SInsertRecord 64939
+#define Vcl_VDBConsts_SDeleteRecord 64940
+#define Vcl_VDBConsts_SEditRecord 64941
+#define Vcl_VDBConsts_SPostEdit 64942
+#define Vcl_VDBConsts_SCancelEdit 64943
+#define Data_DBConsts_SExprBadConst 64944
+#define Data_DBConsts_SExprNoAggFilter 64945
+#define Data_DBConsts_SExprEmptyInList 64946
+#define Data_DBConsts_SInvalidKeywordUse 64947
+#define Data_DBConsts_STextFalse 64948
+#define Data_DBConsts_STextTrue 64949
+#define Data_DBConsts_SParameterNotFound 64950
+#define Data_DBConsts_SInvalidVersion 64951
+#define Data_DBConsts_SBadFieldType 64952
+#define Data_DBConsts_SAggActive 64953
+#define Data_DBConsts_SProviderSQLNotSupported 64954
+#define Data_DBConsts_SProviderExecuteNotSupported 64955
+#define Data_DBConsts_SExprNoAggOnCalcs 64956
+#define Data_DBConsts_SRecordChanged 64957
+#define Data_DBConsts_SDataSetUnidirectional 64958
+#define Data_DBConsts_SUnassignedVar 64959
+#define Data_DBConsts_SExprNameError 64960
+#define Data_DBConsts_SExprStringError 64961
+#define Data_DBConsts_SExprInvalidChar 64962
+#define Data_DBConsts_SExprNoLParen 64963
+#define Data_DBConsts_SExprNoRParen 64964
+#define Data_DBConsts_SExprNoRParenOrComma 64965
+#define Data_DBConsts_SExprExpected 64966
+#define Data_DBConsts_SExprBadField 64967
+#define Data_DBConsts_SExprBadNullTest 64968
+#define Data_DBConsts_SExprRangeError 64969
+#define Data_DBConsts_SExprIncorrect 64970
+#define Data_DBConsts_SExprNothing 64971
+#define Data_DBConsts_SExprTypeMis 64972
+#define Data_DBConsts_SExprBadScope 64973
+#define Data_DBConsts_SExprNoArith 64974
+#define Data_DBConsts_SExprNotAgg 64975
+#define Data_DBConsts_SIndexFieldMissing 64976
+#define Data_DBConsts_SDuplicateIndexName 64977
+#define Data_DBConsts_SNoIndexForFields 64978
+#define Data_DBConsts_SIndexNotFound 64979
+#define Data_DBConsts_SDBDuplicateName 64980
+#define Data_DBConsts_SCircularDataLink 64981
+#define Data_DBConsts_SLookupInfoError 64982
+#define Data_DBConsts_SDataSourceChange 64983
+#define Data_DBConsts_SNoNestedMasterSource 64984
+#define Data_DBConsts_SDataSetOpen 64985
+#define Data_DBConsts_SNotEditing 64986
+#define Data_DBConsts_SDataSetClosed 64987
+#define Data_DBConsts_SDataSetEmpty 64988
+#define Data_DBConsts_SDataSetReadOnly 64989
+#define Data_DBConsts_SNestedDataSetClass 64990
+#define Data_DBConsts_SExprTermination 64991
+#define Data_DBConsts_SFieldRangeError 64992
+#define Data_DBConsts_SBcdFieldRangeError 64993
+#define Data_DBConsts_SInvalidIntegerValue 64994
+#define Data_DBConsts_SInvalidBoolValue 64995
+#define Data_DBConsts_SInvalidFloatValue 64996
+#define Data_DBConsts_SFieldTypeMismatch 64997
+#define Data_DBConsts_SFieldSizeMismatch 64998
+#define Data_DBConsts_SInvalidVarByteArray 64999
+#define Data_DBConsts_SFieldOutOfRange 65000
+#define Data_DBConsts_SFieldRequired 65001
+#define Data_DBConsts_SDataSetMissing 65002
+#define Data_DBConsts_SInvalidCalcType 65003
+#define Data_DBConsts_SFieldReadOnly 65004
+#define Data_DBConsts_SFieldIndexError 65005
+#define Data_DBConsts_SNoFieldIndexes 65006
+#define Data_DBConsts_SNotIndexField 65007
+#define Soap_SOAPConst_SNoErrorDispatch 65008
+#define Soap_SOAPConst_SEmptyStream 65009
+#define Soap_SOAPConst_SMethodNotSupported 65010
+#define Soap_SOAPConst_SInvalidMethod 65011
+#define Soap_SOAPConst_SInvalidContentLength 65012
+#define Soap_SOAPConst_SMimeReadError 65013
+#define Soap_SOAPConst_STempFileAccessError 65014
+#define Soap_SOAPConst_SCantLoadLocation 65015
+#define Data_DBConsts_SInvalidFieldSize 65016
+#define Data_DBConsts_SInvalidFieldKind 65017
+#define Data_DBConsts_SUnknownFieldType 65018
+#define Data_DBConsts_SFieldNameMissing 65019
+#define Data_DBConsts_SDuplicateFieldName 65020
+#define Data_DBConsts_SFieldNotFound 65021
+#define Data_DBConsts_SFieldAccessError 65022
+#define Data_DBConsts_SFieldValueError 65023
+#define Soap_SOAPConst_SInvalidFractionalSecond 65024
+#define Soap_SOAPConst_SInvalidHourOffset 65025
+#define Soap_SOAPConst_SInvalidDuration 65026
+#define Soap_SOAPConst_SInvalidTimeOffset 65027
+#define Soap_SOAPConst_SInvalidDecimalString 65028
+#define Soap_SOAPConst_SNoSciNotation 65029
+#define Soap_SOAPConst_SNoNAN 65030
+#define Soap_SOAPConst_SInvalidBcd 65031
+#define Soap_SOAPConst_SBcdStringTooBig 65032
+#define Soap_SOAPConst_SInvalidHexValue 65033
+#define Soap_SOAPConst_SInvalidHTTPRequest 65034
+#define Soap_SOAPConst_SWideStringOutOfBounds 65035
+#define Soap_SOAPConst_SEmptyURL 65036
+#define Soap_SOAPConst_SInvalidURL 65037
+#define Soap_SOAPConst_SUnsupportedVariant 65038
+#define Soap_SOAPConst_SNoVarDispatch 65039
+#define Soap_SOAPConst_SNoArrayElemRTTI 65040
+#define Soap_SOAPConst_SInvalidResponse 65041
+#define Soap_SOAPConst_SNoInterfacesInClass 65042
+#define Soap_SOAPConst_SVariantCastNotSupported 65043
+#define Soap_SOAPConst_SHeaderError 65044
+#define Soap_SOAPConst_SMissingSoapReturn 65045
+#define Soap_SOAPConst_SInvalidPointer 65046
+#define Soap_SOAPConst_SNoMessageConverter 65047
+#define Soap_SOAPConst_SNoMsgProcessingNode 65048
+#define Soap_SOAPConst_SHeaderAttributeError 65049
+#define Soap_SOAPConst_SNoRTTI 65050
+#define Soap_SOAPConst_SNoRTTIParam 65051
+#define Soap_SOAPConst_SInvalidDateString 65052
+#define Soap_SOAPConst_SInvalidTimeString 65053
+#define Soap_SOAPConst_SInvalidMinute 65054
+#define Soap_SOAPConst_SInvalidMillisecond 65055
+#define Soap_SOAPConst_SMultiBodyNotSupported 65056
+#define Soap_SOAPConst_SRemTypeNotRegistered 65057
+#define Soap_SOAPConst_STypeMismatchInParam 65058
+#define Soap_SOAPConst_SNoSuchMethod 65059
+#define Soap_SOAPConst_SNoWSDL 65060
+#define Soap_SOAPConst_SWSDLError 65061
+#define Soap_SOAPConst_SEmptyWSDL 65062
+#define Soap_SOAPConst_sNoWSDLURL 65063
+#define Soap_SOAPConst_sCantGetURL 65064
+#define Soap_SOAPConst_SDataTypeNotSupported 65065
+#define Soap_SOAPConst_SNoSerializeGraphs 65066
+#define Soap_SOAPConst_SUnsuportedClassType 65067
+#define Soap_SOAPConst_SUnexpectedDataType 65068
+#define Soap_SOAPConst_SInvalidContentType 65069
+#define Soap_SOAPConst_SArrayTooManyElem 65070
+#define Soap_SOAPConst_SWrongDocElem 65071
+#define Xml_XMLConst_SUnknownDataType 65072
+#define Xml_XMLConst_SInvalidGroupDecl 65073
+#define Xml_XMLConst_SMissingName 65074
+#define Xml_XMLConst_SInvalidDerivation 65075
+#define Xml_XMLConst_SNoNameOnRef 65076
+#define Xml_XMLConst_SNoGlobalRef 65077
+#define Xml_XMLConst_SNoRefPropSet 65078
+#define Xml_XMLConst_SSetGroupRefProp 65079
+#define Xml_XMLConst_SNoContentModel 65080
+#define Xml_XMLConst_SNoFacetsAllowed 65081
+#define Xml_XMLConst_SNotBuiltInType 65082
+#define Xml_XMLConst_SInvalidTargetNS 65083
+#define Xml_XMLConst_SUndefinedTargetNS 65084
+#define Soap_SOAPConst_SUnsupportedEncodingSyle 65085
+#define Soap_SOAPConst_SInvalidSoapRequest 65086
+#define Soap_SOAPConst_SInvalidSoapResponse 65087
+#define Xml_XMLConst_SMSDOMNotInstalled 65088
+#define Xml_XMLConst_SNotActive 65089
+#define Xml_XMLConst_SNodeNotFound 65090
+#define Xml_XMLConst_SMissingNode 65091
+#define Xml_XMLConst_SNoAttributes 65092
+#define Xml_XMLConst_SInvalidNodeType 65093
+#define Xml_XMLConst_SMismatchedRegItems 65094
+#define Xml_XMLConst_SNotSingleTextNode 65095
+#define Xml_XMLConst_SNoDOMParseOptions 65096
+#define Xml_XMLConst_SMissingItemTag 65097
+#define Xml_XMLConst_SNodeReadOnly 65098
+#define Xml_XMLConst_SNoRefresh 65099
+#define Xml_XMLConst_SMissingFileName 65100
+#define Xml_XMLConst_SLine 65101
+#define Xml_XMLConst_SInvalidSchema 65102
+#define Xml_XMLConst_SNoLocalTypeName 65103
 #define Vcl_OleConst_SInvalidLicense 65104
 #define Vcl_OleConst_SNotLicensed 65105
 #define Vcl_OleConst_sNoRunningObject 65106
-#define Xml_XMLConst_SDuplicateRegistration 65107
-#define Xml_XMLConst_SNoMatchingDOMVendor 65108
-#define Xml_XMLConst_SNoDOMNodeEx 65109
-#define Xml_XMLConst_SDOMNotSupported 65110
-#define Xml_XMLConst_SNodeExpected 65111
-#define Xml_XMLConst_SMSDOMNotInstalled 65112
-#define Xml_XMLConst_SNotActive 65113
-#define Xml_XMLConst_SNodeNotFound 65114
-#define Xml_XMLConst_SMissingNode 65115
-#define Xml_XMLConst_SNoAttributes 65116
-#define Xml_XMLConst_SInvalidNodeType 65117
-#define Xml_XMLConst_SMismatchedRegItems 65118
-#define Xml_XMLConst_SNotSingleTextNode 65119
+#define ACBrDFeXsLibXml2_cErrParseDoc 65107
+#define ACBrDFeXsLibXml2_cErrFindSignNode 65108
+#define ACBrDFeXsLibXml2_cErrFindRootNode 65109
+#define ACBrDFeXsLibXml2_cErrC14NTransformation 65110
+#define ACBrDFeXsLibXml2_cErrElementsNotFound 65111
+#define ACBrDFeXsLibXml2_cErrDigestValueNode 65112
+#define ACBrDFeXsLibXml2_cErrSignatureValueNode 65113
+#define ACBrDFeXsLibXml2_cErrDigestValueNaoConfere 65114
+#define Xml_XMLConst_SDuplicateRegistration 65115
+#define Xml_XMLConst_SNoMatchingDOMVendor 65116
+#define Xml_XMLConst_SNoDOMNodeEx 65117
+#define Xml_XMLConst_SDOMNotSupported 65118
+#define Xml_XMLConst_SNodeExpected 65119
 #define System_Win_ComConst_SDAXError 65120
 #define Vcl_ComStrs_sTabFailClear 65121
 #define Vcl_ComStrs_sTabFailDelete 65122
@@ -646,26 +654,10 @@
 #define System_SysConst_SIntOverflow 65535
 STRINGTABLE
 BEGIN
-	Datasnap_MidConst_SNoDataSets,	L"Cannot resolve to dataset when using nested datasets or references"
-	Datasnap_MidConst_SRecConstFail,	L"Preparation of record constraint failed with error \"%s\""
-	Datasnap_MidConst_SFieldConstFail,	L"Preparation of field constraint failed with error \"%s\""
-	Datasnap_MidConst_SDefExprFail,	L"Preparation of default expression failed with error \"%s\""
-	Datasnap_MidConst_SArrayElementError,	L"Array elements of type %s are not supported"
-	Datasnap_MidConst_SNoTableName,	L"Unable to resolve records.  Table name not found."
-	Datasnap_MidConst_SNoEditsAllowed,	L"Modifications are not allowed"
-	Datasnap_MidConst_SNoDeletesAllowed,	L"Deletes are not allowed"
 	Datasnap_MidConst_SNoInsertsAllowed,	L"Inserts are not allowed"
 	Datasnap_MidConst_SCannotChangeCommandText,	L"CommandText changes are not allowed"
 	Datasnap_MidConst_SConnectionMissing,	L"Requires Connection before opening"
 	Datasnap_MidConst_SNoCircularConnection,	L"Circular reference to Connection not allowed"
-	Datasnap_MidConst_SInvalidDataPacket,	L"Invalid data packet"
-	Datasnap_MidConst_SRefreshError,	L"Must apply updates before refreshing data"
-	Datasnap_MidConst_SAggsNoSuchLevel,	L"Grouping level not defined"
-	Datasnap_MidConst_SNoCircularReference,	L"Circular provider references not allowed"
-	Datasnap_MidConst_SErrorLoadingMidas,	L"Error loading MIDAS.DLL"
-	Datasnap_MidConst_SCannotCreateDataSet,	L"No fields defined.  Cannot create dataset"
-	Datasnap_MidConst_SNoConnectToBroker,	L"Connection not allowed to TConnectionBroker"
-	Datasnap_MidConst_SNoParentConnection,	L"ParentConnection is not assigned"
 	Datasnap_MidConst_SInvalidResponse,	L"Invalid response"
 	Datasnap_MidConst_STooManyRecordsModified,	L"Update affected more than 1 record."
 	Datasnap_MidConst_SInvalidOptParamType,	L"Value cannot be stored in an optional parameter"
@@ -674,14 +666,14 @@ BEGIN
 	Datasnap_MidConst_SField,	L"Field"
 	Datasnap_MidConst_SReadOnlyProvider,	L"Cannot apply updates to a ReadOnly provider"
 	Datasnap_MidConst_SNoKeySpecified,	L"Unable to find record.  No key specified"
-	Vcl_VDBConsts_SPriorRecord,	L"Prior record"
-	Vcl_VDBConsts_SNextRecord,	L"Next record"
-	Vcl_VDBConsts_SLastRecord,	L"Last record"
-	Vcl_VDBConsts_SInsertRecord,	L"Insert record"
-	Vcl_VDBConsts_SDeleteRecord,	L"Delete record"
-	Vcl_VDBConsts_SEditRecord,	L"Edit record"
-	Vcl_VDBConsts_SPostEdit,	L"Post edit"
-	Vcl_VDBConsts_SCancelEdit,	L"Cancel edit"
+	Datasnap_MidConst_SNoDataSets,	L"Cannot resolve to dataset when using nested datasets or references"
+	Datasnap_MidConst_SRecConstFail,	L"Preparation of record constraint failed with error \"%s\""
+	Datasnap_MidConst_SFieldConstFail,	L"Preparation of field constraint failed with error \"%s\""
+	Datasnap_MidConst_SDefExprFail,	L"Preparation of default expression failed with error \"%s\""
+	Datasnap_MidConst_SArrayElementError,	L"Array elements of type %s are not supported"
+	Datasnap_MidConst_SNoTableName,	L"Unable to resolve records.  Table name not found."
+	Datasnap_MidConst_SNoEditsAllowed,	L"Modifications are not allowed"
+	Datasnap_MidConst_SNoDeletesAllowed,	L"Deletes are not allowed"
 	Vcl_VDBConsts_SRefreshRecord,	L"Refresh data"
 	Vcl_VDBConsts_SApplyUpdates,	L"Apply updates"
 	Vcl_VDBConsts_SCancelUpdates,	L"Cancel updates"
@@ -690,14 +682,14 @@ BEGIN
 	Vcl_Imaging_JConsts_sJPEGError,	L"JPEG error #%d"
 	Vcl_Imaging_JConsts_sJPEGImageFile,	L"JPEG Image File"
 	Datasnap_MidConst_SNoDataProvider,	L"Missing data provider or data packet"
-	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
-	Data_DBConsts_SAggActive,	L"Property may not be modified while aggregate is active"
-	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
-	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
-	Data_DBConsts_SExprNoAggOnCalcs,	L"Field '%s' is not the correct type of calculated field to be used in an aggregate, use an internalcalc"
-	Data_DBConsts_SRecordChanged,	L"Record not found or changed by another user"
-	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
-	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
+	Datasnap_MidConst_SInvalidDataPacket,	L"Invalid data packet"
+	Datasnap_MidConst_SRefreshError,	L"Must apply updates before refreshing data"
+	Datasnap_MidConst_SAggsNoSuchLevel,	L"Grouping level not defined"
+	Datasnap_MidConst_SNoCircularReference,	L"Circular provider references not allowed"
+	Datasnap_MidConst_SErrorLoadingMidas,	L"Error loading MIDAS.DLL"
+	Datasnap_MidConst_SCannotCreateDataSet,	L"No fields defined.  Cannot create dataset"
+	Datasnap_MidConst_SNoConnectToBroker,	L"Connection not allowed to TConnectionBroker"
+	Datasnap_MidConst_SNoParentConnection,	L"ParentConnection is not assigned"
 	Data_DBConsts_SRecordNotFound,	L"Record not found"
 	Data_DBConsts_SBcdOverflow,	L"BCD overflow"
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
@@ -706,14 +698,14 @@ BEGIN
 	Web_WebConst_sErrorDecodingURLText,	L"Error decoding URL style (%%XX) encoded string at position %d"
 	Web_WebConst_sInvalidURLEncodedChar,	L"Invalid URL encoded character (%s) at position %d"
 	Vcl_VDBConsts_SFirstRecord,	L"First record"
-	Data_DBConsts_SExprBadNullTest,	L"NULL only allowed with '=' and '<>'"
-	Data_DBConsts_SExprRangeError,	L"Constant out of range"
-	Data_DBConsts_SExprIncorrect,	L"Incorrectly formed filter expression"
-	Data_DBConsts_SExprNothing,	L"nothing"
-	Data_DBConsts_SExprTypeMis,	L"Type mismatch in expression"
-	Data_DBConsts_SExprBadScope,	L"Operation cannot mix aggregate value with record-varying value"
-	Data_DBConsts_SExprNoArith,	L"Arithmetic in filter expressions not supported"
-	Data_DBConsts_SExprNotAgg,	L"Expression is not an aggregate expression"
+	Vcl_VDBConsts_SPriorRecord,	L"Prior record"
+	Vcl_VDBConsts_SNextRecord,	L"Next record"
+	Vcl_VDBConsts_SLastRecord,	L"Last record"
+	Vcl_VDBConsts_SInsertRecord,	L"Insert record"
+	Vcl_VDBConsts_SDeleteRecord,	L"Delete record"
+	Vcl_VDBConsts_SEditRecord,	L"Edit record"
+	Vcl_VDBConsts_SPostEdit,	L"Post edit"
+	Vcl_VDBConsts_SCancelEdit,	L"Cancel edit"
 	Data_DBConsts_SExprBadConst,	L"Constant is not correct type %s"
 	Data_DBConsts_SExprNoAggFilter,	L"Aggregate expressions not allowed in filters"
 	Data_DBConsts_SExprEmptyInList,	L"IN predicate list may not be empty"
@@ -722,14 +714,14 @@ BEGIN
 	Data_DBConsts_STextTrue,	L"True"
 	Data_DBConsts_SParameterNotFound,	L"Parameter '%s' not found"
 	Data_DBConsts_SInvalidVersion,	L"Unable to load bind parameters"
-	Data_DBConsts_SNoNestedMasterSource,	L"Nested datasets cannot have a MasterSource"
-	Data_DBConsts_SDataSetOpen,	L"Cannot perform this operation on an open dataset"
-	Data_DBConsts_SNotEditing,	L"Dataset not in edit or insert mode"
-	Data_DBConsts_SDataSetClosed,	L"Cannot perform this operation on a closed dataset"
-	Data_DBConsts_SDataSetEmpty,	L"Cannot perform this operation on an empty dataset"
-	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
-	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
-	Data_DBConsts_SExprTermination,	L"Filter expression incorrectly terminated"
+	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
+	Data_DBConsts_SAggActive,	L"Property may not be modified while aggregate is active"
+	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
+	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
+	Data_DBConsts_SExprNoAggOnCalcs,	L"Field '%s' is not the correct type of calculated field to be used in an aggregate, use an internalcalc"
+	Data_DBConsts_SRecordChanged,	L"Record not found or changed by another user"
+	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
+	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
 	Data_DBConsts_SExprNameError,	L"Unterminated field name"
 	Data_DBConsts_SExprStringError,	L"Unterminated string constant"
 	Data_DBConsts_SExprInvalidChar,	L"Invalid filter expression character: '%s'"
@@ -738,14 +730,14 @@ BEGIN
 	Data_DBConsts_SExprNoRParenOrComma,	L"')' or ',' expected but %s found"
 	Data_DBConsts_SExprExpected,	L"Expression expected but %s found"
 	Data_DBConsts_SExprBadField,	L"Field '%s' cannot be used in a filter expression"
-	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
-	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
-	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
-	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
-	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
-	Data_DBConsts_SFieldIndexError,	L"Field index out of range"
-	Data_DBConsts_SNoFieldIndexes,	L"No index currently active"
-	Data_DBConsts_SNotIndexField,	L"Field '%s' is not indexed and cannot be modified"
+	Data_DBConsts_SExprBadNullTest,	L"NULL only allowed with '=' and '<>'"
+	Data_DBConsts_SExprRangeError,	L"Constant out of range"
+	Data_DBConsts_SExprIncorrect,	L"Incorrectly formed filter expression"
+	Data_DBConsts_SExprNothing,	L"nothing"
+	Data_DBConsts_SExprTypeMis,	L"Type mismatch in expression"
+	Data_DBConsts_SExprBadScope,	L"Operation cannot mix aggregate value with record-varying value"
+	Data_DBConsts_SExprNoArith,	L"Arithmetic in filter expressions not supported"
+	Data_DBConsts_SExprNotAgg,	L"Expression is not an aggregate expression"
 	Data_DBConsts_SIndexFieldMissing,	L"Cannot access index field '%s'"
 	Data_DBConsts_SDuplicateIndexName,	L"Duplicate index name '%s'"
 	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
@@ -754,14 +746,14 @@ BEGIN
 	Data_DBConsts_SCircularDataLink,	L"Circular datalinks are not allowed"
 	Data_DBConsts_SLookupInfoError,	L"Lookup information for field '%s' is incomplete"
 	Data_DBConsts_SDataSourceChange,	L"DataSource cannot be changed"
-	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
-	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
-	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
-	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
-	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
-	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
-	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
-	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
+	Data_DBConsts_SNoNestedMasterSource,	L"Nested datasets cannot have a MasterSource"
+	Data_DBConsts_SDataSetOpen,	L"Cannot perform this operation on an open dataset"
+	Data_DBConsts_SNotEditing,	L"Dataset not in edit or insert mode"
+	Data_DBConsts_SDataSetClosed,	L"Cannot perform this operation on a closed dataset"
+	Data_DBConsts_SDataSetEmpty,	L"Cannot perform this operation on an empty dataset"
+	Data_DBConsts_SDataSetReadOnly,	L"Cannot modify a read-only dataset"
+	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
+	Data_DBConsts_SExprTermination,	L"Filter expression incorrectly terminated"
 	Data_DBConsts_SFieldRangeError,	L"%g is not a valid value for field '%s'. The allowed range is %g to %g"
 	Data_DBConsts_SBcdFieldRangeError,	L"%s is not a valid value for field '%s'. The allowed range is %s to %s"
 	Data_DBConsts_SInvalidIntegerValue,	L"'%s' is not a valid integer value for field '%s'"
@@ -770,14 +762,14 @@ BEGIN
 	Data_DBConsts_SFieldTypeMismatch,	L"Type mismatch for field '%s', expecting: %s actual: %s"
 	Data_DBConsts_SFieldSizeMismatch,	L"Size mismatch for field '%s', expecting: %d actual: %d"
 	Data_DBConsts_SInvalidVarByteArray,	L"Invalid variant type or size for field '%s'"
-	Soap_SOAPConst_SBcdStringTooBig,	L"Cannot convert to TBcd: string has more than 64 digits: %s"
-	Soap_SOAPConst_SInvalidHexValue,	L"%s is not a valid hex string"
-	Soap_SOAPConst_SInvalidHTTPRequest,	L"Invalid HTTP Request: Length is 0"
-	Soap_SOAPConst_SWideStringOutOfBounds,	L"WideString index out of bounds"
-	Soap_SOAPConst_SEmptyURL,	L"No URL was specified for 'GET'"
-	Soap_SOAPConst_SInvalidURL,	L"Invalid url '%s' - only supports 'http' and 'https' schemes"
-	Soap_SOAPConst_SUnsupportedVariant,	L"Unsuppported variant type %d"
-	Soap_SOAPConst_SNoVarDispatch,	L"varDispatch type not supported"
+	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
+	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
+	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
+	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
+	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
+	Data_DBConsts_SFieldIndexError,	L"Field index out of range"
+	Data_DBConsts_SNoFieldIndexes,	L"No index currently active"
+	Data_DBConsts_SNotIndexField,	L"Field '%s' is not indexed and cannot be modified"
 	Soap_SOAPConst_SNoErrorDispatch,	L"varError type not supported"
 	Soap_SOAPConst_SEmptyStream,	L"TAggregateStream Error: no internal streams"
 	Soap_SOAPConst_SMethodNotSupported,	L"method not supported"
@@ -786,14 +778,14 @@ BEGIN
 	Soap_SOAPConst_SMimeReadError,	L"Error reading from Mime Request Stream"
 	Soap_SOAPConst_STempFileAccessError,	L"No access to temporary file"
 	Soap_SOAPConst_SCantLoadLocation,	L"Unable to load WSDL File/Location: %s.  Error [%s]"
-	Soap_SOAPConst_SNoMsgProcessingNode,	L"No Message processing node set"
-	Soap_SOAPConst_SHeaderAttributeError,	L"Soap header %s with attribute 'mustUnderstand' set to true was not handled"
-	Soap_SOAPConst_SNoRTTI,	L"Interface %s has no RTTI"
-	Soap_SOAPConst_SNoRTTIParam,	L"Parameter %s on Method %s of Interface %s has no RTTI"
-	Soap_SOAPConst_SInvalidDateString,	L"Invalid date string: %s"
-	Soap_SOAPConst_SInvalidTimeString,	L"Invalid time string: %s"
-	Soap_SOAPConst_SInvalidMinute,	L"Invalid minute: %d"
-	Soap_SOAPConst_SInvalidMillisecond,	L"Invalid millisecond: %d"
+	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
+	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
+	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
+	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
+	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
+	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
+	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
+	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
 	Soap_SOAPConst_SInvalidFractionalSecond,	L"Invalid fractional second: %f"
 	Soap_SOAPConst_SInvalidHourOffset,	L"Invalid hour offset: %d"
 	Soap_SOAPConst_SInvalidDuration,	L"Invalid duration string: %s"
@@ -802,14 +794,14 @@ BEGIN
 	Soap_SOAPConst_SNoSciNotation,	L"Cannot convert scientific notation to TBcd value"
 	Soap_SOAPConst_SNoNAN,	L"Cannot convert NAN to TBcd value"
 	Soap_SOAPConst_SInvalidBcd,	L"Invalid Bcd Precision (%d) or Scale (%d)"
-	Soap_SOAPConst_sCantGetURL,	L"Unable to retrieve the URL endpoint for Service/Port '%s'/'%s' from WSDL '%s'"
-	Soap_SOAPConst_SDataTypeNotSupported,	L"Datatype of TypeKind: %s not supported as argument for remote invocation"
-	Soap_SOAPConst_SNoSerializeGraphs,	L"Must enable multiref output for objects when serializing a graph of objects - (%s)"
-	Soap_SOAPConst_SUnsuportedClassType,	L"Conversion from class %s to SOAP is not supported - SOAP classes must derive from TRemotable"
-	Soap_SOAPConst_SUnexpectedDataType,	L"Internal error: data type kind %s cannot be converted to and from text"
-	Soap_SOAPConst_SInvalidContentType,	L"Received content of invalid Content-Type setting: %s - SOAP expects \"text/xml\""
-	Soap_SOAPConst_SArrayTooManyElem,	L"Array Node: %s has too many elements"
-	Soap_SOAPConst_SWrongDocElem,	L"DocumentElement %s:%s expected, %s:%s found"
+	Soap_SOAPConst_SBcdStringTooBig,	L"Cannot convert to TBcd: string has more than 64 digits: %s"
+	Soap_SOAPConst_SInvalidHexValue,	L"%s is not a valid hex string"
+	Soap_SOAPConst_SInvalidHTTPRequest,	L"Invalid HTTP Request: Length is 0"
+	Soap_SOAPConst_SWideStringOutOfBounds,	L"WideString index out of bounds"
+	Soap_SOAPConst_SEmptyURL,	L"No URL was specified for 'GET'"
+	Soap_SOAPConst_SInvalidURL,	L"Invalid url '%s' - only supports 'http' and 'https' schemes"
+	Soap_SOAPConst_SUnsupportedVariant,	L"Unsuppported variant type %d"
+	Soap_SOAPConst_SNoVarDispatch,	L"varDispatch type not supported"
 	Soap_SOAPConst_SNoArrayElemRTTI,	L"Element of Array type %s has no RTTI"
 	Soap_SOAPConst_SInvalidResponse,	L"Invalid SOAP Response"
 	Soap_SOAPConst_SNoInterfacesInClass,	L"Invokable Class %s implements no interfaces"
@@ -818,14 +810,14 @@ BEGIN
 	Soap_SOAPConst_SMissingSoapReturn,	L"SOAP Response Packet: element matching function return not found, received \"%s\""
 	Soap_SOAPConst_SInvalidPointer,	L"Invalid Pointer"
 	Soap_SOAPConst_SNoMessageConverter,	L"No Native to Message converter set"
-	Xml_XMLConst_SNoContentModel,	L"ContentModel not set"
-	Xml_XMLConst_SNoFacetsAllowed,	L"Facets and Enumeration not allowed on this kind of datatype \"%s\""
-	Xml_XMLConst_SNotBuiltInType,	L"Invalid built-in type name \"%s\""
-	Xml_XMLConst_SInvalidTargetNS,	L"Included schema file \"%s\" has an invalid targetNamespace.\r\n\r\nExpected: %s\r\nFound: %s"
-	Xml_XMLConst_SUndefinedTargetNS,	L"No targetNamespace attribute"
-	Soap_SOAPConst_SUnsupportedEncodingSyle,	L"Unsupported SOAP encodingStyle %s"
-	Soap_SOAPConst_SInvalidSoapRequest,	L"Invalid SOAP request"
-	Soap_SOAPConst_SInvalidSoapResponse,	L"Invalid SOAP response"
+	Soap_SOAPConst_SNoMsgProcessingNode,	L"No Message processing node set"
+	Soap_SOAPConst_SHeaderAttributeError,	L"Soap header %s with attribute 'mustUnderstand' set to true was not handled"
+	Soap_SOAPConst_SNoRTTI,	L"Interface %s has no RTTI"
+	Soap_SOAPConst_SNoRTTIParam,	L"Parameter %s on Method %s of Interface %s has no RTTI"
+	Soap_SOAPConst_SInvalidDateString,	L"Invalid date string: %s"
+	Soap_SOAPConst_SInvalidTimeString,	L"Invalid time string: %s"
+	Soap_SOAPConst_SInvalidMinute,	L"Invalid minute: %d"
+	Soap_SOAPConst_SInvalidMillisecond,	L"Invalid millisecond: %d"
 	Soap_SOAPConst_SMultiBodyNotSupported,	L"Multiple body elements not supported"
 	Soap_SOAPConst_SRemTypeNotRegistered,	L"Remotable Type %s not registered"
 	Soap_SOAPConst_STypeMismatchInParam,	L"Type mismatch in parameter %s"
@@ -834,14 +826,14 @@ BEGIN
 	Soap_SOAPConst_SWSDLError,	L"Invalid WSDL document '%s' - Please verify the location and content!\r\nError: %s"
 	Soap_SOAPConst_SEmptyWSDL,	L"Empty document"
 	Soap_SOAPConst_sNoWSDLURL,	L"No WSDL or URL property was set in the THTTPRIO component. You must set the WSDL or URL property before invoking the Web Service"
-	Xml_XMLConst_SNoDOMParseOptions,	L"DOM Implementation does not support IDOMParseOptions"
-	Xml_XMLConst_SMissingItemTag,	L"ItemTag property is not initialized"
-	Xml_XMLConst_SNodeReadOnly,	L"Node is readonly"
-	Xml_XMLConst_SNoRefresh,	L"Refresh is only supported if the FileName or XML properties are set"
-	Xml_XMLConst_SMissingFileName,	L"FileName cannot be blank"
-	Xml_XMLConst_SLine,	L"Line"
-	Xml_XMLConst_SInvalidSchema,	L"Invalid or unsupported XML Schema document"
-	Xml_XMLConst_SNoLocalTypeName,	L"Local type declarations cannot have a name.  Element: %s"
+	Soap_SOAPConst_sCantGetURL,	L"Unable to retrieve the URL endpoint for Service/Port '%s'/'%s' from WSDL '%s'"
+	Soap_SOAPConst_SDataTypeNotSupported,	L"Datatype of TypeKind: %s not supported as argument for remote invocation"
+	Soap_SOAPConst_SNoSerializeGraphs,	L"Must enable multiref output for objects when serializing a graph of objects - (%s)"
+	Soap_SOAPConst_SUnsuportedClassType,	L"Conversion from class %s to SOAP is not supported - SOAP classes must derive from TRemotable"
+	Soap_SOAPConst_SUnexpectedDataType,	L"Internal error: data type kind %s cannot be converted to and from text"
+	Soap_SOAPConst_SInvalidContentType,	L"Received content of invalid Content-Type setting: %s - SOAP expects \"text/xml\""
+	Soap_SOAPConst_SArrayTooManyElem,	L"Array Node: %s has too many elements"
+	Soap_SOAPConst_SWrongDocElem,	L"DocumentElement %s:%s expected, %s:%s found"
 	Xml_XMLConst_SUnknownDataType,	L"Unknown datatype \"%s\""
 	Xml_XMLConst_SInvalidGroupDecl,	L"Invalid group declaration in \"%s\""
 	Xml_XMLConst_SMissingName,	L"Missing Type name"
@@ -850,14 +842,14 @@ BEGIN
 	Xml_XMLConst_SNoGlobalRef,	L"Global schema items may not contain a ref"
 	Xml_XMLConst_SNoRefPropSet,	L"%s cannot be set on a ref item"
 	Xml_XMLConst_SSetGroupRefProp,	L"Set the GroupRef property for the cmGroupRef content model"
-	Vcl_OleConst_SInvalidLicense,	L"License information for %s is invalid"
-	Vcl_OleConst_SNotLicensed,	L"License information for %s not found. You cannot use this control in design mode"
-	Vcl_OleConst_sNoRunningObject,	L"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
-	Xml_XMLConst_SDuplicateRegistration,	L"\"%s\" DOMImplementation already registered"
-	Xml_XMLConst_SNoMatchingDOMVendor,	L"No matching DOM Vendor: \"%s\""
-	Xml_XMLConst_SNoDOMNodeEx,	L"Selected DOM Vendor does not support this property or method"
-	Xml_XMLConst_SDOMNotSupported,	L"Property or Method \"%s\" is not supported by DOM Vendor \"%s\""
-	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
+	Xml_XMLConst_SNoContentModel,	L"ContentModel not set"
+	Xml_XMLConst_SNoFacetsAllowed,	L"Facets and Enumeration not allowed on this kind of datatype \"%s\""
+	Xml_XMLConst_SNotBuiltInType,	L"Invalid built-in type name \"%s\""
+	Xml_XMLConst_SInvalidTargetNS,	L"Included schema file \"%s\" has an invalid targetNamespace.\r\n\r\nExpected: %s\r\nFound: %s"
+	Xml_XMLConst_SUndefinedTargetNS,	L"No targetNamespace attribute"
+	Soap_SOAPConst_SUnsupportedEncodingSyle,	L"Unsupported SOAP encodingStyle %s"
+	Soap_SOAPConst_SInvalidSoapRequest,	L"Invalid SOAP request"
+	Soap_SOAPConst_SInvalidSoapResponse,	L"Invalid SOAP response"
 	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
 	Xml_XMLConst_SNotActive,	L"No active document"
 	Xml_XMLConst_SNodeNotFound,	L"Node \"%s\" not found"
@@ -866,6 +858,30 @@ BEGIN
 	Xml_XMLConst_SInvalidNodeType,	L"Invalid node type"
 	Xml_XMLConst_SMismatchedRegItems,	L"Mismatched paramaters to RegisterChildNodes"
 	Xml_XMLConst_SNotSingleTextNode,	L"Element \"%s\" does not contain a single text node"
+	Xml_XMLConst_SNoDOMParseOptions,	L"DOM Implementation does not support IDOMParseOptions"
+	Xml_XMLConst_SMissingItemTag,	L"ItemTag property is not initialized"
+	Xml_XMLConst_SNodeReadOnly,	L"Node is readonly"
+	Xml_XMLConst_SNoRefresh,	L"Refresh is only supported if the FileName or XML properties are set"
+	Xml_XMLConst_SMissingFileName,	L"FileName cannot be blank"
+	Xml_XMLConst_SLine,	L"Line"
+	Xml_XMLConst_SInvalidSchema,	L"Invalid or unsupported XML Schema document"
+	Xml_XMLConst_SNoLocalTypeName,	L"Local type declarations cannot have a name.  Element: %s"
+	Vcl_OleConst_SInvalidLicense,	L"License information for %s is invalid"
+	Vcl_OleConst_SNotLicensed,	L"License information for %s not found. You cannot use this control in design mode"
+	Vcl_OleConst_sNoRunningObject,	L"Unable to retrieve a pointer to a running object registered with OLE for %s/%s"
+	ACBrDFeXsLibXml2_cErrParseDoc,	L"Erro: Falha ao interpretar o XML \"xmlParseDoc\""
+	ACBrDFeXsLibXml2_cErrFindSignNode,	L"Erro: Falha ao localizar o n\x00f3 de Assinatura"
+	ACBrDFeXsLibXml2_cErrFindRootNode,	L"Erro: Falha ao localizar o n\x00f3 Raiz"
+	ACBrDFeXsLibXml2_cErrC14NTransformation,	L"Erro ao aplicar transforma\x00e7\x00e3o C14N"
+	ACBrDFeXsLibXml2_cErrElementsNotFound,	L"Nenhum elemento encontrado"
+	ACBrDFeXsLibXml2_cErrDigestValueNode,	L"Node DigestValue n\x00e3o encontrado"
+	ACBrDFeXsLibXml2_cErrSignatureValueNode,	L"Node SignatureValue n\x00e3o encontrado"
+	ACBrDFeXsLibXml2_cErrDigestValueNaoConfere,	L"DigestValue n\x00e3o confere. Conte\x00fado de \"%s\" foi alterado"
+	Xml_XMLConst_SDuplicateRegistration,	L"\"%s\" DOMImplementation already registered"
+	Xml_XMLConst_SNoMatchingDOMVendor,	L"No matching DOM Vendor: \"%s\""
+	Xml_XMLConst_SNoDOMNodeEx,	L"Selected DOM Vendor does not support this property or method"
+	Xml_XMLConst_SDOMNotSupported,	L"Property or Method \"%s\" is not supported by DOM Vendor \"%s\""
+	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
 	System_Win_ComConst_SDAXError,	L"DAX Error"
 	Vcl_ComStrs_sTabFailClear,	L"Failed to clear tab control"
 	Vcl_ComStrs_sTabFailDelete,	L"Failed to delete tab at index %d"
@@ -1286,24 +1302,24 @@ END
 
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Controls.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Buttons.res */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\ACBrNFeServicos.res */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\ACBrNFeServicos.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBCtrls.res */
-/* D:\programacao\Componentes\XE3\FortesReport_SVN\trunk\Source\RLReport.res */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRL.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeEventoRL.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRLRetrato.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRLPaisagem.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeEventoRLRetrato.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRLSimplificado.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDAInutRL.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDAInutRLRetrato.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFCe\Fortes\ACBrDANFCeFortesFr.dfm */
+/* D:\Programacao\Componentes\XE3\fortesreport-ce-master\Binary\LibD17\RLReport.res */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRL.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeEventoRL.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRLRetrato.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRLPaisagem.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeEventoRLRetrato.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDANFeRLSimplificado.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDAInutRL.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFe\Fortes\ACBrNFeDAInutRLRetrato.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Fontes\ACBrDFe\ACBrNFe\DANFE\NFCe\Fortes\ACBrDANFCeFortesFr.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\SPIN.RES */
-/* D:\programacao\Componentes\acbr\trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\ufrmStatus.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\ufrmStatus.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\FileCtrl.res */
-/* D:\programacao\Componentes\acbr\trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\Unit2.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\Unit1.dfm */
-/* D:\programacao\Componentes\acbr\trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\ACBrNFe_demo.res */
-/* D:\programacao\Componentes\acbr\trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\ACBrNFe_demo.drf */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\Unit2.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\Unit1.dfm */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\ACBrNFe_demo.res */
+/* D:\Programacao\Componentes\XE3\ACBR trunk2\Exemplos\ACBrDFe\ACBrNFe\Delphi\ACBrNFe_demo.drf */
