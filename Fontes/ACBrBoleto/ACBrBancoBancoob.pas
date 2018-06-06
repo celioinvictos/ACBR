@@ -676,7 +676,8 @@ begin
          ValorRecebido        := StrToFloatDef(Copy(Linha,254,13),0)/100;
          NossoNumero          := copy( Copy(Linha,63,11),Length( Copy(Linha,63,11) )-TamanhoMaximoNossoNum+1  ,TamanhoMaximoNossoNum);
          Carteira             := Copy(Linha,86,3);
-         ValorDespesaCobranca := StrToFloatDef(Copy(Linha,182,7),0)/100;ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;
+         ValorDespesaCobranca := StrToFloatDef(Copy(Linha,182,7),0)/100;
+		 ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;
 
          { invictos }
          if StrToIntDef(Copy(Linha,176,6),0) <> 0 then
