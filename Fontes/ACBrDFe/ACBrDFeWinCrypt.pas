@@ -596,9 +596,9 @@ begin
     raise EACBrDFeException.Create('PFXDataToCertContextWinApi: Senha informada está errada');
 
   AStore := PFXImportCertStore( PFXBlob, LPCWSTR(wsPass),
-                                CRYPT_EXPORTABLE or
-                                {PKCS12_PREFER_CNG_KSP or}
-                                PKCS12_INCLUDE_EXTENDED_PROPERTIES);
+                                CRYPT_EXPORTABLE {or
+                                PKCS12_PREFER_CNG_KSP or
+                                PKCS12_INCLUDE_EXTENDED_PROPERTIES});
   if AStore = nil then
     raise EACBrDFeException.Create(
       'PFXDataToCertContextWinApi: Falha em "PFXImportCertStore" Erro: '+GetLastErrorAsHexaStr);

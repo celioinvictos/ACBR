@@ -48,6 +48,32 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+19/06/2018
+-- ACBrBPeServicos --
+[*] https://www.projetoacbr.com.br/forum/topic/36432-bilhete-de-passagem-eletr%C3%B4nico-bp-e/?do=findComment&comment=291356
+   Por: Evertof
+
+18/06/2018
+-- pcnBPe --
+[*] https://www.projetoacbr.com.br/forum/topic/36432-bilhete-de-passagem-eletr%C3%B4nico-bp-e/?do=findComment&comment=290912
+   Por: Evertof
+
+15/06/2018
+-- pcnBPe --
+[*] https://www.projetoacbr.com.br/forum/topic/36432-bilhete-de-passagem-eletr%C3%B4nico-bp-e/?do=findComment&comment=290748
+   Por: Evertof
+
+13/06/2018
+-- Diversos --
+[*] Adequações para deixar o componente em conformidade com a NT 2018/002
+   Por: Italo Jurisato Junior
+
+08/06/2018
+-- ACBrBPeWebServices --
+[+] Acrescentado a propriedade ListaArqs na classe DistribuicaoDFe com objetivo
+    relacionar o nome de todos os XML retornados pelo método DistribuicaoDFe.
+   Por: Italo Jurisato Junior
+
 04/06/2018
 -- pcnBPeR / pcnBPeW --
 [*] Correções na geração e leitura dos grupos de ICMS.

@@ -70,6 +70,8 @@ type
     function CodOcorrenciaToTipo(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
     function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
     function CodMotivoRejeicaoToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia;CodMotivo:String): String; override;
+
+    function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
   end;
 
 implementation
@@ -637,7 +639,7 @@ begin
 
 
       OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(StrToIntDef(copy(Linha,109,2),0));
-      CodOcorrencia := StrToInt(IfThen(copy(Linha,109,2) = '00','00',copy(Linha,109,2)));
+      CodOcorrencia := StrToIntDef(IfThen(copy(Linha,109,2) = '00','00',copy(Linha,109,2)),0);
       DataOcorrencia := StringToDateTimeDef( Copy(Linha,111,2)+'/'+
                                              Copy(Linha,113,2)+'/'+
                                              Copy(Linha,115,2),0, 'DD/MM/YY' );
@@ -1411,6 +1413,22 @@ begin
   end;
 end;
 
+function TACBrBancoSicredi.CodOcorrenciaToTipoRemessa(const CodOcorrencia: Integer): TACBrTipoOcorrencia;
+begin
+  case CodOcorrencia of
+    02 : Result:= toRemessaBaixar;                          {Pedido de Baixa}
+    04 : Result:= toRemessaConcederAbatimento;              {Concessão de Abatimento}
+    05 : Result:= toRemessaCancelarAbatimento;              {Cancelamento de Abatimento concedido}
+    06 : Result:= toRemessaAlterarVencimento;               {Alteração de vencimento}
+    09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
+    18 : Result:= toRemessaCancelarInstrucaoProtestoBaixa;  {Sustar protesto e baixar}
+    19 : Result:= toRemessaCancelarInstrucaoProtesto;       {Sustar protesto e manter na carteira}
+    31 : Result:= toRemessaOutrasOcorrencias;               {Alteração de Outros Dados}
+  else
+     Result:= toRemessaRegistrar;                           {Remessa}
+  end;
+end;
+
 function TACBrBancoSicredi.TipoOCorrenciaToCod(
   const TipoOcorrencia: TACBrTipoOcorrencia): String;
 begin
@@ -1572,7 +1590,7 @@ end;
 function TACBrBancoSicredi.GerarRegistroTransacao240(
   ACBrTitulo: TACBrTitulo): String;
 var
-    AceiteStr, CodProtesto, DiasProtesto, TipoSacado: String;
+    AceiteStr, CodProtesto, DiasProtesto, TipoSacado, ATipoBoleto: String;
     Especie, EndSacado: String;
     TipoAvalista: Char;
 begin
@@ -1623,6 +1641,16 @@ begin
       TipoAvalista := '9';
     end;
 
+
+     {Pegando Tipo de Boleto}
+     case ACBrBoleto.Cedente.ResponEmissao of
+       tbCliEmite        : ATipoBoleto := '2' + '2';
+       tbBancoEmite      : ATipoBoleto := '1' + '1';
+       tbBancoReemite    : ATipoBoleto := '4' + '1';
+       tbBancoNaoReemite : ATipoBoleto := '5' + '2';
+     end;
+
+
     {SEGMENTO P}
     Result:= '748'                                                            + // 001 a 003 - Código do banco na compensação
              '0001'                                                           + // 004 a 007 - Lote de serviço = "0001"
@@ -1641,8 +1669,7 @@ begin
              '1'                                                              + // 058 a 058 - Código da carteira
              '1'                                                              + // 059 a 059 - Forma de cadastro do título no banco
              '2'                                                              + // 060 a 060 - Tipo de documento
-             '2'                                                              + // 061 a 061 - Identificação de emissão do bloqueto
-             '2'                                                              + // 062 a 062 - Identificação da distribuição
+             ATipoBoleto                                                      + // 061 a 062 - Identificação de emissão do bloqueto + 062 a 062 - Identificação da distribuição
              PadRight(NumeroDocumento, 15)                                    + // 063 a 077 - Nº do documento de cobrança
              FormatDateTime('ddmmyyyy', Vencimento)                           + // 078 a 085 - Data de vencimento do título
              IntToStrZero(Round(ValorDocumento * 100), 15)                    + // 086 a 100 - Valor nominal do título

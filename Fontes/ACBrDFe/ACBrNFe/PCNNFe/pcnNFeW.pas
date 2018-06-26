@@ -800,7 +800,7 @@ begin
       Gerador.wCampo(tcStr, 'I05d', 'indEscala', 01, 01, 0, indEscalaToStr(nfe.Det[i].Prod.indEscala), DSC_INDESCALA);
       Gerador.wCampo(tcStr, 'I05e', 'CNPJFab  ', 14, 14, 0, nfe.Det[i].Prod.CNPJFab, DSC_CNPJFAB);
     end;
-    Gerador.wCampo(tcStr, 'I05f', 'cBenef', 10, 10, 0, nfe.Det[i].Prod.cBenef, DSC_CBENEF);
+    Gerador.wCampo(tcStr, 'I05f', 'cBenef', 08, 10, 0, nfe.Det[i].Prod.cBenef, DSC_CBENEF);
   end
   else
     Gerador.wCampo(tcStr, 'I05w', 'CEST', 07, 07, 0, OnlyNumber(nfe.Det[i].Prod.CEST), DSC_CEST);
@@ -1023,7 +1023,7 @@ end;
 
 procedure TNFeW.GerarDetProdMed(const i: Integer);
 var
-  j: Integer;
+  j, MaxMed: Integer;
 begin
   for j := 0 to nfe.Det[i].Prod.med.Count - 1 do
   begin
@@ -1040,8 +1040,14 @@ begin
     Gerador.wCampo(tcDe2, 'K06', 'vPMC ', 00, 15, 1, nfe.Det[i].Prod.med[j].vPMC, DSC_VPMC);
     Gerador.wGrupo('/med');
   end;
-  if nfe.Det[i].Prod.med.Count > 500 then
-    Gerador.wAlerta('K01', 'med', DSC_NITEM, ERR_MSG_MAIOR_MAXIMO + '500');
+
+  if (NFe.infNFe.Versao >= 4) then
+    MaxMed := 1
+  else
+    MaxMed := 500;
+
+  if (nfe.Det[i].Prod.med.Count > MaxMed) then
+    Gerador.wAlerta('K01', 'med', DSC_NITEM, ERR_MSG_MAIOR_MAXIMO + IntToStr(MaxMed));
 end;
 
 procedure TNFeW.GerarDetProdNVE(const i: Integer);
@@ -1442,6 +1448,15 @@ begin
                             Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N27b', 'pFCPSTRet', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pFCPSTRet, DSC_PFCPSTRET);
                             Gerador.wCampo(tcDe2, 'N27d', 'vFCPSTRet ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vFCPSTRet, DSC_VFCPSTRET);
                           end;
+
+                          if (nfe.Det[i].Imposto.ICMS.pRedBCEfet > 0) or (nfe.Det[i].Imposto.ICMS.vBCEfet > 0) or
+                             (nfe.Det[i].Imposto.ICMS.pICMSEfet > 0) or (nfe.Det[i].Imposto.ICMS.vICMSEfet > 0) then
+                          begin
+                            Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N34', 'pRedBCEfet', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pRedBCEfet, DSC_PREDBCEFET);
+                            Gerador.wCampo(tcDe2, 'N35', 'vBCEfet ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vBCEfet, DSC_VBCEFET);
+                            Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N36', 'pICMSEfet', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pICMSEfet, DSC_PICMSEFET);
+                            Gerador.wCampo(tcDe2, 'N37', 'vICMSEfet ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vICMSEfet, DSC_VICMSEFET);
+                          end;
                         end;
                       end
                      else
@@ -1619,7 +1634,7 @@ begin
                       Gerador.wCampo(tcDe2, 'N26', 'vBCSTRet  ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vBCSTRET, DSC_VBCSTRET);
 
                       if (NFe.infNFe.Versao >= 4) then
-                        Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N26.1', 'pST', 01, IIf(Usar_tcDe4,07,05), 0, nfe.Det[i].Imposto.ICMS.pST, DSC_PST);
+                        Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N26.1', 'pST', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pST, DSC_PST);
 
                       Gerador.wCampo(tcDe2, 'N27', 'vICMSSTRet', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vICMSSTRET, DSC_VICMSSTRET);
                     end;
@@ -1630,6 +1645,15 @@ begin
                         Gerador.wCampo(tcDe2, 'N27a', 'vBCFCPSTRet', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vBCFCPSTRet, DSC_VBCFCPST);
                         Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N27b', 'pFCPSTRet', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pFCPSTRet, DSC_PFCPSTRET);
                         Gerador.wCampo(tcDe2, 'N27d', 'vFCPSTRet ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vFCPSTRet, DSC_VFCPSTRET);
+                      end;
+
+                      if (nfe.Det[i].Imposto.ICMS.pRedBCEfet > 0) or (nfe.Det[i].Imposto.ICMS.vBCEfet > 0) or
+                         (nfe.Det[i].Imposto.ICMS.pICMSEfet > 0) or (nfe.Det[i].Imposto.ICMS.vICMSEfet > 0) then
+                      begin
+                        Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N34', 'pRedBCEfet', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pRedBCEfet, DSC_PREDBCEFET);
+                        Gerador.wCampo(tcDe2, 'N35', 'vBCEfet ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vBCEfet, DSC_VBCEFET);
+                        Gerador.wCampo(IIf(Usar_tcDe4,tcDe4,tcDe2), 'N36', 'pICMSEfet', 01, IIf(Usar_tcDe4,07,05), 1, nfe.Det[i].Imposto.ICMS.pICMSEfet, DSC_PICMSEFET);
+                        Gerador.wCampo(tcDe2, 'N37', 'vICMSEfet ', 01, 15, 1, nfe.Det[i].Imposto.ICMS.vICMSEfet, DSC_VICMSEFET);
                       end;
                     end;
                   end;

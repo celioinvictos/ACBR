@@ -68,6 +68,7 @@ type
     function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia):String; override;
     function CodMotivoRejeicaoToDescricao(const TipoOcorrencia:TACBrTipoOcorrencia; CodMotivo:Integer): String; override;
 
+    function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
   end;
 
 implementation
@@ -709,6 +710,23 @@ Begin
   End;
 End;
 
+function TACBrBancoHSBC.CodOcorrenciaToTipoRemessa(const CodOcorrencia: Integer): TACBrTipoOcorrencia;
+begin
+  case CodOcorrencia of
+    02 : Result:= toRemessaBaixar;                          {Pedido de Baixa}
+    04 : Result:= toRemessaConcederAbatimento;              {Concessão de Abatimento}
+    05 : Result:= toRemessaCancelarAbatimento;              {Cancelamento de Abatimento concedido}
+    06 : Result:= toRemessaAlterarVencimento;               {Alteração de vencimento}
+    08 : Result:= toRemessaAlterarNumeroControle;           {Alteração de seu número}
+    09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
+    18 : Result:= toRemessaCancelarInstrucaoProtestoBaixa;  {Sustar protesto e baixar}
+    19 : Result:= toRemessaCancelarInstrucaoProtesto;       {Sustar protesto e manter na carteira}
+    31 : Result:= toRemessaOutrasOcorrencias;               {Alteração de Outros Dados}
+  else
+     Result:= toRemessaRegistrar;                           {Remessa}
+  end;
+end;
+
 Function TACBrBancoHSBC.TipoOCorrenciaToCod(
   Const TipoOcorrencia: TACBrTipoOcorrencia): String;
 Begin
@@ -1108,7 +1126,6 @@ var
   Linha, rCedente, rCNPJCPF: String;
   rAgencia, rConta,rDigitoConta: String;
   IdxMotivo : Integer;
-  wSeuNumero: String;
 begin
 
    if (copy(ARetorno.Strings[0],1,3) <> '399') then
@@ -1211,15 +1228,7 @@ begin
             Carteira                  := Copy(Linha,58,1);
             NossoNumero               := Copy(Linha,38,13);
             CodigoLiquidacao          := Copy(Linha,214,10);
-//            CodigoLiquidacaoDescricao := CodigoLiquidacaoDescricao(StrToIntDef(CodigoLiquidacao,0) );
-
-            // prevenir quando o seunumero não vem informado no arquivo, altera para NossoNumero do banco
-            wSeuNumero := StringReplace(SeuNumero, '0','',[rfReplaceAll]);
-            if (AnsiSameText(wSeuNumero, EmptyStr)) then
-            begin
-              SeuNumero       := NossoNumero;
-              NumeroDocumento := NossoNumero
-            end;
+            //CodigoLiquidacaoDescricao := CodigoLiquidacaoDescricao(StrToIntDef(CodigoLiquidacao,0) );
 
             // codigos motivos de ocorrencias
             IdxMotivo := 214;

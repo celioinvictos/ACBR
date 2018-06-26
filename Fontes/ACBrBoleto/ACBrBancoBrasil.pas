@@ -102,6 +102,8 @@ type
       const TipoOcorrencia: TACBrTipoOcorrencia; CodMotivo: Integer): String; override;
 
     function CalcularTamMaximoNossoNumero(const Carteira : String; NossoNumero : String = ''; Convenio: String = ''): Integer; override;
+
+    function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
    end;
 
 implementation
@@ -498,6 +500,15 @@ begin
      else
        ADataMoraJuros := PadRight('', 8, '0');
 
+     {Código Mora}
+     if CodigoMora = '' then
+     begin
+       if ValorMoraJuros > 0 then
+         CodigoMora := '1'
+       else
+         CodigoMora := '3';
+     end;
+
      {Descontos}
      if (ValorDesconto > 0) and (DataDesconto > 0) then
        ADataDesconto := FormatDateTime('ddmmyyyy', DataDesconto)
@@ -529,7 +540,7 @@ begin
               PadRight(EspecieDoc,2)                                                    + // 107 a 108 - Espécie do documento
               ATipoAceite                                                               + // 109 - Identificação de título Aceito / Não aceito
               FormatDateTime('ddmmyyyy', DataDocumento)                                 + // 110 a 117 - Data da emissão do documento
-              IfThen(ValorMoraJuros > 0, '1', '3')                                      + // 118 - Código de juros de mora: Valor por dia
+              PadLeft(trim(CodigoMora), 1)                                              + // 118 - Código de mora (1=Valor diário; 2=Taxa Mensal; 3=Isento)
               ADataMoraJuros                                                            + // 119 a 126 - Data a partir da qual serão cobrados juros
               IfThen(ValorMoraJuros > 0,
                      IntToStrZero(round(ValorMoraJuros * 100), 15),
@@ -542,9 +553,9 @@ begin
               IntToStrZero( round(ValorIOF * 100), 15)                                  + // 166 a 180 - Valor do IOF a ser recolhido
               IntToStrZero( round(ValorAbatimento * 100), 15)                           + // 181 a 195 - Valor do abatimento
               PadRight(SeuNumero, 25, ' ')                                              + // 196 a 220 - Identificação do título na empresa
-              IfThen((DataProtesto <> null) and (DataProtesto > Vencimento),
+              IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
                      IfThen((DaySpan(Vencimento, DataProtesto) > 5), '1', '2'), '3')    + // 221 - Código de protesto: Protestar em XX dias corridos
-              IfThen((DataProtesto <> null) and (DataProtesto > Vencimento),
+              IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
                      PadLeft(IntToStr(DaysBetween(DataProtesto, Vencimento)), 2, '0'),
                      '00')                                                              + // 222 a 223 - Prazo para protesto (em dias corridos)
               '0'                                                                       + // 224 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
@@ -573,7 +584,7 @@ begin
               PadRight(Sacado.UF, 2, ' ')                                              +
               IfThen(Sacado.SacadoAvalista.Pessoa = pJuridica,'2',
                      IfThen(Sacado.SacadoAvalista.CNPJCPF <> '','1', '0'))             + // Tipo de inscrição: Não informado
-              PadRight(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 15, '0')             + // Número de inscrição
+              PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 15, '0')             + // Número de inscrição
               PadRight(Sacado.SacadoAvalista.NomeAvalista, 40, ' ')                    + // Nome do sacador/avalista
               PadRight('', 3, '0')                                                     + // Uso exclusivo FEBRABAN/CNAB
               PadRight('',20, ' ')                                                     + // Uso exclusivo FEBRABAN/CNAB
@@ -1005,7 +1016,7 @@ begin
 
             TempData := copy(Linha, 74, 2) + '/'+copy(Linha, 76, 2)+'/'+copy(Linha, 78, 4);
             if TempData<>'00/00/0000' then
-               Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+              Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYY');
 
             ValorDocumento := StrToFloatDef(copy(Linha, 82, 15), 0) / 100;
 
@@ -1027,9 +1038,6 @@ begin
                Inc(IdxMotivo, 2);
             end;
 
-            // quando o numero documento vier em branco
-            if Trim(NumeroDocumento) = '' then
-              NumeroDocumento := NossoNumero;
           end
          else if copy(Linha, 14, 1) = 'U' then // segmento U
           begin
@@ -1061,6 +1069,7 @@ begin
    if (ACBrBanco.ACBrBoleto.LayoutRemessa = c240) then
    begin
      case TipoOcorrencia of
+       toRetornoRegistroRecusado                    : Result := '03';
        toRetornoTransferenciaCarteiraEntrada        : Result := '04';
        toRetornoTransferenciaCarteiraBaixa          : Result := '05';
        toRetornoBaixaAutomatica                     : Result := '09';
@@ -1077,55 +1086,55 @@ begin
        toRetornoChequePendenteCompensacao           : Result := '50';
      end;
    end
-    else
-    begin
-      case TipoOcorrencia of
-        toRetornoLiquidadoSemRegistro               : Result := '05';
-        toRetornoLiquidadoPorConta                  : Result := '08';
-        toRetornoLiquidadoSaldoRestante             : Result := '08';
-        toRetornoBaixaSolicitada                    : Result := '10';
-        toRetornoLiquidadoEmCartorio                : Result := '15';
-        toRetornoConfirmacaoAlteracaoJurosMora      : Result := '16';
-        toRetornoDebitoEmConta                      : Result := '20';
-        toRetornoNomeSacadoAlterado                 : Result := '21';
-        toRetornoEnderecoSacadoAlterado             : Result := '22';
-        toRetornoProtestoSustado                    : Result := '24';
-        toRetornoJurosDispensados                   : Result := '25';
-        toRetornoManutencaoTituloVencido            : Result := '28';
-        toRetornoDescontoConcedido                  : Result := '31';
-        toRetornoDescontoCancelado                  : Result := '32';
-        toRetornoDescontoRetificado                 : Result := '33';
-        toRetornoAlterarDataDesconto                : Result := '34';
-        toRetornoRecebimentoInstrucaoAlterarJuros   : Result := '35';
-        toRetornoRecebimentoInstrucaoDispensarJuros : Result := '36';
-        toRetornoDispensarIndexador                 : Result := '37';
-        toRetornoDispensarPrazoLimiteRecebimento    : Result := '38';
-        toRetornoAlterarPrazoLimiteRecebimento      : Result := '39';
-        toRetornoChequePendenteCompensacao          : Result := '46';
-        toRetornoTipoCobrancaAlterado               : Result := '72';
-        toRetornoDespesasProtesto                   : Result := '96';
-        toRetornoDespesasSustacaoProtesto                    : Result := '97';
-        toRetornoDebitoCustasAntecipadas            : Result := '98';
-      end;
-    end;
+   else
+   begin
+     case TipoOcorrencia of
+       toRetornoComandoRecusado                    : Result := '03';
+       toRetornoLiquidadoSemRegistro               : Result := '05';
+       toRetornoLiquidadoPorConta                  : Result := '08';
+       toRetornoLiquidadoSaldoRestante             : Result := '08';
+       toRetornoBaixaSolicitada                    : Result := '10';
+       toRetornoLiquidadoEmCartorio                : Result := '15';
+       toRetornoConfirmacaoAlteracaoJurosMora      : Result := '16';
+       toRetornoDebitoEmConta                      : Result := '20';
+       toRetornoNomeSacadoAlterado                 : Result := '21';
+       toRetornoEnderecoSacadoAlterado             : Result := '22';
+       toRetornoProtestoSustado                    : Result := '24';
+       toRetornoJurosDispensados                   : Result := '25';
+       toRetornoManutencaoTituloVencido            : Result := '28';
+       toRetornoDescontoConcedido                  : Result := '31';
+       toRetornoDescontoCancelado                  : Result := '32';
+       toRetornoDescontoRetificado                 : Result := '33';
+       toRetornoAlterarDataDesconto                : Result := '34';
+       toRetornoRecebimentoInstrucaoAlterarJuros   : Result := '35';
+       toRetornoRecebimentoInstrucaoDispensarJuros : Result := '36';
+       toRetornoDispensarIndexador                 : Result := '37';
+       toRetornoDispensarPrazoLimiteRecebimento    : Result := '38';
+       toRetornoAlterarPrazoLimiteRecebimento      : Result := '39';
+       toRetornoChequePendenteCompensacao          : Result := '46';
+       toRetornoTipoCobrancaAlterado               : Result := '72';
+       toRetornoDespesasProtesto                   : Result := '96';
+       toRetornoDespesasSustacaoProtesto           : Result := '97';
+       toRetornoDebitoCustasAntecipadas            : Result := '98';
+     end;
+   end;
 
-    if (Result <> '') then
-    Exit;
+   if (Result <> '') then
+   Exit;
 
-    case TipoOcorrencia of
-      toRetornoRegistroConfirmado                   : Result := '02';
-      toRetornoRegistroRecusado                     : Result := '03';
-      toRetornoLiquidado                            : Result := '06';
-      toRetornoTituloEmSer                          : Result := '11';
-      toRetornoAbatimentoConcedido                  : Result := '12';
-      toRetornoAbatimentoCancelado                  : Result := '13';
-      toRetornoVencimentoAlterado                   : Result := '14';
-      toRetornoRecebimentoInstrucaoProtestar        : Result := '19';
-      toRetornoEntradaEmCartorio                    : Result := '23';
-      toRetornoChequeDevolvido                      : Result := '44';
-    else
-      Result := '02';
-    end;
+   case TipoOcorrencia of
+     toRetornoRegistroConfirmado                   : Result := '02';
+     toRetornoLiquidado                            : Result := '06';
+     toRetornoTituloEmSer                          : Result := '11';
+     toRetornoAbatimentoConcedido                  : Result := '12';
+     toRetornoAbatimentoCancelado                  : Result := '13';
+     toRetornoVencimentoAlterado                   : Result := '14';
+     toRetornoRecebimentoInstrucaoProtestar        : Result := '19';
+     toRetornoEntradaEmCartorio                    : Result := '23';
+     toRetornoChequeDevolvido                      : Result := '44';
+   else
+     Result := '02';
+   end;
 end;
 
 function TACBrBancoBrasil.TipoOcorrenciaToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia): String;
@@ -1282,6 +1291,27 @@ begin
     44: Result := toRetornoChequeDevolvido;
   else
     Result := toRetornoOutrasOcorrencias;
+  end;
+end;
+
+function TACBrBancoBrasil.CodOcorrenciaToTipoRemessa(const CodOcorrencia: Integer): TACBrTipoOcorrencia;
+begin
+  case CodOcorrencia of
+    02 : Result:= toRemessaBaixar;                          {Pedido de Baixa}
+    04 : Result:= toRemessaConcederAbatimento;              {Concessão de Abatimento}
+    05 : Result:= toRemessaCancelarAbatimento;              {Cancelamento de Abatimento concedido}
+    06 : Result:= toRemessaAlterarVencimento;               {Alteração de vencimento}
+    07 : Result:= toRemessaAlterarControleParticipante;     {Alteração do controle do participante}
+    08 : Result:= toRemessaAlterarNumeroControle;           {Alteração de seu número}
+    09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
+    10 : Result:= toRemessaCancelarInstrucaoProtestoBaixa;  {Instrução para sustar protesto}
+    11 : Result:= toRemessaDispensarJuros;                  {Instrução para dispensar juros}
+    12 : Result:= toRemessaAlterarNomeEnderecoSacado;       {Alteração de nome e endereço do Sacado}
+    31 : Result:= toRemessaOutrasOcorrencias;               {Alteração de Outros Dados}
+    32 : Result:= toRemessaCancelarDesconto;                {Não conceder desconto}
+    40 : Result:= toRemessaAlterarModalidade;               {Alterar modalidade (Vide Observações)}
+  else
+     Result:= toRemessaRegistrar;                           {Remessa}
   end;
 end;
 

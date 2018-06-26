@@ -50,6 +50,28 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+15/06/2018
+-- pcnGeradorReinf --
+[*] Estava sendo utilizada uma função de conversão errada para obter o tipo de
+    evento.
+   Por: Italo Jurisato Junior
+
+13/06/2018
+-- Diversos --
+[*] Acrescentado condições na leitura das seções no arquivo INI que são opcionais.
+   Por: Italo Jurisato Junior
+
+08/06/2018
+-- ACBrReinf.pas --
+[-] Não estava identificando corretamente o tipo de evento ao carregar um XML
+    através do LoadFromFile
+   Por: Italo Jurisato Junior
+
+07/06/2018
+-- pcnConversaoReinf.pas --
+[+] Adicionado função de conversão para versão
+   Por: José M S Junior
+
 30/05/2018
 -- pcnReinfRetConsulta --
 [*] Tentativa de eliminar erro de Violação de Acesso.

@@ -629,7 +629,7 @@ begin
       {Descontos}
       if (ValorDesconto > 0) then
        begin
-         if (DataDesconto <> Null) then
+         if (DataDesconto > 0) then
             ADataDesconto := FormatDateTime('ddmmyyyy', DataDesconto)
          else
             ADataDesconto := PadRight('', 8, '0');
@@ -882,7 +882,7 @@ begin
       {Mora Juros}
       if (ValorMoraJuros > 0) then
        begin
-         if (DataMoraJuros <> Null) and (DataMoraJuros >= 30/12/2000) then
+         if (DataMoraJuros > 0) and (DataMoraJuros >= 30/12/2000) then
             ADataMoraJuros := FormatDateTime('ddmmyy', DataMoraJuros)
          else
             ADataMoraJuros := PadLeft('', 6, '0');
@@ -1022,7 +1022,7 @@ begin
                   IntToStrZero(round((ValorDocumento* (PercentualMulta*100) )/100), 10)    + //358 até 367 - Valor nominal da multa
                   PadRight(Sacado.NomeSacado, 22)                                  + // 368 até 389 - Nome do Sacador Avalista
                   '00'                                                             + // 390  391 - Terceira instrução de Cobrança Default '00'
-                   IfThen((DataProtesto <> null) and
+                   IfThen((DataProtesto > 0) and
                       (DataProtesto > Vencimento),
                        PadLeft(IntToStr(DaysBetween(DataProtesto,
                        Vencimento)), 2, '0'), '99')                                + //392 até 393 - Quantidade de dias para início da ação de protesto ou devolução do Título
@@ -1089,7 +1089,7 @@ var
   Linha, rCedente, rCNPJCPF: String;
   rAgencia, rConta,rDigitoConta: String;
   MotivoLinha, CodMotivo: Integer;
-  wSeuNumero, TempData: String;
+  TempData: String;
   codOcorrencia : String;
 begin
 
@@ -1205,14 +1205,6 @@ begin
                 Liquidacao.FormaPagto := '';
               end;
             end;
-
-            // prevenir quando o seunumero não vem informado no arquivo
-            wSeuNumero := StringReplace(SeuNumero, '0','',[rfReplaceAll]);
-            if (AnsiSameText(wSeuNumero, EmptyStr)) then
-            begin
-              SeuNumero := NossoNumero;
-              NumeroDocumento := NossoNumero
-            end;            
 
             if (CodOcorrencia  = '02' ) or (CodOcorrencia  = '03' ) or
                (CodOcorrencia  = '26' ) or (CodOcorrencia  = '30' ) then
@@ -1848,12 +1840,6 @@ begin
 
        if TempData <> '00/00/00' then
          DataCredito:= StringToDateTimeDef(TempData, 0, 'DD/MM/YY');
-
-       if StrToIntDef(SeuNumero,0) = 0 then
-       begin
-         SeuNumero := NossoNumero;
-         NumeroDocumento := NossoNumero
-       end;
      end;
    end;
 
