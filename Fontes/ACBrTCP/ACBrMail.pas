@@ -63,6 +63,8 @@ type
 
   TMailCharset = TMimeChar;
 
+  TMailAttachmentDisposition = (adAttachment, adInline);
+
   { TMailAttachment }
 
   TMailAttachment = class
@@ -70,6 +72,7 @@ type
     FFileName: String;
     FDescription: String;
     FStream: TMemoryStream;
+    FDisposition: TMailAttachmentDisposition;
   public
     constructor Create;
     destructor Destroy; override;
@@ -80,6 +83,9 @@ type
     property FileName: String read FFileName write FFileName;
     property Stream: TMemoryStream read FStream;
     property Description: String read FDescription write FDescription;
+
+    property Disposition: TMailAttachmentDisposition read FDisposition
+      write FDisposition;
   end;
 
   { TMailAttachments }
@@ -201,9 +207,11 @@ type
     procedure SaveToFile(const AFileName: String);
     function SaveToStream(AStream: TStream): Boolean;
 
-    procedure AddAttachment(aFileName: string; aDescription: string); overload;
+    procedure AddAttachment(aFileName: string; aDescription: string;
+      const aDisposition: TMailAttachmentDisposition = adInline); overload;
     procedure AddAttachment(aFileName: string); overload;
-    procedure AddAttachment(aStream: TStream; aDescription: string); overload;
+    procedure AddAttachment(aStream: TStream; aDescription: string;
+      const aDisposition: TMailAttachmentDisposition = adInline); overload;
     procedure AddAttachment(aStream: TStream); overload;
     procedure ClearAttachments;
 
@@ -278,6 +286,7 @@ constructor TMailAttachment.Create;
 begin
   inherited Create;
   FStream := TMemoryStream.Create;
+  FDisposition := adInline;
   Clear;
 end;
 
@@ -719,7 +728,12 @@ begin
     MimePartAttach.DecodedLines.LoadFromStream(AAttachment.Stream);
     MimePartAttach.MimeTypeFromExt(AAttachment.FileName);
     MimePartAttach.Description := AAttachment.Description;
-    MimePartAttach.Disposition := 'inline';
+    case AAttachment.Disposition of
+      adAttachment: MimePartAttach.Disposition := 'attachment';
+      adInline: MimePartAttach.Disposition := 'inline';
+    else
+      MimePartAttach.Disposition := 'attachment';
+    end;
     if fIsHTML and BodyHasImage then
       MimePartAttach.ContentID := '<' + AAttachment.Description + '>';
 
@@ -765,7 +779,7 @@ begin
       Break;
 
     if vAttempts >= fAttempts then
-      SmtpError('SMTP Error: Unable to Login.');
+      SmtpError('SMTP Error: Unable to Login.' + sLineBreak + SMTP.ResultString);
   end;
 
   // Sending Mail Form //
@@ -777,7 +791,7 @@ begin
       Break;
 
     if vAttempts >= fAttempts then
-      SmtpError('SMTP Error: Unable to send MailFrom.');
+      SmtpError('SMTP Error: Unable to send MailFrom.' + sLineBreak + SMTP.ResultString);
   end;
 
   // Sending MailTo //
@@ -791,7 +805,7 @@ begin
         Break;
 
       if vAttempts >= fAttempts then
-        SmtpError('SMTP Error: Unable to send MailTo.');
+        SmtpError('SMTP Error: Unable to send MailTo.' + sLineBreak + SMTP.ResultString);
     end;
   end;
 
@@ -808,7 +822,7 @@ begin
         Break;
 
       if vAttempts >= fAttempts then
-        SmtpError('SMTP Error: Unable to send CC list.');
+        SmtpError('SMTP Error: Unable to send CC list.' + sLineBreak + SMTP.ResultString);
     end;
   end;
 
@@ -825,7 +839,7 @@ begin
         Break;
 
       if vAttempts >= fAttempts then
-        SmtpError('SMTP Error: Unable to send BCC list.');
+        SmtpError('SMTP Error: Unable to send BCC list.' + sLineBreak + SMTP.ResultString);
     end;
   end;
 
@@ -838,7 +852,7 @@ begin
       Break;
 
     if vAttempts >= fAttempts then
-      SmtpError('SMTP Error: Unable to send Mail data.');
+      SmtpError('SMTP Error: Unable to send Mail data.' + sLineBreak + SMTP.ResultString);
   end;
 
   // Login out from SMTP //
@@ -850,7 +864,7 @@ begin
       Break;
 
     if vAttempts >= fAttempts then
-      SmtpError('SMTP Error: Unable to Logout.');
+      SmtpError('SMTP Error: Unable to Logout.' + sLineBreak + SMTP.ResultString);
   end;
 
   // Done //
@@ -869,7 +883,8 @@ begin
   fAttachments.Clear;
 end;
 
-procedure TACBrMail.AddAttachment(aFileName: string; aDescription: string);
+procedure TACBrMail.AddAttachment(aFileName: string; aDescription: string;
+  const aDisposition: TMailAttachmentDisposition = adInline);
 var
   AAttachment: TMailAttachment;
 begin
@@ -885,6 +900,7 @@ begin
     AAttachment.Description := AAttachment.FileName
   else
     AAttachment.Description := aDescription;
+  AAttachment.Disposition := aDisposition;
 
   AAttachment.Stream.LoadFromFile(aFileName)
 end;
@@ -894,7 +910,8 @@ begin
   AddAttachment(aFileName, '');
 end;
 
-procedure TACBrMail.AddAttachment(aStream: TStream; aDescription: string);
+procedure TACBrMail.AddAttachment(aStream: TStream; aDescription: string;
+  const aDisposition: TMailAttachmentDisposition = adInline);
 var
   AAttachment: TMailAttachment;
 begin
@@ -908,6 +925,7 @@ begin
   AAttachment := fAttachments.New;
   AAttachment.FileName    := aDescription;
   AAttachment.Description := aDescription;
+  AAttachment.Disposition := aDisposition;
   AAttachment.Stream.CopyFrom(aStream, aStream.Size);
 end;
 

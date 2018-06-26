@@ -43,6 +43,66 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+25/06/2018
+[+] DoACBreSocialUnit, DoACBrReinfUnit
+Adicionado os metodos para Configuração: ID Contribuinte, ID Empregador, ID Transmissor
+SetIDTransmissor(),  SetIDEmpregador(), SetIDContribuinte()
+   por: José M. S. Junior
+
+25/06/2018
+[*] DoACBrNFeUnit, DOACBrCTeUnit, DOACBrMDfeUnit - Adicionado Método
+SetTipoImpressao(Para selecionar tipo Retrato ou Paisagem)
+   por: José M. S. Junior
+
+14/06/2018
+[*] DoECFUnit - Ajustes no método "enviarblocoxreducaoz"
+   por: José M. S. Junior
+
+12/06/2018
+[*] Acrescentado na resposta retornada pelo método DistribuicaoDFe o nome do 
+    XML bem como o seu tipo (Schema).
+   Por: Fabio Nery
+
+08/06/2018
+[+] Adicionado parâmetro para configuração de Unidade no componente Etiqueta
+   por: José M. S. Junior
+
+[+] Adicionado Campo "pathArqTXT" na aba diretórios do DFe para gravar GNRe
+   por: José M. S. Junior
+
+[+] Adicionado Campo "IgnorarCaixaEAcentos", "IsUTF8" para consulta IBGE
+   por: José M. S. Junior
+
+07/06/2018
+[*] Ajuste para utilização do componente Reinf e geração Tags de Retorno
+   por: José M. S. Junior
+
+07/06/2018
+[*] Ajuste Componente Boleto, adicionado parametro para nome arquivo em setdiretorioarquivo
+   por: José M. S. Junior
+
+06/06/2018
+[*] Ajuste nos retornos de carregamento XML no componente NFe
+   por: José M. S. Junior
+
+[*] Ajuste nos valores Default para os diretórios DFe
+   por: José M. S. Junior
+
+05/06/2018 - ACBrMonior
+[*] Ajuste para preenchimento campo CST no arquivo .ini
+Grupo de Partilha do ICMS entre a UF de origem e UF de destino ou a UF - CST 10 e 90, informar 10part e 90part respectivamente.
+Grupo de Repasse de ICMS ST retido anteriormente em operações interestaduais com repasses através do Substituto Tributário, CST 41 e 60, informar 41rep e 60rep
+   por: José M. S. Junior
+
+[*] Atualizado Leitura e escrita do .INI com tag indPag (NFe 4.0)
+   por: José M. S. Junior
+
+[-] Correção na gravação das margens da NFCe
+   por: José M. S. Junior
+
+[*] Ajustes para utilizar estruturas de diretórios na geração PDF de Inutilização da NFe
+   por: José M. S. Junior
+
 28/05/2018 - ACBrMonior
 [-] Ajuste na gravação dos dados aba ( Software House )
    por: José M. S. Junior

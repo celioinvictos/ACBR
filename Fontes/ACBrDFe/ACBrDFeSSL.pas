@@ -1546,11 +1546,13 @@ begin
   if Assigned(FSSLHttpClass) then
     FreeAndNil(FSSLHttpClass);
 
+  FSSLHttpLib := ASSLHttpLib;
+
   case ASSLHttpLib of
     httpWinINet, httpWinHttp:
     begin
       {$IfDef MSWINDOWS}
-       FSSLHttpClass := TDFeHttpWinHttp.Create(Self, ASSLHttpLib);
+       FSSLHttpClass := TDFeHttpWinHttp.Create(Self);
       {$Else}
        raise EACBrDFeException.Create('Suporte a "httpWinINet" disponível apenas em MSWINDOWS');
       {$EndIf}
@@ -1577,8 +1579,6 @@ begin
   else
     FSSLHttpClass := TDFeSSLHttpClass.Create(Self);
   end;
-
-  FSSLHttpLib := ASSLHttpLib;
 end;
 
 procedure TDFeSSL.SetSSLXmlSignLib(ASSLXmlSignLib: TSSLXmlSignLib);

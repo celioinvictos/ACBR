@@ -75,6 +75,7 @@ const
   CMetodoSetambiente =                 'setambiente';
   CMetodoSetlogomarca =                'setlogomarca';
   CMetodoSetformaemissao =             'setformaemissao';
+  CMetodoSetTipoImpressao =            'settipoimpressao';
   CMetodoSetversaodf =                 'setversaodf';
   CMetodoLermdfe =                     'lermdfe';
   CMetodoMdfetotxt =                   'mdfetotxt';
@@ -104,6 +105,8 @@ const
   CMetodoConsultareSocial =            'consultaresocial';
   CMetodoLimpareSocial =               'limparesocial';
   CMetodoCarregarXMLEventoeSocial =    'carregarxmleventoesocial';
+  CMetodoSetIDEmpregadoreSocial =      'setidempregador';
+  CMetodoSetIDTransmissoresocial =     'setidtransmissor';
 
   CMetodoCriarEventoReinf =          'criareventoreinf';
   CMetodoCriarEnviarReinf =          'criarenviarreinf';
@@ -111,6 +114,8 @@ const
   CMetodoConsultarReinf =            'consultarreinf';
   CMetodoLimparReinf =               'limparreinf';
   CMetodoCarregarXMLEventoReinf =    'carregarxmleventoreinf';
+  CMetodoSetIDContribuinteReinf =    'setidcontribuinte';
+  CMetodoSetIDTransmissorReinf =     'setidtransmissor';
 
   CExtensaoXML =                     '.xml';
 
@@ -227,6 +232,7 @@ const
   CKeyETQMargemEsquerda =            'MargemEsquerda';
   CKeyETQOrigem =                    'Origem';
   CKeyETQCopias =                    'Copias';
+  CKeyETQUnidade =                   'Unidade';
 
   CSecCEP =                          'CEP';
   CKeyCEPWebService =                'WebService';
@@ -235,6 +241,8 @@ const
   CKeyCEPProxy_Port =                'Proxy_Port';
   CKeyCEPProxy_User =                'Proxy_User';
   CKeyCEPProxy_Pass =                'Proxy_Pass';
+  CKeyCEPIBGEAcentos =               'IBGEAcentos';
+  CKeyCEPIBGEUTF8 =                  'IBGEUTF8';
 
   CSecTC =                           'TC';
   CKeyTCModelo =                     'Modelo';
@@ -419,6 +427,7 @@ const
   CKeyArquivosPathInu =                     'PathInu';
   CKeyArquivosPathDPEC =                    'PathDPEC';
   CKeyArquivosPathEvento =                  'PathEvento';
+  CKeyArquivosPathArqTXT =                  'PathArqTXT';
 
   CSeceSocial =                             'eSocial';
   CSecReinf =                               'Reinf';

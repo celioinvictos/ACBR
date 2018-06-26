@@ -39,6 +39,27 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+21/02/2018
+-- ACBrETQ, ACBrETQClass --
+[-] Ajuste para enviar o comando de Limpar a Memória, ante de Impressão da Etiqueta
+    (por: Warquia Pereira)
+    https://www.projetoacbr.com.br/forum/topic/42762-acbretq-tarja-na-primeira-impressão-tlp-2844-e-gc420t/
+
+16/06/2018
+-- ACBrECFEscECF --
+[*] Método "CancelaCupom". Bematech não permite o Cancelamento de Cupom, a não
+    ser que seja o último. Modificado para que a mensagem de erro de Canelamento
+    disparada pela Bematech seja mais significativa
+[*] Métodos "IsBematech, IsDaruma, IsEpson", e propriedade "MarcaECF" tornados
+    Públicos  (por: DSA)
+
+14/06/2018
+-- ACBrECFDaruma --
+[*] Adicionada verificação de retorno para a leitura dos comandos GetEstado
+    e RetornaInfoECF. Pois notado que em alguns equipamentos, em algumas ocasiões
+    o retorno vinha incompleto ou com informações diferentes
+    (por: DSA)
+
 21/05/2048
 -- ACBrPosPrinter --
 [+] Adicionadas novas Tags para suportar a Impressão em "Modo Página".

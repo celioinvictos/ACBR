@@ -34,7 +34,7 @@
 unit DoACBrCTeUnit;
 
 interface
-Uses Classes, SysUtils, CmdUnit, Dialogs;
+Uses Classes, SysUtils, CmdUnit, Dialogs, ACBrCTeConhecimentos;
 
 Procedure DoACBrCTe( Cmd : TACBrCmd );
 procedure GerarIniCTe( AStr: String );
@@ -71,6 +71,7 @@ var
 
   VersaoDFCTe  : TVersaoCTe;
   ModeloDFCTe  : TModeloCTe;
+  TipoDACTE    : TpcnTipoImpressao;
 
 begin
  with FrmACBrMonitor do
@@ -608,7 +609,8 @@ begin
          begin
            if (Cmd.Metodo = 'criarcte') or (Cmd.Metodo = 'criarenviarcte') or
               (Cmd.Metodo = 'adicionarcte') then
-              GerarIniCTe( Cmd.Params(0)  );
+               ACBrCTe1.Conhecimentos.Clear;
+               ACBrCTe1.Conhecimentos.LoadFromIni( Cmd.Params(0) );
 
 
            if (Cmd.Metodo = 'adicionarcte')  or (Cmd.Metodo = 'adicionarctesefaz') then
@@ -1179,6 +1181,19 @@ begin
              SalvarIni;
            end;
          end
+
+        else if Cmd.Metodo = 'settipoimpressao' then
+        begin
+          TipoDACTE := StrToTpImp(OK, Cmd.Params(0));
+          if OK then
+          begin
+            ACBrCTe1.DACTE.TipoDACTE := TipoDACTE;
+            rgTipoDanfe.ItemIndex := StrToIntDef(TpImpToStr(TipoDACTE),1) -1 ;
+            SalvarIni;
+          end
+          else
+            raise Exception.Create('Tipo Impressão Inválido.');
+        end
 
         else if Cmd.Metodo = 'lercte' then
          begin

@@ -70,6 +70,8 @@ type
 
     function TipoOcorrenciaToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
     function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
+
+    function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
   end;
 
 implementation
@@ -424,8 +426,8 @@ begin
                PadRight(Sacado.Cidade, 15)                                          + // Cidade do Sacado
                PadRight(Sacado.UF, 2)                                               + // UF do Sacado
                '0000'                                                           + // Taxa ao dia para pagamento antecipado
-               space(1)                                                         + // Brancos
-               '0000000000000'                                                  + // Valor para cálculo de desconto
+               space(2)                                                         + // Brancos
+               '000000000000'                                                   + // Valor para cálculo de desconto
                IfThen((DataProtesto <> 0) and (DataProtesto > Vencimento),
                       PadLeft(IntToStr(DaysBetween(DataProtesto, Vencimento)),
                       2, '0'), '00')                                            + // Dias para protesto/devolução automática
@@ -1190,6 +1192,21 @@ begin
     23: Result := toRetornoEntradaEmCartorio;
   else
     Result := toRetornoOutrasOcorrencias;
+  end;
+end;
+
+function TACBrBanrisul.CodOcorrenciaToTipoRemessa(const CodOcorrencia: Integer): TACBrTipoOcorrencia;
+begin
+  case CodOcorrencia of
+    02 : Result:= toRemessaBaixar;                          {Pedido de Baixa}
+    04 : Result:= toRemessaConcederAbatimento;              {Concessão de Abatimento}
+    05 : Result:= toRemessaCancelarAbatimento;              {Cancelamento de Abatimento concedido}
+    06 : Result:= toRemessaAlterarVencimento;               {Alteração de vencimento}
+    09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
+    10 : Result:= toRemessaSustarProtesto;                  {Sustação de protesto}
+    16 : Result:= toRemessaAlterarNumeroDiasProtesto;       {Alteração do numero de dias para protesto}
+  else
+     Result:= toRemessaRegistrar;                           {Remessa}
   end;
 end;
 

@@ -44,6 +44,32 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+21/06/2018
+-- ACBrDFe --
+[*] Ajuste no método "EnviarEmail" para que os anexos sejam incluídos com o 
+    parâmetro "Content-disposition" como "attachment", devido a problemas de
+    visualização em alguns clientes de e-mail.
+    (por: BigWings)
+
+14/06/2018
+-- ACBrDFeXsLibXml2 --
+[-] Correção no método "SelectElements", para funcionar quando tem namespace na tag.
+    (por: Rafael Dias)
+
+12/06/2018
+-- ACBrDFeWinCrypt --
+[*] Ajuste no método "PFXDataToCertContextWinApi", para funcionar em Windows XP
+    (por: DSA)
+
+06/06/2018
+-- ACBrDFeSSL, ACBrDFeHttpWinApi --
+[-] Correção de A.V. quando usando httpWinINet, httpWinHttp e
+    TimeOutPorThread = True
+
+-- ACBrDFeHttpWinApi --
+[-] Correção na exibição de mensagens de Erro com acentos
+    (por: DSA)
+
 30/05/2018
 -- ACBrDFeSSL --
 [-] Ajuste em TDFeSendThread, para evitar A.V. em algumas situações

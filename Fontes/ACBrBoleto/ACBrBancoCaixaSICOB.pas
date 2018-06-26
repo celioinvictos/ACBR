@@ -79,6 +79,8 @@ type
     function CodMotivoRejeicaoToDescricao(const TipoOcorrencia:TACBrTipoOcorrencia; CodMotivo:Integer): String; override;
 
     function CalcularTamMaximoNossoNumero(const Carteira : String; NossoNumero : String = ''; Convenio: String = ''): Integer; override;
+
+    function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
    end;
 
 implementation
@@ -384,6 +386,26 @@ begin
       35: Result := toRetornoTransferenciaCarteiraBaixa;
       99: Result := toRetornoRegistroRecusado;
     end;
+  end;
+end;
+
+function TACBrCaixaEconomicaSICOB.CodOcorrenciaToTipoRemessa(const CodOcorrencia: Integer): TACBrTipoOcorrencia;
+begin
+  case CodOcorrencia of
+    02 : Result:= toRemessaBaixar;                          {Pedido de Baixa}
+    04 : Result:= toRemessaConcederAbatimento;              {Concessão de Abatimento}
+    05 : Result:= toRemessaCancelarAbatimento;              {Cancelamento de Abatimento concedido}
+    06 : Result:= toRemessaAlterarVencimento;               {Alteração de vencimento}
+    07 : Result:= toRemessaAlterarControleParticipante;     {Alteração do controle do participante}
+    08 : Result:= toRemessaAlterarNumeroControle;           {Alteração de seu número}
+    09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
+    10 : Result:= toRemessaCancelarInstrucaoProtestoBaixa;  {Sustar protesto e baixar}
+    11 : Result:= toRemessaDispensarJuros;                  {Instrução para dispensar juros}
+    12 : Result:= toRemessaAlterarNomeEnderecoSacado;       {Alteração de nome e endereço do Sacado}
+    31 : Result:= toRemessaOutrasOcorrencias;               {Alteração de Outros Dados}
+    32 : Result:= toRemessaCancelarDesconto;                {Não conceder desconto}
+  else
+     Result:= toRemessaRegistrar;                           {Remessa}
   end;
 end;
 
@@ -1015,7 +1037,7 @@ begin
       {Mora Juros}
       if (ValorMoraJuros > 0) then
        begin
-         if (DataMoraJuros <> Null) and (DataMoraJuros >= 30/12/2000) then
+         if (DataMoraJuros > 0) and (DataMoraJuros >= 30/12/2000) then
             ADataMoraJuros := FormatDateTime('ddmmyy', DataMoraJuros)
          else
             ADataMoraJuros := PadLeft('', 6, '0');
@@ -1150,7 +1172,7 @@ begin
                   IntToStrZero(round((ValorDocumento*PercentualMulta)/100), 10) + //358 até 367 - Valor nominal da multa
                   PadRight( Sacado.NomeSacado, 22)                      + // 368 até 389 - Nome do Sacador Avalista
                   '00'                                                  + // 390  391 - Terceira instrução de Cobrança Default '00'
-                   IfThen((DataProtesto <> null) and
+                   IfThen((DataProtesto > 0) and
                       (DataProtesto > Vencimento),
                        PadLeft(IntToStr(DaysBetween(DataProtesto,
                        Vencimento)), 2, '0'), '00')                     + //392 até 393 - Quantidade de dias para início da ação de protesto ou devolução do Título
@@ -1416,7 +1438,7 @@ begin
          OcorrenciaOriginal.Tipo     := CodOcorrenciaToTipo(StrToIntDef(
                                         copy(Linha,109,2),0));
 
-         CodOcorrencia := StrToInt(IfThen(copy(Linha,109,2) = '00','00',copy(Linha,109,2)));
+         CodOcorrencia := StrToIntDef(IfThen(copy(Linha,109,2) = '00','00',copy(Linha,109,2)),0);
 
          if(CodOcorrencia >= 2) and ((CodOcorrencia <= 10)) then
          begin

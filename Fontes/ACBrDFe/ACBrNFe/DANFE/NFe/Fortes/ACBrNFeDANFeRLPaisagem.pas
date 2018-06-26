@@ -1245,10 +1245,11 @@ procedure TfrlDANFeRLPaisagem.Transporte;
 var
   i, j: Integer;
   RLLabel, RLLabelModelo: TRLLabel;
+  ok: Boolean;
 begin
   with FNFe.Transp do
   begin
-    rllTransModFrete.Caption := modFreteToDesStr( modFrete );
+    rllTransModFrete.Caption := modFreteToDesStr( modFrete, DblToVersaoDF(ok, FNFe.infNFe.Versao) );
     with Transporta do
     begin
       if Trim(CNPJCPF) <> '' then
@@ -1592,7 +1593,7 @@ begin
       if dv_cMod in FDetVeiculos          then Result := Result + ACBrStr('CÓDIGO MARCA MODELO: ') + veicProd.cMod + sQuebraLinha;
       if dv_cCorDENATRAN in FDetVeiculos  then Result := Result + ACBrStr('CÓDIGO COR DENATRAN: ' +VeiculosCorDENATRANSTr( veicProd.cCorDENATRAN )) + sQuebraLinha;
       if dv_lota in FDetVeiculos          then Result := Result + ACBrStr('CAPACIDADE MÁXIMA DE LOTAÇÃO: ') +IntToStr(veicProd.lota) + sQuebraLinha;
-      if dv_tpRest in FDetVeiculos        then Result := Result + ACBrStr('RESTRIÇÃO: ' +VeiculosRestricaoStr( veicProd.tpRest ) )+ #13#10;
+      if dv_tpRest in FDetVeiculos        then Result := Result + ACBrStr('RESTRIÇÃO: ' +VeiculosRestricaoStr( veicProd.tpRest ) )+ sQuebraLinha;
     end;
   end;
 end;
@@ -1614,7 +1615,7 @@ begin
         Result := Result + 'QTD: '  + FormatFloatBr(rastro.Items[i].qLote)+ sQuebraLinha;
         Result := Result + 'FAB: '  + FormatDateBr(rastro.Items[i].dFab)+ sQuebraLinha;
         Result := Result + 'VAL: '  + FormatDateBr(rastro.Items[i].dVal)+ sQuebraLinha;
-        Result := Result + ACBrStr('C.AGREGAÇÃO: ' ) + rastro.Items[i].cAgreg+ #13#10;
+        Result := Result + ACBrStr('C.AGREGAÇÃO: ' ) + rastro.Items[i].cAgreg+ sQuebraLinha;
       end;
     end;
   end;
@@ -1641,9 +1642,7 @@ begin
           if dm_dFab  in FDetMedicamentos then Result := Result + ACBrStr('FAB: ' ) + DateToStr(med.Items[i].dFab) + sQuebraLinha;
           if dm_dVal  in FDetMedicamentos then Result := Result + ACBrStr('VAL: ' ) + DateToStr(med.Items[i].dVal) + sQuebraLinha;
         end;
-        if dm_vPMC  in FDetMedicamentos then Result := Result + IfThen( med.Items[i].vPMC > 0,
-                                                                  ACBrStr('PMC: R$') + FormatFloatBr(med.Items[i].vPMC),'' )
-                                                                  + #13#10;
+        if dm_vPMC  in FDetMedicamentos then Result := IfThen(med.Items[i].vPMC > 0, Result + ACBrStr('PMC: R$') + FormatFloatBr(med.Items[i].vPMC) + sQuebraLinha, Result);
 
       end;
     end;
@@ -1665,7 +1664,7 @@ begin
         if da_tpArma in FDetArmamentos then Result := Result + ACBrStr('TIPO DE ARMA: ')   + ArmaTipoStr( arma.Items[i].tpArma ) + sQuebraLinha;
         if da_nSerie in FDetArmamentos then Result := Result + ACBrStr('No. SÉRIE ARMA: ') + arma.Items[i].nSerie + sQuebraLinha;
         if da_nCano  in FDetArmamentos then Result := Result + ACBrStr('No. SÉRIE CANO: ') + arma.Items[i].nCano + sQuebraLinha;
-        if da_descr  in FDetArmamentos then Result := Result + ACBrStr('DESCRIÇÃO ARMA: ') + arma.Items[i].descr + #13#10;
+        if da_descr  in FDetArmamentos then Result := Result + ACBrStr('DESCRIÇÃO ARMA: ') + arma.Items[i].descr + sQuebraLinha;
        end;
     end;
   end;
@@ -1700,10 +1699,10 @@ begin
           Result := Result + 'BOMBA: ' + IntToStr(comb.encerrante.nBomba) + sQuebraLinha;
         Result := Result + 'TANQUE: ' + IntToStr(comb.encerrante.nTanque) + sQuebraLinha;
         Result := Result + ACBrStr('NO INÍCIO: ' ) + FormatFloatBr(comb.encerrante.vEncIni, FloatMask(3)) + sQuebraLinha;
-        Result := Result + 'NO FINAL: ' + FormatFloatBr(comb.encerrante.vEncFin, FloatMask(3))+ #13#10;
+        Result := Result + 'NO FINAL: ' + FormatFloatBr(comb.encerrante.vEncFin, FloatMask(3))+ sQuebraLinha;
       end
       else
-        Result := Result + #13#10;
+        Result := Result + sQuebraLinha;
     end;
   end;
 end;
@@ -2197,7 +2196,7 @@ begin
   if Not ( TACBrNFeDANFeRL(Owner).ExibirBandInforAdicProduto ) then
   begin
     Result := Trim( FNFe.Det.Items[ inItem ].infAdProd ) ;
-    Result := StringReplace( Result , ';',  #13#10, [rfReplaceAll, rfIgnoreCase]);
+    Result := StringReplace( Result , ';',  sQuebraLinha, [rfReplaceAll, rfIgnoreCase]);
     if ( Result <> '' ) then
       Result := sQuebraLinha + Result
   end
@@ -2208,7 +2207,7 @@ end;
 Function TfrlDANFeRLPaisagem.ManterBandinfAdProd( sInforAdicProduto : String ) : String;
 begin
   Result := Trim( sInforAdicProduto ) ;
-  Result := StringReplace( Result , ';',  #13#10, [rfReplaceAll, rfIgnoreCase]);  ;
+  Result := StringReplace( Result , ';',  sQuebraLinha, [rfReplaceAll, rfIgnoreCase]);  ;
   RLBandInfAd.Visible := ( Result <> '') and
                          ( TACBrNFeDANFeRL(Owner).ExibirBandInforAdicProduto );
 end;
