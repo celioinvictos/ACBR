@@ -387,7 +387,7 @@ begin
                   PadLeft(AInstrucao1, 2, '0')                            +  // 33 Primeira instrução (SEQ 34) = 00 e segunda (SEQ 35) = 00, não imprime nada.
                   PadLeft(AInstrucao2, 2, '0')                            +  // 34 Primeira instrução (SEQ 34) = 00 e segunda (SEQ 35) = 00, não imprime nada.
                   //IntToStrZero( Round( (ValorMoraJuros * 30) *10000 ), 6) +  // Taxa de mora mês
-                  IntToStrZero( Round( ValorMoraJuros  * 10000 ), 6) +  // Taxa de mora mês
+                  IntToStrZero( Round( ValorMoraJuros  * 10000 ), 6) +  // Taxa de mora mês tem q ser o valor que veio do sistema e pronto, nao precisa multiplicar por 30
                   IntToStrZero( Round( PercentualMulta * 10000 ), 6)      +  // Taxa de multa
                   strCarteiraEnvio                                        +  // Responsabilidade Distribuição
                   strDataDesconto                                         +  // Data do Primeiro Desconto, Preencher com zeros quando não for concedido nenhum desconto.
