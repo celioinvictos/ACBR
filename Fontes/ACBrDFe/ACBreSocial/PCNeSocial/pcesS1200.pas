@@ -407,7 +407,7 @@ implementation
 
 uses
   IniFiles,
-  ACBreSocial, ACBrDFeUtil;
+  ACBreSocial;
 
 { TRemunPer1200CollectionItem }
 
@@ -1055,9 +1055,8 @@ begin
     XML := Assinar(Gerador.ArquivoFormatoXML, 'evtRemun');
 
     Validar(schevtRemun);
-  except
-    on e: Exception do
-      raise Exception.Create(e.Message);
+  except on e: Exception do
+    raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '');
@@ -1206,7 +1205,7 @@ begin
                              IntToStrZero(K, 1);
                 sFim   := INIRec.ReadString(sSecao, 'matricula', 'FIM');
 
-                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                if (sFim = 'FIM') then
                   break;
 
                 with remunPerApur.Add do

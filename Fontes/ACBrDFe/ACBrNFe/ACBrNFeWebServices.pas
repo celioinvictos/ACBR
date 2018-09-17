@@ -66,12 +66,12 @@ type
     FPConfiguracoesNFe: TConfiguracoesNFe;
 
     procedure ConfigurarSoapDEPC;
-
   protected
     procedure InicializarServico; override;
     procedure DefinirURL; override;
     procedure DefinirDadosIntegrador; override;
     function GerarVersaoDadosSoap: String; override;
+    procedure EnviarDados; override;
     procedure FinalizarServico; override;
 
   public
@@ -690,7 +690,7 @@ uses
   ACBrUtil, ACBrCompress, ACBrNFe,
   pcnGerador, pcnConsStatServ, pcnRetConsStatServ,
   pcnConsSitNFe, pcnInutNFe, pcnRetInutNFe, pcnConsReciNFe,
-  pcnConsCad, pcnLeitor;
+  pcnConsCad, pcnLeitor, ACBrIntegrador;
 
 { TNFeWebService }
 
@@ -771,6 +771,28 @@ begin
     FPVersaoServico := TACBrNFe(FPDFeOwner).LerVersaoDeParams(FPLayout);
 
   Result := '<versaoDados>' + FPVersaoServico + '</versaoDados>';
+end;
+
+procedure TNFeWebService.EnviarDados;
+var
+  UsaIntegrador: Boolean;
+  Integrador: TACBrIntegrador;
+begin
+  UsaIntegrador := Assigned(FPDFeOwner.Integrador);
+
+  Integrador := Nil;
+  if UsaIntegrador and (FPConfiguracoesNFe.Geral.ModeloDF = moNFe) then
+  begin
+    Integrador := FPDFeOwner.Integrador;
+    FPDFeOwner.Integrador := Nil;
+  end;
+
+  try
+    inherited EnviarDados;
+  finally
+    if Assigned(Integrador) then
+      FPDFeOwner.Integrador := Integrador;
+  end;
 end;
 
 procedure TNFeWebService.FinalizarServico;
@@ -871,6 +893,8 @@ begin
   FPRetWS := SeparaDadosArray(['nfeStatusServicoNF2Result',
                                'NfeStatusServicoNFResult',
                                'nfeResultMsg'],FPRetornoWS );
+
+  VerificarSemResposta;
 
   NFeRetorno := TRetConsStatServ.Create;
   try
@@ -1163,6 +1187,8 @@ begin
                                'nfeAutorizacaoLoteZipResult',
                                'nfeResultMsg',
                                'nfeRecepcaoLote2Result'],FPRetornoWS );
+
+  VerificarSemResposta;
 
   if ((FPConfiguracoesNFe.Geral.ModeloDF = moNFCe) or (FVersaoDF >= ve310)) and FSincrono then
   begin
@@ -1579,6 +1605,8 @@ begin
                                'nfeResultMsg',
                                'nfeRetRecepcao2Result'],FPRetornoWS );
 
+  VerificarSemResposta;
+
   FNFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   FNFeRetorno.LerXML;
 
@@ -1712,7 +1740,7 @@ begin
   begin
     if not FNotasFiscais.Items[I].Confirmada then
       FPMsg := FPMsg + IntToStr(FNotasFiscais.Items[I].NFe.Ide.nNF) +
-        '->' + FNotasFiscais.Items[I].Msg + LineBreak;
+        '->' + IntToStr(FNotasFiscais.Items[I].cStat)+'-'+ FNotasFiscais.Items[I].Msg + LineBreak;
   end;
 
   if AInfProt.Count > 0 then
@@ -1927,6 +1955,8 @@ begin
                                'nfeResultMsg',
                                'nfeRetRecepcao2Result'],FPRetornoWS );
 
+  VerificarSemResposta;
+
   FNFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   FNFeRetorno.LerXML;
 
@@ -2139,6 +2169,8 @@ begin
     FPRetWS := SeparaDadosArray(['NfeConsultaNF2Result',
                                  'NfeConsultaNFResult',
                                  'nfeResultMsg'],FPRetornoWS );
+
+    VerificarSemResposta;
 
     NFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
     NFeRetorno.LerXML;
@@ -2629,6 +2661,8 @@ begin
                                  'nfeInutilizacaoNFResult',
                                  'nfeResultMsg'],FPRetornoWS );
 
+    VerificarSemResposta;
+
     NFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
     NFeRetorno.LerXml;
 
@@ -2827,7 +2861,7 @@ begin
     FPDadosMsg := ConCadNFe.Gerador.ArquivoFormatoXML;
 
     if (FPConfiguracoesNFe.Geral.VersaoDF >= ve400) and
-      ((UpperCase(FUF) = 'RS') or (Pos('svrs.rs.gov.br', FPURL) > 0)) then
+      (UpperCase(FUF) = 'MT') then
     begin
       FPDadosMsg := '<nfeDadosMsg>' + FPDadosMsg + '</nfeDadosMsg>';
     end;
@@ -2841,6 +2875,8 @@ function TNFeConsultaCadastro.TratarResposta: Boolean;
 begin
   FPRetWS := SeparaDadosArray(['consultaCadastro2Result',
                                'nfeResultMsg'],FPRetornoWS );
+
+  VerificarSemResposta;
 
   FRetConsCad.Leitor.Arquivo := ParseText(FPRetWS);
   FRetConsCad.LerXml;
@@ -2882,7 +2918,7 @@ begin
   inherited InicializarServico;
   FOldBodyElement := FPBodyElement;
   if (FPConfiguracoesNFe.Geral.VersaoDF >= ve400) and
-    ((UpperCase(FUF) = 'RS') or (Pos('svrs.rs.gov.br', FPURL) > 0)) then
+    (UpperCase(FUF) = 'MT') then
   begin
     FPBodyElement := 'consultaCadastro';
   end;
@@ -3168,6 +3204,7 @@ begin
                                'nfeRecepcaoEventoNFResult',
                                'nfeResultMsg'],FPRetornoWS );
 
+  VerificarSemResposta;
 
   EventoRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   EventoRetorno.LerXml;
@@ -3402,6 +3439,8 @@ begin
   FPRetWS := SeparaDadosArray(['nfeConsultaNFDestResult',
                                'nfeResultMsg'],FPRetornoWS );
 
+  VerificarSemResposta;
+
   FretConsNFeDest.Leitor.Arquivo := ParseText(FPRetWS);
   FretConsNFeDest.LerXml;
 
@@ -3535,6 +3574,7 @@ begin
   FPRetWS := SeparaDadosArray(['nfeDownloadNFResult',
                                'nfeResultMsg'],FPRetornoWS );
 
+  VerificarSemResposta;
 
   // Processando em UTF8, para poder gravar arquivo corretamente //
   FRetDownloadNFe.Leitor.Arquivo := FPRetWS;
@@ -3661,6 +3701,8 @@ begin
   FPRetWS := SeparaDadosArray(['cscNFCeResult',
                                'nfeResultMsg'],FPRetornoWS );
 
+  VerificarSemResposta;
+
   FretAdmCSCNFCe.Leitor.Arquivo := ParseText(FPRetWS);
   FretAdmCSCNFCe.LerXml;
 
@@ -3785,6 +3827,8 @@ var
 begin
   FPRetWS := SeparaDadosArray(['nfeDistDFeInteresseResult',
                                'nfeResultMsg'],FPRetornoWS );
+
+  VerificarSemResposta;
 
   // Processando em UTF8, para poder gravar arquivo corretamente //
   FretDistDFeInt.Leitor.Arquivo := FPRetWS;
@@ -3950,6 +3994,9 @@ end;
 function TNFeEnvioWebService.TratarResposta: Boolean;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'soap:Body');
+
+  VerificarSemResposta;
+
   Result := True;
 end;
 

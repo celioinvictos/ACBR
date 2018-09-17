@@ -1,4 +1,11 @@
 
+\.svn/
+
+Fontes/ACBrBoleto/__history/
+
+*.dcu
+
+
 Exemplos/ACBrDFe/ACBrMDFe/Delphi/__history/
 
 Exemplos/ACBrDFe/ACBrNFe/Delphi/__history/

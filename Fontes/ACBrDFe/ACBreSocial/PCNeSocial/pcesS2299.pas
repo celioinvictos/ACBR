@@ -357,7 +357,7 @@ implementation
 
 uses
   IniFiles,StrUtils,
-  ACBreSocial, ACBrDFeUtil;
+  ACBreSocial;
 
 { TS2299Collection }
 
@@ -864,7 +864,7 @@ begin
 
     Validar(schevtDeslig);
   except on e:exception do
-    raise Exception.Create('Matricula Funcionário: ' + Self.FIdeVinculo.matricula + sLineBreak + e.Message);
+    raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
@@ -939,11 +939,11 @@ procedure TEvtDeslig.GerarProcCS(obj: TProcCS);
 begin
   if Trim(obj.nrProcJud) <> '' then
   begin
-     Gerador.wGrupo('ProcCS');
+     Gerador.wGrupo('procCS');
 
      Gerador.wCampo(tcStr, '', 'nrProcJud', 1, 20, 1, obj.nrProcJud);
 
-     Gerador.wGrupo('/ProcCS');
+     Gerador.wGrupo('/procCS');
   end;
 end;
 
@@ -1291,11 +1291,11 @@ begin
 
       sSecao := 'ProcCS';
       if INIRec.ReadString(sSecao, 'nrProcJud', '') <> '' then
-       infoDeslig.VerbasResc.ProcCS.nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', '');
+        infoDeslig.VerbasResc.ProcCS.nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', '');
 
       sSecao := 'quarentena';
       if INIRec.ReadString(sSecao, 'dtFimQuar', '') <> '' then
-      infoDeslig.quarentena.dtFimQuar := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimQuar', '0'));
+        infoDeslig.quarentena.dtFimQuar := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimQuar', '0'));
 
       I := 1;
       while true do

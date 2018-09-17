@@ -70,8 +70,6 @@ function ObterNomeMunicipio(const AxUF: String; const AcMun: Integer;
                               const APathArqMun: String): String;
 function ObterCodigoMunicipio(const AxMun, AxUF, APathArqMun: String ): Integer;
 
-procedure LerIniArquivoOuString(const IniArquivoOuString: AnsiString; AMemIni: TMemIniFile);
-
 implementation
 
 uses
@@ -144,7 +142,7 @@ begin
 
   vUF          := Poem_Zeros(AUF, 2);
   vDataEmissao := FormatDateTime('YYMM', ADataEmissao);
-  vCNPJ        := copy(OnlyNumber(ACNPJ) + '00000000000000', 1, 14);
+  vCNPJ        := PadLeft(OnlyNumber(ACNPJ), 14, '0');
   vModelo      := Poem_Zeros(AModelo, 2);
   vSerie       := Poem_Zeros(ASerie, 3);
   vNumero      := Poem_Zeros(ANumero, 9);
@@ -457,24 +455,6 @@ begin
     finally
       List.free;
     end;
-  end;
-end;
-
-procedure LerIniArquivoOuString(const IniArquivoOuString: AnsiString;
-  AMemIni: TMemIniFile);
-var
-  SL: TStringList;
-begin
-  SL := TStringList.Create;
-  try
-    if (pos(LF, IniArquivoOuString) = 0) and FilesExists(IniArquivoOuString) then  // É um Arquivo válido ?
-      SL.LoadFromFile(IniArquivoOuString)
-    else
-      SL.Text := StringToBinaryString( IniArquivoOuString );
-
-    AMemIni.SetStrings(SL);
-  finally
-    SL.Free;
   end;
 end;
 

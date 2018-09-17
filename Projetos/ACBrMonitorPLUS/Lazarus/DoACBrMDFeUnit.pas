@@ -76,7 +76,7 @@ protected
   function ValidarDFe( const AValue: String ): Boolean; override;
 
 public
-  constructor Create(AACBrDFe: TACBrMDFe; AXMLorFile: String ); reintroduce;
+  constructor Create(AACBrDFe: TACBrMDFe; AXMLorFile: String; ARetornaFalha: Boolean = True ); reintroduce;
 end;
 
 { TACBrCarregarMDFeEvento }
@@ -429,7 +429,7 @@ begin
       Resp.Tmed := TMed;
       Resp.Msg := Msg;
 
-      fpCmd.Resposta := Msg;
+      fpCmd.Resposta := fpCmd.Resposta + sLineBreak + Msg + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
   finally
@@ -454,7 +454,7 @@ begin
       Resp.nRec := Recibo;
       Resp.Msg := Msg;
 
-      fpCmd.Resposta := Msg;
+      fpCmd.Resposta := fpCmd.Resposta + sLineBreak + Msg + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
   finally
@@ -504,8 +504,8 @@ var
   Resp: TRetornoItemResposta;
 begin
   Resp := TRetornoItemResposta.Create(
-    '[MDFe' + Trim(IntToStr(
-    fACBrMDFe.Manifestos.Items[ManifestoID].MDFe.Ide.nMDF)) + ']', resINI);
+    'MDFe' + Trim(IntToStr(
+    fACBrMDFe.Manifestos.Items[ManifestoID].MDFe.Ide.nMDF)), resINI);
   try
     with fACBrMDFe.WebServices.Retorno.MDFeRetorno.ProtMDFe.Items[ItemID] do
     begin
@@ -552,7 +552,7 @@ begin
       Resp.xObs := xObs;
       Resp.Msg := Msg;
 
-      fpCmd.Resposta := Msg;
+      fpCmd.Resposta := Msg + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
   finally
@@ -611,6 +611,7 @@ begin
       Resp.CNPJDest := CNPJDest;
       Resp.emailDest := emailDest;
       Resp.XML := XML;
+      Resp.Arquivo := NomeArquivo;
 
       fpCmd.Resposta := XMotivo + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
@@ -643,6 +644,7 @@ begin
       Resp.CNPJDest := CNPJDest;
       Resp.emailDest := emailDest;
       Resp.XML := XML;
+      Resp.Arquivo := NomeArquivo;
 
       fpCmd.Resposta := XMotivo + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
@@ -710,9 +712,9 @@ var
   Resp: TRetornoItemResposta;
 begin
   Resp := TRetornoItemResposta.Create(
-    '[MDFe' + Trim(IntToStr(StrToInt(copy(
+    'MDFe' + Trim(IntToStr(StrToInt(copy(
     fACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtMDFe.Items
-    [ItemID].chMDFe, 26, 9)))) + ']', resINI);
+    [ItemID].chMDFe, 26, 9)))), resINI);
   try
     with fACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtMDFe.Items[ItemID] do
     begin
@@ -972,9 +974,9 @@ begin
                         + AValue + CExtensaoXmlMdfe ;
 end;
 
-constructor TACBrCarregarMDFe.Create(AACBrDFe: TACBrMDFe; AXMLorFile: String);
+constructor TACBrCarregarMDFe.Create(AACBrDFe: TACBrMDFe; AXMLorFile: String; ARetornaFalha: Boolean);
 begin
-  inherited Create(AACBrDFe, AXMLorFile);
+  inherited Create(AACBrDFe, AXMLorFile, ARetornaFalha);
 end;
 
 { TACBrCarregarMDFeEvento }
@@ -1322,11 +1324,14 @@ begin
       try
         with MonitorConfig.DFE.Email do
         begin
-          slMensagemEmail.Text := MensagemMDFe;
+          slMensagemEmail.Text := StringToBinaryString(MensagemMDFe);
           sAssunto := AssuntoMDFe;
         end;
 
+        slCC.DelimitedText := sLineBreak;
         slCC.Text := StringReplace(AEmailCopias, ';', sLineBreak, [rfReplaceAll]);
+
+        slAnexos.DelimitedText := sLineBreak;
         slAnexos.Text := StringReplace(AAnexos, ';', sLineBreak, [rfReplaceAll]);
 
         try
@@ -1429,7 +1434,8 @@ begin
   with TACBrObjetoMDFe(fpObjetoDono) do
   begin
     ACBrMDFe.Manifestos.Clear;
-    CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, AXML);
+    if FilesExists(AXML) then
+      CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, AXML);
     try
 
       if (ACBrMDFe.Manifestos.Count = 0) then
@@ -1519,7 +1525,7 @@ begin
   with TACBrObjetoMDFe(fpObjetoDono) do
   begin
     ACBrMDFe.Manifestos.Clear;
-    CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, AXML);
+    CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, AXML, False);
     try
       if (ACBrMDFe.Manifestos.Count = 0) then
       begin

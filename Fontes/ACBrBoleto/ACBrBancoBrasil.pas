@@ -388,6 +388,7 @@ var
    wTamConvenio, wTamNossoNum   : Integer;
    wCarteira                    : Integer;
    ACaracTitulo, wTipoCarteira  : Char;
+   ACodProtesto                 : Char;
 begin
    with ACBrTitulo do
    begin
@@ -419,6 +420,14 @@ begin
      aConta   := PadLeft(ACBrBoleto.Cedente.Conta, 12, '0');
 
      {SEGMENTO P}
+
+     {Código para Protesto}
+      case TipoDiasProtesto of
+        diCorridos       : ACodProtesto := '1';
+        diUteis          : ACodProtesto := '2';
+      else
+        ACodProtesto := '3';
+      end;
 
      {Pegando o Tipo de Ocorrencia}
      case OcorrenciaOriginal.Tipo of
@@ -553,11 +562,9 @@ begin
               IntToStrZero( round(ValorIOF * 100), 15)                                  + // 166 a 180 - Valor do IOF a ser recolhido
               IntToStrZero( round(ValorAbatimento * 100), 15)                           + // 181 a 195 - Valor do abatimento
               PadRight(SeuNumero, 25, ' ')                                              + // 196 a 220 - Identificação do título na empresa
-              IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
-                     IfThen((DaySpan(Vencimento, DataProtesto) > 5), '1', '2'), '3')    + // 221 - Código de protesto: Protestar em XX dias corridos
-              IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
-                     PadLeft(IntToStr(DaysBetween(DataProtesto, Vencimento)), 2, '0'),
-                     '00')                                                              + // 222 a 223 - Prazo para protesto (em dias corridos)
+              IfThen((DataProtesto <> 0) and (DiasDeProtesto > 0), ACodProtesto, '3')   + // 221 - Código de protesto
+              IfThen((DataProtesto <> 0) and (DiasDeProtesto > 0),
+                    PadLeft(IntToStr(DiasDeProtesto), 2, '0'), '00')                    + // 222 a 223 - Prazo para protesto (em dias)
               '0'                                                                       + // 224 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               '000'                                                                     + // 225 a 227 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               '09'                                                                      + // 228 a 229 - Código da moeda: Real
@@ -965,30 +972,28 @@ begin
    rCNPJCPF        := OnlyNumber( copy(ARetorno[0], 19, 14) );
    rConvenioCedente:= Trim(RemoveZerosEsquerda(Copy(ARetorno[0], 33, 9)));
 
+   ValidarDadosRetorno('', '', rCNPJCPF);
    with ACBrBanco.ACBrBoleto do
    begin
-      if (not LeCedenteRetorno) and (rCNPJCPF <> OnlyNumber(Cedente.CNPJCPF)) then
-         raise Exception.create(ACBrStr('CNPJ\CPF do arquivo inválido'));
+     if LeCedenteRetorno then
+     begin
+       Cedente.Nome          := rCedente;
+       Cedente.CNPJCPF       := rCNPJCPF;
+       Cedente.Convenio      := rConvenioCedente;
+       Cedente.Agencia       := trim(copy(ARetorno[0], 53, 5));
+       Cedente.AgenciaDigito := trim(copy(ARetorno[0], 58, 1));
+       Cedente.Conta         := trim(copy(ARetorno[0], 59, 12));
+       Cedente.ContaDigito   := trim(copy(ARetorno[0], 71, 1));
+     end;
 
-      if LeCedenteRetorno then
-      begin
-        Cedente.Nome          := rCedente;
-        Cedente.CNPJCPF       := rCNPJCPF;
-        Cedente.Convenio      := rConvenioCedente;
-        Cedente.Agencia       := trim(copy(ARetorno[0], 53, 5));
-        Cedente.AgenciaDigito := trim(copy(ARetorno[0], 58, 1));
-        Cedente.Conta         := trim(copy(ARetorno[0], 59, 12));
-        Cedente.ContaDigito   := trim(copy(ARetorno[0], 71, 1));
-      end;
+     case StrToIntDef(copy(ARetorno[0], 18, 1), 0) of
+       01:
+         Cedente.TipoInscricao := pFisica;
+       else
+         Cedente.TipoInscricao := pJuridica;
+     end;
 
-      case StrToIntDef(copy(ARetorno[0], 18, 1), 0) of
-        01:
-          Cedente.TipoInscricao := pFisica;
-        else
-          Cedente.TipoInscricao := pJuridica;
-      end;
-
-      ACBrBanco.ACBrBoleto.ListadeBoletos.Clear;
+     ACBrBanco.ACBrBoleto.ListadeBoletos.Clear;
    end;
 
    ACBrBanco.TamanhoMaximoNossoNum := 20;  
@@ -1617,13 +1622,9 @@ begin
                                                              Copy(ARetorno[0],97,2)+'/'+
                                                              Copy(ARetorno[0],99,2),0, 'DD/MM/YY' );
 
+   ValidarDadosRetorno(rAgencia, rConta);
    with ACBrBanco.ACBrBoleto do
    begin
-     if (not LeCedenteRetorno) and
-        ((rAgencia <> OnlyNumber(Cedente.Agencia)) or
-         (StrToIntDef(rConta,0) <> StrToIntDef(OnlyNumber(Cedente.Conta),0))) then
-       raise Exception.Create(ACBrStr('Agencia\Conta do arquivo inválido'));
-
      if LeCedenteRetorno then
      begin
        Cedente.Nome         := rCedente;
@@ -1733,12 +1734,9 @@ begin
                                                             Copy(ARetorno[0],97,2)+'/'+
                                                             Copy(ARetorno[0],99,2),0, 'DD/MM/YY' );
 
+  ValidarDadosRetorno(rAgencia, rConta);
   with ACBrBanco.ACBrBoleto do
   begin
-    if (not LeCedenteRetorno) and
-       ((rAgencia <> OnlyNumber(Cedente.Agencia)) or
-        (StrToIntDef(rConta,0) <> StrToIntDef(OnlyNumber(Cedente.Conta),0))) then
-      raise Exception.Create(ACBrStr('Agencia\Conta do arquivo inválido'));
 
     if LeCedenteRetorno then
     begin

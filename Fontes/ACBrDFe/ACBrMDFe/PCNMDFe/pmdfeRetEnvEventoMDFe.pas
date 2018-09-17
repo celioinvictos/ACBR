@@ -180,7 +180,7 @@ begin
          infEvento.Id         := Leitor.rAtributo('Id', 'infEvento');
          infEvento.cOrgao     := Leitor.rCampo(tcInt, 'cOrgao');
          infEvento.tpAmb      := StrToTpAmb(ok, Leitor.rCampo(tcStr, 'tpAmb'));
-         infEvento.CNPJ       := Leitor.rCampo(tcStr, 'CNPJ');
+         infEvento.CNPJCPF    := Leitor.rCampoCNPJCPF; //Leitor.rCampo(tcStr, 'CNPJ');
          infEvento.chMDFe     := Leitor.rCampo(tcStr, 'chMDFe');
          infEvento.dhEvento   := Leitor.rCampo(tcDatHor, 'dhEvento');
          infEvento.tpEvento   := StrToTpEvento(ok,Leitor.rCampo(tcStr, 'tpEvento'));
@@ -208,6 +208,7 @@ begin
         signature.X509Certificate := Leitor.rCampo(tcStr, 'X509Certificate');
       end;
 
+      Result := True;
     end;
 
     if (Leitor.rExtrai(1, 'retEnvEvento') <> '') or

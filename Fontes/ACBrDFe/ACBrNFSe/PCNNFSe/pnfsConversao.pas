@@ -109,7 +109,8 @@ type
                     proBethav2, proActconv2, proInfiscv11, proFriburgo, proCTA,
                     proNotaBlu, proSMARAPD, proSmarAPDABRASF, proActconv201,
                     proActconv202, proSigep, proSafeWeb, proSH3, proSIAPNet,
-                    proIPM, proBelford, proISSJoinville, proAsten, proELv2, proTiplanv2);
+                    proIPM, proBelford, proISSJoinville, proAsten, proELv2,
+                    proTiplanv2, proGiss, proDeISS, proTcheInfov2, proDataSmart);
 
   TnfseAcao = (acRecepcionar, acConsSit, acConsLote, acConsNFSeRps, acConsNFSe,
                acCancelar, acGerar, acRecSincrono, acConsSecRps, acSubstituir);
@@ -261,6 +262,8 @@ function StrToOperacao(out ok: boolean; const s: String): TOperacao;
 
 function TributacaoToStr(const t: TTributacao): String;
 function StrToTributacao(out ok: boolean; const s: String): TTributacao;
+
+function RemoverAtributos(const AXML: String; AProvedor: TnfseProvedor): String;
 
 implementation
 
@@ -501,7 +504,7 @@ begin
          'Bethav2', 'Actconv2', 'Infisc-v11', 'Friburgo', 'CTA', 'NotaBlu',
          'Smarapd', 'SmarAPDABRASF', 'Actconv201', 'Actconv202', 'Sigep', 'SafeWeb',
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
-         'Tiplanv2'],
+         'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -517,7 +520,7 @@ begin
          proBethav2, proActconv2, proInfiscv11, proFriburgo, proCTA, proNotaBlu,
          proSMARAPD, proSmarAPDABRASF, proActconv201, proActconv202, proSigep,
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
-         proAsten, proELv2, proTiplanv2]);
+         proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2, proDataSmart]);
 end;
 
 function StrToProvedor(out ok: boolean; const s: String): TnfseProvedor;
@@ -537,7 +540,7 @@ begin
          'Bethav2', 'Actconv2', 'Infisc-v11', 'Friburgo', 'CTA', 'NotaBlu',
          'Smarapd', 'SmarAPDABRASF', 'Actconv201', 'Actconv202', 'Sigep', 'SafeWeb',
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
-         'Tiplanv2'],
+         'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -553,7 +556,7 @@ begin
          proBethav2, proActconv2, proInfiscv11, proFriburgo, proCTA, proNotaBlu,
          proSMARAPD, proSmarAPDABRASF, proActconv201, proActconv202, proSigep,
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
-         proAsten, proELv2, proTiplanv2]);
+         proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2, proDataSmart]);
 end;
 
 // Condição de pagamento ******************************************************
@@ -18064,42 +18067,43 @@ end;
 
 function RetirarPrefixos(const AXML: String; AProvedor: TnfseProvedor): String;
 var
- XML: String;
+  XML: String;
 begin
- XML := StringReplace( AXML, 'ns1:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'ns2:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'ns3:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'ns4:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'ns5:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'tc:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'ii:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'p1:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'env:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'nfse:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'soap:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'soap12:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'SOAP-ENV:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'tin:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'a:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'b:', '', [rfReplaceAll] );
- XML := StringReplace( XML, 'tipos:', '', [rfReplaceAll] );
+  XML := StringReplace( AXML, 'ns1:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'ns2:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'ns3:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'ns4:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'ns5:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'tc:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'ii:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'p1:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'env:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'nfse:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'soap:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'soap12:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'SOAP-ENV:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'tin:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'a:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'b:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 's:', '', [rfReplaceAll] );
+  XML := StringReplace( XML, 'tipos:', '', [rfReplaceAll] );
 
- // Provedor NFSeBrasil
- if AProvedor = proNFSeBrasil then
- begin
-   XML := StringReplace( XML, '<![CDATA[', '', [rfReplaceAll] );
-   XML := StringReplace( XML, ']]>', '', [rfReplaceAll] );
-   XML := StringReplace( XML, 'R$', '', [rfReplaceAll] );
- end;
+  // Provedor NFSeBrasil
+  if AProvedor = proNFSeBrasil then
+  begin
+    XML := StringReplace( XML, '<![CDATA[', '', [rfReplaceAll] );
+    XML := StringReplace( XML, ']]>', '', [rfReplaceAll] );
+    XML := StringReplace( XML, 'R$', '', [rfReplaceAll] );
+  end;
 
- // Provedor Governa, os prefixos não tem ":"
- if AProvedor = proGoverna then
- begin
-   XML := StringReplace( XML, 'tc', '', [rfReplaceAll] );
-   XML := StringReplace( XML, 'ts', '', [rfReplaceAll] );
- end;
+  // Provedor Governa, os prefixos não tem ":"
+  if AProvedor = proGoverna then
+  begin
+    XML := StringReplace( XML, 'tc', '', [rfReplaceAll] );
+    XML := StringReplace( XML, 'ts', '', [rfReplaceAll] );
+  end;
 
- result := XML;
+  result := XML;
 end;
 
 function VersaoXML(AXML: String): String;
@@ -18390,7 +18394,8 @@ begin
     proSisPMJP, proSystemPro, proTecnos, proVirtual, proVitoria, proWebISSv2,
     proActconv201, proActconv202, proVersaTecnologia, proSigep, proSafeWeb,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
-    proAsten, proELv2, proTiplanv2: Result := loABRASFv2;
+    proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
+    proDataSmart: Result := loABRASFv2;
 
     proAgili,
     proAgiliv2:     Result := loAgili;
@@ -18425,7 +18430,8 @@ begin
     proSisPMJP, proSystemPro, proTecnos, proVirtual, proVitoria, proNFSEBrasil,
     proVersaTecnologia, proActconv201, proSafeWeb, proActconv202, proWebISSv2,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
-    proAsten, proELv2, proTiplanv2: Result := ve200;
+    proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
+    proDataSmart: Result := ve200;
 
     proInfiscv11: Result := ve110;
   else
@@ -18566,6 +18572,15 @@ begin
                            [ttIsentaISS, ttNaoIncidencianoMunic, ttImune,
                             ttExigibilidadeSusp, ttNaoTributavel, ttTributavel,
                             ttTributavelFixo, ttTributavelSN, ttMEI]);
+end;
+
+function RemoverAtributos(const AXML: String; AProvedor: TnfseProvedor): String;
+var
+  XML: String;
+begin
+  XML := StringReplace( AXML, ' xml:lang="pt-BR"', '', [rfReplaceAll] );
+
+  result := XML;
 end;
 
 end.

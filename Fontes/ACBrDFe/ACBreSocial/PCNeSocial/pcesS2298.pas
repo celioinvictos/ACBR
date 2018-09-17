@@ -125,7 +125,7 @@ implementation
 
 uses
   IniFiles,
-  ACBreSocial, ACBrDFeUtil;
+  ACBreSocial;
 
 { TS2298Collection }
 
@@ -229,7 +229,7 @@ begin
 
     Validar(schevtReintegr);
   except on e:exception do
-    raise Exception.Create(e.Message);
+    raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')

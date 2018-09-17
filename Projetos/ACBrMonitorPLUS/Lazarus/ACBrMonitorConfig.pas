@@ -224,6 +224,8 @@ type
     VersaoCTe         : String;
     VersaoeSocial     : String;
     VersaoReinf       : String;
+    VersaoQRCode      : String;
+    CamposFatObrig    : Boolean;
     FormaEmissaoNFe   : Integer;
     FormaEmissaoCTe   : Integer;
     FormaEmissaoMDFe  : Integer;
@@ -875,6 +877,7 @@ begin
       Ini.WriteString( CSecWebService, CKeyVersaoMDFe, VersaoMDFe );
       Ini.WriteString( CSecWebService, CKeyVersaoReinf, VersaoReinf );
       Ini.WriteString( CSecWebService, CKeyVersaoeSocial, VersaoeSocial );
+      Ini.WriteString( CSecWebService, CKeyVersaoQRCode, VersaoQRCode );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoNFe, FormaEmissaoNFe );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoCTe, FormaEmissaoCTe );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoMDFe, FormaEmissaoMDFe );
@@ -887,6 +890,7 @@ begin
       Ini.WriteString( CSecWebService, CKeyWebServiceIntervalo, Intervalo );
       Ini.WriteInteger( CSecWebService, CKeyTimeZoneMode , TimeZoneMode );
       Ini.WriteString( CSecWebService, CKeyTimeZoneStr, TimeZoneStr );
+      Ini.WriteBool( CSecWebService, CKeyCamposFatObrig, CamposFatObrig );
     end;
 
     with DFe.ESocial do
@@ -1485,6 +1489,7 @@ begin
       VersaoMDFe                := Ini.ReadString( CSecWebService, CKeyVersaoMDFe, VersaoMDFe );
       VersaoeSocial             := Ini.ReadString( CSecWebService, CKeyVersaoeSocial, CvalueVersaoeSocial );
       VersaoReinf               := Ini.ReadString( CSecWebService, CKeyVersaoReinf, CvalueVersaoReinf );
+      VersaoQRCode              := Ini.ReadString( CSecWebService, CKeyVersaoQRCode, CvalueVersaoQRCode );
       FormaEmissaoNFe           := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoNFe, DFe.Impressao.Geral.FormaEmissao );
       FormaEmissaoCTe           := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoCTe, DFe.Impressao.Geral.FormaEmissao );
       FormaEmissaoGNRe          := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoGNRe, DFe.Impressao.Geral.FormaEmissao );
@@ -1497,6 +1502,7 @@ begin
       Intervalo                 := Ini.ReadString( CSecWebService, CKeyWebServiceIntervalo, Intervalo);
       TimeZoneMode              := Ini.ReadInteger( CSecWebService, CKeyTimeZoneMode, TimeZoneMode);
       TimeZoneStr               := Ini.ReadString( CSecWebService, CKeyTimeZoneStr, TimeZoneStr);
+      CamposFatObrig            := Ini.ReadBool( CSecWebService, CKeyCamposFatObrig, True);
     end;
 
     with DFe.WebService.Proxy do
@@ -2073,6 +2079,7 @@ begin
     VersaoMDFe                := '3.00';
     VersaoeSocial             := '02_04_02';
     VersaoReinf               := '1_03_02';
+    VersaoQRCode              := '0';
     FormaEmissaoNFe           := 0;
     FormaEmissaoCTe           := 0;
     FormaEmissaoGNRe          := 0;
@@ -2085,6 +2092,7 @@ begin
     Intervalo                 := '0';
     TimeZoneMode              := 0;
     TimeZoneStr               := '';
+    CamposFatObrig            := True;
   end;
 
   with DFe.WebService.Proxy do

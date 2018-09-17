@@ -273,7 +273,7 @@ implementation
 
 uses
   IniFiles,
-  ACBreSocial, ACBrDFeUtil;
+  ACBreSocial;
 
 { TS2230Collection }
 
@@ -580,7 +580,7 @@ begin
 
     Validar(schevtAfastTemp);
   except on e:exception do
-    raise Exception.Create(e.Message);
+    raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
@@ -708,21 +708,21 @@ begin
       begin
         // de 0 até 9
         sSecao := 'infoAtestado' + IntToStrZero(I, 1);
-        sFim   := INIRec.ReadString(sSecao, 'codCID', 'FIM');
+        sFim   := INIRec.ReadString(sSecao, 'qtdDiasAfast', 'FIM');
 
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
         with infoAfastamento.iniAfastamento.infoAtestado.Add do
         begin
-          codCID      := sFim;
-          qtDiasAfast := INIRec.ReadInteger(sSecao, 'qtDiasAfast', 0);
+          codCID      := INIRec.ReadString(sSecao, 'codCID', '');
+          qtDiasAfast := strToInt(sFim);
 
           sSecao := 'emitente' + IntToStrZero(I, 1);
           emitente.nmEmit := INIRec.ReadString(sSecao, 'nmEmit', EmptyStr);
           emitente.ideOC  := eSStrToIdeOC(Ok, INIRec.ReadString(sSecao, 'ideOC', '1'));
           emitente.nrOc   := INIRec.ReadString(sSecao, 'nrOc', EmptyStr);
-          emitente.ufOC   := eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufOC', 'SP'));
+          emitente.ufOC   := INIRec.ReadString(sSecao, 'ufOC', 'SP'); //eSStrTouf(Ok, INIRec.ReadString(sSecao, 'ufOC', 'SP'));
         end;
 
         Inc(I);

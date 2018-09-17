@@ -32,6 +32,7 @@
 {******************************************************************************}
 
 {$I ACBr.inc}
+
 unit ACBrLibeSocialConsts;
 
 interface
@@ -47,6 +48,11 @@ const
   CSessaoRespConsulta = 'Consulta';
   CSessaoRespOcorrencia = 'Ocorrencia';
   CSessaoRespConsultaTot = 'Tot';
+
+  CSessaoeSocial = 'eSocial';
+
+  CChaveCodContrato = 'CodContrato';
+
 implementation
 
 end.

@@ -48,6 +48,56 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+10/09/2018
+-- pcesS3000 --
+[*] https://www.projetoacbr.com.br/forum/topic/46212-pcess3000-n%C3%A3o-gera-idetrabalhador-para-os-te-s2299-nem-s2399/?do=findComment&comment=306205
+   Por: Aristarco Ribeiro
+
+05/09/2018
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/46168-corre%C3%A7%C3%A3o-no-s-2200-ajuda-s-2206-infoestaturario/?do=findComment&comment=305616
+   Por: Jorge Williams
+
+31/08/2018
+-- Diversos --
+[*] Correções, tag com a nomenclatura errada.
+   Por: Italo Jurisato Junior
+
+09/08/2018
+-- pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/45582-altera%C3%A7%C3%B5es-para-a-unit-pcesgeradorpas/
+   Por: Gustavo Ribeiro Croscato
+
+08/08/2018
+-- pcesS1200--
+[*] https://www.projetoacbr.com.br/forum/topic/43461-s-1200-tsv-com-mais-de-um-demonstartivo/?do=findComment&comment=300837
+-- pcesS1210--
+[*] https://www.projetoacbr.com.br/forum/topic/42760-adicionar-campo-matricula-no-grupo-detpgtofer-do-evento-s-1210/?do=findComment&comment=300851
+   Por: Leandro LJM
+
+07/08/2018
+-- pcesS2230--
+[*] https://www.projetoacbr.com.br/forum/topic/42108-s-2230-afastamento-temporario-retorno-de-afastamento/?do=findComment&comment=300600
+   Por: Leandro LJM
+
+06/08/2018 -- PCNeSocial --
+[*] Migrado a procedure LerIniArquivoOuString para classe ACBrUtil, devido utilização fora das classes do DFe. 
+
+02/08/2018
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/45256-ajuste-nos-campos-indcomerc-e-indaquis-dos-eventos-s-1250-e-s-1260/
+   Por: Joceandro Perin
+
+17/07/2018
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/44815-padroniza%C3%A7%C3%A3o-eventos-esocial/
+   Por: Alisson Souza Pereira
+
+29/06/2018
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/44184-s-2230-corre%C3%A7%C3%A3o/?do=findComment&comment=292935
+   Por: Paulo Aguiar Junior
+
 20/06/2018
 -- pcesS2300 --
 [*] https://www.projetoacbr.com.br/forum/topic/44095-e-social-nota-de-documenta%C3%A7%C3%A3o-evolutiva-012018-de-30052018/

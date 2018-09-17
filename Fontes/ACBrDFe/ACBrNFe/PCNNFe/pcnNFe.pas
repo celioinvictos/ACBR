@@ -1732,6 +1732,7 @@ type
     procedure SetItem(Index: Integer; Value: TpagCollectionItem);
   public
     constructor Create(AOwner: TNFe);
+    procedure Assign(Source: TPersistent); override;
 
     function Add: TpagCollectionItem;
 
@@ -3203,6 +3204,13 @@ begin
   Result := TpagCollectionItem(inherited Add);
 end;
 
+procedure TpagCollection.Assign(Source: TPersistent);
+begin
+  if Source is TpagCollection then
+    vTroco := TpagCollection(Source).vTroco;
+  inherited;
+end;
+
 constructor TpagCollection.Create(AOwner: TNFe);
 begin
   inherited Create(TpagCollectionItem);
@@ -3818,11 +3826,15 @@ begin
     vDesc := TICMSTot(Source).vDesc;
     vII := TICMSTot(Source).vII;
     vIPI := TICMSTot(Source).vIPI;
+    vIPIDevol := TICMSTot(Source).vIPIDevol;
     vPIS := TICMSTot(Source).vPIS;
     vCOFINS := TICMSTot(Source).vCOFINS;
     vOutro := TICMSTot(Source).vOutro;
     vNF := TICMSTot(Source).vNF;
     vTotTrib := TICMSTot(Source).vTotTrib;
+    vFCP := TICMSTot(Source).vFCP;
+    vFCPST := TICMSTot(Source).vFCPST;
+    vFCPSTRet := TICMSTot(Source).vFCPSTRet;
   end
   else
     inherited;

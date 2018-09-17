@@ -288,7 +288,7 @@ begin
     if Provedor = proISSCuritiba then
       Leitor.Arquivo := RemoverNameSpace(Leitor.Arquivo)
     else
-      Leitor.Arquivo := RemoverNameSpace(RetirarPrefixos(Leitor.Arquivo, Provedor));
+      Leitor.Arquivo := RemoverNameSpace(RemoverAtributos(RetirarPrefixos(Leitor.Arquivo, Provedor), Provedor));
 
     VersaodoXML  := VersaoXML(Leitor.Arquivo);
     Leitor.Grupo := Leitor.Arquivo;
@@ -501,14 +501,18 @@ begin
                 FNFSe.XML := SeparaDados(Leitor.Grupo, 'xml');  // Provedor NFSeBrasil
               if NFSe.XML = '' then
                 FNFSe.XML := SeparaDados(Leitor.Grupo, 'Nota', True);
-              if NFSe.XML = '' then
-                FNFSe.XML := SeparaDados(Leitor.Grupo, 'tbnfd', True);
+//              if NFSe.XML = '' then
+//                FNFSe.XML := SeparaDados(Leitor.Grupo, 'tbnfd', True);
+
+              if Provedor = proSMARAPD then
+                FNFSe.XML := Leitor.Grupo;
+
               if (Provedor = proEL) then
-                begin
-                  FNFSe.XML := SeparaDados(Leitor.Grupo, 'notasFiscais', True);
-                  if NFSe.XML = '' then
-                    FNFSe.XML := SeparaDados(Leitor.Grupo, 'nfeRpsNotaFiscal', True);
-                end;
+              begin
+                FNFSe.XML := SeparaDados(Leitor.Grupo, 'notasFiscais', True);
+                if NFSe.XML = '' then
+                  FNFSe.XML := SeparaDados(Leitor.Grupo, 'nfeRpsNotaFiscal', True);
+              end;
 
               // Retorno do GerarNfse e EnviarLoteRpsSincrono
 
@@ -694,11 +698,26 @@ begin
         ListaNFSe.Sucesso                        := Leitor.rCampo(tcStr, 'Sucesso');
         Result := ListaNFSe.Sucesso = 'true';
       end;
+
+      if Provedor = proISSDigital then
+      begin
+        i := 0;
+        while Leitor.rExtrai(2, 'ListaMensagemRetorno', '', i + 1) <> '' do
+        begin
+          ListaNFSe.FMsgRetorno.Add;
+          ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
+          ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
+          ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
+          inc(i);
+        end;
+      end;
     end;
 
     // =======================================================================
     // Extrai a Lista de Mensagens de Erro
     // =======================================================================
+
+    Leitor.Grupo := Leitor.Arquivo;
 
     if (leitor.rExtrai(1, 'ListaMensagemRetorno') <> '') or
        (leitor.rExtrai(1, 'Listamensagemretorno') <> '') or

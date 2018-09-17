@@ -169,6 +169,7 @@ type
     FPathArquivoMunicipios: String;
     FValidarInscricoes: Boolean;
     FValidarListaServicos: Boolean;
+    FCamposFatObrigatorios: Boolean;
   published
     property AjustarTagNro: Boolean read FAjustarTagNro;
     property GerarTagIPIparaNaoTributado: Boolean read FGerarTagIPIparaNaoTributado;
@@ -178,6 +179,7 @@ type
     property PathArquivoMunicipios: String read FPathArquivoMunicipios write FPathArquivoMunicipios;
     property ValidarInscricoes: Boolean read FValidarInscricoes;
     property ValidarListaServicos: Boolean read FValidarListaServicos;
+    property CamposFatObrigatorios: Boolean read FCamposFatObrigatorios write FCamposFatObrigatorios;
   end;
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -204,6 +206,7 @@ begin
   FOpcoes.FGerarTagAssinatura := taSomenteSeAssinada;
   FOpcoes.FValidarInscricoes := False;
   FOpcoes.FValidarListaServicos := False;
+  FOpcoes.FCamposFatObrigatorios := True;
 end;
 
 destructor TNFeW.Destroy;
@@ -670,8 +673,8 @@ begin
   Gerador.wCampo(tcStr, 'E12', 'UF     ', 02, 02, 1, xUF, DSC_UF);
   if not pcnAuxiliar.ValidarUF(xUF) then
     Gerador.wAlerta('E12', 'UF', DSC_UF, ERR_MSG_INVALIDO);
-  Gerador.wCampo(tcInt, 'E13', 'CEP    ', 08, 08, 0, nfe.Dest.enderDest.CEP, DSC_CEP);
-  Gerador.wCampo(tcStr, 'E14', 'cPais ', 01, 04, 0, IIf(nfe.Dest.enderDest.cPais <> 0, IntToStrZero(nfe.Dest.enderDest.cPais,4), ''), DSC_CPAIS);
+  Gerador.wCampo(tcInt, 'E13', 'CEP   ', 08, 08, 0, nfe.Dest.enderDest.CEP, DSC_CEP);
+  Gerador.wCampo(tcInt, 'E14', 'cPais ', 02, 04, 0, nfe.Dest.enderDest.cPais, DSC_CPAIS);
   if not ValidarCodigoPais(nfe.Dest.enderDest.cPais) = -1 then
     Gerador.wAlerta('E14', 'cPais', DSC_CPAIS, ERR_MSG_INVALIDO);
   Gerador.wCampo(tcStr, 'E15', 'xPais  ', 02, 60, 0, nfe.Dest.enderDest.xPais, DSC_XPAIS);
@@ -819,7 +822,7 @@ begin
 
   Gerador.wCampo(tcStr, 'I12 ', 'cEANTrib', 00, 14, 1, nfe.Det[i].Prod.cEANTrib, DSC_CEANTRIB);
 
-  if (nfe.Det[i].Prod.cEANTrib <> SEMGTIN) and (nfe.Det[i].Prod.cEAN <> '') then
+  if (nfe.Det[i].Prod.cEANTrib <> SEMGTIN) and (nfe.Det[i].Prod.cEANTrib <> '') then
   begin
     ErroValidarGTIN := ValidarGTIN(nfe.Det[i].Prod.cEANTrib);
     if ErroValidarGTIN <> '' then
@@ -2203,10 +2206,10 @@ begin
     (nfe.Cobr.Fat.vLiq > 0) then
   begin
     Gerador.wGrupo('fat', 'Y02');
-    Gerador.wCampo(tcStr, 'Y03', 'nFat   ', 01, 60, 0, nfe.Cobr.Fat.nFat, DSC_NFAT);
-    Gerador.wCampo(tcDe2, 'Y04', 'vOrig  ', 01, 15, 0, nfe.Cobr.Fat.vOrig, DSC_VORIG);
-    Gerador.wCampo(tcDe2, 'Y05', 'vDesc  ', 01, 15, 0, nfe.Cobr.Fat.vDesc, DSC_VDESC);
-    Gerador.wCampo(tcDe2, 'Y06', 'vLiq   ', 01, 15, 0, nfe.Cobr.Fat.vLiq, DSC_VLIQ);
+    Gerador.wCampo(tcStr, 'Y03', 'nFat   ', 01, 60, IIf(FOpcoes.CamposFatObrigatorios and (NFe.infNFe.Versao >= 4),1,0), nfe.Cobr.Fat.nFat, DSC_NFAT);
+    Gerador.wCampo(tcDe2, 'Y04', 'vOrig  ', 01, 15, IIf(FOpcoes.CamposFatObrigatorios and (NFe.infNFe.Versao >= 4),1,0), nfe.Cobr.Fat.vOrig, DSC_VORIG);
+    Gerador.wCampo(tcDe2, 'Y05', 'vDesc  ', 01, 15, IIf(FOpcoes.CamposFatObrigatorios and (NFe.infNFe.Versao >= 4),1,0), nfe.Cobr.Fat.vDesc, DSC_VDESC);
+    Gerador.wCampo(tcDe2, 'Y06', 'vLiq   ', 01, 15, IIf(FOpcoes.CamposFatObrigatorios and (NFe.infNFe.Versao >= 4),1,0), nfe.Cobr.Fat.vLiq, DSC_VLIQ);
     Gerador.wGrupo('/fat');
   end;
 end;

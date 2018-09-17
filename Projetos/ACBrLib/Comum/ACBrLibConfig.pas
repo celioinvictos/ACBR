@@ -39,7 +39,7 @@ interface
 
 uses
   Classes, SysUtils, IniFiles,
-  synachar,
+  synachar, mimemess,
   ACBrLibResposta;
 
 type
@@ -116,13 +116,17 @@ type
   private
     FCodificacao: TMimeChar;
     FConfirmacao: Boolean;
+    FConfirmacaoEntrega: Boolean;
     FConta: String;
+    FIsHTML: Boolean;
     FNome: String;
     FPorta: Integer;
+    FPriority: TMessPriority;
     FSegundoPlano: Boolean;
     FSenha: String;
     FServidor: String;
     FSSL: Boolean;
+    FTentativas: Integer;
     FTimeOut: Integer;
     FTLS: Boolean;
     FUsuario: String;
@@ -146,8 +150,12 @@ type
     property SSL: Boolean read FSSL;
     property TLS: Boolean read FTLS;
     property Confirmacao: Boolean read FConfirmacao;
+    property ConfirmacaoEntrega: Boolean read FConfirmacaoEntrega;
     property SegundoPlano: Boolean read FSegundoPlano;
     property TimeOut: Integer read FTimeOut;
+    property Tentativas: Integer read FTentativas;
+    property IsHTML: Boolean read FIsHTML;
+    property Priority: TMessPriority read FPriority;
   end;
 
   { TEmpresaConfig }
@@ -191,7 +199,6 @@ type
     FSistema: TSistemaConfig;
     FSoftwareHouse: TEmpresaConfig;
     FEmissor: TEmpresaConfig;
-    FChaveCrypt: AnsiString;
     FTipoResposta: TACBrLibRespostaTipo;
 
     procedure SetNomeArquivo(AValue: String);
@@ -199,6 +206,8 @@ type
     procedure VerificarSessaoEChave(ASessao, AChave: String);
 
   protected
+    FChaveCrypt: AnsiString;
+
     function AtualizarArquivoConfiguracao: Boolean; virtual;
     procedure AplicarConfiguracoes; virtual;
 
@@ -331,8 +340,12 @@ begin
   FSSL := False;
   FTLS := False;
   FConfirmacao := False;
+  FConfirmacaoEntrega := False;
   FSegundoPlano := False;
   FTimeOut := 0;
+  FTentativas := 0;
+  FIsHTML := False;
+  FPriority := MP_low;
 end;
 
 function TEmailConfig.GetSenha: String;
@@ -353,7 +366,11 @@ begin
   FTLS := AIni.ReadBool(CSessaoEmail, CChaveEmailTLS, FTLS);
   FTimeOut := AIni.ReadInteger(CSessaoEmail, CChaveTimeOut, FTimeOut);
   FConfirmacao := AIni.ReadBool(CSessaoEmail, CChaveEmailConfirmacao, FConfirmacao);
+  FConfirmacaoEntrega := AIni.ReadBool(CSessaoEmail, CChaveEmailConfirmacaoEntrega, FConfirmacaoEntrega);
   FSegundoPlano := AIni.ReadBool(CSessaoEmail, CChaveEmailSegundoPlano, FSegundoPlano);
+  FTentativas := AIni.ReadInteger(CSessaoEmail, CChaveEmailTentativas, FTentativas);
+  FIsHTML := AIni.ReadBool(CSessaoEmail, CChaveEmailIsHTML, FIsHTML);
+  FPriority := TMessPriority(AIni.ReadInteger(CSessaoEmail, CChaveEmailPriority, Integer(FPriority)));
 end;
 
 procedure TEmailConfig.GravarIni(const AIni: TCustomIniFile);
@@ -369,7 +386,11 @@ begin
   AIni.WriteBool(CSessaoEmail, CChaveEmailTLS, FTLS);
   AIni.WriteInteger(CSessaoEmail, CChaveTimeOut, FTimeOut);
   AIni.WriteBool(CSessaoEmail, CChaveEmailConfirmacao, FConfirmacao);
+  AIni.WriteBool(CSessaoEmail, CChaveEmailConfirmacaoEntrega, FConfirmacaoEntrega);
   AIni.WriteBool(CSessaoEmail, CChaveEmailSegundoPlano, FSegundoPlano);
+  AIni.WriteInteger(CSessaoEmail, CChaveEmailTentativas, FTentativas);
+  AIni.WriteBool(CSessaoEmail, CChaveEmailIsHTML, FIsHTML);
+  AIni.WriteInteger(CSessaoEmail, CChaveEmailPriority, Integer(FPriority));
 end;
 
 { TEmpresaConfig }

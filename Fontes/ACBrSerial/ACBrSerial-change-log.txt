@@ -39,6 +39,43 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+30/08/2018
+-- ACBrECFBematech --
+[-] Correção para Item registrado 2 vezes na impressora Bematech MP 4000 TH
+    (Aplicado workaround, quando o ECF responde com um ACK igual a 255.)
+    https://www.projetoacbr.com.br/forum/topic/45654-item-registrado-2-vezes-na-impressora-bematech-mp-4000-th/
+    (por: DSA)
+
+20/08/2018
+-- ACBrPosPrinter --
+[*] Métodos LerInfoImpressora e LerStatusImpressora modificados para inserir
+    Entrada e Resultado no Log
+
+23/07/2018
+-- ACBrCHQ, ACBrCHQClass --
+[+] Adicionada a propriedade "PaginaDeCodigo: Word default 0"
+    0 = Remove acentos de "Cidade, Favorecido, Textos". Caso contrário, traduz
+    para a página de código em ANSI, usada pelo equipamento
+    https://www.projetoacbr.com.br/forum/topic/44737-acbrchq-nova-propriedade-paginadecodigo/
+    (por: DSA)
+
+20/07/2018
+-- ACBrDevice --
+[+] Adicionado no evento: HookAtivar = procedure(const APort: String; Params: String) of object;
+[+] Adicionado no evento: HookDesativar = procedure(const APort: String) of object;
+    (Que permitem, por exemplo, usar DLLs para acesso a impressoras por interface USB.
+     Veja exemplo de implementação, no Demo: PosPrinterTeste)
+[*] Melhoria em TACBrDevice.LeString, para que leitura por Hook também considere
+    o parâmetro "Terminador"
+
+-- ACBrEscBematech, ACBrEscDaruma, ACBrEscPosEpson --
+[*] Melhorias para correto funcionamento com Hook
+
+19/07/2018
+-- ACBrDevice --
+[+] Ajustes para melhorar as mensagens de Erro, quando Ativar Porta Serial ou
+    Paralela e a mesma for inexistente ou inacessível  (por: DSA)
+
 21/02/2018
 -- ACBrETQ, ACBrETQClass --
 [-] Ajuste para enviar o comando de Limpar a Memória, ante de Impressão da Etiqueta

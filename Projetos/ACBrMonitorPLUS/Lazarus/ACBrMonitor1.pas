@@ -51,7 +51,8 @@ uses
   ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types, fileinfo,
   ACBrDFeConfiguracoes, ACBrReinf, ACBreSocial, ACBrIntegrador, LazHelpCHM,
   pmdfeConversaoMDFe, ACBrMonitorConfig, ACBrMonitorConsts, DoACBrMDFeUnit,
-  DoACBreSocialUnit, pcesConversaoeSocial, DoACBrReinfUnit, pcnConversaoReinf;
+  DoACBreSocialUnit, pcesConversaoeSocial, DoACBrReinfUnit, pcnConversaoReinf,
+  DoBoletoUnit, DOACBrNFeUnit, DoACBrCTeUnit, DoSATUnit, DoECFUnit;
 
 const
   //{$I versao.txt}
@@ -285,6 +286,7 @@ type
     cbHttpLib: TComboBox;
     cbTipoEmpregador: TComboBox;
     cbTipoContribuinte: TComboBox;
+    cbVersaoWSQRCode: TComboBox;
     cbVersaoWSReinf: TComboBox;
     cbVersaoWSMDFe: TComboBox;
     cbVersaoWSeSocial: TComboBox;
@@ -382,6 +384,7 @@ type
     CHMHelpDatabase1: TCHMHelpDatabase;
     ckMemoria: TCheckBox;
     ckNFCeUsarIntegrador: TCheckBox;
+    ckCamposFatObrigatorio: TCheckBox;
     deBolDirRetornoRel: TDirectoryEdit;
     deUSUDataCadastro: TDateEdit;
     eAvanco: TEdit;
@@ -475,6 +478,7 @@ type
     Label223: TLabel;
     Label224: TLabel;
     Label225: TLabel;
+    Label226: TLabel;
     Label60: TLabel;
     Label61: TLabel;
     lbAvanco: TLabel;
@@ -575,6 +579,8 @@ type
     sbArquivoWebServicesMDFe: TSpeedButton;
     sbArquivoWebServicesNFe: TSpeedButton;
     sbArquivoWebServicesCTe: TSpeedButton;
+    Splitter2: TSplitter;
+    Splitter3: TSplitter;
     TabSheet1: TTabSheet;
     gbxWSeSocial: TTabSheet;
     gbxWSReinf: TTabSheet;
@@ -1479,9 +1485,14 @@ type
     FLastHandle: Integer;
 
     FMonitorConfig: TMonitorConfig;
+    FDoNFe: TACBrObjetoNFe;
+    FDoCTe: TACBrObjetoCTe;
     FDoMDFe: TACBrObjetoMDFe;
+    FDoBoleto: TACBrObjetoBoleto;
     FDoeSocial: TACBrObjetoeSocial;
     FDoReinf: TACBrObjetoReinf;
+    FDoSAT: TACBrObjetoSAT;
+    FDoECF: TACBrObjetoECF;
 
     function IsVisible : Boolean; virtual;
 
@@ -1540,6 +1551,7 @@ type
     procedure LerIni(AtualizaMonitoramento: Boolean = True);
     procedure SalvarIni;
     procedure ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);
+    procedure ConfiguraDACTe(GerarPDF: Boolean; MostrarPreview : String);
     procedure VerificaDiretorios;
     procedure LimparResp;
     procedure ExibeResp(Documento: ansistring);
@@ -1560,6 +1572,7 @@ type
     procedure HelptabSheet;
     procedure ValidarIntegradorNFCe(ChaveNFe: String = '');
     function RespostaIntegrador():String;
+    function SubstituirVariaveis(const ATexto: String): String;
 
     property MonitorConfig: TMonitorConfig read FMonitorConfig;
   end;
@@ -1572,14 +1585,14 @@ implementation
 
 uses IniFiles, TypInfo, LCLType, strutils,
   UtilUnit, pcnAuxiliar,
-  DoECFUnit, DoGAVUnit, DoCHQUnit, DoDISUnit, DoLCBUnit, DoACBrUnit, DoBALUnit,
-  DoBoletoUnit, DoCEPUnit, DoIBGEUnit,
+  DoGAVUnit, DoCHQUnit, DoDISUnit, DoLCBUnit, DoACBrUnit, DoBALUnit,
+  DoCEPUnit, DoIBGEUnit,
   {$IFDEF MSWINDOWS} sndkey32, {$ENDIF}
   {$IFDEF LINUX} unix, baseunix, termio, {$ENDIF}
   ACBrECFNaoFiscal, ACBrUtil, ACBrConsts, Math, Sobre, DateUtils,
   ConfiguraSerial, DoECFBemafi32, DoECFObserver, DoETQUnit, DoEmailUnit,
-  DoSedexUnit, DoNcmUnit, DoACBrNFeUnit, DoACBrCTeUnit,
-  DoSATUnit, DoPosPrinterUnit, DoACBrGNReUnit, ACBrSATExtratoClass,
+  DoSedexUnit, DoNcmUnit,
+  DoPosPrinterUnit, DoACBrGNReUnit, ACBrSATExtratoClass,
   SelecionarCertificado, ACBrNFeConfiguracoes, ACBrCTeConfiguracoes,
   ACBrMDFeConfiguracoes, ACBrGNREConfiguracoes, ACBreSocialConfiguracoes,
   ACBrReinfConfiguracoes;
@@ -1648,12 +1661,35 @@ begin
                  PathWithDelim(ExtractFilePath(Application.ExeName)) + CMonitorIni );
   FMonitorConfig.OnGravarConfig := @AtualizarTela;
 
+  FDoNFe := TACBrObjetoNFe.Create(MonitorConfig, ACBrNFe1);
+  FDoNFe.OnAntesDeImprimir  := @AntesDeImprimir;
+  FDoNFe.OnDepoisDeImprimir := @DepoisDeImprimir;
+  FDoNFe.OnConfiguraDANFe   := @ConfiguraDANFe;
+  FDoNFe.OnValidarIntegradorNFCe:= @ValidarIntegradorNFCe;
+  FDoNFe.OnSubstituirVariaveis  := @SubstituirVariaveis;
+  FDoNFe.OnRespostaIntegrador   := @RespostaIntegrador;
+
+  FDoCTe := TACBrObjetoCTe.Create(MonitorConfig, ACBrCTe1);
+  FDoCTe.OnAntesDeImprimir := @AntesDeImprimir;
+  FDoCTe.OnDepoisDeImprimir := @DepoisDeImprimir;
+  FDoNFe.OnConfiguraDACTe   := @ConfiguraDACTe;
+
   FDoMDFe := TACBrObjetoMDFe.Create(MonitorConfig, ACBrMDFe1);
   FDoMDFe.OnAntesDeImprimir := @AntesDeImprimir;
   FDoMDFe.OnDepoisDeImprimir := @DepoisDeImprimir;
 
+  FDoBoleto := TACBrObjetoBoleto.Create(MonitorConfig, ACBrBoleto1);
+  FDoBoleto.OnAntesDeImprimir := @AntesDeImprimir;
+  FDoBoleto.OnDepoisDeImprimir := @DepoisDeImprimir;
+
   FDoeSocial := TACBrObjetoeSocial.Create(MonitorConfig, ACBreSocial1);
   FDoReinf   := TACBrObjetoReinf.Create(MonitorConfig, ACBrReinf1);
+
+  FDoSAT := TACBrObjetoSAT.Create(MonitorConfig, ACBrSAT1);
+  FDoSAT.OnPrepararImpressaoSAT := @PrepararImpressaoSAT;
+  FDoSAT.OnRespostaIntegrador := @RespostaIntegrador;
+
+  FDoECF := TACBrObjetoECF.Create(MonitorConfig, ACBrECF1, ACBrBlocoX1);
 
   // Seta as definições iniciais para navegação
   SetColorButtons(btnMonitor);
@@ -3435,6 +3471,8 @@ end;
 procedure TFrmACBrMonitor.cbxSepararPorCNPJChange(Sender: TObject);
 begin
   ACBrNFe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
+  ACBrCTe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
+  ACBrMDFe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
 end;
 
 procedure TFrmACBrMonitor.cbxTimeZoneModeChange(Sender: TObject);
@@ -3604,8 +3642,13 @@ begin
   fsSLPrecos.Free;
 
   FDoMDFe.Free;
+  FDoNFe.Free;
+  FDoBoleto.Free;
+  FDoCTe.Free;
   FDoeSocial.Free;
   FDoReinf.Free;
+  FDoSAT.Free;
+  FDoECF.Free;
   FMonitorConfig.Free;
 end;
 
@@ -4154,7 +4197,7 @@ begin
       deBolDirRemessa.Text             := DirArquivoRemessa;
       deBolDirRetorno.Text             := DirArquivoRetorno;
       edtCodTransmissao.Text           := CodTransmissao;
-      cbxCNAB.ItemIndex                := CNAB;
+      cbxCNAB.ItemIndex                := StrToInt(IfThen(CNAB = 0, '1', '0'));
       chkLerCedenteRetorno.Checked     := LerCedenteRetorno;
     end;
 
@@ -4279,6 +4322,8 @@ begin
       cbVersaoWSMDFe.ItemIndex         := cbVersaoWSMDFe.Items.IndexOf(VersaoMDFe);
       cbVersaoWSeSocial.ItemIndex      := cbVersaoWSeSocial.Items.IndexOf(VersaoeSocial);
       cbVersaoWsReinf.ItemIndex        := cbVersaoWSReinf.Items.IndexOf(VersaoReinf);
+      cbVersaoWSQRCode.ItemIndex       := cbVersaoWSQRCode.Items.IndexOf(VersaoQRCode);
+      ckCamposFatObrigatorio.Checked   := CamposFatObrig;
     end;
 
     with ESocial do
@@ -5109,6 +5154,12 @@ begin
 
       if cbMonitorarPasta.Checked then
       begin
+        if (not DirectoryExists(edEntTXT.Text)) or (not DirectoryExists(edSaiTXT.Text))  then
+        begin
+          cbMonitorarPasta.Checked := False;
+          raise Exception.Create('Diretorio para monitorar pasta, nao encontrado!');
+        end;
+
         TXT_Entrada    := PathWithDelim(edEntTXT.Text);
         TXT_Saida      := PathWithDelim(edSaiTXT.Text);
       end
@@ -5336,6 +5387,7 @@ begin
         VersaoMDFe               := cbVersaoWSMDFe.Text;
         VersaoeSocial            := cbVersaoWSeSocial.Text;
         VersaoReinf              := cbVersaoWSReinf.Text;
+        VersaoQRCode             := cbVersaoWSQRCode.Text;
         AjustarAut               := cbxAjustarAut.Checked;
         Aguardar                 := edtAguardar.Text;
         Tentativas               := edtTentativas.Text;
@@ -5346,6 +5398,7 @@ begin
         FormaEmissaoCTe          := cbFormaEmissaoCTe.ItemIndex;
         FormaEmissaoMDFe         := cbFormaEmissaoMDFe.ItemIndex;
         FormaEmissaoGNRe         := cbFormaEmissaoGNRe.ItemIndex;
+        CamposFatObrig           := ckCamposFatObrigatorio.Checked;
       end;
 
       with ESocial do
@@ -5713,7 +5766,7 @@ begin
      begin
        DirArquivoRemessa        := PathWithoutDelim(deBolDirRemessa.Text);
        DirArquivoRetorno        := PathWithoutDelim(deBolDirRetorno.Text);
-       CNAB                     := cbxCNAB.ItemIndex;
+       CNAB                     := StrToInt(IfThen(cbxCNAB.ItemIndex = 0, '1', '0'));
        LerCedenteRetorno        := chkLerCedenteRetorno.Checked;
        CodTransmissao           := edtCodTransmissao.Text;
      end;
@@ -5922,7 +5975,7 @@ begin
         if fsCmd.Objeto = 'ACBR' then
           DoACBr(fsCmd)
         else if fsCmd.Objeto = 'ECF' then
-          DoECF(fsCmd)
+          FDoECF.Executar(fsCmd)
         else if fsCmd.Objeto = 'GAV' then
           DoGAV(fsCmd)
         else if fsCmd.Objeto = 'CHQ' then
@@ -5936,7 +5989,7 @@ begin
         else if fsCmd.Objeto = 'ETQ' then
           DoETQ(fsCmd)
         else if fsCmd.Objeto = 'BOLETO' then
-          DoBoleto(fsCmd)
+          FDoBoleto.Executar(fsCmd)
         else if fsCmd.Objeto = 'CEP' then
           DoCEP(fsCmd)
         else if fsCmd.Objeto = 'IBGE' then
@@ -5948,9 +6001,9 @@ begin
         else if fsCmd.Objeto = 'NCM' then
           DoNcm(fsCmd)
         else if fsCmd.Objeto = 'NFE' then
-          DoACBrNFe(fsCmd)
+          FDoNFe.Executar(fsCmd)
         else if fsCmd.Objeto = 'CTE' then
-          DoACBrCTe(fsCmd)
+          FDoCTe.Executar(fsCmd)
         else if fsCmd.Objeto = 'MDFE' then
           FDoMDFe.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESOCIAL' then
@@ -5960,7 +6013,7 @@ begin
         else if fsCmd.Objeto = 'GNRE' then
           DoACBrGNRe(fsCmd)
         else if fsCmd.Objeto = 'SAT' then
-          DoSAT(fsCmd)
+          FDoSAT.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESCPOS' then
           DoPosPrinter(fsCmd);
 
@@ -6164,11 +6217,11 @@ var
   MS: TMemoryStream;
   Linhas: TStringList;
   S: ansistring;
-  RetFind: integer;
-  SearchRec: TSearchRec;
   NomeArqEnt, NomeArqSai: string;
+  SL: TStringList;
 begin
   Timer1.Enabled := False;
+  ArqEntTXT := '';
 
   if Inicio then
   begin
@@ -6180,49 +6233,50 @@ begin
   end;
 
   try
-    try
-      if fsMonitorarPasta then
-      begin
-        NomeArqEnt := PathWithDelim(ExtractFileDir(ArqEntOrig)) + '*.*';
-        RetFind := SysUtils.FindFirst(NomeArqEnt, faAnyFile, SearchRec);
-        if (RetFind = 0) then
+    if fsMonitorarPasta then
+    begin
+      NomeArqEnt := PathWithDelim(ExtractFileDir(ArqEntOrig)) + '*.*';
+      SL:= TStringList.Create;
+      try
+        FindFiles(NomeArqEnt, SL, True, fstDateTime, fsdAscending);
+        if (SL.Count > 0) then
         begin
-          if SearchRec.Name = '.' then
-            FindNext(SearchRec);
-          if SearchRec.Name = '..' then
-            FindNext(SearchRec);
-
-          ArqEntTXT := PathWithDelim(ExtractFileDir(ArqEntOrig)) + SearchRec.Name;
+          ArqEntTXT := SL[0];
           { Arquivo de Requisicao }
           NomeArqEnt := StringReplace(ExtractFileName(ArqEntTXT),
-            ExtractFileExt(ArqEntTXT), '', [rfReplaceAll]);
-          NomeArqEnt := NomeArqEnt + '-resp' + ExtractFileExt(ArqEntTXT);
+                     ExtractFileExt(ArqEntTXT), '', [rfReplaceAll]);
+          NomeArqEnt:= NomeArqEnt + '-resp' + ExtractFileExt(ArqEntTXT);
           ArqSaiTXT := PathWithDelim(ExtractFilePath(ArqSaiOrig)) + NomeArqEnt;
           ArqSaiTMP := ChangeFileExt(ArqSaiTXT, '.tmp');
         end;
-      end
-      else
-      begin
-        NomeArqEnt := PathWithDelim(ExtractFileDir(ArqEntOrig)) +
-          StringReplace(ExtractFileName(ArqEntOrig), ExtractFileExt(ArqEntOrig),
-          '', [rfReplaceAll]) + '*' + ExtractFileExt(ArqEntOrig);
-        RetFind := SysUtils.FindFirst(NomeArqEnt, faAnyFile, SearchRec);
-        if (RetFind = 0) then
+      finally
+        SL.Free;
+      end;
+    end
+    else
+    begin
+      NomeArqEnt := PathWithDelim(ExtractFileDir(ArqEntOrig)) +
+                 StringReplace(ExtractFileName(ArqEntOrig), ExtractFileExt(ArqEntOrig),
+                 '', [rfReplaceAll]) + '*' + ExtractFileExt(ArqEntOrig);
+      SL:= TStringList.Create;
+      try
+        FindFiles(NomeArqEnt, SL, True, fstDateTime, fsdAscending);
+        if (SL.Count > 0) then
         begin
           NomeArqEnt := StringReplace(ExtractFileName(ArqEntOrig),
-            ExtractFileExt(ArqEntOrig), '', [rfReplaceAll]);
+                     ExtractFileExt(ArqEntOrig), '', [rfReplaceAll]);
           NomeArqSai := StringReplace(ExtractFileName(ArqSaiOrig),
-            ExtractFileExt(ArqSaiOrig), '', [rfReplaceAll]);
-          ArqEntTXT := PathWithDelim(ExtractFileDir(ArqEntOrig)) + SearchRec.Name;
+                     ExtractFileExt(ArqSaiOrig), '', [rfReplaceAll]);
+          ArqEntTXT := SL[0];
           { Arquivo de Requisicao }
           ArqSaiTXT := PathWithDelim(ExtractFilePath(ArqSaiOrig)) + StringReplace(
-            ExtractFileName(LowerCase(ArqEntTXT)), LowerCase(NomeArqEnt), LowerCase(
-            NomeArqSai), [rfReplaceAll]);
+                    ExtractFileName(LowerCase(ArqEntTXT)), LowerCase(NomeArqEnt), LowerCase(
+                    NomeArqSai), [rfReplaceAll]);
           ArqSaiTMP := ChangeFileExt(ArqSaiTXT, '.tmp');
         end;
+      finally
+        SL.Free;
       end;
-    finally
-      SysUtils.FindClose(SearchRec);
     end;
 
     if FileExists(ArqEntTXT) then  { Existe arquivo para ler ? }
@@ -8246,6 +8300,75 @@ begin
   //  ForceForeground(Self.Handle);
 end;
 
+procedure TFrmACBrMonitor.ConfiguraDACTe(GerarPDF: Boolean;
+  MostrarPreview: String);
+var
+  OK: boolean;
+begin
+  if ACBrCTe1.Conhecimentos.Count > 0 then
+  begin
+    if ACBrCTe1.Conhecimentos.Items[0].CTe.Ide.modelo = 67 then
+    begin
+//      if (rgModeloDANFeNFCE.ItemIndex = 0) or GerarPDF then
+//        ACBrCTe1.DANFE := ACBrNFeDANFCeFortes1
+//      else
+//        ACBrCTe1.DANFE := ACBrNFeDANFeESCPOS1;
+
+//      ACBrCTe1.DACTE.Impressora := cbxImpressoraNFCe.Text;
+    end
+    else
+    begin
+      ACBrCTe1.DACTE := ACBrCTeDACTeRL1;
+      ACBrCTe1.DACTE.Impressora := cbxImpressora.Text;
+    end;
+
+    if (ACBrCTe1.Conhecimentos.Items[0].CTe.procCTe.cStat in [101, 151, 155]) then
+       ACBrCTe1.DACTE.CTeCancelada := True
+    else
+       ACBrCTe1.DACTE.CTeCancelada := False;
+  end;
+
+  if GerarPDF and not DirectoryExists(PathWithDelim(edtPathPDF.Text))then
+    ForceDirectories(PathWithDelim(edtPathPDF.Text));
+
+  if ACBrCTe1.DACTE <> nil then
+  begin
+    ACBrCTe1.DACTE.TipoDACTE := StrToTpImp(OK, IntToStr(rgTipoDanfe.ItemIndex + 1));
+    ACBrCTe1.DACTE.Logo := edtLogoMarca.Text;
+    ACBrCTe1.DACTE.Sistema := edSH_RazaoSocial.Text;
+    ACBrCTe1.DACTE.Site := edtSiteEmpresa.Text;
+    ACBrCTe1.DACTE.Email := edtEmailEmpresa.Text;
+    ACBrCTe1.DACTE.Fax := edtFaxEmpresa.Text;
+    ACBrCTe1.DACTE.ImprimirDescPorc := cbxImpDescPorc.Checked;
+    ACBrCTe1.DACTE.NumCopias := edtNumCopia.Value;
+    ACBrCTe1.DACTE.MargemInferior := fspeMargemInf.Value;
+    ACBrCTe1.DACTE.MargemSuperior := fspeMargemSup.Value;
+    ACBrCTe1.DACTE.MargemDireita := fspeMargemDir.Value;
+    ACBrCTe1.DACTE.MargemEsquerda := fspeMargemEsq.Value;
+    ACBrCTe1.DACTE.PathPDF := PathWithDelim(edtPathPDF.Text);
+    ACBrCTe1.DACTE.ExibirResumoCanhoto := cbxExibeResumo.Checked;
+    ACBrCTe1.DACTE.MostrarStatus := cbxMostraStatus.Checked;
+    ACBrCTe1.DACTE.ExpandirLogoMarca := cbxExpandirLogo.Checked;
+    ACBrCTe1.DACTE.PosCanhoto := TPosRecibo( rgLocalCanhoto.ItemIndex );
+    ACBrCTe1.DACTE.UsarSeparadorPathPDF := cbxUsarSeparadorPathPDF.Checked;
+
+    if ACBrCTe1.DACTE = ACBrCTeDACTeRL1 then
+    begin
+//      ACBrCTeDACTeRL1.Fonte.Nome := TNomeFonte(rgTipoFonte.ItemIndex);
+//      ACBrCTeDACTeRL1.Fonte.TamanhoFonte_RazaoSocial := speFonteRazao.Value;
+//      ACBrCTeDACTeRL1.AltLinhaComun := speAlturaCampos.Value;
+      ACBrCTeDACTeRL1.PosCanhoto := TPosRecibo( rgLocalCanhoto.ItemIndex );
+    end;
+  end;
+
+  ACBrCTe1.DACTE.MostrarPreview := False;
+  if (not GerarPDF) then
+    if EstaVazio(MostrarPreview) then
+      ACBrCTe1.DACTE.MostrarPreview := cbxMostrarPreview.Checked
+    else
+      ACBrCTe1.DACTE.MostrarPreview := StrToBoolDef(MostrarPreview, False);
+end;
+
 procedure TFrmACBrMonitor.VerificaDiretorios;
 var
   CanEnabled: Boolean;
@@ -8511,7 +8634,7 @@ end;
 procedure TFrmACBrMonitor.bBoletoRelatorioRetornoClick(Sender: TObject);
 begin
   if ACBrBoleto1.ListadeBoletos.Count > 0 then
-    ImprimeRelatorioRetorno(lsvArqsRetorno.Selected.Caption);
+    FDoBoleto.ImprimeRelatorioRetorno(lsvArqsRetorno.Selected.Caption);
 
 end;
 
@@ -8672,6 +8795,7 @@ begin
   begin
     TConfiguracoesNFe(Configuracoes).Geral.FormaEmissao := StrToTpEmis(OK, IntToStr(cbFormaEmissaoNFe.ItemIndex+1));
     TConfiguracoesNFe(Configuracoes).Geral.VersaoDF     := StrToVersaoDF(ok, cbVersaoWS.Text);
+    TConfiguracoesNFe(Configuracoes).Geral.VersaoQRCode := StrToVersaoQrCode(ok, cbVersaoWSQRCode.Text);
     TConfiguracoesNFe(Configuracoes).Geral.AtualizarXMLCancelado:= FMonitorConfig.DFE.Diretorios.AtualizarXMLCancelado;
     TConfiguracoesNFe(Configuracoes).Arquivos.IniServicos    := edtArquivoWebServicesNFe.Text;
     TConfiguracoesNFe(Configuracoes).Arquivos.EmissaoPathNFe := cbxEmissaoPathNFe.Checked;
@@ -8682,6 +8806,7 @@ begin
     TConfiguracoesNFe(Configuracoes).Arquivos.SalvarApenasNFeProcessadas := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+    TConfiguracoesNFe(Configuracoes).Geral.CamposFatObrigatorios    := ckCamposFatObrigatorio.Checked;
 
 
   end
@@ -9099,6 +9224,43 @@ begin
      end;
 
    end;
+end;
+
+function TFrmACBrMonitor.SubstituirVariaveis(const ATexto: String): String;
+var
+  TextoStr: String;
+begin
+  if Trim(ATexto) = '' then
+    Result := ''
+  else
+  begin
+    TextoStr := ATexto;
+
+    if ACBrNFe1.NotasFiscais.Count > 0 then
+    begin
+      with ACBrNFe1.NotasFiscais.Items[0].NFe do
+      begin
+        TextoStr := StringReplace(TextoStr,'[EmitNome]',     Emit.xNome,   [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[EmitFantasia]', Emit.xFant,   [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[EmitCNPJCPF]',  Emit.CNPJCPF, [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[EmitIE]',       Emit.IE,      [rfReplaceAll, rfIgnoreCase]);
+
+        TextoStr := StringReplace(TextoStr,'[DestNome]',     Dest.xNome,   [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[DestCNPJCPF]',  Dest.CNPJCPF, [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[DestIE]',       Dest.IE,      [rfReplaceAll, rfIgnoreCase]);
+
+        TextoStr := StringReplace(TextoStr,'[ChaveNFe]',     procNFe.chNFe, [rfReplaceAll, rfIgnoreCase]);
+
+        TextoStr := StringReplace(TextoStr,'[SerieNF]',      FormatFloat('000',           Ide.serie),         [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[NumeroNF]',     FormatFloat('000000000',     Ide.nNF),           [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[ValorNF]',      FormatFloat('0.00',          Total.ICMSTot.vNF), [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[dtEmissao]',    FormatDateTime('dd/mm/yyyy', Ide.dEmi),          [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[dtSaida]',      FormatDateTime('dd/mm/yyyy', Ide.dSaiEnt),       [rfReplaceAll, rfIgnoreCase]);
+        TextoStr := StringReplace(TextoStr,'[hrSaida]',      FormatDateTime('hh:mm:ss',   Ide.hSaiEnt),       [rfReplaceAll, rfIgnoreCase]);
+      end;
+    end;
+    Result := TextoStr;
+  end;
 end;
 
 procedure TFrmACBrMonitor.sbSerialClick(Sender: TObject);

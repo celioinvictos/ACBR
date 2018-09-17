@@ -86,6 +86,12 @@ end;
 
 TACBrEventoAntesImprimir = procedure(ShowPreview: Boolean) of object;
 TACBrEventoDepoisImprimir = procedure of object;
+TACBrEventoConfiguraDANFe = procedure(GerarPDF: Boolean; MostrarPreview : String) of  object;
+TACBrEventoValidarIntegradorNFCe = procedure(ChaveNFe: String) of object;
+TACBrEventoConfiguraDACTe = procedure(GerarPDF: Boolean; MostrarPreview : String) of  object;
+TACBrEventoPrepararImpressaoSAT = procedure(NomeImpressora : String; GerarPDF : Boolean) of object;
+TACBrEventoRespostaIntegrador = function():String of object;
+TACBrEventoSubstituirVariaveis = function(const ATexto: String): String of object;
 
 { TACBrObjetoDFe }
 
@@ -93,12 +99,30 @@ TACBrObjetoDFe = class(TACBrObjeto)
 private
   FOnAntesDeImprimir: TACBrEventoAntesImprimir;
   FOnDepoisDeImprimir: TACBrEventoDepoisImprimir;
+  FOnConfiguraDANFe: TACBrEventoConfiguraDANFe;
+  FOnValidarIntegradorNFCe: TACBrEventoValidarIntegradorNFCe;
+  FOnConfiguraDACTe: TACBrEventoConfiguraDACTe;
+  FOnPrepararImpressaoSAT: TACBrEventoPrepararImpressaoSAT;
+  FOnRespostaIntegrador: TACBrEventoRespostaIntegrador;
+  FOnSubstituirVariaveis: TACBrEventoSubstituirVariaveis;
 public
   procedure DoAntesDeImprimir(ShowPreview: Boolean);
   procedure DoDepoisDeImprimir;
+  procedure DoConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);
+  procedure DoValidarIntegradorNFCe(ChaveNFe: String = '');
+  procedure DoConfiguraDACTe(GerarPDF: Boolean; MostrarPreview : String);
+  procedure DoPrepararImpressaoSAT(NomeImpressora : String; GerarPDF : Boolean = False);
+  function  DoRespostaIntegrador():String;
+  function  DoSubstituirVariaveis(const ATexto: String): String;
 
   property OnAntesDeImprimir: TACBrEventoAntesImprimir read FOnAntesDeImprimir write FOnAntesDeImprimir;
   property OnDepoisDeImprimir: TACBrEventoDepoisImprimir read FOnDepoisDeImprimir write FOnDepoisDeImprimir;
+  property OnConfiguraDANFe: TACBrEventoConfiguraDANFe read FOnConfiguraDANFe write FOnConfiguraDANFe;
+  property OnValidarIntegradorNFCe: TACBrEventoValidarIntegradorNFCe read FOnValidarIntegradorNFCe write FOnValidarIntegradorNFCe;
+  property OnConfiguraDACTe: TACBrEventoConfiguraDACTe read FOnConfiguraDACTe write FOnConfiguraDACTe;
+  property OnPrepararImpressaoSAT: TACBrEventoPrepararImpressaoSAT read FOnPrepararImpressaoSAT write FOnPrepararImpressaoSAT;
+  property OnRespostaIntegrador: TACBrEventoRespostaIntegrador read FOnRespostaIntegrador write FOnRespostaIntegrador;
+  property OnSubstituirVariaveis: TACBrEventoSubstituirVariaveis read FOnSubstituirVariaveis write FOnSubstituirVariaveis;
 end;
 
 { TACBrMetodo }
@@ -130,6 +154,43 @@ procedure TACBrObjetoDFe.DoDepoisDeImprimir;
 begin
   if Assigned(FOnDepoisDeImprimir) then
     FOnDepoisDeImprimir;
+end;
+
+procedure TACBrObjetoDFe.DoConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);
+begin
+  if Assigned(FOnConfiguraDANFe) then
+    FOnConfiguraDANFe(GerarPDF, MostrarPreview);
+end;
+
+procedure TACBrObjetoDFe.DoValidarIntegradorNFCe(ChaveNFe: String);
+begin
+  if Assigned(FOnValidarIntegradorNFCe) then
+    FOnValidarIntegradorNFCe(ChaveNFe);
+end;
+
+procedure TACBrObjetoDFe.DoConfiguraDACTe(GerarPDF: Boolean; MostrarPreview : String);
+begin
+  if Assigned(FOnConfiguraDACTe) then
+    FOnConfiguraDACTe(GerarPDF, MostrarPreview);
+end;
+
+procedure TACBrObjetoDFe.DoPrepararImpressaoSAT(NomeImpressora: String;
+  GerarPDF: Boolean);
+begin
+  if Assigned(FOnPrepararImpressaoSAT) then
+    FOnPrepararImpressaoSAT(NomeImpressora, GerarPDF);
+end;
+
+function TACBrObjetoDFe.DoRespostaIntegrador(): String;
+begin
+  if Assigned(FOnRespostaIntegrador) then
+    Result:= FOnRespostaIntegrador();
+end;
+
+function TACBrObjetoDFe.DoSubstituirVariaveis(const ATexto: String): String;
+begin
+  if Assigned(FOnSubstituirVariaveis) then
+    Result:= FOnSubstituirVariaveis(ATexto);
 end;
 
 { TACBrObjeto }

@@ -65,6 +65,7 @@ const
   CChaveSenha = 'Senha';
   CChavePorta = 'Porta';
   CChaveDevice = 'Device';
+  CChaveIntegrador = 'Integrador';
 
   CSessaoSistema = 'Sistema';
   CChaveVersao = 'Versao';
@@ -78,7 +79,11 @@ const
   CChaveEmailSSL = 'SSL';
   CChaveEmailTLS = 'TLS';
   CChaveEmailConfirmacao = 'Confirmacao';
+  CChaveEmailConfirmacaoEntrega = 'ConfirmacaoEntrega';
   CChaveEmailSegundoPlano = 'SegundoPlano';
+  CChaveEmailTentativas = 'Tentativas';
+  CChaveEmailIsHTML = 'IsHTML';
+  CChaveEmailPriority = 'Priority';
 
   CSessaoSwHouse = 'SoftwareHouse';
   CSessaoEmissor = 'Emissor';
@@ -110,6 +115,10 @@ const
   CChaveImprimeCodigoEAN = 'ImprimeCodigoEAN';
   CChaveImprimeDescAcrescItem = 'ImprimeDescAcrescItem';
   CChaveExpandeLogoMarca = 'ExpandeLogoMarca';
+
+  CChaveArqLog = 'ArqLog';
+  CChavePastaInput = 'PastaInput';
+  CChavePastaOutput = 'PastaOutput';
 
 resourcestring
   SErrLibSemNome = 'Nome da Biblioteca não foi definido';

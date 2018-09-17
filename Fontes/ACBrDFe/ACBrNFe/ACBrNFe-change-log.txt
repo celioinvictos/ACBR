@@ -47,6 +47,66 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+15/08/2018
+-- ACBrNFeNotasFiscais --
+[*] Validações na leitura do arquivo .INI
+por: José M. S. Junior
+
+05/09/2018
+-- ACBrNFeServicos --
+[*] Correção das URLs Consulta NFCe QRCode2.0 MS.
+  Por: José M. S. Junior
+
+20/08/2018
+-- ACBrNFeWebServices --
+[*] Ajuste para serviço de consulta de cadastro NFe 4.00 RS e SVRS que tiveram
+    o WSDL do serviço corrigidos.
+  Por: BigWings
+  
+15/08/2018
+-- ACBrNFeNotasFiscais --
+[*] Ajuste na leitura do arquivo .INI grupo "detExport"
+por: José M. S. Junior
+
+13/08/2018
+-- ACBrNFeNotasFiscais --
+[*] Acertos para validações de gtin da Nota Técnica 2017.001 - v 1.30
+    Outros acertos referentes a Nota Técnica 2016.002 - v 1.60
+por: Regys Silveira e André Ferreira de Moraes
+
+13/08/2018
+-- ACBrNFeWebServices --
+[*] Incluido a verificação se a UF é MT e caso afirmativo é feito os ajustes
+    necessário para a correta montagem no XML soap da Consulta ao Cadastro a 
+    ser enviando para a SEFAZ.
+por: Italo Jurisato Junior
+
+04/08/2018
+-- ACBrNFeNotasFiscais --
+[*] Ajuste na função GerarNFeIni (Escrita do .ini ref totalizadores do XML)
+por: José M. S. Junior
+
+04/08/2018
+-- pcnNFeW --
+[-] Correção na validação da tag cEANTrib.
+    https://www.projetoacbr.com.br/forum/topic/45414-valida%C3%A7%C3%A3o-do-ceantrib-melhoria/
+  Por: Gabriel Bonzanini
+  
+09/07/2018
+-- ACBrNFeServicos --
+[*] Alteração das URLs NFe 4.00 MS produção.
+  Por: guilhermefq
+  
+07/07/2018
+-- ACBrNFeServicos --
+[*] Alteração das URLs NFCe 4.00 MS produção.
+  Por: BigWings
+  
+29/06/2018
+-- ACBrNFeServicos --
+[*] Correção das URLs NFCe 4.00 MT produção.
+  Por: BigWings
+  
 25/06/2018
 -- pcnLayoutTXT --
 [*] Ajuste na leitura do Layout TXT NFe v4.0 linha <W02>

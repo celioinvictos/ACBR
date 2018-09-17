@@ -939,7 +939,7 @@ begin
       if (DataProtesto > 0) and (DataProtesto > Vencimento) then
         Instrucao1:= '01'    // Protestar
       else
-        Instrucao1:='02'; //Não Protestar
+        Instrucao1:='02'; //Devolver (Não Protestar)
 
       Instrucao2  := '00';  //Registro Detalhe Tipo 1: Campo 25.1 - Posição 159 à 160 – Segunda Instrução de Cobrança: Inserir 00
 
@@ -1024,10 +1024,12 @@ begin
                   IntToStrZero(round((ValorDocumento* (PercentualMulta*100) )/100), 10)    + //358 até 367 - Valor nominal da multa
                   PadRight(Sacado.NomeSacado, 22)                                  + // 368 até 389 - Nome do Sacador Avalista
                   '00'                                                             + // 390  391 - Terceira instrução de Cobrança Default '00'
-                   IfThen((DataProtesto > 0) and
-                      (DataProtesto > Vencimento),
-                       PadLeft(IntToStr(DaysBetween(DataProtesto,
-                       Vencimento)), 2, '0'), '99')                                + //392 até 393 - Quantidade de dias para início da ação de protesto ou devolução do Título
+                   IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
+                             PadLeft(IntToStr(DaysBetween(DataProtesto,Vencimento)), 2, '0'),
+                          IfThen( (DataBaixa > 0) and (DataBaixa > Vencimento),
+                             PadLeft(IntToStr(DaysBetween(DataBaixa,Vencimento)), 2, '0'),
+                             '99')
+                          )                                                          + //392 até 393 - Quantidade de dias para início da ação de protesto ou devolução do Título
                    '1';                                                              // 394 até 394 - Código da moeda: Real
 
          wLinha := wLinha + IntToStrZero(aRemessa.Count + 1, 6 );                    // 395 até 400
@@ -1130,36 +1132,28 @@ begin
       rCNPJCPF := RightStr(rCNPJCPF,11) ;
     end;
 
-
+   ValidarDadosRetorno(rAgencia, rConta+rDigitoConta, rCNPJCPF, True);
    with ACBrBanco.ACBrBoleto do
    begin
+     if LeCedenteRetorno then
+     begin
+        Cedente.Nome    := rCedente;
+        Cedente.CNPJCPF := rCNPJCPF;
+        Cedente.Agencia := rAgencia;
+        Cedente.AgenciaDigito:= '0';
+        Cedente.Conta   := rConta;
+        Cedente.ContaDigito:= rDigitoConta;
+        Cedente.CodigoCedente:= rConta+rDigitoConta;
 
-      if (not LeCedenteRetorno) and (rCNPJCPF <> OnlyNumber(Cedente.CNPJCPF)) then
-         raise Exception.Create(ACBrStr('CNPJ\CPF do arquivo inválido'));
+        case StrToIntDef(Copy(ARetorno[1],18,1),0) of
+           1: Cedente.TipoInscricao:= pFisica;
+           2: Cedente.TipoInscricao:= pJuridica;
+           else
+              Cedente.TipoInscricao:= pJuridica;
+        end;
+     end;
 
-      if (not LeCedenteRetorno) and ((rAgencia <> OnlyNumber(Cedente.Agencia)) or
-          (rConta+rDigitoConta  <> OnlyNumber(Cedente.CodigoCedente))) then
-         raise Exception.Create(ACBrStr('Agencia\Conta do arquivo inválido'));
-
-      if LeCedenteRetorno then
-      begin
-         Cedente.Nome    := rCedente;
-         Cedente.CNPJCPF := rCNPJCPF;
-         Cedente.Agencia := rAgencia;
-         Cedente.AgenciaDigito:= '0';
-         Cedente.Conta   := rConta;
-         Cedente.ContaDigito:= rDigitoConta;
-         Cedente.CodigoCedente:= rConta+rDigitoConta;
-
-         case StrToIntDef(Copy(ARetorno[1],18,1),0) of
-            1: Cedente.TipoInscricao:= pFisica;
-            2: Cedente.TipoInscricao:= pJuridica;
-            else
-               Cedente.TipoInscricao:= pJuridica;
-         end;
-      end;
-
-      ACBrBanco.ACBrBoleto.ListadeBoletos.Clear;
+     ACBrBanco.ACBrBoleto.ListadeBoletos.Clear;
    end;
 
    Linha := '';
@@ -1750,7 +1744,13 @@ begin
     05 : result := 'Compensação Convencional';
     06 : result := 'Internet Banking';
     07 : result := 'Correspondente Bancário';
-    08 : result := 'Em Cartório'
+    08 : result := 'Em Cartório';
+    09 : Result := 'Comandada Banco';
+    10 : result := 'Comandada Cliente via Arquivo';
+    11 : result := 'Comandada Cliente On-line';
+    12 : result := 'Decurso Prazo - Cliente';
+    13 : result := 'Decurso Prazo - Banco';
+    14 : result := 'Protestado';
   end;
 end;
 
@@ -1779,13 +1779,9 @@ begin
    if TempData <> '00/00/00' then
      ACBrBanco.ACBrBoleto.DataArquivo   := StringToDateTimeDef(TempData, 0, 'DD/MM/YY');
 
+   ValidarDadosRetorno(rAgencia, rCodCedente, '', True);
    with ACBrBanco.ACBrBoleto do
    begin
-      if (not LeCedenteRetorno) and
-         ((rAgencia <> OnlyNumber(RightStr(Cedente.Agencia,4))) or
-          (rCodCedente <> OnlyNumber(Cedente.CodigoCedente))) then
-         raise Exception.Create(ACBrStr('Agencia\Conta do arquivo inválido'));
-
       if LeCedenteRetorno then
       begin
         Cedente.Nome         := rCedente;

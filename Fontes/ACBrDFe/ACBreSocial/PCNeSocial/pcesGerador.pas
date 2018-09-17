@@ -711,7 +711,8 @@ begin
   Gerador.wCampo(tcDe2, '', 'vrSalFx',    1, 14, 1, pRemuneracao.VrSalFx);
   Gerador.wCampo(tcStr, '', 'undSalFixo', 1,  1, 1, eSUndSalFixoToStr(pRemuneracao.UndSalFixo));
 
-  if (eSUndSalFixoToStr(pRemuneracao.UndSalFixo) = '7') then
+  if (eSUndSalFixoToStr(pRemuneracao.UndSalFixo) = '6') or
+     (eSUndSalFixoToStr(pRemuneracao.UndSalFixo) = '7') then
     Gerador.wCampo(tcStr, '', 'dscSalVar', 0, 255, 0, pRemuneracao.DscSalVar);
 
   Gerador.wGrupo('/remuneracao');
@@ -1112,7 +1113,16 @@ begin
   Gerador.wGrupo('ideVinculo');
 
   Gerador.wCampo(tcStr, '', 'cpfTrab',   11, 11, 1, pIdeVinculo.cpfTrab);
-  Gerador.wCampo(tcStr, '', 'nisTrab',    1, 11, 1, pIdeVinculo.nisTrab);
+
+  if (
+    (pIdeVinculo.codCateg = 901) or
+    (pIdeVinculo.codCateg = 903) or
+    (pIdeVinculo.codCateg = 904)
+  ) then
+    Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 0, pIdeVinculo.nisTrab)
+  else
+    Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 1, pIdeVinculo.nisTrab);
+    
   Gerador.wCampo(tcStr, '', 'matricula',  1, 30, 0, pIdeVinculo.matricula);
   Gerador.wCampo(tcInt, '', 'codCateg',   1,  3, 0, pIdeVinculo.codCateg);
 
@@ -1242,7 +1252,8 @@ begin
         (DateToStr(pInfoEstatutario.DtExercicio) <> '')) then
       Gerador.wCampo(tcDat, '', 'dtExercicio ', 10, 10, 0, pInfoEstatutario.DtExercicio);
 
-    Gerador.wCampo(tcInt, '', 'tpPlanRP', 0, 1, 0,  eSTpPlanRPToStr(pInfoEstatutario.tpPlanRP));
+    if eSTpPlanRPToStr(pInfoEstatutario.tpPlanRP) <> '0' then
+      Gerador.wCampo(tcInt, '', 'tpPlanRP', 0, 1, 0,  eSTpPlanRPToStr(pInfoEstatutario.tpPlanRP));
 
     GerarInfoDecJud(pInfoEstatutario.infoDecJud);
 
@@ -1517,7 +1528,7 @@ begin
   Gerador.wCampo(tcStr, '', 'nmEmit', 1, 70, 1, pEmitente.nmEmit);
   Gerador.wCampo(tcStr, '', 'ideOC',  1,  1, 1, eSIdeOCToStr(pEmitente.ideOC));
   Gerador.wCampo(tcStr, '', 'nrOc',   1, 14, 1, pEmitente.nrOc);
-  Gerador.wCampo(tcStr, '', 'ufOC',   2,  2, 0, eSufToStr(pEmitente.ufOC));
+  Gerador.wCampo(tcStr, '', 'ufOC',   2,  2, 0, pEmitente.ufOC);//eSufToStr(pEmitente.ufOC));
 
   Gerador.wGrupo('/emitente');
 end;

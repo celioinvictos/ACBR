@@ -379,7 +379,7 @@ implementation
 
 uses
   IniFiles,
-  ACBreSocial, ACBrDFeUtil;
+  ACBreSocial;
 
 { TS1210Collection }
 
@@ -1081,7 +1081,7 @@ begin
 
     Validar(schevtPgtos);
   except on e:exception do
-    raise Exception.Create(e.Message);
+    raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
 
   Result := (Gerador.ArquivoFormatoXML <> '')
@@ -1150,7 +1150,7 @@ begin
             sSecao := 'detPgtoFl' + IntToStrZero(I, 2) + IntToStrZero(J, 3);
             sFim   := INIRec.ReadString(sSecao, 'perRef', 'FIM');
 
-            if (sFim = 'FIM') or (Length(sFim) <= 0) then
+            if (sFim = 'FIM') then
               break;
 
             with detPgtoFl.Add do
