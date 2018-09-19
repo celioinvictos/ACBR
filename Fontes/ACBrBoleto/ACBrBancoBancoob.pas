@@ -564,15 +564,15 @@ begin
                DataOcorrencia := StringToDateTimeDef( Copy(Linha,138,2)+'/'+
                                                       Copy(Linha,140,2)+'/'+
                                                       Copy(Linha,142,4),0, 'DD/MM/YYYY' );
-            { invictos }
+            { invictos - sera tratado ao realizar a leitura fora do componente}
             if StrToIntDef(Copy(Linha,146,6),0) <> 0 then
                DataCredito:= StringToDateTimeDef( Copy(Linha,146,2)+'/'+
                                                   Copy(Linha,148,2)+'/'+
-                                                  Copy(Linha,150,4),0, 'DD/MM/YYYY' )
-            else
-               DataCredito:= StringToDateTimeDef( Copy(Linha,138,2)+'/'+
-                                                  Copy(Linha,140,2)+'/'+
-                                                  Copy(Linha,142,4),0, 'DD/MM/YYYY' );
+                                                  Copy(Linha,150,4),0, 'DD/MM/YYYY' );
+//            else
+//               DataCredito:= StringToDateTimeDef( Copy(Linha,138,2)+'/'+
+//                                                  Copy(Linha,140,2)+'/'+
+//                                                  Copy(Linha,142,4),0, 'DD/MM/YYYY' );
 
             ValorPago            := StrToFloatDef(Copy(Linha,78,15),0)/100;
             ValorMoraJuros       := StrToFloatDef(Copy(Linha,18,15),0)/100;
@@ -680,14 +680,14 @@ begin
          ValorDespesaCobranca := StrToFloatDef(Copy(Linha,182,7),0)/100;
 		 ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;
 
-         { invictos }
+         { invictos - sera tratado ao realizar a leitura fora do componente}
          if StrToIntDef(Copy(Linha,176,6),0) <> 0 then
             DataCredito:= StringToDateTimeDef( Copy(Linha,176,2)+'/'+
                                                Copy(Linha,178,2)+'/'+
-                                               Copy(Linha,180,2),0, 'DD/MM/YY' )
-         else DataCredito := StringToDateTimeDef( Copy(Linha,111,2)+'/'+
-                                               Copy(Linha,113,2)+'/'+
-                                               Copy(Linha,115,2),0, 'DD/MM/YY' );
+                                               Copy(Linha,180,2),0, 'DD/MM/YY' );
+//         else DataCredito := StringToDateTimeDef( Copy(Linha,111,2)+'/'+
+//                                               Copy(Linha,113,2)+'/'+
+//                                               Copy(Linha,115,2),0, 'DD/MM/YY' );
       end;
    end;
 
