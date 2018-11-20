@@ -95,6 +95,7 @@ type
     NameSpace: String;
     CabecalhoStr: Boolean;
     DadosStr: Boolean;
+    VersaoAtrib: String;
   end;
 
  TConfigSchemas = record
@@ -308,6 +309,8 @@ type
     FPathIniProvedor: String;
     FEmitente: TEmitenteConfNFSe;
     FConfigRemover: TConfigRemover;
+    FBanco_P: String;
+    FBanco_H: String;
 
     procedure SetCodigoMunicipio(const Value: Integer);
   public
@@ -345,6 +348,8 @@ type
     property PathIniProvedor: String read FPathIniProvedor write FPathIniProvedor;
 
     property Emitente: TEmitenteConfNFSe read FEmitente write FEmitente;
+    property Banco_P: String read FBanco_P;
+    property Banco_H: String read FBanco_H;
   end;
 
   { TArquivosConfNFSe }
@@ -550,6 +555,13 @@ begin
   FxNomeURL_P := FPIniParams.ReadString(CodIBGE, 'NomeURL_P', '');
   FxLinkURL_H := FPIniParams.ReadString(CodIBGE, 'LinkURL_H', '');
   FxLinkURL_P := FPIniParams.ReadString(CodIBGE, 'LinkURL_P', '');
+  FBanco_P    := FPIniParams.ReadString(CodIBGE, 'Banco_P', '');
+  FBanco_H    := FPIniParams.ReadString(CodIBGE, 'Banco_H', 'BANCO_DEMONSTRACAO');
+
+  // Configuração especifica da versão dos dados para cidades do mesmo provedor,
+  // mas com versões diferentes.
+  FConfigXML.VersaoDados := FPIniParams.ReadString(CodIBGE, 'VersaoDados', '');
+  FConfigXML.VersaoAtrib := FPIniParams.ReadString(CodIBGE, 'VersaoAtrib', '');
 
   FPIniParams.Free;
 
@@ -607,7 +619,15 @@ begin
   FConfigAssinar.FecharSessao := FPIniParams.ReadBool('Assinar', 'FecharSessao', False);
 
   FConfigXML.Layout := FPIniParams.ReadString('XML', 'Layout', 'ABRASF');
-  FConfigXML.VersaoDados := FPIniParams.ReadString('XML', 'VersaoDados', '');
+
+  // Configura com a versão que esta no arquivo <provedor>.ini caso a cidade não
+  // tenha uma versão especifica.
+  if FConfigXML.VersaoDados = '' then
+    FConfigXML.VersaoDados := FPIniParams.ReadString('XML', 'VersaoDados', '');
+
+  if FConfigXML.VersaoAtrib = '' then
+    FConfigXML.VersaoAtrib := FPIniParams.ReadString('XML', 'VersaoAtrib', '');
+
   FConfigXML.VersaoXML := FPIniParams.ReadString('XML', 'VersaoXML', '');
   FConfigXML.NameSpace := Trim(FPIniParams.ReadString('XML', 'NameSpace', ''));
   FConfigXML.CabecalhoStr := FPIniParams.ReadBool('XML', 'Cabecalho', False);

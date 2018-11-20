@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <PathDelim Value="\"/>
     <General>
       <Flags>
@@ -29,23 +29,27 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <local>
-        <FormatVersion Value="1"/>
-      </local>
+      <FormatVersion Value="2"/>
+      <Modes Count="1">
+        <Mode0 Name="default"/>
+      </Modes>
     </RunParams>
-    <RequiredPackages Count="4">
+    <RequiredPackages Count="5">
       <Item1>
-        <PackageName Value="ACBrComum"/>
+        <PackageName Value="Printer4Lazarus"/>
       </Item1>
       <Item2>
-        <PackageName Value="fpcunittestrunner"/>
+        <PackageName Value="ACBrComum"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="fpcunittestrunner"/>
       </Item3>
       <Item4>
-        <PackageName Value="FCL"/>
+        <PackageName Value="LCL"/>
       </Item4>
+      <Item5>
+        <PackageName Value="FCL"/>
+      </Item5>
     </RequiredPackages>
     <Units Count="3">
       <Unit0>
@@ -57,7 +61,7 @@
         <IsPartOfProject Value="True"/>
       </Unit1>
       <Unit2>
-        <Filename Value="..\..\SAT\ACBrLibSATStaticImport.pas"/>
+        <Filename Value="..\..\Fontes\SAT\ACBrLibSATStaticImport.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit2>
     </Units>
@@ -69,8 +73,8 @@
       <Filename Value="bin\ACBrLibSATTest"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir);..\..\Comum"/>
-      <OtherUnitFiles Value="..\..\Comum;..\..\SAT"/>
+      <IncludeFiles Value="$(ProjOutDir);..\..\Fontes\Comum"/>
+      <OtherUnitFiles Value="..\..\Fontes\Comum;..\..\Fontes\SAT"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

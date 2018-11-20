@@ -122,16 +122,12 @@ object Form1: TForm1
       TabOrder = 1
       object TabSheet1: TTabSheet
         Caption = 'Configura'#231#245'es'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PageControl4: TPageControl
           Left = 0
           Top = 0
           Width = 275
           Height = 476
-          ActivePage = TabSheet3
+          ActivePage = TabSheet4
           Align = alClient
           MultiLine = True
           TabOrder = 0
@@ -1813,19 +1809,6 @@ object Form1: TForm1
             OnClick = btnCriarEnviarNFCeClick
           end
         end
-        object Celio: TTabSheet
-          Caption = 'Celio'
-          ImageIndex = 2
-          object btConsultaChave: TButton
-            Left = 17
-            Top = 7
-            Width = 177
-            Height = 25
-            Caption = 'Consultar Chave'
-            TabOrder = 0
-            OnClick = btConsultaChaveClick
-          end
-        end
       end
     end
     object pgRespostas: TPageControl
@@ -1928,10 +1911,6 @@ object Form1: TForm1
       object Dados: TTabSheet
         Caption = 'Dados'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object MemoDados: TMemo
           Left = 0
           Top = 0

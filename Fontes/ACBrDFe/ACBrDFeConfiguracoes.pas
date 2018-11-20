@@ -273,7 +273,7 @@ type
     function GetPathSchemas: String;
     procedure SetSepararPorDia(const Value: Boolean);
     procedure SetSepararPorMes(const Value: Boolean);
-    procedure SetSepararPorAno(const Value: Boolean);
+	procedure SetSepararPorAno(const Value: Boolean);
   protected
     fpConfiguracoes: TConfiguracoes;
   public
@@ -495,7 +495,7 @@ begin
   if NaoEstaVazio(fpConfiguracoes.SessaoIni) then
   begin
     AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'FormaEmissao', Integer(FormaEmissao));
-    AIni.WriteBool(fpConfiguracoes.SessaoIni, 'Salvar', Salvar);
+    AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SalvarGer', Salvar);
     AIni.WriteBool(fpConfiguracoes.SessaoIni, 'ExibirErroSchema', ExibirErroSchema);
     AIni.WriteString(fpConfiguracoes.SessaoIni, 'FormatoAlerta', FormatoAlerta);
     AIni.WriteBool(fpConfiguracoes.SessaoIni, 'RetirarAcentos', RetirarAcentos);
@@ -514,7 +514,7 @@ begin
   if NaoEstaVazio(fpConfiguracoes.SessaoIni) then
   begin
     FormaEmissao := TpcnTipoEmissao(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'FormaEmissao', Integer(FormaEmissao)));
-    Salvar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'Salvar', Salvar);
+    Salvar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SalvarGer', Salvar);
     ExibirErroSchema := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'ExibirErroSchema', ExibirErroSchema);
     FormatoAlerta := AIni.ReadString(fpConfiguracoes.SessaoIni, 'FormatoAlerta', FormatoAlerta);
     RetirarAcentos := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'RetirarAcentos', RetirarAcentos);
@@ -551,7 +551,19 @@ begin
       begin
         SSLCryptLib := cryOpenSSL;
         SSLHttpLib := httpOpenSSL;
+        {$IfNDef DFE_SEM_XMLSEC}
         SSLXmlSignLib := xsXmlSec;
+        {$Else}
+          {$IfNDef DFE_SEM_LIBXML2}
+          SSLXmlSignLib := xsLibXml2;
+          {$Else}
+            {$IfNDef DFE_SEM_MSXML}
+            SSLXmlSignLib := xsMsXml;
+            {$Else}
+            SSLXmlSignLib := xsNone;
+            {$EndIf}
+          {$EndIf}
+        {$EndIf}
       end;
 
       libCapicom:
@@ -575,9 +587,12 @@ begin
         {$IfNDef DFE_SEM_LIBXML2}
          SSLXmlSignLib := xsLibXml2;
         {$Else}
-         SSLXmlSignLib := xsMsXml;
+          {$IfNDef DFE_SEM_MSXML}
+          SSLXmlSignLib := xsMsXml;
+          {$Else}
+          SSLXmlSignLib := xsNone;
+          {$EndIf}
         {$EndIf}
-
       end;
     end;
   finally
@@ -624,7 +639,19 @@ procedure TGeralConf.CalcSSLLib;
 begin
   if not FCalcSSLLib then Exit;
 
+  {$IfNDef DFE_SEM_XMLSEC}
   if (SSLCryptLib = cryOpenSSL) and (SSLHttpLib = httpOpenSSL) and (SSLXmlSignLib = xsXmlSec) then
+  {$Else}
+    {$IfNDef DFE_SEM_LIBXML2}
+    if (SSLCryptLib = cryOpenSSL) and (SSLHttpLib = httpOpenSSL) and (SSLXmlSignLib = xsLibXml2) then
+    {$Else}
+      {$IfNDef DFE_SEM_MSXML}
+      if (SSLCryptLib = cryOpenSSL) and (SSLHttpLib = httpOpenSSL) and (SSLXmlSignLib = xsMsXml) then
+      {$Else}
+      if (SSLCryptLib = cryOpenSSL) and (SSLHttpLib = httpOpenSSL) and (SSLXmlSignLib = xsNone) then
+      {$EndIf}
+    {$EndIf}
+  {$EndIf}
     FSSLLib := libOpenSSL
 
   else if (SSLCryptLib = cryNone) and (SSLHttpLib = httpNone) and (SSLXmlSignLib = xsNone)then
@@ -636,7 +663,15 @@ begin
   else if (SSLCryptLib = cryCapicom) and (SSLHttpLib = httpIndy) and (SSLXmlSignLib = xsMsXmlCapicom) then
     FSSLLib := libCapicomDelphiSoap
 
+  {$IfNDef DFE_SEM_LIBXML2}
   else if (SSLCryptLib = cryWinCrypt) and (SSLHttpLib = httpWinHttp) and (SSLXmlSignLib = xsLibXml2) then
+  {$Else}
+    {$IfNDef DFE_SEM_MSXML}
+    else if (SSLCryptLib = cryWinCrypt) and (SSLHttpLib = httpWinHttp) and (SSLXmlSignLib = xsMsXml) then
+    {$Else}
+    else if (SSLCryptLib = cryWinCrypt) and (SSLHttpLib = httpWinHttp) and (SSLXmlSignLib = xsNone) then
+    {$EndIf}
+  {$EndIf}
     FSSLLib := libWinCrypt
 
   else
@@ -718,7 +753,7 @@ begin
   if NaoEstaVazio(fpConfiguracoes.SessaoIni) then
   begin
     AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'Ambiente', Integer(Ambiente));
-    AIni.WriteBool(fpConfiguracoes.SessaoIni, 'Salvar', Salvar);
+    AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SalvarWS', Salvar);
     AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'Timeout', TimeOut);
     AIni.WriteBool(fpConfiguracoes.SessaoIni, 'TimeoutPorThread', TimeOutPorThread);
     AIni.WriteBool(fpConfiguracoes.SessaoIni, 'Visualizar', Visualizar);
@@ -744,7 +779,7 @@ begin
   if NaoEstaVazio(fpConfiguracoes.SessaoIni) then
   begin
     Ambiente := TpcnTipoAmbiente( AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'Ambiente', Integer(Ambiente)));
-    Salvar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'Salvar', Salvar);
+    Salvar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SalvarWS', Salvar);
     TimeOut := AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'Timeout', TimeOut);
     TimeOutPorThread := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'TimeoutPorThread', TimeOutPorThread);
     Visualizar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'Visualizar', Visualizar);
@@ -1052,7 +1087,7 @@ begin
   AIni.WriteString(fpConfiguracoes.SessaoIni, 'PathSalvar', PathSalvar);
   AIni.WriteString(fpConfiguracoes.SessaoIni, 'PathSchemas', PathSchemas);
   AIni.WriteString(fpConfiguracoes.SessaoIni, 'IniServicos', IniServicos);
-  AIni.WriteBool(fpConfiguracoes.SessaoIni, 'Salvar', Salvar);
+  AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SalvarArq', Salvar);
   AIni.WriteBool(fpConfiguracoes.SessaoIni, 'AdicionarLiteral', AdicionarLiteral);
   AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SepararPorCNPJ', SepararPorCNPJ);
   AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SepararPorModelo', SepararPorModelo);
@@ -1069,7 +1104,7 @@ begin
   PathSalvar := AIni.ReadString(fpConfiguracoes.SessaoIni, 'PathSalvar', PathSalvar);
   PathSchemas := AIni.ReadString(fpConfiguracoes.SessaoIni, 'PathSchemas', PathSchemas);
   IniServicos := AIni.ReadString(fpConfiguracoes.SessaoIni, 'IniServicos', IniServicos);
-  Salvar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'Salvar', Salvar);
+  Salvar := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SalvarArq', Salvar);
   AdicionarLiteral := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'AdicionarLiteral', AdicionarLiteral);
   SepararPorCNPJ := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SepararPorCNPJ', SepararPorCNPJ);
   SepararPorModelo := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SepararPorModelo', SepararPorModelo);

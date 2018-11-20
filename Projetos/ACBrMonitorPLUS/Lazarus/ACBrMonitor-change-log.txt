@@ -43,6 +43,72 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+19/11/2018
+[*] DoACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit
+Ajustes no controle de exceptions nas classes
+
+16/11/2018
+[*] ACBrMonitor1
+Ajustes para configuração da versão do e-Social e Reinf em tela.
+
+16/11/2018
+[*] DoACBrMDFeUnit, DoACBrCTeUnit
+Ajuste no método SetFormaEmissão para salvar corretamente o modelo selecionado nas configurações do ACBrMonitor
+
+16/11/2018
+[*] DoACBrNFeUnit, ACBrLibNFeRespostas, ACBrLibNFeConst
+Adicionado Tags de Retorno na Consulta de NFe no caso de eventos vinculados ao XML.
+
+29/10/2018
+[+] DoBoletoUnit
+Adicionado os métodos "MontarNossoNumero", "RetornaLinhaDigitavel", "RetornaCodigoBarras"
+https://www.projetoacbr.com.br/forum/topic/47115-obter-dados-do-boleto-no-acbrmonitor/
+
+26/10/2018
+[*] DoACBrNFeUnit
+Validação da Assinatura no método "EnviarNFe" para gerar novamente o XML
+
+26/10/2018
+[*] DoACBrMDFeUnit
+Correça na validação da consulta de protocolo do método EncerrarMDFe
+
+17/10/2018
+[-] DoACBrUnit
+Ajustes no método ACBr.setWebService
+
+15/10/2018
+[-] DoECFUnit
+Ajuste nos metodos CupomVinculado / AbrirCupomVinculado
+
+15/10/2018
+[*] DoACBrNFeUnit
+Melhorias performance no método "EnviarNFe"
+
+02/10/2018
+[*] ACBrMonitor
+Atualização Tela ref conf SSL
+
+01/10/2018
+[*] DoPosPrinterUnit, DoACBrGNReUnit, DoSedexUnit, DoDISUnit, DoLCBUnit, DoIBGEUnit,
+DoETQUnit, DoGAVUnit, DoCHQUnit, DoCEPUnit, DoeMailUnit, DoBALUnit.
+Realizado Refactory nas classes do ACBrMonitor baseado na estrutura padrão criada para os componentes DFe
+
+01/10/2018
+[+] DoACBrNFeUnit
+Adicionado parâmetro para Assinatura ou não do XML no método "CriarNFe"
+
+01/10/2018
+[+] DoBoleto
+Adicionado campo "DiasDeProtesto" na leitura do arquivo .ini
+
+18/09/2018
+[*] DoSATUnit
+Ajuste no método AssociarAssinatura
+
+11/09/2018
+[*] DoACBrMDFeUnit
+Ajuste na nomenclatura do Campo CNPJCPF, conforme alteração do componente
+
 06/09/2018
 [*] DoECFUnit
 Ajuste na passagem de parâmetros do método "EfetuaPagamento"

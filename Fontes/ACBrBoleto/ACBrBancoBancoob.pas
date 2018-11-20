@@ -386,8 +386,7 @@ begin
                   FormatDateTime( 'ddmmyy', DataDocumento )               +  // 32 Data de Emissão
                   PadLeft(AInstrucao1, 2, '0')                            +  // 33 Primeira instrução (SEQ 34) = 00 e segunda (SEQ 35) = 00, não imprime nada.
                   PadLeft(AInstrucao2, 2, '0')                            +  // 34 Primeira instrução (SEQ 34) = 00 e segunda (SEQ 35) = 00, não imprime nada.
-                  //IntToStrZero( Round( (ValorMoraJuros * 30) *10000 ), 6) +  // Taxa de mora mês
-                  IntToStrZero( Round( ValorMoraJuros  * 10000 ), 6) +  // Taxa de mora mês tem q ser o valor que veio do sistema e pronto, nao precisa multiplicar por 30
+                  IntToStrZero( Round( (ValorMoraJuros) * 10000 ), 6)     +  // Taxa de mora mês
                   IntToStrZero( Round( PercentualMulta * 10000 ), 6)      +  // Taxa de multa
                   strCarteiraEnvio                                        +  // Responsabilidade Distribuição
                   strDataDesconto                                         +  // Data do Primeiro Desconto, Preencher com zeros quando não for concedido nenhum desconto.
@@ -564,15 +563,11 @@ begin
                DataOcorrencia := StringToDateTimeDef( Copy(Linha,138,2)+'/'+
                                                       Copy(Linha,140,2)+'/'+
                                                       Copy(Linha,142,4),0, 'DD/MM/YYYY' );
-            { invictos - sera tratado ao realizar a leitura fora do componente}
+
             if StrToIntDef(Copy(Linha,146,6),0) <> 0 then
                DataCredito:= StringToDateTimeDef( Copy(Linha,146,2)+'/'+
                                                   Copy(Linha,148,2)+'/'+
                                                   Copy(Linha,150,4),0, 'DD/MM/YYYY' );
-//            else
-//               DataCredito:= StringToDateTimeDef( Copy(Linha,138,2)+'/'+
-//                                                  Copy(Linha,140,2)+'/'+
-//                                                  Copy(Linha,142,4),0, 'DD/MM/YYYY' );
 
             ValorPago            := StrToFloatDef(Copy(Linha,78,15),0)/100;
             ValorMoraJuros       := StrToFloatDef(Copy(Linha,18,15),0)/100;
@@ -678,16 +673,12 @@ begin
          NossoNumero          := copy( Copy(Linha,63,11),Length( Copy(Linha,63,11) )-TamanhoMaximoNossoNum+1  ,TamanhoMaximoNossoNum);
          Carteira             := Copy(Linha,86,3);
          ValorDespesaCobranca := StrToFloatDef(Copy(Linha,182,7),0)/100;
-		 ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;
+         ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;
 
-         { invictos - sera tratado ao realizar a leitura fora do componente}
          if StrToIntDef(Copy(Linha,176,6),0) <> 0 then
             DataCredito:= StringToDateTimeDef( Copy(Linha,176,2)+'/'+
                                                Copy(Linha,178,2)+'/'+
                                                Copy(Linha,180,2),0, 'DD/MM/YY' );
-//         else DataCredito := StringToDateTimeDef( Copy(Linha,111,2)+'/'+
-//                                               Copy(Linha,113,2)+'/'+
-//                                               Copy(Linha,115,2),0, 'DD/MM/YY' );
       end;
    end;
 
@@ -719,7 +710,7 @@ begin
                PadRight(AgenciaDigito, 1, '0')          + // 58 - Digito agência do cedente
                PadLeft(OnlyNumber(Conta), 12, '0')      + // 59 a 70 - Número da conta do cedente
                PadRight(ContaDigito, 1, '0')            + // 71 - Digito conta do cedente
-               ' '                                      + // 72 - Dígito verificador Ag/Conta (zero)
+               PadRight(DigitoVerificadorAgenciaConta, 1, ' ')+ // 72 - Dígito verificador Ag/Conta (zero)
                PadRight(Nome, 30, ' ')                  + // 73 a 102 - Nome do cedente
                PadRight('SICOOB', 30, ' ')              + // 103 a 132 - Nome do banco
                space(10)                                + // 133 A 142 - Brancos
@@ -935,8 +926,8 @@ begin
                'P'                                                           + //14 - Código do segmento do registro detalhe
                ' '                                                           + //15 - Uso exclusivo FEBRABAN/CNAB: Branco
                ATipoOcorrencia                                               + //16 a 17 - Código de movimento
-               //'0'                                                           + // 18
-               PadLeft(OnlyNumber(ACBrBoleto.Cedente.Agencia),5,'0')         + //18 a 22 - Agência mantenedora da conta
+               '0'                                                           + // 18
+               PadLeft(OnlyNumber(ACBrBoleto.Cedente.Agencia),4,'0')         + //19 a 22 - Agência mantenedora da conta
                PadLeft(ACBrBoleto.Cedente.AgenciaDigito, 1, '0')             + //23 Digito agencia
                PadLeft(OnlyNumber(ACBrBoleto.Cedente.Conta), 12, '0')        + //24 a 35 - Número da Conta Corrente
                PadLeft(ACBrBoleto.Cedente.ContaDigito , 1, '0')              + //36 - Dígito da Conta Corrente
@@ -983,9 +974,9 @@ begin
                          DiasProtesto                                     + // 222 a 223 - Prazo para protesto (em dias corridos)
                          '0'                                              + // 224 - Código de Baixa
                          space(3)                                         + // 225 A 227 - Dias para baixa
-                         '09'                                             + // 228 A 229
-                         '0000000000'                                     + // 230 a 239 Numero contrato da operação
-                         ' ';                                               // 240
+                         '09'                                             + //
+                         '0000000000'                                     + // Numero contrato da operação
+                         ' ';
         Inc(i);
       {SEGMENTO Q}
       {Pegando tipo de pessoa do Sacado}
@@ -1065,8 +1056,8 @@ begin
                PadLeft('0', 15, '0')                                      + // 51-65 Valor ou percentual a ser concedido
                IfThen((PercentualMulta > 0),
                        IfThen(MultaValorFixo,'1','2'), '0')               + // 66 Código da multa - 1 valor fixo / 2 valor percentual / 0 Sem Multa
-               IfThen((PercentualMulta > 0),
-                       FormatDateTime('ddmmyyyy', DataMoraJuros),
+               IfThen((DataMulta > 0),
+                       FormatDateTime('ddmmyyyy', DataMulta),
                                       '00000000')                         + // 67 - 74 Se cobrar informe a data para iniciar a cobrança ou informe zeros se não cobrar
                IfThen((PercentualMulta > 0),
                       IntToStrZero(round(PercentualMulta * 100), 15),

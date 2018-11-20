@@ -443,6 +443,7 @@ begin
               Add('   Id...........: ' + Id);
               Add('   Cód Retorno..: ' + IdeStatus.cdRetorno);
               Add('   Descrição....: ' + IdeStatus.descRetorno);
+              Add('   Nro Recibo...: ' + InfoTotal.nrRecArqBase);
 
               Add(' **Ocorrencias');
 
@@ -481,6 +482,8 @@ begin
 end;
 
 procedure TForm2.btnGerarClick(Sender: TObject);
+var
+  i: Integer;
 begin
   edProtocolo.Text := '';
   ACBrReinf1.Configuracoes.Geral.VersaoDF := TVersaoReinf(cbVersaoDF.ItemIndex);
@@ -490,6 +493,14 @@ begin
   ACBrReinf1.AssinarEventos;
 
   ShowMessage('XML dos Eventos Selecionados Gerados.');
+
+  for i := 0 to ACBrReinf1.Eventos.Gerados.Count -1 do
+  begin
+    mmoDados.Lines.Add('Tipo Evento.: ' + TipoEventoToStr(ACBrReinf1.Eventos.Gerados.Items[i].TipoEvento));
+    mmoDados.Lines.Add('ID do Evento: ' + ACBrReinf1.Eventos.Gerados.Items[i].IdEvento);
+    mmoDados.Lines.Add('Evento Salvo: ' + ACBrReinf1.Eventos.Gerados.Items[i].PathNome);
+  end;
+
 end;
 
 procedure TForm2.btnLerArqINIClick(Sender: TObject);

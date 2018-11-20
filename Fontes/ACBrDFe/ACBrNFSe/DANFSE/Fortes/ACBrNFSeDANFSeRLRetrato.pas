@@ -288,7 +288,7 @@ begin
   else if FOutrasInformacaoesImp <> '' then
     rlmDadosAdicionais.Lines.Add(StringReplace(FOutrasInformacaoesImp, ';', #13#10, [rfReplaceAll,rfIgnoreCase]));
 
-  if pos('http://', LowerCase( FNFSe.OutrasInformacoes) ) > 0 then
+  if ((pos('http://', LowerCase( FNFSe.OutrasInformacoes) ) > 0) or (pos('http://', LowerCase( FNFSe.Link) ) > 0)) then
   begin
     rlmDadosAdicionais.Width := 643;
 
@@ -300,7 +300,10 @@ begin
     rlImgQrCode.SetBounds(648, 3, 90, 90);
     rlImgQrCode.BringToFront;
 
-    QRCodeData   := Trim(MidStr(FNFSe.OutrasInformacoes, pos('http://', LowerCase( FNFSe.OutrasInformacoes)), Length(FNFSe.OutrasInformacoes) ));
+    if(FNFSe.Link <> '') then //Provedor Tecnos tem o link para a nota no campo Link
+      QRCodeData := Trim(MidStr(FNFSe.Link, pos('http://', LowerCase( FNFSe.Link)), Length(FNFSe.Link) ))
+    else
+      QRCodeData := Trim(MidStr(FNFSe.OutrasInformacoes, pos('http://', LowerCase( FNFSe.OutrasInformacoes)), Length(FNFSe.OutrasInformacoes) ));
     QRCode       := TDelphiZXingQRCode.Create;
     QRCodeBitmap := TBitmap.Create;
     try
@@ -385,10 +388,18 @@ begin
 
     if length( Competencia ) = 6 then
       rllCompetencia.Caption := Copy(Competencia, 5, 2) + '/' + Copy(Competencia, 1, 4)
-    else if length( Competencia ) = 10 then // dd/mm/aaaa
-      rllCompetencia.Caption := Copy(Competencia, 4, Length(Competencia) )
     else
-      rllCompetencia.Caption := Copy(Competencia, 6, 2) + '/' + Copy(Competencia, 1, 4);
+    begin
+      if length( Competencia ) >= 10 then // dd/mm/aaaa ou aaaa/mm/dd
+      begin
+        if (Pos('/', Competencia) = 3) or (Pos('-', Competencia) = 3) then
+          rllCompetencia.Caption := Copy(Competencia, 4, 7)
+        else
+          rllCompetencia.Caption := Copy(Competencia, 6, 2) + '/' + Copy(Competencia, 1, 4);
+      end
+      else
+        rllCompetencia.Caption := Copy(Competencia, 6, 2) + '/' + Copy(Competencia, 1, 4);		
+    end;
 
     rllNumeroRPS.Caption          := IdentificacaoRps.Numero;
     rllNumNFSeSubstituida.Caption := NfseSubstituida;
@@ -412,7 +423,7 @@ end;
 procedure TfrlDANFSeRLRetrato.rlbISSQNBeforePrint(Sender: TObject;
   var PrintIt: Boolean);
 var
-  MostrarObra: Boolean;
+  MostrarObra, MostrarNaturezaOperacao: Boolean;
 begin
   inherited;
   RLLabel16.Visible := False;
@@ -420,6 +431,8 @@ begin
   With FNFSe do
   begin
     rllNatOperacao.Caption    := NaturezaOperacaoDescricao( NaturezaOperacao );
+    MostrarNaturezaOperacao   := rllNatOperacao.Caption<>'';
+    RLLabel137.Visible        := MostrarNaturezaOperacao;
     rllRegimeEspecial.Caption := nfseRegimeEspecialTributacaoDescricao( RegimeEspecialTributacao );
     rllOpcaoSimples.Caption   := SimNao( Integer ( OptanteSimplesNacional ) );
     rllIncentivador.Caption   := SimNao( Integer ( IncentivadorCultural ) );

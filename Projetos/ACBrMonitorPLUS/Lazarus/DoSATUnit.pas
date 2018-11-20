@@ -1043,32 +1043,40 @@ end;
 
 { TMetodoAssociarAssinatura }
 
-{ Params: 0 - CNPJ - Uma String com CNPJ para ativação
+{ Params: 0 - CNPJs - Uma String contendo o CNPJ da Sw.House + CNPJ do Emissor para ativação
           1 - Assinatura - Uma String com a assinatura
 }
 procedure TMetodoAssociarAssinatura.Executar;
 var
-  cCNPJ, cAssinatura: String;
+  cCNPJs, cCNPJSwHouse, cCNPJEmissor, cAssinatura: String;
 begin
-  cCNPJ := fpCmd.Params(0);
-  cAssinatura :=   fpCmd.Params(1);
+  cCNPJs := fpCmd.Params(0);
+  cCNPJSwHouse := copy(cCNPJs, 1,14);
+  cCNPJEmissor := copy(cCNPJs,15,14);
+  cAssinatura := fpCmd.Params(1);
 
-  with TACBrObjetoSAT(fpObjetoDono) do
+  with TACBrObjetoSAT(fpObjetoDono), MonitorConfig do
   begin
-    if (EstaVazio(Trim(cCNPJ)) and
-        EstaVazio(Trim(cAssinatura))) then
-      with MonitorConfig.SAT do
-        fpCmd.Resposta := ACBrSAT.AssociarAssinatura(SATSWH.CNPJ, SATSWH.Assinatura)
-    else
+    if EstaVazio(Trim(cCNPJSwHouse)) then
+      cCNPJSwHouse := SAT.SATSWH.CNPJ;
+
+    if EstaVazio(Trim(cCNPJEmissor)) then
+      cCNPJEmissor := SAT.SATImpressao.SATEmit.CNPJ;
+
+    if EstaVazio(Trim(cAssinatura)) then
+      cAssinatura := SAT.SATSWH.Assinatura;
+
+    if (ACBrSAT.Config.ide_tpAmb <> taHomologacao) then
     begin
-      if (ACBrSAT.Config.ide_tpAmb <> taHomologacao) and
-         (not ValidarCNPJ(cCNPJ)) then
-        raise Exception.Create('CNPJ '+cCNPJ+' inválido.') ;
+       if (not ValidarCNPJ(cCNPJSwHouse)) then
+         raise Exception.Create('CNPJ Sw.House inválido: '+cCNPJSwHouse);
 
-      fpCmd.Resposta := ACBrSAT.AssociarAssinatura(cCNPJ, cAssinatura);
+       if (not ValidarCNPJ(cCNPJEmissor)) then
+         raise Exception.Create('CNPJ Emissor inválido: '+cCNPJEmissor);
     end;
-  end;
 
+    fpCmd.Resposta := ACBrSAT.AssociarAssinatura(cCNPJSwHouse + cCNPJEmissor, cAssinatura);
+  end;
 end;
 
 { TMetodoDesinicializar }

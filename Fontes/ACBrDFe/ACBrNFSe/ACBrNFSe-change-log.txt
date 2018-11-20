@@ -47,6 +47,139 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+20/11/2018
+-- ACBrNFSeWebServices --
+[*] Corrigido o problema no serviço de Cancelamento, ao tentar assinar com o
+    libWinCrypt.
+Por: Italo Jurisato Junior
+
+16/11/2018
+-- ACBrNFSeWebServices --
+[*] Corrigido o problema no serviço de SubstituicaoNFSe, estava removendo a 
+    assinatura do pedido de cancelamento.
+Por: Italo Jurisato Junior
+
+14/11/2018
+-- Diversos --
+[*] Correções visando o serviço SubstituicaoNFSe
+Por: Italo Jurisato Junior
+-- Diversos --
+[+] Implementação do provedor MetropolisWeb.
+Por: Jefferson M. Correia / Italo Jurisato Junior
+
+13/11/2018
+-- pnfsNFSeG --
+[*] Removido da lista o provedor SpeedGov para que não reset o prefixo3.
+   Por: Jefferson M. Correia
+
+12/11/2018
+-- pnfsNFSeW_ABRASFv1 --
+[*] Incluido o provedor Thema na lista de provedores que devem gerar a tag
+    Aliquota dividida por 100.
+   Por: Francisco Flores
+
+08/11/2018
+-- pnfsNFSeR --
+[*] Removido o provedor ISSNet da lista cuja data de Emissão só composta por data.
+   Por: Italo Jurisato Junior / Augusto Knirsch
+
+31/10/2018
+-- pnfsNFSeW_ABRASFv1 --
+[*] Incluido o provedor Thema na lista de provedores que devem gerar a tag
+    Aliquota não importando o seu valor.
+   Por: Italo Jurisato Junior
+
+19/10/2018
+-- pnfsNFSe / pnfsNFSeW_ABRASFv1 --
+[*] O provedor Betha voltou a traz e removeu a tag <TaxaTurismo>
+   Por: Italo Jurisato Junior
+
+17/10/2018
+-- ACBrNFSeDANFSeFR --
+[*] https://www.projetoacbr.com.br/forum/topic/47091-altera%C3%A7%C3%A3o-para-trazer-al%C3%ADquota-correta-na-impress%C3%A3o-webiss/
+   Por: Maiquel
+
+11/10/2018
+-- ACBrNFSeWebServices/ACBrNFSeConfiguracoes --
+[+] Acrescentado a propriedade VersaoAtrib.
+   Por: Italo Jurisato Junior
+
+09/10/2018
+-- pnfsNFSeW_ABRASFv2 --
+[*] Se o provedor for Giss e não tiver nenhum dado do tomador o grupo Tomador
+    não deve ser gerado.
+   Por: Italo Jurisato Junior
+-- Diversos --
+[+] Acrescentado o grupo Taxa de Turismo par ao provedor Betha.
+   Por: Michel Ouriques
+
+05/10/2018
+-- Diversos --
+[+] Acrescentado o campo <ValorTotalRecebido> para o provedor Recife.
+   Por: Italo Jurisato Junior
+
+04/10/2018
+-- ACBrNFSeWebServices/pnfsNFSeW_ABRASFv2 --
+[*] Ajustes visando o provedor Sigep.
+    Por: vcgyn
+
+-- ACBrNFSeConfiguracoes --
+[*] https://www.projetoacbr.com.br/forum/topic/45530-provedor-nonoai-rs/?do=findComment&comment=309159
+Por: Mateus Brunelli
+
+03/10/2018
+-- ACBrNFSeConfiguracoes/ ACBrNFSeWebServices --
+[+] Acrescentado a propriedade de configuração Banco_P e Banco_H que serão utilizadas
+    pelo provedor DataSmart.
+Por: Italo Jurisato Junior
+
+01/10/2018
+-- ACBrNFSeConfiguracoes --
+[*] Como alguns provedores estão definindo versão de dados diverentes para diverentes cidades,
+    foi incluido uma checagem se no arquivo Cidades.ini possui o campo VersaoDados se sim assume 
+    o seu valor, caso contrario assume o valor do campo VersaoDados que esta no arquivo INI do
+    provedor.
+Por: Italo Jurisato Junior
+
+20/09/2018
+-- pnfsLerListaNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/45530-provedor-nonoai-rs/?do=findComment&comment=307570
+Por: Mateus Brunelli
+
+18/09/2018
+-- pnfsLerListaNFSe --
+[*] Incluido a checagem para o provedor DataSmart na leitura do XML de retorno.
+Por: Italo Jurisato Junior
+
+13/09/2018
+-- ACBrNFSeDANFSeRLRetrato --
+[*] Alteração na montagem da data de Competencia.
+Por: Italo Jurisato Junior
+
+-- ACBrNFSeWebServices --
+[*] Alteração na montagem dos namespaces do provedor Giss.
+Por: Italo Jurisato Junior
+
+12/09/2018
+-- pnfsConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/42704-nfse-cidade-para%C3%ADso-das-aguasms-inclu%C3%ADda/
+Por: Helio Neto
+
+11/09/2018
+-- ACBrNFSeWebServices --
+[*] Correções no provedor Tinus visando as diferenças de NameSpace e SoapAction entre os ambientes.
+Por: Italo Jurisato Junior
+
+-- pnfsNFSeW_ABRASFv2 --
+[*] Alteração incluido o provedor TcheInfo na lista de provedores cuja tag <Aliquota> tem apenas 
+    2 casas decimais.
+Por: Italo Jurisato Junior
+
+-- ACBrNFSeWebServices --
+[*] Alteração visando o provedor DataSmart, para ambiente de homologação não se deve
+    informar o nome da Cidade e sim: BANCO_DEMOSTRACAO
+Por: Italo Jurisato Junior
+
 10/09/2018
 -- pnfsNFSeW_ABRASFv1 --
 [*] https://www.projetoacbr.com.br/forum/topic/8434-ginfes-com-aliquota-do-iss-igual-a-0-zero/?do=findComment&comment=304776

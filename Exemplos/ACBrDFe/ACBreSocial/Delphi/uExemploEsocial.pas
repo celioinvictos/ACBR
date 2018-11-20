@@ -589,7 +589,7 @@ begin
 
           with IdeProcessoSIND.Add do
           begin
-            nrProc := '50';
+            nrProc := '123456';
           end;
         end;
 
@@ -2648,6 +2648,17 @@ begin
         GrauInstr := '10';
         nmSoc := 'Nome social';
 
+        with Nascimento do
+        begin
+          dtNascto   := StrToDate('10/02/1960');
+          codMunic   := 3560025;
+          uf         := 'SP';
+          paisNascto := '123';
+          paisNac    := '123';
+          nmMae      := 'Joaquina';
+          nmPai      := 'Sebastiao';
+        end;
+
         with Documentos do
         begin
           CTPS.NrCtps := '56454';
@@ -3982,7 +3993,7 @@ begin
               Bairro := 'Bairro Educacional';
               Cep := '86086086';
               codMunic := 4141414;
-              uf := ufPR;
+              uf := 'PR';
             end;
 
             with ageIntegracao do
@@ -4057,7 +4068,7 @@ begin
               Bairro := 'Bairro Educacional';
               Cep := '86086086';
               codMunic := 4141414;
-              uf := ufPR;
+              uf := 'PR';
             end;
 
             with ageIntegracao do
@@ -4338,6 +4349,8 @@ begin
 end;
 
 procedure TFExemploEsocial.btnGerarClick(Sender: TObject);
+var
+  i: Integer;
 begin
   SelecionaEventos;
 
@@ -4346,6 +4359,13 @@ begin
 
   memoLog.Lines.Add('XML de Eventos Gerados, Assinados e Validados com Sucesso!');
   memoLog.Lines.Add(' ');
+
+  for i := 0 to ACBreSocial1.Eventos.Gerados.Count -1 do
+  begin
+    MemoLog.Lines.Add('Tipo Evento.: ' + TipoEventoToStr(ACBreSocial1.Eventos.Gerados.Items[i].TipoEvento));
+    MemoLog.Lines.Add('ID do Evento: ' + ACBreSocial1.Eventos.Gerados.Items[i].idEvento);
+    MemoLog.Lines.Add('Evento Salvo: ' + ACBreSocial1.Eventos.Gerados.Items[i].PathNome);
+  end;
 
   pgWebservice.ActivePageIndex := 3;
 end;
@@ -4514,6 +4534,7 @@ begin
           for i := 0 to retEventos.Count - 1 do
           begin
             Add('Processamento');
+            Add(' - ID Evento..........: ' + retEventos.Items[i].Id);
             Add(' - cdResposta.........: ' +
               IntToStr(retEventos.Items[i].Processamento.cdResposta));
             Add(' - descResposta.......: ' + retEventos.Items[i]

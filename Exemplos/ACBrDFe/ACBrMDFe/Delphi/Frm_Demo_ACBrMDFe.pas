@@ -430,7 +430,7 @@ var
   Ok: Boolean;
   PathMensal: String;
 begin
-  // Configuraï¿½ï¿½es -> Certificados
+  // Configurações -> Certificados
   {$IFDEF ACBrMDFeOpenSSL}
    ACBrMDFe1.Configuracoes.Certificados.Certificado := edtCaminho.Text;
    ACBrMDFe1.Configuracoes.Certificados.Senha       := edtSenha.Text;
@@ -440,7 +440,7 @@ begin
 
   ACBrMDFe1.Configuracoes.Certificados.VerificarValidade := False;
 
-  // Configuraï¿½ï¿½es -> Arquivos
+  // Configurações -> Arquivos
   ACBrMDFe1.Configuracoes.Arquivos.AdicionarLiteral := True;
   ACBrMDFe1.Configuracoes.Arquivos.EmissaoPathMDFe  := True;
   ACBrMDFe1.Configuracoes.Arquivos.SepararPorMes    := True;
@@ -450,7 +450,7 @@ begin
 
   PathMensal := ACBrMDFe1.Configuracoes.Arquivos.GetPathMDFe(0);
 
-  // Configuraï¿½ï¿½es -> Geral
+  // Configurações -> Geral
   ACBrMDFe1.Configuracoes.Geral.FormaEmissao := StrToTpEmis(OK,IntToStr(rgFormaEmissao.ItemIndex+1));
   ACBrMDFe1.Configuracoes.Geral.Salvar       := ckSalvar.Checked;
   case rgVersaoDF.ItemIndex of
@@ -460,7 +460,7 @@ begin
 
   ACBrMDFe1.Configuracoes.Arquivos.PathSalvar       := PathMensal;
 
-  // Configuraï¿½ï¿½es -> WebServices
+  // Configurações -> WebServices
   ACBrMDFe1.Configuracoes.WebServices.AguardarConsultaRet      := 0;
   ACBrMDFe1.Configuracoes.WebServices.AjustaAguardaConsultaRet := False;
   ACBrMDFe1.Configuracoes.WebServices.Ambiente                 := StrToTpAmb(Ok, IntToStr(rgTipoAmb.ItemIndex+1));
@@ -497,7 +497,7 @@ begin
   with ACBrMDFe1.Manifestos.Add.MDFe do
   begin
     //
-    // Dados de Identificaï¿½ï¿½o do MDF-e
+    // Dados de Identificação do MDF-e
     //
     Ide.cUF := 35;
 
@@ -512,7 +512,7 @@ begin
     Ide.modelo  := '58';
     Ide.serie   := 1;
     Ide.nMDF    := StrToIntDef(NumMDFe, 0);
-    Ide.cMDF    := 1;  // Cï¿½digo Aleatï¿½rio
+    Ide.cMDF    := 1;  // Código Aleatório
     // TMDFeModal = ( moRodoviario, moAereo, moAquaviario, moFerroviario );
     Ide.modal   := moRodoviario;
     Ide.dhEmi   := Now;
@@ -560,7 +560,7 @@ begin
     rodo.veicTracao.capM3   := 400;
 
     // TpcteTipoRodado = (trNaoAplicavel, trTruck, trToco, trCavaloMecanico, trVAN, trUtilitario, trOutros);
-    // Para o MDF-e nï¿½o utilizar o trNaoAplicavel.
+    // Para o MDF-e não utilizar o trNaoAplicavel.
     rodo.veicTracao.tpRod := trTruck;
 
     // TpcteTipoCarroceria = (tcNaoAplicavel, tcAberta, tcFechada, tcGraneleira, tcPortaContainer, tcSider);
@@ -605,20 +605,20 @@ begin
       begin
         chCTe := '35110803911545000148570010000001011000001018';
 
-        // Informaï¿½ï¿½es das Unidades de Transporte (Carreta/Reboque/Vagï¿½o)
+        // Informações das Unidades de Transporte (Carreta/Reboque/Vagão)
 
         with infUnidTransp.Add do
         begin
           //TpcnUnidTransp = ( utRodoTracao, utRodoReboque, utNavio, utBalsa, utAeronave, utVagao, utOutros );
           tpUnidTransp := utRodoTracao;
-          idUnidTransp := 'ABC1234'; // informar a placa se rodoviï¿½rio
+          idUnidTransp := 'ABC1234'; // informar a placa se rodoviário
 
           with lacUnidTransp.Add do
           begin
             nLacre := '123';
           end;
 
-          // Informaï¿½ï¿½es das Unidades de carga (Containeres/ULD/Outros)
+          // Informações das Unidades de carga (Containeres/ULD/Outros)
           with infUnidCarga.Add do
           begin
             // TpcnUnidCarga  = ( ucContainer, ucULD, ucPallet, ucOutros );
@@ -641,7 +641,7 @@ begin
       begin
         chCTe := '35110803911545000148570010000001021000001023';
 
-        // Informaï¿½ï¿½es das Unidades de Transporte (Carreta/Reboque/Vagï¿½o)
+        // Informações das Unidades de Transporte (Carreta/Reboque/Vagão)
 
         with infUnidTransp.Add do
         begin
@@ -654,7 +654,7 @@ begin
             nLacre := '321';
           end;
 
-          // Informaï¿½ï¿½es das Unidades de carga (Containeres/ULD/Outros)
+          // Informações das Unidades de carga (Containeres/ULD/Outros)
           with infUnidCarga.Add do
           begin
             // TpcnUnidCarga  = ( ucContainer, ucULD, ucPallet, ucOutros );
@@ -881,7 +881,7 @@ begin
 
   PageControl2.ActivePageIndex := 5;
   MemoDados.Lines.Add('');
-  MemoDados.Lines.Add('Status Serviï¿½o');
+  MemoDados.Lines.Add('Status Serviço');
   MemoDados.Lines.Add('tpAmb: '    +TpAmbToStr(ACBrMDFe1.WebServices.StatusServico.tpAmb));
   MemoDados.Lines.Add('verAplic: ' +ACBrMDFe1.WebServices.StatusServico.verAplic);
   MemoDados.Lines.Add('cStat: '    +IntToStr(ACBrMDFe1.WebServices.StatusServico.cStat));
@@ -923,7 +923,7 @@ begin
     ACBrMDFe1.Manifestos.Clear;
     ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
     ACBrMDFe1.Manifestos.Validar;
-    showmessage('Manifesto Eletrï¿½nico de Documentos Fiscais Valido');
+    showmessage('Manifesto Eletrônico de Documentos Fiscais Valido');
   end;
 end;
 
@@ -979,7 +979,7 @@ var
 begin
   vCNPJ := '';
 
-  if not(InputQuery('WebServices Consultar nï¿½o encerrados', 'Informe o CNPJ:', vCNPJ)) then
+  if not(InputQuery('WebServices Consultar não encerrados', 'Informe o CNPJ:', vCNPJ)) then
     exit;
 
   try
@@ -1029,7 +1029,7 @@ procedure TfrmDemo_ACBrMDFe.btnConsultarReciboClick(Sender: TObject);
 var
   aux: String;
 begin
-  if not(InputQuery('Consultar Recibo Lote', 'Nï¿½mero do Recibo', aux)) then
+  if not(InputQuery('Consultar Recibo Lote', 'Número do Recibo', aux)) then
     exit;
 
   ACBrMDFe1.WebServices.Recibo.Recibo := aux;
@@ -1108,35 +1108,6 @@ begin
 
     ACBrMDFe1.EnviarEvento( 1 ); // 1 = Numero do Lote
 
-   MemoResp.Lines.Text   := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
-   memoRespWS.Lines.Text := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
-   LoadXML(MemoResp, WBResposta);
-  end
-  else begin
-    ACBrMDFe1.Manifestos.Clear;
-    ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
-
-    ACBrMDFe1.EventoMDFe.Evento.Clear;
-
-    with ACBrMDFe1.EventoMDFe.Evento.Add do
-    begin
-      infEvento.chMDFe   := Copy(ACBrMDFe1.Manifestos.Items[0].MDFe.infMDFe.ID, 5, 44);
-      infEvento.CNPJ     := edtEmitCNPJ.Text;
-      infEvento.dhEvento := now;
-      //  TpcnTpEvento = (teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
-      //                  teManifDestDesconhecimento, teManifDestOperNaoRealizada,
-      //                  teEncerramento);
-      infEvento.tpEvento   := teEncerramento;
-      infEvento.nSeqEvento := 1;
-
-      infEvento.detEvento.nProt := ACBrMDFe1.Manifestos.Items[0].MDFe.procMDFe.nProt;
-      infEvento.detEvento.dtEnc := Date;
-      infEvento.detEvento.cUF   := StrToInt(Copy(IntToStr(ACBrMDFe1.Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga),1,2));
-      infEvento.detEvento.cMun  := ACBrMDFe1.Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga;
-    end;
-
-    ACBrMDFe1.EnviarEvento( 1 ); // 1 = Numero do Lote
-
     MemoResp.Lines.Text   := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
     memoRespWS.Lines.Text := ACBrUTF8ToAnsi(ACBrMDFe1.WebServices.EnvEvento.RetWS);
     LoadXML(MemoResp, WBResposta);
@@ -1150,13 +1121,13 @@ begin
   if not(InputQuery('WebServices Enviar', 'Chave do Manifesto', vChave)) then
     exit;
 
-  if not(InputQuery('WebServices Enviar', 'Nï¿½mero do Protocolo', vProtocolo)) then
+  if not(InputQuery('WebServices Enviar', 'Número do Protocolo', vProtocolo)) then
     exit;
 
   if not(InputQuery('WebServices Enviar', 'Estado de Encerramento', vUF)) then
     exit;
 
-  if not(InputQuery('WebServices Enviar', 'Cï¿½d. Municï¿½pio IBGE de Encerramento', vCodMun)) then
+  if not(InputQuery('WebServices Enviar', 'Cód. Município IBGE de Encerramento', vCodMun)) then
     exit;
 
   ACBrMDFe1.Manifestos.Clear;
@@ -1264,14 +1235,14 @@ begin
     ACBrMDFe1.Manifestos.Clear;
     ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
     CC:=TstringList.Create;
-    CC.Add('email_1@provedor.com'); //especifique um email vï¿½lido
-    CC.Add('email_2@provedor.com.br'); //especifique um email vï¿½lido
+    CC.Add('email_1@provedor.com'); //especifique um email válido
+    CC.Add('email_2@provedor.com.br'); //especifique um email válido
 
     ACBrMDFe1.Manifestos.Items[0].EnviarEmail(Para
                                               , edtEmailAssunto.Text
                                               , mmEmailMsg.Lines
                                               , False //Enviar PDF junto
-                                              , nil //Lista com emails que serï¿½o enviado cï¿½pias - TStrings
+                                              , nil //Lista com emails que serão enviado cópias - TStrings
                                               , nil // Lista de anexos - TStrings
                                                );
 
@@ -1374,8 +1345,8 @@ begin
     ACBrMDFe1.EventoMDFe.Evento.Clear;
     ACBrMDFe1.EventoMDFe.LerXML(OpenDialog1.FileName);
     CC:=TstringList.Create;
-    CC.Add('andrefmoraes@gmail.com'); //especifique um email vï¿½lido
-    CC.Add('anfm@zipmail.com.br');    //especifique um email vï¿½lido
+    CC.Add('andrefmoraes@gmail.com'); //especifique um email válido
+    CC.Add('anfm@zipmail.com.br');    //especifique um email válido
     (*
     ACBrMDFe1.EnviarEmailEvento(edtSmtpHost.Text
                              , edtSmtpPort.Text
@@ -1385,12 +1356,12 @@ begin
                              , Para
                              , edtEmailAssunto.Text
                              , mmEmailMsg.Lines
-                             , cbEmailSSL.Checked // SSL - Conexï¿½o Segura
+                             , cbEmailSSL.Checked // SSL - Conexão Segura
                              , True //Enviar PDF junto
-                             , CC //Lista com emails que serï¿½o enviado cï¿½pias - TStrings
+                             , CC //Lista com emails que serão enviado cópias - TStrings
                              , Evento // Lista de anexos - TStrings
-                             , False  //Pede confirmaï¿½ï¿½o de leitura do email
-                             , False  //Aguarda Envio do Email(nï¿½o usa thread)
+                             , False  //Pede confirmação de leitura do email
+                             , False  //Aguarda Envio do Email(não usa thread)
                              , 'ACBrMDFe' // Nome do Rementente
                              , cbEmailSSL.Checked ); // Auto TLS
     *)                         

@@ -233,8 +233,6 @@ type
     lSSLLib1: TLabel;
     cbSSLType: TComboBox;
     SpeedButton1: TSpeedButton;
-    Celio: TTabSheet;
-    btConsultaChave: TButton;
     procedure sbtnCaminhoCertClick(Sender: TObject);
     procedure sbtnLogoMarcaClick(Sender: TObject);
     procedure sbtnPathSalvarClick(Sender: TObject);
@@ -298,7 +296,6 @@ type
     procedure btnValidarRegrasNegocioClick(Sender: TObject);
     procedure cbSSLTypeChange(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
-    procedure btConsultaChaveClick(Sender: TObject);
     
   private
     { Private declarations }
@@ -935,7 +932,7 @@ begin
      infEvento.chNFe    := Chave;
      infEvento.CNPJ     := CNPJ;
      infEvento.dhEvento := now;
-     infEvento.tpEvento := teManifDestCiencia;
+     infEvento.tpEvento := teManifDestConfirmacao;
    end;
   ACBrNFe1.EnviarEvento(StrToInt(IDLote));
 
@@ -3081,29 +3078,6 @@ begin
   ACBrNFe1.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento.nProt}
 end;
 
-procedure TForm1.btConsultaChaveClick(Sender: TObject);
-var
-chave:string;
-begin
-  chave := '';
-  if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Chave específico', chave)) then
-     exit;
-
-  ACBrNFe1.Consultar(chave);
-  //ACBrNFe1.WebServices.Consulta.NFeChave := '50180211758339000178550010003001941003001946';
-  //if ACBrNFe1.WebServices.Consulta.Executar then
-  begin
-    //ShowMessage( ACBrNFe1.WebServices.Consulta.protNFe.nProt );
-    MemoResp.Lines.Text := ACBrNFe1.WebServices.Consulta.RetornoWS;
-    MemoResp.Lines.Add('');
-    MemoResp.Lines.Add('***************************');
-    MemoResp.Lines.Add('');
-    MemoResp.Lines.Add(ACBrNFe1.WebServices.Consulta.RetWS);
-
-    LoadXML(ACBrNFe1.WebServices.Consulta.RetWS, WBResposta);
-  end;
-end;
-
 procedure TForm1.btnAdicionarProtNFeClick(Sender: TObject);
 var
   NomeArq : String;
@@ -3450,9 +3424,8 @@ end;
 
 procedure TForm1.btnDistribuicaoDFeClick(Sender: TObject);
 var
- cUFAutor, CNPJ, ultNSU, ANSU, chave: string;
+ cUFAutor, CNPJ, ultNSU, ANSU: string;
  ok: boolean;
- cont:integer;
 begin
   cUFAutor := '';
   if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Código da UF do Autor', cUFAutor)) then
@@ -3470,30 +3443,14 @@ begin
   if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'NSU específico', ANSU)) then
      exit;
 
-  chave := '';
-  if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Chave específico', chave)) then
-     exit;
-
-  if(trim(chave)<> '') then
-    ACBrNFe1.DistribuicaoDFePorChaveNFe(StrToInt(cUFAutor),CNPJ,chave)
-  else
-    ACBrNFe1.DistribuicaoDFe(StrToInt(cUFAutor),CNPJ,ultNSU,ANSU);
+   ACBrNFe1.DistribuicaoDFe(StrToInt(cUFAutor),CNPJ,ultNSU,ANSU);
 
   MemoResp.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetWS;
   memoRespWS.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetornoWS;
 
   LoadXML(ACBrNFe1.WebServices.DistribuicaoDFe.RetWS, WBResposta);
-  MemoResp.Lines.add('********************');
-    MemoResp.Lines.add('');
-  for cont := 0 to ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count -1 do
-  begin
-    MemoResp.Lines.add(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[cont].XML);
-    MemoResp.Lines.add('');
-    MemoResp.Lines.add('********************');
-    MemoResp.Lines.add('');
-  end;
 
-  //ACBrNFe1.Free;
+  ACBrNFe1.Free;
 end;
 
 procedure TForm1.PathClick(Sender: TObject);

@@ -408,7 +408,7 @@ var
   fsvTotTrib, fsvBC, fsvICMS, fsvICMSDeson, fsvBCST, fsvST, fsvProd, fsvFrete : Currency;
   fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF, fsvTotPag : Currency;
   fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol, fsvDup : Currency;
-  FaturamentoDireto, NFImportacao : Boolean;
+  FaturamentoDireto, NFImportacao, UFCons : Boolean;
 
   procedure GravaLog(AString: String);
   begin
@@ -882,11 +882,6 @@ begin
          (NFe.Dest.EnderDest.UF = 'EX') then
         AdicionaErro('771-Rejeição: Operação Interestadual e UF de destino com EX');
 
-      GravaLog('Validar: 772-Op.Interstadual e UF igual');
-      if (nfe.Ide.idDest = doInterestadual) and
-         (NFe.Dest.EnderDest.UF = NFe.Emit.EnderEmit.UF) then
-        AdicionaErro('772-Rejeição: Operação Interestadual e UF de destino igual à UF do emitente');
-
       GravaLog('Validar: 773-Op.Interna e UF diferente');
       if (nfe.Ide.idDest = doInterna) and
          (NFe.Dest.EnderDest.UF <> NFe.Emit.EnderEmit.UF) and
@@ -936,13 +931,13 @@ begin
           if (nfe.Cobr.Fat.vLiq <> (nfe.Cobr.Fat.vOrig - nfe.Cobr.Fat.vDesc)) then
             AdicionaErro('896-Rejeição: Valor Liquido da Fatura difere do Valor Original menos o Valor do Desconto');
 
-          GravaLog('Validar: 897-Valor Líquido da Fatura/Valor Original da Fatura maior que o Valor Total da Nota Fiscal');
-          if (((nfe.Cobr.Fat.vLiq > 0) and (nfe.Cobr.Fat.vLiq > nfe.Total.ICMSTot.vNF)) or
-              ((nfe.Cobr.Fat.vOrig > nfe.Total.ICMSTot.vNF)))then
-            AdicionaErro('897-Rejeição: Valor da Fatura maior que Valor Total da NF-e');
+//          GravaLog('Validar: 897-Valor Líquido da Fatura/Valor Original da Fatura maior que o Valor Total da Nota Fiscal');
+//          if (((nfe.Cobr.Fat.vLiq > 0) and (nfe.Cobr.Fat.vLiq > nfe.Total.ICMSTot.vNF)) or
+//              ((nfe.Cobr.Fat.vOrig > nfe.Total.ICMSTot.vNF)))then
+//            AdicionaErro('897-Rejeição: Valor da Fatura maior que Valor Total da NF-e');
 
           fsvDup := 0;
-          UltVencto := NFe.Ide.dEmi;
+          UltVencto := DateOf(NFe.Ide.dEmi);
           for I:=0 to nfe.Cobr.Dup.Count-1 do
           begin
             fsvDup := fsvDup + nfe.Cobr.Dup.Items[I].vDup;
@@ -954,7 +949,7 @@ begin
             //898 - Verificar DATA de autorização
 
             GravaLog('Validar: 894-Se informado o grupo de Parcelas de cobrança (tag:dup, Id:Y07) e Data de vencimento (dVenc, id:Y09) não informada ou menor que a Data de Emissão (id:B09)');
-            if (nfe.Cobr.Dup.Items[I].dVenc < NFe.Ide.dEmi) then
+            if (nfe.Cobr.Dup.Items[I].dVenc < DateOf(NFe.Ide.dEmi)) then
               AdicionaErro('894-Rejeição: Data de vencimento da parcela não informada ou menor que Data de Emissão');
 
             GravaLog('Validar: 867-Se informado o grupo de Parcelas de cobrança (tag:dup, Id:Y07) e Data de vencimento (dVenc, id:Y09) não informada ou menor que a Data de vencimento da parcela anterior (dVenc, id:Y09)');
@@ -965,8 +960,9 @@ begin
           end;
 
           GravaLog('Validar: 872-Se informado o grupo de Parcelas de cobrança (tag:dup, Id:Y07) e a soma do valor das parcelas (vDup, id: Y10) difere do Valor Líquido da Fatura (vLiq, id:Y06).');
-          if (((nfe.Cobr.Fat.vLiq > 0) and (fsvDup < nfe.Cobr.Fat.vLiq)) or
-            (fsvDup < (nfe.Cobr.Fat.vOrig-nfe.Cobr.Fat.vDesc)))then
+          //porque se não tiver parcela não tem valor para ser verificado
+          if (nfe.Cobr.Dup.Count > 0) and (((nfe.Cobr.Fat.vLiq > 0) and (fsvDup < nfe.Cobr.Fat.vLiq)) or
+             (fsvDup < (nfe.Cobr.Fat.vOrig-nfe.Cobr.Fat.vDesc))) then
             AdicionaErro('872-Rejeição: Soma do valor das parcelas difere do Valor Líquido da Fatura');
         end;
       end;
@@ -1007,6 +1003,7 @@ begin
     fsvIPIDevol:= 0;
     FaturamentoDireto := False;
     NFImportacao := False;
+    UFCons := False;
 
     for I:=0 to NFe.Det.Count-1 do
     begin
@@ -1015,153 +1012,153 @@ begin
         if Trim(Prod.NCM) <> '00' then
         begin
           // validar NCM completo somente quando não for serviço
-          GravaLog('Validar: 777-'+IntToStr(I)+'-NCM info');
+          GravaLog('Validar: 777-NCM info [nItem: '+IntToStr(Prod.nItem)+']');
           if Length(Trim(Prod.NCM)) < 8 then
-            AdicionaErro('777-Rejeição: Obrigatória a informação do NCM completo');
+            AdicionaErro('777-Rejeição: Obrigatória a informação do NCM completo [nItem: '+IntToStr(Prod.nItem)+']');
         end;
 
         if (NFe.Ide.modelo = 65) then
         begin
-          GravaLog('Validar: 725-'+IntToStr(I)+'-NFCe CFOP invalido');
+          GravaLog('Validar: 725-NFCe CFOP invalido [nItem: '+IntToStr(Prod.nItem)+']');
           if (pos(OnlyNumber(Prod.CFOP), 'XXXX,5101,5102,5103,5104,5115,5401,5403,5405,5653,5656,5667,5933') <= 0)  then
-            AdicionaErro('725-Rejeição: NFC-e com CFOP inválido');
+            AdicionaErro('725-Rejeição: NFC-e com CFOP inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 774-'+IntToStr(I)+'-NFCe indicador Total');
+          GravaLog('Validar: 774-NFCe indicador Total [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.IndTot = itNaoSomaTotalNFe) then
-            AdicionaErro('774-Rejeição: NFC-e com indicador de item não participante do total');
+            AdicionaErro('774-Rejeição: NFC-e com indicador de item não participante do total [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 736-'+IntToStr(I)+'-NFCe Grupo veiculos novos');
+          GravaLog('Validar: 736-NFCe Grupo veiculos novos [nItem: '+IntToStr(Prod.nItem)+']');
           if (NaoEstaVazio(Prod.veicProd.chassi)) then
-            AdicionaErro('736-Rejeição: NFC-e com grupo de Veículos novos');
+            AdicionaErro('736-Rejeição: NFC-e com grupo de Veículos novos [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 737-'+IntToStr(I)+'-NCM info');
+          GravaLog('Validar: 737-NCM info [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.med.Count > 0) then
-            AdicionaErro('737-Rejeição: NFC-e com grupo de Medicamentos');
+            AdicionaErro('737-Rejeição: NFC-e com grupo de Medicamentos [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 738-'+IntToStr(I)+'-NFCe grupo Armamentos');
+          GravaLog('Validar: 738-NFCe grupo Armamentos [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.arma.Count > 0) then
-            AdicionaErro('738-Rejeição: NFC-e com grupo de Armamentos');
+            AdicionaErro('738-Rejeição: NFC-e com grupo de Armamentos [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 348-'+IntToStr(I)+'-NFCe grupo RECOPI');
+          GravaLog('Validar: 348-NFCe grupo RECOPI [nItem: '+IntToStr(Prod.nItem)+']');
           if (NaoEstaVazio(Prod.nRECOPI)) then
-            AdicionaErro('348-Rejeição: NFC-e com grupo RECOPI');
+            AdicionaErro('348-Rejeição: NFC-e com grupo RECOPI [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 766-'+IntToStr(I)+'-NFCe CST 50');
+          GravaLog('Validar: 766-NFCe CST 50 [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.ICMS.CST = cst50) then
-            AdicionaErro('766-Rejeição: NFC-e com CST 50-Suspensão');
+            AdicionaErro('766-Rejeição: NFC-e com CST 50-Suspensão [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 740-'+IntToStr(I)+'-NFCe CST 51');
+          GravaLog('Validar: 740-NFCe CST 51 [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.ICMS.CST = cst51) then
-            AdicionaErro('740-Rejeição: NFC-e com CST 51-Diferimento');
+            AdicionaErro('740-Rejeição: NFC-e com CST 51-Diferimento [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 741-'+IntToStr(I)+'-NFCe partilha ICMS');
+          GravaLog('Validar: 741-NFCe partilha ICMS [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.ICMS.CST in [cstPart10,cstPart90]) then
-            AdicionaErro('741-Rejeição: NFC-e com Partilha de ICMS entre UF');
+            AdicionaErro('741-Rejeição: NFC-e com Partilha de ICMS entre UF [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 742-'+IntToStr(I)+'-NFCe grupo IPI');
+          GravaLog('Validar: 742-NFCe grupo IPI [nItem: '+IntToStr(Prod.nItem)+']');
           if ((Imposto.IPI.cEnq  <> '') or
               (Imposto.IPI.vBC   <> 0) or
               (Imposto.IPI.qUnid <> 0) or
               (Imposto.IPI.vUnid <> 0) or
               (Imposto.IPI.pIPI  <> 0) or
               (Imposto.IPI.vIPI  <> 0)) then
-            AdicionaErro('742-Rejeição: NFC-e com grupo do IPI');
+            AdicionaErro('742-Rejeição: NFC-e com grupo do IPI [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 743-'+IntToStr(I)+'-NFCe grupo II');
+          GravaLog('Validar: 743-NFCe grupo II [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.II.vBc > 0) or
              (Imposto.II.vDespAdu > 0) or
              (Imposto.II.vII > 0) or
              (Imposto.II.vIOF > 0) or
              (Copy(Prod.CFOP,1,1) = '3') then
-            AdicionaErro('743-Rejeição: NFC-e com grupo do II');
+            AdicionaErro('743-Rejeição: NFC-e com grupo do II [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 746-'+IntToStr(I)+'-NFCe grupo PIS-ST');
+          GravaLog('Validar: 746-NFCe grupo PIS-ST [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.PISST.vBc > 0) or
              (Imposto.PISST.pPis > 0) or
              (Imposto.PISST.qBCProd > 0) or
              (Imposto.PISST.vAliqProd > 0) or
              (Imposto.PISST.vPIS > 0) then
-           AdicionaErro('746-Rejeição: NFC-e com grupo do PIS-ST');
+           AdicionaErro('746-Rejeição: NFC-e com grupo do PIS-ST [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 749-'+IntToStr(I)+'-NFCe grupo COFINS-ST');
+          GravaLog('Validar: 749-NFCe grupo COFINS-ST [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.COFINSST.vBC > 0) or
              (Imposto.COFINSST.pCOFINS > 0) or
              (Imposto.COFINSST.qBCProd > 0) or
              (Imposto.COFINSST.vAliqProd > 0) or
              (Imposto.COFINSST.vCOFINS > 0) then
-            AdicionaErro('749-Rejeição: NFC-e com grupo da COFINS-ST');
+            AdicionaErro('749-Rejeição: NFC-e com grupo da COFINS-ST [nItem: '+IntToStr(Prod.nItem)+']');
         end
         else if(NFe.Ide.modelo = 55) then
         begin
           if (NFe.infNFe.Versao >= 4) then
           begin
- {           GravaLog('Validar: 508-'+IntToStr(I)+'-CST incompatível na operação com Não Contribuinte');
+ {           GravaLog('Validar: 508-CST incompatível na operação com Não Contribuinte [nItem: '+IntToStr(Prod.nItem)+']');
             if (NFe.Emit.CRT <> crtSimplesNacional) and
                (NFe.Dest.indIEDest = inNaoContribuinte) and
                (NFe.Ide.tpNF <> tnEntrada) and
                (pos(OnlyNumber(Prod.CFOP), 'XXXX,5915,5916,6915,6916,5912,5913') <= 0) and
                (EstaVazio(Prod.veicProd.chassi) or (NaoEstaVazio(Prod.veicProd.chassi) and not (Prod.veicProd.tpOP in [toFaturamentoDireto, toVendaDireta]))) and
                (not (Imposto.ICMS.CST in [cst00, cst20, cst40, cst41, cst60])) then
-              AdicionaErro('508-Rejeição: CST incompatível na operação com Não Contribuinte [nItem:'+IntToStr(I)+']');
+              AdicionaErro('508-Rejeição: CST incompatível na operação com Não Contribuinte [nItem: '+IntToStr(Prod.nItem)+']');
 
-            GravaLog('Validar: 529-'+IntToStr(I)+'-CST incompatível na operação com Contribuinte Isento de Inscrição Estadual');
+            GravaLog('Validar: 529-CST incompatível na operação com Contribuinte Isento de Inscrição Estadual [nItem: '+IntToStr(Prod.nItem)+']');
             if (NFe.Dest.indIEDest = inIsento) and
                ((Imposto.ICMS.CST = cst51) or
                ((Imposto.ICMS.CST = cst50) and (pos(OnlyNumber(Prod.CFOP), 'XXXX,5915,5916,6915,6916,5912,5913') <= 0))) then
-             AdicionaErro('529-Rejeição: CST incompatível na operação com Contribuinte Isento de Inscrição Estadual [nItem:'+IntToStr(I)+']');
+             AdicionaErro('529-Rejeição: CST incompatível na operação com Contribuinte Isento de Inscrição Estadual [nItem: '+IntToStr(Prod.nItem)+']');
 
-            GravaLog('Validar: 600-'+IntToStr(I)+'-CSOSN incompatível na operação com Não Contribuinte');
+            GravaLog('Validar: 600-CSOSN incompatível na operação com Não Contribuinte [nItem: '+IntToStr(Prod.nItem)+']');
             if (NFe.Emit.CRT = crtSimplesNacional) and
                (NFe.Dest.indIEDest = inNaoContribuinte) and
                (NFe.Ide.tpNF <> tnEntrada) and
                (pos(OnlyNumber(Prod.CFOP), 'XXXX,5915,5916,6915,6916,5912,5913') <= 0) and
                (EstaVazio(Prod.veicProd.chassi) or (NaoEstaVazio(Prod.veicProd.chassi) and not (Prod.veicProd.tpOP in [toFaturamentoDireto, toVendaDireta]))) and
                (not (Imposto.ICMS.CSOSN in [csosn102, csosn103, csosn300, csosn400, csosn500])) then
-              AdicionaErro('600-Rejeição: CSOSN incompatível na operação com Não Contribuinte [nItem:'+IntToStr(I)+']');
+              AdicionaErro('600-Rejeição: CSOSN incompatível na operação com Não Contribuinte [nItem: '+IntToStr(Prod.nItem)+']');
 
-            GravaLog('Validar: 806-'+IntToStr(I)+'-Operação com ICMS-ST sem informação do CEST');
+            GravaLog('Validar: 806-Operação com ICMS-ST sem informação do CEST [nItem: '+IntToStr(Prod.nItem)+']');
             if (not Imposto.ICMS.CST in [cstPart10,cstPart90]) and
                EstaVazio(Prod.CEST) and
                (((NFe.Emit.CRT = crtSimplesNacional) and (Imposto.ICMS.CSOSN in [csosn201, csosn202, csosn203, csosn500, csosn900])) or
                 ((NFe.Emit.CRT <> crtSimplesNacional) and (Imposto.ICMS.CST in [cst10, cst30, cst60, cst70, cst90]))) then
-              AdicionaErro('806-Rejeição: Operação com ICMS-ST sem informação do CEST [nItem:'+IntToStr(I)+']');           }
+              AdicionaErro('806-Rejeição: Operação com ICMS-ST sem informação do CEST [nItem: '+IntToStr(Prod.nItem)+']');           }
 
-            GravaLog('Validar: 856-'+IntToStr(I)+'-Obrigatória a informação do campo vPart (id: LA03d) para produto "210203001 – GLP" (tag:cProdANP)');
+            GravaLog('Validar: 856-Obrigatória a informação do campo vPart (id: LA03d) para produto "210203001 – GLP" (tag:cProdANP) [nItem: '+IntToStr(Prod.nItem)+']');
             if (Prod.comb.cProdANP = 210203001) and (Prod.comb.vPart <= 0) then
-              AdicionaErro('856-Rejeição: Campo valor de partida não preenchido para produto GLP [nItem:'+IntToStr(I)+']');
+              AdicionaErro('856-Rejeição: Campo valor de partida não preenchido para produto GLP [nItem: '+IntToStr(Prod.nItem)+']');
 
-{            GravaLog('Validar: 858-'+IntToStr(I)+'-Grupo ICMS60 (id:N08) informado indevidamente nas operações com os produtos combustíveis sujeitos a repasse interestadual');
+{            GravaLog('Validar: 858-Grupo ICMS60 (id:N08) informado indevidamente nas operações com os produtos combustíveis sujeitos a repasse interestadual [nItem: '+IntToStr(Prod.nItem)+']');
             if (Prod.comb.cProdANP = '210203001') and (Imposto.ICMS.CST = cst60 and Imposto.ICMS.vICMSSTDest <= 0) then
-              AdicionaErro('858-Rejeição: Grupo de Tributação informado indevidamente [nItem:'+IntToStr(I)+']');    }//VERIFICAR
+              AdicionaErro('858-Rejeição: Grupo de Tributação informado indevidamente [nItem: '+IntToStr(Prod.nItem)+']');    }//VERIFICAR
 
 
           end;
         end;
 
-        GravaLog('Validar: 528-'+IntToStr(I)+'-ICMS BC e Aliq');
+        GravaLog('Validar: 528-ICMS BC e Aliq [nItem: '+IntToStr(Prod.nItem)+']');
         if (Imposto.ICMS.CST in [cst00,cst10,cst20,cst70]) and
            (NFe.Ide.finNFe = fnNormal) and
 	       (ComparaValor(Imposto.ICMS.vICMS, Imposto.ICMS.vBC * (Imposto.ICMS.pICMS/100), 0.01) <> 0) then
-          AdicionaErro('528-Rejeição: Valor do ICMS difere do produto BC e Alíquota');
+          AdicionaErro('528-Rejeição: Valor do ICMS difere do produto BC e Alíquota [nItem: '+IntToStr(Prod.nItem)+']');
 
-        GravaLog('Validar: 625-'+IntToStr(I)+'-Insc.SUFRAMA');
+        GravaLog('Validar: 625-Insc.SUFRAMA [nItem: '+IntToStr(Prod.nItem)+']');
         if (Imposto.ICMS.motDesICMS = mdiSuframa) and
            (EstaVazio(NFe.Dest.ISUF))then
-          AdicionaErro('625-Rejeição: Inscrição SUFRAMA deve ser informada na venda com isenção para ZFM');
+          AdicionaErro('625-Rejeição: Inscrição SUFRAMA deve ser informada na venda com isenção para ZFM [nItem: '+IntToStr(Prod.nItem)+']');
 
-        GravaLog('Validar: 530-'+IntToStr(I)+'-ISSQN e IM');
+        GravaLog('Validar: 530-ISSQN e IM [nItem: '+IntToStr(Prod.nItem)+']');
         if EstaVazio(NFe.Emit.IM) and
           ((Imposto.ISSQN.vBC > 0) or
            (Imposto.ISSQN.vAliq > 0) or
            (Imposto.ISSQN.vISSQN > 0) or
            (Imposto.ISSQN.cMunFG > 0) or
            (Imposto.ISSQN.cListServ <> '')) then
-          AdicionaErro('530-Rejeição: Operação com tributação de ISSQN sem informar a Inscrição Municipal');
+          AdicionaErro('530-Rejeição: Operação com tributação de ISSQN sem informar a Inscrição Municipal [nItem: '+IntToStr(Prod.nItem)+']');
 
-        GravaLog('Validar: 287-'+IntToStr(I)+'-Cod.Município FG');
+        GravaLog('Validar: 287-Cod.Município FG [nItem: '+IntToStr(Prod.nItem)+']');
         if (Imposto.ISSQN.cMunFG > 0) and
            not ValidarMunicipio(Imposto.ISSQN.cMunFG) then
-          AdicionaErro('287-Rejeição: Código Município do FG - ISSQN: dígito inválido');
+          AdicionaErro('287-Rejeição: Código Município do FG - ISSQN: dígito inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
         if (NFe.infNFe.Versao >= 4) then
         begin
@@ -1175,17 +1172,17 @@ begin
           begin
             if (Prod.cEAN <> SEM_GTIN) then
             begin
-              GravaLog('Validar: 611-GTIN (cEAN) inválido [nItem:' + IntToStr(I) + ']');
+              GravaLog('Validar: 611-GTIN (cEAN) inválido [nItem: '+IntToStr(Prod.nItem)+']');
               if not ValidarGTIN(Prod.cEAN) then
-                AdicionaErro('611-Rejeição: GTIN (cEAN) inválido [nItem:' + IntToStr(I) + ']');
+                AdicionaErro('611-Rejeição: GTIN (cEAN) inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
-              GravaLog('Validar: 882-GTIN (cEAN) com prefixo inválido [nItem:' + IntToStr(I) + ']');
+              GravaLog('Validar: 882-GTIN (cEAN) com prefixo inválido [nItem: '+IntToStr(Prod.nItem)+']');
               if not ValidarPrefixoGTIN(Prod.cEAN) then
-                AdicionaErro('882-Rejeição: GTIN (cEAN) com prefixo inválido [nItem:' + IntToStr(I) + ']');
+                AdicionaErro('882-Rejeição: GTIN (cEAN) com prefixo inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
-              GravaLog('Validar: 885-GTIN informado, mas não informado o GTIN da unidade tributável [nItem:' + IntToStr(I) + ']');
+              GravaLog('Validar: 885-GTIN informado, mas não informado o GTIN da unidade tributável [nItem: '+IntToStr(Prod.nItem)+']');
               if (Trim(Prod.cEANTrib) = '') or ((Trim(Prod.cEANTrib) = SEM_GTIN)) then
-                AdicionaErro('885-Rejeição: GTIN informado, mas não informado o GTIN da unidade tributável [nItem:' + IntToStr(I) + ']');
+                AdicionaErro('885-Rejeição: GTIN informado, mas não informado o GTIN da unidade tributável [nItem: '+IntToStr(Prod.nItem)+']');
             end;
           end;
 
@@ -1193,68 +1190,71 @@ begin
           begin
             //somente aplicavel em produção a partir de 01/12/2018
             //GravaLog('Validar: 888-GTIN da unidade tributável (cEANTrib) sem informação [nItem:' + IntToStr(I) + ']');
-            //AdicionaErro('888-Rejeição: GTIN da unidade tributável (cEANTrib) sem informação [nItem:' + IntToStr(I) + ']');
+            //AdicionaErro('888-Rejeição: GTIN da unidade tributável (cEANTrib) sem informação [nItem: '+IntToStr(Prod.nItem)+']');
           end
           else
           begin
             if (Prod.cEANTrib <> SEM_GTIN) then
             begin
-              GravaLog('Validar: 612-GTIN da unidade tributável (cEANTrib) inválido [nItem:' + IntToStr(I) + ']');
+              GravaLog('Validar: 612-GTIN da unidade tributável (cEANTrib) inválido [nItem: '+IntToStr(Prod.nItem)+']');
               if not ValidarGTIN(Prod.cEANTrib) then
-                AdicionaErro('612-Rejeição: GTIN da unidade tributável (cEANTrib) inválido [nItem:' + IntToStr(I) + ']');
+                AdicionaErro('612-Rejeição: GTIN da unidade tributável (cEANTrib) inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
-              GravaLog('Validar: 884-GTIN da unidade tributável (cEANTrib) com prefixo inválido [nItem:' + IntToStr(I) + ']');
+              GravaLog('Validar: 884-GTIN da unidade tributável (cEANTrib) com prefixo inválido [nItem: '+IntToStr(Prod.nItem)+']');
               if not ValidarPrefixoGTIN(Prod.cEANTrib) then
-                AdicionaErro('884-Rejeição: GTIN da unidade tributável (cEANTrib) com prefixo inválido [nItem:' + IntToStr(I) + ']');
+                AdicionaErro('884-Rejeição: GTIN da unidade tributável (cEANTrib) com prefixo inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
-              GravaLog('Validar: 886-GTIN da unidade tributável informado, mas não informado o GTIN [nItem:' + IntToStr(I) + ']');
+              GravaLog('Validar: 886-GTIN da unidade tributável informado, mas não informado o GTIN [nItem: '+IntToStr(Prod.nItem)+']');
               if (Trim(Prod.cEAN) = '') or ((Trim(Prod.cEAN) = SEM_GTIN)) then
-                AdicionaErro('886-Rejeição: GTIN da unidade tributável informado, mas não informado o GTIN [nItem:' + IntToStr(I) + ']');
+                AdicionaErro('886-Rejeição: GTIN da unidade tributável informado, mas não informado o GTIN [nItem: '+IntToStr(Prod.nItem)+']');
             end;
           end;
 
-          GravaLog('Validação: 889-Obrigatória a informação do GTIN para o produto [nItem:' + IntToStr(I) + ']');
+          GravaLog('Validação: 889-Obrigatória a informação do GTIN para o produto [nItem: '+IntToStr(Prod.nItem)+']');
           if (Trim(Prod.cEAN) = '') then
-            AdicionaErro('889-Rejeição: Obrigatória a informação do GTIN para o produto [nItem:' + IntToStr(I) + ']');
+            AdicionaErro('889-Rejeição: Obrigatória a informação do GTIN para o produto [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 879-'+IntToStr(I)+'-Se informado indEscala=N- não relevante (id: I05d), deve ser informado CNPJ do Fabricante da Mercadoria (id: I05e)');
+          GravaLog('Validar: 879-Se informado indEscala=N- não relevante (id: I05d), deve ser informado CNPJ do Fabricante da Mercadoria (id: I05e) [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.indEscala = ieNaoRelevante) and
              EstaVazio(Prod.CNPJFab) then
-            AdicionaErro('879-Rejeição: Informado item Produzido em Escala NÃO Relevante e não informado CNPJ do Fabricante [nItem:'+IntToStr(I)+']');
+            AdicionaErro('879-Rejeição: Informado item Produzido em Escala NÃO Relevante e não informado CNPJ do Fabricante [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 489-'+IntToStr(I)+'-Se informado CNPJFab (id: I05e) - CNPJ inválido (DV, zeros)');
+          GravaLog('Validar: 489-Se informado CNPJFab (id: I05e) - CNPJ inválido (DV, zeros) [nItem: '+IntToStr(Prod.nItem)+']');
           if NaoEstaVazio(Prod.CNPJFab) and (not ValidarCNPJ(Prod.CNPJFab)) then
-            AdicionaErro('489-Rejeição: CNPJFab informado inválido (DV ou zeros)');
+            AdicionaErro('489-Rejeição: CNPJFab informado inválido (DV ou zeros) [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 854-'+IntToStr(I)+'-Informado campo cProdANP (id: LA02) = 210203001 (GLP) e campo uTrib (id: I13) <> “kg” (ignorar a diferenciação entre maiúsculas e minúsculas)');
+          GravaLog('Validar: 854-Informado campo cProdANP (id: LA02) = 210203001 (GLP) e campo uTrib (id: I13) <> “kg” (ignorar a diferenciação entre maiúsculas e minúsculas) [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.comb.cProdANP = 210203001) and (UpperCase(Prod.uTrib) <> 'KG') then
-            AdicionaErro('854-Rejeição: Unidade Tributável (tag:uTrib) incompatível com produto informado [nItem:'+IntToStr(I)+']');
+            AdicionaErro('854-Rejeição: Unidade Tributável (tag:uTrib) incompatível com produto informado [nItem: '+IntToStr(Prod.nItem)+']');
+
+          if not UFCons then
+            UFCons := (Prod.comb.UFcons <> '') and (Prod.comb.UFcons <> NFe.emit.EnderEmit.UF);
 
           for J:=0 to Prod.rastro.Count-1 do
           begin
-            GravaLog('Validar: 877-'+IntToStr(I)+'-Data de Fabricação dFab (id:I83) maior que a data de processamento');
+            GravaLog('Validar: 877-Data de Fabricação dFab (id:I83) maior que a data de processamento [nItem: '+IntToStr(Prod.nItem)+']');
             if (Prod.rastro.Items[J].dFab > NFe.Ide.dEmi) then
-              AdicionaErro('877-Rejeição: Data de fabricação maior que a data de processamento [nItem:'+IntToStr(I)+']');
+              AdicionaErro('877-Rejeição: Data de fabricação maior que a data de processamento [nItem: '+IntToStr(Prod.nItem)+']');
 
-            GravaLog('Validar: 870-'+IntToStr(I)+'-Informada data de validade dVal(id: I84) menor que Data de Fabricação dFab (id: I83)');
+            GravaLog('Validar: 870-Informada data de validade dVal(id: I84) menor que Data de Fabricação dFab (id: I83) [nItem: '+IntToStr(Prod.nItem)+']');
             if (Prod.rastro.Items[J].dVal < Prod.rastro.Items[J].dFab) then
-              AdicionaErro('870-Rejeição: Data de validade incompatível com data de fabricação [nItem:'+IntToStr(I)+']');
+              AdicionaErro('870-Rejeição: Data de validade incompatível com data de fabricação [nItem: '+IntToStr(Prod.nItem)+']');
           end;
 
           for J:=0 to Prod.med.Count-1 do
           begin
-            GravaLog('Validar: 873-'+IntToStr(I)+'-Se informado Grupo de Medicamentos (tag:med) obrigatório preenchimento do grupo rastro (id: I80)');
+            GravaLog('Validar: 873-Se informado Grupo de Medicamentos (tag:med) obrigatório preenchimento do grupo rastro (id: I80) [nItem: '+IntToStr(Prod.nItem)+']');
             if NaoEstaVazio(Prod.med[J].cProdANVISA) and (Prod.rastro.Count<=0) then
-              AdicionaErro('873-Rejeição: Operação com medicamentos e não informado os campos de rastreabilidade [nItem:'+IntToStr(I)+']');
+              AdicionaErro('873-Rejeição: Operação com medicamentos e não informado os campos de rastreabilidade [nItem: '+IntToStr(Prod.nItem)+']');
           end;
 
-          GravaLog('Validar: 461-'+IntToStr(I)+'-Informado percentual do GLP (id: LA03a) ou percentual de Gás Natural Nacional (id: LA03b) ou percentual de Gás Natural Importado (id: LA03c) para produto diferente de "210203001 – GLP" (tag:cProdANP)');
+          GravaLog('Validar: 461-Informado percentual do GLP (id: LA03a) ou percentual de Gás Natural Nacional (id: LA03b) ou percentual de Gás Natural Importado (id: LA03c) para produto diferente de "210203001 – GLP" (tag:cProdANP) [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.comb.cProdANP <> 210203001) and ((Prod.comb.pGLP > 0) or (Prod.comb.pGNn > 0) or (Prod.comb.pGNi > 0)) then
-            AdicionaErro('461-Rejeição: Informado campos de percentual de GLP e/ou GLGNn e/ou GLGNi para produto diferente de GLP [nItem:'+IntToStr(I)+']');
+            AdicionaErro('461-Rejeição: Informado campos de percentual de GLP e/ou GLGNn e/ou GLGNi para produto diferente de GLP [nItem: '+IntToStr(Prod.nItem)+']');
 
-          GravaLog('Validar: 855-'+IntToStr(I)+'-Informado percentual do GLP (id: LA03a) ou percentual de Gás Natural Nacional (id: LA03b) ou percentual de Gás Natural Importado (id: LA03c) para produto diferente de "210203001 – GLP" (tag:cProdANP)');
+          GravaLog('Validar: 855-Informado percentual do GLP (id: LA03a) ou percentual de Gás Natural Nacional (id: LA03b) ou percentual de Gás Natural Importado (id: LA03c) para produto diferente de "210203001 – GLP" (tag:cProdANP) [nItem: '+IntToStr(Prod.nItem)+']');
           if (Prod.comb.cProdANP = 210203001) and ((Prod.comb.pGLP + Prod.comb.pGNn + Prod.comb.pGNi) <> 100) then
-            AdicionaErro('855-Rejeição: Somatório percentuais de GLP derivado do petróleo, GLGNn e GLGNi diferente de 100 [nItem:'+IntToStr(I)+']');
+            AdicionaErro('855-Rejeição: Somatório percentuais de GLP derivado do petróleo, GLGNn e GLGNi diferente de 100 [nItem: '+IntToStr(Prod.nItem)+']');
         end;
 
         if Prod.IndTot = itSomaTotalNFe then
@@ -1290,6 +1290,15 @@ begin
         if Copy(Prod.CFOP,1,1) = '3'then
           NFImportacao := True;
       end;
+    end;
+
+    if not UFCons then
+    begin
+      GravaLog('Validar: 772-Op.Interstadual e UF igual');
+      if (nfe.Ide.idDest = doInterestadual) and
+         (NFe.Dest.EnderDest.UF = NFe.Emit.EnderEmit.UF) and
+         (NFe.Dest.CNPJCPF <> NFe.Emit.CNPJCPF) then
+        AdicionaErro('772-Rejeição: Operação Interestadual e UF de destino igual à UF do emitente');
     end;
 
     if FaturamentoDireto then
@@ -1407,13 +1416,38 @@ begin
             fsvTotPag :=  fsvTotPag + NFe.pag[I].vPag;
           end;
 
+          {
+            ** Validação removida na NT 2016.002 v1.10
           GravaLog('Validar: 767-Soma dos pagamentos');
           if (fsvTotPag < NFe.Total.ICMSTot.vNF) then
             AdicionaErro('767-Rejeição: Somatório dos pagamentos diferente do total da Nota Fiscal');
+          }
+
+          if (NFe.Ide.modelo = 65) then
+          begin
+            GravaLog('Validar: 899-NFCe sem pagamento');
+            for I := 0 to NFe.pag.Count - 1 do
+            begin
+              if (NFe.pag[I].tPag = fpSemPagamento) then
+              begin
+                AdicionaErro('899-Rejeição: Informado incorretamente o campo meio de pagamento');
+                Break;
+              end;
+            end;
+
+            GravaLog('Validar: 865-Total dos pagamentos NFCe');
+            if (fsvTotPag < NFe.Total.ICMSTot.vNF) then
+              AdicionaErro('865-Rejeição: Total dos pagamentos menor que o total da nota');
+          end;
+
+          GravaLog('Validar: 866-Ausência de troco');
+          if (NFe.pag.vTroco = 0) and (fsvTotPag > NFe.Total.ICMSTot.vNF) then
+            AdicionaErro('866-Rejeição: Ausência de troco quando o valor dos pagamentos informados for maior que o total da nota');
 
           GravaLog('Validar: 869-Valor do troco');
-          if (NFe.Total.ICMSTot.vNF <> (fsvTotPag - NFe.pag.vTroco)) then
+          if (NFe.pag.vTroco > 0) and (NFe.Total.ICMSTot.vNF <> (fsvTotPag - NFe.pag.vTroco)) then
             AdicionaErro('869-Rejeição: Valor do troco incorreto');
+
         end;
 
         fnDevolucao:
@@ -1847,7 +1881,7 @@ begin
 
           sSecao := 'impostoDevol'+IntToStrZero(I,3) ;
           sFim   := INIRec.ReadString( sSecao,'pDevol','FIM') ;
-          if (sFim <> 'FIM') then
+          if ((sFim <> 'FIM') and ( Length(sFim) > 0 ))  then
           begin
             pDevol    := StringToFloatDef( INIRec.ReadString(sSecao,'pDevol','') ,0);
             vIPIDevol := StringToFloatDef( INIRec.ReadString(sSecao,'vIPIDevol','') ,0);
@@ -1856,7 +1890,7 @@ begin
           sSecao := IfThen( INIRec.SectionExists('Veiculo'+IntToStrZero(I,3)), 'Veiculo', 'veicProd');
           sSecao := sSecao+IntToStrZero(I,3) ;
           sFim     := INIRec.ReadString( sSecao,'Chassi','FIM') ;
-          if (sFim <> 'FIM') then
+          if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
           begin
             with Prod.veicProd do
             begin
@@ -1932,7 +1966,7 @@ begin
           sSecao := IfThen( INIRec.SectionExists('Combustivel'+IntToStrZero(I,3)), 'Combustivel', 'comb');
           sSecao := sSecao+IntToStrZero(I,3) ;
           sFim     := INIRec.ReadString( sSecao,'cProdANP','FIM') ;
-          if (sFim <> 'FIM') then
+          if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
           begin
             with Prod.comb do
             begin
@@ -1967,7 +2001,7 @@ begin
 
               sSecao := 'ICMSInter'+IntToStrZero(I,3) ;
               sFim     := INIRec.ReadString( sSecao,'vBCICMSSTDest','FIM') ;
-              if (sFim <> 'FIM') then
+              if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
               begin
                 ICMSInter.vBCICMSSTDest := StringToFloatDef(sFim,0) ;
                 ICMSInter.vICMSSTDest   := StringToFloatDef(INIRec.ReadString( sSecao,'vICMSSTDest',''),0) ;
@@ -1975,7 +2009,7 @@ begin
 
               sSecao := 'ICMSCons'+IntToStrZero(I,3) ;
               sFim   := INIRec.ReadString( sSecao,'vBCICMSSTCons','FIM') ;
-              if (sFim <> 'FIM') then
+              if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
               begin
                 ICMSCons.vBCICMSSTCons := StringToFloatDef(sFim,0) ;
                 ICMSCons.vICMSSTCons   := StringToFloatDef(INIRec.ReadString( sSecao,'vICMSSTCons',''),0) ;
@@ -1989,7 +2023,7 @@ begin
             sSecao := 'ICMS'+IntToStrZero(I,3) ;
             sFim     := INIRec.ReadString( sSecao,'CST',INIRec.ReadString(sSecao,'CSOSN','FIM')) ;
 
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with ICMS do
               begin
@@ -2040,7 +2074,7 @@ begin
 
             sSecao := 'ICMSUFDest'+IntToStrZero(I,3);
             sFim     := INIRec.ReadString(sSecao,'vBCUFDest','FIM');
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with ICMSUFDest do
               begin
@@ -2057,28 +2091,31 @@ begin
             end;
 
             sSecao := 'IPI'+IntToStrZero(I,3) ;
-            sFim     := INIRec.ReadString( sSecao,'CST','FIM') ;
-            if (sFim <> 'FIM') then
+            sFim   := INIRec.ReadString( sSecao,'CST','FIM') ;
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with IPI do
               begin
                 CST      := StrToCSTIPI(OK, INIRec.ReadString( sSecao,'CST','')) ;
-                clEnq    := INIRec.ReadString(  sSecao,'ClasseEnquadramento',INIRec.ReadString(  sSecao,'clEnq'   ,''));
-                CNPJProd := INIRec.ReadString(  sSecao,'CNPJProdutor'       ,INIRec.ReadString(  sSecao,'CNPJProd',''));
-                cSelo    := INIRec.ReadString(  sSecao,'CodigoSeloIPI'      ,INIRec.ReadString(  sSecao,'cSelo'   ,''));
-                qSelo    := INIRec.ReadInteger( sSecao,'QuantidadeSelos'    ,INIRec.ReadInteger( sSecao,'qSelo'   ,0));
-                cEnq     := INIRec.ReadString(  sSecao,'CodigoEnquadramento',INIRec.ReadString(  sSecao,'cEnq'    ,''));
-                vBC      := StringToFloatDef( INIRec.ReadString(sSecao,'ValorBase'   ,INIRec.ReadString(sSecao,'vBC'   ,'')) ,0);
-                qUnid    := StringToFloatDef( INIRec.ReadString(sSecao,'Quantidade'  ,INIRec.ReadString(sSecao,'qUnid' ,'')) ,0);
-                vUnid    := StringToFloatDef( INIRec.ReadString(sSecao,'ValorUnidade',INIRec.ReadString(sSecao,'vUnid' ,'')) ,0);
-                pIPI     := StringToFloatDef( INIRec.ReadString(sSecao,'Aliquota'    ,INIRec.ReadString(sSecao,'pIPI'  ,'')) ,0);
-                vIPI     := StringToFloatDef( INIRec.ReadString(sSecao,'Valor'       ,INIRec.ReadString(sSecao,'vIPI'  ,'')) ,0);
+                if OK then
+                begin
+                  clEnq    := INIRec.ReadString(  sSecao,'ClasseEnquadramento',INIRec.ReadString(  sSecao,'clEnq'   ,''));
+                  CNPJProd := INIRec.ReadString(  sSecao,'CNPJProdutor'       ,INIRec.ReadString(  sSecao,'CNPJProd',''));
+                  cSelo    := INIRec.ReadString(  sSecao,'CodigoSeloIPI'      ,INIRec.ReadString(  sSecao,'cSelo'   ,''));
+                  qSelo    := INIRec.ReadInteger( sSecao,'QuantidadeSelos'    ,INIRec.ReadInteger( sSecao,'qSelo'   ,0));
+                  cEnq     := INIRec.ReadString(  sSecao,'CodigoEnquadramento',INIRec.ReadString(  sSecao,'cEnq'    ,''));
+                  vBC      := StringToFloatDef( INIRec.ReadString(sSecao,'ValorBase'   ,INIRec.ReadString(sSecao,'vBC'   ,'')) ,0);
+                  qUnid    := StringToFloatDef( INIRec.ReadString(sSecao,'Quantidade'  ,INIRec.ReadString(sSecao,'qUnid' ,'')) ,0);
+                  vUnid    := StringToFloatDef( INIRec.ReadString(sSecao,'ValorUnidade',INIRec.ReadString(sSecao,'vUnid' ,'')) ,0);
+                  pIPI     := StringToFloatDef( INIRec.ReadString(sSecao,'Aliquota'    ,INIRec.ReadString(sSecao,'pIPI'  ,'')) ,0);
+                  vIPI     := StringToFloatDef( INIRec.ReadString(sSecao,'Valor'       ,INIRec.ReadString(sSecao,'vIPI'  ,'')) ,0);
+                end;
               end;
             end;
 
             sSecao := 'II'+IntToStrZero(I,3) ;
             sFim     := INIRec.ReadString( sSecao,'ValorBase',INIRec.ReadString( sSecao,'vBC','FIM')) ;
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with II do
               begin
@@ -2091,17 +2128,19 @@ begin
 
             sSecao := 'PIS'+IntToStrZero(I,3) ;
             sFim     := INIRec.ReadString( sSecao,'CST','FIM') ;
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with PIS do
               begin
-                CST :=  StrToCSTPIS(OK, INIRec.ReadString( sSecao,'CST','01'));
-
-                PIS.vBC       := StringToFloatDef( INIRec.ReadString(sSecao,'ValorBase'    ,INIRec.ReadString(sSecao,'vBC'      ,'')) ,0);
-                PIS.pPIS      := StringToFloatDef( INIRec.ReadString(sSecao,'Aliquota'     ,INIRec.ReadString(sSecao,'pPIS'     ,'')) ,0);
-                PIS.qBCProd   := StringToFloatDef( INIRec.ReadString(sSecao,'Quantidade'   ,INIRec.ReadString(sSecao,'qBCProd'  ,'')) ,0);
-                PIS.vAliqProd := StringToFloatDef( INIRec.ReadString(sSecao,'ValorAliquota',INIRec.ReadString(sSecao,'vAliqProd','')) ,0);
-                PIS.vPIS      := StringToFloatDef( INIRec.ReadString(sSecao,'Valor'        ,INIRec.ReadString(sSecao,'vPIS'     ,'')) ,0);
+                CST :=  StrToCSTPIS(OK, INIRec.ReadString( sSecao,'CST',''));
+                if OK then
+                begin
+                  PIS.vBC       := StringToFloatDef( INIRec.ReadString(sSecao,'ValorBase'    ,INIRec.ReadString(sSecao,'vBC'      ,'')) ,0);
+                  PIS.pPIS      := StringToFloatDef( INIRec.ReadString(sSecao,'Aliquota'     ,INIRec.ReadString(sSecao,'pPIS'     ,'')) ,0);
+                  PIS.qBCProd   := StringToFloatDef( INIRec.ReadString(sSecao,'Quantidade'   ,INIRec.ReadString(sSecao,'qBCProd'  ,'')) ,0);
+                  PIS.vAliqProd := StringToFloatDef( INIRec.ReadString(sSecao,'ValorAliquota',INIRec.ReadString(sSecao,'vAliqProd','')) ,0);
+                  PIS.vPIS      := StringToFloatDef( INIRec.ReadString(sSecao,'Valor'        ,INIRec.ReadString(sSecao,'vPIS'     ,'')) ,0);
+                end;
               end;
             end;
 
@@ -2110,7 +2149,7 @@ begin
             if (sFim = 'FIM') then
               sFim   := INIRec.ReadString( sSecao,'vBC','F')+ INIRec.ReadString( sSecao,'qBCProd','IM') ;
 
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with PISST do
               begin
@@ -2124,17 +2163,19 @@ begin
 
             sSecao := 'COFINS'+IntToStrZero(I,3) ;
             sFim     := INIRec.ReadString( sSecao,'CST','FIM') ;
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with COFINS do
               begin
-                CST := StrToCSTCOFINS(OK, INIRec.ReadString( sSecao,'CST','01'));
-
-                COFINS.vBC       := StringToFloatDef( INIRec.ReadString(sSecao,'ValorBase'    ,INIRec.ReadString(sSecao,'vBC'      ,'')) ,0);
-                COFINS.pCOFINS   := StringToFloatDef( INIRec.ReadString(sSecao,'Aliquota'     ,INIRec.ReadString(sSecao,'pCOFINS'  ,'')) ,0);
-                COFINS.qBCProd   := StringToFloatDef( INIRec.ReadString(sSecao,'Quantidade'   ,INIRec.ReadString(sSecao,'qBCProd'  ,'')) ,0);
-                COFINS.vAliqProd := StringToFloatDef( INIRec.ReadString(sSecao,'ValorAliquota',INIRec.ReadString(sSecao,'vAliqProd','')) ,0);
-                COFINS.vCOFINS   := StringToFloatDef( INIRec.ReadString(sSecao,'Valor'        ,INIRec.ReadString(sSecao,'vCOFINS'  ,'')) ,0);
+                CST := StrToCSTCOFINS(OK, INIRec.ReadString( sSecao,'CST',''));
+                if OK then
+                begin
+                  COFINS.vBC       := StringToFloatDef( INIRec.ReadString(sSecao,'ValorBase'    ,INIRec.ReadString(sSecao,'vBC'      ,'')) ,0);
+                  COFINS.pCOFINS   := StringToFloatDef( INIRec.ReadString(sSecao,'Aliquota'     ,INIRec.ReadString(sSecao,'pCOFINS'  ,'')) ,0);
+                  COFINS.qBCProd   := StringToFloatDef( INIRec.ReadString(sSecao,'Quantidade'   ,INIRec.ReadString(sSecao,'qBCProd'  ,'')) ,0);
+                  COFINS.vAliqProd := StringToFloatDef( INIRec.ReadString(sSecao,'ValorAliquota',INIRec.ReadString(sSecao,'vAliqProd','')) ,0);
+                  COFINS.vCOFINS   := StringToFloatDef( INIRec.ReadString(sSecao,'Valor'        ,INIRec.ReadString(sSecao,'vCOFINS'  ,'')) ,0);
+                end;
               end;
             end;
 
@@ -2143,7 +2184,7 @@ begin
             if (sFim = 'FIM') then
               sFim   := INIRec.ReadString( sSecao,'vBC','F')+ INIRec.ReadString( sSecao,'qBCProd','IM') ;
 
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with COFINSST do
               begin
@@ -2160,7 +2201,7 @@ begin
             if (sFim = 'FIM') then
               sFim := INIRec.ReadString( sSecao,'vBC','FIM');
 
-            if (sFim <> 'FIM') then
+            if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin
               with ISSQN do
               begin
@@ -2420,7 +2461,7 @@ begin
       end;
 
       sFim   := INIRec.ReadString( 'exporta','UFembarq',INIRec.ReadString( 'exporta','UFSaidaPais','FIM')) ;
-      if (sFim <> 'FIM') then
+      if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
       begin
         exporta.UFembarq     := INIRec.ReadString( 'exporta','UFembarq','') ;;
         exporta.xLocEmbarq   := INIRec.ReadString( 'exporta','xLocEmbarq','');

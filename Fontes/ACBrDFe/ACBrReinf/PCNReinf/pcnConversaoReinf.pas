@@ -201,6 +201,7 @@ type
                             );
 
   TindCom                 = ( icProdRural,  // 1 - Comercialização da Produção por Prod. Rural PJ/Agroindústria, exceto para entidades executoras do PAA
+                              icProdIsenta, // 7 - Comercialização da Produção com Isenção de Contribuição Previdenciária, de acordo com a Lei n° 13.606/2018;
                               icPAA,        // 8 - Comercialização da Produção para Entidade do Programa de Aquisição de Alimentos - PAA
                               icMercExterno // 9 - Comercialização direta da Produção no Mercado Externo
                             );
@@ -228,7 +229,7 @@ type
                               ttrOutros       // 5 - Outros
                             );
 
-  TVersaoReinf            = ( v1_02_00, v1_03_00, v1_03_02 );
+  TVersaoReinf            = ( v1_02_00, v1_03_00, v1_03_02, v1_04_00 );
 
   // ct00 não consta no manual mas consta no manual do desenvolvedor pg 85, é usado para zerar a base de teste.
   TpClassTrib = (ct00, ct01, ct02, ct03, ct04, ct06, ct07, ct08, ct09, ct10, ct11,
@@ -463,6 +464,7 @@ begin
     v1_02_00: result := 1.20;
     v1_03_00: result := 1.30;
     v1_03_02: result := 1.32;
+    v1_04_00: Result := 1.40;
   else
     result := 0;
   end;
@@ -470,12 +472,14 @@ end;
 
 function VersaoReinfToStr(const t: TVersaoReinf): String;
 begin
-  result := EnumeradoToStr(t, ['1_02_00', '1_03_00', '1_03_02'], [v1_02_00, v1_03_00, v1_03_02]);
+  result := EnumeradoToStr(t, ['1_02_00', '1_03_00', '1_03_02', '1_04_00'],
+                           [v1_02_00, v1_03_00, v1_03_02, v1_04_00]);
 end;
 
 function StrToVersaoReinf(out ok: Boolean; const s: String): TVersaoReinf;
 begin
-  result := StrToEnumerado(ok, s, ['1_02_00', '1_03_00', '1_03_02'], [v1_02_00, v1_03_00, v1_03_02]);
+  result := StrToEnumerado(ok, s, ['1_02_00', '1_03_00', '1_03_02', '1_04_00'],
+                           [v1_02_00, v1_03_00, v1_03_02, v1_04_00]);
 end;
 
 function TipoEventoToStr(const t: TTipoEvento ): string;
@@ -703,12 +707,12 @@ end;
 
 function indComToStr(const t: TindCom ): string;
 begin
-  result := EnumeradoToStr2(t, ['1', '8', '9']);
+  result := EnumeradoToStr2(t, ['1', '7', '8', '9']);
 end;
 
 function StrToindCom(var ok: boolean; const s: string): TindCom;
 begin
-  result := TindCom( StrToEnumerado2(ok , s, ['1', '8', '9']) );
+  result := TindCom( StrToEnumerado2(ok , s, ['1', '7', '8', '9']) );
 end;
 
 function tpAjusteToStr(const t: TtpAjuste ): string;

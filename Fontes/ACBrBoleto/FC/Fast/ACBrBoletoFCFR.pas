@@ -334,8 +334,13 @@ begin
           fiNenhum:
             begin
               if (MostrarPreview) and (not FModoThread) then
-                frxReport.ShowReport(False)
-              else
+              begin
+                frxPDFExport.Keywords       := frxPDFExport.Title;
+                frxPDFExport.Background     := IncorporarBackgroundPdf;//False diminui 70% do tamanho do pdf
+                frxPDFExport.EmbeddedFonts  := IncorporarFontesPdf;
+                frxReport.Engine.Report.FileName := NomeArquivo; //nome do arquivo a ser exportado
+                frxReport.ShowReport(false)
+              end else
                 frxReport.Print;
             end;
           fiPDF:

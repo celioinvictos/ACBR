@@ -307,7 +307,7 @@ begin
                     proGovBR, proIssCuritiba, proISSNET, proLexsom, proNatal,
                     proTinus, proRecife, proRJ, proSimplISS, proThema, proTiplan,
                     proAgiliv2, proFISSLex, proSpeedGov, proPronim, proSalvador,
-                    proSJP, proWebISS, proSystemPro] then
+                    proSJP, proWebISS, proSystemPro, proMetropolisWeb] then
       aVersao := '';
   end
   else
@@ -329,8 +329,10 @@ begin
               end;
 
     proBethav2,
+    proIssDSF,
     proSIAPNet,
     proSaatri,
+    proGiss,
     proSalvador: IdLote := 'lote' + NumeroLote;
 
 
@@ -371,7 +373,7 @@ begin
     aIdentificadorCanc := '';
 
   // Redefine o Profixo 3 ======================================================
-  if Provedor in [proBetha, proBethav2, proSpeedGov] then
+  if Provedor in [proBetha, proBethav2{, proSpeedGov}] then
     Prefixo3 := '';
 end;
 
@@ -1948,13 +1950,7 @@ function TNFSeG.Gera_DadosMsgSubstituirNFSe: String;
 var
  TagGrupo: String;
 begin
-  case Provedor of
-    proAgili: TagGrupo := 'PedidoCancelamento';
-  else
-    TagGrupo := 'Pedido';
-  end;
-
-  Result := Gera_DadosMsgCancelarNFSe + '</' + Prefixo3 + TagGrupo + '>'; //+ Notas;
+  Result := Gera_DadosMsgCancelarNFSe;
 
   FPossuiAlertas := (Gerador.ListaDeAlertas.Count <> 0);
 

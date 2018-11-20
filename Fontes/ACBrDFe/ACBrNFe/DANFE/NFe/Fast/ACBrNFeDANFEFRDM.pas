@@ -716,7 +716,7 @@ begin
           FieldByName('MensagemFiscal').AsString := ACBrStr('EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL')
       else
       begin
-        if FNFe.Ide.tpEmis <> teNormal then
+        if (FNFe.Ide.tpEmis <> teNormal) and EstaVazio(FNFe.procNFe.nProt) then
           FieldByName('MensagemFiscal').AsString := ACBrStr('EMITIDA EM CONTINGÊNCIA'+LineBreak+'Pendente de autorização')
         else
           FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
@@ -1483,7 +1483,7 @@ begin
         FieldDefs.Add('ResumoCanhoto', ftString, 200);
         FieldDefs.Add('Mensagem0', ftString, 60);
         FieldDefs.Add('Imagem', ftString, 256);
-        FieldDefs.Add('Sistema', ftString, 150);
+        FieldDefs.Add('Sistema', ftString, 300);
         FieldDefs.Add('Usuario', ftString, 60);
         FieldDefs.Add('Fax', ftString, 60);
         FieldDefs.Add('Site', ftString, 60);

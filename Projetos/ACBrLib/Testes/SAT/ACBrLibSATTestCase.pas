@@ -25,12 +25,14 @@ type
     procedure Test_SAT_Versao;
     procedure Test_SAT_ConfigLerValor;
     procedure Test_SAT_ConfigGravarValor;
-    procedure Test_SAT_InicializarConfigGravarValoresEFinalizar;
+    procedure Test_SAT_ImpressaoExtratoFortes;
+    procedure Test_SAT_ImpressaoExtratoEscPOS;
   end;
 
 implementation
 
 uses
+  Printers, OSPrinters,
   ACBrLibSATStaticImport, ACBrLibSATConsts, ACBrLibConsts, ACBrUtil;
 
 procedure TTestACBrSATLib.Test_SAT_Inicializar_Com_DiretorioInvalido;
@@ -101,7 +103,7 @@ begin
   Bufflen := 4;
   AStr := Space(Bufflen);
   AssertEquals(ErrOk, SAT_Nome(PChar(AStr), Bufflen));
-  AssertEquals(4, Bufflen);
+  AssertEquals(Length(CLibSATNome), Bufflen);
   AssertEquals(copy(CLibSATNome,1,4), AStr);
 end;
 
@@ -151,14 +153,47 @@ begin
   AssertEquals('Erro ao Mudar configuração', '4', AStr);
 end;
 
-procedure TTestACBrSATLib.Test_SAT_InicializarConfigGravarValoresEFinalizar;
+procedure TTestACBrSATLib.Test_SAT_ImpressaoExtratoFortes;
+var
+  NomeImpressoraPDF: String;
+  I: Integer;
 begin
-  AssertEquals(ErrOk, SAT_Inicializar('',''));
+  NomeImpressoraPDF := '';
+  I := 0;
+  while (I < Printer.Printers.Count) and (NomeImpressoraPDF = '') do
+  begin
+    if (pos(' PDF', UpperCase(Printer.Printers[I])) > 0) then
+      NomeImpressoraPDF := Printer.Printers[I];
 
+    Inc( I );
+  end;
+
+  AssertEquals(ErrOk, SAT_Inicializar('',''));
   AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoSAT, CChaveModelo, '1'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoSAT, CChaveNomeDLL, 'C:\SAT\SAT.dll'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoExtrato, CChaveTipo, '0'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoExtrato, CChavePrinterName, PChar(NomeImpressoraPDF)));
   AssertEquals(ErrOK, SAT_ConfigGravar(''));
-  AssertEquals(ErrOK, SAT_ConfigLer(''));
   AssertEquals(ErrOK, SAT_InicializarSAT);
+  AssertEquals(ErrOK, SAT_ImprimirExtratoVenda('..\AD35180911111111111111591234567890001684429520.xml', ''));
+
+  AssertEquals(ErrOK, SAT_Finalizar());
+end;
+
+procedure TTestACBrSATLib.Test_SAT_ImpressaoExtratoEscPOS;
+var
+  SaidaImpressao: String;
+begin
+  SaidaImpressao := ApplicationPath+'posprinter.txt';
+  AssertEquals(ErrOk, SAT_Inicializar('',''));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoSAT, CChaveModelo, '1'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoSAT, CChaveNomeDLL, 'C:\SAT\SAT.dll'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoExtrato, CChaveTipo, '1'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoPosPrinter, CChaveModelo, '1'));
+  AssertEquals(ErrOK, SAT_ConfigGravarValor(CSessaoPosPrinter, CChavePorta, PChar(SaidaImpressao)));
+  AssertEquals(ErrOK, SAT_ConfigGravar(''));
+  AssertEquals(ErrOK, SAT_InicializarSAT);
+  AssertEquals(ErrOK, SAT_ImprimirExtratoVenda('..\AD35180911111111111111591234567890001684429520.xml', ''));
 
   AssertEquals(ErrOK, SAT_Finalizar());
 end;

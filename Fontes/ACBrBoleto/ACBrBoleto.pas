@@ -56,7 +56,7 @@ uses Classes, Graphics, Contnrs, IniFiles,
      ACBrBase, ACBrMail, ACBrValidador;
 
 const
-  CACBrBoleto_Versao = '0.0.246';
+  CACBrBoleto_Versao = '0.0.247';
   CInstrucaoPagamento = 'Pagar preferencialmente nas agencias do %s';
   CInstrucaoPagamentoLoterica = 'Preferencialmente nas Casas Lotéricas até o valor limite';
   CCedente = 'CEDENTE';
@@ -928,6 +928,7 @@ type
     fUF            : String;
     fAcbrBoleto    : TACBrBoleto;
     fTipoCarteira: TACBrTipoCarteira;
+    fDigitoVerificadorAgenciaConta: String;
     procedure SetAgencia(const AValue: String);
     procedure SetCNPJCPF ( const AValue: String ) ;
     procedure SetConta(const AValue: String);
@@ -959,6 +960,7 @@ type
     property UF          : String  read fUF          write fUF;
     property CEP         : String  read fCEP         write fCEP;
     property Telefone    : String  read fTelefone    write fTelefone;
+    property DigitoVerificadorAgenciaConta  : String read fDigitoVerificadorAgenciaConta   write fDigitoVerificadorAgenciaConta;
     property ACBrBoleto  : TACBrBoleto read fACBrBoleto;
   end;
 
@@ -1506,6 +1508,7 @@ begin
    fModalidade    := '';
    fConvenio      := '';
    fCNPJCPF       := '';
+   fDigitoVerificadorAgenciaConta:= '';
    fResponEmissao := tbCliEmite;
    fCaracTitulo   := tcSimples;
    fTipoInscricao := pJuridica;
@@ -2062,12 +2065,12 @@ begin
       if PercentualMulta <> 0 then   
       begin
         if DataMulta <> 0 then
-          AStringList.Add(ACBrStr('Cobrar Multa de ' + FormatCurr('R$ #,##0.00',
+          AStringList.Add(ACBrStr('Multa de ' + FormatCurr('R$ #,##0.00',
             IfThen(MultaValorFixo, PercentualMulta, ValorDocumento*( 1+ PercentualMulta/100)-ValorDocumento)) +
                          ' a partir '+FormatDateTime('dd/mm/yyyy',ifthen(Vencimento = DataMulta,
                                                                 IncDay(DataMulta,1),DataMulta))))
         else
-          AStringList.Add(ACBrStr('Cobrar Multa de ' + FormatCurr('R$ #,##0.00',
+          AStringList.Add(ACBrStr('Multa de ' + FormatCurr('R$ #,##0.00',
             IfThen(MultaValorFixo, PercentualMulta, ValorDocumento*( 1+ PercentualMulta/100)-ValorDocumento)) +
                          ' após o vencimento.'));
       end;
@@ -2654,7 +2657,7 @@ begin
       end
       else
       begin
-        if (not LeCedenteRetorno) and ((AAgencia <> OnlyNumber(Cedente.Agencia)) or
+        if (not LeCedenteRetorno) and ((StrToIntDef(AAgencia,0) <> StrToIntDef(OnlyNumber(Cedente.Agencia),0)) or
                (StrToIntDef(AContaCedente,0) <> StrToIntDef(OnlyNumber( Cedente.CodigoCedente),0))) then
         begin
           Result:= False;
@@ -2995,6 +2998,8 @@ begin
         ContaDigito   := IniBoletos.ReadString(CConta,'DigitoConta', ContaDigito);
         Agencia       := IniBoletos.ReadString(CConta,'Agencia', Agencia);
         AgenciaDigito := IniBoletos.ReadString(CConta,'DigitoAgencia', AgenciaDigito);
+        DigitoVerificadorAgenciaConta := IniBoletos.ReadString(CConta,'DigitoVerificadorAgenciaConta',
+                                      DigitoVerificadorAgenciaConta );
 
         Result := True;
       end;
@@ -3051,7 +3056,9 @@ begin
             DataDesconto        := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataDesconto','')),0);
             DataMoraJuros       := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataMoraJuros','')),0);
   	    DataMulta           := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataMulta','')),0);
-            DataProtesto        := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataProtesto','')),0);
+            DiasDeProtesto      := IniBoletos.ReadInteger(Sessao,'DiasDeProtesto',0);
+            if (DiasDeProtesto = 0) then
+              DataProtesto        := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataProtesto','')),0);
             DataBaixa           := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataBaixa','')),0);
             DataLimitePagto     := StrToDateDef(Trim(IniBoletos.ReadString(Sessao,'DataLimitePagto','')),0);
             LocalPagamento      := IfThen(Trim(wLocalPagto) <> '',wLocalPagto,LocalPagamento);
@@ -3139,6 +3146,7 @@ begin
        IniRetorno.WriteString(CConta,'DigitoConta',Cedente.ContaDigito);
        IniRetorno.WriteString(CConta,'Agencia',Cedente.Agencia);
        IniRetorno.WriteString(CConta,'DigitoAgencia',Cedente.AgenciaDigito);
+       IniRetorno.WriteString(CConta,'DigitoVerificadorAgenciaConta',Cedente.DigitoVerificadorAgenciaConta);
 
        for I:= 0 to ListadeBoletos.Count - 1 do
        begin

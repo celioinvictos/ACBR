@@ -204,7 +204,8 @@ type
     FvalorOutrasRetencoes: Currency;
     FDescricaoOutrasRetencoes: String;
     FvalorRepasse: Currency; //Governa
-    FValorDespesasNaoTributaveis: Currency; //Governa
+    FValorDespesasNaoTributaveis: Currency;//Governa
+    FValorTotalRecebido: Currency;
   published
     property ValorServicos: Currency read FValorServicos write FValorServicos;
     property ValorDeducoes: Currency read FValorDeducoes write FValorDeducoes;
@@ -243,6 +244,8 @@ type
     property ValorRepasse: Currency read FValorRepasse write FValorRepasse;
     //Provedor Infisc V 11
     property ValorDespesasNaoTributaveis: Currency read FValorDespesasNaoTributaveis write FValorDespesasNaoTributaveis;
+    //Recife
+    property ValorTotalRecebido: Currency read FValorTotalRecebido write FValorTotalRecebido;
   end;
 
   TItemServicoCollection = class(TCollection)
@@ -852,7 +855,6 @@ type
     property Canhoto: TnfseCanhoto read FCanhoto Write FCanhoto;
     property Transportadora: TDadosTransportadora read FTransportadora write FTransportadora;
     property Despesa: TDespesaCollection read FDespesa write FDespesa;
-
     // propriedade para provedor Governa
     property TipoRecolhimento: String read FTipoRecolhimento write FTipoRecolhimento;
 

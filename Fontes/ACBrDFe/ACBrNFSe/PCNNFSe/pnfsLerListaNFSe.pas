@@ -388,7 +388,11 @@ begin
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'retorno') <> '');
 
-   if Nivel1 then
+    //DataSmart
+    if ((not Nivel1) and (Provedor = proDataSmart)) then
+      Nivel1 := (leitor.rExtrai(1, 'CompNfse') <> '');
+
+    if Nivel1 then
     begin
       // =======================================================================
       // Extrai a Lista de Notas
@@ -438,6 +442,9 @@ begin
         DataRecebimentoTemp := Leitor.rCampo(tcDatHor, 'DataEmissaoNFe');
       end;
 
+      if ((Provedor = proDataSmart) and (leitor.rExtrai(1, 'NFSe') <> '')) then
+        Nivel := 1;
+
       i := 0;
       while (Leitor.rExtrai(Nivel, 'tcCompNfse', '', i + 1) <> '') or
             (Leitor.rExtrai(Nivel, 'CompNfse', '', i + 1) <> '') or
@@ -446,7 +453,7 @@ begin
             (leitor.rExtrai(Nivel, 'NFe', '', i + 1) <> '') or                   // Provedor SP
             (leitor.rExtrai(Nivel, 'Reg20Item', '', i + 1) <> '') or             // Provedor CONAM
             ((Provedor in [proActcon]) and (Leitor.rExtrai(Nivel + 1, 'Nfse', '', i + 1) <> '')) or
-            ((Provedor in [proAgili, proAgiliv2]) and (Leitor.rExtrai(Nivel, 'Nfse', '', i + 1) <> '')) or
+            ((Provedor in [proAgili, proAgiliv2, proDataSmart]) and (Leitor.rExtrai(Nivel, 'Nfse', '', i + 1) <> '')) or
             ((Provedor in [proEquiplano]) and (Leitor.rExtrai(Nivel, 'nfse', '', i + 1) <> '')) or
             ((Provedor in [proNFSeBrasil]) and (Leitor.rExtrai(Nivel, 'nota', '', i + 1) <> '')) or
             ((Provedor in [proISSDSF]) and (Leitor.rExtrai(Nivel, 'ConsultaNFSe', '', i + 1) <> '')) or     // ConsultaLote

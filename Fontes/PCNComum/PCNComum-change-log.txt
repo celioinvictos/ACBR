@@ -39,6 +39,24 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+23/10/2018
+-- pcnAuxiliar --
+[*] Ajuste na função "GetInicioDoHorarioDeVerao" de acordo com as novas regras.
+    https://www.projetoacbr.com.br/forum/topic/47233-erro-na-function-getiniciodohorariodeverao/
+  Por: BigWings
+
+16/10/2018
+-- pcnAuxiliar --
+[*] Alterado a função ValidarChave para que este leve em consideração a série,
+    pois dependendo da série o emitente pode ser CNPJ (Pessoa Juridica) ou
+    CPF (Pessoa Fisica). 
+   Por: Maria das Graças
+
+12/09/2018
+-- pcnConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/46359-ajuste-na-descri%C3%A7%C3%A3o-do-cst60-no-dacte/
+  Por: bsoft
+
 30/08/2018
 -- pcnConversao --
 [+] Inclusão de opção de alinhamento à esquerda para o canhoto do DANFE em FR paisagem.

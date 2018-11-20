@@ -76,6 +76,12 @@ public
   Procedure LerIniNFe(ArqINI: String);
   procedure ImprimirNFe(pImpressora: String; pPreview: String; pCopias: Integer; pPDF: Boolean);
   procedure RespostaIntegrador;
+  procedure RespostaConsultaInfCan;
+  procedure RespostaConsultaProcEvento(ItemId: Integer);
+  procedure RespostaConsultaDetEvento(ItemId: Integer);
+  procedure RespostaConsultaItemPedido(ItemId, ItemRet: Integer);
+  procedure RespostaConsultaRetEvento(ItemId, ItemRet: Integer);
+  procedure RespostaConsultaChNFePend(ItemId, ItemRet, ItemChave: Integer);
 
   property ACBrNFe: TACBrNFe read fACBrNFe;
 end;
@@ -1325,6 +1331,166 @@ begin
 
 end;
 
+procedure TACBrObjetoNFe.RespostaConsultaInfCan;
+var
+  Resp: TConsultaNFeInfCanResposta;
+begin
+  Resp := TConsultaNFeInfCanResposta.Create(resINI);
+  try
+    with fACBrNFe.WebServices.Consulta.retCancNFe do
+    begin
+      Resp.tpAmb:=     TpAmbToStr(tpAmb);
+      Resp.VerAplic:=  verAplic;
+      Resp.CStat:=     cStat;
+      Resp.XMotivo:=   xMotivo;
+      Resp.CUF:=       cUF;
+      Resp.ChNFe:=     chNFE;
+      Resp.DhRecbto:=  dhRecbto;
+      Resp.NProt:=     nProt;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoNFe.RespostaConsultaProcEvento(ItemId: Integer);
+var
+  Resp: TConsultaNFeProcEventoResposta;
+begin
+  Resp := TConsultaNFeProcEventoResposta.Create(
+    'ProcEventoNFe' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
+  try
+    with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].RetEventoNFe.InfEvento do
+    begin
+      Resp.ID := fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].ID;
+      Resp.cOrgao := IntToStr(cOrgao);
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.CNPJ := CNPJ;
+      Resp.chNFe := chNFe;
+      Resp.dhEvento := dhEvento;
+      Resp.tpEvento := TpEventoToStr(tpEvento);
+      Resp.nSeqEvento := nSeqEvento;
+      Resp.verEvento := versaoEvento;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoNFe.RespostaConsultaDetEvento(ItemId: Integer);
+var
+  Resp: TConsultaNFeDetEventoResposta;
+begin
+  Resp := TConsultaNFeDetEventoResposta.Create(
+    'DetEvento' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
+  try
+    with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].RetEventoNFe.InfEvento.detEvento do
+    begin
+      Resp.versao := versao;;
+      Resp.descEvento:= descEvento;
+      Resp.xCorrecao := xCorrecao;
+      Resp.xCondUso := xCondUso;
+      Resp.nProt := nProt;
+      Resp.xJust := xJust;
+      Resp.cOrgaoAutor:= IntToStr( cOrgaoAutor );
+      Resp.tpAutor := TipoAutorToStr( tpAutor );
+      Resp.verAplic := verAplic;
+      Resp.dhEmi := dhEmi;
+      Resp.tpNF := tpNFToStr( tpNF );
+      Resp.IE := IE;
+      Resp.DESTCNPJCPF := dest.CNPJCPF;
+      Resp.DESTidEstrangeiro := dest.idEstrangeiro;
+      Resp.DESTIE := dest.IE;
+      Resp.DESTUF := dest.UF;
+      Resp.vNF := vNF;
+      Resp.vICMS := vICMS;
+      Resp.vST := vST;
+      Resp.idPedidoCancelado :=  idPedidoCancelado;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoNFe.RespostaConsultaItemPedido(ItemId, ItemRet: Integer);
+var
+  Resp: TConsultaNFeItemPedidoResposta;
+begin
+  Resp := TConsultaNFeItemPedidoResposta.Create(
+    'ItemPedido' + Trim(IntToStrZero(ItemID +1, 3)) + Trim(IntToStrZero(ItemRet +1, 3)), resINI);
+  try
+    with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].RetEventoNFe.InfEvento.detEvento.itemPedido.Items[ItemRet] do
+    begin
+      Resp.numItem := numItem;
+      Resp.qtdeItem := qtdeItem;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoNFe.RespostaConsultaRetEvento(ItemId, ItemRet: Integer);
+var
+  Resp: TConsultaNFeRetEventoResposta;
+begin
+  Resp := TConsultaNFeRetEventoResposta.Create(
+    'RetEvento' + Trim(IntToStrZero(ItemID +1, 3)) + Trim(IntToStrZero(ItemRet +1, 3)), resINI);
+  try
+    with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemId].RetEventoNFe.retEvento.Items[ItemRet].RetInfEvento do
+    begin
+      Resp.Id := IntToStr(fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].RetEventoNFe.retEvento.Items[ItemRet].ID);
+      Resp.NomeArquivo := NomeArquivo;
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.verAplic := verAplic;
+      Resp.cOrgao := IntToStr(cOrgao);
+      Resp.cStat := cStat;
+      Resp.xMotivo:= xMotivo;
+      Resp.chNFe := chNFe;
+      Resp.tpEvento := TpEventoToStr(tpEvento);
+      Resp.xEvento := xEvento;
+      Resp.nSeqEvento := nSeqEvento;
+      Resp.CNPJDest := CNPJDest;
+      Resp.emailDest := emailDest;
+      Resp.cOrgaoAutor := IntToStr(cOrgaoAutor);
+      Resp.dhRegEvento := dhRegEvento;
+      Resp.nProt := nProt;
+      Resp.XML := XML;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoNFe.RespostaConsultaChNFePend(ItemId, ItemRet, ItemChave: Integer);
+var
+  Resp: TConsultaNFeChNFePendResposta;
+begin
+  Resp := TConsultaNFeChNFePendResposta.Create(
+    'ChNFePend' + Trim(IntToStrZero(ItemID +1, 3)) + Trim(IntToStrZero(ItemRet +1, 3))
+                + Trim(IntToStrZero(ItemChave +1, 3)), resINI);
+  try
+    with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemId].RetEventoNFe.retEvento.Items[ItemRet]
+         .RetInfEvento.chNFePend.Items[ItemChave] do
+    begin
+      Resp.chNFePend:= ChavePend;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
 { TACBrCarregarNFe }
 
 procedure TACBrCarregarNFe.CarregarDFePath( const AValue: String);
@@ -1797,8 +1963,7 @@ begin
   begin
     ACBrNFe.WebServices.Recibo.Recibo := ARecibo;
     DoValidarIntegradorNFCe();
-    if not (ACBrNFe.WebServices.Recibo.Executar) then
-      raise Exception.Create(ACBrNFe.WebServices.Recibo.xMotivo);
+    ACBrNFe.WebServices.Recibo.Executar;
 
     RespostaRecibo;
     for I := 0 to ACBrNFe.WebServices.Recibo.NFeRetorno.ProtNFe.Count - 1 do
@@ -1818,6 +1983,7 @@ procedure TMetodoConsultarNFe.Executar;
 var
   CargaDFe: TACBrCarregarNFe;
   AXML: String;
+  I, J, K: Integer;
 begin
   AXML := fpCmd.Params(0);
 
@@ -1838,20 +2004,39 @@ begin
         ACBrNFe.WebServices.Consulta.NFeChave :=
           OnlyNumber(ACBrNFe.NotasFiscais.Items[0].NFe.infNFe.ID);
 
-      try
-        DoValidarIntegradorNFCe(ACBrNFe.WebServices.Consulta.NFeChave);
-        ACBrNFe.WebServices.Consulta.Executar;
-        RespostaConsulta;
-        if  FilesExists( AXML ) then
-          fpCmd.Resposta :=  fpCmd.Resposta + 'Arquivo=' + AXML;
+      DoValidarIntegradorNFCe(ACBrNFe.WebServices.Consulta.NFeChave);
+      ACBrNFe.WebServices.Consulta.Executar;
+      RespostaConsulta;
 
-      except
-        raise Exception.Create(ACBrNFe.WebServices.Consulta.Msg);
+      if  FilesExists( AXML ) then
+         fpCmd.Resposta :=  fpCmd.Resposta + 'Arquivo=' + AXML + sLineBreak;
+
+      if NaoEstaVazio(Trim(ACBrNFe.WebServices.Consulta.retCancNFe.nProt)) then
+         RespostaConsultaInfCan;
+
+      for I:= 0 to ACBrNFe.WebServices.Consulta.procEventoNFe.Count-1 do
+      begin
+         RespostaConsultaProcEvento(I);
+         RespostaConsultaDetEvento(I);
+
+         for J:= 0 to ACBrNFe.WebServices.Consulta.procEventoNFe.Items[I].RetEventoNFe.InfEvento.detEvento.itemPedido.Count-1 do
+           RespostaConsultaItemPedido(I, J);
+
+         for J:= 0 to ACBrNFe.WebServices.Consulta.procEventoNFe.Items[I].RetEventoNFe.retEvento.Count-1 do
+         begin
+           RespostaConsultaRetEvento(I, J);
+
+           for K:= 0 to ACBrNFe.WebServices.Consulta.procEventoNFe.Items[I].RetEventoNFe.retEvento.Items[J].RetInfEvento.chNFePend.Count-1 do
+             RespostaConsultaChNFePend(I, J, K);
+         end;
+
       end;
+
     finally
       CargaDFe.Free;
     end;
   end;
+
 end;
 
 { TMetodoAssinarNFe }
@@ -1961,7 +2146,8 @@ begin
 
         fpCmd.Resposta := 'Arquivo criado em: ' + ArqPDF;
       except
-        raise Exception.Create('Erro ao criar o arquivo PDF');
+        on E: Exception do
+          raise Exception.Create('Erro ao criar o arquivo PDF. '+ sLineBreak + E.Message );
       end;
     finally
       CargaDFeEvento.Free;
@@ -2080,7 +2266,8 @@ begin
         ArqPDF := PathWithDelim(ACBrNFe.DANFe.PathPDF) + ArqPDF;
         fpCmd.Resposta := 'Arquivo criado em: ' + ArqPDF;
       except
-        raise Exception.Create('Erro ao criar o arquivo PDF');
+        on E: Exception do
+          raise Exception.Create('Erro ao criar o arquivo PDF. '+ sLineBreak + E.Message);
       end;
 
     finally
@@ -2265,9 +2452,9 @@ begin
   begin
     if not DirectoryExists(PathWithDelim(ExtractFilePath(Application.ExeName)) +
       'Lotes' + PathDelim + 'Lote' + ALoteEnvio) then
-      raise Exception.Create('Diretório não encontrado:' + PathWithDelim(
-        ExtractFilePath(Application.ExeName)) +
-        'Lotes' + PathDelim + 'Lote' + ALoteEnvio)
+        raise Exception.Create('Diretório não encontrado:' + PathWithDelim(
+          ExtractFilePath(Application.ExeName)) +
+          'Lotes' + PathDelim + 'Lote' + ALoteEnvio)
     else
     begin
       ACBrNFe.NotasFiscais.Clear;
@@ -2327,32 +2514,41 @@ end;
           3 - Imprime: 1 Para True. Default 0
           4 - Nome Impressora: String com Nome da Impressora
           5 - Sincrono: 1 Para Sincrono
+          6 - ValidarXML: Validar o XML
+          7 - GerarXML: Gerar Novamente o XML
 }
 procedure TMetodoEnviarNFe.Executar;
 var
   CargaDFe: TACBrCarregarNFe;
   APathorXML, AImpressora: String;
   ALote: Integer;
-  AAssina, AImprime, ASincrono: Boolean;
+  AAssina, AImprime, ASincrono, AGerarXML, AValidaXML: Boolean;
+  AErro: String;
 begin
+  AErro:= '';
   APathorXML := fpCmd.Params(0);
   ALote := StrToIntDef(fpCmd.Params(1), 0);
   AAssina := StrToBoolDef(fpCmd.Params(2), False);
   AImprime := StrToBoolDef(fpCmd.Params(3), False);
   AImpressora := fpCmd.Params(4);
   ASincrono := StrToBoolDef(fpCmd.Params(5), False);
+  AValidaXML := StrToBoolDef(fpCmd.Params(6), False);
+  AGerarXML := StrToBoolDef(fpCmd.Params(7), False);
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
     ACBrNFe.NotasFiscais.Clear;
     CargaDFe := TACBrCarregarNFe.Create(ACBrNFe, APathorXML);
     try
-      ACBrNFe.NotasFiscais.GerarNFe;
+      if AGerarXML and
+         ( not (ACBrNFe.NotasFiscais.VerificarAssinatura(AErro)) )  then
+        ACBrNFe.NotasFiscais.GerarNFe;
 
       if (AAssina) then
         ACBrNFe.NotasFiscais.Assinar;
 
-      ACBrNFe.NotasFiscais.Validar;
+      if (AValidaXML) then
+        ACBrNFe.NotasFiscais.Validar;
 
       if (ALote = 0) then
         ACBrNFe.WebServices.Enviar.Lote := '1'
@@ -2392,6 +2588,7 @@ end;
 { Params: 0 - IniFile - Uma String com um Path completo arquivo .ini NFe
                          ou Uma String com conteúdo txt do NFe
           1 - RetornaXML: 1 para Retornar XML Gerado na Resposta
+          2 - AssinaNFe: 0 para NÃO assinar, por padrão gera sempre assinando o XML
 }
 procedure TMetodoCriarNFe.Executar;
 var
@@ -2400,9 +2597,11 @@ var
   ArqNFe: string;
   SL: TStringList;
   Resp, AIni: string;
+  AAssina: Boolean;
 begin
   AIni := fpCmd.Params(0);
   ARetornaXML := StrToBoolDef(fpCmd.Params(1), False);
+  AAssina := StrToBoolDef(fpCmd.Params(2), True);
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
@@ -2420,8 +2619,11 @@ begin
     ACBrNFe.NotasFiscais.GerarNFe;
     Alertas := ACBrNFe.NotasFiscais.Items[0].Alertas;
 
-    ACBrNFe.NotasFiscais.Assinar;
-    ACBrNFe.NotasFiscais.Validar;
+    if AAssina then
+    begin
+      ACBrNFe.NotasFiscais.Assinar;
+      ACBrNFe.NotasFiscais.Validar;
+    end;
 
     ArqNFe := PathWithDelim(ACBrNFe.Configuracoes.Arquivos.PathSalvar) +
       OnlyNumber(ACBrNFe.NotasFiscais.Items[0].NFe.infNFe.ID) + '-nfe.xml';
@@ -2546,8 +2748,7 @@ begin
     else
       ACBrNFe.WebServices.Consulta.NFeChave := AChave;
 
-    if not ACBrNFe.WebServices.Consulta.Executar then
-      raise Exception.Create(ACBrNFe.WebServices.Consulta.Msg);
+    ACBrNFe.WebServices.Consulta.Executar;
 
     ACBrNFe.EventoNFe.Evento.Clear;
     with ACBrNFe.EventoNFe.Evento.Add do
@@ -2570,12 +2771,10 @@ begin
       infEvento.detEvento.xJust := AJustificativa;
     end;
     DoValidarIntegradorNFCe(AChave);
-    try
-      ACBrNFe.EnviarEvento(ALote);
-      RespostaCancelamento;
-    except
-      raise Exception.Create(ACBrNFe.WebServices.EnvEvento.EventoRetorno.xMotivo);
-    end;
+
+    ACBrNFe.EnviarEvento(ALote);
+    RespostaCancelamento;
+
   end;
 end;
 
@@ -2710,7 +2909,6 @@ end;
 procedure TMetodoImprimirInutilizacaoPDF.Executar;
 var
   CargaDFeInut: TACBrCarregarNFeInut;
-  CargaNFe: TACBrCarregarNFe;
   AXMLInut, ArqPDF: String;
   DanfeRL: TACBrNFeDANFeRL;
 begin
@@ -2731,7 +2929,8 @@ begin
 
         fpCmd.Resposta := 'Arquivo criado em: ' + ArqPDF;
       except
-        raise Exception.Create('Erro ao criar o arquivo PDF');
+        on E: Exception do
+          raise Exception.Create('Erro ao criar o arquivo PDF. ' + sLineBreak + E.Message);
       end;
     finally
       CargaDFeInut.Free;
@@ -3128,7 +3327,8 @@ begin
             ArqPDF := OnlyNumber(ACBrNFe.EventoNFe.Evento[0].InfEvento.id);
             ArqPDF := PathWithDelim(ACBrNFe.DANFE.PathPDF)+ArqPDF+'-procEventoNFe.pdf';
           except
-            raise Exception.Create('Erro ao criar o arquivo PDF');
+            on E: Exception do
+              raise Exception.Create('Erro ao criar o arquivo PDF. ' + sLineBreak + E.Message);
           end;
         end;
 
@@ -3225,7 +3425,8 @@ begin
             ArqPDF := OnlyNumber(ACBrNFe.InutNFe.ID);
             ArqPDF := PathWithDelim(ACBrNFe.DANFE.PathPDF)+ArqPDF+'-procInutNFe.pdf';
           except
-            raise Exception.Create('Erro ao criar o arquivo PDF');
+            on E: Exception do
+              raise Exception.Create('Erro ao criar o arquivo PDF. '+ sLineBreak + E.Message);
           end;
         end;
 

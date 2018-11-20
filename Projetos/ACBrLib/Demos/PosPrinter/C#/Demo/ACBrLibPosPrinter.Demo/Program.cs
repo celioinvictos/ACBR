@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace ACBrLibPosPrinter.Demo
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// Ponto de entrada principal para o aplicativo.

@@ -47,6 +47,26 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+19/10/2018
+-- ACBrMDFeManifestos --
+[*] Ajuste na leitura do arquivo .ini (sessão infANTT).
+  por: Italo Jurisato Junior
+
+01/10/2018
+-- pmdfeMDFeW --
+[*] A tag <capKG> estava como obrigatória sendo que é opcional no veicTracao.
+  por: Italo Jurisato Junior
+
+28/09/2018
+-- pmdfeMDFeW --
+[*] A tag <capM3> estava como obrigatória sendo que é opcional.
+  por: Italo Jurisato Junior
+
+11/09/2018
+-- ACBrMDFeManifestos --
+[*] Ajuste na leitura do arquivo .ini baseado na versão 3.0 do MDFe
+  por: José M. S. Junior
+
 27/08/2018
 -- Diversos --
 [*] Alterações visando deixar o componente em conformidade com a nova versão da Nota Técnica 2018/002.

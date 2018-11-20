@@ -47,7 +47,70 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
-Data 13/08/2018 ver: 0.0.246
+Data 26/10/2018 ver: 0.0.247
+
+30-10-2018 -- ACBrBancoBancoob
+[*] Correção na parametrização da versão do lote Header para CNAB240 
+manteve campo fixo com espaço para seguir manual
+
+30-10-2018 -- ACBrBancoBanestes
+[*] Correção na geração do arquivo de Remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/47333-correcao-banestes/?tab=comments#comment-312164
+
+26-10-2018 -- ACBrBancoBrasil
+[*] Correção na geração do Trailler do Registros CNAB240
+https://www.projetoacbr.com.br/forum/topic/46836-arquivo-de-remessa-pelo-acbrmonitorplus/
+
+26-10-2018 -- ACBrBancoNordeste
+[*] Ajustes na validação do código da carteira
+https://www.projetoacbr.com.br/forum/topic/46880-problema-na-carteira-boleto-banco-do-nordeste/
+
+26-10-2018 -- ACBrBancoCecred, ACBrBancoSicred, ACBrBancoBancoob
+[*] Ajustes na parametrização da versão do lote e arquivo para CNAB240 e adicionado
+parametro "DigitoVerificadorAgenciaConta".
+https://www.projetoacbr.com.br/forum/topic/46312-remessa-sicoob-240-digito-verificador-da-agconta/
+
+09-10-2018 -- ACBrBancoBrasil
+[*] Ajustes no totalizador de Registros CNAB240
+https://www.projetoacbr.com.br/forum/topic/46836-arquivo-de-remessa-pelo-acbrmonitorplus/
+
+
+05-10-2018 -- ACBrBoleto
+[*] Ajuste Mensagem "Multa" no Boleto (Diminuir alguns caracteres da Mensagem para correto preenchimento na Remessa)
+https://www.projetoacbr.com.br/forum/topic/45945-remessa-santander-sugest%C3%A3o-para-corre%C3%A7%C3%A3o-de-rejei%C3%A7%C3%A3o/
+
+11-09-2018 -- ACBrBancoSantander
+[*] Ajuste Retorno CNAB240 leitura código ocorrência liquidação
+https://www.projetoacbr.com.br/forum/topic/43728-banco-santander-lerretorno240-motivo-da-ocorr%C3%AAncia-quando-liquida%C3%A7%C3%A3o/
+
+11-09-2018 -- ACBrBancoBrasil
+[+] Ajustes Adicinando Segmento S na geração Remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/45970-segmento-s-santander-e-banco-do-brasil-mensagem-c-200/
+
+11-09-2018 -- ACBrBancoBradesco
+[+] Ajustes na geração geração Remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/43314-homologa%C3%A7%C3%A3o-arquivo-remessa-bradesco-cnab-240/
+
+11-09-2018 -- ACBrBancoCaixa
+[*] Ajustes na geração de remessa Remessa CNAB240- Adicionado propriedade para alterar Versao do Cabeçalho e Lote do arquivo
+https://www.projetoacbr.com.br/forum/topic/43690-n%C3%BAmero-da-vers%C3%A3o-do-layout-caixa/
+
+11-09-2018 -- ACBrBancoob
+[*] Ajustes Remessa CNAB400 - Valor Juros de Mora foi removico multiplicação por 30, deve ser passado % Mensal
+para ficar no padrão da mensagem do Boleto e dos demais bancos.
+https://www.projetoacbr.com.br/forum/topic/45970-segmento-s-santander-e-banco-do-brasil-mensagem-c-200/
+
+11-09-2018 -- ACBrBancoBRB
+[*] Ajustes na geração NossoNumero
+https://www.projetoacbr.com.br/forum/topic/45729-corre%C3%A7%C3%A3o-acbrbancobrb-nosso-numero/
+
+11-09-2018 -- ACBrBancoAmazonia
+[*] Ajustes na geração de remessa
+https://www.projetoacbr.com.br/forum/topic/45719-erro-remessa-boleto-amaz%C3%B4nia/
+
+11-09-2018 -- ACBrBancoBanrisul
+[*] Ajustes na geração de remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/45916-campos-num%C3%A9ricos-opcionais-em-branco/
 
 14-08-2018 -- ACBrBancoUnicredES / ACBrBoleto
 [+] Adicionado Unit Banco UnicredES

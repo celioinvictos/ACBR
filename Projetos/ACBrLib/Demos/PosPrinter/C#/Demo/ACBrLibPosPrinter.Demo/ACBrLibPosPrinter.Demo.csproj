@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\..\Libs\C#\Helpers.cs">
+      <Link>Helpers.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\Libs\C#\ItemData.cs">
+      <Link>ItemData.cs</Link>
+    </Compile>
     <Compile Include="..\..\Imports\ACBrPosPrinter.cs">
       <Link>ACBrPosPrinter.cs</Link>
     </Compile>
@@ -74,8 +80,6 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers.cs" />
-    <Compile Include="ItemData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmMain.resx">

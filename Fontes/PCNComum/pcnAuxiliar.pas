@@ -108,6 +108,7 @@ function DateTimeTodhUTC(DataHora: TDateTime; TZD: string): string;
 function GetUTC(UF: string; const dataHora: TDateTime): string;
 function GetUTCSistema: String;
 function IsHorarioDeVerao(const UF: string; const dataHora: TDateTime): Boolean;
+function GetPrimeiroDomingoDoMes(const ano, mes: Integer): TDateTime;
 function GetTerceiroDomingoDoMes(const ano, mes: Integer): TDateTime;
 function GetInicioDoHorarioDeVerao(const ano: Integer): TDateTime;
 function GetFimDoHorarioDeVerao(const ano: Integer): TDateTime;
@@ -313,12 +314,23 @@ begin
     i := 0;
     if GerarDigito(i, copy(aChave, 1, 43)) then
       result := i = StrToInt(aChave[length(aChave)]);
+
     if result then
       result := ValidarCodigoUF(StrToInt(copy(aChave, 1, 2)));
+
     if result then
       result := ValidarAAMM(copy(aChave, 3, 4));
+
     if result then
-      result := ValidarCNPJ(copy(aChave, 7, 14));
+    begin
+      case StrToInt(copy(aChave, 23, 3)) of
+        // serie reservada para DFe eCPF emitida por aplicativo da Empresa Emitente
+        920..969: result := ValidarCPF(copy(aChave, 10, 11));
+      else
+        // serie (001-889) reservada para DFe eCNPJ
+        result := ValidarCNPJ(copy(aChave, 7, 14));
+      end;
+    end;
   except
     result := false;
   end;
@@ -700,24 +712,37 @@ end;
 
 function GetInicioDoHorarioDeVerao(const ano: Integer): TDateTime;
 begin
-  {O inicio do horário de verão é no terceiro domingo do mes de outubro}
-  Result := GetTerceiroDomingoDoMes(ano, 10);
+  if Ano >= 2018 then
+  begin
+    // http://www.planalto.gov.br/ccivil_03/_ato2015-2018/2017/decreto/D9242.htm
+    Result := GetPrimeiroDomingoDoMes(ano, 11);
+  end
+  else
+  begin
+    {Até 2017, o inicio do horário de verão era no terceiro domingo do mes de outubro}
+    Result := GetTerceiroDomingoDoMes(ano, 10);
+  end;
 end;
 
-function GetTerceiroDomingoDoMes(const ano, mes: Integer): TDateTime;
+function GetPrimeiroDomingoDoMes(const ano, mes: Integer): TDateTime;
 var
   i: integer;
 begin
-  {O laço vai até 7 pois até o dia 7 tem que ter passado pelo menos um domingo.
-   Achado o primeiro domingo, é somado a ele 14 dias para encontrar o terceiro domingo.}
+  {O laço vai até 7 pois até o dia 7 tem que ter passado pelo menos um domingo.}
   result := 0;
   for i := 1 to 7 do begin
     if DayOfWeek(EncodeDate(ano, mes, i)) = 1 then
      begin
-       result := EncodeDate(ano, mes, i + 14);
+       result := EncodeDate(ano, mes, i);
        break;
      end;
   end;
+
+end;
+
+function GetTerceiroDomingoDoMes(const ano, mes: Integer): TDateTime;
+begin
+  Result := GetPrimeiroDomingoDoMes(ano, mes) + 14;
 end;
 
 function GetFimDoHorarioDeVerao(const ano: Integer): TDateTime;

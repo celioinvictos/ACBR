@@ -47,6 +47,22 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+10/10/2018
+-- ACBrCTeConhecimentos --
+[*] Após separar o conteudo do grupo <infModal> remove um eventual namespace.
+  Por: Italo Jurisato Junior
+
+21/09/2018
+-- pcteEnvEventoCTe --
+[*] Acrescentado os demais tipos de eventos no metodo de leitura de arquivo INI do tipo eventos.
+  Por: Italo Jurisato Junior
+
+19/09/2018
+-- pcteCTeW --
+[*] Alterado para gerar a tag <dhViagem> somente quando o tipo de fretamento for
+   Eventual.
+  Por: Italo Jurisato Junior
+
 27/08/2018
 -- Diversos --
 [*] Alterações visando deixar o componente em conformidade com a nova versão da Nota Técnica 2018/002.

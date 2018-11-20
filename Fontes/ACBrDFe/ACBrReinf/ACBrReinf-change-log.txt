@@ -50,6 +50,43 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+08/11/2018
+-- pcnReinfR5011 -- 
+[*] https://www.projetoacbr.com.br/forum/topic/47499-ajuste-reinf-r5011/
+   Por: Maxwell Roberto
+
+22/10/2018
+-- Diversos -- 
+[*] https://www.projetoacbr.com.br/forum/topic/46367-vers%C3%A3o-14-do-layout/?do=findComment&comment=310996
+   Por: Daniel Yudi
+
+19/10/2018
+-- pcnReinfR2099 -- 
+[*] https://www.projetoacbr.com.br/forum/topic/47114-acbrreinf-ajuste-campo-evtpgtos/
+   Por: Édipo Rauber
+
+11/10/2018
+-- pcnReinfR1070 -- 
+[*] Compatibilização com a versão 1.4.0
+   Por: Luis Lambranho
+
+25/09/2018
+-- pcnConversaoReinf -- 
+[+] Acrescentado o enumerador da versão: v1_04_00.
+   Por: Italo Jurisato Junior
+
+20/09/2018
+-- Diversos --
+[*] Acrescentado a propriedade idEvento na classe Gerados, desta forma é possível
+    obter de uma forma simples o ID de cada evento que foi gerado e esta a espera
+    de ser enviado.
+   Por: Italo Jurisato Junior
+
+19/09/2018
+-- pcnReinfR1000 -- 
+[*] https://www.projetoacbr.com.br/forum/topic/46549-tag-de-telefone-da-sw-obrigat%C3%B3ria-r1000/
+   Por: Data Lider
+
 07/08/2018
 -- pcnConversaoReinf -- 
 [*] https://www.projetoacbr.com.br/forum/topic/45468-acbr-reinf-tindsusp-indicativo-de-suspens%C3%A3o-da-exigibilidade/

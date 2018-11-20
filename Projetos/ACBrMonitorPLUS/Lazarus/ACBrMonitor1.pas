@@ -50,9 +50,13 @@ uses
   ACBrDFeSSL, ACBrGNRE2, ACBrGNReGuiaRLClass, ACBrBlocoX, ACBrMDFe,
   ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types, fileinfo,
   ACBrDFeConfiguracoes, ACBrReinf, ACBreSocial, ACBrIntegrador, LazHelpCHM,
-  pmdfeConversaoMDFe, ACBrMonitorConfig, ACBrMonitorConsts, DoACBrMDFeUnit,
-  DoACBreSocialUnit, pcesConversaoeSocial, DoACBrReinfUnit, pcnConversaoReinf,
-  DoBoletoUnit, DOACBrNFeUnit, DoACBrCTeUnit, DoSATUnit, DoECFUnit;
+  pmdfeConversaoMDFe, pcesConversaoeSocial, pcnConversaoReinf,
+  ACBrMonitorConfig, ACBrMonitorConsts,
+  DOACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit, DoACBreSocialUnit, DoBoletoUnit,
+  DoACBrReinfUnit, DoBALUnit, DoEmailUnit, DoCEPUnit, DoCHQUnit, DoGAVUnit,
+  DoIBGEUnit, DoNcmUnit, DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit,
+  DoACBrGNReUnit, DoPosPrinterUnit, DoECFUnit, DoECFObserver, DoECFBemafi32,
+  DoSATUnit;
 
 const
   //{$I versao.txt}
@@ -1491,6 +1495,19 @@ type
     FDoBoleto: TACBrObjetoBoleto;
     FDoeSocial: TACBrObjetoeSocial;
     FDoReinf: TACBrObjetoReinf;
+    FDoBAL: TACBrObjetoBAL;
+    FDoEmail: TACBrObjetoEmail;
+    FDoCEP: TACBrObjetoCEP;
+    FDoCHQ: TACBrObjetoCHQ;
+    FDoGAV: TACBrObjetoGAV;
+    FDoIBGE: TACBrObjetoIBGE;
+    FDoNCM: TACBrObjetoNCM;
+    FDoLCB: TACBrObjetoLCB;
+    FDoDIS: TACBrObjetoDIS;
+    FDoSedex: TACBrObjetoSedex;
+    FDoETQ: TACBrObjetoETQ;
+    FDoGNRe: TACBrObjetoGNRe;
+    FDoPosPrinter: TACBrObjetoPosPrinter;
     FDoSAT: TACBrObjetoSAT;
     FDoECF: TACBrObjetoECF;
 
@@ -1583,17 +1600,14 @@ var
 
 implementation
 
-uses IniFiles, TypInfo, LCLType, strutils,
-  UtilUnit, pcnAuxiliar,
-  DoGAVUnit, DoCHQUnit, DoDISUnit, DoLCBUnit, DoACBrUnit, DoBALUnit,
-  DoCEPUnit, DoIBGEUnit,
+uses
+  IniFiles, TypInfo, LCLType, strutils,
+  UtilUnit, pcnAuxiliar, DoACBrUnit,
   {$IFDEF MSWINDOWS} sndkey32, {$ENDIF}
   {$IFDEF LINUX} unix, baseunix, termio, {$ENDIF}
   ACBrECFNaoFiscal, ACBrUtil, ACBrConsts, Math, Sobre, DateUtils,
-  ConfiguraSerial, DoECFBemafi32, DoECFObserver, DoETQUnit, DoEmailUnit,
-  DoSedexUnit, DoNcmUnit,
-  DoPosPrinterUnit, DoACBrGNReUnit, ACBrSATExtratoClass,
-  SelecionarCertificado, ACBrNFeConfiguracoes, ACBrCTeConfiguracoes,
+  ConfiguraSerial, SelecionarCertificado,
+  ACBrSATExtratoClass, ACBrNFeConfiguracoes, ACBrCTeConfiguracoes,
   ACBrMDFeConfiguracoes, ACBrGNREConfiguracoes, ACBreSocialConfiguracoes,
   ACBrReinfConfiguracoes;
 
@@ -1620,6 +1634,8 @@ var
   iDIS: TACBrDISModelo;
   iBAL: TACBrBALModelo;
   iCEP: TACBrCEPWebService;
+  iESO: TVersaoeSocial;
+  iREI: TVersaoReinf;
   IBanco: TACBrTipoCobranca;
   iSAT: TACBrSATModelo;
   iTipo: TpcnTipoAmbiente;
@@ -1672,18 +1688,46 @@ begin
   FDoCTe := TACBrObjetoCTe.Create(MonitorConfig, ACBrCTe1);
   FDoCTe.OnAntesDeImprimir := @AntesDeImprimir;
   FDoCTe.OnDepoisDeImprimir := @DepoisDeImprimir;
-  FDoNFe.OnConfiguraDACTe   := @ConfiguraDACTe;
+  FDoCTe.OnConfiguraDACTe   := @ConfiguraDACTe;
 
   FDoMDFe := TACBrObjetoMDFe.Create(MonitorConfig, ACBrMDFe1);
   FDoMDFe.OnAntesDeImprimir := @AntesDeImprimir;
   FDoMDFe.OnDepoisDeImprimir := @DepoisDeImprimir;
-
+  
   FDoBoleto := TACBrObjetoBoleto.Create(MonitorConfig, ACBrBoleto1);
   FDoBoleto.OnAntesDeImprimir := @AntesDeImprimir;
   FDoBoleto.OnDepoisDeImprimir := @DepoisDeImprimir;
 
   FDoeSocial := TACBrObjetoeSocial.Create(MonitorConfig, ACBreSocial1);
   FDoReinf   := TACBrObjetoReinf.Create(MonitorConfig, ACBrReinf1);
+  FDoBAL     := TACBrObjetoBAL.Create(MonitorConfig, ACBrBAL1);
+  FDoEmail   := TACBrObjetoEmail.Create(MonitorConfig, ACBrMail1);
+  FDoCEP     := TACBrObjetoCEP.Create(MonitorConfig, ACBrCEP1);
+
+  FDoCHQ := TACBrObjetoCHQ.Create(MonitorConfig, ACBrCHQ1);
+  FDoCHQ.OnAntesDeImprimir := @AntesDeImprimir;
+  FDoCHQ.OnDepoisDeImprimir := @DepoisDeImprimir;
+
+  FDoGAV := TACBrObjetoGAV.Create(MonitorConfig, ACBrGAV1);
+
+  FDoIBGE := TACBrObjetoIBGE.Create(MonitorConfig, ACBrIBGE1);
+
+  FDoNCM := TACBrObjetoNCM.Create(MonitorConfig, ACBrNCMs1);
+
+  FDoLCB := TACBrObjetoLCB.Create(MonitorConfig, ACBrLCB1);
+
+  FDoDIS := TACBrObjetoDIS.Create(MonitorConfig, ACBrDIS1);
+
+  FDoSedex := TACBrObjetoSedex.Create(MonitorConfig, ACBrSedex1);
+
+  FDoETQ := TACBrObjetoETQ.Create(MonitorConfig, ACBrETQ1);
+
+  FDoGNRe := TACBrObjetoGNRe.Create(MonitorConfig, ACBrGNRe1);
+  FDoGNRe.OnAntesDeImprimir := @AntesDeImprimir;
+  FDoGNRe.OnDepoisDeImprimir := @DepoisDeImprimir;
+//  FDoGNRe.OnConfiguraGuia   := @ConfiguraGuia;
+
+  FDoPosPrinter := TACBrObjetoPosPrinter.Create(MonitorConfig, ACBrPosPrinter1);
 
   FDoSAT := TACBrObjetoSAT.Create(MonitorConfig, ACBrSAT1);
   FDoSAT.OnPrepararImpressaoSAT := @PrepararImpressaoSAT;
@@ -1691,7 +1735,9 @@ begin
 
   FDoECF := TACBrObjetoECF.Create(MonitorConfig, ACBrECF1, ACBrBlocoX1);
 
-  // Seta as definições iniciais para navegação
+
+
+// Seta as definições iniciais para navegação
   SetColorButtons(btnMonitor);
 
   mResp.Clear;
@@ -1775,6 +1821,24 @@ begin
   fsSLPrecos := TStringList.Create;
   fsSLPrecos.NameValueSeparator := '|';
   fsDTPrecos := 0;
+
+  { Criando lista versões e-social disponiveis }
+  cbVersaoWSeSocial.Items.Clear;
+  iESO := Low(TVersaoeSocial);
+  while iESO <= High(TVersaoeSocial) do
+  begin
+    cbVersaoWSeSocial.Items.Add( copy( GetEnumName(TypeInfo(TVersaoeSocial), integer(iESO)), 3, 8) );
+    Inc(iESO);
+  end;
+
+  { Criando lista versões ReInf disponiveis }
+  cbVersaoWSReinf.Items.Clear;
+  iREI := Low(TVersaoReinf);
+  while iREI <= High(TVersaoReinf) do
+  begin
+    cbVersaoWSReinf.Items.Add( copy( GetEnumName(TypeInfo(TVersaoReinf), integer(iREI)), 2, 8) );
+    Inc(iREI);
+  end;
 
   { Criando lista modelos de Impres.Cheque disponiveis }
   cbCHQModelo.Items.Clear;
@@ -2227,13 +2291,12 @@ begin
 
   AddLinesLog('Arquivo salvo em: ' + DirNcmSalvar);
 end;
-
 procedure TFrmACBrMonitor.bEmailTestarConfClick(Sender: TObject);
 var
   Teste: string;
 
 begin
-  if (Trim(edEmailEndereco.Text) = '') or not ValidarEmail(edEmailEndereco.Text) then
+  if (Trim(edEmailEndereco.Text) = '') or not FDoEmail.ValidarEmail(edEmailEndereco.Text) then
   begin
     MessageDlg('Atenção',
       'O endereço de E-mail informado não é Válido ou não foi Preenchido',
@@ -2420,7 +2483,7 @@ begin
     exit;
 
   ACBrSedex1.Rastrear(CodRastreio);
-  AddLinesLog(ProcessarRespostaRastreio);
+  AddLinesLog(FDoSedex.ProcessarRespostaRastreio);
 end;
 
 procedure TFrmACBrMonitor.bSedexTestarClick(Sender: TObject);
@@ -2447,7 +2510,7 @@ begin
     ValorDeclarado := StrToFloatDef(edtSedexValorDeclarado.Text, 0);
 
     if ACBrSedex1.Consultar then
-      AMsg := ProcessarRespostaSedex
+      AMsg := FDoSedex.ProcessarRespostaSedex
     else
       AMsg := 'Erro na consulta';
   end;
@@ -2612,7 +2675,7 @@ begin
     with ACBrMDFe1.EventoMDFe.Evento.Add do
     begin
       infEvento.chMDFe   := Copy(ACBrMDFe1.Manifestos.Items[0].MDFe.infMDFe.ID, 5, 44);
-      infEvento.CNPJ     := ACBrMDFe1.Manifestos.Items[0].MDFe.emit.CNPJ;
+      infEvento.CNPJCPF  := ACBrMDFe1.Manifestos.Items[0].MDFe.emit.CNPJCPF;
       infEvento.dhEvento := now;
       infEvento.tpEvento   := teCancelamento;
       infEvento.nSeqEvento := 1;
@@ -3611,7 +3674,7 @@ end;
 
 procedure TFrmACBrMonitor.edEmailEnderecoExit(Sender: TObject);
 begin
-  if (Trim(edEmailEndereco.Text) <> '') and not ValidarEmail(
+  if (Trim(edEmailEndereco.Text) <> '') and not FDoEmail.ValidarEmail(
     edEmailEndereco.Text) then
   begin
     AddLinesLog('O endereço de E-mail informado não é Válido');
@@ -3641,14 +3704,28 @@ begin
 
   fsSLPrecos.Free;
 
+  FDoSAT.Free;
+  FDoECF.Free;
   FDoMDFe.Free;
   FDoNFe.Free;
   FDoBoleto.Free;
   FDoCTe.Free;
   FDoeSocial.Free;
   FDoReinf.Free;
-  FDoSAT.Free;
-  FDoECF.Free;
+  FDoBAL.Free;
+  FDoEmail.Free;
+  FDoCEP.Free;
+  FDoCHQ.Free;
+  FDoGAV.Free;
+  FDoIBGE.Free;
+  FDoNCM.Free;
+  FDoLCB.Free;
+  FDoDIS.Free;
+  FDoSedex.Free;
+  FDoETQ.Free;
+  FDoGNRe.Free;
+  FDoPosPrinter.Free;
+
   FMonitorConfig.Free;
 end;
 
@@ -4137,6 +4214,7 @@ begin
     cbOrigem.ItemIndex                := Origem;
     cbUnidade.ItemIndex               := Unidade;
     eCopias.Text                      := IntToStr(Copias);
+    eAvanco.Text                      := IntToStr(Avanco);
   end;
 
   { Parametros do TC }
@@ -4492,7 +4570,7 @@ begin
        ACBrNFe1.DANFE           := ACBrNFeDANFeRL1;
        ACBrCTe1.DACTE           := ACBrCTeDACTeRL1;
        ACBrMDFe1.DAMDFE         := ACBrMDFeDAMDFeRL1;
-       ACBrGNRE1.GNREGuia       :=ACBrGNREGuiaRL1;
+       ACBrGNRE1.GNREGuia       := ACBrGNREGuiaRL1;
     end;
 
     if ckNFCeUsarIntegrador.Checked then
@@ -4845,7 +4923,6 @@ begin
     Unidade       := etqMilimetros;
     MargemEsquerda:= StrToIntDef(eMargemEsquerda.Text, 0);
     Origem        := TACBrETQOrigem(cbOrigem.ItemIndex);
-    Unidade       := TACBrETQUnidade(cbUnidade.ItemIndex);
 
     Ativo := ETQAtivado;
   end;
@@ -5157,7 +5234,8 @@ begin
         if (not DirectoryExists(edEntTXT.Text)) or (not DirectoryExists(edSaiTXT.Text))  then
         begin
           cbMonitorarPasta.Checked := False;
-          raise Exception.Create('Diretorio para monitorar pasta, nao encontrado!');
+          MonitoraPasta := False;
+          raise Exception.Create('Diretorio para monitorar pasta não encontrado! Verifique os Campos: Entrada, Saida.');
         end;
 
         TXT_Entrada    := PathWithDelim(edEntTXT.Text);
@@ -5283,6 +5361,7 @@ begin
       Origem                      := cbOrigem.ItemIndex;
       Unidade                     := cbUnidade.ItemIndex;
       Copias                      := StrToIntDef(eCopias.Text, 1);
+      Avanco                      := StrToIntDef(eAvanco.Text, 0);
     end;
 
     { Parametros do CEP }
@@ -5977,33 +6056,47 @@ begin
         else if fsCmd.Objeto = 'ECF' then
           FDoECF.Executar(fsCmd)
         else if fsCmd.Objeto = 'GAV' then
-          DoGAV(fsCmd)
+        FDoGAV.Executar(fsCmd)
+//          DoGAV(fsCmd)
         else if fsCmd.Objeto = 'CHQ' then
-          DoCHQ(fsCmd)
+        FDoCHQ.Executar(fsCmd)
+//          DoCHQ(fsCmd)
         else if fsCmd.Objeto = 'DIS' then
-          DoDIS(fsCmd)
+        FDoDIS.Executar(fsCmd)
+//          DoDIS(fsCmd)
         else if fsCmd.Objeto = 'LCB' then
-          DoLCB(fsCmd)
+        FDoLCB.Executar(fsCmd)
+//          DoLCB(fsCmd)
         else if fsCmd.Objeto = 'BAL' then
-          DoBAL(fsCmd)
+        FDoBAL.Executar(fsCmd)
+//          DoBAL(fsCmd)
         else if fsCmd.Objeto = 'ETQ' then
-          DoETQ(fsCmd)
+        FDoETQ.Executar(fsCmd)
+//          DoETQ(fsCmd)
         else if fsCmd.Objeto = 'BOLETO' then
           FDoBoleto.Executar(fsCmd)
+//          DoBoleto(fsCmd)
         else if fsCmd.Objeto = 'CEP' then
-          DoCEP(fsCmd)
+        FDoCEP.Executar(fsCmd)
+//          DoCEP(fsCmd)
         else if fsCmd.Objeto = 'IBGE' then
-          DoIBGE(fsCmd)
+        FDoIBGE.Executar(fsCmd)
+//          DoIBGE(fsCmd)
         else if fsCmd.Objeto = 'EMAIL' then
-          DoEmail(fsCmd)
+        FDoEmail.Executar(fsCmd)
+//          DoEmail(fsCmd)
         else if fsCmd.Objeto = 'SEDEX' then
-          DoSedex(fsCmd)
+        FDoSedex.Executar(fsCmd)
+//          DoSedex(fsCmd)
         else if fsCmd.Objeto = 'NCM' then
-          DoNcm(fsCmd)
+        FDoNcm.Executar(fsCmd)
+//          DoNcm(fsCmd)
         else if fsCmd.Objeto = 'NFE' then
           FDoNFe.Executar(fsCmd)
+//          DoACBrNFe(fsCmd)
         else if fsCmd.Objeto = 'CTE' then
           FDoCTe.Executar(fsCmd)
+//          DoACBrCTe(fsCmd)
         else if fsCmd.Objeto = 'MDFE' then
           FDoMDFe.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESOCIAL' then
@@ -6011,11 +6104,13 @@ begin
         else if fsCmd.Objeto = 'REINF' then
           FDoReinf.Executar(fsCmd)
         else if fsCmd.Objeto = 'GNRE' then
-          DoACBrGNRe(fsCmd)
+        FDoGNRe.Executar(fsCmd)
+//          DoACBrGNRe(fsCmd)
         else if fsCmd.Objeto = 'SAT' then
           FDoSAT.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESCPOS' then
-          DoPosPrinter(fsCmd);
+          FDoPosPrinter.Executar(fsCmd);
+//          DoPosPrinter(fsCmd);
 
         // Atualiza Memo de Entrada //
         mCmd.Lines.Assign(fsProcessar);
@@ -7204,7 +7299,10 @@ procedure TFrmACBrMonitor.cbLCBPortaChange(Sender: TObject);
 begin
   try
     ACBrLCB1.Desativar;
-    ACBrLCB1.Porta := cbLCBPorta.Text;
+    if (cbLCBPorta.Text <> 'Sem Leitor') then
+      ACBrLCB1.Porta := cbLCBPorta.Text
+    else
+      ACBrLCB1.Porta := '';
   finally
     cbLCBPorta.Text := ACBrLCB1.Porta;
   end;
@@ -9362,6 +9460,17 @@ procedure TFrmACBrMonitor.cbMonitorarPastaChange(Sender: TObject);
 begin
   if cbMonitorarPasta.Checked then
   begin
+    if (not DirectoryExists(edEntTXT.Text)) or (not DirectoryExists(edSaiTXT.Text))  then
+    begin
+      cbMonitorarPasta.Checked := False;
+      MessageDlg('Atenção',
+                 'Diretorio para monitorar pasta não encontrado!'
+                 + sLineBreak + 'Verifique os campos: Entrada, Saida.',
+                 mtWarning, [mbOK], '');
+      edEntTXT.SetFocus;
+      exit;
+    end;
+
     if MessageDlg(
       'Ao ativar esta opção, TODOS os arquivos do diretório serão lidos e apagados.' + sLineBreak +
       'Deseja realmente continuar?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
