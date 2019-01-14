@@ -88,6 +88,7 @@ begin
    fpTamanhoMaximoNossoNum  := 12;
    fpTamanhoCarteira        := 3;
    fpTamanhoConta           := 11;
+   fpCodigosMoraAceitos     := '123456';
 end;
 
 function TACBrBancoSantander.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
