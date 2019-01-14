@@ -2,60 +2,53 @@
 { Projeto: Componente ACBrNFe                                                  }
 {  Biblioteca multiplataforma de componentes Delphi para emissão de Conhecimen-}
 { to de Transporte eletrônico - NFe - http://www.nfe.fazenda.gov.br            }
-{                                                                              }
+
 { Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
 {                                       Daniel Simoes de Almeida               }
 {                                       André Ferreira de Moraes               }
-{                                                                              }
+
 { Colaboradores nesse arquivo:                                                 }
-{                                                                              }
+
 {  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
 { Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
-{                                                                              }
+
+
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-{                                                                              }
+
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-{                                                                              }
+
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-{                                                                              }
+
 { Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
 {              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
-{******************************************************************************}
 
-{*******************************************************************************
-|* Historico
-|*
-*******************************************************************************}
+{******************************************************************************}
 
 {$I ACBr.inc}
 
 unit ACBrNFeDAInutRLRetrato;
 
-
 interface
 
 uses
-  SysUtils, Variants, Classes, StrUtils,
+  SysUtils, Classes,
   {$IFDEF CLX}
-  QGraphics, QControls, QForms, QDialogs, QExtCtrls, Qt,
+  QGraphics, QControls, QForms, Qt,
   {$ELSE}
-      Graphics, Controls, Forms, Dialogs, ExtCtrls,
+  Graphics, Controls, Forms,
   {$ENDIF}
-  pcnConversao, ACBrNFeDAInutRL, ACBrUtil,
-  RLReport, RLFilters, RLPrinters, RLPDFFilter, RLConsts,
-  {$IFDEF BORLAND} DBClient, {$ELSE} BufDataset, {$ENDIF} DB;
+  ACBrNFeDAInutRL,
+  RLReport, RLFilters, RLPDFFilter;
 
 type
 
@@ -121,66 +114,133 @@ type
     rlShape109: TRLDraw;
     rllblSistema: TRLLabel;
     rlShape1: TRLDraw;
-    rlLabel15: TRLLabel;
+    rllDataHoraImpressao: TRLLabel;
     rlShape2: TRLDraw;
     rlLabel1: TRLLabel;
     rllJustificativa: TRLMemo;
     procedure RLInutBeforePrint(Sender: TObject; var PrintReport: Boolean);
-    procedure rlb_03_InutilizacaoBeforePrint(Sender: TObject; var PrintBand: Boolean);
-    procedure rlb_07_RodapeBeforePrint(Sender: TObject; var PrintBand: Boolean);
   private
+    procedure InicializaDados;
+    procedure AjustarLayout;
   public
   end;
 
 implementation
 
 uses
-  DateUtils;
+  StrUtils, DateUtils,
+  pcnConversao,
+  ACBrUtil, ACBrDFeReportFortes, ACBrNFeDANFeRLClass, ACBrValidador;
 
-{$IFnDEF FPC}
+{$IfNDef FPC}
   {$R *.dfm}
-{$ELSE}
+{$Else}
   {$R *.lfm}
-{$ENDIF}
+{$EndIf}
 
 procedure TfrmNFeDAInutRLRetrato.RLInutBeforePrint(Sender: TObject; var PrintReport: Boolean);
 begin
   inherited;
+  AjustarLayout;
+  InicializaDados;
+
+end;
+
+procedure TfrmNFeDAInutRLRetrato.InicializaDados;
+begin
   RLNFeInut.Title := ACBrStr('Inutilização');
-end;
 
-procedure TfrmNFeDAInutRLRetrato.rlb_03_InutilizacaoBeforePrint(Sender: TObject; var PrintBand: Boolean);
-begin
-  inherited;
-
-  with FACBrNFe.InutNFe do
+  if (fpNFe <> nil) then
+  begin
+    with fpNFe do
     begin
-      rllOrgao.Caption := IntToStr(RetInutNFe.cUF);
+      // 1.) Preenche os campos do Emitente
+      rllRazaoEmitente.Caption := Emit.xNome;
+      rllCNPJEmitente.Caption  := FormatarCNPJouCPF(Emit.CNPJCPF);
+      if NaoEstaVazio(Emit.EnderEmit.xCpl) then
+        rllEnderecoEmitente.Caption := Emit.EnderEmit.xLgr + ', ' + Emit.EnderEmit.nro + ' ' + Emit.EnderEmit.xCpl
+      else
+        rllEnderecoEmitente.Caption := Emit.EnderEmit.xLgr + ', ' + Emit.EnderEmit.nro;
 
-      case RetInutNFe.tpAmb of
-       taProducao:    rllTipoAmbiente.Caption := ACBrStr('PRODUÇÃO');
-       taHomologacao: rllTipoAmbiente.Caption := ACBrStr('HOMOLOGAÇÃO - SEM VALOR FISCAL');
-      end;
+      rllBairroEmitente.Caption  := Emit.EnderEmit.xBairro;
+      rllCEPEmitente.Caption     := FormatarCEP(Emit.EnderEmit.CEP);
+      rllMunEmitente.Caption     := Emit.EnderEmit.xMun;
+      rllFoneEmitente.Caption    := FormatarFone(Emit.EnderEmit.fone);
+//      rllEmitUF.Caption          := Emit.EnderEmit.UF;
+      rllInscEstEmitente.Caption := Emit.IE;
+    end; // with NFe
+  end; // if fpNFe <> nil
 
-      rllAno.Caption       := IntToStr(RetInutNFe.ano);
-      rllModelo.Caption    := IntToStr(RetInutNFe.Modelo);
-      rllSerie.Caption     := IntToStr(RetInutNFe.Serie);
-      rllNumeracao.Caption := IntToStr(RetInutNFe.nNFIni) + ' a ' + IntToStr(RetInutNFe.nNFFin);
 
-      rllStatus.Caption    := IntToStr(RetInutNFe.cStat) + ' - ' + RetInutNFe.xMotivo;
-      rllProtocolo.Caption := RetInutNFe.nProt + ' ' +
-                              DateTimeToStr(RetInutNFe.dhRecbto);
+  // Preeche os campos - Quadro Inutilizacao
+  rllOrgao.Caption := IntToStr(fpInutNFe.RetInutNFe.cUF);
+  case fpInutNFe.RetInutNFe.tpAmb of
+    taProducao:
+      rllTipoAmbiente.Caption := ACBrStr('PRODUÇÃO');
+    taHomologacao:
+      rllTipoAmbiente.Caption := ACBrStr('HOMOLOGAÇÃO - SEM VALOR FISCAL');
+  end;
 
-      rllJustificativa.Lines.Text := RetInutNFe.xJust;
+  rllAno.Caption              := IntToStr(fpInutNFe.RetInutNFe.ano);
+  rllModelo.Caption           := IntToStr(fpInutNFe.RetInutNFe.modelo);
+  rllSerie.Caption            := IntToStr(fpInutNFe.RetInutNFe.serie);
+  rllNumeracao.Caption        := IntToStr(fpInutNFe.RetInutNFe.nNFIni) + ACBrStr(' a ') + IntToStr(fpInutNFe.RetInutNFe.nNFFin);
+  rllStatus.Caption           := IntToStr(fpInutNFe.RetInutNFe.cStat) + ' - ' + fpInutNFe.RetInutNFe.xMotivo;
+  rllProtocolo.Caption        := fpInutNFe.RetInutNFe.nProt + ' ' + FormatDateTimeBr(fpInutNFe.RetInutNFe.dhRecbto);
+  rllJustificativa.Lines.Text := ACBrStr(fpInutNFe.RetInutNFe.xJust);
+
+  rllDataHoraImpressao.Caption := ACBrStr('DATA E HORA DA IMPRESSÃO: ') + FormatDateTimeBr(Now);
+
+  rllblSistema.Caption := Trim(fpDANFe.Sistema);
+  if NaoEstaVazio(fpDANFe.Usuario) then
+  begin
+    if NaoEstaVazio(rllblSistema.Caption) then
+    begin
+      rllblSistema.Caption := rllblSistema.Caption + ' - ' + fpDANFe.Usuario;
+    end
+    else
+    begin
+      rllblSistema.Caption := fpDANFe.Usuario;
     end;
+  end;
+
+  if rllblSistema.Caption = '' then
+  begin
+    rllblSistema.Caption := ACBrStr('Desenvolvido por Projeto ACBr - http://www.projetoacbr.com.br');
+  end;
+
 end;
 
-procedure TfrmNFeDAInutRLRetrato.rlb_07_RodapeBeforePrint(
-  Sender: TObject; var PrintBand: Boolean);
+procedure TfrmNFeDAInutRLRetrato.AjustarLayout;
+var
+  b, i: Integer;
 begin
-  inherited;
-  if (FSistema <> EmptyStr) or (FUsuario <> EmptyStr) then
-    rllblSistema.Caption := FSistema + ' - ' + FUsuario;
+  TDFeReportFortes.AjustarMargem(RLNFeInut, fpDANFe);
+
+  // Ajuste da fonte
+  case fpDANFe.Fonte.Nome of
+    nfArial:
+      for b := 0 to (RLNFeInut.ControlCount - 1) do
+        for i := 0 to (TRLBand(RLNFeInut.Controls[b]).ControlCount - 1) do
+          TRLLabel(TRLBand(RLNFeInut.Controls[b]).Controls[i]).Font.Name := 'Arial';
+
+    nfCourierNew:
+    begin
+      for b := 0 to (RLNFeInut.ControlCount - 1) do
+        for i := 0 to (TRLBand(RLNFeInut.Controls[b]).ControlCount - 1) do
+        begin
+          TRLLabel(TRLBand(RLNFeInut.Controls[b]).Controls[i]).Font.Name := 'Courier New';
+          TRLLabel(TRLBand(RLNFeInut.Controls[b]).Controls[i]).Font.Size :=
+            TRLLabel((TRLBand(RLNFeInut.Controls[b])).Controls[i]).Font.Size - 1;
+        end;
+    end;
+
+    nfTimesNewRoman:
+      for b := 0 to (RLNFeInut.ControlCount - 1) do
+        for i := 0 to (TRLBand(RLNFeInut.Controls[b]).ControlCount - 1) do
+          TRLLabel((TRLBand(RLNFeInut.Controls[b])).Controls[i]).Font.Name := 'Times New Roman';
+  end;
+
 end;
 
 end.

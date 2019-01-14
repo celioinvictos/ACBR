@@ -632,14 +632,14 @@ TACBrECF = class( TACBrComponent )
     { Procedimentos de Cupom Fiscal }
     property Consumidor : TACBrECFConsumidor read GetConsumidorClass ;
     { Grava dados do Consumidor para ser usado na Abertura ou Fechamento do Cupom }
-    Procedure IdentificaConsumidor( CPF_CNPJ : String; Nome : String = '';
-       Endereco : String = '') ;
-    Procedure AbreCupom( CPF_CNPJ : String = ''; Nome : String = '';
-       Endereco : String = ''; ModoPreVenda: Boolean = False) ;
-    Procedure AbreBilhetePassagem( Origem: String; Destino: String;
-      Linha: String; Agencia: String; DataHora: TDateTime;
-      Poltrona: String; Plataforma: String; Tipo: TACBrECFTipoBilhete; UFDestino: String;
-      PassageiroRG: String; PassageiroNome: String; PassageiroEnd: String);
+    Procedure IdentificaConsumidor( const CPF_CNPJ : String; const Nome : String = '';
+       const Endereco : String = '') ;
+    Procedure AbreCupom( const CPF_CNPJ : String = ''; const Nome : String = '';
+       const Endereco : String = ''; ModoPreVenda: Boolean = False) ;
+    Procedure AbreBilhetePassagem( const Origem, Destino, Linha, Agencia: String;
+      DataHora: TDateTime;
+      const Poltrona, Plataforma: String; Tipo: TACBrECFTipoBilhete;
+      const UFDestino, PassageiroRG, PassageiroNome, PassageiroEnd: String);
     procedure LegendaInmetroProximoItem;
     Procedure VendeItem( Codigo, Descricao : String; AliquotaICMS : String;
        Qtd : Double ; ValorUnitario : Double; ValorDescontoAcrescimo : Double = 0;
@@ -1196,7 +1196,7 @@ TACBrECF = class( TACBrComponent )
      property VerificarApenasNumeroSerieNoAAC: Boolean read FVerificarApenasNumeroSerieNoAAC write FVerificarApenasNumeroSerieNoAAC default False;
 end ;
 
-Function NomeArqCAT52( CAT52ID, NumSerie: String; DtMov : TDatetime ) : String ;
+Function NomeArqCAT52( const CAT52ID, NumSerie: String; DtMov : TDatetime ) : String ;
 Function GetECFComponente( AECFClass: TACBrECFClass ): TACBrECF;
 
 implementation
@@ -1207,7 +1207,7 @@ Uses {$IFDEF COMPILER6_UP} StrUtils {$ELSE}ACBrD5 ,Windows {$ENDIF},
      ACBrECFICash, ACBrECFQuattro, ACBrECFFiscNET, ACBrECFEpson, ACBrECFNCR,
      ACBrECFSwedaSTX, ACBrECFEscECF;
 
-function NomeArqCAT52(CAT52ID, NumSerie: String; DtMov: TDatetime): String;
+function NomeArqCAT52(const CAT52ID, NumSerie: String; DtMov: TDatetime): String;
   function IntToLetra(AInt : Integer): Char ;
   begin
      if AInt < 10 then
@@ -2579,9 +2579,9 @@ begin
 end ;
 
 
-procedure TACBrECF.AbreBilhetePassagem(Origem, Destino, Linha, Agencia: String;
-  DataHora: TDateTime; Poltrona, Plataforma: String; Tipo: TACBrECFTipoBilhete;
-  UFDestino, PassageiroRG, PassageiroNome, PassageiroEnd: String);
+procedure TACBrECF.AbreBilhetePassagem(const Origem, Destino, Linha, Agencia: String;
+  DataHora: TDateTime; const Poltrona, Plataforma: String; Tipo: TACBrECFTipoBilhete;
+  const UFDestino, PassageiroRG, PassageiroNome, PassageiroEnd: String);
 var
   Tratado   : Boolean;
 begin
@@ -2648,8 +2648,8 @@ begin
      FOnDepoisAbreCupom(PassageiroRG, PassageiroNome, PassageiroEnd);
 end;
 
-procedure TACBrECF.AbreCupom(CPF_CNPJ: String = ''; Nome : String = '';
-   Endereco : String = ''; ModoPreVenda: Boolean = False) ;
+procedure TACBrECF.AbreCupom(const CPF_CNPJ: String = ''; const Nome : String = '';
+   const Endereco : String = ''; ModoPreVenda: Boolean = False) ;
 var
   Tratado   : Boolean;
 begin
@@ -2715,8 +2715,8 @@ begin
      FOnDepoisAbreCupom(CPF_CNPJ, Nome, Endereco);
 end;
 
-procedure TACBrECF.IdentificaConsumidor(CPF_CNPJ : String ; Nome : String ;
-  Endereco : String) ;
+procedure TACBrECF.IdentificaConsumidor(const CPF_CNPJ : String ; const Nome : String ;
+  const Endereco : String) ;
 begin
   fsECF.Consumidor.AtribuiConsumidor( CPF_CNPJ,
                                       CodificarPaginaDeCodigoECF( Nome ),
@@ -6535,7 +6535,7 @@ var
   Relatorio: TStringList;
   I: Integer;
   TamLin: Integer;
-  SubTotal: Double;
+  SubTotalCalculado: Double;
   FPAcumuladas: TACBrECFFormasPagamento;
   FPTotalizado: TACBrECFFormasPagamento;
 
@@ -6603,18 +6603,18 @@ var
     Relatorio.Add(
       PadRight('', 15, '-') + ' ' +
       PadRight('', 19, '-') + ' ' +
-      PadRight('', 12, '-')  
+      PadRight('', 12, '-')
     );
   end;
 
   procedure AddSubTotal;
   begin
     Relatorio.Add('</linha_simples>');
-    Relatorio.Add(Format('Sub-Total                           %12.2n', [SubTotal]));
+    Relatorio.Add(Format('Sub-Total                           %12.2n', [SubTotalCalculado]));
     Relatorio.Add('');
     Relatorio.Add('');
 
-    SubTotal  := 0.00;
+    SubTotalCalculado  := 0.00;
   end;
 
 begin
@@ -6640,9 +6640,9 @@ begin
     if Trim(ATituloRelatorio) <> '' then
       Relatorio.Add(PadCenter(ATituloRelatorio, TamLin));
 
-    // *************************************************************************      
+    // *************************************************************************
     // impressão do relatório acumulando por data, descricao e tipo de documento
-    // *************************************************************************    
+    // *************************************************************************
     FPAcumuladas := TACBrECFFormasPagamento.Create;
     FPTotalizado := TACBrECFFormasPagamento.Create;
     try
@@ -6677,7 +6677,7 @@ begin
 
         // acumuladores
         AcumularValorFP(FPAcumuladas[I], True, FPTotalizado);
-        SubTotal := SubTotal + FPAcumuladas[I].Total;
+        SubTotalCalculado := SubTotalCalculado + FPAcumuladas[I].Total;
       end;
 
       // sub-total do ultimo dia
@@ -6695,7 +6695,7 @@ begin
       Relatorio.Add(ACBrStr('Identificação                           Valor R$'));
       Relatorio.Add(
         PadLeft('', 27, '-') + ' ' +
-        PadLeft('', 20, '-')  
+        PadLeft('', 20, '-')
       );
 
       // acumular os valores totais das formas
@@ -6708,7 +6708,7 @@ begin
       end;
 
       // impressão das linhas de totalização
-      SubTotal  := 0.00;
+      SubTotalCalculado  := 0.00;
       FPAcumuladas.Ordenar;
       for I := 0 to FPAcumuladas.Count - 1 do
       begin
@@ -6716,12 +6716,12 @@ begin
           PadRight(FPAcumuladas[I].Descricao, 27),
           Format('%20.2n', [FPAcumuladas[I].Total]) ]));
 
-        SubTotal := SubTotal + FPAcumuladas[I].Total;
+        SubTotalCalculado := SubTotalCalculado + FPAcumuladas[I].Total;
       end;
 
       // somatorio total
       Relatorio.Add('</linha_simples>');
-      Relatorio.Add(Format('TOTAL                %27.2n', [SubTotal]));
+      Relatorio.Add(Format('TOTAL                %27.2n', [SubTotalCalculado]));
       Relatorio.Add('');
     finally
       FreeAndNil(FPAcumuladas);

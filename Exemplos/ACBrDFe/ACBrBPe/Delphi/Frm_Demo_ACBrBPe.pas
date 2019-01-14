@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, IniFiles, ShellAPI, ACBrBase, ACBrDFe, ACBrBPe, Spin, ExtCtrls,
   StdCtrls, Buttons, ComCtrls, OleCtrls, SHDocVw, ACBrMail, ACBrUtil,
-  pcnConversao, ACBrBPeDABPEClass, ACBrBPeDABPeESCPOS, ACBrPosPrinter;
+  pcnConversao, ACBrBPeDABPEClass, ACBrBPeDABPeESCPOS, ACBrPosPrinter,
+  ACBrDFeReport;
 
 type
   Tfrm_DemoACBrBPe = class(TForm)
@@ -1043,7 +1044,7 @@ procedure Tfrm_DemoACBrBPe.btnConsultarChaveClick(Sender: TObject);
 var
  vChave : String;
 begin
-  if not(InputQuery('WebServices Consultar', 'Chave da NF-e:', vChave)) then
+  if not(InputQuery('WebServices Consultar', 'Chave da BP-e:', vChave)) then
     exit;
 
   ACBrBPe1.Bilhetes.Clear;
@@ -1124,7 +1125,7 @@ procedure Tfrm_DemoACBrBPe.btnCancelarChaveClick(Sender: TObject);
 var
  Chave, idLote, CNPJ, Protocolo, Justificativa : string;
 begin
-  if not(InputQuery('WebServices Eventos: Cancelamento', 'Chave da NF-e', Chave)) then
+  if not(InputQuery('WebServices Eventos: Cancelamento', 'Chave da BP-e', Chave)) then
      exit;
   Chave := Trim(OnlyNumber(Chave));
   idLote := '1';

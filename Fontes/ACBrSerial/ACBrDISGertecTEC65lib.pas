@@ -64,7 +64,7 @@ TACBrDISGertecTEC65lib = class( TACBrDISClass )
       xDispStr : function (Str: PAnsiChar): integer; stdcall;
       xFormFeed : function : integer; stdcall;
 
-      procedure FunctionDetectLib(FuncName: String; var LibPointer: Pointer);
+      procedure FunctionDetectLib(const FuncName: String; var LibPointer: Pointer);
       procedure LoadDLLFunctions;
       procedure UnLoadDLLFunctions;
   public
@@ -77,7 +77,7 @@ TACBrDISGertecTEC65lib = class( TACBrDISClass )
     procedure LimparDisplay ; override ;
 
     procedure PosicionarCursor(Linha, Coluna: Integer ) ; override ;
-    procedure Escrever( Texto : String ) ; override ;
+    procedure Escrever( const Texto : String ) ; override ;
 end ;
 
 implementation
@@ -116,7 +116,7 @@ begin
     xGoToXY( Linha, Coluna);
 end;
 
-procedure TACBrDISGertecTEC65lib.Escrever(Texto: String);
+procedure TACBrDISGertecTEC65lib.Escrever(const Texto: String);
 begin
   if Assigned(xDispStr) then
     xDispStr( PAnsiChar( AnsiString(ACBrStrToAnsi(Texto))) );
@@ -147,7 +147,7 @@ begin
   FunctionDetectLib( 'FormFeed',   @xFormFeed);
 end;
 
-procedure TACBrDISGertecTEC65lib.FunctionDetectLib(FuncName : String ;
+procedure TACBrDISGertecTEC65lib.FunctionDetectLib(const FuncName : String ;
   var LibPointer : Pointer) ;
 begin
   if not Assigned( LibPointer )  then

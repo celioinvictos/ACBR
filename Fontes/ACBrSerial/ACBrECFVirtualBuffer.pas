@@ -58,7 +58,7 @@ TACBrECFVirtualBuffer = class( TACBrECFVirtual )
     function GetMascaraItem: String;
     procedure SetCabecalho(AValue: TStrings);
     procedure SetCabecalhoItem(AValue: TStrings);
-    procedure SetMascaraItem(AValue: String);
+    procedure SetMascaraItem(const AValue: String);
   protected
     procedure CreateVirtualClass ; override ;
 
@@ -95,9 +95,9 @@ TACBrECFVirtualBufferClass = class( TACBrECFVirtualClass )
     procedure AddBufferRodape;
 
   protected
-    procedure AddBufferLinhas( AString: AnsiString) ;
+    procedure AddBufferLinhas( const AString: AnsiString) ;
 
-    function AjustaLinhaColunas( Linha: AnsiString ): AnsiString; virtual;
+    function AjustaLinhaColunas( const Linha: AnsiString ): AnsiString; virtual;
     function ColunasExpandido(): Integer; virtual;
 
     procedure AtivarVirtual ; override;
@@ -131,7 +131,7 @@ TACBrECFVirtualBufferClass = class( TACBrECFVirtualClass )
     procedure FechaRelatorioVirtual; override;
 
   protected
-    procedure Imprimir( AString : AnsiString ) ; overload ; virtual;
+    procedure Imprimir( const AString : AnsiString ) ; overload ; virtual;
     procedure Imprimir( AStringList : TStringList ) ; overload ;
 
     function GetSubModeloECF: String ; override ;
@@ -164,8 +164,8 @@ TACBrECFVirtualBufferClass = class( TACBrECFVirtualClass )
     Procedure AbreGaveta ; override ;
   end ;
 
-Function StuffMascaraItem( Linha, MascaraItem : AnsiString; Letra : AnsiChar;
-       TextoInserir : AnsiString; Fim:Boolean = False) : AnsiString ;
+Function StuffMascaraItem( const Linha, MascaraItem : AnsiString; Letra : AnsiChar;
+       const TextoInserir : AnsiString; Fim:Boolean = False) : AnsiString ;
 
 implementation
 
@@ -173,8 +173,8 @@ Uses
   math, strutils,
   ACBrUtil;
 
-Function StuffMascaraItem( Linha, MascaraItem : AnsiString; Letra : AnsiChar;
-   TextoInserir : AnsiString; Fim:Boolean = False) : AnsiString ;
+Function StuffMascaraItem( const Linha, MascaraItem : AnsiString; Letra : AnsiChar;
+   const TextoInserir : AnsiString; Fim:Boolean = False) : AnsiString ;
 Var A,B : Integer ;
     L   : AnsiChar ;
 begin
@@ -262,7 +262,7 @@ begin
   TACBrECFVirtualBufferClass(fpECFVirtualClass).CabecalhoItem.Assign( AValue );
 end;
 
-procedure TACBrECFVirtualBuffer.SetMascaraItem(AValue: String);
+procedure TACBrECFVirtualBuffer.SetMascaraItem(const AValue: String);
 begin
   TACBrECFVirtualBufferClass(fpECFVirtualClass).MascaraItem := AValue;
 end;
@@ -713,7 +713,7 @@ begin
   end ;
 end;
 
-procedure TACBrECFVirtualBufferClass.AddBufferLinhas(AString: AnsiString);
+procedure TACBrECFVirtualBufferClass.AddBufferLinhas(const AString: AnsiString);
 var
   Linhas: TStringList;
 begin
@@ -729,7 +729,7 @@ begin
   end;
 end;
 
-function TACBrECFVirtualBufferClass.AjustaLinhaColunas(Linha: AnsiString
+function TACBrECFVirtualBufferClass.AjustaLinhaColunas(const Linha: AnsiString
   ): AnsiString;
 begin
   Result := AjustaLinhas( Linha, Colunas );
@@ -909,7 +909,7 @@ begin
   ZeraBuffer;
 end ;
 
-procedure TACBrECFVirtualBufferClass.Imprimir(AString : AnsiString) ;
+procedure TACBrECFVirtualBufferClass.Imprimir(const AString : AnsiString) ;
 begin
   { ACBrECFVirtualBuffer não tem impressão, sobrescrever nas classes filhas }
 end ;

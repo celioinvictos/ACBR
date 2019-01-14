@@ -73,7 +73,7 @@ TACBrECFQuattro = class( TACBrECFClass )
     procedure CarregaFormato_ChequeTXT ;
     function GetModelosCheque: TStringList;
     procedure SetArqFormato_ChequeTXT(const Value: String);
-    procedure LeBufferSerial(Cmd : String; AStringList: TStringList);
+    procedure LeBufferSerial(const Cmd : String; AStringList: TStringList);
 
  protected
     function GetDataHora: TDateTime; override ;
@@ -752,7 +752,7 @@ begin
   LeBufferSerial('13|', Linhas);
 end;
 
-procedure TACBrECFQuattro.LeBufferSerial(Cmd: String;
+procedure TACBrECFQuattro.LeBufferSerial(const Cmd: String;
   AStringList: TStringList);
   Var P1,P2 : Integer ;
       Resp, Ret, Linha : String ;
@@ -1486,9 +1486,8 @@ begin
   begin
      Msg := ACBrStr( 'Arquivo '+fsArqFormato_ChequeTXT+' não encontrado. '+
                      'Valores padrões serão utilizados.' ) ;
-     raise EACBrECFErro.Create( Msg );
-
      fsArqFormato_ChequeTXT := '' ;
+     raise EACBrECFErro.Create( Msg );
   end ;
 
   if fsArqFormato_ChequeTXT = '' then

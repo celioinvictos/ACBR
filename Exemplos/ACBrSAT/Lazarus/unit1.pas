@@ -5,11 +5,12 @@ unit Unit1 ;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterXML, PrintersDlgs, Forms,
-  Controls, Graphics, Dialogs, StdCtrls, ActnList, Menus, ExtCtrls, Buttons,
-  ComCtrls, Spin, RLPDFFilter, ACBrSAT, ACBrSATClass, ACBrSATExtratoESCPOS,
-  dateutils, ACBrSATExtratoFortesFr, ACBrBase, ACBrPosPrinter, ACBrDFeSSL,
-  ACBrIntegrador;
+  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterXML, SynGutterBase,
+  SynGutterMarks, SynGutterLineNumber, SynGutterChanges, SynGutter,
+  SynGutterCodeFolding, PrintersDlgs, Forms, Controls, Graphics, Dialogs,
+  StdCtrls, ActnList, Menus, ExtCtrls, Buttons, ComCtrls, Spin, RLPDFFilter,
+  ACBrSAT, ACBrSATClass, ACBrSATExtratoESCPOS, dateutils,
+  ACBrSATExtratoFortesFr, ACBrBase, ACBrPosPrinter, ACBrDFeSSL, ACBrIntegrador;
 
 const
   cAssinatura = '9d4c4eef8c515e2c1269c2e4fff0719d526c5096422bf1defa20df50ba06469'+
@@ -37,7 +38,11 @@ type
     btSalvarParams: TButton;
     btSerial: TSpeedButton;
     btMFEEnviarPagamento: TButton;
+    cbImprimir1Linha: TCheckBox;
+    cbImprimirDescAcres: TCheckBox;
+    cbLogoLateral: TCheckBox;
     cbImprimirChaveUmaLinha: TCheckBox;
+    cbQRCodeLateral: TCheckBox;
     cbUsarEscPos: TRadioButton;
     cbUsarFortes: TRadioButton;
     cbxRemoverAcentos: TCheckBox;
@@ -61,9 +66,7 @@ type
     cbxFormatXML: TCheckBox;
     cbPreview: TCheckBox;
     cbxRedeSeg: TComboBox;
-    cbImprimir1Linha: TCheckBox;
     cbxUTF8: TCheckBox;
-    cbxXmlSignLib: TComboBox;
     edChaveCancelamento: TEdit;
     edMFEInput: TEdit;
     edMFEOutput: TEdit;
@@ -109,7 +112,6 @@ type
     Label32: TLabel;
     Label33: TLabel;
     Label34: TLabel;
-    Label35: TLabel;
     Label6: TLabel;
     Label7: TLabel;
     Label8: TLabel;
@@ -376,10 +378,6 @@ begin
   For O := Low(TACBrPosPaginaCodigo) to High(TACBrPosPaginaCodigo) do
      cbxPagCodigo.Items.Add( GetEnumName(TypeInfo(TACBrPosPaginaCodigo), integer(O) ) ) ;
 
-  cbxXmlSignLib.Items.Clear ;
-  For P := Low(TSSLXmlSignLib) to High(TSSLXmlSignLib) do
-     cbxXmlSignLib.Items.Add( GetEnumName(TypeInfo(TSSLXmlSignLib), integer(P) ) ) ;
-
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais( cbxPorta.Items );
   cbxPorta.Items.Add('LPT1') ;
@@ -537,7 +535,6 @@ begin
     cbxSepararPorAno.Checked := INI.ReadBool('SAT','SepararPorANO', True);
     edSchemaVendaAPL.Text := INI.ReadString('SAT','SchemaVendaAPL','');
     edSchemaVendaSAT.Text := INI.ReadString('SAT','SchemaVendaSAT','');
-    cbxXmlSignLib.ItemIndex := INI.ReadInteger('SAT','XMLLib',Integer(ACBrSAT1.Config.XmlSignLib));
     sePagCodChange(Sender);
 
     cbxModeloPosPrinter.ItemIndex := INI.ReadInteger('PosPrinter', 'Modelo', Integer(ACBrPosPrinter1.Modelo));
@@ -560,11 +557,11 @@ begin
 
     cbUsarFortes.Checked   := INI.ReadBool('Fortes','UsarFortes', True) ;
     cbUsarEscPos.Checked   := not cbUsarFortes.Checked;
-    seLargura.Value        := INI.ReadInteger('Fortes','Largura',ACBrSATExtratoFortes1.LarguraBobina);
-    seMargemTopo.Value     := INI.ReadInteger('Fortes','MargemTopo',ACBrSATExtratoFortes1.Margens.Topo);
-    seMargemFundo.Value    := INI.ReadInteger('Fortes','MargemFundo',ACBrSATExtratoFortes1.Margens.Fundo);
-    seMargemEsquerda.Value := INI.ReadInteger('Fortes','MargemEsquerda',ACBrSATExtratoFortes1.Margens.Esquerda);
-    seMargemDireita.Value  := INI.ReadInteger('Fortes','MargemDireita',ACBrSATExtratoFortes1.Margens.Direita);
+    seLargura.Value        := INI.ReadInteger('Fortes','Largura', ACBrSATExtratoFortes1.LarguraBobina);
+    seMargemTopo.Value     := INI.ReadInteger('Fortes','MargemTopo', trunc(ACBrSATExtratoFortes1.MargemSuperior));
+    seMargemFundo.Value    := INI.ReadInteger('Fortes','MargemFundo', trunc(ACBrSATExtratoFortes1.MargemInferior));
+    seMargemEsquerda.Value := INI.ReadInteger('Fortes','MargemEsquerda', trunc(ACBrSATExtratoFortes1.MargemEsquerda));
+    seMargemDireita.Value  := INI.ReadInteger('Fortes','MargemDireita', trunc(ACBrSATExtratoFortes1.MargemDireita));
     cbPreview.Checked      := INI.ReadBool('Fortes','Preview',True);
 
     lImpressora.Caption    := INI.ReadString('Printer','Name', '');
@@ -574,8 +571,12 @@ begin
       lImpressora.Caption  := Printer.Printers[Printer.PrinterIndex];
     end;
 
-    cbImprimir1Linha.Checked := INI.ReadBool('EscPos','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
     cbImprimirChaveUmaLinha.Checked := INI.ReadBool('EscPos','ImprimirChaveUmaLinha',cbImprimirChaveUmaLinha.Checked);
+
+    cbImprimir1Linha.Checked := INI.ReadBool('Printer','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
+    cbImprimirDescAcres.Checked := INI.ReadBool('Printer','ImprimeDescAcres',cbImprimirDescAcres.Checked);
+    cbLogoLateral.Checked := INI.ReadBool('Printer','LogoLateral',cbLogoLateral.Checked);
+    cbQRCodeLateral.Checked := INI.ReadBool('Printer','QRCodeLateral',cbQRCodeLateral.Checked);
 
     rgRedeTipoInter.ItemIndex := INI.ReadInteger('Rede','tipoInter',0);
     rgRedeTipoLan.ItemIndex   := INI.ReadInteger('Rede','tipoLan',0);
@@ -768,7 +769,6 @@ begin
     INI.WriteBool('SAT','SepararPorANO', cbxSepararPorAno.Checked);
     INI.WriteString('SAT','SchemaVendaAPL',edSchemaVendaAPL.Text);
     INI.WriteString('SAT','SchemaVendaSAT',edSchemaVendaSAT.Text);
-    INI.WriteInteger('SAT','XMLLib',cbxXmlSignLib.ItemIndex);
 
     INI.WriteInteger('PosPrinter','Modelo',cbxModeloPosPrinter.ItemIndex);
     INI.WriteString('PosPrinter','Porta',cbxPorta.Text);
@@ -797,8 +797,12 @@ begin
     INI.WriteBool('Fortes','Preview',cbPreview.Checked);
 
     INI.WriteString('Printer','Name',Printer.PrinterName);
-    INI.WriteBool('EscPos','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
     INI.WriteBool('EscPos','ImprimirChaveUmaLinha',cbImprimirChaveUmaLinha.Checked);
+
+    INI.WriteBool('Printer','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
+    INI.WriteBool('Printer','ImprimeDescAcres',cbImprimirDescAcres.Checked);
+    INI.WriteBool('Printer','LogoLateral',cbLogoLateral.Checked);
+    INI.WriteBool('Printer','QRCodeLateral',cbQRCodeLateral.Checked);
 
     INI.WriteInteger('Rede','tipoInter',rgRedeTipoInter.ItemIndex);
     INI.WriteInteger('Rede','tipoLan',rgRedeTipoLan.ItemIndex);
@@ -1009,7 +1013,9 @@ procedure TForm1.MenuItem19Click(Sender: TObject);
 var
   Erro: String;
 begin
-  ACBrSAT1.Config.XmlSignLib := TSSLXmlSignLib(cbxXmlSignLib.ItemIndex);
+  ACBrSAT1.SSL.SSLXmlSignLib := xsLibXml2;
+  ACBrSAT1.SSL.SSLCryptLib := cryOpenSSL;
+
   ACBrSAT1.Config.ArqSchema := edSchemaVendaAPL.Text;
   PageControl1.ActivePageIndex := 0;
 
@@ -1026,15 +1032,25 @@ procedure TForm1.MenuItem22Click(Sender: TObject);
 var
   Erro: String;
 begin
-  ACBrSAT1.Config.XmlSignLib := TSSLXmlSignLib(cbxXmlSignLib.ItemIndex);
+  ACBrSAT1.SSL.SSLXmlSignLib := xsLibXml2;
+  ACBrSAT1.SSL.SSLCryptLib := cryOpenSSL;
+
   ACBrSAT1.Config.ArqSchema := edSchemaVendaSAT.Text;
   PageControl1.ActivePageIndex := 0;
 
-  if ACBrSAT1.ValidarDadosVenda( mRecebido.Text, Erro ) then
-    mLog.Lines.Add('XML Recebido do SAT, validado com sucesso')
+  if ACBrSAT1.SSL.VerificarAssinatura(ACBrSAT1.CFe.AsXMLString, Erro, 'infCFe') then
+    mLog.Lines.Add('OK: Assinatura do XML retornado pelo SAT é válida')
   else
   begin
-    mLog.Lines.Add('Erro na Validação do XML Recebido do SAT.');
+    mLog.Lines.Add('ERRO: Assinatura do XML retornado pelo SAT, é inválida: ');
+    mLog.Lines.Add(Erro);
+  end;
+
+  if ACBrSAT1.ValidarDadosVenda( mRecebido.Text, Erro ) then
+    mLog.Lines.Add('OK: XML Recebido do SAT, validado com sucesso, contra o Schema: '+ACBrSAT1.Config.ArqSchema)
+  else
+  begin
+    mLog.Lines.Add('ERRO: Erro na Validação de Schema, do XML Recebido do SAT.');
     mLog.Lines.Add(Erro);
   end;
 end;
@@ -1306,13 +1322,6 @@ begin
   begin
     mRecebido.Lines.Text := ACBrSAT1.CFe.AsXMLString;
     PageControl1.ActivePage := tsRecebido;
-
-{    ACBrSAT1.CFe.ide.dEmi;
-    ACBrSAT1.CFe.infCFe.ID;
-    ACBrSAT1.CFe.Total.vCFe;
-    ACBrSAT1.CFe.Dest.CNPJCPF;
-    ACBrSAT1.CFe.ide.assinaturaQRCODE;      }
-
   end;
 end;
 
@@ -1641,7 +1650,6 @@ begin
     ACBrPosPrinter1.LinhasEntreCupons := seLinhasPular.Value;
     ACBrPosPrinter1.EspacoEntreLinhas := seEspLinhas.Value;
     ACBrSATExtratoESCPOS1.ImprimeQRCode := True;
-    ACBrSATExtratoESCPOS1.ImprimeEmUmaLinha := cbImprimir1Linha.Checked;
     if cbImprimirChaveUmaLinha.Checked then
       ACBrSATExtratoESCPOS1.ImprimeChaveEmUmaLinha := rSim
     else
@@ -1649,19 +1657,24 @@ begin
   end
   else
   begin
-    ACBrSATExtratoFortes1.LarguraBobina    := seLargura.Value;
-    ACBrSATExtratoFortes1.Margens.Topo     := seMargemTopo.Value ;
-    ACBrSATExtratoFortes1.Margens.Fundo    := seMargemFundo.Value ;
-    ACBrSATExtratoFortes1.Margens.Esquerda := seMargemEsquerda.Value ;
-    ACBrSATExtratoFortes1.Margens.Direita  := seMargemDireita.Value ;
-    ACBrSATExtratoFortes1.MostrarPreview   := cbPreview.Checked;
+    ACBrSATExtratoFortes1.LarguraBobina   := seLargura.Value;
+    ACBrSATExtratoFortes1.MargemSuperior  := seMargemTopo.Value ;
+    ACBrSATExtratoFortes1.MargemInferior  := seMargemFundo.Value ;
+    ACBrSATExtratoFortes1.MargemEsquerda  := seMargemEsquerda.Value ;
+    ACBrSATExtratoFortes1.MargemDireita   := seMargemDireita.Value ;
+    ACBrSATExtratoFortes1.MostraPreview   := cbPreview.Checked;
 
     try
       if lImpressora.Caption <> '' then
-        ACBrSATExtratoFortes1.PrinterName := lImpressora.Caption;
+        ACBrSATExtratoFortes1.Impressora := lImpressora.Caption;
     except
     end;
   end;
+
+  ACBrSAT1.Extrato.ImprimeLogoLateral := cbLogoLateral.Checked;
+  ACBrSAT1.Extrato.ImprimeQRCodeLateral := cbQRCodeLateral.Checked;
+  ACBrSAT1.Extrato.ImprimeEmUmaLinha := cbImprimir1Linha.Checked;
+  ACBrSAT1.Extrato.ImprimeDescAcrescItem := cbImprimirDescAcres.Checked;
 end;
 
 

@@ -488,7 +488,7 @@ function TBPeStatusServico.TratarResposta: Boolean;
 var
   BPeRetorno: TRetConsStatServ;
 begin
-  FPRetWS := SeparaDadosArray(['bpeResultMsg'], FPRetornoWS );
+  FPRetWS := SeparaDadosArray(['bpeResultMsg', 'bpeStatusServicoBPResult'], FPRetornoWS );
 
   BPeRetorno := TRetConsStatServ.Create;
   try
@@ -981,7 +981,7 @@ var
 begin
   BPeRetorno := TRetConsSitBPe.Create;
   try
-    FPRetWS := SeparaDadosArray(['bpeResultMsg'], FPRetornoWS );
+    FPRetWS := SeparaDadosArray(['bpeResultMsg', 'bpeConsultaBPResult'], FPRetornoWS );
 
     BPeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
     BPeRetorno.LerXML;

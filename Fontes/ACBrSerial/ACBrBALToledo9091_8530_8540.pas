@@ -52,7 +52,7 @@ type
   public
     constructor Create(AOwner: TComponent);
 
-    function InterpretarRepostaPeso(aResposta: AnsiString): Double; override;
+    function InterpretarRepostaPeso(const aResposta: AnsiString): Double; override;
   end ;
 
 implementation
@@ -70,10 +70,10 @@ begin
   fpModeloStr := 'Toledo 9091 8530 8540' ;
 end;
 
-function TACBrBALToledo9091_8530_8540.InterpretarRepostaPeso(aResposta: AnsiString): Double;
+function TACBrBALToledo9091_8530_8540.InterpretarRepostaPeso(const aResposta: AnsiString): Double;
 var
   SWA, SWB, SWC, SP : AnsiString;
-  PesoBruto, PesoTara : Integer;
+  PesoBruto : Integer;
   STX : Integer ;
 begin
   Result := 0;
@@ -120,12 +120,12 @@ begin
       if (SP = ' ') then
       begin
         PesoBruto := StrToIntDef(Copy(aResposta, 5, 6), 0);
-        PesoTara  := StrToIntDef(Copy(aResposta, 11, 6), 0);
+        //PesoTara:= StrToIntDef(Copy(aResposta, 11, 6), 0);
       end
       else
       begin
         PesoBruto := StrToIntDef(Copy(aResposta, 4, 6), 0);
-        PesoTara  := StrToIntDef(Copy(aResposta, 10, 6), 0);
+        //PesoTara:= StrToIntDef(Copy(aResposta, 10, 6), 0);
       end;
 
       Result := PesoBruto;

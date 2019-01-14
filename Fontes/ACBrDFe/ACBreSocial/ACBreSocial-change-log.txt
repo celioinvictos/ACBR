@@ -48,6 +48,49 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+08/01/2018
+-- pcesGerador --
+[*] https://www.projetoacbr.com.br/forum/topic/48578-s-2200-preenchimento-do-campo-dtterm/
+   Por: Alex Camilo
+
+04/01/2019
+-- Diversos --
+[*] Alterações visando a versão 2.5
+   Por: Paulo Aguiar Junior
+
+27/12/2018
+-- pcesGerador / pcesCommon / pces2200 --
+[*] Alterações visando a versão 2.5
+   Por: Italo Jurisato Junior
+
+21/12/2018
+-- pcesS1200 --
+[*] Alteração visando a versão 2.5
+   Por: Italo Jurisato Junior
+
+20/12/2018
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/48247-s-2200-grupo-novo-mudancacpf/?do=findComment&comment=319488
+   Por: Sandro Felipe Adad
+
+10/12/2018
+-- pcesS1200 / pcesS2399 --
+[*] https://www.projetoacbr.com.br/forum/topic/47825-evento-s-1200-tag-detplano-n%C3%A3o-aparece-sem-cpf/?do=findComment&comment=317887
+   Por: Kelly Diego Rakelly
+
+27/11/2018
+-- pcesS2206 --
+[*] https://www.projetoacbr.com.br/forum/topic/47823-s-2206-erro-no-formato-da-data-base-da-categoria-profissional-do-trabalhador/ 
+   Por: Alex Camilo
+-- pcesS1200 --
+[*] https://www.projetoacbr.com.br/forum/topic/47825-evento-s-1200-tag-detplano-n%C3%A3o-aparece-sem-cpf/?do=findComment&comment=315034
+   Por: Italo Jurisato Junior
+
+21/11/2018
+-- pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/47740-infoente-subteto-valores-deve-ser-1-2-3-ou-9/
+   Por: Jadson
+
 12/11/2018
 -- pcesConversaoeSocial --
 [*] Criado o enumerador ve02_05_00 para nova versão do eSocial

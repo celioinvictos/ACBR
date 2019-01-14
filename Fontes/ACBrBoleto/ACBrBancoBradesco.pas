@@ -90,7 +90,6 @@ begin
    fpTamanhoAgencia         := 4;
    fpTamanhoConta           := 7;
    fpTamanhoCarteira        := 2;
-   fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoBradesco.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -244,7 +243,9 @@ function TACBrBancoBradesco.GerarRegistroTransacao240(ACBrTitulo: TACBrTitulo): 
 var
   ATipoOcorrencia,
   ATipoBoleto,
-  ADataMoraJuros: String;
+  ADataMoraJuros,
+  ACodigoMoraJuros,
+  ACodigoDesconto: String;
   ADataDesconto,
   ADataMulta,
   ANossoNumero,
@@ -390,15 +391,26 @@ begin
     end;
 
     {Mora Juros}
-    if (ValorMoraJuros > 0) then
-     begin
-       if DataMoraJuros <> 0 then
-          ADataMoraJuros := FormatDateTime('ddmmyyyy', DataMoraJuros)
-       else
-          ADataMoraJuros := PadRight('', 8, '0');
-     end
+    if (CodigoMora <> '') then begin
+      ACodigoMoraJuros := CodigoMora;
+    end
     else
-       ADataMoraJuros := PadRight('', 8, '0');
+    begin
+      if (ValorMoraJuros > 0) then
+        ACodigoMoraJuros := '1'
+      else 
+        ACodigoMoraJuros := '3';      
+    end;
+
+    if (ValorMoraJuros > 0) then
+    begin
+      if DataMoraJuros > 0 then
+        ADataMoraJuros := FormatDateTime('ddmmyyyy', DataMoraJuros)
+      else
+        ADataMoraJuros := PadRight('', 8, '0');
+    end
+    else
+      ADataMoraJuros := PadRight('', 8, '0');
 
     {Descontos}
     if (ValorDesconto > 0) then
@@ -407,9 +419,19 @@ begin
           ADataDesconto := FormatDateTime('ddmmyyyy', DataDesconto)
        else
           ADataDesconto := PadRight('', 8, '0');
+
+       case TipoDesconto of
+         tdValorFixoAteDataInformada : ACodigoDesconto := '1';
+         tdPercentualAteDataInformada: ACodigoDesconto := '2';
+       else
+         ACodigoDesconto := '1';
+       end; 
      end
     else
-       ADataDesconto := PadRight('', 8, '0');
+    begin
+      ADataDesconto := PadRight('', 8, '0');
+      ACodigoDesconto := '0';
+    end;
 
     {Multa}
     if (PercentualMulta > 0) then
@@ -455,12 +477,12 @@ begin
     ATipoAceite                                          + //Identific. de Título Aceito/Não Aceito 109 109 1 - Alfa C016
     FormatDateTime('ddmmyyyy', DataDocumento)            + //Data da Emissão do Título 110 117 8 - Num G071
 
-    IfThen(ValorMoraJuros > 0, '1', '3')                 + //Código do Juros de Mora 118 118 1 - Num *C018  '1' = Valor por Dia'2' = Taxa Mensal '3' = Isento
+    ACodigoMoraJuros                                     + //Código do Juros de Mora 118 118 1 - Num *C018  '1' = Valor por Dia'2' = Taxa Mensal '3' = Isento
     ADataMoraJuros                                       + //Data do Juros de Mora 119 126 8 - Num *C019
 
     IfThen(ValorMoraJuros > 0, IntToStrZero(round(ValorMoraJuros * 100), 15),PadRight('', 15, '0')) + //juros de Mora por Dia/Taxa 127 141 13 2 Num C020
 
-    IfThen(ValorDesconto > 0, '1', '0')                  + //Código do Desconto 1 142 142 1 - Num *C021
+    ACodigoDesconto                                      + //Código do Desconto 1 142 142 1 - Num *C021
     ADataDesconto                                        + //Data do Desconto 1 143 150 8 - Num C022
 
     IfThen(ValorDesconto > 0, IntToStrZero(

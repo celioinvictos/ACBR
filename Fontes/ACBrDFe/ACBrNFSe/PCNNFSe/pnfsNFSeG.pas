@@ -857,6 +857,21 @@ begin
                   Gerador.wGrupoNFSe('/Cabecalho');
                 end;
 
+    proPublica: begin
+                  Gerador.Prefixo := Prefixo3;
+                  Gerador.wGrupoNFSe('Prestador' + Identificador + '="Ass_' +
+                                         Cnpj + IM + '"');
+
+                  Gerador.Prefixo := Prefixo4;
+
+                  GerarGrupoCNPJCPF(Cnpj, (VersaoNFSe <> ve100) or (Provedor in [proISSNet, proActcon]));
+
+                  if (Provedor <> proBetha) or (IM <> '') then
+                    Gerador.wCampoNFSe(tcStr, '#3', 'InscricaoMunicipal', 01, 15, 1, IM, '');
+
+                  Gerador.Prefixo := Prefixo3;
+                  Gerador.wGrupoNFSe('/Prestador');
+                end
   else
     begin
       Gerador.Prefixo := Prefixo3;
@@ -1806,6 +1821,7 @@ begin
                          '</' + Prefixo3 + 'Pedido>';
                end;
 
+    proRJ,
     proSimplISS: begin
                    TagI := '<' + Prefixo3 + 'Pedido' + FNameSpaceDad + '>' +
                              '<' + Prefixo4 + 'InfPedidoCancelamento' + aIdentificadorCanc + '>';
@@ -1911,6 +1927,18 @@ begin
              Gerador.ArquivoFormatoXML := Gerador.ArquivoFormatoXML + Notas;
            end;
 
+    proSigep:
+      begin
+        Gerador.Prefixo := Prefixo4;
+        Gerador.wGrupoNFSe('credenciais');
+        Gerador.wCampoNFSe(tcStr, '#01', 'usuario     ', 01, 15, 1, UserWeb);
+        Gerador.wCampoNFSe(tcStr, '#02', 'senha       ', 01, 05, 1, SenhaWeb);
+        Gerador.wCampoNFSe(tcStr, '#03', 'chavePrivada', 01, 01, 1, ChaveAcessoPrefeitura);
+        Gerador.wGrupoNFSe('/credenciais');
+
+        Gerador.ArquivoFormatoXML := Gerador.ArquivoFormatoXML + Notas;
+      end
+
   else
     Gerador.ArquivoFormatoXML := Notas;
   end;
@@ -1947,8 +1975,6 @@ begin
 end;
 
 function TNFSeG.Gera_DadosMsgSubstituirNFSe: String;
-var
- TagGrupo: String;
 begin
   Result := Gera_DadosMsgCancelarNFSe;
 

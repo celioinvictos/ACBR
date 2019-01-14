@@ -175,11 +175,9 @@ type
     fpPosPrinter: TACBrPosPrinter;
 
   public
-    function TraduzirTagBloco(const ATag, ConteudoBloco: AnsiString): AnsiString;
-      virtual;
-    function ComandoCodBarras(const ATag: String; ACodigo: AnsiString): AnsiString;
-      virtual;
-    function ComandoQrCode(ACodigo: AnsiString): AnsiString; virtual;
+    function TraduzirTagBloco(const ATag, ConteudoBloco: AnsiString): AnsiString; virtual;
+    function ComandoCodBarras(const ATag: String; const ACodigo: AnsiString): AnsiString; virtual;
+    function ComandoQrCode(const ACodigo: AnsiString): AnsiString; virtual;
     function ComandoEspacoEntreLinhas(Espacos: byte): AnsiString; virtual;
     function ComandoPaginaCodigo(APagCodigo: TACBrPosPaginaCodigo): AnsiString; virtual;
     function ComandoLogo: AnsiString; virtual;
@@ -284,6 +282,8 @@ type
       property EspacoEntreLinhas: Byte read FEspacoEntreLinhas write FEspacoEntreLinhas default 0;
   end;
 
+  TACBrPosTipoCorte = (ctTotal, ctParcial);
+
   { TACBrPosPrinter }
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
@@ -305,6 +305,7 @@ type
     FTagProcessor: TACBrTagProcessor;
 
     FCortaPapel: Boolean;
+    FTipoCorte: TACBrPosTipoCorte;
     FLinhasBuffer: Integer;
     FLinhasEntreCupons: Integer;
     FPaginaDeCodigo: TACBrPosPaginaCodigo;
@@ -321,7 +322,7 @@ type
     function GetColunasFonteCondensada: Integer;
     function GetColunasFonteExpandida: Integer;
     function GetNumeroPaginaDeCodigo(APagCod: TACBrPosPaginaCodigo): word;
-    function CodificarPaginaDeCodigo(ATexto: AnsiString): AnsiString;
+    function CodificarPaginaDeCodigo(const ATexto: AnsiString): AnsiString;
 
     procedure DoLinesChange(Sender: TObject);
     function GetColunas: Integer;
@@ -331,7 +332,7 @@ type
     function GetTraduzirTags: Boolean;
     procedure SetAtivo(AValue: Boolean);
     procedure SetIgnorarTags(AValue: Boolean);
-    procedure SetPorta(AValue: String);
+    procedure SetPorta(const AValue: String);
     procedure SetTraduzirTags(AValue: Boolean);
     procedure SetModelo(AValue: TACBrPosPrinterModelo);
 
@@ -352,15 +353,15 @@ type
     procedure Desativar;
     property Ativo: Boolean read GetAtivo write SetAtivo;
 
-    procedure Imprimir(AString: AnsiString = ''; PulaLinha: Boolean = False;
+    procedure Imprimir(const AString: AnsiString = ''; PulaLinha: Boolean = False;
       DecodificarTags: Boolean = True; CodificarPagina: Boolean = True;
       Copias: Integer = 1);
-    procedure ImprimirLinha(AString: AnsiString);
-    procedure ImprimirCmd(AString: AnsiString);
+    procedure ImprimirLinha(const AString: AnsiString);
+    procedure ImprimirCmd(const AString: AnsiString);
     procedure GravarLog(AString: AnsiString; Traduz: Boolean = False;
       AdicionaTempo: Boolean = True);
 
-    function TxRx(ACmd: AnsiString; BytesToRead: Byte = 1;
+    function TxRx(const ACmd: AnsiString; BytesToRead: Byte = 1;
       ATimeOut: Integer = 500; WaitForTerminator: Boolean = False): AnsiString;
 
     procedure RetornarTags(AStringList: TStrings; IncluiAjuda: Boolean = True);
@@ -376,6 +377,11 @@ type
 
     function LerStatusImpressora( Tentativas: Integer = 1): TACBrPosPrinterStatus;
     function LerInfoImpressora: String;
+
+    function CalcularAlturaTexto(ALinhas: Integer): Integer;
+    function CalcularLinhasAltura(AAltura: Integer): Integer;
+    function CalcularAlturaQRCodeAlfaNumM(const QRCodeData: String): Integer;
+    function ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura, ALargura: Integer): String;
 
     property Buffer: TStringList read FBuffer;
 
@@ -411,7 +417,7 @@ type
     property LinhasEntreCupons: Integer read FLinhasEntreCupons
       write FLinhasEntreCupons default 21;
     property CortaPapel: Boolean read FCortaPapel write FCortaPapel default True;
-
+    property TipoCorte: TACBrPosTipoCorte read FTipoCorte write FTipoCorte default ctTotal;
     property TraduzirTags: Boolean read GetTraduzirTags
       write SetTraduzirTags default True;
     property IgnorarTags: Boolean read GetIgnorarTags write SetIgnorarTags default False;
@@ -457,6 +463,7 @@ end;
 
 constructor TACBrConfigGaveta.Create;
 begin
+  inherited;
   FTempoON := 50;
   FTempoOFF := 200;
   FSinalInvertido := False;
@@ -466,6 +473,7 @@ end;
 
 constructor TACBrConfigLogo.Create;
 begin
+  inherited;
   FKeyCode1 := 32;
   FKeyCode2 := 32;
   FFatorX := 1;
@@ -537,12 +545,12 @@ begin
 end;
 
 function TACBrPosPrinterClass.ComandoCodBarras(const ATag: String;
-  ACodigo: AnsiString): AnsiString;
+  const ACodigo: AnsiString): AnsiString;
 begin
   Result := ACodigo;
 end;
 
-function TACBrPosPrinterClass.ComandoQrCode(ACodigo: AnsiString): AnsiString;
+function TACBrPosPrinterClass.ComandoQrCode(const ACodigo: AnsiString): AnsiString;
 begin
   Result := '';
 end;
@@ -873,6 +881,8 @@ begin
   FArqLog := '';
   FOnGravarLog := nil;
   FOnEnviarStringDevice := nil;
+
+  FTipoCorte := ctTotal;
 end;
 
 destructor TACBrPosPrinter.Destroy;
@@ -1131,14 +1141,14 @@ begin
   else if ATag = cTagPuloDeLinhas then
     TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons)
 
-  else if ATag = cTagCorteParcial then
+  else if (ATag = cTagCorteParcial) or ( (ATag = cTagCorte) and (FTipoCorte = ctParcial) ) then
   begin
     TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons);
     if CortaPapel then
       TagTraduzida := TagTraduzida + FPosPrinterClass.Cmd.CorteParcial;
   end
 
-  else if ATag = cTagCorteTotal then
+  else if (ATag = cTagCorteTotal) or ( (ATag = cTagCorte) and (FTipoCorte = ctTotal) ) then
   begin
     TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons);
     if CortaPapel then
@@ -1507,7 +1517,7 @@ begin
   Imprimir;
 end;
 
-function TACBrPosPrinter.TxRx(ACmd: AnsiString; BytesToRead: Byte;
+function TACBrPosPrinter.TxRx(const ACmd: AnsiString; BytesToRead: Byte;
   ATimeOut: Integer; WaitForTerminator: Boolean): AnsiString;
 var
   OldTimeOut: Integer;
@@ -1628,6 +1638,79 @@ begin
   end;
 end;
 
+function TACBrPosPrinter.CalcularAlturaTexto(ALinhas: Integer): Integer;
+begin
+  Result := (FEspacoEntreLinhas+2) * ALinhas;
+end;
+
+function TACBrPosPrinter.CalcularLinhasAltura(AAltura: Integer): Integer;
+begin
+  Result := round(AAltura / (FEspacoEntreLinhas+2));
+end;
+
+function TACBrPosPrinter.CalcularAlturaQRCodeAlfaNumM(const QRCodeData: String
+  ): Integer;
+var
+  QRCodeModules: Integer;
+  LenData: Integer;
+begin
+  // http://www.qrcode.com/en/about/version.html
+  LenData := Length(QRCodeData);
+
+  if LenData < 20 then
+    QRCodeModules := 21
+  else if LenData < 38 then
+    QRCodeModules := 25
+  else if LenData < 61 then
+    QRCodeModules := 29
+  else if LenData < 90 then
+    QRCodeModules := 33
+  else if LenData < 122 then
+    QRCodeModules := 37
+  else if LenData < 154 then
+    QRCodeModules := 41
+  else if LenData < 178 then
+    QRCodeModules := 45
+  else if LenData < 221 then
+    QRCodeModules := 49
+  else if LenData < 262 then
+    QRCodeModules := 53
+  else if LenData < 311 then
+    QRCodeModules := 57
+  else if LenData < 366 then
+    QRCodeModules := 61
+  else if LenData < 419 then
+    QRCodeModules := 65
+  else if LenData < 483 then
+    QRCodeModules := 69
+  else if LenData < 528 then
+    QRCodeModules := 73
+  else if LenData < 600 then
+    QRCodeModules := 77
+  else
+    raise EPosPrinterException.Create('QRCode muito grande');
+
+  // http://www.qrcode.com/en/howto/code.html
+  Result := (QRCodeModules + 10) * CDotsMM;
+end;
+
+function TACBrPosPrinter.ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura,
+  ALargura: Integer): String;
+
+  Function MontarTag(const ATag, AConteudo: String): String;
+  begin
+     Result := ATag + AConteudo + StringReplace(ATag, '<', '</', [rfReplaceAll]);
+  end;
+
+begin
+  Result := MontarTag( cTagModoPaginaPosEsquerda, IntToStr(AEsquerda) ) +
+            MontarTag( cTagModoPaginaPosTopo, IntToStr(ATopo) ) +
+            MontarTag( cTagModoPaginaAltura, IntToStr(AAltura) ) +
+            MontarTag( cTagModoPaginaLargura, IntToStr(ALargura) ) +
+            MontarTag( cTagModoPaginaEspaco, IntToStr(EspacoEntreLinhas) ) +
+            cTagModoPaginaConfigurar;
+end;
+
 function TACBrPosPrinter.GetTraduzirTags: Boolean;
 begin
   Result := FTagProcessor.TraduzirTags;
@@ -1646,7 +1729,7 @@ begin
   FTagProcessor.IgnorarTags := AValue;
 end;
 
-procedure TACBrPosPrinter.SetPorta(AValue: String);
+procedure TACBrPosPrinter.SetPorta(const AValue: String);
 begin
   FDevice.Porta := AValue;
 end;
@@ -1656,7 +1739,7 @@ begin
   FTagProcessor.TraduzirTags := AValue;
 end;
 
-procedure TACBrPosPrinter.Imprimir(AString: AnsiString; PulaLinha: Boolean;
+procedure TACBrPosPrinter.Imprimir(const AString: AnsiString; PulaLinha: Boolean;
   DecodificarTags: Boolean; CodificarPagina: Boolean; Copias: Integer);
 var
   i: Integer;
@@ -1727,12 +1810,12 @@ begin
     EnviarStringDevice(StrToPrint);
 end;
 
-procedure TACBrPosPrinter.ImprimirLinha(AString: AnsiString);
+procedure TACBrPosPrinter.ImprimirLinha(const AString: AnsiString);
 begin
   Imprimir(AString, True);
 end;
 
-procedure TACBrPosPrinter.ImprimirCmd(AString: AnsiString);
+procedure TACBrPosPrinter.ImprimirCmd(const AString: AnsiString);
 begin
   if FBuffer.Count > 0 then
     Imprimir;
@@ -1792,7 +1875,7 @@ begin
   Result := FDevice.Ativo;
 end;
 
-function TACBrPosPrinter.CodificarPaginaDeCodigo(ATexto: AnsiString
+function TACBrPosPrinter.CodificarPaginaDeCodigo(const ATexto: AnsiString
   ): AnsiString;
 var
   NumPagCod: word;

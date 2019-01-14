@@ -203,7 +203,7 @@ type
 
     FRegistro0111: TRegistro0111;
   public
-    constructor Create(AOwner: TRegistro0001); virtual; /// Create
+    constructor Create(); virtual; /// Create
     destructor  Destroy; override; // Destroy
 
     property COD_INC_TRIB  : TACBrCodIndIncTributaria read FCOD_INC_TRIB  write FCOD_INC_TRIB;
@@ -273,7 +273,7 @@ type
     FRegistro0400 : TRegistro0400List;
     FRegistro0450 : TRegistro0450List;
   public
-    constructor Create(AOwner: TRegistro0001); virtual; /// Create
+    constructor Create(); virtual; /// Create
     destructor  Destroy; override; // Destroy
 
     property COD_EST      : string            read FCOD_EST      write FCOD_EST;
@@ -299,7 +299,7 @@ type
     function GetItem(Index: Integer): TRegistro0140;
     procedure SetItem(Index: Integer; const Value: TRegistro0140);
   public
-    function New(AOwner: TRegistro0001): TRegistro0140;
+    function New(): TRegistro0140;
     property Items[Index: Integer]: TRegistro0140 read GetItem write SetItem;
   end;
 
@@ -360,7 +360,7 @@ type
     procedure SetItem(Index: Integer; const Value: TRegistro0150);
   public
     function New(AOwner: TRegistro0140): TRegistro0150;
-    function LocalizaRegistro(Value: String): boolean;
+    function LocalizaRegistro(const Value: String): boolean;
     property Items[Index: Integer]: TRegistro0150 read GetItem write SetItem;
   end;
 
@@ -383,7 +383,7 @@ type
     procedure SetItem(Index: Integer; const Value: TRegistro0190);
   public
     function New(AOwner: TRegistro0140): TRegistro0190;
-    function LocalizaRegistro(pUNID: String): boolean;
+    function LocalizaRegistro(const pUNID: String): boolean;
     property Items[Index: Integer]: TRegistro0190 read GetItem write SetItem;
   end;
 
@@ -406,7 +406,7 @@ type
     FRegistro0206 : TRegistro0206;
     FRegistro0208 : TRegistro0208;
   public
-    constructor Create(AOwner: TRegistro0140); virtual;   // Create
+    constructor Create(); virtual;   // Create
     destructor  Destroy; override; // Destroy
 
     property COD_ITEM     : string            read FCOD_ITEM     write FCOD_ITEM;
@@ -432,8 +432,8 @@ type
     function GetItem(Index: Integer): TRegistro0200;
     procedure SetItem(Index: Integer; const Value: TRegistro0200);
   public
-    function New(AOwner: TRegistro0140): TRegistro0200;
-    function LocalizaRegistro(pCOD_ITEM: String): boolean;
+    function New(): TRegistro0200;
+    function LocalizaRegistro(const pCOD_ITEM: String): boolean;
     property Items[Index: Integer]: TRegistro0200 read GetItem write SetItem;
   end;
 
@@ -480,7 +480,7 @@ type
     FCOD_GRU   : string;                //Código do grupo, conforme Anexo III do Decreto nº 6.707/08
     FMARCA_COM : string;                //Marca Comercial
   public
-    constructor Create(AOwner: TRegistro0200); virtual;   // Create
+    constructor Create(); virtual;   // Create
     destructor  Destroy; override; // Destroy
 
     property COD_TAB   : TACBrIndCodIncidencia read FCOD_TAB   write FCOD_TAB;
@@ -507,7 +507,7 @@ type
     procedure SetItem(Index: Integer; const Value: TRegistro0400);
   public
     function New(AOwner: TRegistro0140): TRegistro0400;
-    function LocalizaRegistro(pCOD_NAT: String): boolean;
+    function LocalizaRegistro(const pCOD_NAT: String): boolean;
     property Items[Index: Integer]: TRegistro0400 read GetItem write SetItem;
   end;
 
@@ -631,8 +631,9 @@ end;
 
 constructor TRegistro0001.Create;
 begin
+  inherited Create;
   FRegistro0035 := TRegistro0035List.Create;
-  FRegistro0110 := TRegistro0110.Create(Self);
+  FRegistro0110 := TRegistro0110.Create();
   FRegistro0100 := TRegistro0100List.Create;
   FRegistro0120 := TRegistro0120List.Create;    //Implementado por Fábio Gabriel - 29/11/2012
   FRegistro0140 := TRegistro0140List.Create;
@@ -695,9 +696,9 @@ begin
   Result := TRegistro0140(Inherited Items[Index]);
 end;
 
-function TRegistro0140List.New(AOwner: TRegistro0001): TRegistro0140;
+function TRegistro0140List.New(): TRegistro0140;
 begin
-  Result := TRegistro0140.Create(AOwner);
+  Result := TRegistro0140.Create();
   Add(Result);
 end;
 
@@ -708,8 +709,9 @@ end;
 
 { TRegistro0140 }
 
-constructor TRegistro0140.Create(AOwner: TRegistro0001);
+constructor TRegistro0140.Create();
 begin
+  inherited Create;
   FRegistro0145 := TRegistro0145.Create(Self);
   FRegistro0150 := TRegistro0150List.Create;
   FRegistro0190 := TRegistro0190List.Create;
@@ -736,7 +738,7 @@ begin
   Result := TRegistro0150(Inherited Items[Index]);
 end;
 
-function TRegistro0150List.LocalizaRegistro(Value: String): boolean;
+function TRegistro0150List.LocalizaRegistro(const Value: String): boolean;
 var
 intFor: integer;
 begin
@@ -796,7 +798,7 @@ begin
   Result := TRegistro0190(Inherited Items[Index]);
 end;
 
-function TRegistro0190List.LocalizaRegistro(pUNID: String): boolean;
+function TRegistro0190List.LocalizaRegistro(const pUNID: String): boolean;
 var
 intFor: integer;
 begin
@@ -836,13 +838,13 @@ begin
   Result := TRegistro0200(Inherited Items[Index]);
 end;
 
-function TRegistro0200List.New(AOwner: TRegistro0140): TRegistro0200;
+function TRegistro0200List.New(): TRegistro0200;
 begin
-  Result := TRegistro0200.Create(AOwner);
+  Result := TRegistro0200.Create();
   Add(Result);
 end;
 
-function TRegistro0200List.LocalizaRegistro(pCOD_ITEM: String): boolean;
+function TRegistro0200List.LocalizaRegistro(const pCOD_ITEM: String): boolean;
 var
 intFor: integer;
 begin
@@ -864,11 +866,12 @@ end;
 
 { TRegistro0200 }
 
-constructor TRegistro0200.Create(AOwner: TRegistro0140);
+constructor TRegistro0200.Create();
 begin
+  inherited Create;
   FRegistro0205 := TRegistro0205List.Create;
   FRegistro0206 := TRegistro0206.Create(Self);
-  FRegistro0208 := TRegistro0208.Create(Self);
+  FRegistro0208 := TRegistro0208.Create();
 end;
 
 destructor TRegistro0200.Destroy;
@@ -911,7 +914,7 @@ begin
   Result := TRegistro0400(Inherited Items[Index]);
 end;
 
-function TRegistro0400List.LocalizaRegistro(pCOD_NAT: String): boolean;
+function TRegistro0400List.LocalizaRegistro(const pCOD_NAT: String): boolean;
 var
 intFor: integer;
 begin
@@ -1034,8 +1037,9 @@ end;
 
 { TRegistro0110 }
 
-constructor TRegistro0110.Create(AOwner: TRegistro0001);
+constructor TRegistro0110.Create();
 begin
+  inherited Create;
   FRegistro0111 := TRegistro0111.Create(Self);
 end;
 
@@ -1047,8 +1051,9 @@ end;
 
 { TRegistro0208 }
 
-constructor TRegistro0208.Create(AOwner: TRegistro0200);
+constructor TRegistro0208.Create();
 begin
+   inherited Create;
    FCOD_TAB := codIndiTabNaoTem;
 end;
 

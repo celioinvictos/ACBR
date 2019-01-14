@@ -2,6 +2,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
   Left = 1893
   Top = 76
   Caption = 'DACTe - Retrato'
+  ClientHeight = 519
   Font.Height = -8
   Font.Name = 'Arial'
   Font.Style = [fsBold]
@@ -9,16 +10,16 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
   TextHeight = 10
   inherited RLCTe: TRLReport
     Left = 16
-    Top = 19
+    Top = 16
+    Margins.LeftMargin = 7.000000000000000000
+    Margins.TopMargin = 7.000000000000000000
+    Margins.RightMargin = 7.000000000000000000
+    Margins.BottomMargin = 7.000000000000000000
     Background.Height = 96
     Background.Width = 175
     DataSource = Datasource1
     Font.Height = -8
     Font.Name = 'Courier New'
-    Margins.LeftMargin = 7.000000000000000000
-    Margins.TopMargin = 7.000000000000000000
-    Margins.RightMargin = 7.000000000000000000
-    Margins.BottomMargin = 7.000000000000000000
     PreviewOptions.FormStyle = fsStayOnTop
     PreviewOptions.ShowModal = True
     PreviewOptions.Caption = 'DACT-e '
@@ -167,7 +168,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 33
         Width = 14
         Height = 12
-        Caption = 'Nº '
+        Caption = 'N.'
         Color = clWhite
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -545,7 +546,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_09_Obs: TRLBand
       Left = 26
-      Top = 1411
+      Top = 1465
       Width = 742
       Height = 68
       BandType = btHeader
@@ -573,7 +574,6 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 19
         Width = 730
         Height = 45
-        AutoSize = False
         Behavior = [beSiteExpander]
         Color = clWhite
         Font.Charset = DEFAULT_CHARSET
@@ -581,6 +581,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Font.Height = -8
         Font.Name = 'Times New Roman'
         Font.Style = []
+        IntegralHeight = True
         Lines.Strings = (
           'OBS LINHA 1'
           'OBS LINHA 2'
@@ -1136,7 +1137,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 156
         Width = 55
         Height = 8
-        Caption = 'Nº PROTOCOLO'
+        Caption = 'N. PROTOCOLO'
         Color = clWhite
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1242,21 +1243,21 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 60
         Width = 376
         Height = 34
-        AutoSize = False
-        BarcodeType = bcCode128C
         Margins.LeftMargin = 1.000000000000000000
         Margins.RightMargin = 1.000000000000000000
+        AutoSize = False
+        BarcodeType = bcCode128C
       end
       object rlbCodigoBarras: TRLBarcode
         Left = 339
         Top = 60
         Width = 396
         Height = 32
+        Margins.LeftMargin = 1.000000000000000000
+        Margins.RightMargin = 1.000000000000000000
         Alignment = taCenter
         AutoSize = False
         BarcodeType = bcCode128C
-        Margins.LeftMargin = 1.000000000000000000
-        Margins.RightMargin = 1.000000000000000000
         Transparent = False
       end
       object RLLabel198: TRLLabel
@@ -1328,7 +1329,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_10_ModRodFracionado: TRLBand
       Left = 26
-      Top = 1523
+      Top = 1577
       Width = 742
       Height = 44
       BandType = btHeader
@@ -1567,7 +1568,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_11_ModRodLot103: TRLBand
       Left = 26
-      Top = 1567
+      Top = 1621
       Width = 742
       Height = 108
       BandType = btHeader
@@ -4372,7 +4373,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_17_Sistema: TRLBand
       Left = 26
-      Top = 2055
+      Top = 2107
       Width = 742
       Height = 16
       BandType = btHeader
@@ -4428,9 +4429,10 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_16_DadosExcEmitente: TRLBand
       Left = 26
-      Top = 1985
+      Top = 2039
       Width = 742
-      Height = 70
+      Height = 68
+      AutoSize = True
       BandType = btHeader
       Color = clWhite
       ParentColor = False
@@ -4479,7 +4481,6 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 17
         Width = 492
         Height = 49
-        AutoSize = False
         Behavior = [beSiteExpander]
         Color = clWhite
         Font.Charset = DEFAULT_CHARSET
@@ -4487,6 +4488,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Font.Height = -9
         Font.Name = 'Times New Roman'
         Font.Style = []
+        IntegralHeight = True
         Lines.Strings = (
           'OBS LINHA 1'
           'OBS LINHA 2')
@@ -4516,7 +4518,6 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 17
         Width = 228
         Height = 49
-        AutoSize = False
         Behavior = [beSiteExpander]
         Color = clWhite
         Font.Charset = DEFAULT_CHARSET
@@ -4524,6 +4525,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Font.Height = -9
         Font.Name = 'Times New Roman'
         Font.Style = []
+        IntegralHeight = True
         Lines.Strings = (
           'OBS LINHA 1'
           'OBS LINHA 2')
@@ -5393,7 +5395,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_12_ModAereo: TRLBand
       Left = 26
-      Top = 1782
+      Top = 1836
       Width = 742
       Height = 97
       BandType = btHeader
@@ -5905,7 +5907,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_13_ModAquaviario: TRLBand
       Left = 26
-      Top = 1879
+      Top = 1933
       Width = 742
       Height = 92
       BandType = btHeader
@@ -6262,7 +6264,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_14_ModFerroviario: TRLBand
       Left = 26
-      Top = 1971
+      Top = 2025
       Width = 742
       Height = 7
       BandType = btHeader
@@ -6272,7 +6274,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_15_ModDutoviario: TRLBand
       Left = 26
-      Top = 1978
+      Top = 2032
       Width = 742
       Height = 7
       BandType = btHeader
@@ -6551,7 +6553,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_11_ModRodLot104: TRLBand
       Left = 26
-      Top = 1675
+      Top = 1729
       Width = 742
       Height = 107
       BandType = btHeader
@@ -7036,7 +7038,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_18_Recibo: TRLBand
       Left = 26
-      Top = 2071
+      Top = 2123
       Width = 742
       Height = 97
       BandType = btHeader
@@ -7149,7 +7151,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 57
         Width = 14
         Height = 12
-        Caption = 'Nº '
+        Caption = 'N. '
         Color = clWhite
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -7637,7 +7639,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_06_VeiculosNovos: TRLBand
       Left = 26
-      Top = 1313
+      Top = 1367
       Width = 742
       Height = 98
       BandType = btHeader
@@ -7886,7 +7888,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_Fluxo_Carga: TRLBand
       Left = 26
-      Top = 1269
+      Top = 1323
       Width = 742
       Height = 44
       BandType = btHeader
@@ -8429,7 +8431,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
     end
     object rlb_Dados_Seguradora: TRLBand
       Left = 26
-      Top = 1479
+      Top = 1533
       Width = 742
       Height = 44
       BandType = btHeader
@@ -8687,6 +8689,123 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         HelpContext = 1
         Brush.Style = bsClear
         DrawKind = dkLine
+      end
+    end
+    object rlb_Cte_Anulado_Substituido: TRLBand
+      Left = 26
+      Top = 1269
+      Width = 742
+      Height = 54
+      AutoSize = True
+      BandType = btHeader
+      Borders.Sides = sdCustom
+      Borders.DrawLeft = True
+      Borders.DrawTop = True
+      Borders.DrawRight = True
+      Borders.DrawBottom = True
+      Color = clWhite
+      ParentColor = False
+      BeforePrint = rlb_Cte_Anulado_SubstituidoBeforePrint
+      object RLLabel9: TRLLabel
+        Left = 6
+        Top = 2
+        Width = 732
+        Height = 12
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'CT-e  ANULADO / SUBSTITUÍDO'
+        Color = clWhite
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -9
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+      object RLDraw117: TRLDraw
+        Left = 0
+        Top = 14
+        Width = 740
+        Height = 1
+        HelpContext = 1
+        Brush.Style = bsClear
+        DrawKind = dkLine
+      end
+      object RLDraw118: TRLDraw
+        Left = 370
+        Top = 14
+        Width = 1
+        Height = 66
+        Angle = 90.000000000000000000
+        Brush.Style = bsClear
+        DrawKind = dkLine
+      end
+      object rlblChaveCteSubstituido: TRLLabel
+        Left = 5
+        Top = 17
+        Width = 90
+        Height = 8
+        Caption = 'CHAVE CT-E SUBSTITUÍDO'
+        Color = clWhite
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -7
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+      object rlblChaveCteAnulacao: TRLLabel
+        Left = 373
+        Top = 17
+        Width = 84
+        Height = 8
+        Caption = 'CHAVE CT-E ANULAÇÃO'
+        Color = clWhite
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -7
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+        Visible = False
+      end
+      object rlChaveCteSerAnulSubst: TRLMemo
+        Left = 5
+        Top = 27
+        Width = 363
+        Height = 24
+        AutoSize = False
+        Behavior = [beSiteExpander]
+        Color = clWhite
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -9
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+      end
+      object rlChaveCteAnulacao: TRLMemo
+        Left = 373
+        Top = 27
+        Width = 363
+        Height = 24
+        AutoSize = False
+        Behavior = [beSiteExpander]
+        Color = clWhite
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -9
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
       end
     end
   end

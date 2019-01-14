@@ -172,12 +172,10 @@ end;
 
 procedure TACBrBancoUnicredES.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo; aRemessa: TStringList);
 var
-  sDigitoNossoNumero, sEspecie, sAgencia : String;
-  sProtesto, sTipoSacado, sMensagemCedente, sConta    : String;
+  sDigitoNossoNumero, sAgencia : String;
+  sTipoSacado, sConta    : String;
   sCarteira, sLinha, sNossoNumero, sNumContrato       : String;
-  cTipoBoleto : Char;
   iTamNossoNum: Integer;
-  nValorPencentualMulta: Currency;
 begin
 
    with ACBrTitulo do
@@ -206,39 +204,11 @@ begin
 
 
       {Pegando Tipo de Boleto}
-      case ACBrBoleto.Cedente.ResponEmissao of
-         tbCliEmite : cTipoBoleto := '2';
-      else
-         cTipoBoleto := '1';
-         if NossoNumero = EmptyStr then
-           sDigitoNossoNumero := '0';
+      if (ACBrBoleto.Cedente.ResponEmissao <> tbCliEmite) then
+      begin
+        if NossoNumero = EmptyStr then
+          sDigitoNossoNumero := '0';
       end;
-
-      {Pegando Especie}
-      (*if trim(EspecieDoc) = 'DM' then
-         sEspecie:= '01'
-      else if trim(EspecieDoc) = 'NP' then
-         sEspecie:= '02'
-      else if trim(EspecieDoc) = 'NS' then
-         sEspecie:= '03'
-      else if trim(EspecieDoc) = 'CS' then
-         sEspecie:= '04'
-      else if trim(EspecieDoc) = 'ND' then
-         sEspecie:= '11'
-      else if trim(EspecieDoc) = 'DS' then
-         sEspecie:= '12'
-      else if trim(EspecieDoc) = 'OU' then
-         sEspecie:= '99'
-      else
-         sEspecie := EspecieDoc;
-
-      {Pegando campo Intruções}
-      if (DataProtesto > 0) and (DataProtesto > Vencimento) then
-         sProtesto := '06' + IntToStrZero(DaysBetween(DataProtesto, Vencimento), 2)
-      else if CodTipoOcorrenciaToStr(OcorrenciaOriginal.Tipo) = '31' then
-         sProtesto := '9999'
-      else
-         sProtesto := '0000';*)
 
       {Pegando Tipo de Sacado}
       case Sacado.Pessoa of
@@ -343,8 +313,9 @@ begin
    ACBrBanco.ACBrBoleto.DataArquivo := StringToDateTimeDef(Copy(ARetorno[0], 95, 2) + '/' +
                                                            Copy(ARetorno[0], 97, 2) + '/' +
                                                            Copy(ARetorno[0], 99, 2), 0, 'DD/MM/YY' );
-
-   ACBrBanco.ACBrBoleto.DataCreditoLanc := StringToDateTimeDef(Copy(ARetorno[0], 380, 2) + '/' +
+                                                           
+   if StrToIntDef( Copy(ARetorno[0], 380, 6 ), 0) <> 0 then
+      ACBrBanco.ACBrBoleto.DataCreditoLanc := StringToDateTimeDef(Copy(ARetorno[0], 380, 2) + '/' +
                                                                Copy(ARetorno[0], 382, 2) + '/' +
                                                                Copy(ARetorno[0], 384, 2), 0, 'DD/MM/YY');
 
@@ -429,15 +400,14 @@ begin
             iMotivoLinha := 319;
             for i := 0 to 4 do
             begin
-               iCodMotivo := StrToInt(IfThen(copy(sLinha,iMotivoLinha,2) = '00','00',copy(sLinha,iMotivoLinha,2)));
-
+               iCodMotivo := StrToInt(IfThen(trim(copy(sLinha,iMotivoLinha,2)) = '','00',copy(sLinha,iMotivoLinha,2)));
                {Se for o primeiro motivo}
                if (i = 0) then
                 begin
                   {Somente estas ocorrencias possuem motivos 00}
                   if(iCodOcorrencia in [02, 06, 09, 10, 15, 17])then
                    begin
-                     MotivoRejeicaoComando.Add(IfThen(copy(sLinha,iMotivoLinha,2) = '00','00',copy(sLinha,iMotivoLinha,2)));
+                     MotivoRejeicaoComando.Add(IfThen(trim(copy(sLinha,iMotivoLinha,2)) = '','00',copy(sLinha,iMotivoLinha,2)));
                      DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo,iCodMotivo));
                    end
                   else
@@ -449,7 +419,7 @@ begin
                       end
                      else
                       begin
-                        MotivoRejeicaoComando.Add(IfThen(copy(sLinha,iMotivoLinha,2) = '00','00',copy(sLinha,iMotivoLinha,2)));
+                        MotivoRejeicaoComando.Add(IfThen(trim(copy(sLinha,iMotivoLinha,2)) = '','00',copy(sLinha,iMotivoLinha,2)));
                         DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo,iCodMotivo));
                       end;
                    end;
@@ -459,7 +429,7 @@ begin
                   //Apos o 1º motivo os 00 significam que não existe mais motivo
                   if iCodMotivo <> 0 then
                   begin
-                     MotivoRejeicaoComando.Add(IfThen(copy(sLinha,iMotivoLinha,2) = '00','00',copy(sLinha,iMotivoLinha,2)));
+                     MotivoRejeicaoComando.Add(IfThen(trim(copy(sLinha,iMotivoLinha,2)) = '','00',copy(sLinha,iMotivoLinha,2)));
                      DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo,iCodMotivo));
                   end;
                 end;
@@ -527,8 +497,6 @@ end;
 function TACBrBancoUnicredES.CodOcorrenciaToTipo(const CodOcorrencia:
    Integer ) : TACBrTipoOcorrencia;
 begin
-  Result := toTipoOcorrenciaNenhum;
-
   case CodOcorrencia of
     02: Result := toRetornoRegistroConfirmado;
     03: Result := toRetornoRegistroRecusado;

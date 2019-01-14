@@ -63,6 +63,8 @@ public
   procedure RespostaCancelamento;
   procedure RespostaRecibo;
   procedure RespostaItensRecibo(ItemID: integer = 0);
+  procedure RespostaEvento;
+  procedure RespostaItensEvento(ItemID: integer = 0);
 
   property ACBrMDFe: TACBrMDFe read fACBrMDFe;
 end;
@@ -290,6 +292,12 @@ public
   procedure Executar; override;
 end;
 
+{ TMetodoEnviarEvento}
+TMetodoEnviarEvento = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
 implementation
 
 uses IniFiles, DateUtils, Forms, strutils,
@@ -340,6 +348,7 @@ begin
   ListaDeMetodos.Add(CMetodoLoadfromfile);
   ListaDeMetodos.Add(CMetodoLerini);
   ListaDeMetodos.Add(CMetodoSetcertificado);
+  ListaDeMetodos.Add(CMetodoEnviarEvento);
   ListaDeMetodos.Add(CMetodoRestaurar);
   ListaDeMetodos.Add(CMetodoOcultar);
   ListaDeMetodos.Add(CMetodoEncerrarmonitor);
@@ -396,7 +405,8 @@ begin
     28 : AMetodoClass := TMetodoGeraChave;
     29 : AMetodoClass := TMetodoVersao;
     30 : AMetodoClass := TMetodoSetTipoImpressao;
-    31..45 : DoACbr(ACmd);
+    31 : AMetodoClass := TMetodoEnviarEvento;
+    32..46 : DoACbr(ACmd);
   end;
 
   if Assigned(AMetodoClass) then
@@ -484,7 +494,7 @@ begin
           if (Manifestos.Items[i].Confirmado) and (pImprimir) then
           begin
             try
-              DoAntesDeImprimir(DAMDFe.MostrarPreview);
+              DoAntesDeImprimir(DAMDFe.MostraPreview);
               Manifestos.Items[i].Imprimir;
             finally
               DoDepoisDeImprimir;
@@ -594,27 +604,30 @@ var
 begin
   Resp := TCancelamentoResposta.Create(resINI);
   try
-    with fACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento do
+    if fACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Count > 0 then
     begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cOrgao;
-      Resp.ChMDFe := chMDFe;
-      Resp.DhRecbto := dhRegEvento;
-      Resp.NProt := nProt;
-      Resp.TpEvento := TpEventoToStr(tpEvento);
-      Resp.xEvento := xEvento;
-      Resp.nSeqEvento := nSeqEvento;
-      Resp.CNPJDest := CNPJDest;
-      Resp.emailDest := emailDest;
-      Resp.XML := XML;
-      Resp.Arquivo := NomeArquivo;
+      with fACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento do
+      begin
+        Resp.Versao := verAplic;
+        Resp.TpAmb := TpAmbToStr(TpAmb);
+        Resp.VerAplic := VerAplic;
+        Resp.CStat := cStat;
+        Resp.XMotivo := XMotivo;
+        Resp.CUF := cOrgao;
+        Resp.ChMDFe := chMDFe;
+        Resp.DhRecbto := dhRegEvento;
+        Resp.NProt := nProt;
+        Resp.TpEvento := TpEventoToStr(tpEvento);
+        Resp.xEvento := xEvento;
+        Resp.nSeqEvento := nSeqEvento;
+        Resp.CNPJDest := CNPJDest;
+        Resp.emailDest := emailDest;
+        Resp.XML := XML;
+        Resp.Arquivo := NomeArquivo;
 
-      fpCmd.Resposta := XMotivo + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+        fpCmd.Resposta := XMotivo + sLineBreak;
+        fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+      end;
     end;
   finally
     Resp.Free;
@@ -669,8 +682,11 @@ begin
       Resp.XMotivo := XMotivo;
       Resp.CUF := cUF;
       Resp.CNPJ := CNPJCPF;
-      Resp.ChMDFe := InfMDFe.Items[0].chMDFe;
-      Resp.NProt := InfMDFe.Items[0].nProt;
+      if InfMDFe.Count > 0 then
+      begin
+        Resp.ChMDFe := InfMDFe.Items[0].chMDFe;
+        Resp.NProt := InfMDFe.Items[0].nProt;
+      end;
 
       fpCmd.Resposta := Msg + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
@@ -695,9 +711,12 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := cUF;
-      Resp.ChMDFe := fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Items[0].chMDFe;
-      Resp.NProt := fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Items[0].nProt;
-      Resp.MotivoMDFe := MDFeRetorno.ProtMDFe.Items[0].xMotivo;
+      if fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Count > 0 then
+      begin
+        Resp.ChMDFe := fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Items[0].chMDFe;
+        Resp.NProt := fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Items[0].nProt;
+        Resp.MotivoMDFe := MDFeRetorno.ProtMDFe.Items[0].xMotivo;
+      end;
 
       fpCmd.Resposta := Msg + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
@@ -730,6 +749,61 @@ begin
       Resp.digVal := digVal;
 
       fpCmd.Resposta := Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoMDFe.RespostaEvento;
+var
+  Resp: TEventoResposta;
+begin
+  Resp := TEventoResposta.Create(resINI);
+  try
+    with fACBrMDFe.WebServices.EnvEvento.EventoRetorno do
+    begin
+      Resp.VerAplic := VerAplic;
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.CStat := cStat;
+      Resp.XMotivo := XMotivo;
+      Resp.idLote := IdLote;
+      Resp.cOrgao := cOrgao;
+
+      fpCmd.Resposta := sLineBreak + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoMDFe.RespostaItensEvento(ItemID: integer);
+var
+  Resp: TEventoItemResposta;
+begin
+  Resp := TEventoItemResposta.Create(
+    'Evento' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
+  try
+    with fACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[ItemID].RetInfEvento do
+    begin
+      Resp.Id := Id;
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.verAplic := verAplic;
+      Resp.cOrgao := cOrgao;
+      Resp.cStat := cStat;
+      Resp.xMotivo := xMotivo;
+      Resp.chMDFe := chMDFe;
+      Resp.tpEvento := TpEventoToStr(tpEvento);
+      Resp.xEvento := xEvento;
+      Resp.nSeqEvento := nSeqEvento;
+      Resp.CNPJDest := CNPJDest;
+      Resp.emailDest := emailDest;
+      Resp.dhRegEvento := dhRegEvento;
+      Resp.nProt := nProt;
+      Resp.Arquivo := NomeArquivo;
+      Resp.XML := XML;
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
   finally
     Resp.Free;
@@ -1228,7 +1302,6 @@ end;
 }
 procedure TMetodoSetAmbiente.Executar;
 var
-  OK: boolean;
   NumAmbiente: Integer;
 begin
   NumAmbiente := StrToIntDef(fpCmd.Params(0), 2);
@@ -1252,13 +1325,13 @@ end;
           2 - IE: Boolean 1: para consulta por IF
 }
 procedure TMetodoConsultaCadastro.Executar;
-var
-  AUF, ADocumento: String;
-  AIE: Boolean;
+//var
+//  AUF, ADocumento: String;
+//  AIE: Boolean;
 begin
-  AUF := fpCmd.Params(0);
-  ADocumento := fpCmd.Params(1);
-  AIE := StrToBoolDef(fpCmd.Params(2), False);
+  //AUF := fpCmd.Params(0);
+  //ADocumento := fpCmd.Params(1);
+  //AIE := StrToBoolDef(fpCmd.Params(2), False);
 
   raise Exception.Create('Método: MDFe.ConsultarCadastro não implementado.');
 end;
@@ -1274,17 +1347,17 @@ end;
           6 - NumFinal: Integer Nº final inutilização
 }
 procedure TMetodoInutilizarMDFe.Executar;
-var
-  ACNPJ, AJustificativa, ASerie: String;
-  AAno, AModelo, ANumIninial, ANumFinal: Integer;
+//var
+//  ACNPJ, AJustificativa, ASerie: String;
+//  AAno, AModelo, ANumIninial, ANumFinal: Integer;
 begin
-  ACNPJ := fpCmd.Params(0);
-  AJustificativa := fpCmd.Params(1);
-  AAno := StrToIntDef(fpCmd.Params(2), 0);
-  AModelo := StrToIntDef(fpCmd.Params(3), 0);
-  ASerie := fpCmd.Params(4);
-  ANumIninial := StrToIntDef(fpCmd.Params(5), 0);
-  ANumFinal := StrToIntDef(fpCmd.Params(6), 0);
+  //ACNPJ := fpCmd.Params(0);
+  //AJustificativa := fpCmd.Params(1);
+  //AAno := StrToIntDef(fpCmd.Params(2), 0);
+  //AModelo := StrToIntDef(fpCmd.Params(3), 0);
+  //ASerie := fpCmd.Params(4);
+  //ANumIninial := StrToIntDef(fpCmd.Params(5), 0);
+  //ANumFinal := StrToIntDef(fpCmd.Params(6), 0);
 
   raise Exception.Create('Método: MDFe.InutilizarMDFe não implementado.');
 end;
@@ -1690,7 +1763,7 @@ begin
         ACBrMDFe.DAMDFe.NumCopias := ACopias;
 
       try
-        DoAntesDeImprimir(ACBrMDFe.DAMDFE.MostrarPreview);
+        DoAntesDeImprimir(ACBrMDFe.DAMDFE.MostraPreview);
         ACBrMDFe.ImprimirEvento;
       finally
         DoDepoisDeImprimir;
@@ -1723,7 +1796,7 @@ begin
     CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, AXML);
     try
       if NaoEstaVazio(AProtocolo) then
-        ACBrMDFe.DAMDFe.ProtocoloMDFe := AProtocolo;
+        ACBrMDFe.DAMDFe.Protocolo := AProtocolo;
 
       try
         ACBrMDFe.Manifestos.ImprimirPDF;
@@ -2069,10 +2142,10 @@ begin
         ACBrMDFe.DAMDFe.NumCopias := ACopias;
 
       if NaoEstaVazio(AProtocolo) then
-        ACBrMDFe.DAMDFe.ProtocoloMDFe := AProtocolo;
+        ACBrMDFe.DAMDFe.Protocolo := AProtocolo;
 
       try
-        DoAntesDeImprimir(ACBrMDFe.DAMDFe.MostrarPreview);
+        DoAntesDeImprimir(ACBrMDFe.DAMDFe.MostraPreview);
         ACBrMDFe.Manifestos.Imprimir;
       finally
         DoDepoisDeImprimir;
@@ -2133,6 +2206,33 @@ begin
     end;
     ACBrMDFe.EnviarEvento(ALote);
     RespostaCancelamento;
+  end;
+end;
+
+{ TMetodoEnviarEvento }
+
+{ Params: 0 - IniFile - Uma String com um Path completo arquivo .ini Evento
+                         ou Uma String com conteúdo txt do Evento
+}
+procedure TMetodoEnviarEvento.Executar;
+var
+  AArq: String;
+  I: Integer;
+begin
+  AArq := fpCmd.Params(0);
+
+  with TACBrObjetoMDFe(fpObjetoDono) do
+  begin
+    ACBrMDFe.EventoMDFe.Evento.Clear;
+
+    ACBrMDFe.EventoMDFe.LerFromIni( AArq );
+
+    ACBrMDFe.EnviarEvento(ACBrMDFe.EventoMDFe.idLote);
+
+    RespostaEvento;
+
+    for I := 0 to ACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Count - 1 do
+       RespostaItensEvento(I);
   end;
 end;
 

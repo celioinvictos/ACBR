@@ -82,7 +82,7 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    procedure LimpaRegistros;
+    procedure LimpaRegistros; override;
 
     function RegistroE001New: TRegistroE001;
     function RegistroE010New: TRegistroE010;
@@ -104,7 +104,6 @@ type
     property RegistroE030Count: Integer read FRegistroE030Count write FRegistroE030Count;
     property RegistroE155Count: Integer read FRegistroE155Count write FRegistroE155Count;
     property RegistroE355Count: Integer read FRegistroE355Count write FRegistroE355Count;
-  published
   end;
 
 
@@ -117,6 +116,7 @@ uses
 
 constructor TBloco_E.Create;
 begin
+  inherited Create;
   CriaRegistros;
 end;
 
@@ -131,6 +131,7 @@ end;
 destructor TBloco_E.Destroy;
 begin
   LiberaRegistros;
+  inherited;
 end;
 
 procedure TBloco_E.LiberaRegistros;
@@ -154,7 +155,7 @@ end;
 
 function TBloco_E.RegistroE010New: TRegistroE010;
 begin
-  Result := FRegistroE001.RegistroE010.New(FRegistroE001);
+  Result := FRegistroE001.RegistroE010.New();
 end;
 
 function TBloco_E.RegistroE015New: TRegistroE015;
@@ -167,17 +168,17 @@ begin
     raise Exception.Create('O registro E015 deve ser filho do registro E010, e não existe nenhum E010 pai!');
 
   UE010  := FRegistroE001.RegistroE010.Items[UE010Count];
-  Result := UE010.RegistroE015.New(UE010);
+  Result := UE010.RegistroE015.New();
 end;
 
 function TBloco_E.RegistroE020New: TRegistroE020;
 begin
-  Result := FRegistroE001.RegistroE020.New(FRegistroE001);
+  Result := FRegistroE001.RegistroE020.New();
 end;
 
 function TBloco_E.RegistroE030New: TRegistroE030;
 begin
-  Result := FRegistroE001.RegistroE030.New(FRegistroE001);
+  Result := FRegistroE001.RegistroE030.New();
 end;
 
 function TBloco_E.RegistroE155New: TRegistroE155;
@@ -190,7 +191,7 @@ begin
     raise Exception.Create('O registro E155 deve ser filho do registro E030, e não existe nenhum E030 pai!');
 
   UE030  := FRegistroE001.RegistroE030.Items[UE030Count];
-  Result := UE030.RegistroE155.New(UE030);
+  Result := UE030.RegistroE155.New();
 end;
 
 function TBloco_E.RegistroE355New: TRegistroE355;
@@ -203,7 +204,7 @@ begin
     raise Exception.Create('O registro E355 deve ser filho do registro E030, e não existe nenhum E030 pai!');
 
   UE030  := FRegistroE001.RegistroE030.Items[UE030Count];
-  Result := UE030.RegistroE355.New(UE030);
+  Result := UE030.RegistroE355.New();
 end;
 
 procedure TBloco_E.WriteRegistroE001;

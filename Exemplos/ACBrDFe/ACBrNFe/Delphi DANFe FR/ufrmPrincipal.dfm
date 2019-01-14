@@ -112,11 +112,12 @@ object frmPrincipal: TfrmPrincipal
         Height = 46
         Align = alTop
         Caption = 'Canhoto'
-        Columns = 2
+        Columns = 3
         ItemIndex = 0
         Items.Strings = (
           'Cabe'#231'alho '
-          'Rodap'#233)
+          'Rodap'#233
+          'Esquerda')
         TabOrder = 0
       end
       object GroupBox1: TGroupBox
@@ -218,6 +219,10 @@ object frmPrincipal: TfrmPrincipal
     object Decimais: TTabSheet
       Caption = 'Decimais'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object RgTipodedecimais: TRadioGroup
         Left = 0
         Top = 0
@@ -242,6 +247,10 @@ object frmPrincipal: TfrmPrincipal
         object TabtdetInteger: TTabSheet
           Caption = 'tdetInteger'
           ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label5: TLabel
             Left = 16
             Top = 24
@@ -300,6 +309,10 @@ object frmPrincipal: TfrmPrincipal
         object TabtdetMascara: TTabSheet
           Caption = 'tdetMascara'
           ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label7: TLabel
             Left = 5
             Top = 5
@@ -366,7 +379,8 @@ object frmPrincipal: TfrmPrincipal
     Configuracoes.Geral.SSLHttpLib = httpIndy
     Configuracoes.Geral.SSLXmlSignLib = xsMsXmlCapicom
     Configuracoes.Geral.FormatoAlerta = 'TAG:%TAGNIVEL% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.'
-    Configuracoes.Geral.IncluirQRCodeXMLNFCe = False
+    Configuracoes.Geral.VersaoQRCode = veqr000
+    Configuracoes.Arquivos.OrdenacaoPath = <>
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
@@ -375,52 +389,24 @@ object frmPrincipal: TfrmPrincipal
     Top = 30
   end
   object ACBrNFeDANFEFR1: TACBrNFeDANFEFR
-    ACBrNFe = ACBrNFe1
-    MostrarPreview = True
-    MostrarStatus = True
-    TipoDANFE = tiSemGeracao
-    NumCopias = 1
-    ImprimeNomeFantasia = False
-    ImprimirDescPorc = False
-    ImprimirTotalLiquido = True
+    Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
     MargemInferior = 0.800000000000000000
     MargemSuperior = 0.800000000000000000
     MargemEsquerda = 0.600000000000000000
     MargemDireita = 0.510000000000000000
     CasasDecimais.Formato = tdetInteger
-    CasasDecimais._qCom = 2
-    CasasDecimais._vUnCom = 2
-    CasasDecimais._Mask_qCom = '###,###,###,##0.00'
-    CasasDecimais._Mask_vUnCom = '###,###,###,##0.00'
-    ExibirResumoCanhoto = False
-    FormularioContinuo = False
-    TamanhoFonte_DemaisCampos = 10
-    ProdutosPorPagina = 0
-    ImprimirDetalhamentoEspecifico = True
-    NFeCancelada = False
-    ImprimirItens = True
-    ViaConsumidor = True
-    TamanhoLogoHeight = 0
-    TamanhoLogoWidth = 0
-    RecuoEndereco = 0
-    RecuoEmpresa = 0
-    LogoemCima = False
-    TamanhoFonteEndereco = 0
-    RecuoLogo = 0
-    TributosSeparadamente = False
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
+    ACBrNFe = ACBrNFe1
+    TipoDANFE = tiSemGeracao
+    ExibeInforAdicProduto = True
     EspessuraBorda = 1
-    ExibirTotalTributosItem = False
-    ExibeCampoFatura = True
-    TributosPercentual = ptValorProdutos
-    ImprimirUnQtVlComercial = iuTributavel
-    Detalhado = False
-    DescricaoViaEstabelec = 'Via do Consumidor'
     ExpandirDadosAdicionaisAuto = False
-    ImprimirDadosArma = True
-    QuebraLinhaEmDetalhamentoEspecifico = True
     IncorporarBackgroundPdf = True
     IncorporarFontesPdf = True
-    ImprimirDadosDocReferenciados = True
+    BorderIcon = [biSystemMenu, biMinimize, biMaximize]
     Left = 48
     Top = 22
   end
@@ -431,7 +417,7 @@ object frmPrincipal: TfrmPrincipal
   end
   object frxReport1: TfrxReport
     Tag = 1
-    Version = '5.5'
+    Version = '5.4.6'
     DotMatrixReport = False
     EngineOptions.DoublePass = True
     IniFile = '\Software\Fast Reports'
@@ -710,7 +696,6 @@ object frmPrincipal: TfrmPrincipal
         Top = 1224.567720000000000000
         Width = 744.567410000000000000
         OnAfterPrint = 'DadosProdutosOnAfterPrint'
-        DataSet = frxDadosProdutos.Owner
         DataSetName = 'DadosProdutos'
         RowCount = 0
         Stretched = True

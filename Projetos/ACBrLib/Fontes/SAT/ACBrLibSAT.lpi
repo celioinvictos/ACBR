@@ -16,10 +16,13 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <RevisionNr Value="1"/>
+      <MajorVersionNr Value="2019"/>
+      <MinorVersionNr Value="1"/>
+      <RevisionNr Value="7"/>
+      <BuildNr Value="1"/>
       <Language Value="0416"/>
       <Attributes pvaPreRelease="True"/>
-      <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrLibSAT - Biblioteca para comunicação com equipamentos SAT ﻿usando ACBrSAT" InternalName="ACBrLibSAT" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductVersion="0.0.0.0"/>
+      <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrLibSAT - Biblioteca para comunicação com equipamentos SAT ﻿usando ACBrSAT" InternalName="ACBrLibSAT" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductVersion="2019.1.7.1"/>
     </VersionInfo>
     <BuildModes Count="5">
       <Item1 Name="x86 - CDECL" Default="True"/>
@@ -191,17 +194,8 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <local>
-        <HostApplicationFilename Value="C:\dj\ACBr\Projetos\ACBrLib\Testes\SAT\bin\ACBrLibSATTest.exe"/>
-      </local>
       <FormatVersion Value="2"/>
-      <Modes Count="1">
-        <Mode0 Name="default">
-          <local>
-            <HostApplicationFilename Value="C:\dj\ACBr\Projetos\ACBrLib\Testes\SAT\bin\ACBrLibSATTest.exe"/>
-          </local>
-        </Mode0>
-      </Modes>
+      <Modes Count="0"/>
     </RunParams>
     <RequiredPackages Count="4">
       <Item1>

@@ -222,7 +222,7 @@ TACBrHTTP = class( TACBrComponent )
     procedure HTTPPut(AURL: String);
     procedure HTTPMethod( Method, AURL : String ); virtual ;
 
-    function GetHeaderValue( AValue : String ) : String ;
+    function GetHeaderValue( const AValue : String ) : String ;
 
     procedure LerConfiguracoesProxy; 
 
@@ -242,23 +242,23 @@ TACBrHTTP = class( TACBrComponent )
        read fOnAntesAbrirHTTP write fOnAntesAbrirHTTP ;
 end ;
 
-function GetURLBasePath(URL: String): String;
-function IsAbsoluteURL(URL: String): Boolean;
+function GetURLBasePath(const URL: String): String;
+function IsAbsoluteURL(const URL: String): Boolean;
 
 implementation
 
 Uses
-  math,  
+  math,
   ACBrUtil,
   synacode, synautil
   {$IFNDEF NOGUI},Controls, Forms{$ENDIF};
 
-function GetURLBasePath(URL: String): String;
+function GetURLBasePath(const URL: String): String;
 begin
   Result := Copy(URL, 1, PosLast('/',URL) );
 end;
 
-function IsAbsoluteURL(URL: String): Boolean;
+function IsAbsoluteURL(const URL: String): Boolean;
 const
   protocolos: array[0..2] of string = ('http','https', 'ftp');
 var
@@ -996,7 +996,7 @@ begin
   end;
 end;
 
-function TACBrHTTP.GetHeaderValue(AValue : String) : String ;
+function TACBrHTTP.GetHeaderValue(const AValue : String) : String ;
 var
   I : Integer ;
   LinhaHeader : string ;
@@ -1065,12 +1065,15 @@ var
 
 begin
   Port     := '';
+  User     := '';
+  Password := '';
   Server   := GetProxyServer;
-  User     := GetOptionString(INTERNET_OPTION_PROXY_USERNAME);
-  Password := GetOptionString(INTERNET_OPTION_PROXY_PASSWORD);
 
   if Server <> '' then
   begin
+     User     := GetOptionString(INTERNET_OPTION_PROXY_USERNAME);
+     Password := GetOptionString(INTERNET_OPTION_PROXY_PASSWORD);
+
      i := Pos('http=', Server);
      if i > 0 then
      begin

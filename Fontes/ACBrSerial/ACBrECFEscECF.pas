@@ -63,7 +63,7 @@ private
    fsFisco: Byte;
    fsRET: AnsiString;
    fsSPR: Byte;
-   procedure SetRET(AValue: AnsiString);
+   procedure SetRET(const AValue: AnsiString);
  public
     constructor Create;
     property ECF        : Byte read fsECF write fsECF;
@@ -101,11 +101,11 @@ TACBrECFEscECFComando = class
     property Comando : AnsiString  read GetComando ;
     property Params  : TStringList read fsParams ;
 
-    Procedure AddParamString(AString : AnsiString) ;
+    Procedure AddParamString(const AString : AnsiString) ;
     Procedure AddParamInteger(AInteger : Integer) ;
     Procedure AddParamDouble(ADouble : Double; Decimais: Byte = 2) ;
     Procedure AddParamDateTime( ADateTime: TDateTime; Tipo : Char = 'D';
-                                FlagHV : String = '' ) ;
+                                const FlagHV : String = '' ) ;
  end ;
 
 { TACBrECFEscECFResposta }
@@ -161,7 +161,7 @@ TACBrECFEscECFProtocolo = class
   protected
     fpECFEscECF: TACBrECFEscECF;
 
-    function PreparaCmd(CmdExtBcd: AnsiString): AnsiString;
+    function PreparaCmd(const CmdExtBcd: AnsiString): AnsiString;
   public
     constructor Create(AECFEscECF: TACBrECFEscECF); virtual;
     procedure Ativar ; virtual;
@@ -216,7 +216,7 @@ TACBrECFEscECF = class( TACBrECFClass )
     fsDeviceParams   : String;
 
     procedure EnviaConsumidor;
-    Function AjustaDescricao( ADescricao: String ): String;
+    Function AjustaDescricao( const ADescricao: String ): String;
 
     Procedure SalvaRespostasMemoria( AtualizaVB: Boolean = True );
     Procedure LeRespostasMemoria;
@@ -450,22 +450,22 @@ TACBrECFEscECF = class( TACBrECFClass )
        Linhas : TStringList; Documentos : TACBrECFTipoDocumentoSet = [docTodos] ) ; overload ; override ;
 
     Procedure EspelhoMFD_DLL( DataInicial, DataFinal : TDateTime;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; overload ; override ;
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; overload ; override ;
     Procedure EspelhoMFD_DLL( COOInicial, COOFinal : Integer;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; overload ; override ;
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; overload ; override ;
     Procedure ArquivoMFD_DLL( DataInicial, DataFinal : TDateTime;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
        Finalidade: TACBrECFFinalizaArqMFD = finMFD  ) ; overload ; override ;
     Procedure ArquivoMFD_DLL( ContInicial, ContFinal : Integer;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
        Finalidade: TACBrECFFinalizaArqMFD = finMFD;
        TipoContador: TACBrECFTipoContador = tpcCOO ) ; overload ; override ;
 
     procedure PafMF_GerarCAT52(const DataInicial, DataFinal: TDateTime;
       const DirArquivos: String; NumeroSerie: String = ''); override;
 
-    Procedure ArquivoMF_Binario_DLL(NomeArquivo: AnsiString); override;
-    Procedure ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD; NomeArquivo,
+    Procedure ArquivoMF_Binario_DLL(const NomeArquivo: AnsiString); override;
+    Procedure ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD; const NomeArquivo: AnsiString;
       StrInicial, StrFinal: AnsiString); override;
 
     Procedure IdentificaOperador(Nome : String); override;
@@ -476,7 +476,7 @@ TACBrECFEscECF = class( TACBrECFClass )
 
     Function RetornaInfoECF( Registrador: String) : AnsiString; override ;
 
-    Function CapturaXMLCupom( Inicial, Final: String; Tipo: Integer = 2 ): AnsiString;
+    Function CapturaXMLCupom( const Inicial, Final: String; Tipo: Integer = 2 ): AnsiString;
 
     function IsBematech: Boolean;
     function IsEpson: Boolean;
@@ -712,7 +712,7 @@ begin
   end;
 end;
 
-function TACBrECFEscECFProtocolo.PreparaCmd(CmdExtBcd: AnsiString): AnsiString;
+function TACBrECFEscECFProtocolo.PreparaCmd(const CmdExtBcd: AnsiString): AnsiString;
 Var
   CMD, EXT : Byte ;
   BCD : AnsiString ;
@@ -1068,7 +1068,7 @@ begin
   Clear;
 end;
 
-procedure TACBrECFEscECFRET.SetRET(AValue: AnsiString);
+procedure TACBrECFEscECFRET.SetRET(const AValue: AnsiString);
 begin
    if fsRET=AValue then Exit;
 
@@ -1145,7 +1145,7 @@ begin
   Result := SOH + Buffer + AnsiChr( CHK ) ;
 end;
 
-procedure TACBrECFEscECFComando.AddParamString(AString: AnsiString);
+procedure TACBrECFEscECFComando.AddParamString(const AString: AnsiString);
 var
   Buf : AnsiString ;
 begin
@@ -1168,7 +1168,7 @@ begin
 end;
 
 procedure TACBrECFEscECFComando.AddParamDateTime(ADateTime: TDateTime;
-   Tipo : Char = 'D'; FlagHV : String = ''  ) ;
+   Tipo : Char = 'D'; const FlagHV : String = ''  ) ;
 Var
   Formato : String ;
 begin
@@ -1219,7 +1219,7 @@ end;
 procedure TACBrECFEscECFResposta.SetResposta(const AValue: AnsiString);
 Var
   Soma, I, F, LenCmd : Integer ;
-  CHK  : Byte ;
+  vCHK  : Byte ;
 begin
   Clear( False ) ;    // Não Zera Params, pois pode acumular 2 retornos
 
@@ -1251,13 +1251,13 @@ begin
 
   Soma := 0 ;
   LenCmd := fsTBR+11;
-  For I := 2 to LenCmd do  
+  For I := 2 to LenCmd do
      Soma := Soma + ord( AValue[I] ) ;
-  CHK := Soma mod 256  ;
+  vCHK := Soma mod 256  ;
 
-  if CHK <> fsCHK then
+  if vCHK <> fsCHK then
      raise EACBrECFSemResposta.Create(ACBrStr('Erro CHK Resposta. '+
-        'Calculado:'+IntToStr(CHK)+' Recebido:'+IntToStr(fsCHK)));
+        'Calculado:'+IntToStr(vCHK)+' Recebido:'+IntToStr(fsCHK)));
 
   { Quebrando Parametros Separados por '|' e inserindo-os em fsParams }
   I := 1;
@@ -1694,7 +1694,7 @@ begin
       Result := Result + '-'+MsgMotivo;
 end;
 
-function TACBrECFEscECF.AjustaDescricao(ADescricao : String) : String ;
+function TACBrECFEscECF.AjustaDescricao(const ADescricao : String) : String ;
 begin
   { Ajusta uma descrição de acordo com as regras do protocolo EscECF
     Máximo de 15, Mínimo de 4 caracteres ASCII de posição 65 a 90 (letras maiúsculas)
@@ -1845,7 +1845,7 @@ begin
      Delete( Result, Length(Result), 1 );
 end;
 
-function TACBrECFEscECF.CapturaXMLCupom(Inicial, Final : String ; Tipo : Integer
+function TACBrECFEscECF.CapturaXMLCupom(const Inicial, Final : String ; Tipo : Integer
    ) : AnsiString ;
 Var
   I: Integer;
@@ -2497,7 +2497,7 @@ begin
 end;
 
 procedure TACBrECFEscECF.EspelhoMFD_DLL(DataInicial, DataFinal: TDateTime;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet);
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet);
 var
   ECFClass: TACBrECFClass;
 begin
@@ -2518,7 +2518,7 @@ begin
 end;
 
 procedure TACBrECFEscECF.EspelhoMFD_DLL(COOInicial, COOFinal: Integer;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet);
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet);
 var
   ECFClass: TACBrECFClass;
 begin
@@ -2539,7 +2539,7 @@ begin
 end;
 
 procedure TACBrECFEscECF.ArquivoMFD_DLL(DataInicial, DataFinal: TDateTime;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
   Finalidade: TACBrECFFinalizaArqMFD);
 var
   ECFClass: TACBrECFClass;
@@ -2561,7 +2561,7 @@ begin
 end;
 
 procedure TACBrECFEscECF.ArquivoMFD_DLL(ContInicial, ContFinal: Integer;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
   Finalidade: TACBrECFFinalizaArqMFD; TipoContador: TACBrECFTipoContador);
 var
   ECFClass: TACBrECFClass;
@@ -2606,7 +2606,7 @@ begin
   end;
 end;
 
-procedure TACBrECFEscECF.ArquivoMF_Binario_DLL(NomeArquivo: AnsiString);
+procedure TACBrECFEscECF.ArquivoMF_Binario_DLL(const NomeArquivo: AnsiString);
 var
   ECFClass: TACBrECFClass;
 begin
@@ -2624,7 +2624,7 @@ begin
 end;
 
 procedure TACBrECFEscECF.ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD;
-  NomeArquivo, StrInicial, StrFinal: AnsiString);
+  const NomeArquivo: AnsiString; StrInicial, StrFinal: AnsiString);
 var
   ECFClass: TACBrECFClass;
 begin

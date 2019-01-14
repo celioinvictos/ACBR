@@ -134,7 +134,7 @@ begin
    end;
 end;
 
-function OrdenarT2(ACampo1, ACampo2: Pointer): Integer;
+function OrdenarT2(const ACampo1, ACampo2: Pointer): Integer;
 var
   Campo1, Campo2: String;
 begin
@@ -142,10 +142,10 @@ begin
             TRegistroT2(ACampo1).TP_DOCTO +
             TRegistroT2(ACampo1).SERIE +
             TRegistroT2(ACampo1).NUM_ECF;
-  Campo2 := FormatDateTime('YYYYMMDD', TRegistroT2(ACampo1).DT_MOV) +
-            TRegistroT2(ACampo1).TP_DOCTO +
-            TRegistroT2(ACampo1).SERIE +
-            TRegistroT2(ACampo1).NUM_ECF;
+  Campo2 := FormatDateTime('YYYYMMDD', TRegistroT2(ACampo2).DT_MOV) +
+            TRegistroT2(ACampo2).TP_DOCTO +
+            TRegistroT2(ACampo2).SERIE +
+            TRegistroT2(ACampo2).NUM_ECF;
 
   Result := AnsiCompareText(Campo1, Campo2);
 end;

@@ -858,6 +858,7 @@ type
 
   TSucessaoVinc = class
   private
+    FtpInscAnt: tpTpInsc;
     FCnpjEmpregAnt: string;
     FMatricAnt: string;
     FdtTransf: TDateTime;
@@ -867,6 +868,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    property tpInscAnt: tpTpInsc read FtpInscAnt write FtpInscAnt;
     property cnpjEmpregAnt: string read FCnpjEmpregAnt write FCnpjEmpregAnt;
     property CnpjEmpSucessora: string read FCnpjEmpSucessora write FCnpjEmpSucessora;
     property MatricAnt: string read FMatricAnt write FMatricAnt;
@@ -1089,6 +1091,19 @@ type
     property dtTransf: TDate read FdtTransf write FdtTransf;
   end;
 
+  TMudancaCPF = class
+  private
+    FcpfAnt: String;
+    FmatricAnt: String;
+    FdtAltCPF: TDate;
+    Fobservacao: String;
+  public
+    property cpfAnt: String read FcpfAnt write FcpfAnt;
+    property matricAnt: String read FmatricAnt write FmatricAnt;
+    property dtAltCPF: TDate read FdtAltCPF write FdtAltCPF;
+    property observacao: String read Fobservacao write Fobservacao;
+  end;
+
   TVinculo = class
   private
     FMatricula: string;
@@ -1104,6 +1119,7 @@ type
     FAfastamento: TAfastamento;
     FDesligamento: TDesligamento;
     FInfoASO: TInfoASO;
+    FMudancaCPF: TMudancaCPF;
   public
     constructor Create;
     destructor Destroy; override;
@@ -1119,6 +1135,7 @@ type
     property SucessaoVinc: TSucessaoVinc read FSucessaoVinc write FSucessaoVinc;
     property transfDom: TtransfDom read FtransfDom write FtransfDom;
 
+    property mudancaCPF: TMudancaCPF read FMudancaCPF write FMudancaCPF;
     property Afastamento: TAfastamento read FAfastamento write FAfastamento;
     property Desligamento: TDesligamento read FDesligamento write FDesligamento;
     property InfoASO: TInfoASO read FInfoASO write FInfoASO;
@@ -2128,6 +2145,7 @@ begin
   FInfoContrato:= TInfoContrato.Create;
   FSucessaoVinc:= TSucessaoVinc.Create;
   ftransfDom := TtransfDom.Create;
+  FMudancaCPF := TMudancaCPF.Create;
   FAfastamento := TAfastamento.Create;
   FDesligamento := TDesligamento.Create;
   FInfoASO := TInfoASO.Create;
@@ -2139,6 +2157,7 @@ begin
   FInfoContrato.Free;
   FSucessaoVinc.Free;
   FtransfDom.Free;
+  FMudancaCPF.Free;
   FAfastamento.Free;
   FDesligamento.Free;
   FInfoASO.Free;

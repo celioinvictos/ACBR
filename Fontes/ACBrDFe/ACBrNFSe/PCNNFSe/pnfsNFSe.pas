@@ -38,7 +38,7 @@ uses
   {$IFNDEF VER130}
     Variants,
   {$ENDIF}
-  pnfsConversao, pnfsSignature;
+  pnfsConversao;
 
 type
 
@@ -69,6 +69,8 @@ type
  TDadosTransportadora               = class;
  TDespesaCollectionItem             = class;
  TDespesaCollection                 = class;
+ TAssinaComChaveParamsCollectionItem = class;
+ TAssinaComChaveParamsCollection     = class;
 
  TNFSe                              = class;
 
@@ -204,7 +206,7 @@ type
     FvalorOutrasRetencoes: Currency;
     FDescricaoOutrasRetencoes: String;
     FvalorRepasse: Currency; //Governa
-    FValorDespesasNaoTributaveis: Currency;//Governa
+    FValorDespesasNaoTributaveis: Currency; //Governa
     FValorTotalRecebido: Currency;
   published
     property ValorServicos: Currency read FValorServicos write FValorServicos;
@@ -711,12 +713,32 @@ type
     FnItemDesp: String;
     FxDesp: String;
     FdDesp: TDateTime;
-    FvDesp: Currency;  
+    FvDesp: Currency;
   published
     property nItemDesp: String read FnItemDesp write FnItemDesp;
     property xDesp: String read FxDesp write FxDesp;
     property dDesp: TDateTime read FdDesp write FdDesp;
     property vDesp: Currency read FvDesp write FvDesp;
+  end;
+
+  TAssinaComChaveParamsCollectionItem = class(TCollectionItem)
+  private
+    FParam: String;
+    FConteudo: String;
+  published
+    property Param: String read FParam write FParam;
+    property Conteudo: String read FConteudo write FConteudo;
+  end;
+
+  TAssinaComChaveParamsCollection = class(TCollection)
+  private
+    function GetItem(Index: Integer): TAssinaComChaveParamsCollectionItem;
+    procedure SetItem(Index: Integer; Const Value: TAssinaComChaveParamsCollectionItem);
+  public
+    constructor Create(AOwner: TNFSe);
+
+    function Add: TAssinaComChaveParamsCollectionItem;
+    property Items[Index: Integer]: TAssinaComChaveParamsCollectionItem read GetItem write SetItem; default;
   end;
 
  TNFSe = class(TPersistent)
@@ -758,7 +780,6 @@ type
     FAutenticador: String; // para provedor EGoverneISS
     FLink: String; // para provedor EGoverneISS
     // RPS e NFSe
-    FSignature: TSignature;
     FDespesa: TDespesaCollection;
 
     FNumeroLote: String;
@@ -788,6 +809,8 @@ type
     FTipoTributacaoRPS: TnfseTTributacaoRPS;
     FAssinatura: String;
     FInformacoesComplementares: String;
+
+    FAssinaComChaveParams: TAssinaComChaveParamsCollection;
 
     procedure Setemail(const Value: TemailCollection);
     procedure SetInformacoesComplementares(const Value: String);
@@ -835,9 +858,6 @@ type
     // propriedades para provedor EGoverneISS
     property Autenticador: String read FAutenticador write FAutenticador;
     property Link: String read FLink write FLink;
-    // RPS e NFSe
-    property signature: Tsignature read Fsignature write Fsignature;
-
     property NumeroLote: String read FNumeroLote write FNumeroLote;
     property Protocolo: String read FProtocolo write FProtocolo;
     property dhRecebimento: TDateTime read FdhRecebimento write FdhRecebimento;
@@ -861,6 +881,9 @@ type
     property email: TemailCollection read Femail write Setemail;
 
     property TipoTributacaoRPS: TnfseTTributacaoRPS read FTipoTributacaoRPS write FTipoTributacaoRPS;
+
+    property AssinaComChaveParams: TAssinaComChaveParamsCollection read FAssinaComChaveParams write FAssinaComChaveParams;
+
     // Provedor SP
     property Assinatura: String read FAssinatura write FAssinatura;
     property RegRec: TnfseRegRec read FRegRec write FRegRec; //Governa
@@ -874,7 +897,6 @@ type
     FCnpj: String;
     FInscricaoMunicipal: String;
     FQuantidadeRps: String;
-    FSignature: TSignature;
   public
     constructor Create;
     destructor Destroy; override;
@@ -884,7 +906,6 @@ type
     property Cnpj: String read FCnpj write FCnpj;
     property InscricaoMunicipal: String read FInscricaoMunicipal write FInscricaoMunicipal;
     property QuantidadeRps: String read FQuantidadeRps write FQuantidadeRps;
-    property signature: Tsignature read Fsignature write Fsignature;
   end;
 
  TPedidoCancelamento = class(TPersistent)
@@ -892,7 +913,6 @@ type
     FInfID: TInfID;
     FIdentificacaoNfse: TIdentificacaoNfse;
     FCodigoCancelamento: String;
-    FSignature: TSignature;
   public
     constructor Create;
     destructor Destroy; override;
@@ -900,7 +920,6 @@ type
     property InfID: TInfID read FInfID write FInfID;
     property IdentificacaoNfse: TIdentificacaoNfse read FIdentificacaoNfse write FIdentificacaoNfse;
     property CodigoCancelamento: String read FCodigoCancelamento write FCodigoCancelamento;
-    property signature: Tsignature read Fsignature write Fsignature;
   end;
 
  TConfirmacaoCancelamento = class(TPersistent)
@@ -908,7 +927,6 @@ type
     FInfID: TInfID;
     FPedido: TPedidoCancelamento;
     FDataHora: TDateTime;
-    FSignature: TSignature;
   public
     constructor Create;
     destructor Destroy; override;
@@ -916,21 +934,18 @@ type
     property InfID: TInfID read FInfID write FInfID;
     property Pedido: TPedidoCancelamento read FPedido write FPedido;
     property DataHora: TDateTime read FDataHora write FDataHora;
-    property signature: Tsignature read Fsignature write Fsignature;
   end;
 
  TSubstituicaoNfse = class(TPersistent)
   private
     FInfID: TInfID;
     FNfseSubstituidora: String;
-    FSignature: TSignature;
   public
     constructor Create;
     destructor Destroy; override;
   published
     property InfID: TInfID read FInfID write FInfID;
     property NfseSubstituidora: String read FNfseSubstituidora write FNfseSubstituidora;
-    property signature: Tsignature read Fsignature write Fsignature;
   end;
 
 const
@@ -1074,8 +1089,6 @@ begin
  FOrgaoGerador                 := TIdentificacaoOrgaoGerador.Create;
  FValoresNfse                  := TValoresNfse.Create;
  // RPS e NFSe
- Fsignature                    := Tsignature.create;
-
  FNfseCancelamento             := TConfirmacaoCancelamento.Create;
  FNfseCancelamento.DataHora    := 0;
  FNfseSubstituidora            := '';
@@ -1092,6 +1105,8 @@ begin
 
  Femail                        := TemailCollection.Create(Self);
  FDespesa                      := TDespesaCollection.Create(Self);
+
+ FAssinaComChaveParams         := TAssinaComChaveParamsCollection.Create(Self);
 end;
 
 destructor TNFSe.Destroy;
@@ -1111,10 +1126,11 @@ begin
  FOrgaoGerador.Free;
  FValoresNfse.Free;
  // RPS e NFSe
- Fsignature.Free;
  FNfseCancelamento.Free;
  Femail.Free;
  FDespesa.Free;
+
+ FAssinaComChaveParams.Free;
 
  FTransportadora.Free;
 
@@ -1141,13 +1157,11 @@ begin
  FCnpj               := '';
  FInscricaoMunicipal := '';
  FQuantidadeRps      := '';
- Fsignature          := Tsignature.create;
 end;
 
 destructor TLoteRps.Destroy;
 begin
  FInfID.Free;
- Fsignature.Free;
 
  inherited Destroy;
 end;
@@ -1159,14 +1173,12 @@ begin
  FInfID              := TInfID.Create;
  FIdentificacaoNfse  := TIdentificacaoNfse.Create;
  FCodigoCancelamento := '';
- Fsignature          := Tsignature.create;
 end;
 
 destructor TPedidoCancelamento.Destroy;
 begin
  FInfID.Free;
  FIdentificacaoNfse.Free;
- Fsignature.Free;
 
   inherited;
 end;
@@ -1177,14 +1189,12 @@ constructor TConfirmacaoCancelamento.Create;
 begin
  FInfID     := TInfID.Create;
  FPedido    := TPedidoCancelamento.Create;
- Fsignature := Tsignature.create;
 end;
 
 destructor TConfirmacaoCancelamento.Destroy;
 begin
  FInfID.Free;
  FPedido.Free;
- Fsignature.Free;
 
   inherited;
 end;
@@ -1195,13 +1205,11 @@ constructor TSubstituicaoNfse.Create;
 begin
  FInfID             := TInfID.Create;
  FNfseSubstituidora := '';
- Fsignature         := Tsignature.create;
 end;
 
 destructor TSubstituicaoNfse.Destroy;
 begin
  FInfID.Free;
- Fsignature.Free;
 
   inherited;
 end;
@@ -1379,6 +1387,31 @@ end;
 procedure TDespesaCollection.SetItem(Index: Integer; Value: TDespesaCollectionItem);
 begin
   Inherited SetItem(Index, Value);
+end;
+
+{ TAssinaComChaveParamsCollection }
+
+function TAssinaComChaveParamsCollection.Add: TAssinaComChaveParamsCollectionItem;
+begin
+  Result := TAssinaComChaveParamsCollectionItem(inherited Add);
+end;
+
+constructor TAssinaComChaveParamsCollection.Create(
+  AOwner: TNFSe);
+begin
+  inherited Create(TAssinaComChaveParamsCollectionItem);
+end;
+
+function TAssinaComChaveParamsCollection.GetItem(
+  Index: Integer): TAssinaComChaveParamsCollectionItem;
+begin
+  Result := TAssinaComChaveParamsCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TAssinaComChaveParamsCollection.SetItem(Index: Integer;
+  const Value: TAssinaComChaveParamsCollectionItem);
+begin
+  inherited SetItem(Index, Value);
 end;
 
 end.

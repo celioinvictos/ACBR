@@ -82,7 +82,7 @@ type
                  cst60, cst70, cst80, cst81, cst90, cstPart10, cstPart90,
                  cstRep41, cstVazio, cstICMSOutraUF, cstICMSSN, cstRep60); //80 e 81 apenas para CTe
   TpcnCSOSNIcms = (csosnVazio,csosn101, csosn102, csosn103, csosn201, csosn202, csosn203, csosn300, csosn400, csosn500,csosn900 );
-  TpcnDeterminacaoBaseIcms = (dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao);
+  TpcnDeterminacaoBaseIcms = (dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao, dbiNenhum);
   TpcnDeterminacaoBaseIcmsST = (dbisPrecoTabelado, dbisListaNegativa, dbisListaPositiva, dbisListaNeutra, dbisMargemValorAgregado, dbisPauta);
   TpcnMotivoDesoneracaoICMS = (mdiTaxi, mdiDeficienteFisico, mdiProdutorAgropecuario, mdiFrotistaLocadora, mdiDiplomaticoConsular,
                                mdiAmazoniaLivreComercio, mdiSuframa, mdiVendaOrgaosPublicos, mdiOutros, mdiDeficienteCondutor,
@@ -123,7 +123,7 @@ type
                   teCancelamentoMDFeAutComCTe, teAverbacaoExportacao, teAutCteComplementar,
                   teCancCteComplementar,teCTeSubstituicao,teCTeAnulacao,teLiberacaoEPEC,teLiberacaoPrazoCanc,
                   teAutorizadoRedespacho,teautorizadoRedespIntermed,teAutorizadoSubcontratacao,
-                  teautorizadoServMultimodal);
+                  teautorizadoServMultimodal, teCancSubst);
 
   TpcnIndicadorEmissor = (ieTodos, ieRaizCNPJDiferente);
   TpcnIndicadorContinuacao = (icNaoPossuiMaisDocumentos, icPossuiMaisDocumentos);
@@ -172,7 +172,7 @@ type
 
   TIndicador = (tiSim, tiNao);
 const
-  TpcnTpEventoString : array[0..52] of String =('-99999', '110110', '110111',
+  TpcnTpEventoString : array[0..53] of String =('-99999', '110110', '110111',
                                                 '210200', '210210', '210220',
                                                 '210240', '110112', '110113',
                                                 '110114', '110160', '310620',
@@ -189,7 +189,7 @@ const
                                                 '790700', '240130', '240131',
                                                 '240140', '240150', '240160',
                                                 '240170', '440130', '440140',
-                                                '440150', '440160');
+                                                '440150', '440160', '110112');
 
   DFeUF: array[0..26] of String =
   ('AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
@@ -201,7 +201,7 @@ const
 
   LineBreak = #13#10;
 
-function StrToHex(S: String): String;
+function StrToHex(const S: String): String;
 function StrToEnumerado(out ok: boolean; const s: string; const AString: array of string;
   const AEnumerados: array of variant): variant;
 function EnumeradoToStr(const t: variant; const AString:
@@ -210,7 +210,7 @@ function EnumeradoToStr(const t: variant; const AString:
 function StrToEnumerado2(out ok: boolean;  const s: string; Const AString: array of string ): variant;
 function EnumeradoToStr2(const t: variant; const AString: array of string ): variant;
 
-function UFtoCUF(UF: String): Integer;
+function UFtoCUF(const UF: String): Integer;
 function CUFtoUF(CUF: Integer): String;
 
 function TpModalToStr(const t: TpcteModal): string;
@@ -368,7 +368,7 @@ implementation
 uses
   typinfo;
 
-function StrToHex(S: String): String;
+function StrToHex(const S: String): String;
 var I: Integer;
 begin
   Result:= '';
@@ -401,7 +401,7 @@ begin
       result := AString[i];
 end;
 
-function UFtoCUF(UF: String): Integer;
+function UFtoCUF(const UF: String): Integer;
 var
   i: Integer;
 begin
@@ -780,8 +780,8 @@ end;
 // N13 - Modalidade de determinação da BC do ICMS ******************************
 function modBCToStrTagPosText(const t: TpcnDeterminacaoBaseIcms): string;
 begin
-  result := EnumeradoToStr(t, ['0 - Margem Valor Agregado (%)', '1 - Pauta (Valor)', '2 - Preço Tabelado Máx. (valor)', '3 - valor da operação'],
-    [dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao]);
+  result := EnumeradoToStr(t, ['0 - Margem Valor Agregado (%)', '1 - Pauta (Valor)', '2 - Preço Tabelado Máx. (valor)', '3 - valor da operação', ''],
+    [dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao, dbiNenhum]);
 end;
 
 function modBCToStr(const t: TpcnDeterminacaoBaseIcms): string;
@@ -790,14 +790,14 @@ begin
   // 1 - Pauta (Valor);
   // 2 - Preço Tabelado Máx. (valor);
   // 3 - valor da operação.
-  result := EnumeradoToStr(t, ['0', '1', '2', '3'],
-    [dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao]);
+  result := EnumeradoToStr(t, ['0', '1', '2', '3', ''],
+    [dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao, dbiNenhum]);
 end;
 
 function StrTomodBC(out ok: boolean; const s: string): TpcnDeterminacaoBaseIcms;
 begin
-  result := StrToEnumerado(ok, s, ['0', '1', '2', '3'],
-    [dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao]);
+  result := StrToEnumerado(ok, s, ['0', '1', '2', '3', ''],
+    [dbiMargemValorAgregado, dbiPauta, dbiPrecoTabelado, dbiValorOperacao, dbiNenhum]);
 end;
 
 // N18 - Modalidade de determinação da BC do ICMS ST ***************************
@@ -1040,7 +1040,7 @@ begin
               'CancCteComplementar', 'CTeSubstituicao',
               'CTeAnulacao', 'LiberacaoEPEC', 'LiberacaoPrazoCanc',
               'AutorizadoRedespacho', 'AutorizadoRedespIntermed', 'AutorizadoSubcontratacao',
-              'AutorizadoServMultimodal' ],
+              'AutorizadoServMultimodal', 'CancelamentoPorSubstituicao'],
              [teNaoMapeado, teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
               teManifDestDesconhecimento, teManifDestOperNaoRealizada,
               teEncerramento, teEPEC, teInclusaoCondutor, teMultiModal,
@@ -1058,7 +1058,7 @@ begin
               teCancCteComplementar, teCTeSubstituicao,
               teCTeAnulacao, teLiberacaoEPEC, teLiberacaoPrazoCanc,
               teAutorizadoRedespacho, teautorizadoRedespIntermed, teAutorizadoSubcontratacao,
-              teautorizadoServMultimodal]);
+              teautorizadoServMultimodal, teCancSubst]);
 end;
 
 

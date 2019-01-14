@@ -15,7 +15,6 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Pitch = fpVariable
   Font.Style = []
-  Font.Quality = fqClearType
   Menu = MainMenu1
   OldCreateOrder = True
   Position = poScreenCenter
@@ -247,7 +246,6 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Pitch = fpVariable
         Font.Style = []
-        Font.Quality = fqClearType
         ParentFont = False
         ScrollBars = ssVertical
         TabOrder = 26
@@ -516,7 +514,6 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Pitch = fpVariable
         Font.Style = []
-        Font.Quality = fqClearType
         ParentFont = False
         ScrollBars = ssBoth
         TabOrder = 1
@@ -535,7 +532,6 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Pitch = fpVariable
         Font.Style = []
-        Font.Quality = fqClearType
         ParentFont = False
         TabOrder = 0
         WantReturns = False
@@ -564,7 +560,6 @@ object Form1: TForm1
           Font.Name = 'Fixedsys'
           Font.Pitch = fpVariable
           Font.Style = []
-          Font.Quality = fqClearType
           ParentFont = False
           ScrollBars = ssVertical
           TabOrder = 1
@@ -841,7 +836,6 @@ object Form1: TForm1
             Font.Name = 'Fixedsys'
             Font.Pitch = fpVariable
             Font.Style = []
-            Font.Quality = fqClearType
             ParentFont = False
             TabOrder = 0
           end
@@ -871,7 +865,6 @@ object Form1: TForm1
           Font.Name = 'Arial'
           Font.Pitch = fpVariable
           Font.Style = [fsBold]
-          Font.Quality = fqClearType
           ParentFont = False
           OnClick = sbDirRFDClick
         end
@@ -904,7 +897,6 @@ object Form1: TForm1
           Font.Name = 'Arial'
           Font.Pitch = fpVariable
           Font.Style = []
-          Font.Quality = fqClearType
           ParentFont = False
           TabOrder = 1
           OnChange = edDirRFDChange
@@ -982,7 +974,6 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Pitch = fpVariable
         Font.Style = []
-        Font.Quality = fqClearType
         Lines.Strings = (
           'TEXTO LIVRE'
           'At'#233' 600 caracteres'
@@ -1107,7 +1098,6 @@ object Form1: TForm1
         Font.Name = 'Courier New'
         Font.Pitch = fpVariable
         Font.Style = []
-        Font.Quality = fqClearType
         ParentFont = False
         ScrollBars = ssBoth
         TabOrder = 2
@@ -1147,7 +1137,6 @@ object Form1: TForm1
           Font.Name = 'Tahoma'
           Font.Pitch = fpVariable
           Font.Style = []
-          Font.Quality = fqClearType
           ParentFont = False
         end
         object btnMenuFiscalLX: TButton
@@ -1642,7 +1631,6 @@ object Form1: TForm1
             TitleFont.Name = 'Tahoma'
             TitleFont.Pitch = fpVariable
             TitleFont.Style = []
-            TitleFont.Quality = fqClearType
           end
           object edAAC_ECF_NumSerie: TDBEdit
             Left = 8
@@ -2652,7 +2640,6 @@ object Form1: TForm1
               Font.Name = 'MS Sans Serif'
               Font.Pitch = fpVariable
               Font.Style = []
-              Font.Quality = fqClearType
               ItemIndex = 24
               ParentFont = False
               TabOrder = 0
@@ -4333,73 +4320,31 @@ object Form1: TForm1
     Top = 340
   end
   object ACBrNFeDANFCeFortes1: TACBrNFeDANFCeFortes
-    MostrarPreview = True
-    MostrarStatus = True
-    TipoDANFE = tiSemGeracao
-    NumCopias = 1
-    ImprimeNomeFantasia = False
-    ImprimirDescPorc = False
-    ImprimirTotalLiquido = True
     MargemInferior = 0.800000000000000000
     MargemSuperior = 0.800000000000000000
     MargemEsquerda = 0.600000000000000000
     MargemDireita = 0.510000000000000000
     CasasDecimais.Formato = tdetInteger
-    CasasDecimais._qCom = 2
-    CasasDecimais._vUnCom = 2
-    CasasDecimais._Mask_qCom = ',0.00'
-    CasasDecimais._Mask_vUnCom = ',0.00'
-    ExibirResumoCanhoto = False
-    FormularioContinuo = False
-    TamanhoFonte_DemaisCampos = 8
-    ProdutosPorPagina = 0
-    ImprimirDetalhamentoEspecifico = True
-    NFeCancelada = False
-    ImprimirItens = True
-    ViaConsumidor = True
-    TamanhoLogoHeight = 0
-    TamanhoLogoWidth = 0
-    RecuoEndereco = 0
-    RecuoEmpresa = 0
-    LogoemCima = False
-    TamanhoFonteEndereco = 0
-    RecuoLogo = 0
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
+    TipoDANFE = tiSemGeracao
     Left = 718
     Top = 336
   end
   object ACBrNFeDANFeESCPOS1: TACBrNFeDANFeESCPOS
-    ACBrNFe = ACBrNFe1
-    MostrarPreview = True
-    MostrarStatus = True
-    TipoDANFE = tiSemGeracao
-    NumCopias = 1
-    ImprimeNomeFantasia = False
-    ImprimirDescPorc = False
-    ImprimirTotalLiquido = True
     MargemInferior = 0.800000000000000000
     MargemSuperior = 0.800000000000000000
     MargemEsquerda = 0.600000000000000000
     MargemDireita = 0.510000000000000000
     CasasDecimais.Formato = tdetInteger
-    CasasDecimais._qCom = 2
-    CasasDecimais._vUnCom = 2
-    CasasDecimais._Mask_qCom = ',0.00'
-    CasasDecimais._Mask_vUnCom = ',0.00'
-    ExibirResumoCanhoto = False
-    FormularioContinuo = False
-    TamanhoFonte_DemaisCampos = 8
-    ProdutosPorPagina = 0
-    ImprimirDetalhamentoEspecifico = True
-    NFeCancelada = False
-    ImprimirItens = True
-    ViaConsumidor = True
-    TamanhoLogoHeight = 0
-    TamanhoLogoWidth = 0
-    RecuoEndereco = 0
-    RecuoEmpresa = 0
-    LogoemCima = False
-    TamanhoFonteEndereco = 0
-    RecuoLogo = 0
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
+    ACBrNFe = ACBrNFe1
+    TipoDANFE = tiSemGeracao
     Left = 757
     Top = 333
   end
@@ -4438,6 +4383,7 @@ object Form1: TForm1
     Configuracoes.Geral.SSLHttpLib = httpNone
     Configuracoes.Geral.SSLXmlSignLib = xsNone
     Configuracoes.Geral.FormatoAlerta = 'TAG:%TAGNIVEL% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.'
+    Configuracoes.Geral.VersaoQRCode = veqr000
     Configuracoes.Arquivos.OrdenacaoPath = <>
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 0
@@ -4456,6 +4402,7 @@ object Form1: TForm1
     Config.emit_indRatISSQN = irSim
     Config.EhUTF8 = False
     Config.PaginaDeCodigo = 0
+    Config.XmlSignLib = xsNone
     ConfigArquivos.PrefixoArqCFe = 'AD'
     ConfigArquivos.PrefixoArqCFeCanc = 'ADC'
     Rede.tipoInter = infETHE
@@ -4469,10 +4416,16 @@ object Form1: TForm1
     Top = 135
   end
   object ACBrSATExtratoESCPOS1: TACBrSATExtratoESCPOS
-    Mask_qCom = ',0.0000'
-    Mask_vUnCom = ',0.000'
-    SoftwareHouse = 'Projeto ACBr'
     Site = 'http://www.projetoacbr.com.br'
+    MargemInferior = 0.800000000000000000
+    MargemSuperior = 0.800000000000000000
+    MargemEsquerda = 0.600000000000000000
+    MargemDireita = 0.510000000000000000
+    CasasDecimais.Formato = tdetInteger
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
     MsgAppQRCode = 
       'Consulte o QR Code pelo aplicativo  "De olho na nota", dispon'#237've' +
       'l na AppStore (Apple) e PlayStore (Android)'
@@ -4480,14 +4433,21 @@ object Form1: TForm1
     Top = 138
   end
   object ACBrSATExtratoFortes1: TACBrSATExtratoFortes
-    ACBrSAT = ACBrSAT1
-    Mask_qCom = ',0.0000'
-    Mask_vUnCom = ',0.000'
-    SoftwareHouse = 'Projeto ACBr'
     Site = 'http://www.projetoacbr.com.br'
+    MargemInferior = 4.000000000000000000
+    MargemSuperior = 2.000000000000000000
+    MargemEsquerda = 2.000000000000000000
+    MargemDireita = 2.000000000000000000
+    CasasDecimais.Formato = tdetInteger
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
+    ACBrSAT = ACBrSAT1
     MsgAppQRCode = 
       'Consulte o QR Code pelo aplicativo  "De olho na nota", dispon'#237've' +
       'l na AppStore (Apple) e PlayStore (Android)'
+    ImprimeCodigoEan = True
     Left = 701
     Top = 138
   end

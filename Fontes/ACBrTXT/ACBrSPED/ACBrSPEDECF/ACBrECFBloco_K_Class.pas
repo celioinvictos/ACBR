@@ -82,7 +82,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure LimpaRegistros;
+    procedure LimpaRegistros; override;
 
     function RegistroK001New: TRegistroK001;
     function RegistroK030New: TRegistroK030;
@@ -103,7 +103,6 @@ type
     property RegistroK156Count: Integer read FRegistroK156Count write FRegistroK156Count;
     property RegistroK355Count: Integer read FRegistroK355Count write FRegistroK355Count;
     property RegistroK356Count: Integer read FRegistroK356Count write FRegistroK356Count;
-  published
   end;
 
 
@@ -116,6 +115,7 @@ uses
 
 constructor TBloco_K.Create;
 begin
+  inherited Create;
   CriaRegistros;
 end;
 
@@ -162,7 +162,7 @@ end;
 
 function TBloco_K.RegistroK030New: TRegistroK030;
 begin
-  Result := FRegistroK001.RegistroK030.New(FRegistroK001)
+  Result := FRegistroK001.RegistroK030.New()
 end;
 
 function TBloco_K.RegistroK155New: TRegistroK155;
@@ -190,7 +190,7 @@ begin
     raise Exception.Create('O registro 1110 deve ser filho do registro 1105, e não existe nenhum 1105 pai!');
 
   UK155  := FRegistroK001.RegistroK030.Items[UK030Count].RegistroK155.Items[UK155Count];
-  Result := UK155.RegistroK156.New(UK155);
+  Result := UK155.RegistroK156.New();
 end;
 
 function TBloco_K.RegistroK355New: TRegistroK355;
@@ -219,7 +219,7 @@ begin
     raise Exception.Create('O registro 1110 deve ser filho do registro 1105, e não existe nenhum 1105 pai!');
 
   UK355  := FRegistroK001.RegistroK030.Items[UK030Count].RegistroK355.Items[UK355Count];
-  Result := UK355.RegistroK356.New(UK355);
+  Result := UK355.RegistroK356.New();
 end;
 
 procedure TBloco_K.WriteRegistroK001;

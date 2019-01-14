@@ -37,6 +37,7 @@
 package ACBr_NFSeDanfseRL;
 
 {$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -47,27 +48,28 @@ package ACBr_NFSeDanfseRL;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'ACBr - DANFSe em FortesReport - (http://www.projetoacbr.com.br/)'}
 {$IMPLICITBUILD ON}
 
 requires
   rtl,
   designide,
-  soaprtl,
-  frce,
+  dsnap,
   ACBr_NFSe,
-  dsnap;
+  ACBrDFeReportRL;
 
 contains
   ACBrNFSeDANFSeRL in '..\..\..\..\..\..\Fontes\ACBrDFe\ACBrNFSe\DANFSE\Fortes\ACBrNFSeDANFSeRL.pas' {frlDANFSeRL},

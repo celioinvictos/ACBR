@@ -112,25 +112,25 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
     procedure Imprimir(Copias: Integer = 1; AvancoEtq: Integer = 0);
 
     procedure ImprimirTexto(Orientacao: TACBrETQOrientacao; Fonte, MultiplicadorH,
-      MultiplicadorV, Vertical, Horizontal: Integer; Texto: String;
+      MultiplicadorV, Vertical, Horizontal: Integer; const Texto: String;
       SubFonte: Integer = 0; ImprimirReverso: Boolean = False); overload;
-    procedure ImprimirTexto(Orientacao: TACBrETQOrientacao; Fonte: String;
-      MultiplicadorH, MultiplicadorV, Vertical, Horizontal: Integer; Texto: String;
+    procedure ImprimirTexto(Orientacao: TACBrETQOrientacao; const Fonte: String;
+      MultiplicadorH, MultiplicadorV, Vertical, Horizontal: Integer; const Texto: String;
       SubFonte: Integer = 0; ImprimirReverso: Boolean = False); overload;
 
     procedure ImprimirBarras(Orientacao: TACBrETQOrientacao;
       TipoBarras: TACBrTipoCodBarra;
       LarguraBarraLarga, LarguraBarraFina, Vertical, Horizontal: Integer;
-      Texto: String; AlturaCodBarras: Integer; ExibeCodigo:
+      const Texto: String; AlturaCodBarras: Integer; ExibeCodigo:
       TACBrETQBarraExibeCodigo = becPadrao); overload;
     procedure ImprimirBarras(Orientacao: TACBrETQOrientacao;
-      TipoBarras: String;
+      const TipoBarras: String;
       LarguraBarraLarga, LarguraBarraFina, Vertical, Horizontal: Integer;
-      Texto: String; AlturaCodBarras: Integer; ExibeCodigo:
+      const Texto: String; AlturaCodBarras: Integer; ExibeCodigo:
       TACBrETQBarraExibeCodigo = becPadrao); overload;
-    procedure ImprimirBarras(Orientacao: TACBrETQOrientacao; TipoBarras,
+    procedure ImprimirBarras(Orientacao: TACBrETQOrientacao; const TipoBarras,
           LarguraBarraLarga, LarguraBarraFina: String; Vertical, Horizontal: Integer;
-          Texto: String; AlturaCodBarras: Integer = 0;
+          const Texto: String; AlturaCodBarras: Integer = 0;
           ExibeCodigo: TACBrETQBarraExibeCodigo = becPadrao); overload;
 
     procedure ImprimirLinha(Vertical, Horizontal, Largura, Altura: Integer); overload;
@@ -139,12 +139,12 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
       EspessuraVertical, EspessuraHorizontal: Integer);
 
     procedure ImprimirImagem(MultiplicadorImagem, Vertical, Horizontal: Integer;
-      NomeImagem: String);
+      const NomeImagem: String);
 
-    procedure CarregarImagem(aStream: TStream; NomeImagem: String;
-      Flipped: Boolean = True; Tipo: String = ''); overload;
+    procedure CarregarImagem(aStream: TStream; const NomeImagem: String;
+      Flipped: Boolean = True; const Tipo: String = ''); overload;
 
-    procedure CarregarImagem(ArquivoImagem, NomeImagem: String;
+    procedure CarregarImagem(const ArquivoImagem, NomeImagem: String;
       Flipped: Boolean = True); overload;
 
     procedure GravarLog(aString: AnsiString; Traduz: Boolean = False);
@@ -512,7 +512,7 @@ end;
 
 procedure TACBrETQ.ImprimirTexto(Orientacao: TACBrETQOrientacao; Fonte,
   MultiplicadorH, MultiplicadorV, Vertical, Horizontal: Integer;
-  Texto: String; SubFonte: Integer; ImprimirReverso: Boolean);
+  const Texto: String; SubFonte: Integer; ImprimirReverso: Boolean);
 var
   cFonte: Char;
 begin
@@ -525,8 +525,8 @@ begin
     Vertical, Horizontal, Texto, SubFonte, ImprimirReverso);
 end;
 
-procedure TACBrETQ.ImprimirTexto(Orientacao: TACBrETQOrientacao; Fonte: String;
-  MultiplicadorH, MultiplicadorV, Vertical, Horizontal: Integer; Texto: String;
+procedure TACBrETQ.ImprimirTexto(Orientacao: TACBrETQOrientacao; const Fonte: String;
+  MultiplicadorH, MultiplicadorV, Vertical, Horizontal: Integer; const Texto: String;
   SubFonte: Integer; ImprimirReverso: Boolean);
 var
   wCmd: AnsiString;
@@ -550,7 +550,7 @@ end;
 
 procedure TACBrETQ.ImprimirBarras(Orientacao: TACBrETQOrientacao;
   TipoBarras: TACBrTipoCodBarra; LarguraBarraLarga, LarguraBarraFina, Vertical,
-  Horizontal: Integer; Texto: String; AlturaCodBarras: Integer;
+  Horizontal: Integer; const Texto: String; AlturaCodBarras: Integer;
   ExibeCodigo: TACBrETQBarraExibeCodigo);
 var
   TipoBarrasStr: String;
@@ -565,9 +565,9 @@ begin
     LarguraBarraFina, Vertical, Horizontal, Texto, AlturaCodBarras, ExibeCodigo);
 end;
 
-procedure TACBrETQ.ImprimirBarras(Orientacao: TACBrETQOrientacao; TipoBarras,
+procedure TACBrETQ.ImprimirBarras(Orientacao: TACBrETQOrientacao; const TipoBarras,
   LarguraBarraLarga, LarguraBarraFina: String; Vertical, Horizontal: Integer;
-  Texto: String; AlturaCodBarras: Integer; ExibeCodigo: TACBrETQBarraExibeCodigo
+  const Texto: String; AlturaCodBarras: Integer; ExibeCodigo: TACBrETQBarraExibeCodigo
   );
 
   function StrParamToInt(AParam: String): Integer;
@@ -591,8 +591,8 @@ begin
 end;
 
 procedure TACBrETQ.ImprimirBarras(Orientacao: TACBrETQOrientacao;
-  TipoBarras: String; LarguraBarraLarga, LarguraBarraFina, Vertical,
-  Horizontal: Integer; Texto: String; AlturaCodBarras: Integer;
+  const TipoBarras: String; LarguraBarraLarga, LarguraBarraFina, Vertical,
+  Horizontal: Integer; const Texto: String; AlturaCodBarras: Integer;
   ExibeCodigo: TACBrETQBarraExibeCodigo);
 var
   wCmd: AnsiString;
@@ -650,7 +650,7 @@ begin
 end;
 
 procedure TACBrETQ.ImprimirImagem(MultiplicadorImagem, Vertical,
-  Horizontal: Integer; NomeImagem: String);
+  Horizontal: Integer; const NomeImagem: String);
 var
   wCmd: AnsiString;
 begin
@@ -666,8 +666,8 @@ begin
   fsListaCmd.Add(wCmd);
 end;
 
-procedure TACBrETQ.CarregarImagem(aStream: TStream; NomeImagem: String;
-  Flipped: Boolean; Tipo: String);
+procedure TACBrETQ.CarregarImagem(aStream: TStream; const NomeImagem: String;
+  Flipped: Boolean; const Tipo: String);
 var
   wCmd: AnsiString;
 begin
@@ -684,7 +684,7 @@ begin
   fsDevice.EnviaString(wCmd);
 end;
 
-procedure TACBrETQ.CarregarImagem(ArquivoImagem, NomeImagem: String;
+procedure TACBrETQ.CarregarImagem(const ArquivoImagem, NomeImagem: String;
   Flipped: Boolean = True);
 var
   wMS: TMemoryStream;

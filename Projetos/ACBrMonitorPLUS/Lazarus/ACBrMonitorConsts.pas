@@ -82,6 +82,7 @@ const
   CMetodoTesteFimaFim =                'testefimafim';
   CMetodoSetNumeroSessao =             'setnumerosessao';
   CMetodoSetlogomarcaSAT =             'setlogomarca';
+  CMetodoGerarAssinaturaSAT =          'gerarassinaturasat';
 
   CMetodoECFachar =                                      'achar';
   CMetodoECFativar =                                     'ativar';
@@ -945,6 +946,8 @@ const
   CKeySATExtImprimeEmUmaLinha =             'ImprimeEmUmaLinha';
   CKeySATExtImprimeChaveEmUmaLinha =        'ImprimeChaveEmUmaLinha';
   CKeySATExtUsaCodigoEanImpressao =         'UsaCodigoEanImpressao';
+  CKeySATExtLogoLateral =                   'LogoLateral';
+  CKeySATExtQRCodeLateral =                 'QRCodeLateral';
 
   CSecSATEmit =                             'SATEmit';
   CKeySATEmitCNPJ =                         'CNPJ';
@@ -1066,10 +1069,12 @@ const
   CKeyBOLETOCNAB =                          'CNAB';
   CKeyBOLETOLerCedenteRetorno =             'LerCedenteRetorno';
   CKeyBOLETOMostraPreviewRelRetorno =       'MostraPreviewRelRetorno';
+  CKeyBOLETORemoveAcentos =                 'RemoveAcentos';
   CKeyBOLETOLogoEmpresa =                   'LogoEmpresa';
   CKeyBOLETOEmailAssuntoBoleto =            'EmailAssuntoBoleto';
   CKeyBOLETOEmailMensagemBoleto =           'EmailMensagemBoleto';
   CKeyBOLETOImpressora =                    'Impressora';
+  CKeyBOLETONomeArquivoBoleto =             'NomeArquivoBoleto';
   //Manter Compatibilidade
   CKeyBOLETOCedenteNome =                   'Cedente.Nome';
   CKeyBOLETOCedenteCNPJCPF =                'Cedente.CNPJCPF';

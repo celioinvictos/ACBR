@@ -80,7 +80,7 @@ type
   public
     constructor Create;           /// Create
     destructor Destroy; override; /// Destroy
-    procedure LimpaRegistros;
+    procedure LimpaRegistros; override;
 
     function RegistroJ001New: TRegistroJ001;
     function RegistroJ050New: TRegistroJ050;
@@ -154,7 +154,7 @@ end;
 
 function TBloco_J.RegistroJ050New: TRegistroJ050;
 begin
-  Result := FRegistroJ001.RegistroJ050.New(FRegistroJ001);
+  Result := FRegistroJ001.RegistroJ050.New();
 end;
 
 function TBloco_J.RegistroJ051New: TRegistroJ051;

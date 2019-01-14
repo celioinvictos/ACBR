@@ -87,7 +87,7 @@ type
     function GetAbout: String; override;
     function NomeServicoToNomeSchema(const NomeServico: String): String; override;
     function VersaoSchemaDoubleToString(AVersao: Double): String; override;
-    function VersaoSchemaStringToDouble(AVersao: String): Double; override;
+    function VersaoSchemaStringToDouble(const AVersao: String): Double; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -102,6 +102,7 @@ type
 
     function Enviar: boolean;
     function Consultar(const AProtocolo: string): boolean;
+    function ConsultaReciboEvento(const APerApur: String; ATipoEvento: TTipoEvento; ACnpjPrestadorTomador:String=''): Boolean;
 
     property Eventos: TEventos read FEventos write FEventos;
     property Status: TStatusReinf read FStatus;
@@ -179,6 +180,12 @@ begin
   Result := WebServices.Consulta(AProtocolo);
 end;
 
+function TACBrReinf.ConsultaReciboEvento(const APerApur: String;
+  ATipoEvento: TTipoEvento; ACnpjPrestadorTomador:String=''): Boolean;
+begin
+  Result := WebServices.ConsultaReciboEvento(APerApur, ATipoEvento, ACnpjPrestadorTomador);
+end;
+
 procedure TACBrReinf.AssinarEventos;
 begin
   Eventos.GerarXMLs;
@@ -212,7 +219,7 @@ begin
   end;
 end;
 
-function TACBrReinf.VersaoSchemaStringToDouble(AVersao: String): Double;
+function TACBrReinf.VersaoSchemaStringToDouble(const AVersao: String): Double;
 var
   StrVer: String;
 begin

@@ -47,6 +47,84 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+13/01/2019
+-- ACBrDANFCeFortesFr --
+[-] Ajustes para correta impressão do DANFCe, com Logo Lateral ou no topo, e
+    SEM Logo
+[+] Adicionada a propriedade "EspacoFinal: integer default 38"
+[*] Valores default de "TamanhoLogoHeight" modificado para 50, e de
+    "TamanhoLogoWidth" para 77;
+    (por: DSA)
+
+09/01/2019
+-- ACBrDFeDANFeReport --
+[*] Ajustes para ignora a impressão do EAN quando for o literal "SEM GTIN".
+    (por Rafael Dias).
+
+07/01/2019
+-- ACBrDFeDANFeReport, ACBrNFeDANFEClass --
+[*] Propriedade "TACBrNFeDANFEClass.QuebraLinhaEmDetalhamentoEspecifico" movida
+    para classe ancestral, em: "TACBrDFeDANFeReport.QuebraLinhaEmDetalhamentos"
+[*] Propriedade "TACBrNFeDANFEClass.ExibeInforAdicProduto: Boolean" movida para
+    classe ancestral, em: "TACBrDFeDANFeReport.ExibeInforAdicProduto: TinfAdcProd",
+    sendo que: "TinfAdcProd = (infNenhum, infDescricao, infSeparadamente)"
+[*] Método "TACBrNFeDANFEClass.QuebrarLinha: String; virtual" movido para classe
+     ancestral "TACBrDFeDANFeReport.SeparadorDetalhamentos: String; virtual"
+[*] Propriedade "TACBrDFeDANFeReport.ImprimeValor: TImprimirUnidQtdeValor" movida
+    para classe específica "TACBrNFeDANFEClass.ImprimeValor: TImprimirUnidQtdeValor"
+[+] Implementado código genérico em: "TACBrDFeDANFeReport.ManterinfAdProd", fazendo
+    uso da propriedade "ExibeInforAdicProduto", e que deve servir para a maioria
+    das classes filhas
+    (por Rafael Dias e DSA)
+
+26/12/2018
+-- pcnNFeW --
+[*] Correção no ID de algumas tags.
+  Por: Roberto S Filho
+
+21/12/2018
+-- Diversos --
+[+] Implementado o evento teCancSubst (Cancelamento por substituição) para a NFC-e
+  Por: Italo Jurisato Junior
+
+19/12/2018
+-- ACBrNFeWebServices / ACBrNFe --
+[*] Removido as units pcnRetCancNFe, pcnCCeNFe e pcnRetCCeNFe por não ter mais utilidades.
+  Por: Italo Jurisato Junior
+
+18/12/2018
+-- ACBrNFeServicos --
+[+] Inclusão das URLs de homologação e produção da NFC-e MG.
+   Por: Italo Jurisato Junior
+
+13/12/2018
+-- ACBrNFeWebServices / ACBrNFe --
+[*] Removido Classes, Procedures e métodos dos serviços: ConsulNFeDest e DownloadNFe, por
+    terem sidos desativados pela SEFAZ a um bom tempo.
+  Por: Italo Jurisato Junior
+
+07/12/2018
+-- ACBrNFeServicos --
+[*] Atualização de URLs para QRCode 2.00 NFCe TO.
+    https://www.projetoacbr.com.br/forum/topic/48100-mudan%C3%A7a-endere%C3%A7os-qrcode-tocantins/
+
+06/12/2018
+-- ACBrNFeWebServices / ACBrNFeServicos --
+[*] Incluída URL e tratamento do retorno do webservice para a consulta de 
+    cadastro MG 4.00.
+  Por: everson.turossi
+
+28/11/2018
+-- ACBrNFeNotasFiscais --
+[*] Alteração na validação de leitura do arquivo .INI, validando preenchimento
+    campo CST e CSOSN individualmente.
+  Por: José M. S. Junior
+
+28/11/2018
+-- pcnNFeW --
+[*] https://www.projetoacbr.com.br/forum/topic/47855-icms51-com-diferimento-total-pdif100/?do=findComment&comment=315345
+  Por: Italo Jurisato Junior
+
 16/11/2018
 -- ACBrNFeServicos --
 [*] https://www.projetoacbr.com.br/forum/topic/47535-mudan%C3%A7a-url-acbrnfeservicos-url-incorreta/

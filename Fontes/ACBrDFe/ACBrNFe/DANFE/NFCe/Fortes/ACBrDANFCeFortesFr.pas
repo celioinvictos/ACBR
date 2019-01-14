@@ -57,26 +57,29 @@ const
   CACBrNFeDANFCeFortes_Versao = '0.1.0' ;
 
 type
-  TACBrSATExtratoFiltro = (fiNenhum, fiPDF, fiHTML ) ;
+  TACBrNFeDANFCeFiltro = (fiNenhum, fiPDF, fiHTML ) ;
 
   { TACBrNFeDANFCeFortes }
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   {$ENDIF RTL230_UP}	
-  TACBrNFeDANFCeFortes = class( TACBrNFeDANFEClass )
+  TACBrNFeDANFCeFortes = class( TACBrNFeDANFCEClass )
   private
+    FTamanhoLogoHeight: Integer;
+    FTamanhoLogoWidth: Integer;
+
     function CalcularCaractesWidth( Canvas : TCanvas; WidthTotal : Integer ): Integer;
     procedure DiminuirFonteSeNecessario( ARLMemo: TRLMemo; TamanhoMinimo: Integer = 1);
 
     procedure ImprimirInterno(const Cancelado: Boolean;
       const DanfeResumido : Boolean = False;
-      const AFiltro : TACBrSATExtratoFiltro = fiNenhum);
+      const AFiltro : TACBrNFeDANFCeFiltro = fiNenhum);
   protected
     FpNFe: TNFe;
 
     procedure AtribuirNFe(NFE: TNFe = Nil);
-    procedure Imprimir(const DanfeResumido : Boolean = False; const AFiltro : TACBrSATExtratoFiltro = fiNenhum);
-    procedure ImprimirCancelado(const DanfeResumido : Boolean = False; const AFiltro : TACBrSATExtratoFiltro = fiNenhum);
+    procedure Imprimir(const DanfeResumido : Boolean = False; const AFiltro : TACBrNFeDANFCeFiltro = fiNenhum);
+    procedure ImprimirCancelado(const DanfeResumido : Boolean = False; const AFiltro : TACBrNFeDANFCeFiltro = fiNenhum);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -89,6 +92,9 @@ type
     procedure ImprimirEVENTO(NFE : TNFe = nil);override;
     procedure ImprimirEVENTOPDF(NFE: TNFe = nil); override;
   published
+    property TamanhoLogoHeight: Integer read FTamanhoLogoHeight write FTamanhoLogoHeight default 50;
+    property TamanhoLogoWidth: Integer read FTamanhoLogoWidth write FTamanhoLogoWidth default 77;
+
   end ;
 
   { TACBrNFeDANFCeFortesFr }
@@ -132,7 +138,7 @@ type
     lTotalDesconto: TRLLabel;
     lURLConsulta: TRLMemo;
     pGap6: TRLPanel;
-    pGap9: TRLPanel;
+    pGapEspacofinalVenda: TRLPanel;
     rlbConsumidor: TRLBand;
     rlbMensagemFiscal: TRLBand;
     rlbMsgContingencia: TRLBand;
@@ -142,7 +148,7 @@ type
     rlbTotalAcrescimo: TRLBand;
     rlbTotalAPagar: TRLBand;
     rlbTotalDesconto: TRLBand;
-    pLogoLateral: TRLPanel;
+    pLogo: TRLPanel;
     rlpDadosQRCodeLateral: TRLPanel;
     rlpImgQRCodeLateral: TRLPanel;
     rlVenda: TRLReport;
@@ -177,7 +183,7 @@ type
     rlbsCabecalho: TRLSubDetail;
     rlbMsgDANFe: TRLBand;
     rlbDadosCliche: TRLBand;
-    pLogoeCliche: TRLPanel;
+    pCliche: TRLPanel;
     lEndereco: TRLMemo;
     imgLogo: TRLImage;
     rlbLegenda: TRLBand;
@@ -194,7 +200,7 @@ type
     RLPanel1: TRLPanel;
     lSistemaCanc: TRLLabel;
     lProtocoloCanc: TRLLabel;
-    RLPanel2: TRLPanel;
+    pGapEspacofinalCancelamento: TRLPanel;
     RLSubDetail3: TRLSubDetail;
     RLBand10: TRLBand;
     RLLabel26: TRLLabel;
@@ -230,8 +236,6 @@ type
 
     procedure FormDestroy(Sender: TObject);
     procedure pAsteriscoBeforePrint(Sender: TObject; var PrintIt: boolean);
-    procedure pLogoeClicheBeforePrint(Sender: TObject; var PrintIt: Boolean);
-    procedure pLogoLateralBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbChaveDeAcessoBeforePrint(Sender: TObject; var PrintIt: boolean);
     procedure rlbMsgContingenciaBeforePrint(Sender: TObject;
       var PrintIt: Boolean);
@@ -278,7 +282,7 @@ type
     fObsFisco: TStringList;
     fHeightDetItem: Integer;
     fResumido: Boolean;
-    fFiltro: TACBrSATExtratoFiltro;
+    fFiltro: TACBrNFeDANFCeFiltro;
 
     procedure PintarQRCode(const QRCodeData: String; APict: TPicture);
     function CompoemEnderecoCFe: String ;
@@ -287,15 +291,17 @@ type
     { Public declarations }
     property ACBrNFeDANFCeFortes : TACBrNFeDANFCeFortes read fACBrNFeDANFCeFortes ;
     property Resumido : Boolean read fResumido write fResumido;
-    property Filtro         : TACBrSATExtratoFiltro read fFiltro write fFiltro default fiNenhum ;
+    property Filtro         : TACBrNFeDANFCeFiltro read fFiltro write fFiltro default fiNenhum ;
   end ;
 
 procedure Register;
 
 implementation
 
-uses StrUtils, math,
-     ACBrDelphiZXingQRCode, ACBrNFe, ACBrValidador ;
+uses
+  StrUtils, math,
+  ACBrDelphiZXingQRCode, ACBrNFe,
+  ACBrValidador, ACBrDFeDANFeReport, ACBrDFeReportFortes;
 
 {$ifdef FPC}
   {$R *.lfm}
@@ -344,7 +350,7 @@ begin
     else
       Via := '';
 
-    if ACBrNFeDANFCeFortes.QRCodeLateral then
+    if ACBrNFeDANFCeFortes.ImprimeQRCodeLateral then
     begin
       lContingencia1.Lines.Clear;
       lMensagemFiscal1.Lines.Clear;
@@ -412,8 +418,8 @@ begin
       lChaveDeAcesso.Font.Color := clRed;
     end;
 
-    lCancelada.Visible := ACBrNFeDANFCeFortes.NFeCancelada;
-    if ACBrNFeDANFCeFortes.NFeCancelada then
+    lCancelada.Visible := ACBrNFeDANFCeFortes.Cancelada;
+    if ACBrNFeDANFCeFortes.Cancelada then
       lCancelada.Caption := ACBrStr('NFC-e CANCELADA');
   end;
 end;
@@ -472,9 +478,9 @@ begin
 
     with ACBrNFeDANFCeFortes do
     begin
-      if ImprimirTributos then
+      if not (ImprimeTributos = trbNenhum)then
       begin
-        if TributosSeparadamente and ((vTribFed+vTribEst+vTribMun) > 0) then
+        if (ImprimeTributos = trbSeparadamente)and ((vTribFed+vTribEst+vTribMun) > 0) then
         begin
            MsgTributos := Format('Tributos Incidentes Lei Federal 12.741/12 - Total R$ %s Federal R$ %s Estadual R$ %s Municipal R$ %s',
                                  [FormatFloatBr(vTribFed + vTribEst + vTribMun),
@@ -554,7 +560,7 @@ begin
       lChaveDeAcessoCanc.Font.Color := clRed;
     end;
 
-    if ACBrNFeDANFCeFortes.NFeCancelada then
+    if ACBrNFeDANFCeFortes.Cancelada then
       lCanceladaCanc.Caption := ACBrStr('NFC-e CANCELADA');
   end;
 end;
@@ -606,9 +612,9 @@ begin
   QRCode       := TDelphiZXingQRCode.Create;
   QRCodeBitmap := TBitmap.Create;
   try
-    QRCode.Data      := QRCodeData;
     QRCode.Encoding  := qrUTF8NoBOM;
     QRCode.QuietZone := 1;
+    QRCode.Data      := WideString(QRCodeData);
 
     //QRCodeBitmap.SetSize(QRCode.Rows, QRCode.Columns);
     QRCodeBitmap.Width  := QRCode.Columns;
@@ -681,7 +687,6 @@ procedure TACBrNFeDANFCeFortesFr.rlVendaBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 var
   qrcode: String;
-  LogoStream: TStringStream;
 begin
   fNumItem  := 0;
   fNumPagto := 0;
@@ -689,7 +694,8 @@ begin
   fNumObs   := 0;
   fObsFisco.Clear;
 
-  imgLogo.Height := 70;
+  pGapEspacofinalVenda.Height := ACBrNFeDANFCeFortes.EspacoFinal;
+
   with ACBrNFeDANFCeFortes.FpNFe do
   begin
     lNomeFantasia.Visible := ACBrNFeDANFCeFortes.ImprimeNomeFantasia;
@@ -699,52 +705,44 @@ begin
     lRazaoSocial.Lines.Text := 'CNPJ: '+FormatarCNPJ(Emit.CNPJCPF)+' '+Emit.xNome ;
     lEndereco.Lines.Text    := CompoemEnderecoCFe;
 
-    if ACBrNFeDANFCeFortes.ImprimeLogoLateral then
-      imgLogo.Parent := pLogoLateral
-    else
-      imgLogo.Parent := pLogoeCliche;
-    if ACBrNFeDANFCeFortes.Logo <> '' then
+    TDFeReportFortes.CarregarLogo(imgLogo, ACBrNFeDANFCeFortes.Logo);
+    pLogo.Visible := not imgLogo.Picture.Bitmap.Empty;
+
+    if pLogo.Visible then
     begin
+      imgLogo.AutoSize := ACBrNFeDANFCeFortes.ExpandeLogoMarca;
+
       if ACBrNFeDANFCeFortes.ImprimeLogoLateral then
-       begin
-        pLogoLateral.Height := ACBrNFeDANFCeFortes.TamanhoLogoHeight;
-        pLogoLateral.Width := ACBrNFeDANFCeFortes.TamanhoLogoWidth;
-        lNomeFantasia.Alignment := taLeftJustify;
-        lRazaoSocial.Alignment := taLeftJustify;
-        lEndereco.Alignment := taLeftJustify;
-        imgLogo.Parent := pLogoLateral;
-        imgLogo.AutoSize := False;
-       end
-      else
-       begin
-        lNomeFantasia.Alignment := taCenter;
-        lRazaoSocial.Alignment := taCenter;
-        lEndereco.Alignment := taCenter;
-        imgLogo.Parent := pLogoeCliche;
-        imgLogo.AutoSize := ACBrNFeDANFCeFortes.ExpandirLogoMarca;
-       end;
-
-      rlbDadosCliche.Margins.RightMargin := rlVenda.Margins.RightMargin;
-      rlbQRLateral.Margins.RightMargin := rlVenda.Margins.RightMargin;
-
-      imgLogo.Height := ACBrNFeDANFCeFortes.TamanhoLogoHeight;
-      imgLogo.Width := ACBrNFeDANFCeFortes.TamanhoLogoWidth;
-      imgLogo.Scaled := True;
-
-      if (imgLogo.Width <= 0) or (imgLogo.Height <= 0) then
-        imgLogo.AutoSize := True;
-
-      if FileExists (ACBrNFeDANFCeFortes.Logo) then
-        imgLogo.Picture.LoadFromFile(ACBrNFeDANFCeFortes.Logo)
+      begin
+        imgLogo.Center := True;
+        pCliche.Align := faClientTop;
+        pLogo.Align   := faLeftTop;
+        pLogo.Width   := ACBrNFeDANFCeFortes.TamanhoLogoWidth;
+        pLogo.Height  := ACBrNFeDANFCeFortes.TamanhoLogoHeight;
+        imgLogo.Align := faClient;
+      end
       else
       begin
-        LogoStream := TStringStream.Create(ACBrNFeDANFCeFortes.Logo);
-        try
-          imgLogo.Picture.Bitmap.LoadFromStream(LogoStream);
-        finally
-          LogoStream.Free;
-        end;
+        pLogo.Align    := faTop;
+        pLogo.Top      := 0;  // Força ir para o Topo
+        pCliche.Align  := faTop;
+        imgLogo.Width  := ACBrNFeDANFCeFortes.TamanhoLogoWidth;
+        imgLogo.Height := ACBrNFeDANFCeFortes.TamanhoLogoHeight;
+        imgLogo.Align  := faClientTop;
       end;
+    end;
+
+    if not pLogo.Visible then
+    begin
+      lNomeFantasia.Alignment := taCenter;
+      lRazaoSocial.Alignment := taCenter;
+      lEndereco.Alignment := taCenter;
+    end
+    else
+    begin
+      lNomeFantasia.Alignment := taLeftJustify;
+      lRazaoSocial.Alignment := taLeftJustify;
+      lEndereco.Alignment := taLeftJustify;
     end;
 
     // QRCode  //
@@ -759,7 +757,7 @@ begin
     else
       qrcode := infNFeSupl.qrCode;
 
-    if ACBrNFeDANFCeFortes.QRCodeLateral then
+    if ACBrNFeDANFCeFortes.ImprimeQRCodeLateral then
     begin
       rlbConsumidor.Visible := False;
       rlbQRCode.Visible     := False;
@@ -917,7 +915,7 @@ end;
 procedure TACBrNFeDANFCeFortesFr.rlbDetItemBeforePrint(Sender: TObject;
   var PrintIt: Boolean);
 var
-  LinhaItem, LinhaTotal, sDescricao : string;
+  LinhaItem, infoAdProd, LinhaTotal, sDescricao : string;
   nTamDescricao, maxCaracter: Integer;
   {$IFNDEF FPC}
     BMP : TBitmap;
@@ -943,12 +941,12 @@ begin
     if ACBrNFeDANFCeFortes.ImprimeEmUmaLinha then
     begin
       LinhaItem := IntToStrZero(Prod.nItem,3) + ' ' + ACBrNFeDANFCeFortes.ManterCodigo( Prod.cEAN , Prod.cProd ) +
-                   ' ' + '[DesProd] ' + ACBrNFeDANFCeFortes.FormatQuantidade( Prod.QCom, False ) + ' ' +
-                   Trim( Prod.uCom) + ' X ' +  ACBrNFeDANFCeFortes.FormatValorUnitario( Prod.VUnCom ) + ' ' +
+                   ' ' + '[DesProd] ' + ACBrNFeDANFCeFortes.FormatarQuantidade( Prod.QCom, False ) + ' ' +
+                   Trim( Prod.uCom) + ' X ' +  ACBrNFeDANFCeFortes.FormatarValorUnitario( Prod.VUnCom ) + ' ' +
                    FormatFloatBr( Prod.vProd );
 
       // acerta tamanho da descrição
-      nTamDescricao := (maxCaracter - Length(LinhaItem)) + 9;
+      nTamDescricao := (maxCaracter - Length(LinhaItem)) + 5;
       sDescricao := PadRight(Copy(Trim(Prod.xProd), 1, nTamDescricao), nTamDescricao);
 
       LinhaItem := StringReplace(LinhaItem, '[DesProd]', sDescricao, [rfReplaceAll]);
@@ -961,15 +959,16 @@ begin
                                ACBrNFeDANFCeFortes.ManterCodigo( Prod.cEAN , Prod.cProd ) + ' ' +
                                Trim(Prod.xProd);
 
-      if Trim(infAdProd) <> '' then
-        LinhaItem := LinhaItem + '-'+ StringReplace( infAdProd, ';',#13,[rfReplaceAll]);
+      infoAdProd := ACBrNFeDANFCeFortes.ManterinfAdProd(ACBrNFeDANFCeFortes.FpNFe, fNumItem);
+      if Trim(infoAdProd) <> '' then
+        LinhaItem := LinhaItem + '-'+ infoAdProd;
 
       mLinhaItem.Lines.Add(LinhaItem);
 
       //Centraliza os valores. A fonte dos itens foi mudada para Courier New, Pois esta o espaço tem o mesmo tamanho dos demais caractere.
-      LinhaTotal  := '|'+ACBrNFeDANFCeFortes.FormatQuantidade(Prod.qCom, False) +'|'+
+      LinhaTotal  := '|'+ACBrNFeDANFCeFortes.FormatarQuantidade(Prod.qCom, False) +'|'+
                      Trim(Prod.uCom) + ' X ' +
-                     ACBrNFeDANFCeFortes.FormatValorUnitario(Prod.vUnCom) +'|'+
+                     ACBrNFeDANFCeFortes.FormatarValorUnitario(Prod.vUnCom) +'|'+
                      FormatFloatBr(Prod.vProd) ;
       LinhaTotal  := PadSpace( ACBrStr(LinhaTotal), maxCaracter-9, '|') ;
 
@@ -981,10 +980,18 @@ end;
 
 procedure TACBrNFeDANFCeFortesFr.rlbPagamentoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
+var
+  DescPagto, DescBandeira: String;
 begin
   with ACBrNFeDANFCeFortes.FpNFe.pag.Items[fNumPagto] do
   begin
-    lMeioPagamento.Caption  := ACBrStr(FormaPagamentoToDescricao(tPag));
+    DescPagto := ACBrStr(FormaPagamentoToDescricao(tPag));
+    if (tPag in [fpCartaoCredito, fpCartaoDebito]) then
+      DescBandeira := BandeiraCartaoToDescStr(tBand)
+    else
+      DescBandeira := '';
+
+    lMeioPagamento.Caption  := DescPagto + ' ' + DescBandeira;
     lPagamento.Caption      := FormatFloatBr(vPag);
     fTotalPagto             := fTotalPagto + vPag;
   end;
@@ -1061,50 +1068,13 @@ procedure TACBrNFeDANFCeFortesFr.lSistemaBeforePrint(Sender: TObject;
 begin
   PrintIt := True;
   if NaoEstaVazio(fACBrNFeDANFCeFortes.Sistema) then
-    Text := fACBrNFeDANFCeFortes.Sistema + Space(3);
+    Text := fACBrNFeDANFCeFortes.Sistema + Space(8);
 end;
 
 procedure TACBrNFeDANFCeFortesFr.pAsteriscoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   PrintIt := not Resumido;
-end;
-
-procedure TACBrNFeDANFCeFortesFr.pLogoeClicheBeforePrint(Sender: TObject;
-  var PrintIt: Boolean);
-begin
-  pLogoLateral.Visible := ACBrNFeDANFCeFortes.ImprimeLogoLateral;
-  if not ACBrNFeDANFCeFortes.ImprimeLogoLateral then
-    pLogoLateral.Width := 0;
-
-{  if ACBrNFeDANFCeFortes.ImprimeLogoLateral then
-  begin
-    pLogoLateral.Visible := True;
-    pLogoeCliche.Align := faClientTop;
-  end
-  else
-  begin
-    pLogoLateral.Visible := False;
-    pLogoeCliche.Align := faTop;
-  end;
- }
-end;
-
-procedure TACBrNFeDANFCeFortesFr.pLogoLateralBeforePrint(Sender: TObject;
-  var PrintIt: Boolean);
-begin
-  PrintIt := ACBrNFeDANFCeFortes.ImprimeLogoLateral;
-
-  pLogoLateral.Visible := PrintIt;
-
-  if PrintIt then
-  begin
-    pLogoLateral.Height := imgLogo.Height ;
-    pLogoLateral.Width  := imgLogo.Width ;
-    imgLogo.Parent := pLogoLateral;
-  end
-  else
-    pLogoLateral.Width := 0;
 end;
 
 procedure TACBrNFeDANFCeFortesFr.rlbConsumidorCancBeforePrint(Sender: TObject;
@@ -1207,7 +1177,7 @@ begin
   fNumObs   := 0;
   fObsFisco.Clear;
 
-  imgLogo.Height := 100;
+  pGapEspacofinalCancelamento.Height := ACBrNFeDANFCeFortes.EspacoFinal;
 
   with ACBrNFeDANFCeFortes.FpNFe do
   begin
@@ -1215,21 +1185,6 @@ begin
     lRazaoSocialCanc.Lines.Text := Emit.xNome ;
     lEmitCNPJ_IE_IM_Camc.Caption:= CompoemCliche;
     lEnderecoCanc.Lines.Text    := CompoemEnderecoCFe;
-
-    if ACBrNFeDANFCeFortes.Logo <> '' then
-    begin
-      if FileExists (ACBrNFeDANFCeFortes.Logo) then
-        imgLogo.Picture.LoadFromFile(ACBrNFeDANFCeFortes.Logo)
-      else
-      begin
-        LogoStream := TStringStream.Create(ACBrNFeDANFCeFortes.Logo);
-        try
-          imgLogo.Picture.Bitmap.LoadFromStream(LogoStream);
-        finally
-          LogoStream.Free;
-        end;
-      end;
-    end;
 
     // QRCode  //
     if EstaVazio(Trim(infNFeSupl.qrCode)) then
@@ -1256,6 +1211,9 @@ end;
 constructor TACBrNFeDANFCeFortes.Create(AOwner: TComponent);
 begin
   inherited create( AOwner );
+
+  FTamanhoLogoHeight := 50;
+  FTamanhoLogoWidth := 77;
 end;
 
 destructor TACBrNFeDANFCeFortes.Destroy;
@@ -1305,19 +1263,19 @@ begin
 end;
 
 procedure TACBrNFeDANFCeFortes.Imprimir(const DanfeResumido: Boolean;
-  const AFiltro: TACBrSATExtratoFiltro);
+  const AFiltro: TACBrNFeDANFCeFiltro);
 begin
   ImprimirInterno(False, DanfeResumido, AFiltro);
 end;
 
 procedure TACBrNFeDANFCeFortes.ImprimirCancelado(const DanfeResumido: Boolean;
-  const AFiltro: TACBrSATExtratoFiltro);
+  const AFiltro: TACBrNFeDANFCeFiltro);
 begin
   ImprimirInterno(True, DanfeResumido, AFiltro);
 end;
 
 procedure TACBrNFeDANFCeFortes.ImprimirInterno(const Cancelado: Boolean;
-  const DanfeResumido: Boolean; const AFiltro: TACBrSATExtratoFiltro);
+  const DanfeResumido: Boolean; const AFiltro: TACBrNFeDANFCeFiltro);
 var
   frACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr;
   RLLayout: TRLReport;
@@ -1346,8 +1304,8 @@ begin
       if (RLLayout.JobTitle = '') then
         RLLayout.JobTitle := NFeID + IfThen(Cancelado, '-cancelado', '')+'-nfe.xml';
 
-      RLLayout.ShowProgress := MostrarStatus;
-      RLLayout.PrintDialog  := (not MostrarPreview) and EstaVazio(Impressora);
+      RLLayout.ShowProgress := MostraStatus;
+      RLLayout.PrintDialog  := (not MostraPreview) and EstaVazio(Impressora);
 
       // Largura e Margens do Relatório //
       RLLayout.Width := LarguraBobina;
@@ -1368,7 +1326,7 @@ begin
 
       if Filtro = fiNenhum then
       begin
-        if MostrarPreview then
+        if MostraPreview then
           RLLayout.PreviewModal
         else
           RLLayout.Print;
@@ -1384,7 +1342,7 @@ begin
             exit ;
           end ;
 
-          RLFiltro.ShowProgress := ACBrNFeDANFCeFortes.MostrarStatus;
+          RLFiltro.ShowProgress := ACBrNFeDANFCeFortes.MostraStatus;
           RLFiltro.FileName := PathWithDelim(ACBrNFeDANFCeFortes.PathPDF) +
                                ChangeFileExt( RLLayout.JobTitle, '.pdf');
           RLFiltro.FilterPages( RLLayout.Pages );

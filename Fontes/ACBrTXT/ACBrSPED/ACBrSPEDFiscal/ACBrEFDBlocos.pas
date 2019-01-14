@@ -289,7 +289,8 @@ type
   /// Indicador da origem do documento vinculado ao ajuste
   TACBrOrigemDocto = (odPorcessoJudicial, // 0 - Processo Judicial;
                       odProcessoAdminist, // 1 - Processo Administrativo;
-                      odPerDcomp,         // 2 - PER/DCOMP;
+                      odPerDcomp,         // 2 - PER/DCOMP;    
+                      odDocumentoFiscal,  // 3 - Documento Fiscal
                       odOutros            //9 – Outros.
                       );
   /// Indicador de propriedade/posse do item
@@ -764,7 +765,7 @@ type
   function StrToOrigemDocto(const AValue: string): TACBrOrigemDocto;
 
   function IndTipoTituloToStr(AValue: TACBrTipoTitulo): string;
-  function StrToIndTipoTitulo(AValue: string): TACBrTipoTitulo;
+  function StrToIndTipoTitulo(const AValue: string): TACBrTipoTitulo;
 
   function MovimentoDIFALToStr(AValue: TACBrMovimentoDIFAL): string;
   function StrToMovimentoDIFAL(const AValue: string): TACBrMovimentoDIFAL;
@@ -1436,7 +1437,7 @@ begin
      end;
 end;
 
-function StrToIndTipoTitulo(AValue: string): TACBrTipoTitulo;
+function StrToIndTipoTitulo(const AValue: string): TACBrTipoTitulo;
 begin
      if AValue = '00' then
             Result:= tcDuplicata
@@ -1729,6 +1730,7 @@ end;
 
 function StrToMotivoRessarcimento(const AValue: string): TACBrMotivoRessarcimento;
 begin
+ Result := tmrOutros; //podemos criar um tmrNenhum se o campo for opcional
   if AValue = '1' then
     Result := tmrVendaOutraUF
   else
@@ -1767,6 +1769,7 @@ end;
 
 function StrToIndicadorDeducao(const AValue: string): TACBrIndicadorDeducao;
 begin
+  Result := tidOutros; //  podemos criar tidNenhum se for opcional
   if AValue = '0' then
     Result := tidCompensacaoISS
   else
@@ -1796,6 +1799,7 @@ end;
 
 function StrToIndicadorProcesso(const AValue: string): TACBrIndicadorProcesso;
 begin
+  Result := tipOutros; //podemos criar tipNenhum?
   if AValue = '0' then
     Result := tipSefin
   else
@@ -1823,6 +1827,7 @@ end;
 
 function StrToIndicadorObrigacao(const AValue: string): TACBrIndicadorObrigacao;
 begin
+   Result := tioISSProprio; //podermos tioISSNenhum?
   if AValue = '0' then
     Result := tioISSProprio
   else

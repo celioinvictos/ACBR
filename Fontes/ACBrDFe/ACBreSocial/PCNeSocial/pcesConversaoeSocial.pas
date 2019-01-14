@@ -99,7 +99,7 @@ type
                              teS1300, teS2190, teS2200, teS2205, teS2206, teS2210, teS2220, teS2230,
                              teS2240, teS2241, teS2250, teS2260, teS2298, teS2299, teS2300, teS2305,
                              teS2306, teS2399, teS2400, teS3000, teS4000, teS4999, teS5001, teS5002,
-                             teS5011, teS5012);
+                             teS5003, teS5011, teS5012);
 
   TpTpAmb                 = (taProducao, taProducaoRestrita);
 
@@ -120,6 +120,8 @@ type
   TpIndDesFolha           = (idfNaoAplicavel, idfEmpresaenquadradanosArt7_9);
 
   TpIndOptRegEletron      = (iorNaooptou, iorOptoupeloregistro);
+
+  TpIndOpcCP              = (icpComercializacao, icpFolhaPagamento, icpNenhum);
 
   tpAliqRat               = (arat1, arat2, arat3 );
 
@@ -318,8 +320,12 @@ type
 
   tpTpRegPrev             = (rpRGPS, rpRPPS, rpRPPE);
 
-  tpTpAdmissao            = (taAdmissao, taTransfEmpresaMesmoGrupoEconomico, taTransfEmpresaConsorciadaOuDeConsorcio,
-                             taTransfPorMotivoSucessaoIncorporacaoCisaoOuFuso, taTransfEmpregadoDomesticoParaOutroRepresentanteMesmaFamiliar);
+  tpTpAdmissao            = (taAdmissao,
+                             taTransfEmpresaMesmoGrupoEconomico,
+                             taTransfEmpresaConsorciadaOuDeConsorcio,
+                             taTransfPorMotivoSucessaoIncorporacaoCisaoOuFuso,
+                             taTransfEmpregadoDomesticoParaOutroRepresentanteMesmaFamiliar,
+                             taMudancaDeCPF);
 
   tpTpIndAdmissao         = (iaNormal, iaDecorrenteAcaoFiscal, iaDecorrenteDecisaoJudicial);
 
@@ -502,6 +508,9 @@ function eSStrToIndDesFolha(var ok: boolean; const s: string): TpIndDesFolha;
 
 function eSIndOptRegEletronicoToStr(const t: TpIndOptRegEletron ): string;
 function eSStrToIndOptRegEletronico(var ok: boolean; const s: string): TpIndOptRegEletron;
+
+function eSIndOpcCPToStr(const t: TpIndOpcCP ): string;
+function eSStrToIndOpcCP(var ok: boolean; const s: string): TpIndOpcCP;
 
 function eSAliqRatToStr(const t: TpAliqRat ): string;
 function eSStrToAliqRat(var ok: boolean; const s: string): TpAliqRat;
@@ -876,7 +885,7 @@ uses
   pcnConversao, typinfo;
 
 const
-  TTipoEventoString   : array[0..49] of String =('S-1000', 'S-1005', 'S-1010', 'S-1020', 'S-1030',
+  TTipoEventoString   : array[0..50] of String =('S-1000', 'S-1005', 'S-1010', 'S-1020', 'S-1030',
                                                  'S-1035', 'S-1040', 'S-1050', 'S-1060', 'S-1070',
                                                  'S-1080', 'S-2100', 'S-1200', 'S-1202', 'S-1207',
                                                  'S-1210', 'S-1220', 'S-1250', 'S-1260', 'S-1270',
@@ -885,7 +894,8 @@ const
                                                  'S-2220', 'S-2230', 'S-2240', 'S-2241', 'S-2250',
                                                  'S-2260', 'S-2298', 'S-2299', 'S-2300', 'S-2305',
                                                  'S-2306', 'S-2399', 'S-2400', 'S-3000', 'S-4000',
-                                                 'S-4999', 'S-5001', 'S-5002', 'S-5011', 'S-5012');
+                                                 'S-4999', 'S-5001', 'S-5002', 'S-5003', 'S-5011',
+                                                 'S-5012');
 
   TUFString           : array[0..26] of String = ('AC','AL','AP','AM','BA','CE','DF','ES','GO',
                                                   'MA','MT','MS','MG','PA','PB','PR','PE','PI',
@@ -944,6 +954,8 @@ const
   TNrLeiAnistia : array[0..5] of string = ('LEI66831979',  'LEI86321993',
                                            'LEI88781994',  'LEI105592002',
                                            'LEI107902003', 'LEI112822006');
+
+  TPoderSubteto : array[0..3] of string = ('1', '2', '3', '9');
 
 function LayOuteSocialToServico(const t: TLayOut): String;
 begin
@@ -1526,6 +1538,16 @@ begin
   result := TpIndOptRegEletron( StrToEnumerado2(ok , s, TGenericosString0_1 ) );
 end;
 
+function eSIndOpcCPToStr(const t:TpIndOpcCP ): string;
+begin
+  result := EnumeradoToStr2(t,TGenericosString1_2 );
+end;
+
+function eSStrToIndOpcCP(var ok: boolean; const s: string): TpIndOpcCP;
+begin
+  result := TpIndOpcCP( StrToEnumerado2(ok , s, TGenericosString1_2 ) );
+end;
+
 function eSAliqRatToStr(const t:tpAliqRat ): string;
 begin
   result := EnumeradoToStr2(t,TGenericosString1_3 );
@@ -2050,12 +2072,12 @@ end;
 
 function eSIdeSubtetoToStr(const t: tpIdeSubteto): string;
 begin
-  result := EnumeradoToStr2(t,TGenericosString1_4  );
+  result := EnumeradoToStr2(t, TPoderSubteto);
 end;
 
 function eSStrToIdeSubteto(var ok: Boolean; const s: string): tpIdeSubteto;
 begin
-  result := tpIdeSubteto( StrToEnumerado2(ok , s,TGenericosString1_4 ) );
+  result := tpIdeSubteto( StrToEnumerado2(ok, s, TPoderSubteto) );
 end;
 
 function eSTpPublAlvoToStr(const t: tpTpPublAlvo): string;
@@ -2366,7 +2388,7 @@ end;
 
 function StrEventoToTipoEvento(var ok: boolean; const s: string): TTipoEvento;
 const
-  EventoString: array[0..49] of String =('evtInfoEmpregador', 'evtTabEstab',
+  EventoString: array[0..50] of String =('evtInfoEmpregador', 'evtTabEstab',
        'evtTabRubrica', 'evtTabLotacao', 'evtTabCargo', 'evtTabCarreira',
        'evtTabFuncao', 'evtTabHorContratual', 'evtTabAmbiente', 'evtTabProcesso',
        'evtTabOperPortuario', 'S-2100', 'evtRemun', 'evtRmnRPPS', 'evtBenPrRP',
@@ -2376,7 +2398,7 @@ const
        'evtAltContratual', 'evtCAT', 'evtASO', 'evtAfastTemp', 'evtExpRisco',
        'evtInsApo', 'evtAvPrevio', 'evtConvInterm', 'evtReintegr', 'evtDeslig',
        'evtTSVInicio', 'S-2305', 'evtTSVAltContr', 'evtTSVTermino', 'evtCdBenPrRP',
-       'evtExclusao', 'S-4000', 'S-4999', 'S-5001', 'S-5002', 'S-5011', 'S-5012');
+       'evtExclusao', 'S-4000', 'S-4999', 'S-5001', 'S-5002', 'S-5003', 'S-5011', 'S-5012');
 begin
   result := TTipoEvento( StrToEnumerado2(ok , s, EventoString ) );
 end;

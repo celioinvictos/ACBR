@@ -27,9 +27,9 @@ package ACBr_SEF2;
 
 requires
   rtl,
+  designide,
   ACBr_TXTComum,
-  ACBr_PCNComum,
-  designide;
+  ACBr_PCNComum;
 
 contains
   ACBrSEF2 in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2.pas',
@@ -38,6 +38,8 @@ contains
   ACBrSEF2_Bloco0 in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_Bloco0.pas',
   ACBrSEF2_BlocoE in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_BlocoE.pas',
   ACBrSEF2_BlocoE_1 in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_BlocoE_1.pas',
+  ACBrSEF2_BlocoF in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_BlocoF.pas',
+  ACBrSEF2_BlocoF_1 in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_BlocoF_1.pas',
   ACBrSEF2_blocoH in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_blocoH.pas',
   ACBrSEF2_BlocoH_1 in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_BlocoH_1.pas',
   ACBrSEF2_eDoc_BlocoC in '..\..\..\..\Fontes\ACBrTXT\ACBrSEF2\ACBrSEF2_eDoc_BlocoC.pas',

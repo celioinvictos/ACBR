@@ -155,6 +155,7 @@ type
     procedure GerarTrabEstrangeiro(pTrabEstrangeiro: TTrabEstrangeiro);
     procedure GerarTrabTemporario(pTrabTemporario: TTrabTemporario);
     procedure GerarInfoASO(pInfoASO: TInfoASO);
+    procedure GerarMudancaCPF(pMudancaCPF: TmudancaCPF);
     procedure GerarAfastamento(pAfastamento: TAfastamento);
     procedure GerarDesligamento(pDesligamento: TDesligamento);
     procedure GerarVinculo(pVinculo: TVinculo; pTipo: integer = 1);
@@ -558,9 +559,11 @@ begin
 
   Gerador.wCampo(tcStr, '', 'tpContr', 1, 1, 1, eSTpContrToStr(pDuracao.TpContr));
 
+  if pDuracao.dtTerm <> 0 then
+    Gerador.wCampo(tcDat, '', 'dtTerm',    10, 10, 0, pDuracao.dtTerm);
+
   if (eSTpContrToStr(pDuracao.TpContr) = '2') then
   begin
-    Gerador.wCampo(tcDat, '', 'dtTerm',    10, 10, 0, pDuracao.dtTerm);
 
     if pTipo in  [1,2] then
       Gerador.wCampo(tcStr, '', 'clauAssec',  1,  1, 0, eSSimNaoToStr(pDuracao.clauAssec));
@@ -770,6 +773,11 @@ begin
   if pSucessaoVinc.cnpjEmpregAnt <> EmptyStr then
   begin
     Gerador.wGrupo('sucessaoVinc');
+
+//    if (TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF >= ve02_05_00) then
+    if VersaoDF >= ve02_05_00 then
+      Gerador.wCampo(tcStr, '', 'tpInscAnt', 1, 1, 1, eSTpInscricaoToStr(pSucessaoVinc.TpInscAnt));
+
     Gerador.wCampo(tcStr, '', 'cnpjEmpregAnt', 14, 014, 1, pSucessaoVinc.cnpjEmpregAnt);
     Gerador.wCampo(tcStr, '', 'matricAnt',      0, 030, 0, pSucessaoVinc.MatricAnt);
     Gerador.wCampo(tcDat, '', 'dtTransf',      10, 010, 1, pSucessaoVinc.dtTransf);
@@ -882,7 +890,10 @@ begin
     GerarInfoContrato(pVinculo.InfoContrato, pTipo, pVinculo.InfoRegimeTrab);
     GerarSucessaoVinc(pVinculo.SucessaoVinc);
     GerarTransfDom(pVinculo.transfDom);
-
+    if (pTipo = 2) then
+    begin
+      GerarMudancaCPF(pVinculo.mudancaCPF);
+    end;
     if (pTipo = 1) or (pTipo = 2) then
     begin
       GerarAfastamento(pVinculo.Afastamento);
@@ -891,6 +902,22 @@ begin
   end;
 
   Gerador.wGrupo('/vinculo');
+end;
+
+procedure TeSocialEvento.GerarMudancaCPF(pMudancaCPF: TmudancaCPF);
+begin
+  if (TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF >= ve02_05_00) then
+  begin
+    if pMudancaCPF.cpfAnt <> '' then
+    begin
+      Gerador.wGrupo('mudancaCPF');
+      Gerador.wCampo(tcStr, '', 'cpfAnt',  11,  11, 1, pMudancaCPF.cpfAnt);
+      Gerador.wCampo(tcStr, '', 'matricAnt',  1,  11, 1, pMudancaCPF.matricAnt);
+      Gerador.wCampo(tcDat, '', 'dtAltCPF',  10, 10, 1, pMudancaCPF.dtAltCPF);
+      Gerador.wCampo(tcStr, '', 'observacao',  1,  11, 0, pMudancaCPF.observacao);
+      Gerador.wGrupo('/mudancaCPF');
+    end;
+  end;
 end;
 
 procedure TeSocialEvento.GerarAfastamento(pAfastamento: TAfastamento);

@@ -51,19 +51,19 @@ type
     function ConverterOrientacao(aOrientacao: TACBrETQOrientacao): String;
     function ConverterMultiplicador(aMultiplicador: Integer): String;
     function ConverterCoordenadas(aVertical, aHorizontal: Integer): String;
-    function ConverterFonte(aFonte: String; var aTexto: String): String;
+    function ConverterFonte(const aFonte: String; var aTexto: String): String;
     function ConverterReverso(aImprimirReverso: Boolean): String;
     function ConverterLarguraBarras(aBarraLarga, aBarraFina: Integer): String;
     function ConverterUnidadeAlturaBarras(aAlturaBarras: Integer): String;
 
-    function FormatarTexto(aTexto: String): String;
+    function FormatarTexto(const aTexto: String): String;
 
-    procedure VerificarTipoBarras(aTipo: String; aBarraFina: Integer);
+    procedure VerificarTipoBarras(const aTipo: String; aBarraFina: Integer);
     function ConverterExibeCodigo(aExibeCodigo: TACBrETQBarraExibeCodigo): String;
 
     function CalcularEspessuraLinha(aVertical, aHorizontal: Integer): String;
 
-    function AjustarNomeArquivoImagem( aNomeImagem: String): String;
+    function AjustarNomeArquivoImagem( const aNomeImagem: String): String;
   public
     constructor Create(AOwner: TComponent);
 
@@ -118,7 +118,7 @@ begin
   fpLimiteCopias := 65535;
 end;
 
-function TACBrETQEpl2.FormatarTexto(aTexto: String): String;
+function TACBrETQEpl2.FormatarTexto(const aTexto: String): String;
 begin
   Result := aTexto;
 
@@ -131,7 +131,7 @@ begin
   Result := '"' + Result + '"';
 end;
 
-function TACBrETQEpl2.ConverterFonte(aFonte: String; var aTexto: String
+function TACBrETQEpl2.ConverterFonte(const aFonte: String; var aTexto: String
   ): String;
 var
   cFonte: Char;
@@ -174,7 +174,7 @@ begin
   Result := IntToStr(max(wEspessura,1));
 end;
 
-function TACBrETQEpl2.AjustarNomeArquivoImagem(aNomeImagem: String): String;
+function TACBrETQEpl2.AjustarNomeArquivoImagem(const aNomeImagem: String): String;
 begin
   Result := '"' + UpperCase(LeftStr(OnlyAlphaNum(aNomeImagem), 16)) + '"';
 end;
@@ -197,7 +197,7 @@ begin
   end;
 end;
 
-procedure TACBrETQEpl2.VerificarTipoBarras(aTipo: String; aBarraFina: Integer);
+procedure TACBrETQEpl2.VerificarTipoBarras(const aTipo: String; aBarraFina: Integer);
 var
   MinBarraFina, MaxBarraFina: Integer;
 begin
@@ -381,6 +381,8 @@ end;
 
 function TACBrETQEpl2.ComandoCarregarImagem(aStream: TStream;
   aNomeImagem: String; aFlipped: Boolean; aTipo: String): AnsiString;
+var
+  ImgData: AnsiString;
 begin
   Result := EmptyStr;
 
@@ -389,24 +391,18 @@ begin
   else
     aTipo := UpperCase(RightStr(aTipo, 3));
 
-  if (aTipo <> 'PCX') then
-    raise Exception.Create(ModeloStr+' suporta apenas Imagens no formato PCX');
+  if (aTipo <> 'PCX') or (not ImgIsPCX(aStream, True)) then
+    raise Exception.Create(ACBrStr(cErrImgPCXMono));
 
+  aStream.Position := 0;
+  ImgData := ReadStrFromStream(aStream, aStream.Size);
   aNomeImagem := AjustarNomeArquivoImagem(aNomeImagem);
-  AStream.Position := 0;
 
   Result := 'GK' + aNomeImagem     + LF +    // deletes graphic "NomeImagem" - Required
             'GK' + aNomeImagem     + LF +    // second delete graphic - Required
             'GM' + aNomeImagem     +         // Prepares printer to receive graphic "NomeImagem";
             IntToStr(aStream.Size) + LF +    // The Data Size
-            ReadStrFromStream(aStream, aStream.Size); // The Image Data
+            ImgData;                         // The Image Data
 end;
-
-// ToDo:
-//  - Verificar se precisa:
-//    '^@'   // Reset na impressora
-//    'xa'   // Força a detecçao da Medida da Etiqueta e Gap
-//    'Q' + IntToStr(AvancoEtq) + ',' +  // Label length
-//          IntToStr(EspacoEtq) +        // Gap length
 
 end.

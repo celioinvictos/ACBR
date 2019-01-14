@@ -1270,20 +1270,10 @@ procedure TACBrCTeDACTEFR.ImprimirDACTE(ACTE: TCTe);
 begin
   if PrepareReport(ACTE) then
   begin
-    frxReport.PrintOptions.Copies := NumCopias;
-	  frxReport.PreviewOptions.AllowEdit := False;
-    if MostrarPreview then
+    if MostraPreview then
       frxReport.ShowPreparedReport
     else
-    begin
-      // frxReport.PrepareReport(false);
-      if MostrarStatus then
-        frxReport.PrintOptions.ShowDialog := True
-      else
-        frxReport.PrintOptions.ShowDialog := False;
-      frxReport.PrintOptions.Printer      := Impressora;
       frxReport.Print;
-    end;
   end;
 end;
 
@@ -1301,15 +1291,14 @@ begin
     frxPDFExport.Title    := TITULO_PDF;
     frxPDFExport.Subject  := TITULO_PDF;
     frxPDFExport.Keywords := TITULO_PDF;
-
     OldShowDialog         := frxPDFExport.ShowDialog;
-
     try
       frxPDFExport.ShowDialog := False;
       frxPDFExport.FileName   := IncludeTrailingPathDelimiter(PathPDF) + OnlyNumber(CTE.infCTe.Id) + '-cte.pdf';
 
       if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
          ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
+
       frxReport.Export(frxPDFExport);
     finally
       frxPDFExport.ShowDialog := OldShowDialog;
@@ -1321,7 +1310,7 @@ procedure TACBrCTeDACTEFR.ImprimirEVENTO(ACTE: TCTe);
 begin
   if PrepareReportEvento then
   begin
-    if MostrarPreview then
+    if MostraPreview then
       frxReport.ShowPreparedReport
     else
       frxReport.Print;
@@ -1363,7 +1352,7 @@ procedure TACBrCTeDACTEFR.ImprimirINUTILIZACAO(ACTE: TCTe);
 begin
   if PrepareReportInutilizacao then
   begin
-    if MostrarPreview then
+    if MostraPreview then
       frxReport.ShowPreparedReport
     else
       frxReport.Print;
@@ -1374,26 +1363,30 @@ procedure TACBrCTeDACTEFR.ImprimirINUTILIZACAOPDF(ACTE: TCTe);
 const
   TITULO_PDF = 'Inutilização de Numeração';
 var
-  NomeArq: String;
+  NomeArq      : String;
+  OldShowDialog: Boolean;
 begin
   if PrepareReportInutilizacao then
   begin
-    frxPDFExport.Author     := Sistema;
-    frxPDFExport.Creator    := Sistema;
-    frxPDFExport.Producer   := Sistema;
-    frxPDFExport.Title      := TITULO_PDF;
-    frxPDFExport.Subject    := TITULO_PDF;
-    frxPDFExport.Keywords   := TITULO_PDF;
-    frxPDFExport.ShowDialog := False;
+    frxPDFExport.Author   := Sistema;
+    frxPDFExport.Creator  := Sistema;
+    frxPDFExport.Producer := Sistema;
+    frxPDFExport.Title    := TITULO_PDF;
+    frxPDFExport.Subject  := TITULO_PDF;
+    frxPDFExport.Keywords := TITULO_PDF;
+    OldShowDialog         := frxPDFExport.ShowDialog;
+    try
+      frxPDFExport.ShowDialog := False;
+      NomeArq                 := OnlyNumber(TACBrCTe(ACBrCTe).InutCTe.RetInutCTe.Id);
+      frxPDFExport.FileName   := PathWithDelim(Self.PathPDF) + NomeArq + '-procInutCTe.pdf';
 
-    NomeArq := OnlyNumber(TACBrCTe(ACBrCTe).InutCTe.RetInutCTe.Id);
+      if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
+        ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
 
-    frxPDFExport.FileName := PathWithDelim(Self.PathPDF) + NomeArq + '-procInutCTe.pdf';
-
-    if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
-      ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
-
-    frxReport.Export(frxPDFExport);
+      frxReport.Export(frxPDFExport);
+    finally
+      frxPDFExport.ShowDialog := OldShowDialog;
+    end;
   end;
 end;
 
@@ -1455,6 +1448,15 @@ begin
   else
     raise EACBrCTeDACTEFR.Create('Caminho do arquivo de impressão do DACTE não assinalado.');
 
+  frxReport.PrintOptions.Copies := NumCopias;
+  frxReport.PrintOptions.ShowDialog := MostraSetup;
+  frxReport.ShowProgress := MostraStatus;
+  frxReport.PreviewOptions.AllowEdit := False;
+
+  // Define a impressora
+  if NaoEstaVazio(frxReport.PrintOptions.Printer) then
+    frxReport.PrintOptions.Printer := Impressora;
+
   if Assigned(ACTE) then
   begin
     FCTe := ACTE;
@@ -1503,7 +1505,13 @@ begin
     raise EACBrCTeDACTEFR.Create('Caminho do arquivo de impressão do EVENTO não assinalado.');
 
   frxReport.PrintOptions.Copies := NumCopias;
+  frxReport.PrintOptions.ShowDialog := MostraSetup;
+  frxReport.ShowProgress := MostraStatus;
   frxReport.PreviewOptions.AllowEdit := False;
+
+  // Define a impressora
+  if NaoEstaVazio(frxReport.PrintOptions.Printer) then
+    frxReport.PrintOptions.Printer := Impressora;
 
   // preparar relatorio
   if Assigned(ACBrCTe) then
@@ -1541,7 +1549,13 @@ begin
     raise EACBrCTeDACTEFR.Create('Caminho do arquivo de impressão do INUTILIZAÇÃO não assinalado.');
 
   frxReport.PrintOptions.Copies := NumCopias;
+  frxReport.PrintOptions.ShowDialog := MostraSetup;
+  frxReport.ShowProgress := MostraStatus;
   frxReport.PreviewOptions.AllowEdit := False;
+
+  // Define a impressora
+  if NaoEstaVazio(frxReport.PrintOptions.Printer) then
+    frxReport.PrintOptions.Printer := Impressora;
 
   // preparar relatorio
   if Assigned(ACBrCTe) then
@@ -2750,7 +2764,7 @@ begin
     Append;
 
     vResumo := '';
-    if DACTEClassOwner.ExibirResumoCanhoto then
+    if DACTEClassOwner.ExibeResumoCanhoto then
     begin
       vResumo := 'EMIT: '+ FCTe.Emit.xNome + ' - ' +
                  'EMISSÃO: ' + FormatDateTime('DD/MM/YYYY',FCTe.Ide.dhEmi) + '  - '+
@@ -2803,7 +2817,7 @@ begin
     begin
       if not(FCTe.ide.TpEmis in [teContingencia, teFSDA]) then
       begin
-        if ((EstaVazio(ProtocoloCTE)) and (EstaVazio(FCTe.procCTe.nProt))) then
+        if ((EstaVazio(Protocolo)) and (EstaVazio(FCTe.procCTe.nProt))) then
         begin
           if FCTe.Ide.modelo = 67 then
             FieldByName('Mensagem0').AsString := 'CT-e OS sem Autorização de Uso da SEFAZ'
@@ -2811,7 +2825,7 @@ begin
             FieldByName('Mensagem0').AsString := 'CT-e sem Autorização de Uso da SEFAZ';
         end
         else
-          if (not((EstaVazio(ProtocoloCTE)) and
+          if (not((EstaVazio(Protocolo)) and
           (EstaVazio(FCTe.procCTe.nProt)))) and
           (FCTe.procCTe.cStat = 101) then
           begin
@@ -2822,7 +2836,7 @@ begin
           end
         else
         begin
-          if CTeCancelada then
+          if Cancelada then
           begin
             if FCTe.Ide.modelo = 67 then
               FieldByName('Mensagem0').AsString := 'CT-e OS Cancelado'
@@ -2868,24 +2882,25 @@ begin
     FieldByName('Site').AsString  := Site;
     FieldByName('Email').AsString := Email;
 
-    if ImprimirDescPorc then
+    if ImprimeDescPorc then
       FieldByName('Desconto').AsString := 'DESC %'
     else
       FieldByName('Desconto').AsString := 'V.DESC.';
 
-    if ((FCTe.ide.TpEmis = teNormal) or (FCTe.ide.TpEmis = teSCAN)) or (FCTe.procCTe.cStat in [100, 101, 110]) then
+    if ((FCTe.ide.TpEmis = teNormal) or (FCTe.ide.TpEmis = teSCAN)) or
+       (FCTe.procCTe.cStat in [100, 101, 110]) then
     begin
       FieldByName('ChaveAcesso_Descricao').AsString := 'CHAVE DE ACESSO';
       FieldByName('Contingencia_ID').AsString       := '';
 
-      if ((CTeCancelada) or (FCTe.procCTe.cStat = 101)) then
+      if ((Cancelada) or (FCTe.procCTe.cStat = 101)) then
         FieldByName('Contingencia_Descricao').AsString := 'PROTOCOLO DE HOMOLOGAÇÃO DO CANCELAMENTO'
       else if FCTe.procCTe.cStat = 110 then
         FieldByName('Contingencia_Descricao').AsString := 'PROTOCOLO DE DENEGAÇÃO DE USO'
       else
         FieldByName('Contingencia_Descricao').AsString := 'PROTOCOLO DE AUTORIZAÇÃO DE USO';
 
-      if EstaVazio(ProtocoloCTE) then
+      if EstaVazio(Protocolo) then
       begin
         if not(FCTe.ide.TpEmis in [teContingencia, teFSDA]) and EstaVazio(FCTe.procCTe.nProt) then
         begin
@@ -2899,7 +2914,7 @@ begin
             DateTimeToStr(FCTe.procCTe.dhRecbto), '');
       end
       else
-        FieldByName('Contingencia_Valor').AsString := ProtocoloCTE;
+        FieldByName('Contingencia_Valor').AsString := Protocolo;
     end
     else
     begin
@@ -2907,34 +2922,44 @@ begin
       FieldByName('ChaveAcesso_Descricao').AsString := 'CHAVE DE ACESSO';
       FieldByName('Contingencia_ID').AsString       := vChave_Contingencia;
 
-      if ((FCTe.ide.TpEmis = teContingencia) or (FCTe.ide.TpEmis = teFSDA)) then
-      begin
-        if FCTe.Ide.modelo = 67 then
-          FieldByName('Contingencia_Descricao').AsString := 'DADOS DO CT-E OS'
-        else
-          FieldByName('Contingencia_Descricao').AsString := 'DADOS DO CT-E';
+      case FCTe.ide.TpEmis of
+        teContingencia,
+        teFSDA:
+          begin
+            if FCTe.Ide.modelo = 67 then
+              FieldByName('Contingencia_Descricao').AsString := 'DADOS DO CT-E OS'
+            else
+              FieldByName('Contingencia_Descricao').AsString := 'DADOS DO CT-E';
 
-        FieldByName('Contingencia_Valor').AsString     := FormatarChaveAcesso(vChave_Contingencia);
-      end
-      else
-        if (FCTe.ide.TpEmis = teDPEC) then
-      begin
-        FieldByName('Contingencia_Descricao').AsString := 'NÚMERO DE REGISTRO DPEC';
+            FieldByName('Contingencia_Valor').AsString := FormatarChaveAcesso(vChave_Contingencia);
+          end;
 
-        // precisa testar
-        // if EstaVazio(ProtocoloCTE) then
-        // raise EACBrCTeException.Create('Protocolo de Registro no DPEC não informado.')
-        // else
-        // FieldByName('Contingencia_Valor').AsString := ProtocoloCTe;
-      end
-      else
-        if (FCTe.ide.TpEmis = teSVCSP) or (FCTe.ide.TpEmis = teSVCRS) then
-        begin
-          FieldByName('Contingencia_Descricao').AsString := 'PROTOCOLO DE AUTORIZAÇÃO DE USO';
-          FieldByName('Contingencia_Valor').AsString     := FCTe.procCTe.nProt + ' ' + IfThen(FCTe.procCTe.dhRecbto <> 0,
-            DateTimeToStr(FCTe.procCTe.dhRecbto), '');
-        end;
+        teDPEC:
+          begin
+            if NaoEstaVazio(FCTe.procCTe.nProt) then // EPEC TRANSMITIDO
+            begin
+              FieldByName('Contingencia_Descricao').AsString := ACBrStr( 'PROTOCOLO DE AUTORIZAÇÃO DE USO');
+              FieldByName('Contingencia_Valor').AsString     := FCTe.procCTe.nProt + ' ' +
+                IfThen(FCTe.procCTe.dhRecbto <> 0, DateTimeToStr(FCTe.procCTe.dhRecbto), '');
+            end
+            else
+            begin
+              FieldByName('Contingencia_Descricao').AsString := ACBrStr('NÚMERO DE REGISTRO EPEC');
+              if NaoEstaVazio(Protocolo) then
+                FieldByName('Contingencia_Valor').AsString := Protocolo;
+            end;
+          end;
+
+        teSVCSP,
+        teSVCRS:
+          begin
+            FieldByName('Contingencia_Descricao').AsString := 'PROTOCOLO DE AUTORIZAÇÃO DE USO';
+            FieldByName('Contingencia_Valor').AsString     := FCTe.procCTe.nProt + ' ' +
+              IfThen(FCTe.procCTe.dhRecbto <> 0, DateTimeToStr(FCTe.procCTe.dhRecbto), '');
+          end;
+      end;
     end;
+
     Post;
   end;
 end;

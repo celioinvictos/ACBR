@@ -9,7 +9,7 @@ uses IniFiles, ShellAPI, pcnRetConsReciNFe,
   Dialogs, StdCtrls, ExtCtrls, Buttons, ComCtrls, OleCtrls, SHDocVw,
   ACBrNFe, pcnConversao, ACBrUtil, ACBrNFeDANFEClass, ACBrNFeDANFeESCPOS,
   ACBrBase, ACBrDFe, XMLIntf, XMLDoc, zlib, ACBrMail, ACBrNFeDANFeRLClass,
-  ACBrDANFCeFortesFr, ACBrPosPrinter, Spin;
+  ACBrDANFCeFortesFr, ACBrPosPrinter, Spin, ACBrDFeReport, ACBrDFeDANFeReport;
 
 type
 
@@ -65,7 +65,6 @@ type
     btnCartadeCorrecao: TButton;
     btnValidarAssinatura: TButton;
     btnManifDestConfirmacao: TButton;
-    btnNfeDestinadas: TButton;
     btnImprimirCCe: TButton;
     btnEnviarEvento: TButton;
     btnCriarEnviarNFCe: TButton;
@@ -267,7 +266,6 @@ type
     procedure btnCartadeCorrecaoClick(Sender: TObject);
     procedure btnValidarAssinaturaClick(Sender: TObject);
     procedure btnManifDestConfirmacaoClick(Sender: TObject);
-    procedure btnNfeDestinadasClick(Sender: TObject);
     procedure btnImprimirCCeClick(Sender: TObject);
     procedure btnEnviarEventoClick(Sender: TObject);
     procedure btnCriarEnviarNFCeClick(Sender: TObject);
@@ -319,7 +317,7 @@ implementation
 uses
   strutils, math, TypInfo, DateUtils, ufrmStatus, synacode, blcksock, pcnNFe,
   pcnConversaoNFe, ACBrDFeConfiguracoes, pcnAuxiliar, ACBrDFeSSL, pcnNFeRTXT,
-  FileCtrl,ACBrNFeNotasFiscais, ACBrDFeOpenSSL, Unit2, Grids,
+  FileCtrl, ACBrNFeNotasFiscais, ACBrDFeOpenSSL, Unit2, Grids,
   ACBrNFeConfiguracoes;
 
 const
@@ -960,60 +958,6 @@ begin
   memoRespWS.Lines.Text := ACBrNFe1.WebServices.EnvEvento.RetornoWS;
 //  ACBrNFe1.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].XXXX
   LoadXML(ACBrNFe1.WebServices.EnvEvento.RetornoWS, WBResposta);
-end;
-
-procedure TForm1.btnNfeDestinadasClick(Sender: TObject);
-var
- CNPJ, IndNFe, IndEmi, ultNSU: string;
- ok: boolean;
-begin
-  CNPJ := '';
-  if not(InputQuery('WebServices Consulta NFe Destinadas', 'CNPJ do destinatário da NFe', CNPJ)) then
-     exit;
-
-  (*veja NT 2012/002 pág. 11 para identificar os valores possíveis
-  Indicador de NF-e consultada:
-  0=Todas as NF-e;
-  1=Somente as NF-e que ainda não tiveram manifestação do destinatário
-    (Desconhecimento da operação, Operação não Realizada ou Confirmação da Operação);
-  2=Idem anterior, incluindo as NF-e que também não tiveram a Ciência da Operação.*)
-  indNFe := '0';
-  if not(InputQuery('WebServices Consulta NFe Destinadas', 'Indicador de NF-e consultada', indNFe)) then
-     exit;
-
-  (*veja NT 2012/002 pág. 11 para identificar os valores possíveis
-  Indicador do Emissor da NF-e:
-  0=Todos os Emitentes / Remetentes;
-  1=Somente as NF-e emitidas por emissores / remetentes que não tenham a mesma
-    raiz do CNPJ do destinatário (para excluir as notas fiscais de transferência
-    entre filiais).*)
-  IndEmi := '0';
-  if not(InputQuery('WebServices Consulta NFe Destinadas', 'Indicador do Emissor da NF-e', IndEmi)) then
-     exit;
-
-  (*veja NT 2012/002 pág. 11 para identificar os valores possíveis
-   Último NSU recebido pela Empresa.
-   Caso seja informado com zero, ou com um NSU muito antigo, a consulta retornará
-   unicamente as notas fiscais que tenham sido recepcionadas nos últimos 15 dias.*)
-  ultNSU := '0';
-  if not(InputQuery('WebServices Consulta NFe Destinadas', 'Último NSU recebido pela Empresa', ultNSU)) then
-     exit;
-
-  ACBrNFe1.ConsultaNFeDest(CNPJ,
-                           StrToIndicadorNFe(ok,indNFe),
-                           StrToIndicadorEmissor(ok,IndEmi),
-                           UltNSu);
-
-  //AcbrNFe1.WebServices.ConsNFeDest.retConsNFeDest
-
-
-
-  MemoResp.Lines.Text := ACBrNFe1.WebServices.ConsNFeDest.RetWS;
-  memoRespWS.Lines.Text := ACBrNFe1.WebServices.ConsNFeDest.RetornoWS;
-//  ACBrNFe1.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].XXXX
-  LoadXML(ACBrNFe1.WebServices.ConsNFeDest.RetornoWS, WBResposta);
-
-
 end;
 
 procedure TForm1.btnImprimirClick(Sender: TObject);
@@ -2151,20 +2095,20 @@ end;
 procedure TForm1.GerarNFe(NumNFe : String);
 Var NotaF: NotaFiscal;
     Produto: TDetCollectionItem;
-    Servico: TDetCollectionItem;
+//    Servico: TDetCollectionItem;
     Volume: TVolCollectionItem;
     Duplicata: TDupCollectionItem;
     ObsComplementar: TobsContCollectionItem;
     ObsFisco: TobsFiscoCollectionItem;
-    Referenciada: TNFrefCollectionItem;
-    DI: TDICollectionItem;
-    Adicao: TAdiCollectionItem;
-    Rastro: TrastroCollectionItem;
-    Medicamento: TMedCollectionItem;
-    Arma: TArmaCollectionItem;
-    Reboque: TreboqueCollectionItem;
-    Lacre: TLacresCollectionItem;
-    ProcReferenciado: TprocRefCollectionItem;
+//    Referenciada: TNFrefCollectionItem;
+//    DI: TDICollectionItem;
+//    Adicao: TAdiCollectionItem;
+//    Rastro: TrastroCollectionItem;
+//    Medicamento: TMedCollectionItem;
+//    Arma: TArmaCollectionItem;
+//    Reboque: TreboqueCollectionItem;
+//    Lacre: TLacresCollectionItem;
+//    ProcReferenciado: TprocRefCollectionItem;
     InfoPgto: TpagCollectionItem;
 begin
   NotaF := ACBrNFe1.NotasFiscais.Add;
@@ -3425,7 +3369,7 @@ end;
 procedure TForm1.btnDistribuicaoDFeClick(Sender: TObject);
 var
  cUFAutor, CNPJ, ultNSU, ANSU: string;
- ok: boolean;
+// ok: boolean;
 begin
   cUFAutor := '';
   if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Código da UF do Autor', cUFAutor)) then
@@ -3558,8 +3502,8 @@ begin
 end;
 
 procedure TForm1.Button9Click(Sender: TObject);
-var
-  Erro, AName: String;
+//var
+//  Erro, AName: String;
 begin
   with ACBrNFe1.SSL do
   begin

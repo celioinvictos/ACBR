@@ -58,7 +58,8 @@ type
                  vlVersao101,  // Código 002 - Versão 101 ADE Cofis nº 34/2010 de 01/01/2011
                  vlVersao200,  // Código 002 - Versão 200 ADE Cofis nº 20/2012
                  vlVersao201,  // Código 003 - Versão 201 ADE Cofis nº 20/2012 de 14/03/2012
-				 				 vlVersao202   // Código 004
+                 vlVersao202,  // Código 004
+                 vlVersao310   // Código 005
                 );
   TACBrVersaoLeiaute = TACBrCodVer;
 
@@ -858,12 +859,15 @@ type
                 );
   //4.3.8 - Tabela Código de Ajustes de Contribuição ou Créditos:
   TACBrCodAj = (
-                  codAjAcaoJudicial,      // '01' // Ajuste Oriundo de Ação Judicial
-                  codAjProAdministrativo, // '02' // Ajuste Oriundo de Processo Administrativo
-                  codAjLegTributaria,     // '03' // Ajuste Oriundo da Legislação Tributária
-                  codAjEspRTI,            // '04' // Ajuste Oriundo Especificamente do RTT
-                  codAjOutrasSituacaoes,  // '05' // Ajuste Oriundo de Outras Situações
-                  codAjEstorno            // '06' // Estorno
+                  codAjAcaoJudicial,        // '01' // Ajuste Oriundo de Ação Judicial
+                  codAjProAdministrativo,   // '02' // Ajuste Oriundo de Processo Administrativo
+                  codAjLegTributaria,       // '03' // Ajuste Oriundo da Legislação Tributária
+                  codAjEspRTI,              // '04' // Ajuste Oriundo Especificamente do RTT
+                  codAjOutrasSituacaoes,    // '05' // Ajuste Oriundo de Outras Situações
+                  codAjEstorno,             // '06' // Estorno
+                  codAjCPRBAdocaoRegCaixa,  // '07' // Ajuste da CPRB: Adoção do Regime de Caixa
+                  codAjCPRBDiferValRecPer,  // '08' // Ajuste da CPRB: Diferimento de Valores a Recolher no Período
+                  codAjCPRBAdicValDifPerAnt // '09' // Ajuste da CPRB: Adição de Valores Diferidos em Período(s) Anterior(es)
                 );
   //Indicador da Natureza da Receita
   TACBrIndNatRec = (
@@ -1008,6 +1012,23 @@ type
                    crOutros            //99- Outros (Detalhar no campo 10 – Informação Complementar)
                  );
    TACBrIndicadorDaComposicaoDaReceitaRecebida = TACBrInd_Rec;
+
+   // Tabela Código de Ajustes de Base de Cálculo das Contribuições (*) – Versão 1.01
+
+   TACBrTabCodAjBaseCalcContrib = (tcaVendasCanceladas,      // 01 - Vendas canceladas de receitas tributadas em períodos anteriores
+                                   tcaDevolucoesVendas,      // 02 - Devoluções de vendas tributadas em períodos anteriores
+                                   tcaICMSaRecolher,         // 21 - ICMS a recolher sobre Operações próprias
+                                   tcaOutrVlrsDecJudicial,   // 41 - Outros valores a excluir, vinculados a decisão judicial
+                                   tcaOutrVlrsSemDecJudicial // 42 - Outros valores a excluir, não vinculados a decisão judicial
+                                   );
+
+   // Indicador de apropriação do ajuste
+   TACBrIndicadorApropAjuste = (iaaRefPisCofins,  //   01 – Referente ao PIS/Pasep e a Cofins
+                                iaaUnicaPISPasep, //   02 – Referente unicamente ao PIS/Pasep
+                                iaaRefUnicaCofins //   03 – Referente unicamente à Cofins
+                                );
+
+
 
   TOpenBlocos = class
   private
@@ -1184,55 +1205,55 @@ bcc17 = bccAtPresServ;
 bcc18 = bccEstoqueAberturaBens;
 
 function CodVerToStr(AValue: TACBrCodVer): string;
-function StrToCodVer(AValue: string): TACBrCodVer;
+function StrToCodVer(const AValue: string): TACBrCodVer;
 function TipoEscritToStr(AValue: TACBrTipoEscrit): string;
-function StrToTipoEscrit(AValue: string): TACBrTipoEscrit;
+function StrToTipoEscrit(const AValue: string): TACBrTipoEscrit;
 function IndNatPJToStr(AValue: TACBrIndNatPJ): string;
-function StrToIndNatPJ(AValue: string): TACBrIndNatPJ;
+function StrToIndNatPJ(const AValue: string): TACBrIndNatPJ;
 function IndAtivToStr(AValue: TACBrIndAtiv): string;
-function StrToIndAtiv(AValue: string): TACBrIndAtiv;
+function StrToIndAtiv(const AValue: string): TACBrIndAtiv;
 function CodIncTribToStr(AValue: TACBrCodIncTrib): string;
-function StrToCodIncTrib(AValue: string): TACBrCodIncTrib;
+function StrToCodIncTrib(const AValue: string): TACBrCodIncTrib;
 function IndAproCredToStr(AValue: TACBrIndAproCred): string;
-function StrToIndAproCred(AValue: string): TACBrIndAproCred;
+function StrToIndAproCred(const AValue: string): TACBrIndAproCred;
 function CodTipoContToStr(AValue: TACBrCodTipoCont): string;
-function StrToCodTipoCont(AValue: string): TACBrCodTipoCont;
+function StrToCodTipoCont(const AValue: string): TACBrCodTipoCont;
 function IndRegCumToStr(AValue: TACBrIndRegCum): string;
-function StrToIndRegCum(AValue: string): TACBrIndRegCum;
+function StrToIndRegCum(const AValue: string): TACBrIndRegCum;
 function TipoItemToStr(AValue: TACBrTipoItem): string;
-function StrToTipoItem(AValue: string): TACBrTipoItem;
+function StrToTipoItem(const AValue: string): TACBrTipoItem;
 function IndOperToStr(AVAlue: TACBrIndOper): string;
-function StrToIndOper(AVAlue: string): TACBrIndOper;
+function StrToIndOper(const AVAlue: string): TACBrIndOper;
 function IndEmitToStr(AValue: TACBrIndEmit): string;
-function StrToIndEmit(AValue: string): TACBrIndEmit;
+function StrToIndEmit(const AValue: string): TACBrIndEmit;
 function CodSitToStr(AValue: TACBrCodSit): string;
-function StrToCodSit(AValue: string): TACBrCodSit;
+function StrToCodSit(const AValue: string): TACBrCodSit;
 function CodSitFToStr(AValue: TACBrCodSitF): string;
-function StrToCodSitF(AValue: string): TACBrCodSitF;
+function StrToCodSitF(const AValue: string): TACBrCodSitF;
 function IndPgtoToStr(AValue: TACBrIndPgto): string;
-function StrToIndPgto(AValue: string): TACBrIndPgto;
+function StrToIndPgto(const AValue: string): TACBrIndPgto;
 function NatBcCredToStr(AValue: TACBrNatBcCred): string;
-function StrToNatBcCred(AValue: string): TACBrNatBcCred;
+function StrToNatBcCred(const AValue: string): TACBrNatBcCred;
 function IndOrigCredToStr(AValue: TACBrIndOrigCred): string;
-function StrToIndOrigCred(AValue: String): TACBrIndOrigCred;
+function StrToIndOrigCred(const AValue: String): TACBrIndOrigCred;
 function CstPisToStr(AValue: TACBrCstPis): string;
-function StrToCstPis(AValue: String): TACBrCstPis;
+function StrToCstPis(const AValue: String): TACBrCstPis;
 function CstPisCofinsToStr(AValue: TACBrCstPisCofins): string;
-function StrToCstPisCofins(AValue: String): TACBrCstPisCofins;
+function StrToCstPisCofins(const AValue: String): TACBrCstPisCofins;
 function CstCofinsToStr(AValue: TACBrCstCofins): string;
-function StrToCstCofins(AValue: String): TACBrCstCofins;
+function StrToCstCofins(const AValue: String): TACBrCstCofins;
 function CstIcmsToStr(AValue: TACBrCstIcms): string;
-function StrToCstIcms(AValue: String): TACBrCstIcms;
+function StrToCstIcms(const AValue: String): TACBrCstIcms;
 function CstIpiToStr(AValue: TACBrCstIpi): string;
-function StrToCstIpi(AValue: String): TACBrCstIpi;
+function StrToCstIpi(const AValue: String): TACBrCstIpi;
 function IndTipoOperToStr(AVAlue: TACBrIndTipoOper): string;
-function StrToIndTipoOper(AVAlue: string): TACBrIndTipoOper;
+function StrToIndTipoOper(const AVAlue: string): TACBrIndTipoOper;
 function IndMovFisicaToStr(AValue: TACBrIndMovFisica): string;
-function StrToIndMovFisica(AValue: string): TACBrIndMovFisica;
+function StrToIndMovFisica(const AValue: string): TACBrIndMovFisica;
 function IndFrtToStr(AValue: TACBrIndFrt): string;
 function IndCTAToStr(AValue: TACBrIndCTA): string;
-function StrToIndFrt(AValue: string): TACBrIndFrt;
-function StrToIndSitEsp(AValue: string): TACBrIndSitEsp;
+function StrToIndFrt(const AValue: string): TACBrIndFrt;
+function StrToIndSitEsp(const AValue: string): TACBrIndSitEsp;
 function NatFrtContratadoToStr(AValue: TACBrNaturezaFrtContratado): string;
 function NaturezaContaToStr(AValue: TACBrNaturezaConta): string;
 
@@ -1531,8 +1552,8 @@ begin
     Result := nfcTransfAcabadosPJ
   else if AValue = '5' then
     Result :=  nfcTransfNaoAcabadosPJ
-  else if AValue = '9' then
-    Result := nfcOutras
+//  else if AValue = '9' then
+//    Result := nfcOutras
   else
     Result := nfcOutras;
 end;
@@ -1700,10 +1721,13 @@ begin
       Result := '003'
    else
    if AValue = vlVersao202 then
-      Result := '004';
+      Result := '004'
+   else
+   if AValue = vlVersao310 then
+      Result := '005';
 end;
 
-function StrToCodVer(AValue: string): TACBrCodVer;
+function StrToCodVer(const AValue: string): TACBrCodVer;
 begin
    if AValue = '001' then
       Result := vlVersao100
@@ -1714,10 +1738,13 @@ begin
    if AValue = '003' then
       Result := vlVersao201
 	else
-	if AValue = '004' then
-		Result := vlVersao202
+    if AValue = '004' then
+      Result := vlVersao202
+	else
+    if AValue = '005' then
+      Result := vlVersao310
     else
-     raise Exception.Create(format('Valor informado [%s] deve estar entre (001, 002, 003 e 004)',[AValue]));
+     raise Exception.Create(format('Valor informado [%s] deve estar entre (001, 002, 003, 004 e 005)',[AValue]));
 end;
 
 function TipoEscritToStr(AValue: TACBrTipoEscrit): string;
@@ -1725,7 +1752,7 @@ begin
    Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToTipoEscrit(AValue: string): TACBrTipoEscrit;
+function StrToTipoEscrit(const AValue: string): TACBrTipoEscrit;
 begin
    Result := TACBrTipoEscrit( StrToIntDef( AValue, 0) );
 end;
@@ -1738,7 +1765,7 @@ begin
       Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToIndSitEsp(AValue: string): TACBrIndSitEsp;
+function StrToIndSitEsp(const AValue: string): TACBrIndSitEsp;
 begin
    Result := TACBrIndSitEsp( StrToIntDef( AValue, 0) );
 end;
@@ -1748,7 +1775,7 @@ begin
    Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToIndNatPJ(AValue: string): TACBrIndNatPJ;
+function StrToIndNatPJ(const AValue: string): TACBrIndNatPJ;
 begin
    Result := TACBrIndNatPJ( StrToIntDef( AValue, 0) );
 end;
@@ -1761,7 +1788,7 @@ begin
       Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToIndAtiv(AValue: string): TACBrIndAtiv;
+function StrToIndAtiv(const AValue: string): TACBrIndAtiv;
 begin
    if AValue = '9' then
       Result := indAtivoOutros
@@ -1774,7 +1801,7 @@ begin
    Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToCodIncTrib(AValue: string): TACBrCodIncTrib;
+function StrToCodIncTrib(const AValue: string): TACBrCodIncTrib;
 begin
    Result := TACBrCodIncTrib( StrToIntDef( AValue, 1) -1 );
 end;
@@ -1784,7 +1811,7 @@ begin
    Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToIndAproCred(AValue: string): TACBrIndAproCred;
+function StrToIndAproCred(const AValue: string): TACBrIndAproCred;
 begin
    Result := TACBrIndAproCred( StrToIntDef( AValue, 1) -1 );
 end;
@@ -1794,7 +1821,7 @@ begin
    Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToCodTipoCont(AValue: string): TACBrCodTipoCont;
+function StrToCodTipoCont(const AValue: string): TACBrCodTipoCont;
 begin
    Result := TACBrCodTipoCont( StrToIntDef( AValue, 0) -1 );
 end;
@@ -1807,7 +1834,7 @@ begin
       Result := IntToStr( Integer( AValue ) + 1 );
 end;
 
-function StrToIndRegCum(AValue: string): TACBrIndRegCum;
+function StrToIndRegCum(const AValue: string): TACBrIndRegCum;
 begin
    if AValue = '9' then
       Result := codRegimeCompetEscritDetalhada
@@ -1823,7 +1850,7 @@ begin
       Result := FormatFloat('00', Integer( AValue ));
 end;
 
-function StrToTipoItem(AValue: string): TACBrTipoItem;
+function StrToTipoItem(const AValue: string): TACBrTipoItem;
 begin
    if AValue = '99' then
       Result := tiOutras
@@ -1836,7 +1863,7 @@ begin
    Result := IntToStr( Integer( AValue ) );
 end;
 
-function StrToIndOper(AVAlue: string): TACBrIndOper;
+function StrToIndOper(const AVAlue: string): TACBrIndOper;
 begin
    Result := TACBrIndOper( StrToIntDef( AValue, 0) );
 end;
@@ -1846,7 +1873,7 @@ begin
    Result := IntToStr( Integer( AValue ) );
 end;
 
-function StrToIndEmit(AValue: string): TACBrIndEmit;
+function StrToIndEmit(const AValue: string): TACBrIndEmit;
 begin
    Result := TACBrIndEmit( StrToIntDef( AValue, 0) );
 end;
@@ -1856,7 +1883,7 @@ begin
    Result := FormatFloat('00', Integer( AValue ) );
 end;
 
-function StrToCodSit(AValue: string): TACBrCodSit;
+function StrToCodSit(const AValue: string): TACBrCodSit;
 begin
    Result := TACBrCodSit( StrToIntDef( AValue, 0) );
 end;
@@ -1873,7 +1900,7 @@ begin
       Result := '99';
 end;
 
-function StrToCodSitF(AValue: string): TACBrCodSitF;
+function StrToCodSitF(const AValue: string): TACBrCodSitF;
 begin
    if AValue = '00' then
       Result := csffRegular
@@ -1909,7 +1936,7 @@ Indicador do tipo de pagamento:
       Result := IntToStr( Integer( AValue ) );
 end;
 
-function StrToIndPgto(AValue: string): TACBrIndPgto;
+function StrToIndPgto(const AValue: string): TACBrIndPgto;
 begin
    if AValue = '9' then
       Result := tpSemPagamento
@@ -1928,7 +1955,7 @@ begin
       Result := FormatFloat('00', Integer( AValue ) );
 end;
 
-function StrToNatBcCred(AValue: string): TACBrNatBcCred;
+function StrToNatBcCred(const AValue: string): TACBrNatBcCred;
 begin
    if AValue = '' then
       Result := bccVazio
@@ -2070,7 +2097,7 @@ function CodAjToStr(const AValue: TACBrCodAj): string;
 begin
   if AValue = codAjAcaoJudicial then
     Result := '01'
-  else if AValue = codAjAcaoJudicial then
+  else if AValue = codAjProAdministrativo then
     Result :=  '02'
   else if AValue = codAjLegTributaria then
     Result := '03'
@@ -2079,7 +2106,14 @@ begin
   else if AValue = codAjOutrasSituacaoes then
     Result := '05'
   else if AValue = codAjEstorno then
-    Result := '06';
+    Result := '06'
+  else if AValue = codAjCPRBAdocaoRegCaixa then
+    Result := '07'
+  else if AValue = codAjCPRBDiferValRecPer then
+    Result := '08'
+  else if AValue = codAjCPRBAdicValDifPerAnt then
+    Result := '09';
+
 end;
 
 function NatCredDescToStr(const AValue: TACBrNatCredDesc): string;
@@ -2110,7 +2144,7 @@ begin
       Result := IntToStr( Integer( AValue ) );
 end;
 
-function StrToIndOrigCred(AValue: String): TACBrIndOrigCred;
+function StrToIndOrigCred(const AValue: String): TACBrIndOrigCred;
 begin
    if AValue = '' then
       Result := opcVazio
@@ -2123,7 +2157,7 @@ begin
    Result := CstPis[ Integer( AValue ) ];
 end;
 
-function StrToCstPis(AValue: String): TACBrCstPis;
+function StrToCstPis(const AValue: String): TACBrCstPis;
 var
    ifor: Integer;
 begin
@@ -2143,7 +2177,7 @@ begin
   Result := CstPisCofins[ Integer( AValue ) ];
 end;
 
-function StrToCstPisCofins(AValue: String): TACBrCstPisCofins;
+function StrToCstPisCofins(const AValue: String): TACBrCstPisCofins;
 var
    ifor: Integer;
 begin
@@ -2163,7 +2197,7 @@ begin
    Result := CstCofins[ Integer( AValue ) ];
 end;
 
-function StrToCstCofins(AValue: String): TACBrCstCofins;
+function StrToCstCofins(const AValue: String): TACBrCstCofins;
 var
 ifor: Integer;
 begin
@@ -2183,7 +2217,7 @@ begin
    Result := CstIcms[ Integer( AValue ) ];
 end;
 
-function StrToCstIcms(AValue: String): TACBrCstIcms;
+function StrToCstIcms(const AValue: String): TACBrCstIcms;
 var
 ifor: Integer;
 begin
@@ -2203,7 +2237,7 @@ begin
    Result := CstIpi[ Integer( AValue ) ];
 end;
 
-function StrToCstIpi(AValue: String): TACBrCstIpi;
+function StrToCstIpi(const AValue: String): TACBrCstIpi;
 var
 ifor: Integer;
 begin
@@ -2223,7 +2257,7 @@ begin
    Result := IntToStr( Integer( AValue ) );
 end;
 
-function StrToIndTipoOper(AValue: string): TACBrIndTipoOper;
+function StrToIndTipoOper(const AValue: string): TACBrIndTipoOper;
 begin
    Result := TACBrIndTipoOper( StrToIntDef( AValue, 0) );
 end;
@@ -2276,7 +2310,7 @@ Indicador do tipo do frete:
 //   end;
 end;
 
-function StrToIndFrt(AValue: string): TACBrIndFrt;
+function StrToIndFrt(const AValue: string): TACBrIndFrt;
 begin
    if AValue = '9' then
    begin
@@ -2297,7 +2331,7 @@ begin
    Result := IntToStr( Integer( AValue ) );
 end;
 
-function StrToIndMovFisica(AValue: string): TACBrIndMovFisica;
+function StrToIndMovFisica(const AValue: string): TACBrIndMovFisica;
 begin
    Result := TACBrIndMovFisica( StrToIntDef( AValue, 0) );
 end;

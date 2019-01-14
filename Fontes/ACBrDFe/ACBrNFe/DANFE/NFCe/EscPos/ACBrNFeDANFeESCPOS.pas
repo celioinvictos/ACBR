@@ -61,15 +61,14 @@ uses
   pcnNFe, pcnEnvEventoNFe;
 
 const
-  CDotsMM = 8;  // 203dpi
-  CLarguraRegiaoLateral = 270;
+  CLarguraRegiaoEsquerda = 270;
 
 type
   { TACBrNFeDANFeESCPOS }
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   {$ENDIF RTL230_UP}	
-  TACBrNFeDANFeESCPOS = class(TACBrNFeDANFEClass)
+  TACBrNFeDANFeESCPOS = class(TACBrNFeDANFCEClass)
   private
     FPosPrinter : TACBrPosPrinter ;
     procedure AjustaStringList(AStringList: TStringList);
@@ -82,7 +81,6 @@ type
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure AtivarPosPrinter;
 
-    function ConfigurarRegiao(AEsquerda, ATopo, AAltura, ALargura: Integer): String;
 
     procedure GerarCabecalho;
     procedure GerarIdentificacaodoDANFE;
@@ -104,8 +102,6 @@ type
     procedure GerarObservacoesEvento;
 
     function CalcularDadosQRCode: String;
-    function CalcularAlturaTexto(Linhas: Integer): Integer;
-    function CalcularAlturaQRCode(QRCodeData: String): Integer;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -127,7 +123,7 @@ implementation
 
 uses
   strutils, Math,
-  ACBrNFe, ACBrValidador, ACBrUtil, ACBrDFeUtil, ACBrConsts,
+  ACBrNFe, ACBrValidador, ACBrUtil, ACBrDFeUtil, ACBrConsts, ACBrDFeDANFeReport,
    pcnConversao, pcnAuxiliar;
 
 procedure Register;
@@ -184,17 +180,6 @@ begin
   FPosPrinter.Ativar;
 end;
 
-function TACBrNFeDANFeESCPOS.ConfigurarRegiao(AEsquerda, ATopo, AAltura,
-  ALargura: Integer): String;
-begin
-  Result := '<mp_esquerda>'+IntToStr(AEsquerda)+'</mp_esquerda>'+
-            '<mp_topo>'+IntToStr(ATopo)+'</mp_topo>'+
-            '<mp_altura>'+IntToStr(AAltura)+'</mp_altura>'+
-            '<mp_largura>'+IntToStr(ALargura)+'</mp_largura>'+
-            '<mp_espaco>'+IntToStr(FPosPrinter.EspacoEntreLinhas)+'</mp_espaco>'+
-            '</mp_configurar>';
-end;
-
 procedure TACBrNFeDANFeESCPOS.GerarCabecalho;
 var
   DadosCabecalho: TStringList;
@@ -218,8 +203,8 @@ begin
                       Trunc(FPosPrinter.ColunasFonteCondensada/2))+sLineBreak;
 
     TextoLateral := TextoLateral +
-                    QuebraLinhas(Trim(Trim(FpNFe.Emit.EnderEmit.xLgr) + ', ' +
-                    Trim(FpNFe.Emit.EnderEmit.nro) + ' ' +
+                    QuebraLinhas(Trim(Trim(FpNFe.Emit.EnderEmit.xLgr) +
+                    ifthen(Trim(FpNFe.Emit.EnderEmit.nro)<>'',', '+Trim(FpNFe.Emit.EnderEmit.nro),'') + ' ' +
                     ifthen(Trim(FpNFe.Emit.EnderEmit.xCpl)<>'',Trim(FpNFe.Emit.EnderEmit.xCpl) + ' ','') +
                     ifthen(Trim(FpNFe.Emit.EnderEmit.xBairro)<>'',Trim(FpNFe.Emit.EnderEmit.xBairro) + ' ','') +
                     Trim(FpNFe.Emit.EnderEmit.xMun) + '-' + Trim(FpNFe.Emit.EnderEmit.UF) + ' ' +
@@ -229,12 +214,16 @@ begin
     DadosCabecalho := TStringList.Create;
     try
       DadosCabecalho.Text := TextoLateral;
-      Altura := max(CalcularAlturaTexto(DadosCabecalho.Count),250);
+      Altura := max(FPosPrinter.CalcularAlturaTexto(DadosCabecalho.Count),250);
     finally
       DadosCabecalho.Free;
     end;
-    FPosPrinter.Buffer.Add('</zera><mp>' + ConfigurarRegiao(0,0,Altura,260) + '</logo>');
-    FPosPrinter.Buffer.Add(ConfigurarRegiao(260,0,Altura,325) + TextoLateral + '</mp>');
+    FPosPrinter.Buffer.Add('</zera><mp>' +
+                           FPosPrinter.ConfigurarRegiaoModoPagina(0,0,Altura,CLarguraRegiaoEsquerda) +
+                           '</logo>');
+    FPosPrinter.Buffer.Add(FPosPrinter.ConfigurarRegiaoModoPagina(CLarguraRegiaoEsquerda,0,Altura,325) +
+                           TextoLateral +
+                           '</mp>');
   end
   else
   begin
@@ -246,10 +235,11 @@ begin
     FPosPrinter.Buffer.Add('</ce><c>CNPJ: '+ FormatarCNPJ(FpNFe.Emit.CNPJCPF) + ' <n>' + FpNFe.Emit.xNome + '</n>');
 
     FPosPrinter.Buffer.Add('<c>' + QuebraLinhas(Trim(FpNFe.Emit.EnderEmit.xLgr) + ', ' +
-      Trim(FpNFe.Emit.EnderEmit.nro) + '  ' +
-      Trim(FpNFe.Emit.EnderEmit.xCpl) + '  ' +
+      Trim(FpNFe.Emit.EnderEmit.nro) + ' ' +
+      Trim(FpNFe.Emit.EnderEmit.xCpl) + ' ' +
       Trim(FpNFe.Emit.EnderEmit.xBairro) +  ' ' +
-      Trim(FpNFe.Emit.EnderEmit.xMun) + '-' + Trim(FpNFe.Emit.EnderEmit.UF)
+      Trim(FpNFe.Emit.EnderEmit.xMun) + '-' + Trim(FpNFe.Emit.EnderEmit.UF)+' '+
+      FormatarCEP(FpNFe.Emit.EnderEmit.CEP)
       , FPosPrinter.ColunasFonteCondensada)
     );
 
@@ -281,7 +271,7 @@ var
   sItem, sCodigo, sDescricao, sQuantidade, sUnidade, sVlrUnitario, sVlrProduto,
     LinhaCmd: String;
 begin
-  if ImprimirItens then
+  if ImprimeItens then
   begin
     FPosPrinter.Buffer.Add('</ae><c>'+ACBrStr(PadSpace('#|Código|Descrição|Qtde|Un|Valor unit.|Valor total',
                                             FPosPrinter.ColunasFonteCondensada, '|')));
@@ -290,13 +280,13 @@ begin
     begin
       with FpNFe.Det.Items[i] do
       begin
-        sItem        :=        IntToStrZero( Prod.nItem, 3);
-	sCodigo      :=        ManterCodigo( Prod.cEAN , Prod.cProd );
-        sDescricao   :=                Trim( Prod.xProd);
-        sQuantidade  :=    FormatQuantidade( Prod.QCom, False );
-        sUnidade     :=                Trim( Prod.uCom);
-        sVlrUnitario := FormatValorUnitario( Prod.VUnCom );
-        sVlrProduto  :=       FormatFloatBr( Prod.vProd );
+        sItem        :=          IntToStrZero( Prod.nItem, 3);
+	sCodigo      :=          ManterCodigo( Prod.cEAN , Prod.cProd );
+        sDescricao   :=                  Trim( Prod.xProd);
+        sQuantidade  :=    FormatarQuantidade( Prod.QCom, False );
+        sUnidade     :=                  Trim( Prod.uCom);
+        sVlrUnitario := FormatarValorUnitario( Prod.VUnCom );
+        sVlrProduto  :=         FormatFloatBr( Prod.vProd );
 
         if ImprimeEmUmaLinha then
         begin
@@ -347,12 +337,12 @@ begin
             FPosPrinter.Buffer.Add('</ae><c>' + LinhaCmd);
           end;
         end;
+
         //Informação Adicional do produto
-        if infAdProd <> '' then
-        begin
-          LinhaCmd := StringReplace(infAdProd, ';', sLineBreak, [rfReplaceAll]);
+        LinhaCmd := ManterinfAdProd(FpNFe, i);
+        if Trim(LinhaCmd) <> '' then
           FPosPrinter.Buffer.Add('<c>'+LinhaCmd);
-        end;
+
       end;
     end;
   end;
@@ -393,6 +383,7 @@ procedure TACBrNFeDANFeESCPOS.GerarPagamentos;
 var
   i: Integer;
   Troco: Real;
+  DescPagto, DescBandeira: String;
 begin
   //Total := 0;
   FPosPrinter.Buffer.Add('<c>' + PadSpace('FORMA DE PAGAMENTO | VALOR PAGO R$',
@@ -400,9 +391,19 @@ begin
 
   for i := 0 to FpNFe.pag.Count - 1 do
   begin
-    FPosPrinter.Buffer.Add('<c>' + ACBrStr(PadSpace(FormaPagamentoToDescricao(FpNFe.pag.Items[i].tPag) +
-       '|' + FormatFloatBr(FpNFe.pag.Items[i].vPag),
-       FPosPrinter.ColunasFonteCondensada, '|')));
+    with FpNFe.pag.Items[i] do
+    begin
+      DescPagto := ACBrStr(FormaPagamentoToDescricao(tPag));
+      if (tPag in [fpCartaoCredito, fpCartaoDebito]) then
+        DescBandeira := BandeiraCartaoToDescStr(tBand)
+      else
+        DescBandeira := '';
+
+      FPosPrinter.Buffer.Add('<c>' + PadSpace(
+         DescPagto + ' ' + DescBandeira + '|' +
+         FormatFloatBr(vPag),
+         FPosPrinter.ColunasFonteCondensada, '|'));
+    end;
   end;
 
   Troco := IIf(FpNFe.pag.vTroco > 0,FpNFe.pag.vTroco,vTroco);
@@ -428,10 +429,10 @@ procedure TACBrNFeDANFeESCPOS.GerarTotalTributos;
 var
   MsgTributos : String;
 begin
-  if not ImprimirTributos then
+  if (ImprimeTributos = trbNenhum) then
     Exit;
 
-  if TributosSeparadamente and ((vTribFed+vTribEst+vTribMun) > 0) then
+  if (ImprimeTributos = trbSeparadamente) and ((vTribFed+vTribEst+vTribMun) > 0) then
   begin
      MsgTributos:= 'Tributos Incidentes Lei Federal 12.741/12 - Total R$ %s Federal R$ %s Estadual R$ %s Municipal R$ %s';
      FPosPrinter.Buffer.Add('<c>' + QuebraLinhas(Format(MsgTributos,[FormatFloatBr(vTribFed + vTribEst + vTribMun),
@@ -652,7 +653,7 @@ begin
 
   // pular linhas e cortar o papel
   if FPosPrinter.CortaPapel then
-    FPosPrinter.Buffer.Add('</corte_total>')
+    FPosPrinter.Buffer.Add('</corte>')
   else
     FPosPrinter.Buffer.Add('</pular_linhas>')
 end;
@@ -685,7 +686,7 @@ begin
 
   DadosQRCode := CalcularDadosQRCode;
 
-  if QRCodeLateral and (PosPrinter.Colunas >= 48) and (PosPrinter.TagsNaoSuportadas.IndexOf(cTagModoPaginaLiga) < 0) then
+  if ImprimeQRCodeLateral and (PosPrinter.Colunas >= 48) and (PosPrinter.TagsNaoSuportadas.IndexOf(cTagModoPaginaLiga) < 0) then
   begin
     FPosPrinter.Buffer.Add(' ');
 
@@ -698,15 +699,17 @@ begin
 
       AjustaStringList(TextoLateral); // Ajusta corretamente o numero de Linhas
 
-      AlturaQRCode := CalcularAlturaQRCode(DadosQRCode);
-      AlturaMax := max( CalcularAlturaTexto(TextoLateral.Count), AlturaQRCode );
-      EsquerdaQRCode := Trunc(max(CLarguraRegiaoLateral - Trunc(AlturaQRCode/2),0) / 2);
+      AlturaQRCode := FPosPrinter.CalcularAlturaQRCodeAlfaNumM(DadosQRCode);
+      AlturaMax := max( FPosPrinter.CalcularAlturaTexto(TextoLateral.Count), AlturaQRCode );
+      EsquerdaQRCode := Trunc(max(CLarguraRegiaoEsquerda - Trunc(AlturaQRCode/2),0) / 2);
 
       FPosPrinter.Buffer.Add( '<mp>' +
-                              ConfigurarRegiao( EsquerdaQRCode, 0, AlturaMax,
-                                                (CLarguraRegiaoLateral-EsquerdaQRCode) ) +
+                              FPosPrinter.ConfigurarRegiaoModoPagina(
+                                EsquerdaQRCode, 0, AlturaMax,
+                                (CLarguraRegiaoEsquerda-EsquerdaQRCode) ) +
                               GerarInformacoesQRCode(DadosQRCode, False, True));
-      FPosPrinter.Buffer.Add( ConfigurarRegiao(CLarguraRegiaoLateral, 0, AlturaMax, 325) +
+      FPosPrinter.Buffer.Add( FPosPrinter.ConfigurarRegiaoModoPagina(
+                                CLarguraRegiaoEsquerda, 0, AlturaMax, 325) +
                               TextoLateral.Text + '</mp>');
     finally
       TextoLateral.Free;
@@ -752,12 +755,12 @@ var
   OldImprimirItens: Boolean;
 begin
   AtivarPosPrinter;
-  OldImprimirItens := ImprimirItens;
+  OldImprimirItens := ImprimeItens;
   try
-    ImprimirItens := False;
+    ImprimeItens := False;
     MontarEnviarDANFE(NFE, True);
   finally
-    ImprimirItens := OldImprimirItens;
+    ImprimeItens := OldImprimirItens;
   end;
 end;
 
@@ -843,56 +846,6 @@ begin
     Result := FpNFe.infNFeSupl.qrCode;
 end;
 
-function TACBrNFeDANFeESCPOS.CalcularAlturaTexto(Linhas: Integer): Integer;
-begin
-  Result := (FPosPrinter.EspacoEntreLinhas+2) * Linhas;
-end;
-
-function TACBrNFeDANFeESCPOS.CalcularAlturaQRCode(QRCodeData: String): Integer;
-var
-  QRCodeModules: Integer;
-  LenData, DotsMM: Integer;
-begin
-  // http://www.qrcode.com/en/about/version.html
-  LenData := Length(QRCodeData);
-
-  if LenData < 20 then
-    QRCodeModules := 21
-  else if LenData < 38 then
-    QRCodeModules := 25
-  else if LenData < 61 then
-    QRCodeModules := 29
-  else if LenData < 90 then
-    QRCodeModules := 33
-  else if LenData < 122 then
-    QRCodeModules := 37
-  else if LenData < 154 then
-    QRCodeModules := 41
-  else if LenData < 178 then
-    QRCodeModules := 45
-  else if LenData < 221 then
-    QRCodeModules := 49
-  else if LenData < 262 then
-    QRCodeModules := 53
-  else if LenData < 311 then
-    QRCodeModules := 57
-  else if LenData < 366 then
-    QRCodeModules := 61
-  else if LenData < 419 then
-    QRCodeModules := 65
-  else if LenData < 483 then
-    QRCodeModules := 69
-  else if LenData < 528 then
-    QRCodeModules := 73
-  else if LenData < 600 then
-    QRCodeModules := 73
-  else
-    raise Exception.Create('QRCode muito grande');
-
-  // http://www.qrcode.com/en/howto/code.html
-  Result := (QRCodeModules + 8) * CDotsMM;
-end;
-
 procedure TACBrNFeDANFeESCPOS.ImprimirDANFECancelado(NFE: TNFe);
 begin
   if NFE = nil then
@@ -942,7 +895,7 @@ begin
 
   FPosPrinter.Buffer.AddStrings( ATexto );
   if ACortaPapel then
-    FPosPrinter.Buffer.Add('</corte_parcial>')
+    FPosPrinter.Buffer.Add('</corte>')
   else
     FPosPrinter.Buffer.Add('</pular_linhas>');
 
@@ -950,10 +903,9 @@ begin
 end;
 
 
-{$IFDEF FPC}
-
+{$IfDef FPC}
 initialization
 {$I ACBrNFeDANFeESCPOS.lrs}
-{$ENDIF}
+{$EndIf}
 
 end.

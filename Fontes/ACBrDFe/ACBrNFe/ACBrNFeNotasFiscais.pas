@@ -1503,11 +1503,11 @@ end;
 function NotaFiscal.LerArqIni(const AIniString: String): Boolean;
 var
   INIRec : TMemIniFile ;
-  SL     : TStringList;
+//  SL     : TStringList;
   sSecao : String;
   OK     : boolean;
   I, J, K : Integer;
-  versao, sFim, sProdID, sDINumber, sADINumber, sQtdVol,
+  {versao,} sFim, sProdID, sDINumber, sADINumber, sQtdVol,
     sDupNumber, sAdittionalField, sType, sDay, sDeduc, sNVE, sCNPJCPF : String;
 begin
   Result := False;
@@ -1520,7 +1520,7 @@ begin
     begin
       infNFe.versao := StringToFloatDef( INIRec.ReadString('infNFe','versao', VersaoDFToStr(FConfiguracoes.Geral.VersaoDF)), 0) ;
 
-      versao      := FloatToString(infNFe.versao,'.','#0.00');
+      //versao      := FloatToString(infNFe.versao,'.','#0.00'); // Não está sendo utilizado...
       sSecao      := IfThen( INIRec.SectionExists('Identificacao'), 'Identificacao', 'ide');
       Ide.cNF     := INIRec.ReadInteger( sSecao,'Codigo' ,INIRec.ReadInteger( sSecao,'cNF' ,0));
       Ide.natOp   := INIRec.ReadString(  sSecao,'NaturezaOperacao' ,INIRec.ReadString(  sSecao,'natOp' ,''));
@@ -2021,7 +2021,11 @@ begin
           with Imposto do
           begin
             sSecao := 'ICMS'+IntToStrZero(I,3) ;
-            sFim     := INIRec.ReadString( sSecao,'CST',INIRec.ReadString(sSecao,'CSOSN','FIM')) ;
+            //sFim     := INIRec.ReadString( sSecao,'CST',INIRec.ReadString(sSecao,'CSOSN','FIM')) ;
+
+            sFim     := INIRec.ReadString( sSecao,'CST','FIM') ;
+            if (sFim = 'FIM') or ( Length(sFim) = 0 ) then
+              sFim     := INIRec.ReadString(sSecao,'CSOSN','FIM');
 
             if ((sFim <> 'FIM') and ( Length(sFim) > 0 )) then
             begin

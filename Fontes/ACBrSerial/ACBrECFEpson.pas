@@ -107,7 +107,7 @@ TACBrECFEpsonComando = class
     property Params       : TStringList read fsParams ;
     property Seq          : Byte read fsSeq  ;
 
-    Procedure AddParamString(AString: AnsiString) ;
+    Procedure AddParamString(const AString: AnsiString) ;
     Procedure AddParamInteger(AInteger: Integer) ;
     Procedure AddParamDouble(ADouble: Double; CasasDecimais: Integer = 2) ;
     Procedure AddParamBool(ABool: Boolean) ;
@@ -130,7 +130,7 @@ TACBrECFEpsonResposta = class
 
     procedure SetResposta(const AValue: AnsiString);
     function GetDescRetorno: String;
-    procedure SetRespostaDLL(AValue : AnsiString) ;
+    procedure SetRespostaDLL(const AValue : AnsiString) ;
  public
     constructor create( AOwner : TACBrECFEpson ) ;
     destructor Destroy ; override ;
@@ -177,6 +177,7 @@ TACBrECFEpson = class( TACBrECFClass )
     fsPAF1, fsPAF2 : String ;
     fsEmPagamento : Boolean ;
     fsArquivoPosCheque: String;
+    fsTotalPago : Double ;
 
     xEPSON_Serial_Abrir_Porta : function (dwVelocidade:Integer;
        wPorta:Integer):Integer; {$IFDEF LINUX} cdecl {$ELSE} stdcall {$ENDIF} ;
@@ -212,7 +213,7 @@ TACBrECFEpson = class( TACBrECFClass )
 
     Function DocumentosToNum(Documentos : TACBrECFTipoDocumentoSet) : Integer ;
 
-    Procedure PreparaCmd( cmd : AnsiString ) ;
+    Procedure PreparaCmd( const cmd : AnsiString ) ;
 
     function  GetRet0402( Indice: Integer): AnsiString;
     function  GetRet0906: AnsiString;
@@ -353,19 +354,19 @@ TACBrECFEpson = class( TACBrECFClass )
        Linhas : TStringList; Simplificada : Boolean = False ) ; override ;
 
     Procedure EspelhoMFD_DLL( DataInicial, DataFinal : TDateTime;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
     Procedure EspelhoMFD_DLL( COOInicial, COOFinal : Integer;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
     Procedure ArquivoMFD_DLL( DataInicial, DataFinal : TDateTime;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
        Finalidade: TACBrECFFinalizaArqMFD = finMFD  ) ; override ;
     Procedure ArquivoMFD_DLL( ContInicial, ContFinal : Integer;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
        Finalidade: TACBrECFFinalizaArqMFD = finMFD;
        TipoContador: TACBrECFTipoContador = tpcCOO ) ; override ;
 
-    Procedure ArquivoMF_Binario_DLL(NomeArquivo: AnsiString); override;
-    Procedure ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD; NomeArquivo,
+    Procedure ArquivoMF_Binario_DLL(const NomeArquivo: AnsiString); override;
+    Procedure ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD; const NomeArquivo: AnsiString;
       StrInicial, StrFinal: AnsiString); override;
 
     Procedure AbreGaveta ; override ;
@@ -429,7 +430,7 @@ TACBrECFEpson = class( TACBrECFClass )
  end ;
 
 function DescricaoRetornoEpson( Byte1, Byte2 : Byte ): String;
-function EpsonCheckSum(Dados: AnsiString): AnsiString;
+function EpsonCheckSum(const Dados: AnsiString): AnsiString;
 function RemoveEsc(const Campo : AnsiString) : AnsiString ;
 function InsertEsc(const Campo: AnsiString): AnsiString ;
 function EpsonTraduzirTag(const ATag: AnsiString; AECFClass: TACBrECFClass): AnsiString;
@@ -731,7 +732,7 @@ begin
   end;
 end;
 
-function EpsonCheckSum(Dados: AnsiString): AnsiString;
+function EpsonCheckSum(const Dados: AnsiString): AnsiString;
 begin
   Result := IntToHex( SomaAscII(Dados), 4);
 end;
@@ -932,7 +933,7 @@ begin
   inherited destroy ;
 end;
 
-procedure TACBrECFEpsonComando.AddParamString(AString : AnsiString) ;
+procedure TACBrECFEpsonComando.AddParamString(const AString : AnsiString) ;
 begin
   fsParams.Add( InsertEsc( AString ) ) ;
 end ;
@@ -1157,7 +1158,7 @@ begin
         fsParams.Delete(0);   // Remove da pilha Reservado 2, pois não é parametro
 end;
 
-procedure TACBrECFEpsonResposta.SetRespostaDLL(AValue : AnsiString) ;
+procedure TACBrECFEpsonResposta.SetRespostaDLL(const AValue : AnsiString) ;
 Var
   Status, LineOut : AnsiString ;
   P : Integer ;
@@ -1227,6 +1228,7 @@ begin
   fsVerificaChecksum := True ;
   fsEmPagamento := false ;
   fsArquivoPosCheque := 'poscheque.dat';
+  fsTotalPago := 0 ;
 
   fpMFD       := True ;
   fpTermica   := True ;
@@ -1529,7 +1531,7 @@ begin
   end
 end;
 
-procedure TACBrECFEpson.PreparaCmd(cmd : AnsiString) ;
+procedure TACBrECFEpson.PreparaCmd(const cmd : AnsiString) ;
  Var Buf : AnsiString ;
      P   : Integer ;
      SL  : TStringList ;
@@ -1808,16 +1810,24 @@ end;
 function TACBrECFEpson.GetTotalPago: Double;
 begin
   try
-     EpsonComando.Comando := '0A0A' ;
-     EnviaComando ;
+     if Estado = estNaoFiscal then
+      begin
+        EpsonComando.Comando := '0E0B' ;
+        EnviaComando ;
+      end
+     else
+      begin
+        EpsonComando.Comando := '0A0A' ;
+        EnviaComando ;
+      end ;
 
      Result := StrToFloatDef(EpsonResposta.Params[2],0) /100 ;
      Result := RoundTo( Result, -2) ;
   except
      on E : Exception do
      begin
-        if (pos('0102',E.Message) <> 0) then
-           Result := 0
+        if (pos(EpsonResposta.Retorno, '0102|0202') <> 0)  then
+           Result := fsTotalPago
         else
            raise ;
      end ;
@@ -1894,7 +1904,7 @@ begin
          on E : Exception do
          begin
             if (pos('0106',E.Message) <> 0) then  // Erro: 0106 - Comando aceito apenas fora de intervenção.
-               exit ;
+               Exit ;
 
             raise;
          end ;
@@ -1933,9 +1943,9 @@ begin
       else if copy(BitS,13,4) = '0000' then
          fpEstado := estLivre;
 
-   finally
-      Result := fpEstado ;
-   end ;
+  finally
+    Result := fpEstado ;
+  end ;
 end;
 
 function TACBrECFEpson.GetGavetaAberta: Boolean;
@@ -2134,6 +2144,7 @@ begin
 
   ZeraCache;
   fsEmPagamento := false ;
+  fsTotalPago := 0 ;
 end;
 
 procedure TACBrECFEpson.CancelaCupom(NumCOOCancelar: Integer);
@@ -2142,6 +2153,7 @@ Var
 begin
   ZeraCache;
   fsEmPagamento := false ;
+  fsTotalPago := 0 ;
 
   try
      // Cancelando o Cupom
@@ -2150,6 +2162,7 @@ begin
      EpsonComando.AddParamInteger( 1 );   // 1 Campo de entrada NÃO usado no Cancelamento de cupom ;
      EnviaComando ;
 
+     fsTotalPago := 0 ;
      RespostasComando.AddField( 'SubTotal', EpsonResposta.Params[0] );
      RespostasComando.AddField( 'ValorCancelado', EpsonResposta.Params[1] );
   except
@@ -2220,6 +2233,7 @@ begin
   EpsonComando.AddParamString( copy(Observacao,41,40) ) ;
   EnviaComando ;
 
+  fsTotalPago := fsTotalPago + RoundTo(Valor,-2) ;
   ZeraCache;
   RespostasComando.AddField( 'TotalAPagar', EpsonResposta.Params[0] );
   RespostasComando.AddField( 'TotalTroco', EpsonResposta.Params[1] );
@@ -2282,6 +2296,7 @@ begin
 
   ZeraCache;
   fsEmPagamento := false ;
+  fsTotalPago := 0 ;
   RespostasComando.AddField( 'NumCCF', EpsonResposta.Params[0] );
   RespostasComando.AddField( 'TotalPago', EpsonResposta.Params[1] );
   RespostasComando.AddField( 'TotalTroco', EpsonResposta.Params[2] );
@@ -2291,6 +2306,8 @@ procedure TACBrECFEpson.SubtotalizaCupom(DescontoAcrescimo: Double;
        MensagemRodape : AnsiString);
 begin
   fsEmPagamento := True ;
+  fsTotalPago := 0 ;
+
   if DescontoAcrescimo = 0 then
      exit ;
 
@@ -2350,6 +2367,7 @@ begin
 
   ZeraCache;
   fsEmPagamento := false ;
+  fsTotalPago := 0 ;
 
   if EpsonResposta.Params.Count > 0 then
      RespostasComando.AddField( 'NumUltItem', EpsonResposta.Params[0] );
@@ -3174,12 +3192,14 @@ begin
   EpsonComando.AddParamDouble( Valor, 2 );
   EnviaComando ;
 
+  fsTotalPago := 0 ;
   ZeraCache;
 end;
 
 procedure TACBrECFEpson.SubtotalizaNaoFiscal(DescontoAcrescimo: Double;
    MensagemRodape: AnsiString);
 begin
+  fsTotalPago := 0 ;
   if DescontoAcrescimo = 0 then
      exit ;
 
@@ -3205,6 +3225,7 @@ begin
   EpsonComando.AddParamString( copy(Observacao,41,40) ) ;
   EnviaComando ;
 
+  fsTotalPago := fsTotalPago + RoundTo(Valor,-2) ;
   ZeraCache;
   RespostasComando.AddField( 'TotalAPagar', EpsonResposta.Params[0] );
   RespostasComando.AddField( 'TotalTroco', EpsonResposta.Params[1] );
@@ -3912,7 +3933,7 @@ begin
 end;
 
 procedure TACBrECFEpson.EspelhoMFD_DLL(DataInicial,
-  DataFinal: TDateTime; NomeArquivo: AnsiString;
+  DataFinal: TDateTime; const NomeArquivo: AnsiString;
   Documentos: TACBrECFTipoDocumentoSet);
 Var
   Resp : Integer ;
@@ -3960,7 +3981,7 @@ begin
 end;
 
 procedure TACBrECFEpson.EspelhoMFD_DLL(COOInicial, COOFinal: Integer;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet);
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet);
 Var
   Resp : Integer ;
   ArqTmp, ArqDLL, CooIni, CooFim : AnsiString ;
@@ -4007,7 +4028,7 @@ begin
 end;
 
 procedure TACBrECFEpson.ArquivoMFD_DLL(DataInicial, DataFinal: TDateTime;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
   Finalidade: TACBrECFFinalizaArqMFD);
 Var
   Resp, Tipo, Sintegra : Integer ;
@@ -4058,7 +4079,7 @@ begin
 end;
 
 procedure TACBrECFEpson.ArquivoMFD_DLL(ContInicial, ContFinal: Integer;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
   Finalidade: TACBrECFFinalizaArqMFD;
   TipoContador: TACBrECFTipoContador);
 Var
@@ -4116,7 +4137,7 @@ begin
 end;
 
 
-procedure TACBrECFEpson.ArquivoMF_Binario_DLL(NomeArquivo: AnsiString);
+procedure TACBrECFEpson.ArquivoMF_Binario_DLL(const NomeArquivo: AnsiString);
 var
   Resp: Integer;
   OldAtivo: Boolean;
@@ -4147,7 +4168,7 @@ begin
 end;
 
 procedure TACBrECFEpson.ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD;
-  NomeArquivo, StrInicial, StrFinal: AnsiString);
+  const NomeArquivo: AnsiString; StrInicial, StrFinal: AnsiString);
 var
   Resp: Integer;
   OldAtivo: Boolean;

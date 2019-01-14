@@ -50,26 +50,24 @@ type
   private
     fImprimirReverso: Boolean;
 
-    function AjustarTipoBarras(aTipo: String; aExibeCodigo: TACBrETQBarraExibeCodigo): String;
+    function AjustarTipoBarras(const aTipo: String; aExibeCodigo: TACBrETQBarraExibeCodigo): String;
     function ConverterMultiplicador(aMultiplicador: Integer): String;
     function ConverterCoordenadas(aVertical, aHorizontal: Integer): String;
 
     function ConverterUnidade(AValue: Integer): Integer; reintroduce; overload;
     function ConverterOrientacao(aOrientacao: TACBrETQOrientacao): String;
-    function ConverterSubFonte(aFonte: String; aSubFonte: Integer): String;
+    function ConverterSubFonte(const aFonte: String; aSubFonte: Integer): String;
     function ConverterAlturaBarras(aAlturaBarras: Integer): String;
 
     function ComandoReverso(aImprimirReverso: Boolean): String;
     function PrefixoComandoLinhaECaixa(aOrientacao: TACBrETQOrientacao): String;
     function ConverterDimensao(aAltura, aLargura: Integer): String;
 
-    function AjustarNomeArquivoImagem( aNomeImagem: String): String;
+    function AjustarNomeArquivoImagem( const aNomeImagem: String): String;
 
     function ConverterVelocidade(Velocidade: Integer): Char;
 
-    function ComandoTipoImagem(aNomeImagem: String; aFlipped: Boolean; aTipo: String): String;
     function ConverterMultiplicadorImagem(aMultiplicador: Integer): String;
-
     function ConverterEspessura(aVertical, aHorizontal: Integer): String;
 
   protected
@@ -82,7 +80,7 @@ type
   public
     constructor Create(AOwner: TComponent);
 
-    function TratarComandoAntesDeEnviar(aCmd: AnsiString): AnsiString; override;
+    function TratarComandoAntesDeEnviar(const aCmd: AnsiString): AnsiString; override;
 
     function ComandoLimparMemoria: AnsiString; override;
     function ComandoCopias(const NumCopias: Integer): AnsiString; override;
@@ -181,7 +179,7 @@ begin
   Result := IntToStr(Integer(aOrientacao) + 1);
 end;
 
-function TACBrETQPpla.ConverterSubFonte(aFonte: String; aSubFonte: Integer
+function TACBrETQPpla.ConverterSubFonte(const aFonte: String; aSubFonte: Integer
   ): String;
 begin
   if (aSubFonte < 0) or (aSubFonte > 999) then
@@ -240,36 +238,6 @@ function TACBrETQPpla.PrefixoComandoLinhaECaixa(aOrientacao: TACBrETQOrientacao
   ): String;
 begin
   Result := ConverterOrientacao(aOrientacao) + 'X11000';
-end;
-
-function TACBrETQPpla.ComandoTipoImagem(aNomeImagem: String; aFlipped: Boolean;
-  aTipo: String): String;
-var
-  Cmd: Char;
-begin
-  aTipo := UpperCase(LeftStr(aTipo,3));
-
-  if (aTipo = 'PCX') then
-    Cmd := 'p'
-  else if (aTipo = 'IMG') then
-    Cmd := 'i'
-  else if (aTipo = 'HEX') then
-    Cmd := 'f'
-  else if (aTipo = 'BMP') then
-    Cmd := 'b'
-  else
-    raise Exception.Create(ACBrStr(
-      'Formato de Imagem deve ser Monocromático e do atipo: BMP, PCX, IMG ou HEX'));
-
-  if aFlipped then
-    Cmd := UpCase(Cmd);
-
-  Result := STX + 'IA' + Cmd + AjustarNomeArquivoImagem(aNomeImagem);
-end;
-
-function TACBrETQPpla.AjustarNomeArquivoImagem(aNomeImagem: String): String;
-begin
-  Result := UpperCase(LeftStr(OnlyAlphaNum(aNomeImagem), 16));
 end;
 
 function TACBrETQPpla.ConverterMultiplicadorImagem(aMultiplicador: Integer
@@ -353,7 +321,7 @@ begin
     Result := Result * 10;
 end;
 
-function TACBrETQPpla.AjustarTipoBarras(aTipo: String;
+function TACBrETQPpla.AjustarTipoBarras(const aTipo: String;
   aExibeCodigo: TACBrETQBarraExibeCodigo): String;
 begin
   // Tipo de Código de Barras:
@@ -388,7 +356,7 @@ begin
   Result  := Inherited ComandosFinalizarEtiqueta(NumCopias, wAvanco);
 end;
 
-function TACBrETQPpla.TratarComandoAntesDeEnviar(aCmd: AnsiString): AnsiString;
+function TACBrETQPpla.TratarComandoAntesDeEnviar(const aCmd: AnsiString): AnsiString;
 begin
   Result := ChangeLineBreak( aCmd, CR );
 end;
@@ -482,6 +450,11 @@ begin
             ConverterEspessura(aEspVertical, aEspHorizontal);
 end;
 
+function TACBrETQPpla.AjustarNomeArquivoImagem(const aNomeImagem: String): String;
+begin
+  Result := UpperCase(LeftStr(OnlyAlphaNum(aNomeImagem), 16));
+end;
+
 function TACBrETQPpla.ComandoImprimirImagem(aMultImagem, aVertical,
   aHorizontal: Integer; aNomeImagem: String): AnsiString;
 begin
@@ -493,14 +466,41 @@ end;
 
 function TACBrETQPpla.ComandoCarregarImagem(aStream: TStream;
   aNomeImagem: String; aFlipped: Boolean; aTipo: String): AnsiString;
+var
+  Cmd: Char;
 begin
   if (aTipo = '') then
-     aTipo := 'BMP'
+    aTipo := 'BMP'
   else
     aTipo := UpperCase(RightStr(aTipo, 3));
 
+  if (aTipo = 'PCX') then
+  begin
+    if not ImgIsPCX(aStream, True) then
+      raise Exception.Create(ACBrStr(cErrImgPCXMono));
+
+    Cmd := 'p'
+  end
+  else if (aTipo = 'BMP') then
+  begin
+    if not ImgIsBMP(aStream, True) then
+      raise Exception.Create(ACBrStr(cErrImgBMPMono));
+
+    Cmd := 'b'
+  end
+  else if (aTipo = 'IMG') then
+    Cmd := 'i'
+  else if (aTipo = 'HEX') then
+    Cmd := 'f'
+  else
+    raise Exception.Create(ACBrStr(
+      'Formato de Imagem deve ser: BMP, PCX, IMG ou HEX, e Monocromática'));
+
+  if aFlipped then
+    Cmd := UpCase(Cmd);
+
   aStream.Position := 0;
-  Result := ComandoTipoImagem(aNomeImagem, aFlipped, aTipo) + CR +
+  Result := STX + 'IA' + Cmd + AjustarNomeArquivoImagem(aNomeImagem) + CR +
             ReadStrFromStream(aStream, aStream.Size);
 end;
 

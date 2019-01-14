@@ -4,19 +4,19 @@
 
 unit ACBr_NFe;
 
+{$warn 5023 off : no warning about unused units}
 interface
 
 uses
   ACBrNFe, ACBrNFeReg, ACBrNFeNotasFiscais, ACBrNFeConfiguracoes, 
-  ACBrNFeWebServices, ACBrNFeDANFEClass, pcnAdmCSCNFCe, pcnCadEmiDFe, 
-  pcnCCeNFe, pcnConsCad, pcnConsNFeDest, pcnConsReciNFe, pcnConsSitNFe, 
-  pcnConsStatServ, pcnDistDFeInt, pcnDownloadNFe, pcnEnvEventoNFe, 
-  pcnEventoNFe, pcnInutNFe, pcnLayoutTXT, pcnNFe, pcnNFeR, pcnNFeRTXT, 
-  pcnNFeW, pcnProcNFe, pcnRetAdmCSCNFCe, pcnRetAtuCadEmiDFe, pcnRetCancNFe, 
-  pcnRetCCeNFe, pcnRetConsCad, pcnRetConsNFeDest, pcnRetConsReciNFe, 
-  pcnRetConsSitNFe, pcnRetConsStatServ, pcnRetDistDFeInt, pcnRetDownloadNFe, 
+  ACBrNFeWebServices, ACBrNFeDANFEClass, pcnAdmCSCNFCe, pcnConsCad, 
+  pcnConsReciNFe, pcnConsSitNFe, pcnConsStatServ, pcnDistDFeInt, 
+  pcnEnvEventoNFe, pcnEventoNFe, pcnInutNFe, pcnLayoutTXT, pcnNFe, pcnNFeR, 
+  pcnNFeRTXT, pcnNFeW, pcnProcNFe, pcnRetAdmCSCNFCe, pcnRetConsCad, 
+  pcnRetConsReciNFe, pcnRetConsSitNFe, pcnRetConsStatServ, pcnRetDistDFeInt, 
   pcnRetEnvEventoNFe, pcnRetEnvNFe, pcnRetInutNFe, pcnConversaoNFe, 
-  pcnNFeConsts, LazarusPackageIntf;
+  pcnNFeConsts, ACBrDFeDANFeReport, 
+  LazarusPackageIntf;
 
 implementation
 

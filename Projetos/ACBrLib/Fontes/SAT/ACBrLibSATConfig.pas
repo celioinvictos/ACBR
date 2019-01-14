@@ -53,8 +53,6 @@ type
     FMostrarSetup: Boolean;
     FNumCopias: Integer;
     FNomeArquivo: String;
-    FSoftwareHouse: String;
-    FSite: String;
     FFiltro: TACBrSATExtratoFiltro;
     FMsgAppQRCode: String;
     FImprimeEmUmaLinha: Boolean;
@@ -82,23 +80,21 @@ type
     procedure GravarIni(const AIni: TCustomIniFile);
 
     property TipoExtrato: TTipoExtrato read FTipoExtrato write FTipoExtrato;
-    property Mask_qCom: String   read FMask_qCom      write FMask_qCom;
-    property Mask_vUnCom: String   read FMask_vUnCom    write FMask_vUnCom;
+    property MaskqCom: String   read FMask_qCom      write FMask_qCom;
+    property MaskvUnCom: String   read FMask_vUnCom    write FMask_vUnCom;
     property ImprimeQRCode: Boolean  read FImprimeQRCode  write FImprimeQRCode;
     property ImprimeMsgOlhoNoImposto: Boolean read FImprimeMsgOlhoNoImposto write FImprimeMsgOlhoNoImposto;
     property ImprimeCPFNaoInformado: Boolean read FImprimeCPFNaoInformado write FImprimeCPFNaoInformado;
     property PictureLogo: String read FPictureLogo write FPictureLogo;
-    property MostrarPreview: Boolean read FMostrarPreview write FMostrarPreview;
-    property MostrarSetup: Boolean read FMostrarSetup write FMostrarSetup;
+    property MostraPreview: Boolean read FMostrarPreview write FMostrarPreview;
+    property MostraSetup: Boolean read FMostrarSetup write FMostrarSetup;
     property NumCopias: Integer read FNumCopias write FNumCopias;
-    property NomeArquivo: String read FNomeArquivo  write FNomeArquivo ;
-    property SoftwareHouse: String read FSoftwareHouse write FSoftwareHouse;
-    property Site: String read FSite write FSite;
+    property NomeDocumento: String read FNomeArquivo  write FNomeArquivo ;
     property Filtro: TACBrSATExtratoFiltro read FFiltro write FFiltro;
     property MsgAppQRCode: String read FMsgAppQRCode write FMsgAppQRCode;
     property ImprimeEmUmaLinha: Boolean read FImprimeEmUmaLinha write FImprimeEmUmaLinha;
     property ImprimeDescAcrescItem: Boolean read FImprimeDescAcrescItem write FImprimeDescAcrescItem;
-    property UsaCodigoEanImpressao: Boolean read FUsaCodigoEanImpressao write FUsaCodigoEanImpressao;
+    property ImprimeCodigoEan: Boolean read FUsaCodigoEanImpressao write FUsaCodigoEanImpressao;
     property LarguraBobina: Integer read FLarguraBobina  write FLarguraBobina;
     property MargensTopo: Integer read FMargensTopo write FMargensTopo;
     property MargensEsquerda: Integer read FMargensEsquerda write FMargensEsquerda;
@@ -152,14 +148,35 @@ type
     property emit_IE: string read Femit_IE write Femit_IE;
     property emit_IM: string read Femit_IM write Femit_IM;
     property emit_cRegTrib: TpcnRegTrib read Femit_cRegTrib write Femit_cRegTrib;
-    property emit_cRegTribISSQN: TpcnRegTribISSQN
-      read Femit_cRegTribISSQN write Femit_cRegTribISSQN;
-    property emit_indRatISSQN: TpcnindRatISSQN
-      read Femit_indRatISSQN write Femit_indRatISSQN;
+    property emit_cRegTribISSQN: TpcnRegTribISSQN read Femit_cRegTribISSQN write Femit_cRegTribISSQN;
+    property emit_indRatISSQN: TpcnindRatISSQN read Femit_indRatISSQN write Femit_indRatISSQN;
     property EhUTF8: boolean read GetEhUTF8 write SetEhUTF8;
     property PaginaDeCodigo: word read FPaginaDeCodigo write FPaginaDeCodigo;
     property ArqSchema: string read FArqSchema write FArqSchema;
     property XmlSignLib: TSSLXmlSignLib read FXmlSignLib write FXmlSignLib;
+  end;
+
+  { TSATCertificado }
+  TSATCertificado = class
+  private
+    FCryptLib: TSSLCryptLib;
+    FArquivoPFX: String;
+    FNumeroSerie: String;
+    FSenha: String;
+    FChaveCrypt: AnsiString;
+
+    function GetSenha: String;
+
+  public
+    constructor Create(AChaveCrypt: AnsiString = '');
+
+    procedure LerIni(const AIni: TCustomIniFile);
+    procedure GravarIni(const AIni: TCustomIniFile);
+
+    property SSLCryptLib: TSSLCryptLib read FCryptLib write FCryptLib;
+    property ArquivoPFX: String read FArquivoPFX write FArquivoPFX;
+    property NumeroSerie: String read FNumeroSerie write FNumeroSerie;
+    property Senha: String read GetSenha write FSenha;
   end;
 
   { TSATConfigArquivo }
@@ -214,6 +231,7 @@ type
     FArqLOG: string;
     FConfig: TSATConfig;
     FConfigArquivos: TSATConfigArquivo;
+    FSATCertificado: TSATCertificado;
     FRede: TRede;
     FExtrato: TExtratoConfig;
     FIntegrador: TIntegradorConfig;
@@ -248,7 +266,8 @@ type
     property ArqLOG: string read FArqLOG write FArqLOG;
     property IsMFe: boolean read GetIsMFe;
     property Config: TSATConfig read FConfig;
-    property ConfigArquivos: TSATConfigArquivo read FConfigArquivos;
+    property Arquivos: TSATConfigArquivo read FConfigArquivos;
+    property Certificado: TSATCertificado read FSATCertificado;
     property Rede: TRede read FRede;
     property Extrato: TExtratoConfig read FExtrato;
     property Integrador: TIntegradorConfig read FIntegrador;
@@ -275,8 +294,6 @@ begin
   FMostrarSetup := False;
   FNumCopias := 1;
   FNomeArquivo := '';
-  FSoftwareHouse := 'Projeto ACBr';
-  FSite := 'http://www.projetoacbr.com.br';
   FFiltro := fiNenhum;
   FMsgAppQRCode := ACBrStr(cMsgAppQRCode);
   FImprimeEmUmaLinha := True;
@@ -301,23 +318,21 @@ end;
 procedure TExtratoConfig.LerIni(const AIni: TCustomIniFile);
 begin
   FTipoExtrato := TTipoExtrato(AIni.ReadInteger(CSessaoExtrato, CChaveTipo, Integer(FTipoExtrato)));
-  FMask_qCom := AIni.ReadString(CSessaoExtrato, CChaveMask_qCom, FMask_qCom);
-  FMask_vUnCom := AIni.ReadString(CSessaoExtrato, CChaveMask_vUnCom, FMask_vUnCom);
+  FMask_qCom := AIni.ReadString(CSessaoExtrato, CChaveMaskqCom, FMask_qCom);
+  FMask_vUnCom := AIni.ReadString(CSessaoExtrato, CChaveMaskvUnCom, FMask_vUnCom);
   FImprimeQRCode := AIni.ReadBool(CSessaoExtrato, CChaveImprimeQRCode, FImprimeQRCode);
   FImprimeMsgOlhoNoImposto := AIni.ReadBool(CSessaoExtrato, CChaveImprimeMsgOlhoNoImposto, FImprimeMsgOlhoNoImposto);
   FImprimeCPFNaoInformado := AIni.ReadBool(CSessaoExtrato, CChaveImprimeCPFNaoInformado, FImprimeCPFNaoInformado);
   FPictureLogo := AIni.ReadString(CSessaoExtrato, CChavePictureLogo, FPictureLogo);
-  FMostrarPreview := AIni.ReadBool(CSessaoExtrato, CChaveMostrarPreview, FMostrarPreview);
-  FMostrarSetup := AIni.ReadBool(CSessaoExtrato, CChaveMostrarSetup, FMostrarSetup);
+  FMostrarPreview := AIni.ReadBool(CSessaoExtrato, CChaveMostraPreview, FMostrarPreview);
+  FMostrarSetup := AIni.ReadBool(CSessaoExtrato, CChaveMostraSetup, FMostrarSetup);
   FNumCopias := AIni.ReadInteger(CSessaoExtrato, CChaveNumCopias, FNumCopias);
-  FNomeArquivo := AIni.ReadString(CSessaoExtrato, CChaveNomeArquivo, FNomeArquivo);
-  FSoftwareHouse := AIni.ReadString(CSessaoExtrato, CChaveSoftwareHouse, FSoftwareHouse);
-  FSite := AIni.ReadString(CSessaoExtrato, CChaveSite, FSite);
+  FNomeArquivo := AIni.ReadString(CSessaoExtrato, CChaveNomeDocumento, FNomeArquivo);
   FFiltro := TACBrSATExtratoFiltro(AIni.ReadInteger(CSessaoExtrato, CChaveFiltro, Integer(FFiltro)));
   FMsgAppQRCode := AIni.ReadString(CSessaoExtrato, CChaveMsgAppQRCode, FMsgAppQRCode);
   FImprimeEmUmaLinha := AIni.ReadBool(CSessaoExtrato, CChaveImprimeEmUmaLinha, FImprimeEmUmaLinha);
   FImprimeDescAcrescItem := AIni.ReadBool(CSessaoExtrato, CChaveImprimeDescAcrescItem, FImprimeDescAcrescItem);
-  FUsaCodigoEanImpressao := AIni.ReadBool(CSessaoExtrato, CChaveUsaCodigoEanImpressao, FUsaCodigoEanImpressao);
+  FUsaCodigoEanImpressao := AIni.ReadBool(CSessaoExtrato, CChaveImprimeCodigoEan, FUsaCodigoEanImpressao);
   FLarguraBobina := AIni.ReadInteger(CSessaoExtrato, CChaveLarguraBobina, FLarguraBobina);
   FMargensTopo := AIni.ReadInteger(CSessaoExtrato, CChaveMargensTopo, FMargensTopo);
   FMargensEsquerda := AIni.ReadInteger(CSessaoExtrato, CChaveMargensEsquerda, FMargensEsquerda);
@@ -338,23 +353,21 @@ end;
 procedure TExtratoConfig.GravarIni(const AIni: TCustomIniFile);
 begin
   AIni.WriteInteger(CSessaoExtrato, CChaveTipo, Integer(FTipoExtrato));
-  AIni.WriteString(CSessaoExtrato, CChaveMask_qCom, FMask_qCom);
-  AIni.WriteString(CSessaoExtrato, CChaveMask_vUnCom, FMask_vUnCom);
+  AIni.WriteString(CSessaoExtrato, CChaveMaskqCom, FMask_qCom);
+  AIni.WriteString(CSessaoExtrato, CChaveMaskvUnCom, FMask_vUnCom);
   AIni.WriteBool(CSessaoExtrato, CChaveImprimeQRCode, FImprimeQRCode);
   AIni.WriteBool(CSessaoExtrato, CChaveImprimeMsgOlhoNoImposto, FImprimeMsgOlhoNoImposto);
   AIni.WriteBool(CSessaoExtrato, CChaveImprimeCPFNaoInformado, FImprimeCPFNaoInformado);
   AIni.WriteString(CSessaoExtrato, CChavePictureLogo, FPictureLogo);
-  AIni.WriteBool(CSessaoExtrato, CChaveMostrarPreview, FMostrarPreview);
-  AIni.WriteBool(CSessaoExtrato, CChaveMostrarSetup, FMostrarSetup);
+  AIni.WriteBool(CSessaoExtrato, CChaveMostraPreview, FMostrarPreview);
+  AIni.WriteBool(CSessaoExtrato, CChaveMostraSetup, FMostrarSetup);
   AIni.WriteInteger(CSessaoExtrato, CChaveNumCopias, FNumCopias);
-  AIni.WriteString(CSessaoExtrato, CChaveNomeArquivo, FNomeArquivo);
-  AIni.WriteString(CSessaoExtrato, CChaveSoftwareHouse, FSoftwareHouse);
-  AIni.WriteString(CSessaoExtrato, CChaveSite, FSite);
+  AIni.WriteString(CSessaoExtrato, CChaveNomeDocumento, FNomeArquivo);
   AIni.WriteInteger(CSessaoExtrato, CChaveFiltro, Integer(FFiltro));
   AIni.WriteString(CSessaoExtrato, CChaveMsgAppQRCode, FMsgAppQRCode);
   AIni.WriteBool(CSessaoExtrato, CChaveImprimeEmUmaLinha, FImprimeEmUmaLinha);
   AIni.WriteBool(CSessaoExtrato, CChaveImprimeDescAcrescItem, FImprimeDescAcrescItem);
-  AIni.WriteBool(CSessaoExtrato, CChaveUsaCodigoEanImpressao, FUsaCodigoEanImpressao);
+  AIni.WriteBool(CSessaoExtrato, CChaveImprimeCodigoEan, FUsaCodigoEanImpressao);
   AIni.WriteInteger(CSessaoExtrato, CChaveLarguraBobina, FLarguraBobina);
   AIni.WriteInteger(CSessaoExtrato, CChaveMargensTopo, FMargensTopo);
   AIni.WriteInteger(CSessaoExtrato, CChaveMargensEsquerda, FMargensEsquerda);
@@ -390,28 +403,20 @@ end;
 
 procedure TSATConfig.LerIni(const AIni: TCustomIniFile);
 begin
-  infCFe_versaoDadosEnt := AIni.ReadFloat(CSessaoSATConfig,
-    CChaveVersaoDadosEnt, infCFe_versaoDadosEnt);
+  infCFe_versaoDadosEnt := AIni.ReadFloat(CSessaoSATConfig, CChaveVersaoDadosEnt, infCFe_versaoDadosEnt);
   ide_CNPJ := AIni.ReadString(CSessaoSATConfig, CChaveIdeCNPJ, ide_CNPJ);
-  ide_numeroCaixa := AIni.ReadInteger(CSessaoSATConfig, CChaveIdeNumeroCaixa,
-    ide_numeroCaixa);
-  ide_tpAmb := TpcnTipoAmbiente(AIni.ReadInteger(CSessaoSATConfig,
-    CChaveIdeTpAmb, integer(ide_tpAmb)));
+  ide_numeroCaixa := AIni.ReadInteger(CSessaoSATConfig, CChaveIdeNumeroCaixa, ide_numeroCaixa);
+  ide_tpAmb := TpcnTipoAmbiente(AIni.ReadInteger(CSessaoSATConfig, CChaveIdeTpAmb, integer(ide_tpAmb)));
   emit_CNPJ := AIni.ReadString(CSessaoSATConfig, CChaveEmitCNPJ, emit_CNPJ);
   emit_IE := AIni.ReadString(CSessaoSATConfig, CChaveEmitIE, emit_IE);
   emit_IM := AIni.ReadString(CSessaoSATConfig, CChaveEmitIM, emit_IM);
-  emit_cRegTrib := TpcnRegTrib(AIni.ReadInteger(CSessaoSATConfig,
-    CChaveEmitcRegTrib, integer(emit_cRegTrib)));
-  emit_cRegTribISSQN := TpcnRegTribISSQN(AIni.ReadInteger(CSessaoSATConfig,
-    CChaveEmitcRegTribISSQN, integer(emit_cRegTribISSQN)));
-  emit_indRatISSQN := TpcnindRatISSQN(AIni.ReadInteger(CSessaoSATConfig,
-    CChaveEmitIndRatISSQN, integer(emit_indRatISSQN)));
+  emit_cRegTrib := TpcnRegTrib(AIni.ReadInteger(CSessaoSATConfig, CChaveEmitcRegTrib, integer(emit_cRegTrib)));
+  emit_cRegTribISSQN := TpcnRegTribISSQN(AIni.ReadInteger(CSessaoSATConfig, CChaveEmitcRegTribISSQN, integer(emit_cRegTribISSQN)));
+  emit_indRatISSQN := TpcnindRatISSQN(AIni.ReadInteger(CSessaoSATConfig, CChaveEmitIndRatISSQN, integer(emit_indRatISSQN)));
   EhUTF8 := AIni.ReadBool(CSessaoSATConfig, CChaveEhUTF8, EhUTF8);
-  PaginaDeCodigo := AIni.ReadInteger(CSessaoSATConfig, CChavePaginaDeCodigo,
-    PaginaDeCodigo);
+  PaginaDeCodigo := AIni.ReadInteger(CSessaoSATConfig, CChavePaginaDeCodigo, PaginaDeCodigo);
   ArqSchema := AIni.ReadString(CSessaoSATConfig, CChaveArqSchema, ArqSchema);
-  XmlSignLib := TSSLXmlSignLib(AIni.ReadInteger(CSessaoSATConfig,
-    CChaveXmlSignLib, integer(XmlSignLib)));
+  XmlSignLib := TSSLXmlSignLib(AIni.ReadInteger(CSessaoSATConfig, CChaveXmlSignLib, integer(XmlSignLib)));
 end;
 
 procedure TSATConfig.GravarIni(const AIni: TCustomIniFile);
@@ -424,8 +429,7 @@ begin
   AIni.WriteString(CSessaoSATConfig, CChaveEmitIE, emit_IE);
   AIni.WriteString(CSessaoSATConfig, CChaveEmitIM, emit_IM);
   AIni.WriteInteger(CSessaoSATConfig, CChaveEmitcRegTrib, integer(emit_cRegTrib));
-  AIni.WriteInteger(CSessaoSATConfig, CChaveEmitcRegTribISSQN,
-    integer(emit_cRegTribISSQN));
+  AIni.WriteInteger(CSessaoSATConfig, CChaveEmitcRegTribISSQN, integer(emit_cRegTribISSQN));
   AIni.WriteInteger(CSessaoSATConfig, CChaveEmitIndRatISSQN, integer(emit_indRatISSQN));
   AIni.WriteBool(CSessaoSATConfig, CChaveEhUTF8, EhUTF8);
   AIni.WriteInteger(CSessaoSATConfig, CChavePaginaDeCodigo, PaginaDeCodigo);
@@ -447,6 +451,37 @@ begin
     if FPaginaDeCodigo = CUTF8CodPage then
       FPaginaDeCodigo := 0;
   end;
+end;
+
+{ TSATCertificado }
+constructor TSATCertificado.Create(AChaveCrypt: AnsiString = '');
+begin
+  FChaveCrypt := AChaveCrypt;
+  FCryptLib := cryNone;
+  FArquivoPFX := '';
+  FNumeroSerie := '';
+  FSenha := '';
+end;
+
+function TSATCertificado.GetSenha: String;
+begin
+  Result := B64CryptToString(FSenha, FChaveCrypt);
+end;
+
+procedure TSATCertificado.LerIni(const AIni: TCustomIniFile);
+begin
+  FCryptLib := TSSLCryptLib(AIni.ReadInteger(CSessaoDFe, CChaveSSLCryptLib, Integer(FCryptLib)));
+  FArquivoPFX := AIni.ReadString(CSessaoDFe, CChaveArquivoPFX, FArquivoPFX);
+  FNumeroSerie := AIni.ReadString(CSessaoDFe, CChaveNumeroSerie, FNumeroSerie);
+  FSenha := AIni.ReadString(CSessaoDFe, CChaveSenha, FSenha);
+end;
+
+procedure TSATCertificado.GravarIni(const AIni: TCustomIniFile);
+begin
+  AIni.WriteInteger(CSessaoDFe, CChaveSSLCryptLib, Integer(FCryptLib));
+  AIni.WriteString(CSessaoDFe, CChaveArquivoPFX, FArquivoPFX);
+  AIni.WriteString(CSessaoDFe, CChaveNumeroSerie, FNumeroSerie);
+  AIni.WriteString(CSessaoDFe, CChaveSenha, FSenha);
 end;
 
 { TSATConfigArquivo }
@@ -503,8 +538,7 @@ begin
   AIni.WriteBool(CSessaoSATConfigArquivos, CChaveSepararPorMes, SepararPorMes);
   AIni.WriteBool(CSessaoSATConfigArquivos, CChaveSepararPorDia, SepararPorDia);
   AIni.WriteString(CSessaoSATConfigArquivos, CChavePastaCFeVenda, PastaCFeVenda);
-  AIni.WriteString(CSessaoSATConfigArquivos, CChavePastaCFeCancelamento,
-    PastaCFeCancelamento);
+  AIni.WriteString(CSessaoSATConfigArquivos, CChavePastaCFeCancelamento, PastaCFeCancelamento);
   AIni.WriteString(CSessaoSATConfigArquivos, CChavePastaEnvio, PastaEnvio);
   AIni.WriteString(CSessaoSATConfigArquivos, CChavePrefixoArqCFe, PrefixoArqCFe);
   AIni.WriteString(CSessaoSATConfigArquivos, CChavePrefixoArqCFeCanc, PrefixoArqCFeCanc);
@@ -527,6 +561,7 @@ begin
 
   FConfig := TSATConfig.Create;
   FConfigArquivos := TSATConfigArquivo.Create;
+  FSATCertificado := TSATCertificado.Create(AChaveCrypt);
   FRede := TRede.Create;
   FExtrato := TExtratoConfig.Create;
   FIntegrador := TIntegradorConfig.Create;
@@ -537,6 +572,7 @@ destructor TLibSATConfig.Destroy;
 begin
   FConfig.Free;
   FConfigArquivos.Free;
+  FSATCertificado.Free;
   FRede.Free;
   FExtrato.Free;
 
@@ -556,20 +592,16 @@ begin
   FArqLOG := AIni.ReadString(CSessaoSAT, CChaveArqLog, FArqLOG);
   FCodigoDeAtivacao := AIni.ReadString(CSessaoSAT, CChaveCodigoDeAtivacao, FCodigoDeAtivacao);
   FSignAC := AIni.ReadString(CSessaoSAT, CChaveSignAC, FSignAC);
-  FValidarNumeroSessaoResposta :=
-    AIni.ReadBool(CSessaoSAT, CChaveValidarNumero, FValidarNumeroSessaoResposta);
-  FNumeroTentativasValidarSessao :=
-    AIni.ReadInteger(CSessaoSAT, CChaveNumeroTentativas, FNumeroTentativasValidarSessao);
+  FValidarNumeroSessaoResposta := AIni.ReadBool(CSessaoSAT, CChaveValidarNumero, FValidarNumeroSessaoResposta);
+  FNumeroTentativasValidarSessao := AIni.ReadInteger(CSessaoSAT, CChaveNumeroTentativas, FNumeroTentativasValidarSessao);
 
   with FRede do
   begin
-    tipoInter := TTipoInterface(AIni.ReadInteger(CSessaoSATRede,
-      CChaveTipoInter, integer(tipoInter)));
+    tipoInter := TTipoInterface(AIni.ReadInteger(CSessaoSATRede, CChaveTipoInter, integer(tipoInter)));
     SSID := AIni.ReadString(CSessaoSATRede, CChaveSSID, SSID);
     seg := TSegSemFio(AIni.ReadInteger(CSessaoSATRede, CChaveSeg, integer(seg)));
     codigo := AIni.ReadString(CSessaoSATRede, CChaveCodigo, codigo);
-    tipoLan := TTipoLan(AIni.ReadInteger(CSessaoSATRede, CChaveTipoLan,
-      integer(tipoLan)));
+    tipoLan := TTipoLan(AIni.ReadInteger(CSessaoSATRede, CChaveTipoLan, integer(tipoLan)));
     lanIP := AIni.ReadString(CSessaoSATRede, CChaveLanIP, lanIP);
     lanMask := AIni.ReadString(CSessaoSATRede, CChaveLanMask, lanMask);
     lanGW := AIni.ReadString(CSessaoSATRede, CChaveLanGW, lanGW);
@@ -578,10 +610,10 @@ begin
     usuario := AIni.ReadString(CSessaoSATRede, CChaveUsuario, usuario);
     senha := AIni.ReadString(CSessaoSATRede, CChaveSenha, '');
     proxy := AIni.ReadInteger(CSessaoSATRede, CChaveProxy, proxy);
-    proxy_ip := AIni.ReadString(CSessaoSATRede, CChaveProxyIp, proxy_ip);
-    proxy_porta := AIni.ReadInteger(CSessaoSATRede, CChaveProxyPorta, proxy_porta);
-    proxy_user := AIni.ReadString(CSessaoSATRede, CChaveProxyUser, proxy_user);
-    proxy_senha := AIni.ReadString(CSessaoSATRede, CChaveProxySenha, '');
+    proxy_ip := AIni.ReadString(CSessaoProxy, CChaveServidor, proxy_ip);
+    proxy_porta := AIni.ReadInteger(CSessaoProxy, CChavePorta, proxy_porta);
+    proxy_user := AIni.ReadString(CSessaoProxy, CChaveUsuario, proxy_user);
+    proxy_senha := AIni.ReadString(CSessaoProxy, CChaveSenha, '');
   end;
 
   FConfig.LerIni(AIni);
@@ -615,10 +647,6 @@ begin
     AIni.WriteString(CSessaoSATRede, CChaveUsuario, usuario);
     AIni.WriteString(CSessaoSATRede, CChaveSenha, StringToB64Crypt(senha, FChaveCrypt));
     AIni.WriteInteger(CSessaoSATRede, CChaveProxy, proxy);
-    AIni.WriteString(CSessaoSATRede, CChaveProxyIp, proxy_ip);
-    AIni.WriteInteger(CSessaoSATRede, CChaveProxyPorta, proxy_porta);
-    AIni.WriteString(CSessaoSATRede, CChaveProxyUser, proxy_user);
-    AIni.WriteString(CSessaoSATRede, CChaveProxySenha, StringToB64Crypt(proxy_senha, FChaveCrypt));
   end;
 
   FConfig.GravarIni(AIni);

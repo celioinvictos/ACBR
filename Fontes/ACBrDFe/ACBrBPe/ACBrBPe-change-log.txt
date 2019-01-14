@@ -48,6 +48,39 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+17/12/2018
+-- ACBrBPeServicos --
+[*] Algumas UF foi informado por hora a mesma URL do QR-Code para a URL de Consulta.
+   Por: Italo Jurisato Junior
+
+10/12/2018
+-- ACBrBPeServicos --
+[+] Inclusão das URLs do QR-Code de PB.
+   Por: Italo Jurisato Junior
+
+04/12/2018
+-- Diversos --
+[*] Varios ajustes visando o ACBrLibBPe
+   Por: Italo Jurisato Junior
+
+22/11/2018
+-- pcnBPeR --
+[*] https://www.projetoacbr.com.br/forum/topic/47759-ajuste-pcnbperpas/
+   Por: Cleyton
+
+-- ACBrBPeWebServices --
+[*] Acrescentando o nome do grupo "bpeStatusServicoBPResult" como uma segunda alternativa,
+    para a correta leitura de retorno da consulta ao Status do Serviço, 
+    nome do grupo diferente do padrão.
+   Por: Cleyton Luiz Alberti
+
+21/11/2018
+-- ACBrBPeWebServices --
+[*] Acrescentando o nome do grupo "bpeConsultaBPResult" como uma segunda alternativa,
+    para a correta leitura de retorno da consulta, nome do grupo diferente do
+    padrão.
+   Por: Cleyton Luiz Alberti
+
 24/10/2018
 -- ACBrBPeServicos --
 [+] Inclusão das URLs de homologação de SP.

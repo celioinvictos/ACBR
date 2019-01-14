@@ -58,11 +58,11 @@ TACBrECFFiscNETComando = class
     property Comando     : AnsiString  read GetComando ;
     property Params      : TStringList read fsParams ;
 
-    Procedure AddParamString(ParamName : String; AString  : AnsiString) ;
-    Procedure AddParamInteger(ParamName : String; AInteger : Integer) ;
-    Procedure AddParamDouble(ParamName : String; ADouble  : Double) ;
-    Procedure AddParamBool(ParamName : String; ABool    : Boolean) ;
-    Procedure AddParamDateTime(ParamName : String; ADateTime: TDateTime;Tipo : Char = 'D'  ) ;
+    Procedure AddParamString(const ParamName : String; AString  : AnsiString) ;
+    Procedure AddParamInteger(const ParamName : String; AInteger : Integer) ;
+    Procedure AddParamDouble(const ParamName : String; ADouble  : Double) ;
+    Procedure AddParamBool(const ParamName : String; ABool    : Boolean) ;
+    Procedure AddParamDateTime(const ParamName : String; ADateTime: TDateTime;Tipo : Char = 'D'  ) ;
  end ;
 
 TACBrECFFiscNETResposta = class
@@ -164,8 +164,8 @@ TACBrECFFiscNET = class( TACBrECFClass )
     procedure LoadDLLFunctions;
     procedure AbrePortaSerialDLL(const Porta, Path : String ) ;
 
-    Procedure PreparaCmd( cmd : AnsiString ) ;
-    Function AjustaLeitura( AString : AnsiString ) : AnsiString ;
+    Procedure PreparaCmd( const cmd : AnsiString ) ;
+    Function AjustaLeitura( const AString : AnsiString ) : AnsiString ;
     function DocumentosToStr(Documentos: TACBrECFTipoDocumentoSet): String;
     function GetErroAtoCotepe1704(pRet: Integer): string;
 
@@ -310,20 +310,20 @@ TACBrECFFiscNET = class( TACBrECFClass )
        Linhas : TStringList; Documentos : TACBrECFTipoDocumentoSet = [docTodos] ) ; overload ; override ;
 
     Procedure EspelhoMFD_DLL( DataInicial, DataFinal : TDateTime;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
     Procedure EspelhoMFD_DLL( COOInicial, COOFinal : Integer;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos]  ) ; override ;
 
     Procedure ArquivoMFD_DLL( DataInicial, DataFinal : TDateTime;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
        Finalidade: TACBrECFFinalizaArqMFD = finMFD  ) ; override ;
     Procedure ArquivoMFD_DLL( ContInicial, ContFinal : Integer;
-       NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
+       const NomeArquivo : AnsiString; Documentos : TACBrECFTipoDocumentoSet = [docTodos];
        Finalidade: TACBrECFFinalizaArqMFD = finMFD;
        TipoContador: TACBrECFTipoContador = tpcCOO  ) ; override ;
 
-    Procedure ArquivoMF_Binario_DLL(NomeArquivo: AnsiString); override;
-    Procedure ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD; NomeArquivo,
+    Procedure ArquivoMF_Binario_DLL(const NomeArquivo: AnsiString); override;
+    Procedure ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD; const NomeArquivo: AnsiString;
       StrInicial, StrFinal: AnsiString); override;
 
     Procedure ImprimeCheque(Banco : String; Valor : Double ; Favorecido,
@@ -408,7 +408,7 @@ begin
   Result := Result + ';'+IntToStr(Length(Result))+'}' ;
 end;
 
-procedure TACBrECFFiscNETComando.AddParamString(ParamName: String;
+procedure TACBrECFFiscNETComando.AddParamString(const ParamName: String;
   AString: AnsiString);
 var
   Buf : AnsiString ;
@@ -425,7 +425,7 @@ begin
   fsParams.Add( ParamName + '="' + TrimRight( Buf ) + '"' ) ;
 end;
 
-procedure TACBrECFFiscNETComando.AddParamDouble(ParamName: String;
+procedure TACBrECFFiscNETComando.AddParamDouble(const ParamName: String;
   ADouble: Double);
 var
   AFloatStr: string;
@@ -437,13 +437,13 @@ begin
   fsParams.Add(ParamName + '=' + AFloatStr ) ;
 end;
 
-procedure TACBrECFFiscNETComando.AddParamInteger(ParamName: String;
+procedure TACBrECFFiscNETComando.AddParamInteger(const ParamName: String;
   AInteger: Integer);
 begin
   fsParams.Add(ParamName + '=' + IntToStr(AInteger) )
 end;
 
-procedure TACBrECFFiscNETComando.AddParamBool(ParamName: String;
+procedure TACBrECFFiscNETComando.AddParamBool(const ParamName: String;
   ABool: Boolean);
 var
   CharBool: Char;
@@ -456,7 +456,7 @@ begin
   fsParams.Add(ParamName + '=' + CharBool )
 end;
 
-Procedure TACBrECFFiscNETComando.AddParamDateTime(ParamName : String;
+Procedure TACBrECFFiscNETComando.AddParamDateTime(const ParamName : String;
   ADateTime: TDateTime;Tipo : Char = 'D'  ) ;
 var
   Texto: string;
@@ -760,7 +760,7 @@ begin
   end ;
 end;
 
-procedure TACBrECFFiscNET.PreparaCmd(cmd : AnsiString) ;
+procedure TACBrECFFiscNET.PreparaCmd(const cmd : AnsiString) ;
 var
   P: Integer;
 begin
@@ -1988,7 +1988,7 @@ begin
   Result := copy(Result,1,Length(Result)-1) ; // Remove a ultima Virgula
 end ;
 
-function TACBrECFFiscNET.AjustaLeitura(AString : AnsiString) : AnsiString ;
+function TACBrECFFiscNET.AjustaLeitura(const AString : AnsiString) : AnsiString ;
 Var
   A, Cols : Integer ;
 begin
@@ -2647,7 +2647,8 @@ begin
   end ;
 end;
 
-procedure TACBrECFFiscNET.EspelhoMFD_DLL(DataInicial, DataFinal: TDateTime; NomeArquivo: AnsiString;
+procedure TACBrECFFiscNET.EspelhoMFD_DLL(DataInicial, DataFinal: TDateTime;
+  const NomeArquivo: AnsiString;
   Documentos: TACBrECFTipoDocumentoSet);
 Var
   iRet : Integer;
@@ -2698,7 +2699,8 @@ begin
   end;
 end;
 
-procedure TACBrECFFiscNET.EspelhoMFD_DLL(COOInicial, COOFinal: Integer; NomeArquivo: AnsiString;
+procedure TACBrECFFiscNET.EspelhoMFD_DLL(COOInicial, COOFinal: Integer;
+  const NomeArquivo: AnsiString;
   Documentos: TACBrECFTipoDocumentoSet);
 Var
   iRet : Integer;
@@ -2752,7 +2754,7 @@ begin
 end;
 
 procedure TACBrECFFiscNET.ArquivoMFD_DLL(DataInicial, DataFinal: TDateTime;
-  NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
+  const NomeArquivo: AnsiString; Documentos: TACBrECFTipoDocumentoSet;
   Finalidade: TACBrECFFinalizaArqMFD);
 Var
   iRet : Integer;
@@ -2765,6 +2767,7 @@ begin
   ModeloECF   := SubModeloECF;
   PortaSerial := fpDevice.Porta;
   Prop        := IntToStr( StrToIntDef( UsuarioAtual, 1) ) ;
+  ArqTmp      := NomeArquivo;
 
   LoadDLLFunctions;
   OldAtivo := Ativo;
@@ -2780,8 +2783,8 @@ begin
 
      if (Finalidade = finNFPTDM) then
      begin
-        if Length(Trim(ExtractFileName(NomeArquivo))) = 0 then
-           NomeArquivo := NomeArquivo + NomeArqCAT52( RFDID, NumSerie, DataInicial )
+        if Length(Trim(ExtractFileName(ArqTmp))) = 0 then
+           ArqTmp := ArqTmp + NomeArqCAT52( RFDID, NumSerie, DataInicial )
      end;
 
      if pos(fsMarcaECF, 'dataregis|termoprinter') > 0 then
@@ -2791,19 +2794,19 @@ begin
 
         if (Finalidade = finMF) then
           iRet := xGera_AtoCotepe1704_Periodo_MF( PortaSerial, ModeloECF,
-                                                 NomeArquivo, DiaIni, DiaFim )
+                                                 ArqTmp, DiaIni, DiaFim )
         else
           iRet := xGera_AtoCotepe1704_Periodo_MFD( PortaSerial, ModeloECF,
-                                                 NomeArquivo, DiaIni, DiaFim );
+                                                 ArqTmp, DiaIni, DiaFim );
 
         if iRet <> 0 then
            raise EACBrECFERRO.Create( ACBrStr( 'Erro ao executar Gera_AtoCotepe1704_Periodo_MFD.'+sLineBreak+
                                             'Cod.: '+IntToStr(iRet) + ' - ' +
                                             GetErroAtoCotepe1704(iRet) )) ;
 
-        if not FileExists( NomeArquivo ) then
+        if not FileExists( ArqTmp ) then
            raise EACBrECFERRO.Create( ACBrStr( 'Erro na execução de Gera_AtoCotepe1704_Periodo_MFD.'+sLineBreak+
-                                            'Arquivo: "'+NomeArquivo + '" não gerado' ))
+                                            'Arquivo: "'+ArqTmp + '" não gerado' ))
       end
      else if (fsMarcaECF = 'elgin') then
       begin
@@ -2862,7 +2865,8 @@ begin
   end ;
 end;
 
-procedure TACBrECFFiscNET.ArquivoMFD_DLL(ContInicial, ContFinal: Integer; NomeArquivo: AnsiString;
+procedure TACBrECFFiscNET.ArquivoMFD_DLL(ContInicial, ContFinal: Integer;
+  const NomeArquivo: AnsiString;
   Documentos: TACBrECFTipoDocumentoSet;
   Finalidade: TACBrECFFinalizaArqMFD; TipoContador: TACBrECFTipoContador);
 Var
@@ -2956,7 +2960,7 @@ begin
   end;
 end;
 
-procedure TACBrECFFiscNET.ArquivoMF_Binario_DLL(NomeArquivo: AnsiString);
+procedure TACBrECFFiscNET.ArquivoMF_Binario_DLL(const NomeArquivo: AnsiString);
 Var
   iRet : Integer;
   PortaSerial, ModeloECF, NumFab : AnsiString;
@@ -3026,7 +3030,7 @@ begin
 end;
 
 procedure TACBrECFFiscNET.ArquivoMFD_Binario_DLL(Tipo: TACBrECFTipoDownloadMFD;
-  NomeArquivo, StrInicial, StrFinal: AnsiString);
+  const NomeArquivo: AnsiString; StrInicial, StrFinal: AnsiString);
 Var
   iRet : Integer;
   PortaSerial, ModeloECF, NumFab : AnsiString;

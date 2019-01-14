@@ -43,6 +43,8 @@ uses
 
 const
   CInchCM = 2.54;
+  cErrImgPCXMono = 'Imagem não é PCX Monocromática';
+  cErrImgBMPMono = 'Imagem não é BMP Monocromática';
 
 type
 
@@ -60,7 +62,7 @@ TACBrETQClass = class
     fDPI: TACBrETQDPI;
     fAvanco: Integer;
 
-    procedure ErroNaoImplementado(aNomeMetodo: String);
+    procedure ErroNaoImplementado(const aNomeMetodo: String);
 
   protected
     fpBackFeed: TACBrETQBackFeed;
@@ -72,7 +74,7 @@ TACBrETQClass = class
 
     function ConverterUnidade(UnidadeSaida: TACBrETQUnidade; AValue: Integer): Integer; virtual;
 
-    procedure AdicionarComandos( ACmd: AnsiString; var ACmdList: AnsiString);
+    procedure AdicionarComandos( const ACmd: AnsiString; var ACmdList: AnsiString);
     procedure VerificarLimiteCopias( const NumCopias: Integer);
 
   protected
@@ -84,10 +86,12 @@ TACBrETQClass = class
     function ComandoOrigemCoordenadas: AnsiString; virtual;
     function ComandoVelocidade: AnsiString; virtual;
 
+    function ImgIsPCX(S: TStream; CheckIsMono: Boolean = True): Boolean;
+    function ImgIsBMP(S: TStream; CheckIsMono: Boolean = True): Boolean;
   public
     constructor Create(AOwner: TComponent);
 
-    function TratarComandoAntesDeEnviar(aCmd: AnsiString): AnsiString; virtual;
+    function TratarComandoAntesDeEnviar(const aCmd: AnsiString): AnsiString; virtual;
 
     function ComandoLimparMemoria: AnsiString; virtual;
     function ComandoCopias(const NumCopias: Integer): AnsiString; virtual;
@@ -154,7 +158,7 @@ begin
   fpLimiteCopias  := 999;
 end;
 
-procedure TACBrETQClass.ErroNaoImplementado(aNomeMetodo: String);
+procedure TACBrETQClass.ErroNaoImplementado(const aNomeMetodo: String);
 begin
   raise Exception.Create(ACBrStr('Metodo: ' + aNomeMetodo + ' não implementada em: ' + ModeloStr));
 end;
@@ -211,7 +215,7 @@ begin
   Result := trunc(RoundTo(ADouble, 0));
 end;
 
-procedure TACBrETQClass.AdicionarComandos(ACmd: AnsiString;
+procedure TACBrETQClass.AdicionarComandos(const ACmd: AnsiString;
   var ACmdList: AnsiString);
 begin
   if EstaVazio( ACmd ) then
@@ -309,6 +313,58 @@ begin
   Result := EmptyStr;
 end;
 
+function TACBrETQClass.ImgIsPCX(S: TStream; CheckIsMono: Boolean): Boolean;
+var
+  p: Int64;
+  b, bColorPlanes, bBitsPerPixel: Byte;
+begin
+  // https://stackoverflow.com/questions/1689715/image-data-of-pcx-file
+  p := S.Position;
+  S.Position := 0;
+  b := 0;
+  S.ReadBuffer(b,1);
+  Result := (b = 10);
+
+  if Result and CheckIsMono then
+  begin
+    // Lendo as cores
+    bBitsPerPixel := 0; bColorPlanes := 0;
+    S.Position := 3;
+    S.ReadBuffer(bBitsPerPixel, 1);
+    S.Position := 65;
+    S.ReadBuffer(bColorPlanes, 1);
+    Result := (bColorPlanes = 1) and (bBitsPerPixel = 1);
+  end;
+
+  S.Position := p;
+end;
+
+function TACBrETQClass.ImgIsBMP(S: TStream; CheckIsMono: Boolean): Boolean;
+var
+  Buffer: array[0..1] of AnsiChar;
+  bColorPlanes, bBitsPerPixel: Word;
+  p: Int64;
+begin
+  //https://en.wikipedia.org/wiki/BMP_file_format
+  p := S.Position;
+  S.Position := 0;
+  Buffer[0] := ' ';
+  S.ReadBuffer(Buffer, 2);
+  Result := (Buffer = 'BM');
+
+  if Result and CheckIsMono then
+  begin
+    // Lendo as cores
+    bColorPlanes := 0; bBitsPerPixel := 0;
+    S.Position := 26;
+    S.ReadBuffer(bColorPlanes, 2);
+    S.ReadBuffer(bBitsPerPixel, 2);
+    Result := (bColorPlanes = 1) and (bBitsPerPixel = 1);
+  end;
+
+  S.Position := p;
+end;
+
 function TACBrETQClass.ComandoCopias(const NumCopias: Integer): AnsiString;
 begin
   VerificarLimiteCopias(NumCopias);
@@ -326,7 +382,7 @@ begin
   Result := EmptyStr;
 end;
 
-function TACBrETQClass.TratarComandoAntesDeEnviar(aCmd: AnsiString): AnsiString;
+function TACBrETQClass.TratarComandoAntesDeEnviar(const aCmd: AnsiString): AnsiString;
 begin
   Result := ChangeLineBreak( aCmd, LF );
 end;

@@ -179,11 +179,11 @@ TACBrRFDCupom = class
     property Pagamentos : TObjectList read fsPagamentos ;
 
     Procedure Descarrega ;
-    Procedure VendeItem( Codigo, Descricao: String;
+    Procedure VendeItem( const Codigo, Descricao: String;
        const Qtd, ValorUnitario: Double; const Unidade: String;
-       const ValorDescAcres: Double; Aliquota: String) ;
+       const ValorDescAcres: Double; const Aliquota: String) ;
     Procedure CancelaItemVendido(const NumItem: Integer) ;
-    Procedure EfetuaPagamento(DescricaoFormaPagto: String; Valor: Double ) ;
+    Procedure EfetuaPagamento(const DescricaoFormaPagto: String; Valor: Double ) ;
 end ;
 
 { TACBrRFD }
@@ -263,9 +263,9 @@ TACBrRFD = class( TACBrComponent )     { Componente ACBrRFD }
     function GetArqINI: String;
 
     function GetArqRFDID: String;
-    Procedure GravaLog(Arq, Linha : String );
+    Procedure GravaLog(const Arq : String; Linha : String );
     function VerificaHashLinhaLog(var Linha: String): Boolean;
-    function CalcHashLinhaLog(Linha: String): String;
+    function CalcHashLinhaLog(const Linha: String): String;
 
     procedure SetDiaMov(const AValue: TDateTime);
     property pDiaMov : TDateTime read fsDiaMov write SetDiaMov ;
@@ -302,7 +302,7 @@ TACBrRFD = class( TACBrComponent )     { Componente ACBrRFD }
     procedure LerINI ;
     procedure GravarINI ;
     property ArqINI : String read GetArqINI ;
-    Procedure CriarArqRFDID( NomeArq : String );
+    Procedure CriarArqRFDID( const NomeArq : String );
 
     Function NomeArqRFD( DtMov : TDatetime ) : String ;
 
@@ -353,18 +353,18 @@ TACBrRFD = class( TACBrComponent )     { Componente ACBrRFD }
     property SH_Linha2 : String read fsSH_Linha2  write SetSH_Linha2 ;
 
     Procedure AbreCupom ;
-    Procedure VendeItem(Codigo, Descricao: String;
+    Procedure VendeItem(const Codigo, Descricao: String;
        const Qtd, ValorUnitario: Double; const Unidade: String;
-       const ValorDescAcres: Double; Aliquota: String ) ;
+       const ValorDescAcres: Double; const Aliquota: String ) ;
     Procedure SubTotalizaCupom(const DescontoAcrescimo: Double );
     Procedure FechaCupom ;
     Procedure CancelaCupom(const COO: Integer);
     Procedure CancelaItemVendido(const NumItem: Integer) ;
 
-    Procedure ReducaoZ( DadosReducaoZ : AnsiString ) ;
+    Procedure ReducaoZ( const DadosReducaoZ : AnsiString ) ;
 
     Procedure Documento(Denominacao: String) ;
-    Procedure EfetuaPagamento(DescricaoFormaPagto: String; Valor: Double ) ;
+    Procedure EfetuaPagamento(const DescricaoFormaPagto: String; Valor: Double ) ;
 
     property OnGetKeyHashLog : TACBrRFDGetKeyHashLog
        read fsOnGetKeyHashLog write fsOnGetKeyHashLog ;
@@ -613,9 +613,9 @@ begin
 end;
 
 
-procedure TACBrRFDCupom.VendeItem(Codigo, Descricao: String; const Qtd,
+procedure TACBrRFDCupom.VendeItem(const Codigo, Descricao: String; const Qtd,
   ValorUnitario: Double; const Unidade: String;
-  const ValorDescAcres: Double; Aliquota: String);
+  const ValorDescAcres: Double; const Aliquota: String);
  Var ItemCupom : TACBrRFDItemCupom ;
      Ini : TMemIniFile ;
      Linha : String ;
@@ -675,7 +675,7 @@ begin
 end;
 
 
-procedure TACBrRFDCupom.EfetuaPagamento(DescricaoFormaPagto: String;
+procedure TACBrRFDCupom.EfetuaPagamento(const DescricaoFormaPagto: String;
   Valor: Double);
  Var PagamentoCupom : TACBrRFDPagamentoCupom ;
      Ini : TMemIniFile ;
@@ -1333,9 +1333,9 @@ begin
    end;
 end;
 
-procedure TACBrRFD.VendeItem( Codigo, Descricao: String;
+procedure TACBrRFD.VendeItem( const Codigo, Descricao: String;
        const Qtd, ValorUnitario: Double; const Unidade: String;
-       const ValorDescAcres: Double; Aliquota: String) ;
+       const ValorDescAcres: Double; const Aliquota: String) ;
 begin
   fsCupom.VendeItem( Codigo, Descricao, Qtd, ValorUnitario, Unidade,
                      ValorDescAcres, Aliquota );
@@ -1377,7 +1377,7 @@ begin
   end ;
 end;
 
-procedure TACBrRFD.EfetuaPagamento(DescricaoFormaPagto: String; Valor: Double ) ;
+procedure TACBrRFD.EfetuaPagamento(const DescricaoFormaPagto: String; Valor: Double ) ;
   Var Linha : String ;
 begin
   if FileExists( fsCupom.NomeArq ) then  { Tem Cupom aberto ? }
@@ -1399,7 +1399,7 @@ begin
    end ;
 end;
 
-procedure TACBrRFD.ReducaoZ( DadosReducaoZ : AnsiString ) ;
+procedure TACBrRFD.ReducaoZ( const DadosReducaoZ : AnsiString ) ;
   Var Ini : TMemIniFile ;
       CRZ, COO : Integer ;
 begin
@@ -1758,15 +1758,15 @@ end;
 
 function TACBrRFD.NomeArqRFD( DtMov : TDatetime ): String;
 Var
-  DirECFMes : String ;
+  DirECFMes_temp : String ;
 begin
-   DirECFMes := fsDirECF + PathDelim + FormatDateTime('yyyymm',DtMov) ;
-   Result    := DirECFMes + PathDelim +
+   DirECFMes_temp := fsDirECF + PathDelim + FormatDateTime('yyyymm',DtMov) ;
+   Result    := DirECFMes_temp + PathDelim +
                 NomeArqCAT52( fsECF_RFDID, fsECF_NumSerie, DtMov);
 end;
 
 
-procedure TACBrRFD.GravaLog(Arq, Linha: String);
+procedure TACBrRFD.GravaLog(const Arq: String; Linha: String );
  Var Hash : String ;
 begin
   Hash := CalcHashLinhaLog( Linha ) ;
@@ -1784,7 +1784,7 @@ begin
               True );  { True para adicionar no final do arquivo }
 end;
 
-Function TACBrRFD.CalcHashLinhaLog(Linha: String) : String ;
+Function TACBrRFD.CalcHashLinhaLog(const Linha: String) : String ;
  Var Chave : String ;
 begin
   Result := '' ;
@@ -2053,7 +2053,7 @@ begin
   end ;
 end;
 
-procedure TACBrRFD.CriarArqRFDID( NomeArq : String ) ;
+procedure TACBrRFD.CriarArqRFDID( const NomeArq : String ) ;
 Var
   SL : TStringList ;
 begin

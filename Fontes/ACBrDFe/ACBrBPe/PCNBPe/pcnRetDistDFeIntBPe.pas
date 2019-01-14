@@ -438,16 +438,16 @@ begin
         FdocZip.Items[i].schema := StrToSchemaBPe(ok, Leitor.rAtributo('schema'));
 
         StrAux := RetornarConteudoEntre(Leitor.Grupo, '>', '</docZip');
-        StrDecod := DecodeBase64(StrAux);
-        FdocZip.Items[i].FInfZip := UnZip(StrDecod);
+        FdocZip.Items[i].FInfZip := StrAux;
+        StrDecod := UnZip(DecodeBase64(StrAux));
 
         oLeitorInfZip := TLeitor.Create;
         try
-          oLeitorInfZip.Arquivo := FdocZip.Items[i].FInfZip;
+          oLeitorInfZip.Arquivo := StrDecod;
 
           if (oLeitorInfZip.rExtrai(1, 'resBPe') <> '') then
           begin
-            FdocZip.Items[i].XML := IIF(Pos(ENCODING_UTF8, oLeitorInfZip.Grupo) > 0, '', '<' + ENCODING_UTF8 + '>') + oLeitorInfZip.Grupo;
+            FdocZip.Items[i].XML := InserirDeclaracaoXMLSeNecessario(oLeitorInfZip.Grupo);
 
             FdocZip.Items[i].FresBPe.chBPe    := oLeitorInfZip.rCampo(tcStr, 'chBPe');
             FdocZip.Items[i].FresBPe.FCNPJCPF := oLeitorInfZip.rCampo(tcStr, 'CNPJ');
@@ -455,7 +455,7 @@ begin
             if FdocZip.Items[i].FresBPe.FCNPJCPF = '' then
               FdocZip.Items[i].FresBPe.FCNPJCPF := oLeitorInfZip.rCampo(tcStr, 'CPF');
 
-            FdocZip.Items[i].FresBPe.FxNome    := oLeitorInfZip.rCampo(tcStr, 'xNome');
+            FdocZip.Items[i].FresBPe.FxNome    := ParseText(oLeitorInfZip.rCampo(tcStr, 'xNome'));
             FdocZip.Items[i].FresBPe.FIE       := oLeitorInfZip.rCampo(tcStr, 'IE');
             FdocZip.Items[i].FresBPe.FdhEmi    := oLeitorInfZip.rCampo(tcDatHor, 'dhEmi');
             FdocZip.Items[i].FresBPe.FtpBPe    := StrToTpBPe(ok, oLeitorInfZip.rCampo(tcStr, 'tpBPe'));
@@ -468,7 +468,7 @@ begin
 
           if (oLeitorInfZip.rExtrai(1, 'resEvento') <> '') then
           begin
-            FdocZip.Items[i].XML := IIF(Pos(ENCODING_UTF8, oLeitorInfZip.Grupo) > 0, '', '<' + ENCODING_UTF8 + '>') + oLeitorInfZip.Grupo;
+            FdocZip.Items[i].XML := InserirDeclaracaoXMLSeNecessario(oLeitorInfZip.Grupo);
 
             FdocZip.Items[i].FresEvento.FcOrgao  := oLeitorInfZip.rCampo(tcInt, 'cOrgao');
             FdocZip.Items[i].FresEvento.FCNPJCPF := oLeitorInfZip.rCampo(tcStr, 'CNPJ');
@@ -480,14 +480,14 @@ begin
             FdocZip.Items[i].FresEvento.FdhEvento   := oLeitorInfZip.rCampo(tcDatHor, 'dhEvento');
             FdocZip.Items[i].FresEvento.FtpEvento   := StrToTpEvento(ok, oLeitorInfZip.rCampo(tcStr, 'tpEvento'));
             FdocZip.Items[i].FresEvento.FnSeqEvento := oLeitorInfZip.rCampo(tcInt, 'nSeqEvento');
-            FdocZip.Items[i].FresEvento.FxEvento    := oLeitorInfZip.rCampo(tcStr, 'xEvento');
+            FdocZip.Items[i].FresEvento.FxEvento    := ParseText(oLeitorInfZip.rCampo(tcStr, 'xEvento'));
             FdocZip.Items[i].FresEvento.FdhRecbto   := oLeitorInfZip.rCampo(tcDatHor, 'dhRecbto');
             FdocZip.Items[i].FresEvento.FnProt      := oLeitorInfZip.rCampo(tcStr, 'nProt');
           end;
 
           if (oLeitorInfZip.rExtrai(1, 'BPeProc') <> '') then
           begin
-            FdocZip.Items[i].XML := IIF(Pos(ENCODING_UTF8, oLeitorInfZip.Grupo) > 0, '', '<' + ENCODING_UTF8 + '>') + oLeitorInfZip.Grupo;
+            FdocZip.Items[i].XML := InserirDeclaracaoXMLSeNecessario(oLeitorInfZip.Grupo);
 
             oLeitorInfZip.rExtrai(1, 'infBPe');
             FdocZip.Items[i].FresBPe.chBPe := copy(oLeitorInfZip.Grupo, pos('Id="BPe', oLeitorInfZip.Grupo) + 7, 44);
@@ -497,7 +497,7 @@ begin
             if FdocZip.Items[i].FresBPe.FCNPJCPF = '' then
               FdocZip.Items[i].FresBPe.FCNPJCPF := oLeitorInfZip.rCampo(tcStr, 'CPF');
 
-            FdocZip.Items[i].FresBPe.FxNome := oLeitorInfZip.rCampo(tcStr, 'xNome');
+            FdocZip.Items[i].FresBPe.FxNome := ParseText(oLeitorInfZip.rCampo(tcStr, 'xNome'));
             FdocZip.Items[i].FresBPe.FIE    := oLeitorInfZip.rCampo(tcStr, 'IE');
 
             oLeitorInfZip.rExtrai(1, 'ide');
@@ -522,7 +522,7 @@ begin
 
           if (oLeitorInfZip.rExtrai(1, 'procEventoBPe') <> '') then
           begin
-            FdocZip.Items[i].XML := IIF(Pos(ENCODING_UTF8, oLeitorInfZip.Grupo) > 0, '', '<' + ENCODING_UTF8 + '>') + oLeitorInfZip.Grupo;
+            FdocZip.Items[i].XML := InserirDeclaracaoXMLSeNecessario(oLeitorInfZip.Grupo);
 
             FdocZip.Items[i].FprocEvento.FId         := oLeitorInfZip.rAtributo('Id');
             FdocZip.Items[i].FprocEvento.FcOrgao     := oLeitorInfZip.rCampo(tcInt, 'cOrgao');
@@ -538,9 +538,9 @@ begin
             begin
               FdocZip.Items[i].FprocEvento.detEvento.FVersao     := oLeitorInfZip.rAtributo('versao');
               FdocZip.Items[i].FprocEvento.detEvento.FnProt      := oLeitorInfZip.rCampo(tcStr, 'nProt');
-              FdocZip.Items[i].FprocEvento.detEvento.FxJust      := oLeitorInfZip.rCampo(tcStr, 'xJust');
-              FdocZip.Items[i].FprocEvento.detEvento.FxCorrecao  := oLeitorInfZip.rCampo(tcStr, 'xCorrecao');
-              FdocZip.Items[i].FprocEvento.detEvento.FDescEvento := oLeitorInfZip.rCampo(tcStr, 'descEvento');
+              FdocZip.Items[i].FprocEvento.detEvento.FxJust      := ParseText(oLeitorInfZip.rCampo(tcStr, 'xJust'));
+              FdocZip.Items[i].FprocEvento.detEvento.FxCorrecao  := ParseText(oLeitorInfZip.rCampo(tcStr, 'xCorrecao'));
+              FdocZip.Items[i].FprocEvento.detEvento.FDescEvento := ParseText(oLeitorInfZip.rCampo(tcStr, 'descEvento'));
 
               if (oLeitorInfZip.rExtrai(3, 'CTe') <> '') then
               begin
@@ -555,7 +555,7 @@ begin
               begin
                 FdocZip.Items[i].FprocEvento.detEvento.Femit.FCNPJ  := oLeitorInfZip.rCampo(tcStr, 'CNPJ');
                 FdocZip.Items[i].FprocEvento.detEvento.Femit.FIE    := oLeitorInfZip.rCampo(tcStr, 'IE');
-                FdocZip.Items[i].FprocEvento.detEvento.Femit.FxNome := oLeitorInfZip.rCampo(tcStr, 'xNome');
+                FdocZip.Items[i].FprocEvento.detEvento.Femit.FxNome := ParseText(oLeitorInfZip.rCampo(tcStr, 'xNome'));
               end;
             end;
 
@@ -566,10 +566,10 @@ begin
               FdocZip.Items[i].FprocEvento.RetinfEvento.FverAplic    := oLeitorInfZip.rCampo(tcStr, 'verAplic');
               FdocZip.Items[i].FprocEvento.RetinfEvento.FcOrgao      := oLeitorInfZip.rCampo(tcInt, 'cOrgao');
               FdocZip.Items[i].FprocEvento.RetinfEvento.FcStat       := oLeitorInfZip.rCampo(tcInt, 'cStat');
-              FdocZip.Items[i].FprocEvento.RetinfEvento.FxMotivo     := oLeitorInfZip.rCampo(tcStr, 'xMotivo');
+              FdocZip.Items[i].FprocEvento.RetinfEvento.FxMotivo     := ParseText(oLeitorInfZip.rCampo(tcStr, 'xMotivo'));
               FdocZip.Items[i].FprocEvento.RetinfEvento.FchBPe       := oLeitorInfZip.rCampo(tcStr, 'chBPe');
               FdocZip.Items[i].FprocEvento.RetinfEvento.FtpEvento    := StrToTpEvento(ok, oLeitorInfZip.rCampo(tcStr, 'tpEvento'));
-              FdocZip.Items[i].FprocEvento.RetinfEvento.FxEvento     := oLeitorInfZip.rCampo(tcStr, 'xEvento');
+              FdocZip.Items[i].FprocEvento.RetinfEvento.FxEvento     := ParseText(oLeitorInfZip.rCampo(tcStr, 'xEvento'));
               FdocZip.Items[i].FprocEvento.RetinfEvento.FnSeqEvento  := oLeitorInfZip.rCampo(tcInt, 'nSeqEvento');
               FdocZip.Items[i].FprocEvento.RetinfEvento.FCNPJDest    := oLeitorInfZip.rCampo(tcStr, 'CNPJDest');
               FdocZip.Items[i].FprocEvento.RetinfEvento.FdhRegEvento := oLeitorInfZip.rCampo(tcDatHor, 'dhRegEvento');

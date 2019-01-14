@@ -2,6 +2,7 @@
 package ACBr_MDFe;
 
 {$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -23,22 +24,17 @@ package ACBr_MDFe;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'ACBr - Manifesto de Documentos Fiscais Eletrônico - (http://www.projetoacbr.com.br/)'}
 {$IMPLICITBUILD OFF}
-{$DEFINE DEBUG}
 
 requires
   vcl,
   rtl,
   designide,
-  vclactnband,
-  vclx,
-  ACBr_DFeComum,
-  soaprtl,
-  xmlrtl,
-  inet,
-  dbrtl,
-  dsnap;
+  ACBr_DFeComum;
 
 contains
   ACBrMDFe in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\ACBrMDFe.pas',
@@ -64,7 +60,6 @@ contains
   pmdfeRetConsStatServ in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\PCNMDFe\pmdfeRetConsStatServ.pas',
   pmdfeRetEnvEventoMDFe in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\PCNMDFe\pmdfeRetEnvEventoMDFe.pas',
   pmdfeRetEnvMDFe in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\PCNMDFe\pmdfeRetEnvMDFe.pas',
-  pmdfeSignature in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\PCNMDFe\pmdfeSignature.pas',
   ACBrMDFeDAMDFEClass in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\DAMDFE\ACBrMDFeDAMDFEClass.pas',
   pmdfeDistDFeInt in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\PCNMDFe\pmdfeDistDFeInt.pas',
   pmdfeRetDistDFeInt in '..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\PCNMDFe\pmdfeRetDistDFeInt.pas';

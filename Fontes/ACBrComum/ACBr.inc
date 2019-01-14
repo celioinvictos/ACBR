@@ -60,7 +60,7 @@
 // Descomente a linha abaixo, se você quer que seu Executável NÃO dependa das DLLs LibXML2, LibXMLSEC,
 {.$DEFINE DFE_SEM_OPENSSL}
 // Descomente a linha abaixo, se você quer que seu Executável NÃO dependa das DLLs LibXMLSEC, mas continue suportando a LibXML2
-{$DEFINE DFE_SEM_XMLSEC}
+{.$DEFINE DFE_SEM_XMLSEC}
 // Descomente a linha abaixo, se você quer que seu Executável NÃO dependa das DLLs LibXML2, mas continue suportando LibXMLSEC
 {.$DEFINE DFE_SEM_LIBXML2}
 // Descomente a linha abaixo, se você não utiliza a obsoleta Capicom para Criptografia (recomendado)
@@ -115,13 +115,15 @@
   {$DEFINE BORLAND}
 {$ENDIF}
 
-{$IFDEF REMOVE_CAST_WARN}
-  {$WARN IMPLICIT_STRING_CAST OFF}
-  {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
-  {$WARN SYMBOL_DEPRECATED OFF}
-  {$WARN SYMBOL_PLATFORM OFF}
-  {$WARN DUPLICATE_CTOR_DTOR OFF}
-  {$WARN CVT_ACHAR_TO_WCHAR OFF}
+{$IFDEF BORLAND}
+  {$IFDEF REMOVE_CAST_WARN}
+    {$WARN IMPLICIT_STRING_CAST OFF}
+    {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
+    {$WARN SYMBOL_DEPRECATED OFF}
+    {$WARN SYMBOL_PLATFORM OFF}
+    {$WARN DUPLICATE_CTOR_DTOR OFF}
+    {$WARN CVT_ACHAR_TO_WCHAR OFF}
+  {$ENDIF}
 {$ENDIF}
 
 
@@ -285,5 +287,10 @@
   AnsiChar = UTF8Char;
   PAnsiChar = PUTF8Char;
   PPAnsiChar = ^PUTF8Char;
+{$ENDIF}
+
+// INDY mudou muito no Delphi RIO, e as Units do ACBr ainda não foram ajustadas
+{$IFDEF DELPHIX_RIO_UP}
+ {$DEFINE DFE_SEM_INDY}
 {$ENDIF}
 

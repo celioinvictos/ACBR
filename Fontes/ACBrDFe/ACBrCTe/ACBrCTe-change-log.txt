@@ -47,6 +47,55 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/12/2018
+-- ACBrCTeConhecimentos / ACBrCTeDACTeRLClass --
+[+] Incluido a propriedade NomeArqPDF que é alimentada quando se gera o PDF de
+    um DACTE.
+    Para se ter acesso a propriedade NomeArqPDF basta fazer da seguinte forma:
+
+    NomedoPDF := ACBrCTe1.Conhecimentos.Items[x].NomeArqPDF
+
+  Por: Italo Jurisato Junior
+
+21/12/2018
+-- ACBrCTeDACTeRLRetrato--
+[*] https://www.projetoacbr.com.br/forum/topic/48390-impress%C3%A3o-chave-de-cte-anulado-substitu%C3%ADdo-e-chave-do-cte-de-anula%C3%A7%C3%A3o/
+  Por: Cleonir
+
+17/12/2018
+-- Diversos --
+[*] Remoção de Units que não são utilizadas pelo componente.
+  Por: Italo Jurisato Junior
+
+13/12/2018
+-- ACBrCTe --
+[*] Inclusão do tipo de evento tePrestDesacordo na function IdentificaSchema.
+  Por: Italo Jurisato Junior
+
+10/12/2018
+-- pcteCTeW --
+[*] Correções e ajustes na identação do código.
+  Por: Italo Jurisato Junior
+
+30/11/2018
+-- pcteCTeW --
+[*] Possivel correção para o problema apontado nessa postagem:
+    https://www.projetoacbr.com.br/forum/topic/37298-cte-os-rejei%C3%A7%C3%A3o-760/?do=findComment&comment=315957
+  Por: Italo Jurisato Junior
+
+28/11/2018
+-- pcteCTeW --
+[*] https://www.projetoacbr.com.br/forum/topic/47868-valida%C3%A7%C3%A3o-incorreta-dos-campos-xorig-e-xdes-na-previs%C3%A3o-do-fluxo-da-carga/
+  Por: wm Rodrigo
+
+22/11/2018
+-- pcteCTeW --
+[*] https://www.projetoacbr.com.br/forum/topic/47783-erro-no-xml-do-cte-modal-aquavi%C3%A1rio/
+  Por: Tulio Padua
+[*] Acrescentado as condições de prestação de serviço interestadual e não contribuinte
+    ao gerar o grupo <infTribFed>.
+  Por: Italo Jurisato Junior
+
 10/10/2018
 -- ACBrCTeConhecimentos --
 [*] Após separar o conteudo do grupo <infModal> remove um eventual namespace.

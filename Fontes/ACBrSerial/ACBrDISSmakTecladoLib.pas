@@ -69,7 +69,7 @@ TACBrDISSmakTecladoLib = class( TACBrDISClass )
       xClear_L1 : procedure; {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
       xClear_L2 : procedure; {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
 
-      procedure FunctionDetectLib(FuncName: String; var LibPointer: Pointer);
+      procedure FunctionDetectLib(const FuncName: String; var LibPointer: Pointer);
       procedure LoadDLLFunctions;
       procedure UnLoadDLLFunctions;
   public
@@ -83,7 +83,7 @@ TACBrDISSmakTecladoLib = class( TACBrDISClass )
     procedure LimparLinha( Linha: Integer ) ; override ;
 
     procedure PosicionarCursor(Linha, Coluna: Integer ) ; override ;
-    procedure Escrever( Texto : String ) ; override ;
+    procedure Escrever( const Texto : String ) ; override ;
 end ;
 
 implementation
@@ -136,7 +136,7 @@ begin
     xGotoxy(Coluna, Linha);
 end;
 
-procedure TACBrDISSmakTecladoLib.Escrever(Texto: String);
+procedure TACBrDISSmakTecladoLib.Escrever(const Texto: String);
 begin
   if Assigned(xDisp) then
     xDisp( PAnsiChar( AnsiString(ACBrStrToAnsi(Texto))) );
@@ -166,7 +166,7 @@ begin
   FunctionDetectLib( 'Clear_L2'       , @xClear_L2);
 end;
 
-procedure TACBrDISSmakTecladoLib.FunctionDetectLib(FuncName : String ;
+procedure TACBrDISSmakTecladoLib.FunctionDetectLib(const FuncName : String ;
   var LibPointer : Pointer) ;
 begin
   if not Assigned( LibPointer )  then

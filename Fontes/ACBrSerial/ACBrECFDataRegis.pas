@@ -612,7 +612,7 @@ end;
 
 function TACBrECFDataRegis.VerificaFimLeitura(var Retorno : AnsiString ;
    var TempoLimite : TDateTime) : Boolean ;
-Var ACK : AnsiChar ;
+Var vACK : AnsiChar ;
     cmd : AnsiString ;
     Bytes : Integer ;
 begin
@@ -623,9 +623,9 @@ begin
   begin
      if Bytes = 2 then   { Recebeu apenas o ACK }
       begin
-        ACK := Retorno[1] ;
+        vACK := Retorno[1] ;
 
-        case ACK of
+        case vACK of
            { Tudo OK, Comando entendido... porém ECF não efetuará nenhum
              retorno... portanto FIM...}
            _ACKN : Result := True ;
@@ -1719,9 +1719,10 @@ begin
    inherited CarregaComprovantesNaoFiscais ;
 
    try
-      if IsV03 or IsV04 then
-         {Versao 0203}
-      else
+//      if IsV03 or IsV04 then
+//         {Versao 0203}
+//      else
+      if not(IsV03 or IsV04) then
        begin
          {Versao 0205}
          Cont      := 1 ;
@@ -1833,9 +1834,8 @@ begin
   begin
      Msg := ACBrStr( 'Arquivo '+fsArqPrgBcoTXT+' não encontrado. '+
                      'Valores padrões serão utilizados.' ) ;
-     raise EACBrECFErro.Create( Msg );
-
      fsArqPrgBcoTXT := '' ;
+     raise EACBrECFErro.Create( Msg );
   end ;
 
   if fsArqPrgBcoTXT = '' then

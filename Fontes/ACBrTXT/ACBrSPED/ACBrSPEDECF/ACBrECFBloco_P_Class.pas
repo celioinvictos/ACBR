@@ -90,7 +90,7 @@ type
 
     constructor Create;
     destructor Destroy; override;
-    procedure LimpaRegistros;
+    procedure LimpaRegistros; override;
 
     function RegistroP001New : TRegistroP001;
     function RegistroP030New : TRegistroP030;
@@ -115,8 +115,6 @@ type
     property RegistroP300Count: Integer read FRegistroP150Count write FRegistroP300Count;
     property RegistroP400Count: Integer read FRegistroP200Count write FRegistroP400Count;
     property RegistroP500Count: Integer read FRegistroP230Count write FRegistroP500Count;
-
-  published
   end;
 
 
@@ -189,7 +187,7 @@ end;
 
 function TBloco_P.RegistroP030New: TRegistroP030;
 begin
-  Result := RegistroP001.RegistroP030.New(FRegistroP001);
+  Result := RegistroP001.RegistroP030.New();
 end;
 
 function TBloco_P.RegistroP100New: TRegistroP100;

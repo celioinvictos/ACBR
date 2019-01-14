@@ -54,12 +54,9 @@ package ACBr_BlocoX;
 {$DEFINE DEBUG}
 
 requires
-  vcl,
   rtl,
+  vcl,
   designide,
-  xmlrtl,
-  inet,
-  soaprtl,
   ACBr_DFeComum;
 
 contains

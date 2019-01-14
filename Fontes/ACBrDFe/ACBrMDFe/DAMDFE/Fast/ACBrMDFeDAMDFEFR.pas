@@ -694,9 +694,9 @@ end;
 procedure TACBrMDFeDAMDFEFR.frxReportGetValue(const VarName: string; var Value: Variant);
 begin
   if VarName = 'CANCELADO' then
-    Value := (DAMDFEClassOwner.MDFeCancelada) or (FMDFe.procMDFe.cStat = 101);
+    Value := (DAMDFEClassOwner.Cancelada) or (FMDFe.procMDFe.cStat = 101);
   if VarName = 'ENCERRADO' then
-    Value := DAMDFEClassOwner.MDFeEncerrado;
+    Value := DAMDFEClassOwner.Encerrado;
 end;
 
 function TACBrMDFeDAMDFEFR.GetPreparedReport: TfrxReport;
@@ -729,15 +729,10 @@ procedure TACBrMDFeDAMDFEFR.ImprimirDAMDFe(MDFe: TMDFe);
 begin
   if PrepareReport(MDFe) then
   begin
-    if MostrarPreview then
+    if MostraPreview then
       frxReport.ShowPreparedReport
     else
-    begin
-      frxReport.PrintOptions.ShowDialog  := SelecionaImpressora;
-      frxReport.PrintOptions.Copies      := NumCopias;
-      frxReport.PreviewOptions.AllowEdit := False;
       frxReport.Print;
-    end;
   end;
 end;
 
@@ -779,7 +774,7 @@ procedure TACBrMDFeDAMDFEFR.ImprimirEVENTO(MDFe: TMDFe);
 begin
   if PrepareReportEvento then
   begin
-    if MostrarPreview then
+    if MostraPreview then
       frxReport.ShowPreparedReport
     else
       frxReport.Print;
@@ -845,6 +840,15 @@ begin
   else
     raise EACBrMDFeDAMDFEFR.Create('Caminho do arquivo de impressão do DAMDFe não assinalado.');
 
+  frxReport.PrintOptions.Copies      := NumCopias;
+  frxReport.PrintOptions.ShowDialog  := MostraSetup;
+  frxReport.ShowProgress             := MostraStatus;
+  frxReport.PreviewOptions.AllowEdit := False;
+
+  // Define a impressora
+  if NaoEstaVazio(frxReport.PrintOptions.Printer) then
+    frxReport.PrintOptions.Printer := Impressora;
+
   if Assigned(MDFe) then
   begin
     FMDFe := MDFe;
@@ -895,8 +899,14 @@ begin
   else
     raise EACBrMDFeDAMDFEFR.Create('Caminho do arquivo de impressão do EVENTO não assinalado.');
 
-  frxReport.PrintOptions.Copies := NumCopias;
+  frxReport.PrintOptions.Copies      := NumCopias;
+  frxReport.PrintOptions.ShowDialog  := MostraSetup;
+  frxReport.ShowProgress             := MostraStatus;
   frxReport.PreviewOptions.AllowEdit := False;
+
+  // Define a impressora
+  if NaoEstaVazio(frxReport.PrintOptions.Printer) then
+    frxReport.PrintOptions.Printer := Impressora;
 
   // preparar relatorio
   if Assigned(ACBrMDFe) then
@@ -1104,11 +1114,11 @@ begin
       FieldByName('tpEmis').AsInteger := StrToIntDef(TpEmisToStr(tpEmis), 0);
       FieldByName('UFIni').AsString   := UFIni;
       FieldByName('UFFim').AsString   := UFFim;
-      if (tpEmis = teNormal) or (not EstaVazio(FDAMDFEClassOwner.ProtocoloMDFE)) or (not EstaVazio(FMDFe.procMDFe.nProt))
+      if (tpEmis = teNormal) or (not EstaVazio(FDAMDFEClassOwner.Protocolo)) or (not EstaVazio(FMDFe.procMDFe.nProt))
       then
       begin
-        if not EstaVazio(FDAMDFEClassOwner.ProtocoloMDFE) then
-          FieldByName('Protocolo').AsString := FDAMDFEClassOwner.ProtocoloMDFE
+        if not EstaVazio(FDAMDFEClassOwner.Protocolo) then
+          FieldByName('Protocolo').AsString := FDAMDFEClassOwner.Protocolo
         else if not EstaVazio(FMDFe.procMDFe.nProt) then
           FieldByName('Protocolo').AsString := FMDFe.procMDFe.nProt + '   ' +
             IfThen(FMDFe.procMDFe.dhRecbto <> 0, DateTimeToStr(FMDFe.procMDFe.dhRecbto), '')
@@ -1200,13 +1210,12 @@ begin
     Append;
     with FMDFe.emit do
     begin
-//      FieldByName('CNPJ').AsString  := FormatarCNPJ(CNPJ);
-
-      if Length(CNPJCPF)=11 then
+      
+	  if Length(CNPJCPF)=11 then
         FieldByName('CNPJ').AsString := FormatarCPF(CNPJCPF)
       else
         FieldByName('CNPJ').AsString := FormatarCNPJ(CNPJCPF);
-
+		
       FieldByName('IE').AsString    := IE;
       FieldByName('XNome').AsString := xNome;
       FieldByName('XFant').AsString := XFant;
@@ -1541,7 +1550,7 @@ begin
 
     if veicTracao.placa <> '' then
     begin
-      FieldByName('placa').AsString     := FormatarPlaca(veicTracao.placa);
+      FieldByName('placa').AsString     := FormatarPlaca(veicTracao.placa) + ' / ' + veicTracao.UF;
       FieldByName('RENAVAM').AsString   := veicTracao.RENAVAM;
       FieldByName('RNTRCProp').AsString := IfEmptyThen(veicTracao.prop.RNTRC, FieldByName('RNTRC').AsString);
       FieldByName('CNPJCPFProp').AsString := veicTracao.prop.CNPJCPF;
@@ -1556,7 +1565,7 @@ begin
 
     for i := 0 to veicReboque.Count - 1 do
     begin
-      FieldByName('placa').AsString     := FieldByName('placa').AsString + #13#10 + FormatarPlaca(FMDFe.rodo.veicReboque.Items[i].placa);
+      FieldByName('placa').AsString     := FieldByName('placa').AsString + #13#10 + FormatarPlaca(veicReboque.Items[i].placa) + ' / ' + veicReboque.Items[i].UF;
       FieldByName('RENAVAM').AsString   := FieldByName('RENAVAM').AsString + #13#10 + veicReboque.Items[i].RENAVAM;
       FieldByName('RNTRCProp').AsString := FieldByName('RNTRCProp').AsString + #13#10 + IfThen(veicReboque.Items[i].prop.RNTRC <> '', veicReboque.Items[i].prop.RNTRC, FMDFe.rodo.RNTRC);
       FieldByName('CNPJCPFProp').AsString := FieldByName('CNPJCPFProp').AsString + #13#10 + veicReboque.Items[i].prop.CNPJCPF;
@@ -1646,10 +1655,10 @@ begin
         FieldByName('dhRegEvento').AsDateTime := RetInfEvento.dhRegEvento;
         FieldByName('xJust').AsString         := InfEvento.detEvento.xJust;
         FieldByName('xNome').AsString         := InfEvento.detEvento.xNome;
-
+		
         if (InfEvento.detEvento.CPF <> '') then
           FieldByName('CPF').AsString := FormatarCPF(InfEvento.detEvento.CPF);
-
+		  
         FieldByName('nProtEvento').AsString   := InfEvento.detEvento.nProt;
         FieldByName('dtEnc').AsDateTime       := InfEvento.detEvento.dtEnc;
         FieldByName('cUf').AsInteger          := InfEvento.detEvento.cUF;

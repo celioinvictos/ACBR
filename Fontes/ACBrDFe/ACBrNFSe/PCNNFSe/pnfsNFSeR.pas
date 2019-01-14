@@ -201,14 +201,6 @@ begin
       Result := LerNFSe_Smarapd
     else
       Result := False;
-
-  // Grupo da TAG <signature> ***************************************************
-  Leitor.Grupo := Leitor.Arquivo;
-
-  NFSe.Signature.URI             := Leitor.rAtributo('Reference URI=');
-  NFSe.Signature.DigestValue     := Leitor.rCampo(tcStr, 'DigestValue');
-  NFSe.Signature.SignatureValue  := Leitor.rCampo(tcStr, 'SignatureValue');
-  NFSe.Signature.X509Certificate := Leitor.rCampo(tcStr, 'X509Certificate');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3021,8 +3013,6 @@ function TNFSeR.LerNFSe_IPM: Boolean;
 var
   I: Integer;
   vOk: Boolean;
-  vItem: Integer;
-  vLinha: String ;
 begin
   Leitor.Grupo := Leitor.Arquivo;
   VersaoXML    := '1';
@@ -3358,6 +3348,7 @@ begin
       NFSe.PrestadorServico.Endereco.Numero := Leitor.rCampo(tcStr, 'nrEndereco');
       NFSe.PrestadorServico.Endereco.Bairro := Leitor.rCampo(tcStr, 'nmBairro');
       NFSe.PrestadorServico.Endereco.UF := Leitor.rCampo(tcStr, 'nmUf');
+      NFSe.PrestadorServico.Endereco.CEP := Leitor.rCampo(tcStr, 'nrCEP');
       NFSe.PrestadorServico.Endereco.xMunicipio := Leitor.rCampo(tcStr, 'nmCidade');
       NFSe.PrestadorServico.Endereco.xPais := Leitor.rCampo(tcStr, 'nmPais');
       NFSe.PrestadorServico.IdentificacaoPrestador.Cnpj := Leitor.rCampo(tcStr, 'nrDocumento');
@@ -3383,6 +3374,20 @@ begin
         NFSe.MotivoCancelamento := Leitor.rCampo(tcStr, 'dsCancelamento');
         NFSe.Status := srCancelado;
       end;
+    end;
+
+    if (Leitor.rExtrai(1, 'tomadorServico') <> '') then
+    begin
+      NFSe.Tomador.RazaoSocial := Leitor.rCampo(tcStr, 'nmTomador');
+      NFSe.Tomador.IdentificacaoTomador.CpfCnpj := Leitor.rCampo(tcStr, 'nrDocumento');
+      NFSe.Tomador.Endereco.Endereco := Leitor.rCampo(tcStr, 'dsEndereco');
+      NFSe.Tomador.Endereco.Numero := Leitor.rCampo(tcStr, 'nrEndereco');
+      NFSe.Tomador.Endereco.xPais := Leitor.rCampo(tcStr, 'nmPais');
+      NFSe.Tomador.Endereco.xMunicipio := Leitor.rCampo(tcStr, 'nmCidade');
+      NFSe.Tomador.Endereco.CodigoMunicipio := Leitor.rCampo(tcStr, 'cdIbge');
+      NFSe.Tomador.Endereco.Bairro := Leitor.rCampo(tcStr, 'nmBairro');
+      NFSe.Tomador.Endereco.UF := Leitor.rCampo(tcStr, 'nmUf');
+      NFSe.Tomador.Endereco.CEP := Leitor.rCampo(tcStr, 'nrCep');
     end;
 
     Result := True;

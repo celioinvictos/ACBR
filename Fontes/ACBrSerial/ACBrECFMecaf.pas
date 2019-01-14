@@ -112,7 +112,7 @@ TACBrECFMecaf = class( TACBrECFClass )
     fsVinculado : Boolean ;
 
     { Substitui caracteres nulos do retorno por espaços. #0 -> ' ' }
-    function LimpaStr( AString : AnsiString ) : AnsiString ;
+    function LimpaStr( const AString : AnsiString ) : AnsiString ;
     { Retorna Verdadeiro se o ECF é antigo Versão: 201 ou 301 }
     function IsOldMecaf : Boolean ;
 
@@ -744,11 +744,12 @@ begin
      CodTroco := '00' ;
      FPG      := AchaFPGDescricao('Dinheiro') ;
 
-     if FPG = nil then
-{        MessageDlg('Forma de pagamento DINHEIRO não encontrada. '+#10+
+{     if FPG = nil then
+        MessageDlg('Forma de pagamento DINHEIRO não encontrada. '+#10+
                     'Usando Forma de Pagamento "00" para lançar o Troco.',
-                    mtWarning,[mbOk],0)}
-     else
+                    mtWarning,[mbOk],0)
+     else}
+     if FPG <> nil then
         CodTroco := FPG.Indice ;
 
      EnviaComando( '07' + CodTroco + StringOfChar('0' ,15) ,5) ;
@@ -1252,7 +1253,7 @@ begin
                 Favorecido + Cidade + '1' + Dia + Mes + Ano + Observacao ,10) ;
 end;
 
-function TACBrECFMecaf.LimpaStr(AString: AnsiString): AnsiString;
+function TACBrECFMecaf.LimpaStr(const AString: AnsiString): AnsiString;
 Var A,Len : Integer ;
 begin
   Result := '' ;

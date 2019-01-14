@@ -115,7 +115,7 @@ type
     procedure Ativar; virtual;
     procedure Desativar; virtual;
 
-    procedure EnviarComando(ACmd: String; ATimeOut: Integer = 0);
+    procedure EnviarComando(const ACmd: String; ATimeOut: Integer = 0);
     
     function EmLinha: Boolean; virtual;
     function IMEI: String; virtual;
@@ -185,11 +185,11 @@ var
   I, J : Integer;
   FimSMS : Boolean;
 begin
+  Self.Clear;
+  if not FileExists(APath) then
+    raise EACBrSMSException.CreateFmt('Arquivo "%s" não encontrado.', [APath]);
+  ListaSMS := TStringList.Create;
   try
-    Self.Clear;
-    if not FileExists(APath) then
-      raise EACBrSMSException.CreateFmt('Arquivo "%s" não encontrado.', [APath]);
-    ListaSMS := TStringList.Create;
     ListaSMS.LoadFromFile(APath);
     if ListaSMS.Count = 0 then
       Exit;
@@ -481,7 +481,7 @@ begin
     Desativar;
 end;
 
-procedure TACBrSMSClass.EnviarComando(ACmd: String; ATimeOut: Integer);
+procedure TACBrSMSClass.EnviarComando(const ACmd: String; ATimeOut: Integer);
 var
   sRet: String;
 begin

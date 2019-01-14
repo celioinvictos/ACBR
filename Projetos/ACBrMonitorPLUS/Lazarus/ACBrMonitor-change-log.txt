@@ -43,6 +43,41 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+09/01/2019
+[*] ACBrMonitor1
+Ajustes na propriedade da NFe "Exibir Inf Adic. Produto" na impressão.
+
+08/01/2019
+[-] DoACBrCTeUnit
+Correção no método: EnviarLoteCTe na pesquisa e parâmetro do lote a ser enviado
+
+[+] Adicionada configuração para modificar o nome do arquivo do boleto.
+https://www.projetoacbr.com.br/forum/topic/48372-mudar-o-nome-do-boletopdf-para-outro-nome/
+por: Juliana Tamizou
+
+[+] Novas configurações para QRCode lateral e logo adiconadas.
+https://www.projetoacbr.com.br/forum/topic/48406-qrcode-lateral-no-cfe/
+por: DSA
+
+[*] ACBrMonitorPLUS.iss
+Removido manual em PDF do instalador diminuindo o tamanho do instalador em ~50%
+
+[-] ACBr.inc
+Ajustada diretiva de compilação que removia suporte a libXmlSec
+
+27/11/2018
+[+] DoACBrMDFeUnit
+Ajuste na validação de retorno do método ConsultaMDFeNaoEnc
+
+23/11/2018
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado Flag para geração do arquivo de remessa removendo acentuação para componente Boleto
+
+20/11/2018
+[+] DoSATUnit, ACBrMonitorConsts
+Adicionado funcionalidade SatSign no ACBrMonitor para Geração da Assinatura da Software
+House no SAT
+
 19/11/2018
 [*] DoACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit
 Ajustes no controle de exceptions nas classes

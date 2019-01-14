@@ -73,7 +73,7 @@ type
     FC1          : Integer;
     FC2          : Integer;
     FC3          : Integer;
-    function DigitosaIgnorarConta(Banco: String) : integer;
+    function DigitosaIgnorarConta(const Banco: String) : integer;
     procedure SetCMC7(Banda: String);
     procedure ZeraCampos ;
   protected
@@ -82,8 +82,8 @@ type
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy  ; override ;
-    Procedure MontaCMC7(pBanco,pAgencia,pConta,pNrCheque,
-       pCamaraCompesacao : String; pTipificacao : String = '5') ; overload ;
+    Procedure MontaCMC7(pBanco, pAgencia, pConta, pNrCheque, pCamaraCompesacao: string;
+      const pTipificacao : String = '5') ; overload ;
     Procedure MontaCMC7(Bloco1, Bloco2, Bloco3 : String) ; overload ;
   published
     { Published declarations }
@@ -107,10 +107,10 @@ type
 
 function ValidaCMC7(CMC7: String) : Boolean;
 function FormataCMC7(const ACMC7: String): String;
-function CalculaC1(Chave: String): Integer;
-function CalculaC2(Chave: String): Integer;
-function CalculaC3(Chave: String): Integer;
-function CalcDigitoCMC7(Documento : String; Inicial, Final : integer) : String;
+function CalculaC1(const Chave: String): Integer;
+function CalculaC2(const Chave: String): Integer;
+function CalculaC3(const Chave: String): Integer;
+function CalcDigitoCMC7(const Documento : String; Inicial, Final : integer) : String;
 
 implementation
 
@@ -132,7 +132,7 @@ begin
     Copy(CMC7, 19, 12) + ':';
 end;
 
-function CalculaC1(Chave: String): Integer;
+function CalculaC1(const Chave: String): Integer;
 begin
   if Length(Chave) <> 10 then
     raise Exception.Create('Parâmetros inválidos para o cálculo do C1.');
@@ -140,7 +140,7 @@ begin
   Result := StrToInt( Modulo11(Chave) );
 end;
 
-function CalculaC2(Chave: String): Integer;
+function CalculaC2(const Chave: String): Integer;
 begin
   if Length(Chave) <> 10 then
     raise Exception.Create('Parâmetros inválidos para o cálculo do C2.');
@@ -148,7 +148,7 @@ begin
   Result := StrToInt( Modulo11(Chave) );
 end;
 
-function CalculaC3(Chave: String): Integer;
+function CalculaC3(const Chave: String): Integer;
 begin
   if Length(Chave) <> 6 then
     raise Exception.Create('Parâmetros inválidos para o cálculo do C3.');
@@ -156,7 +156,7 @@ begin
   Result := StrToInt( Modulo11(Chave) );
 end;
 
-function CalcDigitoCMC7(Documento : String; Inicial, Final : integer) : String;
+function CalcDigitoCMC7(const Documento : String; Inicial, Final : integer) : String;
 var
   I: Integer;
   vVal1, vVal2, vVal3, vSoma, vPeso : Real;
@@ -262,7 +262,7 @@ begin
   inherited Destroy ;
 end;
 
-function TACBrCMC7.DigitosaIgnorarConta(Banco: String) : integer;
+function TACBrCMC7.DigitosaIgnorarConta(const Banco: String) : integer;
 var
   CodBanco : Integer;
 begin
@@ -349,7 +349,8 @@ begin
 end;
 
 
-Procedure TACBrCMC7.MontaCMC7(pBanco,pAgencia,pConta,pNrCheque,pCamaraCompesacao,pTipificacao : String) ;
+Procedure TACBrCMC7.MontaCMC7(pBanco, pAgencia, pConta, pNrCheque, pCamaraCompesacao: string;
+      const pTipificacao : String = '5') ;
 // Dica retirada do site http://www.ramosdainformatica.com.br/art_recentes01.php?CDA=297 e ajustado conforme necessidade
 var
   vDv1, vDv2, vDv3 : string;

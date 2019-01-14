@@ -42,7 +42,7 @@ uses
 
 const
   CLibSATNome = 'ACBrLibSAT';
-  CLibSATVersao = '0.0.1';
+  CLibSATVersao = '0.0.2';
 
   CSessaoSAT = 'SAT';
   CChaveNomeDLL = 'NomeDLL';
@@ -93,33 +93,26 @@ const
   CChaveLanGW = 'lanGW';
   CChaveLanDNS1 = 'lanDNS1';
   CChaveLanDNS2 = 'lanDNS2';
-  CChaveUsuario = 'usuario';
   CChaveSenha = 'senha';
   CChaveProxy = 'proxy';
-  CChaveProxyIp = 'proxy_ip';
-  CChaveProxyPorta = 'proxy_porta';
-  CChaveProxyUser = 'proxy_user';
-  CChaveProxySenha = 'proxy_senha';
 
   CSessaoExtrato = 'Extrato';
   CChaveTipo = 'Tipo';
-  CChaveMask_qCom = 'Mask_qCom';
-  CChaveMask_vUnCom = 'Mask_vUnCom';
+  CChaveMaskqCom = 'MaskqCom';
+  CChaveMaskvUnCom = 'MaskvUnCom';
   CChaveImprimeQRCode = 'ImprimeQRCode';
   CChaveImprimeMsgOlhoNoImposto = 'ImprimeMsgOlhoNoImposto';
   CChaveImprimeCPFNaoInformado = 'ImprimeCPFNaoInformado';
   CChavePictureLogo = 'PictureLogo';
-  CChaveMostrarPreview = 'MostrarPreview';
-  CChaveMostrarSetup = 'MostrarSetup';
+  CChaveMostraPreview = 'MostraPreview';
+  CChaveMostraSetup = 'MostraSetup';
   CChaveNumCopias = 'NumCopias';
-  CChaveNomeArquivo = 'NomeArquivo';
-  CChaveSoftwareHouse = 'SoftwareHouse';
-  CChaveSite = 'Site';
+  CChaveNomeDocumento = 'NomeDocumento';
   CChaveFiltro = 'Filtro';
   CChaveMsgAppQRCode = 'MsgAppQRCode';
   CChaveImprimeEmUmaLinha = 'ImprimeEmUmaLinha';
   CChaveImprimeDescAcrescItem = 'ImprimeDescAcrescItem';
-  CChaveUsaCodigoEanImpressao = 'UsaCodigoEanImpressao';
+  CChaveImprimeCodigoEan = 'ImprimeCodigoEan';
 
   CChaveLarguraBobina = 'LarguraBobina';
   CChaveMargensTopo = 'MargensTopo';
@@ -133,7 +126,7 @@ const
   CChaveLogoAutoSize = 'LogoAutoSize';
   CChaveLogoCenter = 'LogoCenter';
   CChaveLogoVisible = 'LogoVisible';
-  CChavePrinterName = 'PrinterName';
+  CChavePrinterName = 'Impressora';
   CChaveImprimeChaveEmUmaLinha = 'ImprimeChaveEmUmaLinha';
 
   CSessaoCFe = 'CFE';
@@ -141,6 +134,10 @@ const
   CSessaoCFeCancelado = 'CANCELAMENTO';
   CSessaoTESTEFIMAFIM = 'TESTEFIMAFIM';
   CSessaoStatusSAT = 'STATUSSAT';
+
+resourcestring
+  SErrLibSATCNPJSwHouseInvalido = 'CNPJ da Software House inválido!'+sLineBreak+'%s';
+  SErrLibSATCNPJEmitenteInvalido = 'CNPJ do Emitente inválido!'+sLineBreak+'%s';
 
 
 implementation

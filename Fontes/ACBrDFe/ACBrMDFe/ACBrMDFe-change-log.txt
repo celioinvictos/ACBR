@@ -47,6 +47,22 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+17/12/2018
+-- Diversos --
+[*] Remoção de Units que não são utilizadas pelo componente.
+  Por: Italo Jurisato Junior
+
+28/11/2018
+-- Diversos --
+[*] Alterado o tamanho e casas decimais de dois campos do modal Aereo, conforme NT 2018/002.
+  por: Italo Jurisato Junior
+
+22/11/2018
+-- Diversos --
+[*] Na impressão do DAMDFE (Fortes Report) foi acrescentado a direita da Placa do 
+    Veiculo a UF do mesmo.
+  por: Italo Jurisato Junior
+
 19/10/2018
 -- ACBrMDFeManifestos --
 [*] Ajuste na leitura do arquivo .ini (sessão infANTT).

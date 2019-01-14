@@ -290,7 +290,7 @@ type
     QuebrarLinhasDetalheItens        : Boolean;
     ImprimirDetalhamentoEspecifico   : Boolean;
     ImprimirDadosDocReferenciados    : Boolean;
-    ExibirBandInforAdicProduto       : Boolean;
+    ExibirBandInforAdicProduto       : Integer;
     LogoEmCima                       : Boolean;
   end;
 
@@ -375,6 +375,8 @@ type
     ImprimeEmUmaLinha           : Boolean;
     ImprimeChaveEmUmaLinha      : Integer;
     UsaCodigoEanImpressao       : Boolean;
+    ImprimeQRCodeLateral         : Boolean;
+    ImprimeLogoLateral          : Boolean;
   end;
 
   TSATEmit = record
@@ -427,7 +429,7 @@ type
 
   TSATImpressao = record
     SATEmit                    : TSATEmit;
-    SATExtrado                 : TSATExtrato;
+    SATExtrato                 : TSATExtrato;
     SATFortes                  : TSATFortes;
     SATPrinter                 : TSATPrinter;
   end;
@@ -530,6 +532,7 @@ type
     Filtro                     : Integer;
     DirArquivoBoleto           : String ;
     Impressora                 : String ;
+    NomeArquivoBoleto          : String;
   end;
 
   TBoletoRemessaRetorno = record
@@ -538,6 +541,7 @@ type
     CNAB                       : Integer;
     LerCedenteRetorno          : Boolean;
     CodTransmissao             : String ;
+    RemoveAcentos              : Boolean;
   end;
 
   TBoletoRelatorio = record
@@ -998,7 +1002,7 @@ begin
       Ini.WriteBool( CSecDANFE,  CKeyDANFEQuebrarLinhasDetalheItens      , QuebrarLinhasDetalheItens );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirDetalhamentoEspecifico , ImprimirDetalhamentoEspecifico );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirDadosDocReferenciados  , ImprimirDadosDocReferenciados );
-      Ini.WriteBool( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto     , ExibirBandInforAdicProduto );
+      Ini.WriteInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto     , ExibirBandInforAdicProduto );
       Ini.WriteBool( CSecDANFE,  CKeyDANFELogoEmCima                     , LogoEmCima );
     end;
 
@@ -1047,13 +1051,15 @@ begin
       ini.WriteBool(    CSecSAT, CKeySATSepararPorMES  , SepararPorMES  );
     end;
 
-    with SAT.SATImpressao.SATExtrado do
+    with SAT.SATImpressao.SATExtrato do
     begin
       ini.WriteString(  CSecSATExtrato, CKeySATExtParamsString           , ParamsString          );
       ini.WriteBool(    CSecSATExtrato, CKeySATExtImprimeDescAcrescItem  , ImprimeDescAcrescItem );
       ini.WriteBool(    CSecSATExtrato, CKeySATExtImprimeEmUmaLinha      , ImprimeEmUmaLinha     );
       ini.WriteInteger( CSecSATExtrato, CKeySATExtImprimeChaveEmUmaLinha , ImprimeChaveEmUmaLinha);
       ini.WriteBool(    CSecSATExtrato, CKeySATExtUsaCodigoEanImpressao  , UsaCodigoEanImpressao );
+      Ini.WriteBool(    CSecSATExtrato, CKeySATExtQRCodeLateral          , ImprimeQRCodeLateral);
+      Ini.WriteBool(    CSecSATExtrato, CKeySATExtLogoLateral            , ImprimeLogoLateral);
     end;
 
     with SAT.SATImpressao.SATEmit do
@@ -1202,6 +1208,7 @@ begin
       ini.WriteInteger(CSecBOLETO, CKeyBOLETOFiltro,        Filtro        );
       ini.WriteString( CSecBOLETO, CKeyBOLETODirArquivoBoleto,  DirArquivoBoleto       );
       Ini.WriteString( CSecBOLETO, CKeyBOLETOImpressora,                Impressora             );
+      Ini.WriteString( CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivoBoleto);
     end;
 
     with BOLETO.RemessaRetorno do
@@ -1211,6 +1218,7 @@ begin
       ini.WriteInteger(CSecBOLETO, CKeyBOLETOCNAB,              CNAB                   );
       Ini.WriteBool(   CSecBOLETO, CKeyBOLETOLerCedenteRetorno, LerCedenteRetorno      );
       ini.WriteString( CSecBOLETO, CKeyBOLETOCodTransmissao,CodTransmissao);
+      Ini.WriteBool(   CSecBOLETO, CKeyBOLETORemoveAcentos, RemoveAcentos      );
     end;
 
     with BOLETO.Relatorio do
@@ -1597,7 +1605,7 @@ begin
       QuebrarLinhasDetalheItens :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEQuebrarLinhasDetalheItens         , QuebrarLinhasDetalheItens );
       ImprimirDetalhamentoEspecifico := Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimirDetalhamentoEspecifico , ImprimirDetalhamentoEspecifico );
       ImprimirDadosDocReferenciados := Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimirDadosDocReferenciados  , ImprimirDadosDocReferenciados );
-      ExibirBandInforAdicProduto := Ini.ReadBool( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto        , ExibirBandInforAdicProduto );
+      ExibirBandInforAdicProduto := Ini.ReadInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto        , ExibirBandInforAdicProduto );
       LogoEmCima                 := Ini.ReadBool( CSecDANFE,  CKeyDANFELogoEmCima                        , LogoEmCima );
     end;
 
@@ -1660,13 +1668,15 @@ begin
       SepararPorMES             := ini.ReadBool(    CSecSAT, CKeySATSepararPorMES  , SepararPorMES  );
     end;
 
-    with SAT.SATImpressao.SATExtrado do
+    with SAT.SATImpressao.SATExtrato do
     begin
       ParamsString           := ini.ReadString(  CSecSATExtrato, CKeySATExtParamsString           , ParamsString          );
       ImprimeDescAcrescItem  := ini.ReadBool(    CSecSATExtrato, CKeySATExtImprimeDescAcrescItem  , ImprimeDescAcrescItem );
       ImprimeEmUmaLinha      := ini.ReadBool(    CSecSATExtrato, CKeySATExtImprimeEmUmaLinha      , ImprimeEmUmaLinha     );
       ImprimeChaveEmUmaLinha := ini.ReadInteger( CSecSATExtrato, CKeySATExtImprimeChaveEmUmaLinha , ImprimeChaveEmUmaLinha);
       UsaCodigoEanImpressao  := ini.ReadBool(    CSecSATExtrato, CKeySATExtUsaCodigoEanImpressao  , UsaCodigoEanImpressao );
+      ImprimeQRCodeLateral   := Ini.ReadBool(    CSecSATExtrato, CKeySATExtQRCodeLateral          , ImprimeQRCodeLateral);
+      ImprimeLogoLateral     := Ini.ReadBool(    CSecSATExtrato, CKeySATExtLogoLateral            , ImprimeLogoLateral);
     end;
 
     with SAT.SATImpressao.SATEmit do
@@ -1815,6 +1825,8 @@ begin
       Filtro                 :=  ini.ReadInteger(CSecBOLETO, CKeyBOLETOFiltro,           Filtro                 );
       DirArquivoBoleto       :=  ini.ReadString( CSecBOLETO, CKeyBOLETODirArquivoBoleto,   DirArquivoBoleto     );
       Impressora             :=  Ini.ReadString( CSecBOLETO, CKeyBOLETOImpressora,       Impressora             );
+      NomeArquivoBoleto      :=  Ini.ReadString( CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivoBoleto);
+      
     end;
 
     with BOLETO.RemessaRetorno do
@@ -1824,6 +1836,7 @@ begin
       CNAB                   :=  ini.ReadInteger(CSecBOLETO, CKeyBOLETOCNAB,               CNAB                   );
       LerCedenteRetorno      :=  Ini.ReadBool(   CSecBOLETO, CKeyBOLETOLerCedenteRetorno,  LerCedenteRetorno      );
       CodTransmissao         :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCodTransmissao,     ini.ReadString( CSecBOLETO,CKeyBOLETOCedenteCodTransmissao,'') );
+      RemoveAcentos          :=  Ini.ReadBool(   CSecBOLETO, CKeyBOLETORemoveAcentos,      RemoveAcentos      );
     end;
 
     with BOLETO.Relatorio do
@@ -1850,6 +1863,7 @@ var
   FS: TFileStream;
 begin
   ValidarNomeCaminho(False);
+  DefinirValoresPadrao;
 
   FS := TFileStream.Create(FNomeArquivo, fmOpenRead);
   try
@@ -2187,7 +2201,7 @@ begin
     QuebrarLinhasDetalheItens :=  False;
     ImprimirDetalhamentoEspecifico := True;
     ImprimirDadosDocReferenciados := True;
-    ExibirBandInforAdicProduto := False;
+    ExibirBandInforAdicProduto := 0;
     LogoEmCima                 := False;
   end;
 
@@ -2250,13 +2264,15 @@ begin
     SepararPorMES             := True;
   end;
 
-  with SAT.SATImpressao.SATExtrado do
+  with SAT.SATImpressao.SATExtrato do
   begin
     ParamsString           := '';
     ImprimeDescAcrescItem  := True;
     ImprimeEmUmaLinha      := False;
     ImprimeChaveEmUmaLinha := 0;
     UsaCodigoEanImpressao  := False;
+    ImprimeQRCodeLateral   := True;
+    ImprimeLogoLateral     := True;
   end;
 
   with SAT.SATImpressao.SATEmit do
@@ -2404,6 +2420,7 @@ begin
     Layout                 :=  0;
     Filtro                 :=  0;
     DirArquivoBoleto       :=  '';
+    NomeArquivoBoleto      :=  '';
     Impressora             :=  '';
   end;
 
@@ -2414,6 +2431,7 @@ begin
     CNAB                   :=  0;
     LerCedenteRetorno      :=  False;
     CodTransmissao         :=  '';
+    RemoveAcentos          :=  False;
   end;
 
   with BOLETO.Relatorio do
@@ -2448,6 +2466,7 @@ end;
 procedure TMonitorConfig.CriarArquivo;
 begin
   DefinirValoresPadrao;
+  SalvarArquivo;
 end;
 
 procedure TMonitorConfig.DoOnGravarConfig;

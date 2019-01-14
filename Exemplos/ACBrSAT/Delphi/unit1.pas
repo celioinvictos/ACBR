@@ -8,7 +8,7 @@ uses
   ComCtrls, Spin, RLPDFFilter, ACBrSAT, ACBrSATClass, ACBrSATExtratoESCPOS,
   dateutils, ACBrSATExtratoFortesFr, ACBrBase, ACBrPosPrinter, ACBrDFeSSL,
   RLFilters, ACBrSATExtratoReportClass, ACBrSATExtratoClass, OleCtrls,
-  SHDocVw, ACBrIntegrador;
+  SHDocVw, ACBrIntegrador, ACBrDFeReport;
 
 const
   cAssinatura = '9d4c4eef8c515e2c1269c2e4fff0719d526c5096422bf1defa20df50ba06469'+
@@ -35,7 +35,6 @@ type
     btSalvarParams: TButton;
     btSerial: TSpeedButton;
     btMFEEnviarPagamento: TButton;
-    cbImprimirChaveUmaLinha: TCheckBox;
     cbUsarEscPos: TRadioButton;
     cbUsarFortes: TRadioButton;
     cbxRemoverAcentos: TCheckBox;
@@ -59,7 +58,6 @@ type
     cbxFormatXML: TCheckBox;
     cbPreview: TCheckBox;
     cbxRedeSeg: TComboBox;
-    cbImprimir1Linha: TCheckBox;
     cbxUTF8: TCheckBox;
     cbxXmlSignLib: TComboBox;
     edChaveCancelamento: TEdit;
@@ -239,6 +237,11 @@ type
     tsGerado : TTabSheet ;
     sfeVersaoEnt: TEdit;
     ACBrIntegrador1: TACBrIntegrador;
+    cbLogoLateral: TCheckBox;
+    cbQRCodeLateral: TCheckBox;
+    cbImprimir1Linha: TCheckBox;
+    cbImprimirDescAcres: TCheckBox;
+    cbImprimirChaveUmaLinha: TCheckBox;
     procedure ACBrSAT1CalcPath(var APath: String; ACNPJ: String;
       AData: TDateTime);
     procedure ACBrSAT1GravarLog(const ALogLine: String; var Tratado: Boolean);
@@ -552,11 +555,11 @@ begin
 
     cbUsarFortes.Checked   := INI.ReadBool('Fortes','UsarFortes', True) ;
     cbUsarEscPos.Checked   := not cbUsarFortes.Checked;
-    seLargura.Value        := INI.ReadInteger('Fortes','Largura',ACBrSATExtratoFortes1.LarguraBobina);
-    seMargemTopo.Value     := INI.ReadInteger('Fortes','MargemTopo',ACBrSATExtratoFortes1.Margens.Topo);
-    seMargemFundo.Value    := INI.ReadInteger('Fortes','MargemFundo',ACBrSATExtratoFortes1.Margens.Fundo);
-    seMargemEsquerda.Value := INI.ReadInteger('Fortes','MargemEsquerda',ACBrSATExtratoFortes1.Margens.Esquerda);
-    seMargemDireita.Value  := INI.ReadInteger('Fortes','MargemDireita',ACBrSATExtratoFortes1.Margens.Direita);
+    seLargura.Value        := INI.ReadInteger('Fortes','Largura', ACBrSATExtratoFortes1.LarguraBobina);
+    seMargemTopo.Value     := INI.ReadInteger('Fortes','MargemTopo', Trunc(ACBrSATExtratoFortes1.MargemSuperior));
+    seMargemFundo.Value    := INI.ReadInteger('Fortes','MargemFundo', Trunc(ACBrSATExtratoFortes1.MargemInferior));
+    seMargemEsquerda.Value := INI.ReadInteger('Fortes','MargemEsquerda', Trunc(ACBrSATExtratoFortes1.MargemEsquerda));
+    seMargemDireita.Value  := INI.ReadInteger('Fortes','MargemDireita', Trunc(ACBrSATExtratoFortes1.MargemDireita));
     cbPreview.Checked      := INI.ReadBool('Fortes','Preview',True);
 
     lImpressora.Caption    := INI.ReadString('Printer','Name', '');
@@ -566,8 +569,12 @@ begin
       lImpressora.Caption  := Printer.Printers[Printer.PrinterIndex];
     end;
 
-    cbImprimir1Linha.Checked := INI.ReadBool('EscPos','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
     cbImprimirChaveUmaLinha.Checked := INI.ReadBool('EscPos','ImprimirChaveUmaLinha',cbImprimirChaveUmaLinha.Checked);
+ 
+    cbImprimir1Linha.Checked := INI.ReadBool('Printer','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
+    cbImprimirDescAcres.Checked := INI.ReadBool('Printer','ImprimeDescAcres',cbImprimirDescAcres.Checked);
+    cbLogoLateral.Checked := INI.ReadBool('Printer','LogoLateral',cbLogoLateral.Checked);
+    cbQRCodeLateral.Checked := INI.ReadBool('Printer','QRCodeLateral',cbQRCodeLateral.Checked);
 
     rgRedeTipoInter.ItemIndex := INI.ReadInteger('Rede','tipoInter',0);
     rgRedeTipoLan.ItemIndex   := INI.ReadInteger('Rede','tipoLan',0);
@@ -777,8 +784,12 @@ begin
     INI.WriteBool('Fortes','Preview',cbPreview.Checked);
 
     INI.WriteString('Printer','Name',lImpressora.Caption);
-    INI.WriteBool('EscPos','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
     INI.WriteBool('EscPos','ImprimirChaveUmaLinha',cbImprimirChaveUmaLinha.Checked);
+
+    INI.WriteBool('Printer','ImprimirItemUmaLinha',cbImprimir1Linha.Checked);
+    INI.WriteBool('Printer','ImprimeDescAcres',cbImprimirDescAcres.Checked);
+    INI.WriteBool('Printer','LogoLateral',cbLogoLateral.Checked);
+    INI.WriteBool('Printer','QRCodeLateral',cbQRCodeLateral.Checked);
 
     INI.WriteInteger('Rede','tipoInter',rgRedeTipoInter.ItemIndex);
     INI.WriteInteger('Rede','tipoLan',rgRedeTipoLan.ItemIndex);
@@ -1605,7 +1616,6 @@ begin
     ACBrPosPrinter1.LinhasEntreCupons := seLinhasPular.Value;
     ACBrPosPrinter1.EspacoEntreLinhas := seEspLinhas.Value;
     ACBrSATExtratoESCPOS1.ImprimeQRCode := True;
-    ACBrSATExtratoESCPOS1.ImprimeEmUmaLinha := cbImprimir1Linha.Checked;
     if cbImprimirChaveUmaLinha.Checked then
       ACBrSATExtratoESCPOS1.ImprimeChaveEmUmaLinha := rSim
     else
@@ -1614,18 +1624,23 @@ begin
   else
   begin
     ACBrSATExtratoFortes1.LarguraBobina    := seLargura.Value;
-    ACBrSATExtratoFortes1.Margens.Topo     := seMargemTopo.Value ;
-    ACBrSATExtratoFortes1.Margens.Fundo    := seMargemFundo.Value ;
-    ACBrSATExtratoFortes1.Margens.Esquerda := seMargemEsquerda.Value ;
-    ACBrSATExtratoFortes1.Margens.Direita  := seMargemDireita.Value ;
-    ACBrSATExtratoFortes1.MostrarPreview   := cbPreview.Checked;
+    ACBrSATExtratoFortes1.MargemSuperior   := seMargemTopo.Value ;
+    ACBrSATExtratoFortes1.MargemInferior   := seMargemFundo.Value ;
+    ACBrSATExtratoFortes1.MargemEsquerda   := seMargemEsquerda.Value ;
+    ACBrSATExtratoFortes1.MargemDireita    := seMargemDireita.Value ;
+    ACBrSATExtratoFortes1.MostraPreview   := cbPreview.Checked;
 
     try
       if lImpressora.Caption <> '' then
-        ACBrSATExtratoFortes1.PrinterName := lImpressora.Caption;
+        ACBrSATExtratoFortes1.Impressora := lImpressora.Caption;
     except
     end;
   end;
+
+  ACBrSAT1.Extrato.ImprimeLogoLateral := cbLogoLateral.Checked;
+  ACBrSAT1.Extrato.ImprimeQRCodeLateral := cbQRCodeLateral.Checked;
+  ACBrSAT1.Extrato.ImprimeEmUmaLinha := cbImprimir1Linha.Checked;
+  ACBrSAT1.Extrato.ImprimeDescAcrescItem := cbImprimirDescAcres.Checked;
 end;
 
 

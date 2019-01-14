@@ -47,6 +47,60 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+09/01/2019
+-- ACBrSATExtratoESCPOS --
+[*] Ajuste para correta impressão do Logotipo na lateral, na TM-T20
+[*] Melhor destaque no número do Extrato, imprimindo em Expandido
+[+] Inserido Espaço após a impressão de Descontos/Acréscimos do Item
+
+04/01/2019
+-- ACBrSATExtratoFortesFr --
+[*] Ajuste para melhor detecção de Logotipo, não atribuido...
+    https://www.projetoacbr.com.br/forum/topic/48536-sat-cabe%C3%A7alho-desconfigurado/
+[+] Adicionado suporte a carga de Logo pela propriedade "Logo: String"
+    (que pode conter o Path para um arquivo de imagem)
+[*] Melhorado espaçamento do numero do título com o número do SAT
+[*] Melhorado espaçamento entre Itens, quando imprimir Descontos, Acrescimos ou
+    rateios do Item
+[-] Ajuste para correto funcionamento da propriedade "LogoAutoSize", quando não
+    estiver em uso a impressão de Logo lateral
+[-] Corrigida a ordem de exibição de Nome e Endereço no título do extrato de
+    cancelamento
+[+] Adicionada linha separadora contínua, após a impressão do QRCode e mensagens
+    de "Sistema" e "SoftwareHouse"
+[-] Corrigido problema de ordem de exibição do Logo no extrato de Cancelamento
+    (por: DSA)
+
+22/12/2018
+-- ACBrSATExtratoFortesFr --
+[+] Possível correção para o problema de leitura do QR code no aplicativo
+    "De Olho na nota"
+    https://www.projetoacbr.com.br/forum/topic/48381-qrcode-não-é-valida/
+    (por: DSA)
+
+20/12/2018
+-- ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr --
+[*] Ajustado para ficar de acordo com  Manual de Orientação, Ver 2.17.07
+[+] Adicionada a impressão de QRCode Lateral, se ImprimeQRCodeLateral := True
+[+] Adicionada a impressão de Logo Lateral, se ImprimeLogoLateral := True
+[-] Corrigido o suporte a propriedade ImprimeDescAcrescItem (True/False)
+[+] Adicionada a impressão de Rateio de Acréscimos e Descontos de Subtotal, nos Itens
+[*] Removida a impressão de Valor Líquido nos Itens
+[+] Adicionada a Impressão da somatória de Descontos/Acréscimo nos Itens, no
+    subtotal do Cupom
+    (por: DSA)
+
+14/12/2018
+-- ACBrSATExtratoClass --
+[+] Adicionada as propriedades:
+    ImprimeQRCodeLateral: Boolean
+    ImprimeLogoLateral: Boolean
+
+-- ACBrSATExtratoESCPOS --
+[*] Implementadas modificações para a impressão conforme Novo layout
+    do Manual de Orientação Versão: MO 2.17.07.
+    (por: DSA)
+
 30/07/2018
 -- ACBrSATExtratoFortesFr --
 [*] Ajuste para correto alinhamento do Total do Item

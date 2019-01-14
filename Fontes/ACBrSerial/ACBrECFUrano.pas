@@ -91,10 +91,11 @@ TACBrECFUrano = class( TACBrECFClass )
     fsNumECF    : String ;
     fsNumCRO    : String ;
     fsArredonda : Char ;
+    fsTotalPago : Double ;
 
-    Function PreparaCmd( cmd : AnsiString ) : AnsiString ;
+    Function PreparaCmd( const cmd : AnsiString ) : AnsiString ;
 
-    function RetornaInfoECFValor(ARegistrador: string) : Double;
+    function RetornaInfoECFValor(const ARegistrador: string) : Double;
  protected
     function GetDataHora: TDateTime; override ;
     function GetNumCupom: String; override ;
@@ -220,6 +221,7 @@ begin
   fsArredonda := ' ';
   fpModeloStr := 'Urano' ;
   fpRFDID     := 'UR' ;
+  fsTotalPago := 0 ;
 end;
 
 destructor TACBrECFUrano.Destroy;
@@ -395,7 +397,7 @@ begin
   Result := (Length( Retorno ) >= (BytesResp+1) )
 end;
 
-function TACBrECFUrano.PreparaCmd(cmd : AnsiString) : AnsiString ;
+function TACBrECFUrano.PreparaCmd(const cmd : AnsiString) : AnsiString ;
 begin
   result := '' ;
   if cmd = '' then exit ;
@@ -459,7 +461,8 @@ end;
 
 function TACBrECFUrano.GetTotalPago: Double;
 begin
-  Result := 0                  { Nao achei nenhum registrador para isso ??? }
+//  Result := 0                  { Nao achei nenhum registrador para isso ??? }
+  Result := fsTotalPago ;
 end;
 
 function TACBrECFUrano.GetSubTotal: Double;
@@ -561,6 +564,7 @@ begin
         Raise;
     end;
   end;
+  fsTotalPago := 0 ;
 end;
 
 procedure TACBrECFUrano.CancelaCupom(NumCOOCancelar: Integer);
@@ -575,6 +579,7 @@ begin
   end ;
 
   FechaRelatorio ;   { Fecha relatorio se ficou algum aberto (só por garantia)}
+  fsTotalPago := 0 ;
 end;
 
 procedure TACBrECFUrano.CancelaItemVendido(NumItem: Integer);
@@ -599,6 +604,7 @@ begin
   if ImprimeVinculado then Vinculado := '1' else Vinculado := '0' ;
 
   EnviaComando('04' + CodFormaPagto + Observacao + ValorStr + Vinculado + R);
+  fsTotalPago := fsTotalPago + RoundTo(Valor,-2) ;
 end;
 
 procedure TACBrECFUrano.FechaCupom(Observacao: AnsiString; IndiceBMP : Integer);
@@ -629,7 +635,8 @@ begin
   if Trim( Observacao ) <> '' then
      EnviaComando( '170' + PadRight(Observacao, 192) + R, 10 );
   
-    EnviaComando('050' + PadRight(Operador, 8) + R, 10);  
+  EnviaComando('050' + PadRight(Operador, 8) + R, 10);
+  fsTotalPago := 0 ;
 end;
 
 procedure TACBrECFUrano.SubtotalizaCupom(DescontoAcrescimo: Double;
@@ -640,13 +647,11 @@ begin
   DescontoAcrescimoStr := IntToStrZero(abs(Round(DescontoAcrescimo * 100)), 10);
 
   if DescontoAcrescimo > 0 then
-  begin
-    EnviaComando('090' + PadRight('', 10) + DescontoAcrescimoStr + R );
-  end
+    EnviaComando('090' + PadRight('', 10) + DescontoAcrescimoStr + R )
   else if DescontoAcrescimo < 0 then
-  begin
     EnviaComando('100' + PadRight('', 10) + DescontoAcrescimoStr + R );
-  end;
+
+  fsTotalPago := 0 ;
 end;
 
 procedure TACBrECFUrano.VendeItem(Codigo, Descricao : String ;
@@ -699,6 +704,8 @@ begin
 
     EnviaComando('030' + PadRight('Desconto Aplicado', 26) + DescontoStr + R);
   end;
+
+  fsTotalPago := 0 ;
 end;
 
 procedure TACBrECFUrano.CarregaAliquotas;
@@ -1102,7 +1109,7 @@ begin
   Result := Trim( Result ) ;
 end;
 
-function TACBrECFUrano.RetornaInfoECFValor(ARegistrador: string): Double;
+function TACBrECFUrano.RetornaInfoECFValor(const ARegistrador: string): Double;
 var RetCmd : AnsiString;
 begin
   RetCmd := RetornaInfoECF(ARegistrador) ;

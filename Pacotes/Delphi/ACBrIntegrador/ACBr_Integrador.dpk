@@ -22,14 +22,14 @@ package ACBr_Integrador;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DESCRIPTION 'ACBrIntegrador'}
+{$DESCRIPTION 'ACBr - Integrador - (http://www.projetoacbr.com.br/)'}
 {$IMPLICITBUILD OFF}
 
 requires
   rtl,
-  ACBr_PCNComum,
+  vcl,
   designide,
-  vcl;
+  ACBr_PCNComum;
 
 contains
   ACBrIntegradorReg in '..\..\..\Fontes\ACBrIntegrador\ACBrIntegradorReg.pas',

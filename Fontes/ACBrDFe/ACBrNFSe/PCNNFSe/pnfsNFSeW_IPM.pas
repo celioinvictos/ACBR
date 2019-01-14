@@ -193,7 +193,7 @@ begin
     Gerador.wCampoNFSe(tcStr, '', 'codigo_local_prestacao_servico', 1, 9, 1, NFSe.Servico.CodigoMunicipio, '');
     Gerador.wCampoNFSe(tcStr, '', 'unidade_codigo', 1, 9, 0, '1', ''); //1 - UN, 2 - HORA
     Gerador.wCampoNFSe(tcDe3, '', 'unidade_quantidade', 1, 15, 0, NFSe.Servico.ItemServico[I].Quantidade, '');
-    Gerador.wCampoNFSe(tcDe2, '', 'unidade_valor_unitario', 1, 30, 0, NFSe.Servico.ItemServico[I].ValorUnitario, '');
+    Gerador.wCampoNFSe(tcDe3, '', 'unidade_valor_unitario', 1, 30, 0, NFSe.Servico.ItemServico[I].ValorUnitario, '');
     Gerador.wCampoNFSe(tcStr, '', 'codigo_item_lista_servico', 1, 9, 1, OnlyNumber(NFSe.Servico.ItemListaServico), '');
     Gerador.wCampoNFSe(tcStr, '', 'descritivo', 1, 1000, 1, IfThen(NFSe.Servico.ItemServico[I].Descricao = '', NFSe.Servico.Discriminacao, NFSe.Servico.ItemServico[I].Descricao));
     if NFSe.Servico.ItemServico[I].Aliquota = 0 then
@@ -282,8 +282,6 @@ begin
 end;
 
 function TNFSeW_IPM.GerarXml: Boolean;
-var
-  Gerar: Boolean;
 begin
   Gerador.ListaDeAlertas.Clear;
   Gerador.ArquivoFormatoXML := '';
@@ -301,27 +299,6 @@ begin
   FNFSe.InfID.ID := FNFSe.IdentificacaoRps.Numero;
 
   GerarXML_IPM;
-
-  if FOpcoes.GerarTagAssinatura <> taNunca then
-  begin
-    Gerar := true;
-    if FOpcoes.GerarTagAssinatura = taSomenteSeAssinada then
-      Gerar := ((NFSe.signature.DigestValue <> '') and
-                (NFSe.signature.SignatureValue <> '') and
-                (NFSe.signature.X509Certificate <> ''));
-    if FOpcoes.GerarTagAssinatura = taSomenteParaNaoAssinada then
-      Gerar := ((NFSe.signature.DigestValue = '') and
-                (NFSe.signature.SignatureValue = '') and
-                (NFSe.signature.X509Certificate = ''));
-    if Gerar then
-    begin
-      FNFSe.signature.URI := FNFSe.InfID.ID;
-      FNFSe.signature.Gerador.Opcoes.IdentarXML := Gerador.Opcoes.IdentarXML;
-      FNFSe.signature.GerarXMLNFSe;
-      Gerador.ArquivoFormatoXML := Gerador.ArquivoFormatoXML +
-                                   FNFSe.signature.Gerador.ArquivoFormatoXML;
-    end;
-  end;
 
   Gerador.gtAjustarRegistros(NFSe.InfID.ID);
   Result := (Gerador.ListaDeAlertas.Count = 0);

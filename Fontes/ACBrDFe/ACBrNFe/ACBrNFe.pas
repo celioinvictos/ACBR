@@ -44,10 +44,9 @@ uses
   Classes, SysUtils, ACBrBase,
   ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes,
   ACBrNFeConfiguracoes, ACBrNFeWebServices, ACBrNFeNotasFiscais,
-  ACBrNFeDANFEClass,
-  pcnNFe, pcnConversao, pcnConversaoNFe, pcnCCeNFe,
-  pcnEnvEventoNFe, pcnInutNFe,
-  pcnDownloadNFe, pcnRetDownloadNFe, pcnRetDistDFeInt,
+  ACBrDFeDANFeReport,
+  pcnNFe, pcnConversao, pcnConversaoNFe,
+  pcnEnvEventoNFe, pcnInutNFe, pcnRetDistDFeInt,
   ACBrUtil;
 
 const
@@ -59,47 +58,29 @@ const
 type
   EACBrNFeException = class(EACBrDFeException);
 
-  {Carta de Correção}
-  {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
-  TCartaCorrecao = class(TACBrComponent)
+  { TCartaCorrecao }
+
+  TCartaCorrecao = class
   private
-    FCCe: TCCeNFe;
+    FCCe: TEventoNFe;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create;
     destructor Destroy; override;
 
-    property CCe: TCCeNFe read FCCe write FCCe;
-  end;
-
-  {Download}
-  {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
-  TDownload = class(TACBrComponent)
-  private
-    FDownload: TDownloadNFe;
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-
-    property Download: TDownloadNFe read FDownload write FDownload;
+    property CCe: TEventoNFe read FCCe write FCCe;
   end;
 
   { TACBrNFe }
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$ENDIF RTL230_UP}
   TACBrNFe = class(TACBrDFe)
   private
-    FDANFE: TACBrNFeDANFEClass;
+    FDANFE: TACBrDFeDANFeReport;
     FNotasFiscais: TNotasFiscais;
     FCartaCorrecao: TCartaCorrecao;
     FEventoNFe: TEventoNFe;
     FInutNFe: TInutNFe;
-    FDownloadNFe: TDownload;
-    FRetDownloadNFe: TRetDownloadNFe;
     FRetDistDFeInt: TRetDistDFeInt;
     FStatus: TStatusACBrNFe;
     FWebServices: TWebServices;
@@ -109,7 +90,7 @@ type
       chNFe: String): Boolean;
 
     procedure SetConfiguracoes(AValue: TConfiguracoesNFe);
-    procedure SetDANFE(const Value: TACBrNFeDANFEClass);
+    procedure SetDANFE(const Value: TACBrDFeDANFeReport);
   protected
     function CreateConfiguracoes: TConfiguracoes; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
@@ -120,9 +101,9 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure EnviarEmail(sPara, sAssunto: String;
+    procedure EnviarEmail(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
-      StreamNFe: TStream = nil; NomeArq: String = ''; sReplyTo: TStrings = nil); override;
+      StreamNFe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil); override;
 
     function Enviar(ALote: integer; Imprimir: Boolean = True;
       Sincrono: Boolean = False; Zipado: Boolean = False): Boolean; overload;
@@ -142,9 +123,6 @@ type
     function Consultar( AChave: String = ''): Boolean;
     function EnviarCartaCorrecao(idLote: integer): Boolean;
     function EnviarEvento(idLote: integer): Boolean;
-    function ConsultaNFeDest(CNPJ: String; IndNFe: TpcnIndicadorNFe;
-      IndEmi: TpcnIndicadorEmissor; ultNSU: String): Boolean;
-    function Download: Boolean;
 
     procedure LerServicoDeParams(LayOutServico: TLayOut; var Versao: Double;
       var URL: String; var Servico: String; var SoapAction: String); reintroduce; overload;
@@ -170,8 +148,6 @@ type
     property CartaCorrecao: TCartaCorrecao read FCartaCorrecao write FCartaCorrecao;
     property EventoNFe: TEventoNFe read FEventoNFe write FEventoNFe;
     property InutNFe: TInutNFe read FInutNFe write FInutNFe;
-    property DownloadNFe: TDownload read FDownloadNFe write FDownloadNFe;
-    property RetDownloadNFe: TRetDownloadNFe read FRetDownloadNFe write FRetDownloadNFe;
     property RetDistDFeInt: TRetDistDFeInt read FRetDistDFeInt write FRetDistDFeInt;
     property Status: TStatusACBrNFe read FStatus;
 
@@ -201,9 +177,8 @@ type
   published
     property Configuracoes: TConfiguracoesNFe
       read GetConfiguracoes write SetConfiguracoes;
-    property DANFE: TACBrNFeDANFEClass read FDANFE write SetDANFE;
+    property DANFE: TACBrDFeDANFeReport read FDANFE write SetDANFE;
   end;
-
 
 implementation
 
@@ -228,13 +203,11 @@ begin
   inherited Create(AOwner);
 
   FNotasFiscais := TNotasFiscais.Create(Self, NotaFiscal);
-  FCartaCorrecao := TCartaCorrecao.Create(Self);
+  FCartaCorrecao := TCartaCorrecao.Create; //(Self);
   FEventoNFe := TEventoNFe.Create;
   FInutNFe := TInutNFe.Create;
-  FDownloadNFe := TDownload.Create(Self);
   FRetDistDFeInt := TRetDistDFeInt.Create;
   FWebServices := TWebServices.Create(Self);
-  FRetDownloadNFe := TRetDownloadNFe.Create;
 end;
 
 destructor TACBrNFe.Destroy;
@@ -243,16 +216,14 @@ begin
   FCartaCorrecao.Free;
   FEventoNFe.Free;
   FInutNFe.Free;
-  FDownloadNFe.Free;
   FRetDistDFeInt.Free;
   FWebServices.Free;
-  FRetDownloadNFe.Free;
 
   inherited;
 end;
 
-procedure TACBrNFe.EnviarEmail(sPara, sAssunto: String; sMensagem: TStrings;
-  sCC: TStrings; Anexos: TStrings; StreamNFe: TStream; NomeArq: String;
+procedure TACBrNFe.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
+  sCC: TStrings; Anexos: TStrings; StreamNFe: TStream; const NomeArq: String;
   sReplyTo: TStrings);
 begin
   SetStatus( stNFeEmail );
@@ -270,7 +241,7 @@ begin
   inherited Notification(AComponent, Operation);
 
   if (Operation = opRemove) and (FDANFE <> nil) and
-    (AComponent is TACBrNFeDANFEClass) then
+    (AComponent is TACBrDFeDANFeReport) then
     FDANFE := nil;
 end;
 
@@ -284,9 +255,9 @@ begin
   Result := TConfiguracoesNFe.Create(Self);
 end;
 
-procedure TACBrNFe.SetDANFE(const Value: TACBrNFeDANFEClass);
+procedure TACBrNFe.SetDANFE(const Value: TACBrDFeDANFeReport);
 var
-  OldValue: TACBrNFeDANFEClass;
+  OldValue: TACBrDFeDANFeReport;
 begin
   if Value <> FDANFE then
   begin
@@ -517,8 +488,6 @@ end;
 function TACBrNFe.AjustarVersaoQRCode(AVersaoQRCode: TpcnVersaoQrCode;
   AVersaoXML: TpcnVersaoDF): TpcnVersaoQrCode;
 begin
-  Result := AVersaoQRCode;
-
   if (AVersaoXML <= ve310) then
     Result := veqr000
   else     // ve400 ou superior
@@ -861,40 +830,6 @@ begin
     GerarException( WebServices.EnvEvento.Msg );
 end;
 
-function TACBrNFe.ConsultaNFeDest(CNPJ: String; IndNFe: TpcnIndicadorNFe;
-  IndEmi: TpcnIndicadorEmissor; ultNSU: String): Boolean;
-begin
-  // Desativar o acesso a esse serviço após 02/05/2017
-  Result := False;
-  GerarException('Após 02/05/2017 o Web Service ConsultaNFeDest foi desativado pela SEFAZ.'+#13+
-                 'Favor utilizar o método DistribuicaoDFe.');
-  (*
-  WebServices.ConsNFeDest.CNPJ := CNPJ;
-  WebServices.ConsNFeDest.indNFe := IndNFe;
-  WebServices.ConsNFeDest.indEmi := IndEmi;
-  WebServices.ConsNFeDest.ultNSU := ultNSU;
-
-  Result := WebServices.ConsNFeDest.Executar;
-
-  if not Result then
-    GerarException( WebServices.ConsNFeDest.Msg );
-  *)
-end;
-
-function TACBrNFe.Download: Boolean;
-begin
-  // Desativar o acesso a esse serviço após 02/05/2017
-  Result := False;
-  GerarException('Após 02/05/2017 o Web Service DownloadNFe foi desativado pela SEFAZ.'+#13+
-                 'Favor utilizar o método DistribuicaoDFe.');
-  (*
-  Result := WebServices.DownloadNFe.Executar;
-
-  if not Result then
-    GerarException( WebServices.DownloadNFe.Msg );
-  *)
-end;
-
 function TACBrNFe.NomeServicoToNomeSchema(const NomeServico: String): String;
 Var
   ok: Boolean;
@@ -1028,32 +963,16 @@ end;
 
 { TCartaCorrecao }
 
-constructor TCartaCorrecao.Create(AOwner: TComponent);
+constructor TCartaCorrecao.Create;
 begin
-  inherited;
-  FCCe := TCCeNFe.Create;
+  inherited Create;
+  FCCe := TEventoNFe.Create;
 end;
 
 destructor TCartaCorrecao.Destroy;
 begin
   FCCe.Free;
-  inherited;
-end;
-
-{ TDownload }
-
-constructor TDownload.Create(AOwner: TComponent);
-begin
-  inherited;
-
-  FDownload := TDownloadNFe.Create;
-end;
-
-destructor TDownload.Destroy;
-begin
-  FDownload.Free;
-
-  inherited;
+  inherited Destroy;
 end;
 
 end.

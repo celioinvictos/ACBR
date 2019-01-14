@@ -345,13 +345,13 @@ type
     property Detalhes: TACBrConvenio115Items read FDetalhes;
     function AutenticacaoDocumentoFiscal: string;
     function RegistroEAssinatura(AVersaoAnterior: Boolean): TConvenio115AssinaturaMD5;
-    class function MontaAutenticacaoDocumentoFiscal(ACnpjCpf: string;
+    class function MontaAutenticacaoDocumentoFiscal(const ACnpjCpf: string;
                                                     ANumeroNF: Integer;
                                                     AValorTotal: Double;
                                                     AIcmsBaseCalculo: Double;
                                                     AIcmsValor: Double;
                                                     ADataEmissao: TDateTime;
-                                                    ACnpjEmitente: string): string;
+                                                    const ACnpjEmitente: string): string;
   end;
 
   { Lista de objetos do tipo TConvenio115Mestre }
@@ -372,7 +372,7 @@ type
     FCargo: string;
     FResponsavel: string;
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create;
   published
     property Nome: string read FResponsavel write FResponsavel;
     property Cargo: string read FCargo write FCargo;
@@ -539,13 +539,13 @@ begin
   Result := '00';
 end;
 
-class function TACBrConvenio115Mestre.MontaAutenticacaoDocumentoFiscal(ACnpjCpf: string;
+class function TACBrConvenio115Mestre.MontaAutenticacaoDocumentoFiscal(const ACnpjCpf: string;
                                                                        ANumeroNF: Integer;
                                                                        AValorTotal: Double;
                                                                        AIcmsBaseCalculo: Double;
                                                                        AIcmsValor: Double;
                                                                        ADataEmissao: TDateTime;
-                                                                       ACnpjEmitente: string): string;
+                                                                       const ACnpjEmitente: string): string;
 var
   SRec: string;
 begin
@@ -583,7 +583,7 @@ begin
           {08} PadRight(Destinatario.CodigoConsumidor, 12) +
           {09} DtoS(DataEmissao) +
           {10} PadLeft(IntToStr(FModelo), 2, '0') +
-          {11} PadLeft(FSerie, 3) +
+          {11} PadRight(FSerie, 3) +
           {12} PadLeft(IntToStr(NumeroNF), 9, '0') +
           {13} AutenticacaoDocumentoFiscal;
           //{14} PadLeft(TiraPontos(FormatFloat('#,##0.00', ValorTotal)), 12, '0') +
@@ -729,9 +729,9 @@ end;
 
 constructor TACBrConvenio115.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
   FMestre := TACBrConvenio115Mestres.Create;
-  FResponsavel := TACBrConvenio115Responsavel.Create(Self);
+  FResponsavel := TACBrConvenio115Responsavel.Create();
   FNumeroArquivoSubstituido := 1;
   Ordernar := False;
 end;
@@ -779,7 +779,7 @@ begin
         SRec := SRec +
               {15} DtOS(FMestre[I].DataEmissao) +
               {16} PadLeft(IntToStr(Modelo), 2, '0') +
-              {17} PadLeft(Serie, 3, '0') +
+              {17} PadRight(Serie, 3) +
               {18} PadLeft(IntToStr(FMestre[I].NumeroNF), 9, '0') +
               {19} FMestre[I].Destinatario.CodigoDoMunicipio +
               {20} PadRight('', 5);
@@ -864,7 +864,7 @@ begin
     Result := FUF +
               PadLeft(OnlyNumber(CnpjEmitente), 14, '0') +
               PadLeft(IntToStr(Modelo), 2, '0') +
-              PadLeft(Serie, 3, '0') +
+              PadRight(Serie, 3) +
               Copy(IntToStr(Ano), 3, 2) +
               PadLeft(IntToStr(Mes), 2, '0') +
               IfThen(Status = scv115Normal, 'N', 'S') +
@@ -928,7 +928,6 @@ begin
     for A := 0 to FMestre[I].Detalhes.Count -1 do
     begin
       FMestre[I].Detalhes[A].FTipoAssinanteAte201612 := FMestre[I].TipoAssinanteAte201612;
-      FMestre[I].Detalhes[A].FTipoAssinanteAte201612 := FMestre[I].TipoAssinanteAte201612;
       FMestre[I].Detalhes[A].FTipoUtilizacao := FMestre[I].TipoUtilizacao;
       FMestre[I].Detalhes[A].FCnpjCpf := FMestre[I].Destinatario.CnpjCpf;
       FMestre[I].Detalhes[A].FUF := FMestre[I].Destinatario.UF;
@@ -962,7 +961,7 @@ end;
 
 { TConvenio115Responsavel }
 
-constructor TACBrConvenio115Responsavel.Create(AOwner: TComponent);
+constructor TACBrConvenio115Responsavel.Create;
 begin
   inherited Create;
 end;
@@ -993,7 +992,7 @@ begin
           {05} GrupoTensao +
           {06} DtoS(FDataEmissao) +
           {07} PadLeft(IntToStr(FModelo), 2, '0') +
-          {08} PadLeft(FSerie, 3) +
+          {08} PadRight(FSerie, 3) +
           {09} PadLeft(IntToStr(FNumeroNF), 9, '0') +
           {10} PadLeft(CFOP, 4, '0') +
           {11} PadLeft(IntToStr(Item), 3, '0') +
