@@ -93,6 +93,7 @@ begin
    fpTamanhoCarteira       := 3;
    fValorTotalDocs         := 0;
    fQtRegLote              := 0;
+   fpCodigosMoraAceitos    := '123';
 end;
 
 function TACBrBancoItau.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
