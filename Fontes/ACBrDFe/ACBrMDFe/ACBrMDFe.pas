@@ -46,11 +46,10 @@ uses
   ACBrMDFeConfiguracoes, ACBrMDFeWebServices, ACBrMDFeManifestos,
   ACBrMDFeDAMDFEClass,ACBrDFeException,
   pmdfeMDFe, pcnConversao, pmdfeConversaoMDFe,
-  pmdfeEnvEventoMDFe, pmdfeRetDistDFeInt,
+  pmdfeEnvEventoMDFe, 
   ACBrUtil;
 
 const
-  ACBRMDFe_VERSAO = '2.0.0a';
   ACBRMDFE_NAMESPACE = 'http://www.portalfiscal.inf.br/mdfe';
   ACBRMDFE_CErroAmbDiferente = 'Ambiente do XML (tpAmb) é diferente do '+
      'configurado no Componente (Configuracoes.WebServices.Ambiente)';
@@ -65,12 +64,12 @@ type
     FDAMDFE: TACBrMDFeDAMDFEClass;
     FManifestos: TManifestos;
     FEventoMDFe: TEventoMDFe;
-    FRetDistDFeInt: TRetDistDFeInt;
     FStatus: TStatusACBrMDFe;
     FWebServices: TWebServices;
 
     function GetConfiguracoes: TConfiguracoesMDFe;
-    function Distribuicao(ACNPJCPF, AultNSU, ANSU: String): Boolean;
+    function Distribuicao(ACNPJCPF, AultNSU, ANSU,
+      AchMDFe: String): Boolean;
 
     procedure SetConfiguracoes(AValue: TConfiguracoesMDFe);
     procedure SetDAMDFE(const Value: TACBrMDFeDAMDFEClass);
@@ -78,7 +77,6 @@ type
     function CreateConfiguracoes: TConfiguracoes; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
-    function GetAbout: String; override;
     function NomeServicoToNomeSchema(const NomeServico: String): String; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -120,15 +118,14 @@ type
     property WebServices: TWebServices read FWebServices write FWebServices;
     property Manifestos: TManifestos read FManifestos write FManifestos;
     property EventoMDFe: TEventoMDFe read FEventoMDFe write FEventoMDFe;
-    property RetDistDFeInt: TRetDistDFeInt read FRetDistDFeInt write FRetDistDFeInt;
     property Status: TStatusACBrMDFe read FStatus;
 
     procedure SetStatus(const stNewStatus: TStatusACBrMDFe);
     procedure ImprimirEvento;
     procedure ImprimirEventoPDF;
-//    function DistribuicaoDFe(ACNPJCPF, AultNSU, ANSU: String): Boolean;
     function DistribuicaoDFePorUltNSU(ACNPJCPF, AultNSU: String): Boolean;
     function DistribuicaoDFePorNSU(ACNPJCPF, ANSU: String): Boolean;
+    function DistribuicaoDFePorChaveMDFe(ACNPJCPF, AchMDFe: String): Boolean;
 
   published
     property Configuracoes: TConfiguracoesMDFe
@@ -160,7 +157,6 @@ begin
 
   FManifestos := TManifestos.Create(Self, Manifesto);
   FEventoMDFe := TEventoMDFe.Create;
-  FRetDistDFeInt := TRetDistDFeInt.Create;
   FWebServices := TWebServices.Create(Self);
 end;
 
@@ -168,7 +164,6 @@ destructor TACBrMDFe.Destroy;
 begin
   FManifestos.Free;
   FEventoMDFe.Free;
-  FRetDistDFeInt.Free;
   FWebServices.Free;
 
   inherited;
@@ -195,11 +190,6 @@ begin
   if (Operation = opRemove) and (FDAMDFe <> nil) and
      (AComponent is TACBrMDFeDAMDFeClass) then
     FDAMDFe := nil;
-end;
-
-function TACBrMDFe.GetAbout: String;
-begin
-  Result := 'ACBrMDFe Ver: ' + ACBRMDFE_VERSAO;
 end;
 
 function TACBrMDFe.CreateConfiguracoes: TConfiguracoes;
@@ -648,11 +638,13 @@ begin
      DAMDFE.ImprimirEVENTOPDF(nil);
 end;
 
-function TACBrMDFe.Distribuicao(ACNPJCPF, AultNSU, ANSU: String): Boolean;
+function TACBrMDFe.Distribuicao(ACNPJCPF, AultNSU, ANSU,
+      AchMDFe: String): Boolean;
 begin
   WebServices.DistribuicaoDFe.CNPJCPF := ACNPJCPF;
   WebServices.DistribuicaoDFe.ultNSU := AultNSU;
   WebServices.DistribuicaoDFe.NSU := ANSU;
+  WebServices.DistribuicaoDFe.chMDFe := AchMDFe;
 
   Result := WebServices.DistribuicaoDFe.Executar;
 
@@ -660,19 +652,24 @@ begin
     GerarException( WebServices.DistribuicaoDFe.Msg );
 end;
 
-//function TACBrMDFe.DistribuicaoDFe(ACNPJCPF, AultNSU, ANSU: String): Boolean;
-//begin
-//  Result := Distribuicao(ACNPJCPF, AultNSU, ANSU);
-//end;
-
 function TACBrMDFe.DistribuicaoDFePorUltNSU(ACNPJCPF, AultNSU: String): Boolean;
 begin
-  Result := Distribuicao(ACNPJCPF, AultNSU, '');
+  Result := Distribuicao(ACNPJCPF, AultNSU, '', '');
 end;
 
 function TACBrMDFe.DistribuicaoDFePorNSU(ACNPJCPF, ANSU: String): Boolean;
 begin
-  Result := Distribuicao(ACNPJCPF, '', ANSU);
+  Result := Distribuicao(ACNPJCPF, '', ANSU, '');
+end;
+
+function TACBrMDFe.DistribuicaoDFePorChaveMDFe(ACNPJCPF,
+  AchMDFe: String): Boolean;
+begin
+  // Aguardando a SEFAZ implementar esse recurso já existente para a NF-e.
+  Result := False;
+  GerarException('Aguardando a SEFAZ implementar esse recurso já existente para a NF-e.');
+
+//  Result := Distribuicao(ACNPJCPF, '', '', AchMDFe);
 end;
 
 end.

@@ -693,11 +693,11 @@ var
 begin
   with fACBrNFe do
   begin
-    for I := 0 to WebServices.Retorno.NFeRetorno.ProtNFe.Count - 1 do
+    for I := 0 to WebServices.Retorno.NFeRetorno.ProtDFe.Count - 1 do
     begin
       for J := 0 to NotasFiscais.Count - 1 do
       begin
-        if ('NFe' + WebServices.Retorno.NFeRetorno.ProtNFe.Items[I].chNFe =
+        if ('NFe' + WebServices.Retorno.NFeRetorno.ProtDFe.Items[I].chDFe =
           NotasFiscais.Items[J].NFe.infNFe.Id) then
         begin
           RespostaItensNFe(J, I, True);
@@ -745,7 +745,7 @@ begin
     'NFe' + Trim(IntToStr(
     fACBrNFe.NotasFiscais.Items[NotasFiscaisID].NFe.Ide.nNF)), resINI);
   try
-    with fACBrNFe.WebServices.Retorno.NFeRetorno.ProtNFe.Items[ItemID] do
+    with fACBrNFe.WebServices.Retorno.NFeRetorno.ProtDFe.Items[ItemID] do
     begin
       Resp.Versao := verAplic;
       Resp.TpAmb := TpAmbToStr(TpAmb);
@@ -753,7 +753,7 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := fACBrNFe.WebServices.Retorno.NFeRetorno.cUF;
-      Resp.ChNFe := chNFe;
+      Resp.ChNFe := chDFe;
       Resp.DhRecbto := dhRecbto;
       Resp.NProt := nProt;
       Resp.DigVal := digVal;
@@ -890,10 +890,10 @@ var
 begin
   Resp := TRetornoItemResposta.Create(
     'NFe' + Trim(IntToStr(StrToInt(copy(
-    fACBrNFe.WebServices.Recibo.NFeRetorno.ProtNFe.Items
-    [ItemID].chNFe, 26, 9)))), resINI);
+    fACBrNFe.WebServices.Recibo.NFeRetorno.ProtDFe.Items
+    [ItemID].chDFe, 26, 9)))), resINI);
   try
-    with fACBrNFe.WebServices.Recibo.NFeRetorno.ProtNFe.Items[ItemID] do
+    with fACBrNFe.WebServices.Recibo.NFeRetorno.ProtDFe.Items[ItemID] do
     begin
       Resp.Versao := verAplic;
       Resp.TpAmb := TpAmbToStr(TpAmb);
@@ -901,7 +901,7 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := fACBrNFe.WebServices.Recibo.NFeRetorno.cUF;
-      Resp.ChNFe := chNFe;
+      Resp.ChNFe := chDFe;
       Resp.DhRecbto := dhRecbto;
       Resp.NProt := nProt;
       Resp.digVal := digVal;
@@ -1101,10 +1101,10 @@ begin
   Resp := TDistribuicaoDFeItemResposta.Create(
     'ResNFe' + Trim(IntToStrZero(TagID, 3)), resINI);
   try
-    with fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resNFe do
+    with fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resDFe do
     begin
       Resp.NSU := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chNFe := chNFe;
+      Resp.chNFe := chDFe;
       Resp.CNPJCPF := CNPJCPF;
       Resp.xNome := xNome;
       Resp.IE := IE;
@@ -1113,11 +1113,11 @@ begin
       Resp.vNF := vNF;
       Resp.digVal := digVal;
       Resp.dhRecbto := dhRecbto;
-      Resp.cSitNFe := SituacaoDFeToStr(cSitNFe);
+      Resp.cSitNFe := SituacaoDFeToStr(cSitDFe);
       Resp.nProt := nProt;
       Resp.XML := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrNFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaNFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1136,7 +1136,7 @@ begin
     with fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resEvento do
     begin
       Resp.NSU := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chNFe := chNFe;
+      Resp.chNFe := chDFe;
       Resp.CNPJCPF := CNPJCPF;
       Resp.dhEvento := dhEvento;
       Resp.tpEvento := TpEventoToStr(tpEvento);
@@ -1147,7 +1147,7 @@ begin
       Resp.nProt := nProt;
       Resp.XML := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrNFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaNFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1166,7 +1166,7 @@ begin
     with fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento do
     begin
       Resp.NSU := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chNFe := chNFe;
+      Resp.chNFe := chDFe;
       Resp.cOrgao := cOrgao;
       Resp.CNPJ := CNPJ;
       Resp.Id := Id;
@@ -1193,7 +1193,7 @@ begin
 
       Resp.XML := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrNFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaNFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1215,7 +1215,7 @@ begin
       Resp.VerAplic := VerAplic;
       Resp.tpAmb := TpAmbToStr(tpAmb);
       Resp.cOrgao := cOrgao;
-      Resp.chNFe := chNFe;
+      Resp.chNFe := chDFe;
       Resp.CStat := cStat;
       Resp.CNPJDest := CNPJDest;
       Resp.cOrgaoAutor := cOrgaoAutor;
@@ -1229,7 +1229,7 @@ begin
 
       Resp.XML := fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrNFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaNFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1248,7 +1248,7 @@ begin
     //Campos preenchidos em tela
     if (NotasFiscais.Count > 0) and
        ( NaoEstaVazio(MonitorConfig.DFE.WebService.NFe.CNPJContador) ) then
-      with NotasFiscais.Items[0].NFe.autXML.Add do
+      with NotasFiscais.Items[0].NFe.autXML.New do
         CNPJCPF := MonitorConfig.DFE.WebService.NFe.CNPJContador;
 
   end;
@@ -1364,7 +1364,7 @@ begin
   try
     with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].RetEventoNFe.InfEvento do
     begin
-      Resp.ID := fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].ID;
+      Resp.ID := ItemID;
       Resp.cOrgao := IntToStr(cOrgao);
       Resp.tpAmb := TpAmbToStr(tpAmb);
       Resp.CNPJ := CNPJ;
@@ -1446,7 +1446,7 @@ begin
   try
     with fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemId].RetEventoNFe.retEvento.Items[ItemRet].RetInfEvento do
     begin
-      Resp.Id := IntToStr(fACBrNFe.WebServices.Consulta.procEventoNFe.Items[ItemID].RetEventoNFe.retEvento.Items[ItemRet].ID);
+      Resp.Id := IntToStr(ItemRet);
       Resp.NomeArquivo := NomeArquivo;
       Resp.tpAmb := TpAmbToStr(tpAmb);
       Resp.verAplic := verAplic;
@@ -1880,11 +1880,12 @@ end;
           3 - Assunto: String com Assunto do e-mail
           4 - Copia: String com e-mails copia (Separados ;)
           5 - Anexo: String com Path de Anexos (Separados ;)
+          6 - Replay: String ReplayTo (Separados ;)
 }
 procedure TMetodoEnviarEmail.Executar;
 var
-  sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias, AAnexos: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias, AAnexos, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFe: TACBrCarregarNFe;
   AEnviaPDF: Boolean;
 begin
@@ -1894,6 +1895,7 @@ begin
   AAssunto := fpCmd.Params(3);
   AEmailCopias := fpCmd.Params(4);
   AAnexos := fpCmd.Params(5);
+  AReplay := fpCmd.Params(6);
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
@@ -1902,6 +1904,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFe := TACBrCarregarNFe.Create(ACBrNFe, APathXML);
       try
@@ -1915,8 +1918,8 @@ begin
         end;
 
         QuebrarLinha(AEmailCopias, slCC);
-
         QuebrarLinha(AAnexos, slAnexos);
+        QuebrarLinha(AReplay, slReplay);
 
         try
           ACBrNFe.NotasFiscais.Items[0].EnviarEmail(ADestinatario,
@@ -1926,8 +1929,10 @@ begin
             // Enviar PDF junto
             slCC,
             // Lista com emails que serão enviado cópias - TStrings
-            slAnexos);
+            slAnexos,
             // Lista de slAnexos - TStrings
+            slReplay);
+            // Lista de ReplayTo - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -1942,6 +1947,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
 
   end;
@@ -1966,7 +1972,7 @@ begin
     ACBrNFe.WebServices.Recibo.Executar;
 
     RespostaRecibo;
-    for I := 0 to ACBrNFe.WebServices.Recibo.NFeRetorno.ProtNFe.Count - 1 do
+    for I := 0 to ACBrNFe.WebServices.Recibo.NFeRetorno.ProtDFe.Count - 1 do
       RespostaItensRecibo(I);
 
     if ACBrNFe.Configuracoes.Geral.Salvar then
@@ -2757,15 +2763,15 @@ begin
     ACBrNFe.WebServices.Consulta.Executar;
 
     ACBrNFe.EventoNFe.Evento.Clear;
-    with ACBrNFe.EventoNFe.Evento.Add do
+    with ACBrNFe.EventoNFe.Evento.New do
     begin
       infEvento.CNPJ := ACNPJ;
       if Trim(infEvento.CNPJ) = '' then
         infEvento.CNPJ := copy(OnlyNumber(ACBrNFe.WebServices.Consulta.NFeChave), 7, 14)
       else
       begin
-        if not ValidarCNPJ(ACNPJ) then
-          raise Exception.Create('CNPJ ' + ACNPJ + ' inválido.');
+        if not( ValidarCNPJouCPF(ACNPJ) ) then
+          raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' inválido.');
       end;
 
       infEvento.cOrgao := StrToIntDef(
@@ -3112,8 +3118,8 @@ begin
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ '+ACNPJ+' inválido.');
+    if not( ValidarCNPJouCPF(ACNPJ) ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     DoValidarIntegradorNFCe();
     ACBrNFe.DistribuicaoDFePorChaveNFe(AUF, ACNPJ, AChave);
@@ -3122,7 +3128,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resNFe.chNFe) <> '') then
+      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resDFe.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResNFe(I,J);
         inc(J);
@@ -3130,7 +3136,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chNFe) <> '') then
+      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResEve(I,J);
         inc(J);
@@ -3175,8 +3181,8 @@ begin
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ '+ACNPJ+' inválido.');
+    if not( ValidarCNPJouCPF(ACNPJ) ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     DoValidarIntegradorNFCe();
     ACBrNFe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, AUltNSU);
@@ -3185,7 +3191,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resNFe.chNFe) <> '') then
+      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resDFe.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResNFe(I,J);
         inc(J);
@@ -3193,7 +3199,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chNFe) <> '') then
+      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResEve(I,J);
         inc(J);
@@ -3238,8 +3244,8 @@ begin
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ '+ACNPJ+' inválido.');
+    if not( ValidarCNPJouCPF(ACNPJ) ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     DoValidarIntegradorNFCe();
     ACBrNFe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, ANSU);
@@ -3248,7 +3254,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resNFe.chNFe) <> '') then
+      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resDFe.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResNFe(I,J);
         inc(J);
@@ -3256,7 +3262,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chNFe) <> '') then
+      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResEve(I,J);
         inc(J);
@@ -3291,12 +3297,13 @@ end;
           4 - Assunto: String com Assunto do e-mail
           5 - Copia: String com e-mails copia (Separados ;)
           6 - Anexo: String com Path de Anexos (Separados ;)
+          7 - Replay: String com Replay (Separados ;)
 }
 procedure TMetodoEnviaremailEvento.Executar;
 var
   sAssunto, ADestinatario, APathXMLEvento, APathXML, AAssunto, AEmailCopias,
-  AAnexos, ArqPDF, ArqEvento: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  AAnexos, ArqPDF, ArqEvento, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFeEvento: TACBrCarregarNFeEvento;
   CargaDFe: TACBrCarregarNFe;
   AEnviaPDF: Boolean;
@@ -3309,6 +3316,7 @@ begin
   AAssunto := fpCmd.Params(4);
   AEmailCopias := fpCmd.Params(5);
   AAnexos := fpCmd.Params(6);
+  AReplay := fpCmd.Params(7);
   ArqEvento := '';
 
   with TACBrObjetoNFe(fpObjetoDono) do
@@ -3319,6 +3327,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFeEvento := TACBrCarregarNFeEvento.Create(ACBrNFe, APathXMLEvento);
       if NaoEstaVazio(APathXML) then
@@ -3345,8 +3354,8 @@ begin
         end;
 
         QuebrarLinha(AEmailCopias, slCC);
-
         QuebrarLinha(AAnexos, slAnexos);
+        QuebrarLinha(AReplay, slReplay);
 
         // Se carregou evento usando XML como parâmetro, salva XML para poder anexar
         if  StringIsXML( APathXMLEvento ) then
@@ -3369,7 +3378,10 @@ begin
             DoSubstituirVariaveis( IfThen(NaoEstaVazio(AAssunto), AAssunto, sAssunto) ),
             slMensagemEmail,
             slCC,      // Lista com emails que serão enviado cópias - TStrings
-            slAnexos); // Lista de slAnexos - TStrings
+            slAnexos,  // Lista de slAnexos - TStrings
+            Nil,
+            '',
+            slReplay); // Lista com Endereços Replay - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -3385,6 +3397,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
   end;
 end;
@@ -3397,12 +3410,13 @@ end;
           3 - Assunto: String com Assunto do e-mail
           4 - Copia: String com e-mails copia (Separados ;)
           5 - Anexo: String com Path de Anexos (Separados ;)
+          6 - Replay: String com endereços de Replay (Separados ;)
 }
 procedure TMetodoEnviaremailInutilizacao.Executar;
 var
   sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias,
-  AAnexos, ArqPDF, ArqInut: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  AAnexos, ArqPDF, ArqInut, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFe: TACBrCarregarNFeInut;
   AEnviaPDF: Boolean;
 begin
@@ -3412,6 +3426,7 @@ begin
   AAssunto := fpCmd.Params(3);
   AEmailCopias := fpCmd.Params(4);
   AAnexos := fpCmd.Params(5);
+  AReplay := fpCmd.Params(6);
   ArqInut := '';
 
   with TACBrObjetoNFe(fpObjetoDono) do
@@ -3419,6 +3434,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFe := TACBrCarregarNFeInut.Create(ACBrNFe, APathXML);
       try
@@ -3443,8 +3459,8 @@ begin
         end;
 
         QuebrarLinha(AEmailCopias, slCC);
-
         QuebrarLinha(AAnexos, slAnexos);
+        QuebrarLinha(AReplay, slReplay);
 
         // Se carregou evento usando XML como parâmetro, salva XML para poder anexar
         if  StringIsXML( APathXML ) then
@@ -3466,7 +3482,10 @@ begin
             DoSubstituirVariaveis( IfThen(NaoEstaVazio(AAssunto), AAssunto, sAssunto) ),
             slMensagemEmail,
             slCC,      // Lista com emails que serão enviado cópias - TStrings
-            slAnexos); // Lista de slAnexos - TStrings
+            slAnexos,  // Lista de slAnexos - TStrings
+            nil,
+            '',
+            slReplay); // Lista de slReplay - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -3480,6 +3499,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
   end;
 end;
@@ -3835,8 +3855,8 @@ begin
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ ' + ACNPJ + ' inválido.');
+    if not( ValidarCNPJouCPF(ACNPJ) ) then
+      raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' inválido.');
 
     DoValidarIntegradorNFCe();
     ACBrNFe.DistribuicaoDFe(AUF, ACNPJ, AUltNSU, ANSU, AChave);
@@ -3845,7 +3865,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resNFe.chNFe) <> '') then
+      if ( Trim(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resDFe.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResNFe(I,J);
         inc(J);
@@ -3853,7 +3873,7 @@ begin
 
     J := 1;
     for I := 0 to ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chNFe) <> '') then
+      if ( Trim(AcbrNFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[I].resEvento.chDFe) <> '') then
       begin
         RespostaItensDistribuicaoDFeResEve(I,J);
         inc(J);

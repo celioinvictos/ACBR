@@ -71,8 +71,8 @@ type
     FImprimeEmUmaLinha: Boolean;
     FTipoDANFE: TpcnTipoImpressao;
 
-    procedure SetNFE(const AValue: TComponent);
-    procedure ErroAbstract(NomeProcedure: String);
+    procedure SetACBrNFE(const AValue: TComponent);
+    procedure ErroAbstract(const NomeProcedure: String);
 
   protected
     function GetSeparadorPathPDF(const aInitialPath: String): String; override;
@@ -94,14 +94,14 @@ type
     procedure ImprimirINUTILIZACAOPDF(ANFe: TNFe = nil); virtual;
 
     function SeparadorDetalhamentos: String; virtual;
-    function ManterCodigo(scEAN, scProd: String): String; virtual;
-    function ManterNomeImpresso(sXNome, sXFant: String): String; virtual;
+    function ManterCodigo(const scEAN, scProd: String): String; virtual;
+    function ManterNomeImpresso(const sXNome, sXFant: String): String; virtual;
     function ManterXProd(aNFE: TNFe; const inItem: Integer): String;
-    function ManterUnidades(sUCom, sUTrib: String): String; virtual;
+    function ManterUnidades(const sUCom, sUTrib: String): String; virtual;
     function ManterQuantidades(dQCom, dQTrib: Double): String; virtual;
     function ManterValoresUnitarios(dVCom, dVTrib: Double): String; virtual;
     function ManterInfAdFisco(ANFe: TNFe): String; virtual;
-    function TrataDocumento(sCNPJCPF: String): String; virtual;
+    function TrataDocumento(const sCNPJCPF: String): String; virtual;
     function ManterinfAdProd(aNFE: TNFe; const inItem: Integer): String; virtual;
     function ManterInfCompl(ANFe: TNFe): String; virtual;
     function ManterInfContr(ANFe: TNFe): String; virtual;
@@ -121,7 +121,7 @@ type
     property ChaveTributos: String read FChaveTributos write FChaveTributos;
 
   published
-    property ACBrNFe: TComponent read FACBrNFe write SetNFE;
+    property ACBrNFe: TComponent read FACBrNFe write SetACBrNFE;
     property TipoDANFE: TpcnTipoImpressao read FTipoDANFE write SetTipoDANFE default tiRetrato;
     property QuebraLinhaEmDetalhamentos: Boolean read FQuebraLinhaEmDetalhamentos write FQuebraLinhaEmDetalhamentos default True;
     property ImprimeTotalLiquido: Boolean read FImprimeTotalLiquido write FImprimeTotalLiquido default True;
@@ -172,7 +172,7 @@ begin
     FACBrNFe := nil;
 end;
 
-procedure TACBrDFeDANFeReport.SetNFE(const AValue: TComponent);
+procedure TACBrDFeDANFeReport.SetACBrNFE(const AValue: TComponent);
 var
   OldValue: TACBrNFe;
 begin
@@ -200,7 +200,7 @@ begin
   end;
 end;
 
-procedure TACBrDFeDANFeReport.ErroAbstract(NomeProcedure: String);
+procedure TACBrDFeDANFeReport.ErroAbstract(const NomeProcedure: String);
 begin
   raise EACBrNFeException.Create(NomeProcedure + ' não implementado em: ' + ClassName);
 end;
@@ -300,15 +300,19 @@ begin
     Result := ' - ';
 end;
 
-function TACBrDFeDANFeReport.ManterCodigo(scEAN, scProd: String): String;
+function TACBrDFeDANFeReport.ManterCodigo(const scEAN, scProd: String): String;
 begin
-  if (Length(Trim(scEAN)) > 0) and (Trim(scEAN) <> 'SEM GTIN') and (ImprimeCodigoEan) then
-    Result := Trim(scEAN)
-  else
-    Result := Trim(scProd);
+
+  Result := Trim(scEAN);
+
+  if not  ( ( fImprimeCodigoEan )    and
+            ( Result <> 'SEM GTIN' ) and
+            ( Result <>  '' )
+          ) then
+      Result := Trim(scProd);
 end;
 
-function TACBrDFeDANFeReport.ManterNomeImpresso(sXNome, sXFant: String): String;
+function TACBrDFeDANFeReport.ManterNomeImpresso(const sXNome, sXFant: String): String;
 begin
   if (FImprimeNomeFantasia) and (sXFant <> '') then
     Result := sXFant
@@ -323,7 +327,7 @@ begin
     Result := Result + sLineBreak + FormatarQuantidade(dQTrib);
 end;
 
-function TACBrDFeDANFeReport.ManterUnidades(sUCom, sUTrib: String): String;
+function TACBrDFeDANFeReport.ManterUnidades(const sUCom, sUTrib: String): String;
 begin
   Result := Trim(sUCom);
   if Trim(sUTrib) <> '' then
@@ -337,7 +341,7 @@ begin
     Result := Result + sLineBreak + FormatarValorUnitario(dVTrib);
 end;
 
-function TACBrDFeDANFeReport.TrataDocumento(sCNPJCPF: String): String;
+function TACBrDFeDANFeReport.TrataDocumento(const sCNPJCPF: String): String;
 begin
   Result := sCNPJCPF;
   if NaoEstaVazio(Result) then
@@ -370,9 +374,9 @@ var
 begin
   Result := '';
 
-  if (ExibeInforAdicProduto = infNenhum) or 
-     (inItem < 0) or 
-     (inItem >= aNFE.Det.Count) then 
+  if (ExibeInforAdicProduto = infNenhum) or
+     (inItem < 0) or
+     (inItem >= aNFE.Det.Count) then
     Exit;
 
   if (ExibeInforAdicProduto = infDescricao)  then
@@ -409,7 +413,7 @@ begin
         Result := Result +
           obsCont.Items[i].xCampo + ': ' +
           obsCont.Items[i].xTexto +
-          ifthen((obsCont.Items[i].Index = (obsCont.Count - 1)), '', ';');
+          IfThen((i = (obsCont.Count - 1)), '', ';');
       end;
 
       Result := Result + '; ';
@@ -431,8 +435,7 @@ begin
       begin
         Result := Result +
           obsFisco.Items[i].xCampo + ': ' +
-          obsFisco.Items[i].xTexto + ifthen(
-          (obsFisco.Items[i].Index = (obsFisco.Count - 1)), '', ';');
+          obsFisco.Items[i].xTexto + IfThen((i = (obsFisco.Count - 1)), '', ';');
       end;
 
       Result := Result + '; ';
@@ -452,12 +455,12 @@ begin
     begin
       for i := 0 to (procRef.Count - 1) do
       begin
-        if procRef.Items[i].Index = (procRef.Count - 1) then
+        if (i = (procRef.Count - 1)) then
           Result := Result +
             ACBrStr('PROCESSO OU ATO CONCESSÓRIO Nº: ') +
             procRef.Items[i].nProc + ' - ORIGEM: ' +
             indProcToDescrStr(procRef.Items[i].indProc) +
-            ifthen((procRef.Items[i].Index = (procRef.Count - 1)), '', ';');
+            ifthen((i = (procRef.Count - 1)), '', ';');
       end;
 
       Result := Result + '; ';

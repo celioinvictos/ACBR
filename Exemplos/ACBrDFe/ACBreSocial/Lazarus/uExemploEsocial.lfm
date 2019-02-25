@@ -11,7 +11,7 @@ object FExemploEsocial: TFExemploEsocial
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  LCLVersion = '1.8.0.6'
+  LCLVersion = '1.8.4.0'
   object Panel1: TPanel
     Left = 0
     Height = 648
@@ -1396,15 +1396,6 @@ object FExemploEsocial: TFExemploEsocial
         Width = 219
         Caption = 'S-1080 - Tabela de Operadores Portuários'
         TabOrder = 10
-      end
-      object cbS2100: TCheckBox
-        Left = 349
-        Height = 19
-        Top = 119
-        Width = 219
-        Caption = 'S-2100 - Cadastramento Inicial do Vínculo'
-        Enabled = False
-        TabOrder = 11
       end
       object cbS1070: TCheckBox
         Left = 349

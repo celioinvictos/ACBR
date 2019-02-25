@@ -47,6 +47,21 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+15/02/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Ajustes das alterações ref. dados do modal Aquaviário também no ACBrMDFeDAMDFeRLRetrato.lfm
+  por: José M S Junior
+
+30/01/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Ajustes para imprimir os dados do modal Aquaviário.
+  por: Italo Jurisato Junior
+
+25/01/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] https://www.projetoacbr.com.br/forum/topic/48882-dados-da-seguradora-mdf-e/?do=findComment&comment=323465
+  por: Walter Faria
+
 08/11/2018
 -- ACBrMDFeDAMDFeRLRetrato --
 [*] https://www.projetoacbr.com.br/forum/topic/40584-damdfe-impress%C3%A3o-da-unidade-de-medida-kg-e-ton/?do=findComment&comment=312982

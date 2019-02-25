@@ -78,7 +78,7 @@ type
 
   public
     class procedure Imprimir(ADANFe: TACBrNFeDANFeRL; ANotas: array of TNFe);
-    class procedure SalvarPDF(ADANFe: TACBrNFeDANFeRL; ANFe: TNFe; AFile: String);
+    class procedure SalvarPDF(ADANFe: TACBrNFeDANFeRL; ANFe: TNFe; const AFile: String);
   end;
 
 implementation
@@ -119,27 +119,24 @@ begin
     end;
 
     Report := ReportArray[0].RLNFe;
+    //Associa cada Report com o próximo;
     for i := 1 to High(ReportArray) do
     begin
-      if (Report.NextReport = nil) then
-        Report.NextReport := ReportArray[i].RLNFe
-      else
+      ReportNext := Report;
+      while (ReportNext.NextReport <> nil) do
       begin
-        ReportNext := Report.NextReport;
-
-        repeat
-          if (ReportNext.NextReport <> nil) then
-            ReportNext := ReportNext.NextReport;
-        until (ReportNext.NextReport = nil);
-
-        ReportNext.NextReport := ReportArray[i].RLNFe;
+        ReportNext := ReportNext.NextReport;
       end;
+      ReportNext.NextReport := ReportArray[i].RLNFe;
     end;
 
     TDFeReportFortes.AjustarReport(Report, ADANFe);
 
     if ADANFe.MostraPreview then
-      Report.PreviewModal
+    begin
+      SelectedFilter := DANFeReport.RLPDFFilter1;
+      Report.PreviewModal;
+    end
     else
       Report.Print;
   finally
@@ -155,7 +152,7 @@ begin
   end;
 end;
 
-class procedure TfrlDANFeRL.SalvarPDF(ADANFe: TACBrNFeDANFeRL; ANFe: TNFe; AFile: String);
+class procedure TfrlDANFeRL.SalvarPDF(ADANFe: TACBrNFeDANFeRL; ANFe: TNFe; const AFile: String);
 var
   DANFeReport: TfrlDANFeRL;
 begin
@@ -192,6 +189,8 @@ begin
   {$IfNDef FPC}
   Self.Scaled := False;
   {$EndIf}
+  fpCorDestaqueProdutos := StringToColor('$00E5E5E5');
+
 end;
 
 procedure TfrlDANFeRL.ConfigurarVariavies(ATipoDANFE: TpcnTipoImpressao);
@@ -221,6 +220,7 @@ var
   sLinhaProvisoria, sLinha: String;
 begin
   iPosAtual := 1;
+  sTexto := StringReplace(sTexto, sLineBreak, ';', [rfReplaceAll]);
   iQuantCaracteres := Length(sTexto);
   if iQuantCaracteres <= fpLimiteLinhas then
     iTotalLinhas := 1

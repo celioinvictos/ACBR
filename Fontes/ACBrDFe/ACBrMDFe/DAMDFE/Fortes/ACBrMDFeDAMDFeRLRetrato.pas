@@ -173,6 +173,16 @@ type
     RLDraw15: TRLDraw;
     RLLabel27: TRLLabel;
     rllValorMercadoria: TRLLabel;
+    RLLabel28: TRLLabel;
+    RLLabel29: TRLLabel;
+    rlmRespSeguradora: TRLMemo;
+    RLLabel30: TRLLabel;
+    rlmRespApolice: TRLMemo;
+    RLDraw16: TRLDraw;
+    RLDraw17: TRLDraw;
+    RLLabel32: TRLLabel;
+    rlmRespAverbacao: TRLMemo;
+    rlmRespSeguro: TRLLabel;
     procedure rlb_1_DadosManifestoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlb_2_RodoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlb_3_AereoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -190,9 +200,7 @@ type
     { Private declarations }
     FNumItem: Integer;
     FTotalPages: integer;
-
   end;
-
 
 implementation
 
@@ -215,13 +223,15 @@ var
   nItemControle: integer;
 
 procedure TfrlDAMDFeRLRetrato.rlb_1_DadosManifestoBeforePrint(Sender: TObject; var PrintIt: Boolean);
+var
+  CarregouLogo: Boolean;
 begin
   inherited;
   if  (RLMDFe.PageNumber <> 1) then
   begin
-    rlb_2_Rodo.Visible        := False;
-    RLBand2.Visible           := False;
-    RLBand1.Visible           := False;
+    rlb_2_Rodo.Visible := False;
+    RLBand2.Visible    := False;
+    RLBand1.Visible    := False;
   end;
 
   {$IFNDEF BORLAND}
@@ -229,21 +239,20 @@ begin
     RLMemo1.Font.Size := 6;
   {$ENDIF}
 
-  TDFeReportFortes.CarregarLogo(rliLogo, fpDAMDFe.Logo);
-
+  CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDAMDFe.Logo);
 
   if fpDAMDFe.ExpandeLogoMarca then
   begin
-    rliLogo.top := 2;
-    rliLogo.Left := 2;
-    rliLogo.Height := 142;
-    rliLogo.Width := 330;
+    rliLogo.top     := 2;
+    rliLogo.Left    := 2;
+    rliLogo.Height  := 142;
+    rliLogo.Width   := 330;
     rliLogo.Stretch := True;
+
     rlmEmitente.visible := False;
     rlmDadosEmitente.visible := False;
-  end;
-
-  if not fpDAMDFe.ExpandeLogoMarca then
+  end
+  else
   begin
     rliLogo.Stretch := true;
     rlmEmitente.Enabled := True;
@@ -275,13 +284,14 @@ begin
     end;
   end;
 
-  RLBarcode1.Caption  := Copy ( fpMDFe.InfMDFe.Id, 5, 44 );
-  rllChave.Caption    := FormatarChaveAcesso(Copy(fpMDFe.InfMDFe.Id, 5, 44));
+  RLBarcode1.Caption := Copy ( fpMDFe.InfMDFe.Id, 5, 44 );
+  rllChave.Caption   := FormatarChaveAcesso(Copy(fpMDFe.InfMDFe.Id, 5, 44));
 
   if fpMDFe.ide.tpEmis = teNormal then
   begin
-    rllProtocolo.Font.Size := 8;
+    rllProtocolo.Font.Size  := 8;
     rllProtocolo.Font.Style := [fsBold];
+
     if fpDAMDFe.Protocolo <> '' then
       rllProtocolo.Caption := fpDAMDFe.Protocolo
     else
@@ -291,8 +301,9 @@ begin
   end
   else
   begin
-    rllProtocolo.Font.Size := 5;
+    rllProtocolo.Font.Size  := 5;
     rllProtocolo.Font.Style := [];
+
     rllProtocolo.Caption := ACBrStr('Impressão em contingência. Obrigatória a autorização em 168 horas' +
       ' após esta Emissão (') + FormatDateTime('dd/mm/yyyy hh:nn', Now) + ')';
   end;
@@ -303,9 +314,11 @@ begin
   rllEmissao.Caption      := FormatDateTimeBr(fpMDFe.Ide.dhEmi);
   rllUFCarrega.Caption    := fpMDFe.Ide.UFIni;
   rllUFDescarrega.Caption := fpMDFe.Ide.UFFim;
-  rlb_3_Aereo.Visible     := false;
-  rlb_4_Aquav.Visible     := false;
-  rlb_5_Ferrov.Visible    := false;
+
+  rlb_2_Rodo.Enabled   := False;
+  rlb_3_Aereo.Enabled  := false;
+  rlb_4_Aquav.Enabled  := false;
+  rlb_5_Ferrov.Enabled := false;
 
   case fpMDFe.Ide.modal of
     moRodoviario  : rllModal.Caption := ACBrStr('MODAL RODOVIÁRIO DE CARGA');
@@ -325,7 +338,6 @@ begin
 
   rllPesoTotal.Caption := FormatFloatBr(fpMDFe.tot.qCarga, ',#0.0000');
   rllValorMercadoria.Caption := FormatFloatBr(fpMDFe.tot.vCarga, ',#0.00');
-
 end;
 
 procedure TfrlDAMDFeRLRetrato.rlb_2_RodoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -334,6 +346,10 @@ var
 begin
   inherited;
   rlb_2_Rodo.Enabled := (fpMDFe.Ide.modal = moRodoviario);
+  if rlb_2_Rodo.Enabled then
+    rlb_2_Rodo.Height := 208
+  else
+    rlb_2_Rodo.Height := 0;
 
   rlmPlaca.Lines.Clear;
   rlmPlaca.Lines.Add(FormatarPlaca(fpMDFe.rodo.veicTracao.placa) + ' - ' +
@@ -345,7 +361,7 @@ begin
   else
     if (fpMDFe.infMDFe.versao >= 3) then
       rlmRNTRC.Lines.Add(fpMDFe.rodo.infANTT.RNTRC)
-    ELSE
+    else
       rlmRNTRC.Lines.Add(fpMDFe.rodo.RNTRC);
 
   for i := 0 to fpMDFe.rodo.veicReboque.Count - 1 do
@@ -390,12 +406,31 @@ begin
       rlmNumComprovante.Lines.Add(fpMDFe.rodo.infANTT.valePed.disp.Items[i].nCompra);
     end;
   end;
+
+  rlmRespSeguradora.Lines.Clear;
+  rlmRespApolice.Lines.Clear;
+  rlmRespAverbacao.Lines.Clear;
+
+  rlmRespSeguro.Caption:= '';
+
+  if fpMDFe.seg.Count > 0 then
+    rlmRespSeguro.Caption := RspSeguroMDFeToStrText(fpMDFe.seg.Items[0].respSeg);
+
+  for i := 0 to fpMDFe.seg.Count - 1 do
+  begin
+    rlmRespSeguradora.Lines.Add(fpMDFe.seg.Items[i].xSeg);
+    rlmRespApolice.Lines.Add(fpMDFe.seg.Items[i].nApol);
+  end;
 end;
 
 procedure TfrlDAMDFeRLRetrato.rlb_3_AereoBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   inherited;
-   rlb_3_Aereo.Enabled := (fpMDFe.Ide.modal = moAereo);
+  rlb_3_Aereo.Enabled := (fpMDFe.Ide.modal = moAereo);
+  if rlb_3_Aereo.Enabled then
+    rlb_3_Aereo.Height := 54
+  else
+    rlb_3_Aereo.Height := 0;
 end;
 
 procedure TfrlDAMDFeRLRetrato.rlb_4_AquavBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -403,9 +438,14 @@ var
   i: integer;
 begin
   inherited;
-  rlb_4_Aquav.Enabled   := (fpMDFe.Ide.modal = moAquaviario);
-  rllCodEmbar.Caption   := fpMDFe.aquav.cEmbar;
-  rllNomeEmbar.Caption  := fpMDFe.aquav.xEmbar;
+  rlb_4_Aquav.Enabled := (fpMDFe.Ide.modal = moAquaviario);
+  if rlb_4_Aquav.Enabled then
+    rlb_4_Aquav.Height := 121
+  else
+    rlb_4_Aquav.Height := 0;
+
+  rllCodEmbar.Caption  := fpMDFe.aquav.cEmbar;
+  rllNomeEmbar.Caption := fpMDFe.aquav.xEmbar;
 
   rlmCodCarreg.Lines.Clear;
   rlmNomeCarreg.Lines.Clear;
@@ -429,6 +469,10 @@ procedure TfrlDAMDFeRLRetrato.rlb_5_FerrovBeforePrint(Sender: TObject; var Print
 begin
   inherited;
   rlb_5_Ferrov.Enabled := (fpMDFe.Ide.modal = moFerroviario);
+  if rlb_5_Ferrov.Enabled then
+    rlb_5_Ferrov.Height := 60
+  else
+    rlb_5_Ferrov.Height := 0;
 end;
 
 procedure TfrlDAMDFeRLRetrato.rlb_6_ObservacaoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -519,79 +563,79 @@ begin
 
   with RLMDFe do
   begin
-    Title                 := ACBrStr('Manifesto Eletrônico de Documentos Fiscais - MDF-e');
-    Borders.DrawTop       := true;
-    Borders.DrawLeft      := true;
-    Borders.DrawRight     := true;
-    Borders.DrawBottom    := true;
+    Title              := ACBrStr('Manifesto Eletrônico de Documentos Fiscais - MDF-e');
+    Borders.DrawTop    := true;
+    Borders.DrawLeft   := true;
+    Borders.DrawRight  := true;
+    Borders.DrawBottom := true;
   end;
 
   with rlb_1_DadosManifesto do
   begin
-    Borders.DrawTop     := False;
-    Borders.DrawLeft    := False;
-    Borders.DrawRight   := False;
-    Borders.DrawBottom  := False;
+    Borders.DrawTop    := False;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := False;
   end;
 
   with rlb_2_Rodo do
   begin
-    Borders.DrawTop     := True;
-    Borders.DrawLeft    := False;
-    Borders.DrawRight   := False;
-    Borders.DrawBottom  := False;
+    Borders.DrawTop    := True;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := False;
   end;
 
   with RLBand2 do
   begin
-    Borders.DrawTop     := False;
-    Borders.DrawLeft    := False;
-    Borders.DrawRight   := False;
-    Borders.DrawBottom  := False;
+    Borders.DrawTop    := False;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := False;
   end;
 
   with RLBand1 do
   begin
-    Borders.DrawTop     := True;
-    Borders.DrawLeft    := False;
-    Borders.DrawRight   := False;
-    Borders.DrawBottom  := False;
+    Borders.DrawTop    := True;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := False;
   end;
 
   with rlb_7_Documentos_Titulos do
   begin
-    Borders.DrawTop     := True;
-    Borders.DrawLeft    := False;
-    Borders.DrawRight   := False;
-    Borders.DrawBottom  := True;
+    Borders.DrawTop    := True;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := True;
   end;
 
   with rlb_6_Observacao do
   begin
-    BandType            := btFooter;
-    Borders.DrawTop     := True;
-    Borders.DrawLeft    := False;
-    Borders.DrawRight   := False;
-    Borders.DrawBottom  := False;
+    BandType           := btFooter;
+    Borders.DrawTop    := True;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := False;
   end;
 
-  subItens.Borders.DrawLeft := False;
-  subItens.Borders.DrawRight:= False;
+  subItens.Borders.DrawLeft  := False;
+  subItens.Borders.DrawRight := False;
 
   with rlbItens do
   begin
-    AutoSize             := True;
-    Borders.DrawTop      := False;
-    Borders.DrawLeft     := False;
-    Borders.DrawRight    := False;
-    Borders.DrawBottom   := true;
+    AutoSize           := True;
+    Borders.DrawTop    := False;
+    Borders.DrawLeft   := False;
+    Borders.DrawRight  := False;
+    Borders.DrawBottom := true;
   end;
 
   rlmChave1.Lines.Clear;
-  rlmChave2.Lines     := rlmChave1.Lines;
+  rlmChave2.Lines := rlmChave1.Lines;
 
-  rlmChave1.AutoSize  := True;
-  rlmChave2.AutoSize  := rlmChave1.AutoSize;
+  rlmChave1.AutoSize := True;
+  rlmChave2.AutoSize := rlmChave1.AutoSize;
 end;
 
 procedure TfrlDAMDFeRLRetrato.RLMDFeDataRecord(Sender: TObject; RecNo,
@@ -609,9 +653,9 @@ procedure TfrlDAMDFeRLRetrato.subItensDataRecord(Sender: TObject; RecNo,
   CopyNo: Integer; var Eof: Boolean; var RecordAction: TRLRecordAction);
 begin
   inherited;
-  FNumItem      := RecNo - 1 ;
-  Eof           := (RecNo > fpMDFe.infDoc.infMunDescarga.Count) ;
-  RecordAction  := raUseIt ;
+  FNumItem     := RecNo - 1;
+  Eof          := (RecNo > fpMDFe.infDoc.infMunDescarga.Count);
+  RecordAction := raUseIt;
 end;
 
 procedure TfrlDAMDFeRLRetrato.rlbItensAfterPrint(Sender: TObject);
@@ -624,8 +668,9 @@ end;
 procedure TfrlDAMDFeRLRetrato.rlbItensBeforePrint(Sender: TObject;
   var PrintIt: Boolean);
 var
-   J, nItem : integer;
-  Procedure Printar( sTemp : String; nItem : Integer );
+  J, nItem : integer;
+
+  procedure Printar( sTemp : String; nItem : Integer );
   begin
     if (nItem mod 2) = 0 then
       rlmChave1.Lines.Add(sTemp)
@@ -640,7 +685,7 @@ begin
    // Lista de CT-e
     for J := 0 to ( infCTe.Count - 1) do
     begin
-      Printar( 'CT-e          ' + FormatarChaveAcesso(infCTe.Items[J].chCTe), nItem) ;
+      Printar( 'CT-e          ' + FormatarChaveAcesso(infCTe.Items[J].chCTe), nItem);
       Inc(nItem);
     end;
 

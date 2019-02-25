@@ -361,7 +361,7 @@ begin
         end;
       end;
 
-      if not (FProvedor in [proProdata, proGoiania, proSigep]) then
+      if not (FProvedor in [proCenti, proProdata, proGoiania, proSigep]) then
       begin
         if FProvedor in [pro4R, proISSDigital, proISSe, proSystemPro, proFiorilli,
             proSaatri, proCoplan, proLink3, proTecnos, proNEAInformatica, proSH3] then
@@ -395,9 +395,11 @@ begin
     proGiss,
     proDeISS,
     proTcheInfov2,
+    proCenti,
     proISSJoinville: Gerador.wCampoNFSe(tcDe2, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
 
     proABase,
+    proDesenvolve,
     proEReceita,
     proProdata,
     proSafeWeb,
@@ -439,6 +441,7 @@ begin
       end;
 
     pro4R,
+    proCenti,
     proFiorilli,
     proGoiania,
     proISSDigital,
@@ -454,7 +457,8 @@ begin
     proSIAPNet:
       begin
         Gerador.wCampoNFSe(tcDe2, '#27', 'DescontoIncondicionado', 01, 15, 0, NFSe.Servico.Valores.DescontoIncondicionado, DSC_VDESCINCOND);
-        Gerador.wCampoNFSe(tcDe2, '#28', 'DescontoCondicionado  ', 01, 15, 0, NFSe.Servico.Valores.DescontoCondicionado, DSC_VDESCCOND);
+        if not (FProvedor in [proCenti]) then
+          Gerador.wCampoNFSe(tcDe2, '#28', 'DescontoCondicionado  ', 01, 15, 0, NFSe.Servico.Valores.DescontoCondicionado, DSC_VDESCCOND);
       end;
 
     proProdata: Gerador.wCampoNFSe(tcDe2, '#27', 'DescontoIncondicionado', 01, 15, 1, NFSe.Servico.Valores.DescontoIncondicionado, DSC_VDESCINCOND);
@@ -494,7 +498,7 @@ begin
       Gerador.wCampoNFSe(tcStr, '#29', 'ItemListaServico', 01, 05, 0, NFSe.Servico.ItemListaServico, DSC_CLISTSERV);
     end;
 
-    if FProvedor = proVersaTecnologia then
+    if FProvedor in [proVersaTecnologia, proDesenvolve]  then
       Gerador.wCampoNFSe(tcStr, '#30', 'CodigoCnae', 01, 07, 1, OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE)
     else
       Gerador.wCampoNFSe(tcStr, '#30', 'CodigoCnae', 01, 07, 0, OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE);
@@ -577,27 +581,35 @@ begin
 
     Gerador.wGrupoNFSe('/Valores');
 
-    if FProvedor <> proSigep then
+    if not (FProvedor in [proCenti, proSigep]) then
       Gerador.wCampoNFSe(tcStr, '#20', 'IssRetido', 01, 01, 1, SituacaoTributariaToStr(NFSe.Servico.Valores.IssRetido), DSC_INDISSRET);
 
     Gerador.wCampoNFSe(tcStr, '#29', 'ItemListaServico', 01, 0005, 1, NFSe.Servico.ItemListaServico, DSC_CLISTSERV);
 
-    if FProvedor = proVersaTecnologia then
-      Gerador.wCampoNFSe(tcStr, '#30', 'CodigoCnae', 01, 0007, 1, OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE)
-    else
-      Gerador.wCampoNFSe(tcStr, '#30', 'CodigoCnae', 01, 0007, 0, OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE);
+    if not (FProvedor in [proCenti]) then
+    begin
+      if FProvedor = proVersaTecnologia then
+        Gerador.wCampoNFSe(tcStr, '#30', 'CodigoCnae', 01, 0007, 1, OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE)
+      else
+        Gerador.wCampoNFSe(tcStr, '#30', 'CodigoCnae', 01, 0007, 0, OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE);
+    end;
 
     Gerador.wCampoNFSe(tcStr, '#31', 'CodigoTributacaoMunicipio', 01, 0020, 0, OnlyNumber(NFSe.Servico.CodigoTributacaoMunicipio), DSC_CSERVTRIBMUN);
+
     Gerador.wCampoNFSe(tcStr, '#32', 'Discriminacao', 01, 2000, 1,
       StringReplace(NFSe.Servico.ItemServico[i].Discriminacao, ';', FQuebradeLinha, [rfReplaceAll, rfIgnoreCase]), DSC_DISCR);
     Gerador.wCampoNFSe(tcStr, '#33', 'CodigoMunicipio          ', 01, 0007, 1, OnlyNumber(NFSe.Servico.CodigoMunicipio), DSC_CMUN);
     Gerador.wCampoNFSe(tcInt, '#34', 'CodigoPais               ', 04, 04, 0, NFSe.Servico.CodigoPais, DSC_CPAIS);
-    Gerador.wCampoNFSe(tcStr, '#35', 'ExigibilidadeISS         ', 01, 01, 1, ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS), DSC_INDISS);
-    Gerador.wCampoNFSe(tcInt, '#36', 'MunicipioIncidencia      ', 07, 07, 0, NFSe.Servico.MunicipioIncidencia, DSC_MUNINCI);
-    Gerador.wCampoNFSe(tcStr, '#37', 'NumeroProcesso           ', 01, 30, 0, NFSe.Servico.NumeroProcesso, DSC_NPROCESSO);
+
+    if not (FProvedor in [proCenti]) then
+      Gerador.wCampoNFSe(tcStr, '#35', 'ExigibilidadeISS', 01, 01, 1, ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS), DSC_INDISS);
+
+    Gerador.wCampoNFSe(tcInt, '#36', 'MunicipioIncidencia', 07, 07, 0, NFSe.Servico.MunicipioIncidencia, DSC_MUNINCI);
+    Gerador.wCampoNFSe(tcStr, '#37', 'NumeroProcesso     ', 01, 30, 0, NFSe.Servico.NumeroProcesso, DSC_NPROCESSO);
 
     if (NFSe.Servico.Valores.IssRetido <> stNormal) and (FProvedor = proSystemPro) then
       Gerador.wCampoNFSe(tcStr, '#21', 'ResponsavelRetencao', 01, 01, 1, ResponsavelRetencaoToStr(NFSe.Servico.ResponsavelRetencao), DSC_INDRESPRET);
+
     Gerador.wGrupoNFSe('/Servico');
   end;
 
@@ -667,10 +679,11 @@ begin
   case FProvedor of
     proABase, proDigifred,proBethav2,  proEReceita, proFiorilli, proGovDigital,
     proISSe, proMitra, proNEAInformatica, proNotaInteligente, proPVH, proSisPMJP,
-    proCoplan, proSIAPNet, proSystemPro, proISSJoinville:
+    proCoplan, proSIAPNet, proSystemPro, proISSJoinville, proDesenvolve, proCenti:
         Gerador.wGrupoNFSe('InfDeclaracaoPrestacaoServico ' + FIdentificador + '="' + NFSe.InfID.ID + '"');
 
-    proDeISS:
+    proDeISS,
+    proRLZ:
         Gerador.wGrupoNFSe('InfDeclaracaoPrestacaoServico ' + FIdentificador + '="dec' + NFSe.InfID.ID + '"');
 
     proISSDigital:
@@ -703,7 +716,7 @@ begin
       proABase, proDigifred,proBethav2,  proEReceita, proFiorilli, proGovDigital,
       proISSe, proMitra, proNEAInformatica, proNotaInteligente, proPVH, proSisPMJP,
       proCoplan, proSIAPNet, proSystemPro, proPronimv2, proTecnos, proTiplanv2,
-      proSigep:
+      proSigep, proDesenvolve, proCenti:
           Gerador.wGrupoNFSe('Rps');
 
       proISSDigital:
@@ -736,6 +749,7 @@ begin
       proVersaTecnologia, proVitoria, proWebISSv2, proActconv202, proSIAPNet,
       proBelford, proSystemPro, proSH3, proISSJoinville, proSmarAPDABRASF,
       proElv2, proAsten, proGiss, proDeISS, proTcheInfov2, proDataSmart,
+      proDesenvolve, proRLZ,
       proTiplanv2: Gerador.wCampoNFSe(tcDat, '#4', 'DataEmissao', 10, 10, 1, NFSe.DataEmissao, DSC_DEMI);
 
     else
@@ -773,12 +787,13 @@ begin
         proABase, proBethav2, proFriburgo, proGovDigital, proNotaInteligente,
         proPronimv2, proVersaTecnologia, proWebISSv2, proActconv202, proBelford,
         proSH3, proSIAPNet, proISSJoinville, proSmarAPDABRASF, proELv2, proAsten,
-        proTiplanv2, proDeISS, proTcheInfov2, proDataSmart,
+        proTiplanv2, proDeISS, proTcheInfov2, proDataSmart, proDesenvolve,
+        proRLZ,
         proGiss: Gerador.wCampoNFSe(tcDat, '#4', 'Competencia', 10, 10, 1, NFSe.Competencia, DSC_DEMI);
 
-        proTecnos: Gerador.wCampoNFSe(tcDatHor, '#4', 'Competencia', 19, 19, 0, NFSe.Competencia, DSC_DEMI);
-
-      else
+        proTecnos, 
+		proCenti: Gerador.wCampoNFSe(tcDatHor, '#4', 'Competencia', 19, 19, 0, NFSe.Competencia, DSC_DEMI);
+      else 
         Gerador.wCampoNFSe(tcStr, '#4', 'Competencia', 19, 19, 1, NFSe.Competencia, DSC_DEMI);
       end;
     end
@@ -790,11 +805,12 @@ begin
          proSaatri, proSiam, proSisPMJP, proSystemPro, proVirtual, proVitoria,
          proVersaTecnologia, proWebISSv2, proActconv202, proSH3, proSIAPNet,
          proBelford, proISSJoinville, proSmarAPDABRASF, proAsten, proELv2,
-         proGiss, proTiplanv2, proDeISS, proTcheInfov2, proDataSmart] then
+         proGiss, proTiplanv2, proDeISS, proTcheInfov2, proDataSmart,
+         proDesenvolve, proRLZ] then
         Gerador.wCampoNFSe(tcDat, '#4', 'Competencia', 10, 10, 1, NFSe.DataEmissao, DSC_DEMI)
       else
       begin
-        if not (FProvedor in [proGoiania, proSigep]) then
+        if not (FProvedor in [proCenti, proGoiania, proSigep]) then
           Gerador.wCampoNFSe(tcDatHor, '#4', 'Competencia', 19, 19, 0, NFSe.DataEmissao, DSC_DEMI);
       end;
     end;
@@ -824,7 +840,7 @@ begin
     Gerador.wCampoNFSe(tcStr, '#9', 'IncentivoFiscal       ', 01, 01, 1, SimNaoToStr(NFSe.IncentivadorCultural), DSC_INDINCENTIVO);
   end;
 
-  if not (FProvedor in [proGoiania, proTecnos, proSigep]) then
+  if not (FProvedor in [{proCenti, } proGoiania, proTecnos, proSigep]) then
   begin
     Gerador.wCampoNFSe(tcStr, '#7', 'OptanteSimplesNacional', 01, 01, 1, SimNaoToStr(NFSe.OptanteSimplesNacional), DSC_INDOPSN);
     Gerador.wCampoNFSe(tcStr, '#8', 'IncentivoFiscal       ', 01, 01, 1, SimNaoToStr(NFSe.IncentivadorCultural), DSC_INDINCENTIVO);

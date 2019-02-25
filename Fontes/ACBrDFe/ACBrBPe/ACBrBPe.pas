@@ -49,11 +49,10 @@ uses
   Classes, SysUtils, ACBrBase,
   ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes,
   ACBrBPeConfiguracoes, ACBrBPeWebServices, ACBrBPeBilhetes, ACBrBPeDABPEClass,
-  pcnBPe, pcnConversao, pcnConversaoBPe, pcnEnvEventoBPe, pcnRetDistDFeIntBPe,
+  pcnBPe, pcnConversao, pcnConversaoBPe, pcnEnvEventoBPe, 
   ACBrUtil;
 
 const
-  ACBRBPE_VERSAO = '2.0.0a';
   ACBRBPE_NAMESPACE = 'http://www.portalfiscal.inf.br/bpe';
   ACBRBPE_CErroAmbienteDiferente = 'Ambiente do XML (tpAmb) é diferente do ' +
                'configurado no Componente (Configuracoes.WebServices.Ambiente)';
@@ -70,7 +69,6 @@ type
     FDABPE: TACBrBPeDABPEClass;
     FBilhetes: TBilhetes;
     FEventoBPe: TEventoBPe;
-    FRetDistDFeInt: TRetDistDFeInt;
     FStatus: TStatusACBrBPe;
     FWebServices: TWebServices;
 
@@ -84,7 +82,6 @@ type
     function CreateConfiguracoes: TConfiguracoes; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
-    function GetAbout: String; override;
     function NomeServicoToNomeSchema(const NomeServico: String): String; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -125,7 +122,6 @@ type
     property WebServices: TWebServices read FWebServices write FWebServices;
     property Bilhetes: TBilhetes read FBilhetes write FBilhetes;
     property EventoBPe: TEventoBPe read FEventoBPe write FEventoBPe;
-    property RetDistDFeInt: TRetDistDFeInt read FRetDistDFeInt write FRetDistDFeInt;
     property Status: TStatusACBrBPe read FStatus;
 
     procedure SetStatus(const stNewStatus: TStatusACBrBPe);
@@ -178,7 +174,6 @@ begin
 
   FBilhetes := TBilhetes.Create(Self, Bilhete);
   FEventoBPe := TEventoBPe.Create;
-  FRetDistDFeInt := TRetDistDFeInt.Create;
   FWebServices := TWebServices.Create(Self);
 end;
 
@@ -186,7 +181,6 @@ destructor TACBrBPe.Destroy;
 begin
   FBilhetes.Free;
   FEventoBPe.Free;
-  FRetDistDFeInt.Free;
   FWebServices.Free;
 
   inherited;
@@ -213,11 +207,6 @@ begin
   if (Operation = opRemove) and (FDABPE <> nil) and
     (AComponent is TACBrBPeDABPEClass) then
     FDABPE := nil;
-end;
-
-function TACBrBPe.GetAbout: String;
-begin
-  Result := 'ACBrBPe Ver: ' + ACBRBPe_VERSAO;
 end;
 
 function TACBrBPe.CreateConfiguracoes: TConfiguracoes;

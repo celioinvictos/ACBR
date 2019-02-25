@@ -65,7 +65,7 @@ type
 
   { TinutNFe }
 
-  TinutNFe = class(TPersistent)
+  TinutNFe = class(TObject)
   private
     FGerador: TGerador;
     FLeitor: TLeitor;
@@ -86,10 +86,10 @@ type
     constructor Create;
     destructor Destroy; override;
     function GerarXML: Boolean;
-    function LerXML(CaminhoArquivo: String): Boolean;
+    function LerXML(const CaminhoArquivo: String): Boolean;
     function LerXMLFromString(const AXML: String): Boolean;
     function ObterNomeArquivo: String;
-  published
+
     property Leitor: TLeitor         read FLeitor   write FLeitor;
     property Gerador: TGerador       read FGerador    write FGerador;
     property tpAmb: TpcnTipoAmbiente read FtpAmb      write FtpAmb;
@@ -116,6 +116,7 @@ Uses pcnAuxiliar,
 
 constructor TinutNFe.Create;
 begin
+  inherited Create;
   FGerador    := TGerador.Create;
   FRetInutNFe := TRetInutNFe.Create;
   FLeitor     := TLeitor.Create;
@@ -182,7 +183,7 @@ begin
 
 end;
 
-function TinutNFe.LerXML(CaminhoArquivo: String): Boolean;
+function TinutNFe.LerXML(const CaminhoArquivo: String): Boolean;
 var
   ArqInut: TStringList;
 begin

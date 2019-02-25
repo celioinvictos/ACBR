@@ -5,7 +5,7 @@ unit ACBrMonitorConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, ACBrMonitorConsts, ACBrUtil;
+  Classes, SysUtils, IniFiles, ACBrMonitorConsts, ACBrUtil, Graphics;
 
 type
 
@@ -197,6 +197,12 @@ type
     LarguraBobina     : Double;
   end;
 
+  TDANFCeTipoPagto = record
+    tipo              : Boolean;
+    Bandeira          : Boolean;
+    Autorizacao       : Boolean;
+  end;
+
   TNFCeImpressao = record
     Modelo            : Integer;
     ModoImpressaoEvento: Integer;
@@ -207,12 +213,14 @@ type
     ImprimeNomeFantasia: Boolean;
     QRCodeLateral     : Boolean;
     DANFCe            : TDANFCe;
+    DANFCeTipoPagto   : TDANFCeTipoPagto;
+    ImprimeTributos   : Integer;
+    ExibeTotalTributosItem : Boolean;
   end;
 
   TNFCe = record
     WebService        : TNFCeWebService;
     Emissao           : TNFCeImpressao;
-
   end;
 
   TNFe = record
@@ -326,6 +334,11 @@ type
     AssuntoMDFe       : String;
   end;
 
+  TDFeRespTecnico = record
+    CSRT        : String;
+    idCSRT      : String;
+  end;
+
   TDFeImpressao = record
     Geral       : TDFeGeral;
     DANFE       : TDANFE;
@@ -367,6 +380,7 @@ type
     Diretorios         : TDFeDiretorios;
     ESocial            : TeSocial;
     Reinf              : TReinf;
+    RespTecnico        : TDFeRespTecnico;
   end;
 
   TSATExtrato = record
@@ -601,6 +615,7 @@ type
     FIntegradorFiscal : TIntegradorFiscal;
     FPosPrinter : TPosPrinter;
     FBoleto : TBOLETO;
+    FFonteLinha: TFont;
 
     FOnGravarConfig: TACBrOnGravarConfig;
     procedure DefinirValoresPadrao;
@@ -639,6 +654,7 @@ type
     property IntegradorFiscal : TIntegradorFiscal  read FIntegradorFiscal;
     property PosPrinter : TPosPrinter        read FPosPrinter;
     property BOLETO : TBOLETO                read FBoleto;
+    property FonteLinha: TFont               read FFonteLinha;
 
     property OnGravarConfig: TACBrOnGravarConfig read FOnGravarConfig write FOnGravarConfig;
   end;
@@ -654,10 +670,12 @@ constructor TMonitorConfig.Create(ANomeArquivo: String);
 begin
   FNomeArquivo:= ANomeArquivo;
   FOnGravarConfig := Nil;
+  FFonteLinha := TFont.Create;
 end;
 
 destructor TMonitorConfig.Destroy;
 begin
+  FFonteLinha.Free;
   inherited;
 end;
 
@@ -899,6 +917,12 @@ begin
       Ini.WriteBool( CSecWebService, CKeyCamposFatObrig, CamposFatObrig );
     end;
 
+    with DFe.RespTecnico do
+    begin
+      Ini.WriteString( CSecRespTecnico, CKeyCSRT, CSRT );
+      Ini.WriteString( CSecRespTecnico, CKeyidCSRT, idCSRT );
+    end;
+
     with DFe.ESocial do
     begin
       Ini.WriteString( CSecESocial, CKeyIdEmpregador, IdEmpregador );
@@ -954,6 +978,8 @@ begin
       Ini.WriteBool( CSecNFCe, CKeyNFCeQRCodeLateral, QRCodeLateral);
       Ini.WriteBool( CSecNFCe, CKeyNFCeUsaCodigoEanImpressao, UsaCodigoEanImpressao);
       Ini.WriteBool( CSecNFCe, CKeyNFCeImprimeNomeFantasia, ImprimeNomeFantasia);
+      Ini.WriteInteger( CSecNFCe, CKeyNFCeImprimeTributos, ImprimeTributos);
+      Ini.WriteBool( CSecNFCe, CKeyNFCeExibeTotalTributosItem, ExibeTotalTributosItem);
     end;
 
     with DFE.Impressao.NFCe.Emissao.DANFCe do
@@ -963,6 +989,24 @@ begin
       Ini.WriteFloat( CSecDANFCe,   CKeyDANFCeMargemDir      , MargemDir );
       Ini.WriteFloat( CSecDANFCe,   CKeyDANFCeMargemEsq      , MargemEsq );
       Ini.WriteFloat( CSecDANFCe,   CKeyDANFCeLarguraBobina  , LarguraBobina );
+    end;
+
+    with DFE.Impressao.NFCe.Emissao.DANFCeTipoPagto do
+    begin
+      Ini.WriteBool( CSecDANFCeTipoPagto,   CKeyDANFCeTipoPagtoTipo      , Tipo );
+      Ini.WriteBool( CSecDANFCeTipoPagto,   CKeyDANFCeTipoPagtoBandeira  , Bandeira );
+      Ini.WriteBool( CSecDANFCeTipoPagto,   CKeyDANFCeTipoPagtoAutorizacao, Autorizacao );
+    end;
+
+    with FonteLinha do
+    begin
+      Ini.WriteString( CSecFonte,   CKeyFonteName   , name );
+      Ini.WriteInteger( CSecFonte,  CKeyFonteColor , Color );
+      Ini.WriteInteger( CSecFonte,  CKeyFonteSize  , Size );
+      Ini.WriteBool( CSecFonte,   CKeyFonteStyleBold , fsBold in Style );
+      Ini.WriteBool( CSecFonte,   CKeyFonteStyleItalic , fsItalic in Style );
+      Ini.WriteBool( CSecFonte,   CKeyFonteStyleUnderline , fsUnderline in Style );
+      Ini.WriteBool( CSecFonte,   CKeyFonteStyleStrckout , fsStrikeOut in Style );
     end;
 
     with DFE.Impressao.DANFE do
@@ -1557,6 +1601,8 @@ begin
       QRCodeLateral             := Ini.ReadBool( CSecNFCe, CKeyNFCeQRCodeLateral, QRCodeLateral );
       UsaCodigoEanImpressao     := Ini.ReadBool( CSecNFCe, CKeyNFCeUsaCodigoEanImpressao, UsaCodigoEanImpressao );
       ImprimeNomeFantasia       := Ini.ReadBool( CSecNFCe, CKeyNFCeImprimeNomeFantasia, ImprimeNomeFantasia );
+      ImprimeTributos           := Ini.ReadInteger( CSecNFCe, CKeyNFCeImprimeTributos, ImprimeTributos );
+      ExibeTotalTributosItem    := Ini.ReadBool( CSecNFCe, CKeyNFCeExibeTotalTributosItem, ExibeTotalTributosItem);
     end;
 
     with DFE.Impressao.NFCe.Emissao.DANFCe do
@@ -1566,6 +1612,29 @@ begin
       MargemDir                 :=  Ini.ReadFloat( CSecDANFCe,   CKeyDANFCEMargemDir,     MargemDir     );
       MargemEsq                 :=  Ini.ReadFloat( CSecDANFCe,   CKeyDANFCEMargemEsq,     MargemEsq     );
       LarguraBobina             :=  Ini.ReadFloat( CSecDANFCe,   CKeyDANFCeLarguraBobina, LarguraBobina );
+    end;
+
+    with DFE.Impressao.NFCe.Emissao.DANFCeTipoPagto do
+    begin
+      tipo                 :=  Ini.ReadBool( CSecDANFCeTipoPagto,   CKeyDANFCeTipoPagtoTipo,     Tipo     );
+      Bandeira             :=  Ini.ReadBool( CSecDANFCeTipoPagto,   CKeyDANFCeTipoPagtoBandeira, Bandeira );
+      Autorizacao          :=  Ini.ReadBool( CSecDANFCeTipoPagto,   CKeyDANFCeTipoPagtoAutorizacao, Autorizacao );
+    end;
+
+    with FonteLinha do
+    begin
+      Name    :=  Ini.ReadString( CSecFonte, CKeyFonteName, FFonteLinha.Name );
+      Color   :=  TColor(Ini.ReadInteger( CSecFonte, CKeyFonteColor, FFonteLinha.Color ));
+      Size    :=  Ini.ReadInteger( CSecFonte, CKeyFonteSize, FFonteLinha.Size );
+      Style := [];
+      if Ini.ReadBool( CSecFonte,   CKeyFonteStyleBold , False ) then
+        Style := Style + [fsBold];
+      if Ini.ReadBool( CSecFonte,   CKeyFonteStyleItalic , False ) then
+        Style := Style + [fsItalic];
+      if Ini.ReadBool( CSecFonte,   CKeyFonteStyleUnderline , False ) then
+        Style := Style + [fsUnderline];
+      if Ini.ReadBool( CSecFonte,   CKeyFonteStyleStrckout , False ) then
+        Style := Style + [fsStrikeOut];
     end;
 
     with DFE.Impressao.DANFE do
@@ -1632,6 +1701,12 @@ begin
       PathDPEC                   := Ini.ReadString(CSecArquivos,   CKeyArquivosPathDPEC,                    PathDPEC                    );
       PathEvento                 := Ini.ReadString(CSecArquivos,   CKeyArquivosPathEvento,                  PathEvento                  );
       PathArqTXT                 := Ini.ReadString(CSecArquivos,   CKeyArquivosPathArqTXT,                  PathArqTXT                  );
+    end;
+
+    with DFe.RespTecnico do
+    begin
+      CSRT                       := Ini.ReadString( CSecRespTecnico,    CKeyCSRT,  CSRT  );
+      idCSRT                     := Ini.ReadString( CSecRespTecnico,    CKeyidCSRT,  idCSRT  );
     end;
 
     with DFe.ESocial do
@@ -2153,6 +2228,8 @@ begin
     QRCodeLateral             := True;
     UsaCodigoEanImpressao     := False;
     ImprimeNomeFantasia       := False;
+    ImprimeTributos           := 1;
+    ExibeTotalTributosItem    := False;
   end;
 
   with DFE.Impressao.NFCe.Emissao.DANFCe do
@@ -2162,6 +2239,21 @@ begin
     MargemDir                 :=  0.51;
     MargemEsq                 :=  0.6;
     LarguraBobina             :=  302;
+  end;
+
+  with DFE.Impressao.NFCe.Emissao.DANFCeTipoPagto do
+  begin
+    tipo                      := True;
+    Bandeira                  := True;
+    Autorizacao               := False;
+  end;
+
+  with FonteLinha do
+  begin
+    Name                 := 'Lucida Console';
+    Size                 := 7;
+    Color                := clBlack;
+    Style                := [];
   end;
 
   with DFE.Impressao.DANFE do
@@ -2228,6 +2320,12 @@ begin
     PathDPEC                   :=  AcertaPath('Arqs');
     PathEvento                 :=  AcertaPath('Arqs');
     PathArqTXT                 :=  AcertaPath('TXT');
+  end;
+
+  with DFe.RespTecnico do
+  begin
+    CSRT                       := '';
+    idCSRT                     := '';
   end;
 
   with DFe.ESocial do

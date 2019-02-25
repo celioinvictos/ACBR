@@ -49,7 +49,93 @@ Símbolo : Significado
 
 
 ver: 0.1.0
-06/12/2018
+-- ACBrBancoBradesco --
+[-] Retorno CNAB240: Correção na leitura do Nosso Numero. (Juliana Tamizou)
+https://www.projetoacbr.com.br/forum/topic/49512-nosso-numero-bradesco-240-continua-errado-na-leitura/
+
+
+14/02/2019
+-- ACBrBancoBradesco --
+[*] Inclusão do complemento do endereço do sacado na remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/49394-altera%C3%A7%C3%A3o-remessa-bradesco-cnab400/
+
+-- ACBrBancoBancoob --
+[*] Inclusão da leitura Nome e CPF/CNPJ do cliente ao processar o arquivo retorno CNAB240.
+https://www.projetoacbr.com.br/forum/topic/49287-altera%C3%A7%C3%A3o-retorno-cobran%C3%A7a-bancoob/
+
+
+06/02/2019
+-- ACBrCitiBank, ACBrBoleto --
+[+] Adicionado Unit com layout do CitiBank
+
+05/02/2019
+-- ACBrBancoSicred, ACBrBoleto --
+[*] Ajustar validação do código de Retorno da ocorrencia "09"
+[+] Adicionado novas ocorrencias de Tarifa conforme Manual
+[*] Ajuste na validação de Codigo de Mora na Remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/48820-novas-ocorr%C3%AAncias-de-tarifa-s4-e-s5-cnab-400-sicredi/
+https://www.projetoacbr.com.br/forum/topic/49113-sicredi-fun%C3%A7%C3%A3o-tipoocorrenciatocod-divergente-de-codocorrenciatotipo/
+https://www.projetoacbr.com.br/forum/topic/46361-altera%C3%A7%C3%A3o-necess%C3%A1ria/
+https://www.projetoacbr.com.br/forum/topic/38248-c%C3%B3digo-de-mora-sicredi-sugest%C3%A3o-de-altera%C3%A7%C3%A3o/
+https://www.projetoacbr.com.br/forum/topic/49193-erro-leitura-arquivo-retorno-de-baixa-titulo-sicredi-via-site/
+
+05/02/2019
+-- ACBrBancoNordeste --
+[*] Ajustar na validação da propriedade Multa Valor Fixo
+https://www.projetoacbr.com.br/forum/topic/48999-propriedade-multavalorfixo-no-boleto-banco-do-nordeste/
+
+04/02/2019
+-- ACBrBancoSafra --
+[-] Correção para leitura da ocorrência de retorno no CNAB400 de forma semelhante ao que ocorre nos demais
+bancos.
+https://www.projetoacbr.com.br/forum/topic/45107-erro-na-leitura-do-retorno-cnab400-banco-safra/
+
+28/01/2019
+-- ACBrBoleto --
+[*] Incluídas novas ocorrências de remessa e retorno relacionadas a negativação
+
+-- ACBrBancoSicredi --
+[*] Alteradas rotinas de remessa/retorno para enviar/receber ocorrências relacionadas
+a negativação.
+https://www.projetoacbr.com.br/forum/topic/48890-negativa%C3%A7%C3%A3o-serasa-sicredi/  
+
+
+18/01/2019
+-- ACBrBancoBancoob --
+[-] Correção na geração da remessa CNAB240 (ajuste na posição 127 do Arq. )
+
+17/01/2019
+-- ACBrBoleto --
+[*] Adicionado Campos novos na leitura do Arquivo .INI da classe TACBrBanco,
+referente as novas propriedades dessa classe
+
+17/01/2019
+-- ACBrBancoBancoob --
+[*] Ajuste Remessa CNAB240, para preenchimento da data limite de pagamento
+    https://www.projetoacbr.com.br/forum/topic/48664-banco-sicoob-remessa-240/
+
+16/01/2019
+-- ACBrBoleto --
+[-] Possível correção para geração de Remessa em UTF8
+    https://www.projetoacbr.com.br/forum/topic/48764-arquivo-de-remessa-rejeitado-sicoob-formato-utf-8-para-ansi/
+    (por: DSA)
+
+-- ACBrBancoBrasil --
+[-] Correção para iniciar o Result da função CodMotivoRejeicaoToDescricao
+https://www.projetoacbr.com.br/forum/topic/48742-corre%C3%A7%C3%A3o-na-identifica%C3%A7%C3%A3o-do-motivo-da-rejei%C3%A7%C3%A3o-para-banco-do-brasil/
+
+-- ACBrBancoBrasil --
+[*] Completado lista de Especies do documento para remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/48598-remessa-bb-cnab240-seg-pqrsty/
+
+15/01/2019 -- ACBrBancoBrasil
+[-] Ajuste na geração da remessa CNAB240 para montar corretamente o segmento S conforme a propriedade Titulo.CarteiraEnvio.
+    A justado também para incluir até 6 mensagens a remessa (máximo suportado pelo banco).
+https://www.projetoacbr.com.br/forum/topic/48686-corre%C3%A7%C3%A3o-acbrboleto-bando-brasil/
+
+
+11-01-2019 -- ACBrBancoBrasil
+[-] Ajuste na função MontarInstrucoes2() para evitar erro de List of Index
 
 04-01-2019 -- ACBrBancoNordeste
 [*] Ajuste na geração CNAB400, validação tipo de aceite e dias para protesto

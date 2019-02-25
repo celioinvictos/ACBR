@@ -69,7 +69,7 @@ type
     function TipoOcorrenciaToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
     function CodOcorrenciaToTipo(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
     function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
-    function CodMotivoRejeicaoToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia;CodMotivo:String): String; override;
+    function CodMotivoRejeicaoToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia; const CodMotivo:String): String; override;
 
     function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
   end;
@@ -93,7 +93,7 @@ begin
    fpTamanhoAgencia        := 4;
    fpTamanhoConta          := 5;
    fpTamanhoCarteira       := 1;
-   fpCodigosMoraAceitos    := 'AB';
+   fpCodigosMoraAceitos    := 'AB012';
    fpCodigosGeracaoAceitos := '23456789';
    fpLayoutVersaoArquivo   := 81;
    fpLayoutVersaoLote      := 40;
@@ -224,13 +224,16 @@ begin
          toRemessaCancelarInstrucaoProtestoBaixa : Ocorrencia := '18'; {Sustar protesto e baixar}
          toRemessaCancelarInstrucaoProtesto      : Ocorrencia := '19'; {Sustar protesto e manter na carteira}
          toRemessaOutrasOcorrencias              : Ocorrencia := '31'; {Alteração de Outros Dados}
+         toRemessaNegativacaoSerasa              : Ocorrencia := '45'; {Negativar Serasa}
+         toRemessaExcluirNegativacaoSerasa       : Ocorrencia := '75'; {Excluir Negativação Serasa}
+         toRemessaExcluirNegativacaoSerasaBaixar : Ocorrencia := '76'; {Excluir Negativação Serasa e Baixar}
       else
          Ocorrencia := '01';                                          {Remessa}
       end;
 
       {Pegando Tipo de Boleto}
       if (ACBrBoleto.Cedente.ResponEmissao <> tbCliEmite) or 
-         (CarteiraEnvio = tceBanco) then  
+         (CarteiraEnvio <> tceCedente) then
         TipoBoleto := 'A'
       else
         TipoBoleto := 'B';       
@@ -640,8 +643,8 @@ begin
                                           Copy(Linha,329,4),0, 'DD/MM/YYYY' );
 
 
-      OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(StrToIntDef(copy(Linha,109,2),0));
-      CodOcorrencia := StrToIntDef(IfThen(copy(Linha,109,2) = '00','00',copy(Linha,109,2)),0);
+      CodOcorrencia := StrToIntDef(copy(Linha,109,2),0);
+      OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(CodOcorrencia);
       DataOcorrencia := StringToDateTimeDef( Copy(Linha,111,2)+'/'+
                                              Copy(Linha,113,2)+'/'+
                                              Copy(Linha,115,2),0, 'DD/MM/YY' );
@@ -697,7 +700,7 @@ begin
 end;
 
 function TACBrBancoSicredi.CodMotivoRejeicaoToDescricao(
-  const TipoOcorrencia: TACBrTipoOcorrencia; CodMotivo: String): String;
+  const TipoOcorrencia: TACBrTipoOcorrencia; const CodMotivo: String): String;
 begin
   case ACBrBanco.ACBrBoleto.LayoutRemessa of
     c240: begin
@@ -1109,13 +1112,15 @@ begin
           end;
 
         toRetornoDebitoTarifas: //28
-          case AnsiIndexStr(CodMotivo,['A9', 'B1', 'B2', 'B3', 'E1', 'F5']) of
+          case AnsiIndexStr(CodMotivo,['A9', 'B1', 'B2', 'B3', 'E1', 'F5', 'S4', 'S5']) of
             0: Result:= 'A9-Tarifa de manutenção de título vencido';
             1: Result:= 'B1-Tarifa de baixa da carteira';
             2: Result:= 'B2-Não implementado';
             3: Result:= 'B3-Tarifa de registro de entrada do título';
             4: Result:= 'E1-Não implementado';
             5: Result:= 'F5-Tarifa de entrada na rede SICREDI';
+            6: Result:= 'S4-Tarifa de inclusão negativação';
+            7: Result:= 'S5-Tarifa de exclusão negativação';
           else
             case StrToInt(CodMotivo) of
               03 : Result:= '03-Tarifa de sustação';
@@ -1233,6 +1238,31 @@ begin
               Result:= PadLeft(CodMotivo,2,'0') +' - Outros Motivos';
             end;
           end;
+        toRetornoEntradaNegativacaoRejeitada,
+        toRetornoExclusaoNegativacaoRejeitada: //81 e 83
+           if CodMotivo = 'S1' then
+              Result:= 'S1 – Rejeitado pela empresa de negativação parceira.'
+           else
+              Result:= PadLeft(CodMotivo,2,'0') +' - Motivos não identificados';
+
+        toRetornoExcusaoNegativacaoOutrosMotivos://84;
+           case AnsiIndexStr(CodMotivo, ['N1', 'N2', 'N3','N4','N5']) of
+             0 : Result:= 'N1-Decurso de Prazo';
+             1 : Result:= 'N2-Determinação Judicial';
+             2 : Result:= 'N3-Solicitação de Empresa Conveniada';
+             3 : Result:= 'N4-Devolução de Comunicado pelos Correios';
+             4 : Result:= 'N5-Diversos';
+           else
+             Result:= PadLeft(CodMotivo,2,'0') +' - Outros Motivos';
+           end;
+        toRetornoOcorrenciaInfOutrosMotivos: //85'
+          case AnsiIndexStr(CodMotivo, ['N4','N5']) of
+             0 : Result:= 'N4-Devolução de Comunicado pelos Correios';
+             1 : Result:= 'N5-Diversos';
+           else
+             Result:= PadLeft(CodMotivo,2,'0') +' - Outros Motivos';
+           end;
+
       else
         Result:= PadLeft(CodMotivo,2,'0') +' - Motivos não identificados';
       end; //---- Fim Anderson
@@ -1366,6 +1396,14 @@ begin
     23: Result := '23-Entrada de Título em Cartório';
     28: Result := '28-Débito de Tarifas Custas';
     30: Result := '30-Alteração Rejeitada';
+    78: Result := '78-Confirmação de Recebimento de Pedido de Negativação';
+    79: Result := '79-Confirmação de Recebimento de Pedido Exclusão de Negativação';
+    80: Result := '80-Confirmação de Entrada de Negativação';
+    81: Result := '81-Entrada de Negativação Rejeitada';
+    82: Result := '82-Confirmação de Exclusão de Negativação';
+    83: Result := '83-Exclusão de Negativação Rejeitada';
+    84: Result := '84-Exclusão de Negativação por Outros Motivos';
+    85: Result := '85-Ocorrência Informacional por Outros Motivos';
   end;
 end;
 
@@ -1421,6 +1459,14 @@ begin
     23: Result := toRetornoEntradaEmCartorio;
     28: Result := toRetornoDebitoTarifas;
     30: Result := toRetornoAlteracaoDadosRejeitados;
+    78: Result := toRetornoConfRecPedidoNegativacao;
+    79: Result := toRetornoConfRecPedidoExclusaoNegativacao;
+    80: Result := toRetornoConfEntradaNegativacao;
+    81: Result := toRetornoEntradaNegativacaoRejeitada;
+    82: Result := toRetornoConfExclusaoNegativacao;
+    83: Result := toRetornoExclusaoNegativacaoRejeitada;
+    84: Result := toRetornoExcusaoNegativacaoOutrosMotivos;
+    85: Result := toRetornoOcorrenciaInfOutrosMotivos;
   else
     Result := toRetornoOutrasOcorrencias;
   end;
@@ -1484,6 +1530,8 @@ begin
     toRetornoRegistroRecusado                                  : Result := '03';
     toRetornoLiquidado                                         : Result := '06';
     toRetornoBaixado                                           : Result := '09';
+    toRetornoBaixadoViaArquivo                                 : Result := '09';
+
     toRetornoRecebimentoInstrucaoConcederAbatimento            : Result := '12';
     toRetornoRecebimentoInstrucaoCancelarAbatimento            : Result := '13';
     toRetornoRecebimentoInstrucaoAlterarVencimento             : Result := '14';
@@ -1493,6 +1541,14 @@ begin
     toRetornoEntradaEmCartorio                                 : Result := '23';
     toRetornoDebitoTarifas                                     : Result := '28';
     toRetornoAlteracaoDadosRejeitados                          : Result := '30';
+    toRetornoConfRecPedidoNegativacao                          : Result := '78';
+    toRetornoConfRecPedidoExclusaoNegativacao                  : Result := '79';
+    toRetornoConfEntradaNegativacao                            : Result := '80';
+    toRetornoEntradaNegativacaoRejeitada                       : Result := '81';
+    toRetornoConfExclusaoNegativacao                           : Result := '82';
+    toRetornoExclusaoNegativacaoRejeitada                      : Result := '83';
+    toRetornoExcusaoNegativacaoOutrosMotivos                   : Result := '84';
+    toRetornoOcorrenciaInfOutrosMotivos                        : Result := '85';
   else
     Result := '02';
   end;
@@ -1639,6 +1695,10 @@ begin
       toRemessaAlterarDesconto                : Ocorrencia := '16'; {Alteração do valor de desconto }
       toRemessaNaoConcederDesconto            : Ocorrencia := '17'; {Não conceder desconto }
       toRemessaOutrasOcorrencias              : Ocorrencia := '31'; {Alteração de Outros Dados}
+      toRemessaNegativacaoSerasa              : Ocorrencia := '45'; {Negativar Serasa}
+      toRemessaExcluirNegativacaoSerasa       : Ocorrencia := '75'; {Excluir Negativação Serasa}
+      toRemessaExcluirNegativacaoSerasaBaixar : Ocorrencia := '76'; {Excluir Negativação Serasa e Baixar}
+
     else
        Ocorrencia := '01';{Entrada de títulos}
     end;
@@ -1682,7 +1742,6 @@ begin
        tbBancoNaoReemite : ATipoBoleto := '5' + '2';
      end;
 
-
     {SEGMENTO P}
     Result:= '748'                                                            + // 001 a 003 - Código do banco na compensação
              '0001'                                                           + // 004 a 007 - Lote de serviço = "0001"
@@ -1710,7 +1769,7 @@ begin
              PadLeft(Especie, 2, '0')                                         + // 107 a 108 - Espécie do título
              AceiteStr                                                        + // 109 a 109 - Identificação de título aceito/não aceito
              FormatDateTime('ddmmyyyy', DataDocumento)                        + // 110 a 117 - Data da emissão do título
-             IfThen(ValorMoraJuros = 0, '3', '1')                             + // 118 a 118 - Código do juro de mora
+             IfThen( (ValorMoraJuros > 0) and (CodigoMora= ''), '1', PadRight(CodigoMora, 1, '3') )   + // 118 a 118 - Código do juro de mora
              '00000000'                                                       + // 119 a 126 - Data do juro de mora
              IntToStrZero(Round(ValorMoraJuros * 100), 15)                    + // 127 a 141 - Juros de mora por dia/taxa
              TipoDescontoToString(ACBrTitulo.TipoDesconto)                    + // 142 a 142 - Código do desconto 1

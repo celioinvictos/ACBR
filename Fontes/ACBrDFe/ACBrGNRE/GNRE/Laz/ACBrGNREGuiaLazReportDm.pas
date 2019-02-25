@@ -220,7 +220,6 @@ end;
 constructor TACBrGNREGuiaLazReport.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  //fpAbout := 'ACBrGNREGuiaLazReport ver: ' + CACBrGNREGuiaLazReport_Versao;
 end;
 
 procedure TACBrGNREGuiaLazReport.ImprimirGuia(GNRE: TGNRERetorno);
@@ -232,7 +231,7 @@ procedure TACBrGNREGuiaLazReport.ImprimirGuiaPDF(GNRE: TGNRERetorno);
 var
   frACBrGNREGuiaLazReport : TdmACBrGNREGuiaLazReport;
   RelGNRE, Dir : string;
-  PageIni, PageFim, PInd : Integer;
+  {PageIni, PageFim,} PInd : Integer;
   Res : TLResource ;
   MS  : TMemoryStream ;
 begin

@@ -1,33 +1,33 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interaÃ§Ã£o com equipa- }
-{ mentos de AutomaÃ§Ã£o Comercial utilizados no Brasil                           }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
 { Direitos Autorais Reservados (c) 2013 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:  AndrÃ© Ferreira Moraes                          }
+{ Colaboradores nesse arquivo:  André Ferreira Moraes                          }
 {                                                                              }
-{  VocÃª pode obter a Ãºltima versÃ£o desse arquivo na pagina do  Projeto ACBr    }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
-{  Esta biblioteca Ã© software livre; vocÃª pode redistribuÃ­-la e/ou modificÃ¡-la }
-{ sob os termos da LicenÃ§a PÃºblica Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versÃ£o 2.1 da LicenÃ§a, ou (a seu critÃ©rio) }
-{ qualquer versÃ£o posterior.                                                   }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
 {                                                                              }
-{  Esta biblioteca Ã© distribuÃ­da na expectativa de que seja Ãºtil, porÃ©m, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implÃ­cita de COMERCIABILIDADE OU      }
-{ ADEQUAÃ‡ÃƒO A UMA FINALIDADE ESPECÃFICA. Consulte a LicenÃ§a PÃºblica Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÃ‡A.TXT ou LICENSE.TXT)              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{  VocÃª deve ter recebido uma cÃ³pia da LicenÃ§a PÃºblica Geral Menor do GNU junto}
-{ com esta biblioteca; se nÃ£o, escreva para a Free Software Foundation, Inc.,  }
-{ no endereÃ§o 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ VocÃª tambÃ©m pode obter uma copia da licenÃ§a em:                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel SimÃµes de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              PraÃ§a Anita Costa, 34 - TatuÃ­ - SP - 18270-410                  }
+{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
+{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
 {                                                                              }
 {******************************************************************************}
 
@@ -67,7 +67,7 @@ type
      constructor Create(AOwner: TComponent); override;
      destructor Destroy; override;
 
-     function AssociarAssinatura( CNPJvalue, assinaturaCNPJs : AnsiString ):
+     function AssociarAssinatura(const CNPJvalue, assinaturaCNPJs : AnsiString ):
        String ; override;
      function AtivarSAT( subComando : Integer; CNPJ: AnsiString; cUF : Integer )
        : String ; override;
@@ -133,12 +133,12 @@ end;
 
 procedure TACBrSATMFe_integrador_XML.LoadDLLFunctions;
 begin
-  //NÃ£o faz nada
+  //Não faz nada
 end;
 
 procedure TACBrSATMFe_integrador_XML.UnLoadDLLFunctions;
 begin
-  //NÃ£o faz nada
+  //Não faz nada
 end;
 
 procedure TACBrSATMFe_integrador_XML.OnGetNumeroSessaoIntegrador(
@@ -165,7 +165,7 @@ begin
   Result := StringReplace(Result, '> <', '><', [rfReplaceAll]);;
 end;
 
-function TACBrSATMFe_integrador_XML.AssociarAssinatura(CNPJvalue,
+function TACBrSATMFe_integrador_XML.AssociarAssinatura(const CNPJvalue,
   assinaturaCNPJs : AnsiString) : String ;
 begin
   FIntegrador.Clear;

@@ -46,9 +46,9 @@ interface
 uses
   Classes, SysUtils,
   ACBrDFe, ACBrDFeWebService,
-  pcteCTe, pcteRetConsReciCTe, pcteRetConsCad, pcnAuxiliar, pcnConversao,
+  pcteCTe, pcnRetConsReciDFe, pcnRetConsCad, pcnAuxiliar, pcnConversao,
   pcteConversaoCTe, pcteProcCte, pcteEnvEventoCTe, pcteRetEnvEventoCTe,
-  pcteRetConsSitCTe, pcteRetEnvCTe, pcteDistDFeInt, pcteRetDistDFeInt,
+  pcteRetConsSitCTe, pcteRetEnvCTe, pcnDistDFeInt, pcnRetDistDFeInt,
   ACBrCteConhecimentos, ACBrCTeConfiguracoes;
 
 type
@@ -181,7 +181,7 @@ type
     FxMsg: String;
     FVersaoDF: TVersaoCTe;
 
-    FCTeRetorno: TRetConsReciCTe;
+    FCTeRetorno: TRetConsReciDFe;
 
     function GetRecibo: String;
     function TratarRespostaFinal: Boolean;
@@ -215,7 +215,7 @@ type
     property Protocolo: String read FProtocolo write FProtocolo;
     property ChaveCTe: String read FChaveCTe write FChaveCTe;
 
-    property CTeRetorno: TRetConsReciCTe read FCTeRetorno;
+    property CTeRetorno: TRetConsReciDFe read FCTeRetorno;
   end;
 
   { TCTeRecibo }
@@ -234,7 +234,7 @@ type
     FcMsg: Integer;
     FVersaoDF: TVersaoCTe;
 
-    FCTeRetorno: TRetConsReciCTe;
+    FCTeRetorno: TRetConsReciDFe;
   protected
     procedure InicializarServico; override;
     procedure DefinirServicoEAction; override;
@@ -259,7 +259,7 @@ type
     property cMsg: Integer read FcMsg;
     property Recibo: String read FRecibo write FRecibo;
 
-    property CTeRetorno: TRetConsReciCTe read FCTeRetorno;
+    property CTeRetorno: TRetConsReciDFe read FCTeRetorno;
   end;
 
   { TCTeConsulta }
@@ -282,7 +282,7 @@ type
     FprotCTe: TProcCTe;
     FretCancCTe: TRetCancCTe;
     FprocEventoCTe: TRetEventoCTeCollection;
-    procedure SetCTeChave(AValue: String);
+    procedure SetCTeChave(const AValue: String);
   protected
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
@@ -338,7 +338,7 @@ type
 
     FXML_ProcInutCTe: String;
 
-    procedure SetJustificativa(AValue: String);
+    procedure SetJustificativa(const AValue: String);
     function GerarPathPorCNPJ: String;
   protected
     procedure DefinirURL; override;
@@ -552,10 +552,10 @@ type
     destructor Destroy; override;
 
     function Envia(ALote: Integer): Boolean; overload;
-    function Envia(ALote: String): Boolean; overload;
+    function Envia(const ALote: String): Boolean; overload;
     function EnviaOS(ALote: Integer): Boolean; overload;
-    function EnviaOS(ALote: String): Boolean; overload;
-    procedure Inutiliza(CNPJ, AJustificativa: String;
+    function EnviaOS(const ALote: String): Boolean; overload;
+    procedure Inutiliza(const CNPJ, AJustificativa: String;
       Ano, Modelo, Serie, NumeroInicial, NumeroFinal: Integer);
 
     property ACBrCTe: TACBrDFe read FACBrCTe write FACBrCTe;
@@ -576,8 +576,8 @@ implementation
 uses
   StrUtils, Math,
   ACBrUtil, ACBrCTe,
-  pcteCTeW, pcnGerador, pcteConsStatServ, pcteRetConsStatServ, pcteConsSitCTe,
-  pcteInutCTe, pcteRetInutCTe, pcteConsReciCTe, pcteConsCad, pcnLeitor;
+  pcnGerador, pcnLeitor, pcnConsCad, pcnConsStatServ, pcnRetConsStatServ,
+  pcteConsSitCTe, pcteInutCTe, pcteRetInutCTe, pcnConsReciDFe, pcteCTeW;
 
 { TCTeWebService }
 
@@ -678,11 +678,11 @@ procedure TCTeStatusServico.DefinirDadosMsg;
 var
   ConsStatServ: TConsStatServ;
 begin
-  ConsStatServ := TConsStatServ.Create;
+  ConsStatServ := TConsStatServ.Create(FPVersaoServico, NAME_SPACE_CTE, 'Cte', False);
   try
     ConsStatServ.TpAmb := FPConfiguracoesCTe.WebServices.Ambiente;
     ConsStatServ.CUF := FPConfiguracoesCTe.WebServices.UFCodigo;
-    ConsStatServ.Versao := FPVersaoServico;
+//    ConsStatServ.Versao := FPVersaoServico;
 
     AjustarOpcoes( ConsStatServ.Gerador.Opcoes );
 
@@ -701,7 +701,7 @@ var
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'cteStatusServicoCTResult');
 
-  CTeRetorno := TRetConsStatServ.Create;
+  CTeRetorno := TRetConsStatServ.Create('Cte');
   try
     CTeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
     CTeRetorno.LerXml;
@@ -1189,11 +1189,11 @@ begin
   if Assigned(FCTeRetorno) and Assigned(FConhecimentos) then
   begin
     // Limpa Dados dos retornos dos conhecimentos
-    for i := 0 to FCTeRetorno.ProtCTe.Count - 1 do
+    for i := 0 to FCTeRetorno.ProtDFe.Count - 1 do
     begin
       for j := 0 to FConhecimentos.Count - 1 do
       begin
-        if OnlyNumber(FCTeRetorno.ProtCTe.Items[i].chCTe) = FConhecimentos.Items[J].NumID then
+        if OnlyNumber(FCTeRetorno.ProtDFe.Items[i].chDFe) = FConhecimentos.Items[J].NumID then
         begin
           FConhecimentos.Items[j].CTe.procCTe.verAplic := '';
           FConhecimentos.Items[j].CTe.procCTe.chCTe    := '';
@@ -1209,7 +1209,7 @@ begin
     FreeAndNil(FCTeRetorno);
   end;
 
-  FCTeRetorno := TRetConsReciCTe.Create;
+  FCTeRetorno := TRetConsReciDFe.Create('CTe');
 end;
 
 function TCTeRetRecepcao.GetRecibo: String;
@@ -1299,13 +1299,13 @@ end;
 
 procedure TCTeRetRecepcao.DefinirDadosMsg;
 var
-  ConsReciCTe: TConsReciCTe;
+  ConsReciCTe: TConsReciDFe;
 begin
-  ConsReciCTe := TConsReciCTe.Create;
+  ConsReciCTe := TConsReciDFe.Create(FPVersaoServico, NAME_SPACE_CTE, 'CTe');
   try
     ConsReciCTe.tpAmb := FPConfiguracoesCTe.WebServices.Ambiente;
     ConsReciCTe.nRec := FRecibo;
-    ConsReciCTe.Versao := FPVersaoServico;
+//    ConsReciCTe.Versao := FPVersaoServico;
 
     AjustarOpcoes( ConsReciCTe.Gerador.Opcoes );
 
@@ -1341,19 +1341,19 @@ function TCTeRetRecepcao.TratarRespostaFinal: Boolean;
 var
   I, J: Integer;
   AProcCTe: TProcCTe;
-  AInfProt: TProtCTeCollection;
+  AInfProt: TProtDFeCollection;
 //  NomeXML: String;
   SalvarXML: Boolean;
   NomeXMLSalvo: String;
 begin
   Result := False;
 
-  AInfProt := FCTeRetorno.ProtCTe;
+  AInfProt := FCTeRetorno.ProtDFe;
 
   if (AInfProt.Count > 0) then
   begin
-    FPMsg := FCTeRetorno.ProtCTe.Items[0].xMotivo;
-    FxMotivo := FCTeRetorno.ProtCTe.Items[0].xMotivo;
+    FPMsg := FCTeRetorno.ProtDFe.Items[0].xMotivo;
+    FxMotivo := FCTeRetorno.ProtDFe.Items[0].xMotivo;
   end;
 
   //Setando os retornos dos Conhecimentos;
@@ -1361,7 +1361,7 @@ begin
   begin
     for J := 0 to FConhecimentos.Count - 1 do
     begin
-      if OnlyNumber(AInfProt.Items[I].chCTe) = FConhecimentos.Items[J].NumID then
+      if OnlyNumber(AInfProt.Items[I].chDFe) = FConhecimentos.Items[J].NumID then
       begin
         if (TACBrCTe(FPDFeOwner).Configuracoes.Geral.ValidarDigest) and
           (FConhecimentos.Items[J].CTe.signature.DigestValue <>
@@ -1375,7 +1375,7 @@ begin
         begin
           CTe.procCTe.tpAmb := AInfProt.Items[I].tpAmb;
           CTe.procCTe.verAplic := AInfProt.Items[I].verAplic;
-          CTe.procCTe.chCTe := AInfProt.Items[I].chCTe;
+          CTe.procCTe.chCTe := AInfProt.Items[I].chDFe;
           CTe.procCTe.dhRecbto := AInfProt.Items[I].dhRecbto;
           CTe.procCTe.nProt := AInfProt.Items[I].nProt;
           CTe.procCTe.digVal := AInfProt.Items[I].digVal;
@@ -1392,7 +1392,7 @@ begin
           AProcCTe := TProcCTe.Create;
           try
             AProcCTe.XML_CTe := RemoverDeclaracaoXML(FConhecimentos.Items[J].XMLAssinado);
-            AProcCTe.XML_Prot := AInfProt.Items[I].XMLprotCTe;
+            AProcCTe.XML_Prot := AInfProt.Items[I].XMLprotDFe;
             AProcCTe.Versao := FPVersaoServico;
             AProcCTe.GerarXML;
 
@@ -1460,7 +1460,7 @@ begin
 
   if AInfProt.Count > 0 then
   begin
-    FChaveCTe := AInfProt.Items[0].chCTe;
+    FChaveCTe := AInfProt.Items[0].chDFe;
     FProtocolo := AInfProt.Items[0].nProt;
     FcStat := AInfProt.Items[0].cStat;
   end;
@@ -1535,7 +1535,7 @@ begin
   if Assigned(FCTeRetorno) then
     FCTeRetorno.Free;
 
-  FCTeRetorno := TRetConsReciCTe.Create;
+  FCTeRetorno := TRetConsReciDFe.Create('CTe');
 end;
 
 procedure TCTeRecibo.InicializarServico;
@@ -1605,13 +1605,13 @@ end;
 
 procedure TCTeRecibo.DefinirDadosMsg;
 var
-  ConsReciCTe: TConsReciCTe;
+  ConsReciCTe: TConsReciDFe;
 begin
-  ConsReciCTe := TConsReciCTe.Create;
+  ConsReciCTe := TConsReciDFe.Create(FPVersaoServico, NAME_SPACE_CTE, 'CTe');
   try
     ConsReciCTe.tpAmb := FTpAmb;
     ConsReciCTe.nRec := FRecibo;
-    ConsReciCTe.Versao := FPVersaoServico;
+//    ConsReciCTe.Versao := FPVersaoServico;
 
     AjustarOpcoes( ConsReciCTe.Gerador.Opcoes );
 
@@ -1715,7 +1715,7 @@ begin
   FprocEventoCTe := TRetEventoCTeCollection.Create(FOwner);
 end;
 
-procedure TCTeConsulta.SetCTeChave(AValue: String);
+procedure TCTeConsulta.SetCTeChave(const AValue: String);
 var
   NumChave: String;
 begin
@@ -2158,7 +2158,7 @@ begin
   end
 end;
 
-procedure TCTeInutilizacao.SetJustificativa(AValue: String);
+procedure TCTeInutilizacao.SetJustificativa(const AValue: String);
 var
   TrimValue: String;
 begin
@@ -2177,33 +2177,33 @@ end;
 
 function TCTeInutilizacao.GerarPathPorCNPJ(): String;
 var
-  CNPJ: String;
+  tempCNPJ: String;
 begin
   if FPConfiguracoesCTe.Arquivos.SepararPorCNPJ then
-    CNPJ := FCNPJ
+    tempCNPJ := FCNPJ
   else
-    CNPJ := '';
+    tempCNPJ := '';
 
-  Result := FPConfiguracoesCTe.Arquivos.GetPathInu(Now, CNPJ);
+  Result := FPConfiguracoesCTe.Arquivos.GetPathInu(Now, tempCNPJ);
 end;
 
 procedure TCTeInutilizacao.DefinirURL;
 var
   ok: Boolean;
   VerServ: Double;
-  Modelo: String;
+  ModeloTemp: String;
 begin
   FPVersaoServico := '';
   FPURL  := '';
 
-  Modelo := ModeloCTeToPrefixo( StrToModeloCTe(ok, IntToStr(FModelo) ));
+  ModeloTemp := ModeloCTeToPrefixo( StrToModeloCTe(ok, IntToStr(FModelo) ));
   if not ok then
     raise EACBrCTeException.Create( 'Modelo Inválido: '+IntToStr(FModelo) );
 
   VerServ := VersaoCTeToDbl(FPConfiguracoesCTe.Geral.VersaoDF);
 
   TACBrCTe(FPDFeOwner).LerServicoDeParams(
-    Modelo,
+    ModeloTemp,
     FPConfiguracoesCTe.WebServices.UF,
     FPConfiguracoesCTe.WebServices.Ambiente,
     LayOutToServico(FPLayout),
@@ -2424,11 +2424,11 @@ end;
 
 procedure TCTeConsultaCadastro.DefinirURL;
 var
-  Versao: Double;
+  VersaoTemp: Double;
 begin
   FPVersaoServico := '';
   FPURL := '';
-  Versao := VersaoCTeToDbl(FPConfiguracoesCTe.Geral.VersaoDF);
+  VersaoTemp := VersaoCTeToDbl(FPConfiguracoesCTe.Geral.VersaoDF);
 
   if EstaVazio(FUF) then
     FUF := FPConfiguracoesCTe.WebServices.UF;
@@ -2438,11 +2438,11 @@ begin
     FUF,
     FPConfiguracoesCTe.WebServices.Ambiente,
     LayOutToServico(FPLayout),
-    Versao,
+    VersaoTemp,
     FPURL
   );
 
-  FPVersaoServico := FloatToString(Versao, '.', '0.00');
+  FPVersaoServico := FloatToString(VersaoTemp, '.', '0.00');
 end;
 
 procedure TCTeConsultaCadastro.DefinirDadosMsg;
@@ -3038,7 +3038,7 @@ begin
   if Assigned(FretDistDFeInt) then
     FretDistDFeInt.Free;
 
-  FretDistDFeInt := TRetDistDFeInt.Create;
+  FretDistDFeInt := TRetDistDFeInt.Create('CTe');
 
   if Assigned(FlistaArqs) then
     FlistaArqs.Free;
@@ -3081,15 +3081,15 @@ procedure TDistribuicaoDFe.DefinirDadosMsg;
 var
   DistDFeInt: TDistDFeInt;
 begin
-  DistDFeInt := TDistDFeInt.Create;
+  DistDFeInt := TDistDFeInt.Create(FPVersaoServico, NAME_SPACE_CTE,
+                                     'cteDadosMsg', 'consChCTe', 'chCTe', True);
   try
     DistDFeInt.TpAmb := FPConfiguracoesCTe.WebServices.Ambiente;
     DistDFeInt.cUFAutor := FcUFAutor;
     DistDFeInt.CNPJCPF := FCNPJCPF;
     DistDFeInt.ultNSU := FultNSU;
     DistDFeInt.NSU := FNSU;
-    DistDFeInt.chCTe := trim(FchCTe);
-    DistDFeInt.Versao := FPVersaoServico;
+    DistDFeInt.Chave := trim(FchCTe);
 
     AjustarOpcoes( DistDFeInt.Gerador.Opcoes );
 
@@ -3134,7 +3134,7 @@ begin
         *)
         schprocCTe,
         schprocCTeOS:
-          FNomeArq := FretDistDFeInt.docZip.Items[I].resCTe.chCTe + '-cte.xml';
+          FNomeArq := FretDistDFeInt.docZip.Items[I].resDFe.chDFe + '-cte.xml';
 
         schprocEventoCTe:
           FNomeArq := OnlyNumber(FretDistDFeInt.docZip.Items[I].procEvento.Id) +
@@ -3158,7 +3158,7 @@ begin
   { Processsa novamente, chamando ParseTXT, para converter de UTF8 para a String
     nativa e Decodificar caracteres HTML Entity }
   FretDistDFeInt.Free;   // Limpando a lista
-  FretDistDFeInt := TRetDistDFeInt.Create;
+  FretDistDFeInt := TRetDistDFeInt.Create('CTe');
 
   FretDistDFeInt.Leitor.Arquivo := ParseText(FPRetWS);
   FretDistDFeInt.LerXml;
@@ -3198,7 +3198,7 @@ var
 begin
   if FPConfiguracoesCTe.Arquivos.EmissaoPathCTe then
   begin
-    Data := AItem.resCTe.dhEmi;
+    Data := AItem.resDFe.dhEmi;
     if Data = 0 then
       Data := AItem.procEvento.dhEvento;
   end
@@ -3213,8 +3213,8 @@ begin
 
     schprocCTe,
     schprocCTeOS:
-      Result := FPConfiguracoesCTe.Arquivos.GetPathDownload(AItem.resCTe.xNome,
-                                                        AItem.resCTe.CNPJCPF,
+      Result := FPConfiguracoesCTe.Arquivos.GetPathDownload(AItem.resDFe.xNome,
+                                                        AItem.resDFe.CNPJCPF,
                                                         Data);
   end;
 end;
@@ -3327,7 +3327,7 @@ begin
   Result := Envia(IntToStr(ALote));
 end;
 
-function TWebServices.Envia(ALote: String): Boolean;
+function TWebServices.Envia(const ALote: String): Boolean;
 begin
   FEnviar.Clear;
   FRetorno.Clear;
@@ -3350,7 +3350,7 @@ begin
   Result := EnviaOS(IntToStr(ALote));
 end;
 
-function TWebServices.EnviaOS(ALote: String): Boolean;
+function TWebServices.EnviaOS(const ALote: String): Boolean;
 begin
   FEnviar.Clear;
   FRetorno.Clear;
@@ -3363,20 +3363,22 @@ begin
   Result := True;
 end;
 
-procedure TWebServices.Inutiliza(CNPJ, AJustificativa: String;
+procedure TWebServices.Inutiliza(const CNPJ, AJustificativa: String;
   Ano, Modelo, Serie, NumeroInicial, NumeroFinal: Integer);
+var
+  CNPJ_temp: string;
 begin
-  CNPJ := OnlyNumber(CNPJ);
+  CNPJ_temp := OnlyNumber(CNPJ);
 
-  if not ValidarCNPJ(CNPJ) then
-    raise EACBrCTeException.Create('CNPJ: ' + CNPJ + ', inválido.');
+  if not ValidarCNPJ(CNPJ_temp) then
+    raise EACBrCTeException.Create('CNPJ: ' + CNPJ_temp + ', inválido.');
 
-  FInutilizacao.CNPJ := CNPJ;
-  FInutilizacao.Modelo := Modelo;
-  FInutilizacao.Serie := Serie;
-  FInutilizacao.Ano := Ano;
+  FInutilizacao.CNPJ          := CNPJ_temp;
+  FInutilizacao.Modelo        := Modelo;
+  FInutilizacao.Serie         := Serie;
+  FInutilizacao.Ano           := Ano;
   FInutilizacao.NumeroInicial := NumeroInicial;
-  FInutilizacao.NumeroFinal := NumeroFinal;
+  FInutilizacao.NumeroFinal   := NumeroFinal;
   FInutilizacao.Justificativa := AJustificativa;
 
   if not FInutilizacao.Executar then

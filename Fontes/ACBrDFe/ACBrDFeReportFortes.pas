@@ -48,8 +48,8 @@ type
   public
     class procedure AjustarReport(FReport: TRLReport; AConfig: TACBrDFeReport);
     class procedure AjustarMargem(FReport: TRLReport; AConfig: TACBrDFeReport);
-    class procedure AjustarFiltroPDF(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport; AFile: String);
-    class procedure CarregarLogo(ALogoImage: TRLImage; const ALogo: string);
+    class procedure AjustarFiltroPDF(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport; const AFile: String);
+    class function CarregarLogo(ALogoImage: TRLImage; const ALogo: string): Boolean;
   end;
 
 
@@ -63,7 +63,8 @@ begin
   if NaoEstaVazio(AConfig.Impressora) then
       RLPrinter.PrinterName := AConfig.Impressora;
 
-  RLPrinter.Copies := max(AConfig.NumCopias, 1);
+  if AConfig.NumCopias > 1 then
+    RLPrinter.Copies := AConfig.NumCopias;
 end;
 
 class procedure TDFeReportFortes.AjustarMargem(FReport: TRLReport; AConfig: TACBrDFeReport);
@@ -78,46 +79,49 @@ begin
   end;
 end;
 
-class procedure TDFeReportFortes.AjustarFiltroPDF(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport; AFile: String);
+class procedure TDFeReportFortes.AjustarFiltroPDF(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport; const AFile: String);
 Var
   ADir: String;
+  NomeArquivoFinal: String;
 begin
-  AFile := Trim(AFile);
-  if EstaVazio(AFile) then
+  NomeArquivoFinal := Trim(AFile);
+  if EstaVazio(NomeArquivoFinal) then
     raise Exception.Create('Erro ao gerar PDF. Arquivo não informado');
 
-  ADir := ExtractFilePath(AFile);
+  ADir := ExtractFilePath(NomeArquivoFinal);
   if EstaVazio(ADir) then
-    AFile := ApplicationPath + ExtractFileName(AFile)
+    NomeArquivoFinal := ApplicationPath + ExtractFileName(NomeArquivoFinal)
   else
   begin
-    if not DirectoryExists(ADir) then
-      ForceDirectories(ADir);
+    if not ForceDirectories(ADir) then
+      raise Exception.Create('Erro ao gerar PDF. Diretório: ' + ADir + ' não pode ser criado');
   end;
 
-  if not DirectoryExists(ADir) then
-    raise Exception.Create('Erro ao gerar PDF. Diretório: ' + ADir + ' não pode ser criado');
-
   PDFFilter.ShowProgress := AConfig.MostraStatus;
-  PDFFilter.FileName := AFile;
+  PDFFilter.FileName := NomeArquivoFinal;
 end;
 
-class procedure TDFeReportFortes.CarregarLogo(ALogoImage: TRLImage; const ALogo: string);
+class function TDFeReportFortes.CarregarLogo(ALogoImage: TRLImage; const ALogo: string): Boolean;
 var
   LogoStream: TStringStream;
 begin
+  Result := False;
   ALogoImage.Picture := nil;
   if EstaVazio(Trim(ALogo)) then
     Exit;
 
   if FileExists(ALogo) then
-    ALogoImage.Picture.LoadFromFile(ALogo)
+  begin
+    ALogoImage.Picture.LoadFromFile(ALogo);
+    Result := True;
+  end
   else
   begin
     LogoStream := TStringStream.Create(ALogo);
     try
       try
         ALogoImage.Picture.Bitmap.LoadFromStream(LogoStream);
+        Result := True;
       except
         ALogoImage.Picture := nil;
       end;

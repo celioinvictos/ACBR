@@ -60,11 +60,12 @@ resourcestring
   ACBRESOCIAL_CErroCryptLib = 'Necessário DigestMethod Algorithm SHA256. use cryOpenSSL ou cryWinCrypt na propriedade SSLCryptLib.';
 
 const
-  ACBRESOCIAL_VERSAO = '2.4.1';
   ACBRESOCIAL_NAMESPACE = ' http://www.esocial.gov.br/servicos/empregador/lote/eventos/envio/v1_1_0';
   ACBRESOCIAL_NAMESPACE_CON = 'http://www.esocial.gov.br/schema/lote/eventos/envio/consulta/retornoProcessamento/v1_0_0';
+  ACBRESOCIAL_NAMESPACE_RETEVT = 'http://www.esocial.gov.br/schema/consulta/identificadores-eventos/empregador/v1_0_0';
+  ACBRESOCIAL_NAMESPACE_DOWEVTID = 'http://www.esocial.gov.br/schema/download/solicitacao/id/v1_0_0';
+  ACBRESOCIAL_NAMESPACE_DOWEVTREC = 'http://www.esocial.gov.br/schema/download/solicitacao/nrRecibo/v1_0_0';
   ACBRESOCIAL_NAMESPACE_URI = 'http://www.esocial.gov.br/schema/evt/';
-//  ACBRESOCIAL_VERSAO_URI = '/v02_04_01';
   ACBRESOCIAL_MODELODF = 'eSocial';
 
 type
@@ -88,7 +89,6 @@ type
     procedure SetConfiguracoes(AValue: TConfiguracoeseSocial);
   protected
     function CreateConfiguracoes: TConfiguracoes; override;
-    function GetAbout: String; override;
     function NomeServicoToNomeSchema(const NomeServico: String): String; override;
     function VersaoSchemaDoubleToString(AVersao: Double): String; virtual;
     function VersaoSchemaStringToDouble(AVersao: String): Double; virtual;
@@ -106,6 +106,14 @@ type
 
     function Enviar(AGrupo: TeSocialGrupo): boolean;
     function Consultar(const AProtocolo: string): boolean;
+    function ConsultaIdentificadoresEventosEmpregador(const CnpjEstab: String;
+        tpEvt: TTipoEvento; PerApur: TDateTime): boolean;
+    function ConsultaIdentificadoresEventosTabela(const CnpjEstab: String;
+        tpEvt: TTipoEvento; AchEvt: string; AdtIni, AdtFim: TDateTime): boolean;
+    function ConsultaIdentificadoresEventosTrabalhador(const CnpjEstab: String;
+        AcpfTrab: string; AdtIni, AdtFim: TDateTime): boolean;
+
+    function DownloadEventos(const CnpjEmpr, PorID, PorNrRecibo: String): boolean;
 
     property Eventos: TEventos read FEventos write FEventos;
     property Status: TStatusACBreSocial read FStatus;
@@ -166,11 +174,6 @@ begin
   Result := TConfiguracoeseSocial.Create(Self);
 end;
 
-function TACBreSocial.GetAbout: String;
-begin
-  Result := 'ACBreSocial Ver: ' + ACBRESOCIAL_VERSAO;
-end;
-
 function TACBreSocial.Enviar(AGrupo: TeSocialGrupo): boolean;
 begin
   WebServices.EnvioLote.Clear;
@@ -181,6 +184,34 @@ end;
 function TACBreSocial.Consultar(const AProtocolo: string): boolean;
 begin
   Result := WebServices.Consultar(AProtocolo);
+end;
+
+function TACBreSocial.ConsultaIdentificadoresEventosEmpregador(const CnpjEstab: String;
+  tpEvt: TTipoEvento; PerApur: TDateTime): boolean;
+begin
+  Result := WebServices.ConsultaIdentificadoresEventosEmpregador(CnpjEstab, tpEvt, PerApur);
+end;
+
+function TACBreSocial.ConsultaIdentificadoresEventosTabela(
+  const CnpjEstab: String; tpEvt: TTipoEvento; AchEvt: string; AdtIni,
+  AdtFim: TDateTime): boolean;
+begin
+  Result := WebServices.ConsultaIdentificadoresEventosTabela(CnpjEstab, tpEvt,
+                     AchEvt, AdtIni, AdtFim);
+end;
+
+function TACBreSocial.ConsultaIdentificadoresEventosTrabalhador(
+  const CnpjEstab: String; AcpfTrab: string; AdtIni,
+  AdtFim: TDateTime): boolean;
+begin
+  Result := WebServices.ConsultaIdentificadoresEventosTrabalhador(CnpjEstab,
+                     AcpfTrab, AdtIni, AdtFim);
+end;
+
+function TACBreSocial.DownloadEventos(const CnpjEmpr, PorID,
+  PorNrRecibo: String): boolean;
+begin
+  Result := WebServices.DownloadEvento(CnpjEmpr, PorID, PorNrRecibo);
 end;
 
 procedure TACBreSocial.AssinarEventos;

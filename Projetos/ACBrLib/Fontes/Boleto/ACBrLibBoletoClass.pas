@@ -39,8 +39,7 @@ unit ACBrLibBoletoClass;
 interface
 
 uses
-  Classes, SysUtils, Forms, ACBrLibComum,
-   ACBrLibBoletoDataModule;
+  Classes, SysUtils, Forms, ACBrLibComum, ACBrLibBoletoDataModule;
 
 type
 
@@ -107,7 +106,7 @@ type
   function Boleto_LimparLista: longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-  function Boleto_TotalTitulosLista: longint;
+  function Boleto_TotalTitulosLista(const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
   function Boleto_Imprimir(eNomeImpressora: PChar): longint;
@@ -144,7 +143,7 @@ type
   function Boleto_ListaOcorrenciasEX(const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-  function Boleto_TamNossoNumero(eCarteira: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  function Boleto_TamNossoNumero(eCarteira, enossoNumero, eConvenio: PChar; const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
   function Boleto_CodigosMoraAceitos(const sResposta: PChar; var esTamanho: longint): longint;
@@ -166,10 +165,10 @@ type
 
   {%region Funções Internas}
 
-  function ListaBancos(): String;
-  function ListaCaractTitulo() : String;
-  function ListaOcorrencias(): String;
-  function ListaOcorrenciasEX(): String;
+  function ListaBancos(): AnsiString;
+  function ListaCaractTitulo() : AnsiString;
+  function ListaOcorrencias(): AnsiString;
+  function ListaOcorrenciasEX(): AnsiString;
 
   {%endregion}
 
@@ -177,7 +176,7 @@ implementation
 
 uses
   ACBrLibConsts, ACBrLibBoletoConsts, ACBrLibConfig, ACBrUtil, strutils, typinfo,
-  ACBrBoleto;
+  ACBrBoleto, ACBrLibBoletoConfig, ACBrMail;
 
 {%region Redeclarando Métodos de ACBrLibComum, com nome específico}
 
@@ -277,6 +276,7 @@ begin
      on E: Exception do
        Result := SetRetorno(ErrExecutandoMetodo, E.Message);
    end;
+
 end;
 
 function Boleto_IncluirTitulos(eArquivoIni, eTpSaida: PChar; const sResposta: PChar;
@@ -286,6 +286,7 @@ var
   Resposta : AnsiString;
   ArquivoIni : String;
   TpSaida : String;
+  Mensagem : TStringList;
 begin
   try
      VerificarLibInicializada;
@@ -312,21 +313,27 @@ begin
              BoletoDM.ACBrBoleto1.GerarPDF
            else if TpSaida = 'E' then
            begin
-             {with MonitorConfig.BOLETO.Email do
+             with TLibBoletoConfig(TACBrLibBoleto(pLib).Config).BoletoConfig do
              begin
                Mensagem := TStringList.Create;
                try
-                 Mensagem.Add(EmailMensagemBoleto);
-                     ACBrBoleto.EnviarEmail( ACBrBoleto.ListadeBoletos[0].Sacado.Email,
-                                  EmailAssuntoBoleto,
+                 Mensagem.Add(emailMensagemBoleto);
+                 if pLib.Config.Log.Nivel > logNormal then
+                   pLib.GravarLog('Boleto_EnviarEmail(' + BoletoDM.ACBrBoleto1.ListadeBoletos[0].Sacado.Email +
+                   ',' + emailAssuntoBoleto + ',' + Mensagem.Text, logCompleto, True)
+                 else
+                   pLib.GravarLog('Boleto_EnviarEmail', logNormal);
+
+                 BoletoDM.ACBrBoleto1.EnviarEmail( BoletoDM.ACBrBoleto1.ListadeBoletos[0].Sacado.Email,
+                                  emailAssuntoBoleto,
                                   Mensagem,
                                   True );
-                     fpCmd.Resposta := 'E-mail enviado com sucesso!'
+                 Result := SetRetorno(ErrOK);
 
                finally
                  Mensagem.Free;
                end;
-             end;}
+             end;
 
            end;
 
@@ -373,8 +380,10 @@ begin
   end;
 end;
 
-function Boleto_TotalTitulosLista: longint;
+function Boleto_TotalTitulosLista(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  Resposta: AnsiString;
 begin
   try
     VerificarLibInicializada;
@@ -384,7 +393,12 @@ begin
     begin
       BoletoDM.Travar;
       try
-        Result := SetRetornoBoletosCarregados(BoletoDM.ACBrBoleto1.ListadeBoletos.Count);
+        Resposta := '';
+        Resposta := IntToStr( BoletoDM.ACBrBoleto1.ListadeBoletos.Count );
+
+         MoverStringParaPChar(Resposta, sResposta, esTamanho);
+         Result := SetRetorno(ErrOK, Resposta);
+
       finally
         BoletoDM.Destravar;
       end;
@@ -790,15 +804,17 @@ begin
   end;
 end;
 
-function Boleto_TamNossoNumero(eCarteira: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function Boleto_TamNossoNumero(eCarteira, enossoNumero, eConvenio: PChar; const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
    Resposta : AnsiString;
-   Carteira : String;
+   Carteira, NossoNumero, Convenio : String;
 begin
   try
     VerificarLibInicializada;
     Carteira := String(eCarteira);
+    NossoNumero:= String(enossoNumero);
+    Convenio:= String(eConvenio);
 
     pLib.GravarLog('Boleto_TamNossoNumero', logNormal);
 
@@ -807,7 +823,7 @@ begin
       BoletoDM.Travar;
       try
         Resposta := '';
-        Resposta := IntToStr(BoletoDM.ACBrBoleto1.Banco.CalcularTamMaximoNossoNumero(Carteira));
+        Resposta := IntToStr(BoletoDM.ACBrBoleto1.Banco.CalcularTamMaximoNossoNumero(Carteira, NossoNumero, Convenio));
         MoverStringParaPChar(Resposta, sResposta, esTamanho);
         Result := SetRetorno(ErrOK, Resposta);
       finally
@@ -1015,79 +1031,68 @@ end;
 
 {%region Funções Internas}
 
-function ListaBancos(): String;
+function ListaBancos(): AnsiString;
 var
-   IBanco : TACBrTipoCobranca;
    SBanco : String;
+   I: Integer;
 begin
-   IBanco := Low(TACBrTipoCobranca);
-   Inc(IBanco); // Removendo item 0-Nenhum
    Result := '';
-
-   while IBanco <= High(TACBrTipoCobranca) do
+   for i:= integer( Low(TACBrTipoCobranca) ) + 1  to integer( High(TACBrTipoCobranca) ) do
    begin
-     sBanco := GetEnumName( TypeInfo(TACBrTipoCobranca), Integer(IBanco) );
+     sBanco := GetEnumName( TypeInfo(TACBrTipoCobranca), Integer(I) );
      sBanco := copy(SBanco,4, Length(SBanco)); // Removendo "cob" do nome do banco.
      Result := Result + sBanco + '|';
-
-     Inc(IBanco);
    end;
 
    if Result <> '' then
       Result := copy(Result,1,Length(Result)-1) ;
 end;
 
-function ListaCaractTitulo(): String;
+function ListaCaractTitulo(): AnsiString;
 var
    ICaractTitulo : TACBrCaracTitulo;
    SCaractTitulo : String;
 begin
-   ICaractTitulo := Low(TACBrCaracTitulo);
 
-   while ICaractTitulo <= High(TACBrCaracTitulo) do
+   for ICaractTitulo := Low(TACBrCaracTitulo) to high(TACBrCaracTitulo) do
    begin
      SCaractTitulo := GetEnumName( TypeInfo(TACBrCaracTitulo), Integer(ICaractTitulo) );
      SCaractTitulo := copy(SCaractTitulo, 3, Length(SCaractTitulo)); // Removendo "tc".
      Result := Result + SCaractTitulo + '|';
-
-     Inc(ICaractTitulo);
    end;
 
    if Result <> '' then
       Result := copy(Result,1,Length(Result)-1) ;
 end;
 
-function ListaOcorrencias(): String;
+function ListaOcorrencias(): AnsiString;
 var
    ITipoOcorrencia : TACBrTipoOcorrencia;
    SOcorrencia     : String;
 begin
-  ITipoOcorrencia := Low(TACBrTipoOcorrencia);
-    while ( ITipoOcorrencia <= High(TACBrTipoOcorrencia) ) do
+  for ITipoOcorrencia := Low(TACBrTipoOcorrencia) to High(TACBrTipoOcorrencia) do
   begin
     SOcorrencia := GetEnumName( TypeInfo(TACBrTipoOcorrencia), Integer(ITipoOcorrencia) ) ;
     Result := Result + copy(SOcorrencia, 3, Length(SOcorrencia)) + '|';  //Remove "to"
-    Inc(ITipoOcorrencia);
   end;
-    if (Result <> '') then
+
+  if (Result <> '') then
     Result := copy(Result,1,Length(Result)-1) ;
 end;
 
-function ListaOcorrenciasEX(): String;
+function ListaOcorrenciasEX(): AnsiString;
 var
    ITipoOcorrencia : TACBrTipoOcorrencia;
    SOcorrencia     : String;
    ValorIndice     : Integer;
 begin
-  ITipoOcorrencia := Low(TACBrTipoOcorrencia);
 
-  while ( ITipoOcorrencia <= High(TACBrTipoOcorrencia) ) do
+  for ITipoOcorrencia := Low(TACBrTipoOcorrencia) to High(TACBrTipoOcorrencia) do
   begin
     ValorIndice := Integer(ITipoOcorrencia);
     SOcorrencia := GetEnumName( TypeInfo(TACBrTipoOcorrencia), ValorIndice ) ;
     Result := Result + IntToStr(ValorIndice) + '-' +
               copy(SOcorrencia, 3, Length(SOcorrencia)) + '|';  //Remove "to"
-    Inc(ITipoOcorrencia);
   end;
 
   if (Result <> '') then
@@ -1102,7 +1107,7 @@ procedure TACBrLibBoleto.Inicializar;
 begin
   GravarLog('TACBrLibBoleto.Inicializar', logNormal);
 
-  //FBoletoDM.CriarACBrMail;
+  FBoletoDM.CriarACBrMail;
 
   GravarLog('TACBrLibBoleto.Inicializar - Feito', logParanoico);
 
@@ -1112,18 +1117,19 @@ end;
 procedure TACBrLibBoleto.CriarConfiguracao(ArqConfig: string;
   ChaveCrypt: ansistring);
 begin
-  //fpConfig := TLibBoletoConfig.Create(Self, ArqConfig, ChaveCrypt);
+  fpConfig := TLibBoletoConfig.Create(Self, ArqConfig, ChaveCrypt);
 end;
 
 procedure TACBrLibBoleto.Executar;
 begin
   inherited Executar;
-  //FBoletoDM.AplicarConfiguracoes;
+  FBoletoDM.AplicarConfiguracoes;
 end;
 
 constructor TACBrLibBoleto.Create(ArqConfig: string; ChaveCrypt: ansistring);
 begin
-  inherited Create(ArqConfig, ChaveCrypt);
+  inherited
+  Create(ArqConfig, ChaveCrypt);
   fpNome := CLibBoletoNome;
   fpVersao := CLibBoletoVersao;
 

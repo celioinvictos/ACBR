@@ -62,7 +62,7 @@ uses
 
 type
 
-  TConsSitNFe = class(TPersistent)
+  TConsSitNFe = class
   private
     FGerador: TGerador;
     FtpAmb: TpcnTipoAmbiente;
@@ -73,7 +73,6 @@ type
     destructor Destroy; override;
     function GerarXML: Boolean;
     function ObterNomeArquivo: String;
-  published
     property Gerador: TGerador       read FGerador write FGerador;
     property tpAmb: TpcnTipoAmbiente read FtpAmb   write FtpAmb;
     property chNFe: String           read FchNFe   write FchNFe;
@@ -82,13 +81,14 @@ type
 
 implementation
 
-Uses
+uses
   ACBrUtil;
 
 { TConsSitNFe }
 
 constructor TConsSitNFe.Create;
 begin
+  inherited Create;
   FGerador := TGerador.Create;
 end;
 
@@ -116,5 +116,6 @@ begin
   Result := (Gerador.ListaDeAlertas.Count = 0);
 
 end;
+
 end.
 

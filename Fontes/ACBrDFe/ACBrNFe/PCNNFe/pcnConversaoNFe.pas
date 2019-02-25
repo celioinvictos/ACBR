@@ -54,7 +54,6 @@ uses
 
 type
 
-  TpcnTipoNFe = (tnEntrada, tnSaida);
   TpcnFinalidadeNFe = (fnNormal, fnComplementar, fnAjuste, fnDevolucao);
 
   (* IMPORTANTE - Sempre que alterar um Tipo efetuar a atualização das funções de conversão correspondentes *)
@@ -66,7 +65,7 @@ type
 
   TSchemaNFe = (schErro, schNfe, schcancNFe, schInutNFe, schEnvCCe,
                 schEnvEventoCancNFe, schEnvConfRecebto, schEnvEPEC,
-                schresNFe, schresEvento, schprocNFe, schprocEventoNFe,
+//                schresNFe, schresEvento, schprocNFe, schprocEventoNFe,
                 schconsReciNFe, schconsSitNFe, schconsStatServ, schconsCad,
                 schenvEvento, schconsNFeDest, schdownloadNFe, schretEnviNFe,
                 schadmCscNFCe, schdistDFeInt, scheventoEPEC);
@@ -93,10 +92,7 @@ function ServicoToLayOut(out ok: Boolean; const s: String): TLayOut;
 function LayOutToSchema(const t: TLayOut): TSchemaNFe;
 
 function SchemaNFeToStr(const t: TSchemaNFe): String;
-function StrToSchemaNFe(out ok: Boolean; const s: String): TSchemaNFe;
-
-function tpNFToStr(const t: TpcnTipoNFe): String;
-function StrToTpNF(out ok: Boolean; const s: String): TpcnTipoNFe;
+function StrToSchemaNFe(const s: String): TSchemaNFe;
 
 function FinNFeToStr(const t: TpcnFinalidadeNFe): String;
 function StrToFinNFe(out ok: Boolean; const s: String): TpcnFinalidadeNFe;
@@ -210,10 +206,11 @@ begin
   Result := copy(Result, 4, Length(Result)); // Remove prefixo "sch"
 end;
 
-function StrToSchemaNFe(out ok: Boolean; const s: String): TSchemaNFe;
+function StrToSchemaNFe(const s: String): TSchemaNFe;
 var
   P: Integer;
   SchemaStr: String;
+  CodSchema: Integer;
 begin
   P := pos('_',s);
   if p > 0 then
@@ -224,18 +221,14 @@ begin
   if LeftStr(SchemaStr,3) <> 'sch' then
     SchemaStr := 'sch'+SchemaStr;
 
-  Result := TSchemaNFe( GetEnumValue(TypeInfo(TSchemaNFe), SchemaStr ) );
-end;
+  CodSchema := GetEnumValue(TypeInfo(TSchemaNFe), SchemaStr );
 
-// B11 - Tipo do Documento Fiscal **********************************************
-function tpNFToStr(const t: TpcnTipoNFe): String;
-begin
-  Result := EnumeradoToStr(t, ['0', '1'], [tnEntrada, tnSaida]);
-end;
+  if CodSchema = -1 then
+  begin
+    raise Exception.Create(Format('"%s" não é um valor TSchemaNFe válido.',[SchemaStr]));
+  end;
 
-function StrToTpNF(out ok: Boolean; const s: String): TpcnTipoNFe;
-begin
-  Result := StrToEnumerado(ok, s, ['0', '1'], [tnEntrada, tnSaida]);
+  Result := TSchemaNFe( CodSchema );
 end;
 
 // B25 - Finalidade de emissão da NF-e *****************************************

@@ -59,8 +59,8 @@ type
     FVersaoQRCode: TpcnVersaoQrCode;
     FCamposFatObrigatorios: Boolean;
 
-    procedure SetCSC(AValue: String);
-    procedure SetIdCSC(AValue: String);
+    procedure SetCSC(const AValue: String);
+    procedure SetIdCSC(const AValue: String);
     procedure SetModeloDF(AValue: TpcnModeloDF);
     procedure SetVersaoDF(const Value: TpcnVersaoDF);
   public
@@ -72,7 +72,7 @@ type
   published
     property ModeloDF: TpcnModeloDF read FModeloDF write SetModeloDF default moNFe;
     property ModeloDFCodigo: integer read FModeloDFCodigo;
-    property VersaoDF: TpcnVersaoDF read FVersaoDF write SetVersaoDF default ve310;
+    property VersaoDF: TpcnVersaoDF read FVersaoDF write SetVersaoDF default ve400;
     property AtualizarXMLCancelado: Boolean
       read FAtualizarXMLCancelado write FAtualizarXMLCancelado default False;
     property IdCSC: String read FIdCSC write SetIdCSC;
@@ -116,10 +116,10 @@ type
     procedure GravarIni(const AIni: TCustomIniFile); override;
     procedure LerIni(const AIni: TCustomIniFile); override;
 
-    function GetPathInu(CNPJ: String = ''): String;
-    function GetPathNFe(Data: TDateTime = 0; CNPJ: String = ''; Modelo: Integer = 0): String;
-    function GetPathEvento(tipoEvento: TpcnTpEvento; CNPJ: String = ''; Data: TDateTime = 0): String;
-    function GetPathDownload(xNome: String = ''; CNPJ: String = ''; Data: TDateTime = 0): String;
+    function GetPathInu(const CNPJ: String = ''): String;
+    function GetPathNFe(Data: TDateTime = 0; const CNPJ: String = ''; Modelo: Integer = 0): String;
+    function GetPathEvento(tipoEvento: TpcnTpEvento; const CNPJ: String = ''; Data: TDateTime = 0): String;
+    function GetPathDownload(const xNome: String = ''; const CNPJ: String = ''; Data: TDateTime = 0): String;
   published
     property EmissaoPathNFe: boolean read FEmissaoPathNFe
       write FEmissaoPathNFe default False;
@@ -155,6 +155,7 @@ type
     property Arquivos: TArquivosConfNFe read GetArquivos;
     property WebServices;
     property Certificados;
+    property RespTec;
   end;
 
 implementation
@@ -167,6 +168,7 @@ uses
 
 constructor TDownloadConfNFe.Create;
 begin
+  inherited Create;
   FPathDownload := '';
   FSepararPorNome := False;
 end;
@@ -198,6 +200,7 @@ begin
   WebServices.Assign(DeConfiguracoesNFe.WebServices);
   Certificados.Assign(DeConfiguracoesNFe.Certificados);
   Arquivos.Assign(DeConfiguracoesNFe.Arquivos);
+  RespTec.Assign(DeConfiguracoesNFe.RespTec);
 end;
 
 function TConfiguracoesNFe.GetArquivos: TArquivosConfNFe;
@@ -228,7 +231,7 @@ begin
 
   FModeloDF := moNFe;
   FModeloDFCodigo := StrToInt(ModeloDFToStr(FModeloDF));
-  FVersaoDF := ve310;
+  FVersaoDF := ve400;
   FAtualizarXMLCancelado := False;
   FIdCSC := '';
   FCSC := '';
@@ -281,7 +284,7 @@ begin
   FModeloDFCodigo := StrToInt(ModeloDFToStr(FModeloDF));
 end;
 
-procedure TGeralConfNFe.SetCSC(AValue: String);
+procedure TGeralConfNFe.SetCSC(const AValue: String);
 begin
   if FCSC=AValue then
     Exit;
@@ -289,7 +292,7 @@ begin
   FCSC:=Trim(AValue);
 end;
 
-procedure TGeralConfNFe.SetIdCSC(AValue: String);
+procedure TGeralConfNFe.SetIdCSC(const AValue: String);
 begin
   if FIdCSC=AValue then
     Exit;
@@ -322,6 +325,7 @@ end;
 destructor TArquivosConfNFe.Destroy;
 begin
   FDownloadNFe.Free;
+
   inherited;
 end;
 
@@ -372,7 +376,7 @@ begin
   DownloadNFe.SepararPorNome := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'Download.SepararPorNome', DownloadNFe.SepararPorNome);
 end;
 
-function TArquivosConfNFe.GetPathDownload(xNome: String = ''; CNPJ: String = ''; Data: TDateTime = 0): String;
+function TArquivosConfNFe.GetPathDownload(const xNome: String = ''; const CNPJ: String = ''; Data: TDateTime = 0): String;
 var
   rPathDown: String;
 begin
@@ -388,7 +392,7 @@ begin
   Result := GetPath(rPathDown, 'Down', CNPJ, Data);
 end;
 
-function TArquivosConfNFe.GetPathEvento(tipoEvento: TpcnTpEvento; CNPJ: String;
+function TArquivosConfNFe.GetPathEvento(tipoEvento: TpcnTpEvento; const CNPJ: String;
   Data: TDateTime): String;
 var
   Dir: String;
@@ -404,12 +408,12 @@ begin
   Result := Dir;
 end;
 
-function TArquivosConfNFe.GetPathInu(CNPJ: String = ''): String;
+function TArquivosConfNFe.GetPathInu(const CNPJ: String = ''): String;
 begin
   Result := GetPath(FPathInu, 'Inu', CNPJ);
 end;
 
-function TArquivosConfNFe.GetPathNFe(Data: TDateTime = 0; CNPJ: String = ''; Modelo: Integer = 0): String;
+function TArquivosConfNFe.GetPathNFe(Data: TDateTime = 0; const CNPJ: String = ''; Modelo: Integer = 0): String;
 var
   DescricaoModelo: String;
 begin

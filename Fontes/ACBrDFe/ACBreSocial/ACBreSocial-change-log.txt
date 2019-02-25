@@ -48,7 +48,82 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
-08/01/2018
+18/02/2019
+-- pcesS2245 --
+[*] https://www.projetoacbr.com.br/forum/topic/49409-eventos-sst-v25/?do=findComment&comment=326660
+   Por: gtvosouza
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/49409-eventos-sst-v25/?do=findComment&comment=326693
+   Por: Arce
+
+14/02/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/49409-eventos-sst-v25/
+   Por: Arce
+
+13/02/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/46398-solicitardownloadeventos/?do=findComment&comment=326091
+   Por: Alessandro Feelipe
+
+13/02/2019
+-- pcesRetConsultaIdentEvt --
+[*] Simplificação na definição da classe de leitura do numero do recibo.
+   Por: Italo Jurisato Junior
+
+11/02/2019
+-- pcesS1200 --
+[*] Possível correção na leitura do arquivo INI do evento 1200.
+   Por: Italo Jurisato Junior
+
+07/02/2019
+-- diversos --
+[+] Implementação dos métodos ConsultaIdentificadoresEventosEmpregador e DownloadEventos.
+   Por: Alessandro Feelipe e Italo Jurisato Junior
+
+30/01/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/47582-comit%C3%AA-gestor-aprova-a-vers%C3%A3o-25-do-leiaute-do-esocial/?do=findComment&comment=324270
+   Por: Joceandro Perin
+
+29/01/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/47582-comit%C3%AA-gestor-aprova-a-vers%C3%A3o-25-do-leiaute-do-esocial/?do=findComment&comment=323868
+   Por: Angelo Sobreira
+
+25/01/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/48956-ajuste-campo-tpcontr-do-s-2200/
+[*] https://www.projetoacbr.com.br/forum/topic/48956-ajuste-campo-tpcontr-do-s-2200/?do=findComment&comment=323567
+   Por: Joceandro Perin
+
+23/01/2019
+-- Diversos --
+[*] A tag codSusp pode conter um numero inteiro com mais de 10 digitos, sendo 
+    assim o melhor foi mudar o tipo de Integer para String.
+   Por: Italo Jurisato Junior
+
+17/01/2019
+-- pcesS5013 --
+[*] Correção no nome de uma tag que estava com a grafria errada.
+   Por: Arce
+
+17/01/2019
+-- pcesS5013 --
+[*] Implementação do Evento de Retorno 5013.
+   Por: Arce
+
+15/01/2019
+-- pcesS5003 --
+[*] Implementação do Evento de Retorno 5003.
+   Por: Arce
+
+14/01/2019
+-- pcesConversaoeSocial --
+[*] Possível correção para identificação correta do evento.
+   Por: Italo Jurisato Junior
+
+08/01/2019
 -- pcesGerador --
 [*] https://www.projetoacbr.com.br/forum/topic/48578-s-2200-preenchimento-do-campo-dtterm/
    Por: Alex Camilo
