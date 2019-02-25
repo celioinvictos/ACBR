@@ -617,11 +617,11 @@ var
 begin
   with fACBrCTe do
   begin
-    for I := 0 to WebServices.Retorno.CTeRetorno.ProtCTe.Count - 1 do
+    for I := 0 to WebServices.Retorno.CTeRetorno.ProtDFe.Count - 1 do
     begin
       for J := 0 to Conhecimentos.Count - 1 do
       begin
-        if ('CTe' + WebServices.Retorno.CTeRetorno.ProtCTe.Items[i].chCTe =
+        if ('CTe' + WebServices.Retorno.CTeRetorno.ProtDFe.Items[i].chDFe =
           Conhecimentos.Items[j].CTe.infCTe.Id) then
         begin
           RespostaItensCTe(J, I, True);
@@ -669,7 +669,7 @@ begin
     'CTe' + Trim(IntToStr(
     fACBrCTe.Conhecimentos.Items[ConhecimentosID].CTe.Ide.nCT)), resINI);
   try
-    with fACBrCTe.WebServices.Retorno.CTeRetorno.ProtCTe.Items[ItemID] do
+    with fACBrCTe.WebServices.Retorno.CTeRetorno.ProtDFe.Items[ItemID] do
     begin
       Resp.Versao := verAplic;
       Resp.TpAmb := TpAmbToStr(TpAmb);
@@ -677,7 +677,7 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := fACBrCTe.WebServices.Retorno.CTeRetorno.cUF;
-      Resp.ChCTe := chCTe;
+      Resp.ChCTe := chDFe;
       Resp.DhRecbto := dhRecbto;
       Resp.NProt := nProt;
       Resp.DigVal := digVal;
@@ -813,10 +813,10 @@ var
 begin
   Resp := TRetornoItemResposta.Create(
     'CTe' + Trim(IntToStr(StrToInt(copy(
-    fACBrCTe.WebServices.Recibo.CTeRetorno.ProtCTe.Items
-    [ItemID].chCTe, 26, 9)))), resINI);
+    fACBrCTe.WebServices.Recibo.CTeRetorno.ProtDFe.Items
+    [ItemID].chDFe, 26, 9)))), resINI);
   try
-    with fACBrCTe.WebServices.Recibo.CTeRetorno.ProtCTe.Items[ItemID] do
+    with fACBrCTe.WebServices.Recibo.CTeRetorno.ProtDFe.Items[ItemID] do
     begin
       Resp.Versao := verAplic;
       Resp.TpAmb := TpAmbToStr(TpAmb);
@@ -824,7 +824,7 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := fACBrCTe.WebServices.Recibo.CTeRetorno.cUF;
-      Resp.ChCTe := chCTe;
+      Resp.ChCTe := chDFe;
       Resp.DhRecbto := dhRecbto;
       Resp.NProt := nProt;
       Resp.digVal := digVal;
@@ -1023,10 +1023,10 @@ begin
   Resp := TDistribuicaoDFeItemResposta.Create(
     'ResCTe' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
   try
-    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resCTe do
+    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resDFe do
     begin
       Resp.NSU := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chCTe := chCTe;
+      Resp.chCTe := chDFe;
       Resp.CNPJCPF := CNPJCPF;
       Resp.xNome := xNome;
       Resp.IE := IE;
@@ -1034,11 +1034,11 @@ begin
       Resp.vNF := vNF;
       Resp.digVal := digVal;
       Resp.dhRecbto := dhRecbto;
-      Resp.cSitCTe := SituacaoDFeToStr(cSitCTe);
+      Resp.cSitCTe := SituacaoDFeToStr(cSitDFe);
       Resp.nProt := nProt;
       Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaCTeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1090,7 +1090,7 @@ begin
     with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento do
     begin
       Resp.NSU := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chCTe := chCTe;
+      Resp.chCTe := chDFe;
       Resp.cOrgao := cOrgao;
       Resp.CNPJ := CNPJ;
       Resp.Id := Id;
@@ -1116,7 +1116,7 @@ begin
 
       Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaCTeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1138,7 +1138,7 @@ begin
       Resp.VerAplic := VerAplic;
       Resp.tpAmb := TpAmbToStr(tpAmb);
       Resp.cOrgao := cOrgao;
-      Resp.chCTe := chCTe;
+      Resp.chCTe := chDFe;
       Resp.CStat := cStat;
       Resp.CNPJDest := CNPJDest;
       Resp.cOrgaoAutor := cOrgaoAutor;
@@ -1152,7 +1152,7 @@ begin
 
       Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
       Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaCTeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      Resp.schema := SchemaDFeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
 
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
@@ -1549,11 +1549,12 @@ end;
           3 - Assunto: String com Assunto do e-mail
           4 - Copia: String com e-mails copia (Separados ;)
           5 - Anexo: String com Path de Anexos (Separados ;)
+          6 - Replay: String com endereços replay (Separados ;)
 }
 procedure TMetodoEnviarEmail.Executar;
 var
-  sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias, AAnexos: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias, AAnexos, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFe: TACBrCarregarCTe;
   AEnviaPDF: Boolean;
 begin
@@ -1563,6 +1564,7 @@ begin
   AAssunto := fpCmd.Params(3);
   AEmailCopias := fpCmd.Params(4);
   AAnexos := fpCmd.Params(5);
+  AReplay := fpCmd.Params(6);
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
@@ -1571,6 +1573,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFe := TACBrCarregarCTe.Create(ACBrCTe, APathXML);
       try
@@ -1588,6 +1591,9 @@ begin
         slAnexos.DelimitedText := sLineBreak;
         slAnexos.Text := StringReplace(AAnexos, ';', sLineBreak, [rfReplaceAll]);
 
+        slReplay.DelimitedText := sLineBreak;
+        slReplay.Text := StringReplace(AReplay, ';', sLineBreak, [rfReplaceAll]);
+
         try
           ACBrCTe.Conhecimentos.Items[0].EnviarEmail(ADestinatario,
             IfThen( NaoEstaVazio(AAssunto), AAssunto, sAssunto),
@@ -1596,8 +1602,10 @@ begin
             // Enviar PDF junto
             slCC,
             // Lista com emails que serão enviado cópias - TStrings
-            slAnexos);
+            slAnexos,
             // Lista de slAnexos - TStrings
+            slReplay);
+            // Lista de slReplay - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -1611,6 +1619,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
   end;
 end;
@@ -1632,7 +1641,7 @@ begin
     ACBrCTe.WebServices.Recibo.Executar;
 
     RespostaRecibo;
-    for I := 0 to ACBrCTe.WebServices.Recibo.CTeRetorno.ProtCTe.Count - 1 do
+    for I := 0 to ACBrCTe.WebServices.Recibo.CTeRetorno.ProtDFe.Count - 1 do
       RespostaItensRecibo(I);
 
     if ACBrCTe.Configuracoes.Geral.Salvar then
@@ -2296,8 +2305,8 @@ begin
         Infevento.CNPJ := copy(OnlyNumber(ACBrCTe.WebServices.Consulta.CTeChave), 7, 14)
       else
       begin
-        if not ValidarCNPJ(ACNPJ) then
-          raise Exception.Create('CNPJ ' + ACNPJ + ' inválido.');
+        if not ValidarCNPJouCPF(ACNPJ) then
+          raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' inválido.');
       end;
 
       Infevento.cOrgao := StrToIntDef(
@@ -2594,8 +2603,8 @@ begin
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ '+ACNPJ+' inválido.');
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorChaveCTe(AUF, ACNPJ, AChave);
 
@@ -2634,8 +2643,8 @@ begin
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ '+ACNPJ+' inválido.');
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, AUltNSU);
 
@@ -2674,8 +2683,8 @@ begin
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ '+ACNPJ+' inválido.');
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, ANSU);
 
@@ -2704,12 +2713,13 @@ end;
           4 - Assunto: String com Assunto do e-mail
           5 - Copia: String com e-mails copia (Separados ;)
           6 - Anexo: String com Path de Anexos (Separados ;)
+          7 - Replay: String com endereços replay (Separados ;)
 }
 procedure TMetodoEnviaremailEvento.Executar;
 var
   sAssunto, ADestinatario, APathXMLEvento, APathXML, AAssunto, AEmailCopias,
-  AAnexos, ArqPDF, ArqEvento: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  AAnexos, ArqPDF, ArqEvento, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFeEvento: TACBrCarregarCTeEvento;
   CargaDFe: TACBrCarregarCTe;
   AEnviaPDF: Boolean;
@@ -2722,6 +2732,7 @@ begin
   AAssunto := fpCmd.Params(4);
   AEmailCopias := fpCmd.Params(5);
   AAnexos := fpCmd.Params(6);
+  AReplay := fpCmd.Params(7);
   ArqEvento := '';
 
   with TACBrObjetoCTe(fpObjetoDono) do
@@ -2732,6 +2743,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFeEvento := TACBrCarregarCTeEvento.Create(ACBrCTe, APathXMLEvento);
       CargaDFe := TACBrCarregarCTe.Create(ACBrCTe, APathXML);
@@ -2762,6 +2774,9 @@ begin
         slAnexos.DelimitedText := sLineBreak;
         slAnexos.Text := StringReplace(AAnexos, ';', sLineBreak, [rfReplaceAll]);
 
+        slReplay.DelimitedText := sLineBreak;
+        slReplay.Text := StringReplace(AReplay, ';', sLineBreak, [rfReplaceAll]);
+
         // Se carregou evento usando XML como parâmetro, salva XML para poder anexar
         if ( ArqEvento = '' ) then
         begin
@@ -2780,7 +2795,10 @@ begin
             IfThen(NaoEstaVazio(AAssunto), AAssunto, sAssunto),
             slMensagemEmail,
             slCC,      // Lista com emails que serão enviado cópias - TStrings
-            slAnexos); // Lista de slAnexos - TStrings
+            slAnexos,  // Lista de slAnexos - TStrings
+            nil,
+            '',
+            slReplay); // Lista de slReplay - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -2795,6 +2813,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
   end;
 end;
@@ -2807,12 +2826,13 @@ end;
           3 - Assunto: String com Assunto do e-mail
           4 - Copia: String com e-mails copia (Separados ;)
           5 - Anexo: String com Path de Anexos (Separados ;)
+          6 - Replay: String com endereços replay (Separados ;)
 }
 procedure TMetodoEnviaremailInutilizacao.Executar;
 var
   sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias,
-  AAnexos, ArqPDF, ArqInut: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  AAnexos, ArqPDF, ArqInut, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFe: TACBrCarregarCTeInut;
   AEnviaPDF: Boolean;
 begin
@@ -2822,6 +2842,7 @@ begin
   AAssunto := fpCmd.Params(3);
   AEmailCopias := fpCmd.Params(4);
   AAnexos := fpCmd.Params(5);
+  AReplay := fpCmd.Params(6);
   ArqInut := '';
 
   with TACBrObjetoCTe(fpObjetoDono) do
@@ -2829,6 +2850,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFe := TACBrCarregarCTeInut.Create(ACBrCTe, APathXML);
       try
@@ -2858,6 +2880,9 @@ begin
         slAnexos.DelimitedText := sLineBreak;
         slAnexos.Text := StringReplace(AAnexos, ';', sLineBreak, [rfReplaceAll]);
 
+        slReplay.DelimitedText := sLineBreak;
+        slReplay.Text := StringReplace(AReplay, ';', sLineBreak, [rfReplaceAll]);
+
         // Se carregou Inutilizacao usando XML como parâmetro, salva XML para poder anexar
         if ( ArqInut = '' ) then
         begin
@@ -2875,7 +2900,10 @@ begin
             IfThen(NaoEstaVazio(AAssunto), AAssunto, sAssunto),
             slMensagemEmail,
             slCC,      // Lista com emails que serão enviado cópias - TStrings
-            slAnexos); // Lista de slAnexos - TStrings
+            slAnexos,  // Lista de slAnexos - TStrings
+            nil,
+            '',
+            slReplay); // Lista de slreplay - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -2889,6 +2917,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
   end;
 end;

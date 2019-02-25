@@ -102,7 +102,7 @@ type
     function CodMotivoRejeicaoToDescricao(
       const TipoOcorrencia: TACBrTipoOcorrencia; CodMotivo: Integer): String; override;
 
-    function CalcularTamMaximoNossoNumero(const Carteira : String; NossoNumero : String = ''; Convenio: String = ''): Integer; override;
+    function CalcularTamMaximoNossoNumero(const Carteira : String; const NossoNumero : String = ''; const Convenio: String = ''): Integer; override;
 
     function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
    end;
@@ -144,7 +144,7 @@ begin
 end;
 
 function TACBrBancoBrasil.CalcularTamMaximoNossoNumero(
-  const Carteira: String; NossoNumero : String = ''; Convenio: String = ''): Integer;
+  const Carteira: String; const NossoNumero : String = ''; const Convenio: String = ''): Integer;
 var
   wCarteira   : String;
   wTamConvenio: Integer;
@@ -188,7 +188,7 @@ begin
     AConvenio    := ACBrBoleto.Cedente.Convenio;
     ANossoNumero := NossoNumero;
     wTamNossoNum := CalcularTamMaximoNossoNumero(Carteira,ANossoNumero);
-      
+
     if ((ACBrTitulo.Carteira = '16') or (ACBrTitulo.Carteira = '18')) and
         (Length(AConvenio) = 6) and (wTamNossoNum = 17) then
       ANossoNumero := PadLeft(ANossoNumero, 17, '0')
@@ -392,22 +392,35 @@ var
    ACaracTitulo, wTipoCarteira  : Char;
    AMensagem                    : String;
    ACodProtesto                 : Char;
-   GeraSegS                     : Boolean;
+   BoletoEmail,GeraSegS         : Boolean;
 
   function MontarInstrucoes2: string;
   begin
     Result := '';
+
     with ACBrTitulo do
     begin
-      if ((Mensagem.Count - 1) <= 2) then
-      begin
-        if ((Mensagem.Count - 1) = 2) then
-          Result := Copy(PadRight(Mensagem[1] +' / '+ Mensagem[2], 140, ' '), 1, 140)
-        else if Mensagem.Count > 1 then
-          Result := Copy(PadRight(Mensagem[1], 140, ' '), 1, 140);
+       Result:= PadRight(Mensagem[1], 40, ' ');
 
-        Exit;
-      end;
+       if Mensagem.Count > 2 then
+          Result:= Result + PadRight(Mensagem[2], 40, ' ')
+       else
+          exit;
+
+       if Mensagem.Count > 3 then
+          Result:= Result + PadRight(Mensagem[3], 40, ' ')
+       else
+         exit;
+
+       if Mensagem.Count > 4 then
+          Result:= Result + PadRight(Mensagem[4], 40, ' ')
+       else
+          exit;
+
+       if Mensagem.Count > 5 then
+          Result:= Result + PadRight(Mensagem[5], 40, ' ')
+       else
+          exit;
     end;
   end;
 
@@ -468,20 +481,51 @@ begin
      end;
 
      { Pegando o tipo de EspecieDoc }
-     if EspecieDoc = 'DM' then
+     if EspecieDoc = 'CH' then
+       EspecieDoc   := '01'
+     else if EspecieDoc = 'DM' then
        EspecieDoc   := '02'
-     else if EspecieDoc = 'RC' then
-       EspecieDoc   := '17'
+     else if EspecieDoc = 'DMI' then
+       EspecieDoc   := '03'
+     else if EspecieDoc = 'DS' then
+       EspecieDoc   := '04'
+     else if EspecieDoc = 'DSI' then
+       EspecieDoc   := '05'
+     else if EspecieDoc = 'DR' then
+       EspecieDoc   := '06'
+     else if EspecieDoc = 'LC' then
+       EspecieDoc   := '07'
+     else if EspecieDoc = 'NCC' then
+       EspecieDoc   := '08'
+     else if EspecieDoc = 'NCE' then
+            EspecieDoc   := '09'
+     else if EspecieDoc = 'NCI' then
+       EspecieDoc   := '10'
+     else if EspecieDoc = 'NCR' then
+       EspecieDoc   := '11'
      else if EspecieDoc = 'NP' then
        EspecieDoc   := '12'
+     else if EspecieDoc = 'NPR' then
+       EspecieDoc   := '13'
+     else if EspecieDoc = 'TM' then
+       EspecieDoc   := '14'
+     else if EspecieDoc = 'TS' then
+       EspecieDoc   := '15'
      else if EspecieDoc = 'NS' then
        EspecieDoc   := '16'
+     else if EspecieDoc = 'RC' then
+       EspecieDoc   := '17'
+     else if EspecieDoc = 'FAT' then
+       EspecieDoc   := '18'
      else if EspecieDoc = 'ND' then
        EspecieDoc   := '19'
-     else if EspecieDoc = 'DS' then
-       EspecieDoc   := '04';
-//     else
-//       EspecieDoc := EspecieDoc;
+     else if EspecieDoc = 'AP' then
+       EspecieDoc   := '20'
+     else if EspecieDoc = 'ME' then
+       EspecieDoc   := '21'
+     else if EspecieDoc = 'PC' then
+       EspecieDoc   := '22';
+
 
      { Pegando o Aceite do Titulo }
      case Aceite of
@@ -550,7 +594,8 @@ begin
        AMensagem   := Mensagem.Strings[0];
 
 
-     if (ACBrTitulo.CarteiraEnvio = tceBanco) and (Mensagem.Count > 1) then
+     BoletoEmail:= ACBrTitulo.CarteiraEnvio = tceBancoEmail;
+     if (BoletoEmail) or (Mensagem.Count > 1) then
       begin
        QtdRegTitulo:= 4;
        GeraSegS    := True;
@@ -608,7 +653,8 @@ begin
               '000'                                                                     + // 225 a 227 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               '09'                                                                      + // 228 a 229 - Código da moeda: Real
               StringOfChar('0', 10)                                                     + // 230 a 239 - Uso exclusivo FEBRABAN/CNAB
-              ' ';                                                                        // 240 - Uso exclusivo FEBRABAN/CNAB
+              ' ';
+                                                                    // 240 - Uso exclusivo FEBRABAN/CNAB
 
      {SEGMENTO Q}
      Result:= Result + #13#10 +
@@ -668,16 +714,15 @@ begin
                 IntToStrZero((QtdRegTitulo * ACBrBoleto.ListadeBoletos.IndexOf(ACBrTitulo))+ 4 ,5)     + // 009 - 013 - Número seqüencial do registro no lote - Cada título tem 2 registros (P e Q)
                 'S'                                                                         + // 014 - 014 - Cód. Segmento do registro detalhe
                 Space(1)                                                                    + // 015 - 015 - Reservado (uso Banco)
-                ATipoOcorrencia                                                             + // 016 - 017 - Código de movimento remessa
-                ifthen( ((Mensagem.Count - 1) <= 2), '8', '0' )                             + // 018 - 018 - Identificação da impressão
-                ifthen( ((Mensagem.Count - 1) <= 2), '00', '' )                             + // 019 - 020 - Reservado (uso Banco) para tipo de impressão 1 e 2
-                MontarInstrucoes2                                                           + // 019 - 058 - Mensagem 5
-                                                                                              // 059 - 098 - Mensagem 6
-                                                                                              // 099 - 138 - Mensagem 7
-                                                                                              // 139 - 178 - Mensagem 8
-                                                                                              // 179 - 218 - Mensagem 9
-                ifthen( ((Mensagem.Count - 1) <= 2), '00' + Space(78) ,Space(222));           // 019 - 240 - Preenchido em branco para tipo de impressão 3
-                                                                                              // 161 - 240 - Reservado (uso Banco) para tipo de impressão 1 e 2
+                ATipoOcorrencia;                                                              // 016 - 017 - Código de movimento remessa
+
+       if BoletoEmail then
+          Result:= Result + '8' + '00'                                                     + // 018 - 018 - Identificação da impressão // 019 - 020 - Zeros
+                   PadRight(ACBrTitulo.Sacado.Email, 140)                                  + // 21-160  Email
+                  '00'                                                                     + // 161-162 Zeros
+                  Space(78)                                                                  // 163-240 brancos
+       else
+          Result:= Result + '3' + PadRight(MontarInstrucoes2, 222);
 
        inc(fQtMsg);
      end;
@@ -1397,6 +1442,8 @@ end;
 
 function TACBrBancoBrasil.CodMotivoRejeicaoToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia; CodMotivo: Integer): String;
 begin
+  Result := '';
+
   if (ACBrBanco.ACBrBoleto.LayoutRemessa = c400) then
   begin
     case TipoOcorrencia of

@@ -156,7 +156,7 @@ type
     procedure CarregaPagamento;
     procedure CarregaInformacoesAdicionais;
 
-    function CollateBr(Str: String): String;
+    function CollateBr(const Str: String): String;
 
   public
     constructor Create(AOwner: TComponent);
@@ -173,7 +173,7 @@ type
     procedure CarregaDadosNFe;
     procedure CarregaDadosEventos;
     procedure CarregaDadosInutilizacao;
-    procedure PintarQRCode(QRCodeData: String; APict: TPicture);
+    procedure PintarQRCode(const QRCodeData: String; APict: TPicture);
 
     property FastFile: String read FFastFile write FFastFile;
     property FastFileEvento: String read FFastFileEvento write FFastFileEvento;
@@ -412,6 +412,8 @@ begin
         FieldDefs.Add('vISSQN'    , ftString, 18);
         FieldDefs.Add('vBcISSQN'  , ftString, 18);
         FieldDefs.Add('vBcST'     , ftString, 18);
+        FieldDefs.Add('pMVAST'    , ftString, 18);
+        FieldDefs.Add('pICMSST'   , ftString, 18);
         FieldDefs.Add('vICMSST'   , ftString, 18);
         FieldDefs.Add('nLote'     , ftString, 20);
         FieldDefs.Add('qLote'     , ftFloat);
@@ -419,7 +421,7 @@ begin
         FieldDefs.Add('dVal'      , ftDateTime);
         FieldDefs.Add('DescricaoProduto', ftString, 2000);
         FieldDefs.Add('Unidade'   , ftString, 14);
-        FieldDefs.Add('Quantidade', ftString, 18);
+        FieldDefs.Add('Quantidade', ftString, 50);
         FieldDefs.Add('ValorUnitario'   , ftString, 50);
         FieldDefs.Add('Valorliquido'    , ftString, 18);
         FieldDefs.Add('ValorAcrescimos' , ftString, 18);
@@ -538,6 +540,10 @@ begin
         FieldDefs.Add('vTotPago'    , ftFloat);
         FieldDefs.Add('vTroco'      , ftFloat);
         FieldDefs.Add('ValorApagar' , ftFloat);
+        FieldDefs.Add('VFCP'        , ftFloat);
+        FieldDefs.Add('VFCPST'      , ftFloat);
+        FieldDefs.Add('VFCPSTRet'   , ftFloat);
+        FieldDefs.Add('VIPIDevol'   , ftFloat);
         CreateDataSet;
      end;
    end;
@@ -701,6 +707,12 @@ begin
          FieldDefs.Add('CMun', ftString, 7);
          FieldDefs.Add('XMun', ftString, 60);
          FieldDefs.Add('UF', ftString, 2);
+         FieldDefs.Add('XNome', ftString, 60);
+         FieldDefs.Add('CEP', ftString, 9);
+         FieldDefs.Add('CPais', ftString, 4);
+         FieldDefs.Add('XPais', ftString, 60);
+         FieldDefs.Add('Fone', ftString, 15);
+         FieldDefs.Add('IE', ftString, 15);
          CreateDataSet;
       end;
    end;
@@ -728,6 +740,12 @@ begin
          FieldDefs.Add('CMun', ftString, 7);
          FieldDefs.Add('XMun', ftString, 60);
          FieldDefs.Add('UF', ftString, 2);
+         FieldDefs.Add('XNome', ftString, 60);
+         FieldDefs.Add('CEP', ftString, 9);
+         FieldDefs.Add('CPais', ftString, 4);
+         FieldDefs.Add('XPais', ftString, 60);
+         FieldDefs.Add('Fone', ftString, 15);
+         FieldDefs.Add('IE', ftString, 15);
          CreateDataSet;
       end;
    end;
@@ -861,7 +879,7 @@ begin
   frxReport.EnabledDataSets.Add(FfrxInutilizacao);
 end;
 
-function TACBrNFeFRClass.CollateBr(Str: String): String;
+function TACBrNFeFRClass.CollateBr(const Str: String): String;
 var
   Resultado,Temp: string;
   vChar: Char;
@@ -925,7 +943,10 @@ begin
       FieldByName('VNF').AsFloat          := VNF;
       FieldByName('VTotTrib').AsFloat     := VTotTrib;
       FieldByName('ValorApagar').AsFloat  := VProd - VDesc - vICMSDeson + VOutro;
-
+      FieldByName('VFCP').AsFloat         := VFCP;
+      FieldByName('VFCPST').AsFloat       := VFCPST;
+      FieldByName('VFCPSTRet').AsFloat    := vFCPSTRet;
+      FieldByName('VIPIDevol').AsFloat    := vIPIDevol;
       if (FDANFEClassOwner is TACBrNFeDANFEClass) then
         FieldByName('VTribPerc').AsFloat := TACBrNFeDANFEClass(FDANFEClassOwner).ManterVTribPerc(VTotTrib, VProd, VNF);
 
@@ -977,100 +998,102 @@ begin
 
   cdsParametros.First;
 
-  // verificar se e DANFE detalhado
   // dados dos produtos
   with cdsDadosProdutos do
   begin
     Close;
     CreateDataSet;
-    if (NFe.Ide.modelo <> 65) or
-      ((FDANFEClassOwner is TACBrNFeDANFCEClass) and TACBrNFeDANFCEClass(FDANFEClassOwner).ImprimeItens) then
-    begin
-      for inItem := 0 to (NFe.Det.Count - 1) do
-      begin
-        Append;
-        with FNFe.Det.Items[inItem] do
-        begin
-          FieldByName('ChaveNFe').AsString          := FNFe.infNFe.ID;
-          FieldByName('cProd').AsString             := FDANFEClassOwner.ManterCodigo(Prod.cEAN,Prod.cProd);
-          FieldByName('cEAN').AsString              := Prod.cEAN;
-          FieldByName('XProd').AsString             := StringReplace( Prod.xProd, ';', #13, [rfReplaceAll]);
-          FieldByName('VProd').AsString             := FDANFEClassOwner.ManterVprod(Prod.VProd , Prod.vDesc );
-          FieldByName('vTotTrib').AsString          := FDANFEClassOwner.ManterdvTotTrib(Imposto.vTotTrib );
-          FieldByName('infAdProd').AsString         := FDANFEClassOwner.ManterinfAdProd(FNFe, inItem);
-          FieldByName('DescricaoProduto').AsString  := FDANFEClassOwner.ManterXProd(FNFe, inItem);
-          FieldByName('NCM').AsString               := Prod.NCM;
-          FieldByName('EXTIPI').AsString            := Prod.EXTIPI;
-          FieldByName('genero').AsString            := '';
-          FieldByName('CFOP').AsString              := Prod.CFOP;
-          FieldByName('Ucom').AsString              := Prod.UCom;
-          FieldByName('QCom').AsFloat               := Prod.QCom;
-          FieldByName('VUnCom').AsFloat             := Prod.VUnCom;
-          FieldByName('cEANTrib').AsString          := Prod.cEANTrib;
-          FieldByName('UTrib').AsString             := Prod.uTrib;
-          FieldByName('QTrib').AsFloat              := Prod.qTrib;
-          FieldByName('VUnTrib').AsFloat            := Prod.vUnTrib;
-          FieldByName('vFrete').AsString            := FormatFloatBr( Prod.vFrete ,'###,###,##0.00');
-          FieldByName('vSeg').AsString              := FormatFloatBr( Prod.vSeg   ,'###,###,##0.00');
-          FieldByName('vOutro').AsString            := FormatFloatBr( Prod.vOutro ,'###,###,##0.00');
 
-          if FDANFEClassOwner is TACBrNFeDANFEClass then
-          begin
-            case TACBrNFeDANFEClass(FDANFEClassOwner).ImprimeValor of
-            iuComercial:
+    // verificar se e DANFE detalhado
+    if ((FDANFEClassOwner is TACBrNFeDANFCEClass) and not TACBrNFeDANFCEClass(FDANFEClassOwner).ImprimeItens) then
+      Exit;
+
+    for inItem := 0 to (NFe.Det.Count - 1) do
+    begin
+      Append;
+      with FNFe.Det.Items[inItem] do
+      begin
+        FieldByName('ChaveNFe').AsString          := FNFe.infNFe.ID;
+        FieldByName('cProd').AsString             := FDANFEClassOwner.ManterCodigo(Prod.cEAN,Prod.cProd);
+        FieldByName('cEAN').AsString              := Prod.cEAN;
+        FieldByName('XProd').AsString             := StringReplace( Prod.xProd, ';', #13, [rfReplaceAll]);
+        FieldByName('VProd').AsString             := FDANFEClassOwner.ManterVprod(Prod.VProd , Prod.vDesc );
+        FieldByName('vTotTrib').AsString          := FDANFEClassOwner.ManterdvTotTrib(Imposto.vTotTrib );
+        FieldByName('infAdProd').AsString         := FDANFEClassOwner.ManterinfAdProd(FNFe, inItem);
+        FieldByName('DescricaoProduto').AsString  := FDANFEClassOwner.ManterXProd(FNFe, inItem);
+        FieldByName('NCM').AsString               := Prod.NCM;
+        FieldByName('EXTIPI').AsString            := Prod.EXTIPI;
+        FieldByName('genero').AsString            := '';
+        FieldByName('CFOP').AsString              := Prod.CFOP;
+        FieldByName('Ucom').AsString              := Prod.UCom;
+        FieldByName('QCom').AsFloat               := Prod.QCom;
+        FieldByName('VUnCom').AsFloat             := Prod.VUnCom;
+        FieldByName('cEANTrib').AsString          := Prod.cEANTrib;
+        FieldByName('UTrib').AsString             := Prod.uTrib;
+        FieldByName('QTrib').AsFloat              := Prod.qTrib;
+        FieldByName('VUnTrib').AsFloat            := Prod.vUnTrib;
+        FieldByName('vFrete').AsString            := FormatFloatBr( Prod.vFrete ,'###,###,##0.00');
+        FieldByName('vSeg').AsString              := FormatFloatBr( Prod.vSeg   ,'###,###,##0.00');
+        FieldByName('vOutro').AsString            := FormatFloatBr( Prod.vOutro ,'###,###,##0.00');
+
+        if FDANFEClassOwner is TACBrNFeDANFEClass then
+        begin
+          case TACBrNFeDANFEClass(FDANFEClassOwner).ImprimeValor of
+          iuComercial:
+            begin
+              FieldByName('Unidade').AsString       := FieldByName('Ucom').AsString;
+              FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QCom').AsFloat );
+              FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnCom').AsFloat );
+            end;
+          iuTributavel:
+            begin
+              FieldByName('Unidade').AsString       := FieldByName('UTrib').AsString;
+              FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QTrib').AsFloat );
+              FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnTrib').AsFloat);
+            end;
+          iuComercialETributavel:
+            begin
+              if FieldByName('Ucom').AsString = FieldByName('UTrib').AsString then
               begin
                 FieldByName('Unidade').AsString       := FieldByName('Ucom').AsString;
                 FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QCom').AsFloat );
                 FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnCom').AsFloat );
-              end;
-            iuTributavel:
+              end
+              else
               begin
-                FieldByName('Unidade').AsString       := FieldByName('UTrib').AsString;
-                FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QTrib').AsFloat );
-                FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnTrib').AsFloat);
-              end;
-            iuComercialETributavel:
-              begin
-                if FieldByName('Ucom').AsString = FieldByName('UTrib').AsString then
-                begin
-                  FieldByName('Unidade').AsString       := FieldByName('Ucom').AsString;
-                  FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QCom').AsFloat );
-                  FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnCom').AsFloat );
-                end
-                else
-                begin
-                  FieldByName('Unidade').AsString       := FDANFEClassOwner.ManterUnidades(FieldByName('Ucom').AsString, FieldByName('UTrib').AsString);
-                  FieldByName('Quantidade').AsString    := FDANFEClassOwner.ManterQuantidades(FieldByName('QCom').AsFloat, FieldByName('QTrib').AsFloat);
-                  FieldByName('ValorUnitario').AsString := FDANFEClassOwner.ManterValoresUnitarios(FieldByName('VUnCom').AsFloat, FieldByName('VUnTrib').AsFloat);
-                end;
+                FieldByName('Unidade').AsString       := FDANFEClassOwner.ManterUnidades(FieldByName('Ucom').AsString, FieldByName('UTrib').AsString);
+                FieldByName('Quantidade').AsString    := FDANFEClassOwner.ManterQuantidades(FieldByName('QCom').AsFloat, FieldByName('QTrib').AsFloat);
+                FieldByName('ValorUnitario').AsString := FDANFEClassOwner.ManterValoresUnitarios(FieldByName('VUnCom').AsFloat, FieldByName('VUnTrib').AsFloat);
               end;
             end;
-            FieldByName('vDesc').AsString           := FormatFloatBr( TACBrNFeDANFEClass(FDANFEClassOwner).ManterVDesc( Prod.vDesc , Prod.VUnCom , Prod.QCom),'###,###,##0.00');
-          end
-          else
-          begin
-            FieldByName('Unidade').AsString       := FieldByName('Ucom').AsString;
-            FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QCom').AsFloat );
-            FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnCom').AsFloat );
-            FieldByName('vDesc').AsString           := FormatFloatBr( Prod.vDesc,'###,###,##0.00');
           end;
-
-          FieldByName('ORIGEM').AsString            := OrigToStr( Imposto.ICMS.orig);
-          FieldByName('CST').AsString               := FDANFEClassOwner.ManterCst( FNFe.Emit.CRT , Imposto.ICMS.CSOSN , Imposto.ICMS.CST );
-          FieldByName('VBC').AsString               := FormatFloatBr( Imposto.ICMS.vBC        ,'###,###,##0.00');
-          FieldByName('PICMS').AsString             := FormatFloatBr( Imposto.ICMS.pICMS      ,'###,###,##0.00');
-          FieldByName('VICMS').AsString             := FormatFloatBr( Imposto.ICMS.vICMS      ,'###,###,##0.00');
-          FieldByName('VBCST').AsString             := FormatFloatBr( Imposto.ICMS.vBcST      ,'###,###,##0.00');
-          FieldByName('VICMSST').AsString           := FormatFloatBr( Imposto.ICMS.vICMSST    ,'###,###,##0.00');
-          FieldByName('VIPI').AsString              := FormatFloatBr( Imposto.IPI.VIPI        ,'###,###,##0.00');
-          FieldByName('PIPI').AsString              := FormatFloatBr( Imposto.IPI.PIPI        ,'###,###,##0.00');
-          FieldByName('vISSQN').AsString            := FormatFloatBr( Imposto.ISSQN.vISSQN    ,'###,###,##0.00');
-          FieldByName('vBcISSQN').AsString          := FormatFloatBr( Imposto.ISSQN.vBC       ,'###,###,##0.00');
-          FieldByName('Valorliquido').AsString      := FormatFloatBr( Prod.vProd - Prod.vDesc ,'###,###,##0.00');
-          FieldByName('ValorAcrescimos').AsString   := FormatFloatBr( Prod.vProd + Prod.vOutro,'###,###,##0.00');
-
-          Post;
+          FieldByName('vDesc').AsString           := FormatFloatBr( TACBrNFeDANFEClass(FDANFEClassOwner).ManterVDesc( Prod.vDesc , Prod.VUnCom , Prod.QCom),'###,###,##0.00');
+        end
+        else
+        begin
+          FieldByName('Unidade').AsString       := FieldByName('Ucom').AsString;
+          FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QCom').AsFloat );
+          FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnCom').AsFloat );
+          FieldByName('vDesc').AsString           := FormatFloatBr( Prod.vDesc,'###,###,##0.00');
         end;
+
+        FieldByName('ORIGEM').AsString            := OrigToStr( Imposto.ICMS.orig);
+        FieldByName('CST').AsString               := FDANFEClassOwner.ManterCst( FNFe.Emit.CRT , Imposto.ICMS.CSOSN , Imposto.ICMS.CST );
+        FieldByName('VBC').AsString               := FormatFloatBr( Imposto.ICMS.vBC        ,'###,###,##0.00');
+        FieldByName('PICMS').AsString             := FormatFloatBr( Imposto.ICMS.pICMS      ,'###,###,##0.00');
+        FieldByName('VICMS').AsString             := FormatFloatBr( Imposto.ICMS.vICMS      ,'###,###,##0.00');
+        FieldByName('VBCST').AsString             := FormatFloatBr( Imposto.ICMS.vBcST      ,'###,###,##0.00');
+        FieldByName('pMVAST').AsString            := FormatFloatBr( Imposto.ICMS.pMVAST     ,'###,###,##0.00');
+        FieldByName('pICMSST').AsString           := FormatFloatBr( Imposto.ICMS.pICMSST    ,'###,###,##0.00');
+        FieldByName('VICMSST').AsString           := FormatFloatBr( Imposto.ICMS.vICMSST    ,'###,###,##0.00');
+        FieldByName('VIPI').AsString              := FormatFloatBr( Imposto.IPI.VIPI        ,'###,###,##0.00');
+        FieldByName('PIPI').AsString              := FormatFloatBr( Imposto.IPI.PIPI        ,'###,###,##0.00');
+        FieldByName('vISSQN').AsString            := FormatFloatBr( Imposto.ISSQN.vISSQN    ,'###,###,##0.00');
+        FieldByName('vBcISSQN').AsString          := FormatFloatBr( Imposto.ISSQN.vBC       ,'###,###,##0.00');
+        FieldByName('Valorliquido').AsString      := FormatFloatBr( Prod.vProd - Prod.vDesc ,'###,###,##0.00');
+        FieldByName('ValorAcrescimos').AsString   := FormatFloatBr( Prod.vProd + Prod.vOutro,'###,###,##0.00');
+
+        Post;
       end;
     end;
   end;
@@ -1182,7 +1205,7 @@ begin
 
     with FNFe.Emit do
     begin
-      FieldByName('CNPJ').AsString  := FormatarCNPJ(CNPJCPF);
+      FieldByName('CNPJ').AsString  := FormatarCNPJouCPF(CNPJCPF);
       FieldByName('XNome').AsString := DANFEClassOwner.ManterNomeImpresso( XNome , XFant );
       FieldByName('XFant').AsString := XFant;
       with EnderEmit do
@@ -1472,6 +1495,11 @@ begin
         FieldByName('CMun').AsString    := inttostr(CMun);
         FieldByName('XMun').AsString    := CollateBr(XMun);
         FieldByName('UF').AsString      := UF;
+        FieldByName('XNome').AsString   := xNome;
+        FieldByName('CEP').AsString     := FormatarCEP(CEP);
+        FieldByName('XPais').AsString   := XPais;
+        FieldByName('Fone').AsString    := FormatarFone(Fone);
+        FieldByName('IE').AsString      := IE;
       end;
       Post;
     end;
@@ -1500,6 +1528,11 @@ begin
         FieldByName('CMun').AsString    := inttostr(CMun);
         FieldByName('XMun').AsString    := CollateBr(XMun);
         FieldByName('UF').AsString      := UF;
+        FieldByName('XPais').AsString   := XPais;
+        FieldByName('XNome').AsString   := xNome;
+        FieldByName('CEP').AsString     := FormatarCEP(CEP);
+        FieldByName('Fone').AsString    := FormatarFone(Fone);
+        FieldByName('IE').AsString      := IE;
       end;
       Post;
     end;
@@ -1731,7 +1764,7 @@ begin
 
     with FNFe.Transp do
     begin
-      FieldByName('ModFrete').AsString := modFreteToDesStr( modFrete, StrToVersaoDF(ok, FNFe.infNFe.VersaoStr));
+      FieldByName('ModFrete').AsString := modFreteToDesStr( modFrete, DblToVersaoDF(ok, FNFe.infNFe.Versao));
       with Transporta do
       begin
         FieldByName('CNPJCPF').AsString := FormatarCNPJouCPF(CNPJCPF);
@@ -1867,7 +1900,7 @@ begin
           CondicoesUso := StringReplace(CondicoesUso, 'com: I', 'com:'+#13+' I', [rfReplaceAll]);
           CondicoesUso := StringReplace(CondicoesUso, ';', ';' + #13, [rfReplaceAll]);
 
-          Correcao := InfEvento.detEvento.xCorrecao;
+//          Correcao := InfEvento.detEvento.xCorrecao;
           Correcao := StringReplace(InfEvento.detEvento.xCorrecao, ';', #13, [rfReplaceAll]);
 
           FieldByName('xCondUso').AsString  := CondicoesUso;
@@ -1935,7 +1968,7 @@ begin
    end;
 end;
 
-procedure TACBrNFeFRClass.PintarQRCode(QRCodeData: String; APict: TPicture);
+procedure TACBrNFeFRClass.PintarQRCode(const QRCodeData: String; APict: TPicture);
 var
   QRCode: TDelphiZXingQRCode;
   QRCodeBitmap: TBitmap;

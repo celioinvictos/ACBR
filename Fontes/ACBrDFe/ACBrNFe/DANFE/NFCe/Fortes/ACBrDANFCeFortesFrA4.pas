@@ -264,7 +264,7 @@ type
     FFiltro: TACBrNFeDANFCeFortesA4Filtro;
     FResumido: Boolean;
     function CompoemEnderecoCFe: String ;
-    procedure PintarQRCode(QRCodeData: String; APict: TPicture);
+    procedure PintarQRCode(const QRCodeData: String; APict: TPicture);
   protected
     property Filtro   : TACBrNFeDANFCeFortesA4Filtro read FFiltro write FFiltro default fiNenhum ;
     property Resumido : Boolean read FResumido write FResumido;
@@ -364,7 +364,7 @@ begin
     Text := self.FACBrNFeDANFCeFortesA4.Sistema ;
 end;
 
-procedure TfrmACBrDANFCeFortesFrA4.PintarQRCode(QRCodeData: String;
+procedure TfrmACBrDANFCeFortesFrA4.PintarQRCode(const QRCodeData: String;
   APict: TPicture);
 var
   QRCode: TDelphiZXingQRCode;
@@ -819,7 +819,8 @@ begin
       RLLayout := rlReportA4;
       Resumido := DanfeResumido;
 
-      RLPrinter.Copies     := NumCopias ;
+      if NumCopias > 1 then
+        RLPrinter.Copies := NumCopias;
 
       if FACBrNFeDANFCeFortesA4.Impressora <> '' then
         RLPrinter.PrinterName := FACBrNFeDANFCeFortesA4.Impressora;

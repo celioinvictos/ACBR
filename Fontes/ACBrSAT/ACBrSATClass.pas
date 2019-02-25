@@ -49,7 +49,6 @@ uses
   pcnConversao, ACBrDFeSSL;
 
 const
-  cACBrSAT_Versao      = '0.2.0' ;
   cLIBSAT              = 'SAT.DLL';
   cversaoDadosEnt      = 0.07;
   CPREFIXO_ArqCFe = 'AD';
@@ -309,7 +308,7 @@ type
 
      Property ModeloStr: String read GetModeloStr ;
 
-     function AssociarAssinatura( CNPJvalue, assinaturaCNPJs : AnsiString ):
+     function AssociarAssinatura(const CNPJvalue, assinaturaCNPJs : AnsiString ):
        String ; virtual;
      function AtivarSAT( subComando : Integer; CNPJ: AnsiString; cUF : Integer )
        : String ; virtual;
@@ -774,7 +773,7 @@ begin
   UnLoadLibrary( NomeDLL );
 end ;
 
-function TACBrSATClass.AssociarAssinatura(CNPJvalue,
+function TACBrSATClass.AssociarAssinatura(const CNPJvalue,
   assinaturaCNPJs : AnsiString) : String ;
 begin
   ErroAbstract('AssociarAssinatura');

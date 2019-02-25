@@ -536,26 +536,6 @@ type
     rlbCancelada: TRLBand;
     RLLCancelada: TRLLabel;
     RLLabel2: TRLLabel;
-    rlbEntrega: TRLBand;
-    RLDraw25: TRLDraw;
-    RLLabel4: TRLLabel;
-    RLLabel9: TRLLabel;
-    rlbEntregaCnpjCpf: TRLLabel;
-    RLLabel10: TRLLabel;
-    RLDraw26: TRLDraw;
-    rlbEntregaEndereco: TRLLabel;
-    RLLabel6: TRLLabel;
-    RLDraw27: TRLDraw;
-    rlbRetirada: TRLBand;
-    RLDraw13: TRLDraw;
-    RLLabel5: TRLLabel;
-    RLLabel3: TRLLabel;
-    rlbRetiradaCnpjCpf: TRLLabel;
-    RLLabel8: TRLLabel;
-    RLDraw14: TRLDraw;
-    rlbRetiradaEndereco: TRLLabel;
-    RLLabel7: TRLLabel;
-    RLDraw28: TRLDraw;
     subItens: TRLSubDetail;
     rlbItens: TRLBand;
     LinhaCST: TRLDraw;
@@ -598,6 +578,59 @@ type
     RLDraw63: TRLDraw;
     RLMemoInfAd: TRLMemo;
     RLDraw2: TRLDraw;
+    rlbEntrega: TRLBand;
+    RLDraw37: TRLDraw;
+    RLLabel9: TRLLabel;
+    RLLabel11: TRLLabel;
+    RLDraw27: TRLDraw;
+    RLDraw31: TRLDraw;
+    RLDraw25: TRLDraw;
+    RLDraw32: TRLDraw;
+    RLLabel4: TRLLabel;
+    RLLabel13: TRLLabel;
+    RLLabel14: TRLLabel;
+    RLDraw26: TRLDraw;
+    RLLabel22: TRLLabel;
+    RLLabel27: TRLLabel;
+    RLLabel44: TRLLabel;
+    RLLabel45: TRLLabel;
+    RLDraw40: TRLDraw;
+    RLLquadroEntregaNome: TRLLabel;
+    RLLquadroEntregaDocumento: TRLLabel;
+    RLLquadroEntregaIE: TRLLabel;
+    RLLquadroEntregaEndereco: TRLLabel;
+    RLLquadroEntregaBairro: TRLLabel;
+    RLLquadroEntregaCep: TRLLabel;
+    RLLquadroEntregaMunicipio: TRLLabel;
+    RLLquadroEntregaUF: TRLLabel;
+    RLLquadroEntregaTelefone: TRLLabel;
+    rlbRetirada: TRLBand;
+    RLDraw13: TRLDraw;
+    RLLabel3: TRLLabel;
+    RLLabel5: TRLLabel;
+    RLLabel6: TRLLabel;
+    RLDraw14: TRLDraw;
+    RLDraw28: TRLDraw;
+    RLDraw36: TRLDraw;
+    RLDraw42: TRLDraw;
+    RLLabel7: TRLLabel;
+    RLLabel8: TRLLabel;
+    RLLabel15: TRLLabel;
+    RLDraw43: TRLDraw;
+    RLLabel17: TRLLabel;
+    RLLabel46: TRLLabel;
+    RLLabel47: TRLLabel;
+    RLLabel57: TRLLabel;
+    RLDraw44: TRLDraw;
+    RLLquadroRetiradaNome: TRLLabel;
+    RLLquadroRetiradaDocumento: TRLLabel;
+    RLLquadroRetiradaIE: TRLLabel;
+    RLLquadroRetiradaEndereco: TRLLabel;
+    RLLquadroRetiradaBairro: TRLLabel;
+    RLLquadroRetiradaCEP: TRLLabel;
+    RLLquadroRetiradaMunicipio: TRLLabel;
+    RLLquadroRetiradaUF: TRLLabel;
+    RLLquadroRetiradaTelefone: TRLLabel;
 
     procedure rlbDivisaoReciboBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbReciboHeaderBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -629,7 +662,7 @@ type
     procedure DefinirEntrega;
     procedure DefinirRetirada;
     procedure DefinirCabecalhoItens;
-    function ManterBandinfAdProd(sInforAdicProduto: String): String;
+    function ManterBandinfAdProd(const sInforAdicProduto: String): String;
   end;
 
 implementation
@@ -705,11 +738,12 @@ procedure TfrlDANFeRLRetrato.InicializarDados;
 var
   i, b, h, iAlturaCanhoto, vWidthAux, vLeftAux: Integer;
   vAutoSizeAux: Boolean;
+  CarregouLogo: Boolean;
 begin
   TDFeReportFortes.AjustarMargem(RLNFe, fpDANFe);
-  TDFeReportFortes.CarregarLogo(rliLogo, fpDANFe.Logo);
+  CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDANFe.Logo);
 
-  if rliLogo.Picture.Bitmap.Empty then
+  if not CarregouLogo then
   begin
     rlmEndereco.Left := rlmEmitente.Left;
     rlmEndereco.Width := rlmEmitente.Width;
@@ -1260,7 +1294,7 @@ var
 begin
   with fpNFe.Transp do
   begin
-    rllTransModFrete.Caption := modFreteToDesStr(modFrete, StrToVersaoDF(ok, fpNFe.infNFe.VersaoStr));
+    rllTransModFrete.Caption := modFreteToDesStr(modFrete, DblToVersaoDF(ok, fpNFe.infNFe.Versao));
     with Transporta do
     begin
       rllTransCNPJ.Caption := FormatarCNPJouCPF(CNPJCPF);
@@ -1870,15 +1904,21 @@ procedure TfrlDANFeRLRetrato.DefinirEntrega;
 begin
   with fpNFe.Entrega do
   begin
-    rlbEntrega.Visible := NaoEstaVazio(xLgr);
+    rlbEntrega.Visible := NaoEstaVazio(xNome);
 
     if rlbEntrega.Visible then
     begin
-      rlbEntregaCnpjCpf.Caption := FormatarCNPJouCPF(CNPJCPF);
-      rlbEntregaEndereco.Caption := XLgr +
-        IfThen(Nro = '0', '', ', ' + Nro) +
-        IfThen(EstaVazio(xCpl), '', ' - ' + xCpl) + ' - ' +
-        xBairro + ' - ' + xMun + '-' + UF;
+      RLLquadroEntregaNome.Caption := xNome;
+      RLLquadroEntregaDocumento.Caption := FormatarCNPJouCPF(CNPJCPF);
+      RLLquadroEntregaIE.Caption := IE;
+      RLLquadroEntregaEndereco.Caption := XLgr +
+                                          IfThen(Nro = '0', '', ', ' + Nro) +
+                                          IfThen(EstaVazio(xCpl), '', ' - ' + xCpl);
+      RLLquadroEntregaBairro.Caption := xBairro;
+      RLLquadroEntregaCep.Caption := FormatarCEP(CEP);
+      RLLquadroEntregaMunicipio.Caption := xMun;
+      RLLquadroEntregaUF.Caption := UF;
+      RLLquadroEntregaTelefone.Caption := FormatarFone(Fone);
     end;
   end;
 end;
@@ -1887,15 +1927,21 @@ procedure TfrlDANFeRLRetrato.DefinirRetirada;
 begin
   with fpNFe.Retirada do
   begin
-    rlbRetirada.Visible := NaoEstaVazio(xLgr);
+    rlbRetirada.Visible := NaoEstaVazio(xNome);
 
     if rlbRetirada.Visible then
     begin
-      rlbRetiradaCnpjCpf.Caption := FormatarCNPJouCPF(CNPJCPF);
-      rlbRetiradaEndereco.Caption := XLgr +
-        IfThen(Nro = '0', '', ', ' + Nro) +
-        IfThen(EstaVazio(xCpl), '', ' - ' + xCpl) + ' - ' +
-        xBairro + ' - ' + xMun + '-' + UF;
+      RLLquadroRetiradaNome.Caption := xNome;
+      RLLquadroRetiradaDocumento.Caption := FormatarCNPJouCPF(CNPJCPF);
+      RLLquadroRetiradaIE.Caption := IE;
+      RLLquadroRetiradaEndereco.Caption := XLgr +
+                                            IfThen(Nro = '0', '', ', ' + Nro) +
+                                            IfThen(EstaVazio(xCpl), '', ' - ' + xCpl);
+      RLLquadroRetiradaBairro.Caption := xBairro;
+      RLLquadroRetiradaCEP.Caption := FormatarCEP(CEP);
+      RLLquadroRetiradaMunicipio.Caption := xMun;
+      RLLquadroRetiradaUF.Caption := UF;
+      RLLquadroRetiradaTelefone.Caption := FormatarFone(Fone);
     end;
   end;
 end;
@@ -2018,7 +2064,7 @@ begin
   end;
 end;
 
-function TfrlDANFeRLRetrato.ManterBandinfAdProd(sInforAdicProduto: String): String;
+function TfrlDANFeRLRetrato.ManterBandinfAdProd(const sInforAdicProduto: String): String;
 begin
   Result := Trim(sInforAdicProduto);
   Result := StringReplace(Result, ';', slineBreak, [rfReplaceAll]);

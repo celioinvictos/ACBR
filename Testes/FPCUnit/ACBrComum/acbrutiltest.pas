@@ -181,6 +181,8 @@ type
     procedure ComVariasChaves;
     procedure SemFecharChave;
     procedure SemAbrirChave;
+    procedure ComPrefixo;
+    procedure MostrarChaveComPrefixo;
   end;
 
   { QuebrarLinhaTest }
@@ -294,6 +296,7 @@ type
    procedure TruncarString;
    procedure SubstituirSeparadorPorEspacos;
    procedure SubstituirSeparadorPorCaracter;
+   procedure NaoRemoverEspacos;
   end;
 
   { RemoverEspacosDuplosTest }
@@ -371,6 +374,41 @@ type
   TestBitTest = class(TTestCase)
   published
     procedure TestarTodosBits;
+  end;
+
+  { TesteSetBit }
+
+  TesteSetBit = class(TTestCase)
+  private
+    AByte: Integer;
+  protected
+    procedure SetUp; override;
+  published
+    procedure LigaBitsDeZeroASete;
+    procedure LigaBitsPares;
+    procedure LigaBitsImpares;
+    procedure LigaTodosOsBitsDeUmByte;
+  end;
+
+  { TesteClearBit }
+
+  TesteClearBit = class(TTestCase)
+  private
+    AByte: Integer;
+  protected
+    procedure SetUp; override;
+  published
+    procedure DesligaBitsDeZeroASete;
+    procedure DesligaBitsPares;
+    procedure DesligaBitsImpares;
+    procedure DesligaTodosOsBitsDeUmByte;
+  end;
+
+  { TestePutBit }
+
+  TestePutBit = class(TTestCase)
+  published
+    procedure LigaEDesligaBitsDeZeroASete;
   end;
 
   { IntToBinTest }
@@ -686,6 +724,44 @@ type
     procedure TextoComCaractersEspeciais;
   end;
 
+  { StrIsHexaTest }
+
+  StrIsHexaTest = class(TTestCase)
+  published
+    procedure TextoVazio;
+    procedure TextoEmHexaMaiusculo;
+    procedure TextoEmHexaMinusculo;
+    procedure TextoEmHexaComEspacos;
+    procedure TextoNaoHexa;
+    procedure TextoComCaractersEspeciais;
+  end;
+
+  { StrIsBinaryTest }
+
+  StrIsBinaryTest = class(TTestCase)
+  published
+    procedure TextoVazio;
+    procedure TextoEmBinario;
+    procedure TextoEmBinarioComEspacos;
+    procedure TextoNaoBinario;
+    procedure TextoComCaractersEspeciais;
+  end;
+
+  { StrIsBase64Test }
+
+  StrIsBase64Test = class(TTestCase)
+  published
+    procedure TextoVazio;
+    procedure TextoEmBase64SemPad;
+    procedure TextoEmBase64ComUmPad;
+    procedure TextoEmBase64ComDoisPads;
+    procedure TextoEmBase64TamanhoErrado;
+    procedure TextoEmBase64ComExcessoDePad;
+    procedure TextoEmBase64ComEspacos;
+    procedure TextoNaoBase64;
+    procedure TextoComCaractersEspeciais;
+  end;
+
   { CharIsAlphaTest }
 
   CharIsAlphaTest = class(TTestCase)
@@ -862,6 +938,7 @@ type
   published
     procedure Normal;
     procedure ComLetras;
+    procedure ComValoresInvalidos;
   end;
 
   { StrCryptTest }
@@ -988,6 +1065,278 @@ uses
   Math, dateutils,
   synacode,
   ACBrUtil, ACBrCompress, ACBrConsts;
+
+{ TestePutBit }
+
+procedure TestePutBit.LigaEDesligaBitsDeZeroASete;
+var
+  AByte: Integer;
+begin
+  AByte := 0;
+  PutBit(AByte, 0, True);
+  CheckEquals(AByte, 1);     // 0000 0001
+  PutBit(AByte, 1, True);
+  CheckEquals(AByte, 3);     // 0000 0011
+  PutBit(AByte, 2, True);
+  CheckEquals(AByte, 7);     // 0000 0111
+  PutBit(AByte, 3, True);
+  CheckEquals(AByte, 15);    // 0000 1111
+  PutBit(AByte, 4, True);
+  CheckEquals(AByte, 31);    // 0001 1111
+  PutBit(AByte, 5, True);
+  CheckEquals(AByte, 63);    // 0011 1111
+  PutBit(AByte, 6, True);
+  CheckEquals(AByte, 127);   // 0111 1111
+  PutBit(AByte, 7, True);
+  CheckEquals(AByte, 255);   // 1111 1111
+  PutBit(AByte, 0, False);
+  CheckEquals(AByte, 254);   // 1111 1110
+  PutBit(AByte, 1, False);
+  CheckEquals(AByte, 252);   // 1111 1100
+  PutBit(AByte, 2, False);
+  CheckEquals(AByte, 248);   // 1111 1000
+  PutBit(AByte, 3, False);
+  CheckEquals(AByte, 240);   // 1111 0000
+  PutBit(AByte, 4, False);
+  CheckEquals(AByte, 224);   // 1110 0000
+  PutBit(AByte, 5, False);
+  CheckEquals(AByte, 192);   // 1100 0000
+  PutBit(AByte, 6, False);
+  CheckEquals(AByte, 128);   // 1000 0000
+  PutBit(AByte, 7, False);
+  CheckEquals(AByte, 0);     // 0000 0000
+end;
+
+{ TesteClearBit }
+
+procedure TesteClearBit.SetUp;
+begin
+  inherited SetUp;
+  AByte := 255;
+end;
+
+procedure TesteClearBit.DesligaBitsDeZeroASete;
+begin
+  ClearBit(AByte, 0);
+  CheckEquals(AByte, 254);   // 1111 1110
+  ClearBit(AByte, 1);
+  CheckEquals(AByte, 252);   // 1111 1100
+  ClearBit(AByte, 2);
+  CheckEquals(AByte, 248);   // 1111 1000
+  ClearBit(AByte, 3);
+  CheckEquals(AByte, 240);   // 1111 0000
+  ClearBit(AByte, 4);
+  CheckEquals(AByte, 224);   // 1110 0000
+  ClearBit(AByte, 5);
+  CheckEquals(AByte, 192);   // 1100 0000
+  ClearBit(AByte, 6);
+  CheckEquals(AByte, 128);   // 1000 0000
+  ClearBit(AByte, 7);
+  CheckEquals(AByte, 0);     // 0000 0000
+end;
+
+procedure TesteClearBit.DesligaBitsPares;
+begin
+  // 1010 1010
+  ClearBit(AByte, 0);
+  ClearBit(AByte, 2);
+  ClearBit(AByte, 4);
+  ClearBit(AByte, 6);
+  CheckEquals(AByte, 170);
+end;
+
+procedure TesteClearBit.DesligaBitsImpares;
+begin
+  // 0101 0101
+  ClearBit(AByte, 1);
+  ClearBit(AByte, 3);
+  ClearBit(AByte, 5);
+  ClearBit(AByte, 7);
+  CheckEquals(AByte, 85);
+end;
+
+procedure TesteClearBit.DesligaTodosOsBitsDeUmByte;
+begin
+  // 0000 0000
+  ClearBit(AByte, 0);
+  ClearBit(AByte, 1);
+  ClearBit(AByte, 2);
+  ClearBit(AByte, 3);
+  ClearBit(AByte, 4);
+  ClearBit(AByte, 5);
+  ClearBit(AByte, 6);
+  ClearBit(AByte, 7);
+  CheckEquals(AByte, 0);
+end;
+
+{ TesteSetBit }
+
+procedure TesteSetBit.SetUp;
+begin
+  inherited SetUp;
+  AByte := 0;
+end;
+
+procedure TesteSetBit.LigaBitsDeZeroASete;
+begin
+  SetBit(AByte, 0);
+  CheckEquals(AByte, 1);    // 0000 0001
+  SetBit(AByte, 1);
+  CheckEquals(AByte, 3);    // 0000 0011
+  SetBit(AByte, 2);
+  CheckEquals(AByte, 7);    // 0000 0111
+  SetBit(AByte, 3);
+  CheckEquals(AByte, 15);   // 0000 1111
+  SetBit(AByte, 4);
+  CheckEquals(AByte, 31);   // 0001 1111
+  SetBit(AByte, 5);
+  CheckEquals(AByte, 63);   // 0011 1111
+  SetBit(AByte, 6);
+  CheckEquals(AByte, 127);  // 0111 1111
+  SetBit(AByte, 7);
+  CheckEquals(AByte, 255);  // 1111 1111
+end;
+
+procedure TesteSetBit.LigaBitsPares;
+begin
+  // 0101 0101
+  SetBit(AByte, 0);
+  SetBit(AByte, 2);
+  SetBit(AByte, 4);
+  SetBit(AByte, 6);
+  CheckEquals(AByte, 85);
+end;
+
+procedure TesteSetBit.LigaBitsImpares;
+begin
+  // 1010 1010
+  SetBit(AByte, 1);
+  SetBit(AByte, 3);
+  SetBit(AByte, 5);
+  SetBit(AByte, 7);
+  CheckEquals(AByte, 170);
+end;
+
+procedure TesteSetBit.LigaTodosOsBitsDeUmByte;
+begin
+  // 1111 1111
+  SetBit(AByte, 0);
+  SetBit(AByte, 1);
+  SetBit(AByte, 2);
+  SetBit(AByte, 3);
+  SetBit(AByte, 4);
+  SetBit(AByte, 5);
+  SetBit(AByte, 6);
+  SetBit(AByte, 7);
+  CheckEquals(AByte, 255);
+end;
+
+{ StrIsBase64Test }
+
+procedure StrIsBase64Test.TextoVazio;
+begin
+  CheckFalse(StrIsBase64(''));
+end;
+
+procedure StrIsBase64Test.TextoEmBase64SemPad;
+begin
+  CheckTrue(StrIsBase64('UHJvamV0byBBQ0Jy'));
+end;
+
+procedure StrIsBase64Test.TextoEmBase64ComUmPad;
+begin
+  CheckTrue(StrIsBase64('UHJvamV0b0FDQnI='));
+end;
+
+procedure StrIsBase64Test.TextoEmBase64ComDoisPads;
+begin
+  CheckTrue(StrIsBase64('UHJvamV0b0FDQg=='));
+end;
+
+procedure StrIsBase64Test.TextoEmBase64TamanhoErrado;
+begin
+  CheckFalse(StrIsBase64('UHJvamV0byBBQ0J'));
+  CheckFalse(StrIsBase64('UHJvamV0byBBQ0Jy='));
+end;
+
+procedure StrIsBase64Test.TextoEmBase64ComExcessoDePad;
+begin
+  CheckFalse(StrIsBase64('UHJvamV0b0FDQ==='));
+end;
+
+procedure StrIsBase64Test.TextoEmBase64ComEspacos;
+begin
+  CheckFalse(StrIsBase64('UHJv amV0 byBB Q0Jy'));
+end;
+
+procedure StrIsBase64Test.TextoNaoBase64;
+begin
+  CheckFalse(StrIsBase64('Projeto ACBr'));
+end;
+
+procedure StrIsBase64Test.TextoComCaractersEspeciais;
+begin
+  CheckFalse(StrIsBase64('Projeto@ACBR#123.90'));
+end;
+
+{ StrIsBinaryTest }
+
+procedure StrIsBinaryTest.TextoVazio;
+begin
+  CheckTrue(StrIsBinary(''));
+end;
+
+procedure StrIsBinaryTest.TextoEmBinario;
+begin
+  CheckTrue(StrIsBinary('0001110111110000'));
+end;
+
+procedure StrIsBinaryTest.TextoEmBinarioComEspacos;
+begin
+  CheckFalse(StrIsBinary('00011 1011 1110 000'));
+end;
+
+procedure StrIsBinaryTest.TextoNaoBinario;
+begin
+  CheckFalse(StrIsBinary('ProjetoACBR'));
+end;
+
+procedure StrIsBinaryTest.TextoComCaractersEspeciais;
+begin
+  CheckFalse(StrIsBinary('Projeto@ACBR#123.90'));
+end;
+
+{ StrIsHexaTest }
+
+procedure StrIsHexaTest.TextoVazio;
+begin
+  CheckTrue(StrIsHexa(''));
+end;
+
+procedure StrIsHexaTest.TextoEmHexaMaiusculo;
+begin
+  CheckTrue(StrIsHexa('1234567890ABCDEF'));
+end;
+
+procedure StrIsHexaTest.TextoEmHexaMinusculo;
+begin
+  CheckTrue(StrIsHexa('1234567890abcdef'));
+end;
+
+procedure StrIsHexaTest.TextoEmHexaComEspacos;
+begin
+  CheckFalse(StrIsHexa('0A 12 13 A6 DF FF'));
+end;
+
+procedure StrIsHexaTest.TextoNaoHexa;
+begin
+  CheckFalse(StrIsHexa('ProjetoACBR'));
+end;
+
+procedure StrIsHexaTest.TextoComCaractersEspeciais;
+begin
+  CheckFalse(StrIsHexa('Projeto@ACBR#123.90'));
+end;
 
 { ChangeLineBreakTest }
 
@@ -1910,6 +2259,14 @@ var
 begin
   Resp := AscToString('#13,A,#10,1,#255,B,#65,9,A,C,B,r,#150');
   CheckEquals( #13+'A'+#10+'1'+#255+'BA'+'9ACBr'+#150,  Resp );
+end;
+
+procedure AscToStringTest.ComValoresInvalidos;
+var
+  Resp: String;
+begin
+  Resp := AscToString('#13,A,#10,1,#255,B,#65,9,A,C,B,r,#150,#DN');
+  CheckEquals( #13+'A'+#10+'1'+#255+'BA'+'9ACBr'+#150+'#DN',  Resp );
 end;
 
 { StringToAscTest }
@@ -3915,6 +4272,11 @@ begin
   CheckEquals('   Teste   Unitario   ACBr    ', PadSpace('|Teste|Unitario|ACBr|', 30, '|'));
 end;
 
+procedure padSpaceTest.NaoRemoverEspacos;
+begin
+  CheckEquals('      190,25      KG', PadSpace('      190,25|KG', 20, '|', ' ', False));
+end;
+
 procedure padSpaceTest.SubstituirSeparadorPorCaracter;
 begin
   CheckEquals('ZTesteZUnitarioZACBrZ', PadSpace('|Teste|Unitario|ACBr|', 21, '|', 'Z'));
@@ -4020,6 +4382,22 @@ begin
   CheckEquals('<ACBr>TesteSimples</ACBr>', SeparaDados('<ACBr>TesteSimples</ACBr>', 'ACBr', true));
   CheckEquals('<b>ACBr Util</b>', SeparaDados('<ACBrUtil>Teste com texto longo <b>ACBr Util</b> feito por DJSystem', 'b', true));
   CheckEquals('<u>#ACBrUtil</u>', SeparaDados('<ACBrUtil>Teste com texto longo <u>#ACBrUtil</u> feito por DJSystem', 'u', true));
+end;
+
+procedure SepararDadosTest.MostrarChaveComPrefixo;
+const
+  TEXTO = '<ns0:ACBr>Teste<ns0:ACBrTeste>Projeto ACBr</ns0:ACBrTeste></ns0:ACBr>';
+begin
+  CheckEquals('<ns0:ACBrTeste>Projeto ACBr</ns0:ACBrTeste>', SeparaDados(TEXTO, 'ACBrTeste', True));
+  CheckEquals('', SeparaDados(TEXTO, 'ACBrTeste', False, False));
+end;
+
+procedure SepararDadosTest.ComPrefixo;
+const
+  TEXTO = '<ns0:ACBr>Teste<ns0:ACBrTeste>Projeto ACBr</ns0:ACBrTeste></ns0:ACBr>';
+begin
+  CheckEquals('Projeto ACBr', SeparaDados(TEXTO, 'ACBrTeste'));
+  CheckEquals('', SeparaDados(TEXTO, 'ACBrTeste', False, False));
 end;
 
 procedure SepararDadosTest.ComVariasChaves;
@@ -4396,6 +4774,9 @@ initialization
   RegisterTest('ACBrComum.ACBrUtil', RoundABNTTest{$ifndef FPC}.Suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', CompareVersionsTest{$ifndef FPC}.Suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', TestBitTest{$ifndef FPC}.Suite{$endif});
+  RegisterTest('ACBrComum.ACBrUtil', TesteSetBit{$ifndef FPC}.Suite{$endif});
+  RegisterTest('ACBrComum.ACBrUtil', TesteClearBit{$ifndef FPC}.Suite{$endif});
+  RegisterTest('ACBrComum.ACBrUtil', TestePutBit{$ifndef FPC}.Suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', IntToBinTest{$ifndef FPC}.Suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', BinToIntTest{$ifndef FPC}.Suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', BcdToAscTest{$ifndef FPC}.Suite{$endif});
@@ -4438,6 +4819,9 @@ initialization
   RegisterTest('ACBrComum.ACBrUtil', StrIsAlphaTest{$ifndef FPC}.suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', StrIsAlphaNumTest{$ifndef FPC}.suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', StrIsNumberTest{$ifndef FPC}.suite{$endif});
+  RegisterTest('ACBrComum.ACBrUtil', StrIsHexaTest{$ifndef FPC}.suite{$endif});
+  RegisterTest('ACBrComum.ACBrUtil', StrIsBinaryTest{$ifndef FPC}.suite{$endif});
+  RegisterTest('ACBrComum.ACBrUtil', StrIsBase64Test{$ifndef FPC}.suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', CharIsAlphaTest{$ifndef FPC}.suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', CharIsAlphaNumTest{$ifndef FPC}.suite{$endif});
   RegisterTest('ACBrComum.ACBrUtil', CharIsNumTest{$ifndef FPC}.suite{$endif});

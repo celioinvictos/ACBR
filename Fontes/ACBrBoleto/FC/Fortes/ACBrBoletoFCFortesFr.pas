@@ -51,9 +51,6 @@ uses
   {$ENDIF}
   ACBrBoleto, RLRichText ;
 
-const
-  CACBrBoletoFCFortes_Versao = '0.0.32a' ;
-
 type
 
   { TACBrBoletoFCFortesFr }
@@ -900,8 +897,6 @@ end;
 constructor TACBrBoletoFCFortes.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-
-  fpAbout := 'ACBRBoletoFCFortes ver: '+CACBrBoletoFCFortes_Versao;
 end;
 
 procedure TACBrBoletoFCFortes.Imprimir;
@@ -925,7 +920,9 @@ begin
            RLLayout:= LayoutBoleto;
         end;
 
-        RLPrinter.Copies      := NumCopias ;
+       if NumCopias > 1 then
+         RLPrinter.Copies := NumCopias ;
+
         RLLayout.PrintDialog  := MostrarSetup;
         RLLayout.ShowProgress := MostrarProgresso;
         RLLayout.Title        := TituloRelatorio;

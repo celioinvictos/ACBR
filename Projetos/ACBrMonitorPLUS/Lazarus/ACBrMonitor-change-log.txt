@@ -43,6 +43,54 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+08/02/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado parâmetros "ExibeTotalTributosItem" e "ImprimeTributos" para impressão de NFCe
+
+30/01/2019
+[+] DoACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit
+Adicionado parâmetro "ReplayTo" nos Métodos de Envio de e-mail de DFe
+
+30/01/2019
+[+] DoPosPrinterUnit
+Adicionado Métodos do componente PosPrinter para Impressão de Imagem BMP e
+Gravar Logo na memória da Impressora
+'imprimirimagemarquivo','imprimirlogo','gravarlogoarquivo','apagarlogo'
+
+29/01/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado propriedade "FonteLinhaItem" para impressão NFCe
+(permite definir tipo de Fonte, tamanho e estilo para os itens na NFCe)
+
+28/01/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado propriedade "DescricaoPagamentos" para impressão NFCe
+(permite a seleção para impressão do tipo de impressão pagamento: Tipo, Bandeira, Autorizacao)
+
+24/01/2019
+[*] ACBrMonitor1, DoSedexUnit, ACBrSedex
+Ajustes para consulta e Rastreio Sedex via WebService
+
+24/01/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado configurações para informar Responsável Técnico nos XML DFe
+
+23/01/2019
+[*] DoACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit, pcnAuxiliar
+Alterado metodos que realizam validação do CNPJ, para validar também se for CPF.
+
+18/01/2019
+[+] DoACBrMDFeUnit, ACBrMonitorConsts
+Adicionado Metodos DistribuicaoDFe para o MDFe no ACBrMonitor.
+
+17/01/2019
+[*] ACBrMonitor1
+Ajustes de tela
+
+17/01/2019
+[*] ACBrMonitor1, DoACBrNFeUnit, DoACBrCTeUnit
+Ajustes nas classes do Monitor referente Refactory realizado nas classes de unificação do DFe
+
 09/01/2019
 [*] ACBrMonitor1
 Ajustes na propriedade da NFe "Exibir Inf Adic. Produto" na impressão.

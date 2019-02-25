@@ -53,9 +53,6 @@ uses
   ACBrEPCBloco_F_Class, ACBrEPCBloco_M_Class, ACBrEPCBloco_P_Class,
   ACBrEPCBloco_C_Events, ACBrEPCBloco_I_Class;
 
-const
-  CACBrSpedPisCofins_Versao = '1.02';
-
 type
   { TACBrSPEDPisCofins }
 	{$IFDEF RTL230_UP}
@@ -90,7 +87,6 @@ type
     FBloco_M: TBloco_M;
     FBloco_P: TBloco_P;
 
-    function GetAbout: String;
     function GetConteudo: TStringList;
     function GetDelimitador: String;
     function GetLinhasBuffer: Integer;
@@ -183,7 +179,6 @@ type
     property Bloco_M: TBloco_M read FBloco_M write FBloco_M;
     property Bloco_P: TBloco_P read FBloco_P write FBloco_P;
   published
-    property About: String read GetAbout stored False;
     property Path: String read FPath write SetPath;
     property Arquivo: String read FArquivo write SetArquivo;
     property LinhasBuffer : Integer read GetLinhasBuffer write SetLinhasBuffer
@@ -296,11 +291,6 @@ begin
 
   // Define valores iniciais as propriedades no create e após limpar os registros.
   IniciaDados;
-end;
-
-function TACBrSPEDPisCofins.GetAbout: String;
-begin
-   Result := 'ACBrSpedFiscal Ver: ' + CACBrSpedPisCofins_Versao;
 end;
 
 function TACBrSPEDPisCofins.GetConteudo: TStringList;
@@ -953,6 +943,14 @@ begin
             begin
                REG_BLC := '1020';
                QTD_REG_BLC := Bloco_1.Registro1020Count;
+            end;
+         end;
+         if Bloco_1.Registro1050Count > 0 then
+         begin
+            with New do
+            begin
+               REG_BLC := '1050';
+               QTD_REG_BLC := Bloco_1.Registro1050Count;
             end;
          end;
          if Bloco_1.Registro1100Count > 0 then
@@ -1896,6 +1894,14 @@ begin
                QTD_REG_BLC := Bloco_F.RegistroF550Count;
             end;
          end;
+         if Bloco_F.RegistroF559Count > 0 then
+         begin
+            with New do
+            begin
+               REG_BLC := 'F559';
+               QTD_REG_BLC := Bloco_F.RegistroF559Count;
+            end;
+         end;
          if Bloco_F.RegistroF560Count > 0 then
          begin
             with New do
@@ -2100,6 +2106,14 @@ begin
                QTD_REG_BLC := Bloco_M.RegistroM211Count;
             end;
          end;
+         if Bloco_M.RegistroM215Count > 0 then
+         begin
+            with New do
+            begin
+               REG_BLC := 'M215';
+               QTD_REG_BLC := Bloco_M.RegistroM215Count;
+            end;
+         end;
          if Bloco_M.RegistroM220Count > 0 then
          begin
             with New do
@@ -2218,6 +2232,14 @@ begin
             begin
                REG_BLC := 'M611';
                QTD_REG_BLC := Bloco_M.RegistroM611Count;
+            end;
+         end;
+         if Bloco_M.RegistroM615Count > 0 then
+         begin
+            with New do
+            begin
+               REG_BLC := 'M615';
+               QTD_REG_BLC := Bloco_M.RegistroM615Count;
             end;
          end;
          if Bloco_M.RegistroM620Count > 0 then

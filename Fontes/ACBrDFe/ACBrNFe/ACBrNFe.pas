@@ -46,11 +46,10 @@ uses
   ACBrNFeConfiguracoes, ACBrNFeWebServices, ACBrNFeNotasFiscais,
   ACBrDFeDANFeReport,
   pcnNFe, pcnConversao, pcnConversaoNFe,
-  pcnEnvEventoNFe, pcnInutNFe, pcnRetDistDFeInt,
+  pcnEnvEventoNFe, pcnInutNFe, 
   ACBrUtil;
 
 const
-  ACBRNFE_VERSAO = '2.0.0a';
   ACBRNFE_NAMESPACE = 'http://www.portalfiscal.inf.br/nfe';
   CErroAmbienteDiferente = 'Ambiente do XML (tpAmb) é diferente do '+
      'configurado no Componente (Configuracoes.WebServices.Ambiente)';
@@ -81,12 +80,11 @@ type
     FCartaCorrecao: TCartaCorrecao;
     FEventoNFe: TEventoNFe;
     FInutNFe: TInutNFe;
-    FRetDistDFeInt: TRetDistDFeInt;
     FStatus: TStatusACBrNFe;
     FWebServices: TWebServices;
 
     function GetConfiguracoes: TConfiguracoesNFe;
-    function Distribuicao(AcUFAutor: integer; ACNPJCPF, AultNSU, ANSU,
+    function Distribuicao(AcUFAutor: integer; const ACNPJCPF, AultNSU, ANSU,
       chNFe: String): Boolean;
 
     procedure SetConfiguracoes(AValue: TConfiguracoesNFe);
@@ -95,7 +93,6 @@ type
     function CreateConfiguracoes: TConfiguracoes; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
-    function GetAbout: String; override;
     function NomeServicoToNomeSchema(const NomeServico: String): String; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -117,10 +114,10 @@ type
     function CstatProcessado(AValue: integer): Boolean;
     function CstatCancelada(AValue: integer): Boolean;
 
-    function Enviar(ALote: String; Imprimir: Boolean = True;
+    function Enviar(const ALote: String; Imprimir: Boolean = True;
       Sincrono: Boolean = False; Zipado: Boolean = False): Boolean; overload;
-    function Cancelamento(AJustificativa: String; ALote: integer = 0): Boolean;
-    function Consultar( AChave: String = ''): Boolean;
+    function Cancelamento(const AJustificativa: String; ALote: integer = 0): Boolean;
+    function Consultar( const AChave: String = ''): Boolean;
     function EnviarCartaCorrecao(idLote: integer): Boolean;
     function EnviarEvento(idLote: integer): Boolean;
 
@@ -148,7 +145,6 @@ type
     property CartaCorrecao: TCartaCorrecao read FCartaCorrecao write FCartaCorrecao;
     property EventoNFe: TEventoNFe read FEventoNFe write FEventoNFe;
     property InutNFe: TInutNFe read FInutNFe write FInutNFe;
-    property RetDistDFeInt: TRetDistDFeInt read FRetDistDFeInt write FRetDistDFeInt;
     property Status: TStatusACBrNFe read FStatus;
 
     procedure SetStatus(const stNewStatus: TStatusACBrNFe);
@@ -157,20 +153,20 @@ type
     procedure ImprimirInutilizacao;
     procedure ImprimirInutilizacaoPDF;
 
-    function AdministrarCSC(ARaizCNPJ: String; AIndOP: TpcnIndOperacao;
-      AIdCSC: integer; ACodigoCSC: String): Boolean;
-    function DistribuicaoDFe(AcUFAutor: integer; ACNPJCPF, AultNSU,
-      ANSU: String; AchNFe: String = ''): Boolean;
-    function DistribuicaoDFePorUltNSU(AcUFAutor: integer; ACNPJCPF,
+    function AdministrarCSC(const ARaizCNPJ: String; AIndOP: TpcnIndOperacao;
+      AIdCSC: integer; const ACodigoCSC: String): Boolean;
+    function DistribuicaoDFe(AcUFAutor: integer; const ACNPJCPF, AultNSU,
+      ANSU: String; const AchNFe: String = ''): Boolean;
+    function DistribuicaoDFePorUltNSU(AcUFAutor: integer; const ACNPJCPF,
       AultNSU: String): Boolean;
-    function DistribuicaoDFePorNSU(AcUFAutor: integer; ACNPJCPF,
+    function DistribuicaoDFePorNSU(AcUFAutor: integer; const ACNPJCPF,
       ANSU: String): Boolean;
-    function DistribuicaoDFePorChaveNFe(AcUFAutor: integer; ACNPJCPF,
+    function DistribuicaoDFePorChaveNFe(AcUFAutor: integer; const ACNPJCPF,
       AchNFe: String): Boolean;
-    function Inutilizar(ACNPJ, AJustificativa: String;
+    function Inutilizar(const ACNPJ, AJustificativa: String;
       AAno, ASerie, ANumInicial, ANumFinal: Integer): Boolean;
 
-    procedure EnviarEmailEvento(sPara, sAssunto: String;
+    procedure EnviarEmailEvento(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
       sReplyTo: TStrings = nil);
 
@@ -206,7 +202,6 @@ begin
   FCartaCorrecao := TCartaCorrecao.Create; //(Self);
   FEventoNFe := TEventoNFe.Create;
   FInutNFe := TInutNFe.Create;
-  FRetDistDFeInt := TRetDistDFeInt.Create;
   FWebServices := TWebServices.Create(Self);
 end;
 
@@ -216,7 +211,6 @@ begin
   FCartaCorrecao.Free;
   FEventoNFe.Free;
   FInutNFe.Free;
-  FRetDistDFeInt.Free;
   FWebServices.Free;
 
   inherited;
@@ -243,11 +237,6 @@ begin
   if (Operation = opRemove) and (FDANFE <> nil) and
     (AComponent is TACBrDFeDANFeReport) then
     FDANFE := nil;
-end;
-
-function TACBrNFe.GetAbout: String;
-begin
-  Result := 'ACBrNFe Ver: ' + ACBRNFE_VERSAO;
 end;
 
 function TACBrNFe.CreateConfiguracoes: TConfiguracoes;
@@ -624,7 +613,7 @@ begin
   end;
 end;
 
-function TACBrNFe.Cancelamento(AJustificativa: String; ALote: integer = 0): Boolean;
+function TACBrNFe.Cancelamento(const AJustificativa: String; ALote: integer = 0): Boolean;
 var
   i: integer;
 begin
@@ -659,7 +648,7 @@ begin
   Result := True;
 end;
 
-function TACBrNFe.Consultar(AChave: String): Boolean;
+function TACBrNFe.Consultar(const AChave: String): Boolean;
 var
   i: integer;
 begin
@@ -690,7 +679,7 @@ begin
   Result := Enviar(IntToStr(ALote), Imprimir, Sincrono, Zipado);
 end;
 
-function TACBrNFe.Enviar(ALote: String; Imprimir: Boolean; Sincrono: Boolean;
+function TACBrNFe.Enviar(const ALote: String; Imprimir: Boolean; Sincrono: Boolean;
   Zipado: Boolean): Boolean;
 var
   i: integer;
@@ -874,8 +863,8 @@ begin
     DANFE.ImprimirINUTILIZACAOPDF(nil);
 end;
 
-function TACBrNFe.AdministrarCSC(ARaizCNPJ: String; AIndOP: TpcnIndOperacao;
-  AIdCSC: integer; ACodigoCSC: String): Boolean;
+function TACBrNFe.AdministrarCSC(const ARaizCNPJ: String; AIndOP: TpcnIndOperacao;
+  AIdCSC: integer; const ACodigoCSC: String): Boolean;
 begin
   WebServices.AdministrarCSCNFCe.RaizCNPJ := ARaizCNPJ;
   WebServices.AdministrarCSCNFCe.indOP := AIndOP;
@@ -888,14 +877,14 @@ begin
     GerarException( WebServices.AdministrarCSCNFCe.Msg );
 end;
 
-function TACBrNFe.Distribuicao(AcUFAutor: integer; ACNPJCPF, AultNSU, ANSU,
+function TACBrNFe.Distribuicao(AcUFAutor: integer; const ACNPJCPF, AultNSU, ANSU,
   chNFe: String): Boolean;
 begin
   WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
-  WebServices.DistribuicaoDFe.CNPJCPF := ACNPJCPF;
-  WebServices.DistribuicaoDFe.ultNSU := AultNSU;
-  WebServices.DistribuicaoDFe.NSU := ANSU;
-  WebServices.DistribuicaoDFe.chNFe := chNFe;
+  WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+  WebServices.DistribuicaoDFe.ultNSU   := AultNSU;
+  WebServices.DistribuicaoDFe.NSU      := ANSU;
+  WebServices.DistribuicaoDFe.chNFe    := chNFe;
 
   Result := WebServices.DistribuicaoDFe.Executar;
 
@@ -904,30 +893,30 @@ begin
 end;
 
 function TACBrNFe.DistribuicaoDFe(AcUFAutor: integer;
-  ACNPJCPF, AultNSU, ANSU: String; AchNFe: String = ''): Boolean;
+  const ACNPJCPF, AultNSU, ANSU: String; const AchNFe: String = ''): Boolean;
 begin
   Result := Distribuicao(AcUFAutor, ACNPJCPF, AultNSU, ANSU, AchNFe);
 end;
 
-function TACBrNFe.DistribuicaoDFePorUltNSU(AcUFAutor: integer; ACNPJCPF,
+function TACBrNFe.DistribuicaoDFePorUltNSU(AcUFAutor: integer; const ACNPJCPF,
   AultNSU: String): Boolean;
 begin
   Result := Distribuicao(AcUFAutor, ACNPJCPF, AultNSU, '', '');
 end;
 
-function TACBrNFe.DistribuicaoDFePorNSU(AcUFAutor: integer; ACNPJCPF,
+function TACBrNFe.DistribuicaoDFePorNSU(AcUFAutor: integer; const ACNPJCPF,
   ANSU: String): Boolean;
 begin
   Result := Distribuicao(AcUFAutor, ACNPJCPF, '', ANSU, '');
 end;
 
-function TACBrNFe.DistribuicaoDFePorChaveNFe(AcUFAutor: integer; ACNPJCPF,
+function TACBrNFe.DistribuicaoDFePorChaveNFe(AcUFAutor: integer; const ACNPJCPF,
   AchNFe: String): Boolean;
 begin
   Result := Distribuicao(AcUFAutor, ACNPJCPF, '', '', AchNFe);
 end;
 
-function TACBrNFe.Inutilizar(ACNPJ, AJustificativa: String; AAno, ASerie,
+function TACBrNFe.Inutilizar(const ACNPJ, AJustificativa: String; AAno, ASerie,
   ANumInicial, ANumFinal: Integer): Boolean;
 begin
   Result := True;
@@ -936,7 +925,7 @@ begin
                         ASerie, ANumInicial, ANumFinal);
 end;
 
-procedure TACBrNFe.EnviarEmailEvento(sPara, sAssunto: String;
+procedure TACBrNFe.EnviarEmailEvento(const sPara, sAssunto: String;
   sMensagem: TStrings; sCC: TStrings; Anexos: TStrings;
   sReplyTo: TStrings);
 var

@@ -52,6 +52,14 @@ type
   { TACBrEscPosEpson }
 
   TACBrEscPosEpson = class(TACBrPosPrinterClass)
+  protected
+    procedure VerificarKeyCodes; virtual;
+    function AjustarKeyCodeUnico(AKeyCode: Byte): Byte;
+    function ComandoImprimirImagemColumnStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString;
+
+    function ComandoGravarLogoColumnStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer; KeyCode: Byte): AnsiString;
   public
     constructor Create(AOwner: TACBrPosPrinter);
 
@@ -62,12 +70,19 @@ type
     function ComandoQrCode(const ACodigo: AnsiString): AnsiString; override;
     function ComandoPaginaCodigo(APagCodigo: TACBrPosPaginaCodigo): AnsiString;
       override;
-    function ComandoLogo: AnsiString; override;
     function ComandoGaveta(NumGaveta: Integer = 1): AnsiString; override;
     function ComandoConfiguraModoPagina: AnsiString; override;
 
     procedure LerStatus(var AStatus: TACBrPosPrinterStatus); override;
     function LerInfo: String; override;
+
+    function ComandoImprimirImagemRasterStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString; override;
+
+    function ComandoLogo: AnsiString; override;
+    function ComandoGravarLogoRasterStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString; override;
+    function ComandoApagarLogo: AnsiString; override;
   end;
 
   function ComandoCodBarrasEscPosEpson(const ATag: String; ACodigo: AnsiString;
@@ -75,12 +90,11 @@ type
   function ComandoCodBarrasEscPosNo128ABC(const ATag: String; const ACodigo: AnsiString;
     const AMostrarCodigo: Boolean; const AAltura, ALarguraLinha: Integer): AnsiString;
 
-
 implementation
 
 uses
   strutils, math,
-  ACBrConsts, ACBrUtil;
+  ACBrUtil, ACBrImage, ACBrConsts;
 
 function ComandoCodBarrasEscPosEpson(const ATag: String; ACodigo: AnsiString;
   const AMostrarCodigo: Boolean; const AAltura, ALarguraLinha: Integer): AnsiString;
@@ -196,8 +210,92 @@ begin
   end;
 end;
 
-
 { TACBrEscPosEpson }
+
+function TACBrEscPosEpson.AjustarKeyCodeUnico(AKeyCode: Byte): Byte;
+begin
+  if (AKeyCode >= 48) and (AKeyCode <= 57) then  // '0'..'9'
+    Result := StrToInt( chr(AKeyCode) )
+  else
+    Result := AKeyCode;
+end;
+
+procedure TACBrEscPosEpson.VerificarKeyCodes;
+  procedure VerificarKeyCode(AkeyCode: Integer; NomeKeyCode: String);
+  begin
+    if (AKeyCode < 32) or (AkeyCode > 126) then
+      raise EPosPrinterException.Create(NomeKeyCode+' deve estar entre 32 a 126');
+  end;
+begin
+  with fpPosPrinter.ConfigLogo do
+  begin
+    VerificarKeyCode(KeyCode1, 'KeyCode1');
+    VerificarKeyCode(KeyCode2, 'KeyCode2');
+  end;
+end;
+
+//https://bitbucket.org/bernd_summerswell/delphi_escpos_bitmap/overview
+function TACBrEscPosEpson.ComandoImprimirImagemColumnStr(
+  const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer): AnsiString;
+var
+  Slices: TStrings;
+  i: Integer;
+begin
+  Result := ComandoEspacoEntreLinhas(24);  // 24 dots
+
+  Slices := TStringList.Create;
+  try
+    RasterStrToColumnStr(RasterStr, AWidth, Slices, 3);
+
+    For i := 0 to Slices.Count-1 do
+    begin
+        Result := Result + ESC +
+                           '*' + // Bit image mode
+                           #33 + // 24-dot double density
+                           IntToLEStr(AWidth) +
+                           Slices[i] +
+                           LF;
+    end;
+  finally
+    Slices.Free;
+  end;
+
+  Result := Result + ComandoEspacoEntreLinhas( fpPosPrinter.EspacoEntreLinhas );
+end;
+
+function TACBrEscPosEpson.ComandoGravarLogoColumnStr(
+  const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer; KeyCode: Byte
+  ): AnsiString;
+var
+  SLColumnStr: TStrings;
+  HeightInBytes, LenBuffer, LenSLineBreak, LenK: Integer;
+  Buffer: AnsiString;
+begin
+  if KeyCode <> 1 then
+    raise EPosPrinterException.Create(ACBrStr('ACBrPosPrinter gravando Logo em modo Legado (FS q), somente aceita a posição "1"'));
+
+  SLColumnStr := TStringList.Create;
+  try
+    RasterStrToColumnStr(RasterStr, AWidth, SLColumnStr, 0);
+    Buffer := SLColumnStr.Text;
+    LenSLineBreak := Length(sLineBreak);
+    LenBuffer := Length(Buffer);
+    Delete(Buffer, LenBuffer-LenSLineBreak+1, LenSLineBreak) ;  // Remove sLineBreak do final
+  finally
+    SLColumnStr.Free;
+  end;
+
+  HeightInBytes := ceil(AHeight/8);
+  LenBuffer := Length(Buffer);
+  LenK := AWidth*(HeightInBytes*8);
+  Buffer := Buffer + StringOfChar(#0, max(LenK - LenBuffer,0));
+
+  Result := FS + 'q' +      // Comando (obsoleto) para gravação de NV ABit Image (em modo coluna)
+                  #1 +      // Uma Imagem
+                  IntToLEStr(AWidth)  +
+                  IntToLEStr(HeightInBytes) +
+                  Buffer;
+end;
 
 constructor TACBrEscPosEpson.Create(AOwner: TACBrPosPrinter);
 begin
@@ -248,7 +346,7 @@ function TACBrEscPosEpson.ComandoFonte(TipoFonte: TACBrPosTipoFonte;
   Ligar: Boolean): AnsiString;
 var
   NovoFonteStatus: TACBrPosFonte;
-  AByte: Byte;
+  AByte: Integer;
 begin
   Result := '';
   NovoFonteStatus := fpPosPrinter.FonteStatus;
@@ -262,21 +360,21 @@ begin
     AByte := 0;
 
     if ftCondensado in NovoFonteStatus then
-      AByte := AByte + 1;
+      SetBit(AByte, 0);
 
     if ftNegrito in NovoFonteStatus then
-      AByte := AByte + 8;
+      SetBit(AByte, 3);
 
     if ftAlturaDupla in NovoFonteStatus then
-      AByte := AByte + 16;
+      SetBit(AByte, 4);
 
     if ftExpandido in NovoFonteStatus then
-      AByte := AByte + 32;
+      SetBit(AByte, 5);
 
     if ftSublinhado in NovoFonteStatus then
-      AByte := AByte + 128;
+      SetBit(AByte, 7);
 
-    Result := ESC + '!' + AnsiChr(AByte);
+    Result := ESC + '!' + AnsiChr(Byte(AByte));
 
     // ESC ! desliga Invertido, enviando o comando novamente
     if ftInvertido in NovoFonteStatus then
@@ -334,7 +432,7 @@ end;
 
 function TACBrEscPosEpson.ComandoLogo: AnsiString;
 var
-  m, KeyCode: Integer;
+  m, KeyCode: Byte;
 begin
   with fpPosPrinter.ConfigLogo do
   begin
@@ -349,10 +447,7 @@ begin
 
     if (KeyCode2 = 0) then
     begin
-      if (KeyCode1 >= 48) and (KeyCode1 <= 57) then  // '0'..'9'
-        KeyCode := StrToInt( chr(KeyCode1) )
-      else
-        KeyCode := KeyCode1 ;
+      KeyCode := AjustarKeyCodeUnico(KeyCode1);
 
       m := 0;
       if FatorX > 1 then
@@ -364,9 +459,81 @@ begin
     end
     else
     begin
+      VerificarKeyCodes;
+
       Result := GS + '(L' + #6 + #0 + #48 + #69 +
                 AnsiChr(KeyCode1) + AnsiChr(KeyCode2) +
                 AnsiChr(FatorX)   + AnsiChr(FatorY);
+    end;
+  end;
+end;
+
+function TACBrEscPosEpson.ComandoGravarLogoRasterStr(
+  const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer): AnsiString;
+var
+  KeyCode: Byte;
+begin
+  with fpPosPrinter.ConfigLogo do
+  begin
+    {
+      Verificando se informou o KeyCode compatível com o comando Novo ou Antigo.
+
+      Nota: O Comando novo da Epson "GS + '8L'", não é compatível em alguns
+      Equipamentos (não Epson), mas que usam EscPosEpson...
+      Nesse caso, vamos usar o comando "FS + 'q'", para tal, informe:
+      KeyCode1 := 1; KeyCode2 := 0
+    }
+
+    if (KeyCode2 = 0) then
+    begin
+      KeyCode := AjustarKeyCodeUnico(KeyCode1);
+      Result := ComandoGravarLogoColumnStr(RasterStr, AWidth, AHeight, KeyCode);
+    end
+    else
+    begin
+      VerificarKeyCodes;
+
+      // Comando para gravar Raster Img na memória
+      Result := #48 + #67 + #48 +   // m + fn + a
+                AnsiChr(KeyCode1) + AnsiChr(KeyCode2) +
+                #1 +                // b - 1 Cor, Mono
+                IntToLEStr(AWidth)  +
+                IntToLEStr(AHeight) +
+                '1' +               // Inicio cor 1
+                RasterStr +
+                #1;                 // Fim, cor 1
+
+      Result := GS + '8L' + IntToLEStr(Length(Result), 4) + Result;
+    end;
+  end;
+end;
+
+function TACBrEscPosEpson.ComandoApagarLogo: AnsiString;
+var
+  KeyCode: Byte;
+begin
+  with fpPosPrinter.ConfigLogo do
+  begin
+    {
+      Verificando se informou o KeyCode compatível com o comando Novo ou Antigo.
+
+      Nota: O Comando novo da Epson "GS + '(L'", não é compatível em alguns
+      Equipamentos (não Epson), mas que usam EscPosEpson...
+      Nesse caso, vamos usar o comando "FS + 'q'", para tal, informe:
+      KeyCode1 := 1; KeyCode2 := 0
+    }
+
+    if (KeyCode2 = 0) then
+    begin
+      KeyCode := AjustarKeyCodeUnico(KeyCode1);
+      Result := ComandoGravarLogoColumnStr(#0, 1, 1, KeyCode);
+    end
+    else
+    begin
+      VerificarKeyCodes;
+
+      Result := GS + '(L' + #4 + #0 + #48 + #66 +
+                AnsiChr(KeyCode1) + AnsiChr(KeyCode2);
     end;
   end;
 end;
@@ -497,50 +664,42 @@ begin
   Result := Info;
 end;
 
-(*
-procedure TACBrEscPosEpson.ProgramarLogo(ALogoFileBMP: String);
-var
-  AFileStream: TFileStream;
-  ABitMap: TBitmap;
-  Col, Row, W, H, P: Integer;
-  ACmd: AnsiString;
+function TACBrEscPosEpson.ComandoImprimirImagemRasterStr(
+  const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer): AnsiString;
 begin
-  // Inspiração: http://stackoverflow.com/questions/13715950/writing-a-bitmap-to-epson-tm88iv-through-esc-p-commands-write-to-nvram
+  with fpPosPrinter.ConfigLogo do
+  begin
+    {
+      Verificando se informou o KeyCode compatível com o comando Novo ou Antigo.
 
-  ABitMap := TBitmap.Create;
-  AFileStream := TFileStream.Create(ALogoFileBMP, fmOpenRead);
-  try
-    AFileStream.Position := 0;
-    ABitMap.LoadFromStream(AFileStream);
+      Nota: O Comando novo da Epson "GS + '8L'", não é compatível em alguns
+      Equipamentos (não Epson), mas que usam EscPosEpson...
+      Nesse caso, vamos usar o comando "GS + '*'", para tal, informe:
+      KeyCode1 := 1; KeyCode2 := 0
+    }
 
-    W := ABitMap.Width;
-    H := ABitMap.Height;
+    if (KeyCode2 = 0) then
+      Result := ComandoImprimirImagemColumnStr(RasterStr, AWidth, AHeight)
+    else
+    begin
+      // Comando para gravar Raster Img na memória
+      Result := #48 + #112 + #48 +  // m + fn + a
+                #01 + #01 +         // bx + by
+                '1' +               // c - 1 Cor, Mono
+                IntToLEStr(AWidth)  +
+                IntToLEStr(AHeight) +
+                RasterStr;
 
-    ACmd := #48 + #67 + #48 + 'AC' + #01 +
-            IntToLEStr(W) +
-            IntToLEStr(H) +
-            #49;  // 1 Cor, Mono
+      Result := GS + '8L' + IntToLEStr(Length(Result), 4) + Result;
 
-    For Col := 0 to W do
-      For Row := 0 to H do
-      begin
-        P := ABitMap.Canvas.Pixels[Col, Row];
-        ACmd := ACmd + AnsiChr( P );
-      end;
+      // Comando para imprimir Raster image na impressora
+      Result := Result + GS  + '(L' + #2 + #0 + #48 +#50;
 
-    ACmd := GS + 'L(' + IntToLEStr(Length(ACmd)) + ACmd;
-
-    fpPosPrinter.ImprimirCmd( ACmd ) ;
-
-    fpPosPrinter.ImprimirCmd( GS  + '(L' + #6 + #0 + #48 + #69 + 'AC' + #01 + #01 );
-
-  finally
-    AFileStream.Free;
-    ABitMap.Free;
+      //DEBUG
+      //WriteToFile('c:\temp\Raster.txt', Result);
+    end;
   end;
 end;
-*)
+
 end.
-
-
 

@@ -765,7 +765,8 @@ begin
                   IntToStrZero( round( ValorAbatimento * 100 ), 13)       +  // 206 a 218 - Valor Abatimento
                   TipoSacado + PadLeft(OnlyNumber(Sacado.CNPJCPF),14,'0') +  // 219 a 234 - Tipo de Inscrição + Número de Inscrição do Pagador
                   PadRight( Sacado.NomeSacado, 40, ' ')                   +  // 235 a 274 - Nome do Pagador
-                  PadRight(Sacado.Logradouro + ' ' + Sacado.Numero + ' '      +
+                  PadRight(Sacado.Logradouro + ' ' + Sacado.Numero + ' '  +
+                    Sacado.Complemento + ' ' +
                     Sacado.Bairro + ' ' + Sacado.Cidade + ' '             +
                     Sacado.UF, 40)                                        +
                   space(12) + PadRight( Sacado.CEP, 8 )                   +  // 315 a 334 - 1ª Mensagem + CEP
@@ -1710,7 +1711,7 @@ begin
 
             ValorDocumento := StrToFloatDef(copy(Linha, 82, 15), 0) / 100;
 
-            NossoNumero := copy(Linha, 38, 11);
+            NossoNumero := copy(Linha, 46, 11);
             ValorDespesaCobranca := StrToFloatDef(copy(Linha, 199, 15), 0) / 100;
 
             OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(StrToIntDef(copy(Linha, 16, 2), 0));

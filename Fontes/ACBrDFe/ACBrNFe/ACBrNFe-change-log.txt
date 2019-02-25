@@ -47,6 +47,75 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+14/02/2019
+-- ACBrNFeNotasFiscais / pcnNFeR --
+[*] Ajuste para remoção completa do namespace do XML para leitura correta pelo
+    método "LerXML"
+    https://www.projetoacbr.com.br/forum/topic/49420-xml-com-xmlnshttpwwwportalfiscalinfbrnfe/
+  Por: BigWings
+
+12/02/2019
+-- pcnNFeW --
+[*] Alterado a condição para não gerar a tag IE do destinatário quando o mesmo
+    não for contribuinte do ICMS
+   Por: Italo Jurisato Junior
+
+06/02/2019
+-- pcnNFeR --
+[*] Alterado a posição da remoção do NameSpace para o inicio da rotina.
+    Mudado para fazer uma remoção total e não somente do grupo <det>.
+   Por: Italo Jurisato Junior
+
+04/02/2019
+-- pcnNFeR --
+[*] https://www.projetoacbr.com.br/forum/topic/48913-importa%C3%A7%C3%A3oleitura-do-xml-nf-e-n%C3%A3o-carrega-os-produtos/
+   Por: Lucas Martendal
+
+31/01/2019
+-- pcnNFeW --
+[*] Alterado a geração da tag IE do grupo de Retirada e Entrega com o objetivo
+    de aceitar a palavra ISENTO
+   Por: Italo Jurisato Junior
+
+30/01/2019
+-- pcnNFe / pcnNFeW --
+[*] Removido o valor inicial para os campos: xPais e cPais referente a Retirada e
+    Entrega e alterada a condição que valida o código do Pais.
+   Por: Italo Jurisato Junior
+
+-- pcnNFe / pcnNFeW --
+[*] Definido um valor inicial para os campos: xPais e cPais referente a Retirada e
+    Entrega e incluido um condição para determinar se o cPais será validado ou não.
+   Por: Italo Jurisato Junior
+
+23/01/2019
+-- ACBrNFeServicos --
+[*] https://www.projetoacbr.com.br/forum/topic/48903-webservice-nfc-e-mg-incorreto/
+   Por: Tulio Padua
+
+-- ACBrDANFCeFortesFr --
+[+] Adicionada a propriedade "FonteLinhaItem: TFont", para permitir definir
+    qual Fonte, Tamanho e estilo que deve ser apresentadas as Linhas de Itens
+[*] Ajuste para melhor espacejamento da Legenda do Item
+[*] Ajustes para melhor alinhamento a Direita dos Valores de Totais
+    (por: DSA)
+
+22/01/2019
+-- ACBrDFeDANFeReport --
+[*] Ajustes de processamento no Método "ManterCodigo"
+   Por: Henrique Leonardo
+
+17/01/2019
+-- pcnNFeR --
+[-] Correção na leitura da tag "cPais" dos grupos "Entrega" e "Retirada".
+    https://www.projetoacbr.com.br/forum/topic/48801-erro-acbrnfe1notasfiscaisloadfromstring/?do=findComment&comment=322472
+    https://www.projetoacbr.com.br/forum/topic/48887-refatora%C3%A7%C3%A3o-mantercodigoean/?tab=comments#comment-323010
+
+16/01/2019
+-- Diversos --
+[*] Remoção das units que foram Generalizadas em PCNComum e os ajustes necessários.
+   Por: Italo Jurisato Junior
+
 13/01/2019
 -- ACBrDANFCeFortesFr --
 [-] Ajustes para correta impressão do DANFCe, com Logo Lateral ou no topo, e

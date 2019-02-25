@@ -39,6 +39,106 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+Data: 21/02/2019
+-- ACBrPosPrinter, ACBrEscCustomPos ---
+[+] Adicionado novo modelo "ppCustomPos", para permitir a compatibilização com as
+    impressoras da Custom http://www.nitere.com.br/produto-impressoras-q3x
+    (por: DSA)
+
+Data: 03/02/2019
+-- ACBrPosPrinter, ACBrEscPosHook --
+[+] Adicionado o modelo de Protocolo em "TACBrPosPrinterHook"
+    Isso permite que o Modelo correto, seja automaticamente atribuido a
+    ACBrPosPrinter, quando usando a sintaxe de Hooks (USB:MARCA)
+
+Data: 01/02/2019
+-- ACBrPosPrinter --
+[*] Melhorias na detecção de Porta Ativa e Controle de Porta
+[+] Adicionado novo suporte a Impressoras através da Porta USB. Agora o
+    ACBrPosPrinter aceita a sintaxe de portas como:  "USB:MARCA", onde
+    "MARCA" é o nome do Fabricante.
+    Com isso o ACBrPosPrinter usará a DLL do fabricante para acesso a Impressora,
+    pela porta USB.
+    https://www.projetoacbr.com.br/forum/topic/49160-acbrposprinter-com-suporte-a-usb/
+
+-- ACBrEscPosHook --
+[+] Implementado Classe genérica para criação de Hooks
+
+-- ACBrEscPosHookElginDLL --
+[+] Implementação de Hook com as DLLs da "ELGIN":  HprtPrinter.dll, hprtio.dll
+    Use em Porta := "USB:ELGIN", e mantenha as DLLs indicadas na mesma pasta do
+    seu Executável
+
+-- ACBrEscPosHookEpsonDLL --
+[+] Implementação de Hook com a DLL da "EPSON":  InterfaceEpsonNF.dll
+    Use em Porta := "USB:EPSON", e mantenha a DLL indicada na mesma pasta do
+    seu Executável
+    (por: DSA)
+
+Data: 29/01/2019
+-- ACBrEscPosEpson --
+[*] Ajuste no método "ComandoImprimirImagemRasterStr", para permitir o uso de
+    comando de impressão de Imagem legado, que é utilizado em algumas impressoras.
+      Nota: O Comando novo da Epson "GS + '8L'", não é compatível em alguns
+      Equipamentos (não Epson), mas que usam EscPosEpson...
+      Nesse caso, vamos usar o comando "GS + '*'", para tal, informe:
+      KeyCode1 := 1; KeyCode2 := 0
+    (por: DSA)
+
+Data: 27/01/2019
+-- ACBrEscPosEpson --
+[*] Ajuste nos métodos "ComandoGravarLogoRasterStr" e "ComandoApagarLogo", para
+    permitir o uso de comandos legados, que são utilizados em algumas impressoras.
+      Nota: O Comando novo da Epson "GS + '8L'", não é compatível em alguns
+      Equipamentos (não Epson), mas que usam EscPosEpson...
+      Nesse caso, vamos usar o comando "FS + 'q'", para tal, informe:
+      KeyCode1 := 1; KeyCode2 := 0
+    (por: DSA)
+
+19/01/2019
+-- ACBrPosPrinter --
+[+] Classe TACBrPosPrinterClass, adicionado os métodos Públicos
+    function ComandoImprimirImagemRasterStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString; virtual;
+    function ComandoImprimirImagemArquivo(ArquivoBMP: String): AnsiString;
+    function ComandoImprimirImagemStream(ABMPStream: TStream): AnsiString;
+    function ComandoGravarLogoRasterStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString; virtual;
+    function ComandoGravarLogoArquivo(ArquivoBMP: String): AnsiString;
+    function ComandoGravarLogoStream(ABMPStream: TStream): AnsiString;
+    function ComandoApagarLogo: AnsiString; virtual;
+    procedure ArquivoImagemToRasterStr(ArquivoImagem: String; out AWidth: Integer;
+      out AHeight: Integer; out ARasterStr: AnsiString);
+[+] Classe, TACBrPosPrinter
+    - Adicionada a propriedade de apenas leitura: "PosPrinter: TACBrPosPrinterClass".
+      permitindo acessar a Classe instânciada internamente, da forma:
+      "ACBrPosPrinter1.PosPrinter"
+    - Adicionado os métodos Públicos:
+      procedure ImprimirImagemStream(ABMPStream: TStream);
+      procedure ImprimirImagemArquivo(ArquivoBMP: String);
+      procedure ImprimirImagemRasterStr(const ARasterStr: AnsiString; AWidth, AHeight: Integer);
+      procedure ImprimirLogo(AKC1: Integer = -1; AKC2: Integer = -1;
+        AFatorX: Integer = -1; AFatorY: Integer = -1);
+      procedure GravarLogoStream(ABMPStream: TStream; AKC1: Integer = -1;
+        AKC2: Integer = -1);
+      procedure GravarLogoArquivo(ArquivoBMP: String; AKC1: Integer = -1;
+        AKC2: Integer = -1);
+      procedure ApagarLogo(AKC1: Integer = -1; AKC2: Integer = -1);
+    - Adicionado suporte a Tag de Bloco
+      <bmp> - Imprime Imagem BMP monocromática. Conteúdo pode ser: Path da Imagem,
+              Stream em Base64 ou AscII Art (0 e 1)
+[+] Demo PosPrinterTeste, em Delphi e Lazarus, modificados para demonstrar o
+    suporte a Impressão de Imagens e Gravação de Logos.
+
+-- ACBrEscPosEpson --
+[+] Implementado suporte aos métodos:
+    function ComandoImprimirImagemRasterStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString;
+    function ComandoLogo: AnsiString;
+    function ComandoGravarLogoRasterStr(const RasterStr: AnsiString; AWidth: Integer;
+      AHeight: Integer): AnsiString;
+    function ComandoApagarLogo: AnsiString;
+
 12/01/2019
 -- ACBrETQClass, ACBrETQEpl2, ACBrETQPpla, ACBrETQZplII --
 [+] Adicionado métodos para detecção de Imagens BMP e PCX, monocromáticas

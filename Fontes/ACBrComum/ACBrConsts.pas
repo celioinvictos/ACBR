@@ -227,6 +227,8 @@ const
   cTagQRCodeLargura = '<qrcode_largura>';
   cTagQRCodeError = '<qrcode_error>';
 
+  cTagBMP = '<bmp>';
+
   cTagModoPaginaLiga       = '<mp>';
   cTagModoPaginaDesliga    = '</mp>';
   cTagModoPaginaImprimir   = '</mp_imprimir>';
@@ -377,6 +379,7 @@ const
 
   cACBrDFeSSLEnviarException = 'Erro Interno: %d'+sLineBreak+'Erro HTTP: %d'+sLineBreak+
                                'URL: %s';
+  cACBrArquivoNaoEncontrado = 'Arquivo: %s não encontrado';
 
   sDisplayFormat = ',#0.%.*d';
 

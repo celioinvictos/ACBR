@@ -92,7 +92,7 @@ type
     function GerarInformacoesConsumidor(Lateral: Boolean = False): String;
     function GerarInformacoesIdentificacaoNFCe(Lateral: Boolean = False): String;
     procedure GerarMensagemFiscal;
-    function GerarInformacoesQRCode(DadosQRCode: String; Cancelamento: Boolean = False;
+    function GerarInformacoesQRCode(const DadosQRCode: String; Cancelamento: Boolean = False;
       Lateral: Boolean = False): String;
     procedure GerarMensagemInteresseContribuinte;
     procedure GerarTotalTributos;
@@ -383,7 +383,6 @@ procedure TACBrNFeDANFeESCPOS.GerarPagamentos;
 var
   i: Integer;
   Troco: Real;
-  DescPagto, DescBandeira: String;
 begin
   //Total := 0;
   FPosPrinter.Buffer.Add('<c>' + PadSpace('FORMA DE PAGAMENTO | VALOR PAGO R$',
@@ -393,14 +392,7 @@ begin
   begin
     with FpNFe.pag.Items[i] do
     begin
-      DescPagto := ACBrStr(FormaPagamentoToDescricao(tPag));
-      if (tPag in [fpCartaoCredito, fpCartaoDebito]) then
-        DescBandeira := BandeiraCartaoToDescStr(tBand)
-      else
-        DescBandeira := '';
-
-      FPosPrinter.Buffer.Add('<c>' + PadSpace(
-         DescPagto + ' ' + DescBandeira + '|' +
+      FPosPrinter.Buffer.Add('<c>' + PadSpace(ManterDescricaoPagamentos(FpNFe.pag.Items[i]) + '|' +
          FormatFloatBr(vPag),
          FPosPrinter.ColunasFonteCondensada, '|'));
     end;
@@ -610,7 +602,7 @@ begin
   end;
 end;
 
-function TACBrNFeDANFeESCPOS.GerarInformacoesQRCode(DadosQRCode: String;
+function TACBrNFeDANFeESCPOS.GerarInformacoesQRCode(const DadosQRCode: String;
   Cancelamento: Boolean; Lateral: Boolean): String;
 var
   InfoQrCode: TStringList;

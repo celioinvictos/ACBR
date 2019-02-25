@@ -53,6 +53,10 @@
             this.label4 = new System.Windows.Forms.Label();
             this.txtAssunto = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
+            this.lstAnexos = new System.Windows.Forms.ListBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label11 = new System.Windows.Forms.Label();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudPorta)).BeginInit();
             this.SuspendLayout();
@@ -62,7 +66,7 @@
             this.btnEnviar.Location = new System.Drawing.Point(713, 415);
             this.btnEnviar.Name = "btnEnviar";
             this.btnEnviar.Size = new System.Drawing.Size(75, 23);
-            this.btnEnviar.TabIndex = 1;
+            this.btnEnviar.TabIndex = 16;
             this.btnEnviar.Text = "Enviar";
             this.btnEnviar.UseVisualStyleBackColor = true;
             this.btnEnviar.Click += new System.EventHandler(this.btnEnviar_Click);
@@ -81,7 +85,7 @@
             this.txtDestinatario.Location = new System.Drawing.Point(384, 28);
             this.txtDestinatario.Name = "txtDestinatario";
             this.txtDestinatario.Size = new System.Drawing.Size(404, 20);
-            this.txtDestinatario.TabIndex = 3;
+            this.txtDestinatario.TabIndex = 10;
             // 
             // label2
             // 
@@ -97,25 +101,25 @@
             this.txtBody.Location = new System.Drawing.Point(384, 106);
             this.txtBody.Multiline = true;
             this.txtBody.Name = "txtBody";
-            this.txtBody.Size = new System.Drawing.Size(404, 139);
-            this.txtBody.TabIndex = 5;
+            this.txtBody.Size = new System.Drawing.Size(404, 85);
+            this.txtBody.TabIndex = 12;
             // 
             // txtAltBody
             // 
-            this.txtAltBody.Location = new System.Drawing.Point(384, 264);
+            this.txtAltBody.Location = new System.Drawing.Point(384, 210);
             this.txtAltBody.Multiline = true;
             this.txtAltBody.Name = "txtAltBody";
-            this.txtAltBody.Size = new System.Drawing.Size(404, 145);
-            this.txtAltBody.TabIndex = 7;
+            this.txtAltBody.Size = new System.Drawing.Size(404, 85);
+            this.txtAltBody.TabIndex = 13;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(381, 248);
+            this.label3.Location = new System.Drawing.Point(381, 194);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(92, 13);
+            this.label3.Size = new System.Drawing.Size(87, 13);
             this.label3.TabIndex = 6;
-            this.label3.Text = "Mensagem HTML";
+            this.label3.Text = "Texto Alternativo";
             // 
             // groupBox1
             // 
@@ -137,7 +141,7 @@
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(366, 426);
-            this.groupBox1.TabIndex = 8;
+            this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Configuração";
             // 
@@ -146,7 +150,7 @@
             this.btnSalvar.Location = new System.Drawing.Point(285, 397);
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(75, 23);
-            this.btnSalvar.TabIndex = 18;
+            this.btnSalvar.TabIndex = 9;
             this.btnSalvar.Text = "Salvar";
             this.btnSalvar.UseVisualStyleBackColor = true;
             this.btnSalvar.Click += new System.EventHandler(this.btnSalvar_Click);
@@ -156,7 +160,7 @@
             this.txtEmail.Location = new System.Drawing.Point(6, 71);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(165, 20);
-            this.txtEmail.TabIndex = 17;
+            this.txtEmail.TabIndex = 3;
             // 
             // label9
             // 
@@ -173,7 +177,7 @@
             this.txtSenha.Name = "txtSenha";
             this.txtSenha.PasswordChar = '*';
             this.txtSenha.Size = new System.Drawing.Size(183, 20);
-            this.txtSenha.TabIndex = 15;
+            this.txtSenha.TabIndex = 4;
             // 
             // label8
             // 
@@ -189,7 +193,7 @@
             this.txtUsuario.Location = new System.Drawing.Point(177, 32);
             this.txtUsuario.Name = "txtUsuario";
             this.txtUsuario.Size = new System.Drawing.Size(183, 20);
-            this.txtUsuario.TabIndex = 13;
+            this.txtUsuario.TabIndex = 2;
             // 
             // label7
             // 
@@ -205,7 +209,7 @@
             this.txtNome.Location = new System.Drawing.Point(6, 32);
             this.txtNome.Name = "txtNome";
             this.txtNome.Size = new System.Drawing.Size(165, 20);
-            this.txtNome.TabIndex = 11;
+            this.txtNome.TabIndex = 1;
             // 
             // label6
             // 
@@ -222,7 +226,7 @@
             this.ckbTLS.Location = new System.Drawing.Point(58, 136);
             this.ckbTLS.Name = "ckbTLS";
             this.ckbTLS.Size = new System.Drawing.Size(46, 17);
-            this.ckbTLS.TabIndex = 9;
+            this.ckbTLS.TabIndex = 8;
             this.ckbTLS.Text = "TLS";
             this.ckbTLS.UseVisualStyleBackColor = true;
             // 
@@ -232,7 +236,7 @@
             this.ckbSSL.Location = new System.Drawing.Point(6, 136);
             this.ckbSSL.Name = "ckbSSL";
             this.ckbSSL.Size = new System.Drawing.Size(46, 17);
-            this.ckbSSL.TabIndex = 8;
+            this.ckbSSL.TabIndex = 7;
             this.ckbSSL.Text = "SSL";
             this.ckbSSL.UseVisualStyleBackColor = true;
             // 
@@ -248,6 +252,11 @@
             // nudPorta
             // 
             this.nudPorta.Location = new System.Drawing.Point(299, 110);
+            this.nudPorta.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
             this.nudPorta.Name = "nudPorta";
             this.nudPorta.Size = new System.Drawing.Size(61, 20);
             this.nudPorta.TabIndex = 6;
@@ -273,7 +282,7 @@
             this.txtAssunto.Location = new System.Drawing.Point(384, 67);
             this.txtAssunto.Name = "txtAssunto";
             this.txtAssunto.Size = new System.Drawing.Size(404, 20);
-            this.txtAssunto.TabIndex = 10;
+            this.txtAssunto.TabIndex = 11;
             // 
             // label10
             // 
@@ -284,11 +293,50 @@
             this.label10.TabIndex = 9;
             this.label10.Text = "Assunto";
             // 
+            // lstAnexos
+            // 
+            this.lstAnexos.AllowDrop = true;
+            this.lstAnexos.FormattingEnabled = true;
+            this.lstAnexos.Location = new System.Drawing.Point(384, 327);
+            this.lstAnexos.Name = "lstAnexos";
+            this.lstAnexos.Size = new System.Drawing.Size(404, 82);
+            this.lstAnexos.TabIndex = 15;
+            this.lstAnexos.DragDrop += new System.Windows.Forms.DragEventHandler(this.lstAnexos_DragDrop);
+            this.lstAnexos.DragEnter += new System.Windows.Forms.DragEventHandler(this.lstAnexos_DragEnter);
+            this.lstAnexos.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstAnexos_KeyDown);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(384, 301);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(109, 23);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Anexar Arquivo";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(499, 306);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(218, 13);
+            this.label11.TabIndex = 17;
+            this.label11.Text = "( Ou arraste os arquivos abaixo para anexar )";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.lstAnexos);
             this.Controls.Add(this.txtAssunto);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.groupBox1);
@@ -300,8 +348,10 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnEnviar);
             this.Name = "FrmMain";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ACBrLibMail";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragEnter);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudPorta)).EndInit();
@@ -336,6 +386,10 @@
         private System.Windows.Forms.Button btnSalvar;
         private System.Windows.Forms.TextBox txtAssunto;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.ListBox lstAnexos;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 

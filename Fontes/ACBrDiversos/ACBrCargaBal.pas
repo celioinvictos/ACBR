@@ -50,7 +50,7 @@ uses
 
 type
   EACBrCargaBal = class(Exception);
-  TACBrCargaBalTipoVenda = (tpvPeso, tpvUnidade, tpvEAN13);
+  TACBrCargaBalTipoVenda = (tpvPeso, tpvUnidade, tpvEAN13, tpvEAN13Und);
   TACBrCargaBalModelo = (modFilizola, modToledo, modUrano, modUranoS, modToledoMGV5, modToledoMGV6, modUranoURF32, modRamuza);
   TACBrCargaBalProgresso = procedure(Mensagem: String; ProgressoAtual, ProgressoTotal: Integer) of object;
   TACBrCargaBalTipoValidade = (tpvDias, tpvMeses);
@@ -473,9 +473,10 @@ end;
 function TACBrCargaBal.GetTipoProdutoToledo(Tipo: TACBrCargaBalTipoVenda): String;
 begin
   case Tipo of
-    tpvPeso    : Result := '0';
-    tpvUnidade : Result := '1';
-    tpvEAN13   : Result := '2';
+    tpvPeso     : Result := '0';
+    tpvUnidade  : Result := '1';
+    tpvEAN13    : Result := '2';
+    tpvEAN13Und : Result := '5';
   end;
 end;
 
@@ -679,8 +680,8 @@ begin
       GetTipoProdutoRamuza(Produtos[i].Tipo) +
       LFIll(Produtos[i].Validade, 3) +
       LFIll('0',13)+ // codigo de 13 bits
-      LFIll('0',5)+ // Tara pré determinada ou peso pré determinado – 5 bits.
-      LFIll('0',2)+ // Número da etiqueta – 2 bits.
+      LFIll(Produtos[i].Tara.Valor * 100,5)+ // Tara pré determinada ou peso pré determinado – 5 bits.
+      LFIll(Produtos[i].ModeloEtiqueta,2)+ // Número da etiqueta – 2 bits.
 
       {
       LFIll(Produtos[i].Nutricional.Qtd,6) +

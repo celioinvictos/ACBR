@@ -3,7 +3,7 @@ object frmPrincipal: TfrmPrincipal
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Demo DANF-e em Fast Report'
-  ClientHeight = 413
+  ClientHeight = 471
   ClientWidth = 358
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -26,7 +26,7 @@ object frmPrincipal: TfrmPrincipal
   end
   object pnlbotoes: TPanel
     Left = 0
-    Top = 321
+    Top = 379
     Width = 358
     Height = 92
     Align = alBottom
@@ -77,9 +77,9 @@ object frmPrincipal: TfrmPrincipal
   end
   object PageControl1: TPageControl
     Left = 0
-    Top = 110
+    Top = 149
     Width = 358
-    Height = 211
+    Height = 230
     ActivePage = TabArquivos
     Align = alClient
     TabOrder = 1
@@ -89,7 +89,7 @@ object frmPrincipal: TfrmPrincipal
         Left = 0
         Top = 0
         Width = 350
-        Height = 183
+        Height = 202
         Align = alClient
         ItemHeight = 13
         TabOrder = 0
@@ -99,11 +99,11 @@ object frmPrincipal: TfrmPrincipal
       Caption = 'Customiza'#231#227'o'
       ImageIndex = 1
       object Label9: TLabel
-        Left = 15
-        Top = 138
-        Width = 123
+        Left = 137
+        Top = 150
+        Width = 62
         Height = 13
-        Caption = 'ImprimirUndQtVlComercial'
+        Caption = 'ImprimeValor'
       end
       object RbCanhoto: TRadioGroup
         Left = 0
@@ -123,84 +123,88 @@ object frmPrincipal: TfrmPrincipal
       object GroupBox1: TGroupBox
         Left = 0
         Top = 46
-        Width = 350
-        Height = 59
-        Align = alTop
+        Width = 105
+        Height = 156
+        Align = alLeft
         Caption = 'Margem'
         TabOrder = 1
         object Label1: TLabel
-          Left = 15
-          Top = 13
+          AlignWithMargins = True
+          Left = 10
+          Top = 26
           Width = 40
           Height = 13
           Caption = 'Superior'
         end
         object Label2: TLabel
-          Left = 75
-          Top = 13
+          AlignWithMargins = True
+          Left = 14
+          Top = 51
           Width = 36
           Height = 13
           Caption = 'Inferior'
         end
         object Label3: TLabel
-          Left = 254
-          Top = 13
+          AlignWithMargins = True
+          Left = 19
+          Top = 105
           Width = 31
           Height = 13
           Caption = 'Direita'
         end
         object Label4: TLabel
-          Left = 194
-          Top = 13
+          AlignWithMargins = True
+          Left = 5
+          Top = 78
           Width = 45
           Height = 13
           Caption = 'Esquerda'
         end
         object EditMargemEsquerda: TEdit
-          Left = 194
-          Top = 31
-          Width = 33
-          Height = 21
-          TabOrder = 0
-        end
-        object EditMargemSuperior: TEdit
-          Left = 15
-          Top = 31
-          Width = 30
-          Height = 21
-          TabOrder = 1
-        end
-        object EditMargemDireita: TEdit
-          Left = 254
-          Top = 31
+          Left = 57
+          Top = 74
           Width = 33
           Height = 21
           TabOrder = 2
         end
-        object EditMargemInferior: TEdit
-          Left = 75
-          Top = 31
+        object EditMargemSuperior: TEdit
+          Left = 57
+          Top = 20
+          Width = 33
+          Height = 21
+          TabOrder = 0
+        end
+        object EditMargemDireita: TEdit
+          Left = 57
+          Top = 102
           Width = 33
           Height = 21
           TabOrder = 3
         end
+        object EditMargemInferior: TEdit
+          Left = 57
+          Top = 47
+          Width = 33
+          Height = 21
+          TabOrder = 1
+        end
       end
       object rbTarjaNfeCancelada: TCheckBox
-        Left = 15
-        Top = 111
-        Width = 169
+        Left = 137
+        Top = 104
+        Width = 164
         Height = 17
-        Caption = ' Mostra a Tarja de Cancelada'
-        TabOrder = 2
+        Caption = 'Mostra a Tarja de Cancelada'
+        TabOrder = 4
       end
       object CBImprimirUndQtVlComercial: TComboBox
         AlignWithMargins = True
-        Left = 144
-        Top = 134
+        Left = 137
+        Top = 169
         Width = 141
         Height = 21
         AutoCloseUp = True
-        TabOrder = 3
+        TabOrder = 6
         Text = 'iuComercialETributavel'
         Items.Strings = (
           'iuComercial'
@@ -208,21 +212,33 @@ object frmPrincipal: TfrmPrincipal
           'iuComercialETributavel')
       end
       object rbImprimirDadosDocReferenciados: TCheckBox
-        Left = 15
-        Top = 161
-        Width = 202
+        Left = 137
+        Top = 81
+        Width = 190
         Height = 17
-        Caption = ' Imprimir documentos referenciados'
-        TabOrder = 4
+        Caption = 'Imprimir documentos referenciados'
+        TabOrder = 3
+      end
+      object ckImprimeCodigoEan: TCheckBox
+        Left = 137
+        Top = 58
+        Width = 190
+        Height = 17
+        Caption = 'ImprimeCodigoEan'
+        TabOrder = 2
+      end
+      object ckImprimeItens: TCheckBox
+        Left = 137
+        Top = 127
+        Width = 97
+        Height = 17
+        Caption = 'Imprime itens'
+        TabOrder = 5
       end
     end
     object Decimais: TTabSheet
       Caption = 'Decimais'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object RgTipodedecimais: TRadioGroup
         Left = 0
         Top = 0
@@ -240,17 +256,13 @@ object frmPrincipal: TfrmPrincipal
         Left = 0
         Top = 49
         Width = 350
-        Height = 134
-        ActivePage = TabtdetMascara
+        Height = 153
+        ActivePage = TabtdetInteger
         Align = alClient
         TabOrder = 1
         object TabtdetInteger: TTabSheet
           Caption = 'tdetInteger'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object Label5: TLabel
             Left = 16
             Top = 24
@@ -309,10 +321,6 @@ object frmPrincipal: TfrmPrincipal
         object TabtdetMascara: TTabSheet
           Caption = 'tdetMascara'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object Label7: TLabel
             Left = 5
             Top = 5
@@ -373,6 +381,20 @@ object frmPrincipal: TfrmPrincipal
       end
     end
   end
+  object rgModelo: TRadioGroup
+    Left = 0
+    Top = 110
+    Width = 358
+    Height = 39
+    Align = alTop
+    Caption = 'Modelo'
+    Columns = 2
+    Items.Strings = (
+      'NFe (ACBrNFeDANFeFR)'
+      'NFCe (ACBrNFeDANFCEFR)')
+    TabOrder = 2
+    OnClick = rgModeloClick
+  end
   object ACBrNFe1: TACBrNFe
     Configuracoes.Geral.SSLLib = libCapicomDelphiSoap
     Configuracoes.Geral.SSLCryptLib = cryCapicom
@@ -384,11 +406,13 @@ object frmPrincipal: TfrmPrincipal
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
+    Configuracoes.RespTec.IdCSRT = 0
     DANFE = ACBrNFeDANFEFR1
     Left = 221
     Top = 30
   end
   object ACBrNFeDANFEFR1: TACBrNFeDANFEFR
+    MostraSetup = True
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
     MargemInferior = 0.800000000000000000
     MargemSuperior = 0.800000000000000000
@@ -401,7 +425,6 @@ object frmPrincipal: TfrmPrincipal
     CasasDecimais.MaskvUnCom = ',0.00'
     ACBrNFe = ACBrNFe1
     TipoDANFE = tiSemGeracao
-    ExibeInforAdicProduto = True
     EspessuraBorda = 1
     ExpandirDadosAdicionaisAuto = False
     IncorporarBackgroundPdf = True
@@ -4484,5 +4507,21 @@ object frmPrincipal: TfrmPrincipal
         end
       end
     end
+  end
+  object ACBrNFeDANFCEFR1: TACBrNFeDANFCEFR
+    MostraSetup = True
+    Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
+    MargemInferior = 0.800000000000000000
+    MargemSuperior = 0.800000000000000000
+    MargemEsquerda = 0.600000000000000000
+    MargemDireita = 0.510000000000000000
+    CasasDecimais.Formato = tdetInteger
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
+    BorderIcon = [biSystemMenu, biMinimize, biMaximize]
+    Left = 52
+    Top = 76
   end
 end

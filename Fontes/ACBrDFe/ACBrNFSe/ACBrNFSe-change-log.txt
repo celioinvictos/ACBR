@@ -47,6 +47,103 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+22/02/2019
+-- ACBrNFSeWebServices --
+[*] Corrigido o namespace para assinatura - Provedor ISSDSF
+   Por: Italo Jurisato Junior
+
+19/02/2019
+-- Diversos --
+[*] Simplificação do código
+   Por: Italo Jurisato Junior
+
+14/02/2019
+-- ACBrNFSeNotasFiscais --
+[*] https://www.projetoacbr.com.br/forum/topic/49403-loadfromstring-retornando-registro-a-mais-e-em-branco-real-fantasma/
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/49397-issnet-lerrps_abrasf_v1-identificacaotomador/
+   Por: Balena
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/49058-problemas-com-provedor-centi/?do=findComment&comment=326171
+   Por: Marcio Lopes
+
+13/02/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/49364-equiplano/
+   Por: Marcos
+
+12/02/2019
+-- ACBrNFSeConfiguracoes --
+[*] A cidade de Rio Verde não segue a mesma formatação da URL das demais cidades do
+    mesmo provedor.
+    Feito uma alteração para contornar o problema.
+   Por: Italo Jurisato Junior
+
+08/02/2019
+-- Diversos --
+[+] Implementação de um novo Provedor - RLZ
+   Por: Italo Jurisato Junior
+
+-- Diversos --
+[*] Possível correção na assinatura do Consultar Situação do Lote - Provedor Publica.
+   Por: Italo Jurisato Junior
+
+07/02/2019
+-- ACBrNFSeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/48528-assinatura-do-hash-nao-confere-p%C3%BAblica/?do=findComment&comment=325273
+   Por: Henrique Sandri Zimermam
+
+06/02/2019
+-- ACBrNFSeWebServices --
+[*] Alterações visando resolver o problema de assinatura no cancelamento,
+    provedor Digifred.
+   Por: Italo Jurisato Junior
+
+06/02/2019
+-- ACBrNFSeWebServices --
+[*] Corrigido a remoção de prefixo ao definir o nó da assinatura.
+   Por: Italo Jurisato Junior
+
+05/02/2019
+-- ACBrNFSeWebServices --
+[*] Possível correção para o cancelamento - provedor Bethav2.
+   Por: Italo Jurisato Junior
+
+04/02/2019
+-- Diversos --
+[*] Alterações visando resolver o problema de assinatura no cancelamento
+   Por: Italo Jurisato Junior
+
+01/02/2019
+-- pnfsNFSeW_IPM --
+[*] https://www.projetoacbr.com.br/forum/topic/48762-nfse-ipm-arauc%C3%A1ria-modo-teste/?do=findComment&comment=324604
+   Por: Cleyton Luiz Alberti
+
+31/01/2019
+-- pnfsNFSeW_IPM --
+[*] https://www.projetoacbr.com.br/forum/topic/49088-cancelamento-nfs-e-ipm/?do=findComment&comment=324259
+   Por: Léo
+
+25/01/2019
+-- pnfsConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/48953-nfs-e-provedor-publica-munic%C3%ADpio-de-chapec%C3%B3/
+   Por: Léo
+
+23/01/2019
+-- pnfsNFSeR --
+[*] Leitura do Código de Verificação
+   Por: Claudenes
+
+21/01/2019
+-- pnfsNFSeW_Equiplano --
+[*] Imposta uma condição para que seja gerado ou não o grupo Tomador do Serviço
+   Por: Italo Jurisato Junior
+
+14/01/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/48710-valor-iss-retido-provedor-tecnos-flores-da-cunha-rs/
+   Por: Mateus Brunelli
+
 08/01/2019
 -- Diversos --
 [*] Possivel correção na assinatura do Consultar Situação do provedor Publica.

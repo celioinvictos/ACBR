@@ -50,19 +50,26 @@ uses
   ACBrTEFDVeSPague, ACBrTEFDBanese, ACBrTEFDGoodCard, ACBrTEFDFoxWin,
   ACBrTEFDCliDTEF, ACBrTEFDPetroCard, ACBrTEFDCrediShop, ACBrTEFDTicketCar,
   ACBrTEFDConvCard
-  {$IFNDEF NOGUI}
-    {$IFDEF FPC}
+  {$IfNDef NOGUI}
+    {$IfDef FPC}
       ,LResources
-    {$ENDIF}
-    {$IFDEF MSWINDOWS}
+    {$EndIf}
+    {$IfDef MSWINDOWS}
       ,Windows, Messages
-    {$ENDIF}
-    {$IFDEF VisualCLX}
-      ,QForms, QControls, Qt
-    {$ELSE}
-       {$IFDEF FMX} ,System.UITypes, FMX.Platform.Win {$ENDIF} ,Forms, Controls
-    {$ENDIF}
-  {$ENDIF};
+      {$IFDEF FMX}
+        ,FMX.Platform.Win
+      {$ENDIF}
+    {$EndIf}
+    {$If DEFINED(VisualCLX)}
+      ,Qt, QControls, QForms
+    {$ElseIf DEFINED(FMX)}
+      ,System.UITypes, FMX.Forms, FMX.Controls
+    {$ElseIf DEFINED(DELPHICOMPILER16_UP)}
+      ,System.UITypes, Vcl.Forms, Vcl.Controls
+    {$Else}
+      ,Controls, Forms
+    {$IfEnd}
+  {$EndIf};
 
 type
 
@@ -163,7 +170,6 @@ type
      fpRespostasPendentes : TACBrTEFDRespostasPendentes;
      fArqLOG: string;
 
-     function GetAbout : String;
      function GetAguardandoResposta: Boolean;
      function GetArqReq : String;
      function GetArqResp : String;
@@ -184,7 +190,6 @@ type
      procedure SetNumVias(const AValue : Integer);
      procedure SetPathBackup(const AValue : String);
      procedure SetGPAtual(const AValue : TACBrTEFDTipo);
-     procedure SetAbout(const Value: String);{%h-}
      procedure SetArqLOG(const AValue : String);
 
      procedure AguardarTempoMinimoDeExibicao(const TempoInicial: TDateTime);
@@ -266,9 +271,6 @@ type
         var Grupo : TACBrTEFDArrayGrupoRespostasPendentes) ;
 
    published
-
-     property About : String read GetAbout write SetAbout stored False ;
-
      property Identificacao : TACBrTEFDIdentificacao read fIdentificacao
         write fIdentificacao ;
 
@@ -1732,11 +1734,6 @@ begin
      Result := '' ;
 end;
 
-function TACBrTEFD.GetAbout : String;
-begin
-   Result := 'ACBrTEFD Ver: '+CACBrTEFD_Versao;
-end;
-
 procedure TACBrTEFD.AguardarTempoMinimoDeExibicao(const TempoInicial: TDateTime
   );
 var
@@ -1769,11 +1766,6 @@ end;
 function TACBrTEFD.GetAguardandoResposta: Boolean;
 begin
   Result := fTefClass.AguardandoResposta ;
-end;
-
-procedure TACBrTEFD.SetAbout(const Value: String);
-begin
-  {}
 end;
 
 procedure TACBrTEFD.SetArqLOG(const AValue: String);

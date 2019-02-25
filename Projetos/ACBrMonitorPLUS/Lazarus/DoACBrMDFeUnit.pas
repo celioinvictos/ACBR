@@ -65,6 +65,11 @@ public
   procedure RespostaItensRecibo(ItemID: integer = 0);
   procedure RespostaEvento;
   procedure RespostaItensEvento(ItemID: integer = 0);
+  procedure RespostaDistribuicaoDFe;
+  procedure RespostaItensDistribuicaoDFeResMDFe(ItemID: integer = 0);
+  procedure RespostaItensDistribuicaoDFeResEve(ItemID: integer = 0);
+  procedure RespostaItensDistribuicaoDFeProEve(ItemID: integer = 0);
+  procedure RespostaItensDistribuicaoDFeInfeve(ItemID: integer = 0);
 
   property ACBrMDFe: TACBrMDFe read fACBrMDFe;
 end;
@@ -298,6 +303,24 @@ public
   procedure Executar; override;
 end;
 
+{ TMetodoDistribuicaoDFePorChaveMDFe}
+TMetodoDistribuicaoDFePorChaveMDFe = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
+{ TMetodoDistribuicaoDFePorUltNSU}
+TMetodoDistribuicaoDFePorUltNSU = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
+{ TMetodoDistribuicaoDFePorNSU}
+TMetodoDistribuicaoDFePorNSU = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
 implementation
 
 uses IniFiles, DateUtils, Forms, strutils,
@@ -349,6 +372,10 @@ begin
   ListaDeMetodos.Add(CMetodoLerini);
   ListaDeMetodos.Add(CMetodoSetcertificado);
   ListaDeMetodos.Add(CMetodoEnviarEvento);
+  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporChaveMDFe);
+  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporNSU);
+  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporUltNSU);
+
   ListaDeMetodos.Add(CMetodoRestaurar);
   ListaDeMetodos.Add(CMetodoOcultar);
   ListaDeMetodos.Add(CMetodoEncerrarmonitor);
@@ -406,7 +433,11 @@ begin
     29 : AMetodoClass := TMetodoVersao;
     30 : AMetodoClass := TMetodoSetTipoImpressao;
     31 : AMetodoClass := TMetodoEnviarEvento;
-    32..46 : DoACbr(ACmd);
+    32 : AMetodoClass := TMetodoDistribuicaoDFeporChaveMDFe;
+    33 : AMetodoClass := TMetodoDistribuicaoDFeporUltNSU;
+    34 : AMetodoClass := TMetodoDistribuicaoDFeporNSU;
+
+    35..49 : DoACbr(ACmd);
   end;
 
   if Assigned(AMetodoClass) then
@@ -479,11 +510,11 @@ var
 begin
   with fACBrMDFe do
   begin
-    for I := 0 to WebServices.Retorno.MDFeRetorno.ProtMDFe.Count - 1 do
+    for I := 0 to WebServices.Retorno.MDFeRetorno.ProtDFe.Count - 1 do
     begin
       for J := 0 to Manifestos.Count - 1 do
       begin
-        if ('MDFe' + WebServices.Retorno.MDFeRetorno.ProtMDFe.Items[i].chMDFe =
+        if ('MDFe' + WebServices.Retorno.MDFeRetorno.ProtDFe.Items[i].chDFe =
           Manifestos.Items[j].MDFe.infMDFe.Id) then
         begin
           RespostaItensMDFe(J, I, True);
@@ -517,7 +548,7 @@ begin
     'MDFe' + Trim(IntToStr(
     fACBrMDFe.Manifestos.Items[ManifestoID].MDFe.Ide.nMDF)), resINI);
   try
-    with fACBrMDFe.WebServices.Retorno.MDFeRetorno.ProtMDFe.Items[ItemID] do
+    with fACBrMDFe.WebServices.Retorno.MDFeRetorno.ProtDFe.Items[ItemID] do
     begin
       Resp.Versao := verAplic;
       Resp.TpAmb := TpAmbToStr(TpAmb);
@@ -525,7 +556,7 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := fACBrMDFe.WebServices.Retorno.MDFeRetorno.cUF;
-      Resp.ChMDFe := chMDFe;
+      Resp.ChMDFe := chDFe;
       Resp.DhRecbto := dhRecbto;
       Resp.NProt := nProt;
       Resp.DigVal := digVal;
@@ -715,7 +746,7 @@ begin
       begin
         Resp.ChMDFe := fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Items[0].chMDFe;
         Resp.NProt := fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Items[0].nProt;
-        Resp.MotivoMDFe := MDFeRetorno.ProtMDFe.Items[0].xMotivo;
+        Resp.MotivoMDFe := MDFeRetorno.ProtDFe.Items[0].xMotivo;
       end;
 
       fpCmd.Resposta := Msg + sLineBreak;
@@ -732,10 +763,10 @@ var
 begin
   Resp := TRetornoItemResposta.Create(
     'MDFe' + Trim(IntToStr(StrToInt(copy(
-    fACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtMDFe.Items
-    [ItemID].chMDFe, 26, 9)))), resINI);
+    fACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtDFe.Items
+    [ItemID].chDFe, 26, 9)))), resINI);
   try
-    with fACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtMDFe.Items[ItemID] do
+    with fACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtDFe.Items[ItemID] do
     begin
       Resp.Versao := verAplic;
       Resp.TpAmb := TpAmbToStr(TpAmb);
@@ -743,7 +774,7 @@ begin
       Resp.CStat := cStat;
       Resp.XMotivo := XMotivo;
       Resp.CUF := fACBrMDFe.WebServices.Recibo.MDFeRetorno.cUF;
-      Resp.ChMDFe := chMDFe;
+      Resp.ChMDFe := chDFe;
       Resp.DhRecbto := dhRecbto;
       Resp.NProt := nProt;
       Resp.digVal := digVal;
@@ -808,6 +839,274 @@ begin
   finally
     Resp.Free;
   end;
+end;
+
+procedure TACBrObjetoMDFe.RespostaDistribuicaoDFe;
+var
+  Resp: TDistribuicaoDFeResposta;
+  sTemMais: String;
+begin
+  Resp := TDistribuicaoDFeResposta.Create(resINI);
+  try
+    with fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt do
+    begin
+      Resp.Versao := versao;
+      Resp.VerAplic := VerAplic;
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.CStat := cStat;
+      Resp.XMotivo := XMotivo;
+      Resp.dhResp := dhResp;
+      Resp.ultNSU := ultNSU;
+      Resp.maxNSU := maxNSU;
+      Resp.arquivo := fACBrMDFe.WebServices.DistribuicaoDFe.NomeArq;
+
+      if cStat = 137 then
+        sTemMais := '1'  // Sim
+      else
+        sTemMais := '0'; // Não
+
+      Resp.indCont := sTemMais;
+
+      fpCmd.Resposta := Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+
+end;
+
+procedure TACBrObjetoMDFe.RespostaItensDistribuicaoDFeResMDFe(ItemID: integer);
+var
+  Resp: TDistribuicaoDFeItemResposta;
+begin
+  Resp := TDistribuicaoDFeItemResposta.Create(
+    'ResMDFe' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
+  try
+    with fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resDFe do
+    begin
+      Resp.NSU := fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
+      Resp.chMDFe := chDFe;
+      Resp.CNPJCPF := CNPJCPF;
+      Resp.xNome := xNome;
+      Resp.IE := IE;
+      Resp.dhEmi := dhEmi;
+      Resp.vNF := vNF;
+      Resp.digVal := digVal;
+      Resp.dhRecbto := dhRecbto;
+      Resp.cSitMDFe := SituacaoDFeToStr(cSitDFe);
+      Resp.nProt := nProt;
+      Resp.XML := fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
+      Resp.Arquivo := fACBrMDFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
+      Resp.schema := SchemaDFeToStr(fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+procedure TACBrObjetoMDFe.RespostaItensDistribuicaoDFeResEve(ItemID: integer);
+begin
+  // Atualmente o DistribuicaoDFe do MDF-e não retorna Resumo de Eventos.
+end;
+
+procedure TACBrObjetoMDFe.RespostaItensDistribuicaoDFeProEve(ItemID: integer);
+var
+  Resp: TDistribuicaoDFeItemResposta;
+begin
+  Resp := TDistribuicaoDFeItemResposta.Create(
+    'ProEve' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
+  try
+    with fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento do
+    begin
+      Resp.NSU := fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
+      Resp.chMDFe := chDFe;
+      Resp.cOrgao := cOrgao;
+      Resp.CNPJ := CNPJ;
+      Resp.Id := Id;
+      Resp.dhEvento := dhEvento;
+      Resp.nSeqEvento := nSeqEvento;
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.tpEvento := TpEventoToStr(tpEvento);
+      Resp.verEvento := verEvento;
+
+      with detEvento do
+      begin
+        Resp.descEvento := descEvento;
+        Resp.xJust := xJust;
+        Resp.EmiCnpj := emit.CNPJ;
+        Resp.EmiIE := emit.IE;
+        Resp.EmixNome := emit.xNome;
+        Resp.cteNProt := CTe.nProt;
+        Resp.cteChvCte := CTe.chCTe;
+        Resp.cteDhemi := CTe.dhEmi;
+        Resp.cteModal := TpModalToStr(CTe.modal);
+        Resp.cteDhRebcto := CTe.dhRecbto;
+      end;
+
+      Resp.XML := fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
+      Resp.Arquivo := fACBrMDFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
+      Resp.schema := SchemaDFeToStr(fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+
+end;
+
+procedure TACBrObjetoMDFe.RespostaItensDistribuicaoDFeInfeve(ItemID: integer);
+var
+  Resp: TDistribuicaoDFeItemResposta;
+begin
+  Resp := TDistribuicaoDFeItemResposta.Create(
+    'Infeve' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
+  try
+    with fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento.RetInfevento do
+    begin
+      Resp.Id := Id;
+      Resp.VerAplic := VerAplic;
+      Resp.tpAmb := TpAmbToStr(tpAmb);
+      Resp.cOrgao := cOrgao;
+      Resp.chMDFe := chDFe;
+      Resp.CStat := cStat;
+      Resp.CNPJDest := CNPJDest;
+      Resp.cOrgaoAutor := cOrgaoAutor;
+      Resp.tpEvento := TpEventoToStr(tpEvento);
+      Resp.nSeqEvento := nSeqEvento;
+      Resp.xEvento := xEvento;
+      Resp.XMotivo := XMotivo;
+      Resp.dhRegEvento := dhRegEvento;
+      Resp.emailDest := emailDest;
+      Resp.nProt := nProt;
+
+      Resp.XML := fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
+      Resp.Arquivo := fACBrMDFe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
+      Resp.schema := SchemaDFeToStr(fACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
+{ TMetodoDistribuicaoDFePorChaveMDFe }
+
+{ Params:
+          0 - CNPJ do autor da consulta
+          1 - Chave da MDF-e que se deseja baixar o XML
+}
+procedure TMetodoDistribuicaoDFePorChaveMDFe.Executar;
+var
+  ACNPJ: String;
+  AChave: String;
+  I: Integer;
+begin
+  ACNPJ := fpCmd.Params(0);
+  AChave := fpCmd.Params(1);
+
+  with TACBrObjetoMDFe(fpObjetoDono) do
+  begin
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
+
+    ACBrMDFe.DistribuicaoDFePorChaveMDFe(ACNPJ, AChave);
+
+    RespostaDistribuicaoDFe;
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeResMDFe(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeResEve(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeProEve(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeInfEve(I);
+  end;
+
+end;
+
+{ TMetodoDistribuicaoDFePorUltNSU }
+
+{ Params:
+          0 - CNPJ do autor da consulta
+          1 - Numero do último NSU retornado na consulta anterior
+}
+procedure TMetodoDistribuicaoDFePorUltNSU.Executar;
+var
+  ACNPJ: String;
+  AUltNSU: String;
+  I: Integer;
+begin
+  ACNPJ := fpCmd.Params(0);
+  AUltNSU := fpCmd.Params(1);
+
+  with TACBrObjetoMDFe(fpObjetoDono) do
+  begin
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
+
+    ACBrMDFe.DistribuicaoDFePorUltNSU(ACNPJ, AUltNSU);
+
+    RespostaDistribuicaoDFe;
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeResMDFe(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeResEve(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeProEve(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeInfeve(I);
+  end;
+end;
+
+{ TMetodoDistribuicaoDFePorNSU }
+
+{ Params:
+          0 - CNPJ do autor da consulta
+          1 - Numero do NSU a ser consultado
+}
+procedure TMetodoDistribuicaoDFePorNSU.Executar;
+var
+  ACNPJ: String;
+  ANSU: String;
+  I: Integer;
+begin
+  ACNPJ := fpCmd.Params(0);
+  ANSU := fpCmd.Params(1);
+
+  with TACBrObjetoMDFe(fpObjetoDono) do
+  begin
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
+
+    ACBrMDFe.DistribuicaoDFePorUltNSU(ACNPJ, ANSU);
+
+    RespostaDistribuicaoDFe;
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeResMDFe(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeResEve(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeProEve(I);
+
+    for I := 0 to ACBrMDFe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
+      RespostaItensDistribuicaoDFeInfeve(I);
+  end;
+
 end;
 
 function TACBrObjetoMDFe.GerarMDFeIni(XML: string): string;
@@ -1370,11 +1669,12 @@ end;
           3 - Assunto: String com Assunto do e-mail
           4 - Copia: String com e-mails copia (Separados ;)
           5 - Anexo: String com Path de Anexos (Separados ;)
+          6 - Replay: String com endereços replay (Separados ;)
 }
 procedure TMetodoEnviarEmail.Executar;
 var
-  sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias, AAnexos: string;
-  slMensagemEmail, slCC, slAnexos: TStringList;
+  sAssunto, ADestinatario, APathXML, AAssunto, AEmailCopias, AAnexos, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
   CargaDFe: TACBrCarregarMDFe;
   AEnviaPDF: Boolean;
 begin
@@ -1384,6 +1684,7 @@ begin
   AAssunto := fpCmd.Params(3);
   AEmailCopias := fpCmd.Params(4);
   AAnexos := fpCmd.Params(5);
+  AReplay := fpCmd.Params(6);
 
   with TACBrObjetoMDFe(fpObjetoDono) do
   begin
@@ -1392,6 +1693,7 @@ begin
     slMensagemEmail := TStringList.Create;
     slCC := TStringList.Create;
     slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
     try
       CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, APathXML);
       try
@@ -1407,6 +1709,9 @@ begin
         slAnexos.DelimitedText := sLineBreak;
         slAnexos.Text := StringReplace(AAnexos, ';', sLineBreak, [rfReplaceAll]);
 
+        slReplay.DelimitedText := sLineBreak;
+        slReplay.Text := StringReplace(AReplay, ';', sLineBreak, [rfReplaceAll]);
+
         try
           ACBrMDFe.Manifestos.Items[0].EnviarEmail(ADestinatario,
             IfThen( NaoEstaVazio(AAssunto), AAssunto, sAssunto),
@@ -1415,8 +1720,10 @@ begin
             // Enviar PDF junto
             slCC,
             // Lista com emails que serão enviado cópias - TStrings
-            slAnexos);
-          // Lista de slAnexos - TStrings
+            slAnexos,
+            // Lista de slAnexos - TStrings
+            slReplay);
+            // Lista de slReplay - TStrings
 
           fpCmd.Resposta := 'Email enviado com sucesso';
         except
@@ -1430,6 +1737,7 @@ begin
       slCC.Free;
       slAnexos.Free;
       slMensagemEmail.Free;
+      slReplay.Free;
     end;
   end;
 end;
@@ -1451,7 +1759,7 @@ begin
     ACBrMDFe.WebServices.Recibo.Executar;
 
     RespostaRecibo;
-    for I := 0 to ACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtMDFe.Count - 1 do
+    for I := 0 to ACBrMDFe.WebServices.Recibo.MDFeRetorno.ProtDFe.Count - 1 do
       RespostaItensRecibo(I);
 
     if ACBrMDFe.Configuracoes.Geral.Salvar then
@@ -1472,8 +1780,8 @@ begin
 
   with TACBrObjetoMDFe(fpObjetoDono) do
   begin
-    if not ValidarCNPJ(ACNPJ) then
-      raise Exception.Create('CNPJ ' + ACNPJ + ' invalido.');
+    if not ValidarCNPJouCPF(ACNPJ) then
+      raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' invalido.');
 
     ACBrMDFe.WebServices.ConsultaMDFeNaoEnc(ACNPJ);
     RespostaMDFeNaoEnc;
@@ -1527,8 +1835,8 @@ begin
           infEvento.CNPJCPF := copy(chave, 7, 14)
         else
         begin
-          if not ValidarCNPJ(ACNPJ) then
-            raise Exception.Create('CNPJ ' + ACNPJ + ' inválido.');
+          if not ValidarCNPJouCPF(ACNPJ) then
+            raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' inválido.');
         end;
 
         infEvento.cOrgao := StrToIntDef(copy(OnlyNumber(chave), 1, 2), 0);
@@ -2192,8 +2500,8 @@ begin
         infEvento.CNPJCPF := copy(OnlyNumber(ACBrMDFe.WebServices.Consulta.MDFeChave), 7, 14)
       else
       begin
-        if not ValidarCNPJ(ACNPJ) then
-          raise Exception.Create('CNPJ ' + ACNPJ + ' inválido.');
+        if not ValidarCNPJouCPF(ACNPJ) then
+          raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' inválido.');
       end;
 
       infEvento.cOrgao := StrToIntDef(

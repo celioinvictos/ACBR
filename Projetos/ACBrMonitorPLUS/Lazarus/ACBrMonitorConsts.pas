@@ -328,6 +328,7 @@ const
   CMetodoLoadfromfile =                'loadfromfile';
   CMetodoLerini =                      'lerini';
   CMetodoSetcertificado =              'setcertificado';
+  CMetodoDistribuicaoDFeporChaveMDFe = 'distribuicaodfeporchavemdfe';
   CMetodoRestaurar =                   'restaurar';
   CMetodoOcultar =                     'ocultar';
   CMetodoEncerrarmonitor =             'encerrarmonitor';
@@ -602,6 +603,10 @@ const
   CMetodoSetColunasFonteNormal  = 'setcolunasfontenormal';
   CMetodoCortaPapel             = 'cortapapel';
   CMetodoSetCortaPapel          = 'setcortapapel';
+  CMetodoImprimirImagemArquivo  = 'imprimirimagemarquivo';
+  CMetodoImprimirLogo           = 'imprimirlogo';
+  CMetodoGravarLogoArquivo      = 'gravarlogoarquivo';
+  CMetodoApagarLogo             = 'apagarlogo';
 
   CExtensaoXML =                     '.xml';
 
@@ -809,6 +814,10 @@ const
   CKeyIdContribuinte =               'IdContribuinte';
   CKeyTipoContribuinte =             'TipoContribuinte';
 
+  CSecRespTecnico =                  'RespTecnico';
+  CKeyCSRT =                         'CSRT';
+  CKeyidCSRT =                       'idCSRT';
+
   CSecProxy =                        'Proxy';
   CKeyProxyHost =                    'Host';
   CKeyProxyPorta =                   'Porta';
@@ -850,6 +859,8 @@ const
   CKeyNFCeUsaCodigoEanImpressao =      'UsaCodigoEanImpressao';
   CKeyNFCeImprimeNomeFantasia =        'ImprimeNomeFantasia';
   CKeyNFCeUsarIntegrador =             'UsarIntegrador';
+  CKeyNFCEImprimeTributos =            'ImprimeTributos';
+  CKeyNFCeExibeTotalTributosItem =     'ExibeTotalTributosItem';
 
   CSecDANFE =                          'DANFE';
   CKeyDANFEModelo =                    'Modelo';
@@ -896,6 +907,20 @@ const
   CKeyDANFCeMargemDir =                'MargemDir';
   CKeyDANFCeMargemEsq =                'MargemEsq';
   CKeyDANFCeLarguraBobina =            'LarguraBobina';
+
+  CSecDANFCeTipoPagto =                'DANFCeTipoPagto';
+  CKeyDANFCeTipoPagtoTipo =            'Tipo';
+  CKeyDANFCeTipoPagtoBandeira =        'Bandeira';
+  CKeyDANFCeTipoPagtoAutorizacao =     'Autorizacao';
+
+  CSecFonte =                          'FonteLinhaItem';
+  CKeyFonteName =                      'Name';
+  CKeyFonteColor =                     'Color';
+  CKeyFonteSize =                      'Size';
+  CKeyFonteStyleBold =                 'Bold';
+  CKeyFonteStyleItalic =               'Italic';
+  CKeyFonteStyleUnderline =            'Underline';
+  CKeyFonteStyleStrckout =             'Strckout';
 
   CSecDACTE =                          'DACTE';
   CKeyDACTETamanhoPapel =              'TamanhoPapel';
