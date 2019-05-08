@@ -52,12 +52,11 @@ unit pcesS2399;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2399Collection = class;
   TS2399CollectionItem = class;
   TEvtTSVTermino = class;
   TInfoTSVTermino = class;
@@ -65,26 +64,25 @@ type
   TDmDevCollectionItem = class;
   TDmDevCollection = class;
 
-  TS2399Collection = class(TOwnedCollection)
+  TS2399Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2399CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2399CollectionItem);
   public
-    function Add: TS2399CollectionItem;
+    function Add: TS2399CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2399CollectionItem;
     property Items[Index: Integer]: TS2399CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2399CollectionItem = class(TCollectionItem)
+  TS2399CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTSVTermino : TEvtTSVTermino;
-    procedure setEvtTSVTermino(const Value: TEvtTSVTermino);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTSVTermino: TEvtTSVTermino read FEvtTSVTermino write setEvtTSVTermino;
+    property EvtTSVTermino: TEvtTSVTermino read FEvtTSVTermino write FEvtTSVTermino;
   end;
 
   TEvtTSVTermino = class(TeSocialEvento)
@@ -93,14 +91,13 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeTrabSemVInc : TideTrabSemVinc;
     FInfoTSVTermino: TInfoTSVTermino;
-    FACBreSocial: TObject;
 
     procedure GerarInfoTSVTermino(obj: TInfoTSVTermino);
     procedure GerarVerbasResc(obj: TVerbasRescS2399);
     procedure GerarIdeTrabSemVinc(obj: TIdeTrabSemVinc);
     procedure GerarDmDev(pDmDev: TDmDevCollection);
    public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
 
     function GerarXML: boolean; override;
@@ -112,7 +109,7 @@ type
     property InfoTSVTermino: TInfoTSVTermino read FInfoTSVTermino write FInfoTSVTermino;
   end;
 
-  TinfoTSVTermino = class(TPersistent)
+  TinfoTSVTermino = class(TObject)
   private
     FdtTerm : TDateTime;
     FmtvDesligTSV : string;
@@ -136,23 +133,22 @@ type
     property pensAlim: tpPensaoAlim read FPensAlim write FPensAlim;
   end;
 
-  TDmDevCollection = class(TCollection)
+  TDmDevCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TDMDevCollectionItem;
     procedure SetItem(Index: Integer; Value: TDMDevCollectionItem);
   public
-    constructor Create; reintroduce;
-
-    function Add: TDMDevCollectionItem;
+    function Add: TDMDevCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDMDevCollectionItem;
     property Items[Index: Integer]: TDMDevCollectionItem read GetItem write SetItem; default;
   end;
 
-  TDmDevCollectionItem = class(TCollectionItem)
+  TDmDevCollectionItem = class(TObject)
   private
     FIdeDmDev: string;
     FIdeEstabLot: TideEstabLotCollection;
   public
-    constructor Create; reintroduce;
+    constructor Create;
 
     property ideDmDev: string read FIdeDmDev write FIdeDmDev;
     property ideEstabLot: TideEstabLotCollection read FIdeEstabLot write FIdeEstabLot;
@@ -177,8 +173,7 @@ uses
 
 function TS2399Collection.Add: TS2399CollectionItem;
 begin
-  Result := TS2399CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2399Collection.GetItem(Index: Integer): TS2399CollectionItem;
@@ -191,11 +186,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2399Collection.New: TS2399CollectionItem;
+begin
+  Result := TS2399CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2399CollectionItem }
 
 constructor TS2399CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS2399;
+  inherited Create;
+  FTipoEvento    := teS2399;
   FEvtTSVTermino := TEvtTSVTermino.Create(AOwner);
 end;
 
@@ -204,11 +206,6 @@ begin
   FEvtTSVTermino.Free;
 
   inherited;
-end;
-
-procedure TS2399CollectionItem.setEvtTSVTermino(const Value: TEvtTSVTermino);
-begin
-  FEvtTSVTermino.Assign(Value);
 end;
 
 { TinfoTSVTermino }
@@ -232,15 +229,9 @@ end;
 
 { TDmDevCollection }
 
-constructor TDmDevCollection.Create;
-begin
-  inherited Create(TDMDevCollectionItem);
-end;
-
 function TDmDevCollection.Add: TDMDevCollectionItem;
 begin
-  Result := TDMDevCollectionItem(inherited Add);
-  Result.Create;
+  Result := Self.New;
 end;
 
 function TDmDevCollection.GetItem(Index: Integer): TDMDevCollectionItem;
@@ -253,10 +244,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TDmDevCollection.New: TDMDevCollectionItem;
+begin
+  Result := TDmDevCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TDMDevCollectionItem }
 
 constructor TDMDevCollectionItem.Create;
 begin
+  inherited Create;
   FIdeEstabLot := TideEstabLotCollection.Create;
 end;
 
@@ -274,16 +272,15 @@ end;
 
 constructor TEvtTSVTermino.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento2.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
+  FIdeEvento      := TIdeEvento2.Create;
+  FIdeEmpregador  := TIdeEmpregador.Create;
   FIdeTrabSemVInc := TideTrabSemVinc.Create;
   FInfoTSVTermino := TInfoTSVTermino.Create;
 end;
 
-destructor TEvtTSVTermino.destroy;
+destructor TEvtTSVTermino.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -322,9 +319,11 @@ begin
     Gerador.wCampo(tcDe2, '', 'vrAlim',      1, 14, 0, obj.vrAlim);
   end;
 
-  GerarVerbasResc(obj.verbasResc);
-  GerarMudancaCPF3(obj.mudancaCPF);
-//  GerarRemunOutrEmpr(obj.verbasResc.infoMV.remunOutrEmpr);
+  if obj.mtvDesligTSV <> '07' then
+     GerarVerbasResc(obj.verbasResc);
+  if (VersaoDF >= ve02_05_00) and (obj.mtvDesligTSV = '07') then
+     GerarMudancaCPF3(obj.mudancaCPF);
+	 
   GerarQuarentena(obj.quarentena);
 
   Gerador.wGrupo('/infoTSVTermino');
@@ -401,7 +400,7 @@ var
   sSecao, sFim: String;
   I, J, K, L, M: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -416,7 +415,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -459,7 +457,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with infoTSVTermino.verbasResc.dmDev.Add do
+        with infoTSVTermino.verbasResc.dmDev.New do
         begin
           ideDmDev := sFim;
 
@@ -473,7 +471,7 @@ begin
             if (sFim = 'FIM') or (Length(sFim) <= 0) then
               break;
 
-            with ideEstabLot.Add do
+            with ideEstabLot.New do
             begin
               tpInsc     := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
               nrInsc     := sFim;
@@ -490,7 +488,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with detVerbas.Add do
+                with detVerbas.New do
                 begin
                   codRubr    := sFim;
                   ideTabRubr := INIRec.ReadString(sSecao, 'ideTabRubr', '');
@@ -510,7 +508,7 @@ begin
                     if (sFim = 'FIM') or (Length(sFim) <= 0) then
                       break;
 
-                    with infoSaudeColet.detOper.Add do
+                    with infoSaudeColet.detOper.New do
                     begin
                       cnpjOper := sFim;
                       regANS   := INIRec.ReadString(sSecao, 'regANS', '');
@@ -527,7 +525,7 @@ begin
                         if (sFim = 'FIM') or (Length(sFim) <= 0) then
                           break;
 
-                        with detPlano.Add do
+                        with detPlano.New do
                          begin
                           tpDep    := eSStrToTpDep(Ok, INIRec.ReadString(sSecao, 'tpDep', '00'));
                           cpfDep   := INIRec.ReadString(sSecao, 'cpfDep', '');
@@ -577,7 +575,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with infoTSVTermino.verbasResc.procJudTrab.Add do
+        with infoTSVTermino.verbasResc.procJudTrab.New do
         begin
           tpTrib    := eSStrToTpTributo(Ok, sFim);
           nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', EmptyStr);
@@ -602,7 +600,7 @@ begin
           if (sFim = 'FIM') or (Length(sFim) <= 0) then
             break;
 
-          with infoTSVTermino.VerbasResc.infoMV.remunOutrEmpr.Add do
+          with infoTSVTermino.VerbasResc.infoMV.remunOutrEmpr.New do
           begin
             TpInsc     := eSStrToTpInscricao(Ok, sFim);
             NrInsc     := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
@@ -620,8 +618,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

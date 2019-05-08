@@ -51,8 +51,8 @@ type
   {$ENDIF RTL230_UP}	
   TACBrMDFeDAMDFeClass = class(TACBrDFeReport)
    private
-    procedure SetMDFe(const Value: TComponent);
-    procedure ErroAbstract(NomeProcedure: String);
+    procedure SetACBrMDFe(const Value: TComponent);
+    procedure ErroAbstract(const NomeProcedure: String);
 
   protected
     FACBrMDFe: TComponent;
@@ -75,7 +75,7 @@ type
     procedure ImprimirEVENTO(MDFe: TMDFe = nil); virtual;
     procedure ImprimirEVENTOPDF(MDFe: TMDFe = nil); virtual;
   published
-    property ACBrMDFe: TComponent           read FACBrMDFe               write SetMDFe;
+    property ACBrMDFe: TComponent           read FACBrMDFe               write SetACBrMDFe;
     property ImprimeHoraSaida: Boolean      read FImprimirHoraSaida      write FImprimirHoraSaida;
     property ImprimeHoraSaida_Hora: String  read FImprimirHoraSaida_Hora write FImprimirHoraSaida_Hora;
     property TipoDAMDFe: TpcnTipoImpressao  read FTipoDAMDFe             write FTipoDAMDFe;
@@ -117,7 +117,7 @@ begin
      FACBrMDFe := nil;
 end;
 
-procedure TACBrMDFeDAMDFeClass.SetMDFe(const Value: TComponent);
+procedure TACBrMDFeDAMDFeClass.SetACBrMDFe(const Value: TComponent);
 var
   OldValue: TACBrMDFe;
 begin
@@ -145,7 +145,7 @@ begin
   end;
 end;
 
-procedure TACBrMDFeDAMDFeClass.ErroAbstract(NomeProcedure: String);
+procedure TACBrMDFeDAMDFeClass.ErroAbstract(const NomeProcedure: String);
 begin
   raise Exception.Create(NomeProcedure);
 end;

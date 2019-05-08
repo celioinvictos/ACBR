@@ -111,7 +111,6 @@ type
 
     function GerarXml: Boolean;
 
-  published
     property LayOutXML: TLayOutXML   read FLayOutXML   write SetLayOutXML;
     property NFSeWClass: TNFSeWClass read FNFSeWClass;
     property NFSe: TNFSe             read FNFSe        write FNFSe;
@@ -250,7 +249,7 @@ end;
 
 function TNFSeWClass.GerarXml: Boolean;
 begin
-  Result := False;
+//  Result := False;
   raise EACBrDFeException.Create(ClassName + '.GerarXml, não implementado');
 end;
 

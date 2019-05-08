@@ -49,47 +49,43 @@ unit pcesS1298;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS1298Collection = class;
   TS1298CollectionItem = class;
   TEvtReabreEvPer = class;
 
-  TS1298Collection = class(TOwnedCollection)
+  TS1298Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1298CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1298CollectionItem);
   public
-    function Add: TS1298CollectionItem;
+    function Add: TS1298CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1298CollectionItem;
     property Items[Index: Integer]: TS1298CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1298CollectionItem = class(TCollectionItem)
+  TS1298CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtReabreEvPer: TEvtReabreEvPer;
-
-    procedure setEvtReabreEvPer(const Value: TEvtReabreEvPer);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtReabreEvPer: TEvtReabreEvPer read FEvtReabreEvPer write setEvtReabreEvPer;
+    property EvtReabreEvPer: TEvtReabreEvPer read FEvtReabreEvPer write FEvtReabreEvPer;
   end;
 
   TEvtReabreEvPer = class(TESocialEvento)
   private
     FIdeEvento: TIdeEvento4;
     FIdeEmpregador: TIdeEmpregador;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -109,8 +105,7 @@ uses
 
 function TS1298Collection.Add: TS1298CollectionItem;
 begin
-  Result := TS1298CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1298Collection.GetItem(Index: Integer): TS1298CollectionItem;
@@ -123,10 +118,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1298Collection.New: TS1298CollectionItem;
+begin
+  Result := TS1298CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 {TS1298CollectionItem}
 constructor TS1298CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1298;
+  inherited Create;
+  FTipoEvento     := teS1298;
   FEvtReabreEvPer := TEvtReabreEvPer.Create(AOwner);
 end;
 
@@ -137,22 +139,16 @@ begin
   inherited;
 end;
 
-procedure TS1298CollectionItem.setEvtReabreEvPer(const Value: TEvtReabreEvPer);
-begin
-  FEvtReabreEvPer.Assign(Value);
-end;
-
 { TEvtSolicTotal }
 constructor TEvtReabreEvPer.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento4.Create;
+  FIdeEvento     := TIdeEvento4.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
 end;
 
-destructor TEvtReabreEvPer.destroy;
+destructor TEvtReabreEvPer.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -193,7 +189,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -208,7 +204,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
       ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -219,8 +214,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

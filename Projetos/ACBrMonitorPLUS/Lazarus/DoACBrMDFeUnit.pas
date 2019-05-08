@@ -54,7 +54,8 @@ public
   function GerarMDFeIni(XML: string): string;
   procedure RespostaManifesto(pImprimir: boolean; pImpressora: string);
   procedure RespostaItensMDFe(ManifestoID: integer = 0; ItemID: integer = 0; Gerar: boolean = False);
-  procedure RespostaMDFeNaoEnc;
+  procedure RespostaPadrao;
+  procedure RespostaMDFeNaoEnc(ItemID: integer = 0);
   procedure RespostaEncerramento;
   procedure RespostaEnvio;
   procedure RespostaRetorno;
@@ -367,15 +368,15 @@ begin
   ListaDeMetodos.Add(CMetodoGerarchave);
   ListaDeMetodos.Add(CMetodoVersao);
   ListaDeMetodos.Add(CMetodoSetTipoImpressao);
+  ListaDeMetodos.Add(CMetodoEnviarEvento);
+  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporChaveMDFe);
+  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporUltNSU);
+  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporNSU);
+
   ListaDeMetodos.Add(CMetodoSavetofile);
   ListaDeMetodos.Add(CMetodoLoadfromfile);
   ListaDeMetodos.Add(CMetodoLerini);
   ListaDeMetodos.Add(CMetodoSetcertificado);
-  ListaDeMetodos.Add(CMetodoEnviarEvento);
-  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporChaveMDFe);
-  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporNSU);
-  ListaDeMetodos.Add(CMetodoDistribuicaoDFeporUltNSU);
-
   ListaDeMetodos.Add(CMetodoRestaurar);
   ListaDeMetodos.Add(CMetodoOcultar);
   ListaDeMetodos.Add(CMetodoEncerrarmonitor);
@@ -437,7 +438,8 @@ begin
     33 : AMetodoClass := TMetodoDistribuicaoDFeporUltNSU;
     34 : AMetodoClass := TMetodoDistribuicaoDFeporNSU;
 
-    35..49 : DoACbr(ACmd);
+    else
+      DoACbr(ACmd);
   end;
 
   if Assigned(AMetodoClass) then
@@ -573,6 +575,29 @@ begin
   end;
 end;
 
+procedure TACBrObjetoMDFe.RespostaPadrao;
+var
+  Resp: TPadraoMDFeResposta ;
+begin
+  Resp := TPadraoMDFeResposta.Create('NAOENCERRADOS',resINI);
+  try
+    with fACBrMDFe.WebServices.ConsMDFeNaoEnc do
+    begin
+      Resp.Versao := verAplic;
+      Resp.TpAmb := TpAmbToStr(TpAmb);
+      Resp.VerAplic := VerAplic;
+      Resp.CStat := cStat;
+      Resp.XMotivo := XMotivo;
+      Resp.CUF := cUF;
+
+      fpCmd.Resposta := Msg + sLineBreak;
+      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+    end;
+  finally
+    Resp.Free;
+  end;
+end;
+
 procedure TACBrObjetoMDFe.RespostaStatus;
 var
   Resp: TStatusServicoResposta;
@@ -698,30 +723,21 @@ begin
   end;
 end;
 
-procedure TACBrObjetoMDFe.RespostaMDFeNaoEnc;
+procedure TACBrObjetoMDFe.RespostaMDFeNaoEnc(ItemID: integer);
 var
   Resp: TNaoEncerradosResposta;
 begin
-  Resp := TNaoEncerradosResposta.Create(resINI);
+  Resp := TNaoEncerradosResposta.Create('NAOENCERRADOS' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
   try
     with fACBrMDFe.WebServices.ConsMDFeNaoEnc do
     begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cUF;
       Resp.CNPJ := CNPJCPF;
-      if InfMDFe.Count > 0 then
-      begin
-        Resp.ChMDFe := InfMDFe.Items[0].chMDFe;
-        Resp.NProt := InfMDFe.Items[0].nProt;
-      end;
-
-      fpCmd.Resposta := Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
+      Resp.ChMDFe := InfMDFe.Items[ItemID].chMDFe;
+      Resp.NProt := InfMDFe.Items[ItemID].nProt;
     end;
+
+    fpCmd.Resposta := fpCmd.Resposta + sLineBreak + Resp.Gerar;
+
   finally
     Resp.Free;
   end;
@@ -1775,6 +1791,7 @@ end;
 procedure TMetodoConsultaMDFeNaoEnc.Executar;
 var
   ACNPJ: String;
+  I: Integer;
 begin
   ACNPJ := fpCmd.Params(0);
 
@@ -1784,9 +1801,12 @@ begin
       raise Exception.Create('CNPJ/CPF ' + ACNPJ + ' invalido.');
 
     ACBrMDFe.WebServices.ConsultaMDFeNaoEnc(ACNPJ);
-    RespostaMDFeNaoEnc;
+    RespostaPadrao;
+    for I:= 0 to fACBrMDFe.WebServices.ConsMDFeNaoEnc.InfMDFe.Count -1  do
+      RespostaMDFeNaoEnc(I);
 
   end;
+
 end;
 
 { TMetodoEncerrarMDFe }
@@ -1828,7 +1848,7 @@ begin
         Chave := OnlyNumber(ACBrMDFe.Manifestos.Items[0].MDFe.infMDFe.ID);
 
       ACBrMDFe.EventoMDFe.Evento.Clear;
-      with ACBrMDFe.EventoMDFe.Evento.Add do
+      with ACBrMDFe.EventoMDFe.Evento.New do
       begin
         infEvento.CNPJCPF := ACNPJ;
         if Trim(infEvento.CNPJCPF) = '' then
@@ -2493,7 +2513,7 @@ begin
     ACBrMDFe.WebServices.Consulta.Executar;
 
     ACBrMDFe.EventoMDFe.Evento.Clear;
-    with ACBrMDFe.EventoMDFe.Evento.Add do
+    with ACBrMDFe.EventoMDFe.Evento.New do
     begin
       infEvento.CNPJCPF := ACNPJ;
       if Trim(infEvento.CNPJCPF) = '' then

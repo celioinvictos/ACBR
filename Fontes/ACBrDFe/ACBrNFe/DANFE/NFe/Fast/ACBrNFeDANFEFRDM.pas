@@ -201,9 +201,7 @@ type
     procedure ImprimirEVENTOPDF(ANFE: TNFe = nil);
     procedure ImprimirINUTILIZACAO(ANFE: TNFe = nil);
     procedure ImprimirINUTILIZACAOPDF(ANFE: TNFe = nil);
-
   end;
-
 
 implementation
 
@@ -1481,7 +1479,7 @@ begin
     Close;
     CreateDataSet;
 
-    if NaoEstaVazio(FNFe.Entrega.CNPJCPF) then
+    if NaoEstaVazio(FNFe.Entrega.xLgr) then
     begin
       Append;
 
@@ -1514,7 +1512,7 @@ begin
     Close;
     CreateDataSet;
 
-    if NaoEstaVazio(FNFe.Retirada.CNPJCPF) then
+    if NaoEstaVazio(FNFe.Retirada.xLgr) then
     begin
       Append;
 
@@ -1570,7 +1568,7 @@ begin
         FieldByName('DescricaoViaEstabelec').AsString := 'Via Estabelecimento';
     end;
 
-    if Assigned(FNFe) then
+    if Assigned(FNFe) and (FNFe.InfNFe.ID <> '') then
     begin
       if (DANFEClassOwner is TACBrNFeDANFEClass) and TACBrNFeDANFEClass(DANFEClassOwner).ExibeResumoCanhoto then
       begin
@@ -2348,8 +2346,8 @@ begin
     frxPDFExport.Title         := TITULO_PDF;
     frxPDFExport.Subject       := TITULO_PDF;
     frxPDFExport.Keywords      := TITULO_PDF;
-    frxPDFExport.EmbeddedFonts := False;
-    frxPDFExport.Background    := False;
+    frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
+    frxPDFExport.Background    := IncorporarBackgroundPdf;
 
     fsShowDialog := frxPDFExport.ShowDialog;
     try
@@ -2400,12 +2398,14 @@ var
 begin
   if PrepareReportEvento then
   begin
-    frxPDFExport.Author   := DANFEClassOwner.Sistema;
-    frxPDFExport.Creator  := DANFEClassOwner.Sistema;
-    frxPDFExport.Producer := DANFEClassOwner.Sistema;
-    frxPDFExport.Title    := TITULO_PDF;
-    frxPDFExport.Subject  := TITULO_PDF;
-    frxPDFExport.Keywords := TITULO_PDF;
+    frxPDFExport.Author        := DANFEClassOwner.Sistema;
+    frxPDFExport.Creator       := DANFEClassOwner.Sistema;
+    frxPDFExport.Producer      := DANFEClassOwner.Sistema;
+    frxPDFExport.Title         := TITULO_PDF;
+    frxPDFExport.Subject       := TITULO_PDF;
+    frxPDFExport.Keywords      := TITULO_PDF;
+    frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
+    frxPDFExport.Background    := IncorporarBackgroundPdf;
 
     fsShowDialog := frxPDFExport.ShowDialog;
     try
@@ -2446,12 +2446,14 @@ var
 begin
   if PrepareReportInutilizacao then
   begin
-    frxPDFExport.Author   := DANFEClassOwner.Sistema;
-    frxPDFExport.Creator  := DANFEClassOwner.Sistema;
-    frxPDFExport.Producer := DANFEClassOwner.Sistema;
-    frxPDFExport.Title    := TITULO_PDF;
-    frxPDFExport.Subject  := TITULO_PDF;
-    frxPDFExport.Keywords := TITULO_PDF;
+    frxPDFExport.Author        := DANFEClassOwner.Sistema;
+    frxPDFExport.Creator       := DANFEClassOwner.Sistema;
+    frxPDFExport.Producer      := DANFEClassOwner.Sistema;
+    frxPDFExport.Title         := TITULO_PDF;
+    frxPDFExport.Subject       := TITULO_PDF;
+    frxPDFExport.Keywords      := TITULO_PDF;
+    frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
+    frxPDFExport.Background    := IncorporarBackgroundPdf;
 
     fsShowDialog := frxPDFExport.ShowDialog;
     try

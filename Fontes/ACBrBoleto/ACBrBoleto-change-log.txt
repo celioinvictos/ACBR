@@ -49,6 +49,79 @@ Símbolo : Significado
 
 
 ver: 0.1.0
+
+30/04/2019
+-- ACBrBancoSafra --
+[-] Correção leitura do retorno CNAB400 quando a leitura da ocorrência de retorno.
+https://www.projetoacbr.com.br/forum/topic/49467-ajuste-retorno-banco-safra/
+
+26/04/2019
+-- ACBrBancoBrasil --
+[-] Correção para permitir o processamento do arquivo retorno CNAB400 para convênios de
+    6 posições. (Juliana Tamizou)
+https://www.projetoacbr.com.br/forum/topic/50789-tamanho-nosso-n%C3%BAmero-do-bb/?tab=comments#comment-335886
+
+24/04/2019
+-- ACBrBancoCaixa --
+[*] Ajustes na geração Remessa - CNAB400, adicionado novos campos
+    conforme especificação do manual atualizado Fevereiro/2009
+https://www.projetoacbr.com.br/forum/topic/50728-cnab-400-cef-vers%C3%A3o-fev2019/
+
+
+15/04/2019
+-- ACBrBancoBRB --
+[*] Correção na geração Remessa - CNAB400, validação Intrução para protesto
+https://www.projetoacbr.com.br/forum/topic/50713-arquivo-de-remessa-do-banco-de-bras%C3%ADlia-brb-no-cnab-400-%C3%A9-preciso-implementar-o-c%C3%B3digo-de-instru%C3%A7%C3%B5es-e-prazo-1%E2%81%B0-e-2%E2%81%B0/
+
+12/04/2019
+-- ACBrBancoNordeste --
+[*] Correção na geração Percentual Multa Remessa - CNAB400 
+https://www.projetoacbr.com.br/forum/topic/48999-propriedade-multavalorfixo-no-boleto-banco-do-nordeste/
+
+01/04/2019
+-- ACBrBancoBrasil --
+[+] Adicionado validação CNAB400 para codigo "88" - Negativação de Protesto
+https://www.projetoacbr.com.br/forum/topic/50239-negativa%C3%A7%C3%A3o-cnab-400-do-banco-do-brasil/
+
+-- ACBrBoleto --
+[+] Alterado mensagem calculo percentual de multa sem o arredondamento
+https://www.projetoacbr.com.br/forum/topic/49606-homologa%C3%A7%C3%A3o-santander-rejei%C3%A7%C3%A3o/
+
+-- ACBrBoleto, ACBrSantander --
+[+] Remessa CNAB240: Adicionado propriedade: "CasasDecimaisMoraJuros" Devido a difereças de
+qtd de Casas Decimais em Layouts na geração de Remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/49188-santander-casas-decimais-valor-morajuros/
+
+-- ACBrBancoSantander --
+[*] Remessa CNAB240: Ajuste na formatação Nosso Numero
+    Retorno CNAB240: Ajuste Leitura valores do título
+https://www.projetoacbr.com.br/forum/topic/50037-boleto-santander/
+
+-- ACBrBancoBradesco --
+[*] Remessa CNAB400: Ajuste no endereço Sacado
+https://www.projetoacbr.com.br/forum/topic/49394-altera%C3%A7%C3%A3o-remessa-bradesco-cnab400/
+
+-- ACBrBancoSicred --
+[*] Remessa CNAB240: Ajuste na geração DataMulta na Remessa .
+https://www.projetoacbr.com.br/forum/topic/49844-banco-sicr%C3%A9di-datamorajuros/
+
+-- ACBrBancoSafra --
+[*] Remessa CNAB400: Ajuste na validação de Instrução1 e Instrucao2.
+https://www.projetoacbr.com.br/forum/topic/50059-remessa-do-banco-safra-parou-de-cobrar-multa/
+
+-- ACBrBancoSafra --
+[*] Retorno CNAB400: Ajuste na validação de Retorno.
+https://www.projetoacbr.com.br/forum/topic/50059-remessa-do-banco-safra-parou-de-cobrar-multa/
+
+-- ACBrBancoUnicred --
+[*] Retorno CNAB400: Leitura de Retorno.
+https://www.projetoacbr.com.br/forum/topic/49516-acbrbancounicredes-ajuste-codigomulta/
+
+
+-- ACBrBancoBradesco --
+[-] Remessa CNAB240: Correção no segmento "R".
+https://www.projetoacbr.com.br/forum/topic/50069-boleto/
+
 -- ACBrBancoBradesco --
 [-] Retorno CNAB240: Correção na leitura do Nosso Numero. (Juliana Tamizou)
 https://www.projetoacbr.com.br/forum/topic/49512-nosso-numero-bradesco-240-continua-errado-na-leitura/

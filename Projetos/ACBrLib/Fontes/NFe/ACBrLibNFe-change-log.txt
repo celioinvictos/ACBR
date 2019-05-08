@@ -44,6 +44,52 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/04/2019
+-- ACBrLibNFeRespostas --
+[+] Adicionado campos de Resposta da Sefaz na ConsultaNFe (cMsg e xMsg).
+    Por: José M S Junior
+
+23/04/2019
+-- ACBrLibNFeRespostas --
+[-] Corrigido metodo ProcessarResposta da classe TDistribuicaoDFeResposta, para retornar corretamente o ultNsu e os itens do retorno.
+    Por: Rafael Dias
+
+18/04/2019
+-- ACBrLibNFeRespostas --
+[-] Corrigido metodo ProcessarResposta com path do XML retorno.
+    Por: Jose M S Junior
+
+15/04/2019
+-- ACBrLibNFeClass --
+[-] Corrigido metodo NFe_Cancelar adicionado a declaração de convenção de chamada.
+    Por: Rafael Dias
+
+11/04/2019
+-- ACBrLibNFeClass --
+[-] Corrigido metodo NFe_ConsultarRecibo.
+    Por: Rafael Dias
+
+10/04/2019
+-- ACBrLibNFeRespostas --
+[-] Corrigido erro ao enviar a NFe/NFCe para tratar o retorno correto.
+    Por: Rafael Dias
+[*] Melhoria na forma de tratar os retornos da lib.
+    Por: Rafael Dias
+[-] Corrigido nome campo chNFe, no retorno dos itens da NFe.
+    Por: Jose m S Junior
+
+28/03/2019
+-- ACBrLibNFe --
+[-] Corrigido erro ao salvar senha do certificado.
+    Por: Rafael Dias
+	
+27/03/2019
+-- ACBrLibNFe --
+[+] Ajustados metodos de impressão para ficar mais parecido com os metodos do ACBrMonitor.
+   Por: Rafael Dias
+[+] Adicionado metodos para carregar eventos.
+   Por: Rafael Dias
+
 07/08/2018
 -- ACBrLibNFeRespostas / ACBrLibNFeConst --
 [+] Adicionado todas as possíveis tags de retorno da Consulta de NFe

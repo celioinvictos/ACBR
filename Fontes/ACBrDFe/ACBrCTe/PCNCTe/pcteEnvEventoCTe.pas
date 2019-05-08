@@ -50,44 +50,38 @@ unit pcteEnvEventoCTe;
 interface
 
 uses
-  SysUtils, Classes,
-//{$IFNDEF VER130}
-//  Variants,
-//{$ENDIF}
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, pcnConsts, //pcnLeitor,
   pcteConversaoCTe, pcteEventoCTe, pcteConsts, pcnSignature;
 
 type
-  TInfEventoCollection     = class;
-  TInfEventoCollectionItem = class;
-  TEventoCTe               = class;
   EventoCTeException       = class(Exception);
+  TInfEventoCollectionItem = class;
 
-  TInfEventoCollection = class(TCollection)
+  TInfEventoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TInfEventoCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfEventoCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TInfEventoCollectionItem;
+    function Add: TInfEventoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TInfEventoCollectionItem;
     property Items[Index: Integer]: TInfEventoCollectionItem read GetItem write SetItem; default;
   end;
 
-  TInfEventoCollectionItem = class(TCollectionItem)
+  TInfEventoCollectionItem = class(TObject)
   private
     FInfEvento: TInfEvento;
     FRetInfEvento: TRetInfEvento;
     Fsignature: Tsignature;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-  published
     property InfEvento: TInfEvento       read FInfEvento    write FInfEvento;
     property signature: Tsignature       read Fsignature    write Fsignature;
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
   end;
 
-  TGeradorOpcoes = class(TPersistent)
+  TGeradorOpcoes = class(TObject)
   private
     FAjustarTagNro: Boolean;
     FNormatizarMunicipios: Boolean;
@@ -95,7 +89,7 @@ type
     FPathArquivoMunicipios: String;
     FValidarInscricoes: Boolean;
     FValidarListaServicos: Boolean;
-  published
+  public
     property AjustarTagNro: Boolean                read FAjustarTagNro         write FAjustarTagNro;
     property NormatizarMunicipios: Boolean         read FNormatizarMunicipios  write FNormatizarMunicipios;
     property GerarTagAssinatura: TpcnTagAssinatura read FGerarTagAssinatura    write FGerarTagAssinatura;
@@ -106,7 +100,7 @@ type
 
   { TEventoCTe }
 
-  TEventoCTe = class(TPersistent)
+  TEventoCTe = class(TObject)
   private
     FGerador: TGerador;
     FOpcoes: TGeradorOpcoes;
@@ -125,7 +119,6 @@ type
     function LerXMLFromString(const AXML: String): boolean;
     function ObterNomeArquivo(tpEvento: TpcnTpEvento): string;
     function LerFromIni(const AIniString: String; CCe: Boolean = True): Boolean;
-  published
     property Gerador: TGerador            read FGerador  write FGerador;
     property Opcoes: TGeradorOpcoes       read FOpcoes   write FOpcoes;
     property idLote: Integer              read FidLote   write FidLote;
@@ -146,6 +139,7 @@ uses
 
 constructor TEventoCTe.Create;
 begin
+  inherited Create;
   FGerador := TGerador.Create;
   FOpcoes  := TGeradorOpcoes.Create;
   FOpcoes.FAjustarTagNro := True;
@@ -153,7 +147,7 @@ begin
   FOpcoes.FGerarTagAssinatura := taSomenteSeAssinada;
   FOpcoes.FValidarInscricoes := False;
   FOpcoes.FValidarListaServicos := False;
-  FEvento  := TInfEventoCollection.Create(Self);
+  FEvento  := TInfEventoCollection.Create;
 end;
 
 destructor TEventoCTe.Destroy;
@@ -429,7 +423,7 @@ begin
   try
      RetEventoCTe.Leitor.Arquivo := AXML;
      Result := RetEventoCTe.LerXml;
-     with FEvento.Add do
+     with FEvento.New do
       begin
         infEvento.Id         := RetEventoCTe.InfEvento.Id;
         InfEvento.cOrgao     := RetEventoCTe.InfEvento.cOrgao;
@@ -464,7 +458,7 @@ begin
 
         for i := 0 to RetEventoCTe.InfEvento.detEvento.infCorrecao.Count -1 do
         begin
-          infEvento.detEvento.infCorrecao.Add;
+          infEvento.detEvento.infCorrecao.New;
           infEvento.detEvento.infCorrecao[i].grupoAlterado   := RetEventoCTe.InfEvento.detEvento.infCorrecao[i].grupoAlterado;
           infEvento.detEvento.infCorrecao[i].campoAlterado   := RetEventoCTe.InfEvento.detEvento.infCorrecao[i].campoAlterado;
           infEvento.detEvento.infCorrecao[i].valorAlterado   := RetEventoCTe.InfEvento.detEvento.infCorrecao[i].valorAlterado;
@@ -473,7 +467,7 @@ begin
 
         for i := 0 to RetEventoCTe.InfEvento.detEvento.infGTV.Count -1 do
         begin
-          infEvento.detEvento.infGTV.Add;
+          infEvento.detEvento.infGTV.New;
           infEvento.detEvento.infGTV[i].nDoc     := RetEventoCTe.InfEvento.detEvento.infGTV[i].nDoc;
           infEvento.detEvento.infGTV[i].id       := RetEventoCTe.InfEvento.detEvento.infGTV[i].id;
           infEvento.detEvento.infGTV[i].serie    := RetEventoCTe.InfEvento.detEvento.infGTV[i].serie;
@@ -484,7 +478,7 @@ begin
 
           for j := 0 to RetEventoCTe.InfEvento.detEvento.infGTV[i].infEspecie.Count -1 do
           begin
-            infEvento.detEvento.infGTV[i].infEspecie.Add;
+            infEvento.detEvento.infGTV[i].infEspecie.New;
             infEvento.detEvento.infGTV[i].infEspecie[j].tpEspecie := RetEventoCTe.InfEvento.detEvento.infGTV[i].infEspecie[j].tpEspecie;
             infEvento.detEvento.infGTV[i].infEspecie[j].vEspecie  := RetEventoCTe.InfEvento.detEvento.infGTV[i].infEspecie[j].vEspecie;
           end;
@@ -539,8 +533,7 @@ begin
  end;
 end;
 
-function TEventoCTe.LerFromIni(const AIniString: String;
-  CCe: Boolean): Boolean;
+function TEventoCTe.LerFromIni(const AIniString: String; CCe: Boolean): Boolean;
 var
   I, J, K: Integer;
   sSecao, sFim: String;
@@ -564,7 +557,7 @@ begin
       if (sFim = 'FIM') or (Length(sFim) <= 0) then
         break;
 
-      with Self.Evento.Add do
+      with Self.Evento.New do
       begin
         infEvento.chCTe              := INIRec.ReadString(sSecao, 'chCTe', '');
         infEvento.cOrgao             := INIRec.ReadInteger(sSecao, 'cOrgao', 0);
@@ -605,7 +598,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with Self.Evento.Items[I-1].InfEvento.detEvento.infCorrecao.Add do
+                with Self.Evento.Items[I-1].InfEvento.detEvento.infCorrecao.New do
                 begin
                   grupoAlterado   := INIRec.ReadString(sSecao, 'grupoAlterado', '');
                   campoAlterado   := INIRec.ReadString(sSecao, 'campoAlterado', '');
@@ -624,7 +617,7 @@ begin
 
           tePrestDesacordo:
             begin
-              infEvento.detEvento.xOBS := INIRec.ReadString(sSecao, 'nObs', '');
+              infEvento.detEvento.xOBS := INIRec.ReadString(sSecao, 'xObs', '');
             end;
 
           teGTV:
@@ -639,7 +632,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with Self.Evento.Items[I-1].InfEvento.detEvento.infGTV.Add do
+                with Self.Evento.Items[I-1].InfEvento.detEvento.infGTV.New do
                 begin
                   nDoc     := sFim;
                   id       := INIRec.ReadString(sSecao, 'id', '');
@@ -663,7 +656,7 @@ begin
                   if (sFim = 'FIM') or (Length(sFim) <= 0) then
                     break;
 
-                  with Self.Evento.Items[I-1].InfEvento.detEvento.infGTV.Items[J].infEspecie.Add do
+                  with Self.Evento.Items[I-1].InfEvento.detEvento.infGTV.Items[J].infEspecie.New do
                   begin
                     tpEspecie := StrToTEspecie(Ok, sFim);
                     vEspecie  := StringToFloatDef(INIRec.ReadString(sSecao, 'vEspecie', ''), 0);
@@ -715,13 +708,7 @@ end;
 
 function TInfEventoCollection.Add: TInfEventoCollectionItem;
 begin
-  Result := TInfEventoCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TInfEventoCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TInfEventoCollectionItem);
+  Result := Self.New;
 end;
 
 function TInfEventoCollection.GetItem(
@@ -736,10 +723,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TInfEventoCollection.New: TInfEventoCollectionItem;
+begin
+  Result := TInfEventoCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TInfEventoCollectionItem }
 
 constructor TInfEventoCollectionItem.Create;
 begin
+  inherited Create;
   FInfEvento := TInfEvento.Create;
   Fsignature := Tsignature.Create;
   FRetInfEvento := TRetInfEvento.Create;

@@ -49,7 +49,8 @@ unit pcesS1010;
 interface
 
 uses
-  SysUtils, Classes, ACBrUtil,
+  SysUtils, Classes, Contnrs,
+  ACBrUtil,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -66,35 +67,34 @@ type
   TIdeProcessoFGTSCollection = class;
   TIdeProcessoSindCollection = class;
 
-  TS1010Collection = class(TOwnedCollection)
+  TS1010Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1010CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1010CollectionItem);
   public
-    function Add: TS1010CollectionItem;
+    function Add: TS1010CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1010CollectionItem;
     property Items[Index: Integer]: TS1010CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1010CollectionItem = class(TCollectionItem)
+  TS1010CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTabRubrica: TEvtTabRubrica;
-    procedure setEvtTabRubrica(const Value: TEvtTabRubrica);
   public
     constructor Create(AOwner: TComponent); reintroduce;
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTabRubrica: TEvtTabRubrica read FEvtTabRubrica write setEvtTabRubrica;
+    property EvtTabRubrica: TEvtTabRubrica read FEvtTabRubrica write FEvtTabRubrica;
   end;
 
-  TProcessoCollection = class(TCollection)
+  TProcessoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TProcesso;
     procedure SetItem(Index: Integer; Value: TProcesso);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TProcesso;
+    function Add: TProcesso; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TProcesso;
     property Items[Index: Integer]: TProcesso read GetItem write SetItem; default;
   end;
 
@@ -104,15 +104,14 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeEvento: TIdeEvento;
     FInfoRubrica: TInfoRubrica;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarIdeRubrica;
     procedure GerarDadosRubrica;
     procedure GerarIdeProcessoCP;
-    procedure GerarProcessos(pChave: string; pProcessoCollection: TProcessoCollection);
+    procedure GerarProcessos(const pChave: string; pProcessoCollection: TProcessoCollection);
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
 
     function GerarXML: boolean; override;
@@ -124,7 +123,7 @@ type
     property InfoRubrica: TInfoRubrica read FInfoRubrica write FInfoRubrica;
   end;
 
-  TInfoRubrica = class(TPersistent)
+  TInfoRubrica = class(TObject)
   private
     FDadosRubrica: TDadosRubrica;
     FideRubrica: TideRubrica;
@@ -144,7 +143,7 @@ type
     property novaValidade: TidePeriodo read getNovaValidade write FnovaValidade;
   end;
 
-  TDadosRubrica = class(TPersistent)
+  TDadosRubrica = class(TObject)
   private
     FDscRubr: string;
     FNatRubr: integer;
@@ -164,7 +163,7 @@ type
     function getIdeProcessoFGTS(): TIdeProcessoFGTSCollection;
     function getIdeProcessoSIND(): TIdeProcessoSindCollection;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
 
     function ideProcessoCPInst(): Boolean;
@@ -186,7 +185,7 @@ type
     property IdeProcessoSIND: TIdeProcessoSindCollection read getIdeProcessoSIND write FIdeProcessoSIND;
   end;
 
-  TIdeRubrica = class(TPersistent)
+  TIdeRubrica = class(TObject)
   private
     FCodRubr: string;
     FIdeTabRubr: string;
@@ -199,14 +198,13 @@ type
     property fimValid: string read FFimValid write FFimValid;
   end;
 
-  TIdeProcessoCPCollection = class(TCollection)
+  TIdeProcessoCPCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TIdeProcessoCPCollectionItem;
     procedure SetItem(Index: Integer; Value: TIdeProcessoCPCollectionItem);
   public
-    constructor create(); reintroduce;
-
-    function Add: TIdeProcessoCPCollectionItem;
+    function Add: TIdeProcessoCPCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TIdeProcessoCPCollectionItem;
     property Items[Index: Integer]: TIdeProcessoCPCollectionItem read GetItem write SetItem;
   end;
 
@@ -215,8 +213,6 @@ type
     FtpProc: tpTpProc;
     FExtDecisao: TpExtDecisao;
   public
-    constructor create; reintroduce;
-
     property tpProc: tpTpProc read FtpProc write FtpProc;
     property ExtDecisao: TpExtDecisao read FExtDecisao write FExtDecisao;
   end;
@@ -240,8 +236,7 @@ uses
 
 function TS1010Collection.Add: TS1010CollectionItem;
 begin
-  Result := TS1010CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1010Collection.GetItem(Index: Integer): TS1010CollectionItem;
@@ -255,11 +250,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1010Collection.New: TS1010CollectionItem;
+begin
+  Result := TS1010CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS1010CollectionItem }
 
 constructor TS1010CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1010;
+  inherited Create;
+  FTipoEvento    := teS1010;
   FEvtTabRubrica := TEvtTabRubrica.Create(AOwner);
 end;
 
@@ -270,22 +272,15 @@ begin
   inherited;
 end;
 
-procedure TS1010CollectionItem.setEvtTabRubrica(
-  const Value: TEvtTabRubrica);
-begin
-  FEvtTabRubrica.Assign(Value);
-end;
-
 { TEvtTabRubrica }
 
 constructor TEvtTabRubrica.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeEvento := TIdeEvento.Create;
-  FInfoRubrica := TInfoRubrica.Create;
+  FIdeEvento     := TIdeEvento.Create;
+  FInfoRubrica   := TInfoRubrica.Create;
 end;
 
 destructor TEvtTabRubrica.Destroy;
@@ -319,7 +314,7 @@ begin
   Gerador.wGrupo('/dadosRubrica');
 end;
 
-procedure TEvtTabRubrica.GerarProcessos(pChave: String; pProcessoCollection: TProcessoCollection);
+procedure TEvtTabRubrica.GerarProcessos(const pChave: String; pProcessoCollection: TProcessoCollection);
 var
   i: Integer;
 begin
@@ -421,7 +416,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -435,7 +430,6 @@ begin
       ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
 
       sSecao := 'ideEvento';
-      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -472,7 +466,7 @@ begin
           if (sFim = 'FIM') or (Length(sFim) <= 0) then
             break;
 
-          with infoRubrica.dadosRubrica.ideProcessoCP.Add do
+          with infoRubrica.dadosRubrica.ideProcessoCP.New do
           begin
             tpProc     := eSStrToTpProcesso(Ok, sFim);
             nrProc     := INIRec.ReadString(sSecao, 'nrProc', '');
@@ -493,7 +487,7 @@ begin
           if (sFim = 'FIM') or (Length(sFim) <= 0) then
             break;
 
-          with infoRubrica.dadosRubrica.ideProcessoIRRF.Add do
+          with infoRubrica.dadosRubrica.ideProcessoIRRF.New do
           begin
             nrProc  := INIRec.ReadString(sSecao, 'nrProc', '');
             codSusp := INIRec.ReadString(sSecao, 'codSusp', '');
@@ -512,7 +506,7 @@ begin
           if (sFim = 'FIM') or (Length(sFim) <= 0) then
             break;
 
-          with infoRubrica.dadosRubrica.ideProcessoFGTS.Add do
+          with infoRubrica.dadosRubrica.ideProcessoFGTS.New do
           begin
             nrProc := INIRec.ReadString(sSecao, 'nrProc', '');
           end;
@@ -530,7 +524,7 @@ begin
           if (sFim = 'FIM') or (Length(sFim) <= 0) then
             break;
 
-          with infoRubrica.dadosRubrica.ideProcessoSIND.Add do
+          with infoRubrica.dadosRubrica.ideProcessoSIND.New do
           begin
             nrProc := INIRec.ReadString(sSecao, 'nrProc', '');
           end;
@@ -548,8 +542,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;
@@ -557,9 +549,10 @@ end;
 
 { TInfoRubrica }
 
-constructor TInfoRubrica.create;
+constructor TInfoRubrica.Create;
 begin
-  FideRubrica := TideRubrica.Create;
+  inherited Create;
+  FideRubrica   := TideRubrica.Create;
   FDadosRubrica := nil;
   FnovaValidade := nil;
 end;
@@ -599,24 +592,11 @@ begin
   Result := Assigned(FnovaValidade);
 end;
 
-{ TIdeProcessoCPCollectionItem }
-
-constructor TIdeProcessoCPCollectionItem.create;
-begin
-
-end;
-
 { TIdeProcessoCPCollection }
 
 function TIdeProcessoCPCollection.Add: TIdeProcessoCPCollectionItem;
 begin
-  Result := TIdeProcessoCPCollectionItem(inherited Add());
-  Result.Create;
-end;
-
-constructor TIdeProcessoCPCollection.create;
-begin
-  inherited create(TIdeProcessoCPCollectionItem);
+  Result := Self.New;
 end;
 
 function TIdeProcessoCPCollection.GetItem(
@@ -631,11 +611,18 @@ begin
   Inherited SetItem(Index, Value);
 end;
 
+function TIdeProcessoCPCollection.New: TIdeProcessoCPCollectionItem;
+begin
+  Result := TIdeProcessoCPCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TDadosRubrica }
 
-constructor TDadosRubrica.create;
+constructor TDadosRubrica.Create;
 begin
-  FIdeProcessoCP := nil;
+  inherited Create;
+  FIdeProcessoCP   := nil;
   FIdeProcessoIRRF := nil;
   FIdeProcessoFGTS := nil;
   FIdeProcessoSIND := nil;
@@ -661,21 +648,21 @@ end;
 function TDadosRubrica.getIdeProcessoFGTS: TIdeProcessoFGTSCollection;
 begin
   if Not(Assigned(FIdeProcessoFGTS)) then
-    FIdeProcessoFGTS := TIdeProcessoFGTSCollection.Create(FIdeProcessoFGTS);
+    FIdeProcessoFGTS := TIdeProcessoFGTSCollection.Create;
   Result := FIdeProcessoFGTS;
 end;
 
 function TDadosRubrica.getIdeProcessoIRRF: TIdeProcessoIRRFCollection;
 begin
   if Not(Assigned(FIdeProcessoIRRF)) then
-    FIdeProcessoIRRF := TIdeProcessoIRRFCollection.Create(FIdeProcessoIRRF);
+    FIdeProcessoIRRF := TIdeProcessoIRRFCollection.Create;
   Result := FIdeProcessoIRRF;
 end;
 
 function TDadosRubrica.getIdeProcessoSIND: TIdeProcessoSindCollection;
 begin
   if Not(Assigned(FIdeProcessoSIND)) then
-    FIdeProcessoSIND := TIdeProcessoSINDCollection.Create(FIdeProcessoSIND);
+    FIdeProcessoSIND := TIdeProcessoSINDCollection.Create;
   Result := FIdeProcessoSIND;
 end;
 
@@ -703,13 +690,7 @@ end;
 
 function TProcessoCollection.Add: TProcesso;
 begin
-  Result := TProcesso(inherited Add());
-  Result.Create;
-end;
-
-constructor TProcessoCollection.create(AOwner: TPersistent);
-begin
-  inherited create(TProcesso);
+  Result := Self.New;
 end;
 
 function TProcessoCollection.GetItem(
@@ -722,6 +703,12 @@ procedure TProcessoCollection.SetItem(Index: Integer;
   Value: TProcesso);
 begin
   Inherited SetItem(Index, Value);
+end;
+
+function TProcessoCollection.New: TProcesso;
+begin
+  Result := TProcesso.Create;
+  Self.Add(Result);
 end;
 
 end.

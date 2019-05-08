@@ -49,12 +49,11 @@ unit pcesS2210;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2210Collection = class;
   TS2210CollectionItem = class;
   TEvtCAT = class;
   TCat = class;
@@ -67,27 +66,25 @@ type
   TLocalAcidente = class;
   TideLocalAcid = class;
 
-  TS2210Collection = class(TOwnedCollection)
+  TS2210Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2210CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2210CollectionItem);
   public
-    function Add: TS2210CollectionItem;
+    function Add: TS2210CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2210CollectionItem;
     property Items[Index: Integer]: TS2210CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2210CollectionItem = class(TCollectionItem)
+  TS2210CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtCAT: TEvtCAT;
-
-    procedure setEvtCAT(const Value: TEvtCAT);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtCAT: TEvtCAT read FEvtCAT write setEvtCAT;
+    property EvtCAT: TEvtCAT read FEvtCAT write FEvtCAT;
   end;
 
   TEvtCAT = class(TeSocialEvento)
@@ -96,7 +93,6 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FCat: TCat;
-    FACBreSocial: TObject;
 
     procedure GerarCAT;
     procedure GerarLocalAcidente;
@@ -106,7 +102,7 @@ type
     procedure GerarAtestado;
     procedure GerarCatOrigem;
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
 
     function GerarXML: boolean; override;
@@ -118,7 +114,7 @@ type
     property Cat: TCat read FCat write FCat;
   end;
           
-  TCat = class(TPersistent)
+  TCat = class(TObject)
   private
     FdtAcid: TDateTime;
     FTpAcid: string;
@@ -137,7 +133,7 @@ type
     FAtestado: TAtestado;
     FCatOrigem: TCatOrigem;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
 
     property dtAcid: TDateTime read FdtAcid write FdtAcid;
@@ -173,7 +169,7 @@ type
     Fobservacao: string;
     FEmitente: TEmitente;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
 
     property codCNES: String read FcodCNES write FcodCNES;
@@ -197,43 +193,43 @@ type
     property nrRecCatOrig: string read FnrRecCatOrig write FnrRecCatOrig;
   end;
 
-  TAgenteCausadorItem = class(TCollectionItem)
+  TAgenteCausadorItem = class(TObject)
   private
     FcodAgntCausador: Integer;
-  published
+  public
     property codAgntCausador: Integer read FcodAgntCausador write FcodAgntCausador;
   end;
 
-  TAgenteCausadorCollection = class(TCollection)
+  TAgenteCausadorCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TAgenteCausadorItem;
     procedure SetItem(Index: Integer; const Value: TAgenteCausadorItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TAgenteCausadorItem;
+    function Add: TAgenteCausadorItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TAgenteCausadorItem;
     property Items[Index: Integer]: TAgenteCausadorItem read GetItem write SetItem;
   end;
 
-  TParteAtingidaItem = class(TCollectionItem)
+  TParteAtingidaItem = class(TObject)
   private
     FcodParteAting: Integer;
     Flateralidade: tpLateralidade;
-  published
+  public
     property codParteAting: Integer read FcodParteAting write FcodParteAting;
     property lateralidade: tpLateralidade read Flateralidade write Flateralidade;
   end;
 
-  TParteAtingidaCollection = class(TCollection)
+  TParteAtingidaCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TParteAtingidaItem;
     procedure SetItem(Index: Integer; const Value: TParteAtingidaItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TParteAtingidaItem;
+    function Add: TParteAtingidaItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TParteAtingidaItem;
     property Items[Index: Integer]: TParteAtingidaItem read GetItem write SetItem;
   end;
 
-  TideLocalAcid = class(TPersistent)
+  TideLocalAcid = class(TObject)
   private
     FtpInsc: tpTpInsc;
     FnrInsc: string;
@@ -259,7 +255,7 @@ type
     FCodPostal: String;
     FideLocalAcid: TideLocalAcid;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
 
     property tpLocal: tpTpLocal read FtpLocal write FtpLocal;
@@ -288,8 +284,7 @@ uses
 
 function TS2210Collection.Add: TS2210CollectionItem;
 begin
-  Result := TS2210CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2210Collection.GetItem(Index: Integer): TS2210CollectionItem;
@@ -303,12 +298,19 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2210Collection.New: TS2210CollectionItem;
+begin
+  Result := TS2210CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2210CollectionItem }
 
 constructor TS2210CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento      := teS2210;
-  FEvtCAT := TEvtCAT.Create(AOwner);
+  inherited Create;
+  FTipoEvento := teS2210;
+  FEvtCAT     := TEvtCAT.Create(AOwner);
 end;
 
 destructor TS2210CollectionItem.Destroy;
@@ -318,35 +320,26 @@ begin
   inherited;
 end;
 
-procedure TS2210CollectionItem.setEvtCAT(const Value: TEvtCAT);
-begin
-  FEvtCAT.Assign(Value);
-end;
-
 { TAtestado }
 
-constructor TAtestado.create;
+constructor TAtestado.Create;
 begin
+  inherited Create;
   FEmitente := TEmitente.Create;
 end;
 
-destructor TAtestado.destroy;
+destructor TAtestado.Destroy;
 begin
   FEmitente.Free;
 
   inherited;
 end;
 
-{ TAgenteCausadorColecao }
+{ TAgenteCausadorCollection }
 
 function TAgenteCausadorCollection.Add: TAgenteCausadorItem;
 begin
-  Result := TAgenteCausadorItem(inherited Add);
-end;
-
-constructor TAgenteCausadorCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TAgenteCausadorItem);
+  Result := Self.New;
 end;
 
 function TAgenteCausadorCollection.GetItem(Index: Integer): TAgenteCausadorItem;
@@ -359,21 +352,28 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TParteAtingidaColecao }
+function TAgenteCausadorCollection.New: TAgenteCausadorItem;
+begin
+  Result := TAgenteCausadorItem.Create;
+  Self.Add(Result);
+end;
+
+{ TParteAtingidaCollection }
 
 function TParteAtingidaCollection.Add: TParteAtingidaItem;
 begin
-  Result := TParteAtingidaItem(inherited Add);
-end;
-
-constructor TParteAtingidaCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TParteAtingidaItem);
+  Result := Self.New;
 end;
 
 function TParteAtingidaCollection.GetItem(Index: Integer): TParteAtingidaItem;
 begin
   Result := TParteAtingidaItem(inherited GetItem(Index));
+end;
+
+function TParteAtingidaCollection.New: TParteAtingidaItem;
+begin
+  Result := TParteAtingidaItem.Create;
+  Self.Add(Result);
 end;
 
 procedure TParteAtingidaCollection.SetItem(Index: Integer; const Value: TParteAtingidaItem);
@@ -383,18 +383,18 @@ end;
 
 { TCat }
 
-constructor TCat.create;
+constructor TCat.Create;
 begin
   inherited;
 
-  FLocalAcidente := TLocalAcidente.Create;
-  FParteAtingida := TParteAtingidaCollection.Create(Self);
-  FAgenteCausador := TAgenteCausadorCollection.Create(Self);
-  FAtestado := TAtestado.Create;
-  FCatOrigem := TCatOrigem.Create;
+  FLocalAcidente  := TLocalAcidente.Create;
+  FParteAtingida  := TParteAtingidaCollection.Create;
+  FAgenteCausador := TAgenteCausadorCollection.Create;
+  FAtestado       := TAtestado.Create;
+  FCatOrigem      := TCatOrigem.Create;
 end;
 
-destructor TCat.destroy;
+destructor TCat.Destroy;
 begin
   FLocalAcidente.Free;
   FParteAtingida.Free;
@@ -409,9 +409,8 @@ end;
 
 constructor TEvtCAT.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial   := AACBreSocial;
   FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo    := TIdeVinculo.Create;
@@ -463,7 +462,7 @@ begin
     Gerador.wCampo(tcStr, '', 'codCID',         1,   4, 1, Self.Cat.Atestado.codCID);
     Gerador.wCampo(tcStr, '', 'observacao',     1, 255, 0, Self.Cat.Atestado.observacao);
 
-    GerarEmitente(Self.Cat.Atestado.Emitente);
+    GerarEmitente(Self.Cat.Atestado.Emitente, teS2210);
 
     Gerador.wGrupo('/atestado');
   end;
@@ -571,6 +570,7 @@ begin
     Gerador.wGrupo('evtCAT Id="' + Self.Id + '"');
 
     GerarIdeEvento2(Self.IdeEvento);
+    GerarIdeEmpregador(Self.IdeEmpregador);
     GerarIdeVinculo(Self.IdeVinculo);
     GerarCAT;
 
@@ -595,7 +595,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -610,7 +610,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -669,7 +668,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with cat.parteAtingida.Add do
+        with cat.parteAtingida.New do
         begin
           codParteAting := StrToInt(sFim);
           lateralidade  := eSStrToLateralidade(Ok, INIRec.ReadString(sSecao, 'lateralidade', '1'));
@@ -688,7 +687,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with cat.agenteCausador.Add do
+        with cat.agenteCausador.New do
         begin
           codAgntCausador := StrToInt(sFim);
         end;
@@ -726,8 +725,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;
@@ -735,7 +732,7 @@ end;
 
 { TLocalAcidente }
 
-constructor TLocalAcidente.create;
+constructor TLocalAcidente.Create;
 begin
   inherited;
 

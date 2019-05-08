@@ -247,6 +247,7 @@ type
     Intervalo         : String;
     TimeZoneMode      : Integer;
     TimeZoneStr       : String;
+    TagRejeicao938    : Integer;
     Proxy             : TProxy;
     NFCe              : TNFCeWebService;
     NFe               : TNFe;
@@ -915,6 +916,7 @@ begin
       Ini.WriteInteger( CSecWebService, CKeyTimeZoneMode , TimeZoneMode );
       Ini.WriteString( CSecWebService, CKeyTimeZoneStr, TimeZoneStr );
       Ini.WriteBool( CSecWebService, CKeyCamposFatObrig, CamposFatObrig );
+      Ini.WriteInteger( CSecWebService, CKeyTagRejeicao938, TagRejeicao938 );
     end;
 
     with DFe.RespTecnico do
@@ -1558,6 +1560,7 @@ begin
       TimeZoneMode              := Ini.ReadInteger( CSecWebService, CKeyTimeZoneMode, TimeZoneMode);
       TimeZoneStr               := Ini.ReadString( CSecWebService, CKeyTimeZoneStr, TimeZoneStr);
       CamposFatObrig            := Ini.ReadBool( CSecWebService, CKeyCamposFatObrig, True);
+      TagRejeicao938            := Ini.ReadInteger( CSecWebService, CKeyTagRejeicao938, TagRejeicao938 );
     end;
 
     with DFe.WebService.Proxy do
@@ -2185,6 +2188,7 @@ begin
     TimeZoneMode              := 0;
     TimeZoneStr               := '';
     CamposFatObrig            := True;
+    TagRejeicao938            := 0;
   end;
 
   with DFe.WebService.Proxy do
@@ -2268,14 +2272,14 @@ begin
     Copias                    :=  1;
     LarguraCodigoProduto      :=  40;
     EspessuraBorda            :=  1;
-    FonteRazao                :=  12;
-    FonteEndereco             :=  10;
-    FonteCampos               :=  10;
+    FonteRazao                :=  8;
+    FonteEndereco             :=  7;
+    FonteCampos               :=  8;
     AlturaCampos              :=  30;
-    Margem                    :=  0.8;
-    MargemSup                 :=  0.8;
-    MargemDir                 :=  0.51;
-    MargemEsq                 :=  0.6;
+    Margem                    :=  0.7;
+    MargemSup                 :=  0.7;
+    MargemDir                 :=  0.7;
+    MargemEsq                 :=  0.7;
     PathPDF                   :=  AcertaPath('PDF');
     DecimaisQTD               :=  2;
     DecimaisValor             :=  2;

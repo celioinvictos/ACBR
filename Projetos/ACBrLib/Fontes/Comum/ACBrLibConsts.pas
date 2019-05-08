@@ -128,6 +128,8 @@ const
   CSessaoPosPrinterLogo = 'PosPrinter_Logo';
   CSessaoPosPrinterGaveta = 'PosPrinter_Gaveta';
   CSessaoPosPrinterMPagina = 'PosPrinter_MPagina';
+  CSessaoPosPrinterDevice = 'POS_Device';
+
 
   CChaveModelo = 'Modelo';
   CChavePaginaDeCodigo = 'PaginaDeCodigo';
@@ -173,6 +175,16 @@ const
   CChaveArquivoPFX = 'ArquivoPFX';
   CChaveNumeroSerie = 'NumeroSerie';
 
+  CChaveBaud = 'Baud';
+  CChaveParity = 'Parity';
+  CChaveStop = 'Stop';
+  CChaveMaxBandwidth = 'MaxBandwidth';
+  CChaveSendBytesCount = 'SendBytesCount';
+  CChaveSendBytesInterval = 'SendBytesInterval';
+  CChaveHandShake = 'HandShake';
+  CChaveSoftFlow = 'SoftFlow';
+  CChaveHardFlow = 'HardFlow';
+
 resourcestring
   SErrLibSemNome = 'Nome da Biblioteca não foi definido';
   SErrLibDono = 'Dono de TLibConfig deve ser do tipo TACBrLib';
@@ -193,15 +205,29 @@ resourcestring
 const
 {$I ACBrLibErros.inc}
 
-function SetRetornoWebService(const CodigoHTTP: Integer; const WebServico: String): Integer;
+function SetRetornoWebService(const CodigoHTTP: Integer; const WebService: String; const Message: String = ''): Integer;
 
 implementation
 uses
-  ACBrLibComum;
+  ACBrLibComum, ACBrLibResposta, ACBrUtil;
 
-function SetRetornoWebService(const CodigoHTTP: Integer; const WebServico: String): Integer;
+function SetRetornoWebService(const CodigoHTTP: Integer; const WebService: String; const Message: String = ''): Integer;
+Var
+  Resp: TACBrLibHttpResposta;
+  Resposta: String;
 begin
-  Result := SetRetorno(CodigoHTTP, Format(SErrRetornoHttpWebService, [WebServico, CodigoHTTP]))
+  Resposta := '';
+  Resp := TACBrLibHttpResposta.Create(pLib.Config.TipoResposta);
+  try
+    Resp.CodigoHTTP := CodigoHTTP;
+    Resp.WebService := WebService;
+    Resp.Msg := IfEmptyThen(Message, Format(SErrRetornoHttpWebService, [WebService, CodigoHTTP]));
+    Resposta := Resp.Gerar;
+  finally
+    Resp.Free;
+  end;
+
+  Result := SetRetorno(ErrHttp, Resposta);
 end;
 
 end.

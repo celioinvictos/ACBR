@@ -54,7 +54,7 @@ type
     FMDFe: TMDFe;
     FOpcoes: TGeradorOpcoes;
     FVersaoDF: TVersaoMDFe;
-    ChaveMDFe: string;
+    FChaveMDFe: string;
     FIdCSRT: Integer;
     FCSRT: String;
 
@@ -88,7 +88,7 @@ type
     procedure GerarInfAdic;       // Nivel 1
     procedure GerarinfRespTec;    // Nivel 1
 
-    procedure AjustarMunicipioUF(var xUF: String; var xMun: String; var cMun: Integer; cPais: Integer; vxUF, vxMun: String; vcMun: Integer);
+    procedure AjustarMunicipioUF(var xUF: String; var xMun: String; var cMun: Integer; cPais: Integer; const vxUF, vxMun: String; vcMun: Integer);
 
   public
     constructor Create(AOwner: TMDFe);
@@ -126,6 +126,7 @@ implementation
 
 constructor TMDFeW.Create(AOwner: TMDFe);
 begin
+  inherited Create;
   FMDFe := AOwner;
 
   FGerador                  := TGerador.Create;
@@ -161,10 +162,10 @@ begin
 
   VersaoDF := DblToVersaoMDFe(Ok, MDFe.infMDFe.versao);
 
-  ChaveMDFe := GerarChaveAcesso(MDFe.ide.cUF, MDFe.ide.dhEmi, MDFe.emit.CNPJCPF, MDFe.ide.serie,
+  FChaveMDFe := GerarChaveAcesso(MDFe.ide.cUF, MDFe.ide.dhEmi, MDFe.emit.CNPJCPF, MDFe.ide.serie,
                             MDFe.ide.nMDF, StrToInt(TpEmisToStr(MDFe.ide.tpEmis)),
                             MDFe.ide.cMDF, StrToInt(MDFe.ide.modelo));
-  MDFe.infMDFe.ID := 'MDFe' + ChaveMDFe;
+  MDFe.infMDFe.ID := 'MDFe' + FChaveMDFe;
 
   MDFe.ide.cDV  := ExtrairDigitoChaveAcesso(MDFe.infMDFe.ID);
   MDFe.Ide.cMDF := ExtrairCodigoChaveAcesso(MDFe.infMDFe.ID);
@@ -1225,7 +1226,7 @@ begin
     if (idCSRT <> 0) and (CSRT <> '') then
     begin
       Gerador.wCampo(tcInt, '#086', 'idCSRT  ', 03, 03, 1, idCSRT, DSC_IDCSRT);
-      Gerador.wCampo(tcStr, '#087', 'hashCSRT', 28, 28, 1, CalcularHashCSRT(CSRT, ChaveMDFe), DSC_HASHCSRT);
+      Gerador.wCampo(tcStr, '#087', 'hashCSRT', 28, 28, 1, CalcularHashCSRT(CSRT, FChaveMDFe), DSC_HASHCSRT);
     end;
 
     Gerador.wGrupo('/infRespTec');
@@ -1233,7 +1234,7 @@ begin
 end;
 
 procedure TMDFeW.AjustarMunicipioUF(var xUF, xMun: String;
-  var cMun: Integer; cPais: Integer; vxUF, vxMun: String; vcMun: Integer);
+  var cMun: Integer; cPais: Integer; const vxUF, vxMun: String; vcMun: Integer);
 var
   PaisBrasil: boolean;
 begin

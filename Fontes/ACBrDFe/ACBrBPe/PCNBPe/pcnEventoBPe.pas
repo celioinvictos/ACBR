@@ -163,6 +163,7 @@ type
     FvST: Currency;
     FitemPedido: TitemPedidoCollection;
     FidPedidoCancelado: String;
+    Fpoltrona: Integer;
 
     procedure setCondUso(const Value: String);
     procedure SetitemPedido(const Value: TitemPedidoCollection);
@@ -188,6 +189,7 @@ type
     property vST: Currency          read FvST         write FvST;
     property itemPedido: TitemPedidoCollection read FitemPedido write SetitemPedido;
     property idPedidoCancelado: String read FidPedidoCancelado write FidPedidoCancelado;
+    property poltrona: Integer      read Fpoltrona    write Fpoltrona;
   end;
 
   TRetchBPePendCollection = class(TCollection)
@@ -209,7 +211,7 @@ type
 
   { TRetInfEvento }
 
-  TRetInfEvento = class(TPersistent)
+  TRetInfEvento = class(TObject)
   private
     FId: String;
     FNomeArquivo: String;
@@ -232,7 +234,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-  published
+
     property Id: String                         read FId          write FId;
     property tpAmb: TpcnTipoAmbiente            read FtpAmb       write FtpAmb;
     property verAplic: String                   read FverAplic    write FverAplic;
@@ -282,9 +284,10 @@ end;
 function TInfEvento.getDescEvento: String;
 begin
   case fTpEvento of
-    teCCe         : Result := 'Carta de Correcao';
-    teCancelamento: Result := 'Cancelamento';
-    teNaoEmbarque : Result := 'Nao Embarque';
+    teCCe:               Result := 'Carta de Correcao';
+    teCancelamento:      Result := 'Cancelamento';
+    teNaoEmbarque:       Result := 'Nao Embarque';
+    teAlteracaoPoltrona: Result := 'Alteracao de Poltrona';
   else
     Result := '';
   end;
@@ -302,9 +305,10 @@ end;
 function TInfEvento.DescricaoTipoEvento(TipoEvento: TpcnTpEvento): String;
 begin
   case TipoEvento of
-    teCCe         : Result := 'CARTA DE CORREÇÃO ELETRÔNICA';
-    teCancelamento: Result := 'CANCELAMENTO DE BP-e';
-    teNaoEmbarque : Result := 'NAO EMBARQUE';
+    teCCe:               Result := 'CARTA DE CORREÇÃO ELETRÔNICA';
+    teCancelamento:      Result := 'CANCELAMENTO DE BP-e';
+    teNaoEmbarque:       Result := 'NAO EMBARQUE';
+    teAlteracaoPoltrona: Result := 'ALTERACAO DE POLTRONA';
   else
     Result := 'Não Definido';
   end;
@@ -374,6 +378,7 @@ end;
 
 constructor TRetInfEvento.Create;
 begin
+  inherited Create;
   FchBPePend := TRetchBPePendCollection.Create(Self);
 end;
 

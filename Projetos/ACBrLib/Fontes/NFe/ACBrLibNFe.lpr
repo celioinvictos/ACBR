@@ -30,6 +30,7 @@ exports
   NFE_StatusServico,
   NFE_Inutilizar,
   NFE_Enviar,
+  NFE_ConsultarRecibo,
   NFE_Consultar,
   NFE_Cancelar,
   NFE_EnviarEvento,
@@ -48,7 +49,10 @@ exports
   // Arquivos
   NFE_CarregarXML,
   NFE_CarregarINI,
+  NFE_CarregarEventoXML,
+  NFE_CarregarEventoINI,
   NFE_LimparLista,
+  NFE_LimparListaEventos,
   NFE_Assinar,
   NFE_Validar,
   NFE_ValidarRegrasdeNegocios,

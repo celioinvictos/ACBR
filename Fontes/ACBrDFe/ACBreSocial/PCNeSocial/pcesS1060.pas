@@ -49,39 +49,37 @@ unit pcesS1060;
 interface
 
 uses
-  SysUtils, Classes, ACBrUtil,
+  SysUtils, Classes, Contnrs,
+  ACBrUtil,
   pcnConversao, pcnGerador,
-  pcesCommon, pcesConversaoeSocial, pcesGerador;
+  pcesCommon, pcesConversaoeSocial, pcesGerador,
+  pcnLeitor;
 
 type
-  TS1060Collection = class;
   TS1060CollectionItem = class;
-  TIdeAmbiente = class;
-  TDadosAmbiente = class;
   TInfoAmbiente = class;
   TEvtTabAmbiente = class;
 
 
-  TS1060Collection = class(TOwnedCollection)
+  TS1060Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1060CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1060CollectionItem);
   public
-    function Add: TS1060CollectionItem;
+    function Add: TS1060CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1060CollectionItem;
     property Items[Index: Integer]: TS1060CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1060CollectionItem = class(TCollectionItem)
+  TS1060CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTabAmbiente: TEvtTabAmbiente;
-    procedure setEvtTabAmbiente(const Value: TEvtTabAmbiente);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTabAmbiente: TEvtTabAmbiente read FEvtTabAmbiente write setEvtTabAmbiente;
+    property EvtTabAmbiente: TEvtTabAmbiente read FEvtTabAmbiente write FEvtTabAmbiente;
   end;
 
   TEvtTabAmbiente = class(TeSocialEvento)
@@ -90,15 +88,15 @@ type
     FIdeEvento: TIdeEvento;
     FIdeEmpregador: TIdeEmpregador;
     FInfoAmbiente: TInfoAmbiente;
-    FACBreSocial: TObject;
 
     procedure GerarIdeAmbiente;
     procedure GerarDadosAmbiente;
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
+    function LerXML : Boolean;
     function LerArqIni(const AIniString: String): Boolean;
 
     property ModoLancamento: TModoLancamento read FModoLancamento write FModoLancamento;
@@ -107,7 +105,7 @@ type
     property infoAmbiente: TInfoAmbiente read FInfoAmbiente write FInfoAmbiente;
   end;
 
-  TIdeAmbiente = class(TPersistent)
+  TIdeAmbiente = class(TObject)
   private
     FCodAmb: string;
     FIniValid: string;
@@ -118,27 +116,24 @@ type
     property fimValid: string read FFimValid write FFimValid;
   end;
 
-  TDadosAmbiente = class(TPersistent)
+  TDadosAmbiente = class(TObject)
   private
     FNmAmb: String;
     FDscAmb: String;
     FLocalAmb: tpLocalAmb;
-    FTpInsc: tpTpInscAmbTab;
+    FTpInsc: tpTpInsc;
     FNrInsc: String;
     FCodLotacao: String;
   public
-    constructor create;
-    destructor destroy; override;
-
     property nmAmb: string read FNmAmb write FNmAmb;
     property dscAmb: string read FDscAmb write FDscAmb;
     property localAmb: tpLocalAmb read FLocalAmb write FLocalAmb;
-    property tpInsc: tpTpInscAmbTab read FTpInsc write FTpInsc;
+    property tpInsc: tpTpInsc read FTpInsc write FTpInsc;
     property nrInsc: string read FNrInsc write FNrInsc;
     property codLotacao: String read FCodLotacao write FCodLotacao;
   end;
 
-  TInfoAmbiente = class(TPersistent)
+  TInfoAmbiente = class(TObject)
   private
     FIdeAmbiente: TIdeAmbiente;
     FDadosAmbiente: TDadosAmbiente;
@@ -147,8 +142,8 @@ type
     function getDadosAmbiente: TDadosAmbiente;
     function getNovaValidade: TIdePeriodo;
   public
-    constructor create;
-    destructor destroy; override;
+    constructor Create;
+    destructor Destroy; override;
 
     function dadosAmbienteInst(): Boolean;
     function novaValidadeInst(): Boolean;
@@ -168,8 +163,7 @@ uses
 
 function TS1060Collection.Add: TS1060CollectionItem;
 begin
-  Result := TS1060CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1060Collection.GetItem(Index: Integer): TS1060CollectionItem;
@@ -182,11 +176,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1060Collection.New: TS1060CollectionItem;
+begin
+  Result := TS1060CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS1060CollectionItem }
 
 constructor TS1060CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1060;
+  inherited Create;
+  FTipoEvento     := teS1060;
   FEvtTabAmbiente := TEvtTabAmbiente.Create(AOwner);
 end;
 
@@ -197,31 +198,14 @@ begin
   inherited;
 end;
 
-procedure TS1060CollectionItem.setEvtTabAmbiente(const Value: TEvtTabAmbiente);
-begin
-  FEvtTabAmbiente.Assign(Value);
-end;
-
-{ TDadosAmbiente }
-
-constructor TDadosAmbiente.create;
-begin
-
-end;
-
-destructor TDadosAmbiente.destroy;
-begin
-
-  inherited;
-end;
-
 { TInfoAmbiente }
 
-constructor TInfoAmbiente.create;
+constructor TInfoAmbiente.Create;
 begin
-  FIdeAmbiente := TIdeAmbiente.Create;
+  inherited Create;
+  FIdeAmbiente   := TIdeAmbiente.Create;
   FDadosAmbiente := nil;
-  FNovaValidade := nil;
+  FNovaValidade  := nil;
 end;
 
 function TInfoAmbiente.dadosAmbienteInst: Boolean;
@@ -229,7 +213,7 @@ begin
   Result := Assigned(FDadosAmbiente);
 end;
 
-destructor TInfoAmbiente.destroy;
+destructor TInfoAmbiente.Destroy;
 begin
   FIdeAmbiente.Free;
   FreeAndNil(FDadosAmbiente);
@@ -261,12 +245,11 @@ end;
 
 constructor TEvtTabAmbiente.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento.Create;
+  FIdeEvento     := TIdeEvento.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FInfoAmbiente := TInfoAmbiente.create;
+  FInfoAmbiente  := TInfoAmbiente.create;
 end;
 
 destructor TEvtTabAmbiente.Destroy;
@@ -285,7 +268,7 @@ begin
   Gerador.wCampo(tcStr, '', 'nmAmb',     1,   100, 1, infoAmbiente.dadosAmbiente.nmAmb);
   Gerador.wCampo(tcStr, '', 'dscAmb',     1, 8000, 1, infoAmbiente.dadosAmbiente.dscAmb);
   Gerador.wCampo(tcStr, '', 'localAmb',   1,    1, 1, eSLocalAmbToStr(infoAmbiente.dadosAmbiente.localAmb));
-  Gerador.wCampo(tcStr, '', 'tpInsc',     1,    1, 0, eStpTpInscAmbTabToStr(infoAmbiente.dadosAmbiente.tpInsc));
+  Gerador.wCampo(tcStr, '', 'tpInsc',     1,    1, 0, eSTpInscricaoToStr(infoAmbiente.dadosAmbiente.tpInsc));
   Gerador.wCampo(tcStr, '', 'nrInsc',     1,   15, 0, infoAmbiente.dadosAmbiente.nrInsc);
   Gerador.wCampo(tcStr, '', 'codLotacao', 1,   30, 0, infoAmbiente.dadosAmbiente.codLotacao);
 
@@ -354,7 +337,7 @@ var
   sSecao{, sFim}: String;
 //  I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -368,7 +351,6 @@ begin
       ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
 
       sSecao := 'ideEvento';
-      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -388,7 +370,7 @@ begin
         infoAmbiente.dadosAmbiente.nmAmb      := INIRec.ReadString(sSecao, 'nmAmb', EmptyStr);
         infoAmbiente.dadosAmbiente.dscAmb     := INIRec.ReadString(sSecao, 'dscAmb', EmptyStr);
         infoAmbiente.dadosAmbiente.localAmb   := eSStrToLocalAmb(Ok, INIRec.ReadString(sSecao, 'localAmb', '1'));
-        infoAmbiente.dadosAmbiente.tpInsc     := eSStrTotpTpInscAmbTab(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+        infoAmbiente.dadosAmbiente.tpInsc     := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
         infoAmbiente.dadosAmbiente.nrInsc     := INIRec.ReadString(sSecao, 'nrInsc', '');
         infoAmbiente.dadosAmbiente.codLotacao := INIRec.ReadString(sSecao, 'codLotacao', '');
 
@@ -402,10 +384,69 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
+  end;
+end;
+
+function TEvtTabAmbiente.LerXML: Boolean;
+var
+  Leitor : TLeitor;
+  bOK : Boolean;
+  sEvento : String;
+begin
+  Result := True;
+  Leitor := TLeitor.Create;
+  Leitor.Arquivo := XML;
+  Leitor.Grupo := Leitor.Arquivo;
+  try
+    if Leitor.rExtrai(1, 'ideEvento') <> '' then
+    begin
+      Self.FIdeEvento.ProcEmi := eSStrToprocEmi(bOK, Leitor.rCampo(tcStr, 'procEmi'));
+      Self.FIdeEvento.VerProc := Leitor.rCampo(tcStr, 'verProc');
+    end;
+
+    if Leitor.rExtrai(1, 'ideEmpregador') <> '' then
+    begin
+      Self.FIdeEmpregador.TpInsc := eSStrToTpInscricao(bOK, Leitor.rCampo(tcStr, 'tpInsc'));
+      Self.FIdeEmpregador.NrInsc := Leitor.rCampo(tcStr, 'nrInsc');
+    end;
+
+    if Leitor.rExtrai(1, 'dadosAmbiente') <> '' then
+    begin
+      Self.FInfoAmbiente.DadosAmbiente.nmAmb      := Leitor.rCampo(tcStr, 'nmAmb');
+      Self.FInfoAmbiente.DadosAmbiente.dscAmb     := Leitor.rCampo(tcStr, 'dscAmb');
+      Self.FInfoAmbiente.DadosAmbiente.localAmb   := eSStrToLocalAmb(bOK, Leitor.rCampo(tcStr, 'localAmb'));
+      Self.FInfoAmbiente.DadosAmbiente.tpInsc     := eSStrToTpInscricao(bOK, Leitor.rCampo(tcStr, 'tpInsc'));
+      Self.FInfoAmbiente.DadosAmbiente.nrInsc     := Leitor.rCampo(tcStr, 'nrInsc');
+      Self.FInfoAmbiente.DadosAmbiente.codLotacao := Leitor.rCampo(tcStr, 'codLotacao');
+    end;
+
+    if Leitor.rExtrai(1, 'ideAmbiente') <> '' then
+    begin
+      Self.FInfoAmbiente.ideAmbiente.codAmb   := Leitor.rCampo(tcStr, 'codAmb');
+      Self.FInfoAmbiente.ideAmbiente.iniValid := Leitor.rCampo(tcStr, 'iniValid');
+      Self.FInfoAmbiente.ideAmbiente.fimValid := Leitor.rCampo(tcStr, 'fimValid');
+    end;
+
+    Self.ModoLancamento := mlInclusao;
+
+    if Leitor.rExtrai(1, 'alteracao') <> '' then
+    begin
+      Self.ModoLancamento := mlAlteracao;
+
+      if Leitor.rExtrai(1, 'alteracao') <> '' then
+      begin
+        Self.infoAmbiente.novaValidade.IniValid :=  Leitor.rCampo(tcStr, 'iniValid');
+        Self.infoAmbiente.novaValidade.FimValid :=  Leitor.rCampo(tcStr, 'fimValid');
+      end;
+    end
+    else if Leitor.rExtrai(1, 'exclusao') <> '' then
+    begin
+      Self.ModoLancamento := mlExclusao;
+    end;
+  finally
+    Leitor.Free;
   end;
 end;
 

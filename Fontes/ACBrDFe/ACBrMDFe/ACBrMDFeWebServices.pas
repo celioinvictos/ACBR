@@ -470,8 +470,8 @@ type
     destructor Destroy; override;
 
     function Envia(ALote: Integer): Boolean; overload;
-    function Envia(ALote: String): Boolean; overload;
-    function ConsultaMDFeNaoEnc(ACNPJCPF: String): Boolean;
+    function Envia(const ALote: String): Boolean; overload;
+    function ConsultaMDFeNaoEnc(const ACNPJCPF: String): Boolean;
 
     property ACBrMDFe: TACBrDFe read FACBrMDFe write FACBrMDFe;
     property StatusServico: TMDFeStatusServico read FStatusServico write FStatusServico;
@@ -1401,8 +1401,8 @@ begin
   if Assigned(FprocEventoMDFe) then
     FprocEventoMDFe.Free;
 
-  FprotMDFe := TProcMDFe.Create;
-  FprocEventoMDFe := TRetEventoMDFeCollection.Create(FOwner);
+  FprotMDFe       := TProcMDFe.Create;
+  FprocEventoMDFe := TRetEventoMDFeCollection.Create;
 end;
 
 procedure TMDFeConsulta.SetMDFeChave(const AValue: String);
@@ -1510,18 +1510,17 @@ begin
 
     // <protMDFe> - Retorno dos dados do ENVIO da NF-e
     // Considerá-los apenas se não existir nenhum evento de cancelamento (110111)
-    FprotMDFe.PathMDFe := MDFeRetorno.protMDFe.PathMDFe;
+    FprotMDFe.PathMDFe            := MDFeRetorno.protMDFe.PathMDFe;
     FprotMDFe.PathRetConsReciMDFe := MDFeRetorno.protMDFe.PathRetConsReciMDFe;
-    FprotMDFe.PathRetConsSitMDFe := MDFeRetorno.protMDFe.PathRetConsSitMDFe;
-    FprotMDFe.PathRetConsSitMDFe := MDFeRetorno.protMDFe.PathRetConsSitMDFe;
-    FprotMDFe.tpAmb := MDFeRetorno.protMDFe.tpAmb;
-    FprotMDFe.verAplic := MDFeRetorno.protMDFe.verAplic;
-    FprotMDFe.chMDFe := MDFeRetorno.protMDFe.chMDFe;
-    FprotMDFe.dhRecbto := MDFeRetorno.protMDFe.dhRecbto;
-    FprotMDFe.nProt := MDFeRetorno.protMDFe.nProt;
-    FprotMDFe.digVal := MDFeRetorno.protMDFe.digVal;
-    FprotMDFe.cStat := MDFeRetorno.protMDFe.cStat;
-    FprotMDFe.xMotivo := MDFeRetorno.protMDFe.xMotivo;
+    FprotMDFe.PathRetConsSitMDFe  := MDFeRetorno.protMDFe.PathRetConsSitMDFe;
+    FprotMDFe.tpAmb               := MDFeRetorno.protMDFe.tpAmb;
+    FprotMDFe.verAplic            := MDFeRetorno.protMDFe.verAplic;
+    FprotMDFe.chMDFe              := MDFeRetorno.protMDFe.chMDFe;
+    FprotMDFe.dhRecbto            := MDFeRetorno.protMDFe.dhRecbto;
+    FprotMDFe.nProt               := MDFeRetorno.protMDFe.nProt;
+    FprotMDFe.digVal              := MDFeRetorno.protMDFe.digVal;
+    FprotMDFe.cStat               := MDFeRetorno.protMDFe.cStat;
+    FprotMDFe.xMotivo             := MDFeRetorno.protMDFe.xMotivo;
 
     if Assigned(MDFeRetorno.procEventoMDFe) and (MDFeRetorno.procEventoMDFe.Count > 0) then
     begin
@@ -1534,7 +1533,7 @@ begin
       FprocEventoMDFe.Clear;
       for I := 0 to MDFeRetorno.procEventoMDFe.Count - 1 do
       begin
-        with FprocEventoMDFe.Add.RetEventoMDFe do
+        with FprocEventoMDFe.New.RetEventoMDFe do
         begin
           idLote := MDFeRetorno.procEventoMDFe.Items[I].RetEventoMDFe.idLote;
           tpAmb := MDFeRetorno.procEventoMDFe.Items[I].RetEventoMDFe.tpAmb;
@@ -1563,7 +1562,7 @@ begin
           retEvento.Clear;
           for J := 0 to MDFeRetorno.procEventoMDFe.Items[I].RetEventoMDFe.retEvento.Count-1 do
           begin
-            with retEvento.Add.RetInfEvento do
+            with retEvento.New.RetInfEvento do
             begin
               Id          := MDFeRetorno.procEventoMDFe.Items[I].RetEventoMDFe.retEvento.Items[j].RetInfEvento.Id;
               tpAmb       := MDFeRetorno.procEventoMDFe.Items[I].RetEventoMDFe.retEvento.Items[j].RetInfEvento.tpAmb;
@@ -1880,7 +1879,7 @@ begin
     
     for I := 0 to FEvento.Evento.Count - 1 do
     begin
-      with EventoMDFe.Evento.Add do
+      with EventoMDFe.Evento.New do
       begin
         infEvento.tpAmb      := FTpAmb;
         infEvento.CNPJCPF    := FEvento.Evento[i].InfEvento.CNPJCPF;
@@ -2155,7 +2154,7 @@ begin
   if Assigned(FRetConsMDFeNaoEnc) then
     FRetConsMDFeNaoEnc.Free;
 
-  FInfMDFe := TRetInfMDFeCollection.Create(FOwner);
+  FInfMDFe := TRetInfMDFeCollection.Create;
   FRetConsMDFeNaoEnc := TRetConsMDFeNaoEnc.Create;
 end;
 
@@ -2216,7 +2215,7 @@ begin
 
   for i := 0 to FRetConsMDFeNaoEnc.InfMDFe.Count -1 do
   begin
-    FinfMDFe.Add;
+    FinfMDFe.New;
     FinfMDFe.Items[i].chMDFe := FRetConsMDFeNaoEnc.InfMDFe.Items[i].chMDFe;
     FinfMDFe.Items[i].nProt  := FRetConsMDFeNaoEnc.InfMDFe.Items[i].nProt;
   end;
@@ -2556,7 +2555,7 @@ begin
   Result := Envia(IntToStr(ALote));
 end;
 
-function TWebServices.Envia(ALote: String): Boolean;
+function TWebServices.Envia(const ALote: String): Boolean;
 begin
   FEnviar.Clear;
   FRetorno.Clear;
@@ -2573,7 +2572,7 @@ begin
   Result := True;
 end;
 
-function TWebServices.ConsultaMDFeNaoEnc(ACNPJCPF: String): Boolean;
+function TWebServices.ConsultaMDFeNaoEnc(const ACNPJCPF: String): Boolean;
 begin
   FConsMDFeNaoEnc.FCNPJCPF := ACNPJCPF;
 

@@ -49,12 +49,11 @@ unit pcesS2245;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2245Collection = class;
   TS2245CollectionItem = class;
   TEvtTreiCap = class;
   TTreiCap = class;
@@ -62,26 +61,25 @@ type
   TIdeProfRespCollection = class;
   TIdeProfRespCollectionItem = class;
 
-  TS2245Collection = class(TOwnedCollection)
+  TS2245Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2245CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2245CollectionItem);
   public
-    function Add: TS2245CollectionItem;
+    function Add: TS2245CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2245CollectionItem;
     property Items[Index: Integer]: TS2245CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2245CollectionItem = class(TCollectionItem)
+  TS2245CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTreiCap: TEvtTreiCap;
-    procedure setEvtTreiCap(const Value: TEvtTreiCap);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor  Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTreiCap: TEvtTreiCap read FEvtTreiCap write setEvtTreiCap;
+    property EvtTreiCap: TEvtTreiCap read FEvtTreiCap write FEvtTreiCap;
   end;
 
   TEvtTreiCap = class(TeSocialEvento)
@@ -90,14 +88,13 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FTreiCap: TTreiCap;
-    FACBreSocial: TObject;
 
     { Geradores da classe }
     procedure GerarTreiCap(objTreiCap: TTreiCap);
     procedure GerarInfoComplem(objInfoComplem: TInfoComplem);
     procedure GerarIdeProfResp(objIdeProfResp: TIdeProfRespCollection);
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -109,13 +106,13 @@ type
     property treiCap: TTreiCap read FTreiCap write FTreiCap;
   end;
 
-  TTreiCap = class(TPersistent)
+  TTreiCap = class(TObject)
   private
     FcodTreiCap: String;
     FobsTreiCap: String;
     FInfoComplem: TInfoComplem;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property codTreiCap: String read FcodTreiCap write FcodTreiCap;
@@ -123,7 +120,7 @@ type
     property infoComplem: TInfoComplem read FInfoComplem write FInfoComplem;
   end;
 
-  TInfoComplem = class(TPersistent)
+  TInfoComplem = class(TObject)
   private
     FdtTreiCap: TDateTime;
     FdurTreiCap: Double;
@@ -131,7 +128,7 @@ type
     FTpTreiCap: tpTpTreiCap;
     FIdeProfResp: TIdeProfRespCollection;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property dtTreiCap: TDateTime read FdtTreiCap write FdtTreiCap;
@@ -141,18 +138,17 @@ type
     property ideProfResp: TIdeProfRespCollection read FIdeProfResp write FIdeProfResp;
   end;
 
-  TIdeProfRespCollection = class(TCollection)
+  TIdeProfRespCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TIdeProfRespCollectionItem;
     procedure SetItem(Index: Integer; Value: TIdeProfRespCollectionItem);
   public
-    constructor Create; reintroduce;
-
-    function Add: TIdeProfRespCollectionItem;
+    function Add: TIdeProfRespCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TIdeProfRespCollectionItem;
     property Items[Index: Integer]: TIdeProfRespCollectionItem read GetItem write SetItem; default;
   end;
 
-  TIdeProfRespCollectionItem = class(TCollectionItem)
+  TIdeProfRespCollectionItem = class(TObject)
   private
     FcpfProf: String;
     FNmProf: String;
@@ -179,8 +175,9 @@ uses
 
 constructor TS2245CollectionItem.Create(AOwner: TComponent);
 begin
+  inherited Create;
   FTipoEvento := teS2245;
-  FEvtTreiCap   := TEvtTreiCap.Create(AOwner);
+  FEvtTreiCap := TEvtTreiCap.Create(AOwner);
 end;
 
 destructor TS2245CollectionItem.Destroy;
@@ -190,17 +187,11 @@ begin
   inherited;
 end;
 
-procedure TS2245CollectionItem.setEvtTreiCap(const Value: TEvtTreiCap);
-begin
-  FEvtTreiCap.Assign(Value);
-end;
-
 { TS2245Collection }
 
 function TS2245Collection.Add: TS2245CollectionItem;
 begin
-  Result := TS2245CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2245Collection.GetItem(Index: Integer): TS2245CollectionItem;
@@ -215,16 +206,15 @@ end;
 
 constructor TEvtTreiCap.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial   := AACBreSocial;
   FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo    := TIdeVinculo.Create;
-  FTreiCap  := TTreiCap.Create;
+  FTreiCap       := TTreiCap.Create;
 end;
 
-destructor TEvtTreiCap.destroy;
+destructor TEvtTreiCap.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -316,23 +306,95 @@ begin
 end;
 
 function TEvtTreiCap.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao, sFim: String;
+  I: Integer;
 begin
-  Result := False;
+  Result := True;
 
-  { Implementar }
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
+    with Self do
+    begin
+      sSecao := 'evtTreiCap';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+      IdeVinculo.codCateg  := INIRec.ReadInteger(sSecao, 'codCateg', 0);
+
+      sSecao := 'treiCap';
+      treiCap.codTreiCap := INIRec.ReadString(sSecao, 'codTreiCap', EmptyStr);
+      treiCap.obsTreiCap := INIRec.ReadString(sSecao, 'obsTreiCap', EmptyStr);
+
+      sSecao := 'infoComplem';
+      if INIRec.ReadString(sSecao, 'dtTreiCap', '') <> '' then
+      begin
+        treiCap.infoComplem.dtTreiCap  := StringToDateTime(INIRec.ReadString(sSecao, 'dtTreiCap', '0'));
+        treiCap.infoComplem.durTreiCap := StringToFloatDef(INIRec.ReadString(sSecao, 'durTreiCap', EmptyStr), 0);
+        treiCap.infoComplem.modTreiCap := StrTotpModTreiCap(Ok, INIRec.ReadString(sSecao, 'modTreiCap', '1'));
+        treiCap.infoComplem.tpTreiCap  := StrTotpTpTreiCap(Ok, INIRec.ReadString(sSecao, 'tpTreiCap', '1'));
+      end;
+
+      I := 1;
+      while true do
+      begin
+        // de 01 até 99
+        sSecao := 'ideProfResp' + IntToStrZero(I, 2);
+        sFim   := INIRec.ReadString(sSecao, 'nmProf', 'FIM');
+
+        if (sFim = 'FIM') or (Length(sFim) <= 0) then
+          break;
+
+        with treiCap.infoComplem.ideProfResp.New do
+        begin
+          cpfProf  := INIRec.ReadString(sSecao, 'cpfProf', '');
+          nmProf   := sFim;
+          tpProf   := StrTotpTpProf(Ok, INIRec.ReadString(sSecao, 'tpProf', '1'));
+          formProf := INIRec.ReadString(sSecao, 'formProf', '');
+          codCBO   := INIRec.ReadString(sSecao, 'codCBO', '');
+          nacProf  := StrTotpNacProf(Ok, INIRec.ReadString(sSecao, 'nacProf', '1'));
+        end;
+
+        Inc(I);
+      end;
+    end;
+
+    GerarXML;
+  finally
+    INIRec.Free;
+  end;
+end;
+
+function TS2245Collection.New: TS2245CollectionItem;
+begin
+  Result := TS2245CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
 end;
 
 { TIdeProfRespCollection }
 
 function TIdeProfRespCollection.Add: TIdeProfRespCollectionItem;
 begin
-  Result := TIdeProfRespCollectionItem(inherited Add);
-end;
-
-constructor TIdeProfRespCollection.Create;
-begin
-  inherited Create(TIdeProfRespCollectionItem);
+  Result := Self.New;
 end;
 
 function TIdeProfRespCollection.GetItem(Index: Integer): TIdeProfRespCollectionItem;
@@ -343,6 +405,12 @@ end;
 procedure TIdeProfRespCollection.SetItem(Index: Integer; Value: TIdeProfRespCollectionItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TIdeProfRespCollection.New: TIdeProfRespCollectionItem;
+begin
+  Result := TIdeProfRespCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { TInfoComplem }

@@ -50,7 +50,7 @@ unit pcteRetEnvEventoCTe;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
 {$IFNDEF VER130}
   Variants,
 {$ENDIF}
@@ -58,31 +58,28 @@ uses
   pcnSignature;
 
 type
-  TRetInfEventoCollection     = class;
   TRetInfEventoCollectionItem = class;
-  TRetEventoCTe               = class;
 
-  TRetInfEventoCollection = class(TCollection)
+  TRetInfEventoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TRetInfEventoCollectionItem;
     procedure SetItem(Index: Integer; Value: TRetInfEventoCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TRetInfEventoCollectionItem;
+    function Add: TRetInfEventoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TRetInfEventoCollectionItem;
     property Items[Index: Integer]: TRetInfEventoCollectionItem read GetItem write SetItem; default;
   end;
 
-  TRetInfEventoCollectionItem = class(TCollectionItem)
+  TRetInfEventoCollectionItem = class(TObject)
   private
     FRetInfEvento: TRetInfEvento;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-  published
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
   end;
 
-  TRetEventoCTe = class(TPersistent)
+  TRetEventoCTe = class(TObject)
   private
     FLeitor: TLeitor;
     FidLote: Integer;
@@ -100,7 +97,6 @@ type
     constructor Create;
     destructor Destroy; override;
     function LerXml: boolean;
-  published
     property Leitor: TLeitor                    read FLeitor    write FLeitor;
     property idLote: Integer                    read FidLote    write FidLote;
     property versao: String                     read Fversao    write Fversao;
@@ -121,13 +117,7 @@ implementation
 
 function TRetInfEventoCollection. Add: TRetInfEventoCollectionItem;
 begin
-  Result := TRetInfEventoCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TRetInfEventoCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TRetInfEventoCollectionItem);
+  Result := Self.New;
 end;
 
 function TRetInfEventoCollection.GetItem(
@@ -142,10 +132,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TRetInfEventoCollection.New: TRetInfEventoCollectionItem;
+begin
+  Result := TRetInfEventoCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TRetInfEventoCollectionItem }
 
 constructor TRetInfEventoCollectionItem.Create;
 begin
+  inherited Create;
   FRetInfEvento := TRetInfEvento.Create;
 end;
 
@@ -158,8 +155,9 @@ end;
 { TRetEventoCTe }
 constructor TRetEventoCTe.Create;
 begin
+  inherited Create;
   FLeitor    := TLeitor.Create;
-  FretEvento := TRetInfEventoCollection.Create(Self);
+  FretEvento := TRetInfEventoCollection.Create;
   FInfEvento := TInfEvento.Create;
   Fsignature := Tsignature.Create;
 end;
@@ -218,7 +216,7 @@ begin
            i := 0;
            while Leitor.rExtrai(4, 'infCorrecao', '', i + 1) <> '' do
            begin
-             with infEvento.detEvento.infCorrecao.Add do
+             with infEvento.detEvento.infCorrecao.New do
              begin
                grupoAlterado   := Leitor.rCampo(tcStr, 'grupoAlterado');
                campoAlterado   := Leitor.rCampo(tcStr, 'campoAlterado');
@@ -232,7 +230,7 @@ begin
            i := 0;
            while Leitor.rExtrai(4, 'infGTV', '', i + 1) <> '' do
            begin
-             with infEvento.detEvento.infGTV.Add do
+             with infEvento.detEvento.infGTV.New do
              begin
                nDoc     := Leitor.rCampo(tcStr, 'nDoc');
                id       := Leitor.rCampo(tcStr, 'id');
@@ -249,7 +247,7 @@ begin
                j := 0;
                while Leitor.rExtrai(5, 'infEspecie', '', j + 1) <> '' do
                begin
-                 with infEvento.detEvento.infGTV.Items[i].infEspecie.Add do
+                 with infEvento.detEvento.infGTV.Items[i].infEspecie.New do
                  begin
                    tpEspecie := StrToTEspecie(Ok, Leitor.rCampo(tcStr, 'tpEspecie'));
                    vEspecie  := Leitor.rCampo(tcDe2, 'vEspecie');
@@ -300,7 +298,7 @@ begin
 
       while Leitor.rExtrai(2, 'infEvento', '', i + 1) <> '' do
        begin
-         FretEvento.Add;
+         FretEvento.New;
 
          FretEvento.Items[i].FRetInfEvento.XML := Leitor.Grupo;
 
@@ -327,7 +325,7 @@ begin
        end;
 
       if i = 0 then
-        FretEvento.Add;
+        FretEvento.New;
 
       Result := True;
     end;

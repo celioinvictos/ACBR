@@ -49,15 +49,11 @@ unit pcesS5002;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
 type
-  TS5002 = class;
-  TInfoDep = class;
-
-  TInfoIrrfCollection = class;
   TInfoIrrfCollectionItem = class;
   TbasesIrrfCollection = class;
   TbasesIrrfCollectionItem = class;
@@ -74,38 +70,34 @@ type
     function GetXml : string;
     procedure SetXml(const Value: string);
     function GetTipoEvento : TTipoEvento;
-    procedure SetEvtirrfBenef(const Value: TEvtirrfBenef);
-
   public
     constructor Create;
     destructor Destroy; override;
 
     function GetEvento : TObject;
-
-  published
     property Xml: String read GetXml write SetXml;
     property TipoEvento: TTipoEvento read GetTipoEvento;
-    property EvtirrfBenef: TEvtirrfBenef read FEvtirrfBenef write setEvtirrfBenef;
+    property EvtirrfBenef: TEvtirrfBenef read FEvtirrfBenef write FEvtirrfBenef;
   end;
 
-  TInfoDep = class(TPersistent)
+  TInfoDep = class(TObject)
   private
     FvrDedDep: Double;
   public
     property vrDedDep: Double read FvrDedDep;
   end;
 
-  TInfoIrrfCollection = class(TCollection)
+  TInfoIrrfCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TInfoIrrfCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoIrrfCollectionItem);
   public
-    constructor Create(AOwner: TEvtIrrfBenef);
-    function Add: TInfoIrrfCollectionItem;
+    function Add: TInfoIrrfCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TInfoIrrfCollectionItem;
     property Items[Index: Integer]: TInfoIrrfCollectionItem read GetItem write SetItem;
   end;
 
-  TInfoIrrfCollectionItem = class(TCollectionItem)
+  TInfoIrrfCollectionItem = class(TObject)
   private
     FCodCateg: integer;
     FindResBr: String;
@@ -116,7 +108,7 @@ type
     procedure SetbasesIrrf(const Value: TbasesIrrfCollection);
     procedure Setirrf(const Value: TirrfCollection);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property CodCateg: integer read FCodCateg;
@@ -126,17 +118,17 @@ type
     property idePgtoExt: TidePgtoExt read FidePgtoExt write FidePgtoExt;
   end;
 
-  TbasesIrrfCollection = class(TCollection)
+  TbasesIrrfCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TbasesIrrfCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesIrrfCollectionItem);
   public
-    constructor Create(AOwner: TInfoIrrfCollectionItem);
-    function Add: TbasesIrrfCollectionItem;
+    function Add: TbasesIrrfCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TbasesIrrfCollectionItem;
     property Items[Index: Integer]: TbasesIrrfCollectionItem read GetItem write SetItem;
   end;
 
-  TbasesIrrfCollectionItem = class(TCollectionItem)
+  TbasesIrrfCollectionItem = class(TObject)
   private
     Fvalor: Double;
     FtpValor: Integer;
@@ -145,17 +137,17 @@ type
     property valor: Double read Fvalor;
   end;
 
-  TirrfCollection = class(TCollection)
+  TirrfCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TirrfCollectionItem;
     procedure SetItem(Index: Integer; Value: TirrfCollectionItem);
   public
-    constructor Create(AOwner: TInfoIrrfCollectionItem);
-    function Add: TirrfCollectionItem;
+    function Add: TirrfCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TirrfCollectionItem;
     property Items[Index: Integer]: TirrfCollectionItem read GetItem write SetItem;
   end;
 
-  TirrfCollectionItem = class(TCollectionItem)
+  TirrfCollectionItem = class(TObject)
   private
     FtpCR: string;
     FvrIrrfDesc: Double;
@@ -164,19 +156,18 @@ type
     property vrIrrfDesc: Double read FvrIrrfDesc;
   end;
 
-  TidePgtoExt = class(TPersistent)
+  TidePgtoExt = class(TObject)
   private
     FidePais: TidePais;
     FendExt: TendExt;
   public
-    constructor Create(AOwner: TInfoIrrfCollectionItem);
+    constructor Create;
     destructor Destroy; override;
-
     property idePais: TidePais read FidePais write FidePais;
     property endExt: TendExt read FendExt write FendExt;
   end;
 
-  TEvtIrrfBenef = class(TPersistent)
+  TEvtIrrfBenef = class(TObject)
   private
     FLeitor: TLeitor;
     FId: String;
@@ -201,7 +192,6 @@ type
     property IdeTrabalhador: TIdeTrabalhador3 read FIdeTrabalhador write FIdeTrabalhador;
     property InfoDep: TInfoDep read FInfoDep write FInfoDep;
     property InfoIrrf: TInfoIrrfCollection read FInfoIrrf write SetInfoIrrf;
-  published
     property Leitor: TLeitor read FLeitor write FLeitor;
     property Id: String      read FId;
     property XML: String     read FXML;
@@ -216,7 +206,8 @@ uses
 
 constructor TS5002.Create;
 begin
-  FTipoEvento := teS5002;
+  inherited Create;
+  FTipoEvento   := teS5002;
   FEvtIrrfBenef := TEvtIrrfBenef.Create;
 end;
 
@@ -252,22 +243,11 @@ begin
   Result := FTipoEvento;
 end;
 
-procedure TS5002.SetEvtIrrfBenef(const Value: TEvtIrrfBenef);
-begin
-  FEvtIrrfBenef.Assign(Value);
-end;
-
 { TInfoIrrfCollection }
 
 function TInfoIrrfCollection.Add: TInfoIrrfCollectionItem;
 begin
-  Result := TInfoIrrfCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TInfoIrrfCollection.Create(AOwner: TEvtIrrfBenef);
-begin
-  inherited create(TInfoIrrfCollectionItem);
+  Result := Self.New;
 end;
 
 function TInfoIrrfCollection.GetItem(
@@ -282,13 +262,20 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TInfoIrrfCollection.New: TInfoIrrfCollectionItem;
+begin
+  Result := TInfoIrrfCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TInfoIrrfCollectionItem }
 
 constructor TInfoIrrfCollectionItem.Create;
 begin
-  FbasesIrrf  := TbasesIrrfCollection.Create(Self);
-  Firrf       := TirrfCollection.Create(Self);
-  FidePgtoExt := TidePgtoExt.Create(Self);
+  inherited Create;
+  FbasesIrrf  := TbasesIrrfCollection.Create;
+  Firrf       := TirrfCollection.Create;
+  FidePgtoExt := TidePgtoExt.Create;
 end;
 
 destructor TInfoIrrfCollectionItem.Destroy;
@@ -314,12 +301,7 @@ end;
 
 function TbasesIrrfCollection.Add: TbasesIrrfCollectionItem;
 begin
-  Result := TbasesIrrfCollectionItem(inherited Add);
-end;
-
-constructor TbasesIrrfCollection.Create(AOwner: TInfoIrrfCollectionItem);
-begin
-  inherited create(TbasesIrrfCollectionItem);
+  Result := Self.New;
 end;
 
 function TbasesIrrfCollection.GetItem(
@@ -338,12 +320,7 @@ end;
 
 function TirrfCollection.Add: TirrfCollectionItem;
 begin
-  Result := TirrfCollectionItem(inherited Add);
-end;
-
-constructor TirrfCollection.Create(AOwner: TInfoIrrfCollectionItem);
-begin
-  inherited create(TirrfCollectionItem);
+  Result := Self.New;
 end;
 
 function TirrfCollection.GetItem(Index: Integer): TirrfCollectionItem;
@@ -357,12 +334,19 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TirrfCollection.New: TirrfCollectionItem;
+begin
+  Result := TirrfCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TidePgtoExt }
 
-constructor TidePgtoExt.Create(AOwner: TInfoIrrfCollectionItem);
+constructor TidePgtoExt.Create;
 begin
+  inherited Create;
   FidePais := TidePais.Create;
-  FendExt := TendExt.Create;
+  FendExt  := TendExt.Create;
 end;
 
 destructor TidePgtoExt.Destroy;
@@ -377,19 +361,18 @@ end;
 
 constructor TEvtIrrfBenef.Create;
 begin
-  FLeitor := TLeitor.Create;
-
-  FIdeEvento := TIdeEvento5.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
+  inherited Create;
+  FLeitor         := TLeitor.Create;
+  FIdeEvento      := TIdeEvento5.Create;
+  FIdeEmpregador  := TIdeEmpregador.Create;
   FIdeTrabalhador := TIdeTrabalhador3.Create;
-  FInfoDep := TInfoDep.Create;
-  FInfoIrrf := TInfoIrrfCollection.Create(Self);
+  FInfoDep        := TInfoDep.Create;
+  FInfoIrrf       := TInfoIrrfCollection.Create;
 end;
 
 destructor TEvtIrrfBenef.Destroy;
 begin
   FLeitor.Free;
-
   FIdeEvento.Free;
   FIdeEmpregador.Free;
   FIdeTrabalhador.Free;
@@ -439,14 +422,14 @@ begin
       i := 0;
       while Leitor.rExtrai(2, 'infoIrrf', '', i + 1) <> '' do
       begin
-        InfoIrrf.Add;
+        InfoIrrf.New;
         InfoIrrf.Items[i].FCodCateg := leitor.rCampo(tcInt, 'codCateg');
         InfoIrrf.Items[i].FindResBr := leitor.rCampo(tcStr, 'indResBr');
 
         j := 0;
         while Leitor.rExtrai(3, 'basesIrrf', '', j + 1) <> '' do
         begin
-          InfoIrrf.Items[i].basesIrrf.Add;
+          InfoIrrf.Items[i].basesIrrf.New;
           InfoIrrf.Items[i].basesIrrf.Items[j].FtpValor := leitor.rCampo(tcInt, 'tpValor');
           InfoIrrf.Items[i].basesIrrf.Items[j].Fvalor   := leitor.rCampo(tcDe2, 'valor');
           inc(j);
@@ -455,7 +438,7 @@ begin
         j := 0;
         while Leitor.rExtrai(3, 'irrf', '', j + 1) <> '' do
         begin
-          InfoIrrf.Items[i].irrf.Add;
+          InfoIrrf.Items[i].irrf.New;
           InfoIrrf.Items[i].irrf.Items[j].FtpCR       := leitor.rCampo(tcStr, 'tpCR');
           InfoIrrf.Items[i].irrf.Items[j].FvrIrrfDesc := leitor.rCampo(tcDe2, 'vrIrrfDesc');
           inc(j);
@@ -497,12 +480,10 @@ var
   sSecao: String;
   i, j: Integer;
 begin
-  Result := False;
+  Result := True;
 
   AIni := TMemIniFile.Create('');
   try
-    Result := True;
-
     with Self do
     begin
       sSecao := 'evtIrrfBenef';
@@ -564,6 +545,12 @@ begin
   finally
     AIni.Free;
   end;
+end;
+
+function TbasesIrrfCollection.New: TbasesIrrfCollectionItem;
+begin
+  Result := TbasesIrrfCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 end.

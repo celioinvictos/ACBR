@@ -1719,6 +1719,7 @@ end;
 
 procedure TfrmDACTeRLRetrato.rlb_09_ObsBeforePrint(Sender: TObject;
   var PrintIt: boolean);
+  var i : Integer;
 begin
   inherited;
   PrintIt := RLCTe.PageNumber = 1;
@@ -1748,6 +1749,13 @@ begin
 
   if fpCTe.Ide.tpAmb = taHomologacao then
   begin
+    if rlmObs.Lines.Count < 5  then
+    begin
+       rlmObs.Lines.BeginUpdate;
+       for i:=rlmObs.Lines.Count to 5 do
+          rlmObs.Lines.Add('');
+       rlmObs.Lines.EndUpdate;
+    end;
     rllMsgTeste.Caption := ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
     rllMsgTeste.Visible := True;
     rllMsgTeste.Enabled := True;
@@ -1789,6 +1797,13 @@ begin
 
   // Ajusta o tamanho do quadro conforme a OBS
   rlsQuadro08.Height := rlmObs.Height + 20;
+  rlb_09_Obs.Height  := rlsQuadro08.Height + 4;
+
+  if rllMsgTeste.Visible and (rlb_09_Obs.Height < 68) then
+  begin
+    rlsQuadro08.Height := 64;
+    rlb_09_Obs.Height  := 68;
+  end;
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_10_ModRodFracionadoBeforePrint(Sender: TObject;

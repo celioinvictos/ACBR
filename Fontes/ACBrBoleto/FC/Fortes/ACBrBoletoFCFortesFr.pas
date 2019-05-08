@@ -315,7 +315,6 @@ type
     RLLabel44: TRLLabel;
     RLLabel45: TRLLabel;
     RLLabel46: TRLLabel;
-    RLLabel47: TRLLabel;
     RLLabel48: TRLLabel;
     RLLabel49: TRLLabel;
     RLLabel5: TRLLabel;
@@ -920,8 +919,10 @@ begin
            RLLayout:= LayoutBoleto;
         end;
 
-       if NumCopias > 1 then
-         RLPrinter.Copies := NumCopias ;
+        if RLPrinter.Copies <> NumCopias then
+        begin
+          RLPrinter.Copies := NumCopias;
+        end;
 
         RLLayout.PrintDialog  := MostrarSetup;
         RLLayout.ShowProgress := MostrarProgresso;
@@ -1246,7 +1247,7 @@ begin
       txtNossoNumCan.Caption          := NossoNum;
       txtNumeroDocumentoCarne.Caption := Titulo.NumeroDocumento;
       txtNomeSacado.Caption           := Titulo.Sacado.NomeSacado;
-      txtNomeSacadoCarne.Lines.Text   := txtNomeSacado.Caption;
+      txtNomeSacadoCarne.Lines.Text   := 'Pagador: '+txtNomeSacado.Caption;
 
       txtLocal.Lines.Text             := Titulo.LocalPagamento;
       txtNomeCedente.Caption          := Cedente.Nome+ ' - '+TipoDoc + Cedente.CNPJCPF;
@@ -1254,7 +1255,7 @@ begin
                                          Cedente.Bairro+' '+Cedente.Cidade+' '+Cedente.UF+' '+Cedente.CEP;
 
       memoEndCedenteCarne.Lines.Clear;
-      memoEndCedenteCarne.Lines.Add('Beneficiário: '+Cedente.Nome +' - '+Cedente.Logradouro+' '+Cedente.NumeroRes+' '+Cedente.Complemento+' '+
+      memoEndCedenteCarne.Lines.Add(ACBrStr('Beneficiário: ')+Cedente.Nome +' - '+Cedente.Logradouro+' '+Cedente.NumeroRes+' '+Cedente.Complemento+' '+
                                          Cedente.Bairro+' '+Cedente.Cidade+' '+Cedente.UF+' '+Cedente.CEP+' '+TipoDoc+ Cedente.CNPJCPF);
 
       txtDataDocto.Caption            := FormatDateTime('dd/mm/yyyy', Titulo.DataDocumento);

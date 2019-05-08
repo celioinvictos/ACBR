@@ -49,38 +49,34 @@ unit pcesS1300;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS1300Collection = class;
   TS1300CollectionItem = class;
   TEvtContrSindPatr = class;
-  TContribSindItem = class;
   TContribSindColecao = class;
 
-  TS1300Collection = class(TOwnedCollection)
+  TS1300Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1300CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1300CollectionItem);
   public
-    function Add: TS1300CollectionItem;
+    function Add: TS1300CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1300CollectionItem;
     property Items[Index: Integer]: TS1300CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1300CollectionItem = class(TCollectionItem)
+  TS1300CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtContrSindPatr: TEvtContrSindPatr;
-
-    procedure setEvtContrSindPatr(const Value: TEvtContrSindPatr);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtContrSindPatr: TEvtContrSindPatr read FEvtContrSindPatr write setEvtContrSindPatr;
+    property EvtContrSindPatr: TEvtContrSindPatr read FEvtContrSindPatr write FEvtContrSindPatr;
   end;
 
   TEvtContrSindPatr = class(TESocialEvento)
@@ -88,12 +84,11 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FContribSind: TContribSindColecao;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarContribSind();
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -104,24 +99,24 @@ type
     property ContribSind: TContribSindColecao read FContribSind write FContribSind;
   end;
 
-  TContribSindItem = class(TCollectionItem)
+  TContribSindItem = class(TObject)
   private
     FcnpjSindic: string;
     FtpContribSind: tpTpContribSind;
     FvlrContribSind: Double;
-  published
+  public
     property cnpjSindic: string read FcnpjSindic write FcnpjSindic;
     property tpContribSind: tpTpContribSind read FtpContribSind write FtpContribSind;
     property vlrContribSind: Double read FvlrContribSind write FvlrContribSind;
   end;
 
-  TContribSindColecao = class(TCollection)
+  TContribSindColecao = class(TObjectList)
   private
     function GetItem(Index: Integer): TContribSindItem;
     procedure SetItem(Index: Integer; const Value: TContribSindItem);
   public
-    constructor Create; reintroduce;
-    function Add: TContribSindItem;
+    function Add: TContribSindItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TContribSindItem;
     property Items[Index: Integer]: TContribSindItem read GetItem write SetItem;
   end;
 
@@ -135,8 +130,7 @@ uses
 
 function TS1300Collection.Add: TS1300CollectionItem;
 begin
-  Result := TS1300CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1300Collection.GetItem(Index: Integer): TS1300CollectionItem;
@@ -150,10 +144,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1300Collection.New: TS1300CollectionItem;
+begin
+  Result := TS1300CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 {TS1300CollectionItem}
 constructor TS1300CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1300;
+  inherited Create;
+  FTipoEvento       := teS1300;
   FEvtContrSindPatr := TEvtContrSindPatr.Create(AOwner);
 end;
 
@@ -164,20 +165,14 @@ begin
   inherited;
 end;
 
-procedure TS1300CollectionItem.setEvtContrSindPatr(const Value: TEvtContrSindPatr);
-begin
-  FEvtContrSindPatr.Assign(Value);
-end;
-
 { TEvtSolicTotal }
 constructor TEvtContrSindPatr.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento3.Create;
+  FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FContribSind := TContribSindColecao.Create;
+  FContribSind   := TContribSindColecao.Create;
 end;
 
 destructor TEvtContrSindPatr.destroy;
@@ -238,12 +233,7 @@ end;
 
 function TContribSindColecao.Add: TContribSindItem;
 begin
-  Result := TContribSindItem(inherited add);
-end;
-
-constructor TContribSindColecao.Create;
-begin
-  inherited create(TContribSindItem)
+  Result := Self.New;
 end;
 
 function TContribSindColecao.GetItem(Index: Integer): TContribSindItem;
@@ -263,7 +253,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -280,7 +270,6 @@ begin
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
       ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
       ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -299,7 +288,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with contribSind.Add do
+        with contribSind.New do
         begin
           cnpjSindic     := sFim;
           tpContribSind  := eSStrToTpContribSind(Ok, INIRec.ReadString(sSecao, 'tpTpContribSind', '1'));
@@ -312,11 +301,15 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;
+end;
+
+function TContribSindColecao.New: TContribSindItem;
+begin
+  Result := TContribSindItem.Create;
+  Self.Add(Result);
 end;
 
 end.

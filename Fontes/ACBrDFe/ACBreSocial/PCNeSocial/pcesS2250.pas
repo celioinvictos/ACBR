@@ -49,39 +49,36 @@ unit pcesS2250;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2250Collection = class;
   TS2250CollectionItem = class;
   TEvtAvPrevio = class;
   TInfoAvPrevio = class;
   TDetAvPrevio = class;
   TCancAvPrevio = class;
 
-  TS2250Collection = class(TOwnedCollection)
+  TS2250Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2250CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2250CollectionItem);
   public
-    function Add: TS2250CollectionItem;
+    function Add: TS2250CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2250CollectionItem;
     property Items[Index: Integer]: TS2250CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2250CollectionItem = class(TCollectionItem)
+  TS2250CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtAvPrevio: TEvtAvPrevio;
-
-    procedure setEvtAvPrevio(const Value: TEvtAvPrevio);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtAvPrevio: TEvtAvPrevio read FEvtAvPrevio write setEvtAvPrevio;
+    property EvtAvPrevio: TEvtAvPrevio read FEvtAvPrevio write FEvtAvPrevio;
   end;
 
   TEvtAvPrevio = class(TeSocialEvento)
@@ -90,13 +87,12 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FInfoAvPrevio: TInfoAvPrevio;
-    FACBreSocial: TObject;
 
     procedure GerarInfoAvPrevio;
     procedure GerarDetAvPrevio;
     procedure GerarCancAvPrevio;
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -113,9 +109,8 @@ type
     FDetAvPrevio : TDetAvPrevio;
     FCancAvPrevio: TCancAvPrevio;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
-
     property DetAvPrevio: TDetAvPrevio read FDetAvPrevio write FDetAvPrevio;
     property CancAvPrevio: TCancAvPrevio read FCancAvPrevio write FCancAvPrevio;
   end;
@@ -154,8 +149,7 @@ uses
 
 function TS2250Collection.Add: TS2250CollectionItem;
 begin
-  Result := TS2250CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2250Collection.GetItem(Index: Integer): TS2250CollectionItem;
@@ -169,11 +163,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2250Collection.New: TS2250CollectionItem;
+begin
+  Result := TS2250CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2250CollectionItem }
 
 constructor TS2250CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento      := teS2250;
+  inherited Create;
+  FTipoEvento  := teS2250;
   FEvtAvPrevio := TEvtAvPrevio.Create(AOwner);
 end;
 
@@ -184,21 +185,16 @@ begin
   inherited;
 end;
 
-procedure TS2250CollectionItem.setEvtAvPrevio(
-  const Value: TEvtAvPrevio);
-begin
-  FEvtAvPrevio.Assign(Value);
-end;
-
 { TInfoAvPrevio }
 
-constructor TInfoAvPrevio.create;
+constructor TInfoAvPrevio.Create;
 begin
-  FDetAvPrevio  := TDetAvPrevio.create;
+  inherited Create;
+  FDetAvPrevio  := TDetAvPrevio.Create;
   FCancAvPrevio := TCancAvPrevio.Create;
 end;
 
-destructor TInfoAvPrevio.destroy;
+destructor TInfoAvPrevio.Destroy;
 begin
   FDetAvPrevio.Free;
   FCancAvPrevio.Free;
@@ -210,13 +206,12 @@ end;
 
 constructor TEvtAvPrevio.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento2.Create;
+  FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeVinculo := TIdeVinculo.Create;
-  FInfoAvPrevio := TInfoAvPrevio.Create;
+  FIdeVinculo    := TIdeVinculo.Create;
+  FInfoAvPrevio  := TInfoAvPrevio.Create;
 end;
 
 
@@ -301,7 +296,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -316,7 +311,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -349,8 +343,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

@@ -93,7 +93,7 @@ object frmDemo_ACBrGNRE: TfrmDemo_ACBrGNRE
         Top = 15
         Width = 277
         Height = 360
-        ActivePage = TabSheet2
+        ActivePage = TabSheet1
         Align = alClient
         MultiLine = True
         TabOrder = 0
@@ -279,6 +279,19 @@ object frmDemo_ACBrGNRE: TfrmDemo_ACBrGNRE
               Width = 228
               Height = 21
               TabOrder = 2
+            end
+            object rgVersaoDF: TRadioGroup
+              Left = 8
+              Top = 123
+              Width = 129
+              Height = 50
+              Caption = 'Vers'#227'o DF'
+              Columns = 2
+              ItemIndex = 1
+              Items.Strings = (
+                '1.00'
+                '2.00')
+              TabOrder = 3
             end
           end
         end
@@ -924,6 +937,7 @@ object frmDemo_ACBrGNRE: TfrmDemo_ACBrGNRE
     Configuracoes.Arquivos.OrdenacaoPath = <>
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 0
+    Configuracoes.WebServices.Salvar = True
     Configuracoes.WebServices.QuebradeLinha = '|'
     GNREGuia = ACBrGNREGuiaRL1
     Left = 334

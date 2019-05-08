@@ -49,37 +49,34 @@ unit pcesS1299;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS1299Collection = class;
   TS1299CollectionItem = class;
   TEvtFechaEvPer = class;
-  TInfoFech= class;
+  TInfoFech = class;
 
-  TS1299Collection = class(TOwnedCollection)
+  TS1299Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1299CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1299CollectionItem);
   public
-    function Add: TS1299CollectionItem;
+    function Add: TS1299CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1299CollectionItem;
     property Items[Index: Integer]: TS1299CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1299CollectionItem = class(TCollectionItem)
+  TS1299CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtFechaEvPer: TEvtFechaEvPer;
-
-    procedure setEvtFechaEvPer(const Value: TEvtFechaEvPer);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtFechaEvPer: TEvtFechaEvPer read FEvtFechaEvPer write setEvtFechaEvPer;
+    property EvtFechaEvPer: TEvtFechaEvPer read FEvtFechaEvPer write FEvtFechaEvPer;
   end;
 
   TEvtFechaEvPer = class(TESocialEvento)
@@ -88,12 +85,11 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeRespInf : TIdeRespInf;
     FInfoFech: TInfoFech;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarInfoFech;
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -116,7 +112,7 @@ type
     FcompSemMovto : string;
   public
     constructor create;
-    destructor destroy; override;
+    destructor Destroy; override;
 
     property evtRemun: TpSimNao read FevtRemun write FevtRemun;
     property evtPgtos: TpSimNao read FevtPgtos write FevtPgtos;
@@ -137,8 +133,7 @@ uses
 
 function TS1299Collection.Add: TS1299CollectionItem;
 begin
-  Result := TS1299CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1299Collection.GetItem(Index: Integer): TS1299CollectionItem;
@@ -151,10 +146,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1299Collection.New: TS1299CollectionItem;
+begin
+  Result := TS1299CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 {TS1299CollectionItem}
 constructor TS1299CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1299;
+  inherited Create;
+  FTipoEvento    := teS1299;
   FEvtFechaEvPer := TEvtFechaEvPer.Create(AOwner);
 end;
 
@@ -165,21 +167,15 @@ begin
   inherited;
 end;
 
-procedure TS1299CollectionItem.setEvtFechaEvPer(const Value: TEvtFechaEvPer);
-begin
-  FEvtFechaEvPer.Assign(Value);
-end;
-
 { TEvtSolicTotal }
 constructor TEvtFechaEvPer.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento3.Create;
+  FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeRespInf := TIdeRespInf.Create;
-  FInfoFech := TInfoFech.Create;
+  FIdeRespInf    := TIdeRespInf.Create;
+  FInfoFech      := TInfoFech.Create;
 end;
 
 destructor TEvtFechaEvPer.destroy;
@@ -261,7 +257,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -276,7 +272,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
       ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -305,8 +300,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

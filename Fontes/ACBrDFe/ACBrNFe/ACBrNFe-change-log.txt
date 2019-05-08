@@ -47,6 +47,68 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/04/2019
+-- pcnRetConsSitNFe --
+[-] Correção de tipo na leitura da tag cMsg.
+    https://www.projetoacbr.com.br/forum/topic/50987-erro-invalid-argument-ao-enviarconsultar-nfc-e-tag-cmsg/
+  Por: elrond
+
+25/04/2019
+-- ACBrNFeServicos --
+[*] Ajuste das URL de consulta por chave de acesso NFCe homologação para as UF
+    usuárias da SVRS.
+  Por: BigWings
+
+16/04/2019
+-- ACBrNFe, pcnConversao.pas --
+[+] Adicionado tipo TForcarGeracaoTag que poderá ser usado em qualquer DF-e para parametrizar a exigência ou não de uma tag.
+[+] Adicionada propriedade ForcarGerarTagRejeicao938 em Opções para tentar resolver
+    de forma definitiva os problemas da geração da tag vICMSSubstituto e rejeição 938.
+    Veja: https://www.projetoacbr.com.br/forum/topic/50014-rejei%C3%A7%C3%A3o-n%C3%A3o-informada-vbcstret-pst-vicmssubstituto-e-vicmsstret/
+
+27/03/2019
+-- ACBrNFeServicos --
+[*] https://www.projetoacbr.com.br/forum/topic/50216-acrescentar-a-url-da-nf-e-40-para-pernambuco/
+  Por: Márcio Antônico
+
+-- ACBrDANFCeFortesFrA4 --
+[*] Alteração no valor default de conf. Margens
+    (por: Jose M. S. Junior)
+
+19/03/2019
+-- pcnProcNFe --
+[*] Removido um "M" a mais no nome da tag.
+  Por: Italo Jurisato Junior
+
+16/03/2019
+-- pcnNFeW --
+[*] Removido as condições impostas para gerar ou não as tags novas: pST e vICMSSubstituto.
+    Conforme consta na NT 2018/005 versão 1.20 essas tags passaram a ser opcionais.
+  Por: Italo Jurisato Junior
+
+14/03/2019
+-- pcnNFeW --
+[*] Imposto uma condição para gerar ou não a tag pST (cst41Ret e cst60Ret), pois no ambiente
+    de homologação ela já aceita e no de produção somente a partir do dia 29/04/2019.
+   Por: Italo Jurisato Junior
+
+08/03/2019
+-- pcnNFeW --
+[*] Imposto uma condição para gerar ou não a tag vICMSSubstituto, pois no ambiente
+    de homologação ela já aceita e no de produção somente a partir do dia 29/04/2019.
+   Por: Italo Jurisato Junior
+
+06/03/2019
+-- pcnNFeW --
+[*] Desfeita a alteração na condição para não gerar a tag IE do destinatário 
+    quando o mesmo não for contribuinte do ICMS
+   Por: Italo Jurisato Junior
+
+28/02/2019
+-- Diversos --
+[*] Alterações visando atender a NT 2018/005 versão 1.10
+  Por: Italo Jurisato Junior
+
 14/02/2019
 -- ACBrNFeNotasFiscais / pcnNFeR --
 [*] Ajuste para remoção completa do namespace do XML para leitura correta pelo

@@ -279,7 +279,7 @@ type
     property Terminador       : AnsiString     read fTerminador        write SetTerminador;
     property TerminadorBalanca: AnsiString     read fTerminadorBalanca write SetTerminadorBalanca;
     property TimeOut       : Integer           read GetTimeOut      write SetTimeOut default 1000;
-    property WaitInterval  : Integer           read fWaitInterval   write SetWaitInterval default 200;
+    property WaitInterval  : Integer           read fWaitInterval   write SetWaitInterval default 100;
     property Modelo        : TACBrMTerModelo   read fModelo         write SetModelo default mtrNenhum;
     property DisplayLinhas : Integer           read fDisplayLinhas  write fDisplayLinhas default 4;
     property DisplayColunas: Integer           read fDisplayColunas write fDisplayColunas default 20;
@@ -296,7 +296,7 @@ type
 implementation
 
 uses
-  strutils, dateutils, math,
+  strutils, dateutils, math, typinfo,
   ACBrMTerVT100, ACBrMTerPMTG, ACBrMTerStxEtx, ACBrMTerSB100,
   ACBrConsts, ACBrUtil;
 
@@ -817,6 +817,7 @@ procedure TACBrMTer.DoRecebeDados(const aIP: String;
 var
   wEchoMode: TACBrMTerEchoMode;
   wConexao: TACBrMTerConexao;
+  DadosEcho: String;
 begin
   if (Length(DadosRecebidos) < 1) then
     Exit;
@@ -830,13 +831,18 @@ begin
 
   wEchoMode := EchoMode;
   if Assigned(fOnRecebeDados) then
+  begin
+    GravaLog( '  OnRecebeDados');
     OnRecebeDados(aIP, DadosRecebidos, wEchoMode);
+    GravaLog( '    EchoMode: '+GetEnumName(TypeInfo(TACBrMTerEchoMode), Integer(wEchoMode)));
+  end;
 
+  DadosEcho := fMTer.LimparConteudoParaEnviarEcho(DadosRecebidos);
   case wEchoMode of
     mdeNormal  :
-      fMTer.ComandoEco(wConexao.Comandos, DadosRecebidos);
+      fMTer.ComandoEco(wConexao.Comandos, DadosEcho);
     mdePassword:
-      fMTer.ComandoEco(wConexao.Comandos, StringOfChar(PasswordChar, Length(DadosRecebidos)));
+      fMTer.ComandoEco(wConexao.Comandos, StringOfChar(PasswordChar, Length(DadosEcho)));
   end;
 end;
 
@@ -1062,7 +1068,7 @@ begin
   fTerminadorAsc := '';
   fTerminadorBalanca := '#3';
   fTerminadorBalancaAsc := #3;
-  fWaitInterval := 200;
+  fWaitInterval := 100;
 
   fConexoes := TACBrMTerConexoes.Create(Self);
 
@@ -1095,9 +1101,16 @@ begin
 end;
 
 procedure TACBrMTer.Ativar;
+var
+  wBalStr: String;
 begin
   if Ativo then
     Exit;
+
+  if Assigned(fACBrBAL) and Assigned(fACBrBAL.BAL) then
+    wBalStr := fACBrBAL.ModeloStr
+  else
+    wBalStr := 'Nenhuma';
 
   if (Modelo = mtrNenhum) then
     raise Exception.Create(ACBrStr('Modelo ainda não foi definido'));
@@ -1107,8 +1120,7 @@ begin
            ' - Modelo: ' + ModeloStr + ' - Porta: ' + fTCPServer.Port +
            ' - Terminador: ' + fTCPServer.Terminador +
            ' - Timeout: ' + IntToStr(fTCPServer.TimeOut) +
-           ' - Balança: ' + IfThen(Assigned(fACBrBAL), fACBrBAL.ModeloStr, 'Nenhuma')+
-           sLineBreak + StringOfChar('-', 80) + sLineBreak);
+           ' - Balança: ' + wBalStr +sLineBreak+ StringOfChar('-', 80)+sLineBreak);
 
   fTCPServer.Ativar;
 end;

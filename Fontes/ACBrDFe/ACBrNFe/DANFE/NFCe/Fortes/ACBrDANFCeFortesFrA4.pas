@@ -283,7 +283,7 @@ implementation
 {$ENDIF}
 
 uses RLPrinters, StrUtils,
-     ACBrDFeDANFeReport;
+     ACBrDFeDANFeReport, ACBrDFeReportFortes;
 
 procedure Register;
 begin
@@ -327,10 +327,8 @@ begin
   FACBrNFeDANFCeFortesA4          := TACBrNFeDANFCeFortesA4(Owner) ;  // Link para o Pai
 
   //Pega as marges que for defina na classe pai.
-  rlReportA4.Margins.LeftMargin    := FACBrNFeDANFCeFortesA4.MargemEsquerda ;
-  rlReportA4.Margins.RightMargin   := FACBrNFeDANFCeFortesA4.MargemDireita ;
-  rlReportA4.Margins.TopMargin     := FACBrNFeDANFCeFortesA4.MargemSuperior ;
-  rlReportA4.Margins.BottomMargin  := FACBrNFeDANFCeFortesA4.MargemInferior ;
+  TDFeReportFortes.AjustarMargem(rlReportA4, FACBrNFeDANFCeFortesA4);
+
 end;
 
 procedure TfrmACBrDANFCeFortesFrA4.lNomeFantasiaBeforePrint(Sender: TObject;
@@ -478,7 +476,7 @@ begin
     if (Dest.idEstrangeiro = '') and
        (Dest.CNPJCPF = '') then
      begin
-        lCPF_CNPJ_ID.Lines.Text := 'CONSUMIDOR NÃO IDENTIFICADO';
+        lCPF_CNPJ_ID.Lines.Text := ACBrStr('CONSUMIDOR NÃO IDENTIFICADO');
      end
     else if Dest.idEstrangeiro <> '' then
      begin
@@ -711,7 +709,7 @@ procedure TfrmACBrDANFCeFortesFrA4.RLLabel4BeforePrint(Sender: TObject;
   var Text: string; var PrintIt: Boolean);
 begin
   PrintIt := Trim(self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.IM) <> '';
-  Text    := 'Inscrição Municipal: ' + self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.IM;
+  Text    := ACBrStr('Inscrição Municipal: ') + self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.IM;
 end;
 
 
@@ -720,7 +718,7 @@ procedure TfrmACBrDANFCeFortesFrA4.RLLabel5BeforePrint(Sender: TObject;
   var Text: string; var PrintIt: Boolean);
 begin
   PrintIt := Trim(self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.IE) <> '';
-  Text    := 'Inscrição Estadual: ' + self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.IE;
+  Text    := ACBrStr('Inscrição Estadual: ') + self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.IE;
 end;
 
 procedure TfrmACBrDANFCeFortesFrA4.RLMemo1BeforePrint(Sender: TObject;
@@ -791,10 +789,6 @@ end;
 constructor TACBrNFeDANFCeFortesA4.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  self.MargemEsquerda := 10;
-  self.MargemDireita  := 10;
-  self.MargemSuperior := 10;
-  self.MargemInferior := 10;
 end;
 
 destructor TACBrNFeDANFCeFortesA4.Destroy;
@@ -819,8 +813,10 @@ begin
       RLLayout := rlReportA4;
       Resumido := DanfeResumido;
 
-      if NumCopias > 1 then
+      if RLPrinter.Copies <> NumCopias then
+      begin
         RLPrinter.Copies := NumCopias;
+      end;
 
       if FACBrNFeDANFCeFortesA4.Impressora <> '' then
         RLPrinter.PrinterName := FACBrNFeDANFCeFortesA4.Impressora;
@@ -961,7 +957,7 @@ begin
   else if (FACBrNFeDANFCeFortesA4.ImprimeTributos = trbNormal) then
     Text := ManterValorTributosLinha
   else
-    Text := 'Você pagou aproximadamente : ';
+    Text := ACBrStr('Você pagou aproximadamente : ');
 end;
 
 
@@ -973,17 +969,17 @@ begin
     if  ( vTribFed > 0 ) and
         ( vTribEst > 0 ) and
         ( vTribMun > 0 ) then
-          Text :=  'pelos produtos/serviços :'
+          Text :=  ACBrStr('pelos produtos/serviços :')
     else
     if  ( vTribFed > 0 ) and
         ( vTribEst = 0 ) and
         ( vTribMun > 0 ) then
-          Text :=  'pelos serviços :'
+          Text :=  ACBrStr('pelos serviços :')
     else
     if  ( vTribFed > 0 ) and
         ( vTribEst > 0 ) and
         ( vTribMun = 0 ) then
-          Text :=  'pelos produtos :'
+          Text :=  ACBrStr('pelos produtos :')
   end;
 end;
 
@@ -1015,7 +1011,7 @@ begin
   with FACBrNFeDANFCeFortesA4 do
   begin
     if ( FpNFe.Total.ICMSTot.vTotTrib > 0 ) then
-      sTemp := 'Informação dos Tributos Totais (Lei Federal 12.741/2012 ) '+
+      sTemp := ACBrStr('Informação dos Tributos Totais (Lei Federal 12.741/2012 ) ')+
                 FormatFloat('R$ ,0.00', FpNFe.Total.ICMSTot.vTotTrib);
     if Trim(FonteTributos) <> '' then
       sTemp := sTemp + 'Fonte : ' + FonteTributos+'  '+ ChaveTributos+' ';

@@ -49,7 +49,7 @@ unit pcesS2298;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -59,27 +59,25 @@ type
   TEvtReintegr = class;
   TInfoReintegr = class;
 
-  TS2298Collection = class(TOwnedCollection)
+  TS2298Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2298CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2298CollectionItem);
   public
-    function Add: TS2298CollectionItem;
+    function Add: TS2298CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2298CollectionItem;
     property Items[Index: Integer]: TS2298CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2298CollectionItem = class(TCollectionItem)
+  TS2298CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtReintegr: TEvtReintegr;
-
-    procedure setEvtReintegr(const Value: TEvtReintegr);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor  Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtReintegr: TEvtReintegr read FEvtReintegr write setEvtReintegr;
+    property EvtReintegr: TEvtReintegr read FEvtReintegr write FEvtReintegr;
   end;
 
   TEvtReintegr = class(TeSocialEvento)
@@ -88,11 +86,10 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FInfoReintegr: TInfoReintegr;
-    FACBreSocial: TObject;
 
     procedure GerarInfoReintegr;
   public
-    constructor Create(AACBreSocial: TObject); overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -131,8 +128,7 @@ uses
 
 function TS2298Collection.Add: TS2298CollectionItem;
 begin
-  Result := TS2298CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2298Collection.GetItem(Index: Integer): TS2298CollectionItem;
@@ -146,9 +142,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2298Collection.New: TS2298CollectionItem;
+begin
+  Result := TS2298CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2298CollectionItem }
 constructor TS2298CollectionItem.Create(AOwner: TComponent);
 begin
+  inherited Create;
   FTipoEvento  := teS2298;
   FEvtReintegr := TEvtReintegr.Create(AOwner);
 end;
@@ -160,24 +163,18 @@ begin
   inherited;
 end;
 
-procedure TS2298CollectionItem.setEvtReintegr(const Value: TEvtReintegr);
-begin
-  FEvtReintegr.Assign(Value);
-end;
-
 { TEvtReintegracao }
 constructor TEvtReintegr.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
   FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo    := TIdeVinculo.Create;
   FInfoReintegr  := TInfoReintegr.Create;
 end;
 
-destructor TEvtReintegr.destroy;
+destructor TEvtReintegr.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -241,7 +238,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -256,7 +253,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -280,8 +276,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

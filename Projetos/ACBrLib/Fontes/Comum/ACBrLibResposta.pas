@@ -42,29 +42,18 @@ uses
   inifiles, fpjson, jsonparser, TypInfo, rttiutils,
   ACBrUtil;
 
+const
+  CSessaoHttpResposta = 'RespostaHttp';
+
 type
-  TACBrCollection = class abstract (TCollection)
-  private
-    FSessao: String;
-    FSessaoItem: String;
-
-  public
-    constructor Create(AItemClass: TCollectionItemClass; const ASessao: String; const ASessaoItem: String = ''); reintroduce;
-
-    property Sessao: String read FSessao;
-    property SessaoItem: String read FSessaoItem;
-
-  end;
-
   { TACBrLibResposta }
   TACBrLibRespostaTipo = (resINI, resXML, resJSON);
 
   TACBrLibResposta = class abstract
-  private
-    FTipo: TACBrLibRespostaTipo;
-
   protected
     FSessao: String;
+    FTipo: TACBrLibRespostaTipo;
+
 
     function GerarXml: String;
     function GerarIni: String;
@@ -78,19 +67,28 @@ type
 
     property Sessao: String read FSessao;
 
-    function Gerar: String;
+    function Gerar: String; virtual;
+
+  end;
+
+  { TACBrLibHttpResposta }
+  TACBrLibHttpResposta = class(TACBrLibResposta)
+  private
+    FWebService: string;
+    FCodigoHTTP: Integer;
+    FMsg: string;
+
+  public
+    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+
+  published
+    property WebService: String read FWebService write FWebService;
+    property CodigoHTTP: Integer read FCodigoHTTP write FCodigoHTTP;
+    property Msg: string read FMsg write FMsg;
+
   end;
 
 implementation
-
-{ TACBrCollection }
-constructor TACBrCollection.Create(AItemClass: TCollectionItemClass; const ASessao: String; const ASessaoItem: String);
-begin
-  inherited Create(AItemClass);
-
-  FSessao := ASessao;
-  FSessaoItem := ASessaoItem;
-end;
 
 { TACBrLibResposta }
 
@@ -359,6 +357,13 @@ begin
     else
       Result := GerarIni;
   end;
+end;
+
+{ TACBrLibHttpResposta }
+
+constructor TACBrLibHttpResposta.Create(const ATipo: TACBrLibRespostaTipo);
+begin
+  inherited Create(CSessaoHttpResposta, ATipo);
 end;
 
 end.

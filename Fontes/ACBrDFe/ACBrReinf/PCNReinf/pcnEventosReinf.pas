@@ -137,19 +137,19 @@ constructor TReinfEventos.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FR1000 := TR1000Collection.Create(AOwner, TR1000CollectionItem);
-  FR1070 := TR1070Collection.Create(AOwner, TR1070CollectionItem);
-  FR2010 := TR2010Collection.Create(AOwner, TR2010CollectionItem);
-  FR2020 := TR2020Collection.Create(AOwner, TR2020CollectionItem);
-  FR2030 := TR2030Collection.Create(AOwner, TR2030CollectionItem);
-  FR2040 := TR2040Collection.Create(AOwner, TR2040CollectionItem);
-  FR2050 := TR2050Collection.Create(AOwner, TR2050CollectionItem);
-  FR2060 := TR2060Collection.Create(AOwner, TR2060CollectionItem);
-  FR2070 := TR2070Collection.Create(AOwner, TR2070CollectionItem);
-  FR2098 := TR2098Collection.Create(AOwner, TR2098CollectionItem);
-  FR2099 := TR2099Collection.Create(AOwner, TR2099CollectionItem);
-  FR3010 := TR3010Collection.Create(AOwner, TR3010CollectionItem);
-  FR9000 := TR9000Collection.Create(AOwner, TR9000CollectionItem);
+  FR1000 := TR1000Collection.Create(AOwner);
+  FR1070 := TR1070Collection.Create(AOwner);
+  FR2010 := TR2010Collection.Create(AOwner);
+  FR2020 := TR2020Collection.Create(AOwner);
+  FR2030 := TR2030Collection.Create(AOwner);
+  FR2040 := TR2040Collection.Create(AOwner);
+  FR2050 := TR2050Collection.Create(AOwner);
+  FR2060 := TR2060Collection.Create(AOwner);
+  FR2070 := TR2070Collection.Create(AOwner);
+  FR2098 := TR2098Collection.Create(AOwner);
+  FR2099 := TR2099Collection.Create(AOwner);
+  FR3010 := TR3010Collection.Create(AOwner);
+  FR9000 := TR9000Collection.Create(AOwner);
 end;
 
 destructor TReinfEventos.Destroy;
@@ -243,7 +243,7 @@ begin
 
     Self.R1000.Items[i].evtInfoContri.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR1000;
       PathNome := PathName;
@@ -259,7 +259,7 @@ begin
 
     Self.R1070.Items[i].evtTabProcesso.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR1070;
       PathNome := PathName;
@@ -275,7 +275,7 @@ begin
 
     Self.R2010.Items[i].evtServTom.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2010;
       PathNome := PathName;
@@ -291,7 +291,7 @@ begin
 
     Self.R2020.Items[i].evtServPrest.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2020;
       PathNome := PathName;
@@ -307,7 +307,7 @@ begin
 
     Self.R2030.Items[i].evtAssocDespRec.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2030;
       PathNome := PathName;
@@ -323,7 +323,7 @@ begin
 
     Self.R2040.Items[i].evtAssocDespRep.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2040;
       PathNome := PathName;
@@ -339,7 +339,7 @@ begin
 
     Self.R2050.Items[i].evtComProd.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2050;
       PathNome := PathName;
@@ -355,7 +355,7 @@ begin
 
     Self.R2060.Items[i].evtCPRB.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2060;
       PathNome := PathName;
@@ -371,7 +371,7 @@ begin
 
     Self.R2070.Items[i].evtPgtosDivs.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2070;
       PathNome := PathName;
@@ -387,7 +387,7 @@ begin
 
     Self.R2098.Items[i].evtReabreEvPer.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2098;
       PathNome := PathName;
@@ -403,7 +403,7 @@ begin
 
     Self.R2099.Items[i].evtFechaEvPer.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR2099;
       PathNome := PathName;
@@ -419,7 +419,7 @@ begin
 
     Self.R3010.Items[i].evtEspDesportivo.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR3010;
       PathNome := PathName;
@@ -435,7 +435,7 @@ begin
 
     Self.R9000.Items[i].evtExclusao.SaveToFile(PathName);
 
-    with TACBrReinf(Self.Owner).Eventos.Gerados.Add do
+    with TACBrReinf(Self.Owner).Eventos.Gerados.New do
     begin
       TipoEvento := teR9000;
       PathNome := PathName;
@@ -515,19 +515,19 @@ var
   Ok: Boolean;
 begin
   case StringXMLToTipoEvento(Ok, AXMLString) of
-    teR1000: Self.R1000.Add.evtInfoContri.XML    := AXMLString;
-    teR1070: Self.R1070.Add.evtTabProcesso.XML   := AXMLString;
-    teR2010: Self.R2010.Add.evtServTom.XML       := AXMLString;
-    teR2020: Self.R2020.Add.evtServPrest.XML     := AXMLString;
-    teR2030: Self.R2030.Add.evtAssocDespRec.XML  := AXMLString;
-    teR2040: Self.R2040.Add.evtAssocDespRep.XML  := AXMLString;
-    teR2050: Self.R2050.Add.evtComProd.XML       := AXMLString;
-    teR2060: Self.R2060.Add.evtCPRB.XML          := AXMLString;
-    teR2070: Self.R2070.Add.evtPgtosDivs.XML     := AXMLString;
-    teR2098: Self.R2098.Add.evtReabreEvPer.XML   := AXMLString;
-    teR2099: Self.R2099.Add.evtFechaEvPer.XML    := AXMLString;
-    teR3010: Self.R3010.Add.evtEspDesportivo.XML := AXMLString;
-    teR9000: Self.R9000.Add.evtExclusao.XML      := AXMLString;
+    teR1000: Self.R1000.New.evtInfoContri.XML    := AXMLString;
+    teR1070: Self.R1070.New.evtTabProcesso.XML   := AXMLString;
+    teR2010: Self.R2010.New.evtServTom.XML       := AXMLString;
+    teR2020: Self.R2020.New.evtServPrest.XML     := AXMLString;
+    teR2030: Self.R2030.New.evtAssocDespRec.XML  := AXMLString;
+    teR2040: Self.R2040.New.evtAssocDespRep.XML  := AXMLString;
+    teR2050: Self.R2050.New.evtComProd.XML       := AXMLString;
+    teR2060: Self.R2060.New.evtCPRB.XML          := AXMLString;
+    teR2070: Self.R2070.New.evtPgtosDivs.XML     := AXMLString;
+    teR2098: Self.R2098.New.evtReabreEvPer.XML   := AXMLString;
+    teR2099: Self.R2099.New.evtFechaEvPer.XML    := AXMLString;
+    teR3010: Self.R3010.New.evtEspDesportivo.XML := AXMLString;
+    teR9000: Self.R9000.New.evtExclusao.XML      := AXMLString;
   end;
 
   Result := (GetCount > 0);
@@ -538,19 +538,19 @@ var
   Ok: Boolean;
 begin
   case StringINIToTipoEvento(Ok, AIniString) of
-    teR1000: Self.R1000.Add.evtInfoContri.LerArqIni(AIniString);
-    teR1070: Self.R1070.Add.evtTabProcesso.LerArqIni(AIniString);
-    teR2010: Self.R2010.Add.evtServTom.LerArqIni(AIniString);
-    teR2020: Self.R2020.Add.evtServPrest.LerArqIni(AIniString);
-    teR2030: Self.R2030.Add.evtAssocDespRec.LerArqIni(AIniString);
-    teR2040: Self.R2040.Add.evtAssocDespRep.LerArqIni(AIniString);
-    teR2050: Self.R2050.Add.evtComProd.LerArqIni(AIniString);
-    teR2060: Self.R2060.Add.evtCPRB.LerArqIni(AIniString);
-    teR2070: Self.R2070.Add.evtPgtosDivs.LerArqIni(AIniString);
-    teR2098: Self.R2098.Add.evtReabreEvPer.LerArqIni(AIniString);
-    teR2099: Self.R2099.Add.evtFechaEvPer.LerArqIni(AIniString);
-    teR3010: Self.R3010.Add.evtEspDesportivo.LerArqIni(AIniString);
-    teR9000: Self.R9000.Add.evtExclusao.LerArqIni(AIniString);
+    teR1000: Self.R1000.New.evtInfoContri.LerArqIni(AIniString);
+    teR1070: Self.R1070.New.evtTabProcesso.LerArqIni(AIniString);
+    teR2010: Self.R2010.New.evtServTom.LerArqIni(AIniString);
+    teR2020: Self.R2020.New.evtServPrest.LerArqIni(AIniString);
+    teR2030: Self.R2030.New.evtAssocDespRec.LerArqIni(AIniString);
+    teR2040: Self.R2040.New.evtAssocDespRep.LerArqIni(AIniString);
+    teR2050: Self.R2050.New.evtComProd.LerArqIni(AIniString);
+    teR2060: Self.R2060.New.evtCPRB.LerArqIni(AIniString);
+    teR2070: Self.R2070.New.evtPgtosDivs.LerArqIni(AIniString);
+    teR2098: Self.R2098.New.evtReabreEvPer.LerArqIni(AIniString);
+    teR2099: Self.R2099.New.evtFechaEvPer.LerArqIni(AIniString);
+    teR3010: Self.R3010.New.evtEspDesportivo.LerArqIni(AIniString);
+    teR9000: Self.R9000.New.evtExclusao.LerArqIni(AIniString);
   end;
 
   Result := (GetCount > 0);

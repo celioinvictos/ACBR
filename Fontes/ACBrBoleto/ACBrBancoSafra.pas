@@ -434,7 +434,9 @@ begin
               IntToStrZero(round(ValorDesconto * 100), 13)                                   + // 180 a 192 - Valor Do Desconto Concedido
               IntToStrZero(round(ValorIOF * 100), 13)                                        + // 193 a 205 - Valor De Iof Operações Deseguro
 
-              IfThen( ((Ocorrencia = '01') and (Copy(Instrucao1, 1, 2) = '16')),
+              IfThen( ((Ocorrencia = '01') and
+                      (PercentualMulta > 0) and
+                      ((Copy(Instrucao1, 1, 2) = '16') or (Copy(Instrucao2, 1, 2) = '16'))  ),
                 (FormatDateTime('ddmmyy', DataMulta) +                                         // 206 a 211 a data a partir da qual a multa deve ser cobrada
                 IntToStrZero(round(PercentualMulta * 100), 4) +                                // 212 a 215 o percentual referente à multa no formato 99v99
                 '000'),                                                                        // 216 a 218 zeros
@@ -532,13 +534,12 @@ begin
     with Titulo do
     begin
 
-      NossoNumero := Copy(Linha, 63, 8);
-      OcorrenciaOriginal.Tipo :=
-        CodOcorrenciaToTipo(StrToIntDef(copy(Linha, 109, 2), 0));
+      NossoNumero    := Copy(Linha, 63, 8);
+      CodOcorrencia  := StrToIntDef(copy(Linha, 109, 2),0);
+      OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(CodOcorrencia);
 
       Carteira := copy(Linha, 108, 1);
 
-      CodOcorrencia  := StrToIntDef(copy(Linha, 109, 2),0);
       DataOcorrencia := StringToDateTimeDef(copy(Linha, 111, 2) + '/' +
                                             copy(Linha, 113, 2) + '/' +
                                             copy(Linha, 115, 2), 0, 'DD/MM/YY');

@@ -49,35 +49,33 @@ unit pcesS2205;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2205Collection = class;
   TS2205CollectionItem = class;
   TEvtAltCadastral = class;
 
-  TS2205Collection = class(TOwnedCollection)
+  TS2205Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2205CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2205CollectionItem);
   public
-    function Add: TS2205CollectionItem;
+    function Add: TS2205CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2205CollectionItem;
     property Items[Index: Integer]: TS2205CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2205CollectionItem = class(TCollectionItem)
+  TS2205CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtAltCadastral: TEvtAltCadastral;
-    procedure setEvtAltCadastral(const Value: TEvtAltCadastral);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtAltCadastral: TEvtAltCadastral read FEvtAltCadastral write setEvtAltCadastral;
+    property EvtAltCadastral: TEvtAltCadastral read FEvtAltCadastral write FEvtAltCadastral;
   end;
 
   TEvtAltCadastral = class(TeSocialEvento)
@@ -88,12 +86,11 @@ type
     FTrabalhador: TTrabalhador;
     FVinculo: TVinculo;
     FIdeTrabalhador: TideTrabalhador;
-    FACBreSocial: TObject;
 
     procedure GerarInfoAltCadastral;
   public
-    constructor Create(AACBreSocial: TObject);
-    destructor destroy; override;
+    constructor Create(AACBreSocial: TObject); override;
+    destructor Destroy; override;
 
     function GerarXML: boolean; override;
     function LerArqIni(const AIniString: String): Boolean;
@@ -116,8 +113,7 @@ uses
 
 function TS2205Collection.Add: TS2205CollectionItem;
 begin
-  Result := TS2205CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2205Collection.GetItem(Index: Integer): TS2205CollectionItem;
@@ -131,11 +127,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2205Collection.New: TS2205CollectionItem;
+begin
+  Result := TS2205CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2205CollectionItem }
 
 constructor TS2205CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS2205;
+  inherited Create;
+  FTipoEvento      := teS2205;
   FEvtAltCadastral := TEvtAltCadastral.Create(AOwner);
 end;
 
@@ -146,23 +149,16 @@ begin
   inherited;
 end;
 
-procedure TS2205CollectionItem.setEvtAltCadastral(
-  const Value: TEvtAltCadastral);
-begin
-  FEvtAltCadastral.Assign(Value);
-end;
-
 { TEvtAltCadastral }
 
 constructor TEvtAltCadastral.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento2.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
-  FTrabalhador := TTrabalhador.Create;
-  FVinculo := TVinculo.Create;
+  FIdeEvento      := TIdeEvento2.Create;
+  FIdeEmpregador  := TIdeEmpregador.Create;
+  FTrabalhador    := TTrabalhador.Create;
+  FVinculo        := TVinculo.Create;
   FIdeTrabalhador := TideTrabalhador.Create;
 end;
 
@@ -224,7 +220,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -239,7 +235,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -382,7 +377,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with trabalhador.Dependente.Add do
+        with trabalhador.Dependente.New do
         begin
           tpDep    := eSStrToTpDep(Ok, sFim);
           nmDep    := INIRec.ReadString(sSecao, 'nmDep', '');
@@ -411,8 +406,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

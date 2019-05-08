@@ -43,6 +43,77 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+23/04/2019
+[-] ACBrMonitor1
+Ajuste na configuração da propriedade "ForcarGerarTagRejeicao938"
+
+22/04/2019
+[-] DoBoletoUnit
+Ajuste na mensagem padrão para envio de email
+
+11/04/2019
+[*] DoACBrNFeUnit
+Ajustes nos métodos de Resposta com padronizações
+
+10/04/2019
+[*] DoACBrNFeUnit
+Alteração dos métodos de Resposta da classe DoACBrNFeUnit utilizando as funções
+ProcessarResposta da classe da ACBrLibNFe
+
+05/04/2019
+[+] DoACBrUnit
+Adicionado o método "Versao" (retorna versão do ACBrMonitor)
+
+05/04/2019
+[+] DoSATUnit
+Adicionado Validações para Envio de CFe
+
+03/04/2019
+[+] DoEmailUnit
+Adicionado parâmetro no metodo AdicionarAnexo de e-mail para definir a disposição como "Attachement" ou in-line
+
+03/04/2019
+[*] DoACBrNFeUnit
+Ajustes no Retorno do método EnviarLoteNFe
+
+22/03/2019
+[*] DoACBrMDFeUnit, ACBrLibMDFeRespostas
+Ajustes no retorno dos Itens Resposta do método ConsultarMDFeNaoEnc
+
+14/03/2019
+[*] ACBrMonitor1
+Ajustes nas configurações de Margem para impressão NFCe Modelo A4
+
+13/03/2019
+[-] DoACBrMDFe
+Correção na chamada do método MDFe.LerIni
+
+12/03/2019
+[+] DoACBreSocialfUnit, ACBrLibeSocialConsts, ACBrLibeSocialRespostas
+Adicionado no ACBrMonitor os métodos "ConsultaIdentificadoresEventosEmpregador",
+"ConsultaIdentificadoresEventosTabela", "ConsultaIdentificadoresEventosTrabalhador",
+"DownloadEventos" ao componente e-social.
+
+12/03/2019
+[+] DoACBrReinfUnit
+Adicionado novo parâmetro (InscricaoEstabPrestadorTomador) no método Reinf.ConsultarReciboReinf
+
+11/03/2019
+[*] DoSATUnit
+Ajuste no retorno de Resposta de Envio de Cupom
+
+08/03/2019
+[+] DoACBrReinfUnit, ACBrLibReinfConsts, ACBrLibReinfRespostas
+Adicionado no ACBrMonitor o método "ConsultarReciboReinf" ao componente ReInf
+
+07/03/2019
+[*] ACBrMonitor1
+Ajustes na Impressão NFCe modelo A4
+
+27/02/2019
+[-] ACBrMonitor1
+Ajuste na gravamção da mensagem padrão envio de e-mail
+
 08/02/2019
 [+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
 Adicionado parâmetros "ExibeTotalTributosItem" e "ImprimeTributos" para impressão de NFCe

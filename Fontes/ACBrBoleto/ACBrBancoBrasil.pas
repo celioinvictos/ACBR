@@ -910,38 +910,48 @@ begin
        aTipoCobranca:='     ';
      end;
 
-     AInstrucao := PadLeft(Trim(Instrucao1),2,'0') + PadLeft(Trim(Instrucao2),2,'0');
-     if (DataProtesto > 0) and (DataProtesto > Vencimento) then
-      begin
-       DiasProtesto := '  ';
-       case (DaysBetween(DataProtesto,Vencimento)) of
-          3: // Protestar no 3º dia util após vencimento
-          begin
-            if (trim(Instrucao1) = '') or (trim(Instrucao1) = '03') then
-              AInstrucao := '03'+ PadLeft(trim(Instrucao2),2,'0');
-          end;
-          4: // Protestar no 4º dia util após vencimento
-          begin
-            if (trim(Instrucao1) = '') or (trim(Instrucao1) = '04') then
-              AInstrucao := '04'+ PadLeft(trim(Instrucao2),2,'0');
-          end;
-          5: // Protestar no 5º dia util após vencimento
-          begin
-            if (trim(Instrucao1) = '') or (trim(Instrucao1) = '05') then
-              AInstrucao := '05'+ PadLeft(trim(Instrucao2),2,'0');
-          end;
-       else
-         if (trim(Instrucao1) = '') or (trim(Instrucao1) = '06') then
-           AInstrucao := '06'+ PadLeft(trim(Instrucao2),2,'0');
-          DiasProtesto:=IntToStr(DaysBetween(DataProtesto,Vencimento));
-       end;
-      end
-     else
-      begin
-       Instrucao1  := '07'; //Não Protestar
+     if( ( Instrucao1='88' ) or (Instrucao2='88')) then
+     begin
+       DiasProtesto := IntToStr( DiasDeProtesto );
        AInstrucao  := PadLeft(Trim(Instrucao1),2,'0') + PadLeft(Trim(Instrucao2),2,'0');
-       DiasProtesto:= '  ';
-      end;
+     end
+     else
+     begin
+
+       AInstrucao := PadLeft(Trim(Instrucao1),2,'0') + PadLeft(Trim(Instrucao2),2,'0');
+       if (DataProtesto > 0) and (DataProtesto > Vencimento) then
+        begin
+         DiasProtesto := '  ';
+         case (DaysBetween(DataProtesto,Vencimento)) of
+            3: // Protestar no 3º dia util após vencimento
+            begin
+              if (trim(Instrucao1) = '') or (trim(Instrucao1) = '03') then
+                AInstrucao := '03'+ PadLeft(trim(Instrucao2),2,'0');
+            end;
+            4: // Protestar no 4º dia util após vencimento
+            begin
+              if (trim(Instrucao1) = '') or (trim(Instrucao1) = '04') then
+                AInstrucao := '04'+ PadLeft(trim(Instrucao2),2,'0');
+            end;
+            5: // Protestar no 5º dia util após vencimento
+            begin
+              if (trim(Instrucao1) = '') or (trim(Instrucao1) = '05') then
+                AInstrucao := '05'+ PadLeft(trim(Instrucao2),2,'0');
+            end;
+         else
+           if (trim(Instrucao1) = '') or (trim(Instrucao1) = '06') then
+             AInstrucao := '06'+ PadLeft(trim(Instrucao2),2,'0');
+            DiasProtesto:=IntToStr(DaysBetween(DataProtesto,Vencimento));
+         end;
+        end
+       else
+        begin
+         Instrucao1  := '07'; //Não Protestar
+         AInstrucao  := PadLeft(Trim(Instrucao1),2,'0') + PadLeft(Trim(Instrucao2),2,'0');
+         DiasProtesto:= '  ';
+        end;
+
+     end;
 
      aDataDesconto:= '000000';
 
@@ -1824,7 +1834,8 @@ begin
        ValorMoraJuros       := StrToFloatDef(Copy(Linha,267,13),0)/100;
        ValorOutrosCreditos  := StrToFloatDef(Copy(Linha,280,13),0)/100;
        Carteira             := Copy(Linha,107,2);
-       NossoNumero          := Copy(Linha,63,11);
+       NossoNumero          := Copy(Linha,69,5);
+
        ValorDespesaCobranca := StrToFloatDef(Copy(Linha,182,07),0)/100;
        ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;
 

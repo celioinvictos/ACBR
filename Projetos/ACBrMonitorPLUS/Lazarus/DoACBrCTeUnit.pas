@@ -535,8 +535,8 @@ begin
     38 : AMetodoClass := TMetodoCartaCorrecao;
     39 : AMetodoClass := TMetodoXMLEnviarEvento;
     40 : AMetodoClass := TMetodoDistribuicaoDFeporChaveCTe;
-    41 : AMetodoClass := TMetodoDistribuicaoDFeporUltNSU;
-    42 : AMetodoClass := TMetodoDistribuicaoDFeporNSU;
+    41 : AMetodoClass := TMetodoDistribuicaoDFeporNSU;
+    42 : AMetodoClass := TMetodoDistribuicaoDFeporUltNSU;
     43 : AMetodoClass := TMetodoEnviaremailEvento;
     44 : AMetodoClass := TMetodoEnviaremailInutilizacao;
     45 : AMetodoClass := TMetodoValidarRegrasNegocios;
@@ -2298,7 +2298,7 @@ begin
     ACBrCTe.WebServices.Consulta.Executar;
 
     ACBrCTe.EventoCTe.Evento.Clear;
-    with ACBrCTe.EventoCTe.Evento.Add do
+    with ACBrCTe.EventoCTe.Evento.New do
     begin
       Infevento.CNPJ := ACNPJ;
       if Trim(Infevento.CNPJ) = '' then

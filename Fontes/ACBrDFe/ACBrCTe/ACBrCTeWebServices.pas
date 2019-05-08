@@ -399,6 +399,7 @@ type
     procedure InicializarServico; override;
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
+    procedure DefinirDadosIntegrador; override;
     procedure DefinirDadosMsg; override;
     procedure DefinirEnvelopeSoap; override;
     function TratarResposta: Boolean; override;
@@ -1710,9 +1711,9 @@ begin
   if Assigned(FprocEventoCTe) then
     FprocEventoCTe.Free;
 
-  FprotCTe := TProcCTe.Create;
-  FretCancCTe := TRetCancCTe.Create;
-  FprocEventoCTe := TRetEventoCTeCollection.Create(FOwner);
+  FprotCTe       := TProcCTe.Create;
+  FretCancCTe    := TRetCancCTe.Create;
+  FprocEventoCTe := TRetEventoCTeCollection.Create;
 end;
 
 procedure TCTeConsulta.SetCTeChave(const AValue: String);
@@ -1870,7 +1871,7 @@ begin
       FprocEventoCTe.Clear;
       for I := 0 to CTeRetorno.procEventoCTe.Count - 1 do
       begin
-        with FprocEventoCTe.Add.RetEventoCTe do
+        with FprocEventoCTe.New.RetEventoCTe do
         begin
           idLote := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.idLote;
           tpAmb := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.tpAmb;
@@ -1895,7 +1896,7 @@ begin
           InfEvento.DetEvento.infCorrecao.Clear;
           for k := 0 to CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.InfEvento.detEvento.infCorrecao.Count -1 do
           begin
-            InfEvento.DetEvento.infCorrecao.Add;
+            InfEvento.DetEvento.infCorrecao.New;
             InfEvento.DetEvento.infCorrecao.Items[k].grupoAlterado   := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.InfEvento.DetEvento.infCorrecao.Items[k].grupoAlterado;
             InfEvento.DetEvento.infCorrecao.Items[k].campoAlterado   := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.InfEvento.DetEvento.infCorrecao.Items[k].campoAlterado;
             InfEvento.DetEvento.infCorrecao.Items[k].valorAlterado   := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.InfEvento.DetEvento.infCorrecao.Items[k].valorAlterado;
@@ -1905,7 +1906,7 @@ begin
           retEvento.Clear;
           for J := 0 to CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.retEvento.Count-1 do
           begin
-            with retEvento.Add.RetInfEvento do
+            with retEvento.New.RetInfEvento do
             begin
               Id := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.retEvento.Items[J].RetInfEvento.Id;
               tpAmb := CTeRetorno.procEventoCTe.Items[I].RetEventoCTe.retEvento.Items[J].RetInfEvento.tpAmb;
@@ -2418,8 +2419,29 @@ end;
 
 procedure TCTeConsultaCadastro.DefinirServicoEAction;
 begin
-  FPServico := 'http://www.portalfiscal.inf.br/nfe/wsdl/CadConsultaCadastro2';
-  FPSoapAction := FPServico;
+  if (FPConfiguracoesCTe.Geral.VersaoDF >= ve300) then
+  begin
+    if EstaVazio(FPServico) then
+      FPServico := 'http://www.portalfiscal.inf.br/nfe/wsdl/CadConsultaCadastro4';
+    if EstaVazio(FPSoapAction) then
+      FPSoapAction := FPServico + '/consultaCadastro';
+  end
+  else
+  begin
+    FPServico := 'http://www.portalfiscal.inf.br/nfe/wsdl/CadConsultaCadastro2';
+    FPSoapAction := FPServico;
+  end;
+end;
+
+procedure TCTeConsultaCadastro.DefinirDadosIntegrador;
+begin
+  inherited DefinirDadosIntegrador;
+
+  if Assigned(FPDFeOwner.Integrador) then
+  begin
+    FPDFeOwner.Integrador.Parametros.Values['versaoDados'] := VersaoCTeToStr(FPConfiguracoesCTe.Geral.VersaoDF);
+    FPDFeOwner.Integrador.SetNomeMetodo('CadConsultaCadastro2Soap12', (FPConfiguracoesCTe.WebServices.Ambiente = taHomologacao) );
+  end;
 end;
 
 procedure TCTeConsultaCadastro.DefinirURL;
@@ -2439,8 +2461,9 @@ begin
     FPConfiguracoesCTe.WebServices.Ambiente,
     LayOutToServico(FPLayout),
     VersaoTemp,
-    FPURL
-  );
+    FPURL,
+    FPServico,
+    FPSoapAction);
 
   FPVersaoServico := FloatToString(VersaoTemp, '.', '0.00');
 end;
@@ -2456,12 +2479,16 @@ begin
     ConCadCTe.CNPJ := FCNPJ;
     ConCadCTe.CPF := FCPF;
     ConCadCTe.Versao := FPVersaoServico;
-
     AjustarOpcoes( ConCadCTe.Gerador.Opcoes );
-
     ConCadCTe.GerarXML;
 
     FPDadosMsg := ConCadCTe.Gerador.ArquivoFormatoXML;
+
+    if (FPConfiguracoesCTe.Geral.VersaoDF >= ve300) and
+      (UpperCase(FUF) = 'MT') then
+    begin
+      FPDadosMsg := '<nfeDadosMsg>' + FPDadosMsg + '</nfeDadosMsg>';
+    end;
   finally
     ConCadCTe.Free;
   end;
@@ -2475,12 +2502,6 @@ begin
   Texto := Texto + '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
                                    ' xmlns:xsd="http://www.w3.org/2001/XMLSchema"' +
                                    ' xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
-  Texto := Texto +   '<soap12:Header>';
-  Texto := Texto +     '<nfeCabecMsg xmlns="' + FPServico + '">';
-  Texto := Texto +       GerarUFSoap;
-  Texto := Texto +       GerarVersaoDadosSoap;
-  Texto := Texto +     '</nfeCabecMsg>';
-  Texto := Texto +   '</soap12:Header>';
   Texto := Texto +   '<soap12:Body>';
   Texto := Texto +     '<nfeDadosMsg xmlns="' + FPServico + '">';
   Texto := Texto +       FPDadosMsg;
@@ -2493,7 +2514,11 @@ end;
 
 function TCTeConsultaCadastro.TratarResposta: Boolean;
 begin
-  FPRetWS := SeparaDados(FPRetornoWS, 'consultaCadastro2Result');
+  FPRetWS := SeparaDadosArray(['consultaCadastro2Result',
+                               'nfeResultMsg',
+                               'consultaCadastro4Result'], FPRetornoWS);
+
+  VerificarSemResposta;
 
   FRetConsCad.Leitor.Arquivo := ParseText(FPRetWS);
   FRetConsCad.LerXml;
@@ -2531,11 +2556,9 @@ end;
 procedure TCTeConsultaCadastro.InicializarServico;
 begin
   inherited InicializarServico;
-
   FOldBodyElement := FPBodyElement;
-
   if (FPConfiguracoesCTe.Geral.VersaoDF >= ve300) and
-    ((UpperCase(FUF) = 'RS') or (Pos('svrs.rs.gov.br', FPURL) > 0)) then
+    (UpperCase(FUF) = 'MT') then
   begin
     FPBodyElement := 'consultaCadastro';
   end;
@@ -2652,7 +2675,7 @@ begin
 
     for I := 0 to FEvento.Evento.Count - 1 do
     begin
-      with EventoCTe.Evento.Add do
+      with EventoCTe.Evento.New do
       begin
         infEvento.tpAmb := FTpAmb;
         infEvento.CNPJ := FEvento.Evento[I].InfEvento.CNPJ;
@@ -2672,7 +2695,7 @@ begin
 
             for j := 0 to FEvento.Evento[i].InfEvento.detEvento.infCorrecao.Count - 1 do
              begin
-               with EventoCTe.Evento[i].InfEvento.detEvento.infCorrecao.Add do
+               with EventoCTe.Evento[i].InfEvento.detEvento.infCorrecao.New do
                 begin
                  grupoAlterado   := FEvento.Evento[i].InfEvento.detEvento.infCorrecao[j].grupoAlterado;
                  campoAlterado   := FEvento.Evento[i].InfEvento.detEvento.infCorrecao[j].campoAlterado;
@@ -2725,7 +2748,7 @@ begin
             SchemaEventoCTe := schevGTV;
             for j := 0 to FEvento.Evento[i].InfEvento.detEvento.infGTV.Count - 1 do
             begin
-              with EventoCTe.Evento[i].InfEvento.detEvento.infGTV.Add do
+              with EventoCTe.Evento[i].InfEvento.detEvento.infGTV.New do
               begin
                 nDoc     := FEvento.Evento[i].InfEvento.detEvento.infGTV[j].nDoc;
                 id       := FEvento.Evento[i].InfEvento.detEvento.infGTV[j].id;
@@ -2737,7 +2760,7 @@ begin
 
                 for k := 0 to FEvento.Evento[i].InfEvento.detEvento.infGTV.Items[j].infEspecie.Count - 1 do
                 begin
-                  with EventoCTe.Evento[i].InfEvento.detEvento.infGTV.Items[j].infEspecie.Add do
+                  with EventoCTe.Evento[i].InfEvento.detEvento.infGTV.Items[j].infEspecie.New do
                   begin
                     tpEspecie := FEvento.Evento[i].InfEvento.detEvento.infGTV[j].infEspecie[k].tpEspecie;
                     vEspecie  := FEvento.Evento[i].InfEvento.detEvento.infGTV[j].infEspecie[k].vEspecie;

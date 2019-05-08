@@ -32,6 +32,7 @@ ResourceString
   SMsgeSocialLimparLista = 'Lista de Eventos Limpas com Sucesso';
   SErroeSocialNenhumEvento = 'Erro: Nenhum evento na lista';
   SErroIDEmpregadorTransmissor = 'ID do Empregador/Transmissor Inválido.';
+  SErroeSocialConsulta = 'Erro ao Consultar Evento - Parâmetro não Preenchido';
 
   SErroReinfCarregar = 'Erro ao carregar Reinf';
   SErroReinfAbrir = 'Erro ao abrir o arquivo do Reinf: %s';
@@ -39,6 +40,7 @@ ResourceString
   SMsgReinfLimparLista = 'Lista de Eventos Limpas com Sucesso';
   SErroReinfNenhumEvento = 'Erro: Nenhum evento na lista';
   SErroIDContribuinteTransmissor = 'ID do Contribuinte/Transmissor Inválido.';
+  SErroReinfConsulta = 'Erro ao Consultar Evento - Parâmetro não Preenchido';
 
 
 const
@@ -414,6 +416,10 @@ const
   CMetodoCarregarXMLEventoeSocial =    'carregarxmleventoesocial';
   CMetodoSetIDEmpregadoreSocial =      'setidempregador';
   CMetodoSetIDTransmissoresocial =     'setidtransmissor';
+  CMetodoConsultaIdentEventosEmpreg =  'ConsultaIdentificadoresEventosEmpregador';
+  CMetodoConsultaIdentEventosTabela =  'ConsultaIdentificadoresEventosTabela';
+  CMetodoConsultaIdentEventosTrab =    'ConsultaIdentificadoresEventosTrabalhador';
+  CMetodoDownloadEventos =             'DownloadEventos';
 
   CMetodoCriarEventoReinf =          'criareventoreinf';
   CMetodoCriarEnviarReinf =          'criarenviarreinf';
@@ -423,6 +429,7 @@ const
   CMetodoCarregarXMLEventoReinf =    'carregarxmleventoreinf';
   CMetodoSetIDContribuinteReinf =    'setidcontribuinte';
   CMetodoSetIDTransmissorReinf =     'setidtransmissor';
+  CMetodoConsultarReciboReinf =      'consultarreciboreinf';
 
   CMetodoConfigurarDados =           'configurardados';
   CMetodoLimparLista =               'limparlista';
@@ -807,6 +814,7 @@ const
   CKeyTimeZoneMode =                 'TimeZoneMode';
   CKeyTimeZoneStr =                  'TimeZoneStr';
   CKeyCamposFatObrig =               'CamposFatObrig';
+  CKeyTagRejeicao938 =               'ForcarGerarTagRejeicao938';
 
   CKeyIdEmpregador =                 'IdEmpregador';
   CKeyIdTransmissor =                'IdTransmissor';

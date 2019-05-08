@@ -51,12 +51,11 @@ unit pcesS2300;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2300Collection = class;
   TS2300CollectionItem = class;
   TEvtTSVInicio = class;
   TinfoTSVInicio = class;
@@ -65,26 +64,25 @@ type
   TinfoTrabCedido = class;
   TTermino = class;
 
-  TS2300Collection = class(TOwnedCollection)
+  TS2300Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2300CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2300CollectionItem);
   public
-    function Add: TS2300CollectionItem;
+    function Add: TS2300CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2300CollectionItem;
     property Items[Index: Integer]: TS2300CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2300CollectionItem = class(TCollectionItem)
+  TS2300CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTSVInicio: TEvtTSVInicio;
-    procedure setEvtTSVInicio(const Value: TEvtTSVInicio);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor  Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTSVInicio: TEvtTSVInicio read FEvtTSVInicio write setEvtTSVInicio;
+    property EvtTSVInicio: TEvtTSVInicio read FEvtTSVInicio write FEvtTSVInicio;
   end;
 
   TEvtTSVInicio = class(TeSocialEvento)
@@ -93,7 +91,6 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FTrabalhador: TTrabalhador;
     FinfoTSVInicio : TinfoTSVInicio;
-    FACBreSocial: TObject;
 
     procedure GerarInfoTSVInicio(obj : TinfoTSVInicio);
     procedure GerarInfoComplementares(obj: TinfoComplementares);
@@ -108,7 +105,7 @@ type
     procedure GerarsupervisorEstagio(obj: TsupervisorEstagio);
     procedure GerarTermino(obj: TTermino);
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -120,7 +117,7 @@ type
     property infoTSVInicio : TinfoTSVInicio read FinfoTSVInicio write FInfoTSVInicio;
   end;
 
-  TinfoTSVInicio = class(TPersistent)
+  TinfoTSVInicio = class(TObject)
   private
     FcadIni: tpSimNao;
     FcodCateg : Integer;
@@ -144,7 +141,7 @@ type
     property termino: TTermino read Ftermino write Ftermino;
   end;
 
-  TinfoComplementares = class(TPersistent)
+  TinfoComplementares = class(TObject)
   private
     FcargoFuncao : TcargoFuncao;
     FRemuneracao : TRemuneracao;
@@ -164,7 +161,7 @@ type
     property infoEstagiario: TinfoEstagiario read FinfoEstagiario write FinfoEstagiario;
   end;
 
-  TinfoDirSind = class(TPersistent)
+  TinfoDirSind = class(TObject)
   private
     FcategOrig : Integer;
     FcnpjOrigem : String;
@@ -177,7 +174,7 @@ type
     property matricOrig: String read FmatricOrig write FmatricOrig;
   end;
 
-  TinfoTrabCedido = class(TPersistent)
+  TinfoTrabCedido = class(TObject)
   private
     FcategOrig : Integer;
     FcnpjCednt : String;
@@ -196,7 +193,7 @@ type
     property infOnus: tpInfOnus read FinfOnus write FinfOnus;
   end;
 
-  TTermino = class(TPersistent)
+  TTermino = class(TObject)
   private
     FdtTerm: TDateTime;
   public
@@ -213,8 +210,7 @@ uses
 
 function TS2300Collection.Add: TS2300CollectionItem;
 begin
-  Result := TS2300CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2300Collection.GetItem(Index: Integer): TS2300CollectionItem;
@@ -227,11 +223,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2300Collection.New: TS2300CollectionItem;
+begin
+  Result := TS2300CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2300CollectionItem }
 
 constructor TS2300CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS2300;
+  inherited Create;
+  FTipoEvento   := teS2300;
   FEvtTSVInicio := TEvtTSVInicio.Create(AOwner);
 end;
 
@@ -242,11 +245,6 @@ begin
   inherited;
 end;
 
-procedure TS2300CollectionItem.setEvtTSVInicio(const Value: TEvtTSVInicio);
-begin
-  FEvtTSVInicio.Assign(Value);
-end;
-
 { TinfoTSVInicio }
 
 constructor TinfoTSVInicio.Create;
@@ -254,9 +252,9 @@ begin
   inherited;
 
   FinfoComplementares := TinfoComplementares.Create;
-  Fafastamento := TAfastamento.Create;
-  FMudancaCPF := TMudancaCPF2.Create;
-  Ftermino := TTermino.Create;
+  Fafastamento        := TAfastamento.Create;
+  FMudancaCPF         := TMudancaCPF2.Create;
+  Ftermino            := TTermino.Create;
 end;
 
 destructor TinfoTSVInicio.Destroy;
@@ -275,10 +273,10 @@ constructor TinfoComplementares.Create;
 begin
   inherited;
 
-  FcargoFuncao := TcargoFuncao.Create;
-  FRemuneracao := TRemuneracao.Create;
-  FFgts        := TFGTS.Create;
-  FinfoDirSind := TinfoDirSind.Create;
+  FcargoFuncao    := TcargoFuncao.Create;
+  FRemuneracao    := TRemuneracao.Create;
+  FFgts           := TFGTS.Create;
+  FinfoDirSind    := TinfoDirSind.Create;
   FinfoTrabCedido := TinfoTrabCedido.Create;
   FinfoEstagiario := TinfoEstagiario.Create;
 end;
@@ -299,12 +297,11 @@ end;
 
 constructor TEvtTSVInicio.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento2.Create;
+  FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FTrabalhador := TTrabalhador.Create;
+  FTrabalhador   := TTrabalhador.Create;
   FinfoTSVInicio := TinfoTSVInicio.Create;
 end;
 
@@ -367,7 +364,7 @@ procedure TEvtTSVInicio.GerarInfoComplementares(obj: TinfoComplementares);
 begin
   if (obj.cargoFuncao.codCargo <> EmptyStr) or (obj.Remuneracao.VrSalFx > 0) or
      (obj.Remuneracao.UndSalFixo = sfNaoaplicavel ) or
-     (obj.FGTS.DtOpcFGTS> 0) or (obj.infoDirSind.dtAdmOrig > 0) or
+     (obj.FGTS.DtOpcFGTS> 0) or (obj.infoDirSind.categOrig > 0) or
      (obj.infoTrabCedido.dtAdmCed>0) or (obj.infoEstagiario.dtPrevTerm > 0) then
   begin
     Gerador.wGrupo('infoComplementares');
@@ -385,7 +382,7 @@ end;
 
 procedure TEvtTSVInicio.GerarinfoDirSind(obj: TinfoDirSind);
 begin
-  if obj.dtAdmOrig > 0 then
+  if obj.categOrig > 0 then
   begin
     Gerador.wGrupo('infoDirigenteSindical');
 
@@ -561,7 +558,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -576,7 +573,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -712,7 +708,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with trabalhador.Dependente.Add do
+        with trabalhador.Dependente.New do
         begin
           tpDep    := eSStrToTpDep(Ok, sFim);
           nmDep    := INIRec.ReadString(sSecao, 'nmDep', '');
@@ -838,8 +834,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

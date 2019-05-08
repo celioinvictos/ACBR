@@ -49,36 +49,33 @@ unit pcesS1295;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS1295Collection = class;
   TS1295CollectionItem = class;
   TEvtTotConting = class;
 
-  TS1295Collection = class(TOwnedCollection)
+  TS1295Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1295CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1295CollectionItem);
   public
-    function Add: TS1295CollectionItem;
+    function Add: TS1295CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1295CollectionItem;
     property Items[Index: Integer]: TS1295CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1295CollectionItem = class(TCollectionItem)
+  TS1295CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTotConting: TEvtTotConting;
-
-    procedure setEvtTotConting(const Value: TEvtTotConting);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property evtTotConting: TEvtTotConting read FEvtTotConting write setEvtTotConting;
+    property evtTotConting: TEvtTotConting read FEvtTotConting write FEvtTotConting;
   end;
 
   TEvtTotConting = class(TESocialEvento)
@@ -86,11 +83,10 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FIdeRespInf : TIdeRespInf;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -111,8 +107,7 @@ uses
 
 function TS1295Collection.Add: TS1295CollectionItem;
 begin
-  Result := TS1295CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1295Collection.GetItem(Index: Integer): TS1295CollectionItem;
@@ -125,10 +120,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1295Collection.New: TS1295CollectionItem;
+begin
+  Result := TS1295CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 {TS1295CollectionItem}
 constructor TS1295CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1295;
+  inherited Create;
+  FTipoEvento    := teS1295;
   FEvtTotConting := TEvtTotConting.Create(AOwner);
 end;
 
@@ -139,23 +141,17 @@ begin
   inherited;
 end;
 
-procedure TS1295CollectionItem.setEvtTotConting(const Value: TEvtTotConting);
-begin
-  FEvtTotConting.Assign(Value);
-end;
-
 { TEvtSolicTotal }
 constructor TEvtTotConting.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento3.Create;
+  FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeRespInf := TIdeRespInf.Create;
+  FIdeRespInf    := TIdeRespInf.Create;
 end;
 
-destructor TEvtTotConting.destroy;
+destructor TEvtTotConting.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -198,7 +194,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -213,7 +209,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
       ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -233,8 +228,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

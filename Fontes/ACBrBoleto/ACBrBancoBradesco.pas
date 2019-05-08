@@ -90,7 +90,6 @@ begin
    fpTamanhoAgencia         := 4;
    fpTamanhoConta           := 7;
    fpTamanhoCarteira        := 2;
-   fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoBradesco.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -437,7 +436,7 @@ begin
     {Multa}
     if (PercentualMulta > 0) then
     begin
-        ADataMulta := IfThen(DataMoraJuros > 0,FormatDateTime('ddmmyyyy', DataMoraJuros),FormatDateTime('ddmmyyyy', Vencimento + 1))
+        ADataMulta := IfThen(DataMulta > 0,FormatDateTime('ddmmyyyy', DataMulta),FormatDateTime('ddmmyyyy', Vencimento + 1))
     end
     else
     begin
@@ -533,7 +532,7 @@ begin
     PadRight('', 15, '0')                               + // Número de Inscrição 155 169 15 - Num *G006
     PadRight('', 40, ' ')                               + // Nome do Pagadorr/Avalista 170 209 40 - Alfa G013
     PadRight('0', 3, '0')                               + // Cód. Bco. Corresp. na Compensação 210 212 3 - Num *C031
-    PadRight('',20, '0')                                + // Nosso Nº no Banco Correspondente 213 232 20 - Alfa *C032
+    PadRight('',20, ' ')                                + // Nosso Nº no Banco Correspondente 213 232 20 - Alfa *C032
     PadRight('', 8, ' ');                                 // FEBRABAN/CNAB 233 240 8 - Alfa Brancos G004
 
   {SEGMENTO R OPCIONAL }
@@ -554,7 +553,7 @@ begin
 
     IfThen((PercentualMulta > 0), '2', '0')                     + //Código da Multa 66 66 1 - Alfa G073
 
-    PadLeft('', 8, '0')                                  + //Data da Multa 67 74 8 - Num G074  INFORMAR ZERO
+    ADataMulta                                                  + //Data da Multa 67 74 8 - Num G074
 
     IfThen(PercentualMulta > 0,
       IntToStrZero(round(PercentualMulta * 100), 15),
@@ -572,7 +571,7 @@ begin
     PadLeft('', 12, '0')                                 +//Corrente para Débito 217 228 12 - Num *G010
     PadLeft('', 1, ' ')                                  +//Dígito Verificador da Conta 229 229 1 - Alfa *G011
     PadLeft('', 1, ' ')                                  +//DV Dígito Verificador Ag/Conta 230 230 1 - Alfa *G012
-    PadLeft('', 1, ' ')                                  +//Ident. da Emissão do Aviso Déb. Aviso para Débito Automático 231 231 1 - Num *C039
+    PadLeft('', 1, '3')                                  +//Ident. da Emissão do Aviso Déb. Aviso para Débito Automático 231 231 1 - Num *C039
     PadLeft('',9, ' ');                                  //CNAB Uso Exclusivo FEBRABAN/CNAB 232 240 9 - Alfa Brancos G004
     ;
   End;
@@ -766,9 +765,7 @@ begin
                   TipoSacado + PadLeft(OnlyNumber(Sacado.CNPJCPF),14,'0') +  // 219 a 234 - Tipo de Inscrição + Número de Inscrição do Pagador
                   PadRight( Sacado.NomeSacado, 40, ' ')                   +  // 235 a 274 - Nome do Pagador
                   PadRight(Sacado.Logradouro + ' ' + Sacado.Numero + ' '  +
-                    Sacado.Complemento + ' ' +
-                    Sacado.Bairro + ' ' + Sacado.Cidade + ' '             +
-                    Sacado.UF, 40)                                        +
+                    Sacado.Complemento, 40)                               +  // 275 a 314
                   space(12) + PadRight( Sacado.CEP, 8 )                   +  // 315 a 334 - 1ª Mensagem + CEP
                   PadRight( MensagemCedente, 60 );                           // 335 a 394 - 2ª Mensagem
 

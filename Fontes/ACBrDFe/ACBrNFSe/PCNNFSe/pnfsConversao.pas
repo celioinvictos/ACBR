@@ -68,7 +68,7 @@ type
                             no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
                             no60, no61, no62, no63, no64, no65, no66, no67, no68, no69,
                             no70, no71, no72, no78, no79, no101, no102, no103, no104, no105,
-                            no107, no108, no110, no111, no112, no113, no115,
+                            no106,no107, no108, no109, no110, no111, no112, no113, no114, no115,
                             no121, no201, no301, no501, no511,
                             no512, no515, no521, no522, no539, no541, no549, no551, no601,
                             no611, no612, no613, no615, no621, no622, no701, no711,no712,
@@ -112,7 +112,8 @@ type
                     proActconv202, proSigep, proSafeWeb, proSH3, proSIAPNet,
                     proIPM, proBelford, proISSJoinville, proAsten, proELv2,
                     proTiplanv2, proGiss, proDeISS, proTcheInfov2, proDataSmart,
-                    proMetropolisWeb, proDesenvolve, proCenti, proRLZ);
+                    proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
+					proGiap, proAssessorPublico, proSigIss, proElotech);
 
   TnfseAcao = (acRecepcionar, acConsSit, acConsLote, acConsNFSeRps, acConsNFSe,
                acCancelar, acGerar, acRecSincrono, acConsSecRps, acSubstituir);
@@ -128,7 +129,7 @@ type
 
   TLayOutXML = (loNone, loABRASFv1, loABRASFv2, loEGoverneISS, loEL, loEquiplano,
                 loInfisc, loISSDSF, loGoverna, loSP, loCONAM, loAgili, loSMARAPD, 
-                loIPM);
+                loIPM, loGiap, loAssessorPublico, loSigIss, loElotech);
 
   TnfseFrete = ( tfPrestador, tfTomador );
 
@@ -316,8 +317,9 @@ begin
                             '9', '10', '11', '12', '13', '14', '15',
                             '50', '51', '52', '53', '54', '55', '56', '57', '58', '59',
                             '60', '61', '62', '63', '64', '65', '66', '67', '68', '69',
-                            '70', '71', '72', '78', '79', '101', '102', '105', '107', '108',
-                            '110', '111', '112', '113', '115', '121', '201', '301', '501', '511', '512',
+                            '70', '71', '72', '78', '79', '101', '102', '103', '104',
+                            '105','106', '107', '108',  '109' ,'110', '111', '112', '113', '114',
+                            '115', '121', '201', '301', '501', '511', '512',
                             '515', '521', '522', '539', '541', '549', '551', '601',
                             '611', '612', '613', '615', '621', '622', '701', '711',
                             '712', '901', '902', '911', '912', '921', '931', '951',
@@ -327,8 +329,9 @@ begin
                             no9, no10, no11, no12, no13, no14, no15,
                             no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
                             no60, no61, no62, no63, no64, no65, no66, no67, no68, no69,
-                            no70, no71, no72, no78, no79, no101, no102, no105, no107, no108,
-                            no110, no111, no112, no113, no115, no121, no201, no301, no501, no511, no512,
+                            no70, no71, no72, no78, no79, no101, no102, no103, no104,
+                            no105, no106, no107, no108, no109, no110, no111, no112, no113, no114,
+                            no115, no121, no201, no301, no501, no511, no512,
                             no515, no521, no522, no539, no541, no549, no551, no601,
                             no611, no612, no613, no615, no621, no622, no701, no711,
                             no712, no901, no902, no911, no912, no921, no931,
@@ -343,8 +346,9 @@ begin
                             '9', '10', '11', '12', '13', '14', '15',
                             '50', '51', '52', '53', '54', '55', '56', '57', '58', '59',
                             '60', '61', '62', '63', '64', '65', '66', '67', '68', '69',
-                            '70', '71', '72', '78', '79', '101', '102', '105', '107', '108',
-                            '110', '111', '112', '113', '115', '121', '201', '301', '501', '511', '512',
+                            '70', '71', '72', '78', '79', '101', '102', '103' , '104',
+                            '105', '106', '107', '108', '109', '110', '111', '112', '113',
+                            '114','115', '121', '201', '301', '501', '511', '512',
                             '515', '521', '522', '539', '541', '549', '551', '601',
                             '611', '612', '613', '615', '621', '622', '701', '711',
                             '712', '901', '902', '911', '912', '921', '931', '951',
@@ -354,8 +358,9 @@ begin
                             no9, no10, no11, no12, no13, no14, no15,
                             no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
                             no60, no61, no62, no63, no64, no65, no66, no67, no68, no69,
-                            no70, no71, no72, no78, no79, no101, no102, no105, no107, no108,
-                            no110, no111, no112, no113, no115, no121, no201, no301, no501, no511, no512,
+                            no70, no71, no72, no78, no79, no101, no102, no103, no104,
+                            no105, no106, no107, no108, no109,no110, no111, no112, no113,
+                            no114, no115, no121, no201, no301, no501, no511, no512,
                             no515, no521, no522, no539, no541, no549, no551, no601,
                             no611, no612, no613, no615, no621, no622, no701, no711,
                             no712, no901, no902, no911, no912, no921, no931,
@@ -510,7 +515,8 @@ begin
          'Smarapd', 'SmarAPDABRASF', 'Actconv201', 'Actconv202', 'Sigep', 'SafeWeb',
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
          'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart', 'MetropolisWeb',
-         'Desenvolve', 'Centi', 'RLZ'],
+         'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
+		 'SigIss', 'Elotech'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -527,7 +533,8 @@ begin
          proSMARAPD, proSmarAPDABRASF, proActconv201, proActconv202, proSigep,
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
          proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
-         proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ]);
+         proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
+		 proGiap, proAssessorPublico, proSigIss, proElotech]);
 end;
 
 function StrToProvedor(out ok: boolean; const s: String): TnfseProvedor;
@@ -548,7 +555,8 @@ begin
          'Smarapd', 'SmarAPDABRASF', 'Actconv201', 'Actconv202', 'Sigep', 'SafeWeb',
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
          'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart', 'MetropolisWeb',
-         'Desenvolve', 'Centi', 'RLZ'],
+         'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
+		 'SigIss', 'Elotech'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -565,7 +573,8 @@ begin
          proSMARAPD, proSmarAPDABRASF, proActconv201, proActconv202, proSigep,
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
          proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
-         proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ]);
+         proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
+		 proGiap, proAssessorPublico, proSigIss, proElotech]);
 end;
 
 // Condição de pagamento ******************************************************
@@ -18305,12 +18314,16 @@ begin
     no78 : Result := '7.8 - Não tributável';
     no79 : Result := '7.9 - Imposto recolhido pelo regime único de arrecadação';
 
-    no101 : Result := '101 - ISS devido para Abelardo Luz';
+    no101 : Result := '101 - ISS devido no município';
+    no103 : Result := '103 - ISENTO';
+    no106 : Result := '106 - ISS FIXO';
     no111 : Result := '111 - ISS devido para outro município';
+    no112 : Result := '112 - ISS NÃO TRIBUTÁVEL';
+    no114 : Result := '104 - ISS devido para origem prestado outro Município';
     no121 : Result := '121 - ISS Fixo (Sociedade de Profissionais)';
     no201 : Result := '201 - ISS retido pelo tomador ou intermediário do serviço';
     no301 : Result := '301 - Operação imune, isenta ou não tributada';
-    no501 : Result := '501 - ISS devido para Abelardo Luz (Simples Nacional)';
+    no501 : Result := '501 - ISS devido no município (Simples Nacional)';
 
     no511 : if AProvedor = proPublica then
               Result := '511 - ISS devido para outro município (Simples Nacional)'
@@ -18334,13 +18347,13 @@ begin
     no701 : Result := '701 - Operação imune, isenta ou não tributada (Simples Nacional)';
     no711 : Result := '711 - Prestação de serviço para o exterior - iss mensal sem retenção na fonte';
     no712 : Result := '712 - Prestação de serviço para o exterior - iss mensal com retenção na fonte';
-    no901 : Result := '901 - ISS retido ou sujeito à substituição tributária devido para Abelardo Luz';
+    no901 : Result := '901 - ISS retido ou sujeito à substituição tributária devido no município';
     no902 : Result := '902 - ISS retido ou sujeito à substituição tributária devido para outro município';
     no911 : Result := '911 - Prestação de serviço não enquadrada nas situações anteriores - sem retenção';
     no912 : Result := '912 - Prestação de serviço não enquadrada nas situações anteriores - com retenção';
     no921 : Result := '921 - ISS a ser recolhido pelo prestador do serviço';
     no931 : Result := '931 - Serviço imune, isento ou não tributado';
-    no951 : Result := '951 - ISS retido ou sujeito à substituição tributária devido para Abelardo Luz (prestador optante pelo Simples Nacional)';
+    no951 : Result := '951 - ISS retido ou sujeito à substituição tributária no município (prestador optante pelo Simples Nacional)';
     no952 : Result := '952 - ISS retido ou sujeito à substituição tributária, devido para outro município (prestador optante pelo Simples';
     no971 : Result := '971 - ISS a ser recolhido pelo prestador do serviço (prestador optante pelo Simples Nacional)';
     no981 : Result := '981 - Serviço imune, isento ou não tributado (prestador optante pelo Simples Nacional)';
@@ -18427,7 +18440,7 @@ begin
     proActconv201, proActconv202, proVersaTecnologia, proSigep, proSafeWeb,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
     proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
-    proDataSmart, proDesenvolve, proCenti, proRLZ: Result := loABRASFv2;
+    proDataSmart, proDesenvolve, proCenti, proRLZ, proSigCorp: Result := loABRASFv2;
 
     proAgili,
     proAgiliv2:     Result := loAgili;
@@ -18444,7 +18457,11 @@ begin
     proCONAM:       Result := loCONAM;
     proSMARAPD:     Result := loSMARAPD;
     proIPM:         Result := loIPM;
-  else
+    proGiap:        Result := loGiap;
+    proAssessorPublico: Result := loAssessorPublico;
+    proSigIss:      Result := loSigIss;
+    proElotech:     Result := loElotech;
+else
     Result := loNone;
   end;
 (*
@@ -18463,7 +18480,8 @@ begin
     proVersaTecnologia, proActconv201, proSafeWeb, proActconv202, proWebISSv2,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
     proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
-    proDataSmart, proDesenvolve, proCenti, proRLZ: Result := ve200;
+    proDataSmart, proDesenvolve, proCenti, proRLZ, proSigCorp, 
+	proGiap: Result := ve200;
 
     proInfiscv11: Result := ve110;
   else

@@ -44,7 +44,7 @@ unit pcnReinfR3010;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcnCommonReinf, pcnConversaoReinf, pcnGeradorReinf;
 
@@ -66,33 +66,33 @@ type
   TinfoProcCollection = class;
   TinfoProcCollectionItem = class;
 
-  TR3010Collection = class(TOwnedCollection)
+  TR3010Collection = class(TReinfCollection)
   private
     function GetItem(Index: Integer): TR3010CollectionItem;
     procedure SetItem(Index: Integer; Value: TR3010CollectionItem);
   public
-    function Add: TR3010CollectionItem;
+    function Add: TR3010CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TR3010CollectionItem;
+
     property Items[Index: Integer]: TR3010CollectionItem read GetItem write SetItem; default;
   end;
 
-  TR3010CollectionItem = class(TCollectionItem)
+  TR3010CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FevtEspDesportivo: TevtEspDesportivo;
-    procedure setevtEspDesportivo(const Value: TevtEspDesportivo);
   public
-    procedure AfterConstruction; override;
-    procedure BeforeDestruction; override;
-  published
+    constructor Create(AOwner: TComponent);
+    destructor Destroy; override;
+
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property evtEspDesportivo: TevtEspDesportivo read FevtEspDesportivo write setevtEspDesportivo;
+    property evtEspDesportivo: TevtEspDesportivo read FevtEspDesportivo write FevtEspDesportivo;
   end;
 
   TevtEspDesportivo = class(TReinfEvento) //Classe do elemento principal do XML do evento!
   private
     FIdeEvento: TIdeEvento3;
     FideContri: TideContri;
-    FACBrReinf: TObject;
     FideEstab: TideEstabCollection;
 
     {Geradores específicos desta classe}
@@ -103,7 +103,7 @@ type
     procedure GerarTotal(Item: TreceitaTotal);
     procedure GerarinfoProc(Lista: TinfoProcCollection);
   public
-    constructor Create(AACBrReinf: TObject); overload;
+    constructor Create(AACBrReinf: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: Boolean; override;
@@ -114,24 +114,25 @@ type
     property ideEstab: TideEstabCollection read FideEstab write FideEstab;
   end;
 
-  TideEstabCollection = class(TCollection)
+  TideEstabCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TideEstabCollectionItem;
     procedure SetItem(Index: Integer; Value: TideEstabCollectionItem);
   public
-    constructor create(AOwner: TevtEspDesportivo);
-    function Add: TideEstabCollectionItem;
+    function Add: TideEstabCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TideEstabCollectionItem;
+
     property Items[Index: Integer]: TideEstabCollectionItem read GetItem write SetItem; default;
   end;
 
-  TideEstabCollectionItem = class(TCollectionItem)
+  TideEstabCollectionItem = class(TObject)
   private
     FtpInscEstab: TtpInsc;
     FnrInscEstab: string;
     Fboletim: TboletimCollection;
     FreceitaTotal: TreceitaTotal;
   public
-    constructor create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property tpInscEstab: TtpInsc read FtpInscEstab write FtpInscEstab default tiCNPJ;
@@ -140,17 +141,18 @@ type
     property receitaTotal: TreceitaTotal read FreceitaTotal write FreceitaTotal;
   end;
 
-  TboletimCollection = class(TCollection)
+  TboletimCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TboletimCollectionItem;
     procedure SetItem(Index: Integer; Value: TboletimCollectionItem);
   public
-    constructor create(); reintroduce;
-    function Add: TboletimCollectionItem;
+    function Add: TboletimCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TboletimCollectionItem;
+
     property Items[Index: Integer]: TboletimCollectionItem read GetItem write SetItem; default;
   end;
 
-  TboletimCollectionItem = class(TCollectionItem)
+  TboletimCollectionItem = class(TObject)
   private
     FnrBoletim: String;
     FtpCompeticao: TtpCompeticao;
@@ -168,7 +170,7 @@ type
     FreceitaIngressos: TreceitaIngressosCollection;
     FoutrasReceitas: ToutrasReceitasCollection;
   public
-    constructor create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property nrBoletim: String read FnrBoletim write FnrBoletim;
@@ -188,17 +190,18 @@ type
     property outrasReceitas: ToutrasReceitasCollection read FoutrasReceitas write FoutrasReceitas;
   end;
 
-  TreceitaIngressosCollection = class(TCollection)
+  TreceitaIngressosCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TreceitaIngressosCollectionItem;
     procedure SetItem(Index: Integer; Value: TreceitaIngressosCollectionItem);
   public
-    constructor create(); reintroduce;
-    function Add: TreceitaIngressosCollectionItem;
+    function Add: TreceitaIngressosCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TreceitaIngressosCollectionItem;
+
     property Items[Index: Integer]: TreceitaIngressosCollectionItem read GetItem write SetItem; default;
   end;
 
-  TreceitaIngressosCollectionItem = class(TCollectionItem)
+  TreceitaIngressosCollectionItem = class(TObject)
   private
     FtpIngresso: TtpIngresso;
     FdescIngr: String;
@@ -217,17 +220,18 @@ type
     property vlrTotal: double read FvlrTotal write FvlrTotal;
   end;
 
-  ToutrasReceitasCollection = class(TCollection)
+  ToutrasReceitasCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): ToutrasReceitasCollectionItem;
     procedure SetItem(Index: Integer; Value: ToutrasReceitasCollectionItem);
   public
-    constructor create(); reintroduce;
-    function Add: ToutrasReceitasCollectionItem;
+    function Add: ToutrasReceitasCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: ToutrasReceitasCollectionItem;
+
     property Items[Index: Integer]: ToutrasReceitasCollectionItem read GetItem write SetItem; default;
   end;
 
-  ToutrasReceitasCollectionItem = class(TCollectionItem)
+  ToutrasReceitasCollectionItem = class(TObject)
   private
     FtpReceita: TtpReceita;
     FvlrReceita: double;
@@ -239,7 +243,7 @@ type
   end;
 
   { TreceitaTotal }
-  TreceitaTotal = class(TPersistent)
+  TreceitaTotal = class(TObject)
   private
     FvlrReceitaTotal: double;
     FvlrCP: double;
@@ -259,17 +263,18 @@ type
     property infoProc: TinfoProcCollection read FinfoProc write FinfoProc;
   end;
 
-  TinfoProcCollection = class(TCollection)
+  TinfoProcCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TinfoProcCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoProcCollectionItem);
   public
-    constructor create(); reintroduce;
-    function Add: TinfoProcCollectionItem;
+    function Add: TinfoProcCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TinfoProcCollectionItem;
+
     property Items[Index: Integer]: TinfoProcCollectionItem read GetItem write SetItem; default;
   end;
 
-  TinfoProcCollectionItem = class(TCollectionItem)
+  TinfoProcCollectionItem = class(TObject)
   private
     FtpProc: TtpProc;
     FnrProc: String;
@@ -292,12 +297,18 @@ uses
 
 function TR3010Collection.Add: TR3010CollectionItem;
 begin
-  Result := TR3010CollectionItem(inherited Add);
+  Result := Self.New;
 end;
 
 function TR3010Collection.GetItem(Index: Integer): TR3010CollectionItem;
 begin
   Result := TR3010CollectionItem(inherited GetItem(Index));
+end;
+
+function TR3010Collection.New: TR3010CollectionItem;
+begin
+  Result := TR3010CollectionItem.Create(FACBrReinf);
+  Self.Add(Result);
 end;
 
 procedure TR3010Collection.SetItem(Index: Integer; Value: TR3010CollectionItem);
@@ -307,35 +318,30 @@ end;
 
 { TR3010CollectionItem }
 
-procedure TR3010CollectionItem.AfterConstruction;
+constructor TR3010CollectionItem.Create(AOwner: TComponent);
 begin
-  inherited;
-  FTipoEvento := teR3010;
-  FevtEspDesportivo := TevtEspDesportivo.Create(Collection.Owner);
+  inherited Create;
+
+  FTipoEvento       := teR3010;
+  FevtEspDesportivo := TevtEspDesportivo.Create(AOwner);
 end;
 
-procedure TR3010CollectionItem.BeforeDestruction;
+destructor TR3010CollectionItem.Destroy;
 begin
   inherited;
+
   FevtEspDesportivo.Free;
-end;
-
-procedure TR3010CollectionItem.setevtEspDesportivo(const Value: TevtEspDesportivo);
-begin
-  FevtEspDesportivo.Assign(Value);
 end;
 
 { TevtEspDesportivo }
 
 constructor TevtEspDesportivo.Create(AACBrReinf: TObject);
 begin
-  inherited;
+  inherited Create(AACBrReinf);
 
-  FACBrReinf := AACBrReinf;
-
-  FideContri := TideContri.create;
-  FIdeEvento := TIdeEvento3.create;
-  FideEstab  := TideEstabCollection.Create(Self);
+  FideContri := TideContri.Create;
+  FIdeEvento := TIdeEvento3.Create;
+  FideEstab  := TideEstabCollection.Create;
 end;
 
 destructor TevtEspDesportivo.Destroy;
@@ -351,19 +357,19 @@ end;
 
 function TideEstabCollection.Add: TideEstabCollectionItem;
 begin
-  Result := TideEstabCollectionItem(inherited add());
-  Result.Create;
-end;
-
-constructor TideEstabCollection.create(AOwner: TevtEspDesportivo);
-begin
-  Inherited create(TideEstabCollectionItem);
+  Result := Self.New;
 end;
 
 function TideEstabCollection.GetItem(
   Index: Integer): TideEstabCollectionItem;
 begin
   Result := TideEstabCollectionItem(inherited GetItem(Index));
+end;
+
+function TideEstabCollection.New: TideEstabCollectionItem;
+begin
+  Result := TideEstabCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 procedure TideEstabCollection.SetItem(Index: Integer;
@@ -374,7 +380,7 @@ end;
 
 { TideEstabCollectionItem }
 
-constructor TideEstabCollectionItem.create;
+constructor TideEstabCollectionItem.Create;
 begin
   Fboletim      := TboletimCollection.Create;
   FreceitaTotal := TreceitaTotal.Create;
@@ -392,19 +398,19 @@ end;
 
 function TboletimCollection.Add: TboletimCollectionItem;
 begin
-  Result := TboletimCollectionItem(inherited add());
-  Result.Create;
-end;
-
-constructor TboletimCollection.create;
-begin
-  Inherited create(TboletimCollectionItem);
+  Result := Self.New;
 end;
 
 function TboletimCollection.GetItem(
   Index: Integer): TboletimCollectionItem;
 begin
   Result := TboletimCollectionItem(inherited GetItem(Index));
+end;
+
+function TboletimCollection.New: TboletimCollectionItem;
+begin
+  Result := TboletimCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 procedure TboletimCollection.SetItem(Index: Integer;
@@ -415,10 +421,10 @@ end;
 
 { TboletimCollectionItem }
 
-constructor TboletimCollectionItem.create;
+constructor TboletimCollectionItem.Create;
 begin
-  FreceitaIngressos := TreceitaIngressosCollection.create;
-  FoutrasReceitas   := ToutrasReceitasCollection.create;
+  FreceitaIngressos := TreceitaIngressosCollection.Create;
+  FoutrasReceitas   := ToutrasReceitasCollection.Create;
 end;
 
 destructor TboletimCollectionItem.Destroy;
@@ -433,19 +439,19 @@ end;
 
 function TreceitaIngressosCollection.Add: TreceitaIngressosCollectionItem;
 begin
-  Result := TreceitaIngressosCollectionItem(inherited add());
-//  Result.Create;
-end;
-
-constructor TreceitaIngressosCollection.create;
-begin
-  Inherited create(TreceitaIngressosCollectionItem);
+  Result := Self.New;
 end;
 
 function TreceitaIngressosCollection.GetItem(
   Index: Integer): TreceitaIngressosCollectionItem;
 begin
   Result := TreceitaIngressosCollectionItem(inherited GetItem(Index));
+end;
+
+function TreceitaIngressosCollection.New: TreceitaIngressosCollectionItem;
+begin
+  Result := TreceitaIngressosCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 procedure TreceitaIngressosCollection.SetItem(Index: Integer;
@@ -458,19 +464,19 @@ end;
 
 function ToutrasReceitasCollection.Add: ToutrasReceitasCollectionItem;
 begin
-  Result := ToutrasReceitasCollectionItem(inherited add());
-//  Result.Create;
-end;
-
-constructor ToutrasReceitasCollection.create;
-begin
-  Inherited create(ToutrasReceitasCollectionItem);
+  Result := Self.New;
 end;
 
 function ToutrasReceitasCollection.GetItem(
   Index: Integer): ToutrasReceitasCollectionItem;
 begin
   Result := ToutrasReceitasCollectionItem(inherited GetItem(Index));
+end;
+
+function ToutrasReceitasCollection.New: ToutrasReceitasCollectionItem;
+begin
+  Result := ToutrasReceitasCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 procedure ToutrasReceitasCollection.SetItem(Index: Integer;
@@ -483,7 +489,7 @@ end;
 
 constructor TreceitaTotal.Create;
 begin
-  FinfoProc := TinfoProcCollection.create;
+  FinfoProc := TinfoProcCollection.Create;
 end;
 
 destructor TreceitaTotal.Destroy;
@@ -497,19 +503,19 @@ end;
 
 function TinfoProcCollection.Add: TinfoProcCollectionItem;
 begin
-  Result := TinfoProcCollectionItem(inherited add());
-//  Result.Create;
-end;
-
-constructor TinfoProcCollection.create;
-begin
-  Inherited create(TinfoProcCollectionItem);
+  Result := Self.New;
 end;
 
 function TinfoProcCollection.GetItem(
   Index: Integer): TinfoProcCollectionItem;
 begin
   Result := TinfoProcCollectionItem(inherited GetItem(Index));
+end;
+
+function TinfoProcCollection.New: TinfoProcCollectionItem;
+begin
+  Result := TinfoProcCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 procedure TinfoProcCollection.SetItem(Index: Integer;
@@ -705,7 +711,7 @@ var
   sSecao, sFim: String;
   I, J, K: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -721,7 +727,6 @@ begin
       ideEvento.indRetif   := StrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo   := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
       ideEvento.dtApuracao := StringToDateTime(INIRec.ReadString(sSecao, 'dtApuracao', '0'));
-      ideEvento.TpAmb      := StrTotpAmbReinf(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi    := StrToProcEmiReinf(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc    := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -740,7 +745,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with ideEstab.Add do
+        with ideEstab.New do
         begin
           tpInscEstab := StrToTpInscricao(Ok, sFim);
           nrInscEstab := INIRec.ReadString(sSecao, 'nrInscEstab', '');
@@ -755,7 +760,7 @@ begin
             if (sFim = 'FIM') or (Length(sFim) <= 0) then
               break;
 
-            with boletim.Add do
+            with boletim.New do
             begin
               nrBoletim       := sFim;
               tpCompeticao    := StrTotpCompeticao(Ok, INIRec.ReadString(sSecao, 'tpCompeticao', '1'));
@@ -782,7 +787,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with receitaIngressos.Add do
+                with receitaIngressos.New do
                 begin
                   tpIngresso       := StrTotpIngresso(Ok, sFim);
                   descIngr         := INIRec.ReadString(sSecao, 'descIngr', '');
@@ -807,7 +812,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with outrasReceitas.Add do
+                with outrasReceitas.New do
                 begin
                   tpReceita   := StrTotpReceita(Ok, sFim);
                   vlrReceita  := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrReceita', ''), 0);
@@ -840,7 +845,7 @@ begin
               if (sFim = 'FIM') or (Length(sFim) <= 0) then
                 break;
 
-              with infoProc.Add do
+              with infoProc.New do
               begin
                 tpProc    := StrToTpProc(Ok, sFim);
                 nrProc    := INIRec.ReadString(sSecao, 'nrProc', '');
@@ -858,10 +863,8 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
-     INIRec.Free;
+    INIRec.Free;
   end;
 end;
 

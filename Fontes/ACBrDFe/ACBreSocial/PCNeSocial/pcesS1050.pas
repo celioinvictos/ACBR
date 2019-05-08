@@ -49,39 +49,37 @@ unit pcesS1050;
 interface
 
 uses
-  SysUtils, Classes, ACBrUtil,
+  SysUtils, Classes, ACBrUtil, Contnrs,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 
 type
-  TS1050Collection = class;
   TS1050CollectionItem = class;
   TEvtTabHorTur = class;
   TideHorContratual = class;
   TDadosHorContratual = class;
   TInfoHorContratual = class;
 
-  TS1050Collection = class(TOwnedCollection)
+  TS1050Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1050CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1050CollectionItem);
   public
-    function Add: TS1050CollectionItem;
+    function Add: TS1050CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1050CollectionItem;
     property Items[Index: Integer]: TS1050CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1050CollectionItem = class(TCollectionItem)
+  TS1050CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTabHorContratual: TEvtTabHorTur;
-    procedure setEvtTabHorContratual(const Value: TEvtTabHorTur);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTabHorContratual: TEvtTabHorTur read FEvtTabHorContratual write setEvtTabHorContratual;
+    property EvtTabHorContratual: TEvtTabHorTur read FEvtTabHorContratual write FEvtTabHorContratual;
   end;
 
   TEvtTabHorTur = class(TESocialEvento)
@@ -90,14 +88,13 @@ type
     fIdeEvento: TIdeEvento;
     fIdeEmpregador: TIdeEmpregador;
     fInfoHorContratual: TInfoHorContratual;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarDadosHorContratual;
     procedure GerarHorarioIntervalo;
     procedure GerarIdeHorContratual;
   public
-    constructor Create(AACBreSocial: TObject); overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -109,7 +106,7 @@ type
     property InfoHorContratual: TInfoHorContratual read fInfoHorContratual write fInfoHorContratual;
   end;
 
-  TideHorContratual = class(TPersistent)
+  TideHorContratual = class(TObject)
   private
     FCodHorContrat: string;
     FIniValid: string;
@@ -120,7 +117,7 @@ type
     property fimValid: string read FFimValid write FFimValid;
   end;
 
-  TDadosHorContratual = class(TPersistent)
+  TDadosHorContratual = class(TObject)
   private
     FHrEntr: string;
     FHrSaida: string;
@@ -128,8 +125,8 @@ type
     FPerHorFlexivel: tpSimNao;
     FHorarioIntervalo: THorarioIntervaloCollection;
   public
-    constructor create;
-    destructor destroy; override;
+    constructor Create;
+    destructor Destroy; override;
 
     property hrEntr: string read FHrEntr write FHrEntr;
     property hrSaida: string read FHrSaida write FHrSaida;
@@ -138,7 +135,7 @@ type
     property horarioIntervalo: THorarioIntervaloCollection read FHorarioIntervalo write FHorarioIntervalo;
   end;
 
-  TInfoHorContratual = class(TPersistent)
+  TInfoHorContratual = class(TObject)
   private
     fideHorContratual: TideHorContratual;
     fdadosHorContratual: TdadosHorContratual;
@@ -147,8 +144,8 @@ type
     function getDadosHorContratual: TdadosHorContratual;
     function getNovaValidade: TIdePeriodo;
   public
-    constructor create;
-    destructor destroy; override;
+    constructor Create;
+    destructor Destroy; override;
 
     function dadosHorContratualInst(): Boolean;
     function novaValidadeInst(): Boolean;
@@ -168,8 +165,7 @@ uses
 
 function TS1050Collection.Add: TS1050CollectionItem;
 begin
-  Result := TS1050CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1050Collection.GetItem(Index: Integer): TS1050CollectionItem;
@@ -183,10 +179,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1050Collection.New: TS1050CollectionItem;
+begin
+  Result := TS1050CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS1050CollectionItem }
 
 constructor TS1050CollectionItem.Create(AOwner: TComponent);
 begin
+  inherited Create;
   FTipoEvento := teS1050;
   FEvtTabHorContratual := TEvtTabHorTur.Create(AOwner);
 end;
@@ -198,20 +201,15 @@ begin
   inherited;
 end;
 
-procedure TS1050CollectionItem.setEvtTabHorContratual(
-  const Value: TEvtTabHorTur);
-begin
-  FEvtTabHorContratual.Assign(Value);
-end;
-
 { TdadosHorContratual }
 
-constructor TdadosHorContratual.create;
+constructor TdadosHorContratual.Create;
 begin
+  inherited Create;
   FHorarioIntervalo := THorarioIntervaloCollection.Create;
 end;
 
-destructor TdadosHorContratual.destroy;
+destructor TdadosHorContratual.Destroy;
 begin
   FreeAndNil(FHorarioIntervalo);
 
@@ -220,11 +218,12 @@ end;
 
 { TInfoHorContratual }
 
-constructor TInfoHorContratual.create;
+constructor TInfoHorContratual.Create;
 begin
-  fideHorContratual := TideHorContratual.Create;
+  inherited Create;
+  fideHorContratual   := TideHorContratual.Create;
   fdadosHorContratual := nil;
-  fnovaValidade := nil;
+  fnovaValidade       := nil;
 end;
 
 function TInfoHorContratual.dadosHorContratualInst: Boolean;
@@ -232,7 +231,7 @@ begin
   Result := Assigned(fdadosHorContratual);
 end;
 
-destructor TInfoHorContratual.destroy;
+destructor TInfoHorContratual.Destroy;
 begin
   fideHorContratual.Free;
   FreeAndNil(fdadosHorContratual);
@@ -264,11 +263,10 @@ end;
 
 constructor TEvtTabHorTur.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  fIdeEvento := TIdeEvento.Create;
-  fIdeEmpregador := TIdeEmpregador.Create;
+  fIdeEvento         := TIdeEvento.Create;
+  fIdeEmpregador     := TIdeEmpregador.Create;
   fInfoHorContratual := TInfoHorContratual.Create;
 end;
 
@@ -385,7 +383,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -399,7 +397,6 @@ begin
       ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
 
       sSecao := 'ideEvento';
-      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -431,7 +428,7 @@ begin
           if (sFim = 'FIM') or (Length(sFim) <= 0) then
             break;
 
-          with infoHorContratual.dadosHorContratual.horarioIntervalo.Add do
+          with infoHorContratual.dadosHorContratual.horarioIntervalo.New do
           begin
             tpInterv   := eSStrToTpIntervalo(Ok, sFim);
             durInterv  := INIRec.ReadInteger(sSecao, 'durInterv', 0);
@@ -452,8 +449,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

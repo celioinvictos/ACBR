@@ -49,12 +49,11 @@ unit pcesS1260;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS1260Collection = class;
   TS1260CollectionItem = class;
   TEvtComProd = class;
   TInfoComProd=class;
@@ -64,27 +63,25 @@ type
   TIdeAdquirItem = class;
   TIdeAdquirColecao = class;
 
-  TS1260Collection = class(TOwnedCollection)
+  TS1260Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1260CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1260CollectionItem);
   public
-    function Add: TS1260CollectionItem;
+    function Add: TS1260CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1260CollectionItem;
     property Items[Index: Integer]: TS1260CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1260CollectionItem = class(TCollectionItem)
+  TS1260CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtComProd: TEvtComProd;
-
-    procedure setEvtComProd(const Value: TEvtComProd);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtComProd: TEvtComProd read FEvtComProd write setEvtComProd;
+    property EvtComProd: TEvtComProd read FEvtComProd write FEvtComProd;
   end;
 
   TEvtComProd = class(TESocialEvento)
@@ -92,7 +89,6 @@ type
     FIdeEvento: TIdeEvento3;
     FIdeEmpregador: TIdeEmpregador;
     FInfoComProd: TInfoComProd;
-    FACBreSocial: TObject;
 
     {Geradores específicos da classe}
     procedure GerarInfoComProd;
@@ -101,7 +97,7 @@ type
     procedure GerarIdeAdquir(pIdeAdquir: TIdeAdquirColecao);
     procedure GerarInfoProcJud(pInfoProcJud: TInfoProcJudCollection);
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
 
     function GerarXML: boolean; override;
@@ -112,46 +108,46 @@ type
     property InfoComProd: TInfoComProd read FInfoComProd write FInfoComProd;
   end;
 
-  TInfoComProd=class(TPersistent)
+  TInfoComProd=class(TObject)
   private
     FIdeEstabel: TIdeEstabel;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
 
     property IdeEstabel: TIdeEstabel read FIdeEstabel write FIdeEstabel;
   end;
 
-  TIdeEstabel=class(TPersistent)
+  TIdeEstabel=class(TObject)
   private
     FnrInscEstabRural: string;
     FTpComerc: TTpComercColecao;
   public
-    constructor create;
+    constructor Create;
     destructor Destroy; override;
 
     property nrInscEstabRural: string read FnrInscEstabRural write FnrInscEstabRural;
     property TpComerc: TTpComercColecao read FTpComerc write FTpComerc;
   end;
 
-  TTpComercColecao = class(TCollection)
+  TTpComercColecao = class(TObjectList)
   private
     function GetItem(Index: Integer): TTpComercItem;
     procedure SetItem(Index: Integer; const Value: TTpComercItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TTpComercItem;
+    function Add: TTpComercItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TTpComercItem;
     property Items[Index: Integer]: TTpComercItem read GetItem write SetItem;
   end;
 
-  TTpComercItem = class(TCollectionItem)
+  TTpComercItem = class(TObject)
   private
     FindComerc: tpIndComerc;
     FvrTotCom: Double;
     FIdeAdquir: TIdeAdquirColecao;
     FInfoProcJud: TInfoProcJudCollection;
   public
-    constructor create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property indComerc: tpIndComerc read FindComerc write FindComerc;
@@ -160,17 +156,17 @@ type
     property InfoProcJud: TInfoProcJudCollection read FInfoProcJud write FInfoProcJud;
   end;
 
-  TIdeAdquirColecao = class(TCollection)
+  TIdeAdquirColecao = class(TObjectList)
   private
     function GetItem(Index: Integer): TIdeAdquirItem;
     procedure SetItem(Index: Integer; const Value: TIdeAdquirItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TIdeAdquirItem;
+    function Add: TIdeAdquirItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TIdeAdquirItem;
     property Items[Index: Integer]: TIdeAdquirItem read GetItem write SetItem;
   end;
 
-  TIdeAdquirItem = class(TCollectionItem)
+  TIdeAdquirItem = class(TObject)
   private
     FtpInsc: tpTpInsc;
     FnrInsc: string;
@@ -179,7 +175,7 @@ type
     FNfs: TNfsColecao;
     function getNfs: TNfsColecao;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     function nfsInst: boolean;
 
@@ -200,8 +196,7 @@ uses
 
 function TS1260Collection.Add: TS1260CollectionItem;
 begin
-  Result := TS1260CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1260Collection.GetItem(Index: Integer): TS1260CollectionItem;
@@ -214,9 +209,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1260Collection.New: TS1260CollectionItem;
+begin
+  Result := TS1260CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 {TS1260CollectionItem}
 constructor TS1260CollectionItem.Create(AOwner: TComponent);
 begin
+  inherited Create;
   FTipoEvento := teS1260;
   FEvtComProd := TEvtComProd.Create(AOwner);
 end;
@@ -228,21 +230,10 @@ begin
   inherited;
 end;
 
-procedure TS1260CollectionItem.setEvtComProd(const Value: TEvtComProd);
-begin
-  FEvtComProd.Assign(Value);
-end;
-
 { TTpComercColecao }
 function TTpComercColecao.Add: TTpComercItem;
 begin
-  Result := TTpComercItem(inherited add);
-  Result.Create;
-end;
-
-constructor TTpComercColecao.create(AOwner: TPersistent);
-begin
-  inherited create(TTpComercItem)
+  Result := Self.New;
 end;
 
 function TTpComercColecao.GetItem(Index: Integer): TTpComercItem;
@@ -255,15 +246,21 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TTpComercColecao.New: TTpComercItem;
+begin
+  Result := TTpComercItem.Create;
+  Self.Add(Result);
+end;
+
 { TInfoComProd }
-constructor TInfoComProd.create;
+constructor TInfoComProd.Create;
 begin
   inherited;
 
-  FIdeEstabel := TIdeEstabel.create;
+  FIdeEstabel := TIdeEstabel.Create;
 end;
 
-destructor TInfoComProd.destroy;
+destructor TInfoComProd.Destroy;
 begin
   FIdeEstabel.Free;
 
@@ -271,13 +268,14 @@ begin
 end;
 
 { TTpComercItem }
-constructor TTpComercItem.create;
+constructor TTpComercItem.Create;
 begin
-  FIdeAdquir := TIdeAdquirColecao.Create(self);
-  FInfoProcJud := TInfoProcJudCollection.Create(self);
+  inherited Create;
+  FIdeAdquir   := TIdeAdquirColecao.Create;
+  FInfoProcJud := TInfoProcJudCollection.Create;
 end;
 
-destructor TTpComercItem.destroy;
+destructor TTpComercItem.Destroy;
 begin
   FIdeAdquir.Free;
   FInfoProcJud.Free;
@@ -288,13 +286,7 @@ end;
 { TIdeAdquirColecao }
 function TIdeAdquirColecao.Add: TIdeAdquirItem;
 begin
-  Result := TIdeAdquirItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TIdeAdquirColecao.Create(AOwner: TPersistent);
-begin
-  inherited Create(TIdeAdquirItem);
+  Result := Self.New;
 end;
 
 function TIdeAdquirColecao.GetItem(Index: Integer): TIdeAdquirItem;
@@ -308,10 +300,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TIdeAdquirColecao.New: TIdeAdquirItem;
+begin
+  Result := TIdeAdquirItem.Create;
+  Self.Add(Result);
+end;
+
 { TIdeAdquirItem }
 
 constructor TIdeAdquirItem.Create;
 begin
+  inherited Create;
   FNfs := nil;
 end;
 
@@ -325,7 +324,7 @@ end;
 function TIdeAdquirItem.getNfs: TNfsColecao;
 begin
   if not Assigned(FNfs) then
-    FNfs := TNfsColecao.Create(FNfs);
+    FNfs := TNfsColecao.Create;
   Result := FNfs;
 end;
 
@@ -335,14 +334,14 @@ begin
 end;
 
 { TIdeEstabel }
-constructor TIdeEstabel.create;
+constructor TIdeEstabel.Create;
 begin
   inherited;
 
-  FTpComerc := TTpComercColecao.Create(self);
+  FTpComerc := TTpComercColecao.Create;
 end;
 
-destructor TIdeEstabel.destroy;
+destructor TIdeEstabel.Destroy;
 begin
   FTpComerc.Free;
 
@@ -352,15 +351,14 @@ end;
 { TEvtComProd }
 constructor TEvtComProd.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
   FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FInfoComProd   := TInfoComProd.create;
 end;
 
-destructor TEvtComProd.destroy;
+destructor TEvtComProd.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -489,7 +487,7 @@ var
   sSecao, sFim: String;
   I, J, K: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -506,7 +504,6 @@ begin
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
       ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
       ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -528,7 +525,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with InfoComProd.IdeEstabel.tpComerc.Add do
+        with InfoComProd.IdeEstabel.tpComerc.New do
         begin
           indComerc := eSStrToIndComerc(Ok, sFim);
           vrTotCom  := StringToFloatDef(INIRec.ReadString(sSecao, 'vrTotCom', ''), 0);
@@ -543,7 +540,7 @@ begin
             if (sFim = 'FIM') or (Length(sFim) <= 0) then
               break;
 
-            with ideAdquir.Add do
+            with ideAdquir.New do
             begin
               tpInsc   := eSStrToTpInscricao(Ok, sFim);
               nrInsc   := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
@@ -560,7 +557,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with nfs.Add do
+                with nfs.New do
                 begin
                   serie       := sFim;
                   nrDocto     := INIRec.ReadString(sSecao, 'nrDocto', EmptyStr);
@@ -585,7 +582,7 @@ begin
                 if (sFim = 'FIM') or (Length(sFim) <= 0) then
                   break;
 
-                with infoProcJud.Add do
+                with infoProcJud.New do
                 begin
                   tpProc      := eSStrToTpProcesso(Ok, INIRec.ReadString(sSecao, 'tpProc', '1'));
                   nrProcJud   := sFim;
@@ -611,8 +608,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

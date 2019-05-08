@@ -49,38 +49,34 @@ unit pcesS1040;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS1040Collection = class;
   TS1040CollectionItem = class;
   TEvtTabFuncao = class;
-  TIdeFuncao = class;
-  TDadosFuncao = class;
   TInfoFuncao = class;
 
-  TS1040Collection = class(TOwnedCollection)
+  TS1040Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS1040CollectionItem;
     procedure SetItem(Index: Integer; Value: TS1040CollectionItem);
   public
-    function Add: TS1040CollectionItem;
+    function Add: TS1040CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1040CollectionItem;
     property Items[Index: Integer]: TS1040CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1040CollectionItem = class(TCollectionItem)
+  TS1040CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtTabFuncao: TEvtTabFuncao;
-    procedure setEvtTabFuncao(const Value: TEvtTabFuncao);
   public
     constructor Create(AOwner: TComponent); reintroduce;
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtTabFuncao: TEvtTabFuncao read FEvtTabFuncao write setEvtTabFuncao;
+    property EvtTabFuncao: TEvtTabFuncao read FEvtTabFuncao write FEvtTabFuncao;
   end;
 
   TEvtTabFuncao = class(TeSocialEvento)
@@ -95,7 +91,7 @@ type
     procedure GerarDadosFuncao;
     procedure GerarIdeFuncao;
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -107,7 +103,7 @@ type
     property InfoFuncao: TInfoFuncao read fInfoFuncao write fInfoFuncao;
   end;
 
-  TIdeFuncao = class(TPersistent)
+  TIdeFuncao = class(TObject)
   private
     FCodFuncao: string;
     FIniValid: string;
@@ -118,7 +114,7 @@ type
     property fimValid: string read FFimValid write FFimValid;
   end;
 
-  TDadosFuncao = class(TPersistent)
+  TDadosFuncao = class(TObject)
   private
     FDscFuncao: string;
     FCodCBO: string;
@@ -127,7 +123,7 @@ type
     property codCBO: string read FCodCBO write FCodCBO;
   end;
 
-  TInfoFuncao = class(TPersistent)
+  TInfoFuncao = class(TObject)
   private
     fIdeFuncao: TIdeFuncao;
     fDadosFuncao: TDadosFuncao;
@@ -136,8 +132,8 @@ type
     function getDadosFuncao: TDadosFuncao;
     function getNovaValidade: TIdePeriodo;
   public
-    constructor create;
-    destructor destroy; override;
+    constructor Create;
+    destructor Destroy; override;
 
     function dadosFuncaoInst(): Boolean;
     function novaValidadeInst(): Boolean;
@@ -157,8 +153,7 @@ uses
 
 function TS1040Collection.Add: TS1040CollectionItem;
 begin
-  Result := TS1040CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1040Collection.GetItem(Index: Integer): TS1040CollectionItem;
@@ -172,11 +167,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS1040Collection.New: TS1040CollectionItem;
+begin
+  Result := TS1040CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS1040CollectionItem }
 
 constructor TS1040CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS1040;
+  inherited Create;
+  FTipoEvento   := teS1040;
   FEvtTabFuncao := TEvtTabFuncao.Create(AOwner);
 end;
 
@@ -187,17 +189,13 @@ begin
   inherited;
 end;
 
-procedure TS1040CollectionItem.setEvtTabFuncao(const Value: TEvtTabFuncao);
-begin
-  FEvtTabFuncao.Assign(Value);
-end;
-
 { TInfoFuncao }
 
-constructor TInfoFuncao.create;
+constructor TInfoFuncao.Create;
 begin
-  fIdeFuncao := TIdeFuncao.Create;
-  fDadosFuncao := nil;
+  inherited Create;
+  fIdeFuncao    := TIdeFuncao.Create;
+  fDadosFuncao  := nil;
   fNovaValidade := nil;
 end;
 
@@ -238,7 +236,7 @@ end;
 
 constructor TEvtTabFuncao.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
   FACBreSocial := AACBreSocial;
   fIdeEvento := TIdeEvento.Create;
@@ -326,7 +324,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -340,7 +338,6 @@ begin
       ModoLancamento := eSStrToModoLancamento(Ok, INIRec.ReadString(sSecao, 'ModoLancamento', 'inclusao'));
 
       sSecao := 'ideEvento';
-      ideEvento.TpAmb   := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -370,8 +367,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

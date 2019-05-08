@@ -47,7 +47,7 @@ unit pcesS2400;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -62,26 +62,25 @@ type
   TInfoPenMorte = class;
   TFimBeneficio = class;
 
-  TS2400Collection = class(TOwnedCollection)
+  TS2400Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2400CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2400CollectionItem);
   public
-    function Add: TS2400CollectionItem;
+    function Add: TS2400CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2400CollectionItem;
     property Items[Index: Integer]: TS2400CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2400CollectionItem = class(TCollectionItem)
+  TS2400CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtCdBenPrRP : TEvtCdBenPrRP;
-    procedure setEvtCdBenPrRP(const Value: TEvtCdBenPrRP);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property evtCdBenPrRP: TEvtCdBenPrRP read FEvtCdBenPrRP write setEvtCdBenPrRP;
+    property evtCdBenPrRP: TEvtCdBenPrRP read FEvtCdBenPrRP write FEvtCdBenPrRP;
   end;
 
   TEvtCdBenPrRP = class(TeSocialEvento)
@@ -90,16 +89,15 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeBenef: TIdeBenef;
     FInfoBeneficio: TInfoBeneficio;
-    FACBreSocial: TObject;
 
     procedure GerarIdeBenef(pIdeBenef: TIdeBenef);
     procedure GerarDadosBenef(pDadosBenef: TDadosBenef);
     procedure GerarInfoBeneficio(pInfoBeneficio: TInfoBeneficio);
-    procedure GerarBeneficio(pBeneficio: TBeneficio; pGroupName: String);
+    procedure GerarBeneficio(pBeneficio: TBeneficio; const pGroupName: String);
     procedure GerarInfoPenMorte(pInfoPenMorte: TInfoPenMorte);
     procedure GerarFimBeneficio(pFimBeneficio: TFimBeneficio);
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
 
     function GerarXML: boolean; override;
@@ -111,7 +109,7 @@ type
     property infoBeneficio: TInfoBeneficio read FInfoBeneficio write FInfoBeneficio;
   end;
 
-  TFimBeneficio = class(TPersistent)
+  TFimBeneficio = class(TObject)
   private
     FTpBenef: integer;
     FNrBenefic: string;
@@ -124,7 +122,7 @@ type
     property mtvFim: Integer read FMtvFim write FMtvFim;
   end;
 
-  TInfoPenMorte = class(TPersistent)
+  TInfoPenMorte = class(TObject)
   private
     FIdQuota: String;
     FCpfInst: String;
@@ -133,7 +131,7 @@ type
     property cpfInst: string read FCpfInst write FCpfInst;
   end;
 
-  TBeneficio = class(TPersistent)
+  TBeneficio = class(TObject)
   private
     FTpBenef: integer;
     FNrBenefic: string;
@@ -143,7 +141,9 @@ type
 
     function getInfoPenMorte: TInfoPenMorte;
   public
-    constructor create;
+    constructor Create;
+    destructor Destroy; override;
+
     function infoPenMorteInst: boolean;
 
     property tpBenef: integer read FTpBenef write FTpBenef;
@@ -153,7 +153,7 @@ type
     property infoPenMorte: TInfoPenMorte read getInfoPenMorte write FInfoPenMorte;
   end;
 
-  TInfoBeneficio = class(TPersistent)
+  TInfoBeneficio = class(TObject)
   private
     FTpPlanRP: tpPlanRP;
     FIniBeneficio: TBeneficio;
@@ -164,7 +164,9 @@ type
     function getAltBeneficio: TBeneficio;
     function getFimBeneficio: TFimBeneficio;
   public
-    constructor create;
+    constructor Create;
+    destructor Destroy; override;
+
     function iniBeneficioInst: boolean;
     function altBeneficioInst: boolean;
     function fimBeneficioInst: boolean;
@@ -175,25 +177,25 @@ type
     property fimBeneficio: TFimBeneficio read getFimBeneficio write FFimBeneficio;
   end;
 
-  TDadosBenef = class(TPersistent)
+  TDadosBenef = class(TObject)
   private
     FDadosNasc: TNascimento;
     FEndereco: TEndereco;
   public
     constructor Create;
-
+    destructor Destroy; override;
     property dadosNasc: TNascimento read FDadosNasc write FDadosNasc;
     property endereco: TEndereco read FEndereco write FEndereco;
   end;
 
-  TIdeBenef = class(TPersistent)
+  TIdeBenef = class(TObject)
   private
     FCpfBEnef: string;
     FNmBenefic: string;
     FDadosBenef: TDadosBenef;
   public
     constructor Create;
-
+    destructor Destroy; override;
     property cpfBenef: String read FCpfBEnef write FCpfBEnef;
     property nmBenefic: string read FNmBenefic write FNmBenefic;
     property dadosBenef: TDadosBenef read FDadosBenef write FDadosBenef;
@@ -209,8 +211,7 @@ uses
 
 function TS2400Collection.Add: TS2400CollectionItem;
 begin
-  Result := TS2400CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2400Collection.GetItem(Index: Integer): TS2400CollectionItem;
@@ -223,11 +224,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2400Collection.New: TS2400CollectionItem;
+begin
+  Result := TS2400CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2400CollectionItem }
 
 constructor TS2400CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS2400;
+  inherited Create;
+  FTipoEvento   := teS2400;
   FEvtCdBenPrRP := TEvtCdBenPrRP.Create(AOwner);
 end;
 
@@ -238,16 +246,18 @@ begin
   inherited;
 end;
 
-procedure TS2400CollectionItem.setEvtCdBenPrRP(const Value: TEvtCdBenPrRP);
-begin
-  FEvtCdBenPrRP.Assign(Value);
-end;
-
 { TBeneficio }
 
 constructor TBeneficio.Create;
 begin
+  inherited Create;
   FInfoPenMorte := nil;
+end;
+
+destructor TBeneficio.Destroy;
+begin
+  FreeAndNil(FInfoPenMorte);
+  inherited;
 end;
 
 function TBeneficio.getInfoPenMorte: TInfoPenMorte;
@@ -266,9 +276,18 @@ end;
 
 constructor TInfoBeneficio.Create;
 begin
+  inherited Create;
   FIniBeneficio := nil;
   FAltBeneficio := nil;
   FFimBeneficio := nil;
+end;
+
+destructor TInfoBeneficio.Destroy;
+begin
+  FreeAndNil(FIniBeneficio);
+  FreeAndNil(FAltBeneficio);
+  FreeAndNil(FFimBeneficio);
+  inherited;
 end;
 
 function TInfoBeneficio.getIniBeneficio: TBeneficio;
@@ -311,31 +330,45 @@ end;
 
 constructor TIdeBenef.Create;
 begin
+  inherited Create;
   FDadosBenef := TDadosBenef.Create;
+end;
+
+destructor TIdeBenef.Destroy;
+begin
+  FDadosBenef.Free;
+  inherited;
 end;
 
 { TDadosBenef }
 
 constructor TDadosBenef.Create;
 begin
+  inherited Create;
   FDadosNasc := TNascimento.Create;
-  FEndereco := TEndereco.Create;
+  FEndereco  := TEndereco.Create;
+end;
+
+destructor TDadosBenef.Destroy;
+begin
+  FDadosNasc.Free;
+  FEndereco.Free;
+  inherited;
 end;
 
 { TEvtCdBenPrRP }
 
 constructor TEvtCdBenPrRP.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento2.Create;
+  FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeBenef := TIdeBenef.Create;
+  FIdeBenef      := TIdeBenef.Create;
   FInfoBeneficio := TInfoBeneficio.Create;
 end;
 
-destructor TEvtCdBenPrRP.destroy;
+destructor TEvtCdBenPrRP.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -378,7 +411,7 @@ begin
   Gerador.wGrupo('/infoPenMorte');
 end;
 
-procedure TEvtCdBenPrRP.GerarBeneficio(pBeneficio: TBeneficio; pGroupName: String);
+procedure TEvtCdBenPrRP.GerarBeneficio(pBeneficio: TBeneficio; const pGroupName: String);
 begin
   Gerador.wGrupo(pGroupName);
 
@@ -458,7 +491,7 @@ var
   Ok: Boolean;
   sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -473,7 +506,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -566,8 +598,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

@@ -49,39 +49,36 @@ unit pcesS2221;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
-  TS2221Collection = class;
   TS2221CollectionItem = class;
   TEvtToxic = class;
-  TToxicologico = class;
 
-  TS2221Collection = class(TOwnedCollection)
+  TS2221Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2221CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2221CollectionItem);
   public
-    function Add: TS2221CollectionItem;
+    function Add: TS2221CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2221CollectionItem;
     property Items[Index: Integer]: TS2221CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2221CollectionItem = class(TCollectionItem)
+  TS2221CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtToxic: TEvtToxic;
-    procedure setEvtToxic(const Value: TEvtToxic);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor  Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property EvtToxic: TEvtToxic read FEvtToxic write setEvtToxic;
+    property EvtToxic: TEvtToxic read FEvtToxic write FEvtToxic;
   end;
 
-  TToxicologico = class(TPersistent)
+  TToxicologico = class(TObject)
   private
     FdtExame: TDateTime;
     FnmMed: String;
@@ -106,12 +103,11 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo: TIdeVinculo;
     FToxicologico: TToxicologico;
-    FACBreSocial: TObject;
 
     { Geradores da classe }
     procedure GerarToxicologico(objToxicologico: TToxicologico);
   public
-    constructor Create(AACBreSocial: TObject);overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor  Destroy; override;
 
     function GerarXML: boolean; override;
@@ -133,6 +129,7 @@ uses
 
 constructor TS2221CollectionItem.Create(AOwner: TComponent);
 begin
+  inherited Create;
   FTipoEvento := teS2221;
   FEvtToxic   := TEvtToxic.Create(AOwner);
 end;
@@ -144,17 +141,11 @@ begin
   inherited;
 end;
 
-procedure TS2221CollectionItem.setEvtToxic(const Value: TEvtToxic);
-begin
-  FEvtToxic.Assign(Value);
-end;
-
 { TS2221Collection }
 
 function TS2221Collection.Add: TS2221CollectionItem;
 begin
-  Result := TS2221CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2221Collection.GetItem(Index: Integer): TS2221CollectionItem;
@@ -167,18 +158,25 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2221Collection.New: TS2221CollectionItem;
+begin
+  Result := TS2221CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
+{ TEvtToxic }
+
 constructor TEvtToxic.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial   := AACBreSocial;
   FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeVinculo    := TIdeVinculo.Create;
   FToxicologico  := TToxicologico.Create;
 end;
 
-destructor TEvtToxic.destroy;
+destructor TEvtToxic.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
@@ -214,6 +212,8 @@ begin
     Gerador.wGrupo('evtToxic Id="' + Self.Id + '"');
 
     GerarIdeEvento2(Self.IdeEvento);
+    GerarIdeEmpregador(Self.IdeEmpregador);
+    GerarIdeVinculo(Self.IdeVinculo);
     GerarToxicologico(Self.Toxicologico);
 
     Gerador.wGrupo('/evtToxic');
@@ -222,7 +222,7 @@ begin
 
     XML := Assinar(Gerador.ArquivoFormatoXML, 'evtToxic');
 
-    Validar(schevtInsApo);
+    Validar(schEvtToxic);
 
   except on e:exception do
     raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
@@ -232,11 +232,54 @@ begin
 end;
 
 function TEvtToxic.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  Ok: Boolean;
+  sSecao: String;
 begin
-  Result := False;
+  Result := True;
 
-  { Implementar }
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
 
+    with Self do
+    begin
+      sSecao := 'evtToxic';
+      Id         := INIRec.ReadString(sSecao, 'Id', '');
+      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
+
+      sSecao := 'ideEvento';
+      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
+      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
+      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
+      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
+
+      sSecao := 'ideEmpregador';
+      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
+      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
+      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
+
+      sSecao := 'ideVinculo';
+      ideVinculo.CpfTrab   := INIRec.ReadString(sSecao, 'cpfTrab', EmptyStr);
+      ideVinculo.NisTrab   := INIRec.ReadString(sSecao, 'nisTrab', EmptyStr);
+      ideVinculo.Matricula := INIRec.ReadString(sSecao, 'matricula', EmptyStr);
+      IdeVinculo.codCateg  := INIRec.ReadInteger(sSecao, 'codCateg', 0);
+
+      sSecao := 'toxicologico';
+      toxicologico.dtExame     := StringToDateTime(INIRec.ReadString(sSecao, 'dtExame', '0'));
+      toxicologico.cnpjLab     := INIRec.ReadString(sSecao, 'cnpjLab', '');
+      toxicologico.codSeqExame := INIRec.ReadString(sSecao, 'codSeqExame', '');
+      toxicologico.nmMed       := INIRec.ReadString(sSecao, 'nmMed', '');
+      toxicologico.nrCRM       := INIRec.ReadString(sSecao, 'nrCRM', '');
+      toxicologico.ufCRM       := INIRec.ReadString(sSecao, 'ufCRM', '');
+      toxicologico.indRecusa   := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indRecusa', 'N'));
+    end;
+
+    GerarXML;
+  finally
+    INIRec.Free;
+  end;
 end;
 
 end.

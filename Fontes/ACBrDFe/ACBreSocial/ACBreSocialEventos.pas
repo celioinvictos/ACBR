@@ -49,26 +49,13 @@ unit ACBreSocialEventos;
 interface
 
 uses
-  SysUtils, Classes, synautil,
+  SysUtils, Classes, synautil, Contnrs,
   pcesIniciais, pcesTabelas, pcesNaoPeriodicos, pcesPeriodicos,
   pcesConversaoeSocial;
 
 type
-  TEventos = class;
-  TGeradosCollection = class;
-  TGeradosCollectionItem = class;
 
-  TGeradosCollection = class(TCollection)
-  private
-    function GetItem(Index: Integer): TGeradosCollectionItem;
-    procedure SetItem(Index: Integer; Value: TGeradosCollectionItem);
-  public
-    constructor create(AOwner: TEventos);
-    function Add: TGeradosCollectionItem;
-    property Items[Index: Integer]: TGeradosCollectionItem read GetItem write SetItem; default;
-  end;
-
-  TGeradosCollectionItem = class(TCollectionItem)
+  TGeradosCollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FPathNome: String;
@@ -81,7 +68,17 @@ type
     property XML: String read FXML write FXML;
   end;
 
-  TEventos = class(TComponent)
+  TGeradosCollection = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TGeradosCollectionItem;
+    procedure SetItem(Index: Integer; Value: TGeradosCollectionItem);
+  public
+    function Add: TGeradosCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TGeradosCollectionItem;
+    property Items[Index: Integer]: TGeradosCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TEventos = class(TObject)
   private
     FIniciais: TIniciais;
     FTabelas: TTabelas;
@@ -89,29 +86,28 @@ type
     FPeriodicos: TPeriodicos;
     FTipoEmpregador: TEmpregador;
     FGerados: TGeradosCollection;
-
-    procedure SetIniciais(const Value: TIniciais);
+    FOwner: TComponent;
     procedure SetNaoPeriodicos(const Value: TNaoPeriodicos);
     procedure SetPeriodicos(const Value: TPeriodicos);
     procedure SetTabelas(const Value: TTabelas);
     function GetCount: integer;
     procedure SetGerados(const Value: TGeradosCollection);
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;//verificar se será necessário, se TIniciais for TComponent;
 
     procedure GerarXMLs;
     procedure SaveToFiles;
     procedure Clear;
 
-    function LoadFromFile(CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
+    function LoadFromFile(const CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
     function LoadFromStream(AStream: TStringStream): Boolean;
     function LoadFromString(AXMLString: String): Boolean;
-    function LoadFromStringINI(AINIString: String): Boolean;
-    function LoadFromIni(AIniString: String): Boolean;
+    function LoadFromStringINI(const AINIString: String): Boolean;
+    function LoadFromIni(const AIniString: String): Boolean;
 
     property Count:          Integer        read GetCount;
-    property Iniciais:       TIniciais      read FIniciais       write SetIniciais;
+    property Iniciais:       TIniciais      read FIniciais       write FIniciais;
     property Tabelas:        TTabelas       read FTabelas        write SetTabelas;
     property NaoPeriodicos:  TNaoPeriodicos read FNaoPeriodicos  write SetNaoPeriodicos;
     property Periodicos:     TPeriodicos    read FPeriodicos     write SetPeriodicos;
@@ -129,13 +125,7 @@ uses
 
 function TGeradosCollection.Add: TGeradosCollectionItem;
 begin
-  Result := TGeradosCollectionItem(inherited add());
-//  Result.Create;
-end;
-
-constructor TGeradosCollection.create(AOwner: TEventos);
-begin
-  Inherited create(TGeradosCollectionItem);
+  Result := Self.New;
 end;
 
 function TGeradosCollection.GetItem(Index: Integer): TGeradosCollectionItem;
@@ -147,6 +137,12 @@ procedure TGeradosCollection.SetItem(Index: Integer;
   Value: TGeradosCollectionItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TGeradosCollection.New: TGeradosCollectionItem;
+begin
+  Result := TGeradosCollectionItem.Create;
+  Self.Add(Result)
 end;
 
 { TEventos }
@@ -162,13 +158,13 @@ end;
 
 constructor TEventos.Create(AOwner: TComponent);
 begin
-  inherited;
-
-  FIniciais := TIniciais.Create(AOwner);
-  FTabelas := TTabelas.Create(AOwner);
+  inherited Create;
+  FOwner         := AOwner;
+  FIniciais      := TIniciais.Create(AOwner);
+  FTabelas       := TTabelas.Create(AOwner);
   FNaoPeriodicos := TNaoPeriodicos.Create(AOwner);
-  FPeriodicos := TPeriodicos.Create(AOwner);
-  FGerados := TGeradosCollection.create(Self);
+  FPeriodicos    := TPeriodicos.Create(AOwner);
+  FGerados       := TGeradosCollection.Create;
 end;
 
 destructor TEventos.Destroy;
@@ -184,7 +180,7 @@ end;
 
 procedure TEventos.GerarXMLs;
 begin
-  FTipoEmpregador := TACBreSocial(Self.Owner).Configuracoes.Geral.TipoEmpregador;
+  FTipoEmpregador := TACBreSocial(Self.FOwner).Configuracoes.Geral.TipoEmpregador;
 
   Self.Iniciais.GerarXMLs;
   Self.Tabelas.GerarXMLs;
@@ -216,11 +212,6 @@ begin
   FGerados := Value;
 end;
 
-procedure TEventos.SetIniciais(const Value: TIniciais);
-begin
-  FIniciais.Assign(Value);
-end;
-
 procedure TEventos.SetTabelas(const Value: TTabelas);
 begin
   FTabelas.Assign(Value);
@@ -236,30 +227,27 @@ begin
   FPeriodicos.Assign(Value);
 end;
 
-function TEventos.LoadFromFile(CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
+function TEventos.LoadFromFile(const CaminhoArquivo: String; ArqXML: Boolean = True): Boolean;
 var
   ArquivoXML: TStringList;
   XML: String;
   XMLOriginal: AnsiString;
 begin
-  Result := False;
-  
   ArquivoXML := TStringList.Create;
   try
     ArquivoXML.LoadFromFile(CaminhoArquivo);
     XMLOriginal := ArquivoXML.Text;
-
-    // Converte de UTF8 para a String nativa da IDE //
-    XML := DecodeToString(XMLOriginal, True);
-
-    if ArqXML then
-      Result := LoadFromString(XML)
-    else
-      Result := LoadFromStringINI(XML);
-
   finally
     ArquivoXML.Free;
   end;
+
+  // Converte de UTF8 para a String nativa da IDE //
+  XML := DecodeToString(XMLOriginal, True);
+
+  if ArqXML then
+    Result := LoadFromString(XML)
+  else
+    Result := LoadFromStringINI(XML);
 end;
 
 function TEventos.LoadFromStream(AStream: TStringStream): Boolean;
@@ -303,7 +291,7 @@ begin
   end;
 end;
 
-function TEventos.LoadFromStringINI(AINIString: String): Boolean;
+function TEventos.LoadFromStringINI(const AINIString: String): Boolean;
 begin
   Result := Self.Iniciais.LoadFromIni(AIniString);
   Result := Self.Tabelas.LoadFromIni(AIniString) or Result;
@@ -313,7 +301,7 @@ begin
   SaveToFiles;
 end;
 
-function TEventos.LoadFromIni(AIniString: String): Boolean;
+function TEventos.LoadFromIni(const AIniString: String): Boolean;
 begin
   // O valor False no segundo parâmetro indica que o conteudo do arquivo não é
   // um XML.

@@ -680,6 +680,7 @@ begin
            end;
 
      proSMARAPD,
+     proGiap,
      proIPM:
           begin
             Gerador.ArquivoFormatoXML := Gerador.ArquivoFormatoXML + Notas
@@ -744,6 +745,16 @@ begin
            Gerador.wGrupoNFSe('/LoteRps');
           end;
 
+     proAssessorPublico:
+       begin
+         Gerador.Prefixo := 'nfse:';
+         Gerador.wGrupoNFSe('Nfse.Execute');
+         Gerador.wCampoNFSe(tcStr, '', 'Operacao', 1, 1, 1, '1', '');
+         Gerador.wCampoNFSe(tcStr, '', 'Usuario', 1, 1, 1, UserWeb, '');
+         Gerador.wCampoNFSe(tcStr, '', 'Senha', 1, 1, 1, SenhaWeb, '');
+         Gerador.wCampoNFSe(tcStr, '', 'Webxml', 1, 1, 1, Notas, '');
+         Gerador.wGrupoNFSe('/Nfse.Execute');
+       end
   else
     begin
       Gerador.Prefixo := Prefixo3;
@@ -792,6 +803,8 @@ begin
 end;
 
 function TNFSeG.Gera_DadosMsgConsSitLote: String;
+var
+  strTemp : string;
 begin
   SetAtributos;
   Gerador.ArquivoFormatoXML := '';
@@ -874,7 +887,24 @@ begin
                   Gerador.wGrupoNFSe('/Prestador');
 
                   Gerador.wCampoNFSe(tcStr, '#4', 'Protocolo', 01, 50, 1, Protocolo, '', True, aNameSpace);
-                end
+                end;
+
+    proAssessorPublico:
+      begin
+        strTemp := '<NFSE><IDENTIFICACAO>'+
+                   '<INSCRICAO>'+IM+'</INSCRICAO>'+
+                   '<LOTE>'+NumeroLote+'</LOTE>'+
+//                                     '<SEQUENCIA>'+NUMERO DA NOTA+'</SEQUENCIA>'+
+                   '</IDENTIFICACAO></NFSE>';
+
+        Gerador.Prefixo := 'nfse:';
+        Gerador.wGrupoNFSe('Nfse.Execute');
+        Gerador.wCampoNFSe(tcStr, '', 'Operacao', 1, 1, 1, '3', '');
+        Gerador.wCampoNFSe(tcStr, '', 'Usuario', 1, 1, 1, UserWeb, '');
+        Gerador.wCampoNFSe(tcStr, '', 'Senha', 1, 1, 1, SenhaWeb, '');
+        Gerador.wCampoNFSe(tcStr, '', 'Webxml', 1, 1, 1, strTemp, '');
+        Gerador.wGrupoNFSe('/Nfse.Execute');
+      end;
   else
     begin
       Gerador.Prefixo := Prefixo3;
@@ -919,6 +949,8 @@ begin
 end;
 
 function TNFSeG.Gera_DadosMsgConsLote: String;
+var
+  strTemp : string;
 begin
   SetAtributos;
   Gerador.ArquivoFormatoXML := '';
@@ -1033,6 +1065,23 @@ begin
               Gerador.wGrupoNFSe('/pesquisa');
               Gerador.wGrupoNFSe('/nfse');
             end;
+
+    proAssessorPublico:
+      begin
+        strTemp := '<NFSE><IDENTIFICACAO>'+
+                   '<INSCRICAO>'+IM+'</INSCRICAO>'+
+                   '<LOTE>'+NumeroLote+'</LOTE>'+
+//                                     '<SEQUENCIA>'+NUMERO DA NOTA+'</SEQUENCIA>'+
+                   '</IDENTIFICACAO></NFSE>';
+
+        Gerador.Prefixo := 'nfse:';
+        Gerador.wGrupoNFSe('Nfse.Execute');
+        Gerador.wCampoNFSe(tcStr, '', 'Operacao', 1, 1, 1, '3', '');
+        Gerador.wCampoNFSe(tcStr, '', 'Usuario', 1, 1, 1, UserWeb, '');
+        Gerador.wCampoNFSe(tcStr, '', 'Senha', 1, 1, 1, SenhaWeb, '');
+        Gerador.wCampoNFSe(tcStr, '', 'Webxml', 1, 1, 1, strTemp, '');
+        Gerador.wGrupoNFSe('/Nfse.Execute');
+      end;
   else
     begin
       Gerador.Prefixo := Prefixo3;
@@ -1041,18 +1090,6 @@ begin
       Gerador.Prefixo := Prefixo4;
 
       GerarGrupoCNPJCPF(Cnpj, (VersaoNFSe <> ve100) or (Provedor in [proISSNet, proActcon]));
-
-//      if (VersaoNFSe <> ve100) or (Provedor in [proISSNet, proActcon]) then
-//      begin
-//        Gerador.wGrupoNFSe('CpfCnpj');
-//        if Length(Cnpj) <= 11 then
-//          Gerador.wCampoNFSe(tcStr, '#2', 'Cpf', 11, 11, 1, Cnpj, '')
-//        else
-//          Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, Cnpj, '');
-//        Gerador.wGrupoNFSe('/CpfCnpj');
-//      end
-//      else
-//        Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, Cnpj, '');
 
       if Provedor = proTecnos then
         Gerador.wCampoNFSe(tcStr, '#3', 'RazaoSocial', 01, 115, 1, RazaoSocial, '');
@@ -1218,6 +1255,13 @@ begin
     proNFSEBrasil: begin
                      // Nenhum valor
                    end;
+
+    proGiap: begin
+               Gerador.wGrupoNFSe('consulta');
+               Gerador.wCampoNFSe(tcStr, '', 'inscricaoMunicipal', 01, 11, 1, IM, '');
+               Gerador.wCampoNFSe(tcStr, '', 'codigoVerificacao', 01, 02, 1, CodVerificacaoRPS, '');
+               Gerador.wGrupoNFSe('/consulta');
+             end;
 
     proSP, 
     proNotaBlu: begin
@@ -1423,21 +1467,6 @@ begin
 
          GerarGrupoCNPJCPF(Cnpj, (VersaoNFSe <> ve100) or (Provedor in [proISSNet, proActcon]));
 
-//         if (VersaoNFSe <> ve100) or (Provedor in [proISSNet, proActcon]) then
-//         begin
-//           Gerador.wGrupoNFSe('CpfCnpj');
-//           if Length(Cnpj) <= 11 then
-//             Gerador.wCampoNFSe(tcStr, '#2', 'Cpf', 11, 11, 1, Cnpj, '')
-//           else
-//             Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, Cnpj, '');
-//           Gerador.wGrupoNFSe('/CpfCnpj');
-//         end
-//         else
-//           Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, Cnpj, '');
-
-//         if Provedor = proTecnos then
-//           Gerador.wCampoNFSe(tcStr, '#3', 'RazaoSocial', 01, 115, 1, RazaoSocial, '');
-
          if (Provedor <> proBetha) or (IM <> '') then
            Gerador.wCampoNFSe(tcStr, '#4', 'InscricaoMunicipal', 01, 15, 1, IM, '');
 
@@ -1452,7 +1481,7 @@ begin
 
          if NumeroNFSe <> '' then
          begin
-           if Provedor in [proPublica, proPVH, proSisPMJP, proSystemPro, proTecnos] then
+           if Provedor in [proPublica, proPVH, proSisPMJP, proSystemPro, proTecnos, proRLZ] then
            begin
              Gerador.wGrupoNFSe('Faixa');
              Gerador.wCampoNFSe(tcStr, '#5', 'NumeroNfseInicial', 01, 15, 1, NumeroNFSe, '');
@@ -1479,13 +1508,6 @@ begin
            Gerador.Prefixo := Prefixo4;
 
            GerarGrupoCNPJCPF(CnpjTomador, True);
-
-//           Gerador.wGrupoNFSe('CpfCnpj');
-//           if Length(CnpjTomador) <= 11 then
-//             Gerador.wCampoNFSe(tcStr, '#2', 'Cpf', 11, 11, 1, CnpjTomador, '')
-//           else
-//             Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, CnpjTomador, '');
-//           Gerador.wGrupoNFSe('/CpfCnpj');
 
            Gerador.wCampoNFSe(tcStr, '#4', 'InscricaoMunicipal', 01, 15, 1, IMTomador, '');
 
@@ -1519,18 +1541,6 @@ begin
 
            GerarGrupoCNPJCPF(CnpjInter, (VersaoNFSe <> ve100) or (Provedor in [proActcon, proISSNet]));
 
-//           if (VersaoNFSe <> ve100) or (Provedor in [proActcon, proISSNet]) then
-//           begin
-//             Gerador.wGrupoNFSe('CpfCnpj');
-//             if Length(CnpjInter) <= 11 then
-//               Gerador.wCampoNFSe(tcStr, '#2', 'Cpf', 11, 11, 1, CnpjInter, '')
-//             else
-//               Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, CnpjInter, '');
-//             Gerador.wGrupoNFSe('/CpfCnpj');
-//           end
-//           else
-//             Gerador.wCampoNFSe(tcStr, '#2', 'Cnpj', 14, 14, 1, CnpjInter, '');
-
            Gerador.wCampoNFSe(tcStr, '#4', 'InscricaoMunicipal', 01, 15, 1, IMInter, '');
 
            Gerador.Prefixo := Prefixo3;
@@ -1555,7 +1565,7 @@ begin
          end;
 
          if Provedor in [proDigifred, profintelISS, proFiorilli, proPronimv2,
-                         proPVH, proSisPMJP, proSystemPro, proTecnos] then
+                         proPVH, proSisPMJP, proSystemPro, proTecnos, proRLZ] then
            Gerador.wCampoNFSe(tcInt, '#4', 'Pagina', 01, 06, 1, Pagina, '');
        end;
   end;
@@ -1755,7 +1765,14 @@ begin
         Gerador.ArquivoFormatoXML := NumeroRps;
       end;
 
-    proNotaBlu,
+    proGiap: begin
+               Gerador.wGrupoNFSe('cancelaNota');
+               Gerador.wGrupoNFSe('numeroNota>' + NumeroNFSe + '</numeroNota');
+               Gerador.wGrupoNFSe('codigoMotivo>' + CodigoCanc + '</codigoMotivo');
+               Gerador.wGrupoNFSe('/cancelaNota');
+             end;
+
+	proNotaBlu,
     proSP:
       begin
         Gerador.wGrupoNFSe('Cabecalho' + aVersao + ' xmlns=""');
@@ -1860,6 +1877,7 @@ begin
     proSP,
     proNotaBlu,
     proSMARAPD,
+    proGiap,
     proIPM:
       begin
         TagI := '';

@@ -55,7 +55,7 @@ uses
   pcesCommon, pcesRetornoClass, pcesConversaoeSocial;
 
 type
-  TRetEnvioLote = class(TPersistent)
+  TRetEnvioLote = class(TObject)
   private
     FLeitor: TLeitor;
     FIdeEmpregador: TIdeEmpregador;
@@ -65,10 +65,9 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function LerXml: boolean;
-  published
-    property Leitor: TLeitor read FLeitor write FLeitor;
 
+    function LerXml: boolean;
+    property Leitor: TLeitor read FLeitor write FLeitor;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
     property IdeTransmissor: TIdeTransmissor read FIdeTransmissor write FIdeTransmissor;
     property Status: TStatus read FStatus write FStatus;
@@ -81,8 +80,9 @@ implementation
 
 constructor TRetEnvioLote.Create;
 begin
-  FLeitor := TLeitor.Create;
+  inherited Create;
 
+  FLeitor         := TLeitor.Create;
   FIdeEmpregador  := TIdeEmpregador.Create;
   FIdeTransmissor := TIdeTransmissor.Create;
   FStatus         := TStatus.Create;
@@ -132,7 +132,7 @@ begin
           i := 0;
           while Leitor.rExtrai(4, 'ocorrencia', '', i + 1) <> '' do
           begin
-            Status.Ocorrencias.Add;
+            Status.Ocorrencias.New;
             Status.Ocorrencias.Items[i].Codigo      := FLeitor.rCampo(tcInt, 'codigo');
             Status.Ocorrencias.Items[i].Descricao   := FLeitor.rCampo(tcStr, 'descricao');
             Status.Ocorrencias.Items[i].Tipo        := FLeitor.rCampo(tcInt, 'tipo');

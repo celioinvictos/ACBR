@@ -86,7 +86,7 @@ type
 
   TEnvioLote = class(TeSocialWebService)
   private
-    AGrupo: TeSocialGrupo;
+    FGrupo: TeSocialGrupo;
     FVersao: String;
     FLote: TLoteEventos;
     FRetEnvioLote: TRetEnvioLote;
@@ -107,7 +107,7 @@ type
     procedure Clear; override;
     procedure BeforeDestruction; override;
 
-    property Grupo: TeSocialGrupo read AGrupo write AGrupo;
+    property Grupo: TeSocialGrupo read FGrupo write FGrupo;
     property RetEnvioLote: TRetEnvioLote read FRetEnvioLote;
   end;
 
@@ -150,6 +150,7 @@ type
     FdtIni: TDateTime;
     FdtFim: TDateTime;
     FcpfTrab: String;
+    FmetodoConsulta: String;
 
     FRetConsultaIdentEvt: TRetConsultaIdentEvt;
   protected
@@ -229,9 +230,9 @@ type
     function ConsultaIdentificadoresEventosEmpregador(const CnpjEstab: String;
         tpEvt : TTipoEvento; PerApur : TDateTime): boolean;
     function ConsultaIdentificadoresEventosTabela(const CnpjEstab: String;
-        tpEvt: TTipoEvento; AchEvt: string; AdtIni, AdtFim: TDateTime): boolean;
+        tpEvt: TTipoEvento; const AchEvt: string; AdtIni, AdtFim: TDateTime): boolean;
     function ConsultaIdentificadoresEventosTrabalhador(const CnpjEstab: String;
-        AcpfTrab: string; AdtIni, AdtFim: TDateTime): boolean;
+        const AcpfTrab: string; AdtIni, AdtFim: TDateTime): boolean;
     function DownloadEvento(const ACnpjEmpr, APorID, APorNrRecibo: String): boolean;
 
     property ACBreSocial: TACBrDFe read FACBreSocial write FACBreSocial;
@@ -394,7 +395,7 @@ begin
     NrInsc := TACBreSocial(FPDFeOwner).Configuracoes.Geral.IdTransmissor;
   end;
 
-  FLote.GerarXML(AGrupo);
+  FLote.GerarXML(FGrupo);
 
   FPDadosMsg := FLote.Xml;
 
@@ -645,14 +646,6 @@ begin
   FPArqEnv := 'ped-con';
   FPArqResp := 'con';
 
-  FCnpj    := '';
-  FEvento  := teS1000;
-  FPerApur := 0;
-  FchEvt   := '';
-  FdtIni   := 0;
-  FdtFim   := 0;
-  FcpfTrab := '';
-
   if Assigned(FRetConsultaIdentEvt) then
     FRetConsultaIdentEvt.Free;
 
@@ -674,6 +667,7 @@ var
   EhValido : Boolean;
 begin
 
+  // Deve ser enviado somente a raiz do CNPJ
   if Length(FCnpj) = 14 then
     TpInsc := tiCNPJ
   else
@@ -681,11 +675,37 @@ begin
 
   Consulta := TConsultaIdentEvt.Create;
   try
-    Consulta.SoapEnvelope := ACBRESOCIAL_NAMESPACE_RETEVT;
+//    Consulta.SoapEnvelope := ACBRESOCIAL_NAMESPACE_RETEVT;
+
+    case tipoConsulta of
+        tcEmpregador:
+          begin
+            Consulta.SoapEnvelope := ACBRESOCIAL_NAMESPACE_CONS_EMP;
+          end;
+          tcTabela:
+          begin
+            Consulta.SoapEnvelope := ACBRESOCIAL_NAMESPACE_CONS_TAB;
+          end;
+          tcTrabalhador:
+          begin
+            Consulta.SoapEnvelope := ACBRESOCIAL_NAMESPACE_CONS_TRA;
+          end;
+    end;
+
     Consulta.tipoConsulta := tipoConsulta;
 
     Consulta.tpInsc := eSTpInscricaoToStr(TpInsc);
-    Consulta.nrInsc := Cnpj;
+
+    case TpInsc of
+      tiCNPJ:
+        begin
+          Consulta.nrInsc := copy(Cnpj, 0, 8);
+        end;
+      tiCPF:
+        begin
+          Consulta.nrInsc := Cnpj;
+        end;
+    end;
     Consulta.TipoEvento := Evento;
     Consulta.perApur := FormatDateTime('yyyy-mm', FPerApur);
     Consulta.chEvt := chEvt;
@@ -740,8 +760,8 @@ begin
 
     case tipoConsulta of
       tcEmpregador: ArqXSD := 'ConsultaIdentificadoresEventosEmpregador-v1_0_0.xsd';
-      tcTabela: ArqXSD := 'ConsultaIdentificadoresEventosTabela-v1_0_0';
-      tcTrabalhador: ArqXSD := 'ConsultaIdentificadoresEventosTrabalhador-v1_0_0';
+      tcTabela: ArqXSD := 'ConsultaIdentificadoresEventosTabela-v1_0_0.xsd';
+      tcTrabalhador: ArqXSD := 'ConsultaIdentificadoresEventosTrabalhador-v1_0_0.xsd';
     end;
 
     EhValido := SSL.Validar(String(FPDadosMsg),
@@ -774,11 +794,11 @@ begin
   Texto := Texto + '<' + FPSoapVersion + ':Envelope ' +
     FPSoapEnvelopeAtributtes + '>';
   Texto := Texto + '<' + FPSoapVersion + ':Body>';
-  Texto := Texto + '<' + 'v1:ConsultarIdentificadoresEventosEmpregador>';
-  Texto := Texto + '<' + 'v1:consultaEventosEmpregador>';
+  Texto := Texto + '<v1:ConsultarIdentificadoresEventos' + FmetodoConsulta + '>';
+  Texto := Texto + '<v1:consultaEventos' + FmetodoConsulta + '>';
   Texto := Texto + DadosMsg;
-  Texto := Texto + '<' + '/v1:consultaEventosEmpregador>';
-  Texto := Texto + '<' + '/v1:ConsultarIdentificadoresEventosEmpregador>';
+  Texto := Texto + '</v1:consultaEventos' + FmetodoConsulta + '>';
+  Texto := Texto + '</v1:ConsultarIdentificadoresEventos' + FmetodoConsulta + '>';
   Texto := Texto + '</' + FPSoapVersion + ':Body>';
   Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
 
@@ -788,7 +808,7 @@ end;
 procedure TConsultaIdentEventos.DefinirServicoEAction;
 begin
   FPServico :=
-    'http://www.esocial.gov.br/servicos/empregador/consulta/identificadores-eventos/v1_0_0/ServicoConsultarIdentificadoresEventos/ConsultarIdentificadoresEventosEmpregador';
+    'http://www.esocial.gov.br/servicos/empregador/consulta/identificadores-eventos/v1_0_0/ServicoConsultarIdentificadoresEventos/ConsultarIdentificadoresEventos' + FmetodoConsulta;
   FPSoapAction := Trim(FPServico);
 end;
 
@@ -831,7 +851,7 @@ var
   i: Integer;
   AXML, NomeArq: String;
 begin
-  FPRetWS := SeparaDados(FPRetornoWS, 'ConsultarIdentificadoresEventosEmpregadorResult');
+  FPRetWS := SeparaDados(FPRetornoWS, 'ConsultarIdentificadoresEventos' + FmetodoConsulta + 'Result');
 
   FRetConsultaIdentEvt.Leitor.Arquivo := ParseText(FPRetWS);
   FRetConsultaIdentEvt.LerXml;
@@ -852,149 +872,6 @@ begin
 
   if Assigned(TACBreSocial(FPDFeOwner).OnTransmissaoEventos) then
     TACBreSocial(FPDFeOwner).OnTransmissaoEventos(FPRetWS, eseRetornoConsultaIdentEvt);
-
-  Result := True;
-end;
-
-{ TWebServices }
-
-constructor TWebServices.Create(AOwner: TACBrDFe);
-begin
-  FACBreSocial := TACBrDFe(AOwner);
-
-  FEnvioLote    := TEnvioLote.Create(FACBreSocial);
-  FConsultaLote := TConsultaLote.Create(FACBreSocial);
-  FConsultaIdentEventos := TConsultaIdentEventos.Create(FACBreSocial);
-  FDownloadEventos := TDownloadEventos.Create(FACBreSocial);
-
-end;
-
-destructor TWebServices.Destroy;
-begin
-  FEnvioLote.Free;
-  FConsultaLote.Free;
-  FConsultaIdentEventos.Free;
-  FDownloadEventos.Free;
-
-  inherited Destroy;
-end;
-
-function TWebServices.Envia(AGrupo: TeSocialGrupo): Boolean;
-begin
-  FEnvioLote.Clear;
-
-{$IFDEF FPC}
-  Result := False;
-{$ENDIF}
-
-  EnvioLote.Grupo := AGrupo;
-
-  if not EnvioLote.Executar then
-    EnvioLote.GerarException(EnvioLote.Msg);
-
-  Result := True;
-end;
-
-function TWebServices.Consultar(const AProtocolo: string): Boolean;
-begin
-  FConsultaLote.Clear;
-
-{$IFDEF FPC}
-  Result := False;
-{$ENDIF}
-
-  FConsultaLote.FProtocolo := AProtocolo;
-
-  if not FConsultaLote.Executar then
-      FConsultaLote.GerarException(FConsultaLote.Msg);
-
-  Result := True;
-end;
-
-function TWebServices.ConsultaIdentificadoresEventosEmpregador(const CnpjEstab: String;
-  tpEvt: TTipoEvento; PerApur: TDateTime): boolean;
-begin
-  FConsultaIdentEventos.Clear;
-
-{$IFDEF FPC}
-  Result := False;
-{$ENDIF}
-
-  FConsultaIdentEventos.FtipoConsulta := tcEmpregador;
-  FConsultaIdentEventos.FCnpj := CnpjEstab;
-  FConsultaIdentEventos.FEvento := tpEvt;
-  FConsultaIdentEventos.FPerApur := PerApur;
-
-  if not FConsultaIdentEventos.Executar then
-    FConsultaIdentEventos.GerarException(FConsultaIdentEventos.Msg);
-
-  Result := True;
-end;
-
-function TWebServices.ConsultaIdentificadoresEventosTabela(
-  const CnpjEstab: String; tpEvt: TTipoEvento; AchEvt: string; AdtIni,
-  AdtFim: TDateTime): boolean;
-begin
-  FConsultaIdentEventos.Clear;
-
-{$IFDEF FPC}
-  Result := False;
-{$ENDIF}
-
-  FConsultaIdentEventos.FtipoConsulta := tcTabela;
-  FConsultaIdentEventos.FCnpj := CnpjEstab;
-  FConsultaIdentEventos.FEvento := tpEvt;
-  FConsultaIdentEventos.FchEvt := AchEvt;
-  FConsultaIdentEventos.FdtIni := AdtIni;
-  FConsultaIdentEventos.FdtFim := AdtFim;
-
-  if not FConsultaIdentEventos.Executar then
-    FConsultaIdentEventos.GerarException(FConsultaIdentEventos.Msg);
-
-  Result := True;
-end;
-
-function TWebServices.ConsultaIdentificadoresEventosTrabalhador(
-  const CnpjEstab: String; AcpfTrab: string; AdtIni,
-  AdtFim: TDateTime): boolean;
-begin
-  FConsultaIdentEventos.Clear;
-
-{$IFDEF FPC}
-  Result := False;
-{$ENDIF}
-
-  FConsultaIdentEventos.FtipoConsulta := tcTrabalhador;
-  FConsultaIdentEventos.FCnpj := CnpjEstab;
-  FConsultaIdentEventos.FcpfTrab := AcpfTrab;
-  FConsultaIdentEventos.FdtIni := AdtIni;
-  FConsultaIdentEventos.FdtFim := AdtFim;
-
-  if not FConsultaIdentEventos.Executar then
-    FConsultaIdentEventos.GerarException(FConsultaIdentEventos.Msg);
-
-  Result := True;
-end;
-
-function TWebServices.DownloadEvento(const ACnpjEmpr, APorID, APorNrRecibo: String): boolean;
-begin
-  FDownloadEventos.Clear;
-
-{$IFDEF FPC}
-  Result := False;
-{$ENDIF}
-
-  if APorID <> '' then
-    FDownloadEventos.FTipoDownload := 'PorId'
-  else
-    FDownloadEventos.FTipoDownload := 'PorNrRecibo';
-
-  FDownloadEventos.FCnpj := ACnpjEmpr;
-  FDownLoadEventos.FPorID := Trim(APorID);
-  FDownLoadEventos.FPorNrRecibo := Trim(APorNrRecibo);
-
-  if not FDownLoadEventos.Executar then
-      FDownLoadEventos.GerarException(FDownLoadEventos.Msg);
 
   Result := True;
 end;
@@ -1036,7 +913,10 @@ var
 begin
 
   if Length(FCnpj) = 14 then
-    TpInsc := tiCNPJ
+  begin
+    TpInsc := tiCNPJ;
+    FCnpj  := Copy(FCnpj, 1, 8);
+  end
   else
     TpInsc := tiCPF;
 
@@ -1194,6 +1074,152 @@ begin
 
   if Assigned(TACBreSocial(FPDFeOwner).OnTransmissaoEventos) then
     TACBreSocial(FPDFeOwner).OnTransmissaoEventos(FPRetWS, eseRetornoDownloadEvt);
+
+  Result := True;
+end;
+
+{ TWebServices }
+
+constructor TWebServices.Create(AOwner: TACBrDFe);
+begin
+  FACBreSocial := TACBrDFe(AOwner);
+
+  FEnvioLote    := TEnvioLote.Create(FACBreSocial);
+  FConsultaLote := TConsultaLote.Create(FACBreSocial);
+  FConsultaIdentEventos := TConsultaIdentEventos.Create(FACBreSocial);
+  FDownloadEventos := TDownloadEventos.Create(FACBreSocial);
+
+end;
+
+destructor TWebServices.Destroy;
+begin
+  FEnvioLote.Free;
+  FConsultaLote.Free;
+  FConsultaIdentEventos.Free;
+  FDownloadEventos.Free;
+
+  inherited Destroy;
+end;
+
+function TWebServices.Envia(AGrupo: TeSocialGrupo): Boolean;
+begin
+  FEnvioLote.Clear;
+
+{$IFDEF FPC}
+  Result := False;
+{$ENDIF}
+
+  EnvioLote.Grupo := AGrupo;
+
+  if not EnvioLote.Executar then
+    EnvioLote.GerarException(EnvioLote.Msg);
+
+  Result := True;
+end;
+
+function TWebServices.Consultar(const AProtocolo: string): Boolean;
+begin
+  FConsultaLote.Clear;
+
+{$IFDEF FPC}
+  Result := False;
+{$ENDIF}
+
+  FConsultaLote.FProtocolo := AProtocolo;
+
+  if not FConsultaLote.Executar then
+      FConsultaLote.GerarException(FConsultaLote.Msg);
+
+  Result := True;
+end;
+
+function TWebServices.ConsultaIdentificadoresEventosEmpregador(const CnpjEstab: String;
+  tpEvt: TTipoEvento; PerApur: TDateTime): boolean;
+begin
+  FConsultaIdentEventos.Clear;
+
+{$IFDEF FPC}
+  Result := False;
+{$ENDIF}
+
+  FConsultaIdentEventos.FtipoConsulta := tcEmpregador;
+  FConsultaIdentEventos.FCnpj := CnpjEstab;
+  FConsultaIdentEventos.FEvento := tpEvt;
+  FConsultaIdentEventos.FPerApur := PerApur;
+  FConsultaIdentEventos.FmetodoConsulta := 'Empregador';
+
+  if not FConsultaIdentEventos.Executar then
+    FConsultaIdentEventos.GerarException(FConsultaIdentEventos.Msg);
+
+  Result := True;
+end;
+
+function TWebServices.ConsultaIdentificadoresEventosTabela(
+  const CnpjEstab: String; tpEvt: TTipoEvento; const AchEvt: string; AdtIni,
+  AdtFim: TDateTime): boolean;
+begin
+  FConsultaIdentEventos.Clear;
+
+{$IFDEF FPC}
+  Result := False;
+{$ENDIF}
+
+  FConsultaIdentEventos.FtipoConsulta := tcTabela;
+  FConsultaIdentEventos.FCnpj := CnpjEstab;
+  FConsultaIdentEventos.FEvento := tpEvt;
+  FConsultaIdentEventos.FchEvt := AchEvt;
+  FConsultaIdentEventos.FdtIni := AdtIni;
+  FConsultaIdentEventos.FdtFim := AdtFim;
+  FConsultaIdentEventos.FmetodoConsulta := 'Tabela';
+
+  if not FConsultaIdentEventos.Executar then
+    FConsultaIdentEventos.GerarException(FConsultaIdentEventos.Msg);
+
+  Result := True;
+end;
+
+function TWebServices.ConsultaIdentificadoresEventosTrabalhador(
+  const CnpjEstab: String; const AcpfTrab: string; AdtIni,
+  AdtFim: TDateTime): boolean;
+begin
+  FConsultaIdentEventos.Clear;
+
+{$IFDEF FPC}
+  Result := False;
+{$ENDIF}
+
+  FConsultaIdentEventos.FtipoConsulta := tcTrabalhador;
+  FConsultaIdentEventos.FCnpj := CnpjEstab;
+  FConsultaIdentEventos.FcpfTrab := AcpfTrab;
+  FConsultaIdentEventos.FdtIni := AdtIni;
+  FConsultaIdentEventos.FdtFim := AdtFim;
+  FConsultaIdentEventos.FmetodoConsulta := 'Trabalhador';
+
+  if not FConsultaIdentEventos.Executar then
+    FConsultaIdentEventos.GerarException(FConsultaIdentEventos.Msg);
+
+  Result := True;
+end;
+
+function TWebServices.DownloadEvento(const ACnpjEmpr, APorID, APorNrRecibo: String): boolean;
+begin
+  FDownloadEventos.Clear;
+
+{$IFDEF FPC}
+  Result := False;
+{$ENDIF}
+
+  if APorID <> '' then
+    FDownloadEventos.FTipoDownload := 'PorId'
+  else
+    FDownloadEventos.FTipoDownload := 'PorNrRecibo';
+
+  FDownloadEventos.FCnpj := ACnpjEmpr;
+  FDownLoadEventos.FPorID := Trim(APorID);
+  FDownLoadEventos.FPorNrRecibo := Trim(APorNrRecibo);
+
+  if not FDownLoadEventos.Executar then
+      FDownLoadEventos.GerarException(FDownLoadEventos.Msg);
 
   Result := True;
 end;

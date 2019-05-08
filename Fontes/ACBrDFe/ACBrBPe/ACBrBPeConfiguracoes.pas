@@ -70,14 +70,13 @@ type
 
   { TDownloadConfBPe }
 
-  TDownloadConfBPe = class(TPersistent)
+  TDownloadConfBPe = class(TObject)
   private
     FPathDownload: String;
     FSepararPorNome: Boolean;
   public
     Constructor Create;
-    procedure Assign(Source: TPersistent); override;
-  published
+    procedure Assign(Source: TDownloadConfBPe);
     property PathDownload: String read FPathDownload write FPathDownload;
     property SepararPorNome: Boolean read FSepararPorNome write FSepararPorNome default False;
   end;
@@ -101,9 +100,9 @@ type
     procedure GravarIni(const AIni: TCustomIniFile); override;
     procedure LerIni(const AIni: TCustomIniFile); override;
 
-    function GetPathBPe(Data: TDateTime = 0; CNPJ: String = ''): String;
-    function GetPathEvento(tipoEvento: TpcnTpEvento; CNPJ: String = ''; Data: TDateTime = 0): String;
-    function GetPathDownload(xNome: String = ''; CNPJ: String = ''; Data: TDateTime = 0): String;
+    function GetPathBPe(Data: TDateTime = 0; const CNPJ: String = ''): String;
+    function GetPathEvento(tipoEvento: TpcnTpEvento; const CNPJ: String = ''; Data: TDateTime = 0): String;
+    function GetPathDownload(const xNome: String = ''; const CNPJ: String = ''; Data: TDateTime = 0): String;
   published
     property EmissaoPathBPe: Boolean read FEmissaoPathBPe
       write FEmissaoPathBPe default False;
@@ -138,6 +137,7 @@ type
     property Arquivos: TArquivosConfBPe read GetArquivos;
     property WebServices;
     property Certificados;
+    property RespTec;
   end;
 
 implementation
@@ -162,6 +162,7 @@ begin
   WebServices.Assign(DeConfiguracoesBPe.WebServices);
   Certificados.Assign(DeConfiguracoesBPe.Certificados);
   Arquivos.Assign(DeConfiguracoesBPe.Arquivos);
+  RespTec.Assign(DeConfiguracoesBPe.RespTec);
 end;
 
 function TConfiguracoesBPe.GetArquivos: TArquivosConfBPe;
@@ -221,19 +222,15 @@ end;
 
 { TDownloadConfBPe }
 
-procedure TDownloadConfBPe.Assign(Source: TPersistent);
+procedure TDownloadConfBPe.Assign(Source: TDownloadConfBPe);
 begin
-  if Source is TDownloadConfBPe then
-  begin
-    FPathDownload := TDownloadConfBPe(Source).PathDownload;
-    FSepararPorNome := TDownloadConfBPe(Source).SepararPorNome;
-  end
-  else
-    inherited Assign(Source);
+  FPathDownload   := Source.PathDownload;
+  FSepararPorNome := Source.SepararPorNome;
 end;
 
 constructor TDownloadConfBPe.Create;
 begin
+  inherited Create;
   FPathDownload := '';
   FSepararPorNome := False;
 end;
@@ -276,7 +273,7 @@ begin
   FDownloadBPe.Assign(DeArquivosConfBPe.DownloadBPe);
 end;
 
-function TArquivosConfBPe.GetPathEvento(tipoEvento: TpcnTpEvento; CNPJ: String;
+function TArquivosConfBPe.GetPathEvento(tipoEvento: TpcnTpEvento; const CNPJ: String;
   Data: TDateTime): String;
 var
   Dir: String;
@@ -292,12 +289,12 @@ begin
   Result := Dir;
 end;
 
-function TArquivosConfBPe.GetPathBPe(Data: TDateTime = 0; CNPJ: String = ''): String;
+function TArquivosConfBPe.GetPathBPe(Data: TDateTime = 0; const CNPJ: String = ''): String;
 begin
   Result := GetPath(FPathBPe, ModeloDF, CNPJ, Data, ModeloDF);
 end;
 
-function TArquivosConfBPe.GetPathDownload(xNome, CNPJ: String;
+function TArquivosConfBPe.GetPathDownload(const xNome, CNPJ: String;
   Data: TDateTime): String;
 var
   rPathDown: String;

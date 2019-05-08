@@ -47,6 +47,114 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+02/05/2019
+-- ACBrNFSeWebServices --
+[*] Não estava apresentado de forma correta o retorno - Provedor EGoverneISS.
+-- ACBrNFSe --
+[*] Não estava assinado o RPS para ser enviado pelo SubstituicaoNFSe - Provedor Fiorilli
+   Por: Italo Jurisato Junior
+
+30/04/2019
+-- pnfsNFSeW_ISSDSF --
+[*] Possível correção na geração do XML para evitar erro de validação.
+   Por: Italo Jurisato Junior
+
+25/04/2019
+-- ACBrNFSeWebServices --
+[*] Alterações visando o provedor Recife - Método GerarNFSe
+   Por: Italo Jurisato Junior
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/50851-atualiza%C3%A7%C3%A3o-para-importa%C3%A7%C3%A3o-xml-sigiss-e-elotech/
+    Ainda falta muito a ser feito, mas já é um começo.
+   Por: Digibyte
+
+22/04/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/49926-propriedade-linkvisualizacaonfse/?do=findComment&comment=335316
+   Por: Henrique Sandri Zimermam
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/50740-provedor-iss-online/?do=findComment&comment=335082
+   Por: Fernando Banhos
+
+17/04/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/50336-sigcorp-altera%C3%A7%C3%A3o-de-servidor-em-avar%C3%A9sp-de-fiorilli-para-sigcorp/?do=findComment&comment=334831
+   Por: Jeferson S Lima
+
+16/04/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/50336-sigcorp-altera%C3%A7%C3%A3o-de-servidor-em-avar%C3%A9sp-de-fiorilli-para-sigcorp/?do=findComment&comment=332973
+   Por: Jeferson S Lima / j Guto
+-- ACBrNFSeDANFSeFR --
+[*] https://www.projetoacbr.com.br/forum/topic/50623-nome-do-arquivo-pdf-gerado-pelo-acbrnfse/?do=findComment&comment=333865
+   Por: Gumercino
+
+12/04/2019
+-- pnfsNFSeG / pnfsNFSeR --
+[*] Alterações visando o provedor RLZ
+   Por: Italo Jurisato Junior
+
+01/04/2019
+-- pnfsLerListaNFSe --
+[*] Não estava lendo o grupo <MensagemRetornoLote>
+   Por: Italo Jurisato Junior
+
+27/03/2019
+-- ACBrNFSeWebServices --
+[*] Alterações visando o provedor EReceita
+   Por: Italo Jurisato Junior
+
+07/03/2019
+-- pnfsNFSeW_SP --
+[*] Alterada a condição para gerar ou não a tag <MunicipioPrestacao>
+   Por: Italo Jurisato Junior
+
+13/03/2019
+-- ACBrNFSeWebServices --
+[*] Adicionado um Sleep entre o cancelamento e a consulta automatica, alguns provedores
+    exigem um tempo minimo entre as duas requisições.
+    Esse tempo (milisegundos) deve ser definido na propriedade: AguardarConsultaRet 
+   Por: Italo Jurisato Junior
+
+11/03/2019
+-- Diversos --
+[*] Pequenas alterações visando a melhoria no código.
+   Por: Italo Jurisato Junior
+
+11/03/2019
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido uma condição para não gerar o grupo <IdentificadorTomador> quando nenhuma informação
+    do mesmo não for informada - provedor SystemPro.
+   Por: Italo Jurisato Junior
+
+07/03/2019
+-- pnfsNFSeW_IPM --
+[*] https://www.projetoacbr.com.br/forum/topic/48762-nfse-ipm-arauc%C3%A1ria-modo-teste/?do=findComment&comment=328803
+   Por: Cleyton Luis
+
+-- Diversos --
+[*] Acrescentado o parâmetro Sincrono no método GerarLote.
+    function GerarLote(ALote: Integer; AqMaxRps: Integer = 50; ASincrono: Boolean = False): Boolean; 
+    Desta forma em vez do XML de envio do lote ser gerado com a tag EnviarLoteRpsEnvio, será gerado
+    com a tag EnviarLoteRpsSincronoEnvio.
+
+    Lembrando que esse método só gera o XML e não envia para o webservice.
+   Por: Italo Jurisato Junior
+
+07/03/2019
+-- ACBrNFSeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/48051-cancelamento-issdsf-n%C3%A3o-encontrei-final-do-elemento/?do=findComment&comment=328653
+   Por: Douglas
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido uma condição para não gerar o grupo <Tomador> quando nenhuma informação
+    do mesmo não for informada - provedor SystemPro.
+   Por: Italo Jurisato Junior
+
+25/02/2019
+-- pnfsNFSeR --
+[*] Correção na leitura correta do XML da NFS-e.
+   Por: Luiz Henrique Pratto
+
 22/02/2019
 -- ACBrNFSeWebServices --
 [*] Corrigido o namespace para assinatura - Provedor ISSDSF

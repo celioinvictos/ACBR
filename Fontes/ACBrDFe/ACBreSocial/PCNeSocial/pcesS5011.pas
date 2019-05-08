@@ -49,33 +49,17 @@ unit pcesS5011;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
 type
-  TS5011 = class;
-
-  TInfoCS = class;
-  TInfoCPSeg = class;
-  TInfoContrib = class;
-  TideEstabCollection = class;
-  TideEstabCollectionItem = class;
-  TideLotacaoCollection = class;
-  TideLotacaoCollectionItem = class;
-  TInfoCRContribCollection = class;
   TInfoCRContribCollectionItem = class;
-  TInfoTercSuspCollection = class;
   TInfoTercSuspCollectionItem = class;
-  TbasesRemunCollection = class;
   TbasesremunCollectionItem = class;
-  TinfoSubstPatrOpPortCollection = class;
   TinfoSubstPatrOpPortCollectionItem = class;
-  TbasesAquisCollection = class;
   TbasesAquisCollectionItem = class;
-  TbasesComercCollection = class;
   TbasesComercCollectionItem = class;
-  TinfoCREstabCollection = class;
   TinfoCREstabCollectionItem = class;
 
   TEvtCS = class;
@@ -88,22 +72,18 @@ type
     function GetXml : string;
     procedure SetXml(const Value: string);
     function GetTipoEvento : TTipoEvento;
-    procedure SetEvtCS(const Value: TEvtCS);
-
   public
     constructor Create;
     destructor Destroy; override;
 
     function GetEvento : TObject;
-
-  published
     property Xml: String read GetXml write SetXml;
     property TipoEvento: TTipoEvento read GetTipoEvento;
-    property EvtCS: TEvtCS read FEvtCS write setEvtCS;
+    property EvtCS: TEvtCS read FEvtCS write FEvtCS;
 
   end;
 
-  TInfoCPSeg = class(TPersistent)
+  TInfoCPSeg = class(TObject)
   private
     FvrDescCP: Double;
     FvrCpSeg: Double;
@@ -112,7 +92,7 @@ type
     property vrCpSeg: Double read FvrCpSeg write FvrCpSeg;
   end;
 
-  TInfoAtConc = class(TPersistent)
+  TInfoAtConc = class(TObject)
   private
     FfatorMes: Double;
     Ffator13: Double;
@@ -121,7 +101,7 @@ type
     property fator13: Double read Ffator13;
   end;
 
-  TInfoPJ = class(TPersistent)
+  TInfoPJ = class(TObject)
   private
     FindCoop: Integer;
     FindConstr: Integer;
@@ -129,7 +109,7 @@ type
     FpercRedContrib: Double;
     FinfoAtConc: TinfoAtConc;
   public
-    constructor Create(AOwner: TInfoContrib); reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property indCoop: Integer read FindCoop;
@@ -139,26 +119,26 @@ type
     property infoAtConc: TinfoAtConc read FinfoAtConc write FinfoAtConc;
   end;
 
-  TInfoContrib = class(TPersistent)
+  TInfoContrib = class(TObject)
   private
     FclassTrib: String;
     FinfoPJ: TInfoPJ;
   public
-    constructor Create(AOwner: TInfoCS); reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property classTrib: String read FclassTrib;
     property infoPJ: TInfoPJ read FinfoPJ write FinfoPJ;
   end;
 
-  TInfoComplObra = class(TPersistent)
+  TInfoComplObra = class(TObject)
   private
     FindSubstPartObra: Integer;
   public
     property indSubstPartObra: Integer read FindSubstPartObra;
   end;
 
-  TInfoEstab = class(TPersistent)
+  TInfoEstab = class(TObject)
   private
     FFap: Double;
     FAliqRatAjust: Double;
@@ -166,7 +146,7 @@ type
     FAliqRat: tpAliqRat;
     FinfoComplObra: TInfoComplObra;
   public
-    constructor Create(AOwner: TideEstabCollectionItem); reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property cnaePrep: String read FcnaePrep;
@@ -176,34 +156,24 @@ type
     property infoComplObra: TInfoComplObra read FinfoComplObra write FinfoComplObra;
   end;
 
-  TinfoTercSuspCollection = class(TCollection)
+  TinfoTercSuspCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TinfoTercSuspCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoTercSuspCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TinfoTercSuspCollectionItem;
+    function Add: TinfoTercSuspCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+	  function New: TinfoTercSuspCollectionItem;
     property Items[Index: Integer]: TinfoTercSuspCollectionItem read GetItem write SetItem;
   end;
 
-  TinfoTercSuspCollectionItem = class(TCollectionItem)
+  TinfoTercSuspCollectionItem = class(TObject)
   private
     FcodTerc: String;
   public
     property codTerc: String read FcodTerc;
   end;
 
-  TideLotacaoCollection = class(TCollection)
-  private
-    function GetItem(Index: Integer): TideLotacaoCollectionItem;
-    procedure SetItem(Index: Integer; Value: TideLotacaoCollectionItem);
-  public
-    constructor Create; reintroduce;
-    function Add: TideLotacaoCollectionItem;
-    property Items[Index: Integer]: TideLotacaoCollectionItem read GetItem write SetItem;
-  end;
-
-  TInfoEmprParcial = class(TPersistent)
+  TInfoEmprParcial = class(TObject)
   private
     FtpinscContrat: Integer;
     FnrInscContrat: String;
@@ -216,7 +186,7 @@ type
     property nrInscProp: String read FnrInscProp;
   end;
 
-  TdadosOpPort = class(TPersistent)
+  TdadosOpPort = class(TObject)
   private
     FFap: Double;
     FAliqRatAjust: Double;
@@ -229,7 +199,7 @@ type
     property aliqRatAjust: Double read FAliqRatAjust;
   end;
 
-  TbasesCp = class(TPersistent)
+  TbasesCp = class(TObject)
   private
     FvrBcCp25: Double;
     FvrBcCp15: Double;
@@ -262,23 +232,23 @@ type
     property vrSalMat: Double read FvrSalMat;
   end;
 
-  TbasesRemunCollection = class(TCollection)
+  TbasesRemunCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TbasesRemunCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesRemunCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TbasesRemunCollectionItem;
+    function Add: TbasesRemunCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TbasesRemunCollectionItem;
     property Items[Index: Integer]: TbasesRemunCollectionItem read GetItem write SetItem;
   end;
 
-  TbasesRemunCollectionItem = class(TCollectionItem)
+  TbasesRemunCollectionItem = class(TObject)
   private
     FindIncid: Integer;
     FcodCateg: Integer;
     FbasesCp: TbasesCp;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property indIncid: Integer read FindIncid;
@@ -286,7 +256,7 @@ type
     property basesCp: TbasesCp read FbasesCp write FbasesCp;
   end;
 
-  TbasesAvNport = class(TPersistent)
+  TbasesAvNport = class(TObject)
   private
     FvrBcCp25: Double;
     FvrBcCp15: Double;
@@ -305,24 +275,24 @@ type
     property vrDescCP: Double read FvrDescCP;
   end;
 
-  TinfoSubstPatrOpPortCollection = class(TCollection)
+  TinfoSubstPatrOpPortCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TinfoSubstPatrOpPortCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoSubstPatrOpPortCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TinfoSubstPatrOpPortCollectionItem;
+    function Add: TinfoSubstPatrOpPortCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TinfoSubstPatrOpPortCollectionItem;
     property Items[Index: Integer]: TinfoSubstPatrOpPortCollectionItem read GetItem write SetItem;
   end;
 
-  TinfoSubstPatrOpPortCollectionItem = class(TCollectionItem)
+  TinfoSubstPatrOpPortCollectionItem = class(TObject)
   private
     FcnpjOpPortuario: String;
   public
     property cnpjOpPortuario: String read FcnpjOpPortuario;
   end;
 
-  TideLotacaoCollectionItem = class(TCollectionItem)
+  TideLotacaoCollectionItem = class(TObject)
   private
     Ffpas: Integer;
     FcodLotacao: String;
@@ -334,48 +304,43 @@ type
     Fbasesremun: TbasesremunCollection;
     FbasesAvNport: TbasesAvNport;
     FinfoSubstPatrOpPort: TinfoSubstPatrOpPortCollection;
-
-    procedure Setbasesremun(const Value: TbasesremunCollection);
-    procedure SetinfoSubstPatrOpPort(
-      const Value: TinfoSubstPatrOpPortCollection);
-    procedure SetinfoTercSusp(const Value: TinfoTercSuspCollection);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property codLotacao: String read FcodLotacao;
     property fpas: Integer read Ffpas;
     property codTercs: String read FcodTercs;
     property codTercsSusp: String read FcodTercsSusp;
-    property infoTercSusp: TinfoTercSuspCollection read FinfoTercSusp write SetinfoTercSusp;
+    property infoTercSusp: TinfoTercSuspCollection read FinfoTercSusp write FinfoTercSusp;
     property InfoEmprParcial: TInfoEmprParcial read FInfoEmprParcial write FInfoEmprParcial;
     property dadosOpPort: TdadosOpPort read FdadosOpPort write FdadosOpPort;
-    property basesremun: TbasesremunCollection read Fbasesremun write Setbasesremun;
+    property basesremun: TbasesremunCollection read Fbasesremun write Fbasesremun;
     property basesAvNPort: TbasesAvNport read FbasesAvNport write FbasesAvNport;
-    property infoSubstPatrOpPort: TinfoSubstPatrOpPortCollection read FinfoSubstPatrOpPort write SetinfoSubstPatrOpPort;
+    property infoSubstPatrOpPort: TinfoSubstPatrOpPortCollection read FinfoSubstPatrOpPort write FinfoSubstPatrOpPort;
   end;
 
-  TideEstabCollection = class(TCollection)
+  TideLotacaoCollection = class(TObjectList)
   private
-    function GetItem(Index: Integer): TideEstabCollectionItem;
-    procedure SetItem(Index: Integer; Value: TideEstabCollectionItem);
+    function GetItem(Index: Integer): TideLotacaoCollectionItem;
+    procedure SetItem(Index: Integer; Value: TideLotacaoCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TideEstabCollectionItem;
-    property Items[Index: Integer]: TideEstabCollectionItem read GetItem write SetItem;
+    function Add: TideLotacaoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TideLotacaoCollectionItem;
+    property Items[Index: Integer]: TideLotacaoCollectionItem read GetItem write SetItem;
   end;
 
-  TbasesAquisCollection = class(TCollection)
+  TbasesAquisCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TbasesAquisCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesAquisCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TbasesAquisCollectionItem;
+    function Add: TbasesAquisCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TbasesAquisCollectionItem;
     property Items[Index: Integer]: TbasesAquisCollectionItem read GetItem write SetItem;
   end;
 
-  TbasesAquisCollectionItem = class(TCollectionItem)
+  TbasesAquisCollectionItem = class(TObject)
   private
     FvrSenarCalc: Double;
     FvrCPNRet: Double;
@@ -402,17 +367,17 @@ type
     property vrSenarCalc: Double read FvrSenarCalc;
   end;
 
-  TbasesComercCollection = class(TCollection)
+  TbasesComercCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TbasesComercCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesComercCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TbasesComercCollectionItem;
+    function Add: TbasesComercCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+		function New: TbasesComercCollectionItem;
     property Items[Index: Integer]: TbasesComercCollectionItem read GetItem write SetItem;
   end;
 
-  TbasesComercCollectionItem = class(TCollectionItem)
+  TbasesComercCollectionItem = class(TObject)
   private
     FvrCPSusp: Double;
     FvrRatSusp: Double;
@@ -427,17 +392,17 @@ type
     property vrSenarSusp: Double read FvrSenarSusp;
   end;
 
-  TinfoCREstabCollection = class(TCollection)
+  TinfoCREstabCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TinfoCREstabCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoCREstabCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TinfoCREstabCollectionItem;
+    function Add: TinfoCREstabCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+		function New: TinfoCREstabCollectionItem;
     property Items[Index: Integer]: TinfoCREstabCollectionItem read GetItem write SetItem;
   end;
 
-  TinfoCREstabCollectionItem = class(TCollectionItem)
+  TinfoCREstabCollectionItem = class(TObject)
   private
     FvrSuspCR: Double;
     FvrCR: Double;
@@ -448,7 +413,7 @@ type
     property vrSuspCR: Double read FvrSuspCR;
   end;
 
-  TideEstabCollectionItem = class(TCollectionItem)
+  TideEstabCollectionItem = class(TObject)
   private
     FNrInsc: string;
     FTpInsc: tpTpInsc;
@@ -458,34 +423,40 @@ type
     FbasesComerc: TbasesComercCollection;
     FinfoCREstab: TinfoCREstabCollection;
 
-    procedure SetbasesAquis(const Value: TbasesAquisCollection);
-    procedure SetbasesComerc(const Value: TbasesComercCollection);
-    procedure SetideLotacao(const Value: TideLotacaoCollection);
-    procedure SetinfoCREstab(const Value: TinfoCREstabCollection);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property TpInsc: tpTpInsc read FTpInsc;
     property NrInsc: string read FNrInsc;
     property infoEstab: TinfoEstab read FinfoEstab write FinfoEstab;
-    property ideLotacao: TideLotacaoCollection read FideLotacao write SetideLotacao;
-    property basesAquis: TbasesAquisCollection read FbasesAquis write SetbasesAquis;
-    property basesComerc: TbasesComercCollection read FbasesComerc write SetbasesComerc;
-    property infoCREstab: TinfoCREstabCollection read FinfoCREstab write SetinfoCREstab;
+    property ideLotacao: TideLotacaoCollection read FideLotacao write FideLotacao;
+    property basesAquis: TbasesAquisCollection read FbasesAquis write FbasesAquis;
+    property basesComerc: TbasesComercCollection read FbasesComerc write FbasesComerc;
+    property infoCREstab: TinfoCREstabCollection read FinfoCREstab write FinfoCREstab;
   end;
 
-  TInfoCRContribCollection = class(TCollection)
+  TideEstabCollection = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TideEstabCollectionItem;
+    procedure SetItem(Index: Integer; Value: TideEstabCollectionItem);
+  public
+    function Add: TideEstabCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TideEstabCollectionItem;
+    property Items[Index: Integer]: TideEstabCollectionItem read GetItem write SetItem;
+  end;
+
+  TInfoCRContribCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TInfoCRContribCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoCRContribCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TInfoCRContribCollectionItem;
+    function Add: TInfoCRContribCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+		function New: TInfoCRContribCollectionItem;
     property Items[Index: Integer]: TInfoCRContribCollectionItem read GetItem write SetItem;
   end;
 
-  TInfoCRContribCollectionItem = class(TCollectionItem)
+  TInfoCRContribCollectionItem = class(TObject)
   private
     FtpCR: string;
     FvrCR: Double;
@@ -496,7 +467,7 @@ type
     property vrCRSusp: Double read FvrCRSusp;
   end;
 
-  TInfoCS = class(TPersistent)
+  TInfoCS = class(TObject)
   private
     FnrRecArqBase: String;
     FindExistInfo: Integer;
@@ -504,22 +475,19 @@ type
     FInfoContrib: TInfoContrib;
     FideEstab: TideEstabCollection;
     FinfoCRContrib: TinfoCRContribCollection;
-
-    procedure SetideEstab(const Value: TideEstabCollection);
-    procedure SetinfoCRContrib(const Value: TinfoCRContribCollection);
   public
-    constructor Create(AOwner: TEvtCS);
+    constructor Create;
     destructor Destroy; override;
 
     property nrRecArqBase: String read FnrRecArqBase;
     property indExistInfo: Integer read FindExistInfo;
     property InfoCpSeg: TInfoCpSeg read FInfoCpSeg write FInfoCpSeg;
     property InfoContrib: TInfoContrib read FInfoContrib write FInfoContrib;
-    property ideEstab: TideEstabCollection read FideEstab write SetideEstab;
-    property infoCRContrib: TinfoCRContribCollection read FinfoCRContrib write SetinfoCRContrib;
+    property ideEstab: TideEstabCollection read FideEstab write FideEstab;
+    property infoCRContrib: TinfoCRContribCollection read FinfoCRContrib write FinfoCRContrib;
   end;
 
-  TEvtCS = class(TPersistent)
+  TEvtCS = class(TObject)
   private
     FLeitor: TLeitor;
     FId: String;
@@ -540,7 +508,6 @@ type
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
     property IdeTrabalhador: TIdeTrabalhador3 read FIdeTrabalhador write FIdeTrabalhador;
     property InfoCS: TInfoCS read FInfoCS write FInfoCS;
-  published
     property Leitor: TLeitor read FLeitor write FLeitor;
     property Id: String      read FId;
     property XML: String     read FXML;
@@ -555,8 +522,9 @@ uses
 
 constructor TS5011.Create;
 begin
+  inherited Create;
   FTipoEvento := teS5011;
-  FEvtCS := TEvtCS.Create;
+  FEvtCS      := TEvtCS.Create;
 end;
 
 destructor TS5011.Destroy;
@@ -591,426 +559,27 @@ begin
   Result := FTipoEvento;
 end;
 
-procedure TS5011.SetEvtCS(const Value: TEvtCS);
-begin
-  FEvtCS.Assign(Value);
-end;
-
 { TEvtCS }
 
 constructor TEvtCS.Create;
 begin
-  FLeitor := TLeitor.Create;
-
-  FIdeEvento := TIdeEvento5.Create;
-  FIdeEmpregador := TIdeEmpregador.Create;
+  inherited Create;
+  FLeitor         := TLeitor.Create;
+  FIdeEvento      := TIdeEvento5.Create;
+  FIdeEmpregador  := TIdeEmpregador.Create;
   FIdeTrabalhador := TIdeTrabalhador3.Create;
-  FInfoCS := TInfoCS.Create(Self);
+  FInfoCS         := TInfoCS.Create;
 end;
 
 destructor TEvtCS.Destroy;
 begin
   FLeitor.Free;
-
   FIdeEvento.Free;
   FIdeEmpregador.Free;
   FIdeTrabalhador.Free;
   FInfoCS.Free;
 
   inherited;
-end;
-
-{ TInfoCS }
-
-constructor TInfoCS.Create;
-begin
-  FInfoCpSeg := TInfoCpSeg.Create;
-  FInfoContrib := TInfoContrib.Create(Self);
-  FideEstab := TideEstabCollection.Create;
-  FinfoCRContrib := TinfoCRContribCollection.Create;
-end;
-
-destructor TInfoCS.Destroy;
-begin
-  FInfoCpSeg.Free;
-  FInfoContrib.Free;
-  FideEstab.Free;
-  FinfoCRContrib.Free;
-
-  inherited;
-end;
-
-procedure TInfoCS.SetideEstab(const Value: TideEstabCollection);
-begin
-  FideEstab := Value;
-end;
-
-procedure TInfoCS.SetinfoCRContrib(const Value: TinfoCRContribCollection);
-begin
-  FinfoCRContrib := Value;
-end;
-
-{ TInfoContrib }
-
-constructor TInfoContrib.Create(AOwner: TInfoCS);
-begin
-  FInfoPJ := TInfoPJ.Create(Self);
-end;
-
-destructor TInfoContrib.Destroy;
-begin
-  FInfoPJ.Free;
-
-  inherited;
-end;
-
-{ TInfoPJ }
-
-constructor TInfoPJ.Create(AOwner: TInfoContrib);
-begin
-  FinfoAtConc := TinfoAtConc.Create;
-end;
-
-destructor TInfoPJ.Destroy;
-begin
-  FinfoAtConc.Free;
-  
-  inherited;
-end;
-
-{ TideEstabCollection }
-
-function TideEstabCollection.Add: TideEstabCollectionItem;
-begin
-  Result := TideEstabCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TideEstabCollection.Create;
-begin
-  inherited create(TideEstabCollectionItem);
-end;
-
-function TideEstabCollection.GetItem(
-  Index: Integer): TideEstabCollectionItem;
-begin
-  Result := TideEstabCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TideEstabCollection.SetItem(Index: Integer;
-  Value: TideEstabCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TbasesAquisCollection }
-
-function TbasesAquisCollection.Add: TbasesAquisCollectionItem;
-begin
-  Result := TbasesAquisCollectionItem(inherited Add);
-end;
-
-constructor TbasesAquisCollection.Create;
-begin
-  inherited create(TbasesAquisCollectionItem);
-end;
-
-function TbasesAquisCollection.GetItem(
-  Index: Integer): TbasesAquisCollectionItem;
-begin
-  Result := TbasesAquisCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TbasesAquisCollection.SetItem(Index: Integer;
-  Value: TbasesAquisCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TbasesComercCollection }
-
-function TbasesComercCollection.Add: TbasesComercCollectionItem;
-begin
-  Result := TbasesComercCollectionItem(inherited Add);
-end;
-
-constructor TbasesComercCollection.Create;
-begin
-  inherited create(TbasesComercCollectionItem);
-end;
-
-function TbasesComercCollection.GetItem(
-  Index: Integer): TbasesComercCollectionItem;
-begin
-  Result := TbasesComercCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TbasesComercCollection.SetItem(Index: Integer;
-  Value: TbasesComercCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TinfoCREstabCollection }
-
-function TinfoCREstabCollection.Add: TinfoCREstabCollectionItem;
-begin
-  Result := TinfoCREstabCollectionItem(inherited Add);
-end;
-
-constructor TinfoCREstabCollection.Create;
-begin
-  inherited create(TinfoCREstabCollectionItem);
-end;
-
-function TinfoCREstabCollection.GetItem(
-  Index: Integer): TinfoCREstabCollectionItem;
-begin
-  Result := TinfoCREstabCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TinfoCREstabCollection.SetItem(Index: Integer;
-  Value: TinfoCREstabCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TideEstabCollectionItem }
-
-constructor TideEstabCollectionItem.Create;
-begin
-  FInfoEstab := TInfoEstab.Create(Self);
-  FideLotacao := TideLotacaoCollection.Create;
-  FbasesAquis := TbasesAquiscollection.Create;
-  FbasesComerc := TbasesComercCollection.Create;
-  FinfoCREstab := TinfoCREstabCollection.Create;
-end;
-
-destructor TideEstabCollectionItem.Destroy;
-begin
-  FInfoEstab.Free;
-  FideLotacao.Free;
-  FbasesAquis.Free;
-  FbasesComerc.Free;
-  FinfoCREstab.Free;
-
-  inherited;
-end;
-
-procedure TideEstabCollectionItem.SetbasesAquis(
-  const Value: TbasesAquisCollection);
-begin
-  FbasesAquis := Value;
-end;
-
-procedure TideEstabCollectionItem.SetbasesComerc(
-  const Value: TbasesComercCollection);
-begin
-  FbasesComerc := Value;
-end;
-
-procedure TideEstabCollectionItem.SetideLotacao(
-  const Value: TideLotacaoCollection);
-begin
-  FideLotacao := Value;
-end;
-
-procedure TideEstabCollectionItem.SetinfoCREstab(
-  const Value: TinfoCREstabCollection);
-begin
-  FinfoCREstab := Value;
-end;
-
-{ TideLotacaoCollection }
-
-function TideLotacaoCollection.Add: TideLotacaoCollectionItem;
-begin
-  Result := TideLotacaoCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TideLotacaoCollection.Create;
-begin
-  inherited create(TideLotacaoCollectionItem);
-end;
-
-function TideLotacaoCollection.GetItem(
-  Index: Integer): TideLotacaoCollectionItem;
-begin
-  Result := TideLotacaoCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TideLotacaoCollection.SetItem(Index: Integer;
-  Value: TideLotacaoCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TinfoTercSuspCollection }
-
-function TinfoTercSuspCollection.Add: TinfoTercSuspCollectionItem;
-begin
-  Result := TinfoTercSuspCollectionItem(inherited Add);
-end;
-
-constructor TinfoTercSuspCollection.Create;
-begin
-  inherited create(TinfoTercSuspCollectionItem);
-end;
-
-function TinfoTercSuspCollection.GetItem(
-  Index: Integer): TinfoTercSuspCollectionItem;
-begin
-  Result := TinfoTercSuspCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TinfoTercSuspCollection.SetItem(Index: Integer;
-  Value: TinfoTercSuspCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TbasesRemunCollection }
-
-function TbasesRemunCollection.Add: TbasesRemunCollectionItem;
-begin
-  Result := TbasesRemunCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TbasesRemunCollection.Create;
-begin
-  inherited create(TbasesRemunCollectionItem);
-end;
-
-function TbasesRemunCollection.GetItem(
-  Index: Integer): TbasesRemunCollectionItem;
-begin
-  Result := TbasesRemunCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TbasesRemunCollection.SetItem(Index: Integer;
-  Value: TbasesRemunCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TbasesRemunCollectionItem }
-
-constructor TbasesRemunCollectionItem.Create;
-begin
-  FbasesCp := TbasesCp.Create;
-end;
-
-destructor TbasesRemunCollectionItem.Destroy;
-begin
-  FbasesCp.Free;
-
-  inherited;
-end;
-
-{ TinfoSubstPatrOpPortCollection }
-
-function TinfoSubstPatrOpPortCollection.Add: TinfoSubstPatrOpPortCollectionItem;
-begin
-  Result := TinfoSubstPatrOpPortCollectionItem(inherited Add);
-end;
-
-constructor TinfoSubstPatrOpPortCollection.Create;
-begin
-  inherited create(TinfoSubstPatrOpPortCollectionItem);
-end;
-
-function TinfoSubstPatrOpPortCollection.GetItem(
-  Index: Integer): TinfoSubstPatrOpPortCollectionItem;
-begin
-  Result := TinfoSubstPatrOpPortCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TinfoSubstPatrOpPortCollection.SetItem(Index: Integer;
-  Value: TinfoSubstPatrOpPortCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TideLotacaoCollectionItem }
-
-constructor TideLotacaoCollectionItem.Create;
-begin
-  FinfoTercSusp := TinfoTercSuspCollection.Create;
-  FInfoEmprParcial := TInfoEmprParcial.Create;
-  FdadosOpPort := TdadosOpPort.Create;
-  Fbasesremun := TbasesremunCollection.Create;
-  FbasesAvNport := TbasesAvNport.Create;
-  FinfoSubstPatrOpPort := TinfoSubstPatrOpPortCollection.Create;
-end;
-
-destructor TideLotacaoCollectionItem.Destroy;
-begin
-  FinfoTercSusp.Free;
-  FInfoEmprParcial.Free;
-  FdadosOpPort.Free;
-  Fbasesremun.Free;
-  FbasesAvNport.Free;
-  FinfoSubstPatrOpPort.Free;
-
-  inherited;
-end;
-
-procedure TideLotacaoCollectionItem.Setbasesremun(
-  const Value: TbasesremunCollection);
-begin
-  Fbasesremun := Value;
-end;
-
-procedure TideLotacaoCollectionItem.SetinfoSubstPatrOpPort(
-  const Value: TinfoSubstPatrOpPortCollection);
-begin
-  FinfoSubstPatrOpPort := Value;
-end;
-
-procedure TideLotacaoCollectionItem.SetinfoTercSusp(
-  const Value: TinfoTercSuspCollection);
-begin
-  FinfoTercSusp := Value;
-end;
-
-{ TInfoEstab }
-
-constructor TInfoEstab.Create(AOwner: TideEstabCollectionItem);
-begin
-  FinfoComplObra := TinfoComplObra.Create;
-end;
-
-destructor TInfoEstab.Destroy;
-begin
-  FinfoComplObra.Free;
-
-  inherited;
-end;
-
-{ TInfoCRContribCollection }
-
-function TInfoCRContribCollection.Add: TInfoCRContribCollectionItem;
-begin
-  Result := TInfoCRContribCollectionItem(inherited Add);
-end;
-
-constructor TInfoCRContribCollection.Create;
-begin
-  inherited create(TInfoCRContribCollectionItem);
-end;
-
-function TInfoCRContribCollection.GetItem(
-  Index: Integer): TInfoCRContribCollectionItem;
-begin
-  Result := TInfoCRContribCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TInfoCRContribCollection.SetItem(Index: Integer;
-  Value: TInfoCRContribCollectionItem);
-begin
-  inherited SetItem(Index, Value);
 end;
 
 function TEvtCS.LerXML: boolean;
@@ -1071,7 +640,7 @@ begin
         i := 0;
         while Leitor.rExtrai(3, 'ideEstab', '', i + 1) <> '' do
         begin
-          infoCS.ideEstab.Add;
+          infoCS.ideEstab.New;
           infoCS.ideEstab.Items[i].FTpInsc := eSStrToTpInscricao(ok, leitor.rCampo(tcStr, 'tpInsc'));
           infoCS.ideEstab.Items[i].FNrInsc := leitor.rCampo(tcStr, 'nrInsc');
 
@@ -1089,7 +658,7 @@ begin
           j := 0;
           while Leitor.rExtrai(4, 'ideLotacao', '', j + 1) <> '' do
           begin
-            infoCS.ideEstab.Items[i].ideLotacao.Add;
+            infoCS.ideEstab.Items[i].ideLotacao.New;
             infoCS.ideEstab.Items[i].ideLotacao.Items[j].FcodLotacao   := leitor.rCampo(tcStr, 'codLotacao');
             infoCS.ideEstab.Items[i].ideLotacao.Items[j].Ffpas         := leitor.rCampo(tcInt, 'fpas');
             infoCS.ideEstab.Items[i].ideLotacao.Items[j].FcodTercs     := leitor.rCampo(tcStr, 'codTercs');
@@ -1098,7 +667,7 @@ begin
             k := 0;
             while Leitor.rExtrai(5, 'infoTercSusp', '', k + 1) <> '' do
             begin
-              infoCS.ideEstab.Items[i].ideLotacao.Items[j].infoTercSusp.Add;
+              infoCS.ideEstab.Items[i].ideLotacao.Items[j].infoTercSusp.New;
               infoCS.ideEstab.Items[i].ideLotacao.Items[j].infoTercSusp.Items[k].FcodTerc := leitor.rCampo(tcStr, 'codTerc');
               inc(k);
             end;
@@ -1122,7 +691,7 @@ begin
             k := 0;
             while Leitor.rExtrai(5, 'basesRemun', '', k + 1) <> '' do
             begin
-              infoCS.ideEstab.Items[i].ideLotacao.Items[j].basesRemun.Add;
+              infoCS.ideEstab.Items[i].ideLotacao.Items[j].basesRemun.New;
               infoCS.ideEstab.Items[i].ideLotacao.Items[j].basesRemun.Items[k].FindIncid := leitor.rCampo(tcInt, 'indIncid');
               infoCS.ideEstab.Items[i].ideLotacao.Items[j].basesRemun.Items[k].FcodCateg := leitor.rCampo(tcInt, 'codCateg');
 
@@ -1165,7 +734,7 @@ begin
             k := 0;
             while Leitor.rExtrai(5, 'infoSubstPatrOpPort', '', k + 1) <> '' do
             begin
-              infoCS.ideEstab.Items[i].ideLotacao.Items[j].infoSubstPatrOpPort.Add;
+              infoCS.ideEstab.Items[i].ideLotacao.Items[j].infoSubstPatrOpPort.New;
               infoCS.ideEstab.Items[i].ideLotacao.Items[j].infoSubstPatrOpPort.Items[k].FcnpjOpPortuario := leitor.rCampo(tcStr, 'cnpjOpPortuario');
               inc(k);
             end;
@@ -1176,7 +745,7 @@ begin
           j := 0;
           while Leitor.rExtrai(4, 'basesAquis', '', j + 1) <> '' do
           begin
-            infoCS.ideEstab.Items[i].basesAquis.Add;
+            infoCS.ideEstab.Items[i].basesAquis.New;
             infoCS.ideEstab.Items[i].basesAquis.Items[j].FindAquis    := leitor.rCampo(tcInt, 'indAquis');
             infoCS.ideEstab.Items[i].basesAquis.Items[j].FvlrAquis    := leitor.rCampo(tcDe2, 'vlrAquis');
             infoCS.ideEstab.Items[i].basesAquis.Items[j].FvrCPDescPR  := leitor.rCampo(tcDe2, 'vrCPDescPR');
@@ -1194,7 +763,7 @@ begin
           j := 0;
           while Leitor.rExtrai(4, 'basesComerc', '', j + 1) <> '' do
           begin
-            infoCS.ideEstab.Items[i].basesComerc.Add;
+            infoCS.ideEstab.Items[i].basesComerc.New;
             infoCS.ideEstab.Items[i].basesComerc.Items[j].FindComerc   := leitor.rCampo(tcInt, 'indComerc');
             infoCS.ideEstab.Items[i].basesComerc.Items[j].FvrBcComPr   := leitor.rCampo(tcDe2, 'vrBcComPr');
             infoCS.ideEstab.Items[i].basesComerc.Items[j].FvrCPSusp    := leitor.rCampo(tcDe2, 'vrCPSusp');
@@ -1206,7 +775,7 @@ begin
           j := 0;
           while Leitor.rExtrai(4, 'infoCREstab', '', j + 1) <> '' do
           begin
-            infoCS.ideEstab.Items[i].infoCREstab.Add;
+            infoCS.ideEstab.Items[i].infoCREstab.New;
             infoCS.ideEstab.Items[i].infoCREstab.Items[j].FtpCR     := leitor.rCampo(tcInt, 'tpCR');
             infoCS.ideEstab.Items[i].infoCREstab.Items[j].FvrCR     := leitor.rCampo(tcDe2, 'vrCR');
             infoCS.ideEstab.Items[i].infoCREstab.Items[j].FvrSuspCR := leitor.rCampo(tcDe2, 'vrSuspCR');
@@ -1219,7 +788,7 @@ begin
         i := 0;
         while Leitor.rExtrai(3, 'infoCRContrib', '', i + 1) <> '' do
         begin
-          infoCS.infoCRContrib.Add;
+          infoCS.infoCRContrib.New;
           infoCS.infoCRContrib.Items[i].FtpCR     := leitor.rCampo(tcStr, 'tpCR');
           infoCS.infoCRContrib.Items[i].FvrCR     := leitor.rCampo(tcDe2, 'vrCR');
           infoCS.infoCRContrib.Items[i].FvrCRSusp := leitor.rCampo(tcDe2, 'vrCRSusp');
@@ -1240,12 +809,10 @@ var
   sSecao: String;
   i, j, k: Integer;
 begin
-  Result := False;
+  Result := True;
 
   AIni := TMemIniFile.Create('');
   try
-    Result := True;
-
     with Self do
     begin
       sSecao := 'evtCS';
@@ -1456,6 +1023,360 @@ begin
   finally
     AIni.Free;
   end;
+end;
+
+{ TInfoCS }
+
+constructor TInfoCS.Create;
+begin
+  inherited Create;
+  FInfoCpSeg     := TInfoCpSeg.Create;
+  FInfoContrib   := TInfoContrib.Create;
+  FideEstab      := TideEstabCollection.Create;
+  FinfoCRContrib := TinfoCRContribCollection.Create;
+end;
+
+destructor TInfoCS.Destroy;
+begin
+  FInfoCpSeg.Free;
+  FInfoContrib.Free;
+  FideEstab.Free;
+  FinfoCRContrib.Free;
+
+  inherited;
+end;
+
+{ TInfoContrib }
+
+constructor TInfoContrib.Create;
+begin
+  inherited Create;
+  FInfoPJ := TInfoPJ.Create;
+end;
+
+destructor TInfoContrib.Destroy;
+begin
+  FInfoPJ.Free;
+
+  inherited;
+end;
+
+{ TInfoPJ }
+
+constructor TInfoPJ.Create;
+begin
+  inherited Create;
+  FinfoAtConc := TinfoAtConc.Create;
+end;
+
+destructor TInfoPJ.Destroy;
+begin
+  FinfoAtConc.Free;
+  
+  inherited;
+end;
+
+{ TideEstabCollection }
+
+function TideEstabCollection.Add: TideEstabCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TideEstabCollection.GetItem(
+  Index: Integer): TideEstabCollectionItem;
+begin
+  Result := TideEstabCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TideEstabCollection.SetItem(Index: Integer;
+  Value: TideEstabCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TideEstabCollection.New: TideEstabCollectionItem;
+begin
+  Result := TideEstabCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TbasesAquisCollection }
+
+function TbasesAquisCollection.Add: TbasesAquisCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TbasesAquisCollection.GetItem(
+  Index: Integer): TbasesAquisCollectionItem;
+begin
+  Result := TbasesAquisCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TbasesAquisCollection.SetItem(Index: Integer;
+  Value: TbasesAquisCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TbasesAquisCollection.New: TbasesAquisCollectionItem;
+begin
+  Result := TbasesAquisCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TbasesComercCollection }
+
+function TbasesComercCollection.Add: TbasesComercCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TbasesComercCollection.GetItem(
+  Index: Integer): TbasesComercCollectionItem;
+begin
+  Result := TbasesComercCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TbasesComercCollection.SetItem(Index: Integer;
+  Value: TbasesComercCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TbasesComercCollection.New: TbasesComercCollectionItem;
+begin
+  Result := TbasesComercCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TinfoCREstabCollection }
+
+function TinfoCREstabCollection.Add: TinfoCREstabCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TinfoCREstabCollection.GetItem(
+  Index: Integer): TinfoCREstabCollectionItem;
+begin
+  Result := TinfoCREstabCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TinfoCREstabCollection.SetItem(Index: Integer;
+  Value: TinfoCREstabCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TinfoCREstabCollection.New: TinfoCREstabCollectionItem;
+begin
+  Result := TinfoCREstabCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TideEstabCollectionItem }
+
+constructor TideEstabCollectionItem.Create;
+begin
+  inherited Create;
+  FInfoEstab   := TInfoEstab.Create;
+  FideLotacao  := TideLotacaoCollection.Create;
+  FbasesAquis  := TbasesAquiscollection.Create;
+  FbasesComerc := TbasesComercCollection.Create;
+  FinfoCREstab := TinfoCREstabCollection.Create;
+end;
+
+destructor TideEstabCollectionItem.Destroy;
+begin
+  FInfoEstab.Free;
+  FideLotacao.Free;
+  FbasesAquis.Free;
+  FbasesComerc.Free;
+  FinfoCREstab.Free;
+
+  inherited;
+end;
+
+{ TideLotacaoCollection }
+
+function TideLotacaoCollection.Add: TideLotacaoCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TideLotacaoCollection.GetItem(
+  Index: Integer): TideLotacaoCollectionItem;
+begin
+  Result := TideLotacaoCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TideLotacaoCollection.SetItem(Index: Integer;
+  Value: TideLotacaoCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TideLotacaoCollection.New: TideLotacaoCollectionItem;
+begin
+  Result := TideLotacaoCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TinfoTercSuspCollection }
+
+function TinfoTercSuspCollection.Add: TinfoTercSuspCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TinfoTercSuspCollection.GetItem(
+  Index: Integer): TinfoTercSuspCollectionItem;
+begin
+  Result := TinfoTercSuspCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TinfoTercSuspCollection.SetItem(Index: Integer;
+  Value: TinfoTercSuspCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TinfoTercSuspCollection.New: TinfoTercSuspCollectionItem;
+begin
+  Result := TInfoTercSuspCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TbasesRemunCollection }
+
+function TbasesRemunCollection.Add: TbasesRemunCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TbasesRemunCollection.GetItem(
+  Index: Integer): TbasesRemunCollectionItem;
+begin
+  Result := TbasesRemunCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TbasesRemunCollection.SetItem(Index: Integer;
+  Value: TbasesRemunCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TbasesRemunCollection.New: TbasesRemunCollectionItem;
+begin
+  Result := TbasesremunCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TbasesRemunCollectionItem }
+
+constructor TbasesRemunCollectionItem.Create;
+begin
+  inherited Create;
+  FbasesCp := TbasesCp.Create;
+end;
+
+destructor TbasesRemunCollectionItem.Destroy;
+begin
+  FbasesCp.Free;
+
+  inherited;
+end;
+
+{ TinfoSubstPatrOpPortCollection }
+
+function TinfoSubstPatrOpPortCollection.Add: TinfoSubstPatrOpPortCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TinfoSubstPatrOpPortCollection.GetItem(
+  Index: Integer): TinfoSubstPatrOpPortCollectionItem;
+begin
+  Result := TinfoSubstPatrOpPortCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TinfoSubstPatrOpPortCollection.SetItem(Index: Integer;
+  Value: TinfoSubstPatrOpPortCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TinfoSubstPatrOpPortCollection.New: TinfoSubstPatrOpPortCollectionItem;
+begin
+  Result := TinfoSubstPatrOpPortCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TideLotacaoCollectionItem }
+
+constructor TideLotacaoCollectionItem.Create;
+begin
+  inherited Create;
+  FinfoTercSusp        := TinfoTercSuspCollection.Create;
+  FInfoEmprParcial     := TInfoEmprParcial.Create;
+  FdadosOpPort         := TdadosOpPort.Create;
+  Fbasesremun          := TbasesremunCollection.Create;
+  FbasesAvNport        := TbasesAvNport.Create;
+  FinfoSubstPatrOpPort := TinfoSubstPatrOpPortCollection.Create;
+end;
+
+destructor TideLotacaoCollectionItem.Destroy;
+begin
+  FinfoTercSusp.Free;
+  FInfoEmprParcial.Free;
+  FdadosOpPort.Free;
+  Fbasesremun.Free;
+  FbasesAvNport.Free;
+  FinfoSubstPatrOpPort.Free;
+
+  inherited;
+end;
+
+{ TInfoEstab }
+
+constructor TInfoEstab.Create;
+begin
+  inherited Create;
+  FinfoComplObra := TinfoComplObra.Create;
+end;
+
+destructor TInfoEstab.Destroy;
+begin
+  FinfoComplObra.Free;
+
+  inherited;
+end;
+
+{ TInfoCRContribCollection }
+
+function TInfoCRContribCollection.Add: TInfoCRContribCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TInfoCRContribCollection.GetItem(
+  Index: Integer): TInfoCRContribCollectionItem;
+begin
+  Result := TInfoCRContribCollectionItem(inherited GetItem(Index));
+end;
+
+procedure TInfoCRContribCollection.SetItem(Index: Integer;
+  Value: TInfoCRContribCollectionItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TInfoCRContribCollection.New: TInfoCRContribCollectionItem;
+begin
+  Result := TInfoCRContribCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 end.

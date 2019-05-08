@@ -49,7 +49,7 @@ unit pcesS1207;
 interface
 
 uses
-  SysUtils, Classes, Dialogs, Controls,
+  SysUtils, Classes, Dialogs, Controls, Contnrs,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -64,79 +64,68 @@ type
   TItensCollection = class;
   TItensCollectionItem = class;
 
-  TS1207Collection = class(TOwnedCollection)
+  TS1207Collection = class(TeSocialCollection)
   private
     function GetItem(Index: integer): TS1207CollectionItem;
     procedure SetItem(Index: integer; Value: TS1207CollectionItem);
   public
-    function Add: TS1207CollectionItem;
-    property Items[Index: integer]: TS1207CollectionItem read GetItem write SetItem;
-      default;
+    function Add: TS1207CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS1207CollectionItem;
+    property Items[Index: integer]: TS1207CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS1207CollectionItem = class(TCollectionItem)
+  TS1207CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
     FEvtBenPrRP: TEvtBenPrRP;
-
-    procedure seTEvtBenPrRP(const Value: TEvtBenPrRP);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-  published
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property evtBenPrRP: TEvtBenPrRP read FEvtBenPrRP write seTEvtBenPrRP;
+    property evtBenPrRP: TEvtBenPrRP read FEvtBenPrRP write FEvtBenPrRP;
   end;
 
-  TDMDevCollection = class(TCollection)
+  TDMDevCollection = class(TObjectList)
   private
     function GetItem(Index: integer): TDMDevCollectionItem;
     procedure SetItem(Index: integer; Value: TDMDevCollectionItem);
   public
-    constructor Create(); reintroduce;
-
-    function Add: TDMDevCollectionItem;
-    property Items[Index: integer]: TDMDevCollectionItem read GetItem write SetItem;
-      default;
+    function Add: TDMDevCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDMDevCollectionItem;
+    property Items[Index: integer]: TDMDevCollectionItem read GetItem write SetItem; default;
   end;
 
-  TDMDevCollectionItem = class(TCollectionItem)
+  TDMDevCollectionItem = class(TObject)
   private
     FTpBenef: Integer;
     FNrBenefic: string;
     FIdeDmDev: string;
     FItens: TItensCollection;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-  published
     property tpBenef: integer read FTpBenef write FTpBenef;
     property nrBenefic: string read FNrBenefic write FNrBenefic;
     property ideDmDev: string read FIdeDmDev write FIdeDmDev;
     property itens: TItensCollection read FItens write FItens;
   end;
 
-  TItensCollection = class(TCollection)
+  TItensCollection = class(TObjectList)
   private
     function GetItem(Index: integer): TItensCollectionItem;
     procedure SetItem(Index: integer; Value: TItensCollectionItem);
   public
-    constructor Create(); reintroduce;
-
-    function Add: TItensCollectionItem;
-    property Items[Index: integer]: TItensCollectionItem read GetItem write SetItem;
-      default;
+    function Add: TItensCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TItensCollectionItem;
+    property Items[Index: integer]: TItensCollectionItem read GetItem write SetItem; default;
   end;
 
-  TItensCollectionItem = class(TCollectionItem)
+  TItensCollectionItem = class(TObject)
   private
     FCodRubr: string;
     FIdeTabRubr: string;
     FVrRubr: double;
   public
-    constructor Create; reintroduce;
-    destructor Destroy; override;
-  published
     property codRubr: string read FCodRubr write FCodRubr;
     property ideTabRubr: string read FIdeTabRubr write FIdeTabRubr;
     property vrRubr: double read FVrRubr write FVrRubr;
@@ -148,14 +137,13 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeBenef: TIdeBenef;
     FDMDev: TDMDevCollection;
-    FACBreSocial: TObject;
 
     {Geradores específicos desta classe}
     procedure GerarIdeBenef;
     procedure GerarDmDev;
     procedure GerarItens(pItens: TItensCollection);
   public
-    constructor Create(AACBreSocial: TObject); overload;
+    constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
 
     function GerarXML: boolean; override;
@@ -167,7 +155,7 @@ type
     property dmDev: TDMDevCollection read FDMDev write FDMDev;
   end;
 
-  TIdeBenef = class(TPersistent)
+  TIdeBenef = class(TObject)
   private
     FCpfBenef: string;
   public
@@ -182,15 +170,9 @@ uses
 
 { TItensCollection }
 
-constructor TItensCollection.Create;
-begin
-  inherited Create(TItensCollectionItem);
-end;
-
 function TItensCollection.Add: TItensCollectionItem;
 begin
-  Result := TItensCollectionItem(inherited add());
-  Result.Create;
+  Result := Self.New;
 end;
 
 function TItensCollection.GetItem(Index: integer): TItensCollectionItem;
@@ -203,29 +185,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TItensCollectionItem }
-
-constructor TItensCollectionItem.Create;
+function TItensCollection.New: TItensCollectionItem;
 begin
-
-end;
-
-destructor TItensCollectionItem.Destroy;
-begin
-  inherited;
+  Result := TItensCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { TDMDevCollection }
 
-constructor TDMDevCollection.Create;
-begin
-  inherited Create(TDMDevCollectionItem);
-end;
-
 function TDMDevCollection.Add: TDMDevCollectionItem;
 begin
-  Result := TDMDevCollectionItem(inherited add());
-  Result.Create;
+  Result := Self.New;
 end;
 
 function TDMDevCollection.GetItem(Index: integer): TDMDevCollectionItem;
@@ -238,10 +208,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TDMDevCollection.New: TDMDevCollectionItem;
+begin
+  Result := TDMDevCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TDMDevCollectionItem }
 
 constructor TDMDevCollectionItem.Create;
 begin
+  inherited Create;
   FItens := TItensCollection.Create;
 end;
 
@@ -255,13 +232,12 @@ end;
 { TEvtBenPrRP }
 constructor TEvtBenPrRP.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento3.Create;
+  FIdeEvento     := TIdeEvento3.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeBenef := TIdeBenef.Create;
-  FDMDev := TDMDevCollection.Create;
+  FIdeBenef      := TIdeBenef.Create;
+  FDMDev         := TDMDevCollection.Create;
 end;
 
 destructor TEvtBenPrRP.Destroy;
@@ -360,7 +336,7 @@ var
   sSecao, sFim: String;
   I, J: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -377,7 +353,6 @@ begin
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
       ideEvento.IndApuracao := eSStrToIndApuracao(Ok, INIRec.ReadString(sSecao, 'indApuracao', '1'));
       ideEvento.perApur     := INIRec.ReadString(sSecao, 'perApur', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -399,7 +374,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with dmDev.Add do
+        with dmDev.New do
         begin
           tpBenef   := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
           nrBenefic := sFim;
@@ -415,7 +390,7 @@ begin
             if (sFim = 'FIM') or (Length(sFim) <= 0) then
               break;
 
-            with itens.Add do
+            with itens.New do
             begin
               codRubr    := sFim;
               ideTabRubr := INIRec.ReadString(sSecao, 'ideTabRubr', '');
@@ -433,8 +408,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;
@@ -443,6 +416,7 @@ end;
 { TS1207CollectionItem }
 constructor TS1207CollectionItem.Create(AOwner: TComponent);
 begin
+  inherited Create;
   FTipoEvento := teS1207;
   FEvtBenPrRP := TEvtBenPrRP.Create(AOwner);
 end;
@@ -454,16 +428,10 @@ begin
   inherited;
 end;
 
-procedure TS1207CollectionItem.seTEvtBenPrRP(const Value: TEvtBenPrRP);
-begin
-  FEvtBenPrRP.Assign(Value);
-end;
-
 { TS1207Collection }
 function TS1207Collection.Add: TS1207CollectionItem;
 begin
-  Result := TS1207CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS1207Collection.GetItem(Index: integer): TS1207CollectionItem;
@@ -474,6 +442,12 @@ end;
 procedure TS1207Collection.SetItem(Index: integer; Value: TS1207CollectionItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TS1207Collection.New: TS1207CollectionItem;
+begin
+  Result := TS1207CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
 end;
 
 end.

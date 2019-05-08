@@ -63,8 +63,14 @@ const
   ACBRESOCIAL_NAMESPACE = ' http://www.esocial.gov.br/servicos/empregador/lote/eventos/envio/v1_1_0';
   ACBRESOCIAL_NAMESPACE_CON = 'http://www.esocial.gov.br/schema/lote/eventos/envio/consulta/retornoProcessamento/v1_0_0';
   ACBRESOCIAL_NAMESPACE_RETEVT = 'http://www.esocial.gov.br/schema/consulta/identificadores-eventos/empregador/v1_0_0';
+
+  ACBRESOCIAL_NAMESPACE_CONS_EMP = 'http://www.esocial.gov.br/schema/consulta/identificadores-eventos/empregador/v1_0_0';
+  ACBRESOCIAL_NAMESPACE_CONS_TAB = 'http://www.esocial.gov.br/schema/consulta/identificadores-eventos/tabela/v1_0_0';
+  ACBRESOCIAL_NAMESPACE_CONS_TRA = 'http://www.esocial.gov.br/schema/consulta/identificadores-eventos/trabalhador/v1_0_0';
+
   ACBRESOCIAL_NAMESPACE_DOWEVTID = 'http://www.esocial.gov.br/schema/download/solicitacao/id/v1_0_0';
   ACBRESOCIAL_NAMESPACE_DOWEVTREC = 'http://www.esocial.gov.br/schema/download/solicitacao/nrRecibo/v1_0_0';
+
   ACBRESOCIAL_NAMESPACE_URI = 'http://www.esocial.gov.br/schema/evt/';
   ACBRESOCIAL_MODELODF = 'eSocial';
 
@@ -90,8 +96,8 @@ type
   protected
     function CreateConfiguracoes: TConfiguracoes; override;
     function NomeServicoToNomeSchema(const NomeServico: String): String; override;
-    function VersaoSchemaDoubleToString(AVersao: Double): String; virtual;
-    function VersaoSchemaStringToDouble(AVersao: String): Double; virtual;
+    function VersaoSchemaDoubleToString(AVersao: Double): String; override;
+    function VersaoSchemaStringToDouble(const AVersao: String): Double; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -109,9 +115,9 @@ type
     function ConsultaIdentificadoresEventosEmpregador(const CnpjEstab: String;
         tpEvt: TTipoEvento; PerApur: TDateTime): boolean;
     function ConsultaIdentificadoresEventosTabela(const CnpjEstab: String;
-        tpEvt: TTipoEvento; AchEvt: string; AdtIni, AdtFim: TDateTime): boolean;
+        tpEvt: TTipoEvento; const AchEvt: string; AdtIni, AdtFim: TDateTime): boolean;
     function ConsultaIdentificadoresEventosTrabalhador(const CnpjEstab: String;
-        AcpfTrab: string; AdtIni, AdtFim: TDateTime): boolean;
+        const AcpfTrab: string; AdtIni, AdtFim: TDateTime): boolean;
 
     function DownloadEventos(const CnpjEmpr, PorID, PorNrRecibo: String): boolean;
 
@@ -193,7 +199,7 @@ begin
 end;
 
 function TACBreSocial.ConsultaIdentificadoresEventosTabela(
-  const CnpjEstab: String; tpEvt: TTipoEvento; AchEvt: string; AdtIni,
+  const CnpjEstab: String; tpEvt: TTipoEvento; const AchEvt: string; AdtIni,
   AdtFim: TDateTime): boolean;
 begin
   Result := WebServices.ConsultaIdentificadoresEventosTabela(CnpjEstab, tpEvt,
@@ -201,7 +207,7 @@ begin
 end;
 
 function TACBreSocial.ConsultaIdentificadoresEventosTrabalhador(
-  const CnpjEstab: String; AcpfTrab: string; AdtIni,
+  const CnpjEstab: String; const AcpfTrab: string; AdtIni,
   AdtFim: TDateTime): boolean;
 begin
   Result := WebServices.ConsultaIdentificadoresEventosTrabalhador(CnpjEstab,
@@ -247,7 +253,7 @@ begin
   end;
 end;
 
-function TACBreSocial.VersaoSchemaStringToDouble(AVersao: String): Double;
+function TACBreSocial.VersaoSchemaStringToDouble(const AVersao: String): Double;
 var
   StrVer: String;
 begin

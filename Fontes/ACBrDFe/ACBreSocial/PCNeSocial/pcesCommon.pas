@@ -51,7 +51,7 @@ unit pcesCommon;
 interface
 
 uses
-  SysUtils, Classes, Controls,
+  SysUtils, Classes, Controls, Contnrs,
   pcesConversaoeSocial;
 
 const
@@ -59,7 +59,6 @@ const
 
 type
   {Classes existentes nesta unit}
-  TeSocial = class;
   TAliqGilRat = class;
   TAlvaraJudicial = class;
   TAposentadoria = class;
@@ -167,29 +166,32 @@ type
   TtransfDom = class;
   IEventoeSocial = Interface;
 
-  TeSocial = class(TPersistent)
+  TeSocial = class(TObject)
   private
     FId: string;
     FSequencial: Integer;
-  published
+  public
     property Id: string read FId write FId;
     property Sequencial: Integer read FSequencial write FSequencial;
   end;
 
-  TIdeFolhaPagto = class(TPersistent)
+  TIdeFolhaPagto = class(TObject)
   private
     FindApuracao: tpIndApuracao;
     FperApur: string;
-  published
+  public
     property indApuracao: tpIndApuracao read FindApuracao write FindApuracao;
     property perApur: string read FperApur write FperApur;
   end;
 
-  TeSocialCollection = class(TCollection)
+  TeSocialCollection = class(TObjectList)
+  public
+    FACBreSocial: TComponent;
+    constructor Create(AACBreSocial: TComponent); reintroduce; virtual;
 
   end;
 
-  TAliqGilRat = class(TPersistent)
+  TAliqGilRat = class(TObject)
   private
     FAliqRat: tpAliqRat;
     FFap: Double;
@@ -197,7 +199,7 @@ type
     FProcAdmJudRat: TProcAdmJudRat;
     FProcAdmJudFap: TProcAdmJudFap;
     function getProcAdmJudRat(): TProcAdmJudRat;
-    function getProcAdmJudFat(): TProcAdmJudFap;
+    function getProcAdmJudFap(): TProcAdmJudFap;
   public
     constructor Create;
     destructor Destroy; override;
@@ -208,7 +210,7 @@ type
     property Fap: Double read FFap write FFap;
     property AliqRatAjust: Double read FAliqRatAjust write FAliqRatAjust;
     property ProcAdmJudRat: TProcAdmJudRat read getProcAdmJudRat write FProcAdmJudRat;
-    property ProcAdmJudFap: TProcAdmJudFap read getProcAdmJudFat write FProcAdmJudFap;
+    property ProcAdmJudFap: TProcAdmJudFap read getProcAdmJudFap write FProcAdmJudFap;
   end;
 
   TAlvaraJudicial = class
@@ -263,7 +265,7 @@ type
     property categoriaCnh: tpCnh read FcategoriaCnh write FcategoriaCnh;
   end;
 
-  TContato = class(TPersistent)
+  TContato = class(TObject)
   private
     FNmCtt: string;
     FCpfCtt: string;
@@ -337,17 +339,17 @@ type
     property UfCtps: string read FUfCtps write FUfCtps;
   end;
 
-  TDependenteCollection = class(TCollection)
+  TDependenteCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TDependenteCollectionItem;
     procedure SetItem(Index: Integer; Value: TDependenteCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TDependenteCollectionItem;
+    function Add: TDependenteCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDependenteCollectionItem;
     property Items[Index: Integer]: TDependenteCollectionItem read GetItem write SetItem; default;
   end;
 
-  TDependenteCollectionItem = class(TCollectionItem)
+  TDependenteCollectionItem = class(TObject)
   private
     FtpDep: tpTpDep;
     FnmDep: string;
@@ -357,8 +359,7 @@ type
     FdepSF: tpSimNao;
 //    FDepPlan: tpSimNao;
     FIncTrab: tpSimNao;
-  published
-    constructor create; reintroduce;
+  public
     property tpDep: tpTpDep read FtpDep write FtpDep;
     property nmDep: string read FnmDep write FnmDep;
     property dtNascto: TDateTime read FdtNascto write FdtNascto;
@@ -369,21 +370,20 @@ type
     property incTrab: tpSimNao read FIncTrab write FIncTrab;
   end;
 
-  TDescAtividadeCollection = class(TCollection)
+  TDescAtividadeCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TDescAtividadeCollectionItem;
     procedure SetItem(Index: Integer; Value: TDescAtividadeCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TDescAtividadeCollectionItem;
+    function Add: TDescAtividadeCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDescAtividadeCollectionItem;
     property Items[Index: Integer]: TDescAtividadeCollectionItem read GetItem write SetItem; default;
   end;
 
-  TDescAtividadeCollectionItem = class(TCollectionItem)
+  TDescAtividadeCollectionItem = class(TObject)
   private
     FdescAtivDesemp: string;
   public
-    constructor create; reintroduce;
     property descAtivDesemp: string read FdescAtivDesemp write FdescAtivDesemp;
   end;
 
@@ -477,52 +477,49 @@ type
     property CnpjSindTrab: string read FCnpjSindTrab write FCnpjSindTrab;
   end;
 
-  THorarioCollection = class(TCollection)
+  THorarioCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): THorarioCollectionItem;
     procedure SetItem(Index: Integer; Value: THorarioCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: THorarioCollectionItem;
+    function Add: THorarioCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: THorarioCollectionItem;
     property Items[Index: Integer]: THorarioCollectionItem read GetItem write SetItem; default;
   end;
 
-  THorarioCollectionItem = class(TCollectionItem)
+  THorarioCollectionItem = class(TObject)
   private
     FDia: tpTpDia;
     FCodHorContrat: string;
   public
-    constructor create; reintroduce;
     property Dia: tpTpDia read FDia write FDia;
     property CodHorContrat: string read FCodHorContrat write FCodHorContrat;
   end;
 
-  THorarioIntervaloCollection = class(TCollection)
+  THorarioIntervaloCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): THorarioIntervaloCollectionItem;
     procedure SetItem(Index: Integer; Value: THorarioIntervaloCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: THorarioIntervaloCollectionItem;
+    function Add: THorarioIntervaloCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: THorarioIntervaloCollectionItem;
     property Items[Index: Integer]: THorarioIntervaloCollectionItem read GetItem write SetItem;
   end;
 
-  THorarioIntervaloCollectionItem = class(TCollectionItem)
+  THorarioIntervaloCollectionItem = class(TObject)
   private
     FTpInterv : tpTpIntervalo;
     FDurInterv: integer;
     FIniInterv: string;
     FTermInterv : string;
   public
-    constructor create; reintroduce;
-
     property tpInterv: tpTpIntervalo read FTpInterv write FTpInterv;
     property durInterv: integer read FDurInterv write FDurInterv;
     property iniInterv: string read FIniInterv write FIniInterv;
     property termInterv: string read FTermInterv write FTermInterv;
   end;
 
-  THorContratual = class(TPersistent)
+  THorContratual = class(TObject)
   private
     FQtdHrsSem: Double;
     FTpJornada: tpTpJornada;
@@ -540,7 +537,7 @@ type
     property horario: THorarioCollection read FHorario write FHorario;
   end;
 
-  TInscricao = class(TPersistent)
+  TInscricao = class(TObject)
   protected
     FTpInsc: tpTpInsc;
     FNrInsc: string;
@@ -559,13 +556,11 @@ type
 
   TIdeTransmissor = class(TIdeEmpregador);
 
-  TIdeEvento = class(TPersistent)
+  TIdeEvento = class(TObject)
   private
-    FTpAmb: TpTpAmb;
     FProcEmi: TpProcEmi;
     FVerProc: string;
   public
-    property TpAmb: TpTpAmb read FTpAmb write FTpAmb;
     property ProcEmi: TpProcEmi read FProcEmi write FProcEmi;
     property VerProc: string read FVerProc write FVerProc;
   end;
@@ -588,22 +583,20 @@ type
     property perApur: string read FPerApur write FPerApur;
   end;
 
-  TIdeEvento4 = class(TPersistent)
+  TIdeEvento4 = class(TObject)
   private
     FIndApuracao: tpIndApuracao;
     FPerApur: string;
-    FTpAmb: TpTpAmb;
     FProcEmi: TpProcEmi;
     FVerProc: string;
   public
-    property TpAmb: TpTpAmb read FTpAmb write FTpAmb;
     property ProcEmi: TpProcEmi read FProcEmi write FProcEmi;
     property VerProc: string read FVerProc write FVerProc;
     property IndApuracao: tpIndApuracao read FIndApuracao write FIndApuracao;
     property perApur: string read FPerApur write FPerApur;
   end;
 
-  TIdeEvento5 = class(TPersistent)
+  TIdeEvento5 = class(TObject)
   private
     FnrRecArqBase: string;
     FIndApuracao: tpIndApuracao;
@@ -614,7 +607,7 @@ type
     property perApur: string read FPerApur write FPerApur;
   end;
 
-  TIdePeriodo = class(TPersistent)
+  TIdePeriodo = class(TObject)
   private
     FIniValid: string;
     FFimValid: string;
@@ -636,21 +629,20 @@ type
     property ideEstabVinc: TIdeEstabVinc read FIdeEstabVinc write FIdeEstabVinc;
   end;
 
-  TIdeTrabSubstituidoCollection = class(TCollection)
+  TIdeTrabSubstituidoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TIdeTrabSubstituidoCollectionItem;
     procedure SetItem(Index: Integer; Value: TIdeTrabSubstituidoCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TIdeTrabSubstituidoCollectionItem;
+    function Add: TIdeTrabSubstituidoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TIdeTrabSubstituidoCollectionItem;
     property Items[Index: Integer]: TIdeTrabSubstituidoCollectionItem read GetItem write SetItem; default;
   end;
 
-  TIdeTrabSubstituidoCollectionItem = class(TCollectionItem)
+  TIdeTrabSubstituidoCollectionItem = class(TObject)
   private
     FCpfTrabSubst:  string;
   public
-    constructor Create; reintroduce;
     property CpfTrabSubst:  string read FCpfTrabSubst write FCpfTrabSubst;
   end;
 
@@ -667,7 +659,7 @@ type
     property codCateg: Integer read FcodCateg write FcodCateg;
   end;
 
-  TInfoAtivDesemp = class(TPersistent)
+  TInfoAtivDesemp = class(TObject)
   private
     FDescAtividade: TDescAtividadeCollection;
   public
@@ -763,12 +755,11 @@ type
     property NmPai: string read FNmPai write FNmPai;
   end;
 
-  TProcesso = class(TCollectionItem)
+  TProcesso = class(TObject)
   protected
     FNrProc: String;
     FCodSusp: String;
   public
-    constructor create; reintroduce;
     property nrProc: string read FNrProc write FNrProc;
     property codSusp: String read FCodSusp write FCodSusp;
   end;
@@ -828,9 +819,6 @@ type
     FdtTransf: TDateTime;
     FObservacao: string;
   public
-    constructor Create;
-    destructor Destroy; override;
-
     property tpInscAnt: tpTpInsc read FtpInscAnt write FtpInscAnt;
     property cnpjEmpregAnt: string read FCnpjEmpregAnt write FCnpjEmpregAnt;
     property MatricAnt: string read FMatricAnt write FMatricAnt;
@@ -843,9 +831,6 @@ type
     FcnpjSucessora: string;
     FtpInscSuc: tpTpInsc;
   public
-    constructor Create;
-    destructor Destroy; override;
-
     property tpInscSuc: tpTpInsc read FtpInscSuc write FtpInscSuc;
     property cnpjSucessora: string read FcnpjSucessora write FcnpjSucessora;
   end;
@@ -874,7 +859,7 @@ type
     property DtExped: TDateTime read FDtExped write FDtExped;
   end;
 
-  TTrabalhador = class(TPersistent)
+  TTrabalhador = class(TObject)
   private
     FCpfTrab: string;
     FNisTrab: string;
@@ -932,7 +917,7 @@ type
     property FilhosBr: string read FFilhosBr write FFilhosBr;
   end;
 
-  TTrabTemporario = class(TPersistent)
+  TTrabTemporario = class(TObject)
   private
     FHipLeg: integer;
     FJustContr: string;
@@ -1133,7 +1118,7 @@ type
     property InfoASO: TInfoASO read FInfoASO write FInfoASO;
   end;
 
-  TideTrabalhador = class(TPersistent)  //S-2205;
+  TideTrabalhador = class(TObject)  //S-2205;
   private
     FCpfTrab: string;
   public
@@ -1164,7 +1149,7 @@ type
     property codCateg : Integer read FcodCateg write FcodCateg;
   end;
 
-  TEmitente = class(TPersistent)
+  TEmitente = class(TObject)
   private
     FnmEmit: string;
     FideOC: tpIdeOC;
@@ -1177,7 +1162,7 @@ type
     property ufOC: string read FufOC write FufOC;
   end;
 
-  TEndExt = class(TPersistent)
+  TEndExt = class(TObject)
   private
     FDscLograd: string;
     FNrLograd: string;
@@ -1194,7 +1179,7 @@ type
     property codPostal: string read FCodPostal write FCodPostal;
   end;
 
-  TIdePais = class(TPersistent)
+  TIdePais = class(TObject)
   private
     FCodPais: string;
     FIndNIF: tpIndNIF;
@@ -1205,26 +1190,26 @@ type
     property nifBenef: string read FNifBenef write FNifBenef;
   end;
 
-  TInfoAgNocivo = class(TPersistent)
+  TInfoAgNocivo = class(TObject)
   private
     FGrauExp: tpGrauExp;
   public
     property grauExp: tpGrauExp read FGrauExp write FGrauExp;
   end;
 
-  TRubricaCollection = class(TCollection)
+  TRubricaCollection = class(TObjectList)
   private
   public
     function GetItem(Index: Integer): TRubricaCollectionItem;
     procedure SetItem(Index: Integer; Value: TRubricaCollectionItem);
   public
-    constructor Create;
-    function Add: TRubricaCollectionItem;
+    function Add: TRubricaCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TRubricaCollectionItem;
     property Items[Index: Integer]: TRubricaCollectionItem read GetItem write SetItem;
       default;
   end;
 
-  TRubricaCollectionItem = class(TCollectionItem)
+  TRubricaCollectionItem = class(TObject)
   protected
     Fmatricula: string;
     FCodRubr: string;
@@ -1234,8 +1219,6 @@ type
     FVrUnit: Double;
     FVrRubr: Double;
   public
-    constructor create; reintroduce;
-
     property matricula: string read Fmatricula write Fmatricula;
     property codRubr: string read FCodRubr write FCodRubr;
     property ideTabRubr: string read FIdeTabRubr write FIdeTabRubr;
@@ -1245,23 +1228,22 @@ type
     property vrRubr: Double read FVrRubr write FVrRubr;
   end;
 
-  TReciboPagamento = class(TCollectionItem) // s1200
+  TReciboPagamento = class(TObject) // s1200
   private
     FIdeRecPgto: Integer;
     FvrRec : Double;
   public
-    constructor create; reintroduce;
     property ideRecPgto: Integer read FIdeRecPgto write FIdeRecPgto;
     property vrRec : Double read FvrRec write FvrRec;
   end;
 
-  TRecPgtosCollection = class(TCollection)
+  TRecPgtosCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TRecPgtosCollectionItem;
     procedure SetItem(Index: Integer; Value: TRecPgtosCollectionItem);
   public
-    constructor create; reintroduce;
-    function Add: TRecPgtosCollectionItem;
+    function Add: TRecPgtosCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TRecPgtosCollectionItem;
     property Items[Index: Integer]: TRecPgtosCollectionItem read GetItem write SetItem;
   end;
 
@@ -1277,17 +1259,17 @@ type
     property ideEstabLot : TideEstabLotCollection read FideEstabLot write FideEstabLot;
   end;
 
-  TideEstabLotCollection = class(TCollection)
+  TideEstabLotCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TideEstabLotItem;
     procedure SetItem(Index: Integer; Value: TideEstabLotItem);
   public
-    constructor create; reintroduce;
-    function Add: TideEstabLotItem;
+    function Add: TideEstabLotItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TideEstabLotItem;
     property Items[Index: Integer]: TideEstabLotItem read GetItem write SetItem; default;
   end;
 
-  TideEstabLotItem = class(TCollectionItem)
+  TideEstabLotItem = class(TObject)
   private
     FtpInsc : tpTpInsc;
     FnrInsc : String;
@@ -1297,11 +1279,11 @@ type
     FinfoAgNocivo : TInfoAgNocivo;
     FinfoSimples : TinfoSimples;
 
-    function getInfoSaudeColect: TInfoSaudeColet;
+    function getinfoSaudeColet: TInfoSaudeColet;
     function getInfoAgNocivo: TInfoAgNocivo;
     function getInfoSimples: TinfoSimples;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     function infoSaudeColetInst: boolean;
     function infoAgNocivoInst: boolean;
     function infoSimplesInst: Boolean;
@@ -1310,12 +1292,12 @@ type
     property nrInsc : string read FnrInsc write FnrInsc;
     property codLotacao : string read FcodLotacao write FcodLotacao;
     property detVerbas : TRubricaCollection read FdetVerbas write FdetVerbas;
-    property infoSaudeColet: TInfoSaudeColet read getInfoSaudeColect write FInfoSaudeColet;
+    property infoSaudeColet: TInfoSaudeColet read getinfoSaudeColet write FInfoSaudeColet;
     property infoAgNocivo : TInfoAgNocivo read getInfoAgNocivo write FinfoAgNocivo;
     property infoSimples : TinfoSimples read getInfoSimples write FinfoSimples;
   end;
 
-  TcargoFuncao = class(TPersistent)
+  TcargoFuncao = class(TObject)
   private
     FcodCargo : String;
     FcodFuncao : String;
@@ -1324,29 +1306,28 @@ type
     property codFuncao: String read FcodFuncao write FcodFuncao;
   end;
 
-  TProcJudTrabCollection = class(TCollection)
+  TProcJudTrabCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TProcJudTrabCollectionItem;
     procedure SetItem(Index: Integer; Value: TProcJudTrabCollectionItem);
   public
-    constructor create; reintroduce;
-    function Add: TProcJudTrabCollectionItem;
+    function Add: TProcJudTrabCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TProcJudTrabCollectionItem;
     property Items[Index: Integer]: TProcJudTrabCollectionItem read GetItem write SetItem;
   end;
 
-  TProcJudTrabCollectionItem = class(TCollectionItem)
+  TProcJudTrabCollectionItem = class(TObject)
   private
     FTpTrib: tpTpTributo;
     FNrProcJud: string;
     FCodSusp: string;
-  published
-    constructor create; reintroduce;
+  public
     property tpTrib: tpTpTributo read FTpTrib write FTpTrib;
     property nrProcJud: string read FNrProcJud write FNrProcJud;
     property codSusp: string read FCodSusp write FCodSusp;
   end;
 
-  TinfoEstagiario = class(TPersistent)
+  TinfoEstagiario = class(TObject)
   private
     FnatEstagio : TpNatEstagio;
     FnivEstagio : TpNivelEstagio;
@@ -1372,7 +1353,7 @@ type
     property supervisorEstagio : TsupervisorEstagio read FsupervisorEstagio write FsupervisorEstagio;
   end;
 
-  TinstEnsino = class(TPersistent)
+  TinstEnsino = class(TObject)
   private
     FcnpjInstEnsino : String;
     FnmRazao : String;
@@ -1393,7 +1374,7 @@ type
     property Uf : String read FUf write FUf;
   end;
 
-  TageIntegracao = class(TPersistent)
+  TageIntegracao = class(TObject)
   private
     FcnpjAgntInteg : String;
     FnmRazao : String;
@@ -1414,7 +1395,7 @@ type
     property Uf : tpUf read FUf write FUf;
   end;
 
-  TsupervisorEstagio = class(TPersistent)
+  TsupervisorEstagio = class(TObject)
   private
     FcpfSupervisor : String;
     FnmSuperv : String;
@@ -1423,14 +1404,14 @@ type
     property nmSuperv : String read FnmSuperv write FnmSuperv;
   end;
 
-  TQuarentena = class(TPersistent)
+  TQuarentena = class(TObject)
   private
     FdtFimQuar : TDate;
   public
     property dtFimQuar: TDate read FdtFimQuar write FdtFimQuar;
   end;
 
-  TVerbasResc = class(TPersistent)
+  TVerbasResc = class(TObject)
   private
     FProcJudTrab : TProcJudTrabCollection;
     FInfoMV: TInfoMV;
@@ -1448,17 +1429,17 @@ type
     property infoMV: TInfoMV read getInfoMV write FInfoMV;
   end;
 
-  TdetVerbasCollection = class(TCollection)
+  TdetVerbasCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TdetVerbasItem;
     procedure SetItem(Index: Integer; Value: TdetVerbasItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TdetVerbasItem;
+    function Add: TdetVerbasItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TdetVerbasItem;
     property Items[Index: Integer]: TdetVerbasItem read GetItem write SetItem; default;
   end;
 
-  TdetVerbasItem = class(TCollectionItem)
+  TdetVerbasItem = class(TObject)
   protected
     FcodRubr : String;
     FideTabRubr: String;
@@ -1473,24 +1454,24 @@ type
     property vrRubr: DOuble read FvrRubr write FvrRubr;
   end;
 
-  TinfoSimples = class(TPersistent)
+  TinfoSimples = class(TObject)
   private
     FindSimples : tpIndSimples;
   public
     property indSimples : tpIndSimples read FindSimples write FindSimples;
   end;
 
-  TInfoProcJudCollection = class(TCollection)
+  TInfoProcJudCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TInfoProcJudItem;
     procedure SetItem(Index: Integer; Value: TInfoProcJudItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TInfoProcJudItem;
+    function Add: TInfoProcJudItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TInfoProcJudItem;
     property Items[Index: Integer]: TInfoProcJudItem read GetItem write SetItem; default;
   end;
 
-  TInfoProcJudItem=class(TCollectionItem)
+  TInfoProcJudItem = class(TObject)
   private
     FtpProc : tpTpProc;
     FtpTrib : tpTpTributo;
@@ -1515,17 +1496,17 @@ type
     property vrSenarSusp: Double read FvrSenarSusp write FvrSenarSusp;
   end;
 
-  TInfoProcJCollection = class(TCollection)
+  TInfoProcJCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TInfoProcJItem;
     procedure SetItem(Index: Integer; Value: TInfoProcJItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TInfoProcJItem;
+    function Add: TInfoProcJItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TInfoProcJItem;
     property Items[Index: Integer]: TInfoProcJItem read GetItem write SetItem; default;
   end;
 
-  TInfoProcJItem=class(TCollectionItem)
+  TInfoProcJItem=class(TObject)
   private
     FnrProcJud: string;
     FCodSusp: Integer;
@@ -1540,42 +1521,40 @@ type
     property vrSenarNRet: Double read FvrSenarNRet write FvrSenarNRet;
   end;
 
-  TPensaoAlimCollection = class(TCollection)
+  TPensaoAlimCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TPensaoAlimCollectionItem;
     procedure SetItem(Index: Integer; Value: TPensaoAlimCollectionItem);
   public
-    constructor create; reintroduce;
-    function Add: TPensaoAlimCollectionItem;
+    function Add: TPensaoAlimCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TPensaoAlimCollectionItem;
     property Items[Index: Integer]: TPensaoAlimCollectionItem read GetItem write SetItem;
   end;
 
-  TPensaoAlimCollectionItem = class(TCollectionItem)
+  TPensaoAlimCollectionItem = class(TObject)
   private
     FCpfBenef: string;
     FDtNasctoBenef: TDate;
     FNmBenefic: string;
     FVlrPensao: Double;
   public
-    constructor create; reintroduce;
-
     property cpfBenef: string read FCpfBenef write FCpfBenef;
     property dtNasctoBenef: TDate read FDtNasctoBenef write FDtNasctoBenef;
     property nmBenefic: string read FNmBenefic write FNmBenefic;
     property vlrPensao: Double read FVlrPensao write FVlrPensao;
   end;
 
-  TDetPlanoCollection = class(TCollection)
+  TDetPlanoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TDetPlanoCollectionItem;
     procedure SetItem(Index: Integer; Value: TDetPlanoCollectionItem);
   public
-    constructor create(); reintroduce;
-    function Add: TDetPlanoCollectionItem;
+    function Add: TDetPlanoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDetPlanoCollectionItem;
     property Items[Index: Integer]: TDetPlanoCollectionItem read GetItem write SetItem;
   end;
 
-  TDetPlanoCollectionItem = class(TCollectionItem)
+  TDetPlanoCollectionItem = class(TObject)
   private
     FTpDep: tpTpDep;
     FCpfDep: string;
@@ -1583,8 +1562,6 @@ type
     FNmDep: string;
     FVlrPgDep: Double;
   public
-    constructor create; reintroduce;
-
     property tpDep: tpTpDep read FTpDep write FTpDep;
     property cpfDep: string read FCpfDep write FCpfDep;
     property dtNascto: TDate read FDtNascto write FDtNascto;
@@ -1592,24 +1569,24 @@ type
     property vlrPgDep: Double read FVlrPgDep write FVlrPgDep;
   end;
 
-  TDetOperCollection = class(TCollection)
+  TDetOperCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TDetOperCollectionItem;
     procedure SetItem(Index: Integer; Value: TDetOperCollectionItem);
   public
-    constructor create; reintroduce;
-    function Add: TDetOperCollectionItem;
+    function Add: TDetOperCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDetOperCollectionItem;
     property Items[Index: Integer]: TDetOperCollectionItem read GetItem write SetItem;
   end;
 
-  TDetOperCollectionItem = class(TCollectionItem)
+  TDetOperCollectionItem = class(TObject)
   private
     FCnpjOper: string;
     FRegANS: string;
     FVrPgTit: Double;
     FDetPlanoCollection: TDetPlanoCollection;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     property cnpjOper: string read FCnpjOper write FCnpjOper;
     property regANS: string read FRegANS write FRegANS;
@@ -1617,7 +1594,7 @@ type
     property detPlano: TDetPlanoCollection read FDetPlanoCollection write FDetPlanoCollection;
   end;
 
-  TInfoSaudeColet = class(TPersistent)
+  TInfoSaudeColet = class(TObject)
   private
     FDetOper: TDetOperCollection;
   public
@@ -1628,14 +1605,14 @@ type
 
   end;
 
-  TRemunPerCollectionItem = class(TCollectionItem)
+  TRemunPerCollectionItem = class(TObject)
   private
     FMatricula: string;
     FItensRemun: TRubricaCollection;
     FInfoSaudeColet: TInfoSaudeColet;
     function getInfoSaudeColet: TInfoSaudeColet;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     function infoSaudeColetInst(): boolean;
 
@@ -1645,17 +1622,17 @@ type
       write FInfoSaudeColet;
   end;
 
-  TNfsColecao = class(TCollection)
+  TNfsColecao = class(TObjectList)
   private
     function GetItem(Index: Integer): TNfsItem;
     procedure SetItem(Index: Integer; const Value: TNfsItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TNfsItem;
+    function Add: TNfsItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TNfsItem;
     property Items[Index: Integer]: TNfsItem read GetItem write SetItem;
   end;
 
-  TNfsItem = class(TCollectionItem)
+  TNfsItem = class(TObject)
   private
     Fserie: string;
     FnrDocto: string;
@@ -1674,32 +1651,31 @@ type
     property vrSenarDesc: Double read FvrSenarDesc write FvrSenarDesc;
   end;
 
-  TRemunOutrEmprCollection = class(TCollection)
+  TRemunOutrEmprCollection = class(TObjectList)
   private
     function GetItem(Index: integer): TRemunOutrEmprCollectionItem;
     procedure SetItem(Index: integer; Value: TRemunOutrEmprCollectionItem);
   public
-    constructor Create; reintroduce;
-    function add: TRemunOutrEmprCollectionItem;
+    function Add: TRemunOutrEmprCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TRemunOutrEmprCollectionItem;
     property Items[Index: integer]: TRemunOutrEmprCollectionItem
       read GetItem write SetItem;
   end;
 
-  TRemunOutrEmprCollectionItem = class(TCollectionItem)
+  TRemunOutrEmprCollectionItem = class(TObject)
   private
     FTpInsc: tpTpInsc;
     FNrInsc: string;
     FCodCateg: integer;
     FVlrRemunOE: double;
   public
-    constructor Create; reintroduce;
     property tpInsc: tpTpInsc read FTpInsc write FTpInsc;
     property nrInsc: string read FNrInsc write FNrInsc;
     property codCateg: integer read FCodCateg write FCodCateg;
     property vlrRemunOE: double read FVlrRemunOE write FVlrRemunOE;
   end;
 
-  TInfoMV = class(TPersistent)
+  TInfoMV = class(TObject)
   private
     FIndMV: tpIndMV;
     FRemunOutrEmpr: TRemunOutrEmprCollection;
@@ -1724,26 +1700,25 @@ type
     property email: string read Femail write Femail;
   end;
 
-  TObservacoesCollection = class(TCollection)
+  TObservacoesCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TObservacoesCollectionItem;
     procedure SetItem(Index: Integer; Value: TObservacoesCollectionItem);
   public
-    constructor Create; reintroduce;
-    function Add: TObservacoesCollectionItem;
+    function Add: TObservacoesCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TObservacoesCollectionItem;
     property Items[Index: Integer]: TObservacoesCollectionItem read GetItem write SetItem; default;
   end;
 
-  TObservacoesCollectionItem = class(TCollectionItem)
+  TObservacoesCollectionItem = class(TObject)
   private
     Fobservacao: string;
-  published
-    constructor create; reintroduce;
-
+  public
     property observacao: string read Fobservacao write Fobservacao;
   end;
 
   IEventoeSocial = Interface(IInterface)
+    ['{93160D81-FE11-454A-ACA7-DA357D618F82}']
     function GetXml : string;
     procedure SetXml(const Value: string);
     function GetTipoEvento : TTipoEvento;
@@ -1770,7 +1745,7 @@ begin
   inherited;
 end;
 
-function TAliqGilRat.getProcAdmJudFat: TProcAdmJudFap;
+function TAliqGilRat.getProcAdmJudFap: TProcAdmJudFap;
 begin
   if Not(Assigned(FProcAdmJudFap)) then
     FProcAdmJudFap := TProcAdmJudFap.Create;
@@ -1834,13 +1809,7 @@ end;
 { TDependenteCollection }
 function TDependenteCollection.Add: TDependenteCollectionItem;
 begin
-  Result := TDependenteCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TDependenteCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TDependenteCollectionItem);
+  Result := Self.New;
 end;
 
 function TDependenteCollection.GetItem(
@@ -1855,18 +1824,24 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TDependenteCollection.New: TDependenteCollectionItem;
+begin
+  Result := TDependenteCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TTrabalhador }
 constructor TTrabalhador.Create;
 begin
   inherited;
-  FNascimento:= TNascimento.Create;
-  FDocumentos:= TDocumentos.Create;
-  FEndereco:= TEndereco.Create;
-  FTrabEstrangeiro:= TTrabEstrangeiro.Create;
-  FInfoDeficiencia:= TInfoDeficiencia.Create;
-  FDependente:= TDependenteCollection.Create(Self);
-  FAposentadoria:= TAposentadoria.Create;
-  FContato:= TContatoTrabalhador.Create;
+  FNascimento      := TNascimento.Create;
+  FDocumentos      := TDocumentos.Create;
+  FEndereco        := TEndereco.Create;
+  FTrabEstrangeiro := TTrabEstrangeiro.Create;
+  FInfoDeficiencia := TInfoDeficiencia.Create;
+  FDependente      := TDependenteCollection.Create;
+  FAposentadoria   := TAposentadoria.Create;
+  FContato         := TContatoTrabalhador.Create;
 end;
 
 destructor TTrabalhador.Destroy;
@@ -1886,8 +1861,8 @@ end;
 constructor TTrabTemporario.Create;
 begin
   inherited;
-  FIdeTomadorServ:= TIdeTomadorServ.Create;
-  FIdeTrabSubstituido:= TIdeTrabSubstituidoCollection.Create(self);
+  FIdeTomadorServ     := TIdeTomadorServ.Create;
+  FIdeTrabSubstituido := TIdeTrabSubstituidoCollection.Create;
 end;
 
 destructor TTrabTemporario.Destroy;
@@ -1900,6 +1875,7 @@ end;
 { TIdeTomadorServ }
 constructor TIdeTomadorServ.Create;
 begin
+  inherited Create;
   FIdeEstabVinc := TIdeEstabVinc.Create;
 end;
 
@@ -1912,13 +1888,7 @@ end;
 { THorarioCollection }
 function THorarioCollection.Add: THorarioCollectionItem;
 begin
-  Result := THorarioCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor THorarioCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(THorarioCollectionItem);
+  Result := Self.New;
 end;
 
 function THorarioCollection.GetItem(Index: Integer): THorarioCollectionItem;
@@ -1932,24 +1902,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ THorarioIntervaloCollectionItem }
-
-constructor THorarioIntervaloCollectionItem.create;
+function THorarioCollection.New: THorarioCollectionItem;
 begin
-
+  Result := THorarioCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { THorarioIntervaloCollection }
 
 function THorarioIntervaloCollection.Add: THorarioIntervaloCollectionItem;
 begin
-  Result := THorarioIntervaloCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor THorarioIntervaloCollection.Create;
-begin
-  inherited create(THorarioIntervaloCollectionItem);
+  Result := Self.New;
 end;
 
 function THorarioIntervaloCollection.GetItem(
@@ -1964,11 +1927,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function THorarioIntervaloCollection.New: THorarioIntervaloCollectionItem;
+begin
+  Result := THorarioIntervaloCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { THorContratual }
 constructor THorContratual.Create;
 begin
   inherited;
-  FHorario:= THorarioCollection.Create(Self);
+  FHorario:= THorarioCollection.Create;
 end;
 
 destructor THorContratual.Destroy;
@@ -1980,13 +1949,7 @@ end;
 { TDescAtividadeCollection }
 function TDescAtividadeCollection.Add: TDescAtividadeCollectionItem;
 begin
-  Result := TDescAtividadeCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TDescAtividadeCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TDescAtividadeCollectionItem);
+  Result := Self.New;
 end;
 
 function TDescAtividadeCollection.GetItem(Index: Integer): TDescAtividadeCollectionItem;
@@ -1999,11 +1962,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TDescAtividadeCollection.New: TDescAtividadeCollectionItem;
+begin
+  Result := TDescAtividadeCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TInfoAtivDesemp }
 constructor TInfoAtivDesemp.Create;
 begin
   inherited;
-  FDescAtividade:= TDescAtividadeCollection.Create(Self);
+  FDescAtividade:= TDescAtividadeCollection.Create;
 end;
 
 destructor TInfoAtivDesemp.Destroy;
@@ -2015,14 +1984,15 @@ end;
 { TContrato }
 constructor TInfoContrato.Create;
 begin
-  FRemuneracao:= TRemuneracao.Create;
-  FDuracao:= TDuracao.Create;
-  FLocalTrabalho:= TLocalTrabalho.Create;
-  FHorContratual:= THorContratual.Create;
-  FInfoAtivDesemp:= TInfoAtivDesemp.Create;
-  FFiliacaoSindical:= TFiliacaoSindical.Create;
-  FAlvaraJudicial:= TAlvaraJudicial.Create;
-  Fobservacoes := TobservacoesCollection.Create;
+  inherited Create;
+  FRemuneracao      := TRemuneracao.Create;
+  FDuracao          := TDuracao.Create;
+  FLocalTrabalho    := TLocalTrabalho.Create;
+  FHorContratual    := THorContratual.Create;
+  FInfoAtivDesemp   := TInfoAtivDesemp.Create;
+  FFiliacaoSindical := TFiliacaoSindical.Create;
+  FAlvaraJudicial   := TAlvaraJudicial.Create;
+  Fobservacoes      := TobservacoesCollection.Create;
 end;
 
 destructor TInfoContrato.Destroy;
@@ -2035,31 +2005,6 @@ begin
   FFiliacaoSindical.Free;
   FAlvaraJudicial.Free;
   Fobservacoes.Free;
-  inherited;
-end;
-
-{ TSucessaoVinc }
-
-constructor TSucessaoVinc.Create;
-begin
-
-end;
-
-destructor TSucessaoVinc.Destroy;
-begin
-
-end;
-
-{ TSucessaoVinc2 }
-
-constructor TSucessaoVinc2.Create;
-begin
-
-end;
-
-destructor TSucessaoVinc2.Destroy;
-begin
-
   inherited;
 end;
 
@@ -2089,22 +2034,10 @@ begin
   inherited;
 end;
 
-{ TRubricaCollectionItem }
-constructor TRubricaCollectionItem.create;
-begin
-
-end;
-
 { TRubricaCollection }
 function TRubricaCollection.Add: TRubricaCollectionItem;
 begin
-  Result := TRubricaCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TRubricaCollection.Create;
-begin
- inherited Create(TRubricaCollectionItem);
+  Result := Self.New;
 end;
 
 function TRubricaCollection.GetItem(Index: Integer): TRubricaCollectionItem;
@@ -2118,22 +2051,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TReciboPagamento }
-constructor TReciboPagamento.create;
+function TRubricaCollection.New: TRubricaCollectionItem;
 begin
-
+  Result := TRubricaCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { TRecPgtosCollection }
 function TRecPgtosCollection.Add: TRecPgtosCollectionItem;
 begin
-  Result := TRecPgtosCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TRecPgtosCollection.create;
-begin
-  inherited create(TRecPgtosCollectionItem);
+  Result := Self.New;
 end;
 
 function TRecPgtosCollection.GetItem(Index: Integer): TRecPgtosCollectionItem;
@@ -2145,6 +2072,12 @@ procedure TRecPgtosCollection.SetItem(Index: Integer;
   Value: TRecPgtosCollectionItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TRecPgtosCollection.New: TRecPgtosCollectionItem;
+begin
+  Result := TRecPgtosCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { TInfoRegimeTrab }
@@ -2226,14 +2159,16 @@ end;
 
 constructor TVerbasResc.Create;
 begin
+  inherited Create;
   FProcJudTrab := nil;
-  FInfoMV := nil;
+  FInfoMV      := nil;
 end;
 
 destructor TVerbasResc.Destroy;
 begin
   FreeAndNil(FProcJudTrab);
   FreeAndNil(FInfoMV);
+  inherited;
 end;
 
 function TVerbasResc.getProcJudTrab: TProcJudTrabCollection;
@@ -2264,13 +2199,7 @@ end;
 
 function TInfoProcJudCollection.Add: TInfoProcJudItem;
 begin
-  Result:= TinfoProcJudItem(inherited Add);
-  Result.Create(Self);
-end;
-
-constructor TInfoProcJudCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TinfoProcJudItem);
+  Result := Self.New;
 end;
 
 function TInfoProcJudCollection.GetItem(Index: Integer): TInfoProcJudItem;
@@ -2281,6 +2210,12 @@ end;
 procedure TInfoProcJudCollection.SetItem(Index: Integer; Value: TInfoProcJudItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TInfoProcJudCollection.New: TInfoProcJudItem;
+begin
+  Result := TInfoProcJudItem.Create;
+  Self.Add(Result);
 end;
 
 { TRecPgtosCollectionItem }
@@ -2295,13 +2230,7 @@ end;
 
 function TdetVerbasCollection.Add: TdetVerbasItem;
 begin
-  Result := TdetVerbasItem(inherited Add);
-  Result.Create(Self);
-end;
-
-constructor TdetVerbasCollection.Create(AOwner: TPersistent);
-begin
-   inherited Create(TdetVerbasItem);
+  Result := Self.New;
 end;
 
 function TdetVerbasCollection.GetItem(Index: Integer): TdetVerbasItem;
@@ -2314,17 +2243,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TdetVerbasCollection.New: TdetVerbasItem;
+begin
+  Result := TdetVerbasItem.Create;
+  Self.Add(Result);
+end;
+
 { TideEstabLotCollection }
 
 function TideEstabLotCollection.Add: TideEstabLotItem;
 begin
-  Result := TideEstabLotItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TideEstabLotCollection.create;
-begin
-  inherited Create(TideEstabLotItem);
+  Result := Self.New;
 end;
 
 function TideEstabLotCollection.GetItem(Index: Integer): TideEstabLotItem;
@@ -2337,14 +2266,21 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TideEstabLotCollection.New: TideEstabLotItem;
+begin
+  Result := TideEstabLotItem.Create;
+  Self.Add(Result);
+end;
+
 { TideEstabLotItem }
 
 constructor TideEstabLotItem.Create;
 begin
-  FdetVerbas := TRubricaCollection.Create;
+  inherited Create;
+  FdetVerbas      := TRubricaCollection.Create;
   FInfoSaudeColet := nil;
-  FinfoAgNocivo := nil;
-  FinfoSimples := nil;
+  FinfoAgNocivo   := nil;
+  FinfoSimples    := nil;
 end;
 
 function TideEstabLotItem.getInfoAgNocivo: TInfoAgNocivo;
@@ -2361,7 +2297,7 @@ begin
   Result := FinfoSimples;
 end;
 
-function TideEstabLotItem.getInfoSaudeColect: TInfoSaudeColet;
+function TideEstabLotItem.getinfoSaudeColet: TInfoSaudeColet;
 begin
   if not Assigned(FInfoSaudeColet) then
     FInfoSaudeColet := TInfoSaudeColet.Create;
@@ -2383,21 +2319,10 @@ begin
   result := Assigned(FinfoSimples);
 end;
 
-{ TProcJudTrab }
-constructor TProcJudTrabCollectionItem.create;
-begin
-end;
-
 { TProcJudTrabCollection }
 function TProcJudTrabCollection.Add: TProcJudTrabCollectionItem;
 begin
-  Result := TProcJudTrabCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TProcJudTrabCollection.create;
-begin
-  inherited create(TProcJudTrabCollectionItem);
+  Result := Self.New;
 end;
 
 function TProcJudTrabCollection.GetItem(
@@ -2412,16 +2337,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TProcJudTrabCollection.New: TProcJudTrabCollectionItem;
+begin
+  Result := TProcJudTrabCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TPensaoAlimCollection }
 function TPensaoAlimCollection.Add: TPensaoAlimCollectionItem;
 begin
-  Result := TPensaoAlimCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TPensaoAlimCollection.create;
-begin
-  inherited create(TPensaoAlimCollectionItem)
+  Result := Self.New;
 end;
 
 function TPensaoAlimCollection.GetItem(
@@ -2436,21 +2361,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TPensaoAlimCollectionItem }
-constructor TPensaoAlimCollectionItem.create;
+function TPensaoAlimCollection.New: TPensaoAlimCollectionItem;
 begin
+  Result := TPensaoAlimCollectionItem.Create;
+  Self.Add(Result);
 end;
 
-{ TDetPlano }
+{ TDetPlanoCollection }
 function TDetPlanoCollection.Add: TDetPlanoCollectionItem;
 begin
-  Result := TDetPlanoCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TDetPlanoCollection.create;
-begin
-  inherited create(TDetPlanoCollectionItem);
+  Result := Self.New;
 end;
 
 function TDetPlanoCollection.GetItem(Index: Integer): TDetPlanoCollectionItem;
@@ -2464,15 +2384,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TDetPlanoCollectionItem }
-constructor TDetPlanoCollectionItem.create;
+function TDetPlanoCollection.New: TDetPlanoCollectionItem;
 begin
-
+  Result := TDetPlanoCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { TDetOperCollectionItem }
 constructor TDetOperCollectionItem.create;
 begin
+  inherited Create;
   FDetPlanoCollection := TDetPlanoCollection.create;
 end;
 
@@ -2485,13 +2406,7 @@ end;
 { TDetOperCollection }
 function TDetOperCollection.Add: TDetOperCollectionItem;
 begin
-  Result := TDetOperCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TDetOperCollection.create;
-begin
-  inherited create(TDetOperCollectionItem)
+  Result := Self.New;
 end;
 
 function TDetOperCollection.GetItem(Index: Integer): TDetOperCollectionItem;
@@ -2505,28 +2420,30 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TInfoSaudeColet }
-constructor TInfoSaudeColet.create;
+function TDetOperCollection.New: TDetOperCollectionItem;
 begin
-  FDetOper := TDetOperCollection.create;
+  Result := TDetOperCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TInfoSaudeColet }
+constructor TInfoSaudeColet.Create;
+begin
+  inherited Create;
+  FDetOper := TDetOperCollection.Create;
 end;
 
 destructor TInfoSaudeColet.destroy;
 begin
   FDetOper.Free;
+  inherited;
 end;
 
 {TIdeTrabSubstituidoCollection}
 
 function TIdeTrabSubstituidoCollection.Add: TIdeTrabSubstituidoCollectionItem;
 begin
-  Result := TIdeTrabSubstituidoCollectionItem(inherited Add);
-  Result.Create;
-end;
-
-constructor TIdeTrabSubstituidoCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TIdeTrabSubstituidoCollectionItem);
+  Result := Self.New;
 end;
 
 function TIdeTrabSubstituidoCollection.GetItem(Index: Integer): TIdeTrabSubstituidoCollectionItem;
@@ -2539,40 +2456,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TDependenteCollectionItem }
-
-constructor TDependenteCollectionItem.create;
+function TIdeTrabSubstituidoCollection.New: TIdeTrabSubstituidoCollectionItem;
 begin
-
-end;
-
-{ TDescAtividadeCollectionItem }
-constructor TDescAtividadeCollectionItem.create;
-begin
-
-end;
-
-{ THorarioCollectionItem }
-constructor THorarioCollectionItem.create;
-begin
-
-end;
-
-{ TIdeTrabSubstituidoCollectionItem }
-constructor TIdeTrabSubstituidoCollectionItem.Create;
-begin
-
-end;
-
-{ TProcesso }
-constructor TProcesso.Create;
-begin
-
+  Result := TIdeTrabSubstituidoCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 { TRemunPerCollectionItem }
 constructor TRemunPerCollectionItem.Create;
 begin
+  inherited Create;
   FItensRemun := TRubricaCollection.Create;
   FInfoSaudeColet := nil;
 end;
@@ -2599,13 +2492,7 @@ end;
 { TNfsColecao }
 function TNfsColecao.Add: TNfsItem;
 begin
-  Result := TNfsItem(inherited Add);
-  //Result.Create;
-end;
-
-constructor TNfsColecao.Create(AOwner: TPersistent);
-begin
-  inherited Create(TNfsItem);
+  Result := Self.New;
 end;
 
 function TNfsColecao.GetItem(Index: Integer): TNfsItem;
@@ -2616,6 +2503,12 @@ end;
 procedure TNfsColecao.SetItem(Index: Integer; const Value: TNfsItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TNfsColecao.New: TNfsItem;
+begin
+  Result := TNfsItem.Create;
+  Self.Add(Result);
 end;
 
 { TFiliacaoSindical }
@@ -2641,22 +2534,10 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TRemunOutrEmpr }
-constructor TRemunOutrEmprCollectionItem.Create;
-begin
-
-end;
-
 { TRemunOutrEmprCollection }
-function TRemunOutrEmprCollection.add: TRemunOutrEmprCollectionItem;
+function TRemunOutrEmprCollection.Add: TRemunOutrEmprCollectionItem;
 begin
-  Result := TRemunOutrEmprCollectionItem(inherited add);
-  Result.Create;
-end;
-
-constructor TRemunOutrEmprCollection.Create;
-begin
-  inherited Create(TRemunOutrEmprCollectionItem);
+  Result := Self.New;
 end;
 
 function TRemunOutrEmprCollection.GetItem(Index: integer):
@@ -2671,9 +2552,16 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TRemunOutrEmprCollection.New: TRemunOutrEmprCollectionItem;
+begin
+  Result := TRemunOutrEmprCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TInfoMV }
 constructor TInfoMV.Create;
 begin
+  inherited Create;
   FRemunOutrEmpr := TRemunOutrEmprCollection.Create;
 end;
 
@@ -2691,23 +2579,11 @@ begin
   FOrgaoPublico := False;
 end;
 
-{ TObservacoesCollectionItem }
-
-constructor TObservacoesCollectionItem.create;
-begin
-
-end;
-
 { TObservacoesCollection }
 
 function TObservacoesCollection.Add: TObservacoesCollectionItem;
 begin
-  Result := TObservacoesCollectionItem(inherited Add);
-end;
-
-constructor TObservacoesCollection.Create();
-begin
-  inherited Create(TObservacoesCollectionItem);
+  Result := Self.New;
 end;
 
 function TObservacoesCollection.GetItem(
@@ -2722,10 +2598,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TObservacoesCollection.New: TObservacoesCollectionItem;
+begin
+  Result := TObservacoesCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TideTrabalhador3 }
 
 constructor TideTrabalhador3.Create;
 begin
+  inherited Create;
   FprocJudTrab := TprocJudTrabCollection.create;
 end;
 
@@ -2740,13 +2623,7 @@ end;
 
 function TInfoProcJCollection.Add: TInfoProcJItem;
 begin
-  Result:= TinfoProcJItem(inherited Add);
-  Result.Create(Self);
-end;
-
-constructor TInfoProcJCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TinfoProcJItem);
+  Result := Self.New;
 end;
 
 function TInfoProcJCollection.GetItem(Index: Integer): TInfoProcJItem;
@@ -2757,6 +2634,20 @@ end;
 procedure TInfoProcJCollection.SetItem(Index: Integer; Value: TInfoProcJItem);
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TInfoProcJCollection.New: TInfoProcJItem;
+begin
+  Result := TInfoProcJItem.Create;
+  Self.Add(Result);
+end;
+
+{ TeSocialCollection }
+
+constructor TeSocialCollection.Create(AACBreSocial: TComponent);
+begin
+  inherited Create;
+  FACBreSocial := AACBreSocial;
 end;
 
 end.

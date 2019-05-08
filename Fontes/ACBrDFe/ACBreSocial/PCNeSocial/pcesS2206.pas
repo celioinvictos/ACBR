@@ -48,40 +48,37 @@ unit pcesS2206;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
 
-  TS2206Collection = class;
   TS2206CollectionItem = class;
   TEvtAltContratual = class;
   TAltContratual = class;
   TServPubl = class;
   TInfoContratoS2206 = class;
 
-  TS2206Collection = class(TOwnedCollection)
+  TS2206Collection = class(TeSocialCollection)
   private
     function GetItem(Index: Integer): TS2206CollectionItem;
     procedure SetItem(Index: Integer; Value: TS2206CollectionItem);
   public
-    function Add: TS2206CollectionItem;
+    function Add: TS2206CollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TS2206CollectionItem;
     property Items[Index: Integer]: TS2206CollectionItem read GetItem write SetItem; default;
   end;
 
-  TS2206CollectionItem = class(TCollectionItem)
+  TS2206CollectionItem = class(TObject)
   private
     FTipoEvento : TTipoEvento;
     FEvtAltContratual: TEvtAltContratual;
-
-    procedure setEvtAltContratual(const Value: TEvtAltContratual);
   public
-    constructor Create(AOwner: TComponent); reintroduce;
+    constructor Create(AOwner: TComponent);
     destructor  Destroy; override;
-  published
     property TipoEvento : TTipoEvento read FTipoEvento;
-    property EvtAltContratual : TEvtAltContratual read FEvtAltContratual write setEvtAltContratual;
+    property EvtAltContratual : TEvtAltContratual read FEvtAltContratual write FEvtAltContratual;
   end;
 
   TEvtAltContratual = class(TeSocialEvento)
@@ -90,7 +87,6 @@ type
     FIdeEmpregador: TIdeEmpregador;
     FIdeVinculo : TIdeVinculo;
     FAltContratual: TAltContratual;
-    FACBreSocial: TObject;
 
     {Geradores da Classe - Necessários pois os geradores de ACBreSocialGerador
      possuem campos excedentes que não se aplicam ao S2206}
@@ -102,8 +98,8 @@ type
     procedure GerarServPubl(pServPubl: TServPubl);
     function  GetAltContratual : TAltContratual;
   public
-    constructor Create(AACBreSocial: TObject);overload;
-    destructor destroy; override;
+    constructor Create(AACBreSocial: TObject); override;
+    destructor Destroy; override;
 
     function GerarXML: boolean; override;
     function LerArqIni(const AIniString: String): Boolean;
@@ -114,7 +110,7 @@ type
     property AltContratual : TAltContratual read GetAltContratual write FAltContratual;
   end;
 
-  TServPubl = class(TPersistent)
+  TServPubl = class(TObject)
   private
     FMtvAlter: tpMtvAlt;
   public
@@ -127,14 +123,13 @@ type
 
     function getServPubl: TServPubl;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     function servPublInst: boolean;
-
     property servPubl: TServPubl read getServPubl write FServPubl;
   end;
 
-  TAltContratual = class(TPersistent)
+  TAltContratual = class(TObject)
   private
     FdtAlteracao : TDateTime;
     FDtEf: TDateTime;
@@ -144,8 +139,7 @@ type
     FinfoContrato   : TInfoContratoS2206;
   public
     constructor Create;
-    destructor  destroy; override;
-  published
+    destructor  Destroy; override;
     property dtALteracao : TDateTime read FdtAlteracao write FdtAlteracao;
     property dtEf: TDateTime read FDtEf write FDtEf;
     property dscAlt: string read FDscAlt write FDscAlt;
@@ -164,8 +158,7 @@ uses
 
 function TS2206Collection.Add: TS2206CollectionItem;
 begin
-  Result := TS2206CollectionItem(inherited Add);
-  Result.Create(TComponent(Self.Owner));
+  Result := Self.New;
 end;
 
 function TS2206Collection.GetItem(Index: Integer): TS2206CollectionItem;
@@ -178,11 +171,18 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TS2206Collection.New: TS2206CollectionItem;
+begin
+  Result := TS2206CollectionItem.Create(FACBreSocial);
+  Self.Add(Result);
+end;
+
 { TS2206CollectionItem }
 
 constructor TS2206CollectionItem.Create(AOwner: TComponent);
 begin
-  FTipoEvento := teS2206;
+  inherited Create;
+  FTipoEvento       := teS2206;
   FEvtAltContratual := TEvtAltContratual.Create(AOwner);
 end;
 
@@ -193,23 +193,18 @@ begin
   inherited;
 end;
 
-procedure TS2206CollectionItem.setEvtAltContratual(const Value: TEvtAltContratual);
-begin
-  FEvtAltContratual.Assign(Value)
-end;
-
 { TAltContratual }
 
 constructor TAltContratual.Create;
 begin
   inherited;
 
-  FVinculo := TVinculo.Create;
+  FVinculo        := TVinculo.Create;
   FinfoRegimeTrab := TinfoRegimeTrab.Create;
   FinfoContrato   := TInfoContratoS2206.Create;
 end;
 
-destructor TAltContratual.destroy;
+destructor TAltContratual.Destroy;
 begin
   FVinculo.Free;
   FinfoRegimeTrab.Free;
@@ -250,12 +245,11 @@ end;
 
 constructor TEvtAltContratual.Create(AACBreSocial: TObject);
 begin
-  inherited;
+  inherited Create(AACBreSocial);
 
-  FACBreSocial := AACBreSocial;
-  FIdeEvento := TIdeEvento2.Create;
+  FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeVinculo := TIdeVinculo.Create;
+  FIdeVinculo    := TIdeVinculo.Create;
   FAltContratual := TAltContratual.Create;
 end;
 
@@ -415,7 +409,7 @@ var
   sSecao, sFim: String;
   I: Integer;
 begin
-  Result := False;
+  Result := True;
 
   INIRec := TMemIniFile.Create('');
   try
@@ -430,7 +424,6 @@ begin
       sSecao := 'ideEvento';
       ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
       ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.TpAmb       := eSStrTotpAmb(Ok, INIRec.ReadString(sSecao, 'tpAmb', '1'));
       ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
       ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
 
@@ -532,7 +525,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with altContratual.infoContrato.horContratual.horario.Add do
+        with altContratual.infoContrato.horContratual.horario.New do
         begin
           dia           := eSStrToTpDia(Ok, sFim);
           CodHorContrat := INIRec.ReadString(sSecao, 'codHorContrat', '');
@@ -573,7 +566,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with altContratual.infoContrato.observacoes.Add do
+        with altContratual.infoContrato.observacoes.New do
         begin
           observacao := sFim;
         end;
@@ -587,8 +580,6 @@ begin
     end;
 
     GerarXML;
-
-    Result := True;
   finally
      INIRec.Free;
   end;

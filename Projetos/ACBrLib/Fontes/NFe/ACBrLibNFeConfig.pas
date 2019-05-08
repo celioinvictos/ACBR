@@ -42,7 +42,7 @@ uses
   pcnConversao,
   ACBrNFeConfiguracoes, Graphics,
   ACBrDFeReport, ACBrDFeDANFeReport, ACBrNFeDANFEClass, ACBrNFeDANFeRLClass,
-  ACBrLibConfig, ACBrIntegradorConfig, DFeReportConfig;
+  ACBrLibConfig, ACBrDeviceConfig, ACBrIntegradorConfig, DFeReportConfig;
 
 type
   TTipoRelatorioEvento = (evA4, evBobina);
@@ -225,6 +225,7 @@ type
     FDANFeConfig: TDANFeReportConfig;
     FNFeConfig: TConfiguracoesNFe;
     FIntegradorConfig: TIntegradorConfig;
+    FDeviceConfig: TDeviceConfig;
 
   protected
     function AtualizarArquivoConfiguracao: Boolean; override;
@@ -245,6 +246,8 @@ type
     property NFeConfig: TConfiguracoesNFe read FNFeConfig;
     property DANFeConfig: TDANFeReportConfig read FDANFeConfig;
     property IntegradorConfig: TIntegradorConfig read FIntegradorConfig;
+    property PosDeviceConfig: TDeviceConfig read FDeviceConfig write FDeviceConfig;
+
   end;
 
 implementation
@@ -390,6 +393,9 @@ end;
 
 procedure TDANFeNFeConfig.Assign(const DFeReport: TACBrNFeDANFeRL);
 begin
+
+  if not Assigned(DFeReport) then Exit;
+
   with DFeReport do
   begin
     FormularioContinuo := FFormularioContinuo;
@@ -592,6 +598,9 @@ end;
 
 procedure TDANFeNFCeConfig.Assign(const DFeReport: TACBrNFeDANFCEClass);
 begin
+
+  if not Assigned(DFeReport) then Exit;
+
   with DFeReport do
   begin
     LarguraBobina := FLarguraBobina;
@@ -676,6 +685,7 @@ begin
   FQuebraLinhaEmDetalhamentos := AIni.ReadBool(CSessaoDANFE, CChaveQuebraLinhaEmDetalhamentos, FQuebraLinhaEmDetalhamentos);
 
   FNFeConfig.LerIni(AIni);
+  FNFCeConfig.LerIni(AIni);
 
 end;
 
@@ -697,6 +707,7 @@ begin
   AIni.WriteBool(CSessaoDANFE, CChaveQuebraLinhaEmDetalhamentos, FQuebraLinhaEmDetalhamentos);
 
   FNFeConfig.GravarIni(AIni);
+  FNFCeConfig.GravarIni(AIni);
 
 end;
 
@@ -747,15 +758,17 @@ begin
 
   FNFeConfig := TConfiguracoesNFe.Create(nil);
   FNFeConfig.ChaveCryptINI := AChaveCrypt;
+
   FDANFeConfig := TDANFeReportConfig.Create;
   FIntegradorConfig := TIntegradorConfig.Create;
 end;
 
 destructor TLibNFeConfig.Destroy;
 begin
-  FNFeConfig.Destroy;
+  FNFeConfig.Free;
   FDANFeConfig.Free;
   FIntegradorConfig.Free;
+  if FDeviceConfig <> nil then FDeviceConfig.Free;
 
   inherited Destroy;
 end;
@@ -773,24 +786,32 @@ procedure TLibNFeConfig.INIParaClasse;
 begin
   inherited INIParaClasse;
 
+  FNFeConfig.ChaveCryptINI := ChaveCrypt;
+
   FNFeConfig.LerIni(Ini);
   FDANFeConfig.LerIni(Ini);
   FIntegradorConfig.LerIni(Ini);
+  if FDeviceConfig <> nil then FDeviceConfig.LerIni(Ini);
 end;
 
 procedure TLibNFeConfig.ClasseParaINI;
 begin
   inherited ClasseParaINI;
 
+  FNFeConfig.ChaveCryptINI := ChaveCrypt;
+
   Ini.WriteString(CSessaoVersao, CLibNFeNome, CLibNFeVersao);
 
   FNFeConfig.GravarIni(Ini);
   FDANFeConfig.GravarIni(Ini);
   FIntegradorConfig.GravarIni(Ini);
+  if FDeviceConfig <> nil then FDeviceConfig.GravarIni(Ini);
 end;
 
 procedure TLibNFeConfig.ClasseParaComponentes;
 begin
+  FNFeConfig.ChaveCryptINI := ChaveCrypt;
+
   if Assigned(Owner) then
     TACBrLibNFe(Owner).NFeDM.AplicarConfiguracoes;
 end;

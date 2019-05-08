@@ -43,20 +43,19 @@ uses
   ComCtrls, Controls, Graphics, Spin, MaskEdit, EditBtn, ACBrBAL, ACBrETQ,
   ACBrPosPrinter, ACBrSocket, ACBrCEP, ACBrIBGE, blcksock, ACBrValidador,
   ACBrGIF, ACBrEAD, ACBrMail, ACBrSedex, ACBrNCMs, ACBrNFe, ACBrNFeDANFeESCPOS,
-  ACBrDANFCeFortesFr, ACBrNFeDANFeRLClass, ACBrBoleto, ACBrBoletoFCFortesFr,
-  Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo, PrintersDlgs, IpHtml,
-  pcnConversao, pcnConversaoNFe, pcteConversaoCTe, ACBrSAT,
-  ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede,
+  ACBrDANFCeFortesFr, ACBrDANFCeFortesFrA4, ACBrNFeDANFeRLClass, ACBrBoleto,
+  ACBrBoletoFCFortesFr, Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo,
+  PrintersDlgs, IpHtml, pcnConversao, pcnConversaoNFe, pcteConversaoCTe,
+  ACBrSAT, ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede,
   ACBrDFeSSL, ACBrGNRE2, ACBrGNReGuiaRLClass, ACBrBlocoX, ACBrMDFe,
   ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types, fileinfo,
   ACBrDFeConfiguracoes, ACBrReinf, ACBreSocial, ACBrIntegrador, LazHelpCHM,
   pmdfeConversaoMDFe, pcesConversaoeSocial, pcnConversaoReinf,
-  ACBrMonitorConfig, ACBrMonitorConsts,
-  DOACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit, DoBoletoUnit,
-  DoACBrReinfUnit, DoBALUnit, DoEmailUnit, DoCEPUnit, DoCHQUnit, DoGAVUnit,
-  DoIBGEUnit, DoNcmUnit, DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit,
-  DoACBrGNReUnit, DoPosPrinterUnit, DoECFUnit, DoECFObserver, DoECFBemafi32,
-  DoSATUnit, DoACBreSocialUnit;
+  ACBrMonitorConfig, ACBrMonitorConsts, DOACBrNFeUnit, DoACBrCTeUnit,
+  DoACBrMDFeUnit, DoBoletoUnit, DoACBrReinfUnit, DoBALUnit, DoEmailUnit,
+  DoCEPUnit, DoCHQUnit, DoGAVUnit, DoIBGEUnit, DoNcmUnit, DoLCBUnit, DoDISUnit,
+  DoSedexUnit, DoETQUnit, DoACBrGNReUnit, DoPosPrinterUnit, DoECFUnit,
+  DoECFObserver, DoECFBemafi32, DoSATUnit, DoACBreSocialUnit;
 
 const
   //{$I versao.txt}
@@ -111,6 +110,7 @@ type
     ACBrNCMs1: TACBrNCMs;
     ACBrNFe1: TACBrNFe;
     ACBrNFeDANFCeFortes1: TACBrNFeDANFCeFortes;
+    ACBrNFeDANFCeFortesA4_1: TACBrNFeDANFCeFortesA4;
     ACBrNFeDANFeESCPOS1: TACBrNFeDANFeESCPOS;
     ACBrNFeDANFeRL1: TACBrNFeDANFeRL;
     ACBrPosPrinter1: TACBrPosPrinter;
@@ -251,6 +251,10 @@ type
     cbFormaEmissaoCTe: TComboBox;
     cbFormaEmissaoMDFe: TComboBox;
     cbFormaEmissaoGNRe: TComboBox;
+    ckCamposFatObrigatorio: TCheckBox;
+    GroupBox9: TGroupBox;
+    Label227: TLabel;
+    Label229: TLabel;
     cbGavetaSinalInvertido: TCheckBox;
     cbLog: TCheckBox;
     cbxExibeTotalTributosItem: TCheckBox;
@@ -395,7 +399,6 @@ type
     CHMHelpDatabase1: TCHMHelpDatabase;
     ckMemoria: TCheckBox;
     ckNFCeUsarIntegrador: TCheckBox;
-    ckCamposFatObrigatorio: TCheckBox;
     deBolDirRetornoRel: TDirectoryEdit;
     deUSUDataCadastro: TDateEdit;
     eAvanco: TEdit;
@@ -606,6 +609,7 @@ type
     TabSheet1: TTabSheet;
     gbxWSeSocial: TTabSheet;
     gbxWSReinf: TTabSheet;
+    cbTagRejeicao938: TComboBox;
     tsRespTecnico: TTabSheet;
     tsIntegrador: TTabSheet;
     tsRelatorio: TTabSheet;
@@ -1677,6 +1681,7 @@ var
   Y: TSSLType;
   IFormaEmissaoNFe, IFormaEmissaoCTe, IFormaEmissaoGNRe,
     IFormaEmissaoMDFe: TpcnTipoEmissao;
+  IForcarTagICMSSubs: TForcarGeracaoTag;
   iETQModelo : TACBrETQModelo ;
   iETQDPI: TACBrETQDPI;
   iETQUnidade: TACBrETQUnidade;
@@ -2051,6 +2056,11 @@ begin
   for IFormaEmissaoMDFe := Low(TpcnTipoEmissao) to High(TpcnTipoEmissao) do
     cbFormaEmissaoMDFe.Items.Add(GetEnumName(TypeInfo(TpcnTipoEmissao), integer(IFormaEmissaoMDFe)));
   cbFormaEmissaoMDFe.ItemIndex := 0;
+
+  cbTagRejeicao938.Items.Clear;
+  for IForcarTagICMSSubs := Low(TForcarGeracaoTag) to High(TForcarGeracaoTag) do
+    cbTagRejeicao938.Items.Add(GetEnumName(TypeInfo(TForcarGeracaoTag), integer(IForcarTagICMSSubs)));
+  cbTagRejeicao938.ItemIndex := 0;
 
   FileVerInfo:=TFileVersionInfo.Create(nil);
   try
@@ -2702,7 +2712,7 @@ begin
 
     ACBrCTe1.EventoCTe.Evento.Clear;
     ACBrCTe1.EventoCTe.idLote := StrToInt(idLote);
-    with ACBrCTe1.EventoCTe.Evento.Add do
+    with ACBrCTe1.EventoCTe.Evento.New do
     begin
       infEvento.dhEvento := now;
       infEvento.tpEvento := teCancelamento;
@@ -2732,7 +2742,7 @@ begin
     if not(InputQuery('WebServices Cancelamento', 'Justificativa', vAux))
       then exit;
 
-    with ACBrMDFe1.EventoMDFe.Evento.Add do
+    with ACBrMDFe1.EventoMDFe.Evento.New do
     begin
       infEvento.chMDFe   := Copy(ACBrMDFe1.Manifestos.Items[0].MDFe.infMDFe.ID, 5, 44);
       infEvento.CNPJCPF  := ACBrMDFe1.Manifestos.Items[0].MDFe.emit.CNPJCPF;
@@ -4415,7 +4425,7 @@ begin
     with Email do
     begin
       edtBOLEmailAssunto.Text          := EmailAssuntoBoleto;
-      edtBOLEmailMensagem.Text         := EmailMensagemBoleto;
+      edtBOLEmailMensagem.Text         := StringToBinaryString(EmailMensagemBoleto);
     end;
 
   end;
@@ -4515,6 +4525,8 @@ begin
       cbVersaoWsReinf.ItemIndex        := cbVersaoWSReinf.Items.IndexOf(VersaoReinf);
       cbVersaoWSQRCode.ItemIndex       := cbVersaoWSQRCode.Items.IndexOf(VersaoQRCode);
       ckCamposFatObrigatorio.Checked   := CamposFatObrig;
+      cbTagRejeicao938.ItemIndex       := TagRejeicao938;
+
     end;
 
     with ESocial do
@@ -5630,6 +5642,7 @@ begin
         FormaEmissaoMDFe         := cbFormaEmissaoMDFe.ItemIndex;
         FormaEmissaoGNRe         := cbFormaEmissaoGNRe.ItemIndex;
         CamposFatObrig           := ckCamposFatObrigatorio.Checked;
+        TagRejeicao938           := cbTagRejeicao938.ItemIndex;
       end;
 
       with ESocial do
@@ -8465,7 +8478,12 @@ begin
     if ACBrNFe1.NotasFiscais.Items[0].NFe.Ide.modelo = 65 then
     begin
       if (rgModeloDANFeNFCE.ItemIndex = 0) or GerarPDF then
-        ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1
+      begin
+        if (rgModoImpressaoEvento.ItemIndex = 0) then
+          ACBrNFe1.DANFE := ACBrNFeDANFCeFortesA4_1
+        else
+          ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1;
+      end
       else
         ACBrNFe1.DANFE := ACBrNFeDANFeESCPOS1;
 
@@ -8533,6 +8551,25 @@ begin
       ACBrNFeDANFeRL1.ExibeDadosDocReferenciados := cbxImpDocsReferenciados.Checked;
       ACBrNFeDANFeRL1.ExibeInforAdicProduto := TinfAdcProd(rgInfAdicProduto.ItemIndex);
       ACBrNFeDANFeRL1.LogoemCima := cbxExibirLogoEmCima.Checked;
+    end
+    else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortesA4_1 then
+    begin
+      ACBrNFeDANFCeFortesA4_1.ExibeInforAdicProduto := TinfAdcProd(rgInfAdicProduto.ItemIndex);
+      ACBrNFeDANFCeFortesA4_1.ImprimeDescAcrescItem := cbxImprimirDescAcresItemNFCe.Checked;
+      ACBrNFeDANFCeFortesA4_1.ImprimeTotalLiquido   := cbxImprimirDescAcresItemNFCe.Checked;
+      ACBrNFeDANFCeFortesA4_1.MargemInferior        := fspeMargemInf.Value;
+      ACBrNFeDANFCeFortesA4_1.MargemSuperior        := fspeMargemSup.Value;
+      ACBrNFeDANFCeFortesA4_1.MargemDireita         := fspeMargemDir.Value;
+      ACBrNFeDANFCeFortesA4_1.MargemEsquerda        := fspeMargemEsq.Value;
+      ACBrNFeDANFCeFortesA4_1.ImprimeCodigoEan      := cbxImprimirCodigoEANNFCe.Checked;
+      ACBrNFeDANFCeFortesA4_1.ImprimeNomeFantasia   := cbxImprimirNomeFantasiaNFCe.Checked;
+      ACBrNFeDANFCeFortesA4_1.ExibeTotalTributosItem:= cbxExibeTotalTributosItem.Checked;
+      ACBrNFeDANFCeFortesA4_1.ImprimeTributos       := TpcnTributos(rgImprimeTributos.ItemIndex);
+      if ( Trim(edtLogoMarcaNFCeSAT.Text) <> '') and FileExists(edtLogoMarcaNFCeSAT.Text) then
+        ACBrNFeDANFCeFortesA4_1.Logo                := edtLogoMarcaNFCeSAT.Text
+      else
+        ACBrNFeDANFCeFortesA4_1.Logo                := '';
+
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortes1 then
     begin
@@ -9122,7 +9159,7 @@ begin
     TConfiguracoesNFe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
     TConfiguracoesNFe(Configuracoes).Geral.CamposFatObrigatorios    := ckCamposFatObrigatorio.Checked;
-
+    TConfiguracoesNFe(Configuracoes).Geral.ForcarGerarTagRejeicao938 := TForcarGeracaoTag(cbTagRejeicao938.ItemIndex);
 
   end
   else if Configuracoes is TConfiguracoesCTe then

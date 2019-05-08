@@ -47,6 +47,32 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+16/04/2019
+-- ACBrNFeDANFeRLRetrato, ACBrNFeDANFeRLPaisagem --
+[*] Correção na verificação da condição para impressão dos dados de entrega e retirada.
+    https://www.projetoacbr.com.br/forum/topic/50655-local-de-entrega-n%C3%A3o-est%C3%A1-saindo-no-danfe/
+    (por: BigWings)
+
+15/03/2019
+-- ACBrNFeDANFeRL--
+[*] Ajustes no tamanho campo CNPJ/CPF em "Local Retirada", "Local Entrega"
+	(por: José M S Junior )
+
+15/03/2019
+-- ACBrDANFCeFortesFrA4--
+[*] Ajustes na configuração de Margens NFCeA4 e Descrições com caracteres especiais
+	(por: José M S Junior )
+
+18/03/2019
+-- ACBrNFeDANFeEventoRLRetrato--
+[*] Ajustes no redimensionamento do campo "Correção" do Evento Carta de Correção
+	(por: José M S Junior )
+
+01/03/2019
+-- ACBrNFeDANFeRLRetrato ACBrNFeDANFeRLPaisagem --
+[*] Melhoria na condição para apresentar o layout de local retirada / entrega.
+	(por: Henrique Leonardo - Hleorj )
+
 13/02/2019
 -- ACBrNFeDANFeRLRetrato ACBrNFeDANFeRLPaisagem --
 [+] Implantação do novo layout de local retirada / entrega

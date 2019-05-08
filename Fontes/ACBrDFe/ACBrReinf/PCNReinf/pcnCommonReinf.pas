@@ -44,7 +44,7 @@ unit pcnCommonReinf;
 interface
 
 uses
-  SysUtils, Classes, Controls,
+  SysUtils, Classes, Controls, Contnrs,
   pcnConversaoReinf;
 
 const
@@ -71,17 +71,24 @@ type
 
   IEventoReinf = Interface;
 
-  TReinf = class(TPersistent)
+  TReinfCollection = class(TObjectList)
+  public
+    FACBrReinf: TComponent;
+
+    constructor Create(AACBrReinf: TComponent); reintroduce; virtual;
+  end;
+
+  TReinf = class(TObject)
   private
     FId: string;
     FSequencial: Integer;
-  published
+  public
     property Id: string read FId write FId;
     property Sequencial: Integer read FSequencial write FSequencial;
   end;
 
   { TStatus }
-  TStatus = class
+  TStatus = class(TObject)
   private
     FcdStatus: Integer;
     FdescRetorno: string;
@@ -95,18 +102,18 @@ type
     property Ocorrencias: TOcorrenciasCollection read FOcorrencias write FOcorrencias;
   end;
 
-  TOcorrenciasCollection = class(TCollection)
+  TOcorrenciasCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TOcorrenciasCollectionItem;
     procedure SetItem(Index: Integer; Value: TOcorrenciasCollectionItem);
   public
-    constructor create(AOwner: TStatus);
+    function Add: TOcorrenciasCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TOcorrenciasCollectionItem;
 
-    function Add: TOcorrenciasCollectionItem;
     property Items[Index: Integer]: TOcorrenciasCollectionItem read GetItem write SetItem;
   end;
 
-  TOcorrenciasCollectionItem = class(TCollectionItem)
+  TOcorrenciasCollectionItem = class(TObject)
   private
     FCodigo: Integer;
     FDescricao: String;
@@ -119,19 +126,17 @@ type
     property Localizacao: String read FLocalizacao write FLocalizacao;
   end;
 
-  TIdeEvento = class(TPersistent)
+  TIdeEvento = class(TObject)
   private
-    FTpAmb: TtpAmb;
     FProcEmi: TProcEmi;
     FVerProc: string;
   public
-    property TpAmb: TtpAmb read FTpAmb write FTpAmb;
     property ProcEmi: TProcEmi read FProcEmi write FProcEmi;
     property VerProc: string read FVerProc write FVerProc;
   end;
 
   { TIdeEvento1 }
-  TIdeEvento1 = class(TPersistent)
+  TIdeEvento1 = class(TObject)
   private
     FperApur: string;
   public
@@ -160,7 +165,7 @@ type
     property dtApuracao: TDateTime read FdtApuracao write FdtApuracao;
   end;
 
-  TInscricao = class(TPersistent)
+  TInscricao = class(TObject)
   protected
     FTpInsc: TtpInsc;
     FNrInsc: string;
@@ -188,7 +193,7 @@ type
     property IdTransmissor: string read FIdTransmissor write FIdTransmissor;
   end;
 
-  TIdePeriodo = class(TPersistent)
+  TIdePeriodo = class(TObject)
   private
     FIniValid: string;
     FFimValid: string;
@@ -198,7 +203,7 @@ type
   end;
 
   { TideStatus }
-  TideStatus = class(TPersistent)
+  TideStatus = class(TObject)
   private
     FcdRetorno: String;
     FdescRetorno: string;
@@ -212,18 +217,18 @@ type
     property regOcorrs: TregOcorrsCollection read FregOcorrs write FregOcorrs;
   end;
 
-  TregOcorrsCollection = class(TCollection)
+  TregOcorrsCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TregOcorrsCollectionItem;
     procedure SetItem(Index: Integer; Value: TregOcorrsCollectionItem);
   public
-    constructor create(AOwner: TideStatus);
+    function Add: TregOcorrsCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TregOcorrsCollectionItem;
 
-    function Add: TregOcorrsCollectionItem;
     property Items[Index: Integer]: TregOcorrsCollectionItem read GetItem write SetItem;
   end;
 
-  TregOcorrsCollectionItem = class(TCollectionItem)
+  TregOcorrsCollectionItem = class(TObject)
   private
     FtpOcorr: Integer;
     FlocalErroAviso: String;
@@ -260,7 +265,7 @@ end;
 
 constructor TideStatus.Create;
 begin
-  FregOcorrs := TregOcorrsCollection.create(Self);
+  FregOcorrs := TregOcorrsCollection.Create;
 end;
 
 destructor TideStatus.Destroy;
@@ -274,19 +279,19 @@ end;
 
 function TregOcorrsCollection.Add: TregOcorrsCollectionItem;
 begin
-  Result := TregOcorrsCollectionItem(inherited Add());
-//  Result.Create;
-end;
-
-constructor TregOcorrsCollection.create(AOwner: TideStatus);
-begin
-  inherited create(TregOcorrsCollectionItem);
+  Result := Self.New;
 end;
 
 function TregOcorrsCollection.GetItem(
   Index: Integer): TregOcorrsCollectionItem;
 begin
   Result := TregOcorrsCollectionItem(Inherited GetItem(Index));
+end;
+
+function TregOcorrsCollection.New: TregOcorrsCollectionItem;
+begin
+  Result := TregOcorrsCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 procedure TregOcorrsCollection.SetItem(Index: Integer;
@@ -299,7 +304,7 @@ end;
 
 constructor TStatus.Create;
 begin
-  FOcorrencias := TOcorrenciasCollection.create(Self);
+  FOcorrencias := TOcorrenciasCollection.Create;
 end;
 
 destructor TStatus.Destroy;
@@ -313,13 +318,7 @@ end;
 
 function TOcorrenciasCollection.Add: TOcorrenciasCollectionItem;
 begin
-  Result := TOcorrenciasCollectionItem(inherited Add());
-//  Result.Create;
-end;
-
-constructor TOcorrenciasCollection.create(AOwner: TStatus);
-begin
-  inherited create(TOcorrenciasCollectionItem);
+  Result := Self.New;
 end;
 
 function TOcorrenciasCollection.GetItem(
@@ -328,10 +327,25 @@ begin
   Result := TOcorrenciasCollectionItem(Inherited GetItem(Index));
 end;
 
+function TOcorrenciasCollection.New: TOcorrenciasCollectionItem;
+begin
+  Result := TOcorrenciasCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 procedure TOcorrenciasCollection.SetItem(Index: Integer;
   Value: TOcorrenciasCollectionItem);
 begin
   Inherited SetItem(Index, Value);
+end;
+
+{ TReinfCollection }
+
+constructor TReinfCollection.Create(AACBrReinf: TComponent);
+begin
+  inherited Create;
+
+  FACBrReinf := AACBrReinf;
 end;
 
 end.

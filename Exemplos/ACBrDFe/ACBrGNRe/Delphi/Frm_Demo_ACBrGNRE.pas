@@ -117,6 +117,7 @@ type
     Label42: TLabel;
     edtPathSchemas: TEdit;
     spPathSchemas: TSpeedButton;
+    rgVersaoDF: TRadioGroup;
     procedure sbtnCaminhoCertClick(Sender: TObject);
     procedure sbtnGetCertClick(Sender: TObject);
     procedure sbtnPathSalvarClick(Sender: TObject);
@@ -189,9 +190,10 @@ begin
   Ini.WriteString( 'Certificado','Senha'   ,edtSenha.Text);
   Ini.WriteString( 'Certificado','NumSerie',edtNumSerie.Text);
 
-  Ini.WriteBool(   'Geral','Salvar'      ,ckSalvar.Checked);
-  Ini.WriteString( 'Geral','PathSalvar'  ,edtPathLogs.Text);
-  Ini.WriteString( 'Geral','PathSchemas'  ,edtPathSchemas.Text);
+  Ini.WriteBool(   'Geral', 'Salvar'     , ckSalvar.Checked);
+  Ini.WriteString( 'Geral', 'PathSalvar' , edtPathLogs.Text);
+  Ini.WriteString( 'Geral', 'PathSchemas', edtPathSchemas.Text);
+  Ini.WriteInteger('Geral', 'VersaoDF'   , rgVersaoDF.ItemIndex);
 
   Ini.WriteString( 'WebService','UF'        ,cbUF.Text);
   Ini.WriteInteger( 'WebService','Ambiente'  ,rgTipoAmb.ItemIndex);
@@ -269,11 +271,17 @@ begin
     sbtnCaminhoCert.Visible := False;
     {$ENDIF}
 
-    ckSalvar.Checked    := Ini.ReadBool(   'Geral','Salvar'     , True);
-    edtPathLogs.Text    := Ini.ReadString( 'Geral','PathSalvar' , '');
-    edtPathSchemas.Text := Ini.ReadString( 'Geral','PathSchemas', '' );
+    ckSalvar.Checked     := Ini.ReadBool(   'Geral', 'Salvar'     , True);
+    edtPathLogs.Text     := Ini.ReadString( 'Geral', 'PathSalvar' , '');
+    edtPathSchemas.Text  := Ini.ReadString( 'Geral', 'PathSchemas', '' );
+    rgVersaoDF.ItemIndex := Ini.ReadInteger('Geral', 'VersaoDF'   , 0);
 
     ACBrGNRE1.Configuracoes.Geral.Salvar := ckSalvar.Checked;
+
+    if rgVersaoDF.ItemIndex = 0 then
+      ACBrGNRE1.Configuracoes.Geral.VersaoDF := ve100
+    else
+      ACBrGNRE1.Configuracoes.Geral.VersaoDF := ve200;
 
     cbUF.ItemIndex       := cbUF.Items.IndexOf(Ini.ReadString('WebService','UF','SP'));
     rgTipoAmb.ItemIndex  := Ini.ReadInteger('WebService','Ambiente'  ,0);
@@ -377,14 +385,45 @@ begin
   with ACBrGNRE1.Guias.Add.GNRE do
   begin
     c01_UfFavorecida := 'PR';
+    tipoGNRE := tgSimples;
     c02_receita := 100099;
-    c28_tipoDocOrigem := 10;
+    c03_idContribuinteEmitente := edtEmitCNPJ.Text;
     c04_docOrigem := '777777';
     c06_valorPrincipal := 120.50;
+    c10_valorTotal := 120.50;
     c14_dataVencimento := Now;
     c15_convenio := '16461313';
+
+    c16_razaoSocialEmitente := edtEmitRazao.Text;
     c17_inscricaoEstadualEmitente := '9023725557';
+    c18_enderecoEmitente := edtEmitLogradouro.Text + ', ' + edtEmitNumero.Text;
+    c19_municipioEmitente := edtEmitCidade.Text;
+    c20_ufEnderecoEmitente := edtEmitUF.Text;
+    c21_cepEmitente := edtEmitCEP.Text;
+    c22_telefoneEmitente := edtEmitFone.Text;
+    c27_tipoIdentificacaoEmitente := 1;
+    c28_tipoDocOrigem := 10;
+
     c33_dataPagamento := Now;
+
+    c34_tipoIdentificacaoDestinatario := 1;
+    c35_idContribuinteDestinatario := '12345678000123';
+    c36_inscricaoEstadualDestinatario := '12345678';
+    c37_razaoSocialDestinatario := 'Nome do Destinatario';
+    c38_municipioDestinatario := 'Municipio do Destinatario';
+
+    referencia.periodo := 1;
+    referencia.mes := '04';
+    referencia.ano := 2019;
+    referencia.parcela := 1;
+
+    with camposExtras.Add do
+    begin
+      CampoExtra.codigo := 123;
+      CampoExtra.tipo := '1';
+      CampoExtra.valor := '50.00';
+    end;
+
     c42_identificadorGuia := '001';
   end;
 end;
