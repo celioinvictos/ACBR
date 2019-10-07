@@ -54,9 +54,23 @@ type
     rlb_4_Aquav: TRLBand;
     rlb_5_Ferrov: TRLBand;
     rlb_6_Observacao: TRLBand;
+    RLDraw1: TRLDraw;
+    rlLabel2: TRLLabel;
     rlLabel22: TRLLabel;
+    rlLabel25: TRLLabel;
+    rlLabel3: TRLLabel;
+    rlLabel33: TRLLabel;
+    rlLabel4: TRLLabel;
+    RLLabel6: TRLLabel;
+    rlLabel77: TRLLabel;
+    rllDescricao: TRLLabel;
+    rllEmissao: TRLLabel;
+    rllModelo: TRLLabel;
     rllMsgTeste: TRLLabel;
     rllDataHoraImpressao: TRLLabel;
+    rllNumMDFe: TRLLabel;
+    rllProtocolo: TRLLabel;
+    rllSerie: TRLLabel;
     rllSistema: TRLLabel;
     rlb_7_Documentos_Titulos: TRLBand;
     rlLabel141: TRLLabel;
@@ -66,6 +80,8 @@ type
     rlLabel109: TRLLabel;
     rlLabel106: TRLLabel;
     rlLabel100: TRLLabel;
+    rllUFCarrega: TRLLabel;
+    rllUFDescarrega: TRLLabel;
     rlmObservacao: TRLMemo;
     RLBand1: TRLBand;
     RLDraw2: TRLDraw;
@@ -81,6 +97,13 @@ type
     rlLabel5: TRLLabel;
     RLBand2: TRLBand;
     rllModal: TRLLabel;
+    RLPanel2: TRLPanel;
+    rlsLinhaV05: TRLDraw;
+    rlsLinhaV06: TRLDraw;
+    rlsLinhaV07: TRLDraw;
+    rlsLinhaV08: TRLDraw;
+    rlsLinhaV09: TRLDraw;
+    RLSystemInfo1: TRLSystemInfo;
     subItens: TRLSubDetail;
     rlbItens: TRLBand;
     LinhaQuantidade: TRLDraw;
@@ -91,9 +114,6 @@ type
     rlmEmitente: TRLMemo;
     rlmDadosEmitente: TRLMemo;
     RLPanel1: TRLPanel;
-    RLPanel2: TRLPanel;
-    rllProtocolo: TRLLabel;
-    rllDescricao: TRLLabel;
     RLPanel3: TRLPanel;
     rllChave: TRLLabel;
     rlLabel1: TRLLabel;
@@ -103,27 +123,6 @@ type
     rlLabel17: TRLLabel;
     RLMemo1: TRLMemo;
     RLPanel5: TRLPanel;
-    RLPanel6: TRLPanel;
-    rllModelo: TRLLabel;
-    rllSerie: TRLLabel;
-    rllNumMDFe: TRLLabel;
-    RLSystemInfo1: TRLSystemInfo;
-    rllEmissao: TRLLabel;
-    rllUFCarrega: TRLLabel;
-    rllUFDescarrega: TRLLabel;
-    rlLabel2: TRLLabel;
-    rlLabel3: TRLLabel;
-    rlLabel4: TRLLabel;
-    rlLabel25: TRLLabel;
-    rlLabel33: TRLLabel;
-    rlLabel77: TRLLabel;
-    RLLabel6: TRLLabel;
-    rlsLinhaV05: TRLDraw;
-    rlsLinhaV06: TRLDraw;
-    rlsLinhaV07: TRLDraw;
-    rlsLinhaV08: TRLDraw;
-    rlsLinhaV09: TRLDraw;
-    RLDraw1: TRLDraw;
     RLPanel7: TRLPanel;
     rlShape10: TRLDraw;
     rlLabel35: TRLLabel;
@@ -179,10 +178,10 @@ type
     RLLabel30: TRLLabel;
     rlmRespApolice: TRLMemo;
     RLDraw16: TRLDraw;
-    RLDraw17: TRLDraw;
-    RLLabel32: TRLLabel;
-    rlmRespAverbacao: TRLMemo;
     rlmRespSeguro: TRLLabel;
+    imgQRCode: TRLImage;
+    rlsLinhaH02: TRLDraw;
+    RLDraw53: TRLDraw;
     procedure rlb_1_DadosManifestoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlb_2_RodoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlb_3_AereoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -207,7 +206,8 @@ implementation
 uses
   StrUtils, DateUtils,
   pmdfeMDFe,
-  ACBrUtil, ACBrDFeUtil, ACBrValidador, ACBrDFeReportFortes;
+  ACBrUtil, ACBrDFeUtil, ACBrValidador, ACBrDFeReport, ACBrDFeReportFortes,
+  ACBrDelphiZXingQRCode;
 
 {$ifdef FPC}
  {$R *.lfm}
@@ -342,7 +342,8 @@ end;
 
 procedure TfrlDAMDFeRLRetrato.rlb_2_RodoBeforePrint(Sender: TObject; var PrintIt: Boolean);
 var
-  i: integer;
+  i{, j}: integer;
+//  averbacao: string;
 begin
   inherited;
   rlb_2_Rodo.Enabled := (fpMDFe.Ide.modal = moRodoviario);
@@ -409,7 +410,7 @@ begin
 
   rlmRespSeguradora.Lines.Clear;
   rlmRespApolice.Lines.Clear;
-  rlmRespAverbacao.Lines.Clear;
+//  rlmRespAverbacao.Lines.Clear;
 
   rlmRespSeguro.Caption:= '';
 
@@ -420,6 +421,18 @@ begin
   begin
     rlmRespSeguradora.Lines.Add(fpMDFe.seg.Items[i].xSeg);
     rlmRespApolice.Lines.Add(fpMDFe.seg.Items[i].nApol);
+
+    { Remoção de averbação até ajuste de layout.
+      Veja: https://www.projetoacbr.com.br/forum/topic/53091-impress%C3%A3o-da-mdfe-300a/
+    averbacao := '';
+    for j := 0 to fpMDFe.seg.Items[i].aver.Count - 1 do
+    begin
+      if (averbacao = '') then
+        averbacao := fpMDFe.seg.Items[i].aver.Items[j].nAver
+      else
+        averbacao := averbacao +'; '+ fpMDFe.seg.Items[i].aver.Items[j].nAver;
+    end;
+    rlmRespAverbacao.Lines.Add(averbacao);}
   end;
 end;
 
@@ -636,6 +649,18 @@ begin
 
   rlmChave1.AutoSize := True;
   rlmChave2.AutoSize := rlmChave1.AutoSize;
+
+  if not EstaVazio(Trim(fpMDFe.infMDFeSupl.qrCodMDFe)) then
+    PintarQRCode( fpMDFe.infMDFeSupl.qrCodMDFe, imgQRCode.Picture, qrUTF8NoBOM )
+  else
+  begin
+    RLDraw53.Visible  := False;
+    RLPanel4.width    := 420;
+    RLPanel3.width    := 420;
+    RLBarcode1.width  := 408;
+    rllChave.width    := 408;
+    imgQRCode.Visible := False;
+  end;
 end;
 
 procedure TfrlDAMDFeRLRetrato.RLMDFeDataRecord(Sender: TObject; RecNo,

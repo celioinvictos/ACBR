@@ -34,7 +34,7 @@ unit pnfsLerListaNFSe;
 interface
 
 uses
-  SysUtils, Classes, Forms, variants,
+  SysUtils, Classes, Forms, variants, Contnrs,
   pcnConversao, pcnLeitor,
   pnfsConversao, pnfsNFSe, pnfsNFSeR, ACBrUtil;
 
@@ -45,7 +45,7 @@ type
   TMsgRetornoNFSeCollection = class;
   TMsgRetornoNFSeCollectionItem = class;
 
- TListaNFSe = class(TPersistent)
+ TListaNFSe = class(TObject)
   private
     FCompNFSe: TLerListaNFSeCollection;
     FMsgRetorno: TMsgRetornoNFSeCollection;
@@ -55,7 +55,7 @@ type
     procedure SetCompNFSe(Value: TLerListaNFSeCollection);
     procedure SetMsgRetorno(Value: TMsgRetornoNFSeCollection);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
 
     property CompNFSe: TLerListaNFSeCollection     read FCompNFSe        write SetCompNFSe;
@@ -64,41 +64,41 @@ type
     property ChaveNFeRPS: TChaveNFeRPS             read FChaveNFeRPS     write FChaveNFeRPS;
   end;
 
- TLerListaNFSeCollection = class(TCollection)
+ TLerListaNFSeCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TLerListaNFSeCollectionItem;
     procedure SetItem(Index: Integer; Value: TLerListaNFSeCollectionItem);
   public
-    constructor Create(AOwner: TListaNFSe);
-    function Add: TLerListaNFSeCollectionItem;
+    function Add: TLerListaNFSeCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TLerListaNFSeCollectionItem;
     property Items[Index: Integer]: TLerListaNFSeCollectionItem read GetItem write SetItem; default;
   end;
 
- TLerListaNFSeCollectionItem = class(TCollectionItem)
+ TLerListaNFSeCollectionItem = class(TObject)
   private
     FNFSe: TNFSe;
     FNFSeCancelamento: TConfirmacaoCancelamento;
     FNFSeSubstituicao: TSubstituicaoNFSe;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-  published
+
     property NFSe: TNFSe                                read FNFSe             write FNFSe;
     property NFSeCancelamento: TConfirmacaoCancelamento read FNFSeCancelamento write FNFSeCancelamento;
     property NFSeSubstituicao: TSubstituicaoNFSe        read FNFSeSubstituicao write FNFSeSubstituicao;
   end;
 
- TMsgRetornoNFSeCollection = class(TCollection)
+ TMsgRetornoNFSeCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TMsgRetornoNFSeCollectionItem;
     procedure SetItem(Index: Integer; Value: TMsgRetornoNFSeCollectionItem);
   public
-    constructor Create(AOwner: TListaNFSe);
-    function Add: TMsgRetornoNFSeCollectionItem;
+    function Add: TMsgRetornoNFSeCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TMsgRetornoNFSeCollectionItem;
     property Items[Index: Integer]: TMsgRetornoNFSeCollectionItem read GetItem write SetItem; default;
   end;
 
- TMsgRetornoNFSeCollectionItem = class(TCollectionItem)
+ TMsgRetornoNFSeCollectionItem = class(TObject)
   private
     FCodigo: String;
     FMensagem: String;
@@ -106,9 +106,9 @@ type
     FIdentificacaoRps: TMsgRetornoIdentificacaoRps;
     FChaveNFeRPS: TChaveNFeRPS;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-  published
+
     property Codigo: String   read FCodigo   write FCodigo;
     property Mensagem: String read FMensagem write FMensagem;
     property Correcao: String read FCorrecao write FCorrecao;
@@ -116,7 +116,7 @@ type
     property ChaveNFeRPS: TChaveNFeRPS read FChaveNFeRPS write FChaveNFeRPS;
   end;
 
- TRetornoNFSe = class(TPersistent)
+ TRetornoNFSe = class(TObject)
   private
     FLeitor: TLeitor;
     FListaNFSe: TListaNFSe;
@@ -129,7 +129,6 @@ type
     constructor Create;
     destructor Destroy; override;
     function LerXml: Boolean;
-  published
     property Leitor: TLeitor         read FLeitor         write FLeitor;
     property ListaNFSe: TListaNFSe   read FListaNFSe      write FListaNFSe;
     property Provedor: TNFSeProvedor read FProvedor       write FProvedor;
@@ -145,8 +144,9 @@ implementation
 
 constructor TListaNFSe.Create;
 begin
-  FCompNfse   := TLerListaNFSeCollection.Create(Self);
-  FMsgRetorno := TMsgRetornoNFSeCollection.Create(Self);
+  inherited Create;
+  FCompNfse    := TLerListaNFSeCollection.Create;
+  FMsgRetorno  := TMsgRetornoNFSeCollection.Create;
   FChaveNFeRPS := TChaveNFeRPS.Create;
 end;
 
@@ -173,13 +173,7 @@ end;
 
 function TLerListaNFSeCollection.Add: TLerListaNFSeCollectionItem;
 begin
-  Result := TLerListaNFSeCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TLerListaNFSeCollection.Create(AOwner: TListaNFSe);
-begin
-  inherited Create(TLerListaNFSeCollectionItem);
+  Result := Self.New;
 end;
 
 function TLerListaNFSeCollection.GetItem(
@@ -194,10 +188,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TLerListaNFSeCollection.New: TLerListaNFSeCollectionItem;
+begin
+  Result := TLerListaNFSeCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TLerListaNFSeCollectionItem }
 
 constructor TLerListaNFSeCollectionItem.Create;
 begin
+  inherited Create;
   FNfse             := TNFSe.Create;
   FNfseCancelamento := TConfirmacaoCancelamento.Create;
   FNfseSubstituicao := TSubstituicaoNfse.Create;
@@ -216,13 +217,7 @@ end;
 
 function TMsgRetornoNFSeCollection.Add: TMsgRetornoNFSeCollectionItem;
 begin
-  Result := TMsgRetornoNFSeCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TMsgRetornoNFSeCollection.Create(AOwner: TListaNFSe);
-begin
-  inherited Create(TMsgRetornoNFSeCollectionItem);
+  Result := Self.New;
 end;
 
 function TMsgRetornoNFSeCollection.GetItem(
@@ -237,13 +232,20 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TMsgRetornoNFSeCollection.New: TMsgRetornoNFSeCollectionItem;
+begin
+  Result := TMsgRetornoNFSeCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TMsgRetornoNFSeCollectionItem }
 
 constructor TMsgRetornoNFSeCollectionItem.Create;
 begin
-  FIdentificacaoRps := TMsgRetornoIdentificacaoRps.Create;
+  inherited Create;
+  FIdentificacaoRps      := TMsgRetornoIdentificacaoRps.Create;
   FIdentificacaoRps.Tipo := trRPS;
-  FChaveNFeRPS := TChaveNFeRPS.Create;
+  FChaveNFeRPS           := TChaveNFeRPS.Create;
 end;
 
 destructor TMsgRetornoNFSeCollectionItem.Destroy;
@@ -258,6 +260,7 @@ end;
 
 constructor TRetornoNFSe.Create;
 begin
+  inherited Create;
   FLeitor    := TLeitor.Create;
   FListaNfse := TListaNfse.Create;
   FProtocolo := '';
@@ -296,6 +299,8 @@ begin
     Nivel1 := (leitor.rExtrai(1, 'GerarNfseResposta') <> '');
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'GerarNfseResponse') <> '');
+    if not Nivel1 then
+      Nivel1 := (leitor.rExtrai(1, 'GerarNotaFiscalResult') <> '');
 
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'RecepcionarLoteRpsResult') <> '');
@@ -485,7 +490,7 @@ begin
 
           if Result then
           begin
-            with ListaNFSe.FCompNFSe.Add do
+            with ListaNFSe.FCompNFSe.New do
             begin
               // Armazena o XML da NFS-e
               FNFSe.XML := SeparaDados(Leitor.Grupo, 'tcCompNfse');
@@ -516,7 +521,7 @@ begin
 //              if NFSe.XML = '' then
 //                FNFSe.XML := SeparaDados(Leitor.Grupo, 'tbnfd', True);
 
-              if Provedor = proSMARAPD then
+              if Provedor in [ proSMARAPD, proAGILI ] then
                 FNFSe.XML := Leitor.Grupo;
 
               if (Provedor = proAssessorPublico) and (NFSe.XML = '') then
@@ -677,7 +682,7 @@ begin
 
             for j := 0 to NFSeLida.NFSe.CondicaoPagamento.Parcelas.Count -1 do
             begin
-              with ListaNFSe.FCompNFSe[i].FNFSe.CondicaoPagamento.Parcelas.Add do
+              with ListaNFSe.FCompNFSe[i].FNFSe.CondicaoPagamento.Parcelas.New do
               begin
                 Parcela        := NFSeLida.NFSe.CondicaoPagamento.Parcelas.Items[j].Parcela;
                 DataVencimento := NFSeLida.NFSe.CondicaoPagamento.Parcelas.Items[j].DataVencimento;
@@ -696,7 +701,7 @@ begin
       if (Provedor = ProTecnos) then
       begin
         if (ListaNFSe.CompNFSe.Count = 0) then
-          lNFSe := ListaNFSe.CompNFSe.Add
+          lNFSe := ListaNFSe.CompNFSe.New
         else
           lNFSe := ListaNFSe.CompNFSe.Items[0];
 
@@ -726,7 +731,7 @@ begin
         i := 0;
         while Leitor.rExtrai(2, 'ListaMensagemRetorno', '', i + 1) <> '' do
         begin
-          ListaNFSe.FMsgRetorno.Add;
+          ListaNFSe.FMsgRetorno.New;
           ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
           ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
           ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
@@ -748,17 +753,22 @@ begin
       i := 0;
       while Leitor.rExtrai(2, 'MensagemRetorno', '', i + 1) <> '' do
       begin
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
         ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
+
+        if FProvedor in [proPronimv2, proPVH] then
+          if (leitor.rExtrai(3, 'IdentificacaoRps') <> '') then
+            ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.Numero := Leitor.rCampo(tcStr, 'Numero');
+
         inc(i);
       end;
 
       i := 0;
       while Leitor.rExtrai(2, 'MensagemRetornoLote', '', i + 1) <> '' do
       begin
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
         ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
@@ -768,7 +778,7 @@ begin
       i := 0;
       while Leitor.rExtrai(2, 'tcMensagemRetorno', '', i + 1) <> '' do
       begin
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
         ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
@@ -780,7 +790,7 @@ begin
     i := 0;
     while (Leitor.rExtrai(1, 'Fault', '', i + 1) <> '') do
     begin
-      ListaNFSe.FMsgRetorno.Add;
+      ListaNFSe.FMsgRetorno.New;
       ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'faultcode');
       ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'faultstring');
       ListaNFSe.FMsgRetorno[i].FCorrecao := '';
@@ -795,7 +805,7 @@ begin
       begin
         while Leitor.rExtrai(3, 'erro', '', i + 1) <> '' do
         begin
-          ListaNfse.FMsgRetorno.Add;
+          ListaNfse.FMsgRetorno.New;
           ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'cdMensagem');
           ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'dsMensagem');
           ListaNfse.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'dsCorrecao');
@@ -808,7 +818,7 @@ begin
       begin
         while Leitor.rExtrai(3, 'alerta', '', i + 1) <> '' do
         begin
-          ListaNfse.FMsgRetorno.Add;
+          ListaNfse.FMsgRetorno.New;
           ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'cdMensagem');
           ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'dsMensagem');
           ListaNfse.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'dsCorrecao');
@@ -823,7 +833,7 @@ begin
     begin
       while Leitor.rExtrai(3, 'Alerta', '', i + 1) <> '' do
       begin
-        ListaNfse.FMsgRetorno.Add;
+        ListaNfse.FMsgRetorno.New;
         ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
 
@@ -836,9 +846,11 @@ begin
     begin
       while Leitor.rExtrai(3, 'Erro', '', i + 1) <> '' do
       begin
-        ListaNfse.FMsgRetorno.Add;
+        ListaNfse.FMsgRetorno.New;
         ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
+        ListaNfse.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'AvisoTecnico');
+
         // Roberto Godinho - Provedor CTA pode retornar erros de schema substituindo a TAG <descricao> por <erro>
         // se não tratado resulta em exception vazio.
         if ListaNfse.FMsgRetorno[i].FMensagem = '' then
@@ -865,7 +877,7 @@ begin
       begin
         while Leitor.rExtrai(3, 'erro', '', i + 1) <> '' do
         begin
-          ListaNfse.FMsgRetorno.Add;
+          ListaNfse.FMsgRetorno.New;
           ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'erro');
 
           inc(i);
@@ -883,7 +895,7 @@ begin
         if (Pos('OK!', Msg) = 0) and (Pos('RPS já Importado', Msg) = 0) and
            (Pos('Sucesso', Msg) = 0) then
         begin
-          ListaNFSe.FMsgRetorno.Add;
+          ListaNFSe.FMsgRetorno.New;
           ListaNFSe.FMsgRetorno[MsgErro].FMensagem := Msg;
           inc(MsgErro);
         end;
@@ -900,23 +912,23 @@ begin
         else
           Msg := 'Nota cancelada!';
 
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[MsgErro].FMensagem := Msg;
         inc(MsgErro);
 
         Msg  := Leitor.rCampo(tcStr, 'DatCan');
         if Msg <> '' then
         begin
-          ListaNFSe.FMsgRetorno.Add;
+          ListaNFSe.FMsgRetorno.New;
           ListaNFSe.FMsgRetorno[MsgErro].FMensagem := 'Data de Cancelamento: ' + Msg;
         end;
         inc(j);
       end;
 
       Result := true;
-      
+
       // Bloco abaixo verificar a real necessidade
-      With ListaNFSe.FCompNFSe.Add do
+      With ListaNFSe.FCompNFSe.New do
       begin
         FNFSe.dhRecebimento := Date;
       end;
@@ -929,13 +941,13 @@ begin
       begin
         if Leitor.rCampo(tcStr, 'Erro') <> 'false' then
         begin
-          ListaNfse.FMsgRetorno.Add;
+          ListaNfse.FMsgRetorno.New;
           ListaNfse.FMsgRetorno[i].FCodigo   := 'Erro';
           ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'MensagemErro');
         end
         else
         begin
-          with ListaNFSe.FCompNFSe.Add do
+          with ListaNFSe.FCompNFSe.New do
           begin
             FNFSe.Autenticador := Leitor.rCampo(tcStr, 'Autenticador');
             FNFSe.Link := Leitor.rCampo(tcStr, 'Link');
@@ -950,14 +962,41 @@ begin
       try
         if (Leitor.rExtrai(1, 'RetornoConsulta') <> '') or
            (Leitor.rExtrai(1, 'RetornoConsultaLote') <> '') or
-           (Leitor.rExtrai(1, 'RetornoEnvioRPS') <> '') then
+           (Leitor.rExtrai(1, 'RetornoEnvioRPS') <> '') or
+           (Leitor.rExtrai(1, 'EnvioRPSResult') <> '') then
         begin
           ListaNFSe.FSucesso := Leitor.rCampo(tcStr, 'Sucesso');
 
           i := 0;
-          while Leitor.rExtrai(2, 'Alerta', '', i + 1) <> '' do
+          while (Leitor.rExtrai(2, 'ChaveNFeRPS', '', i + 1) <> '') do
           begin
-            ListaNFSe.FMsgRetorno.Add;
+            ListaNFSe.FMsgRetorno.New;
+
+            if (leitor.rExtrai(3, 'ChaveNFe') <> '') then
+            begin
+              ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.InscricaoPrestador := Leitor.rCampo(tcStr, 'InscricaoPrestador');
+              ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.Numero := Leitor.rCampo(tcStr, 'Numero');
+
+              if ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.Numero = '' then
+                ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.Numero := Leitor.rCampo(tcStr, 'NumeroNFe');
+
+              ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.CodigoVerificacao := Leitor.rCampo(tcStr, 'CodigoVerificacao');
+            end;
+
+            if (leitor.rExtrai(3, 'ChaveRPS') <> '') then
+            begin
+              ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.InscricaoPrestador := Leitor.rCampo(tcStr, 'InscricaoPrestador');
+              ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.SerieRPS := Leitor.rCampo(tcStr, 'SerieRPS');
+              ListaNFSe.FMsgRetorno[i].FChaveNFeRPS.NumeroRPS := Leitor.rCampo(tcStr, 'NumeroRPS');
+            end;
+
+            Inc(i);
+          end;
+
+          i := 0;
+          while (Leitor.rExtrai(2, 'Alerta', '', i + 1) <> '') do
+          begin
+            ListaNFSe.FMsgRetorno.New;
             ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
             ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
             ListaNFSe.FMsgRetorno[i].FCorrecao := '';
@@ -982,7 +1021,7 @@ begin
           i := 0;
           while Leitor.rExtrai(2, 'Erro', '', i + 1) <> '' do
           begin
-            ListaNFSe.MsgRetorno.Add;
+            ListaNFSe.MsgRetorno.New;
             ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
             ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
             ListaNFSe.FMsgRetorno[i].FCorrecao := '';
@@ -1029,7 +1068,7 @@ begin
         i := 0;
         while Leitor.rExtrai(3, 'Message', '', i + 1) <> '' do
         begin
-          ListaNfse.FMsgRetorno.Add;
+          ListaNfse.FMsgRetorno.New;
           ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Id');
           ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Description');
           Inc(i);
@@ -1042,7 +1081,7 @@ begin
       i := 0;
       while Leitor.rExtrai(2, 'MensagemRetorno', '', i + 1) <> '' do
       begin
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
         ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
@@ -1055,7 +1094,7 @@ begin
       i := 0;
       while Leitor.rExtrai(1, 'MensagemRetorno', '', i + 1) <> '' do
       begin
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
         ListaNFSe.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
@@ -1068,7 +1107,7 @@ begin
       i := 0;
       while Leitor.rExtrai(1, 'mensagens', '', i + 1) <> '' do
       begin
-        ListaNFSe.FMsgRetorno.Add;
+        ListaNFSe.FMsgRetorno.New;
         ListaNFSe.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'mensagens');
         Inc(i);
       end;
@@ -1086,7 +1125,7 @@ begin
               i := 0;
               while Leitor.rExtrai(3, 'codigo', '', i + 1 ) <> '' do
               begin
-                ListaNfse.FMsgRetorno.Add;
+                ListaNfse.FMsgRetorno.New;
                 ListaNfse.FMsgRetorno[i].FCodigo   := Copy( Leitor.rCampo( tcStr, 'codigo' ), 1, 5 );
                 ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo( tcStr, 'codigo' );
 
@@ -1105,7 +1144,7 @@ begin
 
             //ListaNFSe.FCompNFSe.Items[0].FNFSe.XML;
             if (ListaNFSe.CompNFSe.Count = 0) then
-              lNFSe := ListaNFSe.CompNFSe.Add
+              lNFSe := ListaNFSe.CompNFSe.New
             else
               lNFSe := ListaNFSe.CompNFSe.Items[0];
 
@@ -1140,7 +1179,7 @@ begin
           if (leitor.rExtrai(2, 'rps') <> '') then
           begin
             if (ListaNFSe.CompNFSe.Count = 0) then
-              lNFSe := ListaNFSe.CompNFSe.Add
+              lNFSe := ListaNFSe.CompNFSe.New
             else
               lNFSe := ListaNFSe.CompNFSe.Items[0];
 
@@ -1152,7 +1191,7 @@ begin
           end;
         end;
       except
-          Result := False;
+        Result := False;
       end;
     end;
 
@@ -1170,13 +1209,50 @@ begin
         end
         else
         begin
-          with ListaNFSe.MsgRetorno.Add do
+          with ListaNFSe.MsgRetorno.New do
           begin
             Codigo := '0';
             Mensagem:= 'Nota Não Existe';
           end;
           Result := False;
         end;
+      end;
+    end;
+
+    if FProvedor = proiiBrasilv2 then
+    begin
+      if (Leitor.rExtrai(1, 'InformacoesNfse') <> '') then
+      begin
+        with ListaNFSe.FCompNFSe.New do
+        begin
+          FNFSe.IdentificacaoRps.Numero := Leitor.rCampo(tcStr, 'NumeroRps');
+          FNFSe.IdentificacaoRps.Serie  := Leitor.rCampo(tcStr, 'SerieRps');
+
+          FNFSe.Prestador.Cnpj := Leitor.rCampo(tcStr, 'Cnpj');
+
+          FNFSe.Numero            := Leitor.rCampo(tcStr, 'NumeroNfse');
+          FNFSe.SeriePrestacao    := Leitor.rCampo(tcStr, 'SerieNfse');
+          FNFSe.CodigoVerificacao := Leitor.rCampo(tcStr, 'CodigoVerificacao');
+
+          FNFSe.Link := Leitor.rCampo(tcStr, 'LinkNfse');
+        end;
+      end;
+    end;
+
+    if FProvedor = proWebFisco then
+    begin
+      i := 0;
+      while Leitor.rExtrai(1, 'item xsi:type="tns:EnvNfe"', '', i + 1 ) <> '' do
+      begin
+        ListaNfse.FMsgRetorno.New;
+        ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo( tcStr, 'okk xsi:type="xsd:string"' );
+
+        if ListaNfse.FMsgRetorno[i].FMensagem = 'OK' then
+          ListaNfse.FMsgRetorno[i].FCodigo   := 'A0000'
+        else
+          ListaNfse.FMsgRetorno[i].FCodigo   := 'Erro';
+
+        Inc(i);
       end;
     end;
 

@@ -132,9 +132,11 @@ type
     FPrintMode: TfrxPrintMode;
     FPrintOnSheet: Integer;
     FExibeCaptionButton: Boolean;
+    FZoomModePadrao: TfrxZoomMode;
     FBorderIcon : TBorderIcons;
     FIncorporarFontesPdf: Boolean;
     FIncorporarBackgroundPdf: Boolean;
+    FOtimizaImpressaoPdf: Boolean;
 
     procedure frxReportBeforePrint(Sender: TfrxReportComponent);
     procedure frxReportPreview(Sender: TObject);
@@ -173,7 +175,6 @@ type
     procedure CarregaDadosNFe;
     procedure CarregaDadosEventos;
     procedure CarregaDadosInutilizacao;
-    procedure PintarQRCode(const QRCodeData: String; APict: TPicture);
 
     property FastFile: String read FFastFile write FFastFile;
     property FastFileEvento: String read FFastFileEvento write FFastFileEvento;
@@ -182,9 +183,11 @@ type
     property PrintMode: TfrxPrintMode read FPrintMode write FPrintMode default pmDefault;
     property PrintOnSheet: Integer read FPrintOnSheet write FPrintOnSheet default 0;
     property ExibeCaptionButton: Boolean read FExibeCaptionButton write FExibeCaptionButton default False;
+    property ZoomModePadrao: TfrxZoomMode read FZoomModePadrao write FZoomModePadrao default ZMDEFAULT;
     property BorderIcon: TBorderIcons read FBorderIcon write FBorderIcon;
     property IncorporarBackgroundPdf: Boolean read FIncorporarBackgroundPdf write FIncorporarBackgroundPdf;
     property IncorporarFontesPdf: Boolean read FIncorporarFontesPdf write FIncorporarFontesPdf;
+    property OtimizaImpressaoPdf: Boolean read FOtimizaImpressaoPdf write FOtimizaImpressaoPdf;
 
     function PrepareReport(ANFE: TNFe = nil): Boolean;
     function PrepareReportEvento: Boolean;
@@ -219,13 +222,17 @@ begin
 
   FFastFile := '';
   FExibeCaptionButton := False;
+  FZoomModePadrao := ZMDEFAULT;
   FBorderIcon := [biSystemMenu,biMaximize,biMinimize];
   FIncorporarFontesPdf := True;
   FIncorporarBackgroundPdf := True;
+  FOtimizaImpressaoPdf := True;
 
   FDANFEClassOwner := TACBrDFeDANFeReport(AOwner);
 
-  FfrxReport := TfrxReport.Create( nil);
+  FfrxReport := TfrxReport.Create(AOwner);
+  //Antes de alterar a linha abaixo, queira verificar o seguinte tópico:
+  //https://www.projetoacbr.com.br/forum/topic/51505-travamento-preview-de-v%C3%A1rias-danfes/
   FfrxReport.EngineOptions.UseGlobalDataSetList := False;
   FfrxReport.PreviewOptions.Buttons := [pbPrint, pbLoad, pbSave, pbExport, pbZoom, pbFind,
     pbOutline, pbPageSetup, pbTools, pbNavigator, pbExportQuick];
@@ -238,11 +245,12 @@ begin
      OnReportPrint := 'frxReportOnReportPrint';
   end;
 
-  FfrxPDFExport := TfrxPDFExport.Create(nil);
+  FfrxPDFExport := TfrxPDFExport.Create(AOwner);
   with FfrxPDFExport do
   begin
      Background    := FIncorporarBackgroundPdf;
      EmbeddedFonts := FIncorporarFontesPdf;
+     PrintOptimized := FOtimizaImpressaoPdf;
      Subject       := 'Exportando DANFE para PDF';
      ShowProgress  := False;
   end;
@@ -250,8 +258,8 @@ begin
   // cdsIdentificacao
   if not Assigned(cdsIdentificacao) then
   begin
-     cdsIdentificacao := TClientDataSet.Create(nil);
-     FfrxIdentificacao := TfrxDBDataset.Create(nil);
+     cdsIdentificacao := TClientDataSet.Create(AOwner);
+     FfrxIdentificacao := TfrxDBDataset.Create(AOwner);
      with FfrxIdentificacao do
      begin
         DataSet := cdsIdentificacao;
@@ -293,8 +301,8 @@ begin
    // cdsEmitente
    if not Assigned(cdsEmitente) then
    begin
-     cdsEmitente := TClientDataSet.Create(nil);
-     FfrxEmitente := TfrxDBDataset.Create(nil);
+     cdsEmitente := TClientDataSet.Create(AOwner);
+     FfrxEmitente := TfrxDBDataset.Create(AOwner);
      with FfrxEmitente do
      begin
         DataSet := cdsEmitente;
@@ -332,8 +340,8 @@ begin
    // cdsDestinatario
    if not Assigned(cdsDestinatario) then
    begin
-     cdsDestinatario := TClientDataSet.Create(nil);
-     FfrxDestinatario := TfrxDBDataset.Create(nil);
+     cdsDestinatario := TClientDataSet.Create(AOwner);
+     FfrxDestinatario := TfrxDBDataset.Create(AOwner);
      with FfrxDestinatario do
      begin
         DataSet := cdsDestinatario;
@@ -366,8 +374,8 @@ begin
    // cdsDadosProdutos
    if not Assigned(cdsDadosProdutos) then
    begin
-     cdsDadosProdutos   := TClientDataSet.Create(nil);
-     FfrxDadosProdutos  := TfrxDBDataset.Create(nil);
+     cdsDadosProdutos   := TClientDataSet.Create(AOwner);
+     FfrxDadosProdutos  := TfrxDBDataset.Create(AOwner);
      with FfrxDadosProdutos do
      begin
         DataSet := cdsDadosProdutos;
@@ -413,16 +421,13 @@ begin
         FieldDefs.Add('pMVAST'    , ftString, 18);
         FieldDefs.Add('pICMSST'   , ftString, 18);
         FieldDefs.Add('vICMSST'   , ftString, 18);
-        FieldDefs.Add('nLote'     , ftString, 20);
-        FieldDefs.Add('qLote'     , ftFloat);
-        FieldDefs.Add('dFab'      , ftDateTime);
-        FieldDefs.Add('dVal'      , ftDateTime);
         FieldDefs.Add('DescricaoProduto', ftString, 2000);
         FieldDefs.Add('Unidade'   , ftString, 14);
         FieldDefs.Add('Quantidade', ftString, 50);
         FieldDefs.Add('ValorUnitario'   , ftString, 50);
         FieldDefs.Add('Valorliquido'    , ftString, 18);
         FieldDefs.Add('ValorAcrescimos' , ftString, 18);
+
         CreateDataSet;
      end;
    end;
@@ -430,8 +435,8 @@ begin
    // cdsParametros
    if not Assigned(cdsParametros) then
    begin
-     cdsParametros  := TClientDataSet.Create(nil);
-     FfrxParametros := TfrxDBDataset.Create(nil);
+     cdsParametros  := TClientDataSet.Create(AOwner);
+     FfrxParametros := TfrxDBDataset.Create(AOwner);
      with FfrxParametros do
      begin
         DataSet         := cdsParametros;
@@ -469,12 +474,15 @@ begin
         FieldDefs.Add('Mask_vUnCom', ftString, 30);
         FieldDefs.Add('LogoCarregado', ftBlob);
         FieldDefs.Add('QrCodeCarregado', ftGraphic, 1000);
+        FieldDefs.Add('QrCodeLateral', ftString, 1);
+        FieldDefs.Add('ImprimeEm1Linha', ftString, 1);
         FieldDefs.Add('DescricaoViaEstabelec', ftString, 30);
         FieldDefs.Add('QtdeItens', ftInteger);
         FieldDefs.Add('ExpandirDadosAdicionaisAuto', ftString, 1);
         FieldDefs.Add('ImprimeDescAcrescItem', ftInteger);
         FieldDefs.Add('nProt', ftString, 30);
         FieldDefs.Add('dhRecbto', ftDateTime);
+        FieldDefs.Add('poscanhotolayout', ftString, 1);
         CreateDataSet;
      end;
    end;
@@ -482,8 +490,8 @@ begin
    // cdsDuplicatas
    if not Assigned(cdsDuplicatas) then
    begin
-     cdsDuplicatas := TClientDataSet.Create(nil);
-     FfrxDuplicatas := TfrxDBDataset.Create(nil);
+     cdsDuplicatas := TClientDataSet.Create(AOwner);
+     FfrxDuplicatas := TfrxDBDataset.Create(AOwner);
      with FfrxDuplicatas do
      begin
         DataSet := cdsDuplicatas;
@@ -505,8 +513,8 @@ begin
    // cdsCalculoImposto
    if not Assigned(cdsCalculoImposto) then
    begin
-     cdsCalculoImposto := TClientDataSet.Create(nil);
-     FfrxCalculoImposto := TfrxDBDataset.Create(nil);
+     cdsCalculoImposto := TClientDataSet.Create(AOwner);
+     FfrxCalculoImposto := TfrxDBDataset.Create(AOwner);
      with FfrxCalculoImposto do
      begin
         DataSet := cdsCalculoImposto;
@@ -549,8 +557,8 @@ begin
    // cdsTransportador
    if not Assigned(cdsTransportador) then
    begin
-     cdsTransportador := TClientDataSet.Create(nil);
-     FfrxTransportador := TfrxDBDataset.Create(nil);
+     cdsTransportador := TClientDataSet.Create(AOwner);
+     FfrxTransportador := TfrxDBDataset.Create(AOwner);
      with FfrxTransportador do
      begin
         DataSet := cdsTransportador;
@@ -575,8 +583,8 @@ begin
    // cdsVeiculo
    if not Assigned(cdsVeiculo) then
    begin
-     cdsVeiculo := TClientDataSet.Create(nil);
-     FfrxVeiculo := TfrxDBDataset.Create(nil);
+     cdsVeiculo := TClientDataSet.Create(AOwner);
+     FfrxVeiculo := TfrxDBDataset.Create(AOwner);
      with FfrxVeiculo do
      begin
         DataSet := cdsVeiculo;
@@ -597,8 +605,8 @@ begin
    // cdsVolumes
    if not Assigned(cdsVolumes) then
    begin
-     cdsVolumes := TClientDataSet.Create(nil);
-     FfrxVolumes := TfrxDBDataset.Create(nil);
+     cdsVolumes := TClientDataSet.Create(AOwner);
+     FfrxVolumes := TfrxDBDataset.Create(AOwner);
      with FfrxVolumes do
      begin
         DataSet := cdsVolumes;
@@ -622,8 +630,8 @@ begin
    // csdEvento
    if not Assigned(cdsEventos) then
    begin
-      cdsEventos := TClientDataSet.Create(nil);
-      FfrxEventos := TfrxDBDataset.Create(nil);
+      cdsEventos := TClientDataSet.Create(AOwner);
+      FfrxEventos := TfrxDBDataset.Create(AOwner);
       with FfrxEventos do
       begin
          DataSet := cdsEventos;
@@ -636,8 +644,8 @@ begin
    // cdsISSQN
    if not Assigned(cdsISSQN) then
    begin
-      cdsISSQN := TClientDataSet.Create(nil);
-      FfrxISSQN := TfrxDBDataset.Create(nil);
+      cdsISSQN := TClientDataSet.Create(AOwner);
+      FfrxISSQN := TfrxDBDataset.Create(AOwner);
       with FfrxISSQN do
       begin
          DataSet := cdsISSQN;
@@ -660,8 +668,8 @@ begin
    // cdsFatura
    if not Assigned(cdsFatura) then
    begin
-      cdsFatura   := TClientDataSet.Create(nil);
-      FfrxFatura  := TfrxDBDataset.Create(nil);
+      cdsFatura   := TClientDataSet.Create(AOwner);
+      FfrxFatura  := TfrxDBDataset.Create(AOwner);
       with FfrxFatura do
       begin
          DataSet        := cdsFatura;
@@ -685,8 +693,8 @@ begin
    // cdsLocalRetirada
    if not Assigned(cdsLocalRetirada) then
    begin
-      cdsLocalRetirada := TClientDataSet.Create(nil);
-      FfrxLocalRetirada := TfrxDBDataset.Create(nil);
+      cdsLocalRetirada := TClientDataSet.Create(AOwner);
+      FfrxLocalRetirada := TfrxDBDataset.Create(AOwner);
       with FfrxLocalRetirada do
       begin
          DataSet := cdsLocalRetirada;
@@ -718,8 +726,8 @@ begin
    // cdsLocalEntrega
    if not Assigned(cdsLocalEntrega) then
    begin
-      cdsLocalEntrega := TClientDataSet.Create(nil);
-      FfrxLocalEntrega := TfrxDBDataset.Create(nil);
+      cdsLocalEntrega := TClientDataSet.Create(AOwner);
+      FfrxLocalEntrega := TfrxDBDataset.Create(AOwner);
       with FfrxLocalEntrega do
       begin
          DataSet := cdsLocalEntrega;
@@ -751,8 +759,8 @@ begin
    // cdsInformacoesAdicionais
    if not Assigned(cdsInformacoesAdicionais) then
    begin
-      cdsInformacoesAdicionais := TClientDataSet.Create(nil);
-      FfrxInformacoesAdicionais := TfrxDBDataset.Create(nil);
+      cdsInformacoesAdicionais := TClientDataSet.Create(AOwner);
+      FfrxInformacoesAdicionais := TfrxDBDataset.Create(AOwner);
       with FfrxInformacoesAdicionais do
       begin
          DataSet := cdsInformacoesAdicionais;
@@ -772,8 +780,8 @@ begin
    // cdsPagamento
    if not Assigned(cdsPagamento) then
    begin
-      cdsPagamento := TClientDataSet.Create(nil);
-      FfrxPagamento := TfrxDBDataset.Create(nil);
+      cdsPagamento := TClientDataSet.Create(AOwner);
+      FfrxPagamento := TfrxDBDataset.Create(AOwner);
       with FfrxPagamento do
       begin
          DataSet := cdsPagamento;
@@ -797,8 +805,8 @@ begin
    //cdsInutilização
    if not Assigned(cdsInutilizacao) then
    begin
-      cdsInutilizacao := TClientDataSet.Create(nil);
-      FfrxInutilizacao := TfrxDBDataset.Create(nil);
+      cdsInutilizacao := TClientDataSet.Create(AOwner);
+      FfrxInutilizacao := TfrxDBDataset.Create(AOwner);
       with FfrxInutilizacao do
       begin
          DataSet := cdsInutilizacao;
@@ -940,7 +948,7 @@ begin
       FieldByName('VOutro').AsFloat       := VOutro;
       FieldByName('VNF').AsFloat          := VNF;
       FieldByName('VTotTrib').AsFloat     := VTotTrib;
-      FieldByName('ValorApagar').AsFloat  := VProd - VDesc - vICMSDeson + VOutro;
+      FieldByName('ValorApagar').AsFloat  := VNF;
       FieldByName('VFCP').AsFloat         := VFCP;
       FieldByName('VFCPST').AsFloat       := VFCPST;
       FieldByName('VFCPSTRet').AsFloat    := vFCPSTRet;
@@ -1072,7 +1080,7 @@ begin
           FieldByName('Unidade').AsString       := FieldByName('Ucom').AsString;
           FieldByName('Quantidade').AsString    := FDANFEClassOwner.FormatarQuantidade( FieldByName('QCom').AsFloat );
           FieldByName('ValorUnitario').AsString := FDANFEClassOwner.FormatarValorUnitario( FieldByName('VUnCom').AsFloat );
-          FieldByName('vDesc').AsString           := FormatFloatBr( Prod.vDesc,'###,###,##0.00');
+          FieldByName('vDesc').AsString         := FormatFloatBr( Prod.vDesc,'###,###,##0.00');
         end;
 
         FieldByName('ORIGEM').AsString            := OrigToStr( Imposto.ICMS.orig);
@@ -1142,7 +1150,7 @@ begin
             FieldByName('Consumidor').AsString := ACBrStr('CONSUMIDOR NÃO IDENTIFICADO')
           else
             FieldByName('Consumidor').AsString :=
-              IfThen(Length(CNPJCPF) = 11, 'CPF: ', 'CNPJ: ') + Trim(FieldByName('CNPJCPF').AsString) + ' ' + trim(FieldByName('XNome').AsString);
+              IfThen(Length(CNPJCPF) = 11, 'CONSUMIDOR CPF: ', 'CONSUMIDOR CNPJ: ') + Trim(FieldByName('CNPJCPF').AsString) + ' ' + trim(FieldByName('XNome').AsString);
         end;
 
         if NaoEstaVazio(Trim(FieldByName('XLgr').AsString)) then
@@ -1302,6 +1310,7 @@ end;
 procedure TACBrNFeFRClass.CarregaPagamento;
 var
   i: Integer;
+  vTroco: Currency;
 begin
   with cdsPagamento do
   begin
@@ -1312,7 +1321,10 @@ begin
       Append;
       with FNFe.Pag[i] do
       begin
-        FieldByName('tPag').AsString  := FormaPagamentoToDescricao( tPag );
+        if FDANFEClassOwner is TACBrNFeDANFCEClass then
+          FieldByName('tPag').AsString := TACBrNFeDANFCEClass(FDANFEClassOwner).ManterDescricaoPagamentos(FNFe.pag[i])
+        else
+          FieldByName('tPag').AsString := FormaPagamentoToDescricao(tPag);
         FieldByName('vPag').AsFloat   := vPag;
         // ver tpIntegra
         FieldByName('CNPJ').AsString  := FormatarCNPJ(CNPJ);
@@ -1323,11 +1335,15 @@ begin
     end;
 
     // acrescenta o troco
-    if (FDANFEClassOwner is TACBrNFeDANFCEClass) and (TACBrNFeDANFCEClass(FDANFEClassOwner).vTroco > 0) then
+    vTroco := FNFe.pag.vTroco;
+    if (vTroco = 0) and (FDANFEClassOwner is TACBrNFeDANFCEClass) then
+      vTroco := TACBrNFeDANFCEClass(FDANFEClassOwner).vTroco;
+
+    if vTroco > 0 then
     begin
       Append;
       FieldByName('tPag').AsString  := 'Troco R$';
-      FieldByName('vPag').AsFloat   := TACBrNFeDANFCEClass(FDANFEClassOwner).vTroco;
+      FieldByName('vPag').AsFloat   := vTroco;
       Post;
     end;
   end;
@@ -1370,20 +1386,22 @@ begin
     if (FNFe.Ide.Modelo = 65) then
     begin
       FieldByName('DEmi').AsString := FormatDateTimeBr(FNFe.Ide.DEmi);
+
+      if (FNFe.Ide.tpEmis <> teNormal) and EstaVazio(FNFe.procNFe.nProt) then
+        FieldByName('MensagemFiscal').AsString := ACBrStr('EMITIDA EM CONTINGÊNCIA'+LineBreak+'Pendente de autorização');
+
       if FNFe.Ide.TpAmb = taHomologacao then
-          FieldByName('MensagemFiscal').AsString := ACBrStr('EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL')
-      else
-      begin
-        if (FNFe.Ide.tpEmis <> teNormal) and EstaVazio(FNFe.procNFe.nProt) then
-          FieldByName('MensagemFiscal').AsString := ACBrStr('EMITIDA EM CONTINGÊNCIA'+LineBreak+'Pendente de autorização')
-        else
-          FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
-      end;
+        FieldByName('MensagemFiscal').AsString := FieldByName('MensagemFiscal').AsString+LineBreak+LineBreak+ACBrStr('EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
+
+      if EstaVazio(FieldByName('MensagemFiscal').AsString) then
+        FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
 
       if EstaVazio(FNFe.infNFeSupl.urlChave) then
         FieldByName('URL').AsString := TACBrNFe(DANFEClassOwner.ACBrNFe).GetURLConsultaNFCe(FNFe.Ide.cUF, FNFe.Ide.tpAmb, FNFe.infNFe.Versao)
       else
         FieldByName('URL').AsString := FNFe.infNFeSupl.urlChave;
+
+      FieldByName('MensagemFiscal').AsString := Trim(FieldByName('MensagemFiscal').AsString);
     end
     else
     begin
@@ -1552,6 +1570,7 @@ begin
     Append;
 
     FieldByName('poscanhoto').AsString            := '';
+    FieldByName('poscanhotolayout').AsString         := '';
     FieldByName('ResumoCanhoto').AsString         := '';
     FieldByName('Mensagem0').AsString             := '';
     FieldByName('Contingencia_ID').AsString       := '';
@@ -1559,7 +1578,10 @@ begin
                                                      'www.nfe.fazenda.gov.br/portal ou no site da Sefaz autorizadora';
 
     if DANFEClassOwner is TACBrNFeDANFEClass then
-      FieldByName('poscanhoto').AsString := IntToStr( Ord(TACBrNFeDANFEClass(DANFEClassOwner).PosCanhoto))
+    begin
+      FieldByName('poscanhoto').AsString     := IntToStr( Ord(TACBrNFeDANFEClass(DANFEClassOwner).PosCanhoto));
+      FieldByName('poscanhotolayout').AsString  := IntToStr( Ord(TACBrNFeDANFEClass(DANFEClassOwner).PosCanhotoLayout));
+    end
     else if DANFEClassOwner is TACBrNFeDANFCEClass then
     begin
       if TACBrNFeDANFCEClass(DANFEClassOwner).ViaConsumidor then
@@ -1718,6 +1740,10 @@ begin
     FieldByName('Mask_vUnCom').AsString                 := FDANFEClassOwner.CasasDecimais.MaskvUnCom;
     FieldByName('Casas_qCom').AsInteger                 := FDANFEClassOwner.CasasDecimais.qCom;
     FieldByName('Casas_vUnCom').AsInteger               := FDANFEClassOwner.CasasDecimais.vUnCom;
+    FieldByName('ImprimeEm1Linha').AsString             := IfThen(FDANFEClassOwner.ImprimeEmUmaLinha, 'S', 'N');
+
+    if (DANFEClassOwner is TACBrNFeDANFCEClass) then
+      FieldByName('QrCodeLateral').AsString := IfThen( TACBrNFeDANFCEClass(FDANFEClassOwner ).ImprimeQRCodeLateral, 'S', 'N');
 
     if (FDANFEClassOwner is TACBrNFeDANFCEClass) then
       FieldByName('ImprimeDescAcrescItem').AsInteger    := IfThen( TACBrNFeDANFCEFR(FDANFEClassOwner).ImprimeDescAcrescItem, 1 , 0 );
@@ -1966,46 +1992,12 @@ begin
    end;
 end;
 
-procedure TACBrNFeFRClass.PintarQRCode(const QRCodeData: String; APict: TPicture);
-var
-  QRCode: TDelphiZXingQRCode;
-  QRCodeBitmap: TBitmap;
-  Row, Column: Integer;
-begin
-  QRCode       := TDelphiZXingQRCode.Create;
-  QRCodeBitmap := TBitmap.Create;
-  try
-    QRCode.Encoding  := qrUTF8NoBOM;
-    QRCode.QuietZone := 1;
-    QRCode.Data      := widestring(QRCodeData);
-
-    //QRCodeBitmap.SetSize(QRCode.Rows, QRCode.Columns);
-    QRCodeBitmap.Width  := QRCode.Columns;
-    QRCodeBitmap.Height := QRCode.Rows;
-
-    for Row := 0 to QRCode.Rows - 1 do
-    begin
-      for Column := 0 to QRCode.Columns - 1 do
-      begin
-        if (QRCode.IsBlack[Row, Column]) then
-          QRCodeBitmap.Canvas.Pixels[Column, Row] := clBlack
-        else
-          QRCodeBitmap.Canvas.Pixels[Column, Row] := clWhite;
-      end;
-    end;
-
-    APict.Assign(QRCodeBitmap);
-  finally
-    QRCode.Free;
-    QRCodeBitmap.Free;
-  end;
-end;
-
 function TACBrNFeFRClass.PrepareReport(ANFE: TNFe): Boolean;
 var
   I: Integer;
   wProjectStream: TStringStream;
   Page: TfrxReportPage;
+  MultiplicadorMargem: Integer;
 begin
   Result := False;
 
@@ -2038,7 +2030,9 @@ begin
   frxReport.ShowProgress := DANFEClassOwner.MostraStatus;
   frxReport.PreviewOptions.AllowEdit := False;
   frxReport.PreviewOptions.ShowCaptions := FExibeCaptionButton;
+  frxReport.PreviewOptions.ZoomMode     := FZoomModePadrao;
   frxReport.OnPreview := frxReportPreview;
+  frxReport.FileName := DANFEClassOwner.NomeDocumento;
 
   // Define a impressora
   if NaoEstaVazio(DANFEClassOwner.Impressora) then
@@ -2071,20 +2065,29 @@ begin
       raise EACBrNFeDANFEFR.Create('Propriedade ACBrNFe não assinalada.');
   end;
 
-  if Assigned(NFe) and (NFe.Ide.modelo = 55) then
+  if Assigned(NFe) then
+  begin
+
+    // Informar margem para NFe em cm, NFCe em mm
+    if NFe.Ide.modelo = 55 then
+	  MultiplicadorMargem := 10
+	else
+	  MultiplicadorMargem := 1;
+
     for i := 0 to (frxReport.PreviewPages.Count - 1) do
     begin
       Page := frxReport.PreviewPages.Page[i];
       if (DANFEClassOwner.MargemSuperior > 0) then
-        Page.TopMargin    := DANFEClassOwner.MargemSuperior * 10;
+        Page.TopMargin    := DANFEClassOwner.MargemSuperior * MultiplicadorMargem;
       if (DANFEClassOwner.MargemInferior > 0) then
-        Page.BottomMargin := DANFEClassOwner.MargemInferior * 10;
+        Page.BottomMargin := DANFEClassOwner.MargemInferior * MultiplicadorMargem;
       if (DANFEClassOwner.MargemEsquerda > 0) then
-        Page.LeftMargin   := DANFEClassOwner.MargemEsquerda * 10;
+        Page.LeftMargin   := DANFEClassOwner.MargemEsquerda * MultiplicadorMargem;
       if (DANFEClassOwner.MargemDireita > 0) then
-        Page.RightMargin  := DANFEClassOwner.MargemDireita * 10;
+        Page.RightMargin  := DANFEClassOwner.MargemDireita * MultiplicadorMargem;
       frxReport.PreviewPages.ModifyPage(i, Page);
     end;
+  end;
 
 end;
 
@@ -2117,7 +2120,9 @@ begin
   frxReport.PrintOptions.ShowDialog := DANFEClassOwner.MostraSetup;
   frxReport.ShowProgress := DANFEClassOwner.MostraStatus;
   frxReport.PreviewOptions.ShowCaptions := ExibeCaptionButton;
+  frxReport.PreviewOptions.ZoomMode     := ZoomModePadrao;
   frxReport.OnPreview := frxReportPreview;
+  frxReport.FileName := DANFEClassOwner.NomeDocumento;
 
   // Define a impressora
   if NaoEstaVazio(DANFEClassOwner.Impressora) then
@@ -2177,7 +2182,9 @@ begin
   frxReport.PrintOptions.ShowDialog := DANFEClassOwner.MostraSetup;
   frxReport.ShowProgress := DANFEClassOwner.MostraStatus;
   frxReport.PreviewOptions.ShowCaptions := ExibeCaptionButton;
+  frxReport.PreviewOptions.ZoomMode     := ZoomModePadrao;
   frxReport.OnPreview := frxReportPreview;
+  frxReport.FileName := DANFEClassOwner.NomeDocumento;
 
   // Define a impressora
   if NaoEstaVazio(DANFEClassOwner.Impressora) then
@@ -2247,8 +2254,8 @@ begin
               else
                 qrcode := NFe.infNFeSupl.qrCode;
 
-              if Assigned(Sender) and (Sender.Name = 'ImgQrCode') then
-                PintarQRCode(qrcode, TfrxPictureView(Sender).Picture);
+              if Assigned(Sender) and (LeftStr(Sender.Name, 9) = 'ImgQrCode') then
+                PintarQRCode(qrcode, TfrxPictureView(Sender).Picture, qrUTF8NoBOM);
 
               CpDescrProtocolo := frxReport.FindObject('Memo25');
               if Assigned(CpDescrProtocolo) then
@@ -2348,6 +2355,7 @@ begin
     frxPDFExport.Keywords      := TITULO_PDF;
     frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
     frxPDFExport.Background    := IncorporarBackgroundPdf;
+    frxPDFExport.PrintOptimized := OtimizaImpressaoPdf;
 
     fsShowDialog := frxPDFExport.ShowDialog;
     try
@@ -2406,6 +2414,7 @@ begin
     frxPDFExport.Keywords      := TITULO_PDF;
     frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
     frxPDFExport.Background    := IncorporarBackgroundPdf;
+    frxPDFExport.PrintOptimized := OtimizaImpressaoPdf;
 
     fsShowDialog := frxPDFExport.ShowDialog;
     try
@@ -2454,6 +2463,7 @@ begin
     frxPDFExport.Keywords      := TITULO_PDF;
     frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
     frxPDFExport.Background    := IncorporarBackgroundPdf;
+    frxPDFExport.PrintOptimized := OtimizaImpressaoPdf;
 
     fsShowDialog := frxPDFExport.ShowDialog;
     try

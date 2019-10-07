@@ -91,7 +91,8 @@ type
     FxMotivo: String;
     FInfEvento: TInfEvento;
     FretEvento: TRetInfEventoCollection;
-    FXML: AnsiString;
+    FXML: String;
+//    FXML: AnsiString;
     Fsignature: Tsignature;
   public
     constructor Create;
@@ -108,7 +109,8 @@ type
     property InfEvento: TInfEvento              read FInfEvento write FInfEvento;
     property signature: Tsignature              read Fsignature write Fsignature;
     property retEvento: TRetInfEventoCollection read FretEvento write FretEvento;
-    property XML: AnsiString                    read FXML       write FXML;
+    property XML: String                        read FXML       write FXML;
+//    property XML: AnsiString                    read FXML       write FXML;
   end;
 
 implementation
@@ -191,7 +193,7 @@ begin
          infEvento.CNPJ       := Leitor.rCampo(tcStr, 'CNPJ');
          infEvento.chCTe      := Leitor.rCampo(tcStr, 'chCTe');
          infEvento.dhEvento   := Leitor.rCampo(tcDatHor, 'dhEvento');
-         infEvento.tpEvento   := StrToTpEvento(ok,Leitor.rCampo(tcStr, 'tpEvento'));
+         infEvento.tpEvento   := StrToTpEventoCTe(ok,Leitor.rCampo(tcStr, 'tpEvento'));
          infEvento.nSeqEvento := Leitor.rCampo(tcInt, 'nSeqEvento');
 
          if Leitor.rExtrai(3, 'detEvento', '', i + 1) <> '' then
@@ -201,6 +203,7 @@ begin
            infEvento.detEvento.nProt      := Leitor.rCampo(tcStr, 'nProt');
            infEvento.detEvento.xJust      := Leitor.rCampo(tcStr, 'xJust');
            infEvento.detEvento.vICMS      := Leitor.rCampo(tcDe2, 'vICMS');
+           infEvento.detEvento.vICMSST    := Leitor.rCampo(tcDe2, 'vICMSST');
            infEvento.detEvento.vTPrest    := Leitor.rCampo(tcDe2, 'vTPrest');
            infEvento.detEvento.vCarga     := Leitor.rCampo(tcDe2, 'vCarga');
            infEvento.detEvento.toma       := StrToTpTomador(ok, Leitor.rCampo(tcStr, 'toma'));
@@ -211,6 +214,16 @@ begin
            infEvento.detEvento.UFIni      := Leitor.rCampo(tcStr, 'UFIni');
            infEvento.detEvento.UFFim      := Leitor.rCampo(tcStr, 'UFFim');
            infEvento.detEvento.xOBS       := Leitor.rCampo(tcStr, 'xOBS');
+           infEvento.detEvento.dhEntrega  := Leitor.rCampo(tcDatHor, 'dhEntrega');
+           infEvento.detEvento.nDoc       := Leitor.rCampo(tcStr, 'nDoc');
+           infEvento.detEvento.xNome      := Leitor.rCampo(tcStr, 'xNome');
+           infEvento.detEvento.latitude   := Leitor.rCampo(tcDe6, 'latitude');
+           infEvento.detEvento.longitude  := Leitor.rCampo(tcDe6, 'longitude');
+
+           infEvento.detEvento.hashEntrega   := Leitor.rCampo(tcStr, 'hashEntrega');
+           infEvento.detEvento.dhHashEntrega := Leitor.rCampo(tcDatHor, 'dhHashEntrega');
+
+           infEvento.detEvento.nProtCE := Leitor.rCampo(tcStr, 'nProtCE');
 
            // Carrega os dados da informação da Correção aplicada
            i := 0;
@@ -270,11 +283,19 @@ begin
                  dest.UF      := Leitor.rCampo(tcStr, 'UF');
                  dest.xNome   := Leitor.rCampo(tcStr, 'xNome');
                end;
-
              end;
              inc(i);
            end;
 
+           // Carrega os dados da informação de Entrega
+           i := 0;
+           while Leitor.rExtrai(4, 'infEntrega', '', i + 1) <> '' do
+           begin
+             with infEvento.detEvento.infEntrega.New do
+               chNFe := Leitor.rCampo(tcStr, 'chNFe');
+
+             inc(i);
+           end;
          end;
       end;
 
@@ -311,7 +332,7 @@ begin
 
          // Os campos abaixos seram retornados caso o cStat = 134 ou 135 ou 136
          FretEvento.Items[i].FRetInfEvento.chCTe       := Leitor.rCampo(tcStr, 'chCTe');
-         FretEvento.Items[i].FRetInfEvento.tpEvento    := StrToTpEvento(ok,Leitor.rCampo(tcStr, 'tpEvento'));
+         FretEvento.Items[i].FRetInfEvento.tpEvento    := StrToTpEventoCTe(ok,Leitor.rCampo(tcStr, 'tpEvento'));
          FretEvento.Items[i].FRetInfEvento.xEvento     := Leitor.rCampo(tcStr, 'xEvento');
          FretEvento.Items[i].FRetInfEvento.nSeqEvento  := Leitor.rCampo(tcInt, 'nSeqEvento');
          FretEvento.Items[i].FRetInfEvento.dhRegEvento := Leitor.rCampo(tcDatHor, 'dhRegEvento');

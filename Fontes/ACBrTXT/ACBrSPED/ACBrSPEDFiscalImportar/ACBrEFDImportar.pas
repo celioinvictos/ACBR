@@ -36,6 +36,12 @@
 |*
 |* 23/02/2015: Macgayver Armini Apolonio - Criação
 |* 03/07/2017: Rodrigo Buschmann | Digibyte - Importação ICMS IPI
+|* 08/05/2019: Rodrigo Coelho | Bunny Soft - Tratamento de exceção
+|*  - Verificação se existe mais de um delimitador para cada linha no momento da
+|*    importação. Isso se faz necessário pois em arquivos SPED que já foram
+|*    assinados existem linhas após a finalização do arquivo (Bloco 9999) e estas
+|*    linhas devem ser ignoradas na importação para não ocasionarem erro
+|* 15/09/2019: Marcelo Silva | Apollo Sistemas - Início do bloco 1
 *******************************************************************************}
 
 unit ACBrEFDImportar;
@@ -53,8 +59,9 @@ uses
   ACBrEFDBloco_0_Importar,
   ACBrEFDBloco_C_Importar,
   ACBrEFDBloco_D_Importar,
-  ACBrEFDBloco_E_Importar;
-//  ACBrEFDBloco_1_Importar;
+  ACBrEFDBloco_E_Importar,
+  ACBrEFDBloco_H_Importar,
+  ACBrEFDBloco_1_Importar;
 
 const
   CACBrSpedFiscalImportar_Versao = '1.00';
@@ -79,7 +86,8 @@ type
     procedure ProcessaBlocoC(const Delimiter: TStrings);
     procedure ProcessaBlocoD(const Delimiter: TStrings);
     procedure ProcessaBlocoE(const Delimiter: TStrings);
-//    procedure ProcessaBloco1(const Delimiter: TStrings);
+    procedure ProcessaBlocoH(const Delimiter: TStrings);
+    procedure ProcessaBloco1(const Delimiter: TStrings);
   public
     procedure Importar;
   published
@@ -134,18 +142,24 @@ begin
         FAntesDeInserirLinha(LinhaAtual, I);
 
       Delimitador.Text := StringReplace(LinhaAtual, Delimiter, sLineBreak, [rfReplaceAll]);
-      Bloco := Delimitador[1][1];
+      // Verificar se a linha tem mais de um delimitador (ver histórico)
+      if (Delimitador.Count > 1) then
+      begin
+        Bloco := Delimitador[1][1];
 
-      if (Bloco = '0') then
-        ProcessaBloco0(Delimitador)
-      else if (Bloco = 'C') then
-        ProcessaBlocoC(Delimitador)
-      else if (Bloco = 'D') then
-        ProcessaBlocoD(Delimitador)
-      else if (Bloco = 'E') then
-        ProcessaBlocoE(Delimitador);
-//      else if (Bloco = '1') then
-//        ProcessaBloco1(Delimitador);
+        if (Bloco = '0') then
+          ProcessaBloco0(Delimitador)
+        else if (Bloco = 'C') then
+          ProcessaBlocoC(Delimitador)
+        else if (Bloco = 'D') then
+          ProcessaBlocoD(Delimitador)
+        else if (Bloco = 'E') then
+          ProcessaBlocoE(Delimitador)
+        else if (Bloco = 'H') then
+          ProcessaBlocoH(Delimitador)
+        else if (Bloco = '1') then
+          ProcessaBloco1(Delimitador);
+      end;
     end;
   finally
     FileStr.Free;
@@ -200,7 +214,19 @@ begin
     ImportarBlocoE.Free;
   end;
 end;
-{
+
+procedure TACBrSpedFiscalImportar.ProcessaBlocoH(const Delimiter: TStrings);
+var
+  ImportarBlocoH: TACBrSpedFiscalImportar_BlocoH;
+begin
+  ImportarBlocoH := TACBrSpedFiscalImportar_BlocoH.Create;
+  try
+    ProcessaBloco(ImportarBlocoH, Delimiter);
+  finally
+    ImportarBlocoH.Free;
+  end;
+end;
+
 procedure TACBrSpedFiscalImportar.ProcessaBloco1(const Delimiter: TStrings);
 var
   ImportarBloco1: TACBrSpedFiscalImportar_Bloco1;
@@ -212,7 +238,7 @@ begin
     ImportarBloco1.Free;
   end;
 end;
-}
+
 procedure TACBrSpedFiscalImportar.ProcessaBloco(Bloco: TACBrSpedFiscalImportar_Base; const Delimiter: TStrings);
 begin
   Bloco.AntesInserirValor := FAntesDeInserirColuna;

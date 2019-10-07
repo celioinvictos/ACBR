@@ -74,7 +74,7 @@ const
 type
   TACBrValTipoDocto = ( docCPF, docCNPJ, docUF, docInscEst, docNumCheque, docPIS,
                         docCEP, docCartaoCredito, docSuframa, docGTIN, docRenavam, 
-                        docEmail, docCNH, docPrefixoGTIN ) ;
+                        docEmail, docCNH, docPrefixoGTIN, docCAEPF, docPlacaMercosul ) ;
 
 type
   TACBrCalcDigFormula = (frModulo11, frModulo10PIS, frModulo10) ;
@@ -134,6 +134,7 @@ type
     
     Procedure ValidarCPF  ;
     Procedure ValidarCNPJ ;
+    Procedure ValidarCAEPF ;
     Procedure ValidarUF(const UF : String) ;
     Procedure ValidarIE ;
     Procedure ValidarCheque ;
@@ -146,6 +147,7 @@ type
     Procedure ValidarEmail;
     Procedure ValidarCNH ;
     Procedure ValidarPrefixoGTIN ;
+    Procedure ValidarPlaca ;
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy  ; override;
@@ -181,6 +183,7 @@ type
 
 function ValidarCPF( const Documento : String ) : String ;
 function ValidarCNPJ( const Documento : String ) : String ;
+function ValidarCAEPF( const Documento : String ) : String ;
 function ValidarCNPJouCPF( const Documento : String ) : String ;
 function ValidarIE(const AIE, AUF: String): String ;
 function ValidarSuframa( const Documento : String ) : String ;
@@ -192,10 +195,12 @@ function ValidarCEP(const ACEP, AUF: String): String; overload;
 function ValidarCEP(const ACEP: Integer; const AUF: String): String; overload;
 function ValidarCNH(const Documento: String) : String ;
 function ValidarUF(const AUF: String): String;
+function ValidarPlaca(const APlaca: String): String;
 
 Function FormatarFone( const AValue : String; const DDDPadrao: String = '' ): String;
 Function FormatarCPF( const AValue : String )    : String ;
 Function FormatarCNPJ( const AValue : String )   : String ;
+Function FormatarCAEPF( const AValue : String )   : String ;
 function FormatarCNPJouCPF(const AValue: String)    : String;
 function FormatarPlaca(const AValue: string): string;
 Function FormatarIE( const AValue: String; const UF : String ) : String ;
@@ -230,6 +235,11 @@ end;
 function ValidarCNPJ(const Documento : String) : String ;
 begin
   Result := ValidarDocumento( docCNPJ, Documento );
+end;
+
+function ValidarCAEPF(const Documento : String) : String ;
+begin
+   Result := ValidarDocumento( docCAEPF, Documento );
 end;
 
 function ValidarIE(const AIE, AUF: String): String;
@@ -315,6 +325,11 @@ begin
       Result := ValidarCPF( Documento )
    else
       Result := ValidarCNPJ( Documento ) ;
+end;
+
+function ValidarPlaca(const APlaca: String): String;
+begin
+  Result := ValidarDocumento( docPlacaMercosul, APlaca );
 end;
 
 { Retorna apenas números, e apenas se o conteúdo for CPF ou CNPJ, caso contrário
@@ -416,6 +431,14 @@ begin
             copy(S,6,3) + '/' + copy(S,9,4) + '-' + copy(S,13,2) ;
 end;
 
+function FormatarCAEPF(const AValue: String): String;
+Var S : String ;
+begin
+  S := PadLeft( OnlyNumber(AValue), 14, '0') ;
+  Result := copy(S,1,3) + '.' + copy(S,4,3) + '.' +
+            copy(S,7,3) + '/' + copy(S,10,3) + '-' + copy(S,13,2) ;
+end;
+
 function FormatarCNPJouCPF(const AValue: String): String;
 var
   S: String;
@@ -435,7 +458,7 @@ end;
 function FormatarPlaca(const AValue: string): string;
 Var S : String ;
 begin
- S := Trim(AValue);
+ S := UpperCase( Trim(AValue) );
  Result := Copy(S, 1, 3) + '-' + Copy(S, 4, 4);
 end;
 
@@ -685,6 +708,7 @@ begin
         case fsTipoDocto of
           docCPF           : NomeDocto := 'CPF'  ;
           docCNPJ          : NomeDocto := 'CNPJ' ;
+          docCAEPF         : NomeDocto := 'CAEPF' ;
           docUF            : NomeDocto := 'UF' ;
           docInscEst       : NomeDocto := 'Inscrição Estadual' ;
           docNumCheque     : NomeDocto := 'Número de Cheque' ;
@@ -697,6 +721,7 @@ begin
           docEmail         : NomeDocto := 'E-Mail';
           docCNH           : NomeDocto := 'Carteira Nacional de Habilitação' ;
           docPrefixoGTIN   : NomeDocto := 'Prefixo do Código GTIN' ;
+          docPlacaMercosul         : NomeDocto := 'Placa' ;
         end;
 
         fsMsgErro := NomeDocto + ' não pode ser vazio.' ;
@@ -707,6 +732,7 @@ begin
      case fsTipoDocto of
        docCPF           : ValidarCPF  ;
        docCNPJ          : ValidarCNPJ ;
+       docCAEPF         : ValidarCAEPF ;
        docUF            : ValidarUF( fsDocto ) ;
        docInscEst       : ValidarIE ;
        docNumCheque     : ValidarCheque ;
@@ -719,6 +745,7 @@ begin
        docEmail         : ValidarEmail ;
        docCNH           : ValidarCNH ;
        docPrefixoGTIN   : ValidarPrefixoGTIN ;
+       docPlacaMercosul         : ValidarPlaca ;
      else
       raise Exception.Create('Tipo de documento informado inválido!');
      end;
@@ -743,11 +770,13 @@ begin
   case fsTipoDocto of
     docCPF      : Result := FormatarCPF( Result ) ;
     docCNPJ     : Result := FormatarCNPJ( Result ) ;
+    docCAEPF    : Result := FormatarCAEPF( Result ) ;
     docInscEst  : Result := FormatarIE( Result, fsComplemento ) ;
     docNumCheque: Result := FormatarCheque( Result ) ;
     docPIS      : Result := FormatarPIS( Result ) ;
     docCEP      : Result := FormatarCEP( Result ) ;
     docSuframa  : Result := FormatarSUFRAMA( Result ) ;
+    docPlacaMercosul    : Result := FormatarPlaca( Result ) ;
   end;
 end;
 
@@ -1101,13 +1130,15 @@ begin
            ['DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1','0','','','','',''] ) ;
       end
      else
-      if Length(fsDocto) = 13 then
-      begin
-        Tamanho := 13 ;
-        xTP := 2   ;   yROT := 'E'   ;   yMD  := 11   ;   yTP  := 1 ;
-        vDigitos := VarArrayOf(
-          ['DVY','DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1','0','']);
-      end ;
+     begin
+       Tamanho  := 13;
+       xTP      := 2;
+       yROT     := 'E';
+       yMD      := 11;
+       yTP      := 1 ;
+       vDigitos := VarArrayOf(
+         ['DVY','DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1','0','']);
+     end ;
   end ;
 
   if fsComplemento = 'AL' then
@@ -1120,18 +1151,15 @@ begin
 
   if fsComplemento = 'AP' then
   begin
-     if Length(fsDocto) = 9 then
-      begin
-        Tamanho := 9 ;
-        xROT := 'CE' ;
-        vDigitos   := VarArrayOf(
-           ['DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'3','0','','','','',''] ) ;
+    Tamanho := 9 ;
+    xROT := 'CE' ;
+    vDigitos   := VarArrayOf(
+       ['DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'3','0','','','','',''] ) ;
 
-        if (fsDocto >= '030170010') and (fsDocto <= '030190229') then
-           FatorF := 1
-        else if fsDocto >= '030190230' then
-           xROT := 'E' ;
-      end ;
+    if (fsDocto >= '030170010') and (fsDocto <= '030190229') then
+       FatorF := 1
+    else if fsDocto >= '030190230' then
+       xROT := 'E' ;
   end ;
 
   if fsComplemento = 'AM' then
@@ -1185,15 +1213,12 @@ begin
 
   if fsComplemento = 'GO' then
   begin
-     if Length(fsDocto) = 9 then
-     begin
-        Tamanho  := 9 ;
-        vDigitos := VarArrayOf(
-           [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0,1,5','1','','','','',''] ) ;
+    Tamanho  := 9 ;
+    vDigitos := VarArrayOf(
+       [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0,1,5','1','','','','',''] ) ;
 
-        if (fsDocto >= '101031050') and (fsDocto <= '101199979') then
-           FatorG := 1 ;
-     end ;
+    if (fsDocto >= '101031050') and (fsDocto <= '101199979') then
+       FatorG := 1 ;
   end ;
 
   if fsComplemento = 'MA' then
@@ -1253,22 +1278,25 @@ begin
 
   if fsComplemento = 'PE' then
   begin
-     if Length(fsDocto) = 14 then
-     begin
-        Tamanho := 14;
-        xTP := 7  ;   FatorF := 1;
-        vDigitos := VarArrayOf(
-          ['DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1-9','8','1']);
-     end
-     else
-      if Length(fsDocto) = 9 then
-      begin
-        Tamanho := 9;
-        xTP  :=  14   ;  xMD := 11;
-        yROT := 'E'  ;  yMD := 11  ;   yTP := 7;
-        vDigitos := VarArrayOf(
+    if Length(fsDocto) = 14 then
+    begin
+      //Antigo CACEPE
+      Tamanho := 14;
+      xTP     := 7;
+      FatorF  := 1;
+      vDigitos := VarArrayOf(
+        ['DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1-9','8','1']);
+    end
+    else
+    begin
+      Tamanho := 9;
+      xTP     := 14;
+      yROT    := 'E';
+      yMD     := 11;
+      yTP     := 7;
+      vDigitos := VarArrayOf(
         [ 'DVY','DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'','','','',''] );
-      end;
+    end;
   end;
 
   if fsComplemento = 'PI' then
@@ -1288,23 +1316,21 @@ begin
 
   if fsComplemento = 'RN' then
   begin
-      if Length(fsDocto) = 9 then
-      begin
-         Tamanho := 9 ;
-         xROT := 'BD' ;
-         vDigitos := VarArrayOf(
-            [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0','2','','','','',''] ) ;
-      end
-     else
-       if Length(fsDocto) = 10 then
-       begin
-         Tamanho := 10 ;
-         xROT := 'BD' ;
-         xTP := 11 ;
-         vDigitos := VarArrayOf(
-            [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0','2','','','',''] ) ;
-       end;
-
+    if Length(fsDocto) = 9 then
+    begin
+      Tamanho := 9 ;
+      xROT := 'BD' ;
+      vDigitos := VarArrayOf(
+         [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0','2','','','','',''] ) ;
+    end
+    else
+    begin
+      Tamanho  := 10 ;
+      xROT     := 'BD' ;
+      xTP      := 11 ;
+      vDigitos := VarArrayOf(
+         [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0','2','','','',''] ) ;
+    end;
   end ;
 
   if fsComplemento = 'RS' then
@@ -1323,9 +1349,8 @@ begin
         xTP := 4 ;
         vDigitos := VarArrayOf(
           [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1-9','','','','',''] ) ;
-     end ;
-
-     if Length(fsDocto) = 14 then
+     end 
+     else
      begin
         Tamanho  := 14 ;
         vDigitos := VarArrayOf(
@@ -1392,7 +1417,7 @@ begin
 
   OK := (Tamanho > 0) and (Length(fsDocto) = Tamanho) ;
   if not OK then
-     fsMsgErro := Format('Tamanho Inválido, esperado %d caracteres, foram digitados somente %d caracteres, verifique', [Tamanho, Length(fsDocto)]) ;
+     fsMsgErro := Format('Tamanho inválido: Esperado %d caracteres, mas foram digitados somente %d caracteres.', [Tamanho, Length(fsDocto)]) ;
 
   { Verificando os digitos nas posicoes são permitidos }
   fsDocto := PadLeft(fsDocto,14) ;
@@ -1540,6 +1565,18 @@ begin
   end ;
 end;
 
+procedure TACBrValidador.ValidarPlaca;
+begin
+  // RegExp = [A-Z]{2,3}[0-9]{4}|[A-Z]{3,4}[0-9]{3}|[A-Z0-9]{7}
+
+  if (Length( fsDocto ) <> 7) or ( not StrIsAlphaNum( fsDocto ) ) then
+  begin
+     fsMsgErro := 'Placa deve ter 7 dígitos. (Somente letras e números)' ;
+     exit;
+  end ;
+
+end;
+
 procedure TACBrValidador.ValidarPrefixoGTIN;
 type
   TRangePrefixGTIN = record
@@ -1552,7 +1589,6 @@ type
 var
   I: Integer;
   CodigoNormalizado: String;
-  IsGtin8: Boolean;
   sPrefixo: String;
   iPrefixo: Integer;
   bEncontrado: Boolean;
@@ -1692,9 +1728,8 @@ begin
   if fsMsgErro = '' then
   begin
     CodigoNormalizado := PadLeft(Trim(Documento), 14, '0');
-    IsGtin8           := StrToInt(Copy(CodigoNormalizado, 1, 6)) = 0;
 
-    if IsGtin8 then
+    if (StrToInt(Copy(CodigoNormalizado, 1, 6)) = 0) then //gtin8
       sPrefixo := copy(CodigoNormalizado, 7, 3)
     else
       sPrefixo := copy(CodigoNormalizado, 2, 3);
@@ -1709,10 +1744,7 @@ begin
 {$ENDIF}
       for I := Low(ARRAY_PREFIX_GTIN) to High(ARRAY_PREFIX_GTIN) do
       begin
-        bEncontrado :=
-          (iPrefixo >= ARRAY_PREFIX_GTIN[I].fxPrefixIni) and
-          (iPrefixo <= ARRAY_PREFIX_GTIN[I].fxPrefixFim);
-
+        bEncontrado := InRange(iPrefixo, ARRAY_PREFIX_GTIN[I].fxPrefixIni, ARRAY_PREFIX_GTIN[I].fxPrefixFim);
         if bEncontrado then
           Break;
       end;
@@ -1834,6 +1866,44 @@ begin
    if fsExibeDigitoCorreto then
      fsMsgErro := fsMsgErro + ' Dígito calculado: ' + fsDigitoCalculado ;
   end;
+end;
+
+procedure TACBrValidador.ValidarCAEPF;
+Var DV1, DV2 : String ;
+begin
+  if fsAjustarTamanho then
+     fsDocto := PadLeft( fsDocto, 14, '0') ;
+
+  if (Length( fsDocto ) <> 14) or ( not StrIsNumber( fsDocto ) ) then
+  begin
+     fsMsgErro := 'CAEPF deve ter 14 dígitos. (Apenas números)' ;
+     exit
+  end ;
+
+  if fsDocto = StringOfChar('0',14) then  // Prevenção contra 00000000000000
+  begin
+     fsMsgErro := 'CAEPF inválido.' ;
+     exit ;
+  end ;
+
+  Modulo.CalculoPadrao ;
+  Modulo.Documento := copy(fsDocto, 1, 12) ;
+  Modulo.Calcular ;
+  DV1 := IntToStr( Modulo.DigitoFinal ) ;
+
+  Modulo.Documento := copy(fsDocto, 1, 12)+DV1 ;
+  Modulo.Calcular ;
+  DV2 := IntToStr( Modulo.DigitoFinal ) ;
+
+  fsDigitoCalculado := DV1+DV2 ;
+
+  if (DV1 <> fsDocto[13]) or (DV2 <> fsDocto[14]) then
+  begin
+     fsMsgErro := 'CAEPF inválido.' ;
+
+     if fsExibeDigitoCorreto then
+        fsMsgErro := fsMsgErro +  '.. Digito calculado: '+fsDigitoCalculado ;
+  end ;
 end;
 
 { Rotina extraida do site:   www.tcsystems.com.br   }

@@ -127,6 +127,8 @@ function ExtrairDigitoChaveAcesso(AChave: string): Integer;
 
 function TimeZoneConf: TTimeZoneConf;
 
+function ValidarCodigoDFe(AcDF, AnDF: Integer): Boolean;
+
 var
   TimeZoneConfInstance: TTimeZoneConf;
 
@@ -247,23 +249,10 @@ begin
     result := False;
 end;
 
-function HexToAscii(const Texto: string): String;
-var i : integer;
-   function HexToInt(Hex: string): integer;
-   begin
-     Result := StrToInt('$' + Hex);
-   end;
-begin
-  result := '';
-  for i := 1 to Length(texto) do begin
-    if i mod 2 <> 0 then
-       result := result + chr(HexToInt(copy(texto,i,2)));
-  end;
-end;
-
 function ReverterFiltroTextoXML(aTexto: String): String;
 var p1,p2:Integer;
     vHex,vStr:String;
+    vStrResult:AnsiString;
 begin
   aTexto := StringReplace(aTexto, '&amp;', '&', [rfReplaceAll]);
   aTexto := StringReplace(aTexto, '&lt;', '<', [rfReplaceAll]);
@@ -278,8 +267,9 @@ begin
     vHex:=Copy(aTexto,p1,p2-p1+1);
     vStr:=StringReplace(vHex,'&#x','',[rfReplaceAll]);
     vStr:=StringReplace(vStr,';','',[rfReplaceAll]);
-    vStr:=HexToAscii(vStr);
-    aTexto:=StringReplace(aTexto,vHex,vStr,[rfReplaceAll]);
+    if not TryHexToAscii(vStr, vStrResult) then
+      vStrResult := vStr;
+    aTexto:=StringReplace(aTexto,vHex,vStrResult,[rfReplaceAll]);
     p1:=Pos('&#x',aTexto);
   end;
   result := Trim(aTexto);
@@ -948,6 +938,24 @@ begin
   begin
     if FTimeZoneStr = '' then
       FTimeZoneStr := GetUTCSistema;
+  end;
+end;
+
+function ValidarCodigoDFe(AcDF, AnDF: Integer): Boolean;
+const
+  CCodigosDFeInvalidos: array[0..19] of Integer =  (0, 11111111, 22222222,
+     33333333, 44444444, 55555555, 66666666, 77777777, 88888888, 99999999,
+     12345678, 23456789, 34567890, 45678901, 56789012, 67890123, 78901234,
+     89012345, 90123456, 01234567);
+var
+  i: Integer;
+begin
+  Result := (AcDF <> AnDF);
+  i := 0;
+  while Result and (i < 20) do
+  begin
+    Result := (AcDF <> CCodigosDFeInvalidos[i]);
+    Inc(i);
   end;
 end;
 

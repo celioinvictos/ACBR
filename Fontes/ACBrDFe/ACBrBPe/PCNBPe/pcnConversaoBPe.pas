@@ -57,7 +57,8 @@ unit pcnConversaoBPe;
 interface
 
 uses
-  SysUtils, StrUtils, Classes;
+  SysUtils, StrUtils, Classes,
+  pcnConversao;
 
 type
   TVersaoBPe = (ve100);
@@ -113,6 +114,9 @@ type
   TBandeiraCard = (bcVisa, bcMasterCard, bcAmericanExpress, bcSorocred, bcElo,
                    bcDinersClub, bcHipercard, bcAura, bcCabal, bcOutros);
 
+  TFormaPagamento = (fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito, fpValeTransporte,
+                        fpOutro);
+
 function StrToVersaoBPe(out ok: Boolean; const s: String): TVersaoBPe;
 function VersaoBPeToStr(const t: TVersaoBPe): String;
 
@@ -128,7 +132,7 @@ function VersaoBPeToDbl(const t: TVersaoBPe): Real;
 function LayOutToSchema(const t: TLayOutBPe): TSchemaBPe;
 
 function SchemaBPeToStr(const t: TSchemaBPe): String;
-function StrToSchemaBPe(out ok: Boolean; const s: String): TSchemaBPe;
+function StrToSchemaBPe(const s: String): TSchemaBPe;
 
 function LayOutBPeToServico(const t: TLayOutBPe): String;
 function ServicoToLayOutBPe(out ok: Boolean; const s: String): TLayOutBPe;
@@ -171,10 +175,16 @@ function BandeiraCardToStr(const t: TBandeiraCard): string;
 function BandeiraCardToDescStr(const t: TBandeiraCard): string;
 function StrToBandeiraCard(out ok: boolean; const s: string): TBandeiraCard;
 
+function StrToTpEventoBPe(out ok: boolean; const s: string): TpcnTpEvento;
+
+function FormaPagamentoBPeToStr(const t: TFormaPagamento): string;
+function FormaPagamentoBPeToDescricao(const t: TFormaPagamento): string;
+function StrToFormaPagamentoBPe(out ok: boolean; const s: string): TFormaPagamento;
+
 implementation
 
 uses
-  pcnConversao, typinfo;
+  typinfo;
 
 function StrToVersaoBPe(out ok: Boolean; const s: String): TVersaoBPe;
 begin
@@ -252,10 +262,11 @@ begin
   Result := copy(Result, 4, Length(Result)); // Remove prefixo "sch"
 end;
 
-function StrToSchemaBPe(out ok: Boolean; const s: String): TSchemaBPe;
+function StrToSchemaBPe(const s: String): TSchemaBPe;
 var
   P: Integer;
   SchemaStr: String;
+  CodSchema: Integer;
 begin
   P := pos('_', s);
   if p > 0 then
@@ -266,7 +277,14 @@ begin
   if LeftStr(SchemaStr, 3) <> 'sch' then
     SchemaStr := 'sch' + SchemaStr;
 
-  Result := TSchemaBPe( GetEnumValue(TypeInfo(TSchemaBPe), SchemaStr ) );
+  CodSchema := GetEnumValue(TypeInfo(TSchemaBPe), SchemaStr );
+
+  if CodSchema = -1 then
+  begin
+    raise Exception.Create(Format('"%s" não é um valor TSchemaANe válido.',[SchemaStr]));
+  end;
+
+  Result := TSchemaBPe( CodSchema );
 end;
 
 function LayOutBPeToServico(const t: TLayOutBPe): String;
@@ -430,14 +448,14 @@ end;
 function SitVeiculoToStr(const t: TSitVeiculo): String;
 begin
   result := EnumeradoToStr(t,
-                           ['01', '02', '03'],
+                           ['1', '2', '3'],
                            [svVazio, svCarregado, svNaoSeAplica]);
 end;
 
 function StrToSitVeiculo(out ok: Boolean; const s: String): TSitVeiculo;
 begin
   result := StrToEnumerado(ok, s,
-                           ['01', '02', '03'],
+                           ['1', '2', '3'],
                            [svVazio, svCarregado, svNaoSeAplica]);
 end;
 
@@ -532,6 +550,38 @@ begin
                                   bcElo, bcDinersClub, bcHipercard, bcAura, bcCabal,
                                   bcOutros]);
 end;
+
+function StrToTpEventoBPe(out ok: boolean; const s: string): TpcnTpEvento;
+begin
+  Result := StrToEnumerado(ok, s,
+            ['-99999', '110111', '110115', '110116'],
+            [teNaoMapeado, teCancelamento, teNaoEmbarque, teAlteracaoPoltrona]);
+end;
+
+function FormaPagamentoBPeToStr(const t: TFormaPagamento): string;
+begin
+  result := EnumeradoToStr(t, ['01', '02', '03', '04', '05', '99'],
+                              [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito, fpValeTransporte,
+                               fpOutro]);
+end;
+
+function FormaPagamentoBPeToDescricao(const t: TFormaPagamento): string;
+begin
+  result := EnumeradoToStr(t,  ['Dinheiro', 'Cheque', 'Cartão de Crédito', 'Cartão de Débito', 'Vale Transporte',
+                               'Outro'],
+                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito, fpValeTransporte,
+                                fpOutro]);
+end;
+
+function StrToFormaPagamentoBPe(out ok: boolean; const s: string): TFormaPagamento;
+begin
+  result := StrToEnumerado(ok, s, ['01', '02', '03', '04', '05', '99'],
+                                  [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito, fpValeTransporte,
+                                   fpOutro]);
+end;
+
+initialization
+  RegisterStrToTpEventoDFe(StrToTpEventoBPe, 'BPe');
 
 end.
 

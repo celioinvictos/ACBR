@@ -41,9 +41,6 @@ uses
   Classes, SysUtils;
 
 const
-  CLibSATNome = 'ACBrLibSAT';
-  CLibSATVersao = '0.0.2';
-
   CSessaoSAT = 'SAT';
   CChaveNomeDLL = 'NomeDLL';
   CChaveCodigoDeAtivacao = 'CodigoDeAtivacao';
@@ -128,7 +125,10 @@ const
   CChaveLogoVisible = 'LogoVisible';
   CChavePrinterName = 'Impressora';
   CChaveImprimeChaveEmUmaLinha = 'ImprimeChaveEmUmaLinha';
+  CChaveImprimeQRCodeLateral = 'ImprimeQRCodeLateral';
+  CChaveImprimeLogoLateral = 'ImprimeLogoLateral';
 
+  CSessaoRespostaSat = 'RespostaSat';
   CSessaoCFe = 'CFE';
   CSessaoENVIO = 'ENVIO';
   CSessaoCFeCancelado = 'CANCELAMENTO';

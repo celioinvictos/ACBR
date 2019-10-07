@@ -39,8 +39,8 @@ unit ACBrDFeReport;
 interface
 
 uses
-  Classes, SysUtils,
-  ACBrBase,
+  Classes, SysUtils, Graphics,
+  ACBrBase, ACBrDelphiZXingQRCode,
   pcnConversao;
 
 type
@@ -193,12 +193,50 @@ type
     property CasasDecimais: TCasasDecimais read FCasasDecimais;
 
   end;
+  
+  procedure PintarQRCode(const QRCodeData: String; APict: TPicture; const AEncoding: TQRCodeEncoding);
 
 implementation
 
 uses
   Math,
   ACBrUtil;
+  
+procedure PintarQRCode(const QRCodeData: String; APict: TPicture;
+  const AEncoding: TQRCodeEncoding);
+var
+  QRCode: TDelphiZXingQRCode;
+  QRCodeBitmap: TBitmap;
+  Row, Column: Integer;
+begin
+  QRCode       := TDelphiZXingQRCode.Create;
+  QRCodeBitmap := TBitmap.Create;
+  try
+    QRCode.Encoding  := AEncoding;
+    QRCode.QuietZone := 1;
+    QRCode.Data      := widestring(QRCodeData);
+
+    //QRCodeBitmap.SetSize(QRCode.Rows, QRCode.Columns);
+    QRCodeBitmap.Width  := QRCode.Columns;
+    QRCodeBitmap.Height := QRCode.Rows;
+
+    for Row := 0 to QRCode.Rows - 1 do
+    begin
+      for Column := 0 to QRCode.Columns - 1 do
+      begin
+        if (QRCode.IsBlack[Row, Column]) then
+          QRCodeBitmap.Canvas.Pixels[Column, Row] := clBlack
+        else
+          QRCodeBitmap.Canvas.Pixels[Column, Row] := clWhite;
+      end;
+    end;
+
+    APict.Assign(QRCodeBitmap);
+  finally
+    QRCode.Free;
+    QRCodeBitmap.Free;
+  end;
+end; 
 
 { TCasasDecimais }
 constructor TCasasDecimais.Create(AOwner: TComponent);
@@ -264,7 +302,7 @@ end;
 
 procedure TACBrDFeReport.SetPathPDF(const Value: String);
 begin
-  FPathPDF := PathWithDelim(Trim(Value));
+  FPathPDF := PathWithDelim( ExtractFilePath(Trim(Value)) );
 end;
 
 function TACBrDFeReport.GetPathPDF: String;
@@ -301,7 +339,11 @@ end;
 
 procedure TACBrDFeReport.SetNumCopias(const Value: Integer);
 begin
-  if (Value < 1) then
+  // O valor de cópias zero é utilizado por aplicações ISAPI no momento.
+  // É utilizado por causa de problemas encontrados ao usar o Fortes Report.
+  // Para mais informações, veja:
+  // https://www.projetoacbr.com.br/forum/topic/52337-gerar-pdf-nfcenfe-danfe-aplica%C3%A7%C3%A3o-isapi-com-fortes-report/?tab=comments#comment-344431
+  if (Value < 0) then
     Exit;
 
   FNumCopias := Value;

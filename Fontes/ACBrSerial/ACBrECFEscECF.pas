@@ -958,7 +958,7 @@ begin
       if (Byte1 = WAK) then // Ocupado, aguarde e solicite novo Status
       begin
         if (fsWAKCounter > 0) and                // Já esteve ocupada antes ?
-           (EscECFComando.fsCMD in [22,26]) and  // Foi um comando de "Leitura de Informações" ?
+           (EscECFComando.fsCMD in [20,22,26]) and  // Foi um comando de "Leitura X Serial" ou "Leitura de Informações" ?
            (IsBematech or IsDaruma) and
            (( fsWAKCounter * cEsperaWAK ) >= (TimeOut*1000)) then  // Atingiu o TimeOut ?
         begin
@@ -3126,9 +3126,12 @@ end;
 procedure TACBrECFEscECF.SubtotalizaCupom(DescontoAcrescimo: Double;
        MensagemRodape : AnsiString );
 begin
-  fsEmPagamento := True ;
-  if DescontoAcrescimo = 0 then exit ;
-  
+  if DescontoAcrescimo = 0 then
+  begin
+    fsEmPagamento := True ;
+    Exit ;
+  end;
+
   with EscECFComando do
   begin
      CMD := 29 ;
@@ -3142,6 +3145,7 @@ begin
     RespostasComando.AddField( 'SubTotal', EscECFResposta.Params[0] );
 
   SalvaRespostasMemoria(False);
+  fsEmPagamento := True ;
 end;
 
 procedure TACBrECFEscECF.CancelaDescontoAcrescimoSubTotal(
@@ -3221,7 +3225,7 @@ begin
 
   EscECFComando.AddParamInteger( PosAliq ) ;
   EscECFComando.AddParamString( Tipo ) ;
-  EscECFComando.AddParamString( IntToStrZero( Trunc(Aliquota*100), 4 ) ) ;
+  EscECFComando.AddParamString( IntToStrZero( TruncFix(Aliquota*100), 4 ) );
   EnviaComando;
 
   CarregaAliquotas;

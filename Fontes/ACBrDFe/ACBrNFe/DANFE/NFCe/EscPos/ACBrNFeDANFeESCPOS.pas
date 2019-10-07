@@ -58,7 +58,7 @@ interface
 uses
   Classes, SysUtils, {$IFDEF FPC} LResources, {$ENDIF}
   ACBrNFeDANFEClass, ACBrPosPrinter,
-  pcnNFe, pcnEnvEventoNFe;
+  pcnNFe, pcnEnvEventoNFe, pcnInutNFe;
 
 const
   CLarguraRegiaoEsquerda = 270;
@@ -74,6 +74,8 @@ type
     procedure AjustaStringList(AStringList: TStringList);
     procedure MontarEnviarDANFE(NFE: TNFe; const AResumido: Boolean);
     procedure SetPosPrinter(AValue: TACBrPosPrinter);
+    procedure GerarIdentificacaoInutilizacao;
+    procedure GerarDadosInutilizacao(fpInutNFe: TinutNFe);
   protected
     FpNFe: TNFe;
     FpEvento: TEventoNFe;
@@ -109,6 +111,8 @@ type
     procedure ImprimirDANFEResumido(NFE: TNFe = nil); override;
     procedure ImprimirDANFECancelado(NFE: TNFe = nil); override;
     procedure ImprimirEVENTO(NFE : TNFe = nil);override;
+    procedure ImprimirINUTILIZACAO(ANFe: TNFe = nil); override;
+
 
     procedure ImprimirRelatorio(const ATexto: TStrings; const AVias: Integer = 1;
       const ACortaPapel: Boolean = True; const ALogo : Boolean = True);
@@ -269,6 +273,11 @@ var
   VlrAcrescimo, VlrLiquido: Double;
   sItem, sCodigo, sDescricao, sQuantidade, sUnidade, sVlrUnitario, sVlrProduto,
     LinhaCmd: String;
+  sDescricaoAd: String;
+  posQuebra, posDescricao: Integer;
+
+const
+  tagDescricao = '[DesProd]';
 begin
   if ImprimeItens then
   begin
@@ -279,24 +288,38 @@ begin
     begin
       with FpNFe.Det.Items[i] do
       begin
-        sItem        :=          IntToStrZero( Prod.nItem, 3);
-	sCodigo      :=          ManterCodigo( Prod.cEAN , Prod.cProd );
-        sDescricao   :=                  Trim( Prod.xProd);
-        sQuantidade  :=    FormatarQuantidade( Prod.QCom, False );
-        sUnidade     :=                  Trim( Prod.uCom);
-        sVlrUnitario := FormatarValorUnitario( Prod.VUnCom );
-        sVlrProduto  :=         FormatFloatBr( Prod.vProd );
+        sItem           :=          IntToStrZero( Prod.nItem, 3);
+        sCodigo         :=          ManterCodigo( Prod.cEAN , Prod.cProd );
+        sDescricao      :=           ManterXProd( FpNFe, i );
+        sQuantidade     :=    FormatarQuantidade( Prod.QCom, False );
+        sUnidade        :=                  Trim( Prod.uCom);
+        sVlrUnitario    := FormatarValorUnitario( Prod.VUnCom );
+        sVlrProduto     :=         FormatFloatBr( Prod.vProd );
+
+        sDescricaoAd    := '';
 
         if ImprimeEmUmaLinha then
         begin
-          LinhaCmd := sItem + ' ' + sCodigo + ' ' + '[DesProd] ' + sQuantidade + ' ' +
+          LinhaCmd := sItem + ' ' + sCodigo + ' ' + tagDescricao + ' ' + sQuantidade + ' ' +
             sUnidade + ' X ' + sVlrUnitario + ' ' + sVlrProduto;
 
+          // prepara impressão da segunda linha da descrição (informação adicional)
+          posQuebra := Pos(sLineBreak, sDescricao);
+          posDescricao := Pos(tagDescricao, LinhaCmd);
+
+          if posQuebra > 0 then
+          begin
+            sDescricaoAd := Copy(sDescricao, posQuebra + Length(sLineBreak), MaxInt);
+            sDescricao := Copy(sDescricao, 1, posQuebra - 1);
+          end;
+
           // acerta tamanho da descrição
-          nTamDescricao := FPosPrinter.ColunasFonteCondensada - Length(LinhaCmd) + 9;
+          nTamDescricao := FPosPrinter.ColunasFonteCondensada - Length(LinhaCmd) + Length(tagDescricao);
           sDescricao := PadRight(Copy(sDescricao, 1, nTamDescricao), nTamDescricao);
 
-          LinhaCmd := StringReplace(LinhaCmd, '[DesProd]', sDescricao, [rfReplaceAll]);
+          LinhaCmd := StringReplace(LinhaCmd, tagDescricao, sDescricao, [rfReplaceAll]);
+          if sDescricaoAd <> '' then
+            LinhaCmd := LinhaCmd + sLineBreak + StringOfChar(' ', posDescricao - 1) + sDescricaoAd;
           FPosPrinter.Buffer.Add('</ae><c>' + LinhaCmd);
         end
         else
@@ -337,10 +360,12 @@ begin
           end;
         end;
 
-        //Informação Adicional do produto
-        LinhaCmd := ManterinfAdProd(FpNFe, i);
-        if Trim(LinhaCmd) <> '' then
-          FPosPrinter.Buffer.Add('<c>'+LinhaCmd);
+        if ExibeInforAdicProduto = infSeparadamente then
+        begin
+          LinhaCmd := FpNFe.Det[i].infAdProd;
+          if Trim(LinhaCmd) <> '' then
+            FPosPrinter.Buffer.Add('<c>' + LinhaCmd);
+        end;
 
       end;
     end;
@@ -444,7 +469,7 @@ end;
 
 procedure TACBrNFeDANFeESCPOS.GerarMensagemInteresseContribuinte;
 var
-  TextoObservacao: AnsiString;
+  TextoObservacao: string;
 begin
   TextoObservacao := Trim(FpNFe.InfAdic.infCpl);
   if TextoObservacao <> '' then
@@ -591,7 +616,7 @@ end;
 
 procedure TACBrNFeDANFeESCPOS.GerarMensagemFiscal;
 var
-  TextoObservacao: AnsiString;
+  TextoObservacao: string;
 begin
   TextoObservacao := Trim(FpNFe.InfAdic.infAdFisco);
   if TextoObservacao <> '' then
@@ -616,7 +641,7 @@ begin
 
     InfoQrCode.Add( '<qrcode_tipo>2</qrcode_tipo>'+
                     '<qrcode_error>0</qrcode_error>'+
-                    '<qrcode_largura>'+IntToStr(min(4,FPosPrinter.ConfigQRCode.LarguraModulo))+'</qrcode_largura>'+
+                    '<qrcode_largura>'+IntToStr(FPosPrinter.ConfigQRCode.LarguraModulo)+'</qrcode_largura>'+
                     '<qrcode>'+DadosQRCode+'</qrcode>');
 
     if Cancelamento then
@@ -737,8 +762,13 @@ end;
 
 procedure TACBrNFeDANFeESCPOS.ImprimirDANFE(NFE: TNFe);
 begin
-  AtivarPosPrinter;
-  MontarEnviarDANFE(NFE, False);
+  IF Cancelada then
+    ImprimirDANFECancelado(NFE)
+  else
+  begin
+    AtivarPosPrinter;
+    MontarEnviarDANFE(NFE, False);
+  end;
 end;
 
 procedure TACBrNFeDANFeESCPOS.ImprimirDANFEResumido(NFE: TNFe);
@@ -800,7 +830,6 @@ begin
   FPosPrinter.Buffer.Add('</linha_simples>');
 end;
 
-
 procedure TACBrNFeDANFeESCPOS.GerarObservacoesEvento;
 begin
   if FpEvento.Evento[0].InfEvento.detEvento.xJust <> '' then
@@ -810,7 +839,6 @@ begin
     FPosPrinter.Buffer.Add('</fn></ae>' +
        FpEvento.Evento[0].InfEvento.detEvento.xJust );
   end
-
   else if FpEvento.Evento[0].InfEvento.detEvento.xCorrecao <> '' then
   begin
     FPosPrinter.Buffer.Add('</linha_simples>');
@@ -893,6 +921,80 @@ begin
   FPosPrinter.Imprimir('', True, True, True, AVias);
 end;
 
+procedure TACBrNFeDANFeESCPOS.GerarDadosInutilizacao(fpInutNFe: TinutNFe);
+const
+  iTamanhoColunaRotulos = 18;
+var
+  sTipoAmbiente: string;
+begin
+  FPosPrinter.Buffer.Add(ACBrStr('</fn></ce><n>INUTILIZAÇÃO</n>'));
+  FPosPrinter.Buffer.Add('</fn></ae>' + PadRight('ÓRGÃO:', iTamanhoColunaRotulos) + IntToStr(fpInutNFe.RetInutNFe.cUF));
+  case fpInutNFe.RetInutNFe.tpAmb of
+    taProducao:
+      sTipoAmbiente := ACBrStr('PRODUÇÃO');
+    taHomologacao:
+      sTipoAmbiente := ACBrStr('HOMOLOGAÇÃO - SEM VALOR FISCAL');
+  end;
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('AMBIENTE:', iTamanhoColunaRotulos)) + sTipoAmbiente);
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('ANO:', iTamanhoColunaRotulos)) + IntToStr(fpInutNFe.RetInutNFe.ano));
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('MODELO:', iTamanhoColunaRotulos)) + IntToStr(fpInutNFe.RetInutNFe.modelo));
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('SERIE:', iTamanhoColunaRotulos)) + IntToStr(fpInutNFe.RetInutNFe.serie));
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('NUM. INUTILIZADA:', iTamanhoColunaRotulos)) + IntToStr(fpInutNFe.RetInutNFe.nNFIni) + ACBrStr(' a ') + IntToStr(fpInutNFe.RetInutNFe.nNFFin));
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('STATUS:', iTamanhoColunaRotulos)) + IntToStr(fpInutNFe.RetInutNFe.cStat) + ' - ' + fpInutNFe.RetInutNFe.xMotivo);
+  FPosPrinter.Buffer.Add(ACBrStr(PadRight('NÚM. PROTOCOLO:', iTamanhoColunaRotulos)) + fpInutNFe.RetInutNFe.nProt + ' ' + FormatDateTimeBr(fpInutNFe.RetInutNFe.dhRecbto));
+  FPosPrinter.Buffer.Add('</linha_simples>');
+end;
+
+procedure TACBrNFeDANFeESCPOS.GerarIdentificacaoInutilizacao;
+begin
+  FPosPrinter.Buffer.Add('</ce><c><n>' + QuebraLinhas(ACBrStr('INUTILIZAÇÃO DE NUMERAÇÃO DA NF-E'), FPosPrinter.ColunasFonteCondensada) + '</n>');
+  FPosPrinter.Buffer.Add('</ae> Não possui valor fiscal, simples representação do fato indicado abaixo.');
+  FPosPrinter.Buffer.Add('CONSULTE A AUTENTICIDADE NO SITE DA SEFAZ AUTORIZADORA');
+  FPosPrinter.Buffer.Add('</linha_simples>');
+end;
+
+procedure TACBrNFeDANFeESCPOS.ImprimirINUTILIZACAO(ANFe: TNFe);
+var
+  fpInutNFe: TInutNFe;
+  sJustificativa: string;
+
+begin
+  if ANFE = nil then
+  begin
+    if not Assigned(ACBrNFe) then
+      raise Exception.Create(ACBrStr('Componente ACBrNFe não atribuído'));
+
+    if TACBrNFe(ACBrNFe).NotasFiscais.Count > 0 then
+      FpNFe := TACBrNFe(ACBrNFe).NotasFiscais.Items[0].NFE;
+  end
+  else
+    FpNFe := ANFE;
+
+  fpInutNFe := TACBrNFe(ACBrNFe).InutNFe;
+  if not Assigned(fpInutNFe) then
+  begin
+    raise Exception.Create(ACBrStr('Objeto de inutilização não atribuído.'));
+  end;
+
+  // Salvar TACBrNFe(ACBrNFe).InutNFe, ANFe
+  GerarIdentificacaoInutilizacao;
+  if Assigned(FpNFe) then
+  begin
+    GerarCabecalho;
+    FPosPrinter.Buffer.Add('</linha_simples>');
+  end;
+  GerarDadosInutilizacao(fpInutNFe);
+
+  sJustificativa := ACBrStr(fpInutNFe.RetInutNFe.xJust);
+  if sJustificativa <> '' then
+  begin
+    FPosPrinter.Buffer.Add('</fn></ce><n>JUSTIFICATIVA</n>');
+    FPosPrinter.Buffer.Add('</fn></ae>' + sJustificativa );
+    FPosPrinter.Buffer.Add('</linha_simples>');
+  end;
+  GerarRodape;
+  FPosPrinter.Imprimir('', False, True, True, NumCopias);
+end;
 
 {$IfDef FPC}
 initialization

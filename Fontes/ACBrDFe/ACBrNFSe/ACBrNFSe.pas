@@ -86,40 +86,40 @@ type
 
     function GerarLote(ALote: Integer; AqMaxRps: Integer = 50;
       ASincrono: Boolean = False): Boolean; overload;
-    function GerarLote(ALote: String; AqMaxRps: Integer = 50;
+    function GerarLote(const ALote: String; AqMaxRps: Integer = 50;
       ASincrono: Boolean = False): Boolean; overload;
 
     function Enviar(ALote: integer; Imprimir: Boolean = True): Boolean; overload;
-    function Enviar(ALote: String; Imprimir: Boolean = True): Boolean; overload;
+    function Enviar(const ALote: String; Imprimir: Boolean = True): Boolean; overload;
 
     function TesteEnviar(ALote: Integer): Boolean; overload;
-    function TesteEnviar(ALote: String): Boolean; overload;
+    function TesteEnviar(const ALote: String): Boolean; overload;
 
     function EnviarSincrono(ALote: Integer; Imprimir: Boolean = True): Boolean; overload;
-    function EnviarSincrono(ALote: String; Imprimir: Boolean = True): Boolean; overload;
+    function EnviarSincrono(const ALote: String; Imprimir: Boolean = True): Boolean; overload;
 
     function Gerar(ARps: Integer; ALote: Integer = 1; Imprimir: Boolean = True): Boolean;
 
-    function ConsultarSituacao(AProtocolo: String;
+    function ConsultarSituacao(const AProtocolo: String;
                                const ANumLote: String = ''): Boolean;
-    function ConsultarLoteRps(ANumLote, AProtocolo: string): Boolean;
-    function ConsultarNFSeporRps(ANumero, ASerie, ATipo: String;
+    function ConsultarLoteRps(const ANumLote, AProtocolo: string): Boolean;
+    function ConsultarNFSeporRps(const ANumero, ASerie, ATipo: String;
                                  const ANumLote: String = ''): Boolean;
     function ConsultarNFSe(ADataInicial, ADataFinal: TDateTime;
-      ANumeroNFSe: String = ''; APagina: Integer = 1;
-      ACNPJTomador: String = ''; AIMTomador: String = '';
-      ANomeInter: String = ''; ACNPJInter: String = ''; AIMInter: String = '';
-      ASerie: String = ''): Boolean;
+      const ANumeroNFSe: String = ''; APagina: Integer = 1;
+      const ACNPJTomador: String = ''; const AIMTomador: String = '';
+      const ANomeInter: String = ''; const ACNPJInter: String = ''; const AIMInter: String = '';
+      const ASerie: String = ''): Boolean;
 
-    function CancelarNFSe(ACodigoCancelamento: String;
-                          ANumeroNFSe: String = '';
-                          AMotivoCancelamento: String = '';
+    function CancelarNFSe(const ACodigoCancelamento: String;
+                          const ANumeroNFSe: String = '';
+                          const AMotivoCancelamento: String = '';
                           const ANumLote: String = ''): Boolean;
 
-    function SubstituirNFSe(ACodigoCancelamento, ANumeroNFSe: String;
-                            AMotivoCancelamento: String = ''): Boolean;
+    function SubstituirNFSe(const ACodigoCancelamento, ANumeroNFSe: String;
+                            const AMotivoCancelamento: String = ''): Boolean;
 
-    function LinkNFSe(ANumeroNFSe: Integer; ACodVerificacao: String; AChaveAcesso: String = ''): String;
+    function LinkNFSe(ANumeroNFSe: Integer; const ACodVerificacao: String; const AChaveAcesso: String = ''): String;
 
     function GetNomeModeloDFe: String; override;
     function GetNameSpaceURI: String; override;
@@ -134,6 +134,8 @@ type
     function IdentificaSchema(const AXML: String): TSchemaNFSe;
     function GerarNomeArqSchema(const ALayOut: TLayOutNFSe;
       VersaoServico: Double): String;
+
+    function GerarIntegridade(const AXML: string): string;
 
     property WebServices: TWebServices read FWebServices write FWebServices;
     property NotasFiscais: TNotasFiscais read FNotasFiscais write FNotasFiscais;
@@ -151,14 +153,10 @@ type
 implementation
 
 uses
-  strutils, dateutils;
+  strutils, dateutils, ACBrDFeSSL;
 
 {$IFDEF FPC}
- {$IFDEF CPU64}
-  {$R ACBrNFSeServicos.res}  // Dificuldades de compilar Recurso em 64 bits
- {$ELSE}
-  {$R ACBrNFSeServicos.rc}
- {$ENDIF}
+ {$R ACBrNFSeServicos.rc}
 {$ELSE}
  {$R ACBrNFSeServicos.res}
 {$ENDIF}
@@ -406,7 +404,7 @@ begin
   Result := GerarLote(IntToStr(ALote), AqMaxRps, ASincrono);
 end;
 
-function TACBrNFSe.GerarLote(ALote: String; AqMaxRps: Integer;
+function TACBrNFSe.GerarLote(const ALote: String; AqMaxRps: Integer;
   ASincrono: Boolean): Boolean;
 begin
   if NotasFiscais.Count <= 0 then
@@ -427,7 +425,7 @@ begin
   Result := Enviar(IntToStr(ALote),Imprimir);
 end;
 
-function TACBrNFSe.Enviar(ALote: String; Imprimir: Boolean): Boolean;
+function TACBrNFSe.Enviar(const ALote: String; Imprimir: Boolean): Boolean;
 var
   i: Integer;
 begin
@@ -459,7 +457,7 @@ begin
   Result := EnviarSincrono(IntToStr(ALote), Imprimir);
 end;
 
-function TACBrNFSe.EnviarSincrono(ALote: String;
+function TACBrNFSe.EnviarSincrono(const ALote: String;
   Imprimir: Boolean): Boolean;
 var
   i: Integer;
@@ -520,17 +518,36 @@ begin
   end;
 end;
 
-function TACBrNFSe.ConsultarSituacao(AProtocolo: String; const ANumLote: String): Boolean;
+function TACBrNFSe.GerarIntegridade(const AXML: string): string;
+var
+  XML: string;
+  i, j: Integer;
+begin
+  j := Length(AXML);
+  XML := '';
+  for i := 1 to J do
+  begin
+    if (AXML[i] in ['!'..'~'])  then
+      XML := XML + AXML[i];
+  end;
+
+//  SSL.CarregarCertificadoSeNecessario;
+  Result := SSL.CalcHash(XML + Configuracoes.Geral.Emitente.WebChaveAcesso,
+                         dgstSHA512, outHexa, False);
+  Result := lowerCase(Result);
+end;
+
+function TACBrNFSe.ConsultarSituacao(const AProtocolo: String; const ANumLote: String): Boolean;
 begin
   Result := WebServices.ConsultaSituacao(AProtocolo, ANumLote);
 end;
 
-function TACBrNFSe.ConsultarLoteRps(ANumLote, AProtocolo: string): Boolean;
+function TACBrNFSe.ConsultarLoteRps(const ANumLote, AProtocolo: string): Boolean;
 begin
   Result := WebServices.ConsultaLoteRps(ANumLote, AProtocolo);
 end;
 
-function TACBrNFSe.ConsultarNFSeporRps(ANumero, ASerie, ATipo: String;
+function TACBrNFSe.ConsultarNFSeporRps(const ANumero, ASerie, ATipo: String;
                                        const ANumLote: String = ''): Boolean;
 begin
   if NotasFiscais.Count <= 0 then
@@ -540,7 +557,7 @@ begin
 end;
 
 function TACBrNFSe.ConsultarNFSe(ADataInicial, ADataFinal: TDateTime;
-  ANumeroNFSe: String; APagina: Integer; ACNPJTomador, AIMTomador,
+  const ANumeroNFSe: String; APagina: Integer; const ACNPJTomador, AIMTomador,
   ANomeInter, ACNPJInter, AIMInter, ASerie: String): Boolean;
 begin
   Result := WebServices.ConsultaNFSe(ADataInicial, ADataFinal, ANumeroNFSe,
@@ -548,8 +565,8 @@ begin
             ASerie);
 end;
 
-function TACBrNFSe.CancelarNFSe(ACodigoCancelamento: String;
-  ANumeroNFSe: String = ''; AMotivoCancelamento: String = '';
+function TACBrNFSe.CancelarNFSe(const ACodigoCancelamento: String;
+  const ANumeroNFSe: String = ''; const AMotivoCancelamento: String = '';
   const ANumLote: String = ''): Boolean;
 begin
   if NotasFiscais.Count <= 0 then
@@ -572,8 +589,8 @@ begin
                                       AMotivoCancelamento, ANumLote);
 end;
 
-function TACBrNFSe.SubstituirNFSe(ACodigoCancelamento,
-  ANumeroNFSe: String; AMotivoCancelamento: String): Boolean;
+function TACBrNFSe.SubstituirNFSe(const ACodigoCancelamento,
+  ANumeroNFSe: String; const AMotivoCancelamento: String): Boolean;
 begin
   if ACodigoCancelamento = '' then
     GerarException(ACBrStr('ERRO: Código de Cancelamento não informado'));
@@ -595,7 +612,7 @@ begin
   Result := TesteEnviar(IntToStr(ALote));
 end;
 
-function TACBrNFSe.TesteEnviar(ALote: String): Boolean;
+function TACBrNFSe.TesteEnviar(const ALote: String): Boolean;
 begin
   if NotasFiscais.Count <= 0 then
     GerarException(ACBrStr('ERRO: Nenhum RPS adicionado ao Lote'));
@@ -609,7 +626,7 @@ begin
   Result := WebServices.TestaEnvio(ALote);
 end;
 
-function TACBrNFSe.LinkNFSe(ANumeroNFSe: Integer; ACodVerificacao: String; AChaveAcesso: String = ''): String;
+function TACBrNFSe.LinkNFSe(ANumeroNFSe: Integer; const ACodVerificacao: String; const AChaveAcesso: String = ''): String;
 var
   Texto, xNumeroNFSe, xNomeMunic, xLink: String;
 begin

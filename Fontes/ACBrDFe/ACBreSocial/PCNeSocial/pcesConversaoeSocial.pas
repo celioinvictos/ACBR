@@ -139,7 +139,7 @@ type
 
   tpuf                    = (ufAC, ufAL, ufAP, ufAM, ufBA, ufCE, ufDF, ufES, ufGO, ufMA,
                              ufMT, ufMS, ufMG, ufPA, ufPB, ufPR, ufPE, ufPI, ufRJ, ufRN,
-                             ufRS, ufRO, ufRR, ufSC, ufSP, ufSE, ufTO);
+                             ufRS, ufRO, ufRR, ufSC, ufSP, ufSE, ufTO, ufEX);
 
   tpIndSituacaoEspecial   = (iseSituacaoNormal, iseExtincao, iseFusao, iseCisao, iseIncorporacao);
 
@@ -388,8 +388,6 @@ type
   tpTpReint               = (trReintegracaoDecisaoJudicial, trReintegracaoAnistiaLegal, trReversaoServidorPublico, trReconducaoServidorPublico,
                              trReinclusoMilitar, trOutros);
 
-  tpNrLeiAnistia          = (nrLEI6683_1979, nrLEI8632_1993, nrLEI8878_1994, nrLEI10559_2002, nrLEI10790_2003, nrLEI11282_2006);
-
   tpTpContribSind         = (csContribSindical, csContribAssociativa, csContribAssistencial, csContribConfederativa);
 
   tpIndSubstPatrOpPort    = (spIntegralmenteSubstituida, spParcialmenteSubstituida);
@@ -412,7 +410,7 @@ type
                               mtvLicencaMaternidadeAdocaoGuardaJudicial, mtvLicencaNaoRemunerada, mtvMandatoEleitoralSemRemuneracao,
                               mtvMandatoEleitoralComRemuneracao, mtvMandatoSindical, mtvMulherVitimaViolencia, mtvParticipacaoCNPS,
                               mtvQualificacao, mtvRepresentanteSindical, mtvServicoMilitar, mtvSuspensaoDisciplinar, mtvServidorPublicoDisponibilidade,
-                              mtvLicencaMaternidade180Dias, mtvInatividadetrabalhadorAvulso90Dias);
+                              mtvLicencaMaternidade180Dias, mtvInatividadetrabalhadorAvulso90Dias, mtvLicencaMaternidadeAntecipacaoProrrogacao);
 
   tpTpAcidTransito        = (tpatAtropelamento, tpatColisao, tpatOutros, tpatNao);
 
@@ -436,7 +434,7 @@ type
 
   tpInclContr             = (icLocaisSemFiliais, icEstudoDeMercado, icContratacaoSuperior3Meses);
 
-  tpPlanRP                = (prpPlanoPrevidenciarioOuUnico, prpPlanoFinanceiro);
+  tpPlanRP                = (prpNenhum, prpPlanoPrevidenciarioOuUnico, prpPlanoFinanceiro);
 
   tpMtvAlt                = (maPromocao, maReadaptacao, maAproveitamento, maOutros);
 
@@ -798,9 +796,6 @@ function eSStrToMtvCancAvPrevio(var ok: boolean; const s: string): tpMtvCancAvPr
 function eSTpReintToStr(const t: tpTpReint ): string;
 function eSStrToTpReint(var ok: boolean; const s: string): tpTpReint;
 
-function eSNrLeiAnistiaToStr(const t: tpNrLeiAnistia ): string;
-function eSStrToNrLeiAnistia(var ok: boolean; const s: string): tpNrLeiAnistia;
-
 function eSTpContribSindToStr(const t: tpTpContribSind ): string;
 function eSStrToTpContribSind(var ok: boolean; const s: string): tpTpContribSind;
 
@@ -925,9 +920,9 @@ const
                                                  'S-4999', 'S-5001', 'S-5002', 'S-5003', 'S-5011',
                                                  'S-5012', 'S-5013', 'S-2221');
 
-  TUFString           : array[0..26] of String = ('AC','AL','AP','AM','BA','CE','DF','ES','GO',
+  TUFString           : array[0..27] of String = ('AC','AL','AP','AM','BA','CE','DF','ES','GO',
                                                   'MA','MT','MS','MG','PA','PB','PR','PE','PI',
-                                                  'RJ','RN','RS','RO','RR','SC','SP','SE','TO');
+                                                  'RJ','RN','RS','RO','RR','SC','SP','SE','TO', '');
 
   TModoLancamentoString : array[0..2] of String = ('inclusao', 'alteracao', 'exclusao');
 
@@ -939,12 +934,13 @@ const
 
   TMotivoAlteracaoCargoFuncao: array[0..3] of string = ('1', '2', '3', '9');
 
-  TMotivoAfastamento: array[0..29] of string = ('01', '03', '05', '06', '07',
+  TMotivoAfastamento: array[0..30] of string = ('01', '03', '05', '06', '07',
                                                 '08', '10', '11', '12', '13',
                                                 '14', '15', '16', '17', '18',
                                                 '19', '20', '21', '22', '23',
                                                 '24', '25', '26', '27', '28',
-                                                '29', '30', '31', '33', '34');
+                                                '29', '30', '31', '33', '34',
+                                                '35');
 
   TGenericosString0_1 : array[0..1] of string = ('0','1' );
   TGenericosString0_2 : array[0..2] of string = ('0','1','2' );
@@ -1335,12 +1331,12 @@ end;
 
 function eSTpExameOcupToStr(const t: tpTpExameOcup ): string;
 begin
-  result := EnumeradoToStr2(t,[ '0', '1', '2', '3', '4', '8' ] );
+  result := EnumeradoToStr2(t,[ '0', '1', '2', '3', '4', '9' ] );
 end;
 
 function eSStrToTpExameOcup(var ok: boolean; const s: string): tpTpExameOcup;
 begin
-  result := tpTpExameOcup( StrToEnumerado2(ok , s, [ '0', '1', '2', '3', '4', '8' ] ) );
+  result := tpTpExameOcup( StrToEnumerado2(ok , s, [ '0', '1', '2', '3', '4', '9' ] ) );
 end;
 
 function eSResAsoToStr(const t: tpResAso ): string;
@@ -1461,16 +1457,6 @@ end;
 function eSStrToTpAvPrevio(var ok: boolean; const s: string): tpTpAvPrevio;
 begin
   result := tpTpAvPrevio( StrToEnumerado2(ok , s, [ '1', '2', '4', '5', '6' ] ) );
-end;
-
-function eSNrLeiAnistiaToStr(const t: tpNrLeiAnistia ): string;
-begin
-  result := EnumeradoToStr2(t, TNrLeiAnistia );
-end;
-
-function eSStrToNrLeiAnistia(var ok: boolean; const s: string): tpNrLeiAnistia;
-begin
-  result := tpNrLeiAnistia( StrToEnumerado2(ok , s, TNrLeiAnistia ) );
 end;
 
 function eSTpContribSindToStr(const t: tpTpContribSind ): string;

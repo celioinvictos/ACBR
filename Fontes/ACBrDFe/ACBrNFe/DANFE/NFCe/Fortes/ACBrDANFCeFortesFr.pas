@@ -291,7 +291,6 @@ type
     fResumido: Boolean;
     fFiltro: TACBrNFeDANFCeFiltro;
 
-    procedure PintarQRCode(const QRCodeData: String; APict: TPicture);
     function CompoemEnderecoCFe: String ;
     function CompoemCliche: String;
   public
@@ -308,7 +307,7 @@ implementation
 uses
   StrUtils, math,
   ACBrDelphiZXingQRCode, ACBrNFe,
-  ACBrValidador, ACBrDFeDANFeReport, ACBrDFeReportFortes, ACBrUtil;
+  ACBrValidador, ACBrDFeDANFeReport, ACBrDFeReportFortes, ACBrDFeReport, ACBrUtil;
 
 {$ifdef FPC}
   {$R *.lfm}
@@ -377,9 +376,11 @@ begin
       lMensagemFiscal1.Visible := NaoEstaVazio(Trim(lMensagemFiscal1.Lines.Text));
 
       lNumeroSerie1.Lines.Text := ACBrStr(
-        'NFC-e nº ' + IntToStrZero(Ide.nNF, 9) + ' ' +
-        'Série ' + IntToStrZero(Ide.serie, 3) + ' ' +
-        DateTimeToStr(Ide.dEmi)+Via );
+        'NFC-e nº ' + IntToStrZero(Ide.nNF, 9) + ' ' + sLineBreak +
+        'Série ' + IntToStrZero(Ide.serie, 3) + ' ' + sLineBreak +
+        DateTimeToStr(Ide.dEmi) + sLineBreak +
+        Via
+      );
     end
     else
     begin
@@ -404,7 +405,7 @@ begin
       lNumeroSerie.Caption := ACBrStr(
         'NFC-e nº ' + IntToStrZero(Ide.nNF, 9) + ' ' +
         'Série ' + IntToStrZero(Ide.serie, 3) + ' ' +
-        DateTimeToStr(Ide.dEmi)+Via );
+        DateTimeToStr(Ide.dEmi)+ Via );
     end;
 
     lTitConsulteChave.Lines.Text := ACBrStr('Consulte pela Chave de Acesso em');
@@ -609,40 +610,6 @@ begin
   RecordAction := raUseIt ;
 end;
 
-procedure TACBrNFeDANFCeFortesFr.PintarQRCode(const QRCodeData: String; APict: TPicture);
-var
-  QRCode: TDelphiZXingQRCode;
-  QRCodeBitmap: TBitmap;
-  Row, Column: Integer;
-begin
-  QRCode       := TDelphiZXingQRCode.Create;
-  QRCodeBitmap := TBitmap.Create;
-  try
-    QRCode.Encoding  := qrUTF8NoBOM;
-    QRCode.QuietZone := 1;
-    QRCode.Data      := WideString(QRCodeData);
-
-    //QRCodeBitmap.SetSize(QRCode.Rows, QRCode.Columns);
-    QRCodeBitmap.Width  := QRCode.Columns;
-    QRCodeBitmap.Height := QRCode.Rows;
-
-    for Row := 0 to QRCode.Rows - 1 do
-    begin
-      for Column := 0 to QRCode.Columns - 1 do
-      begin
-        if (QRCode.IsBlack[Row, Column]) then
-          QRCodeBitmap.Canvas.Pixels[Column, Row] := clBlack
-        else
-          QRCodeBitmap.Canvas.Pixels[Column, Row] := clWhite;
-      end;
-    end;
-
-    APict.Assign(QRCodeBitmap);
-  finally
-    QRCode.Free;
-    QRCodeBitmap.Free;
-  end;
-end;
 
 function TACBrNFeDANFCeFortesFr.CompoemEnderecoCFe: String;
 var
@@ -780,7 +747,7 @@ begin
       rlbConsumidor.Visible := False;
       rlbQRCode.Visible     := False;
       rlbQRLateral.Visible  := True;
-      PintarQRCode( qrcode, imgQRCodeLateral.Picture );
+      PintarQRCode(qrcode, imgQRCodeLateral.Picture, qrUTF8NoBOM);
 
       if (Dest.idEstrangeiro = '') and (Dest.CNPJCPF = '') then
       begin
@@ -840,7 +807,7 @@ begin
       rlbQRLateral.Visible  := False;
       rlbConsumidor.Visible := True;
       rlbQRCode.Visible     := True;
-      PintarQRCode( qrcode, imgQRCode.Picture );
+      PintarQRCode(qrcode, imgQRCode.Picture, qrUTF8NoBOM);
 
       if (Dest.idEstrangeiro = '') and (Dest.CNPJCPF = '') then
       begin
@@ -1191,7 +1158,7 @@ begin
     else
       qrcode := infNFeSupl.qrCode;
 
-    PintarQRCode( qrcode , imgQRCodeCanc.Picture );
+    PintarQRCode(qrcode , imgQRCodeCanc.Picture, qrUTF8NoBOM);
 
     lProtocoloCanc.Caption := ACBrStr('Protocolo de Autorização: '+procNFe.nProt+
                            ' '+ifthen(procNFe.dhRecbto<>0,DateTimeToStr(procNFe.dhRecbto),''));
@@ -1289,9 +1256,9 @@ begin
       else
         RLLayout := rlVenda;
 
-      Resumido := DanfeResumido;
+      Resumido := DanfeResumido or (not Self.ImprimeItens);
 
-      if RLPrinter.Copies <> NumCopias then
+      if (NumCopias > 0) and (RLPrinter.Copies <> NumCopias) then
       begin
         RLPrinter.Copies := NumCopias;
       end;

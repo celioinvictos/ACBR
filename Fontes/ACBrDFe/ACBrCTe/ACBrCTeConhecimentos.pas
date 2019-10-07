@@ -155,7 +155,7 @@ type
     function  Add: Conhecimento;
     function Insert(Index: Integer): Conhecimento;
 
-    property Items[Index: Integer]: Conhecimento read GetItem write SetItem;
+    property Items[Index: Integer]: Conhecimento read GetItem write SetItem; default;
 
     function GetNamePath: String; override;
     // Incluido o Parametro AGerarCTe que determina se após carregar os dados do CTe
@@ -275,6 +275,24 @@ begin
       CTe.signature.X509Certificate := Leitor.rCampo(tcStr, 'X509Certificate');
     finally
       Leitor.Free;
+    end;
+
+    // Gera o QR-Code para adicionar no XML após ter a
+    // assinatura, e antes de ser salvo.
+
+    if ((Configuracoes.Geral.GerarInfCTeSupl = fgtSomenteProducao) and
+       (Configuracoes.WebServices.Ambiente = taProducao)) or
+       ((Configuracoes.Geral.GerarInfCTeSupl = fgtSomenteHomologacao) and
+       (Configuracoes.WebServices.Ambiente = taHomologacao)) or
+       (Configuracoes.Geral.GerarInfCTeSupl = fgtSempre) then
+    begin
+      with TACBrCTe(TConhecimentos(Collection).ACBrCTe) do
+      begin
+        CTe.infCTeSupl.qrCodCTe := GetURLQRCode(CTe.Ide.cUF, CTe.Ide.tpAmb,
+                  CTe.ide.tpEmis, CTe.infCTe.ID, CTe.infCTe.Versao);
+
+        GerarXML;
+      end;
     end;
 
     if Configuracoes.Arquivos.Salvar and
@@ -464,6 +482,10 @@ begin
     if not ValidarConcatChave then
       AdicionaErro(
         '502-Rejeição: Erro na Chave de Acesso - Campo Id não corresponde à concatenação dos campos correspondentes');
+
+    GravaLog('Validar: 897-Código do documento: ' + IntToStr(CTe.Ide.nCT));
+    if not ValidarCodigoDFe(CTe.Ide.cCT, CTe.Ide.nCT) then
+      AdicionaErro('897-Rejeição: Código numérico em formato inválido ');
 
     GravaLog('Validar: 252-Ambiente');
     if (CTe.Ide.tpAmb <> Configuracoes.WebServices.Ambiente) then
@@ -1899,7 +1921,7 @@ begin
       if INIRec.ReadString('ICMSOutraUF', 'CST','') <> '' then
       begin
         Imp.ICMS.ICMSOutraUF.CST           := StrToCSTICMS(OK,INIRec.ReadString('ICMSOutraUF','CST','90'));
-        imp.ICMS.SituTrib                  := Imp.ICMS.ICMSOutraUF.CST;
+        imp.ICMS.SituTrib                  := cstICMSOutraUF;
         Imp.ICMS.ICMSOutraUF.pRedBCOutraUF := StringToFloatDef( INIRec.ReadString('ICMSOutraUF','pRedBCOutraUF','') ,0);
         Imp.ICMS.ICMSOutraUF.vBCOutraUF    := StringToFloatDef( INIRec.ReadString('ICMSOutraUF','vBCOutraUF','') ,0);
         Imp.ICMS.ICMSOutraUF.pICMSOutraUF  := StringToFloatDef( INIRec.ReadString('ICMSOutraUF','pICMSOutraUF','') ,0);
@@ -1912,7 +1934,14 @@ begin
         Imp.ICMS.ICMSSN.indSN := INIRec.ReadInteger('ICMSSN', 'indSN',1);
       end;
 
-      if StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'pICMSInterPart', ''), 0) <> 0 then
+      if (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'pICMSInterPart', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'vBCUFFim', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'pFCPUFFim', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'pICMSUFFim', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'pICMSInter', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'vFCPUFFim', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'vICMSUFFim', ''), 0) <> 0) or
+         (StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'vICMSUFIni', ''), 0) <> 0) then
       begin
         Imp.ICMSUFFim.vBCUFFim       := StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'vBCUFFim', ''), 0 );
         Imp.ICMSUFFim.pFCPUFFim      := StringToFloatDef( INIRec.ReadString('ICMSUFFim', 'pFCPUFFim', ''), 0 );
@@ -2722,7 +2751,8 @@ begin
         with infCTeSub do
         {$ENDIF}
         begin
-          chCte := INIRec.ReadString( 'infCteSub','chCte','');
+          chCte         := INIRec.ReadString( 'infCteSub','chCte','');
+          indAlteraToma := StrToTIndicador(Ok, INIRec.ReadString( 'infCteSub','indAlteraToma','0'));
 
           tomaICMS.refNFe := INIRec.ReadString( 'infCteSub','refNFe','');
 
@@ -2734,11 +2764,15 @@ begin
           tomaICMS.refNF.modelo   := INIRec.ReadString( 'infCteSub','mod','');
           tomaICMS.refNF.serie    := INIRec.ReadInteger( 'infCteSub','serie',0);
           tomaICMS.refNF.subserie := INIRec.ReadInteger( 'infCteSub','subserie',0);
-          tomaICMS.refNF.nro      := INIRec.ReadInteger( 'infCteSub','CNPJ',0);
+          tomaICMS.refNF.nro      := INIRec.ReadInteger( 'infCteSub','nro',0);
           tomaICMS.refNF.valor    :=  StringToFloatDef(INIRec.ReadString('infCteSub','valor','') ,0);
           tomaICMS.refNF.dEmi     := StringToDateTime(INIRec.ReadString( 'infCteSub','dEmi','0'));
+          tomaICMS.refCte         := INIRec.ReadString( 'infCteSub','refCte','');
 
+          // Usado pela versão 2.00
           tomaNaoICMS.refCteAnu := INIRec.ReadString( 'infCteSub','refCteAnu','');
+          // Usado pela versão 3.00
+          refCteAnu := tomaNaoICMS.refCteAnu;
         end;
       end;
 

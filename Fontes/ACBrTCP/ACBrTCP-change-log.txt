@@ -37,6 +37,40 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+
+30/08/2019
+-- ACBrWinReqRespClass, ACBrWinHTTPReqResp --
+[*] Melhoria para que seja possivel passar o metodo e o MimeType para a requisição.
+    https://www.projetoacbr.com.br/forum/topic/53128-requisi%C3%A7%C3%A3o-get-com-winhttp/
+    (por: Allan Wolski)
+
+30/08/2019
+-- ACBrCEP --
+[*] Melhoria na mensagem de erro, de método não implementado
+    https://www.projetoacbr.com.br/forum/topic/53251-não-está-funcionando-a-pesquisa-do-cep-por-endereco/
+    (por: DSA)
+
+21/08/2019
+-- ACBrMTER --
+[+] Adicionada a Propriedade "KeepAlive : Integer default 0"
+    Se o valor for diferente de 0, o ACBrMTER irá verificar se a conexão com o
+    Microterminal ainda está ativa, a cada N segundos
+    https://www.projetoacbr.com.br/forum/topic/53139-problemas-mter-micros-terminais-gertec-antigos-solu%C3%A7%C3%A3o/
+[*] Melhoria na detecção de Queda de Conexão, para evitar erros de A.V.
+    (por: DSA)
+
+17/06/2019
+-- ACBrMTER --
+[+] Adicionado o método TACBrMTer.Desconectar(const aIP: String);
+    https://www.projetoacbr.com.br/forum/topic/51853-desativar-apenas-1-microterminal-e-não-todos/
+    (por: DSA)
+
+10/06/2019
+-- ACBrMTER --
+[-] Correção para que EchoMode não influencie o Passwordchar
+    https://www.projetoacbr.com.br/forum/topic/51820-acbrmter-echomode-password/
+    (por: DSA)
+
 07/04/2019
 -- ACBrMTER --
 [-] Ajuste para evitar A.V. quando componente ACBrBAL nao está associado a ACBrMTER

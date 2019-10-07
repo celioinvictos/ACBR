@@ -118,11 +118,7 @@ uses
   pcnAuxiliar, synacode;
 
 {$IFDEF FPC}
- {$IFDEF CPU64}
-  {$R ACBrANeServicos.res}  // Dificuldades de compilar Recurso em 64 bits
- {$ELSE}
-  {$R ACBrANeServicos.rc}
- {$ENDIF}
+ {$R ACBrANeServicos.rc}
 {$ELSE}
  {$R ACBrANeServicos.res}
 {$ENDIF}
@@ -265,7 +261,11 @@ var
   UF: String;
 begin
   // Para qual quer UF a URL é sempre a mesma.
-  UF := 'XX';
+  if Configuracoes.Geral.Seguradora = tsATM then
+    UF := 'ATM'
+  else
+    UF := 'ELT';
+
   Versao := LerVersaoDeParams(GetNomeModeloDFe, UF,
     Configuracoes.WebServices.Ambiente, LayOutToServico(LayOutServico),
     VersaoANeToDbl(Configuracoes.Geral.VersaoDF));
@@ -296,7 +296,11 @@ begin
   Versao := VersaoANeToDbl(Configuracoes.Geral.VersaoDF);
   URL := '';
   // Para qual quer UF a URL é sempre a mesma.
-  UF := 'XX';
+  if Configuracoes.Geral.Seguradora = tsATM then
+    UF := 'ATM'
+  else
+    UF := 'ELT';
+
   LerServicoDeParams(GetNomeModeloDFe, UF,
     Configuracoes.WebServices.Ambiente, LayOutToServico(LayOutServico),
     Versao, URL);

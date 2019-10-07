@@ -64,7 +64,6 @@ uses
 type
 
   { TfrmDACTeRLRetrato }
-
   TfrmDACTeRLRetrato = class(TfrmDACTeRL)
     rlb_CTeOS_PrestacaoServico: TRLBand;
     rlb_Dados_Seguradora: TRLBand;
@@ -358,7 +357,6 @@ type
     rlsLinhaV06: TRLDraw;
     rlsLinhaV05: TRLDraw;
     rlsLinhaH04: TRLDraw;
-    rlsLinhaV07: TRLDraw;
     rlsLinhaV01: TRLDraw;
     rlsLinhaV11: TRLDraw;
     rlsLinhaH06: TRLDraw;
@@ -516,7 +514,6 @@ type
     RLDraw79: TRLDraw;
     RLDraw80: TRLDraw;
     rlb_01_Recibo_Aereo: TRLBand;
-    rlLabel19: TRLLabel;
     RLDraw81: TRLDraw;
     RLDraw82: TRLDraw;
     rlLabel57: TRLLabel;
@@ -682,6 +679,10 @@ type
     rlblChaveCteAnulacao: TRLLabel;
     rlChaveCteSerAnulSubst: TRLMemo;
     rlChaveCteAnulacao: TRLMemo;
+    RLMemo1: TRLMemo;
+    rlsLinhaV07: TRLDraw;
+    imgQRCode: TRLImage;
+
     procedure rlb_01_ReciboBeforePrint(Sender: TObject; var PrintIt: boolean);
     procedure rlb_02_CabecalhoBeforePrint(Sender: TObject; var PrintIt: boolean);
     procedure rlb_03_DadosDACTeBeforePrint(Sender: TObject; var PrintIt: boolean);
@@ -725,27 +726,25 @@ type
       var PrintIt: Boolean);
   private
     Linhas: integer;
-    procedure Itens;
 
+    procedure Itens;
   public
     constructor Create(TheOwner: TComponent); override;
 
     procedure ProtocoloCTe(const sProtocolo: string);
-
   end;
 
 implementation
 
 uses
-  DateUtils, ACBrUtil, ACBrDFeUtil, ACBrValidador, pcteConversaoCTe, ACBrCTe;
+  DateUtils, ACBrUtil, ACBrDFeUtil, ACBrValidador, pcteConversaoCTe, ACBrCTe,
+  ACBrDFeReport, ACBrDFeReportFortes, ACBrDelphiZXingQRCode;
 
 {$IFnDEF FPC}
   {$R *.dfm}
-
 {$ELSE}
   {$R *.lfm}
 {$ENDIF}
-
 
 var
   FProtocoloCTe: string;
@@ -1062,6 +1061,7 @@ end;
 procedure TfrmDACTeRLRetrato.rlb_02_CabecalhoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 var
+  CarregouLogo: Boolean;
   strChaveContingencia: string;
   vStringStream: TStringStream;
 begin
@@ -1069,25 +1069,12 @@ begin
 
   if (fpDACTe.Logo <> '') then
   begin
-    if FilesExists(fpDACTe.Logo) then
-      rliLogo.Picture.LoadFromFile(fpDACTe.Logo)
-    else
-    begin
-      vStringStream := TStringStream.Create(fpDACTe.Logo);
-      try
-        try
-          rliLogo.Picture.Bitmap.LoadFromStream(vStringStream);
-        except
-        end;
-      finally
-        vStringStream.Free;
-      end;
-    end;
+    CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDACTe.Logo);
   end
   else
   begin
     rlmDadosEmitente.Left := 7;
-    rlmDadosEmitente.Width := 321;
+    rlmDadosEmitente.Width := 302;
     rlmDadosEmitente.Alignment := taCenter;
   end;
 
@@ -1100,17 +1087,8 @@ begin
     rliLogo.Left := 3;
     rliLogo.Height := 115;//91;
     rliLogo.Width := 324;//321
-  end;
-
-  rllModal.Caption := ACBrStr(TpModalToStrText(fpCTe.Ide.modal));
-  rllModelo.Caption := IntToStr(fpCTe.Ide.modelo);
-  rllSerie.Caption := IntToStr(fpCTe.Ide.serie);
-  rllNumCte.Caption := FormatFloat('000,000,000', fpCTe.Ide.nCT);
-  rllEmissao.Caption := FormatDateTimeBr(fpCTe.Ide.dhEmi);
-  rlbCodigoBarras.Caption := OnlyNumber(fpCTe.InfCTe.Id);
-  rllChave.Caption := FormatarChaveAcesso(OnlyNumber(fpCTe.InfCTe.Id));
-
-  if not fpDACTe.ExpandeLogoMarca then
+  end
+  else
   begin
     rlmEmitente.Enabled := True;
     rlmDadosEmitente.Enabled := True;
@@ -1140,6 +1118,14 @@ begin
         rlmDadosEmitente.Lines.Add('E-MAIL: ' + fpDACTe.Email);
     end;
   end;
+
+  rllModal.Caption := ACBrStr(TpModalToStrText(fpCTe.Ide.modal));
+  rllModelo.Caption := IntToStr(fpCTe.Ide.modelo);
+  rllSerie.Caption := IntToStr(fpCTe.Ide.serie);
+  rllNumCte.Caption := FormatFloat('000,000,000', fpCTe.Ide.nCT);
+  rllEmissao.Caption := FormatDateTimeBr(fpCTe.Ide.dhEmi);
+  rlbCodigoBarras.Caption := OnlyNumber(fpCTe.InfCTe.Id);
+  rllChave.Caption := FormatarChaveAcesso(OnlyNumber(fpCTe.InfCTe.Id));
 
   rllTipoCte.Caption := ACBrStr(tpCTToStrText(fpCTe.Ide.tpCTe));
   rllTipoServico.Caption := ACBrStr(TpServToStrText(fpCTe.Ide.tpServ));
@@ -1700,7 +1686,7 @@ begin
 
       if (RLCTe.PageNumber > 1) then
         Inc(Linhas);
-      if ((cdsDocumentos.recno > 4) and (RLCTe.PageNumber = 1) or (Linhas > 70)) then
+      if ((cdsDocumentos.recno > 10) and (RLCTe.PageNumber = 1) or (Linhas > 70)) then
         break;
 
     end;
@@ -1912,7 +1898,7 @@ procedure TfrmDACTeRLRetrato.rlb_11_ModRodLot104AfterPrint(Sender: TObject);
 begin
   inherited;
 
-  if ((cdsDocumentos.recNo > 4) and (rlCte.PageNumber = 1)) then
+  if ((cdsDocumentos.recNo > 10) and (rlCte.PageNumber = 1)) then
     RLCte.newpage;
 end;
 
@@ -2505,6 +2491,16 @@ begin
     VUNIT.Lines.Add(FloatToString(fpCTe.infCTeNorm.veicNovos.Items[i].vUnit, ','));
     VFRETE.Lines.Add(FloatToString(fpCTe.infCTeNorm.veicNovos.Items[i].vFrete, ','));
   end;
+
+  RLDraw228.Height := CHASSI.Top + CHASSI.Height + 5;
+  for I := 0 to (TRLBand(Sender).ControlCount - 1) do
+  begin
+    if TRLBand(Sender).Controls[I] is TRLDraw then
+    begin
+      if TRLDraw(TRLBand(Sender).Controls[I]).DrawKind = dkLine then
+        TRLDraw(TRLBand(Sender).Controls[I]).Height := RLDraw228.Height - RLDraw229.Top - 1;
+    end;
+  end;
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_CTeOS_PrestacaoServicoBeforePrint(Sender: TObject;
@@ -2563,6 +2559,7 @@ end;
 procedure TfrmDACTeRLRetrato.rlb_Fluxo_CargaBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
+  PrintIt := (RLCTe.PageNumber = 1);
   fluxoCargaVersao30();
 
 end;
@@ -2628,6 +2625,19 @@ begin
   end;
 
   RLCTe.Title := 'CT-e: ' + FormatFloat('000,000,000', fpCTe.Ide.nCT);
+
+  if not EstaVazio(Trim(fpCTe.infCTeSupl.qrCodCTe)) then
+    PintarQRCode(fpCTe.infCTeSupl.qrCodCTe, imgQRCode.Picture, qrUTF8NoBOM)
+  else
+  begin
+    rlsLinhaV07.Height     := 26;
+    rlsLinhaH03.Width      := 427;
+    RLDraw99.Width         := 427;
+    rlbCodigoBarras.Width  := 419;
+    rllVariavel1.Width     := 419;
+    RLLabel198.Width       := 419;
+    imgQRCode.Visible      := False;
+  end;
 end;
 
 end.

@@ -79,6 +79,8 @@ type
     procedure Assinar;
 
     function LerXML(const AXML: AnsiString): Boolean;
+//    function LerArqIni(const AIniString: String): Boolean;
+
     function GerarXML: String;
     function GravarXML(const NomeArquivo: String = ''; const PathArquivo: String = ''): Boolean;
     function GravarStream(AStream: TStream): Boolean;
@@ -130,6 +132,8 @@ type
     function LoadFromFile(const CaminhoArquivo: String; AGerarANe: Boolean = True): Boolean;
     function LoadFromStream(AStream: TStringStream; AGerarANe: Boolean = True): Boolean;
     function LoadFromString(AXMLString: String; AGerarANe: Boolean = True): Boolean;
+//    function LoadFromIni(const AIniString: String): Boolean;
+
     function GravarXML(const PathNomeArquivo: String = ''): Boolean;
 
     property ACBrANe: TComponent read FACBrANe;
@@ -138,7 +142,7 @@ type
 implementation
 
 uses
-  ACBrANe, ACBrUtil, pcaConversao, synautil;
+  ACBrANe, ACBrUtil, pcaConversao, synautil, IniFiles;
 
 { Documento }
 
@@ -152,8 +156,9 @@ begin
   with TACBrANe(TDocumentos(Collection).ACBrANe) do
   begin
     FANe.usuario := Configuracoes.Geral.Usuario;
-    FANe.senha := Configuracoes.Geral.Senha;
-    FANe.codatm := Configuracoes.Geral.CodATM;
+    FANe.senha   := Configuracoes.Geral.Senha;
+    FANe.codatm  := Configuracoes.Geral.CodATM;
+    FANe.CNPJ    := Configuracoes.Geral.CNPJEmitente;
   end;
 end;
 
@@ -170,6 +175,17 @@ procedure Documento.Assinar;
 var
   XMLStr: String;
   XMLUTF8: AnsiString;
+
+function RemoverGrupoInfSuplementares(const XML, Grupo: string): string;
+var
+  IniGrupo, FimGrupo: Integer;
+begin
+  IniGrupo := Pos('<' + Grupo + '>', XML);
+  FimGrupo := Pos('</' + Grupo + '>', XML) + Length(Grupo) + 3;
+
+  Result := Copy(XML, 1, IniGrupo -1) + Copy(XML, FimGrupo, Length(XML));
+end;
+
 begin
   // Gera novamente, para processar propriedades que podem ter sido modificadas
   XMLStr := GerarXML;
@@ -183,11 +199,23 @@ begin
     // SSL.Assinar() sempre responde em UTF8...
     FXMLOriginal := RemoverDeclaracaoXML(FXMLAssinado);
 
-    case Configuracoes.Geral.TipoDoc of
-      tdCTe: FXMLOriginal := '<ANe>' + FXMLOriginal + '</ANe>';
-      tdNFe: FXMLOriginal := '<ANe>' + FXMLOriginal + '</ANe>';
-      tdMDFe: FXMLOriginal := '<ANe>' + FXMLOriginal + '</ANe>';
-      tdAddBackMail: FXMLOriginal := '<AddBackMail>' + FXMLOriginal + '</AddBackMail>';
+    case Configuracoes.Geral.Seguradora of
+      tsELT: FXMLOriginal := '<ANe xmlns:tem="http://tempuri.org/">' +
+                               FXMLOriginal + '</ANe>';
+    else
+      begin
+        case Configuracoes.Geral.TipoDoc of
+          tdCTe: FXMLOriginal := '<ANe>' +
+                   RemoverGrupoInfSuplementares(FXMLOriginal, 'infCTeSupl') + '</ANe>';
+
+          tdNFe: FXMLOriginal := '<ANe>' + FXMLOriginal + '</ANe>';
+
+          tdMDFe: FXMLOriginal := '<ANe>' +
+                    RemoverGrupoInfSuplementares(FXMLOriginal, 'infMDFeSupl') + '</ANe>';
+
+          tdAddBackMail: FXMLOriginal := '<AddBackMail>' + FXMLOriginal + '</AddBackMail>';
+        end;
+      end;
     end;
 
     if Configuracoes.Arquivos.Salvar then
@@ -199,7 +227,35 @@ begin
     end;
   end;
 end;
+{
+function Documento.LerArqIni(const AIniString: String): Boolean;
+var
+  INIRec: TMemIniFile;
+  sSecao: String;
+begin
+  Result := True;
 
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniString, INIRec);
+
+    with FANe do
+    begin
+      sSecao := 'Ide';
+      Usuario := INIRec.ReadString(sSecao, 'Usuario', '');
+      Senha   := INIRec.ReadString(sSecao, 'Senha', '');
+      codatm  := INIRec.ReadString(sSecao, 'codatm', '');
+
+      sSecao := 'xmlDFe';
+      xmlDFe := INIRec.ReadString(sSecao, 'Xml', '');
+    end;
+
+    GerarXML;
+  finally
+    INIRec.Free;
+  end;
+end;
+}
 function Documento.LerXML(const AXML: AnsiString): Boolean;
 var
   XMLStr: String;
@@ -285,7 +341,8 @@ begin
     FANeW.Gerador.Opcoes.RetirarEspacos := Configuracoes.Geral.RetirarEspacos;
     FANeW.Gerador.Opcoes.IdentarXML     := Configuracoes.Geral.IdentarXML;
 
-    FANeW.TipoDoc := Configuracoes.Geral.TipoDoc;
+    FANeW.TipoDoc    := Configuracoes.Geral.TipoDoc;
+    FANeW.Seguradora := Configuracoes.Geral.Seguradora;
 
     pcnAuxiliar.TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
   end;
@@ -475,7 +532,15 @@ begin
       Self.Items[i].NomeArq := CaminhoArquivo;
   end;
 end;
+{
+function TDocumentos.LoadFromIni(const AIniString: String): Boolean;
+begin
+  with Self.Add do
+    LerArqIni(AIniString);
 
+  Result := Self.Count > 0;
+end;
+}
 function TDocumentos.LoadFromStream(AStream: TStringStream;
   AGerarANe: Boolean = True): Boolean;
 var

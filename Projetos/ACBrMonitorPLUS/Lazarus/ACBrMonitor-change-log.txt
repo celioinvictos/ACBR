@@ -43,6 +43,194 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+04/10/2019
+[*] DoSATUnit, ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado propriedade "Validar Numero Sessao Resposta" nas configurações do SAT
+
+04/10/2019
+[*] DoSATUnit
+Validação para quando não obtem nenhuma resposta do SAT
+
+04/10/2019
+[*] DoACBrNFe
+Ajustes no método para CancelarNFe
+
+04/10/2019
+[*] DoACBrNFe
+Alteraçoes na rotina de impressão para quando existir parametro de gerar PDF com impressão ESCPOS
+
+02/10/2019
+[+] ACBrMonitor1, UtilUnit
+Adicionado um alerta quando usuário está utilizando arquivos de Servicos.ini dos DFes desatualizados.
+
+02/10/2019
+[+] ACBrMonitor1, MonitorConfig, ACBrMonitorConsts
+Adicionado opção de Impressão de Logo Lateral para NFCe
+
+02/10/2019
+[*] DoACBrMDFe
+Ajuste na função de geração arquivo .ini
+
+23/09/2019
+[*] DoACBrCTe
+Adicionado funcionalidades para envio Síncrono do CT-e
+
+23/09/2019
+[*] DoACBrMDFe, DoACBrCTe, DoACBrNFe
+Ajustes e padronização dos métodos de Retorno de Path (GetPath / GetPathCanc / GetPathCCe / GetPathEvento)
+
+20/09/2019
+[*] DoACBrMDFe
+Padronização do retorno no método de Envio, retornando o Path do XML autorizado
+
+20/09/2019
+[*] DoACBrMDFe, DoACBrCTe
+Padronização do retorno no método de Consulta com path do XML atualizado quando existir
+
+20/09/2019
+[*] DoACBrMDFe
+Adicionado parametros de "Preview", "Cópias", "PDF" nos métodos que contém recursos de Impressão
+
+20/09/2019
+[*] ACBrMonitor1, DoEmailUnit, DoACBrNFeUnit
+Ajustes no retorno de envio de email, utilizando processamento paralelo
+
+30/08/2019
+[*] DoACBrCTe / DoACBrMDFe
+Ajustes no retorno de envio de documentos, padronizado conforme NFe.
+
+26/08/2019
+[*] DoACBrNFe
+Ajuste no método de impressão de inutilização utilizando Fortes Report
+
+15/08/2019
+[*] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado validação da classe para preencher tipo do layout de canhoto em tela
+
+06/08/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado opção para selecinar o tipo do layout de canhoto no DANFe
+
+06/08/2019
+[-] DoACBrMDFe
+Correção do método para alterar o ambiente de Envio MDFe "SetAmbiente"
+
+15/07/2019
+[*] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado flag opcional para Geração da Tag QRCode no XML do CTe
+
+12/07/2019
+[*] DoACBrNFeUnit
+Ajuste retorno do método ConsultaCadastro, baseados nas alterações das classes de Respostas da Lib
+
+12/07/2019
+[*] DoACBrCTeUnit
+Otimização nos retornos do CTe baseados nas alterações das classes de Respostas da Lib
+
+11/07/2019
+[*] DoACBrMDFeUnit
+Adicionado parametro para envio de MDFe em modo Síncrono
+
+11/07/2019
+[*] ACBrMonitor1
+Ajuste na validação de versão DFe para atualização em tela
+
+11/07/2019
+[+] ACBrMonitor1
+Adicionado parametro para configuração versão GNRe
+
+10/07/2019
+[*] DoACBrBPeUnit, DoACBrCTeUnit, DoACBrMDFeUnit
+Ajuste na chamada do método DistribuicaoDFeporNSU
+
+10/07/2019
+[*] DoSATUnit
+Ajuste no retorno do método GerarImpressaoFiscalMFe.
+
+10/07/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado campo para parametrizar o diretório dos Schemas DFe, foi realizado alteração para separar os schemas por tipo DFe.
+
+01/07/2019
+[+] DoACBrNFeUnit
+Melhorias e padronizações nas classes de Retorno DFe
+
+01/07/2019
+[+] ACBrMonitor1
+Ajuste na chamada das funções DownloadDFe, conforme ajustes realizados nos componentes DFe
+
+27/06/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado nas configurações de impressão de NFCe um campo pade definir qtd de cópias (Específico para NFCe)
+
+14/06/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado campo para config. "DígitoAgenciaConta" especifico para alguns bancos
+
+10/06/2019
+[+] DoACBrNFeUnit
+Adicionado funcionalidade de impressão de inutilização de NFCe em ESCPOS
+
+08/0/2019
+[+] ACBrMonitor1
+Adicionado SubMenu: Email referente ao componente SAT
+
+04/06/2019
+[-] DoNFeUnit
+Ajuste no nome das chamadas de métodos de Respostas conforme alterações da classe lib.
+
+03/06/2019
+[-] DoSATUnit
+Correção na leitura em tela das configurações de Regime Tributário.
+
+31/05/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado Propriedade "DownloadDFe" e "Separar por Nome" para baixar XML de Documentos do DistribuicaoDFe
+
+29/05/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts, DoSATUnit
+Adicionado para o SAT os Campos para configuração de Assunto e Mensagem de e-mail em tela
+
+29/05/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado propriedade na aba e-mail para definir Envio do Corpo e-mail como HTML
+
+29/05/2019
+[*] DoSATUnit
+Ajuste leitura da versão do SAT configurado em tela
+
+24/05/2019
+[+] DoACBreSocialUnit, ACBrMonitor1
+Adicionado o método "SetTipoEmpregador"
+
+24/05/2019
+[+] DoSATUnit, ACBrMonitor1
+Adicionado o método "EnviarEmailCFe"
+
+23/05/2019
+[*] DoACBrBPe, ACBrMonitor1
+Ajustes no Componente ACBrBPe
+
+20/05/2019
+[+] DoACBrBPe, ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts, ACBrCMD
+Adicionado o Componente ACBrBPe e realizado as configurações necessárias para o componente
+
+15/05/2019
+[*] DoACBrSAT
+Ajuste na validação dos dados em tela para geração do XML de envio
+
+15/05/2019
+[*] DoACBrNFe
+Ajuste na validação de impressora padrão definida em tela
+
+10/05/2019
+[*] ACBrMonitor1
+Ajustes na validaçao Impressão de Cupom Fiscal, geração de PDF sempre em Fortes.
+
+09/05/2019
+[*] DoSatUnit
+Melhorias nas validações, métodos Carregar XML, Leitura do .INI e Envio.
+
 23/04/2019
 [-] ACBrMonitor1
 Ajuste na configuração da propriedade "ForcarGerarTagRejeicao938"

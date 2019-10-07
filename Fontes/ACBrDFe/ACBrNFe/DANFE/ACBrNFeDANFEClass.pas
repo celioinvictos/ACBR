@@ -65,12 +65,13 @@ type
   TDetCombustivel = (dc_cProdANP, dc_CODIF, dc_qTemp, dc_UFCons, dc_CIDE,
     dc_qBCProd, dc_vAliqProd, dc_vCIDE);
   TDescricaoPagamento = (icaTipo, icaBandeira, icaAutorizacao);
+  TDetRastro = (dr_nLote, dr_qLote, dr_dFab, dr_dVal, dr_cAgreg);
   TDetVeiculos = set of TDetVeiculo;
   TDetMedicamentos = set of TDetMedicamento;
   TDetArmamentos = set of TDetArmamento;
   TDetCombustiveis = set of TDetCombustivel;
   TDescricaoPagamentos = set of TDescricaoPagamento;
-
+  TDetRastros = set of TDetRastro;
 
   { TACBrNFeDANFEClass }
 
@@ -84,6 +85,7 @@ type
     FImprimeValor: TImprimirUnidQtdeValor;
     FImprimeDetalhamentoEspecifico: Boolean;
     FPosCanhoto: TPosRecibo;
+    FPosCanhotoLayout: TPosReciboLayout;
     FExibeResumoCanhoto: Boolean;
     FTextoResumoCanhoto: String;
     FExibeCampoFatura: Boolean;
@@ -93,6 +95,7 @@ type
     FDetMedicamentos: TDetMedicamentos;
     FDetArmamentos: TDetArmamentos;
     FDetCombustiveis: TDetCombustiveis;
+    FDetRastros: TDetRastros;
     FTributosPercentual: TpcnPercentualTributos;
     FTributosPercentualPersonalizado: Double;
 
@@ -120,6 +123,7 @@ type
     property ImprimeDescPorPercentual: Boolean read FImprimeDescPorPercentual write FImprimeDescPorPercentual default False;
     property ImprimeDetalhamentoEspecifico: Boolean read FImprimeDetalhamentoEspecifico write FImprimeDetalhamentoEspecifico default True;
     property PosCanhoto: TPosRecibo read FPosCanhoto write FPosCanhoto default prCabecalho;
+    property PosCanhotoLayout: TPosReciboLayout read FPosCanhotoLayout write FPosCanhotoLayout default prlPadrao;
     property ExibeResumoCanhoto: Boolean read FExibeResumoCanhoto write FExibeResumoCanhoto default True;
     property TextoResumoCanhoto: String read FTextoResumoCanhoto write FTextoResumoCanhoto;
     property ExibeCampoFatura: Boolean read FExibeCampoFatura write FExibeCampoFatura default True;
@@ -129,6 +133,7 @@ type
     property DetMedicamentos: TDetMedicamentos read FDetMedicamentos write FDetMedicamentos default [dm_nLote, dm_qLote, dm_dFab, dm_dVal, dm_vPMC];
     property DetArmamentos: TDetArmamentos read FDetArmamentos write FDetArmamentos default [da_tpArma, da_nSerie, da_nCano, da_descr];
     property DetCombustiveis: TDetCombustiveis read FDetCombustiveis write FDetCombustiveis default [dc_cProdANP, dc_CODIF, dc_qTemp, dc_UFCons, dc_CIDE, dc_qBCProd, dc_vAliqProd, dc_vCIDE];
+    property DetRastros: TDetRastros read FDetRastros write FDetRastros default [dr_nLote, dr_qLote, dr_dFab, dr_dVal, dr_cAgreg];
     property TributosPercentual: TpcnPercentualTributos read FTributosPercentual write SetTributosPercentual default ptValorProdutos;
     property TributosPercentualPersonalizado: Double read FTributosPercentualPersonalizado write SetTributosPercentualPersonalizado;
   end;
@@ -184,6 +189,7 @@ begin
   FImprimeValor := iuComercial;
   FImprimeDetalhamentoEspecifico := True;
   FPosCanhoto := prCabecalho;
+  FPosCanhotoLayout := prlPadrao;
   FExibeResumoCanhoto := True;
   FTextoResumoCanhoto := '';
   FImprimeDescPorPercentual := False;
@@ -194,6 +200,7 @@ begin
   FDetMedicamentos := [dm_nLote, dm_qLote, dm_dFab, dm_dVal, dm_vPMC];
   FDetArmamentos := [da_tpArma, da_nSerie, da_nCano, da_descr];
   FDetCombustiveis := [dc_cProdANP, dc_CODIF, dc_qTemp, dc_UFCons, dc_CIDE, dc_qBCProd, dc_vAliqProd, dc_vCIDE];
+  FDetRastros := [dr_nLote, dr_qLote, dr_dFab, dr_dVal, dr_cAgreg];
   FTributosPercentual := ptValorProdutos;
   FTributosPercentualPersonalizado := 0;
 end;
@@ -243,7 +250,7 @@ begin
     begin
       with Imposto do
       begin
-        Result := 'Val Aprox Tributos: ' + FormatFloatBr(Imposto.vTotTrib);
+        Result := SeparadorDetalhamentos +'Val Aprox Tributos: ' + FormatFloatBr(Imposto.vTotTrib);
 
         if (FTributosPercentual = ptValorNF) then
         begin
@@ -458,6 +465,9 @@ begin
   if (inItem < 0) or (inItem >= aNFE.Det.Count) then
     Exit;
 
+  if FDetRastros = [] then
+    Exit;
+
   with aNFE.Det.Items[inItem].Prod do
   begin
     if (Rastro.Count > 0) then
@@ -465,14 +475,23 @@ begin
       sQuebraLinha := SeparadorDetalhamentos;
 
       Result := sQuebraLinha;
+
       for i := 0 to Rastro.Count - 1 do
       begin
-        Result := Result +
-          'LOTE: ' + rastro.Items[i].nLote + sQuebraLinha +
-          'QTD: ' + FormatFloatBr(rastro.Items[i].qLote) + sQuebraLinha +
-          'FAB: ' + FormatDateBr(rastro.Items[i].dFab) + sQuebraLinha +
-          'VAL: ' + FormatDateBr(rastro.Items[i].dVal) + sQuebraLinha +
-          ACBrStr('C.AGREGAÇÃO: ') + rastro.Items[i].cAgreg + sQuebraLinha;
+        if (dr_nLote in FDetRastros) then
+          Result := Result + 'LOTE: ' + rastro.Items[i].nLote + sQuebraLinha;
+
+        if (dr_qLote in FDetRastros) then
+          Result := Result + 'QTD: ' + FormatFloatBr(rastro.Items[i].qLote) + sQuebraLinha;
+
+        if (dr_dFab in FDetRastros) then
+          Result := Result + 'FAB: ' + FormatDateBr(rastro.Items[i].dFab) + sQuebraLinha;
+
+        if (dr_dVal in FDetRastros) then
+          Result := Result + 'VAL: ' + FormatDateBr(rastro.Items[i].dVal) + sQuebraLinha;
+
+        if (dr_cAgreg in FDetRastros) then
+          Result := Result + ACBrStr('C.AGREGAÇÃO: ') + rastro.Items[i].cAgreg + sQuebraLinha;
       end;
     end;
   end;

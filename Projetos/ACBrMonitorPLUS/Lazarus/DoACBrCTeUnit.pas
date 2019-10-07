@@ -39,7 +39,8 @@ uses
   Classes, SysUtils, ACBrUtil, ACBrLibCTeRespostas,
   ACBrCTe, ACBrLibResposta, ACBrMonitorConfig,
   ACBrMonitorConsts, ACBrDFeUtil, UtilUnit, DoACBrDFeUnit,
-  CmdUnit;
+  CmdUnit, ACBrLibConsReciDFe, ACBrLibDistribuicaoDFe,
+  ACBrLibConsultaCadastro;
 
 type
 
@@ -55,24 +56,7 @@ public
   function GerarCTeIni(XML: string): string;
   procedure RespostaConhecimentos(pImprimir: Boolean; pImpressora: String;
             pPreview: Boolean; pCopias: Integer; pPDF: Boolean);
-  procedure RespostaItensCTe(ConhecimentosID: integer = 0; ItemID: integer = 0; Gerar: boolean = False);
-  procedure RespostaEnvio;
-  procedure RespostaRetorno;
-  procedure RespostaStatus;
-  procedure RespostaConsulta;
-  procedure RespostaCancelamento;
-  procedure RespostaRecibo;
-  procedure RespostaItensRecibo(ItemID: integer = 0);
-  procedure RespostaInutiliza;
-  procedure RespostaConsultaCadastro;
-  procedure RespostaItensConsultaCadastro(ItemID: integer = 0);
-  procedure RespostaEvento;
-  procedure RespostaItensEvento(ItemID: integer = 0);
-  procedure RespostaDistribuicaoDFe;
-  procedure RespostaItensDistribuicaoDFeResCTe(ItemID: integer = 0);
-  procedure RespostaItensDistribuicaoDFeResEve(ItemID: integer = 0);
-  procedure RespostaItensDistribuicaoDFeProEve(ItemID: integer = 0);
-  procedure RespostaItensDistribuicaoDFeInfeve(ItemID: integer = 0);
+  procedure ImprimirCTe(pImpressora: String; pPreview: String; pCopias: Integer; pPDF: Boolean);
 
   property ACBrCTe: TACBrCTe read fACBrCTe;
 end;
@@ -557,58 +541,6 @@ begin
   end;
 end;
 
-procedure TACBrObjetoCTe.RespostaEnvio;
-var
-  Resp: TEnvioResposta;
-begin
-  Resp := TEnvioResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.Enviar do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.verAplic := verAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := xMotivo;
-      Resp.CUF := cUF;
-      Resp.nRec := Recibo;
-      Resp.DhRecbto := dhRecbto;
-      Resp.Tmed := TMed;
-      Resp.Msg := Msg;
-
-      fpCmd.Resposta := fpCmd.Resposta + sLineBreak + Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaRetorno;
-var
-  Resp: TRetornoResposta;
-begin
-  Resp := TRetornoResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.Retorno do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.verAplic := verAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := xMotivo;
-      Resp.CUF := cUF;
-      Resp.nRec := Recibo;
-      Resp.Msg := Msg;
-
-      fpCmd.Resposta := fpCmd.Resposta + sLineBreak + Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
 procedure TACBrObjetoCTe.RespostaConhecimentos(pImprimir: Boolean; pImpressora: String;
           pPreview: Boolean; pCopias: Integer; pPDF: Boolean);
 var
@@ -624,9 +556,13 @@ begin
         if ('CTe' + WebServices.Retorno.CTeRetorno.ProtDFe.Items[i].chDFe =
           Conhecimentos.Items[j].CTe.infCTe.Id) then
         begin
-          RespostaItensCTe(J, I, True);
+          //RespostaItensCTe(J, I, True);
+          fpCmd.Resposta :=  fpCmd.Resposta + sLineBreak +'[CTe_Arq' + Trim(IntToStr(
+                         fACBrCTe.Conhecimentos.Items[J].CTe.ide.nCT)) +']' + sLineBreak +
+                         'Arquivo=' + fACBrCTe.Conhecimentos.Items[J].NomeArq;
 
           DoConfiguraDACTe(False, BoolToStr(pPreview,'1',''));
+
           if NaoEstaVazio(pImpressora) then
             DACTe.Impressora := pImpressora;
 
@@ -639,14 +575,13 @@ begin
             ArqPDF := OnlyNumber(ACBrCTe.Conhecimentos.Items[I].CTe.infCTe.ID)+'-cte.pdf';
 
             fpCmd.Resposta :=  fpCmd.Resposta + sLineBreak +
-              'PDF='+ PathWithDelim(ACBrCTe.DACTE.PathPDF) + ArqPDF ;
+              'PDF='+ PathWithDelim(ACBrCTe.DACTE.PathPDF) + ArqPDF + sLineBreak;
           end;
 
           if (Conhecimentos.Items[i].Confirmado) and (pImprimir) then
           begin
             try
               DoAntesDeImprimir((pPreview) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
-//              DoAntesDeImprimir(DACTe.MostrarPreview);
               Conhecimentos.Items[i].Imprimir;
             finally
               DoDepoisDeImprimir;
@@ -660,504 +595,40 @@ begin
   end;
 end;
 
-procedure TACBrObjetoCTe.RespostaItensCTe(ConhecimentosID: integer;
-  ItemID: integer; Gerar: boolean);
+procedure TACBrObjetoCTe.ImprimirCTe(pImpressora: String; pPreview: String;
+  pCopias: Integer; pPDF: Boolean);
 var
-  Resp: TRetornoItemResposta;
+  ArqPDF : String;
 begin
-  Resp := TRetornoItemResposta.Create(
-    'CTe' + Trim(IntToStr(
-    fACBrCTe.Conhecimentos.Items[ConhecimentosID].CTe.Ide.nCT)), resINI);
-  try
-    with fACBrCTe.WebServices.Retorno.CTeRetorno.ProtDFe.Items[ItemID] do
+  with fACBrCTe do
+  begin
+    if (Conhecimentos.Items[0].Confirmado) then
     begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := fACBrCTe.WebServices.Retorno.CTeRetorno.cUF;
-      Resp.ChCTe := chDFe;
-      Resp.DhRecbto := dhRecbto;
-      Resp.NProt := nProt;
-      Resp.DigVal := digVal;
+      DoConfiguraDACTe(pPDF, Trim(pPreview) );
+      if NaoEstaVazio(pImpressora) then
+        DACTE.Impressora := pImpressora;
 
-      if Gerar then
-        Resp.Arquivo :=
-          PathWithDelim(fACBrCTe.Configuracoes.Arquivos.PathSalvar) +
-          OnlyNumber(fACBrCTe.Conhecimentos.Items[ConhecimentosID].CTe.infCTe.ID) +
-          '-cte.xml';
+      if pCopias > 0 then
+        DACTE.NumCopias := pCopias;
 
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaStatus;
-var
-  Resp: TStatusServicoResposta;
-begin
-  Resp := TStatusServicoResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.StatusServico do
-    begin
-      Resp.Versao := versao;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cUF;
-      Resp.DhRecbto := dhRecbto;
-      Resp.tMed := TMed;
-      Resp.dhRetorno := dhRetorno;
-      Resp.xObs := xObs;
-      Resp.Msg := Msg;
-
-      fpCmd.Resposta := Msg;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaConsulta;
-var
-  Resp: TConsultaCTeResposta;
-begin
-  Resp := TConsultaCTeResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.Consulta do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cUF;
-      Resp.ChCTe := CTeChave;
-      Resp.DhRecbto := dhRecbto;
-      Resp.NProt := Protocolo;
-      Resp.digVal := protCTe.digVal;
-      Resp.Msg := Msg;
-
-      fpCmd.Resposta := Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaCancelamento;
-var
-  Resp: TCancelamentoResposta;
-begin
-  Resp := TCancelamentoResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfevento do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cOrgao;
-      Resp.ChCTe := chCTe;
-      Resp.DhRecbto := dhRegEvento;
-      Resp.NProt := nProt;
-      Resp.TpEvento := TpEventoToStr(tpEvento);
-      Resp.xEvento := xEvento;
-      Resp.nSeqEvento := nSeqEvento;
-      Resp.CNPJDest := CNPJDest;
-      Resp.emailDest := emailDest;
-      Resp.XML := XML;
-
-      fpCmd.Resposta := XMotivo + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaRecibo;
-var
-  Resp: TRetornoResposta;
-begin
-  Resp := TRetornoResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.Recibo do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.nRec := Recibo;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cUF;
-
-      fpCmd.Resposta := Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaItensRecibo(ItemID: integer);
-var
-  Resp: TRetornoItemResposta;
-begin
-  Resp := TRetornoItemResposta.Create(
-    'CTe' + Trim(IntToStr(StrToInt(copy(
-    fACBrCTe.WebServices.Recibo.CTeRetorno.ProtDFe.Items
-    [ItemID].chDFe, 26, 9)))), resINI);
-  try
-    with fACBrCTe.WebServices.Recibo.CTeRetorno.ProtDFe.Items[ItemID] do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := fACBrCTe.WebServices.Recibo.CTeRetorno.cUF;
-      Resp.ChCTe := chDFe;
-      Resp.DhRecbto := dhRecbto;
-      Resp.NProt := nProt;
-      Resp.digVal := digVal;
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaInutiliza;
-var
-  Resp: TInutilizarCTeResposta;
-begin
-  Resp := TInutilizarCTeResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.Inutilizacao do
-    begin
-      Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cUF;
-      Resp.XML := XML_ProcInutCTe;
-
-      fpCmd.Resposta := Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaConsultaCadastro;
-var
-  Resp: TConsultaCadastroResposta;
-begin
-  Resp := TConsultaCadastroResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.ConsultaCadastro do
-    begin
-      Resp.Versao := verAplic;
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.CUF := cUF;
-      Resp.dhCons := dhCons;
-      Resp.IE  := RetConsCad.IE;
-      Resp.CNPJ := RetConsCad.CNPJ;
-      Resp.CPF := RetConsCad.CPF;
-      Resp.CPF := RetConsCad.CPF;
-      Resp.UF := REtConsCad.UF;
-
-      fpCmd.Resposta := Msg + sLineBreak;
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaItensConsultaCadastro(ItemID: integer);
-var
-  Resp: TConsultaCadastroItemResposta;
-begin
-  Resp := TConsultaCadastroItemResposta.Create(
-    'INFCAD' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
-  try
-    with fACBrCTe.WebServices.ConsultaCadastro.RetConsCad.InfCad.Items[ItemID] do
-    begin
-      Resp.IE := IE;
-      Resp.CNPJ := CNPJ;
-      Resp.CPF := CPF;
-      Resp.UF := UF;
-      Resp.cSit := cSit;
-      Resp.xNome := xNome;
-      Resp.xFant := xFant;
-      Resp.xRegApur := xRegApur;
-      Resp.CNAE := CNAE;
-      Resp.dIniAtiv := dIniAtiv;
-      Resp.dUltSit := dUltSit;
-      Resp.dBaixa := dBaixa;
-      Resp.IEUnica := IEUnica;
-      Resp.IEAtual := IEAtual;
-      Resp.xLgr := xLgr;
-      Resp.nro := nro;
-      Resp.xCpl := xCpl;
-      Resp.xBairro := xBairro;
-      Resp.cMun := cMun;
-      Resp.xMun := xMun;
-      Resp.CEP := CEP;
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaEvento;
-var
-  Resp: TEventoResposta;
-begin
-  Resp := TEventoResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.EnvEvento.EventoRetorno do
-    begin
-      Resp.VerAplic := VerAplic;
-      Resp.tpAmb := TpAmbToStr(tpAmb);
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.idLote := IdLote;
-      Resp.cOrgao := cOrgao;
-
-      fpCmd.Resposta := Resp.Gerar;
-//      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaItensEvento(ItemID: integer);
-var
-  Resp: TEventoItemResposta;
-begin
-  Resp := TEventoItemResposta.Create(
-    'EVENTO' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
-  try
-    with fACBrCTe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[ItemID].RetInfevento do
-    begin
-      Resp.Id := Id;
-      Resp.tpAmb := TpAmbToStr(tpAmb);
-      Resp.verAplic := verAplic;
-      Resp.cOrgao := cOrgao;
-      Resp.cStat := cStat;
-      Resp.xMotivo := xMotivo;
-      Resp.chCTe := chCTe;
-      Resp.tpEvento := TpEventoToStr(tpEvento);
-      Resp.xEvento := xEvento;
-      Resp.nSeqEvento := nSeqEvento;
-      Resp.CNPJDest := CNPJDest;
-      Resp.emailDest := emailDest;
-      Resp.dhRegEvento := dhRegEvento;
-      Resp.nProt := nProt;
-      Resp.Arquivo := NomeArquivo;
-      Resp.XML := XML;
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaDistribuicaoDFe;
-var
-  Resp: TDistribuicaoDFeResposta;
-  sTemMais: String;
-begin
-  Resp := TDistribuicaoDFeResposta.Create(resINI);
-  try
-    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt do
-    begin
-      Resp.Versao := versao;
-      Resp.VerAplic := VerAplic;
-      Resp.tpAmb := TpAmbToStr(tpAmb);
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      Resp.dhResp := dhResp;
-      Resp.ultNSU := ultNSU;
-      Resp.maxNSU := maxNSU;
-      Resp.arquivo := fACBrCTe.WebServices.DistribuicaoDFe.NomeArq;
-
-      if cStat = 137 then
-        sTemMais := '1'  // Sim
-      else
-        sTemMais := '0'; // Não
-
-      Resp.indCont := sTemMais;
-
-      fpCmd.Resposta := Resp.Gerar;
-//      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaItensDistribuicaoDFeResCTe(ItemID: integer);
-var
-  Resp: TDistribuicaoDFeItemResposta;
-begin
-  Resp := TDistribuicaoDFeItemResposta.Create(
-    'ResCTe' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
-  try
-    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resDFe do
-    begin
-      Resp.NSU := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chCTe := chDFe;
-      Resp.CNPJCPF := CNPJCPF;
-      Resp.xNome := xNome;
-      Resp.IE := IE;
-      Resp.dhEmi := dhEmi;
-      Resp.vNF := vNF;
-      Resp.digVal := digVal;
-      Resp.dhRecbto := dhRecbto;
-      Resp.cSitCTe := SituacaoDFeToStr(cSitDFe);
-      Resp.nProt := nProt;
-      Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
-      Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaDFeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-procedure TACBrObjetoCTe.RespostaItensDistribuicaoDFeResEve(ItemID: integer);
-//var
-//  Resp: TDistribuicaoDFeItemResposta;
-begin
-  // Atualmente o DistribuicaoDFe do CT-e não retorna Resumo de Eventos.
-  (*
-  Resp := TDistribuicaoDFeItemResposta.Create(
-    'ResEve' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
-  try
-    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resEvento do
-    begin
-      Resp.NSU := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chCTe := chCTe;
-      Resp.CNPJCPF := CNPJCPF;
-      Resp.dhEvento := dhEvento;
-      Resp.tpEvento := TpEventoToStr(tpEvento);
-      Resp.xEvento := xEvento;
-      Resp.nSeqEvento := nSeqEvento;
-      Resp.cOrgao := cOrgao;
-      Resp.dhRecbto := dhRecbto;
-      Resp.nProt := nProt;
-      Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
-      Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaCTeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-  *)
-end;
-
-procedure TACBrObjetoCTe.RespostaItensDistribuicaoDFeProEve(ItemID: integer);
-var
-  Resp: TDistribuicaoDFeItemResposta;
-begin
-  Resp := TDistribuicaoDFeItemResposta.Create(
-    'ProEve' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
-  try
-    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento do
-    begin
-      Resp.NSU := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].NSU;
-      Resp.chCTe := chDFe;
-      Resp.cOrgao := cOrgao;
-      Resp.CNPJ := CNPJ;
-      Resp.Id := Id;
-      Resp.dhEvento := dhEvento;
-      Resp.nSeqEvento := nSeqEvento;
-      Resp.tpAmb := TpAmbToStr(tpAmb);
-      Resp.tpEvento := TpEventoToStr(tpEvento);
-      Resp.verEvento := verEvento;
-
-      with detEvento do
+      if pPDF then
       begin
-        Resp.descEvento := descEvento;
-        Resp.xJust := xJust;
-        Resp.EmiCnpj := emit.CNPJ;
-        Resp.EmiIE := emit.IE;
-        Resp.EmixNome := emit.xNome;
-        Resp.cteNProt := CTe.nProt;
-        Resp.cteChvCte := CTe.chCTe;
-        Resp.cteDhemi := CTe.dhEmi;
-        Resp.cteModal := TpModalToStr(CTe.modal);
-        Resp.cteDhRebcto := CTe.dhRecbto;
+        Conhecimentos.Items[0].ImprimirPDF;
+        ArqPDF := OnlyNumber(ACBrCTe.Conhecimentos.Items[0].CTe.infCTe.ID)+'-cte.pdf';
+
+        fpCmd.Resposta :=  fpCmd.Resposta + sLineBreak +
+                'PDF='+ PathWithDelim(ACBrCTe.DACTE.PathPDF) + ArqPDF + sLineBreak ;
       end;
 
-      Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
-      Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaDFeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
+      try
+        DoAntesDeImprimir(( StrToBoolDef( pPreview, False) ) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
+        Conhecimentos.Items[0].Imprimir;
+      finally
+        DoDepoisDeImprimir;
+      end;
 
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
     end;
-  finally
-    Resp.Free;
-  end;
-end;
 
-procedure TACBrObjetoCTe.RespostaItensDistribuicaoDFeInfeve(ItemID: integer);
-var
-  Resp: TDistribuicaoDFeItemResposta;
-begin
-  Resp := TDistribuicaoDFeItemResposta.Create(
-    'Infeve' + Trim(IntToStrZero(ItemID +1, 3)), resINI);
-  try
-    with fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento.RetInfevento do
-    begin
-      Resp.Id := Id;
-      Resp.VerAplic := VerAplic;
-      Resp.tpAmb := TpAmbToStr(tpAmb);
-      Resp.cOrgao := cOrgao;
-      Resp.chCTe := chDFe;
-      Resp.CStat := cStat;
-      Resp.CNPJDest := CNPJDest;
-      Resp.cOrgaoAutor := cOrgaoAutor;
-      Resp.tpEvento := TpEventoToStr(tpEvento);
-      Resp.nSeqEvento := nSeqEvento;
-      Resp.xEvento := xEvento;
-      Resp.XMotivo := XMotivo;
-      Resp.dhRegEvento := dhRegEvento;
-      Resp.emailDest := emailDest;
-      Resp.nProt := nProt;
-
-      Resp.XML := fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].XML;
-      Resp.Arquivo := fACBrCTe.WebServices.DistribuicaoDFe.listaArqs[ItemID];
-      Resp.schema := SchemaDFeToStr(fACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip[ItemID].schema);
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
   end;
 end;
 
@@ -1482,7 +953,7 @@ procedure TMetodoConsultaCadastro.Executar;
 var
   AUF, ADocumento: String;
   AIE: Boolean;
-  I: Integer;
+  Resp: TConsultaCadastroResposta;
 begin
   AUF := fpCmd.Params(0);
   ADocumento := fpCmd.Params(1);
@@ -1502,11 +973,15 @@ begin
     end;
 
     ACBrCTe.WebServices.ConsultaCadastro.Executar;
+    Resp := TConsultaCadastroResposta.Create(resINI);
+    try
+      Resp.Processar(ACBrCTe.WebServices.ConsultaCadastro.RetConsCad);
+      fpCmd.Resposta:= Resp.Msg + sLineBreak + Resp.Gerar ;
 
-    RespostaConsultaCadastro;
+    finally
+      Resp.Free;
+    end;
 
-    for I := 0 to ACBrCTe.WebServices.ConsultaCadastro.RetConsCad.InfCad.Count - 1 do
-       RespostaItensConsultaCadastro(I);
   end;
 end;
 
@@ -1524,6 +999,7 @@ procedure TMetodoInutilizarCTe.Executar;
 var
   ACNPJ, AJustificativa: String;
   ASerie, AAno, AModelo, ANumInicial, ANumFinal: Integer;
+  Resposta: TInutilizarCTeResposta;
 begin
   ACNPJ := fpCmd.Params(0);
   AJustificativa := fpCmd.Params(1);
@@ -1536,8 +1012,15 @@ begin
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
     ACBrCTe.WebServices.Inutiliza(ACNPJ, AJustificativa, AAno, AModelo, ASerie, ANumInicial, ANumFinal);
+    Resposta := TInutilizarCTeResposta.Create(resINI);
+    try
+      Resposta.Processar(ACBrCTe);
+      fpCmd.Resposta:= Resposta.Msg + sLineBreak + Resposta.Gerar ;
 
-    RespostaInutiliza;
+    finally
+      Resposta.Free;
+    end;
+
   end;
 end;
 
@@ -1607,7 +1090,11 @@ begin
             slReplay);
             // Lista de slReplay - TStrings
 
-          fpCmd.Resposta := 'Email enviado com sucesso';
+          if not(MonitorConfig.Email.SegundoPlano) then
+            fpCmd.Resposta := 'E-mail enviado com sucesso!'
+          else
+            fpCmd.Resposta := 'Enviando e-mail em segundo plano...';
+
         except
           on E: Exception do
             raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);
@@ -1630,8 +1117,8 @@ end;
 }
 procedure TMetodoReciboCTe.Executar;
 var
-  I: integer;
   ARecibo: String;
+  RespRetorno: TRetornoResposta;
 begin
   ARecibo := fpCmd.Params(0);
 
@@ -1640,13 +1127,22 @@ begin
     ACBrCTe.WebServices.Recibo.Recibo := ARecibo;
     ACBrCTe.WebServices.Recibo.Executar;
 
-    RespostaRecibo;
-    for I := 0 to ACBrCTe.WebServices.Recibo.CTeRetorno.ProtDFe.Count - 1 do
-      RespostaItensRecibo(I);
+    RespRetorno := TRetornoResposta.Create('CTe', resINI);
+    try
+      RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
+                            ACBrCTe.WebServices.Retorno.Recibo,
+                            ACBrCTe.WebServices.Retorno.Msg,
+                            ACBrCTe.WebServices.Retorno.Protocolo,
+                            ACBrCTe.WebServices.Retorno.ChaveCTe);
+      fpCmd.Resposta := RespRetorno.Msg + sLineBreak + RespRetorno.Gerar;
 
-    if ACBrCTe.Configuracoes.Geral.Salvar then
-      fpCmd.Resposta := 'Arquivo=' + ACBrCTe.Configuracoes.Arquivos.PathSalvar +
+      if ACBrCTe.Configuracoes.Geral.Salvar then
+        fpCmd.Resposta := 'Arquivo=' + ACBrCTe.Configuracoes.Arquivos.PathSalvar +
                         ARecibo + '-pro-rec.xml';
+    finally
+      RespRetorno.Free;
+    end;
+
   end;
 end;
 
@@ -1658,6 +1154,7 @@ procedure TMetodoConsultarCTe.Executar;
 var
   CargaDFe: TACBrCarregarCTe;
   AXML: String;
+  Resposta: TConsultaCTeResposta;
 begin
   AXML := fpCmd.Params(0);
 
@@ -1680,7 +1177,18 @@ begin
 
 
       ACBrCTe.WebServices.Consulta.Executar;
-      RespostaConsulta;
+      Resposta := TConsultaCTeResposta.Create(resINI);
+      try
+        Resposta.Processar(ACBrCTe);
+        fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
+
+        if  FilesExists( AXML ) then
+          fpCmd.Resposta :=  fpCmd.Resposta + sLineBreak + 'Arquivo=' + AXML;
+
+      finally
+        Resposta.Free;
+      end;
+
     finally
       CargaDFe.Free;
     end;
@@ -1755,11 +1263,22 @@ end;
 { TMetodoStatusServico }
 
 procedure TMetodoStatusServico.Executar;
+var
+  Resposta: TStatusServicoResposta;
 begin
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
     if ACBrCTe.WebServices.StatusServico.Executar then
-      RespostaStatus;
+    begin
+      Resposta := TStatusServicoResposta.Create(resINI);
+      try
+        Resposta.Processar(ACBrCTe);
+        fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
+      finally
+        Resposta.Free;
+      end;
+    end;
+
   end;
 end;
 
@@ -1840,7 +1359,6 @@ begin
 
       try
         DoAntesDeImprimir((APreview) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
-//        DoAntesDeImprimir(ACBrCTe.DACTe.MostrarPreview);
         ACBrCTe.ImprimirEvento;
       finally
         DoDepoisDeImprimir;
@@ -1907,6 +1425,7 @@ end;
           4 - MostrarPreview: 1 para mostrar preview (Default)
           5 - Numero de Copias: Inteiro com número de cópias (Default)
           6 - ImprimirPDF: 1 para imprimir PDF (Default)
+          7 - Assincrono: Boolean
 }
 procedure TMetodoCriarEnviarCTe.Executar;
 var
@@ -1918,6 +1437,9 @@ var
   APreview: Boolean;
   ACopias: Integer;
   APDF: Boolean;
+  Assincrono: Boolean;
+  RespEnvio: TEnvioResposta;
+  RespRetorno: TRetornoResposta;
 begin
   AIni := fpCmd.Params(0);
   ALote := StrToIntDef(fpCmd.Params(1), 0);
@@ -1926,6 +1448,7 @@ begin
   APreview := StrToBoolDef(fpCmd.Params(4), False);
   ACopias := StrToIntDef(fpCmd.Params(5), 0);
   APDF := StrToBoolDef(fpCmd.Params(6), False);
+  Assincrono := StrToBoolDef( fpCmd.Params(7), True);
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
@@ -1957,21 +1480,46 @@ begin
     if (Alertas <> '') then
       Resp := Resp + sLineBreak + 'Alertas:' + Alertas;
 
-    fpCmd.Resposta := Resp;
+    fpCmd.Resposta := Resp + sLineBreak ;
 
     if (ALote = 0) then
       ACBrCTe.WebServices.Enviar.Lote := '1'
     else
       ACBrCTe.WebServices.Enviar.Lote := IntToStr(ALote);
 
+    ACBrCTe.WebServices.Enviar.Sincrono:= not(Assincrono);
+
     ACBrCTe.WebServices.Enviar.Executar;
-    RespostaEnvio;
+    RespEnvio := TEnvioResposta.Create(resINI);
+    try
+       RespEnvio.Processar(ACBrCTe);
+       fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
+    finally
+       RespEnvio.Free;
+    end;
 
-    ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
-    ACBrCTe.WebServices.Retorno.Executar;
+    if (ACBrCTe.WebServices.Enviar.Recibo <> '') then //Assincrono
+    begin
+      ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
+      ACBrCTe.WebServices.Retorno.Executar;
+      RespRetorno := TRetornoResposta.Create('CTe', resINI);
+      try
+        RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
+                              ACBrCTe.WebServices.Retorno.Recibo,
+                              ACBrCTe.WebServices.Retorno.Msg,
+                              ACBrCTe.WebServices.Retorno.Protocolo,
+                              ACBrCTe.WebServices.Retorno.ChaveCTe);
+        fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
+                       + sLineBreak + RespRetorno.Gerar;
+      finally
+        RespRetorno.Free;
+      end;
+      RespostaConhecimentos(AImprime, AImpressora, APreview, ACopias, APDF);
+    end
+    else
+    if AImprime then //Sincrono
+      ImprimirCTe(AImpressora, BoolToStr(APreview,'1',''), ACopias, False);
 
-    RespostaRetorno;
-    RespostaConhecimentos(AImprime, AImpressora, APreview, ACopias, APDF);
   end;
 end;
 
@@ -2042,6 +1590,8 @@ var
   APreview: Boolean;
   ACopias: Integer;
   APDF: Boolean;
+  RespEnvio: TEnvioResposta;
+  RespRetorno: TRetornoResposta;
 begin
   ALote := Trim(fpCmd.Params(0));
   ALoteEnvio := StrToIntDef(fpCmd.Params(1), 1);
@@ -2086,13 +1636,29 @@ begin
     ACBrCTe.WebServices.Enviar.Lote := IntToStr(ALoteEnvio);
 
     ACBrCTe.WebServices.Enviar.Executar;
-
-    RespostaEnvio;
+    RespEnvio := TEnvioResposta.Create(resINI);
+    try
+       RespEnvio.Processar(ACBrCTe);
+       fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
+    finally
+       RespEnvio.Free;
+    end;
 
     ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
     ACBrCTe.WebServices.Retorno.Executar;
+    RespRetorno := TRetornoResposta.Create('CTe', resINI);
+    try
+      RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
+                            ACBrCTe.WebServices.Retorno.Recibo,
+                            ACBrCTe.WebServices.Retorno.Msg,
+                            ACBrCTe.WebServices.Retorno.Protocolo,
+                            ACBrCTe.WebServices.Retorno.ChaveCTe);
+      fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
+                     + sLineBreak + RespRetorno.Gerar;
+    finally
+      RespRetorno.Free;
+    end;
 
-    RespostaRetorno;
     RespostaConhecimentos(AImprime, AImpressora, APreview, ACopias, APDF);
   end;
 end;
@@ -2105,6 +1671,7 @@ end;
           2 - Assina: 1 para assinar XML
           3 - Imprime: 1 Para True. Default 0
           4 - Nome Impressora: String com Nome da Impressora
+          5 - Assincrono : Boolean
 }
 procedure TMetodoEnviarCTe.Executar;
 var
@@ -2112,12 +1679,16 @@ var
   APathorXML, AImpressora: String;
   ALote: Integer;
   AAssina, AImprime: Boolean;
+  RespEnvio: TEnvioResposta;
+  RespRetorno: TRetornoResposta;
+  Assincrono : Boolean;
 begin
   APathorXML := fpCmd.Params(0);
   ALote := StrToIntDef(fpCmd.Params(1), 0);
   AAssina := StrToBoolDef(fpCmd.Params(2), False);
   AImprime := StrToBoolDef(fpCmd.Params(3), False);
   AImpressora := fpCmd.Params(4);
+  Assincrono := StrToBoolDef( fpCmd.Params(5), True);
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
@@ -2136,15 +1707,41 @@ begin
       else
         ACBrCTe.WebServices.Enviar.Lote := IntToStr(ALote);
 
-      ACBrCTe.WebServices.Enviar.Executar;
+      ACBrCTe.WebServices.Enviar.Sincrono:= not(Assincrono);
 
-      RespostaEnvio;
+      ACBrCTe.WebServices.Enviar.Executar;
+      RespEnvio := TEnvioResposta.Create(resINI);
+      try
+         RespEnvio.Processar(ACBrCTe);
+         fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
+      finally
+         RespEnvio.Free;
+      end;
 
       ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
       ACBrCTe.WebServices.Retorno.Executar;
+      if (ACBrCTe.WebServices.Enviar.Recibo <> '') then //Assincrono
+      begin
+        ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
+        ACBrCTe.WebServices.Retorno.Executar;
+        RespRetorno := TRetornoResposta.Create('CTe', resINI);
+        try
+          RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
+                                ACBrCTe.WebServices.Retorno.Recibo,
+                                ACBrCTe.WebServices.Retorno.Msg,
+                                ACBrCTe.WebServices.Retorno.Protocolo,
+                                ACBrCTe.WebServices.Retorno.ChaveCTe);
+          fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
+                         + sLineBreak + RespRetorno.Gerar;
+        finally
+          RespRetorno.Free;
+        end;
+        RespostaConhecimentos(AImprime, AImpressora, False, 0, False);
+      end
+      else
+      if AImprime then //Sincrono
+        ImprimirCTe(AImpressora, '', 0, False);
 
-      RespostaRetorno;
-      RespostaConhecimentos(AImprime, AImpressora, False, 0, False);
     finally
       CargaDFe.Free;
     end;
@@ -2258,7 +1855,6 @@ begin
 
       try
         DoAntesDeImprimir((APreview) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
-//        DoAntesDeImprimir(ACBrCTe.DACTe.MostrarPreview);
         ACBrCTe.Conhecimentos.Imprimir;
       finally
         DoDepoisDeImprimir;
@@ -2282,6 +1878,7 @@ procedure TMetodoCancelarCTe.Executar;
 var
   AChave, AJustificativa, ACNPJ: String;
   ALote: Integer;
+  Resposta: TCancelamentoResposta;
 begin
   AChave := fpCmd.Params(0);
   AJustificativa := fpCmd.Params(1);
@@ -2319,7 +1916,13 @@ begin
     end;
 
     ACBrCTe.EnviarEvento(ALote);
-    RespostaCancelamento;
+    Resposta := TCancelamentoResposta.Create(resINI);
+    try
+      Resposta.Processar(ACBrCTe);
+      fpCmd.Resposta := Resposta.XMotivo + sLineBreak + Resposta.Gerar;
+    finally
+      Resposta.Free;
+    end;
 
   end;
 end;
@@ -2472,13 +2075,14 @@ end;
 }
 procedure TMetodoGetPathEvento.Executar;
 var
-  CodEvento: Integer;
+  CodEvento: String;
+  ok: Boolean;
 begin
-  CodEvento := StrToInt(fpCmd.Params(0));
+  CodEvento := fpCmd.Params(0);
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrCTe.Configuracoes.Arquivos.GetPathEvento(TpcnTpEvento(CodEvento));
+    fpCmd.Resposta := ACBrCTe.Configuracoes.Arquivos.GetPathEvento(StrToTpEventoCTe(ok ,CodEvento));
   end;
 end;
 
@@ -2507,6 +2111,7 @@ procedure TMetodoEnviarEvento.Executar;
 var
   AArq: String;
   I: Integer;
+  Resp: TEventoResposta;
 begin
   AArq := fpCmd.Params(0);
 
@@ -2517,11 +2122,15 @@ begin
     ACBrCTe.EventoCTe.LerFromIni( AArq, False );
 
     ACBrCTe.EnviarEvento(ACBrCTe.EventoCTe.idLote);
+    Resp := TEventoResposta.Create(resINI);
+    try
+      Resp.Processar(ACBrCTe);
+      fpCmd.Resposta:= sLineBreak + Resp.Gerar;
 
-    RespostaEvento;
+    finally
+      Resp.Free;
+    end;
 
-    for I := 0 to ACBrCTe.WebServices.EnvEvento.EventoRetorno.retEvento.Count - 1 do
-       RespostaItensEvento(I);
   end;
 end;
 
@@ -2534,6 +2143,7 @@ procedure TMetodoCartaCorrecao.Executar;
 var
   AArq: String;
   I: Integer;
+  Resp: TEventoResposta;
 begin
   AArq := fpCmd.Params(0);
 
@@ -2544,11 +2154,15 @@ begin
     ACBrCTe.EventoCTe.LerFromIni( AArq, True );
 
     ACBrCTe.EnviarEvento(ACBrCTe.EventoCTe.idLote);
+    Resp := TEventoResposta.Create(resINI);
+    try
+      Resp.Processar(ACBrCTe);
+      fpCmd.Resposta:= sLineBreak + Resp.Gerar;
 
-    RespostaEvento;
+    finally
+      Resp.Free;
+    end;
 
-    for I := 0 to ACBrCTe.WebServices.EnvEvento.EventoRetorno.retEvento.Count - 1 do
-       RespostaItensEvento(I);
   end;
 end;
 
@@ -2562,6 +2176,7 @@ var
   AArq: String;
   I: Integer;
   CargaDFeEvento: TACBrCarregarCTeEvento;
+  Resp: TEventoResposta;
 begin
   AArq := fpCmd.Params(0);
 
@@ -2572,15 +2187,19 @@ begin
 
     try
       ACBrCTe.EnviarEvento(ACBrCTe.EventoCTe.idLote);
+      Resp := TEventoResposta.Create(resINI);
+      try
+        Resp.Processar(ACBrCTe);
+        fpCmd.Resposta:= sLineBreak + Resp.Gerar;
+
+      finally
+        Resp.Free;
+      end;
 
     finally
       CargaDFeEvento.Free;
     end;
 
-    RespostaEvento;
-
-    for I := 0 to ACBrCTe.WebServices.EnvEvento.EventoRetorno.retEvento.Count - 1 do
-       RespostaItensEvento(I);
   end;
 end;
 
@@ -2595,7 +2214,7 @@ var
   AUF: Integer;
   ACNPJ: String;
   AChave: String;
-  I: Integer;
+  Resp: TDistribuicaoDFeResposta;
 begin
   AUF := StrToIntDef(fpCmd.Params(0), 0);
   ACNPJ := fpCmd.Params(1);
@@ -2607,20 +2226,18 @@ begin
       raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorChaveCTe(AUF, ACNPJ, AChave);
+    Resp:= TDistribuicaoDFeResposta.Create(resINI);
+    try
+      Resp.Processar(ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrCTe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrCTe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrCTe.WebServices.DistribuicaoDFe.ListaArqs);
+      fpCmd.Resposta:= sLineBreak + Resp.Gerar ;
 
-    RespostaDistribuicaoDFe;
+    finally
+      Resp.Free;
+    end;
 
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeResCTe(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeResEve(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeProEve(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeInfEve(I);
   end;
 end;
 
@@ -2635,7 +2252,7 @@ var
   AUF: Integer;
   ACNPJ: String;
   AUltNSU: String;
-  I: Integer;
+  Resp: TDistribuicaoDFeResposta;
 begin
   AUF := StrToIntDef(fpCmd.Params(0), 0);
   ACNPJ := fpCmd.Params(1);
@@ -2647,20 +2264,18 @@ begin
       raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, AUltNSU);
+    Resp:= TDistribuicaoDFeResposta.Create(resINI);
+    try
+      Resp.Processar(ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrCTe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrCTe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrCTe.WebServices.DistribuicaoDFe.ListaArqs);
+      fpCmd.Resposta:= sLineBreak + Resp.Gerar ;
 
-    RespostaDistribuicaoDFe;
+    finally
+      Resp.Free;
+    end;
 
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeResCTe(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeResEve(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeProEve(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeInfeve(I);
   end;
 end;
 
@@ -2675,7 +2290,7 @@ var
   AUF: Integer;
   ACNPJ: String;
   ANSU: String;
-  I: Integer;
+  Resp: TDistribuicaoDFeResposta;
 begin
   AUF := StrToIntDef(fpCmd.Params(0), 0);
   ACNPJ := fpCmd.Params(1);
@@ -2686,21 +2301,20 @@ begin
     if not ValidarCNPJouCPF(ACNPJ) then
       raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
-    ACBrCTe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, ANSU);
+    ACBrCTe.DistribuicaoDFePorNSU(AUF, ACNPJ, ANSU);
+    Resp:= TDistribuicaoDFeResposta.Create(resINI);
+    try
+      Resp.Processar(ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrCTe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrCTe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrCTe.WebServices.DistribuicaoDFe.ListaArqs);
+      fpCmd.Resposta:= sLineBreak + Resp.Gerar ;
 
-    RespostaDistribuicaoDFe;
+    finally
+      Resp.Free;
+    end;
 
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeResCTe(I);
 
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeResEve(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeProEve(I);
-
-    for I := 0 to ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count - 1 do
-      RespostaItensDistribuicaoDFeInfeve(I);
   end;
 end;
 
@@ -2800,7 +2414,11 @@ begin
             '',
             slReplay); // Lista de slReplay - TStrings
 
-          fpCmd.Resposta := 'Email enviado com sucesso';
+          if not(MonitorConfig.Email.SegundoPlano) then
+            fpCmd.Resposta := 'E-mail enviado com sucesso!'
+          else
+            fpCmd.Resposta := 'Enviando e-mail em segundo plano...';
+
         except
           on E: Exception do
             raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);
@@ -2905,7 +2523,11 @@ begin
             '',
             slReplay); // Lista de slreplay - TStrings
 
-          fpCmd.Resposta := 'Email enviado com sucesso';
+          if not(MonitorConfig.Email.SegundoPlano) then
+            fpCmd.Resposta := 'E-mail enviado com sucesso!'
+          else
+            fpCmd.Resposta := 'Enviando e-mail em segundo plano...';
+
         except
           on E: Exception do
             raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);

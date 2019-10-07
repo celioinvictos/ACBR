@@ -39,7 +39,7 @@ unit ACBrNFSeDANFSeFR;
 interface
 
 uses
-  SysUtils, Classes, Graphics, ACBrNFSeDANFSeClass, pnfsNFSe, pnfsConversao, pcnauxiliar, frxClass,  
+  SysUtils, Classes, ACBrNFSeDANFSeClass, pnfsNFSe, pnfsConversao, pcnauxiliar, frxClass,
   DB, DBClient, frxDBSet, frxExportPDF, frxBarcode, ACBrValidador;
 
 type
@@ -66,7 +66,7 @@ type
     procedure CarregaLogoPrefeitura;
     procedure CarregaImagemPrestadora;
 
-    function ManterDocumento(sCpfCnpj: String): string;
+    function ManterDocumento(const sCpfCnpj: String): string;
     procedure frxReportBeforePrint(Sender: TfrxReportComponent);
 		procedure SetDataSetsToFrxReport;
   public
@@ -105,7 +105,7 @@ type
 implementation
 
 uses
-  ACBrNFSe, ACBrUtil, StrUtils, Dialogs, ACBrDFeUtil, Math;
+  ACBrNFSe, ACBrUtil, StrUtils, ACBrDFeUtil, Math;
 
 constructor TACBrNFSeDANFSeFR.Create(AOwner: TComponent);
 begin
@@ -188,16 +188,12 @@ begin
       begin
         with TACBrNFSe(ACBrNFSe).NotasFiscais.Items[I] do
         begin
-          if TACBrNFSe(ACBrNFSe).Configuracoes.Arquivos.NomeLongoNFSe then
-            NomeArqXML := GerarNomeNFSe(UFparaCodigo(NFSe.PrestadorServico.Endereco.UF),
-             NFSe.DataEmissao,
-             NFSe.PrestadorServico.IdentificacaoPrestador.Cnpj,
-             StrToInt64Def(NFSe.Numero,0))
-          else
-            NomeArqXML := NFSe.Numero + NFSe.IdentificacaoRps.Serie;
+//         NomeArqXML := TACBrNFSe(ACBrNFSe).NumID[TACBrNFSe(ACBrNFSe).NotasFiscais.Items[I].NFSe];
+         NomeArqXML := TACBrNFSe(ACBrNFSe).NumID[NFSe];
         end;
 
-        frxPDFExport.FileName := PathPDF + NomeArqXML + '-nfse.pdf'; // Correção aplicada do nome do arquivo para o envio de e-mail
+        // Correção aplicada do nome do arquivo para o envio de e-mail
+        frxPDFExport.FileName := PathPDF + NomeArqXML + '-nfse.pdf';
 
         if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
           ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
@@ -527,7 +523,7 @@ begin
     LogChanges := False;
   end;
 
-  frxIdentificacao := TfrxDBDataset.Create(nil);
+  frxIdentificacao := TfrxDBDataset.Create(Self);
   with frxIdentificacao do
   begin
     UserName        := 'Identificacao';
@@ -552,7 +548,7 @@ begin
     BCDToCurrency := False;
   end;
 
-  frxPrestador := TfrxDBDataset.Create(nil);
+  frxPrestador := TfrxDBDataset.Create(Self);
   with frxPrestador do
   begin
     UserName        := 'Prestador';
@@ -582,7 +578,7 @@ begin
       BCDToCurrency := False;
     end;
 
-    frxTomador := TfrxDBDataset.Create(nil);
+    frxTomador := TfrxDBDataset.Create(Self);
     with frxTomador do
     begin
       UserName        := 'Tomador';
@@ -613,7 +609,7 @@ begin
       BCDToCurrency := False;
     end;
 
-    frxTransportadora := TfrxDBDataset.Create(nil);
+    frxTransportadora := TfrxDBDataset.Create(Self);
     with frxTransportadora do begin
       UserName        := 'Transportadora';
       CloseDataSource := False;
@@ -637,7 +633,7 @@ begin
       BCDToCurrency := False;
     end;
 
-    frxServicos := TfrxDBDataset.Create(nil);
+    frxServicos := TfrxDBDataset.Create(Self);
     with frxServicos do
     begin
       UserName        := 'Servicos';
@@ -683,7 +679,7 @@ begin
       BCDToCurrency := False;
     end;
 
-    frxParametros := TfrxDBDataset.Create(nil);
+    frxParametros := TfrxDBDataset.Create(Self);
     with frxParametros do
     begin
       UserName        := 'Parametros';
@@ -721,7 +717,7 @@ begin
       BCDToCurrency := False;
     end;
 
-    frxItensServico := TfrxDBDataset.Create(nil);
+    frxItensServico := TfrxDBDataset.Create(Self);
     with frxItensServico do
     begin
       UserName        := 'ItensServico';
@@ -768,29 +764,33 @@ begin
 
     with ANFSe do
     begin
-			FieldByName('Id').AsString                := IdentificacaoRps.Numero + IdentificacaoRps.Serie;
-			if(FormatarNumeroDocumentoNFSe) then
-		  	FieldByName('Numero').AsString           := FormatarNumeroDocumentoFiscalNFSe(IdentificacaoRps.Numero)
-			else
-		  	FieldByName('Numero').AsString            := IdentificacaoRps.Numero;
-      FieldByName('Serie').AsString             := IdentificacaoRPS.Serie;
-			FieldByName('Competencia').AsString       := Competencia;
+			FieldByName('Id').AsString := IdentificacaoRps.Numero + IdentificacaoRps.Serie;
 
 			if(FormatarNumeroDocumentoNFSe) then
-		  	FieldByName('NFSeSubstituida').AsString   := FormatarNumeroDocumentoFiscalNFSe(NfseSubstituida)
+		  	FieldByName('Numero').AsString := FormatarNumeroDocumentoFiscalNFSe(IdentificacaoRps.Numero)
 			else
-		  	FieldByName('NFSeSubstituida').AsString   := ANFSe.NfseSubstituida;
+		  	FieldByName('Numero').AsString := IdentificacaoRps.Numero;
+
+      FieldByName('Serie').AsString       := IdentificacaoRPS.Serie;
+			FieldByName('Competencia').AsString := Competencia;
 
 			if(FormatarNumeroDocumentoNFSe) then
-		  	FieldByName('NumeroNFSe').AsString        := FormatarNumeroDocumentoFiscalNFSe(Numero) 
+		  	FieldByName('NFSeSubstituida').AsString := FormatarNumeroDocumentoFiscalNFSe(NfseSubstituida)
 			else
-		  	FieldByName('NumeroNFSe').AsString        := ANFSe.Numero;
-			if(Provedor in [proGINFES, proBetha] ) then  // Felipe - Otimizy Sistemas
-				FieldByName('DataEmissao').AsString       := FormatDateTimeBr(ANFSe.DataEmissao) 
+		  	FieldByName('NFSeSubstituida').AsString := ANFSe.NfseSubstituida;
+
+			if(FormatarNumeroDocumentoNFSe) then
+		  	FieldByName('NumeroNFSe').AsString := FormatarNumeroDocumentoFiscalNFSe(Numero)
 			else
-				FieldByName('DataEmissao').AsString       := FormatDateBr(DataEmissao);
+		  	FieldByName('NumeroNFSe').AsString := ANFSe.Numero;
+
+			if(Provedor in [proGINFES, proBetha, proDSFSJC] ) then  // Felipe - Otimizy Sistemas
+				FieldByName('DataEmissao').AsString := FormatDateTimeBr(ANFSe.DataEmissao)
+			else
+				FieldByName('DataEmissao').AsString := FormatDateBr(DataEmissao);
+
       FieldByName('CodigoVerificacao').AsString := CodigoVerificacao;
-      FieldByName('LinkNFSe').AsString := Link;
+      FieldByName('LinkNFSe').AsString          := Link;
     end;
     Post;
   end;
@@ -879,10 +879,11 @@ begin
           FieldByName('CodigoMunicipio').AsString  := CodCidadeToCidade(StrToIntDef(IfThen(CodigoMunicipio <> '', CodigoMunicipio, ''),0));
           FieldByName('ExigibilidadeISS').AsString := ExigibilidadeISSDescricao(ExigibilidadeISS);
 
-          if proEL = proEL then
-            FieldByName('MunicipioIncidencia').AsString := 'No Município'
-          else
-            FieldByName('MunicipioIncidencia').AsString := CodCidadeToCidade(StrToIntDef(CodigoMunicipio, 0));
+//          if proEL = proEL then
+//            FieldByName('MunicipioIncidencia').AsString := 'No Município'
+//          else
+//            FieldByName('MunicipioIncidencia').AsString := CodCidadeToCidade(StrToIntDef(CodigoMunicipio, 0));
+          FieldByName('MunicipioIncidencia').AsString := 'No Município';
 
           if Valores.IssRetido = stRetencao then
             FieldByName('TipoRecolhimento').AsString := 'Retido'
@@ -916,9 +917,10 @@ begin
     CarregaLogoPrefeitura;
     CarregaImagemPrestadora;
 
-    FieldByName('Sistema').AsString   := IfThen( DANFSeClassOwner.Sistema <> '' , DANFSeClassOwner.Sistema, 'Projeto ACBr - http://acbr.sf.net');
-    FieldByName('Usuario').AsString   := DANFSeClassOwner.Usuario;
-    FieldByName('Site').AsString      := DANFSeClassOwner.Site;
+    FieldByName('Sistema').AsString := IfThen( DANFSeClassOwner.Sistema <> '' , DANFSeClassOwner.Sistema, 'Projeto ACBr - http://acbr.sf.net');
+    FieldByName('Usuario').AsString := DANFSeClassOwner.Usuario;
+    FieldByName('Site').AsString    := DANFSeClassOwner.Site;
+
     if Provedor = proEL then
       FieldByName('Mensagem0').AsString := IfThen(ANFSe.Cancelada = snSim, 'CANCELADA', '')
     else
@@ -1161,7 +1163,7 @@ begin
   end;
 end;
 
-function TACBrNFSeDANFSeFR.ManterDocumento(sCpfCnpj: String): string;
+function TACBrNFSeDANFSeFR.ManterDocumento(const sCpfCnpj: String): string;
 begin
   Result := sCpfCnpj;
   if NaoEstaVazio(Result) then

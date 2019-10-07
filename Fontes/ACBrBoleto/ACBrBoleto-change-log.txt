@@ -50,6 +50,156 @@ Símbolo : Significado
 
 ver: 0.1.0
 
+23/09/2019
+-- ACBrBancoSafra --
+[*] Ajustes geração remessa CNAB240 (código Multa)
+
+12/09/2019
+-- ACBrBancoSafra --
+[*] Reversão dos fontes com ultimos ajustes realizados.
+
+12/09/2019
+-- ACBrBancoBrasil --
+[*] Ajuste geração remessa CNAB400 alterado leitura do campo Multa de: DataMoraJuros para DataMulta
+https://www.projetoacbr.com.br/forum/topic/52866-corre%C3%A7%C3%A3o-campo-datamulta-no-banco-do-brasil-cnab400/
+
+11/09/2019
+-- ACBrBoleto --
+[+] Adicionado banco ABC
+[+] Implementações banco SAFRA
+[*] aumento do tamanho do campo de mensagem
+    - contribuição: Fernando Moreira
+
+09/09/2019
+-- ACBrBancoBradesco --
+[*] Adicionado ocorrencia de pagamento Eletronico DDA
+https://www.projetoacbr.com.br/forum/topic/52645-contribui%C3%A7%C3%A3o-acbrbancobradescopas/
+
+09/09/2019
+-- ACBrBancoItau --
+[*] Complementaçoes Leitura CNAB240 com dados de liquidação e informação Sacado.
+https://www.projetoacbr.com.br/forum/topic/51538-contribui%C3%A7%C3%A3o-complementa%C3%A7%C3%B5es-na-leitura-do-retorno-cnab-400-ita%C3%BA/
+
+09/09/2019
+-- ACBrBancoBanese --
+[*] Ajustes na geração do Nosso número baseado no manual.
+https://www.projetoacbr.com.br/forum/topic/52552-cobran%C3%A7a-banese-corre%C3%A7%C3%B5es/
+
+09/09/2019
+-- ACBrBancoSicred --
+[*] Adicionado informação de descontos CNAB400
+https://www.projetoacbr.com.br/forum/topic/52433-desconto-2-sicredi/
+
+09/09/2019
+-- ACBrBancoCecred --
+[*] Ajuste na leitura da Conta Corrente de retorno CNAB240
+
+09/09/2019
+-- ACBrBancoBancoob --
+[*] Ajuste na leitura de ocorrencia de retorno CNAB240
+[*] Correção na descrição de ocorrencias na leitura Retorno.
+
+09/09/2019
+-- ACBrBancoBanrisul --
+[*] Adicionado validador agencia conta no retorno CNAB400
+    Adicionado Ocorrência de remessa para CNAB240 e ajustes na leitura de retorno
+https://www.projetoacbr.com.br/forum/topic/48709-erro-com-retorno-banrisul/
+https://www.projetoacbr.com.br/forum/topic/53318-leitura-retorno-acbrboleto-banrisul/
+
+06/09/2019
+-- ACBrBancoBancoob --
+[+] Adicionado Totalizador do Valor dos Títulos no Registro Trailer do CNAB240
+
+06/09/2019
+-- ACBrBancoSicred / ACBrBoleto --
+[+] Adicionado propriedade DataNegativacao e DiasNegativacao seguindo critérios do layout atualizado Sicred
+https://www.projetoacbr.com.br/forum/topic/51806-boletos-sicredi-negativa%C3%A7%C3%A3o-cnab400/
+
+05/09/2019
+-- ACBrBancoSicred --
+[*] Ajuste na descrição da Mensagem do Banco Sicred
+
+05/09/2019
+-- ACBrBancoBrasil --
+[*] Adicionado informações do Sacado Avalista na Remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/52019-sacadoravalista-banco-do-brasil-cnab400/
+
+05/09/2019
+-- ACBrBancoCaixa --
+[*] Adicionado Leitura do CNPJCPF do Sacado no Retorno CNAB240
+https://www.projetoacbr.com.br/forum/topic/53176-campo-cnpjcpf-na-leitura-de-retorno-cef/
+
+04/09/2019
+-- ACBrBancoSicred --
+[*] Ajustes leitura de Descrição de Ocorrências tratando conversões inválidas
+
+04/09/2019
+-- ACBrBancoSafra --
+[*] Correção na geração do Código de Barras, Nosso Número, Código Cedente.
+Ajustes na leitura dos campos alterados na remessa e retorno
+https://www.projetoacbr.com.br/forum/topic/53074-contribui%C3%A7%C3%A3o-banco-safra-layout-240/?tab=comments#comment-348653
+
+21/08/2019
+-- ACBrBancoBrasil --
+[+] Adicionado Códigos de Ocorrencia de Negtivação
+https://www.projetoacbr.com.br/forum/topic/51515-negativa%C3%A7%C3%A3o-serasa-banco-do-brasil-cnab-240/
+
+29/07/2019
+-- ACBrBancoSafra --
+[+] Adicionado Contribuição de Geração de Remessa e Retorno CNAB240
+https://www.projetoacbr.com.br/forum/topic/52257-contribui%C3%A7%C3%A3o-banco-safra-240-posi%C3%A7%C3%B5es/
+
+10/07/2019
+-- ACBrBancoSicredi --
+[-] Correção na leitura do retorno CNAB400 para considerar corretamente  a recusa A6.
+    (Fernando Henrique)
+
+04/06/2019
+
+-- ACBrBancoCresol--
+[*] Atualização dos tipos de Códigos para campo espécie na Remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/51469-espécie-documento-boletos-cresol/
+
+-- ACBrBancoItau--
+[*] Atualização de Códigos de Retornos de Rejeição.
+https://www.projetoacbr.com.br/forum/topic/50792-sicredi-gerarregistrotransacao240-tiposacado/
+
+-- ACBrBancoSicred--
+[*] Ajuste no remessa CNAB240, validação tipo do Sacado
+https://www.projetoacbr.com.br/forum/topic/50792-sicredi-gerarregistrotransacao240-tiposacado/
+
+-- ACBrBancoSantander--
+[*] Ajuste no retorno CNAB240, validação de códigos de ocorrencias
+https://www.projetoacbr.com.br/forum/topic/50711-retorno-santander-240-ocorrência-25/
+
+-- ACBrBancoBrasil--
+[*] Ajuste retorno CNAB240, validação CPF
+https://www.projetoacbr.com.br/forum/topic/50558-cedente-com-cpf-bb/
+
+-- ACBrBancoSicred--
+[*] Ajuste no retorno CNAB400 Leitura de tarifas
+https://www.projetoacbr.com.br/forum/topic/50256-c2-is-not-a-valid-integer-value-sicredi-cnab-400/
+
+[*] Ajuste no retorno CNAB240 Leitura de tarifas
+https://www.projetoacbr.com.br/forum/topic/47238-acbrboletos-sicredi-cnab-240-retorno-não-carrega-as-tarifas/
+
+-- ACBrBancoBanrisul--
+[*] Ajuste na geração remessa CNAB400, validando informação de Juros
+https://www.projetoacbr.com.br/forum/topic/51028-cnab-400-banrisul-posi%C3%A7%C3%A3o-161-162-173/
+
+30/05/2019
+-- ACBrBancoSicred --
+[*] Ajustes na geração cód ocorrencia
+https://www.projetoacbr.com.br/forum/topic/50256-c2-is-not-a-valid-integer-value-sicredi-cnab-400/
+
+09/05/2019
+-- ACBrBancoBanrisul --
+[*] Ajustes na leitura do retorno CNAB240
+
+07/05/2019
+-- ACBrBancoBradesco --
+[*] Ajustes na geração Remessa - CNAB400, validação do dígito da conta
+
 30/04/2019
 -- ACBrBancoSafra --
 [-] Correção leitura do retorno CNAB400 quando a leitura da ocorrência de retorno.

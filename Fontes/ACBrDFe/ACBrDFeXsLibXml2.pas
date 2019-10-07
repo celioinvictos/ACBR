@@ -49,7 +49,8 @@ resourcestring
   cErrC14NTransformation = 'Erro ao aplicar transformação C14N';
   cErrSelecionarElements = 'Erro ao selecionar os elementos do XML.';
   cErrElementsNotFound = 'Nenhum elemento encontrado';
-  cErrEX509CertificateNotFound = 'X509Certificate não encontrado';
+  cErrSignedInfoNotFound = 'Node SignedInfo não encontrado';
+  cErrX509CertificateNotFound = 'Node X509Certificate não encontrado';
   cErrDigestValueNode = 'Node DigestValue não encontrado';
   cErrSignatureValueNode = 'Node SignatureValue não encontrado';
   cErrDigestValueNaoConfere = 'DigestValue não confere. Conteúdo de "%s" foi alterado';
@@ -72,10 +73,13 @@ type
 
   TDFeSSLXmlSignLibXml2 = class(TDFeSSLXmlSignClass)
   private
+    function CanonC14n(const aDoc: xmlDocPtr; const infElement: String): Ansistring; overload;
+    function CanonC14n(const aDoc: xmlDocPtr; const ANode: xmlNodePtr): Ansistring; overload;
+
   protected
+    function AdicionarNode(var aDoc: xmlDocPtr; const ConteudoXML: String; docElement: String = ''): xmlNodePtr;
     procedure VerificarValoresPadrao(var SignatureNode: String;
       var SelectionNamespaces: String); virtual;
-    function CanonC14n(const aDoc: xmlDocPtr; const infElement: String): Ansistring;
     function LibXmlFindSignatureNode(aDoc: xmlDocPtr;
       const SignatureNode: String; const SelectionNamespaces: String;
       infElement: String): xmlNodePtr;
@@ -83,7 +87,7 @@ type
       const NameSpace: String = ''): xmlNodePtr;
     function LibXmlNodeWasFound(ANode: xmlNodePtr; const NodeName: String;
       const NameSpace: String): boolean;
-    function AdicionarNode(var aDoc: xmlDocPtr; const ConteudoXML: String): xmlNodePtr;
+
   public
     function Assinar(const ConteudoXML, docElement, infElement: String;
       const SignatureNode: String = ''; const SelectionNamespaces: String = '';
@@ -96,53 +100,12 @@ type
       const IdAttr: String = ''): boolean; override;
   end;
 
-procedure LibXmlInit();
-procedure LibXmlShutDown();
-
 implementation
 
 uses
   synacode,
-  ACBrUtil, ACBrDFeUtil, ACBrConsts, ACBrDFeException;
-
-var
-  LibXMLLoaded: boolean;
-
-  { TDFeSSLXmlSignLibXml2 }
-
-procedure LibXmlInit;
-begin
-  if (LibXMLLoaded) then
-    Exit;
-
-  // --Inicializar funções das units do libxml2
-  libxml2.Init;
-
-  { Init libxml and libxslt libraries }
-  xmlInitThreads();
-  xmlInitParser();
-  xmlXPathInit();
-  xmlSubstituteEntitiesDefault(1);
-  __xmlLoadExtDtdDefaultValue^ := XML_DETECT_IDS or XML_COMPLETE_ATTRS;
-  __xmlIndentTreeOutput^ := 1;
-  __xmlSaveNoEmptyTags^ := 1;
-
-  LibXMLLoaded := True;
-end;
-
-procedure LibXmlShutDown();
-begin
-  if (not LibXMLLoaded) then
-    Exit;
-
-  { Shutdown libxslt/libxml }
-  xmlCleanupParser();
-  xmlCleanupThreads();
-  xmlCleanupMemory();
-  xmlCleanupGlobals();
-
-  LibXMLLoaded := False;
-end;
+  ACBrLibXml2, ACBrUtil, ACBrDFeUtil, 
+  ACBrConsts, ACBrDFeException;
 
 function TDFeSSLXmlSignLibXml2.Assinar(const ConteudoXML, docElement,
   infElement: String; const SignatureNode: String; const SelectionNamespaces: String;
@@ -167,7 +130,7 @@ begin
   else
     aXML := ConteudoXML;
 
-  URI := ExtraiURI(aXML, IdAttr);
+  URI := EncontrarURI(aXML, docElement, IdAttr);
 
   // DEBUG
   //WriteToTXT('C:\TEMP\XmlOriginal.xml', aXML, False, False, True);
@@ -199,7 +162,7 @@ begin
     // DEBUG
     //WriteToTXT('C:\TEMP\CanonDigest.xml', Canon, False, False, True);
 
-    SignNode := AdicionarNode(aDoc, SignatureElement(URI, True, IdSignature, FpDFeSSL.SSLDgst));
+    SignNode := AdicionarNode(aDoc, SignatureElement(URI, True, IdSignature, FpDFeSSL.SSLDgst), docElement);
 
     // gerar o hash
     DigestValue := FpDFeSSL.CalcHash(Canon, FpDFeSSL.SSLDgst, outBase64);
@@ -216,10 +179,14 @@ begin
     //WriteToTXT('C:\TEMP\DigestXml.xml', buffer, False, False, True);
 
     // Aplica a transformação c14n o node SignedInfo
-    Canon := CanonC14n(aDoc, cSignedInfoNode);
+    XmlNode := LibXmlLookUpNode(SignNode, cSignedInfoNode);
+    if (XmlNode = nil) then
+      raise EACBrDFeException.Create(cErrSignedInfoNotFound);
+
+    Canon := CanonC14n(aDoc, XmlNode);
 
     // DEBUG
-    //WriteToTXT('C:\TEMP\CanonGeracao.xml', Canon, False, False, True);
+    //WriteToTXT('C:\TEMP\CanonSignedInfoNode.xml', Canon, False, False, True);
 
     // Assina o node SignedInfo já transformado
     Signaturevalue := FpDFeSSL.CalcHash(Canon, FpDFeSSL.SSLDgst, outBase64, True);
@@ -232,7 +199,7 @@ begin
 
     XmlNode := LibXmlLookUpNode(SignNode, cX509CertificateNode);
     if (XmlNode = nil) then
-      raise EACBrDFeException.Create(cErrEX509CertificateNotFound);
+      raise EACBrDFeException.Create(cErrX509CertificateNotFound);
 
     xmlNodeSetContent(XmlNode, PAnsiChar(AnsiString(FpDFeSSL.DadosCertificado.DERBase64)));
 
@@ -261,53 +228,91 @@ begin
   Result := XmlAss;
 end;
 
-function TDFeSSLXmlSignLibXml2.CanonC14n(const aDoc: xmlDocPtr;
-  const infElement: String): Ansistring;
+function TDFeSSLXmlSignLibXml2.CanonC14n(const aDoc: xmlDocPtr; const infElement: String): Ansistring;
 var
-  buffer: PAnsiChar;
-  ANode: xmlNodePtr;
   ElementName: String;
-  SubDoc: xmlDocPtr;
+  RootNode, ANode: xmlNodePtr;
 begin
-  Result := '';
-  buffer := Nil;
-  SubDoc := Nil;
+  Result   := '';
+  ANode    := Nil;
 
-  ANode := xmlDocGetRootElement(aDoc);
-  if (ANode = nil) then
-    raise EACBrDFeException.Create(cErrFindRootNode);
-
-  //ns := xmlCopyNamespace(ANode^.ns);
   { Se infElement possui prefixo o mesmo tem que ser removido }
   ElementName := copy(infElement, Pos(':', infElement) + 1, Length(infElement));
+  if (ElementName <> '') then
+  begin
+    RootNode := xmlDocGetRootElement(aDoc);
+    if (RootNode = nil) then
+      raise EACBrDFeException.Create(cErrFindRootNode);
+
+    { Procura InfElement em todos os nós, filhos de Raiz, usando LibXml }
+    ANode := LibXmlLookUpNode(RootNode, ElementName);
+    if (ANode = nil) then
+        raise EACBrDFeException.Create(cErrFindSignNode);
+  end;
+
+  Result := CanonC14n(aDoc, ANode);
+end;
+
+function TDFeSSLXmlSignLibXml2.CanonC14n(const aDoc: xmlDocPtr; const ANode: xmlNodePtr): Ansistring;
+var
+  buffer: PAnsiChar;
+  RootNode, NewNode: xmlNodePtr;
+  SubDoc: xmlDocPtr;
+  RootNs: xmlNsPtr;
+  TodoDocumento: Boolean;
+begin
+  Result   := '';
+  buffer   := Nil;
+  SubDoc   := Nil;
+  RootNs   := Nil;
+  RootNode := Nil;
+  NewNode  := Nil;
+
+  TodoDocumento := (ANode = Nil);
 
   try
     // Estamos aplicando a versão 1.0 do c14n, mas existe a versão 1.1
     // Talvez seja necessario no futuro checar a versão do c14n
     // aplica a transformação C14N
-    if (ElementName <> '') then
+    if not TodoDocumento then
     begin
-      { Procura InfElement em todos os nós, filhos de Raiz, usando LibXml }
-      ANode := LibXmlLookUpNode(ANode, ElementName);
-      if (ANode = nil) then
-        raise EACBrDFeException.Create(cErrSelecionarElements);
+      RootNode := xmlDocGetRootElement(aDoc);
+      if (RootNode = nil) then
+        raise EACBrDFeException.Create(cErrFindRootNode);
 
+      TodoDocumento := (ANode = RootNode);
+    end;
+
+    if not TodoDocumento then
+    begin
       try
         SubDoc := xmlNewDoc(PAnsichar(ansistring('1.0')));
         if (SubDoc = nil) then
           raise EACBrDFeException.Create(cErrSelecionarElements);
 
-        ANode := xmlCopyNode(ANode, 1);
-        if (ANode = nil) then
+        if (ANode <> nil) then
+          NewNode := xmlCopyNode(ANode, 1);
+
+        if (NewNode = nil) then
           raise EACBrDFeException.Create(cErrSelecionarElements);
 
-        xmlDocSetRootElement(SubDoc, ANode);
+        // Copiando NameSpaces do RootNode
+        if (RootNode <> Nil) then
+          RootNs := RootNode.ns;
+
+        while (RootNs <> Nil) do
+        begin
+          xmlNewNs(NewNode, RootNs.href, RootNs.prefix);   // não adiciona se já existir no Nó destino
+          RootNs := RootNs.next;
+        end;
+
+        xmlDocSetRootElement(SubDoc, NewNode);
 
         if xmlC14NDocDumpMemory(SubDoc, nil, 0, nil, 0, @buffer) < 0 then
           raise EACBrDFeException.Create(cErrC14NTransformation);
       finally
         if (SubDoc <> nil) then
-          xmlFreeDoc(SubDoc);
+          xmlFreeDoc(SubDoc);   // também libera NewNode;
       end;
     end
     else
@@ -468,7 +473,7 @@ begin
       AdicionarNode(aDoc, SignElement);
     end
     else
-      CanonXML := AnsiString(CanonC14n(aDoc, infElement));
+      CanonXML := CanonC14n(aDoc, infElement);
 
     if(not FpDFeSSL.ValidarHash(CanonXML, DigestAlg, DigestXML)) then
     begin
@@ -479,7 +484,7 @@ begin
     X509Certificate := AnsiString(LerTagXML(SignElement, cX509CertificateNode));
     FpDFeSSL.CarregarCertificadoPublico(X509Certificate);
 
-    CanonXML := AnsiString(CanonC14n(aDoc, cSignedInfoNode));
+    CanonXML := CanonC14n(aDoc, cSignedInfoNode);
 
     XmlSign := DecodeBase64(AnsiString(LerTagXML(SignElement, cSignatureValueNode)) );
     Result := FpDFeSSL.ValidarHash(CanonXML, DigestAlg, XmlSign, True);
@@ -510,8 +515,8 @@ function TDFeSSLXmlSignLibXml2.LibXmlFindSignatureNode(aDoc: xmlDocPtr;
   const SignatureNode: String; const SelectionNamespaces: String; infElement: String
   ): xmlNodePtr;
 var
-  rootNode, infNode, SignNode: xmlNodePtr;
-  vSignatureNode, vSelectionNamespaces: String;
+  rootNode, infNode, infNodeParent, SignNode: xmlNodePtr;
+  vSignatureNode, vSelectionNamespaces, vinfElement: String;
 begin
   Result := nil;
 
@@ -523,45 +528,51 @@ begin
   vSignatureNode       := SignatureNode;
   vSelectionNamespaces := SelectionNamespaces;
   VerificarValoresPadrao(vSignatureNode, vSelectionNamespaces);
+  infNode := nil;
+  infNodeParent := nil;
+  SignNode := nil;
 
   { Se infElement possui prefixo o mesmo tem que ser removido }
-  if Pos(':', infElement) > 0 then
-    infElement := copy(infElement, Pos(':', infElement) + 1, Length(infElement));
+  vinfElement := copy(infElement, Pos(':', infElement) + 1, Length(infElement));
 
-  { Se tem InfElement, procura pelo mesmo. Isso permitirá acharmos o nó de
+  { Se tem vinfElement, procura pelo mesmo. Isso permitirá acharmos o nó de
     assinatura, relacionado a ele (mesmo pai) }
-  if (infElement <> '') then
+  if (vinfElement <> '') then
   begin
-    { Procura InfElement em todos os nós, filhos de Raiz, usando LibXml }
-    infNode := LibXmlLookUpNode(rootNode, infElement);
+    { Procura vinfElement em todos os nós, filhos de Raiz, usando LibXml }
+    infNode := LibXmlLookUpNode(rootNode, vinfElement);
 
-    { Não achei o InfElement em nenhum nó :( }
-    if (infNode = nil) then
-      Exit;
-
-    { Vamos agora, achar o pai desse Elemento, pois com ele encontraremos a assinatura }
-    if (infNode^.Name = infElement) and
-       Assigned(infNode^.parent) and
-       (infNode^.parent^.Name <> '') then
+    if (infNode <> nil) then
     begin
-      infNode := infNode^.parent;
+      { Vamos achar o pai desse Elemento, pois com ele encontraremos a assinatura no final }
+      if (infNode^.Name = vinfElement) and
+         Assigned(infNode^.parent) and
+         (infNode^.parent^.Name <> '') then
+      begin
+        infNodeParent := infNode^.parent;
+      end;
     end;
   end
-  else
+
+  { Procurando pelo nó de assinatura...}
+
+  { Primeiro vamos verificar manualmente se é o último nó do Parent do infNode atual };
+  if (infNodeParent <> nil) then
   begin
-    { InfElement não foi informado... vamos usar o nó raiz, para pesquisar pela assinatura }
-    infNode := rootNode;
+    SignNode := infNodeParent^.last;
+    while (SignNode <> nil) and (SignNode <> infNode) and
+      (not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces)) do
+    begin
+      SignNode := SignNode^.prev;
+    end;
+
+    if not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces) then
+      SignNode := nil;
   end;
 
-  if (infNode = nil) then
-    Exit;
-
-  { Procurando pelo nó de assinatura...
-    Primeiro vamos verificar manualmente se é o último no do nosso infNode atual };
-  SignNode := infNode^.last;
-  if not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces) then
+  { Não é o ultimo nó do infNode... então, vamos procurar por um Nó dentro de infNode }
+  if (SignNode = nil) and (infNode <> nil) then
   begin
-    { Não é o ultimo nó do infNode... então, vamos procurar por um Nó dentro de infNode }
     SignNode := infNode^.next;
     while (SignNode <> nil)  and
       (not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces)) do
@@ -569,17 +580,20 @@ begin
       SignNode := SignNode^.next;
     end;
 
-    { Se ainda não achamos, vamos procurar novamente a partir do elemento Raiz }
-    if (SignNode = nil) then
+    if not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces) then
+      SignNode := nil;
+  end;
+
+  { Se ainda não achamos, vamos procurar novamente a partir do elemento Raiz }
+  if (SignNode = nil) then
+  begin
+    SignNode := rootNode^.last;
+    if not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces) then
     begin
-      SignNode := rootNode^.last;
-      if not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces) then
+      SignNode := rootNode^.next;
+      while (SignNode <> nil)  and (not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces)) do
       begin
-        SignNode := rootNode^.next;
-        while (SignNode <> nil)  and (not LibXmlNodeWasFound(SignNode, vSignatureNode, vSelectionNamespaces)) do
-        begin
-          SignNode := SignNode^.next;
-        end;
+        SignNode := SignNode^.next;
       end;
     end;
   end;
@@ -637,11 +651,12 @@ begin
   Result := _LibXmlLookUpNode(ParentNode^.children, NodeName, NameSpace);
 end;
 
-function TDFeSSLXmlSignLibXml2.AdicionarNode(var aDoc: xmlDocPtr; const ConteudoXML: String): xmlNodePtr;
+function TDFeSSLXmlSignLibXml2.AdicionarNode(var aDoc: xmlDocPtr;
+  const ConteudoXML: String; docElement: String): xmlNodePtr;
 Var
-  NewNode: xmlNodePtr;
+  NewNode, DocNode: xmlNodePtr;
   memDoc: xmlDocPtr;
-  NewNodeXml: String;
+  NewNodeXml, vdocElement: String;
 begin
 {$IFNDEF COMPILER23_UP}
   Result := nil;
@@ -652,7 +667,18 @@ begin
     NewNodeXml := '<a>' + ConteudoXML + '</a>';
     memDoc := xmlReadMemory(PAnsiChar(AnsiString(NewNodeXml)), Length(NewNodeXml), nil, nil, 0);
     NewNode := xmlDocCopyNode(xmlDocGetRootElement(memDoc), aDoc.doc, 1);
-    Result := xmlAddChildList(xmlDocGetRootElement(aDoc), NewNode.children);
+    DocNode := xmlDocGetRootElement(aDoc);
+
+    { Se docElement possui prefixo o mesmo tem que ser removido }
+    vdocElement := copy(docElement, Pos(':', docElement) + 1, Length(docElement));
+
+    if (vdocElement <> '') then
+      DocNode := LibXmlLookUpNode(DocNode, vdocElement);
+
+    if (DocNode = nil) then
+      raise EACBrDFeException.Create(cErrElementsNotFound);
+
+    Result := xmlAddChildList(DocNode, NewNode.children);
   finally
     if NewNode <> nil then
     begin
@@ -665,13 +691,5 @@ begin
       xmlFreeDoc(memDoc);
   end;
 end;
-
-initialization
-
-LibXMLLoaded := False;
-
-finalization
-
-LibXmlShutDown;
 
 end.

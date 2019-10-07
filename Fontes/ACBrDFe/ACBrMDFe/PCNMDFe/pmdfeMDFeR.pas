@@ -130,6 +130,11 @@ begin
         MDFe.ide.indCanalVerde := tiSim
       else
         MDFe.ide.indCanalVerde := tiNao;
+
+      if Leitor.rCampo(tcStr, 'indCarregaPosterior') = '1' then
+        MDFe.ide.indCarregaPosterior := tiSim
+      else
+        MDFe.ide.indCarregaPosterior := tiNao;
     end;
 
     i01 := 0;
@@ -927,6 +932,14 @@ begin
   MDFe.signature.SignatureValue  := Leitor.rCampo(tcStr, 'SignatureValue');
   MDFe.signature.X509Certificate := Leitor.rCampo(tcStr, 'X509Certificate');
 
+  (* Grupo da TAG <infMDFeSupl> ************************************************)
+  if Leitor.rExtrai(1, 'infMDFeSupl') <> '' then
+  begin
+    MDFe.infMDFeSupl.qrCodMDFe := Leitor.rCampo(tcStr, 'qrCodMDFe');
+    MDFe.infMDFeSupl.qrCodMDFe := StringReplace(MDFe.infMDFeSupl.qrCodMDFe, '<![CDATA[', '', []);
+    MDFe.infMDFeSupl.qrCodMDFe := StringReplace(MDFe.infMDFeSupl.qrCodMDFe, ']]>', '', []);
+  end;
+
   (* Grupo da TAG <protMDFe> **************************************************)
   if Leitor.rExtrai(1, 'protMDFe') <> '' then
   begin
@@ -938,6 +951,8 @@ begin
     MDFe.procMDFe.digVal   := Leitor.rCampo(tcStr, 'digVal');
     MDFe.procMDFe.cStat    := Leitor.rCampo(tcInt, 'cStat');
     MDFe.procMDFe.xMotivo  := Leitor.rCampo(tcStr, 'xMotivo');
+    MDFe.procMDFe.cMsg     := Leitor.rCampo(tcInt, 'cMsg');
+    MDFe.procMDFe.xMsg     := Leitor.rCampo(tcStr, 'xMsg');
   end;
 
   Result := True;

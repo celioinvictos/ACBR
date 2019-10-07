@@ -47,6 +47,7 @@ uses
 
 const
   CDFeSessaoIni = 'DFe';
+  CProxySessaoIni = 'Proxy';
 
 type
 
@@ -272,6 +273,20 @@ type
     property CSRT: String read FCSRT write SetCSRT;
   end;
 
+  { TDownloadConf }
+
+  TDownloadConf = class(TPersistent)
+  private
+    FPathDownload: String;
+    FSepararPorNome: Boolean;
+  public
+    Constructor Create;
+    procedure Assign(Source: TPersistent); override;
+  published
+    property PathDownload: String read FPathDownload write FPathDownload;
+    property SepararPorNome: Boolean read FSepararPorNome write FSepararPorNome default False;
+  end;
+
   { TArquivosConf }
 
   TArquivosConf = class(TComponent)
@@ -288,6 +303,7 @@ type
     FSepararPorAno: Boolean;
     FSepararPorMes: Boolean;
     FSepararPorDia: Boolean;
+    FDownloadDFe: TDownloadConf;
   private
     function GetIniServicos: String;
     function GetPathSalvar: String;
@@ -306,6 +322,8 @@ type
 
     function GetPath(const APath: String; const ALiteral: String; const CNPJ: String = '';
       Data: TDateTime = 0; const ModeloDescr: String = ''): String; virtual;
+    function GetPathDownload(const xNome: String = ''; const CNPJ: String = ''; Data: TDateTime = 0): String;
+    function GetPathDownloadEvento(tipoEvento: TpcnTpEvento; const xNome: String = ''; const CNPJ: String = ''; Data: TDateTime = 0): String;
   published
     property PathSalvar: String read GetPathSalvar write FPathSalvar;
     property PathSchemas: String read GetPathSchemas write FPathSchemas;
@@ -319,6 +337,7 @@ type
     property SepararPorAno: Boolean read FSepararPorAno write SetSepararPorAno default False;
     property SepararPorMes: Boolean read FSepararPorMes write SetSepararPorMes default False;
     property SepararPorDia: Boolean read FSepararPorDia write SetSepararPorDia default False;
+    property DownloadDFe: TDownloadConf read FDownloadDFe write FDownloadDFe;
   end;
 
   { TConfiguracoes }
@@ -786,10 +805,10 @@ begin
   AIni.WriteString(CDFeSessaoIni, 'UF', UF);
   AIni.WriteInteger(CDFeSessaoIni, 'TimeZone.Modo', Integer(TimeZoneConf.ModoDeteccao));
   AIni.WriteString(CDFeSessaoIni, 'TimeZone.Str', TimeZoneConf.TimeZoneStr);
-  AIni.WriteString(CDFeSessaoIni, 'Proxy.Host', ProxyHost);
-  AIni.WriteString(CDFeSessaoIni, 'Proxy.Port', ProxyPort);
-  AIni.WriteString(CDFeSessaoIni, 'Proxy.User', ProxyUser);
-  AIni.WriteString(CDFeSessaoIni, 'Proxy.Pass', EncodeBase64(
+  AIni.WriteString(CProxySessaoIni, 'Servidor', ProxyHost);
+  AIni.WriteString(CProxySessaoIni, 'Porta', ProxyPort);
+  AIni.WriteString(CProxySessaoIni, 'Usuario', ProxyUser);
+  AIni.WriteString(CProxySessaoIni, 'Senha', EncodeBase64(
     StrCrypt(ProxyPass, IfEmptyThen(fpConfiguracoes.ChaveCryptINI, ProxyHost))));
 
   if NaoEstaVazio(fpConfiguracoes.SessaoIni) then
@@ -813,10 +832,10 @@ begin
   UF := AIni.ReadString(CDFeSessaoIni, 'UF', UF);
   TimeZoneConf.ModoDeteccao := TTimeZoneModoDeteccao(AIni.ReadInteger(CDFeSessaoIni, 'TimeZone.Modo', Integer(TimeZoneConf.ModoDeteccao)));
   TimeZoneConf.TimeZoneStr := AIni.ReadString(CDFeSessaoIni, 'TimeZone.Str', TimeZoneConf.TimeZoneStr);
-  ProxyHost := AIni.ReadString(CDFeSessaoIni, 'Proxy.Host', ProxyHost);
-  ProxyPort := AIni.ReadString(CDFeSessaoIni, 'Proxy.Port', ProxyPort);
-  ProxyUser := AIni.ReadString(CDFeSessaoIni, 'Proxy.User', ProxyUser);
-  ProxyPass := StrCrypt(DecodeBase64(AIni.ReadString(CDFeSessaoIni, 'Proxy.Pass', '')),
+  ProxyHost := AIni.ReadString(CProxySessaoIni, 'Servidor', ProxyHost);
+  ProxyPort := AIni.ReadString(CProxySessaoIni, 'Porta', ProxyPort);
+  ProxyUser := AIni.ReadString(CProxySessaoIni, 'Usuario', ProxyUser);
+  ProxyPass := StrCrypt(DecodeBase64(AIni.ReadString(CProxySessaoIni, 'Senha', '')),
     IfEmptyThen(fpConfiguracoes.ChaveCryptINI, ProxyHost));
 
   if NaoEstaVazio(fpConfiguracoes.SessaoIni) then
@@ -1093,13 +1112,13 @@ begin
     TACBrDFe(fpConfiguracoes.Owner).SSL.DadosPFX := AValue;
 end;
 
-
 { TArquivosConf }
 
 constructor TArquivosConf.Create(AConfiguracoes: TConfiguracoes);
 begin
   inherited Create(AConfiguracoes);
 
+  FDownloadDFe := TDownloadConf.Create;
   FOrdenacaoPath := TOrdenacaoPath.Create(Self, TOrdenacaoPathItem);
 
   fpConfiguracoes := AConfiguracoes;
@@ -1118,7 +1137,9 @@ end;
 
 destructor TArquivosConf.Destroy;
 begin
+  FDownloadDFe.Free;
   FOrdenacaoPath.Free;
+
   inherited;
 end;
 
@@ -1135,6 +1156,9 @@ begin
   SepararPorModelo := DeArquivosConf.SepararPorModelo;
   SepararPorMes    := DeArquivosConf.SepararPorMes;
   SepararPorDia    := DeArquivosConf.SepararPorDia;
+
+  DownloadDFe.Assign(DeArquivosConf.DownloadDFe);
+
   OrdenacaoPath.Clear;
   for I := 0 to DeArquivosConf.OrdenacaoPath.Count-1 do
     OrdenacaoPath.Add.Item := DeArquivosConf.OrdenacaoPath.Items[I].Item;
@@ -1155,6 +1179,8 @@ begin
   AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SepararPorAno', SepararPorAno);
   AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SepararPorMes', SepararPorMes);
   AIni.WriteBool(fpConfiguracoes.SessaoIni, 'SepararPorDia', SepararPorDia);
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'Download.PathDownload', DownloadDFe.PathDownload);
+  AIni.WriteBool(fpConfiguracoes.SessaoIni, 'Download.SepararPorNome', DownloadDFe.SepararPorNome);
 end;
 
 procedure TArquivosConf.LerIni(const AIni: TCustomIniFile);
@@ -1172,6 +1198,8 @@ begin
   SepararPorAno := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SepararPorAno', SepararPorAno);
   SepararPorMes := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SepararPorMes', SepararPorMes);
   SepararPorDia := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'SepararPorDia', SepararPorDia);
+  DownloadDFe.PathDownload := AIni.ReadString(fpConfiguracoes.SessaoIni, 'Download.PathDownload', DownloadDFe.PathDownload);
+  DownloadDFe.SepararPorNome := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'Download.SepararPorNome', DownloadDFe.SepararPorNome);
 end;
 
 function TArquivosConf.GetPathSalvar: String;
@@ -1323,6 +1351,49 @@ begin
   Result := Dir;
 end;
 
+function TArquivosConf.GetPathDownload(const xNome, CNPJ: String;
+  Data: TDateTime): String;
+var
+  rPathDown: String;
+begin
+  rPathDown := '';
+  if EstaVazio(FDownloadDFe.PathDownload) then
+     FDownloadDFe.PathDownload := PathSalvar;
+
+  if (FDownloadDFe.SepararPorNome) and (NaoEstaVazio(xNome)) then
+     rPathDown := rPathDown + PathWithDelim(FDownloadDFe.PathDownload) + OnlyAlphaNum(xNome)
+  else
+     rPathDown := FDownloadDFe.PathDownload;
+
+  Result := GetPath(rPathDown, 'Down', CNPJ, Data);
+end;
+
+function TArquivosConf.GetPathDownloadEvento(tipoEvento: TpcnTpEvento;
+  const xNome, CNPJ: String; Data: TDateTime): String;
+var
+  rPathDown: String;
+begin
+  rPathDown := '';
+
+  if EstaVazio(FDownloadDFe.PathDownload) then
+     FDownloadDFe.PathDownload := PathSalvar;
+
+  if (FDownloadDFe.SepararPorNome) and (NaoEstaVazio(xNome)) then
+     rPathDown := rPathDown + PathWithDelim(FDownloadDFe.PathDownload) + OnlyAlphaNum(xNome)
+  else
+     rPathDown := FDownloadDFe.PathDownload;
+
+  rPathDown := GetPath(rPathDown, 'Evento', CNPJ, Data);
+
+  if AdicionarLiteral then
+    rPathDown := PathWithDelim(rPathDown) + TpEventoToDescStr(tipoEvento);
+
+  if not DirectoryExists(rPathDown) then
+    ForceDirectories(rPathDown);
+
+  Result := rPathDown;
+end;
+
 { TOrdenacaoPath }
 
 function TOrdenacaoPath.Add: TOrdenacaoPathItem;
@@ -1410,6 +1481,26 @@ begin
     Exit;
 
   FIdCSRT := Value;
+end;
+
+{ TDownloadConf }
+
+procedure TDownloadConf.Assign(Source: TPersistent);
+begin
+  if Source is TDownloadConf then
+  begin
+    FPathDownload := TDownloadConf(Source).PathDownload;
+    FSepararPorNome := TDownloadConf(Source).SepararPorNome;
+  end
+  else
+    inherited Assign(Source);
+end;
+
+constructor TDownloadConf.Create;
+begin
+  inherited Create;
+  FPathDownload := '';
+  FSepararPorNome := False;
 end;
 
 end.

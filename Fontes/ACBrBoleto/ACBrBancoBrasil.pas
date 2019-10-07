@@ -980,6 +980,14 @@ begin
      end;
 
      AMensagem   := '';
+     if (Sacado.SacadoAvalista.CNPJCPF <> '') then
+     begin
+       if Sacado.SacadoAvalista.Pessoa = pJuridica then
+         AMensagem := Copy(Sacado.SacadoAvalista.NomeAvalista, 1, 21) + ' CNPJ' + Sacado.SacadoAvalista.CNPJCPF
+       else
+         AMensagem := Copy(Sacado.SacadoAvalista.NomeAvalista, 1, 25) + ' CPF' + Sacado.SacadoAvalista.CNPJCPF;
+     end;
+
      if Mensagem.Text <> '' then
        AMensagem   := Mensagem.Strings[0];
 
@@ -1011,8 +1019,14 @@ begin
          wLinha:= wLinha + PadLeft( ANossoNumero,11)+ ADigitoNossoNumero;
 
 
-       wLinha:= wLinha +
-                '0000' + Space(7) + aModalidade;                // Zeros + Brancos + Prefixo do titulo + Variação da carteira
+       wLinha:= wLinha + '0000' + Space(3);                // Zeros + Brancos + Prefixo do titulo + Variação da carteira
+
+       if (Sacado.SacadoAvalista.CNPJCPF <> '') then//Indica se Mensagem ou Avalista
+         wLinha := wLinha + 'A'//Avalista
+       else
+         wLinha := wLinha + Space(1);//Mensagem
+
+       wLinha:= wLinha + Space(3) + aModalidade;                // Zeros + Brancos + Prefixo do titulo + Variação da carteira
 
        if TamConvenioMaior6  then
          wLinha:= wLinha + IntToStrZero(0,7)                    // Zero + Zeros + Zero + Zeros
@@ -1055,7 +1069,7 @@ begin
                 IfThen((PercentualMulta > 0),
                        IfThen(MultaValorFixo,'1','2'), '9')      + //Cod. 1-Cobrar Multa Valor Fixo / 2-Percentual / 9-Não cobrar multa
                 IfThen(PercentualMulta > 0,
-                       FormatDateTime('ddmmyy', DataMoraJuros),
+                       FormatDateTime('ddmmyy', DataMulta),
                                       '000000')                  + //Data Multa
                 IntToStrZero( round( PercentualMulta * 100), 12) + //Perc. Multa
                 Space(372)                                       + //Brancos
@@ -1098,7 +1112,10 @@ begin
    ACBrBanco.ACBrBoleto.NumeroArquivo := StrToIntDef(Copy(ARetorno[0],158,6),0);
 
    rCedente        := trim(copy(ARetorno[0], 73, 30));
-   rCNPJCPF        := OnlyNumber( copy(ARetorno[0], 19, 14) );
+   if copy(ARetorno[0], 18, 1) = '1' then
+      rCNPJCPF        := OnlyNumber((copy(ARetorno[0], 22, 11)))
+   else
+      rCNPJCPF        := OnlyNumber((copy(ARetorno[0], 19, 14)));
    rConvenioCedente:= Trim(RemoveZerosEsquerda(Copy(ARetorno[0], 33, 9)));
 
    ValidarDadosRetorno('', '', rCNPJCPF);
@@ -1219,6 +1236,8 @@ begin
        toRetornoOcorrenciasDoSacado                 : Result := '29';
        toRetornoAlteracaoDadosRejeitados            : Result := '30';
        toRetornoChequePendenteCompensacao           : Result := '50';
+       toRetornoInclusaoNegativacao                 : Result := '85';
+       toRetornoExclusaoNegativacao                 : Result := '86';
      end;
    end
    else
@@ -1306,7 +1325,9 @@ begin
       29: Result:= '29 – Ocorrências do Sacado';
       30: Result:= '30 – Alteração de Dados Rejeitada';
       44: Result:= '44 – Título pago com cheque devolvido';
-      50: Result:= '50 – Título pago com cheque pendente de compensação'
+      50: Result:= '50 – Título pago com cheque pendente de compensação';
+      85: Result:= '85 – Inclusão de Negativação';
+      86: Result:= '86 – Exclusão de Negativação';
     end;
   end
   else
@@ -1375,6 +1396,8 @@ begin
       29: Result := toRetornoOcorrenciasDoSacado;
       30: Result := toRetornoAlteracaoDadosRejeitados;
       50: Result := toRetornoChequePendenteCompensacao;
+      85: Result := toRetornoInclusaoNegativacao;
+      86: Result := toRetornoExclusaoNegativacao;
     end;
   end
   else
@@ -1678,6 +1701,36 @@ begin
         18: Result:='18-Tarifa Sobre Alteração de Abatimento/Desconto';
         19: Result:='19-Tarifa Sobre Arquivo mensal (Em Ser)';
         20: Result:='20-Tarifa Sobre Emissão de Bloqueto Pré-Emitido pelo Banco';
+      end;
+      toRetornoConfirmacaoRecebPedidoNegativacao: //  85 – Inclusão de Negativação (Particularidades BB jan/2019)
+      case CodMotivo of
+        01: Result:='01-Negativação aceita no BB';
+        02: Result:='02-Negativação aceita no agente negativador';
+        03: Result:='03-Inclusão cancelada';
+        04: Result:='04-Negativação recusada - pagador menor de idade';
+        05: Result:='05-Negativação recusada - espécie do boleto não permitida';
+        06: Result:='06-Negativação recusada - beneficiário não é PJ';
+        07: Result:='07-Negativação recusada - moeda do boleto não é Real';
+        08: Result:='08-Negativação recusada - endereço do pagador inválido';
+        09: Result:='09-Negativação recusada pelo agente negativado';
+        10: Result:='10-Negativação recusada - situação do boleto não permite NGTV';
+        11: Result:='11-Negativação recusada - cadastro do benef. desatualizado';
+        12: Result:='12-Negativação recusada - boleto inexistente';
+        13: Result:='13-Negativação recusada - pagador não identificado';
+        14: Result:='14-Recusa de tarifação de negativação';
+        15: Result:='15-Negativação recusada - motivos diversos';
+      end;
+      toRetornoConfirmacaoPedidoExclNegativacao: //  86 – Exclusão de Negativação (Particularidades BB jan/2019)
+      case CodMotivo of
+        01: Result:='01-Exclusão cancelada';
+        02: Result:='02-Negativação excluída no agente negativador';
+        03: Result:='03-Negativação excluída - devolução pelos correios';
+        04: Result:='04-Negativação excluída - data de ocorrência decursada';
+        05: Result:='05-Negativação excluída - determinação judicial';
+        06: Result:='06-Negativação excluída - contestação do interessado';
+        07: Result:='07-Negativação excluída - carta não retornou do correio';
+        08: Result:='08-Exclusão negativação recusada - registro inexistente';
+        15: Result:='09-Exclusão negativação recusada - motivos diversos';
       end;
     else
        Result := IntToStrZero(CodMotivo, 2) + ' - Outros Motivos';

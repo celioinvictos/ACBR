@@ -617,6 +617,7 @@ end;
 
 destructor TVerbasRescS2299.Destroy;
 begin
+  FDMDev.Free;
   ProcCS.Free;
 
   inherited;
@@ -716,7 +717,7 @@ begin
   Gerador.wCampo(tcStr, '', 'indCumprParc', 1,   1, 1, eSTpCumprParcialAvisoToStr(obj.indCumprParc));
 
   If (obj.QtdDiasInterm > 0) And (VersaoDF <> ve02_04_01) Then
-     Gerador.wCampo(tcInt, '', 'qtdDiasInterm', 1,   2, 0, obj.QtdDiasInterm);
+     Gerador.wCampo(tcInt, '', 'qtdDiasInterm', 1,   2, 1, obj.QtdDiasInterm);
 
   if (VersaoDF = ve02_04_01) then
     Gerador.wCampo(tcStr, '', 'observacao',   1, 255, 0, obj.Observacao)

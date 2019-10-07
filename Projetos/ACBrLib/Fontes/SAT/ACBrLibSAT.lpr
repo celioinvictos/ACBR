@@ -4,8 +4,7 @@ library ACBrLibSat;
 
 uses
   Interfaces, sysutils, Classes, Forms,
-  ACBrLibConfig, ACBrLibComum,
-  ACBrLibSATConfig, ACBrLibSatDataModule, ACBrLibSATClass;
+  ACBrLibComum, ACBrLibSATClass;
 
 {$R *.res}
 
@@ -51,6 +50,7 @@ exports
   SAT_ImprimirExtratoCancelamento,
   SAT_GerarPDFExtratoVenda,
   SAT_GerarPDFCancelamento,
+  SAT_GerarImpressaoFiscalMFe,
   SAT_EnviarEmail;
 
 begin

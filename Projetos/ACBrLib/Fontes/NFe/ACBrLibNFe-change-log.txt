@@ -44,6 +44,33 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+01/10/2019
+-- ACBrLibNFeClass --
+[-] Correção no metodo NFE_CarregarEventoINI.
+    Por: Rafael Dias
+
+29/09/2019
+-- ACBrLibNFeClass --
+[*] Melhorias nos metodos distribuição DFe.
+    Por: Rafael Dias
+
+27/09/2019
+-- ACBrLibNFeClass --
+[-] Correção do metodo inutilização.
+    Por: Rafael Dias
+[-] Correção do metodo cancelar.
+    Por: Rafael Dias
+
+13/09/2019
+-- ACBrLibNFeClass --
+[-] Corrigido erro ao salvar a ultima resposta.
+    Por: Rafael Dias
+
+21/05/2019
+-- ACBrLibNFeRespostas --
+[-] Adicionado campo Protocolo na resposta do método InutilizarNFe
+    Por: José M S Junior
+
 24/04/2019
 -- ACBrLibNFeRespostas --
 [+] Adicionado campos de Resposta da Sefaz na ConsultaNFe (cMsg e xMsg).

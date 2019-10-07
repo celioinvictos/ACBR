@@ -88,7 +88,6 @@ begin
    fpTamanhoMaximoNossoNum  := 12;
    fpTamanhoCarteira        := 3;
    fpTamanhoConta           := 11;
-   fpCodigosMoraAceitos     := '123456';
 end;
 
 function TACBrBancoSantander.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -1223,7 +1222,7 @@ begin
     case CodOcorrencia of
       17: Result := toRetornoLiquidadoAposBaixaOuNaoRegistro;
       24: Result := toRetornoRetiradoDeCartorio;
-      25: Result := toRetornoProtestado;
+      25: Result := toRetornoBaixaPorProtesto;
       26: Result := toRetornoInstrucaoRejeitada;
       35: Result := toRetornoTituloDDAReconhecidoPagador;
       36: Result := toRetornoTituloDDANaoReconhecidoPagador;
@@ -1306,7 +1305,7 @@ begin
     case TipoOcorrencia of
       toRetornoLiquidadoAposBaixaOuNaoRegistro               : Result := '17';
       toRetornoRetiradoDeCartorio                            : Result := '24';
-      toRetornoProtestado                                    : Result := '25';
+      toRetornoBaixaPorProtesto                              : Result := '25';
       toRetornoInstrucaoRejeitada                            : Result := '26';
       toRetornoTituloDDAReconhecidoPagador                   : Result := '35';
       toRetornoTituloDDANaoReconhecidoPagador                : Result := '36';

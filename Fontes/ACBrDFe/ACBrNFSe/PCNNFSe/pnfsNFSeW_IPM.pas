@@ -54,17 +54,13 @@ type
   protected
     procedure GerarIdentificacaoHomologacao;
     procedure GerarIdentificacaoRPS;
-    procedure GerarRPSSubstituido;
 
     procedure GerarPrestador;
     procedure GerarTomador;
-    procedure GerarIntermediarioServico;
 
-    procedure GerarServicoValores;
     procedure GerarListaServicos;
     procedure GerarValoresServico;
 
-    procedure GerarConstrucaoCivil;
     procedure GerarCondicaoPagamento;
 
     procedure GerarXML_IPM;
@@ -112,11 +108,6 @@ begin
 
     Gerador.wGrupoNFSe('/rps');
   end;
-end;
-
-procedure TNFSeW_IPM.GerarRPSSubstituido;
-begin
-  // Não definido
 end;
 
 procedure TNFSeW_IPM.GerarPrestador;
@@ -170,16 +161,6 @@ begin
   Gerador.wGrupoNFSe('/tomador');
 end;
 
-procedure TNFSeW_IPM.GerarIntermediarioServico;
-begin
-  // não definido
-end;
-
-procedure TNFSeW_IPM.GerarServicoValores;
-begin
-  // Não definido
-end;
-
 procedure TNFSeW_IPM.GerarListaServicos;
 var
   i: Integer;
@@ -198,9 +179,9 @@ begin
       Gerador.wCampoNFSe(tcStr, '', 'tributa_municipio_prestador', 1, 1, 1, '1', '');
 
     Gerador.wCampoNFSe(tcStr, '', 'codigo_local_prestacao_servico', 1, 9, 1, NFSe.Servico.CodigoMunicipio, '');
-    Gerador.wCampoNFSe(tcStr, '', 'unidade_codigo', 1, 9, 0, '1', ''); //1 - UN, 2 - HORA
+    Gerador.wCampoNFSe(tcStr, '', 'unidade_codigo', 1, 9, 0, TUnidadeToStr(NFSe.Servico.ItemServico[I].TipoUnidade), '');
     Gerador.wCampoNFSe(tcDe3, '', 'unidade_quantidade', 1, 15, 0, NFSe.Servico.ItemServico[I].Quantidade, '');
-    Gerador.wCampoNFSe(tcDe2, '', 'unidade_valor_unitario', 1, 30, 0, NFSe.Servico.ItemServico[I].ValorUnitario, '');
+    Gerador.wCampoNFSe(tcDe6, '', 'unidade_valor_unitario', 1, 30, 0, NFSe.Servico.ItemServico[I].ValorUnitario, '');
     Gerador.wCampoNFSe(tcStr, '', 'codigo_item_lista_servico', 1, 9, 1, OnlyNumber(NFSe.Servico.ItemListaServico), '');
     Gerador.wCampoNFSe(tcStr, '', 'descritivo', 1, 1000, 1, IfThen(NFSe.Servico.ItemServico[I].Descricao = '', NFSe.Servico.Discriminacao, NFSe.Servico.ItemServico[I].Descricao));
 
@@ -251,11 +232,6 @@ begin
   Gerador.wGrupoNFSe('/nf');
 end;
 
-procedure TNFSeW_IPM.GerarConstrucaoCivil;
-begin
-  // Não definido
-end;
-
 procedure TNFSeW_IPM.GerarCondicaoPagamento;
 var
   i: Integer;
@@ -297,7 +273,6 @@ begin
   GerarValoresServico;
   GerarPrestador;
   GerarTomador;
-  GerarIntermediarioServico;
   GerarListaServicos;
 
   if NFSe.Status = srNormal then

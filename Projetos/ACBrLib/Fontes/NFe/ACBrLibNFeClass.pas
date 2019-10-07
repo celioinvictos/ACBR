@@ -130,6 +130,9 @@ function NFE_Cancelar(const eChave, eJustificativa, eCNPJ: PChar; ALote: Integer
 function NFE_EnviarEvento(idLote: Integer;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_ConsultaCadastro(cUF, nDocumento: PChar; nIE: boolean;
+  const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_DistribuicaoDFePorUltNSU(const AcUFAutor: integer; eCNPJCPF, eultNSU: PChar;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
@@ -165,18 +168,17 @@ function NFE_ImprimirInutilizacaoPDF(const eChave: PChar): longint;
 implementation
 
 uses
-  ACBrLibConsts, ACBrLibNFeConsts, ACBrLibConfig, ACBrLibResposta,
-  ACBrLibNFeConfig, ACBrLibNFeRespostas, ACBrNFe, ACBrMail,
-  pcnConversao, pcnAuxiliar, blcksock, ACBrUtil;
+  ACBrLibConsts, ACBrLibNFeConsts, ACBrLibConfig,
+  ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
+  ACBrLibConsultaCadastro, ACBrLibNFeConfig, ACBrLibNFeRespostas,
+  ACBrNFe, ACBrMail, ACBrUtil,
+  pcnConversao, pcnAuxiliar, blcksock;
 
 { TACBrLibNFe }
 
 constructor TACBrLibNFe.Create(ArqConfig: string; ChaveCrypt: ansistring);
 begin
   inherited Create(ArqConfig, ChaveCrypt);
-  fpNome := CLibNFeNome;
-  fpVersao := CLibNFeVersao;
-
   FNFeDM := TLibNFeDM.Create(nil);
 end;
 
@@ -411,7 +413,7 @@ begin
     begin
       NFeDM.Travar;
       try
-        NFeDM.ACBrNFe1.EventoNFe.LerFromIni(ArquivoOuINI);
+        NFeDM.ACBrNFe1.EventoNFe.LerFromIni(ArquivoOuINI, False);
         Result := SetRetornoEventoCarregados(NFeDM.ACBrNFe1.EventoNFe.Evento.Count);
       finally
         NFeDM.Destravar;
@@ -556,7 +558,7 @@ begin
         Erros := '';
         NFeDM.ACBrNFe1.NotasFiscais.ValidarRegrasdeNegocios(Erros);
         MoverStringParaPChar(Erros, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Erros);
       finally
         NFeDM.Destravar;
       end;
@@ -586,7 +588,7 @@ begin
         Erros := '';
         NFeDM.ACBrNFe1.NotasFiscais.VerificarAssinatura(Erros);
         MoverStringParaPChar(Erros, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Erros);
       finally
         NFeDM.Destravar;
       end;
@@ -607,7 +609,8 @@ end;
 function NFE_StatusServico(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  Resposta: TStatusServicoResposta;
+  Resp: TStatusServicoResposta;
+  Resposta: String;
 begin
   try
     VerificarLibInicializada;
@@ -616,21 +619,22 @@ begin
     with TACBrLibNFe(pLib) do
     begin
       NFeDM.Travar;
-      Resposta := TStatusServicoResposta.Create(pLib.Config.TipoResposta);
+      Resp := TStatusServicoResposta.Create(pLib.Config.TipoResposta);
       try
         with NFeDM.ACBrNFe1 do
         begin
           if WebServices.StatusServico.Executar then
           begin
-            Resposta.ProcessarResposta(NFeDM.ACBrNFe1);
-            MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
+            Resp.Processar(NFeDM.ACBrNFe1);
+            Resposta := Resp.Gerar;
+            MoverStringParaPChar(Resposta, sResposta, esTamanho);
+            Result := SetRetorno(ErrOK, Resposta);
           end
           else
             Result := SetRetornoWebService(SSL.HTTPResultCode, 'StatusServico');
         end;
       finally
-        Resposta.Free;
+        Resp.Free;
         NFeDM.Destravar;
       end;
     end;
@@ -648,7 +652,8 @@ function NFE_Consultar(const eChaveOuNFe: PChar; const sResposta: PChar; var esT
 var
   EhArquivo: boolean;
   ChaveOuNFe: string;
-  Resposta: TConsultaNFeResposta;
+  Resp: TConsultaNFeResposta;
+  Resposta: string;
 begin
   try
     VerificarLibInicializada;
@@ -683,21 +688,19 @@ begin
           NFeDM.ACBrNFe1.NotasFiscais.Items[NFeDM.ACBrNFe1.NotasFiscais.Count - 1].NFe.infNFe.ID,
           'NFe','',[rfIgnoreCase]);
 
-      Resposta := TConsultaNFeResposta.Create(pLib.Config.TipoResposta);
+      Resp := TConsultaNFeResposta.Create(pLib.Config.TipoResposta);
       try
         with NFeDM.ACBrNFe1 do
         begin
-          if WebServices.Consulta.Executar then
-          begin
-            Resposta.ProcessarResposta(NFeDM.ACBrNFe1);
-            MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'StatusServico');
+          WebServices.Consulta.Executar;
+          Resp.Processar(NFeDM.ACBrNFe1);
+
+          Resposta := Resp.Gerar;
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
         end;
       finally
-        Resposta.Free;
+        Resp.Free;
         NFeDM.Destravar;
       end;
     end;
@@ -715,8 +718,8 @@ function NFE_Inutilizar(const ACNPJ, AJustificativa: PChar;
   const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  Resposta: TInutilizarNFeResposta;
-  CNPJ, Justificativa: string;
+  Resp: TInutilizarNFeResposta;
+  Resposta, CNPJ, Justificativa: string;
 begin
   try
     VerificarLibInicializada;
@@ -739,7 +742,7 @@ begin
     with TACBrLibNFe(pLib) do
     begin
       NFeDM.Travar;
-      Resposta := TInutilizarNFeResposta.Create(pLib.Config.TipoResposta);
+      Resp := TInutilizarNFeResposta.Create(pLib.Config.TipoResposta);
       try
         with NFeDM.ACBrNFe1 do
         begin
@@ -753,18 +756,15 @@ begin
             Inutilizacao.NumeroInicial := NumeroInicial;
             Inutilizacao.NumeroFinal := NumeroFinal;
 
-            if Inutilizacao.Executar then
-            begin
-              Resposta.ProcessarResposta(NFeDM.ACBrNFe1);
-              MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-              Result := SetRetorno(ErrOK, StrPas(sResposta));
-            end
-            else
-              Result := SetRetornoWebService(SSL.HTTPResultCode, Inutilizacao.XMotivo);
+            Inutilizacao.Executar;
+            Resp.Processar(NFeDM.ACBrNFe1);
+            Resposta := Resp.Gerar;
+            MoverStringParaPChar(Resposta, sResposta, esTamanho);
+            Result := SetRetorno(ErrOK, Resposta);
           end;
         end;
       finally
-        Resposta.Free;
+        Resp.Free;
         NFeDM.Destravar;
       end;
     end;
@@ -834,7 +834,7 @@ begin
 
           RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta);
           try
-            RespEnvio.ProcessarResposta(NFeDM.ACBrNFe1);
+            RespEnvio.Processar(NFeDM.ACBrNFe1);
             Resposta := RespEnvio.Gerar;
           finally
             RespEnvio.Free;
@@ -846,9 +846,13 @@ begin
             WebServices.Retorno.Executar;
           end;
 
-          RespRetorno := TRetornoResposta.Create(pLib.Config.TipoResposta);
+          RespRetorno := TRetornoResposta.Create('NFe', pLib.Config.TipoResposta);
           try
-            RespRetorno.ProcessarResposta(NFeDM.ACBrNFe1);
+            RespRetorno.Processar(WebServices.Retorno.NFeRetorno,
+                                  WebServices.Retorno.Recibo,
+                                  WebServices.Retorno.Msg,
+                                  WebServices.Retorno.Protocolo,
+                                  WebServices.Retorno.ChaveNFe);
             Resposta := Resposta + sLineBreak + RespRetorno.Gerar;
           finally
             RespRetorno.Free;
@@ -880,7 +884,7 @@ begin
           end;
 
           MoverStringParaPChar(Resposta, sResposta, esTamanho);
-          Result := SetRetorno(ErrOK, StrPas(sResposta));
+          Result := SetRetorno(ErrOK, Resposta);
         end;
       finally
         NFeDM.Destravar;
@@ -920,19 +924,17 @@ begin
           WebServices.Recibo.Recibo := sRecibo;
           WebServices.Recibo.Executar;
 
-          Resp := TReciboResposta.Create(pLib.Config.TipoResposta);
+          Resp := TReciboResposta.Create('NFe', pLib.Config.TipoResposta);
           try
-            Resp.ProcessarResposta(NFeDM.ACBrNFe1);
-            pLib.GravarLog('Resp.Gerar', logNormal);
+            Resp.Processar(WebServices.Recibo.NFeRetorno,
+                           WebServices.Recibo.Recibo);
             Resposta := Resp.Gerar;
           finally
-            pLib.GravarLog('Resp.Free', logNormal);
             Resp.Free;
           end;
 
-          pLib.GravarLog('Result', logNormal);
           MoverStringParaPChar(Resposta, sResposta, esTamanho);
-          Result := SetRetorno(ErrOK, StrPas(sResposta));
+          Result := SetRetorno(ErrOK, Resposta);
         end;
       finally
         NFeDM.Destravar;
@@ -971,57 +973,49 @@ begin
     begin
       NFeDM.Travar;
 
-      if not ValidarChave(AChave) then
-        raise EACBrLibException.Create(ErrChaveNFe, Format(SErrChaveInvalida, [AChave]))
-      else
-        NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave := AChave;
-
-      if not NFeDM.ACBrNFe1.WebServices.Consulta.Executar then
-        raise EACBrLibException.Create(ErrConsulta, NFeDM.ACBrNFe1.WebServices.Consulta.Msg);
-
-      NFeDM.ACBrNFe1.EventoNFe.Evento.Clear;
-
-      with NFeDM.ACBrNFe1.EventoNFe.Evento.New do
-      begin
-        Infevento.CNPJ := ACNPJ;
-        if Trim(Infevento.CNPJ) = '' then
-          Infevento.CNPJ := copy(OnlyNumber(NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave), 7, 14)
-        else
-        begin
-          if not ValidarCNPJ(ACNPJ) then
-            raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJInvalido, [ACNPJ]));
-        end;
-
-        Infevento.cOrgao := StrToIntDef(copy(OnlyNumber(NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave), 1, 2), 0);
-        Infevento.dhEvento := now;
-        Infevento.tpEvento := teCancelamento;
-        Infevento.chNFe := NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave;
-        Infevento.detEvento.nProt := NFeDM.ACBrNFe1.WebServices.Consulta.Protocolo;
-        Infevento.detEvento.xJust := AJustificativa;
-      end;
-
       try
-        if NFeDM.ACBrNFe1.EnviarEvento(ALote) then
+        if not ValidarChave(AChave) then
+          raise EACBrLibException.Create(ErrChaveNFe, Format(SErrChaveInvalida, [AChave]))
+        else
+          NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave := AChave;
+
+        NFeDM.ACBrNFe1.WebServices.Consulta.Executar;
+        NFeDM.ACBrNFe1.EventoNFe.Evento.Clear;
+
+        with NFeDM.ACBrNFe1.EventoNFe.Evento.New do
         begin
-          Resp := TCancelamentoResposta.Create(resINI);
-          try
-            Resp.ProcessarResposta(NFeDM.ACBrNFe1);
-            Resposta := Resp.XMotivo + sLineBreak;
-            Resposta := Resposta + Resp.Gerar;
-          finally
-            Resp.Free;
+          Infevento.CNPJ := ACNPJ;
+          if Trim(Infevento.CNPJ) = '' then
+            Infevento.CNPJ := copy(OnlyNumber(NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave), 7, 14)
+          else
+          begin
+            if not ValidarCNPJ(ACNPJ) then
+              raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJInvalido, [ACNPJ]));
           end;
 
-          MoverStringParaPChar(Resposta, sResposta, esTamanho);
-          Result := SetRetorno(ErrOK, StrPas(sResposta));
-        end
-        else
-          Result := SetRetornoWebService(NFeDM.ACBrNFe1.SSL.HTTPResultCode, 'Cancelar');
-      except
-        raise EACBrLibException.Create(ErrRetorno, NFeDM.ACBrNFe1.WebServices.EnvEvento.EventoRetorno.xMotivo);
-      end;
+          Infevento.cOrgao := StrToIntDef(copy(OnlyNumber(NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave), 1, 2), 0);
+          Infevento.dhEvento := now;
+          Infevento.tpEvento := teCancelamento;
+          Infevento.chNFe := NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave;
+          Infevento.detEvento.nProt := NFeDM.ACBrNFe1.WebServices.Consulta.Protocolo;
+          Infevento.detEvento.xJust := AJustificativa;
+        end;
 
-      NFeDM.Destravar;
+        Resp := TCancelamentoResposta.Create(pLib.Config.TipoResposta);
+        try
+          NFeDM.ACBrNFe1.EnviarEvento(ALote);
+
+          Resp.Processar(NFeDM.ACBrNFe1);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        NFeDM.Destravar;
+      end;
     end;
   except
     on E: EACBrLibException do
@@ -1036,8 +1030,9 @@ function NFE_EnviarEvento(idLote: Integer;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
+  i, j: integer;
   Resp: TEventoResposta;
-  Resposta: String;
+  Resposta, chNfe: String;
 begin
   try
     VerificarLibInicializada;
@@ -1051,38 +1046,152 @@ begin
     begin
       NFeDM.Travar;
 
-      with NFeDM.ACBrNFe1 do
-      begin
-        if EventoNFe.Evento.Count = 0 then
-          raise EACBrLibException.Create(ErrEnvioEvento, Format(SInfEventosCarregados, [EventoNFe.Evento.Count]))
-        else
+      try
+        with NFeDM.ACBrNFe1 do
         begin
+          if EventoNFe.Evento.Count = 0 then
+            raise EACBrLibException.Create(ErrEnvioEvento, 'ERRO: Nenhum Evento adicionado ao Lote');
+
+          if EventoNFe.Evento.Count > 20 then
+            raise EACBrLibException.Create(ErrEnvioEvento, 'ERRO: Conjunto de Eventos transmitidos (máximo de 20) ' +
+                                                           'excedido. Quantidade atual: ' +
+                                                           IntToStr(EventoNFe.Evento.Count));
           if (idLote = 0) then
             idLote := 1;
 
-          if EnviarEvento(idLote) then
+          WebServices.EnvEvento.idLote := idLote;
+
+          {Atribuir nSeqEvento, CNPJ, Chave e/ou Protocolo quando não especificar}
+          for i := 0 to EventoNFe.Evento.Count - 1 do
           begin
-            try
-              Resp := TEventoResposta.Create(pLib.Config.TipoResposta);
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
-              Resposta := Resp.Gerar;
-            finally
-              Resp.Free;
+            if EventoNFe.Evento.Items[i].InfEvento.nSeqEvento = 0 then
+              EventoNFe.Evento.Items[i].infEvento.nSeqEvento := 1;
+
+            EventoNFe.Evento.Items[i].InfEvento.tpAmb := Configuracoes.WebServices.Ambiente;
+
+            if NotasFiscais.Count > 0 then
+            begin
+              chNfe := OnlyNumber(EventoNFe.Evento.Items[i].InfEvento.chNfe);
+
+              // Se tem a chave da NFe no Evento, procure por ela nas notas carregadas //
+              if NaoEstaVazio(chNfe) then
+              begin
+                For j := 0 to NotasFiscais.Count - 1 do
+                begin
+                  if chNfe = NotasFiscais.Items[j].NumID then
+                  Break;
+                end ;
+
+                if j = NotasFiscais.Count then
+                  raise EACBrLibException.Create(ErrEnvioEvento, 'Não existe NFe com a chave ['+chNfe+'] carregada');
+              end
+              else
+              j := 0;
+
+              if trim(EventoNFe.Evento.Items[i].InfEvento.CNPJ) = '' then
+                EventoNFe.Evento.Items[i].InfEvento.CNPJ := NotasFiscais.Items[j].NFe.Emit.CNPJCPF;
+
+              if chNfe = '' then
+                EventoNFe.Evento.Items[i].InfEvento.chNfe := NotasFiscais.Items[j].NumID;
+
+              if trim(EventoNFe.Evento.Items[i].infEvento.detEvento.nProt) = '' then
+              begin
+                if EventoNFe.Evento.Items[i].infEvento.tpEvento = teCancelamento then
+                begin
+                  EventoNFe.Evento.Items[i].infEvento.detEvento.nProt := NotasFiscais.Items[j].NFe.procNFe.nProt;
+
+                  if trim(EventoNFe.Evento.Items[i].infEvento.detEvento.nProt) = '' then
+                  begin
+                    WebServices.Consulta.NFeChave := EventoNFe.Evento.Items[i].InfEvento.chNfe;
+
+                    if not WebServices.Consulta.Executar then
+                      raise EACBrLibException.Create(ErrEnvioEvento, WebServices.Consulta.Msg);
+
+                    EventoNFe.Evento.Items[i].infEvento.detEvento.nProt := WebServices.Consulta.Protocolo;
+                  end;
+                end;
+              end;
             end;
+          end;
 
-            MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'Enviar Evento');
+          WebServices.EnvEvento.Executar;
         end;
-      end;
 
-      NFeDM.Destravar;
+        try
+          Resp := TEventoResposta.Create(pLib.Config.TipoResposta);
+          Resp.Processar(NFeDM.ACBrNFe1);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        NFeDM.Destravar;
+      end;
     end;
   except
     on E: EACBrLibException do
       Result := SetRetorno(E.Erro, E.Message);
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function NFE_ConsultaCadastro(cUF, nDocumento: PChar; nIE: boolean;
+    const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  Resp: TConsultaCadastroResposta;
+  AUF, ADocumento: string;
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+
+    AUF := string(cUF);
+    ADocumento := string(nDocumento);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('NFE_ConsultaCadastro(' + AUF + ',' + ADocumento + ',' + BoolToStr(nIE, True) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('NFE_ConsultaCadastro', logNormal);
+
+    with TACBrLibNFe(pLib) do
+    begin
+      NFeDM.Travar;
+      try
+        NFeDM.ACBrNFe1.WebServices.ConsultaCadastro.UF   := AUF;
+        if nIE then
+          NFeDM.ACBrNFe1.WebServices.ConsultaCadastro.IE := ADocumento
+        else
+        begin
+          if Length(ADocumento) > 11 then
+            NFeDM.ACBrNFe1.WebServices.ConsultaCadastro.CNPJ := ADocumento
+          else
+            NFeDM.ACBrNFe1.WebServices.ConsultaCadastro.CPF := ADocumento;
+        end;
+
+        NFeDM.ACBrNFe1.WebServices.ConsultaCadastro.Executar;
+        Resp := TConsultaCadastroResposta.Create(pLib.Config.TipoResposta);
+        try
+          Resp.Processar(NFeDM.ACBrNFe1.WebServices.ConsultaCadastro.RetConsCad);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        NFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
     on E: Exception do
       Result := SetRetorno(ErrExecutandoMetodo, E.Message);
   end;
@@ -1112,33 +1221,41 @@ begin
     begin
       NFeDM.Travar;
 
-      if not ValidarCNPJ(ACNPJCPF) then
-        raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
+      try
+        if not ValidarCNPJ(ACNPJCPF) then
+          raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
 
-      with NFeDM.ACBrNFe1 do
-      begin
-        try
-          if DistribuicaoDFePorUltNSU(AcUFAutor, ACNPJCPF, AultNSU) then
-          begin
+        with NFeDM do
+        begin
+          try
+            ACBrNFe1.WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
+            ACBrNFe1.WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+            ACBrNFe1.WebServices.DistribuicaoDFe.ultNSU   := AultNSU;
+            ACBrNFe1.WebServices.DistribuicaoDFe.NSU      := '';
+            ACBrNFe1.WebServices.DistribuicaoDFe.chNFe    := '';
+
+            ACBrNFe1.WebServices.DistribuicaoDFe.Executar;
+
             Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
             try
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resp.Processar(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                             ACBrNFe1.WebServices.DistribuicaoDFe.Msg,
+                             ACBrNFe1.WebServices.DistribuicaoDFe.NomeArq,
+                             ACBrNFe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
             end;
 
             MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'DistribuicaoDFePorUltNSU');
-        except
-          raise EACBrLibException.Create(ErrRetorno, WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+            Result := SetRetorno(ErrOK, Resposta);
+          except
+            raise EACBrLibException.Create(ErrRetorno, ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+          end;
         end;
+      finally
+        NFeDM.Destravar;
       end;
-
-      NFeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1173,33 +1290,41 @@ begin
     begin
       NFeDM.Travar;
 
-      if not ValidarCNPJ(ACNPJCPF) then
-        raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
+      try
+        if not ValidarCNPJ(ACNPJCPF) then
+          raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
 
-      with NFeDM.ACBrNFe1 do
-      begin
-        try
-          if DistribuicaoDFePorNSU(AcUFAutor, ACNPJCPF, ANSU) then
-          begin
+        with NFeDM do
+        begin
+          try
+            ACBrNFe1.WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
+            ACBrNFe1.WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+            ACBrNFe1.WebServices.DistribuicaoDFe.ultNSU   := '';
+            ACBrNFe1.WebServices.DistribuicaoDFe.NSU      := ANSU;
+            ACBrNFe1.WebServices.DistribuicaoDFe.chNFe    := '';
+
+            ACBrNFe1.WebServices.DistribuicaoDFe.Executar;
+
             Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
             try
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resp.Processar(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                             ACBrNFe1.WebServices.DistribuicaoDFe.Msg,
+                             ACBrNFe1.WebServices.DistribuicaoDFe.NomeArq,
+                             ACBrNFe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
             end;
 
             MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'DistribuicaoDFePorNSU');
-        except
-          raise EACBrLibException.Create(ErrRetorno, WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+            Result := SetRetorno(ErrOK, Resposta);
+          except
+            raise EACBrLibException.Create(ErrRetorno, ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+          end;
         end;
+      finally
+        NFeDM.Destravar;
       end;
-
-      NFeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1234,36 +1359,44 @@ begin
     begin
       NFeDM.Travar;
 
+      try
       if not ValidarCNPJ(ACNPJCPF) then
         raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
 
       if not ValidarChave(AchNFe) then
         raise EACBrLibException.Create(ErrChaveNFe, Format(SErrChaveInvalida, [AchNFe]));
 
-      with NFeDM.ACBrNFe1 do
+      with NFeDM do
       begin
         try
-          if DistribuicaoDFePorChaveNFe(AcUFAutor, ACNPJCPF, AchNFe) then
-          begin
-            Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
-            try
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
-              Resposta := Resp.Gerar;
-            finally
-              Resp.Free;
-            end;
+          ACBrNFe1.WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
+          ACBrNFe1.WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+          ACBrNFe1.WebServices.DistribuicaoDFe.ultNSU   := '';
+          ACBrNFe1.WebServices.DistribuicaoDFe.NSU      := '';
+          ACBrNFe1.WebServices.DistribuicaoDFe.chNFe    := AchNFe;
 
-            MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'DistribuicaoDFePorChaveNFe');
+          ACBrNFe1.WebServices.DistribuicaoDFe.Executar;
+
+          Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
+          try
+            Resp.Processar(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                           ACBrNFe1.WebServices.DistribuicaoDFe.Msg,
+                           ACBrNFe1.WebServices.DistribuicaoDFe.NomeArq,
+                           ACBrNFe1.WebServices.DistribuicaoDFe.ListaArqs);
+            Resposta := Resp.Gerar;
+          finally
+            Resp.Free;
+          end;
+
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
         except
-          raise EACBrLibException.Create(ErrRetorno, WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+          raise EACBrLibException.Create(ErrRetorno, ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
         end;
       end;
-
-      NFeDM.Destravar;
+      finally
+        NFeDM.Destravar;
+      end;
     end;
   except
     on E: EACBrLibException do
@@ -1503,6 +1636,7 @@ function NFE_Imprimir(const cImpressora: PChar; nNumCopias: Integer; const cProt
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 Var
   Resposta: TLibImpressaoResposta;
+  NumCopias: Integer;
   Impressora, Protocolo,
   MostrarPreview, MarcaDagua,
   ViaConsumidor, Simplificado: String;
@@ -1531,9 +1665,13 @@ begin
       try
         NFeDM.ConfigurarImpressao(Impressora, False, Protocolo, MostrarPreview,
           MarcaDagua, ViaConsumidor, Simplificado);
+        NumCopias := NFeDM.ACBrNFe1.DANFE.NumCopias;
+        if nNumCopias > 0 then
+          NFeDM.ACBrNFe1.DANFE.NumCopias := nNumCopias;
         NFeDM.ACBrNFe1.NotasFiscais.Imprimir;
         Result := SetRetorno(ErrOK, Resposta.Gerar);
       finally
+        NFeDM.ACBrNFe1.DANFE.NumCopias := NumCopias;
         Resposta.Free;
         NFeDM.Destravar;
       end;
@@ -1550,7 +1688,7 @@ end;
 function NFE_ImprimirPDF: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 Var
-  Resposta: TLibNFeResposta;
+  Resposta: TLibImpressaoResposta;
 begin
   try
     VerificarLibInicializada;
@@ -1559,7 +1697,7 @@ begin
     with TACBrLibNFe(pLib) do
     begin
       NFeDM.Travar;
-      Resposta := TLibNFeResposta.Create('Imprimir', pLib.Config.TipoResposta);
+      Resposta := TLibImpressaoResposta.Create(NFeDM.ACBrNFe1.NotasFiscais.Count, pLib.Config.TipoResposta);
       try
         NFeDM.ConfigurarImpressao('', true);
         NFeDM.ACBrNFe1.NotasFiscais.ImprimirPDF;

@@ -1,7 +1,7 @@
 object ACBRBoletoFCFortesFr: TACBRBoletoFCFortesFr
-  Left = 1611
+  Left = 302
   Height = 705
-  Top = 142
+  Top = 139
   Width = 1366
   Caption = 'ACBRBoletoFCFortesFr'
   ClientHeight = 705
@@ -12,7 +12,7 @@ object ACBRBoletoFCFortesFr: TACBRBoletoFCFortesFr
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '1.8.4.0'
+  LCLVersion = '2.0.2.0'
   object BoletoReciboTopo: TRLReport
     Left = 0
     Height = 1123
@@ -916,7 +916,7 @@ object ACBRBoletoFCFortesFr: TACBRBoletoFCFortesFr
         AutoSize = False
         Caption = '00000.0000 00000.000000 00000.000000 0 00000000000000'
         Font.Color = clBlack
-        Font.Height = -16
+        Font.Height = -15
         Font.Name = 'Arial'
         ParentFont = False
         RealBounds.Left = 0
@@ -1891,7 +1891,7 @@ object ACBRBoletoFCFortesFr: TACBRBoletoFCFortesFr
         AutoSize = False
         Caption = '00000.0000 00000.000000 00000.000000 0 00000000000000'
         Font.Color = clBlack
-        Font.Height = -16
+        Font.Height = -15
         Font.Name = 'Arial'
         ParentFont = False
         RealBounds.Left = 0
@@ -9230,23 +9230,6 @@ object ACBRBoletoFCFortesFr: TACBRBoletoFCFortesFr
         RealBounds.Width = 0
         RealBounds.Height = 0
       end
-      object RLLabel190: TRLLabel
-        Left = 289
-        Height = 18
-        Top = 21
-        Width = 465
-        Alignment = taRightJustify
-        AutoSize = False
-        Caption = 'Comprovante de Entrega'
-        Font.Color = clBlack
-        Font.Height = -16
-        Font.Name = 'Arial'
-        ParentFont = False
-        RealBounds.Left = 0
-        RealBounds.Top = 0
-        RealBounds.Width = 0
-        RealBounds.Height = 0
-      end
       object txtNumeroBanco5: TRLLabel
         Left = 183
         Height = 29
@@ -9632,12 +9615,45 @@ object ACBRBoletoFCFortesFr: TACBRBoletoFCFortesFr
         RealBounds.Width = 0
         RealBounds.Height = 0
       end
+      object RLLabel190: TRLLabel
+        Left = 291
+        Height = 18
+        Top = 3
+        Width = 476
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = 'Comprovante de Entrega'
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'Arial'
+        ParentFont = False
+        RealBounds.Left = 0
+        RealBounds.Top = 0
+        RealBounds.Width = 0
+        RealBounds.Height = 0
+      end
+      object txtLinhaDigitavelComprovanteRec: TRLLabel
+        Left = 291
+        Height = 19
+        Top = 23
+        Width = 473
+        AutoSize = False
+        Caption = '00000.0000 00000.000000 00000.000000 0 00000000000000'
+        Font.Color = clBlack
+        Font.Height = -16
+        Font.Name = 'Arial'
+        ParentFont = False
+        RealBounds.Left = 0
+        RealBounds.Top = 0
+        RealBounds.Width = 0
+        RealBounds.Height = 0
+      end
     end
   end
   object BoletoCarne: TRLReport
-    Left = 20
+    Left = 56
     Height = 1123
-    Top = 19
+    Top = 96
     Width = 794
     Font.Color = clBlack
     Font.Height = -13

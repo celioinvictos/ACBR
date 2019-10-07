@@ -45,20 +45,20 @@ uses
   ACBrGIF, ACBrEAD, ACBrMail, ACBrSedex, ACBrNCMs, ACBrNFe, ACBrNFeDANFeESCPOS,
   ACBrDANFCeFortesFr, ACBrDANFCeFortesFrA4, ACBrNFeDANFeRLClass, ACBrBoleto,
   ACBrBoletoFCFortesFr, Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo,
-  PrintersDlgs, IpHtml, pcnConversao, pcnConversaoNFe, pcteConversaoCTe,
-  ACBrSAT, ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede,
+  PrintersDlgs, IpHtml, pcnConversao, pcnConversaoNFe, pcteConversaoCTe, pcnConversaoBPe,
+  ACBrSAT, ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede, pgnreConversao,
   ACBrDFeSSL, ACBrGNRE2, ACBrGNReGuiaRLClass, ACBrBlocoX, ACBrMDFe,
   ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types, fileinfo,
-  ACBrDFeConfiguracoes, ACBrReinf, ACBreSocial, ACBrIntegrador, LazHelpCHM,
-  pmdfeConversaoMDFe, pcesConversaoeSocial, pcnConversaoReinf,
-  ACBrMonitorConfig, ACBrMonitorConsts, DOACBrNFeUnit, DoACBrCTeUnit,
-  DoACBrMDFeUnit, DoBoletoUnit, DoACBrReinfUnit, DoBALUnit, DoEmailUnit,
-  DoCEPUnit, DoCHQUnit, DoGAVUnit, DoIBGEUnit, DoNcmUnit, DoLCBUnit, DoDISUnit,
-  DoSedexUnit, DoETQUnit, DoACBrGNReUnit, DoPosPrinterUnit, DoECFUnit,
-  DoECFObserver, DoECFBemafi32, DoSATUnit, DoACBreSocialUnit;
+  ACBrDFeConfiguracoes, ACBrBPe, ACBrBPeDABPeESCPOS, ACBrReinf, ACBreSocial,
+  ACBrIntegrador, LazHelpCHM, pmdfeConversaoMDFe, pcesConversaoeSocial,
+  pcnConversaoReinf, ACBrMonitorConfig, ACBrMonitorConsts, DOACBrNFeUnit,
+  DoACBrCTeUnit, DoACBrMDFeUnit, DoBoletoUnit, DoACBrReinfUnit, DoBALUnit,
+  DoEmailUnit, DoCEPUnit, DoCHQUnit, DoGAVUnit, DoIBGEUnit, DoNcmUnit,
+  DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit, DoACBrGNReUnit,
+  DoPosPrinterUnit, DoECFUnit, DoECFObserver, DoECFBemafi32, DoSATUnit,
+  DoACBreSocialUnit, DoACBrBPeUnit;
 
 const
-  //{$I versao.txt}
   CEstados: array[TACBrECFEstado] of string =
     ('Não Inicializada', 'Desconhecido', 'Livre', 'Venda',
     'Pagamento', 'Relatório', 'Bloqueada', 'Requer Z', 'Requer X',
@@ -85,7 +85,7 @@ type
   TDFeCarregar = (tDFeNFe, tDFeEventoNFe, tDFeInutNFe,
                   tDFeCTe, tDFeEventoCTe, tDFeInutCTe,
                   tDFeMDFe, tDFeEventoMDFe,
-                  tDFeGNRe);
+                  tDFeGNRe, tDFeBPe, tDFeEventoBPe);
 
   { TFrmACBrMonitor }
 
@@ -93,6 +93,8 @@ type
     ACBrBlocoX1: TACBrBlocoX;
     ACBrBoleto1: TACBrBoleto;
     ACBrBoletoFCFortes1: TACBrBoletoFCFortes;
+    ACBrBPe1: TACBrBPe;
+    ACBrBPeDABPeESCPOS1: TACBrBPeDABPeESCPOS;
     ACBrCEP1: TACBrCEP;
     ACBrCTe1: TACBrCTe;
     ACBrCTeDACTeRL1: TACBrCTeDACTeRL;
@@ -143,6 +145,7 @@ type
     btnIntegrador: TPanel;
     btnGerarAssinaturaSAT: TButton;
     btnFonteItens: TButton;
+    btnSATEMAIL: TPanel;
     bvCadastro: TBevel;
     bExecECFTeste: TBitBtn;
     bGAVAbrir: TBitBtn;
@@ -244,14 +247,31 @@ type
     bvCadastro3: TBevel;
     bvCadastro4: TBevel;
     bvCadastro5: TBevel;
+    bvCadastro6: TBevel;
     cbBackFeed: TComboBox;
     cbDPI: TComboBox;
+    cbEmailHTML: TCheckBox;
     cbETQModelo: TComboBox;
     cbETQPorta: TComboBox;
     cbFormaEmissaoCTe: TComboBox;
+    cbFormaEmissaoBPe: TComboBox;
     cbFormaEmissaoMDFe: TComboBox;
     cbFormaEmissaoGNRe: TComboBox;
+    cbTagInfSuplCTe: TComboBox;
+    cbVersaoWSBPe: TComboBox;
+    cbVersaoWSGNRE: TComboBox;
+    cbxValidarNumeroSessaoResposta: TCheckBox;
+    cbxImprimirLogoLateralNFCe: TCheckBox;
+    cbxSepararPorNome: TCheckBox;
     ckCamposFatObrigatorio: TCheckBox;
+    edtBOLDigitoAgConta: TEdit;
+    edtArquivoWebServicesBPe: TEdit;
+    edtEmailAssuntoSAT: TEdit;
+    edtNumCopiaNFCe: TSpinEdit;
+    edtPathDownload: TEdit;
+    edtPathSchemasDFe: TEdit;
+    grbPathSchemas: TGroupBox;
+    GroupBox12: TGroupBox;
     GroupBox9: TGroupBox;
     Label227: TLabel;
     Label229: TLabel;
@@ -499,6 +519,17 @@ type
     Label225: TLabel;
     Label226: TLabel;
     Label228: TLabel;
+    Label230: TLabel;
+    Label231: TLabel;
+    Label232: TLabel;
+    Label233: TLabel;
+    Label234: TLabel;
+    Label235: TLabel;
+    Label236: TLabel;
+    Label237: TLabel;
+    Label238: TLabel;
+    Label239: TLabel;
+    Label240: TLabel;
     Label26: TLabel;
     lblIDCSRT: TLabel;
     lblCSRT: TLabel;
@@ -541,6 +572,7 @@ type
     mmEmailMsgCTe: TMemo;
     mmEmailMsgMDFe: TMemo;
     mmEmailMsgNFe: TMemo;
+    mmEmailMsgSAT: TMemo;
     pnLogoBanco: TPanel;
     PanelMenu: TPanel;
     PanelScroll: TPanel;
@@ -548,15 +580,19 @@ type
     rgImprimeTributos: TRadioGroup;
     rgInfAdicProduto: TRadioGroup;
     rdgImprimeChave1LinhaSAT: TRadioGroup;
+    rgLayoutCanhoto: TRadioGroup;
     rgTipoFonte: TRadioGroup;
     sbArquivoCert: TSpeedButton;
+    sbSchemaDFe: TSpeedButton;
     sbArquivoWebServicesReinf: TSpeedButton;
     sbArquivoWebServicesGNRe: TSpeedButton;
     sbArquivoWebServiceseSocial: TSpeedButton;
+    sbArquivoWebServicesBPe: TSpeedButton;
     sbLogoMarca1: TSpeedButton;
     sbLogoMarcaNFCeSAT: TSpeedButton;
     sbNumeroSerieCert: TSpeedButton;
     sbPathArqTXT: TSpeedButton;
+    sbPathDownload: TSpeedButton;
     ScrollBox: TScrollBox;
     seGavetaTempoOFF: TSpinEdit;
     seGavetaTempoON: TSpinEdit;
@@ -610,6 +646,7 @@ type
     gbxWSeSocial: TTabSheet;
     gbxWSReinf: TTabSheet;
     cbTagRejeicao938: TComboBox;
+    tsSATemail: TTabSheet;
     tsRespTecnico: TTabSheet;
     tsIntegrador: TTabSheet;
     tsRelatorio: TTabSheet;
@@ -1185,6 +1222,8 @@ type
     procedure ACBrEAD1GetChavePrivada(var Chave: ansistring);
     procedure ACBrEAD1GetChavePublica(var Chave: ansistring);
     procedure ACBrGIF1Click(Sender: TObject);
+    procedure ACBrMail1MailException(const AMail: TACBrMail;
+      const E: Exception; var ThrowIt: Boolean);
     procedure ACBrMail1MailProcess(const AMail: TACBrMail;
       const aStatus: TMailStatus);
     procedure ACBrNFe1GerarLog(const ALogLine: string; var Tratado: boolean);
@@ -1265,6 +1304,7 @@ type
     procedure btnRFDGeralClick(Sender: TObject);
     procedure btnSATClick(Sender: TObject);
     procedure btnSATDadosClick(Sender: TObject);
+    procedure btnSATEMAILClick(Sender: TObject);
     procedure btnSATEmitenteClick(Sender: TObject);
     procedure btnSATPrintClick(Sender: TObject);
     procedure btnSATRedeClick(Sender: TObject);
@@ -1356,6 +1396,7 @@ type
     procedure sbArquivoWebServicesGNReClick(Sender: TObject);
     procedure sbArquivoWebServicesMDFeClick(Sender: TObject);
     procedure sbArquivoWebServicesNFeClick(Sender: TObject);
+    procedure sbArquivoWebServicesBPeClick(Sender: TObject);
     procedure sbArquivoWebServicesReinfClick(Sender: TObject);
     procedure sbBALSerialClick(Sender: TObject);
     procedure sbLogoMarca1Click(Sender: TObject);
@@ -1364,6 +1405,7 @@ type
     procedure sbBALLogClick(Sender: TObject);
     procedure sbLogoMarcaClick(Sender: TObject);
     procedure sbPathArqTXTClick(Sender: TObject);
+    procedure sbPathDownloadClick(Sender: TObject);
     procedure sbPathDPECClick(Sender: TObject);
     procedure sbPathEventoClick(Sender: TObject);
     procedure sbPathInuClick(Sender: TObject);
@@ -1371,6 +1413,7 @@ type
     procedure sbPathPDFClick(Sender: TObject);
     procedure sbPathSalvarClick(Sender: TObject);
     procedure sbPosPrinterLogClick(Sender: TObject);
+    procedure sbSchemaDFeClick(Sender: TObject);
     procedure sbSerialClick(Sender: TObject);
     procedure sbSobreClick(Sender: TObject);
     procedure ScrollBoxMouseWheelDown(Sender: TObject; Shift: TShiftState;
@@ -1492,6 +1535,7 @@ type
     procedure PathClick(Sender: TObject);
     procedure ACT_ButtonMouseEnter(Sender: TObject);
     procedure ACT_ButtonMouseLeave(Sender: TObject);
+    function ValidaArquivo(APath:String): String;
   private
     ACBrMonitorINI: string;
     Inicio, fsMonitorarPasta: boolean;
@@ -1536,6 +1580,7 @@ type
     FDoPosPrinter: TACBrObjetoPosPrinter;
     FDoSAT: TACBrObjetoSAT;
     FDoECF: TACBrObjetoECF;
+    FDoBPe: TACBrObjetoBPe;
 
     function IsVisible : Boolean; virtual;
 
@@ -1595,6 +1640,7 @@ type
     procedure SalvarIni;
     procedure ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);
     procedure ConfiguraDACTe(GerarPDF: Boolean; MostrarPreview : String);
+    procedure ConfiguraDABPe(GerarPDF: Boolean; MostrarPreview : String);
     procedure VerificaDiretorios;
     procedure LimparResp;
     procedure ExibeResp(Documento: ansistring);
@@ -1635,7 +1681,7 @@ uses
   ConfiguraSerial, SelecionarCertificado, ACBrSATExtratoClass,
   ACBrNFeConfiguracoes, ACBrNFeDANFEClass, ACBrCTeConfiguracoes,
   ACBrMDFeConfiguracoes, ACBrGNREConfiguracoes, ACBreSocialConfiguracoes,
-  ACBrReinfConfiguracoes, ACBrDFeDANFeReport;
+  ACBrReinfConfiguracoes, ACBrDFeDANFeReport, ACBrBPeConfiguracoes;
 
 {$R *.lfm}
 
@@ -1662,6 +1708,13 @@ var
   iCEP: TACBrCEPWebService;
   iESO: TVersaoeSocial;
   iREI: TVersaoReinf;
+  iGNR: TVersaoGNRE;
+  iBPE: TVersaoBPe;
+  iMDF: TVersaoMDFe;
+  iCTE: TVersaoCTe;
+  iNFe: TpcnVersaoDF;
+  IPosReciboLayout: TPosReciboLayout;
+  SPosReciboLayout: String;
   IBanco: TACBrTipoCobranca;
   iSAT: TACBrSATModelo;
   iTipo: TpcnTipoAmbiente;
@@ -1680,8 +1733,9 @@ var
   X: TSSLXmlSignLib;
   Y: TSSLType;
   IFormaEmissaoNFe, IFormaEmissaoCTe, IFormaEmissaoGNRe,
-    IFormaEmissaoMDFe: TpcnTipoEmissao;
+  IFormaEmissaoMDFe, IFormaEmissaoBPe: TpcnTipoEmissao;
   IForcarTagICMSSubs: TForcarGeracaoTag;
+  IGerarTagInfComplCTe: TForcarGeracaoTag;
   iETQModelo : TACBrETQModelo ;
   iETQDPI: TACBrETQDPI;
   iETQUnidade: TACBrETQUnidade;
@@ -1689,6 +1743,7 @@ var
   iETQOrigem: TACBrETQOrigem;
   M: Integer;
   K: Integer;
+  vFormatSettings: TFormatSettings;
 begin
   {$IFDEF MSWINDOWS}
   WindowState := wsMinimized;
@@ -1762,7 +1817,9 @@ begin
 
   FDoECF := TACBrObjetoECF.Create(MonitorConfig, ACBrECF1, ACBrBlocoX1);
 
-
+  FDoBPe := TACBrObjetoBPe.Create(MonitorConfig, ACBrBPe1);
+  FDoBPe.OnAntesDeImprimir := @AntesDeImprimir;
+  FDoBPe.OnDepoisDeImprimir := @DepoisDeImprimir;
 
 // Seta as definições iniciais para navegação
   SetColorButtons(btnMonitor);
@@ -1811,6 +1868,16 @@ begin
   FalseBoolStrs[1] := 'F';
   FalseBoolStrs[2] := 'Falso';
 
+  { Criando Lista Layout Canhoto }
+  rgLayoutCanhoto.Items.Clear;
+  IPosReciboLayout := Low(TPosReciboLayout);
+  while IPosReciboLayout <= High(TPosReciboLayout) do
+  begin
+    SPosReciboLayout:= GetEnumName(TypeInfo(TPosReciboLayout), integer(IPosReciboLayout));
+    rgLayoutCanhoto.Items.Add(copy(SPosReciboLayout,4, Length(SPosReciboLayout))); // Removendo "prl" do modelo.
+    Inc(IPosReciboLayout);
+  end;
+
   { Criando lista de Bancos disponiveis }
   cbxBOLBanco.Items.Clear;
   IBanco := Low(TACBrTipoCobranca);
@@ -1848,6 +1915,57 @@ begin
   fsSLPrecos := TStringList.Create;
   fsSLPrecos.NameValueSeparator := '|';
   fsDTPrecos := 0;
+
+  vFormatSettings.DecimalSeparator  := '.';
+  { Criando lista versões GNRe disponiveis }
+  cbVersaoWSGNRE.Items.Clear;
+  iGNR := Low(TVersaoGNRE);
+  while iGNR <= High(TVersaoGNRE) do
+  begin
+    cbVersaoWSGNRE.Items.Add( FormatFloat('0.00', StrToFloat(copy( GetEnumName(TypeInfo(TVersaoGNRE), integer(iGNR)), 3, 1))
+                              , vFormatSettings ) );
+    Inc(iGNR);
+  end;
+
+  { Criando lista versões BPe disponiveis }
+  cbVersaoWSBPe.Items.Clear;
+  iBPE := Low(TVersaoBPe);
+  while iBPE <= High(TVersaoBPe) do
+  begin
+    cbVersaoWSBPe.Items.Add( FormatFloat('0.00', StrToFloat(copy( GetEnumName(TypeInfo(TVersaoBPe), integer(iBPE)), 3, 1))
+                              , vFormatSettings ) );
+    Inc(iBPE);
+  end;
+
+  { Criando lista versões MDFe disponiveis }
+  cbVersaoWSMDFe.Items.Clear;
+  iMDF := Low(TVersaoMDFe);
+  while iMDF <= High(TVersaoMDFe) do
+  begin
+    cbVersaoWSMDFe.Items.Add( FormatFloat('0.00', StrToFloat(copy( GetEnumName(TypeInfo(TVersaoMDFe), integer(iMDF)), 3, 1))
+                              , vFormatSettings ) );
+    Inc(iMDF);
+  end;
+
+  { Criando lista versões CTe disponiveis }
+  cbVersaoWSCTe.Items.Clear;
+  iCTE := Low(TVersaoCTe);
+  while iCTE <= High(TVersaoCTe) do
+  begin
+    cbVersaoWSCTe.Items.Add( FormatFloat('0.00', StrToFloat(copy( GetEnumName(TypeInfo(TVersaoCTe), integer(iCTE)), 3, 1))
+                              , vFormatSettings ) );
+    Inc(iCTE);
+  end;
+
+  { Criando lista versões NFe disponiveis }
+  cbVersaoWS.Items.Clear;
+  iNFe := Low(TpcnVersaoDF);
+  while iNFe <= High(TpcnVersaoDF) do
+  begin
+    cbVersaoWS.Items.Add( FormatFloat('0.00', (StrToFloat(copy( GetEnumName(TypeInfo(TpcnVersaoDF ), integer(iNFe)), 3, 3))) /100
+                              , vFormatSettings ) );
+    Inc(iNFe);
+  end;
 
   { Criando lista versões e-social disponiveis }
   cbVersaoWSeSocial.Items.Clear;
@@ -2057,10 +2175,20 @@ begin
     cbFormaEmissaoMDFe.Items.Add(GetEnumName(TypeInfo(TpcnTipoEmissao), integer(IFormaEmissaoMDFe)));
   cbFormaEmissaoMDFe.ItemIndex := 0;
 
+  cbFormaEmissaoBPe.Items.Clear;
+  for IFormaEmissaoBPe := Low(TpcnTipoEmissao) to High(TpcnTipoEmissao) do
+    cbFormaEmissaoBPe.Items.Add(GetEnumName(TypeInfo(TpcnTipoEmissao), integer(IFormaEmissaoBPe)));
+  cbFormaEmissaoBPe.ItemIndex := 0;
+
   cbTagRejeicao938.Items.Clear;
   for IForcarTagICMSSubs := Low(TForcarGeracaoTag) to High(TForcarGeracaoTag) do
     cbTagRejeicao938.Items.Add(GetEnumName(TypeInfo(TForcarGeracaoTag), integer(IForcarTagICMSSubs)));
   cbTagRejeicao938.ItemIndex := 0;
+
+  cbTagInfSuplCTe.Items.Clear;
+  for IGerarTagInfComplCTe := Low(TForcarGeracaoTag) to High(TForcarGeracaoTag) do
+    cbTagInfSuplCTe.Items.Add(GetEnumName(TypeInfo(TForcarGeracaoTag), integer(IGerarTagInfComplCTe)));
+  cbTagInfSuplCTe.ItemIndex := 0;
 
   FileVerInfo:=TFileVersionInfo.Create(nil);
   try
@@ -2176,6 +2304,17 @@ begin
   OpenURL('http://www.projetoacbr.com.br/forum/index.php?/page/SAC/sobre_o_sac.html');
 end;
 
+procedure TFrmACBrMonitor.ACBrMail1MailException(const AMail: TACBrMail;
+  const E: Exception; var ThrowIt: Boolean);
+begin
+  if ACBrMail1.UseThread then
+  begin
+    ThrowIt := False;
+    Resposta('', 'ERRO: ' + 'Erro ao Enviar email: ('+ E.Message + ')');
+  end;
+
+end;
+
 procedure TFrmACBrMonitor.ACBrMail1MailProcess(const AMail: TACBrMail;
   const aStatus: TMailStatus);
 begin
@@ -2207,6 +2346,7 @@ begin
         AddLinesLog(ACBrMail1.GetLastSmtpError)
       else
         AddLinesLog('Email: Enviado com sucesso');
+
     end;
   end;
 end;
@@ -3363,6 +3503,12 @@ begin
   pgSAT.ActivePage := tsDadosSAT;
 end;
 
+procedure TFrmACBrMonitor.btnSATEMAILClick(Sender: TObject);
+begin
+  SetColorSubButtons(Sender);
+  pgSAT.ActivePage := tsSATemail;
+end;
+
 procedure TFrmACBrMonitor.btnSATEmitenteClick(Sender: TObject);
 begin
   SetColorSubButtons(Sender);
@@ -3560,6 +3706,7 @@ begin
       ACBrBlocoX1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
       ACBreSocial1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
+      ACBrBPe1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -3657,6 +3804,7 @@ begin
   ACBrNFe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
   ACBrCTe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
   ACBrMDFe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
+  ACBrBPe1.Configuracoes.Arquivos.SepararPorCNPJ := cbxSepararPorCNPJ.Checked;
 end;
 
 procedure TFrmACBrMonitor.cbxTimeZoneModeChange(Sender: TObject);
@@ -3672,6 +3820,7 @@ begin
   ACBrGNRE1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
   ACBreSocial1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
   ACBrReinf1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
+  ACBrBPe1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
 end;
 
 procedure TFrmACBrMonitor.cbxUTF8Change(Sender: TObject);
@@ -3846,6 +3995,7 @@ begin
   FDoETQ.Free;
   FDoGNRe.Free;
   FDoPosPrinter.Free;
+  FDoBPe.Free;
 
   FMonitorConfig.Free;
 end;
@@ -4137,7 +4287,7 @@ end;
 procedure TFrmACBrMonitor.LerIni(AtualizaMonitoramento: Boolean);
 var
   ECFAtivado, CHQAtivado, GAVAtivado, DISAtivado, BALAtivado,
-  ETQAtivado, ESCPOSAtivado: boolean;
+  ETQAtivado, ESCPOSAtivado, ESCPOSAtivadoBPe: boolean;
   wSenha, POSPrDeviceParams, ECFDeviceParams, CHQDeviceParams: string;
   //PathApplication: string;
   wDirArquivo, wNomeArquivo, wPathArquivo: string;
@@ -4156,6 +4306,11 @@ begin
      ESCPOSAtivado := ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativo
   else
      ESCPOSAtivado := False;
+
+  if ( Assigned(ACBrBPeDABPeESCPOS1.PosPrinter) ) then
+     ESCPOSAtivadoBPe := ACBrBPeDABPeESCPOS1.PosPrinter.Device.Ativo
+  else
+     ESCPOSAtivadoBPe := False;
 
   //Atualiza Campos Classe ACbrMonitorConfig
   try
@@ -4387,6 +4542,7 @@ begin
       edtBOLDigitoConta.Text           := DigitoConta;
       edtBOLAgencia.Text               := Agencia;
       edtBOLDigitoAgencia.Text         := DigitoAgencia;
+      edtBOLDigitoAgConta.Text         := DigitoAgenciaConta;
       edtCodCliente.Text               := CodCedente;
       edtBOLLocalPagamento.Text        := LocalPagamento;
     end;
@@ -4444,6 +4600,7 @@ begin
     cbEmailConfirmation.Checked        := Confirmacao;
     cbEmailThread.Checked              := SegundoPlano;
     cbEmailCodificacao.Text            := Codificacao;
+    cbEmailHTML.Checked                := HTML;
   end;
 
   {Parametro Sedex}
@@ -4463,6 +4620,7 @@ begin
   with FMonitorConfig.DFE do
   begin
     ACBrNFeDANFeESCPOS1.PosPrinter.Device.Desativar;
+    ACBrBPeDABPeESCPOS1.PosPrinter.Device.Desativar;
 
     cbModoXML.Checked                  := ModoXML;
     cbRetirarAcentos.Checked           := RetirarAcentos;
@@ -4470,12 +4628,13 @@ begin
     cbLogComp.Checked                  := Gravar_Log_Comp;
     sedLogLinhasComp.Value             := Linhas_Log_Comp;
     ArqLogCompTXT                      := AcertaPath(edLogComp.Text);
-    edtArquivoWebServicesNFe.Text      := ArquivoWebServices;
-    edtArquivoWebServicesCTe.Text      := ArquivoWebServicesCTe;
-    edtArquivoWebServicesMDFe.Text     := ArquivoWebServicesMDFe;
-    edtArquivoWebServicesGNRe.Text     := ArquivoWebServicesGNRe;
-    edtArquivoWebServiceseSocial.Text  := ArquivoWebServiceseSocial;
-    edtArquivoWebServicesReinf.Text    := ArquivoWebServicesReinf;
+    edtArquivoWebServicesNFe.Text      := ValidaArquivo(ArquivoWebServices);
+    edtArquivoWebServicesCTe.Text      := ValidaArquivo(ArquivoWebServicesCTe);
+    edtArquivoWebServicesMDFe.Text     := ValidaArquivo(ArquivoWebServicesMDFe);
+    edtArquivoWebServicesBPe.Text      := ValidaArquivo(ArquivoWebServicesBPe);
+    edtArquivoWebServicesGNRe.Text     := ValidaArquivo(ArquivoWebServicesGNRe);
+    edtArquivoWebServiceseSocial.Text  := ValidaArquivo(ArquivoWebServiceseSocial);
+    edtArquivoWebServicesReinf.Text    := ValidaArquivo(ArquivoWebServicesReinf);
     cbValidarDigest.Checked            := ValidarDigest;
     edtTimeoutWebServices.Value        := TimeoutWebService;
     cbModoEmissao.Checked              := IgnorarComandoModoEmissao;
@@ -4511,6 +4670,7 @@ begin
       cbFormaEmissaoNFe.ItemIndex      := FormaEmissaoNFe;
       cbFormaEmissaoCTe.ItemIndex      := FormaEmissaoCTe;
       cbFormaEmissaoMDFe.ItemIndex     := FormaEmissaoMDFe;
+      cbFormaEmissaoBPe.ItemIndex      := FormaEmissaoBPe;
       cbFormaEmissaoGNRe.ItemIndex     := FormaEmissaoGNRe;
       cbxAjustarAut.Checked            := AjustarAut;
       edtAguardar.Text                 := Aguardar;
@@ -4521,11 +4681,14 @@ begin
       cbVersaoWS.ItemIndex             := cbVersaoWS.Items.IndexOf(Versao);
       cbVersaoWSCTe.ItemIndex          := cbVersaoWSCTe.Items.IndexOf(VersaoCTe);
       cbVersaoWSMDFe.ItemIndex         := cbVersaoWSMDFe.Items.IndexOf(VersaoMDFe);
+      cbVersaoWSBPe.ItemIndex          := cbVersaoWSBPe.Items.IndexOf(VersaoBPe);
+      cbVersaoWSGNRE.ItemIndex         := cbVersaoWSGNRE.Items.IndexOf(VersaoGNRe);
       cbVersaoWSeSocial.ItemIndex      := cbVersaoWSeSocial.Items.IndexOf(VersaoeSocial);
       cbVersaoWsReinf.ItemIndex        := cbVersaoWSReinf.Items.IndexOf(VersaoReinf);
       cbVersaoWSQRCode.ItemIndex       := cbVersaoWSQRCode.Items.IndexOf(VersaoQRCode);
       ckCamposFatObrigatorio.Checked   := CamposFatObrig;
       cbTagRejeicao938.ItemIndex       := TagRejeicao938;
+      cbTagInfSuplCTe.ItemIndex        := TagQRCodeCTe;
 
     end;
 
@@ -4594,6 +4757,7 @@ begin
       cbxImprimirNomeFantasiaNFCe.Checked := ImprimeNomeFantasia;
       cbxExibeTotalTributosItem.Checked   := ExibeTotalTributosItem;
       rgImprimeTributos.ItemIndex         := ImprimeTributos;
+      cbxImprimirLogoLateralNFCe.Checked  := LogoLateral;
     end;
 
     with Impressao.NFCe.Emissao.DANFCe do
@@ -4629,6 +4793,7 @@ begin
       cbxImpDescPorc.Checked              := ImpDescPorc;
       cbxMostrarPreview.Checked           := MostrarPreview;
       edtNumCopia.Value                   := Copias;
+      edtNumCopiaNFCe.Value               := CopiasNFCe;
       speLargCodProd.Value                := LarguraCodigoProduto;
       speEspBorda.Value                   := EspessuraBorda;
       speFonteRazao.Value                 := FonteRazao;
@@ -4653,6 +4818,7 @@ begin
       cbxExpandirLogo.Checked             := ExpandirLogo;
       rgTipoFonte.ItemIndex               := Fonte;
       rgLocalCanhoto.ItemIndex            := LocalCanhoto;
+      rgLayoutCanhoto.ItemIndex           := LayoutCanhoto;
       cbxQuebrarLinhasDetalhesItens.Checked:=QuebrarLinhasDetalheItens;
       cbxImpDetEspNFe.Checked             := ImprimirDetalhamentoEspecifico;
       cbxImpDocsReferenciados.Checked     := ImprimirDadosDocReferenciados;
@@ -4678,11 +4844,14 @@ begin
       cbxAtualizarXMLCancelado.Checked := AtualizarXMLCancelado;
       cbxNormatizarMunicipios.Checked  := NormatizarMunicipios;
       cbxUsarSeparadorPathPDF.Checked  := UsarSeparadorPathPDF;
+      cbxSepararPorNome.Checked        := SepararPorNome;
       edtPathNFe.Text                  := IfThen( NaoEstaVazio(PathNFe), PathNFe, AcertaPath('Arqs'));
       edtPathInu.Text                  := IfThen( NaoEstaVazio(PathInu), PathInu, AcertaPath('Arqs'));
       edtPathDPEC.Text                 := IfThen( NaoEstaVazio(PathDPEC), PathDPEC, AcertaPath('Arqs'));
       edtPathEvento.Text               := IfThen( NaoEstaVazio(PathEvento), PathEvento, AcertaPath('Arqs'));
       edtPathArqTXT.Text               := IfThen( NaoEstaVazio(PathArqTXT), PathArqTXT, AcertaPath('TXT'));
+      edtPathDownload.Text             := IfThen( NaoEstaVazio(PathDownload), PathDownload, AcertaPath('Arqs'));
+      edtPathSchemasDFe.Text           := IfThen( NaoEstaVazio(PathSchemasDFe), PathSchemasDFe, AcertaPath('Schemas'));
 
     end;
 
@@ -4695,6 +4864,7 @@ begin
     SetComumConfig(ACBrBlocoX1.Configuracoes);
     SetComumConfig(ACBreSocial1.Configuracoes);
     SetComumConfig(ACBrReinf1.Configuracoes);
+    SetComumConfig(ACBrBPe1.Configuracoes);
 
     AtualizaSSLLibsCombo;
 
@@ -4780,9 +4950,28 @@ begin
     ACBrGNRE1.GNREGuia.PathPDF         := edtPathPDF.Text;
     ACBrGNRE1.GNREGuia.MostrarStatus   := cbxMostraStatus.Checked;
 
+    ACBrBPe1.DABPe.TipoDABPe         := StrToTpImp(OK,IntToStr(rgTipoDanfe.ItemIndex+1));
+    ACBrBPe1.DABPe.Logo              := edtLogoMarca.Text;
+    ACBrBPe1.DABPe.Sistema           := edSH_RazaoSocial.Text;
+    ACBrBPe1.DABPe.Site              := edtSiteEmpresa.Text;
+    ACBrBPe1.DABPe.Email             := edtEmailEmpresa.Text;
+    ACBrBPe1.DABPe.Fax               := edtFaxEmpresa.Text;
+    ACBrBPe1.DABPe.MostraPreview     := cbxMostrarPreview.Checked;
+    ACBrBPe1.DABPe.Impressora        := cbxImpressora.Text;
+    ACBrBPe1.DABPe.NumCopias         := edtNumCopia.Value;
+    ACBrBPe1.DABPe.MargemInferior    := fspeMargemInf.Value;
+    ACBrBPe1.DABPe.MargemSuperior    := fspeMargemSup.Value;
+    ACBrBPe1.DABPe.MargemDireita     := fspeMargemDir.Value;
+    ACBrBPe1.DABPe.MargemEsquerda    := fspeMargemEsq.Value;
+    ACBrBPe1.DABPe.PathPDF           := edtPathPDF.Text;
+    ACBrBPe1.DABPe.MostraStatus      := cbxMostraStatus.Checked;
+    ACBrBPe1.DABPe.ExpandeLogoMarca  := cbxExpandirLogo.Checked;
+    ACBrBPe1.DABPe.UsaSeparadorPathPDF := cbxUsarSeparadorPathPDF.Checked;
+
     VerificaDiretorios;
 
     ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativo := ESCPOSAtivado;
+    ACBrBPeDABPeESCPOS1.PosPrinter.Device.Ativo := ESCPOSAtivadoBPe;
 
   end;
 
@@ -4807,6 +4996,7 @@ begin
     cbxSATSalvarEnvio.Checked          := SalvarEnvio;
     cbxSATSepararPorCNPJ.Checked       := SepararPorCNPJ;
     cbxSATSepararPorMES.Checked        := SepararPorMES;
+    cbxValidarNumeroSessaoResposta.Checked:= ValidarNumeroSessaoResposta;
 
     with SATImpressao.SATExtrato do
     begin
@@ -4885,6 +5075,12 @@ begin
     begin
       edtSwHCNPJ.Text       := CNPJ;
       edtSwHAssinatura.Text := Assinatura;
+    end;
+
+    with SATEmail do
+    begin
+      edtEmailAssuntoSAT.Text            := AssuntoSAT;
+      mmEmailMsgSAT.Lines.Text           := StringToBinaryString(MensagemSAT);
     end;
 
     AjustaACBrSAT;
@@ -5105,6 +5301,7 @@ begin
     UseThread := cbEmailThread.Checked;
     DefaultCharset := TMailCharset(GetEnumValue(TypeInfo(TMailCharset),
       cbEmailCodificacao.Text));
+    IsHTML := cbEmailHTML.Checked;
   end;
 
   with ACBrIBGE1 do
@@ -5164,6 +5361,7 @@ begin
     Cedente.AgenciaDigito := edtBOLDigitoAgencia.Text;
     Cedente.Conta := edtBOLConta.Text;
     Cedente.ContaDigito := edtBOLDigitoConta.Text;
+    Cedente.DigitoVerificadorAgenciaConta := edtBOLDigitoAgConta.Text;
     Cedente.Modalidade := edtModalidade.Text;
 
     case cbxBOLEmissao.ItemIndex of
@@ -5564,6 +5762,7 @@ begin
       Confirmacao             := cbEmailConfirmation.Checked;
       SegundoPlano            := cbEmailThread.Checked;
       Codificacao             := cbEmailCodificacao.Text;
+      HTML                    := cbEmailHTML.Checked;
     end;
 
     { Parametros Sedex }
@@ -5591,6 +5790,7 @@ begin
       ArquivoWebServices        := edtArquivoWebServicesNFe.Text;
       ArquivoWebServicesCTe     := edtArquivoWebServicesCTe.Text;
       ArquivoWebServicesMDFe    := edtArquivoWebServicesMDFe.Text;
+      ArquivoWebServicesBPe     := edtArquivoWebServicesBPe.Text;
       ArquivoWebServicesGNRe    := edtArquivoWebServicesGNRe.Text;
       ArquivoWebServiceseSocial := edtArquivoWebServiceseSocial.Text;
       ArquivoWebServicesReinf   := edtArquivoWebServicesReinf.Text;
@@ -5628,6 +5828,8 @@ begin
         Versao                   := cbVersaoWS.Text;
         VersaoCTe                := cbVersaoWSCTe.Text;
         VersaoMDFe               := cbVersaoWSMDFe.Text;
+        VersaoBPe                := cbVersaoWSBPe.Text;
+        VersaoGNRe               := cbVersaoWSGNRE.Text;
         VersaoeSocial            := cbVersaoWSeSocial.Text;
         VersaoReinf              := cbVersaoWSReinf.Text;
         VersaoQRCode             := cbVersaoWSQRCode.Text;
@@ -5640,9 +5842,11 @@ begin
         FormaEmissaoNFe          := cbFormaEmissaoNFe.ItemIndex;
         FormaEmissaoCTe          := cbFormaEmissaoCTe.ItemIndex;
         FormaEmissaoMDFe         := cbFormaEmissaoMDFe.ItemIndex;
+        FormaEmissaoBPe          := cbFormaEmissaoBPe.ItemIndex;
         FormaEmissaoGNRe         := cbFormaEmissaoGNRe.ItemIndex;
         CamposFatObrig           := ckCamposFatObrigatorio.Checked;
         TagRejeicao938           := cbTagRejeicao938.ItemIndex;
+        TagQRCodeCTe             := cbTagInfSuplCTe.ItemIndex;
       end;
 
       with ESocial do
@@ -5707,6 +5911,7 @@ begin
         ImprimeNomeFantasia       := cbxImprimirNomeFantasiaNFCe.Checked;
         ExibeTotalTributosItem    := cbxExibeTotalTributosItem.Checked;
         ImprimeTributos           := rgImprimeTributos.ItemIndex;
+        LogoLateral               := cbxImprimirLogoLateralNFCe.Checked;
       end;
 
       with Impressao.NFCe.Emissao.DANFCe do
@@ -5742,6 +5947,7 @@ begin
         ImpDescPorc                := cbxImpDescPorc.Checked;
         MostrarPreview             := cbxMostrarPreview.Checked;
         Copias                     := edtNumCopia.Value;
+        CopiasNFCe                 := edtNumCopiaNFCe.Value;
         LarguraCodigoProduto       := speLargCodProd.Value;
         EspessuraBorda             := speEspBorda.Value;
         FonteRazao                 := speFonteRazao.Value;
@@ -5766,6 +5972,7 @@ begin
         ExpandirLogo               := cbxExpandirLogo.Checked;
         Fonte                      := rgTipoFonte.ItemIndex;
         LocalCanhoto               := rgLocalCanhoto.ItemIndex;
+        LayoutCanhoto              := rgLayoutCanhoto.ItemIndex;
         QuebrarLinhasDetalheItens  := cbxQuebrarLinhasDetalhesItens.Checked ;
         ImprimirDetalhamentoEspecifico := cbxImpDetEspNFe.Checked;
         ImprimirDadosDocReferenciados  := cbxImpDocsReferenciados.Checked;
@@ -5791,11 +5998,15 @@ begin
         AtualizarXMLCancelado          := cbxAtualizarXMLCancelado.Checked;
         NormatizarMunicipios           := cbxNormatizarMunicipios.Checked;
         UsarSeparadorPathPDF           := cbxUsarSeparadorPathPDF.Checked;
+        SepararPorNome                 := cbxSepararPorNome.Checked;
         PathNFe                        := edtPathNFe.Text;
         PathInu                        := edtPathInu.Text;
         PathDPEC                       := edtPathDPEC.Text;
         PathEvento                     := edtPathEvento.Text;
         PathArqTXT                     := edtPathArqTXT.Text;
+        PathDownload                   := edtPathDownload.Text;
+        PathSchemasDFe                 := edtPathSchemasDFe.Text;
+
       end;
     end;
 
@@ -5818,6 +6029,7 @@ begin
       SalvarEnvio                      := cbxSATSalvarEnvio.Checked;
       SepararPorCNPJ                   := cbxSATSepararPorCNPJ.Checked;
       SepararPorMES                    := cbxSATSepararPorMES.Checked;
+      ValidarNumeroSessaoResposta      := cbxValidarNumeroSessaoResposta.Checked;
 
       with SATImpressao.SATExtrato do
       begin
@@ -5882,6 +6094,13 @@ begin
         CNPJ                           := edtSwHCNPJ.Text;
         Assinatura                     := edtSwHAssinatura.Text;
       end;
+
+      with SATEmail do
+      begin
+         AssuntoSAT                    := edtEmailAssuntoSAT.Text;
+         MensagemSAT                   := BinaryStringToString( mmEmailMsgSAT.Lines.Text );
+      end;
+
     end;
 
     {Parametro Integrador}
@@ -6010,6 +6229,7 @@ begin
        DigitoConta              := edtBOLDigitoConta.Text;
        Agencia                  := edtBOLAgencia.Text;
        DigitoAgencia            := edtBOLDigitoAgencia.Text;
+       DigitoAgenciaConta       := edtBOLDigitoAgConta.Text;
        CodCedente               := edtCodCliente.Text;
        LocalPagamento           := edtBOLLocalPagamento.Text;
        RespEmis                 := cbxBOLEmissao.ItemIndex;
@@ -6215,6 +6435,7 @@ begin
        (UpperCase(Copy(Objeto, 1, 4)) = 'GNRE') or
        (UpperCase(Copy(Objeto, 1, 7)) = 'ESOCIAL') or
        (UpperCase(Copy(Objeto, 1, 5)) = 'REINF') or
+       (UpperCase(Copy(Objeto, 1, 3)) = 'BPE') or
        (UpperCase(Copy(Objeto, 1, 3)) = 'CTE')then
     begin
       Linha := Trim(fsProcessar.Text);
@@ -6300,6 +6521,8 @@ begin
 //          DoACBrGNRe(fsCmd)
         else if fsCmd.Objeto = 'SAT' then
           FDoSAT.Executar(fsCmd)
+        else if fsCmd.Objeto = 'BPE' then
+          FDoBPe.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESCPOS' then
           FDoPosPrinter.Executar(fsCmd);
 //          DoPosPrinter(fsCmd);
@@ -6911,6 +7134,19 @@ begin
   end;
 end;
 
+procedure TFrmACBrMonitor.sbArquivoWebServicesBPeClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Selecione o arquivo';
+  OpenDialog1.DefaultExt := '*.ini';
+  OpenDialog1.Filter :=
+    'Arquivos INI (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ExtractFileDir(application.ExeName);
+  if OpenDialog1.Execute then
+  begin
+    edtArquivoWebServicesBPe.Text := OpenDialog1.FileName;
+  end;
+end;
+
 procedure TFrmACBrMonitor.sbArquivoWebServicesReinfClick(Sender: TObject);
 begin
   OpenDialog1.Title := 'Selecione o arquivo';
@@ -7043,6 +7279,11 @@ begin
   PathClick(edtPathArqTXT);
 end;
 
+procedure TFrmACBrMonitor.sbPathDownloadClick(Sender: TObject);
+begin
+  PathClick(edtPathDownload);
+end;
+
 procedure TFrmACBrMonitor.sbPathDPECClick(Sender: TObject);
 begin
   PathClick(edtPathDPEC);
@@ -7083,6 +7324,11 @@ begin
      AFileLog := edPosPrinterLog.Text;
 
   OpenURL(AFileLog);
+end;
+
+procedure TFrmACBrMonitor.sbSchemaDFeClick(Sender: TObject);
+begin
+  PathClick(edtPathSchemasDFe);
 end;
 
 procedure TFrmACBrMonitor.sbSobreClick(Sender: TObject);
@@ -8180,6 +8426,7 @@ begin
     Config.PaginaDeCodigo     := sePagCod.Value;
     Config.EhUTF8             := cbxUTF8.Checked;
     Config.infCFe_versaoDadosEnt := sfeVersaoEnt.Value;
+    ValidarNumeroSessaoResposta := cbxValidarNumeroSessaoResposta.Checked;
 
     ConfigArquivos.PastaCFeVenda := PathWithDelim(edSATPathArqs.Text)+'Vendas';
     ConfigArquivos.PastaCFeCancelamento := PathWithDelim(edSATPathArqs.Text)+'Cancelamentos';
@@ -8205,7 +8452,8 @@ end ;
 
 procedure TFrmACBrMonitor.PrepararImpressaoSAT(NomeImpressora : string; GerarPDF : boolean);
 begin
-  if cbUsarFortes.Checked then
+
+  if ( not(cbUsarEscPos.Checked) or (GerarPDF)) then
   begin
     ACBrSAT1.Extrato := ACBrSATExtratoFortes1;
 
@@ -8246,8 +8494,6 @@ begin
   end
   else
   begin
-    if GerarPDF then
-      raise Exception.Create('Função gerar PDF não implementada para modo de impressão ESCPOS.');
 
     ACBrSAT1.Extrato := ACBrSATExtratoESCPOS1;
 
@@ -8288,7 +8534,8 @@ begin
   end;
 
   Dialogs.SelectDirectory('Selecione o diretório',Dir,Dir);
-  TEdit(Sender).Text := Dir;
+  if NaoEstaVazio(Dir) then
+    TEdit(Sender).Text := Dir;
 end;
 
 {---------------------------------- ACBrBAL -----------------------------------}
@@ -8492,7 +8739,8 @@ begin
     else
     begin
       ACBrNFe1.DANFE := ACBrNFeDANFeRL1;
-      ACBrNFe1.DANFE.Impressora := cbxImpressora.Text;
+      if NaoEstaVazio(cbxImpressora.Text) then
+        ACBrNFe1.DANFE.Impressora := cbxImpressora.Text
     end;
 
     if (ACBrNFe1.NotasFiscais.Items[0].NFe.procNFe.cStat in [101, 151, 155]) then
@@ -8546,6 +8794,7 @@ begin
       ACBrNFeDANFeRL1.Fonte.TamanhoFonteRazaoSocial := speFonteRazao.Value;
       ACBrNFeDANFeRL1.AltLinhaComun := speAlturaCampos.Value;
       ACBrNFeDANFeRL1.PosCanhoto := TPosRecibo( rgLocalCanhoto.ItemIndex );
+      ACBrNFeDANFeRL1.PosCanhotoLayout := TPosReciboLayout( rgLayoutCanhoto.ItemIndex );
       ACBrNFeDANFeRL1.ImprimeValor := TImprimirUnidQtdeValor(cbxUnComTributavel.ItemIndex);
       ACBrNFeDANFeRL1.ImprimeDetalhamentoEspecifico := cbxImpDetEspNFe.Checked;
       ACBrNFeDANFeRL1.ExibeDadosDocReferenciados := cbxImpDocsReferenciados.Checked;
@@ -8569,6 +8818,7 @@ begin
         ACBrNFeDANFCeFortesA4_1.Logo                := edtLogoMarcaNFCeSAT.Text
       else
         ACBrNFeDANFCeFortesA4_1.Logo                := '';
+      ACBrNFeDANFCeFortesA4_1.NumCopias             := edtNumCopiaNFCe.Value;
 
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortes1 then
@@ -8586,7 +8836,8 @@ begin
       ACBrNFeDANFCeFortes1.ImprimeNomeFantasia   := cbxImprimirNomeFantasiaNFCe.Checked;
       ACBrNFeDANFCeFortes1.ExibeTotalTributosItem:= cbxExibeTotalTributosItem.Checked;
       ACBrNFeDANFCeFortes1.ImprimeTributos       := TpcnTributos(rgImprimeTributos.ItemIndex);
-
+      ACBrNFeDANFCeFortes1.NumCopias             := edtNumCopiaNFCe.Value;
+      ACBrNFEDANFCeFortes1.ImprimeLogoLateral    := cbxImprimirLogoLateralNFCe.Checked;
 
       ACBrNFeDANFCeFortes1.DescricaoPagamentos   := [];
       for tDescPagto:= Low(tDescPagto) to High(tDescPagto) do
@@ -8613,6 +8864,8 @@ begin
       ACBrNFeDANFeESCPOS1.ImprimeNomeFantasia   := cbxImprimirNomeFantasiaNFCe.Checked;
       ACBrNFeDANFeESCPOS1.ExibeTotalTributosItem:= cbxExibeTotalTributosItem.Checked;
       ACBrNFeDANFeESCPOS1.ImprimeTributos       := TpcnTributos(rgImprimeTributos.ItemIndex);
+      ACBrNFeDANFeESCPOS1.NumCopias             := edtNumCopiaNFCe.Value;
+      ACBrNFeDANFeESCPOS1.ImprimeLogoLateral    := cbxImprimirLogoLateralNFCe.Checked;
 
       ACBrNFeDANFeESCPOS1.DescricaoPagamentos   := [];
       for tDescPagto:= Low(tDescPagto) to High(tDescPagto) do
@@ -8652,20 +8905,9 @@ var
 begin
   if ACBrCTe1.Conhecimentos.Count > 0 then
   begin
-    if ACBrCTe1.Conhecimentos.Items[0].CTe.Ide.modelo = 67 then
-    begin
-//      if (rgModeloDANFeNFCE.ItemIndex = 0) or GerarPDF then
-//        ACBrCTe1.DANFE := ACBrNFeDANFCeFortes1
-//      else
-//        ACBrCTe1.DANFE := ACBrNFeDANFeESCPOS1;
-
-//      ACBrCTe1.DACTE.Impressora := cbxImpressoraNFCe.Text;
-    end
-    else
-    begin
-      ACBrCTe1.DACTE := ACBrCTeDACTeRL1;
+    ACBrCTe1.DACTE := ACBrCTeDACTeRL1;
+    if NaoEstaVazio(cbxImpressora.Text) then
       ACBrCTe1.DACTE.Impressora := cbxImpressora.Text;
-    end;
 
     if (ACBrCTe1.Conhecimentos.Items[0].CTe.procCTe.cStat in [101, 151, 155]) then
        ACBrCTe1.DACTE.Cancelada := True
@@ -8714,6 +8956,27 @@ begin
       ACBrCTe1.DACTE.MostraPreview := StrToBoolDef(MostrarPreview, False);
 end;
 
+procedure TFrmACBrMonitor.ConfiguraDABPe(GerarPDF: Boolean;
+  MostrarPreview: String);
+begin
+    GerarPDF:= False;
+    MostrarPreview:= '';
+    ACBrBPe1.DABPE := ACBrBPeDABPeESCPOS1;
+    ACBrBPeDABPeESCPOS1.PosPrinter.Modelo := TACBrPosPrinterModelo(cbxModelo.ItemIndex);
+    ACBrBPeDABPeESCPOS1.PosPrinter.Device.Porta := cbxPorta.Text;
+    ACBrBPeDABPeESCPOS1.ImprimeNomeFantasia := cbxImprimirNomeFantasiaNFCe.Checked;
+
+    if not ACBrPosPrinter1.ControlePorta then
+    begin
+       ACBrBPeDABPeESCPOS1.PosPrinter.Ativar;
+       if not ACBrBPeDABPeESCPOS1.PosPrinter.Device.Ativo then
+         ACBrBPeDABPeESCPOS1.PosPrinter.Device.Ativar;
+    end
+
+
+end;
+
+
 procedure TFrmACBrMonitor.VerificaDiretorios;
 var
   CanEnabled: Boolean;
@@ -8735,6 +8998,7 @@ begin
   sbPathInu.Enabled := CanEnabled;
   sbPathDPEC.Enabled := CanEnabled;
   sbPathEvento.Enabled := CanEnabled;
+  sbPathDownload.Enabled := CanEnabled;
 
   edtPathLogs.Enabled := ckSalvar.Checked;
   sbPathSalvar.Enabled := ckSalvar.Checked;
@@ -9066,7 +9330,9 @@ procedure TFrmACBrMonitor.SetComumConfig(Configuracoes: TConfiguracoes);
 var
   OK: boolean;
   PathMunIBGE: String;
+  PathSchemaDFe: String;
 begin
+  PathSchemaDFe := '';
   PathMunIBGE := PathWithDelim(ExtractFilePath(Application.ExeName)) + 'MunIBGE' + PathDelim ;
   with Configuracoes do
   begin
@@ -9155,26 +9421,40 @@ begin
     TConfiguracoesNFe(Configuracoes).Arquivos.PathNFe        := edtPathNFe.Text;
     TConfiguracoesNFe(Configuracoes).Arquivos.PathInu        := edtPathInu.Text;
     TConfiguracoesNFe(Configuracoes).Arquivos.PathEvento     := edtPathEvento.Text;
+    TConfiguracoesNFe(Configuracoes).Arquivos.DownloadDFe.PathDownload:= edtPathDownload.Text;
+    TConfiguracoesNFe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.SalvarApenasNFeProcessadas := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
     TConfiguracoesNFe(Configuracoes).Geral.CamposFatObrigatorios    := ckCamposFatObrigatorio.Checked;
     TConfiguracoesNFe(Configuracoes).Geral.ForcarGerarTagRejeicao938 := TForcarGeracaoTag(cbTagRejeicao938.ItemIndex);
 
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'NFe';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesNFe(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
+
   end
   else if Configuracoes is TConfiguracoesCTe then
   begin
     TConfiguracoesCTe(Configuracoes).Geral.FormaEmissao := StrToTpEmis(OK, IntToStr(cbFormaEmissaoCTe.ItemIndex + 1));
     TConfiguracoesCTe(Configuracoes).Geral.VersaoDF     := StrToVersaoCTe(ok, cbVersaoWSCTe.Text);
+    TConfiguracoesCTe(Configuracoes).Geral.GerarInfCTeSupl := TForcarGeracaoTag(cbTagInfSuplCTe.ItemIndex);
 
     TConfiguracoesCTe(Configuracoes).Arquivos.IniServicos    := edtArquivoWebServicesCTe.Text;
     TConfiguracoesCTe(Configuracoes).Arquivos.EmissaoPathCTe := cbxEmissaoPathNFe.Checked;
     TConfiguracoesCTe(Configuracoes).Arquivos.PathCTe        := edtPathNFe.Text;
     TConfiguracoesCTe(Configuracoes).Arquivos.PathInu        := edtPathInu.Text;
     TConfiguracoesCTe(Configuracoes).Arquivos.PathEvento     := edtPathEvento.Text;
+    TConfiguracoesCTe(Configuracoes).Arquivos.DownloadDFe.PathDownload:= edtPathDownload.Text;
+    TConfiguracoesCTe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesCTe(Configuracoes).Arquivos.SalvarApenasCTeProcessados := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesCTe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
     TConfiguracoesCTe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'CTe';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesCTe(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
+
   end
   else if Configuracoes is TConfiguracoesMDFe then
   begin
@@ -9185,20 +9465,53 @@ begin
     TConfiguracoesMDFe(Configuracoes).Arquivos.EmissaoPathMDFe := cbxEmissaoPathNFe.Checked;
     TConfiguracoesMDFe(Configuracoes).Arquivos.PathMDFe        := edtPathNFe.Text;
     TConfiguracoesMDFe(Configuracoes).Arquivos.PathEvento      := edtPathEvento.Text;
+    TConfiguracoesMDFe(Configuracoes).Arquivos.DownloadDFe.PathDownload:= edtPathDownload.Text;
+    TConfiguracoesMDFe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesMDFe(Configuracoes).Arquivos.SalvarApenasMDFeProcessados := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesMDFe(Configuracoes).Arquivos.NormatizarMunicipios := cbxNormatizarMunicipios.Checked;
     TConfiguracoesMDFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'MDFe';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesMDFe(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
+
+  end
+  else if Configuracoes is TConfiguracoesBPe then
+  begin
+    TConfiguracoesBPe(Configuracoes).Geral.FormaEmissao := StrToTpEmis(OK, IntToStr(cbFormaEmissaoBPe.ItemIndex + 1));
+    TConfiguracoesBPe(Configuracoes).Geral.VersaoDF     := StrToVersaoBPe(ok, cbVersaoWSBPe.Text);
+
+    TConfiguracoesBPe(Configuracoes).Arquivos.IniServicos    := edtArquivoWebServicesBPe.Text;
+    TConfiguracoesBPe(Configuracoes).Arquivos.EmissaoPathBPe := cbxEmissaoPathNFe.Checked;
+    TConfiguracoesBPe(Configuracoes).Arquivos.PathBPe        := edtPathNFe.Text;
+    TConfiguracoesBPe(Configuracoes).Arquivos.PathEvento     := edtPathEvento.Text;
+    TConfiguracoesBPe(Configuracoes).Arquivos.DownloadDFe.PathDownload:= edtPathDownload.Text;
+    TConfiguracoesBPe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
+    TConfiguracoesBPe(Configuracoes).Arquivos.SalvarApenasBPeProcessadas := cbxSalvarNFesProcessadas.Checked;
+    TConfiguracoesBPe(Configuracoes).Arquivos.NormatizarMunicipios := cbxNormatizarMunicipios.Checked;
+    TConfiguracoesBPe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'BPe';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesBPe(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
+
   end
   else if Configuracoes is TConfiguracoesGNRE then
   begin
     TConfiguracoesGNRE(Configuracoes).Geral.FormaEmissao := StrToTpEmis(OK, IntToStr(cbFormaEmissaoGNRe.ItemIndex + 1));
+    TConfiguracoesGNRE(Configuracoes).Geral.VersaoDF     := StrToVersaoGNRe(ok, cbVersaoWSGNRE.Text);
 
     TConfiguracoesGNRE(Configuracoes).Arquivos.IniServicos     := edtArquivoWebServicesGNRe.Text;
     TConfiguracoesGNRE(Configuracoes).Arquivos.EmissaoPathGNRE := cbxEmissaoPathNFe.Checked;
     TConfiguracoesGNRE(Configuracoes).Arquivos.PathGNRE        := edtPathNFe.Text;
     TConfiguracoesGNRE(Configuracoes).Arquivos.SalvarApenasGNREProcessadas := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesGNRE(Configuracoes).Arquivos.PathArqTXT      := edtPathArqTXT.Text;
+
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'GNRe';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesGNRE(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
   end
+
   else if Configuracoes is TConfiguracoeseSocial then
   begin
     TConfiguracoeseSocial(Configuracoes).Arquivos.IniServicos       := edtArquivoWebServiceseSocial.Text;
@@ -9208,6 +9521,11 @@ begin
     TConfiguracoeseSocial(Configuracoes).Geral.TipoEmpregador       := TEmpregador(cbTipoEmpregador.ItemIndex);
     TConfiguracoeseSocial(Configuracoes).Geral.IdEmpregador         := edtIDEmpregador.Text;
     TConfiguracoeseSocial(Configuracoes).Geral.IdTransmissor        := edtIDTransmissor.Text;
+
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'eSocial';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoeseSocial(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
+
   end
   else if Configuracoes is TConfiguracoesReinf then
   begin
@@ -9218,6 +9536,10 @@ begin
     TConfiguracoesReinf(Configuracoes).Geral.TipoContribuinte     := TContribuinte(cbTipoContribuinte.ItemIndex);
     TConfiguracoesReinf(Configuracoes).Geral.IdContribuinte       := edtIDContribuinte.Text;
     TConfiguracoesReinf(Configuracoes).Geral.IdTransmissor        := edtIDTransmissorReinf.Text;
+
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'Reinf';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesReinf(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
   end
 
 end;
@@ -9287,6 +9609,18 @@ begin
       begin
         if not ACBrMDFe1.EventoMDFe.LerXMLFromString(XMLorFile) then
           raise Exception.Create('Erro ao carregar o evento do MDFe');
+      end;
+
+      tDFeBPe:
+      begin
+        if not ACBrBPe1.Bilhetes.LoadFromString(XMLorFile) then
+          raise Exception.Create('Erro ao carregar BPe');
+      end;
+
+      tDFeEventoBPe:
+      begin
+        if not ACBrBPe1.EventoBPe.LerXMLFromString(XMLorFile) then
+          raise Exception.Create('Erro ao carregar o evento do BPe');
       end;
 
       tDFeGNRe:
@@ -9397,6 +9731,28 @@ begin
         end;
       end;
 
+      tDFeBPe:
+      begin
+        if FileExists(XMLorFile) then
+        begin
+          if not ACBrBPe1.Bilhetes.LoadFromFile(XMLorFile) then
+            raise Exception.Create('Erro ao abrir o arquivo do Bilhete: '+XMLorFile)
+          else
+            PathDfe := XMLorFile;
+        end;
+      end;
+
+      tDFeEventoBPe:
+      begin
+        if FileExists(XMLorFile) then
+        begin
+          if not ACBrBPe1.EventoBPe.LerXML(XMLorFile) then
+            raise Exception.Create('Erro ao abrir o evento do BPe '+XMLorFile)
+          else
+            PathDfe := XMLorFile;
+        end;
+      end;
+
       tDFeGNRe:
       begin
         if FileExists(XMLorFile) then
@@ -9466,6 +9822,18 @@ begin
         tDFeEventoMDFe:
         begin
           if ACBrMDFe1.EventoMDFe.Evento.Count > 0 then
+             Exit;
+        end;
+
+        tDFeBPe:
+        begin
+          if ACBrBPe1.Bilhetes.Count > 0 then
+             Exit;
+        end;
+
+        tDFeEventoBPe:
+        begin
+          if ACBrBPe1.EventoBPe.Evento.Count > 0 then
              Exit;
         end;
 
@@ -9658,6 +10026,7 @@ begin
       ACBrBlocoX1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
       ACBreSocial1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
+      ACBrBPe1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -9676,6 +10045,7 @@ begin
       ACBrBlocox1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
       ACBreSocial1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
+      ACBrBPe1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -9744,6 +10114,7 @@ begin
       ACBrBlocoX1.Configuracoes.Geral.SSLLib := TSSLLib(cbSSLLib.ItemIndex);
       ACBreSocial1.Configuracoes.Geral.SSLLib:= TSSLLib(cbSSLLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLLib  := TSSLLib(cbSSLLib.ItemIndex);
+      ACBrBPe1.Configuracoes.Geral.SSLLib  := TSSLLib(cbSSLLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -9774,6 +10145,26 @@ begin
        TPanel(Sender).Color := TCores.Buttons
     else
        TPanel(Sender).Color := TCores.SubButtons;
+  end;
+end;
+
+function TFrmACBrMonitor.ValidaArquivo(APath: String): String;
+var
+  ErroStr: String;
+begin
+  ErroStr := '';
+  Result := Trim(APath);
+
+  if not FileExists(Result) then
+    ErroStr := 'ATENÇÃO: Arquivo ' + Result + ' não encontrado!!!'
+  else if VerificaArquivoDesatualizado(Result) then
+    ErroStr := 'ATENÇÃO: Arquivo ' + ExtractFileName(Result)
+              + ' disponível em: ' + ExtractFileDir(Result) + ' está desatualizado!!!';
+
+  if (ErroStr <> '') then
+  begin
+    AddLinesLog( ErroStr );
+	Result := ApplicationPath + ExtractFileName(Result);
   end;
 end;
 
@@ -9918,6 +10309,7 @@ begin
   ACBrBlocoX1.SSL.SSLType := TSSLType( cbSSLType.ItemIndex );
   ACBreSocial1.SSL.SSLType:= TSSLType( cbSSLType.ItemIndex );
   ACBrReinf1.SSL.SSLType  := TSSLType( cbSSLType.ItemIndex );
+  ACBrBPe1.SSL.SSLType  := TSSLType( cbSSLType.ItemIndex );
 end;
 
 procedure TFrmACBrMonitor.SetColorSubButtons(Sender: TObject);

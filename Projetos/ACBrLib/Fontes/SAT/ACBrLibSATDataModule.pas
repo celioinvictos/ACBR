@@ -70,13 +70,15 @@ type
     procedure Travar;
     procedure Destravar;
 
+    function RespostaIntegrador: String;
+
   end;
 
 implementation
 
 uses
   strutils, FileUtil, ACBrDeviceConfig, ACBrLibConsts,
-  ACBrUtil, ACBrLibSATConfig, ACBrLibComum, ACBrLibSATClass;
+  ACBrUtil, ACBrLibSATConfig, ACBrLibComum, ACBrLibIntegradorResposta;
 
 {$R *.lfm}
 
@@ -366,61 +368,22 @@ procedure TLibSatDM.ConfigurarImpressao(NomeImpressora: String; GerarPDF: Boolea
 var
   pLibConfig: TLibSATConfig;
 begin
-  pLibConfig := TLibSATConfig(pLibConfig);
+  pLibConfig := TLibSATConfig(pLib.Config);
 
   with pLibConfig.Extrato do
   begin
-    if TipoExtrato = teFortes then
-    begin
-      ACBrSAT1.Extrato := ACBrSATExtratoFortes1;
-
-      if NomeImpressora <> '' then
-        ACBrSATExtratoFortes1.Impressora := NomeImpressora
-      else
-        ACBrSATExtratoFortes1.Impressora := Impressora;
-
-      ACBrSATExtratoFortes1.LarguraBobina := LarguraBobina;
-      ACBrSATExtratoFortes1.MargemSuperior := MargensTopo;
-      ACBrSATExtratoFortes1.MargemEsquerda := MargensEsquerda;
-      ACBrSATExtratoFortes1.MargemInferior := MargensFundo;
-      ACBrSATExtratoFortes1.MargemDireita := MargensDireita;
-      ACBrSATExtratoFortes1.EspacoFinal := EspacoFinal;
-      ACBrSATExtratoFortes1.LogoWidth := LogoWidth;
-      ACBrSATExtratoFortes1.LogoHeigth := LogoHeigth;
-      ACBrSATExtratoFortes1.LogoStretch := LogoStretch;
-      ACBrSATExtratoFortes1.LogoAutoSize := LogoAutoSize;
-      ACBrSATExtratoFortes1.LogoCenter := LogoCenter;
-      ACBrSATExtratoFortes1.LogoVisible := LogoVisible;
-    end
+    if GerarPDF or (TipoExtrato = teFortes) then
+      ACBrSAT1.Extrato := ACBrSATExtratoFortes1
     else
-    begin
       ACBrSAT1.Extrato := ACBrSATExtratoESCPOS1;
-      ACBrSATExtratoESCPOS1.ImprimeChaveEmUmaLinha := ImprimeChaveEmUmaLinha;
-    end;
 
-    if FileExists(PictureLogo) then
-      ACBrSAT1.Extrato.PictureLogo.Bitmap.LoadFromFile(PictureLogo);
+    pLibConfig.Extrato.Assign(ACBrSAT1.Extrato);
 
-    ACBrSAT1.Extrato.CasasDecimais.MaskqCom := MaskqCom;
-    ACBrSAT1.Extrato.CasasDecimais.MaskvUnCom := MaskvUnCom;
-    ACBrSAT1.Extrato.ImprimeQRCode := ImprimeQRCode;
-    ACBrSAT1.Extrato.ImprimeMsgOlhoNoImposto := ImprimeMsgOlhoNoImposto;
-    ACBrSAT1.Extrato.ImprimeCPFNaoInformado := ImprimeCPFNaoInformado;
-    ACBrSAT1.Extrato.MostraPreview := MostraPreview;
-    ACBrSAT1.Extrato.MostraSetup := MostraSetup;
-    ACBrSAT1.Extrato.NumCopias := NumCopias;
-    ACBrSAT1.Extrato.NomeDocumento := NomeDocumento;
-    ACBrSAT1.Extrato.Sistema := pLibConfig.Sistema.Nome;
-    ACBrSAT1.Extrato.Site := pLibConfig.Emissor.WebSite;
-    ACBrSAT1.Extrato.MsgAppQRCode := MsgAppQRCode;
-    ACBrSAT1.Extrato.ImprimeEmUmaLinha := ImprimeEmUmaLinha;
-    ACBrSAT1.Extrato.ImprimeDescAcrescItem := ImprimeDescAcrescItem;
-    ACBrSAT1.Extrato.ImprimeCodigoEan := ImprimeCodigoEan;
+    if NomeImpressora <> '' then
+      ACBrSAT1.Extrato.Impressora := NomeImpressora;
 
     if GerarPDF then
       ACBrSAT1.Extrato.Filtro := fiPDF
-    else
-      ACBrSAT1.Extrato.Filtro := Filtro;
   end;
 end;
 
@@ -428,14 +391,16 @@ procedure TLibSatDM.CarregarDadosVenda(XmlArquivoOuString: String; aNomePDF: Str
 begin
   if Trim(XmlArquivoOuString) = '' then exit;
 
+  ACBrSAT1.CFe.Clear;
+
   if FileExists(XmlArquivoOuString) then
   begin
-    GravarLog('Carregando arquivo xml' + XmlArquivoOuString, logParanoico);
+    GravarLog('Carregando arquivo xml [' + XmlArquivoOuString + ']', logParanoico);
     ACBrSAT1.CFe.LoadFromFile(XmlArquivoOuString);
   end
   else
   begin
-    GravarLog('Carregando xml string' + XmlArquivoOuString, logParanoico);
+    GravarLog('Carregando xml string  [' + XmlArquivoOuString + ']', logParanoico);
     ACBrSAT1.CFe.AsXMLString := XmlArquivoOuString;
   end;
 
@@ -450,12 +415,12 @@ begin
 
   if FileExists(aStr) then
   begin
-    GravarLog('Carregando arquivo xml cancelamento', logParanoico);
+    GravarLog('Carregando arquivo xml cancelamento [' + aStr + ']', logParanoico);
     ACBrSAT1.CFeCanc.LoadFromFile(aStr);
   end
   else
   begin
-    GravarLog('Carregando xml string de cancelamento', logParanoico);
+    GravarLog('Carregando xml string de cancelamento  [' + aStr + ']', logParanoico);
     ACBrSAT1.CFeCanc.AsXMLString := aStr;
   end;
 
@@ -474,6 +439,23 @@ procedure TLibSatDM.Destravar;
 begin
   GravarLog('Destravar', logParanoico);
   FLock.Release;
+end;
+
+function TLibSatDM.RespostaIntegrador: String;
+Var
+  Resp: TIntegradorResp;
+begin
+  Result := '';
+  if ACBrSAT1.Integrador = ACBrIntegrador1 then
+  begin
+    Resp := TIntegradorResp.Create(pLib.Config.TipoResposta);
+    try
+      Resp.Processar(ACBrIntegrador1);
+      Result := sLineBreak + Resp.Gerar;
+    finally
+      Resp.Free;
+    end;
+  end;
 end;
 
 end.

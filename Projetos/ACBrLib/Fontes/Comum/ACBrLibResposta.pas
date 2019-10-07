@@ -40,7 +40,7 @@ interface
 uses
   SysUtils, Classes, laz2_DOM, laz2_XMLWrite, StrUtils,
   inifiles, fpjson, jsonparser, TypInfo, rttiutils,
-  ACBrUtil;
+  ACBrBase, ACBrUtil;
 
 const
   CSessaoHttpResposta = 'RespostaHttp';
@@ -50,25 +50,32 @@ type
   TACBrLibRespostaTipo = (resINI, resXML, resJSON);
 
   TACBrLibResposta = class abstract
-  protected
+  private
     FSessao: String;
     FTipo: TACBrLibRespostaTipo;
-
 
     function GerarXml: String;
     function GerarIni: String;
     function GerarJson: String;
 
+  protected
     procedure GravarXml(const xDoc: TXMLDocument; const RootNode: TDomNode; const Target: TObject); virtual;
     procedure GravarIni(const AIni: TCustomIniFile; const ASessao: String; const Target: TObject; IsCollection: Boolean = false); virtual;
     procedure GravarJson(const JSON: TJSONObject; const ASessao: String; const Target: TObject); virtual;
+
   public
     constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo);
 
     property Sessao: String read FSessao;
+    property Tipo: TACBrLibRespostaTipo read FTipo;
 
     function Gerar: String; virtual;
 
+  end;
+
+  TACBrLibResposta<T: TACBrComponent> = class abstract(TACBrLibResposta)
+  public
+    procedure Processar(const Control: T); virtual; abstract;
   end;
 
   { TACBrLibHttpResposta }
@@ -88,10 +95,25 @@ type
 
   end;
 
+  { TLibImpressaoResposta }
+  TLibImpressaoResposta = class(TACBrLibResposta)
+  private
+    FMsg: string;
+
+  public
+    constructor Create(const QtdImpresso: Integer; const ATipo: TACBrLibRespostaTipo); reintroduce;
+
+  published
+    property Msg: string read FMsg write FMsg;
+
+  end;
+
 implementation
 
-{ TACBrLibResposta }
+uses
+  math;
 
+{ TACBrLibResposta }
 constructor TACBrLibResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo);
 begin
   inherited Create;
@@ -130,6 +152,7 @@ Var
   PI: PPropInfo;
   PT: PTypeInfo;
   ParentNode, Node: TDomNode;
+  FloatValue: Extended;
 begin
   PropList := TPropInfoList.Create(Target, tkProperties);
 
@@ -153,10 +176,16 @@ begin
         tkAString:
           Node := xDoc.CreateTextNode(Trim(GetStrProp(Target, PI)));
         tkFloat:
-          if (PT = TypeInfo(TDateTime)) then
-            Node := xDoc.CreateTextNode(DateTimeToStr(GetFloatProp(Target, PI)))
-          else
-            Node := xDoc.CreateTextNode(FloatToStr(GetFloatProp(Target, PI)));
+          begin
+            FloatValue := GetFloatProp(Target, PI);
+            if(PT = TypeInfo(TDateTime))then
+            begin
+              if not IsZero(FloatValue) then
+                Node := xDoc.CreateTextNode(DateTimeToStr(FloatValue));
+            end
+            else
+              Node := xDoc.CreateTextNode(FloatToStr(FloatValue));
+          end;
       end;
       ParentNode.AppendChild(Node);
       RootNode.AppendChild(ParentNode);
@@ -191,18 +220,14 @@ end;
 procedure TACBrLibResposta.GravarIni(const AIni: TCustomIniFile; const ASessao: String; const Target: TObject; IsCollection: Boolean);
 var
   PropList: TPropInfoList;
-  i, j, x: Integer;
+  i, j: Integer;
   PI: PPropInfo;
   PT: PTypeInfo;
-  SetValues: TSplitResult;
   Sessao: String;
-  ValoresSet: String;
-  //SetOrdValue: Int64;
   ClassObject: TObject;
   CollectionObject: TCollection;
   CollectionItem: TCollectionItem;
-  AOrdTypeInfo: PTypeInfo;
-  OrdTypeData: PTypeData;
+  FloatValue: Extended;
 begin
   PropList := TPropInfoList.Create(Target, tkProperties);
 
@@ -243,24 +268,7 @@ begin
           end;
         tkSet:
           begin
-            {Para gerar uma string, poderia ser alterado para
-            ValoresSet := GetSetProp(Target, PI, True);
-            AIni.WriteString(ASessao, PI^.Name, ValoresSet);
-            // Isso poderia ser lido depois usando o método SetSetProp.
-            }
-            //SetOrdValue := 0;
-            ValoresSet := '[';
-            SetValues := Split(',', GetSetProp(Target, PI, false));
-            OrdTypeData:= GetTypeData(PT);
-            AOrdTypeInfo := OrdTypeData^.CompType;
-            for j := 0 to Length(SetValues) - 1 do
-            begin
-              x := GetEnumValue(AOrdTypeInfo, SetValues[j]);
-              ValoresSet := ValoresSet +  IntToStr(x) + ',' ;
-            end;
-            ValoresSet[Length(ValoresSet)] := ']';
-
-            AIni.WriteString(ASessao, PI^.Name, ValoresSet);
+            AIni.WriteString(ASessao, PI^.Name, GetSetProp(Target, PI, True));
           end;
         tkBool,
         tkEnumeration,
@@ -275,10 +283,14 @@ begin
           AIni.WriteString(ASessao, PI^.Name, Trim(GetStrProp(Target, PI)));
         tkFloat:
           begin
+            FloatValue := GetFloatProp(Target, PI);
             if (PT = TypeInfo(TDateTime)) then
-              AIni.WriteDateTime(ASessao, PI^.Name, GetFloatProp(Target, PI))
+            begin
+              if not IsZero(FloatValue) then
+                AIni.WriteDateTime(ASessao, PI^.Name, FloatValue);
+            end
             else
-              AIni.WriteFloat(ASessao, PI^.Name, GetFloatProp(Target, PI));
+              AIni.WriteFloat(ASessao, PI^.Name, FloatValue);
           end;
       end;
     end;
@@ -337,7 +349,8 @@ begin
           if (PT = TypeInfo(TDateTime)) then
           begin
             Aux := GetFloatProp(Target, PI);
-            JSONRoot.Add(PI^.Name, FormatDateTime('yyyy-mm-dd"T"hh:nn:ss.zzz"Z"', TDateTime(Aux)));
+            if not IsZero(Aux) then
+              JSONRoot.Add(PI^.Name, FormatDateTime('yyyy-mm-dd"T"hh:nn:ss.zzz"Z"', TDateTime(Aux)));
           end
           else
             JSONRoot.Add(PI^.Name, GetFloatProp(Target, PI));
@@ -360,10 +373,16 @@ begin
 end;
 
 { TACBrLibHttpResposta }
-
 constructor TACBrLibHttpResposta.Create(const ATipo: TACBrLibRespostaTipo);
 begin
   inherited Create(CSessaoHttpResposta, ATipo);
+end;
+
+{ TLibImpressaoResposta }
+constructor TLibImpressaoResposta.Create(const QtdImpresso: Integer; const ATipo: TACBrLibRespostaTipo);
+begin
+  inherited Create('Impressao', ATipo);
+  Msg := Format('%d Documento (s) impresso(s) com sucesso', [QtdImpresso]);
 end;
 
 end.

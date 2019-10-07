@@ -46,8 +46,6 @@ uses
 
 type
   TfrmPrincipal = class(TForm)
-    ACBrNFe1: TACBrNFe;
-    ACBrNFeDANFEFR1: TACBrNFeDANFEFR;
     imgLogo: TImage;
     pnlbotoes: TPanel;
     btnImprimir: TButton;
@@ -88,10 +86,15 @@ type
     Label9: TLabel;
     CBImprimirUndQtVlComercial: TComboBox;
     rbImprimirDadosDocReferenciados: TCheckBox;
-    ACBrNFeDANFCEFR1: TACBrNFeDANFCEFR;
     rgModelo: TRadioGroup;
     ckImprimeCodigoEan: TCheckBox;
     ckImprimeItens: TCheckBox;
+    ChkQuebraLinhaEmDetalhamentos: TCheckBox;
+    Label10: TLabel;
+    cbPosCanhotoLayout: TComboBox;
+    ACBrNFeDANFEFR1: TACBrNFeDANFEFR;
+    ACBrNFeDANFCEFR1: TACBrNFeDANFCEFR;
+    ACBrNFe1: TACBrNFe;
     procedure FormCreate(Sender: TObject);
     procedure btncarregarClick(Sender: TObject);
     procedure btnImprimirClick(Sender: TObject);
@@ -101,6 +104,8 @@ type
   private
     procedure Configuracao;
     procedure Initializao;
+    procedure ConfiguraNfe;
+    procedure ConfiguraNFCe;
     { Private declarations }
   public
     { Public declarations }
@@ -226,22 +231,8 @@ begin
     CasasDecimais.MaskvUnCom := cbtdetMascara_Vrl.Items[cbtdetMascara_Vrl.ItemIndex];
 
   end;
-
-  // --- Configurações específicas para NFe ---
-
-  // Mostra a posicao do canhoto
-  ACBrNFeDANFEFR1.PosCanhoto := TPosRecibo(RbCanhoto.ItemIndex);
-
-  // ImprimirUndQtVlComercial
-  ACBrNFeDANFEFR1.ImprimeValor := TImprimirUnidQtdeValor(CBImprimirUndQtVlComercial.ItemIndex);
-
-  // Mostra dados referenciados
-  ACBrNFeDANFEFR1.ExibeDadosDocReferenciados := rbImprimirDadosDocReferenciados.Checked;
-
-  // --- Configurações específicas para NFCe ---
-
-  // Mostra itens na NFCe, caso False emite a NFCe resumida
-  ACBrNFeDANFCEFR1.ImprimeItens := ckImprimeItens.Checked;
+  ConfiguraNfe;
+  ConfiguraNFCe;
 
 end;
 
@@ -274,6 +265,9 @@ begin
 
     ckImprimeCodigoEan.Checked := ImprimeCodigoEan;
 
+    ChkQuebraLinhaEmDetalhamentos.Checked := QuebraLinhaEmDetalhamentos;
+
+    cbPosCanhotoLayout.ItemIndex  := Integer(  PosCanhotoLayout );
   end;
 
   ckImprimeItens.Checked := ACBrNFeDANFCEFR1.ImprimeItens;
@@ -284,6 +278,31 @@ begin
     StoreInDFM := False;
   end;
 
+end;
+
+procedure TfrmPrincipal.ConfiguraNfe;
+  // --- Configurações específicas para NFe ---
+begin
+  // Mostra a posicao do canhoto
+  ACBrNFeDANFEFR1.PosCanhoto := TPosRecibo(RbCanhoto.ItemIndex);
+  // ImprimirUndQtVlComercial
+  ACBrNFeDANFEFR1.ImprimeValor := TImprimirUnidQtdeValor(CBImprimirUndQtVlComercial.ItemIndex);
+  // Mostra dados referenciados
+  ACBrNFeDANFEFR1.ExibeDadosDocReferenciados := rbImprimirDadosDocReferenciados.Checked;
+  // Mostra Quebra Linha Em Detalhamentos
+  ACBrNFeDANFEFR1.QuebraLinhaEmDetalhamentos := ChkQuebraLinhaEmDetalhamentos.Checked;
+    // Mostra Layout do Canhoto
+  ACBrNFeDANFEFR1.PosCanhotoLayout := TPosReciboLayout(cbPosCanhotoLayout.ItemIndex);
+
+end;
+
+procedure TfrmPrincipal.ConfiguraNFCe;
+  // --- Configurações específicas para NFCe ---
+begin
+  // Mostra itens na NFCe, caso False emite a NFCe resumida
+  ACBrNFeDANFCEFR1.ImprimeItens := ckImprimeItens.Checked;
+  // Mostra Quebra Linha Em Detalhamentos
+  ACBrNFeDANFCEFR1.QuebraLinhaEmDetalhamentos := ChkQuebraLinhaEmDetalhamentos.Checked;
 end;
 
 procedure TfrmPrincipal.rgModeloClick(Sender: TObject);

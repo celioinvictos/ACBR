@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 326
+  Left = 344
   Height = 498
-  Top = 226
+  Top = 135
   Width = 900
   ActiveControl = PageControl1
   Caption = 'SAT Teste - Projeto ACBr'
@@ -12,7 +12,7 @@ object Form1: TForm1
   Menu = MainMenu1
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '2.0.0.3'
+  LCLVersion = '2.0.2.0'
   object Splitter1: TSplitter
     Cursor = crVSplit
     Left = 0
@@ -29,12 +29,14 @@ object Form1: TForm1
     Width = 900
     ActivePage = tsLog
     Align = alClient
+    ParentFont = False
     TabIndex = 0
     TabOrder = 1
     object tsLog: TTabSheet
       Caption = 'Log de Comandos'
       ClientHeight = 167
       ClientWidth = 892
+      ParentFont = False
       object mLog: TMemo
         Left = 0
         Height = 167
@@ -53,6 +55,7 @@ object Form1: TForm1
       Caption = 'XML Gerado'
       ClientHeight = 161
       ClientWidth = 892
+      ParentFont = False
       inline mVendaEnviar: TSynMemo
         Cursor = crIBeam
         Left = 0
@@ -510,6 +513,7 @@ object Form1: TForm1
       Caption = 'XML Recebido'
       ClientHeight = 167
       ClientWidth = 892
+      ParentFont = False
       inline mRecebido: TSynMemo
         Cursor = crIBeam
         Left = 0
@@ -967,6 +971,7 @@ object Form1: TForm1
       Caption = 'XML Cancelamento'
       ClientHeight = 116
       ClientWidth = 846
+      ParentFont = False
       inline mCancelamentoEnviar: TSynMemo
         Cursor = crIBeam
         Left = 0
@@ -1427,6 +1432,7 @@ object Form1: TForm1
         Align = alBottom
         ClientHeight = 25
         ClientWidth = 842
+        ParentFont = False
         TabOrder = 1
         object Label18: TLabel
           Left = 6
@@ -1438,6 +1444,7 @@ object Form1: TForm1
           Caption = 'Chave Cancelamento:'
           Layout = tlCenter
           ParentColor = False
+          ParentFont = False
         end
         object edChaveCancelamento: TEdit
           Left = 127
@@ -1446,6 +1453,7 @@ object Form1: TForm1
           Width = 704
           Align = alClient
           BorderSpacing.Right = 10
+          ParentFont = False
           TabOrder = 0
         end
       end
@@ -1454,6 +1462,7 @@ object Form1: TForm1
       Caption = 'XML Rede'
       ClientHeight = 167
       ClientWidth = 892
+      ParentFont = False
       inline mRede: TSynMemo
         Cursor = crIBeam
         Left = 0
@@ -1916,6 +1925,7 @@ object Form1: TForm1
     Align = alTop
     ClientHeight = 254
     ClientWidth = 900
+    ParentFont = False
     TabOrder = 2
     object gpOperacao: TGroupBox
       Left = 1
@@ -1926,6 +1936,7 @@ object Form1: TForm1
       Caption = 'Inicialização'
       ClientHeight = 232
       ClientWidth = 165
+      ParentFont = False
       TabOrder = 0
       object bInicializar: TButton
         AnchorSideLeft.Control = gpOperacao
@@ -1936,6 +1947,7 @@ object Form1: TForm1
         Width = 105
         Caption = 'Inicializar'
         OnClick = bInicializarClick
+        ParentFont = False
         TabOrder = 0
       end
       object cbxModelo: TComboBox
@@ -1950,6 +1962,7 @@ object Form1: TForm1
           ''
         )
         OnChange = cbxModeloChange
+        ParentFont = False
         Style = csDropDownList
         TabOrder = 1
       end
@@ -1963,6 +1976,7 @@ object Form1: TForm1
         Caption = 'Parâmetros'
         ClientHeight = 69
         ClientWidth = 151
+        ParentFont = False
         TabOrder = 2
         object btLerParams: TButton
           AnchorSideLeft.Control = GroupBox2
@@ -1973,6 +1987,7 @@ object Form1: TForm1
           Width = 105
           Caption = 'Ler'
           OnClick = btLerParamsClick
+          ParentFont = False
           TabOrder = 0
         end
         object btSalvarParams: TButton
@@ -1984,6 +1999,7 @@ object Form1: TForm1
           Width = 105
           Caption = 'Salvar'
           OnClick = btSalvarParamsClick
+          ParentFont = False
           TabOrder = 1
         end
       end
@@ -1997,6 +2013,7 @@ object Form1: TForm1
       Caption = 'Configuração'
       ClientHeight = 232
       ClientWidth = 725
+      ParentFont = False
       TabOrder = 1
       object PageControl2: TPageControl
         Left = 0
@@ -2005,12 +2022,14 @@ object Form1: TForm1
         Width = 725
         ActivePage = Impressao
         Align = alClient
+        ParentFont = False
         TabIndex = 4
         TabOrder = 0
         object tsDadosSAT: TTabSheet
           Caption = 'Dados do SAT CFe'
-          ClientHeight = 192
+          ClientHeight = 204
           ClientWidth = 717
+          ParentFont = False
           object Label9: TLabel
             Left = 16
             Height = 15
@@ -2019,6 +2038,7 @@ object Form1: TForm1
             Alignment = taRightJustify
             Caption = 'Arq.Log:'
             ParentColor = False
+            ParentFont = False
           end
           object edLog: TEdit
             Cursor = crIBeam
@@ -2026,6 +2046,7 @@ object Form1: TForm1
             Height = 23
             Top = 24
             Width = 163
+            ParentFont = False
             TabOrder = 0
           end
           object SbArqLog: TSpeedButton
@@ -2035,6 +2056,7 @@ object Form1: TForm1
             Width = 24
             Caption = '...'
             OnClick = SbArqLogClick
+            ParentFont = False
           end
           object Label10: TLabel
             Left = 217
@@ -2044,6 +2066,7 @@ object Form1: TForm1
             Alignment = taRightJustify
             Caption = 'Nome DLL:'
             ParentColor = False
+            ParentFont = False
           end
           object edNomeDLL: TEdit
             Cursor = crIBeam
@@ -2052,6 +2075,7 @@ object Form1: TForm1
             Top = 24
             Width = 282
             Anchors = [akTop, akLeft, akRight]
+            ParentFont = False
             TabOrder = 1
           end
           object edtCodigoAtivacao: TEdit
@@ -2059,6 +2083,7 @@ object Form1: TForm1
             Height = 23
             Top = 72
             Width = 164
+            ParentFont = False
             TabOrder = 3
           end
           object Label1: TLabel
@@ -2068,6 +2093,7 @@ object Form1: TForm1
             Width = 104
             Caption = 'Código de Ativação'
             ParentColor = False
+            ParentFont = False
           end
           object Label4: TLabel
             Left = 217
@@ -2076,12 +2102,14 @@ object Form1: TForm1
             Width = 39
             Caption = 'Cód.UF'
             ParentColor = False
+            ParentFont = False
           end
           object edtCodUF: TEdit
             Left = 218
             Height = 23
             Top = 72
             Width = 61
+            ParentFont = False
             TabOrder = 4
           end
           object Label3: TLabel
@@ -2091,6 +2119,7 @@ object Form1: TForm1
             Width = 58
             Caption = 'Num.Caixa'
             ParentColor = False
+            ParentFont = False
           end
           object seNumeroCaixa: TSpinEdit
             Left = 312
@@ -2099,6 +2128,7 @@ object Form1: TForm1
             Width = 58
             MaxValue = 999
             MinValue = 1
+            ParentFont = False
             TabOrder = 5
             Value = 1
           end
@@ -2109,6 +2139,7 @@ object Form1: TForm1
             Width = 34
             Caption = 'Versão'
             ParentColor = False
+            ParentFont = False
           end
           object sfeVersaoEnt: TFloatSpinEdit
             Left = 280
@@ -2119,6 +2150,7 @@ object Form1: TForm1
             MaxValue = 10
             MinValue = 0
             OnChange = sfeVersaoEntChange
+            ParentFont = False
             TabOrder = 9
             Value = 0.07
           end
@@ -2130,6 +2162,7 @@ object Form1: TForm1
             Caption = 'Formatar XML'
             Checked = True
             OnChange = cbxFormatXMLChange
+            ParentFont = False
             State = cbChecked
             TabOrder = 7
           end
@@ -2140,6 +2173,7 @@ object Form1: TForm1
             Width = 152
             Anchors = [akTop, akRight]
             ItemHeight = 15
+            ParentFont = False
             Style = csDropDownList
             TabOrder = 2
           end
@@ -2150,6 +2184,7 @@ object Form1: TForm1
             Width = 52
             Caption = 'Ambiente'
             ParentColor = False
+            ParentFont = False
           end
           object cbxRemoverAcentos: TCheckBox
             Left = 152
@@ -2159,6 +2194,7 @@ object Form1: TForm1
             Caption = 'Remover Acentos'
             Checked = True
             OnChange = cbxRemoverAcentosChange
+            ParentFont = False
             State = cbChecked
             TabOrder = 8
           end
@@ -2175,6 +2211,7 @@ object Form1: TForm1
             ChildSizing.ControlsPerLine = 4
             ClientHeight = 104
             ClientWidth = 261
+            ParentFont = False
             TabOrder = 10
             object cbxSalvarEnvio: TCheckBox
               Left = 9
@@ -2184,6 +2221,7 @@ object Form1: TForm1
               Caption = 'Salvar Envio'
               Checked = True
               OnChange = cbxSalvarEnvioChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 2
             end
@@ -2195,6 +2233,7 @@ object Form1: TForm1
               Caption = 'Salvar CFe'
               Checked = True
               OnChange = cbxSalvarCFeChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 0
             end
@@ -2206,6 +2245,7 @@ object Form1: TForm1
               Caption = 'Salvar CFeCanc'
               Checked = True
               OnChange = cbxSalvarCFeCancChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 1
             end
@@ -2217,6 +2257,7 @@ object Form1: TForm1
               Caption = 'Separar por CNPJ'
               Checked = True
               OnChange = cbxSepararPorCNPJChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 3
             end
@@ -2228,6 +2269,7 @@ object Form1: TForm1
               Caption = 'Separar por Modelo'
               Checked = True
               OnChange = cbxSepararPorModeloChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 7
             end
@@ -2239,6 +2281,7 @@ object Form1: TForm1
               Caption = 'Separar por Dia'
               Checked = True
               OnChange = cbxSepararPorDiaChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 6
             end
@@ -2250,6 +2293,7 @@ object Form1: TForm1
               Caption = 'Separar por Mês'
               Checked = True
               OnChange = cbxSepararPorMesChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 4
             end
@@ -2261,6 +2305,7 @@ object Form1: TForm1
               Caption = 'Separar por Ano'
               Checked = True
               OnChange = cbxSepararPorAnoChange
+              ParentFont = False
               State = cbChecked
               TabOrder = 5
             end
@@ -2273,6 +2318,7 @@ object Form1: TForm1
             Caption = 'Página de Código'
             ClientHeight = 28
             ClientWidth = 133
+            ParentFont = False
             TabOrder = 6
             object sePagCod: TSpinEdit
               Left = 8
@@ -2281,6 +2327,7 @@ object Form1: TForm1
               Width = 64
               MaxValue = 65001
               OnChange = sePagCodChange
+              ParentFont = False
               TabOrder = 0
             end
             object cbxUTF8: TCheckBox
@@ -2290,6 +2337,7 @@ object Form1: TForm1
               Width = 47
               Caption = 'UTF8'
               OnChange = cbxUTF8Change
+              ParentFont = False
               TabOrder = 1
             end
           end
@@ -2301,6 +2349,7 @@ object Form1: TForm1
             Anchors = [akTop, akRight]
             Caption = '...'
             OnClick = sbNomeDLLClick
+            ParentFont = False
           end
           object seItensVenda: TSpinEdit
             Left = 280
@@ -2311,6 +2360,7 @@ object Form1: TForm1
             Increment = 3
             MaxValue = 999
             MinValue = 3
+            ParentFont = False
             TabOrder = 11
             Value = 3
           end
@@ -2327,12 +2377,14 @@ object Form1: TForm1
             BorderSpacing.Right = 5
             Caption = 'Itens a Vender:'
             ParentColor = False
+            ParentFont = False
           end
         end
         object tsDadosEmit: TTabSheet
           Caption = 'Dados Emitente'
-          ClientHeight = 192
+          ClientHeight = 204
           ClientWidth = 717
+          ParentFont = False
           object Label11: TLabel
             Left = 12
             Height = 15
@@ -2340,6 +2392,7 @@ object Form1: TForm1
             Width = 27
             Caption = 'CNPJ'
             ParentColor = False
+            ParentFont = False
           end
           object Label12: TLabel
             Left = 192
@@ -2348,6 +2401,7 @@ object Form1: TForm1
             Width = 68
             Caption = 'Insc.Estadual'
             ParentColor = False
+            ParentFont = False
           end
           object Label14: TLabel
             Left = 336
@@ -2356,6 +2410,7 @@ object Form1: TForm1
             Width = 77
             Caption = 'Insc.Municipal'
             ParentColor = False
+            ParentFont = False
           end
           object edtEmitCNPJ: TEdit
             Cursor = crIBeam
@@ -2363,6 +2418,7 @@ object Form1: TForm1
             Height = 23
             Top = 38
             Width = 166
+            ParentFont = False
             TabOrder = 0
           end
           object edtEmitIE: TEdit
@@ -2371,6 +2427,7 @@ object Form1: TForm1
             Height = 23
             Top = 38
             Width = 134
+            ParentFont = False
             TabOrder = 1
           end
           object edtEmitIM: TEdit
@@ -2379,6 +2436,7 @@ object Form1: TForm1
             Height = 23
             Top = 38
             Width = 134
+            ParentFont = False
             TabOrder = 2
           end
           object cbxRegTribISSQN: TComboBox
@@ -2387,6 +2445,7 @@ object Form1: TForm1
             Top = 87
             Width = 130
             ItemHeight = 15
+            ParentFont = False
             Style = csDropDownList
             TabOrder = 4
           end
@@ -2397,6 +2456,7 @@ object Form1: TForm1
             Width = 102
             Caption = 'Regime Trib. ISSQN'
             ParentColor = False
+            ParentFont = False
           end
           object cbxIndRatISSQN: TComboBox
             Left = 336
@@ -2404,6 +2464,7 @@ object Form1: TForm1
             Top = 87
             Width = 134
             ItemHeight = 15
+            ParentFont = False
             Style = csDropDownList
             TabOrder = 5
           end
@@ -2414,6 +2475,7 @@ object Form1: TForm1
             Width = 73
             Caption = 'Ind.Rat.ISSQN'
             ParentColor = False
+            ParentFont = False
           end
           object Label17: TLabel
             Left = 12
@@ -2422,6 +2484,7 @@ object Form1: TForm1
             Width = 94
             Caption = 'Regime Tributario'
             ParentColor = False
+            ParentFont = False
           end
           object cbxRegTributario: TComboBox
             Left = 12
@@ -2429,14 +2492,16 @@ object Form1: TForm1
             Top = 87
             Width = 166
             ItemHeight = 15
+            ParentFont = False
             Style = csDropDownList
             TabOrder = 3
           end
         end
         object tsDadosSwHouse: TTabSheet
           Caption = 'Dados Sw.House'
-          ClientHeight = 192
+          ClientHeight = 204
           ClientWidth = 717
+          ParentFont = False
           object Label2: TLabel
             Left = 10
             Height = 15
@@ -2444,6 +2509,7 @@ object Form1: TForm1
             Width = 27
             Caption = 'CNPJ'
             ParentColor = False
+            ParentFont = False
           end
           object edtSwHCNPJ: TEdit
             Left = 10
@@ -2451,6 +2517,7 @@ object Form1: TForm1
             Top = 31
             Width = 358
             Anchors = [akTop, akLeft, akRight]
+            ParentFont = False
             TabOrder = 0
           end
           object Label5: TLabel
@@ -2460,6 +2527,7 @@ object Form1: TForm1
             Width = 195
             Caption = 'Assinatura Sw.House (344 caracteres)'
             ParentColor = False
+            ParentFont = False
           end
           object edtSwHAssinatura: TEdit
             Left = 10
@@ -2467,6 +2535,7 @@ object Form1: TForm1
             Top = 89
             Width = 623
             Anchors = [akTop, akLeft, akRight]
+            ParentFont = False
             TabOrder = 1
           end
         end
@@ -2474,6 +2543,7 @@ object Form1: TForm1
           Caption = 'Rede'
           ClientHeight = 192
           ClientWidth = 717
+          ParentFont = False
           object gbPPPoE: TGroupBox
             Left = 160
             Height = 105
@@ -2482,6 +2552,7 @@ object Form1: TForm1
             Caption = 'PPPoE'
             ClientHeight = 85
             ClientWidth = 285
+            ParentFont = False
             TabOrder = 4
             Visible = False
             object lSSID7: TLabel
@@ -2491,12 +2562,14 @@ object Form1: TForm1
               Width = 40
               Caption = 'Usuario'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeUsuario: TEdit
               Left = 64
               Height = 23
               Top = -4
               Width = 88
+              ParentFont = False
               TabOrder = 0
             end
             object lSSID8: TLabel
@@ -2506,12 +2579,14 @@ object Form1: TForm1
               Width = 32
               Caption = 'Senha'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeSenha: TEdit
               Left = 64
               Height = 23
               Top = 26
               Width = 88
+              ParentFont = False
               TabOrder = 1
             end
           end
@@ -2523,6 +2598,7 @@ object Form1: TForm1
             Caption = 'IPFIX'
             ClientHeight = 89
             ClientWidth = 285
+            ParentFont = False
             TabOrder = 3
             Visible = False
             object lSSID2: TLabel
@@ -2532,12 +2608,14 @@ object Form1: TForm1
               Width = 10
               Caption = 'IP'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeIP: TEdit
               Left = 56
               Height = 23
               Top = -4
               Width = 88
+              ParentFont = False
               TabOrder = 0
             end
             object lSSID3: TLabel
@@ -2547,12 +2625,14 @@ object Form1: TForm1
               Width = 28
               Caption = 'Mask'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeMask: TEdit
               Left = 56
               Height = 23
               Top = 26
               Width = 88
+              ParentFont = False
               TabOrder = 1
             end
             object lSSID4: TLabel
@@ -2562,12 +2642,14 @@ object Form1: TForm1
               Width = 45
               Caption = 'Gateway'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeGW: TEdit
               Left = 56
               Height = 23
               Top = 56
               Width = 88
+              ParentFont = False
               TabOrder = 2
             end
             object lSSID5: TLabel
@@ -2577,6 +2659,7 @@ object Form1: TForm1
               Width = 29
               Caption = 'DNS1'
               ParentColor = False
+              ParentFont = False
             end
             object lSSID6: TLabel
               Left = 152
@@ -2585,12 +2668,14 @@ object Form1: TForm1
               Width = 29
               Caption = 'DNS2'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeDNS1: TEdit
               Left = 192
               Height = 23
               Top = -4
               Width = 87
+              ParentFont = False
               TabOrder = 3
             end
             object edRedeDNS2: TEdit
@@ -2598,6 +2683,7 @@ object Form1: TForm1
               Height = 23
               Top = 26
               Width = 87
+              ParentFont = False
               TabOrder = 4
             end
           end
@@ -2624,6 +2710,7 @@ object Form1: TForm1
               'WIFI'
             )
             OnClick = rgRedeTipoInterClick
+            ParentFont = False
             TabOrder = 0
           end
           object gbWiFi: TGroupBox
@@ -2634,6 +2721,7 @@ object Form1: TForm1
             Caption = 'WiFi'
             ClientHeight = 89
             ClientWidth = 140
+            ParentFont = False
             TabOrder = 1
             Visible = False
             object lSSID: TLabel
@@ -2643,12 +2731,14 @@ object Form1: TForm1
               Width = 26
               Caption = 'SSID:'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeSSID: TEdit
               Left = 47
               Height = 23
               Top = -4
               Width = 82
+              ParentFont = False
               TabOrder = 0
             end
             object Label24: TLabel
@@ -2658,6 +2748,7 @@ object Form1: TForm1
               Width = 22
               Caption = 'Seg:'
               ParentColor = False
+              ParentFont = False
             end
             object cbxRedeSeg: TComboBox
               Left = 47
@@ -2672,6 +2763,7 @@ object Form1: TForm1
                 'WPA-PERSONAL'
                 'WPA-ENTERPRISE'
               )
+              ParentFont = False
               Style = csDropDownList
               TabOrder = 1
               Text = 'WEP'
@@ -2683,12 +2775,14 @@ object Form1: TForm1
               Width = 32
               Caption = 'Senha'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeCodigo: TEdit
               Left = 47
               Height = 23
               Top = 56
               Width = 82
+              ParentFont = False
               TabOrder = 2
             end
           end
@@ -2716,6 +2810,7 @@ object Form1: TForm1
               'IPFIX'
             )
             OnClick = rgRedeTipoLanClick
+            ParentFont = False
             TabOrder = 2
           end
           object gbProxy: TGroupBox
@@ -2726,6 +2821,7 @@ object Form1: TForm1
             Caption = 'Proxy'
             ClientHeight = 137
             ClientWidth = 146
+            ParentFont = False
             TabOrder = 5
             object cbxRedeProxy: TComboBox
               Left = 8
@@ -2740,6 +2836,7 @@ object Form1: TForm1
                 '2= Proxy transparente'
               )
               OnChange = cbxRedeProxyChange
+              ParentFont = False
               Style = csDropDownList
               TabOrder = 0
               Text = '0= Não usa proxy'
@@ -2751,6 +2848,7 @@ object Form1: TForm1
               Width = 10
               Caption = 'IP'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeProxyIP: TEdit
               Left = 49
@@ -2758,6 +2856,7 @@ object Form1: TForm1
               Top = 28
               Width = 88
               Enabled = False
+              ParentFont = False
               TabOrder = 1
             end
             object lSSID10: TLabel
@@ -2767,6 +2866,7 @@ object Form1: TForm1
               Width = 28
               Caption = 'Porta'
               ParentColor = False
+              ParentFont = False
             end
             object lSSID11: TLabel
               Left = 3
@@ -2775,6 +2875,7 @@ object Form1: TForm1
               Width = 40
               Caption = 'Usuario'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeProxyUser: TEdit
               Left = 49
@@ -2782,6 +2883,7 @@ object Form1: TForm1
               Top = 80
               Width = 88
               Enabled = False
+              ParentFont = False
               TabOrder = 3
             end
             object lSSID12: TLabel
@@ -2791,6 +2893,7 @@ object Form1: TForm1
               Width = 32
               Caption = 'Senha'
               ParentColor = False
+              ParentFont = False
             end
             object edRedeProxySenha: TEdit
               Left = 49
@@ -2798,6 +2901,7 @@ object Form1: TForm1
               Top = 106
               Width = 88
               Enabled = False
+              ParentFont = False
               TabOrder = 4
             end
             object edRedeProxyPorta: TSpinEdit
@@ -2807,6 +2911,7 @@ object Form1: TForm1
               Width = 88
               Enabled = False
               MaxValue = 999999
+              ParentFont = False
               TabOrder = 2
             end
           end
@@ -2815,6 +2920,7 @@ object Form1: TForm1
           Caption = 'Impressao'
           ClientHeight = 204
           ClientWidth = 717
+          ParentFont = False
           object GroupBox3: TGroupBox
             Left = -2
             Height = 154
@@ -2822,6 +2928,7 @@ object Form1: TForm1
             Width = 274
             ClientHeight = 134
             ClientWidth = 270
+            ParentFont = False
             TabOrder = 2
             object seLargura: TSpinEdit
               Left = 8
@@ -2829,6 +2936,7 @@ object Form1: TForm1
               Top = 16
               Width = 64
               MaxValue = 9999
+              ParentFont = False
               TabOrder = 0
             end
             object Label19: TLabel
@@ -2838,6 +2946,7 @@ object Form1: TForm1
               Width = 40
               Caption = 'Largura'
               ParentColor = False
+              ParentFont = False
             end
             object Label20: TLabel
               Left = 96
@@ -2846,6 +2955,7 @@ object Form1: TForm1
               Width = 27
               Caption = 'Topo'
               ParentColor = False
+              ParentFont = False
             end
             object seMargemTopo: TSpinEdit
               Left = 96
@@ -2853,6 +2963,7 @@ object Form1: TForm1
               Top = 16
               Width = 64
               MaxValue = 9999
+              ParentFont = False
               TabOrder = 1
             end
             object Label21: TLabel
@@ -2862,6 +2973,7 @@ object Form1: TForm1
               Width = 34
               Caption = 'Fundo'
               ParentColor = False
+              ParentFont = False
             end
             object seMargemFundo: TSpinEdit
               Left = 8
@@ -2869,6 +2981,7 @@ object Form1: TForm1
               Top = 66
               Width = 64
               MaxValue = 9999
+              ParentFont = False
               TabOrder = 2
             end
             object Label22: TLabel
@@ -2878,6 +2991,7 @@ object Form1: TForm1
               Width = 48
               Caption = 'Esquerda'
               ParentColor = False
+              ParentFont = False
             end
             object seMargemEsquerda: TSpinEdit
               Left = 96
@@ -2885,6 +2999,7 @@ object Form1: TForm1
               Top = 66
               Width = 64
               MaxValue = 9999
+              ParentFont = False
               TabOrder = 3
             end
             object Label23: TLabel
@@ -2894,6 +3009,7 @@ object Form1: TForm1
               Width = 34
               Caption = 'Direita'
               ParentColor = False
+              ParentFont = False
             end
             object seMargemDireita: TSpinEdit
               Left = 184
@@ -2901,6 +3017,7 @@ object Form1: TForm1
               Top = 66
               Width = 64
               MaxValue = 9999
+              ParentFont = False
               TabOrder = 4
             end
             object bImpressora: TButton
@@ -2911,6 +3028,7 @@ object Form1: TForm1
               AutoSize = True
               Caption = 'Definir Impressora'
               OnClick = bImpressoraClick
+              ParentFont = False
               TabOrder = 5
             end
             object lImpressora: TLabel
@@ -2920,6 +3038,7 @@ object Form1: TForm1
               Width = 104
               Caption = 'Impresssora Default'
               ParentColor = False
+              ParentFont = False
             end
             object cbPreview: TCheckBox
               Left = 192
@@ -2927,6 +3046,7 @@ object Form1: TForm1
               Top = 26
               Width = 61
               Caption = 'Preview'
+              ParentFont = False
               TabOrder = 6
             end
           end
@@ -2938,6 +3058,7 @@ object Form1: TForm1
             Anchors = [akTop, akLeft, akRight]
             ClientHeight = 134
             ClientWidth = 428
+            ParentFont = False
             TabOrder = 3
             object Label25: TLabel
               AnchorSideRight.Control = seLinhasPular
@@ -2950,6 +3071,7 @@ object Form1: TForm1
               Anchors = [akRight, akBottom]
               Caption = 'Linhas à pular'
               ParentColor = False
+              ParentFont = False
             end
             object seLinhasPular: TSpinEdit
               Left = 108
@@ -2957,6 +3079,7 @@ object Form1: TForm1
               Top = 77
               Width = 41
               MaxValue = 255
+              ParentFont = False
               TabOrder = 0
             end
             object Label26: TLabel
@@ -2971,6 +3094,7 @@ object Form1: TForm1
               BorderSpacing.Right = 2
               Caption = 'Espaços entre linhas'
               ParentColor = False
+              ParentFont = False
             end
             object seEspLinhas: TSpinEdit
               Left = 108
@@ -2978,6 +3102,7 @@ object Form1: TForm1
               Top = 51
               Width = 41
               MaxValue = 255
+              ParentFont = False
               TabOrder = 1
             end
             object Label27: TLabel
@@ -2992,6 +3117,7 @@ object Form1: TForm1
               BorderSpacing.Right = 2
               Caption = 'Colunas'
               ParentColor = False
+              ParentFont = False
             end
             object seColunas: TSpinEdit
               Left = 108
@@ -3000,6 +3126,7 @@ object Form1: TForm1
               Width = 41
               MaxValue = 999
               MinValue = 1
+              ParentFont = False
               TabOrder = 2
               Value = 48
             end
@@ -3015,6 +3142,7 @@ object Form1: TForm1
               BorderSpacing.Right = 2
               Caption = 'Modelo'
               ParentColor = False
+              ParentFont = False
             end
             object cbxModeloPosPrinter: TComboBox
               Left = 8
@@ -3023,6 +3151,7 @@ object Form1: TForm1
               Width = 145
               ItemHeight = 15
               OnChange = cbxModeloChange
+              ParentFont = False
               Style = csDropDownList
               TabOrder = 3
             end
@@ -3037,6 +3166,7 @@ object Form1: TForm1
               BorderSpacing.Right = 2
               Caption = 'Porta'
               ParentColor = False
+              ParentFont = False
             end
             object cbxPorta: TComboBox
               Left = 168
@@ -3044,6 +3174,7 @@ object Form1: TForm1
               Top = 16
               Width = 136
               ItemHeight = 15
+              ParentFont = False
               TabOrder = 4
             end
             object Label29: TLabel
@@ -3059,6 +3190,7 @@ object Form1: TForm1
               BorderSpacing.Bottom = 2
               Caption = 'Pág. de código'
               ParentColor = False
+              ParentFont = False
             end
             object cbxPagCodigo: TComboBox
               Left = 342
@@ -3067,6 +3199,7 @@ object Form1: TForm1
               Top = 16
               Width = 76
               ItemHeight = 15
+              ParentFont = False
               Style = csDropDownList
               TabOrder = 5
             end
@@ -3111,6 +3244,7 @@ object Form1: TForm1
                 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
               }
               OnClick = btSerialClick
+              ParentFont = False
             end
             object GroupBox7: TGroupBox
               Left = 168
@@ -3125,6 +3259,7 @@ object Form1: TForm1
               ChildSizing.ControlsPerLine = 5
               ClientHeight = 59
               ClientWidth = 246
+              ParentFont = False
               TabOrder = 6
               object cbLogotipo: TCheckBox
                 Left = 1
@@ -3134,6 +3269,7 @@ object Form1: TForm1
                 Caption = 'Logotipo'
                 Checked = True
                 OnChange = cbLogotipoChange
+                ParentFont = False
                 State = cbChecked
                 TabOrder = 0
               end
@@ -3148,6 +3284,7 @@ object Form1: TForm1
                 Caption = 'FatorY'
                 Layout = tlCenter
                 ParentColor = False
+                ParentFont = False
               end
               object seFatorY: TSpinEdit
                 Left = 109
@@ -3158,6 +3295,7 @@ object Form1: TForm1
                 MaxValue = 3
                 MinValue = 1
                 OnChange = seFatorYChange
+                ParentFont = False
                 TabOrder = 1
                 Value = 1
               end
@@ -3172,6 +3310,7 @@ object Form1: TForm1
                 Caption = 'FatorX'
                 Layout = tlCenter
                 ParentColor = False
+                ParentFont = False
               end
               object seFatorX: TSpinEdit
                 Left = 194
@@ -3182,6 +3321,7 @@ object Form1: TForm1
                 MaxValue = 3
                 MinValue = 1
                 OnChange = seFatorXChange
+                ParentFont = False
                 TabOrder = 2
                 Value = 1
               end
@@ -3192,6 +3332,7 @@ object Form1: TForm1
                 Width = 68
                 Caption = ' '
                 ParentColor = False
+                ParentFont = False
               end
               object lbKC1: TLabel
                 AnchorSideBottom.Side = asrCenter
@@ -3204,6 +3345,7 @@ object Form1: TForm1
                 Caption = 'KC1'
                 Layout = tlCenter
                 ParentColor = False
+                ParentFont = False
               end
               object seKC1: TSpinEdit
                 Left = 109
@@ -3211,8 +3353,9 @@ object Form1: TForm1
                 Top = 29
                 Width = 45
                 Constraints.MaxWidth = 45
-                MinValue = 1
+                MaxValue = 999
                 OnChange = seKC1Change
+                ParentFont = False
                 TabOrder = 4
                 Value = 32
               end
@@ -3227,6 +3370,7 @@ object Form1: TForm1
                 Caption = 'KC2'
                 Layout = tlCenter
                 ParentColor = False
+                ParentFont = False
               end
               object seKC2: TSpinEdit
                 Left = 194
@@ -3234,8 +3378,9 @@ object Form1: TForm1
                 Top = 29
                 Width = 45
                 Constraints.MaxWidth = 45
-                MinValue = 1
+                MaxValue = 999
                 OnChange = seKC2Change
+                ParentFont = False
                 TabOrder = 3
                 Value = 32
               end
@@ -3275,6 +3420,7 @@ object Form1: TForm1
             Top = 180
             Width = 102
             Caption = 'Item em 1 linha'
+            ParentFont = False
             TabOrder = 4
           end
           object cbImprimirChaveUmaLinha: TCheckBox
@@ -3283,6 +3429,7 @@ object Form1: TForm1
             Top = 180
             Width = 111
             Caption = 'Chave em 1 linha'
+            ParentFont = False
             TabOrder = 5
           end
           object cbLogoLateral: TCheckBox
@@ -3291,6 +3438,7 @@ object Form1: TForm1
             Top = 180
             Width = 85
             Caption = 'Logo Lateral'
+            ParentFont = False
             TabOrder = 6
           end
           object cbQRCodeLateral: TCheckBox
@@ -3299,6 +3447,7 @@ object Form1: TForm1
             Top = 180
             Width = 102
             Caption = 'QRCode Lateral'
+            ParentFont = False
             TabOrder = 7
           end
           object cbImprimirDescAcres: TCheckBox
@@ -3307,13 +3456,15 @@ object Form1: TForm1
             Top = 180
             Width = 127
             Caption = 'Imprime Desc/Acres'
+            ParentFont = False
             TabOrder = 8
           end
         end
         object tsMFe: TTabSheet
           Caption = 'MFE'
-          ClientHeight = 192
+          ClientHeight = 204
           ClientWidth = 717
+          ParentFont = False
           object Label30: TLabel
             Left = 8
             Height = 15
@@ -3321,6 +3472,7 @@ object Form1: TForm1
             Width = 71
             Caption = 'Pasta Entrada'
             ParentColor = False
+            ParentFont = False
           end
           object Label31: TLabel
             Left = 8
@@ -3329,6 +3481,7 @@ object Form1: TForm1
             Width = 78
             Caption = 'Pasta Resposta'
             ParentColor = False
+            ParentFont = False
           end
           object Label32: TLabel
             Left = 8
@@ -3337,12 +3490,14 @@ object Form1: TForm1
             Width = 45
             Caption = 'Timeout'
             ParentColor = False
+            ParentFont = False
           end
           object edMFEInput: TEdit
             Left = 8
             Height = 23
             Top = 24
             Width = 264
+            ParentFont = False
             TabOrder = 0
             Text = 'c:\Integrador\Input\'
           end
@@ -3351,6 +3506,7 @@ object Form1: TForm1
             Height = 23
             Top = 64
             Width = 264
+            ParentFont = False
             TabOrder = 1
             Text = 'c:\Integrador\Output\'
           end
@@ -3360,6 +3516,7 @@ object Form1: TForm1
             Top = 104
             Width = 82
             MinValue = 10
+            ParentFont = False
             TabOrder = 2
             Value = 30
           end
@@ -3370,6 +3527,7 @@ object Form1: TForm1
             Width = 147
             Caption = 'MFE Enviar Pagamento'
             OnClick = btMFEEnviarPagamentoClick
+            ParentFont = False
             TabOrder = 3
           end
           object btMFEVerificarStatus: TButton
@@ -3379,6 +3537,7 @@ object Form1: TForm1
             Width = 147
             Caption = 'Verificar Status Validador'
             OnClick = btMFEVerificarStatusClick
+            ParentFont = False
             TabOrder = 4
           end
           object btMFEEnviarStatusPagamento: TButton
@@ -3388,6 +3547,7 @@ object Form1: TForm1
             Width = 147
             Caption = 'Enviar Status Pagamento'
             OnClick = btMFEEnviarStatusPagamentoClick
+            ParentFont = False
             TabOrder = 5
           end
           object btMFERespostaFiscal: TButton
@@ -3397,6 +3557,7 @@ object Form1: TForm1
             Width = 147
             Caption = 'Resposta Fiscal'
             OnClick = btMFERespostaFiscalClick
+            ParentFont = False
             TabOrder = 6
           end
         end
@@ -3404,6 +3565,7 @@ object Form1: TForm1
           Caption = 'Validação'
           ClientHeight = 196
           ClientWidth = 717
+          ParentFont = False
           object Label33: TLabel
             Left = 16
             Height = 13
@@ -3412,6 +3574,7 @@ object Form1: TForm1
             Alignment = taRightJustify
             Caption = 'Schema Venda Aplicação'
             ParentColor = False
+            ParentFont = False
           end
           object edSchemaVendaAPL: TEdit
             Cursor = crIBeam
@@ -3420,6 +3583,7 @@ object Form1: TForm1
             Top = 33
             Width = 640
             Anchors = [akTop, akLeft, akRight]
+            ParentFont = False
             TabOrder = 0
           end
           object sbSchemaVendaAPL: TSpeedButton
@@ -3434,6 +3598,7 @@ object Form1: TForm1
             BorderSpacing.Left = 3
             Caption = '...'
             OnClick = sbSchemaVendaAPLClick
+            ParentFont = False
           end
           object sbSchemaVendaSAT: TSpeedButton
             AnchorSideLeft.Control = edSchemaVendaSAT
@@ -3447,6 +3612,7 @@ object Form1: TForm1
             BorderSpacing.Left = 3
             Caption = '...'
             OnClick = sbSchemaVendaSATClick
+            ParentFont = False
           end
           object edSchemaVendaSAT: TEdit
             Cursor = crIBeam
@@ -3455,6 +3621,7 @@ object Form1: TForm1
             Top = 81
             Width = 640
             Anchors = [akTop, akLeft, akRight]
+            ParentFont = False
             TabOrder = 1
           end
           object Label34: TLabel
@@ -3465,6 +3632,7 @@ object Form1: TForm1
             Alignment = taRightJustify
             Caption = 'Schema Venda SAT'
             ParentColor = False
+            ParentFont = False
           end
         end
       end
@@ -3482,6 +3650,7 @@ object Form1: TForm1
       item
         Width = 50
       end>
+    ParentFont = False
     SimplePanel = False
   end
   object MainMenu1: TMainMenu
@@ -3652,7 +3821,7 @@ object Form1: TForm1
     ValidarNumeroSessaoResposta = True
     NumeroTentativasValidarSessao = 2
     OnGravarLog = ACBrSAT1GravarLog
-    Config.infCFe_versaoDadosEnt = 0.05
+    Config.infCFe_versaoDadosEnt = 0.08
     Config.ide_numeroCaixa = 0
     Config.ide_tpAmb = taHomologacao
     Config.emit_cRegTrib = RTSimplesNacional
@@ -3724,120 +3893,6 @@ object Form1: TForm1
     CasasDecimais.MaskqCom = ',0.00'
     CasasDecimais.MaskvUnCom = ',0.00'
     ACBrSAT = ACBrSAT1
-    PictureLogo.Data = {
-      07544269746D6170DE0D0000424DDE0D0000000000003E00000028000000FA00
-      00006D0000000100010000000000A00D0000232E0000232E0000020000000000
-      000000000000FFFFFF00EFDBEDADD6DB6ED6D6A59A6AB364A49352A4A4C94909
-      148A451212088892210098AC9556ADB56259335AD795991B5754B6DA9B2D2CD4
-      D2D4A965515692949900E6D6EEB5B29B5B2ECCB2A8D5AADAA94A88495252532B
-      4A2548AAAA9144A944805DEDB5FEF7D5BDF7BDBF777CD767DB77776FAFD76DD5
-      B5BBBEA4AD6CBB574900A6BFFFAF6DFFEFFDF7DFFFBFFFFFFFFFFFFDFFBFFEFF
-      FFFEFFFFFFFFFFFFF500BD410910A608880928400841207FFFFF088880204112
-      42050210248440442480D4AAD6DB55DA6B554B7DB5ED2D7FFFFFE5A6BED65AA5
-      ACD2B5B7955B9DABB900B76D6A5B6CA756EAD54ADB9AD3FFFFFFDD75532DDB79
-      377ADB69DAECAD5CC940F0D295A49359AD36DAB54BC92CFFFFFFE64A99C8A526
-      DA4D849A6B12E692B6409D9B536F5D2DFB9F6777B7FFEF7FFFFFF5EFECFDDFB5
-      7EB5FBEF44D659D65480CEA574C96EDFFBFFF777FFEFFFFFFFFFFEEFEDFFFFFA
-      FFFBFFFBF54A9A29AC80D0B5AEB4AFFD9F33EF7F7E6EF9FFFFFFFE7EDDC7B9BB
-      65BBBA77EEBBAD9D5480B75A225757FBBBF5F7B7F66FFDFFFFFFFEFFEED9BFB4
-      FFB5FFEECB5256E4AA40ACCB55CADBB3BFBFFFF6F7EDDFFFFFFFFFEF6FFFBFFD
-      FFBFBBF7F4A7B5376A40D253FA2D29FB5F9E7EF3EBD79FFFFFFFFFD7DF7D9F37
-      7FBDF3F6DB3549925400D6DA05B367ECC345844C0A6FC9FFFFFFFF28A803E3FF
-      FF421C2EE5D8EECDA980A94AEED659C5BB6CAB5B7525B3FFFFFFFFDB37FFFFFF
-      FD776593DAA69AB5AC40D6B592AB5A3694B6B565D9B95DFFFFFFFFCFFFFFFFFF
-      F994DAF4A69B35325100EB4AB5494EDA6B4B55944EA649FFFFFFFFFFFFFFFFFF
-      F4AB262B297566CDCE8051649AF5B3275570AAB76156E7FFFFFFFFFFFFFFFFFF
-      E66AF3CB552B54AD7480BEBB6A16CCE8D6AF6D6A3DB19FFFFFFFFFFFFFFFFFFF
-      ED551935B6996B529C80B54D4B667256529246578A4E53FFFFFFFFFFFFFFFFFF
-      DAC99AA4A9E6A6DAC900CCCAB5DAAF4B39B5BAA8D5ADB7FFFFFFFFFFFFFFFFFF
-      CABB66DD547555265940BB5DB22D32BBAEB6DB5B7AD2ABFFFFFFFFFFFFFFFFFF
-      B696556BAB12C9E6A480D5D69F65D554D2C945668B6D5524924A5148A5492492
-      48918A8052545430D200EEB5B5DCBEDA5DDF7DADF695AD96DDB5AEB75AEEFEEE
-      DF7D76BD198B128A0A80B35B56B74BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFFFC8420A8C54540ADADAD2ADBFFFFFFFFFFFFFFFFD7FFFFFFFFFFFFFFFF
-      FFFFFFF4DB6C442A6900DAD6F2EB6DFFFFFEEF7BFFFFE0002FFFFFF000000001
-      FFFFC000224297448480DB695B8001FFFFFC0005FFFF000007FFFFF000000000
-      1FFFC000153348A92200CD76990000FFFFFC0007FFF8000000FFFFF3FFFFFFF8
-      03FFCFFF1298225264C0B49B668000FFFFF80003FFF40000007FFFF3FFFFFFFF
-      E1FFCFFF248552291500EF5BBB4000FFFFFC0007FFE80000003FFFF3FFFFFFFF
-      F8FFCFFF26A92912924099B4B50000FFFFF8000FFFC00000000FFFF3FFFFFFFF
-      FC7FCFFF19548D4A4A80D6B7A7C0007FFFF00007FF8000000007FFF3FFFFFFFF
-      FE3FCFFF048962A4A440EDAA5960007FFFF0001FFF0000000007FFF3FFFFFFFF
-      FF3FCFFF344924492500ADD7B680007FFFF8000FFE0000000003FFF3FFFFFFFF
-      FF1FCFFF0B6534B15980966CCEE0003FFFE0001FFE0000000001FFF3FFFFFFFF
-      FF9FCFFF11288B0C8440F5AEF36000000000001FFC0000000001FFF3FFFFFFFF
-      FF8FCFFF190940A32A00BAD5355000000000003FFC0000000000FFF3FFF553FF
-      FFCFCFFF096A3950930097734DA000000000003FF80000780000FFF3FFF0003F
-      FFCFCFFF24918C152480E92DEED000000000003FF80003FE80007FF3FFF0001F
-      FFCFCFFF262443489900D7B6527800000000007FF00007FF80007FF3FFF3FF8F
-      FFE7CFFF1295695249406CED6D5000000000007FE0000FFFA0003FF3FFF3FFC7
-      FFC7CFFF292292294240DAB6B6B400000000007FF0001FFFC0003FF3FFF3FFE7
-      FFC7CFFF159424869A00B755B3D80000000000FFE0001FFFE0003FF3FFE3FFE7
-      FFE7CFFF10A95B521300B9B54AB40000000000FFE0003FFFF0005FF3FFF3FFE7
-      FFC7CFFF1656A465A2C0A6AAB5AC0000000000FFC0003FFFF001BFF3FFF3FFE7
-      FFCFCFFF12844A104800DB5DB66E0000000001FFC0003FFFF007FFF3FFF3FFE7
-      FFCFCFFF08A8A54C2A00ADA6CBB40006ED8001FFC0007FFFF87FFFF3FFF3FFC7
-      FFCFCFFF154A528B9280D4F56D5A0007FF0003FFC0003FFFFDFFFFF3FFE3FF0F
-      FF8FCFFF924908B05240BB2B566B0007FE8001FFE0007FFFFBFFFFF3FFF0001F
-      FF9FCFFF892AB50525009DDAED9D0007FF0003FFC0007FFFFFFFFFF3FFF0007F
-      FF1FCFFF8D1085524440D6DD356A8001FF0007FF80003FFFFFFFFFF3FFFFFFFF
-      FE3FCFFF81AB48AAB340EB4BB6B70003FE0007FFC0007FFFFFFFFFF3FFFFFFFF
-      FE3FCFFFC85032450880ADB95B598003FE0007FFC0007FFFFFFFFFF3FFFFFFFF
-      F87FCFFFC64B4D326440D9B7B2AEC002FC0007FF80007FFFFFFFFFF3FFFFFFFF
-      E1FFCFFFE104A4489500AECADDD34001FE000FFFC0007FFFFFFFFFF3FFFFFFFF
-      03FFCFFFE00225961240D57B4ADD2001FC000FFFC0003FFFFFFFFFF3FFFFFFFE
-      0FFFCFFFF8019242C080ADB36D22C000FC000FFFC0007FFFFFFFFFF3FFFFFFFF
-      87FFCFFFFFF052689C40D69ED7BFA000F8001FFFC0007FFFFFFFFFF3FFFFFFFF
-      E1FFCFFFFFF224852280DB656AD0C000FC001FFFC0003FFFFFFFFFF3FFF005FF
-      F9FFCFFFFFF195354900B976DD3B3000F8002FFFC0003FFFFFFFFFF3FFF0007F
-      FCFFCFFE3FF898828A40A73B26D5B00070003FFFC0007FFFFFFFFFF3FFF3D83F
-      FC7FCFFE3FF842946100DBCCF6D4C00078003FFFE0003FFFF7FFFFF3FFF3FF3F
-      FE7FCFFE1FF8AA521480B46D995AB80070003FFFC0003FFFF2DFFFF3FFF3FF9F
-      FE3FCFFE1FFC95499500AFB6D6CFC80050007FFFE0001FFFF057FFF3FFF3FF9F
-      FF3F8FFE0FFC42254880D2ADD5D1680020007FFFE0001FFFE0005FF3FFF3FF9F
-      FF3F8FFE47FC28A22B00B9DA2A7EB4003000FFFFE00007FFD0007FF3FFF3FF9F
-      FF3F400021E05532C040DEB5B74B54002000FFFFF0000FFFA0003FF3FFF3FF9F
-      FF1E000040012A883640A6CEE969A8000000FFFFF00005FF80007FF3FFE3FF1F
-      FF3CEDEDA80484534880DB525EB5B6000000FFFFF800017E0000FFF3FFF3FE3F
-      FF3D2010551A92248200B56FA9D6B4000001FFFFF00000000000FFF3FFF0007F
-      FF3A36AA8AC266C8B340CED9556956000001FFFFFC0000000000FFF3FFF001FF
-      FF31CAD468A491150880F4DAB7BDD5000003FFFFFC0000000001FFF3FFFFFFFF
-      FF2C112A95192A2A4440ABADDA4E6C000003FFFFFE0000000003FFF3FFFFFFFF
-      FE259D23292522D0A680956B5B6B5B000003FFFFFF0000000001FFF3FFFFFFFF
-      FE10C2548AD248869100F5D6B6D2A6800007FFFFFF0000000007FFF3FFFFFFFF
-      FC5A6954D4192C514C80BB35ACDDB6800007FFFFFF800000000FFFF3FFFFFFFF
-      F8252A8A54C325A92440D6AA5732D5400007FFFFFFE00000001FFFF3FFFFFFFF
-      F88A94612A5492442900B5EDF35A6B40000BFFFFFFF00000003FFFF3FFFFFFFF
-      E1D14936C4A8A42AC940B6569CEDB680000DFFFFFFF8000000FFFFF3FFFFFFFF
-      C22C9484550AA2A24480DBB9A7AA6AC0000CFFFFFFFE000001FFFFF1FFFFFFFC
-      0455656492D35514A480AD4DB95B556104377FFFFFFFC00017FFFFF000000000
-      1BA2921A523409892A00D56ACEB5EF3EFFC93FFFFFFFFC48BFFFFFF000000000
-      649A4AC52488C8654280B3B6755433ADAB5A9FFFFFFFFFFFFFFFFFFFFFFFFFFF
-      88496932934695249240BDBD95ABB5D2B12FA7FFFFFFFFFFFFFFFFFFFFFFFFFC
-      57A68A48A4A922989080CA45DB5ECC6B2ED16BFFFFFFFFFFFFFFFFFFFFFFFFF2
-      923154954A154A452A00B6FA6DB27775A6DDA8FFFFFFFFFFFFFFFFFFFFFFFFE5
-      694A654A95A125354A80DB5F4CBBAB16752B2F3FFFFFFFFFFFFFFFFFFFFFFFDA
-      4AAA1255625522229140CAC5F39B55EB6DD8D29FFFFFFFFFFFFFFFFFFFFFFF12
-      9495AC8A190AD2C82A40DDB96D6DB559924ED9B7FFFFFFFFFFFFFFFFFFFFFE64
-      A692636495B00A36C840B6B695B2CAAADDB5AD65FFFFFFFFFFFFFFFFFFFFF1B6
-      496A08AAC22B69412680A9DB5B2DBAF6CDCD532AFFFFFFFFFFFFFFFFFFFFE813
-      5A4AB492594495949100DE95EDDAAB4D346669593FFFFFFFFFFFFFFFFFFF9D49
-      25954B152A944822AA40B76C5565B4D6D6D5BAD6A7FFFFFFFFFFFFFFFFFD26CA
-      4A4924EA912325520500A96FAB3B6EA9AB6CCD2AB1FFFFFFFFFFFFFFFFF4D255
-      A9549249269894955080DB92DDCD556A72B365D95CBFFFFFFFFFFFFFFFAAA5A8
-      A66A649268AC92A09A40ACF9525B6B779B5A5AA6A64FFFFFFFFFFFFFFE09291A
-      52932A4D8C912A4D2300DB5EADA6592CCDAE966955B0FFFFFFFFFFFFE1F552D3
-      2C94A561124A92A49100EDA6F6DD9BC9DAB56B56B6AD1FFFFFFFFFFE542A9AA4
-      A569149AE292448948C0A5755B66CA6E2D4B73B6A956C4FFFFFFFFE29B456554
-      CA16CA491A69AA564A00FDBAA4F2B555E6EC8A495AA56A937FFFEC1A49665296
-      51C852A44912492149009757BB2EDBB6D4B3756CB673354C808013B2A531A959
-      2C52A956D4A5308C6480EAECDD66B6D92EDD6B57274ACD6CDA5DD24D6AA894A5
-      532D4A48129A4D6206409DB366D9CCA76692A4A9D95932C66DE4B954B5566B4A
-      448924A765249213B240EB36B55B5ADAB2EB5F6A93A5B52B02164D2A4925496A
-      BAD4B25012A149645100A5CF776CCF554D29A896EC55AD72EDD2A2CB5ADA4A29
-      035656A5694A6A582480DA688A453226EAB6A5594AD24A8C566D54D492AAA98D
-      58A2452D963492459A80
-    }
     MsgAppQRCode = 'Consulte o QR Code pelo aplicativo  "De olho na nota", disponível na AppStore (Apple) e PlayStore (Android)'
     EspacoFinal = 50
     LogoWidth = 100

@@ -138,6 +138,7 @@ type
     function IdentificaSchema(const AXML: String): TSchemaNFe;
     function GerarNomeArqSchema(const ALayOut: TLayOut; VersaoServico: Double
       ): String;
+    function GerarNomeArqSchemaEvento(ASchemaEventoNFe: TSchemaNFe; VersaoServico: Double): String;
     function GerarChaveContingencia(FNFe: TNFe): String;
 
     property WebServices: TWebServices read FWebServices write FWebServices;
@@ -183,11 +184,7 @@ uses
   pcnAuxiliar, synacode;
 
 {$IFDEF FPC}
- {$IFDEF CPU64}
-  {$R ACBrNFeServicos.res}  // Dificuldades de compilar Recurso em 64 bits
- {$ELSE}
-  {$R ACBrNFeServicos.rc}
- {$ENDIF}
+ {$R ACBrNFeServicos.rc}
 {$ELSE}
  {$R ACBrNFeServicos.res}
 {$ENDIF}
@@ -299,7 +296,7 @@ end;
 function TACBrNFe.CstatCancelada(AValue: integer): Boolean;
 begin
   case AValue of
-    101, 151, 155: Result := True;
+    101, 135, 151, 155: Result := True;
     else
       Result := False;
   end;
@@ -377,6 +374,26 @@ begin
   end;
 
   Result := ArqSchema;
+end;
+
+function TACBrNFe.GerarNomeArqSchemaEvento(ASchemaEventoNFe: TSchemaNFe;
+  VersaoServico: Double): String;
+var
+  xComplemento: string;
+begin
+  if VersaoServico = 0.0 then
+    Result := ''
+  else
+  begin
+    if ASchemaEventoNFe = schEnvEPEC then
+      xComplemento := GetNomeModeloDFe
+    else
+      xComplemento := '';
+
+    Result := PathWithDelim( Configuracoes.Arquivos.PathSchemas ) +
+              SchemaEventoToStr(ASchemaEventoNFe) + xComplemento + '_v' +
+              FloatToString(VersaoServico, '.', '0.00') + '.xsd';
+  end;
 end;
 
 function TACBrNFe.GerarChaveContingencia(FNFe: TNFe): String;
@@ -630,7 +647,7 @@ begin
     EventoNFe.Evento.Clear;
     with EventoNFe.Evento.New do
     begin
-      infEvento.CNPJ := copy(OnlyNumber(WebServices.Consulta.NFeChave), 7, 14);
+      infEvento.CNPJ:= NotasFiscais.Items[i].NFe.Emit.CNPJCPF;
       infEvento.cOrgao := StrToIntDef(copy(OnlyNumber(WebServices.Consulta.NFeChave), 1, 2), 0);
       infEvento.dhEvento := now;
       infEvento.tpEvento := teCancelamento;
@@ -704,11 +721,7 @@ begin
     for i := 0 to NotasFiscais.Count - 1 do
     begin
       if NotasFiscais.Items[i].Confirmada and Imprimir then
-      begin
         NotasFiscais.Items[i].Imprimir;
-        if (DANFE.ClassName = 'TACBrNFeDANFERaveCB') then
-          Break;
-      end;
     end;
   end;
 end;

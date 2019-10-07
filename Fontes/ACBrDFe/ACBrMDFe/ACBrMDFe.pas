@@ -86,8 +86,10 @@ type
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
       StreamMDFe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil); override;
 
-    function Enviar(ALote: integer; Imprimir: Boolean = True): Boolean; overload;
-    function Enviar(const ALote: String; Imprimir: Boolean = True): Boolean; overload;
+    function Enviar(ALote: integer; Imprimir: Boolean = True;
+      ASincrono:  Boolean = False): Boolean; overload;
+    function Enviar(const ALote: String; Imprimir: Boolean = True;
+      ASincrono:  Boolean = False): Boolean; overload;
 
     function GetNomeModeloDFe: String; override;
     function GetNameSpaceURI: String; override;
@@ -104,6 +106,13 @@ type
     procedure LerServicoDeParams(LayOutServico: TLayOutMDFe; var Versao: Double;
       var URL: String); reintroduce; overload;
     function LerVersaoDeParams(LayOutServico: TLayOutMDFe): String; reintroduce; overload;
+
+    function GetURLConsulta(const CUF: integer;
+      const TipoAmbiente: TpcnTipoAmbiente;
+      const Versao: Double): String;
+    function GetURLQRCode(const CUF: integer; const TipoAmbiente: TpcnTipoAmbiente;
+      const TipoEmissao: TpcnTipoEmissao; const AChaveMDFe: String;
+      const Versao: Double): String;
 
     function IdentificaSchema(const AXML: String): TSchemaMDFe;
     function IdentificaSchemaModal(const AXML: String): TSchemaMDFe;
@@ -136,15 +145,11 @@ type
 implementation
 
 uses
-  strutils, dateutils,
-  pcnAuxiliar, synacode;
+  strutils, dateutils, math,
+  pcnAuxiliar, synacode, ACBrDFeSSL;
 
 {$IFDEF FPC}
- {$IFDEF CPU64}
-  {$R ACBrMDFeServicos.res}  // Dificuldades de compilar Recurso em 64 bits
- {$ELSE}
-  {$R ACBrMDFeServicos.rc}
- {$ENDIF}
+ {$R ACBrMDFeServicos.rc}
 {$ELSE}
  {$R ACBrMDFeServicos.res}
 {$ENDIF}
@@ -226,6 +231,53 @@ begin
   Result := 'MDFe';
 end;
 
+function TACBrMDFe.GetURLConsulta(const CUF: integer;
+  const TipoAmbiente: TpcnTipoAmbiente; const Versao: Double): String;
+var
+  VersaoDFe: TVersaoMDFe;
+  ok: Boolean;
+begin
+  VersaoDFe := DblToVersaoMDFe(ok, Versao);
+  Result := LerURLDeParams('MDFe', CUFtoUF(CUF), TipoAmbiente, 'URL-ConsultaMDFe', 0);
+end;
+
+function TACBrMDFe.GetURLQRCode(const CUF: integer;
+  const TipoAmbiente: TpcnTipoAmbiente; const TipoEmissao: TpcnTipoEmissao;
+  const AChaveMDFe: String; const Versao: Double): String;
+var
+  idMDFe,
+  sEntrada, urlUF, Passo2, sign: String;
+  VersaoDFe: TVersaoMDFe;
+  ok: Boolean;
+begin
+  VersaoDFe := DblToVersaoMDFe(ok, Versao);
+
+  urlUF := LerURLDeParams('MDFe', CUFtoUF(CUF), TipoAmbiente, 'URL-QRCode', 0);
+
+  if Pos('?', urlUF) <= 0 then
+    urlUF := urlUF + '?';
+
+  idMDFe := OnlyNumber(AChaveMDFe);
+
+  // Passo 1
+  sEntrada := 'chMDFe=' + idMDFe + '&tpAmb=' + TpAmbToStr(TipoAmbiente);
+
+  // Passo 2 calcular o SHA-1 da string idMDFe se emissão em contingência
+  if TipoEmissao = teContingencia then
+  begin
+    // Tipo de Emissão em Contingência
+    SSL.CarregarCertificadoSeNecessario;
+    sign := SSL.CalcHash(idMDFe, dgstSHA1, outBase64, True);
+    Passo2 := '&sign='+sign;
+
+    sEntrada := sEntrada + Passo2;
+  end;
+
+
+
+  Result := urlUF + sEntrada;
+end;
+
 function TACBrMDFe.GetNameSpaceURI: String;
 begin
   Result := ACBRMDFE_NAMESPACE;
@@ -272,12 +324,13 @@ begin
     I := pos('<infEvento', AXML);
     if I > 0 then
     begin
-      lTipoEvento := StrToTpEvento(Ok, Trim(RetornarConteudoEntre(AXML, '<tpEvento>', '</tpEvento>')));
+      lTipoEvento := StrToTpEventoMDFe(Ok, Trim(RetornarConteudoEntre(AXML, '<tpEvento>', '</tpEvento>')));
 
       case lTipoEvento of
         teCancelamento: Result := schevCancMDFe;
         teEncerramento: Result := schevEncMDFe;
-        else Result := schevIncCondutorMDFe;
+      else 
+        Result := schevIncCondutorMDFe;
       end;
     end;
   end;
@@ -464,7 +517,7 @@ begin
     EventoMDFe.Evento.Clear;
     with EventoMDFe.Evento.New do
     begin
-      infEvento.CNPJCPF  := copy(OnlyNumber(WebServices.Consulta.MDFeChave), 7, 14);
+      infEvento.CNPJCPF  := Manifestos.Items[i].MDFe.Emit.CNPJCPF;
       infEvento.cOrgao   := StrToIntDef(copy(OnlyNumber(WebServices.Consulta.MDFeChave), 1, 2), 0);
       infEvento.dhEvento := now;
       infEvento.tpEvento := teCancelamento;
@@ -513,12 +566,14 @@ begin
   Result := WebServices.ConsultaMDFeNaoEnc(ACNPJCPF);
 end;
 
-function TACBrMDFe.Enviar(ALote: Integer; Imprimir:Boolean = True): Boolean;
+function TACBrMDFe.Enviar(ALote: Integer; Imprimir:Boolean = True;
+      ASincrono:  Boolean = False): Boolean;
 begin
-  Result := Enviar(IntToStr(ALote), Imprimir);
+  Result := Enviar(IntToStr(ALote), Imprimir, ASincrono);
 end;
 
-function TACBrMDFe.Enviar(const ALote: String; Imprimir:Boolean = True): Boolean;
+function TACBrMDFe.Enviar(const ALote: String; Imprimir:Boolean = True;
+      ASincrono:  Boolean = False): Boolean;
 var
  i: Integer;
 begin
@@ -535,16 +590,14 @@ begin
   Manifestos.Assinar;
   Manifestos.Validar;
 
-  Result := WebServices.Envia(ALote);
+  Result := WebServices.Envia(ALote, ASincrono);
 
   if DAMDFE <> nil then
   begin
     for i := 0 to Manifestos.Count - 1 do
     begin
       if Manifestos.Items[i].Confirmado and Imprimir then
-      begin
         Manifestos.Items[i].Imprimir;
-      end;
     end;
   end;
 end;

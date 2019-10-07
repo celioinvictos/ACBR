@@ -47,6 +47,154 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+06/10/2019
+-- ACBrMDFeConfiguracoes --
+[*] Removido a propriedade de configuração: GerarInfMDFeSupl pois a geração da 
+    string do QR-Code no XML é obrigatória em ambos os ambientes.
+   Por: Italo Jurisato Junior
+
+01/10/2019
+-- ACBrMDFeManifestos --
+[*] Correções na rotina que le o arquivo INI que é utilizado pelo
+    ACBrMonitor.
+   Por: Italo Jurisato Junior
+
+24/09/2019
+-- ACBrMDFeManifestos --
+[*] Removido a condição que defini se é para gerar ou não o grupo
+    <infMDFeSupl>.
+   Por: Italo Jurisato Junior
+
+16/09/2019
+-- pmdfeEnvEventoMDFe --
+[*] Alterado o tamanho máximo da descrição do evento.
+   Por: Gleryston Matos
+
+05/09/2019
+-- ACBrMDFeManifestos --
+[*] Alterado o valor padrão do campo IE do proprietario do veiculo para
+    "ISENTO".
+   Por: Italo Jurisato Junior
+
+28/08/2019
+-- pmdfeMDFeW --
+[*] O CNPJ/CPF do Responsável pelo seguro só será gerado se o Responsável
+    for o tomador.
+  Por: Italo Jurisato Junior
+
+26/08/2019
+-- pmdfeMDFeW --
+[*] https://www.projetoacbr.com.br/forum/topic/53186-erroposs%C3%ADvel-corre%C3%A7%C3%A3o-mdfe-proprietario-do-veic-de-tra%C3%A7%C3%A3o-pr%C3%B3prio-e-reboque-isento/
+  Por: Marcos
+
+01/08/2019
+-- ACBrMDFeManifestos/ACBrMDFeWebServices --
+[*] Removido a validação do código numerico da chave do método Enviar e 
+    incluido na Validação de Regras de Negócios.
+   Por: Italo Jurisato Junior
+
+30/07/2019
+-- pmdfeMDFeW --
+[*] A propriedade GerarTagAssinatura agora pode ser lida e escrita.
+  Por: Italo Jurisato Junior
+
+29/07/2019
+-- ACBrMDFeWebServices --
+[*] No retorno do envio Sincrono estava sendo comparado o cStat com 104
+    sendo que o correto é 100 caso o MDF-e seja autorizado.
+   Por: Italo Jurisato Junior
+
+26/07/2019
+-- pmdfeMDFeW --
+[*] Correção nos tamanhos mínimo e máximo na geração da tag "modal".
+  Por: BigWings
+
+24/07/2019
+-- ACBrMDFeWebServices --
+[*] Ajustes feito para que a validação do código que compõe a chave seja
+    realizado somente no envio e não na geração do XML.
+   Por: Italo Jurisato Junior
+-- Diversos --
+[+] Implementado o evento de Inclusão de DF-e no MDF-e com indicação de 
+    carregamento posterior.
+   Por: Italo Jurisato Junior
+
+18/07/2019
+-- ACBrMDFe --
+[-] https://www.projetoacbr.com.br/forum/topic/52494-482-%E2%80%93-par%C3%A2metro-sign-n%C3%A3o-informado-no-qr-code-para-emiss%C3%A3o-em-conting%C3%AAncia/?do=findComment&comment=345426
+  Por: Asterix
+
+17/07/2019
+-- ACBrMDFe --
+[-] Correção na geração do QRCode quando emissão em contingência.
+  Por: BigWings
+
+15/07/2019
+-- ACBrMDFeConfiguracoes --
+[*] Alterado o valor padrão da propriedade GerarInfMDFeSupl pois agora tanto
+    o ambiente de homologação quanto o de produção exige a geração da string
+    do QR-Code no XML.
+   Por: Italo Jurisato Junior
+
+12/07/2019
+-- Diversos --
+[*] Ajustes na leitura do grupo infFisco que pode ser retornado junto com as
+    informações do protocolo.
+   Por: Italo Jurisato Junior
+
+08/07/2019
+-- ACBrMDFeWebServices --
+[*] No TratarRetorno do método Consultar, foi acrescentado o tratamento de 
+    MDF-e com evento de Encerramento.
+   Por: Italo Jurisato Junior
+
+02/07/2019
+-- ACBrMDFe / ACBrMDFeConfiguracoes --
+[*] Acrescentado um método para setar a propriedade GerarInfMDFeSupl e 
+    corrigido a função GetURLQRCode.
+   Por: Gilvano Piontkoski
+
+01/07/2019
+-- pmdfeMDFeR --
+[*] Alterado a forma de leitura das tags: indCanalVerde e indCarregaPosterior.
+   Por: Italo Jurisato Junior
+
+27/06/2019
+-- ACBrMDFe / ACBrMDFeWebServices --
+[+] Implementado o modo de envio sincrono do MDF-e.
+    function Enviar(ALote: integer; Imprimir: Boolean = True;
+      ASincrono:  Boolean = False): Boolean;
+    a função enviar agora tem um parametro a mais que define o modo de envio.
+   Por: Italo Jurisato Junior
+-- ACBrMDFeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+26/06/2019
+-- Diversos --
+[*] Ajustes visando a versão 3.00a
+  Por: Italo Jurisato Junior
+
+21/06/2019
+-- ACBrMDFeServicos --
+[+] Incluidas as URLs do QR-Code e de Recepção em modo Sincrono.
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador, adicionado a propridade de configuração GerarInfMDFeSupl,
+    que permite gerar ou não o grupo infMDFeSupl que vai conter a com campo
+    com a string do QR-Code previsto na versão 3.00a.
+    (ainda não esta disponivel o ambiente de homologação)
+  Por: Italo Jurisato Junior
+
+24/05/2019
+-- ACBrMDFeWebservices --
+[*] Corrigido a montagem do XML do evento para ser validado corretamente
+   Por: Italo Jurisato Junior
+
 06/03/2018
 -- pmdfeProcMDFe.pas --
 [*] https://www.projetoacbr.com.br/forum/topic/49759-mdf-e-contratante/

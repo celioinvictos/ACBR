@@ -47,6 +47,184 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+04/10/2019
+-- ACBrNFeServicos --
+[*] Incluido a seção: SOAP_V4_BA no arquivo INI, pois a SEFAZ-BA esta usando 
+    namespace diferente do padrão para alguns serviços.
+   Por: Italo Jurisato Junior / Henrique Sandri Zimermam
+
+03/10/2019
+-- pcnConversaoNFe --
+[*] Incluido o tipo de evento: Averbação para Exportação.
+   Por: Italo Jurisato Junior
+
+01/10/2019
+-- ACBrNFeWebServices --
+[*] Incluido a chamada para remover os namespaces individos no método
+    Inutilização.
+   Por: Italo Jurisato Junior
+-- ACBrNFeWebServices --
+[*] Possível correção para o problema que esta ocorrendo na SEFAZ-MG,
+    estão incluido indevidamente o namespace em todas as tags de retorno.
+   Por: Italo Jurisato Junior
+
+27/09/2019
+-- pcnNFeW --
+[*] Alterado de opcional para obrigatório algumas tags do cst 51.
+  Por: Italo Jurisato Junior
+
+13/09/2019
+-- pcnEnvEventoNFe --
+[*] Correção para não tentar extrair CPF da chave de acesso no envio de evento
+    caso o evento seja uma manifestação.
+  Por: BigWings
+
+02/09/2019
+-- ACBrNFeServicos --
+[*] Excluido a chamada para a SVAN e deixando apenas a chamada para a SVRS 
+    para a SEFAZ-PA, pois a partir de 02/09/2019
+    vai deixar de usar a SVAN e passar a utilizar a SVRS.
+   Por: Italo Jurisato Junior
+
+23/08/2019
+-- ACBrNFeDANFeESCPOS --
+[-] Ajustado o metodo ImprimirDANFE para chamar o metodo ImprimirDANFECancelado quando a propriedade Cancelada for true.
+   Por: Rafael Dias
+
+21/08/2019
+-- ACBrNFeServicos --
+[*] Incluido a chamada para a SVRS para a SEFAZ-PA, pois a partir de 02/09/2019
+    vai deixar de usar a SVAN e passar a utilizar a SVRS.
+   Por: Italo Jurisato Junior
+
+14/08/2019
+-- ACBrNFe --
+[*] Alterado a forma como gera o nome do arquivo Schema dos eventos, visando
+    atender os 2 XSD do evento EPEC (NF-e e NFC-e).
+   Por: Italo Jurisato Junior
+
+01/08/2019
+-- ACBrNFeNotasFiscais/ACBrNFeWebServices --
+[*] Removido a validação do código numerico da chave do método Enviar e 
+    incluido na Validação de Regras de Negócios.
+   Por: Italo Jurisato Junior
+
+30/07/2019
+-- pcnNFeW --
+[*] A propriedade GerarTagAssinatura agora pode ser lida e escrita.
+  Por: Italo Jurisato Junior
+
+29/07/2019
+-- ACBrNFeDANFeRLClass --
+[*] No método ImprimirDANFECancelado estava setando a propriedade Cancelada com o valor
+    True e depois da impressão não estava retornando para False.
+   Por: Italo Jurisato Junior
+-- ACBrDFeDANFeReport --
+[*] No método ImprimirDANFECancelado estava setando a propriedade Cancelada com o valor
+    True e depois da impressão não estava retornando para False.
+   Por: Italo Jurisato Junior
+
+26/07/2019
+-- ACBrNFeDANFEClass --
+[+] Adicionada propriedade PosCanhotoLayout, para definir o tipo de canhoto de nfe a ser impresso.
+     (prlPadrao, prlBarra)
+  Por: Henrique Leonardo ( HLeoRj )
+
+24/07/2019
+-- ACBrNFeWebServices --
+[*] Ajustes feito para que a validação do código que compõe a chave seja
+    realizado somente no envio e não na geração do XML.
+   Por: Italo Jurisato Junior
+
+12/07/2019
+-- Diversos --
+[*] Ajustes na leitura do grupo infFisco que pode ser retornado junto com as
+    informações do protocolo.
+   Por: Italo Jurisato Junior
+
+27/06/2019
+-- ACBrNFeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+25/06/2019
+-- ACBrNFeServicos --
+[*] Atualização das URLs de QR-Code e de Consulta da UF: PI.
+  Por: José M S Junior
+
+24/06/2019
+-- ACBrNFeWebServices --
+[*] Tratamento do retorno do webservice de autorização NFe PE quando envio zipado.
+    https://www.projetoacbr.com.br/forum/topic/51801-retorno-do-webservice-sefaz-n%C3%A3o-tratado/
+  Por: Wladimir Isnard
+
+21/06/2019
+-- ACBrNFe --
+[*] Remoção de um IF no método Enviar que não tem mais nenhuma utilidade.
+-- ACBrNFeServicos --
+[*] Atualização das URLs de QR-Code e de Consulta da UF: PI.
+  Por: Italo Jurisato Junior
+
+17/06/2019
+-- ACBrNFeWebServices --
+[*] Ao separar o evento para a sua validação ficou faltando o atributo versao.
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- ACBrNFeNotasFiscais --
+[*] https://www.projetoacbr.com.br/forum/topic/51923-rejei%C3%A7%C3%A3o-725-nfc-e-com-cfop-inv%C3%A1lido/
+  Por: pcBonetti
+
+14/06/2019
+-- ACBrNFeWebServices --
+[*] A variável SchemaEventoNFe não estava sendo inicializada com o valor schErro.
+  Por: Waldir Paim
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador, adicionado a função para gerar o path para o Download de
+    eventos e implementado a validação completa de um evento antes do seu
+    envio.
+  Por: Italo Jurisato Junior
+
+07/06/2019
+-- ACBrECFVirtualNFCe --
+[+] Adicionado evento QuandoImprimirDocumento que permite ao programador tratar sua
+    própria impressão.
+    https://www.projetoacbr.com.br/forum/topic/51814-sugest%C3%B5es-para-o-refactoring-dos-ecf-virtuais/
+  Por: EMBarbosa
+
+06/06/2019
+-- ACBrNFeDANFEClass --
+[+] Inclusão da propriedade "DetRastros" para configurar impressão
+    individualizada das tags do detalhamento específico "rastro" no DANFE.
+    https://www.projetoacbr.com.br/forum/topic/51434-detalhamento-específico-melhoria-impressão-fonte-disponivel/
+  Por: -=Ma®©oS=-
+
+22/05/2019
+-- ACBrNFeWebServices --
+[-] Ajuste no Método Inutiliza, para validar emitente com CPF
+  Por: Jose M S Junior
+
+15/05/2019
+-- pcnNFeRTXT, pcnLAyoutTXT --
+[*] Atualizado layout TXT com ultimas NTs.
+  Por: Jose M S Junior
+
+15/05/2019
+-- ACBrNFeNotasFiscais--
+[-] remoção de regras antigas de validação da série
+[-] alterado método de validação do cnpj do emitente para 
+    considerar CPF (Produtor Rural)
+   Por: Régys Silveira
+
+09/05/2019
+-- ACBrECFVirtualNFCe --
+[*] Atribuir a chave da NFe a propriedade ChaveCupom antes de levantar a exception em caso de falha de envia, possibilitando pegar a chave da NFe.
+  Por: Rafael Dias
+
 26/04/2019
 -- pcnRetConsSitNFe --
 [-] Correção de tipo na leitura da tag cMsg.

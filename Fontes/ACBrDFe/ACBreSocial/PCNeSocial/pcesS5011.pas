@@ -105,7 +105,7 @@ type
   private
     FindCoop: Integer;
     FindConstr: Integer;
-    FindSubstPart: Integer;
+    FindSubstPatr: Integer;
     FpercRedContrib: Double;
     FinfoAtConc: TinfoAtConc;
   public
@@ -114,7 +114,7 @@ type
 
     property indCoop: Integer read FindCoop;
     property indConstr: Integer read FindConstr;
-    property indSubstPart: Integer read FindSubstPart;
+    property indSubstPatr: Integer read FindSubstPatr;
     property percRedContrib: Double read FpercRedContrib;
     property infoAtConc: TinfoAtConc read FinfoAtConc write FinfoAtConc;
   end;
@@ -133,9 +133,9 @@ type
 
   TInfoComplObra = class(TObject)
   private
-    FindSubstPartObra: Integer;
+    FindSubstPatrObra: Integer;
   public
-    property indSubstPartObra: Integer read FindSubstPartObra;
+    property indSubstPatrObra: Integer read FindSubstPatrObra;
   end;
 
   TInfoEstab = class(TObject)
@@ -300,6 +300,7 @@ type
     FcodTercsSusp: String;
     FinfoTercSusp: TinfoTercSuspCollection;
     FInfoEmprParcial: TInfoEmprParcial;
+    FcnoObra: String;
     FdadosOpPort: TdadosOpPort;
     Fbasesremun: TbasesremunCollection;
     FbasesAvNport: TbasesAvNport;
@@ -314,6 +315,7 @@ type
     property codTercsSusp: String read FcodTercsSusp;
     property infoTercSusp: TinfoTercSuspCollection read FinfoTercSusp write FinfoTercSusp;
     property InfoEmprParcial: TInfoEmprParcial read FInfoEmprParcial write FInfoEmprParcial;
+    property cnoObra: String read FcnoObra;
     property dadosOpPort: TdadosOpPort read FdadosOpPort write FdadosOpPort;
     property basesremun: TbasesremunCollection read Fbasesremun write Fbasesremun;
     property basesAvNPort: TbasesAvNport read FbasesAvNport write FbasesAvNport;
@@ -626,7 +628,7 @@ begin
           begin
             infoCS.InfoContrib.infoPJ.FindCoop        := leitor.rCampo(tcInt, 'indCoop');
             infoCS.InfoContrib.infoPJ.FindConstr      := leitor.rCampo(tcInt, 'indConstr');
-            infoCS.InfoContrib.infoPJ.FindSubstPart   := leitor.rCampo(tcInt, 'indSubstPart');
+            infoCS.InfoContrib.infoPJ.FindSubstPatr   := leitor.rCampo(tcInt, 'indSubstPatr');
             infoCS.InfoContrib.infoPJ.FpercRedContrib := leitor.rCampo(tcDe2, 'percRedContrib');
 
             if leitor.rExtrai(5, 'infoAtConc') <> '' then
@@ -652,7 +654,7 @@ begin
             infoCS.ideEstab.Items[i].infoEstab.FaliqRatAjust := leitor.rCampo(tcDe4, 'aliqRatAjust');
 
             if leitor.rExtrai(5, 'infoComplObra') <> '' then
-              infoCS.ideEstab.Items[i].infoEstab.infoComplObra.FindSubstPartObra := leitor.rCampo(tcInt, 'indSubstPartObra');
+              infoCS.ideEstab.Items[i].infoEstab.infoComplObra.FindSubstPatrObra := leitor.rCampo(tcInt, 'indSubstPatrObra');
           end;
 
           j := 0;
@@ -679,6 +681,8 @@ begin
               infoCS.ideEstab.Items[i].ideLotacao.Items[j].InfoEmprParcial.FtpInscProp    := leitor.rCampo(tcInt, 'tpInscProp');
               infoCS.ideEstab.Items[i].ideLotacao.Items[j].InfoEmprParcial.FnrInscProp    := leitor.rCampo(tcStr, 'nrInscProp');
             end;
+
+            infoCS.ideEstab.Items[i].ideLotacao.Items[j].FcnoObra := leitor.rCampo(tcStr, 'cnoObra');
 
             if leitor.rExtrai(5, 'dadosOpPort') <> '' then
             begin
@@ -840,7 +844,7 @@ begin
       sSecao := 'infoPJ';
       AIni.WriteInteger(sSecao, 'indCoop',      infoCS.infoContrib.infoPJ.indCoop);
       AIni.WriteInteger(sSecao, 'indConstr',    infoCS.infoContrib.infoPJ.indConstr);
-      AIni.WriteInteger(sSecao, 'indSubstPart', infoCS.infoContrib.infoPJ.indSubstPart);
+      AIni.WriteInteger(sSecao, 'indSubstPatr', infoCS.infoContrib.infoPJ.indSubstPatr);
       AIni.WriteFloat(sSecao, 'percRedContrib', infoCS.infoContrib.infoPJ.percRedContrib);
 
       sSecao := 'infoAtConc';
@@ -863,7 +867,7 @@ begin
 
         sSecao := 'infoComplObra' + IntToStrZero(I, 4);
 
-        AIni.WriteInteger(sSecao, 'indSubstPartObra', infoCS.ideEstab.Items[i].infoEstab.infoComplObra.indSubstPartObra);
+        AIni.WriteInteger(sSecao, 'indSubstPatrObra', infoCS.ideEstab.Items[i].infoEstab.infoComplObra.indSubstPatrObra);
 
         with infoCS.ideEstab.Items[i] do
         begin
@@ -875,6 +879,7 @@ begin
             AIni.WriteInteger(sSecao, 'fpas',        ideLotacao.Items[j].fpas);
             AIni.WriteString(sSecao, 'codTercs',     ideLotacao.Items[j].codTercs);
             AIni.WriteString(sSecao, 'codTercsSusp', ideLotacao.Items[j].codTercsSusp);
+            AIni.WriteString(sSecao, 'cnoObra',      ideLotacao.Items[j].cnoObra);
 
             with ideLotacao.Items[j] do
             begin

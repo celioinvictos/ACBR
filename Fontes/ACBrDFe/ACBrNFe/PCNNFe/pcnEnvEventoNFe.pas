@@ -155,7 +155,7 @@ end;
 
 function TEventoNFe.GerarXML: Boolean;
 var
-  i, j: Integer;
+  i, j, Serie: Integer;
   sDoc, sModelo: String;
 begin
   Gerador.ArquivoFormatoXML := '';
@@ -179,7 +179,20 @@ begin
     Gerador.wCampo(tcInt, 'HP08', 'cOrgao', 001, 002, 1, FEvento.Items[i].FInfEvento.cOrgao);
     Gerador.wCampo(tcStr, 'HP09', 'tpAmb', 001, 001,  1, TpAmbToStr(Evento.Items[i].InfEvento.tpAmb), DSC_TPAMB);
 
-    sDoc := OnlyNumber( Evento.Items[i].InfEvento.CNPJ );
+    sDoc := OnlyNumber(Evento.Items[i].InfEvento.CNPJ);
+    if EstaVazio(sDoc) then
+      sDoc := ExtrairCNPJChaveAcesso(Evento.Items[i].InfEvento.chNFe);
+
+    // Verifica a Série do Documento, caso esteja no intervalo de 910-969
+    // o emitente é pessoa fisica, logo na chave temos um CPF.
+    Serie := ExtrairSerieChaveAcesso(Evento.Items[i].InfEvento.chNFe);
+    if (Length(sDoc) = 14)
+      and (Serie >= 910) and (Serie <= 969)
+      and not (Evento.Items[i].InfEvento.tpEvento in [teManifDestConfirmacao..teManifDestOperNaoRealizada]) then
+    begin
+      sDoc := Copy(sDoc, 4, 11);
+    end;
+
     case Length( sDoc ) of
      14: begin
            Gerador.wCampo(tcStr, 'HP10', 'CNPJ', 014, 014, 1, sDoc , DSC_CNPJ);
@@ -400,11 +413,12 @@ begin
         infEvento.nSeqEvento    := RetEventoNFe.InfEvento.nSeqEvento;
         infEvento.VersaoEvento  := RetEventoNFe.InfEvento.VersaoEvento;
 
-        infEvento.DetEvento.xCorrecao := RetEventoNFe.InfEvento.DetEvento.xCorrecao;
-        infEvento.DetEvento.xCondUso  := RetEventoNFe.InfEvento.DetEvento.xCondUso;
-        infEvento.DetEvento.nProt     := RetEventoNFe.InfEvento.DetEvento.nProt;
-        infEvento.DetEvento.xJust     := RetEventoNFe.InfEvento.DetEvento.xJust;
-        infEvento.DetEvento.chNFeRef  := RetEventoNFe.InfEvento.DetEvento.chNFeRef;
+        infEvento.DetEvento.descEvento := RetEventoNFe.InfEvento.DetEvento.descEvento;
+        infEvento.DetEvento.xCorrecao  := RetEventoNFe.InfEvento.DetEvento.xCorrecao;
+        infEvento.DetEvento.xCondUso   := RetEventoNFe.InfEvento.DetEvento.xCondUso;
+        infEvento.DetEvento.nProt      := RetEventoNFe.InfEvento.DetEvento.nProt;
+        infEvento.DetEvento.xJust      := RetEventoNFe.InfEvento.DetEvento.xJust;
+        infEvento.DetEvento.chNFeRef   := RetEventoNFe.InfEvento.DetEvento.chNFeRef;
 
         infEvento.detEvento.cOrgaoAutor := RetEventoNFe.InfEvento.detEvento.cOrgaoAutor;
         infEvento.detEvento.tpAutor     := RetEventoNFe.InfEvento.detEvento.tpAutor;
@@ -486,7 +500,7 @@ begin
         if CCe then
           infEvento.tpEvento := teCCe
         else
-          infEvento.tpEvento := StrToTpEvento(ok,INIRec.ReadString(  sSecao,'tpEvento' ,''));
+          infEvento.tpEvento := StrToTpEventoNFe(ok,INIRec.ReadString(  sSecao,'tpEvento' ,''));
 
         infEvento.nSeqEvento   := INIRec.ReadInteger( sSecao,'nSeqEvento' ,1);
         infEvento.versaoEvento := INIRec.ReadString(  sSecao,'versaoEvento' ,'1.00');;

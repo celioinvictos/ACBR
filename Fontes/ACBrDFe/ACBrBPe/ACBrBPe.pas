@@ -157,11 +157,7 @@ uses
   pcnAuxiliar, synacode, ACBrDFeSSL;
 
 {$IFDEF FPC}
- {$IFDEF CPU64}
-  {$R ACBrBPeServicos.res}  // Dificuldades de compilar Recurso em 64 bits
- {$ELSE}
-  {$R ACBrBPeServicos.rc}
- {$ENDIF}
+ {$R ACBrBPeServicos.rc}
 {$ELSE}
  {$R ACBrBPeServicos.res}
 {$ENDIF}
@@ -251,8 +247,8 @@ end;
 function TACBrBPe.CstatConfirmada(AValue: Integer): Boolean;
 begin
   case AValue of
-    100, 110, 150, 301, 302, 303: Result := True;
-    else
+    100, 102, 110, 150, 301, 302, 303: Result := True;
+  else
       Result := False;
   end;
 end;
@@ -260,8 +256,8 @@ end;
 function TACBrBPe.CstatProcessado(AValue: Integer): Boolean;
 begin
   case AValue of
-    100, 110, 150, 301, 302, 303: Result := True;
-    else
+    100, 102, 110, 150, 301, 302, 303: Result := True;
+  else
       Result := False;
   end;
 end;
@@ -433,9 +429,9 @@ begin
       GerarException(WebServices.Consulta.Msg);
 
     EventoBPe.Evento.Clear;
-    with EventoBPe.Evento.Add do
+    with EventoBPe.Evento.New do
     begin
-      infEvento.CNPJ := copy(OnlyNumber(WebServices.Consulta.BPeChave), 7, 14);
+      infEvento.CNPJ := Bilhetes.Items[i].BPe.Emit.CNPJ;
       infEvento.cOrgao := StrToIntDef(copy(OnlyNumber(WebServices.Consulta.BPeChave), 1, 2), 0);
       infEvento.dhEvento := now;
       infEvento.tpEvento := teCancelamento;
@@ -506,11 +502,7 @@ begin
     for i := 0 to Bilhetes.Count - 1 do
     begin
       if Bilhetes.Items[i].Confirmada and Imprimir then
-      begin
         Bilhetes.Items[i].Imprimir;
-        if (DABPE.ClassName = 'TACBrBPeDABPERaveCB') then
-          Break;
-      end;
     end;
   end;
 end;

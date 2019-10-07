@@ -57,35 +57,32 @@ unit pcnRetEnvEventoBPe;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnLeitor, pcnEventoBPe, pcnSignature;
 
 type
-  TRetInfEventoCollection     = class;
   TRetInfEventoCollectionItem = class;
-  TRetEventoBPe               = class;
 
-  TRetInfEventoCollection = class(TCollection)
+  TRetInfEventoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TRetInfEventoCollectionItem;
     procedure SetItem(Index: Integer; Value: TRetInfEventoCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TRetInfEventoCollectionItem;
+    function Add: TRetInfEventoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TRetInfEventoCollectionItem;
     property Items[Index: Integer]: TRetInfEventoCollectionItem read GetItem write SetItem; default;
   end;
 
-  TRetInfEventoCollectionItem = class(TCollectionItem)
+  TRetInfEventoCollectionItem = class(TObject)
   private
     FRetInfEvento: TRetInfEvento;
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-  published
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
   end;
 
-  TRetEventoBPe = class(TPersistent)
+  TRetEventoBPe = class(TObject)
   private
     FidLote: Integer;
     Fversao: String;
@@ -103,7 +100,6 @@ type
     constructor Create;
     destructor Destroy; override;
     function LerXml: Boolean;
-  published
     property idLote: Integer                    read FidLote    write FidLote;
     property Leitor: TLeitor                    read FLeitor    write FLeitor;
     property versao: String                     read Fversao    write Fversao;
@@ -128,13 +124,7 @@ uses
 
 function TRetInfEventoCollection.Add: TRetInfEventoCollectionItem;
 begin
-  Result := TRetInfEventoCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TRetInfEventoCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TRetInfEventoCollectionItem);
+  Result := Self.New;
 end;
 
 function TRetInfEventoCollection.GetItem(
@@ -149,10 +139,17 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TRetInfEventoCollection.New: TRetInfEventoCollectionItem;
+begin
+  Result := TRetInfEventoCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TRetInfEventoCollectionItem }
 
 constructor TRetInfEventoCollectionItem.Create;
 begin
+  inherited;
   FRetInfEvento := TRetInfEvento.Create;
 end;
 
@@ -166,8 +163,9 @@ end;
 
 constructor TRetEventoBPe.Create;
 begin
-  FLeitor := TLeitor.Create;
-  FretEvento := TRetInfEventoCollection.Create(Self);
+  inherited;
+  FLeitor    := TLeitor.Create;
+  FretEvento := TRetInfEventoCollection.Create;
   FInfEvento := TInfEvento.Create;
   Fsignature := Tsignature.Create;
 end;
@@ -199,7 +197,7 @@ begin
          infEvento.CNPJ         := Leitor.rCampo(tcStr, 'CNPJ');
          infEvento.chBPe        := Leitor.rCampo(tcStr, 'chBPe');
          infEvento.dhEvento     := Leitor.rCampo(tcDatHor, 'dhEvento');
-         infEvento.tpEvento     := StrToTpEvento(ok, Leitor.rCampo(tcStr, 'tpEvento'));
+         infEvento.tpEvento     := StrToTpEventoBPe(ok, Leitor.rCampo(tcStr, 'tpEvento'));
          infEvento.nSeqEvento   := Leitor.rCampo(tcInt, 'nSeqEvento');
          infEvento.VersaoEvento := Leitor.rCampo(tcDe2, 'verEvento');
 
@@ -257,7 +255,7 @@ begin
       i := 0;
       while Leitor.rExtrai(2, 'infEvento', '', i + 1) <> '' do
        begin
-         FretEvento.Add;
+         FretEvento.New;
 
          FretEvento.Items[i].FRetInfEvento.XML := Leitor.Grupo;
 
@@ -269,7 +267,8 @@ begin
          FretEvento.Items[i].FRetInfEvento.xMotivo    := Leitor.rCampo(tcStr, 'xMotivo');
          
          FretEvento.Items[i].FRetInfEvento.chBPe      := Leitor.rCampo(tcStr, 'chBPe');
-         FretEvento.Items[i].FRetInfEvento.tpEvento   := StrToTpEvento(ok, Leitor.rCampo(tcStr, 'tpEvento'));
+         // Alterado a função de conversao
+         FretEvento.Items[i].FRetInfEvento.tpEvento   := StrToTpEventoBPe(ok, Leitor.rCampo(tcStr, 'tpEvento'));
          FretEvento.Items[i].FRetInfEvento.xEvento    := Leitor.rCampo(tcStr, 'xEvento');
          FretEvento.Items[i].FRetInfEvento.nSeqEvento := Leitor.rCampo(tcInt, 'nSeqEvento');
          FretEvento.Items[i].FRetInfEvento.dhRegEvento := Leitor.rCampo(tcDatHor, 'dhRegEvento');
@@ -286,7 +285,7 @@ begin
          j := 0;
          while  Leitor.rExtrai(3, 'chBPePend', '', j + 1) <> '' do
           begin
-            FretEvento.Items[i].FRetInfEvento.chBPePend.Add;
+            FretEvento.Items[i].FRetInfEvento.chBPePend.New;
 
             FretEvento.Items[i].FRetInfEvento.chBPePend[j].ChavePend := Leitor.rCampo(tcStr, 'chBPePend');
 

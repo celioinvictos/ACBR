@@ -51,10 +51,16 @@ type
 
   TANe = class(TObject)
   private
+    /////// ATM
     Fusuario: String;
     Fsenha: String;
     Fcodatm: String;
 
+    /////// ELT
+    FNomeArq: String;
+    FCNPJ: String;
+
+    /////// ATM e ELT
     FxmlDFe: String;
 
     Faplicacao: String;
@@ -66,10 +72,16 @@ type
     Fchaveresp: String;
 
   public
+    /////// ATM
     property usuario: String  read Fusuario  write Fusuario;
     property senha: String    read Fsenha    write Fsenha;
     property codatm: String   read Fcodatm   write Fcodatm;
 
+    /////// ELT
+    property NomeArq: String  read FNomeArq write FNomeArq;
+    property CNPJ: String     read FCNPJ    write FCNPJ;
+
+    /////// ATM e ELT
     // A propriedade abaixo é utilizada pelos serviços: AverbaNFe, AverbaCTe e DeclaraMDFe
     property xmlDFe: String   read FxmlDFe   write FxmlDFe;
 

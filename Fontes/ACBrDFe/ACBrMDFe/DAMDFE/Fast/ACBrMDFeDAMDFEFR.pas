@@ -127,6 +127,7 @@ type
     function  PrepareReport(MDFe: TMDFe = nil): Boolean;
     function  PrepareReportEvento: Boolean;
     procedure CriarDataSetsFrx;
+    procedure frxReportBeforePrint(Sender: TfrxReportComponent);
   public
     frxReport: TfrxReport;
     frxPDFExport: TfrxPDFExport;
@@ -161,7 +162,7 @@ type
 
 implementation
 
-uses ACBrMDFe, ACBrUtil, StrUtils, pmdfeConversaoMDFe, ACBrValidador;
+uses ACBrMDFe, ACBrUtil, ACBrDFeReport, ACBrDelphiZXingQRCode, StrUtils, pmdfeConversaoMDFe, ACBrValidador;
 
 function CollateBr(Str: string): string;
 var
@@ -230,10 +231,13 @@ begin
     ScriptLanguage := 'PascalScript';
     StoreInDFM     := False;
     OnGetValue := frxReportGetValue;
+    OnBeforePrint := frxReportBeforePrint;
+    OnReportPrint := 'frxReportOnReportPrint';
     PreviewOptions.Buttons :=[pbExport, pbPrint, pbZoom, pbFind, pbNavigator, pbExportQuick];
   end;
 
   frxPDFExport := TfrxPDFExport.Create(FDAMDFEClassOwner);
+  frxPDFExport.PrintOptimized := True;
   frxPDFExport.ShowProgress := False;
 
   frxBarCodeObject := TfrxBarCodeObject.Create(Self);
@@ -268,6 +272,10 @@ begin
     Add('dhIniViagem', ftDateTime);
     Add('Lacres', ftMemo);
 	  Add('vCarga', ftCurrency);
+
+    // Outros
+    Add('URL', ftString, 1000);
+
     CreateDataSet;
   end;
 
@@ -382,6 +390,7 @@ begin
     Add('Imagem', ftString, 256);
     Add('Sistema', ftString, 150);
     Add('Usuario', ftString, 60);
+    Add('QrCodeCarregado', ftGraphic, 1000);
     CreateDataSet;
   end;
 
@@ -691,12 +700,26 @@ begin
   inherited Destroy;
 end;
 
+procedure TACBrMDFeDAMDFEFR.frxReportBeforePrint(Sender: TfrxReportComponent);
+var
+  qrCode: String;
+begin
+  if Assigned(FMDFe) then
+  begin
+    qrCode := FMDFe.infMDFeSupl.qrCodMDFe;
+  if Assigned(Sender) and (Trim(qrCode) <> '') and (Sender.Name = 'ImgQrCode') then
+     PintarQRCode(qrCode, TfrxPictureView(Sender).Picture, qrUTF8NoBOM);
+  end;
+end;
+
 procedure TACBrMDFeDAMDFEFR.frxReportGetValue(const VarName: string; var Value: Variant);
 begin
   if VarName = 'CANCELADO' then
     Value := (DAMDFEClassOwner.Cancelada) or (FMDFe.procMDFe.cStat = 101);
   if VarName = 'ENCERRADO' then
     Value := DAMDFEClassOwner.Encerrado;
+  if VarName = 'PREVISAO' then
+    Value := False;
 end;
 
 function TACBrMDFeDAMDFEFR.GetPreparedReport: TfrxReport;
@@ -1145,6 +1168,8 @@ begin
         FieldByName('qCarga').AsCurrency := qCarga;
 	    FieldByName('vCarga').AsCurrency := vCarga;
     end;
+
+    FieldByName('URL').AsString := TACBrMDFe(ACBrMDFe).GetURLConsulta(FMDFe.Ide.cUF, FMDFe.Ide.tpAmb, FMDFe.infMDFe.versao);
 
     // Incluido por Paulo Hostert em 18/11/2014.
     wObs := FMDFe.infAdic.infCpl;

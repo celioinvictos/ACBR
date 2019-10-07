@@ -174,6 +174,8 @@ function BEStrToInt(const ABEStr: AnsiString): Integer;
 
 Function HexToAscii(const HexStr : String) : AnsiString ;
 Function AsciiToHex(const ABinaryString: AnsiString): String;
+function TryHexToAscii(const HextStr: String; out Value: AnsiString): Boolean;
+function HexToAsciiDef(const HexStr: String; const Default: AnsiString): AnsiString;
 
 function BinaryStringToString(const AString: AnsiString): AnsiString;
 function StringToBinaryString(const AString: AnsiString): AnsiString;
@@ -380,6 +382,9 @@ function WorkingDaysBetween(StartDate,EndDate: TDateTime): Integer;
 function IncWorkingDay(ADate: TDateTime; WorkingDays: Integer): TDatetime;
 
 procedure LerIniArquivoOuString(const IniArquivoOuString: AnsiString; AMemIni: TMemIniFile);
+function StringIsINI(AString: String): Boolean;
+function StringIsAFile(AString: String): Boolean;
+function StringIsXML(AString: String): Boolean;
 
 {$IfDef FPC}
 var ACBrANSIEncoding: String;
@@ -1078,15 +1083,31 @@ begin
   Result := '' ;
   Cmd    := Trim(HexStr);
   I      := 1 ;
-  L      := Length( HexStr ) ;
+  L      := Length(Cmd) ;
 
   while I < L do
   begin
-     B := StrToIntDef('$' + copy(Cmd, I, 2), 32) ;
+     B := StrToInt('$' + copy(Cmd, I, 2)) ;
      Result := Result + AnsiChr( B ) ;
      Inc( I, 2) ;
   end ;
 end ;
+
+function TryHexToAscii(const HextStr: String; out Value: AnsiString): Boolean;
+begin
+  try
+    Value := HexToAscii(HextStr);
+    Result := True;
+  except
+    Result := False;
+  end;
+end;
+
+function HexToAsciiDef(const HexStr: String; const Default: AnsiString): AnsiString;
+begin
+  if not TryHexToAscii(HexStr, Result) then
+    Result := Default;
+end;
 
 {-----------------------------------------------------------------------------
   Converte uma String pela sua representação em HexaDecimal
@@ -3354,10 +3375,12 @@ end;
       // Precisa ser o ROOT ou a
       // aplicação ter provilegios de ROOT  (use: su  ,  chmod u+s SeuPrograma )
       //
-      if Reboot then
-         RunCommand('sudo shutdown -r now')
+      if LogOff then
+        RunCommand('loginctl terminate-session $XDG_SESSION_ID')
+      else if Reboot then
+        RunCommand('sudo shutdown -r now')
       else
-         RunCommand('sudo shutdown -h now') ;
+        RunCommand('sudo shutdown -h now') ;
    end ;
 {$ENDIF}
 
@@ -4285,15 +4308,52 @@ var
 begin
   SL := TStringList.Create;
   try
-    if (pos(LF, IniArquivoOuString) = 0) and FilesExists(IniArquivoOuString) then
-      SL.LoadFromFile(IniArquivoOuString)
+    if StringIsINI(IniArquivoOuString) then
+      SL.Text := StringToBinaryString( IniArquivoOuString )
     else
-      SL.Text := StringToBinaryString( IniArquivoOuString );
+    begin
+      if not StringIsAFile(IniArquivoOuString) then
+        raise Exception.Create(ACBrStr('String INI informada não é válida.'))
+      else
+      begin
+        if FileExists(IniArquivoOuString) then
+          SL.LoadFromFile(IniArquivoOuString)
+        else
+          raise Exception.CreateFmt(ACBrStr('Arquivo: %s não encontrado.'), [IniArquivoOuString] );
+      end;
+    end;
 
     AMemIni.SetStrings(SL);
   finally
     SL.Free;
   end;
+end;
+
+{------------------------------------------------------------------------------
+   Valida se é um arquivo contém caracteres existentes em um ini
+ ------------------------------------------------------------------------------}
+function StringIsINI(AString: String): Boolean;
+begin
+  Result :=(pos('[', AString) > 0) and (pos(']', AString) > 0) and (pos('=', AString) > 0);
+end;
+
+{------------------------------------------------------------------------------
+   Valida as características básicas de um File válido
+ ------------------------------------------------------------------------------}
+function StringIsAFile(AString: String): Boolean;
+begin
+  Result := (AString <> '') and
+            (not StringIsXML(AString)) and
+            (not StringIsINI(AString)) and
+            (Length(AString) < 255) ;
+end;
+
+{------------------------------------------------------------------------------
+   Valida se é um arquivo contém caracteres existentes em um xml
+ ------------------------------------------------------------------------------}
+function StringIsXML(AString: String): Boolean;
+begin
+   Result :=(pos('<', AString) > 0) and (pos('>', AString) > 0);
 end;
 
 procedure QuebrarLinha(const Alinha: string; const ALista: TStringList;

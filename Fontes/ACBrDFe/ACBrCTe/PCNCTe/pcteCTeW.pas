@@ -268,6 +268,14 @@ begin
   GerarInfCTe;
   Gerador.wGrupo('/infCte');
 
+  if CTe.infCTeSupl.qrCodCTe <> '' then
+  begin
+    Gerador.wGrupo('infCTeSupl');
+    Gerador.wCampo(tcStr, '#196', 'qrCodCTe', 50, 1000, 1,
+                     '<![CDATA[' + CTe.infCTeSupl.qrCodCTe + ']]>', DSC_INFQRCODCTE, False);
+    Gerador.wGrupo('/infCTeSupl');
+  end;
+
   if FOpcoes.GerarTagAssinatura <> taNunca then
   begin
     Gerar := true;
@@ -310,6 +318,12 @@ begin
               '<cStat>'+IntToStr(CTe.procCTe.cStat)+'</cStat>'+
               '<xMotivo>'+CTe.procCTe.xMotivo+'</xMotivo>'+
             '</infProt>'+
+            IIF( (CTe.procCTe.cMsg > 0) or (CTe.procCTe.xMsg <> ''),
+            '<infFisco>' +
+              '<cMsg>' + IntToStr(CTe.procCTe.cMsg) + '</cMsg>' +
+              '<xMsg>' + CTe.procCTe.xMsg + '</xMsg>' +
+            '</infFisco>',
+            '') +
           '</protCTe>';
 
     Gerador.wTexto(xProtCTe);
@@ -1204,10 +1218,7 @@ begin
   Gerador.wCampo(tcDe2, '#250', 'vTotTrib  ', 01, 15, 0, CTe.Imp.vTotTrib, DSC_VCOMP);
   Gerador.wCampo(tcStr, '#251', 'infAdFisco', 01, 2000, 0, CTe.Imp.InfAdFisco, DSC_INFADFISCO);
 
-  // Grupo a ser informado nas prestações de serviços de transporte interestaduais
-  // para consumidor final, não contribuinte do ICMS.
-  if CTe.Imp.ICMSUFFim.pICMSInterPart <> 0 then
-    GerarICMSUFFim;
+  GerarICMSUFFim;
 
   if (CTe.infCTe.versao >= 3) and (CTe.ide.modelo = 67) then
     GerarinfTribFed;
@@ -1310,16 +1321,26 @@ end;
 
 procedure TCTeW.GerarICMSUFFim;
 begin
-  Gerador.wGrupo('ICMSUFFim', '#248a');
-  Gerador.wCampo(tcDe2, '#', 'vBCUFFim      ', 01, 15, 1, CTe.Imp.ICMSUFFim.vBCUFFim, DSC_VBC);
-  Gerador.wCampo(tcDe2, '#', 'pFCPUFFim     ', 01, 05, 1, CTe.Imp.ICMSUFFim.pFCPUFFim, DSC_PICMS);
-  Gerador.wCampo(tcDe2, '#', 'pICMSUFFim    ', 01, 05, 1, CTe.Imp.ICMSUFFim.pICMSUFFim, DSC_PICMS);
-  Gerador.wCampo(tcDe2, '#', 'pICMSInter    ', 01, 05, 1, CTe.Imp.ICMSUFFim.pICMSInter, DSC_PICMS);
-  Gerador.wCampo(tcDe2, '#', 'pICMSInterPart', 01, 05, 1, CTe.Imp.ICMSUFFim.pICMSInterPart, DSC_PICMS);
-  Gerador.wCampo(tcDe2, '#', 'vFCPUFFim     ', 01, 15, 1, CTe.Imp.ICMSUFFim.vFCPUFFim, DSC_PICMS);
-  Gerador.wCampo(tcDe2, '#', 'vICMSUFFim    ', 01, 15, 1, CTe.Imp.ICMSUFFim.vICMSUFFim, DSC_VICMS);
-  Gerador.wCampo(tcDe2, '#', 'vICMSUFIni    ', 01, 15, 1, CTe.Imp.ICMSUFFim.vICMSUFIni, DSC_VICMS);
-  Gerador.wGrupo('/ICMSUFFim');
+  // Grupo a ser informado nas prestações de serviços de transporte interestaduais
+  // para consumidor final, não contribuinte do ICMS.
+
+  if (CTe.Imp.ICMSUFFim.vBCUFFim <> 0) or (CTe.Imp.ICMSUFFim.pFCPUFFim <> 0) or
+     (CTe.Imp.ICMSUFFim.pICMSUFFim <> 0) or //(CTe.Imp.ICMSUFFim.pICMSInter <> 0) or
+     (CTe.Imp.ICMSUFFim.vFCPUFFim <> 0) or (CTe.Imp.ICMSUFFim.vICMSUFFim <> 0) or
+     (CTe.Imp.ICMSUFFim.vICMSUFIni <> 0) then
+  begin
+    Gerador.wGrupo('ICMSUFFim', '#248a');
+    Gerador.wCampo(tcDe2, '#', 'vBCUFFim      ', 01, 15, 1, CTe.Imp.ICMSUFFim.vBCUFFim, DSC_VBC);
+    Gerador.wCampo(tcDe2, '#', 'pFCPUFFim     ', 01, 05, 1, CTe.Imp.ICMSUFFim.pFCPUFFim, DSC_PICMS);
+    Gerador.wCampo(tcDe2, '#', 'pICMSUFFim    ', 01, 05, 1, CTe.Imp.ICMSUFFim.pICMSUFFim, DSC_PICMS);
+    Gerador.wCampo(tcDe2, '#', 'pICMSInter    ', 01, 05, 1, CTe.Imp.ICMSUFFim.pICMSInter, DSC_PICMS);
+    // Na versão 3.00a não tem mais: pICMSInterPart
+//    Gerador.wCampo(tcDe2, '#', 'pICMSInterPart', 01, 05, 0, CTe.Imp.ICMSUFFim.pICMSInterPart, DSC_PICMS);
+    Gerador.wCampo(tcDe2, '#', 'vFCPUFFim     ', 01, 15, 1, CTe.Imp.ICMSUFFim.vFCPUFFim, DSC_PICMS);
+    Gerador.wCampo(tcDe2, '#', 'vICMSUFFim    ', 01, 15, 1, CTe.Imp.ICMSUFFim.vICMSUFFim, DSC_VICMS);
+    Gerador.wCampo(tcDe2, '#', 'vICMSUFIni    ', 01, 15, 1, CTe.Imp.ICMSUFFim.vICMSUFIni, DSC_VICMS);
+    Gerador.wGrupo('/ICMSUFFim');
+  end;
 end;
 
 procedure TCTeW.GerarinfTribFed;
@@ -1544,6 +1565,10 @@ begin
         Gerador.wAlerta('#277', 'PIN', DSC_ISUF, ERR_MSG_INVALIDO);
 
     Gerador.wCampo(tcDat, '#278', 'dPrev', 10, 10, 0, CTe.infCTeNorm.infDoc.InfNF[i].dPrev, DSC_DPREV);
+
+    //
+    // Na versão 3.00a teremos opcionalmente o grupo infUnidCarga
+    //
 
     for j := 0 to CTe.infCTeNorm.infDoc.infNF[i].infUnidTransp.Count - 1 do
     begin

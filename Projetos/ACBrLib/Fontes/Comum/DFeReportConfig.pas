@@ -11,7 +11,7 @@ uses
 
 type
 
- TDFeReportConfig = class
+ TDFeReportConfig<T: TACBrDFeReport> = class
  private
     FPathPDF: String;
     FUsaSeparadorPathPDF: Boolean;
@@ -30,12 +30,13 @@ type
     FNomeDocumento: String;
 
     procedure SetNumCopias(const Value: Integer);
+
  protected
     FSessao: String;
 
     procedure LerIniChild(const AIni: TCustomIniFile); virtual; abstract;
     procedure GravarIniChild(const AIni: TCustomIniFile); virtual; abstract;
-    procedure AssignChild(const DFeReport: TACBrDFeReport); virtual; abstract;
+    procedure AssignChild(const DFeReport: T); virtual; abstract;
     procedure DefinirValoresPadroesChild; virtual; abstract;
 
  public
@@ -45,7 +46,7 @@ type
    procedure DefinirValoresPadroes;
    procedure LerIni(const AIni: TCustomIniFile);
    procedure GravarIni(const AIni: TCustomIniFile);
-   procedure Assign(const DFeReport: TACBrDFeReport);
+   procedure Assign(const DFeReport: T);
 
    property Impressora: String read FImpressora write FImpressora;
    property NomeDocumento: String read FNomeDocumento write FNomeDocumento;
@@ -66,25 +67,25 @@ type
 
 implementation
 
-constructor TDFeReportConfig.Create(ASessao: String);
+constructor TDFeReportConfig<T>.Create(ASessao: String);
 begin
   FSessao := ASessao;
   DefinirValoresPadroes;
 end;
 
-destructor TDFeReportConfig.Destroy;
+destructor TDFeReportConfig<T>.Destroy;
 begin
   FCasasDecimais.Destroy;
 
   inherited Destroy;
 end;
 
-procedure TDFeReportConfig.SetNumCopias(const Value: Integer);
+procedure TDFeReportConfig<T>.SetNumCopias(const Value: Integer);
 begin
   FNumCopias := max(Value, 1);
 end;
 
-procedure TDFeReportConfig.DefinirValoresPadroes;
+procedure TDFeReportConfig<T>.DefinirValoresPadroes;
 begin
   FPathPDF := '';
   FUsaSeparadorPathPDF := False;
@@ -107,7 +108,7 @@ begin
   DefinirValoresPadroesChild;
 end;
 
-procedure TDFeReportConfig.LerIni(const AIni: TCustomIniFile);
+procedure TDFeReportConfig<T>.LerIni(const AIni: TCustomIniFile);
 begin
   FPathPDF := AIni.ReadString(FSessao, CChavePathPDF, FPathPDF);
   FUsaSeparadorPathPDF := AIni.ReadBool(FSessao, CChaveUsaSeparadorPathPDF, FUsaSeparadorPathPDF);
@@ -136,7 +137,7 @@ begin
   LerIniChild(AIni);
 end;
 
-procedure TDFeReportConfig.GravarIni(const AIni: TCustomIniFile);
+procedure TDFeReportConfig<T>.GravarIni(const AIni: TCustomIniFile);
 begin
   AIni.WriteString(FSessao, CChavePathPDF, FPathPDF);
   AIni.WriteBool(FSessao, CChaveUsaSeparadorPathPDF, FUsaSeparadorPathPDF);
@@ -165,9 +166,9 @@ begin
   GravarIniChild(AIni);
 end;
 
-procedure TDFeReportConfig.Assign(const DFeReport: TACBrDFeReport);
+procedure TDFeReportConfig<T>.Assign(const DFeReport: T);
 begin
-  if not Assigned(DFeReport) then Exit;
+  if not Assigned(DFeReport) or (DFeReport = nil) then Exit;
 
   DFeReport.PathPDF := FPathPDF;
   DFeReport.UsaSeparadorPathPDF := FUsaSeparadorPathPDF;

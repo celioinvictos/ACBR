@@ -50,14 +50,15 @@ unit pcteConversaoCTe;
 interface
 
 uses
-  SysUtils, StrUtils, Classes, pcnConversao;
+  SysUtils, StrUtils, Classes,
+  pcnConversao;
 
 type
 
   TLayOutCTe = (LayCTeRecepcao, LayCTeRetRecepcao, LayCTeCancelamento,
                 LayCTeInutilizacao, LayCTeConsulta, LayCTeStatusServico,
                 LayCTeCadastro, LayCTeEvento, LayCTeEventoAN,
-                LayCTeDistDFeInt, LayCTeRecepcaoOS);
+                LayCTeDistDFeInt, LayCTeRecepcaoOS, LayCTeRecepcaoSinc);
 
   TSchemaCTe = ( schErro, schCTe, schCTeOS, schcancCTe, schInutCTe, schEventoCTe,
            //      schresCTe, schresEvento, schprocCTe, schprocEventoCTe,
@@ -66,7 +67,7 @@ type
                  schcteModalFerroviario, schcteModalRodoviario, schcteMultiModal,
                  schevEPECCTe, schevCancCTe, schevRegMultimodal, schevCCeCTe,
                  schdistDFeInt, schcteModalRodoviarioOS, schevPrestDesacordo,
-                 schevGTV{, schprocCTeOS} );
+                 schevGTV, schevCECTe, schevCancCECTe{, schprocCTeOS} );
 
   TStatusACBrCTe = (stCTeIdle, stCTeStatusServico, stCTeRecepcao, stCTeRetRecepcao,
                     stCTeConsulta, stCTeCancelamento, stCTeInutilizacao,
@@ -203,6 +204,8 @@ function StrToUniMed(out ok: Boolean; const s: String): TpUniMed;
 function TpFretamentoToStr(const t: TtpFretamento): String;
 function StrToTpFretamento(out ok: Boolean; const s: String): TtpFretamento;
 
+function StrToTpEventoCTe(out ok: boolean; const s: string): TpcnTpEvento;
+
 implementation
 
 uses
@@ -214,11 +217,11 @@ begin
     ['CTeRecepcao', 'CTeRetRecepcao', 'CTeCancelamento',
      'CTeInutilizacao', 'CTeConsultaProtocolo', 'CTeStatusServico',
      'CTeConsultaCadastro', 'RecepcaoEvento', 'RecepcaoEventoAN',
-     'CTeDistribuicaoDFe', 'CTeRecepcaoOS'],
+     'CTeDistribuicaoDFe', 'CTeRecepcaoOS', 'CTeRecepcaoSinc'],
     [ LayCTeRecepcao, LayCTeRetRecepcao, LayCTeCancelamento,
       LayCTeInutilizacao, LayCTeConsulta, LayCTeStatusServico,
       LayCTeCadastro, LayCTeEvento, LayCTeEventoAN,
-      LayCTeDistDFeInt, LayCTeRecepcaoOS ]);
+      LayCTeDistDFeInt, LayCTeRecepcaoOS, LayCTeRecepcaoSinc ]);
 end;
 
 function ServicoToLayOut(out ok: Boolean; const s: String): TLayOutCTe;
@@ -227,17 +230,18 @@ begin
     ['CTeRecepcao', 'CTeRetRecepcao', 'CTeCancelamento',
      'CTeInutilizacao', 'CTeConsultaProtocolo', 'CTeStatusServico',
      'CTeConsultaCadastro', 'RecepcaoEvento', 'RecepcaoEventoAN',
-     'CTeDistribuicaoDFe', 'CTeRecepcaoOS'],
+     'CTeDistribuicaoDFe', 'CTeRecepcaoOS', 'CTeRecepcaoSinc'],
     [ LayCTeRecepcao, LayCTeRetRecepcao, LayCTeCancelamento,
       LayCTeInutilizacao, LayCTeConsulta, LayCTeStatusServico,
       LayCTeCadastro, LayCTeEvento, LayCTeEventoAN,
-      LayCTeDistDFeInt, LayCTeRecepcaoOS ]);
+      LayCTeDistDFeInt, LayCTeRecepcaoOS, LayCTeRecepcaoSinc ]);
 end;
 
 function LayOutToSchema(const t: TLayOutCTe): TSchemaCTe;
 begin
   case t of
-    LayCTeRecepcao:      Result := schCTe;
+    LayCTeRecepcao,
+    LayCTeRecepcaoSinc:  Result := schCTe;
     LayCTeRecepcaoOS:    Result := schCTeOS;
     LayCTeRetRecepcao:   Result := schconsReciCTe;
     LayCTeCancelamento:  Result := schcancCTe;
@@ -703,5 +707,18 @@ begin
   result := StrToEnumerado(ok, s, ['', '1','2'],
                                   [tfNenhum, tfEventual, tpContinuo]);
 end;
+
+function StrToTpEventoCTe(out ok: boolean; const s: string): TpcnTpEvento;
+begin
+  Result := StrToEnumerado(ok, s,
+            ['-99999', '110110', '110111', '110113', '110160', '110170',
+             '110180', '110181', '610110', '310610'],
+            [teNaoMapeado, teCCe, teCancelamento, teEPEC, teMultiModal,
+             teGTV, teComprEntrega, teCancComprEntrega, tePrestDesacordo,
+             teMDFeAutorizado2]);
+end;
+
+initialization
+  RegisterStrToTpEventoDFe(StrToTpEventoCTe, 'CTe');
 
 end.

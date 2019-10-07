@@ -41,9 +41,6 @@ uses
   Classes, SysUtils;
 
 const
-  CLibNFeNome = 'ACBrLibNFe';
-  CLibNFeVersao = '0.0.1';
-
   CSessaoDANFE = 'DANFE';
   CChaveTipoDANFE = 'TipoDANFE';
   CChaveImprimeTotalLiquido = 'ImprimeTotalLiquido';
@@ -110,11 +107,9 @@ const
   CSessaoRespInutilizacao = 'Inutilizacao';
   CSessaoRespConsulta = 'Consulta';
   CSessaoRespEnvio = 'Envio';
-  CSessaoRespRetorno = 'Retorno';
   CSessaoRespCancelamento = 'Cancelamento';
   CSessaoRespConsultaCadastro = 'ConsultaCadastro';
   CSessaoRespEvento = 'Evento';
-  CSessaoRespDistribuicaoDFe = 'DistribuicaoDFe';
   CSessaoRespConsultaInfCan = 'InfCan';
 
   ErrValidacaoNFe = -11;

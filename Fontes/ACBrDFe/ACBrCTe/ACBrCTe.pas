@@ -75,6 +75,7 @@ type
     function GetConfiguracoes: TConfiguracoesCTe;
     function Distribuicao(AcUFAutor: integer; const ACNPJCPF, AultNSU, ANSU,
       AchCTe: String): Boolean;
+    function GetUFFormaEmissao: string;
 
     procedure SetConfiguracoes(AValue: TConfiguracoesCTe);
   	procedure SetDACTE(const Value: TACBrCTeDACTEClass);
@@ -98,6 +99,13 @@ type
       var URL: String); reintroduce; overload;
     function LerVersaoDeParams(LayOutServico: TLayOutCTe): String; reintroduce; overload;
 
+    function GetURLConsulta(const CUF: integer;
+      const TipoAmbiente: TpcnTipoAmbiente;
+      const Versao: Double): String;
+    function GetURLQRCode(const CUF: integer; const TipoAmbiente: TpcnTipoAmbiente;
+      const TipoEmissao: TpcnTipoEmissao; const AChaveCTe: String;
+      const Versao: Double): String;
+
     function IdentificaSchema(const AXML: String): TSchemaCTe;
     function IdentificaSchemaModal(const AXML: String): TSchemaCTe;
     function IdentificaSchemaEvento(const AXML: String): TSchemaCTe;
@@ -110,8 +118,10 @@ type
 
     procedure SetStatus(const stNewStatus: TStatusACBrCTe);
 
-    function Enviar(ALote: Integer; Imprimir: Boolean = True): Boolean;  overload;
-    function Enviar(const ALote: String; Imprimir: Boolean = True): Boolean;  overload;
+    function Enviar(ALote: Integer; Imprimir: Boolean = True;
+      ASincrono: Boolean = False): Boolean;  overload;
+    function Enviar(const ALote: String; Imprimir: Boolean = True;
+      ASincrono: Boolean = False): Boolean;  overload;
 
     function Consultar( const AChave: String = ''): Boolean;
     function Cancelamento(const AJustificativa: String; ALote: Integer = 0): Boolean;
@@ -151,15 +161,11 @@ type
 implementation
 
 uses
-  strutils, dateutils,
-  pcnAuxiliar, synacode;
+  strutils, dateutils, math,
+  pcnAuxiliar, synacode, ACBrDFeSSL;
 
 {$IFDEF FPC}
- {$IFDEF CPU64}
-  {$R ACBrCTeServicos.res}  // Dificuldades de compilar Recurso em 64 bits
- {$ELSE}
-  {$R ACBrCTeServicos.rc}
- {$ENDIF}
+ {$R ACBrCTeServicos.rc}
 {$ELSE}
  {$R ACBrCTeServicos.res}
 {$ENDIF}
@@ -239,6 +245,95 @@ begin
   Result := ModeloCTeToPrefixo( Configuracoes.Geral.ModeloDF );
 end;
 
+function TACBrCTe.GetUFFormaEmissao: string;
+begin
+  case Configuracoes.Geral.FormaEmissao of
+    teNormal: Result := Configuracoes.WebServices.UF;
+    teDPEC: begin
+              case Configuracoes.WebServices.UFCodigo of
+                11, // Rondônia
+                12, // Acre
+                13, // Amazonas
+                14, // Roraima
+                15, // Pará
+                16, // Amapá
+                17, // Tocantins
+                21, // Maranhão
+                22, // Piauí
+                23, // Ceará
+                24, // Rio Grande do Norte
+                25, // Paraibá
+                27, // Alagoas
+                28, // Sergipe
+                29, // Bahia
+                31, // Minas Gerais
+                32, // Espirito Santo
+                33, // Rio de Janeiro
+                41, // Paraná
+                42, // Santa Catarina
+                43, // Rio Grande do Sul
+                52, // Goiás
+                53: // Distrito Federal
+                    Result := 'SVC-SP';
+                26, // Pernanbuco
+                35, // São Paulo
+                50, // Mato Grosso do Sul
+                51: // Mato Grosso
+                    Result := 'SVC-RS';
+              end;
+            end;
+    teSVCAN: Result := 'SVC-AN';
+    teSVCRS: Result := 'SVC-RS';
+    teSVCSP: Result := 'SVC-SP';
+  else
+    Result := Configuracoes.WebServices.UF;
+  end;
+end;
+
+function TACBrCTe.GetURLConsulta(const CUF: integer;
+  const TipoAmbiente: TpcnTipoAmbiente; const Versao: Double): String;
+//var
+//  VersaoDFe: TVersaoCTe;
+//  ok: Boolean;
+begin
+//  VersaoDFe := DblToVersaoCTe(ok, Versao);  // Deixado para usu futuro
+  Result := LerURLDeParams('CTe', CUFtoUF(CUF), TipoAmbiente, 'URL-ConsultaCTe', 0);
+end;
+
+function TACBrCTe.GetURLQRCode(const CUF: integer;
+  const TipoAmbiente: TpcnTipoAmbiente; const TipoEmissao: TpcnTipoEmissao;
+  const AChaveCTe: String; const Versao: Double): String;
+var
+  idCTe, sEntrada, urlUF, Passo2, sign: String;
+//  VersaoDFe: TVersaoCTe;
+//  ok: Boolean;
+begin
+//  VersaoDFe := DblToVersaoCTe(ok, Versao);  // Deixado para usu futuro
+
+  urlUF := LerURLDeParams('CTe', GetUFFormaEmissao, TipoAmbiente, 'URL-QRCode', 0);
+
+  if Pos('?', urlUF) <= 0 then
+    urlUF := urlUF + '?';
+
+  idCTe := OnlyNumber(AChaveCTe);
+
+  // Passo 1
+  sEntrada := 'chCTe=' + idCTe + '&tpAmb=' + TpAmbToStr(TipoAmbiente);
+
+  // Passo 2 calcular o SHA-1 da string idCTe se o Tipo de Emissão for EPEC ou FSDA
+  if TipoEmissao in [teDPEC, teFSDA] then
+  begin
+    // Tipo de Emissão em Contingência
+    SSL.CarregarCertificadoSeNecessario;
+    sign := SSL.CalcHash(idCTe, dgstSHA1, outBase64, True);
+    Passo2 := '&sign=' + sign;
+
+    sEntrada := sEntrada + Passo2;
+  end;
+
+  Result := urlUF + sEntrada;
+end;
+
 function TACBrCTe.GetNameSpaceURI: String;
 begin
   Result := ACBRCTE_NAMESPACE;
@@ -285,54 +380,10 @@ end;
 
 procedure TACBrCTe.LerServicoDeParams(LayOutServico: TLayOutCTe;
   var Versao: Double; var URL: String);
-var
-  AUF: String;
 begin
-  case Configuracoes.Geral.FormaEmissao of
-    teNormal: AUF := Configuracoes.WebServices.UF;
-    teDPEC: begin
-              case Configuracoes.WebServices.UFCodigo of
-                11, // Rondônia
-                12, // Acre
-                13, // Amazonas
-                14, // Roraima
-                15, // Pará
-                16, // Amapá
-                17, // Tocantins
-                21, // Maranhão
-                22, // Piauí
-                23, // Ceará
-                24, // Rio Grande do Norte
-                25, // Paraibá
-                27, // Alagoas
-                28, // Sergipe
-                29, // Bahia
-                31, // Minas Gerais
-                32, // Espirito Santo
-                33, // Rio de Janeiro
-                41, // Paraná
-                42, // Santa Catarina
-                43, // Rio Grande do Sul
-                52, // Goiás
-                53: // Distrito Federal
-                    AUF := 'SVC-SP';
-                26, // Pernanbuco
-                35, // São Paulo
-                50, // Mato Grosso do Sul
-                51: // Mato Grosso
-                    AUF := 'SVC-RS';
-              end;
-            end;
-    teSVCAN: AUF := 'SVC-AN';
-    teSVCRS: AUF := 'SVC-RS';
-    teSVCSP: AUF := 'SVC-SP';
-  else
-    AUF := Configuracoes.WebServices.UF;
-  end;
-
   Versao := VersaoCTeToDbl(Configuracoes.Geral.VersaoDF);
   URL := '';
-  LerServicoDeParams(GetNomeModeloDFe, AUF,
+  LerServicoDeParams(GetNomeModeloDFe, GetUFFormaEmissao,
     Configuracoes.WebServices.Ambiente, LayOutToServico(LayOutServico),
     Versao, URL);
 end;
@@ -369,15 +420,19 @@ begin
       I := pos('<infEvento', AXML);
       if I > 0 then
       begin
-        lTipoEvento := StrToTpEvento(Ok, Trim(RetornarConteudoEntre(AXML, '<tpEvento>', '</tpEvento>')));
+        lTipoEvento := StrToTpEventoCTe(Ok, Trim(RetornarConteudoEntre(AXML, '<tpEvento>', '</tpEvento>')));
 
         case lTipoEvento of
-          teCCe:            Result := schEventoCTe;
-          teCancelamento:   Result := schEventoCTe;
-          teEPEC:           Result := schEventoCTe;
-          teMultiModal:     Result := schEventoCTe;
-          tePrestDesacordo: Result := schEventoCTe;
-          else              Result := schErro;
+          teCCe,
+          teCancelamento,
+          teEPEC,
+          teMultiModal,
+          tePrestDesacordo,
+          teGTV,
+          teComprEntrega,
+          teCancComprEntrega: Result := schEventoCTe;
+        else
+          Result := schErro;
         end;
       end
       else
@@ -637,12 +692,14 @@ begin
   end;
 end;
 
-function TACBrCTe.Enviar(ALote: Integer; Imprimir: Boolean = True): Boolean;
+function TACBrCTe.Enviar(ALote: Integer; Imprimir: Boolean = True;
+      ASincrono: Boolean = False): Boolean;
 begin
-  Result := Enviar(IntToStr(ALote), Imprimir);
+  Result := Enviar(IntToStr(ALote), Imprimir, ASincrono);
 end;
 
-function TACBrCTe.Enviar(const ALote: String; Imprimir: Boolean): Boolean;
+function TACBrCTe.Enviar(const ALote: String; Imprimir: Boolean = True;
+      ASincrono: Boolean = False): Boolean;
 var
   i: Integer;
 begin
@@ -652,9 +709,18 @@ begin
   if Conhecimentos.Count <= 0 then
     GerarException(ACBrStr('ERRO: Nenhum CT-e adicionado ao Lote'));
 
-  if Conhecimentos.Count > 50 then
-    GerarException(ACBrStr('ERRO: Conjunto de CT-e transmitidos (máximo de 50 CT-e)' +
-      ' excedido. Quantidade atual: ' + IntToStr(Conhecimentos.Count)));
+  if ASincrono then
+  begin
+    if Conhecimentos.Count > 1 then
+      GerarException(ACBrStr('ERRO: Conjunto de CT-e transmitidos (máximo de 1 CT-e)' +
+        ' excedido. Quantidade atual: ' + IntToStr(Conhecimentos.Count)));
+  end
+  else
+  begin
+    if Conhecimentos.Count > 50 then
+      GerarException(ACBrStr('ERRO: Conjunto de CT-e transmitidos (máximo de 50 CT-e)' +
+        ' excedido. Quantidade atual: ' + IntToStr(Conhecimentos.Count)));
+  end;
 
   Conhecimentos.Assinar;
   Conhecimentos.Validar;
@@ -662,16 +728,14 @@ begin
   if Configuracoes.Geral.ModeloDF = moCTeOS then
     Result := WebServices.EnviaOS(ALote)
   else
-    Result := WebServices.Envia(ALote);
+    Result := WebServices.Envia(ALote, ASincrono);
 
   if DACTE <> nil then
   begin
      for i := 0 to Conhecimentos.Count-1 do
      begin
        if Conhecimentos.Items[i].Confirmado and Imprimir then
-       begin
          Conhecimentos.Items[i].Imprimir;
-       end;
      end;
   end;
 end;
@@ -718,7 +782,7 @@ begin
     EventoCTe.Evento.Clear;
     with EventoCTe.Evento.New do
     begin
-      infEvento.CNPJ := copy(OnlyNumber(WebServices.Consulta.CTeChave), 7, 14);
+      infEvento.CNPJ := Conhecimentos.Items[i].CTe.Emit.CNPJ;
       infEvento.cOrgao := StrToIntDef(copy(OnlyNumber(WebServices.Consulta.CTeChave), 1, 2), 0);
       infEvento.dhEvento := now;
       infEvento.tpEvento := teCancelamento;

@@ -26,6 +26,9 @@ ResourceString
   SErroArqNaoEncontado = 'Arquivo %s nao encontrado.';
   SErroMDFeAbrir = 'Erro ao abrir o arquivo do Manifesto: %s';
 
+  SErroBPeCarregar = 'Erro ao carregar BPe';
+  SErroBPeAbrir = 'Erro ao abrir o arquivo do Bilhete: %s';
+
   SErroeSocialCarregar = 'Erro ao carregar eSocial';
   SErroeSocialAbrir = 'Erro ao abrir o arquivo do eSocial: %s';
   SMsgeSocialEventoAdicionado = 'Evento Adicionado: %s';
@@ -47,12 +50,18 @@ const
   CMonitorIni = 'ACBrMonitor.ini';
   _C = 'tYk*5W@';
 
+  CModeloNFe55 = 55;
+  CModeloNFe65 = 65;
+  CEmissaoESCPOS = 1;
+  CEmissaoFortes = 0;
+
   CACBrNFeServicosIni =                'ACBrNFeServicos.ini';
   CACBrCTeServicosIni =                'ACBrCTeServicos.ini';
   CACBrMDFeServicosIni =               'ACBrMDFeServicos.ini';
   CACBrGNREServicosIni =               'ACBrGNREServicos.ini';
   CACBreSocialServicosIni =            'ACBreSocialServicos.ini';
   CACBrReinfServicosIni =              'ACBrReinfServicos.ini';
+  CACBrBPeServicosIni =                'ACBrBPeServicos.ini';
 
   CMetodoSATAtivar =                   'ativar';
   CMetodoInicializar =                 'inicializar';
@@ -85,6 +94,7 @@ const
   CMetodoSetNumeroSessao =             'setnumerosessao';
   CMetodoSetlogomarcaSAT =             'setlogomarca';
   CMetodoGerarAssinaturaSAT =          'gerarassinaturasat';
+  CMetodoEnviarEmailCFe =              'enviaremailcfe';
 
   CMetodoECFachar =                                      'achar';
   CMetodoECFativar =                                     'ativar';
@@ -331,6 +341,7 @@ const
   CMetodoLerini =                      'lerini';
   CMetodoSetcertificado =              'setcertificado';
   CMetodoDistribuicaoDFeporChaveMDFe = 'distribuicaodfeporchavemdfe';
+  CMetodoGetPathMDFe =                 'getpathmdfe';
   CMetodoRestaurar =                   'restaurar';
   CMetodoOcultar =                     'ocultar';
   CMetodoEncerrarmonitor =             'encerrarmonitor';
@@ -408,6 +419,21 @@ const
   CMetodoGerarINICTe =                 'gerarinicte';
   CMetodoGetPathCTe =                  'getpathcte';
 
+  CMetodoValidarBPe =                  'validarbpe';
+  CMetodoAssinarBPe =                  'assinarbpe';
+  CMetodoConsultarBPe =                'consultarbpe';
+  CMetodoCancelarBPe =                 'cancelarbpe';
+  CMetodoImprimirDABPe =               'imprimirdabpe';
+  CMetodoImprimirDABPePDF =            'imprimirdabpepdf';
+
+  CMetodoEnviarBPe =                   'enviarbpe';
+  CMetodoCriarBPe =                    'criarbpe';
+  CMetodoCriarEnviarBPe =              'criarenviarbpe';
+  CMetodoLerBPe =                      'lerbpe';
+  CMetodoGetPathBPe =                  'getpathbpe';
+  CMetodoGerarINIBPe =                 'gerarinibpe';
+  CMetodoDistribuicaoDFeporChaveBPe =  'distribuicaodfeporchavebpe';
+
   CMetodoCriarEventoeSocial =          'criareventoesocial';
   CMetodoCriarEnviareSocial =          'criarenviaresocial';
   CMetodoEnviareSocial =               'enviaresocial';
@@ -415,6 +441,7 @@ const
   CMetodoLimpareSocial =               'limparesocial';
   CMetodoCarregarXMLEventoeSocial =    'carregarxmleventoesocial';
   CMetodoSetIDEmpregadoreSocial =      'setidempregador';
+  CMetodoSetTipoEmpregadoreSocial =    'settipoempregador';
   CMetodoSetIDTransmissoresocial =     'setidtransmissor';
   CMetodoConsultaIdentEventosEmpreg =  'ConsultaIdentificadoresEventosEmpregador';
   CMetodoConsultaIdentEventosTabela =  'ConsultaIdentificadoresEventosTabela';
@@ -629,6 +656,9 @@ const
   CExtensaoXmlMdfeEve =              '-eve.xml';
   CExtensaoXmlGNRe =                 '-gnre.xml';
 
+  CExtensaoXmlBPe =                 '-bpe.xml';
+  CExtensaoXmlBPeEve =              '-eve.xml';
+
   CPathLogs =                        'Logs';
 
   CSecACBrMonitor =                  'ACBrMonitor';
@@ -782,6 +812,7 @@ const
   CKeyArquivoWebServicesGNRe =        'ArquivoWebServicesGNRe';
   CKeyArquivoWebServiceseSocial =     'ArquivoWebServiceseSocial';
   CKeyArquivoWebServicesReinf =       'ArquivoWebServicesReinf';
+  CKeyArquivoWebServicesBPe =         'ArquivoWebServicesBPe';
   CKeyValidarDigest =                 'ValidarDigest';
   CKeyTimeoutWebService =             'TimeoutWebService';
 
@@ -801,10 +832,13 @@ const
   CKeyVersaoeSocial =                'VersaoeSocial';
   CKeyVersaoReinf =                  'VersaoReinf';
   CKeyVersaoQRCode =                 'VersaoQRCode';
+  CKeyVersaoBPe =                    'VersaoBPe';
+  CKeyVersaoGNRe =                   'VersaoGNRe';
   CKeyFormaEmissaoCTe =              'FormaEmissaoCTe';
   CKeyFormaEmissaoNFe =              'FormaEmissaoNFe';
   CKeyFormaEmissaoMDFe =             'FormaEmissaoMDFe';
   CKeyFormaEmissaoGNRe =             'FormaEmissaoGNRe';
+  CKeyFormaEmissaoBPe =              'FormaEmissaoBPe';
   CKeyUF =                           'UF';
   CKeyAmbiente =                     'Ambiente';
   CKeyAjustarAut =                   'AjustarAut';
@@ -815,6 +849,7 @@ const
   CKeyTimeZoneStr =                  'TimeZoneStr';
   CKeyCamposFatObrig =               'CamposFatObrig';
   CKeyTagRejeicao938 =               'ForcarGerarTagRejeicao938';
+  CKeyTagQRCodeCTe =                 'TagQRCodeCTe';
 
   CKeyIdEmpregador =                 'IdEmpregador';
   CKeyIdTransmissor =                'IdTransmissor';
@@ -844,12 +879,15 @@ const
   CKeyEmailConfirmacao =             'Confirmacao';
   CKeyEmailSegundoPlano =            'SegundoPlano';
   CKeyEmailCodificacao =             'Codificacao';
+  CKeyEmailHTML =                    'HTML';
   CKeyMensagemNFe =                  'MensagemNFe';
   CKeyMensagemCTe =                  'MensagemCTe';
   CKeyMensagemMDFe =                 'MensagemMDFe';
+  CKeyMensagemBPe =                  'AssuntoBPe';
   CKeyAssuntoNFe =                   'AssuntoNFe';
   CKeyAssuntoCTe =                   'AssuntoCTe';
   CKeyAssuntoMDFe =                  'AssuntoMDFe';
+  CKeyAssuntoBPe =                   'AssuntoBPe';
 
   CSecNFe =                          'NFe';
   CKeyNFeCNPJContador =              'CNPJContador';
@@ -869,6 +907,7 @@ const
   CKeyNFCeUsarIntegrador =             'UsarIntegrador';
   CKeyNFCEImprimeTributos =            'ImprimeTributos';
   CKeyNFCeExibeTotalTributosItem =     'ExibeTotalTributosItem';
+  CKeyNFCeLogoLateral =                'LogoLateral';
 
   CSecDANFE =                          'DANFE';
   CKeyDANFEModelo =                    'Modelo';
@@ -879,6 +918,7 @@ const
   CKeyDANFEImpDescPorc =               'ImpDescPorc';
   CKeyDANFEMostrarPreview =            'MostrarPreview';
   CKeyDANFECopias =                    'Copias';
+  CKeyDANFECopiasNFCe =                'CopiasNFCe';
   CKeyDANFELarguraCodigoProduto =      'LarguraCodigoProduto';
   CKeyDANFEEspessuraBorda =            'EspessuraBorda';
   CKeyDANFEFonteRazao =                'FonteRazao';
@@ -903,6 +943,7 @@ const
   CKeyDANFEExpandirLogo =              'ExpandirLogo';
   CKeyDANFEFonte =                     'Fonte';
   CKeyDANFELocalCanhoto =              'LocalCanhoto';
+  CKeyDANFELayoutCanhoto =             'LayoutCanhoto';
   CKeyDANFEQuebrarLinhasDetalheItens =     'QuebrarLinhasDetalheItens';
   CKeyDANFEImprimirDetalhamentoEspecifico ='ImprimirDetalhamentoEspecifico';
   CKeyDANFEImprimirDadosDocReferenciados = 'ImprimirDadosDocReferenciados';
@@ -945,11 +986,22 @@ const
   CKeyArquivosAtualizarXMLCancelado =       'AtualizarXMLCancelado';
   CKeyArquivosNormatizarMunicipios =        'NormatizarMunicipios';
   CKeyArquivosUsarSeparadorPathPDF =        'UsarSeparadorPathPDF';
+  CKeyArquivosSepararPorNome =              'SepararPorNome';
   CKeyArquivosPathNFe =                     'PathNFe';
   CKeyArquivosPathInu =                     'PathInu';
   CKeyArquivosPathDPEC =                    'PathDPEC';
   CKeyArquivosPathEvento =                  'PathEvento';
   CKeyArquivosPathArqTXT =                  'PathArqTXT';
+  CKeyArquivosPathDownload =                'PathDonwload';
+
+  CKeyArquivosPathSchemasDFe =              'PathSchemasDFe';
+  {CKeyArquivosPathSchemaNFe =               'PathSchemaNFe';
+  CKeyArquivosPathSchemaCTe =               'PathSchemaCTe';
+  CKeyArquivosPathSchemaMDFe =              'PathSchemaMDFe';
+  CKeyArquivosPathSchemaGNRe =              'PathSchemaGNRe';
+  CKeyArquivosPathSchemaBPe =               'PathSchemaBPe';
+  CKeyArquivosPathSchemaeSocial =           'PathSchemaeSocial';
+  CKeyArquivosPathSchemaReInf =             'PathSchemaReInf';}
 
   CSeceSocial =                             'eSocial';
   CSecReinf =                               'Reinf';
@@ -972,6 +1024,7 @@ const
   CKeySATSalvarEnvio =                      'SalvarEnvio';
   CKeySATSepararPorCNPJ =                   'SepararPorCNPJ';
   CKeySATSepararPorMES =                    'SepararPorMES';
+  CKeySATValidarNumeroSessaoResposta =      'ValidarNumeroSessaoResposta';
 
   CSecSATExtrato =                          'SATExtrato';
   CKeySATExtParamsString =                  'ParamsString';
@@ -1024,6 +1077,10 @@ const
   CSecSATSwH =                              'SATSwH';
   CKeySATSwHCNPJ =                          'CNPJ';
   CKeySATSwHAssinatura =                    'Assinatura';
+
+  CSecSATEmail =                            'SATemail';
+  CKeySATEmailAssunto =                     'Assunto';
+  CKeySATEmailMensagem =                    'Mensagem';
 
   CSecSATIntegrador =                       'SATIntegrador';
   CKeySATIntegradorInput =                  'Input';
@@ -1087,6 +1144,7 @@ const
   CKeyBOLETODigitoConta =                   'DigitoConta';
   CKeyBOLETOAgencia =                       'Agencia';
   CKeyBOLETODigitoAgencia =                 'DigitoAgencia';
+  CKeyBOLETODigitoAgenciaConta =            'DigitoAgenciaConta';
   CKeyBOLETOCodCedente =                    'CodCedente';
   CKeyBOLETOLocalPagamento =                'LocalPagamento';
   CKeyBOLETODirLogos =                      'DirLogos';

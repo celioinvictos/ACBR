@@ -41,13 +41,15 @@ unit ACBrDFeUtil;
 interface
 
 uses
-  Classes, StrUtils, SysUtils, synacode,
+  Classes, StrUtils, SysUtils, synacode, synautil,
   {IniFiles,} ACBrDFeSSL, pcnAuxiliar;
 
 function FormatarNumeroDocumentoFiscal(AValue: String): String;
 function FormatarNumeroDocumentoFiscalNFSe(AValue: String): String;
 
 function GerarCodigoNumerico(numero: integer): integer;
+function GerarCodigoDFe(AnDF: Integer): integer;
+
 function GerarChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ:String;
                           ASerie, ANumero, AtpEmi, ACodigo: Integer; AModelo: Integer = 55): String;
 function FormatarChaveAcesso(AValue: String): String;
@@ -65,12 +67,14 @@ function ValidaNVE(const AValue: string): Boolean;
 function XmlEstaAssinado(const AXML: String): Boolean;
 function SignatureElement(const URI: String; AddX509Data: Boolean;
     const IdSignature: String = ''; const Digest: TSSLDgst = dgstSHA1): String;
-function ExtraiURI(const AXML: String; IdAttr: String = ''): String;
+function EncontrarURI(const AXML: String; docElement: String = ''; IdAttr: String = ''): String;
 function ObterNomeMunicipio(const AxUF: String; const AcMun: Integer;
                               const APathArqMun: String): String;
 function ObterCodigoMunicipio(const AxMun, AxUF, APathArqMun: String ): Integer;
 
 function CalcularHashCSRT(const ACSRT, AChave: String): string;
+function CalcularHashDados(const ADados: TStream; AChave: String): string;
+function CalcularHashArquivo(const APathArquivo: String; AChave: String): string;
 
 implementation
 
@@ -120,26 +124,32 @@ begin
   Result := StrToInt(copy(s, 1, 8));
 end;
 
+function GerarCodigoDFe(AnDF: Integer): integer;
+var
+ ACodigo: Integer;
+begin
+  Repeat
+    ACodigo := Random(99999999);
+  Until ValidarCodigoDFe(ACodigo, AnDF);
+
+  Result := ACodigo;
+end;
+
 function GerarChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                           ASerie, ANumero, AtpEmi, ACodigo: Integer; AModelo: Integer): String;
 var
   vUF, vDataEmissao, vSerie, vNumero, vCodigo, vModelo, vCNPJ, vtpEmi: String;
 begin
-  // Se o usuario informar um código inferior a -2 a chave não será gerada //
-  if ACodigo < -2 then
-    raise EACBrDFeException.Create('Código Numérico inválido, Chave não Gerada');
-
   // Se o usuario informar 0 ou -1; o código numerico sera gerado de maneira aleatória //
   if ACodigo = -1 then
     ACodigo := 0;
 
-  while ACodigo = 0 do
-  begin
-    ACodigo := Random(99999999);
-  end;
+  if ACodigo = 0 then
+    ACodigo := GerarCodigoDFe(ANumero);
 
-  // Se o usuario informar -2; o código numerico sera ZERO //
-  if ACodigo = -2 then
+  // Se o usuario informar um código inferior ou igual a -2 a chave será gerada
+  // com o código igual a zero, mas poderá não ser autorizada pela SEFAZ.
+  if ACodigo <= -2 then
     ACodigo := 0;
 
   vUF          := Poem_Zeros(AUF, 2);
@@ -370,15 +380,21 @@ begin
   {*)}
 end;
 
-function ExtraiURI(const AXML: String; IdAttr: String): String;
+function EncontrarURI(const AXML: String; docElement: String; IdAttr: String
+  ): String;
 var
   I, J: integer;
 begin
   Result := '';
-  if IdAttr = '' then
+  if (IdAttr = '') then
     IdAttr := 'Id';
 
-  I := PosEx(IdAttr+'=', AXML);
+  if (docElement <> '') then
+    I := Pos('<'+docElement, AXML)
+  else
+    I := 0;
+
+  I := PosEx(IdAttr+'=', AXML, I);
   if I = 0 then       // XML não tem URI
     Exit;
 
@@ -471,8 +487,42 @@ begin
   Result := EncodeBase64(SHA1(ACSRT + AChave));
 end;
 
+function CalcularHashDados(const ADados: TStream; AChave: String): string;
+var
+  sAux: AnsiString;
+begin
+  if (ADados.Size = 0) then
+    raise EACBrDFeException.Create('Dados não especificados');
+
+  ADados.Position := 0;
+  sAux := ReadStrFromStream(ADados, ADados.Size);
+  sAux := EncodeBase64(sAux);
+
+  Result := EncodeBase64(SHA1(AnsiString(AChave) + sAux));
+end;
+
+function CalcularHashArquivo(const APathArquivo: String; AChave: String
+  ): string;
+var
+  FS: TFileStream;
+begin
+  if (APathArquivo = '') then
+    raise EACBrDFeException.Create('Path Arquivo não especificados');
+
+  if not FileExists(APathArquivo) then
+    raise EACBrDFeException.Create('Arquivo:  '+APathArquivo+'não encontrado');
+
+  FS := TFileStream.Create(APathArquivo, fmOpenRead);
+  try
+    Result := CalcularHashDados(FS, AChave);
+  finally
+    FS.Free;
+  end;
+end;
+
 initialization
 
   Randomize;
 
 end.
+

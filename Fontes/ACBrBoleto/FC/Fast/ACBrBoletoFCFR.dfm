@@ -45,7 +45,7 @@ object dmACBrBoletoFCFR: TdmACBrBoletoFCFR
     Top = 200
   end
   object frxReport: TfrxReport
-    Version = '5.2.3'
+    Version = '5.6.14'
     DotMatrixReport = False
     IniFile = '\Software\Fast Reports'
     PreviewOptions.AllowEdit = False

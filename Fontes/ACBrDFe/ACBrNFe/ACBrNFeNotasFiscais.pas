@@ -53,8 +53,13 @@ interface
 
 uses
   Classes, SysUtils, StrUtils,
-  ACBrNFeConfiguracoes,
-  pcnNFe, pcnNFeR, pcnNFeW, pcnConversao, pcnAuxiliar, pcnLeitor;
+  ACBrNFeConfiguracoes, pcnNFe,
+  {$IfDef DFE_ACBR_LIBXML2}
+    ACBrNFeXmlReader, ACBrNFeXmlWriter,
+  {$Else}
+     pcnNFeR, pcnNFeW,
+  {$EndIf}
+   pcnConversao, pcnAuxiliar, pcnLeitor;
 
 type
 
@@ -63,8 +68,13 @@ type
   NotaFiscal = class(TCollectionItem)
   private
     FNFe: TNFe;
+{$IfDef DFE_ACBR_LIBXML2}
+    FNFeW: TNFeXmlWriter;
+    FNFeR: TNFeXmlReader;
+{$Else}
     FNFeW: TNFeW;
     FNFeR: TNFeR;
+{$EndIf}
 
     FConfiguracoes: TConfiguracoesNFe;
     FXMLAssinado: String;
@@ -197,8 +207,14 @@ constructor NotaFiscal.Create(Collection2: TCollection);
 begin
   inherited Create(Collection2);
   FNFe := TNFe.Create;
-  FNFeW := TNFeW.Create(FNFe);
-  FNFeR := TNFeR.Create(FNFe);
+  {$IfDef DFE_ACBR_LIBXML2}
+    FNFeW := TNFeXmlWriter.Create(FNFe);
+    FNFeR := TNFeXmlReader.Create(FNFe);
+{$Else}
+    FNFeW := TNFeW.Create(FNFe);
+    FNFeR := TNFeR.Create(FNFe);
+{$EndIf}
+
   FConfiguracoes := TACBrNFe(TNotasFiscais(Collection).ACBrNFe).Configuracoes;
 
   with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
@@ -206,11 +222,11 @@ begin
     FNFe.Ide.modelo := StrToInt(ModeloDFToStr(Configuracoes.Geral.ModeloDF));
     FNFe.infNFe.Versao := VersaoDFToDbl(Configuracoes.Geral.VersaoDF);
 
-    FNFe.Ide.tpNF := tnSaida;
-    FNFe.Ide.indPag := ipVista;
-    FNFe.Ide.verProc := 'ACBrNFe';
-    FNFe.Ide.tpAmb := Configuracoes.WebServices.Ambiente;
-    FNFe.Ide.tpEmis := Configuracoes.Geral.FormaEmissao;
+    FNFe.Ide.tpNF    := tnSaida;
+    FNFe.Ide.indPag  := ipVista;
+    FNFe.Ide.verProc := 'ACBrNFe'; // 'ACBr'+ ModeloDFIntegerToPrefixo(FNFe.Ide.modelo);
+    FNFe.Ide.tpAmb   := Configuracoes.WebServices.Ambiente;
+    FNFe.Ide.tpEmis  := Configuracoes.Geral.FormaEmissao;
 
     if Assigned(DANFE) then
       FNFe.Ide.tpImp := DANFE.TipoDANFE;
@@ -237,7 +253,7 @@ begin
   with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
   begin
     if not Assigned(DANFE) then
-      raise EACBrNFeException.Create('Componente DANFE não associado.')
+      raise EACBrNFeException.Create('Componente DA'+ModeloDFToPrefixo(Configuracoes.Geral.ModeloDF)+' não associado.')
     else
       DANFE.ImprimirDANFE(NFe);
   end;
@@ -248,7 +264,7 @@ begin
   with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
   begin
     if not Assigned(DANFE) then
-      raise EACBrNFeException.Create('Componente DANFE não associado.')
+      raise EACBrNFeException.Create('Componente DA'+ModeloDFToPrefixo(Configuracoes.Geral.ModeloDF)+' não associado.')
     else
       DANFE.ImprimirDANFEPDF(NFe);
   end;
@@ -439,17 +455,14 @@ begin
       AdicionaErro(
         '502-Rejeição: Erro na Chave de Acesso - Campo Id não corresponde à concatenação dos campos correspondentes');
 
+    GravaLog('Validar: 897-Código do documento: ' + IntToStr(NFe.Ide.nNF));
+    if not ValidarCodigoDFe(NFe.Ide.cNF, NFe.Ide.nNF) then
+      AdicionaErro('897-Rejeição: Código numérico em formato inválido ');
+
     GravaLog('Validar 226-IF');
     if copy(IntToStr(NFe.Emit.EnderEmit.cMun), 1, 2) <>
       IntToStr(Configuracoes.WebServices.UFCodigo) then //B02-10
       AdicionaErro('226-Rejeição: Código da UF do Emitente diverge da UF autorizadora');
-
-//    702-Rejeição: NFC-e não é aceita pela UF do Emitente
-
-    GravaLog('Validar: 503-Serie');
-    if (NFe.Ide.serie > 899) and  //B07-20
-      (NFe.Ide.tpEmis <> teSCAN) then
-      AdicionaErro('503-Rejeição: Série utilizada fora da faixa permitida no SCAN (900-999)');
 
     GravaLog('Validar: 703-Data hora');
     if (NFe.Ide.dEmi > Agora) then  //B09-10
@@ -498,17 +511,6 @@ begin
       AdicionaErro('252-Rejeição: Ambiente informado diverge do Ambiente de recebimento '
         + '(Tipo do ambiente da NF-e difere do ambiente do Web Service)');
 
-    GravaLog('Validar: 266-Série');
-    if (not (NFe.Ide.procEmi in [peAvulsaFisco, peAvulsaContribuinte])) and
-      (NFe.Ide.serie > 889) then //B26-10
-      AdicionaErro('266-Rejeição: Série utilizada fora da faixa permitida no Web Service (0-889)');
-
-    GravaLog('Validar: 451-Processo de emissão');
-    if (NFe.Ide.procEmi in [peAvulsaFisco, peAvulsaContribuinte]) and
-      (NFe.Ide.serie < 890) and (NFe.Ide.serie > 899) then
-      //B26-20
-      AdicionaErro('451-Rejeição: Processo de emissão informado inválido');
-
     GravaLog('Validar: 370-Tipo de Emissão');
     if (NFe.Ide.procEmi in [peAvulsaFisco, peAvulsaContribuinte]) and
       (NFe.Ide.tpEmis <> teNormal) then //B26-30
@@ -530,12 +532,13 @@ begin
     if (NFe.Ide.dhCont > Agora) then //B28-30
       AdicionaErro('558-Rejeição: Data de entrada em contingência posterior a data de recebimento');
 
-    GravaLog('Validar: 559-Data Entrada contingência');
+    GravaLog('Validar: 569-Data Entrada contingência');
     if (NFe.Ide.dhCont > 0) and ((Agora - NFe.Ide.dhCont) > 30) then //B28-40
-      AdicionaErro('559-Rejeição: Data de entrada em contingência muito atrasada');
+      AdicionaErro('569-Rejeição: Data de entrada em contingência muito atrasada');
 
     GravaLog('Validar: 207-CNPJ emitente');
-    if not ValidarCNPJ(NFe.Emit.CNPJCPF) then
+    // adicionado CNPJ por conta do produtor rural
+    if not ValidarCNPJouCPF(NFe.Emit.CNPJCPF) then
       AdicionaErro('207-Rejeição: CNPJ do emitente inválido');
 
     GravaLog('Validar: 272-Código Município');
@@ -1020,7 +1023,7 @@ begin
         if (NFe.Ide.modelo = 65) then
         begin
           GravaLog('Validar: 725-NFCe CFOP invalido [nItem: '+IntToStr(Prod.nItem)+']');
-          if (pos(OnlyNumber(Prod.CFOP), 'XXXX,5101,5102,5103,5104,5115,5401,5403,5405,5653,5656,5667,5933') <= 0)  then
+          if (pos(OnlyNumber(Prod.CFOP), 'XXXX,5101,5102,5103,5104,5115,5405,5656,5667,5933') <= 0)  then
             AdicionaErro('725-Rejeição: NFC-e com CFOP inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
           GravaLog('Validar: 774-NFCe indicador Total [nItem: '+IntToStr(Prod.nItem)+']');
@@ -1485,11 +1488,16 @@ begin
 end;
 
 function NotaFiscal.LerXML(const AXML: String): Boolean;
+{$IfNDef DFE_ACBR_LIBXML2}
 var
   XMLStr: String;
+{$EndIf}
 begin
   XMLOriginal := AXML;  // SetXMLOriginal() irá verificar se AXML está em UTF8
 
+{$IfDef DFE_ACBR_LIBXML2}
+  FNFeR.Arquivo := XMLOriginal;
+{$Else}
   { Verifica se precisa converter "AXML" de UTF8 para a String nativa da IDE.
     Isso é necessário, para que as propriedades fiquem com a acentuação correta }
   XMLStr := ParseText(AXML, True, XmlEhUTF8(AXML));
@@ -1504,8 +1512,8 @@ begin
   XMLStr := StringReplace(XMLStr, ' xmlns="http://www.portalfiscal.inf.br/nfe"', '', [rfReplaceAll]);
 
   FNFeR.Leitor.Arquivo := XMLStr;
+{$EndIf}
   FNFeR.LerXml;
-
   Result := True;
 end;
 
@@ -2583,7 +2591,7 @@ begin
   Result := '';
 
   if not ValidarChave(NFe.infNFe.ID) then
-    raise EACBrNFeException.Create('NFe Inconsistente para gerar INI. Chave Inválida.');
+    raise EACBrNFeException.Create(ModeloDFToPrefixo(FConfiguracoes.Geral.ModeloDF)+' Inconsistente para gerar INI. Chave Inválida.');
 
   INIRec := TMemIniFile.Create('');
   try
@@ -3493,6 +3501,16 @@ begin
   with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
   begin
     IdAnterior := NFe.infNFe.ID;
+{$IfDef DFE_ACBR_LIBXML2}
+    FNFeW.Opcoes.FormatoAlerta  := Configuracoes.Geral.FormatoAlerta;
+    FNFeW.Opcoes.RetirarAcentos := Configuracoes.Geral.RetirarAcentos;
+    FNFeW.Opcoes.RetirarEspacos := Configuracoes.Geral.RetirarEspacos;
+    FNFeW.Opcoes.IdentarXML := Configuracoes.Geral.IdentarXML;
+    FNFeW.Opcoes.NormatizarMunicipios  := Configuracoes.Arquivos.NormatizarMunicipios;
+    FNFeW.Opcoes.PathArquivoMunicipios := Configuracoes.Arquivos.PathArquivoMunicipios;
+    FNFeW.Opcoes.CamposFatObrigatorios := Configuracoes.Geral.CamposFatObrigatorios;
+    FNFeW.Opcoes.ForcarGerarTagRejeicao938 := Configuracoes.Geral.ForcarGerarTagRejeicao938;
+{$Else}
     FNFeW.Gerador.Opcoes.FormatoAlerta  := Configuracoes.Geral.FormatoAlerta;
     FNFeW.Gerador.Opcoes.RetirarAcentos := Configuracoes.Geral.RetirarAcentos;
     FNFeW.Gerador.Opcoes.RetirarEspacos := Configuracoes.Geral.RetirarEspacos;
@@ -3500,7 +3518,8 @@ begin
     FNFeW.Opcoes.NormatizarMunicipios  := Configuracoes.Arquivos.NormatizarMunicipios;
     FNFeW.Opcoes.PathArquivoMunicipios := Configuracoes.Arquivos.PathArquivoMunicipios;
     FNFeW.Opcoes.CamposFatObrigatorios := Configuracoes.Geral.CamposFatObrigatorios;
-    FNFeW.Opcoes.ForcarGerarTagRejeicao938          := Configuracoes.Geral.ForcarGerarTagRejeicao938;
+    FNFeW.Opcoes.ForcarGerarTagRejeicao938 := Configuracoes.Geral.ForcarGerarTagRejeicao938;
+{$EndIf}
 
     pcnAuxiliar.TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
 
@@ -3508,20 +3527,31 @@ begin
     FNFeW.CSRT   := Configuracoes.RespTec.CSRT;
   end;
 
+{$IfNDef DFE_ACBR_LIBXML2}
   FNFeW.Opcoes.GerarTXTSimultaneamente := False;
+{$EndIf}
 
   FNFeW.GerarXml;
   //DEBUG
+  //WriteToTXT('c:\temp\Notafiscal.xml', FNFeW.Document.Xml, False, False);
   //WriteToTXT('c:\temp\Notafiscal.xml', FNFeW.Gerador.ArquivoFormatoXML, False, False);
 
+{$IfDef DFE_ACBR_LIBXML2}
+  XMLOriginal := FNFeW.Document.Xml;  // SetXMLOriginal() irá converter para UTF8
+{$Else}
   XMLOriginal := FNFeW.Gerador.ArquivoFormatoXML;  // SetXMLOriginal() irá converter para UTF8
+{$EndIf}
 
   { XML gerado pode ter nova Chave e ID, então devemos calcular novamente o
     nome do arquivo, mantendo o PATH do arquivo carregado }
   if (NaoEstaVazio(FNomeArq) and (IdAnterior <> FNFe.infNFe.ID)) then
     FNomeArq := CalcularNomeArquivoCompleto('', ExtractFilePath(FNomeArq));
 
+{$IfDef DFE_ACBR_LIBXML2}
+  FAlertas := ACBrStr( FNFeW.ListaDeAlertas.Text );
+{$Else}
   FAlertas := ACBrStr( FNFeW.Gerador.ListaDeAlertas.Text );
+{$EndIf}
   Result := FXMLOriginal;
 end;
 
@@ -3529,6 +3559,8 @@ function NotaFiscal.GerarTXT: String;
 var
   IdAnterior : String;
 begin
+  Result := '';
+{$IfNDef DFE_ACBR_LIBXML2}
   with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
   begin
     IdAnterior                             := NFe.infNFe.ID;
@@ -3552,6 +3584,7 @@ begin
 
   FAlertas := FNFeW.Gerador.ListaDeAlertas.Text;
   Result   := FNFeW.Gerador.ArquivoFormatoTXT;
+{$EndIf}
 end;
 
 function NotaFiscal.CalcularNomeArquivo: String;
@@ -3798,7 +3831,7 @@ begin
 
   if Self.Count < 1 then
   begin
-    Erros := 'Nenhuma NFe carregada';
+    Erros := 'Nenhuma '+ModeloDFToPrefixo(Self.FConfiguracoes.Geral.ModeloDF)+' carregada';
     Result := False;
     Exit;
   end;

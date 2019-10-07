@@ -190,16 +190,17 @@ begin
         infEvento.CNPJ         := Leitor.rCampo(tcStr, 'CNPJ');
         infEvento.chNFe        := Leitor.rCampo(tcStr, 'chNFe');
         infEvento.dhEvento     := Leitor.rCampo(tcDatHor, 'dhEvento');
-        infEvento.tpEvento     := StrToTpEvento(ok,Leitor.rCampo(tcStr, 'tpEvento'));
+        infEvento.tpEvento     := StrToTpEventoNFe(ok,Leitor.rCampo(tcStr, 'tpEvento'));
         infEvento.nSeqEvento   := Leitor.rCampo(tcInt, 'nSeqEvento');
         infEvento.VersaoEvento := Leitor.rCampo(tcDe2, 'verEvento');
 
         if Leitor.rExtrai(3, 'detEvento', '', i + 1) <> '' then
         begin
-          infEvento.DetEvento.xCorrecao := Leitor.rCampo(tcStr, 'xCorrecao');
-          infEvento.DetEvento.xCondUso  := Leitor.rCampo(tcStr, 'xCondUso');
-          infEvento.DetEvento.nProt     := Leitor.rCampo(tcStr, 'nProt');
-          infEvento.DetEvento.xJust     := Leitor.rCampo(tcStr, 'xJust');
+          infEvento.DetEvento.descEvento := Leitor.rCampo(tcStr, 'descEvento');
+          infEvento.DetEvento.xCorrecao  := Leitor.rCampo(tcStr, 'xCorrecao');
+          infEvento.DetEvento.xCondUso   := Leitor.rCampo(tcStr, 'xCondUso');
+          infEvento.DetEvento.nProt      := Leitor.rCampo(tcStr, 'nProt');
+          infEvento.DetEvento.xJust      := Leitor.rCampo(tcStr, 'xJust');
 
           InfEvento.detEvento.cOrgaoAutor := Leitor.rCampo(tcInt, 'cOrgaoAutor');
           infEvento.detEvento.tpAutor     := StrToTipoAutor(ok, Leitor.rCampo(tcStr, 'tpAutor'));
@@ -265,7 +266,7 @@ begin
          (*HR16 *)FretEvento.Items[i].FRetInfEvento.cStat      := Leitor.rCampo(tcInt, 'cStat');
          (*HR17 *)FretEvento.Items[i].FRetInfEvento.xMotivo    := Leitor.rCampo(tcStr, 'xMotivo');
          (*HR18 *)FretEvento.Items[i].FRetInfEvento.chNFe      := Leitor.rCampo(tcStr, 'chNFe');
-         (*HR19 *)FretEvento.Items[i].FRetInfEvento.tpEvento   := StrToTpEvento(ok,Leitor.rCampo(tcStr, 'tpEvento'));
+         (*HR19 *)FretEvento.Items[i].FRetInfEvento.tpEvento   := StrToTpEventoNFe(ok,Leitor.rCampo(tcStr, 'tpEvento'));
          (*HR20 *)FretEvento.Items[i].FRetInfEvento.xEvento    := Leitor.rCampo(tcStr, 'xEvento');
          (*HR21 *)FretEvento.Items[i].FRetInfEvento.nSeqEvento := Leitor.rCampo(tcInt, 'nSeqEvento');
          (*HR22 *)FretEvento.Items[i].FRetInfEvento.CNPJDest   := Leitor.rCampo(tcStr, 'CNPJDest');

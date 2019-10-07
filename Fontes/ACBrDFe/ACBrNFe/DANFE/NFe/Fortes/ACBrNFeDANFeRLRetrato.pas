@@ -319,7 +319,6 @@ type
     RLLabel16: TRLLabel;
     rlmContinuacaoDadosAdicionais: TRLMemo;
     rllHomologacao: TRLLabel;
-    rlmDadosAdicionaisAuxiliar: TRLMemo;
     LinhaDCSuperior: TRLDraw;
     LinhaDCInferior: TRLDraw;
     LinhaDCEsquerda: TRLDraw;
@@ -336,8 +335,6 @@ type
     rliTransp3: TRLDraw;
     rlmDescricaoProduto: TRLMemo;
     rlmCodProd: TRLMemo;
-    rlbDivisaoRecibo: TRLBand;
-    rliDivisao: TRLDraw;
     rllUsuario: TRLLabel;
     rllSistema: TRLLabel;
     rllCabFatura4: TRLLabel;
@@ -506,18 +503,7 @@ type
     rliDivImposto5: TRLDraw;
     rllTituloTotalTributos: TRLLabel;
     rllTotalTributos: TRLLabel;
-    rlbReciboHeader: TRLBand;
-    rliCanhoto: TRLDraw;
-    rliCanhoto1: TRLDraw;
-    rliCanhoto2: TRLDraw;
-    rllRecebemosDe: TRLLabel;
-    rllDataRecebimento: TRLLabel;
-    rllIdentificacao: TRLLabel;
-    rliCanhoto3: TRLDraw;
-    rllNFe: TRLLabel;
-    rllNumNF0: TRLLabel;
-    rllSERIE0: TRLLabel;
-    rllResumo: TRLLabel;
+    rlbReciboHeaderBarra: TRLBand;
     rlbFaturaReal: TRLBand;
     RLLabel1: TRLLabel;
     RlbDadoPagamento: TRLLabel;
@@ -533,8 +519,8 @@ type
     RLLabelLIQ: TRLLabel;
     RlbDadoValorLiquido: TRLLabel;
     RLDraw12: TRLDraw;
-    rlbCancelada: TRLBand;
-    RLLCancelada: TRLLabel;
+    rlbCanceladaDenegada: TRLBand;
+    RLLCanceladaDenegada: TRLLabel;
     RLLabel2: TRLLabel;
     subItens: TRLSubDetail;
     rlbItens: TRLBand;
@@ -631,9 +617,39 @@ type
     RLLquadroRetiradaMunicipio: TRLLabel;
     RLLquadroRetiradaUF: TRLLabel;
     RLLquadroRetiradaTelefone: TRLLabel;
+    rlBarraiCanhoto: TRLDraw;
+    RLBarraRecebemosDe: TRLMemo;
+    RLBarraResumo: TRLMemo;
+    rlBarraDataRecebimento: TRLLabel;
+    rlBarraIdentificacao: TRLLabel;
+    rlBarramDadosAdicionaisAuxiliar: TRLMemo;
+    RLBarraBarcode: TRLBarcode;
+    rllBarraNFe: TRLLabel;
+    rlBarraNumNF0: TRLLabel;
+    rlBarraSERIE0: TRLLabel;
+    rlBarraiCanhoto1: TRLDraw;
+    rlBarraiCanhoto2: TRLDraw;
+    rlBarraiCanhoto3: TRLDraw;
+    rlbReciboHeader: TRLBand;
+    rliCanhoto: TRLDraw;
+    rliCanhoto1: TRLDraw;
+    rliCanhoto2: TRLDraw;
+    rllRecebemosDe: TRLLabel;
+    rllDataRecebimento: TRLLabel;
+    rllIdentificacao: TRLLabel;
+    rliCanhoto3: TRLDraw;
+    rllNFe: TRLLabel;
+    rllNumNF0: TRLLabel;
+    rllSERIE0: TRLLabel;
+    rllResumo: TRLLabel;
+    rlmDadosAdicionaisAuxiliar: TRLMemo;
+    rlbDivisaoRecibo: TRLBand;
+    rliDivisao: TRLDraw;
 
+    procedure rlbContinuacaoInformacoesComplementaresBeforePrint(
+      Sender: TObject; var PrintIt: Boolean);
     procedure rlbDivisaoReciboBeforePrint(Sender: TObject; var PrintIt: Boolean);
-    procedure rlbReciboHeaderBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure rlbReciboHeaderBarraBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure RLNFeBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbEmitenteBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbItensAfterPrint(Sender: TObject);
@@ -663,6 +679,11 @@ type
     procedure DefinirRetirada;
     procedure DefinirCabecalhoItens;
     function ManterBandinfAdProd(const sInforAdicProduto: String): String;
+    procedure posicionaCanhoto;
+    function CanhotoDesabilita(Value: TRLBand): TfrlDANFeRLRetrato;
+    Function ConfigurarRLBarcode:TfrlDANFeRLRetrato ;
+    function ConfigurarCanhotoBarra: TfrlDANFeRLRetrato;
+    function Canhoto(Value: TRLBand): TfrlDANFeRLRetrato;
   end;
 
 implementation
@@ -682,6 +703,8 @@ uses
 procedure TfrlDANFeRLRetrato.RLNFeBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   ConfigurarVariavies(tiRetrato);
+
+//  ConfigurarCanhoto;
 
   InicializarDados;
 
@@ -706,7 +729,7 @@ begin
   end;
 end;
 
-procedure TfrlDANFeRLRetrato.rlbReciboHeaderBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfrlDANFeRLRetrato.rlbReciboHeaderBarraBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   PrintIt := (RLNFe.PageNumber = 1);
 end;
@@ -714,6 +737,12 @@ end;
 procedure TfrlDANFeRLRetrato.rlbDivisaoReciboBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   PrintIt := (RLNFe.PageNumber = 1);
+end;
+
+procedure TfrlDANFeRLRetrato.rlbContinuacaoInformacoesComplementaresBeforePrint(
+  Sender: TObject; var PrintIt: Boolean);
+begin
+  if(RLNFe.PageNumber = 1) then RLNFe.NewPageNeeded := True;
 end;
 
 procedure TfrlDANFeRLRetrato.rlbEmitenteBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -742,6 +771,7 @@ var
 begin
   TDFeReportFortes.AjustarMargem(RLNFe, fpDANFe);
   CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDANFe.Logo);
+  rlbCanceladaDenegada.Visible := False;
 
   if not CarregouLogo then
   begin
@@ -762,7 +792,6 @@ begin
         '  -  ' + 'DEST. / REM.: ' + fpNFe.Dest.xNome +
         '  -  ' + 'VALOR TOTAL: R$ ' + FormatFloatBr(fpNFe.Total.ICMSTot.vNF);
     end;
-
     rllResumo.Visible := True;
     iAlturaCanhoto := 25;
   end
@@ -772,11 +801,11 @@ begin
     iAlturaCanhoto := 15;
   end;
 
-  rliCanhoto1.Top := iAlturaCanhoto;
-  rliCanhoto2.Top := rliCanhoto1.Top;
-  rliCanhoto2.Height := (rliCanhoto.Top + rliCanhoto.Height) - rliCanhoto2.Top;
-  rllDataRecebimento.Top := rliCanhoto1.Top + 3;
-  rllIdentificacao.Top := rliCanhoto1.Top + 3;
+  rlBarraiCanhoto1.Top := iAlturaCanhoto;
+  rlBarraiCanhoto2.Top := rlBarraiCanhoto1.Top;
+  rlBarraiCanhoto2.Height := (rlBarraiCanhoto.Top + rlBarraiCanhoto.Height) - rlBarraiCanhoto2.Top;
+  rllDataRecebimento.Top := rlBarraiCanhoto1.Top + 3;
+  rllIdentificacao.Top := rlBarraiCanhoto1.Top + 3;
 
   rllSistema.Visible := (fpDANFe.Sistema <> '');
   rllSistema.Caption := fpDANFe.Sistema;
@@ -790,14 +819,15 @@ begin
 
   rllDadosVariaveis3_Descricao.Visible := True;
   rlbCodigoBarras.Visible := False;
-  rllXmotivo.Visible := True;
-  rlbCancelada.Visible := fpDANFe.Cancelada;
 
-  if rlbCancelada.Visible then
+  rllXmotivo.Visible := True;
+  rlbCanceladaDenegada.Visible := fpDANFe.Cancelada;
+
+  if rlbCanceladaDenegada.Visible then
   begin
     rllDadosVariaveis3_Descricao.Caption := ACBrStr('PROTOCOLO DE HOMOLOGAÇÃO DE CANCELAMENTO');
     rllXmotivo.Caption := 'NF-e CANCELADA';
-    RLLCancelada.Caption := 'NF-e CANCELADA';
+    RLLCanceladaDenegada.Caption := 'NF-e CANCELADA';
   end
   else
   begin
@@ -821,6 +851,8 @@ begin
         begin
           rllXmotivo.Caption := 'NF-e DENEGADA';
           rllDadosVariaveis3_Descricao.Caption := ACBrStr('PROTOCOLO DE DENEGAÇÃO DE USO');
+          rlbCanceladaDenegada.Visible := True;
+          RLLCanceladaDenegada.Caption := 'NF-e DENEGADA';
         end;
 
         else
@@ -840,6 +872,7 @@ begin
         rllDadosVariaveis3.Visible := False;
       end;
     end;
+//    ConfigurarRLBarcode;
   end;
 
   // Ajusta a largura da coluna "Código do Produto"
@@ -888,25 +921,6 @@ begin
     rlmDescricaoProduto.Lines.Text := ACBrStr('DESCRIÇÃO DO PRODUTO / SERVIÇO')
   else
     rlmDescricaoProduto.Lines.Text := 'DESCR. PROD. / SERV.';
-
-  // Posiciona o canhoto do fpDANFe no cabeçalho ou rodapé
-  case fpDANFe.PosCanhoto of
-    prCabecalho:
-    begin
-      rlbReciboHeader.BandType := btHeader;
-      rlbDivisaoRecibo.BandType := btHeader;
-      rlbReciboHeader.Top := 0;
-      rlbDivisaoRecibo.Top := rlbReciboHeader.Top + rlbDivisaoRecibo.Height;
-    end;
-
-    prRodape:
-    begin
-      rlbReciboHeader.BandType := btFooter;
-      rlbDivisaoRecibo.BandType := btFooter;
-      rlbDivisaoRecibo.Top := rlbDadosAdicionais.Top + rlbDadosAdicionais.Height;
-      rlbReciboHeader.Top := rlbDivisaoRecibo.Top + rlbDivisaoRecibo.Height;
-    end;
-  end;
 
   // Oculta alguns itens do fpDANFe
   if fpDANFe.FormularioContinuo then
@@ -1028,7 +1042,7 @@ begin
 
   if (fpDANFe.Fonte.Nome = nfCourierNew) then
   begin
-    rllNumNF1.Font.Size := rllNumNF1.Font.Size - 2;
+    rllNumNF1.Font.Size := rllNumNF1.Font.Size - 3;
     rllNumNF1.Top := rllNumNF1.Top + 1;
     rllChave.Font.Size := rllChave.Font.Size - 1;
   end;
@@ -1052,6 +1066,7 @@ begin
   AdicionarFatura;
   DefinirCabecalhoItens;
   DefinirObservacoes;
+  posicionaCanhoto;
 
   // Verifica se será exibida a 'continuação das informações complementares'
   if (rlmDadosAdicionaisAuxiliar.Lines.Count > fpLimiteLinhas) then
@@ -1081,10 +1096,13 @@ begin
 
     rlbCodigoBarras.Visible := True;
     rlbCodigoBarras.Caption := OnlyNumber(fpNFe.InfNFe.Id);
+
     rllNumNF0.Caption := ACBrStr('Nº ') + PadLeft(IntToStr(nNF), 9, '0');
     rllNumNF1.Caption := rllNumNF0.Caption;
+
     rllSERIE0.Caption := ACBrStr('SÉRIE ') + PadLeft(IntToStr(Serie), 3, '0');
     rllSERIE1.Caption := rllSERIE0.Caption;
+
     rllNatOperacao.Caption := NatOp;
     rllEntradaSaida.Caption := tpNFToStr(tpNF);
     rllEmissao.Caption := FormatDateBr(dEmi);
@@ -1164,6 +1182,7 @@ begin
       FRecebemoDe := rllRecebemosDe.Caption;
 
     rllRecebemosDe.Caption := Format(FRecebemoDe, [XNome]);
+
     rllInscricaoEstadual.Caption := IE;
     rllInscrEstSubst.Caption := IEST;
     rllCNPJ.Caption := FormatarCNPJouCPF(CNPJCPF);
@@ -2030,13 +2049,18 @@ begin
     txtAliqICMS.Caption := FormatFloatBr(Imposto.ICMS.PICMS);
     txtAliqIPI.Caption := FormatFloatBr(Imposto.IPI.PIPI);
   end;
+
+  if fpDANFe.AlternaCoresProdutos then
+  begin
+    FundoItem.Height  := rlbItens.Height;
+    FundoItem.Color   := fpCorDestaqueProdutos;
+    FundoItem.Visible := odd(FNumItem);
+  end;
 end;
 
 procedure TfrlDANFeRLRetrato.rlbItensAfterPrint(Sender: TObject);
 begin
-  //// Alterna produtos com fundo colorido e fundo branco
-  FundoItem.Color := fpCorDestaqueProdutos;
-  FundoItem.Visible := not (FundoItem.Visible) and fpDANFe.AlternaCoresProdutos;
+  //Código removido
 end;
 
 procedure TfrlDANFeRLRetrato.DefinirCabecalhoItens;
@@ -2070,6 +2094,123 @@ begin
   Result := StringReplace(Result, ';', slineBreak, [rfReplaceAll]);
 
   RLBandInfAd.Visible := (Result <> '') and (fpDANFe.ExibeInforAdicProduto = infSeparadamente);
+end;
+
+procedure TfrlDANFeRLRetrato.posicionaCanhoto;
+begin
+  // Seleciona o Layout do Canhoto
+  case fpDANFe.PosCanhotoLayout of
+    prlBarra  : CanhotoDesabilita( rlbReciboHeader).
+                ConfigurarCanhotoBarra.
+                ConfigurarRLBarcode.
+                Canhoto( rlbReciboHeaderBarra );
+
+    prlPadrao : CanhotoDesabilita( rlbReciboHeaderBarra ).
+                Canhoto( rlbReciboHeader );
+  end;
+end;
+
+
+Function TfrlDANFeRLRetrato.CanhotoDesabilita(  Value : TRLBand ) :TfrlDANFeRLRetrato ;
+begin
+  result := Self;
+  Value.Visible := false;
+end;
+
+Function TfrlDANFeRLRetrato.Canhoto( Value : TRLBand ) :TfrlDANFeRLRetrato ;
+begin
+  // Posiciona o canhoto do fpDANFe no cabeçalho ou rodapé
+  result := self;
+  case fpDANFe.PosCanhoto of
+    prCabecalho:
+      begin
+        Value.BandType := btHeader;
+        rlbDivisaoRecibo.BandType := btHeader;
+        Value.Top := 0;
+        rlbDivisaoRecibo.Top := Value.Top + Value.Height;
+      end;
+    prRodape:
+      begin
+        Value.BandType := btFooter;
+        rlbDivisaoRecibo.BandType := btFooter;
+        rlbDivisaoRecibo.Top := rlbDadosAdicionais.Top + rlbDadosAdicionais.Height;
+        Value.Top := rlbDivisaoRecibo.Top + rlbDivisaoRecibo.Height;
+      end;
+  end;
+end;
+
+Function TfrlDANFeRLRetrato.ConfigurarCanhotoBarra :TfrlDANFeRLRetrato ;
+begin
+  result := self;
+  // Define o Tamanho do Canhoto
+  rlbReciboHeaderBarra.Height := 65;
+  if fpDANFe.ExibeResumoCanhoto then
+    rlbReciboHeaderBarra.Height := rlbReciboHeaderBarra.Height + 20;
+
+end;
+
+Function  TfrlDANFeRLRetrato.ConfigurarRLBarcode:TfrlDANFeRLRetrato ;
+Var
+  lIAlimento : Integer;
+  lIAlibarra : Integer;
+begin
+  result := self;
+  // Posiciona as informações do canhoto com chave de acesso
+
+  rlBarraiCanhoto.Height        := rlbReciboHeaderBarra.Height;
+
+  RLBarraRecebemosDe.Top        := rlBarraiCanhoto.Top +1;
+  RLBarraRecebemosDe.Font       := rllRecebemosDe.Font;
+  RLBarraRecebemosDe.Lines.Add( rllRecebemosDe.Caption );
+  RLBarraRecebemosDe.Font.Size  := rllRecebemosDe.Font.Size;
+
+  rlBarraiCanhoto1.Top          := RLBarraResumo.top + 10;
+  RLBarraBarcode.Caption        := rlbCodigoBarras.Caption;
+  RLBarraBarcode.Height         := rlbCodigoBarras.Height;
+
+  if fpDANFe.ExibeResumoCanhoto then
+  begin
+    RLBarraResumo.Top           := RLBarraRecebemosDe.Top + 15;
+    RLBarraResumo.Font          := rllResumo.Font;
+    RLBarraResumo.Font.Size     := rllResumo.Font.Size;
+    RLBarraResumo.Lines.Add( rllResumo.Caption );
+    rlBarraiCanhoto1.Top        := RLBarraResumo.top + 20;
+    lIAlimento                  := Trunc( rlBarraiCanhoto1.Top / 2 )-5;
+  end
+  else
+    lIAlimento                  := rlBarraiCanhoto.Top +1;
+
+  lIAlibarra                    := 530;
+
+  rlBarraDataRecebimento.Top    := rlBarraiCanhoto1.Top + 1;
+  rlBarraIdentificacao.Top      := rlBarraiCanhoto1.Top + 1;
+  RLBarraBarcode.Top            := rlBarraiCanhoto1.Top + 3;
+
+  rlBarraiCanhoto1.Width        := rlBarraiCanhoto.Width;
+  rlBarraiCanhoto2.Top          := rlBarraiCanhoto1.Top;
+  rlBarraiCanhoto2.Height       := (rlBarraiCanhoto.Top + rlBarraiCanhoto.Height) - rlBarraiCanhoto1.Top;
+  rlBarraiCanhoto3.Height       := (rlBarraiCanhoto.Top + rlBarraiCanhoto.Height) - rlBarraiCanhoto3.Top;
+
+  RLBarraBarcode.Left           := rlBarraiCanhoto3.Left + 3;
+
+  rllBarraNFe.Top               := lIAlimento;
+  rllBarraNFe.Left              := lIAlibarra - 80;
+
+  rlBarraNumNF0.Top             := lIAlimento;
+  rlBarraNumNF0.Left            := lIAlibarra - 40;
+  rlBarraNumNF0.Alignment       := taLeftJustify;
+  rlBarraNumNF0.Font            := rllBarraNFe.Font;
+  rlBarraNumNF0.Font.Style      := [fsBold];
+  rlBarraNumNF0.Caption         := rllNumNF0.Caption;
+
+  rlBarraSERIE0.Top             := lIAlimento;
+  rlBarraSERIE0.Left            := lIAlibarra + 70 ;
+  rlBarraSERIE0.Alignment       := taLeftJustify;
+  rlBarraSERIE0.Font            := rllBarraNFe.Font;
+  rlBarraSERIE0.Caption         := rllSERIE0.Caption;
+
+  rlBarraiCanhoto3.Left         := rllBarraNFe.Left - 3;
+
 end;
 
 end.

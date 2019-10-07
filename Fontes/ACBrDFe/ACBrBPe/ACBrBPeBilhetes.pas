@@ -198,7 +198,6 @@ begin
   begin
     FBPe.Ide.modelo := 63;
     FBPe.infBPe.Versao := VersaoBPeToDbl(Configuracoes.Geral.VersaoDF);
-
     FBPe.Ide.tpBPe := tbNormal;
     FBPe.Ide.verProc := 'ACBrBPe';
     FBPe.Ide.tpAmb := Configuracoes.WebServices.Ambiente;
@@ -388,6 +387,10 @@ begin
     GravaLog('Validar: 701-versão');
     if BPe.infBPe.Versao < 1.00 then
       AdicionaErro('701-Rejeição: Versão inválida');
+
+    GravaLog('Validar: 897-Código do documento: ' + IntToStr(BPe.Ide.nBP));
+    if not ValidarCodigoDFe(BPe.Ide.cBP, BPe.Ide.nBP) then
+      AdicionaErro('897-Rejeição: Código numérico em formato inválido ');
 
     for I:=0 to BPe.autXML.Count-1 do
     begin
@@ -790,8 +793,8 @@ begin
       Comp.enderComp.xMun    := INIRec.ReadString('comp', 'xMun', '');
       Comp.enderComp.CEP     := INIRec.ReadInteger('comp', 'CEP', 0);
       Comp.enderComp.UF      := INIRec.ReadString('comp', 'UF', '');
-      Comp.EnderComp.cPais   := INIRec.ReadInteger('comp', 'cPais', 1058);
-      Comp.EnderComp.xPais   := INIRec.ReadString('comp', 'xPais', 'BRASIL');
+      Comp.EnderComp.cPais   := INIRec.ReadInteger('comp', 'cPais', 0);
+      Comp.EnderComp.xPais   := INIRec.ReadString('comp', 'xPais', '');
       Comp.enderComp.fone    := INIRec.ReadString('comp', 'fone', '');
       Comp.enderComp.Email   := INIRec.ReadString('comp', 'Email', '');
 
@@ -809,6 +812,8 @@ begin
       Agencia.enderAgencia.xMun    := INIRec.ReadString('Agencia', 'xMun', '');
       Agencia.enderAgencia.CEP     := INIRec.ReadInteger('Agencia', 'CEP', 0);
       Agencia.enderAgencia.UF      := INIRec.ReadString('Agencia', 'UF', '');
+      Agencia.enderAgencia.cPais   := INIRec.ReadInteger('Agencia', 'cPais', 0);
+      Agencia.enderAgencia.xPais   := INIRec.ReadString('Agencia', 'xPais', '');
       Agencia.enderAgencia.fone    := INIRec.ReadString('Agencia', 'fone', '');
       Agencia.enderAgencia.Email   := INIRec.ReadString('Agencia', 'Email', '');
 
@@ -857,7 +862,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with infViagem.Add do
+        with infViagem.New do
         begin
           cPercurso    := sFim;
           xPercurso    := INIRec.ReadString(sSecao, 'xPercurso', '');
@@ -909,7 +914,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break;
 
-        with infValorBPe.Comp.Add do
+        with infValorBPe.Comp.New do
         begin
           tpComp := StrTotpComponente(Ok, sFim);
           vComp  := StringToFloatDef(INIRec.ReadString(sSecao, 'vComp', ''), 0);
@@ -971,9 +976,9 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break ;
 
-        with pag.Add do
+        with pag.New do
         begin
-          tPag    := StrToFormaPagamento(OK, sFim);
+          tPag    := StrToFormaPagamentoBPe(OK, sFim);
           xPag    := INIRec.ReadString(sSecao, 'xPag', '');
           nDocPag := INIRec.ReadString(sSecao, 'nDocPag', '');
           vPag    := StringToFloatDef(INIRec.ReadString(sSecao, 'vPag', ''), 0);
@@ -1003,7 +1008,7 @@ begin
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
           break ;
 
-        with autXML.Add do
+        with autXML.New do
           CNPJCPF := sFim;
 
         Inc(I);
@@ -1041,7 +1046,7 @@ begin
   if not (AOwner is TACBrBPe) then
     raise EACBrBPeException.Create('AOwner deve ser do tipo TACBrBPe');
 
-  inherited;
+  inherited Create(AOwner, ItemClass);
 
   FACBrBPe := TACBrBPe(AOwner);
   FConfiguracoes := TACBrBPe(FACBrBPe).Configuracoes;

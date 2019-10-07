@@ -201,6 +201,7 @@ type
     FinfPercurso: TinfPercursoCollection;
     FdhIniViagem: TDateTime;
     FindCanalVerde: TIndicador;
+    FindCarregaPosterior: TIndicador;
 
     procedure SetinfMunCarrega(Value: TinfMunCarregaCollection);
     procedure SetinfPercurso(Value: TinfPercursoCollection);
@@ -227,6 +228,7 @@ type
     property infPercurso: TinfPercursoCollection     read FinfPercurso   write SetinfPercurso;
     property dhIniViagem: TDateTime                  read FdhIniViagem   write FdhIniViagem;
     property indCanalVerde: TIndicador               read FindCanalVerde write FindCanalVerde default tiNao;
+    property indCarregaPosterior: TIndicador         read FindCarregaPosterior write FindCarregaPosterior default tiNao;
   end;
 
   Temit = class(TObject)
@@ -1118,6 +1120,13 @@ type
     property hashCSRT: String read FhashCSRT write FhashCSRT;
  end;
 
+  TinfMDFeSupl = class(TObject)
+  private
+    FqrCodMDFe: String;
+  public
+    property qrCodMDFe: String read FqrCodMDFe write FqrCodMDFe;
+  end;
+
   TMDFe = class(TObject)
   private
     FinfMDFe: TinfMDFe;
@@ -1136,6 +1145,7 @@ type
     FautXML: TautXMLCollection;
     FinfAdic: TinfAdic;
     FinfRespTec: TinfRespTec;
+    FinfMDFeSupl: TinfMDFeSupl;
 
     FProcMDFe: TProcMDFe;
     FSignature: TSignature;
@@ -1163,6 +1173,7 @@ type
     property infAdic: TinfAdic         read FinfAdic write FinfAdic;
 
     property infRespTec: TinfRespTec read FinfRespTec write FinfRespTec;
+    property infMDFeSupl: TinfMDFeSupl read FinfMDFeSupl write FinfMDFeSupl;
 
     property procMDFe: TProcMDFe   read FProcMDFe  write FProcMDFe;
     property signature: Tsignature read Fsignature write Fsignature;
@@ -1200,6 +1211,7 @@ begin
   FinfAdic := TinfAdic.Create;
 
   FinfRespTec := TinfRespTec.Create;
+  FinfMDFeSupl := TinfMDFeSupl.Create;
 
   FProcMDFe  := TProcMDFe.create;
   Fsignature := Tsignature.create;
@@ -1223,6 +1235,7 @@ begin
   FautXML.Free;
   FinfAdic.Free;
   FinfRespTec.Free;
+  FinfMDFeSupl.Free;
 
   FProcMDFe.Free;
   Fsignature.Free;
@@ -1275,6 +1288,7 @@ begin
   FinfMunCarrega := TinfMunCarregaCollection.Create;
   FinfPercurso   := TinfPercursoCollection.Create;
   FindCanalVerde := tiNao;
+  FindCarregaPosterior := tiNao;
 end;
 
 destructor TIde.Destroy;

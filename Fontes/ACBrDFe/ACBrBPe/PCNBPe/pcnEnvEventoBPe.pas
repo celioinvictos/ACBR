@@ -57,27 +57,26 @@ unit pcnEnvEventoBPe;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, Contnrs,
   pcnConversao, pcnGerador, pcnConsts,
   pcnEventoBPe, pcnBPeConsts, pcnSignature;
 
 type
-  TInfEventoCollection     = class;
-  TInfEventoCollectionItem = class;
-  TEventoBPe               = class;
   EventoException          = class(Exception);
 
-  TInfEventoCollection = class(TCollection)
+  TInfEventoCollectionItem = class;
+
+  TInfEventoCollection = class(TObjectList)
   private
     function GetItem(Index: Integer): TInfEventoCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfEventoCollectionItem);
   public
-    constructor Create(AOwner: TPersistent);
-    function Add: TInfEventoCollectionItem;
+    function Add: TInfEventoCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TInfEventoCollectionItem;
     property Items[Index: Integer]: TInfEventoCollectionItem read GetItem write SetItem; default;
   end;
 
-  TInfEventoCollectionItem = class(TCollectionItem)
+  TInfEventoCollectionItem = class(TObject)
   private
     FInfEvento: TInfEvento;
     FRetInfEvento: TRetInfEvento;
@@ -85,7 +84,7 @@ type
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-  published
+
     property InfEvento: TInfEvento       read FInfEvento    write FInfEvento;
     property signature: Tsignature       read Fsignature    write Fsignature;
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
@@ -93,7 +92,7 @@ type
 
   { TEventoBPe }
 
-  TEventoBPe = class(TPersistent)
+  TEventoBPe = class(TObject)
   private
     FGerador: TGerador;
     FidLote: Integer;
@@ -108,7 +107,8 @@ type
     function LerXML(const CaminhoArquivo: String): Boolean;
     function LerXMLFromString(const AXML: String): Boolean;
     function LerFromIni(const AIniString: String): Boolean;
-  published
+    function ObterNomeArquivo(tpEvento: TpcnTpEvento): String;
+
     property Gerador: TGerador            read FGerador write FGerador;
     property idLote: Integer              read FidLote  write FidLote;
     property Evento: TInfEventoCollection read FEvento  write SetEvento;
@@ -126,8 +126,9 @@ uses
 
 constructor TEventoBPe.Create;
 begin
+  inherited Create;
   FGerador := TGerador.Create;
-  FEvento  := TInfEventoCollection.Create(Self);
+  FEvento  := TInfEventoCollection.Create;
 end;
 
 destructor TEventoBPe.Destroy;
@@ -254,7 +255,7 @@ begin
   try
      RetEventoBPe.Leitor.Arquivo := AXML;
      Result := RetEventoBPe.LerXml;
-     with FEvento.Add do
+     with FEvento.New do
       begin
         infEvento.ID           := RetEventoBPe.InfEvento.id;
         infEvento.cOrgao       := RetEventoBPe.InfEvento.cOrgao;
@@ -337,17 +338,17 @@ begin
     while true do
     begin
       sSecao := 'EVENTO'+IntToStrZero(I,3);
-      sFim   := INIRec.ReadString(sSecao, 'chCTe', 'FIM');
+      sFim   := INIRec.ReadString(sSecao, 'chBPe', 'FIM');
       if (sFim = 'FIM') or (Length(sFim) <= 0) then
         break;
 
-      with Self.Evento.Add do
+      with Self.Evento.New do
       begin
         infEvento.chBPe              := INIRec.ReadString(sSecao, 'chBPe', '');
         infEvento.cOrgao             := INIRec.ReadInteger(sSecao, 'cOrgao', 0);
         infEvento.CNPJ               := INIRec.ReadString(sSecao, 'CNPJ', '');
         infEvento.dhEvento           := StringToDateTime(INIRec.ReadString(sSecao, 'dhEvento', ''));
-        infEvento.tpEvento           := StrToTpEvento(ok,INIRec.ReadString(sSecao, 'tpEvento', ''));
+        infEvento.tpEvento           := StrToTpEventoBPe(ok,INIRec.ReadString(sSecao, 'tpEvento', ''));
         infEvento.nSeqEvento         := INIRec.ReadInteger(sSecao, 'nSeqEvento', 1);
         infEvento.detEvento.xCondUso := '';
         infEvento.detEvento.xJust    := INIRec.ReadString(sSecao, 'xJust', '');
@@ -361,17 +362,31 @@ begin
   end;
 end;
 
+function TEventoBPe.ObterNomeArquivo(tpEvento: TpcnTpEvento): String;
+begin
+  case tpEvento of
+     teCCe                       : Result := IntToStr(Self.idLote) + '-cce.xml';     // Carta de Correção Eletrônica
+     teCancelamento,
+     teCancSubst                 : Result := IntToStr(Self.idLote) + '-can-eve.xml'; // Cancelamento da NFe como Evento
+     teManifDestCiencia,
+     teManifDestConfirmacao,
+     teManifDestDesconhecimento,
+     teManifDestOperNaoRealizada : Result := IntToStr(Self.idLote) + '-man-des.xml'; // Manifestação do Destinatário
+     teEPEC                      : Result := Evento.Items[0].InfEvento.chBPe + '-ped-epec.xml'; // EPEC
+     tePedProrrog1,
+     tePedProrrog2               : Result := Evento.Items[0].InfEvento.chBPe + '-ped-prorr.xml';
+     teCanPedProrrog1,
+     teCanPedProrrog2            : Result := Evento.Items[0].InfEvento.chBPe + '-can-prorr.xml';
+   else
+     raise EventoException.Create('Obter nome do arquivo de Evento não Implementado!');
+  end;
+end;
+
 { TInfEventoCollection }
 
 function TInfEventoCollection.Add: TInfEventoCollectionItem;
 begin
-  Result := TInfEventoCollectionItem(inherited Add);
-  Result.create;
-end;
-
-constructor TInfEventoCollection.Create(AOwner: TPersistent);
-begin
-  inherited Create(TInfEventoCollectionItem);
+  Result := Self.New;
 end;
 
 function TInfEventoCollection.GetItem(
@@ -386,12 +401,19 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TInfEventoCollection.New: TInfEventoCollectionItem;
+begin
+  Result := TInfEventoCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TInfEventoCollectionItem }
 
 constructor TInfEventoCollectionItem.Create;
 begin
-  FInfEvento := TInfEvento.Create;
-  Fsignature := Tsignature.Create;
+  inherited Create;
+  FInfEvento    := TInfEvento.Create;
+  Fsignature    := Tsignature.Create;
   FRetInfEvento := TRetInfEvento.Create;
 end;
 

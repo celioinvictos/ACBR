@@ -107,7 +107,8 @@ type
     procedure CreateCtx;
     procedure DestroyCtx;
     function XmlSecSign(aDoc: xmlDocPtr;
-      const SignatureNode, SelectionNamespaces: string; const InfElement, URI, IdSignature : String): String;
+      const SignatureNode, SelectionNamespaces: string;
+      const InfElement, URI, IdSignature, docElement: String): String;
   protected
     procedure VerificarValoresPadrao(var SignatureNode: String;
       var SelectionNamespaces: String); override;
@@ -166,7 +167,7 @@ Uses
   strutils, math,
   ACBrUtil, ACBrConsts,
   synautil, synacode,
-  ACBrDFeUtil;
+  ACBrDFeUtil, ACBrLibXML2;
 
 var
   XMLSecLoaded: String;
@@ -420,7 +421,8 @@ begin
 end;
 
 function TDFeSSLXmlSignXmlSec.XmlSecSign(aDoc: xmlDocPtr;
- const SignatureNode, SelectionNamespaces: string; const InfElement, URI, IdSignature : String): String;
+  const SignatureNode, SelectionNamespaces: string;
+  const InfElement, URI, IdSignature, docElement: String): String;
 var
   SignNode: xmlNodePtr;
   buffer: PAnsiChar;
@@ -434,7 +436,7 @@ begin
     // Inserindo Template da Assinatura digital //
     SignNode := LibXmlFindSignatureNode(aDoc, SignatureNode, SelectionNamespaces, infElement);
     if (SignNode = nil) then
-      SignNode := AdicionarNode(aDoc, SignatureElement(URI, True, IdSignature, FpDFeSSL.SSLDgst));
+      SignNode := AdicionarNode(aDoc, SignatureElement(URI, True, IdSignature, FpDFeSSL.SSLDgst), docElement);
 
     { sign the template }
     SignResult := xmlSecDSigCtxSign(FdsigCtx, SignNode);
@@ -475,6 +477,7 @@ begin
 
   // Nota: "ConteudoXML" já deve estar convertido para UTF8 //
   XmlAss := '';
+  IdAttr_temp := IfEmptyThen(IdAttr, 'Id');
 
   // Verificando se possui a Declaração do XML, se não possuir, adiciona para OpenSSL compreender o Encoding
   TemDeclaracao := XmlEhUTF8(ConteudoXML);
@@ -483,17 +486,15 @@ begin
   else
     AXml := ConteudoXML;
 
-  if InfElement <> '' then
+  if (InfElement <> '') then
   begin
-    IdAttr_temp := IfEmptyThen(IdAttr, 'Id');
-
     DTD := StringReplace(cDTD, '&infElement&', InfElement, []);
     DTD := StringReplace(DTD, '&IdAttribute&', IdAttr_temp, []);
 
     AXml := InserirDTD(AXml, DTD);
   end;
 
-  URI := ExtraiURI(aXML, IdAttr_temp);
+  URI := EncontrarURI(aXML, docElement, IdAttr_temp);
 
 
   { load template }
@@ -506,7 +507,8 @@ begin
     // DEBUG
     // WriteToTXT('C:\TEMP\XmlToSign.xml', AXml, False, False);
 
-    XmlAss := XmlSecSign(doc, SignatureNode, SelectionNamespaces, InfElement, URI, IdSignature);
+    XmlAss := XmlSecSign(doc, SignatureNode, SelectionNamespaces, InfElement,
+                         URI, IdSignature, docElement);
 
     // DEBUG
     // WriteToTXT('C:\TEMP\XmlSigned1.xml', XmlAss, False, False);
@@ -688,8 +690,8 @@ begin
     end;
 
     { Achando o nó da Assinatura }
-    SignNode := LibXmlFindSignatureNode(doc, SignatureNode, SelectionNamespaces, InfElement);
-    if (SignNode = nil) or (SignNode.Name <> SignatureNode) then
+    SignNode := LibXmlFindSignatureNode(doc, asSignatureNode, asSelectionNamespaces, InfElement);
+    if (SignNode = nil) or (SignNode.Name <> asSignatureNode) then
     begin
        MsgErro := ACBrStr(cErrFindSignNode);
        Exit;

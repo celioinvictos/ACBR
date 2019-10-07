@@ -113,7 +113,9 @@ type
                     proIPM, proBelford, proISSJoinville, proAsten, proELv2,
                     proTiplanv2, proGiss, proDeISS, proTcheInfov2, proDataSmart,
                     proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-					proGiap, proAssessorPublico, proSigIss, proElotech);
+                    proGiap, proAssessorPublico, proSigIss, proElotech,
+                    proSilTecnologia, proiiBrasilv2, proWebFisco, proDSFSJC,
+                    proSimplISSv2, proLencois, progeNFe );
 
   TnfseAcao = (acRecepcionar, acConsSit, acConsLote, acConsNFSeRps, acConsNFSe,
                acCancelar, acGerar, acRecSincrono, acConsSecRps, acSubstituir);
@@ -129,7 +131,8 @@ type
 
   TLayOutXML = (loNone, loABRASFv1, loABRASFv2, loEGoverneISS, loEL, loEquiplano,
                 loInfisc, loISSDSF, loGoverna, loSP, loCONAM, loAgili, loSMARAPD, 
-                loIPM, loGiap, loAssessorPublico, loSigIss, loElotech);
+                loIPM, loGiap, loAssessorPublico, loSigIss, loElotech, loWebFisco,
+                loLencois);
 
   TnfseFrete = ( tfPrestador, tfTomador );
 
@@ -157,6 +160,8 @@ type
   TTributacao = ( ttIsentaISS, ttNaoIncidencianoMunic, ttImune,
                   ttExigibilidadeSusp, ttNaoTributavel, ttTributavel,
                   ttTributavelFixo, ttTributavelSN, ttMEI );
+
+  TUnidade = ( tuHora, tuQtde );
 
 function SimNao( const t : Integer ): String;
 function StatusRPSToStr(const t: TnfseStatusRPS): String;
@@ -219,13 +224,13 @@ function StrToCondicao(out ok: boolean; const s: String): TnfseCondicaoPagamento
 function CondicaoToStrPublica(const t: TnfseCondicaoPagamento): String;
 function StrPublicaToCondicao(out ok: boolean; const s: String): TnfseCondicaoPagamento;
 
-function ObterDescricaoServico(cCodigo: String): String;
-function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function ObterDescricaoServico(const cCodigo: String): String;
+function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                      ASerie:Integer; ANumero, ACodigo: Integer;
                      AModelo: Integer=56): String;
 function RetirarPrefixos(const AXML: String; AProvedor: TnfseProvedor): String;
-function VersaoXML(AXML: String): String;
-function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function VersaoXML(const AXML: String): String;
+function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                                ANumero: Int64; AModelo: Integer = 56): String;
 
 function LayOutToServico(const t: TLayOutNFSe): String;
@@ -235,7 +240,7 @@ function LayOutToSchema(const t: TLayOutNFSe): TSchemaNFSe;
 function LayOutToStr(const t: TLayOutNFSe): String;
 
 function SchemaNFSeToStr(const t: TSchemaNFSe): String;
-function StrToSchemaNFSe(out ok: Boolean; const s: String): TSchemaNFSe;
+function StrToSchemaNFSe(const s: String): TSchemaNFSe;
 
 function StrToVersaoNFSe(out ok: Boolean; const s: String): TVersaoNFSe;
 function VersaoNFSeToStr(const t: TVersaoNFSe): String;
@@ -270,6 +275,11 @@ function TributacaoToStr(const t: TTributacao): String;
 function StrToTributacao(out ok: boolean; const s: String): TTributacao;
 
 function RemoverAtributos(const AXML: String; AProvedor: TnfseProvedor): String;
+
+function TUnidadeToStr(const t: TUnidade): String;
+function StrToTUnidade(out ok: boolean; const s: String): TUnidade;
+
+function RemoverIdentacao(const AXML: String): String;
 
 implementation
 
@@ -516,7 +526,8 @@ begin
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
          'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart', 'MetropolisWeb',
          'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
-		 'SigIss', 'Elotech'],
+         'SigIss', 'Elotech', 'SilTecnologia', 'iiBrasilv2', 'WEBFISCO', 'DSFSJC',
+         'SimplISSv2', 'Lencois', 'geNFe'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -534,7 +545,8 @@ begin
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
          proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
          proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-		 proGiap, proAssessorPublico, proSigIss, proElotech]);
+         proGiap, proAssessorPublico, proSigIss, proElotech, proSilTecnologia,
+         proiiBrasilv2, proWebFisco, proDSFSJC, proSimplISSv2, proLencois, progeNFe]);
 end;
 
 function StrToProvedor(out ok: boolean; const s: String): TnfseProvedor;
@@ -556,7 +568,8 @@ begin
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
          'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart', 'MetropolisWeb',
          'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
-		 'SigIss', 'Elotech'],
+         'SigIss', 'Elotech', 'SilTecnologia', 'iiBrasilv2', 'WEBFISCO', 'DSFSJC',
+         'SimplISSv2', 'Lencois', 'geNFe'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -574,7 +587,8 @@ begin
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
          proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
          proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-		 proGiap, proAssessorPublico, proSigIss, proElotech]);
+         proGiap, proAssessorPublico, proSigIss, proElotech, proSilTecnologia,
+         proiiBrasilv2, proWebFisco, proDSFSJC, proSimplISSv2, proLencois, progeNFe]);
 end;
 
 // Condição de pagamento ******************************************************
@@ -869,6 +883,7 @@ var
         25300: Cidade := 'Goiânia/GO';
         33800: Cidade := 'Aparecida de Goiânia/GO';
        530020: Cidade := 'Brazlandia/DF';
+        28800: Cidade := 'Trindade/GO';
    end;
  end;
 
@@ -6645,6 +6660,7 @@ var
         25300: CodSiafi := ''; // Goiânia/GO
         33800: CodSiafi := ''; // Aparecida de Goiânia/GO
        530020: CodSiafi := ''; // Brazlandia/DF
+        28800: CodSiafi := ''; // Trindade/GO
    end;
  end;
 
@@ -11955,7 +11971,7 @@ var
       5007307: CodSiafi := '9145'; // Rio Negro/MS';
       5007406: CodSiafi := '9147'; // Rio Verde De Mato Grosso/MS';
       5007505: CodSiafi := '9149'; // Rochedo/MS';
-      5007554: CodSiafi := '9806'; // Santa Rita Do Pardo/MS';
+      5007554: CodSiafi := '9745'; // Santa Rita Do Pardo/MS';
       5007695: CodSiafi := '9809'; // Sao Gabriel Do Oeste/MS';
       5007703: CodSiafi := '9813'; // Sete Quedas/MS';
       5007802: CodSiafi := '9811'; // Selviria/MS';
@@ -17589,7 +17605,7 @@ begin
       9145: CodCidade := 5007307; // Rio Negro/MS  
       9147: CodCidade := 5007406; // Rio Verde De Mato Grosso/MS  
       9149: CodCidade := 5007505; // Rochedo/MS  
-      9806: CodCidade := 5007554; // Santa Rita Do Pardo/MS  
+      9745: CodCidade := 5007554; // Santa Rita Do Pardo/MS
       9809: CodCidade := 5007695; // Sao Gabriel Do Oeste/MS
       9813: CodCidade := 5007703; // Sete Quedas/MS  
       9811: CodCidade := 5007802; // Selviria/MS  
@@ -18056,7 +18072,7 @@ begin
                            [EgConstrucaoCivil, EgOutros]);
 end;
 
-function ObterDescricaoServico(cCodigo: String): String;
+function ObterDescricaoServico(const cCodigo: String): String;
 var
  i: Integer;
  PathArquivo: String;
@@ -18082,7 +18098,7 @@ begin
   end;
 end;
 
-function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
   ASerie: Integer; ANumero, ACodigo: Integer; AModelo: Integer): String;
 var
   vUF, vDataEmissao, vSerie, vNumero,
@@ -18130,7 +18146,7 @@ begin
   XML := StrReplace( XML, 'tipos:' );
 
   // Provedor NFSeBrasil
-  if AProvedor = proNFSeBrasil then
+  if AProvedor in [proNFSeBrasil, proSigCorp] then
   begin
     XML := StringReplace( XML, '<![CDATA[', '', [rfReplaceAll] );
     XML := StringReplace( XML, ']]>', '', [rfReplaceAll] );
@@ -18147,7 +18163,7 @@ begin
   result := XML;
 end;
 
-function VersaoXML(AXML: String): String;
+function VersaoXML(const AXML: String): String;
 var
  i: Integer;
 begin
@@ -18157,7 +18173,7 @@ begin
   else result := '2';
 end;
 
-function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                        ANumero: Int64; AModelo: Integer): String;
 var
   vUF, vDataEmissao, vNumero, vModelo: String;
@@ -18234,10 +18250,11 @@ begin
   Result := copy(Result, 4, Length(Result)); // Remove prefixo "sch"
 end;
 
-function StrToSchemaNFSe(out ok: Boolean; const s: String): TSchemaNFSe;
+function StrToSchemaNFSe(const s: String): TSchemaNFSe;
 var
   P: Integer;
   SchemaStr: String;
+  CodSchema: Integer;
 begin
   P := pos('_',s);
   if p > 0 then
@@ -18248,7 +18265,14 @@ begin
   if LeftStr(SchemaStr,3) <> 'sch' then
     SchemaStr := 'sch'+SchemaStr;
 
-  Result := TSchemaNFSe( GetEnumValue(TypeInfo(TSchemaNFSe), SchemaStr ) );
+  CodSchema := GetEnumValue(TypeInfo(TSchemaNFSe), SchemaStr );
+
+  if CodSchema = -1 then
+  begin
+    raise Exception.Create(Format('"%s" não é um valor TSchemaANe válido.',[SchemaStr]));
+  end;
+
+  Result := TSchemaNFSe( CodSchema );
 end;
 
 function StrToVersaoNFSe(out ok: Boolean; const s: String): TVersaoNFSe;
@@ -18430,7 +18454,8 @@ begin
     proGINFES, proGovBR, proISSCuritiba, proISSIntel, proISSNet, proLexsom,
     proNatal, proProdemge, proPronim, proPublica, proRecife, proRJ, proSalvador,
     proSimplISS, proSJP, proSpeedGov, proThema, proTinus, proTiplan, proWebISS,
-    proCIGA, proNFSeBrasil, proMetropolisWeb: Result := loABRASFv1;
+    proCIGA, proNFSeBrasil, proMetropolisWeb, proSilTecnologia, 
+	  proDSFSJC, progeNFe: Result := loABRASFv1;
 
     proABRASFv2, pro4R, proABase, proActconv2, proBethav2, proCoplan, proDigifred,
     proEReceita, proFIntelISS, proFiorilli, proFriburgo, proGoiania, proGovDigital,
@@ -18440,7 +18465,8 @@ begin
     proActconv201, proActconv202, proVersaTecnologia, proSigep, proSafeWeb,
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
     proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
-    proDataSmart, proDesenvolve, proCenti, proRLZ, proSigCorp: Result := loABRASFv2;
+    proDataSmart, proDesenvolve, proCenti, proRLZ, proSigCorp, proiiBrasilv2,
+    proSimplISSv2: Result := loABRASFv2;
 
     proAgili,
     proAgiliv2:     Result := loAgili;
@@ -18461,6 +18487,8 @@ begin
     proAssessorPublico: Result := loAssessorPublico;
     proSigIss:      Result := loSigIss;
     proElotech:     Result := loElotech;
+    proWebFisco:    Result := loWebFisco;
+    proLencois:     Result := loLencois;
 else
     Result := loNone;
   end;
@@ -18481,9 +18509,9 @@ begin
     proSH3, proSIAPNet, proBelford, proISSJoinville, proSmarAPDABRASF,
     proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
     proDataSmart, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-	proGiap: Result := ve200;
+    proGiap: Result := ve200;
 
-    proInfiscv11: Result := ve110;
+    proInfiscv11, proLencois: Result := ve110;
   else
     Result := ve100;
   end;
@@ -18633,5 +18661,39 @@ begin
   result := XML;
 end;
 
-end.
+function TUnidadeToStr(const t: TUnidade): String;
+begin
+  result := EnumeradoToStr(t,
+                           ['1', '2'],
+                           [tuHora, tuQtde]);
+end;
 
+function StrToTUnidade(out ok: boolean; const s: String): TUnidade;
+begin
+  result := StrToEnumerado(ok, s,
+                           ['1', '2'],
+                           [tuHora, tuQtde]);
+end;
+
+function RemoverIdentacao(const AXML: String): String;
+var
+  XMLe, XMLs: String;
+begin
+  XMLe := AXML;
+  XMLs := '';
+
+  while XMLe <> XMLs do
+  begin
+    if XMLs <> '' then
+      XMLe := XMLs;
+
+    XMLs := StringReplace(XMLe, ' <', '<', [rfReplaceAll]);
+    XMLs := StringReplace(XMLs, #13 + '<', '<', [rfReplaceAll]);
+    XMLs := StringReplace(XMLs, '> ', '>', [rfReplaceAll]);
+    XMLs := StringReplace(XMLs, '>' + #13, '>', [rfReplaceAll]);
+  end;
+
+  Result := XMLs;
+end;
+
+end.

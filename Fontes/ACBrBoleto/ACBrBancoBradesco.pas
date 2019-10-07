@@ -90,7 +90,6 @@ begin
    fpTamanhoAgencia         := 4;
    fpTamanhoConta           := 7;
    fpTamanhoCarteira        := 2;
-   fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoBradesco.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -583,7 +582,7 @@ end;
 procedure TACBrBancoBradesco.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo; aRemessa: TStringList);
 var
   DigitoNossoNumero, Ocorrencia, aEspecie, aAgencia :String;
-  Protesto, TipoSacado, MensagemCedente, aConta     :String;
+  Protesto, TipoSacado, MensagemCedente, aConta, aDigitoConta     :String;
   aCarteira, wLinha, ANossoNumero: String;
   TipoBoleto :Char;
   aPercMulta: Double;
@@ -633,7 +632,7 @@ var
                   aCarteira                                           +
                   aAgencia                                            +
                   aConta                                              +
-                  Cedente.ContaDigito                                 +
+                  aDigitoConta                                        +
                   ANossoNumero + DigitoNossoNumero                    +
                   IntToStrZero( aRemessa.Count + 2, 6);                  // Nº SEQÜENCIAL DO REGISTRO NO ARQUIVO
      end;
@@ -657,6 +656,7 @@ begin
       aAgencia := IntToStrZero(StrToIntDef(OnlyNumber(ACBrBoleto.Cedente.Agencia),0),5);
       aConta   := IntToStrZero(StrToIntDef(OnlyNumber(ACBrBoleto.Cedente.Conta),0),7);
       aCarteira:= IntToStrZero(StrToIntDef(trim(Carteira),0), 3);
+      aDigitoConta := PadLeft(trim(ACBrBoleto.Cedente.ContaDigito),1,'0');
 
       {Pegando Código da Ocorrencia}
       case OcorrenciaOriginal.Tipo of
@@ -743,7 +743,7 @@ begin
                   '0'+ aCarteira                                          +
                   aAgencia                                                +
                   aConta                                                  +
-                  Cedente.ContaDigito                                     +
+                  aDigitoConta                                            +
                   PadRight( SeuNumero,25,' ')+'000'                       +  // 038 a 062 - Numero de Controle do Participante                                                   +  // 063 a 065 - Código do Banco
                   IfThen( PercentualMulta > 0, '2', '0')                  +  // 066 a 066 - Indica se exite Multa ou não
                   IntToStrZero( round( aPercMulta * 100 ) , 4)            +  // 067 a 070 - Percentual de Multa formatado com 2 casas decimais
@@ -1310,6 +1310,7 @@ begin
          72: Result := '72-Débito não agendado - Código de moeda diferente de R$';
          73: Result := '73-Débito não agendado - Data de vencimento inválida';
          75: Result := '75-Débito não agendado - Tipo do número de inscrição do sacado debitado inválido';
+         76: Result := '76-Pagador Eletrônico DDA (NOVO)- Esse motivo somente será disponibilizado no arquivo retorno para as empresas cadastradas nessa condição';
          86: Result := '86-Seu número do documento inválido';
          89: Result := '89-Email sacado nao enviado - Titulo com debito automatico';
          90: Result := '90-Email sacado nao enviado - Titulo com cobranca sem registro';

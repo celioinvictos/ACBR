@@ -58,18 +58,16 @@ implementation
 class procedure TDFeReportFortes.AjustarReport(FReport: TRLReport; AConfig: TACBrDFeReport);
 begin
   FReport.ShowProgress := AConfig.MostraStatus;
-  FReport.PrintDialog := (not (AConfig.MostraPreview)) and EstaVazio(AConfig.Impressora);
+  FReport.PrintDialog := AConfig.MostraSetup and (not AConfig.MostraPreview);
 
-  if NaoEstaVazio(AConfig.Impressora) then
-      RLPrinter.PrinterName := AConfig.Impressora;
-	  
+  if RLPrinter.PrinterName <> AConfig.Impressora then
+    RLPrinter.PrinterName := AConfig.Impressora;
+
   if RLPrinter.SupportsDuplex Then
      RLPrinter.Duplex := false;
-	 
-  if RLPrinter.Copies <> AConfig.NumCopias then
-  begin
+
+  if (AConfig.NumCopias > 0) and (RLPrinter.Copies <> AConfig.NumCopias) then
     RLPrinter.Copies := AConfig.NumCopias;
-  end;
 end;
 
 class procedure TDFeReportFortes.AjustarMargem(FReport: TRLReport; AConfig: TACBrDFeReport);

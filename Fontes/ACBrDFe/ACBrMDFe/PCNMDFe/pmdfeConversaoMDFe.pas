@@ -41,7 +41,8 @@ unit pmdfeConversaoMDFe;
 interface
 
 uses
-  SysUtils, StrUtils, Classes;
+  SysUtils, StrUtils, Classes,
+  pcnConversao;
 
 type
   TTpEmitenteMDFe = (teTransportadora, teTranspCargaPropria,
@@ -53,7 +54,7 @@ type
 
   TLayOutMDFe     = (LayMDFeRecepcao, LayMDFeRetRecepcao, LayMDFeConsulta,
                      LayMDFeStatusServico, LayMDFeEvento, LayMDFeConsNaoEnc,
-                     LayMDFeDistDFeInt);
+                     LayMDFeDistDFeInt, LayMDFeRecepcaoSinc);
 
   TSchemaMDFe     = (schErro, schMDFe, schEventoMDFe,
                  //    schresMDFe, schresEvento, schprocMDFe, schprocEventoMDFe,
@@ -61,7 +62,7 @@ type
                      schmdfeModalAereo, schmdfeModalAquaviario,
                      schmdfeModalFerroviario, schmdfeModalRodoviario,
                      schevCancMDFe, schevEncMDFe, schevIncCondutorMDFe,
-                     schdistDFeInt, schconsMDFeNaoEnc);
+                     schdistDFeInt, schconsMDFeNaoEnc, schevInclusaoDFeMDFe);
 
   TStatusACBrMDFe = (stMDFeIdle, stMDFeStatusServico, stMDFeRecepcao, stMDFeRetRecepcao,
                      stMDFeConsulta, stMDFeRecibo, stMDFeEmail, stMDFeEvento,
@@ -105,10 +106,12 @@ function RspSeguroMDFeToStr(const t: TRspSegMDFe): String;
 function RspSeguroMDFeToStrText(const t: TRspSegMDFe): String;
 function StrToRspSeguroMDFe(out ok: boolean; const s: String ): TRspSegMDFe;
 
+function StrToTpEventoMDFe(out ok: boolean; const s: string): TpcnTpEvento;
+
 implementation
 
 uses
-  pcnConversao, typinfo;
+  typinfo;
 
 function StrToEnumerado(out ok: boolean; const s: string; const AString:
   array of string; const AEnumerados: array of variant): variant;
@@ -156,7 +159,8 @@ end;
 function LayOutToSchema(const t: TLayOutMDFe): TSchemaMDFe;
 begin
   case t of
-    LayMDFeRecepcao:       Result := schMDFe;
+    LayMDFeRecepcao,
+    LayMDFeRecepcaoSinc:   Result := schMDFe;
     LayMDFeRetRecepcao:    Result := schconsReciMDFe;
     LayMDFeConsulta:       Result := schconsSitMDFe;
     LayMDFeStatusServico:  Result := schconsStatServMDFe;
@@ -213,10 +217,10 @@ begin
   Result := EnumeradoToStr(t,
     ['MDFeRecepcao', 'MDFeRetRecepcao', 'MDFeConsultaProtocolo',
      'MDFeStatusServico', 'RecepcaoEvento', 'MDFeConsNaoEnc',
-     'MDFeDistDFeInt'],
+     'MDFeDistDFeInt', 'MDFeRecepcaoSinc'],
     [ LayMDFeRecepcao, LayMDFeRetRecepcao, LayMDFeConsulta,
       LayMDFeStatusServico, LayMDFeEvento, LayMDFeConsNaoEnc,
-      LayMDFeDistDFeInt ] );
+      LayMDFeDistDFeInt, LayMDFeRecepcaoSinc ] );
 end;
 
 function ServicoToLayOut(out ok: Boolean; const s: String): TLayOutMDFe;
@@ -224,10 +228,10 @@ begin
   Result := StrToEnumerado(ok, s,
   ['MDFeRecepcao', 'MDFeRetRecepcao', 'MDFeConsultaProtocolo',
    'MDFeStatusServico', 'RecepcaoEvento', 'MDFeConsNaoEnc',
-   'MDFeDistDFeInt'],
+   'MDFeDistDFeInt', 'MDFeRecepcaoSinc'],
   [ LayMDFeRecepcao, LayMDFeRetRecepcao, LayMDFeConsulta,
     LayMDFeStatusServico, LayMDFeEvento, LayMDFeConsNaoEnc,
-    LayMDFeDistDFeInt ] );
+    LayMDFeDistDFeInt, LayMDFeRecepcaoSinc ] );
 end;
 
 function SchemaMDFeToStr(const t: TSchemaMDFe): String;
@@ -324,6 +328,17 @@ begin
   result := StrToEnumerado(ok, s, ['1', '2'],
                                   [rsEmitente, rsTomadorServico]);
 end;
+
+function StrToTpEventoMDFe(out ok: boolean; const s: string): TpcnTpEvento;
+begin
+  Result := StrToEnumerado(ok, s,
+            ['-99999', '110111', '110112', '110114', '110115'],
+            [teNaoMapeado, teCancelamento, teEncerramento, teInclusaoCondutor,
+             teInclusaoDFe]);
+end;
+
+initialization
+  RegisterStrToTpEventoDFe(StrToTpEventoMDFe, 'MDFe');
 
 end.
 

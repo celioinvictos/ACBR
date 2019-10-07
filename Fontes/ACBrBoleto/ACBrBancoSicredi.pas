@@ -41,12 +41,15 @@ uses
   Classes, SysUtils, Contnrs,
   ACBrBoleto;
 
-type
+const
+  CInstrucaoPagamentoCooperativa = 'Pagável preferencialmente nas cooperativas de crédito do %s';
 
+type
   { TACBrBancoSicredi }
 
   TACBrBancoSicredi = class(TACBrBancoClass)
   protected
+    function GetLocalPagamento: String; override;
   public
     Constructor create(AOwner: TACBrBanco);
     function CalcularDigitoVerificador(const ACBrTitulo:TACBrTitulo): String; override;
@@ -204,7 +207,7 @@ end;
 
 procedure TACBrBancoSicredi.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo; aRemessa: TStringList);
 var
-  wNossoNumeroCompleto, CodProtesto, DiasProtesto: String;
+  wNossoNumeroCompleto, CodProtesto, DiasProtesto, CodNegativacao, DiasNegativacao: String;
   TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto   : String;
   TipoBoleto, wModalidade: Char;
   TextoRegInfo: String;
@@ -240,15 +243,27 @@ begin
 
       {Pegando campo Protesto}
       if (DataProtesto > 0) and (DataProtesto >= Vencimento + 3) then // mínimo de 3 dias de protesto
-       begin
-         CodProtesto := '06';
-         DiasProtesto := IntToStrZero(DaysBetween(DataProtesto,Vencimento),2);
-       end
+      begin
+        CodProtesto := '06';
+        DiasProtesto := IntToStrZero(DaysBetween(DataProtesto,Vencimento),2);
+      end
       else
-       begin
-         CodProtesto := '00';
-         DiasProtesto := '00';
-       end;
+      begin
+        CodProtesto := '00';
+        DiasProtesto := '00';
+      end;
+
+      {Pegando campo Negativação Serasa}
+      if (DataNegativacao > 0) and (DataNegativacao >= Vencimento + 3) then // mínimo de 3 dias de negativacaoserasa
+      begin
+        CodNegativacao := '06';
+        DiasNegativacao := IntToStrZero(DaysBetween(DataNegativacao,Vencimento),2);
+      end
+      else
+      begin
+        CodNegativacao := '00';
+        DiasNegativacao := '00';
+      end;
 
       {Pegando Tipo de Sacado}
       if Length(OnlyNumber(Sacado.CNPJCPF)) > 11 then
@@ -364,10 +379,17 @@ begin
 
          if wModalidade = 'A' then
             wLinha:= wLinha +
-                     PadRight('', 13, '0')                                                  +  // 193 a 205 - Filler - Zeros
-                     IntToStrZero( round( ValorAbatimento * 100 ), 13)                         // 206 a 218 - Valor do abatimento
+                     CodNegativacao                                                     +  // 193 a 194 - Instrução de negativação automática = "00" Não negativar automaticamente "06" Negativar automaticamente
+                     DiasNegativacao                                                       // 195 a 196 - Número de dias para negativação automática
          else
-            wLinha:= wLinha + PadRight('', 26, '0');                                           // 193 a 218 - Filler Zeros
+            wLinha:= wLinha + Space(4);                                                    // 193 a 196 - Filler Brancos
+
+         if wModalidade = 'A' then
+            wLinha:= wLinha +
+                     PadRight('', 9, '0')                                               +  // 197 a 205 - Filler - Zeros
+                     IntToStrZero( round( ValorAbatimento * 100 ), 13)                     // 206 a 218 - Valor do abatimento
+         else
+            wLinha:= wLinha + PadRight('', 22, '0');                                       // 197 a 218 - Filler Zeros
 
 
          wLinha:= wLinha +
@@ -502,8 +524,30 @@ begin
                     IntToStrZero( ARemessa.Count + 1, 6);                            // 395 a 400 - Número sequencial do registro
           ARemessa.Text:= ARemessa.Text + UpperCase(wLinha);
         end;
+
+        if (ValorDesconto2 > 0) and (DataDesconto2 > 0) then
+        begin
+          wLinha := '7'                                                            + // 001 a 001 - Identificação do registro detalhe (7)
+                    PadLeft(wNossoNumeroCompleto, 15, ' ')                         + // 002 a 016 - Nosso número Sicredi
+                    PadRight(NumeroDocumento, 10)                                  + // 017 a 026 - Seu número
+                    PadLeft(OnlyNumber(Sacado.CNPJCPF), 14, '0')                   + // 027 a 040 - CPF/CNPJ do pagador
+                    PadLeft(Sacado.SacadoAvalista.CNPJCPF, 14, '0')                + // 041 a 054 - CPF/CNPJ do Sacador Avalista
+                    IfThen(DataDesconto2 < EncodeDate(2000, 01, 01), '000000',
+                         FormatDateTime('ddmmyy', DataDesconto2))                  + // 055 a 060 - Data limite para desconto 2
+                    IntToStrZero( Round( ValorDesconto2 * 100 ), 13)               + // 061 a 073 - Valor do desconto 2
+                    '000000'                                                       + // 074 a 079 - Data limite para desconto 3
+                    '0000000000000'                                                + // 080 a 092 - Valor do desconto 3
+                    Space(302)                                                     + // 093 a 394 - Filler ( Deixar em Branco (sem preenchimento) )
+                    IntToStrZero( ARemessa.Count + 1, 6);                            // 395 a 400 - Número sequencial do registro
+          ARemessa.Text:= ARemessa.Text + UpperCase(wLinha);
+        end;
       end;
    end;
+end;
+
+function TACBrBancoSicredi.GetLocalPagamento: String;
+begin
+  Result := Format(ACBrStr(CInstrucaoPagamentoCooperativa), [fpNome]);
 end;
 
 procedure TACBrBancoSicredi.GerarRegistroTrailler400( ARemessa:TStringList );
@@ -767,9 +811,9 @@ begin
             35: Result := '35 - Valor a conceder não confere';
             36: Result := '36 - Concessão de abatimento - já existe abatimento aAnterior';
             37: Result := '37 - Código para protesto inválido';
-            38: Result := '38 - Prazo para protesto inválido';
+            38: Result := '38 - Prazo para protesto/negativação inválido';
             39: Result := '39 - Pedido de protesto não permitido para o título';
-            40: Result := '40 - Título com ordem de protesto emitida';
+            40: Result := '40 - Título com ordem de protesto/pedido de negativação emitido';
             41: Result := '41 - Pedido de cancelamento/sustação para títulos sem instrução de protesto';
             42: Result := '42 - Código para baixa/devolução inválido';
             43: Result := '43 - Prazo para baixa/devolução inválido';
@@ -818,7 +862,16 @@ begin
         end;
         toRetornoDebitoTarifas:
         begin
-          case StrtoInt(CodMotivo) of
+          case StrtoIntDef(CodMotivo, -1) of
+            -1:
+            begin
+              if(CodMotivo = 'S4') Then
+                Result := 'S4 - Tarifa de Inclusão Negativação'
+              else if(CodMotivo = 'S5') Then
+                Result := 'S5 - Tarifa de Exclusão Negativação'
+              else
+                Result := PadLeft(CodMotivo,2,'0') + ' - Outros motivos';
+            end;
             01: Result := '01 - Tarifa de extrato de posição';
             02: Result := '02 - Tarifa de manutenção de título vencido';
             03: Result := '03 - Tarifa de sustação';
@@ -889,7 +942,8 @@ begin
                             'D5', 'D7', 'F6', 'H7', 'H9', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6',
                             'I7', 'I8', 'I9', 'J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8',
                             'J9', 'K1', 'K2', 'K3', 'K4', 'K5', 'K6', 'K7', 'K8', 'K9', 'L1',
-                            'L2', 'L3', 'L4', 'C4', 'C7', 'C8', 'C9']) of
+                            'L2', 'L3', 'L4', 'C1', 'C2', 'C3', 'C4', 'C7', 'C8', 'C9', 'A6', 
+                            'L7']) of
             0: Result:= 'A1-Praça do sacado não cadastrada';
             1: Result:= 'A2-Tipo de cobrança do título divergente com a praça do sacado';
             2: Result:= 'A3-Agência depositária divergente: atualiza o cadastro de praças da agência cedente';
@@ -937,10 +991,15 @@ begin
             44: Result:= 'L2-Sacado consta na lista de falência';
             45: Result:= 'L3-Apresentante não aceita publicação de edital';
             46: Result:= 'L4-Dados do sacado em branco ou inválido';
-            47: Result:= 'C4-Título ainda não foi confirmado pela centralizadora';
-            48: Result:= 'C7-Título já baixado';
-            49: Result:= 'C8-Existe mesma instrução pendente de confirmação para este título';
-            50: Result:= 'C9-Instrução prévia de concessão de abatimento não existe ou não confirmada';
+            47: Result:= 'C1-Data limite para concessão de desconto inválida';
+            48: Result:= 'C2-Aceite do título inválido';
+            49: Result:= 'C3-Campo alterado na instrução “31 – alteração de outros dados” inválido';
+            50: Result:= 'C4-Título ainda não foi confirmado pela centralizadora';
+            51: Result:= 'C7-Título já baixado';
+            52: Result:= 'C8-Existe mesma instrução pendente de confirmação para este título';
+            53: Result:= 'C9-Instrução prévia de concessão de abatimento não existe ou não confirmada';
+            54: Result:= 'A6-Data da instrução/ocorrência inválida';
+            55: Result:= 'L7-Não permitido cadastro de boleto com negativação automática e protesto automático simultaneamente';
           else
             case StrToInt(CodMotivo) of
               02: Result:= '02-Código do registro detalhe inválido';
@@ -1167,7 +1226,7 @@ begin
                             ['A1', 'A2', 'A4', 'A5', 'A6', 'B4', 'B5', 'B6', 'B7',
                              'B8', 'B9', 'C4', 'C5', 'C6', 'C7', 'D2', 'F3', 'F7', 'F8',
                              'F9', 'G1', 'G5', 'G8', 'G9', 'H1', 'L3', 'L4', 'J8',
-                             'I9', 'K9', 'A3', 'C8', 'C9', 'J3', 'D1', 'K1', 'G4']) of
+                             'I9', 'K9', 'A3', 'C8', 'C9', 'J3', 'D1', 'K1', 'G4', 'L6']) of
             0 : Result:= 'A1-Praça do sacado não cadastrada';
             1 : Result:= 'A2-Tipo de cobrança do título divergente com a praça do sacado';
             2 : Result:= 'A4-Cedente não cadastrado ou possui CNPJ/CPF inválido';
@@ -1183,14 +1242,14 @@ begin
             12 : Result:= 'C5-Título rejeitado pela centralizadora';
             13 : Result:= 'C6-Título já liquidado';
             14 : Result:= 'C7-Título já baixado';
-            15 : Result:= 'D2-Espécie de documento não permite protesto de título';
+            15 : Result:= 'D2-Espécie de documento não permite protesto/negativação de título';
             16 : Result:= 'F3-Instrução inválida, este título está caucionado/descontado';
             17 : Result:= 'F7-Falta de comprovante de prestação de serviço';
             18 : Result:= 'F8-Nome do cedente incompleto/incorreto';
             19 : Result:= 'F9-CNPJ/CPF incompatível com o nome do sacado/sacador avalista';
             20 : Result:= 'G1-CNPJ/CPF do sacador incompatível com a espécie';
             21 : Result:= 'G5-Praça de pagamento incompatível com o endereço';
-            22 : Result:= 'G8-Saldo maior que o valor do título';
+            22 : Result:= 'G8-Linha digitável maior que o valor do título';
             23 : Result:= 'G9-Tipo de endosso inválido';
             24 : Result:= 'H1-Nome do sacador incompleto/incorreto';
             25 : Result:= 'L3-Apresentante não aceita publicação de edital';
@@ -1205,37 +1264,43 @@ begin
             34 : Result:= 'D1-Título dentro do prazo de vencimento (em dia)';
             35 : Result:= 'K1-Título apresentado em duplicidade';
             36 : Result:= 'G4-Título aceito: Falta título (cooperativa/ag. beneficiária deverá enviá-lo)';
+            37 : Result:= 'L6-Tipo de comando de instrução inválida para beneficiário pessoa física.';
           else
-            case StrToInt(CodMotivo) of
-              01: Result:= '01-Código do Banco inválido';
-              02: Result:= '02-Código do registro detalhe inválido';
-              03: Result:= '03-Código da ocorrência inválido';
-              04: Result:= '04-Código de ocorrência não permitida para a carteira';
-              05: Result:= '05-Código de ocorrência não numérico';
-              07: Result:= '07-Agência\Conta\dígito inválidos';
-              08: Result:= '08-Nosso número inválido';
-              10: Result:= '10-Carteira inválida';
-              15: Result:= '15-Agência\Carteira\Conta\nosso número inválidos';
-              16: Result:= '16-Data de vencimento inválida';
-              17: Result:= '17-Data de vencimento anterior à data de emissão';
-              21: Result:= '21-Espécie do título inválida';
-              22: Result:= '22-Espécie não permitida para a carteira';
-              24: Result:= '24-Data de emissão inválida';
-              29: Result:= '29-Valor do desconto maior/igual ao valor do título';
-              31: Result:= '31-Concessão de desconto - existe desconto anterior';
-              33: Result:= '33-Valor do abatimento inválido';
-              34: Result:= '34-Valor do abatimento maior/igual ao valor do título';
-              36: Result:= '36-Concessão de abatimento - existe abatimento anterior';
-              38: Result:= '38-Prazo para protesto inválido';
-              39: Result:= '39-Pedido de protesto não permitido para o título';
-              40: Result:= '40-Título com ordem de protesto emitido';
-              41: Result:= '41-Pedido cancelamento/sustação sem instrução de protesto';
-              45: Result:= '45-Nome do sacado inválido';
-              46: Result:= '46-Tipo/número de inscrição do sacado inválidos';
-              47: Result:= '47-Endereço do sacado não informado';
-              60: Result:= '60-Movimento para título não cadastrado';
-            else
-              Result:= PadLeft(CodMotivo,2,'0') +' - Outros Motivos';
+            try
+              case StrToInt(CodMotivo) of
+                01: Result:= '01-Código do Banco inválido';
+                02: Result:= '02-Código do registro detalhe inválido';
+                03: Result:= '03-Código da ocorrência inválido';
+                04: Result:= '04-Código de ocorrência não permitida para a carteira';
+                05: Result:= '05-Código de ocorrência não numérico';
+                07: Result:= '07-Agência\Conta\dígito inválidos';
+                08: Result:= '08-Nosso número inválido';
+                10: Result:= '10-Carteira inválida';
+                15: Result:= '15-Agência\Carteira\Conta\nosso número inválidos';
+                16: Result:= '16-Data de vencimento inválida';
+                17: Result:= '17-Data de vencimento anterior à data de emissão';
+                21: Result:= '21-Espécie do título inválida';
+                22: Result:= '22-Espécie não permitida para a carteira';
+                24: Result:= '24-Data de emissão inválida';
+                29: Result:= '29-Valor do desconto maior/igual ao valor do título';
+                31: Result:= '31-Concessão de desconto - existe desconto anterior';
+                33: Result:= '33-Valor do abatimento inválido';
+                34: Result:= '34-Valor do abatimento maior/igual ao valor do título';
+                36: Result:= '36-Concessão de abatimento - existe abatimento anterior';
+                38: Result:= '38-Prazo para protesto inválido';
+                39: Result:= '39-Pedido de protesto não permitido para o título';
+                40: Result:= '40-Título com ordem de protesto emitido';
+                41: Result:= '41-Pedido cancelamento/sustação sem instrução de protesto';
+                45: Result:= '45-Nome do sacado inválido';
+                46: Result:= '46-Tipo/número de inscrição do sacado inválidos';
+                47: Result:= '47-Endereço do sacado não informado';
+                60: Result:= '60-Movimento para título não cadastrado';
+              else
+                Result:= PadLeft(CodMotivo,2,'0') +' - Outros Motivos';
+              end;
+
+            except
+              Result:= PadLeft(CodMotivo,2,'0') +' - Motivos não identificados';
             end;
           end;
         toRetornoEntradaNegativacaoRejeitada,
@@ -1731,7 +1796,7 @@ begin
       pFisica:   TipoAvalista := '1';
       pJuridica: TipoAvalista := '2';
     else
-      TipoAvalista := '9';
+      TipoAvalista := '0';
     end;
 
      {Pegando Tipo de Boleto}
@@ -1779,7 +1844,7 @@ begin
              IntToStrZero(Round(ValorDesconto * 100), 15)                     + // 151 a 165 - Valor percentual a ser concedido
              IntToStrZero(Round(ValorIOF * 100), 15)                          + // 166 a 180 - Valor do IOF a ser recolhido
              IntToStrZero(Round(ValorAbatimento * 100), 15)                   + // 181 a 195 - Valor do abatimento
-             PadRight(NumeroDocumento, 25)                                    + // 196 a 220 - Identificação do título na empresa
+             PadRight(SeuNumero, 25)                                          + // 196 a 220 - Identificação do título na empresa
              CodProtesto                                                      + // 221 a 221 - Código para protesto
              DiasProtesto                                                     + // 222 a 223 - Número de dias para protesto
              '1'                                                              + // 224 a 224 - Código para baixa/devolução
@@ -1830,8 +1895,7 @@ begin
                TipoDescontoToString(ACBrTitulo.TipoDesconto2)              + // 42 tipo de desconto 3
                PadLeft('0', 8, '0')                                        + // 43-50 data do desconto 3
                PadLeft('0', 15, '0')                                       + // 51-65 Valor ou percentual a ser concedido
-               IfThen((PercentualMulta > 0),
-                       IfThen(MultaValorFixo,'1','2'), '0')                + // 66 Código da multa - 1 valor fixo / 2 valor percentual / 0 Sem Multa
+               '2'                                                         + // 66 Código da multa - 2 valor percentual
                IfThen((DataMulta > 0),
                        FormatDateTime('ddmmyyyy', DataMulta),
                                       '00000000')                          + // 67 - 74 Se cobrar informe a data para iniciar a cobrança ou informe zeros se não cobrar
@@ -1930,9 +1994,9 @@ begin
       SegU := ARetorno[ContLinha + 1] ;
 
       if (SegT[14] <> 'T') then
-        Continue
-      else if (Copy(SegT,16,2) = '28') then // se a ocorrência do campo 016~017 for = 28
-         Continue;
+        Continue;
+//      else if (Copy(SegT,16,2) = '28') then // se a ocorrência do campo 016~017 for = 28
+//         Continue;
 
       Titulo := ACBrBanco.ACBrBoleto.CriarTituloNaLista;
 
@@ -1953,9 +2017,9 @@ begin
         Sacado.NomeSacado := Trim(Copy(SegT, 149, 40));
 
         NumeroDocumento      := Trim(Copy(SegT,59,15));
-        SeuNumero            := NumeroDocumento;
+        SeuNumero            := Trim(Copy(SegT,106,25));
         Carteira             := Copy(SegT,58,1);
-        NossoNumero          := Trim(Copy(SegT,38,8));
+        NossoNumero          := Trim(Copy(SegT,38, TamanhoMaximoNossoNum));
         Vencimento           := StringToDateTimeDef( Copy(SegT,74,2) +'/'+
                                                      Copy(SegT,76,2) +'/'+
                                                      Copy(SegT,78,4),

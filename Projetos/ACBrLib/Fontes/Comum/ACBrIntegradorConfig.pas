@@ -38,8 +38,7 @@ unit ACBrIntegradorConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles,
-  synachar;
+  Classes, SysUtils, IniFiles, synachar;
 
 type
 
@@ -65,7 +64,6 @@ type
     property Timeout: Integer read FTimeout write FTimeout;
 
   end;
-  
 
 implementation
 
@@ -92,18 +90,18 @@ end;
 
 procedure TIntegradorConfig.LerIni(const AIni: TCustomIniFile);
 begin
-  FArqLOG := AIni.ReadString(CChaveIntegrador, CChaveArqLog, FArqLOG);
-  FPastaInput := AIni.ReadString(CChaveIntegrador, CChavePastaInput, FPastaInput);
-  FPastaOutput := AIni.ReadString(CChaveIntegrador, CChavePastaOutput, FPastaOutput);
-  FTimeout := AIni.ReadInteger(CChaveIntegrador, CChaveTimeout, FTimeout);
+  FArqLOG := AIni.ReadString(CSessaoIntegrador, CChaveArqLog, FArqLOG);
+  FPastaInput := AIni.ReadString(CSessaoIntegrador, CChavePastaInput, FPastaInput);
+  FPastaOutput := AIni.ReadString(CSessaoIntegrador, CChavePastaOutput, FPastaOutput);
+  FTimeout := AIni.ReadInteger(CSessaoIntegrador, CChaveTimeout, FTimeout);
 end;
 
 procedure TIntegradorConfig.GravarIni(const AIni: TCustomIniFile);
 begin
-  AIni.WriteString(CChaveIntegrador, CChaveArqLog, FArqLOG);
-  AIni.WriteString(CChaveIntegrador, CChavePastaInput, FPastaInput);
-  AIni.WriteString(CChaveIntegrador, CChavePastaOutput, FPastaOutput);
-  AIni.WriteInteger(CChaveIntegrador, CChaveTimeout, FTimeout);
+  AIni.WriteString(CSessaoIntegrador, CChaveArqLog, FArqLOG);
+  AIni.WriteString(CSessaoIntegrador, CChavePastaInput, FPastaInput);
+  AIni.WriteString(CSessaoIntegrador, CChavePastaOutput, FPastaOutput);
+  AIni.WriteInteger(CSessaoIntegrador, CChaveTimeout, FTimeout);
 end;
 
 end.

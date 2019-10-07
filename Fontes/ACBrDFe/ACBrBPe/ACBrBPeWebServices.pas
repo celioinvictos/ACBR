@@ -745,7 +745,7 @@ begin
   end;
 
   // Verificar se o BP-e foi autorizado com sucesso
-  Result := (FBPeRetorno.cStat = 100) and
+  Result := TACBrBPe(FPDFeOwner).CstatConfirmada(FBPeRetorno.cStat) and
       (TACBrBPe(FPDFeOwner).CstatProcessado(FBPeRetorno.protBPe[0].cStat));
 
   if Result then
@@ -857,17 +857,16 @@ procedure TBPeConsulta.Clear;
 begin
   inherited Clear;
 
-  FPStatus := stBPeConsulta;
-  FPLayout := LayBPeConsulta;
-  FPArqEnv := 'ped-sit';
-  FPArqResp := 'sit';
-
-  FverAplic := '';
-  FcStat := 0;
-  FxMotivo := '';
+  FPStatus   := stBPeConsulta;
+  FPLayout   := LayBPeConsulta;
+  FPArqEnv   := 'ped-sit';
+  FPArqResp  := 'sit';
+  FverAplic  := '';
+  FcStat     := 0;
+  FxMotivo   := '';
   FProtocolo := '';
-  FDhRecbto := 0;
-  Fversao := '';
+  FDhRecbto  := 0;
+  Fversao    := '';
   FRetBPeDFe := '';
 
   if Assigned(FPConfiguracoesBPe) then
@@ -882,8 +881,8 @@ begin
   if Assigned(FprocEventoBPe) then
     FprocEventoBPe.Free;
 
-  FprotBPe := TProcBPe.Create;
-  FprocEventoBPe := TRetEventoBPeCollection.Create(FOwner);
+  FprotBPe       := TProcBPe.Create;
+  FprocEventoBPe := TRetEventoBPeCollection.Create;
 end;
 
 procedure TBPeConsulta.SetBPeChave(const AValue: String);
@@ -1020,49 +1019,50 @@ begin
       FprocEventoBPe.Clear;
       for I := 0 to BPeRetorno.procEventoBPe.Count - 1 do
       begin
-        with FprocEventoBPe.Add.RetEventoBPe do
+        with FprocEventoBPe.New.RetEventoBPe do
         begin
-          idLote := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.idLote;
-          tpAmb := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.tpAmb;
+          idLote   := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.idLote;
+          tpAmb    := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.tpAmb;
           verAplic := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.verAplic;
-          cOrgao := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.cOrgao;
-          cStat := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.cStat;
-          xMotivo := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.xMotivo;
-          XML := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.XML;
+          cOrgao   := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.cOrgao;
+          cStat    := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.cStat;
+          xMotivo  := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.xMotivo;
+          XML      := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.XML;
 
-          infEvento.ID := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.ID;
-          infEvento.tpAmb := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.tpAmb;
-          infEvento.CNPJ := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.CNPJ;
-          infEvento.chBPe := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.chBPe;
-          infEvento.dhEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.dhEvento;
-          infEvento.TpEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.TpEvento;
-          infEvento.nSeqEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.nSeqEvento;
+          infEvento.ID           := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.ID;
+          infEvento.tpAmb        := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.tpAmb;
+          infEvento.CNPJ         := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.CNPJ;
+          infEvento.chBPe        := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.chBPe;
+          infEvento.dhEvento     := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.dhEvento;
+          infEvento.TpEvento     := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.TpEvento;
+          infEvento.nSeqEvento   := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.nSeqEvento;
           infEvento.VersaoEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.VersaoEvento;
+
           infEvento.DetEvento.xCorrecao := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.xCorrecao;
-          infEvento.DetEvento.xCondUso := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.xCondUso;
-          infEvento.DetEvento.nProt := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.nProt;
-          infEvento.DetEvento.xJust := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.xJust;
+          infEvento.DetEvento.xCondUso  := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.xCondUso;
+          infEvento.DetEvento.nProt     := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.nProt;
+          infEvento.DetEvento.xJust     := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.infEvento.DetEvento.xJust;
 
           retEvento.Clear;
           for J := 0 to BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Count-1 do
           begin
-            with retEvento.Add.RetinfEvento do
+            with retEvento.New.RetinfEvento do
             begin
-              Id := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.Id;
-              tpAmb := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.tpAmb;
-              verAplic := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.verAplic;
-              cOrgao := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.cOrgao;
-              cStat := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.cStat;
-              xMotivo := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.xMotivo;
-              chBPe := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.chBPe;
-              tpEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.tpEvento;
-              xEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.xEvento;
-              nSeqEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.nSeqEvento;
-              CNPJDest := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.CNPJDest;
-              emailDest := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.emailDest;
+              Id          := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.Id;
+              tpAmb       := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.tpAmb;
+              verAplic    := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.verAplic;
+              cOrgao      := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.cOrgao;
+              cStat       := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.cStat;
+              xMotivo     := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.xMotivo;
+              chBPe       := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.chBPe;
+              tpEvento    := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.tpEvento;
+              xEvento     := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.xEvento;
+              nSeqEvento  := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.nSeqEvento;
+              CNPJDest    := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.CNPJDest;
+              emailDest   := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.emailDest;
               dhRegEvento := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.dhRegEvento;
-              nProt := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.nProt;
-              XML := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.XML;
+              nProt       := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.nProt;
+              XML         := BPeRetorno.procEventoBPe.Items[I].RetEventoBPe.retEvento.Items[J].RetinfEvento.XML;
             end;
           end;
         end;
@@ -1149,7 +1149,7 @@ begin
             AProcBPe := TProcBPe.Create;
             try
               AProcBPe.XML_BPe := RemoverDeclaracaoXML(XMLOriginal);
-              AProcBPe.XML_Prot := BPeRetorno.XMLprotBPe;
+              AProcBPe.XML_Prot := NativeStringToUTF8(BPeRetorno.XMLprotBPe);
               AProcBPe.Versao := FPVersaoServico;
               AjustarOpcoes( AProcBPe.Gerador.Opcoes );
               AProcBPe.GerarXML;
@@ -1362,7 +1362,7 @@ begin
     {(*}
     for I := 0 to FEvento.Evento.Count - 1 do
     begin
-      with EventoBPe.Evento.Add do
+      with EventoBPe.Evento.New do
       begin
         infEvento.tpAmb := FTpAmb;
         infEvento.CNPJ := FEvento.Evento[I].infEvento.CNPJ;
@@ -1411,8 +1411,32 @@ begin
     end;
 
     // Separa o XML especifico do Evento para ser Validado.
-    AXMLEvento := '<' + ENCODING_UTF8 + '>' +
-                  SeparaDados(FPDadosMsg, 'detEvento');
+    AXMLEvento := SeparaDados(FPDadosMsg, 'detEvento');
+
+    case SchemaEventoBPe of
+      schevCancBPe:
+        begin
+          AXMLEvento := '<evCancBPe xmlns="' + ACBRBPE_NAMESPACE + '">' +
+                          Trim(RetornarConteudoEntre(AXMLEvento, '<evCancBPe>', '</evCancBPe>')) +
+                        '</evCancBPe>';
+        end;
+
+      schevNaoEmbBPe:
+        begin
+          AXMLEvento := '<evNaoEmbBPe xmlns="' + ACBRBPE_NAMESPACE + '">' +
+                          Trim(RetornarConteudoEntre(AXMLEvento, '<evNaoEmbBPe>', '</evNaoEmbBPe>')) +
+                        '</evNaoEmbBPe>';
+        end;
+
+      schevAlteracaoPoltrona:
+        begin
+          AXMLEvento := '<evAlteracaoPoltrona xmlns="' + ACBRBPE_NAMESPACE + '">' +
+                          Trim(RetornarConteudoEntre(AXMLEvento, '<evAlteracaoPoltrona>', '</evAlteracaoPoltrona>')) +
+                        '</evAlteracaoPoltrona>';
+        end;
+    end;
+
+    AXMLEvento := '<' + ENCODING_UTF8 + '>' + AXMLEvento;
 
     with TACBrBPe(FPDFeOwner) do
     begin
@@ -1431,7 +1455,7 @@ begin
       FErroValidacao := ACBrStr('Falha na validação dos dados do Evento: ') +
         FPMsg;
 
-//      raise EACBrBPeException.CreateDef(FErroValidacao);
+      raise EACBrBPeException.CreateDef(FErroValidacao);
     end;
 
     for I := 0 to FEvento.Evento.Count - 1 do
@@ -1800,7 +1824,8 @@ begin
 
   case AItem.schema of
     schprocEventoBPe:
-      Result := FPConfiguracoesBPe.Arquivos.GetPathEvento(AItem.procEvento.tpEvento,
+      Result := FPConfiguracoesBPe.Arquivos.GetPathDownloadEvento(AItem.procEvento.tpEvento,
+                                                          AItem.resDFe.xNome,
                                                           AItem.resDFe.CNPJCPF,
                                                           Data);
 

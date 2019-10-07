@@ -48,6 +48,80 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+05/09/2019
+-- Diversos --
+[*] Ao enviar um BP-e Substituto a outro o retorno do status não é 100 e 
+    sim 102.
+   Por: Italo Jurisato Junior
+
+14/08/2019
+-- pcnBPeW/pcnConversaoBPe --
+[*] Estava gerando o valor do campo sitVeiculo com 2 digitos sendo que o correto
+    é com apenas 1.
+   Por: Italo Jurisato Junior
+
+07/08/2019
+-- ACBrBPeServicos --
+[*] https://www.projetoacbr.com.br/forum/topic/52867-erro-leitura-qrcode-de-mt/
+   Por: Luiz Carlos de Lima
+
+01/08/2019
+-- ACBrBPeBilhetes/ACBrBPeWebServices --
+[*] Removido a validação do código numerico da chave do método Enviar e 
+    incluido na Validação de Regras de Negócios.
+   Por: Italo Jurisato Junior
+
+24/07/2019
+-- ACBrBPeWebServices --
+[*] Ajustes feito para que a validação do código que compõe a chave seja
+    realizado somente no envio e não na gerão do XML.
+   Por: Italo Jurisato Junior
+
+12/07/2019
+-- Diversos --
+[*] Ajustes na leitura do grupo infFisco que pode ser retornado junto com as
+    informações do protocolo.
+   Por: Italo Jurisato Junior
+
+04/07/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/52289-erro-forma-de-pagamento-bpe/
+   Por: Snoopyfael / Italo Jurisato Junior
+
+27/06/2019
+-- ACBrBPeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+21/06/2019
+-- ACBrBPe --
+[*] Remoção de um IF no método Enviar que não tem mais nenhuma utilidade.
+-- ACBrBPeServicos --
+[+] Incluidas as URLs do ambiente de produção UF: SP
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador.
+  Por: Italo Jurisato Junior
+
+24/05/2019
+-- ACBrBPeWebservices --
+[*] Corrigido a montagem do XML do evento para ser validado corretamente
+   Por: Italo Jurisato Junior
+
+21/05/2019
+-- ACBrBPeBilhetes --
+[*] Corrigido o método LerArqIni - campos: cPais e xPais
+   Por: Italo Jurisato Junior
+
+15/05/2019
+-- pcnEnvEventoBPe --
+[*] Alteração visando disponibilziar o BPe no ACBrMonitor.
+   Por: Italo Jurisato Junior
+
 20/04/2019
 -- ACBrBPeServicos --
 [*] URLs de Homologação/Produção de Mato Grosso

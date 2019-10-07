@@ -61,7 +61,6 @@ type
 
     procedure GerarServicoValores;
     procedure GerarListaServicos;
-    procedure GerarValoresServico;
 
     procedure GerarConstrucaoCivil;
     procedure GerarCondicaoPagamento;
@@ -253,7 +252,7 @@ begin
   Gerador.wGrupoNFSe('Valores');
   Gerador.wCampoNFSe(tcDe2, '#13', 'ValorServicos', 01, 15, 1, NFSe.Servico.Valores.ValorServicos, DSC_VSERVICO);
 
-  if FProvedor in [proRecife, proPronim, proISSNET, proNFSeBrasil, proGinfes, proThema] then
+  if FProvedor in [proRecife, proPronim, proISSNET, proNFSeBrasil, proGinfes, proThema, proDSFSJC] then
   begin
     Gerador.wCampoNFSe(tcDe2, '#14', 'ValorDeducoes', 01, 15, 1, NFSe.Servico.Valores.ValorDeducoes, DSC_VDEDUCISS);
 
@@ -307,7 +306,8 @@ begin
     proGovBR,
     proPronim,
     proISSNet,
-    proWebISS:  Gerador.wCampoNFSe(tcDe4, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
+    proWebISS,
+    proDSFSJC:  Gerador.wCampoNFSe(tcDe4, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
 
     proNFSEBrasil: Gerador.wCampoNFSe(tcDe2, '#25', 'Aliquota', 01, 05, 1, (NFSe.Servico.Valores.Aliquota * 100), DSC_VALIQ);
 
@@ -448,11 +448,6 @@ begin
     Gerador.wGrupoNFSe('/ListaServicos');
 end;
 
-procedure TNFSeW_ABRASFv1.GerarValoresServico;
-begin
-//  Não definido
-end;
-
 procedure TNFSeW_ABRASFv1.GerarConstrucaoCivil;
 begin
   if (NFSe.ConstrucaoCivil.CodigoObra <> '') then
@@ -558,8 +553,6 @@ begin
 
   Gerador.wGrupoNFSe('/InfRps');
 end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 constructor TNFSeW_ABRASFv1.Create(ANFSeW: TNFSeW);
 begin

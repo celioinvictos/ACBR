@@ -55,7 +55,7 @@ uses
 
 type
   EACBrCTeDACTEFR = class(Exception);
-	{$IFDEF RTL230_UP}
+  {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   {$ENDIF RTL230_UP}
   TACBrCTeDACTEFR = class(TACBrCTeDACTEClass)
@@ -72,7 +72,7 @@ type
     procedure CriarDataSetsFrx;
     function GetPreparedReport: TfrxReport;
     function GetPreparedReportEvento: TfrxReport;
-		function GetPreparedReportInutilizacao: TfrxReport;
+    function GetPreparedReportInutilizacao: TfrxReport;
 
     procedure SetDataSetsToFrxReport;
     procedure frxReportBeforePrint(Sender: TfrxReportComponent);
@@ -96,12 +96,12 @@ type
     procedure CarregaMultiModal;
     procedure CarregaInformacoesAdicionais;
     procedure CarregaDocumentoAnterior;
-		procedure CarregaCTeAnuladoComplementado;
-		procedure CarregaProdutosPerigosos;
-		procedure CarregaVeiculosNovos;
-	  procedure CarregaInfServico;
+    procedure CarregaCTeAnuladoComplementado;
+    procedure CarregaProdutosPerigosos;
+    procedure CarregaVeiculosNovos;
+    procedure CarregaInfServico;
     procedure CarregaInfTribFed;
-	  procedure CarregaPercurso;
+    procedure CarregaPercurso;
     procedure LimpaDados;
     function ManterCep(iCep: Integer): String;
   protected
@@ -138,9 +138,9 @@ type
     cdsRodoMotorista        : TClientDataSet;
     cdsDocAnterior          : TClientDataSet;
     cdsAnuladoComple        : TClientDataSet;
-  	cdsEventos              : TClientDataSet;
-	  cdsProdutosPerigosos    : TClientDataSet;
-  	cdsVeiculosNovos        : TClientDataSet;
+    cdsEventos              : TClientDataSet;
+    cdsProdutosPerigosos    : TClientDataSet;
+    cdsVeiculosNovos        : TClientDataSet;
     cdsInutilizacao         : TClientDataSet;
     cdsInfServico           : TClientDataSet;
     cdsInfTribFed           : TClientDataSet;
@@ -170,9 +170,9 @@ type
     frxRodoMotorista        : TfrxDBDataset;
     frxDocAnterior          : TfrxDBDataset;
     frxAnuladoComple        : TfrxDBDataset;
-  	frxEventos              : TfrxDBDataset;
-	  frxProdutosPerigosos    : TfrxDBDataset;
-  	frxVeiculosNovos        : TfrxDBDataset;
+    frxEventos              : TfrxDBDataset;
+    frxProdutosPerigosos    : TfrxDBDataset;
+    frxVeiculosNovos        : TfrxDBDataset;
     frxInutilizacao         : TfrxDBDataset;
     frxInfServico           : TfrxDBDataset;
     frxInfTribFed           : TfrxDBDataset;
@@ -210,7 +210,7 @@ var
 implementation
 
 uses
-  pcteConversaoCTe, ACBrDFeUtil, ACBrValidador;
+  pcteConversaoCTe, ACBrDFeUtil, ACBrDFeReport, ACBrDelphiZXingQRCode, ACBrValidador;
 
 function CollateBr(Str: string): string;
 var
@@ -262,8 +262,8 @@ end;
 procedure TACBrCTeDACTEFR.CriarDataSetsFrx;
 begin
   frxReport := TfrxReport.Create(nil);
-	frxReport.PreviewOptions.Buttons := [pbPrint, pbLoad, pbSave, pbExport, pbZoom, pbFind,
-    pbOutline, pbPageSetup, pbTools, pbNavigator, pbExportQuick ];		
+  frxReport.PreviewOptions.Buttons := [pbPrint, pbLoad, pbSave, pbExport, pbZoom, pbFind,
+    pbOutline, pbPageSetup, pbTools, pbNavigator, pbExportQuick];
   frxReport.EngineOptions.UseGlobalDataSetList := False;
   with frxReport do
   begin
@@ -274,7 +274,7 @@ begin
     PreviewOptions.Buttons :=[pbPrint, pbZoom, pbFind, pbNavigator, pbExportQuick];
   end;
 
-  frxPDFExport := TfrxPDFExport.Create(nil);
+  frxPDFExport := TfrxPDFExport.Create(Self);
   with frxPDFExport do
   begin
     Background     := True;
@@ -283,7 +283,7 @@ begin
     ShowProgress   := False;
   end;
   // CDS
-  cdsIdentificacao := TClientDataSet.Create(nil);
+  cdsIdentificacao := TClientDataSet.Create(Self);
   with cdsIdentificacao, FieldDefs do
   begin
     Close;
@@ -324,10 +324,11 @@ begin
     Add('xDetRetira', ftString, 160);
     Add('toma', ftString, 50);
     Add('refCTE', ftString, 44);
+    Add('URL', ftString, 1000);
     CreateDataSet;
   end;
 
-  cdsEmitente := TClientDataSet.Create(nil);
+  cdsEmitente := TClientDataSet.Create(Self);
   with cdsEmitente, FieldDefs do
   begin
     Close;
@@ -354,7 +355,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsDestinatario := TClientDataSet.Create(nil);
+  cdsDestinatario := TClientDataSet.Create(Self);
   with cdsDestinatario, FieldDefs do
   begin
     Close;
@@ -378,7 +379,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsDadosNotasFiscais := TClientDataSet.Create(nil);
+  cdsDadosNotasFiscais := TClientDataSet.Create(Self);
   with cdsDadosNotasFiscais, FieldDefs do
   begin
     Close;
@@ -392,7 +393,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsParametros := TClientDataSet.Create(nil);
+  cdsParametros := TClientDataSet.Create(Self);
   with cdsParametros, FieldDefs do
   begin
     Close;
@@ -418,7 +419,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsInformacoesAdicionais := TClientDataSet.Create(nil);
+  cdsInformacoesAdicionais := TClientDataSet.Create(Self);
   with cdsInformacoesAdicionais, FieldDefs do
   begin
     Close;
@@ -429,11 +430,15 @@ begin
     FieldDefs.Add('Fluxo_xOrig', ftString, 15);
     FieldDefs.Add('Fluxo_xDest', ftString, 15);
     FieldDefs.Add('Fluxo_xRota', ftString, 15);
+    FieldDefs.Add('Entrega_tpPer', ftString, 50);
+    FieldDefs.Add('Entrega_dProg', ftString, 10);
+    FieldDefs.Add('Entrega_dIni',  ftString, 10);
+    FieldDefs.Add('Entrega_dFim',  ftString, 10);
 
     CreateDataSet;
   end;
 
-  cdsVolumes := TClientDataSet.Create(nil);
+  cdsVolumes := TClientDataSet.Create(Self);
   with cdsVolumes, FieldDefs do
   begin
     Close;
@@ -452,7 +457,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsTomador := TClientDataSet.Create(nil);
+  cdsTomador := TClientDataSet.Create(Self);
   with cdsTomador, FieldDefs do
   begin
     Close;
@@ -476,7 +481,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsExpedidor := TClientDataSet.Create(nil);
+  cdsExpedidor := TClientDataSet.Create(Self);
   with cdsExpedidor, FieldDefs do
   begin
     Close;
@@ -503,7 +508,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsRecebedor := TClientDataSet.Create(nil);
+  cdsRecebedor := TClientDataSet.Create(Self);
   with cdsRecebedor, FieldDefs do
   begin
     Close;
@@ -531,7 +536,7 @@ begin
 
   end;
 
-  cdsRemetente := TClientDataSet.Create(nil);
+  cdsRemetente := TClientDataSet.Create(Self);
   with cdsRemetente, FieldDefs do
   begin
     Close;
@@ -558,7 +563,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsCalculoImposto := TClientDataSet.Create(nil);
+  cdsCalculoImposto := TClientDataSet.Create(Self);
   with cdsCalculoImposto, FieldDefs do
   begin
     Close;
@@ -575,7 +580,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsComponentesPrestacao := TClientDataSet.Create(nil);
+  cdsComponentesPrestacao := TClientDataSet.Create(Self);
   with cdsComponentesPrestacao, FieldDefs do
   begin
     Close;
@@ -587,7 +592,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsSeguro := TClientDataSet.Create(nil);
+  cdsSeguro := TClientDataSet.Create(Self);
   with cdsSeguro, FieldDefs do
   begin
     Close;
@@ -599,7 +604,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsModalRodoviario := TClientDataSet.Create(nil);
+  cdsModalRodoviario := TClientDataSet.Create(Self);
   with cdsModalRodoviario, FieldDefs do
   begin
     Close;
@@ -612,7 +617,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsRodoVeiculos := TClientDataSet.Create(nil);
+  cdsRodoVeiculos := TClientDataSet.Create(Self);
   with cdsRodoVeiculos, FieldDefs do
   begin
     Close;
@@ -628,7 +633,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsRodoValePedagio := TClientDataSet.Create(nil);
+  cdsRodoValePedagio := TClientDataSet.Create(Self);
   with cdsRodoValePedagio, FieldDefs do
   begin
     Close;
@@ -640,7 +645,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsRodoMotorista := TClientDataSet.Create(nil);
+  cdsRodoMotorista := TClientDataSet.Create(Self);
   with cdsRodoMotorista, FieldDefs do
   begin
     Close;
@@ -650,7 +655,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsModalAquaviario := TClientDataSet.Create(nil);
+  cdsModalAquaviario := TClientDataSet.Create(Self);
   with cdsModalAquaviario, FieldDefs do
   begin
     Close;
@@ -672,7 +677,7 @@ begin
   end;
 
 
-  cdsModalAereo := TClientDataSet.Create(nil);
+  cdsModalAereo := TClientDataSet.Create(Self);
   with cdsModalAereo, FieldDefs do
   begin
     Close;
@@ -694,7 +699,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsMultiModal := TClientDataSet.Create(nil);
+  cdsMultiModal := TClientDataSet.Create(Self);
   with cdsMultiModal, FieldDefs do
   begin
     Close;
@@ -704,7 +709,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsDocAnterior := TClientDataSet.Create(nil);
+  cdsDocAnterior := TClientDataSet.Create(Self);
   with cdsDocAnterior, FieldDefs do
   begin
     Close;
@@ -722,7 +727,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsAnuladoComple := TClientDataSet.Create(nil);
+  cdsAnuladoComple := TClientDataSet.Create(Self);
   with cdsAnuladoComple, FieldDefs do
   begin
     Close;
@@ -731,7 +736,7 @@ begin
     CreateDataSet;
   end;
 
-  cdsEventos := TClientDataSet.Create(nil);
+  cdsEventos := TClientDataSet.Create(Self);
   with cdsEventos, FieldDefs do
   begin
     Close;
@@ -761,10 +766,18 @@ begin
     Add('valorAlterado', ftBlob);
     Add('nroItemAlterado', ftInteger);
 
+    Add('dhEntrega', ftDateTime);
+    Add('nDoc', ftString, 20);
+    Add('xNome', ftString, 60);
+    Add('latitude', ftFloat);
+    Add('longitude', ftFloat);
+
+    Add('nProtCE', ftString, 15);
+
     CreateDataSet;
   end;
 
-  cdsProdutosPerigosos := TClientDataSet.Create(nil);
+  cdsProdutosPerigosos := TClientDataSet.Create(Self);
   with cdsProdutosPerigosos, FieldDefs do
   begin
    	Close;
@@ -779,7 +792,7 @@ begin
 
 		CreateDataSet;
   end;
-  cdsVeiculosNovos := TClientDataSet.Create(nil);
+  cdsVeiculosNovos := TClientDataSet.Create(Self);
   with cdsVeiculosNovos, FieldDefs do
   begin
    	Close;
@@ -795,7 +808,7 @@ begin
   end;
 
   //Inutilização
-  cdsInutilizacao := TClientDataSet.Create(nil);
+  cdsInutilizacao := TClientDataSet.Create(Self);
   with cdsInutilizacao, FieldDefs do
   begin
    	Close;
@@ -819,7 +832,7 @@ begin
 		CreateDataSet;
   end;
 
-  cdsInfServico := TClientDataSet.Create(nil);
+  cdsInfServico := TClientDataSet.Create(Self);
   with cdsInfServico, FieldDefs do
   begin
    	Close;
@@ -829,7 +842,7 @@ begin
 		CreateDataSet;
   end;
 
-  cdsInfTribFed := TClientDataSet.Create(nil);
+  cdsInfTribFed := TClientDataSet.Create(Self);
   with cdsInfTribFed, FieldDefs do
   begin
     Close;
@@ -842,7 +855,7 @@ begin
 		CreateDataSet;
   end;
 
-  cdsPercurso := TClientDataSet.Create(nil);
+  cdsPercurso := TClientDataSet.Create(Self);
   with cdsPercurso, FieldDefs do
   begin
    	Close;
@@ -852,7 +865,7 @@ begin
   end;
 
   // frxDB
-  frxIdentificacao := TfrxDBDataset.Create(nil);
+  frxIdentificacao := TfrxDBDataset.Create(Self);
   with frxIdentificacao do
   begin
     UserName       := 'Identificacao';
@@ -860,7 +873,7 @@ begin
     DataSet        := cdsIdentificacao;
   end;
 
-  frxEmitente := TfrxDBDataset.Create(nil);
+  frxEmitente := TfrxDBDataset.Create(Self);
   with frxEmitente do
   begin
     UserName       := 'Emitente';
@@ -868,7 +881,7 @@ begin
     DataSet        := cdsEmitente;
   end;
 
-  frxDestinatario := TfrxDBDataset.Create(nil);
+  frxDestinatario := TfrxDBDataset.Create(Self);
   with frxDestinatario do
   begin
     UserName       := 'Destinatario';
@@ -876,7 +889,7 @@ begin
     DataSet        := cdsDestinatario;
   end;
 
-  frxDadosNotasFiscais := TfrxDBDataset.Create(nil);
+  frxDadosNotasFiscais := TfrxDBDataset.Create(Self);
   with frxDadosNotasFiscais do
   begin
     UserName       := 'DadosNotasFiscais';
@@ -884,7 +897,7 @@ begin
     DataSet        := cdsDadosNotasFiscais;
   end;
 
-  frxParametros := TfrxDBDataset.Create(nil);
+  frxParametros := TfrxDBDataset.Create(Self);
   with frxParametros do
   begin
     UserName       := 'Parametros';
@@ -892,7 +905,7 @@ begin
     DataSet        := cdsParametros;
   end;
 
-  frxVolumes := TfrxDBDataset.Create(nil);
+  frxVolumes := TfrxDBDataset.Create(Self);
   with frxVolumes do
   begin
     UserName       := 'Volumes';
@@ -900,7 +913,7 @@ begin
     DataSet        := cdsVolumes;
   end;
 
-  frxInformacoesAdicionais := TfrxDBDataset.Create(nil);
+  frxInformacoesAdicionais := TfrxDBDataset.Create(Self);
   with frxInformacoesAdicionais do
   begin
     UserName       := 'InformacoesAdicionais';
@@ -908,7 +921,7 @@ begin
     DataSet        := cdsInformacoesAdicionais;
   end;
 
-  frxTomador := TfrxDBDataset.Create(nil);
+  frxTomador := TfrxDBDataset.Create(Self);
   with frxTomador do
   begin
     UserName       := 'Tomador';
@@ -916,7 +929,7 @@ begin
     DataSet        := cdsTomador;
   end;
 
-  frxExpedidor := TfrxDBDataset.Create(nil);
+  frxExpedidor := TfrxDBDataset.Create(Self);
   with frxExpedidor do
   begin
     UserName       := 'Expedidor';
@@ -924,7 +937,7 @@ begin
     DataSet        := cdsExpedidor;
   end;
 
-  frxRecebedor := TfrxDBDataset.Create(nil);
+  frxRecebedor := TfrxDBDataset.Create(Self);
   with frxRecebedor do
   begin
     UserName       := 'Recebedor';
@@ -932,7 +945,7 @@ begin
     DataSet        := cdsRecebedor;
   end;
 
-  frxRemetente := TfrxDBDataset.Create(nil);
+  frxRemetente := TfrxDBDataset.Create(Self);
   with frxRemetente do
   begin
     UserName       := 'Remetente';
@@ -940,7 +953,7 @@ begin
     DataSet        := cdsRemetente;
   end;
 
-  frxCalculoImposto := TfrxDBDataset.Create(nil);
+  frxCalculoImposto := TfrxDBDataset.Create(Self);
   with frxCalculoImposto do
   begin
     UserName       := 'CalculoImposto';
@@ -948,7 +961,7 @@ begin
     DataSet        := cdsCalculoImposto;
   end;
 
-  frxComponentesPrestacao := TfrxDBDataset.Create(nil);
+  frxComponentesPrestacao := TfrxDBDataset.Create(Self);
   with frxComponentesPrestacao do
   begin
     UserName       := 'ComponentesPrestacao';
@@ -956,7 +969,7 @@ begin
     DataSet        := cdsComponentesPrestacao;
   end;
 
-  frxSeguro := TfrxDBDataset.Create(nil);
+  frxSeguro := TfrxDBDataset.Create(Self);
   with frxSeguro do
   begin
     UserName       := 'Seguro';
@@ -964,7 +977,7 @@ begin
     DataSet        := cdsSeguro;
   end;
 
-  frxModalRodoviario := TfrxDBDataset.Create(nil);
+  frxModalRodoviario := TfrxDBDataset.Create(Self);
   with frxModalRodoviario do
   begin
     UserName       := 'ModalRodoviario';
@@ -972,7 +985,7 @@ begin
     DataSet        := cdsModalRodoviario;
   end;
 
-  frxModalAquaviario := TfrxDBDataset.Create(nil);
+  frxModalAquaviario := TfrxDBDataset.Create(Self);
   with frxModalAquaviario do
   begin
     UserName       := 'ModalAquaviario';
@@ -980,7 +993,7 @@ begin
     DataSet        := cdsModalAquaviario;
   end;
 
-  frxModalAereo := TfrxDBDataset.Create(nil);
+  frxModalAereo := TfrxDBDataset.Create(Self);
   with frxModalAereo do
   begin
     UserName       := 'ModalAereo';
@@ -988,7 +1001,7 @@ begin
     DataSet := cdsModalAereo;
   end;
 
-  frxMultiModal := TfrxDBDataset.Create(nil);
+  frxMultiModal := TfrxDBDataset.Create(Self);
   with frxMultiModal do
   begin
     UserName       := 'MultiModal';
@@ -996,7 +1009,7 @@ begin
     DataSet := cdsMultiModal;
   end;
 
-  frxRodoVeiculos := TfrxDBDataset.Create(nil);
+  frxRodoVeiculos := TfrxDBDataset.Create(Self);
   with frxRodoVeiculos do
   begin
     UserName       := 'Veiculos';
@@ -1004,7 +1017,7 @@ begin
     DataSet        := cdsRodoVeiculos;
   end;
 
-  frxRodoValePedagio := TfrxDBDataset.Create(nil);
+  frxRodoValePedagio := TfrxDBDataset.Create(Self);
   with frxRodoValePedagio do
   begin
     UserName       := 'ValePedagio';
@@ -1012,7 +1025,7 @@ begin
     DataSet        := cdsRodoValePedagio;
   end;
 
-  frxRodoMotorista := TfrxDBDataset.Create(nil);
+  frxRodoMotorista := TfrxDBDataset.Create(Self);
   with frxRodoMotorista do
   begin
     UserName       := 'Motorista';
@@ -1020,7 +1033,7 @@ begin
     DataSet        := cdsRodoMotorista;
   end;
 
-  frxDocAnterior := TfrxDBDataset.Create(nil);
+  frxDocAnterior := TfrxDBDataset.Create(Self);
   with frxDocAnterior do
   begin
     UserName       := 'DocAnterior';
@@ -1028,7 +1041,7 @@ begin
     DataSet        := cdsDocAnterior;
   end;
 
-  frxAnuladoComple := TfrxDBDataset.Create(nil);
+  frxAnuladoComple := TfrxDBDataset.Create(Self);
   with frxAnuladoComple do
   begin
     UserName       := 'AnuladoComple';
@@ -1036,7 +1049,7 @@ begin
     DataSet        := cdsAnuladoComple;
   end;
 
-  frxEventos := TfrxDBDataset.Create(nil);
+  frxEventos := TfrxDBDataset.Create(Self);
   with frxEventos do
   begin
     UserName       := 'Eventos';
@@ -1044,49 +1057,49 @@ begin
     DataSet        := cdsEventos;
   end;
 
-  frxProdutosPerigosos := TfrxDBDataset.Create(nil);
+  frxProdutosPerigosos := TfrxDBDataset.Create(Self);
   with frxProdutosPerigosos do
   begin
 		UserName       := 'ProdutosPerigosos';
   	OpenDataSource := False;
 		DataSet        := cdsProdutosPerigosos;
   end;
-  frxVeiculosNovos := TfrxDBDataset.Create(nil);
+  frxVeiculosNovos := TfrxDBDataset.Create(Self);
   with frxVeiculosNovos do
   begin
 		UserName       := 'VeiculosNovos';
      	OpenDataSource := False;
 		DataSet        := cdsVeiculosNovos;
   end;
-  frxInutilizacao  := TfrxDBDataset.Create(nil);
+  frxInutilizacao  := TfrxDBDataset.Create(Self);
   with frxInutilizacao do
   begin
 		UserName       := 'Inutilizacao';
     OpenDataSource := False;
 		DataSet        := cdsInutilizacao;
   end;
-  frxInfServico := TfrxDBDataset.Create(nil);
+  frxInfServico := TfrxDBDataset.Create(Self);
   with frxInfServico do
   begin
 		UserName       := 'InfServico';
     OpenDataSource := False;
 		DataSet        := cdsInfServico;
   end;
-  frxInfTribFed := TfrxDBDataset.Create(nil);
+  frxInfTribFed := TfrxDBDataset.Create(Self);
   with frxInfTribFed do
   begin
 		UserName       := 'InfTribFed';
     OpenDataSource := False;
 		DataSet        := cdsInfTribFed;
   end;
-  frxPercurso := TfrxDBDataset.Create(nil);
+  frxPercurso := TfrxDBDataset.Create(Self);
   with frxPercurso do
   begin
     UserName       := 'Percurso';
     OpenDataSource := False;
     DataSet        := cdsPercurso;
   end;
-  frxBarCodeObject := TfrxBarCodeObject.Create(nil);
+  frxBarCodeObject := TfrxBarCodeObject.Create(Self);
 end;
 
 destructor TACBrCTeDACTEFR.Destroy;
@@ -1163,67 +1176,49 @@ end;
 
 procedure TACBrCTeDACTEFR.frxReportBeforePrint(Sender: TfrxReportComponent);
 var
-  Child     : TfrxChild;
+  ChildEvento, Child: TfrxChild;
   DetailData: TfrxDetailData;
   Memo      : TfrxMemoView;
   Shape     : TfrxShapeView;
+  qrCode    : string;
 begin
-  case TipoEvento of
-    teCCe:
-      begin
-        // Esconde ChildJustificativa
-        Memo := frxReport.FindObject('JustTit') as TfrxMemoView;
-        if Memo <> nil then
-        begin
-          Memo.Visible := False;
-        end;
-        Memo := frxReport.FindObject('JustDesc') as TfrxMemoView;
-        if Memo <> nil then
-        begin
-          Memo.Visible := False;
-        end;
-        Shape := frxReport.FindObject('ShapeJust') as TfrxShapeView;
-        if Shape <> nil then
-        begin
-          Shape.Visible := False;
-        end;
-        Child := frxReport.FindObject('ChildJustificativa') as TfrxChild;
-        if Child <> nil then
-        begin
-          Child.Height := 0;
-        end;
-      end;
-    teCancelamento:
-      begin
-        // Esconde ChildCondUso
-        Child := frxReport.FindObject('ChildCondUso') as TfrxChild;
-        if Child <> nil then
-        begin
-          Child.Visible := False;
-        end;
-
-        // Esconde ChildCorrecao
+  ChildEvento := frxReport.FindObject('ChildProcEvento') as TfrxChild;
+  Child := nil;
+  if ChildEvento <> nil then
+  begin
+    case TipoEvento of
+      teCCe:
         Child := frxReport.FindObject('ChildCorrecao') as TfrxChild;
-        if Child <> nil then
-        begin
-          Child.Visible := False;
-        end;
+      teCancelamento, tePrestDesacordo:
+         Child := frxReport.FindObject('ChildJustificativa') as TfrxChild;
+      teComprEntrega:
+         Child := frxReport.FindObject('ChildComprovanteEntrega') as TfrxChild;
+      teCancComprEntrega:
+         Child := frxReport.FindObject('ChildCancComp') as TfrxChild;
 
-        // Esconde DetailData1
-        DetailData := frxReport.FindObject('DetailData1') as TfrxDetailData;
-        if DetailData <> nil then
-        begin
-          DetailData.Visible := False;
-        end;
-      end;
+    end;
+    if Child <> nil then
+       ChildEvento.Child := Child;
   end;
-  if cdsModalRodoviario.FieldByName('LOTACAO').AsString = 'Não' then 
-	begin
+
+  DetailData := frxReport.FindObject('DadosCorrecao') as TfrxDetailData;
+  if DetailData <> nil then
+    DetailData.Visible := TipoEvento = teCCe;
+
+  
+  if cdsModalRodoviario.FieldByName('LOTACAO').AsString = 'Não' then
+  begin
     Child := frxReport.FindObject('ChildRodoviarioLotacao') as TfrxChild;
-		if Child <> nil then
-	 	begin
-			Child.Visible := False;
-	 	end;
+    if Child <> nil then
+    begin
+      Child.Visible := False;
+    end;
+  end;
+  if Assigned(FCTe) then
+  begin
+    qrCode := FCTe.infCTeSupl.qrCodCTe;
+    if Assigned(Sender) and (Trim(qrCode) <> '') and (Sender.Name = 'ImgQrCode') then
+      PintarQRCode(qrCode, TfrxPictureView(Sender).Picture, qrUTF8NoBOM);
   end;
 end;
 
@@ -1844,7 +1839,7 @@ begin
               FieldByName('xMotivo').AsString             := RetInfEvento.xMotivo;
               FieldByName('nProt').AsString               := RetInfEvento.nProt;
               FieldByName('dhRegEvento').AsDateTime       := RetInfEvento.dhRegEvento;
-              FieldByName('xJust').AsString               := InfEvento.detEvento.xJust;
+              FieldByName('xJust').AsString               := InfEvento.detEvento.xOBS;
               FieldByName('xCondUso').AsString            := '';
               frxReport.Variables['HOMOLOGACAO']          := ( InfEvento.tpAmb = taHomologacao);
               Post;
@@ -1914,6 +1909,62 @@ begin
 
                 Post;
               end;
+            end;
+          teComprEntrega:
+            begin
+              TipoEvento := teComprEntrega;
+              Append;
+              FieldByName('DescricaoTipoEvento').AsString := InfEvento.DescricaoTipoEvento(InfEvento.tpEvento);
+              FieldByName('Modelo').AsString              := Copy(InfEvento.chCTe, 21, 2);
+              FieldByName('Serie').AsString               := Copy(InfEvento.chCTe, 23, 3);
+              FieldByName('Numero').AsString              := Copy(InfEvento.chCTe, 26, 9);
+              FieldByName('MesAno').AsString              := Copy(InfEvento.chCTe, 05, 2) + '/' + Copy(InfEvento.chCTe, 03, 2);
+              FieldByName('Barras').AsString              := InfEvento.chCTe;
+              FieldByName('ChaveAcesso').AsString         := FormatarChaveAcesso(InfEvento.chCTe);
+              FieldByName('cOrgao').AsInteger             := InfEvento.cOrgao;
+              FieldByName('nSeqEvento').AsInteger         := InfEvento.nSeqEvento;
+              FieldByName('tpAmb').AsString               := MantertpAmb(InfEvento.tpAmb);
+              FieldByName('dhEvento').AsDateTime          := InfEvento.dhEvento;
+              FieldByName('TipoEvento').AsString          := InfEvento.TipoEvento;
+              FieldByName('DescEvento').AsString          := InfEvento.DescEvento;
+              FieldByName('versaoEvento').AsString        := InfEvento.versaoEvento;
+              FieldByName('cStat').AsInteger              := RetInfEvento.cStat;
+              FieldByName('xMotivo').AsString             := RetInfEvento.xMotivo;
+              FieldByName('nProt').AsString               := RetInfEvento.nProt;
+              FieldByName('dhRegEvento').AsDateTime       := RetInfEvento.dhRegEvento;
+              FieldByName('dhEntrega').AsDateTime         := InfEvento.detEvento.dhEntrega;
+              FieldByName('nDoc').AsString                := InfEvento.detEvento.nDoc;
+              FieldByName('xNome').AsString               := InfEvento.detEvento.xNome;
+              FieldByName('latitude').AsFloat             := InfEvento.detEvento.latitude;
+              FieldByName('longitude').AsFloat            := InfEvento.detEvento.longitude;
+              frxReport.Variables['HOMOLOGACAO']          := (InfEvento.tpAmb = taHomologacao);
+              Post;
+            end;
+          teCancComprEntrega:
+            begin
+              TipoEvento := teCancComprEntrega;
+              Append;
+              FieldByName('DescricaoTipoEvento').AsString := InfEvento.DescricaoTipoEvento(InfEvento.tpEvento);
+              FieldByName('Modelo').AsString              := Copy(InfEvento.chCTe, 21, 2);
+              FieldByName('Serie').AsString               := Copy(InfEvento.chCTe, 23, 3);
+              FieldByName('Numero').AsString              := Copy(InfEvento.chCTe, 26, 9);
+              FieldByName('MesAno').AsString              := Copy(InfEvento.chCTe, 05, 2) + '/' + Copy(InfEvento.chCTe, 03, 2);
+              FieldByName('Barras').AsString              := InfEvento.chCTe;
+              FieldByName('ChaveAcesso').AsString         := FormatarChaveAcesso(InfEvento.chCTe);
+              FieldByName('cOrgao').AsInteger             := InfEvento.cOrgao;
+              FieldByName('nSeqEvento').AsInteger         := InfEvento.nSeqEvento;
+              FieldByName('tpAmb').AsString               := MantertpAmb(InfEvento.tpAmb);
+              FieldByName('dhEvento').AsDateTime          := InfEvento.dhEvento;
+              FieldByName('TipoEvento').AsString          := InfEvento.TipoEvento;
+              FieldByName('DescEvento').AsString          := InfEvento.DescEvento;
+              FieldByName('versaoEvento').AsString        := InfEvento.versaoEvento;
+              FieldByName('cStat').AsInteger              := RetInfEvento.cStat;
+              FieldByName('xMotivo').AsString             := RetInfEvento.xMotivo;
+              FieldByName('nProt').AsString               := RetInfEvento.nProt;
+              FieldByName('dhRegEvento').AsDateTime       := RetInfEvento.dhRegEvento;
+              FieldByName('nProtCE').AsString             := InfEvento.detEvento.nProtCE;
+              frxReport.Variables['HOMOLOGACAO']          := (InfEvento.tpAmb = taHomologacao);
+              Post;
             end;
         end;
       end;
@@ -2266,6 +2317,7 @@ begin
       FieldByName('CCT').AsString   := IntToStr(CCT);
       FieldByName('CFOP').AsString  := IntToStr(CFOP);
       FieldByName('NatOp').AsString := NatOp;
+      FieldByName('URL').AsString := TACBrCTe(ACBrCTE).GetURLConsulta(cUF, tpAmb, FCTe.infCTe.versao);
 
       case forPag of
         fpPago  : FieldByName('forPag').AsString  := 'Pago';
@@ -2400,6 +2452,34 @@ begin
       FieldByName('Fluxo_xDest').AsString := fluxo.xDest;
       FieldByName('Fluxo_xRota').AsString := fluxo.xRota;
 
+      with Entrega do
+      begin
+        case TipoData of
+          tdSemData, tdNaoInformado:
+          begin
+            FieldByName('Entrega_tpPer').AsString := '';
+            FieldByName('Entrega_dProg').AsString := '';
+            FieldByName('Entrega_dIni').AsString  := '';
+            FieldByName('Entrega_dFim').AsString  := '';
+          end;
+
+          tdNaData, tdAteData, tdApartirData:
+          begin
+            FieldByName('Entrega_tpPer').AsString := IfThen(TipoData = tdNaData, 'NA DATA', IfThen(TipoData = tdAteData, 'ATE A DATA', 'A PARTIR DE'));
+            FieldByName('Entrega_dProg').AsString := FormatDateTime('dd/mm/yyyy', comData.dProg);
+            FieldByName('Entrega_dIni').AsString  := '';
+            FieldByName('Entrega_dFim').AsString  := '';
+          end;
+
+          tdNoPeriodo:
+          begin
+            FieldByName('Entrega_tpPer').AsString := 'NO PERIODO';
+            FieldByName('Entrega_dProg').AsString := '';
+            FieldByName('Entrega_dIni').AsString  := FormatDateTime('dd/mm/yyyy', noPeriodo.dIni);
+            FieldByName('Entrega_dFim').AsString  := FormatDateTime('dd/mm/yyyy', noPeriodo.dFim);
+          end;
+        end;
+      end;
     end;
     FieldByName('OBS').AsString := BufferObs;
 

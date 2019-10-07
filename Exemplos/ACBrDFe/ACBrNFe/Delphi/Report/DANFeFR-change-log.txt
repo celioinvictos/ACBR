@@ -53,13 +53,39 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+05/08/2019
+-- DANFeNFCe5_00.fr3 --
+[*] Correção para remover espaço em branco abaixo da nota na visualização e "picote" na impressão.
+    https://www.projetoacbr.com.br/forum/topic/52813-problemas-na-impress%C3%A3o-danfenfce5_00fr3/
+  Por: BigWings
+
+31/07/2019
+--- DANFeNFCe5_00.fr3 ---
+[*] Ajustes de alinhamento das informações adicionais, inclusão do valor dos serviços e outros acréscimos e descontos nos totais da nota e remoção de duplicidade da impressão do troco.
+  Por: BigWings
+
+26/07/2019
+--- DanfeRetrato_2019.fr3
+[*] Refatoração para apresentar o canhoto com chave de acesso.
+      Por : Henrique Leonardo ( HLeorj )
+
+19/07/2019
+--- DANFeNFCe5_00.fr3 ---
+[*] Substitui as versões anteriores com correções relacionadas a NT do DANFC-e e QR-Code.
+https://www.projetoacbr.com.br/forum/topic/52484-altera%C3%A7%C3%B5es-no-layout-danfce-fast-report-bobina/
+      Por : Túlio de Pádua
+
+17/07/2019
+--- EventosNFCe.fr3 ---
+[*] Reestruturação para ficar funcional e mais parecido com o modelo em Fortes Report. 
+https://www.projetoacbr.com.br/forum/topic/48283-altera%C3%A7%C3%A3o-danfe-nfc-e-cancelamento/
+      Por : brajan
+
 11/03/2019
 --- DanfePaisagem_2019.fr3 ---
 [*] Ajuste no canhoto a esquerda
 https://www.projetoacbr.com.br/forum/topic/49889-corre%C3%A7%C3%A3o-erro-impress%C3%A3o-modelo-paisagem-fast/?tab=comments#comment-329087
       Por : Pedro Braga	
-
-
 
 07/02/2019
 --- DanfePaisagem_2019.fr3 - DanfeRetrato_2019.fr3

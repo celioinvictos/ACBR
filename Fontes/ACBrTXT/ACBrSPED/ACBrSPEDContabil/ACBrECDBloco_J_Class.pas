@@ -80,6 +80,7 @@ type
     procedure WriteRegistroJ215(RegJ210: TRegistroJ210);
     procedure WriteRegistroJ800(RegJ005: TRegistroJ005);
     procedure WriteRegistroJ801(RegJ005: TRegistroJ005);
+    function EstaGerandoArquivoDeSubstituicao: Boolean;
 
 
   public
@@ -359,36 +360,45 @@ begin
                   LFill(IND_GRP_DRE) +
                   LFill(NOTAS_EXP_REF)
                   );
+           end 
+           else
+           /// Layout 6 a partir da escrituração ano calendário 2017
+           if DT_INI >= EncodeDate(2017,01,01) then
+           begin
+             Add( LFill('J150') +
+                  LFill(COD_AGL) +
+                  LFill(NIVEL_AGL) +
+                  LFill(DESCR_COD_AGL) +
+                  LFill(VL_CTA, 19, 2) +
+                  LFill(IND_VL, 1) +
+                  LFill(VL_CTA_ULT_DRE, 19, 2, True) +
+                  LFill(IND_VL_ULT_DRE, 1, True) +
+                  LFill(NOTAS_EXP_REF)
+                  );
            end
-             else
-             begin
-               /// Layout 6 a partir da escrituração ano calendário 2017
-               if DT_INI >= EncodeDate(2017,01,01) then
-               begin
-                 Add( LFill('J150') +
-                      LFill(COD_AGL) +
-                      LFill(NIVEL_AGL) +
-                      LFill(DESCR_COD_AGL) +
-                      LFill(VL_CTA, 19, 2) +
-                      LFill(IND_VL, 1) +
-                      LFill(VL_CTA_ULT_DRE, 19, 2, True) +
-                      LFill(IND_VL_ULT_DRE, 1, True) +
-                      LFill(NOTAS_EXP_REF)
-                      );
-               end
-                 else
-                 begin
-                   Add( LFill('J150') +
-                        LFill(COD_AGL) +
-                        LFill(NIVEL_AGL) +
-                        LFill(DESCR_COD_AGL) +
-                        LFill(VL_CTA, 19, 2) +
-                        LFill(IND_VL, 1) +
-                        LFill(VL_CTA_ULT_DRE, 19, 2, True) +
-                        LFill(IND_VL_ULT_DRE, 1, True)
-                        );
-                 end;
-            end;
+           else
+           if DT_INI >= EncodeDate(2015,01,01) then
+           begin
+             Add( LFill('J150') +
+                  LFill(COD_AGL) +
+                  LFill(NIVEL_AGL) +
+                  LFill(DESCR_COD_AGL) +
+                  LFill(VL_CTA, 19, 2) +
+                  LFill(IND_VL, 1) +
+                  LFill(VL_CTA_ULT_DRE, 19, 2, True) +
+                  LFill(IND_VL_ULT_DRE, 1, True)
+                  );
+           end
+           else
+           begin
+             Add( LFill('J150') +
+                  LFill(COD_AGL) +
+                  LFill(NIVEL_AGL) +
+                  LFill(DESCR_COD_AGL) +
+                  LFill(VL_CTA, 19, 2) +
+                  LFill(IND_VL, 1)
+                  );
+           end;
         end;
         FRegistroJ990.QTD_LIN_J := FRegistroJ990.QTD_LIN_J + 1;
      end;
@@ -665,17 +675,20 @@ end;
 
 procedure TBloco_J.WriteRegistroJ930;
 var
-intFor: integer;
+  intFor: integer;
+  DeveUsarLeiauteRecente: Boolean;
 begin
   if Assigned(FRegistroJ930) then
   begin
+    DeveUsarLeiauteRecente := EstaGerandoArquivoDeSubstituicao;
      for intFor := 0 to FRegistroJ930.Count - 1 do
      begin
         with FRegistroJ930.Items[intFor] do
         begin
-         /// Layout 2 a partir da escrituração ano calendário 2016
-         if DT_INI >= EncodeDate(2016,01,01) then
+
+         if DeveUsarLeiauteRecente or (DT_INI >= EncodeDate(2016,01,01)) then
          begin
+           /// Layout 5 a partir da escrituração ano calendário 2016
              Add( LFill('J930') +
                   LFill(IDENT_NOM) +
                   LFill(IDENT_CPF) +
@@ -690,9 +703,9 @@ begin
                   LFill(IND_RESP_LEGAL)
                   );
          end else
-         /// Layout 2 a partir da escrituração ano calendário 2013
          if DT_INI >= EncodeDate(2013,01,01) then
          begin
+           /// Layout 2 a partir da escrituração ano calendário 2013
              Add( LFill('J930') +
                   LFill(IDENT_NOM) +
                   LFill(IDENT_CPF) +
@@ -794,6 +807,11 @@ begin
        Add(strLinha);
      end;
   end;
+end;
+
+function TBloco_J.EstaGerandoArquivoDeSubstituicao: Boolean;
+begin
+  Result := (FRegistroJ801.Count > 0) or (FBloco_0.Registro0000.IND_FIN_ESC = '1 - Substituta');
 end;
 
 end.

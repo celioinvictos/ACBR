@@ -48,6 +48,84 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+01/08/2019
+-- pcesS1200 --
+[*] Alterado o indice de xx para xxx da seção dmDev e das demais que são filhas 
+    dela.
+    Essa alteração afeta apenas que utiliza a leitura do arquivo INI, para gerar
+    e enviar o respectivo evento.
+   Por: Italo Jurisato Junior
+
+01/07/2019
+-- Diversos --
+[*] Acrescentado o enumerador prpNenhum ao tipo: tpPlanRP, pois a tag é opcional
+    e precisamos de um valor para informar que a mesma não deve ser gerada.
+   Por: Italo Jurisato Junior
+
+26/06/2019
+-- Diversos --
+[*] Alterações visando adequar a geração dos XML em função das alterações realizadas
+    nos Schemas no dia 18/06/2019
+   Por: Italo Jurisato Junior
+
+25/06/2019
+-- pcesS1000 --
+[*] https://www.projetoacbr.com.br/forum/topic/52101-campo-indporte-evento-s-1000-nota-tecnica-14-2019/
+   Por: ghvoliveira
+
+30/05/2019
+-- pcesS5013 --
+[*] https://www.projetoacbr.com.br/forum/topic/51645-vazamento-de-mem%C3%B3ria-s-5013/
+   Por: Alisson Souza Pereira
+-- pcesS2299 / pcesCommon --
+[*] https://www.projetoacbr.com.br/forum/topic/51641-vazamento-de-mem%C3%B3ria-s-2299/
+   Por: Alisson Souza Pereira
+
+29/05/2019
+-- pcesS2240 --
+[*] https://www.projetoacbr.com.br/forum/topic/51599-nota-t%C3%A9cnica-122019-s2240/
+   Por: Angelo Sobreira
+-- ACBreSocial / ACBreSocialWebServices --
+[+] https://www.projetoacbr.com.br/forum/topic/51394-esocial-possibilidade-de-escolher-entre-gerar-assinar-validar-ou-enviar-temos-casos-onde-o-cliente-n%C3%A3o-vai-enviar-diretamente-para-o-webservice/?do=findComment&comment=340170
+   Por: Dream Sistemas
+
+24/05/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/51507-corre%C3%A7%C3%A3o-do-evento-s-2298/
+   Por: Gustavo Ribeiro Croscato
+
+23/05/2019
+-- pcesS5011 --
+[-] https://www.projetoacbr.com.br/forum/topic/51495-corre%C3%A7%C3%A3o-pcess5011pas/
+   Por: Patrick Alves
+-- pcesGerador --
+[-] https://www.projetoacbr.com.br/forum/topic/51488-corre%C3%A7%C3%A3o-pcesgeradorpas-m%C3%A9todo-gerarnfs/
+   Por: Digibyte
+
+16/05/2019
+-- pcesConversaoeSocial --
+[*] Incluido o enumerador ufEX no tpUF para ser utilizado quando for Exterior.
+   Por: Italo Jurisato Junior
+
+14/05/2019
+-- pcesS2210 --
+[*] Trocado o tipo de conversão de tcStr para tcInt nos campos que são Integer.
+   Por: Italo Jurisato Junior
+-- pcesGerador/pcesConversaoeSocial --
+[*] https://www.projetoacbr.com.br/forum/topic/51319-s-2230-afastamento-pelo-motivo-35-licen%C3%A7a-maternidade-antecipa%C3%A7%C3%A3o-eou-prorroga%C3%A7%C3%A3o-mediante-atestado-m%C3%A9dico/
+[*] Troca do tipo de conversão de tcStr para tcInt de alguns campos do pcesGerador.
+   Por: Alex Camilo / Italo Jurisato Junior
+
+10/05/2019
+-- pcesS2245 --
+[*] Inclusão do campo: indTreinAnt.
+   Por: Italo Jurisato Junior
+
+07/05/2019
+-- pcesS2299 --
+[*] https://www.projetoacbr.com.br/forum/topic/51115-evento-2299-tag-qtddiasinterm/
+   Por: Roberto Couto dos Santos
+
 29/04/2019
 -- pcesS1000 --
 [*] https://www.projetoacbr.com.br/forum/topic/50994-%C3%B3rg%C3%A3o-p%C3%BAblico/
