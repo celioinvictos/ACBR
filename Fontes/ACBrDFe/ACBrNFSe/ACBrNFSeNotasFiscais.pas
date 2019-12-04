@@ -78,6 +78,8 @@ type
     procedure SetXMLOriginal(const Value: String);
 
     procedure AssinaturaAdicional;
+
+    function CorrigirAssinatura(const AXML: string): string;
   public
     constructor Create(Collection2: TCollection); override;
     destructor Destroy; override;
@@ -116,7 +118,6 @@ type
     property Msg: String read GetMsg;
     property Alertas: String read FAlertas;
     property ErroRegrasdeNegocios: String read FErroRegrasdeNegocios;
-
   end;
 
   { TNotasFiscais }
@@ -272,6 +273,7 @@ begin
       proNotaBlu: DocElemento := 'RPS';
       proSMARAPD: DocElemento := 'tbnfd';
       proGiap:    DocElemento := 'nfe';
+      proInfiscv11: DocElemento := 'infNFSe';
     else
       DocElemento := 'Rps';
     end;
@@ -301,6 +303,8 @@ begin
                                   '', '', '', IdAttr)
     else
       FXMLAssinado := XMLOriginal;
+
+    FXMLAssinado := CorrigirAssinatura(FXMLAssinado);
 
     if Configuracoes.Arquivos.Salvar and
       (not Configuracoes.Arquivos.SalvarApenasNFSeProcessadas)  then
@@ -518,8 +522,35 @@ begin
     else
       Data := Now;
 
-    Result := PathWithDelim(Configuracoes.Arquivos.GetPathRPS(Data, FNFSe.Prestador.Cnpj));
+    Result := PathWithDelim(Configuracoes.Arquivos.GetPathRPS(Data, FNFSe.Prestador.Cnpj, FNFSe.Prestador.InscricaoEstadual));
   end;
+end;
+
+function NotaFiscal.CorrigirAssinatura(const AXML: string): string;
+var
+  XML:string;
+begin
+  XML := StringReplace(AXML,
+      '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></CanonicalizationMethod>',
+      '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>', [rfReplaceAll]);
+
+  XML := StringReplace(XML,
+      '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></SignatureMethod>',
+      '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>', [rfReplaceAll]);
+
+  XML := StringReplace(XML,
+      '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></Transform>',
+      '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>', [rfReplaceAll]);
+
+  XML := StringReplace(XML,
+      '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></Transform>',
+      '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>', [rfReplaceAll]);
+
+  XML := StringReplace(XML,
+      '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod>',
+      '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>', [rfReplaceAll]);
+
+  Result := XML;
 end;
 
 function NotaFiscal.CalcularNomeArquivoCompleto(NomeArquivo: String;
@@ -692,6 +723,9 @@ begin
       XMLAss := SSL.Assinar(ArqXML, docElemento, infElemento,
                             SignatureNode, SelectionNamespaces, IdSignature, IdAttr);
       FXMLLoteAssinado := XMLAss;
+
+      FXMLLoteAssinado := Self.Items[0].CorrigirAssinatura(FXMLLoteAssinado);
+
       Result := FXMLLoteAssinado;
     end;
   end;
@@ -720,6 +754,9 @@ begin
     begin
       XMLAss := SSL.Assinar(ArqXML, docElemento, infElemento,
                             SignatureNode, SelectionNamespaces, IdSignature, IdAttr);
+
+      XMLAss := Self.Items[0].CorrigirAssinatura(XMLAss);
+
       Result := XMLAss;
     end;
   end;
@@ -888,7 +925,7 @@ var
   Ok: Boolean;
   AXML: AnsiString;
   N, TamTAG, i: integer;
-  TagF: Array[1..12] of String;
+  TagF: Array[1..11] of String;
 
   function PosNFSe: Integer;
   begin
@@ -896,15 +933,13 @@ var
     TagF[02] := '</ComplNfse>';
     TagF[03] := '</NFS-e>';
     TagF[04] := '</Nfse>';
-    TagF[05] := '</nfse>'; //IPM
+    TagF[05] := '</nfse>'; // IPM
     TagF[06] := '</Nota>';
     TagF[07] := '</NFe>';
     TagF[08] := '</tbnfd>';
     TagF[09] := '</nfs>';
-    // Necessários para o Provedor EL
-    TagF[10] := '</nfeRpsNotaFiscal>';
-    TagF[11] := '</notasFiscais>';
-    TagF[12] := '</notaFiscal>'; //Provedor GIAP
+    TagF[10] := '</nfeRpsNotaFiscal>'; // Provedor EL
+    TagF[11] := '</notaFiscal>'; // Provedor GIAP
 
     i := 0;
 

@@ -67,6 +67,16 @@ Private Declare Function NFE_CarregarXML _
 Private Declare Function NFE_CarregarINI _
                 Lib "ACBrNFE32.dll" (ByVal eArquivoOuIni As String) As Long
                 
+Private Declare Function NFE_ObterXml _
+                Lib "ACBrNFE32.dll" (ByVal AIndex As Long, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function NFE_GravarXml _
+                Lib "ACBrNFE32.dll" (ByVal AIndex As Long, _
+                                     ByVal eNomeArquivo As String, _
+                                     ByVal ePathArquivo As String) As Long
+                
 Private Declare Function NFE_CarregarEventoXML _
                 Lib "ACBrNFE32.dll" (ByVal eArquivoOuXml As String) As Long
                 
@@ -88,6 +98,18 @@ Private Declare Function NFE_ValidarRegrasdeNegocios _
 Private Declare Function NFE_VerificarAssinatura _
                 Lib "ACBrNFE32.dll" (ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function NFE_GerarChave _
+                Lib "ACBrNFE32.dll" (ByVal ACodigoUF As Long, _
+                                     ByVal ACodigoNumerico As Long, _
+                                     ByVal AModelo As Long, _
+                                     ByVal ASerie As Long, _
+                                     ByVal ANumero As Long, _
+                                     ByVal ATpEmi As Long, _
+                                     ByVal AEmissao As String, _
+                                     ByVal ACNPJCPF As String, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferLen As Long) As Long
                                      
 Private Declare Function NFE_StatusServico _
                 Lib "ACBrNFE32.dll" (ByVal buffer As String, _
@@ -119,6 +141,13 @@ Private Declare Function NFE_Enviar _
                                      
 Private Declare Function NFE_ConsultarRecibo _
                 Lib "ACBrNFE32.dll" (ByVal aRecibo As String, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function NFE_ConsultaCadastro _
+                Lib "ACBrNFE32.dll" (ByVal cUF As String, _
+                                     ByVal nDocumento As String, _
+                                     ByVal nIE As Boolean, _
                                      ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
                                      
@@ -186,18 +215,18 @@ Private Declare Function NFE_Imprimir _
 Private Declare Function NFE_ImprimirPDF Lib "ACBrNFE32.dll" () As Long
 
 Private Declare Function NFE_ImprimirEvento _
-                Lib "ACBrNFE32.dll" (ByVal eChaveNFe As String, _
-                                     ByVal eChaveEvento As String) As Long
+                Lib "ACBrNFE32.dll" (ByVal eArquivoXmlNFe As String, _
+                                     ByVal eArquivoXmlEvento As String) As Long
                                      
 Private Declare Function NFE_ImprimirEventoPDF _
-                Lib "ACBrNFE32.dll" (ByVal eChaveNFe As String, _
-                                     ByVal eChaveEvento As String) As Long
+                Lib "ACBrNFE32.dll" (ByVal eArquivoXmlNFe As String, _
+                                     ByVal eArquivoXmlEvento As String) As Long
                                      
 Private Declare Function NFE_ImprimirInutilizacao _
-                Lib "ACBrNFE32.dll" (ByVal eChaveNFe As String) As Long
+                Lib "ACBrNFE32.dll" (ByVal eArquivoXml As String) As Long
                 
 Private Declare Function NFE_ImprimirInutilizacaoPDF _
-                Lib "ACBrNFE32.dll" (ByVal eChaveNFe As String) As Long
+                Lib "ACBrNFE32.dll" (ByVal eArquivoXml As String) As Long
 
 Public Sub InicializarLib(Optional ByVal eArqConfig As String = "", _
                           Optional ByVal eChaveCrypt As String = "")
@@ -239,8 +268,7 @@ Public Function ConfigLerValor(ByVal eSessao As String, ByVal eChave As String) 
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen + 1, " ")
+    buffer = String$(bufferLen, " ")
     
     retorno = NFE_ConfigLerValor(eSessao, eChave, buffer, bufferLen)
     CheckResult retorno
@@ -265,7 +293,6 @@ Public Function Nome() As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
         
     retorno = NFE_Nome(buffer, bufferLen)
@@ -299,6 +326,29 @@ End Sub
 Public Sub CarregarINI(ByVal eArquivoOuIni As String)
     Dim retorno   As Long
     retorno = NFE_CarregarINI(eArquivoOuIni)
+    CheckResult retorno
+End Sub
+
+Public Function ObterXml(ByVal AIndex As Long) As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_ObterXml(AIndex, buffer, bufferLen)
+    CheckResult retorno
+    
+    ObterXml = processResult(buffer, bufferLen)
+End Function
+
+Public Sub GravarXml(ByVal AIndex As Long, _
+                     Optional ByVal eNomeArquivo As String = "", _
+                     Optional ByVal ePathArquivo As String = "")
+    Dim retorno   As Long
+    retorno = NFE_GravarXml(AIndex, eNomeArquivo, ePathArquivo)
     CheckResult retorno
 End Sub
 
@@ -344,7 +394,6 @@ Public Function ValidarRegrasdeNegocios() As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_ValidarRegrasdeNegocios(buffer, bufferLen)
@@ -359,7 +408,6 @@ Public Function VerificarAssinatura() As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_VerificarAssinatura(buffer, bufferLen)
@@ -368,13 +416,29 @@ Public Function VerificarAssinatura() As String
     VerificarAssinatura = processResult(buffer, bufferLen)
 End Function
 
+Public Function GerarChave(ByVal ACodigoUF As Long, ByVal ACodigoNumerico As Long, _
+                           ByVal AModelo As Long, ByVal ASerie As Long, ByVal ANumero As Long, _
+                           ByVal ATpEmi As Long, ByVal AEmissao As Date, ByVal ACNPJCPF As String) As String
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi, _
+                             Format(AEmissao, "dd/MM/yyyy"), ACNPJCPF, buffer, bufferLen)
+    CheckResult retorno
+    
+    GerarChave = processResult(buffer, bufferLen)
+End Function
+
 Public Function StatusServico() As String
     Dim retorno   As Long
     Dim buffer    As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_StatusServico(buffer, bufferLen)
@@ -389,13 +453,26 @@ Public Function Consultar(ByVal eChaveOuNFe As String) As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_Consultar(eChaveOuNFe, buffer, bufferLen)
     CheckResult retorno
     
     Consultar = processResult(buffer, bufferLen)
+End Function
+
+Public Function ConsultaCadastro(ByVal cUF As String, ByVal nDocumento As String, ByVal nIE As Boolean) As String
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_ConsultaCadastro(cUF, nDocumento, nIE, buffer, bufferLen)
+    CheckResult retorno
+    
+    ConsultaCadastro = processResult(buffer, bufferLen)
 End Function
 
 Public Function Inutilizar(ByVal acnpj As String, ByVal aJustificativa As String, ByVal ano As Long, _
@@ -406,7 +483,6 @@ Public Function Inutilizar(ByVal acnpj As String, ByVal aJustificativa As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_Inutilizar(acnpj, aJustificativa, ano, modelo, serie, numeroInicial, numeroFinal, buffer, bufferLen)
@@ -423,7 +499,6 @@ Public Function Enviar(ByVal aLote As Long, Optional ByVal Imprimir As Boolean =
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_Enviar(aLote, Imprimir, sincrono, zipado, buffer, bufferLen)
@@ -438,7 +513,6 @@ Public Function ConsultarRecibo(ByVal aRecibo As String) As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_ConsultarRecibo(aRecibo, buffer, bufferLen)
@@ -454,7 +528,6 @@ Public Function Cancelar(ByVal eChave As String, ByVal eJustificativa As String,
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_Cancelar(eChave, eJustificativa, eCNPJ, aLote, buffer, bufferLen)
@@ -469,7 +542,6 @@ Public Function EnviarEvento(ByVal aLote As Long) As String
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_EnviarEvento(aLote, buffer, bufferLen)
@@ -484,7 +556,6 @@ Public Function DistribuicaoDFePorUltNSU(ByVal acUFAutor As String, ByVal eCnpjc
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_DistribuicaoDFePorUltNSU(acUFAutor, eCnpjcpf, eultNsu, buffer, bufferLen)
@@ -499,7 +570,6 @@ Public Function DistribuicaoDFePorNSU(ByVal acUFAutor As String, ByVal eCnpjcpf 
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_DistribuicaoDFePorNSU(acUFAutor, eCnpjcpf, eNsu, buffer, bufferLen)
@@ -514,7 +584,6 @@ Public Function DistribuicaoDFePorChave(ByVal acUFAutor As String, ByVal eCnpjcp
     Dim bufferLen As Long
 
     bufferLen = BUFFER_LENGTH
-    
     buffer = String$(bufferLen, " ")
     
     retorno = NFE_DistribuicaoDFePorNSU(acUFAutor, eCnpjcpf, echNFe, buffer, bufferLen)
@@ -527,10 +596,6 @@ Public Sub EnviarEmail(ByVal ePara As String, ByVal eChaveNFe As String, ByVal a
                        ByVal eAssunto As String, ByVal eMensagem As String, _
                        Optional ByVal eCc As String = "", Optional ByVal eAnexos As String = "")
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
     
     retorno = NFE_EnviarEmail(ePara, eChaveNFe, aEnviaPDF, eAssunto, eCc, eAnexos, eMensagem)
     CheckResult retorno
@@ -540,10 +605,6 @@ Public Sub EnviarEmailEvento(ByVal ePara As String, ByVal eChaveNFe As String, B
                        ByVal eAssunto As String, ByVal eMensagem As String, _
                        Optional ByVal eCc As String = "", Optional ByVal eAnexos As String = "")
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
     
     retorno = NFE_EnviarEmailEvento(ePara, eChaveNFe, aEnviaPDF, eAssunto, eCc, eAnexos, eMensagem)
     CheckResult retorno
@@ -554,10 +615,6 @@ Public Sub Imprimir(Optional ByVal cImpressora As String = "", Optional ByVal nN
                     Optional ByVal cMarcaDagua As String = "", Optional ByVal bViaConsumidor As String = "", _
                     Optional ByVal bSimplificado As String = "")
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
     
     retorno = NFE_Imprimir(cImpressora, nNumCopias, cProtocolo, bMostrarPreview, cMarcaDagua, bViaConsumidor, bSimplificado)
     CheckResult retorno
@@ -565,56 +622,40 @@ End Sub
 
 Public Sub ImprimirPDF()
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
     
     retorno = NFE_ImprimirPDF()
     CheckResult retorno
 End Sub
 
-Public Sub ImprimirEvento(ByVal eChaveNFe As String, ByVal eChaveEvento As String)
+Public Sub ImprimirEvento(ByVal eArquivoXmlNFe As String, ByVal eArquivoXmlEvento As String)
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
     
-    buffer = String$(bufferLen, " ")
-    
-    retorno = NFE_ImprimirEvento(eChaveNFe, eChaveEvento)
+    retorno = NFE_ImprimirEvento(eArquivoXmlNFe, eArquivoXmlEvento)
     CheckResult retorno
 End Sub
 
-Public Sub ImprimirEventoPDF(ByVal eChaveNFe As String, ByVal eChaveEvento As String)
+Public Sub ImprimirEventoPDF(ByVal eArquivoXmlNFe As String, ByVal eArquivoXmlEvento As String)
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
-    
-    retorno = NFE_ImprimirEventoPDF(eChaveNFe, eChaveEvento)
+   
+    retorno = NFE_ImprimirEventoPDF(eArquivoXmlNFe, eArquivoXmlEvento)
     CheckResult retorno
 End Sub
 
-Public Sub ImprimirInutilizacao(ByVal eChaveNFe As String)
+Public Sub ImprimirInutilizacao(ByVal eArquivoXml As String)
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
-    
-    retorno = NFE_ImprimirInutilizacao(eChaveNFe)
+       
+    retorno = NFE_ImprimirInutilizacao(eArquivoXml)
     CheckResult retorno
 End Sub
 
-Public Sub ImprimirInutilizacaoPDF(ByVal eChaveNFe As String)
+Public Sub ImprimirInutilizacaoPDF(ByVal eArquivoXml As String)
     Dim retorno   As Long
 
     bufferLen = BUFFER_LENGTH
     
     buffer = String$(bufferLen, " ")
     
-    retorno = NFE_ImprimirInutilizacaoPDF(eChaveNFe)
+    retorno = NFE_ImprimirInutilizacaoPDF(eArquivoXml)
     CheckResult retorno
 End Sub
 

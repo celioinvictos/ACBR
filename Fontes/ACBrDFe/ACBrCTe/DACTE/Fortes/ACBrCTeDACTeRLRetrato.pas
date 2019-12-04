@@ -153,10 +153,10 @@ type
     rlLabel20: TRLLabel;
     RLDraw32: TRLDraw;
     rlLabel91: TRLLabel;
-    rlLabel92: TRLLabel;
-    rlLabel96: TRLLabel;
-    rlLabel100: TRLLabel;
-    rlLabel106: TRLLabel;
+    rllTituloCNPJ1: TRLLabel;
+    rllTituloSerie1: TRLLabel;
+    rllTituloSerie2: TRLLabel;
+    rllTituloCNPJ2: TRLLabel;
     rlLabel109: TRLLabel;
     rld_07_headerItens: TRLDraw;
     rlb_09_Obs: TRLBand;
@@ -343,10 +343,6 @@ type
     rlsLinhaV12: TRLDraw;
     rlsLinhaV13: TRLDraw;
     rlsQuadro01: TRLDraw;
-    rlsQuadro02: TRLDraw;
-    rlsQuadro04: TRLDraw;
-    rlsQuadro05: TRLDraw;
-    rlsQuadro08: TRLDraw;
     rlsQuadro09: TRLDraw;
     rlsLinhaV10: TRLDraw;
     rlsLinhaV04: TRLDraw;
@@ -372,7 +368,6 @@ type
     RLDraw61: TRLDraw;
     RLDraw62: TRLDraw;
     rlb_17_Sistema: TrlBand;
-    RLDraw10: TRLDraw;
     rlLabel65: TRLLabel;
     RLDraw2: TRLDraw;
     rlLabel66: TRLLabel;
@@ -429,7 +424,6 @@ type
     rlmQtdUnidMedida3: TRLMemo;
     rlmQtdUnidMedida5: TRLMemo;
     rlb_06_ValorPrestacao: TRLBand;
-    RLDraw46: TRLDraw;
     RLDraw48: TRLDraw;
     RLDraw49: TRLDraw;
     rlLabel3: TRLLabel;
@@ -449,7 +443,6 @@ type
     rlb_13_ModAquaviario: TRLBand;
     rlb_14_ModFerroviario: TRLBand;
     rlb_15_ModDutoviario: TRLBand;
-    RLDraw47: TRLDraw;
     RLDraw54: TRLDraw;
     RLDraw63: TRLDraw;
     RLDraw64: TRLDraw;
@@ -487,8 +480,6 @@ type
     rllLojaAgenteEmissor: TRLLabel;
     rllRetira: TRLLabel;
     RLDraw70: TRLDraw;
-    RLDraw71: TRLDraw;
-    RLDraw73: TRLDraw;
     rlLabel151: TRLLabel;
     RLDraw74: TRLDraw;
     rlLabel152: TRLLabel;
@@ -590,7 +581,6 @@ type
     rlmQtdUnidMedida4: TRLMemo;
     rlLabel73: TRLLabel;
     RLDraw100: TRLDraw;
-    rlsQuadro03: TRLDraw;
     rlsLinhaPontilhada: TRLDraw;
     rlLabel178: TRLLabel;
     rllIndBalsas: TRLLabel;
@@ -622,8 +612,8 @@ type
     RLDraw51: TRLDraw;
     RLDraw52: TRLDraw;
     RLDraw50: TRLDraw;
-    RLLabel198: TRLLabel;
-    RLDraw108: TRLDraw;
+    rllVariavel2: TRLLabel;
+    rldPontilhado3: TRLDraw;
     RLDraw109: TRLDraw;
     rlmComplChave1: TRLMemo;
     rlmComplValor1: TRLMemo;
@@ -633,13 +623,10 @@ type
     rlDocOrig_tpDoc2: TRLMemo;
     RLLabel199: TRLLabel;
     RLLabel200: TRLLabel;
-    rlsQuadro10: TRLDraw;
-    rlsQuadro10_Fluxo: TRLDraw;
     rlsQuadro3: TRLDraw;
     RLSystemInfo1: TRLSystemInfo;
     RLSystemInfo2: TRLSystemInfo;
     rlb_06_VeiculosNovos: TRLBand;
-    RLDraw228: TRLDraw;
     RLLabel222: TRLLabel;
     RLDraw229: TRLDraw;
     RLLabel229: TRLLabel;
@@ -682,6 +669,8 @@ type
     RLMemo1: TRLMemo;
     rlsLinhaV07: TRLDraw;
     imgQRCode: TRLImage;
+    RLDraw10: TRLDraw;
+    RLDraw46: TRLDraw;
 
     procedure rlb_01_ReciboBeforePrint(Sender: TObject; var PrintIt: boolean);
     procedure rlb_02_CabecalhoBeforePrint(Sender: TObject; var PrintIt: boolean);
@@ -724,6 +713,7 @@ type
     procedure dadosSeguradoraMod67();
     procedure rlb_Cte_Anulado_SubstituidoBeforePrint(Sender: TObject;
       var PrintIt: Boolean);
+
   private
     Linhas: integer;
 
@@ -767,6 +757,33 @@ begin
     exit;
 
   Item := 0;
+
+  if (fpCTe.infCTeNorm.infDoc.infNF.Count > 0) or
+     (fpCTe.infCTeNorm.docAnt.emiDocAnt.Count > 0) then
+  begin
+    rllTituloCNPJ1.Caption := 'CNPJ/CPF EMITENTE';
+    rllTituloCNPJ2.Caption := 'CNPJ/CPF EMITENTE';
+    rllTituloSerie1.Caption := 'SÉRIE/NRO. DOCUMENTO';
+    rllTituloSerie2.Caption := 'SÉRIE/NRO. DOCUMENTO';
+  end;
+
+  if (fpCTe.infCTeNorm.infDoc.infNFe.Count > 0) or
+     (fpCTe.infCTeNorm.docAnt.emiDocAnt.Count > 0) then
+  begin
+    rllTituloCNPJ1.Caption := 'CHAVE DO DF-e';
+    rllTituloCNPJ2.Caption := 'CHAVE DO DF-e';
+    rllTituloSerie1.Caption := '';
+    rllTituloSerie2.Caption := '';
+  end;
+
+  if fpCTe.infCTeNorm.infDoc.InfOutros.Count > 0 then
+  begin
+    rllTituloCNPJ1.Caption := 'CNPJ/CPF EMITENTE';
+    rllTituloCNPJ2.Caption := 'CNPJ/CPF EMITENTE';
+    rllTituloSerie1.Caption := '';
+    rllTituloSerie2.Caption := '';
+  end;
+
   //Varrendo NF comum
   for I := 0 to (fpCTe.infCTeNorm.infDoc.infNF.Count - 1) do
   begin
@@ -793,6 +810,7 @@ begin
       Inc(Item);
     end;
   end;
+
   //Varrendo NFe
   for I := 0 to (fpCTe.infCTeNorm.infDoc.InfNFE.Count - 1) do
   begin
@@ -813,6 +831,7 @@ begin
       Inc(Item);
     end;
   end;
+
   //Varrendo Outros
   for I := 0 to (fpCTe.infCTeNorm.infDoc.InfOutros.Count - 1) do
   begin
@@ -913,6 +932,7 @@ begin
       Inc(Item);
     end;
   end;
+
   //Varrendo Documentos de Transporte anterior
   for I := 0 to (fpCTe.infCTeNorm.docAnt.emiDocAnt.Count - 1) do
   begin
@@ -1031,6 +1051,7 @@ procedure TfrmDACTeRLRetrato.rlb_01_ReciboBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := (RLCTe.PageNumber = 1) and (fpCTe.Ide.modal <> mdAereo) and
     (fpDACTe.PosCanhoto = prCabecalho);
   if (fpDACTe.ExibeResumoCanhoto) then
@@ -1052,6 +1073,7 @@ procedure TfrmDACTeRLRetrato.rlb_01_Recibo_AereoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := (RLCTe.PageNumber = 1) and (fpCTe.Ide.modal = mdAereo);
 
   rlb_01_Recibo_Aereo.Enabled :=
@@ -1063,7 +1085,7 @@ procedure TfrmDACTeRLRetrato.rlb_02_CabecalhoBeforePrint(Sender: TObject;
 var
   CarregouLogo: Boolean;
   strChaveContingencia: string;
-  vStringStream: TStringStream;
+//  vStringStream: TStringStream;
 begin
   inherited;
 
@@ -1142,14 +1164,15 @@ begin
       rllTomaServico.Caption := TpTomadorToStrText(fpCTe.Ide.Toma4.toma);
 
     rllFormaPagamento.Caption := tpforPagToStrText(fpCTe.Ide.forPag);
-
   end;
 
   // Normal **************************************************************
   if fpCTe.Ide.tpEmis in [teNormal, teSCAN, teSVCSP, teSVCRS] then
   begin
-    rllVariavel1.Enabled := True;
-    RLBarcode1.Enabled := False;
+    rllVariavel1.Visible := True;
+    rllVariavel2.Visible := True;
+    RLBarcode1.Visible := False;
+
     if fpCTe.procCTe.cStat = 100 then
       rllDescricao.Caption := ACBrStr('PROTOCOLO DE AUTORIZAÇÃO DE USO');
 
@@ -1172,8 +1195,10 @@ begin
   begin
     if fpCTe.procCTe.cStat in [100, 101, 110] then
     begin
-      rllVariavel1.Enabled := True;
-      RLBarcode1.Enabled := False;
+      rllVariavel1.Visible := True;
+      rllVariavel2.Visible := True;
+      RLBarcode1.Visible := False;
+
       if fpCTe.procCTe.cStat = 100 then
         rllDescricao.Caption := ACBrStr('PROTOCOLO DE AUTORIZAÇÃO DE USO');
 
@@ -1192,8 +1217,9 @@ begin
     end
     else
     begin
-      rllVariavel1.Enabled := False;
-      RLBarcode1.Enabled := True;
+      rllVariavel1.Visible := False;
+      rllVariavel2.Visible := False;
+      RLBarcode1.Visible := True;
 
       strChaveContingencia := fpACBrCTe.GerarChaveContingencia(fpCTe);
       RLBarcode1.Caption := strChaveContingencia;
@@ -1205,8 +1231,9 @@ begin
   // EPEC ****************************************************************
   if fpCTe.Ide.tpEmis = teDPEC then
   begin
-    rllVariavel1.Enabled := False;
-    RLBarcode1.Enabled := True;
+    rllVariavel1.Visible := False;
+    rllVariavel2.Visible := False;
+    RLBarcode1.Visible := True;
 
     strChaveContingencia := fpACBrCTe.GerarChaveContingencia(fpCTe);
     RLBarcode1.Caption := strChaveContingencia;
@@ -1223,7 +1250,9 @@ var
   i: integer;
 begin
   inherited;
+
   rlb_03_DadosDACTe.Enabled := not (fpCTe.ide.modelo = 67);
+
   if not (rlb_03_DadosDACTe.Enabled) then
     rlb_03_DadosDACTe.Height := 0;
 
@@ -1573,6 +1602,7 @@ begin
       rllICMS_ST.Caption := '';
     end;
   end;
+
   if fpCTe.ide.modelo = 67 then
   begin
     rlblVlrPIS.Caption := FormatFloatBr(msk13x2, fpCTe.imp.infTribFed.vPIS);
@@ -1594,6 +1624,7 @@ procedure TfrmDACTeRLRetrato.rlb_04_DadosNotaFiscalBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   // Imprime os dados da da Nota Fiscal se o Tipo de CTe for Normal ou Substituto
@@ -1604,7 +1635,6 @@ begin
     rlb_04_DadosNotaFiscal.Height := 0
   else
     dadosNotaFiscalVersao30();
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_05_ComplementoBeforePrint(Sender: TObject;
@@ -1612,6 +1642,7 @@ procedure TfrmDACTeRLRetrato.rlb_05_ComplementoBeforePrint(Sender: TObject;
 begin
   // Imprime a lista dos CT-e Complementados se o Tipo de CTe for Complemento
   inherited;
+
   rlb_05_Complemento.Enabled := (fpCTe.Ide.tpCTe = tcComplemento);
   if not rlb_05_Complemento.Enabled then
     rlb_05_Complemento.Height := 0;
@@ -1631,6 +1662,7 @@ procedure TfrmDACTeRLRetrato.rlb_06_ValorPrestacaoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 end;
 
@@ -1646,7 +1678,6 @@ begin
     rld_07_headerItens.Height := 81;
     RLCTe.newpage;
   end;
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_07_HeaderItensBeforePrint(Sender: TObject;
@@ -1657,9 +1688,9 @@ begin
   rlb_07_HeaderItens.Enabled :=
     (((fpCTe.Ide.tpCTe = tcNormal) or (fpCTe.Ide.tpCTe = tcComplemento) or
     (fpCTe.Ide.tpCTe = tcSubstituto)) and (fpCTe.ide.modelo <> 67));
+
   if (rlb_07_HeaderItens.Enabled) then
   begin
-
     rlDocOrig_tpDoc1.Lines.Clear;
     rlDocOrig_tpDoc2.Lines.Clear;
 
@@ -1688,13 +1719,11 @@ begin
         Inc(Linhas);
       if ((cdsDocumentos.recno > 10) and (RLCTe.PageNumber = 1) or (Linhas > 70)) then
         break;
-
     end;
 
     rlDocOrig_tpDoc1.Height := Round(rlDocOrig_tpDoc1.Lines.Count * 12);
     rlDocOrig_tpDoc2.Height := Round(rlDocOrig_tpDoc2.Lines.Count * 12);
     rld_07_headerItens.Height := rlb_07_HeaderItens.Height - 12;
-
   end
   else
   begin
@@ -1708,6 +1737,7 @@ procedure TfrmDACTeRLRetrato.rlb_09_ObsBeforePrint(Sender: TObject;
   var i : Integer;
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   rlmObs.Lines.BeginUpdate;
@@ -1782,20 +1812,17 @@ begin
   rllMsgTeste.Repaint;
 
   // Ajusta o tamanho do quadro conforme a OBS
-  rlsQuadro08.Height := rlmObs.Height + 20;
-  rlb_09_Obs.Height  := rlsQuadro08.Height + 4;
+  rlb_09_Obs.Height  := rlmObs.Height + 20 + 4;
 
   if rllMsgTeste.Visible and (rlb_09_Obs.Height < 68) then
-  begin
-    rlsQuadro08.Height := 64;
     rlb_09_Obs.Height  := 68;
-  end;
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_10_ModRodFracionadoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   // Imprime as Informações Especificas do Modal se o Tipo de CTe for Normal
@@ -1842,7 +1869,6 @@ begin
 
         if (dPrev > 0) then
           rllDtPrevEntrega.Caption := FormatDateTime('DD/MM/YYYY', dPrev);
-
       end;
     end;
   end;
@@ -1854,6 +1880,7 @@ var
   i: integer;
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   rlmTipo.Lines.Clear;
@@ -1914,11 +1941,9 @@ begin
       rllTomaServico.Caption := 'SIM';
       if (Trim(fpCTe.infCTeNorm.infGlobalizado.xObs) <> '') then
         rllFormaPagamento.Caption := fpCTe.infCTeNorm.infGlobalizado.xObs;
-
     end
     else
       rllTomaServico.Caption := ACBrStr('NÃO');
-
   end
   else
   begin
@@ -1930,7 +1955,6 @@ begin
     rllTomaServico.Caption :=
       FormatFloat('0000', fpCTe.Ide.CFOP) + ' - ' + fpCTe.Ide.natOp;
     rllFormaPagamento.Caption := '';
-
   end;
 end;
 
@@ -1939,9 +1963,9 @@ var
   I: integer;
 begin
   rlb_03_DadosDACTe_OS.Enabled := (fpCTe.ide.modelo = 67);
+
   if (rlb_03_DadosDACTe_OS.Enabled) then
   begin
-
     rllOrigPrestacao1.Caption :=
       fpCTe.Ide.xMunIni + ' - ' + fpCTe.Ide.UFIni + ' - ' +
       FormatFloat('000', fpCTe.Ide.cMunIni);
@@ -1976,7 +2000,6 @@ begin
   end
   else
     rlb_03_DadosDACTe_OS.Height := 0;
-
 end;
 
 procedure TfrmDACTeRLRetrato.dadosNotaFiscalVersao30;
@@ -1996,7 +2019,6 @@ begin
     RLDraw61.Visible := not (versao >= 3.00);
     RLDraw7.Visible := not (versao >= 3.00);
     RLDraw8.Visible := not (versao >= 3.00);
-
   end;
 
   //Valida a Versão para reposicionar campos na tela
@@ -2031,7 +2053,6 @@ begin
     RLLabel43.Left := 600;
     rlmQtdUnidMedida5.Width := 136;
     rlmQtdUnidMedida5.Left := 600;
-
   end;
 end;
 
@@ -2052,7 +2073,6 @@ begin
 
   if (fpCTe.ide.modelo = 67) then
     modalRodoviarioMod67();
-
 end;
 
 procedure TfrmDACTeRLRetrato.modalRodoviarioMod67;
@@ -2129,8 +2149,8 @@ begin
   rllSiglaPassagem.Lines.Clear;
 
   rlb_Fluxo_Carga.Enabled := ((fpCTe.infCTe.versao >= 3.00) and
-    (fpCTe.ide.modelo <> 67) and
-    (fpCTe.ide.modal = mdAereo));
+    (fpCTe.ide.modelo <> 67) and (fpCTe.ide.modal = mdAereo));
+
   if (rlb_Fluxo_Carga.Enabled) then
   begin
     rllSiglaOrigem.Caption := fpCTe.compl.fluxo.xOrig;
@@ -2141,12 +2161,12 @@ begin
   end
   else
     rlb_Fluxo_Carga.Height := 0;
-
 end;
 
 procedure TfrmDACTeRLRetrato.prestacaoServicoMod67;
 begin
   rlb_CTeOS_PrestacaoServico.Enabled := (fpCTe.ide.modelo = 67);
+
   if (rlb_CTeOS_PrestacaoServico.Enabled) then
   begin
     rlb_CTeOS_PrestacaoServico.AutoSize := True;
@@ -2170,6 +2190,7 @@ var
 begin
   rlb_Dados_Seguradora.Enabled :=
     ((fpCTe.ide.modelo = 67) or (fpCTe.Ide.modal = mdMultimodal));
+
   if (rlb_Dados_Seguradora.Enabled) then
   begin
     rllNomeSeguradora.Lines.Clear;
@@ -2204,6 +2225,7 @@ var
   i: integer;
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   rlmTipo2.Lines.Clear;
@@ -2254,6 +2276,7 @@ procedure TfrmDACTeRLRetrato.rlb_12_ModAereoBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
   rlb_12_ModAereo.Enabled := (fpCTe.Ide.tpCTe = tcNormal) and (fpCTe.Ide.modal = mdAereo);
 
@@ -2284,6 +2307,7 @@ var
   i: integer;
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
   rlb_13_ModAquaviario.Enabled :=
     (fpCTe.Ide.tpCTe = tcNormal) and (fpCTe.Ide.modal = mdAquaviario);
@@ -2309,7 +2333,6 @@ begin
       drOeste: rllDirecao.Caption := 'OESTE';
     end;
 
-    // Incluido por Fabio
     rllIndBalsas.Caption := '';
     for i := 0 to (balsa.Count - 1) do
     begin
@@ -2325,20 +2348,20 @@ procedure TfrmDACTeRLRetrato.rlb_14_ModFerroviarioBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
   rlb_14_ModFerroviario.Enabled :=
     (fpCTe.Ide.tpCTe = tcNormal) and (fpCTe.Ide.modal = mdFerroviario);
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_15_ModDutoviarioBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
   rlb_15_ModDutoviario.Enabled :=
     (fpCTe.Ide.tpCTe = tcNormal) and (fpCTe.Ide.modal = mdDutoviario);
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_16_DadosExcEmitenteBeforePrint(Sender: TObject;
@@ -2347,6 +2370,7 @@ var
   i, vHeight: integer;
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   rlmObsExcEmitente.Lines.BeginUpdate;
@@ -2366,7 +2390,6 @@ begin
     StringReplace(rlmObsExcEmitente.Lines.Text, ';', #13, [rfReplaceAll]);
   rlmObsExcEmitente.Lines.EndUpdate;
 
-  // Incluido por Italo em 17/09/2012
   if Length(Trim(fpCTe.Imp.infAdFisco)) > 0 then
     rlmObsFisco.Lines.Add(StringReplace(fpCTe.Imp.infAdFisco, '&lt;BR&gt;',
       #13#10, [rfReplaceAll, rfIgnoreCase]));
@@ -2386,10 +2409,10 @@ begin
   if (rlmObsExcEmitente.Lines.Count > 0) or (rlmObsFisco.Lines.Count > 0) then
   begin
     vHeight := rlmObsExcEmitente.Height + 20;
+
     if rlmObsFisco.Height > rlmObsExcEmitente.Height then
       vHeight := rlmObsFisco.Height + 20;
 
-    RLDraw71.Height := vHeight;
     RLDraw3.Height  := vHeight;
   end;
 end;
@@ -2398,6 +2421,7 @@ procedure TfrmDACTeRLRetrato.rlb_17_SistemaBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := RLCTe.PageNumber = 1;
 
   rlLabel15.Visible := fpDACTe.ImprimirHoraSaida;
@@ -2413,6 +2437,7 @@ procedure TfrmDACTeRLRetrato.rlb_18_ReciboBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   inherited;
+
   PrintIt := (RLCTe.PageNumber = 1);
 
   if (fpDACTe.ExibeResumoCanhoto) then
@@ -2461,7 +2486,6 @@ begin
     rlmGrupoEmbalagem.Lines.Add(fpCTe.infCTeNorm.peri.Items[i].grEmb);
     rlmQtdeProduto.Lines.Add(fpCTe.infCTeNorm.peri.Items[i].qTotProd);
   end;
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_06_VeiculosNovosBeforePrint(Sender: TObject;
@@ -2492,13 +2516,14 @@ begin
     VFRETE.Lines.Add(FloatToString(fpCTe.infCTeNorm.veicNovos.Items[i].vFrete, ','));
   end;
 
-  RLDraw228.Height := CHASSI.Top + CHASSI.Height + 5;
+  rlb_06_VeiculosNovos.Height := CHASSI.Top + CHASSI.Height + 5;
+
   for I := 0 to (TRLBand(Sender).ControlCount - 1) do
   begin
     if TRLBand(Sender).Controls[I] is TRLDraw then
     begin
       if TRLDraw(TRLBand(Sender).Controls[I]).DrawKind = dkLine then
-        TRLDraw(TRLBand(Sender).Controls[I]).Height := RLDraw228.Height - RLDraw229.Top - 1;
+        TRLDraw(TRLBand(Sender).Controls[I]).Height := rlb_06_VeiculosNovos.Height - RLDraw229.Top - 1;
     end;
   end;
 end;
@@ -2507,7 +2532,6 @@ procedure TfrmDACTeRLRetrato.rlb_CTeOS_PrestacaoServicoBeforePrint(Sender: TObje
   var PrintIt: boolean);
 begin
   prestacaoServicoMod67();
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_Cte_Anulado_SubstituidoBeforePrint(
@@ -2516,6 +2540,7 @@ var
   ModeloDoc: string;
 begin
   inherited;
+
   rlb_Cte_Anulado_Substituido.Enabled :=((fpCTe.Ide.tpCTe = tcAnulacao) or (fpCTe.Ide.tpCTe = tcSubstituto));
   if (rlb_Cte_Anulado_Substituido.Enabled) then
   begin
@@ -2553,7 +2578,6 @@ procedure TfrmDACTeRLRetrato.rlb_Dados_SeguradoraBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
   dadosSeguradoraMod67();
-
 end;
 
 procedure TfrmDACTeRLRetrato.rlb_Fluxo_CargaBeforePrint(Sender: TObject;
@@ -2561,7 +2585,6 @@ procedure TfrmDACTeRLRetrato.rlb_Fluxo_CargaBeforePrint(Sender: TObject;
 begin
   PrintIt := (RLCTe.PageNumber = 1);
   fluxoCargaVersao30();
-
 end;
 
 procedure TfrmDACTeRLRetrato.RLCTeBeforePrint(Sender: TObject; var PrintIt: boolean);
@@ -2606,18 +2629,22 @@ begin
         rlb_11_ModRodLot104.Height := 107;
       end;
     end;
+
     mdAereo:
     begin
       rlb_12_ModAereo.Height := 97;
     end;
+
     mdAquaviario:
     begin
       rlb_13_ModAquaviario.Height := 92;
     end;
+
     mdFerroviario:
     begin
       rlb_14_ModFerroviario.Height := 0;
     end;
+
     mdDutoviario:
     begin
       rlb_15_ModDutoviario.Height := 0;
@@ -2630,13 +2657,13 @@ begin
     PintarQRCode(fpCTe.infCTeSupl.qrCodCTe, imgQRCode.Picture, qrUTF8NoBOM)
   else
   begin
-    rlsLinhaV07.Height     := 26;
-    rlsLinhaH03.Width      := 427;
-    RLDraw99.Width         := 427;
-    rlbCodigoBarras.Width  := 419;
-    rllVariavel1.Width     := 419;
-    RLLabel198.Width       := 419;
-    imgQRCode.Visible      := False;
+    rlsLinhaV07.Height    := 26;
+    rlsLinhaH03.Width     := 427;
+    RLDraw99.Width        := 427;
+    rlbCodigoBarras.Width := 419;
+    rllVariavel1.Width    := 419;
+    rllVariavel2.Width    := 419;
+    imgQRCode.Visible     := False;
   end;
 end;
 

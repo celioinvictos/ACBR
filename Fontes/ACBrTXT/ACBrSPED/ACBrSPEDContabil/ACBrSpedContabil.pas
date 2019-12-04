@@ -60,8 +60,8 @@ type
   /// ACBrSpedContabil - Sitema Publico de Escrituração Digital Contabil
 
   { TACBrSPEDContabil }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrSPEDContabil = class(TACBrComponent)
   private

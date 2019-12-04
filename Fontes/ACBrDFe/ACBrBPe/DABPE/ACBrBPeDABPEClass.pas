@@ -52,8 +52,8 @@ uses
 type
 
   { TACBrBPeDABPEClass }
-   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrBPeDABPEClass = class( TACBrDFeReport )
   private
@@ -216,6 +216,7 @@ begin
                          Result,
                          DescricaoModelo,
                          ABPe.Emit.CNPJ,
+                         ABPe.Emit.IE,
                          dhEmissao,
                          DescricaoModelo);
     end;

@@ -44,7 +44,7 @@ interface
 uses
   JclIDEUtils, JclCompilerUtils, ACBrUtil,
 
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, FileCtrl, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, pngimage, ShlObj,
   uFrameLista, IOUtils,
   Types, JvComponentBase, JvCreateProcess, JvExControls, JvAnimatedImage,
@@ -174,8 +174,8 @@ type
     function PathSystem: String;
     function RegistrarActiveXServer(const AServerLocation: string;
       const ARegister: Boolean): Boolean;
-    procedure CopiarArquivoTo(ADestino : TDestino; const ANomeArquivo: String);
-    procedure ExtrairDiretorioPacote(NomePacote: string);
+    procedure CopiarArquivoDLLTo(ADestino : TDestino; const ANomeArquivo: String);
+    procedure ExtrairDiretorioPacote(const NomePacote: string);
     procedure AddLibraryPathToDelphiPath(const APath, AProcurarRemover: String);
     procedure FindDirs(ADirRoot: String; bAdicionar: Boolean = True);
     procedure DeixarSomenteLib;
@@ -185,6 +185,7 @@ type
     procedure GetDriveLetters(AList: TStrings);
     procedure MostraDadosVersao;
     function GetPathACBrInc: TFileName;
+    procedure InstalarLibXml2;
   public
 
   end;
@@ -195,7 +196,7 @@ var
 implementation
 
 uses
-  SVN_Class, FileCtrl, ShellApi, IniFiles, StrUtils, Math, Registry;
+  SVN_Class, ShellApi, IniFiles, StrUtils, Math, Registry;
 
 {$R *.dfm}
 
@@ -224,11 +225,12 @@ begin
       GetExitCodeProcess(sei.hProcess, ExitCode) ;
     until (ExitCode <> STILL_ACTIVE) or  Application.Terminated;
   end;
+  Result := True;
 end;
 
-procedure TfrmPrincipal.ExtrairDiretorioPacote(NomePacote: string);
+procedure TfrmPrincipal.ExtrairDiretorioPacote(const NomePacote: string);
 
-  procedure FindDirPackage(sDir, sPacote: String);
+  procedure FindDirPackage(sDir: String; const sPacote: String);
   var
     oDirList: TSearchRec;
 //    iRet: Integer;
@@ -380,7 +382,7 @@ begin
   end;
 end;
 
-procedure TfrmPrincipal.CopiarArquivoTo(ADestino : TDestino; const ANomeArquivo: String);
+procedure TfrmPrincipal.CopiarArquivoDLLTo(ADestino : TDestino; const ANomeArquivo: String);
 var
   PathOrigem: String;
   PathDestino: String;
@@ -419,9 +421,9 @@ procedure TfrmPrincipal.InstalarCapicom;
 begin
   if sDestino <> tdNone then
   begin
-    CopiarArquivoTo(sDestino,'Capicom\capicom.dll');
-    CopiarArquivoTo(sDestino,'Capicom\msxml5.dll');
-    CopiarArquivoTo(sDestino,'Capicom\msxml5r.dll');
+    CopiarArquivoDLLTo(sDestino,'Capicom\capicom.dll');
+    CopiarArquivoDLLTo(sDestino,'Capicom\msxml5.dll');
+    CopiarArquivoDLLTo(sDestino,'Capicom\msxml5r.dll');
 
     if sDestino = tdDelphi then
     begin
@@ -441,9 +443,20 @@ procedure TfrmPrincipal.InstalarDiversos;
 begin
   if sDestino <> tdNone then
   begin
-    CopiarArquivoTo(sDestino,'Diversos\iconv.dll');
-    CopiarArquivoTo(sDestino,'Diversos\inpout32.dll');
-    CopiarArquivoTo(sDestino,'Diversos\msvcr71.dll');
+    CopiarArquivoDLLTo(sDestino,'Diversos\iconv.dll');
+    CopiarArquivoDLLTo(sDestino,'Diversos\inpout32.dll');
+    CopiarArquivoDLLTo(sDestino,'Diversos\msvcr71.dll');
+  end;
+end;
+
+procedure TfrmPrincipal.InstalarLibXml2;
+begin
+  if sDestino <> tdNone then
+  begin
+    CopiarArquivoDLLTo(sDestino,'LibXml2\x86\libxslt.dll');
+    CopiarArquivoDLLTo(sDestino,'LibXml2\x86\libexslt.dll');
+    CopiarArquivoDLLTo(sDestino,'LibXml2\x86\libiconv.dll');
+    CopiarArquivoDLLTo(sDestino,'LibXml2\x86\libxml2.dll');
   end;
 end;
 
@@ -453,9 +466,9 @@ procedure TfrmPrincipal.InstalarOpenSSL;
 begin
   if sDestino <> tdNone then
   begin
-    CopiarArquivoTo(sDestino,'OpenSSL\1.0.2.13\x86\libeay32.dll');
-    CopiarArquivoTo(sDestino,'OpenSSL\1.0.2.13\x86\ssleay32.dll');
-    CopiarArquivoTo(sDestino,'OpenSSL\1.0.2.13\x86\msvcr120.dll');
+    CopiarArquivoDLLTo(sDestino,'OpenSSL\1.0.2.19\x86\libeay32.dll');
+    CopiarArquivoDLLTo(sDestino,'OpenSSL\1.0.2.19\x86\ssleay32.dll');
+    CopiarArquivoDLLTo(sDestino,'OpenSSL\1.0.2.19\x86\msvcr120.dll');
   end;
 end;
 
@@ -464,12 +477,12 @@ procedure TfrmPrincipal.InstalarXMLSec;
 begin
   if sDestino <> tdNone then
   begin
-    CopiarArquivoTo(sDestino, 'XMLSec\iconv.dll');
-    CopiarArquivoTo(sDestino, 'XMLSec\libxml2.dll');
-    CopiarArquivoTo(sDestino, 'XMLSec\libxmlsec.dll');
-    CopiarArquivoTo(sDestino, 'XMLSec\libxmlsec-openssl.dll');
-    CopiarArquivoTo(sDestino, 'XMLSec\libxslt.dll');
-    CopiarArquivoTo(sDestino, 'XMLSec\zlib1.dll');
+    CopiarArquivoDLLTo(sDestino, 'XMLSec\iconv.dll');
+    CopiarArquivoDLLTo(sDestino, 'XMLSec\libxml2.dll');
+    CopiarArquivoDLLTo(sDestino, 'XMLSec\libxmlsec.dll');
+    CopiarArquivoDLLTo(sDestino, 'XMLSec\libxmlsec-openssl.dll');
+    CopiarArquivoDLLTo(sDestino, 'XMLSec\libxslt.dll');
+    CopiarArquivoDLLTo(sDestino, 'XMLSec\zlib1.dll');
   end;
 end;
 
@@ -481,18 +494,18 @@ var
 begin
   ArqIni := TIniFile.Create(PathArquivoIni);
   try
-    edtDirDestino.Text          := ArqIni.ReadString('CONFIG', 'DiretorioInstalacao', ExtractFilePath(ParamStr(0)));
-    edtPlatform.ItemIndex := 0;
+    edtDirDestino.Text             := ArqIni.ReadString('CONFIG', 'DiretorioInstalacao', ExtractFilePath(ParamStr(0)));
+    edtPlatform.ItemIndex          := 0;
     ckbFecharTortoise.Checked      := ArqIni.ReadBool('CONFIG', 'FecharTortoise', True);
-    rdgDLL.ItemIndex               := ArqIni.ReadInteger('CONFIG','DestinoDLL',0);
+    rdgDLL.ItemIndex               := ArqIni.ReadInteger('CONFIG','DestinoDLL', 0);
     ckbCopiarTodasDll.Checked      := True;
-    ckbBCB.Checked                 := ArqIni.ReadBool('CONFIG','C++Builder',False);
-    chkDeixarSomenteLIB.Checked    := ArqIni.ReadBool('CONFIG','DexarSomenteLib',False);
-    ckbRemoveOpenSSL.Checked       := ArqIni.ReadBool('CONFIG','RemoveOpenSSL',False);
-    ckbRemoveCapicom.Checked       := ArqIni.ReadBool('CONFIG','RemoveCapicom',False);
-    ckbRemoveXMLSec.Checked        := ArqIni.ReadBool('CONFIG','RemoveXMLSec',False);
-    ckbCargaDllTardia.Checked      := ArqIni.ReadBool('CONFIG','CargaDllTardia',False);
-    ckbRemoverCastWarnings.Checked := ArqIni.ReadBool('CONFIG','RemoverCastWarnings',False);
+    ckbBCB.Checked                 := ArqIni.ReadBool('CONFIG','C++Builder', False);
+    chkDeixarSomenteLIB.Checked    := ArqIni.ReadBool('CONFIG','DexarSomenteLib', False);
+    ckbRemoveOpenSSL.Checked       := ArqIni.ReadBool('CONFIG','RemoveOpenSSL', False);
+    ckbRemoveCapicom.Checked       := ArqIni.ReadBool('CONFIG','RemoveCapicom', False);
+    ckbRemoveXMLSec.Checked        := True;
+    ckbCargaDllTardia.Checked      := ArqIni.ReadBool('CONFIG','CargaDllTardia', False);
+    ckbRemoverCastWarnings.Checked := ArqIni.ReadBool('CONFIG','RemoverCastWarnings', False);
     ckbUsarArquivoConfig.Checked   := True;
 
     if Trim(edtDelphiVersion.Text) = '' then
@@ -1354,8 +1367,11 @@ begin
     // instalar capicom
     // *************************************************************************
     try
-      InstalarCapicom;
-      MostrarMensagemInstalado('CAPICOM instalado com sucesso');
+      if not ckbRemoveCapicom.Checked then
+      begin
+        InstalarCapicom;
+        MostrarMensagemInstalado('CAPICOM instalado com sucesso');
+      end;
     except
       on E: Exception do
       begin
@@ -1367,8 +1383,11 @@ begin
     // instalar OpenSSL
     // *************************************************************************
     try
-      InstalarOpenSSL;
-      MostrarMensagemInstalado('OPENSSL instalado com sucesso');
+      if not ckbRemoveOpenSSL.Checked then
+      begin
+          InstalarOpenSSL;
+        MostrarMensagemInstalado('OPENSSL instalado com sucesso');
+      end;
     except
       on E: Exception do
       begin
@@ -1382,8 +1401,10 @@ begin
     if ckbCopiarTodasDll.Checked then
     begin
       try
-        InstalarXMLSec;
+        InstalarLibXml2;
         InstalarDiversos;
+        if not ckbRemoveXMLSec.Checked then
+          InstalarXMLSec;
         MostrarMensagemInstalado('Outras DLL´s instaladas com sucesso');
       except
         on E: Exception do
@@ -1431,7 +1452,7 @@ begin
   if MatchText(oACBr.Installations[clbDelphiVersion.ItemIndex].VersionNumberStr, ['d7','d9','d10','d11']) then
   begin
     Application.MessageBox(
-      'Atenção: a partir de Agosto de 2016 o Projeto ACBr não suportará mais versões não Unicode do Delphi, atualize o quanto antes para versões mais recentes do Delphi.',
+      'Atenção: Embora o ACBr continue suportando versões anteriores do Delphi, incentivamos que você atualize o quanto antes para versões mais recentes do Delphi ou considere migrar para o Lazarus.',
       'Erro.',
       MB_OK + MB_ICONWARNING
     );
@@ -1581,6 +1602,36 @@ begin
       'Erro.',
       MB_OK + MB_ICONERROR
     );
+  end;
+
+  if not ckbRemoveXMLSec.Checked then
+  begin
+    if MessageDlg('Usar XMLSec não é recomendado. Sugerimos que marque a opção "'+
+                  ckbRemoveXMLSec.Caption + '" antes de continuar.'+ sLineBreak +
+                  'Deseja continuar assim mesmo?', mtConfirmation, mbYesNo, 0, mbNo) <> mrYes  then
+    begin
+      Stop := True;
+    end;
+  end;
+
+//  //Exibir mensagem abaixo apenas se não for o Delphi 7..
+//  if not ckbRemoverCastWarnings.Checked then
+//  begin
+//    if MessageDlg('Se não estiver resolvendo os Warnings com strings sugerimos marcar a opção "'+
+//                  ckbRemoverCastWarnings.Caption + '" antes de continuar.'+ sLineBreak +
+//                  'Deseja continuar assim mesmo?', mtConfirmation, mbYesNo, 0, mbNo) <> mrYes  then
+//    begin
+//      Stop := True;
+//    end;
+//  end;
+//
+  if not ckbCopiarTodasDll.Checked then
+  begin
+    if MessageDlg('Não foi marcado a opção para copiar as DLLs. Você terá que copiar manualmente. ' + sLineBreak +
+                  'Deseja continuar assim mesmo?', mtConfirmation, mbYesNo, 0, mbNo) <> mrYes  then
+    begin
+      Stop := True;
+    end;
   end;
 
   // Gravar as configurações em um .ini para utilizar depois

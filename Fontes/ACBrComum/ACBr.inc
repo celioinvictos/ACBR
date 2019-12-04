@@ -63,7 +63,7 @@
 {.$DEFINE DFE_SEM_MSXML}
 // Descomente a linha abaixo, se você não deseja adicionar a Dependência da INDY nos seus Projetos
 {.$DEFINE DFE_SEM_INDY}
-// Descomente a linha abaixo, se você não deseja utilizar a libxml2 para ler e gerar os arquivos xml
+// Descomente a linha abaixo, se você deseja utilizar a libxml2 para ler e gerar os arquivos xml
 {.$DEFINE DFE_ACBR_LIBXML2}
 
 {$IfDef DFE_SEM_OPENSSL}
@@ -124,6 +124,7 @@
    {$DEFINE SUPPORTS_DEPRECATED_DETAILS}
    {$UnDef FPC2}
   {$ENDIF}
+  {$UNDEF REMOVE_CAST_WARN} //Devido a problemas com a mensagem de erro "Message recordind not yet supported"
 {$ELSE}
   {$DEFINE BORLAND}
 {$ENDIF}
@@ -178,6 +179,8 @@
 //------------------------------------------------------------------------------
 {$IFDEF WIN64}
   {$DEFINE MSWINDOWS}
+  {$DEFINE DFE_SEM_CAPICOM}  // apenas 32 bits
+  {$DEFINE DFE_SEM_MSXML}    // apenas 32 bits
 {$ENDIF}
 
 {$IFDEF DELPHILANGUAGE}

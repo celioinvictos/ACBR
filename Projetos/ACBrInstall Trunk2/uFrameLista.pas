@@ -37,6 +37,38 @@
 |* 29/03/2012: Isaque Pinheiro / Régys Borges da Silveira
 |*  - Criação e distribuição da Primeira Versao
 *******************************************************************************}
+
+{
+  Hierarquia de dependência dos Packages
+  • ACBrComum → Synapse
+• ACBrDiversos → ACBrComum
+• PCNComum → ACBrDiversos
+• ACBrOpenSSL → ACBrComum
+• ACBrSerial → ACBrDiversos, ACBrOpenSSL
+• ACBrTXTComum → ACBrDiversos,
+• ACBrConvenio115 → ACBrTXTComum, ACBrOpenSSL
+• ACBrLFD → ACBrTXTComum
+• ACBrPAF → ACBrTXTComum, ACBrOpenSSL
+• ACBrSEF2 → ACBrTXTComum, PCNComum
+• ACBrSintegra → ACBrTXTComum
+• ACBrSPED → ACBrTXTComum
+• ACBrTCP → ACBrDiversos
+• ACBrTEFD → ACBrComum
+• ACBr_Boleto → ACBrTCP
+• ACBr_BoletoFC_Fortes → ACBr_Boleto, fortes324laz
+• ACBr_BoletoFC_LazReport → ACBr_Boleto, lazreportpdfexport
+• ACBrDFeComum → ACBrOpenSSL, ACBrTCP, PCNComum
+• ACBrNFe → ACBrDFeComum
+• ACBrCTe → ACBrDFeComum
+• ACBrGNRe → ACBrDFeComum
+• ACBrMDFe → ACBrDFeComum
+• ACBrNFSe → ACBrDFeComum
+• ACBr_SAT → PCNComum
+• ACBr_SAT_ECFVirtual → ACBr_SAT, ACBrSerial
+• ACBr_SAT_Extrato_ESCPOS → ACBr_SAT, ACBrDFeComum, ACBrSerial
+• ACBr_SAT_Extrato_Fortes → ACBr_SAT, ACBrDFeComum, fortes324laz
+}
+
 unit uFrameLista;
 
 interface
@@ -136,6 +168,8 @@ type
     ACBr_BPeDabpeESCPOS_dpk: TCheckBox;
     Label27: TLabel;
     ACBr_CIOT_dpk: TCheckBox;
+    ACBr_LCDPR_dpk: TCheckBox;
+    ACBr_ONE_dpk: TCheckBox;
     procedure btnPacotesMarcarTodosClick(Sender: TObject);
     procedure btnPacotesDesmarcarTodosClick(Sender: TObject);
     procedure VerificarCheckboxes(Sender: TObject);
@@ -366,34 +400,3 @@ begin
 end;
 
 end.
-
-{
-  Hierarquia de dependência dos Packages
-  • ACBrComum → Synapse
-• ACBrDiversos → ACBrComum
-• PCNComum → ACBrDiversos
-• ACBrOpenSSL → ACBrComum
-• ACBrSerial → ACBrDiversos, ACBrOpenSSL
-• ACBrTXTComum → ACBrDiversos,
-• ACBrConvenio115 → ACBrTXTComum, ACBrOpenSSL
-• ACBrLFD → ACBrTXTComum
-• ACBrPAF → ACBrTXTComum, ACBrOpenSSL
-• ACBrSEF2 → ACBrTXTComum, PCNComum
-• ACBrSintegra → ACBrTXTComum
-• ACBrSPED → ACBrTXTComum
-• ACBrTCP → ACBrDiversos
-• ACBrTEFD → ACBrComum
-• ACBr_Boleto → ACBrTCP
-• ACBr_BoletoFC_Fortes → ACBr_Boleto, fortes324laz
-• ACBr_BoletoFC_LazReport → ACBr_Boleto, lazreportpdfexport
-• ACBrDFeComum → ACBrOpenSSL, ACBrTCP, PCNComum
-• ACBrNFe → ACBrDFeComum
-• ACBrCTe → ACBrDFeComum
-• ACBrGNRe → ACBrDFeComum
-• ACBrMDFe → ACBrDFeComum
-• ACBrNFSe → ACBrDFeComum
-• ACBr_SAT → PCNComum
-• ACBr_SAT_ECFVirtual → ACBr_SAT, ACBrSerial
-• ACBr_SAT_Extrato_ESCPOS → ACBr_SAT, ACBrDFeComum, ACBrSerial
-• ACBr_SAT_Extrato_Fortes → ACBr_SAT, ACBrDFeComum, fortes324laz
-}

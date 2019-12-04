@@ -45,6 +45,18 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+21/11/2019
+-- ACBrNFeDANFERDM --
+[+] Implementado a impressão do conteúdo da tag xMsg nos DANFE da NF-e e NFC-e
+    feitos em Fast Report.
+  Por: BigWings
+
+25/10/2019
+-- ACBrNFeDANFERDM --
+[*] Ajustes para impressão de eventos NFe em Fast Report.
+    https://www.projetoacbr.com.br/forum/topic/53385-problema-emissão-de-carta-de-correção/
+  Por: CarlosSolla / BigWings
+
 24/09/2019
 -- ACBrNFeDANFERDM --
 [*] Ajuste de compatibilidade para impressão do QrCode nos .fr3 antigos.

@@ -63,13 +63,11 @@ type
     rlLabel4: TRLLabel;
     RLLabel6: TRLLabel;
     rlLabel77: TRLLabel;
-    rllDescricao: TRLLabel;
     rllEmissao: TRLLabel;
     rllModelo: TRLLabel;
-    rllMsgTeste: TRLLabel;
+    rllMsg1: TRLLabel;
     rllDataHoraImpressao: TRLLabel;
     rllNumMDFe: TRLLabel;
-    rllProtocolo: TRLLabel;
     rllSerie: TRLLabel;
     rllSistema: TRLLabel;
     rlb_7_Documentos_Titulos: TRLBand;
@@ -83,21 +81,16 @@ type
     rllUFCarrega: TRLLabel;
     rllUFDescarrega: TRLLabel;
     rlmObservacao: TRLMemo;
-    RLBand1: TRLBand;
+    rlb_2: TRLBand;
     RLDraw2: TRLDraw;
     RLDraw3: TRLDraw;
     RLDraw4: TRLDraw;
     rlLabel12: TRLLabel;
     rllPesoTotal: TRLLabel;
-    rllqMDFe: TRLLabel;
-    rllqNFe: TRLLabel;
+    rllqNFeMDFe: TRLLabel;
     rllqCTe: TRLLabel;
-    rlLabel23: TRLLabel;
-    rlLabel10: TRLLabel;
+    lblQTDENFeMDFe: TRLLabel;
     rlLabel5: TRLLabel;
-    RLBand2: TRLBand;
-    rllModal: TRLLabel;
-    RLPanel2: TRLPanel;
     rlsLinhaV05: TRLDraw;
     rlsLinhaV06: TRLDraw;
     rlsLinhaV07: TRLDraw;
@@ -113,16 +106,6 @@ type
     rliLogo: TRLImage;
     rlmEmitente: TRLMemo;
     rlmDadosEmitente: TRLMemo;
-    RLPanel1: TRLPanel;
-    RLPanel3: TRLPanel;
-    rllChave: TRLLabel;
-    rlLabel1: TRLLabel;
-    RLPanel4: TRLPanel;
-    RLBarcode1: TRLBarcode;
-    rlLabel74: TRLLabel;
-    rlLabel17: TRLLabel;
-    RLMemo1: TRLMemo;
-    RLPanel5: TRLPanel;
     RLPanel7: TRLPanel;
     rlShape10: TRLDraw;
     rlLabel35: TRLLabel;
@@ -179,9 +162,22 @@ type
     rlmRespApolice: TRLMemo;
     RLDraw16: TRLDraw;
     rlmRespSeguro: TRLLabel;
+    rlLabel17: TRLLabel;
+    RLMemo1: TRLMemo;
     imgQRCode: TRLImage;
-    rlsLinhaH02: TRLDraw;
-    RLDraw53: TRLDraw;
+    RLPanel4: TRLPanel;
+    RLBarcode1: TRLBarcode;
+    rlLabel74: TRLLabel;
+    RLPanel3: TRLPanel;
+    rllChave: TRLLabel;
+    rlLabel1: TRLLabel;
+    rllDescricao: TRLLabel;
+    RLDraw17: TRLDraw;
+    rllModal: TRLLabel;
+    rllProtocolo: TRLMemo;
+    rllMsg2: TRLLabel;
+    RLDraw18: TRLDraw;
+    RLDraw19: TRLDraw;
     procedure rlb_1_DadosManifestoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlb_2_RodoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlb_3_AereoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -227,15 +223,15 @@ var
   CarregouLogo: Boolean;
 begin
   inherited;
-  if  (RLMDFe.PageNumber <> 1) then
+
+  if (RLMDFe.PageNumber <> 1) then
   begin
     rlb_2_Rodo.Visible := False;
-    RLBand2.Visible    := False;
-    RLBand1.Visible    := False;
+    rlb_2.Visible      := False;
   end;
 
   {$IFNDEF BORLAND}
-    RLMemo1.Layout := tlCenter;
+    RLMemo1.Layout    := tlCenter;
     RLMemo1.Font.Size := 6;
   {$ENDIF}
 
@@ -266,19 +262,24 @@ begin
       with EnderEmit do
       begin
         rlmDadosEmitente.Lines.Add(XLgr + IfThen(Nro = '0', '', ', ' + Nro));
+
         if XCpl <> '' then
           rlmDadosEmitente.Lines.Add(XCpl);
+
         if XBairro <> '' then
           rlmDadosEmitente.Lines.Add(XBairro);
+
         rlmDadosEmitente.Lines.Add('CEP: ' + FormatarCEP(CEP) +
           ' - ' + XMun + ' - ' + UF);
       end;
+
       rlmDadosEmitente.Lines.Add('CNPJ: ' + FormatarCNPJouCPF(CNPJCPF));
       rlmDadosEmitente.Lines.Add(ACBrStr('INSCRIÇÃO ESTADUAL: ') + IE);
       rlmDadosEmitente.Lines.Add('TELEFONE: ' + FormatarFone(EnderEmit.Fone));
 
       if Trim(fpDAMDFe.Site) <> '' then
         rlmDadosEmitente.Lines.Add('SITE: ' + fpDAMDFe.Site);
+
       if Trim(fpDAMDFe.Email) <> '' then
         rlmDadosEmitente.Lines.Add('E-MAIL: ' + fpDAMDFe.Email);
     end;
@@ -287,25 +288,23 @@ begin
   RLBarcode1.Caption := Copy ( fpMDFe.InfMDFe.Id, 5, 44 );
   rllChave.Caption   := FormatarChaveAcesso(Copy(fpMDFe.InfMDFe.Id, 5, 44));
 
+  rllProtocolo.Lines.Clear;
+  rllProtocolo.Font.Size  := 8;
+  rllProtocolo.Font.Style := [fsBold];
+
   if fpMDFe.ide.tpEmis = teNormal then
   begin
-    rllProtocolo.Font.Size  := 8;
-    rllProtocolo.Font.Style := [fsBold];
-
     if fpDAMDFe.Protocolo <> '' then
-      rllProtocolo.Caption := fpDAMDFe.Protocolo
+      rllProtocolo.Lines.Add(fpDAMDFe.Protocolo)
     else
-      rllProtocolo.Caption := fpMDFe.procMDFe.nProt + '   ' +
+      rllProtocolo.Lines.Add(fpMDFe.procMDFe.nProt + '   ' +
         IfThen(fpMDFe.procMDFe.dhRecbto <> 0,
-        DateTimeToStr(fpMDFe.procMDFe.dhRecbto), '');
+        DateTimeToStr(fpMDFe.procMDFe.dhRecbto), ''));
   end
   else
   begin
-    rllProtocolo.Font.Size  := 5;
-    rllProtocolo.Font.Style := [];
-
-    rllProtocolo.Caption := ACBrStr('Impressão em contingência. Obrigatória a autorização em 168 horas' +
-      ' após esta Emissão (') + FormatDateTime('dd/mm/yyyy hh:nn', Now) + ')';
+    rllProtocolo.Lines.Add(ACBrStr('EMISSÃO EM CONTINGÊNCIA. Obrigatória a autorização em 168 horas' +
+      ' após esta Emissão (') + FormatDateTime('dd/mm/yyyy hh:nn', fpMDFe.Ide.dhEmi) + ')');
   end;
 
   rllModelo.Caption       := fpMDFe.Ide.modelo;
@@ -328,8 +327,14 @@ begin
   end;
 
   rllqCTe.Caption  := FormatFloatBr(fpMDFe.tot.qCTe,  '#0');
-  rllqNFe.Caption  := FormatFloatBr(fpMDFe.tot.qNFe,  '#0');
-  rllqMDFe.Caption := FormatFloatBr(fpMDFe.tot.qMDFe, '#0');
+  lblQTDENFeMDFe.Caption := 'QTDE NF-e';
+  rllqNFeMDFe.Caption := FormatFloatBr(fpMDFe.tot.qNFe, '#0');
+
+  if fpMDFe.tot.qMDFe > 0 then
+  begin
+    lblQTDENFeMDFe.Caption := 'QTDE MDF-e';
+    rllqNFeMDFe.Caption := FormatFloatBr(fpMDFe.tot.qMDFe, '#0');
+  end;
 
   if fpMDFe.tot.cUnid = uTON then
     rlLabel12.Caption := 'PESO TOTAL (Ton)'
@@ -346,7 +351,9 @@ var
 //  averbacao: string;
 begin
   inherited;
+
   rlb_2_Rodo.Enabled := (fpMDFe.Ide.modal = moRodoviario);
+
   if rlb_2_Rodo.Enabled then
     rlb_2_Rodo.Height := 208
   else
@@ -357,6 +364,7 @@ begin
                      fpMDFe.rodo.veicTracao.UF );
 
   rlmRNTRC.Lines.Clear;
+
   if fpMDFe.rodo.veicTracao.prop.RNTRC <> '' then
     rlmRNTRC.Lines.Add(fpMDFe.rodo.veicTracao.prop.RNTRC)
   else
@@ -369,10 +377,14 @@ begin
   begin
     rlmPlaca.Lines.Add(FormatarPlaca(fpMDFe.rodo.veicReboque.Items[i].placa) + ' - ' +
                      fpMDFe.rodo.veicReboque.Items[i].UF );
+
     if fpMDFe.rodo.veicReboque.Items[i].prop.RNTRC <> '' then
       rlmRNTRC.Lines.Add(fpMDFe.rodo.veicReboque.Items[i].prop.RNTRC)
     else
-      rlmRNTRC.Lines.Add(fpMDFe.rodo.RNTRC);
+      if (fpMDFe.infMDFe.versao >= 3) then
+        rlmRNTRC.Lines.Add(fpMDFe.rodo.infANTT.RNTRC)
+      else
+        rlmRNTRC.Lines.Add(fpMDFe.rodo.RNTRC);
   end;
 
   rlmCPF.Lines.Clear;
@@ -387,7 +399,7 @@ begin
   rlmRespCNPJ.Lines.Clear;
   rlmFornCNPJ.Lines.Clear;
   rlmNumComprovante.Lines.Clear;
-  
+
   if fpMDFe.rodo.valePed.disp.Count > 0 then
   begin
     for i := 0 to fpMDFe.rodo.valePed.disp.Count - 1 do
@@ -439,7 +451,9 @@ end;
 procedure TfrlDAMDFeRLRetrato.rlb_3_AereoBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   inherited;
+
   rlb_3_Aereo.Enabled := (fpMDFe.Ide.modal = moAereo);
+
   if rlb_3_Aereo.Enabled then
     rlb_3_Aereo.Height := 54
   else
@@ -451,7 +465,9 @@ var
   i: integer;
 begin
   inherited;
+
   rlb_4_Aquav.Enabled := (fpMDFe.Ide.modal = moAquaviario);
+
   if rlb_4_Aquav.Enabled then
     rlb_4_Aquav.Height := 121
   else
@@ -481,7 +497,9 @@ end;
 procedure TfrlDAMDFeRLRetrato.rlb_5_FerrovBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   inherited;
+
   rlb_5_Ferrov.Enabled := (fpMDFe.Ide.modal = moFerroviario);
+
   if rlb_5_Ferrov.Enabled then
     rlb_5_Ferrov.Height := 60
   else
@@ -500,56 +518,59 @@ begin
 
   // Mensagem para modo Homologacao.
 
-  rllMsgTeste.Enabled := False;
-  rllMsgTeste.Visible := False;
+  rllMsg1.Caption := '';
+  rllMsg1.Enabled := False;
+  rllMsg1.Visible := False;
+  rllMsg2.Caption := '';
+  rllMsg2.Enabled := False;
+  rllMsg2.Visible := False;
 
-  if fpMDFe.Ide.tpAmb = taHomologacao then
+  if fpMDFe.procMDFe.cStat > 0 then
   begin
-    rllMsgTeste.Caption := ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
-    rllMsgTeste.Enabled := True;
-    rllMsgTeste.Visible := True;
+    if fpMDFe.Ide.tpAmb = taHomologacao then
+    begin
+      rllMsg1.Caption := ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
+      rllMsg1.Enabled := True;
+      rllMsg1.Visible := True;
+    end;
+
+    if (fpMDFe.procMDFe.cStat = 101) or (fpDAMDFe.Cancelada) then
+    begin
+      rllMsg2.Caption := 'MDF-e CANCELADO';
+      rllMsg2.Visible := True;
+      rllMsg2.Enabled := True;
+    end;
+
+    if (fpMDFe.procMDFe.cStat = 100) and (fpDAMDFe.Encerrado) then
+    begin
+      rllMsg2.Caption := 'MDF-e ENCERRADO';
+      rllMsg2.Visible := True;
+      rllMsg2.Enabled := True;
+    end;
+
+    if fpMDFe.procMDFe.cStat = 110 then
+    begin
+      rllMsg2.Caption := 'MDF-e DENEGADO';
+      rllMsg2.Visible := True;
+      rllMsg2.Enabled := True;
+    end;
+
+    if not fpMDFe.procMDFe.cStat in [100, 101, 110] then
+    begin
+      rllMsg2.Caption := fpMDFe.procMDFe.xMotivo;
+      rllMsg2.Visible := True;
+      rllMsg2.Enabled := True;
+    end;
   end
   else
   begin
-    if fpMDFe.procMDFe.cStat > 0 then
-    begin
-      if (fpMDFe.procMDFe.cStat = 101) or (fpDAMDFe.Cancelada) then
-      begin
-        rllMsgTeste.Caption := 'MDF-e CANCELADO';
-        rllMsgTeste.Visible := True;
-        rllMsgTeste.Enabled := True;
-      end;
-
-      if (fpMDFe.procMDFe.cStat = 100) and (fpDAMDFe.Encerrado) then
-      begin
-        rllMsgTeste.Caption := 'MDF-e ENCERRADO';
-        rllMsgTeste.Visible := True;
-        rllMsgTeste.Enabled := True;
-      end;
-
-      if fpMDFe.procMDFe.cStat = 110 then
-      begin
-        rllMsgTeste.Caption := 'MDF-e DENEGADO';
-        rllMsgTeste.Visible := True;
-        rllMsgTeste.Enabled := True;
-      end;
-
-      if not fpMDFe.procMDFe.cStat in [101, 110, 100] then
-      begin
-        rllMsgTeste.Caption := fpMDFe.procMDFe.xMotivo;
-        rllMsgTeste.Visible := True;
-        rllMsgTeste.Enabled := True;
-      end;
-    end
-    else
-    begin
-      rllMsgTeste.Caption := ACBrStr('MDF-E NÃO ENVIADO PARA SEFAZ');
-      rllMsgTeste.Visible := True;
-      rllMsgTeste.Enabled := True;
-    end;
+    rllMsg1.Caption := ACBrStr('MDF-E NÃO ENVIADO PARA SEFAZ');
+    rllMsg1.Visible := True;
+    rllMsg1.Enabled := True;
   end;
 
-  rllMsgTeste.Repaint;
+  rllMsg1.Repaint;
+  rllMsg2.Repaint;
 
   // imprime data e hora da impressao
   rllDataHoraImpressao.Caption := ACBrStr('DATA E HORA DA IMPRESSÃO: ') + FormatDateTime('dd/mm/yyyy hh:nn', Now);
@@ -568,6 +589,7 @@ end;
 procedure TfrlDAMDFeRLRetrato.RLMDFeBeforePrint(Sender: TObject; var PrintIt: boolean);
 begin
   inherited;
+
   nItemControle := 0;
   FTotalPages   := 1;
   RLMDFe.Title  := ACBrStr('Manifesto Eletrônico de Documentos Fiscais - MDF-e');
@@ -599,15 +621,7 @@ begin
     Borders.DrawBottom := False;
   end;
 
-  with RLBand2 do
-  begin
-    Borders.DrawTop    := False;
-    Borders.DrawLeft   := False;
-    Borders.DrawRight  := False;
-    Borders.DrawBottom := False;
-  end;
-
-  with RLBand1 do
+  with rlb_2 do
   begin
     Borders.DrawTop    := True;
     Borders.DrawLeft   := False;
@@ -653,31 +667,24 @@ begin
   if not EstaVazio(Trim(fpMDFe.infMDFeSupl.qrCodMDFe)) then
     PintarQRCode( fpMDFe.infMDFeSupl.qrCodMDFe, imgQRCode.Picture, qrUTF8NoBOM )
   else
-  begin
-    RLDraw53.Visible  := False;
-    RLPanel4.width    := 420;
-    RLPanel3.width    := 420;
-    RLBarcode1.width  := 408;
-    rllChave.width    := 408;
     imgQRCode.Visible := False;
-  end;
 end;
 
 procedure TfrlDAMDFeRLRetrato.RLMDFeDataRecord(Sender: TObject; RecNo,
   CopyNo: Integer; var Eof: Boolean; var RecordAction: TRLRecordAction);
 begin
   inherited;
+
   Eof := (RecNo > 1);
   RecordAction := raUseIt;
   rlb_6_Observacao.Visible := Eof;
 end;
 
-
-
 procedure TfrlDAMDFeRLRetrato.subItensDataRecord(Sender: TObject; RecNo,
   CopyNo: Integer; var Eof: Boolean; var RecordAction: TRLRecordAction);
 begin
   inherited;
+
   FNumItem     := RecNo - 1;
   Eof          := (RecNo > fpMDFe.infDoc.infMunDescarga.Count);
   RecordAction := raUseIt;
@@ -686,6 +693,7 @@ end;
 procedure TfrlDAMDFeRLRetrato.rlbItensAfterPrint(Sender: TObject);
 begin
   inherited;
+
   rlmChave1.Lines.Clear;
   rlmChave2.Lines.Clear;
 end;
@@ -704,9 +712,11 @@ var
   end;
 begin
   nItem := 0;
+
   with fpMDFe.infDoc.infMunDescarga.Items[FNumItem] do
   begin
-    rlbNumcipio.Caption   := ACBrStr(Format('Município %s ',[ fpMDFe.infDoc.infMunDescarga.Items[FNumItem].xMunDescarga]));
+    rlbNumcipio.Caption := ACBrStr(Format('Município %s ',[ fpMDFe.infDoc.infMunDescarga.Items[FNumItem].xMunDescarga]));
+
    // Lista de CT-e
     for J := 0 to ( infCTe.Count - 1) do
     begin
@@ -746,6 +756,7 @@ begin
       Inc(nItem);
     end;
   end;
+
   inherited;
 end;
 

@@ -49,7 +49,7 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -9
-        Font.Name = 'Courier New'
+        Font.Name = 'Times New Roman'
         Font.Style = []
         ParentFont = False
       end
@@ -340,11 +340,11 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         HoldStyle = hsRelatively
         ParentFont = False
       end
-      object RLLabel91: TRLLabel
+      object lblQuantidade: TRLLabel
         Tag = 10
         Left = 359
         Top = 18
-        Width = 45
+        Width = 46
         Height = 7
         Alignment = taCenter
         AutoSize = False
@@ -357,7 +357,7 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         HoldStyle = hsRelatively
         ParentFont = False
       end
-      object RLLabel87: TRLLabel
+      object lblValorUnitarioSup: TRLLabel
         Tag = 10
         Left = 405
         Top = 14
@@ -374,7 +374,7 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         HoldStyle = hsRelatively
         ParentFont = False
       end
-      object RLLabel88: TRLLabel
+      object lblValorUnitarioInf: TRLLabel
         Tag = 10
         Left = 405
         Top = 21
@@ -393,9 +393,9 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
       end
       object lblValorTotal: TRLLabel
         Tag = 10
-        Left = 457
+        Left = 455
         Top = 21
-        Width = 50
+        Width = 52
         Height = 7
         Alignment = taCenter
         AutoSize = False
@@ -629,7 +629,7 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         HoldStyle = hsRelatively
         ParentFont = False
       end
-      object RLDraw1: TRLDraw
+      object rlsDivProd14: TRLDraw
         Left = 508
         Top = 12
         Width = 1
@@ -638,11 +638,11 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         DrawKind = dkLine
         HoldStyle = hsRelatively
       end
-      object RLLabel2: TRLLabel
+      object lblValorTotalSup: TRLLabel
         Tag = 10
-        Left = 459
+        Left = 455
         Top = 14
-        Width = 44
+        Width = 52
         Height = 7
         Alignment = taCenter
         AutoSize = False
@@ -1281,14 +1281,14 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         Tag = 20
         Left = 8
         Top = 34
-        Width = 417
-        Height = 119
+        Width = 458
+        Height = 120
         AutoSize = False
         Behavior = [beSiteExpander]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -9
-        Font.Name = 'Courier New'
+        Font.Name = 'Times New Roman'
         Font.Style = []
         IntegralHeight = True
         ParentFont = False
@@ -1325,7 +1325,7 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         Tag = 10
         Left = 562
         Top = 158
-        Width = 176
+        Width = 177
         Height = 7
         Alignment = taRightJustify
         Caption = 'DESENVOLVIDO POR: EMPRESA RRRRRRRRRRRR'
@@ -1334,6 +1334,22 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         Font.Height = -7
         Font.Name = 'Arial'
         Font.Style = []
+        ParentFont = False
+      end
+      object rlmDadosFisco: TRLMemo
+        Tag = 20
+        Left = 475
+        Top = 34
+        Width = 261
+        Height = 120
+        AutoSize = False
+        Behavior = [beSiteExpander]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -9
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        IntegralHeight = True
         ParentFont = False
       end
     end
@@ -6665,7 +6681,7 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         end
         object txtValorUnitario: TRLMemo
           Tag = 705
-          Left = 404
+          Left = 405
           Top = 1
           Width = 50
           Height = 11
@@ -7761,15 +7777,16 @@ inherited frlDANFeRLRetrato: TfrlDANFeRLRetrato
         ParentFont = False
       end
       object rlmDadosAdicionaisAuxiliar: TRLMemo
+        Tag = 20
         Left = 136
         Top = 36
-        Width = 457
+        Width = 458
         Height = 12
         Behavior = [beSiteExpander]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -9
-        Font.Name = 'Courier New'
+        Font.Name = 'Times New Roman'
         Font.Style = []
         IntegralHeight = True
         ParentFont = False

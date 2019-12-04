@@ -47,6 +47,155 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/11/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/55041-tipo-de-deducao-nao-encontrado-ou-invalido/
+   Por: Danilo MS
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/55055-cancelamento-provedor-ipm/
+   Por: Marcio st
+-- ACBrNFSeWebServices --
+[*] Possível ajuste para evitar a exibição de uma tela em branco após o envio
+    de RPS pelo método Gerar para o webservice do provedor SP.
+   Por: Italo Jurisato Junior
+-- pnfsNFSeW_SP --
+[*] https://www.projetoacbr.com.br/forum/topic/55000-municipioprestacao-do-servi%C3%A7o/
+   Por: Antonio Alexandre
+
+22/11/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/54949-joinville-n%C3%A3o-emite-nota-para-estrangeiro/
+   Por: Augusto Fontana
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/54986-provedor-infisc-v11-melhorias-m%C3%A9todo-tacbrnfseconsultarnfse/
+   Por: Henrique Sandri Zimermam
+
+21/11/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/54963-impress%C3%A3o-nfs-e-com-v%C3%A1rios-servi%C3%A7os/?do=findComment&comment=361102
+   Por: Rafael Sartori
+-- pnfsNFSeR --
+[+] Incluida as linhas para a leitura dos campos de itens de serviços, provedor SystemPro.
+   Por: Italo Jurisato Junior
+
+19/11/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/54163-envio-de-nota-para-blumenau-usando-o-novo-webservice/?do=findComment&comment=360700
+   Por: Ernesto Ricardo
+
+18/11/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/54874-loadfromfile-carrega-somente-1-servi%C3%A7o/?do=findComment&comment=360557
+   Por: Rafael Sartori
+
+14/11/2019
+-- pnfsNFSeR --
+[*] O grupo <Servico> do provedor SystemPro pode ter mais de uma ocorrência.
+    Alteração feita para ler todas as ocorrências desse grupo.
+   Por: Italo Jurisato Junior
+
+13/11/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/54688-como-informar-o-codigo_item_lista_servico-na-nfs-e/?do=findComment&comment=360196
+   Por: Juliano do Amaral Chaves
+
+11/11/2019
+-- pnfsNFSeW_ABRASFv1 --
+[*] https://www.projetoacbr.com.br/forum/topic/54793-provedor-fisslex-inscri%C3%A7%C3%A3o-estadual/?do=findComment&comment=359896
+   Por: Rafael D' Lima
+
+06/11/2019
+-- ACBrNFSeDANFSeRLRetrato --
+[*] https://www.projetoacbr.com.br/forum/topic/54711-logos-no-danfse-est%C3%A3o-ficando-deformadas/
+   Por: Juliano do Amaral Chaves
+-- pnfsNFSeG --
+[*] Ajustes no Consultar NFS-e por Faixa
+   Por: Italo Jurisato Junior
+
+05/11/2019
+-- pnfsNFSeR/pnfsConversao --
+[*] https://www.projetoacbr.com.br/forum/topic/54717-provedor-megasoft/
+   Por: Leonardo Gregianin
+-- pnfsNFSeG --
+[-] https://www.projetoacbr.com.br/forum/topic/54660-cancelamento-issnet-novo-hamburgo/
+   Por: Marco Moreira
+-- ACBrNFSeDANFSeRLRetrato --
+[-] https://www.projetoacbr.com.br/forum/topic/54623-ajustes-danfe-fortes/
+   Por: Marcio Lopes
+
+31/10/2019
+-- pnfsConversao --
+[-] Estava faltando o enumerador do provedor SimplISSv2 na lista de provedores que
+    seguem a versão 2 do layout da ABRASF.
+   Por: Italo Jurisato Junior
+
+30/10/2019
+-- ACBrNFSeWebServices --
+[*] Alterado os namespace de todos os método - provedor SimplISSv2 - Blumenau/SC
+   Por: Italo Jurisato Junior
+[*] Alterado os namespace do método Cancelar - provedor SimplISSv2 - Blumenau/SC
+   Por: Italo Jurisato Junior
+[*] Remoção do "CDATA" no XML de retorno.
+   Por: Italo Jurisato Junior
+
+25/10/2019
+-- ACBrNFSeDANFSeRLRetrato --
+[*] https://www.projetoacbr.com.br/forum/topic/53848-nfse-goi%C3%A1sgoi%C3%A2niatrindade/
+   Por: Mozart
+
+24/10/2019
+-- ACBrNFSeWebServices --
+[*] Possível correção para o provedor SimplISSv2.
+   Por: Italo Jurisato Junior
+
+24/10/2019
+-- pnfsNFSe --
+[*] Alterado o tipo Currency para Double do campo Aliquota
+   Por: Italo Jurisato Junior
+
+21/10/2019
+-- pnfsNFSeW_SP --
+[*] https://www.projetoacbr.com.br/forum/topic/54158-envio-de-nota-para-blumenau-usando-o-webservice-de-migra%C3%A7%C3%A3o/?do=findComment&comment=357512
+   Por: João Paulo Muller
+
+-- ACBrNFSeWebServices --
+[*] Possível correção para o provedor Pronim.
+   Por: Italo Jurisato Junior
+
+-- pnfsNFSeW_IPM --
+[*] https://www.projetoacbr.com.br/forum/topic/54381-ipm-tributa_municipio_prestador-bug/
+   Por: Marcos
+
+16/10/2019
+-- ACBrNFSeWebServices --
+[*] Alterado o método TratarResposta do SubstituirNFSe.
+   Por: Italo Jurisato Junior
+
+15/10/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/53949-nfse-de-santo-antonio-do-planalto-rs/
+   Por: Deunerf
+-- pnfsLerListaNFSe --
+[*] Possível correção para a leitura do retorno do método SubstituirNFSe.
+   Por: Italo Jurisato Junior
+
+14/10/2019
+-- pnfsCancNfseResposta --
+[*] https://www.projetoacbr.com.br/forum/topic/54253-tratamento-retorno-cancelamento-provedor-assessorpublico/
+   Por: Verissimo
+
+10/10/2019
+-- pnfsLerListaNFSe --
+[*] Acrescentado a leitura da tag <situacao_codigo_nfse> provedor IPM.
+-- pnfsNFSeW_Giap / pnfsNFSeW --
+[*] Estava faltando incluir o provedor Giap na unit para gerar o XML do RPS.
+   Por: Italo Jurisato Junior
+
+09/10/2019
+-- ACBrNFSeWebServices --
+[*] Alteração visando o provedor TcheInfov2, incluio o namespace na tag <Rps>
+   Por: Italo Jurisato Junior
+
 04/10/2019
 -- pnfsNFSeW_Agili --
 [*] Ajustes para o provedor Agili.

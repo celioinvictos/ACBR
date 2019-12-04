@@ -469,7 +469,11 @@ begin
                             slMensagem,
                             slCC,
                             slAnexos);
-        fpCmd.Resposta := 'Email enviado com sucesso';
+        if not(MonitorConfig.Email.SegundoPlano) then
+          fpCmd.Resposta := 'E-mail enviado com sucesso!'
+        else
+          fpCmd.Resposta := 'Enviando e-mail em segundo plano...';
+
       except
         on E: Exception do
           raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);
@@ -1189,7 +1193,7 @@ procedure TACBrObjetoSAT.RespostaConsultaSessao(ArqCFe: String);
 var
   Resp: TRetornoConsultarSessao;
 begin
-  Resp := TRetornoConsultarSessao.Create(resINI);
+  Resp := TRetornoConsultarSessao.Create(resINI, codUTF8);
   try
     with fACBrSAT.CFe do
     begin
@@ -1210,7 +1214,7 @@ procedure TACBrObjetoSAT.RespostaConsultaSessaoCancelado(ArqCFe: String);
 var
   Resp: TRetornoConsultarSessaoCancelado;
 begin
-  Resp := TRetornoConsultarSessaoCancelado.Create(resINI);
+  Resp := TRetornoConsultarSessaoCancelado.Create(resINI, codUTF8);
   try
     with fACBrSAT.CFeCanc do
     begin
@@ -1231,7 +1235,7 @@ procedure TACBrObjetoSAT.RespostaStatusSAT;
 var
   Resp: TRetornoStatusSAT;
 begin
-  Resp := TRetornoStatusSAT.Create(resINI);
+  Resp := TRetornoStatusSAT.Create(resINI, codUTF8);
   try
     with fACBrSAT.Status do
     begin
@@ -1267,7 +1271,7 @@ procedure TACBrObjetoSAT.RespostaCriarCFe(ArqCFe: String);
 var
   Resp: TRetornoCriarCFe;
 begin
-  Resp := TRetornoCriarCFe.Create(resINI);
+  Resp := TRetornoCriarCFe.Create(resINI, codUTF8);
   try
     with fACBrSAT.CFe do
     begin
@@ -1290,7 +1294,7 @@ var
   ArqCFe: String;
   Resp: TRetornoEnvio;
 begin
-  Resp := TRetornoEnvio.Create(resINI);
+  Resp := TRetornoEnvio.Create(resINI, codUTF8);
   try
     with fACBrSAT do
     begin
@@ -1318,7 +1322,7 @@ var
   ArqCFe: String;
   Resp: TRetornoCancelarCFe;
 begin
-  Resp := TRetornoCancelarCFe.Create(resINI);
+  Resp := TRetornoCancelarCFe.Create(resINI, codUTF8);
   try
     with fACBrSAT do
     begin
@@ -1345,7 +1349,7 @@ procedure TACBrObjetoSAT.RespostaTesteFimaFim(Resultado: String);
 var
   Resp: TRetornoTesteFimaFim;
 begin
-  Resp := TRetornoTesteFimaFim.Create(resINI);
+  Resp := TRetornoTesteFimaFim.Create(resINI, codUTF8);
   try
     with fACBrSAT do
     begin
@@ -1370,7 +1374,7 @@ procedure TACBrObjetoSAT.RespostaPadrao;
 var
   Resp: TPadraoSATResposta;
 begin
-  Resp := TPadraoSATResposta.Create('CFe',resINI);
+  Resp := TPadraoSATResposta.Create('CFe',resINI, codUTF8);
   try
     with fACBrSAT do
     begin

@@ -21,8 +21,8 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="2"/>
-      <BuildNr Value="112"/>
+      <MinorVersionNr Value="3"/>
+      <BuildNr Value="195"/>
       <Language Value="0416"/>
       <CharSet Value="04B0"/>
       <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrMonitor - Permite o uso dos componentes do Projeto ACBr, por comunicação TXT ou Socket"/>
@@ -142,7 +142,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="ACBrMonitor"/>
+            <Filename Value="ACBrMonitor32"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -301,7 +301,7 @@
         <PackageName Value="LCL"/>
       </Item36>
     </RequiredPackages>
-    <Units Count="58">
+    <Units Count="60">
       <Unit0>
         <Filename Value="ACBrMonitor.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -551,6 +551,14 @@
         <Filename Value="..\..\ACBrLib\Fontes\BPe\ACBrLibBPeRespostas.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit57>
+      <Unit58>
+        <Filename Value="..\..\ACBrLib\Fontes\Comum\ACBrLibDistribuicaoDFe.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit58>
+      <Unit59>
+        <Filename Value="..\..\ACBrLib\Fontes\Comum\ACBrLibConsReciDFe.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit59>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

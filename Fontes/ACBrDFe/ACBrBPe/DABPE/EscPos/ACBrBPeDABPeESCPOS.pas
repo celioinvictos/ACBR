@@ -46,15 +46,16 @@ unit ACBrBPeDABPeESCPOS;
 interface
 
 uses
-  Classes, SysUtils, {$IFDEF FPC} LResources, {$ENDIF}
-  ACBrBPeDABPEClass, ACBrPosPrinter,
+  Classes, SysUtils,
+  {$IFDEF FPC} LResources, {$ENDIF}
+  ACBrBPeDABPEClass, ACBrPosPrinter, ACBrBase,
   pcnBPe, pcnEnvEventoBPe;
 
 type
   { TACBrBPeDABPeESCPOS }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrBPeDABPeESCPOS = class(TACBrBPeDABPEClass)
   private
     FPosPrinter: TACBrPosPrinter;
@@ -448,11 +449,13 @@ begin
   if Site <> '' then
     FPosPrinter.Buffer.Add('</ce><c>' + Site);
 
+  FPosPrinter.Buffer.Add('</pular_linhas>');
+
   // pular linhas e cortar o papel
   if FPosPrinter.CortaPapel then
     FPosPrinter.Buffer.Add('</corte_total>')
   else
-    FPosPrinter.Buffer.Add('</pular_linhas>')
+    FPosPrinter.Buffer.Add('</pular_linhas>');
 end;
 
 procedure TACBrBPeDABPeESCPOS.MontarEnviarDABPe(BPe: TBPe;

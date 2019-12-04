@@ -118,11 +118,11 @@ type
     RLLabel84: TRLLabel;
     RLLabel85: TRLLabel;
     lblValorTotal: TRLLabel;
-    RLLabel87: TRLLabel;
-    RLLabel88: TRLLabel;
+    lblValorUnitarioSup: TRLLabel;
+    lblValorUnitarioInf: TRLLabel;
     RLLabel89: TRLLabel;
     RLLabel90: TRLLabel;
-    RLLabel91: TRLLabel;
+    lblQuantidade: TRLLabel;
     RLLabel92: TRLLabel;
     RLLabel93: TRLLabel;
     RLLabel94: TRLLabel;
@@ -348,7 +348,7 @@ type
     rllCabFatura12: TRLLabel;
     lblPercValorDesc: TRLLabel;
     lblPercValorDesc1: TRLLabel;
-    RLDraw1: TRLDraw;
+    rlsDivProd14: TRLDraw;
     rllContingencia: TRLLabel;
     RLDraw4: TRLDraw;
     rllFatNum13: TRLLabel;
@@ -521,7 +521,7 @@ type
     RLDraw12: TRLDraw;
     rlbCanceladaDenegada: TRLBand;
     RLLCanceladaDenegada: TRLLabel;
-    RLLabel2: TRLLabel;
+    lblValorTotalSup: TRLLabel;
     subItens: TRLSubDetail;
     rlbItens: TRLBand;
     LinhaCST: TRLDraw;
@@ -645,11 +645,13 @@ type
     rlmDadosAdicionaisAuxiliar: TRLMemo;
     rlbDivisaoRecibo: TRLBand;
     rliDivisao: TRLDraw;
+    rlmDadosFisco: TRLMemo;
 
     procedure rlbContinuacaoInformacoesComplementaresBeforePrint(
       Sender: TObject; var PrintIt: Boolean);
     procedure rlbDivisaoReciboBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbReciboHeaderBarraBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure rlbReciboHeaderBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure RLNFeBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbEmitenteBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbItensAfterPrint(Sender: TObject);
@@ -684,6 +686,7 @@ type
     Function ConfigurarRLBarcode:TfrlDANFeRLRetrato ;
     function ConfigurarCanhotoBarra: TfrlDANFeRLRetrato;
     function Canhoto(Value: TRLBand): TfrlDANFeRLRetrato;
+    procedure ControlaExibicaoColunaDesconto(var vWidthAux: Integer; var vLeftAux: Integer);
   end;
 
 implementation
@@ -702,10 +705,6 @@ uses
 
 procedure TfrlDANFeRLRetrato.RLNFeBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
-  ConfigurarVariavies(tiRetrato);
-
-//  ConfigurarCanhoto;
-
   InicializarDados;
 
   RLNFe.Title := OnlyNumber(fpNFe.InfNFe.Id);
@@ -734,6 +733,12 @@ begin
   PrintIt := (RLNFe.PageNumber = 1);
 end;
 
+procedure TfrlDANFeRLRetrato.rlbReciboHeaderBeforePrint(Sender: TObject;
+  var PrintIt: Boolean);
+begin
+  PrintIt := (RLNFe.PageNumber = 1);
+end;
+
 procedure TfrlDANFeRLRetrato.rlbDivisaoReciboBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   PrintIt := (RLNFe.PageNumber = 1);
@@ -742,7 +747,10 @@ end;
 procedure TfrlDANFeRLRetrato.rlbContinuacaoInformacoesComplementaresBeforePrint(
   Sender: TObject; var PrintIt: Boolean);
 begin
-  if(RLNFe.PageNumber = 1) then RLNFe.NewPageNeeded := True;
+  if (not fpDANFe.ImprimeContinuacaoDadosAdicionaisPrimeiraPagina) and (RLNFe.PageNumber = 1) then
+  begin
+    RLNFe.NewPageNeeded := True;
+  end;
 end;
 
 procedure TfrlDANFeRLRetrato.rlbEmitenteBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -770,9 +778,9 @@ var
   CarregouLogo: Boolean;
 begin
   TDFeReportFortes.AjustarMargem(RLNFe, fpDANFe);
-  CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDANFe.Logo);
   rlbCanceladaDenegada.Visible := False;
 
+  CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDANFe.Logo);
   if not CarregouLogo then
   begin
     rlmEndereco.Left := rlmEmitente.Left;
@@ -785,7 +793,9 @@ begin
   if fpDANFe.ExibeResumoCanhoto then
   begin
     if NaoEstaVazio(fpDANFe.TextoResumoCanhoto) then
-      rllResumo.Caption := fpDANFe.TextoResumoCanhoto
+    begin
+      rllResumo.Caption := fpDANFe.TextoResumoCanhoto;
+    end
     else
     begin
       rllResumo.Caption := ACBrStr('EMISSÃO: ') + FormatDateBr(fpNFe.Ide.dEmi) +
@@ -807,12 +817,12 @@ begin
   rllDataRecebimento.Top := rlBarraiCanhoto1.Top + 3;
   rllIdentificacao.Top := rlBarraiCanhoto1.Top + 3;
 
-  rllSistema.Visible := (fpDANFe.Sistema <> '');
+  rllSistema.Visible := NaoEstaVazio(fpDANFe.Sistema);
   rllSistema.Caption := fpDANFe.Sistema;
 
-  rllUsuario.Visible := (fpDANFe.Usuario <> '');
-  rllUsuario.Caption := ACBrStr('DATA / HORA DA IMPRESSÃO: ') +
-    FormatDateTimeBr(Now) + ' - ' + fpDANFe.Usuario;
+  rllUsuario.Visible := NaoEstaVazio(fpDANFe.Usuario);
+  rllUsuario.Caption := ACBrStr('DATA / HORA DA IMPRESSÃO: ') + FormatDateTimeBr(Now) +
+    ' - ' + fpDANFe.Usuario;
 
   rllHomologacao.Visible := (fpNFe.Ide.tpAmb = taHomologacao);
   rllHomologacao.Caption := ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - NF-E SEM VALOR FISCAL');
@@ -822,7 +832,6 @@ begin
 
   rllXmotivo.Visible := True;
   rlbCanceladaDenegada.Visible := fpDANFe.Cancelada;
-
   if rlbCanceladaDenegada.Visible then
   begin
     rllDadosVariaveis3_Descricao.Caption := ACBrStr('PROTOCOLO DE HOMOLOGAÇÃO DE CANCELAMENTO');
@@ -872,7 +881,6 @@ begin
         rllDadosVariaveis3.Visible := False;
       end;
     end;
-//    ConfigurarRLBarcode;
   end;
 
   // Ajusta a largura da coluna "Código do Produto"
@@ -922,34 +930,36 @@ begin
   else
     rlmDescricaoProduto.Lines.Text := 'DESCR. PROD. / SERV.';
 
+  ControlaExibicaoColunaDesconto(vWidthAux, vLeftAux);
+
   // Oculta alguns itens do fpDANFe
   if fpDANFe.FormularioContinuo then
   begin
-    rllRecebemosDe.Visible := False;
-    rllResumo.Visible := False;
+    rllRecebemosDe.Visible     := False;
+    rllResumo.Visible          := False;
     rllDataRecebimento.Visible := False;
-    rllIdentificacao.Visible := False;
-    rllNFe.Visible := False;
-    rliCanhoto.Visible := False;
-    rliCanhoto1.Visible := False;
-    rliCanhoto2.Visible := False;
-    rliCanhoto3.Visible := False;
-    rliDivisao.Visible := False;
-    rliTipoEntrada.Visible := False;
-    rllDANFE.Visible := False;
-    rllDocumento1.Visible := False;
-    rllDocumento2.Visible := False;
-    rllTipoEntrada.Visible := False;
-    rllTipoSaida.Visible := False;
-    rllEmitente.Visible := False;
-    rliLogo.Visible := False;
-    rlmEmitente.Visible := False;
-    rlmEndereco.Visible := False;
-    rliEmitente.Visible := False;
-    rllChaveAcesso.Visible := False;
-    rliChave.Visible := False;
-    rliChave2.Visible := False;
-    rliChave3.Visible := False;
+    rllIdentificacao.Visible   := False;
+    rllNFe.Visible             := False;
+    rliCanhoto.Visible         := False;
+    rliCanhoto1.Visible        := False;
+    rliCanhoto2.Visible        := False;
+    rliCanhoto3.Visible        := False;
+    rliDivisao.Visible         := False;
+    rliTipoEntrada.Visible     := False;
+    rllDANFE.Visible           := False;
+    rllDocumento1.Visible      := False;
+    rllDocumento2.Visible      := False;
+    rllTipoEntrada.Visible     := False;
+    rllTipoSaida.Visible       := False;
+    rllEmitente.Visible        := False;
+    rliLogo.Visible            := False;
+    rlmEmitente.Visible        := False;
+    rlmEndereco.Visible        := False;
+    rliEmitente.Visible        := False;
+    rllChaveAcesso.Visible     := False;
+    rliChave.Visible           := False;
+    rliChave2.Visible          := False;
+    rliChave3.Visible          := False;
   end;
 
   // Expande a logomarca
@@ -1053,6 +1063,7 @@ begin
     RLMEndereco.Font.Size := 7;
 
   AplicarParametros; // Aplica os parâmetros escolhidos, após alterar o tamanho das fontes.
+
   DefinirDadosAdicionais;
   DefinirCabecalho;
   DefinirEmitente;
@@ -1069,19 +1080,27 @@ begin
   posicionaCanhoto;
 
   // Verifica se será exibida a 'continuação das informações complementares'
-  if (rlmDadosAdicionaisAuxiliar.Lines.Count > fpLimiteLinhas) then
+  if rlbContinuacaoInformacoesComplementares.Visible then
   begin
-    rlbContinuacaoInformacoesComplementares.Visible := True;
     h := (rlmContinuacaoDadosAdicionais.Top + rlmContinuacaoDadosAdicionais.Height) + 2;
     LinhaDCInferior.Top := h;
     h := (h - LinhaDCSuperior.Top) + 1;
     LinhaDCEsquerda.Height := h;
     LinhaDCDireita.Height := h;
-  end
-  else
-    rlbContinuacaoInformacoesComplementares.Visible := False;
+  end;
 
   fpQuantItens := fpNFe.Det.Count;
+
+  //Ajustar tamanho quadro DadosAdicionais
+  if fpDANFe.ExpandirDadosAdicionaisAuto then
+  begin
+    rlbDadosAdicionais.AutoExpand := True;
+    rlmDadosAdicionais.AutoSize := True;
+    RLDraw50.Height := (rlmDadosAdicionais.Top + rlmDadosAdicionais.Height) - RLLabel77.Top + 2;
+    RLDraw51.Height := RLDraw50.Height;
+    rllSistema.Top  := RLDraw50.Top + RLDraw50.Height;
+    rllUsuario.Top  := rllSistema.Top;
+  end;
 end;
 
 procedure TfrlDANFeRLRetrato.DefinirCabecalho;
@@ -1432,74 +1451,44 @@ begin
 end;
 
 procedure TfrlDANFeRLRetrato.DefinirDadosAdicionais;
-var
-  sProtocolo, sSuframa: String;
 begin
-  rlmDadosAdicionaisAuxiliar.Lines.BeginUpdate;
-  rlmDadosAdicionaisAuxiliar.Lines.Clear;
-
-  // Protocolo de autorização, nos casos de emissão em contingência
-  if (fpNFe.Ide.tpEmis in [teContingencia, teFSDA]) and (fpNFe.procNFe.cStat = 100) then
-  begin
-    sProtocolo := ACBrStr('PROTOCOLO DE AUTORIZAÇÃO DE USO: ') +
-      fpNFe.procNFe.nProt + ' ' + FormatDateTimeBr(fpNFe.procNFe.dhRecbto);
-    InserirLinhas(sProtocolo, fpLimiteCaracteresLinha, rlmDadosAdicionaisAuxiliar);
-  end;
-
-  // Inscrição Suframa
-  if NaoEstaVazio(fpNFe.Dest.ISUF) then
-  begin
-    sSuframa := ACBrStr('INSCRIÇÃO SUFRAMA: ') + fpNFe.Dest.ISUF;
-    InserirLinhas(sSuframa, fpLimiteCaracteresLinha, rlmDadosAdicionaisAuxiliar);
-  end;
-
-  InserirLinhas(
-    fpDANFe.ManterDocreferenciados(fpNFe) +
-    fpDANFe.ManterInfAdFisco(fpNFe) +
-    fpDANFe.ManterObsFisco(fpNFe) +
-    fpDANFe.ManterProcreferenciado(fpNFe) +
-    fpDANFe.ManterInfContr(fpNFe) +
-    fpDANFe.ManterInfCompl(fpNFe) +
-    fpDANFe.ManterContingencia(fpNFe),
-    fpLimiteCaracteresLinha,
-    rlmDadosAdicionaisAuxiliar);
-
-  rlmDadosAdicionaisAuxiliar.Lines.EndUpdate;
+  rlmDadosAdicionaisAuxiliar.Lines.Text :=
+    fpDANFe.ManterInformacoesDadosAdicionais( fpNFe  );
 end;
 
 procedure TfrlDANFeRLRetrato.DefinirObservacoes;
 var
-  i, iMaximoLinhas, iRestanteLinhas: Integer;
+  PosUltimoEspaco: Integer;
   sTexto: String;
+  TextoContinuacao, TextoOriginal: string;
 begin
-  rlmDadosAdicionais.Lines.BeginUpdate;
-  rlmDadosAdicionais.Lines.Clear;
-
-  if (rlmDadosAdicionaisAuxiliar.Lines.Count > fpLimiteLinhas) then
+  if (not fpDANFe.ExpandirDadosAdicionaisAuto) and
+     (rlmDadosAdicionaisAuxiliar.Height > rlmDadosAdicionais.Height) then
   begin
-    iMaximoLinhas := fpLimiteLinhas;
-    iRestanteLinhas := rlmDadosAdicionaisAuxiliar.Lines.Count - fpLimiteLinhas;
-    rlmContinuacaoDadosAdicionais.Lines.BeginUpdate;
-    sTexto := '';
-    for i := 0 to (iRestanteLinhas - 1) do
-      sTexto := sTexto + rlmDadosAdicionaisAuxiliar.Lines.Strings[(iMaximoLinhas + i)];
+    rlbContinuacaoInformacoesComplementares.Visible := True;
+    TextoOriginal := rlmDadosAdicionaisAuxiliar.Lines.Text;
+    sTexto := TextoOriginal;
+    repeat
+      PosUltimoEspaco := LastDelimiter(' ', sTexto);
+      sTexto          := LeftStr(TextoOriginal, PosUltimoEspaco -1 );
+      //Debug
+      //TextoContinuacao  := RightStr(TextoOriginal, Length(TextoOriginal)- PosUltimoEspaco);
+      rlmDadosAdicionaisAuxiliar.Lines.Text := sTexto;
+    until not (rlmDadosAdicionaisAuxiliar.Height > rlmDadosAdicionais.Height);
 
-    InserirLinhas(sTexto, fpLimiteCaracteresContinuacao, rlmContinuacaoDadosAdicionais);
-    rlmContinuacaoDadosAdicionais.Lines.Text :=
-      StringReplace(rlmContinuacaoDadosAdicionais.Lines.Text, ';', '', [rfReplaceAll]);
-
-    rlmContinuacaoDadosAdicionais.Lines.EndUpdate;
+    TextoContinuacao  := RightStr(TextoOriginal, Length(TextoOriginal)- PosUltimoEspaco);
+    rlmContinuacaoDadosAdicionais.Lines.Text := TextoContinuacao;
   end
   else
-    iMaximoLinhas := rlmDadosAdicionaisAuxiliar.Lines.Count;
+  begin
+    rlbContinuacaoInformacoesComplementares.Visible := False;
+  end;
 
-  for i := 0 to (iMaximoLinhas - 1) do
-    rlmDadosAdicionais.Lines.Add(rlmDadosAdicionaisAuxiliar.Lines.Strings[i]);
+  rlmDadosAdicionais.Lines.Text := rlmDadosAdicionaisAuxiliar.Lines.Text;
 
-  rlmDadosAdicionais.Lines.Text :=
-    StringReplace(rlmDadosAdicionais.Lines.Text, ';', '', [rfReplaceAll]);
-
-  rlmDadosAdicionais.Lines.EndUpdate;
+  // Área reservada ao Fisco
+  rlmDadosFisco.Lines.Clear;
+  rlmDadosFisco.Lines.Text := fpNFe.procNFe.xMsg;
 end;
 
 procedure TfrlDANFeRLRetrato.DefinirISSQN;
@@ -2211,6 +2200,114 @@ begin
 
   rlBarraiCanhoto3.Left         := rllBarraNFe.Left - 3;
 
+end;
+
+procedure TfrlDANFeRLRetrato.ControlaExibicaoColunaDesconto(var vWidthAux: Integer; var vLeftAux: Integer);
+begin
+  // Controle para exibir coluna de desconto
+  txtValorDesconto.Visible := fpDANFe.ManterColunaDesconto( fpNFe.Total.ICMSTot.vDesc );
+  lblPercValorDesc.Visible := txtValorDesconto.Visible;
+  lblPercValorDesc1.Visible := txtValorDesconto.Visible;
+  LinhaDesconto.Visible := txtValorDesconto.Visible;
+  rlsDivProd14.Visible := txtValorDesconto.Visible;
+  // Ajusta a posição da coluna 'VALOR TOTAL'
+  if (txtValorDesconto.Visible) then
+  begin
+    // Quantidade
+    lblQuantidade.Width := 45;
+    txtQuantidade.Width := 45;
+    // Linha Valor Unitario
+    rlsDivProd7.Left := 404;
+    LinhaValorUnitario.Left := 404;
+    // Valor Unitario
+    lblValorUnitarioSup.Left := 405;
+    lblValorUnitarioSup.Width := 50;
+    lblValorUnitarioInf.Left := 405;
+    lblValorUnitarioInf.Width := 50;
+    txtValorUnitario.Left := 405;
+    txtValorUnitario.Width := 50;
+    // Linha Valor Total
+    rlsDivProd8.Left := 455;
+    LinhaValorTotal.Left := 455;
+    // Valor Total
+    lblValorTotalSup.Left := 455;
+    lblValorTotalSup.Width := 52;
+    txtValorTotal.Left := 455;
+    txtValorTotal.Width := 52;
+    lblValorTotal.Left := 455;
+    lblValorTotal.Width := 52;
+  end
+  else
+  begin
+    // Calcula o espaço a distribuir entre os campos qtd, vlunit e vltot pela
+    // diferença entre a posição inicial da qtd e a posição final do desconto, descontando 4 para separação de cada campó que restou
+    vWidthAux := (txtValorDesconto.Left + txtValorDesconto.Width) - txtQuantidade.Left - 12;
+    vWidthAux := Trunc(vWidthAux / 3);
+    vLeftAux := txtQuantidade.Left;
+    // Quantidade
+    lblQuantidade.Width := vWidthAux;
+    txtQuantidade.Width := vWidthAux;
+    // Linha Valor Unitario
+    rlsDivProd7.Left := vLeftAux + vWidthAux + 2;
+    LinhaValorUnitario.Left := vLeftAux + vWidthAux + 2;
+    vLeftAux := vLeftAux + vWidthAux + 4;
+    // Valor Unitario
+    lblValorUnitarioSup.Left := vLeftAux;
+    lblValorUnitarioSup.Width := vWidthAux;
+    lblValorUnitarioInf.Left := vLeftAux;
+    lblValorUnitarioInf.Width := vWidthAux;
+    txtValorUnitario.Left := vLeftAux;
+    txtValorUnitario.Width := vWidthAux;
+    // Linha Valor Total
+    rlsDivProd8.Left := vLeftAux + vWidthAux + 2;
+    LinhaValorTotal.Left := vLeftAux + vWidthAux + 2;
+    vLeftAux := vLeftAux + vWidthAux + 4;
+    // Ajuste se deu diferença na última posição quando o cálculo do vWidthAux não for divisão exata
+    if ((vLeftAux + vWidthAux) <> (txtValorDesconto.Left + txtValorDesconto.Width)) then
+      vWidthAux := vWidthAux + ((txtValorDesconto.Left + txtValorDesconto.Width) - (vLeftAux + vWidthAux));
+    // Valor Total
+    lblValorTotalSup.Left := vLeftAux;
+    lblValorTotalSup.Width := vWidthAux;
+    txtValorTotal.Left := vLeftAux;
+    txtValorTotal.Width := vWidthAux;
+    lblValorTotal.Left := vLeftAux;
+    lblValorTotal.Width := vWidthAux;
+  end;
+  // Se a largura da coluna 'Quantidade' for suficiente,
+  // exibe o título sem abreviações
+  if (lblQuantidade.Width > 47) then
+    lblQuantidade.Caption := ACBrStr('QUANTIDADE')
+  else
+    lblQuantidade.Caption := ACBrStr('QUANT.');
+  // Se a largura da coluna 'Valor Unitário' for suficiente,
+  // exibe o título em uma linha apenas
+
+  if (lblValorUnitarioInf.Width > 61) then
+  begin
+    lblValorUnitarioSup.Visible := False;
+    lblValorUnitarioInf.Caption := ACBrStr('VALOR UNITÁRIO');
+    lblValorUnitarioInf.Top := 18;
+  end
+  else
+  begin
+    lblValorUnitarioSup.Visible := True;
+    lblValorUnitarioInf.Caption := ACBrStr('UNITÁRIO');
+    lblValorUnitarioInf.Top := 21;
+  end;
+  // Se a largura da coluna 'Valor Total' for suficiente,
+  // exibe o título em uma linha apenas
+  if (lblValorTotal.Width > 52) then
+  begin
+    lblValorTotalSup.Visible := False;
+    lblValorTotal.Caption := ACBrStr('VALOR TOTAL');
+    lblValorTotal.Top := 18;
+  end
+  else
+  begin
+    lblValorTotalSup.Visible := True;
+    lblValorTotal.Caption := ACBrStr('TOTAL');
+    lblValorTotal.Top := 21;
+  end;
 end;
 
 end.

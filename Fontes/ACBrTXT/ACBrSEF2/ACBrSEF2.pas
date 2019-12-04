@@ -61,8 +61,8 @@ uses
 
 type
   TACBrSEF2Arquivo = (aSEF, aEDOC);
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrSEF2 = class(TACBrComponent)
   private

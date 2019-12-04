@@ -140,12 +140,12 @@ type
  TValoresNfse = class(TObject)
  private
    FBaseCalculo: Currency;
-   FAliquota: Currency;
+   FAliquota: Double;
    FValorIss: Currency;
    FValorLiquidoNfse: Currency;
  public
    property BaseCalculo: Currency read FBaseCalculo write FBaseCalculo;
-   property Aliquota: Currency read FAliquota write FAliquota;
+   property Aliquota: Double read FAliquota write FAliquota;
    property ValorIss: Currency read FValorIss write FValorIss;
    property ValorLiquidoNfse: Currency read FValorLiquidoNfse write FValorLiquidoNfse;
  end;
@@ -163,8 +163,8 @@ type
     FValorIss: Currency;
     FOutrasRetencoes: Currency;
     FBaseCalculo: Currency;
-    FAliquota: Currency;
-    FAliquotaSN: Currency; // mauroasl : Aliquota usada pelo Provedor conam
+    FAliquota: Double;
+    FAliquotaSN: Currency; // Aliquota usada pelo Provedor conam
     FAliquotaPis: Currency;
     FAliquotaCofins: Currency;
     FAliquotaInss: Currency;
@@ -193,8 +193,8 @@ type
     property ValorIss: Currency read FValorIss write FValorIss;
     property OutrasRetencoes: Currency read FOutrasRetencoes write FOutrasRetencoes;
     property BaseCalculo: Currency read FBaseCalculo write FBaseCalculo;
-    property Aliquota: Currency read FAliquota write FAliquota;
-    // mauroasl : Aliquota usada pelo Provedor conam
+    property Aliquota: Double read FAliquota write FAliquota;
+    // Aliquota usada pelo Provedor conam
     property AliquotaSN: Currency read FAliquotaSN write FAliquotaSN;
 
     // Aliquotas usadas pelo Provedor IssDsf
@@ -240,7 +240,7 @@ type
     FQuantidade : Currency; 
     FValorUnitario : Currency;
     FValorTotal : Currency;
-    FAliquota: Currency;
+    FAliquota: Double;
     FValorIss: Currency;
     FBaseCalculo: Currency;
     FValorDeducoes: Currency;
@@ -278,6 +278,7 @@ type
     FpRetCOFINS: currency;
     FvRed: currency;
     FTipoUnidade: TUnidade;
+    FItemListaServico: String;
 
   public
     constructor Create;
@@ -291,7 +292,7 @@ type
     property ValorServicos: Currency read FValorServicos write FValorServicos;
     property ValorDeducoes: Currency read FValorDeducoes write FValorDeducoes;
     property ValorIss: Currency read FValorIss write FValorIss;
-    property Aliquota: Currency read FAliquota write FAliquota;
+    property Aliquota: Double read FAliquota write FAliquota;
     property BaseCalculo: Currency read FBaseCalculo write FBaseCalculo;
     property DescontoCondicionado: Currency read FDescontoCondicionado write FDescontoCondicionado;
     property DescontoIncondicionado: Currency read FDescontoIncondicionado write FDescontoIncondicionado;
@@ -324,6 +325,7 @@ type
     property vBCPISPASEP: currency read FvBCPISPASEP write FvBCPISPASEP;
     property pRetPISPASEP: currency read FpRetPISPASEP write FpRetPISPASEP;
     property TipoUnidade: TUnidade read FTipoUnidade write FTipoUnidade;
+    property ItemListaServico: String read FItemListaServico write FItemListaServico;
   end;
 
  TDeducaoCollection = class(TObjectList)
@@ -527,6 +529,7 @@ type
     FContato: TContato;
     FAtualizaTomador: TnfseSimNao;
     FTomadorExterior: TnfseSimNao;
+    FNifTomador: String;
   public
     constructor Create;
     destructor Destroy; override;
@@ -537,6 +540,7 @@ type
     property Contato: TContato read FContato write FContato;
     property AtualizaTomador: TnfseSimNao read FAtualizaTomador write FAtualizaTomador;
     property TomadorExterior: TnfseSimNao read FTomadorExterior write FTomadorExterior;
+    property NifTomador: String read FNifTomador write FNifTomador;
   end;
 
  TIdentificacaoIntermediarioServico = class(TObject)

@@ -71,13 +71,13 @@ const
 
 type
 
-TACBrExtensoFormato = (extPadrao, extDolar) ;
+  TACBrExtensoFormato = (extPadrao, extDolar) ;
 
 { Componente ACBrExtenso }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
-TACBrExtenso = class( TACBrComponent )
+  TACBrExtenso = class( TACBrComponent )
   private
     { Propriedades do Componente ACBrExtenso }
     fsMoeda: String;

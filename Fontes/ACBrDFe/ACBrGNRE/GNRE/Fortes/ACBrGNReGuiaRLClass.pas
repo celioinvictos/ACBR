@@ -39,12 +39,13 @@ unit ACBrGNReGuiaRLClass;
 interface
 
 uses
-  Forms, SysUtils, Classes, ACBrGNREGuiaClass,pgnreGNRERetorno,RLTypes;
+  Forms, SysUtils, Classes, RLTypes,
+  ACBrBase, ACBrGNREGuiaClass, pgnreGNRERetorno;
 
 type
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrGNREGuiaRL = class(TACBrGNREGuiaClass)
   private
   protected
@@ -52,8 +53,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure ImprimirGuia(GNRE: TGNRERetorno=nil); override;
-    procedure ImprimirGuiaPDF(GNRE: TGNRERetorno=nil); override;
+    procedure ImprimirGuia(AGNRE: TGNRERetorno=nil); override;
+    procedure ImprimirGuiaPDF(AGNRE: TGNRERetorno=nil); override;
   published
     property PrintDialog: Boolean read FPrintDialog write FPrintDialog;
 end;
@@ -74,7 +75,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TACBrGNREGuiaRL.ImprimirGuia(GNRe: TGNRERetorno = nil);
+procedure TACBrGNREGuiaRL.ImprimirGuia(AGNRE: TGNRERetorno = nil);
 var
   i: integer;
   frlGuiaRLRetrato: TfrlGuiaRLRetrato;
@@ -86,7 +87,7 @@ begin
     frlGuiaRLRetrato.RLGNRe.PageSetup.PaperHeight :=297.0;
     frlGuiaRLRetrato.RLGNRe.PageSetup.PaperWidth  :=210.0;
 
-    if GNRe = nil then
+    if AGNRE = nil then
     begin
       for i:=0 to TACBrGNRE(ACBrGNRE).GuiasRetorno.Count -1 do
       begin
@@ -110,7 +111,7 @@ begin
     else
     begin
       frlGuiaRLRetrato.Imprimir(Self,
-           GNRE,
+           AGNRE,
            Email,
            Fax,
            NumCopias,
@@ -130,7 +131,7 @@ begin
   end;
 end;
 
-procedure TACBrGNReGuiaRL.ImprimirGuiaPDF(GNRe: TGNRERetorno = nil);
+procedure TACBrGNReGuiaRL.ImprimirGuiaPDF(AGNRE: TGNRERetorno = nil);
 var
   NomeArq: string;
   i: integer;
@@ -138,7 +139,7 @@ var
 begin
   frlGuiaRLRetrato := TfrlGuiaRLRetrato.Create(Self);
 
-  if GNRe = nil then
+  if AGNRE = nil then
   begin
     for i := 0 to TACBrGNRE(ACBrGNRE).GuiasRetorno.Count -1 do
     begin
@@ -162,12 +163,12 @@ begin
   end
   else
   begin
-    NomeArq:= OnlyNumber(GNRe.IdentificadorGuia);
+    NomeArq:= OnlyNumber(AGNRE.IdentificadorGuia);
     NomeArq:= PathWithDelim(Self.PathPDF) + NomeArq + '-guia.pdf';
 
     frlGuiaRLRetrato.SavePDF(Self,
           NomeArq,
-          GNRE,
+          AGNRE,
           Email,
           Fax,
           NumCopias,

@@ -62,6 +62,9 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tbpCertificados = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.txtDadosPFX = new System.Windows.Forms.TextBox();
+            this.btnDadosPFX = new System.Windows.Forms.Button();
             this.txtCertNumero = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -107,6 +110,7 @@
             this.btnStatusServ = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnImprimirInut = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tbpConfiguracoes.SuspendLayout();
             this.tbpWebservices.SuspendLayout();
@@ -523,6 +527,9 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.label26);
+            this.groupBox4.Controls.Add(this.txtDadosPFX);
+            this.groupBox4.Controls.Add(this.btnDadosPFX);
             this.groupBox4.Controls.Add(this.txtCertNumero);
             this.groupBox4.Controls.Add(this.label9);
             this.groupBox4.Controls.Add(this.label8);
@@ -533,15 +540,44 @@
             this.groupBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox4.Location = new System.Drawing.Point(6, 132);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(249, 145);
+            this.groupBox4.Size = new System.Drawing.Size(249, 180);
             this.groupBox4.TabIndex = 7;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Certificados";
             // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label26.Location = new System.Drawing.Point(3, 55);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(70, 13);
+            this.label26.TabIndex = 15;
+            this.label26.Text = "Dados PFX";
+            // 
+            // txtDadosPFX
+            // 
+            this.txtDadosPFX.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDadosPFX.Location = new System.Drawing.Point(6, 71);
+            this.txtDadosPFX.MaxLength = 99999;
+            this.txtDadosPFX.Name = "txtDadosPFX";
+            this.txtDadosPFX.Size = new System.Drawing.Size(211, 20);
+            this.txtDadosPFX.TabIndex = 14;
+            // 
+            // btnDadosPFX
+            // 
+            this.btnDadosPFX.Location = new System.Drawing.Point(216, 70);
+            this.btnDadosPFX.Name = "btnDadosPFX";
+            this.btnDadosPFX.Size = new System.Drawing.Size(27, 22);
+            this.btnDadosPFX.TabIndex = 16;
+            this.btnDadosPFX.Text = "...";
+            this.btnDadosPFX.UseVisualStyleBackColor = true;
+            this.btnDadosPFX.Click += new System.EventHandler(this.btnDadosPFX_Click);
+            // 
             // txtCertNumero
             // 
             this.txtCertNumero.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtCertNumero.Location = new System.Drawing.Point(6, 110);
+            this.txtCertNumero.Location = new System.Drawing.Point(6, 149);
             this.txtCertNumero.Name = "txtCertNumero";
             this.txtCertNumero.Size = new System.Drawing.Size(237, 20);
             this.txtCertNumero.TabIndex = 13;
@@ -550,7 +586,7 @@
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(3, 94);
+            this.label9.Location = new System.Drawing.Point(3, 133);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(101, 13);
             this.label9.TabIndex = 12;
@@ -560,7 +596,7 @@
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(3, 55);
+            this.label8.Location = new System.Drawing.Point(3, 94);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(43, 13);
             this.label8.TabIndex = 11;
@@ -569,7 +605,7 @@
             // txtCertPassword
             // 
             this.txtCertPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtCertPassword.Location = new System.Drawing.Point(6, 71);
+            this.txtCertPassword.Location = new System.Drawing.Point(6, 110);
             this.txtCertPassword.Name = "txtCertPassword";
             this.txtCertPassword.PasswordChar = '*';
             this.txtCertPassword.Size = new System.Drawing.Size(237, 20);
@@ -906,7 +942,7 @@
             // 
             // btnEnviarEmail
             // 
-            this.btnEnviarEmail.Location = new System.Drawing.Point(254, 77);
+            this.btnEnviarEmail.Location = new System.Drawing.Point(6, 107);
             this.btnEnviarEmail.Name = "btnEnviarEmail";
             this.btnEnviarEmail.Size = new System.Drawing.Size(118, 23);
             this.btnEnviarEmail.TabIndex = 14;
@@ -966,6 +1002,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btnImprimirInut);
             this.groupBox1.Controls.Add(this.btnStatusServ);
             this.groupBox1.Controls.Add(this.btnInutilizar);
             this.groupBox1.Controls.Add(this.btnEnviar);
@@ -991,6 +1028,16 @@
             this.groupBox2.TabIndex = 19;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Respostas";
+            // 
+            // btnImprimirInut
+            // 
+            this.btnImprimirInut.Location = new System.Drawing.Point(254, 77);
+            this.btnImprimirInut.Name = "btnImprimirInut";
+            this.btnImprimirInut.Size = new System.Drawing.Size(118, 23);
+            this.btnImprimirInut.TabIndex = 18;
+            this.btnImprimirInut.Text = "Imprimir Inutilização";
+            this.btnImprimirInut.UseVisualStyleBackColor = true;
+            this.btnImprimirInut.Click += new System.EventHandler(this.btnImprimirInut_Click);
             // 
             // FrmMain
             // 
@@ -1114,6 +1161,10 @@
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.TextBox txtMensagem;
         private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.TextBox txtDadosPFX;
+        private System.Windows.Forms.Button btnDadosPFX;
+        private System.Windows.Forms.Button btnImprimirInut;
     }
 }
 

@@ -4,9 +4,8 @@
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
 { Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
-{                                       Régys Silveira                         }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Régys Silveira                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,9 +29,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -49,7 +47,8 @@ unit ACBrIBPTax;
 interface
 
 uses
-  Contnrs,  SysUtils, Variants, Classes, ACBrSocket;
+  Contnrs, SysUtils, Variants, Classes,
+  ACBrBase, ACBrSocket;
 
 type
   EACBrIBPTax = class(Exception);
@@ -142,9 +141,9 @@ type
 
   { TACBrIBPTax }
 
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrIBPTax = class(TACBrHTTP)
   private
     FArquivo: TStringList;
@@ -210,8 +209,7 @@ type
 implementation
 
 uses
-  StrUtils,
-  ACBrValidador, ACBrUtil, ACBrConsts;
+  StrUtils, ACBrValidador, ACBrUtil;
 
 function TabelaToString(const ATabela: TACBrIBPTaxTabela): String;
 begin

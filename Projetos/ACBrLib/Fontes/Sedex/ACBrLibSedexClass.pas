@@ -110,8 +110,6 @@ uses
 constructor TACBrLibSedex.Create(ArqConfig: string; ChaveCrypt: ansistring);
 begin
   inherited Create(ArqConfig, ChaveCrypt);
-  fpNome := CLibSedexNome;
-  fpVersao := CLibSedexVersao;
 
   FSedexDM := TLibSedexDM.Create(nil);
 end;
@@ -205,7 +203,7 @@ var
   Resp: TLibSedexRastreio;
 begin
   Resp := TLibSedexRastreio.Create(
-          CSessaoRespRastreio + Trim(IntToStrZero(ItemID +1, 2)), resINI);
+          CSessaoRespRastreio + Trim(IntToStrZero(ItemID +1, 2)), pLib.Config.TipoResposta, pLib.Config.CodResposta);
   try
     with TACBrLibSedex(pLib).SedexDM.ACBrSedex1.retRastreio[ItemID] do
     begin
@@ -224,7 +222,6 @@ end;
 function Sedex_LerArqIni(const eArqIni: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  Ok: Boolean;
   AArqIni: String;
 begin
   try
@@ -240,7 +237,7 @@ begin
     begin
       SedexDM.Travar;
       try
-        Ok := SedexDM.ACBrSedex1.LerArqIni(AArqIni);
+        SedexDM.ACBrSedex1.LerArqIni(AArqIni);
         Result := SetRetorno(ErrOK);
       finally
         SedexDM.Destravar;
@@ -268,7 +265,7 @@ begin
     with TACBrLibSedex(pLib) do
     begin
       SedexDM.Travar;
-      Resp := TLibSedexConsulta.Create(resINI);
+      Resp := TLibSedexConsulta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         SedexDM.ACBrSedex1.Consultar;
         AResposta := '';

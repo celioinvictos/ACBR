@@ -253,7 +253,6 @@ type
     TimeZoneMode      : Integer;
     TimeZoneStr       : String;
     TagRejeicao938    : Integer;
-    TagQRCodeCTe      : Integer;
     Proxy             : TProxy;
     NFCe              : TNFCeWebService;
     NFe               : TNFe;
@@ -293,6 +292,7 @@ type
     DecimaisQTD                      : Integer;
     DecimaisValor                    : Integer;
     ExibeResumo                      : Boolean;
+    TextoResumoCanhoto               : String;
     ImprimirTributosItem             : Boolean;
     ImprimirValLiq                   : Boolean;
     UNComercialETributavel           : Integer;
@@ -308,7 +308,10 @@ type
     ImprimirDetalhamentoEspecifico   : Boolean;
     ImprimirDadosDocReferenciados    : Boolean;
     ExibirBandInforAdicProduto       : Integer;
+    ImprimeDescAcrescItemNFe         : Integer;
     LogoEmCima                       : Boolean;
+    ExpandirDadosAdicionaisAuto      : Boolean;
+    ImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean;
   end;
 
   TDACTE = record
@@ -407,6 +410,11 @@ type
     UsaCodigoEanImpressao       : Boolean;
     ImprimeQRCodeLateral        : Boolean;
     ImprimeLogoLateral          : Boolean;
+    ExtratoDecimaisQTD          : Integer;
+    ExtratoDecimaisValor        : Integer;
+    ExtratoMaskQTD              : String;
+    ExtratoMaskValor            : String;
+    FormatoDecimal              : Integer;
   end;
 
   TSATEmit = record
@@ -946,7 +954,6 @@ begin
       Ini.WriteString( CSecWebService, CKeyTimeZoneStr, TimeZoneStr );
       Ini.WriteBool( CSecWebService, CKeyCamposFatObrig, CamposFatObrig );
       Ini.WriteInteger( CSecWebService, CKeyTagRejeicao938, TagRejeicao938 );
-      Ini.WriteInteger( CSecWebService, CKeyTagQRCodeCTe, TagQRCodeCTe );
     end;
 
     with DFe.RespTecnico do
@@ -1069,6 +1076,7 @@ begin
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEDecimaisQTD            , DecimaisQTD );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEDecimaisValor          , DecimaisValor );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEExibeResumo               , ExibeResumo );
+      Ini.WriteString( CSecDANFE, CKeyDANFETextoResumoCanhoto       , TextoResumoCanhoto );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirTributosItem      , ImprimirTributosItem );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirValLiq            , ImprimirValLiq );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEUNComercialETributavel , UNComercialETributavel );
@@ -1083,8 +1091,10 @@ begin
       Ini.WriteBool( CSecDANFE,  CKeyDANFEQuebrarLinhasDetalheItens      , QuebrarLinhasDetalheItens );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirDetalhamentoEspecifico , ImprimirDetalhamentoEspecifico );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirDadosDocReferenciados  , ImprimirDadosDocReferenciados );
-      Ini.WriteInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto     , ExibirBandInforAdicProduto );
-      Ini.WriteBool( CSecDANFE,  CKeyDANFELogoEmCima                     , LogoEmCima );
+      Ini.WriteInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto  , ExibirBandInforAdicProduto );
+      Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe     , ImprimeDescAcrescItemNFe);
+      Ini.WriteBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto , ExpandirDadosAdicionaisAuto );
+      Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina, ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
     end;
 
     with DFe.Impressao.DACTE do
@@ -1145,6 +1155,11 @@ begin
       ini.WriteBool(    CSecSATExtrato, CKeySATExtUsaCodigoEanImpressao  , UsaCodigoEanImpressao );
       Ini.WriteBool(    CSecSATExtrato, CKeySATExtQRCodeLateral          , ImprimeQRCodeLateral);
       Ini.WriteBool(    CSecSATExtrato, CKeySATExtLogoLateral            , ImprimeLogoLateral);
+      Ini.WriteInteger( CSecSATExtrato, CKeySATExtDecimaisQTD            , ExtratoDecimaisQTD );
+      Ini.WriteInteger( CSecSATExtrato, CKeySATExtDecimaisValor          , ExtratoDecimaisValor );
+      Ini.WriteString( CSecSATExtrato,   CKeySATExtMaskQTD                , ExtratoMaskQTD );
+      Ini.WriteString( CSecSATExtrato,   CKeySATExtMaskValor              , ExtratoMaskValor );
+      Ini.WriteInteger( CSecSATExtrato, CKeySATExtFormatoDecimal         , FormatoDecimal );
     end;
 
     with SAT.SATImpressao.SATEmit do
@@ -1612,7 +1627,6 @@ begin
       TimeZoneStr               := Ini.ReadString( CSecWebService, CKeyTimeZoneStr, TimeZoneStr);
       CamposFatObrig            := Ini.ReadBool( CSecWebService, CKeyCamposFatObrig, True);
       TagRejeicao938            := Ini.ReadInteger( CSecWebService, CKeyTagRejeicao938, TagRejeicao938 );
-      TagQRCodeCTe              := Ini.ReadInteger( CSecWebService, CKeyTagQRCodeCTe, TagQRCodeCTe );
     end;
 
     with DFe.WebService.Proxy do
@@ -1720,6 +1734,7 @@ begin
       DecimaisQTD               :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEDecimaisQTD                    , DecimaisQTD );
       DecimaisValor             :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEDecimaisValor                  , DecimaisValor );
       ExibeResumo               :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEExibeResumo                       , ExibeResumo );
+      TextoResumoCanhoto        :=  Ini.ReadString( CSecDANFE, CKeyDANFETextoResumoCanhoto               , TextoResumoCanhoto);
       ImprimirTributosItem      :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimirTributosItem              , ImprimirTributosItem );
       ImprimirValLiq            :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimirValLiq                    , ImprimirValLiq );
       UNComercialETributavel    :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEUNComercialETributavel         , UNComercialETributavel );
@@ -1734,8 +1749,12 @@ begin
       QuebrarLinhasDetalheItens :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEQuebrarLinhasDetalheItens         , QuebrarLinhasDetalheItens );
       ImprimirDetalhamentoEspecifico := Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimirDetalhamentoEspecifico , ImprimirDetalhamentoEspecifico );
       ImprimirDadosDocReferenciados := Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimirDadosDocReferenciados  , ImprimirDadosDocReferenciados );
-      ExibirBandInforAdicProduto := Ini.ReadInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto        , ExibirBandInforAdicProduto );
+      ExibirBandInforAdicProduto := Ini.ReadInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto     , ExibirBandInforAdicProduto );
+      ImprimeDescAcrescItemNFe   := Ini.ReadInteger( CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe        , ImprimeDescAcrescItemNFe );
       LogoEmCima                 := Ini.ReadBool( CSecDANFE,  CKeyDANFELogoEmCima                        , LogoEmCima );
+      ExpandirDadosAdicionaisAuto:= Ini.ReadBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto      , ExpandirDadosAdicionaisAuto );
+      ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina,
+                                                        ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
     end;
 
     with DFe.Impressao.DACTE do
@@ -1817,6 +1836,12 @@ begin
       UsaCodigoEanImpressao  := ini.ReadBool(    CSecSATExtrato, CKeySATExtUsaCodigoEanImpressao  , UsaCodigoEanImpressao );
       ImprimeQRCodeLateral   := Ini.ReadBool(    CSecSATExtrato, CKeySATExtQRCodeLateral          , ImprimeQRCodeLateral);
       ImprimeLogoLateral     := Ini.ReadBool(    CSecSATExtrato, CKeySATExtLogoLateral            , ImprimeLogoLateral);
+      ExtratoDecimaisQTD     := Ini.ReadInteger( CSecSATExtrato, CKeySATExtDecimaisQTD            , ExtratoDecimaisQTD);
+      ExtratoDecimaisValor   := Ini.ReadInteger( CSecSATExtrato, CKeySATExtDecimaisValor          , ExtratoDecimaisValor);
+      ExtratoMaskQTD         := Ini.ReadString( CSecSATExtrato,  CKeySATExtMaskQTD                , ExtratoMaskQTD);
+      ExtratoMaskValor       := Ini.ReadString( CSecSATExtrato,  CKeySATExtMaskValor              , ExtratoMaskValor);
+      FormatoDecimal         := Ini.ReadInteger( CSecSATExtrato, CKeySATExtFormatoDecimal         , FormatoDecimal);
+
     end;
 
     with SAT.SATImpressao.SATEmit do
@@ -2263,7 +2288,6 @@ begin
     TimeZoneStr               := '';
     CamposFatObrig            := True;
     TagRejeicao938            := 0;
-    TagQRCodeCTe              := 0;
   end;
 
   with DFe.WebService.Proxy do
@@ -2355,14 +2379,15 @@ begin
     FonteEndereco             :=  7;
     FonteCampos               :=  8;
     AlturaCampos              :=  30;
-    Margem                    :=  0.7;
-    MargemSup                 :=  0.7;
-    MargemDir                 :=  0.7;
-    MargemEsq                 :=  0.7;
+    Margem                    :=  7;
+    MargemSup                 :=  7;
+    MargemDir                 :=  5;
+    MargemEsq                 :=  9;
     PathPDF                   :=  AcertaPath('PDF');
     DecimaisQTD               :=  2;
     DecimaisValor             :=  2;
     ExibeResumo               :=  False;
+    TextoResumoCanhoto        := '';
     ImprimirTributosItem      :=  False;
     ImprimirValLiq            :=  False;
     UNComercialETributavel    :=  0;
@@ -2378,7 +2403,10 @@ begin
     ImprimirDetalhamentoEspecifico := True;
     ImprimirDadosDocReferenciados := True;
     ExibirBandInforAdicProduto := 0;
+    ImprimeDescAcrescItemNFe   := 0;
     LogoEmCima                 := False;
+    ExpandirDadosAdicionaisAuto := False;
+    ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= False;
   end;
 
   with DFe.Impressao.DACTE do
@@ -2459,6 +2487,11 @@ begin
     UsaCodigoEanImpressao  := False;
     ImprimeQRCodeLateral   := True;
     ImprimeLogoLateral     := True;
+    ExtratoDecimaisQTD     := 2;
+    ExtratoDecimaisValor   := 2;
+    ExtratoMaskQTD         := '0.0000';
+    ExtratoMaskValor       := '0.000';
+    FormatoDecimal         := 0;
   end;
 
   with SAT.SATImpressao.SATEmit do

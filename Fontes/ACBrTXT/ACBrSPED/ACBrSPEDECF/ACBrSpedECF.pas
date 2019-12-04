@@ -62,8 +62,8 @@ type
   /// ACBrSpedECF - Sitema Publico de Escrituração Contábil Fiscal
 
   { TACBrSPEDECF }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrSPEDECF = class(TACBrComponent)
   private

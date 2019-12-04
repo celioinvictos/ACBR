@@ -1,3 +1,36 @@
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
+
 {$I ACBr.inc}
 
 library ACBrLibMDFe;
@@ -16,40 +49,46 @@ var
 
 exports
   // Importadas de ACBrLibComum
-  MDFe_Inicializar,
-  MDFe_Finalizar,
-  MDFe_Nome,
-  MDFe_Versao,
-  MDFe_UltimoRetorno,
-  MDFe_ConfigLer,
-  MDFe_ConfigGravar,
-  MDFe_ConfigLerValor,
-  MDFe_ConfigGravarValor,
+  MDFE_Inicializar,
+  MDFE_Finalizar,
+  MDFE_Nome,
+  MDFE_Versao,
+  MDFE_UltimoRetorno,
+  MDFE_ConfigLer,
+  MDFE_ConfigGravar,
+  MDFE_ConfigLerValor,
+  MDFE_ConfigGravarValor,
 
   // Servicos
-  MDFe_StatusServico,
-  MDFe_Enviar,
-  MDFe_Consultar,
-  MDFe_Cancelar,
-  MDFe_EnviarEvento,
-  MDFe_DistribuicaoDFePorUltNSU,
-  MDFe_DistribuicaoDFePorNSU,
-  MDFe_DistribuicaoDFePorChave,
-  MDFe_EnviarEmail,
-  MDFe_EnviarEmailEvento,
-  MDFe_Imprimir,
-  MDFe_ImprimirPDF,
-  MDFe_ImprimirEvento,
-  MDFe_ImprimirEventoPDF,
+  MDFE_StatusServico,
+  MDFE_Enviar,
+  MDFE_ConsultarRecibo,
+  MDFE_Consultar,
+  MDFE_Cancelar,
+  MDFE_EnviarEvento,
+  MDFE_DistribuicaoDFePorUltNSU,
+  MDFE_DistribuicaoDFePorNSU,
+  MDFE_DistribuicaoDFePorChave,
+  MDFE_EnviarEmail,
+  MDFE_EnviarEmailEvento,
+  MDFE_Imprimir,
+  MDFE_ImprimirPDF,
+  MDFE_ImprimirEvento,
+  MDFE_ImprimirEventoPDF,
 
   // Arquivos
-  MDFe_CarregarXML,
-  MDFe_CarregarINI,
-  MDFe_LimparLista,
-  MDFe_Assinar,
-  MDFe_Validar,
-  MDFe_ValidarRegrasdeNegocios,
-  MDFe_VerificarAssinatura;
+  MDFE_CarregarXML,
+  MDFE_CarregarINI,
+  MDFE_ObterXml,
+  MDFE_GravarXml,
+  MDFE_CarregarEventoXML,
+  MDFE_CarregarEventoINI,
+  MDFE_LimparLista,
+  MDFE_LimparListaEventos,
+  MDFE_Assinar,
+  MDFE_Validar,
+  MDFE_ValidarRegrasdeNegocios,
+  MDFE_VerificarAssinatura;
 
 begin
   {$IFDEF DEBUG}

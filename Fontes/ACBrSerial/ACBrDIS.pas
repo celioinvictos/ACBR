@@ -130,9 +130,9 @@ TACBrDISLinhas = class(TObjectList)
 
 { TACBrDIS }
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
-TACBrDIS = class( TACBrComponent )
+  TACBrDIS = class( TACBrComponent )
   private
     fsDevice  : TACBrDevice ;   { SubComponente ACBrDevice }
 

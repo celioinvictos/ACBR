@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: JvEnterTab.PAS    http://jvcl.sourceforge.net   }                                             
+{ Colaboradores nesse arquivo: JvEnterTab.PAS    http://jvcl.sourceforge.net   }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -60,12 +60,12 @@ type
 
   THackButtomControl = class(TButtonControl);
 
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}
 
   { TACBrEnterTab }
 
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrEnterTab = class ( TACBrComponent )
   private
     FAllowDefault: Boolean;
@@ -77,7 +77,7 @@ type
   public
     constructor Create(AOwner: TComponent ); override ;
     destructor Destroy ; override ;
-    
+
     procedure DoEnterAsTab(AForm : TObject; var Key: Char);
   published
     property EnterAsTab: Boolean read FEnterAsTab write SetEnterAsTab

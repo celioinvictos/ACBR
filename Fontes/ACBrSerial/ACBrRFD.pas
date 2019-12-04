@@ -187,10 +187,10 @@ TACBrRFDCupom = class
 end ;
 
 { TACBrRFD }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
-TACBrRFD = class( TACBrComponent )     { Componente ACBrRFD }
+  TACBrRFD = class( TACBrComponent )     { Componente ACBrRFD }
   private
     fsDirECF: String;
     fsDirECFLog: String;

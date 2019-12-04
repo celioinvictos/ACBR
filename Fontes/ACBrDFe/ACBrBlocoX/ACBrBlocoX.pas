@@ -32,7 +32,7 @@ unit ACBrBlocoX;
 interface
 
 uses
-  Classes, SysUtils, 
+  Classes, SysUtils, ACBrBase,
   ACBrDFe, ACBrDFeConfiguracoes, ACBrBlocoX_WebServices, 
   ACBrBlocoX_ReducaoZ, ACBrBlocoX_Estoque, ACBrBlocoX_Comum, 
   ACBrBlocoX_Consulta, ACBrUtil;
@@ -101,8 +101,8 @@ type
     property Versao: String read FVersao write FVersao;
     property Caixa: String read FCaixa write FCaixa;
   end;
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrBlocoX = class(TACBrDFe)
   private

@@ -45,8 +45,8 @@ uses
 
 type
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
  TACBrNFSeDANFSeClass = class(TACBrDFeReport)
   private
     procedure SetACBrNFSe(const Value: TComponent);
@@ -233,6 +233,7 @@ begin
       Result := TACBrNFSe(ACBrNFSe).Configuracoes.Arquivos.GetPath(
                 Result, DescricaoModelo,
                 OnlyNumber(ANFSe.PrestadorServico.IdentificacaoPrestador.CNPJ),
+                OnlyNumber(ANFSe.PrestadorServico.IdentificacaoPrestador.InscricaoEstadual),
                 dhEmissao);
     end;
   end;

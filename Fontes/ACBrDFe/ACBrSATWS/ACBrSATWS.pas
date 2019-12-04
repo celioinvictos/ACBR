@@ -33,7 +33,7 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrDFe, ACBrDFeConfiguracoes, ACBrSATWS_WebServices,
+  ACBrBase, ACBrDFe, ACBrDFeConfiguracoes, ACBrSATWS_WebServices,
   ACBrUtil;
 
 type
@@ -49,9 +49,9 @@ type
   end;
 
   { TACBrSATWS }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrSATWS = class(TACBrDFe)
   private
     FWebServices: TACBrSATWS_WebServices;

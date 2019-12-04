@@ -151,6 +151,8 @@ type
     function LerXml_proGoverna: Boolean;
     function LerXml_proSMARAPD: Boolean;
     function LerXml_proGIAP: Boolean;
+    function LerXml_proIPM: Boolean;
+    function LerXml_proAssessorPublico: Boolean;
 
     property Leitor: TLeitor         read FLeitor   write FLeitor;
     property InfCanc: TInfCanc       read FInfCanc  write FInfCanc;
@@ -298,6 +300,8 @@ begin
     proGoverna:     Result := LerXml_proGoverna;
     proSMARAPD:     Result := LerXml_proSMARAPD;
     proGiap:        Result := LerXml_proGIAP;
+    proIPM:         Result := LerXml_proIPM;
+    proAssessorPublico:  Result := LerXml_proAssessorPublico;
   else
     Result := LerXml_ABRASF;
   end;
@@ -454,7 +458,8 @@ begin
             InfCanc.FPedido.InfID.ID := Leitor.rAtributo('InfPedidoCancelamento id=');
 
           InfCanc.FPedido.CodigoCancelamento := Leitor.rCampo(tcStr, 'CodigoCancelamento');
-          If Provedor = proSimpliss then
+
+          If (Provedor in [proSimpliss, proTcheInfov2]) then
             InfCanc.Sucesso := InfCanc.FPedido.CodigoCancelamento;
 
           if Leitor.rExtrai(2, 'IdentificacaoNfse') <> '' then
@@ -1034,6 +1039,62 @@ begin
     end;}
     Result := True;
 
+  except
+    Result := False;
+  end;
+end;
+
+function TretCancNFSe.LerXml_proAssessorPublico: Boolean;
+begin
+  try
+    if pos('Sucesso', leitor.Arquivo) > 0 then
+    begin
+       InfCanc.Sucesso  := 'S';
+       InfCanc.MsgCanc  := leitor.Arquivo;
+    end
+    else
+      infCanc.DataHora := 0;
+    FInfCanc.MsgRetorno.New;
+    FInfCanc.FMsgRetorno[0].FCodigo   := '';
+    FInfCanc.FMsgRetorno[0].FMensagem := leitor.Arquivo;
+    FInfCanc.FMsgRetorno[0].FCorrecao := '';
+    Result := True;
+  except
+    result := False;
+  end;
+end;
+
+function TretCancNFSe.LerXml_proIPM: Boolean;
+var
+  sRetorno, sCodigo, sMensagem: String;
+begin
+  Result := False;
+
+  try
+    if (Leitor.rExtrai(1, 'retorno') <> '') and (Leitor.rExtrai(1, 'mensagem') <> '') then
+    begin
+      sRetorno  := Leitor.rCampo(tcStr, 'codigo');
+      sCodigo   := Trim(Copy(sRetorno, 1, PosAt('-', sRetorno, 1) - 1));
+      sMensagem := Trim(Copy(sRetorno, PosAt('-', sRetorno, 1) + 1, Length(sRetorno)));
+
+      if StrToIntDef(sCodigo, 0) = 1 then
+      begin
+        InfCanc.Sucesso  := 'True';
+        InfCanc.DataHora := Now;
+        InfCanc.MsgCanc  := sMensagem;
+
+        Result := True;
+      end
+      else
+      begin
+        InfCanc.Sucesso := 'False';
+
+        InfCanc.MsgRetorno.New;
+        InfCanc.MsgRetorno[0].FCodigo   := sCodigo;
+        InfCanc.MsgRetorno[0].FMensagem := sMensagem;
+        InfCanc.MsgRetorno[0].FCorrecao := '';
+      end;
+    end;
   except
     Result := False;
   end;

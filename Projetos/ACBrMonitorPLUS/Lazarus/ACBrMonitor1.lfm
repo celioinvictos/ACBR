@@ -1,7 +1,7 @@
 object FrmACBrMonitor: TFrmACBrMonitor
-  Left = 401
+  Left = 407
   Height = 723
-  Top = 218
+  Top = 235
   Width = 1228
   HelpType = htKeyword
   HelpKeyword = 'ACBrMonitor/Monitor.htm'
@@ -19,7 +19,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ShowHint = True
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.6.0'
   Visible = True
   object StatusBar1: TStatusBar
     Left = 0
@@ -412,12 +412,12 @@ object FrmACBrMonitor: TFrmACBrMonitor
         Height = 408
         Top = 1
         Width = 1023
-        ActivePage = tsSat
+        ActivePage = tsMonitor
         Align = alClient
         Font.Height = -13
         Images = ImageList1
         ParentFont = False
-        TabIndex = 17
+        TabIndex = 0
         TabOrder = 0
         OnChange = pgConfigChange
         object tsMonitor: TTabSheet
@@ -970,7 +970,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
         object tsCadastro: TTabSheet
           Caption = 'Cadas&tro'
           ClientHeight = 378
-          ClientWidth = 1040
+          ClientWidth = 1015
           Font.Height = -13
           ImageIndex = 22
           ParentFont = False
@@ -978,7 +978,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Left = 0
             Height = 378
             Top = 0
-            Width = 1040
+            Width = 1015
             ActivePage = tsCadSwH
             Align = alClient
             Font.Height = -13
@@ -991,7 +991,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               HelpKeyword = 'ACBrMonitor/SwHouse.htm'
               Caption = 'Sw.House'
               ClientHeight = 370
-              ClientWidth = 1032
+              ClientWidth = 1007
               Font.Height = -13
               ImageIndex = 21
               ParentFont = False
@@ -999,7 +999,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 0
                 Height = 370
                 Top = 0
-                Width = 1032
+                Width = 1007
                 ActivePage = tsCadSwDados
                 Align = alClient
                 Font.Height = -13
@@ -1009,7 +1009,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object tsCadSwDados: TTabSheet
                   Caption = 'Dados Cadastrais'
                   ClientHeight = 340
-                  ClientWidth = 1024
+                  ClientWidth = 999
                   Font.Height = -13
                   ImageIndex = 19
                   ParentFont = False
@@ -1032,7 +1032,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 12
                     Height = 25
                     Top = 18
-                    Width = 735
+                    Width = 710
                     Anchors = [akTop, akLeft, akRight]
                     Font.Height = -13
                     ParentFont = False
@@ -1041,7 +1041,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object Label84: TLabel
                     AnchorSideLeft.Control = edSH_COO
                     AnchorSideTop.Control = Label83
-                    Left = 757
+                    Left = 732
                     Height = 17
                     Top = 1
                     Width = 28
@@ -1055,7 +1055,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     AnchorSideLeft.Side = asrBottom
                     AnchorSideTop.Control = edSH_RazaoSocial
                     Cursor = crIBeam
-                    Left = 757
+                    Left = 732
                     Height = 25
                     Top = 18
                     Width = 180
@@ -1068,7 +1068,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object Label85: TLabel
                     AnchorSideLeft.Control = edSH_IM
                     AnchorSideTop.Control = Label87
-                    Left = 757
+                    Left = 732
                     Height = 17
                     Top = 44
                     Width = 81
@@ -1083,7 +1083,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     AnchorSideRight.Control = edSH_COO
                     AnchorSideRight.Side = asrBottom
                     Cursor = crIBeam
-                    Left = 757
+                    Left = 732
                     Height = 25
                     Top = 61
                     Width = 180
@@ -1101,7 +1101,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 215
                     Height = 25
                     Top = 61
-                    Width = 532
+                    Width = 507
                     Anchors = [akTop, akLeft, akRight]
                     BorderSpacing.Left = 10
                     Font.Height = -13
@@ -1169,7 +1169,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 12
                     Height = 25
                     Top = 104
-                    Width = 648
+                    Width = 623
                     Anchors = [akTop, akLeft, akRight]
                     Font.Height = -13
                     OnChange = edSH_AplicativoChange
@@ -1179,7 +1179,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object Label89: TLabel
                     AnchorSideLeft.Control = edSH_NumeroAP
                     AnchorSideTop.Control = Label88
-                    Left = 670
+                    Left = 645
                     Height = 17
                     Top = 87
                     Width = 48
@@ -1193,7 +1193,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     AnchorSideLeft.Side = asrBottom
                     AnchorSideTop.Control = edSH_Aplicativo
                     Cursor = crIBeam
-                    Left = 670
+                    Left = 645
                     Height = 25
                     Top = 104
                     Width = 77
@@ -1206,7 +1206,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object Label90: TLabel
                     AnchorSideLeft.Control = edSH_VersaoAP
                     AnchorSideTop.Control = Label88
-                    Left = 757
+                    Left = 732
                     Height = 17
                     Top = 87
                     Width = 40
@@ -1221,7 +1221,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     AnchorSideRight.Control = edSH_IM
                     AnchorSideRight.Side = asrBottom
                     Cursor = crIBeam
-                    Left = 757
+                    Left = 732
                     Height = 25
                     Top = 104
                     Width = 180
@@ -1233,7 +1233,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object Label91: TLabel
                     AnchorSideLeft.Control = edSH_Linha2
                     AnchorSideTop.Control = Label92
-                    Left = 757
+                    Left = 732
                     Height = 17
                     Top = 130
                     Width = 41
@@ -1249,7 +1249,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     AnchorSideRight.Control = edSH_VersaoAP
                     AnchorSideRight.Side = asrBottom
                     Cursor = crIBeam
-                    Left = 757
+                    Left = 732
                     Height = 25
                     Top = 147
                     Width = 180
@@ -1280,7 +1280,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 12
                     Height = 25
                     Top = 147
-                    Width = 735
+                    Width = 710
                     Anchors = [akTop, akLeft, akRight]
                     Font.Height = -13
                     ParentFont = False
@@ -1293,7 +1293,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 12
                     Height = 25
                     Top = 190
-                    Width = 735
+                    Width = 710
                     Anchors = [akTop, akLeft, akRight]
                     Font.Height = -13
                     ParentFont = False
@@ -1303,7 +1303,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     AnchorSideLeft.Control = edSH_Site
                     AnchorSideTop.Control = edSH_Linha1
                     AnchorSideTop.Side = asrBottom
-                    Left = 14
+                    Left = 13
                     Height = 17
                     Top = 173
                     Width = 21
@@ -1318,7 +1318,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object tsCadSwChaveRSA: TTabSheet
                   Caption = 'Chave RSA'
                   ClientHeight = 340
-                  ClientWidth = 1026
+                  ClientWidth = 999
                   Font.Height = -13
                   ImageIndex = 18
                   ParentFont = False
@@ -1326,7 +1326,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 0
                     Height = 140
                     Top = 0
-                    Width = 1026
+                    Width = 999
                     Align = alTop
                     Font.Height = 12
                     Font.Name = 'Fixedsys'
@@ -1349,7 +1349,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   end
                   object bRSAPrivKey: TButton
                     AnchorSideTop.Side = asrCenter
-                    Left = 319
+                    Left = 292
                     Height = 27
                     Top = 146
                     Width = 145
@@ -1364,7 +1364,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   end
                   object bRSAPubKey: TButton
                     AnchorSideTop.Side = asrCenter
-                    Left = 478
+                    Left = 451
                     Height = 27
                     Top = 146
                     Width = 137
@@ -1379,7 +1379,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   end
                   object bRSAeECFc: TButton
                     AnchorSideTop.Side = asrCenter
-                    Left = 619
+                    Left = 592
                     Height = 27
                     Top = 146
                     Width = 121
@@ -1400,7 +1400,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               HelpKeyword = 'ACBrMonitor/Usuario.htm'
               Caption = 'Usuário'
               ClientHeight = 370
-              ClientWidth = 1034
+              ClientWidth = 1007
               Font.Height = -13
               ImageIndex = 20
               ParentFont = False
@@ -1422,7 +1422,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 7
                 Height = 25
                 Top = 24
-                Width = 827
+                Width = 800
                 Anchors = [akTop, akLeft, akRight]
                 Font.Height = -13
                 ParentFont = False
@@ -1431,7 +1431,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object Label47: TLabel
                 AnchorSideLeft.Control = edUSUCNPJ
                 AnchorSideTop.Control = Label46
-                Left = 844
+                Left = 817
                 Height = 17
                 Top = 7
                 Width = 29
@@ -1445,7 +1445,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 AnchorSideLeft.Side = asrBottom
                 AnchorSideTop.Control = edUSURazaoSocial
                 Cursor = crIBeam
-                Left = 844
+                Left = 817
                 Height = 25
                 Top = 24
                 Width = 172
@@ -1477,7 +1477,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 7
                 Height = 25
                 Top = 67
-                Width = 827
+                Width = 800
                 Anchors = [akTop, akLeft, akRight]
                 Font.Height = -13
                 ParentFont = False
@@ -1486,7 +1486,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object Label48: TLabel
                 AnchorSideLeft.Control = edUSUIE
                 AnchorSideTop.Control = Label49
-                Left = 844
+                Left = 817
                 Height = 17
                 Top = 50
                 Width = 74
@@ -1502,7 +1502,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 AnchorSideRight.Control = edUSUCNPJ
                 AnchorSideRight.Side = asrBottom
                 Cursor = crIBeam
-                Left = 844
+                Left = 817
                 Height = 25
                 Top = 67
                 Width = 172
@@ -1623,7 +1623,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 372
                 Height = 25
                 Top = 140
-                Width = 644
+                Width = 617
                 Anchors = [akTop, akLeft, akRight]
                 Font.Height = -13
                 MaxValue = 999999999
@@ -1653,7 +1653,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 210
                 Height = 10
                 Top = 106
-                Width = 806
+                Width = 779
                 Anchors = [akTop, akLeft, akRight]
                 BorderSpacing.Top = 3
                 Shape = bsTopLine
@@ -1666,7 +1666,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
           HelpKeyword = 'ACBrMonitor/ECF.htm'
           Caption = '&ECF'
           ClientHeight = 378
-          ClientWidth = 1068
+          ClientWidth = 1015
           Font.Height = -13
           ImageIndex = 1
           ParentFont = False
@@ -2159,14 +2159,14 @@ object FrmACBrMonitor: TFrmACBrMonitor
           HelpKeyword = 'ACBrMonitor/ImpressaodeCheque.htm'
           Caption = 'Imp.&Cheque'
           ClientHeight = 378
-          ClientWidth = 1068
+          ClientWidth = 1015
           Font.Height = -13
           ImageIndex = 2
           ParentFont = False
           object sbCHQBemafiINI: TSpeedButton
             AnchorSideLeft.Control = edCHQBemafiINI
             AnchorSideLeft.Side = asrBottom
-            Left = 735
+            Left = 682
             Height = 22
             Top = 78
             Width = 23
@@ -2308,7 +2308,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Text = 'COM1'
           end
           object bCHQTestar: TBitBtn
-            Left = 636
+            Left = 583
             Height = 48
             Top = 116
             Width = 110
@@ -2361,11 +2361,11 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Left = 16
             Height = 121
             Top = 61
-            Width = 594
+            Width = 541
             Anchors = [akTop, akLeft, akRight]
             Caption = 'Valores Padrões'
             ClientHeight = 99
-            ClientWidth = 590
+            ClientWidth = 537
             Font.Height = -13
             ParentFont = False
             TabOrder = 3
@@ -2388,7 +2388,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               Left = 16
               Height = 25
               Top = 18
-              Width = 551
+              Width = 498
               Anchors = [akTop, akLeft, akRight]
               Font.Height = -13
               OnChange = edCHQFavorecidoChange
@@ -2415,7 +2415,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               Left = 16
               Height = 25
               Top = 62
-              Width = 551
+              Width = 498
               Anchors = [akTop, akLeft, akRight]
               Font.Height = -13
               OnChange = edCHQCidadeChange
@@ -2425,7 +2425,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
           end
           object edCHQBemafiINI: TEdit
             Cursor = crIBeam
-            Left = 621
+            Left = 568
             Height = 25
             Top = 78
             Width = 113
@@ -2437,7 +2437,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
           end
           object Label30: TLabel
             AnchorSideLeft.Control = edCHQBemafiINI
-            Left = 621
+            Left = 568
             Height = 17
             Top = 61
             Width = 58
@@ -5151,8 +5151,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
               HelpType = htKeyword
               HelpKeyword = 'ACBrMonitor/Layout.htm'
               Caption = 'Layout'
-              ClientHeight = 297
-              ClientWidth = 981
+              ClientHeight = 348
+              ClientWidth = 1007
               Font.Height = -13
               ParentFont = False
               object deBOLDirLogo: TDirectoryEdit
@@ -5161,7 +5161,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 8
                 Height = 25
                 Top = 24
-                Width = 961
+                Width = 987
                 ShowHidden = False
                 ButtonWidth = 23
                 NumGlyphs = 1
@@ -5209,7 +5209,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 6
                 Height = 99
                 Top = 192
-                Width = 371
+                Width = 397
                 Anchors = [akTop, akLeft, akRight]
                 AutoFill = True
                 Caption = 'Mostrar'
@@ -5223,7 +5223,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 ChildSizing.Layout = cclTopToBottomThenLeftToRight
                 ChildSizing.ControlsPerLine = 3
                 ClientHeight = 77
-                ClientWidth = 367
+                ClientWidth = 393
                 Font.Height = -13
                 Items.Strings = (
                   'Previsualização'
@@ -5298,7 +5298,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 7
                 Height = 25
                 Top = 115
-                Width = 716
+                Width = 742
                 ShowHidden = False
                 ButtonWidth = 23
                 NumGlyphs = 1
@@ -5326,7 +5326,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 7
                 Height = 25
                 Top = 160
-                Width = 962
+                Width = 988
                 Anchors = [akTop, akLeft, akRight]
                 Font.Height = -13
                 ItemHeight = 17
@@ -5347,7 +5347,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object edNomeArquivo: TEdit
                 AnchorSideLeft.Control = deBOLDirArquivo
                 AnchorSideLeft.Side = asrBottom
-                Left = 730
+                Left = 756
                 Height = 25
                 Top = 115
                 Width = 210
@@ -5359,7 +5359,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object Label4: TLabel
                 AnchorSideLeft.Control = edNomeArquivo
                 AnchorSideBottom.Control = edNomeArquivo
-                Left = 730
+                Left = 756
                 Height = 16
                 Top = 99
                 Width = 85
@@ -5374,8 +5374,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
               HelpType = htKeyword
               HelpKeyword = 'ACBrMonitor/RemessaRetorno.htm'
               Caption = 'Remessa\Retorno'
-              ClientHeight = 297
-              ClientWidth = 981
+              ClientHeight = 348
+              ClientWidth = 1007
               Font.Height = -13
               ParentFont = False
               object deBolDirRemessa: TDirectoryEdit
@@ -5383,7 +5383,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 6
                 Height = 25
                 Top = 28
-                Width = 960
+                Width = 986
                 ShowHidden = False
                 ButtonWidth = 23
                 NumGlyphs = 1
@@ -5398,7 +5398,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 8
                 Height = 25
                 Top = 76
-                Width = 960
+                Width = 986
                 ShowHidden = False
                 ButtonWidth = 23
                 NumGlyphs = 1
@@ -5483,7 +5483,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 168
                 Height = 17
                 Top = 105
-                Width = 104
+                Width = 103
                 Anchors = [akLeft, akBottom]
                 Caption = 'Cod. Transmissão'
                 Font.Height = -13
@@ -6987,7 +6987,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
           HelpKeyword = 'ACBrMonitor/NCM.htm'
           Caption = 'NCM'
           ClientHeight = 378
-          ClientWidth = 989
+          ClientWidth = 1015
           Font.Height = -13
           ImageIndex = 25
           ParentFont = False
@@ -7026,7 +7026,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Height = 25
             Hint = 'Diretorio onde salvar a lista'
             Top = 78
-            Width = 493
+            Width = 519
             ShowHidden = False
             ButtonWidth = 23
             NumGlyphs = 1
@@ -7047,7 +7047,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
             ParentFont = False
           end
           object bDownloadLista: TButton
-            Left = 509
+            Left = 535
             Height = 25
             Top = 78
             Width = 120
@@ -7071,11 +7071,11 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Height = 378
             Top = 0
             Width = 1015
-            ActivePage = tsWebServiceDFe
+            ActivePage = tsConfiguracaoDFe
             Align = alClient
             Font.Height = -13
             ParentFont = False
-            TabIndex = 2
+            TabIndex = 0
             TabOrder = 0
             object tsConfiguracaoDFe: TTabSheet
               HelpType = htKeyword
@@ -8772,44 +8772,6 @@ object FrmACBrMonitor: TFrmACBrMonitor
                       Text = 'fgtNunca'
                     end
                   end
-                  object GroupBox12: TGroupBox
-                    Left = 656
-                    Height = 127
-                    Top = 144
-                    Width = 356
-                    Caption = 'Regras Gerar XML CTe'
-                    ClientHeight = 105
-                    ClientWidth = 352
-                    TabOrder = 6
-                    object Label240: TLabel
-                      Left = 13
-                      Height = 17
-                      Top = 16
-                      Width = 195
-                      Caption = 'Geração da Tag QRCode no XML'
-                      Font.Height = -13
-                      ParentColor = False
-                      ParentFont = False
-                    end
-                    object cbTagInfSuplCTe: TComboBox
-                      Left = 13
-                      Height = 23
-                      Top = 36
-                      Width = 191
-                      Font.Height = -12
-                      ItemHeight = 15
-                      ItemIndex = 0
-                      Items.Strings = (
-                        'fgtNunca'
-                        'fgtSomenteProducao'
-                        'fgtSomenteHomologacao'
-                        'fgtSempre'
-                      )
-                      ParentFont = False
-                      TabOrder = 0
-                      Text = 'fgtNunca'
-                    end
-                  end
                 end
                 object tsWSNFCe: TTabSheet
                   Caption = 'NFC-e'
@@ -8902,7 +8864,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object gbxWSeSocial: TTabSheet
                   Caption = 'e-Social'
                   ClientHeight = 318
-                  ClientWidth = 1035
+                  ClientWidth = 999
                   Font.Height = -13
                   ParentFont = False
                   object cbVersaoWSeSocial: TComboBox
@@ -9436,7 +9398,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Height = 71
                     Top = 94
                     Width = 299
-                    Caption = 'Margens (NFe/CTe/MDFe)'
+                    Caption = 'Margens "mm" (NFe/CTe/MDFe)'
                     ClientHeight = 49
                     ClientWidth = 295
                     Font.Height = -13
@@ -9701,7 +9663,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object tsDadosEmpresa: TTabSheet
                   Caption = 'Dados Empresa'
                   ClientHeight = 318
-                  ClientWidth = 1035
+                  ClientWidth = 999
                   Font.Height = -13
                   ImageIndex = 1
                   ParentFont = False
@@ -9852,7 +9814,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object TabSheet1: TTabSheet
                   Caption = 'NFe'
                   ClientHeight = 318
-                  ClientWidth = 1035
+                  ClientWidth = 999
                   Font.Height = -13
                   ParentFont = False
                   object Label145: TLabel
@@ -9885,7 +9847,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 10
                     Height = 44
                     Top = 65
-                    Width = 351
+                    Width = 423
                     AutoFill = True
                     Caption = 'Tipo de Fonte'
                     ChildSizing.LeftRightSpacing = 6
@@ -9896,7 +9858,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     ChildSizing.Layout = cclLeftToRightThenTopToBottom
                     ChildSizing.ControlsPerLine = 3
                     ClientHeight = 22
-                    ClientWidth = 347
+                    ClientWidth = 419
                     Columns = 3
                     Font.Height = -13
                     ItemIndex = 0
@@ -10086,9 +10048,9 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object cbxExibirEAN: TCheckBox
                     Left = 8
                     Height = 21
-                    Top = 171
-                    Width = 132
-                    Caption = 'Exibir Código GTIN'
+                    Top = 179
+                    Width = 239
+                    Caption = 'Exibir Código GTIN (modo Paisagem)'
                     Font.Height = -13
                     ParentFont = False
                     TabOrder = 9
@@ -10096,7 +10058,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object cbxExibirCampoFatura: TCheckBox
                     Left = 8
                     Height = 21
-                    Top = 193
+                    Top = 201
                     Width = 138
                     Caption = 'Exibir Campo Fatura'
                     Font.Height = -13
@@ -10106,7 +10068,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object cbxQuebrarLinhasDetalhesItens: TCheckBox
                     Left = 8
                     Height = 21
-                    Top = 215
+                    Top = 223
                     Width = 241
                     Caption = 'Quebrar linhas em '#13#10'detalhe dos itens'
                     Font.Height = -13
@@ -10116,7 +10078,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object cbxFormCont: TCheckBox
                     Left = 8
                     Height = 21
-                    Top = 237
+                    Top = 245
                     Width = 165
                     Caption = 'Formulario Pré-Impresso'
                     Font.Height = -13
@@ -10126,19 +10088,9 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object cbxImpValLiq: TCheckBox
                     Left = 262
                     Height = 21
-                    Top = 193
+                    Top = 201
                     Width = 222
                     Caption = 'Imprimir Valor Líquido do Produto'
-                    Font.Height = -13
-                    ParentFont = False
-                    TabOrder = 14
-                  end
-                  object cbxExibeResumo: TCheckBox
-                    Left = 262
-                    Height = 21
-                    Top = 171
-                    Width = 175
-                    Caption = 'Exibir Resumo no Canhoto'
                     Font.Height = -13
                     ParentFont = False
                     TabOrder = 13
@@ -10173,7 +10125,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Left = 262
                     Height = 25
                     Top = 32
-                    Width = 220
+                    Width = 171
                     Font.Height = -13
                     ItemHeight = 17
                     ItemIndex = 0
@@ -10183,7 +10135,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                       'Unidade Comercial e Tributável'
                     )
                     ParentFont = False
-                    TabOrder = 15
+                    TabOrder = 14
                     Text = 'Unidade Comercial'
                   end
                   object Label193: TLabel
@@ -10199,38 +10151,38 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   object cbxImpDetEspNFe: TCheckBox
                     Left = 262
                     Height = 21
-                    Top = 215
+                    Top = 223
                     Width = 273
                     Caption = 'Imprimir Detalhamento Específico dos Itens'
                     Font.Height = -13
                     ParentFont = False
-                    TabOrder = 16
+                    TabOrder = 15
                   end
                   object cbxImpDocsReferenciados: TCheckBox
                     Left = 262
                     Height = 21
-                    Top = 237
+                    Top = 245
                     Width = 275
                     Caption = 'Imprimir Dados Documentos Referenciados'
                     Font.Height = -13
                     ParentFont = False
-                    TabOrder = 17
+                    TabOrder = 16
                   end
                   object cbxExibirLogoEmCima: TCheckBox
-                    Left = 555
+                    Left = 262
                     Height = 21
-                    Top = 171
+                    Top = 179
                     Width = 141
                     Caption = 'Exibir Logo em Cima'
                     Font.Height = -13
                     ParentFont = False
-                    TabOrder = 18
+                    TabOrder = 17
                   end
                   object rgInfAdicProduto: TRadioGroup
-                    Left = 501
-                    Height = 55
-                    Top = 5
-                    Width = 306
+                    Left = 448
+                    Height = 43
+                    Top = 8
+                    Width = 272
                     AutoFill = True
                     Caption = 'Exibir Inf. Adicionais Produto'
                     ChildSizing.LeftRightSpacing = 6
@@ -10240,8 +10192,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     ChildSizing.ShrinkVertical = crsScaleChilds
                     ChildSizing.Layout = cclLeftToRightThenTopToBottom
                     ChildSizing.ControlsPerLine = 3
-                    ClientHeight = 33
-                    ClientWidth = 302
+                    ClientHeight = 21
+                    ClientWidth = 268
                     Columns = 3
                     Font.Height = -13
                     ItemIndex = 0
@@ -10251,7 +10203,100 @@ object FrmACBrMonitor: TFrmACBrMonitor
                       'Separados'
                     )
                     ParentFont = False
+                    TabOrder = 18
+                  end
+                  object cbxExpandirDadosAdicionaisAuto: TCheckBox
+                    Left = 555
+                    Height = 21
+                    Top = 179
+                    Width = 281
+                    Caption = 'Expandir Dados Adicionais Automaticamente'
+                    Font.Height = -13
+                    ParentFont = False
                     TabOrder = 19
+                  end
+                  object cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina: TCheckBox
+                    Left = 555
+                    Height = 21
+                    Top = 201
+                    Width = 344
+                    Caption = 'Imprime Continuação Dados Adicionais Primeira Pagina'
+                    Font.Height = -13
+                    ParentFont = False
+                    TabOrder = 20
+                  end
+                  object rgrMsgCanhoto: TRadioGroup
+                    Left = 448
+                    Height = 101
+                    Top = 66
+                    Width = 528
+                    Anchors = [akTop, akLeft, akRight]
+                    AutoFill = False
+                    Caption = 'Mensagem Resumida Canhoto'
+                    ChildSizing.LeftRightSpacing = 6
+                    ChildSizing.ShrinkHorizontal = crsScaleChilds
+                    ChildSizing.ShrinkVertical = crsScaleChilds
+                    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+                    ChildSizing.ControlsPerLine = 1
+                    ClientHeight = 79
+                    ClientWidth = 524
+                    TabOrder = 21
+                    object cbxExibeResumo: TCheckBox
+                      Left = 6
+                      Height = 21
+                      Top = 0
+                      Width = 221
+                      AutoSize = False
+                      Caption = 'Exibir Resumo Padrão no Canhoto'
+                      Font.Height = -13
+                      OnChange = cbxExibeResumoChange
+                      ParentFont = False
+                      TabOrder = 0
+                    end
+                    object edtMsgResumoCanhoto: TEdit
+                      Left = 6
+                      Height = 25
+                      Top = 48
+                      Width = 511
+                      Anchors = [akLeft, akRight, akBottom]
+                      TabOrder = 1
+                    end
+                    object lblMsgCanhoto: TLabel
+                      AnchorSideBottom.Control = edtMsgResumoCanhoto
+                      Left = 8
+                      Height = 17
+                      Top = 31
+                      Width = 447
+                      Anchors = [akLeft, akBottom]
+                      Caption = 'Mensagem Personalizada   (Se não informado será emitido resumo padrão)'
+                      ParentColor = False
+                    end
+                  end
+                  object rgImprimeDescAcrescItemNFe: TRadioGroup
+                    Left = 728
+                    Height = 43
+                    Top = 8
+                    Width = 248
+                    Anchors = [akTop, akLeft, akRight]
+                    AutoFill = True
+                    Caption = 'Imprime Desc. Acresc. Itens'
+                    ChildSizing.LeftRightSpacing = 6
+                    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+                    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+                    ChildSizing.ShrinkHorizontal = crsScaleChilds
+                    ChildSizing.ShrinkVertical = crsScaleChilds
+                    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+                    ChildSizing.ControlsPerLine = 3
+                    ClientHeight = 21
+                    ClientWidth = 244
+                    Columns = 3
+                    ItemIndex = 2
+                    Items.Strings = (
+                      'Com Valor'
+                      'Nunca'
+                      'Sempre'
+                    )
+                    TabOrder = 22
                   end
                 end
                 object tsImpNFCe: TTabSheet
@@ -10511,7 +10556,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Top = 242
                     Width = 299
                     Anchors = [akLeft, akBottom]
-                    Caption = 'Margens'
+                    Caption = 'Margens "mm"'
                     ClientHeight = 50
                     ClientWidth = 295
                     Font.Height = -13
@@ -10656,7 +10701,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object tsImpCTe: TTabSheet
                   Caption = 'CT-e'
                   ClientHeight = 318
-                  ClientWidth = 1035
+                  ClientWidth = 999
                   Font.Height = -13
                   ParentFont = False
                   object rgTamanhoPapelDacte: TRadioGroup
@@ -11142,7 +11187,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
             object tsRespTecnico: TTabSheet
               Caption = 'Resp. Técnico'
               ClientHeight = 348
-              ClientWidth = 1043
+              ClientWidth = 1007
               Font.Height = -13
               ParentFont = False
               object lblCSRT: TLabel
@@ -11189,7 +11234,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               HelpKeyword = 'ACBrMonitor/Teste.htm'
               Caption = 'Teste'
               ClientHeight = 348
-              ClientWidth = 1043
+              ClientWidth = 1007
               Font.Height = -13
               ImageIndex = 5
               ParentFont = False
@@ -11495,10 +11540,10 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 177
                 Height = 348
                 Top = 0
-                Width = 866
+                Width = 830
                 Align = alClient
                 ClientHeight = 348
-                ClientWidth = 866
+                ClientWidth = 830
                 Font.Height = -13
                 ParentFont = False
                 TabOrder = 1
@@ -11506,7 +11551,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   Left = 1
                   Height = 17
                   Top = 68
-                  Width = 864
+                  Width = 828
                   Align = alBottom
                   Alignment = taLeftJustify
                   Caption = 'Resposta WebService'
@@ -11522,7 +11567,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   Left = 1
                   Height = 262
                   Top = 85
-                  Width = 864
+                  Width = 828
                   Align = alBottom
                   Font.Height = -13
                   Font.Name = 'Courier New'
@@ -12017,11 +12062,11 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Height = 378
             Top = 0
             Width = 1015
-            ActivePage = tsDadosSAT
+            ActivePage = tsDadosSwHouse
             Align = alClient
             Font.Height = -13
             ParentFont = False
-            TabIndex = 0
+            TabIndex = 2
             TabOrder = 0
             object tsDadosSAT: TTabSheet
               HelpType = htKeyword
@@ -13044,10 +13089,10 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object GroupBox7: TGroupBox
                 Left = 0
                 Height = 216
-                Top = 0
+                Top = 122
                 Width = 301
                 Align = alCustom
-                Caption = 'Fortes'
+                Caption = 'Fortes (Margens "mm")'
                 ClientHeight = 194
                 ClientWidth = 297
                 Font.Height = -13
@@ -13202,7 +13247,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object GroupBox8: TGroupBox
                 Left = 306
                 Height = 215
-                Top = 1
+                Top = 123
                 Width = 249
                 Align = alCustom
                 Caption = 'EscPOS'
@@ -13281,7 +13326,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
               object gbExtratoSAT: TGroupBox
                 Left = 561
                 Height = 215
-                Top = 1
+                Top = 123
                 Width = 280
                 Caption = 'Impressão Extrato'
                 ChildSizing.EnlargeHorizontal = crsHomogenousSpaceResize
@@ -13344,11 +13389,114 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   TabOrder = 4
                 end
               end
+              object GroupBox12: TGroupBox
+                Left = 8
+                Height = 88
+                Top = 8
+                Width = 552
+                Caption = 'Casas Decimais'
+                ClientHeight = 66
+                ClientWidth = 548
+                TabOrder = 3
+                object spedtSATCasasDecimaisQtd: TSpinEdit
+                  Left = 164
+                  Height = 25
+                  Top = 23
+                  Width = 64
+                  Alignment = taCenter
+                  Font.Height = -13
+                  MaxValue = 4
+                  ParentFont = False
+                  TabOrder = 0
+                end
+                object spedtSATDecimaisVUnit: TSpinEdit
+                  Left = 240
+                  Height = 25
+                  Top = 23
+                  Width = 64
+                  Alignment = taCenter
+                  Font.Height = -13
+                  MaxValue = 10
+                  ParentFont = False
+                  TabOrder = 1
+                end
+                object Label241: TLabel
+                  Left = 242
+                  Height = 17
+                  Top = 5
+                  Width = 69
+                  Caption = 'Vlr. Unitário'
+                  ParentColor = False
+                end
+                object Label242: TLabel
+                  Left = 327
+                  Height = 17
+                  Top = 5
+                  Width = 67
+                  Caption = 'Mask Qtde.'
+                  ParentColor = False
+                end
+                object Label243: TLabel
+                  Left = 405
+                  Height = 17
+                  Top = 5
+                  Width = 84
+                  Caption = 'Mask Vlr. Unit.'
+                  ParentColor = False
+                end
+                object Label240: TLabel
+                  Left = 161
+                  Height = 17
+                  Top = 5
+                  Width = 68
+                  Caption = 'Quantidade'
+                  ParentColor = False
+                end
+                object cbFormatoDecimais: TComboBox
+                  Left = 9
+                  Height = 25
+                  Top = 21
+                  Width = 128
+                  ItemHeight = 17
+                  Items.Strings = (
+                    'tdetInteger'
+                    'tdetMascara'
+                  )
+                  OnChange = cbFormatoDecimaisChange
+                  TabOrder = 2
+                end
+                object Label244: TLabel
+                  Left = 9
+                  Height = 17
+                  Top = 3
+                  Width = 49
+                  Caption = 'Formato'
+                  ParentColor = False
+                end
+                object edtSATCasasMaskQtd: TEdit
+                  Left = 327
+                  Height = 25
+                  Top = 23
+                  Width = 65
+                  OnKeyPress = onMascaraFormatKeyPress
+                  TabOrder = 3
+                  Text = '0.0000'
+                end
+                object edtSATMaskVUnit: TEdit
+                  Left = 404
+                  Height = 25
+                  Top = 23
+                  Width = 64
+                  OnKeyPress = onMascaraFormatKeyPress
+                  TabOrder = 4
+                  Text = '0.000'
+                end
+              end
             end
             object tsSATemail: TTabSheet
               Caption = 'e-mail'
               ClientHeight = 348
-              ClientWidth = 1043
+              ClientWidth = 1007
               object Label233: TLabel
                 AnchorSideRight.Control = bvCadastro6
                 AnchorSideBottom.Control = bvCadastro6
@@ -13368,7 +13516,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 408
                 Height = 10
                 Top = 11
-                Width = 616
+                Width = 580
                 Anchors = [akTop, akLeft, akRight]
                 BorderSpacing.Top = 3
                 Shape = bsTopLine
@@ -13387,7 +13535,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 6
                 Height = 25
                 Top = 48
-                Width = 1018
+                Width = 982
                 Anchors = [akTop, akLeft, akRight]
                 Font.Height = -13
                 ParentFont = False
@@ -13407,7 +13555,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 6
                 Height = 189
                 Top = 98
-                Width = 1018
+                Width = 982
                 Anchors = [akTop, akLeft, akRight, akBottom]
                 Font.Height = -13
                 ParentFont = False
@@ -13419,7 +13567,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
         object tsIntegrador: TTabSheet
           Caption = 'Integrador'
           ClientHeight = 378
-          ClientWidth = 1051
+          ClientWidth = 1015
           Font.Height = -13
           ImageIndex = 28
           ParentFont = False
@@ -13610,7 +13758,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Left = 8
                 Height = 15
                 Top = 6
-                Width = 24
+                Width = 23
                 Caption = 'Tipo'
                 ParentColor = False
                 ParentFont = False
@@ -16121,7 +16269,6 @@ object FrmACBrMonitor: TFrmACBrMonitor
     top = 554
   end
   object ACBrETQ1: TACBrETQ
-    ArqLOG = 'C:\TEMP\etq.txt'
     Porta = 'LPT1'
     Ativo = False
     left = 589
@@ -17358,7 +17505,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
     MargemSuperior = 2
     MargemEsquerda = 2
     MargemDireita = 2
-    CasasDecimais.Formato = tdetInteger
+    CasasDecimais.Formato = tdetMascara
     CasasDecimais.qCom = 2
     CasasDecimais.vUnCom = 2
     CasasDecimais.MaskqCom = '0.0000'

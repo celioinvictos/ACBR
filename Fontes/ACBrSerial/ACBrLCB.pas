@@ -69,10 +69,10 @@ uses ACBrBase, ACBrDevice  {Units da ACBr}
 type
 
 { Componente ACBrLCB - Leitor de Código de Barras }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
-TACBrLCB = class( TACBrComponent )
+  TACBrLCB = class( TACBrComponent )
   private
     fsDevice  : TACBrDevice ;   { SubComponente ACBrDevice }
     {$IFNDEF NOGUI}

@@ -47,6 +47,38 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+25/10/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Ajustes de alinhamento de alguns campos no arquivo .lfm
+   Por: José M S Junior
+
+24/10/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Ajustes de alinhamento do código de barras e da chave.
+   Por: Italo Jurisato Junior
+
+23/10/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Ajustes de alinhamento de alguns campos.
+   Por: Jose A Silva
+
+22/10/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Acrescentado uma segunda mensagem para mostrar se o MDF-e esta Cancelado ou
+    Encerrado, mesmo quando este for enviado em ambiente de homologação
+   Por: Italo Jurisato Junior
+
+16/10/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Alteração no layout .lfm convertendo para UTF8
+   Por: José M S Junior
+
+16/10/2019
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Alteração em nomes de objetos e ajustes para o novo layout da versão 3.00a
+    (para o Lazarus).
+  por: Italo Jurisato Junior
+
 12/08/2019
 -- Diversos --
 [*] Simplificação de código e ajustes no arquivo LFM (Lazarus)

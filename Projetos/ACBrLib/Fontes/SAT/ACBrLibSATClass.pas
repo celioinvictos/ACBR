@@ -1,35 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -349,7 +349,7 @@ begin
     begin
       SatDM.Travar;
 
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.AssociarAssinatura(CNPJ, Assinatura);
@@ -386,7 +386,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.BloquearSAT;
@@ -422,7 +422,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.DesbloquearSAT;
@@ -466,7 +466,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.TrocarCodigoDeAtivacao(CodigoAtivacao, opcao, NovoCodigoAtv);
@@ -503,7 +503,7 @@ begin
     begin
       SatDM.Travar;
 
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
 
       try
         Resposta := '';
@@ -543,8 +543,8 @@ begin
     begin
       SatDM.Travar;
 
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
-      Resp := TRetornoStatusSAT.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+      Resp := TRetornoStatusSAT.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.ConsultarStatusOperacional;
@@ -595,7 +595,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
 
       try
         Resposta := '';
@@ -608,7 +608,7 @@ begin
 
         if SatDM.ACBrSAT1.Resposta.codigoDeRetorno = 6000 then
         begin
-          Resp := TRetornoConsultarSessao.Create(pLib.Config.TipoResposta);
+          Resp := TRetornoConsultarSessao.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
           try
             Resp.Processar(SatDM.ACBrSAT1);
             Resposta := Resposta + sLineBreak + Resp.Gerar;
@@ -619,7 +619,7 @@ begin
 
         if SatDM.ACBrSAT1.Resposta.codigoDeRetorno = 7000 then
         begin
-          RespCanc := TRetornoConsultarSessaoCancelado.Create(resINI);
+          RespCanc := TRetornoConsultarSessaoCancelado.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
           try
             RespCanc.Processar(SatDM.ACBrSAT1);
             Resposta := Resposta + sLineBreak + RespCanc.Gerar;
@@ -659,7 +659,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.AtualizarSoftwareSAT;
@@ -701,7 +701,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta);
+      RespSat := TACBrLibSATResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.ComunicarCertificadoICPBRASIL(cCertificado);
@@ -777,7 +777,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TRetornoTesteFimaFim.Create(Config.TipoResposta);
+      Resp := TRetornoTesteFimaFim.Create(Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         Resp.Resultado := SatDM.ACBrSAT1.TesteFimAFim(ArquivoXmlVenda);
@@ -869,7 +869,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TRetornoCriarCFe.Create(Config.TipoResposta);
+      Resp := TRetornoCriarCFe.Create(Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.CFe.Clear;
@@ -913,7 +913,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TRetornoEnvio.Create(Config.TipoResposta);
+      Resp := TRetornoEnvio.Create(Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.CFe.Clear;
@@ -945,11 +945,11 @@ function SAT_EnviarCFe(eArquivoXml: PChar; const sResposta: PChar;
 var
   Resp: TRetornoEnvio;
   Resposta: Ansistring;
-  ArquivoXml: String;
+  ArquivoXml: Ansistring;
 begin
    try
     VerificarLibInicializada;
-    ArquivoXml := String(eArquivoXml);
+    ArquivoXml := Ansistring(eArquivoXml);
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('SAT_EnviarCFe(' + ArquivoXml + ' )', logCompleto, True)
@@ -959,10 +959,11 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TRetornoEnvio.Create(Config.TipoResposta);
+      Resp := TRetornoEnvio.Create(Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ACBrSAT1.CFe.Clear;
+        SatDM.ACBrSAT1.InicializaCFe;
         SatDM.CarregarDadosVenda(ArquivoXml);
 
         Resp.Resultado := SatDM.ACBrSAT1.EnviarDadosVenda;
@@ -1005,14 +1006,13 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TRetornoCancelarCFe.Create(Config.TipoResposta);
+      Resp := TRetornoCancelarCFe.Create(Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
-        if (ArquivoXml <> '') and (FileExists(ArquivoXml)) then
-        begin
-          SatDM.ACBrSAT1.CFe.Clear;
-          SatDM.CarregarDadosVenda(ArquivoXml);
-        end;
+
+        SatDM.ACBrSAT1.CFe.Clear;
+        SatDM.ACBrSAT1.InicializaCFe;
+        SatDM.CarregarDadosVenda(ArquivoXml);
 
         Resp.Resultado := SatDM.ACBrSAT1.CancelarUltimaVenda;
         Resp.Processar(SatDM.ACBrSAT1);
@@ -1212,7 +1212,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TPadraoSATResposta.Create('CFe', Config.TipoResposta);
+      Resp := TPadraoSATResposta.Create('CFe', Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
         SatDM.ConfigurarImpressao('', True);
@@ -1263,7 +1263,7 @@ begin
     with TACBrLibSAT(pLib) do
     begin
       SatDM.Travar;
-      Resp := TPadraoSATResposta.Create('CFe', Config.TipoResposta);
+      Resp := TPadraoSATResposta.Create('CFe', Config.TipoResposta, pLib.Config.CodResposta);
       try
        Resposta := '';
         SatDM.ConfigurarImpressao('', True);

@@ -113,7 +113,7 @@ type
 
   tpIndSegmento           = (isNormal );
 
-  tpTpInsc                = (tiCNPJ, tiCPF, tiCAEPF, tiCNO, tiCGC);
+  tpTpInsc                = (tiCNPJ, tiCPF, tiCAEPF, tiCNO, tiCGC, tiCEI);
 
   TpTpInscProp            = (tpCNPJ, tpCPF );
 
@@ -297,7 +297,7 @@ type
   tpLocalAmb              = (laEstabProprioEmpregador, laEstabTerceiro, laPrestInstalacaoTerceiro);
 
   tpTpAcConv              = (tacAcordoColTrab, tacLegislacaoFederalEstadualMunicipalDistrital, tacConvencaoColTrab,
-                             tacSetencNormativa, tacConversaoLicenSaudeAcidTrabalho, tacOutrasVerbas);
+                             tacSetencNormativa, tacConversaoLicenSaudeAcidTrabalho, tacOutrasVerbas, tacAntecipacaoDif);
 
   tpIndSusp               = (siLiminarMandadoSeguranca, siDepositoJudicial, siDepositoAdministrativo, siAntecipacaoTutela, siLiminarMedidaCautelar,
                              siSentencaMandadoSegurancaFavoravelContribuinte, siSentencaAcaoOrdinariaFavContribuinteConfirmadaPeloTRF,
@@ -426,13 +426,13 @@ type
 
   tpOpcConsult            = (ocContribPrevCPF, ocIRporCPF, ocTotContribSociais, ocTotIRRF);
 
-  tpRegPt                 = (rpNaoUtiliza, rpManual, rpMecanico, rpEletronico, rpNaoEletronicoAlternativo, rpEletronicoAlternativo, rpEletronicoOutros);
+  tpRegPt                 = (rpNaoInformado = -1, rpNaoUtiliza, rpManual, rpMecanico, rpEletronico, rpNaoEletronicoAlternativo, rpEletronicoAlternativo, rpEletronicoOutros);
 
   tpContApr               = (caDispensado, caDispensadoParcialmente, caObrigado);
 
   tpContPCD               = (cpcdDispensado, cpcdDispensadoParcialmente, cpcdExigibilidadeSuspensa, cpcdObrigado);
 
-  tpInclContr             = (icLocaisSemFiliais, icEstudoDeMercado, icContratacaoSuperior3Meses);
+  tpInclContr             = (icNenhum, icLocaisSemFiliais, icEstudoDeMercado, icContratacaoSuperior3Meses);
 
   tpPlanRP                = (prpNenhum, prpPlanoPrevidenciarioOuUnico, prpPlanoFinanceiro);
 
@@ -465,6 +465,8 @@ type
                  ct13, ct14, ct21, ct22, ct60, ct70, ct80, ct85, ct99);
 
   tpConsulta = (tcEmpregador, tcTabela, tcTrabalhador);
+
+  tpSimNaoFacultativo = (snfNada, snfSim, snfNao);
 
 Const
   PrefixoVersao = '-v';
@@ -772,6 +774,9 @@ function eSStrToTpCat(var ok: boolean; const s: string): tpTpCat;
 function eSSimNaoToStr(const t: tpSimNao ): string;
 function eSStrToSimNao(var ok: boolean; const s: string): tpSimNao;
 
+function eSSimNaoFacultativoToStr(const t: tpSimNaoFacultativo ): string;
+function eSStrToSimNaoFacultativo(var ok: boolean; const s: string): tpSimNaoFacultativo;
+
 function eSTpRegistradorToStr(const t: tpTpRegistrador ): string;
 function eSStrToTpRegistrador(var ok: boolean; const s: string): tpTpRegistrador;
 
@@ -930,6 +935,8 @@ const
 
   TSimNaoString       : array[0..1] of string = ('S','N' );
 
+  TSimNaoFacultativoString  : array[0..2] of string = ('', 'S','N');
+
   TIndicativoContratacaoPCD : array[0..3] of string = ('0', '1', '2', '9' );
 
   TMotivoAlteracaoCargoFuncao: array[0..3] of string = ('1', '2', '3', '9');
@@ -961,7 +968,7 @@ const
 
   TGenericosStringA_E : array[0..4] of string = ('A','B','C','D','E');
 
-  TGenericosStringA_F : array[0..5] of string = ('A','B','C','D','E','F');
+  TGenericosStringA_G : array[0..6] of string = ('A','B','C','D','E','F','G');
 
   TGenericosStringO_N : array[0..1] of string = ('O', 'N');
 
@@ -1131,12 +1138,12 @@ end;
 
 function eSTpInscricaoToStr(const t:tpTpInsc ): string;
 begin
-  result := EnumeradoToStr2(t, TGenericosString1_5 );
+  result := EnumeradoToStr2(t, TGenericosString1_6 );
 end;
 
 function eSStrToTpInscricao(var ok: boolean; const s: string): tpTpInsc;
 begin
-  result := tpTpInsc( StrToEnumerado2(ok , s, TGenericosString1_5 ) );
+  result := tpTpInsc( StrToEnumerado2(ok , s, TGenericosString1_6 ) );
 end;
 
 function eStpOpcConsultToStr(const t: tpOpcConsult): string;
@@ -1181,12 +1188,12 @@ end;
 
 function eSTpInclContrToStr(const t: tpInclContr): string;
 begin
-  result := EnumeradoToStr2(t, TGenericosString1_3 );
+  result := EnumeradoToStr2(t, TGenericosString0_3 );
 end;
 
 function eSStrToTpInclContr(var ok: Boolean; const s: string): tpInclContr;
 begin
-  result := tpInclContr( StrToEnumerado2(ok, s, TGenericosString1_3) );
+  result := tpInclContr( StrToEnumerado2(ok, s, TGenericosString0_3) );
 end;
 
 function eSTpPlanRPToStr(const t: tpPlanRP): string;
@@ -1497,6 +1504,16 @@ end;
 function eSStrToSimNao(var ok: boolean; const s: string): tpSimNao;
 begin
   result := tpSimNao( StrToEnumerado2(ok , s, TSimNaoString ) );
+end;
+
+function eSSimNaoFacultativoToStr(const t: tpSimNaoFacultativo ): string;
+begin
+  result := EnumeradoToStr2(t,TSimNaoFacultativoString );
+end;
+
+function eSStrToSimNaoFacultativo(var ok: boolean; const s: string): tpSimNaoFacultativo;
+begin
+  result := tpSimNaoFacultativo( StrToEnumerado2(ok , s, TSimNaoFacultativoString ) );
 end;
 
 function eStpTpInscAmbTabToStr(const t: tpTpInscAmbTab ): string;
@@ -2213,12 +2230,12 @@ end;
 
 function eSTpAcConvToStr(const t: tpTpAcConv): string;
 begin
-  result := EnumeradoToStr2(t, TGenericosStringA_F);
+  result := EnumeradoToStr2(t, TGenericosStringA_G);
 end;
 
 function eSStrToTpAcConv(var ok: Boolean; const s: string): tpTpAcConv;
 begin
-  result := tpTpAcConv( StrToEnumerado2(ok , s, TGenericosStringA_F ));
+  result := tpTpAcConv( StrToEnumerado2(ok , s, TGenericosStringA_G ));
 end;
 
 function eSTpNatEstagioToStr(const t: tpNatEstagio): string;

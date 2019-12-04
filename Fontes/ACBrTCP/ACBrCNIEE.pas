@@ -50,7 +50,7 @@ interface
 
 uses
   Contnrs,  SysUtils, Variants, Classes,
-  ACBrUtil, ACBrSocket;
+  ACBrBase, ACBrUtil, ACBrSocket;
 
 const
   CURL_Download_Tabela_CNIEE = 'http://www.fazenda.mg.gov.br/empresas/ecf/files/Tabela_CNIEE.bin' ;
@@ -120,10 +120,10 @@ type
   end;
 
   { TACBrCNIEE }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
-TACBrCNIEE = class(TACBrHTTP)
+  TACBrCNIEE = class(TACBrHTTP)
   private
     FArquivo: String;
     FVersaoArquivo: String;

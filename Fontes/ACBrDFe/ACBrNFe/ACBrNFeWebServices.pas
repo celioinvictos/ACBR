@@ -70,7 +70,6 @@ type
     function GerarVersaoDadosSoap: String; override;
     procedure EnviarDados; override;
     procedure FinalizarServico; override;
-    procedure RemoverNameSpace;
 
   public
     constructor Create(AOwner: TACBrDFe); override;
@@ -447,10 +446,11 @@ type
     FxMotivo: String;
     FTpAmb: TpcnTipoAmbiente;
     FCNPJ: String;
+    FIE: String;
 
     FEventoRetorno: TRetEventoNFe;
 
-    function GerarPathEvento(const ACNPJ: String = ''): String;
+    function GerarPathEvento(const ACNPJ: String = ''; const AIE: String = ''): String;
   protected
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
@@ -671,12 +671,6 @@ begin
   TACBrNFe(FPDFeOwner).SetStatus(FPStatus);
 end;
 
-procedure TNFeWebService.RemoverNameSpace;
-begin
-  FPRetWS := StringReplace(FPRetWS, ' xmlns="http://www.portalfiscal.inf.br/nfe"',
-                                    '', [rfReplaceAll, rfIgnoreCase]);
-end;
-
 procedure TNFeWebService.DefinirURL;
 var
   Versao: Double;
@@ -839,8 +833,6 @@ begin
                                'nfeResultMsg'],FPRetornoWS );
 
   VerificarSemResposta;
-
-  RemoverNameSpace;
 
   NFeRetorno := TRetConsStatServ.Create('');
   try
@@ -1138,8 +1130,6 @@ begin
 
   VerificarSemResposta;
 
-  RemoverNameSpace;
-
   if ((FPConfiguracoesNFe.Geral.ModeloDF = moNFCe) or (FVersaoDF >= ve310)) and FSincrono then
   begin
     if pos('retEnviNFe', FPRetWS) > 0 then
@@ -1206,6 +1196,8 @@ begin
             NFe.procNFe.nProt := FNFeRetornoSincrono.ProtNFe.nProt;
             NFe.procNFe.digVal := FNFeRetornoSincrono.protNFe.digVal;
             NFe.procNFe.xMotivo := FNFeRetornoSincrono.protNFe.xMotivo;
+            NFe.procNFe.cMsg := FNFeRetornoSincrono.protNFe.cMsg;
+            NFe.procNFe.xMsg := FNFeRetornoSincrono.protNFe.xMsg;
 
             AProcNFe := TProcNFe.Create;
             try
@@ -1408,6 +1400,9 @@ begin
           FNotasFiscais.Items[j].NFe.procNFe.digVal   := '';
           FNotasFiscais.Items[j].NFe.procNFe.cStat    := 0;
           FNotasFiscais.Items[j].NFe.procNFe.xMotivo  := '';
+          FNotasFiscais.Items[j].NFe.procNFe.cMsg     := 0;
+          FNotasFiscais.Items[j].NFe.procNFe.xMsg     := '';
+
         end;
       end;
     end;
@@ -1560,8 +1555,6 @@ begin
 
   VerificarSemResposta;
 
-  RemoverNameSpace;
-
   FNFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   FNFeRetorno.LerXML;
 
@@ -1621,6 +1614,8 @@ begin
           NFe.procNFe.digVal := AInfProt.Items[I].digVal;
           NFe.procNFe.cStat := AInfProt.Items[I].cStat;
           NFe.procNFe.xMotivo := AInfProt.Items[I].xMotivo;
+          NFe.ProcNFe.cMsg := AInfProt.Items[I].cMsg;
+          Nfe.ProcNFe.xMsg := AInfProt.Items[I].xMsg;
         end;
 
         // Monta o XML da NF-e assinado e com o protocolo de Autorização ou Denegação
@@ -1915,8 +1910,6 @@ begin
 
   VerificarSemResposta;
 
-  RemoverNameSpace;
-
   FNFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   FNFeRetorno.LerXML;
 
@@ -2135,8 +2128,6 @@ begin
 
     VerificarSemResposta;
 
-    RemoverNameSpace;
-
     NFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
     NFeRetorno.LerXML;
 
@@ -2188,6 +2179,8 @@ begin
     FprotNFe.cStat := NFeRetorno.protNFe.cStat;
     FprotNFe.xMotivo := NFeRetorno.protNFe.xMotivo;
     FprotNFe.Versao := NFeRetorno.protNFe.Versao;
+    FprotNFe.cMsg := NFeRetorno.protNFe.cMsg;
+    FprotNFe.xMsg := NFeRetorno.protNFe.xMsg;
 
     {(*}
     if Assigned(NFeRetorno.procEventoNFe) and (NFeRetorno.procEventoNFe.Count > 0) then
@@ -2356,6 +2349,8 @@ begin
               NFe.procNFe.cStat := NFeRetorno.protNFe.cStat;
               NFe.procNFe.xMotivo := NFeRetorno.protNFe.xMotivo;
               NFe.procNFe.Versao := NFeRetorno.protNFe.Versao;
+              NFe.procNFe.cMsg := NFeRetorno.protNFe.cMsg;
+              NFe.procNFe.xMsg := NFeRetorno.protNFe.xMsg;
 
               // O código abaixo é bem mais rápido que "GerarXML" (acima)...
               AProcNFe := TProcNFe.Create;
@@ -2410,7 +2405,7 @@ begin
             else
               dhEmissao := Now;
 
-            sPathNFe := PathWithDelim(FPConfiguracoesNFe.Arquivos.GetPathNFe(dhEmissao, NFe.Emit.CNPJCPF, NFe.Ide.modelo));
+            sPathNFe := PathWithDelim(FPConfiguracoesNFe.Arquivos.GetPathNFe(dhEmissao, NFe.Emit.CNPJCPF, NFe.Emit.IE, NFe.Ide.modelo));
 
             if (FRetNFeDFe <> '') then
               FPDFeOwner.Gravar( FNFeChave + '-NFeDFe.xml', FRetNFeDFe, sPathNFe);
@@ -2653,8 +2648,6 @@ begin
 
     VerificarSemResposta;
 
-    RemoverNameSpace;
-
     NFeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
     NFeRetorno.LerXml;
 
@@ -2877,8 +2870,6 @@ begin
 
   VerificarSemResposta;
 
-  RemoverNameSpace;
-
   FRetConsCad.Leitor.Arquivo := ParseText(FPRetWS);
   FRetConsCad.LerXml;
 
@@ -2964,11 +2955,11 @@ begin
   FEventoRetorno := TRetEventoNFe.Create;
 end;
 
-function TNFeEnvEvento.GerarPathEvento(const ACNPJ: String): String;
+function TNFeEnvEvento.GerarPathEvento(const ACNPJ, AIE: String): String;
 begin
   with FEvento.Evento.Items[0].InfEvento do
   begin
-    Result := FPConfiguracoesNFe.Arquivos.GetPathEvento(tpEvento, ACNPJ);
+    Result := FPConfiguracoesNFe.Arquivos.GetPathEvento(tpEvento, ACNPJ, AIE);
   end;
 end;
 
@@ -2986,6 +2977,7 @@ begin
   FCNPJ    := FEvento.Evento.Items[0].InfEvento.CNPJ;
   FTpAmb   := FEvento.Evento.Items[0].InfEvento.tpAmb;
   Modelo   := ModeloDFToPrefixo( StrToModeloDF(ok, ExtrairModeloChaveAcesso(FEvento.Evento.Items[0].InfEvento.chNFe) ));
+  FIE      := FEvento.Evento.Items[0].InfEvento.detEvento.IE;
 
   // Configuração correta ao enviar para o SVC
   case FPConfiguracoesNFe.Geral.FormaEmissao of
@@ -3305,8 +3297,6 @@ begin
 
   VerificarSemResposta;
 
-  RemoverNameSpace;
-
   EventoRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   EventoRetorno.LerXml;
 
@@ -3367,7 +3357,7 @@ begin
               if FPConfiguracoesNFe.Arquivos.Salvar then
               begin
                 NomeArq := OnlyNumber(FEvento.Evento.Items[i].InfEvento.Id) + '-procEventoNFe.xml';
-                PathArq := PathWithDelim(GerarPathEvento(FEvento.Evento.Items[I].InfEvento.CNPJ));
+                PathArq := PathWithDelim(GerarPathEvento(FEvento.Evento.Items[I].InfEvento.CNPJ, FEvento.Evento.Items[I].InfEvento.detEvento.IE));
 
                 FPDFeOwner.Gravar(NomeArq, Texto, PathArq);
                 FEventoRetorno.retEvento.Items[J].RetInfEvento.NomeArquivo := PathArq + NomeArq;
@@ -3401,11 +3391,11 @@ begin
 
   if FPConfiguracoesNFe.Geral.Salvar then
     FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '.xml',
-                      FPDadosMsg, GerarPathEvento(FCNPJ));
+                      FPDadosMsg, GerarPathEvento(FCNPJ, FIE));
 
   if FPConfiguracoesNFe.WebServices.Salvar then
     FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '-soap.xml',
-      FPEnvelopeSoap, GerarPathEvento(FCNPJ));
+      FPEnvelopeSoap, GerarPathEvento(FCNPJ, FIE));
 end;
 
 procedure TNFeEnvEvento.SalvarResposta;
@@ -3417,11 +3407,11 @@ begin
 
   if FPConfiguracoesNFe.Geral.Salvar then
     FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '.xml',
-                      FPRetWS, GerarPathEvento(FCNPJ));
+                      FPRetWS, GerarPathEvento(FCNPJ, FIE));
 
   if FPConfiguracoesNFe.WebServices.Salvar then
     FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '-soap.xml',
-      FPRetornoWS, GerarPathEvento(FCNPJ));
+      FPRetornoWS, GerarPathEvento(FCNPJ, FIE));
 end;
 
 function TNFeEnvEvento.GerarMsgLog: String;
@@ -3516,8 +3506,6 @@ begin
                                'nfeResultMsg'],FPRetornoWS );
 
   VerificarSemResposta;
-
-  RemoverNameSpace;
 
   FretAdmCSCNFCe.Leitor.Arquivo := ParseText(FPRetWS);
   FretAdmCSCNFCe.LerXml;
@@ -3647,8 +3635,6 @@ begin
 
   VerificarSemResposta;
 
-  RemoverNameSpace;
-
   // Processando em UTF8, para poder gravar arquivo corretamente //
   FretDistDFeInt.Leitor.Arquivo := FPRetWS;
   FretDistDFeInt.LerXml;
@@ -3752,18 +3738,21 @@ begin
       Result := FPConfiguracoesNFe.Arquivos.GetPathDownloadEvento(AItem.resEvento.tpEvento,
                                                           AItem.resDFe.xNome,
                                                           AItem.resEvento.CNPJCPF,
+                                                          AItem.resDFe.IE,
                                                           Data);
 
     schprocEventoNFe:
       Result := FPConfiguracoesNFe.Arquivos.GetPathDownloadEvento(AItem.procEvento.tpEvento,
                                                           AItem.resDFe.xNome,
                                                           AItem.procEvento.CNPJ,
+                                                          AItem.resDFe.IE,
                                                           Data);
 
     schresNFe,
     schprocNFe:
       Result := FPConfiguracoesNFe.Arquivos.GetPathDownload(AItem.resDFe.xNome,
                                                         AItem.resDFe.CNPJCPF,
+                                                        AItem.resDFe.IE,
                                                         Data);
   end;
 end;
@@ -3825,8 +3814,6 @@ begin
   FPRetWS := SeparaDados(FPRetornoWS, 'soap:Body');
 
   VerificarSemResposta;
-
-  RemoverNameSpace;
 
   Result := True;
 end;

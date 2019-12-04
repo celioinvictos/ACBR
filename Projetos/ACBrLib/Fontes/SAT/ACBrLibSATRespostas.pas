@@ -1,35 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -50,7 +50,8 @@ type
     FArquivo: String;
     FXML: String;
   public
-    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
+      const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); virtual; reintroduce;
 
@@ -62,7 +63,7 @@ type
 
   { TACBrLibSATResposta }
 
-  TACBrLibSATResposta = class(TACBrLibResposta)
+  TACBrLibSATResposta = class(TACBrLibRespostaBase)
   private
     FCodigoDeErro: Integer;
     FNumeroSessao : Integer ;
@@ -73,7 +74,7 @@ type
     FRetorno : String ;
 
   public
-    constructor Create( const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create( const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT);
 
@@ -94,7 +95,7 @@ type
   private
     FnCFe: String;
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); override;
 
@@ -109,7 +110,7 @@ type
   private
     FnCFeCanc: String;
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); override;
 
@@ -124,7 +125,7 @@ type
   private
     FnCFe: String;
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); override;
 
@@ -142,7 +143,7 @@ type
     FCodigoDeRetorno: Integer;
     FRetornoStr: String;
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); override;
 
@@ -163,7 +164,7 @@ type
     FCodigoDeRetorno: Integer;
     FRetornoStr: String;
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); override;
 
@@ -184,7 +185,7 @@ type
     FCodigoDeRetorno: Integer;
     FRetornoStr: String;
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT); override;
 
@@ -198,7 +199,7 @@ type
 
   { TRetornoStatusSAT }
 
-  TRetornoStatusSAT = class(TACBrLibResposta)
+  TRetornoStatusSAT = class(TACBrLibRespostaBase)
   private
     FNSERIE          : String;
     FLAN_MAC         : String;
@@ -219,7 +220,7 @@ type
     FESTADO_OPERACAO : String;
 
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const SAT: TACBrSAT);
 
@@ -252,9 +253,9 @@ uses
 
 { TRetornoStatusSAT }
 
-constructor TRetornoStatusSAT.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TRetornoStatusSAT.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoStatusSAT, ATipo);
+  inherited Create(CSessaoStatusSAT, ATipo, AFormato);
 end;
 
 procedure TRetornoStatusSAT.Processar(const SAT: TACBrSAT);
@@ -283,9 +284,9 @@ end;
 
 { TRetornoEnvio }
 
-constructor TRetornoEnvio.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TRetornoEnvio.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoENVIO, ATipo);
+  inherited Create(CSessaoENVIO, ATipo, AFormato);
 end;
 
 procedure TRetornoEnvio.Processar(const SAT: TACBrSAT);
@@ -301,9 +302,9 @@ end;
 
 { TRetornoTesteFimaFim }
 
-constructor TRetornoTesteFimaFim.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TRetornoTesteFimaFim.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoTESTEFIMAFIM, ATipo);
+  inherited Create(CSessaoTESTEFIMAFIM, ATipo, AFormato);
 end;
 
 procedure TRetornoTesteFimaFim.Processar(const SAT: TACBrSAT);
@@ -319,9 +320,9 @@ end;
 
 { TRetornoCancelarCFe }
 
-constructor TRetornoCancelarCFe.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TRetornoCancelarCFe.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoCFeCancelado, ATipo);
+  inherited Create(CSessaoCFeCancelado, ATipo, AFormato);
 end;
 
 procedure TRetornoCancelarCFe.Processar(const SAT: TACBrSAT);
@@ -337,9 +338,9 @@ end;
 
 { TRetornoCriarCFe }
 
-constructor TRetornoCriarCFe.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TRetornoCriarCFe.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoCFe, ATipo);
+  inherited Create(CSessaoCFe, ATipo, AFormato);
 end;
 
 procedure TRetornoCriarCFe.Processar(const SAT: TACBrSAT);
@@ -356,9 +357,9 @@ end;
 { TRetornoConsultarSessaoCancelado }
 
 constructor TRetornoConsultarSessaoCancelado.Create(
-  const ATipo: TACBrLibRespostaTipo);
+  const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoCFeCancelado, ATipo);
+  inherited Create(CSessaoCFeCancelado, ATipo, AFormato);
 end;
 
 procedure TRetornoConsultarSessaoCancelado.Processar(const SAT: TACBrSAT);
@@ -373,9 +374,10 @@ end;
 
 { TPadraoResposta }
 
-constructor TPadraoSATResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo);
+constructor TPadraoSATResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
+  const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(ASessao, ATipo);
+  inherited Create(ASessao, ATipo, AFormato);
 end;
 
 procedure TPadraoSATResposta.Processar(const SAT: TACBrSAT);
@@ -385,9 +387,9 @@ end;
 
 { TRetornoConsultarSessao }
 
-constructor TRetornoConsultarSessao.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TRetornoConsultarSessao.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoCFe, ATipo);
+  inherited Create(CSessaoCFe, ATipo, AFormato);
 end;
 
 procedure TRetornoConsultarSessao.Processar(const SAT: TACBrSAT);
@@ -402,9 +404,9 @@ end;
 
 { TPadraoResposta }
 
-constructor TACBrLibSATResposta.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TACBrLibSATResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoRespostaSat, ATipo);
+  inherited Create(CSessaoRespostaSat, ATipo, AFormato);
 end;
 
 procedure TACBrLibSATResposta.Processar(const SAT: TACBrSAT);

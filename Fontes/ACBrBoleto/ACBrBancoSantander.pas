@@ -88,7 +88,6 @@ begin
    fpTamanhoMaximoNossoNum  := 12;
    fpTamanhoCarteira        := 3;
    fpTamanhoConta           := 11;
-   fpCodigosMoraAceitos     := '123456';
 end;
 
 function TACBrBancoSantander.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -588,7 +587,7 @@ begin
               IntToStrZero(0, 15)                                        + // 027 - 041 / Valor/Percentual a ser concedido
               Space(24)                                                  + // 042 – 065 / Reservado (uso Banco)
               IfThen((PercentualMulta > 0),
-                     IfThen(MultaValorFixo,'1','2'), '0')                                           + // 66 - 66 1-Cobrar Multa Valor Fixo / 2-Percentual / 0-Não cobrar multa
+                     IfThen(MultaValorFixo,'1','2'), '2')                                           + // 66 - 66 1-Cobrar Multa Valor Fixo / 2-Percentual / 0-Não cobrar multa
               IfThen((PercentualMulta > 0),
                       FormatDateTime('ddmmyyyy', DataMulta), '00000000')                            + // 67 - 74 Se cobrar informe a data para iniciar a cobrança ou informe zeros se não cobrar
               IfThen((PercentualMulta > 0), IntToStrZero(round(PercentualMulta * 100), 15),
@@ -1289,7 +1288,10 @@ begin
     07 : Result:= toRemessaAlterarControleParticipante;     {Alteração do controle do participante}
     08 : Result:= toRemessaAlterarNumeroControle;           {Alteração de seu número}
     09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
-    18 : Result:= toRemessaCancelarInstrucaoProtesto;       {Sustar protesto e manter na carteira}
+    10 : Result:= toRemessaConcederDesconto;                {Concessão de Desconto}
+    11 : Result:= toRemessaCancelarDesconto;                {Cancelamento de desconto}
+    18 : Result:= toRemessaCancelarInstrucaoProtesto;       {Sustar protesto e manter na carteira}    
+    31 : Result:= toRemessaAlterarOutrosDados;              {Alteração de outros dados}
     98 : Result:= toRemessaNaoProtestar;                    {Sustar protesto antes do início do ciclo de protesto}
   else
      Result:= toRemessaRegistrar;                           {Remessa}

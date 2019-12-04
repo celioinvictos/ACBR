@@ -48,6 +48,28 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+19/11/2019
+-- ACBrBPeDABPeESCPOS --
+[*] Incluido o comando para avançar linhas após as mensagens do rodapé.
+   Por: Italo Jurisato Junior
+
+08/11/2019
+-- ACBrBPeBilhetes --
+[+] Implementado o método ImprimirOffline, esse método imprime automaticamente a
+    via do consumidor e da empresa.
+   Por: Italo Jurisato Junior
+
+07/11/2019
+-- ACBrBPeWebServices --
+[*] Melhorias nas procedures responsáveis por salvar o envio e o retorno dos
+    eventos.
+   Por: Italo Jurisato Junior
+
+21/10/2019
+-- ACBrBPeServicos --
+[*] Remoção de espaço em branco no meio de uma URL.
+   Por: Italo Jurisato Junior
+
 05/09/2019
 -- Diversos --
 [*] Ao enviar um BP-e Substituto a outro o retorno do status não é 100 e 

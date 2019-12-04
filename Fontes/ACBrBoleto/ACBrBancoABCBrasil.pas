@@ -268,7 +268,7 @@ end;
 function TACBrBancoABCBrasil.GerarRegistroTransacao240(ACBrTitulo: TACBrTitulo): string;
 var
   ISequencia: Integer;
-  sCodMovimento, sAgencia, sCCorrente: string;
+  sCodMovimento: string;
   sDigitoNossoNumero, sTipoCobranca, sTipoDocto, sTipoCarteira: string;
   sEspecie, sDataMoraJuros, sDataDesconto: string;
   STipoJuros, sTipoDesconto, sDiasProtesto, sDiasBaixaDevol: string;
@@ -453,7 +453,7 @@ begin
         sEspecie := '20'
       else if Trim(EspecieDoc) = 'CH' then {CH - CHEQUE}
         sEspecie := '97'
-      else if Trim(EspecieDoc) = 'CH' then {ND - NOTA PROMISSORIA DIRETA}
+      else if Trim(EspecieDoc) = 'ND' then {ND - NOTA PROMISSORIA DIRETA}
         sEspecie := '98'
       else
       begin
@@ -925,7 +925,7 @@ var
 
   procedure DoVerOcorrencia(AOcorrencia: string);
   var
-    pMotivoRejeicao, CodMotivo, I: Integer;
+    pMotivoRejeicao, I: Integer;
   begin
     with Titulo.OcorrenciaOriginal do
     begin
@@ -1040,11 +1040,11 @@ begin
 end;
 
 procedure TACBrBancoABCBrasil.LerRetorno400(ARetorno: TStringList);
-var
-  Titulo: TACBrTitulo;
-  ContLinha, CodOcorrencia, CodMotivo: Integer;
-  Linha, rCedente, rAgencia, rConta, rDigitoConta, rCNPJCPF: string;
-  wCodBanco: Integer;
+//var
+//  Titulo: TACBrTitulo;
+//  ContLinha, CodOcorrencia, CodMotivo: Integer;
+//  Linha, rCedente, rAgencia, rConta, rDigitoConta, rCNPJCPF: string;
+//  wCodBanco: Integer;
 begin
   //   wCodBanco := StrToIntDef(copy(ARetorno.Strings[0],77,3),-1);
   //   if (wCodBanco <> Numero) and (wCodBanco <> 353) then

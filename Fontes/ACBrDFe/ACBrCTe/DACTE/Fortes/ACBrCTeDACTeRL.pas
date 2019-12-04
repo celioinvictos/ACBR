@@ -126,6 +126,9 @@ begin
       ReportArray[i] := DACTeReport;
     end;
 
+    if Length(ReportArray) = 0 then
+      raise Exception.Create('Nenhum relatorio foi inicializado.');
+
     Report := ReportArray[0].RLCTe;
     for i := 1 to High(ReportArray) do
     begin
@@ -145,6 +148,7 @@ begin
     end;
 
     TDFeReportFortes.AjustarReport(Report, aDACTe);
+    TDFeReportFortes.AjustarMargem(Report, aDACTe);
 
     if aDACTe.MostraPreview then
       Report.PreviewModal
@@ -173,6 +177,7 @@ begin
     DACTeReport.fpDACTe := aDACTe;
 
     TDFeReportFortes.AjustarReport(DACTeReport.RLCTe, DACTeReport.fpDACTe);
+    TDFeReportFortes.AjustarMargem(DACTeReport.RLCTe, DACTeReport.fpDACTe);
     TDFeReportFortes.AjustarFiltroPDF(DACTeReport.RLPDFFilter1, DACTeReport.fpDACTe, AFile);
 
     with DACTeReport.RLPDFFilter1.DocumentInfo do

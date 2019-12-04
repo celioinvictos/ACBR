@@ -43,7 +43,7 @@ uses
 type
 
   { TLibCEPResposta }
-  TLibCEPResposta = class(TACBrLibResposta)
+  TLibCEPResposta = class(TACBrLibRespostaBase)
   private
     FBairro: string;
     FCEP: string;
@@ -55,7 +55,8 @@ type
     FTipo_Logradouro: string;
     FUF: string;
   public
-    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
+      const AFormato: TACBrLibCodificacao); reintroduce;
 
   published
     property CEP: string read FCEP write FCEP;
@@ -71,15 +72,12 @@ type
 
 implementation
 
-uses
-  ACBrLibCEPConsts;
-
 { TLibCEPResposta }
 
 constructor TLibCEPResposta.Create(const ASessao: String;
-  const ATipo: TACBrLibRespostaTipo);
+  const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(ASessao, ATipo);
+  inherited Create(ASessao, ATipo, AFormato);
 end;
 
 end.

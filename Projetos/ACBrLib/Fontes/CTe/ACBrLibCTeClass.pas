@@ -90,7 +90,17 @@ function CTE_CarregarXML(const eArquivoOuXML: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_CarregarINI(const eArquivoOuINI: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_ObterXml(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_GravarXml(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_CarregarEventoXML(const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_CarregarEventoINI(const eArquivoOuINI: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_LimparLista: longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_LimparListaEventos: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_Assinar: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
@@ -142,17 +152,17 @@ function CTE_EnviarEmail(const ePara, eChaveCTe: PChar; const AEnviaPDF: Boolean
 function CTE_EnviarEmailEvento(const ePara, eChaveEvento, eChaveCTe: PChar;
   const AEnviaPDF: Boolean; const eAssunto, eCC, eAnexos, eMensagem: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function CTE_Imprimir: longint;
-  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_Imprimir(const cImpressora: PChar; nNumCopias: Integer; const cProtocolo,
+  bMostrarPreview: PChar): longint; {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_ImprimirPDF: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function CTE_ImprimirEvento(const eChaveCTe, eChaveEvento: PChar): longint;
+function CTE_ImprimirEvento(const eArquivoXmlCTe, eArquivoXmlEvento: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function CTE_ImprimirEventoPDF(const eChaveCTe, eChaveEvento: PChar): longint;
+function CTE_ImprimirEventoPDF(const eArquivoXmlCTe, eArquivoXmlEvento: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function CTE_ImprimirInutilizacao(const eChave: PChar): longint;
+function CTE_ImprimirInutilizacao(const eArquivoXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function CTE_ImprimirInutilizacaoPDF(const eChave: PChar): longint;
+function CTE_ImprimirInutilizacaoPDF(const eArquivoXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
@@ -171,8 +181,6 @@ uses
 constructor TACBrLibCTe.Create(ArqConfig: string; ChaveCrypt: ansistring);
 begin
   inherited Create(ArqConfig, ChaveCrypt);
-  fpNome := CLibCTeNome;
-  fpVersao := CLibCTeVersao;
 
   FCTeDM := TLibCTeDM.Create(nil);
 end;
@@ -344,6 +352,162 @@ begin
   end;
 end;
 
+function CTE_ObterXml(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: String;
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_ObterXml(' + IntToStr(AIndex) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_ObterXml', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        if (AIndex >= CTeDM.ACBrCTe1.Conhecimentos.Count) and (CTeDM.ACBrCTe1.Conhecimentos.Count < 1) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        if EstaVazio(CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].XMLOriginal) then
+          CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].GerarXML;
+
+        Resposta := CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].XMLOriginal;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_GravarXml(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  ANomeArquivo, APathArquivo: String;
+begin
+  try
+    VerificarLibInicializada;
+    ANomeArquivo := String(eNomeArquivo);
+    APathArquivo := String(ePathArquivo);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_GravarXml(' + IntToStr(AIndex) + ',' + ANomeArquivo + ',' + APathArquivo + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_GravarXml', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        if (AIndex >= CTeDM.ACBrCTe1.Conhecimentos.Count) and (CTeDM.ACBrCTe1.Conhecimentos.Count < 1) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        if CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].GravarXML(ANomeArquivo, APathArquivo) then
+          Result := SetRetorno(ErrOK)
+        else
+          Result := SetRetorno(ErrGerarXml);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_CarregarEventoXML(const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  EhArquivo: boolean;
+  ArquivoOuXml: string;
+begin
+  try
+    VerificarLibInicializada;
+    ArquivoOuXml := string(eArquivoOuXML);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_CarregarEventoXML(' + ArquivoOuXml + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_CarregarEventoXML', logNormal);
+
+    EhArquivo := StringEhArquivo(ArquivoOuXml);
+    if EhArquivo then
+      VerificarArquivoExiste(ArquivoOuXml);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        if EhArquivo then
+          CTeDM.ACBrCTe1.EventoCTe.LerXML(ArquivoOuXml)
+        else
+          CTeDM.ACBrCTe1.EventoCTe.LerXMLFromString(ArquivoOuXml);
+
+        Result := SetRetornoEventoCarregados(CTeDM.ACBrCTe1.EventoCTe.Evento.Count);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_CarregarEventoINI(const eArquivoOuINI: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  ArquivoOuINI: string;
+begin
+  try
+    VerificarLibInicializada;
+    ArquivoOuINI := string(eArquivoOuINI);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_CarregarEventoINI(' + ArquivoOuINI + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_CarregarEventoINI', logNormal);
+
+    if StringEhArquivo(ArquivoOuINI) then
+      VerificarArquivoExiste(ArquivoOuINI);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        CTeDM.ACBrCTe1.EventoCTe.LerFromIni(ArquivoOuINI, False);
+        Result := SetRetornoEventoCarregados(CTeDM.ACBrCTe1.EventoCTe.Evento.Count);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
 function CTE_LimparLista: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
@@ -357,6 +521,32 @@ begin
       try
         CTeDM.ACBrCTe1.Conhecimentos.Clear;
         Result := SetRetornoCTesCarregados(CTeDM.ACBrCTe1.Conhecimentos.Count);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_LimparListaEventos: longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada;
+    pLib.GravarLog('NFE_LimparListaEventos', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        CTeDM.ACBrCTe1.EventoCTe.Evento.Clear;
+        Result := SetRetornoEventoCarregados(CTeDM.ACBrCTe1.EventoCTe.Evento.Count);
       finally
         CTeDM.Destravar;
       end;
@@ -507,19 +697,15 @@ begin
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
-      Resposta := TStatusServicoResposta.Create(pLib.Config.TipoResposta);
+      Resposta := TStatusServicoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
-        with CTeDM.ACBrCTe1 do
+        with CTeDM do
         begin
-          if WebServices.StatusServico.Executar then
-          begin
-            Resposta.Processar(CTeDM.ACBrCTe1);
-            MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'StatusServico');
-        end;
+          ACBrCTe1.WebServices.StatusServico.Executar;
+          Resposta.Processar(CTeDM.ACBrCTe1);
+          MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, StrPas(sResposta));
+        end
       finally
         Resposta.Free;
         CTeDM.Destravar;
@@ -538,8 +724,8 @@ function CTE_Consultar(const eChaveOuCTe: PChar; const sResposta: PChar; var esT
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   EhArquivo: boolean;
-  ChaveOuCTe: string;
-  Resposta: TConsultaCTeResposta;
+  Resposta, ChaveOuCTe: string;
+  Resp: TConsultaCTeResposta;
 begin
   try
     VerificarLibInicializada;
@@ -551,16 +737,17 @@ begin
     else
       pLib.GravarLog('CTE_Consultar', logNormal);
 
-    EhArquivo := StringEhArquivo(ChaveOuCTe);
-    if EhArquivo then
-      VerificarArquivoExiste(ChaveOuCTe);
-
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
 
-      if EhArquivo then
+      EhArquivo := StringEhArquivo(ChaveOuCTe);
+
+      if EhArquivo and not ValidarChave(ChaveOuCTe) then
+      begin
+        VerificarArquivoExiste(ChaveOuCTe);
         CTeDM.ACBrCTe1.Conhecimentos.LoadFromFile(ChaveOuCTe);
+      end;
 
       if CTeDM.ACBrCTe1.Conhecimentos.Count = 0 then
       begin
@@ -574,21 +761,19 @@ begin
           CTeDM.ACBrCTe1.Conhecimentos.Items[CTeDM.ACBrCTe1.Conhecimentos.Count - 1].CTe.infCTe.ID,
           'CTe','',[rfIgnoreCase]);
 
-      Resposta := TConsultaCTeResposta.Create(pLib.Config.TipoResposta);
+      Resp := TConsultaCTeResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         with CTeDM.ACBrCTe1 do
         begin
-          if WebServices.Consulta.Executar then
-          begin
-            Resposta.Processar(CTeDM.ACBrCTe1);
-            MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'Consultar');
+          WebServices.Consulta.Executar;
+          Resp.Processar(CTeDM.ACBrCTe1);
+
+          Resposta := Resp.Gerar;
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
         end;
       finally
-        Resposta.Free;
+        Resp.Free;
         CTeDM.Destravar;
       end;
     end;
@@ -606,8 +791,8 @@ function CTE_Inutilizar(const ACNPJ, AJustificativa: PChar;
   const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  Resposta: TInutilizarCTeResposta;
-  CNPJ, Justificativa: string;
+  Resp: TInutilizarCTeResposta;
+  Resposta, CNPJ, Justificativa: string;
 begin
   try
     VerificarLibInicializada;
@@ -625,37 +810,32 @@ begin
     CNPJ := OnlyNumber(CNPJ);
 
     if not ValidarCNPJ(CNPJ) then
-      raise EACBrLibException.Create(ErrChaveCTe, Format(SErrCNPJInvalido, [ACNPJ]));
+      raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJInvalido, [ACNPJ]));
 
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
-      Resposta := TInutilizarCTeResposta.Create(pLib.Config.TipoResposta);
+      Resp := TInutilizarCTeResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
-        with CTeDM.ACBrCTe1 do
+        with CTeDM.ACBrCTe1.WebServices do
         begin
-          with WebServices do
-          begin
-            Inutilizacao.CNPJ := CNPJ;
-            Inutilizacao.Justificativa := Justificativa;
-            Inutilizacao.Modelo := Modelo;
-            Inutilizacao.Serie := Serie;
-            Inutilizacao.Ano := Ano;
-            Inutilizacao.NumeroInicial := NumeroInicial;
-            Inutilizacao.NumeroFinal := NumeroFinal;
+          Inutilizacao.Clear;
+          Inutilizacao.CNPJ := CNPJ;
+          Inutilizacao.Justificativa := Justificativa;
+          Inutilizacao.Modelo := Modelo;
+          Inutilizacao.Serie := Serie;
+          Inutilizacao.Ano := Ano;
+          Inutilizacao.NumeroInicial := NumeroInicial;
+          Inutilizacao.NumeroFinal := NumeroFinal;
 
-            if Inutilizacao.Executar then
-            begin
-              Resposta.Processar(CTeDM.ACBrCTe1);
-              MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-              Result := SetRetorno(ErrOK, StrPas(sResposta));
-            end
-            else
-              Result := SetRetornoWebService(SSL.HTTPResultCode, 'Inutilizar');
-          end;
+          Inutilizacao.Executar;
+          Resp.Processar(CTeDM.ACBrCTe1);
+          Resposta := Resp.Gerar;
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
         end;
       finally
-        Resposta.Free;
+        Resp.Free;
         CTeDM.Destravar;
       end;
     end;
@@ -712,13 +892,8 @@ begin
           else
             WebServices.Enviar.Lote := IntToStr(ALote);
 
-          if not WebServices.Enviar.Executar then
-          begin
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'Enviar', WebServices.Enviar.Msg);
-            Exit;
-          end;
-
-          RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta);
+          WebServices.Enviar.Executar;
+          RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
           try
             RespEnvio.Processar(CTeDM.ACBrCTe1);
             Resposta := RespEnvio.Gerar;
@@ -732,7 +907,7 @@ begin
             WebServices.Retorno.Executar
           end;
 
-          RespRetorno := TRetornoResposta.Create('CTe', pLib.Config.TipoResposta);
+          RespRetorno := TRetornoResposta.Create('CTe', pLib.Config.TipoResposta, pLib.Config.CodResposta);
           try
             RespRetorno.Processar(WebServices.Retorno.CTeRetorno,
                                   WebServices.Retorno.Recibo,
@@ -760,7 +935,7 @@ begin
 
             if ImpCount > 0 then
             begin
-              ImpResp := TLibImpressaoResposta.Create(ImpCount, pLib.Config.TipoResposta);
+              ImpResp := TLibImpressaoResposta.Create(ImpCount, pLib.Config.TipoResposta, pLib.Config.CodResposta);
               try
                 Resposta := Resposta + sLineBreak + ImpResp.Gerar;
               finally
@@ -809,7 +984,7 @@ begin
           WebServices.Recibo.Recibo := sRecibo;
           WebServices.Recibo.Executar;
 
-          Resp := TReciboResposta.Create('CTe', pLib.Config.TipoResposta);
+          Resp := TReciboResposta.Create('CTe', pLib.Config.TipoResposta, pLib.Config.CodResposta);
           try
             Resp.Processar(WebServices.Recibo.CTeRetorno,
             WebServices.Recibo.Recibo);
@@ -872,14 +1047,17 @@ begin
         with CTeDM.ACBrCTe1.EventoCTe.Evento.New do
         begin
           Infevento.CNPJ := ACNPJ;
+
           if Trim(Infevento.CNPJ) = '' then
             Infevento.CNPJ := copy(OnlyNumber(CTeDM.ACBrCTe1.WebServices.Consulta.CTeChave), 7, 14)
           else
           begin
-            if not ValidarCNPJ(ACNPJ) then
-              raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJInvalido, [ACNPJ]));
+            if not ValidarCNPJouCPF(ACNPJ) then
+              raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJ]));
           end;
 
+          Infevento.nSeqEvento := 1;
+          InfEvento.tpAmb := CTeDM.ACBrCTe1.Configuracoes.WebServices.Ambiente;
           Infevento.cOrgao := StrToIntDef(copy(OnlyNumber(CTeDM.ACBrCTe1.WebServices.Consulta.CTeChave), 1, 2), 0);
           Infevento.dhEvento := now;
           Infevento.tpEvento := teCancelamento;
@@ -887,25 +1065,23 @@ begin
           Infevento.detEvento.nProt := CTeDM.ACBrCTe1.WebServices.Consulta.Protocolo;
           Infevento.detEvento.xJust := AJustificativa;
         end;
-        try
-          if CTeDM.ACBrCTe1.EnviarEvento(ALote) then
-          begin
-            Resp := TCancelamentoResposta.Create(pLib.Config.TipoResposta);
-            try
-              Resp.Processar(CTeDM.ACBrCTe1);
-              Resposta := Resp.Gerar;
-            finally
-              Resp.Free;
-            end;
 
-            MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(CTeDM.ACBrCTe1.SSL.HTTPResultCode, 'Cancelar');
-        except
-          raise EACBrLibException.Create(ErrRetorno, CTeDM.ACBrCTe1.WebServices.EnvEvento.EventoRetorno.xMotivo);
+        if (ALote = 0) then
+            ALote := 1;
+
+        CTeDM.ACBrCTe1.WebServices.EnvEvento.idLote := ALote;
+        CTeDM.ACBrCTe1.WebServices.EnvEvento.Executar;
+        Resp := TCancelamentoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+
+        try
+          Resp.Processar(CTeDM.ACBrCTe1);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
         end;
+
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, StrPas(sResposta));
       finally
         CTeDM.Destravar;
       end;
@@ -923,7 +1099,8 @@ function CTE_EnviarEvento(idLote: Integer;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  Resposta: String;
+  i, j: Integer;
+  chCTe, Resposta: String;
   Resp: TEventoResposta;
 begin
   try
@@ -940,29 +1117,79 @@ begin
 
       with CTeDM.ACBrCTe1 do
       begin
-        if EventoCTe.Evento.Count =0 then
-          raise EACBrLibException.Create(ErrEnvioEvento, Format(SInfEventosCarregados, [EventoCTe.Evento.Count]))
-        else
+        if EventoCTe.Evento.Count <= 0 then
+          raise EACBrLibException.Create(ErrEnvioEvento, 'ERRO: Nenhum Evento adicionado ao Lote');
+
+        if EventoCTe.Evento.Count > 20 then
+          raise EACBrLibException.Create(ErrEnvioEvento,'ERRO: Conjunto de Eventos transmitidos (máximo de 20) ' +
+                                                        'excedido. Quantidade atual: ' + IntToStr(EventoCTe.Evento.Count));
+
+        {Atribuir nSeqEvento, CNPJ, Chave e/ou Protocolo quando não especificar}
+        for i := 0 to EventoCTe.Evento.Count -1 do
         begin
-          if (idLote = 0) then
-            idLote := 1;
+          if EventoCTe.Evento.Items[i].InfEvento.nSeqEvento = 0 then
+            EventoCTe.Evento.Items[i].infEvento.nSeqEvento := 1;
 
-          if EnviarEvento(idLote) then
+          EventoCTe.Evento.Items[i].InfEvento.tpAmb := Configuracoes.WebServices.Ambiente;
+
+          if Conhecimentos.Count > 0 then
           begin
-            Resp := TEventoResposta.Create(pLib.Config.TipoResposta);
-            try
-              Resp.Processar(CTeDM.ACBrCTe1);
-              Resposta := Resp.Gerar;
-            finally
-              Resp.Free;
-            end;
+            chCTe := OnlyNumber(EventoCTe.Evento.Items[i].InfEvento.chCTe);
 
-            MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'Enviar Evento');
+            // Se tem a chave do CTe no Evento, procure por ela nos conhecimentos carregados //
+            if NaoEstaVazio(chCTe) then
+            begin
+              for j := 0 to Conhecimentos.Count - 1 do
+              begin
+                if chCTe = Conhecimentos.Items[j].NumID then
+                Break;
+              end;
+
+              if j = Conhecimentos.Count then
+                raise EACBrLibException.Create(ErrEnvioEvento,'Não existe CTe com a chave ['+chCTe+'] carregado');
+            end
+            else
+              j := 0;
+
+            if trim(EventoCTe.Evento.Items[i].InfEvento.CNPJ) = '' then
+              EventoCTe.Evento.Items[i].InfEvento.CNPJ := Conhecimentos.Items[j].CTe.Emit.CNPJ;
+
+            if chCTe = '' then
+              EventoCTe.Evento.Items[i].InfEvento.chCTe := Conhecimentos.Items[j].NumID;
+
+            if trim(EventoCTe.Evento.Items[i].infEvento.detEvento.nProt) = '' then
+            begin
+              if EventoCTe.Evento.Items[i].infEvento.tpEvento = teCancelamento then
+              begin
+                EventoCTe.Evento.Items[i].infEvento.detEvento.nProt := Conhecimentos.Items[j].CTe.procCTe.nProt;
+
+                if trim(EventoCTe.Evento.Items[i].infEvento.detEvento.nProt) = '' then
+                begin
+                  WebServices.Consulta.CTeChave := EventoCTe.Evento.Items[i].InfEvento.chCTe;
+
+                  if not WebServices.Consulta.Executar then
+                    raise EACBrLibException.Create(ErrEnvioEvento, WebServices.Consulta.Msg);
+
+                  EventoCTe.Evento.Items[i].infEvento.detEvento.nProt := WebServices.Consulta.Protocolo;
+                end;
+              end;
+            end;
+          end;
         end;
+
+        WebServices.EnvEvento.idLote := idLote;
+        WebServices.EnvEvento.Executar;
+
+        Resp := TEventoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+        try
+          Resp.Processar(CTeDM.ACBrCTe1);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, StrPas(sResposta));
       end;
 
       CTeDM.Destravar;
@@ -1010,7 +1237,7 @@ begin
         end;
 
         CTeDM.ACBrCTe1.WebServices.ConsultaCadastro.Executar;
-        Resp := TConsultaCadastroResposta.Create(pLib.Config.TipoResposta);
+        Resp := TConsultaCadastroResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
         try
           Resp.Processar(CTeDM.ACBrCTe1.WebServices.ConsultaCadastro.RetConsCad);
           Resposta := Resp.Gerar;
@@ -1057,36 +1284,41 @@ begin
     begin
       CTeDM.Travar;
 
-      if not ValidarCNPJ(ACNPJCPF) then
-        raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
+      try
+        if not ValidarCNPJ(ACNPJCPF) then
+          raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
 
-      with CTeDM.ACBrCTe1 do
-      begin
-        try
-          if DistribuicaoDFePorUltNSU(AcUFAutor, ACNPJCPF, AultNSU) then
-          begin
-            Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
+        with CTeDM do
+        begin
+          try
+            ACBrCTe1.WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
+            ACBrCTe1.WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+            ACBrCTe1.WebServices.DistribuicaoDFe.ultNSU   := AultNSU;
+            ACBrCTe1.WebServices.DistribuicaoDFe.NSU      := '';
+            ACBrCTe1.WebServices.DistribuicaoDFe.chCTe    := '';
+
+            ACBrCTe1.WebServices.DistribuicaoDFe.Executar;
+
+            Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
             try
-              Resp.Processar(CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.Msg,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.NomeArq,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.ListaArqs);
+              Resp.Processar(ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                             ACBrCTe1.WebServices.DistribuicaoDFe.Msg,
+                             ACBrCTe1.WebServices.DistribuicaoDFe.NomeArq,
+                             ACBrCTe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
             end;
 
             MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'DistribuicaoDFePorUltNSU');
-        except
-          raise EACBrLibException.Create(ErrRetorno, WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+            Result := SetRetorno(ErrOK, Resposta);
+          except
+            raise EACBrLibException.Create(ErrRetorno, ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+          end;
         end;
+      finally
+        CTeDM.Destravar;
       end;
-
-      CTeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1121,36 +1353,41 @@ begin
     begin
       CTeDM.Travar;
 
-      if not ValidarCNPJ(ACNPJCPF) then
-        raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
+      try
+        if not ValidarCNPJ(ACNPJCPF) then
+          raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
 
-      with CTeDM.ACBrCTe1 do
-      begin
-        try
-          if DistribuicaoDFePorNSU(AcUFAutor, ACNPJCPF, ANSU) then
-          begin
-            Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
+        with CTeDM do
+        begin
+          try
+            ACBrCTe1.WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
+            ACBrCTe1.WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+            ACBrCTe1.WebServices.DistribuicaoDFe.ultNSU   := '';
+            ACBrCTe1.WebServices.DistribuicaoDFe.NSU      := ANSU;
+            ACBrCTe1.WebServices.DistribuicaoDFe.chCTe    := '';
+
+            ACBrCTe1.WebServices.DistribuicaoDFe.Executar;
+
+            Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
             try
-              Resp.Processar(CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.Msg,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.NomeArq,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.ListaArqs);
+              Resp.Processar(ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                             ACBrCTe1.WebServices.DistribuicaoDFe.Msg,
+                             ACBrCTe1.WebServices.DistribuicaoDFe.NomeArq,
+                             ACBrCTe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
             end;
 
             MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'DistribuicaoDFePorNSU');
-        except
-          raise EACBrLibException.Create(ErrRetorno, WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+            Result := SetRetorno(ErrOK, Resposta);
+          except
+            raise EACBrLibException.Create(ErrRetorno, ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+          end;
         end;
+      finally
+        CTeDM.Destravar;
       end;
-
-      CTeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1185,39 +1422,44 @@ begin
     begin
       CTeDM.Travar;
 
+      try
       if not ValidarCNPJ(ACNPJCPF) then
         raise EACBrLibException.Create(ErrCNPJ, Format(SErrCNPJCPFInvalido, [ACNPJCPF]));
 
       if not ValidarChave(AchCTe) then
         raise EACBrLibException.Create(ErrChaveCTe, Format(SErrChaveInvalida, [AchCTe]));
 
-      with CTeDM.ACBrCTe1 do
+      with CTeDM do
       begin
         try
-          if DistribuicaoDFePorChaveCTe(AcUFAutor, ACNPJCPF, AchCTe) then
-          begin
-            Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
-            try
-              Resp.Processar(CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.Msg,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.NomeArq,
-                             CTeDM.ACBrCTe1.WebServices.DistribuicaoDFe.ListaArqs);
-              Resposta := Resp.Gerar;
-            finally
-              Resp.Free;
-            end;
+          ACBrCTe1.WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
+          ACBrCTe1.WebServices.DistribuicaoDFe.CNPJCPF  := ACNPJCPF;
+          ACBrCTe1.WebServices.DistribuicaoDFe.ultNSU   := '';
+          ACBrCTe1.WebServices.DistribuicaoDFe.NSU      := '';
+          ACBrCTe1.WebServices.DistribuicaoDFe.chCTe    := AchCTe;
 
-            MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'DistribuicaoDFePorChaveCTe');
+          ACBrCTe1.WebServices.DistribuicaoDFe.Executar;
+
+          Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+          try
+            Resp.Processar(ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                           ACBrCTe1.WebServices.DistribuicaoDFe.Msg,
+                           ACBrCTe1.WebServices.DistribuicaoDFe.NomeArq,
+                           ACBrCTe1.WebServices.DistribuicaoDFe.ListaArqs);
+            Resposta := Resp.Gerar;
+          finally
+            Resp.Free;
+          end;
+
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
         except
-          raise EACBrLibException.Create(ErrRetorno, WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
+          raise EACBrLibException.Create(ErrRetorno, ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.xMotivo);
         end;
       end;
-
-      CTeDM.Destravar;
+      finally
+        CTeDM.Destravar;
+      end;
     end;
   except
     on E: EACBrLibException do
@@ -1442,20 +1684,45 @@ begin
   end;
 end;
 
-function CTE_Imprimir: longint;
-  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_Imprimir(const cImpressora: PChar; nNumCopias: Integer; const cProtocolo,
+  bMostrarPreview: PChar): longint; {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: TLibImpressaoResposta;
+  NumCopias: Integer;
+  Impressora, Protocolo,
+  MostrarPreview: String;
 begin
   try
     VerificarLibInicializada;
-    pLib.GravarLog('CTE_Imprimir', logNormal);
+
+    Impressora := String(cImpressora);
+    Protocolo := String(cProtocolo);
+    MostrarPreview := String(bMostrarPreview);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_Imprimir(' + Impressora + ',' + IntToStr(nNumCopias) + ','
+        + Protocolo + ',' + MostrarPreview + ')', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_Imprimir', logNormal);
 
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
+      Resposta := TLibImpressaoResposta.Create(CTeDM.ACBrCTe1.Conhecimentos.Count, pLib.Config.TipoResposta,
+                                               pLib.Config.CodResposta);
+
       try
+        CTeDM.ConfigurarImpressao(Impressora, False, Protocolo, MostrarPreview);
+
+        NumCopias := CTeDM.ACBrCTe1.DACTE.NumCopias;
+        if nNumCopias > 0 then
+          CTeDM.ACBrCTe1.DACTE.NumCopias := nNumCopias;
+
         CTeDM.ACBrCTe1.Conhecimentos.Imprimir;
-        Result := SetRetornoCTesCarregados(CTeDM.ACBrCTe1.Conhecimentos.Count);
+        Result := SetRetorno(ErrOK, Resposta.Gerar);
       finally
+        CTeDM.ACBrCTe1.DACTE.NumCopias := NumCopias;
+        Resposta.Free;
         CTeDM.Destravar;
       end;
     end;
@@ -1479,6 +1746,7 @@ begin
     begin
       CTeDM.Travar;
       try
+        CTeDM.ConfigurarImpressao('', True);
         CTeDM.ACBrCTe1.Conhecimentos.ImprimirPDF;
         Result := SetRetornoCTesCarregados(CTeDM.ACBrCTe1.Conhecimentos.Count);
       finally
@@ -1494,21 +1762,21 @@ begin
   end;
 end;
 
-function CTE_ImprimirEvento(const eChaveCTe, eChaveEvento: PChar): longint;
+function CTE_ImprimirEvento(const eArquivoXmlCTe, eArquivoXmlEvento: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   EhArquivo: boolean;
-  AChaveCTe: string;
-  AChaveEvento: string;
+  AArquivoXmlCTe: string;
+  AArquivoXmlEvento: string;
 begin
   try
     VerificarLibInicializada;
 
-    AChaveCTe := string(eChaveCTe);
-    AChaveEvento := string(eChaveEvento);
+    AArquivoXmlCTe := string(eArquivoXmlCTe);
+    AArquivoXmlEvento := string(eArquivoXmlEvento);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('CTE_ImprimirEvento(' + AChaveCTe + ',' + AChaveEvento + ' )', logCompleto, True)
+      pLib.GravarLog('CTE_ImprimirEvento(' + AArquivoXmlCTe + ',' + AArquivoXmlEvento + ' )', logCompleto, True)
     else
       pLib.GravarLog('CTE_ImprimirEvento', logNormal);
 
@@ -1516,22 +1784,23 @@ begin
     begin
       CTeDM.Travar;
 
-      EhArquivo := StringEhArquivo(AChaveCTe);
+      EhArquivo := StringEhArquivo(AArquivoXmlCTe);
 
       if EhArquivo then
-        VerificarArquivoExiste(AChaveCTe);
+        VerificarArquivoExiste(AArquivoXmlCTe);
 
       if EhArquivo then
-        CTeDM.ACBrCTe1.Conhecimentos.LoadFromFile(AchaveCTe);
+        CTeDM.ACBrCTe1.Conhecimentos.LoadFromFile(AArquivoXmlCTe);
 
-      EhArquivo := StringEhArquivo(AChaveEvento);
-
-      if EhArquivo then
-        VerificarArquivoExiste(AChaveEvento);
+      EhArquivo := StringEhArquivo(AArquivoXmlEvento);
 
       if EhArquivo then
-        CTeDM.ACBrCTe1.EventoCTe.LerXML(AChaveEvento);
+        VerificarArquivoExiste(AArquivoXmlEvento);
 
+      if EhArquivo then
+        CTeDM.ACBrCTe1.EventoCTe.LerXML(AArquivoXmlEvento);
+
+      CTeDM.ConfigurarImpressao;
       CTeDM.ACBrCTe1.ImprimirEvento;
 
       Result := SetRetorno(ErrOK);
@@ -1545,21 +1814,21 @@ begin
   end;
 end;
 
-function CTE_ImprimirEventoPDF(const eChaveCTe, eChaveEvento: PChar): longint;
+function CTE_ImprimirEventoPDF(const eArquivoXmlCTe, eArquivoXmlEvento: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   EhArquivo: boolean;
-  AChaveCTe: string;
-  AChaveEvento: string;
+  AArquivoXmlCTe: string;
+  AArquivoXmlEvento: string;
 begin
   try
     VerificarLibInicializada;
 
-    AChaveCTe := string(eChaveCTe);
-    AChaveEvento := string(eChaveEvento);
+    AArquivoXmlCTe := string(eArquivoXmlCTe);
+    AArquivoXmlEvento := string(eArquivoXmlEvento);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('CTE_ImprimirEventoPDF(' + AChaveCTe + ',' + AChaveEvento + ' )', logCompleto, True)
+      pLib.GravarLog('CTE_ImprimirEventoPDF(' + AArquivoXmlCTe + ',' + AArquivoXmlEvento + ' )', logCompleto, True)
     else
       pLib.GravarLog('CTE_ImprimirEventoPDF', logNormal);
 
@@ -1567,22 +1836,23 @@ begin
     begin
       CTeDM.Travar;
 
-      EhArquivo := StringEhArquivo(AChaveCTe);
+      EhArquivo := StringEhArquivo(AArquivoXmlCTe);
 
       if EhArquivo then
-        VerificarArquivoExiste(AChaveCTe);
+        VerificarArquivoExiste(AArquivoXmlCTe);
 
       if EhArquivo then
-        CTeDM.ACBrCTe1.Conhecimentos.LoadFromFile(AchaveCTe);
+        CTeDM.ACBrCTe1.Conhecimentos.LoadFromFile(AArquivoXmlCTe);
 
-      EhArquivo := StringEhArquivo(AChaveEvento);
-
-      if EhArquivo then
-        VerificarArquivoExiste(AChaveEvento);
+      EhArquivo := StringEhArquivo(AArquivoXmlEvento);
 
       if EhArquivo then
-        CTeDM.ACBrCTe1.EventoCTe.LerXML(AChaveEvento);
+        VerificarArquivoExiste(AArquivoXmlEvento);
 
+      if EhArquivo then
+        CTeDM.ACBrCTe1.EventoCTe.LerXML(AArquivoXmlEvento);
+
+      CTeDM.ConfigurarImpressao('', True);
       CTeDM.ACBrCTe1.ImprimirEventoPDF;
 
       Result := SetRetorno(ErrOK);
@@ -1596,34 +1866,35 @@ begin
   end;
 end;
 
-function CTE_ImprimirInutilizacao(const eChave: PChar): longint;
+function CTE_ImprimirInutilizacao(const eArquivoXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   EhArquivo: boolean;
-  AChave: string;
+  AArquivoXml: string;
 begin
   try
     VerificarLibInicializada;
 
-    AChave := string(eChave);
+    AArquivoXml := string(eArquivoXml);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('CTE_ImprimirInutilizacao(' + AChave + ' )', logCompleto, True)
+      pLib.GravarLog('CTE_ImprimirInutilizacao(' + AArquivoXml + ' )', logCompleto, True)
     else
       pLib.GravarLog('CTE_ImprimirInutilizacao', logNormal);
 
-    EhArquivo := StringEhArquivo(AChave);
+    EhArquivo := StringEhArquivo(AArquivoXml);
 
     if EhArquivo then
-      VerificarArquivoExiste(AChave);
+      VerificarArquivoExiste(AArquivoXml);
 
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
 
       if EhArquivo then
-        CTeDM.ACBrCTe1.InutCTe.LerXML(AChave);
+        CTeDM.ACBrCTe1.InutCTe.LerXML(AArquivoXml);
 
+      CTeDM.ConfigurarImpressao;
       CTeDM.ACBrCTe1.ImprimirInutilizacao;
 
       Result := SetRetorno(ErrOK);
@@ -1637,34 +1908,35 @@ begin
   end;
 end;
 
-function CTE_ImprimirInutilizacaoPDF(const eChave: PChar): longint;
+function CTE_ImprimirInutilizacaoPDF(const eArquivoXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   EhArquivo: boolean;
-  AChave: string;
+  AArquivoXml: string;
 begin
   try
     VerificarLibInicializada;
 
-    AChave := string(eChave);
+    AArquivoXml := string(eArquivoXml);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('CTE_ImprimirInutilizacaoPDF(' + AChave + ' )', logCompleto, True)
+      pLib.GravarLog('CTE_ImprimirInutilizacaoPDF(' + AArquivoXml + ' )', logCompleto, True)
     else
       pLib.GravarLog('CTE_ImprimirInutilizacaoPDF', logNormal);
 
-    EhArquivo := StringEhArquivo(AChave);
+    EhArquivo := StringEhArquivo(AArquivoXml);
 
     if EhArquivo then
-      VerificarArquivoExiste(AChave);
+      VerificarArquivoExiste(AArquivoXml);
 
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
 
       if EhArquivo then
-        CTeDM.ACBrCTe1.InutCTe.LerXML(AChave);
+        CTeDM.ACBrCTe1.InutCTe.LerXML(AArquivoXml);
 
+      CTeDM.ConfigurarImpressao('', True);
       CTeDM.ACBrCTe1.ImprimirInutilizacaoPDF;
 
       Result := SetRetorno(ErrOK);

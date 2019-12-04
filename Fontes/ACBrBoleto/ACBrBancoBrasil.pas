@@ -456,12 +456,18 @@ begin
 
      {SEGMENTO P}
 
-     {Código para Protesto}
-      case TipoDiasProtesto of
-        diCorridos       : ACodProtesto := '1';
-        diUteis          : ACodProtesto := '2';
+     {Código para Protesto / Negativação}
+      case CodigoNegativacao of
+        cnProtestarCorrido :  ACodProtesto := '1';
+        cnProtestarUteis   :  ACodProtesto := '2';
+        cnNegativar        :  ACodProtesto := '8';
       else
-        ACodProtesto := '3';
+        case TipoDiasProtesto of
+          diCorridos       : ACodProtesto := '1';
+          diUteis          : ACodProtesto := '2';
+        else
+          ACodProtesto := '3';
+        end;
       end;
 
      {Pegando o Tipo de Ocorrencia}
@@ -498,7 +504,7 @@ begin
      else if EspecieDoc = 'NCC' then
        EspecieDoc   := '08'
      else if EspecieDoc = 'NCE' then
-            EspecieDoc   := '09'
+       EspecieDoc   := '09'
      else if EspecieDoc = 'NCI' then
        EspecieDoc   := '10'
      else if EspecieDoc = 'NCR' then
@@ -535,20 +541,49 @@ begin
        ATipoAceite := 'N';
      end;
 
+     BoletoEmail:= ACBrTitulo.CarteiraEnvio = tceBancoEmail;
+     if (BoletoEmail) or (Mensagem.Count > 1) then
+      begin
+       QtdRegTitulo:= 4;
+       GeraSegS    := True;
+      end
+     else
+      begin
+       QtdRegTitulo:= 3;
+       GeraSegS    := False;
+      end;     
+
      {Pegando Tipo de Boleto}
      case ACBrBoleto.Cedente.ResponEmissao of
-       tbCliEmite        : ATipoBoleto := '2' + '2';
-       tbBancoEmite      : ATipoBoleto := '1' + '1';
-       tbBancoReemite    : ATipoBoleto := '4' + '1';
+       tbCliEmite : ATipoBoleto := '2' + '2';
+       tbBancoEmite :
+       begin
+         if BoletoEmail then
+           ATipoBoleto := '1' + '3'
+         else
+           ATipoBoleto := '1' + '1';
+       end;
+       tbBancoReemite :
+       begin
+         if BoletoEmail then
+           ATipoBoleto := '4' + '3'
+         else
+           ATipoBoleto := '4' + '1';
+       end;
        tbBancoNaoReemite : ATipoBoleto := '5' + '2';
+     else
+       ATipoBoleto := '2' + '2';
      end;
-     ACaracTitulo := ' ';
+
+//     ACaracTitulo := ' ';
      case CaracTitulo of
        tcSimples     : ACaracTitulo  := '1';
        tcVinculada   : ACaracTitulo  := '2';
        tcCaucionada  : ACaracTitulo  := '3';
        tcDescontada  : ACaracTitulo  := '4';
        tcVendor      : ACaracTitulo  := '5';
+     else
+       ACaracTitulo  := '1';
      end;
 
      wCarteira:= StrToIntDef(Carteira,0);
@@ -592,19 +627,6 @@ begin
      AMensagem   := '';
      if Mensagem.Text <> '' then
        AMensagem   := Mensagem.Strings[0];
-
-
-     BoletoEmail:= ACBrTitulo.CarteiraEnvio = tceBancoEmail;
-     if (BoletoEmail) or (Mensagem.Count > 1) then
-      begin
-       QtdRegTitulo:= 4;
-       GeraSegS    := True;
-      end
-     else
-      begin
-       QtdRegTitulo:= 3;
-       GeraSegS    := False;
-      end;
 
      {SEGMENTO P}
      Result:= IntToStrZero(ACBrBanco.Numero, 3)                                         + // 1 a 3 - Código do banco

@@ -62,8 +62,8 @@ type
   // DECLARANDO O COMPONENTE:
 
   { TACBrPonto }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrPonto = class(TACBrComponent)
   private

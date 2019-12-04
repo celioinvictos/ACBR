@@ -41,7 +41,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics,
-  pcnNFe, ACBrNFeDANFEClass, pcnConversao;
+  ACBrBase, pcnNFe, ACBrNFeDANFEClass, pcnConversao;
 
 type
   TNomeFonte = (nfTimesNewRoman, nfCourierNew, nfArial);
@@ -49,7 +49,7 @@ type
   { TFonte }
 
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TFonte = class(TComponent)
   protected
@@ -73,7 +73,7 @@ type
   { TACBrNFeDANFeRL }
 
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFeDANFeRL = class(TACBrNFeDANFEClass)
   protected
@@ -95,7 +95,7 @@ type
     FRecuoEmpresa: Integer;
     FLogoEmCima: Boolean;
     FRecuoLogo: Integer;
-
+    FImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -131,6 +131,7 @@ type
     property RecuoEmpresa: Integer read FRecuoEmpresa write FRecuoEmpresa default 0;
     property LogoemCima: Boolean read FLogoEmCima write FLogoEmCima default False;
     property RecuoLogo: Integer read FRecuoLogo write FRecuoLogo default 0;
+    property ImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean read FImprimeContinuacaoDadosAdicionaisPrimeiraPagina write FImprimeContinuacaoDadosAdicionaisPrimeiraPagina default False;
   end;
 
 implementation
@@ -161,21 +162,22 @@ constructor TACBrNFeDANFeRL.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FFonte := TFonte.Create(self);
-
+  FFonte      := TFonte.Create(self);
   FFonte.Name := 'Fonte';
-  FLarguraCodProd := 54;
-  FExibeEAN := False;
-  FAltLinhaComun := 30;
-  FEspacoEntreProdutos := 7;
+
+  FLarguraCodProd       := 54;
+  FExibeEAN             := False;
+  FAltLinhaComun        := 30;
+  FEspacoEntreProdutos  := 7;
   FAlternaCoresProdutos := False;
-  FCorDestaqueProdutos := clWhite;
-  FTamanhoLogoHeight := 0;
-  FTamanhoLogoWidth := 0;
-  FRecuoEndereco := 0;
-  FRecuoEmpresa := 0;
-  FLogoEmCima := False;
-  FRecuoLogo := 0;
+  FCorDestaqueProdutos  := clWhite;
+  FTamanhoLogoHeight    := 0;
+  FTamanhoLogoWidth     := 0;
+  FRecuoEndereco        := 0;
+  FRecuoEmpresa         := 0;
+  FLogoEmCima           := False;
+  FRecuoLogo            := 0;
+  FImprimeContinuacaoDadosAdicionaisPrimeiraPagina := False;
 end;
 
 destructor TACBrNFeDANFeRL.Destroy;

@@ -39,6 +39,37 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+22/11/2019
+-- pcnAuxiliar --
+[*] Ajuste para leitura dos campos "CDATA" no XML.
+    https://www.projetoacbr.com.br/forum/topic/55006-cdata-nas-tags-xml-nfe/
+  Por: BigWings
+
+19/11/2019
+-- pcnRetConsReciDFe--
+[*] https://www.projetoacbr.com.br/forum/topic/54881-sefaz-ms-nota-ms-premiada/?do=findComment&comment=360858
+   Por: Compusofts
+
+25/10/2019
+-- pcnAuxiliar --
+[+] Adicionando o método:
+    function TimeToDecimal(const ATime: TDateTime): Double;
+    https://www.projetoacbr.com.br/forum/topic/54474-converter-horas-para-decimal-s-2245/
+    (por: DSA)
+
+22/10/2019
+-- pcnAuxiliar --
+[*] Ajuste na função "GetInicioDoHorarioDeVerao" e "GetFimDoHorarioDeVerao" 
+    de acordo com as novas regras.
+    https://www.projetoacbr.com.br/forum/topic/54406-tzpcn-j%C3%A1-est%C3%A1-atualizado-para-o-fim-do-hor%C3%A1rio-de-ver%C3%A3o/
+  Por: BigWings
+
+11/10/2019
+[*] pcnRetDistDFeInt
+    Possivel correção, para um erro que esta ocorrendo ao tentar ler a lista 
+    de Itens Averbados.
+    Por: Italo Jurisato Junior
+
 03/10/2019
 [+] pcnRetDistDFeInt
     Implementado a classe para realizar a leitura dos Itens Averbados em um 

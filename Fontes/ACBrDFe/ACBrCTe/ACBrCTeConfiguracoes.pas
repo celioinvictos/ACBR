@@ -55,11 +55,8 @@ type
     FModeloDFCodigo: integer;
     FVersaoDF: TVersaoCTe;
 
-    FGerarInfCTeSupl: TForcarGeracaoTag;
-
     procedure SetVersaoDF(const Value: TVersaoCTe);
     procedure SetModeloDF(const Value: TModeloCTe);
-    procedure SetGerarInfCTeSupl(const Value: TForcarGeracaoTag);
   public
     constructor Create(AOwner: TConfiguracoes); override;
     procedure Assign(DeGeralConfCTe: TGeralConfCTe); reintroduce;
@@ -70,8 +67,6 @@ type
     property ModeloDF: TModeloCTe read FModeloDF write SetModeloDF default moCTe;
     property ModeloDFCodigo: integer read FModeloDFCodigo;
     property VersaoDF: TVersaoCTe read FVersaoDF write SetVersaoDF default ve300;
-    property GerarInfCTeSupl: TForcarGeracaoTag read FGerarInfCTeSupl
-      write SetGerarInfCTeSupl default fgtSempre;
   end;
 
   { TArquivosConfCTe }
@@ -92,9 +87,9 @@ type
     procedure GravarIni(const AIni: TCustomIniFile); override;
     procedure LerIni(const AIni: TCustomIniFile); override;
 
-    function GetPathCTe(Data: TDateTime = 0; const CNPJ: String = ''; Modelo: Integer = 0): String;
-    function GetPathInu(Data: TDateTime = 0; const CNPJ: String = ''): String;
-    function GetPathEvento(tipoEvento: TpcnTpEvento; const CNPJ: String = ''; Data: TDateTime = 0): String;
+    function GetPathCTe(Data: TDateTime = 0; const CNPJ: String = ''; const IE: String = ''; Modelo: Integer = 0): String;
+    function GetPathInu(Data: TDateTime = 0; const CNPJ: String = ''; const IE: String = ''): String;
+    function GetPathEvento(tipoEvento: TpcnTpEvento; const CNPJ: String = ''; const IE: String = ''; Data: TDateTime = 0): String;
   published
     property EmissaoPathCTe: Boolean     read FEmissaoPathCte write FEmissaoPathCTe default False;
     property SalvarApenasCTeProcessados: Boolean read FSalvarApenasCTeProcessados write FSalvarApenasCTeProcessados default False;
@@ -179,7 +174,6 @@ begin
 
   ModeloDF := DeGeralConfCTe.ModeloDF;
   FVersaoDF := DeGeralConfCTe.VersaoDF;
-  FGerarInfCTeSupl := DeGeralConfCTe.GerarInfCTeSupl;
 end;
 
 constructor TGeralConfCTe.Create(AOwner: TConfiguracoes);
@@ -189,7 +183,6 @@ begin
   FModeloDF := moCTe;
   FModeloDFCodigo := StrToInt(ModeloCTeToStr(FModeloDF));
   FVersaoDF := ve300;
-  FGerarInfCTeSupl := fgtSempre;
 end;
 
 procedure TGeralConfCTe.GravarIni(const AIni: TCustomIniFile);
@@ -198,7 +191,6 @@ begin
 
   AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'ModeloDF', Integer(ModeloDF));
   AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'VersaoDF', Integer(VersaoDF));
-  AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'GerarInfCTeSupl', Integer(GerarInfCTeSupl));
 end;
 
 procedure TGeralConfCTe.LerIni(const AIni: TCustomIniFile);
@@ -207,12 +199,6 @@ begin
 
   ModeloDF := TModeloCTe(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'ModeloDF', Integer(ModeloDF)));
   VersaoDF := TVersaoCTe(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'VersaoDF', Integer(VersaoDF)));
-  GerarInfCTeSupl := TForcarGeracaoTag(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'GerarInfCTeSupl', Integer(GerarInfCTeSupl)));
-end;
-
-procedure TGeralConfCTe.SetGerarInfCTeSupl(const Value: TForcarGeracaoTag);
-begin
-  FGerarInfCTeSupl := Value;
 end;
 
 procedure TGeralConfCTe.SetModeloDF(const Value: TModeloCTe);
@@ -260,7 +246,7 @@ begin
   inherited;
 end;
 
-function TArquivosConfCTe.GetPathCTe(Data: TDateTime = 0; const CNPJ: String = ''; Modelo: Integer = 0): String;
+function TArquivosConfCTe.GetPathCTe(Data: TDateTime = 0; const CNPJ: String = ''; const IE: String = ''; Modelo: Integer = 0): String;
 var
   DescricaoModelo: String;
 begin
@@ -278,20 +264,20 @@ begin
       DescricaoModelo := 'CTeOS';
   end;
 
-  Result := GetPath(FPathCTe, DescricaoModelo, CNPJ, Data, DescricaoModelo);
+  Result := GetPath(FPathCTe, DescricaoModelo, CNPJ, IE, Data, DescricaoModelo);
 end;
 
-function TArquivosConfCTe.GetPathInu(Data: TDateTime = 0; const CNPJ: String = ''): String;
+function TArquivosConfCTe.GetPathInu(Data: TDateTime = 0; const CNPJ: String = ''; const IE: String = ''): String;
 begin
-  Result := GetPath(FPathInu, 'Inu', CNPJ);
+  Result := GetPath(FPathInu, 'Inu', CNPJ, IE);
 end;
 
 function TArquivosConfCTe.GetPathEvento(tipoEvento: TpcnTpEvento;
-  const CNPJ: String = ''; Data: TDateTime = 0): String;
+  const CNPJ: String = ''; const IE: String = ''; Data: TDateTime = 0): String;
 var
   Dir: String;
 begin
-  Dir := GetPath(FPathEvento, 'Evento', CNPJ, Data);
+  Dir := GetPath(FPathEvento, 'Evento', CNPJ, IE, Data);
 
   if AdicionarLiteral then
     Dir := PathWithDelim(Dir) + TpEventoToDescStr(tipoEvento);

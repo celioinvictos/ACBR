@@ -43,7 +43,7 @@ uses
 type
 
   { TLibIBGEResposta }
-  TLibIBGEResposta = class(TACBrLibResposta)
+  TLibIBGEResposta = class(TACBrLibRespostaBase)
   private
     FUF: string;
     FCodUF: string;
@@ -51,7 +51,8 @@ type
     FCodMunicipio: string;
     FArea: string;
   public
-    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
+      const AFormato: TACBrLibCodificacao); reintroduce;
 
   published
     property UF: string read FUF write FUF;
@@ -66,9 +67,9 @@ implementation
 { TLibIBGEResposta }
 
 constructor TLibIBGEResposta.Create(const ASessao: String;
-  const ATipo: TACBrLibRespostaTipo);
+  const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(ASessao, ATipo);
+  inherited Create(ASessao, ATipo, AFormato);
 end;
 
 end.

@@ -46,19 +46,19 @@ unit ACBrDANFCeFortesFrA4;
 interface
 
 uses
-	Classes, SysUtils,
-     {$IFDEF FPC}
-       LResources,
-     {$ENDIF}
-  Messages, Variants, Graphics,
-  Controls, Forms, Dialogs, ACBrNFeDANFEClass, RLReport, pcnNFe, ACBrNFe,
+  Classes, SysUtils,
+  {$IFDEF FPC}
+   LResources,
+  {$ENDIF}
+  Messages, Variants, Graphics, Controls, Forms, Dialogs,
+  ACBrBase, ACBrNFeDANFEClass, RLReport, pcnNFe, ACBrNFe,
   RLHTMLFilter, RLFilters, RLPDFFilter, ACBrUtil, pcnConversao, ACBrDFeUtil, ACBrValidador;
 
 type
   TACBrNFeDANFCeFortesA4Filtro = (fiNenhum, fiPDF, fiHTML ) ;
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrNFeDANFCeFortesA4 = class(TACBrNFeDANFCEClass)
   private
     FpNFe: TNFe;
@@ -165,6 +165,7 @@ type
     RlPelosProdutos: TRLLabel;
     RLLabel51: TRLLabel;
     lCancelada: TRLLabel;
+    rllFisco: TRLLabel;
     procedure lNomeFantasiaBeforePrint(Sender: TObject; var Text: string;
       var PrintIt: Boolean);
     procedure RLBand9BeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -396,6 +397,8 @@ procedure TfrmACBrDANFCeFortesFrA4.RLBand11BeforePrint(Sender: TObject;
 begin
   if self.FACBrNFeDANFCeFortesA4.Cancelada then
     lCancelada.Caption    := ACBrStr('NF-e CANCELADA');
+
+  rllFisco.Caption := ACBrStr(self.FACBrNFeDANFCeFortesA4.FpNFe.procNFe.xMsg);
 end;
 
 procedure TfrmACBrDANFCeFortesFrA4.RLBand12BeforePrint(Sender: TObject;
@@ -689,7 +692,7 @@ begin
   if self.FACBrNFeDANFCeFortesA4.FpNFe.Det[self.FNumItem].infAdProd = '' then
     Text := self.FACBrNFeDANFCeFortesA4.FpNFe.Det[self.FNumItem].Prod.xProd
   else
-    Text := self.FACBrNFeDANFCeFortesA4.FpNFe.Det[self.FNumItem].Prod.xProd + ' - ' 
+    Text := self.FACBrNFeDANFCeFortesA4.FpNFe.Det[self.FNumItem].Prod.xProd + ' - '
 			+ StringReplace( self.FACBrNFeDANFCeFortesA4.FpNFe.Det[self.FNumItem].infAdProd, ';',#13,[rfReplaceAll]);
 end;
 

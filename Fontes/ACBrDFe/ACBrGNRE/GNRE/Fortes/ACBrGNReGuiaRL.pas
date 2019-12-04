@@ -51,7 +51,7 @@ type
   RLGNRe: TRLReport;
   RLPDFFilter1: TRLPDFFilter;
   private
-    { Private declarations }
+    procedure AjustarMargens(AMargemSuperior: Double; AMargemInferior: Double; AMargemEsquerda: Double; AMargemDireita: Double);
   protected
     FACBrGNRe: TACBrGNRE;
     FGNRe: TGNRERetorno;
@@ -80,10 +80,10 @@ type
       ASite: string = '';
       AUsuario: string = '';
       APreview: boolean = True;
-      AMargemSuperior: double = 0.8;
-      AMargemInferior: double = 0.8;
-      AMargemEsquerda: double = 0.6;
-      AMargemDireita: double = 0.51;
+      AMargemSuperior: double = 8;
+      AMargemInferior: double = 8;
+      AMargemEsquerda: double = 6;
+      AMargemDireita: double = 5.1;
       AImpressora: string = '';
       APrintDialog  : Boolean = True  );
 
@@ -96,10 +96,10 @@ type
       ASistema: string = '';
       ASite: string = '';
       AUsuario: string = '';
-      AMargemSuperior: double = 0.8;
-      AMargemInferior: double = 0.8;
-      AMargemEsquerda: double = 0.6;
-      AMargemDireita: double = 0.51);
+      AMargemSuperior: double = 8;
+      AMargemInferior: double = 8;
+      AMargemEsquerda: double = 6;
+      AMargemDireita: double = 5.1);
   end;
 
 implementation
@@ -119,10 +119,10 @@ class procedure TfrlGuiaRL.Imprimir(AOwner: TComponent;
   ASite: string = '';
   AUsuario: string = '';
   APreview: boolean = True;
-  AMargemSuperior: double = 0.8;
-  AMargemInferior: double = 0.8;
-  AMargemEsquerda: double = 0.6;
-  AMargemDireita: double = 0.51;
+  AMargemSuperior: double = 8;
+  AMargemInferior: double = 8;
+  AMargemEsquerda: double = 6;
+  AMargemDireita: double = 5.1;
   AImpressora: string = '';
   APrintDialog: Boolean = True);
 begin
@@ -145,6 +145,9 @@ begin
         RLPrinter.Copies := FNumCopias;
       end;
 
+
+      AjustarMargens(AMargemSuperior, AMargemInferior, AMargemEsquerda, AMargemDireita);
+
       RLGNRe.PrintDialog := APrintDialog;
       if APreview = True then
         RLGNRe.PreviewModal
@@ -164,10 +167,10 @@ class procedure TfrlGuiaRL.SavePDF(AOwner: TComponent;
   ASistema: string = '';
   ASite: string = '';
   AUsuario: string = '';
-  AMargemSuperior: double = 0.8;
-  AMargemInferior: double = 0.8;
-  AMargemEsquerda: double = 0.6;
-  AMargemDireita: double = 0.51);
+  AMargemSuperior: double = 8;
+  AMargemInferior: double = 8;
+  AMargemEsquerda: double = 6;
+  AMargemDireita: double = 5.1);
 begin
   with Create(AOwner) do
     try
@@ -182,6 +185,8 @@ begin
       FMargemInferior := AMargemInferior;
       FMargemEsquerda := AMargemEsquerda;
       FMargemDireita := AMargemDireita;
+
+      AjustarMargens(AMargemSuperior, AMargemInferior, AMargemEsquerda, AMargemDireita);
 
       with RLPDFFilter1.DocumentInfo do
       begin
@@ -198,6 +203,14 @@ begin
     finally
       Free;
     end;
+end;
+
+procedure TfrlGuiaRL.AjustarMargens(AMargemSuperior: Double; AMargemInferior: Double; AMargemEsquerda: Double; AMargemDireita: Double);
+begin
+  RLGNRe.Margins.TopMargin := AMargemSuperior;
+  RLGNRe.Margins.BottomMargin := AMargemInferior;
+  RLGNRe.Margins.LeftMargin := AMargemEsquerda;
+  RLGNRe.Margins.RightMargin := AMargemDireita;
 end;
 
 end.

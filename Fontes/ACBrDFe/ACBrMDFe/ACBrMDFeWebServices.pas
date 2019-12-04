@@ -326,7 +326,7 @@ type
 
     FEventoRetorno: TRetEventoMDFe;
 
-    function GerarPathEvento(const ACNPJ: String = ''): String;
+    function GerarPathEvento(const ACNPJ: String = ''; const AIE: String = ''): String;
   protected
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
@@ -1820,8 +1820,10 @@ begin
 
     with TACBrMDFe(FPDFeOwner) do
     begin
-      Result := cStatProcessado(MDFeRetorno.CStat) or
-                cStatCancelado(MDFeRetorno.CStat);
+      // cStat = 132 indica que o MDF-e foi encerrado
+      Result := cStatProcessado(MDFeRetorno.cStat) or
+                cStatCancelado(MDFeRetorno.cStat) or
+                (MDFeRetorno.cStat = 132);
     end;
 
     for i := 0 to TACBrMDFe(FPDFeOwner).Manifestos.Count - 1 do
@@ -1833,7 +1835,7 @@ begin
           Atualiza := (NaoEstaVazio(MDFeRetorno.XMLprotMDFe));
 
           if Atualiza and
-             TACBrMDFe(FPDFeOwner).cStatCancelado(MDFeRetorno.CStat) then
+             TACBrMDFe(FPDFeOwner).cStatCancelado(MDFeRetorno.cStat) then
             Atualiza := False;
 
           if (FPConfiguracoesMDFe.Geral.ValidarDigest) and
@@ -1902,22 +1904,22 @@ begin
               else
                 dhEmissao := Now;
 
-                sPathMDFe := PathWithDelim(FPConfiguracoesMDFe.Arquivos.GetPathMDFe(dhEmissao, MDFe.Emit.CNPJCPF));
+              sPathMDFe := PathWithDelim(FPConfiguracoesMDFe.Arquivos.GetPathMDFe(dhEmissao, MDFe.Emit.CNPJCPF, MDFe.emit.IE));
 
-                if (FRetMDFeDFe <> '') then
-                  FPDFeOwner.Gravar( FMDFeChave + '-MDFeDFe.xml', FRetMDFeDFe, sPathMDFe);
+              if (FRetMDFeDFe <> '') then
+                FPDFeOwner.Gravar( FMDFeChave + '-MDFeDFe.xml', FRetMDFeDFe, sPathMDFe);
 
-                // Salva o XML do MDF-e assinado e protocolado
-                NomeXMLSalvo := '';
-                if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
-                begin
-                  FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
-                  NomeXMLSalvo := NomeArq;
-                end;
+              // Salva o XML do MDF-e assinado e protocolado
+              NomeXMLSalvo := '';
+              if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
+              begin
+                FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
+                NomeXMLSalvo := NomeArq;
+              end;
 
-                // Salva na pasta baseado nas configurações do PathCTe
-                if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
-                  GravarXML;
+              // Salva na pasta baseado nas configurações do PathCTe
+              if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
+                GravarXML;
             end;
           end;
 
@@ -1992,11 +1994,11 @@ begin
   FEventoRetorno := TRetEventoMDFe.Create;
 end;
 
-function TMDFeEnvEvento.GerarPathEvento(const ACNPJ: String): String;
+function TMDFeEnvEvento.GerarPathEvento(const ACNPJ, AIE: String): String;
 begin
   with FEvento.Evento.Items[0].InfEvento do
   begin
-    Result := FPConfiguracoesMDFe.Arquivos.GetPathEvento(tpEvento, ACNPJ);
+    Result := FPConfiguracoesMDFe.Arquivos.GetPathEvento(tpEvento, ACNPJ, AIE);
   end;
 end;
 
@@ -2642,11 +2644,13 @@ begin
       Result := FPConfiguracoesMDFe.Arquivos.GetPathDownloadEvento(AItem.procEvento.tpEvento,
                                                            AItem.resDFe.xNome,
                                                            AItem.procEvento.CNPJ,
+                                                           AItem.resDFe.IE,
                                                            Data);
 
     schprocMDFe:
       Result := FPConfiguracoesMDFe.Arquivos.GetPathDownload(AItem.resDFe.xNome,
                                                              AItem.resDFe.CNPJCPF,
+                                                             AItem.resDFe.IE,
                                                              Data);
   end;
 end;

@@ -43,7 +43,8 @@ ResourceString
   SMsgReinfLimparLista = 'Lista de Eventos Limpas com Sucesso';
   SErroReinfNenhumEvento = 'Erro: Nenhum evento na lista';
   SErroIDContribuinteTransmissor = 'ID do Contribuinte/Transmissor Inválido.';
-  SErroReinfConsulta = 'Erro ao Consultar Evento - Parâmetro não Preenchido';
+  SErroReinfConsulta = 'Erro ao Consultar Evento - Parâmetro não Preenchido.';
+  SErroSSLDesabilitado = 'Será utilizado a configuração padrão SSL: %s !';
 
 
 const
@@ -933,6 +934,7 @@ const
   CKeyDANFEDecimaisQTD =               'DecimaisQTD';
   CKeyDANFEDecimaisValor =             'DecimaisValor';
   CKeyDANFEExibeResumo =               'ExibeResumo';
+  CKeyDANFETextoResumoCanhoto =        'TextoResumoCanhoto';
   CKeyDANFEImprimirTributosItem =      'ImprimirTributosItem';
   CKeyDANFEImprimirValLiq =            'ImprimirValLiq';
   CKeyDANFEUNComercialETributavel =    'UNComercialETributavel';
@@ -949,6 +951,9 @@ const
   CKeyDANFEImprimirDadosDocReferenciados = 'ImprimirDadosDocReferenciados';
   CKeyDANFEExibirBandInforAdicProduto =    'ExibirBandInforAdicProduto';
   CKeyDANFELogoEmCima =                    'LogoEmCima';
+  CKeyDANFEExpandirDadosAdicionaisAuto = 'ExpandirDadosAdicionaisAuto';
+  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina = 'ImprimeContinuacaoDadosAdicionaisPrimeiraPagina';
+  CKeyDANFEImprimeDescAcrescItemNFe = 'ImprimeDescAcrescItemNFe';
 
   CSecDANFCe =                         'DANFCe';
   CKeyDANFCeMargemInf =                'MargemInf';
@@ -1034,6 +1039,11 @@ const
   CKeySATExtUsaCodigoEanImpressao =         'UsaCodigoEanImpressao';
   CKeySATExtLogoLateral =                   'LogoLateral';
   CKeySATExtQRCodeLateral =                 'QRCodeLateral';
+  CKeySATExtDecimaisQTD =                   'ExtratoDecimaisQTD';
+  CKeySATExtDecimaisValor =                 'ExtratoDecimaisValor';
+  CKeySATExtMaskQTD =                       'ExtratoMaskQTD';
+  CKeySATExtMaskValor =                     'ExtratoMaskValor';
+  CKeySATExtFormatoDecimal =                'FormatoDecimal';
 
   CSecSATEmit =                             'SATEmit';
   CKeySATEmitCNPJ =                         'CNPJ';

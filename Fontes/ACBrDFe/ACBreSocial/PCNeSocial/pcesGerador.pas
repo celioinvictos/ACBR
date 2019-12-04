@@ -133,7 +133,9 @@ type
     procedure GerarRic(pRic: TRic);
     procedure GerarOC(pOc: TOC);
     procedure GerarSucessaoVinc(pSucessaoVinc: TSucessaoVinc);
-    procedure GerarTrabalhador(pTrabalhador: TTrabalhador; const GroupName: string = 'trabalhador'; const Tipo: Integer = 1; const Categoria: Integer = 0);
+    procedure GerarTrabalhador(pTrabalhador: TTrabalhador; AcadIni: tpSimNao;
+      const GroupName: string = 'trabalhador'; const Tipo: Integer = 1;
+      const Categoria: Integer = 0);
     procedure GerarTrabEstrangeiro(pTrabEstrangeiro: TTrabEstrangeiro);
     procedure GerarTrabTemporario(pTrabTemporario: TTrabTemporario);
     procedure GerarInfoASO(pInfoASO: TInfoASO);
@@ -551,16 +553,21 @@ end;
 
 procedure TeSocialEvento.GerarDocumentos(pDocumentos: TDocumentos);
 begin
-  Gerador.wGrupo('documentos');
+  if (pDocumentos.CTPS.NrCtps <> '') or (pDocumentos.Ric.NrRic <> '') or
+     (pDocumentos.Rg.NrRg <> '') or (pDocumentos.RNE.NrRne  <> '') or
+     (pDocumentos.Oc.NrOc <> '') or (pDocumentos.Cnh.nrRegCnh <> '') then
+  begin
+    Gerador.wGrupo('documentos');
 
-  GerarCTPS(pDocumentos.CTPS);
-  GerarRic(pDocumentos.Ric);
-  GerarRG(pDocumentos.RG);
-  GerarRNE(pDocumentos.RNE);
-  GerarOC(pDocumentos.OC);
-  GerarCNH(pDocumentos.CNH);
+    GerarCTPS(pDocumentos.CTPS);
+    GerarRic(pDocumentos.Ric);
+    GerarRG(pDocumentos.RG);
+    GerarRNE(pDocumentos.RNE);
+    GerarOC(pDocumentos.OC);
+    GerarCNH(pDocumentos.CNH);
 
-  Gerador.wGrupo('/documentos');
+    Gerador.wGrupo('/documentos');
+  end;
 end;
 
 procedure TeSocialEvento.GerarDuracao(pDuracao: TDuracao; pTipo: Integer);
@@ -601,7 +608,9 @@ procedure TeSocialEvento.GerarEnderecoBrasil(pEndereco: TBrasil; const GroupName
 begin
   Gerador.wGrupo(GroupName);
 
-  Gerador.wCampo(tcStr, '', 'tpLograd',    1,  4, 1, pEndereco.TpLograd);
+
+  Gerador.wCampo(tcStr, '', 'tpLograd',    1,  4, 0, pEndereco.TpLograd);
+
   Gerador.wCampo(tcStr, '', 'dscLograd',   1, 80, 1, pEndereco.DscLograd);
   Gerador.wCampo(tcStr, '', 'nrLograd',    1, 10, 1, pEndereco.NrLograd);
   Gerador.wCampo(tcStr, '', 'complemento', 1, 30, 0, pEndereco.Complemento);
@@ -786,7 +795,8 @@ begin
   end;
 end;
 
-procedure TeSocialEvento.GerarTrabalhador(pTrabalhador: TTrabalhador; const GroupName: string; const tipo: Integer; const Categoria: Integer);
+procedure TeSocialEvento.GerarTrabalhador(pTrabalhador: TTrabalhador; AcadIni: tpSimNao;
+  const GroupName: string; const tipo: Integer; const Categoria: Integer);
 begin
   Gerador.wGrupo(GroupName);
 
@@ -811,7 +821,7 @@ begin
 
   Gerador.wCampo(tcStr, '', 'grauInstr', 2, 2, 1, pTrabalhador.GrauInstr);
 
-  if (tipo = 2) then
+  if (tipo = 2) and (AcadIni = tpNao) then
     Gerador.wCampo(tcStr, '', 'indPriEmpr', 1, 1, 0, eSSimNaoToStr(pTrabalhador.IndPriEmpr));
 
   Gerador.wCampo(tcStr, '', 'nmSoc', 1, 70, 0, pTrabalhador.nmSoc);
@@ -858,7 +868,9 @@ begin
 
     Gerador.wCampo(tcInt, '', 'hipLeg',      1,   1, 1, pTrabTemporario.hipLeg);
     Gerador.wCampo(tcStr, '', 'justContr',   1, 999, 1, pTrabTemporario.justContr);
-    Gerador.wCampo(tcInt, '', 'tpInclContr', 1,   1, 1, eSTpInclContrToStr(pTrabTemporario.tpinclContr));
+
+    if (pTrabTemporario.tpinclContr <> icNenhum) then
+      Gerador.wCampo(tcInt, '', 'tpInclContr', 1,   1, 1, eSTpInclContrToStr(pTrabTemporario.tpinclContr));
 
     GerarIdeTomadorServ(pTrabTemporario.IdeTomadorServ);
     GerarIdeTrabSubstituido(pTrabTemporario.IdeTrabSubstituido);

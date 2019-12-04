@@ -1,28 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-{******************************************************************************}
-
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -67,7 +74,7 @@ type
   protected
     procedure LerIniChild(const AIni: TCustomIniFile); override;
     procedure GravarIniChild(const AIni: TCustomIniFile); override;
-    procedure AssignChild(const DFeReport: TACBrSATExtratoClass); override;
+    procedure ApplyChild(const DFeReport: TACBrSATExtratoClass); override;
     procedure DefinirValoresPadroesChild; override;
 
   public
@@ -337,10 +344,13 @@ begin
   AIni.WriteBool(FSessao, CChaveImprimeLogoLateral, FImprimeLogoLateral);
 end;
 
-procedure TExtratoConfig.AssignChild(const DFeReport: TACBrSATExtratoClass);
+procedure TExtratoConfig.ApplyChild(const DFeReport: TACBrSATExtratoClass);
+Var
+  LogoVisible: Boolean;
 begin
-  if FileExists(Logo) then
-    DFeReport.PictureLogo.Bitmap.LoadFromFile(Logo);
+  LogoVisible := FileExists(Logo);
+  if LogoVisible then
+    DFeReport.PictureLogo.LoadFromFile(Logo);
 
   DFeReport.ImprimeQRCode := ImprimeQRCode;
   DFeReport.ImprimeMsgOlhoNoImposto := ImprimeMsgOlhoNoImposto;
@@ -350,12 +360,15 @@ begin
   DFeReport.ImprimeDescAcrescItem := ImprimeDescAcrescItem;
   DFeReport.ImprimeCodigoEan := ImprimeCodigoEan;
   DFeReport.Filtro := Filtro;
+  DFeReport.ImprimeLogoLateral := ImprimeLogoLateral;
+  DFeReport.ImprimeQRCodeLateral := ImprimeQRCodeLateral;
 
   if DFeReport is TACBrSATExtratoESCPOS then
     TACBrSATExtratoESCPOS(DFeReport).ImprimeChaveEmUmaLinha := ImprimeChaveEmUmaLinha;
 
   if DFeReport is TACBrSATExtratoFortes then
   begin
+    TACBrSATExtratoFortes(DFeReport).LogoVisible := LogoVisible;
     TACBrSATExtratoFortes(DFeReport).LarguraBobina := LarguraBobina;
     TACBrSATExtratoFortes(DFeReport).EspacoFinal := EspacoFinal;
     TACBrSATExtratoFortes(DFeReport).LogoWidth := LogoWidth;
@@ -568,8 +581,7 @@ end;
 
 procedure TLibSATConfig.LerIni(const AIni: TCustomIniFile);
 begin
-  FModelo := TACBrSATModelo(AIni.ReadInteger(CSessaoSAT, CChaveModelo,
-    integer(FModelo)));
+  FModelo := TACBrSATModelo(AIni.ReadInteger(CSessaoSAT, CChaveModelo, integer(FModelo)));
   FNomeDLL := AIni.ReadString(CSessaoSAT, CChaveNomeDLL, FNomeDLL);
   FArqLOG := AIni.ReadString(CSessaoSAT, CChaveArqLog, FArqLOG);
   FCodigoDeAtivacao := AIni.ReadString(CSessaoSAT, CChaveCodigoDeAtivacao, FCodigoDeAtivacao);

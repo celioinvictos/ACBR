@@ -8,12 +8,6 @@ namespace ACBrLib.NFe
 {
     public sealed class ACBrNFe : ACBrLibHandle
     {
-        #region Fields
-
-        private const int BUFFER_LEN = 256;
-
-        #endregion Fields
-
         #region InnerTypes
 
         private class Delegates
@@ -52,6 +46,12 @@ namespace ACBrLib.NFe
             public delegate int NFE_CarregarINI(string eArquivoOuIni);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_ObterXml(int AIndex, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_GravarXml(int AIndex, string eNomeArquivo, string ePathArquivo);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_CarregarEventoXML(string eArquivoOuXml);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -76,10 +76,17 @@ namespace ACBrLib.NFe
             public delegate int NFE_VerificarAssinatura(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
+                int ATpEmi, string AEmissao, string CPFCNPJ, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_StatusServico(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_Consultar(string eChaveOuNFe, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_ConsultaCadastro(string cUF, string nDocumento, bool nIE, StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_Inutilizar(string acnpj, string aJustificativa, int ano, int modelo,
@@ -111,7 +118,7 @@ namespace ACBrLib.NFe
             public delegate int NFE_EnviarEmail(string ePara, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eCc, string eAnexos, string eMensagem);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int NFE_EnviarEmailEvento(string ePara, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eCc, string eAnexos, string eMensagem);
+            public delegate int NFE_EnviarEmailEvento(string ePara, string eChaveEvento, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eCc, string eAnexos, string eMensagem);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_Imprimir(string cImpressora, int nNumCopias, string cProtocolo, string bMostrarPreview, string cMarcaDagua, string bViaConsumidor, string bSimplificado);
@@ -120,16 +127,16 @@ namespace ACBrLib.NFe
             public delegate int NFE_ImprimirPDF();
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int NFE_ImprimirEvento(string eChaveNFe, string eChaveEvento);
+            public delegate int NFE_ImprimirEvento(string eArquivoXmlNFe, string eArquivoXmlEvento);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int NFE_ImprimirEventoPDF(string eChaveNFe, string eChaveEvento);
+            public delegate int NFE_ImprimirEventoPDF(string eArquivoXmlNFe, string eArquivoXmlEvento);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int NFE_ImprimirInutilizacao(string eChave);
+            public delegate int NFE_ImprimirInutilizacao(string eArquivoXml);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int NFE_ImprimirInutilizacaoPDF(string eChave);
+            public delegate int NFE_ImprimirInutilizacaoPDF(string eArquivoXml);
         }
 
         #endregion InnerTypes
@@ -137,10 +144,8 @@ namespace ACBrLib.NFe
         #region Constructors
 
         public ACBrNFe(string eArqConfig = "", string eChaveCrypt = "") :
-            base(Environment.Is64BitProcess ? "ACBrNFE64.dll" : "ACBrNFE32.dll")
+            base(Environment.Is64BitProcess ? "ACBrNFe64.dll" : "ACBrNFe32.dll")
         {
-            InitializeMethods();
-
             var inicializar = GetMethod<Delegates.NFE_Inicializar>();
             var ret = ExecuteMethod(() => inicializar(ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
 
@@ -148,6 +153,42 @@ namespace ACBrLib.NFe
         }
 
         #endregion Constructors
+
+        #region Properties
+
+        public string Nome
+        {
+            get
+            {
+                var bufferLen = BUFFER_LEN;
+                var buffer = new StringBuilder(bufferLen);
+
+                var method = GetMethod<Delegates.NFE_Nome>();
+                var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+                CheckResult(ret);
+
+                return ProcessResult(buffer, bufferLen);
+            }
+        }
+
+        public string Versao
+        {
+            get
+            {
+                var bufferLen = BUFFER_LEN;
+                var buffer = new StringBuilder(bufferLen);
+
+                var method = GetMethod<Delegates.NFE_Versao>();
+                var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+                CheckResult(ret);
+
+                return ProcessResult(buffer, bufferLen);
+            }
+        }
+
+        #endregion Properties
 
         #region Methods
 
@@ -178,13 +219,8 @@ namespace ACBrLib.NFe
             var ret = ExecuteMethod(() => method(ToUTF8(eSessao.ToString()), ToUTF8(eChave), pValue, ref bufferLen));
             CheckResult(ret);
 
-            var value = FromUTF8(pValue);
-
-            if (typeof(T).IsEnum) return (T)Enum.ToObject(typeof(T), Convert.ToInt32(value));
-
-            if (typeof(T) == typeof(bool)) return (T)(object)Convert.ToBoolean(Convert.ToInt32(value));
-
-            return (T)Convert.ChangeType(value, typeof(T));
+            var value = ProcessResult(pValue, bufferLen);
+            return ConvertValue<T>(value);
         }
 
         public void ConfigGravarValor(ACBrSessao eSessao, string eChave, object value)
@@ -192,11 +228,7 @@ namespace ACBrLib.NFe
             if (value == null) return;
 
             var method = GetMethod<Delegates.NFE_ConfigGravarValor>();
-            var type = value.GetType();
-
-            var propValue = value.ToString();
-            if (type.IsEnum) propValue = ((int)value).ToString();
-            if (type == typeof(bool)) propValue = Convert.ToInt32(value).ToString();
+            var propValue = ConvertValue(value);
 
             var ret = ExecuteMethod(() => method(ToUTF8(eSessao.ToString()), ToUTF8(eChave), ToUTF8(propValue)));
             CheckResult(ret);
@@ -216,6 +248,27 @@ namespace ACBrLib.NFe
         {
             var method = GetMethod<Delegates.NFE_CarregarINI>();
             var ret = ExecuteMethod(() => method(ToUTF8(eArquivoOuIni)));
+
+            CheckResult(ret);
+        }
+
+        public string ObterXml(int aIndex)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_ObterXml>();
+            var ret = ExecuteMethod(() => method(aIndex, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public void GravarXml(int aIndex, string eNomeArquivo = "", string ePathArquivo = "")
+        {
+            var method = GetMethod<Delegates.NFE_GravarXml>();
+            var ret = ExecuteMethod(() => method(aIndex, ToUTF8(eNomeArquivo), ToUTF8(ePathArquivo)));
 
             CheckResult(ret);
         }
@@ -294,6 +347,22 @@ namespace ACBrLib.NFe
             return ProcessResult(buffer, bufferLen);
         }
 
+        public string GerarChave(int aCodigoUf, int aCodigoNumerico, int aModelo, int aSerie, int aNumero,
+            int aTpEmi, DateTime aEmissao, string acpfcnpj)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_GerarChave>();
+            var ret = ExecuteMethod(() => method(aCodigoUf, aCodigoNumerico, aModelo, aSerie, aNumero,
+                                                 aTpEmi, aEmissao.Date.ToString("dd/MM/yyyy"), ToUTF8(acpfcnpj),
+                                                 buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
         public string StatusServico()
         {
             var bufferLen = BUFFER_LEN;
@@ -314,6 +383,19 @@ namespace ACBrLib.NFe
 
             var method = GetMethod<Delegates.NFE_Consultar>();
             var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuNFe), buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultaCadastro(string cUF, string nDocumento, bool nIE)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_ConsultaCadastro>();
+            var ret = ExecuteMethod(() => method(ToUTF8(cUF), ToUTF8(nDocumento), nIE, buffer, ref bufferLen));
 
             CheckResult(ret);
 
@@ -434,10 +516,10 @@ namespace ACBrLib.NFe
             CheckResult(ret);
         }
 
-        public void EnviarEmailEvento(string ePara, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
+        public void EnviarEmailEvento(string ePara, string eChaveEvento, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
         {
             var method = GetMethod<Delegates.NFE_EnviarEmailEvento>();
-            var ret = ExecuteMethod(() => method(ToUTF8(ePara), ToUTF8(eChaveNFe), aEnviaPDF, ToUTF8(eAssunto), ToUTF8(eCc == null ? "" : string.Join(";", eCc)),
+            var ret = ExecuteMethod(() => method(ToUTF8(ePara), ToUTF8(eChaveEvento), ToUTF8(eChaveNFe), aEnviaPDF, ToUTF8(eAssunto), ToUTF8(eCc == null ? "" : string.Join(";", eCc)),
                 ToUTF8(eAnexos == null ? "" : string.Join(";", eAnexos)), ToUTF8(eMensagem.Replace(Environment.NewLine, ";"))));
 
             CheckResult(ret);
@@ -466,34 +548,34 @@ namespace ACBrLib.NFe
             CheckResult(ret);
         }
 
-        public void ImprimirEvento(string eChaveNFe, string eChaveEvento)
+        public void ImprimirEvento(string eArquivoXmlNFe, string eArquivoXmlEvento)
         {
             var method = GetMethod<Delegates.NFE_ImprimirEvento>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveNFe), ToUTF8(eChaveEvento)));
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlNFe), ToUTF8(eArquivoXmlEvento)));
 
             CheckResult(ret);
         }
 
-        public void ImprimirEventoPDF(string eChaveNFe, string eChaveEvento)
+        public void ImprimirEventoPDF(string eArquivoXmlNFe, string eArquivoXmlEvento)
         {
             var method = GetMethod<Delegates.NFE_ImprimirEventoPDF>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveNFe), ToUTF8(eChaveEvento)));
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlNFe), ToUTF8(eArquivoXmlEvento)));
 
             CheckResult(ret);
         }
 
-        public void ImprimirInutilizacao(string eChaveNFe)
+        public void ImprimirInutilizacao(string eArquivoXml)
         {
             var method = GetMethod<Delegates.NFE_ImprimirInutilizacao>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveNFe)));
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXml)));
 
             CheckResult(ret);
         }
 
-        public void ImprimirInutilizacaoPDF(string eChaveNFe)
+        public void ImprimirInutilizacaoPDF(string eArquivoXml)
         {
             var method = GetMethod<Delegates.NFE_ImprimirInutilizacaoPDF>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveNFe)));
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXml)));
 
             CheckResult(ret);
         }
@@ -507,7 +589,7 @@ namespace ACBrLib.NFe
             CheckResult(codRet);
         }
 
-        private void InitializeMethods()
+        protected override void InitializeMethods()
         {
             AddMethod<Delegates.NFE_Inicializar>("NFE_Inicializar");
             AddMethod<Delegates.NFE_Finalizar>("NFE_Finalizar");
@@ -520,6 +602,8 @@ namespace ACBrLib.NFe
             AddMethod<Delegates.NFE_ConfigGravarValor>("NFE_ConfigGravarValor");
             AddMethod<Delegates.NFE_CarregarXML>("NFE_CarregarXML");
             AddMethod<Delegates.NFE_CarregarINI>("NFE_CarregarINI");
+            AddMethod<Delegates.NFE_ObterXml>("NFE_ObterXml");
+            AddMethod<Delegates.NFE_GravarXml>("NFE_GravarXml");
             AddMethod<Delegates.NFE_CarregarEventoXML>("NFE_CarregarEventoXML");
             AddMethod<Delegates.NFE_CarregarEventoINI>("NFE_CarregarEventoINI");
             AddMethod<Delegates.NFE_LimparLista>("NFE_LimparLista");
@@ -528,8 +612,10 @@ namespace ACBrLib.NFe
             AddMethod<Delegates.NFE_Validar>("NFE_Validar");
             AddMethod<Delegates.NFE_ValidarRegrasdeNegocios>("NFE_ValidarRegrasdeNegocios");
             AddMethod<Delegates.NFE_VerificarAssinatura>("NFE_VerificarAssinatura");
+            AddMethod<Delegates.NFE_GerarChave>("NFE_GerarChave");
             AddMethod<Delegates.NFE_StatusServico>("NFE_StatusServico");
             AddMethod<Delegates.NFE_Consultar>("NFE_Consultar");
+            AddMethod<Delegates.NFE_ConsultaCadastro>("NFE_ConsultaCadastro");
             AddMethod<Delegates.NFE_Inutilizar>("NFE_Inutilizar");
             AddMethod<Delegates.NFE_Enviar>("NFE_Enviar");
             AddMethod<Delegates.NFE_ConsultarRecibo>("NFE_ConsultarRecibo");
@@ -548,19 +634,21 @@ namespace ACBrLib.NFe
             AddMethod<Delegates.NFE_ImprimirInutilizacaoPDF>("NFE_ImprimirInutilizacaoPDF");
         }
 
-        protected override string GetUltimoRetorno()
+        protected override string GetUltimoRetorno(int iniBufferLen = 0)
         {
-            var bufferLen = BUFFER_LEN;
+            var bufferLen = iniBufferLen < 1 ? BUFFER_LEN : iniBufferLen;
             var buffer = new StringBuilder(bufferLen);
             var ultimoRetorno = GetMethod<Delegates.NFE_UltimoRetorno>();
 
+            if (iniBufferLen < 1)
+            {
+                ExecuteMethod(() => ultimoRetorno(buffer, ref bufferLen));
+                if (bufferLen <= BUFFER_LEN) return FromUTF8(buffer);
+
+                buffer.Capacity = bufferLen;
+            }
+
             ExecuteMethod(() => ultimoRetorno(buffer, ref bufferLen));
-
-            if (bufferLen <= BUFFER_LEN) return FromUTF8(buffer);
-
-            buffer.Capacity = bufferLen;
-            ExecuteMethod(() => ultimoRetorno(buffer, ref bufferLen));
-
             return FromUTF8(buffer);
         }
 

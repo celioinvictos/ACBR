@@ -1,18 +1,18 @@
 object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
-  Left = 519
-  Height = 870
-  Top = 148
-  Width = 763
+  Left = 528
+  Height = 749
+  Top = 158
+  Width = 780
   Caption = 'ACBrNFeDANFCeFortesFr'
-  ClientHeight = 870
-  ClientWidth = 763
+  ClientHeight = 749
+  ClientWidth = 780
   Color = clBtnFace
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.0.0.3'
+  LCLVersion = '2.0.6.0'
   object rlVenda: TRLReport
     Left = 8
     Height = 1512
@@ -215,7 +215,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
       end
       object rlbOutroItem: TRLBand
         Left = 8
-        Height = 26
+        Height = 24
         Top = 48
         Width = 278
         AutoSize = True
@@ -305,7 +305,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
       object rlbGap: TRLBand
         Left = 8
         Height = 2
-        Top = 74
+        Top = 72
         Width = 278
         BandType = btSummary
         RealBounds.Left = 0
@@ -366,6 +366,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
             Font.Color = clBlack
             Font.Height = -9
             Font.Name = 'Arial'
+            Font.Style = [fsBold]
             ParentFont = False
             RealBounds.Left = 0
             RealBounds.Top = 0
@@ -413,6 +414,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
             Font.Color = clBlack
             Font.Height = -9
             Font.Name = 'Arial'
+            Font.Style = [fsBold]
             ParentFont = False
             RealBounds.Left = 0
             RealBounds.Top = 0
@@ -429,6 +431,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
             Font.Color = clBlack
             Font.Height = -9
             Font.Name = 'Arial'
+            Font.Style = [fsBold]
             ParentFont = False
             RealBounds.Left = 0
             RealBounds.Top = 0
@@ -755,7 +758,6 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
           Font.Height = -7
           Font.Name = 'Arial'
           Font.Pitch = fpVariable
-          Font.Quality = fqDraft
           Font.Style = [fsBold]
           Layout = tlCenter
           ParentFont = False
@@ -942,7 +944,6 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
           Font.Height = -9
           Font.Name = 'Arial'
           Font.Pitch = fpVariable
-          Font.Quality = fqDraft
           Font.Style = [fsBold]
           Layout = tlCenter
           Lines.Strings = (
@@ -1588,7 +1589,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
     object rlbRodapeCanc: TRLBand
       Left = 8
       Height = 222
-      Top = 345
+      Top = 357
       Width = 264
       AutoSize = True
       BandType = btSummary
@@ -2046,7 +2047,7 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
     end
     object rlbMensagemFiscalCanc: TRLBand
       Left = 8
-      Height = 98
+      Height = 110
       Top = 247
       Width = 264
       AutoSize = True
@@ -2196,6 +2197,22 @@ object ACBrNFeDANFCeFortesFr: TACBrNFeDANFCeFortesFr
         Left = 4
         Height = 12
         Top = 86
+        Width = 256
+        Align = faTop
+        Alignment = taCenter
+        Font.Color = clBlack
+        Font.Height = -9
+        Font.Name = 'Arial'
+        ParentFont = False
+        RealBounds.Left = 0
+        RealBounds.Top = 0
+        RealBounds.Width = 0
+        RealBounds.Height = 0
+      end
+      object rllFisco: TRLLabel
+        Left = 4
+        Height = 12
+        Top = 98
         Width = 256
         Align = faTop
         Alignment = taCenter

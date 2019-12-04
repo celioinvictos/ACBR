@@ -1,6 +1,6 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
@@ -22,9 +22,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -38,6 +37,31 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+Data: 02/12/2019
+-- ACBrETQPpla --
+[+] Implementado o método "BMP2HEX", que converte uma Imagem BitMap, no Formato
+    HEX nativo do protocolo PPLA
+[*] Método "ComandoCarregarImagem" modificado para converter imagens BMP para HEX, no
+    momento da Carga da Imagem
+    (por: DSA)
+
+Data: 01/12/2019
+-- ACBrEscPosEpson --
+[*] Ajuste no método "TACBrEscPosEpson.LerInfo", para correta leitura de informações
+    em alguns novos modelos de impressoras
+    (por: DSA)
+
+Data: 27/10/2019
+-- ACBrEscGPrinter --
+[*] Remoção do Bloqueio de Keycodes iguais a KC1=1 e KC2=0... pois os novos
+    Firmwares suportam o comando GS+"(L"
+
+-- ACBrEscPosEpson --
+[*] Métodos "ComandoGravarLogoRasterStr" e "ComandoImprimirImagemRasterStr",
+    modificados para usar o comando GS+"(L" se a imagem em Raster a ser enviada
+    for menor do que 65535, e GS+"8L", se for maior
+    (por: DSA)
 
 Data: 25/09/2019
 -- ACBrPosPrinter, ACBrEscGPrinter --

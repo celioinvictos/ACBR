@@ -106,7 +106,7 @@ type
   TACBrTEFDCliSiTefExibeMenu = procedure( Titulo : String; Opcoes : TStringList;
     var ItemSelecionado : Integer; var VoltarMenu : Boolean ) of object ;
 
-  TACBrTEFDCliSiTefOperacaoCampo = (tcString, tcDouble, tcCMC7, tcBarCode) ;
+  TACBrTEFDCliSiTefOperacaoCampo = (tcString, tcDouble, tcCMC7, tcBarCode, tcStringMask) ;
 
   TACBrTEFDCliSiTefObtemCampo = procedure( Titulo : String;
     TamanhoMinimo, TamanhoMaximo : Integer ;
@@ -219,6 +219,9 @@ type
      xVerificaPresencaPinPad: function(): Integer
      {$IFDEF LINUX} cdecl {$ELSE} stdcall {$ENDIF};
 
+     xObtemDadoPinPadDiretoEx: function(ChaveAcesso: PAnsiChar; Identificador: PAnsiChar; Entrada: PAnsiChar; var Saida: array of Byte): Integer;
+     {$IFDEF LINUX} cdecl {$ELSE} stdcall {$ENDIF};
+
      procedure AvaliaErro(Sts : Integer);
      function GetDataHoraFiscal: TDateTime;
      function GetDocumentoFiscal: AnsiString;
@@ -276,6 +279,7 @@ type
         Valor : Double) : Boolean; overload; override;
      Function PRE(Valor : Double; DocumentoVinculado : String = '';
         Moeda : Integer = 0) : Boolean; override;
+     function CDP(const EntidadeCliente: string; out Resposta: string): Boolean; override;
 
      Function DefineMensagemPermanentePinPad(Mensagem:AnsiString):Integer;
      Function ObtemQuantidadeTransacoesPendentes(Data:TDateTime;
@@ -290,6 +294,7 @@ type
      function ValidaCampoCodigoEmBarras(Dados: AnsiString;
         var Tipo: SmallInt): Integer;
      function VerificaPresencaPinPad: Boolean;
+     function ObtemDadoPinPadDiretoEx(Tipo_Doc: Integer; ChaveAcesso: PAnsiChar; Identificador: PAnsiChar): AnsiString;
 
    published
      property EnderecoIP: AnsiString                    read fEnderecoIP           write fEnderecoIP;
@@ -608,6 +613,7 @@ begin
   xValidaCampoCodigoEmBarras          := nil;
   xEnviaRecebeSiTefDireto             := nil;
   xVerificaPresencaPinPad             := nil;
+  xObtemDadoPinPadDiretoEx            := nil;
 
   fOnExibeMenu  := nil ;
   fOnObtemCampo := nil ;
@@ -668,6 +674,7 @@ begin
    CliSiTefFunctionDetect('ValidaCampoCodigoEmBarras',@xValidaCampoCodigoEmBarras);
    CliSiTefFunctionDetect('EnviaRecebeSiTefDireto',@xEnviaRecebeSiTefDireto);
    CliSiTefFunctionDetect('VerificaPresencaPinPad',@xVerificaPresencaPinPad);
+   CliSiTefFunctionDetect('ObtemDadoPinPadDiretoEx', @xObtemDadoPinPadDiretoEx);
 end ;
 
 procedure TACBrTEFDCliSiTef.UnLoadDLLFunctions;
@@ -689,6 +696,7 @@ begin
   xValidaCampoCodigoEmBarras          := Nil;
   xEnviaRecebeSiTefDireto             := Nil;
   xVerificaPresencaPinPad             := Nil;
+  xObtemDadoPinPadDiretoEx            := Nil;
 end;
 
 procedure TACBrTEFDCliSiTef.SetParametrosAdicionais(const AValue : TStringList
@@ -969,6 +977,83 @@ procedure TACBrTEFDCliSiTef.NCN(Rede, NSU, Finalizacao: String; Valor: Double;
 begin
   // CliSiTEF não usa Rede, NSU, Finalizacao e Valor
   FinalizarTransacao( False, DocumentoVinculado, Finalizacao );
+end;
+
+function TACBrTEFDCliSiTef.ObtemDadoPinPadDiretoEx(Tipo_Doc: Integer; ChaveAcesso,
+  Identificador: PAnsiChar): AnsiString;
+ var
+  Saida   : array of Byte;
+  Retorno : Integer;
+  Caracter: Char;
+  sSaida  : string;
+  I       : Integer;
+
+ const
+  EntradaCelular = '011111NUMERO CELULAR                  CONFIRME NUMERO |(xx) xxxxx-xxxx  ';
+  EntradaCPF     = '011111DIGITE O CPF                    CONFIRME O CPF  |xxx.xxx.xxx-xx  ';
+  EntradaCNPJ    =                                                             //
+   '020808INFORME CNPJ P1                 CONFIRME P1     |xx.xxx.xxx      ' + //
+   '0606INFORME CNPJ P2                 CONFIRME P2     |xxxx-xx         ';
+
+ begin
+  if Assigned(xObtemDadoPinPadDiretoEx) then
+   begin
+    Result := '';
+    SetLength(Saida, 15);
+
+    case Tipo_Doc of
+     1:
+      begin
+       Retorno := xObtemDadoPinPadDiretoEx(PAnsiChar(ChaveAcesso), PAnsiChar(Identificador), PAnsiChar(EntradaCPF), Saida);
+      end;
+     2:
+      begin
+       Retorno := xObtemDadoPinPadDiretoEx(PAnsiChar(ChaveAcesso), PAnsiChar(Identificador), PAnsiChar(EntradaCNPJ), Saida);
+      end;
+     3:
+      begin
+       Retorno := xObtemDadoPinPadDiretoEx(PAnsiChar(ChaveAcesso), PAnsiChar(Identificador), PAnsiChar(EntradaCelular), Saida);
+      end;
+    end;
+    if Retorno = 0 then
+     begin
+      sSaida := '';
+      case Tipo_Doc of
+       1:
+        begin
+         for I := 4 to 14 do
+          begin
+           Caracter := Char(Saida[I]);
+           sSaida   := sSaida + Caracter;
+          end;
+        end;
+       2:
+        begin
+         for I := 4 to 19 do
+          begin
+           Caracter := Char(Saida[I]);
+           sSaida   := sSaida + Caracter;
+          end;
+         Delete(sSaida, 9, 2);
+        end;
+       3:
+        begin
+         for I := 4 to 14 do
+          begin
+           Caracter := Char(Saida[I]);
+           sSaida   := sSaida + Caracter;
+          end;
+        end;
+
+      end;
+      Result := sSaida;
+     end;
+    Saida := nil;
+   end
+  else
+   begin
+    raise EACBrTEFDErro.Create(ACBrStr(CACBrTEFD_CliSiTef_NaoInicializado));
+   end;
 end;
 
 function TACBrTEFDCliSiTef.ObtemQuantidadeTransacoesPendentes(Data:TDateTime;
@@ -1409,6 +1494,14 @@ begin
                      BloquearMouseTeclado(True);
                    end;
 
+                 41 :
+                   begin
+                     BloquearMouseTeclado(False);
+                     OnObtemCampo( ACBrStr(Mensagem), TamanhoMinimo, TamanhoMaximo,
+                                   TipoCampo, tcStringMask, Resposta, Digitado, Voltar ) ;
+                     BloquearMouseTeclado(True);
+                   end;
+
               end;
             end
             else
@@ -1751,5 +1844,10 @@ begin
     raise EACBrTEFDErro.Create(ACBrStr(CACBrTEFD_CliSiTef_NaoInicializado));
 end;
 
+
+function TACBrTEFDCliSiTef.CDP(const EntidadeCliente: string; out Resposta: string): Boolean;
+begin
+  raise EACBrTEFDErro.Create( ACBrStr('Não implementado para SiTef no momento. Use a função "ObtemDadoPinPadDiretoEx".') ) ;
+end;
 
 end.

@@ -71,8 +71,9 @@ type
   // Permite alterar o conteúdo da linha ou coluna antes de ser adicionado ao componente da ACBR.
   TACBrSpedFiscalImportarLinha = procedure(var Linha: string; const LinhaI: integer) of Object;
   TACBrSpedFiscalImportarColuna = TACBrSpedFiscalImportarGetColumn;
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrSpedFiscalImportar = class(TACBrComponent)
   private

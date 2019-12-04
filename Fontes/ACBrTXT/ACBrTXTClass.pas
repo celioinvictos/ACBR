@@ -45,7 +45,7 @@ unit ACBrTXTClass;
 interface
 
 uses
-  SysUtils, Classes, DateUtils, Math, Variants;
+  SysUtils, Classes, DateUtils, Math, Variants, ACBrBase;
 
 type
   EACBrTXTClassErro            = class(Exception) ;
@@ -53,8 +53,8 @@ type
   TErrorEvent = procedure(const MsnError: String) of object;
 
   { TACBrTXTClass }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrTXTClass = class
   private

@@ -51,8 +51,8 @@ interface
 
 uses
   SysUtils, Classes,
-  ACBrDFeDANFeReport,
-  pcnNFe, pcnConversao, pcnConversaoNFe;
+  ACBrBase, ACBrDFeDANFeReport,
+  pcnNFe, pcnConversao, pcnConversaoNFe, StrUtilsEx;
 
 type
   TDetVeiculo = (dv_tpOp, dv_chassi, dv_cCor, dv_xCor, dv_pot, dv_cilin,
@@ -76,7 +76,7 @@ type
   { TACBrNFeDANFEClass }
 
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFeDANFEClass = class(TACBrDFeDANFeReport)
   private
@@ -84,6 +84,7 @@ type
     FFormularioContinuo: Boolean;
     FImprimeValor: TImprimirUnidQtdeValor;
     FImprimeDetalhamentoEspecifico: Boolean;
+    FImprimeDescAcrescItem: TpcnImprimeDescAcrescItem;
     FPosCanhoto: TPosRecibo;
     FPosCanhotoLayout: TPosReciboLayout;
     FExibeResumoCanhoto: Boolean;
@@ -98,6 +99,7 @@ type
     FDetRastros: TDetRastros;
     FTributosPercentual: TpcnPercentualTributos;
     FTributosPercentualPersonalizado: Double;
+    FExpandirDadosAdicionaisAuto: boolean;
 
     procedure SetTributosPercentual(const AValue: TpcnPercentualTributos);
     procedure SetTributosPercentualPersonalizado(const AValue: Double);
@@ -116,12 +118,18 @@ type
     function ManterContingencia(aNFE: TNFe): String; virtual;
     function ManterVTribPerc(dVTotTrib, dVProd, dVNF: Double): Double; virtual;
     function ManterValAprox(aNFE: TNFe; inItem: Integer): String; virtual;
+    function ManterColunaDesconto( Value : Double): Boolean;
+    function ManterProtocolo(aNFE: TNFe): String;
+    function ManterSuframa(aNFE: TNFe): String;
+
+    function ManterInformacoesDadosAdicionais(aNFE: TNFe): String;
 
   published
     property FormularioContinuo: Boolean read FFormularioContinuo write FFormularioContinuo default False;
     property ImprimeValor: TImprimirUnidQtdeValor read FImprimeValor write FImprimeValor default iuComercial;
     property ImprimeDescPorPercentual: Boolean read FImprimeDescPorPercentual write FImprimeDescPorPercentual default False;
     property ImprimeDetalhamentoEspecifico: Boolean read FImprimeDetalhamentoEspecifico write FImprimeDetalhamentoEspecifico default True;
+    property ImprimeDescAcrescItem: TpcnImprimeDescAcrescItem read FImprimeDescAcrescItem write FImprimeDescAcrescItem default idaiSempre;
     property PosCanhoto: TPosRecibo read FPosCanhoto write FPosCanhoto default prCabecalho;
     property PosCanhotoLayout: TPosReciboLayout read FPosCanhotoLayout write FPosCanhotoLayout default prlPadrao;
     property ExibeResumoCanhoto: Boolean read FExibeResumoCanhoto write FExibeResumoCanhoto default True;
@@ -136,13 +144,14 @@ type
     property DetRastros: TDetRastros read FDetRastros write FDetRastros default [dr_nLote, dr_qLote, dr_dFab, dr_dVal, dr_cAgreg];
     property TributosPercentual: TpcnPercentualTributos read FTributosPercentual write SetTributosPercentual default ptValorProdutos;
     property TributosPercentualPersonalizado: Double read FTributosPercentualPersonalizado write SetTributosPercentualPersonalizado;
+    property ExpandirDadosAdicionaisAuto: boolean read FExpandirDadosAdicionaisAuto write FExpandirDadosAdicionaisAuto default False;
   end;
 
 
   { TACBrNFeDANFCEClass }
 
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFeDANFCEClass = class(TACBrDFeDANFeReport)
   private
@@ -155,7 +164,11 @@ type
     FImprimeQRCodeLateral: Boolean;
     FImprimeLogoLateral: Boolean;
     FDescricaoPagamentos: TDescricaoPagamentos;
+    FImprimeEmUmaLinha: Boolean;
+    FImprimeEmDuasLinhas: Boolean;
 
+    procedure setImprimeEmUmaLinha(const Value: Boolean);
+    procedure setImprimeEmDuasLinhas(const Value: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -171,6 +184,8 @@ type
     property ImprimeLogoLateral: Boolean read FImprimeLogoLateral write FImprimeLogoLateral default False;
     property EspacoFinal: Integer read FEspacoFinal write FEspacoFinal default 38;
     property DescricaoPagamentos: TDescricaoPagamentos read FDescricaoPagamentos write FDescricaoPagamentos default [icaTipo, icaBandeira];
+    property ImprimeEmUmaLinha: Boolean read FImprimeEmUmaLinha write setImprimeEmUmaLinha default False;
+    property ImprimeEmDuasLinhas: Boolean read FImprimeEmDuasLinhas write setImprimeEmDuasLinhas default False;
   end;
 
 implementation
@@ -185,24 +200,27 @@ constructor TACBrNFeDANFEClass.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FFormularioContinuo := False;
-  FImprimeValor := iuComercial;
-  FImprimeDetalhamentoEspecifico := True;
-  FPosCanhoto := prCabecalho;
-  FPosCanhotoLayout := prlPadrao;
-  FExibeResumoCanhoto := True;
-  FTextoResumoCanhoto := '';
-  FImprimeDescPorPercentual := False;
-  FExibeCampoFatura := True;
-  FExibeDadosISSQN := False;
-  FExibeDadosDocReferenciados := True;
-  FDetVeiculos := [dv_chassi, dv_xCor, dv_nSerie, dv_tpComb, dv_nMotor, dv_anoMod, dv_anoFab];
-  FDetMedicamentos := [dm_nLote, dm_qLote, dm_dFab, dm_dVal, dm_vPMC];
-  FDetArmamentos := [da_tpArma, da_nSerie, da_nCano, da_descr];
-  FDetCombustiveis := [dc_cProdANP, dc_CODIF, dc_qTemp, dc_UFCons, dc_CIDE, dc_qBCProd, dc_vAliqProd, dc_vCIDE];
-  FDetRastros := [dr_nLote, dr_qLote, dr_dFab, dr_dVal, dr_cAgreg];
-  FTributosPercentual := ptValorProdutos;
+  FFormularioContinuo              := False;
+  FImprimeValor                    := iuComercial;
+  FImprimeDetalhamentoEspecifico   := True;
+  FImprimeDescAcrescItem           := idaiSempre;
+  FPosCanhoto                      := prCabecalho;
+  FPosCanhotoLayout                := prlPadrao;
+  FExibeResumoCanhoto              := True;
+  FTextoResumoCanhoto              := '';
+  FImprimeDescPorPercentual        := False;
+  FExibeCampoFatura                := True;
+  FExibeDadosISSQN                 := False;
+  FExibeDadosDocReferenciados      := True;
+  FDetVeiculos                     := [dv_chassi, dv_xCor, dv_nSerie, dv_tpComb, dv_nMotor, dv_anoMod, dv_anoFab];
+  FDetMedicamentos                 := [dm_nLote, dm_qLote, dm_dFab, dm_dVal, dm_vPMC];
+  FDetArmamentos                   := [da_tpArma, da_nSerie, da_nCano, da_descr];
+  FDetCombustiveis                 := [dc_cProdANP, dc_CODIF, dc_qTemp, dc_UFCons, dc_CIDE, dc_qBCProd, dc_vAliqProd, dc_vCIDE];
+  FDetRastros                      := [dr_nLote, dr_qLote, dr_dFab, dr_dVal, dr_cAgreg];
+  FTributosPercentual              := ptValorProdutos;
   FTributosPercentualPersonalizado := 0;
+  FExpandirDadosAdicionaisAuto     := False;
+
 end;
 
 procedure TACBrNFeDANFEClass.SetTributosPercentual(const AValue: TpcnPercentualTributos);
@@ -638,15 +656,18 @@ constructor TACBrNFeDANFCEClass.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FLarguraBobina := 302;
+  FLarguraBobina         := 302;
   FImprimeDescAcrescItem := True;
-  FImprimeItens := True;
-  FViaConsumidor := False;
-  FvTroco := 0;
-  FImprimeQRCodeLateral := False;
-  FImprimeLogoLateral := False;
-  FEspacoFinal := 38;
-  FDescricaoPagamentos := [icaTipo, icaBandeira];
+  FImprimeItens          := True;
+  FViaConsumidor         := False;
+  FvTroco                := 0;
+  FImprimeQRCodeLateral  := False;
+  FImprimeLogoLateral    := False;
+  FEspacoFinal           := 38;
+  FDescricaoPagamentos   := [icaTipo, icaBandeira];
+  FImprimeEmUmaLinha     := False;
+  FImprimeEmDuasLinhas   := False;
+
 end;
 
 function TACBrNFeDANFCEClass.ManterDescricaoPagamentos(aPagto: TpagCollectionItem
@@ -676,5 +697,82 @@ begin
   end;
 
 end;
+
+procedure TACBrNFeDANFCEClass.setImprimeEmDuasLinhas(const Value: Boolean);
+begin
+  if Value = FImprimeEmDuasLinhas then Exit;
+
+  FImprimeEmDuasLinhas := Value;
+  if Value then
+  begin
+    FImprimeEmUmaLinha := False;
+  end;
+end;
+
+procedure TACBrNFeDANFCEClass.setImprimeEmUmaLinha(const Value: Boolean);
+begin
+  if Value = FImprimeEmUmaLinha then Exit;
+
+  FImprimeEmUmaLinha := Value;
+  if Value then
+  begin
+    FImprimeEmDuasLinhas := False;
+  end;
+
+end;
+
+
+function TACBrNFeDANFEClass.ManterColunaDesconto(Value: Double): Boolean;
+begin
+  //Por padrão a configuração atual é idaiSempre.
+  Result := True;
+  // idaiSempre    => Sempre apresentar a coluna desconto
+  // idaiNunca     => Nunca apresenta a coluna desconto
+  // idaiComValor  => Apresentar a coluna desconto se value > 0 ( desconto )
+
+  case fImprimeDescAcrescItem of
+    idaiSempre    : Result := True;
+    idaiNunca     : Result := False;
+    idaiComValor  : Result := ( value > 0 );
+  end;
+end;
+function TACBrNFeDANFEClass.ManterProtocolo(aNFE: TNFe): String;
+begin
+  // Protocolo de autorização, nos casos de emissão em contingência
+  if (aNFe.Ide.tpEmis in [teContingencia, teFSDA]) and (aNFe.procNFe.cStat = 100) then
+  begin
+    Result := ACBrStr('PROTOCOLO DE AUTORIZAÇÃO DE USO: ') +
+      aNFe.procNFe.nProt + ' ' + FormatDateTimeBr(aNFe.procNFe.dhRecbto);
+  end
+  else
+    Result := '';
+end;
+
+function TACBrNFeDANFEClass.ManterSuframa(aNFE: TNFe): String;
+begin
+  // Inscrição Suframa
+  if NaoEstaVazio(aNFe.Dest.ISUF) then
+  begin
+    Result := ACBrStr('INSCRIÇÃO SUFRAMA: ') + aNFe.Dest.ISUF;
+  end
+  else
+    Result := '';
+end;
+
+function TACBrNFeDANFEClass.ManterInformacoesDadosAdicionais( aNFE: TNFe): String;
+begin
+  Result := ManterProtocolo( aNFE ) +
+            ManterSuframa( aNFE ) +
+            ManterDocreferenciados(aNFE) +
+            ManterInfAdFisco(aNFE) +
+            ManterObsFisco(aNFE) +
+            ManterProcreferenciado(aNFE) +
+            ManterInfContr(aNFE) +
+            ManterInfCompl(aNFE) +
+            ManterContingencia(aNFE);
+
+  Result := FastStringReplace(Result, ';', sLineBreak, [rfReplaceAll]);
+end;
+
 
 end.

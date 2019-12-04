@@ -1,3 +1,36 @@
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
+
 unit ACBrLibNFeDataModule;
 
 {$mode delphi}
@@ -7,7 +40,7 @@ interface
 uses
   Classes, SysUtils, syncobjs,
   ACBrNFe, ACBrNFeDANFeRLClass, ACBrMail,
-  ACBrPosPrinter, ACBrNFeDANFeESCPOS, ACBrDANFCeFortesFr,
+  ACBrPosPrinter, ACBrIntegrador, ACBrNFeDANFeESCPOS, ACBrDANFCeFortesFr,
   ACBrLibConfig,  ACBrLibMailImport, ACBrLibPosPrinterImport;
 
 type
@@ -15,6 +48,7 @@ type
   { TLibNFeDM }
 
   TLibNFeDM = class(TDataModule)
+    ACBrIntegrador1: TACBrIntegrador;
     ACBrNFe1: TACBrNFe;
     ACBrNFeDANFCeFortes1: TACBrNFeDANFCeFortes;
     ACBrNFeDANFeESCPOS1: TACBrNFeDANFeESCPOS;
@@ -36,6 +70,7 @@ type
     procedure AplicarConfiguracoes;
     procedure AplicarConfigMail;
     procedure AplicarConfigPosPrinter;
+    procedure ValidarIntegradorNFCe();
     procedure ConfigurarImpressao(NomeImpressora: String = ''; GerarPDF: Boolean = False;
                                   Protocolo: String = ''; MostrarPreview: String = ''; MarcaDagua: String = '';
                                   ViaConsumidor: String = ''; Simplificado: String = '');
@@ -47,7 +82,7 @@ type
 implementation
 
 uses
-  pcnConversao,
+  pcnConversao, pcnConversaoNFe,
   ACBrUtil, FileUtil, ACBrNFeDANFEClass, ACBrLibConsts,
   ACBrDeviceConfig, ACBrLibNFeConfig, ACBrLibComum;
 
@@ -127,7 +162,7 @@ begin
   begin
     GravarLog('     Criando PosPrinter Interno', logCompleto);
     FACBrPosPrinter := TACBrPosPrinter.Create(Nil);
-    TLibNFeConfig(pLib.Config).PosDeviceConfig := TDeviceConfig.Create(CSessaoPosPrinterDevice);
+    TLibNFeConfig(pLib.Config).PosDevice := TDeviceConfig.Create(CSessaoPosPrinterDevice);
   end;
 
   ACBrNFeDANFeESCPOS1.PosPrinter := FACBrPosPrinter;
@@ -139,7 +174,15 @@ var
 begin
   ACBrNFe1.SSL.DescarregarCertificado;
   pLibConfig := TLibNFeConfig(pLib.Config);
-  ACBrNFe1.Configuracoes.Assign(pLibConfig.NFeConfig);
+  ACBrNFe1.Configuracoes.Assign(pLibConfig.NFe);
+
+  with ACBrIntegrador1 do
+  begin
+    ArqLOG := pLibConfig.Integrador.ArqLOG;
+    PastaInput := pLibConfig.Integrador.PastaInput;
+    PastaOutput := pLibConfig.Integrador.PastaOutput;
+    Timeout := pLibConfig.Integrador.Timeout;
+  end;
 
   AplicarConfigMail;
   AplicarConfigPosPrinter;
@@ -229,7 +272,7 @@ begin
     ConfigModoPagina.Direcao := TACBrPosDirecao(pLibConfig.PosPrinter.MpDirecao);
     ConfigModoPagina.EspacoEntreLinhas := pLibConfig.PosPrinter.MpEspacoEntreLinhas;
 
-    pLibConfig.PosDeviceConfig.Assign(Device);
+    pLibConfig.PosDevice.Apply(Device);
   end;
 end;
 
@@ -243,30 +286,28 @@ begin
 
   GravarLog('ConfigurarImpressao - Iniciado', logNormal);
 
+  ACBrNFe1.DANFE := ACBrNFeDANFeRL1;
+
   if ACBrNFe1.NotasFiscais.Count > 0 then
   begin
     if ACBrNFe1.NotasFiscais.Items[0].NFe.Ide.modelo = 65 then
     begin
-      if (pLibConfig.DANFeConfig.NFCeConfig.TipoRelatorioBobina = tpFortes) or GerarPDF then
+      if (pLibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortes) or GerarPDF then
         ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1
       else
         ACBrNFe1.DANFE := ACBrNFeDANFeESCPOS1;
-    end
-    else
-    begin
-      ACBrNFe1.DANFE := ACBrNFeDANFeRL1;
     end;
-
-    pLibConfig.DANFeConfig.Assign(ACBrNFe1.DANFE);
 
     if (ACBrNFe1.NotasFiscais.Items[0].NFe.procNFe.cStat in [101, 151, 155]) then
       ACBrNFe1.DANFE.Cancelada := True
     else
       ACBrNFe1.DANFE.Cancelada := False;
-
-    if GerarPDF and not DirectoryExists(PathWithDelim(pLibConfig.DANFeConfig.PathPDF))then
-        ForceDirectories(PathWithDelim(pLibConfig.DANFeConfig.PathPDF));
   end;
+
+  if GerarPDF and not DirectoryExists(PathWithDelim(pLibConfig.DANFe.PathPDF))then
+    ForceDirectories(PathWithDelim(pLibConfig.DANFe.PathPDF));
+
+  pLibConfig.DANFe.Apply(ACBrNFe1.DANFE);
 
   if NaoEstaVazio(NomeImpressora) then
     ACBrNFe1.DANFE.Impressora := NomeImpressora;
@@ -279,9 +320,23 @@ begin
   else
     ACBrNFe1.DANFE.Protocolo := '';
 
-  if ACBrNFe1.DANFE = ACBrNFeDANFeRL1 then
+  if ACBrNFe1.DANFE is TACBrNFeDANFCEClass then
   begin
+     if NaoEstaVazio(ViaConsumidor) then
+       TACBrNFeDANFCEClass(ACBrNFe1.DANFE).ViaConsumidor := StrToBoolDef(ViaConsumidor, False);
 
+     if ACBrNFe1.DANFE = ACBrNFeDANFeESCPOS1 then
+     begin
+        if not ACBrNFeDANFeESCPOS1.PosPrinter.ControlePorta then
+        begin
+          ACBrNFeDANFeESCPOS1.PosPrinter.Ativar;
+          if not ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativo then
+            ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativar;
+        end;
+     end;
+  end
+  else
+  begin
     if NaoEstaVazio(Simplificado) then
     begin
       if StrToBoolDef(Simplificado, False) then
@@ -294,22 +349,17 @@ begin
        ACBrNFeDANFeRL1.MarcaDagua := '';
   end;
 
-  if ACBrNFe1.DANFE is TACBrNFeDANFCEClass then
-  begin
-     if NaoEstaVazio(ViaConsumidor) then
-       TACBrNFeDANFCEClass(ACBrNFe1.DANFE).ViaConsumidor := StrToBoolDef(ViaConsumidor, False);
-  end;
-
-  if ACBrNFe1.DANFE = ACBrNFeDANFeESCPOS1 then
-  begin
-    if not ACBrNFeDANFeESCPOS1.PosPrinter.ControlePorta then
-    begin
-      ACBrNFeDANFeESCPOS1.PosPrinter.Ativar;
-      if not ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativo then
-        ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativar;
-    end;
-  end;
   GravarLog('ConfigurarImpressao - Feito', logNormal);
+end;
+
+procedure TLibNFeDM.ValidarIntegradorNFCe;
+
+begin
+  if (ACBrNFe1.Configuracoes.Geral.ModeloDF = moNFCe) and
+     (ACBrNFe1.Configuracoes.WebServices.UF = 'CE') then
+    ACBrNFe1.Integrador := ACBrIntegrador1
+  else
+    ACBrNFe1.Integrador := nil;
 end;
 
 procedure TLibNFeDM.GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean);

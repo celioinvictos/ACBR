@@ -54,21 +54,21 @@ unit ACBrNFeDANFEFR;
 interface
 
 uses
-  SysUtils, Classes, Forms, ACBrNFeDANFEClass, ACBrNFeDANFEFRDM,
+  SysUtils, Classes, Forms,
+  ACBrBase, ACBrNFeDANFEClass, ACBrNFeDANFEFRDM,
   pcnNFe, pcnConversao, frxClass;
 
 type
   EACBrNFeDANFEFR = class(Exception);
 
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFeDANFEFR = class( TACBrNFeDANFEClass )
   private
     FdmDanfe: TACBrNFeFRClass;
     FEspessuraBorda: Integer;
     FMarcaDaguaMSG: string;
-    FExpandirDadosAdicionaisAuto: boolean;
 
     function GetPreparedReport: TfrxReport;
     function GetPreparedReportEvento: TfrxReport;
@@ -120,7 +120,6 @@ type
     property FastFileInutilizacao: String read GetFastFileInutilizacao write SetFastFileInutilizacao;
     property EspessuraBorda: Integer read FEspessuraBorda write FEspessuraBorda;
     property MarcaDaguaMSG: string read FMarcaDaguaMSG write FMarcaDaguaMSG;
-    property ExpandirDadosAdicionaisAuto: boolean read FExpandirDadosAdicionaisAuto write FExpandirDadosAdicionaisAuto;
     property IncorporarBackgroundPdf: Boolean read GetIncorporarBackgroundPdf write SetIncorporarBackgroundPdf default True;
     property IncorporarFontesPdf: Boolean read GetIncorporarFontesPdf write SetIncorporarFontesPdf default True;
     property OtimizaImpressaoPdf: Boolean read GetOtimizaImpressaoPdf write SetOtimizaImpressaoPdf default True;
@@ -131,8 +130,8 @@ type
     property ZoomModePadrao: TfrxZoomMode read GetZoomModePadrao write SetZoomModePadrao default ZMDEFAULT;
   end;
 
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFeDANFCEFR = class( TACBrNFeDANFCEClass )
   private
@@ -205,10 +204,8 @@ begin
   inherited create( AOwner );
 
   FEspessuraBorda := 1;
-  FMarcaDaguaMSG:='';
-  ExpandirDadosAdicionaisAuto:=false;
-  FdmDanfe := TACBrNFeFRClass.Create(Self);
-
+  FMarcaDaguaMSG  :='';
+  FdmDanfe        := TACBrNFeFRClass.Create(Self);
 end;
 
 destructor TACBrNFeDANFEFR.Destroy;

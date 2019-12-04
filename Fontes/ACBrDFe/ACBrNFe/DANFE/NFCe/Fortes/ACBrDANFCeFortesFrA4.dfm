@@ -1,9 +1,9 @@
 object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
   Left = 0
   Top = 0
-  Width = 1028
-  Height = 784
   Caption = 'frmACBrDANFCeFortesFrA4'
+  ClientHeight = 745
+  ClientWidth = 1012
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,7 +16,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
   TextHeight = 13
   object rlReportA4: TRLReport
     Left = 8
-    Top = 0
+    Top = -300
     Width = 794
     Height = 1123
     Font.Charset = DEFAULT_CHARSET
@@ -196,7 +196,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Top = 0
         Width = 105
         Height = 16
-        Caption = 'Produto.............:'
+        Caption = 'Produto'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -224,7 +224,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Top = 0
         Width = 74
         Height = 16
-        Caption = 'Quantidade:'
+        Caption = 'Quantidade'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -238,7 +238,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Top = 0
         Width = 72
         Height = 16
-        Caption = 'Vlr.Unit'#225'rio:'
+        Caption = 'Vlr.Unit'#225'rio'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -252,7 +252,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Top = 0
         Width = 70
         Height = 16
-        Caption = 'Valor Total:'
+        Caption = 'Valor Total'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -266,7 +266,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Top = 0
         Width = 63
         Height = 16
-        Caption = 'Desconto:'
+        Caption = 'Desconto'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -281,7 +281,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Top = 0
         Width = 70
         Height = 16
-        Caption = 'Acr'#233'scimo:'
+        Caption = 'Acr'#233'scimo'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -340,7 +340,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Height = 16
           Alignment = taRightJustify
           AutoSize = False
-          Caption = 'Quantidade:'
+          Caption = 'Quantidade'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -13
@@ -357,7 +357,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Height = 16
           Alignment = taRightJustify
           AutoSize = False
-          Caption = 'Vlr.Unit'#225'rio:'
+          Caption = 'Vlr.Unit'#225'rio'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -13
@@ -374,7 +374,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Height = 16
           Alignment = taRightJustify
           AutoSize = False
-          Caption = 'Desconto:'
+          Caption = 'Desconto'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -13
@@ -391,7 +391,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Height = 16
           Alignment = taRightJustify
           AutoSize = False
-          Caption = 'Acr'#233'scimo:'
+          Caption = 'Acr'#233'scimo'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -13
@@ -528,7 +528,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Borders.DrawTop = False
           Borders.DrawRight = False
           Borders.DrawBottom = True
-          Caption = 'Forma de Pagamento :'
+          Caption = 'Forma de Pagamento'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -13
@@ -575,7 +575,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Width = 137
           Height = 16
           Alignment = taRightJustify
-          Caption = 'Forma de Pagamento :'
+          Caption = 'Forma de Pagamento'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -13
@@ -731,7 +731,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
         Left = 0
         Top = 142
         Width = 718
-        Height = 89
+        Height = 105
         AutoSize = True
         Borders.Sides = sdCustom
         Borders.DrawLeft = True
@@ -838,10 +838,26 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
           Layout = tlCenter
           ParentFont = False
         end
+        object rllFisco: TRLLabel
+          Left = 1
+          Top = 88
+          Width = 716
+          Height = 16
+          Align = faTop
+          Alignment = taCenter
+          Caption = 'Dados do Fisco'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = []
+          Layout = tlCenter
+          ParentFont = False
+        end
       end
       object rlbConsumidor: TRLBand
         Left = 0
-        Top = 231
+        Top = 247
         Width = 718
         Height = 44
         AutoSize = True
@@ -905,7 +921,7 @@ object frmACBrDANFCeFortesFrA4: TfrmACBrDANFCeFortesFrA4
       end
       object rlbRodape: TRLBand
         Left = 0
-        Top = 275
+        Top = 291
         Width = 718
         Height = 173
         AutoSize = True

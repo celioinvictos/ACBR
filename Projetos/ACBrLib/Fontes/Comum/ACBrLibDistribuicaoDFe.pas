@@ -1,27 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: ACBrLib                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -36,7 +44,7 @@ uses
 
 type
   { TDistribuicaoDFeItemResposta }
-  TDistribuicaoDFeItemResposta = class(TACBrLibResposta)
+  TDistribuicaoDFeItemResposta = class(TACBrLibRespostaBase)
   private
     Fversao: String;
     FtpAmb: String;
@@ -82,7 +90,7 @@ type
     FxNome: string;
 
   public
-    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const AresDFe: TresDFe; const ANSU, AArquivo, AXml: String; const  ASchema: TSchemaDFe); overload;
     procedure Processar(const AresEvento: TresEvento; const ANSU, AArquivo, AXml: String; const  ASchema: TSchemaDFe); overload;
@@ -136,7 +144,7 @@ type
     end;
 
   { TDistribuicaoDFeResposta }
-  TDistribuicaoDFeResposta = class(TACBrLibResposta)
+  TDistribuicaoDFeResposta = class(TACBrLibRespostaBase)
   private
     FMsg: string;
     Fversao: string;
@@ -156,13 +164,13 @@ type
     function GetItem(Index: Integer): TDistribuicaoDFeItemResposta;
 
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
     procedure Processar(const retDistDFeInt: TretDistDFeInt;
                         const msg, arquivo: String;
                         const ListaArqs: TStringList);
-    function Gerar: String; override;
+    function Gerar: Ansistring; override;
 
     property Items[Index: Integer]: TDistribuicaoDFeItemResposta read GetItem;
 
@@ -192,9 +200,9 @@ uses
 { TDistribuicaoDFeItemResposta }
 
 constructor TDistribuicaoDFeItemResposta.Create(const ASessao: String;
-  const ATipo: TACBrLibRespostaTipo);
+  const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(ASessao, ATipo);
+  inherited Create(ASessao, ATipo, AFormato);
 end;
 
 procedure TDistribuicaoDFeItemResposta.Processar(const AresDFe: TresDFe; const ANSU, AArquivo, AXml: String;
@@ -295,9 +303,9 @@ end;
 
 { TDistribuicaoDFeResposta }
 
-constructor TDistribuicaoDFeResposta.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TDistribuicaoDFeResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoRespDistribuicaoDFe, ATipo);
+  inherited Create(CSessaoRespDistribuicaoDFe, ATipo, AFormato);
 
   FItems := TObjectList.Create;
 end;
@@ -310,7 +318,7 @@ begin
   inherited Destroy;
 end;
 
-function TDistribuicaoDFeResposta.Gerar: String;
+function TDistribuicaoDFeResposta.Gerar: Ansistring;
 Var
   i: Integer;
 begin
@@ -343,6 +351,8 @@ begin
   self.maxNSU := retDistDFeInt.maxNSU;
   self.arquivo := arquivo;
 
+  FItems.Clear;
+
   if retDistDFeInt.cStat = 137 then
     indCont := '1'  // Sim
   else
@@ -353,7 +363,7 @@ begin
   begin
     if (Trim(retDistDFeInt.docZip[I].resDFe.chDFe) <> '') then
     begin
-      Item := TDistribuicaoDFeItemResposta.Create('ResNFe' + Trim(IntToStrZero(J, 3)), Tipo);
+      Item := TDistribuicaoDFeItemResposta.Create('ResNFe' + Trim(IntToStrZero(J, 3)), Tipo, FFormato);
       Item.Processar(retDistDFeInt.docZip.Items[I].resDFe,
                      retDistDFeInt.docZip.Items[I].NSU,
                      ListaArqs[I],
@@ -369,7 +379,7 @@ begin
   begin
     if (Trim(retDistDFeInt.docZip[I].resEvento.chDFe) <> '') then
     begin
-      Item := TDistribuicaoDFeItemResposta.Create('ResEve' + Trim(IntToStrZero(J, 3)), Tipo);
+      Item := TDistribuicaoDFeItemResposta.Create('ResEve' + Trim(IntToStrZero(J, 3)), Tipo, FFormato);
       Item.Processar(retDistDFeInt.docZip.Items[I].resEvento,
                      retDistDFeInt.docZip.Items[I].NSU,
                      ListaArqs[I],
@@ -385,7 +395,7 @@ begin
   begin
     if (Trim(retDistDFeInt.docZip[I].procEvento.detEvento.versao) <> '' ) then
     begin
-      Item := TDistribuicaoDFeItemResposta.Create('ProEve' + Trim(IntToStrZero(J, 3)), Tipo);
+      Item := TDistribuicaoDFeItemResposta.Create('ProEve' + Trim(IntToStrZero(J, 3)), Tipo, FFormato);
       Item.Processar(retDistDFeInt.docZip.Items[I].procEvento,
                      retDistDFeInt.docZip.Items[I].NSU,
                      listaArqs[I],
@@ -401,7 +411,7 @@ begin
   begin
     if (Trim(retDistDFeInt.docZip[I].procEvento.RetinfEvento.Id) <> '' ) then
     begin
-      Item := TDistribuicaoDFeItemResposta.Create('InfEve' + Trim(IntToStrZero(J, 3)), Tipo);
+      Item := TDistribuicaoDFeItemResposta.Create('InfEve' + Trim(IntToStrZero(J, 3)), Tipo, FFormato);
       Item.Processar(retDistDFeInt.docZip.Items[I].procEvento.RetinfEvento,
                      retDistDFeInt.docZip.Items[I].NSU,
                      listaArqs[I],

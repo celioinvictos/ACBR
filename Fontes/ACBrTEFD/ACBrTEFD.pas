@@ -49,7 +49,7 @@ uses
   ACBrTEFDDial, ACBrTEFDDisc, ACBrTEFDHiper, ACBrTEFDCliSiTef, ACBrTEFDGpu,
   ACBrTEFDVeSPague, ACBrTEFDBanese, ACBrTEFDGoodCard, ACBrTEFDFoxWin,
   ACBrTEFDCliDTEF, ACBrTEFDPetroCard, ACBrTEFDCrediShop, ACBrTEFDTicketCar,
-  ACBrTEFDConvCard
+  ACBrTEFDConvCard, ACBrTEFDCappta
   {$IfNDef NOGUI}
     {$IfDef FPC}
       ,LResources
@@ -98,8 +98,8 @@ type
 
 
    { TACBrTEFD }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
    TACBrTEFD = class( TACBrComponent )
    private
@@ -162,7 +162,8 @@ type
      fTefPetrocard : TACBrTEFDPetroCard ;
      fTefCrediShop : TACBrTEFDCrediShop ;
      fTefTicketCar : TACBrTEFDTicketCar ;
-     fTefConvCard  : TACBrTEFDConvCard ;     
+     fTefConvCard  : TACBrTEFDConvCard ;
+     fTefCappta    : TACBrTEFDCappta;
 
      fEsperaSTS    : Integer;
      fEsperaMinimaMensagemFinal: Integer;
@@ -245,6 +246,7 @@ type
      Function CRT( const Valor : Double; const IndiceFPG_ECF : String;
         const DocumentoVinculado : String = ''; const Moeda : Integer = 0 )
         : Boolean ;
+     Function CDP(Const EntidadeCliente:String; Out Resposta:String): Boolean;
      Function CHQ( const Valor : Double; const IndiceFPG_ECF : String;
         const DocumentoVinculado : String = ''; const CMC7 : String = '';
         const TipoPessoa : AnsiChar = 'F'; const DocumentoPessoa : String = '';
@@ -327,6 +329,7 @@ type
      property TEFCrediShop : TACBrTEFDCrediShop  read fTefCrediShop ;
      property TEFTicketCar : TACBrTEFDTicketCar  read fTefTicketCar ;
      property TEFConvCard : TACBrTEFDConvCard read fTefConvCard ;     
+     property TEFCappta    : TACBrTEFDCappta    read fTefCappta;
 
      property OnAguardaResp : TACBrTEFDAguardaRespEvent read fOnAguardaResp
         write fOnAguardaResp ;
@@ -583,7 +586,14 @@ begin
   fTEFList.Add(fTefConvCard);     // Adicionando "fTefConvCard" na Lista Objetos de Classes de TEF
   {$IFDEF COMPILER6_UP}
    fTefConvCard.SetSubComponent(True);   // Ajustando como SubComponente para aparecer no ObjectInspector
-  {$ENDIF}  
+  {$ENDIF}
+
+  { Criando Classe TEF Cappta }
+  fTefCappta := TACBrTEFDCappta.Create(self);
+  fTEFList.Add(fTefCappta);     // Adicionando "fTefCappta" na Lista Objetos de Classes de TEF
+  {$IFDEF COMPILER6_UP}
+   fTefCappta.SetSubComponent(True);   // Ajustando como SubComponente para aparecer no ObjectInspector
+  {$ENDIF}
 
   GPAtual := gpTefDial;
 end;
@@ -700,7 +710,8 @@ begin
     gpPetroCard : fTefClass := fTefPetrocard ;
     gpCrediShop : fTefClass := fTefCrediShop ;
     gpTicketCar : fTefClass := fTefTicketCar ;
-    gpConvCard  : fTefClass := fTefConvCard ;    
+    gpConvCard  : fTefClass := fTefConvCard ;
+    gpCappta    : fTefClass := fTefCappta ;
   end;
 
   fGPAtual := AValue;
@@ -823,6 +834,11 @@ begin
         RespostasPendentes.Clear;
      end;
   end;
+end;
+
+function TACBrTEFD.CDP(const EntidadeCliente: String; out Resposta: String): Boolean;
+begin
+  Result := fTefClass.CDP(EntidadeCliente, Resposta);
 end;
 
 procedure TACBrTEFD.ConfirmarTransacoesPendentes(ApagarRespostasPendentes: Boolean);

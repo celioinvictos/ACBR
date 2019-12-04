@@ -39,7 +39,7 @@ interface
 
 uses Classes, SysUtils,
 {$IFDEF FPC}LResources, {$ENDIF}
-  ACBrECFVirtual, ACBrECFVirtualPrinter, ACBrNFe, ACBrECF, ACBrDevice,
+  ACBrECFVirtual, ACBrECFVirtualPrinter, ACBrNFe, ACBrECF, ACBrDevice, ACBrBase,
   pcnNFe, pcnConversao;
 
 const
@@ -62,9 +62,9 @@ type
   TACBrECFVirtualNFCeQuandoImprimirDocumento = procedure(var Tratado: Boolean) of object;
 
   { TACBrECFVirtualNFCe }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrECFVirtualNFCe = class(TACBrECFVirtualPrinter)
   private
     function GetACBrNFCe: TACBrNFe;
@@ -110,34 +110,32 @@ type
   end;
 
   { TACBrECFVirtualNFCeClass }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrECFVirtualNFCeClass = class(TACBrECFVirtualPrinterClass)
   private
-    fsACBrNFCe: TACBrNFe;
-    fsEhVenda: Boolean;
-    fsImprimir2ViaOffLine : Boolean;
-
-    fsQuandoAbrirDocumento: TACBrECFVirtualNFCeQuandoAbrirDocumento;
-    fsQuandoEfetuarPagamento: TACBrECFVirtualNFCeQuandoEfetuarPagamento;
-    fsQuandoVenderItem: TACBrECFVirtualNFCeQuandoVenderItem;
-    fsQuandoFecharDocumento: TACBrECFVirtualNFCeQuandoFecharDocumento;
-    fsQuandoCancelarDocumento: TACBrECFVirtualNFCeQuandoCancelarDocumento;
-    fsQuandoImprimirDocumento: TACBrECFVirtualNFCeQuandoImprimirDocumento;
-    fsNomeArqTempXML: string;
-    fsECF: TACBrECF;
-    fsDestCNPJ: string;
-    fsDestNome: string;
-    fsvTotTrib, fsvBC, fsvICMS, fsvBCST, fsvST, fsvProd, fsvFrete: Currency;
-    fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvNF: Currency;
-
     function AdivinharFormaPagamento(const DescricaoPagto: string): TpcnFormaPagamento;
     procedure SomaTotais;
     procedure CancelarNFCe;
     function GetACBrECF: TACBrECF;
     procedure FazerImpressaoDocumento;
   protected
+    fsACBrNFCe: TACBrNFe;
+    fsECF: TACBrECF;
+    fsNomeArqTempXML: string;
+    fsQuandoAbrirDocumento: TACBrECFVirtualNFCeQuandoAbrirDocumento;
+    fsQuandoEfetuarPagamento: TACBrECFVirtualNFCeQuandoEfetuarPagamento;
+    fsQuandoVenderItem: TACBrECFVirtualNFCeQuandoVenderItem;
+    fsQuandoFecharDocumento: TACBrECFVirtualNFCeQuandoFecharDocumento;
+    fsQuandoCancelarDocumento: TACBrECFVirtualNFCeQuandoCancelarDocumento;
+    fsQuandoImprimirDocumento: TACBrECFVirtualNFCeQuandoImprimirDocumento;
+    fsImprimir2ViaOffLine : Boolean;
+    fsEhVenda: Boolean;
+    fsDestCNPJ: string;
+    fsDestNome: string;
+    fsvTotTrib, fsvBC, fsvICMS, fsvBCST, fsvST, fsvProd, fsvFrete: Currency;
+    fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvNF: Currency;
     function GetSubModeloECF: string; override;
     function GetNumVersao: string; override;
     procedure AtivarVirtual; override;
@@ -639,7 +637,34 @@ procedure TACBrECFVirtualNFCeClass.SubtotalizaCupomVirtual(MensagemRodape: AnsiS
 var
   i, ItMaior: Integer;
   ItDescAcre: array of Extended;
-  Total, VlDescAcres, TotDescAcre, VlItMaior: Extended;
+  Total, VlDescAcres, TotDescAcre, VlItMaior, vlrDifeDescAcres: Extended;
+
+  procedure ratearDescAcre(vlrRateioDescAcre : Extended);
+  var
+    iItens : integer;
+  begin
+    with fsACBrNFCe do
+    begin
+      for iItens := 0 to NotasFiscais.Items[0].NFe.Det.Count - 1 do
+      begin
+        if vlrRateioDescAcre <= 0 then //Caso não tenha mais valor para rateio então sai do laço para não cosumir processamento desnecessário
+          Break;
+
+        if (NotasFiscais.Items[0].NFe.Det[iItens].Prod.cProd <> cItemCancelado) then
+        begin
+          if ItDescAcre[iItens] > 0 then  //So decrementa em valores que obtiveram desconto
+          begin
+            ItDescAcre[iItens] := TruncTo(ItDescAcre[iItens], 2) - TruncTo(0.01, 2);
+            vlrRateioDescAcre  := TruncTo(vlrRateioDescAcre, 2) - TruncTo(0.01, 2); //Decrementa o valor
+          end;
+        end;
+      end;
+    end;
+
+    //Caso ainda fique valor para rateio efetuo uma recusividade para zerar ela
+    if vlrRateioDescAcre > 0 then
+      ratearDescAcre(vlrRateioDescAcre);
+  end;
 begin
   if fsEhVenda then
   begin
@@ -656,6 +681,7 @@ begin
         ItMaior := -1;
         VlItMaior := 0;
         TotDescAcre := 0;
+        vlrDifeDescAcres := 0;
 
         SetLength(ItDescAcre, NotasFiscais.Items[0].NFe.Det.Count);
 
@@ -670,7 +696,7 @@ begin
           if NotasFiscais.Items[0].NFe.Det[i].Prod.cProd <> cItemCancelado then
           begin
             ItDescAcre[i] := RoundABNT(VlDescAcres * (NotasFiscais.Items[0].NFe.Det[i].Prod.vProd / Total), 2);
-            TotDescAcre := TotDescAcre + ItDescAcre[i];
+            TotDescAcre   := RoundABNT(TotDescAcre + ItDescAcre[i],2);
 
             if ItDescAcre[i] > VlItMaior then
             begin
@@ -680,9 +706,22 @@ begin
           end;
         end;
 
+        if (VlDescAcres > 0) and (TotDescAcre = 0) then
+          ItDescAcre[0] := VlDescAcres
+        else
         if TotDescAcre <> VlDescAcres then
-          ItDescAcre[ItMaior] := ItDescAcre[ItMaior] -
-            (TotDescAcre - VlDescAcres);
+        begin
+          vlrDifeDescAcres := TruncTo(TotDescAcre, 2) - TruncTo(VlDescAcres, 2);
+
+          if ItDescAcre[ItMaior] >= vlrDifeDescAcres  then
+            ItDescAcre[ItMaior] := ItDescAcre[ItMaior] - vlrDifeDescAcres
+          else
+          begin
+            //Existe casos que o valor de desconto pode ficar negativo pois a vlrDifeDescAcres pode ser jogada em itens com descontos <= a vlrDifeDescAcres
+            //Solução: ratear em todos os itens 0,01 para solucionar esse tipo raro de situação
+            ratearDescAcre(vlrDifeDescAcres);
+          end;
+        end;
 
         for i := 0 to NotasFiscais.Items[0].NFe.Det.Count - 1 do
         begin
@@ -813,7 +852,7 @@ begin
         if Configuracoes.Geral.FormaEmissao = teOffLine then
         begin
           NotasFiscais.Assinar;
-          NotasFiscais.Validar;
+          //NotasFiscais.Validar;
           //NotasFiscais.Items[0].Confirmada := True;
 
           if DANFE is TACBrNFeDANFCEClass then
@@ -885,10 +924,10 @@ begin
       CancelarNFCe
     else
     begin
-      NomeNFCe := PathWithDelim(Configuracoes.Arquivos.GetPathNFe(Now, CNPJ, StrToInt(ModeloDFToStr(moNFCe))))+OnlyNumber(ChaveCupom)+'-nfe.xml';
+      NomeNFCe := PathWithDelim(Configuracoes.Arquivos.GetPathNFe(Now, CNPJ, IE, StrToInt(ModeloDFToStr(moNFCe))))+OnlyNumber(ChaveCupom)+'-nfe.xml';
 
       if not FileExists(NomeNFCe) then
-        NomeNFCe := PathWithDelim(Configuracoes.Arquivos.GetPathNFe(Now-1, CNPJ, StrToInt(ModeloDFToStr(moNFCe))))+OnlyNumber(ChaveCupom)+'-nfe.xml';
+        NomeNFCe := PathWithDelim(Configuracoes.Arquivos.GetPathNFe(Now-1, CNPJ, IE, StrToInt(ModeloDFToStr(moNFCe))))+OnlyNumber(ChaveCupom)+'-nfe.xml';
 
       if FileExists(NomeNFCe) then
       begin

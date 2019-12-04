@@ -275,6 +275,15 @@ procedure TACBrSpedFiscalImportar_BlocoC.RegC113;
 begin
   with ACBrSpedFiscal.Bloco_C.RegistroC113New do
   begin
+    IND_OPER := StrToIndOper(Valor);
+    IND_EMIT := StrToIndEmit(Valor);
+    COD_PART := Valor;
+    COD_MOD := Valor;
+    SER := Valor;
+    SUB := Valor;
+    NUM_DOC := Valor;
+    DT_DOC := ValorD;
+    CHV_DOCe := Valor;
   end;
 end;
 
@@ -322,6 +331,12 @@ procedure TACBrSpedFiscalImportar_BlocoC.RegC140;
 begin
   with ACBrSpedFiscal.Bloco_C.RegistroC140New do
   begin
+    IND_EMIT := StrToIndEmit(Valor);
+    IND_TIT := StrToIndTipoTitulo(Valor);
+    DESC_TIT := Valor;
+    NUM_TIT := Valor;
+    QTD_PARC := ValorI;
+    VL_TIT := ValorF;
   end;
 end;
 
@@ -329,6 +344,9 @@ procedure TACBrSpedFiscalImportar_BlocoC.RegC141;
 begin
   with ACBrSpedFiscal.Bloco_C.RegistroC141New do
   begin
+    NUM_PARC := Valor;
+    DT_VCTO := ValorD;
+    VL_PARC := ValorF;
   end;
 end;
 
@@ -407,6 +425,13 @@ procedure TACBrSpedFiscalImportar_BlocoC.RegC173;
 begin
   with ACBrSpedFiscal.Bloco_C.RegistroC173New do
   begin
+    LOTE_MED := Valor;
+    QTD_ITEM := ValorF;
+    DT_FAB := ValorD;
+    DT_VAL := ValorD;
+    IND_MED := StrToTipoBaseMedicamento(Valor);
+    TP_PROD := StrToTipoProduto(Valor);
+    VL_TAB_MAX := ValorF;
   end;
 end;
 
@@ -474,6 +499,8 @@ procedure TACBrSpedFiscalImportar_BlocoC.RegC195;
 begin
   with ACBrSpedFiscal.Bloco_C.RegistroC195New do
   begin
+      COD_OBS := Valor;    /// Código da observação do lançamento fiscal (campo 02 do Registro 0460)
+      TXT_COMPL := Valor;
   end;
 end;
 
@@ -481,6 +508,13 @@ procedure TACBrSpedFiscalImportar_BlocoC.RegC197;
 begin
   with ACBrSpedFiscal.Bloco_C.RegistroC197New do
   begin
+    COD_AJ:= Valor;           /// Código do ajustes/benefício/incentivo, conforme tabela indicada no item 5.3.
+    DESCR_COMPL_AJ:= Valor;   /// Descrição complementar do ajuste da apuração, nos casos em que o código da tabela for “9999”
+    COD_ITEM := Valor;         /// Código do item (campo 02 do Registro 0200)
+    VL_BC_ICMS := ValorF;     /// Base de cálculo do ICMS ou do ICMS ST
+    ALIQ_ICMS := ValorF;      /// Alíquota do ICMS
+    VL_ICMS := ValorF;        /// Valor do ICMS ou do ICMS ST
+    VL_OUTROS := ValorF;      /// Outros valores
   end;
 end;
 

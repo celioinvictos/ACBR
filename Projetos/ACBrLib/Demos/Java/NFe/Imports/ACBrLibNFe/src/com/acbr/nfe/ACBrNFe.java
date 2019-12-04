@@ -11,6 +11,9 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Implementa AutoCloseable para ser possível usar em try-with-resources
@@ -121,6 +124,24 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     checkResult( ret );
   }
 
+  public String obterXml( int AIndex ) throws Exception {
+      ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+      IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+      int ret = ACBrNFeLib.INSTANCE.NFE_ObterXml(AIndex, buffer, bufferLen );
+      checkResult( ret );
+      
+      return processResult( buffer, bufferLen );
+  }
+  
+  public void gravarXml ( int AIndex ) throws Exception {
+      gravarXml(AIndex, "", "");
+  }
+  
+  public void gravarXml ( int AIndex, String eNomeArquivo, String ePathArquivo ) throws Exception {
+      int ret = ACBrNFeLib.INSTANCE.NFE_GravarXml( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
+    checkResult( ret );
+  }
+  
   public void carregarIni( String eArquivoOuIni ) throws Exception {
     int ret = ACBrNFeLib.INSTANCE.NFE_CarregarINI( toUTF8( eArquivoOuIni ) );
     checkResult( ret );
@@ -128,6 +149,21 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
 
   public void limparLista() throws Exception {
     int ret = ACBrNFeLib.INSTANCE.NFE_LimparLista();
+    checkResult( ret );
+  }
+  
+  public void carregarEventoXml( String eArquivoOuXML ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_CarregarEventoXML( toUTF8( eArquivoOuXML ) );
+    checkResult( ret );
+  }
+
+  public void carregarEventoINI( String eArquivoOuIni ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_CarregarEventoINI(toUTF8( eArquivoOuIni ) );
+    checkResult( ret );
+  }
+
+  public void limparListaEventos() throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_LimparListaEventos();
     checkResult( ret );
   }
 
@@ -160,6 +196,22 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
 
     return processResult( buffer, bufferLen );
   }
+  
+  public String gerarChave(int aCodigoUf, int aCodigoNumerico, int aModelo, int aSerie, int aNumero,
+            int aTpEmi, Date aEmissao, String acpfcnpj) throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+    
+    String pattern = "dd/MM/yyyy";
+    DateFormat df = new SimpleDateFormat(pattern);
+
+    int ret = ACBrNFeLib.INSTANCE.NFE_GerarChave( aCodigoUf, aCodigoNumerico, aModelo,
+                                                  aSerie, aNumero, aTpEmi, df.format(aEmissao), 
+                                                  toUTF8(acpfcnpj),  buffer, bufferLen );
+    checkResult( ret );
+
+    return processResult( buffer, bufferLen );
+  }
 
   public String statusServico() throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
@@ -186,6 +238,16 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
 
     int ret = ACBrNFeLib.INSTANCE.NFE_ConsultarRecibo( toUTF8( aRecibo ), buffer, bufferLen );
+    checkResult( ret );
+
+    return processResult( buffer, bufferLen );
+  }
+  
+  public String consultaCadastro( String cUF, String nDocumento, Boolean nIE ) throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+
+    int ret = ACBrNFeLib.INSTANCE.NFE_ConsultaCadastro( toUTF8( cUF ), toUTF8( nDocumento), nIE, buffer, bufferLen );
     checkResult( ret );
 
     return processResult( buffer, bufferLen );
@@ -317,23 +379,23 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     checkResult( ret );
   }
 
-  public void imprimirEvento( String aChaveNFe, String aChaveEvento ) throws Exception {
-    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirEvento( aChaveNFe, aChaveEvento );
+  public void imprimirEvento( String eArquivoXmlNFe, String eArquivoXmlEvento ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirEvento( toUTF8(eArquivoXmlNFe), toUTF8(eArquivoXmlEvento) );
     checkResult( ret );
   }
 
-  public void imprimirEventoPDF( String aChaveNFe, String aChaveEvento ) throws Exception {
-    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirEventoPDF( aChaveNFe, aChaveEvento );
+  public void imprimirEventoPDF( String eArquivoXmlNFe, String eArquivoXmlEvento ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirEventoPDF( toUTF8(eArquivoXmlNFe), toUTF8(eArquivoXmlEvento)  );
     checkResult( ret );
   }
 
-  public void imprimirInutilizacao( String aChave ) throws Exception {
-    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirInutilizacao( aChave );
+  public void imprimirInutilizacao( String eArquivoXml ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirInutilizacao( toUTF8(eArquivoXml) );
     checkResult( ret );
   }
 
-  public void imprimirInutilizacaoPDF( String aChave ) throws Exception {
-    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirInutilizacaoPDF( aChave );
+  public void imprimirInutilizacaoPDF( String eArquivoXml ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_ImprimirInutilizacaoPDF( toUTF8(eArquivoXml) );
     checkResult( ret );
   }
 
@@ -369,6 +431,10 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     int NFE_CarregarXML( String eArquivoOuXML );
 
     int NFE_CarregarINI( String eArquivoOuINI );
+    
+    int NFE_ObterXml( Integer AIndex, ByteBuffer buffer, IntByReference bufferSize );
+    
+    int NFE_GravarXml( Integer AIndex, String eNomeArquivo, String ePathArquivo );
 
     int NFE_LimparLista();
 
@@ -385,6 +451,9 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     int NFE_ValidarRegrasdeNegocios( ByteBuffer buffer, IntByReference bufferSize );
 
     int NFE_VerificarAssinatura( ByteBuffer buffer, IntByReference bufferSize );
+    
+    int NFE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
+                int ATpEmi, String AEmissao, String CPFCNPJ, ByteBuffer buffer, IntByReference bufferSize);
 
     int NFE_StatusServico( ByteBuffer buffer, IntByReference bufferSize );
 
@@ -396,6 +465,8 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     int NFE_Enviar( int ALote, boolean Imprimir, boolean sincrono, boolean zipado, ByteBuffer buffer, IntByReference bufferSize );
 
     int NFE_ConsultarRecibo( String aRecibo, ByteBuffer buffer, IntByReference bufferSize );
+    
+    int NFE_ConsultaCadastro( String cUF, String nDocumento, Boolean nIE, ByteBuffer buffer, IntByReference bufferSize );
 
     int NFE_Cancelar( String eChave, String eJustificativa, String eCNPJ, int ALote,
                       ByteBuffer buffer, IntByReference bufferSize );
@@ -422,13 +493,13 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
 
     int NFE_ImprimirPDF();
 
-    int NFE_ImprimirEvento( String eChaveNFe, String eChaveEvento );
+    int NFE_ImprimirEvento( String eArquivoXmlNFe, String eArquivoXmlEvento );
 
-    int NFE_ImprimirEventoPDF( String eChaveNFe, String eChaveEvento );
+    int NFE_ImprimirEventoPDF( String eArquivoXmlNFe, String eArquivoXmlEvento );
 
-    int NFE_ImprimirInutilizacao( String eChave );
+    int NFE_ImprimirInutilizacao( String eArquivoXml );
 
-    int NFE_ImprimirInutilizacaoPDF( String eChave );
+    int NFE_ImprimirInutilizacaoPDF( String eArquivoXml );
 
     class LibraryLoader {
       private static String library = "";

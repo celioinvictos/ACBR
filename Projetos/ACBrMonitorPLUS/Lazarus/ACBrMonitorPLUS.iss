@@ -10,6 +10,9 @@
   #define OutputDir ACBrMonitorPLUSDir
 #endif
 
+; para teste de compilação em 64 bits, descomente a linha abaixo
+;#define MyAppTarget "x64"
+
 #IfNDef MyAppTarget
   #define MyAppTarget "x86"
 #endif
@@ -37,8 +40,13 @@
 #define MyAppVerName MyAppName + "-" + MyAppVersion + "-" + MyAppTarget
 #define OpenSSLDir ACBrDIR + "\DLLs\OpenSSL\1.0.2.19\" + MyAppTarget
 #define LibXML2Dir ACBrDIR + "\DLLs\LibXml2\" + MyAppTarget
+#define VCRedistInstaller "vcredist_" + MyAppTarget + ".exe"
 
 [Setup]
+#ifDef App64bits
+  ArchitecturesInstallIn64BitMode=x64
+  ArchitecturesAllowed=x64
+#endif
 AppName={#MyAppName}
 AppVerName={#MyAppVerName}
 AppPublisher={#MyAppPublisher}
@@ -133,21 +141,25 @@ Source: {#ACBrMonitorPLUSDir}\Exemplos\php_socket.zip; DestDir: {app}\Exemplos; 
 
 ;DLL para acesso direto a portas
 #ifNDef App64bits
-  Source: {#ACBrDIR}\DLLs\Diversos\inpout32.dll; DestDir: {syswow64}; Flags: ; Components: programa
+  Source: {#ACBrDIR}\DLLs\Diversos\x86\inpout32.dll; DestDir: {app}; Flags: ignoreversion ; Components: programa
 #else
-  Source: {#ACBrDIR}\DLLs\Diversos\inpoutx64.dll; DestDir: {sysnative}; Flags: ; Components: programa
+  Source: {#ACBrDIR}\DLLs\Diversos\x64\inpoutx64.dll; DestDir: {app}; Flags: ignoreversion ; Components: programa
 #endif
 
+;Visual C++ 2010 RunTime
+Source: {#ACBrDIR}\DLLs\Diversos\{#MyAppTarget}\{#VCRedistInstaller}; DestDir: {tmp}; Flags: deleteafterinstall
+Source: {#ACBrDIR}\DLLs\Diversos\{#MyAppTarget}\msvcr120.dll; DestDir: {app}; Flags: ignoreversion ; Components: programa
+
 ;OpenSSL
-Source: {#OpenSSLDir}\openssl.exe; DestDir: {app}; Flags: ; Components: programa
-Source: {#OpenSSLDir}\libeay32.dll; DestDir: {app}; Components: programa; Flags: ;
-Source: {#OpenSSLDir}\ssleay32.dll; DestDir: {app}; Components: programa; Flags: ;
+Source: {#OpenSSLDir}\openssl.exe; DestDir: {app}; Components: programa; Flags: ignoreversion ;
+Source: {#OpenSSLDir}\libeay32.dll; DestDir: {app}; Components: programa; Flags: ignoreversion ;
+Source: {#OpenSSLDir}\ssleay32.dll; DestDir: {app}; Components: programa; Flags: ignoreversion ;
 
 ;LibXML2
-Source: {#LibXML2Dir}\libexslt.dll; DestDir: {app}; Components: programa; Flags: ;
-Source: {#LibXML2Dir}\libiconv.dll; DestDir: {app}; Components: programa; Flags: ;
-Source: {#LibXML2Dir}\libxml2.dll; DestDir: {app}; Components: programa; Flags: ;
-Source: {#LibXML2Dir}\libxslt.dll; DestDir: {app}; Components: programa; Flags: ;
+Source: {#LibXML2Dir}\libexslt.dll; DestDir: {app}; Components: programa; Flags: ignoreversion ;
+Source: {#LibXML2Dir}\libiconv.dll; DestDir: {app}; Components: programa; Flags: ignoreversion ;
+Source: {#LibXML2Dir}\libxml2.dll; DestDir: {app}; Components: programa; Flags: ignoreversion ;
+Source: {#LibXML2Dir}\libxslt.dll; DestDir: {app}; Components: programa; Flags: ignoreversion ;
 
 #ifNDef App64bits
   ;DLLs CAPICOM  
@@ -172,9 +184,12 @@ Name: {userstartup}\{#MyAppName}; Filename: {app}\{#MyAppExeName}; WorkingDir: {
 Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {app}\{#MyAppUrlName}; Components: help
 
 [Run]
+Filename: {tmp}\{#VCRedistInstaller}; Parameters: "/passive /Q:a /c:""msiexec /qb /i vcredist.msi"" "; StatusMsg: Installing Visual C++ 2010 RunTime...
+    
 Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,{#MyAppName}}"
 Filename: "{app}\ACBrMonitor.chm"; Flags: postinstall shellexec skipifsilent; Description: "Manual ACBrMonitor"; Components: help
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyAppName}"" dir=in action=allow protocol=TCP localport=3434"; Flags: skipifdoesntexist runhidden; MinVersion: 0,6.0; Tasks: firewallopen
 
 [UninstallRun]
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"""; Flags: skipifdoesntexist runhidden; MinVersion: 0,6.0; Tasks: firewallopen
+

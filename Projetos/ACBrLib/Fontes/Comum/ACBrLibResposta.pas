@@ -1,35 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -46,47 +46,51 @@ const
   CSessaoHttpResposta = 'RespostaHttp';
 
 type
-  { TACBrLibResposta }
   TACBrLibRespostaTipo = (resINI, resXML, resJSON);
+  TACBrLibCodificacao = (codUTF8, codANSI);
 
-  TACBrLibResposta = class abstract
+  { TACBrLibRespostaBase }
+  TACBrLibRespostaBase = class abstract
   private
     FSessao: String;
     FTipo: TACBrLibRespostaTipo;
 
-    function GerarXml: String;
-    function GerarIni: String;
-    function GerarJson: String;
+    function GerarXml: Ansistring;
+    function GerarIni: Ansistring;
+    function GerarJson: Ansistring;
 
   protected
+    FFormato: TACBrLibCodificacao;
+
     procedure GravarXml(const xDoc: TXMLDocument; const RootNode: TDomNode; const Target: TObject); virtual;
     procedure GravarIni(const AIni: TCustomIniFile; const ASessao: String; const Target: TObject; IsCollection: Boolean = false); virtual;
     procedure GravarJson(const JSON: TJSONObject; const ASessao: String; const Target: TObject); virtual;
 
   public
-    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo);
+    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 
     property Sessao: String read FSessao;
     property Tipo: TACBrLibRespostaTipo read FTipo;
 
-    function Gerar: String; virtual;
+    function Gerar: Ansistring; virtual;
 
   end;
 
-  TACBrLibResposta<T: TACBrComponent> = class abstract(TACBrLibResposta)
+  { TACBrLibResposta }
+  TACBrLibResposta<T: TACBrComponent> = class abstract(TACBrLibRespostaBase)
   public
     procedure Processar(const Control: T); virtual; abstract;
   end;
 
   { TACBrLibHttpResposta }
-  TACBrLibHttpResposta = class(TACBrLibResposta)
+  TACBrLibHttpResposta = class(TACBrLibRespostaBase)
   private
     FWebService: string;
     FCodigoHTTP: Integer;
     FMsg: string;
 
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
   published
     property WebService: String read FWebService write FWebService;
@@ -96,12 +100,12 @@ type
   end;
 
   { TLibImpressaoResposta }
-  TLibImpressaoResposta = class(TACBrLibResposta)
+  TLibImpressaoResposta = class(TACBrLibRespostaBase)
   private
     FMsg: string;
 
   public
-    constructor Create(const QtdImpresso: Integer; const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const QtdImpresso: Integer; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
   published
     property Msg: string read FMsg write FMsg;
@@ -114,14 +118,15 @@ uses
   math;
 
 { TACBrLibResposta }
-constructor TACBrLibResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo);
+constructor TACBrLibRespostaBase.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create;
   FSessao := ASessao;
   FTipo := ATipo;
+  FFormato := AFormato;
 end;
 
-function TACBrLibResposta.GerarXml: String;
+function TACBrLibRespostaBase.GerarXml: Ansistring;
 var
   xDoc: TXMLDocument;
   RootNode: TDomNode;
@@ -145,7 +150,7 @@ begin
   end;
 end;
 
-procedure TACBrLibResposta.GravarXml(const xDoc: TXMLDocument; const RootNode: TDomNode; const Target: TObject);
+procedure TACBrLibRespostaBase.GravarXml(const xDoc: TXMLDocument; const RootNode: TDomNode; const Target: TObject);
 Var
   PropList: TPropInfoList;
   i: Integer;
@@ -196,7 +201,7 @@ begin
   end;
 end;
 
-function TACBrLibResposta.GerarIni: String;
+function TACBrLibRespostaBase.GerarIni: Ansistring;
 var
   AIni: TMemIniFile;
   TList: TStringList;
@@ -217,7 +222,7 @@ begin
   end;
 end;
 
-procedure TACBrLibResposta.GravarIni(const AIni: TCustomIniFile; const ASessao: String; const Target: TObject; IsCollection: Boolean);
+procedure TACBrLibRespostaBase.GravarIni(const AIni: TCustomIniFile; const ASessao: String; const Target: TObject; IsCollection: Boolean);
 var
   PropList: TPropInfoList;
   i, j: Integer;
@@ -254,9 +259,9 @@ begin
             end
             else
             begin
-              if (ClassObject.InheritsFrom(TACBrLibResposta)) then
+              if (ClassObject.InheritsFrom(TACBrLibRespostaBase)) then
               begin
-                Sessao := IfThen(IsCollection, ASessao + TACBrLibResposta(ClassObject).Sessao, TACBrLibResposta(ClassObject).Sessao);
+                Sessao := IfThen(IsCollection, ASessao + TACBrLibRespostaBase(ClassObject).Sessao, TACBrLibRespostaBase(ClassObject).Sessao);
                 GravarIni(AIni, Sessao, ClassObject, IsCollection)
               end
               else
@@ -300,7 +305,7 @@ begin
   end;
 end;
 
-function TACBrLibResposta.GerarJson: String;
+function TACBrLibRespostaBase.GerarJson: Ansistring;
 var
   JSON: TJSONObject;
 begin
@@ -314,7 +319,7 @@ begin
   end;
 end;
 
-procedure TACBrLibResposta.GravarJson(const JSON: TJSONObject; const ASessao: String; const Target: TObject);
+procedure TACBrLibRespostaBase.GravarJson(const JSON: TJSONObject; const ASessao: String; const Target: TObject);
 var
   PropList: TPropInfoList;
   i: Integer;
@@ -362,7 +367,7 @@ begin
   end;
 end;
 
-function TACBrLibResposta.Gerar: String;
+function TACBrLibRespostaBase.Gerar: Ansistring;
 begin
   case FTipo of
     resXML: Result := GerarXml;
@@ -370,18 +375,21 @@ begin
     else
       Result := GerarIni;
   end;
+
+  if FFormato = codANSI then
+    Result := ACBrUTF8ToAnsi(Result);
 end;
 
 { TACBrLibHttpResposta }
-constructor TACBrLibHttpResposta.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TACBrLibHttpResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoHttpResposta, ATipo);
+  inherited Create(CSessaoHttpResposta, ATipo, AFormato);
 end;
 
 { TLibImpressaoResposta }
-constructor TLibImpressaoResposta.Create(const QtdImpresso: Integer; const ATipo: TACBrLibRespostaTipo);
+constructor TLibImpressaoResposta.Create(const QtdImpresso: Integer; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create('Impressao', ATipo);
+  inherited Create('Impressao', ATipo, AFormato);
   Msg := Format('%d Documento (s) impresso(s) com sucesso', [QtdImpresso]);
 end;
 

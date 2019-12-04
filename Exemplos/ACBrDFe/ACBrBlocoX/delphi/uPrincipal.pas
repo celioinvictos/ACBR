@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Controls, StdCtrls, Forms, Clipbrd,
-  Dialogs, Buttons, ACBrBase, ACBrDFe, ACBrBlocoX;
+  Dialogs, Buttons, ACBrBase, ACBrDFe, ACBrBlocoX, ACBrBlocoX_WebServices;
 
 type
   TfrmPrincipal = class(TForm)
@@ -181,7 +181,7 @@ begin
         begin
           with TotalizadoresParciais.Add do
           begin
-            Identificacao := '00T1234';
+            Identificacao := '0'+IntToStr(i-1)+'T1234';
             Valor       := 1234.56;
 
             for X := 1 to 2 do

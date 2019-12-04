@@ -1410,12 +1410,12 @@ begin
     proInfiscv11:
       begin
         Gerador.Prefixo := '';
-        Gerador.wCampoNFSe(tcStr, '#1', 'CNPJ', 14, 14, 1, Cnpj, '');
-        Gerador.wCampoNFSe(tcStr, '#1', 'notaInicial', 01, 15, 1, NumeroNFSe, '');
-        Gerador.wCampoNFSe(tcStr, '#1', 'notaFinal', 01, 15, 1, NumeroNFSe, '');
-        Gerador.wCampoNFSe(tcDat, '#1', 'emissaoInicial', 01, 15, 1, DataInicial, '');
-        Gerador.wCampoNFSe(tcDat, '#1', 'emissaoFinal', 01, 15, 1, DataFinal, '');
-        Gerador.wCampoNFSe(tcStr, '#1', 'serieNotaFiscal', 01, 15, 1, SerieNFSe, '');
+        Gerador.wCampoNFSe(tcStr, '#1', 'CNPJ           ', 14, 14, 1, Cnpj, '');
+        Gerador.wCampoNFSe(tcStr, '#1', 'notaInicial    ', 01, 15, 1, NumeroNFSe, '');
+        Gerador.wCampoNFSe(tcStr, '#1', 'notaFinal      ', 01, 15, 1, NumeroNFSe, '');
+        Gerador.wCampoNFSe(tcDat, '#1', 'emissaoInicial ', 01, 15, 0, DataInicial, '');
+        Gerador.wCampoNFSe(tcDat, '#1', 'emissaoFinal   ', 01, 15, 0, DataFinal, '');
+        Gerador.wCampoNFSe(tcStr, '#1', 'serieNotaFiscal', 01, 15, 0, SerieNFSe, '');
       end;
 
     proEquiplano:
@@ -1534,7 +1534,8 @@ begin
 
       if NumeroNFSe <> '' then
       begin
-        if Provedor in [proPublica, proPVH, proSisPMJP, proSystemPro, proTecnos, proRLZ] then
+        if Provedor in [proPublica, proPVH, proSisPMJP, proSystemPro, proTecnos,
+                        proRLZ, proWebISSv2] then
         begin
           Gerador.wGrupoNFSe('Faixa');
           Gerador.wCampoNFSe(tcStr, '#5', 'NumeroNfseInicial', 01, 15, 1, NumeroNFSe, '');
@@ -1545,7 +1546,8 @@ begin
           Gerador.wCampoNFSe(tcStr, '#5', 'NumeroNfse', 01, 15, 1, NumeroNFSe, '', True, FaNameSpace);
       end;
 
-      if ((DataInicial>0) and (DataFinal>0)) and (provedor <> proPVH) then
+      if ((DataInicial>0) and (DataFinal>0)) and not
+         (provedor in [proPVH, proWebISSv2]) then
       begin
         Gerador.wGrupoNFSe('PeriodoEmissao' + FaNameSpace);
         Gerador.wCampoNFSe(tcDat, '#5', 'DataInicial', 10, 10, 1, DataInicial, '');
@@ -1618,7 +1620,8 @@ begin
       end;
 
       if Provedor in [proDigifred, profintelISS, proFiorilli, proPronimv2,
-                      proPVH, proSisPMJP, proSystemPro, proTecnos, proRLZ] then
+                      proPVH, proSisPMJP, proSystemPro, proTecnos, proRLZ,
+                      proWebISSv2] then
         Gerador.wCampoNFSe(tcInt, '#4', 'Pagina', 01, 06, 1, Pagina, '');
     end;
   end;
@@ -1886,6 +1889,22 @@ begin
         Gerador.wCampoNFSe(tcStr, '', 'tipo'   , 1,   8, 1, CodigoCanc, '', True, xAtrib);
         Gerador.wCampoNFSe(tcStr, '', 'obs'    , 1, 100, 1, MotivoCanc, '', True, xAtrib);
       end;
+
+    proIPM:
+      begin
+        Gerador.wGrupoNFSe('nfse');
+        Gerador.wGrupoNFSe('nf');
+        Gerador.wCampoNFSe(tcStr, '#1', 'numero', 01, 15, 1, NumeroNfse, '');
+        Gerador.wCampoNFSe(tcStr, '#2', 'situacao', 01, 01, 1, 'C', '');
+        Gerador.wCampoNFSe(tcStr, '#3', 'observacao', 01, 01, 1, MotivoCanc, '');
+        Gerador.wGrupoNFSe('/nf');
+        Gerador.wGrupoNFSe('prestador');
+        Gerador.wCampoNFSe(tcStr, '#1', 'cpfcnpj', 01, 15, 1, Cnpj, '');
+        Gerador.wCampoNFSe(tcInt, '#2', 'cidade', 01, 07, 1, CodMunicipio, '');
+        Gerador.wGrupoNFSe('/prestador');
+        Gerador.wGrupoNFSe('/nfse');
+      end;
+
   else
     begin
       Gerador.Prefixo := Prefixo4;
@@ -1903,10 +1922,9 @@ begin
       Gerador.wCampoNFSe(tcStr, '#1', 'CodigoCancelamento', 01, 01, 1, CodigoCanc, '');
 
       if Provedor in [proPublica, proTecnos, proFriburgo] then
-        Gerador.wCampoNFSe(tcStr, '#1', 'MotivoCancelamento', 01, 255, 1, MotivoCanc, '');
-
-//      else if Provedor in [proISSNET] then
-//        Gerador.wCampoNFSe(tcStr, '#1', 'MotivoCancelamentoNfse', 01, 255, 1, MotivoCanc, '');
+        Gerador.wCampoNFSe(tcStr, '#1', 'MotivoCancelamento', 01, 255, 1, MotivoCanc, '')
+      else if Provedor in [proISSNET] then
+        Gerador.wCampoNFSe(tcStr, '#1', 'MotivoCancelamentoNfse', 01, 255, 0, MotivoCanc, '');
 
 //      if (Provedor in [proPublica]) and (CodigoCanc = 'C999') then
 //        Gerador.wCampoNFSe(tcStr, '#1', 'MotivoCancelamento', 01, 255, 1, MotivoCanc, '');

@@ -57,7 +57,7 @@ interface
 
 uses
   Classes, SysUtils, {$IFDEF FPC} LResources, {$ENDIF}
-  ACBrNFeDANFEClass, ACBrPosPrinter,
+  ACBrBase, ACBrNFeDANFEClass, ACBrPosPrinter,
   pcnNFe, pcnEnvEventoNFe, pcnInutNFe;
 
 const
@@ -66,8 +66,8 @@ const
 type
   { TACBrNFeDANFeESCPOS }
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrNFeDANFeESCPOS = class(TACBrNFeDANFCEClass)
   private
     FPosPrinter : TACBrPosPrinter ;
@@ -624,6 +624,11 @@ begin
     TextoObservacao := StringReplace(FpNFe.InfAdic.infAdFisco, ';', sLineBreak, [rfReplaceAll]);
     FPosPrinter.Buffer.Add('<c>' + TextoObservacao);
   end;
+
+  TextoObservacao := Trim(FpNFe.procNFe.xMsg);
+
+  if TextoObservacao <> '' then
+    FPosPrinter.Buffer.Add('<c>' + TextoObservacao);
 end;
 
 function TACBrNFeDANFeESCPOS.GerarInformacoesQRCode(const DadosQRCode: String;

@@ -47,6 +47,32 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/10/2019
+-- pcteCTeR / pcteCTeW --
+[*] Correção na grafia da tag lacre referente ao modal Aquaviário.
+  Por: Renan Eustaquio
+
+16/10/2019
+-- ACBrCTe --
+[*] Removido a checagem de Forma de emissão ao gerar a string do QR-Code.
+    Pois parece que as SVC mudaram as regras de checagem de URL do QR-Code.
+   Por: Italo Jurisato Junior
+-- ACBrCTeDACTeRLRetrato --
+[*] Impressão correta dos titulos dos documentos originarios.
+   Por: Italo Jurisato Junior
+
+12/10/2019
+-- ACBrCTeConfiguracoes --
+[*] Removido a propriedade de configuração: GerarInfCTeSupl pois a geração da 
+    string do QR-Code no XML é obrigatória em ambos os ambientes.
+   Por: Italo Jurisato Junior
+
+12/10/2019
+-- ACBrCTeManifestos --
+[*] Removido a condição que defini se é para gerar ou não o grupo
+    <infCTeSupl>.
+   Por: Italo Jurisato Junior
+
 01/10/2019
 -- ACBrCTe --
 [+] Incluida a função GetUFFormaEmissao para determinar a UF a ser utilizada

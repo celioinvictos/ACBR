@@ -229,8 +229,8 @@ type
     property Items[Index: Integer]: TACBrCargaBalItem read GetItem write SetItem; Default;
   end;
 
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrCargaBal = class( TACBrComponent )
   private

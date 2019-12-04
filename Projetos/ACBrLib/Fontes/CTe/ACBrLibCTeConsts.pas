@@ -41,9 +41,6 @@ uses
   Classes, SysUtils;
 
 const
-  CLibCTeNome = 'ACBrLibCTe';
-  CLibCTeVersao = '0.0.1';
-
   CSessaoDACTe = 'DACTe';
 
   CChaveTipoRelatorioEvento = 'TipoRelatorioEvento';
@@ -88,6 +85,7 @@ Resourcestring
   SErrCNPJCPFInvalido = 'CNPJ/CPF % inválido.';
 
 function SetRetornoCTesCarregados(const NumCTe: Integer): Integer;
+function SetRetornoEventoCarregados(const NumEventos: Integer): Integer;
 
 implementation
 uses
@@ -96,6 +94,11 @@ uses
 function SetRetornoCTesCarregados(const NumCTe: Integer): Integer;
 begin
   Result := SetRetorno( 0, {NumCTe,} Format(SInfCTeCarregados, [NumCTe]));
+end;
+
+function SetRetornoEventoCarregados(const NumEventos: Integer): Integer;
+begin
+  Result := SetRetorno( 0, {NumNFe,} Format(SInfEventosCarregados, [NumEventos]));
 end;
 
 end.

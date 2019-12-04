@@ -44,6 +44,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/11/2019
+--- ACBrLibCTeConfig ---
+[-] Corrigido erro na impressão ACBrLibCTe.
+    Por: Rafael Dias
+
+29/10/2019
+--- ACBrLibCTeConfig ---
+[-] Corrigido erro na criptografia da senha na ACBrLibCTe.
+    Por: Rafael Dias
+
+18/10/2019
+--- ACBrLibCTeClass ---
+[+] Adicionado metodos para carregamento dos eventos e limpeza da lista de evento.
+    Por: Rafael Dias
+[*] Varias correções nos metodos da biblioteca.
+    Por: Rafael Dias
+
 18/09/2018
 --- ACBrLibCTe ---
 [+] Inicio do projeto.

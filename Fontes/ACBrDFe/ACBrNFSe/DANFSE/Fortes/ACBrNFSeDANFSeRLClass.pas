@@ -39,11 +39,12 @@ unit ACBrNFSeDANFSeRLClass;
 interface
 
 uses
-  Forms, SysUtils, Classes, pnfsNFSe, ACBrNFSeDANFSeClass;
+  Forms, SysUtils, Classes, pnfsNFSe,
+  ACBrBase, ACBrNFSeDANFSeClass;
 
 type
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFSeDANFSeRL = class(TACBrNFSeDANFSeClass)
   private
@@ -85,7 +86,8 @@ var
   i: Integer;
   Notas: array of TNFSe;
 begin
-  TfrlDANFSeRLRetrato.QuebradeLinha(TACBrNFSe(ACBrNFSe).Configuracoes.WebServices.QuebradeLinha);
+//  TfrlDANFSeRLRetrato.QuebradeLinha(TACBrNFSe(ACBrNFSe).Configuracoes.WebServices.QuebradeLinha);
+  TfrlDANFSeRLRetrato.QuebradeLinha(TACBrNFSe(ACBrNFSe).Configuracoes.Geral.ConfigGeral.QuebradeLinha);
   if (NFSe = nil) then
   begin
     SetLength(Notas, TACBrNFSe(ACBrNFSe).NotasFiscais.Count);

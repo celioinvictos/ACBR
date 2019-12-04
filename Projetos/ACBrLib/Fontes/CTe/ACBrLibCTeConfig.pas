@@ -64,7 +64,7 @@ type
   protected
       procedure LerIniChild(const AIni: TCustomIniFile); override;
       procedure GravarIniChild(const AIni: TCustomIniFile); override;
-      procedure AssignChild(const DFeReport: TACBrCTeDACTeRL); reintroduce;
+      procedure ApplyChild(const DFeReport: TACBrCTeDACTeRL); override;
       procedure DefinirValoresPadroesChild; override;
 
   public
@@ -91,9 +91,6 @@ type
     FCTeConfig: TConfiguracoesCTe;
 
   protected
-    function AtualizarArquivoConfiguracao: Boolean; override;
-//    procedure AplicarConfiguracoes; override;
-
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
@@ -105,8 +102,8 @@ type
     constructor Create(AOwner: TObject; ANomeArquivo: String = ''; AChaveCrypt: AnsiString = ''); override;
     destructor Destroy; override;
 
-    property CTeConfig: TConfiguracoesCTe read FCTeConfig;
-    property DACTeConfig: TDACTeConfig read FDACTeConfig;
+    property CTe: TConfiguracoesCTe read FCTeConfig;
+    property DACTe: TDACTeConfig read FDACTeConfig;
   end;
 
 implementation
@@ -167,21 +164,21 @@ begin
   AIni.WriteInteger(FSessao, CChaveTamanhoPapel, Integer(FTamanhoPapel));
 end;
 
-procedure TDACTeConfig.AssignChild(const DFeReport: TACBrCTeDACTeRL);
+procedure TDACTeConfig.ApplyChild(const DFeReport: TACBrCTeDACTeRL);
 begin
   with DFeReport do
   begin
-    TipoDACTe := Self.TipoDACTe;
-    ImprimeDescPorc := Self.ImprimeDescPorc;
-    ExibeResumoCanhoto := Self.ExibeResumoCanhoto;
-    PosCanhoto := Self.PosCanhoto;
-    CTeCancelada := Self.CTeCancelada;
-    EPECEnviado := Self.EPECEnviado;
-    ImprimirHoraSaida := Self.ImprimirHoraSaida;
-    ImprimirHoraSaida_Hora := Self.ImprimirHoraSaida_Hora;
-    ProtocoloCTe := Self.ProtocoloCTe;
-    Usuario := Self.Usuario;
-    TamanhoPapel := Self.TamanhoPapel;
+    TipoDACTe := FTipoDACTe;
+    ImprimeDescPorc := FImprimeDescPorc;
+    ExibeResumoCanhoto := FExibeResumoCanhoto;
+    PosCanhoto := FPosCanhoto;
+    CTeCancelada := FCTeCancelada;
+    EPECEnviado := FEPECEnviado;
+    ImprimirHoraSaida := FImprimirHoraSaida;
+    ImprimirHoraSaida_Hora := FImprimirHoraSaida_Hora;
+    ProtocoloCTe := FProtocoloCTe;
+    Usuario := FUsuario;
+    TamanhoPapel := FTamanhoPapel;
   end;
 end;
 
@@ -192,6 +189,8 @@ begin
   inherited Create(AOwner, ANomeArquivo, AChaveCrypt);
 
   FCTeConfig := TConfiguracoesCTe.Create(nil);
+  FCTeConfig.ChaveCryptINI := AChaveCrypt;
+
   FDACTeConfig := TDACTeConfig.Create;
 end;
 
@@ -203,19 +202,11 @@ begin
   inherited Destroy;
 end;
 
-function TLibCTeConfig.AtualizarArquivoConfiguracao: Boolean;
-var
-  Versao: String;
-begin
-  Versao := Ini.ReadString(CSessaoVersao, CLibCTeNome, '0');
-  Result := (CompareVersions(CLibCTeVersao, Versao) > 0) or
-            (inherited AtualizarArquivoConfiguracao);
-end;
-
 procedure TLibCTeConfig.INIParaClasse;
 begin
   inherited INIParaClasse;
 
+  FCTeConfig.ChaveCryptINI := ChaveCrypt;
   FCTeConfig.LerIni(Ini);
   FDACTeConfig.LerIni(Ini);
 end;
@@ -224,14 +215,15 @@ procedure TLibCTeConfig.ClasseParaINI;
 begin
   inherited ClasseParaINI;
 
-  Ini.WriteString(CSessaoVersao, CLibCTeNome, CLibCTeVersao);
-
+  FCTeConfig.ChaveCryptINI := ChaveCrypt;
   FCTeConfig.GravarIni(Ini);
   FDACTeConfig.GravarIni(Ini);
 end;
 
 procedure TLibCTeConfig.ClasseParaComponentes;
 begin
+  FCTeConfig.ChaveCryptINI := ChaveCrypt;
+
   if Assigned(Owner) then
     TACBrLibCTe(Owner).CTeDM.AplicarConfiguracoes;
 end;

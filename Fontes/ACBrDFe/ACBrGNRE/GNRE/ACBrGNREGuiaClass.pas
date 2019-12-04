@@ -53,9 +53,9 @@ uses
   Forms, SysUtils, Classes, ACBrBase, pcnConversao, pgnreGNRERetorno;
 
 type
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}	
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
   TACBrGNREGuiaClass = class( TACBrComponent )
   private
     procedure SetGNRE(const Value: TComponent);
@@ -83,8 +83,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure ImprimirGuia(GNRE: TGNRERetorno = nil); virtual;
-    procedure ImprimirGuiaPDF(GNRE: TGNRERetorno = nil); virtual;
+    procedure ImprimirGuia(AGNRE: TGNRERetorno = nil); virtual;
+    procedure ImprimirGuiaPDF(AGNRE: TGNRERetorno = nil); virtual;
   published
     property ACBrGNRE : TComponent  read FACBrGNRE write SetGNRE;
     property Sistema: String read FSistema write FSistema;
@@ -127,10 +127,10 @@ begin
   FSite  := '';
   FEmail := '';
 
-  FMargemInferior := 0.8;
-  FMargemSuperior := 0.8;
-  FMargemEsquerda := 0.6;
-  FMargemDireita  := 0.51;
+  FMargemInferior := 8;
+  FMargemSuperior := 8;
+  FMargemEsquerda := 6;
+  FMargemDireita  := 5.1;
 end;
 
 destructor TACBrGNREGuiaClass.Destroy;
@@ -138,12 +138,12 @@ begin
   inherited Destroy;
 end;
 
-procedure TACBrGNREGuiaClass.ImprimirGuia(GNRE: TGNRERetorno = nil);
+procedure TACBrGNREGuiaClass.ImprimirGuia(AGNRE: TGNRERetorno = nil);
 begin
   ErroAbstract('Imprimir');
 end;
 
-procedure TACBrGNREGuiaClass.ImprimirGuiaPDF(GNRE: TGNRERetorno = nil);
+procedure TACBrGNREGuiaClass.ImprimirGuiaPDF(AGNRE: TGNRERetorno = nil);
 begin
   ErroAbstract('ImprimirPDF');
 end;

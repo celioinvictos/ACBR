@@ -29,9 +29,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -64,14 +63,55 @@ uses Classes, SysUtils, Contnrs, syncobjs,
           ,Dialogs
        {$IFEND}
      {$ENDIF};
+
+{$IFDEF DELPHIXE2_UP}
+const
+  { Platform identifiers }
+  piacbrWin32          = $00000001; // Windows 32-bit
+  piacbrWin64          = $00000002; // Windows 64-bit
+  piacbrOSX32          = $00000004; // OS X 32-bit
+  piacbrOSX64          = $00001000; // OS X 64-bit
+  piacbriOSSimulator32 = $00000008; // iOS Simulator 32-bit (runs on the Mac)
+  piacbriOSSimulator64 = $00010000; // iOS Simulator 64-bit (runs on the Mac)
+  piacbrAndroid32Arm   = $00000010; // Android device 32-bit
+  piacbrAndroid64Arm   = $00008000; // Android device 64-bit
+  piacbrLinux32        = $00000020; // Linux 32-bit
+  piacbrLinux64        = $00000080; // Linux 64-bit
+  piacbrLinux32Arm     = $00002000; // Linux 32-bit ARM processor (raspberry pi)
+  piacbrLinux64Arm     = $00004000; // Linux 64-bit ARM processor (raspberry pi)
+  piacbriOSDevice32    = $00000040; // iOS Device 32-bit (iPad, iPhone, iPod Touch)
+  piacbriOSDevice64    = $00000400; // iOS Device 64-bit (iPad, iPhone, iPod Touch)
+  piacbrWinNX32        = $00000100; // Windows ??
+  piacbrWinIoT32       = $00000200; // Windows Embedded IoT (Internet of Things) - Intel Galileo
+  piacbrWinARM32       = $00000800; // Windows 32-bit ARM processor (raspberry pi)
+
+
+  piacbrAllPlatforms = piacbrWin32 or piacbrWin64 or piacbrOSX32
+  {$IFDEF DELPHIXE3_UP}
+    or piacbriOSSimulator32 or piacbrAndroid32Arm or piacbrLinux32 or piacbriOSDevice32 or piacbrWinNX32
+  {$ENDIF}
+  {$IFDEF DELPHIXE8_UP}
+    or piacbriOSDevice64 or piacbrLinux64 or piacbrWinIoT32
+  {$ENDIF}
+  {$IFDEF DELPHIX_SEATTLE_UP}
+    or piacbrWinARM32
+  {$ENDIF}
+  {$IFDEF DELPHIX_BERLIN_UP}
+    or piacbrOSX64 or piacbrLinux32Arm or piacbrLinux64Arm or piacbrAndroid64Arm
+  {$ENDIF}
+  {$IFDEF DELPHIX_RIO_UP}
+    or piacbriOSSimulator64
+  {$ENDIF};
+{$ENDIF}
+
 type
 
 TACBrAboutInfo = (ACBrAbout);
 
 { ACBrComponente contém apenas a propriedade ACBrAbout }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  {$ENDIF RTL230_UP}
+{$IFDEF DELPHIXE2_UP}
+[ComponentPlatformsAttribute(piacbrAllPlatforms)]
+{$ENDIF DELPHIXE2_UP}
 TACBrComponent = class( TComponent )
   private
     fsAbout: TACBrAboutInfo;
@@ -129,6 +169,7 @@ de campos quando necessário}
     fFloatDecimalDigits: Integer;
     fInfo: String;
     fName: String;
+    function GetAsBinary: AnsiString;
     function GetAsDate : TDateTime;
     function GetAsFloat: Double;
     function GetAsInteger : Integer;
@@ -136,7 +177,7 @@ de campos quando necessário}
     function GetAsTime : TDateTime;
     function GetAsTimeStamp : TDateTime;
     function GetAsTimeStampSQL : TDateTime;
-    //procedure SetAsAnsiString(const AValue: AnsiString);
+    procedure SetAsBinary(AValue: AnsiString);
     procedure SetAsDate(const AValue : TDateTime);
     procedure SetAsFloat(const AValue : Double);
     procedure SetAsInteger(const AValue : Integer);
@@ -155,6 +196,7 @@ de campos quando necessário}
     property AsTimeStampSQL: TDateTime  read GetAsTimeStampSQL write SetAsTimeStampSQL ;
     property AsInteger     : Integer    read GetAsInteger      write SetAsInteger ;
     property AsFloat       : Double     read GetAsFloat        write SetAsFloat ;
+    property AsBinary      : AnsiString read GetAsBinary       write SetAsBinary ;
 
     property FloatDecimalDigits : Integer read fFloatDecimalDigits write SetFloatDecimalDigits default 2;
   end ;
@@ -167,7 +209,10 @@ de campos quando necessário}
     procedure SetItem(Index: Integer; const Value: TACBrInformacao);
     function GetFields(Index: String): TAcbrInformacao;
   public
-    function Add: TACBrInformacao;
+    function Add (Obj: TACBrInformacao): Integer;
+    procedure Insert (Index: Integer; Obj: TACBrInformacao);
+    function New: TACBrInformacao;
+
     function AddField(const AName: String; const AValue: String): TACBrInformacao;
     function FindFieldByName(const AName: String): TACBrInformacao;
     function FieldByName(const AName: String): TACBrInformacao;
@@ -359,6 +404,11 @@ begin
   end;
 end;
 
+function TACBrInformacao.GetAsBinary: AnsiString;
+begin
+  Result := StringToBinaryString(fInfo);
+end;
+
 function TACBrInformacao.GetAsFloat : Double;
 Var
   Info: String ;
@@ -433,12 +483,11 @@ begin
   end;
 end;
 
-{
-procedure TACBrInformacao.SetAsAnsiString(const AValue: AnsiString);
+procedure TACBrInformacao.SetAsBinary(AValue: AnsiString);
 begin
-   fInformacao := AValue;
+  fInfo := String(BinaryStringToString(AValue));
 end;
-}
+
 procedure TACBrInformacao.SetAsDate(const AValue : TDateTime);
 begin
   if AValue = 0 then
@@ -523,7 +572,7 @@ begin
     Result.AsString := AValue
   else
   begin
-    Result := Self.Add;
+    Result := Self.New;
     with Result do
     begin
       Nome     := AName;
@@ -602,13 +651,22 @@ begin
   Result := FieldByName(Index);
 end;
 
-function TACBrInformacoes.GetItem(
-  Index: Integer): TACBrInformacao;
+function TACBrInformacoes.Add(Obj: TACBrInformacao): Integer;
+begin
+  Result := inherited Add(Obj);
+end;
+
+procedure TACBrInformacoes.Insert(Index: Integer; Obj: TACBrInformacao);
+begin
+  inherited Insert(Index, Obj);
+end;
+
+function TACBrInformacoes.GetItem(Index: Integer): TACBrInformacao;
 begin
   Result := TACBrInformacao(inherited Items[Index]);
 end;
 
-function TACBrInformacoes.Add: TACBrInformacao;
+function TACBrInformacoes.New: TACBrInformacao;
 begin
   Result := TACBrInformacao.Create;
   inherited Add(Result);

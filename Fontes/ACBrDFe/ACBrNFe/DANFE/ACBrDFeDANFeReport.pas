@@ -40,7 +40,7 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrDFeReport,
+  ACBrBase, ACBrDFeReport,
   pcnNFe, pcnConversao, pcnAuxiliar;
 
 type
@@ -49,7 +49,7 @@ type
 
   { TACBrDFeDANFeReport }
   {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrDFeDANFeReport = class(TACBrDFeReport)
   private
@@ -58,6 +58,7 @@ type
     FProtocoloNFe: String;
     FNFeCancelada: Boolean;
     FImprimeCodigoEan: Boolean;
+    FImprimeInfContr: Boolean;
     FvTribFed: currency;
     FvTribEst: currency;
     FvTribMun: currency;
@@ -68,7 +69,6 @@ type
     FExibeTotalTributosItem: Boolean;
     FExibeInforAdicProduto: TinfAdcProd;
     FImprimeNomeFantasia: Boolean;
-    FImprimeEmUmaLinha: Boolean;
     FTipoDANFE: TpcnTipoImpressao;
 
     procedure SetACBrNFE(const AValue: TComponent);
@@ -129,8 +129,8 @@ type
     property ExibeTotalTributosItem: Boolean read FExibeTotalTributosItem write FExibeTotalTributosItem default False;
     property ExibeInforAdicProduto: TinfAdcProd read FExibeInforAdicProduto write FExibeInforAdicProduto default infDescricao;
     property ImprimeCodigoEan: Boolean read FImprimeCodigoEan write FImprimeCodigoEan default False;
+    property ImprimeInfContr: Boolean read FImprimeInfContr write FImprimeInfContr default True;
     property ImprimeNomeFantasia: Boolean read FImprimeNomeFantasia write FImprimeNomeFantasia default False;
-    property ImprimeEmUmaLinha: Boolean read FImprimeEmUmaLinha write FImprimeEmUmaLinha default False;
   end;
 
 implementation
@@ -145,22 +145,22 @@ constructor TACBrDFeDANFeReport.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FACBrNFe := nil;
-  FTipoDANFE := tiRetrato;
-  FImprimeTotalLiquido := True;
-  FProtocoloNFe := '';
-  FNFeCancelada := False;
-  FvTribFed := 0.0;
-  FvTribEst := 0.0;
-  FvTribMun := 0.0;
-  FFonteTributos := '';
-  FChaveTributos := '';
-  FImprimeTributos := trbNormal;
-  FExibeTotalTributosItem := False;
-  FImprimeCodigoEan := False;
-  FImprimeNomeFantasia := False;
-  FImprimeEmUmaLinha := False;
-  FExibeInforAdicProduto := infDescricao;
+  FACBrNFe                    := nil;
+  FTipoDANFE                  := tiRetrato;
+  FImprimeTotalLiquido        := True;
+  FProtocoloNFe               := '';
+  FNFeCancelada               := False;
+  FvTribFed                   := 0.0;
+  FvTribEst                   := 0.0;
+  FvTribMun                   := 0.0;
+  FFonteTributos              := '';
+  FChaveTributos              := '';
+  FImprimeTributos            := trbNormal;
+  FExibeTotalTributosItem     := False;
+  FImprimeCodigoEan           := False;
+  FImprimeInfContr            := True;
+  FImprimeNomeFantasia        := False;
+  FExibeInforAdicProduto      := infDescricao;
   FQuebraLinhaEmDetalhamentos := True;
 end;
 
@@ -241,7 +241,7 @@ begin
       end;
 
       Result := TACBrNFe(FACBrNFe).Configuracoes.Arquivos.GetPath(Result,
-        DescricaoModelo, ANFe.Emit.CNPJCPF, dhEmissao, DescricaoModelo);
+        DescricaoModelo, ANFe.Emit.CNPJCPF, ANFe.Emit.IE, dhEmissao, DescricaoModelo);
     end;
   end;
 end;
@@ -409,19 +409,22 @@ var
   i: Integer;
 begin
   Result := '';
-  with ANFe.InfAdic do
+  if FImprimeInfContr then
   begin
-    if obsCont.Count > 0 then
+    with ANFe.InfAdic do
     begin
-      for i := 0 to (obsCont.Count - 1) do
+      if obsCont.Count > 0 then
       begin
-        Result := Result +
-          obsCont.Items[i].xCampo + ': ' +
-          obsCont.Items[i].xTexto +
-          IfThen((i = (obsCont.Count - 1)), '', ';');
-      end;
+        for i := 0 to (obsCont.Count - 1) do
+        begin
+          Result := Result +
+            obsCont.Items[i].xCampo + ': ' +
+            obsCont.Items[i].xTexto +
+            IfThen((i = (obsCont.Count - 1)), '', ';');
+        end;
 
-      Result := Result + '; ';
+        Result := Result + '; ';
+      end;
     end;
   end;
 end;
@@ -513,6 +516,7 @@ begin
 
   Result := FormatFloatBr(dValor);
 end;
+
 
 
 end.

@@ -1,35 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: Componentes ACBr                                                     }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -38,17 +38,16 @@ unit ACBrLibNFeConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles,
+  Classes, Graphics, SysUtils, IniFiles,
   pcnConversao,
-  ACBrNFeConfiguracoes, Graphics,
-  ACBrDFeReport, ACBrDFeDANFeReport, ACBrNFeDANFEClass, ACBrNFeDANFeRLClass,
-  ACBrLibConfig, ACBrDeviceConfig, ACBrIntegradorConfig, DFeReportConfig;
+  ACBrNFeConfiguracoes, ACBrDFeReport, ACBrDFeDANFeReport,
+  ACBrNFeDANFEClass, ACBrNFeDANFeRLClass, ACBrLibConfig,
+  ACBrDeviceConfig, ACBrIntegradorConfig, DFeReportConfig;
 
 type
   TTipoRelatorioEvento = (evA4, evBobina);
 
   { TDANFeNFeConfig }
-
   TDANFeNFeConfig = class
   private
     FImprimeDescPorPercentual: Boolean;
@@ -81,6 +80,8 @@ type
     FRecuoEmpresa: Integer;
     FLogoEmCima: Boolean;
     FRecuoLogo: Integer;
+    FExpandirDadosAdicionaisAuto: boolean;
+    FImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean;
 
   public
     constructor Create;
@@ -122,6 +123,8 @@ type
     property RecuoEmpresa: Integer read FRecuoEmpresa write FRecuoEmpresa;
     property LogoemCima: Boolean read FLogoEmCima write FLogoEmCima;
     property RecuoLogo: Integer read FRecuoLogo write FRecuoLogo;
+    property ExpandirDadosAdicionaisAuto: boolean read FExpandirDadosAdicionaisAuto write FExpandirDadosAdicionaisAuto;
+    property ImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean read FImprimeContinuacaoDadosAdicionaisPrimeiraPagina write FImprimeContinuacaoDadosAdicionaisPrimeiraPagina;
 
   end;
 
@@ -164,7 +167,6 @@ type
   end;
 
   { TDANFeReportConfig }
-
   TDANFeReportConfig = class(TDFeReportConfig<TACBrDFeDANFeReport>)
   private
     FTipoDANFE: TpcnTipoImpressao;
@@ -187,7 +189,7 @@ type
   protected
     procedure LerIniChild(const AIni: TCustomIniFile); override;
     procedure GravarIniChild(const AIni: TCustomIniFile); override;
-    procedure AssignChild(const DFeReport: TACBrDFeDANFeReport); override;
+    procedure ApplyChild(const DFeReport: TACBrDFeDANFeReport); override;
     procedure DefinirValoresPadroesChild; override;
 
   public
@@ -203,13 +205,12 @@ type
     property ImprimeCodigoEan: Boolean read FImprimeCodigoEan write FImprimeCodigoEan;
     property ImprimeNomeFantasia: Boolean read FImprimeNomeFantasia write FImprimeNomeFantasia;
     property ImprimeEmUmaLinha: Boolean read FImprimeEmUmaLinha write FImprimeEmUmaLinha;
-    property NFeConfig: TDANFeNFeConfig read FNFeConfig;
-    property NFCeConfig: TDANFeNFCeConfig read FNFCeConfig;
+    property NFe: TDANFeNFeConfig read FNFeConfig;
+    property NFCe: TDANFeNFCeConfig read FNFCeConfig;
 
   end;
 
   { TLibNFeConfig }
-
   TLibNFeConfig = class(TLibConfig)
   private
     FDANFeConfig: TDANFeReportConfig;
@@ -229,19 +230,19 @@ type
     constructor Create(AOwner: TObject; ANomeArquivo: String = ''; AChaveCrypt: AnsiString = ''); override;
     destructor Destroy; override;
 
-    function PrecisaCriptografar(ASessao, AChave: String): Boolean; override;
+    function AjustarValor(Tipo: TTipoFuncao; ASessao, AChave, AValor: Ansistring): Ansistring; override;
 
-    property NFeConfig: TConfiguracoesNFe read FNFeConfig;
-    property DANFeConfig: TDANFeReportConfig read FDANFeConfig;
-    property IntegradorConfig: TIntegradorConfig read FIntegradorConfig;
-    property PosDeviceConfig: TDeviceConfig read FDeviceConfig write FDeviceConfig;
+    property NFe: TConfiguracoesNFe read FNFeConfig;
+    property DANFe: TDANFeReportConfig read FDANFeConfig;
+    property Integrador: TIntegradorConfig read FIntegradorConfig;
+    property PosDevice: TDeviceConfig read FDeviceConfig write FDeviceConfig;
 
   end;
 
 implementation
 
 uses
-  typinfo,
+  typinfo, strutils, synacode,
   ACBrLibNFeClass, ACBrLibNFeConsts, ACBrLibConsts, ACBrLibComum,
   ACBrDANFCeFortesFr, ACBrNFeDANFeESCPOS,
   ACBrUtil, ACBrDFeConfiguracoes;
@@ -290,6 +291,8 @@ begin
   FRecuoEmpresa := 0;
   FLogoEmCima := False;
   FRecuoLogo := 0;
+  FExpandirDadosAdicionaisAuto := False;
+  FImprimeContinuacaoDadosAdicionaisPrimeiraPagina := False;
 
   if Assigned(FFonte) then FFonte.Free;
   FFonte := TFonte.Create(nil);
@@ -330,6 +333,8 @@ begin
   RecuoEmpresa := AIni.ReadInteger(CSessaoDANFENFE, CChaveRecuoEmpresa, RecuoEmpresa);
   LogoemCima := AIni.ReadBool(CSessaoDANFENFE, CChaveLogoemCima, LogoemCima);
   RecuoLogo := AIni.ReadInteger(CSessaoDANFENFE, CChaveRecuoLogo, RecuoLogo);
+  ExpandirDadosAdicionaisAuto := AIni.ReadBool(CSessaoDANFENFE, CChaveExpandirDadosAdicionaisAuto, FExpandirDadosAdicionaisAuto);
+  ImprimeContinuacaoDadosAdicionaisPrimeiraPagina := AIni.ReadBool(CSessaoDANFENFE, CChaveImprimeContinuacaoDadosAdicionaisPrimeiraPagina, FImprimeContinuacaoDadosAdicionaisPrimeiraPagina);
 
   with Fonte do
   begin
@@ -375,6 +380,9 @@ begin
   AIni.WriteInteger(CSessaoDANFENFE, CChaveRecuoEmpresa, RecuoEmpresa);
   AIni.WriteBool(CSessaoDANFENFE, CChaveLogoemCima, LogoemCima);
   AIni.WriteInteger(CSessaoDANFENFE, CChaveRecuoLogo, RecuoLogo);
+  AIni.WriteBool(CSessaoDANFENFE, CChaveExpandirDadosAdicionaisAuto, ExpandirDadosAdicionaisAuto);
+  AIni.WriteBool(CSessaoDANFENFE, CChaveImprimeContinuacaoDadosAdicionaisPrimeiraPagina, ImprimeContinuacaoDadosAdicionaisPrimeiraPagina);
+
 
   with Fonte do
   begin
@@ -422,6 +430,8 @@ begin
     RecuoEmpresa := FRecuoEmpresa;
     LogoemCima := FLogoemCima;
     RecuoLogo := FRecuoLogo;
+    ExpandirDadosAdicionaisAuto := FExpandirDadosAdicionaisAuto;
+    ImprimeContinuacaoDadosAdicionaisPrimeiraPagina := FImprimeContinuacaoDadosAdicionaisPrimeiraPagina;
 
     with Fonte do
     begin
@@ -605,7 +615,7 @@ begin
 
 end;
 
-procedure TDANFeReportConfig.AssignChild(const DFeReport: TACBrDFeDANFeReport);
+procedure TDANFeReportConfig.ApplyChild(const DFeReport: TACBrDFeDANFeReport);
 var
   pLibConfig: TLibNFeConfig;
 begin
@@ -631,11 +641,11 @@ begin
 
   if DFeReport is TACBrNFeDANFeRL then
   begin
-    pLibConfig.DANFeConfig.NFeConfig.Assign(TACBrNFeDANFeRL(DFeReport));
+    pLibConfig.DANFe.NFe.Assign(TACBrNFeDANFeRL(DFeReport));
   end
   else if DFeReport is TACBrNFeDANFCEClass then
   begin
-    pLibConfig.DANFeConfig.NFCeConfig.Assign(TACBrNFeDANFCEClass(DFeReport));
+    pLibConfig.DANFe.NFCe.Assign(TACBrNFeDANFCEClass(DFeReport));
   end;
 end;
 
@@ -667,7 +677,6 @@ begin
   inherited INIParaClasse;
 
   FNFeConfig.ChaveCryptINI := ChaveCrypt;
-
   FNFeConfig.LerIni(Ini);
   FDANFeConfig.LerIni(Ini);
   FIntegradorConfig.LerIni(Ini);
@@ -680,7 +689,6 @@ begin
 
   FNFeConfig.ChaveCryptINI := ChaveCrypt;
   FNFeConfig.GravarIni(Ini);
-
   FDANFeConfig.GravarIni(Ini);
   FIntegradorConfig.GravarIni(Ini);
   if FDeviceConfig <> nil then FDeviceConfig.GravarIni(Ini);
@@ -712,14 +720,25 @@ begin
   end;
 end;
 
-function TLibNFeConfig.PrecisaCriptografar(ASessao, AChave: String): Boolean;
+function TLibNFeConfig.AjustarValor(Tipo: TTipoFuncao; ASessao, AChave, AValor: Ansistring): Ansistring;
 begin
-  Result := inherited PrecisaCriptografar(ASessao, AChave);
+  Result := '';
 
-  if not Result then
+  if (ASessao = CSessaoDFe) and (AChave = CChaveDadosPFX) then
   begin
-    Result := (ASessao = CDFeSessaoIni) and ((AChave = 'DadosPFX') or (AChave = 'Proxy.Pass'));
-  end;
+    TACBrLib(Owner).GravarLog(ClassName + '.AjustarValor(' + GetEnumName(TypeInfo(TTipoFuncao), Integer(Tipo)) + ','
+                                                          + ASessao + ',' + AChave + ',' +
+                                                          IfThen(PrecisaCriptografar(ASessao, AChave),
+                                                          StringOfChar('*', Length(AValor)), AValor) +')', logParanoico);
+    case Tipo of
+      tfGravar: Result := StringToB64Crypt(DecodeBase64(AValor), pLib.Config.ChaveCrypt);
+      tfLer: Result := EncodeBase64(B64CryptToString(AValor, pLib.Config.ChaveCrypt));
+    end;
+
+    TACBrLib(Owner).GravarLog(ClassName + '.AjustarValor - Feito Result: ' + Result, logParanoico);
+  end
+  else
+    Result := inherited AjustarValor(Tipo, ASessao, AChave, AValor);
 end;
 
 end.

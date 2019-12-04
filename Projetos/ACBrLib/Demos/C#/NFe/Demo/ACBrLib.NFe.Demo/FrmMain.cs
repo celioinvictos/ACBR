@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Windows.Forms;
 using ACBrLib.Core;
 using ACBrLib.Core.DFe;
@@ -27,6 +29,7 @@ namespace ACBrLib.NFe.Demo
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             AcbrNFe.Dispose();
+            AcbrNFe = null;
         }
 
         private void FrmMain_Shown(object sender, EventArgs e)
@@ -65,6 +68,7 @@ namespace ACBrLib.NFe.Demo
             AcbrNFe.ConfigGravarValor(ACBrSessao.DFe, "SSLHttpLib", cmbHttp.GetSelectedValue<SSLHttpLib>());
             AcbrNFe.ConfigGravarValor(ACBrSessao.DFe, "SSLXmlSignLib", cmbXmlSign.GetSelectedValue<SSLXmlSignLib>());
             AcbrNFe.ConfigGravarValor(ACBrSessao.DFe, "ArquivoPFX", txtCertPath.Text);
+            AcbrNFe.ConfigGravarValor(ACBrSessao.DFe, "DadosPFX", txtDadosPFX.Text);
             AcbrNFe.ConfigGravarValor(ACBrSessao.DFe, "Senha", txtCertPassword.Text);
             AcbrNFe.ConfigGravarValor(ACBrSessao.DFe, "NumeroSerie", txtCertNumero.Text);
             AcbrNFe.ConfigGravarValor(ACBrSessao.NFe, "PathSchemas", txtSchemaPath.Text);
@@ -98,6 +102,7 @@ namespace ACBrLib.NFe.Demo
             cmbHttp.SetSelectedValue(AcbrNFe.ConfigLerValor<SSLHttpLib>(ACBrSessao.DFe, "SSLHttpLib"));
             cmbXmlSign.SetSelectedValue(AcbrNFe.ConfigLerValor<SSLXmlSignLib>(ACBrSessao.DFe, "SSLXmlSignLib"));
             txtCertPath.Text = AcbrNFe.ConfigLerValor<string>(ACBrSessao.DFe, "ArquivoPFX");
+            txtDadosPFX.Text = AcbrNFe.ConfigLerValor<string>(ACBrSessao.DFe, "DadosPFX");
             txtCertPassword.Text = AcbrNFe.ConfigLerValor<string>(ACBrSessao.DFe, "Senha");
             txtCertNumero.Text = AcbrNFe.ConfigLerValor<string>(ACBrSessao.DFe, "NumeroSerie");
             txtSchemaPath.Text = AcbrNFe.ConfigLerValor<string>(ACBrSessao.NFe, "PathSchemas");
@@ -130,6 +135,21 @@ namespace ACBrLib.NFe.Demo
         private void BtnSelecionarCertificado_Click(object sender, EventArgs e)
         {
             txtCertPath.Text = Helpers.OpenFile("Arquivos PFX (*.pfx)|*.pfx|Todos os Arquivos (*.*)|*.*");
+        }
+
+        private void btnDadosPFX_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtDadosPFX.Text))
+            {
+                var cert = new X509Certificate2(Convert.FromBase64String(txtDadosPFX.Text), txtCertPassword.Text);
+                MessageBox.Show(cert.SerialNumber);
+            }
+
+            var file = Helpers.OpenFile("Arquivos PFX (*.pfx)|*.pfx|Todos os Arquivos (*.*)|*.*");
+            if (!File.Exists(file)) return;
+
+            var dados = File.ReadAllBytes(file);
+            txtDadosPFX.Text = Convert.ToBase64String(dados);
         }
 
         private void BtnSelectSchema_Click(object sender, EventArgs e)
@@ -309,6 +329,14 @@ namespace ACBrLib.NFe.Demo
             {
                 MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void btnImprimirInut_Click(object sender, EventArgs e)
+        {
+            var arquivoXml = Helpers.OpenFile("Arquivo Xml NFe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+            if (string.IsNullOrEmpty(arquivoXml)) return;
+
+            AcbrNFe.ImprimirInutilizacaoPDF(arquivoXml);
         }
 
         #endregion EventHandlers

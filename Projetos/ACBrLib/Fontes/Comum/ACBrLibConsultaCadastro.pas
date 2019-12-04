@@ -1,27 +1,35 @@
-{******************************************************************************}
-{ Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
-{ mentos de Automação Comercial utilizados no Brasil                           }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
-{ qualquer versão posterior.                                                   }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: ACBrLib                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
+{ mentos de Automação Comercial utilizados no Brasil                            }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -36,7 +44,7 @@ uses
 
 type
   { TConsultaCadastroItemResposta }
-  TConsultaCadastroItemResposta = class(TACBrLibResposta)
+  TConsultaCadastroItemResposta = class(TACBrLibRespostaBase)
   private
     Farquivo: string;
     FCEP: Integer;
@@ -62,7 +70,8 @@ type
     FxRegApur: String;
 
   public
-    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
+      const AFormato: TACBrLibCodificacao); reintroduce;
 
     procedure Processar(const infCad: TInfCadCollectionItem);
 
@@ -89,10 +98,11 @@ type
     property cMun: Integer read FcMun write FcMun;
     property xMun: String read FxMun write FxMun;
     property CEP: Integer read FCEP write FCEP;
+
   end;
 
   { TConsultaCadastroResposta }
-  TConsultaCadastroResposta = class(TACBrLibResposta)
+  TConsultaCadastroResposta = class(TACBrLibRespostaBase)
   private
     FMsg: string;
     Fversao: string;
@@ -107,16 +117,16 @@ type
     FCPF: string;
     FUF: string;
     FdhCons: TDateTime;
-    FItens: TObjectList;
+    FItems: TObjectList;
 
     function GetItem(Index: Integer): TConsultaCadastroItemResposta;
 
   public
-    constructor Create(const ATipo: TACBrLibRespostaTipo); reintroduce;
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
     procedure Processar(const retConsCad: TRetConsCad);
-    function Gerar: String; override;
+    function Gerar: Ansistring; override;
 
     property Items[Index: Integer]: TConsultaCadastroItemResposta read GetItem;
 
@@ -145,9 +155,9 @@ uses
 
 { TConsultaCadastroItemResposta }
 constructor TConsultaCadastroItemResposta.Create(const ASessao: String;
-  const ATipo: TACBrLibRespostaTipo);
+  const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(ASessao, ATipo);
+  inherited Create(ASessao, ATipo, AFormato);
 end;
 
 procedure TConsultaCadastroItemResposta.Processar(const infCad: TInfCadCollectionItem);
@@ -176,36 +186,36 @@ begin
 end;
 
 { TConsultaCadastroResposta }
-constructor TConsultaCadastroResposta.Create(const ATipo: TACBrLibRespostaTipo);
+constructor TConsultaCadastroResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
-  inherited Create(CSessaoRespConsultaCadastro, ATipo);
+  inherited Create(CSessaoRespConsultaCadastro, ATipo, AFormato);
 
-  FItens := TObjectList.Create(True);
+  FItems := TObjectList.Create(True);
 end;
 
 destructor TConsultaCadastroResposta.Destroy;
 begin
-  FItens.Clear;
-  FItens.Free;
+  FItems.Clear;
+  FItems.Free;
 
   inherited Destroy;
 end;
 
-function TConsultaCadastroResposta.Gerar: String;
+function TConsultaCadastroResposta.Gerar: Ansistring;
 Var
   i: Integer;
 begin
   Result := Inherited Gerar;
 
-  for i := 0 to FItens.Count - 1  do
+  for i := 0 to FItems.Count - 1  do
   begin
-    Result := Result + sLineBreak + TConsultaCadastroItemResposta(FItens.Items[i]).Gerar;
+    Result := Result + sLineBreak + TConsultaCadastroItemResposta(FItems.Items[i]).Gerar;
   end;
 end;
 
 function TConsultaCadastroResposta.GetItem(Index: Integer): TConsultaCadastroItemResposta;
 begin
-  Result := TConsultaCadastroItemResposta(FItens.Items[Index]);
+  Result := TConsultaCadastroItemResposta(FItems.Items[Index]);
 end;
 
 procedure TConsultaCadastroResposta.Processar(const retConsCad: TRetConsCad);
@@ -225,13 +235,15 @@ begin
   FCPF := RetConsCad.CPF;
   FUF := REtConsCad.UF;
 
+  FItems.Clear;
+
   with retConsCad do
   begin
     for i := 0 to InfCad.Count - 1 do
     begin
-      Item := TConsultaCadastroItemResposta.Create('INFCAD' + Trim(IntToStrZero(i + 1, 3)), Tipo);
+      Item := TConsultaCadastroItemResposta.Create('INFCAD' + Trim(IntToStrZero(i + 1, 3)), Tipo, FFormato);
       Item.Processar(InfCad.Items[i]);
-      FItens.Add(Item);
+      FItems.Add(Item);
     end;
   end;
 

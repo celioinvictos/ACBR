@@ -45,7 +45,8 @@ unit ACBrSedex;
 interface
 
 uses
-  Classes, SysUtils, contnrs, ACBrSocket, ACBrUtil, IniFiles;
+  Classes, SysUtils, contnrs,
+  ACBrBase, ACBrSocket, ACBrUtil, IniFiles;
 
 const
   CURL_SEDEX = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?';
@@ -96,8 +97,8 @@ type
   end;
 
   { TACBrSedex }
-	{$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrSedex = class(TACBrHTTP)
   private
