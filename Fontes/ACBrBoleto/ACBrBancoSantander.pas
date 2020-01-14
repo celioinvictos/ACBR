@@ -106,6 +106,7 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 9;
    fpModuloMultiplicadorAtual:= 0;
+  fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoSantander.DefineNumeroDocumentoModulo(
