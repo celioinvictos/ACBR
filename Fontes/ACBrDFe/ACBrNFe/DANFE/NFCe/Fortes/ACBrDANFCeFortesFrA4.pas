@@ -50,9 +50,10 @@ uses
   {$IFDEF FPC}
    LResources,
   {$ENDIF}
-  Messages, Variants, Graphics, Controls, Forms, Dialogs,
-  ACBrBase, ACBrNFeDANFEClass, RLReport, pcnNFe, ACBrNFe,
-  RLHTMLFilter, RLFilters, RLPDFFilter, ACBrUtil, pcnConversao, ACBrDFeUtil, ACBrValidador;
+  Variants, Graphics, Controls, Forms, Dialogs,
+  ACBrBase, ACBrNFeDANFEClass, pcnNFe, ACBrNFe,
+  RLReport, RLHTMLFilter, RLFilters, RLPDFFilter,
+  ACBrUtil, pcnConversao, ACBrDFeUtil, ACBrValidador;
 
 type
   TACBrNFeDANFCeFortesA4Filtro = (fiNenhum, fiPDF, fiHTML ) ;
@@ -478,7 +479,7 @@ begin
                                      Total.ICMSTot.vNF, Total.ICMSTot.vICMS,
                                      signature.DigestValue,
                                      infNFe.Versao);
-    PintarQRCode(qrcode, imgQRCode.Picture, qrUTF8NoBOM);
+    PintarQRCode(qrcode, imgQRCode.Picture.Bitmap, qrUTF8NoBOM);
 
     lProtocolo.Caption := ACBrStr('Protocolo de Autorização: '+procNFe.nProt+
                            ' '+ifthen(procNFe.dhRecbto<>0,DateTimeToStr(procNFe.dhRecbto),''));
@@ -774,6 +775,12 @@ begin
   try
     with frACBrNFeDANFCeFortesFr do
     begin
+	  if AlterarEscalaPadrao then
+      begin
+        frACBrNFeDANFCeFortesFr.Scaled := False;
+        frACBrNFeDANFCeFortesFr.ScaleBy(NovaEscala , Screen.PixelsPerInch);
+      end;
+	
       Filtro := AFiltro;
       RLLayout := rlReportA4;
       Resumido := DanfeResumido;

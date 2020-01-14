@@ -74,13 +74,14 @@ type
 
     FGerador: TGerador;
     FSchema: TeSocialSchema;
-//    FXML: AnsiString;
-    FXML: String;
 
 //    procedure SetXML(const Value: AnsiString);
     procedure SetXML(const Value: String);
   protected
     {Geradores de Uso Comum}
+//    FXML: AnsiString;
+    FXML: String;
+
     procedure GerarCabecalho(const Namespace: String);
     procedure GerarRodape;
     procedure GerarAliqGilRat(pEmp: TIdeEmpregador; pAliqRat: TAliqGilRat; const GroupName: string = 'aliqGilRat');
@@ -219,13 +220,16 @@ type
 implementation
 
 uses
-  ACBreSocial, ACBreSocialEventos, ACBrDFeSSL, ACBrDFeUtil;
+  ACBreSocial, ACBrDFeSSL, ACBrDFeUtil;
 
 {TeSocialEvento}
 
 function TeSocialEvento.Assinar(const XMLEvento, NomeEvento: String): AnsiString;
 var
-  XMLAss, ArqXML, NomeEventoArquivo: string;
+  XMLAss, ArqXML: string;
+ {$IFDEF DEBUG}
+ NomeEventoArquivo: string;
+ {$ENDIF}
 begin
   Result := '';
 
@@ -250,14 +254,14 @@ begin
     XMLAss := StringReplace(XMLAss, '<' + ENCODING_UTF8_STD + '>', '', [rfReplaceAll]);
     XMLAss := StringReplace(XMLAss, '<' + XML_V01 + '>', '', [rfReplaceAll]);
 
-    NomeEventoArquivo := NomeEvento + '.xml';
-
 //    if Configuracoes.Arquivos.Salvar then
 //      Gravar(NomeEvento, XMLAss, Configuracoes.Arquivos.PathSalvar);
 
     Result := AnsiString(XMLAss);
 
     {$IFDEF DEBUG}
+    NomeEventoArquivo := NomeEvento + '.xml';
+
     if Configuracoes.Arquivos.Salvar then
     begin
       With TStringList.Create do

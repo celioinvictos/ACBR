@@ -90,7 +90,6 @@ begin
    fpTamanhoAgencia         := 4;
    fpTamanhoConta           := 7;
    fpTamanhoCarteira        := 2;
-   fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoBradesco.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;

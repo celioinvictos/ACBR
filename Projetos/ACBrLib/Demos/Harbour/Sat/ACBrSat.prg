@@ -1,23 +1,14 @@
-#include "hbclass.ch"
-#include "error.ch"
+#include 'acbrlib.ch'
 
-#define DC_CALL_CDECL          0x0010      // __cdecl
-#define DC_CALL_STD            0x0020      // __stdcall
-
-#ifdef _XHARBOUR_ 
-#define ACBrLIBSat "ACBrSAT32.dll"
-#define DLL_OSAPI DC_CALL_STD
+#ifdef __PLATFORM__WINDOWS
+   #define ACBrLIB 'ACBrSAT32.dll'
 #else
-#if defined( __PLATFORM__WINDOWS )
-#define ACBrLIBSat "ACBrSAT32.dll"
-#define DLL_OSAPI DC_CALL_STD
-#else
-#define ACBrLIBSat "ACBrSAT32.so"
-#define DLL_OSAPI DC_CALL_CDECL
+   #ifdef __PLATFORM__LINUX
+      #define ACBrLIB 'libacbrsat64.so'
+   #else
+      #error ACBrLIB-FALTA DEFINICAO: PLATFORM__?
+   #endif
 #endif
-#endif
-
-#define STR_LEN 256
 
 CREATE CLASS ACBrSat
 HIDDEN:
@@ -27,7 +18,6 @@ HIDDEN:
     METHOD ProcessResult(buffer, bufferLen)
 
 VISIBLE:
-    METHOD New() CONSTRUCTOR
     METHOD New(eArqConfig, eChaveCrypt) CONSTRUCTOR
     DESTRUCTOR  Destroy
 
@@ -72,8 +62,11 @@ END CLASS
 METHOD New(eArqConfig, eChaveCrypt) CLASS ACBrSat
     local hResult, buffer, bufferLen, oErr
 
+    eArqConfig :=if(eArqConfig = nil, '', eArqConfig)
+    eChaveCrypt:=if(eChaveCrypt = nil, '', eChaveCrypt)
+
     ::hHandle := DllLoad(ACBrLIBSat)
-    if ::hHandle = nil
+    if EMPTY(::hHandle) // Eric.Developer: xHarbour retorna 0x00000000
         oErr := ErrorNew()
         oErr:Severity := ES_ERROR        
         oErr:Description := "Erro a carregar a dll [" + ACBrLIBSat + "]"

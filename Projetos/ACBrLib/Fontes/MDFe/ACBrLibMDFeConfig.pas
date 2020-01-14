@@ -38,15 +38,13 @@ unit ACBrLibMDFeConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles,
+  Classes, SysUtils, IniFiles, pcnConversao,
   ACBrMDFeConfiguracoes, ACBrMDFeDAMDFeRLClass,
-  pcnConversao,
   DFeReportConfig, ACBrLibConfig;
 
 type
 
   { TDAMDFeConfig }
-
   TDAMDFeConfig = class(TDFeReportConfig<TACBrMDFeDAMDFeRL>)
   private
     FImprimeHoraSaida: Boolean;
@@ -56,12 +54,12 @@ type
     FProtocolo: String;
     FCancelada: Boolean;
     FEncerrado: Boolean;
-    FPrintDialog: Boolean;
 
   protected
+    procedure DefinirValoresPadroesChild; override;
+    procedure ImportChild(const AIni: TCustomIniFile); override;
     procedure LerIniChild(const AIni: TCustomIniFile); override;
     procedure GravarIniChild(const AIni: TCustomIniFile); override;
-    procedure DefinirValoresPadroesChild; override;
     procedure ApplyChild(const DFeReport: TACBrMDFeDAMDFeRL); override;
 
   public
@@ -74,12 +72,9 @@ type
     property Protocolo: String read FProtocolo write FProtocolo;
     property Cancelada: Boolean read FCancelada write FCancelada;
     property Encerrado: Boolean read FEncerrado write FEncerrado;
-    property PrintDialog: Boolean read FPrintDialog write FPrintDialog;
-
   end;
 
   { TLibMDFeConfig }
-
   TLibMDFeConfig = class(TLibConfig)
   private
     FDAMDFeConfig: TDAMDFeConfig;
@@ -89,6 +84,7 @@ type
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
+    procedure ImportarIni(FIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -104,8 +100,9 @@ type
 implementation
 
 uses
-  ACBrLibMDFeClass, ACBrLibMDFeConsts, ACBrLibConsts, ACBrLibComum,
-  ACBrUtil;
+  blcksock, pcnAuxiliar, pmdfeConversaoMDFe,
+  ACBrDFeSSL, ACBrLibMDFeClass, ACBrMonitorConsts,
+  ACBrLibMDFeConsts, ACBrLibConsts, ACBrLibComum, ACBrUtil;
 
 { TDAMDFeConfig }
 constructor TDAMDFeConfig.Create;
@@ -122,19 +119,11 @@ begin
   FEncerrado := False;
   FTipoDAMDFe := tiRetrato;
   FTamanhoPapel := tpA4;
-  FPrintDialog := True;
 end;
 
-procedure TDAMDFeConfig.ApplyChild(const DFeReport: TACBrMDFeDAMDFeRL);
+procedure TDAMDFeConfig.ImportChild(const AIni: TCustomIniFile);
 begin
-  DFeReport.ImprimeHoraSaida := FImprimeHoraSaida;
-  DFeReport.ImprimeHoraSaida_Hora := FImprimeHoraSaida_Hora;
-  DFeReport.TipoDAMDFe := FTipoDAMDFe;
-  DFeReport.TamanhoPapel := FTamanhoPapel;
-  DFeReport.Protocolo := FProtocolo;
-  DFeReport.Cancelada := FCancelada;
-  DFeReport.Encerrado := FEncerrado;
-  DFeReport.PrintDialog := FPrintDialog;
+  //Não Achei config especifica da DAMDFe
 end;
 
 procedure TDAMDFeConfig.LerIniChild(const AIni: TCustomIniFile);
@@ -146,7 +135,6 @@ begin
   FProtocolo := AIni.ReadString(FSessao, CChaveProtocolo, FProtocolo);
   FCancelada := AIni.ReadBool(FSessao, CChaveCancelada, FCancelada);
   FEncerrado := AIni.ReadBool(FSessao, CChaveEncerrado, FEncerrado);
-  FPrintDialog := AIni.ReadBool(FSessao, CChavePrintDialog, FPrintDialog);
 end;
 
 procedure TDAMDFeConfig.GravarIniChild(const AIni: TCustomIniFile);
@@ -158,11 +146,20 @@ begin
   AIni.WriteString(FSessao, CChaveProtocolo, FProtocolo);
   AIni.WriteBool(FSessao, CChaveCancelada, FCancelada);
   AIni.WriteBool(FSessao, CChaveEncerrado, FEncerrado);
-  AIni.WriteBool(FSessao, CChavePrintDialog, FPrintDialog);
+end;
+
+procedure TDAMDFeConfig.ApplyChild(const DFeReport: TACBrMDFeDAMDFeRL);
+begin
+  DFeReport.ImprimeHoraSaida := FImprimeHoraSaida;
+  DFeReport.ImprimeHoraSaida_Hora := FImprimeHoraSaida_Hora;
+  DFeReport.TipoDAMDFe := FTipoDAMDFe;
+  DFeReport.TamanhoPapel := FTamanhoPapel;
+  DFeReport.Protocolo := FProtocolo;
+  DFeReport.Cancelada := FCancelada;
+  DFeReport.Encerrado := FEncerrado;
 end;
 
 { TLibMDFeConfig }
-
 constructor TLibMDFeConfig.Create(AOwner: TObject; ANomeArquivo: String; AChaveCrypt: AnsiString);
 begin
   inherited Create(AOwner, ANomeArquivo, AChaveCrypt);
@@ -188,7 +185,7 @@ begin
   FMDFeConfig.ChaveCryptINI := ChaveCrypt;
 
   FMDFeConfig.LerIni(Ini);
-  FDAMDFeConfig.LerIniChild(Ini);
+  FDAMDFeConfig.LerIni(Ini);
 end;
 
 procedure TLibMDFeConfig.ClasseParaINI;
@@ -198,7 +195,7 @@ begin
   FMDFeConfig.ChaveCryptINI := ChaveCrypt;
 
   FMDFeConfig.GravarIni(Ini);
-  FDAMDFeConfig.GravarIniChild(Ini);
+  FDAMDFeConfig.GravarIni(Ini);
 end;
 
 procedure TLibMDFeConfig.ClasseParaComponentes;
@@ -207,6 +204,102 @@ begin
 
   if Assigned(Owner) then
     TACBrLibMDFe(Owner).MDFeDM.AplicarConfiguracoes;
+end;
+
+procedure TLibMDFeConfig.ImportarIni(FIni: TCustomIniFile);
+Var
+  AuxStr: String;
+  Ok: Boolean;
+begin
+  with MDFe.Certificados do
+  begin
+    //Sessão Certificado
+    ArquivoPFX := FIni.ReadString(CSecCertificado, CKeyArquivoPFX, ArquivoPFX);
+    NumeroSerie := FIni.ReadString(CSecCertificado, CKeyNumeroSerie, NumeroSerie);
+
+    AuxStr := '';
+    AuxStr := FIni.ReadString(CSecCertificado, CKeySenha, '');
+    if NaoEstaVazio(AuxStr) then
+      Senha := AuxStr;
+  end;
+
+  with MDFe.Geral do
+  begin
+    //Sessão Certificado
+    SSLCryptLib := TSSLCryptLib(FIni.ReadInteger(CSecCertificado, CKeyCryptLib, Integer(SSLCryptLib)));
+    SSLHttpLib := TSSLHttpLib(FIni.ReadInteger(CSecCertificado, CKeyHttpLib, Integer(SSLHttpLib)));
+    SSLXmlSignLib := TSSLXmlSignLib(FIni.ReadInteger(CSecCertificado, CKeyXmlSignLib, Integer(SSLXmlSignLib)));
+
+    //ACBrNFeMonitor
+    RetirarAcentos := FIni.ReadBool(CSecACBrNFeMonitor, CKeyRetirarAcentos,RetirarAcentos);
+    ValidarDigest := FIni.ReadBool(CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest);
+
+    //Webservices
+    FormaEmissao := TpcnTipoEmissao(FIni.ReadInteger(CSecWebService, CKeyFormaEmissaoMDFe, Integer(FormaEmissao)));
+    VersaoDF := StrToVersaoMDFe(Ok, FIni.ReadString(CSecWebService, CKeyVersaoMDFe, VersaoMDFeToStr(VersaoDF)));
+  end;
+
+
+  with MDFe.Arquivos do
+  begin
+    //ACBrNFeMonitor
+    IniServicos := FIni.ReadString(CSecACBrNFeMonitor, CKeyArquivoWebServicesMDFe, IniServicos);
+
+    //Arquivos
+    Salvar := FIni.ReadBool(CSecArquivos, CKeyArquivosSalvar, Salvar);
+    SepararPorMes := FIni.ReadBool(CSecArquivos, CKeyArquivosPastaMensal, SepararPorMes);
+    SepararPorCNPJ := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorCNPJ, SepararPorCNPJ);
+    SepararPorModelo := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorModelo, SepararPorModelo);
+    SepararPorModelo := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorModelo, SepararPorModelo);
+    AdicionarLiteral := FIni.ReadBool(CSecArquivos, CKeyArquivosAddLiteral, AdicionarLiteral);
+    SalvarApenasMDFeProcessados := FIni.ReadBool(CSecArquivos, CKeyArquivosSalvarApenasNFesAutorizadas, SalvarApenasMDFeProcessados);
+    NormatizarMunicipios := FIni.ReadBool(CSecArquivos, CKeyArquivosNormatizarMunicipios, NormatizarMunicipios);
+    EmissaoPathMDFe := FIni.ReadBool(CSecArquivos, CKeyArquivosEmissaoPathNFe, EmissaoPathMDFe);
+    PathEvento := FIni.ReadString(CSecArquivos, CKeyArquivosPathEvento, PathEvento);
+
+    AuxStr := FIni.ReadString(CSecArquivos, CKeyArquivosPathSchemasDFe, '');
+    if NaoEstaVazio(AuxStr) then
+      PathSchemas := PathWithDelim(AuxStr) + 'MDFe';
+
+    with DownloadDFe do
+    begin
+      SepararPorNome := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorNome, SepararPorNome);
+      PathDownload := FIni.ReadString(CSecArquivos, CKeyArquivosPathDownload, PathDownload);
+    end;
+  end;
+
+  with MDFe.WebServices do
+  begin
+    // ACBrNFeMonitor
+    TimeOut := FIni.ReadInteger(CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeOut);
+
+    // Certificado
+    SSLType := TSSLType(FIni.ReadInteger(CSecCertificado, CKeySSLType, Integer(SSLType)));
+
+    //Webservices
+    Ambiente := TpcnTipoAmbiente(FIni.ReadInteger(CSecWebService, CKeyAmbiente, Integer(Ambiente)));
+    UF := FIni.ReadString(CSecWebService, CKeyUF, UF);
+    AjustaAguardaConsultaRet := FIni.ReadBool(CSecWebService, CKeyAjustarAut, AjustaAguardaConsultaRet);
+    AguardarConsultaRet := FIni.ReadInteger(CSecWebService, CKeyAguardar, AguardarConsultaRet);
+    Tentativas := FIni.ReadInteger(CSecWebService, CKeyTentativas, Tentativas);
+    IntervaloTentativas := FIni.ReadInteger(CSecWebService, CKeyWebServiceIntervalo, IntervaloTentativas);
+
+    with TimeZoneConf do
+    begin
+      ModoDeteccao := TTimeZoneModoDeteccao(FIni.ReadInteger(CSecWebService, CKeyTimeZoneMode, Integer(ModoDeteccao)));
+      TimeZoneStr := FIni.ReadString(CSecWebService, CKeyTimeZoneStr, TimeZoneStr);
+    end;
+  end;
+
+  with MDFe.RespTec do
+  begin
+    // RespTecnico
+    IdCSRT := FIni.ReadInteger(CSecRespTecnico, CKeyidCSRT, IdCSRT);
+    CSRT := FIni.ReadString(CSecRespTecnico, CKeyCSRT, CSRT);
+  end;
+
+  //Impressão
+  DAMDFe.Import(FIni);
 end;
 
 procedure TLibMDFeConfig.Travar;

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using ACBrLib.Core;
+using ACBrLib.Core.DFe;
 
 namespace ACBrLib.MDFe
 {
@@ -45,6 +47,18 @@ namespace ACBrLib.MDFe
             public delegate int MDFE_CarregarINI(string eArquivoOuIni);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_ObterXml(int AIndex, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_GravarXml(int AIndex, string eNomeArquivo, string ePathArquivo);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_ObterIni(int AIndex, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_GravarIni(int AIndex, string eNomeArquivo, string ePathArquivo);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int MDFE_CarregarEventoXML(string eArquivoOuXml);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -69,6 +83,13 @@ namespace ACBrLib.MDFe
             public delegate int MDFE_VerificarAssinatura(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
+                int ATpEmi, string AEmissao, string CPFCNPJ, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_ObterCertificados(StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int MDFE_StatusServico(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -86,6 +107,12 @@ namespace ACBrLib.MDFe
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int MDFE_EnviarEvento(int alote, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_EncerrarMDFe(string eChaveOuMDFe, string eDtEnc, string cMunicipioDescarga, string nCNPJ, string nProtocolo, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int MDFE_ConsultaMDFeNaoEnc(string nCNPJ, StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int MDFE_DistribuicaoDFePorUltNSU(int acUFAutor, string eCnpjcpf, string eultNsu, StringBuilder buffer, ref int bufferSize);
@@ -120,7 +147,7 @@ namespace ACBrLib.MDFe
         #region Constructors
 
         public ACBrMDFe(string eArqConfig = "", string eChaveCrypt = "") :
-            base(Environment.Is64BitProcess ? "ACBrMDFe64.dll" : "ACBrMDFe32.dll")
+            base("ACBrMDFe64.dll", "ACBrMDFe32.dll")
         {
             var inicializar = GetMethod<Delegates.MDFE_Inicializar>();
             var ret = ExecuteMethod(() => inicializar(ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
@@ -228,6 +255,48 @@ namespace ACBrLib.MDFe
             CheckResult(ret);
         }
 
+        public string ObterXml(int aIndex)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.MDFE_ObterXml>();
+            var ret = ExecuteMethod(() => method(aIndex, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public void GravarXml(int aIndex, string eNomeArquivo = "", string ePathArquivo = "")
+        {
+            var method = GetMethod<Delegates.MDFE_GravarXml>();
+            var ret = ExecuteMethod(() => method(aIndex, ToUTF8(eNomeArquivo), ToUTF8(ePathArquivo)));
+
+            CheckResult(ret);
+        }
+
+        public string ObterIni(int aIndex)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.MDFE_ObterIni>();
+            var ret = ExecuteMethod(() => method(aIndex, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public void GravarIni(int aIndex, string eNomeArquivo = "", string ePathArquivo = "")
+        {
+            var method = GetMethod<Delegates.MDFE_GravarIni>();
+            var ret = ExecuteMethod(() => method(aIndex, ToUTF8(eNomeArquivo), ToUTF8(ePathArquivo)));
+
+            CheckResult(ret);
+        }
+
         public void CarregarEventoXML(string eArquivoOuXml)
         {
             var method = GetMethod<Delegates.MDFE_CarregarEventoXML>();
@@ -302,6 +371,36 @@ namespace ACBrLib.MDFe
             return ProcessResult(buffer, bufferLen);
         }
 
+        public string GerarChave(int aCodigoUf, int aCodigoNumerico, int aModelo, int aSerie, int aNumero,
+            int aTpEmi, DateTime aEmissao, string acpfcnpj)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.MDFE_GerarChave>();
+            var ret = ExecuteMethod(() => method(aCodigoUf, aCodigoNumerico, aModelo, aSerie, aNumero,
+                aTpEmi, aEmissao.Date.ToString("dd/MM/yyyy"), ToUTF8(acpfcnpj),
+                buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public InfoCertificado[] ObterCertificados()
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.MDFE_ObterCertificados>();
+            var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var certificados = ProcessResult(buffer, bufferLen).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
+        }
+
         public string StatusServico()
         {
             var bufferLen = BUFFER_LEN;
@@ -374,6 +473,33 @@ namespace ACBrLib.MDFe
 
             var method = GetMethod<Delegates.MDFE_EnviarEvento>();
             var ret = ExecuteMethod(() => method(aLote, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string EncerrarMDFe(string eChaveOuMDFe, DateTime eDtEnc, string cMunicipioDescarga, string nCNPJ = "", string nProtocolo = "")
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.MDFE_EncerrarMDFe>();
+            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuMDFe), ToUTF8(eDtEnc.ToString("dd/MM/yyyy")), ToUTF8(cMunicipioDescarga),
+                                                 ToUTF8(nCNPJ), ToUTF8(nProtocolo), buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultaMDFeNaoEnc(string cnpj)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.MDFE_ConsultaMDFeNaoEnc>();
+            var ret = ExecuteMethod(() => method(ToUTF8(cnpj), buffer, ref bufferLen));
 
             CheckResult(ret);
 
@@ -486,6 +612,10 @@ namespace ACBrLib.MDFe
             AddMethod<Delegates.MDFE_ConfigGravarValor>("MDFE_ConfigGravarValor");
             AddMethod<Delegates.MDFE_CarregarXML>("MDFE_CarregarXML");
             AddMethod<Delegates.MDFE_CarregarINI>("MDFE_CarregarINI");
+            AddMethod<Delegates.MDFE_ObterXml>("MDFE_ObterXml");
+            AddMethod<Delegates.MDFE_GravarXml>("MDFE_GravarXml");
+            AddMethod<Delegates.MDFE_ObterIni>("MDFE_ObterIni");
+            AddMethod<Delegates.MDFE_GravarIni>("MDFE_GravarIni");
             AddMethod<Delegates.MDFE_CarregarEventoXML>("MDFE_CarregarEventoXML");
             AddMethod<Delegates.MDFE_CarregarEventoINI>("MDFE_CarregarEventoINI");
             AddMethod<Delegates.MDFE_LimparLista>("MDFE_LimparLista");
@@ -494,12 +624,16 @@ namespace ACBrLib.MDFe
             AddMethod<Delegates.MDFE_Validar>("MDFE_Validar");
             AddMethod<Delegates.MDFE_ValidarRegrasdeNegocios>("MDFE_ValidarRegrasdeNegocios");
             AddMethod<Delegates.MDFE_VerificarAssinatura>("MDFE_VerificarAssinatura");
+            AddMethod<Delegates.MDFE_GerarChave>("MDFE_GerarChave");
+            AddMethod<Delegates.MDFE_ObterCertificados>("MDFE_ObterCertificados");
             AddMethod<Delegates.MDFE_StatusServico>("MDFE_StatusServico");
             AddMethod<Delegates.MDFE_Consultar>("MDFE_Consultar");
             AddMethod<Delegates.MDFE_Enviar>("MDFE_Enviar");
             AddMethod<Delegates.MDFE_ConsultarRecibo>("MDFE_ConsultarRecibo");
             AddMethod<Delegates.MDFE_Cancelar>("MDFE_Cancelar");
             AddMethod<Delegates.MDFE_EnviarEvento>("MDFE_EnviarEvento");
+            AddMethod<Delegates.MDFE_EncerrarMDFe>("MDFE_EncerrarMDFe");
+            AddMethod<Delegates.MDFE_ConsultaMDFeNaoEnc>("MDFE_ConsultaMDFeNaoEnc");
             AddMethod<Delegates.MDFE_DistribuicaoDFePorUltNSU>("MDFE_DistribuicaoDFePorUltNSU");
             AddMethod<Delegates.MDFE_DistribuicaoDFePorNSU>("MDFE_DistribuicaoDFePorNSU");
             AddMethod<Delegates.MDFE_DistribuicaoDFePorChave>("MDFE_DistribuicaoDFePorChave");

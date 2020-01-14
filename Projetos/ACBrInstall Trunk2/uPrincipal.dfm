@@ -1043,6 +1043,44 @@ object frmPrincipal: TfrmPrincipal
         ParentFont = False
       end
     end
+    object wizPgSelectIDEs: TJvWizardInteriorPage
+      Header.ParentFont = False
+      Header.Title.Color = clNone
+      Header.Title.Text = 'Escolha as IDEs'
+      Header.Title.Anchors = [akLeft, akTop, akRight]
+      Header.Title.Font.Charset = DEFAULT_CHARSET
+      Header.Title.Font.Color = clWindowText
+      Header.Title.Font.Height = -16
+      Header.Title.Font.Name = 'Tahoma'
+      Header.Title.Font.Style = [fsBold]
+      Header.Subtitle.Color = clNone
+      Header.Subtitle.Text = 'Escolha todas as IDEs em que o ACBr deve ser instalado.'
+      Header.Subtitle.Anchors = [akLeft, akTop, akRight, akBottom]
+      Header.Subtitle.Font.Charset = DEFAULT_CHARSET
+      Header.Subtitle.Font.Color = clWindowText
+      Header.Subtitle.Font.Height = -13
+      Header.Subtitle.Font.Name = 'Tahoma'
+      Header.Subtitle.Font.Style = []
+      Color = clWhite
+      Caption = 'Selecione as IDEs'
+      OnNextButtonClick = wizPgSelectIDEsNextButtonClick
+      object clbDelphiVersion: TCheckListBox
+        Left = 6
+        Top = 72
+        Width = 539
+        Height = 417
+        Color = clBtnFace
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ItemHeight = 19
+        ParentFont = False
+        TabOrder = 0
+        OnClick = clbDelphiVersionClick
+      end
+    end
     object wizPgConfiguracao: TJvWizardInteriorPage
       Header.Visible = False
       Header.ParentFont = False
@@ -1067,36 +1105,9 @@ object frmPrincipal: TfrmPrincipal
       Color = clWhite
       Caption = 'Configura'#231#245'es'
       OnNextButtonClick = wizPgConfiguracaoNextButtonClick
-      object Label4: TLabel
-        Left = 17
-        Top = 68
-        Width = 84
-        Height = 13
-        Caption = 'Vers'#245'es do delphi'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label5: TLabel
-        Left = 195
-        Top = 50
-        Width = 52
-        Height = 13
-        Caption = 'Plataforma'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        Visible = False
-      end
       object Label2: TLabel
-        Left = 17
-        Top = 13
+        Left = 6
+        Top = 6
         Width = 321
         Height = 13
         Caption = 
@@ -1110,8 +1121,8 @@ object frmPrincipal: TfrmPrincipal
         ParentFont = False
       end
       object btnSelecDirInstall: TSpeedButton
-        Left = 510
-        Top = 27
+        Left = 499
+        Top = 19
         Width = 26
         Height = 24
         Hint = 'Clique para procurar pelo diret'#243'rio onde deseja instalar'
@@ -1120,90 +1131,26 @@ object frmPrincipal: TfrmPrincipal
         ShowHint = True
         OnClick = btnSelecDirInstallClick
       end
-      object Label8: TLabel
-        Left = 211
-        Top = 111
-        Width = 316
-        Height = 13
-        Caption = 'Nota : A suite ACBr n'#227'o est'#225' 100% compativel com o C++ Builder'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clRed
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
       object Label22: TLabel
-        Left = 17
-        Top = 461
-        Width = 517
-        Height = 26
+        Left = 6
+        Top = 459
+        Width = 525
+        Height = 34
         AutoSize = False
         Caption = 
-          'NOTA: Seguindo o aviso feito no f'#243'rum sobre n'#227'o suportar vers'#245'es' +
-          ' n'#227'o UNICODE, vers'#245'es pr'#233' Delphi 2009 n'#227'o ser'#227'o mais suportadas,' +
-          ' atualize sua vers'#227'o do Delphi se necess'#225'rio.'
+          'NOTA: Se voc'#234' utiliza uma vers'#227'o pr'#233' Delphi 2009, por favor atua' +
+          'lize seu Delphi ou mude para Lazarus. '
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clRed
-        Font.Height = -11
+        Font.Height = -13
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         WordWrap = True
       end
-      object Label23: TLabel
-        Left = 373
-        Top = 50
-        Width = 93
-        Height = 13
-        Caption = 'ComboBox Invisivel'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        Visible = False
-      end
-      object edtDelphiVersion: TComboBox
-        Left = 373
-        Top = 66
-        Width = 172
-        Height = 21
-        Style = csDropDownList
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 2
-        Visible = False
-        OnChange = edtDelphiVersionChange
-      end
-      object edtPlatform: TComboBox
-        Left = 195
-        Top = 66
-        Width = 172
-        Height = 21
-        Style = csDropDownList
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ItemIndex = 0
-        ParentFont = False
-        TabOrder = 1
-        Text = 'Win32'
-        Visible = False
-        Items.Strings = (
-          'Win32'
-          'Win64')
-      end
       object edtDirDestino: TEdit
-        Left = 17
-        Top = 29
+        Left = 6
+        Top = 22
         Width = 487
         Height = 21
         Font.Charset = DEFAULT_CHARSET
@@ -1215,121 +1162,140 @@ object frmPrincipal: TfrmPrincipal
         TabOrder = 0
         Text = 'C:\ACBr'
       end
-      object rdgDLL: TRadioGroup
-        Left = 195
-        Top = 329
-        Width = 350
-        Height = 126
-        Caption = 'Local para onde ser'#227'o copiadas as DLL'#39's'
-        ItemIndex = 0
-        Items.Strings = (
-          'Diret'#243'rio system do Windows (Recomendado)'
-          'Diret'#243'rio bin'#225'rio do Delphi'
-          'N'#227'o copiar (N'#227'o recomendado)')
-        TabOrder = 14
-        OnClick = rdgDLLClick
+      object grpCompilacao: TGroupBox
+        Left = 6
+        Top = 49
+        Width = 531
+        Height = 121
+        Caption = 'Op'#231#245'es de Compila'#231#227'o do ACBr'
+        TabOrder = 1
+        object ckbRemoveOpenSSL: TCheckBox
+          Left = 6
+          Top = 59
+          Width = 379
+          Height = 17
+          Caption = 'N'#227'o utilizar OpenSSL'
+          TabOrder = 0
+        end
+        object ckbRemoveCapicom: TCheckBox
+          Left = 6
+          Top = 80
+          Width = 379
+          Height = 17
+          Caption = 'N'#227'o utilizar Capicom'
+          TabOrder = 1
+        end
+        object ckbRemoveXMLSec: TCheckBox
+          Left = 6
+          Top = 37
+          Width = 379
+          Height = 17
+          Caption = 'N'#227'o utilizar XMLSec'
+          Checked = True
+          State = cbChecked
+          TabOrder = 2
+        end
+        object ckbCargaDllTardia: TCheckBox
+          Left = 6
+          Top = 16
+          Width = 379
+          Height = 17
+          Caption = 'Usar carga de DLL tardia (em especial xmlSec)'
+          TabOrder = 3
+        end
+        object ckbRemoverCastWarnings: TCheckBox
+          Left = 6
+          Top = 101
+          Width = 379
+          Height = 17
+          Hint = 
+            'Sugerimos marcar caso n'#227'o esteja resolvendo problemas com string' +
+            's.'
+          Caption = 
+            'Remover Warnings de CAST causados por WideString/String/AnsiStri' +
+            'ng'
+          TabOrder = 4
+        end
       end
-      object ckbCopiarTodasDll: TCheckBox
-        Left = 195
-        Top = 306
-        Width = 350
-        Height = 17
-        Hint = 
-          'Copia todas as DLL'#180's "Extras" para o destino selecionado (CLX, D' +
-          'iversos, MSVCR, LibXml, etc...)'
-        Caption = 
-          'Copiar todas as DLL'#39's requeridas (exceto as marcadas '#39'n'#227'o utiliz' +
-          'ar'#39')'
-        TabOrder = 13
-      end
-      object ckbBCB: TCheckBox
-        Left = 195
-        Top = 95
-        Width = 278
-        Height = 17
-        Caption = 'Generate all C++Builder files (including package libs) '
-        TabOrder = 3
-      end
-      object chkDeixarSomenteLIB: TCheckBox
-        Left = 195
-        Top = 127
-        Width = 350
-        Height = 17
-        Caption = 'Deixar somente a pasta LibXX no Library Path do Delphi?'
-        TabOrder = 4
-      end
-      object ckbRemoverArquivosAntigos: TCheckBox
-        Left = 195
-        Top = 150
-        Width = 379
-        Height = 17
-        Caption = 'Remover arquivos antigos do disco (pode demorar bastante)'
-        TabOrder = 5
-      end
-      object clbDelphiVersion: TCheckListBox
-        Left = 17
-        Top = 84
-        Width = 172
-        Height = 371
-        Color = clBtnFace
-        ItemHeight = 13
-        TabOrder = 11
-        OnClick = clbDelphiVersionClick
-      end
-      object ckbRemoveOpenSSL: TCheckBox
-        Left = 195
-        Top = 173
-        Width = 379
-        Height = 17
-        Caption = 'N'#227'o utilizar OpenSSL'
-        TabOrder = 6
-      end
-      object ckbRemoveCapicom: TCheckBox
-        Left = 195
-        Top = 196
-        Width = 379
-        Height = 17
-        Caption = 'N'#227'o utilizar Capicom'
-        TabOrder = 7
-      end
-      object ckbCargaDllTardia: TCheckBox
-        Left = 195
-        Top = 239
-        Width = 379
-        Height = 17
-        Caption = 'Usar carga de DLL tardia nas units do OpenSSL'
-        TabOrder = 9
-      end
-      object ckbRemoverCastWarnings: TCheckBox
-        Left = 195
-        Top = 260
-        Width = 379
-        Height = 17
-        Hint = 
-          'Sugerimos marcar caso n'#227'o esteja resolvendo problemas com string' +
-          's.'
-        Caption = 
-          'Remover Warnings de CAST causados por WideString/String/AnsiStri' +
-          'ng'
-        TabOrder = 10
-      end
-      object ckbUsarArquivoConfig: TCheckBox
-        Left = 195
-        Top = 283
-        Width = 305
-        Height = 17
-        Caption = 'Usar arquivo de configura'#231#227'o (*.cfg)'
-        TabOrder = 12
-      end
-      object ckbRemoveXMLSec: TCheckBox
-        Left = 195
-        Top = 214
-        Width = 379
-        Height = 17
-        Caption = 'N'#227'o utilizar XMLSec'
-        Checked = True
-        State = cbChecked
-        TabOrder = 8
+      object grpInstalacao: TGroupBox
+        Left = 6
+        Top = 176
+        Width = 531
+        Height = 279
+        Caption = 'Op'#231#245'es de Instala'#231#227'o'
+        TabOrder = 2
+        object Label8: TLabel
+          Left = 279
+          Top = 16
+          Width = 248
+          Height = 26
+          Caption = 'BETA: A suite ACBr n'#227'o est'#225' 100% compativel com o C++ Builder'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clRed
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          WordWrap = True
+        end
+        object ckbBCB: TCheckBox
+          Left = 6
+          Top = 15
+          Width = 267
+          Height = 17
+          Caption = 'Generate all C++Builder files (including package libs) '
+          TabOrder = 0
+        end
+        object chkDeixarSomenteLIB: TCheckBox
+          Left = 6
+          Top = 45
+          Width = 350
+          Height = 17
+          Caption = 'Deixar somente a pasta LibXX no Library Path do Delphi?'
+          TabOrder = 1
+        end
+        object ckbRemoverArquivosAntigos: TCheckBox
+          Left = 6
+          Top = 68
+          Width = 379
+          Height = 17
+          Caption = 'Remover arquivos antigos do disco (pode demorar bastante)'
+          TabOrder = 2
+        end
+        object ckbUsarArquivoConfig: TCheckBox
+          Left = 6
+          Top = 92
+          Width = 305
+          Height = 17
+          Caption = 'Usar arquivo de configura'#231#227'o (*.cfg)'
+          TabOrder = 3
+        end
+        object ckbCopiarTodasDll: TCheckBox
+          Left = 6
+          Top = 137
+          Width = 350
+          Height = 17
+          Hint = 
+            'Copia todas as DLL'#180's "Extras" para o destino selecionado (CLX, D' +
+            'iversos, MSVCR, LibXml, etc...)'
+          Caption = 
+            'Copiar todas as DLL'#39's requeridas (exceto as marcadas '#39'n'#227'o utiliz' +
+            'ar'#39')'
+          TabOrder = 4
+        end
+        object rdgDLL: TRadioGroup
+          Left = 6
+          Top = 160
+          Width = 350
+          Height = 105
+          Caption = 'Local para onde ser'#227'o copiadas as DLL'#39's'
+          ItemIndex = 0
+          Items.Strings = (
+            'Diret'#243'rio system do Windows (Recomendado)'
+            'Diret'#243'rio bin'#225'rio do Delphi'
+            'N'#227'o copiar (N'#227'o recomendado)')
+          TabOrder = 5
+        end
       end
     end
     object wizPgPacotes: TJvWizardInteriorPage
@@ -1352,6 +1318,7 @@ object frmPrincipal: TfrmPrincipal
       Header.Subtitle.Font.Name = 'Tahoma'
       Header.Subtitle.Font.Style = []
       Caption = 'Pacotes'
+      OnNextButtonClick = wizPgPacotesNextButtonClick
       inline framePacotes1: TframePacotes
         Left = 0
         Top = 0
@@ -1375,91 +1342,6 @@ object frmPrincipal: TfrmPrincipal
           Width = 548
           Height = 452
         end
-      end
-    end
-    object wizPgObterFontes: TJvWizardInteriorPage
-      Header.Visible = False
-      Header.ParentFont = False
-      Header.Title.Color = clNone
-      Header.Title.Text = 'Obtendo os fontes atualizados'
-      Header.Title.Anchors = [akLeft, akTop, akRight]
-      Header.Title.Font.Charset = DEFAULT_CHARSET
-      Header.Title.Font.Color = clWindowText
-      Header.Title.Font.Height = -16
-      Header.Title.Font.Name = 'Arial'
-      Header.Title.Font.Style = [fsBold]
-      Header.Subtitle.Color = clNone
-      Header.Subtitle.Text = 
-        'O assistente far'#225' o download ou atualiza'#231#227'o dos fontes diretamen' +
-        'te do reposit'#243'rio do ACBr neste momento.'
-      Header.Subtitle.Anchors = [akLeft, akTop, akRight, akBottom]
-      Header.Subtitle.Font.Charset = DEFAULT_CHARSET
-      Header.Subtitle.Font.Color = clWindowText
-      Header.Subtitle.Font.Height = -11
-      Header.Subtitle.Font.Name = 'Arial'
-      Header.Subtitle.Font.Style = []
-      Color = clWhite
-      Caption = 'Reposit'#243'rio'
-      OnEnterPage = wizPgObterFontesEnterPage
-      OnNextButtonClick = wizPgObterFontesNextButtonClick
-      object Label1: TLabel
-        Left = 77
-        Top = 177
-        Width = 91
-        Height = 13
-        Caption = 'URL do  reposit'#243'rio'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clMaroon
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object lblInfoObterFontes: TLabel
-        Left = 77
-        Top = 122
-        Width = 103
-        Height = 13
-        Caption = 'Texto de informa'#231#227'o.'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clMaroon
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object btnSVNCheckoutUpdate: TSpeedButton
-        Left = 365
-        Top = 220
-        Width = 106
-        Height = 25
-        Caption = 'Checkout'
-        OnClick = btnSVNCheckoutUpdateClick
-      end
-      object edtURL: TEdit
-        Left = 77
-        Top = 193
-        Width = 394
-        Height = 21
-        Enabled = False
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-        Text = 'svn://svn.code.sf.net/p/acbr/code/trunk2'
-      end
-      object ckbFecharTortoise: TCheckBox
-        Left = 77
-        Top = 260
-        Width = 358
-        Height = 17
-        Caption = 
-          'Fechar automaticamente o tortoise se n'#227'o ocorrem erros ou confli' +
-          'tos?'
-        TabOrder = 1
       end
     end
     object wizPgInstalacao: TJvWizardInteriorPage
@@ -1504,7 +1386,7 @@ object frmPrincipal: TfrmPrincipal
         OnClick = btnVisualizarLogCompilacaoClick
       end
       object lstMsgInstalacao: TListBox
-        Left = 20
+        Left = 21
         Top = 72
         Width = 516
         Height = 362
@@ -1550,16 +1432,6 @@ object frmPrincipal: TfrmPrincipal
           ParentFont = False
           TabOrder = 0
         end
-      end
-      object btnWCInfo: TButton
-        Left = 166
-        Top = 463
-        Width = 140
-        Height = 25
-        Caption = 'Mostrar '#250'ltima revis'#227'o'
-        TabOrder = 3
-        WordWrap = True
-        OnClick = btnWCInfoClick
       end
     end
     object wizPgFinalizar: TJvWizardInteriorPage
@@ -1739,7 +1611,6 @@ object frmPrincipal: TfrmPrincipal
         Cursor = crHandPoint
         Animate = True
         Center = True
-        FrameIndex = 5
         Image.Data = {
           688B00004749463839613F012800F70000FFFFFFFFFFE5FFFFCCF7FAFDFFFF99
           FFF7B9FFF9A9FFFA84EAFA9EFFF573FFF74AFFFF00FFF268F2F478FFF456E9F5

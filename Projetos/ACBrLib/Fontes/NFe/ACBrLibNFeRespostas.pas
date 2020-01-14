@@ -40,7 +40,7 @@ interface
 uses
   SysUtils, Classes, contnrs,
   pcnEventoNFe, pcnRetEnvEventoNFe, pcnRetConsSitNFe,
-  ACBrLibResposta, ACBrNFe;
+  ACBrLibResposta, ACBrLibConsReciDFe, ACBrNFe;
 
 type
 
@@ -131,18 +131,24 @@ type
   private
     FtMed: integer;
     FnRec: string;
+    FNProt: string;
+    FItemRetorno: TRetornoItemResposta;
+
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+    destructor Destroy; override;
 
     procedure Processar(const ACBrNFe: TACBrNFe); override;
 
   published
    property TMed: integer read FtMed write FtMed;
    property NRec: string read FnRec write FnRec;
+   property NProt: String read FNProt write FNProt;
+   property Retorno: TRetornoItemResposta read FItemRetorno;
+
   end;
 
   { TCancelamentoResposta }
-
   TCancelamentoResposta = class(TLibNFeServiceResposta)
   private
     FchNFe: string;
@@ -172,7 +178,6 @@ type
   end;
 
   { TEventoItemResposta }
-
   TEventoItemResposta = class(TACBrLibRespostaBase)
   private
     FtpAmb: String;
@@ -219,7 +224,6 @@ type
   end;
 
   { TEventoResposta }
-
   TEventoResposta = class(TLibNFeServiceResposta)
   private
     FidLote: Integer;
@@ -491,7 +495,6 @@ uses
   ACBrUtil, ACBrLibNFeConsts;
 
 { TLibNFeResposta }
-
 constructor TLibNFeResposta.Create(const ASessao: String;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -499,7 +502,6 @@ begin
 end;
 
 { TLibNFeServiceResposta }
-
 constructor TLibNFeServiceResposta.Create(const ASessao: String;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -507,7 +509,6 @@ begin
 end;
 
 { TConsultaNFeChNFePendResposta }
-
 constructor TConsultaNFeChNFePendResposta.Create(const AId, AIndex, ASIndex: Integer;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -521,7 +522,6 @@ begin
 end;
 
 { TConsultaNFeRetEventoResposta }
-
 constructor TConsultaNFeRetEventoResposta.Create(const AId, AIndex: Integer;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -583,14 +583,13 @@ begin
 
   for i := 0 to ARetInfEvento.chNFePend.Count - 1  do
    begin
-     Item := TConsultaNFeChNFePendResposta.Create(FAId, FAIndex, i+1, Tipo, FFormato);
+     Item := TConsultaNFeChNFePendResposta.Create(FAId, FAIndex, i+1, Tipo, Formato);
      Item.Processar(ARetInfEvento.chNFePend.Items[i]);
      FItems.Add(Item);
    end;
 end;
 
 { TConsultaNFeItemPedidoResposta }
-
 constructor TConsultaNFeItemPedidoResposta.Create(const AId, AIndex: Integer;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -604,7 +603,6 @@ begin
 end;
 
 { TConsultaNFeDetEventoResposta }
-
 constructor TConsultaNFeDetEventoResposta.Create(const AId: Integer;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -666,7 +664,7 @@ begin
 
    for i := 0 to AEvento.itemPedido.Count - 1  do
    begin
-     Item := TConsultaNFeItemPedidoResposta.Create(FId, i+1, Tipo, FFormato);
+     Item := TConsultaNFeItemPedidoResposta.Create(FId, i+1, Tipo, Formato);
      Item.Processar(AEvento.itemPedido.Items[i]);
      FItems.Add(Item);
    end;
@@ -674,12 +672,11 @@ begin
 end;
 
 { TConsultaNFeProcEventoResposta }
-
 constructor TConsultaNFeProcEventoResposta.Create(const AId: Integer;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create('ProcEventoNFe' + Trim(IntToStrZero(AId, 3)), ATipo, AFormato);
-  FDetEvento := TConsultaNFeDetEventoResposta.Create(AId, ATipo, FFormato);
+  FDetEvento := TConsultaNFeDetEventoResposta.Create(AId, ATipo, Formato);
   FRetEventos := TObjectList.Create;
   FID := AId;
 end;
@@ -730,14 +727,13 @@ begin
 
    for i := 0 to AEvento.RetEventoNFe.retEvento.Count - 1  do
    begin
-     RetEvento := TConsultaNFeRetEventoResposta.Create(FId, i+1, Tipo, FFormato);
+     RetEvento := TConsultaNFeRetEventoResposta.Create(FId, i+1, Tipo, Formato);
      RetEvento.Processar(AEvento.RetEventoNFe.retEvento.Items[i].RetInfEvento);
      FRetEventos.Add(RetEvento);
    end;
 end;
 
 { TConsultaNFeInfCanResposta }
-
 constructor TConsultaNFeInfCanResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespConsultaInfCan, ATipo, AFormato);
@@ -759,7 +755,6 @@ begin
 end;
 
 { TEventoItemResposta }
-
 constructor TEventoItemResposta.Create(const ASessao: String;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -787,7 +782,6 @@ begin
 end;
 
 { TEventoResposta }
-
 constructor TEventoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespEvento, ATipo, AFormato);
@@ -836,7 +830,7 @@ begin
 
     for I := 0 to EventoRetorno.retEvento.Count - 1 do
     begin
-      Item := TEventoItemResposta.Create('Evento' + Trim(IntToStrZero(I +1, 3)), Tipo, FFormato);
+      Item := TEventoItemResposta.Create('Evento' + Trim(IntToStrZero(I +1, 3)), Tipo, Formato);
       Item.Processar(EventoRetorno.retEvento.Items[i].RetInfEvento);
       FItems.Add(Item);
     end;
@@ -844,7 +838,6 @@ begin
 end;
 
 { TCancelamentoResposta }
-
 constructor TCancelamentoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespCancelamento, ATipo, AFormato);
@@ -875,14 +868,20 @@ begin
 end;
 
 { TEnvioResposta }
-
 constructor TEnvioResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespEnvio, ATipo, AFormato);
 end;
 
+destructor TEnvioResposta.Destroy;
+begin
+  if Assigned(FItemRetorno) then FreeAndNil(FItemRetorno);
+end;
+
 procedure TEnvioResposta.Processar(const ACBrNFe: TACBrNFe);
 begin
+  if Assigned(FItemRetorno) then FreeAndNil(FItemRetorno);
+
   with ACBrNFe.WebServices do
   begin
     Versao := Enviar.versao;
@@ -895,11 +894,26 @@ begin
     DhRecbto := Enviar.dhRecbto;
     Tmed := Enviar.TMed;
     Msg := Enviar.Msg;
+    NProt := Enviar.Protocolo;
+  end;
+
+  if (ACBrNFe.WebServices.Enviar.Sincrono) and (ACBrNFe.NotasFiscais.Count > 0) then
+  begin
+    FItemRetorno := TRetornoItemResposta.Create('NFe' + Trim(ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.chNFe), Tipo, Formato);
+    FItemRetorno.Id := 'ID' + ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.nProt;
+    FItemRetorno.tpAmb := TpAmbToStr(ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.tpAmb);
+    FItemRetorno.verAplic := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.verAplic;
+    FItemRetorno.chDFe := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.chNFe;
+    FItemRetorno.dhRecbto := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.dhRecbto;
+    FItemRetorno.nProt := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.nProt;
+    FItemRetorno.digVal := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.digVal;
+    FItemRetorno.cStat := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.cStat;
+    FItemRetorno.xMotivo := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.xMotivo;
+    FItemRetorno.XML := ACBrNFe.NotasFiscais.Items[0].NFe.procNFe.XML_prot;
   end;
 end;
 
 { TStatusServicoResposta }
-
 constructor TStatusServicoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespStatus, ATipo, AFormato);
@@ -924,7 +938,6 @@ begin
 end;
 
 { TInutilizarNFeResposta }
-
 constructor TInutilizarNFeResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespInutilizacao, ATipo, AFormato);
@@ -950,7 +963,6 @@ begin
 end;
 
 { TConsultaNFeResposta }
-
 constructor TConsultaNFeResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespConsulta, ATipo, AFormato);
@@ -1022,7 +1034,7 @@ begin
   begin
     for I:= 0 to Consulta.procEventoNFe.Count-1 do
     begin
-      ProcEvento := TConsultaNFeProcEventoResposta.Create(I + 1, Tipo, FFormato);
+      ProcEvento := TConsultaNFeProcEventoResposta.Create(I + 1, Tipo, Formato);
       ProcEvento.Processar(Consulta.procEventoNFe.Items[I]);
       FEventos.Add(ProcEvento);
     end;

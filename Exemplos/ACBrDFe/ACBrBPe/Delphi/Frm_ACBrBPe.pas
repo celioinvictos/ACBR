@@ -217,6 +217,7 @@ type
     cbVersaoDF: TComboBox;
     btnStatusServ: TButton;
     btnAlteracaoPoltrona: TButton;
+    chkLogoLateral: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathBPeClick(Sender: TObject);
@@ -940,6 +941,7 @@ begin
   MemoDados.Lines.Add('cStat: ' + IntToStr(ACBrBPe1.WebServices.Enviar.cStat));
   MemoDados.Lines.Add('cUF: ' + IntToStr(ACBrBPe1.WebServices.Enviar.cUF));
   MemoDados.Lines.Add('xMotivo: ' + ACBrBPe1.WebServices.Enviar.xMotivo);
+  MemoDados.Lines.Add('Protocolo: ' + ACBrBPe1.WebServices.Enviar.Protocolo);
   (*
   ACBrBPe1.WebServices.Retorno.BPeRetorno.ProtBPe.Items[0].tpAmb
   ACBrBPe1.WebServices.Retorno.BPeRetorno.ProtBPe.Items[0].verAplic
@@ -1677,6 +1679,7 @@ begin
     INI.WriteInteger('PosPrinter', 'EspacoLinhas',      seEspLinhas.Value);
     INI.WriteInteger('PosPrinter', 'LinhasEntreCupons', seLinhasPular.Value);
     Ini.WriteBool(   'PosPrinter', 'CortarPapel',       cbCortarPapel.Checked );
+    Ini.WriteBool(   'PosPrinter', 'LogoLateral',       chkLogoLateral.Checked );
 
     ConfigurarComponente;
   finally
@@ -1807,6 +1810,7 @@ begin
     seEspLinhas.Value             := INI.ReadInteger('PosPrinter', 'EspacoLinhas',      ACBrPosPrinter1.EspacoEntreLinhas);
     seLinhasPular.Value           := INI.ReadInteger('PosPrinter', 'LinhasEntreCupons', ACBrPosPrinter1.LinhasEntreCupons);
     cbCortarPapel.Checked         := Ini.ReadBool(   'PosPrinter', 'CortarPapel',       True);
+    chkLogoLateral.Checked        := Ini.ReadBool(   'PosPrinter', 'LogoLateral',       False);
 
     ACBrPosPrinter1.Device.ParamsString := INI.ReadString('PosPrinter', 'ParamsString', '');
 
@@ -1819,6 +1823,7 @@ end;
 procedure TfrmACBrBPe.ConfigurarComponente;
 var
   Ok: Boolean;
+  PathMensal: string;
 begin
   ACBrBPe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrBPe1.Configuracoes.Certificados.Senha       := edtSenha.Text;
@@ -1887,16 +1892,18 @@ begin
     SalvarEvento     := cbxSalvaPathEvento.Checked;
     SepararPorCNPJ   := cbxSepararPorCNPJ.Checked;
     SepararPorModelo := cbxSepararPorModelo.Checked;
-    PathSalvar       := edtPathLogs.Text;
     PathSchemas      := edtPathSchemas.Text;
     PathBPe          := edtPathBPe.Text;
     PathEvento       := edtPathEvento.Text;
+    PathMensal       := GetPathBPe(0);
+    PathSalvar       := PathMensal;
   end;
 
-  if ACBrBPe1.DABPe <> nil then
+  if ACBrBPe1.DABPE <> nil then
   begin
-    ACBrBPe1.DABPe.TipoDABPe := StrToTpImp(OK, IntToStr(rgTipoDaBPe.ItemIndex + 1));
-    ACBrBPe1.DABPe.Logo      := edtLogoMarca.Text;
+    ACBrBPe1.DABPE.TipoDABPe := StrToTpImp(OK, IntToStr(rgTipoDaBPe.ItemIndex + 1));
+    ACBrBPe1.DABPE.Logo      := edtLogoMarca.Text;
+    ACBrBPe1.DABPE.ImprimeLogoLateral := chkLogoLateral.Checked;
   end;
 end;
 
@@ -1936,6 +1943,9 @@ begin
   ACBrPosPrinter1.LinhasEntreCupons  := seLinhasPular.Value;
   ACBrPosPrinter1.EspacoEntreLinhas  := seEspLinhas.Value;
   ACBrPosPrinter1.CortaPapel         := cbCortarPapel.Checked;
+
+  ACBrPosPrinter1.ApagarLogo(32, 32);
+  ACBrPosPrinter1.GravarLogoArquivo(edtLogoMarca.Text, 32, 32);
 
   ACBrPosPrinter1.Ativar;
 end;

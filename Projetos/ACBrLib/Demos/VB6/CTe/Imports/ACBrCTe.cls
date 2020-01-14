@@ -65,6 +65,16 @@ Private Declare Function CTE_GravarXml _
                 Lib "ACBrCTe32.dll" (ByVal AIndex As Long, _
                                      ByVal eNomeArquivo As String, _
                                      ByVal ePathArquivo As String) As Long
+                                     
+Private Declare Function CTE_ObterIni _
+                Lib "ACBrCTe32.dll" (ByVal AIndex As Long, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function CTE_GravarIni _
+                Lib "ACBrCTe32.dll" (ByVal AIndex As Long, _
+                                     ByVal eNomeArquivo As String, _
+                                     ByVal ePathArquivo As String) As Long
                 
 Private Declare Function CTE_CarregarEventoXML _
                 Lib "ACBrCTe32.dll" (ByVal eArquivoOuXml As String) As Long
@@ -85,6 +95,22 @@ Private Declare Function CTE_ValidarRegrasdeNegocios _
                                      ByRef bufferSize As Long) As Long
                                      
 Private Declare Function CTE_VerificarAssinatura _
+                Lib "ACBrCTe32.dll" (ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function CTE_GerarChave _
+                Lib "ACBrCTe32.dll" (ByVal ACodigoUF As Long, _
+                                     ByVal ACodigoNumerico As Long, _
+                                     ByVal AModelo As Long, _
+                                     ByVal ASerie As Long, _
+                                     ByVal ANumero As Long, _
+                                     ByVal ATpEmi As Long, _
+                                     ByVal AEmissao As String, _
+                                     ByVal ACNPJCPF As String, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferLen As Long) As Long
+                                     
+Private Declare Function CTE_ObterCertificados _
                 Lib "ACBrCTe32.dll" (ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
                                     
@@ -112,7 +138,6 @@ Private Declare Function CTE_Enviar _
                 Lib "ACBrCTe32.dll" (ByVal aLote As Long, _
                                      ByVal Imprimir As Boolean, _
                                      ByVal sincrono As Boolean, _
-                                     ByVal zipado As Boolean, _
                                      ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
                                      
@@ -205,6 +230,8 @@ Private Declare Function CTE_ImprimirInutilizacaoPDF _
 Public Sub InicializarLib(Optional ByVal eArqConfig As String = "", _
                           Optional ByVal eChaveCrypt As String = "")
 
+    SetLibPath
+    
     Dim retorno As Long
 
     retorno = CTE_Inicializar(eArqConfig, eChaveCrypt)
@@ -326,6 +353,29 @@ Public Sub GravarXml(ByVal AIndex As Long, _
     CheckResult retorno
 End Sub
 
+Public Function ObterIni(ByVal AIndex As Long) As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = CTE_ObterIni(AIndex, buffer, bufferLen)
+    CheckResult retorno
+    
+    ObterIni = processResult(buffer, bufferLen)
+End Function
+
+Public Sub GravarIni(ByVal AIndex As Long, _
+                     ByVal eNomeArquivo As String, _
+                     Optional ByVal ePathArquivo As String = "")
+    Dim retorno   As Long
+    retorno = CTE_GravarIni(AIndex, eNomeArquivo, ePathArquivo)
+    CheckResult retorno
+End Sub
+
 Public Sub CarregarEventoXML(ByVal eArquivoOuXml As String)
     Dim retorno   As Long
     retorno = CTE_CarregarEventoXML(eArquivoOuXml)
@@ -390,6 +440,37 @@ Public Function VerificarAssinatura() As String
     VerificarAssinatura = processResult(buffer, bufferLen)
 End Function
 
+Public Function GerarChave(ByVal ACodigoUF As Long, ByVal ACodigoNumerico As Long, _
+                           ByVal AModelo As Long, ByVal ASerie As Long, ByVal ANumero As Long, _
+                           ByVal ATpEmi As Long, ByVal AEmissao As Date, ByVal ACNPJCPF As String) As String
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = CTE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi, _
+                             Format(AEmissao, "dd/MM/yyyy"), ACNPJCPF, buffer, bufferLen)
+    CheckResult retorno
+    
+    GerarChave = processResult(buffer, bufferLen)
+End Function
+
+Public Function ObterCertificados() As String()
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = CTE_ObterCertificados(buffer, bufferLen)
+    CheckResult retorno
+    
+    ObterCertificados = Split(processResult(buffer, bufferLen), vbCrLf)
+End Function
+
 Public Function StatusServico() As String
     Dim retorno   As Long
     Dim buffer    As String
@@ -449,8 +530,7 @@ Public Function Inutilizar(ByVal acnpj As String, ByVal aJustificativa As String
 End Function
 
 Public Function Enviar(ByVal aLote As Long, Optional ByVal Imprimir As Boolean = False, _
-                       Optional ByVal sincrono As Boolean = False, _
-                       Optional ByVal zipado As Boolean = False) As String
+                       Optional ByVal sincrono As Boolean = False) As String
     Dim retorno   As Long
     Dim buffer    As String
     Dim bufferLen As Long
@@ -458,7 +538,7 @@ Public Function Enviar(ByVal aLote As Long, Optional ByVal Imprimir As Boolean =
     bufferLen = BUFFER_LENGTH
     buffer = String$(bufferLen, " ")
     
-    retorno = CTE_Enviar(aLote, Imprimir, sincrono, zipado, buffer, bufferLen)
+    retorno = CTE_Enviar(aLote, Imprimir, sincrono, buffer, bufferLen)
     CheckResult retorno
     
     Enviar = processResult(buffer, bufferLen)
@@ -543,7 +623,7 @@ Public Function DistribuicaoDFePorChave(ByVal acUFAutor As String, ByVal eCnpjcp
     bufferLen = BUFFER_LENGTH
     buffer = String$(bufferLen, " ")
     
-    retorno = CTE_DistribuicaoDFePorNSU(acUFAutor, eCnpjcpf, echNFe, buffer, bufferLen)
+    retorno = CTE_DistribuicaoDFePorChave(acUFAutor, eCnpjcpf, echNFe, buffer, bufferLen)
     CheckResult retorno
     
     DistribuicaoDFePorChave = processResult(buffer, bufferLen)

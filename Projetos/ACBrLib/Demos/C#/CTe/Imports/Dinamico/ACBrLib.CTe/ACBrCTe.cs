@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using ACBrLib.Core;
+using ACBrLib.Core.DFe;
 
 namespace ACBrLib.CTe
 {
@@ -45,6 +47,18 @@ namespace ACBrLib.CTe
             public delegate int CTE_CarregarINI(string eArquivoOuIni);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_ObterXml(int AIndex, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_GravarXml(int AIndex, string eNomeArquivo, string ePathArquivo);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_ObterIni(int AIndex, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_GravarIni(int AIndex, string eNomeArquivo, string ePathArquivo);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int CTE_CarregarEventoXML(string eArquivoOuXml);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -69,6 +83,13 @@ namespace ACBrLib.CTe
             public delegate int CTE_VerificarAssinatura(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
+                int ATpEmi, string AEmissao, string CPFCNPJ, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_ObterCertificados(StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int CTE_StatusServico(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -82,7 +103,7 @@ namespace ACBrLib.CTe
                 int serie, int numeroInicial, int numeroFinal, StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int CTE_Enviar(int aLote, bool imprimir, StringBuilder buffer, ref int bufferSize);
+            public delegate int CTE_Enviar(int aLote, bool imprimir, bool sincrono, StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int CTE_ConsultarRecibo(string aRecibo, StringBuilder buffer, ref int bufferSize);
@@ -116,10 +137,10 @@ namespace ACBrLib.CTe
             public delegate int CTE_ImprimirPDF();
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int CTE_ImprimirEvento(string eArquivoXmlNFe, string eArquivoXmlEvento);
+            public delegate int CTE_ImprimirEvento(string eArquivoXmlCTe, string eArquivoXmlEvento);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int CTE_ImprimirEventoPDF(string eArquivoXmlNFe, string eArquivoXmlEvento);
+            public delegate int CTE_ImprimirEventoPDF(string eArquivoXmlCTe, string eArquivoXmlEvento);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int CTE_ImprimirInutilizacao(string eArquivoXml);
@@ -241,6 +262,48 @@ namespace ACBrLib.CTe
             CheckResult(ret);
         }
 
+        public string ObterXml(int aIndex)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.CTE_ObterXml>();
+            var ret = ExecuteMethod(() => method(aIndex, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public void GravarXml(int aIndex, string eNomeArquivo = "", string ePathArquivo = "")
+        {
+            var method = GetMethod<Delegates.CTE_GravarXml>();
+            var ret = ExecuteMethod(() => method(aIndex, ToUTF8(eNomeArquivo), ToUTF8(ePathArquivo)));
+
+            CheckResult(ret);
+        }
+
+        public string ObterIni(int aIndex)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.CTE_ObterIni>();
+            var ret = ExecuteMethod(() => method(aIndex, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public void GravarIni(int aIndex, string eNomeArquivo = "", string ePathArquivo = "")
+        {
+            var method = GetMethod<Delegates.CTE_GravarIni>();
+            var ret = ExecuteMethod(() => method(aIndex, ToUTF8(eNomeArquivo), ToUTF8(ePathArquivo)));
+
+            CheckResult(ret);
+        }
+
         public void CarregarEventoXML(string eArquivoOuXml)
         {
             var method = GetMethod<Delegates.CTE_CarregarEventoXML>();
@@ -315,6 +378,36 @@ namespace ACBrLib.CTe
             return ProcessResult(buffer, bufferLen);
         }
 
+        public string GerarChave(int aCodigoUf, int aCodigoNumerico, int aModelo, int aSerie, int aNumero,
+            int aTpEmi, DateTime aEmissao, string acpfcnpj)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.CTE_GerarChave>();
+            var ret = ExecuteMethod(() => method(aCodigoUf, aCodigoNumerico, aModelo, aSerie, aNumero,
+                aTpEmi, aEmissao.Date.ToString("dd/MM/yyyy"), ToUTF8(acpfcnpj),
+                buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public InfoCertificado[] ObterCertificados()
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.CTE_ObterCertificados>();
+            var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var certificados = ProcessResult(buffer, bufferLen).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
+        }
+
         public string StatusServico()
         {
             var bufferLen = BUFFER_LEN;
@@ -328,13 +421,13 @@ namespace ACBrLib.CTe
             return ProcessResult(buffer, bufferLen);
         }
 
-        public string Consultar(string eChaveOuNFe)
+        public string Consultar(string eChaveOuCTe)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
 
             var method = GetMethod<Delegates.CTE_Consultar>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuNFe), buffer, ref bufferLen));
+            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuCTe), buffer, ref bufferLen));
 
             CheckResult(ret);
 
@@ -368,13 +461,13 @@ namespace ACBrLib.CTe
             return ProcessResult(buffer, bufferLen);
         }
 
-        public string Enviar(int aLote, bool imprimir = false)
+        public string Enviar(int aLote, bool imprimir = false, bool sincrono = false)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
 
             var method = GetMethod<Delegates.CTE_Enviar>();
-            var ret = ExecuteMethod(() => method(aLote, imprimir, buffer, ref bufferLen));
+            var ret = ExecuteMethod(() => method(aLote, imprimir, sincrono, buffer, ref bufferLen));
 
             CheckResult(ret);
 
@@ -446,32 +539,32 @@ namespace ACBrLib.CTe
             return ProcessResult(buffer, bufferLen);
         }
 
-        public string DistribuicaoDFePorChave(int acUFAutor, string eCnpjcpf, string echNFe)
+        public string DistribuicaoDFePorChave(int acUFAutor, string eCnpjcpf, string echCTe)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
 
             var method = GetMethod<Delegates.CTE_DistribuicaoDFePorChave>();
-            var ret = ExecuteMethod(() => method(acUFAutor, ToUTF8(eCnpjcpf), ToUTF8(echNFe), buffer, ref bufferLen));
+            var ret = ExecuteMethod(() => method(acUFAutor, ToUTF8(eCnpjcpf), ToUTF8(echCTe), buffer, ref bufferLen));
 
             CheckResult(ret);
 
             return ProcessResult(buffer, bufferLen);
         }
 
-        public void EnviarEmail(string ePara, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
+        public void EnviarEmail(string ePara, string eArquivoCTe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
         {
             var method = GetMethod<Delegates.CTE_EnviarEmail>();
-            var ret = ExecuteMethod(() => method(ToUTF8(ePara), ToUTF8(eChaveNFe), aEnviaPDF, ToUTF8(eAssunto), ToUTF8(eCc == null ? "" : string.Join(";", eCc)),
+            var ret = ExecuteMethod(() => method(ToUTF8(ePara), ToUTF8(eArquivoCTe), aEnviaPDF, ToUTF8(eAssunto), ToUTF8(eCc == null ? "" : string.Join(";", eCc)),
                                                  ToUTF8(eAnexos == null ? "" : string.Join(";", eAnexos)), ToUTF8(eMensagem.Replace(Environment.NewLine, ";"))));
 
             CheckResult(ret);
         }
 
-        public void EnviarEmailEvento(string ePara, string eChaveEvento, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
+        public void EnviarEmailEvento(string ePara, string eArquivoEvento, string eArquivoCTe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
         {
             var method = GetMethod<Delegates.CTE_EnviarEmailEvento>();
-            var ret = ExecuteMethod(() => method(ToUTF8(ePara), ToUTF8(eChaveEvento), ToUTF8(eChaveNFe), aEnviaPDF, ToUTF8(eAssunto), ToUTF8(eCc == null ? "" : string.Join(";", eCc)),
+            var ret = ExecuteMethod(() => method(ToUTF8(ePara), ToUTF8(eArquivoEvento), ToUTF8(eArquivoCTe), aEnviaPDF, ToUTF8(eAssunto), ToUTF8(eCc == null ? "" : string.Join(";", eCc)),
                 ToUTF8(eAnexos == null ? "" : string.Join(";", eAnexos)), ToUTF8(eMensagem.Replace(Environment.NewLine, ";"))));
 
             CheckResult(ret);
@@ -495,18 +588,18 @@ namespace ACBrLib.CTe
             CheckResult(ret);
         }
 
-        public void ImprimirEvento(string eArquivoXmlNFe, string eArquivoXmlEvento)
+        public void ImprimirEvento(string eArquivoXmlCTe, string eArquivoXmlEvento)
         {
             var method = GetMethod<Delegates.CTE_ImprimirEvento>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlNFe), ToUTF8(eArquivoXmlEvento)));
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlCTe), ToUTF8(eArquivoXmlEvento)));
 
             CheckResult(ret);
         }
 
-        public void ImprimirEventoPDF(string eArquivoXmlNFe, string eArquivoXmlEvento)
+        public void ImprimirEventoPDF(string eArquivoXmlCTe, string eArquivoXmlEvento)
         {
             var method = GetMethod<Delegates.CTE_ImprimirEventoPDF>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlNFe), ToUTF8(eArquivoXmlEvento)));
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlCTe), ToUTF8(eArquivoXmlEvento)));
 
             CheckResult(ret);
         }
@@ -544,12 +637,18 @@ namespace ACBrLib.CTe
             AddMethod<Delegates.CTE_CarregarINI>("CTE_CarregarINI");
             AddMethod<Delegates.CTE_CarregarEventoXML>("CTE_CarregarEventoXML");
             AddMethod<Delegates.CTE_CarregarEventoINI>("CTE_CarregarEventoINI");
+            AddMethod<Delegates.CTE_ObterXml>("CTE_ObterXml");
+            AddMethod<Delegates.CTE_GravarXml>("CTE_GravarXml");
+            AddMethod<Delegates.CTE_ObterIni>("CTE_ObterIni");
+            AddMethod<Delegates.CTE_GravarIni>("CTE_GravarIni");
             AddMethod<Delegates.CTE_LimparLista>("CTE_LimparLista");
             AddMethod<Delegates.CTE_LimparListaEventos>("CTE_LimparListaEventos");
             AddMethod<Delegates.CTE_Assinar>("CTE_Assinar");
             AddMethod<Delegates.CTE_Validar>("CTE_Validar");
             AddMethod<Delegates.CTE_ValidarRegrasdeNegocios>("CTE_ValidarRegrasdeNegocios");
             AddMethod<Delegates.CTE_VerificarAssinatura>("CTE_VerificarAssinatura");
+            AddMethod<Delegates.CTE_GerarChave>("CTE_GerarChave");
+            AddMethod<Delegates.CTE_ObterCertificados>("CTE_ObterCertificados");
             AddMethod<Delegates.CTE_StatusServico>("CTE_StatusServico");
             AddMethod<Delegates.CTE_Consultar>("CTE_Consultar");
             AddMethod<Delegates.CTE_ConsultaCadastro>("CTE_ConsultaCadastro");

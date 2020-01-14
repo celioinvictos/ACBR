@@ -47,7 +47,9 @@ uses
    {$IfDef FPC}
     ,LCLType, InterfaceBase
    {$Else}
-    ,windows
+    {$IfDef MSWINDOWS}
+     ,windows
+    {$EndIf}
    {$EndIf}
    {$IfDef FMX}
     ,FMX.Graphics, System.UITypes, FMX.Types
@@ -387,6 +389,7 @@ var
   LenPixArrIn, LenPixArrOut, BytesPerRowIn, BytesPerRowOut, RowStart: Integer;
   AHeight, i, p, b: Integer;
   PixArr: array of Byte;
+  BMSig: array[0..1] of AnsiChar;
 begin
   BytesPerRowIn := ceil(AWidth / 8);
   LenPixArrIn := Length(ARasterStr);
@@ -426,8 +429,10 @@ begin
   begin
     Size := 0;  // Trunc Stream
 
+    BMSig[0] := 'B';
+    BMSig[1] := 'M';
     // BMP header   14 bytes
-    Write('BM',2);    // BitMap signature
+    WriteBuffer(BMSig,2);    // BitMap signature
     ALongWord := 14 + 40 + 8 + LenPixArrOut ;
     WriteBuffer(ALongWord, 4);  // Tamanho do arquivo
     ALongWord := 0;

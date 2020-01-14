@@ -1,8 +1,8 @@
 inherited frmDACTeRLRetratoA5: TfrmDACTeRLRetratoA5
-  Left = 290
-  Top = 188
+  Left = 312
+  Top = 167
   Width = 974
-  Height = 919
+  Height = 788
   VertScrollBar.Position = 251
   Caption = 'DACTe -  Retrato A5'
   Font.Height = -8
@@ -977,7 +977,7 @@ inherited frmDACTeRLRetratoA5: TfrmDACTeRLRetratoA5
       end
       object rliLogo: TRLImage
         Left = 7
-        Top = 32
+        Top = 34
         Width = 94
         Height = 62
         Center = True

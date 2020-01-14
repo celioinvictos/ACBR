@@ -1,34 +1,35 @@
-{******************************************************************************}
-{ Projeto: ACBrNFeMonitor                                                      }
-{  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para }
-{ criar uma interface de comunicação com equipamentos de automacao comercial.  }
-
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
-
-{ Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
-{  Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo   }
-{ sob os termos da Licença Pública Geral GNU, conforme publicada pela Free     }
-{ Software Foundation; tanto a versão 2 da Licença como (a seu critério)       }
-{ qualquer versão mais nova.                                                   }
-
-{  Este programa é distribuído na expectativa de ser útil, mas SEM NENHUMA     }
-{ GARANTIA; nem mesmo a garantia implícita de COMERCIALIZAÇÃO OU DE ADEQUAÇÃO A}
-{ QUALQUER PROPÓSITO EM PARTICULAR. Consulte a Licença Pública Geral GNU para  }
-{ obter mais detalhes. (Arquivo LICENCA.TXT ou LICENSE.TXT)                    }
-
-{  Você deve ter recebido uma cópia da Licença Pública Geral GNU junto com este}
-{ programa; se não, escreva para a Free Software Foundation, Inc., 59 Temple   }
-{ Place, Suite 330, Boston, MA 02111-1307, USA. Você também pode obter uma     }
-{ copia da licença em:  http://www.opensource.org/licenses/gpl-license.php     }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: ACBrMonitor                                                          }
+{  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
+{ criar uma interface de comunicação com equipamentos de automacao comercial.   }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo:                                                  }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 {$I ACBr.inc}
 
 unit DoACBrBPeUnit;
@@ -447,7 +448,7 @@ procedure TACBrObjetoBPe.RespostaEnvio;
 var
   Resp: TEnvioResposta;
 begin
-  Resp := TEnvioResposta.Create(resINI, codUTF8);
+  Resp := TEnvioResposta.Create(TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.Enviar do
     begin
@@ -461,6 +462,7 @@ begin
       Resp.DhRecbto := dhRecbto;
       Resp.Tmed := TMed;
       Resp.Msg := Msg;
+      Resp.NProt := Protocolo;
 
       fpCmd.Resposta := fpCmd.Resposta + sLineBreak + Msg + sLineBreak;
       fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
@@ -496,8 +498,15 @@ begin
               'PDF='+ PathWithDelim(ACBrBPe.DABPe.PathPDF) + ArqPDF;
           end;
 
-          if (pImprimir) then
-            Bilhetes.Items[I].Imprimir;
+          if (Bilhetes.Items[I].Confirmada) and (pImprimir) then
+          begin
+//            try
+//              DoAntesDeImprimir((pPreview));
+              Bilhetes.Items[I].Imprimir;
+//            finally
+//              DoDepoisDeImprimir;
+//            end;
+          end;
 
           break;
         end;
@@ -510,7 +519,7 @@ procedure TACBrObjetoBPe.RespostaStatus;
 var
   Resp: TStatusServicoResposta;
 begin
-  Resp := TStatusServicoResposta.Create(resINI, codUTF8);
+  Resp := TStatusServicoResposta.Create(TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.StatusServico do
     begin
@@ -538,7 +547,7 @@ procedure TACBrObjetoBPe.RespostaConsulta;
 var
   Resp: TConsultaBPeResposta;
 begin
-  Resp := TConsultaBPeResposta.Create(resINI, codUTF8);
+  Resp := TConsultaBPeResposta.Create(TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.Consulta do
     begin
@@ -566,7 +575,7 @@ procedure TACBrObjetoBPe.RespostaCancelamento;
 var
   Resp: TCancelamentoResposta;
 begin
-  Resp := TCancelamentoResposta.Create(resINI, codUTF8);
+  Resp := TCancelamentoResposta.Create(TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfevento do
     begin
@@ -598,7 +607,7 @@ procedure TACBrObjetoBPe.RespostaEvento;
 var
   Resp: TEventoResposta;
 begin
-  Resp := TEventoResposta.Create(resINI, codUTF8);
+  Resp := TEventoResposta.Create(TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.EnvEvento.EventoRetorno do
     begin
@@ -622,7 +631,7 @@ var
   Resp: TEventoItemResposta;
 begin
   Resp := TEventoItemResposta.Create(
-    'EVENTO' + Trim(IntToStrZero(ItemID +1, 3)), resINI, codUTF8);
+    'EVENTO' + Trim(IntToStrZero(ItemID +1, 3)), TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[ItemID].RetInfevento do
     begin
@@ -655,7 +664,7 @@ var
   Resp: TDistribuicaoDFeResposta;
   sTemMais: String;
 begin
-  Resp := TDistribuicaoDFeResposta.Create(resINI, codUTF8);
+  Resp := TDistribuicaoDFeResposta.Create(TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.DistribuicaoDFe.retDistDFeInt do
     begin
@@ -689,7 +698,7 @@ var
   Resp: TDistribuicaoDFeItemResposta;
 begin
   Resp := TDistribuicaoDFeItemResposta.Create(
-    'ResBPe' + Trim(IntToStrZero(ItemID +1, 3)), resINI, codUTF8);
+    'ResBPe' + Trim(IntToStrZero(ItemID +1, 3)), TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].resDFe do
     begin
@@ -728,7 +737,7 @@ var
   Resp: TDistribuicaoDFeItemResposta;
 begin
   Resp := TDistribuicaoDFeItemResposta.Create(
-    'ProEve' + Trim(IntToStrZero(ItemID +1, 3)), resINI, codUTF8);
+    'ProEve' + Trim(IntToStrZero(ItemID +1, 3)), TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento do
     begin
@@ -773,7 +782,7 @@ var
   Resp: TDistribuicaoDFeItemResposta;
 begin
   Resp := TDistribuicaoDFeItemResposta.Create(
-    'Infeve' + Trim(IntToStrZero(ItemID +1, 3)), resINI, codUTF8);
+    'Infeve' + Trim(IntToStrZero(ItemID +1, 3)), TpResp, codUTF8);
   try
     with fACBrBPe.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[ItemID].procEvento.RetInfevento do
     begin
@@ -812,28 +821,35 @@ var
 begin
   INIRec := TMemIniFile.Create('BPe.ini');
 
-  fACBrBPe.Bilhetes.Clear;
-  if FilesExists(XML) then
-    fACBrBPe.Bilhetes.LoadFromFile(XML)
-  else
-  begin
-    LocBPeR := TBPeR.Create(fACBrBPe.Bilhetes.Add.BPe);
-    try
-      LocBPeR.Leitor.Arquivo := ConvertStrRecived(XML);
-      LocBPeR.LerXml;
-      fACBrBPe.Bilhetes.Items[0].XML := LocBPeR.Leitor.Arquivo;
-      fACBrBPe.Bilhetes.GerarBPe;
-    finally
-      LocBPeR.Free;
-    end;
-  end;
+  try
+    fACBrBPe.Bilhetes.Clear;
 
-  IniBPe := TStringList.Create;
-// falta implementar no componente  IniBPe.Text := fACBrBPe.Bilhetes.GerarIni();
-  INIRec.SetStrings(IniBPe);
-  INIRec.Free;
-  Result := IniBPe.Text;
-  IniBPe.Free;
+    if FilesExists(XML) then
+      fACBrBPe.Bilhetes.LoadFromFile(XML)
+    else
+    begin
+      LocBPeR := TBPeR.Create(fACBrBPe.Bilhetes.Add.BPe);
+      try
+        LocBPeR.Leitor.Arquivo := ConvertStrRecived(XML);
+        LocBPeR.LerXml;
+        fACBrBPe.Bilhetes.Items[0].XML := LocBPeR.Leitor.Arquivo;
+        fACBrBPe.Bilhetes.GerarBPe;
+      finally
+        LocBPeR.Free;
+      end;
+    end;
+
+    IniBPe := TStringList.Create;
+    try
+      IniBPe.Text := fACBrBPe.Bilhetes.GerarIni();
+      INIRec.SetStrings(IniBPe);
+      Result := IniBPe.Text;
+    finally
+      IniBPe.Free;
+    end;
+  finally
+    INIRec.Free;
+  end;
 end;
 
 { TACBrCarregarBPe }

@@ -42,6 +42,8 @@ uses
 
 const
   CSessaoDANFE = 'DANFE';
+  CChaveProtocolo = 'Protocolo';
+  CChaveCancelada = 'Cancelada';
   CChaveTipoDANFE = 'TipoDANFE';
   CChaveImprimeTotalLiquido = 'ImprimeTotalLiquido';
   CChavevTribFed = 'vTribFed';
@@ -52,7 +54,7 @@ const
   CChaveImprimeTributos = 'ImprimeTributos';
   CChaveExibeTotalTributosItem = 'ExibeTotalTributosItem';
   CChaveImprimeCodigoEan = 'ImprimeCodigoEan';
-  CChaveImprimeEmUmaLinha = 'ImprimeEmUmaLinha';
+  CChaveImprimeNomeFantasia = 'ImprimeNomeFantasia';
   CChaveExibeInforAdicProduto = 'ExibeInforAdicProduto';
   CChaveQuebraLinhaEmDetalhamentos = 'QuebraLinhaEmDetalhamentos';
 
@@ -62,6 +64,7 @@ const
   CChaveImprimeDescPorPercentual = 'ImprimeDescPorPercentual';
   CChaveImprimeDetalhamentoEspecifico = 'ImprimeDetalhamentoEspecifico';
   CChavePosCanhoto = 'PosCanhoto';
+  CChavePosCanhotoLayout = 'PosCanhotoLayout';
   CChaveExibeResumoCanhoto = 'ExibeResumoCanhoto';
   CChaveTextoResumoCanhoto = 'TextoResumoCanhoto';
   CChaveExibeCampoFatura = 'ExibeCampoFatura';
@@ -81,13 +84,15 @@ const
   CChaveAlternaCoresProdutos = 'AlternaCoresProdutos';
   CChaveCorDestaqueProdutos = 'CorDestaqueProdutos';
   CChaveTamanhoLogoHeight = 'TamanhoLogoHeight';
+  CChaveDescricaoPagamentos = 'DescricaoPagamentos';
   CChaveTamanhoLogoWidth = 'TamanhoLogoWidth';
   CChaveRecuoEndereco = 'RecuoEndereco';
   CChaveRecuoEmpresa = 'RecuoEmpresa';
   CChaveLogoemCima = 'LogoemCima';
   CChaveRecuoLogo = 'RecuoLogo';
   CChaveExpandirDadosAdicionaisAuto = 'ExpandirDadosAdicionaisAuto';
-  CChaveImprimeContinuacaoDadosAdicionaisPrimeiraPagina = 'ImprimeContDadosAdPrimeiraPagina';
+  CChaveImprimeContDadosAdPrimeiraPagina = 'ImprimeContDadosAdPrimeiraPagina';
+  CChaveExibeCampoDePagamento = 'ExibeCampoDePagamento';
   CChaveFonteNome = 'Fonte.Nome';
   CChaveFonteNegrito = 'Fonte.Negrito';
   CChaveFonteTamanhoFonteRazaoSocial = 'Fonte.TamanhoFonteRazaoSocial';
@@ -104,6 +109,8 @@ const
   CChaveImprimeQRCodeLateral = 'ImprimeQRCodeLateral';
   CChaveImprimeLogoLateral = 'ImprimeLogoLateral';
   CChaveEspacoFinal = 'EspacoFinal';
+  CChaveImprimeEmUmaLinha = 'ImprimeEmUmaLinha';
+  CChaveImprimeEmDuasLinhas = 'ImprimeEmDuasLinhas';
 
   CSessaoRespStatus = 'Status';
   CSessaoRespInutilizacao = 'Inutilizacao';

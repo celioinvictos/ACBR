@@ -2131,7 +2131,12 @@ begin
     NFSe.DataEmissaoRps := Leitor.rCampo(tcDat, 'DataEmissao');
     NFSe.Status         := StrToStatusRPS(ok, Leitor.rCampo(tcStr, 'Status'));
 
-    if (Leitor.rExtrai(NivelTemp, 'IdentificacaoRps') <> '') then
+    if FProvedor = proISSJoinville then
+    begin
+      if (Leitor.rExtrai(NivelTemp, 'InfNfse') <> '') then
+        NFSe.IdentificacaoRps.Numero := Leitor.rCampo(tcStr, 'NumeroRps');
+    end
+    else if (Leitor.rExtrai(NivelTemp, 'IdentificacaoRps') <> '') then
     begin
       NFSe.IdentificacaoRps.Numero := Leitor.rCampo(tcStr, 'Numero');
       NFSe.IdentificacaoRps.Serie  := Leitor.rCampo(tcStr, 'Serie');
@@ -2147,17 +2152,25 @@ begin
       NFSe.RpsSubstituido.Tipo   := StrToTipoRPS(ok, Leitor.rCampo(tcStr, 'Tipo'));
     end;
   end;
+  
+  if NFSe.Status = srCancelado then
+    NFSe.Cancelada := snSim
+  else
+    NFSe.Cancelada := snNao;  
 
   if FProvedor = proSystemPro then
   begin
     i := 0;
+
     NFSe.Servico.ItemServico.Clear;
 
     while Leitor.rExtrai(NivelTemp, 'Servico', '', i + 1) <> '' do
     begin
+      SetxItemListaServico;
+
       NFSe.Servico.ItemServico.New;
       NFSe.Servico.Valores.IssRetido            := StrToSituacaoTributaria(ok, Leitor.rCampo(tcStr, 'IssRetido'));
-      NFSe.Servico.ItemListaServico             := Leitor.rCampo(tcStr, 'ItemListaServico');
+//      NFSe.Servico.ItemListaServico             := Leitor.rCampo(tcStr, 'ItemListaServico');
       NFSe.Servico.ItemServico[i].Descricao     := Leitor.rCampo(tcStr, 'Discriminacao');
       NFSe.Servico.CodigoMunicipio              := Leitor.rCampo(tcStr, 'CodigoMunicipio');
       NFSe.Servico.ExigibilidadeISS             := StrToExigibilidadeISS(ok, Leitor.rCampo(tcStr, 'ExigibilidadeISS'));
@@ -4921,3 +4934,4 @@ begin
 end;
 
 end.
+

@@ -93,7 +93,6 @@ begin
    fpTamanhoCarteira       := 3;
    fValorTotalDocs         := 0;
    fQtRegLote              := 0;
-   fpCodigosMoraAceitos    := '123';
 end;
 
 function TACBrBancoItau.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -251,8 +250,8 @@ end;
 
 function TACBrBancoItau.GerarRegistroTransacao240(ACBrTitulo : TACBrTitulo): String;
 var
-   ATipoInscricao, ATipoOcorrencia, AEspecieDoc       :String;
-   ADataMoraJuros, ADataDesconto,ATipoAceite,  ACodigoNegativacao :String;
+   ATipoInscricao, ATipoOcorrencia, AEspecieDoc, ADataMoraJuros, ADataDesconto,
+   ATipoAceite, ACodigoNegativacao, DataProtestoNegativacao, DiasProtestoNegativacao: String;
    ATipoInscricaoAvalista: Char;
 begin
    ATipoInscricaoAvalista := ' ';
@@ -327,6 +326,24 @@ begin
         ACodigoNegativacao := '0';
       end;
 
+      if (ACodigoNegativacao = '7') then
+      begin
+        DataProtestoNegativacao := DateToStr(DataNegativacao);
+        DiasProtestoNegativacao := IntToStr(DiasDeNegativacao);
+      end
+      else
+      begin
+	    if ((ACodigoNegativacao <> '3') and (ACodigoNegativacao <> '8')) then
+        begin
+          DataProtestoNegativacao := DateToStr(DataProtesto);
+          DiasProtestoNegativacao := IntToStr(DiasDeProtesto);
+        end
+        else
+        begin
+          DataProtestoNegativacao := '';
+          DiasProtestoNegativacao := '0';
+        end;
+	  end;
 
       {Mora Juros}
       if (ValorMoraJuros > 0) then
@@ -393,8 +410,11 @@ begin
                IntToStrZero( round(ValorAbatimento * 100), 15)            + //181 a 195 - Valor do abatimento
                PadRight(SeuNumero, 25, ' ')                               + //196 a 220 - Identificação do título na empresa
                ACodigoNegativacao                                         + //221 - Código de protesto: Protestar em XX dias corridos
-               IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
-                    PadLeft(IntToStr(DiasDeProtesto), 2, '0'), '00')      + //222 a 223 - Prazo para protesto
+//               IfThen((DataProtesto > 0) and (DataProtesto > Vencimento),
+//                    PadLeft(IntToStr(DiasDeProtesto), 2, '0'), '00')      + //222 a 223 - Prazo para protesto
+               IfThen((DataProtestoNegativacao <> '') and
+                      (StrToDate(DataProtestoNegativacao) > Vencimento),
+                       PadLeft(DiasProtestoNegativacao , 2, '0'), '00')   + //222 a 223 - Prazo para protesto
                IfThen((DataBaixa <> 0) and (DataBaixa > Vencimento), '1', '0')  + // 224 - Código de Baixa
                IfThen((DataBaixa <> 0) and (DataBaixa > Vencimento),
                        PadLeft(IntToStr(DaysBetween(DataBaixa, Vencimento)), 2, '0'), '00')  + // 225 A 226 - Dias para baixa
@@ -560,7 +580,7 @@ begin
                   FormatDateTime('ddmmyy', Now)        + // 95 a 100  - DATA DE GERAÇÃO DO ARQUIVO
                   space(294)                           + // 101 a 394 - COMPLEMENTO DO REGISTRO
                   IntToStrZero(1,6);                     // 395 a 400 - NÚMERO SEQÜENCIAL DO REGISTRO NO ARQUIVO
-      aRemessa.Text := aRemessa.Text + UpperCase(wLinha);
+      aRemessa.Add(UpperCase(wLinha));
    end;
 end;
 
@@ -858,7 +878,7 @@ begin
                    IntToStrZero(aRemessa.Count + 1, 6);                                             // Nº SEQÜENCIAL DO REGISTRO NO ARQUIVO
 
                    iSequencia := aRemessa.Count + 1;
-
+                   aRemessa.Add(UpperCase(wLinha));
                    //Registro Complemento Detalhe - Multa
                    if PercentualMulta > 0 then
                    begin
@@ -871,7 +891,7 @@ begin
                                    space(371)                                       + // Complemento
                                    IntToStrZero(iSequencia , 6);                      // Sequencial
 
-                     wLinha := wLinha + #13#10 + wLinhaMulta;
+                     aRemessa.Add(UpperCase(wLinhaMulta));
                    end;
 
                    //OPCIONAL – COBRANÇA E-MAIL E/OU DADOS DO SACADOR AVALISTA
@@ -892,13 +912,11 @@ begin
                                    space(180)                                                   + // COMPLEMENTO DE REGISTRO
                                    IntToStrZero(iSequencia , 6);                                  // Sequencial
 
-                     wLinha := wLinha + #13#10 + wLinhaMulta;
-
+                     aRemessa.Add(UpperCase(wLinhaMulta));
                    end;
 
         end;
     end;
-    aRemessa.Text:= aRemessa.Text + UpperCase(wLinha);
   end;
 end;
 
@@ -910,7 +928,7 @@ begin
   wLinha:= '9' + Space(393) +                     // TIPO DE REGISTRO
            IntToStrZero( ARemessa.Count + 1, 6);  // NÚMERO SEQÜENCIAL DO REGISTRO NO ARQUIVO
 
-  ARemessa.Text := ARemessa.Text + UpperCase(wLinha);
+  ARemessa.Add(wLinha);
 end;
 
 procedure TACBrBancoItau.LerRetorno240(ARetorno: TStringList);

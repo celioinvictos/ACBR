@@ -1,8 +1,8 @@
 inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
-  Left = 1893
-  Top = 76
+  Left = 256
+  Top = 88
+  Height = 777
   Caption = 'DACTe - Retrato'
-  ClientHeight = 738
   Font.Height = -8
   Font.Name = 'Arial'
   Font.Style = [fsBold]
@@ -10,15 +10,16 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
   TextHeight = 10
   inherited RLCTe: TRLReport
     Left = 8
-    Margins.LeftMargin = 7.000000000000000000
-    Margins.TopMargin = 7.000000000000000000
-    Margins.RightMargin = 7.000000000000000000
-    Margins.BottomMargin = 7.000000000000000000
+    Top = -500
     Background.Height = 96
     Background.Width = 175
     DataSource = Datasource1
     Font.Height = -8
     Font.Name = 'Courier New'
+    Margins.LeftMargin = 7.000000000000000000
+    Margins.TopMargin = 7.000000000000000000
+    Margins.RightMargin = 7.000000000000000000
+    Margins.BottomMargin = 7.000000000000000000
     PreviewOptions.FormStyle = fsStayOnTop
     PreviewOptions.ShowModal = True
     PreviewOptions.Caption = 'DACT-e '
@@ -647,10 +648,10 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 122
         Width = 298
         Height = 28
-        Margins.LeftMargin = 1.000000000000000000
-        Margins.RightMargin = 1.000000000000000000
         AutoSize = False
         BarcodeType = bcCode128C
+        Margins.LeftMargin = 1.000000000000000000
+        Margins.RightMargin = 1.000000000000000000
       end
       object rlsQuadro01: TRLDraw
         Left = 0
@@ -1254,11 +1255,11 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Top = 62
         Width = 298
         Height = 26
-        Margins.LeftMargin = 1.000000000000000000
-        Margins.RightMargin = 1.000000000000000000
         Alignment = taCenter
         AutoSize = False
         BarcodeType = bcCode128C
+        Margins.LeftMargin = 1.000000000000000000
+        Margins.RightMargin = 1.000000000000000000
         Transparent = False
       end
       object rllVariavel2: TRLLabel
@@ -4454,7 +4455,6 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
         Font.Style = []
         Info = itNow
         ParentFont = False
-        Text = ''
       end
     end
     object rlb_16_DadosExcEmitente: TRLBand
@@ -4616,7 +4616,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
       end
       object RLDraw20: TRLDraw
         Left = 448
-        Top = 90
+        Top = 93
         Width = 1
         Height = 26
         Angle = 90.000000000000000000
@@ -4625,7 +4625,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
       end
       object RLDraw22: TRLDraw
         Left = 346
-        Top = 91
+        Top = 93
         Width = 1
         Height = 26
         Angle = 90.000000000000000000
@@ -4634,7 +4634,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
       end
       object RLDraw23: TRLDraw
         Left = 500
-        Top = 91
+        Top = 93
         Width = 1
         Height = 26
         Angle = 90.000000000000000000
@@ -4643,7 +4643,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
       end
       object RLDraw25: TRLDraw
         Left = 586
-        Top = 91
+        Top = 93
         Width = 1
         Height = 26
         Angle = 90.000000000000000000
@@ -4652,7 +4652,7 @@ inherited frmDACTeRLRetrato: TfrmDACTeRLRetrato
       end
       object RLDraw26: TRLDraw
         Left = 650
-        Top = 91
+        Top = 93
         Width = 1
         Height = 26
         Angle = 90.000000000000000000

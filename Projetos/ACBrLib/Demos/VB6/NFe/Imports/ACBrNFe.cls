@@ -14,18 +14,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Const BUFFER_LENGTH As Long = 1024
-
-' UTF-8 Code Page'Sys call to convert multiple byte chars to a charPrivate
-Const CP_UTF8       As Long = 65001
-
-Private Declare Function MultiByteToWideChar _
-                Lib "kernel32" (ByVal CodePage As Long, _
-                                ByVal dwFlags As Long, _
-                                ByVal lpMultiByteStr As Long, _
-                                ByVal cchMultiByte As Long, _
-                                ByVal lpWideCharStr As Long, _
-                                ByVal cchWideChar As Long) As Long
-                                
+                               
 Private Declare Function NFE_Inicializar _
                 Lib "ACBrNFE32.dll" (ByVal eArqConfig As String, _
                                       ByVal eChaveCrypt As String) As Long
@@ -76,6 +65,16 @@ Private Declare Function NFE_GravarXml _
                 Lib "ACBrNFE32.dll" (ByVal AIndex As Long, _
                                      ByVal eNomeArquivo As String, _
                                      ByVal ePathArquivo As String) As Long
+                                     
+Private Declare Function NFE_ObterIni _
+                Lib "ACBrNFE32.dll" (ByVal AIndex As Long, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function NFE_GravarIni _
+                Lib "ACBrNFE32.dll" (ByVal AIndex As Long, _
+                                     ByVal eNomeArquivo As String, _
+                                     ByVal ePathArquivo As String) As Long
                 
 Private Declare Function NFE_CarregarEventoXML _
                 Lib "ACBrNFE32.dll" (ByVal eArquivoOuXml As String) As Long
@@ -110,6 +109,10 @@ Private Declare Function NFE_GerarChave _
                                      ByVal ACNPJCPF As String, _
                                      ByVal buffer As String, _
                                      ByRef bufferLen As Long) As Long
+                                     
+Private Declare Function NFE_ObterCertificados _
+                Lib "ACBrNFE32.dll" (ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
                                      
 Private Declare Function NFE_StatusServico _
                 Lib "ACBrNFE32.dll" (ByVal buffer As String, _
@@ -231,6 +234,7 @@ Private Declare Function NFE_ImprimirInutilizacaoPDF _
 Public Sub InicializarLib(Optional ByVal eArqConfig As String = "", _
                           Optional ByVal eChaveCrypt As String = "")
 
+    SetLibPath
     Dim retorno As Long
 
     retorno = NFE_Inicializar(eArqConfig, eChaveCrypt)
@@ -352,6 +356,29 @@ Public Sub GravarXml(ByVal AIndex As Long, _
     CheckResult retorno
 End Sub
 
+Public Function ObterIni(ByVal AIndex As Long) As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_ObterIni(AIndex, buffer, bufferLen)
+    CheckResult retorno
+    
+    ObterIni = processResult(buffer, bufferLen)
+End Function
+
+Public Sub GravarIni(ByVal AIndex As Long, _
+                     ByVal eNomeArquivo As String, _
+                     Optional ByVal ePathArquivo As String = "")
+    Dim retorno   As Long
+    retorno = NFE_GravarIni(AIndex, eNomeArquivo, ePathArquivo)
+    CheckResult retorno
+End Sub
+
 Public Sub CarregarEventoXML(ByVal eArquivoOuXml As String)
     Dim retorno   As Long
     retorno = NFE_CarregarEventoXML(eArquivoOuXml)
@@ -431,6 +458,20 @@ Public Function GerarChave(ByVal ACodigoUF As Long, ByVal ACodigoNumerico As Lon
     CheckResult retorno
     
     GerarChave = processResult(buffer, bufferLen)
+End Function
+
+Public Function ObterCertificados() As String()
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_ObterCertificados(buffer, bufferLen)
+    CheckResult retorno
+    
+    ObterCertificados = Split(processResult(buffer, bufferLen), vbCrLf)
 End Function
 
 Public Function StatusServico() As String
@@ -586,7 +627,7 @@ Public Function DistribuicaoDFePorChave(ByVal acUFAutor As String, ByVal eCnpjcp
     bufferLen = BUFFER_LENGTH
     buffer = String$(bufferLen, " ")
     
-    retorno = NFE_DistribuicaoDFePorNSU(acUFAutor, eCnpjcpf, echNFe, buffer, bufferLen)
+    retorno = NFE_DistribuicaoDFePorChave(acUFAutor, eCnpjcpf, echNFe, buffer, bufferLen)
     CheckResult retorno
     
     DistribuicaoDFePorChave = processResult(buffer, bufferLen)
@@ -681,22 +722,4 @@ Private Function processResult(ByRef buffer As String, ByRef bufferLen As Long) 
     End If
 
     processResult = Trim$(FromUTF8(buffer))
-End Function
-
-Private Function FromUTF8(ByRef utf8STR As String) As String
-    
-    Dim length As Long
-    Dim UTF8() As Byte
-    Dim lDataLength As Long
-
-    length = Len(utf8STR)
-    UTF8 = StrConv(utf8STR, vbFromUnicode)
-    
-    ' Get the length of the data.
-    lDataLength = MultiByteToWideChar(CP_UTF8, 0, VarPtr(UTF8(0)), length, 0, 0)
-    
-    ' Create array big enough
-    FromUTF8 = String$(lDataLength, 0)
-    
-    MultiByteToWideChar CP_UTF8, 0, VarPtr(UTF8(0)), length, StrPtr(FromUTF8), lDataLength
 End Function

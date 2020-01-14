@@ -48,6 +48,26 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+31/12/2019
+-- ACBrBPeBilhetes --
+[+] Implementado os métodos: GerarBPeIni e GerarIni, métodos a serem utilizados 
+    pelo ACBrMonitor e ACBrLibBPe para gerar o arquivo INI com base no XML
+    carregado.
+   Por: Italo Jurisato Junior
+
+24/12/2019
+-- ACBrBPeDABPeESCPOS --
+[*] Melhorias na impressão do DABPE.
+   Por: Italo Jurisato Junior
+-- ACBrBPeDABPEClass --
+[+] Incluido a propriedade de configuração: ImprimeLogoLateral
+   Por: Italo Jurisato Junior
+
+18/12/2019
+-- ACBrBPeWebServices --
+[+] Incluido a propriedade Protocolo no retorno de envio do BP-e.
+   Por: Italo Jurisato Junior
+
 19/11/2019
 -- ACBrBPeDABPeESCPOS --
 [*] Incluido o comando para avançar linhas após as mensagens do rodapé.

@@ -1,23 +1,14 @@
-#include "hbclass.ch"
-#include "error.ch"
+#include 'acbrlib.ch'
 
-#define DC_CALL_CDECL          0x0010      // __cdecl
-#define DC_CALL_STD            0x0020      // __stdcall
-
-#ifdef _XHARBOUR_ 
-#define ACBrLIB "ACBrNFe32.dll"
-#define DLL_OSAPI DC_CALL_STD
+#ifdef __PLATFORM__WINDOWS
+   #define ACBrLIB 'ACBrNFe32.dll'
 #else
-#if defined( __PLATFORM__WINDOWS )
-#define ACBrLIB "ACBrNFe32.dll"
-#define DLL_OSAPI DC_CALL_STD
-#else
-#define ACBrLIB "libacbrnfe64.so"
-#define DLL_OSAPI DC_CALL_CDECL
+   #ifdef __PLATFORM__LINUX
+      #define ACBrLIB 'libacbrnfe64.so'
+   #else
+      #error ACBrLIB-FALTA DEFINICAO: PLATFORM__?
+   #endif
 #endif
-#endif
-
-#define STR_LEN 256
 
 CREATE CLASS ACBrNFe
 HIDDEN:
@@ -27,7 +18,6 @@ HIDDEN:
     METHOD ProcessResult(buffer, bufferLen)
 
 VISIBLE:
-    METHOD New() CONSTRUCTOR
     METHOD New(eArqConfig, eChaveCrypt) CONSTRUCTOR
     DESTRUCTOR  Destroy
 
@@ -43,6 +33,8 @@ VISIBLE:
     METHOD CarregarINI(eArquivoOuIni)
     METHOD ObterXml(AIndex)
     METHOD GravarXml(AIndex, eNomeArquivo, ePathArquivo)
+    METHOD ObterIni(AIndex)
+    METHOD GravarIni(AIndex, eNomeArquivo, ePathArquivo)
     METHOD CarregarEventoXML(eArquivoOuXml)
     METHOD CarregarEventoINI(eArquivoOuIni)
     METHOD LimparLista()
@@ -53,6 +45,7 @@ VISIBLE:
     METHOD ValidarRegrasdeNegocios()
     METHOD VerificarAssinatura()
     METHOD GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi, AEmissao, ACNPJCPF)
+    METHOD ObterCertificados()
 
     METHOD StatusServico()
     METHOD Consultar(eChaveOuNFe)
@@ -81,8 +74,11 @@ END CLASS
 METHOD New(eArqConfig, eChaveCrypt) CLASS ACBrNFe
     local hResult, buffer, bufferLen, oErr
 
+    eArqConfig :=if(eArqConfig = nil, '', eArqConfig)
+    eChaveCrypt:=if(eChaveCrypt = nil, '', eChaveCrypt)
+
     ::hHandle := DllLoad(ACBrLIB)
-    if ::hHandle = nil
+    if EMPTY(::hHandle) // Eric.Developer: xHarbour retorna 0x00000000
         oErr := ErrorNew()
         oErr:Severity := ES_ERROR        
         oErr:Description := "Erro a carregar a dll [" + ACBrLIB + "]"
@@ -193,6 +189,20 @@ METHOD GravarXml(AIndex, eNomeArquivo, ePathArquivo) CLASS ACBrNFe
     ::CheckResult(hResult)
     RETURN nil
 
+METHOD ObterIni(AIndex) CLASS ACBrNFe
+    local hResult, buffer, bufferLen
+    bufferLen := STR_LEN
+    buffer := Space(bufferLen)   
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_ObterIni", AIndex, @buffer, @bufferLen)
+    ::CheckResult(hResult)
+    RETURN ::ProcessResult(buffer, bufferLen)
+    
+METHOD GravarIni(AIndex, eNomeArquivo, ePathArquivo) CLASS ACBrNFe
+    local hResult
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_GravarIni", AIndex, hb_StrToUTF8(eNomeArquivo), hb_StrToUTF8(ePathArquivo))
+    ::CheckResult(hResult)
+    RETURN nil
+
 METHOD CarregarEventoXML(eArquivoOuXml) CLASS ACBrNFe
     local hResult
     hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_CarregarEventoXML", hb_StrToUTF8(eArquivoOuXml))
@@ -246,6 +256,14 @@ METHOD GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi, 
     bufferLen := STR_LEN
     buffer := Space(bufferLen)
     hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_GerarChave", ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi, AEmissao, ACNPJCPF, @buffer, @bufferLen)
+    ::CheckResult(hResult)
+    RETURN ::ProcessResult(buffer, bufferLen)
+
+METHOD ObterCertificados() CLASS ACBrNFe
+    local hResult, buffer, bufferLen
+    bufferLen := STR_LEN
+    buffer := Space(bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_ObterCertificados", @buffer, @bufferLen)
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 
@@ -309,7 +327,7 @@ METHOD DistribuicaoDFePorUltNSU(acUFAutor, eCNPJCPF, eultNSU) CLASS ACBrNFe
     local hResult, buffer, bufferLen
     bufferLen := STR_LEN
     buffer := Space(bufferLen)
-    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_DistribuicaoDFePorUltNSU", hb_StrToUTF8(acUFAutor), hb_StrToUTF8(eCNPJCPF), hb_StrToUTF8(eultNSU), @buffer, @bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_DistribuicaoDFePorUltNSU", acUFAutor, hb_StrToUTF8(eCNPJCPF), hb_StrToUTF8(eultNSU), @buffer, @bufferLen)
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 
@@ -317,7 +335,7 @@ METHOD DistribuicaoDFePorNSU(acUFAutor, eCNPJCPF, eNSU) CLASS ACBrNFe
     local hResult, buffer, bufferLen
     bufferLen := STR_LEN
     buffer := Space(bufferLen)
-    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_DistribuicaoDFePorNSU", hb_StrToUTF8(acUFAutor), hb_StrToUTF8(eCNPJCPF), hb_StrToUTF8(eNSU), @buffer, @bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_DistribuicaoDFePorNSU", acUFAutor, hb_StrToUTF8(eCNPJCPF), hb_StrToUTF8(eNSU), @buffer, @bufferLen)
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 
@@ -325,7 +343,7 @@ METHOD DistribuicaoDFePorChave(acUFAutor, eCNPJCPF, echNFe) CLASS ACBrNFe
     local hResult, buffer, bufferLen
     bufferLen := STR_LEN
     buffer := Space(bufferLen)
-    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_DistribuicaoDFePorChave", hb_StrToUTF8(acUFAutor), hb_StrToUTF8(eCNPJCPF), hb_StrToUTF8(echNFe), @buffer, @bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_DistribuicaoDFePorChave", acUFAutor, hb_StrToUTF8(eCNPJCPF), hb_StrToUTF8(echNFe), @buffer, @bufferLen)
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 
@@ -343,7 +361,7 @@ METHOD EnviarEmailEvento(ePara, eChaveEvento, eChaveNFe, aEnviaPDF, eAssunto, eM
 
 METHOD Imprimir(cImpressora, nNumCopias, cProtocolo, bMostrarPreview, cMarcaDagua, bViaConsumidor, bSimplificado) CLASS ACBrNFe
     local hResult
-    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_Imprimir", hb_StrToUTF8(cImpressora), nNumCopias, hb_StrToUTF8(bMostrarPreview), hb_StrToUTF8(cMarcaDagua), hb_StrToUTF8(bViaConsumidor), hb_StrToUTF8(bSimplificado))
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_Imprimir", hb_StrToUTF8(cImpressora), nNumCopias, hb_StrToUTF8(cProtocolo), hb_StrToUTF8(bMostrarPreview), hb_StrToUTF8(cMarcaDagua), hb_StrToUTF8(bViaConsumidor), hb_StrToUTF8(bSimplificado))
     ::CheckResult(hResult)
     RETURN nil
 

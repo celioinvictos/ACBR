@@ -1,34 +1,35 @@
-{******************************************************************************}
-{ Projeto: ACBrNFeMonitor                                                      }
-{  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para }
-{ criar uma interface de comunicação com equipamentos de automacao comercial.  }
-
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
-
-{ Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
-{  Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo   }
-{ sob os termos da Licença Pública Geral GNU, conforme publicada pela Free     }
-{ Software Foundation; tanto a versão 2 da Licença como (a seu critério)       }
-{ qualquer versão mais nova.                                                   }
-
-{  Este programa é distribuído na expectativa de ser útil, mas SEM NENHUMA     }
-{ GARANTIA; nem mesmo a garantia implícita de COMERCIALIZAÇÃO OU DE ADEQUAÇÃO A}
-{ QUALQUER PROPÓSITO EM PARTICULAR. Consulte a Licença Pública Geral GNU para  }
-{ obter mais detalhes. (Arquivo LICENCA.TXT ou LICENSE.TXT)                    }
-
-{  Você deve ter recebido uma cópia da Licença Pública Geral GNU junto com este}
-{ programa; se não, escreva para a Free Software Foundation, Inc., 59 Temple   }
-{ Place, Suite 330, Boston, MA 02111-1307, USA. Você também pode obter uma     }
-{ copia da licença em:  http://www.opensource.org/licenses/gpl-license.php     }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
-{******************************************************************************}
+{*******************************************************************************}
+{ Projeto: ACBrMonitor                                                          }
+{  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
+{ criar uma interface de comunicação com equipamentos de automacao comercial.   }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
+{                                                                               }
+{ Colaboradores nesse arquivo:                                                  }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{                                                                               }
+{*******************************************************************************}
 {$I ACBr.inc}
 
 unit DoACBrCTeUnit;
@@ -456,6 +457,7 @@ begin
   ListaDeMetodos.Add(CMetodoLoadfromfile);
   ListaDeMetodos.Add(CMetodoLerini);
   ListaDeMetodos.Add(CMetodoSetcertificado);
+  ListaDeMetodos.Add(CMetodoObterCertificados);
   ListaDeMetodos.Add(CMetodoRestaurar);
   ListaDeMetodos.Add(CMetodoOcultar);
   ListaDeMetodos.Add(CMetodoEncerrarmonitor);
@@ -530,7 +532,9 @@ begin
     46 : AMetodoClass := TMetodoCertificadoDataVencimento; // DataVencimentoCertificado
     47 : AMetodoClass := TMetodoSetTipoImpressao;
 
-    48..62 : DoACbr(ACmd);
+    else
+      DoACbr(ACmd);
+
   end;
 
   if Assigned(AMetodoClass) then
@@ -984,7 +988,7 @@ begin
     end;
 
     ACBrCTe.WebServices.ConsultaCadastro.Executar;
-    Resp := TConsultaCadastroResposta.Create(resINI, codUTF8);
+    Resp := TConsultaCadastroResposta.Create(TpResp, codUTF8);
     try
       Resp.Processar(ACBrCTe.WebServices.ConsultaCadastro.RetConsCad);
       fpCmd.Resposta:= Resp.Msg + sLineBreak + Resp.Gerar ;
@@ -1023,7 +1027,7 @@ begin
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
     ACBrCTe.WebServices.Inutiliza(ACNPJ, AJustificativa, AAno, AModelo, ASerie, ANumInicial, ANumFinal);
-    Resposta := TInutilizarCTeResposta.Create(resINI, codUTF8);
+    Resposta := TInutilizarCTeResposta.Create(TpResp, codUTF8);
     try
       Resposta.Processar(ACBrCTe);
       fpCmd.Resposta:= Resposta.Msg + sLineBreak + Resposta.Gerar ;
@@ -1138,7 +1142,7 @@ begin
     ACBrCTe.WebServices.Recibo.Recibo := ARecibo;
     ACBrCTe.WebServices.Recibo.Executar;
 
-    RespRetorno := TRetornoResposta.Create('CTe', resINI, codUTF8);
+    RespRetorno := TRetornoResposta.Create('CTe', TpResp, codUTF8);
     try
       RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
                             ACBrCTe.WebServices.Retorno.Recibo,
@@ -1188,7 +1192,7 @@ begin
 
 
       ACBrCTe.WebServices.Consulta.Executar;
-      Resposta := TConsultaCTeResposta.Create(resINI, codUTF8);
+      Resposta := TConsultaCTeResposta.Create(TpResp, codUTF8);
       try
         Resposta.Processar(ACBrCTe);
         fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
@@ -1281,7 +1285,7 @@ begin
   begin
     if ACBrCTe.WebServices.StatusServico.Executar then
     begin
-      Resposta := TStatusServicoResposta.Create(resINI, codUTF8);
+      Resposta := TStatusServicoResposta.Create(TpResp, codUTF8);
       try
         Resposta.Processar(ACBrCTe);
         fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
@@ -1501,7 +1505,7 @@ begin
     ACBrCTe.WebServices.Enviar.Sincrono:= not(Assincrono);
 
     ACBrCTe.WebServices.Enviar.Executar;
-    RespEnvio := TEnvioResposta.Create(resINI, codUTF8);
+    RespEnvio := TEnvioResposta.Create(TpResp, codUTF8);
     try
        RespEnvio.Processar(ACBrCTe);
        fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
@@ -1513,7 +1517,7 @@ begin
     begin
       ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
       ACBrCTe.WebServices.Retorno.Executar;
-      RespRetorno := TRetornoResposta.Create('CTe', resINI, codUTF8);
+      RespRetorno := TRetornoResposta.Create('CTe', TpResp, codUTF8);
       try
         RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
                               ACBrCTe.WebServices.Retorno.Recibo,
@@ -1647,7 +1651,7 @@ begin
     ACBrCTe.WebServices.Enviar.Lote := IntToStr(ALoteEnvio);
 
     ACBrCTe.WebServices.Enviar.Executar;
-    RespEnvio := TEnvioResposta.Create(resINI, codUTF8);
+    RespEnvio := TEnvioResposta.Create(TpResp, codUTF8);
     try
        RespEnvio.Processar(ACBrCTe);
        fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
@@ -1657,7 +1661,7 @@ begin
 
     ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
     ACBrCTe.WebServices.Retorno.Executar;
-    RespRetorno := TRetornoResposta.Create('CTe', resINI, codUTF8);
+    RespRetorno := TRetornoResposta.Create('CTe', TpResp, codUTF8);
     try
       RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
                             ACBrCTe.WebServices.Retorno.Recibo,
@@ -1721,7 +1725,7 @@ begin
       ACBrCTe.WebServices.Enviar.Sincrono:= not(Assincrono);
 
       ACBrCTe.WebServices.Enviar.Executar;
-      RespEnvio := TEnvioResposta.Create(resINI, codUTF8);
+      RespEnvio := TEnvioResposta.Create(TpResp, codUTF8);
       try
          RespEnvio.Processar(ACBrCTe);
          fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
@@ -1735,7 +1739,7 @@ begin
       begin
         ACBrCTe.WebServices.Retorno.Recibo := ACBrCTe.WebServices.Enviar.Recibo;
         ACBrCTe.WebServices.Retorno.Executar;
-        RespRetorno := TRetornoResposta.Create('CTe', resINI, codUTF8);
+        RespRetorno := TRetornoResposta.Create('CTe', TpResp, codUTF8);
         try
           RespRetorno.Processar(ACBrCTe.WebServices.Retorno.CTeRetorno,
                                 ACBrCTe.WebServices.Retorno.Recibo,
@@ -1927,7 +1931,7 @@ begin
     end;
 
     ACBrCTe.EnviarEvento(ALote);
-    Resposta := TCancelamentoResposta.Create(resINI, codUTF8);
+    Resposta := TCancelamentoResposta.Create(TpResp, codUTF8);
     try
       Resposta.Processar(ACBrCTe);
       fpCmd.Resposta := Resposta.XMotivo + sLineBreak + Resposta.Gerar;
@@ -2133,7 +2137,7 @@ begin
     ACBrCTe.EventoCTe.LerFromIni( AArq, False );
 
     ACBrCTe.EnviarEvento(ACBrCTe.EventoCTe.idLote);
-    Resp := TEventoResposta.Create(resINI, codUTF8);
+    Resp := TEventoResposta.Create(TpResp, codUTF8);
     try
       Resp.Processar(ACBrCTe);
       fpCmd.Resposta:= sLineBreak + Resp.Gerar;
@@ -2165,7 +2169,7 @@ begin
     ACBrCTe.EventoCTe.LerFromIni( AArq, True );
 
     ACBrCTe.EnviarEvento(ACBrCTe.EventoCTe.idLote);
-    Resp := TEventoResposta.Create(resINI, codUTF8);
+    Resp := TEventoResposta.Create(TpResp, codUTF8);
     try
       Resp.Processar(ACBrCTe);
       fpCmd.Resposta:= sLineBreak + Resp.Gerar;
@@ -2198,7 +2202,7 @@ begin
 
     try
       ACBrCTe.EnviarEvento(ACBrCTe.EventoCTe.idLote);
-      Resp := TEventoResposta.Create(resINI, codUTF8);
+      Resp := TEventoResposta.Create(TpResp, codUTF8);
       try
         Resp.Processar(ACBrCTe);
         fpCmd.Resposta:= sLineBreak + Resp.Gerar;
@@ -2237,7 +2241,7 @@ begin
       raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorChaveCTe(AUF, ACNPJ, AChave);
-    Resp:= TDistribuicaoDFeResposta.Create(resINI, codUTF8);
+    Resp:= TDistribuicaoDFeResposta.Create(TpResp, codUTF8);
     try
       Resp.Processar(ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt,
                      ACBrCTe.WebServices.DistribuicaoDFe.Msg,
@@ -2275,7 +2279,7 @@ begin
       raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, AUltNSU);
-    Resp:= TDistribuicaoDFeResposta.Create(resINI, codUTF8);
+    Resp:= TDistribuicaoDFeResposta.Create(TpResp, codUTF8);
     try
       Resp.Processar(ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt,
                      ACBrCTe.WebServices.DistribuicaoDFe.Msg,
@@ -2313,7 +2317,7 @@ begin
       raise Exception.Create('CNPJ/CPF '+ACNPJ+' inválido.');
 
     ACBrCTe.DistribuicaoDFePorNSU(AUF, ACNPJ, ANSU);
-    Resp:= TDistribuicaoDFeResposta.Create(resINI, codUTF8);
+    Resp:= TDistribuicaoDFeResposta.Create(TpResp, codUTF8);
     try
       Resp.Processar(ACBrCTe.WebServices.DistribuicaoDFe.retDistDFeInt,
                      ACBrCTe.WebServices.DistribuicaoDFe.Msg,

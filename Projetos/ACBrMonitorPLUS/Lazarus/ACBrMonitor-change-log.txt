@@ -43,6 +43,41 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+10/01/2020
+[*] DoACBrNFe
+    Melhoria no metodo GerarNFeIni.
+
+09/01/2020
+[+] DoACBrUnit, DoACBrNFe, DoACBrCTe, DoACBrMDFe
+Adicionado novo método "ObterCertificados", retorna os dados de todos os certificados instalados na máquina.
+
+09/01/2020
+[+] ACBrMonitor1
+Adicionado botão para Cancelamento por Substituição da NFCe
+
+06/01/2020
+[+] DoACBrECFUnit, ACBrMonitorConfig
+Adicionado os métodos novos de Processamento, Consultas, Cancelamento, Download ref. BlocoX
+
+02/01/2020
+[*] DoACBrBPeUnit e DoACBrMDFeUnit
+Alterado a implementação dos métodos: GerarBPeIni e GerarMDFeIni visando se utilizar
+do método GerarIni implementado nos códigos dos componentes.
+
+18/12/2019
+[*] DoACBrBPeUnit
+Incluido o parametro Protocolo no retorno do Envio e corrigido a impressão do DABPE
+após o envio somente quando o mesmo for autorizado.
+
+10/12/2019
+[*] DoACBrBPeUnit, DoACBrCTeUnit, DoACBrESocialUnit, DoACBrGNReUnit, DoACBrMDFeUnit, DoACBrSATUnit,
+DoACBrCEPUnit, DoACBrIBGEUnit, DoACBrSEDEXUnit
+Adicionado parametrização para o Tipo de Resposta dos métodos WebService (INI, XML, JSON)
+
+10/12/2019
+[*] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts, CmdUnit
+Adicionado propriedade para configurar o Tipo de Resposta dos métodos WebService (INI, XML, JSON)
+
 02/12/2019
 [*] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
 Adicionado propriedade Para apresentar coluna Desconto e Acrescimo na impressão da DANFe

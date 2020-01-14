@@ -48,6 +48,36 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+08/01/2020
+--- ACBrLibNFeConfig ---
+[+] Adicionado propriedades que estavam faltando na configuração de impressão.
+    Por: Rafael Dias
+
+07/01/2020
+--- ACBrLibNFeClass ---
+[+] Adicionado o metodo NFE_ObterCertificados.
+   Por: Rafael Dias
+
+03/01/2020
+--- ACBrLibNFeClass ---
+[+] Adicionado o metodo NFE_ImportarConfig.
+   Por: Rafael Dias
+
+30/12/2019
+--- ACBrLibNFeClass ---
+[+] Adicionado os metodos NFE_ObterIni e NFE_GravarIni.
+   Por: Rafael Dias
+
+26/12/2019
+-- ACBrLibNFeDataModule --
+[-] Correção para acatar o layout de impressão quando é PDF e caso não o layout não seja nenhum fortes setar por padrão a impressão em fortes.
+    Por: Rafael Dias
+
+19/12/2019
+--- ACBrLibNFeRespostas ---
+[+] Incluido a propriedade Protocolo no retorno do Envio.
+   Por: Italo Jurisato Junior
+
 16/11/2019
 -- ACBrLibNFeClass --
 [-] Corrigido erro de não preencher dados de respostas no metodo NFE_GerarChave.

@@ -317,6 +317,8 @@ begin
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'ConsultarNfseRpsResposta') <> '');
     if not Nivel1 then
+      Nivel1 := (leitor.rExtrai(1, 'ConsultarNfseRpsRespostaV110') <> '');
+    if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'ConsultarNfsePorRpsResult') <> '');
 
     if not Nivel1 then
@@ -925,6 +927,20 @@ begin
         ListaNfse.FMsgRetorno.New;
         ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
         ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
+
+        inc(i);
+      end;
+    end;
+
+    i := 0;
+    if (leitor.rExtrai(2, 'Erro') <> '') then
+    begin
+      while Leitor.rExtrai(3, 'Erro', '', i + 1) <> '' do
+      begin
+        ListaNfse.FMsgRetorno.New;
+        ListaNfse.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'ErroID');
+        ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'ErroMensagem');
+        ListaNfse.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'ErroSolucao');
 
         inc(i);
       end;

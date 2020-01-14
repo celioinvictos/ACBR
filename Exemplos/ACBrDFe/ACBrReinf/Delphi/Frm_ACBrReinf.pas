@@ -218,10 +218,10 @@ type
     procedure btnValidarSchemaClick(Sender: TObject);
     procedure btnConsultarClick(Sender: TObject);
     procedure btnConsultarReciboClick(Sender: TObject);
-    procedure ACBrReinf1TransmissaoEventos(const AXML: String;
-      ATipo: TEventosReinf);
     procedure chk1000Click(Sender: TObject);
     procedure rdgOperacaoClick(Sender: TObject);
+    procedure ACBrReinf1TransmissaoEventos(const AXML: String;
+      ATipo: TEventosReinf);
   private
     { Private declarations }
 
@@ -649,7 +649,7 @@ end;
 procedure TfrmACBrReinf.ConfigurarComponente;
 var
   Ok: Boolean;
-  PathMensal: String;
+  PathMensal: string;
 begin
   ACBrReinf1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrReinf1.Configuracoes.Certificados.Senha       := edtSenha.Text;
@@ -720,13 +720,10 @@ begin
     EmissaoPathReinf := cbxEmissaoPathReinf.Checked;
     SepararPorCNPJ   := cbxSepararPorCNPJ.Checked;
     SepararPorModelo := cbxSepararPorModelo.Checked;
-    PathSalvar       := edtPathLogs.Text;
     PathSchemas      := edtPathSchemas.Text;
     PathReinf        := edtPathReinf.Text;
-
-    PathMensal := GetPathReinf(0);
-
-    PathSalvar := PathMensal;
+    PathMensal       := GetPathReinf(0);
+    PathSalvar       := PathMensal;
   end;
 end;
 
@@ -866,6 +863,17 @@ begin
   Application.ProcessMessages;
 end;
 
+procedure TfrmACBrReinf.ACBrReinf1TransmissaoEventos(const AXML: String;
+  ATipo: TEventosReinf);
+begin
+  case ATipo of
+    erEnvioLote:       mmoXMLEnv.Lines.Text := AXML;
+    erRetornoLote:     mmoXMLEnv.Lines.Text := AXML;
+    erEnvioConsulta:   mmoXMLEnv.Lines.Text := AXML;
+    erRetornoConsulta: mmoXMLEnv.Lines.Text := AXML;
+  end;
+end;
+
 procedure TfrmACBrReinf.btnGerarClick(Sender: TObject);
 var
   i: Integer;
@@ -875,7 +883,14 @@ begin
 
   ACBrReinf1.Eventos.Clear;
   PreencherXMLEventos;
-  ACBrReinf1.AssinarEventos;
+
+  ACBrReinf1.Eventos.Gerar;    // Somente Gera os XMLs dos Eventos
+  ACBrReinf1.Eventos.Assinar;  // Somente Assina os XMLs
+  ACBrReinf1.Eventos.Validar;  // Somente Valida os XMLs
+
+//  ACBrReinf1.Eventos.GerarXMLs; // Gera, Assina e Valida os XMLs dos Eventos
+
+  ACBrReinf1.Eventos.SaveToFiles; // Salva em Disco os XMLs dos Eventos
 
   ShowMessage('XML dos Eventos Selecionados Gerados.');
 
@@ -1242,17 +1257,6 @@ begin
     end;
 
     PageControl1.ActivePageIndex := 1;
-  end;
-end;
-
-procedure TfrmACBrReinf.ACBrReinf1TransmissaoEventos(const AXML: String;
-  ATipo: TEventosReinf);
-begin
-  case ATipo of
-    erEnvioLote:       mmoXMLEnv.Lines.Text := AXML;
-    erRetornoLote:     mmoXMLEnv.Lines.Text := AXML;
-    erEnvioConsulta:   mmoXMLEnv.Lines.Text := AXML;
-    erRetornoConsulta: mmoXMLEnv.Lines.Text := AXML;
   end;
 end;
 

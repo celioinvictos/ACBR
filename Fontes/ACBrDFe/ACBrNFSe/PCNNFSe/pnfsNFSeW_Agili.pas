@@ -40,7 +40,7 @@ uses
 
 {$ENDIF}
   SysUtils, Classes, StrUtils,
-  synacode, ACBrConsts,
+  ACBrConsts,
   pcnAuxiliar, pcnConversao, pcnGerador,
   pnfsNFSe, pnfsNFSeW, pnfsConversao, pnfsConsts;
 
@@ -293,6 +293,12 @@ begin
       end;
 
       Gerador.wGrupoNFSe('/Contato');
+
+      if VersaoNFSe = ve100 then
+        Gerador.wCampoNFSe(tcStr, '', 'InscricaoEstadual', 01, 20, 0, NFSe.Tomador.IdentificacaoTomador.InscricaoEstadual, '')
+      else
+        Gerador.wCampoNFSe(tcStr, '', 'InscricaoEstadual', 01, 15, 0, NFSe.Tomador.IdentificacaoTomador.InscricaoEstadual, '');
+
     end;
 
     Gerador.wGrupoNFSe('/DadosTomador');

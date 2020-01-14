@@ -54,6 +54,7 @@ exports
   MDFE_Nome,
   MDFE_Versao,
   MDFE_UltimoRetorno,
+  MDFE_ImportarConfig,
   MDFE_ConfigLer,
   MDFE_ConfigGravar,
   MDFE_ConfigLerValor,
@@ -66,6 +67,8 @@ exports
   MDFE_Consultar,
   MDFE_Cancelar,
   MDFE_EnviarEvento,
+  MDFE_EncerrarMDFe,
+  MDFE_ConsultaMDFeNaoEnc,
   MDFE_DistribuicaoDFePorUltNSU,
   MDFE_DistribuicaoDFePorNSU,
   MDFE_DistribuicaoDFePorChave,
@@ -81,6 +84,8 @@ exports
   MDFE_CarregarINI,
   MDFE_ObterXml,
   MDFE_GravarXml,
+  MDFE_ObterIni,
+  MDFE_GravarIni,
   MDFE_CarregarEventoXML,
   MDFE_CarregarEventoINI,
   MDFE_LimparLista,
@@ -88,7 +93,9 @@ exports
   MDFE_Assinar,
   MDFE_Validar,
   MDFE_ValidarRegrasdeNegocios,
-  MDFE_VerificarAssinatura;
+  MDFE_VerificarAssinatura,
+  MDFE_GerarChave,
+  MDFE_ObterCertificados;
 
 begin
   {$IFDEF DEBUG}

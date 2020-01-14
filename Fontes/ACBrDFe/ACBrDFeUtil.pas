@@ -1,37 +1,33 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                          }
-
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-
-
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -236,16 +232,26 @@ begin
   //       NNNNNNN Número sequencial dentro do AnoData ( 7 dígitos )
   //       SSS Serie do RE (001, 002, ...)
 
-  Result := StrIsNumber(AValue) and (Length(AValue) = 12);
-
-  if Result then
+  if (AValue = '000000000000') or (AValue = '') then
   begin
-    AnoData  := StrToInt(Copy(IntToStr(YearOf(Date)), 3, 2));
-    AnoValue := StrToInt(Copy(AValue, 1, 2));
-    SerieRE  := StrToInt(Copy(AValue,10, 3));
+    // Deve aceitar doze zeros, pois há casos onde a RE é gerada somente depois
+    // http://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=81446&visao=anotado
+    // No link acima diz que o DUE substitui o RE.
+    Result := True;
+  end
+  else
+  begin
+    Result := StrIsNumber(AValue) and (Length(AValue) = 12);
 
-    Result := ((AnoValue >= (AnoData - 1)) and (AnoValue <= (AnoData + 1))) and
-              ((SerieRE >= 1) and (SerieRE <= 999));
+    if Result then
+    begin
+      AnoData  := StrToInt(Copy(IntToStr(YearOf(Date)), 3, 2));
+      AnoValue := StrToInt(Copy(AValue,  1, 2));
+      SerieRE  := StrToInt(Copy(AValue, 10, 3));
+
+      Result := ((AnoValue >= (AnoData - 1)) and (AnoValue <= (AnoData + 1))) and
+                ((SerieRE >= 1) and (SerieRE <= 999));
+    end;
   end;
 end;
 

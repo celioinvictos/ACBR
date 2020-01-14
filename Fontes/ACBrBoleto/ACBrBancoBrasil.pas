@@ -300,8 +300,8 @@ end;
 
 function TACBrBancoBrasil.GerarRegistroHeader240(NumeroRemessa : Integer): String;
 var
-  ATipoInscricao,aConta:String;
-  aAgencia,aModalidade :String;
+  ATipoInscricao, aConta, aAgencia, aModalidade, aCSP :String;
+  VersaoArquivo, VersaoLote: Integer;
 begin
 
    with ACBrBanco.ACBrBoleto.Cedente do
@@ -316,6 +316,21 @@ begin
       aAgencia    := PadLeft(OnlyNumber(Agencia), 5, '0');
       aConta      := PadLeft(OnlyNumber(Conta), 12, '0');
       aModalidade := PadLeft(trim(Modalidade), 3, '0');
+
+      VersaoArquivo := LayoutVersaoArquivo;
+
+      if not (VersaoArquivo in [030, 040, 080, 082, 083, 084, 087]) then
+        VersaoArquivo := 030;
+
+      {
+      Se o arquivo foi formatado com a  versão do layout  030,
+      pode ser informado 'CSP' nas posições 223 a 225.
+      }
+
+      if VersaoArquivo = 030 then
+        aCSP := 'CSP'
+      else
+        aCSP := '';
 
       { GERAR REGISTRO-HEADER DO ARQUIVO }
 
@@ -340,17 +355,40 @@ begin
                FormatDateTime('ddmmyyyy', Now)                 + // 144 a 151 - Data do de geração do arquivo
                FormatDateTime('hhmmss', Now)                   + // 152 a 157 - Hora de geração do arquivo
                PadLeft(IntToStr(NumeroRemessa), 6, '0')        + // 158 a 163 - Número seqüencial do arquivo
-               '030'                                           + // 164 a 166 - Número da versão do layout do arquivo
+               PadLeft(IntToStr(VersaoArquivo), 3, '0')        + // 164 a 166 - Número da versão do layout do arquivo
                StringOfChar('0', 5)                            + // 167 a 171 - Densidade de gravação do arquivo (BPI)
                StringOfChar(' ', 20)                           + // 172 a 191 - Uso reservado do banco
                StringOfChar('0', 20)                           + // 192 a 211 - Uso reservado da empresa
                StringOfChar(' ', 11)                           + // 212 a 222 - 11 brancos
-               'CSP'                                           + // 223 a 225 - 'CSP'
+               PadLeft(aCSP, 3, ' ')                           + // 223 a 225 - Informar 'CSP' se a versão for 030, caso contrario informar branco
                StringOfChar('0', 3)                            + // 226 a 228 - Uso exclusivo de Vans
                StringOfChar(' ', 2)                            + // 229 a 230 - Tipo de servico
                StringOfChar(' ', 10);                            // 231 a 240 - titulo em carteira de cobranca
 
           { GERAR REGISTRO HEADER DO LOTE }
+
+      { *** Versao do Layout do Lote ***
+      Campo não criticado pelo sistema. Informar Zeros OU se preferir,
+      informar número da versão do leiaute do Lote que foi utilizado como base
+      para formatação dos campos.
+      Versões disponíveis: 043, 042, 041, 040, 030 e 020.
+      A versão do Lote quando informada deve estar condizente com a versão do
+      Arquivo (posições 164 a 166 do Header de Arquivo).
+      }
+
+    //  VersaoLote := LayoutVersaoLote;
+
+      case VersaoArquivo of
+        030: VersaoLote := 020;
+        040: VersaoLote := 030;
+        080: VersaoLote := 040;
+        082: VersaoLote := 041;
+        083: VersaoLote := 042;
+        084: VersaoLote := 043;
+        087: VersaoLote := 045;
+      else
+        VersaoLote := 000;
+      end;
 
       Result:= Result + #13#10 +
                IntToStrZero(ACBrBanco.Numero, 3)               + // 1 a 3 - Código do banco
@@ -359,7 +397,7 @@ begin
                'R'                                             + // 9 - Tipo de operação: R (Remessa) ou T (Retorno)
                '01'                                            + // 10 a 11 - Tipo de serviço: 01 (Cobrança)
                '00'                                            + // 12 a 13 - Forma de lançamento: preencher com ZEROS no caso de cobrança
-               '020'                                           + // 14 a 16 - Número da versão do layout do lote
+               PadLeft(IntToStr(VersaoLote), 3, '0')           + // 14 a 16 - Número da versão do layout do lote
                ' '                                             + // 17 - Uso exclusivo FEBRABAN/CNAB
                ATipoInscricao                                  + // 18 - Tipo de inscrição do cedente
                PadLeft(OnlyNumber(CNPJCPF), 15, '0')           + // 19 a 32 -Número de inscrição do cedente
@@ -393,6 +431,8 @@ var
    AMensagem                    : String;
    ACodProtesto                 : Char;
    BoletoEmail,GeraSegS         : Boolean;
+   DataProtestoNegativacao      : string;
+   DiasProtestoNegativacao      : string;
 
   function MontarInstrucoes2: string;
   begin
@@ -469,6 +509,26 @@ begin
           ACodProtesto := '3';
         end;
       end;
+
+      {Data e Dias de Protesto / Negativação}
+      if (ACodProtesto = '8') then
+      begin
+        DataProtestoNegativacao := DateToStr(DataNegativacao);
+        DiasProtestoNegativacao := IntToStr(DiasDeNegativacao);
+      end
+      else
+	  begin
+  	    if (ACodProtesto <> '3') then
+        begin
+          DataProtestoNegativacao := DateToStr(DataProtesto);
+          DiasProtestoNegativacao := IntToStr(DiasDeProtesto);
+        end
+        else
+        begin
+          DataProtestoNegativacao := '';
+          DiasProtestoNegativacao := '0';
+        end;
+	  end;
 
      {Pegando o Tipo de Ocorrencia}
      case OcorrenciaOriginal.Tipo of
@@ -577,11 +637,12 @@ begin
 
 //     ACaracTitulo := ' ';
      case CaracTitulo of
-       tcSimples     : ACaracTitulo  := '1';
-       tcVinculada   : ACaracTitulo  := '2';
-       tcCaucionada  : ACaracTitulo  := '3';
-       tcDescontada  : ACaracTitulo  := '4';
-       tcVendor      : ACaracTitulo  := '5';
+       tcSimples       : ACaracTitulo  := '1';
+       tcVinculada     : ACaracTitulo  := '2';
+       tcCaucionada    : ACaracTitulo  := '3';
+       tcDescontada    : ACaracTitulo  := '4';
+       tcVendor        : ACaracTitulo  := '5';
+       tcDiretaEspecial: ACaracTitulo  := '7';
      else
        ACaracTitulo  := '1';
      end;
@@ -668,9 +729,14 @@ begin
               IntToStrZero( round(ValorIOF * 100), 15)                                  + // 166 a 180 - Valor do IOF a ser recolhido
               IntToStrZero( round(ValorAbatimento * 100), 15)                           + // 181 a 195 - Valor do abatimento
               PadRight(SeuNumero, 25, ' ')                                              + // 196 a 220 - Identificação do título na empresa
-              IfThen((DataProtesto <> 0) and (DiasDeProtesto > 0), ACodProtesto, '3')   + // 221 - Código de protesto
-              IfThen((DataProtesto <> 0) and (DiasDeProtesto > 0),
-                    PadLeft(IntToStr(DiasDeProtesto), 2, '0'), '00')                    + // 222 a 223 - Prazo para protesto (em dias)
+//              IfThen((DataProtesto <> 0) and (DiasDeProtesto > 0), ACodProtesto, '3')   + // 221 - Código de protesto
+//              IfThen((DataProtesto <> 0) and (DiasDeProtesto > 0),
+//                    PadLeft(IntToStr(DiasDeProtesto), 2, '0'), '00')                    + // 222 a 223 - Prazo para protesto (em dias)
+              IfThen((DataProtestoNegativacao <> '') and
+                      (StrToInt(DiasProtestoNegativacao) > 0), ACodProtesto, '3')       + // 221 - Código de protesto
+              IfThen((DataProtestoNegativacao <> '') and
+                     (StrToInt(DiasProtestoNegativacao) > 0),
+                      PadLeft(DiasProtestoNegativacao, 2, '0'), '00')                   + // 222 a 223 - Prazo para protesto (em dias)
               '0'                                                                       + // 224 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               '000'                                                                     + // 225 a 227 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               '09'                                                                      + // 228 a 229 - Código da moeda: Real

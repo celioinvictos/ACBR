@@ -54,6 +54,7 @@ exports
   NFE_Nome,
   NFE_Versao,
   NFE_UltimoRetorno,
+  NFE_ImportarConfig,
   NFE_ConfigLer,
   NFE_ConfigGravar,
   NFE_ConfigLerValor,
@@ -85,6 +86,8 @@ exports
   NFE_CarregarINI,
   NFE_ObterXml,
   NFE_GravarXml,
+  NFE_ObterIni,
+  NFE_GravarIni,
   NFE_CarregarEventoXML,
   NFE_CarregarEventoINI,
   NFE_LimparLista,
@@ -93,7 +96,8 @@ exports
   NFE_Validar,
   NFE_ValidarRegrasdeNegocios,
   NFE_VerificarAssinatura,
-  NFE_GerarChave;
+  NFE_GerarChave,
+  NFE_ObterCertificados;
 
 begin
   {$IFDEF DEBUG}

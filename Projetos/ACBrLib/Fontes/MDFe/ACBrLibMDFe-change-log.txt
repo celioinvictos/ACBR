@@ -44,19 +44,49 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+08/01/2020
+--- ACBrLibMDFeClass ---
+[+] Adicionado o metodo MDFE_GerarChave.
+   Por: Rafael Dias
+[+] Adicionado o metodo MDFE_ObterCertificados.
+   Por: Rafael Dias
+
+03/01/2020
+--- ACBrLibMDFeClass ---
+--- ACBrLibMDFeConfig ---
+[+] Adicionado o metodo ImportConfig para importar a configuração do ACBrMonitor.
+    Por: Rafael Dias
+[-] Corrigido erro no metodo consultar.
+    Por: Rafael Dias
+
+30/12/2019
+--- ACBrLibMDFe ---
+[-] Corrigido o nome de saida na compílação em linux x86.
+    Por: Rafael Dias
+
+19/12/2019
+--- ACBrLibMDFeRespostas ---
+[+] Incluido a propriedade Protocolo no retorno do Envio.
+    Por: Italo Jurisato Junior
+
+13/12/2019
+--- ACBrLibMDFeClass ---
+[-] Correção nos metodos MDFE_EncerrarMDFe e MDFE_ConsultaMDFeNaoEnc.
+    Por: Rafael Dias.
+
 19/09/2018
 --- ACBrLibMDFe ---
 [+] Inicio do projeto.
-   Por: Italo Jurisato Junior
+    Por: Italo Jurisato Junior
 
 24/08/2018
 -- ACBrLibMDFeRespostas --
 [+] Acrescentado a propriedade Arquivo nas respostas de Cancelamento e Encerramento.
-Por: Italo Jurisato Junior
+    Por: Italo Jurisato Junior
 
 14/05/2018
 --- ACBrLibMDFe ---
-
 [+] Adicionado métodos para retorno de envio do XML do componente MDFe
  (Utilizado também pelo ACBrMonitorPlus).
+    Por: Italo Jurisato Junior
 

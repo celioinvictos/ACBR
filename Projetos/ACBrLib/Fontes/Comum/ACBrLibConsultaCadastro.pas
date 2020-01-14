@@ -119,16 +119,11 @@ type
     FdhCons: TDateTime;
     FItems: TObjectList;
 
-    function GetItem(Index: Integer): TConsultaCadastroItemResposta;
-
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
     procedure Processar(const retConsCad: TRetConsCad);
-    function Gerar: Ansistring; override;
-
-    property Items[Index: Integer]: TConsultaCadastroItemResposta read GetItem;
 
   published
     property Msg: string read FMsg write FMsg;
@@ -144,6 +139,7 @@ type
     property CPF: string read FCPF write FCPF;
     property UF: string read FUF write FUF;
     property dhCons: TDateTime read FdhCons write FdhCons;
+    property Items: TObjectList read FItems write FItems;
 
   end;
 
@@ -201,23 +197,6 @@ begin
   inherited Destroy;
 end;
 
-function TConsultaCadastroResposta.Gerar: Ansistring;
-Var
-  i: Integer;
-begin
-  Result := Inherited Gerar;
-
-  for i := 0 to FItems.Count - 1  do
-  begin
-    Result := Result + sLineBreak + TConsultaCadastroItemResposta(FItems.Items[i]).Gerar;
-  end;
-end;
-
-function TConsultaCadastroResposta.GetItem(Index: Integer): TConsultaCadastroItemResposta;
-begin
-  Result := TConsultaCadastroItemResposta(FItems.Items[Index]);
-end;
-
 procedure TConsultaCadastroResposta.Processar(const retConsCad: TRetConsCad);
 var
   i: Integer;
@@ -241,7 +220,7 @@ begin
   begin
     for i := 0 to InfCad.Count - 1 do
     begin
-      Item := TConsultaCadastroItemResposta.Create('INFCAD' + Trim(IntToStrZero(i + 1, 3)), Tipo, FFormato);
+      Item := TConsultaCadastroItemResposta.Create('INFCAD' + Trim(IntToStrZero(i + 1, 3)), Tipo, Formato);
       Item.Processar(InfCad.Items[i]);
       FItems.Add(Item);
     end;

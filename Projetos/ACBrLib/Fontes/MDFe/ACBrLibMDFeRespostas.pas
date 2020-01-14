@@ -40,12 +40,11 @@ interface
 uses
   SysUtils, Classes, contnrs,
   pmdfeRetConsMDFeNaoEnc, pmdfeEventoMDFe,
-  ACBrMDFe, ACBrLibResposta;
+  ACBrMDFe, ACBrLibResposta, ACBrLibConsReciDFe;
 
 type
 
   { TLibMDFeResposta }
-
   TLibMDFeResposta = class(TACBrLibResposta<TACBrMDFe>)
   private
     Fversao: string;
@@ -60,7 +59,7 @@ type
     constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
       const AFormato: TACBrLibCodificacao); reintroduce;
 
-    procedure Processar(const Control: TACBrMDFe); reintroduce; virtual; abstract;
+    procedure Processar(const Control: TACBrMDFe); override; abstract;
 
   published
     property Versao: string read Fversao write Fversao;
@@ -74,7 +73,6 @@ type
   end;
 
   { TStatusServicoResposta }
-
   TStatusServicoResposta = class(TLibMDFeResposta)
   private
     FMsg: string;
@@ -85,7 +83,7 @@ type
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
-    procedure Processar(const Control: TACBrMDFe); override;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
   published
     property Msg: string read FMsg write FMsg;
@@ -97,7 +95,6 @@ type
   end;
 
   { TConsultaResposta }
-
   TConsultaResposta = class(TLibMDFeResposta)
   private
     FMsg: string;
@@ -109,7 +106,7 @@ type
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
-    procedure Processar(const Control: TACBrMDFe); override;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
   published
     property Msg: string read FMsg write FMsg;
@@ -121,7 +118,6 @@ type
   end;
 
   { TCancelamentoResposta }
-
   TCancelamentoResposta = class(TLibMDFeResposta)
   private
     FArquivo: string;
@@ -138,7 +134,7 @@ type
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
-    procedure Processar(const Control: TACBrMDFe); override;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
   published
     property ChMDFe: string read FchMDFe write FchMDFe;
@@ -155,7 +151,6 @@ type
   end;
 
   { TNaoEncerradosRespostaItem }
-
   TNaoEncerradosRespostaItem = class(TACBrLibRespostaBase)
   private
     Fmsg: string;
@@ -178,26 +173,22 @@ type
   end;
 
   { TNaoEncerradosResposta }
-
   TNaoEncerradosResposta = class(TLibMDFeResposta)
   private
     FItems: TObjectList;
-
-    function GetItem(Index: Integer): TNaoEncerradosRespostaItem;
 
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
-    procedure Processar(const Control: TACBrMDFe); override;
-    function Gerar: Ansistring; override;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
-    property Items[Index: Integer]: TNaoEncerradosRespostaItem read GetItem; default;
+  published
+    property Items: TObjectList read FItems;
 
   end;
 
   { TEncerramentoResposta }
-
   TEncerramentoResposta = class(TLibMDFeResposta)
   private
     FArquivo: string;
@@ -214,7 +205,7 @@ type
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
 
-    procedure Processar(const Control: TACBrMDFe); override;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
   published
     property ChMDFe: string read FchMDFe write FchMDFe;
@@ -231,31 +222,43 @@ type
   end;
 
   { TEnvioResposta }
-
   TEnvioResposta = class(TLibMDFeResposta)
   private
     Fmsg: string;
     FdhRecbto: TDateTime;
     FtMed: integer;
     FnRec: string;
+    FXml: string;
+    FNProt: string;
+    FItem: TRetornoItemResposta;
 
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+    destructor Destroy; override;
 
-    procedure Processar(const Control: TACBrMDFe); override;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
   published
     property Msg: string read Fmsg write Fmsg;
     property DhRecbto: TDateTime read FdhRecbto write FdhRecbto;
     property TMed: integer read FtMed write FtMed;
     property NRec: string read FnRec write FnRec;
+    property Xml: String read FXml write FXml;
+    property NProt: String read FNProt write FNProt;
+    property Retorno: TRetornoItemResposta read FItem;
 
   end;
 
   { TEventoItemResposta }
-
-  TEventoItemResposta = class(TLibMDFeResposta)
+  TEventoItemResposta = class(TACBrLibRespostaBase)
   private
+    Fversao: string;
+    FtpAmb: string;
+    FverAplic: string;
+    FcStat: integer;
+    FxMotivo: string;
+    FcUF: integer;
+    FMsg: string;
     Farquivo: String;
     FchMDFe: string;
     FCNPJDest: string;
@@ -277,6 +280,13 @@ type
     procedure Processar(const Item: TRetInfEvento);
 
   published
+    property Versao: string read Fversao write Fversao;
+    property TpAmb: string read FtpAmb write FtpAmb;
+    property VerAplic: string read FverAplic write FverAplic;
+    property CStat: integer read FcStat write FcStat;
+    property XMotivo: string read FxMotivo write FxMotivo;
+    property CUF: integer read FcUF write FcUF;
+    property Msg: string read FMsg write FMsg;
     property chMDFe: string read FchMDFe write FchMDFe;
     property nProt: String read FnProt write FnProt;
     property arquivo: String read Farquivo write Farquivo;
@@ -293,27 +303,23 @@ type
   end;
 
   { TEventoResposta }
-
   TEventoResposta = class(TLibMDFeResposta)
   private
     FidLote: Integer;
     FcOrgao: Integer;
     FItems: TObjectList;
 
-    function GetItem(Index: Integer): TEventoItemResposta;
-
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
-    procedure Processar(const Control: TACBrMDFe); override;
-    function Gerar: Ansistring; override;
-
-    property Items[Index: Integer]: TEventoItemResposta read GetItem; default;
+    procedure Processar(const ACBrMDFe: TACBrMDFe); override;
 
   published
     property idLote: Integer read FidLote write FidLote;
     property cOrgao: Integer read FcOrgao write FcOrgao;
+    property Items: TObjectList read FItems;
+
   end;
 
 implementation
@@ -322,7 +328,6 @@ uses
   pcnConversao, pcnAuxiliar, ACBrLibMDFeConsts;
 
 { TEventoItemResposta }
-
 constructor TEventoItemResposta.Create(const ItemID: Integer;
   const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -353,10 +358,11 @@ begin
 end;
 
 { TEventoResposta }
-
 constructor TEventoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespEvento, ATipo, AFormato);
+
+  FItems := TObjectList.Create(true);
 end;
 
 destructor TEventoResposta.Destroy;
@@ -367,28 +373,12 @@ begin
   inherited Destroy;
 end;
 
-function TEventoResposta.GetItem(Index: Integer): TEventoItemResposta;
-begin
-  Result := TEventoItemResposta(FItems[Index]);
-end;
-
-function TEventoResposta.Gerar: Ansistring;
-Var
-  i: Integer;
-begin
-  Result := Inherited Gerar;
-  for i := 0 to FItems.Count - 1 do
-  begin
-    Result := Result + sLineBreak + TEventoItemResposta(FItems.Items[i]).Gerar;
-  end;
-end;
-
-procedure TEventoResposta.Processar(const Control: TACBrMDFe);
+procedure TEventoResposta.Processar(const ACBrMDFe: TACBrMDFe);
 Var
   i: Integer;
   Item: TEventoItemResposta;
 begin
-  with Control.WebServices.EnvEvento.EventoRetorno do
+  with ACBrMDFe.WebServices.EnvEvento.EventoRetorno do
   begin
     Self.VerAplic := VerAplic;
     Self.tpAmb := TpAmbToStr(tpAmb);
@@ -399,7 +389,7 @@ begin
 
     for i := 0 to retEvento.Count - 1 do
     begin
-      Item := TEventoItemResposta.Create(i+1, Tipo, FFormato);
+      Item := TEventoItemResposta.Create(i+1, Tipo, Formato);
       Item.Processar(retEvento.Items[i].RetInfEvento);
       FItems.Add(Item);
     end;
@@ -407,7 +397,6 @@ begin
 end;
 
 { TPadraoResposta }
-
 constructor TLibMDFeResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
   const AFormato: TACBrLibCodificacao);
 begin
@@ -415,15 +404,21 @@ begin
 end;
 
 { TEnvioResposta }
-
 constructor TEnvioResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespEnvio, ATipo, AFormato);
 end;
 
-procedure TEnvioResposta.Processar(const Control: TACBrMDFe);
+destructor TEnvioResposta.Destroy;
 begin
-  with Control.WebServices.Enviar do
+  if Assigned(FItem) then FreeAndNil(FItem);
+end;
+
+procedure TEnvioResposta.Processar(const ACBrMDFe: TACBrMDFe);
+begin
+  if Assigned(FItem) then FreeAndNil(FItem);
+
+  with ACBrMDFe.WebServices.Enviar do
   begin
     Self.Versao := verAplic;
     Self.TpAmb := TpAmbToStr(TpAmb);
@@ -435,11 +430,30 @@ begin
     Self.DhRecbto := dhRecbto;
     Self.Tmed := TMed;
     Self.Msg := Msg;
+    Self.NProt := Protocolo;
   end;
+
+  if (ACBrMDFe.WebServices.Enviar.Sincrono) and
+     (ACBrMDFe.Manifestos.Count > 0) then
+  begin
+    Self.Xml := ACBrMDFe.Manifestos.Items[0].XMLOriginal;
+
+    FItem := TRetornoItemResposta.Create('MDFe' + Trim(ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.chMDFe), Tipo, Formato);
+    FItem.Id := 'ID'+ ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.nProt;
+    FItem.tpAmb := TpAmbToStr(ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.tpAmb);
+    FItem.verAplic := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.verAplic;
+    FItem.chDFe := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.chMDFe;
+    FItem.dhRecbto := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.dhRecbto;
+    FItem.nProt := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.nProt;
+    FItem.digVal := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.digVal;
+    FItem.cStat := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.cStat;
+    FItem.xMotivo := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.xMotivo;
+    FItem.XML := ACBrMDFe.Manifestos.Items[0].MDFe.procMDFe.XML_prot;
+  end;
+
 end;
 
 { TNaoEncerradosRespostaItem }
-
 constructor TNaoEncerradosRespostaItem.Create(const ItemID: Integer; const ATipo: TACBrLibRespostaTipo;
         const AFormato: TACBrLibCodificacao);
 begin
@@ -454,11 +468,12 @@ begin
 end;
 
 { TNaoEncerradosResposta }
-
 constructor TNaoEncerradosResposta.Create(const ATipo: TACBrLibRespostaTipo;
   const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoNaoEncerrados, ATipo, AFormato);
+
+  FItems := TObjectList.Create(true);
 end;
 
 destructor TNaoEncerradosResposta.Destroy;
@@ -469,28 +484,12 @@ begin
   inherited Destroy;
 end;
 
-function TNaoEncerradosResposta.GetItem(Index: Integer): TNaoEncerradosRespostaItem;
-begin
-  Result := TNaoEncerradosRespostaItem(FItems[Index]);
-end;
-
-function TNaoEncerradosResposta.Gerar: Ansistring;
-Var
-  i: Integer;
-begin
-  Result := Inherited Gerar;
-  for i := 0 to FItems.Count - 1 do
-  begin
-    Result := Result + sLineBreak + TNaoEncerradosRespostaItem(FItems.Items[i]).Gerar;
-  end;
-end;
-
-procedure TNaoEncerradosResposta.Processar(const Control: TACBrMDFe);
+procedure TNaoEncerradosResposta.Processar(const ACBrMDFe: TACBrMDFe);
 Var
   i: Integer;
   Item: TNaoEncerradosRespostaItem;
 begin
-  with Control.WebServices.ConsMDFeNaoEnc do
+  with ACBrMDFe.WebServices.ConsMDFeNaoEnc do
   begin
     Self.Versao := verAplic;
     Self.TpAmb := TpAmbToStr(TpAmb);
@@ -501,7 +500,7 @@ begin
 
     for i := 0 to InfMDFe.Count - 1 do
     begin
-      Item := TNaoEncerradosRespostaItem.Create(i+1, Tipo, FFormato);
+      Item := TNaoEncerradosRespostaItem.Create(i+1, Tipo, Formato);
       Item.Processar(CNPJCPF, InfMDFe.Items[i]);
       FItems.Add(Item);
     end;
@@ -509,15 +508,14 @@ begin
 end;
 
 { TEncerramentoResposta }
-
 constructor TEncerramentoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespEncerramento, ATipo, AFormato);
 end;
 
-procedure TEncerramentoResposta.Processar(const Control: TACBrMDFe);
+procedure TEncerramentoResposta.Processar(const ACBrMDFe: TACBrMDFe);
 begin
-  with Control.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento do
+  with ACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento do
   begin
     Self.Versao := verAplic;
     Self.TpAmb := TpAmbToStr(TpAmb);
@@ -539,17 +537,16 @@ begin
 end;
 
 { TCancelamentoResposta }
-
 constructor TCancelamentoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespCancelamento, ATipo, AFormato);
 end;
 
-procedure TCancelamentoResposta.Processar(const Control: TACBrMDFe);
+procedure TCancelamentoResposta.Processar(const ACBrMDFe: TACBrMDFe);
 begin
-  if Control.WebServices.EnvEvento.EventoRetorno.retEvento.Count > 0 then
+  if ACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Count > 0 then
   begin
-    with Control.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento do
+    with ACBrMDFe.WebServices.EnvEvento.EventoRetorno.retEvento.Items[0].RetInfEvento do
     begin
       Self.Versao := verAplic;
       Self.TpAmb := TpAmbToStr(TpAmb);
@@ -572,15 +569,14 @@ begin
 end;
 
 { TConsultaResposta }
-
 constructor TConsultaResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespConsulta, ATipo, AFormato);
 end;
 
-procedure TConsultaResposta.Processar(const Control: TACBrMDFe);
+procedure TConsultaResposta.Processar(const ACBrMDFe: TACBrMDFe);
 begin
-  with Control.WebServices.Consulta do
+  with ACBrMDFe.WebServices.Consulta do
   begin
     Self.Versao := verAplic;
     Self.TpAmb := TpAmbToStr(TpAmb);
@@ -597,15 +593,14 @@ begin
 end;
 
  { TStatusServicoResposta }
-
 constructor TStatusServicoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespStatus, ATipo, AFormato);
 end;
 
-procedure TStatusServicoResposta.Processar(const Control: TACBrMDFe);
+procedure TStatusServicoResposta.Processar(const ACBrMDFe: TACBrMDFe);
 begin
-  with Control.WebServices.StatusServico do
+  with ACBrMDFe.WebServices.StatusServico do
   begin
     Self.Versao := versao;
     Self.TpAmb := TpAmbToStr(TpAmb);

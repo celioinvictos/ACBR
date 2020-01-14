@@ -96,7 +96,7 @@ object frmACBrGNRe: TfrmACBrGNRe
           Top = 0
           Width = 287
           Height = 476
-          ActivePage = TabSheet13
+          ActivePage = TabSheet12
           Align = alClient
           MultiLine = True
           TabOrder = 0
@@ -360,7 +360,7 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
+              ItemHeight = 0
               TabOrder = 9
               OnChange = cbSSLLibChange
             end
@@ -370,7 +370,7 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
+              ItemHeight = 0
               TabOrder = 10
               OnChange = cbCryptLibChange
             end
@@ -380,7 +380,7 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
+              ItemHeight = 0
               TabOrder = 11
               OnChange = cbHttpLibChange
             end
@@ -390,7 +390,7 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
+              ItemHeight = 0
               TabOrder = 12
               OnChange = cbXmlSignLibChange
             end
@@ -501,7 +501,7 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Top = 104
                 Width = 248
                 Height = 21
-                ItemHeight = 13
+                ItemHeight = 0
                 TabOrder = 2
               end
               object cbxAtualizarXML: TCheckBox
@@ -540,7 +540,7 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Top = 181
                 Width = 248
                 Height = 21
-                ItemHeight = 13
+                ItemHeight = 0
                 TabOrder = 7
               end
               object edtPathSchemas: TEdit
@@ -692,7 +692,7 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Height = 21
                 Hint = 'Depende de configura'#231#227'o de  SSL.HttpLib'
                 Style = csDropDownList
-                ItemHeight = 13
+                ItemHeight = 0
                 TabOrder = 5
                 OnChange = cbSSLTypeChange
               end
@@ -1345,11 +1345,11 @@ object frmACBrGNRe: TfrmACBrGNRe
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 446
           Align = alClient
           TabOrder = 0
           ControlData = {
-            4C000000C6390000CA2700000000000000000000000000000000000000000000
+            4C000000C6390000182E00000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126200000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -1363,7 +1363,7 @@ object frmACBrGNRe: TfrmACBrGNRe
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 446
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1389,7 +1389,7 @@ object frmACBrGNRe: TfrmACBrGNRe
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 446
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1430,7 +1430,7 @@ object frmACBrGNRe: TfrmACBrGNRe
       'Arquivos NFE (*-nfe.XML)|*-nfe.XML|Arquivos XML (*.XML)|*.XML|To' +
       'dos os Arquivos (*.*)|*.*'
     Title = 'Selecione a NFe'
-    Left = 435
+    Left = 427
     Top = 287
   end
   object ACBrGNRE1: TACBrGNRE
@@ -1461,7 +1461,7 @@ object frmACBrGNRe: TfrmACBrGNRe
     MargemEsquerda = 6.000000000000000000
     MargemDireita = 5.100000000000000000
     PrintDialog = True
-    Left = 438
+    Left = 430
     Top = 238
   end
 end

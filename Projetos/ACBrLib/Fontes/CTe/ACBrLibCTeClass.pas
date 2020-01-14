@@ -74,6 +74,8 @@ function CTE_Versao(const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_ImportarConfig(const eArqConfig: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_ConfigLer(const eArqConfig: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_ConfigGravar(const eArqConfig: PChar): longint;
@@ -94,6 +96,10 @@ function CTE_ObterXml(AIndex: longint; const sResposta: PChar; var esTamanho: lo
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_GravarXml(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_CarregarEventoXML(const eArquivoOuXML: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_CarregarEventoINI(const eArquivoOuINI: PChar): longint;
@@ -110,6 +116,11 @@ function CTE_ValidarRegrasdeNegocios(const sResposta: PChar; var esTamanho: long
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_VerificarAssinatura(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi: longint;
+  AEmissao, ACNPJCPF: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function CTE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
 {%region Servicos}
@@ -122,7 +133,7 @@ function CTE_Inutilizar(const ACNPJ, AJustificativa: PChar;
   Ano, Modelo, Serie, NumeroInicial, NumeroFinal: integer;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function CTE_Enviar(ALote: Integer; Imprimir: Boolean;
+function CTE_Enviar(ALote: Integer; AImprimir, ASincrono: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function CTE_ConsultarRecibo(ARecibo: PChar;
@@ -173,8 +184,8 @@ implementation
 uses
   ACBrLibConsts, ACBrLibCTeConsts, ACBrLibConfig, ACBrLibResposta,
   ACBrLibConsReciDFe, ACBrLibDistribuicaoDFe, ACBrLibConsultaCadastro,
-  ACBrLibCTeConfig, ACBrLibCTeRespostas, ACBrCTe, ACBrMail,
-  pcnConversao, pcnAuxiliar, pcteConversaoCTe, blcksock, ACBrUtil;
+  ACBrLibCTeConfig, ACBrLibCTeRespostas, ACBrCTe, ACBrMail, ACBrLibCertUtils,
+  pcnConversao, pcnAuxiliar, pcteConversaoCTe, blcksock, ACBrUtil, ACBrDFeUtil;
 
 { TACBrLibCTe }
 
@@ -245,6 +256,12 @@ function CTE_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): long
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_UltimoRetorno(sMensagem, esTamanho);
+end;
+
+function CTE_ImportarConfig(const eArqConfig: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_ImportarConfig(eArqConfig);
 end;
 
 function CTE_ConfigLer(const eArqConfig: PChar): longint;
@@ -417,6 +434,101 @@ begin
           Result := SetRetorno(ErrOK)
         else
           Result := SetRetorno(ErrGerarXml);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: String;
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_ObterIni(' + IntToStr(AIndex) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_ObterIni', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        if (AIndex >= CTeDM.ACBrCTe1.Conhecimentos.Count) and (CTeDM.ACBrCTe1.Conhecimentos.Count < 1) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        if EstaVazio(CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].XMLOriginal) then
+          CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].GerarXML;
+
+        Resposta := CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].GerarCTeIni;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  ACTeIni, ANomeArquivo, APathArquivo: String;
+begin
+  try
+    VerificarLibInicializada;
+    ANomeArquivo := String(eNomeArquivo);
+    APathArquivo := String(ePathArquivo);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_GravarIni(' + IntToStr(AIndex) + ',' + ANomeArquivo + ',' + APathArquivo + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_GravarIni', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+      try
+        if (AIndex >= CTeDM.ACBrCTe1.Conhecimentos.Count) and (CTeDM.ACBrCTe1.Conhecimentos.Count < 1) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        ANomeArquivo := ExtractFileName(ANomeArquivo);
+
+        if EstaVazio(ANomeArquivo) then
+          raise EACBrLibException.Create(ErrExecutandoMetodo, 'Nome de arquivo não informado');
+
+        if EstaVazio(APathArquivo) then
+          APathArquivo := ExtractFilePath(ANomeArquivo);
+        if EstaVazio(APathArquivo) then
+          APathArquivo := CTeDM.ACBrCTe1.Configuracoes.Arquivos.PathSalvar;
+
+        APathArquivo := PathWithDelim(APathArquivo);
+
+        if EstaVazio(CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].XMLOriginal) then
+          CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].GerarXML;
+
+        ACTeIni := CTeDM.ACBrCTe1.Conhecimentos.Items[AIndex].GerarCTeIni;
+
+        if not DirectoryExists(APathArquivo) then
+          ForceDirectories(APathArquivo);
+
+        WriteToTXT(APathArquivo + ANomeArquivo, ACTeIni, False, False);
       finally
         CTeDM.Destravar;
       end;
@@ -638,7 +750,7 @@ begin
         Erros := '';
         CTeDM.ACBrCTe1.Conhecimentos.ValidarRegrasdeNegocios(Erros);
         MoverStringParaPChar(Erros, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Erros);
       finally
         CTeDM.Destravar;
       end;
@@ -668,7 +780,82 @@ begin
         Erros := '';
         CTeDM.ACBrCTe1.Conhecimentos.VerificarAssinatura(Erros);
         MoverStringParaPChar(Erros, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Erros);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi: longint;
+  AEmissao, ACNPJCPF: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta, CNPJCPF: string;
+  Emissao: TDateTime;
+begin
+  try
+    VerificarLibInicializada;
+
+    Emissao := StrToDate(AEmissao);
+    CNPJCPF := String(ACNPJCPF);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('CTE_GerarChave(' + IntToStr(ACodigoUF) + ',' + IntToStr(ACodigoNumerico) + ',' +
+                      IntToStr(AModelo)  + ',' + IntToStr(AModelo) + ',' + IntToStr(ASerie) + ',' +
+                      IntToStr(ANumero) + ',' + IntToStr(ATpEmi) + ',' + DateToStr(Emissao) + ',' +
+                      CNPJCPF + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('CTE_GerarChave', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+
+      try
+        Resposta := '';
+        Resposta := GerarChaveAcesso(ACodigoUF, Emissao, CNPJCPF, ASerie, ANumero, ATpEmi, ACodigoNumerico, AModelo);
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        CTeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function CTE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('CTE_ObterCertificados', logNormal);
+
+    with TACBrLibCTe(pLib) do
+    begin
+      CTeDM.Travar;
+
+      try
+        Resposta := '';
+        Resposta := ObterCerticados(CTeDM.ACBrCTe1.SSL);
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
       finally
         CTeDM.Destravar;
       end;
@@ -688,7 +875,8 @@ end;
 function CTE_StatusServico(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  Resposta: TStatusServicoResposta;
+  Resp: TStatusServicoResposta;
+  Resposta: String;
 begin
   try
     VerificarLibInicializada;
@@ -697,17 +885,18 @@ begin
     with TACBrLibCTe(pLib) do
     begin
       CTeDM.Travar;
-      Resposta := TStatusServicoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+      Resp := TStatusServicoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         with CTeDM do
         begin
           ACBrCTe1.WebServices.StatusServico.Executar;
-          Resposta.Processar(CTeDM.ACBrCTe1);
-          MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
-          Result := SetRetorno(ErrOK, StrPas(sResposta));
+          Resp.Processar(CTeDM.ACBrCTe1);
+          Resposta := Resp.Gerar;
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
         end
       finally
-        Resposta.Free;
+        Resp.Free;
         CTeDM.Destravar;
       end;
     end;
@@ -847,7 +1036,7 @@ begin
   end;
 end;
 
-function CTE_Enviar(ALote: Integer; Imprimir: Boolean;
+function CTE_Enviar(ALote: Integer; AImprimir, ASincrono: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
@@ -862,7 +1051,8 @@ begin
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('CTE_Enviar(' + IntToStr(ALote) + ',' +
-                   BoolToStr(Imprimir, 'Imprimir','') + ' )', logCompleto, True)
+                   BoolToStr(AImprimir, 'Imprimir','') + ',' +
+                   BoolToStr(ASincrono, 'Sincrono','')+ ' )', logCompleto, True)
     else
       pLib.GravarLog('CTE_Enviar', logNormal);
 
@@ -892,6 +1082,7 @@ begin
           else
             WebServices.Enviar.Lote := IntToStr(ALote);
 
+          WebServices.Enviar.Sincrono := ASincrono;
           WebServices.Enviar.Executar;
           RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
           try
@@ -901,25 +1092,27 @@ begin
             RespEnvio.Free;
           end;
 
-          if NaoEstaVazio(WebServices.Enviar.Recibo) and (WebServices.Enviar.cStat = 103) then
+          if not ASincrono or ((NaoEstaVazio(WebServices.Enviar.Recibo)) and (WebServices.Enviar.cStat = 103)) then
           begin
             WebServices.Retorno.Recibo := WebServices.Enviar.Recibo;
-            WebServices.Retorno.Executar
+            WebServices.Retorno.Executar;
+
+            RespRetorno := TRetornoResposta.Create('CTe', pLib.Config.TipoResposta, pLib.Config.CodResposta);
+
+            try
+              RespRetorno.Processar(WebServices.Retorno.CTeRetorno,
+                                    WebServices.Retorno.Recibo,
+                                    WebServices.Retorno.Msg,
+                                    WebServices.Retorno.Protocolo,
+                                    WebServices.Retorno.ChaveCTe);
+
+              Resposta := Resposta + sLineBreak + RespRetorno.Gerar;
+            finally
+              RespRetorno.Free;
+            end;
           end;
 
-          RespRetorno := TRetornoResposta.Create('CTe', pLib.Config.TipoResposta, pLib.Config.CodResposta);
-          try
-            RespRetorno.Processar(WebServices.Retorno.CTeRetorno,
-                                  WebServices.Retorno.Recibo,
-                                  WebServices.Retorno.Msg,
-                                  WebServices.Retorno.Protocolo,
-                                  WebServices.Retorno.ChaveCTe);
-            Resposta := Resposta + sLineBreak + RespRetorno.Gerar;
-          finally
-            RespRetorno.Free;
-          end;
-
-          if Imprimir then
+          if AImprimir then
           begin
             CTeDM.ConfigurarImpressao();
 
@@ -946,7 +1139,7 @@ begin
         end;
 
         MoverStringParaPChar(Resposta, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Resposta);
       finally
         CTeDM.Destravar;
       end;
@@ -994,7 +1187,7 @@ begin
           end;
 
           MoverStringParaPChar(Resposta, sResposta, esTamanho);
-          Result := SetRetorno(ErrOK, StrPas(sResposta));
+          Result := SetRetorno(ErrOK, Resposta);
         end;
       finally
         CTeDM.Destravar;
@@ -1081,7 +1274,7 @@ begin
         end;
 
         MoverStringParaPChar(Resposta, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Resposta);
       finally
         CTeDM.Destravar;
       end;
@@ -1189,7 +1382,7 @@ begin
         end;
 
         MoverStringParaPChar(Resposta, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Resposta);
       end;
 
       CTeDM.Destravar;
@@ -1246,7 +1439,7 @@ begin
         end;
 
         MoverStringParaPChar(Resposta, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Resposta);
       finally
         CTeDM.Destravar;
       end;

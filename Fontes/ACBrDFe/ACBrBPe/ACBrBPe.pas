@@ -46,8 +46,8 @@ unit ACBrBPe;
 interface
 
 uses
-  Classes, SysUtils, ACBrBase,
-  ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes,
+  Classes, SysUtils,
+  ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes, ACBrBase, 
   ACBrBPeConfiguracoes, ACBrBPeWebServices, ACBrBPeBilhetes, ACBrBPeDABPEClass,
   pcnBPe, pcnConversao, pcnConversaoBPe, pcnEnvEventoBPe, 
   ACBrUtil;
@@ -153,8 +153,8 @@ Const
 implementation
 
 uses
-  strutils, dateutils,
-  pcnAuxiliar, synacode, ACBrDFeSSL;
+  dateutils,
+  pcnAuxiliar, ACBrDFeSSL;
 
 {$IFDEF FPC}
  {$R ACBrBPeServicos.rc}

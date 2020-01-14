@@ -46,16 +46,16 @@ unit ACBrNFSeDANFSeRL;
 interface
 
 uses
-  SysUtils, Variants, Classes, StrUtils,
+  SysUtils, Variants, Classes,
   {$IFDEF CLX}
    QGraphics, QControls, QForms, QDialogs, QExtCtrls, Qt,
   {$ELSE}
    Graphics, Controls, Forms, Dialogs, ExtCtrls, Printers,
   {$ENDIF}
-  pnfsNFSe, ACBrNFSe, ACBrNFSeDANFSeRLClass, ACBrDFeReportFortes,
   RLReport, RLFilters, RLPrinters, RLPDFFilter, RLConsts,
-  {$IFDEF BORLAND} DBClient, {$ELSE} BufDataset, {$ENDIF} DB;
-  
+  {$IFDEF BORLAND} DBClient, {$ELSE} BufDataset, {$ENDIF}
+  pnfsNFSe, ACBrNFSe, ACBrNFSeDANFSeRLClass, ACBrDFeReportFortes;
+
 type
 
   { TfrlDANFSeRL }
@@ -137,6 +137,11 @@ begin
       DANFSeReport := Create(nil);
       DANFSeReport.fpNFSe := ANotas[i];
       DANFSeReport.fpDANFSe := ADANFSe;
+      if ADANFSe.AlterarEscalaPadrao then
+      begin
+        DANFSeReport.Scaled := False;
+        DANFSeReport.ScaleBy(ADANFSe.NovaEscala , Screen.PixelsPerInch);
+      end;
 
       DANFSeReport.RLNFSe.CompositeOptions.ResetPageNumber := True;
       ReportArray[i] := DANFSeReport;
@@ -188,6 +193,11 @@ begin
   try
     DANFSeReport.fpNFSe := ANFSe;
     DANFSeReport.fpDANFSe := ADANFSe;
+    if ADANFSe.AlterarEscalaPadrao then
+    begin
+      DANFSeReport.Scaled := False;
+      DANFSeReport.ScaleBy(ADANFSe.NovaEscala , Screen.PixelsPerInch);
+    end;
 
     TDFeReportFortes.AjustarReport(DANFSeReport.RLNFSe, DANFSeReport.fpDANFSe);
     TDFeReportFortes.AjustarFiltroPDF(DANFSeReport.RLPDFFilter1, DANFSeReport.fpDANFSe, AFile);

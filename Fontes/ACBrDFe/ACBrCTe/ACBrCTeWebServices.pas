@@ -127,6 +127,7 @@ type
     FxMotivo: String;
     FdhRecbto: TDateTime;
     FTMed: Integer;
+    FProtocolo: String;
     FVersaoDF: TVersaoCTe;
     FSincrono: Boolean;
     FMsgUnZip: String;
@@ -161,6 +162,7 @@ type
     property xMotivo: String read FxMotivo;
     property dhRecbto: TDateTime read FdhRecbto;
     property TMed: Integer read FTMed;
+    property Protocolo: String read FProtocolo;
     property Lote: String read GetLote write FLote;
     property Sincrono: Boolean read FSincrono write FSincrono;
     property MsgUnZip: String read FMsgUnZip write FMsgUnZip;
@@ -584,7 +586,7 @@ uses
   StrUtils, Math,
   ACBrUtil, ACBrCompress, ACBrCTe,
   pcnGerador, pcnLeitor, pcnConsCad, pcnConsStatServ, pcnRetConsStatServ,
-  pcteConsSitCTe, pcteInutCTe, pcteRetInutCTe, pcnConsReciDFe, pcteCTeW;
+  pcteConsSitCTe, pcteInutCTe, pcteRetInutCTe, pcnConsReciDFe;
 
 { TCTeWebService }
 
@@ -788,13 +790,14 @@ begin
   FPArqEnv := 'env-lot';
   FPArqResp := 'rec';
 
-  Fversao := '';
-  FTMed := 0;
-  FverAplic := '';
-  FcStat    := 0;
-  FxMotivo  := '';
-  FRecibo   := '';
-  FdhRecbto := 0;
+  Fversao    := '';
+  FTMed      := 0;
+  FverAplic  := '';
+  FcStat     := 0;
+  FxMotivo   := '';
+  FRecibo    := '';
+  FdhRecbto  := 0;
+  FProtocolo := '';
 
   if Assigned(FPConfiguracoesCTe) then
   begin
@@ -1034,6 +1037,9 @@ begin
 
     if Result then
     begin
+      // Pega o numero do protocolo
+      FProtocolo := FCTeRetornoOS.protCTe.nProt;
+
       for I := 0 to TACBrCTe(FPDFeOwner).Conhecimentos.Count - 1 do
       begin
         with TACBrCTe(FPDFeOwner).Conhecimentos.Items[I] do
@@ -1138,6 +1144,9 @@ begin
 
       if Result then
       begin
+        // Pega o numero do protocolo
+        FProtocolo := FCTeRetornoSincrono.protCTe.nProt;
+        
         for I := 0 to TACBrCTe(FPDFeOwner).Conhecimentos.Count - 1 do
         begin
           with TACBrCTe(FPDFeOwner).Conhecimentos.Items[I] do
@@ -1967,10 +1976,48 @@ begin
 end;
 
 function TCTeConsulta.TratarResposta: Boolean;
+
+procedure SalvarEventos(Retorno: string);
+var
+  aEvento, aProcEvento, aIDEvento, sPathEvento, sCNPJ: string;
+  Inicio, Fim: Integer;
+  TipoEvento: TpcnTpEvento;
+  Ok: Boolean;
+begin
+  while Retorno <> '' do
+  begin
+    Inicio := Pos('<procEventoCTe', Retorno);
+    Fim    := Pos('</procEventoCTe>', Retorno) + 15;
+
+    aEvento := Copy(Retorno, Inicio, Fim - Inicio + 1);
+
+    Retorno := Copy(Retorno, Fim + 1, Length(Retorno));
+
+    aProcEvento := '<procEventoCTe versao="' + FVersao + '" xmlns="' + ACBRCTE_NAMESPACE + '">' +
+                      SeparaDados(aEvento, 'procEventoCTe') +
+                   '</procEventoCTe>';
+
+    Inicio := Pos('Id=', aProcEvento) + 6;
+    Fim    := 52;
+
+    if Inicio = 6 then
+      aIDEvento := FormatDateTime('yyyymmddhhnnss', Now)
+    else
+      aIDEvento := Copy(aProcEvento, Inicio, Fim);
+
+    TipoEvento  := StrToTpEventoCTe(Ok, SeparaDados(aEvento, 'tpEvento'));
+    sCNPJ       := SeparaDados(aEvento, 'CNPJ');
+    sPathEvento := PathWithDelim(FPConfiguracoesCTe.Arquivos.GetPathEvento(TipoEvento, sCNPJ));
+
+    if (aProcEvento <> '') then
+      FPDFeOwner.Gravar( aIDEvento + '-procEventoCTe.xml', aProcEvento, sPathEvento);
+  end;
+end;
+
 var
   CTeRetorno: TRetConsSitCTe;
   SalvarXML, CTCancelado, Atualiza: Boolean;
-  aEventos, sPathCTe, NomeXMLSalvo, aEvento, aProcEvento, aIDEvento: String;
+  aEventos, sPathCTe, NomeXMLSalvo: String;
   AProcCTe: TProcCTe;
   I, J, K, Inicio, Fim: Integer;
   dhEmissao: TDateTime;
@@ -2144,135 +2191,131 @@ begin
 
     if Result then
     begin
-      for i := 0 to TACBrCTe(FPDFeOwner).Conhecimentos.Count - 1 do
+      if TACBrCTe(FPDFeOwner).Conhecimentos.Count > 0 then
       begin
-        with TACBrCTe(FPDFeOwner).Conhecimentos.Items[i] do
+        for i := 0 to TACBrCTe(FPDFeOwner).Conhecimentos.Count - 1 do
         begin
-          // Se verdadeiro significa que o componente esta carregado com todos os
-          // dados do CT-e
-          if (OnlyNumber(FCTeChave) = NumID) then
+          with TACBrCTe(FPDFeOwner).Conhecimentos.Items[i] do
           begin
-            Atualiza := (NaoEstaVazio(CTeRetorno.XMLprotCTe));
-
-            if Atualiza and
-               TACBrCTe(FPDFeOwner).cStatCancelado(CTeRetorno.CStat) then
-              Atualiza := False;
-
-            if (CTeRetorno.cUF = 51) and (CTeRetorno.CStat = 101) then
-              Atualiza := True;
-
-            if (FPConfiguracoesCTe.Geral.ValidarDigest) and
-               (CTeRetorno.protCTe.digVal <> '') and (CTe.signature.DigestValue <> '') and
-               (UpperCase(CTe.signature.DigestValue) <> UpperCase(CTeRetorno.protCTe.digVal)) then
+            // Se verdadeiro significa que o componente esta carregado com todos os
+            // dados do CT-e
+            if (OnlyNumber(FCTeChave) = NumID) then
             begin
-              raise EACBrCTeException.Create('DigestValue do documento ' +
-                  NumID + ' não confere.');
-            end;
+              Atualiza := (NaoEstaVazio(CTeRetorno.XMLprotCTe));
 
-            // Atualiza o Status da CTe interna //
-            CTe.procCTe.cStat := CTeRetorno.cStat;
+              if Atualiza and
+                 TACBrCTe(FPDFeOwner).cStatCancelado(CTeRetorno.CStat) then
+                Atualiza := False;
 
-            if Atualiza then
-            begin
-              CTe.procCTe.Id := CTeRetorno.protCTe.Id;
-              CTe.procCTe.tpAmb := CTeRetorno.tpAmb;
-              CTe.procCTe.verAplic := CTeRetorno.verAplic;
-              CTe.procCTe.chCTe := CTeRetorno.chCTe;
-              CTe.procCTe.dhRecbto := FDhRecbto;
-              CTe.procCTe.nProt := FProtocolo;
-              CTe.procCTe.digVal := CTeRetorno.protCTe.digVal;
-              CTe.procCTe.cStat := CTeRetorno.cStat;
-              CTe.procCTe.xMotivo := CTeRetorno.xMotivo;
+              if (CTeRetorno.cUF = 51) and (CTeRetorno.CStat = 101) then
+                Atualiza := True;
 
-              AProcCTe := TProcCTe.Create;
-              try
-                AProcCTe.XML_CTe := RemoverDeclaracaoXML(XMLOriginal);
-                AProcCTe.XML_Prot := CTeRetorno.XMLprotCTe;
-                AProcCTe.Versao := FPVersaoServico;
-                AProcCTe.GerarXML;
-
-                XMLOriginal := AProcCTe.Gerador.ArquivoFormatoXML;
-
-                FRetCTeDFe := '';
-                aEventos := '';
-
-                if (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoCTe'))) then
-                begin
-                  Inicio := Pos('<procEventoCTe', FPRetWS);
-                  Fim    := Pos('</retConsSitCTe', FPRetWS) -1;
-
-                  aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
-
-                  FRetCTeDFe := '<CTeDFe>' +
-                                 '<procCTe versao="' + FVersao + '">' +
-                                   SeparaDados(XMLOriginal, 'cteProc') +
-                                 '</procCTe>' +
-                                 '<procEventoCTe versao="' + FVersao + '">' +
-                                   aEventos +
-                                 '</procEventoCTe>' +
-                                '</CTeDFe>';
-
-                end;
-              finally
-                AProcCTe.Free;
-              end;
-
-              SalvarXML := Result and
-                       FPConfiguracoesCTe.Arquivos.Salvar and
-                       ((not FPConfiguracoesCTe.Arquivos.SalvarApenasCTeProcessados) or
-                         Processado);
-
-              if SalvarXML then
+              if (FPConfiguracoesCTe.Geral.ValidarDigest) and
+                 (CTeRetorno.protCTe.digVal <> '') and (CTe.signature.DigestValue <> '') and
+                 (UpperCase(CTe.signature.DigestValue) <> UpperCase(CTeRetorno.protCTe.digVal)) then
               begin
-                if FPConfiguracoesCTe.Arquivos.EmissaoPathCTe then
-                  dhEmissao := CTe.Ide.dhEmi
-                else
-                  dhEmissao := Now;
+                raise EACBrCTeException.Create('DigestValue do documento ' +
+                    NumID + ' não confere.');
+              end;
 
-                sPathCTe := PathWithDelim(FPConfiguracoesCTe.Arquivos.GetPathCTe(dhEmissao, CTe.Emit.CNPJ, CTe.emit.IE));
+              // Atualiza o Status da CTe interna //
+              CTe.procCTe.cStat := CTeRetorno.cStat;
 
-                if (FRetCTeDFe <> '') {and FPConfiguracoesCTe.Geral.Salvar} then
-                  FPDFeOwner.Gravar( FCTeChave + '-CTeDFe.xml', FRetCTeDFe, sPathCTe);
+              if Atualiza then
+              begin
+                CTe.procCTe.Id := CTeRetorno.protCTe.Id;
+                CTe.procCTe.tpAmb := CTeRetorno.tpAmb;
+                CTe.procCTe.verAplic := CTeRetorno.verAplic;
+                CTe.procCTe.chCTe := CTeRetorno.chCTe;
+                CTe.procCTe.dhRecbto := FDhRecbto;
+                CTe.procCTe.nProt := FProtocolo;
+                CTe.procCTe.digVal := CTeRetorno.protCTe.digVal;
+                CTe.procCTe.cStat := CTeRetorno.cStat;
+                CTe.procCTe.xMotivo := CTeRetorno.xMotivo;
 
-                // Salva o XML do CT-e assinado e protocolado
-                NomeXMLSalvo := '';
-                if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
-                begin
-                  FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
-                  NomeXMLSalvo := NomeArq;
+                AProcCTe := TProcCTe.Create;
+                try
+                  AProcCTe.XML_CTe := RemoverDeclaracaoXML(XMLOriginal);
+                  AProcCTe.XML_Prot := CTeRetorno.XMLprotCTe;
+                  AProcCTe.Versao := FPVersaoServico;
+                  AProcCTe.GerarXML;
+
+                  XMLOriginal := AProcCTe.Gerador.ArquivoFormatoXML;
+
+                  FRetCTeDFe := '';
+                  aEventos := '';
+
+                  if (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoCTe'))) then
+                  begin
+                    Inicio := Pos('<procEventoCTe', FPRetWS);
+                    Fim    := Pos('</retConsSitCTe', FPRetWS) -1;
+
+                    aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
+
+                    FRetCTeDFe := '<CTeDFe>' +
+                                   '<procCTe versao="' + FVersao + '">' +
+                                     SeparaDados(XMLOriginal, 'cteProc') +
+                                   '</procCTe>' +
+                                   '<procEventoCTe versao="' + FVersao + '">' +
+                                     aEventos +
+                                   '</procEventoCTe>' +
+                                  '</CTeDFe>';
+
+                  end;
+                finally
+                  AProcCTe.Free;
                 end;
 
-                // Salva na pasta baseado nas configurações do PathCTe
-                if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
-                  GravarXML;
+                SalvarXML := Result and
+                         FPConfiguracoesCTe.Arquivos.Salvar and
+                         ((not FPConfiguracoesCTe.Arquivos.SalvarApenasCTeProcessados) or
+                           Processado);
 
-                // Salva o XML de eventos retornados ao consultar um CT-e
-                while aEvento <> '' do
+                if SalvarXML then
                 begin
-                  Inicio := Pos('<procEventoCTe', aEventos);
-                  Fim    := Pos('</procEventoCTe', aEventos) -1;
+                  if FPConfiguracoesCTe.Arquivos.EmissaoPathCTe then
+                    dhEmissao := CTe.Ide.dhEmi
+                  else
+                    dhEmissao := Now;
 
-                  aEvento := Copy(aEventos, Inicio, Fim - Inicio + 1);
+                  sPathCTe := PathWithDelim(FPConfiguracoesCTe.Arquivos.GetPathCTe(dhEmissao, CTe.Emit.CNPJ, CTe.emit.IE));
 
-                  aEventos := Copy(aEventos, Fim + 16, Length(aEventos));
+                  if (FRetCTeDFe <> '') {and FPConfiguracoesCTe.Geral.Salvar} then
+                    FPDFeOwner.Gravar( FCTeChave + '-CTeDFe.xml', FRetCTeDFe, sPathCTe);
 
-                  aProcEvento := '<procEventoCTe versao="' + FVersao + '" xmlns="' + ACBRCTE_NAMESPACE + '">' +
-                                   SeparaDados(aEvento, 'procEventoCTe') +
-                                 '</procEventoCTe>';
+                  // Salva o XML do CT-e assinado e protocolado
+                  NomeXMLSalvo := '';
+                  if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
+                  begin
+                    FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
+                    NomeXMLSalvo := NomeArq;
+                  end;
 
-                  Inicio := Pos('Id=', aProcEvento) + 6;
-                  Fim    := Inicio + 51;
+                  // Salva na pasta baseado nas configurações do PathCTe
+                  if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
+                    GravarXML;
 
-                  aIDEvento := Copy(aProcEvento, Inicio, Fim);
-
-                  if (aProcEvento <> '') then
-                    FPDFeOwner.Gravar( aIDEvento + '-procEventoCTe.xml', aProcEvento, sPathCTe);
+                  // Salva o XML de eventos retornados ao consultar um CT-e
+                  SalvarEventos(aEventos);
                 end;
               end;
-            end;
 
-            break;
+              break;
+            end;
           end;
+        end;
+      end
+      else
+      begin
+        if FPConfiguracoesCTe.Arquivos.Salvar and (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoCTe'))) then
+        begin
+          Inicio := Pos('<procEventoCTe', FPRetWS);
+          Fim    := Pos('</retConsSitCTe', FPRetWS) -1;
+
+          aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
+
+          // Salva o XML de eventos retornados ao consultar um CT-e
+          SalvarEventos(aEventos);
         end;
       end;
     end;
@@ -2861,7 +2904,6 @@ begin
           teCCe:
           begin
             SchemaEventoCTe := schevCCeCTe;
-            infEvento.detEvento.xCondUso := FEvento.Evento[I].InfEvento.detEvento.xCondUso;
             infEvento.detEvento.xCondUso := FEvento.Evento[i].InfEvento.detEvento.xCondUso;
 
             for j := 0 to FEvento.Evento[i].InfEvento.detEvento.infCorrecao.Count - 1 do

@@ -39,11 +39,9 @@ unit ACBrMDFeDAMDFeRL;
 interface
 
 uses
-  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls,
-  pmdfeMDFe,
-  ACBrMDFe, ACBrMDFeDAMDFeRLClass, ACBrDFeReportFortes,
-  RLReport, RLFilters, RLPrinters, RLPDFFilter, RLConsts;
+  SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs, ExtCtrls,
+  RLReport, RLFilters, RLPrinters, RLPDFFilter, RLConsts,
+  pmdfeMDFe, ACBrMDFe, ACBrMDFeDAMDFeRLClass, ACBrDFeReportFortes;
 
 type
 
@@ -73,7 +71,7 @@ type
 implementation
 
 uses
-  MaskUtils, ACBrUtil;
+  ACBrUtil;
 
 {$ifdef FPC}
  {$R *.lfm}
@@ -100,6 +98,11 @@ begin
       DAMDFeReport := Create(nil);
       DAMDFeReport.fpMDFe := AMDFes[i];
       DAMDFeReport.fpDAMDFe := ADAMDFe;
+      if ADAMDFe.AlterarEscalaPadrao then
+      begin
+        DAMDFeReport.Scaled := False;
+        DAMDFeReport.ScaleBy(ADAMDFe.NovaEscala , Screen.PixelsPerInch);
+      end;
 
       DAMDFeReport.RLMDFe.CompositeOptions.ResetPageNumber := True;
       ReportArray[i] := DAMDFeReport;
@@ -151,6 +154,11 @@ begin
   try
     DAMDFeReport.fpMDFe := AMDFe;
     DAMDFeReport.fpDAMDFe := ADAMDFe;
+    if ADAMDFe.AlterarEscalaPadrao then
+    begin
+      DAMDFeReport.Scaled := False;
+      DAMDFeReport.ScaleBy(ADAMDFe.NovaEscala , Screen.PixelsPerInch);
+    end;
 
     TDFeReportFortes.AjustarReport(DAMDFeReport.RLMDFe, DAMDFeReport.fpDAMDFe);
     TDFeReportFortes.AjustarFiltroPDF(DAMDFeReport.RLPDFFilter1, DAMDFeReport.fpDAMDFe, AFile);

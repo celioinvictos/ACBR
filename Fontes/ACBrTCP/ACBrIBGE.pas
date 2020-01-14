@@ -1204,7 +1204,15 @@ begin
     begin
       if CacheDiasValidade > 0 then
       begin
-         DataCache := FileDateToDateTime(FileAge(Arq));
+        {$IFDEF FPC}
+          FileAge(Arq, DataCache);
+        {$ELSE}
+          {$IFDEF DELPHI2007_UP}
+            FileAge(Arq, DataCache);
+          {$ELSE}
+            DataCache := FileDateToDateTime(FileAge(Arq));
+          {$ENDIF}
+        {$ENDIF}
          if (DaysBetween(Now, DataCache) > CacheDiasValidade) then
          begin
            DeleteFile(Arq);

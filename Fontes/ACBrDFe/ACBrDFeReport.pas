@@ -1,28 +1,33 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-{ Colaboradores nesse arquivo:                                                 }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo:  Rafael Dias                                    }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -39,7 +44,12 @@ unit ACBrDFeReport;
 interface
 
 uses
-  Classes, SysUtils, Graphics,
+  Classes, SysUtils,
+  {$IfDef FMX}
+    FMX.Graphics, System.UITypes, System.UIConsts, FMX.Types,
+  {$Else}
+    Graphics,
+  {$EndIf}
   ACBrBase, ACBrDelphiZXingQRCode,
   pcnConversao;
 
@@ -82,6 +92,43 @@ type
     property MaskvUnCom: String read FMaskvUnCom write FMaskvUnCom;
   end;
 
+  { TExpandeLogoMarcaConfig }
+  {@class TExpandeLogoMarcaConfig - Propriedades para configurar a logomarca se ExpandeLogoMarca = True
+   @links TACBrDFeReport.ExpandeLogoMarcaConfig }
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
+  TExpandeLogoMarcaConfig = class(TComponent)
+  private
+    FAltura: Integer;
+    FEsquerda: Integer;
+    FTopo: Integer;
+    FLargura: Integer;
+    FDimensionar: Boolean;
+    FEsticar: Boolean;
+  public
+    constructor Create(AOwner: TComponent); override;
+  published
+    {@prop Altura - Denife a altura da logomarca expandida
+     @links TExpandeLogoMarcaConfig.Altura :/}
+    property Altura: Integer read FAltura write FAltura;
+    {@prop Esquerda - Denife a posição a esquerda da logomarca expandida
+     @links TExpandeLogoMarcaConfig.Esquerda :/}
+    property Esquerda: Integer read FEsquerda write FEsquerda;
+    {@prop Topo - Denife a posição ao topo da logomarca expandida
+     @links TExpandeLogoMarcaConfig.Topo :/}
+    property Topo: Integer read FTopo write FTopo;
+    {@prop Largura - Denife a largura da logomarca expandida
+     @links TExpandeLogoMarcaConfig.Largura :/}
+    property Largura: Integer read FLargura write FLargura;
+    {@prop Dimensionar - Denife a logomarca expandida deve esticar no tamanho total ou não
+     @links TExpandeLogoMarcaConfig.Dimensionar :/}
+    property Dimensionar: Boolean read FDimensionar write FDimensionar;
+    {@prop Esticar - Denife a logomarca expandida deve esticar no tamanho total ou não
+     @links TExpandeLogoMarcaConfig.Esticar :/}
+    property Esticar: Boolean read FEsticar write FEsticar;
+  end;
+
   { TACBrDFeReport }
   {@class TACBrDFeReport - Classe base para os componentes de impressão dos documentos DFe.
    @links TACBrDFeReport }
@@ -109,7 +156,10 @@ type
     FMargemDireita: Double;
     FCasasDecimais: TCasasDecimais;
     FExpandeLogoMarca: Boolean;
+    FExpandeLogoMarcaConfig: TExpandeLogoMarcaConfig;
     FNomeDocumento: String;
+    FAlterarEscalaPadrao: Boolean;
+    FNovaEscala: Integer;
 
     procedure SetNumCopias(const AValue: Integer);
     procedure SetPathPDF(const AValue: String);
@@ -189,13 +239,22 @@ type
     {@prop ExpandirLogoMarca - Define/retorna se de expandir a logomarca na impressão.
      @links TACBrDFeReport.ExpandeLogoMarca :/}
     property ExpandeLogoMarca: Boolean read FExpandeLogoMarca write FExpandeLogoMarca default False;
+    {@prop ExpandeLogoMarcaConfig - Configurações da logomarda expandida na impressão.
+     @links TACBrDFeReport.ExpandeLogoMarcaConfig :/}
+    property ExpandeLogoMarcaConfig: TExpandeLogoMarcaConfig read FExpandeLogoMarcaConfig;
     {@prop CasasDecimais - Configurações de impresão de números decimais.
      @links TACBrDFeReport.CasasDecimais :/}
     property CasasDecimais: TCasasDecimais read FCasasDecimais;
+    {@prop AlterarEscalaPadrao - Configuração para permitir alterar escala da impressão.
+     @links TACBrDFeReport.AlterarEscalaPadrao :/}
+    property AlterarEscalaPadrao: Boolean read FAlterarEscalaPadrao write FAlterarEscalaPadrao default False;
+    {@prop NovaEscala - Configuração para alterar escala da impressão.
+     @links TACBrDFeReport.NovaEscala :/}
+    property NovaEscala: Integer read FNovaEscala write FNovaEscala default 96;
 
   end;
   
-  procedure PintarQRCode(const QRCodeData: String; APict: TPicture; const AEncoding: TQRCodeEncoding);
+  procedure PintarQRCode(const QRCodeData: String; ABitMap: TBitmap; const AEncoding: TQRCodeEncoding);
 
 implementation
 
@@ -203,12 +262,15 @@ uses
   Math,
   ACBrUtil;
   
-procedure PintarQRCode(const QRCodeData: String; APict: TPicture;
+procedure PintarQRCode(const QRCodeData: String; ABitMap: TBitmap;
   const AEncoding: TQRCodeEncoding);
 var
   QRCode: TDelphiZXingQRCode;
   QRCodeBitmap: TBitmap;
   Row, Column: Integer;
+  {$IfDef FMX}
+   BitMapData: TBitmapData;
+  {$EndIf}
 begin
   QRCode       := TDelphiZXingQRCode.Create;
   QRCodeBitmap := TBitmap.Create;
@@ -221,18 +283,34 @@ begin
     QRCodeBitmap.Width  := QRCode.Columns;
     QRCodeBitmap.Height := QRCode.Rows;
 
-    for Row := 0 to QRCode.Rows - 1 do
-    begin
-      for Column := 0 to QRCode.Columns - 1 do
+    {$IfDef FMX}
+    if QRCodeBitmap.Map(TMapAccess.Read, BitMapData) then
+    try
+    {$EndIf}
+      for Row := 0 to QRCode.Rows - 1 do
       begin
-        if (QRCode.IsBlack[Row, Column]) then
-          QRCodeBitmap.Canvas.Pixels[Column, Row] := clBlack
-        else
-          QRCodeBitmap.Canvas.Pixels[Column, Row] := clWhite;
+        for Column := 0 to QRCode.Columns - 1 do
+        begin
+          {$IfDef FMX}
+            if (QRCode.IsBlack[Row, Column]) then
+              BitMapData.SetPixel(Column, Row, claBlack)
+            else
+              BitMapData.SetPixel(Column, Row, claWhite);
+          {$Else}
+            if (QRCode.IsBlack[Row, Column]) then
+              QRCodeBitmap.Canvas.Pixels[Column, Row] := clBlack
+            else
+              QRCodeBitmap.Canvas.Pixels[Column, Row] := clWhite;
+          {$EndIf}
+        end;
       end;
+    {$IfDef FMX}
+    finally
+      QRCodeBitmap.Unmap(BitMapData);
     end;
+    {$EndIf}
 
-    APict.Assign(QRCodeBitmap);
+    ABitMap.Assign(QRCodeBitmap);
   finally
     QRCode.Free;
     QRCodeBitmap.Free;
@@ -289,14 +367,21 @@ begin
   FCasasDecimais := TCasasDecimais.Create(self);
   FCasasDecimais.Name := 'CasasDecimais';
 
+  FExpandeLogoMarcaConfig := TExpandeLogoMarcaConfig.Create(self);
+  FExpandeLogoMarcaConfig.Name := 'ExpandeLogoMarcaConfig';
+
   {$IFDEF COMPILER6_UP}
   FCasasDecimais.SetSubComponent(True);{ para gravar no DFM/XFM }
+  FExpandeLogoMarcaConfig.SetSubComponent(True);{ para gravar no DFM/XFM }
   {$ENDIF}
+  FAlterarEscalaPadrao := False;
+  FNovaEscala := 96;
 end;
 
 destructor TACBrDFeReport.Destroy;
 begin
-  FCasasDecimais.Destroy;
+  FCasasDecimais.Free;
+  FExpandeLogoMarcaConfig.Free;
 
   inherited Destroy;
 end;
@@ -415,6 +500,20 @@ begin
   else
     Result := FormatFloatBr(dValor, FloatMask(CasasDecimais.vUnCom));
   end;
+end;
+
+{ TExpandeLogoMarcaConfig }
+
+constructor TExpandeLogoMarcaConfig.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  FAltura := 0;
+  FEsquerda := 0;
+  FTopo := 0;
+  FLargura := 0;
+  FDimensionar := False;
+  FEsticar := True;
 end;
 
 end.

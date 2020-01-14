@@ -20,9 +20,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
-      <MinorVersionNr Value="1"/>
+      <MinorVersionNr Value="2"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="55"/>
+      <BuildNr Value="48"/>
       <Language Value="0416"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrMDFe - BIblioteca para emissão e impressão de Manifesto de Documentos Fiscais Eletrônicos" InternalName="ACBrLibMDFe" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductName="ACBrMDFe " ProductVersion="0.0.0.1"/>
@@ -38,7 +38,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum;..\Mail"/>
+            <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -80,7 +80,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum;..\Mail"/>
+            <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -122,7 +122,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum;..\Mail"/>
+            <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -164,7 +164,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum;..\Mail"/>
+            <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -201,11 +201,11 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="bin\Linux\acbrmdfe64"/>
+            <Filename Value="bin\Linux\acbrmdfe32"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum;..\Mail"/>
+            <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -246,7 +246,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum;..\Mail"/>
+            <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -309,7 +309,7 @@
         <PackageName Value="FCL"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="12">
       <Unit0>
         <Filename Value="ACBrLibMDFe.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -357,6 +357,10 @@
         <Filename Value="ACBrLibMDFeConsts.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="..\..\..\ACBrMonitorPLUS\Lazarus\ACBrMonitorConsts.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit11>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -367,7 +371,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-      <OtherUnitFiles Value="..\Comum;..\Mail"/>
+      <OtherUnitFiles Value="..\Comum;..\Mail;..\..\..\ACBrMonitorPLUS\Lazarus"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

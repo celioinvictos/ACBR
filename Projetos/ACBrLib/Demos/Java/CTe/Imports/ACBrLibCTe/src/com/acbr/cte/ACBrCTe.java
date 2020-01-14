@@ -9,8 +9,10 @@ import com.sun.jna.ptr.IntByReference;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Implementa AutoCloseable para ser possível usar em try-with-resources
@@ -27,9 +29,6 @@ import java.nio.file.Paths;
  */
 
 public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
-
-  private static final Charset UTF8 = Charset.forName( "UTF-8" );
-  private static final int STR_BUFFER_LEN = 256;
 
   public ACBrCTe() throws Exception {
     File iniFile = Paths.get( System.getProperty( "user.dir" ), "ACBrLib.ini" ).toFile();
@@ -122,20 +121,42 @@ public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
   }
 
   public String obterXml( int AIndex ) throws Exception {
-      ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
-      IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
-      int ret = ACBrCTeLib.INSTANCE.CTE_ObterXml(AIndex, buffer, bufferLen );
-      checkResult( ret );
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+    int ret = ACBrCTeLib.INSTANCE.CTE_ObterXml(AIndex, buffer, bufferLen );
+    checkResult( ret );
       
-      return processResult( buffer, bufferLen );
+    return processResult( buffer, bufferLen );
   }
   
   public void gravarXml ( int AIndex ) throws Exception {
-      gravarXml(AIndex, "", "");
+    gravarXml(AIndex, "", "");
+  }
+  
+  public void gravarXml ( int AIndex, String eNomeArquivo ) throws Exception {
+    gravarXml(AIndex, eNomeArquivo, "");
   }
   
   public void gravarXml ( int AIndex, String eNomeArquivo, String ePathArquivo ) throws Exception {
-      int ret = ACBrCTeLib.INSTANCE.CTE_GravarXml( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
+    int ret = ACBrCTeLib.INSTANCE.CTE_GravarXml( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
+    checkResult( ret );
+  }
+  
+  public String obterIni( int AIndex ) throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+    int ret = ACBrCTeLib.INSTANCE.CTE_ObterIni(AIndex, buffer, bufferLen );
+    checkResult( ret );
+      
+    return processResult( buffer, bufferLen );
+  }
+  
+  public void gravarIni ( int AIndex, String eNomeArquivo ) throws Exception {
+    gravarIni(AIndex, eNomeArquivo, "");
+  }
+  
+  public void gravarIni ( int AIndex, String eNomeArquivo, String ePathArquivo ) throws Exception {
+    int ret = ACBrCTeLib.INSTANCE.CTE_GravarIni( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
     checkResult( ret );
   }
   
@@ -193,6 +214,31 @@ public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
 
     return processResult( buffer, bufferLen );
   }
+  
+  public String gerarChave(int aCodigoUf, int aCodigoNumerico, int aModelo, int aSerie, int aNumero,
+            int aTpEmi, Date aEmissao, String acpfcnpj) throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+    
+    String pattern = "dd/MM/yyyy";
+    DateFormat df = new SimpleDateFormat(pattern);
+
+    int ret = ACBrCTeLib.INSTANCE.CTE_GerarChave( aCodigoUf, aCodigoNumerico, aModelo,
+                                                  aSerie, aNumero, aTpEmi, df.format(aEmissao), 
+                                                  toUTF8(acpfcnpj),  buffer, bufferLen );
+    checkResult( ret );
+
+    return processResult( buffer, bufferLen );
+  }
+  
+  public String obterCertificados() throws Exception {
+      ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+      IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+      
+      int ret = ACBrCTeLib.INSTANCE.CTE_ObterCertificados(buffer, bufferLen );
+      checkResult( ret );
+      return processResult( buffer, bufferLen );
+  }
 
   public String statusServico() throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
@@ -248,14 +294,18 @@ public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
   }
 
   public String enviar( int aLote ) throws Exception {
-    return enviar( aLote, false );
+    return enviar( aLote, false, false );
+  }
+  
+  public String enviar( int aLote, boolean imprimir ) throws Exception {
+    return enviar( aLote, imprimir, false );
   }
 
-  public String enviar( int aLote, boolean imprimir ) throws Exception {
+  public String enviar( int aLote, boolean imprimir, boolean sincrono ) throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
     IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
 
-    int ret = ACBrCTeLib.INSTANCE.CTE_Enviar( aLote, imprimir, buffer, bufferLen );
+    int ret = ACBrCTeLib.INSTANCE.CTE_Enviar( aLote, imprimir, sincrono, buffer, bufferLen );
     checkResult( ret );
 
     return processResult( buffer, bufferLen );
@@ -407,6 +457,10 @@ public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
     int CTE_ObterXml( Integer AIndex, ByteBuffer buffer, IntByReference bufferSize );
     
     int CTE_GravarXml( Integer AIndex, String eNomeArquivo, String ePathArquivo );
+    
+    int CTE_ObterIni( Integer AIndex, ByteBuffer buffer, IntByReference bufferSize );
+    
+    int CTE_GravarIni( Integer AIndex, String eNomeArquivo, String ePathArquivo );
 
     int CTE_LimparLista();
 
@@ -423,6 +477,11 @@ public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
     int CTE_ValidarRegrasdeNegocios( ByteBuffer buffer, IntByReference bufferSize );
 
     int CTE_VerificarAssinatura( ByteBuffer buffer, IntByReference bufferSize );
+    
+    int CTE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
+                int ATpEmi, String AEmissao, String CPFCNPJ, ByteBuffer buffer, IntByReference bufferSize);
+    
+    int CTE_ObterCertificados( ByteBuffer buffer, IntByReference bufferSize );
 
     int CTE_StatusServico( ByteBuffer buffer, IntByReference bufferSize );
 
@@ -431,7 +490,7 @@ public final class ACBrCTe extends ACBrLibBase implements AutoCloseable {
     int CTE_Inutilizar( String ACNPJ, String AJustificativa, int Ano, int Modelo, int Serie,
                         int NumeroInicial, int NumeroFinal, ByteBuffer buffer, IntByReference bufferSize );
 
-    int CTE_Enviar( int ALote, boolean Imprimir, ByteBuffer buffer, IntByReference bufferSize );
+    int CTE_Enviar( int ALote, boolean Imprimir, boolean Sincrono, ByteBuffer buffer, IntByReference bufferSize );
 
     int CTE_ConsultarRecibo( String aRecibo, ByteBuffer buffer, IntByReference bufferSize );
     

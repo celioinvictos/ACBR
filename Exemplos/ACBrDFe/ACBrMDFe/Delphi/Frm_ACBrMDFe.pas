@@ -195,13 +195,13 @@ type
     OpenDialog1: TOpenDialog;
     btnStatusServ: TButton;
     ACBrMDFe1: TACBrMDFe;
-    ACBrMDFeDAMDFeRL1: TACBrMDFeDAMDFeRL;
     btnCriarEnviar: TButton;
     btnCriarEnviarSincrono: TButton;
     btnGerarPDFEvento: TButton;
     btnInclusaoCondutor: TButton;
     btnInclusaoDFe: TButton;
     btnConsultarNaoEncerrados: TButton;
+    ACBrMDFeDAMDFeRL1: TACBrMDFeDAMDFeRL;
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathMDFeClick(Sender: TObject);
@@ -1819,6 +1819,7 @@ end;
 procedure TfrmACBrMDFe.ConfigurarComponente;
 var
   Ok: Boolean;
+  PathMensal: string;
 begin
   ACBrMDFe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrMDFe1.Configuracoes.Certificados.Senha       := edtSenha.Text;
@@ -1884,16 +1885,29 @@ begin
     EmissaoPathMDFe  := cbxEmissaoPathMDFe.Checked;
     SepararPorCNPJ   := cbxSepararPorCNPJ.Checked;
     SepararPorModelo := cbxSepararPorModelo.Checked;
-    PathSalvar       := edtPathLogs.Text;
     PathSchemas      := edtPathSchemas.Text;
     PathMDFe         := edtPathMDFe.Text;
     PathEvento       := edtPathEvento.Text;
+    PathMensal       := GetPathMDFe(0);
+    PathSalvar       := PathMensal;
   end;
 
   if ACBrMDFe1.DAMDFe <> nil then
   begin
     ACBrMDFe1.DAMDFe.TipoDAMDFe := StrToTpImp(OK, IntToStr(rgTipoDaMDFe.ItemIndex + 1));
     ACBrMDFe1.DAMDFe.Logo       := edtLogoMarca.Text;
+
+    ACBrMDFe1.DAMDFe.PathPDF      := PathMensal;
+    ACBrMDFe1.DAMDFe.TamanhoPapel := tpA4;
+
+    ACBrMDFe1.DAMDFe.MargemDireita  := 7;
+    ACBrMDFe1.DAMDFe.MargemEsquerda := 7;
+    ACBrMDFe1.DAMDFe.MargemSuperior := 5;
+    ACBrMDFe1.DAMDFe.MargemInferior := 5;
+
+//    ACBrMDFe1.DAMDFE.ImprimeDadosExtras := [];
+//    ACBrMDFe1.DAMDFE.ImprimeDadosExtras := [deRelacaoDFe];
+    ACBrMDFe1.DAMDFE.ImprimeDadosExtras := [deValorTotal];
   end;
 end;
 

@@ -39,10 +39,9 @@ unit ACBrMDFeDAMDFeRLRetrato;
 interface
 
 uses
-  Messages, SysUtils, Variants, Classes, db, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, RLReport, RLBarcode, RLPDFFilter, pcnConversao,
-  pmdfeConversaoMDFe, ACBrMDFeDAMDFeRL, ACBrMDFeDAMDFeClass, ACBrMDFeDAMDFeRLClass,
-  RLFilters;
+  SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs, ExtCtrls,
+  RLReport, RLBarcode, RLPDFFilter, RLFilters,
+  pcnConversao, pmdfeConversaoMDFe, ACBrMDFeDAMDFeRL, ACBrMDFeDAMDFeClass;
 
 type
 
@@ -153,7 +152,7 @@ type
     RLDraw14: TRLDraw;
     rlbNumcipio: TRLLabel;
     RLDraw15: TRLDraw;
-    RLLabel27: TRLLabel;
+    rllTituloValorMerc: TRLLabel;
     rllValorMercadoria: TRLLabel;
     RLLabel28: TRLLabel;
     RLLabel29: TRLLabel;
@@ -191,6 +190,9 @@ type
       var Eof: Boolean; var RecordAction: TRLRecordAction);
     procedure rlbItensBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbItensAfterPrint(Sender: TObject);
+    procedure rlb_7_Documentos_TitulosBeforePrint(Sender: TObject;
+      var PrintIt: Boolean);
+    procedure subItensBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     { Private declarations }
     FNumItem: Integer;
@@ -239,18 +241,18 @@ begin
 
   if fpDAMDFe.ExpandeLogoMarca then
   begin
-    rliLogo.top     := 2;
+    rliLogo.top     := 3;
     rliLogo.Left    := 2;
-    rliLogo.Height  := 142;
-    rliLogo.Width   := 330;
-    rliLogo.Stretch := True;
+    rliLogo.Height  := 163;
+    rliLogo.Width   := 317;
+
+    TDFeReportFortes.AjustarLogo(rliLogo, fpDAMDFe.ExpandeLogoMarcaConfig);
 
     rlmEmitente.visible := False;
     rlmDadosEmitente.visible := False;
   end
   else
   begin
-    rliLogo.Stretch := true;
     rlmEmitente.Enabled := True;
     rlmDadosEmitente.Enabled := True;
     // Emitente
@@ -343,6 +345,17 @@ begin
 
   rllPesoTotal.Caption := FormatFloatBr(fpMDFe.tot.qCarga, ',#0.0000');
   rllValorMercadoria.Caption := FormatFloatBr(fpMDFe.tot.vCarga, ',#0.00');
+
+  if deValorTotal in fpDAMDFe.ImprimeDadosExtras then
+  begin
+    rllTituloValorMerc.Visible := True;
+    rllValorMercadoria.Visible := True;
+  end
+  else
+  begin
+    rllTituloValorMerc.Visible := False;
+    rllValorMercadoria.Visible := False;
+  end;
 end;
 
 procedure TfrlDAMDFeRLRetrato.rlb_2_RodoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -665,7 +678,7 @@ begin
   rlmChave2.AutoSize := rlmChave1.AutoSize;
 
   if not EstaVazio(Trim(fpMDFe.infMDFeSupl.qrCodMDFe)) then
-    PintarQRCode( fpMDFe.infMDFeSupl.qrCodMDFe, imgQRCode.Picture, qrUTF8NoBOM )
+    PintarQRCode( fpMDFe.infMDFeSupl.qrCodMDFe, imgQRCode.Picture.Bitmap, qrUTF8NoBOM )
   else
     imgQRCode.Visible := False;
 end;
@@ -715,7 +728,7 @@ begin
 
   with fpMDFe.infDoc.infMunDescarga.Items[FNumItem] do
   begin
-    rlbNumcipio.Caption := ACBrStr(Format('Município %s ',[ fpMDFe.infDoc.infMunDescarga.Items[FNumItem].xMunDescarga]));
+    rlbNumcipio.Caption := ACBrStr(Format('Município de Descarregamento: %s ',[ fpMDFe.infDoc.infMunDescarga.Items[FNumItem].xMunDescarga]));
 
    // Lista de CT-e
     for J := 0 to ( infCTe.Count - 1) do
@@ -756,6 +769,22 @@ begin
       Inc(nItem);
     end;
   end;
+
+  inherited;
+end;
+
+procedure TfrlDAMDFeRLRetrato.rlb_7_Documentos_TitulosBeforePrint(
+  Sender: TObject; var PrintIt: Boolean);
+begin
+  PrintIt := (deRelacaoDFe in fPDAMDFE.ImprimeDadosExtras);
+
+  inherited;
+end;
+
+procedure TfrlDAMDFeRLRetrato.subItensBeforePrint(Sender: TObject;
+  var PrintIt: Boolean);
+begin
+  PrintIt := (deRelacaoDFe in fPDAMDFE.ImprimeDadosExtras);
 
   inherited;
 end;

@@ -3,7 +3,8 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2009   Daniel Simoes de Almeida             }
+{                                         Isaque Pinheiro                      }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -26,9 +27,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -77,11 +77,9 @@ uses
   Generics.Collections, Generics.Defaults,
 
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Buttons, ExtCtrls, StdCtrls, ComCtrls;
+  Dialogs, Buttons, ExtCtrls, StdCtrls, ComCtrls, ACBrPacotes;
 
 type
-  TPacotes = TList<TCheckBox>;
-
   TframePacotes = class(TFrame)
     pnlBotoesMarcar: TPanel;
     btnPacotesDesmarcarTodos: TSpeedButton;
@@ -170,6 +168,7 @@ type
     ACBr_CIOT_dpk: TCheckBox;
     ACBr_LCDPR_dpk: TCheckBox;
     ACBr_ONE_dpk: TCheckBox;
+    ACBr_EDI_dpk: TCheckBox;
     procedure btnPacotesMarcarTodosClick(Sender: TObject);
     procedure btnPacotesDesmarcarTodosClick(Sender: TObject);
     procedure VerificarCheckboxes(Sender: TObject);
@@ -271,15 +270,16 @@ end;
 // rotina de verificação de dependência e marcação dos pacotes base
 procedure TframePacotes.VerificarCheckboxes(Sender: TObject);
 begin
-  // pacotes base não podem ser desmarcados
-  // instalação mínima do ACBr
-  ACBr_synapse_dpk.Checked := True;
-  ACBr_Comum_dpk.Checked := True;
-  ACBr_Diversos_dpk.Checked := True;
-
+  //If necessário para evitar stackoverflow
   if not FUtilizarBotoesMarcar then
   begin
     FUtilizarBotoesMarcar := True;
+
+    // pacotes base não podem ser desmarcados
+    // instalação mínima do ACBr
+    ACBr_synapse_dpk.Checked := True;
+    ACBr_Comum_dpk.Checked := True;
+    ACBr_Diversos_dpk.Checked := True;
 
     /// caso algum evento abaixo dispare novamente
     try

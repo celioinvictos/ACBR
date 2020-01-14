@@ -47,7 +47,75 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+13/01/2020
+-- ACBrBoleto --
+[+] Adicionado campo Competencia, ArquivoLogoEmp, Verso na leitura de Título via arquivo .ini
+Utilizado na impressão modelo Fatura Detalhada
+
+13/01/2020
+-- ACBrBancoItau --
+[*] Ajuste na quebra de linha do arquivo CNAB400, removendo CR+LF e adicionando ADD 
+https://www.projetoacbr.com.br/forum/topic/55746-problema-remessa-itau-cnab400/
+
+10/01/2020
+-- ACBrBoleto --
+[*] Adicionado validação de quebra de linha CR+LF para geração de remessa em Linux
+
+09/01/2020
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/54904-alterações-de-boleto-para-avaliação/
+   Por: Lukas
+
+07/01/2020
+-- ACBrBoleto --
+[+] Implementado o modelo lTermica80mm para imprimir em Fortes o Boleto em uma impressora termica
+   Por: Guilerme km
+
+07/01/2020
+-- ACBrBanrisul --
+[*] Melhorias para evitar erros de acesso a campos ou tamanho indevidos
+https://www.projetoacbr.com.br/forum/topic/55348-n%C2%BA-da-vers%C3%A3o-do-layout-do-arquivo-e-n%C2%BA-da-vers%C3%A3o-do-layout-do-lote-remessa-banco-do-brasil-240-posi%C3%A7%C3%B5es/?do=findComment&comment=364860
+
+04/01/2020
+-- ACBrBancoBrasil --
+[*] https://www.projetoacbr.com.br/forum/topic/55348-n%C2%BA-da-vers%C3%A3o-do-layout-do-arquivo-e-n%C2%BA-da-vers%C3%A3o-do-layout-do-lote-remessa-banco-do-brasil-240-posi%C3%A7%C3%B5es/?do=findComment&comment=364860
+   Por: Mailson Dragon
+
+03/01/2020
+-- ACBrBancoBrasil --
+[*] https://www.projetoacbr.com.br/forum/topic/55348-n%C2%BA-da-vers%C3%A3o-do-layout-do-arquivo-e-n%C2%BA-da-vers%C3%A3o-do-layout-do-lote-remessa-banco-do-brasil-240-posi%C3%A7%C3%B5es/
+   Por: Mailson Dragon
+-- ACBrBancoCresol --
+[*] https://www.projetoacbr.com.br/forum/topic/55473-leitura-arquivo-retorno-cresol/
+   Por: Filipe Natividade
+
 ver: 0.1.0
+30/12/2019
+-- ACBrBancoPine/ ACBrBancoPineBradesco --
+[*] Adicionado remoção de mascará ao incluir o CNPJ do Sacado/Avalista na remessa.
+
+-- ACBrBancoPineBradesco --
+[*] Remoção de métodos não utilizados
+
+
+26/12/2019
+-- ACBrBoleto --
+[*] Inclusão de classe DadosNFe como filha do ACBrTitulo devido a remessa do Pine incluir 
+ests informações no layout
+
+-- ACBrBancoPine / ACBrBancoPineBradesco
+[+] Inclusão do Banco Pine com cobrança direta e também por correspondente
+
+18/12/2019
+-- ACBrBancoCecred --
+[*] Alterado a condição que determina se o Segmento R vai ser gerado ou não.
+https://www.projetoacbr.com.br/forum/topic/54821-seguimento-r-crecred-cobran%C3%A7a-com-multa/
+   Por: Filipe Natividade
+
+13/12/2019
+-- ACBrBancoBancoob --
+[*] Ajuste na ocorrencia de retorno cód- 28 "DÉBITO DE TARIFAS/CUSTAS", baseado no Manual
+https://www.projetoacbr.com.br/forum/topic/55207-contribui%C3%A7%C3%A3o-ajuste-das-fun%C3%A7%C3%B5es-relacionadas-as-ocorr%C3%AAncias-do-bancoob/
 
 22/11/2019
 -- ACBrBoletoFCFortesFr --

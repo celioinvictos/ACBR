@@ -51,9 +51,9 @@ type
 
   protected
     procedure Inicializar; override;
-    procedure CriarConfiguracao(ArqConfig: string = ''; ChaveCrypt: ansistring = '');
-      override;
+    procedure CriarConfiguracao(ArqConfig: string = ''; ChaveCrypt: ansistring = ''); override;
     procedure Executar; override;
+
   public
     constructor Create(ArqConfig: string = ''; ChaveCrypt: ansistring = ''); override;
     destructor Destroy; override;
@@ -73,6 +73,8 @@ function MDFE_Nome(const sNome: PChar; var esTamanho: longint): longint;
 function MDFE_Versao(const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_ImportarConfig(const eArqConfig: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_ConfigLer(const eArqConfig: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
@@ -94,6 +96,10 @@ function MDFE_ObterXml(AIndex: longint; const sResposta: PChar; var esTamanho: l
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_GravarXml(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_CarregarEventoXML(const eArquivoOuXML: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_CarregarEventoINI(const eArquivoOuINI: PChar): longint;
@@ -110,6 +116,11 @@ function MDFE_ValidarRegrasdeNegocios(const sResposta: PChar; var esTamanho: lon
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_VerificarAssinatura(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi: longint;
+  AEmissao, ACNPJCPF: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
 {%region Servicos}
@@ -118,7 +129,7 @@ function MDFE_StatusServico(const sResposta: PChar; var esTamanho: longint): lon
 function MDFE_Consultar(const eChaveOuMDFe: PChar;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function MDFE_Enviar(ALote: Integer; Imprimir, Sincrono: Boolean;
+function MDFE_Enviar(ALote: Integer; AImprimir, ASincrono: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_ConsultarRecibo(ARecibo: PChar;
@@ -129,6 +140,11 @@ function MDFE_Cancelar(const eChave, eJustificativa, eCNPJCPF: PChar; ALote: Int
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_EnviarEvento(idLote: Integer;
   const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_EncerrarMDFe(const eChaveOuMDFe, eDtEnc, cMunicipioDescarga, nCNPJ, nProtocolo: PChar;
+  const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function MDFE_ConsultaMDFeNaoEnc(const nCNPJ: PChar; const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function MDFE_DistribuicaoDFePorUltNSU(eCNPJCPF, eultNSU: PChar;
   const sResposta: PChar; var esTamanho: longint): longint;
@@ -163,7 +179,7 @@ implementation
 uses
   ACBrLibConsts, ACBrLibMDFeConsts, ACBrLibConfig, ACBrLibResposta,
   ACBrLibMDFeConfig, ACBrLibMDFeRespostas, ACBrMDFe, ACBrMail,
-  ACBrLibConsReciDFe, ACBrLibDistribuicaoDFe,
+  ACBrLibConsReciDFe, ACBrLibDistribuicaoDFe, ACBrDFeUtil, ACBrLibCertUtils,
   pcnConversao, pcnAuxiliar, pMDFeConversaoMDFe, blcksock, ACBrUtil;
 
 { TACBrLibMDFe }
@@ -235,6 +251,12 @@ function MDFE_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): lon
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_UltimoRetorno(sMensagem, esTamanho);
+end;
+
+function MDFE_ImportarConfig(const eArqConfig: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_ImportarConfig(eArqConfig);
 end;
 
 function MDFE_ConfigLer(const eArqConfig: PChar): longint;
@@ -407,6 +429,101 @@ begin
           Result := SetRetorno(ErrOK)
         else
           Result := SetRetorno(ErrGerarXml);
+      finally
+        MDFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function MDFE_ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: String;
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('MDFE_ObterIni(' + IntToStr(AIndex) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('MDFE_ObterIni', logNormal);
+
+    with TACBrLibMDFe(pLib) do
+    begin
+      MDFeDM.Travar;
+      try
+        if (AIndex >= MDFeDM.ACBrMDFe1.Manifestos.Count) and (MDFeDM.ACBrMDFe1.Manifestos.Count < 1) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        if EstaVazio(MDFeDM.ACBrMDFe1.Manifestos.Items[AIndex].XMLOriginal) then
+          MDFeDM.ACBrMDFe1.Manifestos.Items[AIndex].GerarXML;
+
+        Resposta := MDFeDM.ACBrMDFe1.Manifestos.Items[AIndex].GerarMDFeIni;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        MDFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function MDFE_GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  AMDFeIni, ANomeArquivo, APathArquivo: String;
+begin
+  try
+    VerificarLibInicializada;
+    ANomeArquivo := String(eNomeArquivo);
+    APathArquivo := String(ePathArquivo);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('MDFE_GravarIni(' + IntToStr(AIndex) + ',' + ANomeArquivo + ',' + APathArquivo + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('MDFE_GravarIni', logNormal);
+
+    with TACBrLibMDFe(pLib) do
+    begin
+      MDFeDM.Travar;
+      try
+        if (AIndex >= MDFeDM.ACBrMDFe1.Manifestos.Count) and (MDFeDM.ACBrMDFe1.Manifestos.Count < 1) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        ANomeArquivo := ExtractFileName(ANomeArquivo);
+
+        if EstaVazio(ANomeArquivo) then
+          raise EACBrLibException.Create(ErrExecutandoMetodo, 'Nome de arquivo não informado');
+
+        if EstaVazio(APathArquivo) then
+          APathArquivo := ExtractFilePath(ANomeArquivo);
+        if EstaVazio(APathArquivo) then
+          APathArquivo := MDFeDM.ACBrMDFe1.Configuracoes.Arquivos.PathSalvar;
+
+        APathArquivo := PathWithDelim(APathArquivo);
+
+        if EstaVazio(MDFeDM.ACBrMDFe1.Manifestos.Items[AIndex].XMLOriginal) then
+          MDFeDM.ACBrMDFe1.Manifestos.Items[AIndex].GerarXML;
+
+        AMDFeIni := MDFeDM.ACBrMDFe1.Manifestos.Items[AIndex].GerarMDFeIni;
+
+        if not DirectoryExists(APathArquivo) then
+          ForceDirectories(APathArquivo);
+
+        WriteToTXT(APathArquivo + ANomeArquivo, AMDFeIni, False, False);
       finally
         MDFeDM.Destravar;
       end;
@@ -628,7 +745,7 @@ begin
         Erros := '';
         MDFeDM.ACBrMDFe1.Manifestos.ValidarRegrasdeNegocios(Erros);
         MoverStringParaPChar(Erros, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Erros);
       finally
         MDFeDM.Destravar;
       end;
@@ -658,7 +775,82 @@ begin
         Erros := '';
         MDFeDM.ACBrMDFe1.Manifestos.VerificarAssinatura(Erros);
         MoverStringParaPChar(Erros, sResposta, esTamanho);
-        Result := SetRetorno(ErrOK, StrPas(sResposta));
+        Result := SetRetorno(ErrOK, Erros);
+      finally
+        MDFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function MDFE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi: longint;
+  AEmissao, ACNPJCPF: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta, CNPJCPF: string;
+  Emissao: TDateTime;
+begin
+  try
+    VerificarLibInicializada;
+
+    Emissao := StrToDate(AEmissao);
+    CNPJCPF := String(ACNPJCPF);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('MDFE_GerarChave(' + IntToStr(ACodigoUF) + ',' + IntToStr(ACodigoNumerico) + ',' +
+                      IntToStr(AModelo)  + ',' + IntToStr(AModelo) + ',' + IntToStr(ASerie) + ',' +
+                      IntToStr(ANumero) + ',' + IntToStr(ATpEmi) + ',' + DateToStr(Emissao) + ',' +
+                      CNPJCPF + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('MDFE_GerarChave', logNormal);
+
+    with TACBrLibMDFe(pLib) do
+    begin
+      MDFeDM.Travar;
+
+      try
+        Resposta := '';
+        Resposta := GerarChaveAcesso(ACodigoUF, Emissao, CNPJCPF, ASerie, ANumero, ATpEmi, ACodigoNumerico, AModelo);
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        MDFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function MDFE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('MDFE_ObterCertificados', logNormal);
+
+    with TACBrLibMDFe(pLib) do
+    begin
+      MDFeDM.Travar;
+
+      try
+        Resposta := '';
+        Resposta := ObterCerticados(MDFeDM.ACBrMDFe1.SSL);
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
       finally
         MDFeDM.Destravar;
       end;
@@ -732,10 +924,6 @@ begin
     else
       pLib.GravarLog('MDFE_Consultar', logNormal);
 
-    EhArquivo := StringEhArquivo(ChaveOuMDFe);
-    if EhArquivo then
-      VerificarArquivoExiste(ChaveOuMDFe);
-
     with TACBrLibMDFe(pLib) do
     begin
       MDFeDM.Travar;
@@ -758,7 +946,7 @@ begin
       else
         MDFeDM.ACBrMDFe1.WebServices.Consulta.MDFeChave := StringReplace(
           MDFeDM.ACBrMDFe1.Manifestos.Items[MDFeDM.ACBrMDFe1.Manifestos.Count - 1].MDFe.infMDFe.ID,
-          'NFe','',[rfIgnoreCase]);
+          'MDFe','',[rfIgnoreCase]);
 
       Resp := TConsultaResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
@@ -785,7 +973,7 @@ begin
   end;
 end;
 
-function MDFE_Enviar(ALote: Integer; Imprimir, Sincrono: Boolean;
+function MDFE_Enviar(ALote: Integer; AImprimir, ASincrono: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
@@ -800,8 +988,8 @@ begin
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('MDFE_Enviar(' + IntToStr(ALote) + ','
-                                    + BoolToStr(Sincrono, 'Sincrono','')
-                                    + BoolToStr(Imprimir, 'Imprimir','') + ' )', logCompleto, True)
+                                    + BoolToStr(AImprimir, 'Imprimir ,',' , ')
+                                    + BoolToStr(ASincrono, 'Sincrono','  ') + ')', logCompleto, True)
     else
       pLib.GravarLog('MDFE_Enviar', logNormal);
 
@@ -817,7 +1005,7 @@ begin
 
           if Manifestos.Count > 50 then
             raise EACBrLibException.Create(ErrEnvio, 'ERRO: Conjunto de MDF-e transmitidas (máximo de 50 MDF-e)' +
-              ' excedido. Quantidade atual: ' + IntToStr(Manifestos.Count));
+                                                     ' excedido. Quantidade atual: ' + IntToStr(Manifestos.Count));
 
           Resposta := '';
           WebServices.Enviar.Clear;
@@ -831,7 +1019,7 @@ begin
           else
             WebServices.Enviar.Lote := IntToStr(ALote);
 
-          WebServices.Enviar.Sincrono := Sincrono;
+          WebServices.Enviar.Sincrono := ASincrono;
           WebServices.Enviar.Executar;
 
           RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
@@ -842,7 +1030,7 @@ begin
             RespEnvio.Free;
           end;
 
-          if not Sincrono or ((NaoEstaVazio(WebServices.Enviar.Recibo)) and (WebServices.Enviar.cStat = 103)) then
+          if not ASincrono or ((NaoEstaVazio(WebServices.Enviar.Recibo)) and (WebServices.Enviar.cStat = 103)) then
           begin
             WebServices.Retorno.Recibo := WebServices.Enviar.Recibo;
             WebServices.Retorno.Executar;
@@ -855,25 +1043,13 @@ begin
                                     WebServices.Retorno.Protocolo,
                                     WebServices.Retorno.ChaveMDFe);
 
-              // Preenche o xml completo no retorno se tiver a nota de carregada no componente
-              for i := 0 to WebServices.Recibo.MDFeRetorno.ProtDFe.Count - 1 do
-              begin
-                for j := 0 to Manifestos.Count - 1 do
-                begin
-                  if WebServices.Recibo.MDFeRetorno.ProtDFe.Items[i].chDFe = Manifestos.Items[J].MDFe.infMDFe.Id then
-                  begin
-                    RespRetorno.Items[i].XML := Manifestos.Items[J].XML;
-                  end;
-                end;
-              end;
-
               Resposta := Resposta + sLineBreak + RespRetorno.Gerar;
             finally
-              RespRetorno.Free;
+                RespRetorno.Free;
             end;
           end;
 
-          if Imprimir then
+          if AImprimir then
           begin
             MDFeDM.ConfigurarImpressao;
 
@@ -944,18 +1120,6 @@ begin
           try
             Resp.Processar(WebServices.Recibo.MDFeRetorno,
                            WebServices.Recibo.Recibo);
-
-            // Preenche o xml completo no retorno se tiver a nota de carregada no componente
-            for i := 0 to WebServices.Recibo.MDFeRetorno.ProtDFe.Count - 1 do
-            begin
-              for j := 0 to Manifestos.Count - 1 do
-              begin
-                if WebServices.Recibo.MDFeRetorno.ProtDFe.Items[i].chDFe = Manifestos.Items[J].MDFe.infMDFe.ID then
-                begin
-                  Resp.Items[i].XML := Manifestos.Items[J].XML;
-                end;
-              end;
-            end;
 
             Resposta := Resp.Gerar;
           finally
@@ -1165,6 +1329,179 @@ begin
         Result := SetRetorno(ErrOK, Resposta);
       finally
         MDFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function MDFE_EncerrarMDFe(const eChaveOuMDFe, eDtEnc, cMunicipioDescarga, nCNPJ, nProtocolo: PChar;
+  const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resp: TEncerramentoResposta;
+  ChaveOuMDFe, MunicipioDescarga, CNPJ, Protocolo, Resposta: string;
+  DtEnc: TDateTime;
+begin
+  try
+    VerificarLibInicializada;
+    ChaveOuMDFe := String(eChaveOuMDFe);
+    DtEnc := StrToDateTime(eDtEnc);
+    MunicipioDescarga := String(cMunicipioDescarga);
+    CNPJ := String(nCNPJ);
+    Protocolo := String(nProtocolo);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('MDFE_EncerrarMDFe(' + ChaveOuMDFe + ',' + DateTimeToStr(DtEnc) + ',' +
+                     MunicipioDescarga + ',' + CNPJ + ',' + Protocolo + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('MDFE_EncerrarMDFe', logNormal);
+
+    with TACBrLibMDFe(pLib) do
+    begin
+      MDFeDM.Travar;
+
+      try
+        with MDFeDM.ACBrMDFe1 do
+        begin
+          Manifestos.Clear;
+           if FilesExists(ChaveOuMDFe) then
+           begin
+             Manifestos.LoadFromFile(ChaveOuMDFe);
+             if (Manifestos.Count > 0) then
+               ChaveOuMDFe := OnlyNumber(Manifestos.Items[0].MDFe.infMDFe.ID)
+             else
+               raise EACBrLibException.Create(ErrArquivoNaoExiste, 'Arquivo MDFe inválido: ' + ChaveOuMDFe);
+           end
+           else if not ValidarChave(ChaveOuMDFe) then
+             raise EACBrLibException.Create(ErrChaveMDFe, 'Chave MDFe inválido: '+ ChaveOuMDFe);
+
+
+           EventoMDFe.Evento.Clear;
+           with EventoMDFe.Evento.New do
+           begin
+
+              if Trim(CNPJ) = '' then
+                CNPJ := copy(ChaveOuMDFe, 7, 14)
+              else
+              begin
+                if not ValidarCNPJouCPF(CNPJ) then
+                  raise EACBrLibException.Create(ErrCNPJ, 'CNPJ/CPF ' + CNPJ + ' inválido.');
+              end;
+
+             infEvento.CNPJCPF := CNPJ;
+             infEvento.nSeqEvento := 1;
+             infEvento.cOrgao := StrToIntDef(copy(OnlyNumber(ChaveOuMDFe), 1, 2), 0);
+             infEvento.tpAmb := Configuracoes.WebServices.Ambiente;
+             infEvento.dhEvento := now;
+             infEvento.tpEvento := teEncerramento;
+             infEvento.chMDFe := ChaveOuMDFe;
+
+             if (Trim(Protocolo) <> '') then
+               infEvento.detEvento.nProt := Trim(Protocolo)
+             else if ((Manifestos.Count > 0) and (Manifestos.Items[0].MDFe.procMDFe.nProt <> '')) then
+               infEvento.detEvento.nProt := Manifestos.Items[0].MDFe.procMDFe.nProt
+             else
+             begin
+               //Realiza Consulta na Sefaz
+               WebServices.Consulta.MDFeChave := ChaveOuMDFe;
+               WebServices.Consulta.Executar;
+               if (WebServices.Consulta.protocolo <> '') then
+                 infEvento.detEvento.nProt := WebServices.Consulta.Protocolo
+               else
+                 raise EACBrLibException.Create(ErrConsulta, 'Falha na consulta do Protocolo MDFe. ' + WebServices.Consulta.Msg);
+             end;
+
+             if (Trim(MunicipioDescarga) <> '') then
+             begin
+               infEvento.detEvento.cUF := StrToIntDef(copy(MunicipioDescarga, 1, 2), 1);
+               infEvento.detEvento.cMun := StrToIntDef(MunicipioDescarga, 1);
+             end
+             else if ((Manifestos.Count > 0) and
+                     (Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga > 0)) then
+             begin
+               infEvento.detEvento.cMun :=
+               Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga;
+               infEvento.detEvento.cUF := StrToIntDef(copy(IntToStr(Manifestos.Items[0].MDFe.infDoc.infMunDescarga.Items[0].cMunDescarga), 1, 2), 1);
+             end;
+
+             infEvento.detEvento.dtEnc := DtEnc;
+           end;
+
+           WebServices.EnvEvento.idLote := 1;
+           WebServices.EnvEvento.Executar;
+
+           Resposta := '';
+           Resp := TEncerramentoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+
+           try
+             Resp.Processar(MDFeDM.ACBrMDFe1);
+             Resposta := Resp.Gerar;
+           finally
+             Resp.Free;
+           end;
+
+           MoverStringParaPChar(Resposta, sResposta, esTamanho);
+           Result := SetRetorno(ErrOK, Resposta);
+        end;
+      finally
+        MDFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function MDFE_ConsultaMDFeNaoEnc(const nCNPJ: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  CNPJ, Resposta: String;
+  Resp: TNaoEncerradosResposta ;
+begin
+  try
+    VerificarLibInicializada;
+    CNPJ := String(nCNPJ);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('MDFE_ConsultaMDFeNaoEnc(' + CNPJ + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('MDFE_ConsultaMDFeNaoEnc', logNormal);
+
+    with TACBrLibMDFe(pLib) do
+    begin
+      MDFeDM.Travar;
+
+      try
+        if not ValidarCNPJouCPF(CNPJ) then
+          raise EACBrLibException.Create(ErrCNPJ, 'CNPJ/CPF ' + CNPJ + ' invalido.');
+
+        MDFeDM.ACBrMDFe1.WebServices.ConsMDFeNaoEnc.CNPJCPF := CNPJ;
+        MDFeDM.ACBrMDFe1.WebServices.ConsMDFeNaoEnc.Executar;
+
+        Resposta := '';
+        Resp := TNaoEncerradosResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+
+        try
+          Resp.Processar(MDFeDM.ACBrMDFe1);
+          Resposta := Resp.Gerar;
+        finally
+            Resp.Free;
+        end;
+
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+          MDFeDM.Destravar;
       end;
     end;
   except

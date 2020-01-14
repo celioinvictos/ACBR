@@ -189,8 +189,7 @@ implementation
 uses
   StrUtils, DateUtils,
   ACBrUtil, ACBrValidador, ACBrDFeUtil,
-  ACBrDFeReportFortes,
-  pcnNFe, pcnConversao, pcnConversaoNFe;
+  ACBrDFeReportFortes, pcnNFe, pcnConversao;
 
 {$IfNDef FPC}
   {$R *.dfm}
@@ -238,7 +237,9 @@ begin
     rliLogo.Left := 2;
     rliLogo.Height := 108;
     rliLogo.Width := 284;
-    rliLogo.Stretch := True;
+
+    TDFeReportFortes.AjustarLogo(rliLogo, fpDANFe.ExpandeLogoMarcaConfig);
+
     rlmEmitente.Enabled := False;
     RLb02_Emitente.Height:= 188;
     RLmEmitente.Top:= rlilogo.Top + rlilogo.Height + 3;

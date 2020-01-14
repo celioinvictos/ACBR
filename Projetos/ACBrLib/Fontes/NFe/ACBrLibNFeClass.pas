@@ -73,6 +73,8 @@ function NFE_Versao(const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_ImportarConfig(const eArqConfig: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_ConfigLer(const eArqConfig: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_ConfigGravar(const eArqConfig: PChar): longint;
@@ -93,6 +95,10 @@ function NFE_ObterXml(AIndex: longint; const sResposta: PChar; var esTamanho: lo
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_GravarXml(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_CarregarEventoXML(const eArquivoOuXML: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_CarregarEventoINI(const eArquivoOuINI: PChar): longint;
@@ -112,6 +118,8 @@ function NFE_VerificarAssinatura(const sResposta: PChar; var esTamanho: longint)
 function NFE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi: longint;
   AEmissao, ACNPJCPF: PChar; const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
 {%region Servicos}
@@ -124,7 +132,7 @@ function NFE_Inutilizar(const ACNPJ, AJustificativa: PChar;
   Ano, Modelo, Serie, NumeroInicial, NumeroFinal: integer;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function NFE_Enviar(ALote: Integer; Imprimir, Sincrono, Zipado: Boolean;
+function NFE_Enviar(ALote: Integer; AImprimir, ASincrono, AZipado: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_ConsultarRecibo(ARecibo: PChar;
@@ -177,7 +185,7 @@ uses
   ACBrLibConsts, ACBrLibNFeConsts, ACBrLibConfig,
   ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
   ACBrLibConsultaCadastro, ACBrLibNFeConfig, ACBrLibNFeRespostas,
-  ACBrDFeUtil, ACBrNFe, ACBrMail, ACBrUtil,
+  ACBrDFeUtil, ACBrNFe, ACBrMail, ACBrUtil, ACBrLibCertUtils,
   pcnConversao, pcnAuxiliar, blcksock;
 
 { TACBrLibNFe }
@@ -250,6 +258,12 @@ function NFE_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): long
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_UltimoRetorno(sMensagem, esTamanho);
+end;
+
+function NFE_ImportarConfig(const eArqConfig: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_ImportarConfig(eArqConfig);
 end;
 
 function NFE_ConfigLer(const eArqConfig: PChar): longint;
@@ -374,7 +388,7 @@ begin
     begin
       NFeDM.Travar;
       try
-        if (AIndex >= NFeDM.ACBrNFe1.NotasFiscais.Count) and (NFeDM.ACBrNFe1.NotasFiscais.Count < 1) then
+        if (NFeDM.ACBrNFe1.NotasFiscais.Count < 1) or (AIndex < 0) or (AIndex >= NFeDM.ACBrNFe1.NotasFiscais.Count) then
           raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
 
         if EstaVazio(NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].XMLOriginal) then
@@ -415,13 +429,108 @@ begin
     begin
       NFeDM.Travar;
       try
-        if (AIndex >= NFeDM.ACBrNFe1.NotasFiscais.Count) and (NFeDM.ACBrNFe1.NotasFiscais.Count < 1) then
+        if (NFeDM.ACBrNFe1.NotasFiscais.Count < 1) or (AIndex < 0) or (AIndex >= NFeDM.ACBrNFe1.NotasFiscais.Count) then
           raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
 
         if NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].GravarXML(ANomeArquivo, APathArquivo) then
           Result := SetRetorno(ErrOK)
         else
           Result := SetRetorno(ErrGerarXml);
+      finally
+        NFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function NFE_ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: String;
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('NFE_ObterIni(' + IntToStr(AIndex) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('NFE_ObterIni', logNormal);
+
+    with TACBrLibNFe(pLib) do
+    begin
+      NFeDM.Travar;
+      try
+        if (NFeDM.ACBrNFe1.NotasFiscais.Count < 1) or (AIndex < 0) or (AIndex >= NFeDM.ACBrNFe1.NotasFiscais.Count) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        if EstaVazio(NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].XMLOriginal) then
+          NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].GerarXML;
+
+        Resposta := NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].GerarNFeIni;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        NFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function NFE_GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  ANFeIni, ANomeArquivo, APathArquivo: String;
+begin
+  try
+    VerificarLibInicializada;
+    ANomeArquivo := String(eNomeArquivo);
+    APathArquivo := String(ePathArquivo);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('NFE_GravarIni(' + IntToStr(AIndex) + ',' + ANomeArquivo + ',' + APathArquivo + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('NFE_GravarIni', logNormal);
+
+    with TACBrLibNFe(pLib) do
+    begin
+      NFeDM.Travar;
+      try
+        if (NFeDM.ACBrNFe1.NotasFiscais.Count < 1) or (AIndex < 0) or (AIndex >= NFeDM.ACBrNFe1.NotasFiscais.Count) then
+          raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+        ANomeArquivo := ExtractFileName(ANomeArquivo);
+
+        if EstaVazio(ANomeArquivo) then
+          raise EACBrLibException.Create(ErrExecutandoMetodo, 'Nome de arquivo não informado');
+
+        if EstaVazio(APathArquivo) then
+          APathArquivo := ExtractFilePath(ANomeArquivo);
+        if EstaVazio(APathArquivo) then
+          APathArquivo := NFeDM.ACBrNFe1.Configuracoes.Arquivos.PathSalvar;
+
+        APathArquivo := PathWithDelim(APathArquivo);
+
+        if EstaVazio(NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].XMLOriginal) then
+          NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].GerarXML;
+
+        ANFeIni := NFeDM.ACBrNFe1.NotasFiscais.Items[AIndex].GerarNFeIni;
+
+        if not DirectoryExists(APathArquivo) then
+          ForceDirectories(APathArquivo);
+
+        WriteToTXT(APathArquivo + ANomeArquivo, ANFeIni, False, False);
       finally
         NFeDM.Destravar;
       end;
@@ -730,6 +839,38 @@ begin
   end;
 end;
 
+function NFE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('NFE_ObterCertificados', logNormal);
+
+    with TACBrLibNFe(pLib) do
+    begin
+      NFeDM.Travar;
+
+      try
+        Resposta := '';
+        Resposta := ObterCerticados(NFeDM.ACBrNFe1.SSL);
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        NFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
 {%endregion}
 
 {%region Servicos}
@@ -902,7 +1043,7 @@ begin
   end;
 end;
 
-function NFE_Enviar(ALote: Integer; Imprimir, Sincrono, Zipado: Boolean;
+function NFE_Enviar(ALote: Integer; AImprimir, ASincrono, AZipado: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
@@ -910,16 +1051,16 @@ var
   RespEnvio: TEnvioResposta;
   RespRetorno: TRetornoResposta;
   ImpResp: TLibImpressaoResposta;
-  i, j, ImpCount: Integer;
+  i, ImpCount: Integer;
 begin
   try
     VerificarLibInicializada;
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('NFe_Enviar(' + IntToStr(ALote) + ',' +
-                     BoolToStr(Imprimir, 'Imprimir','') +
-                     BoolToStr(Sincrono, 'Sincrono','') +
-                     BoolToStr(Zipado, 'Zipado','') + ' )', logCompleto, True)
+                     BoolToStr(AImprimir, 'Imprimir','') +
+                     BoolToStr(ASincrono, 'Sincrono','') +
+                     BoolToStr(AZipado, 'Zipado','') + ' )', logCompleto, True)
     else
       pLib.GravarLog('NFe_Enviar', logNormal);
 
@@ -951,8 +1092,8 @@ begin
           else
             WebServices.Enviar.Lote := IntToStr(ALote);
 
-          WebServices.Enviar.Sincrono := Sincrono;
-          WebServices.Enviar.Zipado := Zipado;
+          WebServices.Enviar.Sincrono := ASincrono;
+          WebServices.Enviar.Zipado := AZipado;
           WebServices.Enviar.Executar;
 
           RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
@@ -963,7 +1104,7 @@ begin
             RespEnvio.Free;
           end;
 
-          if not Sincrono or ((NaoEstaVazio(WebServices.Enviar.Recibo)) and (WebServices.Enviar.cStat = 103)) then
+          if not ASincrono or ((NaoEstaVazio(WebServices.Enviar.Recibo)) and (WebServices.Enviar.cStat = 103)) then
           begin
             WebServices.Retorno.Recibo := WebServices.Enviar.Recibo;
             WebServices.Retorno.Executar;
@@ -976,25 +1117,13 @@ begin
                                     WebServices.Retorno.Protocolo,
                                     WebServices.Retorno.ChaveNFe);
 
-              // Preenche o xml completo no retorno se tiver a nota de carregada no componente
-              for i := 0 to WebServices.Recibo.NFeRetorno.ProtDFe.Count - 1 do
-              begin
-                for j := 0 to NotasFiscais.Count - 1 do
-                begin
-                  if WebServices.Recibo.NFeRetorno.ProtDFe.Items[i].chDFe = NotasFiscais.Items[J].NFe.infNFe.ID then
-                  begin
-                    RespRetorno.Items[i].XML := NotasFiscais.Items[J].XML;
-                  end;
-                end;
-              end;
-
               Resposta := Resposta + sLineBreak + RespRetorno.Gerar;
             finally
               RespRetorno.Free;
             end;
           end;
 
-          if Imprimir then
+          if AImprimir then
           begin
             NFeDM.ConfigurarImpressao();
 
@@ -1039,7 +1168,6 @@ function NFE_ConsultarRecibo(ARecibo: PChar; const sResposta: PChar; var esTaman
 var
   Resp: TReciboResposta;
   sRecibo, Resposta: string;
-  i, j: Integer;
 begin
   try
     VerificarLibInicializada;
@@ -1065,18 +1193,6 @@ begin
           try
             Resp.Processar(WebServices.Recibo.NFeRetorno,
                            WebServices.Recibo.Recibo);
-
-            // Preenche o xml completo no retorno se tiver a nota de carregada no componente
-            for i := 0 to WebServices.Recibo.NFeRetorno.ProtDFe.Count - 1 do
-            begin
-              for j := 0 to NotasFiscais.Count - 1 do
-              begin
-                if WebServices.Recibo.NFeRetorno.ProtDFe.Items[i].chDFe = NotasFiscais.Items[J].NFe.infNFe.ID then
-                begin
-                  Resp.Items[i].XML := NotasFiscais.Items[J].XML;
-                end;
-              end;
-            end;
 
             Resposta := Resp.Gerar;
           finally
@@ -1371,7 +1487,7 @@ begin
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('NFe_DistribuicaoDFePorUltNSU(' + IntToStr(AcUFAutor) + ',' +
-                     ACNPJCPF + ',' + AultNSU + ',' + ' )', logCompleto, True)
+                     ACNPJCPF + ',' + AultNSU + ')', logCompleto, True)
     else
       pLib.GravarLog('NFe_DistribuicaoDFePorUltNSU', logNormal);
 
@@ -1436,7 +1552,7 @@ begin
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('NFe_DistribuicaoDFePorNSU(' + IntToStr(AcUFAutor) + ',' +
-                     ACNPJCPF + ',' + ANSU + ',' + ' )', logCompleto, True)
+                     ACNPJCPF + ',' + ANSU + ')', logCompleto, True)
     else
       pLib.GravarLog('NFe_DistribuicaoDFePorNSU', logNormal);
 
@@ -1501,7 +1617,7 @@ begin
 
     if pLib.Config.Log.Nivel > logNormal then
       pLib.GravarLog('NFe_DistribuicaoDFePorChave(' + IntToStr(AcUFAutor) + ',' +
-                     ACNPJCPF + ',' + AchNFe + ' )', logCompleto, True)
+                     ACNPJCPF + ',' + AchNFe + ')', logCompleto, True)
     else
       pLib.GravarLog('NFe_DistribuicaoDFePorChave', logNormal);
 

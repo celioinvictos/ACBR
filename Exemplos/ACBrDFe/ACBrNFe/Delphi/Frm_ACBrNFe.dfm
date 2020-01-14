@@ -1,6 +1,6 @@
 object frmACBrNFe: TfrmACBrNFe
-  Left = 249
-  Top = 82
+  Left = 236
+  Top = 105
   Width = 882
   Height = 651
   Caption = 'ACBrNFe - Programa Exemplo'
@@ -22,71 +22,11 @@ object frmACBrNFe: TfrmACBrNFe
     Height = 612
     Align = alLeft
     TabOrder = 0
-    object lblColaborador: TLabel
-      Left = 18
-      Top = 540
-      Width = 261
-      Height = 13
-      Cursor = crHandPoint
-      Caption = 'Veja a lista de Colaboradores do Projeto ACBr'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clNavy
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      OnClick = lblColaboradorClick
-    end
-    object lblPatrocinador: TLabel
-      Left = 16
-      Top = 555
-      Width = 265
-      Height = 13
-      Cursor = crHandPoint
-      Caption = 'Veja a lista de Patrocinadores do Projeto ACBr'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clGreen
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      OnClick = lblPatrocinadorClick
-    end
-    object lblDoar1: TLabel
-      Left = 21
-      Top = 570
-      Width = 255
-      Height = 13
-      Cursor = crHandPoint
-      Caption = 'Para se tornar Patrocinador do Projeto ACBr,'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clRed
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      OnClick = lblDoar1Click
-    end
-    object lblDoar2: TLabel
-      Left = 117
-      Top = 583
-      Width = 63
-      Height = 13
-      Cursor = crHandPoint
-      Caption = 'clique aqui'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clRed
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      OnClick = lblDoar2Click
-    end
     object PageControl1: TPageControl
       Left = 1
       Top = 1
       Width = 295
-      Height = 504
+      Height = 544
       ActivePage = TabSheet1
       TabOrder = 0
       object TabSheet1: TTabSheet
@@ -95,8 +35,8 @@ object frmACBrNFe: TfrmACBrNFe
           Left = 0
           Top = 0
           Width = 287
-          Height = 476
-          ActivePage = TabSheet12
+          Height = 516
+          ActivePage = TabSheet3
           Align = alClient
           MultiLine = True
           TabOrder = 0
@@ -302,8 +242,8 @@ object frmACBrNFe: TfrmACBrNFe
               OnClick = btnIssuerNameClick
             end
             object GroupBox1: TGroupBox
-              Left = 2
-              Top = 328
+              Left = 3
+              Top = 367
               Width = 263
               Height = 69
               Caption = 'Calculo de Hash e assinatura'
@@ -337,8 +277,8 @@ object frmACBrNFe: TfrmACBrNFe
               end
             end
             object btnHTTPS: TButton
-              Left = 8
-              Top = 403
+              Left = 9
+              Top = 442
               Width = 128
               Height = 25
               Caption = 'HTTPS sem Certificado'
@@ -346,8 +286,8 @@ object frmACBrNFe: TfrmACBrNFe
               OnClick = btnHTTPSClick
             end
             object btnLeituraX509: TButton
-              Left = 144
-              Top = 403
+              Left = 145
+              Top = 442
               Width = 115
               Height = 25
               Caption = 'Leitura de X509'
@@ -360,7 +300,7 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
+              ItemHeight = 13
               TabOrder = 9
               OnChange = cbSSLLibChange
             end
@@ -370,7 +310,7 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
+              ItemHeight = 13
               TabOrder = 10
               OnChange = cbCryptLibChange
             end
@@ -380,7 +320,7 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
+              ItemHeight = 13
               TabOrder = 11
               OnChange = cbHttpLibChange
             end
@@ -390,9 +330,18 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
+              ItemHeight = 13
               TabOrder = 12
               OnChange = cbXmlSignLibChange
+            end
+            object btVersao: TButton
+              Left = 8
+              Top = 336
+              Width = 113
+              Height = 25
+              Caption = 'Vers'#227'o OpenSSL'
+              TabOrder = 13
+              OnClick = btVersaoClick
             end
           end
           object TabSheet4: TTabSheet
@@ -522,7 +471,7 @@ object frmACBrNFe: TfrmACBrNFe
                 Top = 104
                 Width = 248
                 Height = 21
-                ItemHeight = 0
+                ItemHeight = 13
                 TabOrder = 2
               end
               object cbxAtualizarXML: TCheckBox
@@ -553,7 +502,7 @@ object frmACBrNFe: TfrmACBrNFe
                 Top = 142
                 Width = 248
                 Height = 21
-                ItemHeight = 0
+                ItemHeight = 13
                 TabOrder = 6
               end
               object cbxRetirarAcentos: TCheckBox
@@ -569,7 +518,7 @@ object frmACBrNFe: TfrmACBrNFe
                 Top = 181
                 Width = 248
                 Height = 21
-                ItemHeight = 0
+                ItemHeight = 13
                 TabOrder = 8
               end
               object edtIdToken: TEdit
@@ -735,7 +684,7 @@ object frmACBrNFe: TfrmACBrNFe
                 Height = 21
                 Hint = 'Depende de configura'#231#227'o de  SSL.HttpLib'
                 Style = csDropDownList
-                ItemHeight = 0
+                ItemHeight = 13
                 TabOrder = 5
                 OnChange = cbSSLTypeChange
               end
@@ -1483,7 +1432,7 @@ object frmACBrNFe: TfrmACBrNFe
             Width = 233
             Height = 21
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 1
           end
           object cbxPorta: TComboBox
@@ -1491,7 +1440,7 @@ object frmACBrNFe: TfrmACBrNFe
             Top = 88
             Width = 201
             Height = 21
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 2
           end
           object cbxPagCodigo: TComboBox
@@ -1500,7 +1449,7 @@ object frmACBrNFe: TfrmACBrNFe
             Width = 101
             Height = 21
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 3
           end
           object seColunas: TSpinEdit
@@ -1659,10 +1608,10 @@ object frmACBrNFe: TfrmACBrNFe
       end
     end
     object btnSalvarConfig: TBitBtn
-      Left = 78
-      Top = 515
+      Left = 74
+      Top = 560
       Width = 153
-      Height = 25
+      Height = 36
       Caption = 'Salvar Configura'#231#245'es'
       TabOrder = 1
       OnClick = btnSalvarConfigClick
@@ -2067,7 +2016,6 @@ object frmACBrNFe: TfrmACBrNFe
   end
   object ACBrNFe1: TACBrNFe
     MAIL = ACBrMail1
-    Integrador = ACBrIntegrador1
     OnStatusChange = ACBrNFe1StatusChange
     OnGerarLog = ACBrNFe1GerarLog
     Configuracoes.Geral.SSLLib = libNone
@@ -2141,8 +2089,8 @@ object frmACBrNFe: TfrmACBrNFe
     CasasDecimais.MaskvUnCom = '###,###,###,##0.00'
     TipoDANFE = tiSemGeracao
     PosPrinter = ACBrPosPrinter1
-    Left = 657
-    Top = 239
+    Left = 529
+    Top = 287
   end
   object ACBrPosPrinter1: TACBrPosPrinter
     Modelo = ppEscPosEpson
@@ -2176,8 +2124,8 @@ object frmACBrNFe: TfrmACBrNFe
       'Arquivos NFE (*-nfe.XML)|*-nfe.XML|Arquivos XML (*.XML)|*.XML|To' +
       'dos os Arquivos (*.*)|*.*'
     Title = 'Selecione a NFe'
-    Left = 499
-    Top = 287
+    Left = 411
+    Top = 343
   end
   object ACBrIntegrador1: TACBrIntegrador
     PastaInput = 'C:\Integrador\Input\'

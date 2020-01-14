@@ -48,7 +48,7 @@ type
     FId: String;
     FtpAmb: String;
     FverAplic: String;
-    FchNFe: String;
+    FchDFe: String;
     FdhRecbto: TDateTime;
     FnProt: String;
     FdigVal: String;
@@ -65,7 +65,7 @@ type
     property Id: String read FId write FId;
     property tpAmb: String read FtpAmb write FtpAmb;
     property verAplic: String read FverAplic write FverAplic;
-    property chNFe: String read FchNFe write FchNFe;
+    property chDFe: String read FchDFe write FchDFe;
     property dhRecbto: TDateTime read FdhRecbto write FdhRecbto;
     property nProt: String read FnProt write FnProt;
     property digVal: String read FdigVal write FdigVal;
@@ -94,16 +94,11 @@ type
     FChaveDFe: string;
     FItems: TObjectList;
 
-    function GetItem(Index: Integer): TRetornoItemResposta;
-
   public
     constructor Create(const APrefix: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
     procedure Processar(const RetConsReciDFe: TRetConsReciDFe; const Recibo, Msg, Protocolo, ChaveDFe: String);
-    function Gerar: Ansistring; override;
-
-    property Items[Index: Integer]: TRetornoItemResposta read GetItem; default;
 
   published
     property Msg: string read FMsg write FMsg;
@@ -119,6 +114,7 @@ type
     property xMsg: String read FxMsg write FxMsg;
     property Protocolo: String read FProtocolo write FProtocolo;
     property ChaveDFe: String read FChaveDFe write FChaveDFe;
+    property Items: TObjectList read FItems write FItems;
 
   end;
 
@@ -135,16 +131,11 @@ type
     FnRec: string;
     FItens: TObjectList;
 
-    function GetItem(Index: Integer): TRetornoItemResposta;
-
   public
     constructor Create(const APrefix: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
     procedure Processar(const RetConsReciDFe: TRetConsReciDFe; const Recibo: String);
-    function Gerar: Ansistring; override;
-
-    property Items[Index: Integer]: TRetornoItemResposta read GetItem; default;
 
   published
     property Versao: string read Fversao write Fversao;
@@ -154,6 +145,7 @@ type
     property XMotivo: string read FxMotivo write FxMotivo;
     property CUF: integer read FcUF write FcUF;
     property nRec: string read FnRec write FnRec;
+    property Items: TObjectList read FItens write FItens;
 
   end;
 
@@ -175,7 +167,7 @@ begin
   FId := Item.Id;
   FtpAmb := TpAmbToStr(Item.tpAmb);
   FverAplic := Item.verAplic;
-  FchNFe := Item.chDFe;
+  FchDFe := Item.chDFe;
   FdhRecbto := Item.dhRecbto;
   FnProt := Item.nProt;
   FdigVal := Item.digVal;
@@ -198,22 +190,6 @@ begin
   FItems.Free;
 
   Inherited Destroy;
-end;
-
-function TRetornoResposta.GetItem(Index: Integer): TRetornoItemResposta;
-begin
-  Result := TRetornoItemResposta(FItems[Index]);
-end;
-
-function TRetornoResposta.Gerar: Ansistring;
-Var
-  i: Integer;
-begin
-  Result := Inherited Gerar;
-  for i := 0 to FItems.Count - 1 do
-  begin
-    Result := Result + sLineBreak + TRetornoItemResposta(FItems.Items[i]).Gerar;
-  end;
 end;
 
 procedure TRetornoResposta.Processar(const RetConsReciDFe: TRetConsReciDFe; const Recibo, Msg, Protocolo, ChaveDFe: String);
@@ -240,7 +216,7 @@ begin
   begin
     for i := 0 to ProtDFe.Count - 1 do
     begin
-      Item := TRetornoItemResposta.Create(FPrefix + Trim(IntToStr(StrToInt(copy(ProtDFe.Items[i].chDFe, 26, 9)))), Tipo, FFormato);
+      Item := TRetornoItemResposta.Create(FPrefix + Trim(IntToStr(StrToInt(copy(ProtDFe.Items[i].chDFe, 26, 9)))), Tipo, Formato);
       Item.Processar(ProtDFe.Items[i]);
       FItems.Add(Item);
     end;
@@ -263,22 +239,6 @@ begin
   Inherited Destroy;
 end;
 
-function TReciboResposta.GetItem(Index: Integer): TRetornoItemResposta;
-begin
-  Result := TRetornoItemResposta(FItens[Index]);
-end;
-
-function TReciboResposta.Gerar: Ansistring;
-Var
-  i: Integer;
-begin
-  Result := Inherited Gerar;
-  for i := 0 to FItens.Count - 1 do
-  begin
-    Result := Result + sLineBreak + TRetornoItemResposta(FItens.Items[i]).Gerar;
-  end;
-end;
-
 procedure TReciboResposta.Processar(const RetConsReciDFe: TRetConsReciDFe; const Recibo: String);
 Var
   i: Integer;
@@ -299,7 +259,7 @@ begin
   begin
     for i := 0 to ProtDFe.Count - 1 do
     begin
-      Item := TRetornoItemResposta.Create(FPrefix + Trim(IntToStr(StrToInt(copy(ProtDFe.Items[i].chDFe, 26, 9)))), Tipo, FFormato);
+      Item := TRetornoItemResposta.Create(FPrefix + Trim(IntToStr(StrToInt(copy(ProtDFe.Items[i].chDFe, 26, 9)))), Tipo, Formato);
       Item.Processar(ProtDFe.Items[i]);
       FItens.Add(Item);
     end;

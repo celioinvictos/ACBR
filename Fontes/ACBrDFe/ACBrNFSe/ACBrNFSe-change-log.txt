@@ -47,6 +47,83 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+10/01/2020
+-- Diversos --
+[+] Implementação do provedor ModernizacaoPublica
+   Por: Michel Ouriques
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/55699-provedor-issjoinville-carregamento-atrav%C3%A9s-do-m%C3%A9todo-tnotasfiscaisloadfromstring/
+   Por: Henrique Sandri Zimermam
+-- Diversos --
+[*] Alterações visando gerar e enviar o RPS para o webservice do provedor
+    MegaSoft.
+   Por: Italo Jurisato Junior
+
+-- pnfsNFSeW_Agili --
+[*] Geração da tag "InscricaoEstadual" nos dados do tomador.
+    https://www.projetoacbr.com.br/forum/topic/55713-inscri%C3%A7%C3%A3o-estadual-tomador-nfse-provedor-agili/
+  Por: BigWings
+
+08/01/2020
+-- pnfsNFSeW_Infisc --
+[*] Alterações visando a validação do Lote de RPS antes do seu envio.
+   Por: Italo Jurisato Junior
+
+30/12/2019
+-- pnfsLerListaNFSe --
+[*] Incluido a condição para identificar o grupo <ConsultarNfseRpsRespostaV110>.
+   Por: Natan Andreolla
+
+30/12/2019
+-- pnfsNFSeW_ABRASFv2 --
+[*] Segundo o provedor Pronimv2 a tag Aliquota sempre deve ser gerada se o 
+    contribuinte for do Simples Nacional, alteração feita para atender essa
+    condição.
+   Por: Italo Jurisato Junior
+
+27/12/2019
+-- pnfsNFSeG --
+[*] Incluido o enumerador proBelford na lista de provedores que devem gerar
+    o ID do lote de forma alfanumerica
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido o enumerador proISSJoinville na lista de provedor que devem gerar
+    o ItemListaServico sem o zero a esquerda.
+   Por: Italo Jurisato Junior
+
+23/12/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/55426-nfs-e-joinville-atualiza%C3%A7%C3%A3o-arquivo-ini-e-leitura-do-xml-de-retorno-da-consulta/
+   Por: Filipe Natividade
+-- pnfsNFSeW_SP --
+[*] https://www.projetoacbr.com.br/forum/topic/55483-quebra-de-linha/
+   Por: Rogério
+
+18/12/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/50851-atualiza%C3%A7%C3%A3o-para-importa%C3%A7%C3%A3o-xml-sigiss-e-elotech/?do=findComment&comment=363690
+   Por: Marcos
+
+13/12/2019
+-- ACBrNFSeNotasFiscais --
+[*] https://www.projetoacbr.com.br/forum/topic/55300-provedor-el-carregamento-atrav%C3%A9s-do-m%C3%A9todo-tnotasfiscaisloadfromstring/
+   Por: Italo Jurisato Junior
+
+11/12/2019
+-- pnfsNFSeR --
+[*] Possível correção para a impressão da descrição do código do serviço.
+   Por: Italo Jurisato Junior
+-- ACBrNFSeWebServices --
+[*] Possível correção para enviar em ambiente de homologação - provedor ISSDSF.
+   Por: Italo Jurisato Junior
+-- ACBrNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/55292-charinset/
+   Por: Antonio Gomes
+
+03/12/2019
+-- pnfsNFSeW_ABRASFv1 --
+[*] https://www.projetoacbr.com.br/forum/topic/55191-quebra-de-linha-na-impress%C3%A3o-via-site-prefeitura-rj/
+   Por: Felipe Augusto R.
+
 26/11/2019
 -- Diversos --
 [*] https://www.projetoacbr.com.br/forum/topic/55041-tipo-de-deducao-nao-encontrado-ou-invalido/

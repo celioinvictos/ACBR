@@ -77,6 +77,7 @@ type
 
     FRegistro0000: TRegistro0000;      /// BLOCO 0 - Registro0000
     FRegistro0001: TRegistro0001;      /// BLOCO 0 - Registro0001
+    FRegistro0002: TRegistro0002;      /// BLOCO 0 - Registro0002
     FRegistro0990: TRegistro0990;      /// BLOCO 0 - Registro0990
 
     FRegistro0005Count: Integer;
@@ -125,6 +126,7 @@ type
 
     function Registro0000New: TRegistro0000;
     function Registro0001New: TRegistro0001;
+    function Registro0002New: TRegistro0002;
     function Registro0005New: TRegistro0005;
     function Registro0015New: TRegistro0015;
     function Registro0100New: TRegistro0100;
@@ -150,6 +152,7 @@ type
 
     property Registro0000: TRegistro0000 read FRegistro0000 write FRegistro0000;
     property Registro0001: TRegistro0001 read FRegistro0001 write FRegistro0001;
+    property Registro0002: TRegistro0002 read FRegistro0002 write FRegistro0002;
     property Registro0990: TRegistro0990 read FRegistro0990 write FRegistro0990;
 
     property Registro0005Count: Integer read FRegistro0005Count write FRegistro0005Count;
@@ -214,6 +217,7 @@ procedure TBloco_0.CriaRegistros;
 begin
   FRegistro0000 := TRegistro0000.Create;
   FRegistro0001 := TRegistro0001.Create;
+  FRegistro0002 := TRegistro0002.Create;
   FRegistro0990 := TRegistro0990.Create;
 
   FRegistro0005Count := 0;
@@ -241,6 +245,7 @@ procedure TBloco_0.LiberaRegistros;
 begin
   FRegistro0000.Free;
   FRegistro0001.Free;
+  FRegistro0002.Free;
   FRegistro0990.Free;
 end;
 
@@ -264,6 +269,11 @@ begin
    Result := FRegistro0001;
 end;
 
+function TBloco_0.Registro0002New: TRegistro0002;
+begin
+   Result := FRegistro0002;
+end;
+
 function TBloco_0.Registro0005New: TRegistro0005;
 begin
    Result := FRegistro0001.Registro0005;
@@ -271,7 +281,7 @@ end;
 
 function TBloco_0.Registro0015New: TRegistro0015;
 begin
-   Result := FRegistro0001.Registro0015.New(FRegistro0001);
+   Result := FRegistro0001.Registro0015.New;
 end;
 
 function TBloco_0.Registro0100New: TRegistro0100;
@@ -294,12 +304,12 @@ begin
       raise EACBrSPEDFiscalException.Create('O registro 0175 deve ser filho do registro 0150, e não existe nenhum 0150 pai!');
 
    U0150 := FRegistro0001.Registro0150.Items[U0150Count];
-   Result  := U0150.Registro0175.New(U0150);
+   Result  := U0150.Registro0175.New;
 end;
 
 function TBloco_0.Registro0190New: TRegistro0190;
 begin
-   Result := FRegistro0001.Registro0190.New(FRegistro0001);
+   Result := FRegistro0001.Registro0190.New;
 end;
 
 function TBloco_0.Registro0200New: TRegistro0200;
@@ -317,7 +327,7 @@ begin
       raise EACBrSPEDFiscalException.Create('O registro 0205 deve ser filho do registro 0200, e não existe nenhum 0200 pai!');
 
    U0200 := FRegistro0001.Registro0200.Items[U0200Count];
-   Result  := U0200.Registro0205.New(U0200);
+   Result  := U0200.Registro0205.New;
 end;
 
 function TBloco_0.Registro0206New: TRegistro0206;
@@ -330,7 +340,7 @@ begin
       raise EACBrSPEDFiscalException.Create('O registro 0206 deve ser filho do registro 0200, e não existe nenhum 0200 pai!');
 
    U0200 := FRegistro0001.Registro0200.Items[U0200Count];
-   Result  := U0200.Registro0206.New(U0200);
+   Result  := U0200.Registro0206.New;
 end;
 
 function TBloco_0.Registro0210New: TRegistro0210;
@@ -343,7 +353,7 @@ begin
       raise EACBrSPEDFiscalException.Create('O registro 0210 deve ser filho do registro 0200, e não existe nenhum 0200 pai!');
 
    U0200 := FRegistro0001.Registro0200.Items[U0200Count];
-   Result  := U0200.Registro0210.New(U0200);
+   Result  := U0200.Registro0210.New;
 end;
 
 function TBloco_0.Registro0220New: TRegistro0220;
@@ -356,12 +366,12 @@ begin
       raise EACBrSPEDFiscalException.Create('O registro 0220 deve ser filho do registro 0200, e não existe nenhum 0200 pai!');
 
    U0200 := FRegistro0001.Registro0200.Items[U0200Count];
-   Result  := U0200.Registro0220.New(U0200);
+   Result  := U0200.Registro0220.New;
 end;
 
 function TBloco_0.Registro0300New: TRegistro0300;
 begin
-   Result := FRegistro0001.Registro0300.New();
+   Result := FRegistro0001.Registro0300.New;
 end;
 
 function TBloco_0.Registro0305New: TRegistro0305;
@@ -371,27 +381,27 @@ end;
 
 function TBloco_0.Registro0400New: TRegistro0400;
 begin
-   Result := FRegistro0001.Registro0400.New(FRegistro0001);
+   Result := FRegistro0001.Registro0400.New;
 end;
 
 function TBloco_0.Registro0450New: TRegistro0450;
 begin
-   Result := FRegistro0001.Registro0450.New(FRegistro0001);
+   Result := FRegistro0001.Registro0450.New;
 end;
 
 function TBloco_0.Registro0460New: TRegistro0460;
 begin
-   Result := FRegistro0001.Registro0460.New(FRegistro0001);
+   Result := FRegistro0001.Registro0460.New;
 end;
 
 function TBloco_0.Registro0500New: TRegistro0500;
 begin
-   Result := FRegistro0001.Registro0500.New(FRegistro0001);
+   Result := FRegistro0001.Registro0500.New;
 end;
 
 function TBloco_0.Registro0600New: TRegistro0600;
 begin
-   Result := FRegistro0001.Registro0600.New(FRegistro0001);
+   Result := FRegistro0001.Registro0600.New;
 end;
 
 procedure TBloco_0.WriteRegistro0000 ;
@@ -465,7 +475,21 @@ begin
      with FRegistro0001 do
      begin
         Add( LFill( '0001' ) +
-             LFill( Integer(IND_MOV), 0 ) ) ;
+             LFill( Integer(IND_MOV), 0 ) ) ;  
+
+        Check((not((FRegistro0000.IND_ATIV = atIndustrial) and (DT_INI >= EncodeDate(2020,01,01))) and (FRegistro0002.CLAS_ESTAB_IND = EmptyStr)),
+          '(0-0002) Contribuinte Industrial ou equiparado a industrial deve ser informada a classificação do estabelecimento conforme tabela 4.5.5!');
+
+        if Assigned(FRegistro0002) and (DT_INI >= EncodeDate(2020,01,01))
+        and( FRegistro0000.IND_ATIV = atIndustrial) then
+           begin
+              with FRegistro0002 do
+              begin
+                 Add( LFill( '0002' ) +
+                      LFill( CLAS_ESTAB_IND ) ) ;
+              end;
+              Registro0990.QTD_LIN_0 := Registro0990.QTD_LIN_0 + 1;
+           end;
 
         if IND_MOV = imComDados then
         begin

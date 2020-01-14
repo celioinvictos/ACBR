@@ -41,13 +41,11 @@ unit ACBrMDFe;
 interface
 
 uses
-  Classes, SysUtils, ACBrBase,
-  ACBrDFe, ACBrDFeConfiguracoes,
+  Classes, SysUtils,
+  ACBrUtil, ACBrDFe, ACBrDFeConfiguracoes, ACBrDFeException, ACBrBase,
   ACBrMDFeConfiguracoes, ACBrMDFeWebServices, ACBrMDFeManifestos,
-  ACBrMDFeDAMDFEClass,ACBrDFeException,
-  pmdfeMDFe, pcnConversao, pmdfeConversaoMDFe,
-  pmdfeEnvEventoMDFe, 
-  ACBrUtil;
+  ACBrMDFeDAMDFEClass,
+  pmdfeMDFe, pcnConversao, pmdfeConversaoMDFe, pmdfeEnvEventoMDFe;
 
 const
   ACBRMDFE_NAMESPACE = 'http://www.portalfiscal.inf.br/mdfe';
@@ -145,8 +143,8 @@ type
 implementation
 
 uses
-  strutils, dateutils, math,
-  pcnAuxiliar, synacode, ACBrDFeSSL;
+  dateutils,
+  pcnAuxiliar, ACBrDFeSSL;
 
 {$IFDEF FPC}
  {$R ACBrMDFeServicos.rc}
@@ -233,11 +231,14 @@ end;
 
 function TACBrMDFe.GetURLConsulta(const CUF: integer;
   const TipoAmbiente: TpcnTipoAmbiente; const Versao: Double): String;
-var
-  VersaoDFe: TVersaoMDFe;
-  ok: Boolean;
+//var
+//  VersaoDFe: TVersaoMDFe;
+//  ok: Boolean;
 begin
-  VersaoDFe := DblToVersaoMDFe(ok, Versao);
+  // Se futuramente viermos a ter versões diferentes de URL de consulta
+  // devemos descomentar as linhas e trocar o zero da função abaixo pela variável
+  // VersaoDFe
+//  VersaoDFe := DblToVersaoMDFe(ok, Versao);
   Result := LerURLDeParams('MDFe', CUFtoUF(CUF), TipoAmbiente, 'URL-ConsultaMDFe', 0);
 end;
 
@@ -247,10 +248,10 @@ function TACBrMDFe.GetURLQRCode(const CUF: integer;
 var
   idMDFe,
   sEntrada, urlUF, Passo2, sign: String;
-  VersaoDFe: TVersaoMDFe;
-  ok: Boolean;
+//  VersaoDFe: TVersaoMDFe;
+//  ok: Boolean;
 begin
-  VersaoDFe := DblToVersaoMDFe(ok, Versao);
+//  VersaoDFe := DblToVersaoMDFe(ok, Versao);
 
   urlUF := LerURLDeParams('MDFe', CUFtoUF(CUF), TipoAmbiente, 'URL-QRCode', 0);
 
@@ -272,8 +273,6 @@ begin
 
     sEntrada := sEntrada + Passo2;
   end;
-
-
 
   Result := urlUF + sEntrada;
 end;

@@ -47,6 +47,51 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+13/01/2020
+-- pcnNFeW -- 
+[*] Acrescentado a condição (OcorrenciasVICMSSubstituto > 0) para a geração das tags: 
+    vBCSTRET, pST, vICMSSubstituto e vICMSSTRET quando o CST for 60 e CSOSN for 500.
+   Por: Italo Jurisato Junior
+
+09/01/2020
+-- pcnNFeW -- 
+[*] Alterado as condições para a geração das tags: vBCSTRET, pST, 
+    vICMSSubstituto e vICMSSTRET quando o CST for 60 e CSOSN for 500.
+   Por: Italo Jurisato Junior
+
+-- pcnConversaoNFe, ACBrNFeDANFEClass, ACBrNFeDANFeRLPaisagem, ACBrNFeDANFeRLRetrato, ACBrNFeDANFEFRDM --
+[*] Criação de propriedade "ExibeCampoDePagamento" para controlar a impressão
+    dos pagamentos no DANFE.
+  Por: Henrique Leonardo (hleorj) / BigWings
+
+08/01/2020
+-- pcnLayoutTXT -- 
+[*] Atualização do Layout TXT compatibilizando com a versão 4.0 disponibilizada pelo SEBRAE
+-- pcnNFeRTXT -- 
+[*] Atualização na leitura do Layout TXT compatibilizando com a versão 4.0 disponibilizada pelo SEBRAE
+   Por: José M S Junior
+
+30/12/2019
+-- pcnNFeW -- 
+[*] https://www.projetoacbr.com.br/forum/topic/47753-notas-de-exporta%C3%A7%C3%A3o-ind-obrigando-campo-nre/?do=findComment&comment=363645
+   Por: Fernando Bolson
+
+19/12/2019
+-- ACBrNFeWebServices --
+[+] Incluido a propriedade Protocolo no retorno de envio do NF-e.
+   Por: Italo Jurisato Junior
+
+18/12/2019
+-- ACBrDANFCeFortesFr -- 
+[*] https://www.projetoacbr.com.br/forum/topic/54973-impressao-nfce-fortes-bobina/
+   Por: Volmir
+
+18/12/2019
+-- ACBrNFe -- 
+[*] Invertido as alinhas que atribuem valores para cCSC e cIdCSC, uma vez que cCSC
+    se utiliza do valor de cIdCSC caso cCSC for vazio.
+   Por: Italo Jurisato Junior
+
 21/11/2019
 -- ACBrNFeNotasFiscais 
 [-] Checagem de todos os campos que compõe o grupo <vol> para decidir se o mesmo será criado ou não.

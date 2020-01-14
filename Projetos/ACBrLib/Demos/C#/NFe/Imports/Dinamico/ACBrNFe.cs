@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using ACBrLib.Core;
+using ACBrLib.Core.DFe;
 
 namespace ACBrLib.NFe
 {
@@ -52,6 +54,12 @@ namespace ACBrLib.NFe
             public delegate int NFE_GravarXml(int AIndex, string eNomeArquivo, string ePathArquivo);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_ObterIni(int AIndex, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_GravarIni(int AIndex, string eNomeArquivo, string ePathArquivo);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_CarregarEventoXML(string eArquivoOuXml);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -78,6 +86,9 @@ namespace ACBrLib.NFe
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
                 int ATpEmi, string AEmissao, string CPFCNPJ, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_ObterCertificados(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_StatusServico(StringBuilder buffer, ref int bufferSize);
@@ -143,8 +154,7 @@ namespace ACBrLib.NFe
 
         #region Constructors
 
-        public ACBrNFe(string eArqConfig = "", string eChaveCrypt = "") :
-            base(Environment.Is64BitProcess ? "ACBrNFe64.dll" : "ACBrNFe32.dll")
+        public ACBrNFe(string eArqConfig = "", string eChaveCrypt = "") : base("ACBrNFe64.dll", "ACBrNFe32.dll")
         {
             var inicializar = GetMethod<Delegates.NFE_Inicializar>();
             var ret = ExecuteMethod(() => inicializar(ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
@@ -273,6 +283,27 @@ namespace ACBrLib.NFe
             CheckResult(ret);
         }
 
+        public string ObterIni(int aIndex)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_ObterIni>();
+            var ret = ExecuteMethod(() => method(aIndex, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public void GravarIni(int aIndex, string eNomeArquivo = "", string ePathArquivo = "")
+        {
+            var method = GetMethod<Delegates.NFE_GravarIni>();
+            var ret = ExecuteMethod(() => method(aIndex, ToUTF8(eNomeArquivo), ToUTF8(ePathArquivo)));
+
+            CheckResult(ret);
+        }
+
         public void CarregarEventoXML(string eArquivoOuXml)
         {
             var method = GetMethod<Delegates.NFE_CarregarEventoXML>();
@@ -361,6 +392,20 @@ namespace ACBrLib.NFe
             CheckResult(ret);
 
             return ProcessResult(buffer, bufferLen);
+        }
+
+        public InfoCertificado[] ObterCertificados()
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_ObterCertificados>();
+            var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var certificados = ProcessResult(buffer, bufferLen).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
         }
 
         public string StatusServico()
@@ -604,6 +649,8 @@ namespace ACBrLib.NFe
             AddMethod<Delegates.NFE_CarregarINI>("NFE_CarregarINI");
             AddMethod<Delegates.NFE_ObterXml>("NFE_ObterXml");
             AddMethod<Delegates.NFE_GravarXml>("NFE_GravarXml");
+            AddMethod<Delegates.NFE_ObterIni>("NFE_ObterIni");
+            AddMethod<Delegates.NFE_GravarIni>("NFE_GravarIni");
             AddMethod<Delegates.NFE_CarregarEventoXML>("NFE_CarregarEventoXML");
             AddMethod<Delegates.NFE_CarregarEventoINI>("NFE_CarregarEventoINI");
             AddMethod<Delegates.NFE_LimparLista>("NFE_LimparLista");
@@ -613,6 +660,7 @@ namespace ACBrLib.NFe
             AddMethod<Delegates.NFE_ValidarRegrasdeNegocios>("NFE_ValidarRegrasdeNegocios");
             AddMethod<Delegates.NFE_VerificarAssinatura>("NFE_VerificarAssinatura");
             AddMethod<Delegates.NFE_GerarChave>("NFE_GerarChave");
+            AddMethod<Delegates.NFE_ObterCertificados>("NFE_ObterCertificados");
             AddMethod<Delegates.NFE_StatusServico>("NFE_StatusServico");
             AddMethod<Delegates.NFE_Consultar>("NFE_Consultar");
             AddMethod<Delegates.NFE_ConsultaCadastro>("NFE_ConsultaCadastro");

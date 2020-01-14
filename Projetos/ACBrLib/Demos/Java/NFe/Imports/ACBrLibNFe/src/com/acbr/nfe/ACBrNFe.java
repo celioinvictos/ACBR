@@ -9,7 +9,6 @@ import com.sun.jna.ptr.IntByReference;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -30,9 +29,6 @@ import java.util.Date;
  */
 
 public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
-
-  private static final Charset UTF8 = Charset.forName( "UTF-8" );
-  private static final int STR_BUFFER_LEN = 256;
 
   public ACBrNFe() throws Exception {
     File iniFile = Paths.get( System.getProperty( "user.dir" ), "ACBrLib.ini" ).toFile();
@@ -125,20 +121,46 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
   }
 
   public String obterXml( int AIndex ) throws Exception {
-      ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
-      IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
-      int ret = ACBrNFeLib.INSTANCE.NFE_ObterXml(AIndex, buffer, bufferLen );
-      checkResult( ret );
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+    int ret = ACBrNFeLib.INSTANCE.NFE_ObterXml(AIndex, buffer, bufferLen );
+    checkResult( ret );
       
-      return processResult( buffer, bufferLen );
+    return processResult( buffer, bufferLen );
   }
   
   public void gravarXml ( int AIndex ) throws Exception {
-      gravarXml(AIndex, "", "");
+    gravarXml(AIndex, "", "");
+  }
+  
+  public void gravarXml ( int AIndex, String eNomeArquivo ) throws Exception {
+    gravarXml(AIndex, eNomeArquivo, "");
   }
   
   public void gravarXml ( int AIndex, String eNomeArquivo, String ePathArquivo ) throws Exception {
-      int ret = ACBrNFeLib.INSTANCE.NFE_GravarXml( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
+    int ret = ACBrNFeLib.INSTANCE.NFE_GravarXml( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
+    checkResult( ret );
+  }
+  
+  public String obterIni( int AIndex ) throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+    IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+    int ret = ACBrNFeLib.INSTANCE.NFE_ObterIni(AIndex, buffer, bufferLen );
+    checkResult( ret );
+      
+    return processResult( buffer, bufferLen );
+  }
+  
+  public void gravarIni ( int AIndex ) throws Exception {
+    gravarIni(AIndex, "", "");
+  }
+  
+  public void gravarIni ( int AIndex, String eNomeArquivo ) throws Exception {
+    gravarIni(AIndex, eNomeArquivo, "");
+  }
+  
+  public void gravarIni ( int AIndex, String eNomeArquivo, String ePathArquivo ) throws Exception {
+    int ret = ACBrNFeLib.INSTANCE.NFE_GravarIni( AIndex, toUTF8( eNomeArquivo ), toUTF8( ePathArquivo ) );
     checkResult( ret );
   }
   
@@ -211,6 +233,15 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     checkResult( ret );
 
     return processResult( buffer, bufferLen );
+  }
+  
+  public String obterCertificados() throws Exception {
+      ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
+      IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
+      
+      int ret = ACBrNFeLib.INSTANCE.NFE_ObterCertificados(buffer, bufferLen );
+      checkResult( ret );
+      return processResult( buffer, bufferLen );
   }
 
   public String statusServico() throws Exception {
@@ -435,6 +466,10 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     int NFE_ObterXml( Integer AIndex, ByteBuffer buffer, IntByReference bufferSize );
     
     int NFE_GravarXml( Integer AIndex, String eNomeArquivo, String ePathArquivo );
+    
+    int NFE_ObterIni( Integer AIndex, ByteBuffer buffer, IntByReference bufferSize );
+    
+    int NFE_GravarIni( Integer AIndex, String eNomeArquivo, String ePathArquivo );
 
     int NFE_LimparLista();
 
@@ -454,6 +489,8 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     
     int NFE_GerarChave(int ACodigoUF, int ACodigoNumerico, int AModelo, int ASerie, int ANumero,
                 int ATpEmi, String AEmissao, String CPFCNPJ, ByteBuffer buffer, IntByReference bufferSize);
+    
+    int NFE_ObterCertificados( ByteBuffer buffer, IntByReference bufferSize );
 
     int NFE_StatusServico( ByteBuffer buffer, IntByReference bufferSize );
 

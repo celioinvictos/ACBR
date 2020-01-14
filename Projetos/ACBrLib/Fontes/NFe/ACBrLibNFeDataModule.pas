@@ -38,10 +38,10 @@ unit ACBrLibNFeDataModule;
 interface
 
 uses
-  Classes, SysUtils, syncobjs,
-  ACBrNFe, ACBrNFeDANFeRLClass, ACBrMail,
+  Classes, SysUtils, syncobjs, ACBrNFe, ACBrNFeDANFeRLClass, ACBrMail,
   ACBrPosPrinter, ACBrIntegrador, ACBrNFeDANFeESCPOS, ACBrDANFCeFortesFr,
-  ACBrLibConfig,  ACBrLibMailImport, ACBrLibPosPrinterImport;
+  ACBrDANFCeFortesFrA4, ACBrLibConfig, ACBrLibMailImport,
+  ACBrLibPosPrinterImport;
 
 type
 
@@ -51,6 +51,7 @@ type
     ACBrIntegrador1: TACBrIntegrador;
     ACBrNFe1: TACBrNFe;
     ACBrNFeDANFCeFortes1: TACBrNFeDANFCeFortes;
+    ACBrNFeDANFCeFortesA4: TACBrNFeDANFCeFortesA4;
     ACBrNFeDANFeESCPOS1: TACBrNFeDANFeESCPOS;
     ACBrNFeDANFeRL1: TACBrNFeDANFeRL;
 
@@ -292,10 +293,15 @@ begin
   begin
     if ACBrNFe1.NotasFiscais.Items[0].NFe.Ide.modelo = 65 then
     begin
-      if (pLibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortes) or GerarPDF then
+      if (pLibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortes) then
         ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1
+      else if (pLibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortesA4) then
+        ACBrNFe1.DANFE := ACBrNFeDANFCeFortesA4
       else
         ACBrNFe1.DANFE := ACBrNFeDANFeESCPOS1;
+
+      if GerarPDF and not (pLibConfig.DANFe.NFCe.TipoRelatorioBobina in [tpFortes, tpFortesA4]) then
+        ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1;
     end;
 
     if (ACBrNFe1.NotasFiscais.Items[0].NFe.procNFe.cStat in [101, 151, 155]) then

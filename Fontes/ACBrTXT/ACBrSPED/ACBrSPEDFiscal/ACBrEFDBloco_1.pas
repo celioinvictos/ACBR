@@ -3,7 +3,8 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{                                       Isaque Pinheiro                        }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -26,9 +27,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -54,6 +54,8 @@ type
   TRegistro1110List = class;
   TRegistro1200List = class;
   TRegistro1210List = class;
+  TRegistro1250List = class;
+  TRegistro1255List = class;
   TRegistro1300List = class;
   TRegistro1310List = class;
   TRegistro1320List = class;
@@ -89,6 +91,7 @@ type
     FRegistro1010: TRegistro1010List;
     FRegistro1100: TRegistro1100List;
     FRegistro1200: TRegistro1200List;
+    FRegistro1250: TRegistro1250List;
     FRegistro1300: TRegistro1300List;
     FRegistro1350: TRegistro1350List;
     FRegistro1390: TRegistro1390List;
@@ -109,6 +112,7 @@ type
     property Registro1010: TRegistro1010List read FRegistro1010 write FRegistro1010;
     property Registro1100: TRegistro1100List read FRegistro1100 write FRegistro1100;
     property Registro1200: TRegistro1200List read FRegistro1200 write FRegistro1200;
+    property Registro1250: TRegistro1250List read FRegistro1250 write FRegistro1250;
     property Registro1300: TRegistro1300List read FRegistro1300 write FRegistro1300;
     property Registro1350: TRegistro1350List read FRegistro1350 write FRegistro1350;
     property Registro1390: TRegistro1390List read FRegistro1390 write FRegistro1390;
@@ -140,6 +144,7 @@ type
     fIND_GIAF1 : String;// Reg. 1960 – Possui informações GIAF1:
     fIND_GIAF3 : String;// Reg. 1970 – Possui informações GIAF3:
     fIND_GIAF4 : String;// Reg. 1980 – Possui informações GIAF4:
+    FIND_REST_RESSARC_COMPL_ICMS: string; //Reg. 1250 – Possui informações consolidadas de saldos de restituição, ressarcimento e complementação do ICMS?
   public
     constructor Create(AOwner: TRegistro1001); virtual; /// Create
 
@@ -155,6 +160,7 @@ type
     property IND_GIAF1 : String read fIND_GIAF1 write fIND_GIAF1 ;
     property IND_GIAF3 : String read fIND_GIAF3 write fIND_GIAF3 ;
     property IND_GIAF4 : String read fIND_GIAF4 write fIND_GIAF4 ;
+    property IND_REST_RESSARC_COMPL_ICMS: string read FIND_REST_RESSARC_COMPL_ICMS write FIND_REST_RESSARC_COMPL_ICMS;
   end;
 
   /// Registro 1010 - Lista
@@ -353,6 +359,73 @@ type
   public
     function New(AOwner: TRegistro1200): TRegistro1210;
     property Items[Index: Integer]: TRegistro1210 read GetItem write SetItem;
+  end;
+
+   /// Registro 1250 - OPERAÇÕES DE EXPORTAÇÃO INDIRETA DE PRODUTOS NÃO INDUSTRIALIZADOS PELO ESTABELECIMENTO EMITENTE.
+
+  TRegistro1250 = class
+  private
+   fVL_CREDITO_ICMS_OP : currency; /// Informar o valor total do ICMS operação própria que o informante tem direito ao crédito, na forma prevista na legislação, referente às hipóteses de restituição em que há previsão deste crédito.
+   fVL_ICMS_ST_REST: currency; /// Informar o valor total do ICMS ST que o informante tem direito ao crédito, na forma prevista na legislação, referente às hipóteses de restituição em que há previsão deste crédito.
+   fVL_FCP_ST_REST: currency; /// Informar o valor total do FCP_ST agregado ao valor do ICMS ST informado no campo “VL_ICMS_ST_REST”.
+   fVL_ICMS_ST_COMPL: currency; /// Informar o valor total do débito referente ao complemento do imposto, nos casos previstos na legislação.
+   fVL_FCP_ST_COMPL: currency; /// Informar o valor total do FCP_ST agregado ao valor informado no campo “VL_ICMS_ST_COMPL”.
+
+   FRegistro1255: TRegistro1255List;
+  public
+    constructor Create(); virtual; /// Create
+    destructor Destroy; override; /// Destroy
+
+    property VL_CREDITO_ICMS_OP : Currency   read fVL_CREDITO_ICMS_OP     write fVL_CREDITO_ICMS_OP;
+    property VL_ICMS_ST_REST : Currency   read fVL_ICMS_ST_REST     write fVL_ICMS_ST_REST;
+    property VL_FCP_ST_REST  : Currency   read fVL_FCP_ST_REST   write fVL_FCP_ST_REST;
+    property VL_ICMS_ST_COMPL : Currency   read fVL_ICMS_ST_COMPL    write fVL_ICMS_ST_COMPL;
+    property VL_FCP_ST_COMPL: Currency   read fVL_FCP_ST_COMPL write fVL_FCP_ST_COMPL;
+    property Registro1255: TRegistro1255List read FRegistro1255 write FRegistro1255;
+  end;
+
+  /// Registro 1250 - Lista
+
+  TRegistro1250List = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TRegistro1250;
+    procedure SetItem(Index: Integer; const Value: TRegistro1250);
+  public
+    function New(): TRegistro1250;
+    property Items[Index: Integer]: TRegistro1250 read GetItem write SetItem;
+  end;
+
+  /// REGISTRO 1255: INFORMAÇÕES CONSOLIDADAS DE SALDOS DE RESTITUIÇÃO, RESSARCIMENTO E COMPLEMENTAÇÃO DO ICMS POR MOTIVO
+
+  TRegistro1255 = class
+  private
+   fCOD_MOT_REST_COMPL: string; /// Código do motivo da restituição ou complementação conforme Tabela 5.7.
+   fVL_CREDITO_ICMS_OP_MOT: currency; /// Informar o valor total do ICMS operação própria que o informante tem direito ao crédito, na forma prevista na legislação, referente às hipóteses de restituição em que há previsão deste crédito, para o mesmo “COD_MOT_REST_COMPL”.
+   fVL_ICMS_ST_REST_MOT: currency; /// Informar o valor total do ICMS ST que o informante tem direito ao crédito, na forma prevista na legislação, referente às hipóteses de restituição em que há previsão deste crédito, para o mesmo “COD_MOT_REST_COMPL”.
+   fVL_FCP_ST_REST_MOT: currency; /// Informar o valor total do FCP_ST agregado ao valor do ICMS ST informado no campo “VL_ICMS_ST_REST_MOT”.
+   fVL_ICMS_ST_COMPL_MOT: currency; /// Informar o valor total do débito referente ao complemento do imposto, nos casos previstos na legislação, para o mesmo “COD_MOT_REST_COMPL”.
+   fVL_FCP_ST_COMPL_MOT: currency; /// Informar o valor total do FCP_ST agregado ao valor informado no campo “VL_ICMS_ST_COMPL_MOT”.
+  public
+
+    constructor Create(AOwner: TRegistro1250); virtual; /// Create
+
+    property COD_MOT_REST_COMPL : string   read fCOD_MOT_REST_COMPL     write fCOD_MOT_REST_COMPL;
+    property VL_CREDITO_ICMS_OP_MOT : Currency   read fVL_CREDITO_ICMS_OP_MOT     write fVL_CREDITO_ICMS_OP_MOT;
+    property VL_ICMS_ST_REST_MOT : Currency   read fVL_ICMS_ST_REST_MOT     write fVL_ICMS_ST_REST_MOT;
+    property VL_FCP_ST_REST_MOT  : Currency   read fVL_FCP_ST_REST_MOT   write fVL_FCP_ST_REST_MOT;
+    property VL_ICMS_ST_COMPL_MOT : Currency   read fVL_ICMS_ST_COMPL_MOT    write fVL_ICMS_ST_COMPL_MOT;
+    property VL_FCP_ST_COMPL_MOT: Currency   read fVL_FCP_ST_COMPL_MOT write fVL_FCP_ST_COMPL_MOT;
+  end;
+
+  /// Registro 1255 - Lista
+
+  TRegistro1255List = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TRegistro1255;
+    procedure SetItem(Index: Integer; const Value: TRegistro1255);
+  public
+    function New(AOwner: TRegistro1250): TRegistro1255;
+    property Items[Index: Integer]: TRegistro1255 read GetItem write SetItem;
   end;
 
   /// Registro 1300 - MOVIMENTAÇÃO DE COMBUSTÍVEIS.
@@ -614,6 +687,11 @@ type
     fUTIL_MEL     : Currency;   /// Mel residual utilizado (Kg) e saídas de mel (Kg)
     fPROD_ALC_MEL : Currency;   /// Produção de álcool (litros) ou açúcar (Kg) proveniente do mel residual.
     fOBS          : String;     /// Observações
+    FCOD_ITEM: string;          /// Informar o insumo conforme código do item (campo 02 do Registro 0200)
+    FTP_RESIDUO: Integer;       /// Tipo de resíduo produzido: 01 - Bagaço de cana
+                                                            // 02 - DDG
+                                                            // 03 - WDG
+    FQTD_RESIDUO: Extended;     /// Quantidade de resíduo produzido (toneladas)
   public                        
     constructor Create(AOwner: TRegistro1390); virtual; /// Create
 
@@ -633,6 +711,9 @@ type
     property UTIL_MEL: Currency read fUTIL_MEL write fUTIL_MEL;
     property PROD_ALC_MEL: Currency read fPROD_ALC_MEL write fPROD_ALC_MEL;
     property OBS: String read fOBS write fOBS;
+    property COD_ITEM: string read FCOD_ITEM write FCOD_ITEM;
+    property TP_RESIDUO: Integer read FTP_RESIDUO write FTP_RESIDUO;
+    property QTD_RESIDUO: Extended read FQTD_RESIDUO write FQTD_RESIDUO;
   end;
 
   /// Registro 1391 - Lista
@@ -1764,6 +1845,7 @@ begin
    FRegistro1010 := TRegistro1010List.Create;
    FRegistro1100 := TRegistro1100List.Create;
    FRegistro1200 := TRegistro1200List.Create;
+   FRegistro1250 := TRegistro1250List.Create;
    FRegistro1300 := TRegistro1300List.Create;
    FRegistro1350 := TRegistro1350List.Create;
    FRegistro1390 := TRegistro1390List.Create;
@@ -1785,6 +1867,7 @@ begin
   FRegistro1010.Free;
   FRegistro1100.Free;
   FRegistro1200.Free;
+  FRegistro1250.Free;
   FRegistro1300.Free;
   FRegistro1350.Free;
   FRegistro1390.Free;
@@ -2268,6 +2351,62 @@ end;
 constructor TRegistro1980.Create(AOwner: TRegistro1001);
 begin
 
+end;
+
+{ TRegistro1250List }
+
+function TRegistro1250List.GetItem(Index: Integer): TRegistro1250;
+begin
+  Result := TRegistro1250(Inherited Items[Index]);
+end;
+
+function TRegistro1250List.New: TRegistro1250;
+begin
+  Result := TRegistro1250.Create();
+  Add(Result)
+end;
+
+procedure TRegistro1250List.SetItem(Index: Integer; const Value: TRegistro1250);
+begin
+  Put(Index, Value);
+end;
+
+{ TRegistro1250 }
+
+constructor TRegistro1250.Create;
+begin
+   inherited Create;
+   FRegistro1255 := TRegistro1255List.Create;
+end;
+
+destructor TRegistro1250.Destroy;
+begin
+  FRegistro1255.Free;
+  inherited;
+end;
+
+{ TRegistro1255List }
+
+function TRegistro1255List.GetItem(Index: Integer): TRegistro1255;
+begin
+  Result := TRegistro1255(Inherited Items[Index]);
+end;
+
+function TRegistro1255List.New(AOwner: TRegistro1250): TRegistro1255;
+begin
+  Result := TRegistro1255.Create(AOwner);
+  Add(Result);
+end;
+
+procedure TRegistro1255List.SetItem(Index: Integer; const Value: TRegistro1255);
+begin
+  Put(Index, Value);
+end;
+
+{ TRegistro1255 }
+
+constructor TRegistro1255.Create(AOwner: TRegistro1250);
+begin
 end;
 
 end.

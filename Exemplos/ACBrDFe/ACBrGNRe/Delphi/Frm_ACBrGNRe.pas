@@ -290,7 +290,7 @@ begin
     c16_razaoSocialEmitente := edtEmitRazao.Text;
     c17_inscricaoEstadualEmitente := '9023725557';
     c18_enderecoEmitente := edtEmitLogradouro.Text + ', ' + edtEmitNumero.Text;
-    c19_municipioEmitente := edtEmitCidade.Text;
+    c19_municipioEmitente := Copy(edtEmitCodCidade.Text, 3, 5);
     c20_ufEnderecoEmitente := edtEmitUF.Text;
     c21_cepEmitente := edtEmitCEP.Text;
     c22_telefoneEmitente := edtEmitFone.Text;
@@ -774,6 +774,7 @@ end;
 procedure TfrmACBrGNRe.ConfigurarComponente;
 var
   Ok: Boolean;
+  PathMensal: string;
 begin
   ACBrGNRE1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrGNRE1.Configuracoes.Certificados.Senha       := edtSenha.Text;
@@ -839,9 +840,10 @@ begin
     EmissaoPathGNRE  := cbxEmissaoPathGNRE.Checked;
     SepararPorCNPJ   := cbxSepararPorCNPJ.Checked;
     SepararPorModelo := cbxSepararPorModelo.Checked;
-    PathSalvar       := edtPathLogs.Text;
     PathSchemas      := edtPathSchemas.Text;
     PathGNRE         := edtPathGNRE.Text;
+    PathMensal       := GetPathGNRE(0);
+    PathSalvar       := PathMensal;
   end;
 end;
 

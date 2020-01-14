@@ -53,6 +53,8 @@ exports
   CTE_CarregarINI,
   CTE_ObterXml,
   CTE_GravarXml,
+  CTE_ObterIni,
+  CTE_GravarIni,
   CTE_CarregarEventoXML,
   CTE_CarregarEventoINI,
   CTE_LimparLista,
@@ -60,7 +62,9 @@ exports
   CTE_Assinar,
   CTE_Validar,
   CTE_ValidarRegrasdeNegocios,
-  CTE_VerificarAssinatura;
+  CTE_VerificarAssinatura,
+  CTE_GerarChave,
+  CTE_ObterCertificados;
 
 begin
   {$IFDEF DEBUG}

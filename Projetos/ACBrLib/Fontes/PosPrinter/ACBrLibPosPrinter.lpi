@@ -17,8 +17,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
-      <MinorVersionNr Value="1"/>
-      <BuildNr Value="479"/>
+      <MajorVersionNr Value="1"/>
+      <BuildNr Value="12"/>
       <Language Value="0416"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrPosPrinter - Biblioteca para comunicação com impressoras não fiscais ﻿usando EscPos" InternalName="ACBrLibPosPrinter" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductName="PosPrinter " ProductVersion="0.0.2.30"/>
@@ -34,7 +34,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum"/>
+            <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -76,7 +76,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum"/>
+            <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -118,7 +118,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum"/>
+            <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -160,7 +160,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum"/>
+            <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -201,7 +201,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum"/>
+            <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -242,7 +242,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-            <OtherUnitFiles Value="..\Comum"/>
+            <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -290,7 +290,7 @@
         <PackageName Value="ACBrSerial"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="ACBrLibPosPrinter.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -326,6 +326,10 @@
         <Filename Value="..\Comum\ACBrDeviceConfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="..\..\..\ACBrMonitorPLUS\Lazarus\ACBrMonitorConsts.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -336,7 +340,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
-      <OtherUnitFiles Value="..\Comum"/>
+      <OtherUnitFiles Value="..\Comum;..\..\..\ACBrMonitorPLUS\Lazarus"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
