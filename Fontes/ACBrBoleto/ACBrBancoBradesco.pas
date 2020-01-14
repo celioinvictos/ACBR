@@ -180,7 +180,7 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 7;
    fpCodParametroMovimento:= 'MX';
-   fpCodigosMoraAceitos    := '123';
+   fpCodigosMoraAceitos:='123';
 end;
 
 function TACBrBancoBradesco.MontaInstrucoesCNAB400(
