@@ -98,6 +98,7 @@ begin
    fQtRegLote              := 0;
    fpLayoutVersaoArquivo := 50;
    fpLayoutVersaoLote    := 30;
+   fpCodigosMoraAceitos     := '123';
 
    fpOrientacoesBanco.Clear;
    fpOrientacoesBanco.Add(ACBrStr(
