@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  Rafael Teno Dias                               }
 {                                                                              }
@@ -55,7 +55,7 @@ type
 
     function LerXml: Boolean; virtual; abstract;
     function CarregarArquivo(const CaminhoArquivo: string): boolean; overload;
-    function CarregarArquivo(const Stream: TStringStream): boolean; overload;
+    function CarregarArquivo(const Stream: TStream): boolean; overload;
     function ProcessarCNPJCPF(const ANode: TACBrXmlNode): string;
     function ProcessarConteudo(const ANode: TACBrXmlNode; const Tipo: TpcnTipoCampo): variant;
 
@@ -67,7 +67,7 @@ type
 implementation
 
 uses
-  ACBrUtil;
+  synautil, ACBrUtil;
 
 { TACBrXmlReader }
 constructor TACBrXmlReader.Create;
@@ -96,10 +96,10 @@ begin
   end;
 end;
 
-function TACBrXmlReader.CarregarArquivo(const Stream: TStringStream): boolean;
+function TACBrXmlReader.CarregarArquivo(const Stream: TStream): boolean;
 begin
   //NOTA: Carrega o arquivo xml na memória para posterior leitura de sua tag's
-  FArquivo := Stream.DataString;
+  FArquivo := ReadStrFromStream(Stream, Stream.Size);
   Result := True;
 end;
 

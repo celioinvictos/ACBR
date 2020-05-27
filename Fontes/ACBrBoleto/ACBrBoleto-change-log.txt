@@ -1,9 +1,11 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2006 Daniel Simoes de Almeida               }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,10 +24,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
+
 Agradecimentos:
 
 * Administradores:
@@ -46,6 +48,261 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+22/05/2020
+
+-- ACBrBoleto --
+[*] Ajustes na validação do campo CodigoMoraJuros, utilização na função DefineCodigoMoraJuros 
+e para impressão de Mensagem do boleto
+
+22/05/2020
+-- ACBrBancoBancoob--
+[*] Ajuste no registro P CNAB240 informando o código da operação. (Joas Vilas Boas Fernandes)
+https://www.projetoacbr.com.br/forum/topic/49599-remessa-cnab240-n%C2%BA-do-contrato-da-opera%C3%A7%C3%A3o-de-cr%C3%A9dito/
+-- ACBrBancoCaixa--
+[-] Ajuste para leitura correta do SeuNumero no retorno CNAB400. (FrancinaldoAC)
+https://www.projetoacbr.com.br/forum/topic/57759-erro-no-campo-seunumero-no-retorno-da-caixa/
+
+
+13/05/2020
+-- ACBrBancoBancoob--
+[*] Ajuste no Header CNAB240 informando número do convenio.
+https://www.projetoacbr.com.br/forum/topic/57503-corre%C3%A7%C3%A3o-acbrbancobancoobpas/
+
+-- ACBrBoleto--
+[+] Retorno CNAB400 - Adicionado Leitura do Banco e Agencia Cobradora
+https://www.projetoacbr.com.br/forum/topic/57423-campo-acbr-boleto-lerretorno400/
+
+-- ACBrBancoBradesco--
+[*] Ajuste leitura CNAB240 - referente código de Carteira e Número de Carteira.
+https://www.projetoacbr.com.br/forum/topic/57323-refactory-acbrboleto/
+
+-- ACBrBancoUnicredES--
+[*] Ajuste Remessa CNAB400 adicionado validação de Código de Protesto e Dias para Protesto
+https://www.projetoacbr.com.br/forum/topic/57323-refactory-acbrboleto
+
+-- ACBrUniprime--
+[*] Ajuste Remessa CNAB400 posição 02 - 20 caracteres em branco
+
+06/05/2020
+-- ACBrBancoSantander--
+[*] Ajuste baseado no manual na Remessa CNAB240 Segmento P Posicao 61
+
+-- ACBrBancoSicred, ACBrBoleto --
+[+] Adicionado propriedade LerNossoNumeroCompleto para leitura de Retorno
+https://www.projetoacbr.com.br/forum/topic/57289-nosso-n%C3%BAmero-sicredi-ler-retorno-240/
+
+05/05/2020
+
+-- ACBrBancoSicred, ACBrBoleto --
+[+] Adicionado Classe Ocorrência de Complemento de Outros Dados (TACBrComplementoOcorrenciaOutrosDados)
+https://www.projetoacbr.com.br/forum/topic/56614-cancelar-negativa%C3%A7%C3%A3o-autom%C3%A1tica-sicredi/
+
+-- ACBrBancoUniprime --
+[*] Ajustes na geração da Remessa CNAB400 conforme manual 2.0
+https://www.projetoacbr.com.br/forum/topic/56770-altera%C3%A7%C3%A3o-remessa-banco-uniprime-norte-do-paran%C3%A1/?tab=comments#comment-372032
+
+-- ACBrBoleto, ACBrBancoUnicredES --
+[*] Criado função DefinePosicaoNossoNumeroRetorno400 para definir leitura de NossoNumero fora do padrão para CNAB400
+https://www.projetoacbr.com.br/forum/topic/57230-arquivo-de-retorno-unicred-136/
+
+-- ACBrBancoBrasil --
+
+[*] Validação da propriedade CarteiraEnvio para geração do segmento S na remessa
+https://www.projetoacbr.com.br/forum/topic/57056-ajuste-segmento-s-banco-do-brasil-cnab-240/
+
+[*] Ajuste na leitura CNAB400 referente campo NossoNumero de 11 dígitos
+https://www.projetoacbr.com.br/forum/topic/57227-erro-em-layout-de-retorno-do-banco-do-brasil-quando-o-nosso-n%C3%BAmero-possui-tamanho-11/
+
+-- ACBrBancoCresol --
+[*] Adicionado campo nome e data no cabeçalho da remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/56851-boleto-cresol-e-safra-altera%C3%A7oes/
+
+-- ACBrBancoBanrisul --
+[*] Adicionado validação do campo tipoBoleto na remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/57225-cnab-240-banrisul-tipo-de-emitente-do-boleto/
+
+-- ACBrBancoSantander --
+[*] Adicionado campo NumeroArquivo na leitura retorno CNAB400
+https://www.projetoacbr.com.br/forum/topic/57209-numeroarquivo-no-retorno-cnab400-do-santander/
+
+-- ACBrBancoDaycoval --
+[*] Adicionado geração do registor NFe na remessa
+https://www.projetoacbr.com.br/forum/topic/57110-banco-daycoval-nfe/
+
+
+20/04/2020
+-- ACBrBoleto, ACBrBancoBradesco --
+[-] Correção para não remover espaços em branco no final dos registros.
+    https://www.projetoacbr.com.br/forum/topic/57237-remessa-bradesco-com-quantidade-de-caracteres-por-linha-menor-que-240/
+  Por: BigWings
+
+13/04/2020
+-- ACBrBancoSafra --
+[*] Ajuste no Segmento R CNAB240 preenchendo campo Desconto
+
+09/04/2020
+-- ACBrBoleto, ACBrBancoBradesco, ACBrBancoUnicredRS, ACBrBancoUnicredSC, ACBrBancoUnicredES --
+[*] Realização de Refactory nas classes dos Bancos, unificando funcionalidades criadas na classe principal ACBrBancoClass.
+
+08/04/2020
+-- ACBrBancoCaixa --
+[*] Inclusão da leitura do tipo de documento do beneficiário na leitura do retorno CNAB240.(AG Sistemas)
+https://www.projetoacbr.com.br/forum/topic/57111-acbr-boleto-caixa/
+    
+
+07/04/2020
+-- ACBrBoleto, ACBrBancoBradesco --
+[*] Realização de um Refactory nas classes dos Bancos.
+O propósito é centralizar, unificar e padronizar funcionalidades das classes dos banco a medida do possível, visto que 
+a maioria são identicas ou com pequenos detalhes divergentes.
+As funcionalidades que são possíveis unificar para uso dos demais Bancos estão ficando centralizadas 
+na classe ACBrBancoClass no unit ACBrBoleto. (obs: As modificações não devem alterar em nada o comportamento da classe
+e também as demais classes ainda não refatoradas.)
+
+27/03/2020
+-- ACBrBancoCresol --
+[*] Ajuste cód. Ocorrência 10 e 11 seguindo manual Banco Cresol
+
+27/03/2020
+-- ACBrBancoBrasil --
+[*] Ajuste Remessa240 Regitro R posição 232 - 240 em branco
+
+25/03/2020
+-- ACBrBancoSIcred --
+[-] Correção na leitura do retorno CNAB240 para ler o nosso número.
+    (por Juliana Tamizou)
+https://www.projetoacbr.com.br/forum/topic/56803-tamanho-nosso-numero-sicredi-altera%C3%A7%C3%A3o-svn-09032020/
+
+13/03/2020
+-- ACBrBancoSantander--
+[-] Ajuste no preenchimento do campo NumeroDocumento com zeros a esquerda
+
+13/03/2020
+-- ACBrBancoCecred--
+[-] Ajuste na validação de CódigoMoraJuros e DataMoraJuros na geração da Remessa CNAB240
+
+13/03/2020
+-- ACBrBancoBancoob --
+[-] Ajuste na validação de CódigoMora e DataMoraJuros na geração da Remessa CNAB240
+
+13/03/2020
+-- ACBrBancoSafra --
+[-] Correção no tamanho da leitura do campo Agencia no CNAB400
+
+13/03/2020
+-- ACBrBancoCresol --
+[-] Correção da montagem do código de barras e da impressão do código do cedente para considerar
+corretamente os digitos da agência.  (Juliana Tamizou)
+
+13/03/2020
+-- ACBrBancoCresol --
+[-] Correção da montagem do código de barras e da impressão do código do cedente para considerar 
+corretamente os digitos da agência.  (Juliana Tamizou)
+
+10/03/2020
+-- ACBrBancoBrasil --
+[*] Inclusão da ocorrência BaixaAutomatica na função TipoOcorrenciaToCod (Michele - ACT)
+09/03/2020
+-- ACBrBancoSicred --
+[-] Ajuste na Validação da função CalcularTamanhoMaxNossoNumero.
+
+09/03/2020
+-- ACBrBancoItau --
+[+] Adicionado validação do código de Instrução de Protestos na geração da remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/55691-remessa-cnab-400-ita%C3%BA/
+
+06/03/2020
+-- ACBrBancoPine --
+[+] Adicionado Leitura dos dados da NFe no arquivo .ini
+
+28/02/2020
+-- ACBrBancoBancoob --
+[*] Adicionado validação de código Negativação CNAB240.
+  https://www.projetoacbr.com.br/forum/topic/55961-bancoobsicoob-negativacao-cnab240/
+
+28/02/2020
+-- ACBrBancoSicredi --
+[-] Correção na leitura CNPJ alinhdo a esquerda no segmentoQ.
+  https://www.projetoacbr.com.br/forum/topic/56025-erro-seguimento-q-banco-sicred/
+
+28/02/2020
+-- ACBrBancoSicredi --
+[*] Realizado Revert na leitura retorno CNAB400 referente ao campo Multa.
+  Motivo: Mater padrão do componente para leitura de Retorno deste campos.
+  Para Acrescimos provenientes de Multa no arquivo de retorno, até o momento mantivemos no campo "ValorOutrosCreditos".
+
+28/02/2020
+-- ACBrBoleto --
+[*] https://www.projetoacbr.com.br/forum/topic/56122-sugest%C3%A3o-gerarremessastream/
+   Por: Delcio
+-- ACBrBancoBancoob --
+[*] https://www.projetoacbr.com.br/forum/topic/56146-arquivo-de-remessa-banco-sicoob-registro-q-posi%C3%A7%C3%A3o-18/
+   Por: Vinicius Lopes Machado
+-- ACBrBancoBanestes --
+[*] https://www.projetoacbr.com.br/forum/topic/56047-retorno-remessa-banestes-400/
+   Por: Renan Eustaquio
+
+24/02/2020
+-- ACBrBancoBrasil --
+[*] Inclusão da leitura do motivo de ocorrência de liquidação 99 no retorno CNAB240.
+    (Juliana Tamizou)
+
+18/02/2020
+-- ACBrBancoSantander --
+[*] https://www.projetoacbr.com.br/forum/topic/56161-emiss%C3%A3o-do-boleto-pelo-banci/
+   Por: Leandro do Couto
+
+17/02/2020
+-- ACBrBancoSicred --
+[*] Ajustes na definição de espécie do título para CNAB240
+
+14/02/2020
+-- ACBrBancoDaycoval --
+[*] Realizado correção para calculo do DV do nosso número quando carteira requer que seja considerado
+também a agência. (Juliana Tamizou)
+
+13/02/2020
+-- ACBrBoleto --
+[*] Ajustes nos Metodos: Imprimir, GerarPDF, EnviarEmail na Classe Títulos
+
+07/02/2020
+-- ACBrBoleto --
+[+] Adicionado Metodos: Imprimir, GerarPDF, EnviarEmail na Classe Títulos
+permitindo assim realizar essas funcionalidades de forma individual para cada boleto da lista.
+
+04/02/2020
+-- ACBrBoleto --
+[+] Ajuste na leitura do arquivo ini validando também a tag TipoCobranca
+
+30/01/2020
+-- ACBrBancoMercantil --
+[-] Ajuste na validação de data Desconto na remessa CNAB400
+
+28/01/2020
+-- ACBrBancoCaixa --
+[-] Ajuste na validação de DataProtesto para campo Instrução
+  https://www.projetoacbr.com.br/forum/topic/55919-remessa-cobran%C3%A7a-caixa-ec-federal-posicao-157-a-158/
+
+23/01/2020
+-- ACBrBancoSafra --
+[-] Ajuste na leitura de Retorno do Nosso Número- CNAB400
+  https://www.projetoacbr.com.br/forum/topic/48704-problema-ao-ler-nosso-numero-no-retorno-do-banco-safra/
+
+21/01/2020
+-- ACBrBoleto, ACBrUnicredRS, ACBrUnicredES, ACBrUnicredSC --
+[+] Realizado Refactory nas classes do Banco Unicred, mantendo o Layout UnicredRS como base para as demais classes de Correspondentes desse Banco
+[+] Adicionado a classe UnicredSC baseado no refactory realizado na classe principal (UnicredRS) 
+
+20/01/2020
+-- ACBrBancoBrasil --
+[+] Adicionado código de ocorrencia de Inclusão de Negativação "85" e Exclusão de Negativação "86"
+  https://www.projetoacbr.com.br/forum/topic/55672-informa%C3%A7%C3%B5es-de-negativa%C3%A7%C3%A3o-cnab400-bb/
+
+16/01/2020
+-- ACBrBancoSicredi --
+[-] Correção para leitura do valor da multa no retorno CNAB400.
+  Por: BigWings
 
 13/01/2020
 -- ACBrBoleto --
@@ -2486,6 +2743,25 @@ Data: 15/05/2014 ver. 0.0.93
 
 -- ACBrBancoItau.pas
 [*] Ajuste e correção da função CalcularDigitoVerificador. (Rafael Dias)
+
+Data: 07/05/2014 (Paulo Monteiro)
+-- ACBrBancoAmazonia/ACBrBancoBrasil --
+[+] Adicionado a leitura do retorno cnab 400 para convênio de 6 posições Layout de Arquivo 
+    Retorno para Convênios na faixa numérica entre 000.001 a 999.999 (Convênios de até 6 posições) Versão Set/09
+[*] Separando em LerRetorno400Pos6 e LerRetorno400Pos7
+[*] Limpeza dos codigos antigos documentados na funções: CodMotivoRejeicaoToDescricao, TipoOcorrenciaToDescricao
+[*] Preenchidos os campos CodigoLiquidacao e CodigoLiquidacaoDescricao na leitura do retorno do cnab 400
+[*] CodOcorrenciaToTipo adicionadas as ocorrencias conforme a contribuição do Jacinto Junior, testada e homologada, 
+    pois faltava e algumas estavam erradas.
+[*] CodOcorrenciaToTipo conforme a contribuição do Jacinto Junior, Ajustadas para retornar o enumerado correto.
+    Verificadas conforme o layout do banco e testadas através do arquivo retorno.
+[*] TipoOCorrenciaToCod conforme a contribuição do Jacinto Junior, ajustada para utilizar ocorrências corretas e 
+    acrescentado novas ocorrências.
+    Verificadas conforme o layout do banco e testadas através do arquivo retorno.
+[-] Alterado a validação da conta do arquivo retorno cnab 400 pois como o valor fpTamanhoConta está 12 e 
+    causava erro, pois 12 é para cnab 240 e não para o 400
+[-] Retorno convenio 7 pos, alterado a leitura do campo Carteira  := Copy(Linha,107,2) conforme o layout do banco, 
+    pois antes estava pegando a variacao da carteira
 
 Data: 02/04/2014
 -- ACBrBancoob.pas

@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 01/08/2012: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -227,14 +223,71 @@ begin
           while Leitor.rExtrai(4, 'infContratante', '', i01 + 1) <> '' do
           begin
             MDFe.Rodo.infANTT.infContratante.New;
-            MDFe.Rodo.infANTT.infContratante[i01].CNPJCPF := Leitor.rCampoCNPJCPF;
+            MDFe.rodo.infANTT.infContratante[i01].xNome         := Leitor.rCampo(tcStr, 'xNome');
+            MDFe.rodo.infANTT.infContratante[i01].idEstrangeiro := Leitor.rCampo(tcStr, 'idEstrangeiro');
+
+            if MDFe.rodo.infANTT.infContratante[i01].idEstrangeiro = '' then
+              MDFe.Rodo.infANTT.infContratante[i01].CNPJCPF := Leitor.rCampoCNPJCPF;
+
             inc(i01);
+          end;
+
+          i01 := 0;
+          while Leitor.rExtrai(4, 'infPag', '', i01 + 1) <> '' do
+          begin
+            MDFe.Rodo.infANTT.infPag.New;
+            MDFe.rodo.infANTT.infPag[i01].xNome         := Leitor.rCampo(tcStr, 'xNome');
+            MDFe.rodo.infANTT.infPag[i01].idEstrangeiro := Leitor.rCampo(tcStr, 'idEstrangeiro');
+
+            if MDFe.rodo.infANTT.infPag[i01].idEstrangeiro = '' then
+              MDFe.Rodo.infANTT.infPag[i01].CNPJCPF := Leitor.rCampoCNPJCPF;
+
+            MDFe.rodo.infANTT.infPag[i01].vContrato := Leitor.rCampo(tcDe2, 'vContrato');
+            MDFe.rodo.infANTT.infPag[i01].indPag    := StrToTIndPag(ok, Leitor.rCampo(tcStr, 'indPag'));
+
+            i02 := 0;
+            while Leitor.rExtrai(5, 'Comp', '', i02 + 1) <> '' do
+            begin
+              MDFe.Rodo.infANTT.infPag[i01].Comp.New;
+              MDFe.Rodo.infANTT.infPag[i01].Comp[i02].tpComp := StrToTComp(ok, Leitor.rCampo(tcStr, 'tpComp'));
+              MDFe.Rodo.infANTT.infPag[i01].Comp[i02].vComp  := Leitor.rCampo(tcDe2, 'vComp');
+              MDFe.Rodo.infANTT.infPag[i01].Comp[i02].xComp  := Leitor.rCampo(tcStr, 'xComp');
+
+              inc(i02);
+            end;
+
+            if MDFe.rodo.infANTT.infPag[i01].indPag = ipPrazo then
+            begin
+              i02 := 0;
+              while Leitor.rExtrai(5, 'infPrazo', '', i02 + 1) <> '' do
+              begin
+                MDFe.Rodo.infANTT.infPag[i01].infPrazo.New;
+                MDFe.Rodo.infANTT.infPag[i01].infPrazo[i02].nParcela := Leitor.rCampo(tcInt, 'nParcela');
+                MDFe.Rodo.infANTT.infPag[i01].infPrazo[i02].dVenc    := Leitor.rCampo(tcDat, 'dVenc');
+                MDFe.Rodo.infANTT.infPag[i01].infPrazo[i02].vParcela := Leitor.rCampo(tcDe2, 'vParcela');
+
+                inc(i02);
+              end;
+            end;
+
+            if Leitor.rExtrai(5, 'infBanc') <> '' then
+            begin
+              MDFe.rodo.infANTT.infPag[i01].infBanc.CNPJIPEF := Leitor.rCampo(tcStr, 'CNPJIPEF');
+
+              if MDFe.rodo.infANTT.infPag[i01].infBanc.CNPJIPEF = '' then
+              begin
+                MDFe.rodo.infANTT.infPag[i01].infBanc.codBanco   := Leitor.rCampo(tcStr, 'codBanco');
+                MDFe.rodo.infANTT.infPag[i01].infBanc.codAgencia := Leitor.rCampo(tcStr, 'codAgencia');
+              end;
+            end;
+
+            Inc(i01);
           end;
         end;
       end;
 
       if (Leitor.rExtrai(3, 'veicTracao') <> '') or (Leitor.rExtrai(3, 'veicPrincipal') <> '')then
-       begin
+      begin
         MDFe.Rodo.veicTracao.cInt    := Leitor.rCampo(tcStr, 'cInt');
         MDFe.Rodo.veicTracao.placa   := Leitor.rCampo(tcStr, 'placa');
         MDFe.Rodo.veicTracao.RENAVAM := Leitor.rCampo(tcStr, 'RENAVAM');
@@ -267,7 +320,7 @@ begin
           MDFe.rodo.veicTracao.condutor[i01].CPF   := Leitor.rCampo(tcStr, 'CPF');
           inc(i01);
         end;
-       end;
+      end;
 
       i01 := 0;
       while Leitor.rExtrai(3, 'veicReboque', '', i01 + 1) <> '' do
@@ -872,6 +925,31 @@ begin
       end;
 
       inc(i01);
+    end;
+
+    if Leitor.rExtrai(1, 'prodPred') <> '' then
+    begin
+      MDFe.prodPred.tpCarga := StrToTCarga(ok, Leitor.rCampo(tcStr, 'tpCarga'));
+      MDFe.prodPred.xProd   := Leitor.rCampo(tcStr, 'xProd');
+      MDFe.prodPred.cEAN    := Leitor.rCampo(tcStr, 'cEAN');
+      MDFe.prodPred.NCM     := Leitor.rCampo(tcStr, 'NCM');
+
+      if Leitor.rExtrai(2, 'infLotacao') <> '' then
+      begin
+        if Leitor.rExtrai(3, 'infLocalCarrega') <> '' then
+        begin
+          MDFe.prodPred.infLocalCarrega.CEP       := Leitor.rCampo(tcInt, 'CEP');
+          MDFe.prodPred.infLocalCarrega.latitude  := Leitor.rCampo(tcDe6, 'latitude');
+          MDFe.prodPred.infLocalCarrega.longitude := Leitor.rCampo(tcDe6, 'longitude');
+        end;
+
+        if Leitor.rExtrai(3, 'infLocalDescarrega') <> '' then
+        begin
+          MDFe.prodPred.infLocalDescarrega.CEP       := Leitor.rCampo(tcInt, 'CEP');
+          MDFe.prodPred.infLocalDescarrega.latitude  := Leitor.rCampo(tcDe6, 'latitude');
+          MDFe.prodPred.infLocalDescarrega.longitude := Leitor.rCampo(tcDe6, 'longitude');
+        end;
+      end;
     end;
   end;
 

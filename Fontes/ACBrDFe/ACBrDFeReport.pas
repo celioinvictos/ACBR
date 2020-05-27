@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  Rafael Dias                                    }
 {                                                                              }
@@ -109,22 +109,22 @@ type
   public
     constructor Create(AOwner: TComponent); override;
   published
-    {@prop Altura - Denife a altura da logomarca expandida
+    {@prop Altura - Define a altura da logomarca expandida
      @links TExpandeLogoMarcaConfig.Altura :/}
     property Altura: Integer read FAltura write FAltura;
-    {@prop Esquerda - Denife a posição a esquerda da logomarca expandida
+    {@prop Esquerda - Define a posição a esquerda da logomarca expandida
      @links TExpandeLogoMarcaConfig.Esquerda :/}
     property Esquerda: Integer read FEsquerda write FEsquerda;
-    {@prop Topo - Denife a posição ao topo da logomarca expandida
+    {@prop Topo - Define a posição ao topo da logomarca expandida
      @links TExpandeLogoMarcaConfig.Topo :/}
     property Topo: Integer read FTopo write FTopo;
-    {@prop Largura - Denife a largura da logomarca expandida
+    {@prop Largura - Define a largura da logomarca expandida
      @links TExpandeLogoMarcaConfig.Largura :/}
     property Largura: Integer read FLargura write FLargura;
-    {@prop Dimensionar - Denife a logomarca expandida deve esticar no tamanho total ou não
+    {@prop Dimensionar - Define a logomarca expandida deve esticar no tamanho total ou não
      @links TExpandeLogoMarcaConfig.Dimensionar :/}
     property Dimensionar: Boolean read FDimensionar write FDimensionar;
-    {@prop Esticar - Denife a logomarca expandida deve esticar no tamanho total ou não
+    {@prop Esticar - Define a logomarca expandida deve esticar no tamanho total ou não
      @links TExpandeLogoMarcaConfig.Esticar :/}
     property Esticar: Boolean read FEsticar write FEsticar;
   end;
@@ -137,6 +137,7 @@ type
   {$ENDIF RTL230_UP}
   TACBrDFeReport = class(TACBrComponent)
   private
+    FFormularioContinuo: Boolean;
     FPathPDF: String;
     FUsaSeparadorPathPDF: Boolean;
     FImpressora: String;
@@ -177,6 +178,11 @@ type
 
     function FormatarQuantidade(dValor: Double; dForcarDecimais: Boolean = True): String; virtual;
     function FormatarValorUnitario(dValor: Double): String; virtual;
+
+  protected
+    {@prop FormularioContinuo - Se True, não quebra a página durante a impressão, útil para Impressão em Bobinas
+     @links TACBrDFeReport.FormularioContinuo :/}
+    property FormularioContinuo: Boolean read FFormularioContinuo write FFormularioContinuo default False;
 
   published
     {@prop Impressora - Define/retorna o nome da impressora onde será impresso o documento.
@@ -362,7 +368,10 @@ begin
   FMargemSuperior := 8;
   FMargemEsquerda := 6;
   FMargemDireita := 5.1;
-  ExpandeLogoMarca := False;
+  FExpandeLogoMarca := False;
+  FAlterarEscalaPadrao := False;
+  FNovaEscala := 96;
+  FFormularioContinuo := False;
 
   FCasasDecimais := TCasasDecimais.Create(self);
   FCasasDecimais.Name := 'CasasDecimais';
@@ -374,8 +383,6 @@ begin
   FCasasDecimais.SetSubComponent(True);{ para gravar no DFM/XFM }
   FExpandeLogoMarcaConfig.SetSubComponent(True);{ para gravar no DFM/XFM }
   {$ENDIF}
-  FAlterarEscalaPadrao := False;
-  FNovaEscala := 96;
 end;
 
 destructor TACBrDFeReport.Destroy;

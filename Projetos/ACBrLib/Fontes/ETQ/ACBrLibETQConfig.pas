@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: Italo Jurisato Junior                           }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -53,6 +52,7 @@ type
     FDPI: TACBrETQDPI;
     FLimparMemoria: Boolean;
     FMargemEsquerda: Integer;
+    FPaginaDeCodigo: TACBrETQPaginaCodigo;
     FModelo: TACBrETQModelo;
     FOrigem: TACBrETQOrigem;
     FPorta: String;
@@ -68,6 +68,7 @@ type
 
     property ArqLog: String read FArqLog write FArqLog;
     property Unidade: TACBrETQUnidade read FUnidade write FUnidade;
+    property PaginaDeCodigo: TACBrETQPaginaCodigo read FPaginaDeCodigo write FPaginaDeCodigo;
     property Modelo: TACBrETQModelo read FModelo write FModelo;
     property BackFeed: TACBrETQBackFeed read FBackFeed write FBackFeed;
     property LimparMemoria: Boolean read FLimparMemoria write FLimparMemoria;
@@ -92,7 +93,7 @@ type
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
-    procedure ImportarIni(FIni: TCustomIniFile); override;
+    procedure ImportarIni(AIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -115,6 +116,7 @@ uses
 
 constructor TETQConfig.Create;
 begin
+  FPaginaDeCodigo := pce850;
   FUnidade        := etqDecimoDeMilimetros;
   FModelo         := etqNenhum;
   FBackFeed       := bfNone;
@@ -145,6 +147,7 @@ begin
   FMargemEsquerda := AIni.ReadInteger(CSessaoETQ, CChaveMargemEsquerda, FMargemEsquerda);
   FLimparMemoria  := AIni.ReadBool(CSessaoETQ, CChaveLimparMemoria, FLimparMemoria);
   FAtivo          := AIni.ReadBool(CSessaoETQ, CChaveAtivo, FAtivo);
+  FPaginaDeCodigo := TACBrETQPaginaCodigo(AIni.ReadInteger(CSessaoETQ, CChavePaginaDeCodigo, Integer(FPaginaDeCodigo)));
   FModelo         := TACBrETQModelo(AIni.ReadInteger(CSessaoETQ, CChaveModelo, Integer(FModelo)));
   FUnidade        := TACBrETQUnidade(AIni.ReadInteger(CSessaoETQ, CChaveUnidade, Integer(FUnidade)));
   FBackFeed       := TACBrETQBackFeed(AIni.ReadInteger(CSessaoETQ, CChaveBackFeed, Integer(FBackFeed)));
@@ -162,6 +165,7 @@ begin
   AIni.WriteInteger(CSessaoETQ, CChaveMargemEsquerda, FMargemEsquerda);
   AIni.WriteBool(CSessaoETQ, CChaveLimparMemoria, FLimparMemoria);
   AIni.WriteBool(CSessaoETQ, CChaveAtivo, FAtivo);
+  AIni.WriteInteger(CSessaoETQ, CChavePaginaDeCodigo, Integer(FPaginaDeCodigo));
   AIni.WriteInteger(CSessaoETQ, CChaveModelo, Integer(FModelo));
   AIni.WriteInteger(CSessaoETQ, CChaveUnidade, Integer(FUnidade));
   AIni.WriteInteger(CSessaoETQ, CChaveBackFeed, Integer(FBackFeed));
@@ -209,19 +213,19 @@ begin
     TACBrLibETQ(Owner).ETQDM.AplicarConfiguracoes;
 end;
 
-procedure TLibETQConfig.ImportarIni(FIni: TCustomIniFile);
+procedure TLibETQConfig.ImportarIni(AIni: TCustomIniFile);
 begin
-  FETQConfig.Porta          := FIni.ReadString(CSecETQ, CKeyETQPorta, FETQConfig.Porta);
-  FETQConfig.Temperatura    := FIni.ReadInteger(CSecETQ, CKeyETQTemperatura, FETQConfig.Temperatura);
-  FETQConfig.Velocidade     := FIni.ReadInteger(CSecETQ, CKeyETQVelocidade, FETQConfig.Velocidade);
-  FETQConfig.Avanco         := FIni.ReadInteger(CSecETQ, CKeyETQAvanco, FETQConfig.Avanco);
-  FETQConfig.MargemEsquerda := FIni.ReadInteger(CSecETQ, CKeyETQMargemEsquerda, FETQConfig.MargemEsquerda);
-  FETQConfig.LimparMemoria  := FIni.ReadBool(CSecETQ, CKeyETQLimparMemoria, FETQConfig.LimparMemoria);
-  FETQConfig.Modelo         := TACBrETQModelo(FIni.ReadInteger(CSecETQ, CKeyETQModelo, Integer(FETQConfig.Modelo)));
-  FETQConfig.Unidade        := TACBrETQUnidade(FIni.ReadInteger(CSecETQ, CKeyETQUnidade, Integer(FETQConfig.Unidade)));
-  FETQConfig.BackFeed       := TACBrETQBackFeed(FIni.ReadInteger(CSecETQ, CKeyETQBackFeed, Integer(FETQConfig.BackFeed)));
-  FETQConfig.Origem         := TACBrETQOrigem(FIni.ReadInteger(CSecETQ, CKeyETQOrigem, Integer(FETQConfig.Origem)));
-  FETQConfig.DPI            := TACBrETQDPI(FIni.ReadInteger(CSecETQ, CKeyETQDPI, Integer(FETQConfig.DPI)));
+  FETQConfig.Porta          := AIni.ReadString(CSecETQ, CKeyETQPorta, FETQConfig.Porta);
+  FETQConfig.Temperatura    := AIni.ReadInteger(CSecETQ, CKeyETQTemperatura, FETQConfig.Temperatura);
+  FETQConfig.Velocidade     := AIni.ReadInteger(CSecETQ, CKeyETQVelocidade, FETQConfig.Velocidade);
+  FETQConfig.Avanco         := AIni.ReadInteger(CSecETQ, CKeyETQAvanco, FETQConfig.Avanco);
+  FETQConfig.MargemEsquerda := AIni.ReadInteger(CSecETQ, CKeyETQMargemEsquerda, FETQConfig.MargemEsquerda);
+  FETQConfig.LimparMemoria  := AIni.ReadBool(CSecETQ, CKeyETQLimparMemoria, FETQConfig.LimparMemoria);
+  FETQConfig.Modelo         := TACBrETQModelo(AIni.ReadInteger(CSecETQ, CKeyETQModelo, Integer(FETQConfig.Modelo)));
+  FETQConfig.Unidade        := TACBrETQUnidade(AIni.ReadInteger(CSecETQ, CKeyETQUnidade, Integer(FETQConfig.Unidade)));
+  FETQConfig.BackFeed       := TACBrETQBackFeed(AIni.ReadInteger(CSecETQ, CKeyETQBackFeed, Integer(FETQConfig.BackFeed)));
+  FETQConfig.Origem         := TACBrETQOrigem(AIni.ReadInteger(CSecETQ, CKeyETQOrigem, Integer(FETQConfig.Origem)));
+  FETQConfig.DPI            := TACBrETQDPI(AIni.ReadInteger(CSecETQ, CKeyETQDPI, Integer(FETQConfig.DPI)));
 end;
 
 procedure TLibETQConfig.Travar;

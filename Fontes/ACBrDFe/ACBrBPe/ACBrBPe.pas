@@ -1,15 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrBPe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Bilhete de }
-{ Passagem Eletrônica - BPe                                                    }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2017                                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -27,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 20/06/2017: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -46,7 +37,7 @@ unit ACBrBPe;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, synautil,
   ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes, ACBrBase, 
   ACBrBPeConfiguracoes, ACBrBPeWebServices, ACBrBPeBilhetes, ACBrBPeDABPEClass,
   pcnBPe, pcnConversao, pcnConversaoBPe, pcnEnvEventoBPe, 
@@ -103,7 +94,7 @@ type
     function CstatCancelada(AValue: Integer): Boolean;
 
     function Cancelamento(const AJustificativa: String; ALote: Integer = 0): Boolean;
-    function Consultar( const AChave: String = ''): Boolean;
+    function Consultar(const AChave: String = ''; AExtrairEventos: Boolean = False): Boolean;
     function EnviarEvento(idLote: Integer): Boolean;
 
     procedure LerServicoDeParams(LayOutServico: TLayOutBPe; var Versao: Double;
@@ -136,6 +127,8 @@ type
       ANSU: String): Boolean;
     function DistribuicaoDFePorChaveBPe(AcUFAutor: Integer; const ACNPJCPF,
       AchBPe: String): Boolean;
+
+    function GravarStream(AStream: TStream): Boolean;
 
     procedure EnviarEmailEvento(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
@@ -404,6 +397,16 @@ begin
   end;
 end;
 
+function TACBrBPe.GravarStream(AStream: TStream): Boolean;
+begin
+  if EstaVazio(FEventoBPe.Gerador.ArquivoFormatoXML) then
+    FEventoBPe.GerarXML;
+
+  AStream.Size := 0;
+  WriteStrToStream(AStream, AnsiString(FEventoBPe.Gerador.ArquivoFormatoXML));
+  Result := True;
+end;
+
 procedure TACBrBPe.SetStatus(const stNewStatus: TStatusACBrBPe);
 begin
   if stNewStatus <> FStatus then
@@ -449,7 +452,7 @@ begin
   Result := True;
 end;
 
-function TACBrBPe.Consultar(const AChave: String): Boolean;
+function TACBrBPe.Consultar(const AChave: String; AExtrairEventos: Boolean): Boolean;
 var
   i: Integer;
 begin
@@ -459,14 +462,16 @@ begin
   if NaoEstaVazio(AChave) then
   begin
     Bilhetes.Clear;
-    WebServices.Consulta.BPeChave := AChave;
+    WebServices.Consulta.BPeChave       := AChave;
+    WebServices.Consulta.ExtrairEventos := AExtrairEventos;
     WebServices.Consulta.Executar;
   end
   else
   begin
     for i := 0 to Bilhetes.Count - 1 do
     begin
-      WebServices.Consulta.BPeChave := Bilhetes.Items[i].NumID;
+      WebServices.Consulta.BPeChave       := Bilhetes.Items[i].NumID;
+      WebServices.Consulta.ExtrairEventos := AExtrairEventos;
       WebServices.Consulta.Executar;
     end;
   end;
@@ -653,22 +658,27 @@ procedure TACBrBPe.EnviarEmailEvento(const sPara, sAssunto: String;
 var
   NomeArq: String;
   AnexosEmail: TStrings;
+  StreamBPe : TMemoryStream;
 begin
   AnexosEmail := TStringList.Create;
+  StreamBPe := TMemoryStream.Create;
   try
     AnexosEmail.Clear;
 
     if Anexos <> nil then
       AnexosEmail.Text := Anexos.Text;
 
-    ImprimirEventoPDF;
-    NomeArq := OnlyNumber(EventoBPe.Evento[0].infEvento.Id);
-    NomeArq := PathWithDelim(DABPE.PathPDF) + NomeArq + '-procEventoBPe.pdf';
-    AnexosEmail.Add(NomeArq);
+    GravarStream(StreamBPe);
 
-    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, nil, '', sReplyTo);
+    ImprimirEventoPDF;
+    AnexosEmail.Add(DABPE.ArquivoPDF);
+
+    NomeArq := OnlyNumber(EventoBPe.Evento[0].InfEvento.Id);
+    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamBPe,
+	    NomeArq + '-procEventoBPe.xml', sReplyTo);
   finally
     AnexosEmail.Free;
+    StreamBPe.Free;
   end;
 end;
 

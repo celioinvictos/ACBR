@@ -3,16 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2007 Andrews Ricardo Bejatto                }
-{                                       Anderson Rogerio Bejatto               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Daniel Simooes de Almeida              }
+{ Colaboradores nesse arquivo:                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{ Esse arquivo usa a classe  SynaSer   Copyright (c)2001-2003, Lukas Gebauer   }
-{  Project : Ararat Synapse     (Found at URL: http://www.ararat.cz/synapse/)  }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -30,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -68,6 +63,7 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
     fsMargemEsquerda: Integer;
     fsEtqFinalizada: Boolean;
     fsEtqInicializada: Boolean;
+    fsCopias, fsAvancoEtq: Integer;
     fsOnGravarLog: TACBrGravarLog;
     fsModelo: TACBrETQModelo;
     fsListaCmd: TACBrETQCmdList;
@@ -80,6 +76,7 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
     function GetModeloStr: String;
     function GetBackFeed: TACBrETQBackFeed;
     function GetOrigem: TACBrETQOrigem;
+    function GetPaginaDeCodigo: TACBrETQPaginaCodigo;
     function GetUnidade: TACBrETQUnidade;
     function GetTemperatura: Integer;
     function GetVelocidade: Integer;
@@ -98,6 +95,9 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
     procedure SetOrigem(AValue: TACBrETQOrigem);
     procedure SetAvanco(const AValue: Integer);
     procedure SetAtivo(const Value: Boolean);
+    procedure SetPaginaDeCodigo(AValue: TACBrETQPaginaCodigo);
+    function GetNumeroPaginaDeCodigo(APagCod: TACBrETQPaginaCodigo): word;
+    function CodificarPaginaDeCodigo(const ATexto: AnsiString): AnsiString;
 
     procedure AtivarSeNecessario;
   public
@@ -133,6 +133,9 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
           const Texto: String; AlturaCodBarras: Integer = 0;
           ExibeCodigo: TACBrETQBarraExibeCodigo = becPadrao); overload;
 
+    procedure ImprimirQRCode(Vertical, Horizontal: Integer; const Texto: String;
+          LarguraModulo: Integer = 4; ErrorLevel: Integer = 0; Tipo: Integer = 2);
+
     procedure ImprimirLinha(Vertical, Horizontal, Largura, Altura: Integer); overload;
 
     procedure ImprimirCaixa(Vertical, Horizontal, Largura, Altura,
@@ -156,6 +159,7 @@ TACBrETQModelo = (etqNenhum, etqPpla, etqPplb, etqZPLII, etqEpl2);
     property EtqInicializada: Boolean          read fsEtqInicializada;
 
   published
+    property PaginaDeCodigo:  TACBrETQPaginaCodigo read GetPaginaDeCodigo write SetPaginaDeCodigo default pce850;
     property Unidade:         TACBrETQUnidade  read GetUnidade       write SetUnidade default etqDecimoDeMilimetros;
     property Modelo:          TACBrETQModelo   read fsModelo         write SetModelo default etqNenhum;
     property BackFeed:        TACBrETQBackFeed read GetBackFeed      write SetBackFeed default bfNone;
@@ -230,6 +234,8 @@ begin
   fsOnGravarLog     := Nil;
   fsEtqFinalizada   := False;
   fsEtqInicializada := False;
+  fsCopias          := 1;
+  fsAvancoEtq       := 0;
   fsMargemEsquerda  := 0;
 end;
 
@@ -266,6 +272,11 @@ begin
   Result := fsETQ.Origem;
 end;
 
+function TACBrETQ.GetPaginaDeCodigo: TACBrETQPaginaCodigo;
+begin
+  Result := fsETQ.PaginaDeCodigo;
+end;
+
 function TACBrETQ.GetUnidade: TACBrETQUnidade;
 begin
   Result := fsETQ.Unidade;
@@ -294,6 +305,44 @@ end;
 function TACBrETQ.GetAvanco: Integer;
 begin
   Result := fsETQ.Avanco;
+end;
+
+procedure TACBrETQ.SetPaginaDeCodigo(AValue: TACBrETQPaginaCodigo);
+begin
+  fsETQ.PaginaDeCodigo := AValue;
+end;
+
+function TACBrETQ.GetNumeroPaginaDeCodigo(APagCod: TACBrETQPaginaCodigo): word;
+begin
+  case APagCod of
+    pce437: Result := 437;
+    pce850: Result := 850;
+    pce852: Result := 852;
+    pce860: Result := 860;
+    pce1250: Result := 1250;
+    pce1252: Result := 1252;
+  else
+    Result := 0;
+  end;
+end;
+
+function TACBrETQ.CodificarPaginaDeCodigo(const ATexto: AnsiString): AnsiString;
+var
+  NumPagCod: word;
+begin
+  NumPagCod := GetNumeroPaginaDeCodigo(PaginaDeCodigo);
+  //GravarLog('CodificarPaginaDeCodigo: '+IntToStr(NumPagCod) );
+
+  if (NumPagCod > 0) then
+  begin
+    {$IfDef MSWINDOWS}
+    Result := TranslateString(ACBrStrToAnsi(ATexto), NumPagCod)
+    {$Else}
+    Result := TranslateString(ATexto, NumPagCod)
+    {$EndIf}
+  end
+  else
+    Result := TiraAcentos(ATexto);
 end;
 
 procedure TACBrETQ.SetUnidade(const AValue: TACBrETQUnidade);
@@ -434,6 +483,8 @@ begin
   fsAtivo           := True;
   fsEtqFinalizada   := False;
   fsEtqInicializada := False;
+  fsCopias          := 1;
+  fsAvancoEtq       := 0;
 end;
 
 procedure TACBrETQ.Desativar;
@@ -462,26 +513,30 @@ begin
   if (not (fsEtqInicializada or fsEtqFinalizada)) then
     fsListaCmd.Insert(0, wCmd)       //Se Etiqueta não foi iniciada, comandos incluídos no início
   else
+  begin
+    if fsEtqFinalizada then
+      fsListaCmd.Add(fsETQ.ComandosFinalizarEtiqueta(fsCopias, fsAvancoEtq));
+
     fsListaCmd.Add(wCmd);    //Se Etiqueta foi iniciada, comandos são concatenados
+  end;
 
   fsEtqInicializada := True;
   fsEtqFinalizada   := False;
+  fsCopias          := 1;
+  fsAvancoEtq       := 0;
 end;
 
 procedure TACBrETQ.FinalizarEtiqueta(Copias: Integer = 1; AvancoEtq: Integer = 0);
-var
-  wCmd: AnsiString;
 begin
   GravarLog('- FinalizarEtiqueta: Copias:'+IntToStr(Copias)+', AvancoEtq:'+IntToStr(AvancoEtq));
 
-  AtivarSeNecessario;
-
-  wCmd := fsETQ.ComandosFinalizarEtiqueta(Copias, AvancoEtq);
-
-  fsListaCmd.Add(wCmd);
+  if not fsEtqInicializada then
+    IniciarEtiqueta;
 
   fsEtqInicializada := False;
   fsEtqFinalizada   := True;
+  fsCopias          := Copias;
+  fsAvancoEtq       := AvancoEtq;
 end;
 
 procedure TACBrETQ.GravarLog(aString: AnsiString; Traduz: Boolean);
@@ -516,7 +571,18 @@ begin
 
     // Verifica se ficou um bloco de etiquetas sem ser Finalizado
     if (not fsEtqFinalizada) then
-      FinalizarEtiqueta(Copias, AvancoEtq);
+      FinalizarEtiqueta(Copias, AvancoEtq)
+    else
+    begin
+      if Copias > 1 then
+        fsCopias := Copias;
+
+      if AvancoEtq > 0 then
+        fsAvancoEtq := AvancoEtq;
+    end;
+
+    wCmd := fsETQ.ComandosFinalizarEtiqueta(fsCopias, fsAvancoEtq);
+    fsListaCmd.Add(wCmd);
 
     if LimparMemoria then
     begin
@@ -532,6 +598,8 @@ begin
     fsListaCmd.Clear;
     fsEtqInicializada := False;
     fsEtqFinalizada   := False;
+    fsCopias          := 1;
+    fsAvancoEtq       := 0;
   end;
 end;
 
@@ -567,8 +635,12 @@ begin
             ', SubFonte:'+IntToStr(SubFonte)+
             ', ImprimirReverso:'+BoolToStr(ImprimirReverso, True));
 
-  wCmd := fsETQ.ComandoImprimirTexto(Orientacao, Fonte, MultiplicadorH, MultiplicadorV,
-    Vertical, (Horizontal+MargemEsquerda), Texto, SubFonte, ImprimirReverso);
+  wCmd := fsETQ.ComandoImprimirTexto( Orientacao,
+                                      Fonte, MultiplicadorH, MultiplicadorV,
+                                      Vertical, (Horizontal+MargemEsquerda),
+                                      CodificarPaginaDeCodigo(Texto),
+                                      SubFonte,
+                                      ImprimirReverso);
 
   fsListaCmd.Add(wCmd);
 end;
@@ -613,6 +685,29 @@ begin
                   StrParamToInt(LarguraBarraLarga),
                   StrParamToInt(LarguraBarraFina),
                   Vertical, Horizontal, Texto, AlturaCodBarras, ExibeCodigo);
+end;
+
+procedure TACBrETQ.ImprimirQRCode(Vertical, Horizontal: Integer;
+  const Texto: String; LarguraModulo: Integer; ErrorLevel: Integer;
+  Tipo: Integer);
+var
+  wCmd: AnsiString;
+begin
+  Tipo := Min(Max(Tipo,1),2);
+  LarguraModulo := Max(1,LarguraModulo);
+
+  GravarLog('- ImprimirQRCode:'+
+            '  Vertical:'+IntToStr(Vertical)+
+            ', Horizontal:'+IntToStr(Horizontal)+
+            ', Texto:'+Texto+
+            ', LarguraModulo:'+IntToStr(LarguraModulo)+
+            ', ErrorLevel:'+IntToStr(ErrorLevel)+
+            ', Tipo:'+IntToStr(Tipo));
+
+  wCmd := fsETQ.ComandoImprimirQRCode( Vertical, (Horizontal+MargemEsquerda),
+                                       Texto, LarguraModulo, ErrorLevel, Tipo);
+
+  fsListaCmd.Add(wCmd);
 end;
 
 procedure TACBrETQ.ImprimirBarras(Orientacao: TACBrETQOrientacao;

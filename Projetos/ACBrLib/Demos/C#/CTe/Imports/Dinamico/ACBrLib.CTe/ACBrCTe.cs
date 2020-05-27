@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using ACBrLib.Core;
+using ACBrLib.Core.CTe;
 using ACBrLib.Core.DFe;
 
 namespace ACBrLib.CTe
@@ -90,10 +91,16 @@ namespace ACBrLib.CTe
             public delegate int CTE_ObterCertificados(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_GetPath(int tipo, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int CTE_GetPathEvento(string aCodEvento, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int CTE_StatusServico(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int CTE_Consultar(string eChaveOuCTe, StringBuilder buffer, ref int bufferSize);
+            public delegate int CTE_Consultar(string eChaveOuCTe, bool AExtrairEventos, StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int CTE_ConsultaCadastro(string cUF, string nDocumento, bool nIE, StringBuilder buffer, ref int bufferSize);
@@ -204,7 +211,7 @@ namespace ACBrLib.CTe
 
         #region Ini
 
-        public void ConfigGravar(string eArqConfig = "ACBrLib.ini")
+        public void ConfigGravar(string eArqConfig = "")
         {
             var gravarIni = GetMethod<Delegates.CTE_ConfigGravar>();
             var ret = ExecuteMethod(() => gravarIni(ToUTF8(eArqConfig)));
@@ -212,7 +219,7 @@ namespace ACBrLib.CTe
             CheckResult(ret);
         }
 
-        public void ConfigLer(string eArqConfig = "ACBrLib.ini")
+        public void ConfigLer(string eArqConfig = "")
         {
             var lerIni = GetMethod<Delegates.CTE_ConfigLer>();
             var ret = ExecuteMethod(() => lerIni(ToUTF8(eArqConfig)));
@@ -408,6 +415,28 @@ namespace ACBrLib.CTe
             return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
         }
 
+        public string GetPath(TipoPathCTe tipo)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.CTE_GetPath>();
+            var ret = ExecuteMethod(() => method((int)tipo, buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string GetPathEvento(string evento)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.CTE_GetPathEvento>();
+            var ret = ExecuteMethod(() => method(ToUTF8(evento), buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
         public string StatusServico()
         {
             var bufferLen = BUFFER_LEN;
@@ -421,13 +450,13 @@ namespace ACBrLib.CTe
             return ProcessResult(buffer, bufferLen);
         }
 
-        public string Consultar(string eChaveOuCTe)
+        public string Consultar(string eChaveOuCTe, bool AExtrairEventos = false)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
 
             var method = GetMethod<Delegates.CTE_Consultar>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuCTe), buffer, ref bufferLen));
+            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuCTe), AExtrairEventos, buffer, ref bufferLen));
 
             CheckResult(ret);
 
@@ -649,6 +678,8 @@ namespace ACBrLib.CTe
             AddMethod<Delegates.CTE_VerificarAssinatura>("CTE_VerificarAssinatura");
             AddMethod<Delegates.CTE_GerarChave>("CTE_GerarChave");
             AddMethod<Delegates.CTE_ObterCertificados>("CTE_ObterCertificados");
+            AddMethod<Delegates.CTE_GetPath>("CTE_GetPath");
+            AddMethod<Delegates.CTE_GetPathEvento>("CTE_GetPathEvento");
             AddMethod<Delegates.CTE_StatusServico>("CTE_StatusServico");
             AddMethod<Delegates.CTE_Consultar>("CTE_Consultar");
             AddMethod<Delegates.CTE_ConsultaCadastro>("CTE_ConsultaCadastro");

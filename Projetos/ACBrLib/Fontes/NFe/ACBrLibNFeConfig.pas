@@ -1,35 +1,34 @@
-{*******************************************************************************}
-{ Projeto: Componentes ACBr                                                     }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
-{ mentos de Automação Comercial utilizados no Brasil                            }
-{                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
-{                                                                               }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
-{                                                                               }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
-{ qualquer versão posterior.                                                    }
-{                                                                               }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
-{                                                                               }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
-{ Você também pode obter uma copia da licença em:                               }
-{ http://www.opensource.org/licenses/gpl-license.php                            }
-{                                                                               }
-{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
-{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
-{                                                                               }
-{*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -42,7 +41,7 @@ uses
   pcnConversao, pcnConversaoNFe,
   ACBrNFeConfiguracoes, ACBrDFeReport, ACBrDFeDANFeReport,
   ACBrNFeDANFEClass, ACBrNFeDANFeRLClass, ACBrLibConfig,
-  ACBrDeviceConfig, ACBrIntegradorConfig, DFeReportConfig;
+  ACBrIntegradorConfig, DFeReportConfig;
 
 type
   TTipoRelatorioBobina = (tpFortes, tpEscPos, tpFortesA4);
@@ -155,6 +154,7 @@ type
     FMargemSuperior: Double;
     FMargemEsquerda: Double;
     FMargemDireita: Double;
+    FFonteLinhaItem: TFont;
 
     procedure setImprimeEmUmaLinha(const Value: Boolean);
     procedure setImprimeEmDuasLinhas(const Value: Boolean);
@@ -186,6 +186,7 @@ type
     property MargemSuperior: Double read FMargemSuperior write FMargemSuperior;
     property MargemEsquerda: Double read FMargemEsquerda write FMargemEsquerda;
     property MargemDireita: Double read FMargemDireita write FMargemDireita;
+    property FonteLinhaItem: TFont read FFonteLinhaItem write FFonteLinhaItem;
 
   end;
 
@@ -247,13 +248,12 @@ type
     FDANFeConfig: TDANFeReportConfig;
     FNFeConfig: TConfiguracoesNFe;
     FIntegradorConfig: TIntegradorConfig;
-    FDeviceConfig: TDeviceConfig;
 
   protected
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
-    procedure ImportarIni(FIni: TCustomIniFile); override;
+    procedure ImportarIni(AIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -268,7 +268,6 @@ type
     property NFe: TConfiguracoesNFe read FNFeConfig;
     property DANFe: TDANFeReportConfig read FDANFeConfig;
     property Integrador: TIntegradorConfig read FIntegradorConfig;
-    property PosDevice: TDeviceConfig read FDeviceConfig write FDeviceConfig;
 
   end;
 
@@ -534,6 +533,9 @@ begin
   FMargemSuperior := 0;
   FMargemEsquerda := 0;
   FMargemDireita := 0;
+  FFonteLinhaItem := TFont.Create;
+  FFonteLinhaItem.Name := 'Lucida Console';
+  FFonteLinhaItem.Size := 7;
 end;
 
 procedure TDANFeNFCeConfig.LerIni(const AIni: TCustomIniFile);
@@ -557,6 +559,18 @@ begin
   MargemSuperior := AIni.ReadFloat(CSessaoDANFENFCE, CChaveMargemSuperior, MargemSuperior);
   MargemEsquerda := AIni.ReadFloat(CSessaoDANFENFCE, CChaveMargemEsquerda, MargemEsquerda);
   MargemDireita := AIni.ReadFloat(CSessaoDANFENFCE, CChaveMargemDireita, MargemDireita);
+  FonteLinhaItem.Name    :=  AIni.ReadString( CSessaoDANFENFCE, CChaveFonteLinhaItemName, FonteLinhaItem.Name );
+  FonteLinhaItem.Color   :=  TColor(AIni.ReadInteger( CSessaoDANFENFCE, CChaveFonteLinhaItemColor, FonteLinhaItem.Color ));
+  FonteLinhaItem.Size    :=  AIni.ReadInteger( CSessaoDANFENFCE, CChaveFonteLinhaItemSize, FonteLinhaItem.Size );
+  FonteLinhaItem.Style := [];
+  if AIni.ReadBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemBold , False ) then
+    FonteLinhaItem.Style := FonteLinhaItem.Style + [fsBold];
+  if AIni.ReadBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemItalic , False ) then
+    FonteLinhaItem.Style := FonteLinhaItem.Style + [fsItalic];
+  if AIni.ReadBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemUnderline , False ) then
+    FonteLinhaItem.Style := FonteLinhaItem.Style + [fsUnderline];
+  if AIni.ReadBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemStrikeOut , False ) then
+    FonteLinhaItem.Style := FonteLinhaItem.Style + [fsStrikeOut];
 end;
 
 procedure TDANFeNFCeConfig.GravarIni(const AIni: TCustomIniFile);
@@ -580,9 +594,18 @@ begin
   AIni.WriteFloat(CSessaoDANFENFCE, CChaveMargemSuperior, FMargemSuperior);
   AIni.WriteFloat(CSessaoDANFENFCE, CChaveMargemEsquerda, FMargemEsquerda);
   AIni.WriteFloat(CSessaoDANFENFCE, CChaveMargemDireita, FMargemDireita);
+  AIni.WriteString( CSessaoDANFENFCE,   CChaveFonteLinhaItemName   , FonteLinhaItem.Name );
+  AIni.WriteInteger( CSessaoDANFENFCE,  CChaveFonteLinhaItemColor , FonteLinhaItem.Color );
+  AIni.WriteInteger( CSessaoDANFENFCE,  CChaveFonteLinhaItemSize  , FonteLinhaItem.Size );
+  AIni.WriteBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemBold , fsBold in FonteLinhaItem.Style );
+  AIni.WriteBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemItalic , fsItalic in FonteLinhaItem.Style );
+  AIni.WriteBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemUnderline , fsUnderline in FonteLinhaItem.Style );
+  AIni.WriteBool( CSessaoDANFENFCE,   CChaveFonteLinhaItemStrikeOut , fsStrikeOut in FonteLinhaItem.Style );
 end;
 
 procedure TDANFeNFCeConfig.Apply(const DFeReport: TACBrNFeDANFCEClass);
+Var
+  DANFeFortes: TACBrNFeDANFCeFortes;
 begin
   if not Assigned(DFeReport) then Exit;
 
@@ -608,8 +631,13 @@ begin
 
   if DFeReport is TACBrNFeDANFCeFortes then
   begin
-    TACBrNFeDANFCeFortes(DFeReport).TamanhoLogoHeight := FTamanhoLogoHeight;
-    TACBrNFeDANFCeFortes(DFeReport).TamanhoLogoWidth := FTamanhoLogoWidth;
+    DANFeFortes := TACBrNFeDANFCeFortes(DFeReport);
+    DANFeFortes.TamanhoLogoHeight := FTamanhoLogoHeight;
+    DANFeFortes.TamanhoLogoWidth := FTamanhoLogoWidth;
+    DANFeFortes.FonteLinhaItem.Name := FFonteLinhaItem.Name;
+    DANFeFortes.FonteLinhaItem.Color := FFonteLinhaItem.Color;
+    DANFeFortes.FonteLinhaItem.Size := FFonteLinhaItem.Size;
+    DANFeFortes.FonteLinhaItem.Style := FFonteLinhaItem.Style;
   end;
 end;
 
@@ -820,7 +848,6 @@ begin
   FNFeConfig.Free;
   FDANFeConfig.Free;
   FIntegradorConfig.Free;
-  if FDeviceConfig <> nil then FDeviceConfig.Free;
 
   inherited Destroy;
 end;
@@ -833,7 +860,6 @@ begin
   FNFeConfig.LerIni(Ini);
   FDANFeConfig.LerIni(Ini);
   FIntegradorConfig.LerIni(Ini);
-  if FDeviceConfig <> nil then FDeviceConfig.LerIni(Ini);
 end;
 
 procedure TLibNFeConfig.ClasseParaINI;
@@ -844,7 +870,6 @@ begin
   FNFeConfig.GravarIni(Ini);
   FDANFeConfig.GravarIni(Ini);
   FIntegradorConfig.GravarIni(Ini);
-  if FDeviceConfig <> nil then FDeviceConfig.GravarIni(Ini);
 end;
 
 procedure TLibNFeConfig.ClasseParaComponentes;
@@ -855,7 +880,7 @@ begin
     TACBrLibNFe(Owner).NFeDM.AplicarConfiguracoes;
 end;
 
-procedure TLibNFeConfig.ImportarIni(FIni: TCustomIniFile);
+procedure TLibNFeConfig.ImportarIni(AIni: TCustomIniFile);
 Var
   AuxStr: String;
   Ok: Boolean;
@@ -863,11 +888,11 @@ begin
   with NFe.Certificados do
   begin
     //Sessão Certificado
-    ArquivoPFX := FIni.ReadString(CSecCertificado, CKeyArquivoPFX, ArquivoPFX);
-    NumeroSerie := FIni.ReadString(CSecCertificado, CKeyNumeroSerie, NumeroSerie);
+    ArquivoPFX := AIni.ReadString(CSecCertificado, CKeyArquivoPFX, ArquivoPFX);
+    NumeroSerie := AIni.ReadString(CSecCertificado, CKeyNumeroSerie, NumeroSerie);
 
     AuxStr := '';
-    AuxStr := FIni.ReadString(CSecCertificado, CKeySenha, '');
+    AuxStr := AIni.ReadString(CSecCertificado, CKeySenha, '');
     if NaoEstaVazio(AuxStr) then
       Senha := AuxStr;
   end;
@@ -875,91 +900,91 @@ begin
   with NFe.Geral do
   begin
     //Sessão Certificado
-    SSLCryptLib := TSSLCryptLib(FIni.ReadInteger(CSecCertificado, CKeyCryptLib, Integer(SSLCryptLib)));
-    SSLHttpLib := TSSLHttpLib(FIni.ReadInteger(CSecCertificado, CKeyHttpLib, Integer(SSLHttpLib)));
-    SSLXmlSignLib := TSSLXmlSignLib(FIni.ReadInteger(CSecCertificado, CKeyXmlSignLib, Integer(SSLXmlSignLib)));
+    SSLCryptLib := TSSLCryptLib(AIni.ReadInteger(CSecCertificado, CKeyCryptLib, Integer(SSLCryptLib)));
+    SSLHttpLib := TSSLHttpLib(AIni.ReadInteger(CSecCertificado, CKeyHttpLib, Integer(SSLHttpLib)));
+    SSLXmlSignLib := TSSLXmlSignLib(AIni.ReadInteger(CSecCertificado, CKeyXmlSignLib, Integer(SSLXmlSignLib)));
 
     //ACBrNFeMonitor
-    RetirarAcentos := FIni.ReadBool(CSecACBrNFeMonitor, CKeyRetirarAcentos,RetirarAcentos);
-    ValidarDigest := FIni.ReadBool(CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest);
+    RetirarAcentos := AIni.ReadBool(CSecACBrNFeMonitor, CKeyRetirarAcentos,RetirarAcentos);
+    ValidarDigest := AIni.ReadBool(CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest);
 
     //Webservices
-    FormaEmissao := TpcnTipoEmissao(FIni.ReadInteger(CSecWebService, CKeyFormaEmissaoNFe, Integer(FormaEmissao)));
-    VersaoDF := StrToVersaoDF(Ok, FIni.ReadString(CSecWebService, CKeyVersao, VersaoDFToStr(VersaoDF)));
-    VersaoQRCode := TpcnVersaoQrCode(FIni.ReadInteger(CSecWebService, CKeyVersaoQRCode, Integer(VersaoQRCode)));
-    CamposFatObrigatorios := FIni.ReadBool(CSecWebService, CKeyCamposFatObrig, CamposFatObrigatorios);
-    ForcarGerarTagRejeicao938 := TForcarGeracaoTag(FIni.ReadInteger(CSecWebService, CKeyTagRejeicao938, Integer(ForcarGerarTagRejeicao938)));
+    FormaEmissao := TpcnTipoEmissao(AIni.ReadInteger(CSecWebService, CKeyFormaEmissaoNFe, Integer(FormaEmissao)));
+    VersaoDF := StrToVersaoDF(Ok, AIni.ReadString(CSecWebService, CKeyVersao, VersaoDFToStr(VersaoDF)));
+    VersaoQRCode := TpcnVersaoQrCode(AIni.ReadInteger(CSecWebService, CKeyVersaoQRCode, Integer(VersaoQRCode)));
+    CamposFatObrigatorios := AIni.ReadBool(CSecWebService, CKeyCamposFatObrig, CamposFatObrigatorios);
+    ForcarGerarTagRejeicao938 := TForcarGeracaoTag(AIni.ReadInteger(CSecWebService, CKeyTagRejeicao938, Integer(ForcarGerarTagRejeicao938)));
 
     //Arquivos
-    AtualizarXMLCancelado := FIni.ReadBool(CSecArquivos, CKeyArquivosAtualizarXMLCancelado, AtualizarXMLCancelado);
+    AtualizarXMLCancelado := AIni.ReadBool(CSecArquivos, CKeyArquivosAtualizarXMLCancelado, AtualizarXMLCancelado);
 
     //NFCe
-    IdCSC := FIni.ReadString(CSecNFCe, CKeyNFCeIdToken, IdCSC);
-    CSC := FIni.ReadString(CSecNFCe, CKeyNFCeToken, CSC);
+    IdCSC := AIni.ReadString(CSecNFCe, CKeyNFCeIdToken, IdCSC);
+    CSC := AIni.ReadString(CSecNFCe, CKeyNFCeToken, CSC);
   end;
 
   with NFe.Arquivos do
   begin
     //ACBrNFeMonitor
-    IniServicos := FIni.ReadString(CSecACBrNFeMonitor, CKeyArquivoWebServices, IniServicos);
+    IniServicos := AIni.ReadString(CSecACBrNFeMonitor, CKeyArquivoWebServices, IniServicos);
 
     //Arquivos
-    Salvar := FIni.ReadBool(CSecArquivos, CKeyArquivosSalvar, Salvar);
-    SepararPorMes := FIni.ReadBool(CSecArquivos, CKeyArquivosPastaMensal, SepararPorMes);
-    SepararPorCNPJ := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorCNPJ, SepararPorCNPJ);
-    SepararPorModelo := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorModelo, SepararPorModelo);
-    SepararPorModelo := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorModelo, SepararPorModelo);
-    AdicionarLiteral := FIni.ReadBool(CSecArquivos, CKeyArquivosAddLiteral, AdicionarLiteral);
-    SalvarApenasNFeProcessadas := FIni.ReadBool(CSecArquivos, CKeyArquivosSalvarApenasNFesAutorizadas, SalvarApenasNFeProcessadas);
-    NormatizarMunicipios := FIni.ReadBool(CSecArquivos, CKeyArquivosNormatizarMunicipios, NormatizarMunicipios);
-    EmissaoPathNFe := FIni.ReadBool(CSecArquivos, CKeyArquivosEmissaoPathNFe, EmissaoPathNFe);
-    PathNFe := FIni.ReadString(CSecArquivos, CKeyArquivosPathNFe, PathNFe);
-    PathInu := FIni.ReadString(CSecArquivos, CKeyArquivosPathInu, PathInu);
-    PathEvento := FIni.ReadString(CSecArquivos, CKeyArquivosPathEvento, PathEvento);
+    Salvar := AIni.ReadBool(CSecArquivos, CKeyArquivosSalvar, Salvar);
+    SepararPorMes := AIni.ReadBool(CSecArquivos, CKeyArquivosPastaMensal, SepararPorMes);
+    SepararPorCNPJ := AIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorCNPJ, SepararPorCNPJ);
+    SepararPorModelo := AIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorModelo, SepararPorModelo);
+    SepararPorModelo := AIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorModelo, SepararPorModelo);
+    AdicionarLiteral := AIni.ReadBool(CSecArquivos, CKeyArquivosAddLiteral, AdicionarLiteral);
+    SalvarApenasNFeProcessadas := AIni.ReadBool(CSecArquivos, CKeyArquivosSalvarApenasNFesAutorizadas, SalvarApenasNFeProcessadas);
+    NormatizarMunicipios := AIni.ReadBool(CSecArquivos, CKeyArquivosNormatizarMunicipios, NormatizarMunicipios);
+    EmissaoPathNFe := AIni.ReadBool(CSecArquivos, CKeyArquivosEmissaoPathNFe, EmissaoPathNFe);
+    PathNFe := AIni.ReadString(CSecArquivos, CKeyArquivosPathNFe, PathNFe);
+    PathInu := AIni.ReadString(CSecArquivos, CKeyArquivosPathInu, PathInu);
+    PathEvento := AIni.ReadString(CSecArquivos, CKeyArquivosPathEvento, PathEvento);
 
-    AuxStr := FIni.ReadString(CSecArquivos, CKeyArquivosPathSchemasDFe, '');
+    AuxStr := AIni.ReadString(CSecArquivos, CKeyArquivosPathSchemasDFe, '');
     if NaoEstaVazio(AuxStr) then
       PathSchemas := PathWithDelim(AuxStr) + 'NFe';
 
     with DownloadDFe do
     begin
-      SepararPorNome := FIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorNome, SepararPorNome);
-      PathDownload := FIni.ReadString(CSecArquivos, CKeyArquivosPathDownload, PathDownload);
+      SepararPorNome := AIni.ReadBool(CSecArquivos, CKeyArquivosSepararPorNome, SepararPorNome);
+      PathDownload := AIni.ReadString(CSecArquivos, CKeyArquivosPathDownload, PathDownload);
     end;
   end;
 
   with NFe.WebServices do
   begin
     // ACBrNFeMonitor
-    TimeOut := FIni.ReadInteger(CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeOut);
+    TimeOut := AIni.ReadInteger(CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeOut);
 
     // Certificado
-    SSLType := TSSLType(FIni.ReadInteger(CSecCertificado, CKeySSLType, Integer(SSLType)));
+    SSLType := TSSLType(AIni.ReadInteger(CSecCertificado, CKeySSLType, Integer(SSLType)));
 
     //Webservices
-    Ambiente := TpcnTipoAmbiente(FIni.ReadInteger(CSecWebService, CKeyAmbiente, Integer(Ambiente)));
-    UF := FIni.ReadString(CSecWebService, CKeyUF, UF);
-    AjustaAguardaConsultaRet := FIni.ReadBool(CSecWebService, CKeyAjustarAut, AjustaAguardaConsultaRet);
-    AguardarConsultaRet := FIni.ReadInteger(CSecWebService, CKeyAguardar, AguardarConsultaRet);
-    Tentativas := FIni.ReadInteger(CSecWebService, CKeyTentativas, Tentativas);
-    IntervaloTentativas := FIni.ReadInteger(CSecWebService, CKeyWebServiceIntervalo, IntervaloTentativas);
+    Ambiente := TpcnTipoAmbiente(AIni.ReadInteger(CSecWebService, CKeyAmbiente, Integer(Ambiente)));
+    UF := AIni.ReadString(CSecWebService, CKeyUF, UF);
+    AjustaAguardaConsultaRet := AIni.ReadBool(CSecWebService, CKeyAjustarAut, AjustaAguardaConsultaRet);
+    AguardarConsultaRet := AIni.ReadInteger(CSecWebService, CKeyAguardar, AguardarConsultaRet);
+    Tentativas := AIni.ReadInteger(CSecWebService, CKeyTentativas, Tentativas);
+    IntervaloTentativas := AIni.ReadInteger(CSecWebService, CKeyWebServiceIntervalo, IntervaloTentativas);
 
     with TimeZoneConf do
     begin
-      ModoDeteccao := TTimeZoneModoDeteccao(FIni.ReadInteger(CSecWebService, CKeyTimeZoneMode, Integer(ModoDeteccao)));
-      TimeZoneStr := FIni.ReadString(CSecWebService, CKeyTimeZoneStr, TimeZoneStr);
+      ModoDeteccao := TTimeZoneModoDeteccao(AIni.ReadInteger(CSecWebService, CKeyTimeZoneMode, Integer(ModoDeteccao)));
+      TimeZoneStr := AIni.ReadString(CSecWebService, CKeyTimeZoneStr, TimeZoneStr);
     end;
   end;
 
   with NFe.RespTec do
   begin
     // RespTecnico
-    IdCSRT := FIni.ReadInteger(CSecRespTecnico, CKeyidCSRT, IdCSRT);
-    CSRT := FIni.ReadString(CSecRespTecnico, CKeyCSRT, CSRT);
+    IdCSRT := AIni.ReadInteger(CSecRespTecnico, CKeyidCSRT, IdCSRT);
+    CSRT := AIni.ReadString(CSecRespTecnico, CKeyCSRT, CSRT);
   end;
 
   //Impressão
-  DANFe.Import(FIni);
+  DANFe.Import(AIni);
 end;
 
 procedure TLibNFeConfig.Travar;

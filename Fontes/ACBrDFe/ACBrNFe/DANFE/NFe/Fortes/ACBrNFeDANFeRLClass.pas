@@ -1,37 +1,36 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
-
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-
-{ Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-
-
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Peterson de Cerqueira Matos                     }
+{                              Wemerson Souto                                  }
+{                              Daniel Simoes de Almeida                        }
+{                              André Ferreira de Moraes                        }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -57,6 +56,7 @@ type
     FNegrito: Boolean;
     FTamanhoFonteRazaoSocial: Integer;
     FTamanhoFonteEndereco: Integer;
+    FTamanhoFonteInformacoesComplementares: Integer;
     FTamanhoFonteDemaisCampos: Integer;
 
   public
@@ -67,6 +67,7 @@ type
     property Negrito: Boolean read FNegrito write FNegrito default False;
     property TamanhoFonteRazaoSocial: Integer read FTamanhoFonteRazaoSocial write FTamanhoFonteRazaoSocial default 8;
     property TamanhoFonteEndereco: Integer read FTamanhoFonteEndereco write FTamanhoFonteEndereco default 0;
+    property TamanhoFonteInformacoesComplementares: Integer read FTamanhoFonteInformacoesComplementares write FTamanhoFonteInformacoesComplementares default 8;
     property TamanhoFonteDemaisCampos: Integer read FTamanhoFonteDemaisCampos write FTamanhoFonteDemaisCampos default 8;
   end;
 
@@ -154,6 +155,7 @@ begin
   FTamanhoFonteRazaoSocial := 8;
   FTamanhoFonteEndereco := 0;
   FTamanhoFonteDemaisCampos := 8;
+  FTamanhoFonteInformacoesComplementares := 8;
 end;
 
 { TACBrNFeDANFeRL }
@@ -164,6 +166,10 @@ begin
 
   FFonte      := TFonte.Create(self);
   FFonte.Name := 'Fonte';
+
+  {$IFDEF COMPILER6_UP}
+  FFonte.SetSubComponent(True);{ para gravar no DFM/XFM }
+  {$ENDIF}
 
   FLarguraCodProd       := 54;
   FExibeEAN             := False;
@@ -244,7 +250,10 @@ var
 
   function ImprimirDANFEPDFTipo(ANFe: TNFe): String;
   begin
-    Result := Self.PathPDF + OnlyNumber(ANFe.infNFe.ID) + '-nfe.pdf';
+    if NaoEstaVazio(Trim(Self.NomeDocumento)) then
+      Result := Self.NomeDocumento
+    else
+      Result := Self.PathPDF + OnlyNumber(ANFe.infNFe.ID) + '-nfe.pdf';
 
     case Self.TipoDANFE of
       tiPaisagem:
@@ -318,7 +327,10 @@ var
 
   function ImprimirEVENTOPDFTipo(EventoNFeItem: TInfEventoCollectionItem; ANFe: TNFe): String;
   begin
-    Result := Self.PathPDF + OnlyNumber(EventoNFeItem.InfEvento.id) + '-procEventoNFe.pdf';
+    if NaoEstaVazio(Trim(Self.NomeDocumento)) then
+      Result := Self.NomeDocumento
+    else
+      Result := Self.PathPDF + OnlyNumber(EventoNFeItem.InfEvento.id) + '-procEventoNFe.pdf';
 
     // TipoDANFE ainda não está sendo utilizado no momento
     TfrlDANFeEventoRLRetrato.SalvarPDF(Self, EventoNFeItem, Result, ANFe);
@@ -374,7 +386,10 @@ end;
 
 procedure TACBrNFeDANFeRL.ImprimirINUTILIZACAOPDF(ANFe: TNFe);
 begin
-  FPArquivoPDF := Self.PathPDF + OnlyNumber(TACBrNFe(ACBrNFe).InutNFe.ID) + '-procInutNFe.pdf';
+  if NaoEstaVazio(Trim(Self.NomeDocumento)) then
+    FPArquivoPDF := Self.NomeDocumento
+  else
+    FPArquivoPDF := Self.PathPDF + OnlyNumber(TACBrNFe(ACBrNFe).InutNFe.ID) + '-procInutNFe.pdf';
   TfrmNFeDAInutRLRetrato.SalvarPDF(Self, TACBrNFe(ACBrNFe).InutNFe, FPArquivoPDF, ANFe);
 end;
 

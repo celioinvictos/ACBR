@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2019 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -119,6 +119,7 @@ type
      FId          : String ;  // Identificação do Intercâmbio caso não seja informado
                               // será gerado o formato sugerido pelo manual
      FSequencia   : Integer ; // Número de Controle Sequencial do Arquivo
+     FCNPJTransp  : string ;  // Usado nas versões 3.0 e 3.0a
      FFiller      : String ;  // Espaços em branco para uso futuro
   public
      property IdRegistro  : String    read FIdRegistro   write FIdRegistro ;
@@ -128,6 +129,7 @@ type
      property Hora        : TTime     read FHora         write FHora ;
      property Id          : String    read FId           write FId ;
      property Sequencia   : Integer   read FSequencia    write FSequencia ;
+     property CNPJTransp  : String    read FCNPJTransp   write FCNPJTransp ;
      property Filler      : String    read FFiller       write FFiller ;
   end;
 

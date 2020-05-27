@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: João Carvalho - SIGData Soluções em TI          }
 {                                                                              }
@@ -29,13 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 09/06/2008:  João Carvalho - SIGData Soluções em TI
-|* - Primeira Versao: Criaçao e Distribuiçao da Primeira Versao
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -108,6 +101,11 @@ const
   cTimeout = 3 ;  { Tempo PADRAO para msg de falha de comunicacao }
   CDotsMM = 8;  // 203dpi
 
+
+  const cMesDescricao : array[1..12] of string =
+        ('Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto',
+         'Setembro','Outubro','Novembro','Dezembro') ;
+
   cTagLigaExpandido         = '<e>';
   cTagDesligaExpandido      = '</e>';
   cTagLigaAlturaDupla       = '<a>';
@@ -172,6 +170,7 @@ const
   cTagZera = '</zera>';
   cTagReset = '</reset>';
   cTagPulodeLinha = '</lf>';
+  cTagPulodePagina = '</ff>';
   cTagRetornoDeCarro = '</cr>';
 
   cTAGS_FUNCOES: array[0..9] of String = (
@@ -238,6 +237,7 @@ const
   cTagModoPaginaAltura     = '<mp_altura>';
   cTagModoPaginaEspaco     = '<mp_espaco>';
   cTagModoPaginaConfigurar = '</mp_configurar>';
+  cTagModoPaginaPosiciona  = '<mp_pos>';
 
   cTAGS_BARRAS: array[0..15] of String = (
     cTagBarraEAN8, cTagBarraEAN13, cTagBarraStd, cTagBarraInter, cTagBarraCode11,

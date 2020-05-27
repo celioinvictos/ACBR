@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -30,13 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 11/02/2019:  Daniel Simões de Almeida
-|*   Inicio do desenvolvimento
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrEscZJiang;
@@ -45,11 +38,12 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrPosPrinter, ACBrEscPosEpson;
+  ACBrPosPrinter, ACBrEscPosEpson
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 type
-
-  { TACBrEscCustomPos }
 
   { TACBrEscZJiang }
 

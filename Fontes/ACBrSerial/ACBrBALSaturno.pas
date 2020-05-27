@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo:   Wislei de Brito Fernandes                     }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,16 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 29/03/2016: Wislei de Brito Fernandes
-|*  - Primeira Versao ACBrBALSaturno
-|*
-|* 10/10/2016: Elias César Vieira
-|*  - Refatoração de ACBrBALSaturno
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrBALSaturno;
@@ -47,8 +37,12 @@ unit ACBrBALSaturno;
 interface
 
 uses
-  ACBrBALClass, Classes;
-
+  Classes,
+  ACBrBALClass
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
+  
 type
 
   { TACBrBALSaturno }

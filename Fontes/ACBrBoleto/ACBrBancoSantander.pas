@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
+{ Colaboradores nesse arquivo: Juliana Tamizou                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -88,7 +87,6 @@ begin
    fpTamanhoMaximoNossoNum  := 12;
    fpTamanhoCarteira        := 3;
    fpTamanhoConta           := 11;
-   fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoSantander.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -513,9 +511,10 @@ begin
               sTipoCobranca                                                                                + // 058 - 058 / Tipo de cobrança
               sTipoCarteira                                                                                + // 059 - 059 / Forma de Cadastramento = 1 Registrada / 2 Sem Registro
               sTipoDocto                                                                                   + // 060 - 060 / Tipo de documento
-              Space(1)                                                                                     + // 061 - 061 / Reservado (uso Banco)
+              //IfThen( ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite ,'1','2' )                           + // 061 - 061 / Quem emite boleto 1 = Banco / 2 = Cliente
+              Space(1)                                                                                     + //061 - 061 / Quem emite boleto 1 = Banco / 2 = Cliente
               Space(1)                                                                                     + // 062 - 062 / Reservado (uso Banco)
-              PadRight(Copy(NumeroDocumento, 1, 15), 15)                                                   + // 063 - 077 / Nº do documento
+              PadRight(Copy(NumeroDocumento, 1, 15), 15, ' ')                                              + // 063 - 077 / Nº do documento
               FormatDateTime('ddmmyyyy',Vencimento)                                                        + // 078 - 085 / Data de vencimento do título
               IntToStrZero(round(ValorDocumento * 100), 15)                                                + // 086 - 100 / Valor nominal do título
               PadLeft('0', 4, '0')                                                                         + // 101 - 104 / Agência encarregada da cobrança
@@ -1025,6 +1024,8 @@ begin
      StringToDateTimeDef(Copy(ARetorno[0], 95, 2) + '/' +
                          Copy(ARetorno[0], 97, 2) + '/' +
                          Copy(ARetorno[0], 99, 2), 0, 'dd/mm/yy');
+
+   ACBrBanco.ACBrBoleto.NumeroArquivo := StrToIntDef(Copy(ARetorno[0],392,3),0);
 
    ValidarDadosRetorno(rAgencia, rConta, rCNPJCPF);
    with ACBrBanco.ACBrBoleto do

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -24,11 +24,10 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -41,9 +40,20 @@ unit ACBrECFVirtual ;
 
 interface
 uses
-  Classes, Contnrs, Math, SysUtils, IniFiles,
-  {$IFDEF COMPILER6_UP} DateUtils, StrUtils {$ELSE} ACBrD5, Windows{$ENDIF},
-  ACBrBase, ACBrECFClass, ACBrDevice;
+  Classes, Math, SysUtils, IniFiles,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
+  {$IFDEF COMPILER6_UP}
+    DateUtils, StrUtils
+  {$ELSE}
+    ACBrD5, Windows
+  {$ENDIF},
+  ACBrECFClass, ACBrDevice ,ACBrBase;
 
 type
 
@@ -90,7 +100,7 @@ end;
 
 { TACBrECFVirtualClassItensCupom }
 
-TACBrECFVirtualClassItensCupom = class(TObjectList)
+TACBrECFVirtualClassItensCupom = class(TObjectList{$IfDef NEXTGEN}<TACBrECFVirtualClassItemCupom>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TACBrECFVirtualClassItemCupom);
     function GetObject (Index: Integer): TACBrECFVirtualClassItemCupom;
@@ -121,7 +131,7 @@ end;
 
 { TACBrECFVirtualClassPagamentosCupom }
 
-TACBrECFVirtualClassPagamentosCupom = class(TObjectList)
+TACBrECFVirtualClassPagamentosCupom = class(TObjectList{$IfDef NEXTGEN}<TACBrECFVirtualClassPagamentoCupom>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TACBrECFVirtualClassPagamentoCupom);
     function GetObject (Index: Integer): TACBrECFVirtualClassPagamentoCupom;
@@ -154,7 +164,7 @@ end;
 
 { TACBrECFVirtualClassCNFsCupom }
 
-TACBrECFVirtualClassCNFsCupom = class(TObjectList)
+TACBrECFVirtualClassCNFsCupom = class(TObjectList{$IfDef NEXTGEN}<TACBrECFVirtualClassCNFCupom>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TACBrECFVirtualClassCNFCupom);
     function GetObject (Index: Integer): TACBrECFVirtualClassCNFCupom;
@@ -192,7 +202,7 @@ end;
 
 { TACBrECFVirtualClassAliquotasCupom }
 
-TACBrECFVirtualClassAliquotasCupom = class(TObjectList)
+TACBrECFVirtualClassAliquotasCupom = class(TObjectList{$IfDef NEXTGEN}<TACBrECFVirtualClassAliquotaCupom>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TACBrECFVirtualClassAliquotaCupom);
     function GetObject (Index: Integer): TACBrECFVirtualClassAliquotaCupom;
@@ -278,6 +288,8 @@ end;
 TACBrECFVirtualLerGravarINI = procedure(ConteudoINI: TStrings; var Tratado: Boolean) of object;
 TACBrECFVirtualQuandoCancelarCupom = procedure(const NumCOOCancelar: Integer;
   CupomVirtual: TACBrECFVirtualClassCupom; var PermiteCancelamento: Boolean) of object;
+TACBrECFVirtualQuandoMudarEstado = procedure(const EstadoAtual: TACBrECFEstado;
+  var NovoEstado: TACBrECFEstado) of object;
 
 { TACBrECFVirtual }
   {$IFDEF RTL230_UP}
@@ -297,6 +309,7 @@ TACBrECFVirtualQuandoCancelarCupom = procedure(const NumCOOCancelar: Integer;
     function GetQuandoCancelarCupom: TACBrECFVirtualQuandoCancelarCupom;
     function GetQuandoGravarArqINI: TACBrECFVirtualLerGravarINI;
     function GetQuandoLerArqINI: TACBrECFVirtualLerGravarINI;
+    function GetQuandoMudarEstado: TACBrECFVirtualQuandoMudarEstado;
     procedure SetCNPJ(const AValue: String);
     procedure SetColunas(AValue: Integer);
     procedure SetIE(const AValue: String);
@@ -308,6 +321,7 @@ TACBrECFVirtualQuandoCancelarCupom = procedure(const NumCOOCancelar: Integer;
     procedure SetQuandoCancelarCupom(AValue: TACBrECFVirtualQuandoCancelarCupom);
     procedure SetQuandoGravarArqINI(AValue: TACBrECFVirtualLerGravarINI);
     procedure SetQuandoLerArqINI(AValue: TACBrECFVirtualLerGravarINI);
+    procedure SetQuandoMudarEstado(AValue: TACBrECFVirtualQuandoMudarEstado);
   protected
     fpECFVirtualClass: TACBrECFVirtualClass;
 
@@ -341,6 +355,8 @@ TACBrECFVirtualQuandoCancelarCupom = procedure(const NumCOOCancelar: Integer;
       write SetQuandoLerArqINI ;
     property QuandoCancelarCupom : TACBrECFVirtualQuandoCancelarCupom
       read GetQuandoCancelarCupom write SetQuandoCancelarCupom ;
+    property QuandoMudarEstado : TACBrECFVirtualQuandoMudarEstado read GetQuandoMudarEstado
+      write SetQuandoMudarEstado;
 end ;
 
 { Classe filha de TACBrECFClass com implementaçao para Virtual }
@@ -353,6 +369,7 @@ TACBrECFVirtualClass = class( TACBrECFClass )
     fsQuandoCancelarCupom: TACBrECFVirtualQuandoCancelarCupom;
     fsQuandoGravarArqINI: TACBrECFVirtualLerGravarINI;
     fsQuandoLerArqINI: TACBrECFVirtualLerGravarINI;
+    fsQuandoMudarEstado: TACBrECFVirtualQuandoMudarEstado;
 
     function GetChaveCupom: String;
     procedure SetChaveCupom(const AValue: String);
@@ -397,7 +414,6 @@ TACBrECFVirtualClass = class( TACBrECFClass )
     fpGrandeTotal: Double;
     fpVendaBruta : Double;
     fpNumCCF     : Integer;
-    fpEXEName    : String;
 
     fpTotalDescontosICMS  : Double;
     fpTotalAcrescimosICMS : Double;
@@ -437,6 +453,7 @@ TACBrECFVirtualClass = class( TACBrECFClass )
     Procedure LeituraXVirtual ; virtual ;
     Procedure ReducaoZVirtual(DataHora : TDateTime = 0 ) ; virtual ;
     procedure GetEstadoECFVirtual; virtual;
+    procedure SetEstadoECFVirtual(const NovoEstado: TACBrECFEstado);
 
     Procedure AbreRelatorioGerencialVirtual(Indice: Integer = 0) ; virtual ;
     procedure AbreCupomVinculadoVirtual(COO: String; FPG: TACBrECFFormaPagamento;
@@ -505,8 +522,8 @@ TACBrECFVirtualClass = class( TACBrECFClass )
     Constructor Create( AECFVirtual : TACBrECFVirtual );
     Destructor Destroy  ; override ;
 
-    procedure LeArqINI ;
-    procedure GravaArqINI ;
+    procedure LeArqINI;
+    procedure GravaArqINI;
 
     property QuandoGravarArqINI : TACBrECFVirtualLerGravarINI read fsQuandoGravarArqINI
       write fsQuandoGravarArqINI ;
@@ -514,6 +531,8 @@ TACBrECFVirtualClass = class( TACBrECFClass )
       write fsQuandoLerArqINI ;
     property QuandoCancelarCupom : TACBrECFVirtualQuandoCancelarCupom
       read fsQuandoCancelarCupom write fsQuandoCancelarCupom ;
+    property QuandoMudarEstado : TACBrECFVirtualQuandoMudarEstado read fsQuandoMudarEstado
+      write fsQuandoMudarEstado;
 
     property ECFVirtual : TACBrECFVirtual read fsECFVirtualOwner ;
     property Device     : TACBrDevice     read GetDevice write SetDevice;
@@ -681,13 +700,13 @@ end;
 procedure TACBrECFVirtualClassItensCupom.SetObject(Index: Integer;
   Item: TACBrECFVirtualClassItemCupom);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 function TACBrECFVirtualClassItensCupom.GetObject(Index: Integer
   ): TACBrECFVirtualClassItemCupom;
 begin
-  Result := inherited GetItem(Index) as TACBrECFVirtualClassItemCupom ;
+  Result := TACBrECFVirtualClassItemCupom(inherited Items[Index]);
 end;
 
 function TACBrECFVirtualClassItensCupom.New(
@@ -743,13 +762,13 @@ end;
 procedure TACBrECFVirtualClassPagamentosCupom.SetObject(Index: Integer;
   Item: TACBrECFVirtualClassPagamentoCupom);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 function TACBrECFVirtualClassPagamentosCupom.GetObject(Index: Integer
   ): TACBrECFVirtualClassPagamentoCupom;
 begin
-  Result := inherited GetItem(Index) as TACBrECFVirtualClassPagamentoCupom ;
+  Result := TACBrECFVirtualClassPagamentoCupom(inherited Items[Index]);
 end;
 
 function TACBrECFVirtualClassPagamentosCupom.New: TACBrECFVirtualClassPagamentoCupom;
@@ -804,13 +823,13 @@ end;
 procedure TACBrECFVirtualClassCNFsCupom.SetObject(Index: Integer;
   Item: TACBrECFVirtualClassCNFCupom);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 function TACBrECFVirtualClassCNFsCupom.GetObject(Index: Integer
   ): TACBrECFVirtualClassCNFCupom;
 begin
-  Result := inherited GetItem(Index) as TACBrECFVirtualClassCNFCupom ;
+  Result := TACBrECFVirtualClassCNFCupom(inherited Items[Index]);
 end;
 
 function TACBrECFVirtualClassCNFsCupom.New: TACBrECFVirtualClassCNFCupom;
@@ -877,13 +896,13 @@ end;
 procedure TACBrECFVirtualClassAliquotasCupom.SetObject(Index: Integer;
   Item: TACBrECFVirtualClassAliquotaCupom);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 function TACBrECFVirtualClassAliquotasCupom.GetObject(Index: Integer
   ): TACBrECFVirtualClassAliquotaCupom;
 begin
-  Result := inherited GetItem(Index) as TACBrECFVirtualClassAliquotaCupom ;
+  Result := TACBrECFVirtualClassAliquotaCupom(inherited Items[Index]);
 end;
 
 function TACBrECFVirtualClassAliquotasCupom.New: TACBrECFVirtualClassAliquotaCupom;
@@ -1528,6 +1547,11 @@ begin
   Result := fpECFVirtualClass.QuandoLerArqINI;
 end;
 
+function TACBrECFVirtual.GetQuandoMudarEstado: TACBrECFVirtualQuandoMudarEstado;
+begin
+  Result := fpECFVirtualClass.QuandoMudarEstado;
+end;
+
 procedure TACBrECFVirtual.SetCNPJ(const AValue: String);
 begin
   fpECFVirtualClass.CNPJ := AValue;
@@ -1583,6 +1607,11 @@ begin
   fpECFVirtualClass.QuandoLerArqINI := AValue;
 end;
 
+procedure TACBrECFVirtual.SetQuandoMudarEstado(AValue: TACBrECFVirtualQuandoMudarEstado);
+begin
+  fpECFVirtualClass.QuandoMudarEstado := AValue;
+end;
+
 procedure TACBrECFVirtual.LeArqINI;
 begin
   fpECFVirtualClass.LeArqINI;
@@ -1604,6 +1633,7 @@ begin
   fsQuandoLerArqINI := nil;
   fsQuandoGravarArqINI := nil;
   fsQuandoCancelarCupom := nil;
+  fsQuandoMudarEstado := nil;
   fpCupom := TACBrECFVirtualClassCupom.Create(Self);
   fpNumMaxLinhasRodape := 0;
   fpArredondaItemMFD := True;
@@ -1630,7 +1660,6 @@ begin
   Operador     := '' ;
   fpIM         := '1234-0' ;
   fpModeloStr  := 'ECFVirtual' ;
-  fpEXEName    := ParamStr(0) ;
   fpVerao      := false ;
   fpDia        := now ;
   fpNumCRO     := 1 ;
@@ -1681,7 +1710,7 @@ begin
               //'         Device: '+fpDevice.DeviceToString(False) +
               sLineBreak +
               StringOfChar('-',80) + sLineBreak );
-    //fpEstado := estDesconhecido ;
+    //SetEstadoECFVirtual(estDesconhecido);
     fpAtivo  := true ;
   end;
 
@@ -2065,7 +2094,7 @@ begin
   try
     ZeraCupom;
 
-    fpEstado := estVenda ;
+    SetEstadoECFVirtual(estVenda);
     fpNumCCF := fpNumCCF + 1 ;
 
     EnviaConsumidorVirtual;
@@ -2391,7 +2420,7 @@ begin
       Veja "TACBrECFVirtualClassCupom.SetDescAcresSubtotal" }
     fpCupom.DescAcresSubtotal := DescontoAcrescimo;
 
-    fpEstado := estPagamento ;
+    SetEstadoECFVirtual(estPagamento);
 
     if (DescontoAcrescimo < 0) then
     begin
@@ -2535,7 +2564,7 @@ begin
     EnviaConsumidorVirtual;
     FechaCupomVirtual(Observacao, IndiceBMP);
 
-    fpEstado := estLivre ;
+    SetEstadoECFVirtual(estLivre);
 
     GravaArqINI ;
   except
@@ -2705,7 +2734,7 @@ begin
           Total := Max( RoundTo(Total - Valor,-2), 0) ;
 
     ZeraCupom;
-    fpEstado := estLivre;
+    SetEstadoECFVirtual(estLivre);
 
     GravaArqINI ;
   except
@@ -2739,7 +2768,7 @@ begin
   try
     ZeraCupom ;
     fpLeiturasX := fpLeiturasX + 1 ;
-    fpEstado    := estLivre ;
+    SetEstadoECFVirtual(estLivre);
 
     if AbrirDia then
       AbreDia;
@@ -2775,13 +2804,13 @@ begin
 
     ReducaoZVirtual( DataHora );
 
-    if fpEstado = estRequerZ then
+    if (fpEstado = estRequerZ) then
     begin
-      fpEstado := estLivre ;
-      fpDia    := now ;
+      SetEstadoECFVirtual(estLivre);
+      fpDia := now ;
     end
     else
-      fpEstado := estBloqueada ;
+      SetEstadoECFVirtual(estBloqueada);
 
     fpNumCER     := 0;
     fpVendaBruta := 0;
@@ -2831,6 +2860,24 @@ begin
   {}
 end;
 
+procedure TACBrECFVirtualClass.SetEstadoECFVirtual(
+  const NovoEstado: TACBrECFEstado);
+var
+  ANovoEstado: TACBrECFEstado;
+begin
+  GravaLog( 'SetEstadoECFVirtual: '+GetEnumName(TypeInfo(TACBrECFEstado), integer( NovoEstado ) ) );
+
+  ANovoEstado := NovoEstado;
+  if Assigned(fsQuandoMudarEstado) then
+  begin
+    fsQuandoMudarEstado(fpEstado, ANovoEstado);
+    if ANovoEstado <> NovoEstado then
+      GravaLog( '         Modificado: '+GetEnumName(TypeInfo(TACBrECFEstado), integer( ANovoEstado ) ) );
+  end;
+
+  fpEstado := ANovoEstado;
+end;
+
 procedure TACBrECFVirtualClass.AbreRelatorioGerencial(Indice : Integer) ;
 var
   IndiceStr: String;
@@ -2854,7 +2901,7 @@ begin
     RG.Contador := RG.Contador + 1;
 
     ZeraCupom;
-    fpEstado := estRelatorio ;
+    SetEstadoECFVirtual(estRelatorio);
 
     AbreRelatorioGerencialVirtual( Indice );
     AbreDocumento ;
@@ -2924,7 +2971,7 @@ begin
     SubTotalCupomAnterior := Subtotal;
 
     //ZeraCupom;  // Não Zera Dados, para permitir chamar "CancelaCupom" após Vinculado
-    fpEstado := estRelatorio ;
+    SetEstadoECFVirtual(estRelatorio);
 
     AbreCupomVinculadoVirtual(COO, FPG, CodComprovanteNaoFiscal, SubTotalCupomAnterior, Valor);
     AbreDocumento ;
@@ -2953,7 +3000,7 @@ begin
   if Estado <> estRelatorio then exit ;
 
   try
-    fpEstado := estLivre ;
+    SetEstadoECFVirtual(estLivre);
     FechaRelatorioVirtual;
 
     GravaArqINI ;
@@ -2981,8 +3028,7 @@ begin
 
   try
     ZeraCupom;
-
-    fpEstado := estNaoFiscal ;
+    SetEstadoECFVirtual(estNaoFiscal);
 
     AbreNaoFiscalVirtual(CPF_CNPJ, Nome);
     AbreDocumento ;
@@ -3080,8 +3126,7 @@ begin
   try
     EnviaConsumidorVirtual;
     FechaCupomVirtual(Observacao, IndiceBMP);
-
-    fpEstado := estLivre ;
+    SetEstadoECFVirtual(estLivre);
 
     GravaArqINI ;
   except
@@ -3571,7 +3616,7 @@ end;
 
 function TACBrECFVirtualClass.CalculaNomeArqINI : String ;
 begin
-  Result := ExtractFilePath(fpEXEName)+'acbrecf'+GetNumECF+'.ini';
+  Result := ApplicationPath+'acbrecf'+GetNumECF+'.ini';
 end;
 
 procedure TACBrECFVirtualClass.SetNumECF(AValue: Integer);
@@ -3648,14 +3693,16 @@ begin
     if (CompareDate(now, fpDia) > 0) then
     begin
        case fpEstado of
-         estLivre:     fpEstado := estRequerZ;
-         estBloqueada: fpEstado := estRequerX ;
+         estLivre:
+           SetEstadoECFVirtual(estRequerZ);
+         estBloqueada:
+           SetEstadoECFVirtual(estRequerX);
        end;
     end;
   end ;
 
   if fpEstado in [estDesconhecido, estNaoInicializada] then
-    fpEstado := estLivre ;
+    SetEstadoECFVirtual(estLivre);
 
   GetEstadoECFVirtual;
 

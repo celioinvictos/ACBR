@@ -1,10 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using ACBrLib.Core;
 using ACBrLib.Core.DFe;
+using ACBrLib.Core.NFe;
 
 namespace ACBrLib.NFe
 {
@@ -91,10 +91,16 @@ namespace ACBrLib.NFe
             public delegate int NFE_ObterCertificados(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_GetPath(int tipo, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int NFE_GetPathEvento(string aCodEvento, StringBuilder buffer, ref int bufferSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_StatusServico(StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate int NFE_Consultar(string eChaveOuNFe, StringBuilder buffer, ref int bufferSize);
+            public delegate int NFE_Consultar(string eChaveOuNFe, bool AExtrairEventos, StringBuilder buffer, ref int bufferSize);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int NFE_ConsultaCadastro(string cUF, string nDocumento, bool nIE, StringBuilder buffer, ref int bufferSize);
@@ -204,7 +210,7 @@ namespace ACBrLib.NFe
 
         #region Ini
 
-        public void ConfigGravar(string eArqConfig = "ACBrLib.ini")
+        public void ConfigGravar(string eArqConfig = "")
         {
             var gravarIni = GetMethod<Delegates.NFE_ConfigGravar>();
             var ret = ExecuteMethod(() => gravarIni(ToUTF8(eArqConfig)));
@@ -212,7 +218,7 @@ namespace ACBrLib.NFe
             CheckResult(ret);
         }
 
-        public void ConfigLer(string eArqConfig = "ACBrLib.ini")
+        public void ConfigLer(string eArqConfig = "")
         {
             var lerIni = GetMethod<Delegates.NFE_ConfigLer>();
             var ret = ExecuteMethod(() => lerIni(ToUTF8(eArqConfig)));
@@ -408,6 +414,28 @@ namespace ACBrLib.NFe
             return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
         }
 
+        public string GetPath(TipoPathNFe tipo)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_GetPath>();
+            var ret = ExecuteMethod(() => method((int)tipo, buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string GetPathEvento(string evento)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Delegates.NFE_GetPathEvento>();
+            var ret = ExecuteMethod(() => method(ToUTF8(evento), buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
         public string StatusServico()
         {
             var bufferLen = BUFFER_LEN;
@@ -421,13 +449,13 @@ namespace ACBrLib.NFe
             return ProcessResult(buffer, bufferLen);
         }
 
-        public string Consultar(string eChaveOuNFe)
+        public string Consultar(string eChaveOuNFe, bool AExtrairEventos = false)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
 
             var method = GetMethod<Delegates.NFE_Consultar>();
-            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuNFe), buffer, ref bufferLen));
+            var ret = ExecuteMethod(() => method(ToUTF8(eChaveOuNFe), AExtrairEventos, buffer, ref bufferLen));
 
             CheckResult(ret);
 
@@ -661,6 +689,8 @@ namespace ACBrLib.NFe
             AddMethod<Delegates.NFE_VerificarAssinatura>("NFE_VerificarAssinatura");
             AddMethod<Delegates.NFE_GerarChave>("NFE_GerarChave");
             AddMethod<Delegates.NFE_ObterCertificados>("NFE_ObterCertificados");
+            AddMethod<Delegates.NFE_GetPath>("NFE_GetPath");
+            AddMethod<Delegates.NFE_GetPathEvento>("NFE_GetPathEvento");
             AddMethod<Delegates.NFE_StatusServico>("NFE_StatusServico");
             AddMethod<Delegates.NFE_Consultar>("NFE_Consultar");
             AddMethod<Delegates.NFE_ConsultaCadastro>("NFE_ConsultaCadastro");

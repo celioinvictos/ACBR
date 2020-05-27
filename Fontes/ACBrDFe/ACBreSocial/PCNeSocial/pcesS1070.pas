@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 01/03/2015: Guilherme Costa
-|*  - Ao gerar o período a tag deve se chamar "novaValidade"
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS1070;
@@ -49,8 +40,13 @@ unit pcesS1070;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  ACBrUtil,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase, ACBrUtil,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -137,7 +133,7 @@ type
     property indDeposito: tpSimNao read FIndDeposito write FIndDeposito;
   end;
 
-  TInfoSuspCollection = class(TObjectList)
+  TInfoSuspCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoSuspCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoSuspCollectionItem);
@@ -218,13 +214,13 @@ end;
 
 function TS1070Collection.GetItem(Index: Integer): TS1070CollectionItem;
 begin
-  Result := TS1070CollectionItem(inherited GetItem(Index));
+  Result := TS1070CollectionItem(inherited Items[Index]);
 end;
 
 procedure TS1070Collection.SetItem(Index: Integer;
   Value: TS1070CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TS1070Collection.New: TS1070CollectionItem;
@@ -258,13 +254,13 @@ end;
 function TInfoSuspCollection.GetItem(
   Index: Integer): TInfoSuspCollectionItem;
 begin
-  Result := TInfoSuspCollectionItem(Inherited GetItem(Index));
+  Result := TInfoSuspCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfoSuspCollection.SetItem(Index: Integer;
   Value: TInfoSuspCollectionItem);
 begin
-  Inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoSuspCollection.New: TInfoSuspCollectionItem;

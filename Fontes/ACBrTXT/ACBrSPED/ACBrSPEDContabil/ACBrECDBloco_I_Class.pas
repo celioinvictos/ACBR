@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -461,12 +460,24 @@ begin
      begin
         with RegI050.RegistroI051.Items[intFor] do
         begin
-           ///
-           Add( LFill('I051') +
-                LFill(COD_PLAN_REF, 1) +
-                LFill(COD_CCUS) +
-                LFill(COD_CTA_REF) 
-                );
+           /// Layout 8 a partir da escrituração ano calendário 2019
+           if DT_INI >= EncodeDate(2019,01,01) then
+           begin
+              Add( LFill('I051') +
+                   LFill(COD_CCUS) +
+                   LFill(COD_CTA_REF) 
+                 );
+		   end;	 
+           /// Layout até 7 escrituração ano calendário até 2018
+           if DT_FIN <= EncodeDate(2018,12,31) then
+           begin
+              Add( LFill('I051') +
+                   LFill(COD_PLAN_REF, 1) +
+                   LFill(COD_CCUS) +
+                   LFill(COD_CTA_REF) 
+                 );
+		   end;	 
+		   
         end;
        FRegistroI990.QTD_LIN_I := FRegistroI990.QTD_LIN_I + 1;
      end;

@@ -3,11 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2014   Juliomar Marchetti                   }
-{					  Isaque Pinheiro		       }
-{ 					  Daniel Simões de Almeida	       }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Juliomar Marchetti e Isaque Pinheiro            }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -28,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -314,7 +311,7 @@ begin
                LFill(OPT_EXT_RTT) +
                LFill(DIF_FCONT) );
 
-        ECFVersao300, ECFVersao400, ECFVersao500:
+        ECFVersao300, ECFVersao400, ECFVersao500, ECFVersao600:
           Add( LFill('0010') +
                LFill(HASH_ECF_ANTERIOR) +
                LFill(strOPT_REFIS) +
@@ -411,7 +408,7 @@ begin
                LFill(IND_AREA_COM) +
                LFill(IND_PAIS_A_PAIS));
 
-        ECFVersao400, ECFVersao500:
+        ECFVersao400, ECFVersao500,ECFVersao600 :
           Add( LFill('0020') +
                LFill(IND_ALIQ_CSLL) +
                LFill(IND_QTE_SCP, 3) +

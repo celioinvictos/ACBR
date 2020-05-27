@@ -1,17 +1,16 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Wemerson Souto                                  }
+{                              Daniel Simoes de Almeida                        }
+{                              André Ferreira de Moraes                        }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,9 +28,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -741,6 +739,7 @@ type
     procedure limparLabels(ValueInicio,ValueRepeticao: Integer;
       const ValueLbl1, ValueLbl2: String;
       const ValueLbl3: String = 'VAZIO');
+    procedure AjustaFontesReport;
   end;
 
 implementation
@@ -827,12 +826,17 @@ end;
 
 procedure TfrlDANFeRLRetrato.InicializarDados;
 var
-  i, b, h, iAlturaCanhoto, vWidthAux, vLeftAux: Integer;
-  vAutoSizeAux: Boolean;
+  h, iAlturaCanhoto, vWidthAux, vLeftAux, iAlturaMinLinha: Integer;
   CarregouLogo: Boolean;
 begin
   TDFeReportFortes.AjustarMargem(RLNFe, fpDANFe);
   rlbCanceladaDenegada.Visible := False;
+
+  iAlturaMinLinha := 12;
+  if fpDANFe.EspacoEntreProdutos > iAlturaMinLinha then
+    rlbItens.Height := fpDANFe.EspacoEntreProdutos
+  else
+    rlbItens.Height := iAlturaMinLinha;
 
   CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDANFe.Logo);
   if not CarregouLogo then
@@ -1033,88 +1037,7 @@ begin
     end;
   end;
 
-  // Altera a fonte da Razão Social do DefinirEmitente
-  rlmEmitente.Font.Size := fpDANFe.Fonte.TamanhoFonteRazaoSocial;
-
-  for b := 0 to (RLNFe.ControlCount - 1) do
-  begin
-    for i := 0 to (TRLBand(RLNFe.Controls[b]).ControlCount - 1) do
-    begin
-      if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag = 703) then
-      begin
-        TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Style := [];
-        if fpDANFe.Fonte.Negrito then // Dados em negrito
-          TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Style := [fsBold];
-        if (fpDANFe <> nil) then //altera o tamanho fonte demais campos
-          TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size :=
-            fpDANFe.Fonte.TamanhoFonteDemaisCampos;
-      end;
-
-      // Altera a fonte dos demais campos
-      case fpDANFe.Fonte.Nome of
-        nfArial:
-        begin
-          if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag <> 20) then
-            TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Name := 'Arial';
-          if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag = 3) then
-            TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size :=
-              (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size) - 1;
-        end;
-
-        nfCourierNew:
-        begin
-          TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Name := 'Courier New';
-
-          case TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag of
-            0, 703, 704, 705:
-            begin
-              TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size :=
-                (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size) - 1;
-              if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag = 705) then
-                TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Top :=
-                  (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Top) - 1;
-            end;
-          end;
-        end;
-
-        else
-        begin
-          if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag <> 20) then
-            TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Name := 'Times New Roman';
-          if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag = 3) then
-            TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size :=
-              (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Font.Size) - 1;
-        end;
-      end;
-
-      //copia o left e width do componente, alterar o size do fonte, com o autosize ajusta o height, depois retorna como estava
-      if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Tag = 703) then
-      begin
-        vWidthAux := TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Width;
-        vLeftAux := TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Left;
-        vAutoSizeAux := TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).AutoSize;
-//        TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).AutoSize := True;
-        TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).AutoSize := vAutoSizeAux;
-        TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Left := vLeftAux;
-        if (TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Alignment = taLeftJustify) then
-          vWidthAux := vWidthAux - fpAuxDiferencaPDF;//na hora de gerar o PDF vai ficar correto.
-
-        TRLLabel(TRLBand(RLNFe.Controls[b]).Controls[i]).Width := vWidthAux;
-      end;
-    end;
-  end;
-
-  if (fpDANFe.Fonte.Nome = nfCourierNew) then
-  begin
-    rllNumNF1.Font.Size := rllNumNF1.Font.Size - 3;
-    rllNumNF1.Top := rllNumNF1.Top + 1;
-    rllChave.Font.Size := rllChave.Font.Size - 1;
-  end;
-
-  if (fpDANFe.Fonte.TamanhoFonteEndereco > 0) then
-    RLMEndereco.Font.Size := fpDANFe.Fonte.TamanhoFonteEndereco
-  else
-    RLMEndereco.Font.Size := 7;
+  AjustaFontesReport;
 
   AplicarParametros; // Aplica os parâmetros escolhidos, após alterar o tamanho das fontes.
 
@@ -1151,11 +1074,12 @@ begin
   begin
     rlbDadosAdicionais.AutoExpand := True;
     rlmDadosAdicionais.AutoSize := True;
-    RLDraw50.Height := (rlmDadosAdicionais.Top + rlmDadosAdicionais.Height) - RLLabel77.Top + 2;
+    RLDraw50.Height := (rlmDadosAdicionais.Top + rlmDadosAdicionais.Height) - RLLabel77.Top + 10;
     RLDraw51.Height := RLDraw50.Height;
     rllSistema.Top  := RLDraw50.Top + RLDraw50.Height;
     rllUsuario.Top  := rllSistema.Top;
   end;
+
 end;
 
 procedure TfrlDANFeRLRetrato.DefinirCabecalho;
@@ -2455,6 +2379,104 @@ Begin
       TRLLabel(FindComponent(ValueLbl3 + IntToStr(x))).Caption := '';
   end;
 End;
+
+procedure TfrlDANFeRLRetrato.AjustaFontesReport;
+var
+  vWidthAux: Integer;
+  vLeftAux: Integer;
+  b: Integer;
+  i: Integer;
+  vAutoSizeAux: Boolean;
+  UmaBand: TRLBand;
+begin
+  // Altera a fonte da Razão Social do DefinirEmitente
+  rlmEmitente.Font.Size := fpDANFe.Fonte.TamanhoFonteRazaoSocial;
+  //Percorre contrls do Report...
+  for b := 0 to (RLNFe.ControlCount - 1) do
+  begin
+    if not (RLNFe.Controls[b] is TRLBand) then
+    begin
+      //não há configurações de componentes TRLImage por exemplo
+      Continue;
+    end;
+
+    //Para cada band...
+    UmaBand := TRLBand(RLNFe.Controls[b]);
+    for i := 0 to (UmaBand.ControlCount - 1) do
+    begin
+      if (UmaBand.Controls[i].Tag = 703) then
+      begin
+        TRLLabel(UmaBand.Controls[i]).Font.Style := [];
+        if fpDANFe.Fonte.Negrito then
+          // Dados em negrito
+          TRLLabel(UmaBand.Controls[i]).Font.Style := [fsBold];
+        if (fpDANFe <> nil) then
+          //altera o tamanho fonte demais campos
+          TRLLabel(UmaBand.Controls[i]).Font.Size := fpDANFe.Fonte.TamanhoFonteDemaisCampos;
+      end;
+
+      if (UmaBand.Controls[i].Tag = 20) then
+      begin
+        TRLLabel(UmaBand.Controls[i]).Font.Size := fpDANFe.Fonte.TamanhoFonteInformacoesComplementares;
+      end;
+
+      // Altera a fonte dos demais campos
+      case fpDANFe.Fonte.Nome of
+        nfArial:
+          begin
+            if (UmaBand.Controls[i].Tag <> 20) then
+              TRLLabel(UmaBand.Controls[i]).Font.Name := 'Arial';
+            if (UmaBand.Controls[i].Tag = 3) then
+              TRLLabel(UmaBand.Controls[i]).Font.Size := (TRLLabel(UmaBand.Controls[i]).Font.Size) - 1;
+          end;
+        nfCourierNew:
+          begin
+            TRLLabel(UmaBand.Controls[i]).Font.Name := 'Courier New';
+            case UmaBand.Controls[i].Tag of
+              0, 703, 704, 705:
+                begin
+                  TRLLabel(UmaBand.Controls[i]).Font.Size := (TRLLabel(UmaBand.Controls[i]).Font.Size) - 1;
+                  if (TRLLabel(UmaBand.Controls[i]).Tag = 705) then
+                    TRLLabel(UmaBand.Controls[i]).Top := (TRLLabel(UmaBand.Controls[i]).Top) - 1;
+                end;
+            end;
+          end;
+      else
+        begin
+          if (UmaBand.Controls[i].Tag <> 20) then
+            TRLLabel(UmaBand.Controls[i]).Font.Name := 'Times New Roman';
+          if (UmaBand.Controls[i].Tag = 3) then
+            TRLLabel(UmaBand.Controls[i]).Font.Size := (TRLLabel(UmaBand.Controls[i]).Font.Size) - 1;
+        end;
+      end;
+
+      //copia o left e width do componente, alterar o size do fonte, com o autosize ajusta o height, depois retorna como estava
+      if (UmaBand.Controls[i].Tag = 703) then
+      begin
+        vWidthAux    := TRLLabel(UmaBand.Controls[i]).Width;
+        vLeftAux     := TRLLabel(UmaBand.Controls[i]).Left;
+        vAutoSizeAux := TRLLabel(UmaBand.Controls[i]).AutoSize;
+        //        TRLLabel(UmaBand.Controls[i]).AutoSize := True;
+        TRLLabel(UmaBand.Controls[i]).AutoSize := vAutoSizeAux;
+        TRLLabel(UmaBand.Controls[i]).Left     := vLeftAux;
+        if (TRLLabel(UmaBand.Controls[i]).Alignment = taLeftJustify) then
+          vWidthAux := vWidthAux - fpAuxDiferencaPDF;
+        //na hora de gerar o PDF vai ficar correto.
+        TRLLabel(UmaBand.Controls[i]).Width := vWidthAux;
+      end;
+    end;
+  end;
+  if (fpDANFe.Fonte.Nome = nfCourierNew) then
+  begin
+    rllNumNF1.Font.Size := rllNumNF1.Font.Size - 3;
+    rllNumNF1.Top := rllNumNF1.Top + 1;
+    rllChave.Font.Size := rllChave.Font.Size - 1;
+  end;
+  if (fpDANFe.Fonte.TamanhoFonteEndereco > 0) then
+    RLMEndereco.Font.Size := fpDANFe.Fonte.TamanhoFonteEndereco
+  else
+    RLMEndereco.Font.Size := 7;
+end;
 
 Procedure TfrlDANFeRLRetrato.AtribuirDePara( ValueDe :  TRLDraw;
                                              ValuePara : array of TRLDraw  );

@@ -3,12 +3,10 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2015 Daniel Simoes de Almeida               }
-{                                       Juliomar Marchetti                     }
-{                                       Marciano Bandeira                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
-{                                                                              }
+{ Colaboradores nesse arquivo: Marciano Bandeira                               }
+{                              Juliomar Marchetti                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
@@ -26,19 +24,12 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-
-{******************************************************************************
-|* Historico
-|*
-|* 28/10/2015 Marciano Bandeira Disponibilizou os fontes
-******************************************************************************}
 {$I ACBr.inc}
 
 unit ACBrDANFCeFortesFrA4;
@@ -167,6 +158,9 @@ type
     RLLabel51: TRLLabel;
     lCancelada: TRLLabel;
     rllFisco: TRLLabel;
+    RLBand17: TRLBand;
+    RLLabel43: TRLLabel;
+    RLLabel52: TRLLabel;
     procedure lNomeFantasiaBeforePrint(Sender: TObject; var Text: string;
       var PrintIt: Boolean);
     procedure RLBand9BeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -258,6 +252,9 @@ type
     procedure RLLabel51BeforePrint(Sender: TObject; var Text: string;
       var PrintIt: Boolean);
     procedure RLBand11BeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure RLLabel52BeforePrint(Sender: TObject; var AText: string;
+      var PrintIt: Boolean);
+    procedure RLBand17BeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     FNumItem: Integer;
     FNumPag: Integer;
@@ -272,8 +269,6 @@ type
     { Public declarations }
   end;
 
-procedure Register;
-
 implementation
 
 {$ifdef FPC}
@@ -284,11 +279,6 @@ implementation
 
 uses RLPrinters, StrUtils,
      ACBrDFeDANFeReport, ACBrDFeReportFortes, ACBrDFeREport, ACBrDelphiZXingQRCode;
-
-procedure Register;
-begin
-  RegisterComponents('ACBrNFe',[TACBrNFeDANFCeFortesA4]);
-end;
 
 function TfrmACBrDANFCeFortesFrA4.CompoemEnderecoCFe: String;
 var
@@ -334,7 +324,12 @@ end;
 procedure TfrmACBrDANFCeFortesFrA4.lNomeFantasiaBeforePrint(Sender: TObject;
   var Text: string; var PrintIt: Boolean);
 begin
-  Text := self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.xFant;
+  lNomeFantasia.Visible := FACBrNFeDANFCeFortesA4.ImprimeNomeFantasia;
+
+  if lNomeFantasia.Visible then
+     Text := self.FACBrNFeDANFCeFortesA4.FpNFe.Emit.xFant
+  else
+     Text := '';
 end;
 
 procedure TfrmACBrDANFCeFortesFrA4.RLBand9BeforePrint(Sender: TObject;
@@ -419,6 +414,12 @@ procedure TfrmACBrDANFCeFortesFrA4.RLBand15BeforePrint(Sender: TObject;
 begin
   with self.FACBrNFeDANFCeFortesA4 do
     PrintIt := (ImprimeTributos = trbSeparadamente);
+end;
+
+procedure TfrmACBrDANFCeFortesFrA4.RLBand17BeforePrint(Sender: TObject;
+  var PrintIt: Boolean);
+begin
+  PrintIt := self.FACBrNFeDANFCeFortesA4.FpNFe.Total.ICMSTot.vFrete > 0;
 end;
 
 procedure TfrmACBrDANFCeFortesFrA4.RLBand8BeforePrint(Sender: TObject;
@@ -622,7 +623,7 @@ procedure TfrmACBrDANFCeFortesFrA4.RLLabel37BeforePrint(Sender: TObject;
 begin
   Text := FormatarChaveAcesso(OnlyNumber(self.FACBrNFeDANFCeFortesA4.FpNFe.infNFe.ID));
 
-  if FACBrNFeDANFCeFortesA4.FpNFe.procNFe.cStat = 0 then
+  if (FACBrNFeDANFCeFortesA4.FpNFe.Ide.tpEmis = teNormal) and (FACBrNFeDANFCeFortesA4.FpNFe.procNFe.cStat = 0) then
   begin
     Text  := ACBrStr('NFC-E NÃO ENVIADA PARA SEFAZ');
     RLLabel37.Font.Color := clRed;
@@ -702,14 +703,17 @@ procedure TfrmACBrDANFCeFortesFrA4.RLMemo2BeforePrint(Sender: TObject;
 var
   I:integer;
 begin
-  if self.FACBrNFeDANFCeFortesA4.FpNFe.InfAdic.obsCont.Count > 0 then
+  with self.FACBrNFeDANFCeFortesA4.FpNFe do
+  begin
+    if FACBrNFeDANFCeFortesA4.ImprimeInfContr then
     begin
-      for I := 0 to self.FACBrNFeDANFCeFortesA4.FpNFe.InfAdic.obsCont.Count - 1 do
-        Text := Text + StringReplace( self.FACBrNFeDANFCeFortesA4.FpNFe.InfAdic.obsCont[i].xCampo + ': ' +
-                                      self.FACBrNFeDANFCeFortesA4.FpNFe.InfAdic.obsCont[i].xTexto, ';', #13, [rfReplaceAll] ) + #13;
+      for I := 0 to InfAdic.obsCont.Count - 1 do
+        Text := Text + StringReplace(InfAdic.obsCont[i].xCampo + ': ' +
+                                     InfAdic.obsCont[i].xTexto, ';', #13, [rfReplaceAll] ) + #13;
     end;
 
-  Text := Text + StringReplace(self.FACBrNFeDANFCeFortesA4.FpNFe.InfAdic.infCpl, ';', #13, [rfReplaceAll] ) ;
+    Text := Text + StringReplace(InfAdic.infCpl, ';', #13, [rfReplaceAll] ) + #13;
+  end;
 end;
 
 procedure TfrmACBrDANFCeFortesFrA4.RLMemo3BeforePrint(Sender: TObject;
@@ -769,6 +773,7 @@ var
   frACBrNFeDANFCeFortesFr: TfrmACBrDANFCeFortesFrA4;
   RLLayout: TRLReport;
   RLFiltro: TRLCustomSaveFilter;
+  NFeID: string;
 begin
 
   frACBrNFeDANFCeFortesFr := TfrmACBrDANFCeFortesFrA4.Create(Self);
@@ -793,6 +798,12 @@ begin
       if FACBrNFeDANFCeFortesA4.Impressora <> '' then
         RLPrinter.PrinterName := FACBrNFeDANFCeFortesA4.Impressora;
 
+      NFeID := OnlyNumber(FACBrNFeDANFCeFortesA4.FpNFe.infNFe.ID);
+
+      RLLayout.JobTitle := NomeDocumento;
+      if (RLLayout.JobTitle = '') then
+        RLLayout.JobTitle := NFeID + '-nfe.xml';
+
       RLLayout.PrintDialog := FACBrNFeDANFCeFortesA4.MostraPreview;
       RLLayout.ShowProgress:= False ;
 
@@ -815,7 +826,8 @@ begin
           end ;
 
           RLFiltro.ShowProgress := FACBrNFeDANFCeFortesA4.MostraStatus;
-          RLFiltro.FileName := FACBrNFeDANFCeFortesA4.PathPDF + OnlyNumber(FACBrNFeDANFCeFortesA4.FpNFe.infNFe.ID) + '-nfe.pdf';
+          RLFiltro.FileName := PathWithDelim(FACBrNFeDANFCeFortesA4.PathPDF) +
+                               ChangeFileExt( RLLayout.JobTitle, '.pdf');
           RLFiltro.FilterPages( RLLayout.Pages );
           FACBrNFeDANFCeFortesA4.FPArquivoPDF := RLFiltro.FileName;
         end;
@@ -912,11 +924,11 @@ procedure TfrmACBrDANFCeFortesFrA4.RLLabel31BeforePrint(Sender: TObject;
         end;
 
         if vTribFed > 0 then
-          Result := Result + ' ' + FormatFloatBr( vTribFed,'###,###,##0.00') + sFederal ;
+          Result := Result + ' ' + FormatFloatBr( vTribFed,',0.00') + sFederal ;
         if vTribEst > 0 then
-          Result := Result + ' ' + FormatFloatBr( vTribEst,'###,###,##0.00') + sEstadual;
+          Result := Result + ' ' + FormatFloatBr( vTribEst,',0.00') + sEstadual;
         if vTribMun > 0 then
-          Result := Result + ' ' + FormatFloatBr( vTribMun,'###,###,##0.00') + sMunicipal;
+          Result := Result + ' ' + FormatFloatBr( vTribMun,',0.00') + sMunicipal;
       end
       else
         Result := '';
@@ -956,6 +968,12 @@ begin
 end;
 
 
+procedure TfrmACBrDANFCeFortesFrA4.RLLabel52BeforePrint(Sender: TObject;
+  var AText: string; var PrintIt: Boolean);
+begin
+  Text := FormatFloat('R$ ,0.00;R$ -,0.00', self.FACBrNFeDANFCeFortesA4.FpNFe.Total.ICMSTot.vFrete);
+end;
+
 procedure TfrmACBrDANFCeFortesFrA4.RlPelosProdutosBeforePrint(Sender: TObject;
   var Text: string; var PrintIt: Boolean);
 Var
@@ -964,13 +982,11 @@ begin
   With self.FACBrNFeDANFCeFortesA4 do
   begin
     With FpNFe.Total.ICMSTot do
-      dPelosProdutos := ( VProd - VDesc + VOutro); // Valor Total
+      dPelosProdutos := (vProd - vDesc + vOutro + vFrete); // Valor Total
 
     dPelosProdutos := dPelosProdutos - ( vTribFed + vTribEst + vTribMun) ;
   end;
   Text  := FormatFloat('R$ ,0.00', dPelosProdutos );
-
-
 end;
 
 

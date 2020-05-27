@@ -1,35 +1,34 @@
-{*******************************************************************************}
-{ Projeto: Componentes ACBr                                                     }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
-{ mentos de Automação Comercial utilizados no Brasil                            }
-{                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
-{                                                                               }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
-{                                                                               }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
-{ qualquer versão posterior.                                                    }
-{                                                                               }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
-{                                                                               }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
-{ Você também pode obter uma copia da licença em:                               }
-{ http://www.opensource.org/licenses/gpl-license.php                            }
-{                                                                               }
-{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
-{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
-{                                                                               }
-{*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 unit ACBrLibNFeDataModule;
 
@@ -84,7 +83,7 @@ implementation
 
 uses
   pcnConversao, pcnConversaoNFe,
-  ACBrUtil, FileUtil, ACBrNFeDANFEClass, ACBrLibConsts,
+  ACBrUtil, FileUtil, ACBrDeviceSerial, ACBrNFeDANFEClass,
   ACBrDeviceConfig, ACBrLibNFeConfig, ACBrLibComum;
 
 {$R *.lfm}
@@ -163,7 +162,6 @@ begin
   begin
     GravarLog('     Criando PosPrinter Interno', logCompleto);
     FACBrPosPrinter := TACBrPosPrinter.Create(Nil);
-    TLibNFeConfig(pLib.Config).PosDevice := TDeviceConfig.Create(CSessaoPosPrinterDevice);
   end;
 
   ACBrNFeDANFeESCPOS1.PosPrinter := FACBrPosPrinter;
@@ -273,7 +271,17 @@ begin
     ConfigModoPagina.Direcao := TACBrPosDirecao(pLibConfig.PosPrinter.MpDirecao);
     ConfigModoPagina.EspacoEntreLinhas := pLibConfig.PosPrinter.MpEspacoEntreLinhas;
 
-    pLibConfig.PosDevice.Apply(Device);
+    Device.Baud := pLibConfig.PosDeviceConfig.Baud;
+    Device.Data := pLibConfig.PosDeviceConfig.Data;
+    Device.TimeOut := pLibConfig.PosDeviceConfig.TimeOut;
+    Device.Parity := TACBrSerialParity(pLibConfig.PosDeviceConfig.Parity);
+    Device.Stop := TACBrSerialStop(pLibConfig.PosDeviceConfig.Stop);
+    Device.MaxBandwidth := pLibConfig.PosDeviceConfig.MaxBandwidth;
+    Device.SendBytesCount := pLibConfig.PosDeviceConfig.SendBytesCount;
+    Device.SendBytesInterval := pLibConfig.PosDeviceConfig.SendBytesInterval;
+    Device.HandShake := TACBrHandShake(pLibConfig.PosDeviceConfig.HandShake);
+    Device.HardFlow := pLibConfig.PosDeviceConfig.HardFlow;
+    Device.SoftFlow := pLibConfig.PosDeviceConfig.SoftFlow;
   end;
 end;
 
@@ -310,8 +318,12 @@ begin
       ACBrNFe1.DANFE.Cancelada := False;
   end;
 
-  if GerarPDF and not DirectoryExists(PathWithDelim(pLibConfig.DANFe.PathPDF))then
-    ForceDirectories(PathWithDelim(pLibConfig.DANFe.PathPDF));
+  if GerarPDF then
+  begin
+    if (pLibConfig.DANFe.PathPDF <> '') then
+      if not DirectoryExists(PathWithDelim(pLibConfig.DANFe.PathPDF))then
+        ForceDirectories(PathWithDelim(pLibConfig.DANFe.PathPDF));
+  end;
 
   pLibConfig.DANFe.Apply(ACBrNFe1.DANFE);
 

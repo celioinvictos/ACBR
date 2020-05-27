@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -30,13 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 20/04/2013:  Daniel Simões de Almeida
-|*   Inicio do desenvolvimento
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrEscDiebold;
@@ -44,7 +37,11 @@ unit ACBrEscDiebold;
 interface
 
 uses
-  Classes, SysUtils, ACBrPosPrinter, ACBrEscPosEpson;
+  Classes, SysUtils,
+  ACBrPosPrinter, ACBrEscPosEpson
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 type
 
@@ -73,6 +70,8 @@ uses
 { TACBrEscDiebold }
 
 constructor TACBrEscDiebold.Create(AOwner: TACBrPosPrinter);
+var
+  i: Integer;
 begin
   inherited Create(AOwner);
 
@@ -88,6 +87,12 @@ begin
   {*)}
 
   TagsNaoSuportadas.Add( cTagBarraCode128c );
+  i := TagsNaoSuportadas.IndexOf( cTagLigaItalico );
+  if i >= 0 then
+    TagsNaoSuportadas.Delete(i);
+  i := TagsNaoSuportadas.IndexOf( cTagDesligaItalico );
+  if i >= 0 then
+    TagsNaoSuportadas.Delete(i);
 end;
 
 function TACBrEscDiebold.ComandoCodBarras(const ATag: String;
@@ -108,7 +113,7 @@ begin
 
     Result := Result +
               ESC + '(k' + #3 + #0 + '1C' + AnsiChr(LarguraModulo) +   // Largura Modulo
-              ESC + '(k' + #3 + #0 + '1E' + IntToStr(ErrorLevel) + // Error Level
+              ESC + '(k' + #3 + #0 + '1E' + AnsiString(IntToStr(ErrorLevel)) + // Error Level
               ESC + '(k' + IntToLEStr(length(ACodigo)+3)+'1P0' + ACodigo +  // Codifica
               ESC + '(k' + #3 + #0 +'1Q0';  // Imprime
   end;

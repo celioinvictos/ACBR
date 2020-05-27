@@ -3,9 +3,7 @@
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -450,6 +448,7 @@ var
   AMetodoClass: TACBrMetodoClass;
   CmdNum: Integer;
   Ametodo: TACBrMetodo;
+  AACBrUnit: TACBrObjetoACBr;
 begin
   inherited Executar(ACmd);
 
@@ -497,7 +496,16 @@ begin
     37 : AMetodoClass := TMetodoGetPathEvento;
 
     else
-      DoACbr(ACmd);
+      begin
+        AACBrUnit := TACBrObjetoACBr.Create(Nil); //Instancia DoACBrUnit para validar métodos padrão para todos os objetos
+        try
+          AACBrUnit.Executar(ACmd);
+        finally
+          AACBrUnit.Free;
+        end;
+
+      end;
+
   end;
 
   if Assigned(AMetodoClass) then
@@ -1474,19 +1482,24 @@ end;
 { TMetodoConsultarMDFe }
 
 { Params: 0 - XML - Uma String com um Path completo XML ou chave MDFe
+          1 - AExtrairEventos (1 para extrair)
 }
 procedure TMetodoConsultarMDFe.Executar;
 var
   CargaDFe: TACBrCarregarMDFe;
   AXML: String;
+  AExtrairEventos: Boolean;
 begin
   AXML := fpCmd.Params(0);
+  AExtrairEventos := StrToBoolDef(fpCmd.Params(1), False);
 
   with TACBrObjetoMDFe(fpObjetoDono) do
   begin
     ACBrMDFe.Manifestos.Clear;
     CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, AXML, False);
     try
+      ACBrMDFe.WebServices.Consulta.ExtrairEventos := AExtrairEventos;
+
       if (ACBrMDFe.Manifestos.Count = 0) then
       begin
         if ValidarChave(AXML) then
@@ -2152,6 +2165,8 @@ begin
       ACBrMDFe.WebServices.Consulta.MDFeChave := AChave;
 
     ACBrMDFe.WebServices.Consulta.Executar;
+    if EstaVazio(ACBrMDFe.WebServices.Consulta.Protocolo) then
+      raise Exception.Create(ACBrStr('Não foi possível consultar o número de Protocolo para a Chave: ') + AChave );
 
     ACBrMDFe.EventoMDFe.Evento.Clear;
     with ACBrMDFe.EventoMDFe.Evento.New do

@@ -3,9 +3,7 @@
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -60,7 +58,6 @@ public
   function GerarNFeIni(XML: string): string;
   procedure RespostaImpressao(pImprimir: Boolean; pImpressora: String;
             pPreview: String; pCopias: Integer; pPDF: Boolean);
-  procedure RespostaItensNFe(NotasFiscaisID: integer = 0; ItemID: integer = 0; Gerar: boolean = False);  //
   Procedure LerIniNFe(ArqINI: String);
   procedure ImprimirNFe(pImpressora: String; pPreview: String; pCopias: Integer; pPDF: Boolean);
   procedure RespostaIntegrador;
@@ -442,11 +439,10 @@ implementation
 
 uses
   IniFiles, DateUtils, Forms, strutils,
-  DoACBrUnit,
   ACBrDFeConfiguracoes, ACBrNFeDANFEClass,
   ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
   pcnConversao, pcnConversaoNFe,
-  pcnAuxiliar, pcnNFeR, pcnNFeRTXT, pcnNFe;
+  pcnAuxiliar, pcnNFeR, pcnNFeRTXT, pcnNFe, DoACBrUnit;
 
 { TACBrObjetoNFe }
 
@@ -515,7 +511,7 @@ begin
   ListaDeMetodos.Add(CMetodoDataVencimentoCertificado);
   ListaDeMetodos.Add(CMetodoSetTipoImpressao);
 
-  // DoACBr
+  // DoACBrUnit
   ListaDeMetodos.Add(CMetodoSavetofile);
   ListaDeMetodos.Add(CMetodoLoadfromfile);
   ListaDeMetodos.Add(CMetodoLerini);
@@ -539,6 +535,7 @@ var
   AMetodoClass: TACBrMetodoClass;
   CmdNum: Integer;
   Ametodo: TACBrMetodo;
+  AACBrUnit: TACBrObjetoACBr;
 begin
   inherited Executar(ACmd);
 
@@ -604,7 +601,16 @@ begin
     57 : AMetodoClass := TMetodoSetTipoImpressao;
 
     else
-      DoACbr(ACmd);
+      begin
+        AACBrUnit := TACBrObjetoACBr.Create(Nil); //Instancia DoACBrUnit para validar métodos padrão para todos os objetos
+        try
+          AACBrUnit.Executar(ACmd);
+        finally
+          AACBrUnit.Free;
+        end;
+
+      end;
+
   end;
 
   if Assigned(AMetodoClass) then
@@ -658,7 +664,8 @@ begin
               'PDF='+ PathWithDelim(ACBrNFe.DANFE.PathPDF) + ArqPDF + sLineBreak;
           end;
 
-          DoConfiguraDANFe(False, Trim(pPreview) );
+          if ( pImprimir or StrToBoolDef( pPreview, False ) or pPDF ) then
+            DoConfiguraDANFe(False, Trim(pPreview) );
 
           if NaoEstaVazio(pImpressora) then
             DANFe.Impressora := pImpressora;
@@ -680,41 +687,6 @@ begin
         end;
       end;
     end;
-  end;
-end;
-
-procedure TACBrObjetoNFe.RespostaItensNFe(NotasFiscaisID: integer;
-  ItemID: integer; Gerar: boolean);
-var
-  Resp: TRetornoItemResposta;
-begin
-  Resp := TRetornoItemResposta.Create(
-    'NFe' + Trim(IntToStr(
-    fACBrNFe.NotasFiscais.Items[NotasFiscaisID].NFe.Ide.nNF)), TpResp, codUTF8);
-  try
-    with fACBrNFe.WebServices.Retorno.NFeRetorno.ProtDFe.Items[ItemID] do
-    begin
-      //Resp.Versao := verAplic;
-      Resp.TpAmb := TpAmbToStr(TpAmb);
-      Resp.VerAplic := VerAplic;
-      Resp.CStat := cStat;
-      Resp.XMotivo := XMotivo;
-      //Resp.CUF := fACBrNFe.WebServices.Retorno.NFeRetorno.cUF;
-      //Resp.ChNFe := chDFe;
-      Resp.DhRecbto := dhRecbto;
-      Resp.NProt := nProt;
-      Resp.DigVal := digVal;
-
-      //if Gerar then
-        //Resp.Arquivo := fACBrNFe.NotasFiscais.Items[NotasFiscaisID].NomeArq+sLineBreak;
-          {PathWithDelim(fACBrNFe.Configuracoes.Arquivos.PathSalvar) +
-          OnlyNumber(fACBrNFe.NotasFiscais.Items[NotasFiscaisID].NFe.infNFe.ID) +
-          '-nfe.xml';}
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
   end;
 end;
 
@@ -1071,12 +1043,15 @@ end;
 { TMetodoSetLogoMarca }
 
 { Params: 0 - Logo: String com path da logo
+          1 - NFCe: 1 para atualizar Logo da NFCe
 }
 procedure TMetodoSetLogoMarca.Executar;
 var
   ALogo: String;
+  ANFCe: Boolean;
 begin
   ALogo := fpCmd.Params(0);
+  ANFCe := StrToBoolDef( fpCmd.Params(1), False);
 
   if not FileExists(ALogo) then
     raise Exception.Create('Arquivo não encontrado.');
@@ -1084,7 +1059,12 @@ begin
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
     with MonitorConfig.DFE.Impressao.Geral do
-        Logomarca := ALogo;
+    begin
+      if not(ANFCe) then
+        Logomarca := ALogo
+      else
+        LogoMarcaNFCeSAT := ALogo ;
+    end;
 
     MonitorConfig.SalvarArquivo;
   end;
@@ -1318,20 +1298,25 @@ end;
 { TMetodoConsultarNFe }
 
 { Params: 0 - XML - Uma String com um Path completo XML ou chave NFe
+          1 - AExtrairEventos (1 para extrair)
 }
 procedure TMetodoConsultarNFe.Executar;
 var
   CargaDFe: TACBrCarregarNFe;
   AXML: String;
   Resposta: TConsultaNFeResposta;
+  AExtrairEventos: Boolean;
 begin
   AXML := fpCmd.Params(0);
+  AExtrairEventos := StrToBoolDef(fpCmd.Params(1), False);
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
     ACBrNFe.NotasFiscais.Clear;
     CargaDFe := TACBrCarregarNFe.Create(ACBrNFe, AXML, False);
     try
+      ACBrNFe.WebServices.Consulta.ExtrairEventos := AExtrairEventos;
+
       if (ACBrNFe.NotasFiscais.Count = 0) then
       begin
         if ValidarChave(AXML) then
@@ -1352,8 +1337,14 @@ begin
         Resposta.Processar(ACBrNFe);
         fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
 
-        if  FilesExists( AXML ) then
-          fpCmd.Resposta :=  fpCmd.Resposta + sLineBreak + 'Arquivo=' + AXML;
+        if (ACBrNFe.NotasFiscais.Count > 0) then
+        begin
+          if NaoEstaVazio(ACBrNFe.NotasFiscais.Items[0].NomeArq) then
+            fpCmd.Resposta := fpCmd.Resposta + sLineBreak + 'Arquivo=' + ACBrNFe.NotasFiscais.Items[0].NomeArq;
+        end
+        else if ACBrNFe.Configuracoes.Geral.Salvar then
+            fpCmd.Resposta := fpCmd.Resposta + sLineBreak + 'Arquivo='
+            + PathWithDelim(ACBrNFe.Configuracoes.Arquivos.PathSalvar) + AXML + '-sit.xml';
 
       finally
         Resposta.Free;
@@ -1399,7 +1390,7 @@ begin
       if NaoEstaVazio(ACBrNFe.NotasFiscais.Items[0].NomeArq) then
         fpCmd.Resposta := ACBrNFe.NotasFiscais.Items[0].NomeArq
       else
-        fpCmd.Resposta := PathWithDelim(ACBrNFe.Configuracoes.Arquivos.PathSalvar)
+        fpCmd.Resposta := PathWithDelim(ACBrNFe.Configuracoes.Arquivos.GetPathNFe())
           + StringReplace(ACBrNFe.NotasFiscais.Items[0].NFe.infNFe.ID,
           'NFe', '', [rfIgnoreCase]) + '-nfe.xml';
     finally
@@ -1722,7 +1713,6 @@ begin
        finally
          RespRetorno.Free;
        end;
-
        RespostaImpressao(AImprime, AImpressora, APreview, ACopias, APDF);
 
     end
@@ -1962,7 +1952,6 @@ begin
         finally
            RespRetorno.Free;
         end;
-
         RespostaImpressao(AImprime, AImpressora, '' , 0, False);
       end
       else
@@ -2148,6 +2137,8 @@ begin
       ACBrNFe.WebServices.Consulta.NFeChave := AChave;
 
     ACBrNFe.WebServices.Consulta.Executar;
+    if EstaVazio(ACBrNFe.WebServices.Consulta.Protocolo) then
+      raise Exception.Create(ACBrStr('Não foi possível consultar o número de Protocolo para a Chave: ') + AChave );
 
     ACBrNFe.EventoNFe.Evento.Clear;
     with ACBrNFe.EventoNFe.Evento.New do
@@ -2178,7 +2169,6 @@ begin
     finally
       Resposta.Free;
     end;
-
 
   end;
 end;

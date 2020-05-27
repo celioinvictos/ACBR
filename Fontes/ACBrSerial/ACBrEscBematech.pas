@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -30,13 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 20/04/2013:  Daniel Simões de Almeida
-|*   Inicio do desenvolvimento
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrEscBematech;
@@ -45,7 +38,10 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrPosPrinter, ACBrConsts;
+  ACBrPosPrinter, ACBrConsts
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 const
   ModoEscBema = GS + #249 + #32 + #0;

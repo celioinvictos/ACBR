@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2005 Anderson Rogerio Bejatto               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Daniel Simoes de Almeida               }
+{ Colaboradores nesse arquivo: Anderson Rogerio Bejatto                        }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,28 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 19/09/2011: Régys Borges da Silveira
-|*  - Primeira Versao ACBrCargaBal
-|
-|* 04/04/2019: Iago Mozart
-|*  + Inclusão do campo "Código da informação Extra do item para a versão 3 do 
-|*     arquivo para modelo tipo MGV6
-|*  - Ajustes por Waldir Paim
-|
-|* 14/05/2019: EMBarbosa
-|*  + Inclusão do campo "Observacoes" usado no "arquivo de informações extras"
-|*     ou "arquivo de receitas" da MGV6
-|*  * Informações extras ou relativas a receita movidas para nova classe
-|*     TACBrCargaBalInformacaoExtra usada para o arquivo mencionado acima
-******************************************************************************}
 
 unit ACBrCargaBal;
 
@@ -56,7 +37,14 @@ unit ACBrCargaBal;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
   ACBrBase;
 
 type
@@ -217,14 +205,13 @@ type
   	property EAN13Fornecedor: string read FEAN13Fornecedor write FEAN13Fornecedor;
   end;
 
-  TACBrCargaBalItens = class(TObjectList)
+  TACBrCargaBalItens = class(TObjectList{$IfDef NEXTGEN}<TACBrCargaBalItem>{$EndIf})
   private
     function GetItem(Index: Integer): TACBrCargaBalItem;
     procedure SetItem(Index: Integer; const Value: TACBrCargaBalItem);
   public
     constructor Create;
     destructor Destroy; Override;
-    procedure Clear; override;
     function New: TACBrCargaBalItem;
     property Items[Index: Integer]: TACBrCargaBalItem read GetItem write SetItem; Default;
   end;
@@ -239,6 +226,7 @@ type
     FProdutos: TACBrCargaBalItens;
     FModelo: TACBrCargaBalModelo;
     procedure Progresso(const AMensagem: String; const AContAtual, AContTotal: Integer);
+
   protected
     function RFill(const Str: string; Tamanho: Integer = 0; Caracter: Char = ' '): string; overload;
     function LFIll(const Str: string; Tamanho: Integer = 0; Caracter: Char = '0'): string; overload;
@@ -251,6 +239,7 @@ type
     function GetNomeArquivoSetor: String;
     function GetNomeArquivoTaras: String;
     function GetNomeArquivoFornecedor: String;
+    function GetNomeArquivoTeclado: String;
 
     function GetNomeArquivoRelacaoProdutoNutricional: String;
     function GetNomeArquivoRelacaoProdutoReceita: String;
@@ -266,7 +255,7 @@ type
     function GetTipoValidadeProdutoUranoURF32(Tipo: TACBrCargaBalTipoValidade): string;
 
     procedure PreencherFilizola(stlArquivo, stlSetor, stlNutricional, stlReceita: TStringList);
-    procedure PreencherToledo(stlArquivo, stlNutricional, stlReceita, stlTara, stlFornecedor, stlSetor: TStringList; Versao: Integer);
+    procedure PreencherToledo(stlArquivo, stlNutricional, stlReceita, stlTara, stlFornecedor, stlSetor, stlTeclado: TStringList; Versao: Integer);
     procedure PreencherUrano(Arquivo: TStringList);
     procedure PreencherUranoS(Arquivo: TStringList);
     procedure PreencherUranoURF32(stlArquivo, stlNutricional, stlReceita, stlRelacaoProdutoNutricional, stlRelacaoProdutoReceita: TStringList);
@@ -391,11 +380,6 @@ end;
 
 { TACBrCargaBalItens }
 
-procedure TACBrCargaBalItens.Clear;
-begin
-  inherited Clear;
-end;
-
 constructor TACBrCargaBalItens.create;
 begin
   inherited Create(True);
@@ -421,7 +405,7 @@ end;
 procedure TACBrCargaBalItens.SetItem(Index: Integer;
   const Value: TACBrCargaBalItem);
 begin
-  Put(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 { TACBrCargaBal }
@@ -623,6 +607,13 @@ begin
   end;
 end;
 
+function TACBrCargaBal.GetNomeArquivoTeclado: String;
+begin
+  case FModelo of
+    modToledoMGV5: Result := 'TXTECLAS.TXT';
+  end;
+end;
+
 function TACBrCargaBal.GetNomeArquivoNutricional: String;
 begin
   // A urano nao possuem arquivo nutricional a parte das informações
@@ -806,7 +797,7 @@ begin
   end;
 end;
 
-procedure TACBrCargaBal.PreencherToledo(stlArquivo, stlNutricional, stlReceita, stlTara, stlFornecedor, stlSetor: TStringList; Versao: Integer);
+procedure TACBrCargaBal.PreencherToledo(stlArquivo, stlNutricional, stlReceita, stlTara, stlFornecedor, stlSetor, stlTeclado: TStringList; Versao: Integer);
 var
   i, Total: Integer;
   ANutri, AReceita, ATara, AFornecedor, ASetor: string;
@@ -929,6 +920,19 @@ begin
         LFIll('0', 4)+ // Código da Conservação
         LFIll(Produtos[i].EAN13Fornecedor, 12) // EAN-13, quando utilizado Tipo de Produto EAN-13
       );
+
+      if Produtos[i].Tecla > 0 then
+      begin
+        stlTeclado.Add(
+          '01' +
+          '1' +
+          LFIll(Produtos[i].Tecla, 2) +
+          LFIll(Produtos[i].Codigo, 6) +
+          '0' +
+          RFIll(Produtos[i].Descricao, 24) +
+          RFIll('', 255)
+        );
+      end;
 
       if (Length(Produtos[i].InformacaoExtra.Receita) > 2) then
       begin
@@ -1348,7 +1352,7 @@ end;
 procedure TACBrCargaBal.GerarArquivos(const ADiretorio: String);
 var
   Produto, Setor, Receita, Nutricional, Tara, Fornecedor: TStringList;
-  RelacaoProdutoNutricional, RelacaoProdutoReceita: TStringList;
+  RelacaoProdutoNutricional, RelacaoProdutoReceita, Teclado: TStringList;
   NomeArquivo: TFileName;
   Total: integer;
 begin
@@ -1371,6 +1375,7 @@ begin
   RelacaoProdutoNutricional := TStringList.Create;
   RelacaoProdutoReceita     := TStringList.Create;
   Fornecedor                := TStringList.Create;
+  Teclado                   := TStringList.Create;
   try
     Total := Self.Produtos.Count;
     Progresso(ACBrStr('Iniciando a geração dos arquivos'), 0, Total);
@@ -1378,14 +1383,14 @@ begin
     // Varre os registros gerando o arquivo em lista
     case FModelo of
       modFilizola   : PreencherFilizola(Produto, Setor, Nutricional, Receita);
-      modToledo     : PreencherToledo(Produto, Nutricional, Receita, Tara, nil, nil, 0);
+      modToledo     : PreencherToledo(Produto, Nutricional, Receita, Tara, nil, nil, nil, 0);
       modUrano      : PreencherUrano(Produto);
       modUranoS     : PreencherUranoS(Produto);
-      modToledoMGV5 : PreencherToledo(Produto, Nutricional, Receita, Tara, Fornecedor, Setor, 2);
-      modToledoMGV6 : PreencherToledo(Produto, Nutricional, Receita, Tara, Fornecedor, Setor, 3);
+      modToledoMGV5 : PreencherToledo(Produto, Nutricional, Receita, Tara, Fornecedor, Setor, Teclado, 2);
+      modToledoMGV6 : PreencherToledo(Produto, Nutricional, Receita, Tara, Fornecedor, Setor, Teclado, 3);
       modUranoURF32 : PreencherUranoURF32(Produto, Nutricional, Receita, RelacaoProdutoNutricional, RelacaoProdutoReceita);
       modRamuza     : PreencherRamuza(Produto);
-      modToledoMGV5Ver1 : PreencherToledo(Produto, Nutricional, Receita, Tara, Fornecedor, Setor, 1);
+      modToledoMGV5Ver1 : PreencherToledo(Produto, Nutricional, Receita, Tara, Fornecedor, Setor, nil, 1);
     end;
 
     // Monta o nome do arquivo de produtos seguindo o padrao da balanca
@@ -1452,6 +1457,13 @@ begin
       FArquivosGerados.Add(NomeArquivo) ;
     end;
 
+    if Teclado.Count > 0 then
+    begin
+      NomeArquivo := IncludeTrailingPathDelimiter(ADiretorio) + GetNomeArquivoTeclado;
+      Teclado.SaveToFile(NomeArquivo);
+      FArquivosGerados.Add(NomeArquivo) ;
+    end;
+
     Progresso('Terminado', Total, Total);
   finally
     Produto.Free;
@@ -1462,6 +1474,7 @@ begin
     RelacaoProdutoNutricional.Free;
     RelacaoProdutoReceita.Free;
     Fornecedor.Free;
+    Teclado.Free;
   end;
 end;
 

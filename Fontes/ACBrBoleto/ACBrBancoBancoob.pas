@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   DOUGLAS TYBEL                                 }
+{ Colaboradores nesse arquivo: DOUGLAS TYBEL dtybel@yahoo.com.br               }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,13 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{ Desenvolvedor desta unit: DOUGLAS TYBEL -  dtybel@yahoo.com.br  -  www.facilassim.com.br  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{Somente é aceito o Convênio Carteira 1 Sem Registro} 
 
 {$I ACBr.inc}
 
@@ -727,7 +723,7 @@ begin
                space(9)                                 + // 9 a 17 Uso exclusivo FEBRABAN/CNAB
                ATipoInscricao                           + // 18 - Tipo de inscrição do cedente
                PadLeft(OnlyNumber(CNPJCPF), 14, '0')    + // 19 a 32 -Número de inscrição do cedente
-               StringOfChar(' ', 20)                    + // 33 a 52 - Brancos - Alteração para passar no validador
+               PadRight(Convenio, 20, ' ')              + // 33 a 52 - Brancos - Alteração para passar no validador
                '0'                                      + // 53 - Zeros
                PadLeft(OnlyNumber(Agencia), 4, '0')     + // 54 a 57 - Código da agência do cedente
                PadRight(AgenciaDigito, 1, '0')          + // 58 - Digito agência do cedente
@@ -779,14 +775,15 @@ function TACBrBancoob.GerarRegistroTransacao240(
   ACBrTitulo: TACBrTitulo): String;
 var AEspecieTitulo, ATipoInscricao, ATipoOcorrencia, ATipoBoleto, ADataMoraJuros,
     ADataDesconto,ADataDesconto2,ATipoAceite,NossoNum : string;
-    DiasProtesto: String;
-    ProtestoBaixa: String;
     ATipoInscricaoAvalista: Char;
     wModalidade, ValorMora: String;
     strCarteiraEnvio : Char;
     S :string;
     MsgBoleto: Array[1..5] of string;
     K: Integer;
+    ACodProtesto: Char;
+   DataProtestoNegativacao: string;
+   DiasProtestoNegativacao: string;
 begin
   if ( ACBrTitulo.NossoNumero <> IntToStrZero(0, length(ACBrTitulo.NossoNumero)) ) then
     NossoNum  := RemoveString('-', MontarCampoNossoNumero(ACBrTitulo))
@@ -836,6 +833,12 @@ begin
         tbBancoReemite    : ATipoBoleto := '3';
         tbBancoNaoReemite : ATipoBoleto := '4';
       end;
+
+      {Pegando Tipo de Sacado}
+      if Length(OnlyNumber(Sacado.CNPJCPF)) > 11 then
+         Sacado.Pessoa:= pJuridica
+      else
+         Sacado.Pessoa:= pFisica;
 
       {Pegando especie do titulo}
       if EspecieDoc = 'CH' then
@@ -893,15 +896,6 @@ begin
       else
         AEspecieTitulo := '99';
 
-      {Mora Juros}
-      if (ValorMoraJuros > 0) then
-        begin
-          if (DataMoraJuros > 0) then
-            ADataMoraJuros := FormatDateTime('ddmmyyyy', DataMoraJuros)
-          else ADataMoraJuros := PadLeft('', 8, '0');
-        end
-      else ADataMoraJuros := PadLeft('', 8, '0');
-
      {Descontos}
      if (ValorDesconto > 0) then
        begin
@@ -912,12 +906,39 @@ begin
      else
        ADataDesconto := PadLeft('', 8, '0');
 
-     DiasProtesto  := IntToStrZero(DiasDeProtesto,2);
+     {Código para Protesto / Negativação}
+      case CodigoNegativacao of
+        cnProtestarCorrido :  ACodProtesto := '1';
+        cnProtestarUteis   :  ACodProtesto := '1'; // Não há no manual opção para dias uteis
+        cnNegativar        :  ACodProtesto := '8';
+      else
+        case TipoDiasProtesto of
+          diCorridos       : ACodProtesto := '1';
+          diUteis          : ACodProtesto := '2';
+        else
+          ACodProtesto := '3';
+        end;
+      end;
 
-     if (DataProtesto > 0) then
-       ProtestoBaixa:= '1'
-     else
-       ProtestoBaixa:= '3';
+      {Data e Dias de Protesto / Negativação}
+      if (ACodProtesto = '8') then
+      begin
+        DataProtestoNegativacao := DateToStr(DataNegativacao);
+        DiasProtestoNegativacao := IntToStr(DiasDeNegativacao);
+      end
+      else
+	  begin
+  	    if (ACodProtesto <> '3') then
+        begin
+          DataProtestoNegativacao := DateToStr(DataProtesto);
+          DiasProtestoNegativacao := IntToStr(DiasDeProtesto);
+        end
+        else
+        begin
+          DataProtestoNegativacao := '';
+          DiasProtestoNegativacao := '0';
+        end;
+	  end;
 
      if CodigoMora = '' then
      begin
@@ -930,6 +951,19 @@ begin
         else if  CodigoMoraJuros = cjTaxaMensal then
           CodigoMora :='2';
       end;
+     end;
+
+     {Mora Juros}
+     if (ValorMoraJuros > 0) then
+       begin
+         if (DataMoraJuros > 0) then
+           ADataMoraJuros := FormatDateTime('ddmmyyyy', DataMoraJuros)
+         else ADataMoraJuros := PadLeft('', 8, '0');
+       end
+     else
+     begin
+       ADataMoraJuros := PadLeft('', 8, '0');
+       CodigoMora := '0'; // Se não tem juro atribuido, não informar o código mora
      end;
 
      if CodigoMora = '0' then
@@ -994,12 +1028,16 @@ begin
                          IntToStrZero( round(ValorIOF * 100), 15)         + // 166 a 180 - Valor do IOF a ser recolhido
                          IntToStrZero( round(ValorAbatimento * 100), 15)  + // 181 a 195 - Valor do abatimento
                          PadRight(SeuNumero, 25, ' ')                     + // 196 a 220 - Identificação do título na empresa
-                         ProtestoBaixa                                    + // 221 - Código de protesto: "1"
-                         DiasProtesto                                     + // 222 a 223 - Prazo para protesto (em dias corridos)
+                         IfThen((DataProtestoNegativacao <> '') and
+                                 (StrToInt(DiasProtestoNegativacao) > 0), ACodProtesto, '3')       + // 221 - Código de protesto
+                         IfThen((DataProtestoNegativacao <> '') and
+                                (StrToInt(DiasProtestoNegativacao) > 0),
+                                 PadLeft(DiasProtestoNegativacao, 2, '0'), '00')                   + // 222 a 223 - Prazo para protesto (em dias)
                          '0'                                              + // 224 - Código de Baixa
                          space(3)                                         + // 225 A 227 - Dias para baixa
                          '09'                                             + //
-                         '0000000000'                                     + // Numero contrato da operação
+                                                              
+                         PadLeft(OnlyNumber(ACBrBoleto.Cedente.Operacao), 10, '0') + // Numero contrato da operação
                          ' ';
         Inc(FNumeroSequencialRegistroNoLote);
       {SEGMENTO Q}
@@ -1080,7 +1118,7 @@ begin
                PadLeft('0', 15, '0')                                      + // 51-65 Valor ou percentual a ser concedido
                IfThen((PercentualMulta > 0),
                        IfThen(MultaValorFixo,'1','2'), '0')               + // 66 Código da multa - 1 valor fixo / 2 valor percentual / 0 Sem Multa
-               IfThen((DataMulta > 0),
+               IfThen((DataMulta > 0) and (PercentualMulta > 0),
                        FormatDateTime('ddmmyyyy', DataMulta),
                                       '00000000')                         + // 67 - 74 Se cobrar informe a data para iniciar a cobrança ou informe zeros se não cobrar
                IfThen((PercentualMulta > 0),

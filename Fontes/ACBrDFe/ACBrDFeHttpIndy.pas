@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: André Ferreira de Moraes                        }
 {                                                                              }
@@ -48,6 +48,8 @@ const
 type
   { TDFeDelphiSoap }
 
+  { TDFeHttpIndy }
+
   TDFeHttpIndy = class(TDFeSSLHttpClass)
   private
     FIndyReqResp: THTTPReqResp;
@@ -55,18 +57,16 @@ type
   {$IF CompilerVersion >= 33}
     procedure OnBeforePost(const HTTPReqResp: THTTPReqResp; Client: THTTPClient);
   {$ELSE}
-    procedure OnBeforePost(const HTTPReqResp: THTTPReqResp; Data: Pointer);
+    procedure OnBeforePost(const HTTPReqResp: THTTPReqResp; ARequest: Pointer);
   {$IFEND}
   protected
-    function GetHTTPResultCode: Integer; override;
-    procedure ConfigurarHTTP(const AURL, ASoapAction: String; const AMimeType: String); override;
+    procedure ConfigConnection; override;
 
   public
     constructor Create(ADFeSSL: TDFeSSL); override;
     destructor Destroy; override;
 
-    function Enviar(const ConteudoXML: String; const AURL: String;
-      const ASoapAction: String; const AMimeType: String = ''): String; override;
+    procedure Execute; override;
     procedure Abortar; override;
   end;
 
@@ -93,36 +93,25 @@ begin
   inherited Destroy;
 end;
 
-function TDFeHttpIndy.Enviar(const ConteudoXML, AURL, ASoapAction: String;
-  const AMimeType: String): String;
-var
-  Resp: TMemoryStream;
+procedure TDFeHttpIndy.Execute;
 begin
-  Result := '';
+  inherited;
 
-  ConfigurarHTTP(AURL, ASoapAction, AMimeType);
-
-  Resp := TMemoryStream.Create;
+  // Enviando, dispara exceptions no caso de erro //
   try
-    try
-      // Enviando, dispara exceptions no caso de erro //
-      FIndyReqResp.Execute(ConteudoXML, Resp);
-    except
-      On E: Exception do
-      begin
-        raise EACBrDFeException.Create( Format( cACBrDFeSSLEnviarException,
-                                        [InternalErrorCode, HTTPResultCode, AURL] ) + sLineBreak +
-                                        E.Message ) ;
-      end;
-    end;
-
-    Resp.Position := 0;
-    Result := ReadStrFromStream(Resp, Resp.Size);
-    // DEBUG //
-    //Resp.SaveToFile('c:\temp\ReqResp.xml');
+    DataReq.Position := 0;
+    FIndyReqResp.Execute(DataReq, DataResp);
   finally
-    Resp.Free;
+    FpInternalErrorCode := GetLastError;
+    // Indy não tem mapeamento para HttpResultCode
+    if DataResp.Size > 0 then
+      FpHTTPResultCode := 200
+    else
+      FpHTTPResultCode := 0;
   end;
+
+  // DEBUG //
+  //DataResp.SaveToFile('c:\temp\ReqResp.xml');
 end;
 
 procedure TDFeHttpIndy.Abortar;
@@ -131,35 +120,40 @@ begin
   FIndyReqResp := THTTPReqResp.Create(nil);
 end;
 
-procedure TDFeHttpIndy.ConfigurarHTTP(const AURL, ASoapAction: String;
-  const AMimeType: String);
+procedure TDFeHttpIndy.ConfigConnection;
 begin
-  with FpDFeSSL do
-  begin
-    if ProxyHost <> '' then
-    begin
-      FIndyReqResp.Proxy := ProxyHost + ':' + ProxyPort;
-      FIndyReqResp.UserName := ProxyUser;
-      FIndyReqResp.Password := ProxyPass;
-    end;
+  inherited;
 
-    FIndyReqResp.ConnectTimeout := TimeOut;
-  {$IF CompilerVersion >= 33}
-    //NOTA: Não existe a propriedade SendTimeout em Soap.SOAPHTTPTrans (Delphi 10.3.1)
-    //No Delphi 10.3 SendTimeout = ReceiveTimeout
-    FIndyReqResp.ReceiveTimeout := TimeOut;
-  {$ELSE}
-    FIndyReqResp.SendTimeout    := TimeOut;
-    FIndyReqResp.ReceiveTimeout := TimeOut;
-  {$IFEND}
+  // Proxy //
+  if (FpDFeSSL.ProxyHost <> '') then
+  begin
+    FIndyReqResp.Proxy := FpDFeSSL.ProxyHost + ':' + FpDFeSSL.ProxyPort;
+    FIndyReqResp.UserName := FpDFeSSL.ProxyUser;
+    FIndyReqResp.Password := FpDFeSSL.ProxyPass;
   end;
 
-  FMimeType := AMimeType;
+  // Header //
+  FIndyReqResp.URL := URL;
+  //FIndyReqResp.Method := Method;
+  FIndyReqResp.UseUTF8InHeader := True;
+  FMimeType := MimeType;
+  FIndyReqResp.SoapAction := SoapAction;
+  //Headers.Insert(0, UpperCase(Method) + ' ' + URL + ' HTTP/1.0');
+  //if Headers.Count > 0 then
+  //  FIndyReqResp.Headers.AddStrings(Headers);
+
+  // SSL e Certificado //
+
+  // TimeOut //
+  FIndyReqResp.ConnectTimeout := FpDFeSSL.TimeOut;
+  FIndyReqResp.ReceiveTimeout := FpDFeSSL.TimeOut;
+  {$IF CompilerVersion < 33}
+    //NOTA: Não existe a propriedade SendTimeout em Soap.SOAPHTTPTrans (Delphi 10.3.1)
+    //No Delphi 10.3 SendTimeout = ReceiveTimeout
+    FIndyReqResp.SendTimeout := FpDFeSSL.TimeOut;
+  {$IFEND}
 
   FIndyReqResp.OnBeforePost := OnBeforePost;
-  FIndyReqResp.UseUTF8InHeader := True;
-  FIndyReqResp.SoapAction := ASoapAction;
-  FIndyReqResp.URL := AURL;
 end;
 
 {$IF CompilerVersion >= 33}
@@ -174,28 +168,33 @@ begin
     if (UseCertificateHTTP) then
     begin
       if not InternetSetOption(Client, INTERNET_OPTION_CLIENT_CERT_CONTEXT,
-        FpDFeSSL.CertContextWinApi, SizeOf(CERT_CONTEXT)) then
+        PCCERT_CONTEXT(FpDFeSSL.CertContextWinApi), SizeOf(CERT_CONTEXT)) then
         raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_CLIENT_CERT_CONTEXT: ' +
                                        IntToStr(GetLastError));
     end;
 
-    if trim(ProxyUser) <> '' then
+    if (trim(ProxyUser) <> '') then
+    begin
       if not InternetSetOption(Client, INTERNET_OPTION_PROXY_USERNAME,
         PChar(ProxyUser), Length(ProxyUser)) then
         raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_PROXY_USERNAME: ' +
                                        IntToStr(GetLastError));
 
-    if trim(ProxyPass) <> '' then
-      if not InternetSetOption(Client, INTERNET_OPTION_PROXY_PASSWORD,
-        PChar(ProxyPass), Length(ProxyPass)) then
-        raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_PROXY_PASSWORD: ' +
-                                       IntToStr(GetLastError));
+      if (trim(ProxyPass) <> '') then
+        if not InternetSetOption(Client, INTERNET_OPTION_PROXY_PASSWORD,
+          PChar(ProxyPass), Length(ProxyPass)) then
+          raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_PROXY_PASSWORD: ' +
+                                         IntToStr(GetLastError));
+    end;
 
-    ContentHeader := Format(ContentTypeTemplate, [FMimeType]);
-    HttpAddRequestHeaders(Client, PChar(ContentHeader), Length(ContentHeader),
-                            HTTP_ADDREQ_FLAG_REPLACE);
+    if (FMimeType <> '') then
+    begin
+      ContentHeader := Format(ContentTypeTemplate, [FMimeType]);
+      HttpAddRequestHeaders(Client, PChar(ContentHeader), Length(ContentHeader),
+                              HTTP_ADDREQ_FLAG_REPLACE);
+
+    end;
   end;
-
   //Não existe este método CheckContentType em Soap.SOAPHTTPTrans (D10.3.1)
   //FIndyReqResp.CheckContentType;
 end;
@@ -203,46 +202,67 @@ end;
 {$ELSE}
 
 procedure TDFeHttpIndy.OnBeforePost(const HTTPReqResp: THTTPReqResp;
-  Data: Pointer);
+  ARequest: Pointer);
 var
   ContentHeader: String;
+  SecurityFlags, FlagsLen: Cardinal;
 begin
   with FpDFeSSL do
   begin
     if (UseCertificateHTTP) then
     begin
-      if not InternetSetOption(Data, INTERNET_OPTION_CLIENT_CERT_CONTEXT,
-        FpDFeSSL.CertContextWinApi, SizeOf(CERT_CONTEXT)) then
+      if not InternetSetOption(ARequest, INTERNET_OPTION_CLIENT_CERT_CONTEXT,
+        PCCERT_CONTEXT(FpDFeSSL.CertContextWinApi), SizeOf(CERT_CONTEXT)) then
         raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_CLIENT_CERT_CONTEXT: ' +
                                        IntToStr(GetLastError));
     end;
 
+    SecurityFlags := 0;
+    FlagsLen := SizeOf(SecurityFlags);
+    // Query actual Flags
+    if InternetQueryOption( ARequest,
+                            INTERNET_OPTION_SECURITY_FLAGS,
+                            @SecurityFlags, FlagsLen ) then
+    begin
+      SecurityFlags := SecurityFlags or
+                       SECURITY_FLAG_IGNORE_REVOCATION or
+                       SECURITY_FLAG_IGNORE_UNKNOWN_CA or
+                       SECURITY_FLAG_IGNORE_CERT_CN_INVALID or
+                       SECURITY_FLAG_IGNORE_CERT_DATE_INVALID or
+                       SECURITY_FLAG_IGNORE_WRONG_USAGE;
+      if not InternetSetOption( ARequest,
+                                INTERNET_OPTION_SECURITY_FLAGS,
+                                @SecurityFlags, FlagsLen ) then
+        raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_SECURITY_FLAGS: ' +
+                                       IntToStr(GetLastError));
+    end;
+
     if trim(ProxyUser) <> '' then
-      if not InternetSetOption(Data, INTERNET_OPTION_PROXY_USERNAME,
+    begin
+      if not InternetSetOption(ARequest, INTERNET_OPTION_PROXY_USERNAME,
         PChar(ProxyUser), Length(ProxyUser)) then
         raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_PROXY_USERNAME: ' +
                                        IntToStr(GetLastError));
 
-    if trim(ProxyPass) <> '' then
-      if not InternetSetOption(Data, INTERNET_OPTION_PROXY_PASSWORD,
-        PChar(ProxyPass), Length(ProxyPass)) then
-        raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_PROXY_PASSWORD: ' +
-                                       IntToStr(GetLastError));
+      if trim(ProxyPass) <> '' then
+        if not InternetSetOption(ARequest, INTERNET_OPTION_PROXY_PASSWORD,
+          PChar(ProxyPass), Length(ProxyPass)) then
+          raise EACBrDFeException.Create('Erro ao ajustar INTERNET_OPTION_PROXY_PASSWORD: ' +
+                                         IntToStr(GetLastError));
+    end;
 
-    ContentHeader := Format(ContentTypeTemplate, [FMimeType]);
-    HttpAddRequestHeaders(Data, PChar(ContentHeader), Length(ContentHeader),
+    if (FMimeType <> '') then
+    begin
+      ContentHeader := Format(ContentTypeTemplate, [FMimeType]);
+      HttpAddRequestHeaders(ARequest, PChar(ContentHeader), Length(ContentHeader),
                             HTTP_ADDREQ_FLAG_REPLACE);
+    end;
   end;
 
   FIndyReqResp.CheckContentType;
 end;
 {$IFEND}
 
-
-function TDFeHttpIndy.GetHTTPResultCode: Integer;
-begin
-  Result := GetLastError;
-end;
-
 end.
+
 

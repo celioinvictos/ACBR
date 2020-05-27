@@ -28,6 +28,7 @@
 package ACBr_BlocoX;
 
 {$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -49,13 +50,15 @@ package ACBr_BlocoX;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'ACBr - Bloco X - (http://www.projetoacbr.com.br/)'}
+{$RUNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
   rtl,
   vcl,
-  designide,
   ACBr_DFeComum;
 
 contains
@@ -64,7 +67,6 @@ contains
   ACBrBlocoX_Estoque in '..\..\..\..\Fontes\ACBrDFe\ACBrBlocoX\ACBrBlocoX_Estoque.pas',
   ACBrBlocoX_ReducaoZ in '..\..\..\..\Fontes\ACBrDFe\ACBrBlocoX\ACBrBlocoX_ReducaoZ.pas',
   ACBrBlocoX_WebServices in '..\..\..\..\Fontes\ACBrDFe\ACBrBlocoX\ACBrBlocoX_WebServices.pas',
-  ACBrBlocoX_Reg in '..\..\..\..\Fontes\ACBrDFe\ACBrBlocoX\ACBrBlocoX_Reg.pas',
   pcnRetEnvBlocoX in '..\..\..\..\Fontes\ACBrDFe\ACBrBlocoX\PCNBlocoX\pcnRetEnvBlocoX.pas',
   ACBrBlocoX_Consulta in '..\..\..\..\Fontes\ACBrDFe\ACBrBlocoX\ACBrBlocoX_Consulta.pas';
 

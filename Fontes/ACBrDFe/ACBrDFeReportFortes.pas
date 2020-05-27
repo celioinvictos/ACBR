@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: Rafael Dias                                                }
 {                                                                              }
@@ -69,8 +69,9 @@ begin
   FReport.ShowProgress := AConfig.MostraStatus;
   FReport.PrintDialog := AConfig.MostraSetup and (not AConfig.MostraPreview);
 
-  if RLPrinter.PrinterName <> AConfig.Impressora then
-    RLPrinter.PrinterName := AConfig.Impressora;
+  if NaoEstaVazio(AConfig.Impressora) then
+    if RLPrinter.PrinterName <> AConfig.Impressora then
+      RLPrinter.PrinterName := AConfig.Impressora;
 
   if RLPrinter.SupportsDuplex Then
      RLPrinter.Duplex := false;

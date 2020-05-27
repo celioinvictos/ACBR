@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -34,7 +37,13 @@ unit pnfsSubsNfseResposta;
 interface
 
 uses
-  SysUtils, Classes, Forms, Contnrs,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase,
   pcnConversao, pcnLeitor, pnfsConversao, pnfsNFSe;
 
 type
@@ -64,13 +73,14 @@ type
     function LerXML_proInfisc: Boolean;
     function LerXML_proEL: Boolean;
 	  function LerXml_proNFSeBrasil: Boolean;
+    function LerXml_proSiat: Boolean; 
     property Leitor: TLeitor                                 read FLeitor            write FLeitor;
     property MsgRetorno: TMsgRetornoSubsCollection           read FMsgRetorno        write SetMsgRetorno;
     property NotaSubstituidora: TNotaSubstituidoraCollection read FNotaSubstituidora write SetNotaSubstituidora;
     property Provedor: TnfseProvedor                         read FProvedor          write FProvedor;
   end;
 
- TMsgRetornoSubsCollection = class(TObjectList)
+ TMsgRetornoSubsCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TMsgRetornoSubsCollectionItem;
     procedure SetItem(Index: Integer; Value: TMsgRetornoSubsCollectionItem);
@@ -91,7 +101,7 @@ type
     property Correcao: String read FCorrecao write FCorrecao;
   end;
 
- TNotaSubstituidoraCollection = class(TObjectList)
+ TNotaSubstituidoraCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TNotaSubstituidoraCollectionItem;
     procedure SetItem(Index: Integer; Value: TNotaSubstituidoraCollectionItem);
@@ -124,13 +134,13 @@ end;
 function TMsgRetornoSubsCollection.GetItem(
   Index: Integer): TMsgRetornoSubsCollectionItem;
 begin
-  Result := TMsgRetornoSubsCollectionItem(inherited GetItem(Index));
+  Result := TMsgRetornoSubsCollectionItem(inherited Items[Index]);
 end;
 
 procedure TMsgRetornoSubsCollection.SetItem(Index: Integer;
   Value: TMsgRetornoSubsCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TMsgRetornoSubsCollection.New: TMsgRetornoSubsCollectionItem;
@@ -149,13 +159,13 @@ end;
 function TNotaSubstituidoraCollection.GetItem(
   Index: Integer): TNotaSubstituidoraCollectionItem;
 begin
-  Result := TNotaSubstituidoraCollectionItem(inherited GetItem(Index));
+  Result := TNotaSubstituidoraCollectionItem(inherited Items[Index]);
 end;
 
 procedure TNotaSubstituidoraCollection.SetItem(Index: Integer;
   Value: TNotaSubstituidoraCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TNotaSubstituidoraCollection.New: TNotaSubstituidoraCollectionItem;
@@ -208,6 +218,7 @@ begin
    proInfiscv11:  Result := LerXml_proInfisc;
    proEL:         Result := LerXML_proEL;
    proNFSeBrasil: Result := LerXml_proNFSeBrasil;
+   proSiat:       Result := LerXml_proSiat; 
  else
    Result := LerXml_ABRASF;
  end;
@@ -291,6 +302,11 @@ begin
 end;
 
 function TretSubsNFSe.LerXml_proNFSeBrasil: Boolean;
+begin
+  Result := False;
+end;
+
+function TretSubsNFSe.LerXml_proSiat: Boolean; 
 begin
   Result := False;
 end;

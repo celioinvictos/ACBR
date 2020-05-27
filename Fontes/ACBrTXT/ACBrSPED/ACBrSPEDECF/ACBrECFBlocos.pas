@@ -1,37 +1,34 @@
- {******************************************************************************}
- { Projeto: Componentes ACBr                                                    }
- {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
- { mentos de Automação Comercial utilizados no Brasil                           }
- {                                                                              }
- { Direitos Autorais Reservados (c) 2014   Juliomar Marchetti                   }
- {					  Isaque Pinheiro	                }
- { 			                  Daniel Simões de Almeida              }
- {                                                                              }
- { Colaboradores nesse arquivo:                                                 }
- {                                                                              }
- {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
- { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
- {                                                                              }
- {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
- { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
- { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
- { qualquer versão posterior.                                                   }
- {                                                                              }
- {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
- { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
- { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
- { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
- {                                                                              }
- {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
- { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
- { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
- { Você também pode obter uma copia da licença em:                              }
- { http://www.opensource.org/licenses/lgpl-license.php                          }
- {                                                                              }
- { Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
- {              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
- {                                                                              }
- {******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Juliomar Marchetti e Isaque Pinheiro            }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {******************************************************************************
 |* Historico
@@ -199,7 +196,7 @@ type
   TACBrIndicadorDados = TACBrIndDad;
 
   /// Versão do Leiaute do arquivo - TRegistro0000
-  TACBrECFCodVer = (ECFVersao100, ECFVersao200, ECFVersao300, ECFVersao400, ECFVersao500);
+  TACBrECFCodVer = (ECFVersao100, ECFVersao200, ECFVersao300, ECFVersao400, ECFVersao500, ECFVersao600);
 //  TACBrECFVersaoLeiaute = TACBrECFCodVer;
 
   /// Código da finalidade do arquivo - TRegistro0000
@@ -871,6 +868,9 @@ begin
   if AValue = '0005' then
     Result := ECFVersao500
   else
+  if AValue = '0006' then
+    Result := ECFVersao600
+  else
     raise Exception.CreateFmt('Valor informado [%s] deve estar entre (0001,0002 e 0003)', [AValue]);
 end;
               
@@ -890,6 +890,9 @@ begin
   else
   if AValue = ECFVersao500 then
     Result := '0005'
+  else
+  if AValue = ECFVersao600 then
+    Result := '0006'
   else
     raise Exception.Create('Valor informado inválido para ser convertido em TACBrECFCodVer');
 end;

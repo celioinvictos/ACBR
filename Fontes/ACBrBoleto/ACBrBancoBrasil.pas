@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,36 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-{******************************************************************************
-|* Historico
-|
-|* 0.0.1 - 07/05/2014: Paulo Monteiro - Alterações para leitura correta do Retorno
-|*  [*] Adicionado a leitura do retorno cnab 400 para convênio de 6 posições
-|*      Layout de Arquivo Retorno para Convênios na faixa numérica entre 000.001
-|*      a 999.999 (Convênios de até 6 posições) Versão Set/09
-|*      Separando em LerRetorno400Pos6 e LerRetorno400Pos7
-|*  [-] Alterado a validação da conta do arquivo retorno cnab 400 pois como o valor
-|*      fpTamanhoConta está 12 e causava erro, pois 12 é para cnab 240 e não para o 400
-|*  [*] Limpeza dos codigos antigos documentados na funções:
-|*      CodMotivoRejeicaoToDescricao, TipoOcorrenciaToDescricao
-|*  [*] Preenchidos os campos CodigoLiquidacao e CodigoLiquidacaoDescricao na
-|*      leitura do retorno do cnab 400
-|*  [*] CodOcorrenciaToTipo adicionadas as ocorrencias conforme a contribuição
-|*      do Jacinto Junior, testada e homologada, pois faltava e algumas estavam
-|*      erradas.
-|*  [*] CodOcorrenciaToTipo conforme a contribuição do Jacinto Junior,
-|*      Ajustadas para retornar o enumerado correto.
-|*      Verificadas conforme o layout do banco e testadas através do arquivo retorno.
-|*  [*] TipoOCorrenciaToCod conforme a contribuição do Jacinto Junior,
-|*      ajustada para utilizar ocorrências corretas e acrescentado novas ocorrências
-|*      Verificadas conforme o layout do banco e testadas através do arquivo retorno.
-|*  [-] Retorno convenio 7 pos, alterado a leitura do campo Carteira  := Copy(Linha,107,2);
-|*      conforme o layout do banco, pois antes estava pegando a variacao da carteira
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -602,7 +575,7 @@ begin
      end;
 
      BoletoEmail:= ACBrTitulo.CarteiraEnvio = tceBancoEmail;
-     if (BoletoEmail) or (Mensagem.Count > 1) then
+     if BoletoEmail then
       begin
        QtdRegTitulo:= 4;
        GeraSegS    := True;
@@ -790,7 +763,8 @@ begin
               PadRight(AMensagem,40,' ')                                              + // 100 - 139  - Mensagem 3
               PadRight('',60,' ')                                                     + // 140 - 199  - Não tratado
               PadRight('',8,'0')                                                      + // 200 - 207
-              StringOfChar('0', 33);                                                    // 208 - 240 Zeros (De acordo com o manual de particularidades BB)
+              StringOfChar('0', 24)                                                   + // 208 - 231 Zeros (De acordo com o manual de particularidades BB)
+              StringOfChar(' ', 9);                                                     // 232 - 240 Brancos (De acordo com o manual de particularidades BB)
 
      {SEGMENTO S}
      if GeraSegS then
@@ -1355,6 +1329,8 @@ begin
        toRetornoAlterarPrazoLimiteRecebimento      : Result := '39';
        toRetornoChequePendenteCompensacao          : Result := '46';
        toRetornoTipoCobrancaAlterado               : Result := '72';
+       toRetornoInclusaoNegativacao                : Result := '85';
+       toRetornoExclusaoNegativacao                : Result := '86';
        toRetornoDespesasProtesto                   : Result := '96';
        toRetornoDespesasSustacaoProtesto           : Result := '97';
        toRetornoDebitoCustasAntecipadas            : Result := '98';
@@ -1367,6 +1343,7 @@ begin
    case TipoOcorrencia of
      toRetornoRegistroConfirmado                   : Result := '02';
      toRetornoLiquidado                            : Result := '06';
+     toRetornoBaixaAutomatica                      : Result := '09';
      toRetornoTituloEmSer                          : Result := '11';
      toRetornoAbatimentoConcedido                  : Result := '12';
      toRetornoAbatimentoCancelado                  : Result := '13';
@@ -1455,6 +1432,8 @@ begin
       44: Result:= '44-Título pago com cheque devolvido';
       46: Result:= '46-Título pago com cheque, aguardando compensação';
       72: Result:= '72-Alteração de tipo de cobrança';
+      85: Result:= '85 – Inclusão de Negativação';
+      86: Result:= '86 – Exclusão de Negativação';
       96: Result:= '96-Despesas de Protesto';
       97: Result:= '97-Despesas de Sustação de Protesto';
       98: Result:= '98-Débito de Custas Antecipadas';
@@ -1515,6 +1494,8 @@ begin
       39: Result := toRetornoAlterarPrazoLimiteRecebimento;
       46: Result := toRetornoChequePendenteCompensacao;
       72: Result := toRetornoTipoCobrancaAlterado;
+      85: Result := toRetornoInclusaoNegativacao;
+      86: Result := toRetornoExclusaoNegativacao;
       96: Result := toRetornoDespesasProtesto;
       97: Result := toRetornoProtestoSustado;
       98: Result := toRetornoDebitoCustasAntecipadas;
@@ -1671,6 +1652,37 @@ begin
         00: Result := '00-Transferência de título de cobrança simples para descontada ou vice-versa';
         52: Result := '52-Reembolso de título vendor ou descontado';
       end;
+    toRetornoConfirmacaoRecebPedidoNegativacao, toRetornoInclusaoNegativacao: //  85 – Inclusão de Negativação (Particularidades BB jan/2019)
+      case CodMotivo of
+        01: Result:='01-Negativação aceita no BB';
+        02: Result:='02-Negativação aceita no agente negativador';
+        03: Result:='03-Inclusão cancelada';
+        04: Result:='04-Negativação recusada - pagador menor de idade';
+        05: Result:='05-Negativação recusada - espécie do boleto não permitida';
+        06: Result:='06-Negativação recusada - beneficiário não é PJ';
+        07: Result:='07-Negativação recusada - moeda do boleto não é Real';
+        08: Result:='08-Negativação recusada - endereço do pagador inválido';
+        09: Result:='09-Negativação recusada pelo agente negativado';
+        10: Result:='10-Negativação recusada - situação do boleto não permite NGTV';
+        11: Result:='11-Negativação recusada - cadastro do benef. desatualizado';
+        12: Result:='12-Negativação recusada - boleto inexistente';
+        13: Result:='13-Negativação recusada - pagador não identificado';
+        14: Result:='14-Recusa de tarifação de negativação';
+        15: Result:='15-Negativação recusada - motivos diversos';
+      end;
+    toRetornoConfirmacaoPedidoExclNegativacao, toRetornoExclusaoNegativacao: //  86 – Exclusão de Negativação (Particularidades BB jan/2019)
+      case CodMotivo of
+        01: Result:='01-Exclusão cancelada';
+        02: Result:='02-Negativação excluída no agente negativador';
+        03: Result:='03-Negativação excluída - devolução pelos correios';
+        04: Result:='04-Negativação excluída - data de ocorrência decursada';
+        05: Result:='05-Negativação excluída - determinação judicial';
+        06: Result:='06-Negativação excluída - contestação do interessado';
+        07: Result:='07-Negativação excluída - carta não retornou do correio';
+        08: Result:='08-Exclusão negativação recusada - registro inexistente';
+        15: Result:='09-Exclusão negativação recusada - motivos diversos';
+      end;
+
     else
       Result := IntToStrZero(CodMotivo, 2) + ' - Outros Motivos';
     end;
@@ -1766,6 +1778,7 @@ begin
         11: Result:='11-Comandada cliente on-line';
         12: Result:='12-Decurso prazo - cliente';
         13: Result:='13-Decurso prazo - banco';
+        99: Result:='99-Liquidado por agendamento';
       end;
       toRetornoDebitoTarifas: // 28 - Débito de Tarifas/Custas (Febraban 240 posições, v08.9 de 15/04/2014)
       case CodMotivo of
@@ -1790,7 +1803,7 @@ begin
         19: Result:='19-Tarifa Sobre Arquivo mensal (Em Ser)';
         20: Result:='20-Tarifa Sobre Emissão de Bloqueto Pré-Emitido pelo Banco';
       end;
-      toRetornoConfirmacaoRecebPedidoNegativacao: //  85 – Inclusão de Negativação (Particularidades BB jan/2019)
+      toRetornoConfirmacaoRecebPedidoNegativacao, toRetornoInclusaoNegativacao: //  85 – Inclusão de Negativação (Particularidades BB jan/2019)
       case CodMotivo of
         01: Result:='01-Negativação aceita no BB';
         02: Result:='02-Negativação aceita no agente negativador';
@@ -1808,7 +1821,7 @@ begin
         14: Result:='14-Recusa de tarifação de negativação';
         15: Result:='15-Negativação recusada - motivos diversos';
       end;
-      toRetornoConfirmacaoPedidoExclNegativacao: //  86 – Exclusão de Negativação (Particularidades BB jan/2019)
+      toRetornoConfirmacaoPedidoExclNegativacao, toRetornoExclusaoNegativacao: //  86 – Exclusão de Negativação (Particularidades BB jan/2019)
       case CodMotivo of
         01: Result:='01-Exclusão cancelada';
         02: Result:='02-Negativação excluída no agente negativador';
@@ -1951,7 +1964,7 @@ begin
          CodigoLiquidacaoDescricao := TipoOcorrenciaToDescricao(OcorrenciaOriginal.Tipo);
        end;
 
-       if(CodOcorrencia >= 2) and (CodOcorrencia <= 10) then
+       if ((CodOcorrencia >= 2) and (CodOcorrencia <= 10)) or ( CodOcorrencia >= 85 )then
        begin
          MotivoLinha:= 81;
          CodMotivo:= StrToInt(copy(Linha,MotivoLinha,2));
@@ -1975,7 +1988,11 @@ begin
        ValorMoraJuros       := StrToFloatDef(Copy(Linha,267,13),0)/100;
        ValorOutrosCreditos  := StrToFloatDef(Copy(Linha,280,13),0)/100;
        Carteira             := Copy(Linha,107,2);
-       NossoNumero          := Copy(Linha,69,5);
+	   
+       case CalcularTamMaximoNossoNumero(Carteira, '', rConvenioCedente) of
+         11: NossoNumero := Copy(Linha,63,11);
+         else NossoNumero := Copy(Linha,69,5);
+       end;
 
        ValorDespesaCobranca := StrToFloatDef(Copy(Linha,182,07),0)/100;
        ValorOutrasDespesas  := StrToFloatDef(Copy(Linha,189,13),0)/100;

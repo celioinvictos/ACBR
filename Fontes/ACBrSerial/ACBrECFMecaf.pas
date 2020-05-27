@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -24,11 +24,10 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 {******************************************************************************
 |*             O B S E R V A C O E S   S O B R E   A   M E C A F
@@ -41,60 +40,18 @@
 |*   STX/ETX. Se o protocolo estiver diferente não funcionará, é possivel mudar
 |*   o protocolo usando o "MODO MENU" da impressora.
 ******************************************************************************}
-{******************************************************************************
-|* Historico
-|*
-|* 13/09/2004:  Daniel Simoes de Almeida
-|*   Primeira Versao: Criaçao e Distribuiçao da Primeira Versao
-|* 23/05/2005:  Daniel Simoes de Almeida
-|*   Corrigido BUG em FechaCupom. Linhas de Observação eram impressas com
-|*   alinhamento errado.
-|*   Corrigido BUG em Estado. No incio do dia Estado sempre constava como
-|*   estBloqueda
-|*   -  Bugs reportados por Licerio Jose Rodrigues Neto
-|* 16/06/2005:  Daniel Simoes de Almeida e Licerio Jose Rodrigues Neto
-|*   - Adaptado para suporte da Versao FCP201 da MECAF (antiga)
-|* 23/05/2005:  Daniel Simoes de Almeida
-|*   - Corrigido BUG em VendeItem... para a MECAF imprimir Item em 2 linhas (e
-|*     e nao 3 linhas) ela deve restringir a descriçao em 20 caracteres
-|*     - Bug Reportado por Rildecy de Queiroz Borba
-|* 01/11/2005: Gabriel Fernandes - Duel Informática
-|*   - Compatibilizado com a vesão 301
-|*   - Corrigido BUG. Quando a redução z ficava pendente de um dia para o outro
-|*     o ECF ficava em estDesconhecido.
-|* 08/12/2005:  Daniel Simoes de Almeida
-|*  - Diminuido tempo de alguns Sleeps de 100 para 10 a fim de agilizar a
-|*    comunicaçao com o ECF (experimental)
-|* 27/04/2006:  Daniel Simoes de Almeida e Valmor Florez
-|*   - Melhorado o suporte a Versao FCP201/301 da MECAF (antiga)
-|* 29/06/2006:  Daniel Simoes de Almeida
-|*   - Métodos que usam campo de Texto livre modificados para filtrar os
-|*     caracteres acentuados
-|* 04/04/2007:  Daniel Simoes de Almeida
-|*  - Implementados métodos de Cupom Não Fiscal
-|* 20/08/2007:  Daniel Simoes de Almeida
-|*  - Adicionada as propriedades: CNPJ, IE, DataMovimento, NumCOOInicial,
-|*    NumCRZ, VendaBruta, GrandeTotal, TotalDescontos, TotalAcrescimos,
-|*    TotalCancelamentos, TotalIsencao, TotalNaoTributado,
-|*    TotalSubstituicaoTributaria,
-|*  - Adicionado os métodos: LerTotaisAliquota, LerTotaisFormaPagamento,
-|*    LerTotaisComprovanteNaoFiscal
-|* 06/11/2008:  Anderson Rogerio Bejatto
-|*  - Alteração Método VendeItem
-|* 24/12/2008:  Daniel Simoes de Almeida
-|*  - Cancelamento de cupons sem itens retornava Erro 51. Corrigido vendendo um
-|*    Item de 0.01 centavos antes de cancelar   (Reportado por Licério Neto)
-|*  - Metodo CarregaAliquotas alterado para incluir prefixo 'T' no indice
-|* 25/03/2010:  José Nilton Pace
-|*  - Implementado método GETNUMCCF
-******************************************************************************}
+
 {$I ACBr.inc}
 
 unit ACBrECFMecaf ;
 
 interface
-uses Classes,
-    ACBrECFClass, ACBrDevice;
+uses
+  Classes,
+  {$IFDEF NEXTGEN}
+   ACBrBase,
+  {$ENDIF}
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial;
 
 type
 { Classe filha de TACBrECFClass com implementaçao para Mecaf }

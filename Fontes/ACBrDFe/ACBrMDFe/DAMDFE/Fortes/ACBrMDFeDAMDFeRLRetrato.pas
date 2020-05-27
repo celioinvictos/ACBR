@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,15 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -98,7 +96,7 @@ type
     RLSystemInfo1: TRLSystemInfo;
     subItens: TRLSubDetail;
     rlbItens: TRLBand;
-    LinhaQuantidade: TRLDraw;
+    LinhaDivisoria: TRLDraw;
     rlmChave1: TRLMemo;
     rlmChave2: TRLMemo;
     rlb_1_DadosManifesto: TRLBand;
@@ -150,7 +148,7 @@ type
     RLDraw12: TRLDraw;
     RLDraw13: TRLDraw;
     RLDraw14: TRLDraw;
-    rlbNumcipio: TRLLabel;
+    rlbMunicipio: TRLLabel;
     RLDraw15: TRLDraw;
     rllTituloValorMerc: TRLLabel;
     rllValorMercadoria: TRLLabel;
@@ -238,6 +236,12 @@ begin
   {$ENDIF}
 
   CarregouLogo := TDFeReportFortes.CarregarLogo(rliLogo, fpDAMDFe.Logo);
+
+  if not CarregouLogo then
+  begin
+    rlmDadosEmitente.Left := rlmEmitente.Left;
+    rlmDadosEmitente.Width := rlmEmitente.Width;
+  end;
 
   if fpDAMDFe.ExpandeLogoMarca then
   begin
@@ -665,6 +669,7 @@ begin
   with rlbItens do
   begin
     AutoSize           := True;
+    IntegralHeight     := False;
     Borders.DrawTop    := False;
     Borders.DrawLeft   := False;
     Borders.DrawRight  := False;
@@ -714,7 +719,7 @@ end;
 procedure TfrlDAMDFeRLRetrato.rlbItensBeforePrint(Sender: TObject;
   var PrintIt: Boolean);
 var
-  J, nItem : integer;
+  J, nItem: integer;
 
   procedure Printar( sTemp : String; nItem : Integer );
   begin
@@ -728,7 +733,9 @@ begin
 
   with fpMDFe.infDoc.infMunDescarga.Items[FNumItem] do
   begin
-    rlbNumcipio.Caption := ACBrStr(Format('Município de Descarregamento: %s ',[ fpMDFe.infDoc.infMunDescarga.Items[FNumItem].xMunDescarga]));
+    rlbMunicipio.Caption := ACBrStr(Format('Município de Descarregamento: %s ',[ fpMDFe.infDoc.infMunDescarga.Items[FNumItem].xMunDescarga]));
+
+    LinhaDivisoria.Left := (rlbMunicipio.Width div 2) - 30;
 
    // Lista de CT-e
     for J := 0 to ( infCTe.Count - 1) do

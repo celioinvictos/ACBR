@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 29/02/2016: Guilherme Costa
-|*  - Alterado os atributos que não estavam de acordo com o leiaute/xsd
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS1200;
@@ -49,7 +40,13 @@ unit pcesS1200;
 interface
 
 uses
-  SysUtils, Classes, Dialogs, Controls, Contnrs,
+  SysUtils, Classes, Dialogs, Controls,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -99,7 +96,7 @@ type
     property evtRemun: TEvtRemun read FEvtRemun write FEvtRemun;
   end;
 
-  TDMDevCollection = class(TObjectList)
+  TDMDevCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TDMDevCollectionItem;
     procedure SetItem(Index: integer; Value: TDMDevCollectionItem);
@@ -173,7 +170,7 @@ type
     property dmDev: TDMDevCollection read FDMDev write FDMDev;
   end;
 
-  TRemunPer1200Collection = class(TObjectList)
+  TRemunPer1200Collection = class(TACBrObjectList)
   private
     FNomeGrupoXML: string;
     function GetItem(Index: integer): TRemunPer1200CollectionItem;
@@ -202,7 +199,7 @@ type
     property infoTrabInterm: TinfoTrabIntermCollection read FinfoTrabInterm write FinfoTrabInterm;
   end;
 
-  TIdeEstabLotCollection = class(TObjectList)
+  TIdeEstabLotCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TIdeEstabLotCollectionItem;
     procedure SetItem(Index: integer; Value: TIdeEstabLotCollectionItem);
@@ -232,7 +229,7 @@ type
     property remunPerAnt: TRemunPer1200Collection read FRemunPerAnt write FRemunPerAnt;
   end;
 
-  TIdePeriodoCollection = class(TObjectList)
+  TIdePeriodoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TIdePeriodoCollectionItem;
     procedure SetItem(Index: integer; Value: TIdePeriodoCollectionItem);
@@ -253,7 +250,7 @@ type
     property ideEstabLot: TIdeEstabLotCollection read FIdeEstabLot write FIdeEstabLot;
   end;
 
-  TIdeADCCollection = class(TObjectList)
+  TIdeADCCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TIdeADCCollectionItem;
     procedure SetItem(Index: integer; Value: TIdeADCCollectionItem);
@@ -367,7 +364,7 @@ type
     property sucessaoVinc: TSucessaoVinc read getSucessaoVinc write FSucessaoVinc;
   end;
 
-  TInfoTrabIntermCollection = class(TObjectList)
+  TInfoTrabIntermCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TInfoTrabIntermCollectionItem;
     procedure SetItem(Index: integer; Value: TInfoTrabIntermCollectionItem);
@@ -445,12 +442,12 @@ end;
 
 function TRemunPer1200Collection.GetItem(Index: integer): TRemunPer1200CollectionItem;
 begin
-  Result := TRemunPer1200CollectionItem(inherited GetItem(Index));
+  Result := TRemunPer1200CollectionItem(inherited Items[Index]);
 end;
 
 procedure TRemunPer1200Collection.SetItem(Index: integer; Value: TRemunPer1200CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TRemunPer1200Collection.New: TRemunPer1200CollectionItem;
@@ -484,12 +481,12 @@ end;
 
 function TIdeEstabLotCollection.GetItem(Index: integer): TIdeEstabLotCollectionItem;
 begin
-  Result := TIdeEstabLotCollectionItem(inherited GetItem(Index));
+  Result := TIdeEstabLotCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdeEstabLotCollection.SetItem(Index: integer; Value: TIdeEstabLotCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeEstabLotCollection.New: TIdeEstabLotCollectionItem;
@@ -520,12 +517,12 @@ end;
 
 function TIdePeriodoCollection.GetItem(Index: integer): TIdePeriodoCollectionItem;
 begin
-  Result := TIdePeriodoCollectionItem(inherited GetItem(Index));
+  Result := TIdePeriodoCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdePeriodoCollection.SetItem(Index: integer; Value: TIdePeriodoCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdePeriodoCollection.New: TIdePeriodoCollectionItem;
@@ -555,12 +552,12 @@ end;
 
 function TIdeADCCollection.GetItem(Index: integer): TIdeADCCollectionItem;
 begin
-  Result := TIdeADCCollectionItem(inherited GetItem(Index));
+  Result := TIdeADCCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdeADCCollection.SetItem(Index: integer; Value: TIdeADCCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeADCCollection.New: TIdeADCCollectionItem;
@@ -703,12 +700,12 @@ end;
 
 function TDMDevCollection.GetItem(Index: integer): TDMDevCollectionItem;
 begin
-  Result := TDMDevCollectionItem(inherited GetItem(Index));
+  Result := TDMDevCollectionItem(inherited Items[Index]);
 end;
 
 procedure TDMDevCollection.SetItem(Index: integer; Value: TDMDevCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TDMDevCollection.New: TDMDevCollectionItem;
@@ -1524,12 +1521,12 @@ end;
 
 function TS1200Collection.GetItem(Index: integer): TS1200CollectionItem;
 begin
-  Result := TS1200CollectionItem(inherited GetItem(Index));
+  Result := TS1200CollectionItem(inherited Items[Index]);
 end;
 
 procedure TS1200Collection.SetItem(Index: integer; Value: TS1200CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TS1200Collection.New: TS1200CollectionItem;
@@ -1548,13 +1545,13 @@ end;
 function TInfoTrabIntermCollection.GetItem(
   Index: integer): TInfoTrabIntermCollectionItem;
 begin
-  Result := TInfoTrabIntermCollectionItem(inherited GetItem(Index));
+  Result := TInfoTrabIntermCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfoTrabIntermCollection.SetItem(Index: integer;
   Value: TInfoTrabIntermCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoTrabIntermCollection.New: TInfoTrabIntermCollectionItem;

@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -211,8 +210,6 @@ type
     property EventsBloco_E: TEventsBloco_E read FEventsBloco_E; // write FOnEventsBloco_E;
   end;
 
-procedure Register;
-
 implementation
 
 uses ACBrUtil;
@@ -220,11 +217,6 @@ uses ACBrUtil;
 {$IFNDEF FPC}
  {$R ACBr_SPEDFiscal.dcr}
 {$ENDIF}
-
-procedure Register;
-begin
-  RegisterComponents('ACBrTXT', [TACBrSPEDFiscal]);
-end;
 
 (* TACBrSPEDFiscal *)
 
@@ -1514,6 +1506,22 @@ begin
            QTD_REG_BLC := Bloco_C.RegistroC179Count;
          end;
        end;
+       if Bloco_C.RegistroC180Count > 0 then
+       begin
+         with New do
+         begin
+           REG_BLC := 'C180';
+           QTD_REG_BLC := Bloco_C.RegistroC180Count;
+         end;
+       end;
+       if Bloco_C.RegistroC185Count > 0 then
+       begin
+         with New do
+         begin
+           REG_BLC := 'C185';
+           QTD_REG_BLC := Bloco_C.RegistroC185Count;
+         end;
+       end;
        if Bloco_C.RegistroC190Count > 0 then
        begin
          with New do
@@ -1704,6 +1712,30 @@ begin
          begin
            REG_BLC := 'C590';
            QTD_REG_BLC := Bloco_C.RegistroC590Count;
+         end;
+       end;
+       if Bloco_C.RegistroC591Count > 0 then
+       begin
+         with New do
+         begin
+           REG_BLC := 'C591';
+           QTD_REG_BLC := Bloco_C.RegistroC591Count;
+         end;
+       end;
+       if Bloco_C.RegistroC595Count > 0 then
+       begin
+         with New do
+         begin
+           REG_BLC := 'C595';
+           QTD_REG_BLC := Bloco_C.RegistroC595Count;
+         end;
+       end;
+       if Bloco_C.RegistroC597Count > 0 then
+       begin
+         with New do
+         begin
+           REG_BLC := 'C597';
+           QTD_REG_BLC := Bloco_C.RegistroC597Count;
          end;
        end;
        if Bloco_C.RegistroC600Count > 0 then
@@ -2501,6 +2533,14 @@ begin
             begin
                REG_BLC := 'H020';
                QTD_REG_BLC := Bloco_H.RegistroH020Count;
+            end;
+         end;
+         if Bloco_H.RegistroH030Count > 0 then
+         begin
+            with New do
+            begin
+               REG_BLC := 'H030';
+               QTD_REG_BLC := Bloco_H.RegistroH030Count;
             end;
          end;
       end;

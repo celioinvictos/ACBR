@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 29/02/2015: Guilherme Costa
-|*  - não estava sendo gerada a tag "tpProc"
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS1010;
@@ -49,8 +40,13 @@ unit pcesS1010;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  ACBrUtil,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase, ACBrUtil,
   pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -88,7 +84,7 @@ type
     property EvtTabRubrica: TEvtTabRubrica read FEvtTabRubrica write FEvtTabRubrica;
   end;
 
-  TProcessoCollection = class(TObjectList)
+  TProcessoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TProcesso;
     procedure SetItem(Index: Integer; Value: TProcesso);
@@ -198,7 +194,7 @@ type
     property fimValid: string read FFimValid write FFimValid;
   end;
 
-  TIdeProcessoCPCollection = class(TObjectList)
+  TIdeProcessoCPCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TIdeProcessoCPCollectionItem;
     procedure SetItem(Index: Integer; Value: TIdeProcessoCPCollectionItem);
@@ -241,13 +237,13 @@ end;
 
 function TS1010Collection.GetItem(Index: Integer): TS1010CollectionItem;
 begin
-  Result := TS1010CollectionItem(inherited GetItem(Index));
+  Result := TS1010CollectionItem(inherited Items[Index]);
 end;
 
 procedure TS1010Collection.SetItem(Index: Integer;
   Value: TS1010CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TS1010Collection.New: TS1010CollectionItem;
@@ -604,13 +600,13 @@ end;
 function TIdeProcessoCPCollection.GetItem(
   Index: Integer): TIdeProcessoCPCollectionItem;
 begin
-  Result := TIdeProcessoCPCollectionItem(Inherited GetItem(Index));
+  Result := TIdeProcessoCPCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdeProcessoCPCollection.SetItem(Index: Integer;
   Value: TIdeProcessoCPCollectionItem);
 begin
-  Inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeProcessoCPCollection.New: TIdeProcessoCPCollectionItem;
@@ -698,13 +694,13 @@ end;
 function TProcessoCollection.GetItem(
   Index: Integer): TProcesso;
 begin
-  Result := TProcesso(Inherited GetItem(Index));
+  Result := TProcesso(inherited Items[Index]);
 end;
 
 procedure TProcessoCollection.SetItem(Index: Integer;
   Value: TProcesso);
 begin
-  Inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TProcessoCollection.New: TProcesso;

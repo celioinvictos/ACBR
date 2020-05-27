@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -56,8 +55,8 @@ type
     FMargemSuperior: Double;
     FMargemEsquerda: Double;
     FMargemDireita: Double;
-    FMostraPreview: Boolean;
-    FMostraStatus: Boolean;
+    FMostrarPreview: Boolean;
+    FMostrarStatus: Boolean;
     FNumCopias: Integer;
     FPathPDF: String;
     FPrintDialog: Boolean;
@@ -65,7 +64,6 @@ type
     FSite: String;
     FTamanhoPapel: TpcnTamanhoPapel;
     FUsuario: String;
-    FUsarSeparadorPathPDF: Boolean;
   public
     constructor Create;
     procedure DefinirValoresPadroes;
@@ -79,8 +77,8 @@ type
     property MargemSuperior: Double read FMargemSuperior write FMargemSuperior;
     property MargemEsquerda: Double read FMargemEsquerda write FMargemEsquerda;
     property MargemDireita: Double read FMargemDireita write FMargemDireita;
-    property MostraPreview: Boolean read FMostraPreview write FMostraPreview;
-    property MostraStatus: Boolean read FMostraStatus write FMostraStatus;
+    property MostrarPreview: Boolean read FMostrarPreview write FMostrarPreview;
+    property MostrarStatus: Boolean read FMostrarStatus write FMostrarStatus;
     property NumCopias: Integer read FNumCopias write FNumCopias;
     property PathPDF: String read FPathPDF write FPathPDF;
     property PrintDialog: Boolean read FPrintDialog write FPrintDialog;
@@ -88,7 +86,6 @@ type
     property Site: String read FSite write FSite;
     property TamanhoPapel: TpcnTamanhoPapel read FTamanhoPapel write FTamanhoPapel;
     property Usuario: String read FUsuario write FUsuario;
-    property UsarSeparadorPathPDF: Boolean read FUsarSeparadorPathPDF write FUsarSeparadorPathPDF;
   end;
 
   { TLibGNReConfig }
@@ -138,8 +135,8 @@ begin
   FMargemSuperior := 0.7;
   FMargemEsquerda := 0.7;
   FMargemDireita := 0.7;
-  FMostraPreview := True;
-  FMostraStatus := True;
+  FMostrarPreview := True;
+  FMostrarStatus := True;
   FNumCopias := 1;
   FPathPDF := '';
   FPrintDialog := False;
@@ -147,7 +144,6 @@ begin
   FSite := '';
   FTamanhoPapel := tpA4;
   FUsuario := '';
-  FUsarSeparadorPathPDF := False;
 end;
 
 procedure TGuiaConfig.LerIni(const AIni: TCustomIniFile);
@@ -159,8 +155,8 @@ begin
   FMargemSuperior := AIni.ReadFloat(CSessaoGuia, CChaveMargemSuperior, FMargemSuperior);
   FMargemEsquerda := AIni.ReadFloat(CSessaoGuia, CChaveMargemEsquerda, FMargemEsquerda);
   FMargemDireita := AIni.ReadFloat(CSessaoGuia, CChaveMargemDireita, FMargemDireita);
-  FMostraPreview := AIni.ReadBool(CSessaoGuia, CChaveMostraPreview, FMostraPreview);
-  FMostraStatus := AIni.ReadBool(CSessaoGuia, CChaveMostraStatus, FMostraStatus);
+  FMostrarPreview := AIni.ReadBool(CSessaoGuia, CChaveMostraPreview, FMostrarPreview);
+  FMostrarStatus := AIni.ReadBool(CSessaoGuia, CChaveMostraStatus, FMostrarStatus);
   FNumCopias := AIni.ReadInteger(CSessaoGuia, CChaveCopias, FNumCopias);
   FPathPDF := AIni.ReadString(CSessaoGuia, CChavePathPDF, FPathPDF);
   FPrintDialog := AIni.ReadBool(CSessaoGuia, CChavePrintDialog, FPrintDialog);
@@ -168,7 +164,6 @@ begin
   FSite := AIni.ReadString(CSessaoGuia, CChaveSite, FSite);
   FTamanhoPapel := TpcnTamanhoPapel(AIni.ReadInteger(CSessaoGuia, CChaveTamanhoPapel, Integer(FTamanhoPapel)));
   FUsuario := AIni.ReadString(CSessaoGuia, CChaveUsuario, FUsuario);
-  FUsarSeparadorPathPDF := AIni.ReadBool(CSessaoGuia, CChaveUsarSeparadorPathPDF, FUsarSeparadorPathPDF);
 end;
 
 procedure TGuiaConfig.GravarIni(const AIni: TCustomIniFile);
@@ -180,8 +175,8 @@ begin
   AIni.WriteFloat(CSessaoGuia, CChaveMargemSuperior, FMargemSuperior);
   AIni.WriteFloat(CSessaoGuia, CChaveMargemEsquerda, FMargemEsquerda);
   AIni.WriteFloat(CSessaoGuia, CChaveMargemDireita, FMargemDireita);
-  AIni.WriteBool(CSessaoGuia, CChaveMostraPreview, FMostraPreview);
-  AIni.WriteBool(CSessaoGuia, CChaveMostraStatus, FMostraStatus);
+  AIni.WriteBool(CSessaoGuia, CChaveMostraPreview, FMostrarPreview);
+  AIni.WriteBool(CSessaoGuia, CChaveMostraStatus, FMostrarStatus);
   AIni.WriteInteger(CSessaoGuia, CChaveCopias, FNumCopias);
   AIni.WriteString(CSessaoGuia, CChavePathPDF, FPathPDF);
   AIni.WriteBool(CSessaoGuia, CChavePrintDialog, FPrintDialog);
@@ -189,7 +184,6 @@ begin
   AIni.WriteString(CSessaoGuia, CChaveSite, FSite);
   AIni.WriteInteger(CSessaoGuia, CChaveTamanhoPapel, Integer(FTamanhoPapel));
   AIni.WriteString(CSessaoGuia, CChaveUsuario, FUsuario);
-  AIni.WriteBool(CSessaoGuia, CChaveUsarSeparadorPathPDF, FUsarSeparadorPathPDF);
 end;
 
 { TLibGNReConfig }

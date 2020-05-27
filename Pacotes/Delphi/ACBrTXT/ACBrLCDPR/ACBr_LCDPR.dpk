@@ -1,16 +1,15 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrLCDPR                                                }
-{  Biblioteca multiplataforma de componentes Delphi para geração do LCDPR -    }
-{ Lirvro Caixa Digital do Produtor Rural                                       }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Desenvolvimento e doação ao Projeto ACBr: Willian Hübner                     }
+{ Colaboradores nesse arquivo: Willian Hübner                                  }
+{						       Elton Barbosa (EMBarbosa)                       }
 {                                                                              }
-{ Ajustes e correções para doação: Elton Barbosa (EMBarbosa)                   }
-{                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -28,17 +27,18 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
+
 package ACBr_LCDPR;
 
 {$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
-{$DEBUGINFO ON}
+{$DEBUGINFO OFF}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
@@ -48,7 +48,7 @@ package ACBr_LCDPR;
 {$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
-{$REFERENCEINFO OFF}
+{$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
@@ -56,8 +56,11 @@ package ACBr_LCDPR;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DESCRIPTION 'ACBr - LCDPR - (http://www.projetoacbr.com.br/)'}
-{$IMPLICITBUILD OFF}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'ACBr - Livro Caixa Digital do Produtor Rural (LCDPR) - (http://www.projetoacbr.com.br/)'}
+{$RUNONLY}
+{$IMPLICITBUILD ON}
 
 requires
   rtl,
@@ -80,8 +83,7 @@ contains
   RegistroQ100 in '..\..\..\..\Fontes\ACBrTXT\ACBrLCDPR\RegistroQ100.pas',
   RegistroQ200 in '..\..\..\..\Fontes\ACBrTXT\ACBrLCDPR\RegistroQ200.pas',
   LCDPRUtils in '..\..\..\..\Fontes\ACBrTXT\ACBrLCDPR\LCDPRUtils.pas',
-  uDadosContador in '..\..\..\..\Fontes\ACBrTXT\ACBrLCDPR\uDadosContador.pas',
-  ACBrLCDPRReg in '..\..\..\..\Fontes\ACBrTXT\ACBrLCDPR\ACBrLCDPRReg.pas';
+  uDadosContador in '..\..\..\..\Fontes\ACBrTXT\ACBrLCDPR\uDadosContador.pas';
 
 end.
 

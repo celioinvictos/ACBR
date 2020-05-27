@@ -22,7 +22,7 @@
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="2"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="48"/>
+      <BuildNr Value="94"/>
       <Language Value="0416"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrMDFe - BIblioteca para emissão e impressão de Manifesto de Documentos Fiscais Eletrônicos" InternalName="ACBrLibMDFe" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductName="ACBrMDFe " ProductVersion="0.0.0.1"/>
@@ -289,25 +289,22 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="6">
+    <RequiredPackages Count="5">
       <Item1>
         <PackageName Value="ACBr_MDFe_DaMDFeRL"/>
       </Item1>
       <Item2>
-        <PackageName Value="ACBrSerial"/>
+        <PackageName Value="ACBrTCP"/>
       </Item2>
       <Item3>
-        <PackageName Value="ACBrTCP"/>
+        <PackageName Value="ACBr_MDFe"/>
       </Item3>
       <Item4>
-        <PackageName Value="ACBr_MDFe"/>
+        <PackageName Value="LCL"/>
       </Item4>
       <Item5>
-        <PackageName Value="LCL"/>
-      </Item5>
-      <Item6>
         <PackageName Value="FCL"/>
-      </Item6>
+      </Item5>
     </RequiredPackages>
     <Units Count="12">
       <Unit0>

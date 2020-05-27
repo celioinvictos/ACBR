@@ -1,6 +1,7 @@
 package ACBr_Integrador;
 
 {$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -11,28 +12,29 @@ package ACBr_Integrador;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'ACBr - Integrador - (http://www.projetoacbr.com.br/)'}
+{$RUNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
   rtl,
   vcl,
-  designide,
   ACBr_PCNComum;
 
 contains
-  ACBrIntegradorReg in '..\..\..\Fontes\ACBrIntegrador\ACBrIntegradorReg.pas',
   ACBrIntegrador in '..\..\..\Fontes\ACBrIntegrador\ACBrIntegrador.pas',
   ACBrIntegradorResposta in '..\..\..\Fontes\ACBrIntegrador\ACBrIntegradorResposta.pas',
   pcnVFPe in '..\..\..\Fontes\ACBrIntegrador\pcnVFPe\pcnVFPe.pas',

@@ -58,8 +58,10 @@ uses
 type
 
   TDetFormato   = (tdetInteger,tdetMascara);
-  TpcnTipoCampo = (tcStr, tcInt, tcDat, tcDatHor, tcEsp, tcDe2, tcDe3, tcDe4, tcDe10,
-                   tcHor, tcDe6, tcDatCFe, tcHorCFe, tcDatVcto, tcDatHorCFe, tcBoolStr, tcStrOrig, tcNumStr); // tcEsp = String: somente numeros;
+                  // tcEsp = String: somente numeros;
+  TpcnTipoCampo = (tcStr, tcInt, tcDat, tcDatHor, tcEsp, tcDe2, tcDe3, tcDe4,
+                   tcDe6, tcDe8, tcDe10, tcHor, tcDatCFe, tcHorCFe, tcDatVcto,
+                   tcDatHorCFe, tcBoolStr, tcStrOrig, tcNumStr);
   TpcnFormatoGravacao = (fgXML, fgTXT);
   TpcnTagAssinatura = (taSempre, taNunca, taSomenteSeAssinada, taSomenteParaNaoAssinada);
 
@@ -113,25 +115,27 @@ type
 
   TpcteModeloNF = (moNF011AAvulsa, moNFProdutor);
 
-  TpcnTpEvento = (teNaoMapeado, teCCe, teCancelamento, teManifDestConfirmacao,
-                  teManifDestCiencia, teManifDestDesconhecimento, teManifDestOperNaoRealizada,
-                  teEncerramento, teEPEC, teInclusaoCondutor,
-                  teMultiModal, teRegistroPassagem, teRegistroPassagemBRId,
-                  teEPECNFe, teRegistroCTe, teRegistroPassagemNFeCancelado,
-                  teRegistroPassagemNFeRFID, teCTeCancelado, teMDFeCancelado,
-                  teVistoriaSuframa, tePedProrrog1, tePedProrrog2,
-                  teCanPedProrrog1, teCanPedProrrog2, teEventoFiscoPP1,
-                  teEventoFiscoPP2, teEventoFiscoCPP1, teEventoFiscoCPP2,
-                  teRegistroPassagemNFe, teConfInternalizacao, teCTeAutorizado,
-                  teMDFeAutorizado, tePrestDesacordo, teGTV, teMDFeAutorizado2,
-                  teNaoEmbarque, teMDFeCancelado2,teMDFeAutorizadoComCTe,
-                  teRegPasNfeProMDFe, teRegPasNfeProMDFeCte, teRegPasAutMDFeComCte,
-                  teCancelamentoMDFeAutComCTe, teAverbacaoExportacao, teAutCteComplementar,
-                  teCancCteComplementar,teCTeSubstituicao,teCTeAnulacao,teLiberacaoEPEC,teLiberacaoPrazoCanc,
-                  teAutorizadoRedespacho,teautorizadoRedespIntermed,teAutorizadoSubcontratacao,
-                  teautorizadoServMultimodal, teCancSubst, teAlteracaoPoltrona,
-                  teComprEntrega, teCancComprEntrega, teInclusaoDFe,
-                  teAutorizadoSubstituicao, teAutorizadoAjuste, teLiberacaoPrazoCancelado);
+  TpcnTpEvento = (teNaoMapeado, teCCe, teCancelamento,
+                  teManifDestConfirmacao, teManifDestCiencia, teManifDestDesconhecimento,
+                  teManifDestOperNaoRealizada, teEncerramento, teEPEC,
+                  teInclusaoCondutor, teMultiModal, teRegistroPassagem,
+                  teRegistroPassagemBRId, teEPECNFe, teRegistroCTe,
+                  teRegistroPassagemNFeCancelado, teRegistroPassagemNFeRFID, teCTeCancelado,
+                  teMDFeCancelado, teVistoriaSuframa, tePedProrrog1,
+                  tePedProrrog2, teCanPedProrrog1, teCanPedProrrog2,
+                  teEventoFiscoPP1, teEventoFiscoPP2, teEventoFiscoCPP1,
+                  teEventoFiscoCPP2, teRegistroPassagemNFe, teConfInternalizacao,
+                  teCTeAutorizado, teMDFeAutorizado, tePrestDesacordo,
+                  teGTV, teMDFeAutorizado2, teNaoEmbarque,
+                  teMDFeCancelado2, teMDFeAutorizadoComCTe, teRegPasNfeProMDFe,
+                  teRegPasNfeProMDFeCte, teRegPasAutMDFeComCte, teCancelamentoMDFeAutComCTe,
+                  teAverbacaoExportacao, teAutCteComplementar, teCancCteComplementar,
+                  teCTeSubstituicao, teCTeAnulacao, teLiberacaoEPEC,
+                  teLiberacaoPrazoCanc, teAutorizadoRedespacho, teautorizadoRedespIntermed,
+                  teAutorizadoSubcontratacao, teautorizadoServMultimodal, teCancSubst,
+                  teAlteracaoPoltrona, teComprEntrega, teCancComprEntrega,
+                  teInclusaoDFe, teAutorizadoSubstituicao, teAutorizadoAjuste,
+                  teLiberacaoPrazoCancelado, tePagamentoOperacao, teExcessoBagagem);
 
   TpcnIndicadorEmissor = (ieTodos, ieRaizCNPJDiferente);
   TpcnIndicadorContinuacao = (icNaoPossuiMaisDocumentos, icPossuiMaisDocumentos);
@@ -195,7 +199,7 @@ type
   end;
 
 const
-  TpcnTpEventoString : array[0..57] of String =('-99999', '110110', '110111',
+  TpcnTpEventoString : array[0..62] of String =('-99999', '110110', '110111',
                                                 '210200', '210210', '210220',
                                                 '210240', '110112', '110113',
                                                 '110114', '110160', '310620',
@@ -214,11 +218,13 @@ const
                                                 '240170', '440130', '440140',
                                                 '440150', '440160', '110112',
                                                 '110116', '110180', '110181',
-                                                '110115');
+                                                '110115', '240140', '240150',
+                                                '240170', '110116', '110117');
 
   DFeUF: array[0..26] of String =
   ('AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
    'PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO');
+
   DFeUFCodigo: array[0..26] of Integer =
   (12,27,16,13,29,23,53,32,52,21,51,50,31,15,25,41,26,22,33,24,43,11,14,42,35,28,17);
 
@@ -784,10 +790,10 @@ end;
 
 function StrToCSTICMS(out ok: boolean; const s: string): TpcnCSTIcms;
 begin
-  result := StrToEnumerado(ok, s, ['00', '10', '20', '30', '40', '41', '45', '50', '51', '60',
+  result := StrToEnumerado(ok, s, ['', '00', '10', '20', '30', '40', '41', '45', '50', '51', '60',
                                    '70', '80', '81', '90', '91', 'SN',
                                    '10part', '90part', '41rep', '60rep'],
-                                  [cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60,
+                                  [cstVazio, cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60,
                                    cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN,
                                    cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
@@ -801,7 +807,8 @@ end;
 function CSTICMSToStrTagPosText(const t: TpcnCSTIcms): string;
 begin
   result := EnumeradoToStr(t,
-   ['00 - TRIBUTAÇÃO NORMAL DO ICMS',
+   ['VAZIO',
+    '00 - TRIBUTAÇÃO NORMAL DO ICMS',
     '10 - TRIBUTAÇÃO COM COBRANÇA DO ICMS POR SUBST. TRIBUTÁRIA',
     '20 - TRIBUTAÇÃO COM REDUÇÃO DE BC DO ICMS',
     '30 - TRIBUTAÇÃO ISENTA E COM COBRANÇA DO ICMS POR SUBST. TRIBUTÁRIA',
@@ -822,7 +829,7 @@ begin
     '41 - NÃO TRIBUTADO - REPASSE',
     '60 - COBRADO ANTERIORMENTE POR SUBSTITUIÇÃO TRIBUTÁRIA - REPASSE'
     ],
-    [cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60, cst70,
+    [cstVazio, cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60, cst70,
     cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN, cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
 
@@ -1095,7 +1102,7 @@ begin
               'CTeAnulacao', 'LiberacaoEPEC', 'LiberacaoPrazoCanc',
               'AutorizadoRedespacho', 'AutorizadoRedespIntermed', 'AutorizadoSubcontratacao',
               'AutorizadoServMultimodal', 'CancelamentoPorSubstituicao',
-              'AlteracaoPoltrona'],
+              'AlteracaoPoltrona', 'ExcessoBagagem'],
              [teNaoMapeado, teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
               teManifDestDesconhecimento, teManifDestOperNaoRealizada,
               teEncerramento, teEPEC, teInclusaoCondutor, teMultiModal,
@@ -1113,7 +1120,8 @@ begin
               teCancCteComplementar, teCTeSubstituicao,
               teCTeAnulacao, teLiberacaoEPEC, teLiberacaoPrazoCanc,
               teAutorizadoRedespacho, teautorizadoRedespIntermed, teAutorizadoSubcontratacao,
-              teautorizadoServMultimodal, teCancSubst, teAlteracaoPoltrona]);
+              teautorizadoServMultimodal, teCancSubst, teAlteracaoPoltrona,
+              teExcessoBagagem]);
 end;
 
 

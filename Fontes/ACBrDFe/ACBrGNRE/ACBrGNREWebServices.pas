@@ -1,19 +1,15 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrGNRE                                                 }
-{  Biblioteca multiplataforma de componentes Delphi/Lazarus para emissão da    }
-{  Guia Nacional de Recolhimento de Tributos Estaduais                         }
-{  http://www.gnre.pe.gov.br/                                                  }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2013 Claudemir Vitor Pereira                }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-{                                       Juliomar Marchetti                     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Juliomar Marchetti                              }
+{                              Claudemir Vitor Pereira                         }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -31,17 +27,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 09/12/2013 - Claudemir Vitor Pereira
-|*  - Doação do componente para o Projeto ACBr
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -67,6 +55,7 @@ type
     FPStatus: TStatusACBrGNRE;
     FPLayout: TLayOutGNRE;
     FPConfiguracoesGNRE: TConfiguracoesGNRE;
+    FtempoEstimadoProc: Integer;
 
   protected
     procedure InicializarServico; override;
@@ -80,6 +69,7 @@ type
 
     property Status: TStatusACBrGNRE read FPStatus;
     property Layout: TLayOutGNRE read FPLayout;
+    property tempoEstimadoProc: Integer read FtempoEstimadoProc write FtempoEstimadoProc;
   end;
 
   { TGNRERecepcao }
@@ -87,7 +77,6 @@ type
   TGNRERecepcao = class(TGNREWebService)
   private
     Fnumero: String;
-    FtempoEstimadoProc: Integer;
     Fcodigo: Integer;
     Fdescricao: String;
     FdataHoraRecibo: TDateTime;
@@ -118,7 +107,6 @@ type
     property descricao: String read Fdescricao write Fdescricao;
     property numero: String read Fnumero write Fnumero;
     property dataHoraRecibo: TDateTime read FdataHoraRecibo write FdataHoraRecibo;
-    property tempoEstimadoProc: Integer read FtempoEstimadoProc write FtempoEstimadoProc;
     property cUF: Integer read FcUF;
   end;
 
@@ -156,6 +144,7 @@ type
 
     function Executar: Boolean; override;
     function SalvarTXT(AResultado: String): Boolean;
+    function SalvarXML(AGuia, ANumero: String): Boolean;
 
     property Ambiente: TpcnTipoAmbiente read FAmbiente write FAmbiente;
     property numeroRecibo: String read FnumeroRecibo write FnumeroRecibo;
@@ -423,7 +412,7 @@ var
 begin
   vGuias := '';
   for i := 0 to FGuias.Count - 1 do
-    vGuias := vGuias + FGuias.Items[i].XML;
+    vGuias := vGuias + RemoverDeclaracaoXML(FGuias.Items[i].XMLAssinado);
 
   if FPConfiguracoesGNRE.Geral.VersaoDF = ve200 then
     Versao := 'versao="2.00" '
@@ -520,7 +509,7 @@ function TGNRERecepcao.TratarResposta: Boolean;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'processarResponse');
 
-  FGNRERetorno.Leitor.Arquivo := ParseText(FPRetWS);
+  FGNRERetorno.Leitor.Arquivo := ParseText(AnsiString(FPRetWS));
   FGNRERetorno.LerXml;
 
   Fcodigo            := FGNRERetorno.codigo;
@@ -569,6 +558,9 @@ begin
     FcUF := FPConfiguracoesGNRE.WebServices.UFCodigo;
   end;
 
+  if Assigned(FGNRERetorno) then
+    FGNRERetorno.Free;
+    
   FGNRERetorno := TTResultLote_GNRE.Create;
 end;
 
@@ -639,7 +631,10 @@ begin
 
   TACBrGNRE(FPDFeOwner).SetStatus(stGNRERetRecepcao);
   try
-    Sleep(FPConfiguracoesGNRE.WebServices.AguardarConsultaRet);
+    if FPConfiguracoesGNRE.WebServices.AguardarConsultaRet < FtempoEstimadoProc then
+      Sleep(FtempoEstimadoProc)
+    else
+      Sleep(FPConfiguracoesGNRE.WebServices.AguardarConsultaRet);
 
     Tentativas := 0;
     IntervaloTentativas := max(FPConfiguracoesGNRE.WebServices.IntervaloTentativas, 1000);
@@ -692,7 +687,7 @@ var
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'gnreRespostaMsg');
 
-  FGNRERetorno.Leitor.Arquivo := ParseText(FPRetWS);
+  FGNRERetorno.Leitor.Arquivo := ParseText(AnsiString(FPRetWS));
   FGNRERetorno.LerXML;
 
   FAmbiente  := FGNRERetorno.Ambiente;
@@ -702,8 +697,8 @@ begin
   // Para aparecer as exceções que ocorreram / caso haja alguma
   SL := TStringList.Create;
   SL.Clear;
-  for I := 0 to GNRERetorno.resRejeicaGuia.Count - 1 do
-   SL.Add(Trim(GNRERetorno.resRejeicaGuia.Items[I].DescMotivoRejeicao)+#13);
+  for I := 0 to GNRERetorno.resRejeicaoGuia.Count - 1 do
+   SL.Add(Trim(GNRERetorno.resRejeicaoGuia.Items[I].DescMotivoRejeicao)+#13);
   FPMsg      := FGNRERetorno.descricao + #13 + Trim(SL.Text);
   SL.Free;
   //
@@ -721,8 +716,12 @@ begin
     if FGuias.Items[I].Confirmada then
     begin
       Result := True;
-      Self.SalvarTXT(FGNRERetorno.resultado);
-      break;
+
+      if FGNRERetorno.resGuia.Items[i].Versao = ve100 then
+        Self.SalvarTXT(FGNRERetorno.resultado)
+      else
+        Self.SalvarXML(FGNRERetorno.resGuia.Items[i].XML,
+                       FGNRERetorno.resGuia.Items[i].NumeroControle);
     end;
   end;
 
@@ -787,6 +786,21 @@ begin
     FreeAndNil(SL);
     FreeAndNil(SLAux);
     Result := GuiasOk > 0;
+  end;
+end;
+
+function TGNRERetRecepcao.SalvarXML(AGuia, ANumero: String): Boolean;
+var
+  NomeArq: string;
+begin
+  Result := True;
+
+  if FPConfiguracoesGNRE.Arquivos.Salvar then
+  begin
+    NomeArq := PathWithDelim(FPConfiguracoesGNRE.Arquivos.PathGNRE) +
+               ANumero + '-guia.xml';
+
+    Result := FPDFeOwner.Gravar(NomeArq, AGuia);
   end;
 end;
 
@@ -897,7 +911,7 @@ function TGNRERecibo.TratarResposta: Boolean;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'gnreRespostaMsg');
 
-  FGNRERetorno.Leitor.Arquivo := ParseText(FPRetWS);
+  FGNRERetorno.Leitor.Arquivo := ParseText(AnsiString(FPRetWS));
   FGNRERetorno.LerXML;
 
   FAmbiente  := FGNRERetorno.Ambiente;
@@ -1016,7 +1030,7 @@ function TGNREConsultaUF.TratarResposta: Boolean;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'gnreRespostaMsg');
 
-  FGNRERetorno.Leitor.Arquivo := ParseText(FPRetWS);
+  FGNRERetorno.Leitor.Arquivo := ParseText(AnsiString(FPRetWS));
   FGNRERetorno.LerXML;
 
   FAmbiente          := FGNRERetorno.Ambiente;

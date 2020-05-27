@@ -559,9 +559,9 @@ object frmACBrMDFe: TfrmACBrMDFe
               object Label6: TLabel
                 Left = 8
                 Top = 16
-                Width = 121
+                Width = 126
                 Height = 13
-                Caption = 'Selecione UF de Destino:'
+                Caption = 'Selecione UF do Emitente:'
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
                 Font.Height = -11
@@ -1543,6 +1543,24 @@ object frmACBrMDFe: TfrmACBrMDFe
           TabOrder = 6
           OnClick = btnInclusaoDFeClick
         end
+        object btnPagOperacaoTransp: TButton
+          Left = 374
+          Top = 40
+          Width = 177
+          Height = 25
+          Caption = 'Pag. Opera'#231#227'o Transporte'
+          TabOrder = 7
+          OnClick = btnPagOperacaoTranspClick
+        end
+        object btnEnviarEventoEmail: TButton
+          Left = 374
+          Top = 71
+          Width = 177
+          Height = 25
+          Caption = 'Enviar Evento Email'
+          TabOrder = 8
+          OnClick = btnEnviarEventoEmailClick
+        end
       end
       object tsDistribuicao: TTabSheet
         Caption = 'Distribui'#231#227'o DFe'
@@ -1687,6 +1705,7 @@ object frmACBrMDFe: TfrmACBrMDFe
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
     Configuracoes.RespTec.IdCSRT = 0
+    DAMDFE = ACBrMDFeDAMDFeRL1
     Left = 334
     Top = 238
   end
@@ -1696,11 +1715,18 @@ object frmACBrMDFe: TfrmACBrMDFe
     MargemSuperior = 8.000000000000000000
     MargemEsquerda = 6.000000000000000000
     MargemDireita = 5.099999999999999000
+    ExpandeLogoMarcaConfig.Altura = 0
+    ExpandeLogoMarcaConfig.Esquerda = 0
+    ExpandeLogoMarcaConfig.Topo = 0
+    ExpandeLogoMarcaConfig.Largura = 0
+    ExpandeLogoMarcaConfig.Dimensionar = False
+    ExpandeLogoMarcaConfig.Esticar = True
     CasasDecimais.Formato = tdetInteger
     CasasDecimais.qCom = 2
     CasasDecimais.vUnCom = 2
     CasasDecimais.MaskqCom = ',0.00'
     CasasDecimais.MaskvUnCom = ',0.00'
+    ACBrMDFe = ACBrMDFe1
     ImprimeHoraSaida = False
     TipoDAMDFe = tiSemGeracao
     TamanhoPapel = tpA4

@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
+{ Colaboradores nesse arquivo: Juliana Tamizou                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,13 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-{******************************************************************************
-|* Historico
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -389,13 +385,13 @@ begin
     end;
 
     if CodigoMulta = cmValorFixo then
-    Begin
+    begin
       aCodMulta := '1';
       if PercentualMulta > 0 then
         aValorMulta := IntToStrZero(Round(ValorDocumento*(PercentualMulta/100)*100), 15);
-    End
-     else
-    Begin
+    end
+    else
+    begin
       aCodMulta := '2'; //Percentual
       if PercentualMulta > 0 then
         aValorMulta := IntToStrZero(Round(PercentualMulta * 100), 15);
@@ -421,7 +417,10 @@ begin
     if (ValorMoraJuros > 0) and (DataMoraJuros > 0) then
       ADataMoraJuros := FormatDateTime('ddmmyyyy', DataMoraJuros)
     else
+    begin
+      aCodJuros := '3';// isento ;
       ADataMoraJuros := PadRight('', 8, '0');
+    end;
 
     //Descontos
     if (ValorDesconto > 0) and (DataDesconto > 0) then

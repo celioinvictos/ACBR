@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Unit1 ;
 
 {$mode objfpc}{$H+}
@@ -5,12 +35,12 @@ unit Unit1 ;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterXML, SynGutterBase,
-  SynGutterMarks, SynGutterLineNumber, SynGutterChanges, SynGutter,
+  Classes, SysUtils, FileUtil, SynMemo, SynHighlighterXML,
   SynGutterCodeFolding, PrintersDlgs, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, ExtCtrls, Buttons, ComCtrls, Spin, RLPDFFilter,
-  ACBrSAT, ACBrSATClass, ACBrSATExtratoESCPOS, dateutils,
-  ACBrSATExtratoFortesFr, ACBrBase, ACBrPosPrinter, ACBrDFeSSL, ACBrIntegrador, Types;
+  StdCtrls, ActnList, Menus, ExtCtrls, Buttons, ComCtrls, Spin,
+  RLPDFFilter, ACBrSAT, ACBrSATClass, ACBrSATExtratoESCPOS,
+  dateutils, ACBrSATExtratoFortesFr, ACBrPosPrinter, ACBrDFeSSL,
+  ACBrIntegrador;
 
 const
   cAssinatura = '9d4c4eef8c515e2c1269c2e4fff0719d526c5096422bf1defa20df50ba06469'+
@@ -39,6 +69,7 @@ type
     btSerial: TSpeedButton;
     btMFEEnviarPagamento: TButton;
     cbImprimir1Linha: TCheckBox;
+    cbContinuo: TCheckBox;
     cbLogotipo: TCheckBox;
     cbImprimirDescAcres: TCheckBox;
     cbLogoLateral: TCheckBox;
@@ -326,6 +357,8 @@ type
     procedure mLimparClick(Sender : TObject) ;
     procedure SbArqLogClick(Sender : TObject) ;
     procedure sePagCodChange(Sender: TObject);
+    procedure tsDadosEmitContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
     procedure ConfiguraRedeSAT;
     procedure LeDadosRedeSAT;
@@ -343,7 +376,7 @@ var
 implementation
 
 Uses
-  math, typinfo, ACBrUtil, pcnConversao, pcnRede, synacode, IniFiles, configuraserial,
+  math, typinfo, ACBrUtil, pcnConversao, pcnRede, IniFiles, configuraserial,
   RLPrinters, Printers, ACBrSATExtratoClass, ACBrSATMFe_integrador, pcnVFPe;
 
 {$R *.lfm}
@@ -360,7 +393,6 @@ var
   N: TACBrPosPrinterModelo;
   O: TACBrPosPaginaCodigo;
   R: pcnRede.TSegSemFio;
-  P: Integer;
 begin
   cbxModelo.Items.Clear ;
   For I := Low(TACBrSATModelo) to High(TACBrSATModelo) do
@@ -396,12 +428,11 @@ begin
 
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais( cbxPorta.Items );
-  For P := 0 to Printer.Printers.Count-1 do
-    cbxPorta.Items.Add('RAW:'+Printer.Printers[P]);
+  ACBrPosPrinter1.Device.AcharPortasRAW( cbxPorta.Items );
+  {$IfDef MSWINDOWS}
+  ACBrPosPrinter1.Device.AcharPortasUSB( cbxPorta.Items );
+  {$EndIf}
 
-  cbxPorta.Items.Add('LPT1') ;
-  cbxPorta.Items.Add('USB:ELGIN') ;
-  cbxPorta.Items.Add('USB:EPSON') ;
   cbxPorta.Items.Add('\\localhost\Epson') ;
   cbxPorta.Items.Add('c:\temp\ecf.txt') ;
   cbxPorta.Items.Add('TCP:192.168.0.31:9100') ;
@@ -594,6 +625,7 @@ begin
     seMargemEsquerda.Value := INI.ReadInteger('Fortes','MargemEsquerda', trunc(ACBrSATExtratoFortes1.MargemEsquerda));
     seMargemDireita.Value  := INI.ReadInteger('Fortes','MargemDireita', trunc(ACBrSATExtratoFortes1.MargemDireita));
     cbPreview.Checked      := INI.ReadBool('Fortes','Preview',True);
+    cbContinuo.Checked     := INI.ReadBool('Fortes','Continuo',True);
 
     lImpressora.Caption    := INI.ReadString('Printer','Name', '');
     if EstaVazio(lImpressora.Caption) then
@@ -885,6 +917,7 @@ begin
     INI.WriteInteger('Fortes','MargemEsquerda',seMargemEsquerda.Value);
     INI.WriteInteger('Fortes','MargemDireita',seMargemDireita.Value);
     INI.WriteBool('Fortes','Preview',cbPreview.Checked);
+    INI.WriteBool('Fortes','Continuo',cbContinuo.Checked);
 
     INI.WriteString('Printer','Name',Printer.PrinterName);
     INI.WriteBool('EscPos','ImprimirChaveUmaLinha',cbImprimirChaveUmaLinha.Checked);
@@ -1206,13 +1239,10 @@ begin
 end;
 
 procedure TForm1.mTesteFimAFimClick(Sender: TObject);
-var
-  Numero: Integer;
 begin
   if mVendaEnviar.Text = '' then
     mGerarVenda.Click;
 
-  Numero := ACBrSAT1.CFe.ide.nCFe ;
   PageControl1.ActivePage := tsLog;
 
   ACBrSAT1.TesteFimAFim( mVendaEnviar.Text );
@@ -1498,7 +1528,7 @@ begin
 
     For A := 0 to Loops do  // Ajuste aqui para vender mais itens
     begin
-    with Det.Add do
+    with Det.New do
     begin
       nItem := 1 + (A * 3);
       Prod.cProd := 'ACBR0001';
@@ -1512,7 +1542,7 @@ begin
       Prod.indRegra := irTruncamento;
       Prod.vDesc := 1;
 
-      with Prod.obsFiscoDet.Add do
+      with Prod.obsFiscoDet.New do
       begin
         xCampoDet := 'campo';
         xTextoDet := 'texto';
@@ -1544,7 +1574,7 @@ begin
       infAdProd := 'Informacoes adicionais';
     end;
 
-    with Det.Add do
+    with Det.New do
     begin
       nItem := 2 + (A * 3);
       Prod.cProd := '6291041500213';
@@ -1582,7 +1612,7 @@ begin
       //Imposto.COFINSST.vAliqProd := 779.4577;
     end;
 
-    with Det.Add do
+    with Det.New do
     begin
       nItem := 3 + (A * 3);
       Prod.cProd := 'abc123';
@@ -1653,14 +1683,14 @@ begin
       vMP := Pagto1;
     end;    }
 
-    with Pagto.Add do
+    with Pagto.New do
     begin
       cMP := mpDinheiro;
       vMP := TotalGeral; //- Pagto1 + 100;
     end;
 
     InfAdic.infCpl := 'Acesse www.projetoacbr.com.br para obter mais;informações sobre o componente ACBrSAT;'+
-                      'Precisa de um PAF-ECF homologado?;Conheça o DJPDV - www.djpdv.com.br';
+                      'Precisa de um PAF-ECF homologado?;Conheça o Projeto ACBr - www.projetoacbr.com.br';
 
    { InfAdic.infCpl := '</linha_simples>;'+
                         '</ce><e><n>SENHA XXX</n></e>;'+
@@ -1710,6 +1740,12 @@ procedure TForm1.sePagCodChange(Sender: TObject);
 begin
   ACBrSAT1.Config.PaginaDeCodigo := sePagCod.Value;
   cbxUTF8.Checked := ACBrSAT1.Config.EhUTF8;
+end;
+
+procedure TForm1.tsDadosEmitContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+
 end;
 
 procedure TForm1.ConfiguraRedeSAT;
@@ -1792,6 +1828,7 @@ begin
     ACBrSATExtratoFortes1.MargemEsquerda  := seMargemEsquerda.Value ;
     ACBrSATExtratoFortes1.MargemDireita   := seMargemDireita.Value ;
     ACBrSATExtratoFortes1.MostraPreview   := cbPreview.Checked;
+    ACBrSATExtratoFortes1.FormularioContinuo := cbContinuo.Checked;
 
     try
       if lImpressora.Caption <> '' then

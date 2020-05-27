@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 01/08/2012: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -41,7 +37,7 @@ unit ACBrMDFe;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, synautil,
   ACBrUtil, ACBrDFe, ACBrDFeConfiguracoes, ACBrDFeException, ACBrBase,
   ACBrMDFeConfiguracoes, ACBrMDFeWebServices, ACBrMDFeManifestos,
   ACBrMDFeDAMDFEClass,
@@ -80,9 +76,15 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    function GravarStream(AStream: TStream): Boolean;
+
     procedure EnviarEmail(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
       StreamMDFe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil); override;
+
+    procedure EnviarEmailEvento(const sPara, sAssunto: String;
+      sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
+      sReplyTo: TStrings = nil);
 
     function Enviar(ALote: integer; Imprimir: Boolean = True;
       ASincrono:  Boolean = False): Boolean; overload;
@@ -96,7 +98,7 @@ type
     function cStatProcessado(AValue: integer): Boolean;
     function cStatCancelado(AValue: integer): Boolean;
 
-    function Consultar( const AChave: String = ''): Boolean;
+    function Consultar(const AChave: String = ''; AExtrairEventos: Boolean = False): Boolean;
     function ConsultarMDFeNaoEnc(const ACNPJCPF: String): Boolean;
     function Cancelamento(const AJustificativa: String; ALote: integer = 0): Boolean;
     function EnviarEvento(idLote: integer): Boolean;
@@ -183,6 +185,34 @@ begin
       sReplyTo);
   finally
     SetStatus( stMDFeIdle );
+  end;
+end;
+
+procedure TACBrMDFe.EnviarEmailEvento(const sPara, sAssunto: String; sMensagem, sCC, Anexos, sReplyTo: TStrings);
+var
+  NomeArq: String;
+  AnexosEmail: TStrings;
+  StreamMDFe : TMemoryStream;
+begin
+  AnexosEmail := TStringList.Create;
+  StreamMDFe := TMemoryStream.Create;
+  try
+    AnexosEmail.Clear;
+
+    if Anexos <> nil then
+      AnexosEmail.Text := Anexos.Text;
+
+    GravarStream(StreamMDFe);
+
+    ImprimirEventoPDF;
+    AnexosEmail.Add(DAMDFE.ArquivoPDF);
+
+    NomeArq := OnlyNumber(EventoMDFe.Evento[0].InfEvento.Id);
+    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamMDFe,
+	    NomeArq + '-procEventoMDFe.xml', sReplyTo);
+  finally
+    AnexosEmail.Free;
+    StreamMDFe.Free;
   end;
 end;
 
@@ -275,6 +305,16 @@ begin
   end;
 
   Result := urlUF + sEntrada;
+end;
+
+function TACBrMDFe.GravarStream(AStream: TStream): Boolean;
+begin
+  if EstaVazio(FEventoMDFe.Gerador.ArquivoFormatoXML) then
+    FEventoMDFe.GerarXML;
+
+  AStream.Size := 0;
+  WriteStrToStream(AStream, AnsiString(FEventoMDFe.Gerador.ArquivoFormatoXML));
+  Result := True;
 end;
 
 function TACBrMDFe.GetNameSpaceURI: String;
@@ -535,7 +575,7 @@ begin
   Result := True;
 end;
 
-function TACBrMDFe.Consultar(const AChave: String): Boolean;
+function TACBrMDFe.Consultar(const AChave: String; AExtrairEventos: Boolean): Boolean;
 var
  i: Integer;
 begin
@@ -545,14 +585,16 @@ begin
   if NaoEstaVazio(AChave) then
   begin
     Manifestos.Clear;
-    WebServices.Consulta.MDFeChave := AChave;
+    WebServices.Consulta.MDFeChave      := AChave;
+    WebServices.Consulta.ExtrairEventos := AExtrairEventos;
     WebServices.Consulta.Executar;
   end
   else
   begin
     for i := 0 to Manifestos.Count - 1 do
     begin
-      WebServices.Consulta.MDFeChave := Manifestos.Items[i].NumID;
+      WebServices.Consulta.MDFeChave      := Manifestos.Items[i].NumID;
+      WebServices.Consulta.ExtrairEventos := AExtrairEventos;
       WebServices.Consulta.Executar;
     end;
   end;

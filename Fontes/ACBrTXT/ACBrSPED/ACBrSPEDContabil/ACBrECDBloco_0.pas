@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -79,6 +78,9 @@ type
     fCOD_SCP: String;         /// Identificação da SCP.
     fIDENT_MF: String;        /// Identificação de Moeda Funcional
     fIND_ESC_CONS: string;    /// Escriturações Contábeis Consolidadas: Deve ser preenchido pela empresa controladora obrigada, nos termos da lei, a informações demonstrações contábeis consolidadas
+    fIND_CENTRALIZADA: string;/// Indicador da modalidade de escrituração centralizada ou descentralizada: 0 – Escrituração Centralizada 1 – Escrituração Descentralizada
+    fIND_MUDANC_PC: string;   /// Indicador de mudança de plano de contas: 0 – Não houve mudança no plano de contas. 1 – Houve mudança no plano de contas.
+    fCOD_PLAN_REF: string;    /// Código do Plano de Contas Referencial que será utilizado para o mapeamento de todas as contas analíticas Observação: Caso a pessoa jurídica não realize o mapeamento para os planos referenciais na ECD, este campo deve ficar em branco.
   public
     property DT_INI: TDateTime read FDT_INI write FDT_INI;
     property DT_FIN: TDateTime read FDT_FIN write FDT_FIN;
@@ -99,6 +101,9 @@ type
     property COD_SCP: String read fCOD_SCP write fCOD_SCP;
     property IDENT_MF: String read fIDENT_MF write fIDENT_MF;
     property IND_ESC_CONS: String read fIND_ESC_CONS write fIND_ESC_CONS;
+    property IND_CENTRALIZADA: String read fIND_CENTRALIZADA write fIND_CENTRALIZADA;
+    property IND_MUDANC_PC: String read fIND_MUDANC_PC write fIND_MUDANC_PC;
+    property COD_PLAN_REF: String read fCOD_PLAN_REF write fCOD_PLAN_REF;
   end;
 
   /// Registro 0001 - ABERTURA DO BLOCO 0

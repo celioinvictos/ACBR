@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2011 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: Regys silveira, Isaque Pinheiro                 }
 {                                                                              }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{       Rua Coronel Aureliano de Camargo, 973 - Tatuí - SP - 18270-170         }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -845,7 +844,7 @@ begin
   fsNomeCompleto := fsNomeArquivoAux;
   // Tem Path no Nome do Arquivo ?
   if (fsNomeCompleto <> '') and (pos(PathDelim, fsNomeCompleto) = 0) then
-     fsNomeCompleto := ExtractFilePath( ParamStr(0) ) + fsNomeCompleto;
+     fsNomeCompleto := ApplicationPath + fsNomeCompleto;
 end ;
 
 procedure TACBrAAC.SetParams(const AValue : TStringList) ;

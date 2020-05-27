@@ -1,28 +1,14 @@
-{ LCDPR - Livro caixa digital do produtor rural
-
-  Projeto de escrituração do livro caixa do produtor, obrigatório para o ano de 2019.
-  Componente desenvolvido com base nos links:
-
-  http://receita.economia.gov.br/orientacao/tributaria/declaracoes-e-demonstrativos/lcdpr-livro-caixa-digital-do-produtor-rural/leiaute-1-0-lcdpr.xlsx
-  http://receita.economia.gov.br/orientacao/tributaria/declaracoes-e-demonstrativos/lcdpr-livro-caixa-digital-do-produtor-rural/manual-de-preenchimento-do-lcdpr-1-0.docx
-  http://receita.economia.gov.br/orientacao/tributaria/declaracoes-e-demonstrativos/lcdpr-livro-caixa-digital-do-produtor-rural/manual-de-preenchimento-do-lcdpr-1-2.docx
-
-  Willian Hübner
-}
-
 {******************************************************************************}
-{ Projeto: Componente ACBrLCDPR                                                }
-{  Biblioteca multiplataforma de componentes Delphi para geração do LCDPR -    }
-{ Lirvro Caixa Digital do Produtor Rural                                       }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Desenvolvimento e doação ao Projeto ACBr: Willian Hübner                     }
+{ Colaboradores nesse arquivo: Willian Hübner e Elton Barbosa (EMBarbosa)      }
 {                                                                              }
-{ Ajustes e correções para doação: Elton Barbosa (EMBarbosa)                   }
-{                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -40,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 unit UACBrLCDPR;
 
@@ -99,6 +84,7 @@ type
     procedure PrepararArquivo;
     procedure GerarBlocos;
     procedure SalvarBlocos;
+    procedure limparRegistros;
 
     property Arquivo : String read GetArquivo write SetArquivo;
   published
@@ -142,7 +128,8 @@ begin
   FBloco9999      := TRegistro9999.Create;
   FDadosContador  := TContador.Create;
 
-  FConteudo     := TStringList.Create;;
+  FConteudo     := TStringList.Create;
+
   FDelimitador  := '|';
   FArquivo      := 'LCDPR';
 end;
@@ -175,10 +162,19 @@ begin
 end;
 
 function TACBrLCDPR.GetArquivo: String;
+var
+  diaInicial, mesInicial, anoInicial: Word;
+  diaFinal, mesFinal, anoFinal: Word;
+  dataInicial, dataFinal: String;
 begin
+  DecodeDate(FBloco0000.DT_INI, anoInicial, mesInicial, diaInicial);
+  DecodeDate(FBloco0000.DT_FIN, anoFinal, mesFinal, diaFinal);
+  dataInicial := FormatFloat('0#', diaInicial) + '/' + FormatFloat('0#', mesInicial) + '/' + FormatFloat('####', anoInicial);
+  dataFinal := FormatFloat('0#', diaFinal) + '/' + FormatFloat('0#', mesFinal) + '/' + FormatFloat('####', anoFinal);
+
   Result := FArquivo + '_' + FBloco0000.NOME + '_' +
-    OnlyNumber(DateToStr(FBloco0000.DT_INI)) + '_' + OnlyNumber(DateToStr(FBloco0000.DT_FIN)) +
-    '.txt';
+      OnlyNumber(dataInicial) + '_' + OnlyNumber(dataFinal) +
+      '.txt';
 end;
 
 procedure TACBrLCDPR.PrepararArquivo;
@@ -332,7 +328,7 @@ begin
             AddCampo(COD_MUN) +
             AddCampo(CEP) +
             AddCampo(TipoExploracaoToStr(TIPO_EXPLORACAO)) +
-            AddCampo(formatNumeric(PARTICIPACAO), False)
+            AddCampo(formatNumeric(PARTICIPACAO, 5), False)
           );
         end;
 
@@ -344,9 +340,9 @@ begin
                 AddCampo('0045') +
                 AddCampo(IntToStr(Bloco0040.Blocos[i].Bloco0040.COD_IMOVEL)) +
                 AddCampo(TipoContraparteToStr(TIPO_CONTRAPARTE)) +
-                AddCampo(CPF_CONTRAPARTE) +
+                AddCampo(ID_CONTRAPARTE) +
                 AddCampo(NOME_CONTRAPARTE) +
-                AddCampo(formatNumeric(PERC_CONTRAPARTE), False)
+                AddCampo(formatNumeric(PERC_CONTRAPARTE, 5), False)
               );
             end;
         end;
@@ -430,6 +426,16 @@ begin
           );
         end;
     end;
+end;
+
+procedure TACBrLCDPR.limparRegistros;
+begin
+  Bloco0040.Blocos.Clear;
+  Bloco0050.CONTAS.Clear;
+  BlocoQ.RegistrosQ100.Clear;
+  BlocoQ.RegistrosQ200.Clear;
+
+  Bloco9999.QTD_LIN := 0;
 end;
 
 end.

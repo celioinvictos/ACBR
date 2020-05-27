@@ -55,6 +55,7 @@
     <Compile Include="Boleto\BoletoTpSaida.cs" />
     <Compile Include="CTe\ModeloCTe.cs" />
     <Compile Include="CTe\TipoDACTE.cs" />
+    <Compile Include="CTe\TipoPathCTe.cs" />
     <Compile Include="CTe\VersaoCTe.cs" />
     <Compile Include="DFe\InfoCertificado.cs" />
     <Compile Include="DFe\TipoEmissao.cs" />
@@ -75,9 +76,11 @@
     <Compile Include="Mail\MimeChar.cs" />
     <Compile Include="DFe\TamanhoPapel.cs" />
     <Compile Include="MDFe\TipoDAMDFE.cs" />
+    <Compile Include="MDFe\TipoPathMDFe.cs" />
     <Compile Include="MDFe\VersaoMDFe.cs" />
     <Compile Include="NFe\ModeloNFe.cs" />
     <Compile Include="NFe\TipoDANFE.cs" />
+    <Compile Include="NFe\TipoPathNFe.cs" />
     <Compile Include="NFe\TipoRelatorioEvento.cs" />
     <Compile Include="NFe\VersaoNFe.cs" />
     <Compile Include="NivelLog.cs" />
@@ -96,6 +99,8 @@
     <Compile Include="Sat\SATModelo.cs" />
     <Compile Include="Sat\TipoExtrato.cs" />
     <Compile Include="Serial\ACBrDevice.cs" />
+    <Compile Include="Serial\SerialBaud.cs" />
+    <Compile Include="Serial\SerialDataBits.cs" />
     <Compile Include="Serial\SerialHandShake.cs" />
     <Compile Include="Serial\SerialParity.cs" />
     <Compile Include="Serial\SerialStopBytes.cs" />

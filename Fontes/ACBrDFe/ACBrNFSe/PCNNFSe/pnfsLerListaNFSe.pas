@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -34,7 +37,13 @@ unit pnfsLerListaNFSe;
 interface
 
 uses
-  SysUtils, Classes, Forms, variants, Contnrs,
+  SysUtils, Classes, variants,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase,
   pcnConversao, pcnLeitor,
   pnfsConversao, pnfsNFSe, pnfsNFSeR, ACBrUtil;
 
@@ -64,7 +73,7 @@ type
     property ChaveNFeRPS: TChaveNFeRPS             read FChaveNFeRPS     write FChaveNFeRPS;
   end;
 
- TLerListaNFSeCollection = class(TObjectList)
+ TLerListaNFSeCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TLerListaNFSeCollectionItem;
     procedure SetItem(Index: Integer; Value: TLerListaNFSeCollectionItem);
@@ -88,7 +97,7 @@ type
     property NFSeSubstituicao: TSubstituicaoNFSe        read FNFSeSubstituicao write FNFSeSubstituicao;
   end;
 
- TMsgRetornoNFSeCollection = class(TObjectList)
+ TMsgRetornoNFSeCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TMsgRetornoNFSeCollectionItem;
     procedure SetItem(Index: Integer; Value: TMsgRetornoNFSeCollectionItem);
@@ -179,13 +188,13 @@ end;
 function TLerListaNFSeCollection.GetItem(
   Index: Integer): TLerListaNFSeCollectionItem;
 begin
-  Result := TLerListaNFSeCollectionItem(inherited GetItem(Index));
+  Result := TLerListaNFSeCollectionItem(inherited Items[Index]);
 end;
 
 procedure TLerListaNFSeCollection.SetItem(Index: Integer;
   Value: TLerListaNFSeCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TLerListaNFSeCollection.New: TLerListaNFSeCollectionItem;
@@ -223,13 +232,13 @@ end;
 function TMsgRetornoNFSeCollection.GetItem(
   Index: Integer): TMsgRetornoNFSeCollectionItem;
 begin
-  Result := TMsgRetornoNFSeCollectionItem(inherited GetItem(Index));
+  Result := TMsgRetornoNFSeCollectionItem(inherited Items[Index]);
 end;
 
 procedure TMsgRetornoNFSeCollection.SetItem(Index: Integer;
   Value: TMsgRetornoNFSeCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TMsgRetornoNFSeCollection.New: TMsgRetornoNFSeCollectionItem;
@@ -397,6 +406,10 @@ begin
     //CTA
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'RetornoConsultaNotas') <> '');
+	  
+    //CTA
+    if not Nivel1 then
+      Nivel1 := (leitor.rExtrai(1, 'NotasConsultadas') <> '');	  
 
     //EL
     if not Nivel1 then
@@ -497,8 +510,8 @@ begin
             ((Provedor in [proEquiplano, proIPM]) and (Leitor.rExtrai(Nivel, 'nfse', '', i + 1) <> '')) or
             ((Provedor in [proNFSeBrasil, proISSJoinville]) and (Leitor.rExtrai(Nivel, 'nota', '', i + 1) <> '')) or
             ((Provedor in [proISSJoinville]) and (Leitor.rExtrai(Nivel, 'nota_recebida', '', i + 1) <> '')) or
-            ((Provedor in [proISSDSF]) and (Leitor.rExtrai(Nivel, 'ConsultaNFSe', '', i + 1) <> '')) or
-            ((Provedor in [proISSDSF]) and (Leitor.rExtrai(Nivel, 'NotasConsultadas', '', i + 1) <> '')) or
+            ((Provedor in [proISSDSF, proSiat]) and (Leitor.rExtrai(Nivel, 'ConsultaNFSe', '', i + 1) <> '')) or     // ConsultaLote  
+            ((Provedor in [proISSDSF, proSiat]) and (Leitor.rExtrai(Nivel, 'NotasConsultadas', '', i + 1) <> '')) or // ConsultaNFSePorRPS 
             ((Provedor in [proInfisc, proInfiscv11]) and (Leitor.rExtrai(Nivel, 'resPedidoLoteNFSe', '', i + 1) <> '')) or
             ((Provedor in [proGoverna]) and (Leitor.rExtrai(Nivel, 'InfRetConsultaNotCan', '', i + 1) <> '')) or
             ((Provedor in [proCTA, proISSDSF]) and (Leitor.rExtrai(Nivel, 'Nota', '', i + 1) <> '')) or
@@ -961,7 +974,7 @@ begin
         if ListaNfse.FMsgRetorno[i].FMensagem = '' then
           ListaNfse.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Erro');
 
-        if FProvedor = proIssDSF then
+        if FProvedor in [proIssDSF, proSiat] then 
         begin
           if (leitor.rExtrai(3, 'ChaveRPS') <> '') then
           begin
@@ -1062,7 +1075,7 @@ begin
       end;
     end;
 
-    if FProvedor in [proSP, proNotaBlu, proISSDSF] then
+    if FProvedor in [proSP, proNotaBlu, proISSDSF, proSiat] then 
     begin
       try
         if (Leitor.rExtrai(1, 'RetornoConsulta') <> '') or
@@ -1221,11 +1234,11 @@ begin
     if FProvedor in [proIPM] then
     begin
       try
-        if( Leitor.rExtrai( 1, 'retorno' ) <> '' )then
+        if (Leitor.rExtrai(1, 'retorno') <> '') then
         begin
-          if( Leitor.rExtrai( 2, 'mensagem' ) <> '' )then
+          if (Leitor.rExtrai(2, 'mensagem') <> '') then
           begin
-            if( Copy( Leitor.rCampo( tcStr, 'codigo' ), 1, 5 ) <> '00001' )then
+            if (Copy(Leitor.rCampo(tcStr, 'codigo'), 1, 5) <> '00001') then
             begin
               i := 0;
               while Leitor.rExtrai(3, 'codigo', '', i + 1 ) <> '' do
@@ -1240,7 +1253,7 @@ begin
           end;
         end;
 
-        if( ListaNfse.FMsgRetorno.Count = 0 )then
+        if (ListaNfse.FMsgRetorno.Count = 0) then
         begin
           if (Leitor.rExtrai(1, 'retorno') <> '') then
           begin
@@ -1296,7 +1309,18 @@ begin
             ListaNFSe.FChaveNFeRPS.SerieRPS  := Leitor.rCampo(tcStr, 'serie_recibo_provisorio');
           end;
         end;
-      except
+ 
+        // Quando o login e senha estiver invalido, não esta retornando um xml, e sim o erro como texto.
+        if ((leitor.rExtrai(1, 'retorno') = '') and (ListaNfse.FMsgRetorno.Count = 0)) then
+        begin
+          ListaNfse.FMsgRetorno.New;
+          ListaNfse.FMsgRetorno[i].FCodigo   := '00002'; // não tem codigo...
+          if Pos('Nao foi encontrado na tb.dcarq.unico a cidade(codmun) do Usuario:', leitor.Arquivo) > 0 then
+            ListaNfse.FMsgRetorno[i].FMensagem := 'Usuário e/ou senha informados são inválidos'
+          else
+            ListaNfse.FMsgRetorno[i].FMensagem := leitor.Arquivo;
+        end;
+     except
         Result := False;
       end;
     end;

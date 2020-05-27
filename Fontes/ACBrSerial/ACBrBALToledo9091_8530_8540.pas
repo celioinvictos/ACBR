@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Rafael Dipold                                   }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,13 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 04/03/2015: Rafael Dipold
-|*  - Primeira Versao ACBrBALToledo9091_8530_8540
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrBALToledo9091_8530_8540;
@@ -44,8 +37,12 @@ unit ACBrBALToledo9091_8530_8540;
 interface
 
 uses
-  ACBrBALClass, Classes;
-
+  Classes,
+  ACBrBALClass
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
+  
 type
   TACBrBALToledo9091_8530_8540 = class( TACBrBALClass )
   public

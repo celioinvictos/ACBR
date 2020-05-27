@@ -1,11 +1,9 @@
 {*******************************************************************************}
-{ Projeto: ACBrMonitor                                                         }
+{ Projeto: ACBrMonitor                                                          }
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -312,7 +310,7 @@ type
     Copias                           : Integer;
     CopiasNFCe                       : Integer;
     LarguraCodigoProduto             : Integer;
-    EspessuraBorda                   : Integer;
+    EspacoEntreProdutos              : Integer;
     FonteRazao                       : Integer;
     FonteEndereco                    : Integer;
     FonteCampos                      : Integer;
@@ -413,6 +411,7 @@ type
     IgnorarComandoModoEmissao: Boolean;
     ModoXML           : Boolean;
     RetirarAcentos    : Boolean;
+    RetirarEspacos    : Boolean;
     Gravar_Log_Comp   : Boolean;
     Arquivo_Log_Comp  : String;
     Linhas_Log_Comp   : Integer;
@@ -527,11 +526,18 @@ type
     SalvarEnvio                  : Boolean;
     SepararPorCNPJ               : Boolean;
     SepararPorMES                : Boolean;
+    SepararPorANO                : Boolean;
+    SepararPorDIA                : Boolean;
+    SepararPorModelo             : Boolean;
     ValidarNumeroSessaoResposta  : Boolean;
     SATImpressao                 : TSATImpressao;
     SATRede                      : TSATRede;
     SATSWH                       : TSATSwH;
     SATEmail                     : TSATEmail;
+    PathCFeCanc                  : String;
+    PathCFeEnvio                 : String;
+    PrefixoArqCFe                : String;
+    PrefixoArqCFeCanc            : String;
 
   end;
 
@@ -924,6 +930,7 @@ begin
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyIgnorarComandoModoEmissao, IgnorarComandoModoEmissao );
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyModoXML, ModoXML );
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyRetirarAcentos, RetirarAcentos );
+      Ini.WriteBool( CSecACBrNFeMonitor, CKeyRetirarEspacos, RetirarEspacos );
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyGravar_Log_Comp, Gravar_Log_Comp );
       Ini.WriteString( CSecACBrNFeMonitor, CKeyArquivo_Log_Comp, Arquivo_Log_Comp );
       Ini.WriteInteger( CSecACBrNFeMonitor, CKeyLinhas_Log_Comp, Linhas_Log_Comp );
@@ -1097,7 +1104,7 @@ begin
       Ini.WriteInteger( CSecDANFE,  CKeyDANFECopias                 , Copias );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFECopiasNFCe             , CopiasNFCe );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFELarguraCodigoProduto   , LarguraCodigoProduto );
-      Ini.WriteInteger( CSecDANFE,  CKeyDANFEEspessuraBorda         , EspessuraBorda );
+      Ini.WriteInteger( CSecDANFE,  CKeyDANFEEspacoEntreProdutos    , EspacoEntreProdutos );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteRazao             , FonteRazao );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteEndereco          , FonteEndereco );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteCampos            , FonteCampos );
@@ -1127,6 +1134,7 @@ begin
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimirDadosDocReferenciados  , ImprimirDadosDocReferenciados );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto  , ExibirBandInforAdicProduto );
       Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe     , ImprimeDescAcrescItemNFe);
+      Ini.WriteBool( CSecDANFE,  CKeyDANFELogoEmCima                     , LogoEmCima );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto , ExpandirDadosAdicionaisAuto );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina, ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
     end;
@@ -1177,7 +1185,14 @@ begin
       ini.WriteBool(    CSecSAT, CKeySATSalvarEnvio    , SalvarEnvio    );
       ini.WriteBool(    CSecSAT, CKeySATSepararPorCNPJ , SepararPorCNPJ );
       ini.WriteBool(    CSecSAT, CKeySATSepararPorMES  , SepararPorMES  );
+      ini.WriteBool(    CSecSAT, CKeySATSepararPorANO  , SepararPorANO  );
+      ini.WriteBool(    CSecSAT, CKeySATSepararPorDIA  , SepararPorDIA  );
+      ini.WriteBool(    CSecSAT, CKeySATSepararPorModelo, SepararPorModelo  );
       ini.WriteBool(    CSecSAT, CKeySATValidarNumeroSessaoResposta, ValidarNumeroSessaoResposta );
+      ini.WriteString(  CSecSAT, CKeySATPathCFeCanc    , PathCFeCanc    );
+      ini.WriteString(  CSecSAT, CKeySATPathCFeEnvio   , PathCFeEnvio   );
+      ini.WriteString(  CSecSAT, CKeySATPrefixoArqCFe  , PrefixoArqCFe  );
+      ini.WriteString(  CSecSAT, CKeySATPrefixoArqCFeCanc  , PrefixoArqCFeCanc  );
     end;
 
     with SAT.SATImpressao.SATExtrato do
@@ -1598,6 +1613,7 @@ begin
       IgnorarComandoModoEmissao := Ini.ReadBool( CSecACBrNFeMonitor, CKeyIgnorarComandoModoEmissao, IgnorarComandoModoEmissao );
       ModoXML                   := Ini.ReadBool( CSecACBrNFeMonitor, CKeyModoXML, ModoXML );
       RetirarAcentos            := Ini.ReadBool( CSecACBrNFeMonitor, CKeyRetirarAcentos, RetirarAcentos );
+      RetirarEspacos            := Ini.ReadBool( CSecACBrNFeMonitor, CKeyRetirarEspacos, RetirarEspacos );
       Gravar_Log_Comp           := Ini.ReadBool( CSecACBrNFeMonitor, CKeyGravar_Log_Comp, Gravar_Log_Comp );
       Arquivo_Log_Comp          := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivo_Log_Comp, Arquivo_Log_Comp );
       Linhas_Log_Comp           := Ini.ReadInteger( CSecACBrNFeMonitor, CKeyLinhas_Log_Comp, Linhas_Log_Comp );
@@ -1756,7 +1772,7 @@ begin
       Copias                    :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFECopias                         , Copias );
       CopiasNFCe                :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFECopiasNFCe                     , CopiasNFCe );
       LarguraCodigoProduto      :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFELarguraCodigoProduto           , LarguraCodigoProduto );
-      EspessuraBorda            :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEEspessuraBorda                 , EspessuraBorda );
+      EspacoEntreProdutos       :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEEspacoEntreProdutos            , EspacoEntreProdutos );
       FonteRazao                :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteRazao                     , FonteRazao );
       FonteEndereco             :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteEndereco                  , FonteEndereco );
       FonteCampos               :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteCampos                    , FonteCampos );
@@ -1859,7 +1875,14 @@ begin
       SalvarEnvio               := ini.ReadBool(    CSecSAT, CKeySATSalvarEnvio    , SalvarEnvio    );
       SepararPorCNPJ            := ini.ReadBool(    CSecSAT, CKeySATSepararPorCNPJ , SepararPorCNPJ );
       SepararPorMES             := ini.ReadBool(    CSecSAT, CKeySATSepararPorMES  , SepararPorMES  );
+      SepararPorANO             := ini.ReadBool(    CSecSAT, CKeySATSepararPorANO  , SepararPorANO  );
+      SepararPorDIA             := ini.ReadBool(    CSecSAT, CKeySATSepararPorDIA  , SepararPorDIA  );
+      SepararPorModelo          := ini.ReadBool(    CSecSAT, CKeySATSepararPorModelo  , SepararPorModelo  );
       ValidarNumeroSessaoResposta := ini.ReadBool(CSecSAT, CKeySATValidarNumeroSessaoResposta, ValidarNumeroSessaoResposta );
+      PathCFeCanc               := ini.ReadString(  CSecSAT, CKeySATPathCFeCanc    , PathCFeCanc    );
+      PathCFeEnvio              := ini.ReadString(  CSecSAT, CKeySATPathCFeEnvio   , PathCFeEnvio   );
+      PrefixoArqCFe             := ini.ReadString(  CSecSAT, CKeySATPrefixoArqCFe  , PrefixoArqCFe  );
+      PrefixoArqCFeCanc         := ini.ReadString(  CSecSAT, CKeySATPrefixoArqCFeCanc  , PrefixoArqCFeCanc   );
     end;
 
     with SAT.SATImpressao.SATExtrato do
@@ -2260,6 +2283,7 @@ begin
     IgnorarComandoModoEmissao := False;
     ModoXML                   := False;
     RetirarAcentos            := True;
+    RetirarEspacos            := False;
     Gravar_Log_Comp           := False;
     Arquivo_Log_Comp          := 'LOG_COMP.TXT';
     Linhas_Log_Comp           := 0;
@@ -2410,7 +2434,7 @@ begin
     Copias                    :=  1;
     CopiasNFCe                :=  1;
     LarguraCodigoProduto      :=  40;
-    EspessuraBorda            :=  1;
+    EspacoEntreProdutos       :=  11;
     FonteRazao                :=  8;
     FonteEndereco             :=  7;
     FonteCampos               :=  8;
@@ -2511,7 +2535,14 @@ begin
     SalvarEnvio               := True;
     SepararPorCNPJ            := True;
     SepararPorMES             := True;
+    SepararPorDIA             := False;
+    SepararPorANO             := False;
+    SepararPorModelo          := False;
     ValidarNumeroSessaoResposta:= True;
+    PathCFeCanc               := AcertaPath('Arqs'+PathDelim+'SAT');
+    PathCFeEnvio              := AcertaPath('Arqs'+PathDelim+'SAT');
+    PrefixoArqCFe             := '';
+    PrefixoArqCFeCanc         := '';
   end;
 
   with SAT.SATImpressao.SATExtrato do

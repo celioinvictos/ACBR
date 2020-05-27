@@ -1,12 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr - ACBrMDFe                                         }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{																			   }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: 												   }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -24,15 +26,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-******************************************************************************}
 package ACBr_MDFeDamdfeRL;
 
 {$R *.res}
@@ -40,7 +37,7 @@ package ACBr_MDFeDamdfeRL;
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
-{$DEBUGINFO ON}
+{$DEBUGINFO OFF}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
@@ -61,17 +58,16 @@ package ACBr_MDFeDamdfeRL;
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'ACBr - DAMDFe em FortesReport - (http://www.projetoacbr.com.br/)'}
+{$RUNONLY}
 {$IMPLICITBUILD ON}
 
 requires
   rtl,
-  designide,
   dsnap,
   ACBr_MDFe,
   ACBrDFeReportRL;
 
 contains
-  ACBrMDFeDAMDFeRLReg in '..\..\..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\DAMDFE\Fortes\ACBrMDFeDAMDFeRLReg.pas',
   ACBrMDFeDAMDFeRLClass in '..\..\..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\DAMDFE\Fortes\ACBrMDFeDAMDFeRLClass.pas',
   ACBrMDFeDAMDFeRL in '..\..\..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\DAMDFE\Fortes\ACBrMDFeDAMDFeRL.pas' {TfrlDAMDFeRL},
   ACBrMDFeDAMDFeRLRetrato in '..\..\..\..\..\..\Fontes\ACBrDFe\ACBrMDFe\DAMDFE\Fortes\ACBrMDFeDAMDFeRLRetrato.pas' {TfrlDAMDFeRLRetrato},

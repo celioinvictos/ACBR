@@ -3,9 +3,7 @@
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -476,6 +474,7 @@ var
   AMetodoClass: TACBrMetodoClass;
   CmdNum: Integer;
   Ametodo: TACBrMetodo;
+  AACBrUnit: TACBrObjetoACBr;
 begin
   inherited Executar(ACmd);
 
@@ -533,7 +532,15 @@ begin
     47 : AMetodoClass := TMetodoSetTipoImpressao;
 
     else
-      DoACbr(ACmd);
+      begin
+        AACBrUnit := TACBrObjetoACBr.Create(Nil); //Instancia DoACBrUnit para validar métodos padrão para todos os objetos
+        try
+          AACBrUnit.Executar(ACmd);
+        finally
+          AACBrUnit.Free;
+        end;
+
+      end;
 
   end;
 
@@ -1164,20 +1171,25 @@ end;
 { TMetodoConsultarCTe }
 
 { Params: 0 - XML - Uma String com um Path completo XML ou chave CTe
+          1 - AExtrairEventos (1 para extrair)
 }
 procedure TMetodoConsultarCTe.Executar;
 var
   CargaDFe: TACBrCarregarCTe;
   AXML: String;
   Resposta: TConsultaCTeResposta;
+  AExtrairEventos: Boolean;
 begin
   AXML := fpCmd.Params(0);
+  AExtrairEventos := StrToBoolDef(fpCmd.Params(1), False);
 
   with TACBrObjetoCTe(fpObjetoDono) do
   begin
     ACBrCTe.Conhecimentos.Clear;
     CargaDFe := TACBrCarregarCTe.Create(ACBrCTe, AXML);
     try
+      ACBrCTe.WebServices.Consulta.ExtrairEventos := AExtrairEventos;
+
       if (ACBrCTe.Conhecimentos.Count = 0) then
       begin
         if ValidarChave(AXML) then
@@ -1908,6 +1920,8 @@ begin
       ACBrCTe.WebServices.Consulta.CTeChave := AChave;
 
     ACBrCTe.WebServices.Consulta.Executar;
+    if EstaVazio(ACBrCTe.WebServices.Consulta.Protocolo) then
+      raise Exception.Create(ACBrStr('Não foi possível consultar o número de Protocolo para a Chave: ') + AChave );
 
     ACBrCTe.EventoCTe.Evento.Clear;
     with ACBrCTe.EventoCTe.Evento.New do

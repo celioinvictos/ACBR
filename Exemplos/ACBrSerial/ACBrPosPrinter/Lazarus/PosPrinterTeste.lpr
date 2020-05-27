@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   sysutils,
-  Forms, Unit1, ConfiguraSerial;
+  Forms, Unit1, ConfiguraSerial, ACBrDeviceClass;
 
 {$R *.res}
 
@@ -18,6 +18,7 @@ begin
    SetHeapTraceOutput( 'c:\temp\heaptrclog.trc');
   {$ENDIF}
   RequireDerivedFormResource := True;
+  Application.Scaled := True;
   Application.Initialize;
   Application.CreateForm(TFrPosPrinterTeste, FrPosPrinterTeste);
   Application.Run;

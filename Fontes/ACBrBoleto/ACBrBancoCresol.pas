@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Lucas R L Reis                                }
+{ Colaboradores nesse arquivo: Lucas R L Reis                                  }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -109,7 +108,7 @@ begin
 
       CodigoBarras := IntToStr(Numero) + '9' + FatorVencimento +
                       IntToStrZero(Round(ACBrTitulo.ValorDocumento * 100), 10) +
-                      PadLeft(OnlyNumber(Cedente.Agencia), 4, '0') +
+                      IntToStrZero(StrToIntDef(Cedente.Agencia,0),4) +
                       ACBrTitulo.Carteira +
                       ACBrTitulo.NossoNumero +
                       PadLeft(RightStr(Cedente.Conta, 7), 7, '0') + '0';
@@ -129,7 +128,7 @@ end;
 function TACBrBancoCresol.MontarCampoCodigoCedente (
    const ACBrTitulo: TACBrTitulo ) : String;
 begin
-   Result := ACBrTitulo.ACBrBoleto.Cedente.Agencia + '-' +
+   Result := IntToStrZero(StrToIntDef(ACBrTitulo.ACBrBoleto.Cedente.Agencia,0),4) + '-' +
              ACBrTitulo.ACBrBoleto.Cedente.AgenciaDigito + '/' +
              ACBrTitulo.ACBrBoleto.Cedente.Conta + '-' +
              ACBrTitulo.ACBrBoleto.Cedente.ContaDigito;
@@ -147,9 +146,10 @@ begin
                '01'                                            + // Código do Tipo de Serviço
                PadRight( 'COBRANCA', 15 )                      + // Descrição do tipo de serviço
                PadLeft( Convenio, 20, '0')                     + // Codigo da Empresa no Banco
-               space(30)                                       + // Nome da Empresa
+               PadLeft( Copy(Nome,1,30) , 30)                  + // Nome da Empresa                                17/04/2020
                IntToStr( Numero )+ PadRight('BRADESCO', 15)    + // Código e Nome do Banco(237 - Bradesco)
-               Space(06) + Space(08) + Space(02)               + // Data de geração do arquivo + brancos
+               FormatDateTime('DDMMYY',Now)                    + // Data de geração do arquivo                     17/04/2020
+               Space(08) + Space(02)                           + // brancos
                IntToStrZero(NumeroRemessa, 7) + Space(277)     + // Nr. Sequencial de Remessa + brancos
                IntToStrZero(1, 6);                               // Nr. Sequencial de Remessa + brancos + Contador
 
@@ -243,8 +243,8 @@ begin
          toRemessaAlterarControleParticipante    : Ocorrencia := '07'; {Alteração do controle do participante}
          toRemessaAlterarNumeroControle          : Ocorrencia := '08'; {Alteração de seu número}
          toRemessaProtestar                      : Ocorrencia := '09'; {Pedido de protesto}
-         toRemessaCancelarInstrucaoProtestoBaixa : Ocorrencia := '18'; {Sustar protesto e baixar}
-         toRemessaCancelarInstrucaoProtesto      : Ocorrencia := '19'; {Sustar protesto e manter na carteira}
+         toRemessaCancelarInstrucaoProtestoBaixa : Ocorrencia := '10'; {Sustar protesto e baixar}
+         toRemessaCancelarInstrucaoProtesto      : Ocorrencia := '11'; {Sustar protesto e manter na carteira}
          toRemessaAlterarValorTitulo             : Ocorrencia := '20'; {Alteração de valor}
          toRemessaTransferenciaCarteira          : Ocorrencia := '23'; {Transferência entre carteiras}
          toRemessaDevTransferenciaCarteira       : Ocorrencia := '24'; {Dev. Transferência entre carteiras}
@@ -1177,8 +1177,8 @@ begin
     07 : Result:= toRemessaAlterarControleParticipante;     {Alteração do controle do participante}
     08 : Result:= toRemessaAlterarNumeroControle;           {Alteração de seu número}
     09 : Result:= toRemessaProtestar;                       {Pedido de protesto}
-    18 : Result:= toRemessaCancelarInstrucaoProtestoBaixa;  {Sustar protesto e baixar}
-    19 : Result:= toRemessaCancelarInstrucaoProtesto;       {Sustar protesto e manter na carteira}
+    10 : Result:= toRemessaCancelarInstrucaoProtestoBaixa;  {Sustar protesto e baixar}
+    11 : Result:= toRemessaCancelarInstrucaoProtesto;       {Sustar protesto e manter na carteira}
     22 : Result:= toRemessaTransfCessaoCreditoIDProd10;     {Transferência Cessão crédito ID. Prod.10}
     23 : Result:= toRemessaTransferenciaCarteira;           {Transferência entre Carteiras}
     24 : Result:= toRemessaDevTransferenciaCarteira;        {Dev. Transferência entre Carteiras}

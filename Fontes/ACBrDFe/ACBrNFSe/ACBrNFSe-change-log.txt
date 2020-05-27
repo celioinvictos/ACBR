@@ -1,9 +1,13 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,18 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-Agradecimentos:
-
-* Administradores:
-- Daniel Simões de Almeida
-- André Ferreira de Moraes
-
-* Desenvolvedores:
-- Juaumkiko - Doação do componente ao projeto ACBr
 
 {******************************************************************************
 |* ACBrNFSe
@@ -46,6 +41,192 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+22/05/2020
+-- ACBrNFSeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/57707-erro-retorno-provedor-issnet/
+  Por: Maiquel
+-- Diversos --
+[+] Inicio da implementação do provedor proSmarAPDv1 (segue a versão 1 da ABRASF).
+  Por: Italo Jurisato Junior
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/57741-atualizações-para-o-provedor-finteliss-e-novas-cidades/
+  Por: Rodrigo Crovador
+
+19/05/2020
+-- ACBrNFSeDANFSeRLRetrato --
+[*] https://www.projetoacbr.com.br/forum/topic/57639-danfse-com-prestador-pessoa-física/
+  Por: Ederts / Italo Jurisato Junior
+
+14/05/2020
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/57611-correção-em-tnfserlernfse_abrasf_v2-provedor-systempro/
+  Por: Rafael Sartori
+[*] Comentado as linhas que estavam carregando as informações de contato do tomador e
+    atribuindo ao prestador de forma indevida.
+  Por: Italo Jurisato Junior
+
+11/05/2020
+-- pnfsNFSeG/pnfsNFSeW_ABRASFv2 --
+[*] https://www.projetoacbr.com.br/forum/topic/56791-assinatura-inv%C3%A1lida-megasoft/?do=findComment&comment=376843
+   Por: InfoPonterp
+
+08/05/2020
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/57528-lerxml-provedor-issintel/
+  Por: Patrick Alves
+-- pnfsConversao --
+[*] Inclusão do prefixo p no método RetirarPrefixos.
+  Por: Italo Jurisato Junior
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/57476-nfse-saatri-iss-retido-consulta-impressão-xml/
+  Por: Theiller
+
+07/05/2020
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido o provedor SmarAPDABRASF na lista de provedores que geram o grupo de 
+    EnderecoExterior no grupo de Tomador.
+  Por: Italo
+
+30/04/2020
+-- pnfsNFSeW_ABRASFv2 --
+[*] Ajustes para o provedor DeISS.
+    https://www.projetoacbr.com.br/forum/topic/57391-erro-ao-enviar-nfs-e-outrasreten%C3%A7%C3%B5es/
+  Por: BigWings
+
+15/04/2020
+-- Diversos --
+[+] Implementação do provedor Siat
+   Por: Leeonardo Gomes
+
+30/03/2020
+-- pnfsConversao/pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/56886-provedor-centi-fora-padr%C3%A3o-issretido/
+   Por: Eliomar
+
+26/03/2020
+-- pnfsNFSeW_EL-- 
+[*] https://www.projetoacbr.com.br/forum/topic/56922-m%C3%BAltiplos-servi%C3%A7os-da-nfse-provedor-el/
+   Por: Paulo Alves N Junior
+-- Diversos -- 
+[*] Alterações visando atender o provedor Actcon.
+   Por: Italo Jurisato Junior
+-- ACBrNFSeWebServices -- 
+[*] Incluido o ID na consulta da NFS-e por RPS para o provedor SJP.
+   Por: Italo Jurisato Junior
+
+24/03/2020
+-- pnfsNFSeW_ABRASFv1/pnfsNFSeW_ABRASFv2 -- 
+[*] Ajustes necessarios por conta do refactoring feito no pcnGerador
+   Por: Italo Jurisato Junior
+
+16/03/2020
+-- pnfsNFSeW_ABRASFv2 -- 
+[*] Ajustes para o provedor DeISS
+   Por: Carlos Junior / Italo Jurisato Junior
+
+05/03/2020
+-- ACBrNFSeNotasFiscais/ACBrNFSeWebServices -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56533-quebralinha-goiania-smarapd-consultasituacaolote/
+   Por: Michel Ouriques
+-- ACBrNFSeWebServices/pnfsNFSeR -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56586-provedor-smarapd-pequenas-altera%C3%A7%C3%B5es/
+   Por: Lutzem Massao Aihara
+-- pnfsNFSe/pnfsNFSeW_IPM -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56522-bento-gon%C3%A7alves-ipm-campo-tipo-de-tomador/
+   Por: Sandro Felipe Adad
+
+20/02/2020
+-- pnfsNFSeW_Governa -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56421-nfse-provedor-governavalparaiso-de-goi%C3%A1s/
+   Por: Ariel Ton Lima
+
+19/02/2020
+-- pnfsConsSitLoteRpsResposta -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56411-provedor-infisc-situa%C3%A7%C3%A3o-n%C3%A3o-precessado/
+   Por: Marcio ST
+-- pnfsNFSe/pnfsNFSeW_ABRASFv2 -- 
+[+] https://www.projetoacbr.com.br/forum/topic/56380-total-tributos-blumenau/
+   Por: João Paulo Muller
+
+12/02/2020
+-- pnfsNFSeR -- 
+[*] Removido da lista o proGinfes, pois ao ler um XML da NFS-e o componente
+    estava multiplicando a aliquota por 100. 
+   Por: Italo Jurisato Junior
+
+10/02/2020
+-- Diversos -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56153-nfse-dados-do-tomador-na-impress%C3%A3o/
+   Por: Haroldo
+-- pnfsNFSeW_SP -- 
+[*] https://www.projetoacbr.com.br/forum/topic/55000-municipioprestacao-do-servi%C3%A7o/?do=findComment&comment=368407
+   Por: Bruno
+-- ACBrNFSeWebServices -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56112-servicos-utilizados-sem-a-assinatura-digital-consultarlote-provedor-sjp/
+    Incluido o atributo ID em algumas consultas para o provedor SJP
+   Por: Italo Jurisato Junior
+-- pnfsNFSeW_ABRASFv2 -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56006-atualiza%C3%A7%C3%A3o-xml-envio-centi/?do=findComment&comment=368050
+    O provedor Centi não possui o atributo ID na tag InfDeclaracaoPrestacaoServico.
+   Por: InfoPointerp
+
+07/02/2020
+-- pnfsConversao --
+[+] https://www.projetoacbr.com.br/forum/topic/56178-enum-publica/
+   Por: Marcelo Fagundes
+[+] Implementado o provedor SJC - São José dos Campos/SP
+   Por: Italo Jurisato Junior
+
+06/02/2020
+-- Diversos -- 
+[*] Acrescentandos novos campos para o provedor Tecnos
+   Por: Italo Jurisato Junior
+-- pnfsNFSeW_Agili -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56145-provedor-agili-cidade-juina-mt/
+   Por: PlenusTech
+
+04/02/2020
+-- pnfsEnvLoteRpsResposta -- 
+[*] Retorno fazendo uso de variável que não foi regenerada o valor, corrigido.
+   Por: Antonio Gomes
+
+30/01/2020
+-- Diversos -- 
+[*] Ajustes para ser impresso a mensagem de Homologação no DANFSE.
+   Por: Italo Jurisato Junior
+
+27/01/2020
+-- pnfsNFSeR -- 
+[*] Alterado para que a multiplicação por 100 a aliquota passa a ser feita pela leitura do XML.
+   Por: Italo Jurisato Junior
+
+20/01/2020
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/55822-ajuste-na-al%C3%ADquota-para-o-provedor-thema/
+   Por: Leandro KSC
+
+16/01/2020
+-- Diversos --
+[*] Ajustes realizados para gerar corretamente o pedido de cancelamento para o
+    provedor Sigep.
+   Por: Italo Jurisato Junior
+
+14/01/2020
+-- pnfsNFSeW_ABRASFv2 --
+[*] Alteração no ID do provedor ModernizacaoPublica.
+   Por: Michel Ouriques
+-- pnfsNFSeW_ABRASFv1 --
+[*] https://www.projetoacbr.com.br/forum/topic/55744-quebra-de-linha/
+   Por: Leandro ksc
+-- Diversos --
+[*] Acrescentado a linha para levar em consideração o caracter de 
+    quebra de linha definido no arquivo INI do provedor ao gerar
+    o XML do RPS.
+   Por: Italo Jurisato Junior
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/55721-provedor-ipm-altera%C3%A7%C3%B5es/
+   Por: Lutzem Massao Aihara
 
 10/01/2020
 -- Diversos --
@@ -3757,6 +3938,7 @@ Versão 0.01a
 [+] Início do Projeto
 [+] Primeira Versao lançada baseado no componente fornecido por juaumkiko.
 
-
+[+] Doação do componente ao projeto ACBr
+   Por: Juaumkiko
 
 

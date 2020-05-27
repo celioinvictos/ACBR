@@ -3,13 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2014 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ This file uses: DelphiZXIngQRCode Copyright 2008 ZXing authors,              }
-{   port to Delphi, by Debenu Pty Ltd                                          }
-{   URL: http://www.debenu.com/open-sourc1e/delphizxingqrcode                  }
-{                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: André Ferreira de Moraes                        }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -28,19 +24,18 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 04/04/2013:  André Ferreira de Moraes
-|*   Inicio do desenvolvimento
-******************************************************************************}
+{******************************************************************************}
+{ This file uses: DelphiZXIngQRCode Copyright 2008 ZXing authors,              }
+{   port to Delphi, by Debenu Pty Ltd                                          }
+{   URL: http://www.debenu.com/open-sourc1e/delphizxingqrcode                  }
+{******************************************************************************}
+
 {$I ACBr.inc}
 
 unit ACBrSATExtratoFortesFr;
@@ -365,8 +360,6 @@ type
     property Resumido : Boolean read fResumido write fResumido;
   end ;
 
-procedure Register;
-
 implementation
 
 uses  math, RLTypes,
@@ -379,11 +372,6 @@ uses  math, RLTypes,
   {$R *.dfm}
   {$R ACBrSATExtratoFortesFr.dcr}
 {$ENDIF}
-
-procedure Register;
-begin
-  RegisterComponents('ACBrSAT',[TACBrSATExtratoFortes]);
-end;
 
 { TACBrSATExtratoFortesFr }
 
@@ -1317,6 +1305,12 @@ var
   RLLayout: TRLReport;
   RLFiltro: TRLCustomSaveFilter;
   FileExt, DirPDF: String;
+
+  function FormatarTitulo(Atitulo, AChave: String): String;
+  begin
+    Result := Atitulo + '-' +StringReplace(FormatarChaveAcesso(AChave),' ', '_', [rfReplaceAll]);
+  end;
+
 begin
   frACBrSATExtratoFortesFr := TACBrSATExtratoFortesFr.Create(Self);
   try
@@ -1325,12 +1319,12 @@ begin
       if LayOut = lCancelamento then
       begin
          RLLayout := rlCancelamento;
-         RLLayout.Title := 'CFeCan: '+FormatarChaveAcesso(CFeCanc.infCFe.ID);
+         RLLayout.Title := FormatarTitulo('CFeCan', CFeCanc.infCFe.ID);
       end
       else
       begin
         RLLayout := rlVenda;
-        RLLayout.Title := 'CFe: '+FormatarChaveAcesso(CFe.infCFe.ID);
+        RLLayout.Title := FormatarTitulo('CFe', CFe.infCFe.ID);
         Resumido := (LayOut = lResumido);
       end;
 
@@ -1360,8 +1354,9 @@ begin
       RLLayout.PageBreaking := pbNone;
       RLLayout.PageSetup.PaperSize   := fpCustom ;
       RLLayout.PageSetup.PaperWidth  := Round(LarguraBobina/MMAsPixels) ;
+      //RLLayout.PageSetup.PaperHeight := 200;
 
-      RLLayout.UnlimitedHeight := True; // ****** ATENÇÃO ******
+      RLLayout.UnlimitedHeight := FormularioContinuo; // ****** ATENÇÃO ******
       // Se você recebeu um erro de compilação na linha ACIMA
       // Voce DEVE atualizar os fontes do seu Fortes Report CE
       // https://github.com/fortesinformatica/fortesreport-ce
@@ -1393,7 +1388,7 @@ begin
           end ;
 
           if (NomeDocumento = '') then
-            RLFiltro.FileName := OnlyAlphaNum(RLLayout.Title)
+            RLFiltro.FileName := RLLayout.Title
           else
             RLFiltro.FileName := NomeDocumento ;
 
@@ -1408,6 +1403,8 @@ begin
           RLFiltro.FileName := ChangeFileExt(RLFiltro.FileName, FileExt);
           RLFiltro.ShowProgress := RLLayout.ShowProgress;
           RLFiltro.FilterPages( RLLayout.Pages );
+
+          FPArquivoPDF := RLFiltro.FileName;
         end;
       end;
     end;

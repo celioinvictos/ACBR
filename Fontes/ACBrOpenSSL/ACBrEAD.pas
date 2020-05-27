@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2010                                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Elton M. Barbosa                                }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,18 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 05/07/2010: Elton M. Barbosa
-|*  - Baseado em métodos já existentes no ACBrRFD.
-|*  - Esboço da Primeira Versao para avaliação.
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -481,34 +472,42 @@ begin
 end;
 
 function TACBrEAD.GetOpenSSL_Version: String;
+begin
+  OpenSSL_OldVersion;
+  Result := OpenSSLExt.OpenSSLVersion(0);
+end;
+
+function TACBrEAD.OpenSSL_OldVersion: Boolean;
 var
   VersaoStr: String;
+  VersaoNum: Integer;
   P1, P2: Integer;
 begin
   if (fsVersao = '') then
   begin
-    VersaoStr := String(SSLeay_version( 0 ));
-
-    P1 := pos(' ', VersaoStr);
-    P2 := Length(VersaoStr);
-    if P1 > 0 then
+    VersaoNum := OpenSSLExt.OpenSSLVersionNum;
+    if (VersaoNum > 0) then
     begin
-      P2 := PosEx(' ', VersaoStr, P1+1 );
-      if P2 = 0 then
-        P2 := Length(VersaoStr);
+      VersaoStr := IntToHex(VersaoNum, 9);
+      fsVersao := copy(VersaoStr,1,2)+'.'+copy(VersaoStr,3,2)+'.'+copy(VersaoStr,5,2)+'.'+copy(VersaoStr,7,10);
+    end
+    else
+    begin
+      VersaoStr := OpenSSLExt.OpenSSLVersion(0);
+
+      P1 := pos(' ', VersaoStr);
+      if P1 > 0 then
+      begin
+        P2 := PosEx(' ', VersaoStr, P1+1 );
+        if P2 = 0 then
+          P2 := Length(VersaoStr);
+
+        fsVersao := Trim(copy(VersaoStr, P1, P2-P1));
+      end;
     end;
 
-    fsVersao := Trim(copy(VersaoStr, P1, P2-P1));
     fsVersaoEhAntiga := (CompareVersions(fsVersao, '1.1.0') < 0);
   end;
-
-  Result := fsVersao;
-end;
-
-function TACBrEAD.OpenSSL_OldVersion: Boolean;
-begin
-  if (fsVersao = '') then
-    GetOpenSSL_Version;
 
   Result := fsVersaoEhAntiga;
 end;
@@ -545,7 +544,7 @@ procedure TACBrEAD.GerarChaves(var AChavePublica : AnsiString ;
     if FindFirst(TmpDir + '\*', faReadOnly and faHidden and faSysFile and faArchive, TmpFile) = 0 then
        Result := TmpFile.Name
     else
-       if FindFirst(ExtractFileDir(ParamStr(0)) + '*', faReadOnly and faHidden and faSysFile and faArchive, TmpFile) = 0 then
+       if FindFirst(ApplicationPath + '*', faReadOnly and faHidden and faSysFile and faArchive, TmpFile) = 0 then
           Result := TmpFile.Name ;
 
     FindClose(TmpFile);
@@ -1039,7 +1038,7 @@ Var
   md_len: cardinal;
   md_ctx: EVP_MD_CTX;
   pmd_ctx: PEVP_MD_CTX;
-  md_value_bin, md_value_hex : array [0..1023] of AnsiChar;
+  md_value_bin : array [0..1023] of AnsiChar;
   NameDgst : AnsiString;
   ABinStr, Base64Str: AnsiString;
   Memory: Pointer;
@@ -1098,9 +1097,8 @@ begin
 
       outHexa:
         begin
-          BinToHex( md_value_bin, md_value_hex, md_len);
-          md_value_hex[2 * md_len] := #0;
-          Result := AnsiString(StrPas(md_value_hex));
+          SetString( ABinStr, md_value_bin, md_len);
+          Result := AsciiToHex(ABinStr);
         end;
 
       outBinary:
@@ -1196,7 +1194,7 @@ begin
 
      // Verificando se já existe LF no final do arquivo //
      Buffer := #0;
-     FS.Seek(-1, soFromEnd);  // vai para EOF - 1
+     FS.Seek(-1, soEnd);  // vai para EOF - 1
      FS.Read(Buffer, 1);
      if Buffer <> LF then
      begin
@@ -1210,7 +1208,7 @@ begin
 
      if Result <> '' then
      begin
-       FS.Seek(0,soFromEnd);
+       FS.Seek(0,soEnd);
        FS.Write(Pointer(Result)^,Length(Result));
      end ;
   finally
@@ -1263,20 +1261,20 @@ begin
 
   // Verificando se tem CRLF no final da linha do EAD //
   Buffer := #0;
-  AStream.Seek(-1, soFromEnd);  // vai para EOF - 1
+  AStream.Seek(-1, soEnd);  // vai para EOF - 1
   AStream.Read(Buffer, 1);
   while (Buffer[0] in [CR, LF]) do
   begin
      Result := Buffer[0] + Result;
 
      Buffer := #0;
-     AStream.Seek(-2, soFromCurrent);  // Volta 2 bytes
+     AStream.Seek(-2, soCurrent);  // Volta 2 bytes
      AStream.Read(Buffer, 1);
   end ;
 
   // Procurando por ultimo EAD //
   Buffer[0] := #0;
-  AStream.Seek(-259,soFromCurrent);     // 259 = Tamanho da Linha EAD
+  AStream.Seek(-259,soCurrent);     // 259 = Tamanho da Linha EAD
   AStream.Read(Buffer, 259 );
   Result := UpperCase( Trim( String( Buffer ) ) ) + Result;
 
@@ -1347,6 +1345,7 @@ Var
   StreamSize, PosStream, BytesToEnd: Int64;
   EADAnsi : AnsiString;
   RsaKey: pRSA;
+  ABinStr: AnsiString;
 begin
   EAD := Trim(EAD);
 
@@ -1371,7 +1370,10 @@ begin
   md_len := trunc(Length(EAD) / 2);
   if md_len <> 128 then
      raise EACBrEADException.Create('EAD deve conter 256 caracteres');
-  HexToBin( PAnsiChar(AnsiString(EAD)), EAD_crypt, md_len );
+
+  //HexToBin( PAnsiChar(AnsiString(EAD)), EAD_crypt, md_len );
+  ABinStr := HexToAscii(EAD);
+  Move(ABinStr[1], EAD_crypt[0], md_len);
 
   LerChavePublica;
   PosStream := 0;

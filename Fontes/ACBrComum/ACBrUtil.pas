@@ -3,9 +3,8 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -59,11 +58,14 @@ Uses
     ,Windows, ShellAPI
   {$Else}
     {$IfNDef FPC}
-      {$IFDEF  POSIX}
+      {$IfDef ANDROID}
+      ,System.IOUtils
+      {$EndIf}
+      {$IfDef  POSIX}
       ,Posix.Stdlib
       ,Posix.Unistd
       ,Posix.Fcntl
-      {$ELSE}
+      {$Else}
       ,Libc
       {$EndIf}
     {$Else}
@@ -79,7 +81,7 @@ Uses
   {$EndIf} ;
 
 const
-{$IFDEF CPU64}
+{$IFDEF WIN64}
   CINPOUTDLL = 'inpoutx64.dll';
 {$ELSE}
   CINPOUTDLL = 'inpout32.dll';
@@ -119,7 +121,7 @@ function SeparaDados(const AString: String; const Chave: String; const MantemCha
 function SeparaDadosArray(const AArray: Array of String; const AString: String; const MantemChave: Boolean = False;
   const PermitePrefixo: Boolean = True) : String;
 function RetornarConteudoEntre(const Frase, Inicio, Fim: String; IncluiInicioFim: Boolean = False): string;
-procedure EncontrarInicioFinalTag(const aText, ATag: ansistring;
+procedure EncontrarInicioFinalTag(const aText, ATag: String;
   var PosIni, PosFim: integer;const PosOffset: integer = 0);
 
 procedure QuebrarLinha(const Alinha: string; const ALista: TStringList;
@@ -177,15 +179,21 @@ Function AsciiToHex(const ABinaryString: AnsiString): String;
 function TryHexToAscii(const HextStr: String; out Value: AnsiString): Boolean;
 function HexToAsciiDef(const HexStr: String; const Default: AnsiString): AnsiString;
 
-function BinaryStringToString(const AString: AnsiString): AnsiString;
-function StringToBinaryString(const AString: AnsiString): AnsiString;
+function BinaryStringToString(const AString: AnsiString): String;
+function StringToBinaryString(const AString: String): AnsiString;
 
 function PadRight(const AString : String; const nLen : Integer;
    const Caracter : Char = ' ') : String;
+function PadRightA(const AAnsiString : AnsiString; const nLen : Integer;
+   const Caracter : AnsiChar = ' ') : AnsiString;
 function PadLeft(const AString : String; const nLen : Integer;
    const Caracter : Char = ' ') : String;
+function PadLeftA(const AAnsiString : AnsiString; const nLen : Integer;
+   const Caracter : AnsiChar = ' ') : AnsiString;
 function PadCenter(const AString : String; const nLen : Integer;
    const Caracter : Char = ' ') : String;
+function PadCenterA(const AAnsiString : AnsiString; const nLen : Integer;
+   const Caracter : AnsiChar = ' ') : AnsiString;
 function PadSpace(const AString : String; const nLen : Integer; Separador : String;
    const Caracter : Char = ' '; const RemoverEspacos: Boolean = True) : String ;
 
@@ -193,8 +201,8 @@ function RemoveString(const sSubStr, sString: String): String;
 function RemoveStrings(const AText: AnsiString; StringsToRemove: array of AnsiString): AnsiString;
 function RemoverEspacosDuplos(const AString: String): String;
 function StripHTML(const AHTMLString : String) : String;
-procedure AcharProximaTag(const AString: String;
-  const PosIni: Integer; var ATag: String; var PosTag: Integer);
+procedure AcharProximaTag(const ABinaryString: AnsiString;
+  const PosIni: Integer; var ATag: AnsiString; var PosTag: Integer);
 procedure RemoveEmptyLines( AStringList: TStringList) ;
 function RandomName(const LenName : Integer = 8) : String ;
 
@@ -225,7 +233,7 @@ function IfEmptyThen( const AValue, DefaultValue: String; DoTrim: Boolean = True
 function PosAt(const SubStr, S: AnsiString; Ocorrencia : Cardinal = 1): Integer;
 function RPos(const aSubStr, aString : AnsiString; const aStartPos: Integer): Integer; overload;
 function RPos(const aSubStr, aString : AnsiString): Integer; overload;
-function PosLast(const SubStr, S: AnsiString): Integer;
+function PosLast(const SubStr, S: String): Integer;
 function CountStr(const AString, SubStr : String ) : Integer ;
 Function Poem_Zeros(const Texto : String; const Tamanho : Integer) : String; overload;
 function Poem_Zeros(const NumInteiro : Int64 ; Tamanho : Integer) : String ; overload;
@@ -299,6 +307,7 @@ function AjustaLinhas(const Texto: AnsiString; Colunas: Integer ;
    NumMaxLinhas: Integer = 0; PadLinhas: Boolean = False): AnsiString;
 function QuebraLinhas(const Texto: String; const Colunas: Integer;
    const CaracterQuebrar : AnsiChar = ' '): String;
+function RemoverQuebraLinhaFinal(const ATexto: String; const AQuebraLinha: String = ''): String;
 
 function TraduzComando( const AString : String ) : AnsiString ;
 Function StringToAsc( const AString : AnsiString ) : String ;
@@ -346,7 +355,8 @@ Procedure DesligarMaquina(Reboot: Boolean = False; Forcar: Boolean = False;
 function ForceForeground(AppHandle:{$IfDef FPC}LCLType.HWND{$Else}THandle{$EndIf}): boolean;
 {$EndIf}
 
-Procedure WriteToFile( const Arq: String; const ABinaryString : AnsiString);
+Procedure WriteToFile( const Arq: String; const ABinaryString : AnsiString;
+   const ForceDirectory : Boolean = False);
 Procedure WriteToTXT( const ArqTXT : String; const ABinaryString : AnsiString;
    const AppendIfExists : Boolean = True; const AddLineBreak : Boolean = True;
    const ForceDirectory : Boolean = False);
@@ -381,7 +391,7 @@ function IsWorkingDay(ADate: TDateTime): Boolean;
 function WorkingDaysBetween(StartDate,EndDate: TDateTime): Integer;
 function IncWorkingDay(ADate: TDateTime; WorkingDays: Integer): TDatetime;
 
-procedure LerIniArquivoOuString(const IniArquivoOuString: AnsiString; AMemIni: TMemIniFile);
+procedure LerIniArquivoOuString(const IniArquivoOuString: String; AMemIni: TMemIniFile);
 function StringIsINI(const AString: String): Boolean;
 function StringIsAFile(const AString: String): Boolean;
 function StringIsXML(const AString: String): Boolean;
@@ -402,6 +412,7 @@ procedure LoadInpOut;
 procedure LoadBlockInput;
 
 function GetLastErrorAsHexaStr(WinErro: DWORD = 0): String;
+function GetFileVersion(const AFile: String): String;
 
 {$ENDIF}
 
@@ -547,8 +558,8 @@ function NativeStringToUTF8(const AString : String ) : AnsiString;
  {$ENDIF}
 {$ENDIF}
 begin
-  {$IFDEF FPC}
-    Result := AString;  // FPC usa UTF8 de forma nativa
+  {$IFDEF USE_UTF8}
+    Result := AString;  // FPC, NEXTGEN usam UTF8 de forma nativa
   {$ELSE}
     {$IFDEF UNICODE}
       RBS := UTF8Encode(AString);
@@ -562,8 +573,8 @@ end;
 
 function UTF8ToNativeString(const AUTF8String: AnsiString): String;
 begin
-  {$IfDef FPC}
-   Result := AUTF8String;  // FPC usa UTF8 de forma nativa
+  {$IfDef USE_UTF8}
+   Result := AUTF8String;  // FPC, NEXTGEN usam UTF8 de forma nativa
   {$Else}
    {$IfDef UNICODE}
     {$IfDef DELPHI12_UP}  // delphi 2009 em diante
@@ -576,13 +587,13 @@ begin
    {$EndIf}
 
    if Result = '' then 
-     Result := AUTF8String;
+     Result := String(AUTF8String);
   {$EndIf}
 end;
 
 function NativeStringToAnsi(const AString: String): AnsiString;
 begin
-  {$IfDef FPC}
+  {$IfDef USE_UTF8}
     Result := ACBrUTF8ToAnsi(AString);
   {$Else}
     Result := AnsiString(AString);
@@ -591,7 +602,7 @@ end;
 
 function AnsiToNativeString(const AAnsiString: AnsiString): String;
 begin
-  {$IfDef FPC}
+  {$IfDef USE_UTF8}
     Result := ACBrAnsiToUTF8(AAnsiString);
   {$Else}
     Result := String(AAnsiString);
@@ -992,7 +1003,7 @@ begin
   while P < LenHex do
   begin
     DecVal := StrToInt('$'+copy(AHexStr,P,2)) ;
-    Result := AnsiChar( DecVal ) + Result;
+    Result := AnsiChr( DecVal ) + Result;
     P := P + 2 ;
   end ;
 end;
@@ -1131,12 +1142,24 @@ end;
   Retorna o numero de caracteres dentro de uma String, semelhante a Length()
   Porém Lenght() não funciona corretamente em FPC com UTF8 e acentos
  ---------------------------------------------------------------------------- }
-function LenghtNativeString(const AString: String): Integer;
+function LengthNativeString(const AString: String): Integer;
 begin
   {$IfDef FPC}
    Result := UTF8Length(AString);
   {$Else}
    Result := Length(AString);
+  {$EndIf}
+end;
+
+{-----------------------------------------------------------------------------
+  Semelhante a LeftStr(), mas trata corretanmente Strings em UTF8 no FPC
+ ---------------------------------------------------------------------------- }
+function LeftStrNativeString(const AString: String; const ALen: Integer): String;
+begin
+  {$IfDef FPC}
+   Result := UTF8LeftStr(AString, ALen);
+  {$Else}
+   Result := LeftStr(AString, ALen);
   {$EndIf}
 end;
 
@@ -1149,12 +1172,24 @@ function PadRight(const AString : String; const nLen : Integer;
 var
   Tam: Integer;
 begin
-  Tam := LenghtNativeString( AString );
+  Tam := LengthNativeString( AString );
   if Tam < nLen then
     Result := AString + StringOfChar(Caracter, (nLen - Tam))
   else
-    Result := LeftStr(AString, nLen);
-end ;
+    Result := LeftStrNativeString(AString, nLen);
+end;
+
+function PadRightA(const AAnsiString : AnsiString; const nLen : Integer;
+   const Caracter : AnsiChar = ' ') : AnsiString;
+var
+  Tam: Integer;
+begin
+  Tam := Length( AAnsiString );
+  if Tam < nLen then
+    Result := AAnsiString + StringOfChar(Caracter, (nLen - Tam))
+  else
+    Result := LeftStr(AAnsiString, nLen);
+end;
 
 {-----------------------------------------------------------------------------
   Completa <AString> com <Caracter> a esquerda, até o tamanho <nLen>, Alinhando
@@ -1165,12 +1200,24 @@ function PadLeft(const AString : String; const nLen : Integer;
 var
   Tam: Integer;
 begin
-  Tam := LenghtNativeString( AString );
+  Tam := LengthNativeString( AString );
   if Tam < nLen then
     Result := StringOfChar(Caracter, (nLen - Tam)) + AString
   else
-    Result := LeftStr(AString, nLen) ;  //RightStr(AString,nLen) ;
-end ;
+    Result := LeftStrNativeString(AString, nLen);  //RightStr(AString,nLen) ;
+end;
+
+function PadLeftA(const AAnsiString : AnsiString; const nLen : Integer;
+   const Caracter : AnsiChar = ' ') : AnsiString;
+var
+  Tam: Integer;
+begin
+  Tam := Length( AAnsiString );
+  if Tam < nLen then
+    Result := StringOfChar(Caracter, (nLen - Tam)) + AAnsiString
+  else
+    Result := LeftStr(AAnsiString, nLen);  //RightStr(AString,nLen) ;
+end;
 
 {-----------------------------------------------------------------------------
  Completa <AString> Centralizando, preenchendo com <Caracter> a esquerda e direita
@@ -1181,15 +1228,31 @@ var
   nCharLeft: Integer;
   Tam: integer;
 begin
-  Tam := LenghtNativeString( AString );
+  Tam := LengthNativeString( AString );
   if Tam < nLen then
   begin
     nCharLeft := Trunc( (nLen - Tam) / 2 ) ;
     Result    := PadRight( StringOfChar(Caracter, nCharLeft) + AString, nLen, Caracter) ;
   end
   else
-    Result := LeftStr(AString, nLen) ;
-end ;
+    Result := LeftStrNativeString(AString, nLen);
+end;
+
+function PadCenterA(const AAnsiString : AnsiString; const nLen : Integer;
+   const Caracter : AnsiChar = ' ') : AnsiString;
+var
+  nCharLeft: Integer;
+  Tam: integer;
+begin
+  Tam := Length( AAnsiString );
+  if (Tam < nLen) then
+  begin
+    nCharLeft := Trunc( (nLen - Tam) / 2 ) ;
+    Result    := PadRightA( StringOfChar(Caracter, nCharLeft) + AAnsiString, nLen, Caracter) ;
+  end
+  else
+    Result := LeftStr(AAnsiString, nLen);
+end;
 
 {-----------------------------------------------------------------------------
   Ajusta a <AString> com o tamanho de <nLen> inserindo espaços no meio,
@@ -1219,9 +1282,9 @@ begin
   if RemoverEspacos then
     Result := Trim( Result ) ;
 
-  D        := (nLen - (LenghtNativeString(Result)-nSep)) / nSep ;
+  D        := (nLen - (LengthNativeString(Result)-nSep)) / nSep ;
   nCharSep := Trunc( D ) ;
-  nResto   := nLen - ( (LenghtNativeString(Result)-nSep) + (nCharSep*nSep) ) ;
+  nResto   := nLen - ( (LengthNativeString(Result)-nSep) + (nCharSep*nSep) ) ;
   nFeito   := nSep ;
   StuffStr := String( StringOfChar( Caracter, nCharSep ) ) ;
 
@@ -1293,7 +1356,7 @@ end ;
  ---------------------------------------------------------------------------- }
 function StripHTML(const AHTMLString: String): String;
 var
-  ATag, VHTMLString: String;
+  ATag, VHTMLString: AnsiString;
   PosTag, LenTag: Integer;
 begin
   VHTMLString := AHTMLString;
@@ -1316,17 +1379,17 @@ end;
    Localiza uma Tag dentro de uma String, iniciando a busca em PosIni.
    Se encontrar uma Tag, Retorna a mesma em ATag, e a posição inicial dela em PosTag
  ---------------------------------------------------------------------------- }
-procedure AcharProximaTag(const AString: String;
-  const PosIni: Integer; var ATag: String; var PosTag: Integer);
+procedure AcharProximaTag(const ABinaryString: AnsiString;
+  const PosIni: Integer; var ATag: AnsiString; var PosTag: Integer);
 var
    PosTagAux, FimTag, LenTag : Integer ;
 begin
   ATag   := '';
-  PosTag := PosEx( '<', AString, PosIni);
+  PosTag := PosEx( '<', ABinaryString, PosIni);
   if PosTag > 0 then
   begin
-    PosTagAux := PosEx( '<', AString, PosTag + 1);  // Verificando se Tag é inválida
-    FimTag    := PosEx( '>', AString, PosTag + 1);
+    PosTagAux := PosEx( '<', ABinaryString, PosTag + 1);  // Verificando se Tag é inválida
+    FimTag    := PosEx( '>', ABinaryString, PosTag + 1);
     if FimTag = 0 then                             // Tag não fechada ?
     begin
       PosTag := 0;
@@ -1336,11 +1399,11 @@ begin
     while (PosTagAux > 0) and (PosTagAux < FimTag) do  // Achou duas aberturas Ex: <<e>
     begin
       PosTag    := PosTagAux;
-      PosTagAux := PosEx( '<', AString, PosTag + 1);
+      PosTagAux := PosEx( '<', ABinaryString, PosTag + 1);
     end ;
 
     LenTag := FimTag - PosTag + 1 ;
-    ATag   := LowerCase( copy( AString, PosTag, LenTag ) );
+    ATag   := LowerCase( copy( ABinaryString, PosTag, LenTag ) );
   end ;
 end ;
 
@@ -1566,7 +1629,7 @@ end;
 {-----------------------------------------------------------------------------
   Acha a Ultima "Ocorrencia" de "SubStr" em "S"
  ---------------------------------------------------------------------------- }
-function PosLast(const SubStr, S: AnsiString ): Integer;
+function PosLast(const SubStr, S: String ): Integer;
 Var P : Integer ;
 begin
   Result := 0 ;
@@ -1574,7 +1637,7 @@ begin
   while P <> 0 do
   begin
      Result := P ;
-     P := PosEx( String(SubStr), String(S), P+1) ;
+     P := PosEx( SubStr, S, P+1) ;
   end ;
 end ;
 
@@ -2422,7 +2485,7 @@ begin
   if Result = '' then
   begin
     if PadLinhas then
-      Result := Space(Colunas) + #10
+      Result := AnsiString(Space(Colunas)) + #10
     else
       Result := #10;
   end;
@@ -2497,6 +2560,27 @@ begin
     Resp := StringReplace(Resp, LF, sLineBreak, [rfReplaceAll]);
 
   Result := ACBrStr(Resp);
+end;
+
+{-----------------------------------------------------------------------------
+  Remove a última quebra de linha caso seja a informada no parâmetro AQuebraLinha
+  ou a quebra de linha padrão do sistema
+ -----------------------------------------------------------------------------}
+function RemoverQuebraLinhaFinal(const ATexto: String; const AQuebraLinha: String = ''): String;
+var
+  StrQ: String;
+  LT, LQ: Integer;
+begin
+  Result := ATexto;
+  StrQ := AQuebraLinha;
+  if StrQ = '' then
+    StrQ := sLineBreak;
+  LT := Length(ATexto);
+  LQ := Length(StrQ);
+  if LT < LQ then
+    Exit;
+  if  Copy(ATexto, LT - LQ + 1, LQ) = StrQ then
+    Result := Copy(ATexto, 1, LT - LQ);
 end;
 
 {-----------------------------------------------------------------------------
@@ -2585,7 +2669,7 @@ end;
  ASCII 127), de <AString> por sua representação em HEXA. (\xNN)
  Use StringToBinaryString para Converter para o valor original.
  ---------------------------------------------------------------------------- }
-function BinaryStringToString(const AString: AnsiString): AnsiString;
+function BinaryStringToString(const AString: AnsiString): String;
 var
    ASC : Integer;
    I, N : Integer;
@@ -2596,9 +2680,9 @@ begin
   begin
      ASC := Ord(AString[I]) ;
      if (ASC < 32) or (ASC > 127) then
-        Result := Result + AnsiString('\x'+Trim(IntToHex(ASC,2)))
+        Result := Result + '\x'+Trim(IntToHex(ASC,2))
      else
-        Result := Result + AString[I] ;
+        Result := Result + Char(AString[I]) ;
   end ;
 end ;
 
@@ -2607,13 +2691,13 @@ end ;
  é o valor em Hexa)).
  Retornana o Estado original, AString de BinaryStringToString.
  ---------------------------------------------------------------------------- }
-function StringToBinaryString(const AString: AnsiString): AnsiString;
+function StringToBinaryString(const AString: String): AnsiString;
 var
    P, I : LongInt;
    Hex : String;
    CharHex : AnsiString;
 begin
-  Result := AString ;
+  Result := AnsiString(AString);
 
   P := pos('\x',String(Result)) ;
   while P > 0 do
@@ -2628,7 +2712,7 @@ begin
           CharHex := ' ' ;
        end ;
 
-       Result := ReplaceString(Result, '\x'+Hex, String(CharHex) );
+       Result := ReplaceString(Result, AnsiString('\x'+Hex), CharHex );
        I := 1;
      end
      else
@@ -2810,7 +2894,11 @@ end ;
 -----------------------------------------------------------------------------}
 function ApplicationPath: String;
 begin
+  {$IfDef ANDROID}
+  Result := PathWithDelim(TPath.GetHomePath);
+  {$Else}
   Result := PathWithDelim(ExtractFilePath(ParamStr(0)));
+  {$EndIf}
 end;
 
 {-----------------------------------------------------------------------------
@@ -2907,8 +2995,9 @@ begin
      begin
         LastFile := SearchRec.Name ;
 
-        if pos(LastFile, '..') = 0 then    { ignora . e .. }
-           AStringList.Add( IfThen(IncludePath, Path, '') + LastFile) ;
+        if (SearchRec.Attr and faDirectory) <> 0 then
+          if pos(LastFile, '..') = 0 then    { ignora . e .. }
+             AStringList.Add( IfThen(IncludePath, Path, '') + LastFile) ;
 
         SysUtils.FindNext(SearchRec) ;
      end ;
@@ -3218,14 +3307,14 @@ begin
  {$EndIf}
 end ;
 
- function FlushToDisk(const sFile: string): Boolean;
+  function FlushToDisk(const sFile: string): boolean;
 {$IfDef MSWINDOWS}
  { Fonte: http://stackoverflow.com/questions/1635947/how-to-make-sure-that-a-file-was-permanently-saved-on-usb-when-user-doesnt-use }
  var
    hDrive: THandle;
    AFileName: String;
  begin
-   AFileName := '\\.\' + ExtractFileDrive( sFile )[1] + ':';
+   AFileName := '\\.\' + copy(ExtractFileDrive(sFile),1,1) + ':';
 
    //NOTE: this may only work for the SYSTEM user
    hDrive := Windows.CreateFileW( PWideChar(WideString(AFileName)),
@@ -3251,7 +3340,7 @@ end ;
  end ;
 {$EndIf}
 
- function FlushFileToDisk(const sFile: string): Boolean;
+  function FlushFileToDisk(const sFile: string): boolean;
  {$IfDef MSWINDOWS}
  var
    hFile: THandle;
@@ -3270,7 +3359,7 @@ end ;
  end;
 {$Else}
  begin
-   FlushToDisk(sFile);
+   Result := FlushToDisk(sFile);
  end ;
 {$EndIf}
 
@@ -3429,6 +3518,7 @@ function ForceForeground(AppHandle: {$IfDef FPC}LCLType.HWND{$Else}THandle{$EndI
 begin
   {$IfDef FMX}
     Application.MainForm.BringToFront;
+    Result := True;
   {$Else}
     Application.Restore;
     Application.BringToFront;
@@ -3444,9 +3534,10 @@ end;
 {$EndIf}
 
 
-procedure WriteToFile(const Arq: String; const ABinaryString: AnsiString);
+procedure WriteToFile(const Arq: String; const ABinaryString: AnsiString;
+  const ForceDirectory: Boolean);
 begin
-  WriteToTXT(Arq, ABinaryString, False, False);
+  WriteToTXT(Arq, ABinaryString, False, False, ForceDirectory);
 end;
 
 {-----------------------------------------------------------------------------
@@ -3487,7 +3578,7 @@ begin
                IfThen( AppendIfExists and ArquivoExiste,
                        Integer(fmOpenReadWrite), Integer(fmCreate)) or fmShareDenyWrite );
   try
-     FS.Seek(0, {$IFDEF COMPILER23_UP}soEnd{$ELSE}soFromEnd{$ENDIF});  // vai para EOF
+     FS.Seek(0, soEnd);  // vai para EOF
      FS.Write(Pointer(ABinaryString)^,Length(ABinaryString));
 
      if AddLineBreak then
@@ -3707,12 +3798,13 @@ function TranslateString(const S: AnsiString; CP_Destino: Word; CP_Atual: Word =
 var
   R: RawByteString;
 begin
-  R := S;
+  R := String(S);
   if CP_Atual = 0 then
     SetCodePage(R, CP_Destino, True)
   else
     SetCodePage(R, CP_ACP, True);
-  Result := R;
+
+  Result := AnsiString(R);
 end;
 {$ELSE}
 {$IfNDef MSWINDOWS}
@@ -4050,7 +4142,7 @@ end;
 {------------------------------------------------------------------------------
    Retorna a posição inicial e final da Tag do XML
  ------------------------------------------------------------------------------}
-procedure EncontrarInicioFinalTag(const aText, ATag: ansistring;
+procedure EncontrarInicioFinalTag(const aText, ATag: String;
   var PosIni, PosFim: integer; const PosOffset: integer = 0);
 begin
   PosFim := 0;
@@ -4079,7 +4171,7 @@ var
   function InternalStringReplace(const S, OldPatern, NewPattern: String ): String;
   begin
     if pos(OldPatern, S) > 0 then
-      Result := FastStringReplace(AnsiString(S), AnsiString(OldPatern), AnsiString(ACBrStr(NewPattern)), [rfReplaceAll])
+      Result := FastStringReplace(S, OldPatern, ACBrStr(NewPattern), [rfReplaceAll])
     else
       Result := S;
   end;
@@ -4272,7 +4364,7 @@ end;
    Valida se é um arquivo válido para carregar em um MenIniFile, caso contrário
    adiciona a String convertendo representações em Hexa.
  ------------------------------------------------------------------------------}
-procedure LerIniArquivoOuString(const IniArquivoOuString: AnsiString;
+procedure LerIniArquivoOuString(const IniArquivoOuString: String;
   AMemIni: TMemIniFile);
 var
   SL: TStringList;
@@ -4280,7 +4372,7 @@ begin
   SL := TStringList.Create;
   try
     if StringIsINI(IniArquivoOuString) then
-      SL.Text := StringToBinaryString( IniArquivoOuString )
+      SL.Text := String(StringToBinaryString( IniArquivoOuString ))
     else
     begin
       if not StringIsAFile(IniArquivoOuString) then
@@ -4439,6 +4531,41 @@ begin
 
   Result := IntToHex(WinErro, 8);
 end;
+
+function GetFileVersion(const AFile: String): String;
+var
+  Major, Minor, Release, Build: Integer;
+  Zero, VersionInfoSize: DWORD;
+  PVersionData: Pointer;
+  lplBuffer: PVSFixedFileInfo;
+  puLen: Cardinal;
+begin
+  // http://www.planetadelphi.com.br/dica/688/pega-informacoes-de-versao-de-qualquer-exe-ou-dll
+  Result := '';
+  Zero := 0;
+  VersionInfoSize := GetFileVersionInfoSize(PChar(AFile), Zero);
+  if VersionInfoSize = 0 then
+     exit;
+  PVersionData := AllocMem(VersionInfoSize);
+  try
+    if GetFileVersionInfo(PChar(AFile), 0, VersionInfoSize, PVersionData) then
+    begin
+      lplBuffer := nil;
+      puLen := 0;
+      if VerQueryValue(PVersionData, '', pointer(lplBuffer), puLen) then
+      begin
+        Major   := HIWORD(lplBuffer^.dwFileVersionMS);
+        Minor   := LOWORD(lplBuffer^.dwFileVersionMS);
+        Release := HIWORD(lplBuffer^.dwFileVersionLS);
+        Build   := LOWORD(lplBuffer^.dwFileVersionLS);
+        Result  := IntToStr(Major)+'.'+IntToStr(Minor)+'.'+IntToStr(Release)+'.'+IntToStr(Build);
+      end;
+    end;
+  finally
+    FreeMem(PVersionData);
+  end;
+end;
+
 {$ENDIF}
 
 initialization

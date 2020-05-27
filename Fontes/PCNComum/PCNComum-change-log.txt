@@ -1,9 +1,9 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,9 +22,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -38,6 +37,48 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+27/04/2020
+-- pcnConversao/pcnGerador/pcnLeitor --
+[+] Acrescentado o tipo de conversão tcDe8 que é utilizado em algumas tags do
+    NF3e.
+   Por: Italo Jurisato Junior
+
+23/03/2020
+-- pcnGerador --
+[*] Removido os métodos wGrupoNFSe e wCampoNFSe, agora os métodos wGrupo e wCampo,
+    são capazes de gerar as tags com o prefixo quando for o caso.
+   Por: Italo Jurisato Junior
+
+02/03/2020
+-- pcnRetDistDFeInt --
+[+] Acrescentado a propriedade NomeArq com o objetivo de armazenar o Path+Nome do
+    XML retornado pelo DistribuicaoDFe.
+   Por: Italo Jurisato Junior
+
+07/02/2020
+-- pcnConversao --
+[*] Incluido o enumerador cstVazio nas funções: StrToCSTICMS e
+    CSTICMSToStrTagPosText.
+  Por: Italo Jurisato Junior
+
+22/01/2020
+-- pcnConversao --
+[+] Incluido os códigos dos eventos: teAutorizadoSubstituicao, 
+    teAutorizadoAjuste, teLiberacaoPrazoCancelado utilizados
+    pela NF3e (Nota Fiscal de Energia Elétrica Eletrônica).
+  Por: Italo Jurisato Junior
+
+16/01/2020
+-- pcnAuxiliar --
+[*] Implementação das funções: ValidarProtocolo, ValidarRecibo, ExtrairChaveMsg,
+    ExtrairProtocoloMsg e ExtrairReciboMsg, com o objetivo de ajudar o 
+    desenvolvedor de uma forma ou outra automatizar algumas rotinas.
+  Por: Italo Jurisato Junior
+-- pcnConversao --
+[+] Incluido o enumerador: tePagamentoOperacao, que será utilizado pelo
+    novo evento do MDF-e (Evento de Pagamento da Operação de Transporte).
+  Por: Italo Jurisato Junior
 
 23/12/2019
 -- pcnGerador --

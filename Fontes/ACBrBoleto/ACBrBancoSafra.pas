@@ -3,12 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2014 Paulo H. Ribeiro,                      }
-{                                       Jackeline Bellon,                      }
-{                                       Juliomar Marchetti e                   }
-{                                       Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:  André Ferreira de Moraes                       }
+{ Colaboradores nesse arquivo: André Ferreira de Moraes,                       }
+{                              Paulo H. Ribeiro,                               }
+{                              Jackeline Bellon,                               }
+{                              Juliomar Marchetti                              }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -29,15 +29,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -814,17 +808,21 @@ begin
 
       Inc(FSequencia);
       {SEGMENTO R}
-      segmentoR := IntToStrZero(ACBrBanco.Numero, 3)                                     + // 001 - 003 / Código do Banco na compensação
-                  '0001'                                                                + // 004 - 007 / Numero do lote remessa
-                  '3'                                                                   + // 008 - 008 / Tipo de registro
-                  IntToStrZero(FSequencia ,5)                                           + // 009 - 013 / Número seqüencial do registro no lote
-                  'R'                                                                   + // 014 - 014 / Cód. Segmento do registro detalhe
-                  Space(1)                                                              + // 015 - 015 / Reservado (uso Banco)
-                  sCodMovimento                                                         + // 016 - 017 / Código de movimento remessa
-                  '0'                                                                   + // 018 - 018 / Código do desconto 2
-                  PadLeft('', 8, '0')                                                   + // 019 - 026 / Data do desconto 2
-                  IntToStrZero(0, 15)                                                   + // 027 - 041 / Valor/Percentual a ser concedido
-                  Space(24)                                                             + // 042 – 065 / Reservado (uso Banco)
+      segmentoR := IntToStrZero(ACBrBanco.Numero, 3)                                                    + // 001 - 003 / Código do Banco na compensação
+                  '0001'                                                                                + // 004 - 007 / Numero do lote remessa
+                  '3'                                                                                   + // 008 - 008 / Tipo de registro
+                  IntToStrZero(FSequencia ,5)                                                           + // 009 - 013 / Número seqüencial do registro no lote
+                  'R'                                                                                   + // 014 - 014 / Cód. Segmento do registro detalhe
+                  Space(1)                                                                              + // 015 - 015 / Reservado (uso Banco)
+                  sCodMovimento                                                                         + // 016 - 017 / Código de movimento remessa
+                  '0'                                                                                   + // 018 - 018 / Código do desconto 2
+                  PadLeft('', 8, '0')                                                                   + // 019 - 026 / Data do desconto 2
+                  IntToStrZero(0, 15)                                                                   + // 027 - 041 / Valor/Percentual a ser concedido
+                  sTipoDesconto                                                                         + // 42 - 42 1 = Valor Fixo ate a Data Informada / 2 = Percentual ate a Data Informada / 3 = Valor por Antecipação dia Corrido
+                                                                                                          //         5 = Percentual por Antecipação dia corrido
+                  IfThen((ACBrTitulo.ValorDesconto > 0),
+                          FormatDateTime('ddmmyyyy', ACBrTitulo.DataDesconto), '00000000')              + // 43 - 50 Campo numerico e deve ser preenchido, caso não tenha desconto manter o campo zerado. DDMMAAAA
+                  IntToStrZero(round(ACBrTitulo.ValorDesconto), 15)                                     + // 51 - 65 / Valor/Percentual a ser aplicado
                   IfThen((ACBrTitulo.PercentualMulta > 0),
                          IfThen(ACBrTitulo.MultaValorFixo,'1','2'), '0')                + // 66 - 66 1-Cobrar Multa Valor Fixo / 2-Percentual / 0-Não cobrar multa
                   IfThen((ACBrTitulo.PercentualMulta > 0),
@@ -1109,7 +1107,7 @@ begin
 
   rCodEmpresa    := trim(Copy(ARetorno[0], 27, 14));
   rCedente       := trim(Copy(ARetorno[0], 47, 30));
-  rAgencia       := trim(Copy(ARetorno[1], 18, 4));
+  rAgencia       := trim(Copy(ARetorno[1], 18, 5));
   rDigitoAgencia := trim(Copy(ARetorno[1], 22, 1));
   rConta         := trim(Copy(ARetorno[1], 23, ACBrBanco.TamanhoConta));
   rDigitoConta   := Copy(ARetorno[1], 31, 1);
@@ -1167,7 +1165,7 @@ begin
     with Titulo do
     begin
       SeuNumero      := Copy(Linha,38,62);
-      NossoNumero    := Copy(Linha, 63, 8);
+      NossoNumero    := Copy(Linha, 63, 9);
       CodOcorrencia  := StrToIntDef(copy(Linha, 109, 2),0);
       OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(CodOcorrencia);
 

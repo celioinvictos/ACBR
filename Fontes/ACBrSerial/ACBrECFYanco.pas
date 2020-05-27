@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -24,50 +24,24 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 02/07/2004:  Daniel Simoes de Almeida
-|*   Inicio do desenvolvimento  baseada na Bematech
-|* 06/06/2006:  Carlos do Nascimento Filho
-|*   Diversos métodos implementados... Agora a classe da Yanco está operacional
-|* 14/06/2008:  Sauli Bueno
-|*   - Correção no método GetDataHora
-|*   - Implementação do método GetGrandeTotal
-|*   - Implementação do método GetDataMovimento
-|*   - Implementação do método GetNumCRO
-|*   - Implementação do método GetNumCRZ
-|*   - Implementação do método GetVendaBruta
-|*   - Implementação do método GetTotalDescontos
-|*   - Implementação do método GetTotalCancelamentos
-|*   - Implementação do método GetTotalAcrescimos
-|*   - Implementação do método LerTotaisAliquota
-|*   - Implementação do método GetTotalNaoTributado
-|*   - Implementação do método GetTotalSubstituicaoTributaria
-|*   - Implementação do método GetTotalIsencao
-|* 10/10/2008:  Anderson Rogerio Bejatto
-|    - Correção no método CarregaFormasPagamento
-|    - Implementação do método GetHorarioVerao
-|    - Implementação do método MudaHorarioVerao
-|    - Implementação do método GetCNPJ
-|    - Implementação do método GetIE
-|    - Correção no método GetEstado
-******************************************************************************}
 
 {$I ACBr.inc}
 
 unit ACBrECFYanco ;
 
 interface
-uses Classes, IniFiles,
-    ACBrECFClass, ACBrDevice;
+uses
+  Classes, IniFiles,
+  ACBrPosPrinter,
+  {$IFDEF NEXTGEN}
+   ACBrBase,
+  {$ENDIF}
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial;
 
 type
 
@@ -88,7 +62,6 @@ TACBrECFYanco = class( TACBrECFClass )
     fsNumItem   : Integer ;
     fsEmVenda   : Boolean ;
 
-  	fsEXEName   : String ;
     fsININame   : String ;
     fsTotalPago : Double ;
 
@@ -210,8 +183,7 @@ begin
 
   fpModeloStr := 'Yanco' ;
   fpRFDID     := 'YA' ;
-  fsEXEName   := ParamStr(0) ;
-  fsININame   := ExtractFilePath(fsEXEName) + 'ACBrECFYanco.ini';
+  fsININame   := ApplicationPath + 'ACBrECFYanco.ini';
   Ini := TIniFile.Create(fsININame);
   try
     fsTotalPago := Ini.ReadFloat('Variaveis', 'TotalPago', 0);

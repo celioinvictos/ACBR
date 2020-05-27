@@ -1,7 +1,7 @@
 object frmACBrNFe: TfrmACBrNFe
-  Left = 360
+  Left = 983
   Height = 651
-  Top = 102
+  Top = 378
   Width = 882
   Caption = 'ACBrNFe - Programa Exemplo'
   ClientHeight = 651
@@ -27,8 +27,8 @@ object frmACBrNFe: TfrmACBrNFe
       Height = 576
       Top = 0
       Width = 295
-      ActivePage = TabSheet1
-      TabIndex = 0
+      ActivePage = TabSheet2
+      TabIndex = 1
       TabOrder = 0
       object TabSheet1: TTabSheet
         Caption = 'Configurações'
@@ -39,10 +39,10 @@ object frmACBrNFe: TfrmACBrNFe
           Height = 550
           Top = 0
           Width = 287
-          ActivePage = TabSheet3
+          ActivePage = TabSheet12
           Align = alClient
           MultiLine = True
-          TabIndex = 0
+          TabIndex = 3
           TabOrder = 0
           Options = [nboMultiLine]
           object TabSheet3: TTabSheet
@@ -95,17 +95,17 @@ object frmACBrNFe: TfrmACBrNFe
             end
             object gbCertificado: TGroupBox
               Left = 2
-              Height = 144
+              Height = 186
               Top = 118
               Width = 263
               Caption = 'Certificado'
-              ClientHeight = 126
+              ClientHeight = 168
               ClientWidth = 259
               TabOrder = 0
               object Label1: TLabel
                 Left = 6
                 Height = 13
-                Top = 2
+                Top = 40
                 Width = 41
                 Caption = 'Caminho'
                 ParentColor = False
@@ -113,7 +113,7 @@ object frmACBrNFe: TfrmACBrNFe
               object Label2: TLabel
                 Left = 6
                 Height = 13
-                Top = 42
+                Top = 80
                 Width = 30
                 Caption = 'Senha'
                 ParentColor = False
@@ -121,7 +121,7 @@ object frmACBrNFe: TfrmACBrNFe
               object sbtnCaminhoCert: TSpeedButton
                 Left = 233
                 Height = 24
-                Top = 18
+                Top = 56
                 Width = 23
                 Glyph.Data = {
                   76010000424D7601000000000000760000002800000020000000100000000100
@@ -143,7 +143,7 @@ object frmACBrNFe: TfrmACBrNFe
               object Label25: TLabel
                 Left = 6
                 Height = 13
-                Top = 82
+                Top = 120
                 Width = 79
                 Caption = 'Número de Série'
                 ParentColor = False
@@ -151,7 +151,7 @@ object frmACBrNFe: TfrmACBrNFe
               object sbtnGetCert: TSpeedButton
                 Left = 233
                 Height = 24
-                Top = 96
+                Top = 134
                 Width = 23
                 Glyph.Data = {
                   76010000424D7601000000000000760000002800000020000000100000000100
@@ -173,7 +173,7 @@ object frmACBrNFe: TfrmACBrNFe
               object sbtnNumSerie: TSpeedButton
                 Left = 204
                 Height = 24
-                Top = 96
+                Top = 134
                 Width = 23
                 Glyph.Data = {
                   76010000424D7601000000000000760000002800000020000000100000000100
@@ -193,73 +193,88 @@ object frmACBrNFe: TfrmACBrNFe
                 OnClick = sbtnNumSerieClick
               end
               object edtCaminho: TEdit
-                Left = 6
+                Left = 7
                 Height = 21
-                Top = 18
+                Top = 56
                 Width = 225
-                TabOrder = 0
+                TabOrder = 1
               end
               object edtSenha: TEdit
-                Left = 6
+                Left = 7
                 Height = 21
-                Top = 58
+                Top = 96
                 Width = 249
                 EchoMode = emPassword
                 PasswordChar = '*'
-                TabOrder = 1
+                TabOrder = 2
               end
               object edtNumSerie: TEdit
-                Left = 6
+                Left = 7
                 Height = 21
-                Top = 98
+                Top = 136
                 Width = 193
-                TabOrder = 2
+                TabOrder = 3
+              end
+              object Label51: TLabel
+                Left = 8
+                Height = 13
+                Top = 0
+                Width = 65
+                Caption = 'URL para PFX'
+                ParentColor = False
+              end
+              object edtURLPFX: TEdit
+                Left = 7
+                Height = 21
+                Top = 16
+                Width = 248
+                TabOrder = 0
               end
             end
             object btnDataValidade: TButton
-              Left = 8
+              Left = 9
               Height = 25
-              Top = 266
+              Top = 320
               Width = 99
               Caption = 'Data de Validade'
               OnClick = btnDataValidadeClick
               TabOrder = 1
             end
             object btnNumSerie: TButton
-              Left = 112
+              Left = 113
               Height = 25
-              Top = 266
+              Top = 320
               Width = 73
               Caption = 'Num.Série'
               OnClick = btnNumSerieClick
               TabOrder = 2
             end
             object btnSubName: TButton
-              Left = 8
+              Left = 9
               Height = 25
-              Top = 298
+              Top = 352
               Width = 99
               Caption = 'Subject Name'
               OnClick = btnSubNameClick
-              TabOrder = 3
+              TabOrder = 4
             end
             object btnCNPJ: TButton
-              Left = 112
+              Left = 113
               Height = 25
-              Top = 298
+              Top = 352
               Width = 73
               Caption = 'CNPJ'
               OnClick = btnCNPJClick
-              TabOrder = 4
+              TabOrder = 5
             end
             object btnIssuerName: TButton
-              Left = 188
+              Left = 189
               Height = 25
-              Top = 298
+              Top = 320
               Width = 76
               Caption = 'Issuer Name'
               OnClick = btnIssuerNameClick
-              TabOrder = 5
+              TabOrder = 3
             end
             object GroupBox1: TGroupBox
               Left = 8
@@ -269,7 +284,7 @@ object frmACBrNFe: TfrmACBrNFe
               Caption = 'Calculo de Hash e assinatura'
               ClientHeight = 51
               ClientWidth = 259
-              TabOrder = 6
+              TabOrder = 7
               object Edit1: TEdit
                 Left = 1
                 Height = 21
@@ -305,7 +320,7 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 128
               Caption = 'HTTPS sem Certificado'
               OnClick = btnHTTPSClick
-              TabOrder = 7
+              TabOrder = 8
             end
             object btnLeituraX509: TButton
               Left = 150
@@ -314,7 +329,7 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 115
               Caption = 'Leitura de X509'
               OnClick = btnLeituraX509Click
-              TabOrder = 8
+              TabOrder = 9
             end
             object cbSSLLib: TComboBox
               Left = 80
@@ -324,7 +339,7 @@ object frmACBrNFe: TfrmACBrNFe
               ItemHeight = 13
               OnChange = cbSSLLibChange
               Style = csDropDownList
-              TabOrder = 9
+              TabOrder = 10
             end
             object cbCryptLib: TComboBox
               Left = 80
@@ -334,7 +349,7 @@ object frmACBrNFe: TfrmACBrNFe
               ItemHeight = 13
               OnChange = cbCryptLibChange
               Style = csDropDownList
-              TabOrder = 10
+              TabOrder = 11
             end
             object cbHttpLib: TComboBox
               Left = 80
@@ -344,7 +359,7 @@ object frmACBrNFe: TfrmACBrNFe
               ItemHeight = 13
               OnChange = cbHttpLibChange
               Style = csDropDownList
-              TabOrder = 11
+              TabOrder = 12
             end
             object cbXmlSignLib: TComboBox
               Left = 80
@@ -354,16 +369,16 @@ object frmACBrNFe: TfrmACBrNFe
               ItemHeight = 13
               OnChange = cbXmlSignLibChange
               Style = csDropDownList
-              TabOrder = 12
+              TabOrder = 13
             end
             object bVersao: TButton
-              Left = 14
+              Left = 189
               Height = 25
-              Top = 368
-              Width = 107
-              Caption = 'Versão OpenSSL'
+              Top = 352
+              Width = 76
+              Caption = 'Ver.SSL Lib'
               OnClick = bVersaoClick
-              TabOrder = 13
+              TabOrder = 6
             end
           end
           object TabSheet4: TTabSheet
@@ -1079,6 +1094,36 @@ object frmACBrNFe: TfrmACBrNFe
               Width = 35
               TabOrder = 12
             end
+            object cbTipoEmpresa: TComboBox
+              Left = 8
+              Height = 24
+              Top = 312
+              Width = 249
+              Font.Color = clWindowText
+              Font.Height = -13
+              Font.Name = 'MS Sans Serif'
+              ItemHeight = 16
+              Items.Strings = (
+                'Simples Nacional'
+                'Simples Nacional, excesso sublimite de receita bruta'
+                'Regime Normal'
+              )
+              ParentFont = False
+              Style = csDropDownList
+              TabOrder = 13
+            end
+            object Label52: TLabel
+              Left = 8
+              Height = 13
+              Top = 296
+              Width = 83
+              Caption = 'Tipo de Empresa:'
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              ParentColor = False
+              ParentFont = False
+            end
           end
           object TabSheet13: TTabSheet
             Caption = 'Arquivos'
@@ -1614,14 +1659,15 @@ object frmACBrNFe: TfrmACBrNFe
           ChildSizing.ShrinkHorizontal = crsScaleChilds
           ChildSizing.ShrinkVertical = crsScaleChilds
           ChildSizing.Layout = cclLeftToRightThenTopToBottom
-          ChildSizing.ControlsPerLine = 2
+          ChildSizing.ControlsPerLine = 3
           ClientHeight = 31
           ClientWidth = 269
-          Columns = 2
+          Columns = 3
           ItemIndex = 0
           Items.Strings = (
-            'Fortes Report'
-            'Esc Pos'
+            'Fortes'
+            'EscPos'
+            'A4'
           )
           TabOrder = 3
         end
@@ -2243,6 +2289,7 @@ object frmACBrNFe: TfrmACBrNFe
     Configuracoes.Geral.AtualizarXMLCancelado = True
     Configuracoes.Geral.VersaoQRCode = veqr000
     Configuracoes.Arquivos.OrdenacaoPath = <>
+    Configuracoes.Arquivos.NormatizarMunicipios = True
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 15000
     Configuracoes.WebServices.AjustaAguardaConsultaRet = True
@@ -2260,6 +2307,12 @@ object frmACBrNFe: TfrmACBrNFe
     MargemSuperior = 0.7
     MargemEsquerda = 0.7
     MargemDireita = 0.7
+    ExpandeLogoMarcaConfig.Altura = 0
+    ExpandeLogoMarcaConfig.Esquerda = 0
+    ExpandeLogoMarcaConfig.Topo = 0
+    ExpandeLogoMarcaConfig.Largura = 0
+    ExpandeLogoMarcaConfig.Dimensionar = False
+    ExpandeLogoMarcaConfig.Esticar = True
     CasasDecimais.Formato = tdetInteger
     CasasDecimais.qCom = 4
     CasasDecimais.vUnCom = 4
@@ -2278,6 +2331,12 @@ object frmACBrNFe: TfrmACBrNFe
     MargemSuperior = 0.8
     MargemEsquerda = 0.6
     MargemDireita = 0.51
+    ExpandeLogoMarcaConfig.Altura = 0
+    ExpandeLogoMarcaConfig.Esquerda = 0
+    ExpandeLogoMarcaConfig.Topo = 0
+    ExpandeLogoMarcaConfig.Largura = 0
+    ExpandeLogoMarcaConfig.Dimensionar = False
+    ExpandeLogoMarcaConfig.Esticar = True
     CasasDecimais.Formato = tdetInteger
     CasasDecimais.qCom = 2
     CasasDecimais.vUnCom = 2
@@ -2285,6 +2344,7 @@ object frmACBrNFe: TfrmACBrNFe
     CasasDecimais.MaskvUnCom = '###,###,###,##0.00'
     TipoDANFE = tiSemGeracao
     ImprimeNomeFantasia = True
+    FormularioContinuo = True
     FonteLinhaItem.Color = clWindowText
     FonteLinhaItem.Height = -9
     FonteLinhaItem.Name = 'Lucida Console'
@@ -2297,12 +2357,19 @@ object frmACBrNFe: TfrmACBrNFe
     MargemSuperior = 0.8
     MargemEsquerda = 0.6
     MargemDireita = 0.51
+    ExpandeLogoMarcaConfig.Altura = 0
+    ExpandeLogoMarcaConfig.Esquerda = 0
+    ExpandeLogoMarcaConfig.Topo = 0
+    ExpandeLogoMarcaConfig.Largura = 0
+    ExpandeLogoMarcaConfig.Dimensionar = False
+    ExpandeLogoMarcaConfig.Esticar = True
     CasasDecimais.Formato = tdetInteger
     CasasDecimais.qCom = 4
     CasasDecimais.vUnCom = 4
     CasasDecimais.MaskqCom = '###,###,###,##0.00'
     CasasDecimais.MaskvUnCom = '###,###,###,##0.00'
     TipoDANFE = tiSemGeracao
+    FormularioContinuo = True
     PosPrinter = ACBrPosPrinter1
     left = 657
     top = 239
@@ -2352,5 +2419,26 @@ object frmACBrNFe: TfrmACBrNFe
     WantBracesParsed = False
     left = 504
     top = 342
+  end
+  object ACBrNFeDANFCeFortesA41: TACBrNFeDANFCeFortesA4
+    Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
+    MargemInferior = 8
+    MargemSuperior = 8
+    MargemEsquerda = 6
+    MargemDireita = 5.1
+    ExpandeLogoMarcaConfig.Altura = 0
+    ExpandeLogoMarcaConfig.Esquerda = 0
+    ExpandeLogoMarcaConfig.Topo = 0
+    ExpandeLogoMarcaConfig.Largura = 0
+    ExpandeLogoMarcaConfig.Dimensionar = False
+    ExpandeLogoMarcaConfig.Esticar = True
+    CasasDecimais.Formato = tdetInteger
+    CasasDecimais.qCom = 2
+    CasasDecimais.vUnCom = 2
+    CasasDecimais.MaskqCom = ',0.00'
+    CasasDecimais.MaskvUnCom = ',0.00'
+    FormularioContinuo = True
+    left = 752
+    top = 239
   end
 end

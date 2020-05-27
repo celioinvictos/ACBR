@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: José M. S. Junior                               }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -113,6 +112,9 @@ type
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
   function Boleto_Imprimir(eNomeImpressora: PChar): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+  function Boleto_ImprimirBoleto(eIndice: longint; eNomeImpressora: PChar): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
   function Boleto_GerarPDF: longint;
@@ -247,7 +249,6 @@ end;
 {%endregion}
 
 {%region Boleto}
-
 
 function Boleto_ConfigurarDados(eArquivoIni: PChar; const sResposta: PChar;
   var esTamanho: longint): longint;
@@ -431,7 +432,10 @@ begin
   try
     VerificarLibInicializada;
     NomeImpressora := String(eNomeImpressora);
-    pLib.GravarLog('Boleto_Imprimir', logNormal);
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('Boleto_Imprimir(' + NomeImpressora + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('Boleto_Imprimir', logNormal);
 
     with TACBrLibBoleto(pLib) do
     begin
@@ -439,6 +443,7 @@ begin
       try
         if NaoEstaVazio(NomeImpressora) then
           BoletoDM.ACBrBoleto1.ACBrBoletoFC.PrinterName := NomeImpressora;
+
         BoletoDM.ACBrBoleto1.Imprimir;
         Result := SetRetorno(ErrOK);
 
@@ -453,7 +458,47 @@ begin
     on E: Exception do
       Result := SetRetorno(ErrExecutandoMetodo, E.Message);
   end;
+end;
 
+function Boleto_ImprimirBoleto(eIndice: longint; eNomeImpressora: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  NomeImpressora : String;
+begin
+  try
+    VerificarLibInicializada;
+    NomeImpressora := String(eNomeImpressora);
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('Boleto_ImprimirBoleto(' + IntToStr(eIndice) + ', ' + NomeImpressora + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('Boleto_ImprimirBoleto', logNormal);
+
+    with TACBrLibBoleto(pLib) do
+    begin
+      BoletoDM.Travar;
+      try
+        if NaoEstaVazio(NomeImpressora) then
+          BoletoDM.ACBrBoleto1.ACBrBoletoFC.PrinterName := NomeImpressora;
+
+        BoletoDM.ACBrBoleto1.ACBrBoletoFC.IndiceImprimirIndividual := eIndice;
+        try
+          BoletoDM.ACBrBoleto1.Imprimir;
+        finally
+          BoletoDM.ACBrBoleto1.ACBrBoletoFC.IndiceImprimirIndividual := -1;
+        end;
+        Result := SetRetorno(ErrOK);
+
+      finally
+        BoletoDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
 end;
 
 function Boleto_GerarPDF: longint;

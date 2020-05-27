@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -106,13 +105,14 @@ function POS_ImprimirCmd(eComando: PChar): longint;
 function POS_ImprimirTags: longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function POS_ImprimirImagemArquivo(aPath: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function POS_GravarLogoArquivo(aPath: PChar; nAKC1, nAKC2: longint): longint;
-  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function POS_ImprimirLogo(nAKC1, nAKC2, nFatorX, nFatorY: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function POS_ApagarLogo(nAKC1, nAKC2: longint): longint;
+function POS_ImprimirCheque(CodBanco: Integer; const AValor, ADataEmissao, AFavorecido,
+  ACidade, AComplemento: PChar; LerCMC7: Boolean; SegundosEspera: Integer): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-
+function POS_ImprimirTextoCheque(const X, Y: Integer; const AString: PChar;
+  AguardaCheque: Boolean; SegundosEspera: Integer): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
 {%region Diversos}
@@ -133,6 +133,19 @@ function POS_RetornarTags(IncluiAjuda: Boolean; const sResposta: PChar; var esTa
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function POS_AcharPortas(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_GravarLogoArquivo(aPath: PChar; nAKC1, nAKC2: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_ApagarLogo(nAKC1, nAKC2: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_LeituraCheque(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_LerCMC7(AguardaCheque: Boolean; SegundosEspera: Integer;
+  const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_EjetarCheque: longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_PodeLerDaPorta: longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function POS_LerCaracteristicas(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function POS_GetPosPrinter: Pointer;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
@@ -142,7 +155,8 @@ function POS_GetPosPrinter: Pointer;
 implementation
 
 uses
-  ACBrLibConsts, ACBrLibConfig, ACBrLibPosPrinterConfig;
+  ACBrLibConsts, ACBrLibConfig, ACBrLibPosPrinterConfig,
+  ACBrLibDeviceUtils, ACBrUtil;
 
 { TACBrLibPosPrinter }
 
@@ -307,6 +321,7 @@ function POS_Imprimir(eString: PChar; PulaLinha, DecodificarTags,
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   AString: AnsiString;
+  UTF8Str: String;
 begin
   try
     VerificarLibInicializada;
@@ -323,7 +338,8 @@ begin
     begin
       PosDM.Travar;
       try
-        PosDM.ACBrPosPrinter1.Imprimir(AString, PulaLinha, DecodificarTags, CodificarPagina, Copias);
+        UTF8Str := ConverterAnsiParaUTF8(AString);
+        PosDM.ACBrPosPrinter1.Imprimir(UTF8Str, PulaLinha, DecodificarTags, CodificarPagina, Copias);
         Result := SetRetorno(ErrOK);
       finally
         PosDM.Destravar;
@@ -342,6 +358,7 @@ function POS_ImprimirLinha(eString: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   AString: AnsiString;
+  UTF8Str: String;
 begin
   try
     VerificarLibInicializada;
@@ -356,7 +373,8 @@ begin
     begin
       PosDM.Travar;
       try
-        PosDM.ACBrPosPrinter1.ImprimirLinha(AString);
+        UTF8Str := ConverterAnsiParaUTF8(AString);
+        PosDM.ACBrPosPrinter1.ImprimirLinha(UTF8Str);
         Result := SetRetorno(ErrOK);
       finally
         PosDM.Destravar;
@@ -464,42 +482,6 @@ begin
   end;
 end;
 
-function POS_GravarLogoArquivo(aPath: PChar; nAKC1, nAKC2: longint): longint;
-  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-Var
-  Path: AnsiString;
-begin
-  try
-    VerificarLibInicializada;
-
-    Path := AnsiString(aPath);
-
-    if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('POS_GravarLogoArquivo(' + Path + ',' +
-                                                IntToStr(nAKC1) + ',' +
-                                                IntToStr(nAKC2) +')', logCompleto, True)
-    else
-      pLib.GravarLog('POS_GravarLogoArquivo', logNormal);
-
-    with TACBrLibPosPrinter(pLib) do
-    begin
-      PosDM.Travar;
-      try
-        PosDM.ACBrPosPrinter1.GravarLogoArquivo(Path, nAKC1, nAKC2);
-        Result := SetRetorno(ErrOK);
-      finally
-        PosDM.Destravar;
-      end;
-    end;
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
-  end;
-end;
-
 function POS_ImprimirLogo(nAKC1, nAKC2, nFatorX, nFatorY: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
@@ -533,23 +515,42 @@ begin
   end;
 end;
 
-function POS_ApagarLogo(nAKC1, nAKC2: longint): longint;
+function POS_ImprimirCheque(CodBanco: Integer;
+      const AValor, ADataEmissao, AFavorecido, ACidade, AComplemento: PChar; LerCMC7: Boolean;
+      SegundosEspera: Integer): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Valor: Double;
+  DataEmissao: TDateTime;
+  Favorecido, Cidade, Complemento: String;
 begin
   try
     VerificarLibInicializada;
 
+    Valor := StringToFloatDef(AValor, 0);
+    DataEmissao := StrToDate(ADataEmissao);
+    Favorecido := ConverterAnsiParaUTF8(ansistring(AFavorecido));
+    Cidade := ConverterAnsiParaUTF8(ansistring(ACidade));
+    Complemento := ConverterAnsiParaUTF8(ansistring(AComplemento));
+
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('POS_ApagarLogo(' + IntToStr(nAKC1) + ','
-                                       + IntToStr(nAKC2) + ')', logCompleto, True)
+      pLib.GravarLog('POS_ImprimirCheque(' + IntToStr(CodBanco) + ','
+                                         + FloatToStr(Valor) + ','
+                                         + DateToStr(DataEmissao) + ','
+                                         + Favorecido + ','
+                                         + Cidade + ','
+                                         + Complemento + ','
+                                         + BoolToStr(LerCMC7, True) + ','
+                                         + IntToStr(SegundosEspera) + ')', logCompleto, True)
     else
-      pLib.GravarLog('POS_ApagarLogo', logNormal);
+      pLib.GravarLog('POS_ImprimirCheque', logNormal);
 
     with TACBrLibPosPrinter(pLib) do
     begin
       PosDM.Travar;
       try
-        PosDM.ACBrPosPrinter1.ApagarLogo(nAKC1, nAKC2);
+        PosDM.ACBrPosPrinter1.ImprimirCheque(CodBanco, Valor, DataEmissao, Favorecido, Cidade,
+                                             Complemento, LerCMC7, SegundosEspera);
         Result := SetRetorno(ErrOK);
       finally
         PosDM.Destravar;
@@ -564,6 +565,45 @@ begin
   end;
 end;
 
+function POS_ImprimirTextoCheque(const X, Y: Integer; const AString: PChar;
+  AguardaCheque: Boolean; SegundosEspera: Integer): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Texto: string;
+begin
+   try
+
+    Texto := ConverterAnsiParaUTF8(ansistring(AString));
+
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('POS_ImprimirTextoCheque(' + IntToStr(x) + ','
+                                                + IntToStr(y) + ','
+                                                + Texto + ','
+                                                + BoolToStr(AguardaCheque, True) + ','
+                                                + IntToStr(SegundosEspera) + ')', logCompleto, True)
+    else
+      pLib.GravarLog('POS_ImprimirTextoCheque', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        PosDM.ACBrPosPrinter1.ImprimirTextoCheque(x, y, Texto, AguardaCheque, SegundosEspera);
+        Result := SetRetorno(ErrOK);
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
 {%endregion}
 
 {%region Diversos}
@@ -880,9 +920,8 @@ end;
 function POS_AcharPortas(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 Var
-  i: Integer;
-  Portas: TStringList;
   Resposta: string;
+  Portas: TStringList;
 begin
   try
     VerificarLibInicializada;
@@ -896,19 +935,235 @@ begin
       Resposta := '';
       Portas := TStringList.Create;
       try
-        PosDM.ACBrPosPrinter1.Device.AcharPortasSeriais( Portas );
+        Resposta := PortasSeriais(PosDM.ACBrPosPrinter1.Device);
+        Resposta := Resposta + '|' + PortasUSB(PosDM.ACBrPosPrinter1.Device);
+        Resposta := Resposta + '|' + PortasRAW(PosDM.ACBrPosPrinter1.Device);
 
-        {$IfDef MSWINDOWS}
-        PosDM.ACBrPosPrinter1.Device.WinUSB.FindUSBPrinters();
-        for i := 0 to PosDM.ACBrPosPrinter1.Device.WinUSB.DeviceList.Count-1 do
-          Portas.Add('USB:'+PosDM.ACBrPosPrinter1.Device.WinUSB.DeviceList.Items[i].DeviceName);
-        {$EndIf}
-
-        Resposta := StringReplace(Portas.Text, sLineBreak, '|', [rfReplaceAll]);
         MoverStringParaPChar(Resposta, sResposta, esTamanho);
         Result := SetRetorno(ErrOK, Resposta);
       finally
         Portas.Free;
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_GravarLogoArquivo(aPath: PChar; nAKC1, nAKC2: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Path: AnsiString;
+begin
+  try
+    VerificarLibInicializada;
+
+    Path := AnsiString(aPath);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('POS_GravarLogoArquivo(' + Path + ',' +
+                                                IntToStr(nAKC1) + ',' +
+                                                IntToStr(nAKC2) +')', logCompleto, True)
+    else
+      pLib.GravarLog('POS_GravarLogoArquivo', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        PosDM.ACBrPosPrinter1.GravarLogoArquivo(Path, nAKC1, nAKC2);
+        Result := SetRetorno(ErrOK);
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_ApagarLogo(nAKC1, nAKC2: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('POS_ApagarLogo(' + IntToStr(nAKC1) + ','
+                                       + IntToStr(nAKC2) + ')', logCompleto, True)
+    else
+      pLib.GravarLog('POS_ApagarLogo', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        PosDM.ACBrPosPrinter1.ApagarLogo(nAKC1, nAKC2);
+        Result := SetRetorno(ErrOK);
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_LeituraCheque(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+begin
+   try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('POS_LeituraCheque', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        Resposta := '';
+        Resposta := PosDM.ACBrPosPrinter1.LeituraCheque;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_LerCMC7(AguardaCheque: Boolean; SegundosEspera: Integer; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+begin
+   try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('POS_LerCMC7(' + BoolToStr(AguardaCheque, True) + ','
+                                    + IntToStr(SegundosEspera) + ')', logCompleto, True)
+    else
+      pLib.GravarLog('POS_LerCMC7', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        Resposta := '';
+        PosDM.ACBrPosPrinter1.LerCMC7(AguardaCheque, SegundosEspera);
+        Resposta := PosDM.ACBrPosPrinter1.LeituraCheque;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_EjetarCheque: longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('POS_EjetarCheque', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        PosDM.ACBrPosPrinter1.EjetarCheque;
+        Result := SetRetorno(ErrOK);
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_PodeLerDaPorta: longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('POS_PodeLerDaPorta', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        if PosDM.ACBrPosPrinter1.PodeLerDaPorta then
+          Result := SetRetorno(1)
+        else
+          Result := SetRetorno(ErrOK)
+      finally
+        PosDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function POS_LerCaracteristicas(const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+begin
+   try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('POS_LerCaracteristicas', logNormal);
+
+    with TACBrLibPosPrinter(pLib) do
+    begin
+      PosDM.Travar;
+      try
+        Resposta := IntToStr(PosDM.ACBrPosPrinter1.TemGuilhotina);
+        Resposta := Resposta + '|' + IntToStr(PosDM.ACBrPosPrinter1.TemCheque);
+        Resposta := Resposta + '|' + IntToStr(PosDM.ACBrPosPrinter1.TemAutenticacao);
+        Resposta := Resposta + '|' + IntToStr(PosDM.ACBrPosPrinter1.TemMICR);
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
         PosDM.Destravar;
       end;
     end;

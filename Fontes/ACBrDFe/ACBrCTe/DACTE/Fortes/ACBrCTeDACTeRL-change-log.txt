@@ -1,9 +1,9 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,9 +22,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
 
@@ -45,6 +44,33 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+14/05/2020
+-- ACBrCTeDACTeRLClass --
+[*] Corrigido o nome do PDF de eventos.
+   Por: Italo Jurisato Junior
+
+14/05/2020
+-- ACBrCTeDACTeRLRetrato --
+[*] A variável CarregouLogo estava sendo atribuida mas não estava sendo
+    utilizada. Incluido as linhas que estavam faltando.
+   Por: Italo Jurisato Junior
+
+01/04/2020
+-- ACBrCTeDAEventoRLRetrato --
+[+] Inclusão dos eventos novos.
+   Por: Italo Jurisato Junior
+
+19/02/2020
+-- ACBrCTeDACTeRLRetrato --
+[*] Alterado a mensagem "Declaração Doc." por "N. Doc." pois não estava sendo 
+    impresso o numero da declaração.
+  Por: Italo Jurisato Junior
+
+04/02/2020
+-- ACBrCTeDAInutRL --
+[*] https://www.projetoacbr.com.br/forum/topic/56085-memoryleak-em-impress%C3%A3o-de-inutiliza%C3%A7%C3%A3o-de-numeros/
+  por: Jéter Rabelo Ferreira
 
 12/11/2019
 -- ACBrCTeDACTeRLRetratoA5 --

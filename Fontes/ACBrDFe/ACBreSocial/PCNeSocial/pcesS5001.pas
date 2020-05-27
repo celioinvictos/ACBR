@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 29/02/2016: Guilherme Costa
-|*  - Alterado os atributos que não estavam de acordo com o leiaute/xsd
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS5001;
@@ -49,7 +40,13 @@ unit pcesS5001;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
   pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
@@ -63,6 +60,10 @@ type
   TInfoBaseCSCollectionItem = class;
   TCalcTercCollection = class;
   TCalcTercCollectionItem = class;
+  TInfoPerRefCollection = class;
+  TInfoPerRefCollectionItem = class;
+  TDetInfoPerRefCollection = class;
+  TDetInfoPerRefCollectionItem = class;
   TEvtBasesTrab = class;
 
   TS5001 = class(TInterfacedObject, IEventoeSocial)
@@ -84,7 +85,7 @@ type
 
   end;
 
-  TInfoCpCalcCollection = class(TObjectList)
+  TInfoCpCalcCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoCpCalcCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoCpCalcCollectionItem);
@@ -117,7 +118,7 @@ type
     property IdeEstabLot: TIdeEstabLotCollection read FIdeEstabLot write SetIdeEstabLot;
   end;
 
-  TIdeEstabLotCollection = class(TObjectList)
+  TIdeEstabLotCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TIdeEstabLotCollectionItem;
     procedure SetItem(Index: Integer; Value: TIdeEstabLotCollectionItem);
@@ -145,7 +146,7 @@ type
     property InfoCategIncid: TInfoCategIncidCollection read FInfoCategIncid write SetInfoCategIncid;
   end;
 
-  TInfoCategIncidCollection = class(TObjectList)
+  TInfoCategIncidCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoCategIncidCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoCategIncidCollectionItem);
@@ -162,9 +163,11 @@ type
     FindSimples: tpIndSimples;
     FInfoBaseCS: TInfoBaseCSCollection;
     FCalcTerc: TCalcTercCollection;
+    FInfoPerRef: TInfoPerRefCollection;
 
     procedure SetInfoBaseCS(const Value: TInfoBaseCSCollection);
     procedure SetCalcTerc(const Value: TCalcTercCollection);
+    procedure SetInfoPerRef(const Value: TInfoPerRefCollection);
   public
     constructor Create;
     destructor Destroy; override;
@@ -174,9 +177,10 @@ type
     property indSimples: tpIndSimples read FindSimples;
     property InfoBaseCS: TInfoBaseCSCollection read FInfoBaseCS write SetInfoBaseCS;
     property CalcTerc: TCalcTercCollection read FCalcTerc write SetCalcTerc;
+    property InfoPerRef: TInfoPerRefCollection read FInfoPerRef write SetInfoPerRef;
   end;
 
-  TInfoBaseCSCollection = class(TObjectList)
+  TInfoBaseCSCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoBaseCSCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoBaseCSCollectionItem);
@@ -197,7 +201,7 @@ type
     property valor: Double read Fvalor;
   end;
 
-  TCalcTercCollection = class(TObjectList)
+  TCalcTercCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TCalcTercCollectionItem;
     procedure SetItem(Index: Integer; Value: TCalcTercCollectionItem);
@@ -216,6 +220,50 @@ type
     property tpCR: Integer read FtpCR;
     property vrCsSegTerc: Double read FvrCsSegTerc;
     property vrDescTerc: Double read FvrDescTerc;
+  end;
+
+  TInfoPerRefCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TInfoPerRefCollectionItem;
+    procedure SetItem(Index: Integer; Value: TInfoPerRefCollectionItem);
+  public
+    function Add: TInfoPerRefCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TInfoPerRefCollectionItem;
+    property Items[Index: Integer]: TInfoPerRefCollectionItem read GetItem write SetItem;
+  end;
+
+  TInfoPerRefCollectionItem = class(TObject)
+  private
+    FperRef: string;
+    FDetInfoPerRef: TDetInfoPerRefCollection;
+    procedure SetDetInfoPerRef(const Value: TDetInfoPerRefCollection);
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    property perRef: string read FperRef;
+    property DetInfoPerRef: TDetInfoPerRefCollection read FDetInfoPerRef write SetDetInfoPerRef;
+  end;
+
+  TDetInfoPerRefCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TDetInfoPerRefCollectionItem;
+    procedure SetItem(Index: Integer; Value: TDetInfoPerRefCollectionItem);
+  public
+    function Add: TDetInfoPerRefCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TDetInfoPerRefCollectionItem;
+    property Items[Index: Integer]: TDetInfoPerRefCollectionItem read GetItem write SetItem;
+  end;
+
+  TDetInfoPerRefCollectionItem = class(TObject)
+  private
+    FvrPerRef: Double;
+    Find13: Integer;
+    FtpValor: Integer;
+  public
+    property ind13: Integer read Find13;
+    property tpValor: Integer read FtpValor;
+    property vrPerRef: Double read FvrPerRef;
   end;
 
   TEvtBasesTrab = class(TObject)
@@ -328,13 +376,13 @@ end;
 function TInfoCpCalcCollection.GetItem(
   Index: Integer): TInfoCpCalcCollectionItem;
 begin
-  Result := TInfoCpCalcCollectionItem(inherited GetItem(Index));
+  Result := TInfoCpCalcCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfoCpCalcCollection.SetItem(Index: Integer;
   Value: TInfoCpCalcCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoCpCalcCollection.New: TInfoCpCalcCollectionItem;
@@ -373,13 +421,13 @@ end;
 function TIdeEstabLotCollection.GetItem(
   Index: Integer): TIdeEstabLotCollectionItem;
 begin
-  Result := TIdeEstabLotCollectionItem(inherited GetItem(Index));
+  Result := TIdeEstabLotCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdeEstabLotCollection.SetItem(Index: Integer;
   Value: TIdeEstabLotCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeEstabLotCollection.New: TIdeEstabLotCollectionItem;
@@ -419,13 +467,13 @@ end;
 function TInfoCategIncidCollection.GetItem(
   Index: Integer): TInfoCategIncidCollectionItem;
 begin
-  Result := TInfoCategIncidCollectionItem(inherited GetItem(Index));
+  Result := TInfoCategIncidCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfoCategIncidCollection.SetItem(Index: Integer;
   Value: TInfoCategIncidCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoCategIncidCollection.New: TInfoCategIncidCollectionItem;
@@ -441,12 +489,14 @@ begin
   inherited Create;
   FInfoBaseCS := TInfoBaseCSCollection.Create;
   FCalcTerc   := TCalcTercCollection.Create;
+  FInfoPerRef := TInfoPerRefCollection.Create;
 end;
 
 destructor TInfoCategIncidCollectionItem.Destroy;
 begin
   FInfoBaseCS.Free;
   FCalcTerc.Free;
+  FInfoPerRef.Free;
 
   inherited;
 end;
@@ -463,6 +513,12 @@ begin
   FInfoBaseCS := Value;
 end;
 
+procedure TInfoCategIncidCollectionItem.SetInfoPerRef(
+  const Value: TInfoPerRefCollection);
+begin
+  FInfoPerRef := Value;
+end;
+
 { TInfoBaseCSCollection }
 
 function TInfoBaseCSCollection.Add: TInfoBaseCSCollectionItem;
@@ -473,13 +529,13 @@ end;
 function TInfoBaseCSCollection.GetItem(
   Index: Integer): TInfoBaseCSCollectionItem;
 begin
-  Result := TInfoBaseCSCollectionItem(inherited GetItem(Index));
+  Result := TInfoBaseCSCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfoBaseCSCollection.SetItem(Index: Integer;
   Value: TInfoBaseCSCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoBaseCSCollection.New: TInfoBaseCSCollectionItem;
@@ -498,13 +554,13 @@ end;
 function TCalcTercCollection.GetItem(
   Index: Integer): TCalcTercCollectionItem;
 begin
-  Result := TCalcTercCollectionItem(inherited GetItem(Index));
+  Result := TCalcTercCollectionItem(inherited Items[Index]);
 end;
 
 procedure TCalcTercCollection.SetItem(Index: Integer;
   Value: TCalcTercCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TCalcTercCollection.New: TCalcTercCollectionItem;
@@ -513,12 +569,83 @@ begin
   Self.Add(Result);
 end;
 
+{ TInfoPerRefCollection }
+
+function TInfoPerRefCollection.Add: TInfoPerRefCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TInfoPerRefCollection.GetItem(
+  Index: Integer): TInfoPerRefCollectionItem;
+begin
+  Result := TInfoPerRefCollectionItem(inherited Items[Index]);
+end;
+
+procedure TInfoPerRefCollection.SetItem(Index: Integer;
+  Value: TInfoPerRefCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+function TInfoPerRefCollection.New: TInfoPerRefCollectionItem;
+begin
+  Result := TInfoPerRefCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TInfoPerRefCollectionItem }
+
+constructor TInfoPerRefCollectionItem.Create;
+begin
+  inherited Create;
+  FDetInfoPerRef := TDetInfoPerRefCollection.Create;
+end;
+
+destructor TInfoPerRefCollectionItem.Destroy;
+begin
+  FDetInfoPerRef.Free;
+
+  inherited;
+end;
+
+procedure TInfoPerRefCollectionItem.SetDetInfoPerRef(
+  const Value: TDetInfoPerRefCollection);
+begin
+  FDetInfoPerRef := Value;
+end;
+
+{ TDetInfoPerRefCollection }
+
+function TDetInfoPerRefCollection.Add: TDetInfoPerRefCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TDetInfoPerRefCollection.GetItem(
+  Index: Integer): TDetInfoPerRefCollectionItem;
+begin
+  Result := TDetInfoPerRefCollectionItem(inherited Items[Index]);
+end;
+
+procedure TDetInfoPerRefCollection.SetItem(Index: Integer;
+  Value: TDetInfoPerRefCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+function TDetInfoPerRefCollection.New: TDetInfoPerRefCollectionItem;
+begin
+  Result := TDetInfoPerRefCollectionItem.Create;
+  Self.Add(Result);
+end;
+
 { TEvtBasesTrab }
 
 function TEvtBasesTrab.LerXML: boolean;
 var
   ok: Boolean;
-  i, j, k: Integer;
+  i, j, k, l: Integer;
 begin
   Result := False;
   try
@@ -603,6 +730,25 @@ begin
               inc(k);
             end;
 
+            k := 0;
+            while Leitor.rExtrai(5, 'infoPerRef', '', k + 1) <> '' do
+            begin
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoPerRef.New;
+              infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoPerRef.Items[k].FperRef := leitor.rCampo(tcStr, 'perRef');
+
+              l := 0;
+              while Leitor.rExtrai(6, 'detInfoPerRef', '', l + 1) <> '' do
+              begin
+                infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoPerRef.Items[k].DetInfoPerRef.New;
+                infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoPerRef.Items[k].DetInfoPerRef.Items[l].Find13    := leitor.rCampo(tcInt, 'ind13');
+                infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoPerRef.Items[k].DetInfoPerRef.Items[l].FtpValor  := leitor.rCampo(tcInt, 'tpValor');
+                infoCp.IdeEstabLot.Items[i].InfoCategIncid.Items[j].InfoPerRef.Items[k].DetInfoPerRef.Items[l].FvrPerRef := leitor.rCampo(tcDe2, 'vrPerRef');
+                inc(l);
+              end;
+
+              inc(k);
+            end;
+
             inc(j);
           end;
 
@@ -622,7 +768,7 @@ function TEvtBasesTrab.SalvarINI: boolean;
 var
   AIni: TMemIniFile;
   sSecao: String;
-  i, j, k: Integer;
+  i, j, k, l: Integer;
 begin
   Result := True;
 
@@ -707,6 +853,31 @@ begin
                   AIni.WriteFloat(sSecao, 'vrDescTerc',  vrDescTerc);
                 end;
               end;
+
+              for k := 0 to InfoPerRef.Count -1 do
+              begin
+                with InfoPerRef.Items[k] do
+                begin
+                  sSecao := 'InfoPerRef' + IntToStrZero(I, 2) +
+                                     IntToStrZero(J, 2) + IntToStrZero(k, 1); // italo
+
+                  AIni.WriteString(sSecao, 'perRef', perRef);
+
+                  for l := 0 to detInfoPerRef.Count -1 do
+                  begin
+                    with detInfoPerRef.Items[l] do
+                    begin
+                      sSecao := 'detInfoPerRef' + IntToStrZero(I, 2) +
+                                         IntToStrZero(J, 2) + IntToStrZero(k, 1) +
+                                         IntToStrZero(l, 1); // italo
+
+                      AIni.WriteInteger(sSecao, 'ind13',    ind13);
+                      AIni.WriteInteger(sSecao, 'tpValor',  tpValor);
+                      AIni.WriteFloat(  sSecao, 'vrPerRef', vrPerRef);
+                    end;
+                  end;
+                end;
+              end;
             end;
           end;
         end;
@@ -716,6 +887,5 @@ begin
     AIni.Free;
   end;
 end;
-
 
 end.

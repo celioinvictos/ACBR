@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 29/02/2016: Guilherme Costa
-|*  - Alterado os atributos que não estavam de acordo com o leiaute/xsd
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS5011;
@@ -49,7 +40,13 @@ unit pcesS5011;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
   pcnConversao, pcnLeitor, ACBrUtil,
   pcesCommon, pcesConversaoeSocial;
 
@@ -156,7 +153,7 @@ type
     property infoComplObra: TInfoComplObra read FinfoComplObra write FinfoComplObra;
   end;
 
-  TinfoTercSuspCollection = class(TObjectList)
+  TinfoTercSuspCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TinfoTercSuspCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoTercSuspCollectionItem);
@@ -232,7 +229,7 @@ type
     property vrSalMat: Double read FvrSalMat;
   end;
 
-  TbasesRemunCollection = class(TObjectList)
+  TbasesRemunCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TbasesRemunCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesRemunCollectionItem);
@@ -275,7 +272,7 @@ type
     property vrDescCP: Double read FvrDescCP;
   end;
 
-  TinfoSubstPatrOpPortCollection = class(TObjectList)
+  TinfoSubstPatrOpPortCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TinfoSubstPatrOpPortCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoSubstPatrOpPortCollectionItem);
@@ -322,7 +319,7 @@ type
     property infoSubstPatrOpPort: TinfoSubstPatrOpPortCollection read FinfoSubstPatrOpPort write FinfoSubstPatrOpPort;
   end;
 
-  TideLotacaoCollection = class(TObjectList)
+  TideLotacaoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TideLotacaoCollectionItem;
     procedure SetItem(Index: Integer; Value: TideLotacaoCollectionItem);
@@ -332,7 +329,7 @@ type
     property Items[Index: Integer]: TideLotacaoCollectionItem read GetItem write SetItem;
   end;
 
-  TbasesAquisCollection = class(TObjectList)
+  TbasesAquisCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TbasesAquisCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesAquisCollectionItem);
@@ -369,7 +366,7 @@ type
     property vrSenarCalc: Double read FvrSenarCalc;
   end;
 
-  TbasesComercCollection = class(TObjectList)
+  TbasesComercCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TbasesComercCollectionItem;
     procedure SetItem(Index: Integer; Value: TbasesComercCollectionItem);
@@ -394,7 +391,7 @@ type
     property vrSenarSusp: Double read FvrSenarSusp;
   end;
 
-  TinfoCREstabCollection = class(TObjectList)
+  TinfoCREstabCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TinfoCREstabCollectionItem;
     procedure SetItem(Index: Integer; Value: TinfoCREstabCollectionItem);
@@ -438,7 +435,7 @@ type
     property infoCREstab: TinfoCREstabCollection read FinfoCREstab write FinfoCREstab;
   end;
 
-  TideEstabCollection = class(TObjectList)
+  TideEstabCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TideEstabCollectionItem;
     procedure SetItem(Index: Integer; Value: TideEstabCollectionItem);
@@ -448,7 +445,7 @@ type
     property Items[Index: Integer]: TideEstabCollectionItem read GetItem write SetItem;
   end;
 
-  TInfoCRContribCollection = class(TObjectList)
+  TInfoCRContribCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoCRContribCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfoCRContribCollectionItem);
@@ -1091,13 +1088,13 @@ end;
 function TideEstabCollection.GetItem(
   Index: Integer): TideEstabCollectionItem;
 begin
-  Result := TideEstabCollectionItem(inherited GetItem(Index));
+  Result := TideEstabCollectionItem(inherited Items[Index]);
 end;
 
 procedure TideEstabCollection.SetItem(Index: Integer;
   Value: TideEstabCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TideEstabCollection.New: TideEstabCollectionItem;
@@ -1116,13 +1113,13 @@ end;
 function TbasesAquisCollection.GetItem(
   Index: Integer): TbasesAquisCollectionItem;
 begin
-  Result := TbasesAquisCollectionItem(inherited GetItem(Index));
+  Result := TbasesAquisCollectionItem(inherited Items[Index]);
 end;
 
 procedure TbasesAquisCollection.SetItem(Index: Integer;
   Value: TbasesAquisCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TbasesAquisCollection.New: TbasesAquisCollectionItem;
@@ -1141,13 +1138,13 @@ end;
 function TbasesComercCollection.GetItem(
   Index: Integer): TbasesComercCollectionItem;
 begin
-  Result := TbasesComercCollectionItem(inherited GetItem(Index));
+  Result := TbasesComercCollectionItem(inherited Items[Index]);
 end;
 
 procedure TbasesComercCollection.SetItem(Index: Integer;
   Value: TbasesComercCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TbasesComercCollection.New: TbasesComercCollectionItem;
@@ -1166,13 +1163,13 @@ end;
 function TinfoCREstabCollection.GetItem(
   Index: Integer): TinfoCREstabCollectionItem;
 begin
-  Result := TinfoCREstabCollectionItem(inherited GetItem(Index));
+  Result := TinfoCREstabCollectionItem(inherited Items[Index]);
 end;
 
 procedure TinfoCREstabCollection.SetItem(Index: Integer;
   Value: TinfoCREstabCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TinfoCREstabCollection.New: TinfoCREstabCollectionItem;
@@ -1214,13 +1211,13 @@ end;
 function TideLotacaoCollection.GetItem(
   Index: Integer): TideLotacaoCollectionItem;
 begin
-  Result := TideLotacaoCollectionItem(inherited GetItem(Index));
+  Result := TideLotacaoCollectionItem(inherited Items[Index]);
 end;
 
 procedure TideLotacaoCollection.SetItem(Index: Integer;
   Value: TideLotacaoCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TideLotacaoCollection.New: TideLotacaoCollectionItem;
@@ -1239,13 +1236,13 @@ end;
 function TinfoTercSuspCollection.GetItem(
   Index: Integer): TinfoTercSuspCollectionItem;
 begin
-  Result := TinfoTercSuspCollectionItem(inherited GetItem(Index));
+  Result := TinfoTercSuspCollectionItem(inherited Items[Index]);
 end;
 
 procedure TinfoTercSuspCollection.SetItem(Index: Integer;
   Value: TinfoTercSuspCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TinfoTercSuspCollection.New: TinfoTercSuspCollectionItem;
@@ -1264,13 +1261,13 @@ end;
 function TbasesRemunCollection.GetItem(
   Index: Integer): TbasesRemunCollectionItem;
 begin
-  Result := TbasesRemunCollectionItem(inherited GetItem(Index));
+  Result := TbasesRemunCollectionItem(inherited Items[Index]);
 end;
 
 procedure TbasesRemunCollection.SetItem(Index: Integer;
   Value: TbasesRemunCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TbasesRemunCollection.New: TbasesRemunCollectionItem;
@@ -1304,13 +1301,13 @@ end;
 function TinfoSubstPatrOpPortCollection.GetItem(
   Index: Integer): TinfoSubstPatrOpPortCollectionItem;
 begin
-  Result := TinfoSubstPatrOpPortCollectionItem(inherited GetItem(Index));
+  Result := TinfoSubstPatrOpPortCollectionItem(inherited Items[Index]);
 end;
 
 procedure TinfoSubstPatrOpPortCollection.SetItem(Index: Integer;
   Value: TinfoSubstPatrOpPortCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TinfoSubstPatrOpPortCollection.New: TinfoSubstPatrOpPortCollectionItem;
@@ -1369,13 +1366,13 @@ end;
 function TInfoCRContribCollection.GetItem(
   Index: Integer): TInfoCRContribCollectionItem;
 begin
-  Result := TInfoCRContribCollectionItem(inherited GetItem(Index));
+  Result := TInfoCRContribCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfoCRContribCollection.SetItem(Index: Integer;
   Value: TInfoCRContribCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoCRContribCollection.New: TInfoCRContribCollectionItem;

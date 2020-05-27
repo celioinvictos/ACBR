@@ -3,13 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 http://acbr.sf.net                     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:  Isaque Pinheiro                                }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -27,27 +26,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|
-|* 0.0.15 - 16/06/2016: Paulo Monteiro
-|*  [*] Adicionado a propriedade IncorporarBackgroundPdf e IncorporarFontesPdf
-|* 0.0.14 - 19/04/2016: Paulo Monteiro
-|*  [*] Adicionado a propriedade modo thread para quem utiliza o recurso de geração
-|*      de boleto em aplicações multi thread datasnap, isapi, etc.
-|* 0.0.13b - 07/05/2014: Paulo Monteiro
-|*  [*] Adicionado algumas propriedades na exportação para pdf seguindo o padrão
-|*      dos outros componentes e setando o frxPDFExport.Background := false;
-|*      isso faz diminuir 70% do tamanho do pdf
-|* 31/07/2011: Isaque Pinheiro
-|*  - Inicio do desenvolvimento
-|*
-******************************************************************************}
 {$I ACBr.inc}
 
 unit ACBrBoletoFCFR;
@@ -323,6 +305,8 @@ begin
       begin
         frxReport.PrintOptions.ShowDialog := (MostrarSetup) and (not FModoThread);
         frxReport.PrintOptions.Copies := NumCopias;
+        if TituloPreview <> '' then
+          frxReport.ReportOptions.Name := TituloPreview;
 
         if Length(Impressora) > 0 then
           frxReport.PrintOptions.Printer := Impressora;
@@ -370,11 +354,9 @@ begin
               frxPDFExport.Keywords := frxPDFExport.Title;
               frxPDFExport.Background := IncorporarBackgroundPdf;//False diminui 70% do tamanho do pdf
               frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
-              if PdfSenha <> '' then
-              begin
-                frxPDFExport.UserPassword := PdfSenha;
+              frxPDFExport.UserPassword := PdfSenha;
+              if NaoEstaVazio(frxPDFExport.UserPassword) then
                 frxPDFExport.ProtectionFlags := [ePrint];
-              end;
               frxReport.Export(FdmBoleto.frxPDFExport);
               if frxPDFExport.FileName <> NomeArquivo then
                 NomeArquivo := frxPDFExport.FileName;

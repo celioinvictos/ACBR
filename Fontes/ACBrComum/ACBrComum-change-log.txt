@@ -37,6 +37,95 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+
+Data: 12/05/2020
+-- ACBrUtil --
+[+] Ajustes para use de UTF8 por padrão, em NEXTGEN, Android, e POSIX, Linux
+    (por: DSA)
+
+Data: 20/04/2020
+-- ACBrUtil --
+[+] Adicionado método "RemoverQuebraLinhaFinal" para tratar retornos de 
+    TStrings.Text.
+  Por: BigWings
+
+Data: 19/04/2020
+-- ACBrUtil --
+[+] Adicionados novos métodos, para manipulação de Strings em AnsiString,
+    para evitar a perda do Encodig da Página de Código
+   function PadRightA(const AAnsiString : AnsiString; const nLen : Integer;
+     const Caracter : AnsiChar = ' ') : AnsiString;
+   function PadLeftA(const AAnsiString : AnsiString; const nLen : Integer;
+     const Caracter : AnsiChar = ' ') : AnsiString;
+   function PadCenterA(const AAnsiString : AnsiString; const nLen : Integer;
+     const Caracter : AnsiChar = ' ') : AnsiString;
+[-] Método "TranslateString", corrigido para trabalhar corretamente em Delphi,
+    Linux POSIX
+[*] Método "AcharProximaTag" modificado para trabalhar corretamente com
+    AnsiStrings
+    (por: DSA)
+
+Data: 15/04/2020
+-- ACBrBase -- 
+[-] Correção em Busca "bubble sort", de TACBrObjectList. 
+    Ajuste para localização no menor "Match", exato
+    (por: DSA)
+
+Data: 30/03/2020
+-- ACBrUtil --
+[*] Método "WriteToFile", com assinatura modificada, incluindo o parâmetro "ForceDirectory"
+    Procedure WriteToFile( const Arq: String; const ABinaryString : AnsiString;
+       const ForceDirectory : Boolean = False);
+    (por: DSA)
+
+Data: 27/03/2020
+-- ACBrUtil --
+[*] Método "FindSubDirectories", aplicado correção para funcionamento em ANDROID
+
+-- ACBrBase --
+[+] Adicionada a Classe "THttpHeader", usada em TACBrWinReqResp e TDFeSSLHttpClass
+    (por: DSA)
+
+Data: 06/03/2020
+-- ACBrUtil --
+[-] Correção em PadLeft, PadRight, e PadCenter, para funcionar corretamente com
+    Strings em UTF8, no FPC
+    (por: DSA)
+
+Data: 21/02/2020
+-- ACBrUtil --
+[*] Método AcharProximaTag modificado para receber parâmetro de Entrada, como AnsiString
+
+-- ACBrBase --
+[+] Adicionada classe "TAnsiStringList", para evitar problemas de conversão de
+    AnsiString para String.
+
+-- ACBrImage --
+[*] Métodos "RasterStrToColumnStr" e "AscIIToColumnStr" modificados para usar
+    TAnsiStringList ao invez de TStringList, para funcionar corretamente em NEXTGEN
+    (por: DSA)
+
+Data: 07/02/2020
+-- ACBrBase --
+[+] Criado novo PID, "piacbrAllDesktopPlatforms", para ser usado nos componentes
+    que não fazem sentido para Mobile
+[*] TACBrObjectList, novos ajustes para compiladores NEXTGEN
+    (por: DSA)
+	
+-- ACBr.inc --
+[+] Novas verificações e chaves, para definir se usa a Classe JSonDataObjects	
+    (por: DSA)
+		
+Data: 23/01/2020
+-- ACBrUtil --
+[*] Revisão de alguns métodos que usavam AnsiString desnecessáriamente
+[*] Otimização e remoção de Hints
+[+] Adicionado o método: function GetFileVersion(AFile: String): String;
+
+-- ACBrImage --
+[*] Otimização e remoção de Hints
+    (por: DSA)
+
 Data: 26/12/2019
 -- ACBrUtil, ACBrBase, ACBr.inc, ACBrImage --
 [*] Ajustes para compilação em FMX, Linux

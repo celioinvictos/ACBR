@@ -1,9 +1,14 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Juliomar Marchetti                              }
+{                              Claudemir Vitor Pereira                         }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,18 +27,14 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-Agradecimentos:
 
-* Administradores:
-- Daniel Simões de Almeida
-- André Ferreira de Moraes
+{$I ACBr.inc}
 
 {******************************************************************************
-|* ACBrCTe
+|* ACBrGNRE
 |*
 |* PROPÓSITO: Registro de Alterações
 ******************************************************************************}
@@ -43,6 +44,69 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+14/05/2020
+-- ACBrGNREWebServices --
+[*] No método TGNRERecepcao.DefinirDadosMsg foi incluido a chamada ao 
+    método RemoverDeclaracaoXML pois estava duplicando.
+  Por: Italo Jurisato Junior
+-- pgnreRetConsResLoteGNRE --
+[*] Incluido a leitura do grupo <motivosRejeicao>.
+  Por: RP Info Sistemas
+
+08/05/2020
+-- ACBrGNREWebServices --
+[*] No método TGNRERecepcao.DefinirDadosMsg foi trocado a propriedade XML por
+    XMLAssinado, desta forma o componente consegue gerar e assinar o XML 
+    automaticamente antes do seu envio.
+  Por: Italo Jurisato Junior
+-- ACBrGNREWebServices --
+[*] Ao realizar a consulta automatica verifica se o tempo de estimativa de 
+    retorno é maior o que esta configurado no componente.
+  Por: Italo Jurisato Junior
+
+05/05/2020
+-- Diversos --
+[-] Possível correção na leitura do retorno do envio do GNRE.
+    Não estava separando corretamente as guias.
+  Por: Italo Jurisato Junior
+
+16/03/2020
+-- Diversos --
+[+] Acrescentado novos campos especificos da versão 2.00
+    (ValorFECP, TotalFECP, MultaICMS, MultaFECP, JurosICMS, 
+     JurosFECP, AtualMonetICMS e AtualMonetFECP).
+  Por: Italo Jurisato Junior
+
+05/03/2020
+-- ACBrGNREGuiaFRDM --
+[*] Melhorias na impressão da guia do GNRE em Fast Report.
+    https://www.projetoacbr.com.br/forum/topic/56585-nova-melhoria-gnre/
+  Por: Gustavo Déo da Silva / BigWings
+
+28/02/2020
+-- ACBrGNREGuiaClass/ACBrGNREGuiaFR --
+[*] https://www.projetoacbr.com.br/forum/topic/56465-melhorias-gnre/
+   Por: Gustavo Déo da Silva
+-- ACBrGNREGuiasRetorno --
+[*] https://www.projetoacbr.com.br/forum/topic/56465-melhorias-gnre/?do=findComment&comment=370368
+   Por: Gustavo Déo da Silva
+
+20/02/2020
+-- ACBrGNREGuias --
+[*] Corrigido o nome do arquivo PDF.
+   Por: Italo Jurisato Junior
+
+18/02/2020
+-- ACBrGNREServicos --
+[*] Removido o comando Break do loop, pois ele estava impedindo que fossem 
+    salvos todas as guias retornadas.
+   Por: Italo Jurisato Junior
+
+29/01/2020
+-- Diversos --
+[*] Implementado o SalvarXML que grava em disco o XML das guias separadamente.
+    por: Italo Jurisato Junior
 
 11/12/2019
 -- pgnreGNREW --

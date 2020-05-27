@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 01/08/2012: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -273,6 +269,7 @@ type
     FOwner: TACBrDFe;
     FManifestos: TManifestos;
     FMDFeChave: String;
+    FExtrairEventos: Boolean;
     FProtocolo: String;
     FDhRecbto: TDateTime;
     FXMotivo: String;
@@ -285,6 +282,7 @@ type
 
     FprotMDFe: TProcMDFe;
     FprocEventoMDFe: TRetEventoMDFeCollection;
+
     procedure SetMDFeChave(const AValue: String);
   protected
     procedure DefinirURL; override;
@@ -302,6 +300,7 @@ type
     procedure Clear; override;
 
     property MDFeChave: String read FMDFeChave write SetMDFeChave;
+    property ExtrairEventos: Boolean read FExtrairEventos write FExtrairEventos;
     property Protocolo: String read FProtocolo;
     property DhRecbto: TDateTime read FDhRecbto;
     property XMotivo: String read FXMotivo;
@@ -334,9 +333,7 @@ type
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
     procedure DefinirDadosMsg; override;
-    procedure SalvarEnvio; override;
     function TratarResposta: Boolean; override;
-    procedure SalvarResposta; override;
 
     function GerarMsgLog: String; override;
     function GerarPrefixoArquivo: String; override;
@@ -995,8 +992,8 @@ begin
                      [FMDFeRetornoSincrono.versao,
                       TpAmbToStr(FMDFeRetornoSincrono.TpAmb),
                       FMDFeRetornoSincrono.verAplic,
-                      IntToStr(FMDFeRetornoSincrono.protMDFe.cStat),
-                      FMDFeRetornoSincrono.protMDFe.xMotivo,
+                      IntToStr(FMDFeRetornoSincrono.cStat),
+                      FMDFeRetornoSincrono.xMotivo,
                       CodigoParaUF(FMDFeRetornoSincrono.cUF),
                       FormatDateTimeBr(FMDFeRetornoSincrono.protMDFe.dhRecbto),
                       FMDFeRetornoSincrono.chMDFe])
@@ -1671,6 +1668,44 @@ begin
 end;
 
 function TMDFeConsulta.TratarResposta: Boolean;
+
+procedure SalvarEventos(Retorno: string);
+var
+  aEvento, aProcEvento, aIDEvento, sPathEvento, sCNPJ: string;
+  Inicio, Fim: Integer;
+  TipoEvento: TpcnTpEvento;
+  Ok: Boolean;
+begin
+  while Retorno <> '' do
+  begin
+    Inicio := Pos('<procEventoMDFe', Retorno);
+    Fim    := Pos('</procEventoMDFe>', Retorno) + 15;
+
+    aEvento := Copy(Retorno, Inicio, Fim - Inicio + 1);
+
+    Retorno := Copy(Retorno, Fim + 1, Length(Retorno));
+
+    aProcEvento := '<procEventoMDFe versao="' + FVersao + '" xmlns="' + ACBRMDFe_NAMESPACE + '">' +
+                      SeparaDados(aEvento, 'procEventoMDFe') +
+                   '</procEventoMDFe>';
+
+    Inicio := Pos('Id=', aProcEvento) + 6;
+    Fim    := 52;
+
+    if Inicio = 6 then
+      aIDEvento := FormatDateTime('yyyymmddhhnnss', Now)
+    else
+      aIDEvento := Copy(aProcEvento, Inicio, Fim);
+
+    TipoEvento  := StrToTpEventoMDFe(Ok, SeparaDados(aEvento, 'tpEvento'));
+    sCNPJ       := SeparaDados(aEvento, 'CNPJ');
+    sPathEvento := PathWithDelim(FPConfiguracoesMDFe.Arquivos.GetPathEvento(TipoEvento, sCNPJ));
+
+    if (aProcEvento <> '') then
+      FPDFeOwner.Gravar( aIDEvento + '-procEventoMDFe.xml', aProcEvento, sPathEvento);
+  end;
+end;
+
 var
   MDFeRetorno: TRetConsSitMDFe;
   SalvarXML, MDFCancelado, MDFEncerrado, Atualiza: Boolean;
@@ -1833,104 +1868,128 @@ begin
                 (MDFeRetorno.cStat = 132);
     end;
 
-    for i := 0 to TACBrMDFe(FPDFeOwner).Manifestos.Count - 1 do
+    if Result then
     begin
-      with TACBrMDFe(FPDFeOwner).Manifestos.Items[i] do
+      if TACBrMDFe(FPDFeOwner).Manifestos.Count > 0 then
       begin
-        if (OnlyNumber(FMDFeChave) = NumID) then
+        for i := 0 to TACBrMDFe(FPDFeOwner).Manifestos.Count - 1 do
         begin
-          Atualiza := (NaoEstaVazio(MDFeRetorno.XMLprotMDFe));
-
-          if Atualiza and
-             TACBrMDFe(FPDFeOwner).cStatCancelado(MDFeRetorno.cStat) then
-            Atualiza := False;
-
-          if (FPConfiguracoesMDFe.Geral.ValidarDigest) and
-             (MDFeRetorno.protMDFe.digVal <> '') and (MDFe.signature.DigestValue <> '') and
-             (UpperCase(MDFe.signature.DigestValue) <> UpperCase(MDFeRetorno.protMDFe.digVal)) then
+          with TACBrMDFe(FPDFeOwner).Manifestos.Items[i] do
           begin
-            raise EACBrMDFeException.Create('DigestValue do documento ' +
-                NumID + ' não confere.');
-          end;
-
-          // Atualiza o Status da MDFe interna //
-          MDFe.procMDFe.cStat := MDFeRetorno.cStat;
-
-          if Atualiza then
-          begin
-            MDFe.procMDFe.tpAmb := MDFeRetorno.tpAmb;
-            MDFe.procMDFe.verAplic := MDFeRetorno.verAplic;
-            MDFe.procMDFe.chMDFe := MDFeRetorno.chMDFe;
-            MDFe.procMDFe.dhRecbto := FDhRecbto;
-            MDFe.procMDFe.nProt := FProtocolo;
-            MDFe.procMDFe.digVal := MDFeRetorno.protMDFe.digVal;
-            MDFe.procMDFe.cStat := MDFeRetorno.cStat;
-            MDFe.procMDFe.xMotivo := MDFeRetorno.xMotivo;
-
-            AProcMDFe := TProcMDFe.Create;
-            try
-              AProcMDFe.XML_MDFe := RemoverDeclaracaoXML(XMLOriginal);
-              AProcMDFe.XML_Prot := MDFeRetorno.XMLprotMDFe;
-              AProcMDFe.Versao := FPVersaoServico;
-              AProcMDFe.GerarXML;
-
-              XMLOriginal := AProcMDFe.Gerador.ArquivoFormatoXML;
-
-              FRetMDFeDFe := '';
-
-              if (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoMDFe'))) then
-              begin
-                Inicio := Pos('<procEventoMDFe', FPRetWS);
-                Fim    := Pos('</retConsSitMDFe', FPRetWS) -1;
-
-                aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
-
-                FRetMDFeDFe := '<MDFeDFe>' +
-                                '<procMDFe versao="' + FVersao + '">' +
-                                  SeparaDados(XMLOriginal, 'mdfeProc') +
-                                '</procMDFe>' +
-                                '<procEventoMDFe versao="' + FVersao + '">' +
-                                  aEventos +
-                                '</procEventoMDFe>' +
-                               '</MDFeDFe>';
-
-              end;
-            finally
-              AProcMDFe.Free;
-            end;
-
-            SalvarXML := Result and
-                       FPConfiguracoesMDFe.Arquivos.Salvar and
-                       ((not FPConfiguracoesMDFe.Arquivos.SalvarApenasMDFeProcessados) or
-                         Processado);
-
-            if SalvarXML then
+            if (OnlyNumber(FMDFeChave) = NumID) then
             begin
-              if FPConfiguracoesMDFe.Arquivos.EmissaoPathMDFe then
-                dhEmissao := MDFe.Ide.dhEmi
-              else
-                dhEmissao := Now;
+              Atualiza := (NaoEstaVazio(MDFeRetorno.XMLprotMDFe));
 
-              sPathMDFe := PathWithDelim(FPConfiguracoesMDFe.Arquivos.GetPathMDFe(dhEmissao, MDFe.Emit.CNPJCPF, MDFe.emit.IE));
+              if Atualiza and
+                 TACBrMDFe(FPDFeOwner).cStatCancelado(MDFeRetorno.cStat) then
+                Atualiza := False;
 
-              if (FRetMDFeDFe <> '') then
-                FPDFeOwner.Gravar( FMDFeChave + '-MDFeDFe.xml', FRetMDFeDFe, sPathMDFe);
-
-              // Salva o XML do MDF-e assinado e protocolado
-              NomeXMLSalvo := '';
-              if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
+              if (FPConfiguracoesMDFe.Geral.ValidarDigest) and
+                 (MDFeRetorno.protMDFe.digVal <> '') and (MDFe.signature.DigestValue <> '') and
+                 (UpperCase(MDFe.signature.DigestValue) <> UpperCase(MDFeRetorno.protMDFe.digVal)) then
               begin
-                FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
-                NomeXMLSalvo := NomeArq;
+                raise EACBrMDFeException.Create('DigestValue do documento ' +
+                    NumID + ' não confere.');
               end;
 
-              // Salva na pasta baseado nas configurações do PathCTe
-              if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
-                GravarXML;
+              // Atualiza o Status da MDFe interna //
+              MDFe.procMDFe.cStat := MDFeRetorno.cStat;
+
+              if Atualiza then
+              begin
+                MDFe.procMDFe.tpAmb := MDFeRetorno.tpAmb;
+                MDFe.procMDFe.verAplic := MDFeRetorno.verAplic;
+                MDFe.procMDFe.chMDFe := MDFeRetorno.chMDFe;
+                MDFe.procMDFe.dhRecbto := FDhRecbto;
+                MDFe.procMDFe.nProt := FProtocolo;
+                MDFe.procMDFe.digVal := MDFeRetorno.protMDFe.digVal;
+                MDFe.procMDFe.cStat := MDFeRetorno.cStat;
+                MDFe.procMDFe.xMotivo := MDFeRetorno.xMotivo;
+
+                AProcMDFe := TProcMDFe.Create;
+                try
+                  AProcMDFe.XML_MDFe := RemoverDeclaracaoXML(XMLOriginal);
+                  AProcMDFe.XML_Prot := MDFeRetorno.XMLprotMDFe;
+                  AProcMDFe.Versao := FPVersaoServico;
+                  AProcMDFe.GerarXML;
+
+                  XMLOriginal := AProcMDFe.Gerador.ArquivoFormatoXML;
+
+                  FRetMDFeDFe := '';
+
+                  if (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoMDFe'))) then
+                  begin
+                    Inicio := Pos('<procEventoMDFe', FPRetWS);
+                    Fim    := Pos('</retConsSitMDFe', FPRetWS) -1;
+
+                    aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
+
+                    FRetMDFeDFe := '<MDFeDFe>' +
+                                    '<procMDFe versao="' + FVersao + '">' +
+                                      SeparaDados(XMLOriginal, 'mdfeProc') +
+                                    '</procMDFe>' +
+                                    '<procEventoMDFe versao="' + FVersao + '">' +
+                                      aEventos +
+                                    '</procEventoMDFe>' +
+                                   '</MDFeDFe>';
+
+                  end;
+                finally
+                  AProcMDFe.Free;
+                end;
+
+                SalvarXML := Result and
+                           FPConfiguracoesMDFe.Arquivos.Salvar and
+                           ((not FPConfiguracoesMDFe.Arquivos.SalvarApenasMDFeProcessados) or
+                             Processado);
+
+                if SalvarXML then
+                begin
+                  if FPConfiguracoesMDFe.Arquivos.EmissaoPathMDFe then
+                    dhEmissao := MDFe.Ide.dhEmi
+                  else
+                    dhEmissao := Now;
+
+                  sPathMDFe := PathWithDelim(FPConfiguracoesMDFe.Arquivos.GetPathMDFe(dhEmissao, MDFe.Emit.CNPJCPF, MDFe.emit.IE));
+
+                  if (FRetMDFeDFe <> '') then
+                    FPDFeOwner.Gravar( FMDFeChave + '-MDFeDFe.xml', FRetMDFeDFe, sPathMDFe);
+
+                  // Salva o XML do MDF-e assinado e protocolado
+                  NomeXMLSalvo := '';
+                  if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
+                  begin
+                    FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
+                    NomeXMLSalvo := NomeArq;
+                  end;
+
+                  // Salva na pasta baseado nas configurações do PathCTe
+                  if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
+                    GravarXML;
+
+                  // Salva o XML de eventos retornados ao consultar um MDF-e
+                  if ExtrairEventos then
+                    SalvarEventos(aEventos);
+                end;
+              end;
+
+              break;
             end;
           end;
+        end;
+      end
+      else
+      begin
+        if ExtrairEventos and FPConfiguracoesMDFe.Arquivos.Salvar and
+           (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoMDFe'))) then
+        begin
+          Inicio := Pos('<procEventoMDFe', FPRetWS);
+          Fim    := Pos('</retConsSitMDFe', FPRetWS) -1;
 
-          break;
+          aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
+
+          // Salva o XML de eventos retornados ao consultar um MDF-e
+          SalvarEventos(aEventos);
         end;
       end;
     end;
@@ -2048,7 +2107,7 @@ end;
 procedure TMDFeEnvEvento.DefinirDadosMsg;
 var
   EventoMDFe: TEventoMDFe;
-  I, J, F: Integer;
+  I, J, k, F: Integer;
   Evento, Eventos, EventosAssinados, AXMLEvento: AnsiString;
   FErroValidacao: String;
   EventoEhValido: Boolean;
@@ -2112,6 +2171,55 @@ begin
               end;
             end;
           end;
+
+          tePagamentoOperacao:
+          begin
+            SchemaEventoMDFe := schevPagtoOperMDFe;
+            infEvento.detEvento.nProt := FEvento.Evento[i].InfEvento.detEvento.nProt;
+
+            infEvento.detEvento.infViagens.qtdViagens := FEvento.Evento[i].InfEvento.detEvento.infViagens.qtdViagens;
+            infEvento.detEvento.infViagens.nroViagem  := FEvento.Evento[i].InfEvento.detEvento.infViagens.nroViagem;
+
+            for j := 0 to FEvento.Evento[i].InfEvento.detEvento.infPag.Count - 1 do
+            begin
+              with EventoMDFe.Evento[i].InfEvento.detEvento.infPag.New do
+              begin
+                xNome         := FEvento.Evento[i].InfEvento.detEvento.infPag[j].xNome;
+                idEstrangeiro := FEvento.Evento[i].InfEvento.detEvento.infPag[j].idEstrangeiro;
+                CNPJCPF       := FEvento.Evento[i].InfEvento.detEvento.infPag[j].CNPJCPF;
+
+                for k := 0 to FEvento.Evento[i].InfEvento.detEvento.infPag[j].Comp.Count - 1 do
+                begin
+                  with EventoMDFe.Evento[i].InfEvento.detEvento.infPag[j].Comp.New do
+                  begin
+                    tpComp := FEvento.Evento[i].InfEvento.detEvento.infPag[j].Comp[k].tpComp;
+                    vComp  := FEvento.Evento[i].InfEvento.detEvento.infPag[j].Comp[k].vComp;
+                    xComp  := FEvento.Evento[i].InfEvento.detEvento.infPag[j].Comp[k].xComp;
+                  end;
+                end;
+
+                vContrato := FEvento.Evento[i].InfEvento.detEvento.infPag[j].vContrato;
+                indPag    := FEvento.Evento[i].InfEvento.detEvento.infPag[j].indPag;
+
+                if indPag = ipPrazo then
+                begin
+                  for k := 0 to FEvento.Evento[i].InfEvento.detEvento.infPag[j].infPrazo.Count - 1 do
+                  begin
+                    with EventoMDFe.Evento[i].InfEvento.detEvento.infPag[j].infPrazo.New do
+                    begin
+                      nParcela := FEvento.Evento[i].InfEvento.detEvento.infPag[j].infPrazo[k].nParcela;
+                      dVenc    := FEvento.Evento[i].InfEvento.detEvento.infPag[j].infPrazo[k].dVenc;
+                      vParcela := FEvento.Evento[i].InfEvento.detEvento.infPag[j].infPrazo[k].vParcela;
+                    end;
+                  end;
+                end;
+
+                infBanc.CNPJIPEF   := FEvento.Evento[i].InfEvento.detEvento.infPag[j].infBanc.CNPJIPEF;
+                infBanc.codBanco   := FEvento.Evento[i].InfEvento.detEvento.infPag[j].infBanc.codBanco;
+                infBanc.codAgencia := FEvento.Evento[i].InfEvento.detEvento.infPag[j].infBanc.codAgencia;
+              end;
+            end;
+          end;
         end;
       end;
     end;
@@ -2172,6 +2280,13 @@ begin
           AXMLEvento := '<evIncDFeMDFe xmlns="' + ACBRMDFE_NAMESPACE + '">' +
                           Trim(RetornarConteudoEntre(AXMLEvento, '<evIncDFeMDFe>', '</evIncDFeMDFe>')) +
                         '</evIncDFeMDFe>';
+        end;
+
+      schevPagtoOperMDFe:
+        begin
+          AXMLEvento := '<evPagtoOperMDFe xmlns="' + ACBRMDFE_NAMESPACE + '">' +
+                          Trim(RetornarConteudoEntre(AXMLEvento, '<evPagtoOperMDFe>', '</evPagtoOperMDFe>')) +
+                        '</evPagtoOperMDFe>';
         end;
     end;
 
@@ -2290,38 +2405,6 @@ begin
       Leitor.Free;
     end;
   end;
-end;
-
-procedure TMDFeEnvEvento.SalvarEnvio;
-begin
-//  inherited SalvarEnvio;
-
-  if ArqEnv = '' then
-    exit;
-
-  if FPConfiguracoesMDFe.Geral.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '.xml',
-      FPDadosMsg, GerarPathEvento(FCNPJ));
-
-  if FPConfiguracoesMDFe.WebServices.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '-soap.xml',
-      FPEnvelopeSoap, GerarPathEvento(FCNPJ));
-end;
-
-procedure TMDFeEnvEvento.SalvarResposta;
-begin
-//  inherited SalvarResposta;
-
-  if ArqResp = '' then
-    exit;
-
-  if FPConfiguracoesMDFe.Geral.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '.xml',
-      FPRetWS, GerarPathEvento(FCNPJ));
-
-  if FPConfiguracoesMDFe.WebServices.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '-soap.xml',
-      FPRetornoWS, GerarPathEvento(FCNPJ));
 end;
 
 function TMDFeEnvEvento.GerarMsgLog: String;
@@ -2549,7 +2632,7 @@ end;
 function TDistribuicaoDFe.TratarResposta: Boolean;
 var
   I: Integer;
-  AXML: String;
+  AXML, aPath: String;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'mdfeDistDFeInteresseResult');
 
@@ -2585,13 +2668,16 @@ begin
       if NaoEstaVazio(NomeArq) then
         FlistaArqs.Add( FNomeArq );
 
+      aPath := GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]);
+      FretDistDFeInt.docZip.Items[I].NomeArq := aPath + FNomeArq;
+
       if (FPConfiguracoesMDFe.Arquivos.Salvar) and NaoEstaVazio(FNomeArq) then
       begin
-        if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoMDFe]) then // salvar evento
-          FPDFeOwner.Gravar(FNomeArq, AXML, GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]));
+        if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoMDFe]) then
+          FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
 
         if (FretDistDFeInt.docZip.Items[I].schema in [schprocMDFe]) then
-          FPDFeOwner.Gravar(FNomeArq, AXML, GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]));
+          FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
       end;
     end;
   end;

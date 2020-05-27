@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Unit1;
 
 interface
@@ -62,6 +92,7 @@ type
     cbbDefaultCharset: TComboBox;
     cbbIdeCharSet: TComboBox;
     lbl1: TLabel;
+    btLerConfig: TButton;
     procedure ACBrMail1AfterMailProcess(Sender: TObject);
     procedure ACBrMail1BeforeMailProcess(Sender: TObject);
     procedure ACBrMail1MailException(const AMail: TACBrMail; const E: Exception; var ThrowIt: Boolean);
@@ -72,6 +103,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure btnSalvarClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btLerConfigClick(Sender: TObject);
   private
     procedure AjustaParametrosDeEnvio;
     procedure LerConfiguracao;
@@ -108,8 +140,8 @@ begin
     Ini.WriteString('Email', 'Pass', edtPassword.text);
     Ini.WriteBool('Email', 'TLS', chkTLS.Checked);
     Ini.WriteBool('Email', 'SSL', chkSSL.Checked);
-    Ini.ReadInteger('Email', 'DefaultCharset', cbbDefaultCharset.ItemIndex);
-    Ini.ReadInteger('Email', 'IdeCharset', cbbIdeCharSet.ItemIndex);
+    Ini.WriteInteger('Email', 'DefaultCharset', cbbDefaultCharset.ItemIndex);
+    Ini.WriteInteger('Email', 'IdeCharset', cbbIdeCharSet.ItemIndex);
   finally
     Ini.Free;
   end;
@@ -191,14 +223,14 @@ begin
   begin
     // Depende de: "<img src='cid:LogoACBr'>" em ACBrMail1.Body;
     if Pos('cid:LogoACBr', ACBrMail1.Body.Text) > 0 then
-      ACBrMail1.AddAttachment(Dir + 'acbr_logo2.png', 'LogoACBr');
+      ACBrMail1.AddAttachment(Dir + 'acbr_logo2.png', 'LogoACBr', adInline);
   end;
 
   if cbAddImgAtt.Checked then
-    ACBrMail1.AddAttachment(Dir + 'acbr_logo.jpg');
+    ACBrMail1.AddAttachment(Dir + 'acbr_logo.jpg', '', adAttachment);
 
   if cbAddPDF.Checked then
-    ACBrMail1.AddAttachment(Dir + '35150905481336000137550010000111291000111298-nfe.pdf', 'DANFE');
+    ACBrMail1.AddAttachment(Dir + '35150905481336000137550010000111291000111298-nfe.pdf', 'DANFE', adAttachment);
 
   if cbAddXML.Checked then
   begin
@@ -206,7 +238,7 @@ begin
     try
       ArqXML := '35150905481336000137550010000111291000111298-nfe.xml';
       MS.LoadFromFile(Dir + ArqXML);
-      ACBrMail1.AddAttachment(MS, ArqXML);
+      ACBrMail1.AddAttachment(MS, ArqXML, adAttachment);
     finally
       MS.Free;
     end;
@@ -235,13 +267,13 @@ begin
     pmsStartProcess:
       mLog.Lines.Add('Iniciando processo de envio.');
     pmsConfigHeaders:
-      mLog.Lines.Add('Configurando o cabe�alho do e-mail.');
+      mLog.Lines.Add('Configurando o cabeçalho do e-mail.');
     pmsLoginSMTP:
       mLog.Lines.Add('Logando no servidor de e-mail.');
     pmsStartSends:
       mLog.Lines.Add('Iniciando os envios.');
     pmsSendTo:
-      mLog.Lines.Add('Processando lista de destinat�rios.');
+      mLog.Lines.Add('Processando lista de destinatários.');
     pmsSendCC:
       mLog.Lines.Add('Processando lista CC.');
     pmsSendBCC:
@@ -317,7 +349,12 @@ begin
   //ACBrMail1.AddReplyTo('um_email'); // opcional
   //ACBrMail1.AddBCC('um_email'); // opcional
   //ACBrMail1.Priority := MP_high;
-  //ACBrMail1.ReadingConfirmation := True; // solicita confirma��o de leitura
+  //ACBrMail1.ReadingConfirmation := True; // solicita confirmação de leitura
+end;
+
+procedure TForm1.btLerConfigClick(Sender: TObject);
+begin
+  LerConfiguracao;
 end;
 
 end.

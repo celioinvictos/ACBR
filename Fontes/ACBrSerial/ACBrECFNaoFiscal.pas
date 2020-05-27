@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -30,76 +30,32 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 28/06/2004:  Daniel Simoes de Almeida
-|*   Inicio do desenvolvimento
-|* 31/05/2005:  Daniel Simoes de Almeida
-|*   Variaveis Subtotal ou TotalPago poderiam, conter valores com mais de 2
-|*   decimais, o que poderia causar problemas nas comparações dos valores.
-|*   -  Bug reportado por Licerio Jose Rodrigues Neto
-|* 28/07/2005:  Daniel Simoes de Almeida
-|*   Leitura do comando de Abertura de gaveta não era decodificada com AscToString
-|*   -  Bug reportado por Fabio Farias
-|* 05/08/2005:  Daniel Simoes de Almeida
-|*  - Propriedade "Operador" será gravada no arquivo ACBrECFxxx.INI
-|*  - Rodapé padrão modificado para incluir as Informações: Versao do ACBr e
-|*  Operador
-|* 12/08/2005:  Daniel Simoes de Almeida
-|*  - Troco no cupom não era subtraido da forma de Pagamento Dinheiro
-|* 27/10/2005: Daniel Simoes de Almeida
-|*  - Modificado o Texto impresso apos o termino das Formas de pagamento de
-|*    "Valor Recebido" para "S O M A"...
-|*    - Essa linha será impressa apenas se tiver mais de 1 pagamento no Cupom
-|* 22/11/2005: Daniel Simoes de Almeida
-|*  - Relatorio Gerencial não imprimia a primeira linha
-|*  - Relatorio Gerencial modificado para imprimir apenas um cabeçalho,
-|*    semelhante aos ECFs novos (não impreme mais uma Leitura X)
-|*  - Corrigido Consumo excessivo de CPU ao vender Muitos Itens
-|* 29/11/2005: Daniel Simoes de Almeida
-|*  - Corrigido bug no retorno da propriedade NomeArqINI
-|* 03/05/2006:  Daniel Simoes de Almeida
-|*  - Usando Arquivos ou portas paralelas, em algumas ocasioes ocorria erro de
-|*    I/O ao Ativar     (bug reportado por Fabio Farias)
-|* 06/02/2007:  Thiago Delgado Pinto
-|*  - Adicionada a função "NumeroColunas", para facilitar a impressao de linhas
-|*    com expandido
-|* 21/02/2007:  Marcos Agostini
-|*  - Corrigido Bug no Cancelamento de Item com Desconto
-|* 06/03/2007:  Fabio Farias
-|*  - Corrigido Bug na Abertura de Cupom Fiscal Vinculado, quando Cupom anterior
-|*    continha mais de uma forma de Pagamento
-|* 01/04/2007:  Daniel Simoes de Almeida
-|*  - Implementados métodos de Cupom Não Fiscal
-|* 11/05/2007:  Fabio Farias
-|*  - Corrigido Bug no Cancelamento de Item (arredondamento)
-|* 24/12/2008:  Daniel Simoes de Almeida
-|*  - Implementado retorno da propriedade DataMovimento (por Waldir Paim)
-|*  - Identificação do Cliente no rodapé do Cupom estava duplicando
-|*    as informações, corrigido
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrECFNaoFiscal ;
 
 interface
-uses Classes, Contnrs, Math, SysUtils, IniFiles,
-     {$IFDEF COMPILER6_UP} DateUtils, StrUtils {$ELSE} ACBrD5, Windows{$ENDIF}
-     {$IFNDEF NOGUI}
-        {$IF DEFINED(VisualCLX)}
-           ,QControls, QForms, QDialogs
-        {$ELSEIF DEFINED(FMX)}
-           ,FMX.Controls, FMX.Forms, FMX.Dialogs, System.UITypes
-        {$ELSE}
-           ,Controls, Forms, Dialogs
-          {$IFDEF DELPHIXE2_UP}
-           , System.UITypes
-          {$ENDIF}  
-        {$IFEND}
-     {$ENDIF},
-     ACBrECFClass, ACBrDevice, ACBrConsts;
+uses
+  Classes, Math, SysUtils, IniFiles,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  {$IFDEF COMPILER6_UP} DateUtils, StrUtils {$ELSE} ACBrD5, Windows{$ENDIF}
+  {$IFNDEF NOGUI}
+     {$IF DEFINED(VisualCLX)}
+        ,QControls, QForms, QDialogs
+     {$ELSEIF DEFINED(FMX)}
+        ,FMX.Controls, FMX.Forms, FMX.Dialogs, System.UITypes
+     {$ELSE}
+        ,Controls, Forms, Dialogs
+       {$IFDEF DELPHIXE2_UP}
+        , System.UITypes
+       {$ENDIF}
+     {$IFEND}
+  {$ENDIF},
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial, ACBrBase, ACBrConsts;
 
 const
       cCmdImpCondensado = #15 ;
@@ -224,15 +180,13 @@ TACBrECFNaoFiscal = class( TACBrECFClass )
     fsSubTotal   : Double ;
     fsTotalPago  : Double ;
 
-    fsEXEName : String ;
-
-    fsAliquotas              : TObjectList ;
-    fsFormasPagamento        : TObjectList ;
-    fsComprovantesNaoFiscais : TObjectList ;
-    fsItensCupom             : TObjectList ;
+    fsAliquotas              : TACBrObjectList ;
+    fsFormasPagamento        : TACBrObjectList ;
+    fsComprovantesNaoFiscais : TACBrObjectList ;
+    fsItensCupom             : TACBrObjectList ;
     fsItensCount             : Integer ;
-    fsPagamentosCupom        : TObjectList ;
-    fsCNFCupom               : TObjectList ;
+    fsPagamentosCupom        : TACBrObjectList ;
+    fsCNFCupom               : TACBrObjectList ;
 
     fswVERAO     : Boolean ;
     fswDia       : TDateTime ;
@@ -254,11 +208,11 @@ TACBrECFNaoFiscal = class( TACBrECFClass )
     fswSubTotal   : Double ;
     fswTotalPago  : Double ;
 
-    fswAliquotas              : TObjectList ;
-    fswFormasPagamento        : TObjectList ;
-    fswComprovantesNaoFiscais : TObjectList ;
-    fswItensCupom             : TObjectList ;
-    fswPagamentosCupom        : TObjectList ;
+    fswAliquotas              : TACBrObjectList ;
+    fswFormasPagamento        : TACBrObjectList ;
+    fswComprovantesNaoFiscais : TACBrObjectList ;
+    fswItensCupom             : TACBrObjectList ;
+    fswPagamentosCupom        : TACBrObjectList ;
 
     fsCmdImpCondensado: AnsiString;
     fsCmdImpExpandidoUmaLinha: AnsiString;
@@ -267,12 +221,12 @@ TACBrECFNaoFiscal = class( TACBrECFClass )
 
     function NumeroColunas: Integer;
 
-    Procedure CopyAliquotas( FromObjectList, ToObjectList : TObjectList ) ;
-    Procedure CopyFormasPagamento( FromObjectList, ToObjectList : TObjectList );
+    Procedure CopyAliquotas( FromObjectList, ToObjectList : TACBrObjectList ) ;
+    Procedure CopyFormasPagamento( FromObjectList, ToObjectList : TACBrObjectList );
     Procedure CopyComprovantesNaoFiscais( FromObjectList, ToObjectList :
-       TObjectList );
-    Procedure CopyItensCupom( FromObjectList, ToObjectList : TObjectList );
-    Procedure CopyPagamentosCupom( FromObjectList, ToObjectList : TObjectList );
+       TACBrObjectList );
+    Procedure CopyItensCupom( FromObjectList, ToObjectList : TACBrObjectList );
+    Procedure CopyPagamentosCupom( FromObjectList, ToObjectList : TACBrObjectList );
 
     Procedure SalvaEstadoAtual ;
     Procedure RestauraEstadoAnterior ;
@@ -500,7 +454,6 @@ begin
   fsCRO       := 1 ;
   fpModeloStr := 'NaoFiscal' ;
   fsBuffer    := TStringList.create ;
-  fsEXEName   := ParamStr(0) ;
 
   fsCabecalho := TStringList.create ;
   fsCabecalho.add('Nome da Empresa') ;
@@ -542,19 +495,19 @@ begin
   fsCmdImpFimExpandido      := cCmdImpFimExpandido;
   fsCmdImpZera              := cCmdImpZera ;
 
-  fsAliquotas               := TObjectList.Create( true );
-  fsFormasPagamento         := TObjectList.Create( true );
-  fsComprovantesNaoFiscais  := TObjectList.Create( true );
-  fsItensCupom              := TObjectList.Create( true );
+  fsAliquotas               := TACBrObjectList.Create( true );
+  fsFormasPagamento         := TACBrObjectList.Create( true );
+  fsComprovantesNaoFiscais  := TACBrObjectList.Create( true );
+  fsItensCupom              := TACBrObjectList.Create( true );
   fsItensCount              := 0 ;
-  fsPagamentosCupom         := TObjectList.Create( true );
-  fsCNFCupom                := TObjectList.Create( true );
+  fsPagamentosCupom         := TACBrObjectList.Create( true );
+  fsCNFCupom                := TACBrObjectList.Create( true );
 
-  fswAliquotas              := TObjectList.Create( true );
-  fswFormasPagamento        := TObjectList.Create( true );
-  fswComprovantesNaoFiscais := TObjectList.Create( true );
-  fswItensCupom             := TObjectList.Create( true );
-  fswPagamentosCupom        := TObjectList.Create( true );
+  fswAliquotas              := TACBrObjectList.Create( true );
+  fswFormasPagamento        := TACBrObjectList.Create( true );
+  fswComprovantesNaoFiscais := TACBrObjectList.Create( true );
+  fswItensCupom             := TACBrObjectList.Create( true );
+  fswPagamentosCupom        := TACBrObjectList.Create( true );
 
   fpArredondaItemMFD := True;
 
@@ -603,7 +556,7 @@ begin
       begin
         NumECF   := Max(fpDevice.Tag, 1) ;
         fsNumECF := IntToStrZero( NumECF, 3 ) ;
-        fsArqINI := ExtractFilePath(fsEXEName)+'ACBrECF'+fsNumECF+'.INI';
+        fsArqINI := ApplicationPath+'ACBrECF'+fsNumECF+'.INI';
       end ;
 
      LeArqINI ;
@@ -2209,7 +2162,7 @@ begin
      else
         Num := fsNumECF ;
 
-     Result := ExtractFilePath(fsEXEName)+'ACBrECF'+Num+'.INI';
+     Result := ApplicationPath+'ACBrECF'+Num+'.INI';
    end ;
 end;
 
@@ -2897,7 +2850,7 @@ begin
 end;
 
 procedure TACBrECFNaoFiscal.CopyAliquotas(FromObjectList,
-   ToObjectList: TObjectList);
+   ToObjectList: TACBrObjectList);
 Var A : Integer ;
     ItemF,ItemT : TACBrECFNaoFiscalAliquota ;
 begin
@@ -2918,7 +2871,7 @@ begin
 end;
 
 procedure TACBrECFNaoFiscal.CopyFormasPagamento(FromObjectList,
-  ToObjectList: TObjectList);
+  ToObjectList: TACBrObjectList);
 Var A : Integer ;
     ItemF,ItemT : TACBrECFNaoFiscalFormaPagamento ;
 begin
@@ -2938,7 +2891,7 @@ begin
 end;
 
 procedure TACBrECFNaoFiscal.CopyComprovantesNaoFiscais(FromObjectList,
-  ToObjectList: TObjectList);
+  ToObjectList: TACBrObjectList);
 Var A : Integer ;
     ItemF,ItemT : TACBrECFNaoFiscalComprovanteNaoFiscal ;
 begin
@@ -2958,7 +2911,7 @@ begin
 end;
 
 procedure TACBrECFNaoFiscal.CopyItensCupom(FromObjectList,
-  ToObjectList: TObjectList);
+  ToObjectList: TACBrObjectList);
 Var A : Integer ;
     ItemF,ItemT : TACBrECFNaoFiscalItemCupom ;
 begin
@@ -2982,7 +2935,7 @@ begin
 end;
 
 procedure TACBrECFNaoFiscal.CopyPagamentosCupom(FromObjectList,
-  ToObjectList: TObjectList);
+  ToObjectList: TACBrObjectList);
 Var A : Integer ;
     ItemF,ItemT : TACBrECFNaoFiscalPagamentoCupom ;
 begin

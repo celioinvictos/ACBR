@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
-{                                       Isaque Pinheiro                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,13 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 10/04/2009: Isaque Pinheiro
-|*  - Criação e distribuição da Primeira Versao
-*******************************************************************************}
 
 unit ACBrEFDBlocos;
 
@@ -412,7 +404,8 @@ type
                  miMudancaTributacao,
                  miBaixaCadastral,
                  miRegimePagamento,
-                 miDeterminacaoFiscos
+                 miDeterminacaoFiscos,
+                 miControleMercadoriaSujeitaST
                 );
   TACBrMotivoInventario = TACBrMotInv;
 
@@ -1030,6 +1023,9 @@ begin
    if AValue = '05' then
       Result := miDeterminacaoFiscos
    else
+   if AValue = '06' then
+      Result := miControleMercadoriaSujeitaST
+   else
      raise EACBrSPEDFiscalException.CreateFmt('O motivo do inventário "%s" não é um valor válido.', [AValue]);
 end;
 
@@ -1049,6 +1045,9 @@ begin
    else
    if AValue = miDeterminacaoFiscos then
       Result := '05'
+   else
+   if AValue = miControleMercadoriaSujeitaST then
+      Result := '06'
    else
      raise Exception.Create('Valor informado inválido para ser convertido em TACBrMotInv');
 end;
@@ -1078,7 +1077,7 @@ begin
    if AValue = gtNenhum then
       Result := ''
    else
-      Result := FormatFloat('00', Integer( AValue ) + 1 );
+      Result := FormatFloat('00', Integer( AValue ));
 end;
 
 function StrToGrupoTensao(const AValue: string): TACBrGrupoTensao;

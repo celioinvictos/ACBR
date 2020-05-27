@@ -1,37 +1,33 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{  de Serviço eletrônica - NFSe                                                }
-
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-
-{ Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-
-
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -1056,7 +1052,8 @@ begin
 
       proGiap: FNameSpaceDad := xmlns3 + FNameSpace + '"';
 
-      proIssDSF: FNameSpaceDad := xmlns3 + FNameSpace + '"' +
+      proIssDSF,
+      proSiat: FNameSpaceDad := xmlns3 + FNameSpace + '"' + 
                                   ' xmlns:tipos="http://localhost:8080/WsNFe2/tp"' +
                                   ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
                                   ' xsi:schemaLocation="http://localhost:8080/WsNFe2/lote' +
@@ -1087,7 +1084,8 @@ begin
       proWEBFISCO: FNameSpaceDad := xmlns3 + FNameSpace + '"' +
                                   ' xmlns:enc="http://schemas.xmlsoap.org/soap/encoding/"';
 
-      else begin
+    else
+      begin
         if (FSeparador = '') then
         begin
           FNameSpaceDad := xmlns3 + FNameSpace + FSeparador + FxsdServico + '"';
@@ -1137,15 +1135,15 @@ begin
     Result := FastStringReplace(Result, '&#xD;', '', [rfReplaceAll]);
     Result := FastStringReplace(Result, '&#xd;', '', [rfReplaceAll]);
   end;
-
-  if FPConfiguracoesNFSe.Geral.ConfigRemover.EComercial then
-    Result := FastStringReplace(Result, '&amp;', '', [rfReplaceAll]);
-
   if FPConfiguracoesNFSe.Geral.ConfigRemover.TagQuebradeLinhaUnica then
   begin
+    result := FastStringReplace(Result, '<br&amp;>', '', [rfReplaceAll]);
     Result := FastStringReplace(Result, 'lt;brgt;', '', [rfReplaceAll]);
     Result := FastStringReplace(Result, '</>', '', [rfReplaceAll]);
   end;
+
+  if FPConfiguracoesNFSe.Geral.ConfigRemover.EComercial then
+    Result := FastStringReplace(Result, '&amp;', '', [rfReplaceAll]);
 
   // Remover o CDATA
   Result := FastStringReplace(Result, '<![CDATA[', '', [rfReplaceAll]);
@@ -1296,7 +1294,7 @@ begin
 
       // Se o RPS na lista de NFS-e consultado está na lista de FNotasFiscais, então atualiza os dados da mesma. A não existencia, implica em adcionar novo ponteiro em FNotasFiscais
       // foi alterado para testar o Numero, serie e tipo, pois o numero pode voltar ao terminar a seriação.
-      if FProvedor in [proNFSeBrasil, proEL, proEquiplano] then
+      if FProvedor in [proNFSeBrasil, proEL, proEquiplano, proSMARAPD] then
         // Se o provedor for NFSeBrasil ou EL compara apenas o numero do RPS
         CondicaoNovoRetorno := (StrToInt64Def(FNotasFiscais.Items[l].NFSe.IdentificacaoRps.Numero, 0) = StrToInt64Def(FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.IdentificacaoRps.Numero, 0))
       else
@@ -1342,7 +1340,9 @@ begin
       end
       else
       begin
-        FNotasFiscais.Items[ii].NFSe.NumeroLote    := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.NumeroLote;
+        if (Provedor <> proSMARAPD) then
+          FNotasFiscais.Items[ii].NFSe.NumeroLote := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.NumeroLote;
+		  
         FNotasFiscais.Items[ii].NFSe.dhRecebimento := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.dhRecebimento;
         FNotasFiscais.Items[ii].NFSe.Protocolo     := FRetornoNFSe.ListaNFSe.CompNFSe.Items[i].NFSe.Protocolo;
       end;
@@ -1591,7 +1591,7 @@ begin
     proSP,
     proGiap: Result := (UpperCase(FRetornoNFSe.ListaNFSe.Sucesso) = UpperCase('true'));
 
-    proISSDSF: Result := Alerta203 or (FDataRecebimento <> 0);
+    proISSDSF, proSiat: Result := Alerta203 or (FDataRecebimento <> 0); 
 
     proEgoverneISS,
     proiiBrasilv2: Result := ProcSucesso;
@@ -1674,7 +1674,7 @@ begin
 
             j := Pos('">', FPDadosMsg) + 1;
 
-            if FProvedor = proIssDSF then
+            if FProvedor in [proIssDSF, proSiat] then 
               FxDSIGNSLote := 'xmlns:' + StringReplace(xPrefixo, ':', '', []) + '=' +
                             '"' + Trim(FNameSpace) + '"'
             else
@@ -1685,6 +1685,13 @@ begin
               FxDSIGNSLote := 'xmlns:ds=';
           end;
         end;
+      end;
+    LayNfseConsultaSitLoteRps,
+    LayNfseConsultaLote,
+    LayNfseConsultaNfseRps,
+    LayNfseConsultaNfse:
+      begin
+        FxIdSignature := ' ' + Identificador + '="consultar';
       end;
      (*
     LayNfseCancelaNfse:
@@ -1870,7 +1877,8 @@ begin
 
         proAssessorPublico,
         proIssDSF,
-        proEquiplano: FvNotas :=  FvNotas + StringReplace(RPS, '<' + ENCODING_UTF8 + '>', '', [rfReplaceAll]);
+        proEquiplano,
+        proSiat: FvNotas :=  FvNotas + StringReplace(RPS, '<' + ENCODING_UTF8 + '>', '', [rfReplaceAll]); {MXM}
 
         proEgoverneISS: FvNotas := FvNotas +
                                    '<rgm:NotaFiscal>' +
@@ -1984,6 +1992,8 @@ begin
            proNotaBlu: FTagI := '<' + FTagGrupo +
                              ' xmlns="http://nfse.blumenau.sc.gov.br" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">';
 
+           proSJP: FTagI := '<' + FTagGrupo + FNameSpaceDad + ' Id="consultar">';
+
 //           proNotaBlu: FTagI := '<' + FTagGrupo +
 //                             ' xmlns:p1="http://nfse.blumenau.sc.gov.br" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">';
 
@@ -2031,6 +2041,8 @@ begin
            proSP: FTagI := '<' + FTagGrupo +
                              ' xmlns="http://www.prefeitura.sp.gov.br/nfe">';
 
+           proSJP: FTagI := '<' + FTagGrupo + FNameSpaceDad + ' Id="consultar">';
+
            proNotaBlu: FTagI := '<' + FTagGrupo +
                              ' xmlns="http://nfse.blumenau.sc.gov.br" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">';
 
@@ -2073,6 +2085,8 @@ begin
            proEL,
            proTinus,
            proSimplISS: FTagI := '<' + FTagGrupo + '>';
+
+           proSJP: FTagI := '<' + FTagGrupo + FNameSpaceDad + ' Id="consultar">';
 
            proSP: FTagI := '<' + FTagGrupo +
                              ' xmlns="http://www.prefeitura.sp.gov.br/nfe">';
@@ -2125,6 +2139,8 @@ begin
            proIPM,
            proGiap,
            proSMARAPD: FTagI := '';
+
+           proSJP: FTagI := '<' + FTagGrupo + FNameSpaceDad + ' Id="consultar">';
 
 //           proSimplISSv2: FTagI := '<' + FTagGrupo + FNameSpaceDad +
 //                                   ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+
@@ -2721,7 +2737,7 @@ begin
     if FTagGrupo <> '' then
       FTagGrupo := FPrefixo3 + FTagGrupo;
 
-    if (FTagElemento <> '') and not (Provedor in [proBetha, proIssDSF, proCTA]) then
+	if (FTagElemento <> '') and not (Provedor in [proBetha, proIssDSF, proCTA, proSiat]) then 
       FTagElemento := FPrefixo3 + FTagElemento;
 
     if FPConfiguracoesNFSe.Geral.ConfigAssinar.RPS then
@@ -3091,7 +3107,7 @@ begin
     if FTagGrupo <> '' then
       FTagGrupo := FPrefixo3 + FTagGrupo;
 
-    if (FTagElemento <> '') and not (Provedor in [proBetha, proIssDSF, proCTA]) then
+    if (FTagElemento <> '') and not (Provedor in [proBetha, proIssDSF, proCTA, proSiat]) then 
       FTagElemento := FPrefixo3 + FTagElemento;
 
     if FPConfiguracoesNFSe.Geral.ConfigAssinar.RPS then
@@ -3366,7 +3382,7 @@ begin
     if FTagGrupo <> '' then
       FTagGrupo := FPrefixo3 + FTagGrupo;
 
-    if (FTagElemento <> '') and not (Provedor in [proBetha, proIssDSF]) then
+    if (FTagElemento <> '') and not (Provedor in [proBetha, proIssDSF, proSiat]) then 
       FTagElemento := FPrefixo3 + FTagElemento;
 
     if FPConfiguracoesNFSe.Geral.ConfigAssinar.RPS then
@@ -3404,6 +3420,12 @@ begin
   if (FPDadosMsg <> '') and (FDadosEnvelope <> '') then
   begin
     DefinirSignatureNode(FTagGrupo);
+
+    if FProvedor = proActcon then
+    begin
+      FPDadosMsg := StringReplace(FPDadosMsg, 'EnviarLoteRpsSincronoEnvio', 'EnviarLoteRpsEnvio', [rfReplaceAll]);
+      FTagGrupo := 'EnviarLoteRpsEnvio';
+    end;
 
     FPDadosMsg := TNFSeEnviarSincrono(Self).FNotasFiscais.AssinarLote(FPDadosMsg,
                                   FTagGrupo,
@@ -3629,7 +3651,7 @@ begin
       try
         Gerador.ArquivoFormatoXML := '';
 
-        Gerador.wCampoNFSe(tcStr, '', 'Integridade', 01, 2000, 1, FIntegridade);
+        Gerador.wCampo(tcStr, '', 'Integridade', 01, 2000, 1, FIntegridade);
 
         FvNotas := FvNotas + Gerador.ArquivoFormatoXML;
       finally
@@ -3841,20 +3863,18 @@ begin
     GerarDadosMsg.Free;
   end;
 
-  // O procedimento recebe como parametro o XML a ser assinado e retorna o
-  // mesmo assinado da propriedade FPDadosMsg
-
   DefinirSignatureNode(FTagGrupo);
 
-  FPDadosMsg := FNotasFiscais.AssinarXML(FPDadosMsg, FdocElemento, FinfElemento,
-                                FPConfiguracoesNFSe.Geral.ConfigAssinar.ConsSit,
-                                xSignatureNode, xDSIGNSLote, FxIdSignature);
-  (*
   // O procedimento recebe como parametro o XML a ser assinado e retorna o
   // mesmo assinado da propriedade FPDadosMsg
+
   if (FPConfiguracoesNFSe.Geral.ConfigAssinar.ConsSit) and (FPDadosMsg <> '') then
     AssinarXML(FPDadosMsg, FTagGrupo, FinfElemento, 'Falha ao Assinar - Consultar Situação do Lote: ');
-  *)
+
+
+//  FPDadosMsg := FNotasFiscais.AssinarXML(FPDadosMsg, FdocElemento, FinfElemento,
+//                                FPConfiguracoesNFSe.Geral.ConfigAssinar.ConsSit,
+//                                xSignatureNode, xDSIGNSLote, FxIdSignature);
 
   IncluirEncoding(FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsSit.IncluiEncodingDados);
 
@@ -4219,7 +4239,7 @@ var
   Gerador: TGerador;
   Consulta: string;
 begin
-  if (FNotasFiscais.Count <= 0) and (FProvedor in [proGoverna,proIssDSF]) then
+  if (FNotasFiscais.Count <= 0) and (FProvedor in [proGoverna,proIssDSF, proSiat]) then 
     GerarException(ACBrStr('ERRO: Nenhum RPS carregado ao componente'));
 
   FCabecalhoStr := FPConfiguracoesNFSe.Geral.ConfigEnvelope.ConsNFSeRps.CabecalhoStr;
@@ -4240,7 +4260,7 @@ begin
 
     InicializarTagITagF;
 
-    if FProvedor in [proIssDSF, proCTA] then
+    if FProvedor in [proIssDSF, proCTA, proSiat] then 
     begin
       Gerador := TGerador.Create;
       try
@@ -4250,40 +4270,40 @@ begin
         begin
           if FNotasFiscais.Items[0].NFSe.Numero = '' then
           begin
-            Gerador.wGrupoNFSe('RPSConsulta');
+            Gerador.wGrupo('RPSConsulta');
             for i := 0 to FNotasFiscais.Count-1 do
             begin
               with FNotasFiscais.Items[I] do
                 if NFSe.IdentificacaoRps.Numero <> '' then
                 begin
-                  Gerador.wGrupoNFSe('RPS Id="rps:' + NFSe.IdentificacaoRps.Numero + '"');
-                  Gerador.wCampoNFSe(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, NFSe.Prestador.InscricaoMunicipal, '');
-                  Gerador.wCampoNFSe(tcStr, '#1', 'NumeroRPS', 01, 12, 1, OnlyNumber(NFSe.IdentificacaoRps.Numero), '');
+                  Gerador.wGrupo('RPS Id="rps:' + NFSe.IdentificacaoRps.Numero + '"');
+                  Gerador.wCampo(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, NFSe.Prestador.InscricaoMunicipal, '');
+                  Gerador.wCampo(tcStr, '#1', 'NumeroRPS', 01, 12, 1, OnlyNumber(NFSe.IdentificacaoRps.Numero), '');
                   // Roberto godinho - Para o provedor CTA deve enviar a série de prestação (99) e não a série do RPS
-                  if FProvedor = proCTA then
-                    Gerador.wCampoNFSe(tcStr, '', 'SeriePrestacao', 01, 2,  1, IIf(NFSe.SeriePrestacao='', '99', NFSe.SeriePrestacao), '')
+                  if FProvedor in [proCTA, proSiat] then
+                    Gerador.wCampo(tcStr, '', 'SeriePrestacao', 01, 2,  1, IIf(NFSe.SeriePrestacao='', '99', NFSe.SeriePrestacao), '')
                   else
-                    Gerador.wCampoNFSe(tcStr, '', 'SeriePrestacao', 01, 2,  1, NFSe.SeriePrestacao, '');
-                  Gerador.wGrupoNFSe('/RPS');
+                    Gerador.wCampo(tcStr, '', 'SeriePrestacao', 01, 2,  1, NFSe.SeriePrestacao, '');
+                  Gerador.wGrupo('/RPS');
                 end;
             end;
-            Gerador.wGrupoNFSe('/RPSConsulta');
+            Gerador.wGrupo('/RPSConsulta');
           end
           else begin
-            Gerador.wGrupoNFSe('NotaConsulta');
+            Gerador.wGrupo('NotaConsulta');
             for i := 0 to FNotasFiscais.Count-1 do
             begin
               with FNotasFiscais.Items[I] do
                 if NFSe.Numero <> '' then
                 begin
-                  Gerador.wGrupoNFSe('Nota Id="nota:' + NFSe.Numero + '"');
-                  Gerador.wCampoNFSe(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, FPConfiguracoesNFSe.Geral.Emitente.InscMun, '');
-                  Gerador.wCampoNFSe(tcStr, '#1', 'NumeroNota', 01, 12, 1, OnlyNumber(NFSe.Numero), '');
-                  Gerador.wCampoNFSe(tcStr, '', 'CodigoVerificacao', 01, 255,  1, NFSe.CodigoVerificacao, '');
-                  Gerador.wGrupoNFSe('/Nota');
+                  Gerador.wGrupo('Nota Id="nota:' + NFSe.Numero + '"');
+                  Gerador.wCampo(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, FPConfiguracoesNFSe.Geral.Emitente.InscMun, '');
+                  Gerador.wCampo(tcStr, '#1', 'NumeroNota', 01, 12, 1, OnlyNumber(NFSe.Numero), '');
+                  Gerador.wCampo(tcStr, '', 'CodigoVerificacao', 01, 255,  1, NFSe.CodigoVerificacao, '');
+                  Gerador.wGrupo('/Nota');
                 end;
             end;
-            Gerador.wGrupoNFSe('/NotaConsulta');
+            Gerador.wGrupo('/NotaConsulta');
           end;
         end;
 
@@ -4302,7 +4322,7 @@ begin
       TipoRps   := FTipo;
 
       // Necessário para o provedor ISSDSF e CTA
-      if FProvedor in [proIssDSF, proCTA] then
+      if FProvedor in [proIssDSF, proCTA, proSiat] then 
       begin
         NumeroLote := FNumeroLote;
         Transacao  := FNotasFiscais.Transacao;
@@ -4334,7 +4354,7 @@ begin
       try
         Gerador.ArquivoFormatoXML := '';
 
-        Gerador.wCampoNFSe(tcStr, '', 'Integridade', 01, 2000, 1, FIntegridade);
+        Gerador.wCampo(tcStr, '', 'Integridade', 01, 2000, 1, FIntegridade);
 
         Consulta := Consulta + Gerador.ArquivoFormatoXML;
       finally
@@ -4648,7 +4668,7 @@ begin
     begin
       if (FNumeroNFSe = '') then
         FNumeroNFSe := FNotasFiscais.Items[0].NFSe.Numero;
-      if FProvedor = proISSDSF then
+      if FProvedor in [proISSDSF, proSiat] then 
         FCodigoVerificacao := FNotasFiscais.Items[0].NFSe.CodigoVerificacao;
     end;
 
@@ -4692,7 +4712,7 @@ begin
 
     InicializarTagITagF;
 
-    if FProvedor in [proIssDSF, proCTA] then
+    if FProvedor in [proIssDSF, proCTA, proSiat] then 
     begin
       Gerador := TGerador.Create;
       try
@@ -4702,12 +4722,12 @@ begin
         begin
           with FNotasFiscais.Items[I] do
           begin
-            Gerador.wGrupoNFSe('Nota Id="nota:' + NFSe.Numero + '"');
-            Gerador.wCampoNFSe(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, FPConfiguracoesNFSe.Geral.Emitente.InscMun, '');
-            Gerador.wCampoNFSe(tcStr, '#1', 'NumeroNota', 01, 12, 1, OnlyNumber(NFSe.Numero), '');
-            Gerador.wCampoNFSe(tcStr, '', 'CodigoVerificacao', 01, 255,  1, NFSe.CodigoVerificacao, '');
-            Gerador.wCampoNFSe(tcStr, '', 'MotivoCancelamento', 01, 80, 1, TNFSeCancelarNfse(Self).FMotivoCancelamento, '');
-            Gerador.wGrupoNFSe('/Nota');
+            Gerador.wGrupo('Nota Id="nota:' + NFSe.Numero + '"');
+            Gerador.wCampo(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, FPConfiguracoesNFSe.Geral.Emitente.InscMun, '');
+            Gerador.wCampo(tcStr, '#1', 'NumeroNota', 01, 12, 1, OnlyNumber(NFSe.Numero), '');
+            Gerador.wCampo(tcStr, '', 'CodigoVerificacao', 01, 255,  1, NFSe.CodigoVerificacao, '');
+            Gerador.wCampo(tcStr, '', 'MotivoCancelamento', 01, 80, 1, TNFSeCancelarNfse(Self).FMotivoCancelamento, '');
+            Gerador.wGrupo('/Nota');
           end;
         end;
 
@@ -4726,8 +4746,8 @@ begin
         begin
           with FNotasFiscais.Items[I] do
           begin
-            Gerador.wCampoNFSe(tcStr, '', 'chvAcessoNFS-e', 1, 39, 1, NFSe.ChaveNFSe, '');
-            Gerador.wCampoNFSe(tcStr, '', 'motivo', 1, 39, 1, TNFSeCancelarNfse(Self).FCodigoCancelamento, ''); {@/\@}
+            Gerador.wCampo(tcStr, '', 'chvAcessoNFS-e', 1, 39, 1, NFSe.ChaveNFSe, '');
+            Gerador.wCampo(tcStr, '', 'motivo', 1, 39, 1, TNFSeCancelarNfse(Self).FCodigoCancelamento, ''); {@/\@}
           end;
         end;
 
@@ -4745,18 +4765,18 @@ begin
         Gerador.Prefixo := Prefixo4;
         for i := 0 to FNotasFiscais.Count-1 do
         begin
-          Gerador.wGrupoNFSe('NotCan');
+          Gerador.wGrupo('NotCan');
           with FNotasFiscais.Items[I] do
           begin
-            Gerador.wGrupoNFSe('InfNotCan');
+            Gerador.wGrupo('InfNotCan');
             Gerador.Prefixo := Prefixo3;
-            Gerador.wCampoNFSe(tcStr, '', 'NumNot', 01, 10, 1, OnlyNumber(NFSe.Numero), '');
-            Gerador.wCampoNFSe(tcStr, '', 'CodVer', 01, 255,  1, NFSe.CodigoVerificacao, '');
-            Gerador.wCampoNFSe(tcStr, '', 'DesMotCan', 01, 80, 1, TNFSeCancelarNfse(Self).FMotivoCancelamento, '');
+            Gerador.wCampo(tcStr, '', 'NumNot', 01, 10, 1, OnlyNumber(NFSe.Numero), '');
+            Gerador.wCampo(tcStr, '', 'CodVer', 01, 255,  1, NFSe.CodigoVerificacao, '');
+            Gerador.wCampo(tcStr, '', 'DesMotCan', 01, 80, 1, TNFSeCancelarNfse(Self).FMotivoCancelamento, '');
             Gerador.Prefixo := Prefixo4;
-            Gerador.wGrupoNFSe('/InfNotCan');
+            Gerador.wGrupo('/InfNotCan');
           end;
-          Gerador.wGrupoNFSe('/NotCan');
+          Gerador.wGrupo('/NotCan');
         end;
 
         FvNotas := Gerador.ArquivoFormatoXML;
@@ -4838,11 +4858,11 @@ begin
           try
             Gerador.ArquivoFormatoXML := '';
             Gerador.Prefixo := Prefixo4;
-            Gerador.wGrupoNFSe('credenciais');
-            Gerador.wCampoNFSe(tcStr, '#01', 'usuario     ', 01, 15, 1, GerarDadosMsg.UserWeb);
-            Gerador.wCampoNFSe(tcStr, '#02', 'senha       ', 01, 05, 1, GerarDadosMsg.SenhaWeb);
-            Gerador.wCampoNFSe(tcStr, '#03', 'chavePrivada', 01, 01, 1, GerarDadosMsg.ChaveAcessoPrefeitura);
-            Gerador.wGrupoNFSe('/credenciais');
+            Gerador.wGrupo('credenciais');
+            Gerador.wCampo(tcStr, '#01', 'usuario     ', 01, 15, 1, GerarDadosMsg.UserWeb);
+            Gerador.wCampo(tcStr, '#02', 'senha       ', 01, 05, 1, GerarDadosMsg.SenhaWeb);
+            Gerador.wCampo(tcStr, '#03', 'chavePrivada', 01, 01, 1, GerarDadosMsg.ChaveAcessoPrefeitura);
+            Gerador.wGrupo('/credenciais');
 
             FPDadosMsg := FTagI + Gerador.ArquivoFormatoXML +
                                 GerarDadosMsg.Gera_DadosMsgCancelarNFSe + FTagF;
@@ -5106,7 +5126,7 @@ begin
 
     InicializarTagITagF;
 
-    if FProvedor in [proIssDSF] then
+    if FProvedor in [proIssDSF, proSiat] then 
     begin
       Gerador := TGerador.Create;
       try
@@ -5116,12 +5136,12 @@ begin
         begin
           with FNotasFiscais.Items[I] do
           begin
-            Gerador.wGrupoNFSe('Nota Id="nota:' + NFSe.Numero + '"');
-            Gerador.wCampoNFSe(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, FPConfiguracoesNFSe.Geral.Emitente.InscMun, '');
-            Gerador.wCampoNFSe(tcStr, '#1', 'NumeroNota', 01, 12, 1, OnlyNumber(NFSe.Numero), '');
-            Gerador.wCampoNFSe(tcStr, '', 'CodigoVerificacao', 01, 255,  1, NFSe.CodigoVerificacao, '');
-            Gerador.wCampoNFSe(tcStr, '', 'MotivoCancelamento', 01, 80, 1, TNFSeSubstituirNfse(Self).FMotivoCancelamento, '');
-            Gerador.wGrupoNFSe('/Nota');
+            Gerador.wGrupo('Nota Id="nota:' + NFSe.Numero + '"');
+            Gerador.wCampo(tcStr, '', 'InscricaoMunicipalPrestador', 01, 11,  1, FPConfiguracoesNFSe.Geral.Emitente.InscMun, '');
+            Gerador.wCampo(tcStr, '#1', 'NumeroNota', 01, 12, 1, OnlyNumber(NFSe.Numero), '');
+            Gerador.wCampo(tcStr, '', 'CodigoVerificacao', 01, 255,  1, NFSe.CodigoVerificacao, '');
+            Gerador.wCampo(tcStr, '', 'MotivoCancelamento', 01, 80, 1, TNFSeSubstituirNfse(Self).FMotivoCancelamento, '');
+            Gerador.wGrupo('/Nota');
           end;
         end;
 
@@ -5757,7 +5777,9 @@ begin
         case Configuracoes.Geral.Provedor of
           proGoverna,
           proIPM,
-          proIssDSF: Result := True
+          proIssDSF,
+          proSmarapd,
+		  proSiat: Result := True
         else
           Result := FConsSitLoteRPS.Executar;
         end;
@@ -5867,7 +5889,7 @@ begin
               // não sabemos se vai funcionar como o esperado.
               //****************************************************************
               if (ProvedorToVersaoNFSe(Configuracoes.Geral.Provedor) = ve200) or
-                 (Configuracoes.Geral.Provedor in [proIssDSF]) then
+                 (Configuracoes.Geral.Provedor in [proIssDSF, proSiat]) then 
               begin
                 try
                   Tentativas := 0;

@@ -3,15 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{ Esse arquivo usa a classe  SynaSer   Copyright (c)2001-2003, Lukas Gebauer   }
-{  Project : Ararat Synapse     (Found at URL: http://www.ararat.cz/synapse/)  }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -32,12 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-{******************************************************************************
-|* Historico
-|*
-|* 25/05/2013: Primeira Versao
-|*    Fernando - fernando-mm@hotmail.com
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -51,7 +42,7 @@ uses
 
 const
   CURL_CAPTCH = 'https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/captcha/gerarCaptcha.asp';
-  CURL_REFER = 'https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_solicitacao3.asp';
+  CURL_REFER = 'http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao_CS.asp';
   CURL_POST = 'https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/valida.asp';
 
 
@@ -239,11 +230,10 @@ begin
   while Retentar do
   begin
     HTTPSend.Clear;
-    PostStr := 'cnpj='+OnlyNumber(ACNPJ)+'&' +
-               'origem=comprovante&' +
-               'search_type=cnpj&' +
-               'submit1=Consultar&' +
-               'txtTexto_captcha_serpro_gov_br='+Trim(ACaptcha);
+    PostStr := 'origem=comprovante&' +
+               'cnpj='+OnlyNumber(ACNPJ)+'&' +
+               'txtTexto_captcha_serpro_gov_br=' +Trim(ACaptcha) +'&' +
+               'search_type=cnpj';
 
     WriteStrToStream( HTTPSend.Document, PostStr );
     HTTPSend.MimeType := 'application/x-www-form-urlencoded';

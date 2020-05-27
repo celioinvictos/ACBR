@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
-{                                       Isaque Pinheiro                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,13 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 10/04/2009: Isaque Pinheiro
-|*  - Criação e distribuição da Primeira Versao
-*******************************************************************************}
 
 unit ACBrEFDBloco_H_Class;
 
@@ -228,11 +220,12 @@ begin
               if DT_FIN >= EncodeDate(2012,07,01) then
               begin
                 case MOT_INV of
-                  miFinalPeriodo:       strMotInv := '01';
-                  miMudancaTributacao:  strMotInv := '02';
-                  miBaixaCadastral:     strMotInv := '03';
-                  miRegimePagamento:    strMotInv := '04';
-                  miDeterminacaoFiscos: strMotInv := '05';
+                  miFinalPeriodo:               strMotInv := '01';
+                  miMudancaTributacao:          strMotInv := '02';
+                  miBaixaCadastral:             strMotInv := '03';
+                  miRegimePagamento:            strMotInv := '04';
+                  miDeterminacaoFiscos:         strMotInv := '05';
+                  miControleMercadoriaSujeitaST: strMotInv:= '06';
                 else
                   strMotInv := '01';
                 end;

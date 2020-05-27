@@ -8,6 +8,11 @@
 #define ACBrMonitorPLUSDir ACBrDIR + "\Projetos\ACBrMonitorPLUS\Lazarus"
 #ifNDef OutputDir
   #define OutputDir ACBrMonitorPLUSDir
+  #define CHMFile  OutputDir + "\Output\chm\ACBrMonitor.chm"
+  #define PDFFile  OutputDir + "\Output\pdf\ACBrMonitor.pdf"
+#else
+  #define CHMFile  OutputDir + "\ACBrMonitor.chm"
+  #define PDFFile  OutputDir + "\ACBrMonitor.pdf"
 #endif
 
 ; para teste de compilação em 64 bits, descomente a linha abaixo
@@ -40,7 +45,7 @@
 #define MyAppVerName MyAppName + "-" + MyAppVersion + "-" + MyAppTarget
 #define OpenSSLDir ACBrDIR + "\DLLs\OpenSSL\1.1.1.4\" + MyAppTarget
 #define LibXML2Dir ACBrDIR + "\DLLs\LibXml2\" + MyAppTarget
-#define VCRedistInstaller "vcredist_" + MyAppTarget + ".exe"
+#define VCRedistInstaller "VC_redist." + MyAppTarget + ".exe"
 
 [Setup]
 #ifDef App64bits
@@ -110,9 +115,6 @@ Source: {#ACBrDIR}\Exemplos\ACBrDFe\Schemas\Reinf\*.*; DestDir: {app}\Schemas\Re
 Source: {#ACBrDIR}\Exemplos\ACBrDFe\Schemas\BPe\*.*; DestDir: {app}\Schemas\BPe; Components: programa;
 Source: {#ACBrDIR}\Exemplos\ACBrDFe\Schemas\GNRe\*.*; DestDir: {app}\Schemas\GNRe; Components: programa;
 
-;Lista de municípios do IBGE
-Source: {#ACBrMonitorPLUSDir}\MunIBGE\*.*; DestDir: {app}\MunIBGE; Flags: ; Components: programa
-
 ;Arquivos de Change-log.TXT
 Source: {#ACBrMonitorPLUSDir}\Notas_Lancamento.pdf; DestDir: {app}; Flags: ignoreversion; Components: help
 Source: {#ACBrMonitorPLUSDir}\ACBrMonitor-change-log.txt; DestDir: {app}\ChangeLog; Flags: ignoreversion; Components: help
@@ -128,8 +130,8 @@ Source: {#ACBrDIR}\Fontes\ACBrDiversos\ACBrDiversos-change-log.txt; DestDir: {ap
 
 ;Arquivo de leitura de CHM para exibição diretamente usando a tecla F1
 Source: {#ACBrMonitorPLUSDir}\lhelp\lhelp.exe; DestDir: {app}\lhelp; Flags: ignoreversion sign; Components: help
-Source: {#OutputDir}\Output\chm\ACBrMonitor.chm; DestDir: {app}; Flags: ignoreversion; Components: help
-Source: {#OutputDir}\Output\pdf\ACBrMonitor.pdf; DestDir: {app}; Flags: ignoreversion; Components: help
+Source: {#CHMFile}; DestDir: {app}; Flags: ignoreversion; Components: help
+Source: {#PDFFile}; DestDir: {app}; Flags: ignoreversion; Components: help
 
 ;Exemplos
 Source: {#ACBrMonitorPLUSDir}\Exemplos\TesteTXT.BAT; DestDir: {app}\Exemplos; Flags: ignoreversion; Components: exemplos
@@ -184,7 +186,7 @@ Name: {userstartup}\{#MyAppName}; Filename: {app}\{#MyAppExeName}; WorkingDir: {
 Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {app}\{#MyAppUrlName}; Components: help
 
 [Run]
-Filename: {tmp}\{#VCRedistInstaller}; Parameters: "/passive /Q:a /c:""msiexec /qb /i vcredist.msi"" "; StatusMsg: Installing Visual C++ 2010 RunTime...
+Filename: {tmp}\{#VCRedistInstaller}; Parameters: "/install /passive /norestart"; StatusMsg: Installing Visual C++ 2019 RunTime...
     
 Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,{#MyAppName}}"
 Filename: "{app}\ACBrMonitor.chm"; Flags: postinstall shellexec skipifsilent; Description: "Manual ACBrMonitor"; Components: help

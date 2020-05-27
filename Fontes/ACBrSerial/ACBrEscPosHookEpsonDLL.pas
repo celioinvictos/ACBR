@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -29,13 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 29/01/2019:  Daniel Simões de Almeida
-|*   Inicio do desenvolvimento
-******************************************************************************}
 
 unit ACBrEscPosHookEpsonDLL;
 
@@ -71,11 +64,17 @@ type
     xEpsonComandoTX: function( pszComando: PAnsiChar; dwTamanho: Integer): Integer;StdCall;
     xEpsonLeStatus: function(): Integer; StdCall;
     xEpsonLeStatusGaveta: function(): Integer; StdCall;
+    xEpsonLeStatusSlip: function(pszFlags: PAnsiChar): Integer; StdCall;
     xEpsonLeModelo: function (pszModelo: PAnsiChar): Integer; StdCall;
     xEpsonLeNumeroSerie: function(pszSerie: PAnsiChar): Integer; StdCall;
+    xEpsonLeMICR: function(pszCodigo: PAnsiChar): Integer;StdCall;
+
 
     FStatusToRead: Integer;
     FInfoToRead: Char;
+    FModelo: String;
+
+    function LeModelo(): String;
   protected
     procedure LoadLibFunctions; override;
     procedure UnLoadLibFunctions; override;
@@ -115,6 +114,7 @@ begin
 
   FStatusToRead := 0;
   FInfoToRead := ' ';
+  FModelo := '';
 end;
 
 procedure TEpsonUSBPrinter.Open(const APort: String);
@@ -156,15 +156,21 @@ var
   errorNo: Integer;
 begin
   CheckConnected;
-  if (LeftStr(AData,2) = DLE + EOT) then
+  if (LeftStr(AData,2) = DLE + EOT) then   // Leitura de Status
   begin
     FStatusToRead := ord(PadLeft(copy(AData,3,1),1 ,#0)[1]);
     Exit;
   end;
 
-  if (LeftStr(AData,2) = GS + 'I') then
+  if (LeftStr(AData,2) = GS + 'I') then  // Leitura de Informações
   begin
     FInfoToRead := PadLeft(copy(AData,3,1),1)[1];
+    Exit;
+  end;
+
+  if (LeftStr(AData,2) = FS + 'b') then  // Leitura de CMC7
+  begin
+    FInfoToRead := 'b';
     Exit;
   end;
 
@@ -212,6 +218,22 @@ begin
            32: SetBit(AByte, 6);
           end;
         end;
+
+      5:
+        begin
+          Buffer := StringOfChar(' ', 4);
+          ret := xEpsonLeStatusSlip( PAnsiChar(Buffer) );
+          if (ret = FUNC_SUCESSO) then
+            Result := Trim(Buffer);
+
+          AByte := 6;  // Bits 1 e 2 Ligados
+          if (copy(Buffer,1,1) = '1') then
+            SetBit(AByte, 3);
+          if not (copy(Buffer,2,1) = '1') then
+            SetBit(AByte, 5);
+          if not (copy(Buffer,3,1) = '1') then
+            SetBit(AByte, 6);
+        end;
     end;
 
     FStatusToRead := 0;
@@ -228,12 +250,7 @@ begin
         Result := '_EPSON';
 
       'C':
-        begin
-          Buffer := StringOfChar(' ', 32);
-          ret := xEpsonLeModelo( PAnsiChar(Buffer) );
-          if (ret = FUNC_SUCESSO) then
-            Result := Trim(Buffer);
-        end;
+        Result := LeModelo;
 
       'D':
         begin
@@ -244,7 +261,21 @@ begin
         end;
 
       '2':
-        Result := chr(2);  // Bit 1 ligado
+        begin
+          if (pos('H6000', LeModelo) > 0) then
+            Result := AnsiChr( 2 + 8 )  // Bit 1, 3 e 6 ligado: Guilhotina, Slip, MICR
+          else
+            Result := AnsiChr( 2 );     // Bit 1 ligado: Guilhotina
+        end;
+
+      //  Infelizmente não funciona, pois método "LeMICR", da DLL da Epson, fica aguardando novamente a inserção do cheque
+      //'b':
+      //  begin
+      //    Buffer := StringOfChar(' ', 40);
+      //    ret := xEpsonLeMICR( PAnsiChar(Buffer) );
+      //    if (ret = FUNC_SUCESSO) then
+      //      Result := Trim(Buffer);
+      //  end;
     end;
 
     FInfoToRead := ' ';
@@ -261,6 +292,22 @@ begin
   Result := EPSON_NAME;
 end;
 
+function TEpsonUSBPrinter.LeModelo: String;
+var
+  Buffer: AnsiString;
+  ret: Integer;
+begin
+  if (FModelo = '') then
+  begin
+    Buffer := StringOfChar(' ', 32);
+    ret := xEpsonLeModelo( PAnsiChar(Buffer) );
+    if (ret = FUNC_SUCESSO) then
+      FModelo := Trim(Buffer);
+  end;
+
+  Result := FModelo;
+end;
+
 procedure TEpsonUSBPrinter.LoadLibFunctions;
 begin
   if Initialized then
@@ -270,9 +317,11 @@ begin
   FunctionDetectLib( 'FechaPorta', @xEpsonFechaPorta );
   FunctionDetectLib( 'ComandoTX', @xEpsonComandoTX );
   FunctionDetectLib( 'Le_Status', @xEpsonLeStatus );
+  FunctionDetectLib( 'Le_Status_Slip', @xEpsonLeStatusSlip );
   FunctionDetectLib( 'Le_Status_Gaveta', @xEpsonLeStatusGaveta );
   FunctionDetectLib( 'LeModelo', @xEpsonLeModelo );
   FunctionDetectLib( 'LeNumeroSerie', @xEpsonLeNumeroSerie );
+  FunctionDetectLib( 'LeMICR', @xEpsonLeMICR );
 end;
 
 procedure TEpsonUSBPrinter.UnLoadLibFunctions;
@@ -283,9 +332,11 @@ begin
   xEpsonFechaPorta := NIl;
   xEpsonComandoTX := Nil;
   xEpsonLeStatus := Nil;
+  xEpsonLeStatusSlip := Nil;
   xEpsonLeStatusGaveta := Nil;
   xEpsonLeModelo := Nil;
   xEpsonLeNumeroSerie := Nil;
+  xEpsonLeMICR := Nil;
 end;
 
 initialization

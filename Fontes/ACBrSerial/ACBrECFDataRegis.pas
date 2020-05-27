@@ -3,10 +3,10 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2005 Airton Stodulski                       }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Anderson Rogerio Bejatto               }
-{                                       Daniel Simoes de Almeida               }
+{ Colaboradores nesse arquivo:   Airton Stodulski                              }
+{                                Anderson Rogerio Bejatto                      }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -25,76 +25,23 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 20/06/2005:  Airton Stodulski
-|*   Inicio do desenvolvimento  baseada na yanco
-|* 23-6     function AchaIndiceTipo( chrTipo:char ) : TACBrECFAliquota;
-|* 21-7     relatorios gerencias/enviacomandoespera
-|* 23/10/2005:  Anderson Rogerio Bejatto
-|*   Ajuste de todos os métodos para compatibilizar com a 02.05
-|* 27/10/2005:  Daniel Simões de Almeida
-|*   Revisão de diversos métodos
-|* 22/11/2005:  Daniel Simões de Almeida
-|*   Adcionada a Impressão do Numero do Item antes do Cod.Produto no formato
-|*   001.. (DataRegis não imprime n.Item, o que dificulta no cancelamento)
-|* 08/12/2005:  Daniel Simoes de Almeida
-|*  - VerificaFimImpressao poderia disparar excessão com ECF off-line
-|* 08/12/2005:  Anderson Rogerio Bejatto
-|*  - Removido tempo de alguns Sleeps a fim de agilizar a comunicaçao com o ECF
-|*   (experimental)
-|*  - Método Cancela cupom detecta o estado do ECF para permitir cancelamento
-|*    com o Cupom aberto...
-|*  - Modificado mecanismo de Gravação e Leitura de memoria auxiliar (INI) para
-|*    ficar mais rápida a rotina de venda
-|* 10/03/2006:  Airton Stodulski
-|*  - Corrigido Bug na leitura de modelos de Cheques
-|*  - Nao reconhecia corretamente todas as versoes de .03 e .05
-|* 13/03/2006:  Daniel Simões de Almeida
-|*  - Inserido suporte a Venda de Item com 3 casas decimais
-|*  - Metodo VendeItem usará o Arredondamento de Item sempre que necessário
-|*  - Corrigido bug em pulos de Linha em ListaRelatorioGerencial e
-|*    ListaCupomVinculado
-|*  - SubTotal, não considerava Desconto Acrescimo pendente informado em
-|*    SubtotalizaCupom
-|* 11/05/2006:  Anderson Rogerio Bejatto
-|*  - Acerto das cordenadas para Impressao de Cheques
-|* 31/05/2006:  Fabio Farias
-|*  - Se não achar a Uniade de Medida em VendeItem, tenta com "UN"
-|* 18/07/2006:  Daniel Simoes de Almeida e Anderson Rogerio Bejatto
-|*  - Corrigido bug na procedure EnviaMensagem
-|* 17/08/2006:  Anderson Rogerio Bejatto
-|*  - Corrigido bug em arquivo auxiliar de itens quando ocorrer erro no
-|*    EfetuaPagamento
-|* 22/08/2006:  Fabio Farias
-|*  - Corrigido tempo de espera em EnviaComando quando impressora for xx.03
-|* 27/02/2007:  Fabio Farias
-|*  - Ajuste para rodar na versão 02.06 (melhoria da 02.05)
-|* 28/11/2007:  Anderson Rogerio Bejatto
-|   - Implementacao de varios Metodos
-|* 08/12/2007:  Anderson Rogerio Bejatto
-|   - Alteração do Metodo Carrega aliquota, pois a Dataregis apresenta defeito
-|* 11/12/2007: João Victor Maia Fernandes
-|   - Implementação de varios Metodos e Comparação com Implementacao do Anderson R B
-|* 02/03/2009: Weber Luvisa (ByteCom)
-|   - Compatibilização com a Versão 04
-******************************************************************************}
-//teste de edicao
 {$I ACBr.inc}
 
 unit ACBrECFDataRegis ;
 
 interface
-uses Classes,
-     ACBrECFClass, ACBrDevice;
+uses
+  Classes,
+  {$IFDEF NEXTGEN}
+   ACBrBase,
+  {$ENDIF}
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial;
 
       //CONFORME MANUAL PARA VERSOES X.03
 const
@@ -161,7 +108,6 @@ TACBrECFDataRegis = class( TACBrECFClass )
     fsNumECF    : String ;
 
     fsMensagem  : String ;
-    fsEXEName : String ;
 
     fsSEQ       : Integer ;
     fsACK       : Byte ;
@@ -348,7 +294,6 @@ begin
   fsNumSerie  := '' ;
   fsNumECF    := '' ;
   fsArqINI    := '' ;
-  fsEXEName   := ParamStr(0) ;
 
   {Coloquei espaco para fsMensagem para que caso a primeira mensagem seja um
    espaco em branco ocorra a programacao da impressora (Anderson) }
@@ -403,8 +348,7 @@ begin
      if NomeArqINI <> '' then
         fsArqINI := NomeArqINI
      else
-        fsArqINI := ExtractFilePath( fsEXEName )+'ACBrECFDataRegis'+
-                                     Poem_Zeros( NumECF, 3 )+'.ini';
+        fsArqINI := ApplicationPath+'ACBrECFDataRegis'+Poem_Zeros( NumECF, 3 )+'.ini';
 
      LeArqINI ;
 
@@ -1839,7 +1783,7 @@ begin
   end ;
 
   if fsArqPrgBcoTXT = '' then
-     ArqTemp := ExtractFilePath( fsEXEName )+'prgbco.txt'
+     ArqTemp := ApplicationPath+'prgbco.txt'
   else
      ArqTemp := fsArqPrgBcoTXT ;
 

@@ -1,9 +1,11 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,21 +24,16 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
-
-* Administradores:
-- Daniel Simões de Almeida
-- André Ferreira de Moraes
 
 * Desenvolvedores:
 - Wemerson P. Souto - Doação do componente ao projeto ACBr
 
 {******************************************************************************
-|* ACBrNFePCN
+|* ACBrNFe
 |*
 |* PROPÓSITO: Registro de Alterações
 ******************************************************************************}
@@ -46,6 +43,165 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+22/05/2020
+-- pcnNFeW --
+[*] Descomentado as linhas que verificam o valor de cEAN e cEANTrib.
+    Na versão 4.00 se o produto não possui o GTIM deve ser informado
+    o literam "SEMGTIM".
+   Por: Italo Jurisato Junior
+
+15/05/2020
+-- ACBrNFeWebServices --
+[*] Realizado uma alteração no método: TDistribuicaoDFe.DefinirURL para 
+    que o modelo a ser utilizado seja obtido da chave da NF-e caso tenha 
+    sido informada, caso contrario utilizar a configuração do componente
+   Por: Italo Jurisato Junior
+
+11/05/2020
+-- pcnNFeW --
+[-] Correção na quantidade minima de caracteres do campo CMT de 9 para 1.
+   Por: Italo Jurisato Junior
+
+04/05/2020
+-- ACBrNFeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/57161-clear-no-método-de-inutilização-não-limpa-o-protocolo/
+   Por: acg.net
+
+27/04/2020
+-- ACBrNFeServicos --
+[*] Correção da URL do QR-Code (NFC-e) do Distrito Federal.
+   Por: Big Wings
+
+13/04/2020
+-- Diversos --
+[*] Melhorias no método EnviarEmailEvento.
+   Por: DSA
+
+30/03/2020
+-- Diversos --
+[+] Implementado a impressão das informações adicionais no DANFE NFC-e
+    que estão em observação do contribuinte mediante a verificação da 
+    propriedade ImprimeInfContr.
+   Por: Italo Jurisato Junior
+
+27/03/2020
+-- ACBrNFeNotasFiscais -- 
+[*] Ajuste na validação na leitura .INI seção Volume
+   Por: José M S Junior
+
+13/03/2020
+-- pcnNFeRTXT --  
+[-] Ajuste na Validação da tag Pagamento na versão 3.1 do Layout da NFe
+Por: José M S Junior
+
+10/03/2020
+-- ACBrNFe --
+[*] Ao enviar o evento por e-mail não estava sendo informado o nome do XML do 
+    evento corretamente.
+   Por: Italo Jurisato Junior
+
+03/03/2020
+-- pcnNFeRTXT --  
+[*] Validação tag YA baseado na versão do Layout da NFe
+Por: José M S Junior
+
+02/03/2020
+-- ACBrNFe --
+[+] https://www.projetoacbr.com.br/forum/topic/56528-enviar-email-do-evento/
+   Por: Renan Eustaquio
+-- ACBrNFeWebServices --
+[+] Acrescentado no TratamentoResposta o armazenamento do Path+Nome do
+    XML retornado pelo DistribuicaoDFe.
+   Por: Italo Jurisato Junior
+
+28/02/2020
+-- ACBrDANFCeFortesFrA4 -- 
+[*] https://www.projetoacbr.com.br/forum/topic/56412-danfce-a4-n%C3%A3o-exibe-chave-de-acesso-para-notas-em-conting%C3%AAncia/
+   Por: Túlio de Pádua
+
+27/02/2020
+-- ACBrNFeNotasFiscais -- 
+[*] Adicionado validação na leitura .INI do campo vTroco
+   Por: José M S Junior
+
+24/02/2020
+-- ACBrNFe/ACBrNFeWebServices --
+[+] Implementado a extração dos eventos do retorno da consulta.
+   Por: Italo Jurisato Junior
+
+19/02/2020
+-- ACBrNFeNotasFiscais --
+[*] Ajuste para conseguir detectar XML da NFe, sem "xmlns"
+    https://www.projetoacbr.com.br/forum/topic/56387-erro-ao-validar-assinatura-com-acbr/
+
+-- ACBrDFeDANFeReport --
+[*] Melhoria em "TACBrDFeDANFeReport.ImprimirDANFECancelado", para usar Try/Finally
+
+-- ACBrNFeDANFeESCPOS --
+[-] Ajuste para evitar Index Bound Error, quando Imprimindo Cancelamento e Evento
+    não foi informado
+    (por: DSA)
+
+18/02/2020
+-- ACBrNFeDANFEClass --
+[*] https://www.projetoacbr.com.br/forum/topic/56109-detpag-com-tpintegra2-n%C3%A3o-imprime-c%C3%B3digo-de-autoriza%C3%A7%C3%A3o/
+   Por: Edmar Frazao
+
+17/02/2020
+-- pcnNFeW --
+[*] Remoção da propriedade: AjustarTagNro.
+   Por: Italo Jurisato Junior
+
+14/02/2020
+-- pcnConversaoNFe --
+[*] https://www.projetoacbr.com.br/forum/topic/53721-nfe-evento-790700-averba%C3%A7%C3%A3o-para-exporta%C3%A7%C3%A3o-%C3%B3rg%C3%A3o-autor-an-retorna-tenaomapeado/?do=findComment&comment=369005
+   Por: William Mometti
+
+12/02/2020
+-- ACBrNFeWebServices --
+[*] Removido as procedures SalvarEnvio e SalvarRetorno do envio de eventos e
+    inutilizacão, pois já existe essas procedures padrões que salvam os XMLs 
+    de envio e de retorno na pasta correta. 
+   Por: Italo Jurisato Junior
+
+05/02/2020
+-- ACBrDANFCeFortesFrA4 --  
+[-] Parâmetro ImprimeNomeFantasia não estava sendo respeitado.
+Por: Fernanda Alves
+
+03/02/2020
+-- ACBrDANFCeFortesFrA4 --  
+[-] A impressão dos numeros dos bilhetes da Nota MS Premiada estavam
+    sendo impressos em duplicidade.
+Por: Italo Jurisato Junior
+
+30/01/2020
+-- ACBrDANFCeFortesFrA4 --  
+[*] Incluído a impressão do valor total do frete.
+Por: Italo Jurisato Junior
+-- ACBrDANFCeFortesFrA4 --  
+[*] Incluído a impressão dos numeros dos bilhetes da Nota MS Premiada.
+Por: Italo Jurisato Junior
+
+23/01/2020
+-- pcnNFeRTXT --  
+[*] Atualizado leitura do grupo pagamento validando tag YA, disponivel na versão 3.10 da NFe
+Por: José M S Junior
+
+16/01/2020
+-- ACBrNFeDANFeESCPOS, ACBrDANFCeFortesFr --
+[+] Ajuste para que Frete no Item, seja impresso destacado de Acréscimos
+    https://www.projetoacbr.com.br/forum/topic/55780-valor-do-frete-no-item-da-nfc-e/
+    (por: DSA)
+
+15/01/2020
+-- ACBrDANFCeFortesFr --
+[+] Adicionada a propriedade FormularioContinuo: Boolean default False
+    Para permitir gerar relatórios com quebras de Páginas, a fim de permitir a
+    impressão correta de DANFCEs longos, algumas Impressoras
+    https://www.projetoacbr.com.br/forum/topic/55422-extrato-forte-itens/
+    (por: DSA)
 
 13/01/2020
 -- pcnNFeW -- 

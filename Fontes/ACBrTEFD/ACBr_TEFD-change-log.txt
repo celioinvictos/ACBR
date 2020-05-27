@@ -1,9 +1,9 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,9 +22,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
 
@@ -47,6 +46,77 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/05/2019
+-- ACBrTEFD --
+[+] Adicionado nova classe de TEF, "TEFPayGo", modelo gpPayGo
+[*] Devido não mais existir o Gerenciador Padrão, TEF_Dial, "gpPayGo" passa a ser
+    o TEF padrão.
+[*] Propriedades "SuportaReajusteValor" e "SuportaNSUEstendido", removidas de
+    "TACBrTEFD" e movidas para "TACBrTEFDRespPayGo", pois são de uso exclusivo
+    do TEFPayGo. Para acessa-las use:
+    ACBrTEFD1.TEFPayGo.SuportaReajusteValor
+    ACBrTEFD1.TEFPayGo.SuportaNSUEstendido
+[*] Diversos ajustes após refatoração em ACBrTEFDClass e ACBrTEFComum
+
+-- ACBrTEFDClass, ACBrTEFComum --
+[*] Refatoração, para preparação de novo componente ACBrTEFAPI, separando Classes
+    em comum a ambos os componentes, em ACBrTEFComum
+
+-- ACBrTEFDClass --
+[*] Ajuste em método: TACBrTEFDRespTXT.ConteudoToProperty, para simplificação da
+    detecção das vias de comprovantes.
+[*] Verificação de Campos específicos do PayGo foram movidos para "ACBrTEFDPayGo"
+
+-- ACBrTEFDPayGo --
+[+] Nova classe de TEF "TACBrTEFDPayGo", criando requisições e respostas em
+    "C:\PAYGO\".
+[+] Adicionada a propriedade "SuportaViasDiferenciadas: Boolean default True"
+[+] Implementada sobrearga nos métodos: "TACBrTEFDRespPayGo.ConteudoToProperty" e
+    "TACBrTEFDRespPayGo.ProcessarTipoInterno", para processar mapeamento de tipos
+    específicos do PayGo, como:
+    707-000 Valor original
+    708-000 Valor do troco
+    709-000 Valor do desconto
+    710-000 Linhas Via Reduzida Cliente
+    711-xxx Cupom reduzido
+    712-000 Tamanho Via Cliente
+    713-xxx Via Cliente do comprovante
+    714-000 Linhas Via Estabelecimento;
+    715-xxx Via Estabelecimento do comprovante
+    727-000 Taxa de serviço
+    731-000 Tipo de cartão
+    732-000 Tipo de financiamento
+    737-000 Vias de Comprovante
+    739-000 Índice da Rede Adquirente
+    740-000 Número do cartão, mascarado
+    741-000 Nome do Cliente, extraído do cartão ou informado pelo emissor.
+    747-000 Data de vencimento do cartão (MMAA)
+    748-000 Nome do cartão padronizado. Se existir, substitui o 040-000
+
+[+] Método "TACBrTEFDPayGo.AdicionarIdentificacao", modificado, para processar
+    todas as características do campo:    "706-000 Capacidades da Automação"
+    1: funcionalidade de troco (ver campo 708-000)
+    2: funcionalidade de desconto (ver campo 709-000)
+    4: valor fixo, sempre incluir
+    8: vias diferenciadas do comprovante para Cliente/Estabelecimento (campos 712-000 a 715-000)
+    16: cupom reduzido (campos 710-000 e 711-000)
+    32: funcionalidade de valor devido (ver campo 743-000)
+    64: funcionalidade de valor reajustado (ver campo 744-000)
+    128: suporta NSU com tamanho de até 40 caracteres (campos 012-000 e 025-000)
+
+-- ACBrTEFDCliSitef, ACBrTEFCliSiTefComum --
+[*] Refatoração, para preparação de novo componente ACBrTEFAPI, separando Classes
+    em comum a ambos os componentes, em ACBrTEFCliSiTefComum
+
+-- ACBrTEFDVeSPague, ACBrTEFDTicketCar, ACBrTEFDCliDTEF, ACBrTEFDBanese --
+[*] Diversos ajustes após refatoração em ACBrTEFDClass e ACBrTEFComum
+
+-- ACBrTEFDPetroCard, ACBrTEFDHiper, ACbrTEFDGpu, ACBrTEFDGoodCard,
+   ACBrTEFDFoxWin, ACBrTEFDDisc, ACBrTEFDDial, ACBrTEFDCrediShop,
+   ACBrTEFDConvCard, ACBrTEFDCappta, ACBrTEFDAuttar --
+[*] Remoção de Units não utilizadas
+    (por: DSA)
+
 23/04/2019
 -- ACBrTEFDCliSitef --
 [*] Chamada ao Método "FinalizaTransacaoSiTefInterativo" que está depreciado,
@@ -55,6 +125,10 @@ Símbolo : Significado
     ParamAdic: AnsiString
     https://www.projetoacbr.com.br/forum/topic/50545-finalizatransacaositefinterativo-fun%C3%A7%C3%A3o-descontinuada/-
     (por: DSA)
+
+10/03/2019
+-- ACBrTEFDCappta --
+[+] Inclusão da classe ACBrTEFDCappta. (por Juliomar Marchetti)
 
 01/02/2019
 -- ACBrTEFDCliSitef --
@@ -684,6 +758,17 @@ Data:  02/09/2011  - Ver: 1.34
 Data:  11/08/2011  - Ver: 1.33
 [-] Correção de Bug descrito em:
     http://www.djsystem.com.br/acbr/forum/viewtopic.php?f=16&p=12735
+	
+Data: 10/08/2011 
+-- ACBrTEFDTicketCar --
+[+] Inclusão da classe ACBrTEFDTicketCar. (por Márcio D. Carvalho)
+-- ACBrTEFDCliDTEF --
+[+] Inclusão da classe ACBrTEFDCliDTEF. (por Márcio D. Carvalho)
+-- ACBrTEFDCrediShop --
+[+] Inclusão da classe ACBrTEFDCrediShop. (por Márcio D. Carvalho)
+-- ACBrTEFDBanese --
+[*] Exibição da msg "IMPRIMINDO", durante a impressão
+    (por Márcio Delfino Carvalho)
 
 Data:  26/07/2011  - Ver: 1.32
 [+] Implementado recurso para que os TEF Discados, indentifique se o tipo
@@ -716,6 +801,8 @@ Data:  09/05/2011
        gpCliSiTef: ACBrTEF.TEFCliSiTef.PathDLL := '.\DLLs\TEF\SiTef';
     end;
 
+Data: 18/03/11
+[+] Inclusão TACBrTEFDBanese. (por Márcio Delfino Carvalho)
 
 Versão 1.30    13/03/11
 [+] Adicionado suporte ao tratamento de Cupons Não Fiscais. Porém, é necessário
@@ -741,6 +828,10 @@ Versão 1.20b   05/07/10
     com um Espaço no Inicio do texto
 [*] Metodo TACBrTEFDLinha.SetLinha, compatibilizado com formato de Chaves do
     TEF V&SPague
+	
+Data: 26/06/2010
+-- ACBrTEFDVeSPague --
+[+] Inclusão da classe ACBrTEFDVeSPague. (por Daniel Simoes de Almeida)
 
 Versão 1.17b   19/04/10
 [+] Adicionada a propriedade em TACBrTEFD.NumeroMaximoCartoes : Integer
@@ -929,6 +1020,7 @@ Versão 1.4b   08/02/10
     exibição por 2 vezes.
 
 Versão 1.3b   03/02/10
+[+] Inclusão da classe ACbrTEFDGpu.pas (por Evandro Mira)
 [-] Corrigido Bug na verificação de transação Aprovada (retorno) em CRT e CHQ
 [-] Corrigido Bug na verificação de Saldo Restante a Pagar em transaçoes com
     Multiplos Cartoes

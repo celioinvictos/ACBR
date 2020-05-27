@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -26,22 +26,13 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
+
 {******************************************************************************
 |* Agradecimentos à:
 |* Everton H. Cardoso  -  Bematech S/A - Testes deste Modulo  
-******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 24/08/2004: Daniel Simoes de Almeida
-|*  - Primeira Versao ACBrCHQBematech
-|* 25/04/2014 : William Duarte
-|*  - Segunda Versao ACBrCHQBematech
 ******************************************************************************}
 
 {$I ACBr.inc}
@@ -150,7 +141,7 @@ begin
   EnviarStr( #27 + #161 + fpCidade + #13 ) ;
 
   { Data }
-  DataStr := FormatDateTime('dd/mm/yy',fpData) ;
+  DataStr := FormatDateTime('dd/mm/yyyy',fpData) ;
   DataStr := StringReplace(DataStr,DateSeparator,'/',[rfReplaceAll]) ;
   EnviarStr( #27 + #164 + DataStr + #13 ) ;
 

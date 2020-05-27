@@ -3,15 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:    Alexandre Rocha Lima e Marcondes             }
+{ Colaboradores nesse arquivo: Alexandre Rocha Lima e Marcondes                }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{ Esse arquivo usa a classe  SynaSer   Copyright (c)2001-2003, Lukas Gebauer   }
-{  Project : Ararat Synapse     (Found at URL: http://www.ararat.cz/synapse/)  }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -46,23 +43,31 @@
 Unit ACBrBase ;
 
 interface
-uses Classes, SysUtils, Contnrs, syncobjs,
-     {$IFDEF COMPILER6_UP}
-        Types
-     {$ELSE}
-        Windows, ACBrD5
-     {$ENDIF}
-     {$IFNDEF NOGUI}
-        {$IF DEFINED(VisualCLX)}
-          ,QDialogs
-        {$ELSEIF DEFINED(FMX)}
-          ,FMX.Dialogs, System.UITypes
-        {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
-          ,Vcl.Dialogs, System.UITypes
-        {$ELSE}
-          ,Dialogs
-       {$IFEND}
-     {$ENDIF};
+uses
+  Classes, SysUtils, syncobjs,
+  {$IFDEF COMPILER6_UP}
+   Types,
+  {$ELSE}
+   Windows, ACBrD5,
+  {$ENDIF}
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs
+  {$Else}
+   Contnrs
+  {$IfEnd}
+  {$IFNDEF NOGUI}
+   {$IF DEFINED(VisualCLX)}
+    ,QDialogs
+   {$ELSEIF DEFINED(FMX)}
+    ,FMX.Dialogs, System.UITypes
+   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+    ,Vcl.Dialogs, System.UITypes
+   {$ELSE}
+    ,Dialogs
+   {$IFEND}
+  {$ENDIF};
 
 {$IFDEF DELPHIXE2_UP}
 const
@@ -86,18 +91,29 @@ const
   piacbrWinARM32       = $00000800; // Windows 32-bit ARM processor (raspberry pi)
 
 
-  piacbrAllPlatforms = piacbrWin32 or piacbrWin64 or piacbrOSX32
+  piacbrAllDesktopPlatforms = piacbrWin32 or piacbrWin64 or piacbrOSX32
   {$IFDEF DELPHIXE3_UP}
-    or piacbriOSSimulator32 or piacbrAndroid32Arm or piacbrLinux32 or piacbriOSDevice32 or piacbrWinNX32
+    or piacbrLinux32 or piacbrWinNX32
   {$ENDIF}
   {$IFDEF DELPHIXE8_UP}
-    or piacbriOSDevice64 or piacbrLinux64 or piacbrWinIoT32
+    or piacbrLinux64
+  {$ENDIF}
+  {$IFDEF DELPHIX_BERLIN_UP}
+    or piacbrOSX64 or piacbrLinux32Arm or piacbrLinux64Arm
+  {$ENDIF};
+
+  piacbrAllPlatforms = piacbrAllDesktopPlatforms
+  {$IFDEF DELPHIXE3_UP}
+    or piacbriOSSimulator32 or piacbrAndroid32Arm or piacbriOSDevice32
+  {$ENDIF}
+  {$IFDEF DELPHIXE8_UP}
+    or piacbriOSDevice64 or piacbrWinIoT32
   {$ENDIF}
   {$IFDEF DELPHIX_SEATTLE_UP}
     or piacbrWinARM32
   {$ENDIF}
   {$IFDEF DELPHIX_BERLIN_UP}
-    or piacbrOSX64 or piacbrLinux32Arm or piacbrLinux64Arm or piacbrAndroid64Arm
+    or piacbrAndroid64Arm
   {$ENDIF}
   {$IFDEF DELPHIX_RIO_UP}
     or piacbriOSSimulator64
@@ -122,13 +138,14 @@ type
     ULONG_PTR = SizeUInt;
    {$EndIf}
 
-  // Compatibilização de Tipos inexistentes em Delphi Linux (POSIX)
-//  {$IFDEF POSIX}
-//    AnsiString = UTF8String;
-//    AnsiChar = UTF8Char;
-//    PAnsiChar = PUTF8Char;
-//    PPAnsiChar = ^PUTF8Char;
-//  {$ENDIF}
+  // Compatibilização de Tipos inexistentes em compiladores NEXTGEN
+  {$IfDef NEXTGEN}
+    AnsiString = RawByteString;
+    AnsiChar = UTF8Char;
+    PAnsiChar = MarshaledAString;
+    PPAnsiChar = ^MarshaledAString;
+    WideString = String;
+  {$EndIf}
 {$EndIf}
 
 type
@@ -149,19 +166,44 @@ TACBrComponent = class( TComponent )
 
 TACBrGravarLog = procedure(const ALogLine: String; var Tratado: Boolean) of object ;
 
+TAnsiStringList = class
+  private
+    FList: array of AnsiString;
+    function GetCount: Integer;
+    function GetItem(Index: Integer): AnsiString;
+    procedure SetItem(Index: Integer; const Value: AnsiString);
+    function GetText: AnsiString;
+
+  public
+    constructor Create;
+
+    procedure Clear;
+    function Add(AAnsiString: AnsiString): Integer;
+
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: AnsiString read GetItem write SetItem; default;
+    property Text: AnsiString read GetText;
+  end;
+
 { TACBrObjectList }
 
-TACBrObjectList = class(TObjectList)
+  TACBrObjectList = class(TObjectList{$IfDef NEXTGEN}<TObject>{$EndIf})
   protected
     fIsSorted: Boolean;
   public
-    constructor Create(FreeObjects: boolean);
+    constructor Create(FreeObjects: boolean = True);
 
     Function Add(AObject: TObject): Integer;
     Procedure Insert(Index: Integer; AObject: TObject);
-    procedure Sort(Compare: TListSortCompare);
-
-    function FindObject(Item: Pointer; Compare: TListSortCompare; Nearest: Boolean = False): Integer;
+    {$IfDef NEXTGEN}
+     procedure Sort(const AComparer: IComparer<TObject>);
+     function FindObject(Item: TObject; AComparer: IComparer<TObject>; Nearest: Boolean = False): Integer;
+     procedure Assign(ObjectListSource: TObjectList<TObject>);
+     procedure Clear; virtual;
+    {$Else}
+     procedure Sort(Compare: TListSortCompare);
+     function FindObject(Item: Pointer; AComparer: TListSortCompare; Nearest: Boolean = False): Integer;
+    {$EndIf}
   end;
 
 { TACBrThreadTimer }
@@ -230,7 +272,7 @@ de campos quando necessário}
 
   { TACBrInformacoes }
 
-  TACBrInformacoes = class(TObjectList)
+  TACBrInformacoes = class(TObjectList{$IfDef NEXTGEN}<TACBrInformacao>{$EndIf})
   private
     function GetItem(Index: Integer): TACBrInformacao;
     procedure SetItem(Index: Integer; const Value: TACBrInformacao);
@@ -252,6 +294,17 @@ de campos quando necessário}
     property Items[Index: Integer]: TACBrInformacao read GetItem write SetItem;
     property Fields[Index: String]: TAcbrInformacao read GetFields; default;
   end;
+
+  { THttpHeader }
+
+  THttpHeader = class(TStringList)
+  public
+    function GetHeaderIndex(const AHeader: String): Integer;
+    function GetHeaderValue(const AHeader: String): String; overload;
+    function GetHeaderValue(const AIndex: Integer): String; overload;
+    function AddHeader(const AHeader, AValue: string): Integer;
+  end;
+
 
 procedure ACBrAboutDialog ;
 
@@ -310,19 +363,55 @@ begin
   fIsSorted := False;
 end;
 
-procedure TACBrObjectList.Sort(Compare: TListSortCompare);
+{$IfDef NEXTGEN}
+ procedure TACBrObjectList.Sort(const AComparer: IComparer<TObject>);
+ begin
+   inherited Sort(AComparer);
+   fIsSorted := True;
+ end;
+
+ procedure TACBrObjectList.Assign(ObjectListSource: TObjectList<TObject>);
+ var
+   I: Integer;
+ begin
+   Clear;
+   Capacity := ObjectListSource.Capacity;
+   for I := 0 to ObjectListSource.Count - 1 do
+     Add(ObjectListSource[I]);
+ end;
+
+procedure TACBrObjectList.Clear;
 begin
-  inherited Sort(Compare);
-  fIsSorted := True;
+  inherited Clear;
 end;
+{$Else}
+ procedure TACBrObjectList.Sort(Compare: TListSortCompare);
+ begin
+   inherited Sort(Compare);
+   fIsSorted := True;
+ end;
+{$EndIf}
 
-{ Inspirado de http://www.avdf.com/mar97/delf_sortlist.html }
-
-function TACBrObjectList.FindObject(Item: Pointer; Compare: TListSortCompare;
-  Nearest: Boolean): Integer;
+{$IfDef NEXTGEN}
+function TACBrObjectList.FindObject(Item: TObject; AComparer: IComparer<TObject>; Nearest: Boolean = False): Integer;
+{$Else}
+function TACBrObjectList.FindObject(Item: Pointer; AComparer: TListSortCompare; Nearest: Boolean): Integer;
+{$EndIf}
 var
   nLow, nHigh, nCompare, nCheckPos : Integer;
+
+  function DoCompare(APos: Integer): Integer;
+  begin
+    {$IfDef NEXTGEN}
+     Result := AComparer.Compare(Item,Items[APos]);
+    {$Else}
+     Result := AComparer(Item,Pointer(Items[APos]));
+    {$EndIf}
+  end;
+
 begin
+  { Inspirado de http://www.avdf.com/mar97/delf_sortlist.html }
+
   if not fIsSorted then
     raise Exception.Create('Lista de Objetos não foi ordanada por chamada ao método "Sort"');
 
@@ -334,15 +423,22 @@ begin
   while (Result = -1) and (nLow <= nHigh) do
   begin
     nCheckPos := (nLow + nHigh) div 2;
-    nCompare := Compare(Item,Pointer(Items[nCheckPos]));
+    nCompare := DoCompare(nCheckPos);
+
     if (nCompare = -1) then                // less than
       nHigh := nCheckPos - 1
     else if (nCompare = 1) then            // greater than
       nLow := nCheckPos + 1
     else                                   // equal to
+    begin
       Result := nCheckPos;
+      // Check if we have another match below
+      while (Result > nLow) and (DoCompare(Result-1) = 0) do
+        Dec(Result);
+    end;
   end;
-   if (Result = -1) and Nearest then
+
+  if (Result = -1) and Nearest then
     Result := nLow;
 end;
 
@@ -702,8 +798,109 @@ end;
 procedure TACBrInformacoes.SetItem(Index: Integer;
   const Value: TACBrInformacao);
 begin
-  Put(Index, Value);
+  inherited Items[Index] := Value;
+end;
+
+{ TAnsiStringList }
+
+constructor TAnsiStringList.Create;
+begin
+  inherited;
+  Clear;
+end;
+
+procedure TAnsiStringList.Clear;
+begin
+  SetLength(FList,0);
+end;
+
+function TAnsiStringList.Add(AAnsiString: AnsiString): Integer;
+begin
+  Result := GetCount;
+  SetLength(FList, Result+1);
+  FList[Result] := AAnsiString;
+end;
+
+function TAnsiStringList.GetCount: Integer;
+begin
+  Result := Length(FList);
+end;
+
+function TAnsiStringList.GetItem(Index: Integer): AnsiString;
+begin
+  Result := FList[Index]
+end;
+
+procedure TAnsiStringList.SetItem(Index: Integer; const Value: AnsiString);
+begin
+  FList[Index] := Value;
+end;
+
+function TAnsiStringList.GetText: AnsiString;
+var
+  i, l: Integer;
+begin
+  Result := '';
+  l := GetCount-1;
+  for i := 0 to l do
+    Result := Result + GetItem(i);
+end;
+
+
+{ THttpHeader }
+
+function THttpHeader.GetHeaderIndex(const AHeader: String): Integer;
+var
+  I: Integer;
+  LinhaHeader: String;
+begin
+  Result := -1;
+  I := 0;
+  while (Result < 0) and (I < Count) do
+  begin
+    LinhaHeader := Strings[I];
+    if (pos(AHeader, LinhaHeader) = 1) then
+      Result := I;
+
+    Inc( I ) ;
+  end ;
+end;
+
+function THttpHeader.GetHeaderValue(const AHeader: String): String;
+var
+  I: Integer;
+begin
+  I := GetHeaderIndex(AHeader);
+  Result := GetHeaderValue(I)
+end;
+
+function THttpHeader.GetHeaderValue(const AIndex: Integer): String;
+var
+  LinhaHeader: String;
+  P: Integer;
+begin
+  Result := '';
+  if (AIndex >= 0) and (AIndex < Count) then
+  begin
+    LinhaHeader := Strings[AIndex];
+    P := pos(':', LinhaHeader);
+    if (P > 0) then
+      Result := Trim(copy(LinhaHeader, P+1, Length(LinhaHeader)));
+  end;
+end;
+
+function THttpHeader.AddHeader(const AHeader, AValue: string): Integer;
+var
+  LinhaHeader: String;
+begin
+  LinhaHeader := AHeader + ': ' + AValue;
+  Result := GetHeaderIndex(AHeader);
+  if Result < 0 then
+    Result := Add(LinhaHeader)
+  else
+    Strings[Result] := LinhaHeader;
 end;
 
 end.
+
 

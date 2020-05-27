@@ -68,12 +68,21 @@ interface
 
 uses
   SysUtils, Classes,
+  {$IFDEF NEXTGEN}
+    System.Generics.Collections, System.Generics.Defaults,
+  {$ENDIF}
   synafpc,
   synachar, synacode, synautil, mimeinln;
 
 type
 
   TMimePart = class;
+
+{$IFDEF NEXTGEN}
+  TSubPartsList = TList<TMimePart>;
+{$ELSE}
+  TSubPartsList = TList;
+{$ENDIF}
 
   {:@abstract(Procedural type for @link(TMimepart.Walkpart) hook). This hook is used for
    easy walking through MIME subparts.}
@@ -131,7 +140,7 @@ type
     FPrePart: TStringList;
     FPostPart: TStringList;
     FDecodedLines: TMemoryStream;
-    FSubParts: TList;
+    FSubParts: TSubPartsList;
     FOnWalkPart: THookWalkPart;
     FMaxLineLength: integer;
     FSubLevel: integer;
@@ -144,6 +153,7 @@ type
     procedure SetEncoding(Value: string);
     procedure SetCharset(Value: string);
     function IsUUcode(Value: string): boolean;
+    function InlineCode(Value: string): string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -439,7 +449,7 @@ implementation
 
 {==============================================================================}
 
-constructor TMIMEPart.Create;
+constructor TMimePart.Create;
 begin
   inherited Create;
   FOnWalkPart := nil;
@@ -449,7 +459,7 @@ begin
   FPrePart := TStringList.Create;
   FPostPart := TStringList.Create;
   FDecodedLines := TMemoryStream.Create;
-  FSubParts := TList.Create;
+  FSubParts := TSubPartsList.Create;
   FTargetCharset := GetCurCP;
   //was 'US-ASCII' before, but RFC-ignorant Outlook sometimes using default
   //system charset instead.
@@ -462,7 +472,7 @@ begin
   FForcedHTMLConvert := false;
 end;
 
-destructor TMIMEPart.Destroy;
+destructor TMimePart.Destroy;
 begin
   ClearSubParts;
   FSubParts.Free;
@@ -477,7 +487,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.Clear;
+procedure TMimePart.Clear;
 begin
   FPrimary := '';
   FEncoding := '';
@@ -505,7 +515,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.Assign(Value: TMimePart);
+procedure TMimePart.Assign(Value: TMimePart);
 begin
   Primary := Value.Primary;
   Encoding := Value.Encoding;
@@ -533,7 +543,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.AssignSubParts(Value: TMimePart);
+procedure TMimePart.AssignSubParts(Value: TMimePart);
 var
   n: integer;
   p: TMimePart;
@@ -548,14 +558,14 @@ end;
 
 {==============================================================================}
 
-function TMIMEPart.GetSubPartCount: integer;
+function TMimePart.GetSubPartCount: integer;
 begin
   Result :=  FSubParts.Count;
 end;
 
 {==============================================================================}
 
-function TMIMEPart.GetSubPart(index: integer): TMimePart;
+function TMimePart.GetSubPart(index: integer): TMimePart;
 begin
   Result := nil;
   if Index < GetSubPartCount then
@@ -564,7 +574,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.DeleteSubPart(index: integer);
+procedure TMimePart.DeleteSubPart(index: integer);
 begin
   if Index < GetSubPartCount then
   begin
@@ -575,7 +585,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.ClearSubParts;
+procedure TMimePart.ClearSubParts;
 var
   n: integer;
 begin
@@ -586,7 +596,7 @@ end;
 
 {==============================================================================}
 
-function TMIMEPart.AddSubPart: TMimePart;
+function TMimePart.AddSubPart: TMimePart;
 begin
   Result := TMimePart.Create;
   Result.DefaultCharset := FDefaultCharset;
@@ -597,7 +607,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.DecomposeParts;
+procedure TMimePart.DecomposeParts;
 var
   x: integer;
   s: string;
@@ -705,7 +715,7 @@ begin
   end;
 end;
 
-procedure TMIMEPart.DecomposePartsBinary(AHeader:TStrings; AStx,AEtx:PANSIChar);
+procedure TMimePart.DecomposePartsBinary(AHeader:TStrings; AStx,AEtx:PANSIChar);
 var
   x:    integer;
   s:    ANSIString;
@@ -796,7 +806,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.ComposeParts;
+procedure TMimePart.ComposeParts;
 var
   n: integer;
   mime: TMimePart;
@@ -876,7 +886,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.DecodePart;
+procedure TMimePart.DecodePart;
 var
   n: Integer;
   s, t, t2: string;
@@ -960,7 +970,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.DecodePartHeader;
+procedure TMimePart.DecodePartHeader;
 var
   n: integer;
   s, su, fn: string;
@@ -1025,10 +1035,10 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.EncodePart;
+procedure TMimePart.EncodePart;
 var
   l: TStringList;
-  s, t: string;
+  s, t: AnsiString;
   n, x: Integer;
   d1, d2: integer;
 begin
@@ -1112,7 +1122,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.EncodePartHeader;
+procedure TMimePart.EncodePartHeader;
 var
   s: string;
 begin
@@ -1129,12 +1139,12 @@ begin
         FSecondary := 'octet-stream';
     end;
   if FDescription <> '' then
-    FHeaders.Insert(0, 'Content-Description: ' + FDescription);
+    FHeaders.Insert(0, 'Content-Description: ' + InlineCode(FDescription));
   if FDisposition <> '' then
   begin
     s := '';
     if FFileName <> '' then
-      s := '; FileName=' + QuoteStr(InlineCodeEx(FileName, FTargetCharset), '"');
+      s := '; FileName=' + QuoteStr(InlineCode(FileName), '"');
     FHeaders.Insert(0, 'Content-Disposition: ' + LowerCase(FDisposition) + s);
   end;
   if FContentID <> '' then
@@ -1163,13 +1173,13 @@ begin
       s := FPrimary + '/' + FSecondary;
   end;
   if FFileName <> '' then
-    s := s + '; name=' + QuoteStr(InlineCodeEx(FileName, FTargetCharset), '"');
+    s := s + '; name=' + QuoteStr(InlineCode(FileName), '"');
   FHeaders.Insert(0, 'Content-type: ' + s);
 end;
 
 {==============================================================================}
 
-procedure TMIMEPart.MimeTypeFromExt(Value: string);
+procedure TMimePart.MimeTypeFromExt(Value: string);
 var
   s: string;
   n: Integer;
@@ -1195,7 +1205,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.WalkPart;
+procedure TMimePart.WalkPart;
 var
   n: integer;
   m: TMimepart;
@@ -1214,7 +1224,7 @@ end;
 
 {==============================================================================}
 
-procedure TMIMEPart.SetPrimary(Value: string);
+procedure TMimePart.SetPrimary(Value: string);
 var
   s: string;
 begin
@@ -1229,7 +1239,7 @@ begin
     FPrimaryCode := MP_MESSAGE;
 end;
 
-procedure TMIMEPart.SetEncoding(Value: string);
+procedure TMimePart.SetEncoding(Value: string);
 var
   s: string;
 begin
@@ -1248,7 +1258,7 @@ begin
     FEncodingCode := ME_XX;
 end;
 
-procedure TMIMEPart.SetCharset(Value: string);
+procedure TMimePart.SetCharset(Value: string);
 begin
   if value <> '' then
   begin
@@ -1257,14 +1267,19 @@ begin
   end;
 end;
 
-function TMIMEPart.CanSubPart: boolean;
+function TMimePart.CanSubPart: boolean;
 begin
   Result := True;
   if FMaxSubLevel <> -1 then
     Result := FMaxSubLevel > FSubLevel;
 end;
 
-function TMIMEPart.IsUUcode(Value: string): boolean;
+function TMimePart.InlineCode(Value: string): string;
+begin
+  Result := InlineCodeEx2(Value, FTargetCharset, FCharsetCode);
+end;
+
+function TMimePart.IsUUcode(Value: string): boolean;
 begin
   Value := UpperCase(Value);
   Result := (pos('BEGIN ', Value) = 1) and (Trim(SeparateRight(Value, ' ')) <> '');

@@ -1,15 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrSAT                                                  }
-{ Biblioteca multiplataforma de componentes Delphi para emissão Cupom Fiscal   }
-{ Eletrônico SAT                                                               }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2018 Juliomar Marchetti                     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Juliomar Marchetti                              }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -27,78 +26,29 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|*
-******************************************************************************}
-{$I ACBr.inc}
 
 unit ACBrSATExtratoFRReg;
 
+{$I ACBr.inc}
+
 interface
 
-uses
-  Classes, SysUtils,
-  ACBrBase, ACBrSATExtratoClass, ACBrSATExtratoReportClass,
-  pcnCFe, pcnCFeCanc, pcnConversao;
-
-type
-
-  { TACBrSATExtratoFast }
-  {$IFDEF RTL230_UP}
-  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
-  {$ENDIF RTL230_UP}
-  TACBrSATExtratoFast = class( TACBrSATExtratoReportClass )
-  private
-  protected
-    procedure Imprimir;
-  public
-    procedure ImprimirExtrato(ACFe: TCFe = nil); override;
-    procedure ImprimirExtratoResumido(ACFe : TCFe = nil); override;
-    procedure ImprimirExtratoCancelamento(ACFe : TCFe = nil; ACFeCanc: TCFeCanc = nil); override;
-  end ;
-
 implementation
+
+uses
+  Classes, ACBr_SATExtratoFR;
 
 {$IFNDEF FPC}
 //  {$R ACBrSATExtratoFast.dcr}
 {$ENDIF}
-
-{ TACBrSATExtratoFast }
 
 procedure Register;
 begin
   RegisterComponents('ACBrSAT',[TACBrSATExtratoFast]);
 end;
 
-procedure TACBrSATExtratoFast.Imprimir;
-begin
-
-end;
-
-procedure TACBrSATExtratoFast.ImprimirExtrato(ACFe: TCFe);
-begin
-  inherited;
-  Imprimir;
-end;
-
-procedure TACBrSATExtratoFast.ImprimirExtratoCancelamento(ACFe: TCFe;
-  ACFeCanc: TCFeCanc);
-begin
-  inherited;
-  Imprimir;
-end;
-
-procedure TACBrSATExtratoFast.ImprimirExtratoResumido(ACFe: TCFe);
-begin
-  inherited;
-  Imprimir;
-end;
 
 end.

@@ -1,35 +1,34 @@
-{*******************************************************************************}
-{ Projeto: ACBrLib                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
-{ mentos de Automação Comercial utilizados no Brasil                            }
-{                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
-{                                                                               }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
-{                                                                               }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
-{ qualquer versão posterior.                                                    }
-{                                                                               }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
-{                                                                               }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
-{ Você também pode obter uma copia da licença em:                               }
-{ http://www.opensource.org/licenses/gpl-license.php                            }
-{                                                                               }
-{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
-{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
-{                                                                               }
-{*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -47,7 +46,7 @@ type
   TConsultaCadastroItemResposta = class(TACBrLibRespostaBase)
   private
     Farquivo: string;
-    FCEP: Integer;
+    FCEP: string;
     FcMun: Integer;
     FCNAE: Integer;
     FcSit: Integer;
@@ -97,7 +96,7 @@ type
     property xBairro: String read FxBairro write FxBairro;
     property cMun: Integer read FcMun write FcMun;
     property xMun: String read FxMun write FxMun;
-    property CEP: Integer read FCEP write FCEP;
+    property CEP: String read FCEP write FCEP;
 
   end;
 
@@ -119,11 +118,16 @@ type
     FdhCons: TDateTime;
     FItems: TObjectList;
 
+    function GetItem(Index: Integer): TConsultaCadastroItemResposta;
+
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
     procedure Processar(const retConsCad: TRetConsCad);
+    function Gerar: Ansistring; override;
+
+    property Items[Index: Integer]: TConsultaCadastroItemResposta read GetItem;
 
   published
     property Msg: string read FMsg write FMsg;
@@ -139,7 +143,6 @@ type
     property CPF: string read FCPF write FCPF;
     property UF: string read FUF write FUF;
     property dhCons: TDateTime read FdhCons write FdhCons;
-    property Items: TObjectList read FItems write FItems;
 
   end;
 
@@ -178,7 +181,7 @@ begin
   FxBairro := infCad.xBairro;
   FcMun := infCad.cMun;
   FxMun := infCad.xMun;
-  FCEP := infCad.CEP;
+  FCEP := IntToStrZero(infCad.CEP,8);
 end;
 
 { TConsultaCadastroResposta }
@@ -195,6 +198,23 @@ begin
   FItems.Free;
 
   inherited Destroy;
+end;
+
+function TConsultaCadastroResposta.Gerar: Ansistring;
+Var
+  i: Integer;
+begin
+  Result := Inherited Gerar;
+
+  for i := 0 to FItems.Count - 1  do
+  begin
+    Result := Result + sLineBreak + TConsultaCadastroItemResposta(FItems.Items[i]).Gerar;
+  end;
+end;
+
+function TConsultaCadastroResposta.GetItem(Index: Integer): TConsultaCadastroItemResposta;
+begin
+  Result := TConsultaCadastroItemResposta(FItems.Items[Index]);
 end;
 
 procedure TConsultaCadastroResposta.Processar(const retConsCad: TRetConsCad);

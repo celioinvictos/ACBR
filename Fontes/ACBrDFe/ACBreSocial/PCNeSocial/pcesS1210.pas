@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 01/03/2016: Guilherme Costa
-|*  - Alterações para validação com o XSD
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS1210;
@@ -49,7 +40,13 @@ unit pcesS1210;
 interface
 
 uses
-  SysUtils, Classes, Controls, Contnrs,
+  SysUtils, Classes, Controls,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -151,7 +148,7 @@ type
     property vrDedDep: Double read FVrDedDep write FVrDedDep;
   end;
 
-  TInfoPgtoCollection = class(TObjectList)
+  TInfoPgtoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoPgtoItem;
     procedure SetItem(Index: Integer; const Value: TInfoPgtoItem);
@@ -223,7 +220,7 @@ type
     property infoPgtoParc: TRubricaCollection read getInfoPgtoParc write FInfoPgtoParc;
   end;
 
-  TRubricasComPensaoCollection = class(TObjectList)
+  TRubricasComPensaoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TRubricasComPensaoItem;
     procedure SetItem(Index: Integer; const Value: TRubricasComPensaoItem);
@@ -247,7 +244,7 @@ type
     property penAlim: TPensaoAlimCollection read getpenAlim write FPenAlim;
   end;
 
-  TdetPgtoFlCollection = class(TObjectList)
+  TdetPgtoFlCollection = class(TACBrObjectList)
   private
     function GetITem(Index: Integer): TdetPgtoFlItem;
     procedure SetItem(Index: Integer; const Value: TdetPgtoFlItem);
@@ -297,7 +294,7 @@ type
     property endExt: TEndExt read FEndExt write FEndExt;
   end;
 
-  TDetPgtoFerCollection = class(TObjectList)
+  TDetPgtoFerCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TDetPgtoFerItem;
     procedure SetItem(Index: Integer; const Value: TDetPgtoFerItem);
@@ -328,7 +325,7 @@ type
     property detRubrFer: TRubricasComPensaoCollection read FDetRubrFer write FDetRubrFer;
   end;
 
-  TDetPgtoAntCollection = class(TObjectList)
+  TDetPgtoAntCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TDetPgtoAntItem;
     procedure SetItem(Index: Integer; const Value: TDetPgtoAntItem);
@@ -351,7 +348,7 @@ type
     property infoPgtoAnt: TInfoPgtoAntCollection read FInfoPgtoAnt write FInfoPgtoAnt;
   end;
 
-  TInfoPgtoAntCollection = class(TObjectList)
+  TInfoPgtoAntCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoPgtoAntItem;
     procedure SetItem(Index: Integer; const Value: TInfoPgtoAntItem);
@@ -386,12 +383,12 @@ end;
 
 function TS1210Collection.GetItem(Index: Integer): TS1210CollectionItem;
 begin
-  Result := TS1210CollectionItem(inherited GetItem(Index));
+  Result := TS1210CollectionItem(inherited Items[Index]);
 end;
 
 procedure TS1210Collection.SetItem(Index: Integer; Value: TS1210CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TS1210Collection.New: TS1210CollectionItem;
@@ -462,12 +459,12 @@ end;
 
 function TInfoPgtoAntCollection.GetItem(Index: Integer): TInfoPgtoAntItem;
 begin
-  Result := TInfoPgtoAntItem(inherited GetItem(Index));
+  Result := TInfoPgtoAntItem(inherited Items[Index]);
 end;
 
 procedure TInfoPgtoAntCollection.SetItem(Index: Integer; const Value: TInfoPgtoAntItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoPgtoAntCollection.New: TInfoPgtoAntItem;
@@ -485,12 +482,12 @@ end;
 
 function TInfoPgtoCollection.GetItem(Index: Integer): TInfoPgtoItem;
 begin
-  Result := TInfoPgtoItem(inherited GetItem(Index));
+  Result := TInfoPgtoItem(inherited Items[Index]);
 end;
 
 procedure TInfoPgtoCollection.SetItem(Index: Integer; const Value: TInfoPgtoItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoPgtoCollection.New: TInfoPgtoItem;
@@ -608,12 +605,12 @@ end;
 
 function TRubricasComPensaoCollection.GetItem(Index: Integer): TRubricasComPensaoItem;
 begin
-  Result := TRubricasComPensaoItem(inherited GetItem(Index));
+  Result := TRubricasComPensaoItem(inherited Items[Index]);
 end;
 
 procedure TRubricasComPensaoCollection.SetItem(Index: Integer; const Value: TRubricasComPensaoItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TRubricasComPensaoCollection.New: TRubricasComPensaoItem;
@@ -659,12 +656,12 @@ end;
 
 function TdetPgtoFlCollection.GetItem(Index: Integer): TdetPgtoFlItem;
 begin
-  Result := TdetPgtoFlItem(inherited GetItem(Index));
+  Result := TdetPgtoFlItem(inherited Items[Index]);
 end;
 
 procedure TdetPgtoFlCollection.SetItem(Index: Integer; const Value: TdetPgtoFlItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TdetPgtoFlCollection.New: TdetPgtoFlItem;
@@ -723,12 +720,12 @@ end;
 
 function TDetPgtoAntCollection.GetItem(Index: Integer): TDetPgtoAntItem;
 begin
-  result := TDetPgtoAntItem(inherited GetItem(Index));
+  result := TDetPgtoAntItem(inherited Items[Index]);
 end;
 
 procedure TDetPgtoAntCollection.SetItem(Index: Integer; const Value: TDetPgtoAntItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TDetPgtoAntCollection.New: TDetPgtoAntItem;
@@ -761,12 +758,12 @@ end;
 
 function TDetPgtoFerCollection.GetItem(Index: Integer): TDetPgtoFerItem;
 begin
-  result := TDetPgtoFerItem(inherited GetItem(Index));
+  result := TDetPgtoFerItem(inherited Items[Index]);
 end;
 
 procedure TDetPgtoFerCollection.SetITem(Index: Integer; const Value: TDetPgtoFerItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TDetPgtoFerCollection.New: TDetPgtoFerItem;
@@ -1339,7 +1336,7 @@ begin
                   while true do
                   begin
                     // de 01 até 99
-                    sSecao := 'penAlim' + IntToStrZero(I, 2) + IntToStrZero(J, 3) +
+                    sSecao := 'penAlim' + IntToStrZero(I, 2) + IntToStrZero(J, 1) +
                                    IntToStrZero(K, 2) + IntToStrZero(L, 2);
                     sFim   := INIRec.ReadString(sSecao, 'cpfBenef', 'FIM');
 

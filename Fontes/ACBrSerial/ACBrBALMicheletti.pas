@@ -3,9 +3,10 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Juliomar Marchetti, André Angeluci                                                }
+{ Colaboradores nesse arquivo:  André Angeluci                                 }
+{                               Juliomar Marchetti                             }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,13 +31,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 29/09/2017: André Angeluci
-|*  - Primeira Versao ACBrBALMicheletti
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrBALMicheletti;
@@ -44,8 +38,12 @@ unit ACBrBALMicheletti;
 interface
 
 uses
-  ACBrBALClass, Classes;
-
+  Classes,
+  ACBrBALClass
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
+  
 type
   TACBrBALMicheletti = class(TACBrBALClass)
   public

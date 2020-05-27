@@ -125,14 +125,17 @@ var
     {$ENDIF OS2}
    {$ENDIF}
   {$ELSE}
-   DLLSSLNames: array[1..4] of string = ({$IfDef CPU64}'libssl-1_1-x64.dll'{$Else}'libssl-1_1.dll'{$EndIf},
+   DLLSSLNames: array[1..4] of string = ({$IfDef WIN64}'libssl-1_1-x64.dll'{$Else}'libssl-1_1.dll'{$EndIf},
                                          'ssleay32.dll', 'libssl32.dll', 'libssl.dll');
-   DLLUtilNames: array[1..4] of string = ({$IfDef CPU64}'libcrypto-1_1-x64.dll'{$Else}'libcrypto-1_1.dll'{$EndIf},
+   DLLUtilNames: array[1..4] of string = ({$IfDef WIN64}'libcrypto-1_1-x64.dll'{$Else}'libcrypto-1_1.dll'{$EndIf},
                                           'libeay32.dll', 'libcrypto.dll', 'libeay.dll');
   {$ENDIF}
 
 
 {$IfNDef FPC}
+ {$IfDef CPUX64}
+  {$Define CPU64}
+ {$EndIf}
  // Converting FPC CTypes to Delphi
  type
    {$If not DECLARED(DWord)}
@@ -156,6 +159,14 @@ var
    cuint8 = Byte;
    cuchar = cuint8;
    pcuchar = ^cuchar;
+
+  // NEXTGEN legacy compatibility
+  {$IfDef NEXTGEN}
+    AnsiString = RawByteString;
+    AnsiChar = UTF8Char;
+    PAnsiChar = PUTF8Char;
+    PPAnsiChar = ^PUTF8Char;
+  {$EndIf}
  const
     LineEnding = #13#10;
 {$EndIf}
@@ -1108,6 +1119,7 @@ const
   ECDH_R_KDF_FAILED = 102;
 
 var
+  SSLLibPath: String = '';
   SSLLibHandle: TLibHandle = 0;
   SSLUtilHandle: TLibHandle = 0;
   SSLLibFile: String = '';
@@ -1115,6 +1127,7 @@ var
 
 // libssl.dll
   function OpenSSLVersion(t: cint): AnsiString;
+  function OpenSSLVersionNum(): cLong;
   function SSLeay_version(t: cInt): AnsiString;
   function SslGetError(s: PSSL; ret_code: cInt):cInt;
   function SslLibraryInit:cInt;
@@ -1198,6 +1211,7 @@ var
   function X509SetNotAfter(x: PX509; tm: PASN1_UTCTIME): cInt;
   function X509GetSerialNumber(x: PX509): PASN1_cInt;
   function X509GetExt(x: PX509; loc: integer): pX509_EXTENSION;
+  function X509ExtensionGetData(ext: pX509_EXTENSION): pASN1_STRING;
   function EvpPkeyNew: PEVP_PKEY;
   procedure EvpPkeyFree(pk: PEVP_PKEY);
   function EvpPkeyAssign(pkey: PEVP_PKEY; _type: cInt; key: Prsa): cInt;
@@ -1546,6 +1560,12 @@ var
 
 implementation
 
+uses
+  strutils
+  {$IfDef ANDROID}
+  ,System.IOUtils
+  {$EndIf} ;
+
 {
   Compatibility functions
 }
@@ -1623,7 +1643,8 @@ end;
 
 type
 // libssl.dll
-  TOpenSSLversion = function (arg : cint) : PAnsiChar; cdecl;
+  TOpenSSLVersion = function(arg : cint): PAnsiChar; cdecl;
+  TOpenSSLVersionNum = function(): cLong; cdecl;
   TSslGetError = function(s: PSSL; ret_code: cInt):cInt; cdecl;
   TSslLibraryInit = function:cInt; cdecl;
   TSslLoadErrorStrings = procedure; cdecl;
@@ -1697,6 +1718,7 @@ type
   TX509SetNotAfter = function(x: PX509; tm: PASN1_UTCTIME): cInt; cdecl;
   TX509GetSerialNumber = function(x: PX509): PASN1_cInt; cdecl;
   TX509GetExt = function(x: PX509; loc: integer): pX509_EXTENSION; cdecl;
+  TX509ExtensionGetData = function (ext: pX509_EXTENSION): pASN1_STRING cdecl;
   TEvpPkeyNew = function: PEVP_PKEY; cdecl;
   TEvpPkeyFree = procedure(pk: PEVP_PKEY); cdecl;
   TEvpPkeyAssign = function(pkey: PEVP_PKEY; _type: cInt; key: Prsa): cInt; cdecl;
@@ -1878,7 +1900,8 @@ type
 
 var
 // libssl.dll
-  _OpenSSLVersion : TOpenSSLversion = Nil;
+  _OpenSSLVersion : TOpenSSLVersion = Nil;
+  _OpenSSLVersionNum : TOpenSSLVersionNum = Nil;
   _SslGetError: TSslGetError = nil;
   _SslLibraryInit: TSslLibraryInit = nil;
   _SslLoadErrorStrings: TSslLoadErrorStrings = nil;
@@ -1951,6 +1974,7 @@ var
   _X509SetNotAfter: TX509SetNotAfter = nil;
   _X509GetSerialNumber: TX509GetSerialNumber = nil;
   _X509GetExt: TX509GetExt = nil;
+  _X509ExtensionGetData: TX509ExtensionGetData = nil;
   _EvpPkeyNew: TEvpPkeyNew = nil;
   _EvpPkeyFree: TEvpPkeyFree = nil;
   _EvpPkeyAssign: TEvpPkeyAssign = nil;
@@ -2594,6 +2618,14 @@ begin
     Result := '';
 end;
 
+function OpenSSLVersionNum(): cLong;
+begin
+  if InitSSLInterface and Assigned(_OpenSSLVersionNum) then
+    Result := _OpenSSLVersionNum()
+  else
+    Result := 0;
+end;
+
 function SSLeay_version(t: cInt): AnsiString;
 begin
   Result := OpenSSLVersion(t);
@@ -2875,7 +2907,7 @@ end;
 
 function BIOReset(b: pBIO): cint;
 begin
-  if InitlibeaInterface and Assigned(_BioReset) then
+  if InitSSLInterface and Assigned(_BioReset) then
     Result := _BioReset(b)
   else
     Result := -2;
@@ -2922,7 +2954,7 @@ end;
 
 function EvpPkeyGet1RSA(pkey: PEVP_PKEY): pRSA;
 begin
-  if InitlibeaInterface and Assigned(_EvpPkeyGet1RSA) then
+  if InitSSLInterface and Assigned(_EvpPkeyGet1RSA) then
     Result := _EvpPkeyGet1RSA(pkey)
   else
     Result := nil;
@@ -2930,7 +2962,7 @@ end;
 
 function EvpPkeySet1RSA(pkey: PEVP_PKEY; rsa: pRSA): cInt;
 begin
-  if InitlibeaInterface and Assigned(_EvpPkeySet1RSA) then
+  if InitSSLInterface and Assigned(_EvpPkeySet1RSA) then
     Result := _EvpPkeySet1RSA(pkey, rsa)
   else
     Result := 0;
@@ -3057,7 +3089,7 @@ end;
 function X509GetNotAfter(x: pX509): pASN1_TIME;
 begin
   Result := Nil;
-  if not InitSSLInterface or (not Assigned(x)) then
+  if (not InitSSLInterface) or (not Assigned(x)) then
     Exit;
 
   if Assigned(_X509GetNotAfter) then
@@ -3128,6 +3160,18 @@ begin
     Result := _X509GetExt(x, loc)
   else
     Result := nil;
+end;
+
+function X509ExtensionGetData(ext: pX509_EXTENSION): pASN1_STRING;
+begin
+  Result := Nil;
+  if (not InitSSLInterface) or (not Assigned(ext)) then
+    Exit;
+
+  if Assigned(_X509ExtensionGetData) then
+    Result := _X509ExtensionGetData(ext)
+  else
+    Result := ext^.value;
 end;
 
 // 3DES functions
@@ -3977,7 +4021,7 @@ end;
 function PEM_read_bio_RSAPrivateKey(bp : pBIO ; var x : pRSA ;
    cb : Ppem_password_cb ; u : pointer) : pRSA ;
 begin
-  if InitlibeaInterface and Assigned(_PEM_read_bio_RSAPrivateKey) then
+  if InitSSLInterface and Assigned(_PEM_read_bio_RSAPrivateKey) then
     Result := _PEM_read_bio_RSAPrivateKey(bp, x, cb, u)
   else
     Result := nil;
@@ -3986,7 +4030,7 @@ end;
 function PEM_write_bio_RSAPrivateKey(bp: pBIO; x: pRSA; const enc: pEVP_CIPHER;
   kstr: PAnsiChar; klen: integer; cb: Ppem_password_cb; u: pointer): integer;
 begin
-  if InitlibeaInterface and Assigned(_PEM_write_bio_RSAPrivateKey) then
+  if InitSSLInterface and Assigned(_PEM_write_bio_RSAPrivateKey) then
     Result := _PEM_write_bio_RSAPrivateKey(bp, x, enc, kstr, klen, cb, u )
   else
     Result := -1;
@@ -3995,7 +4039,7 @@ end;
 function PEM_read_bio_RSAPublicKey(bp : pBIO ; var x : pRSA ;
    cb : Ppem_password_cb ; u : pointer) : pRSA ;
 begin
-  if InitlibeaInterface and Assigned(_PEM_read_bio_RSAPublicKey) then
+  if InitSSLInterface and Assigned(_PEM_read_bio_RSAPublicKey) then
     Result := _PEM_read_bio_RSAPublicKey(bp, x, cb, u )
   else
     Result := nil;
@@ -4003,7 +4047,7 @@ end;
 
 function PEM_write_bio_RSAPublicKey(bp : pBIO ; x : pRSA) : integer ;
 begin
-  if InitlibeaInterface and Assigned(_PEM_write_bio_RSAPublicKey) then
+  if InitSSLInterface and Assigned(_PEM_write_bio_RSAPublicKey) then
     Result := _PEM_write_bio_RSAPublicKey(bp, x )
   else
     Result := -1;
@@ -4978,10 +5022,16 @@ end;
 
 function LoadLib(const Value: String): HModule;
 begin
+ if (SSLLibPath <> '') then
+ begin
+   if (RightStr(SSLLibPath, Length(PathDelim)) <> PathDelim) then
+     SSLLibPath := SSLLibPath + PathDelim;
+ end;
+
  {$IfDef FPC}
-  Result := dynlibs.LoadLibrary(Value) ;
+  Result := dynlibs.LoadLibrary(SSLLibPath + Value) ;
  {$Else}
-  Result := LoadLibrary(PChar(Value));
+  Result := LoadLibrary(PChar(SSLLibPath + Value));
  {$ENDIF}
 end;
 
@@ -5003,7 +5053,6 @@ begin
 end;
 
 Procedure LoadSSLEntryPoints;
-
 begin
   _SslGetError := GetProcAddr(SSLLibHandle, 'SSL_get_error');
   _SslLibraryInit := GetProcAddr(SSLLibHandle, 'SSL_library_init');
@@ -5057,8 +5106,10 @@ begin
 end;
 
 Procedure LoadUtilEntryPoints;
-
 begin
+  _OpenSSLVersionNum := GetProcAddr(SSLUtilHandle, 'OpenSSL_version_num');
+  if not Assigned(_OpenSSLVersionNum) then
+    _OpenSSLVersionNum := GetProcAddr(SSLUtilHandle, 'SSLeay');  // Version 1.0.x
   _OpenSSLVersion := GetProcAddr(SSLUtilHandle, 'OpenSSL_version');
   if not Assigned(_OpenSSLVersion) then
     _OpenSSLVersion := GetProcAddr(SSLUtilHandle, 'SSLeay_version');  // Version 1.0.x
@@ -5086,6 +5137,7 @@ begin
   _X509SetNotAfter := GetProcAddr(SSLUtilHandle, 'X509_set1_notAfter');
   _X509GetSerialNumber := GetProcAddr(SSLUtilHandle, 'X509_get_serialNumber');
   _X509GetExt := GetProcAddr(SSLUtilHandle, 'X509_get_ext');
+  _X509ExtensionGetData := GetProcAddr(SSLUtilHandle, 'X509_EXTENSION_get_data');
   _EvpPkeyNew := GetProcAddr(SSLUtilHandle, 'EVP_PKEY_new');
   _EvpPkeyFree := GetProcAddr(SSLUtilHandle, 'EVP_PKEY_free');
   _EvpPkeyAssign := GetProcAddr(SSLUtilHandle, 'EVP_PKEY_assign');
@@ -5380,6 +5432,7 @@ end;
 Procedure ClearSSLEntryPoints;
 
 begin
+  _OpenSSLVersionNum := Nil;
   _OpenSSLVersion := Nil;
   _SslGetError := nil;
   _SslLibraryInit := nil;
@@ -5587,6 +5640,7 @@ begin
   _X509SetNotAfter := nil;
   _X509GetSerialNumber := nil;
   _X509GetExt := nil;
+  _X509ExtensionGetData := nil;
   _EvpPkeyNew := nil;
   _EvpPkeyFree := nil;
   _EvpPkeyAssign := nil;
@@ -5798,10 +5852,6 @@ var
    s: String;
   {$EndIf}
 begin
-  {$IFNDEF COMPILER25_UP}
-   Result := False;
-  {$ENDIF}
-
   for i := low(DLLUtilNames) to high(DLLUtilNames) do
   begin
     SSLUtilHandle := LoadLib(DLLUtilNames[i]);
@@ -5852,7 +5902,20 @@ begin
     if SSLloaded then
       Exit;
 
+    {$IfDef ANDROID}
+    if (SSLLibPath = '') then     // Try to load from "./assets/internal/" first
+      SSLLibPath := TPath.GetDocumentsPath;
+
     Result := LoadLibraries;
+    if (not Result) then         // Try System Default Lib
+    begin
+      SSLLibPath := '';
+      Result := LoadLibraries;
+    end;
+    {$Else}
+    Result := LoadLibraries;
+    {$EndIf}
+
     if Not Result then
     begin
       UnloadLibraries;
@@ -5909,9 +5972,11 @@ end;
 
 initialization
   SSLCS := TCriticalSection.Create;
+  SSLLibPath := '';
 
 finalization
   DestroySSLInterface;
   SSLCS.Free;
 
 end.
+

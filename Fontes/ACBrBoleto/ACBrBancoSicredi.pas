@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
+{ Colaboradores nesse arquivo: Juliana Tamizou                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -74,6 +73,10 @@ type
     function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
     function CodMotivoRejeicaoToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia; const CodMotivo:String): String; override;
 
+    function CompOcorrenciaOutrosDadosToDescricao(const CompOcorrencia: TACBrComplementoOcorrenciaOutrosDados): String; override;
+    function CompOcorrenciaOutrosDadosToCodigo(const CompOcorrencia: TACBrComplementoOcorrenciaOutrosDados): String; override;
+
+
     function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
   end;
 
@@ -92,7 +95,7 @@ begin
    fpDigito                := 10;
    fpNome                  := 'Sicredi';
    fpNumero                := 748;
-   fpTamanhoMaximoNossoNum := 8;
+   fpTamanhoMaximoNossoNum := 5;
    fpTamanhoAgencia        := 4;
    fpTamanhoConta          := 5;
    fpTamanhoCarteira       := 1;
@@ -208,7 +211,7 @@ end;
 procedure TACBrBancoSicredi.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo; aRemessa: TStringList);
 var
   wNossoNumeroCompleto, CodProtesto, DiasProtesto, CodNegativacao, DiasNegativacao: String;
-  TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto   : String;
+  TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto, CompOcorrenciaOutrosDados  : String;
   TipoBoleto, wModalidade: Char;
   TextoRegInfo: String;
 begin
@@ -232,6 +235,11 @@ begin
          toRemessaExcluirNegativacaoSerasaBaixar : Ocorrencia := '76'; {Excluir Negativação Serasa e Baixar}
       else
          Ocorrencia := '01';                                          {Remessa}
+      end;
+
+      if(OcorrenciaOriginal.Tipo = toRemessaOutrasOcorrencias)Then
+      begin
+        CompOcorrenciaOutrosDados := CompOcorrenciaOutrosDadosToCodigo(OcorrenciaOriginal.ComplementoOutrosDados);
       end;
 
       {Pegando Tipo de Boleto}
@@ -330,7 +338,7 @@ begin
             wLinha:= wLinha +
                      Space(6)                                                           +  // 057 a 062 - Filler - Brancos
                      FormatDateTime( 'yyyymmdd', date)                                  +  // 063 a 070 - Data da instrução
-                     Space(1)                                                           +  // 071 a 071 - Campo alterado, quando instrução "31" Conforme tabela de instruções
+                     IfThen(Ocorrencia = '31', CompOcorrenciaOutrosDados, Space(1))     +  // 071 a 071 - Campo alterado, quando instrução "31" Conforme tabela de instruções
                      IfThen(TipoBoleto = 'A', 'S', 'N')                                 +  // 072 a 072 - Postagem do título = "S" Para postar o título "N" Não postar e remeter para o cedente
                      Space(1)                                                           +  // 073 a 073 - Filler Brancos
                      TipoBoleto                                                         +  // 074 a 074 - Emissão do bloqueto = "A" Impressão pelo SICREDI "B" Impressão pelo Cedente
@@ -740,7 +748,7 @@ begin
       end;
     end;
   end;
-  fpTamanhoMaximoNossoNum := 8;
+  fpTamanhoMaximoNossoNum := 5;
 end;
 
 function TACBrBancoSicredi.CodMotivoRejeicaoToDescricao(
@@ -1738,13 +1746,20 @@ begin
       atNao: AceiteStr := 'N';
     end;
 
-    {Espécie}
-    if (EspecieDoc = 'DM') then
-      Especie := '03'
-    else if (EspecieDoc = 'DMI') then
-      Especie := '03'
+    case AnsiIndexStr(EspecieDoc, ['DMI', 'DSI', 'DR', 'LC', 'NP', 'NPR', 'NS', 'RC', 'ND', 'BP']) of
+      0 : Especie := '03'; //DMI duplicata mercantil por indicação
+      1 : Especie := '05'; //DSI duplicata de serviço por indicação
+      2 : Especie := '06'; //DR duplicata rural
+      3 : Especie := '07'; //LC letra de câmbio
+      4 : Especie := '12'; //NP nota promissóri
+      5 : Especie := '13'; //NPR nota promissória rural
+      6 : Especie := '16'; //NS nota de seguro
+      7 : Especie := '17'; //RC recibo
+      8 : Especie := '19'; //ND nota de débito
+      9 : Especie := '32'; //Boleto Proposta
     else
-      Especie := '99';
+      Especie := '99'; //Outros
+    end;
 
     {Pegando Código da Ocorrencia}
     case OcorrenciaOriginal.Tipo of
@@ -1885,7 +1900,7 @@ begin
              PadRight(TiraAcentos(Sacado.Cidade), 15)                       + // 137 a 151 - Cidade
              PadLeft(Sacado.UF, 2)                                          + // 152 a 153 - Unidade da Federação
              TipoAvalista                                                   + // 154 a 154 - Tipo de inscrição
-             PadRight(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 15, '0')   + // 155 a 169 - Número de inscrição
+             PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 15, '0')    + // 155 a 169 - Número de inscrição
              PadRight(TiraAcentos(Sacado.SacadoAvalista.NomeAvalista),40,' ')            + // 170 a 209 - Nome do sacador/avalista
              PadRight('', 3, '0')                                           + // 210 a 212 - Cód. bco corresp. na compensação
              Space(20)                                                      + // 213 a 232 - Nosso nº no banco correspondente
@@ -2000,6 +2015,7 @@ begin
       ACBrBanco.ACBrBoleto.ListadeBoletos.Clear;
    end;
 
+   ACBrBanco.TamanhoMaximoNossoNum := 9;
    for ContLinha := 1 to ARetorno.Count - 2 do
    begin
       SegT := ARetorno[ContLinha] ;
@@ -2031,7 +2047,11 @@ begin
         NumeroDocumento      := Trim(Copy(SegT,59,15));
         SeuNumero            := Trim(Copy(SegT,106,25));
         Carteira             := Copy(SegT,58,1);
-        NossoNumero          := Trim(Copy(SegT,38, TamanhoMaximoNossoNum));
+        if ACBrBanco.ACBrBoleto.LerNossoNumeroCompleto then
+          NossoNumero          := Trim(Copy(SegT,38, TamanhoMaximoNossoNum))
+        else
+          NossoNumero          := Trim(Copy(SegT,38, 8));
+
         Vencimento           := StringToDateTimeDef( Copy(SegT,74,2) +'/'+
                                                      Copy(SegT,76,2) +'/'+
                                                      Copy(SegT,78,4),
@@ -2075,6 +2095,37 @@ begin
         end;
       end;
    end;
+   ACBrBanco.TamanhoMaximoNossoNum := 5;
+end;
+
+function TACBrBancoSicredi.CompOcorrenciaOutrosDadosToCodigo(
+  const CompOcorrencia: TACBrComplementoOcorrenciaOutrosDados): String;
+begin
+  Result := ' ';
+  case CompOcorrencia of
+  TCompDesconto:                      Result := 'A';
+  TCompJurosDia:                      Result := 'B';
+  TCompDescontoDiasAntecipacao:       Result := 'C';
+  TCompDataLimiteDesconto:            Result := 'D';
+  TCompCancelaProtestoAutomatico:     Result := 'E';
+  TCompCarteiraCobranca:              Result := 'F';
+  TCompCancelaNegativacaoAutomatica:  Result := 'G';
+  end;
+end;
+
+function TACBrBancoSicredi.CompOcorrenciaOutrosDadosToDescricao(
+  const CompOcorrencia: TACBrComplementoOcorrenciaOutrosDados): String;
+begin
+  Result := '';
+  case CompOcorrencia of
+  TCompDesconto:                      Result := 'Desconto';
+  TCompJurosDia:                      Result := 'Juros por dia';
+  TCompDescontoDiasAntecipacao:       Result := 'Desconto por dia de antecipação ';
+  TCompDataLimiteDesconto:            Result := 'Data limite para concessão de desconto';
+  TCompCancelaProtestoAutomatico:     Result := 'Cancelamento de protesto automático ';
+  TCompCarteiraCobranca:              Result := 'Carteira de cobrança';
+  TCompCancelaNegativacaoAutomatica:  Result := 'Cancelamento de negativação automática';
+  end;
 end;
 
 end.

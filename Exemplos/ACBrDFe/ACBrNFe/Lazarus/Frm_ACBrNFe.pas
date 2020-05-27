@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Frm_ACBrNFe;
 
 {$MODE Delphi}
@@ -10,7 +40,7 @@ uses
   SynEdit, SynHighlighterXML,
   ACBrUtil, ACBrMail, ACBrDFe, ACBrDFeSSL, ACBrDFeReport,
   ACBrDFeDANFeReport,
-  ACBrNFe, ACBrNFeDANFeRLClass, ACBrDANFCeFortesFr,
+  ACBrNFe, ACBrNFeDANFeRLClass, ACBrDANFCeFortesFr, ACBrDANFCeFortesFrA4,
   ACBrPosPrinter, ACBrNFeDANFeESCPOS, ACBrIntegrador;
 
 type
@@ -18,7 +48,12 @@ type
   { TfrmACBrNFe }
 
   TfrmACBrNFe = class(TForm)
+    ACBrNFeDANFCeFortesA41: TACBrNFeDANFCeFortesA4;
     bVersao: TButton;
+    cbTipoEmpresa: TComboBox;
+    edtURLPFX: TEdit;
+    Label51: TLabel;
+    Label52: TLabel;
     pnlMenus: TPanel;
     pnlCentral: TPanel;
     PageControl1: TPageControl;
@@ -317,6 +352,7 @@ type
     procedure GravarConfiguracao;
     procedure LerConfiguracao;
     procedure ConfigurarComponente;
+    procedure ConfigurarEmail;
     procedure AlimentarNFe(NumDFe: String);
     procedure AlimentarNFCe(NumDFe: String);
     Procedure AlimentarComponente(NumDFe: String);
@@ -488,6 +524,8 @@ begin
 end;
 
 procedure TfrmACBrNFe.AlimentarNFCe(NumDFe: String);
+var
+  Ok: Boolean;
 begin
   with ACBrNFe1.NotasFiscais.Add.NFe do
   begin
@@ -502,7 +540,7 @@ begin
     Ide.hSaiEnt   := now;
     Ide.tpNF      := tnSaida;
     Ide.tpEmis    := TpcnTipoEmissao(cbFormaEmissao.ItemIndex);;
-    Ide.tpAmb     := taHomologacao;  //Lembre-se de trocar esta variÃ¡vel quando for para ambiente de produÃ§Ã£o
+    Ide.tpAmb     := taHomologacao;  //Lembre-se de trocar esta variavel quando for para ambiente de producao
     Ide.cUF       := UFtoCUF(edtEmitUF.Text);
     Ide.cMunFG    := StrToInt(edtEmitCodCidade.Text);
     Ide.finNFe    := fnNormal;
@@ -530,16 +568,19 @@ begin
     Emit.enderEmit.cPais   := 1058;
     Emit.enderEmit.xPais   := 'BRASIL';
 
-    Emit.IEST              := '';
-//      Emit.IM                := '2648800'; // Preencher no caso de existir serviços na nota
-//      Emit.CNAE              := '6201500'; // Verifique na cidade do emissor da NFe se é permitido
-                                    // a inclusão de serviços na NFe
-    Emit.CRT               := crtRegimeNormal;// (1-crtSimplesNacional, 2-crtSimplesExcessoReceita, 3-crtRegimeNormal)
+    Emit.IEST := '';
+    // esta sendo somando 1 uma vez que o ItemIndex inicia do zero e devemos
+    // passar os valores 1, 2 ou 3
+    // (1-crtSimplesNacional, 2-crtSimplesExcessoReceita, 3-crtRegimeNormal)
+    Emit.CRT  := StrToCRT(Ok, IntToStr(cbTipoEmpresa.ItemIndex + 1));
 
-    Dest.CNPJCPF           := '05481336000137';
-//      Dest.IE                := '687138770110'; //NFC-e não aceita IE
+    // Na NFC-e o Destinatário é opcional
+    {
+    Dest.CNPJCPF           := 'informar o CPF do destinatário';
     Dest.ISUF              := '';
-    Dest.xNome             := 'D.J. COM. E LOCAÇÃO DE SOFTWARES LTDA - ME';
+    Dest.xNome             := 'nome do destinatário';
+
+    Dest.indIEDest         := inNaoContribuinte;
 
     Dest.EnderDest.Fone    := '1533243333';
     Dest.EnderDest.CEP     := 18270170;
@@ -552,6 +593,7 @@ begin
     Dest.EnderDest.UF      := 'SP';
     Dest.EnderDest.cPais   := 1058;
     Dest.EnderDest.xPais   := 'BRASIL';
+    }
 
 //Use os campos abaixo para informar o endereço de retirada quando for diferente do Remetente/Destinatário
     Retirada.CNPJCPF := '';
@@ -609,19 +651,56 @@ begin
 
         with ICMS do
         begin
-          CST          := cst00;
-          ICMS.orig    := oeNacional;
-          ICMS.modBC   := dbiValorOperacao;
-          ICMS.vBC     := 100;
-          ICMS.pICMS   := 18;
-          ICMS.vICMS   := 18;
-          ICMS.modBCST := dbisMargemValorAgregado;
-          ICMS.pMVAST  := 0;
-          ICMS.pRedBCST:= 0;
-          ICMS.vBCST   := 0;
-          ICMS.pICMSST := 0;
-          ICMS.vICMSST := 0;
-          ICMS.pRedBC  := 0;
+          // caso o CRT seja:
+          // 1=Simples Nacional
+          // Os valores aceitos para CSOSN são:
+          // csosn101, csosn102, csosn103, csosn201, csosn202, csosn203,
+          // csosn300, csosn400, csosn500,csosn900
+
+          // 2=Simples Nacional, excesso sublimite de receita bruta;
+          // ou 3=Regime Normal.
+          // Os valores aceitos para CST são:
+          // cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51,
+          // cst60, cst70, cst80, cst81, cst90, cstPart10, cstPart90,
+          // cstRep41, cstVazio, cstICMSOutraUF, cstICMSSN, cstRep60
+
+          // (consulte o contador do seu cliente para saber qual deve ser utilizado)
+          // Pode variar de um produto para outro.
+
+          if Emit.CRT in [crtSimplesExcessoReceita, crtRegimeNormal] then
+            CST := cst00
+          else
+            CSOSN := csosn101;
+
+          orig    := oeNacional;
+          modBC   := dbiValorOperacao;
+          vBC     := 100;
+          pICMS   := 18;
+          vICMS   := 18;
+          modBCST := dbisMargemValorAgregado;
+          pMVAST  := 0;
+          pRedBCST:= 0;
+          vBCST   := 0;
+          pICMSST := 0;
+          vICMSST := 0;
+          pRedBC  := 0;
+
+          pCredSN := 5;
+          vCredICMSSN := 50;
+          vBCFCPST := 100;
+          pFCPST := 2;
+          vFCPST := 2;
+          vBCSTRet := 0;
+          pST := 0;
+          vICMSSubstituto := 0;
+          vICMSSTRet := 0;
+          vBCFCPSTRet := 0;
+          pFCPSTRet := 0;
+          vFCPSTRet := 0;
+          pRedBCEfet := 0;
+          vBCEfet := 0;
+          pICMSEfet := 0;
+          vICMSEfet := 0;
 
           // partilha do ICMS e fundo de probreza
           with ICMSUFDest do
@@ -680,47 +759,6 @@ begin
       end;
     end;
 
-    (*
-    //Adicionando Serviços
-    with Det.New do
-    begin
-      Prod.nItem    := 1; // Número sequencial, para cada item deve ser incrementado
-      Prod.cProd    := '123457';
-      Prod.cEAN     := '';
-      Prod.xProd    := 'Descrição do Serviço';
-      Prod.NCM      := '99';
-      Prod.EXTIPI   := '';
-      Prod.CFOP     := '5933';
-      Prod.uCom     := 'UN';
-      Prod.qCom     := 1;
-      Prod.vUnCom   := 100;
-      Prod.vProd    := 100;
-
-      Prod.cEANTrib  := '';
-      Prod.uTrib     := 'UN';
-      Prod.qTrib     := 1;
-      Prod.vUnTrib   := 100;
-
-      Prod.vFrete    := 0;
-      Prod.vSeg      := 0;
-      Prod.vDesc     := 0;
-
-      infAdProd      := 'Informação Adicional do Serviço';
-
-      //Grupo para serviços
-      with Imposto.ISSQN do
-      begin
-        cSitTrib  := ISSQNcSitTribNORMAL;
-        vBC       := 100;
-        vAliq     := 2;
-        vISSQN    := 2;
-        cMunFG    := 3554003;
-        cListServ := '14.02'; // Preencha este campo usando a tabela disponível
-                              // em http://www.planalto.gov.br/Ccivil_03/LEIS/LCP/Lcp116.htm
-      end;
-    end;
-    *)
-
     Total.ICMSTot.vBC     := 100;
     Total.ICMSTot.vICMS   := 18;
     Total.ICMSTot.vBCST   := 0;
@@ -757,25 +795,6 @@ begin
 
     Transp.modFrete := mfSemFrete; // NFC-e não pode ter FRETE
 
-    Cobr.Fat.nFat  := 'Numero da Fatura';
-    Cobr.Fat.vOrig := 100;
-    Cobr.Fat.vDesc := 0;
-    Cobr.Fat.vLiq  := 100;
-
-    with Cobr.Dup.New do
-    begin
-      nDup  := '1234';
-      dVenc := now+10;
-      vDup  := 50;
-    end;
-
-    with Cobr.Dup.New do
-    begin
-      nDup  := '1235';
-      dVenc := now+10;
-      vDup  := 50;
-    end;
-
     with pag.New do
     begin
       tPag := fpDinheiro;
@@ -803,6 +822,7 @@ end;
 
 procedure TfrmACBrNFe.AlimentarNFe(NumDFe: String);
 var
+  Ok: Boolean;
   NotaF: NotaFiscal;
   Produto: TDetCollectionItem;
 //    Servico: TDetCollectionItem;
@@ -889,7 +909,11 @@ begin
   NotaF.NFe.Emit.IM                := '2648800'; // Preencher no caso de existir serviços na nota
   NotaF.NFe.Emit.CNAE              := '6201500'; // Verifique na cidade do emissor da NFe se é permitido
                                                  // a inclusão de serviços na NFe
-  NotaF.NFe.Emit.CRT               := crtRegimeNormal;// (1-crtSimplesNacional, 2-crtSimplesExcessoReceita, 3-crtRegimeNormal)
+
+    // esta sendo somando 1 uma vez que o ItemIndex inicia do zero e devemos
+    // passar os valores 1, 2 ou 3
+    // (1-crtSimplesNacional, 2-crtSimplesExcessoReceita, 3-crtRegimeNormal)
+  NotaF.NFe.Emit.CRT  := StrToCRT(Ok, IntToStr(cbTipoEmpresa.ItemIndex + 1));
 
 //Para NFe Avulsa preencha os campos abaixo
 
@@ -1079,80 +1103,148 @@ begin
   Produto.Prod.comb.ICMSCons.vICMSSTCons   := 0;
   Produto.Prod.comb.ICMSCons.UFcons        := '';
 
-  // lei da transparencia nos impostos
-  Produto.Imposto.vTotTrib := 0;
-  Produto.Imposto.ICMS.CST          := cst00;
-  Produto.Imposto.ICMS.orig    := oeNacional;
-  Produto.Imposto.ICMS.modBC   := dbiValorOperacao;
-  Produto.Imposto.ICMS.vBC     := 100;
-  Produto.Imposto.ICMS.pICMS   := 18;
-  Produto.Imposto.ICMS.vICMS   := 18;
-  Produto.Imposto.ICMS.modBCST := dbisMargemValorAgregado;
-  Produto.Imposto.ICMS.pMVAST  := 0;
-  Produto.Imposto.ICMS.pRedBCST:= 0;
-  Produto.Imposto.ICMS.vBCST   := 0;
-  Produto.Imposto.ICMS.pICMSST := 0;
-  Produto.Imposto.ICMS.vICMSST := 0;
-  Produto.Imposto.ICMS.pRedBC  := 0;
 
-  // partilha do ICMS e fundo de probreza
-  Produto.Imposto.ICMSUFDest.vBCUFDest      := 0.00;
-  Produto.Imposto.ICMSUFDest.pFCPUFDest     := 0.00;
-  Produto.Imposto.ICMSUFDest.pICMSUFDest    := 0.00;
-  Produto.Imposto.ICMSUFDest.pICMSInter     := 0.00;
-  Produto.Imposto.ICMSUFDest.pICMSInterPart := 0.00;
-  Produto.Imposto.ICMSUFDest.vFCPUFDest     := 0.00;
-  Produto.Imposto.ICMSUFDest.vICMSUFDest    := 0.00;
-  Produto.Imposto.ICMSUFDest.vICMSUFRemet   := 0.00;
+  with Produto.Imposto do
+  begin
+    // lei da transparencia nos impostos
+    vTotTrib := 0;
 
-  (*
-  // IPI, se hpouver...
-  Produto.Imposto.IPI.CST      := ipi99;
-  Produto.Imposto.IPI.clEnq    := '999';
-  Produto.Imposto.IPI.CNPJProd := '';
-  Produto.Imposto.IPI.cSelo    := '';
-  Produto.Imposto.IPI.qSelo    := 0;
-  Produto.Imposto.IPI.cEnq     := '';
+    with ICMS do
+    begin
+      // caso o CRT seja:
+      // 1=Simples Nacional
+      // Os valores aceitos para CSOSN são:
+      // csosn101, csosn102, csosn103, csosn201, csosn202, csosn203,
+      // csosn300, csosn400, csosn500,csosn900
 
-  Produto.Imposto.IPI.vBC    := 100;
-  Produto.Imposto.IPI.qUnid  := 0;
-  Produto.Imposto.IPI.vUnid  := 0;
-  Produto.Imposto.IPI.pIPI   := 5;
-  Produto.Imposto.IPI.vIPI   := 5;
-  *)
+      // 2=Simples Nacional, excesso sublimite de receita bruta;
+      // ou 3=Regime Normal.
+      // Os valores aceitos para CST são:
+      // cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51,
+      // cst60, cst70, cst80, cst81, cst90, cstPart10, cstPart90,
+      // cstRep41, cstVazio, cstICMSOutraUF, cstICMSSN, cstRep60
 
-  Produto.Imposto.II.vBc      := 0;
-  Produto.Imposto.II.vDespAdu := 0;
-  Produto.Imposto.II.vII      := 0;
-  Produto.Imposto.II.vIOF     := 0;
+      // (consulte o contador do seu cliente para saber qual deve ser utilizado)
+      // Pode variar de um produto para outro.
 
-  Produto.Imposto.PIS.CST      := pis99;
-  Produto.Imposto.PIS.vBC  := 0;
-  Produto.Imposto.PIS.pPIS := 0;
-  Produto.Imposto.PIS.vPIS := 0;
+      if NotaF.NFe.Emit.CRT in [crtSimplesExcessoReceita, crtRegimeNormal] then
+        CST := cst00
+      else
+        CSOSN := csosn101;
 
-  Produto.Imposto.PIS.qBCProd   := 0;
-  Produto.Imposto.PIS.vAliqProd := 0;
-  Produto.Imposto.PIS.vPIS      := 0;
+      orig    := oeNacional;
+      modBC   := dbiValorOperacao;
+      vBC     := 100;
+      pICMS   := 18;
+      vICMS   := 18;
+      modBCST := dbisMargemValorAgregado;
+      pMVAST  := 0;
+      pRedBCST:= 0;
+      vBCST   := 0;
+      pICMSST := 0;
+      vICMSST := 0;
+      pRedBC  := 0;
 
-  Produto.Imposto.PISST.vBc       := 0;
-  Produto.Imposto.PISST.pPis      := 0;
-  Produto.Imposto.PISST.qBCProd   := 0;
-  Produto.Imposto.PISST.vAliqProd := 0;
-  Produto.Imposto.PISST.vPIS      := 0;
+      pCredSN := 5;
+      vCredICMSSN := 50;
+      vBCFCPST := 100;
+      pFCPST := 2;
+      vFCPST := 2;
+      vBCSTRet := 0;
+      pST := 0;
+      vICMSSubstituto := 0;
+      vICMSSTRet := 0;
+      vBCFCPSTRet := 0;
+      pFCPSTRet := 0;
+      vFCPSTRet := 0;
+      pRedBCEfet := 0;
+      vBCEfet := 0;
+      pICMSEfet := 0;
+      vICMSEfet := 0;
+    end;
 
-  Produto.Imposto.COFINS.CST            := cof99;
-  Produto.Imposto.COFINS.vBC     := 0;
-  Produto.Imposto.COFINS.pCOFINS := 0;
-  Produto.Imposto.COFINS.vCOFINS := 0;
-  Produto.Imposto.COFINS.qBCProd   := 0;
-  Produto.Imposto.COFINS.vAliqProd := 0;
+    with ICMSUFDest do
+    begin
+      // partilha do ICMS e fundo de probreza
+      vBCUFDest      := 0.00;
+      pFCPUFDest     := 0.00;
+      pICMSUFDest    := 0.00;
+      pICMSInter     := 0.00;
+      pICMSInterPart := 0.00;
+      vFCPUFDest     := 0.00;
+      vICMSUFDest    := 0.00;
+      vICMSUFRemet   := 0.00;
+    end;
 
-  Produto.Imposto.COFINSST.vBC       := 0;
-  Produto.Imposto.COFINSST.pCOFINS   := 0;
-  Produto.Imposto.COFINSST.qBCProd   := 0;
-  Produto.Imposto.COFINSST.vAliqProd := 0;
-  Produto.Imposto.COFINSST.vCOFINS   := 0;
+    (*
+    // IPI, se hpouver...
+    with IPI do
+    begin
+      CST      := ipi99;
+      clEnq    := '999';
+      CNPJProd := '';
+      cSelo    := '';
+      qSelo    := 0;
+      cEnq     := '';
+
+      vBC    := 100;
+      qUnid  := 0;
+      vUnid  := 0;
+      pIPI   := 5;
+      vIPI   := 5;
+    end;
+    *)
+
+    with II do
+    begin
+      II.vBc      := 0;
+      II.vDespAdu := 0;
+      II.vII      := 0;
+      II.vIOF     := 0;
+    end;
+
+    with PIS do
+    begin
+      CST  := pis99;
+      vBC  := 0;
+      pPIS := 0;
+      vPIS := 0;
+
+      qBCProd   := 0;
+      vAliqProd := 0;
+      vPIS      := 0;
+    end;
+
+    with PISST do
+    begin
+      vBc       := 0;
+      pPis      := 0;
+      qBCProd   := 0;
+      vAliqProd := 0;
+      vPIS      := 0;
+    end;
+
+    with COFINS do
+    begin
+      CST     := cof99;
+      vBC     := 0;
+      pCOFINS := 0;
+      vCOFINS := 0;
+      qBCProd   := 0;
+      vAliqProd := 0;
+    end;
+
+    with COFINSST do
+    begin
+      vBC       := 0;
+      pCOFINS   := 0;
+      qBCProd   := 0;
+      vAliqProd := 0;
+      vCOFINS   := 0;
+    end;
+  end;
+
+
 
   //Adicionando Serviços
   (*
@@ -1244,18 +1336,6 @@ begin
   NotaF.NFe.Transp.retTransp.vICMSRet := 0;
   NotaF.NFe.Transp.retTransp.CFOP     := '';
   NotaF.NFe.Transp.retTransp.cMunFG   := 0;
-
-  NotaF.NFe.Transp.veicTransp.placa := '';
-  NotaF.NFe.Transp.veicTransp.UF    := '';
-  NotaF.NFe.Transp.veicTransp.RNTC  := '';
-
-//Dados do Reboque
-  (*
-  Reboque := NotaF.NFe.Transp.Reboque.Add;
-  Reboque.placa := '';
-  Reboque.UF    := '';
-  Reboque.RNTC  := '';
-  *)
 
   Volume := NotaF.NFe.Transp.Vol.New;
   Volume.qVol  := 1;
@@ -1726,6 +1806,9 @@ begin
     else
       Sincrono := False;
 
+    if (ACBrNFe1.Configuracoes.Geral.ModeloDF = moNFCe) and (rgDANFCE.ItemIndex = 1) then
+      PrepararImpressao;
+
     ACBrNFe1.Enviar(vNumLote, True, Sincrono);
   end;
 
@@ -1837,36 +1920,30 @@ begin
 
   OpenDialog1.InitialDir := ACBrNFe1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-  begin
-    ACBrNFe1.NotasFiscais.Clear;
-    ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
-    CC:=TstringList.Create;
+  if not OpenDialog1.Execute then
+    Exit;
 
-    try
-      CC.Add('andrefmoraes@gmail.com'); // especifique um email valido
-      CC.Add('anfm@zipmail.com.br');    // especifique um email valido
+  ACBrNFe1.NotasFiscais.Clear;
+  ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
 
-      ACBrMail1.Host := edtSmtpHost.Text;
-      ACBrMail1.Port := edtSmtpPort.Text;
-      ACBrMail1.Username := edtSmtpUser.Text;
-      ACBrMail1.Password := edtSmtpPass.Text;
-      ACBrMail1.From := edtSmtpUser.Text;
-      ACBrMail1.SetSSL := cbEmailSSL.Checked; // SSL - Conexao Segura
-      ACBrMail1.SetTLS := cbEmailSSL.Checked; // Auto TLS
-      ACBrMail1.ReadingConfirmation := False; // Pede confirmacao de leitura do email
-      ACBrMail1.UseThread := False;           // Aguarda Envio do Email(nao usa thread)
-      ACBrMail1.FromName := 'Projeto ACBr - ACBrNFe';
+  CC := TStringList.Create;
+  try
+    //CC.Add('email_1@provedor.com'); // especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    // especifique um email valido
 
-      ACBrNFe1.NotasFiscais.Items[0].EnviarEmail( Para, edtEmailAssunto.Text,
-                                               mmEmailMsg.Lines
-                                               , True  // Enviar PDF junto
-                                               , CC    // Lista com emails que serao enviado copias - TStrings
-                                               , nil); // Lista de anexos - TStrings
-    finally
-      CC.Free;
-    end;
+    ConfigurarEmail;
+    ACBrNFe1.NotasFiscais.Items[0].EnviarEmail(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , True  // Enviar PDF junto
+      , CC    // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      );
+
+  finally
+    CC.Free;
   end;
+
 end;
 
 procedure TfrmACBrNFe.btnEnviarEventoEmailClick(Sender: TObject);
@@ -1890,33 +1967,38 @@ begin
     ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
   end;
 
-  OpenDialog1.Title := 'Selecione ao Evento';
+  OpenDialog1.Title := 'Selecione o evento';
   OpenDialog1.DefaultExt := '*.XML';
   OpenDialog1.Filter := 'Arquivos XML (*.XML)|*.XML|Todos os Arquivos (*.*)|*.*';
 
   OpenDialog1.InitialDir := ACBrNFe1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-  begin
-    Evento := TStringList.Create;
+  if not OpenDialog1.Execute then
+    Exit;
+
+  Evento := TStringList.Create;
+  CC := TStringList.Create;
+  try
     Evento.Clear;
     Evento.Add(OpenDialog1.FileName);
     ACBrNFe1.EventoNFe.Evento.Clear;
     ACBrNFe1.EventoNFe.LerXML(OpenDialog1.FileName);
 
-    CC:=TstringList.Create;
-    CC.Add('andrefmoraes@gmail.com'); // especifique um email valido
-    CC.Add('anfm@zipmail.com.br');    // especifique um email valido
-
-    ACBrNFe1.EnviarEmailEvento(Para, edtEmailAssunto.Text, mmEmailMsg.Lines,
-                               nil, // Lista com emails que serao enviado copias - TStrings
-                               nil, // Lista de anexos - TStrings
-                               nil  // ReplyTo
-                               );
-
+    //CC.Add('email_1@provedor.com'); // especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    // especifique um email valido
+    ConfigurarEmail;
+    ACBrNFe1.EnviarEmailEvento(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , CC // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      , nil  // ReplyTo
+      );
+  finally
     CC.Free;
     Evento.Free;
   end;
+
 end;
 
 procedure TfrmACBrNFe.btnGerarPDFClick(Sender: TObject);
@@ -2728,7 +2810,8 @@ begin
 
   if OpenDialog1.Execute then
   begin
-    PrepararImpressao;
+    if ACBrNFe1.DANFE = ACBrNFeDANFeESCPOS1 then
+      PrepararImpressao;
 
     ACBrNFe1.NotasFiscais.Clear;
     ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName,False);
@@ -2799,7 +2882,7 @@ begin
  if not(InputQuery('WebServices Inutilização ', 'Número Inicial', NumeroInicial)) then
     exit;
  NumeroFinal := '';
- if not(InputQuery('WebServices Inutilização ', 'Número Inicial', NumeroFinal)) then
+ if not(InputQuery('WebServices Inutilização ', 'Número Final', NumeroFinal)) then
     exit;
  Justificativa := '';
  if not(InputQuery('WebServices Inutilização ', 'Justificativa', Justificativa)) then
@@ -3213,19 +3296,20 @@ begin
 
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais( cbxPorta.Items );
+  ACBrPosPrinter1.Device.AcharPortasRAW( cbxPorta.Items );
+
+  {$IfDef MSWINDOWS}
   cbxPorta.Items.Add('LPT1') ;
   cbxPorta.Items.Add('\\localhost\Epson') ;
   cbxPorta.Items.Add('c:\temp\ecf.txt') ;
+  {$EndIf}
+
   cbxPorta.Items.Add('TCP:192.168.0.31:9100') ;
-
-  for l := 0 to Printer.Printers.Count-1 do
-    cbxPorta.Items.Add('RAW:'+Printer.Printers[l]);
-
+  {$IfDef LINUX}
   cbxPorta.Items.Add('/dev/ttyS0') ;
-  cbxPorta.Items.Add('/dev/ttyS1') ;
   cbxPorta.Items.Add('/dev/ttyUSB0') ;
-  cbxPorta.Items.Add('/dev/ttyUSB1') ;
   cbxPorta.Items.Add('/tmp/ecf.txt') ;
+  {$EndIf}
 
   LerConfiguracao;
   pgRespostas.ActivePageIndex := 0;
@@ -3236,14 +3320,7 @@ end;
 procedure TfrmACBrNFe.bVersaoClick(Sender: TObject);
 begin
   pgRespostas.ActivePageIndex := 0;
-  if ACBrNFe1.SSL.SSLCryptLib = cryOpenSSL then
-  begin
-    MemoResp.Lines.Add(TDFeOpenSSL(ACBrNFe1.SSL.SSLCryptClass).OpenSSLVersion);
-    MemoResp.Lines.Add(SSLUtilFile);
-    MemoResp.Lines.Add(SSLLibFile);
-  end
-  else
-    MemoResp.Lines.Add('Biblioteca de Criptografia Selecionada não é OpenSSL');
+  MemoResp.Lines.Add(ACBrNFe1.SSL.SSLCryptClass.Versao);
 end;
 
 procedure TfrmACBrNFe.GravarConfiguracao;
@@ -3260,6 +3337,7 @@ begin
     Ini.WriteInteger('Certificado', 'CryptLib',   cbCryptLib.ItemIndex);
     Ini.WriteInteger('Certificado', 'HttpLib',    cbHttpLib.ItemIndex);
     Ini.WriteInteger('Certificado', 'XmlSignLib', cbXmlSignLib.ItemIndex);
+    Ini.WriteString( 'Certificado', 'URL',        edtURLPFX.Text);
     Ini.WriteString( 'Certificado', 'Caminho',    edtCaminho.Text);
     Ini.WriteString( 'Certificado', 'Senha',      edtSenha.Text);
     Ini.WriteString( 'Certificado', 'NumSerie',   edtNumSerie.Text);
@@ -3320,6 +3398,7 @@ begin
     Ini.WriteString('Emitente', 'CodCidade',   edtEmitCodCidade.Text);
     Ini.WriteString('Emitente', 'Cidade',      edtEmitCidade.Text);
     Ini.WriteString('Emitente', 'UF',          edtEmitUF.Text);
+    Ini.WriteInteger('Emitente', 'CRT',        cbTipoEmpresa.ItemIndex);
 
     Ini.WriteString('Email', 'Host',    edtSmtpHost.Text);
     Ini.WriteString('Email', 'Port',    edtSmtpPort.Text);
@@ -3350,6 +3429,7 @@ begin
     Ini.WriteBool(   'PosPrinter', 'CortarPapel',       cbCortarPapel.Checked );
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -3379,6 +3459,7 @@ begin
     cbCryptLib.ItemIndex   := Ini.ReadInteger('Certificado', 'CryptLib',   0);
     cbHttpLib.ItemIndex    := Ini.ReadInteger('Certificado', 'HttpLib',    0);
     cbXmlSignLib.ItemIndex := Ini.ReadInteger('Certificado', 'XmlSignLib', 0);
+    edtURLPFX.Text         := Ini.ReadString( 'Certificado', 'URL',        '');
     edtCaminho.Text        := Ini.ReadString( 'Certificado', 'Caminho',    '');
     edtSenha.Text          := Ini.ReadString( 'Certificado', 'Senha',      '');
     edtNumSerie.Text       := Ini.ReadString( 'Certificado', 'NumSerie',   '');
@@ -3442,6 +3523,8 @@ begin
     edtEmitCidade.Text     := Ini.ReadString('Emitente', 'Cidade',      '');
     edtEmitUF.Text         := Ini.ReadString('Emitente', 'UF',          '');
 
+    cbTipoEmpresa.ItemIndex := Ini.ReadInteger('Emitente', 'CRT', 2);
+
     edtSmtpHost.Text     := Ini.ReadString('Email', 'Host',    '');
     edtSmtpPort.Text     := Ini.ReadString('Email', 'Port',    '');
     edtSmtpUser.Text     := Ini.ReadString('Email', 'User',    '');
@@ -3469,6 +3552,7 @@ begin
     ACBrPosPrinter1.Device.ParamsString := INI.ReadString('PosPrinter', 'ParamsString', '');
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -3479,6 +3563,7 @@ var
   Ok: Boolean;
   PathMensal: string;
 begin
+  ACBrNFe1.Configuracoes.Certificados.URLPFX      := edtURLPFX.Text;
   ACBrNFe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrNFe1.Configuracoes.Certificados.Senha       := edtSenha.Text;
   ACBrNFe1.Configuracoes.Certificados.NumeroSerie := edtNumSerie.Text;
@@ -3487,10 +3572,11 @@ begin
     ACBrNFe1.DANFE := ACBrNFeDANFeRL1
   else
   begin
-    if rgDANFCE.ItemIndex = 0 then
-      ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1
-    else
-      ACBrNFe1.DANFE := ACBrNFeDANFeESCPOS1;
+    case rgDANFCE.ItemIndex of
+      0: ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1;
+      1: ACBrNFe1.DANFE := ACBrNFeDANFeESCPOS1;
+      2: ACBrNFe1.DANFE := ACBrNFeDANFCeFortesA41;
+    end;
   end;
 
   ACBrNFe1.SSL.DescarregarCertificado;
@@ -3580,6 +3666,20 @@ begin
     ACBrNFe1.DANFE.MargemSuperior := 5;
     ACBrNFe1.DANFE.MargemInferior := 5;
   end;
+end;
+
+procedure TfrmACBrNFe.ConfigurarEmail;
+begin
+  ACBrMail1.Host := edtSmtpHost.Text;
+  ACBrMail1.Port := edtSmtpPort.Text;
+  ACBrMail1.Username := edtSmtpUser.Text;
+  ACBrMail1.Password := edtSmtpPass.Text;
+  ACBrMail1.From := edtSmtpUser.Text;
+  ACBrMail1.SetSSL := cbEmailSSL.Checked; // SSL - Conexao Segura
+  ACBrMail1.SetTLS := cbEmailSSL.Checked; // Auto TLS
+  ACBrMail1.ReadingConfirmation := False; // Pede confirmacao de leitura do email
+  ACBrMail1.UseThread := False;           // Aguarda Envio do Email(nao usa thread)
+  ACBrMail1.FromName := 'Projeto ACBr - ACBrNFe';
 end;
 
 procedure TfrmACBrNFe.LoadXML(MyMemo: TMemo; SynEdit: TSynEdit);

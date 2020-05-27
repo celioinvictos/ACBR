@@ -1,9 +1,9 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,15 +22,13 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
 
 * Administradores:
 - Daniel Simões de Almeida
-- André Ferreira de Moraes
 
 {******************************************************************************
 |* ACBrLibBoleto
@@ -44,10 +42,35 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+19/05/2020
+--- ACBrLibBoletoDataModule --
+[-] Corrigido erro ao configurar o cedente como pessoa fisica.
+    (Por: Rafael Dias)
+
+27/02/2020
+--- ACBrLibBoletoConfig --
+[-] Removido a propriedade TamanhoMaximoNossoNumero, pois a mesma causava erro na geração dos boletos.
+    (Por: Rafael Dias)
+
+23/02/2020
+--- ACBrLibBoleto --
+[+] Adicionado o metodo Boleto_ImprimirBoleto. 
+    (Por: Rafael Dias)
+
+20/02/2020
+--- ACBrLibBoletoConfig --
+[*] Ajuste na leitura e escrita do .INI campo "LayoutRetorno", baseado na classe Leitura em ACBrBoleto 
+    (Por: Jose M S Junior)
+
+17/02/2020
+--- ACBrLibBoletoConfig --
+[+] Adicionado propriedade para remover acentuação do arquivo de remessa.
+    (Por: Rafael Dias)
+
 03/01/2020
 --- ACBrLibBoleto --
 [+] Adicionado o metodo Boleto_ImportarConfig.
-    (Por; Rafael Dias)
+    (Por: Rafael Dias)
 
 15/04/2018
 --- ACBrLibBoleto --

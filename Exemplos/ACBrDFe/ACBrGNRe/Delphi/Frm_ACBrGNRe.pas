@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Frm_ACBrGNRe;
 
 interface
@@ -171,10 +201,11 @@ type
     ACBrGNREGuiaRL1: TACBrGNREGuiaRL;
     btnGerarMDFe: TButton;
     btnCriarEnviar: TButton;
-    btnImprimir: TButton;
+    btnImprimirTXT: TButton;
     btnGerarPDF: TButton;
     btnConsultaConfigUF: TButton;
     btnConsultarRecibo: TButton;
+    btnImprimirXML: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathGNREClick(Sender: TObject);
@@ -209,15 +240,17 @@ type
     procedure ACBrGNRE1StatusChange(Sender: TObject);
     procedure btnGerarMDFeClick(Sender: TObject);
     procedure btnCriarEnviarClick(Sender: TObject);
-    procedure btnImprimirClick(Sender: TObject);
+    procedure btnImprimirTXTClick(Sender: TObject);
     procedure btnGerarPDFClick(Sender: TObject);
     procedure btnConsultaConfigUFClick(Sender: TObject);
     procedure btnConsultarReciboClick(Sender: TObject);
+    procedure btnImprimirXMLClick(Sender: TObject);
   private
     { Private declarations }
     procedure GravarConfiguracao;
     procedure LerConfiguracao;
     procedure ConfigurarComponente;
+    procedure ConfigurarEmail;
     Procedure AlimentarComponente;
     procedure LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);
     procedure AtualizarSSLLibsCombo;
@@ -355,36 +388,27 @@ begin
 
   OpenDialog1.InitialDir := ACBrGNRE1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-  begin
-    ACBrGNRE1.Guias.Clear;
-    ACBrGNRE1.Guias.LoadFromFile(OpenDialog1.FileName);
-    CC:=TstringList.Create;
+  if not OpenDialog1.Execute then
+    Exit;
 
-    try
-      CC.Add('andrefmoraes@gmail.com'); // especifique um email valido
-      CC.Add('anfm@zipmail.com.br');    // especifique um email valido
-
-      ACBrMail1.Host := edtSmtpHost.Text;
-      ACBrMail1.Port := edtSmtpPort.Text;
-      ACBrMail1.Username := edtSmtpUser.Text;
-      ACBrMail1.Password := edtSmtpPass.Text;
-      ACBrMail1.From := edtSmtpUser.Text;
-      ACBrMail1.SetSSL := cbEmailSSL.Checked; // SSL - Conexao Segura
-      ACBrMail1.SetTLS := cbEmailSSL.Checked; // Auto TLS
-      ACBrMail1.ReadingConfirmation := False; // Pede confirmacao de leitura do email
-      ACBrMail1.UseThread := False;           // Aguarda Envio do Email(nao usa thread)
-      ACBrMail1.FromName := 'Projeto ACBr - ACBrGNRE';
-
-      ACBrGNRE1.Guias.Items[0].EnviarEmail( Para, edtEmailAssunto.Text,
-                                               mmEmailMsg.Lines
-                                               , True  // Enviar PDF junto
-                                               , CC    // Lista com emails que serao enviado copias - TStrings
-                                               , nil); // Lista de anexos - TStrings
-    finally
-      CC.Free;
-    end;
+  ACBrGNRE1.Guias.Clear;
+  ACBrGNRE1.Guias.LoadFromFile(OpenDialog1.FileName);
+  CC := TStringList.Create;
+  try
+    //CC.Add('email_1@provedor.com'); // especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    // especifique um email valido
+    ConfigurarEmail;
+    ACBrGNRE1.Guias.Items[0].EnviarEmail(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , True  // Enviar PDF junto
+      , CC    // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      );
+  finally
+    CC.Free;
   end;
+
 end;
 
 procedure TfrmACBrGNRe.btnHTTPSClick(Sender: TObject);
@@ -649,6 +673,7 @@ begin
     StreamMemo.Free;
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -766,6 +791,7 @@ begin
     StreamMemo.Free;
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -847,6 +873,20 @@ begin
   end;
 end;
 
+procedure TfrmACBrGNRe.ConfigurarEmail;
+begin
+  ACBrMail1.Host := edtSmtpHost.Text;
+  ACBrMail1.Port := edtSmtpPort.Text;
+  ACBrMail1.Username := edtSmtpUser.Text;
+  ACBrMail1.Password := edtSmtpPass.Text;
+  ACBrMail1.From := edtSmtpUser.Text;
+  ACBrMail1.SetSSL := cbEmailSSL.Checked; // SSL - Conexao Segura
+  ACBrMail1.SetTLS := cbEmailSSL.Checked; // Auto TLS
+  ACBrMail1.ReadingConfirmation := False; // Pede confirmacao de leitura do email
+  ACBrMail1.UseThread := False;           // Aguarda Envio do Email(nao usa thread)
+  ACBrMail1.FromName := 'Projeto ACBr - ACBrGNRE';
+end;
+
 procedure TfrmACBrGNRe.LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);
 begin
   ACBrUtil.WriteToTXT(PathWithDelim(ExtractFileDir(application.ExeName)) + 'temp.xml',
@@ -893,7 +933,6 @@ end;
 procedure TfrmACBrGNRe.sbtnNumSerieClick(Sender: TObject);
 var
   I: Integer;
-//  ASerie: String;
   AddRow: Boolean;
 begin
   ACBrGNRE1.SSL.LerCertificadosStore;
@@ -918,8 +957,6 @@ begin
   begin
     with ACBrGNRE1.SSL.ListaCertificados[I] do
     begin
-//      ASerie := NumeroSerie;
-
       if (CNPJ <> '') then
       begin
         with frmSelecionarCertificado.StringGrid1 do
@@ -1019,16 +1056,16 @@ begin
   pgRespostas.ActivePageIndex := 4;
   MemoDados.Lines.Add('');
   MemoDados.Lines.Add('Envio GNRE');
-  MemoDados.Lines.Add('ambiente: '+ TpAmbToStr(ACBrGNRE1.WebServices.Retorno.ambiente));
-  MemoDados.Lines.Add('codigo: '+ IntToStr(ACBrGNRE1.WebServices.Retorno.codigo));
-  MemoDados.Lines.Add('descricao: '+ ACBrGNRE1.WebServices.Retorno.descricao);
-  MemoDados.Lines.Add('Recibo: '+ ACBrGNRE1.WebServices.Retorno.numeroRecibo);
-  MemoDados.Lines.Add('Protocolo: '+ ACBrGNRE1.WebServices.Retorno.protocolo);
+  MemoDados.Lines.Add('ambiente: '  + TpAmbToStr(ACBrGNRE1.WebServices.Retorno.ambiente));
+  MemoDados.Lines.Add('codigo: '    + IntToStr(ACBrGNRE1.WebServices.Retorno.codigo));
+  MemoDados.Lines.Add('descricao: ' + ACBrGNRE1.WebServices.Retorno.descricao);
+  MemoDados.Lines.Add('Recibo: '    + ACBrGNRE1.WebServices.Retorno.numeroRecibo);
+  MemoDados.Lines.Add('Protocolo: ' + ACBrGNRE1.WebServices.Retorno.protocolo);
 
   ACBrGNRE1.Guias.Clear;
 end;
 
-procedure TfrmACBrGNRe.btnImprimirClick(Sender: TObject);
+procedure TfrmACBrGNRe.btnImprimirTXTClick(Sender: TObject);
 begin
   OpenDialog1.Title := 'Selecione a Guia';
   OpenDialog1.DefaultExt := '*-gnre.txt';
@@ -1039,43 +1076,54 @@ begin
   begin
     ACBrGNRE1.GuiasRetorno.Clear;
     ACBrGNRE1.GuiasRetorno.LoadFromFile(OpenDialog1.FileName);
-//    TACBrGNREGuiaFR(ACBrGNRE1.GNREGuia).FastFile :=
-//      IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'Report\GNRE_GUIA.fr3' ;
     ACBrGNRE1.GuiasRetorno.Imprimir;
   end;
 end;
 
-procedure TfrmACBrGNRe.btnGerarPDFClick(Sender: TObject);
+procedure TfrmACBrGNRe.btnImprimirXMLClick(Sender: TObject);
 begin
-  OpenDialog1.Title := 'Selecione o GNRE';
-  OpenDialog1.DefaultExt := '*-gnre.txt';
-  OpenDialog1.Filter := 'Arquivos GNRE (*-gnre.txt)|*-gnre.txt|Arquivos TXT (*.txt)|*.txt|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.Title := 'Selecione a Guia';
+  OpenDialog1.DefaultExt := '*-guia.xml';
+  OpenDialog1.Filter := 'Arquivos Guia (*-guia.xml)|*-guia.xml|Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
   OpenDialog1.InitialDir := ACBrGNRE1.Configuracoes.Arquivos.PathSalvar;
 
   if OpenDialog1.Execute then
   begin
     ACBrGNRE1.GuiasRetorno.Clear;
     ACBrGNRE1.GuiasRetorno.LoadFromFile(OpenDialog1.FileName);
-//    TACBrGNREGuiaFR(ACBrGNRE1.GNREGuia).FastFile :=
-//      IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'Report\GNRE_GUIA.fr3' ;
+    ACBrGNRE1.GuiasRetorno.Imprimir;
+  end;
+end;
+
+procedure TfrmACBrGNRe.btnGerarPDFClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Selecione a Guia';
+  OpenDialog1.DefaultExt := '*-guia.xml';
+  OpenDialog1.Filter := 'Arquivos Guia (*-guia.xml)|*-guia.xml|Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ACBrGNRE1.Configuracoes.Arquivos.PathSalvar;
+
+  if OpenDialog1.Execute then
+  begin
+    ACBrGNRE1.GuiasRetorno.Clear;
+    ACBrGNRE1.GuiasRetorno.LoadFromFile(OpenDialog1.FileName);
     ACBrGNRE1.GuiasRetorno.ImprimirPDF;
   end;
 end;
 
 procedure TfrmACBrGNRe.btnConsultaConfigUFClick(Sender: TObject);
 var
-  aux : String;
+  aUF, aReceita : String;
 begin
-  aux := '';
-  if not(InputQuery('Consulta Configuração UF', 'Uf', aux))
-   then exit;
-  ACBrGNRE1.WebServices.ConsultaUF.Uf := aux;
+  aUF := '';
+  if not(InputQuery('Consulta Configuração UF', 'UF', aUF)) then
+    exit;
 
-  aux := '';
-  if not(InputQuery('Consulta Configuração UF', 'Receita', aux))
-   then exit;
-  ACBrGNRE1.WebServices.ConsultaUF.receita := StrToIntDef(aux, 0);
+  aReceita := '';
+  if not(InputQuery('Consulta Configuração UF', 'Receita', aReceita)) then
+    exit;
 
+  ACBrGNRE1.WebServices.ConsultaUF.Uf := aUF;
+  ACBrGNRE1.WebServices.ConsultaUF.receita := StrToIntDef(aReceita, 0);
   ACBrGNRE1.WebServices.ConsultaUF.Executar;
 
   MemoResp.Lines.Text := UTF8Encode(ACBrGNRE1.WebServices.ConsultaUF.RetWS);
@@ -1085,12 +1133,12 @@ begin
   pgRespostas.ActivePageIndex := 4;
   MemoDados.Lines.Add('');
   MemoDados.Lines.Add('Consulta Configuração UF');
-  MemoDados.Lines.Add('ambiente: '    +TpAmbToStr(ACBrGNRE1.WebServices.ConsultaUF.ambiente));
-  MemoDados.Lines.Add('codigo: '    +IntToStr(ACBrGNRE1.WebServices.ConsultaUF.codigo));
-  MemoDados.Lines.Add('descricao: '  +ACBrGNRE1.WebServices.ConsultaUF.descricao);
-  MemoDados.Lines.Add('Uf: '      +ACBrGNRE1.WebServices.ConsultaUF.Uf);
+  MemoDados.Lines.Add('ambiente: '           + TpAmbToStr(ACBrGNRE1.WebServices.ConsultaUF.ambiente));
+  MemoDados.Lines.Add('codigo: '             + IntToStr(ACBrGNRE1.WebServices.ConsultaUF.codigo));
+  MemoDados.Lines.Add('descricao: '          + ACBrGNRE1.WebServices.ConsultaUF.descricao);
+  MemoDados.Lines.Add('Uf: '                 + ACBrGNRE1.WebServices.ConsultaUF.Uf);
   MemoDados.Lines.Add('exigeUfFavorecida : ' + IIF(ACBrGNRE1.WebServices.ConsultaUF.exigeUfFavorecida = 'S', 'SIM', 'NÃO'));
-  MemoDados.Lines.Add('exigeReceita: '     + IIF(ACBrGNRE1.WebServices.ConsultaUF.exigeReceita = 'S', 'SIM', 'NÃO'));
+  MemoDados.Lines.Add('exigeReceita: '       + IIF(ACBrGNRE1.WebServices.ConsultaUF.exigeReceita = 'S', 'SIM', 'NÃO'));
 //  MemoDados.Lines.Add('exigeContribuinteEmitente: '+ IIF(ACBrGNRE1.WebServices.ConsultaUF.exigeContribuinteEmitente = 'S', 'SIM', 'NÃO'));
 //  MemoDados.Lines.Add('exigeDataVencimento: '     + IIF(ACBrGNRE1.WebServices.ConsultaUF.exigeDataVencimento = 'S', 'SIM', 'NÃO'));
 //  MemoDados.Lines.Add('exigeConvenio: '+ IIF(ACBrGNRE1.WebServices.ConsultaUF.exigeConvenio = 'S', 'SIM', 'NÃO'));
@@ -1099,10 +1147,10 @@ end;
 
 procedure TfrmACBrGNRe.btnConsultarReciboClick(Sender: TObject);
 var
- aux : String;
+  aux : String;
 begin
-  if not(InputQuery('Consultar Recibo Lote', 'Número do Recibo', aux))
-   then exit;
+  if not(InputQuery('Consultar Recibo Lote', 'Número do Recibo', aux)) then
+    exit;
 
   ACBrGNRE1.WebServices.Retorno.numeroRecibo := aux;
   ACBrGNRE1.WebServices.Retorno.Executar;

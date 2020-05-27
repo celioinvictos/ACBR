@@ -1,19 +1,15 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrGNRE                                                 }
-{  Biblioteca multiplataforma de componentes Delphi/Lazarus para emissão da    }
-{  Guia Nacional de Recolhimento de Tributos Estaduais                         }
-{  http://www.gnre.pe.gov.br/                                                  }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2013 Claudemir Vitor Pereira                }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-{                                       Juliomar Marchetti                     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Juliomar Marchetti                              }
+{                              Claudemir Vitor Pereira                         }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -31,17 +27,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 09/12/2013 - Claudemir Vitor Pereira
-|*  - Doação do componente para o Projeto ACBr
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -50,20 +38,27 @@ unit pgnreRetConsResLoteGNRE;
 interface
 
 uses
-  SysUtils, Classes, pcnAuxiliar, pcnConversao, pcnLeitor;
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase,
+  pcnAuxiliar, pcnConversao, pcnLeitor, pgnreConversao;
 
 type
 
   TTResultLote_GNRE = class;
 
-  TRejeicaoGuiaCollectionItem = class(TCollectionItem)
+  TRejeicaoGuiaCollectionItem = class(TObject)
   private
     FIdentificador: Integer;
     FSequencialGuia: Integer;
     FNomeCampo: string;
     FCodMotivoRejeicao: Integer;
     FDescMotivoRejeicao: string;
-  published
+  public
     property Identificador: Integer read FIdentificador write FIdentificador;
     property SequencialGuia: Integer read FSequencialGuia write FSequencialGuia;
     property NomeCampo: string read FNomeCampo write FNomeCampo;
@@ -71,17 +66,17 @@ type
     property DescMotivoRejeicao: string read FDescMotivoRejeicao write FDescMotivoRejeicao;
   end;
 
-  TRejeicaoGuiaCollection = class(TCollection)
+  TRejeicaoGuiaCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TRejeicaoGuiaCollectionItem;
     procedure SetItem(Index: Integer; Value: TRejeicaoGuiaCollectionItem);
   public
-    constructor Create(AOwner: TTResultLote_GNRE); reintroduce;
-    function Add: TRejeicaoGuiaCollectionItem;
+    function Add: TRejeicaoGuiaCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TRejeicaoGuiaCollectionItem;
     property Items[Index: Integer]: TRejeicaoGuiaCollectionItem read GetItem write SetItem; default;
   end;
 
-  TGuiaCollectionItem = class(TCollectionItem)
+  TGuiaCollectionItem = class(TObject)
   private
     FIdentificador: Integer;
     FSequencialGuia: Integer;
@@ -122,7 +117,9 @@ type
     // Versao 2.00
     FtipoGnre: string;
     FValorICMS: Currency;
-  published
+    FVersao: TVersaoGNRE;
+    FXML: string;
+  public
     property Identificador: Integer read FIdentificador write FIdentificador;
     property SequencialGuia: Integer read FSequencialGuia write FSequencialGuia;
     property SituacaoGuia: string read FSituacaoGuia write FSituacaoGuia;
@@ -162,19 +159,21 @@ type
     // Versao 2.00
     property tipoGnre: string read FtipoGnre write FtipoGnre;
     property ValorICMS: Currency read FValorICMS write FValorICMS;
+    property Versao: TVersaoGNRE read FVersao write FVersao;
+    property XML: string read FXML write FXML;
   end;
 
-  TGuiaCollection = class(TCollection)
+  TGuiaCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TGuiaCollectionItem;
     procedure SetItem(Index: Integer; Value: TGuiaCollectionItem);
   public
-    constructor Create(AOwner: TTResultLote_GNRE); reintroduce;
-    function Add: TGuiaCollectionItem;
+    function Add: TGuiaCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TGuiaCollectionItem;
     property Items[Index: Integer]: TGuiaCollectionItem read GetItem write SetItem; default;
   end;
 
-  TInfoCabec = class
+  TInfoCabec = class(TObject)
   private
     FTipoIdentificadoSolicitante: Integer;
     FIdentificadorSolicitante: string;
@@ -190,7 +189,7 @@ type
     property Ambiente: Integer read FAmbiente write FAmbiente;
   end;
 
-  TTResultLote_GNRE = class(TPersistent)
+  TTResultLote_GNRE = class(TObject)
   private
     FLeitor: TLeitor;
     Fambiente: TpcnTipoAmbiente;
@@ -208,7 +207,7 @@ type
     function LerXml: boolean;
     function Ler_Versao_1: boolean;
     function Ler_Versao_2: boolean;
-  published
+
     property Leitor: TLeitor read FLeitor write FLeitor;
     property ambiente: TpcnTipoAmbiente read Fambiente write Fambiente;
     property numeroRecibo: string read FnumeroRecibo write FnumeroRecibo;
@@ -217,10 +216,76 @@ type
     property resultado: string read Fresultado write Fresultado;
     property resInfoCabec: TInfoCabec read FresInfoCabec write FresInfoCabec;
     property resGuia: TGuiaCollection read FresGuia write FresGuia;
-    property resRejeicaGuia: TRejeicaoGuiaCollection read FresRejeicaoGuia write FresRejeicaoGuia;
+    property resRejeicaoGuia: TRejeicaoGuiaCollection read FresRejeicaoGuia write FresRejeicaoGuia;
   end;
 
 implementation
+
+uses
+  ACBrUtil;
+
+{ TInfoCabec }
+
+constructor TInfoCabec.Create;
+begin
+  FTipoIdentificadoSolicitante := 0;
+  FIdentificadorSolicitante := '';
+  FNumeroProtocoloLote := '';
+  FAmbiente := 0;
+end;
+
+destructor TInfoCabec.Destroy;
+begin
+  inherited Destroy;
+end;
+
+{ TRejeicaoGuiaCollection }
+
+function TRejeicaoGuiaCollection.Add: TRejeicaoGuiaCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TRejeicaoGuiaCollection.GetItem(
+  Index: Integer): TRejeicaoGuiaCollectionItem;
+begin
+  Result := TRejeicaoGuiaCollectionItem(inherited Items[Index]);
+end;
+
+function TRejeicaoGuiaCollection.New: TRejeicaoGuiaCollectionItem;
+begin
+  Result := TRejeicaoGuiaCollectionItem.Create();
+  Self.Add(Result);
+end;
+
+procedure TRejeicaoGuiaCollection.SetItem(Index: Integer;
+  Value: TRejeicaoGuiaCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+{ TGuiaCollection }
+
+function TGuiaCollection.Add: TGuiaCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TGuiaCollection.GetItem(Index: Integer): TGuiaCollectionItem;
+begin
+  Result := TGuiaCollectionItem(inherited Items[Index]);
+end;
+
+function TGuiaCollection.New: TGuiaCollectionItem;
+begin
+  Result := TGuiaCollectionItem.Create();
+  Self.Add(Result);
+end;
+
+procedure TGuiaCollection.SetItem(Index: Integer; Value: TGuiaCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
 
 { TTResultLote_GNRE }
 
@@ -228,9 +293,9 @@ constructor TTResultLote_GNRE.Create;
 begin
   FLeitor := TLeitor.Create;
 
-  FresGuia         := TGuiaCollection.Create(Self);
+  FresGuia         := TGuiaCollection.Create;
   FresInfoCabec    := TInfoCabec.Create;
-  FresRejeicaoGuia := TRejeicaoGuiaCollection.Create(Self);
+  FresRejeicaoGuia := TRejeicaoGuiaCollection.Create;
 end;
 
 destructor TTResultLote_GNRE.Destroy;
@@ -256,18 +321,29 @@ begin
   begin
     FAmbiente     := StrToTpAmb(ok, Leitor.rCampo(tcStr, 'ambiente'));
     FnumeroRecibo := Leitor.rCampo(tcStr, 'numeroRecibo');
-    Fresultado    := Leitor.rCampo(tcStr, 'resultado');
 
-    if Leitor.rExtrai(2, 'situacaoProcess') <> '' then
+    if (Pos('versao="2.00"', Leitor.Grupo) > 0) then
     begin
-      Fcodigo    := Leitor.rCampo(tcInt, 'codigo');
-      Fdescricao := Leitor.rCampo(tcStr, 'descricao');
-    end;
+      if Leitor.rExtrai(2, 'situacaoProcess') <> '' then
+      begin
+        Fcodigo    := Leitor.rCampo(tcInt, 'codigo');
+        Fdescricao := Leitor.rCampo(tcStr, 'descricao');
+      end;
 
-    if (Fresultado <> '') and (Pos('versao="2.00"', Fresultado) > 0) then
-      Result := Ler_Versao_2
+      Result := Ler_Versao_2;
+    end
     else
+    begin
+      Fresultado    := Leitor.rCampo(tcStr, 'resultado');
+
+      if Leitor.rExtrai(2, 'situacaoProcess') <> '' then
+      begin
+        Fcodigo    := Leitor.rCampo(tcInt, 'codigo');
+        Fdescricao := Leitor.rCampo(tcStr, 'descricao');
+      end;
+
       Result := Ler_Versao_1;
+    end;
   end;
 end;
 
@@ -296,9 +372,10 @@ begin
 
       if SameText(Copy(SLResultGuia.Strings[i], 1, 1), '1') then
       begin
-        resGuia.Add;
+        resGuia.New;
         Inc(j);
 
+        resGuia.Items[j].Versao := ve100;
         resGuia.Items[j].Identificador          := StrToInt(Copy(SLResultGuia.Strings[i], 1, 1));
         resGuia.Items[j].SequencialGuia         := StrToInt(Copy(SLResultGuia.Strings[i], 2, 4));
         resGuia.Items[j].SituacaoGuia           := Trim(Copy(SLResultGuia.Strings[i], 6, 1));
@@ -339,14 +416,14 @@ begin
 
       if SameText(Copy(SLResultGuia.Strings[i], 1, 1), '2') then
       begin
-        resRejeicaGuia.Add;
+        resRejeicaoGuia.New;
         Inc(k);
 
-        resRejeicaGuia.Items[k].Identificador      := StrToInt(Copy(SLResultGuia.Strings[i], 1, 1));
-        resRejeicaGuia.Items[k].SequencialGuia     := StrToInt(Copy(SLResultGuia.Strings[i], 2, 4));
-        resRejeicaGuia.Items[k].NomeCampo          := Copy(SLResultGuia.Strings[i], 6, 30);
-        resRejeicaGuia.Items[k].CodMotivoRejeicao  := StrToInt(Copy(SLResultGuia.Strings[i], 36, 3));
-        resRejeicaGuia.Items[k].DescMotivoRejeicao := Copy(SLResultGuia.Strings[i], 39, 355);
+        resRejeicaoGuia.Items[k].Identificador      := StrToInt(Copy(SLResultGuia.Strings[i], 1, 1));
+        resRejeicaoGuia.Items[k].SequencialGuia     := StrToInt(Copy(SLResultGuia.Strings[i], 2, 4));
+        resRejeicaoGuia.Items[k].NomeCampo          := Copy(SLResultGuia.Strings[i], 6, 30);
+        resRejeicaoGuia.Items[k].CodMotivoRejeicao  := StrToInt(Copy(SLResultGuia.Strings[i], 36, 3));
+        resRejeicaoGuia.Items[k].DescMotivoRejeicao := Copy(SLResultGuia.Strings[i], 39, 355);
       end;
     end;
 
@@ -359,14 +436,24 @@ end;
 function TTResultLote_GNRE.Ler_Versao_2: boolean;
 var
   i, j, k, l: Integer;
+  aXML: string;
 begin
+  Result := False;
+
   if Leitor.rExtrai(2, 'resultado') <> '' then
   begin
     i := 0;
     while Leitor.rExtrai(3, 'guia', '', i + 1) <> '' do
     begin
-      resGuia.Add;
+      resGuia.New;
 
+      aXML := '<guia versao="2.00" xmlns="http://www.gnre.pe.gov.br">' +
+                Leitor.Grupo +
+              '</guia>';
+
+      resGuia.Items[i].XML := InserirDeclaracaoXMLSeNecessario(aXML);
+
+      resGuia.Items[i].Versao := ve200;
       resGuia.Items[i].SituacaoGuia          := Leitor.rCampo(tcStr, 'situacaoGuia');
       resGuia.Items[i].UFFavorecida          := Leitor.rCampo(tcStr, 'ufFavorecida');
       resGuia.Items[i].tipoGnre              := Leitor.rCampo(tcStr, 'tipoGnre');
@@ -467,74 +554,27 @@ begin
         end;
       end;
 
+      if Leitor.rExtrai(4, 'motivosRejeicao') <> '' then
+      begin
+        j:=0;
+        while Leitor.rExtrai(5, 'motivo', '', j + 1) <> '' do
+        begin
+          resRejeicaoGuia.New;
+          resRejeicaoGuia.Items[j].CodMotivoRejeicao  := Leitor.rCampo(tcInt, 'codigo');
+          resRejeicaoGuia.Items[j].DescMotivoRejeicao := Leitor.rCampo(tcStr, 'descricao');
+          resRejeicaoGuia.Items[j].NomeCampo          := Leitor.rCampo(tcStr, 'campo');
+          Inc(j);
+        end;
+      end;
+
       if Leitor.rExtrai(4, 'informacoesComplementares') <> '' then
         resGuia.Items[i].InfoComplementares := Leitor.rCampo(tcStr, 'informacao');
 
       Inc(i);
     end;
+
+    Result := True;
   end
-end;
-
-{ TGuiaCollection }
-
-function TGuiaCollection.Add: TGuiaCollectionItem;
-begin
-  Result := TGuiaCollectionItem(inherited Add);
-end;
-
-constructor TGuiaCollection.Create(AOwner: TTResultLote_GNRE);
-begin
-  inherited Create(TGuiaCollectionItem);
-end;
-
-function TGuiaCollection.GetItem(Index: Integer): TGuiaCollectionItem;
-begin
-  Result := TGuiaCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TGuiaCollection.SetItem(Index: Integer;
-  Value: TGuiaCollectionItem);
-begin
-  inherited SetItem(Index, Value);
-end;
-
-{ TInfoCabec }
-
-constructor TInfoCabec.Create;
-begin
-  FTipoIdentificadoSolicitante := 0;
-  FIdentificadorSolicitante := '';
-  FNumeroProtocoloLote := '';
-  FAmbiente := 0;
-end;
-
-destructor TInfoCabec.Destroy;
-begin
-  inherited Destroy;
-end;
-
-{ TRejeicaoGuiaCollection }
-
-function TRejeicaoGuiaCollection.Add: TRejeicaoGuiaCollectionItem;
-begin
-  Result := TRejeicaoGuiaCollectionItem(inherited Add);
-end;
-
-constructor TRejeicaoGuiaCollection.Create(AOwner: TTResultLote_GNRE);
-begin
-  inherited Create(TRejeicaoGuiaCollectionItem);
-end;
-
-function TRejeicaoGuiaCollection.GetItem(
-  Index: Integer): TRejeicaoGuiaCollectionItem;
-begin
-  Result := TRejeicaoGuiaCollectionItem(inherited GetItem(Index));
-end;
-
-procedure TRejeicaoGuiaCollection.SetItem(Index: Integer;
-  Value: TRejeicaoGuiaCollectionItem);
-begin
-  inherited SetItem(Index, Value);
 end;
 
 end.

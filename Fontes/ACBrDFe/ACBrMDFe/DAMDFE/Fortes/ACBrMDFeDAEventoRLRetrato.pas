@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,15 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -42,7 +40,7 @@ uses
   SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs, ExtCtrls,
   RLReport, RLPDFFilter, RLBarcode, RLFilters,
   ACBrMDFeDAEventoRL, ACBrDFeReportFortes,
-  pcnConversao;
+  pcnConversao, DB;
 
 type
 
@@ -243,6 +241,7 @@ begin
         'Não possui valor fiscal, simples representação do Cancelamento indicado abaixo.');
       rllLinha3.Caption := 'CONSULTE A AUTENTICIDADE DO CANCELAMENTO NO SITE DA SEFAZ AUTORIZADORA.';
     end;
+
     teEncerramento:
     begin
       rllLinha1.Caption := 'ENCERRAMENTO';
@@ -250,6 +249,7 @@ begin
         'Não possui valor fiscal, simples representação do Encerramento indicado abaixo.');
       rllLinha3.Caption := 'CONSULTE A AUTENTICIDADE DO ENCERRAMENTO NO SITE DA SEFAZ AUTORIZADORA.';
     end;
+
     teInclusaoCondutor:
     begin
       rllLinha1.Caption := ACBrStr('INCLUSÃO DE CONDUTOR');
@@ -257,6 +257,15 @@ begin
         'Não possui valor fiscal, simples representação da Inclusão de Condutor indicada abaixo.');
       rllLinha3.Caption := ACBrStr(
         'CONSULTE A AUTENTICIDADE DA INCLUSÃO DE CONDUTOR NO SITE DA SEFAZ AUTORIZADORA.');
+    end;
+
+    tePagamentoOperacao:
+    begin
+      rllLinha1.Caption := ACBrStr('PAGAMENTO DA OPERAÇÃO DE TRANSPORTE');
+      rllLinha2.Caption := ACBrStr(
+        'Não possui valor fiscal, simples representação do Pagamento da Operação de Transporte indicada abaixo.');
+      rllLinha3.Caption := ACBrStr(
+        'CONSULTE A AUTENTICIDADE DO PAGAMENTO DA OPERAÇÃO NO SITE DA SEFAZ AUTORIZADORA.');
     end;
   end;
 end;
@@ -289,13 +298,16 @@ begin
       teCancelamento: rllTituloEvento.Caption := 'CANCELAMENTO';
       teEncerramento: rllTituloEvento.Caption := 'ENCERRAMENTO';
       teInclusaoCondutor: rllTituloEvento.Caption := ACBrStr('INCLUSÃO DE CONDUTOR');
+      tePagamentoOperacao: rllTituloEvento.Caption := ACBrStr('PAGAMENTO DA OPERAÇÃO DE TRANSPORTE');
     end;
 
     rllOrgao.Caption := IntToStr(InfEvento.cOrgao);
+
     case InfEvento.tpAmb of
       taProducao: rllTipoAmbiente.Caption := ACBrStr('PRODUÇÃO');
       taHomologacao: rllTipoAmbiente.Caption := ACBrStr('HOMOLOGAÇÃO - SEM VALOR FISCAL');
     end;
+
     rllEmissaoEvento.Caption := FormatDateTimeBr(InfEvento.dhEvento);
     rllTipoEvento.Caption := InfEvento.TipoEvento;
     rllDescricaoEvento.Caption := InfEvento.DescEvento;
@@ -331,17 +343,22 @@ end;
 procedure TfrmMDFeDAEventoRLRetrato.rlb_04_TomadorBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   inherited;
+
   printIt := False;
 end;
 
 procedure TfrmMDFeDAEventoRLRetrato.rlb_06_DescricaoBeforePrint(Sender: TObject; var PrintIt: Boolean);
+var
+  Exibir: Boolean;
 begin
   inherited;
 
-  printIt := (fpEventoMDFe.InfEvento.tpEvento = teCancelamento) or
-    (fpEventoMDFe.InfEvento.tpEvento = teEncerramento) or
-    (fpEventoMDFe.InfEvento.tpEvento = teInclusaoCondutor) or
-    (fpEventoMDFe.InfEvento.tpAmb = taHomologacao);
+  Exibir := (fpEventoMDFe.InfEvento.tpEvento = teCancelamento) or
+            (fpEventoMDFe.InfEvento.tpEvento = teEncerramento) or
+            (fpEventoMDFe.InfEvento.tpEvento = teInclusaoCondutor) or
+            (fpEventoMDFe.InfEvento.tpEvento = tePagamentoOperacao);
+
+  printIt := Exibir or (fpEventoMDFe.InfEvento.tpAmb = taHomologacao);
 
   rllMsgTeste.Visible := False;
   rllMsgTeste.Enabled := False;
@@ -353,12 +370,8 @@ begin
     rllMsgTeste.Enabled := True;
   end;
 
-  rlmDescricao.Visible := (fpEventoMDFe.InfEvento.tpEvento = teCancelamento) or
-    (fpEventoMDFe.InfEvento.tpEvento = teEncerramento) or
-    (fpEventoMDFe.InfEvento.tpEvento = teInclusaoCondutor);
-  rlmDescricao.Enabled := (fpEventoMDFe.InfEvento.tpEvento = teCancelamento) or
-    (fpEventoMDFe.InfEvento.tpEvento = teEncerramento) or
-    (fpEventoMDFe.InfEvento.tpEvento = teInclusaoCondutor);
+  rlmDescricao.Visible := Exibir;
+  rlmDescricao.Enabled := Exibir;
 
   rlmDescricao.Lines.Clear;
   case fpEventoMDFe.InfEvento.tpEvento of
@@ -367,6 +380,7 @@ begin
       rlmDescricao.Lines.Add('Protocolo do MDFe Cancelado: ' + fpEventoMDFe.InfEvento.detEvento.nProt);
       rlmDescricao.Lines.Add('Motivo do Cancelamento     : ' + fpEventoMDFe.InfEvento.detEvento.xJust);
     end;
+
     teEncerramento:
     begin
       rlmDescricao.Lines.Add('Protocolo do MDFe Encerrado: ' + fpEventoMDFe.InfEvento.detEvento.nProt);
@@ -377,11 +391,17 @@ begin
       rlmDescricao.Lines.Add(ACBrStr('Código do Município        : ') +
         IntToStr(fpEventoMDFe.InfEvento.detEvento.cMun));
     end;
+
     teInclusaoCondutor:
     begin
       rlmDescricao.Lines.Add('Dados do Motorista');
       rlmDescricao.Lines.Add('CPF : ' + fpEventoMDFe.InfEvento.detEvento.CPF);
       rlmDescricao.Lines.Add('Nome: ' + fpEventoMDFe.InfEvento.detEvento.xNome);
+    end;
+
+    tePagamentoOperacao:
+    begin
+      rlmDescricao.Lines.Add('Protocolo do MDFe Pago: ' + fpEventoMDFe.InfEvento.detEvento.nProt);
     end;
   end;
 end;
@@ -402,6 +422,7 @@ end;
 procedure TfrmMDFeDAEventoRLRetrato.rlb_09_ItensBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   inherited;
+
   rlb_09_Itens.Enabled := True;
 end;
 

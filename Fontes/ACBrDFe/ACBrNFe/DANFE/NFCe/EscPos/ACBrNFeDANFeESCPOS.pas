@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: André Ferreira de Moraes                        }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -24,30 +24,11 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 04/04/2013:  André Ferreira de Moraes
-|*   Inicio do desenvolvimento
-|* 20/11/2014:  Welkson Renny de Medeiros
-|*   Contribuições para impressão na Bematech e Daruma
-|* 25/11/2014: Régys Silveira
-|*   Acertos gerais e adaptação do layout a norma técnica
-|*   adição de método para impressão de relatórios
-|*   adição de impressão de eventos
-|* 28/11/2014: Régys Silveira
-|*   Implementação da possibilidade de utilizar tags nos relatorios (segue o
-|*   padrão do acbrecf)
-|* 06/05/2015: DSA
-|*   Refatoração para usar TACBrPosPrinter
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -120,19 +101,12 @@ type
     property PosPrinter : TACBrPosPrinter read FPosPrinter write SetPosPrinter;
   end;
 
-procedure Register;
-
 implementation
 
 uses
   strutils, Math,
   ACBrNFe, ACBrValidador, ACBrUtil, ACBrDFeUtil, ACBrConsts, ACBrDFeDANFeReport,
    pcnConversao, pcnAuxiliar;
-
-procedure Register;
-begin
-  RegisterComponents('ACBrNFe', [TACBrNFeDANFeESCPOS]);
-end;
 
 { TACBrNFeDANFeESCPOS }
 
@@ -336,14 +310,24 @@ begin
 
         if ImprimeDescAcrescItem then
         begin
-          VlrAcrescimo := Prod.vFrete + Prod.vSeg + Prod.vOutro;
-          VlrLiquido   := (Prod.qCom * Prod.vUnCom) + VlrAcrescimo - Prod.vDesc;
+          VlrAcrescimo := Prod.vSeg + Prod.vOutro;
+          VlrLiquido   := (Prod.qCom * Prod.vUnCom) + (VlrAcrescimo + Prod.vFrete) - Prod.vDesc;
 
           // desconto
           if Prod.vDesc > 0 then
           begin
             LinhaCmd := '</ae><c>' + padSpace(
-                'desconto ' + padLeft(FormatFloatBr(Prod.vDesc, '-,0.00'), 15, ' ')
+                'Desconto ' + padLeft(FormatFloatBr(Prod.vDesc, '-,0.00'), 15, ' ')
+                +IIf((VlrAcrescimo+Prod.vFrete > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
+                FPosPrinter.ColunasFonteCondensada, '|');
+            FPosPrinter.Buffer.Add('</ae><c>' + LinhaCmd);
+          end;
+
+          // Frete
+          if Prod.vFrete > 0 then
+          begin
+            LinhaCmd := '</ae><c>' + padSpace(
+                'Frete ' + padLeft(FormatFloatBr(Prod.vFrete, '+,0.00'), 15, ' ')
                 +IIf((VlrAcrescimo > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
                 FPosPrinter.ColunasFonteCondensada, '|');
             FPosPrinter.Buffer.Add('</ae><c>' + LinhaCmd);
@@ -353,7 +337,7 @@ begin
           if VlrAcrescimo > 0 then
           begin
             LinhaCmd := '</ae><c>' + ACBrStr(padSpace(
-                'acréscimo ' + padLeft(FormatFloatBr(VlrAcrescimo, '+,0.00'), 15, ' ')
+                'Acréscimo ' + padLeft(FormatFloatBr(VlrAcrescimo, '+,0.00'), 15, ' ')
                 + '|' + FormatFloatBr(VlrLiquido),
                 FPosPrinter.ColunasFonteCondensada, '|'));
             FPosPrinter.Buffer.Add('</ae><c>' + LinhaCmd);
@@ -373,31 +357,46 @@ begin
 end;
 
 procedure TACBrNFeDANFeESCPOS.GerarInformacoesTotais;
+var
+  SufixoTitulo: String;
+  ImprimeTotalNoFinal: Boolean;
 begin
-  FPosPrinter.Buffer.Add('<c>' + PadSpace('Qtde. Total de Itens|' +
+  if ImprimeDescAcrescItem then
+    SufixoTitulo := ' total'
+  else
+    SufixoTitulo := '';
+
+  ImprimeTotalNoFinal := (FpNFe.Total.ICMSTot.vDesc > 0) or
+                         ((FpNFe.Total.ICMSTot.vOutro + FpNFe.Total.ICMSTot.vFrete + FpNFe.Total.ICMSTot.vSeg) > 0);
+
+  FPosPrinter.Buffer.Add('<c>' + PadSpace('Qtde. total de itens|' +
      IntToStrZero(FpNFe.Det.Count, 3), FPosPrinter.ColunasFonteCondensada, '|'));
 
-  FPosPrinter.Buffer.Add('<c>' + PadSpace('Valor Total R$|' +
-     FormatFloatBr(FpNFe.Total.ICMSTot.vProd + FpNFe.Total.ISSQNtot.vServ),
-     FPosPrinter.ColunasFonteCondensada, '|'));
+  if ImprimeTotalNoFinal then  // Se não for reimprimir o Total no Final, use Expandido
+    FPosPrinter.Buffer.Add('<c>' + PadSpace('Valor total R$|' +
+       FormatFloatBr(FpNFe.Total.ICMSTot.vProd + FpNFe.Total.ISSQNtot.vServ),
+       FPosPrinter.ColunasFonteCondensada, '|'))
+  else
+    FPosPrinter.Buffer.Add('</ae><e>' + PadSpace('Valor total R$|' +
+       FormatFloatBr(FpNFe.Total.ICMSTot.vProd + FpNFe.Total.ISSQNtot.vServ),
+       FPosPrinter.ColunasFonteCondensada div 2, '|') + '</e>');
 
   if (FpNFe.Total.ICMSTot.vDesc > 0) then
-    FPosPrinter.Buffer.Add('<c>' + PadSpace('Descontos|' +
+    FPosPrinter.Buffer.Add('<c>' + PadSpace('Desconto'+SufixoTitulo+'|' +
        FormatFloatBr(FpNFe.Total.ICMSTot.vDesc, '-,0.00'),
        FPosPrinter.ColunasFonteCondensada, '|'));
 
   if (FpNFe.Total.ICMSTot.vOutro+FpNFe.Total.ICMSTot.vSeg) > 0 then
-    FPosPrinter.Buffer.Add('<c>' + ACBrStr(PadSpace('Acréscimos|' +
+    FPosPrinter.Buffer.Add('<c>' + ACBrStr(PadSpace('Acréscimo'+SufixoTitulo+'|' +
        FormatFloatBr(FpNFe.Total.ICMSTot.vOutro+FpNFe.Total.ICMSTot.vSeg, '+,0.00'),
        FPosPrinter.ColunasFonteCondensada, '|')));
 
   if (FpNFe.Total.ICMSTot.vFrete) > 0 then
-    FPosPrinter.Buffer.Add('<c>' + ACBrStr(PadSpace('Frete|' +
+    FPosPrinter.Buffer.Add('<c>' + ACBrStr(PadSpace('Frete'+SufixoTitulo+'|' +
        FormatFloatBr(FpNFe.Total.ICMSTot.vFrete, '+,0.00'),
        FPosPrinter.ColunasFonteCondensada, '|')));
 
-  if (FpNFe.Total.ICMSTot.vDesc > 0) or
-     ((FpNFe.Total.ICMSTot.vOutro+FpNFe.Total.ICMSTot.vFrete+FpNFe.Total.ICMSTot.vSeg) > 0) then
+  if ImprimeTotalNoFinal then
     FPosPrinter.Buffer.Add('</ae><e>' + PadSpace('Valor a Pagar R$|' +
        FormatFloatBr(FpNFe.Total.ICMSTot.vNF),
        FPosPrinter.ColunasFonteCondensada div 2, '|') + '</e>');
@@ -470,8 +469,20 @@ end;
 procedure TACBrNFeDANFeESCPOS.GerarMensagemInteresseContribuinte;
 var
   TextoObservacao: string;
+  i: Integer;
 begin
+  if ImprimeInfContr then
+  begin
+    for i := 0 to FpNFe.InfAdic.obsCont.Count - 1 do
+    begin
+      TextoObservacao := StringReplace(Trim(FpNFe.InfAdic.obsCont[i].xCampo) + ': ' +
+          Trim(FpNFe.InfAdic.obsCont[i].xTexto), ';', sLineBreak, [rfReplaceAll]);
+      FPosPrinter.Buffer.Add('<c>' + TextoObservacao);
+    end;
+  end;
+
   TextoObservacao := Trim(FpNFe.InfAdic.infCpl);
+
   if TextoObservacao <> '' then
   begin
     TextoObservacao := StringReplace(FpNFe.InfAdic.infCpl, ';', sLineBreak, [rfReplaceAll]);
@@ -506,7 +517,7 @@ begin
                     FPosPrinter.ColunasFonteExpandida)+'</n></e>');
 
       if CaracterDestaque <> #0 then
-        MsgContingencia.Add(ACBrStr('<c><n>'+PadCenter('Pendente de autorização',FPosPrinter.ColunasFonteCondensada, CaracterDestaque)+'</n>'))
+        MsgContingencia.Add(ACBrStr('<c><n>'+PadCenter(' Pendente de autorização ',FPosPrinter.ColunasFonteCondensada, CaracterDestaque)+'</n>'))
       else
         MsgContingencia.Add(ACBrStr('</ce><c><n>Pendente de autorização</n>'));
     end;
@@ -802,6 +813,9 @@ procedure TACBrNFeDANFeESCPOS.GerarDadosEvento;
 const
   TAMCOLDESCR = 11;
 begin
+  if FpEvento.Evento.Count < 1 then
+    Exit;
+
   // dados da nota eletrônica
   FPosPrinter.Buffer.Add('</fn></ce><n>Nota Fiscal para Consumidor Final</n>');
   FPosPrinter.Buffer.Add(ACBrStr('Número: ' + IntToStrZero(FpNFe.ide.nNF, 9) +
@@ -845,6 +859,9 @@ end;
 
 procedure TACBrNFeDANFeESCPOS.GerarObservacoesEvento;
 begin
+  if FpEvento.Evento.Count < 1 then
+    Exit;
+
   if FpEvento.Evento[0].InfEvento.detEvento.xJust <> '' then
   begin
     FPosPrinter.Buffer.Add('</linha_simples>');

@@ -1,3 +1,34 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -12,8 +43,8 @@ uses
   pcnConversao, pcnConversaoCIOT;
 
 const
-  ACBRCIOT_VERSAO = '1.0.0a';
-  ACBRCIOT_NAMESPACE = 'ATMWenSvr';
+  ACBRCIOT_VERSAO = '1.0.0';
+  ACBRCIOT_NAMESPACE = '';
   ACBRCIOT_CErroAmbienteDiferente = 'Ambiente do XML (tpAmb) é diferente do '+
                'configurado no Componente (Configuracoes.WebServices.Ambiente)';
 
@@ -46,12 +77,7 @@ type
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
       StreamCIOT: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil); override;
 
-    function Enviar: Boolean;
-
-    function IntegrarMotorista: Boolean;
-    function AverbarNFe: Boolean;
-    function DeclararMDFe: Boolean;
-    function AddBackMail: Boolean;
+    function Enviar(const ANomePDF: String = ''): Boolean;
 
     function GetNomeModeloDFe: String; override;
     function GetNameSpaceURI: String; override;
@@ -150,8 +176,8 @@ function TACBrCIOT.cStatConfirmado(AValue: integer): Boolean;
 begin
   case AValue of
     100, 150: Result := True;
-    else
-      Result := False;
+  else
+    Result := False;
   end;
 end;
 
@@ -159,8 +185,8 @@ function TACBrCIOT.cStatProcessado(AValue: integer): Boolean;
 begin
   case AValue of
     100, 110, 150, 301, 302: Result := True;
-    else
-      Result := False;
+  else
+    Result := False;
   end;
 end;
 
@@ -226,7 +252,7 @@ var
   Versao: Double;
   UF: String;
 begin
-  // Para qual quer UF a URL é sempre a mesma.
+  // Para qualquer UF a URL é sempre a mesma.
   UF := 'XX';
   Versao := LerVersaoDeParams(GetNomeModeloDFe, UF,
     Configuracoes.WebServices.Ambiente, LayOutToServico(LayOutServico),
@@ -257,7 +283,7 @@ var
 begin
   Versao := VersaoCIOTToDbl(Configuracoes.Geral.VersaoDF);
   URL := '';
-  // Para qual quer UF a URL é sempre a mesma.
+  // Para qualquer UF a URL é sempre a mesma.
   UF := 'XX';
   LerServicoDeParams(GetNomeModeloDFe, UF,
     Configuracoes.WebServices.Ambiente, LayOutToServico(LayOutServico),
@@ -274,7 +300,7 @@ begin
   end;
 end;
 
-function TACBrCIOT.Enviar: Boolean;
+function TACBrCIOT.Enviar(const ANomePDF: String = ''): Boolean;
 begin
   if Contratos.Count <= 0 then
     GerarException(ACBrStr('ERRO: Nenhum CIOT adicionado'));
@@ -285,55 +311,7 @@ begin
 
   Contratos.Assinar;
 
-  Result := WebServices.Envia;
-end;
-
-function TACBrCIOT.IntegrarMotorista: Boolean;
-begin
-  Result := True;
-
-//  if Contratos.Count <= 0 then
-//    GerarException(ACBrStr('ERRO: Nenhum CIOT adicionado'));
-//
-//  if Contratos.Count > 1 then
-//    GerarException(ACBrStr('ERRO: Conjunto de CIOT transmitidos (máximo de 1 CIOT)' +
-//      ' excedido. Quantidade atual: ' + IntToStr(Contratos.Count)));
-
-  Contratos.Assinar;
-end;
-
-function TACBrCIOT.AverbarNFe: Boolean;
-begin
-  Result := True;
-
-  if Contratos.Count <= 0 then
-    GerarException(ACBrStr('ERRO: Nenhum CIOT adicionado'));
-
-  if Contratos.Count > 1 then
-    GerarException(ACBrStr('ERRO: Conjunto de CIOT transmitidos (máximo de 1 CIOT)' +
-      ' excedido. Quantidade atual: ' + IntToStr(Contratos.Count)));
-
-  Contratos.Assinar;
-end;
-
-function TACBrCIOT.DeclararMDFe: Boolean;
-begin
-  Result := True;
-
-  if Contratos.Count <= 0 then
-    GerarException(ACBrStr('ERRO: Nenhum CIOT adicionado'));
-
-  if Contratos.Count > 1 then
-    GerarException(ACBrStr('ERRO: Conjunto de CIOT transmitidos (máximo de 1 CIOT)' +
-      ' excedido. Quantidade atual: ' + IntToStr(Contratos.Count)));
-
-  Contratos.Assinar;
-end;
-
-function TACBrCIOT.AddBackMail: Boolean;
-begin
-  {a}
-  Result := True;
+  Result := WebServices.Envia(ANomePDF);
 end;
 
 end.

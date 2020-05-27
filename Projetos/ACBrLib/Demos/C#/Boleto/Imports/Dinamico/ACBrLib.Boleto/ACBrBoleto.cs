@@ -54,6 +54,9 @@ namespace ACBrLib.Boleto
             public delegate int Boleto_Imprimir(string eNomeImpressora);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int Boleto_ImprimirBoleto(int eIndice, string eNomeImpressora);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int Boleto_GerarPDF();
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -157,7 +160,7 @@ namespace ACBrLib.Boleto
 
         #region Ini
 
-        public void ConfigGravar(string eArqConfig = "ACBrLib.ini")
+        public void ConfigGravar(string eArqConfig = "")
         {
             var gravarIni = GetMethod<Delegates.Boleto_ConfigGravar>();
             var ret = ExecuteMethod(() => gravarIni(ToUTF8(eArqConfig)));
@@ -165,7 +168,7 @@ namespace ACBrLib.Boleto
             CheckResult(ret);
         }
 
-        public void ConfigLer(string eArqConfig = "ACBrLib.ini")
+        public void ConfigLer(string eArqConfig = "")
         {
             var lerIni = GetMethod<Delegates.Boleto_ConfigLer>();
             var ret = ExecuteMethod(() => lerIni(ToUTF8(eArqConfig)));
@@ -250,6 +253,13 @@ namespace ACBrLib.Boleto
         {
             var method = GetMethod<Delegates.Boleto_Imprimir>();
             var ret = ExecuteMethod(() => method(ToUTF8(eNomeImpressora)));
+            CheckResult(ret);
+        }
+
+        public void ImprimirBoleto(int indice, string eNomeImpressora = "")
+        {
+            var method = GetMethod<Delegates.Boleto_ImprimirBoleto>();
+            var ret = ExecuteMethod(() => method(indice, ToUTF8(eNomeImpressora)));
             CheckResult(ret);
         }
 
@@ -452,6 +462,7 @@ namespace ACBrLib.Boleto
             AddMethod<Delegates.Boleto_LimparLista>("Boleto_LimparLista");
             AddMethod<Delegates.Boleto_TotalTitulosLista>("Boleto_TotalTitulosLista");
             AddMethod<Delegates.Boleto_Imprimir>("Boleto_Imprimir");
+            AddMethod<Delegates.Boleto_ImprimirBoleto>("Boleto_ImprimirBoleto");
             AddMethod<Delegates.Boleto_GerarPDF>("Boleto_GerarPDF");
             AddMethod<Delegates.Boleto_GerarHTML>("Boleto_GerarHTML");
             AddMethod<Delegates.Boleto_GerarRemessa>("Boleto_GerarRemessa");

@@ -1,9 +1,9 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,10 +22,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
-{******************************************************************************
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 |* ACBr                                                                        
 |*                                                                        
 |* PROPÓSITO: Registro de Alterações
@@ -36,6 +35,90 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+13/05/2020
+-- ACBrWinReqRespClass, ACBrWinHTTPReqResp, ACBrWinINetReqResp --
+[-] Ajustes para correta leitura de GetLastError
+    (por: BigWings e DSA)
+
+07/05/2020
+-- ACBrWinReqRespClass --
+[-] Ajuste em "GetWinInetError", quando não é possível capturar o Código de Erro
+    https://www.projetoacbr.com.br/forum/topic/57464-erro-ao-enviar-requisição-gnre/
+    (por: DSA)
+
+29/04/2020
+-- ACBrSocket --
+[-] Acerto para não perder os cabeçalhos quando ocorre redirecionamento
+    (por: regys.silveira)
+
+06/04/2020
+-- ACBrIBGE --
+[+] Adicionado os métodos:
+    function BuscarPorcUF( const AcUF: Integer ) : Integer ;
+    function BuscarPorUF( const AUF: string ) : Integer ;
+    - Que permitem carregar Todas as Cidades, de uma UF. Útil para criar listas
+    de Cidades, por UF.
+    (por: DSA)
+
+01/04/2020
+-- ACBrIBGE --
+[-] Correção para tratamento de Encoding, quando Resultado não está compactado
+[-] Correção para evitar carregar duas vezes as Cidades, quando o Cache está
+    parcial (sem todas as UFs e Cidades)
+    (por: DSA)
+
+27/03/2020
+-- ACBrMail --
+[*] Ajuste no método "BuildMimeMess", para que o MimeType seja reconhecido pela
+    Extensão do arquivo
+
+-- ACBrWinReqResp, ACBrWinHTTPReqResp, ACBrWinINetReqResp --
+[*] Amplo refactoring, visando melhoria no código
+[*] Novas propriedades e métodos adicionados, para permitir uma completa
+    comunicação HTTP: HeaderReq, HeaderResp, HTTPMethod
+[+] Adicionado mecanimo de Log (Debug)
+
+05/03/2020
+-- ACBrConsultaCNPJ --
+[*] Novo ajuste nas URLs de consulta do Servidor
+    (por: Alisson Gabriel)
+    https://www.projetoacbr.com.br/forum/topic/56582-consultacnpj-altera%C3%A7%C3%A3o-link/
+
+-- ACBrCEP --
+[-] Correção para Bad Request na Consulta de Cep, por Logradouro - ViaCEP
+   https://www.projetoacbr.com.br/forum/topic/56594-bad-request-na-consulta-de-cep-viacep
+   (por: paaraujo)
+
+09/02/2020
+-- ACBrTCP --
+[*] Diversos ajustes para compatibilizar com a compilação em Delphi FMX,
+    Android e Linux
+
+-- ACBrCEP --
+[-] Correção no funcionamento de TACBrWSCEPAberto, para a API V3 e JSonDataObjects
+[*] Simplificação nas classes: TACBrWSBases4you e TACBrWSCorreiosSIGEP, para
+    evitar problemas de Encoding
+
+-- ACBrIBGE --
+[-] Correção na leitura de Estatísticas de Cidades
+[*] Melhoria no tratamento da resposta do WebService para detectar se está ou não
+    compatada
+[*] Modificação para fazer uso de JSonDataObjects quando possível, agilizando
+    muito o tempo de tratamento da resposta em JSon
+    (por: DSA)
+
+-- ACBrMail --
+[*] Diversas modificações em "BuildMimeMess", para permitir o Encoding correto
+    em diversas plataforma e sem a dependência da libIconv
+[*] EncodeParts modificados para usar Base64
+[+] Melhoria para exibir todos os erros de SMTP, quando o componente está
+    configurado, para várias tentativas
+    https://www.projetoacbr.com.br/forum/topic/56158-bug-detectado-em-acbrmail/
+
+-- ACBrSuframa --
+[*] Simplificação na chamada do WebService, para evitar problemas de Encoding
+    (por: DSA)
 
 18/12/2019
 -- ACBrConsultaCNPJ --
@@ -218,7 +301,12 @@ Símbolo : Significado
 -- ACBrMail --
 [*] Metodo "TACBrMail.SendMail", modificado para retornar a mensagem de erro
     original do Servidor SMTP (Por: Carlos H. Cantu)
-
+	
+24/05/2018
+-- ACBrCEP --
+[*] Atualizacao dos comandos do CEPAberto que alterou a API para versao 3.0.
+    (por Igor de Bastos Costa)
+	
 08/05/2018
 -- ACBrCEP --
 [+] TACBrCEP, adição de novo provedor viaCEP
@@ -328,6 +416,10 @@ Símbolo : Significado
 -- ACBrConsultaCPF --
 [-] Refatoração, e ajustes para funcionar com nova URL em Lazarus
     (por: DSA)
+	
+14/11/2017
+-- ACBrFeriado --
+[*] Separação das classes em arquivos próprios. (por Filipe de Almeida Sortica)
 
 10/11/2017
 -- ACBrMail --
@@ -341,6 +433,15 @@ Símbolo : Significado
     Encoding nativo.
     https://www.projetoacbr.com.br/forum/topic/39818-problemas-em-anexar-xml-no-e-mail
     (por: DSA)
+
+07/11/2017
+-- ACBrFeriado --
+[+] Inclusão de pesquisa no arquivo JSON. (por Filipe de Almeida Sortica)
+
+27/10/2017
+-- ACBrFeriado --
+[+] Primeira Versao, inclusão de pesquisa no WebService calendario.com.br
+    (por Filipe de Almeida Sortica)
 
 23/10/2017
 -- ACBrWinHTTPReqResp, ACBrWinINetReqResp --
@@ -626,6 +727,14 @@ Símbolo : Significado
 [+] Adicionado suporte ao campo "Data da Inscrição"
     http://www.projetoacbr.com.br/forum/topic/30634-consultacpf-corre%C3%A7%C3%A3o-de-endere%C3%A7o/
     (por: Alan Lucas)
+	
+17/05/2016
+-- ACBrMTerSB100 --
+[+] Inclusão do modelo ACBrMTerSB100. (por Elias César Vieira)
+-- ACBrMTerStxEtx --
+[+] Inclusão do modelo ACBrMTerStxEtx. (por Elias César Vieira)
+-- ACBrMTerVT100 --
+[+] Inclusão do modelo ACBrMTerVT100. (por Elias César Vieira)
 
 03/02/2016
 -- ACBrMTer --
@@ -893,6 +1002,12 @@ http://www.projetoacbr.com.br/forum/index.php?/topic/
     http://www.projetoacbr.com.br/forum/index.php?/topic/13345-novo-componete-acbrtabelassped/#entry80872
 [+] Ajuste para o padrão dos componentes do projeto ACBr
     (por: Isaque Pinheiro/Juliomar Marchetti)
+	
+15/01/2014
+-- ACBrWinINetReqResp --
+[+]Inclusão da classe no Projeto ACBr. (por Jean Patrick Figueiredo dos Santos)
+-- ACBrWinReqRespClass --
+[+]Inclusão da classe no Projeto ACBr. (por Jean Patrick Figueiredo dos Santos)
 
 27/01/2013
 -- ACBrCEP --
@@ -984,6 +1099,8 @@ http://www.projetoacbr.com.br/forum/index.php?/topic/
 [*] Refactoring de funções que já existiam nos fontes do ACBr ou synapse:
     HTTPEncode -> synacode.EncodeURLElement; PosEx -> strutils.PosEx
     (por: DSA)
+-- ACBrTaxaDolar--
+[+] Inclusão do componente ACBrTaxaDolar. (por Jefferson - Jeffersonlupinacc@gmail.com)
 
 17/06/2013
 -- ACBrConsultaCNPJ --
@@ -1006,6 +1123,10 @@ http://www.projetoacbr.com.br/forum/index.php?/topic/
     dentro delas.
 [+] Adicionado evento para capturar erros de importação.
     por: regys.silveira
+	
+25/05/2013
+-- ACBrConsultaCNPJ --
+[+] Inclusão do componente ACBrConsultaCNPJ (por Fernando - fernando-mm@hotmail.com)
 
 17/05/2013
 -- ACBrIBPTax --
@@ -1081,7 +1202,8 @@ http://www.projetoacbr.com.br/forum/index.php?/topic/
 
 30/10/2011
 -- ACBrDownload --
-[+] Liberado componente para download de arquivos
+[+] Liberado componente para download de arquivos via http e ftp, com 
+    recurso de pausa e continuação do download.
     por: Isaque Pinheiro / Daniel Simões
 
 17/10/2011
@@ -1116,4 +1238,11 @@ http://www.projetoacbr.com.br/forum/index.php?/topic/
 -- ACBrCNIEE --
 [+] Librado componente para download e leitura da tabela de CNIEE
     por: Régys Silveira / Daniel Simões
+	
+12/08/2010
+-- ACBrIBGE --
+[+] Inclusão do componente ACBrIBGE. (por Daniel Simoes de Almeida e André Moraes)
 
+24/10/2008
+-- ACBrSocket --
+[+] Inclusão do componente ACBrSocket. (por Daniel Simoes de Almeida)

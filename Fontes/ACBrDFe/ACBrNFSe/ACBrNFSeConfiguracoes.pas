@@ -1,37 +1,33 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{  de Serviço eletrônica - NFSe                                                }
-
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-
-{ Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-
-
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -180,6 +176,39 @@ type
     FecharSessao: String;
  end;
 
+ TDadosEmitente = class(TPersistent)
+  private
+    FNomeFantasia: String;
+    FInscricaoEstadual: String;
+    FEndereco: String;
+    FNumero: String;
+    FCEP: String;
+    FBairro: String;
+    FComplemento: String;
+    FMunicipio: String;
+    FUF: String;
+    FCodigoMunicipio: String;
+    FTelefone: String;
+    FEmail: String;
+  public
+    Constructor Create;
+    procedure Assign(Source: TPersistent); override;
+
+  published
+    property NomeFantasia: String read FNomeFantasia write FNomeFantasia;
+    property InscricaoEstadual: String read FInscricaoEstadual write FInscricaoEstadual;
+    property Endereco: String read FEndereco write FEndereco;
+    property Numero: String read FNumero write FNumero;
+    property CEP: String read FCEP write FCEP;
+    property Bairro: String read FBairro write FBairro;
+    property Complemento: String read FComplemento write FComplemento;
+    property Municipio: String read FMunicipio write FMunicipio;
+    property UF: String read FUF write FUF;
+    property CodigoMunicipio: String read FCodigoMunicipio write FCodigoMunicipio;
+    property Telefone: String read FTelefone write FTelefone;
+    property Email: String read FEmail write FEmail;
+ end;
+
  { TParamEnvelope }
 
  TParamEnvelope = class
@@ -284,6 +313,7 @@ type
     FWebFraseSecr: String;
     FWebChaveAcesso: String;
     FDadosSenhaParams: TDadosSenhaParamsCollection;
+    FDadosEmitente: TDadosEmitente;
 
     procedure SetDadosSenhaParams(const Value: TDadosSenhaParamsCollection);
   public
@@ -299,6 +329,7 @@ type
     property WebFraseSecr: String read FWebFraseSecr write FWebFraseSecr;
     property WebChaveAcesso: String read FWebChaveAcesso write FWebChaveAcesso;
     property DadosSenhaParams: TDadosSenhaParamsCollection read FDadosSenhaParams write SetDadosSenhaParams;
+    property DadosEmitente: TDadosEmitente read FDadosEmitente write FDadosEmitente;
   end;
 
   { TGeralConfNFSe }
@@ -454,6 +485,7 @@ begin
   FWebFraseSecr     := '';
   FWebChaveAcesso   := '';
   FDadosSenhaParams := TDadosSenhaParamsCollection.Create;
+  FDadosEmitente    := TDadosEmitente.Create;
 end;
 
 procedure TEmitenteConfNFSe.Assign(Source: TPersistent);
@@ -467,6 +499,8 @@ begin
     FWebSenha := TEmitenteConfNFSe(Source).WebSenha;
     FWebFraseSecr := TEmitenteConfNFSe(Source).WebFraseSecr;
     FWebChaveAcesso := TEmitenteConfNFSe(Source).WebChaveAcesso;
+
+    FDadosEmitente.Assign(TEmitenteConfNFSe(Source).DadosEmitente);
   end
   else
     inherited Assign(Source);
@@ -475,6 +509,7 @@ end;
 destructor TEmitenteConfNFSe.Destroy;
 begin
   FDadosSenhaParams.Free;
+  FDadosEmitente.Free;
 
   inherited;
 end;
@@ -680,7 +715,8 @@ begin
     FConfigXML.VersaoAtrib := FPIniParams.ReadString('XML', 'VersaoAtrib', '');
 
   FConfigXML.VersaoXML := FPIniParams.ReadString('XML', 'VersaoXML', '');
-  FConfigXML.NameSpace := Trim(FPIniParams.ReadString('XML', 'NameSpace', ''));
+  FConfigXML.NameSpace := StringReplace(StringReplace(Trim(FPIniParams.ReadString('XML', 'NameSpace', '')), '%NomeURL_P%', FxNomeURL_P, [rfReplaceAll]),
+    '%NomeURL_H%', FxNomeURL_H, [rfReplaceAll]);
   FConfigXML.CabecalhoStr := FPIniParams.ReadBool('XML', 'Cabecalho', False);
   FConfigXML.DadosStr := FPIniParams.ReadBool('XML', 'Dados', False);
 
@@ -1288,6 +1324,47 @@ begin
   FFecharSessao.Free;
 
   inherited;
+end;
+
+{ TDadosEmitente }
+
+procedure TDadosEmitente.Assign(Source: TPersistent);
+begin
+  if Source is TDownloadConf then
+  begin
+    FNomeFantasia := TDadosEmitente(Source).NomeFantasia;
+    FInscricaoEstadual := TDadosEmitente(Source).InscricaoEstadual;
+    FEndereco := TDadosEmitente(Source).Endereco;
+    FNumero := TDadosEmitente(Source).Numero;
+    FCEP := TDadosEmitente(Source).CEP;
+    FBairro := TDadosEmitente(Source).Bairro;
+    FComplemento := TDadosEmitente(Source).Complemento;
+    FMunicipio := TDadosEmitente(Source).Municipio;
+    FUF := TDadosEmitente(Source).UF;
+    FCodigoMunicipio := TDadosEmitente(Source).CodigoMunicipio;
+    FTelefone := TDadosEmitente(Source).Telefone;
+    FEmail := TDadosEmitente(Source).Email;
+  end
+  else
+    inherited Assign(Source);
+end;
+
+constructor TDadosEmitente.Create;
+begin
+  inherited Create;
+
+  FNomeFantasia := '';
+  FInscricaoEstadual := '';
+  FEndereco := '';
+  FNumero := '';
+  FCEP := '';
+  FBairro := '';
+  FComplemento := '';
+  FMunicipio := '';
+  FUF := '';
+  FCodigoMunicipio := '';
+  FTelefone := '';
+  FEmail := '';
 end;
 
 end.

@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 {$I Report.inc}
 unit uDemo;
 
@@ -88,6 +118,7 @@ type
     cbxLayOut: TComboBox;
     cbxImprimirVersoFatura: TCheckBox;
     btnLerRetorno: TButton;
+    Button8: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -99,6 +130,7 @@ type
     procedure cbxLayOutChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnLerRetornoClick(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
   private
 {$IFDEF demo_forte}
     dm: TdmForte;
@@ -131,8 +163,17 @@ begin
 end;
 
 procedure TfrmDemo.Button2Click(Sender: TObject);
+//var
+  //i: Integer; 
 begin
   dm.ACBrBoleto.GerarPDF;
+
+  //Método para geração PDF de forma individual
+   {for i:= 0 to ACBrBoleto1.ListadeBoletos.Count -1 do
+   begin
+     ACBrBoleto1.ListadeBoletos[i].GerarPDF();
+
+   end;}
 end;
 
 procedure TfrmDemo.Button4Click(Sender: TObject);
@@ -142,13 +183,14 @@ var
   VLinha, logo : string;
   i: Integer;
 begin
-  dm.ACBrBoleto.Cedente.FantasiaCedente := 'Nome Fantasia' ;
+  dm.ACBrBoleto.Cedente.FantasiaCedente := 'Nome Fantasia';
 
-  dm.ACBrBoleto.Cedente.Nome := 'Nome do edente' ;
-  dm.ACBrBoleto.Cedente.Logradouro := 'Logradouro do edente' ;
-  dm.ACBrBoleto.Cedente.Bairro := 'Bairro do edente' ;
-  dm.ACBrBoleto.Cedente.Cidade := 'Cidade do edente' ;
-  dm.ACBrBoleto.Cedente.CEP := 'CEP do edente' ;
+  dm.ACBrBoleto.Cedente.Nome := 'Nome do cedente';
+  dm.ACBrBoleto.Cedente.Logradouro := 'Logradouro do cedente';
+  dm.ACBrBoleto.Cedente.Bairro := 'Bairro do cedente';
+  dm.ACBrBoleto.Cedente.Cidade := 'Cidade do cedente';
+  dm.ACBrBoleto.Cedente.CEP := 'CEP do cedente';
+  dm.ACBrBoleto.Cedente.Telefone := '(xx) 99999-9999';
 
   Titulo := dm.ACBrBoleto.CriarTituloNaLista;
 
@@ -197,7 +239,7 @@ begin
       begin
         VLinha := '.';
 
-        VQtdeCarcA := length('Descrição Produto/Serviço ' + IntToStr(I)) ;
+        VQtdeCarcA := length('Descrição Produto/Serviço ' + IntToStr(I));
         VQtdeCarcB := Length('Valor:');
         VQtdeCarcC := 85 - (VQtdeCarcA + VQtdeCarcB);
 
@@ -214,7 +256,7 @@ begin
 
     logo:= ExtractFileDir(ParamStr(0)) + '\acbr_logo.jpg';
 
-    ArquivoLogoEmp := logo ;  // logo da empresa
+    ArquivoLogoEmp := logo;  // logo da empresa
     //ShowMessage(logo);
 
     Verso := ((cbxImprimirVersoFatura.Checked) and ( cbxImprimirVersoFatura.Enabled = true ));
@@ -233,7 +275,7 @@ begin
   NrTitulos    := 10;
   NrTitulosStr := '10';
   Convertido   := true;
-  dm.ACBrBoleto.Cedente.FantasiaCedente := 'Nome Fantasia do Cliente' ;
+  dm.ACBrBoleto.Cedente.FantasiaCedente := 'Nome Fantasia do Cliente';
   repeat
     InputQuery('ACBrBoleto','Número de Boletos a incluir',NrTitulosStr);
     try
@@ -252,7 +294,7 @@ begin
       LocalPagamento    := 'Pagar preferêncialmente nas agências do Bradesco'; //MEnsagem exigida pelo bradesco
       Vencimento        := IncMonth(EncodeDate(2010,05,10),I);
       DataDocumento     := EncodeDate(2010,04,10);
-      NumeroDocumento   := PadRight(IntToStr(I),6,'0');
+      NumeroDocumento   := PadRight(IntToStr(I),8,'0');
       EspecieDoc        := 'DM';
       Aceite            := atSim;
       DataProcessamento := Now;
@@ -283,8 +325,17 @@ begin
 end;
 
 procedure TfrmDemo.Button7Click(Sender: TObject);
+//var
+//  i: Integer; 
 begin
   dm.ACBrBoleto.Imprimir;
+
+  //Método para impressao de cada titulo de forma individual
+   {for i:= 0 to ACBrBoleto1.ListadeBoletos.Count -1 do
+   begin
+     ACBrBoleto1.ListadeBoletos[i].Imprimir();
+
+   end; }
 end;
 
 procedure TfrmDemo.FormCreate(Sender: TObject);
@@ -319,9 +370,33 @@ procedure TfrmDemo.cbxLayOutChange(Sender: TObject);
 begin
   dm.ACBrBoleto.ACBrBoletoFC.LayOut := TACBrBolLayOut( cbxLayOut.ItemIndex );
 
-  cbxImprimirVersoFatura.Enabled := (cbxLayOut.ItemIndex = 4); // lFaturaDetal
-  if cbxLayOut.ItemIndex <> 4 then
+  cbxImprimirVersoFatura.Enabled := (cbxLayOut.ItemIndex = 6); // lFaturaDetal
+  if cbxLayOut.ItemIndex <> 6 then
    cbxImprimirVersoFatura.Checked := false;
+end;
+
+procedure TfrmDemo.Button8Click(Sender: TObject);
+var
+  SL: TStringList;
+  //i: Integer;
+begin
+  SL := TStringList.Create;
+  try
+    SL.Add('Olá,');
+    SL.Add('Atenção, Boleto está em Anexo');
+    dm.ACBrBoleto.EnviarEmail(edtEmail.Text ,'Teste de Envio de Email', SL, True);
+
+    //Método para envio e-mail de forma individual para cada título
+    {for i := 0 to dm.ACBrBoleto.ListadeBoletos.Count -1 do
+    begin
+      if (dm.ACBrBoleto.ListadeBoletos[i].Sacado.Email <> '') then
+        dm.ACBrBoleto.ListadeBoletos[i].EnviarEmail(dm.ACBrBoleto.ListadeBoletos[i].Sacado.Email ,'Teste de Envio de Email', SL, True);
+
+    end;}
+
+  finally
+    SL.Free;
+  end;
 end;
 
 end.

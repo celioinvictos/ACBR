@@ -30,13 +30,21 @@ const
 type
 
       {$IFNDEF FPC}
-        {$IFDEF CPU64}
+        {$IFDEF CPUX64}
           SizeInt = Int64;
         {$ELSE}
           SizeInt = LongInt;
         {$ENDIF}
         PSizeInt = ^SizeInt;
         TLibHandle = THandle;
+
+        // Compatibilização de Tipos inexistentes em compiladores NEXTGEN
+        {$IfDef NEXTGEN}
+          AnsiString = RawByteString;
+          AnsiChar = UTF8Char;
+          PAnsiChar = PUTF8Char;
+          PPAnsiChar = ^PUTF8Char;
+        {$EndIf}
       {$ENDIF}
 
       PFILE = Pointer;

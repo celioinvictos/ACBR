@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,21 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 01/03/2016: Guilherme Costa
-|*  - Alterações para validação com o XSD
-|* 15/02/2018 - EdmarFrazão
-|*  Alterações  Declaração e Campo Opcional ftransfTit
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS2299;
@@ -51,7 +40,13 @@ unit pcesS2299;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -180,7 +175,7 @@ type
     property QtdDiasInterm: Integer read FQtdDiasInterm write FQtdDiasInterm;
   end;
 
-  TIdePeriodoCollection = class(TObjectList)
+  TIdePeriodoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TIdePeriodoItem;
     procedure SetItem(Index: Integer; Value: TIdePeriodoItem);
@@ -202,7 +197,7 @@ type
     property ideEstabLot: TideEstabLotCollection read FIdeEstabLot write FIdeEstabLot;
   end;
 
-  TIdeADCCollection = class(TObjectList)
+  TIdeADCCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TIdeADCItem;
     procedure SetItem(Index: Integer; Value: TIdeADCItem);
@@ -252,7 +247,7 @@ type
     property ideEstabLot: TideEstabLotCollection read FIdeEstabLot write FIdeEstabLot;
   end;
 
-  TDmDevCollection = class(TObjectList)
+  TDmDevCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TDMDevCollectionItem;
     procedure SetItem(Index: Integer; Value: TDMDevCollectionItem);
@@ -296,7 +291,7 @@ type
     property ProcCS: TProcCS read FProcCS write FProcCS;
   end;
 
-  TConsigFGTSCollection = class(TObjectList)
+  TConsigFGTSCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TConsigFGTSItem;
     procedure SetItem(Index: Integer; Value: TConsigFGTSItem);
@@ -326,7 +321,7 @@ type
     property dtNascto: TDateTime read FdtNascto write FdtNascto;
   end;
 
-  TInfoTrabIntermCollection = class(TObjectList)
+  TInfoTrabIntermCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfoTrabIntermItem;
     procedure SetItem(Index: Integer; Value: TInfoTrabIntermItem);
@@ -365,12 +360,12 @@ end;
 
 function TS2299Collection.GetItem(Index: Integer): TS2299CollectionItem;
 begin
-  Result := TS2299CollectionItem(inherited GetItem(Index));
+  Result := TS2299CollectionItem(inherited Items[Index]);
 end;
 
 procedure TS2299Collection.SetItem(Index: Integer; Value: TS2299CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TS2299Collection.New: TS2299CollectionItem;
@@ -392,6 +387,7 @@ begin
   FMudancaCPF   := TMudancaCPF3.Create;
   Fobservacoes  := TobservacoesCollection.Create;
   FconsigFGTS   := TConsigFGTSCollection.Create;
+  FQtdDiasInterm := -1;
 end;
 
 destructor TInfoDeslig.Destroy;
@@ -444,12 +440,12 @@ end;
 
 function TDmDevCollection.GetItem(Index: Integer): TDMDevCollectionItem;
 begin
-  Result := TDMDevCollectionItem(inherited GetItem(Index));
+  Result := TDMDevCollectionItem(inherited Items[Index]);
 end;
 
 procedure TDmDevCollection.SetItem(Index: Integer; Value: TDMDevCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TDmDevCollection.New: TDMDevCollectionItem;
@@ -538,12 +534,12 @@ end;
 
 function TIdeADCCollection.GetItem(Index: Integer): TIdeADCItem;
 begin
-  Result := TIdeADCItem(inherited GetItem(Index));
+  Result := TIdeADCItem(inherited Items[Index]);
 end;
 
 procedure TIdeADCCollection.SetItem(Index: Integer; Value: TIdeADCItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeADCCollection.New: TIdeADCItem;
@@ -576,12 +572,12 @@ end;
 
 function TIdePeriodoCollection.GetItem(Index: Integer): TIdePeriodoItem;
 begin
-  Result := TIdePeriodoItem(inherited GetItem(Index));
+  Result := TIdePeriodoItem(inherited Items[Index]);
 end;
 
 procedure TIdePeriodoCollection.SetItem(Index: Integer; Value: TIdePeriodoItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdePeriodoCollection.New: TIdePeriodoItem;
@@ -633,13 +629,13 @@ end;
 function TInfoTrabIntermCollection.GetItem(
   Index: Integer): TInfoTrabIntermItem;
 begin
-  Result := TInfoTrabIntermItem(inherited GetItem(Index));
+  Result := TInfoTrabIntermItem(inherited Items[Index]);
 end;
 
 procedure TInfoTrabIntermCollection.SetItem(Index: Integer;
   Value: TInfoTrabIntermItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfoTrabIntermCollection.New: TInfoTrabIntermItem;
@@ -657,12 +653,12 @@ end;
 
 function TConsigFGTSCollection.GetItem(Index: Integer): TConsigFGTSItem;
 begin
-  Result := TConsigFGTSItem(inherited GetItem(Index));
+  Result := TConsigFGTSItem(inherited Items[Index]);
 end;
 
 procedure TConsigFGTSCollection.SetItem(Index: Integer; Value: TConsigFGTSItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TConsigFGTSCollection.New: TConsigFGTSItem;
@@ -716,7 +712,7 @@ begin
 
   Gerador.wCampo(tcStr, '', 'indCumprParc', 1,   1, 1, eSTpCumprParcialAvisoToStr(obj.indCumprParc));
 
-  If (obj.QtdDiasInterm > 0) And (VersaoDF <> ve02_04_01) Then
+  If (obj.QtdDiasInterm >= 0) And (VersaoDF <> ve02_04_01) Then
      Gerador.wCampo(tcInt, '', 'qtdDiasInterm', 1,   2, 1, obj.QtdDiasInterm);
 
   if (VersaoDF = ve02_04_01) then

@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: Italo Jurisato Junior                           }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -123,6 +122,9 @@ function ETQ_ImprimirCaixa(const Vertical, Horizontal, Largura, Altura,
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function ETQ_ImprimirImagem(const MultiplicadorImagem, Vertical, Horizontal: Integer;
       const eNomeImagem: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function ETQ_ImprimirQRCode(const Vertical, Horizontal: Integer; const Texto: PChar;
+          LarguraModulo, ErrorLevel, Tipo: Integer): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
@@ -413,7 +415,8 @@ function ETQ_ImprimirTexto(const Orientacao, Fonte, MultiplicadorH,
             const SubFonte: Integer; const ImprimirReverso: Boolean): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-    ATexto: AnsiString;
+  ATexto: AnsiString;
+  UTF8Str: String;
 begin
   try
     VerificarLibInicializada;
@@ -432,8 +435,9 @@ begin
     begin
       ETQDM.Travar;
       try
+        UTF8Str := ConverterAnsiParaUTF8(ATexto);
         ETQDM.ACBrETQ1.ImprimirTexto(TACBrETQOrientacao(Orientacao), Fonte, MultiplicadorH,
-              MultiplicadorV, Vertical, Horizontal, ATexto,
+              MultiplicadorV, Vertical, Horizontal, UTF8Str,
               SubFonte, ImprimirReverso);
         Result := SetRetorno(ErrOK);
       finally
@@ -454,7 +458,8 @@ function ETQ_ImprimirTextoStr(const Orientacao: Integer; const Fonte: PChar; con
             const SubFonte: Integer; const ImprimirReverso: Boolean): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-    ATexto, AFonte: AnsiString;
+  ATexto, AFonte: AnsiString;
+  UTF8Str: String;
 begin
   try
     VerificarLibInicializada;
@@ -474,8 +479,9 @@ begin
     begin
       ETQDM.Travar;
       try
+        UTF8Str := ConverterAnsiParaUTF8(ATexto);
         ETQDM.ACBrETQ1.ImprimirTexto(TACBrETQOrientacao(Orientacao), AFonte, MultiplicadorH,
-              MultiplicadorV, Vertical, Horizontal, ATexto,
+              MultiplicadorV, Vertical, Horizontal, UTF8Str,
               SubFonte, ImprimirReverso);
         Result := SetRetorno(ErrOK);
       finally
@@ -497,6 +503,7 @@ function ETQ_ImprimirBarras(const Orientacao, TipoBarras, LarguraBarraLarga,
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   ATexto: AnsiString;
+  UTF8Str: String;
 begin
   try
     VerificarLibInicializada;
@@ -515,9 +522,10 @@ begin
     begin
       ETQDM.Travar;
       try
+        UTF8Str := ConverterAnsiParaUTF8(ATexto);
         ETQDM.ACBrETQ1.ImprimirBarras(TACBrETQOrientacao(Orientacao),
            TACBrTipoCodBarra(TipoBarras), LarguraBarraLarga, LarguraBarraFina,
-           Vertical, Horizontal, ATexto, AlturaCodBarras,
+           Vertical, Horizontal, UTF8Str, AlturaCodBarras,
            TACBrETQBarraExibeCodigo(ExibeCodigo));
         Result := SetRetorno(ErrOK);
       finally
@@ -636,6 +644,45 @@ begin
       Result := SetRetorno(ErrExecutandoMetodo, E.Message);
   end;
 end;
+
+function ETQ_ImprimirQRCode(const Vertical, Horizontal: Integer; const Texto: PChar;
+          LarguraModulo, ErrorLevel, Tipo: Integer): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  ATexto: string;
+  UTF8Str: String;
+begin
+  try
+    VerificarLibInicializada;
+    ATexto := AnsiString(Texto);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('ETQ_ImprimirQRCode( ' + IntToStr(Vertical) + ',' +
+        IntToStr(Horizontal) + ',' + ATexto + ',' + IntToStr(LarguraModulo)
+        + ',' + IntToStr(ErrorLevel) + ',' + IntToStr(Tipo) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('ETQ_ImprimirQRCode', logNormal);
+
+    with TACBrLibETQ(pLib) do
+    begin
+      ETQDM.Travar;
+      try
+        UTF8Str := ConverterAnsiParaUTF8(ATexto);
+        ETQDM.ACBrETQ1.ImprimirQRCode(Vertical, Horizontal, UTF8Str, LarguraModulo, ErrorLevel, Tipo);
+        Result := SetRetorno(ErrOK);
+      finally
+        ETQDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
 {%endregion}
 
 {%endregion}

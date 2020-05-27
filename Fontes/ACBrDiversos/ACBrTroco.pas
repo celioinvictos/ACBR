@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2005 Anderson Rogerio Bejatto               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Daniel Simoes de Almeida               }
+{ Colaboradores nesse arquivo: Anderson Rogerio Bejatto                        }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,25 +26,25 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 18/10/2005: Anderson Rogerio Bejatto
-|*  - Primeira Versao ACBrTroco
-******************************************************************************}
 
 unit ACBrTroco;
 
 {$I ACBr.inc}
 
 interface
-uses ACBrBase,
-     SysUtils , Classes, Contnrs ;
+uses
+  SysUtils , Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
+  ACBrBase;
 
 type
 
@@ -60,7 +60,7 @@ TDinheiro = class
   end;
 
 {Classe que ira armazenar os objetos de TDinheiro}
-TDinheiroList = class(TObjectList)
+TDinheiroList = class(TObjectList{$IfDef NEXTGEN}<TDinheiro>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TDinheiro);
     function GetObject (Index: Integer): TDinheiro;
@@ -89,7 +89,7 @@ TTroco = class
 end;
 
 {Classe que ira armazenar os objetos de TTroco}
-TTrocoList = class(TObjectList)
+TTrocoList = class(TObjectList{$IfDef NEXTGEN}<TTroco>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TTroco);
     function GetObject (Index: Integer): TTroco;
@@ -353,7 +353,7 @@ end;
 
 function TDinheiroList.GetObject(Index: Integer): TDinheiro;
 begin
-   Result := inherited GetItem(Index) as TDinheiro;
+  Result := TDinheiro(inherited Items[Index]);
 end;
 
 procedure TDinheiroList.Insert(Index: Integer; Obj: TDinheiro);
@@ -363,7 +363,7 @@ end;
 
 procedure TDinheiroList.SetObject(Index: Integer; Item: TDinheiro);
 begin
-   inherited SetItem(Index, Item);
+   inherited Items[Index] := Item;
 end;
 
 {---------------------------------- TTroco ----------------------------------}
@@ -388,7 +388,7 @@ end;
 
 function TTrocoList.GetObject(Index: Integer): TTroco;
 begin
-   Result := inherited GetItem(Index) as TTroco;
+  Result := TTroco(inherited Items[Index]);
 end;
 
 procedure TTrocoList.Insert(Index: Integer; Obj: TTroco);
@@ -398,7 +398,7 @@ end;
 
 procedure TTrocoList.SetObject(Index: Integer; Item: TTroco);
 begin
-   inherited SetItem(Index, Item);
+   inherited Items[Index] := Item;
 end;
 
 end.

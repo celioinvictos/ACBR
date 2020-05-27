@@ -1,14 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNF3e                                                 }
-{  Nota Fiscal de Energia Eletrica Eletrônica - NF3e                           }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2019                                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -26,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 18/12/2019: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -45,7 +37,7 @@ unit ACBrNF3e;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, synautil,
   ACBrBase, ACBrUtil, ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes,
   ACBrNF3eConfiguracoes, ACBrNF3eWebServices, ACBrNF3eNotasFiscais,
   ACBrNF3eDANF3eClass,
@@ -102,7 +94,7 @@ type
     function Enviar(const ALote: String; Imprimir: Boolean = True;
       Sincrono: Boolean = False): Boolean; overload;
     function Cancelamento(const AJustificativa: String; ALote: integer = 0): Boolean;
-    function Consultar( const AChave: String = ''): Boolean;
+    function Consultar(const AChave: String = ''; AExtrairEventos: Boolean = False): Boolean;
     function EnviarEvento(idLote: integer): Boolean;
 
     procedure LerServicoDeParams(LayOutServico: TLayOut; var Versao: Double;
@@ -140,6 +132,8 @@ type
       AchNF3e: String): Boolean;
     function Inutilizar(const ACNPJ, AJustificativa: String;
       AAno, ASerie, ANumInicial, ANumFinal: Integer): Boolean;
+
+    function GravarStream(AStream: TStream): Boolean;
 
     procedure EnviarEmailEvento(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
@@ -516,6 +510,16 @@ begin
   Result := urlUF + sEntrada;
 end;
 
+function TACBrNF3e.GravarStream(AStream: TStream): Boolean;
+begin
+  if EstaVazio(FEventoNF3e.Gerador.ArquivoFormatoXML) then
+    FEventoNF3e.GerarXML;
+
+  AStream.Size := 0;
+  WriteStrToStream(AStream, AnsiString(FEventoNF3e.Gerador.ArquivoFormatoXML));
+  Result := True;
+end;
+
 procedure TACBrNF3e.SetStatus(const stNewStatus: TStatusACBrNF3e);
 begin
   if stNewStatus <> FStatus then
@@ -564,7 +568,7 @@ begin
   Result := True;
 end;
 
-function TACBrNF3e.Consultar(const AChave: String): Boolean;
+function TACBrNF3e.Consultar(const AChave: String; AExtrairEventos: Boolean): Boolean;
 var
   i: integer;
 begin
@@ -574,14 +578,16 @@ begin
   if NaoEstaVazio(AChave) then
   begin
     NotasFiscais.Clear;
-    WebServices.Consulta.NF3eChave := AChave;
+    WebServices.Consulta.NF3eChave      := AChave;
+    WebServices.Consulta.ExtrairEventos := AExtrairEventos;
     WebServices.Consulta.Executar;
   end
   else
   begin
     for i := 0 to NotasFiscais.Count - 1 do
     begin
-      WebServices.Consulta.NF3eChave := NotasFiscais.Items[i].NumID;
+      WebServices.Consulta.NF3eChave      := NotasFiscais.Items[i].NumID;
+      WebServices.Consulta.ExtrairEventos := AExtrairEventos;
       WebServices.Consulta.Executar;
     end;
   end;
@@ -774,22 +780,27 @@ procedure TACBrNF3e.EnviarEmailEvento(const sPara, sAssunto: String;
 var
   NomeArq: String;
   AnexosEmail: TStrings;
+  StreamNF3e : TMemoryStream;
 begin
   AnexosEmail := TStringList.Create;
+  StreamNF3e := TMemoryStream.Create;
   try
     AnexosEmail.Clear;
 
     if Anexos <> nil then
       AnexosEmail.Text := Anexos.Text;
 
-    ImprimirEventoPDF;
-    NomeArq := OnlyNumber(EventoNF3e.Evento[0].InfEvento.Id);
-    NomeArq := PathWithDelim(DANF3e.PathPDF) + NomeArq + '-procEventoNF3e.pdf';
-    AnexosEmail.Add(NomeArq);
+    GravarStream(StreamNF3e);
 
-    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, nil, '', sReplyTo);
+    ImprimirEventoPDF;
+    AnexosEmail.Add(DANF3E.ArquivoPDF);
+
+    NomeArq := OnlyNumber(EventoNF3e.Evento[0].InfEvento.Id);
+    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamNF3e,
+  	  NomeArq + '-procEventoNF3e.xml', sReplyTo);
   finally
     AnexosEmail.Free;
+    StreamNF3e.Free;
   end;
 end;
 

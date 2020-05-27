@@ -1,9 +1,9 @@
 object frmACBrGNRe: TfrmACBrGNRe
   Left = 249
   Top = 82
-  Width = 882
-  Height = 651
   Caption = 'ACBrGNRe - Programa Exemplo'
+  ClientHeight = 612
+  ClientWidth = 866
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -360,7 +360,6 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 9
               OnChange = cbSSLLibChange
             end
@@ -370,7 +369,6 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 10
               OnChange = cbCryptLibChange
             end
@@ -380,7 +378,6 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 11
               OnChange = cbHttpLibChange
             end
@@ -390,7 +387,6 @@ object frmACBrGNRe: TfrmACBrGNRe
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 12
               OnChange = cbXmlSignLibChange
             end
@@ -501,7 +497,6 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Top = 104
                 Width = 248
                 Height = 21
-                ItemHeight = 0
                 TabOrder = 2
               end
               object cbxAtualizarXML: TCheckBox
@@ -540,7 +535,6 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Top = 181
                 Width = 248
                 Height = 21
-                ItemHeight = 0
                 TabOrder = 7
               end
               object edtPathSchemas: TEdit
@@ -565,9 +559,9 @@ object frmACBrGNRe: TfrmACBrGNRe
               object Label6: TLabel
                 Left = 8
                 Top = 16
-                Width = 121
+                Width = 126
                 Height = 13
-                Caption = 'Selecione UF de Destino:'
+                Caption = 'Selecione UF do Emitente:'
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
                 Font.Height = -11
@@ -619,7 +613,6 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Font.Height = -13
                 Font.Name = 'MS Sans Serif'
                 Font.Style = []
-                ItemHeight = 16
                 ItemIndex = 24
                 ParentFont = False
                 TabOrder = 1
@@ -692,7 +685,6 @@ object frmACBrGNRe: TfrmACBrGNRe
                 Height = 21
                 Hint = 'Depende de configura'#231#227'o de  SSL.HttpLib'
                 Style = csDropDownList
-                ItemHeight = 0
                 TabOrder = 5
                 OnChange = cbSSLTypeChange
               end
@@ -1213,8 +1205,6 @@ object frmACBrGNRe: TfrmACBrGNRe
       Width = 153
       Height = 25
       Caption = 'Salvar Configura'#231#245'es'
-      TabOrder = 1
-      OnClick = btnSalvarConfigClick
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
         04000000000000010000130B0000130B00001000000000000000000000000000
@@ -1229,6 +1219,8 @@ object frmACBrGNRe: TfrmACBrGNRe
         99337F3FF7F3733777F30F08F0F0337999337F7737F73F7777330FFFF0039999
         93337FFFF7737777733300000033333333337777773333333333}
       NumGlyphs = 2
+      TabOrder = 1
+      OnClick = btnSalvarConfigClick
     end
   end
   object pnlCentral: TPanel
@@ -1250,11 +1242,11 @@ object frmACBrGNRe: TfrmACBrGNRe
         Caption = 'Envios'
         ImageIndex = 2
         object btnEnviarEmail: TButton
-          Left = 9
-          Top = 77
+          Left = 192
+          Top = 71
           Width = 177
           Height = 25
-          Caption = 'Enviar NFe Email'
+          Caption = 'Enviar Guia Email'
           TabOrder = 0
           OnClick = btnEnviarEmailClick
         end
@@ -1276,23 +1268,32 @@ object frmACBrGNRe: TfrmACBrGNRe
           TabOrder = 2
           OnClick = btnCriarEnviarClick
         end
-        object btnImprimir: TButton
+        object btnImprimirTXT: TButton
           Left = 8
           Top = 40
           Width = 177
           Height = 25
-          Caption = 'Imprimir Guia'
+          Caption = 'Imprimir Guia TXT'
           TabOrder = 3
-          OnClick = btnImprimirClick
+          OnClick = btnImprimirTXTClick
         end
         object btnGerarPDF: TButton
-          Left = 192
-          Top = 40
+          Left = 9
+          Top = 71
           Width = 177
           Height = 25
           Caption = 'Gerar PDF'
           TabOrder = 4
           OnClick = btnGerarPDFClick
+        end
+        object btnImprimirXML: TButton
+          Left = 192
+          Top = 40
+          Width = 177
+          Height = 25
+          Caption = 'Imprimir Guia XML'
+          TabOrder = 5
+          OnClick = btnImprimirXMLClick
         end
       end
       object tsConsultas: TTabSheet
@@ -1459,7 +1460,7 @@ object frmACBrGNRe: TfrmACBrGNRe
     MargemInferior = 8.000000000000000000
     MargemSuperior = 8.000000000000000000
     MargemEsquerda = 6.000000000000000000
-    MargemDireita = 5.100000000000000000
+    MargemDireita = 5.099999999999999000
     PrintDialog = True
     Left = 430
     Top = 238

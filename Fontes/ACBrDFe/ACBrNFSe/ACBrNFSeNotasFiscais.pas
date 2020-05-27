@@ -1,17 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{  de Serviço eletrônica - NFSe                                                }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -41,7 +37,7 @@ unit ACBrNFSeNotasFiscais;
 interface
 
 uses
-  Classes, SysUtils, Dialogs, Forms, StrUtils,
+  Classes,
   ACBrNFSeConfiguracoes, ACBrDFeUtil, ACBrDFeSSL,
   pnfsNFSe, pnfsNFSeR, pnfsNFSeW, pcnConversao, pcnAuxiliar, pcnLeitor;
 
@@ -185,6 +181,7 @@ type
 implementation
 
 uses
+  SysUtils, StrUtils,
   ACBrNFSe, ACBrUtil, pnfsConversao, synautil;
 
 { NotaFiscal }
@@ -391,6 +388,11 @@ begin
     FNFSeR.PathIniCidades := Configuracoes.Geral.PathIniCidades;
     FNFSeR.TabServicosExt := Configuracoes.Arquivos.TabServicosExt;
     FNFSeR.VersaoXML      := Configuracoes.Geral.ConfigXML.VersaoXML; //Alterado Dalvan
+
+    if Configuracoes.WebServices.Ambiente = taProducao then
+      FNFSeR.Producao := snSim
+    else
+      FNFSeR.Producao := snNao;
   end;
   FNFSeR.LerXml;
 
@@ -763,7 +765,8 @@ begin
       XMLAss := SSL.Assinar(ArqXML, docElemento, infElemento,
                             SignatureNode, SelectionNamespaces, IdSignature, IdAttr);
 
-      XMLAss := Self.Items[0].CorrigirAssinatura(XMLAss);
+      if (Self.Count > 0) then
+        XMLAss := Self.Items[0].CorrigirAssinatura(XMLAss);
 
       Result := XMLAss;
     end;

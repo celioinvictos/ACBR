@@ -123,7 +123,6 @@ namespace ACBrLibBoleto.Demo
 
         private void SaveConfig()
         {
-            boleto.ConfigGravarValor(ACBrSessao.BoletoBancoFCFortesConfig, "Layout", cmbModeloImpressao.GetSelectedValue<ACBrBolLayOut>());
             boleto.ConfigGravarValor(ACBrSessao.BoletoBancoFCFortesConfig, "MostrarPreview", chkPreview.Checked);
             boleto.ConfigGravarValor(ACBrSessao.BoletoBancoFCFortesConfig, "MostrarProgresso", chkProgresso.Checked);
             boleto.ConfigGravarValor(ACBrSessao.BoletoBancoFCFortesConfig, "MostrarSetup", chkSetup.Checked);
@@ -132,6 +131,9 @@ namespace ACBrLibBoleto.Demo
             boleto.ConfigGravarValor(ACBrSessao.BoletoBancoFCFortesConfig, "PrinterName", cmbImpressora.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoBancoFCFortesConfig, "DirLogo", txtDirLogo.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoBancoConfig, "TipoCobranca", cmbBanco.GetSelectedValue<ACBrTipoCobranca>());
+            boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "TipoCarteira", cmbTipoCarteira.GetSelectedValue<ACBrTipoCarteira>());
+            boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "TipoDocumento", cmbTipoDocumento.GetSelectedValue<ACBrTipoDocumento>());
+            boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "TipoInscricao", cmbTipoInscricao.GetSelectedValue<ACBrPessoa>());
             boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "Agencia", txtAgencia.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "AgenciaDigito", txtDigAgencia.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "Conta", txtConta.Text);
@@ -151,9 +153,6 @@ namespace ACBrLibBoleto.Demo
             boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "NumeroRes", txtNumeroRes.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "Telefone", txtTelefone.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "UF", cmbUF.Text);
-            boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "TipoCarteira", cmbTipoCarteira.GetSelectedValue<ACBrTipoCarteira>());
-            boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "TipoDocumento", cmbTipoDocumento.GetSelectedValue<ACBrTipoDocumento>());
-            boleto.ConfigGravarValor(ACBrSessao.BoletoCedenteConfig, "TipoInscricao", cmbTipoInscricao.GetSelectedValue<ACBrPessoa>());
             boleto.ConfigGravarValor(ACBrSessao.BoletoDiretorioConfig, "DirArqRemessa", txtDirRemessa.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoDiretorioConfig, "DirArqRetorno", txtDirRetorno.Text);
             boleto.ConfigGravarValor(ACBrSessao.BoletoDiretorioConfig, "LayoutRemessa", cmbLayoutCNAB.GetSelectedValue<ACBrLayoutRemessa>());
@@ -212,7 +211,12 @@ namespace ACBrLibBoleto.Demo
 
         private void BtnGerarRemessa_Click(object sender, EventArgs e)
         {
-            boleto.GerarRemessa(txtDirRemessa.Text, 1, txtNomeRemessa.Text);
+            string ret = "";
+            if (string.IsNullOrEmpty(txtDirRemessa.Text))
+                ret = Application.StartupPath;
+            else
+                ret = txtDirRemessa.Text;
+            boleto.GerarRemessa(ret, 1, txtNomeRemessa.Text);
             rtbRespostas.AppendLine("Remessa Gerada.");
         }
 
@@ -229,5 +233,74 @@ namespace ACBrLibBoleto.Demo
         }
 
         #endregion EventHandlers
+
+        private void BtnConfigDados_Click(object sender, EventArgs e)
+        {
+            var iniPath = Helpers.OpenFile("Configurar Dados do Cedente (*.ini)|*.ini|Todo os Arquivos (*.*)|*.*");
+            if (string.IsNullOrEmpty(iniPath)) return;
+
+            var ret = boleto.ConfigurarDados(iniPath);
+            rtbRespostas.AppendLine(ret);
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            var ret = boleto.ListaOcorrenciasEX();
+            rtbRespostas.AppendLine(ret);
+        }
+
+        private void BtnGerarPDF_Click(object sender, EventArgs e)
+        {
+            boleto.GerarPDF();
+            rtbRespostas.AppendLine("PDF Gerado");
+        }
+
+        private void BtnLinhaDigitavel_Click(object sender, EventArgs e)
+        {
+            var ret = boleto.RetornaLinhaDigitavel(0);
+            rtbRespostas.AppendLine(ret);
+        }
+
+        private void FrmMain_Load(object sender, EventArgs e)
+        {
+        }
+
+        private void BtnEnviarEmail_Click(object sender, EventArgs e)
+        {
+            int i = 0;
+            Int32.TryParse(boleto.TotalTitulosLista(), out i);
+
+            if (i == 0) return;
+
+            try
+            {
+                boleto.EnviarEmail(txtEmail.Text,
+                    "Teste envio Boleto",
+                    "Boleto em anexo", "");
+                rtbRespostas.AppendLine("e-mail enviado!");
+            }
+            catch (Exception ex)
+            {
+                rtbRespostas.AppendLine(ex.Message);
+            }
+        }
+
+        private void BtnListaBancos_Click(object sender, EventArgs e)
+        {
+            var ret = boleto.ListaBancos();
+            rtbRespostas.AppendLine(ret);
+        }
+
+        private void BtnCodigoBarras_Click(object sender, EventArgs e)
+        {
+            var ret = boleto.RetornaCodigoBarras(0);
+            rtbRespostas.AppendLine(ret);
+        }
+
+        private void BtnLerRetorno_Click(object sender, EventArgs e)
+        {
+            boleto.LerRetorno(txtDirRetorno.Text, txtNomeRetorno.Text);
+            rtbRespostas.AppendLine("Retorno Gerado.");
+        }
     }
 }

@@ -3,15 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{ Esse arquivo usa a classe  SynaSer   Copyright (c)2001-2003, Lukas Gebauer   }
-{  Project : Ararat Synapse     (Found at URL: http://www.ararat.cz/synapse/)  }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -33,23 +30,31 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 24/10/2008: Primeira Versao
-|*    Daniel Simoes de Almeida
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrSocket;
 
 interface
 
-uses SysUtils, Classes, Types, syncobjs,
-     blcksock, synsock, httpsend, ssl_openssl,  {Units da Synapse}
-     {$IFDEF MSWINDOWS} windows, wininet, {$ENDIF}  { Units para a auto-detecção de Proxy }
-     ACBrBase ;
+{$IFDEF VCL}
+  {$DEFINE UPDATE_SCREEN_CURSOR}
+{$ENDIF}
+
+{$IFDEF LCL}
+  {$DEFINE UPDATE_SCREEN_CURSOR}
+{$ENDIF}
+
+{$IFDEF NOGUI}
+  {$UNDEF UPDATE_SCREEN_CURSOR}
+{$ENDIF}
+
+uses
+  SysUtils, Classes, Types, syncobjs,
+  blcksock, synsock, httpsend, ssl_openssl,  {Units da Synapse}
+  {$IFDEF MSWINDOWS}
+    windows, wininet,
+  {$ENDIF}  { Units para a auto-detecção de Proxy }
+  ACBrBase;
 
 type
 
@@ -248,10 +253,12 @@ function IsAbsoluteURL(const URL: String): Boolean;
 implementation
 
 Uses
-  math,
+  math, StrUtils,
   ACBrUtil,
   synacode, synautil
-  {$IFNDEF NOGUI},Controls, Forms{$ENDIF};
+  {$IFDEF UPDATE_SCREEN_CURSOR}
+    ,Controls, Forms
+  {$ENDIF};
 
 function GetURLBasePath(const URL: String): String;
 begin
@@ -709,8 +716,8 @@ begin
 
   if (fs_Terminador = '') and (AValue <> '') then  // não usou notação '#13,#10'
   begin
-    fs_Terminador := AValue;
-    fsTerminador := StringToAsc(AValue);
+    fs_Terminador := AnsiString(AValue);
+    fsTerminador := StringToAsc(fs_Terminador);
   end;
 end;
 
@@ -858,14 +865,15 @@ end ;
 procedure TACBrHTTP.HTTPMethod(const Method, AURL: String);
 var
   OK : Boolean ;
-  {$IFNDEF NOGUI}
+  {$IFDEF UPDATE_SCREEN_CURSOR}
    OldCursor : TCursor ;
   {$ENDIF}
    CT, Location, HtmlHead: String ;
    RespIsUTF8, AddUTF8InHeader: Boolean;
    ContaRedirecionamentos: Integer;
+   HeadersOld: string;
 begin
-  {$IFNDEF NOGUI}
+  {$IFDEF UPDATE_SCREEN_CURSOR}
    OldCursor := Screen.Cursor ;
    Screen.Cursor := crHourGlass;
   {$ENDIF}
@@ -902,6 +910,7 @@ begin
       end;
     end;
 
+    HeadersOld := HTTPSend.Headers.Text;
     HTTPSend.HTTPMethod(Method, fURL);
 
     while ContaRedirecionamentos <= 10 do
@@ -918,20 +927,19 @@ begin
 
           //Location pode ser relativa ou absoluta http://stackoverflow.com/a/25643550/460775
           if IsAbsoluteURL(Location) then
-          begin
-            fURL := Location;
-          end
+            fURL := Location
           else
             fURL := GetURLBasePath( fURL ) + Location;
 
           HTTPSend.Clear;
+          HTTPSend.Headers.Text := HeadersOld;
 
           // Tipo de método usado não deveria ser trocado...
           // https://tools.ietf.org/html/rfc2616#page-62
           // ... mas talvez seja necessário, pois a maioria dos browsers o fazem
           // http://blogs.msdn.com/b/ieinternals/archive/2011/08/19/understanding-the-impact-of-redirect-response-status-codes-on-http-methods-like-head-get-post-and-delete.aspx
           if (HttpSend.ResultCode = 303) or
-             (((HttpSend.ResultCode = 301) or (HttpSend.ResultCode = 302)) and (Method = 'POST')) then
+             ( ((HttpSend.ResultCode = 301) or (HttpSend.ResultCode = 302)) and (Method = 'POST')) then
           begin
             HTTPSend.HTTPMethod('GET', fURL ) ;
           end
@@ -946,7 +954,7 @@ begin
     end;
 
     OK := HTTPSend.ResultCode = 200;
-    RespHTTP.LoadFromStream( HTTPSend.Document ) ;
+    RespHTTP.LoadFromStream( HTTPSend.Document {$IfDef POSIX},TEncoding.ANSI{$EndIf} ) ;
 
     // DEBUG //
     //RespHTTP.SaveToFile('c:\temp\HttpResp.txt');
@@ -976,9 +984,9 @@ begin
     end;
 
     if ParseText then
-       RespHTTP.Text := ACBrUtil.ParseText( RespHTTP.Text, True, RespIsUTF8 )
+       RespHTTP.Text := ACBrUtil.ParseText( AnsiString(RespHTTP.Text), True, RespIsUTF8 )
     else
-       RespHTTP.Text := ACBrUtil.DecodeToString( RespHTTP.Text, RespIsUTF8 );
+       RespHTTP.Text := ACBrUtil.DecodeToString( AnsiString(RespHTTP.Text), RespIsUTF8 );
 
     if not OK then
        raise EACBrHTTPError.Create( 'Erro HTTP: '+IntToStr(HTTPSend.ResultCode)+' '+
@@ -989,7 +997,7 @@ begin
                                     'Resposta HTTP:' + sLineBreak +
                                       String(AjustaLinhas( AnsiString(RespHTTP.Text), 80, 20) )) ;
   finally
-    {$IFNDEF NOGUI}
+    {$IFDEF UPDATE_SCREEN_CURSOR}
      Screen.Cursor := OldCursor;
     {$ENDIF}
   end;

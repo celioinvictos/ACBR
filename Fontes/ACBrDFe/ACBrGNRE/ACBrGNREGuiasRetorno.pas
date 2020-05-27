@@ -1,19 +1,15 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrGNRE                                                 }
-{  Biblioteca multiplataforma de componentes Delphi/Lazarus para emissão da    }
-{  Guia Nacional de Recolhimento de Tributos Estaduais                         }
-{  http://www.gnre.pe.gov.br/                                                  }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2013 Claudemir Vitor Pereira                }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-{                                       Juliomar Marchetti                     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Juliomar Marchetti                              }
+{                              Claudemir Vitor Pereira                         }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -31,17 +27,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 09/12/2013 - Claudemir Vitor Pereira
-|*  - Doação do componente para o Projeto ACBr
-******************************************************************************}
 {$I ACBr.inc}
 
 unit ACBrGNREGuiasRetorno;
@@ -65,8 +54,10 @@ type
   public
     constructor Create(Collection2: TCollection); override;
     destructor Destroy; override;
+
     procedure Imprimir;
     procedure ImprimirPDF;
+
     property GNRE: TGNRERetorno  read FGNRE write FGNRE;
     property Confirmada: Boolean  read FConfirmada write FConfirmada;
     property Msg: AnsiString  read FMsg write FMsg;
@@ -85,14 +76,18 @@ type
     function LerXML(AXML: String): Boolean;
   public
     constructor Create(AOwner: TPersistent; ItemClass: TCollectionItemClass);
+
     procedure Imprimir;
     procedure ImprimirPDF;
+
     function Add: GuiaRetorno;
     function Insert(Index: Integer): GuiaRetorno;
     property Items[Index: Integer]: GuiaRetorno read GetItem  write SetItem;
-    function GetNamePath: string; override ;
+
+    function GetNamePath: string; override;
     function LoadFromFile(CaminhoArquivo: String): boolean;
     function LoadFromString(Arquivo: String): boolean;
+
     property ACBrGNRE : TComponent read FACBrGNRE ;
   end;
 
@@ -107,6 +102,7 @@ uses
 constructor GuiaRetorno.Create(Collection2: TCollection);
 begin
  inherited Create(Collection2);
+
  FGNRE     := TGNRERetorno.Create;
  FNomeArq  := '';
 end;
@@ -114,6 +110,7 @@ end;
 destructor GuiaRetorno.Destroy;
 begin
   FGNRE.Free;
+
   inherited Destroy;
 end;
 
@@ -257,7 +254,7 @@ end;
 function TGuiasRetorno.LerXML(AXML: String): Boolean;
 var
   GNRERetorno: TGNRERetorno;
-  i, j, k: Integer;
+  i, j, k, Nivel: Integer;
   Leitor: TLeitor;
 begin
   Result := False;
@@ -269,10 +266,12 @@ begin
   try
     GNRERetorno := TACBrGNRE(ACBrGNRE).GuiasRetorno.Add.GNRE;
 
-    if Leitor.rExtrai(1, 'resultado') <> '' then
-    begin
+    Nivel := 1;
+//    if Leitor.rExtrai(1, 'resultado') <> '' then
+//    begin
+//     Nivel := 2;
       i := 0;
-      while Leitor.rExtrai(2, 'guia', '', i + 1) <> '' do
+      while Leitor.rExtrai(Nivel, 'guia', '', i + 1) <> '' do
       begin
         GNRERetorno.SituacaoGuia          := Leitor.rCampo(tcStr, 'situacaoGuia');
         GNRERetorno.UFFavorecida          := Leitor.rCampo(tcStr, 'ufFavorecida');
@@ -284,7 +283,8 @@ begin
         GNRERetorno.RepresentacaoNumerica := Leitor.rCampo(tcStr, 'linhaDigitavel');
         GNRERetorno.CodigoBarras          := Leitor.rCampo(tcStr, 'codigoBarras');
 
-        if Leitor.rExtrai(3, 'contribuinteEmitente') <> '' then
+        Inc(Nivel);
+        if Leitor.rExtrai(Nivel, 'contribuinteEmitente') <> '' then
         begin
           GNRERetorno.DocEmitente         := Leitor.rCampo(tcStr, 'CNPJ');
           GNRERetorno.RazaoSocialEmitente := Leitor.rCampo(tcStr, 'razaoSocial');
@@ -295,10 +295,14 @@ begin
           GNRERetorno.TelefoneEmitente    := Leitor.rCampo(tcStr, 'telefone');
         end;
 
-        if Leitor.rExtrai(3, 'itensGNRE') <> '' then
+        if Leitor.rExtrai(Nivel, 'informacoesComplementares') <> '' then
+          GNRERetorno.InfoComplementares  := Leitor.rCampo(tcStr, 'informacao');
+
+        if Leitor.rExtrai(Nivel, 'itensGNRE') <> '' then
         begin
+          Inc(Nivel);
           j := 0;
-          while Leitor.rExtrai(4, 'item', '', j + 1) <> '' do
+          while Leitor.rExtrai(Nivel, 'item', '', j + 1) <> '' do
           begin
             GNRERetorno.CodReceita     := Leitor.rCampo(tcInt, 'receita');
             GNRERetorno.DataVencimento := DateToStr(Leitor.rCampo(tcDat, 'dataVencimento'));
@@ -306,7 +310,8 @@ begin
             if Leitor.rAtributo('tipo=', 'documentoOrigem') = '10' then
               GNRERetorno.NumDocOrigem := Leitor.rCampo(tcDe2, 'documentoOrigem');
 
-            if Leitor.rExtrai(5, 'referencia') <> '' then
+            Inc(Nivel);
+            if Leitor.rExtrai(Nivel, 'referencia') <> '' then
             begin
               GNRERetorno.PeriodoReferencia := Leitor.rCampo(tcStr, 'periodo');
               GNRERetorno.MesAnoReferencia := Leitor.rCampo(tcStr, 'mes') +
@@ -314,7 +319,7 @@ begin
             end;
 
             k := 0;
-            while Leitor.rExtrai(5, 'valor', '', k + 1) <> '' do
+            while Leitor.rExtrai(Nivel, 'valor', '', k + 1) <> '' do
             begin
               {
               11 - Valor Principal ICMS
@@ -346,7 +351,7 @@ begin
               Inc(k);
             end;
 
-            if Leitor.rExtrai(5, 'contribuinteDestinatario') <> '' then
+            if Leitor.rExtrai(Nivel, 'contribuinteDestinatario') <> '' then
             begin
               GNRERetorno.DocDestinatario       := Leitor.rCampo(tcStr, 'CNPJ');
               GNRERetorno.MunicipioDestinatario := Leitor.rCampo(tcStr, 'municipio');
@@ -355,10 +360,11 @@ begin
                 GNRERetorno.DocDestinatario := Leitor.rCampo(tcStr, 'CPF');
             end;
 
-            if Leitor.rExtrai(5, 'camposExtras') <> '' then
+            if Leitor.rExtrai(Nivel, 'camposExtras') <> '' then
             begin
+              Inc(Nivel);
               k := 0;
-              while Leitor.rExtrai(6, 'campoExtra', '', k + 1) <> '' do
+              while Leitor.rExtrai(Nivel, 'campoExtra', '', k + 1) <> '' do
               begin
                 GNRERetorno.InfoComplementares := GNRERetorno.InfoComplementares +
                                                   Leitor.rCampo(tcStr, 'valor');
@@ -372,7 +378,7 @@ begin
 
         Inc(i);
       end;
-    end
+//    end
   finally
     Leitor.Free;
     Result := True;
@@ -410,7 +416,7 @@ begin
 
       ArquivoRetorno.Free;
     except
-      Result := False;
+//      Result := False;
       raise;
     end;
   end;
@@ -424,7 +430,7 @@ begin
   // Verifica se precisa Converter de UTF8 para a String nativa da IDE //
   XMLString := ConverteXMLtoNativeString(Arquivo);
 
-  if Pos('<ns1:guia versao="2.00">', XMLString) > 0  then
+  if Pos('guia versao="2.00">', XMLString) > 0  then
     Result := LerXML(XMLString)
   else
   begin
@@ -436,7 +442,7 @@ begin
 
       ArquivoRetorno.Free;
     except
-      Result := False;
+//      Result := False;
       raise;
     end;
   end;

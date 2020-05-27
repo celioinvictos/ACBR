@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit CEPTeste1 ;
 
 {$mode objfpc}{$H+}
@@ -19,7 +49,9 @@ type
     bBuscarCEP1 : TButton ;
     bBuscarLogradouro : TButton ;
     bBuscarLogradouro1 : TButton ;
+    btEstatisticas: TButton;
     cbxWS : TComboBox ;
+    cbIgnorar: TCheckBox;
     edCEP : TEdit ;
     edIBGECod : TEdit ;
     edIBGENome : TEdit ;
@@ -66,10 +98,11 @@ type
     procedure bBuscarCEPClick(Sender : TObject) ;
     procedure bBuscarLogradouro1Click(Sender : TObject) ;
     procedure bBuscarLogradouroClick(Sender : TObject) ;
+    procedure btEstatisticasClick(Sender: TObject);
     procedure cbxWSChange(Sender : TObject) ;
     procedure FormCreate(Sender: TObject);
   private
-    procedure AjustaProxy ;
+    procedure ConfigurarComponente ;
     { private declarations }
   public
     { public declarations }
@@ -101,7 +134,7 @@ begin
      cbxWS.Items.Add( GetEnumName(TypeInfo(TACBrCEPWebService), integer(I) ) ) ;
 end;
 
-procedure TForm1.AjustaProxy ;
+procedure TForm1.ConfigurarComponente ;
 begin
   cbxWSChange(Self);
 
@@ -118,6 +151,7 @@ begin
   ACBrIBGE1.ProxyPort := edProxyPort.Text ;
   ACBrIBGE1.ProxyUser := edProxyUser.Text ;
   ACBrIBGE1.ProxyPass := edProxyPass.Text ;
+  ACBrIBGE1.IgnorarCaixaEAcentos := cbIgnorar.Checked;
 end ;
 
 procedure TForm1.ACBrCEP1BuscaEfetuada(Sender : TObject) ;
@@ -192,7 +226,8 @@ end;
 
 procedure TForm1.bBuscarCEP1Click(Sender : TObject) ;
 begin
-  AjustaProxy ;
+  Memo1.Clear;
+  ConfigurarComponente ;
 
   try
      ACBrIBGE1.BuscarPorCodigo( StrToIntDef(edIBGECod.Text,0) );
@@ -215,7 +250,7 @@ end;
 
 procedure TForm1.bBuscarCEPClick(Sender : TObject) ;
 begin
-  AjustaProxy ;
+  ConfigurarComponente ;
 
   try
      ACBrCEP1.BuscarPorCEP(edCEP.Text);
@@ -229,7 +264,8 @@ end;
 
 procedure TForm1.bBuscarLogradouro1Click(Sender : TObject) ;
 begin
-  AjustaProxy ;
+  Memo1.Clear;
+  ConfigurarComponente ;
 
   try
      ACBrIBGE1.BuscarPorNome( edIBGENome.Text );
@@ -243,7 +279,7 @@ end;
 
 procedure TForm1.bBuscarLogradouroClick(Sender : TObject) ;
 begin
-  AjustaProxy ;
+  ConfigurarComponente ;
 
   try
      ACBrCEP1.BuscarPorLogradouro( edCidade.Text, edTipo_Logradouro.Text,
@@ -254,6 +290,11 @@ begin
         Memo1.Lines.Add(E.Message);
      end ;
   end ;
+end;
+
+procedure TForm1.btEstatisticasClick(Sender: TObject);
+begin
+  ACBrIBGE1.ObterEstatisticasCidadesUF('SP');
 end;
 
 end.

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
 {                            :   Agnaldo Pedroni                               }
@@ -27,9 +27,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -271,7 +270,9 @@ begin
                   PadRight(Instrucao1,2,'0')                                  +  // instruçoes de cobrança
                   PadRight(Instrucao2,2,'0')                                  +  // instruçoes de cobrança
                   IntToStrZero(round(ValorMoraJuros * 100),13)            + // juros mora 11.2
-                  FormatDateTime( 'ddmmyy', DataDesconto)                 + // data limite desconto
+                  IfThen(DataDesconto > 0,
+                                      FormatDateTime( 'ddmmyy', DataDesconto),
+                                      PadRight('', 6, '0'))               + // data limite desconto
                   IntToStrZero(round(ValorDesconto * 100) ,13)            + // valor desconto
                   StringOfChar( '0', 13)                                  + // iof - caso seguro
                   StringOfChar( '0', 13)                                  + // valor abatimento ?????

@@ -1,18 +1,15 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrCTe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Conhecimen-}
-{ to de Transporte eletrônico - CTe - http://www.cte.fazenda.gov.br            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Desenvolvimento                                                              }
-{         de Cte: Wiliam Zacarias da Silva Rosa                                }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Wemerson Souto                                  }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -30,9 +27,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -562,7 +558,7 @@ begin
 
     with TACBrCTe(TConhecimentos(Collection).ACBrCTe) do
     begin
-      GravarStream(StreamCTe);
+      Self.GravarStream(StreamCTe);
 
       if (EnviaPDF) then
       begin
@@ -1552,7 +1548,7 @@ begin
       while true do
       begin
         sSecao := 'infNFe'+IntToStrZero(I,3);
-        sFim   := INIRec.ReadString(sSecao,'Chave','FIM');
+        sFim   := INIRec.ReadString(sSecao,'chave','FIM');
         if sFim = 'FIM' then
           break;
 
@@ -1860,7 +1856,6 @@ begin
 
       Imp.vTotTrib   := StringToFloatDef( INIRec.ReadString('Imp','vTotTrib',INIRec.ReadString('ICMS','vTotTrib','')) ,0);
       Imp.infAdFisco := INIRec.ReadString('Imp','infAdFisco',INIRec.ReadString('ICMS','infAdFisco',''));
-
 
       if INIRec.ReadString('ICMS00', 'CST','') <> '' then
       begin
@@ -2495,145 +2490,189 @@ begin
       if INIRec.ReadString('ferrov','tpTraf','') <> '' then
       begin
         sSecao := 'ferrov';
-        {$IFDEF PL_200}
-        with infCTeNorm do
+
+        if FConfiguracoes.Geral.VersaoDF >= ve300 then
         begin
-        {$ENDIF}
-          Ferrov.tpTraf := StrToTpTrafego(OK,INIRec.ReadString(sSecao,'tpTraf',''));
-          Ferrov.fluxo  := INIRec.ReadString( sSecao,'fluxo','0');
-          Ferrov.idTrem := INIRec.ReadString( sSecao,'idTrem','0');
-          Ferrov.vFrete := StringToFloatDef( INIRec.ReadString(sSecao,'vFrete','') ,0);
-
-          Ferrov.trafMut.respFat := StrToTrafegoMutuo(OK,INIRec.ReadString(sSecao,'respFat',''));
-          Ferrov.trafMut.ferrEmi := StrToTrafegoMutuo(OK,INIRec.ReadString(sSecao,'ferrEmi',''));
-
-          {$IFDEF PL_200}
-          I := 1;
-          while true do
+          with infCTeNorm do
           begin
-            sSecao := 'ferroEnv'+IntToStrZero(I,3);
-            sFim   := INIRec.ReadString(sSecao,'CNPJ','FIM');
-            if sFim = 'FIM' then
-              break;
+            Ferrov.tpTraf := StrToTpTrafego(OK,INIRec.ReadString(sSecao,'tpTraf',''));
+            Ferrov.fluxo  := INIRec.ReadString( sSecao,'fluxo','0');
 
-            with Ferrov.ferroEnv.New do
+            Ferrov.trafMut.respFat := StrToTrafegoMutuo(OK,INIRec.ReadString(sSecao,'respFat',''));
+            Ferrov.trafMut.ferrEmi := StrToTrafegoMutuo(OK,INIRec.ReadString(sSecao,'ferrEmi',''));
+            Ferrov.vFrete          := StringToFloatDef( INIRec.ReadString(sSecao,'vFrete','') ,0);
+
+            Ferrov.trafMut.chCTeFerroOrigem := INIRec.ReadString(sSecao,'chCTeFerroOrigem', '');
+
+            I := 1;
+            while true do
             begin
-              CNPJ  := sFim;
-              IE    := INIRec.ReadString(sSecao,'IE','');
-              xNome := INIRec.ReadString(sSecao,'xNome','');
+              sSecao := 'ferroEnv'+IntToStrZero(I,3);
+              sFim   := INIRec.ReadString(sSecao,'CNPJ','FIM');
+              if sFim = 'FIM' then
+                break;
 
-              EnderFerro.xLgr    := INIRec.ReadString(sSecao,'xLgr','');
-              EnderFerro.nro     := INIRec.ReadString(sSecao,'nro','');
-              EnderFerro.xCpl    := INIRec.ReadString(sSecao, 'xCpl','');
-              EnderFerro.xBairro := INIRec.ReadString(sSecao,'xBairro','');
-              EnderFerro.cMun    := INIRec.ReadInteger(sSecao,'cMun',0);
-              EnderFerro.xMun    := INIRec.ReadString(sSecao,'xMun','');
-              EnderFerro.CEP     := INIRec.ReadInteger(sSecao,'CEP',0);
-              EnderFerro.UF      := INIRec.ReadString(sSecao,'UF','');
+              with Ferrov.ferroEnv.New do
+              begin
+                CNPJ  := sFim;
+                IE    := INIRec.ReadString(sSecao,'IE','');
+                xNome := INIRec.ReadString(sSecao,'xNome','');
+
+                EnderFerro.xLgr    := INIRec.ReadString(sSecao,'xLgr','');
+                EnderFerro.nro     := INIRec.ReadString(sSecao,'nro','');
+                EnderFerro.xCpl    := INIRec.ReadString(sSecao, 'xCpl','');
+                EnderFerro.xBairro := INIRec.ReadString(sSecao,'xBairro','');
+                EnderFerro.cMun    := INIRec.ReadInteger(sSecao,'cMun',0);
+                EnderFerro.xMun    := INIRec.ReadString(sSecao,'xMun','');
+                EnderFerro.CEP     := INIRec.ReadInteger(sSecao,'CEP',0);
+                EnderFerro.UF      := INIRec.ReadString(sSecao,'UF','');
+              end;
+              Inc(I);
             end;
-            Inc(I);
           end;
-          {$ELSE}
-          sSecao := 'ferroEnv';
-
-          Ferrov.ferroEnv.CNPJ  := INIRec.ReadString(sSecao,'CNPJ','');
-          Ferrov.ferroEnv.IE    := INIRec.ReadString(sSecao,'IE','');
-          Ferrov.ferroEnv.xNome := INIRec.ReadString(sSecao,'xNome','');
-
-          Ferrov.ferroEnv.EnderFerro.xLgr    := INIRec.ReadString(sSecao,'xLgr','');
-          Ferrov.ferroEnv.EnderFerro.nro     := INIRec.ReadString(sSecao,'nro','');
-          Ferrov.ferroEnv.EnderFerro.xCpl    := INIRec.ReadString(sSecao, 'xCpl','');
-          Ferrov.ferroEnv.EnderFerro.xBairro := INIRec.ReadString(sSecao,'xBairro','');
-          Ferrov.ferroEnv.EnderFerro.cMun    := INIRec.ReadInteger(sSecao,'cMun',0);
-          Ferrov.ferroEnv.EnderFerro.xMun    := INIRec.ReadString(sSecao,'xMun','');
-          Ferrov.ferroEnv.EnderFerro.CEP     := INIRec.ReadInteger(sSecao,'CEP',0);
-          Ferrov.ferroEnv.EnderFerro.UF      := INIRec.ReadString(sSecao,'UF','');
-          {$ENDIF}
-
-          I := 1;
-          while true do
-          begin
-            sSecao := 'detVag'+IntToStrZero(I,3);
-            sFim   := INIRec.ReadString(sSecao,'nVag','FIM');
-            if sFim = 'FIM' then
-              break;
-
-            with Ferrov.detVag.New do
-            begin
-              nVag   := StrToInt(sFim);
-              cap    := StringToFloatDef( INIRec.ReadString(sSecao,'cap','') ,0);
-              tpVag  := INIRec.ReadString(sSecao,'tpVag','');
-              pesoR  := StringToFloatDef( INIRec.ReadString(sSecao,'pesoR','') ,0);
-              pesoBC := StringToFloatDef( INIRec.ReadString(sSecao,'pesoBC','') ,0);
-
-              {$IFNDEF PL_200}
-              J := 1;
-              while true do
-              begin
-                sSecao := 'lacDetVag'+IntToStrZero(I,3)+IntToStrZero(J,3);
-                sFim   := INIRec.ReadString(sSecao,'nLacre','FIM');
-                if (sFim = 'FIM') or (Length(sFim) <= 0)  then
-                  break;
-
-                lacDetVag.Add.nLacre := sFim;
-                Inc(J);
-              end;
-
-              J := 1;
-              while true do
-              begin
-                sSecao := 'contVag'+IntToStrZero(I,3)+IntToStrZero(J,3);
-                sFim   := INIRec.ReadString(sSecao,'nCont','FIM');
-                if (sFim = 'FIM') or (Length(sFim) <= 0)  then
-                  break;
-
-                with contVag.Add do
-                begin
-                  nCont := sFim;
-                  dPrev := StringToDateTime(INIRec.ReadString( sSecao,'dPrev','0'));
-                end;
-                Inc(J);
-              end;
-
-              J := 1;
-              while true do
-              begin
-                sSecao := 'ratNF'+IntToStrZero(I,3)+IntToStrZero(J,3);
-                sFim   := INIRec.ReadString(sSecao,'nDoc','FIM');
-                if (sFim = 'FIM') or (Length(sFim) <= 0)  then
-                  break;
-
-                with ratNF.Add do
-                begin
-                  nDoc    := sFim;
-                  serie   := INIRec.ReadString(sSecao,'serie','FIM');
-                  pesoRat := StringToFloatDef( INIRec.ReadString(sSecao,'pesoRat','') ,0);
-                end;
-                Inc(J);
-              end;
-
-              J := 1;
-              while true do
-              begin
-                sSecao := 'ratNFe'+IntToStrZero(I,3)+IntToStrZero(J,3);
-                sFim   := INIRec.ReadString(sSecao,'chave','FIM');
-                if (sFim = 'FIM') or (Length(sFim) <= 0)  then
-                  break;
-
-                with ratNFe.Add do
-                begin
-                  chave   := sFim;
-                  pesoRat := StringToFloatDef( INIRec.ReadString(sSecao,'pesoRat','') ,0);
-                end;
-                Inc(J);
-              end;
-              {$ENDIF}
-             end;
-             Inc(I);
-          end;
+        end
+        else
+        begin
           {$IFDEF PL_200}
+          with infCTeNorm do
+          begin
+          {$ENDIF}
+            Ferrov.tpTraf := StrToTpTrafego(OK,INIRec.ReadString(sSecao,'tpTraf',''));
+            Ferrov.fluxo  := INIRec.ReadString( sSecao,'fluxo','0');
+            Ferrov.idTrem := INIRec.ReadString( sSecao,'idTrem','0');
+            Ferrov.vFrete := StringToFloatDef( INIRec.ReadString(sSecao,'vFrete','') ,0);
+
+            Ferrov.trafMut.respFat := StrToTrafegoMutuo(OK,INIRec.ReadString(sSecao,'respFat',''));
+            Ferrov.trafMut.ferrEmi := StrToTrafegoMutuo(OK,INIRec.ReadString(sSecao,'ferrEmi',''));
+
+            {$IFDEF PL_200}
+            I := 1;
+            while true do
+            begin
+              sSecao := 'ferroEnv'+IntToStrZero(I,3);
+              sFim   := INIRec.ReadString(sSecao,'CNPJ','FIM');
+              if sFim = 'FIM' then
+                break;
+
+              with Ferrov.ferroEnv.New do
+              begin
+                CNPJ  := sFim;
+                IE    := INIRec.ReadString(sSecao,'IE','');
+                xNome := INIRec.ReadString(sSecao,'xNome','');
+
+                EnderFerro.xLgr    := INIRec.ReadString(sSecao,'xLgr','');
+                EnderFerro.nro     := INIRec.ReadString(sSecao,'nro','');
+                EnderFerro.xCpl    := INIRec.ReadString(sSecao, 'xCpl','');
+                EnderFerro.xBairro := INIRec.ReadString(sSecao,'xBairro','');
+                EnderFerro.cMun    := INIRec.ReadInteger(sSecao,'cMun',0);
+                EnderFerro.xMun    := INIRec.ReadString(sSecao,'xMun','');
+                EnderFerro.CEP     := INIRec.ReadInteger(sSecao,'CEP',0);
+                EnderFerro.UF      := INIRec.ReadString(sSecao,'UF','');
+              end;
+              Inc(I);
+            end;
+            {$ELSE}
+            sSecao := 'ferroEnv';
+
+            Ferrov.ferroEnv.CNPJ  := INIRec.ReadString(sSecao,'CNPJ','');
+            Ferrov.ferroEnv.IE    := INIRec.ReadString(sSecao,'IE','');
+            Ferrov.ferroEnv.xNome := INIRec.ReadString(sSecao,'xNome','');
+
+            Ferrov.ferroEnv.EnderFerro.xLgr    := INIRec.ReadString(sSecao,'xLgr','');
+            Ferrov.ferroEnv.EnderFerro.nro     := INIRec.ReadString(sSecao,'nro','');
+            Ferrov.ferroEnv.EnderFerro.xCpl    := INIRec.ReadString(sSecao, 'xCpl','');
+            Ferrov.ferroEnv.EnderFerro.xBairro := INIRec.ReadString(sSecao,'xBairro','');
+            Ferrov.ferroEnv.EnderFerro.cMun    := INIRec.ReadInteger(sSecao,'cMun',0);
+            Ferrov.ferroEnv.EnderFerro.xMun    := INIRec.ReadString(sSecao,'xMun','');
+            Ferrov.ferroEnv.EnderFerro.CEP     := INIRec.ReadInteger(sSecao,'CEP',0);
+            Ferrov.ferroEnv.EnderFerro.UF      := INIRec.ReadString(sSecao,'UF','');
+            {$ENDIF}
+
+            I := 1;
+            while true do
+            begin
+              sSecao := 'detVag'+IntToStrZero(I,3);
+              sFim   := INIRec.ReadString(sSecao,'nVag','FIM');
+              if sFim = 'FIM' then
+                break;
+
+              with Ferrov.detVag.New do
+              begin
+                nVag   := StrToInt(sFim);
+                cap    := StringToFloatDef( INIRec.ReadString(sSecao,'cap','') ,0);
+                tpVag  := INIRec.ReadString(sSecao,'tpVag','');
+                pesoR  := StringToFloatDef( INIRec.ReadString(sSecao,'pesoR','') ,0);
+                pesoBC := StringToFloatDef( INIRec.ReadString(sSecao,'pesoBC','') ,0);
+
+                {$IFNDEF PL_200}
+                J := 1;
+                while true do
+                begin
+                  sSecao := 'lacDetVag'+IntToStrZero(I,3)+IntToStrZero(J,3);
+                  sFim   := INIRec.ReadString(sSecao,'nLacre','FIM');
+                  if (sFim = 'FIM') or (Length(sFim) <= 0)  then
+                    break;
+
+                  lacDetVag.Add.nLacre := sFim;
+                  Inc(J);
+                end;
+
+                J := 1;
+                while true do
+                begin
+                  sSecao := 'contVag'+IntToStrZero(I,3)+IntToStrZero(J,3);
+                  sFim   := INIRec.ReadString(sSecao,'nCont','FIM');
+                  if (sFim = 'FIM') or (Length(sFim) <= 0)  then
+                    break;
+
+                  with contVag.Add do
+                  begin
+                    nCont := sFim;
+                    dPrev := StringToDateTime(INIRec.ReadString( sSecao,'dPrev','0'));
+                  end;
+                  Inc(J);
+                end;
+
+                J := 1;
+                while true do
+                begin
+                  sSecao := 'ratNF'+IntToStrZero(I,3)+IntToStrZero(J,3);
+                  sFim   := INIRec.ReadString(sSecao,'nDoc','FIM');
+                  if (sFim = 'FIM') or (Length(sFim) <= 0)  then
+                    break;
+
+                  with ratNF.Add do
+                  begin
+                    nDoc    := sFim;
+                    serie   := INIRec.ReadString(sSecao,'serie','FIM');
+                    pesoRat := StringToFloatDef( INIRec.ReadString(sSecao,'pesoRat','') ,0);
+                  end;
+                  Inc(J);
+                end;
+
+                J := 1;
+                while true do
+                begin
+                  sSecao := 'ratNFe'+IntToStrZero(I,3)+IntToStrZero(J,3);
+                  sFim   := INIRec.ReadString(sSecao,'chave','FIM');
+                  if (sFim = 'FIM') or (Length(sFim) <= 0)  then
+                    break;
+
+                  with ratNFe.Add do
+                  begin
+                    chave   := sFim;
+                    pesoRat := StringToFloatDef( INIRec.ReadString(sSecao,'pesoRat','') ,0);
+                  end;
+                  Inc(J);
+                end;
+                {$ENDIF}
+               end;
+               Inc(I);
+            end;
+            {$IFDEF PL_200}
+          end;
+          {$ENDIF}
         end;
-        {$ENDIF}
       end;
 
       if INIRec.ReadString('duto','dIni','') <> '' then

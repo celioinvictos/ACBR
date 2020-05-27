@@ -1,4 +1,4 @@
-#include 'acbrlib.ch'
+#include '..\Comum\acbrlib.ch'
 
 #ifdef __PLATFORM__WINDOWS
    #define ACBrLIB 'ACBrNFe32.dll'
@@ -46,9 +46,11 @@ VISIBLE:
     METHOD VerificarAssinatura()
     METHOD GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, ATpEmi, AEmissao, ACNPJCPF)
     METHOD ObterCertificados()
+    METHOD GetPath(tipo)
+    METHOD GetPathEvento(aCodEvento)
 
     METHOD StatusServico()
-    METHOD Consultar(eChaveOuNFe)
+    METHOD Consultar(eChaveOuNFe, AExtrairEventos)
     METHOD Inutilizar(ACNPJ, AJustificativa, Ano, Modelo, Serie, NumeroInicial, NumeroFinal)
     METHOD Enviar(ALote, Imprimir, Sincrono, Zipado)
     METHOD ConsultarRecibo(ARecibo)
@@ -267,6 +269,22 @@ METHOD ObterCertificados() CLASS ACBrNFe
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 
+METHOD GetPath(tipo)
+    local hResult, buffer, bufferLen
+    bufferLen := STR_LEN
+    buffer := Space(bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_GetPath", tipo, @buffer, @bufferLen)
+    ::CheckResult(hResult)
+    RETURN ::ProcessResult(buffer, bufferLen)
+
+METHOD GetPathEvento(aCodEvento)
+    local hResult, buffer, bufferLen
+    bufferLen := STR_LEN
+    buffer := Space(bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_GetPathEvento", hb_StrToUTF8(aCodEvento), @buffer, @bufferLen)
+    ::CheckResult(hResult)
+    RETURN ::ProcessResult(buffer, bufferLen)
+
 METHOD StatusServico() CLASS ACBrNFe
     local hResult, buffer, bufferLen
     bufferLen := STR_LEN
@@ -275,11 +293,11 @@ METHOD StatusServico() CLASS ACBrNFe
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 
-METHOD Consultar(eChaveOuNFe) CLASS ACBrNFe
+METHOD Consultar(eChaveOuNFe, AExtrairEventos) CLASS ACBrNFe
     local hResult, buffer, bufferLen
     bufferLen := STR_LEN
     buffer := Space(bufferLen)
-    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_Consultar", hb_StrToUTF8(eChaveOuNFe), @buffer, @bufferLen)
+    hResult := DllCall(::hHandle, DLL_OSAPI, "NFE_Consultar", hb_StrToUTF8(eChaveOuNFe), AExtrairEventos, @buffer, @bufferLen)
     ::CheckResult(hResult)
     RETURN ::ProcessResult(buffer, bufferLen)
 

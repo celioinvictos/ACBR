@@ -1,33 +1,33 @@
-Ôªø{******************************************************************************}
+{******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para intera√ß√£o com equipa- }
-{ mentos de Automa√ß√£o Comercial utilizados no Brasil                           }
+{  Biblioteca multiplataforma de componentes Delphi para interaÁ„o com equipa- }
+{ mentos de AutomaÁ„o Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  Rafael Teno Dias                               }
 {                                                                              }
-{  Voc√™ pode obter a √∫ltima vers√£o desse arquivo na pagina do  Projeto ACBr    }
+{  VocÍ pode obter a ˙ltima vers„o desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
-{  Esta biblioteca √© software livre; voc√™ pode redistribu√≠-la e/ou modific√°-la }
-{ sob os termos da Licen√ßa P√∫blica Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a vers√£o 2.1 da Licen√ßa, ou (a seu crit√©rio) }
-{ qualquer vers√£o posterior.                                                   }
+{  Esta biblioteca È software livre; vocÍ pode redistribuÌ-la e/ou modific·-la }
+{ sob os termos da LicenÁa P˙blica Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a vers„o 2.1 da LicenÁa, ou (a seu critÈrio) }
+{ qualquer vers„o posterior.                                                   }
 {                                                                              }
-{  Esta biblioteca √© distribu√≠da na expectativa de que seja √∫til, por√©m, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia impl√≠cita de COMERCIABILIDADE OU      }
-{ ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICEN√áA.TXT ou LICENSE.TXT)              }
+{  Esta biblioteca È distribuÌda na expectativa de que seja ˙til, porÈm, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implÌcita de COMERCIABILIDADE OU      }
+{ ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICEN«A.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{  Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral Menor do GNU junto}
-{ com esta biblioteca; se n√£o, escreva para a Free Software Foundation, Inc.,  }
-{ no endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Voc√™ tamb√©m pode obter uma copia da licen√ßa em:                              }
+{  VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral Menor do GNU junto}
+{ com esta biblioteca; se n„o, escreva para a Free Software Foundation, Inc.,  }
+{ no endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ VocÍ tambÈm pode obter uma copia da licenÁa em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Sim√µes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
-{       Rua Coronel Aureliano de Camargo, 963 - Tatu√≠ - SP - 18270-170         }
+{ Daniel Simıes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - TatuÌ - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -42,22 +42,21 @@ uses
   ACBrXmlDocument;
 
 resourcestring
-  ERR_MSG_MAIOR = 'Tamanho maior que o m√°ximo permitido';
-  ERR_MSG_MENOR = 'Tamanho menor que o m√≠nimo permitido';
+  ERR_MSG_MAIOR = 'Tamanho maior que o m·ximo permitido';
+  ERR_MSG_MENOR = 'Tamanho menor que o mÌnimo permitido';
   ERR_MSG_VAZIO = 'Nenhum valor informado';
-  ERR_MSG_INVALIDO = 'Conte√∫do inv√°lido';
-  ERR_MSG_MAXIMO_DECIMAIS = 'Numero m√°ximo de casas decimais permitidas';
-  ERR_MSG_MAIOR_MAXIMO = 'N√∫mero de ocorr√™ncias maior que o m√°ximo permitido - M√°ximo ';
+  ERR_MSG_INVALIDO = 'Conte˙do inv·lido';
+  ERR_MSG_MAXIMO_DECIMAIS = 'Numero m·ximo de casas decimais permitidas';
+  ERR_MSG_MAIOR_MAXIMO = 'N˙mero de ocorrÍncias maior que o m·ximo permitido - M·ximo ';
   ERR_MSG_GERAR_CHAVE = 'Erro ao gerar a chave da NFe!';
-  ERR_MSG_FINAL_MENOR_INICIAL = 'O numero final n√£o pode ser menor que o inicial';
-  ERR_MSG_ARQUIVO_NAO_ENCONTRADO = 'Arquivo n√£o encontrado';
+  ERR_MSG_FINAL_MENOR_INICIAL = 'O numero final n„o pode ser menor que o inicial';
+  ERR_MSG_ARQUIVO_NAO_ENCONTRADO = 'Arquivo n„o encontrado';
   ERR_MSG_SOMENTE_UM = 'Somente um campo deve ser preenchido';
-  ERR_MSG_MENOR_MINIMO = 'N√∫mero de ocorr√™ncias menor que o m√≠nimo permitido - M√≠nimo ';
+  ERR_MSG_MENOR_MINIMO = 'N˙mero de ocorrÍncias menor que o mÌnimo permitido - MÌnimo ';
   DSC_CNPJ = 'CNPJ(MF)';
   DSC_CPF = 'CPF';
 
 type
- {$M+}
   { TACBrXmlWriterOptions }
   TACBrXmlWriterOptions = class
   private
@@ -68,11 +67,11 @@ type
     FIdentarXML: Boolean;
     FSuprimirDecimais: Boolean;
     FFormatoAlerta: string;
+    FQuebraLinha: string;
 
   public
     constructor Create;
 
-  published
     property DecimalChar: Char read FDecimalChar write FDecimalChar;
     property SomenteValidar: Boolean read FSomenteValidar write FSomenteValidar default False;
     property RetirarEspacos: Boolean read FRetirarEspacos write FRetirarEspacos default True;
@@ -80,9 +79,9 @@ type
     property IdentarXML: Boolean read FIdentarXML write FIdentarXML default False;
     property SuprimirDecimais: Boolean read FSuprimirDecimais write FSuprimirDecimais default False;
     property FormatoAlerta: string read FFormatoAlerta write FFormatoAlerta;
+    property QuebraLinha: string read FQuebraLinha write FQuebraLinha;
 
   end;
- {$M-}
 
   { TACBrXmlWriter }
   TACBrXmlWriter = class
@@ -99,10 +98,12 @@ type
       obrigatorio: boolean): TACBrXmlNode;
     function AddNodeCPF(const ID: string; CPF: string; const cPais: integer;
       obrigatorio: boolean): TACBrXmlNode;
+    function CreateElement(AName: string; ANamespace: string = '';
+      APrefixNamespace: string = ''): TACBrXmlNode; virtual;
     function AddNode(const Tipo: TpcnTipoCampo; ID, TAG: string;
       const min, max, ocorrencias: smallint; const valor: variant;
       const Descricao: string = ''; ParseTextoXML: boolean = True;
-      Atributo: string = ''): TACBrXmlNode;
+      Atributo: string = ''): TACBrXmlNode; virtual;
     procedure wAlerta(const ID, TAG, Descricao, Alerta: string);
     function GerarSignature(const Signature: TSignature): TACBrXmlNode;
     function CreateOptions: TACBrXmlWriterOptions; virtual; abstract;
@@ -132,7 +133,7 @@ begin
   inherited;
 
   FIdentarXML := False;
-  FFormatoAlerta := 'TAG:%TAGNIVEL% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.'; // Vide coment√°rio em wAlerta
+  FFormatoAlerta := 'TAG:%TAGNIVEL% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.'; // Vide coment·rio em wAlerta
   FRetirarEspacos := True;
   FRetirarAcentos := True;
   FSuprimirDecimais := False;
@@ -168,7 +169,7 @@ begin
   Tamanho := length(CNPJCPF);
   Ocorrencia := integer(obrigatorio);
 
-  if (Tamanho <= 11) and (Tamanho > 0) then    // Se Vazio d√° preferencia a CNPJ
+  if (Tamanho <= 11) and (Tamanho > 0) then    // Se Vazio d· preferencia a CNPJ
   begin
     if PreencheZeros and (Tamanho <> 11) then
     begin
@@ -233,6 +234,12 @@ begin
     wAlerta(ID, 'CPF', DSC_CPF, ERR_MSG_INVALIDO);
 end;
 
+function TACBrXmlWriter.CreateElement(AName: string; ANamespace: string;
+  APrefixNamespace: string): TACBrXmlNode;
+begin
+  Result := FDocument.CreateElement(AName, ANamespace,  APrefixNamespace);
+end;
+
 function TACBrXmlWriter.AddNode(const Tipo: TpcnTipoCampo; ID, TAG: string;
   const min, max, ocorrencias: smallint; const valor: variant;
   const Descricao: string = ''; ParseTextoXML: boolean = True;
@@ -253,6 +260,9 @@ var
   AttSplit: TSplitResult;
 begin
   Result := nil;
+
+  if ocorrencias < 0 then Exit;
+
   ID := Trim(ID);
   Tag := Trim(TAG);
   Atributo := Trim(Atributo);
@@ -326,7 +336,7 @@ begin
 
     tcDe2, tcDe3, tcDe4, tcDe6, tcDe10:
     begin
-      // adicionar um para que o m√°ximo e m√≠nimo n√£o considerem a virgula
+      // adicionar um para que o m·ximo e mÌnimo n„o considerem a virgula
       if not FOpcoes.SuprimirDecimais then
       begin
         TamMax := TamMax + 1;
@@ -359,7 +369,7 @@ begin
         walerta(ID, Tag, Descricao, ERR_MSG_MAXIMO_DECIMAIS + ' ' +
           IntToStr(NumeroDecimais));
 
-      // Caso n√£o seja um valor fracion√°rio; retira os decimais.
+      // Caso n„o seja um valor fracion·rio; retira os decimais.
       if FOpcoes.SuprimirDecimais then
         if int(valorDbl) = valorDbl then
           ConteudoProcessado := IntToStr(Round(valorDbl));
@@ -402,7 +412,7 @@ begin
   end;
 
   Alerta := '';
-  //(Existem tags obrigat√≥rias que podem ser nulas ex. cEAN)  if (ocorrencias = 1) and (EstaVazio) then
+  //(Existem tags obrigatÛrias que podem ser nulas ex. cEAN)  if (ocorrencias = 1) and (EstaVazio) then
   if (ocorrencias = 1) and (EstaVazio) and (TamMin > 0) then
     Alerta := ERR_MSG_VAZIO;
 
@@ -421,21 +431,21 @@ begin
   // Sai se for apenas para validar //
   if FOpcoes.FSomenteValidar then exit;
 
-  // Grava a tag no arquivo - Quando n√£o existir algum conte√∫do
+  // Grava a tag no arquivo - Quando n„o existir algum conte˙do
   if ((ocorrencias = 1) and (EstaVazio)) then
   begin
     Result := FDocument.CreateElement(Tag);
     exit;
   end;
 
-  // Grava a tag no arquivo - Quando existir algum conte√∫do
+  // Grava a tag no arquivo - Quando existir algum conte˙do
   if ((ocorrencias = 1) or (not EstaVazio)) then
   begin
     Result := FDocument.CreateElement(Tag);
 
     if ParseTextoXML then
       Result.Content := FiltrarTextoXML(FOpcoes.RetirarEspacos,
-        ConteudoProcessado, FOpcoes.RetirarAcentos)
+        ConteudoProcessado, FOpcoes.RetirarAcentos, True, FOpcoes.FQuebraLinha)
     else
       Result.Content := ConteudoProcessado;
 
@@ -456,7 +466,7 @@ begin
   // %TAG%       : Representa a TAG; ex: <nLacre>
   // %ID%        : Representa a ID da TAG; ex X34
   // %MSG%       : Representa a mensagem de alerta
-  // %DESCRICAO% : Representa a Descri√ß√£o da TAG
+  // %DESCRICAO% : Representa a DescriÁ„o da TAG
   s := FOpcoes.FormatoAlerta;
   //s := StringReplace(s, '%TAGNIVEL%', TagNivel, [rfReplaceAll]);
   s := StringReplace(s, '%TAG%', TAG, [rfReplaceAll]);
@@ -471,13 +481,11 @@ function TACBrXmlWriter.GerarSignature(const Signature: TSignature): TACBrXmlNod
 var
   xmlNode, xmlNodeAux: TACBrXmlNode;
 begin
-  Result := FDocument.CreateElement('Signature',
-    'http://www.w3.org/2000/09/xmldsig#');
+  Result := FDocument.CreateElement('Signature', 'http://www.w3.org/2000/09/xmldsig#');
   xmlNode := Result.AddChild('SignedInfo');
 
   xmlNodeAux := xmlNode.AddChild('CanonicalizationMethod');
-  xmlNodeAux.SetAttribute('Algorithm',
-    'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
+  xmlNodeAux.SetAttribute('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
 
   xmlNodeAux := xmlNode.AddChild('SignatureMethod');
   xmlNodeAux.SetAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#rsa-sha1');
@@ -486,13 +494,10 @@ begin
   xmlNode.SetAttribute('URI', Signature.URI);
 
   xmlNodeAux := xmlNode.AddChild('Transforms');
-  xmlNodeAux.AddChild('Transform ').SetAttribute('Algorithm',
-    'http://www.w3.org/2000/09/xmldsig#enveloped-signature');
-  xmlNodeAux.AddChild('Transform ').SetAttribute('Algorithm',
-    'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
+  xmlNodeAux.AddChild('Transform ').SetAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#enveloped-signature');
+  xmlNodeAux.AddChild('Transform ').SetAttribute('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
 
-  xmlNode.AddChild('DigestMethod').SetAttribute('Algorithm',
-    'http://www.w3.org/2000/09/xmldsig#sha1');
+  xmlNode.AddChild('DigestMethod').SetAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
   xmlNode.AddChild('DigestValue').Content := Signature.DigestValue;
 
   Result.AddChild('SignatureValue').Content := Signature.SignatureValue;

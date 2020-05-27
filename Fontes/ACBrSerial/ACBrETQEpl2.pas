@@ -3,10 +3,10 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2007 Andrews Ricardo Bejatto                }
-{                                       Anderson Rogerio Bejatto               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Daniel Simooes de Almeida              }
+{ Colaboradores nesse arquivo:   Andrews Ricardo Bejatto                       }
+{                                Anderson Rogerio Bejatto                      }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -27,9 +27,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -40,7 +39,10 @@ interface
 
 uses
   Classes,
-  ACBrETQClass, ACBrDevice;
+  ACBrETQClass, ACBrDevice
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 type
 
@@ -55,6 +57,7 @@ type
     function ConverterReverso(aImprimirReverso: Boolean): String;
     function ConverterLarguraBarras(aBarraLarga, aBarraFina: Integer): String;
     function ConverterUnidadeAlturaBarras(aAlturaBarras: Integer): String;
+    function ConverterPaginaDeCodigo(aPaginaDeCodigo: TACBrETQPaginaCodigo): String;
 
     function FormatarTexto(const aTexto: String): String;
 
@@ -71,6 +74,7 @@ type
     function ComandoAbertura: AnsiString; override;
     function ComandoBackFeed: AnsiString; override;
     function ComandoTemperatura: AnsiString; override;
+    function ComandoPaginaDeCodigo: AnsiString; override;
     function ComandoOrigemCoordenadas: AnsiString; override;
     function ComandoVelocidade: AnsiString; override;
 
@@ -85,6 +89,9 @@ type
       aBarraLarga, aBarraFina, aVertical, aHorizontal: Integer; aTexto: String;
       aAlturaBarras: Integer; aExibeCodigo: TACBrETQBarraExibeCodigo = becPadrao
       ): AnsiString; override;
+    function ComandoImprimirQRCode(aVertical, aHorizontal: Integer;
+      const aTexto: String; aLarguraModulo: Integer; aErrorLevel: Integer;
+      aTipo: Integer): AnsiString; override;
 
     function ComandoImprimirLinha(aVertical, aHorizontal, aLargura, aAltura: Integer
       ): AnsiString; override;
@@ -185,6 +192,21 @@ begin
   Result := IntToStr(ConverterUnidade(etqDots, aAlturaBarras));
 end;
 
+function TACBrETQEpl2.ConverterPaginaDeCodigo(
+  aPaginaDeCodigo: TACBrETQPaginaCodigo): String;
+begin
+  case aPaginaDeCodigo of
+    pce437 : Result := '8,0,001';
+    pce850 : Result := '8,1,001';
+    pce852 : Result := '8,2,001';
+    pce860 : Result := '8,3,001';
+    pce1250: Result := '8,B,001';
+    pce1252: Result := '8,A,001';
+  else
+    Result := '';
+  end;
+end;
+
 function TACBrETQEpl2.ConverterOrientacao(aOrientacao: TACBrETQOrientacao
   ): String;
 begin
@@ -271,6 +293,11 @@ begin
   Result := 'D' + IntToStr(Temperatura);
 end;
 
+function TACBrETQEpl2.ComandoPaginaDeCodigo: AnsiString;
+begin
+  Result := 'I'+ConverterPaginaDeCodigo(PaginaDeCodigo);
+end;
+
 function TACBrETQEpl2.ComandoVelocidade: AnsiString;
 begin
   Result := EmptyStr;
@@ -351,6 +378,20 @@ begin
             ConverterLarguraBarras(aBarraLarga, aBarraFina) + ',' +
             ConverterUnidadeAlturaBarras(aAlturaBarras)     + ',' +
             ConverterExibeCodigo(aExibeCodigo)              + ',' +
+            FormatarTexto(aTexto);
+end;
+
+function TACBrETQEpl2.ComandoImprimirQRCode(aVertical, aHorizontal: Integer;
+  const aTexto: String; aLarguraModulo: Integer; aErrorLevel: Integer;
+  aTipo: Integer): AnsiString;
+begin
+  Result := 'b' +
+            ConverterCoordenadas(aVertical, aHorizontal) + ',' +
+            'Q'                                          + ',' +
+            'm'+IntToStr(aTipo)                          + ',' +
+            's'+IntToStr(aLarguraModulo)                 + ',' +
+            'e'+ConverterQRCodeErrorLevel(aErrorLevel)   + ',' +
+            'iA'                                         + ',' +
             FormatarTexto(aTexto);
 end;
 

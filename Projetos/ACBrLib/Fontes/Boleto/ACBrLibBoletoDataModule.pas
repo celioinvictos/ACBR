@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Rafael Teno Dias                       }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -112,22 +112,25 @@ begin
     NomeArqRemessa := pLibConfig.BoletoDiretorioConfig.NomeArqRemessa;
     NomeArqRetorno := pLibConfig.BoletoDiretorioConfig.NomeArqRetorno;
     NumeroArquivo := pLibConfig.BoletoDiretorioConfig.NumeroArquivo;
+    RemoveAcentosArqRemessa := pLibConfig.BoletoDiretorioConfig.RemoveAcentosArqRemessa;
 
     with ACBrBoleto1.Banco do
     begin
-      Digito := pLibConfig.BoletoBancoConfig.Digito;
       LayoutVersaoArquivo := pLibConfig.BoletoBancoConfig.LayoutVersaoArquivo;
       LayoutVersaoLote := pLibConfig.BoletoBancoConfig.LayoutVersaoLote;
+      Digito := pLibConfig.BoletoBancoConfig.Digito;
       LocalPagamento := pLibConfig.BoletoBancoConfig.LocalPagamento;
       Numero := pLibConfig.BoletoBancoConfig.Numero;
       NumeroCorrespondente := pLibConfig.BoletoBancoConfig.NumeroCorrespondente;
       OrientacoesBanco.Text := pLibConfig.BoletoBancoConfig.OrientacaoBanco;
-      TamanhoMaximoNossoNum := pLibConfig.BoletoBancoConfig.TamanhoMaximoNossoNumero;
       TipoCobranca := pLibConfig.BoletoBancoConfig.TipoCobranca;
     end;
 
     with ACBrBoleto1.Cedente do
     begin
+      TipoCarteira := pLibConfig.BoletoCedenteConfig.TipoCarteira;
+      TipoDocumento := pLibConfig.BoletoCedenteConfig.TipoDocumento;
+      TipoInscricao := pLibConfig.BoletoCedenteConfig.TipoInscricao;
       Agencia := pLibConfig.BoletoCedenteConfig.Agencia;
       AgenciaDigito := pLibConfig.BoletoCedenteConfig.AgenciaDigito;
       Bairro := pLibConfig.BoletoCedenteConfig.Bairro;
@@ -147,9 +150,6 @@ begin
       NumeroRes := pLibConfig.BoletoCedenteConfig.NumeroRes;
       ResponEmissao := pLibConfig.BoletoCedenteConfig.ResponEmissao;
       Telefone := pLibConfig.BoletoCedenteConfig.Telefone;
-      TipoCarteira := pLibConfig.BoletoCedenteConfig.TipoCarteira;
-      TipoDocumento := pLibConfig.BoletoCedenteConfig.TipoDocumento;
-      TipoInscricao := pLibConfig.BoletoCedenteConfig.TipoInscricao;
       UF := pLibConfig.BoletoCedenteConfig.UF;
       DigitoVerificadorAgenciaConta := pLibConfig.BoletoCedenteConfig.DigitoVerificadorAgenciaConta;
     end;

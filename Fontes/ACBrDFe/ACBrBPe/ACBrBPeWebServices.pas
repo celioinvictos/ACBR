@@ -1,15 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrBPe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Bilhete de }
-{ Passagem Eletrônica - BPe                                                    }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2017                                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -27,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 20/06/2017: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -173,6 +164,7 @@ type
   private
     FOwner: TACBrDFe;
     FBPeChave: String;
+    FExtrairEventos: Boolean;
     FBilhetes: TBilhetes;
     FProtocolo: String;
     FDhRecbto: TDateTime;
@@ -186,7 +178,7 @@ type
 
     FprotBPe: TProcBPe;
     FprocEventoBPe: TRetEventoBPeCollection;
-    
+
     procedure SetBPeChave(const AValue: String);
   protected
     procedure DefinirURL; override;
@@ -204,6 +196,7 @@ type
     procedure Clear; override;
 
     property BPeChave: String read FBPeChave write SetBPeChave;
+    property ExtrairEventos: Boolean read FExtrairEventos write FExtrairEventos;
     property Protocolo: String read FProtocolo;
     property DhRecbto: TDateTime read FDhRecbto;
     property XMotivo: String read FXMotivo;
@@ -236,9 +229,7 @@ type
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
     procedure DefinirDadosMsg; override;
-    procedure SalvarEnvio; override;
     function TratarResposta: Boolean; override;
-    procedure SalvarResposta; override;
 
     function GerarMsgLog: String; override;
     function GerarPrefixoArquivo: String; override;
@@ -968,6 +959,44 @@ begin
 end;
 
 function TBPeConsulta.TratarResposta: Boolean;
+
+procedure SalvarEventos(Retorno: string);
+var
+  aEvento, aProcEvento, aIDEvento, sPathEvento, sCNPJ: string;
+  Inicio, Fim: Integer;
+  TipoEvento: TpcnTpEvento;
+  Ok: Boolean;
+begin
+  while Retorno <> '' do
+  begin
+    Inicio := Pos('<procEventoBPe', Retorno);
+    Fim    := Pos('</procEventoBPe>', Retorno) + 15;
+
+    aEvento := Copy(Retorno, Inicio, Fim - Inicio + 1);
+
+    Retorno := Copy(Retorno, Fim + 1, Length(Retorno));
+
+    aProcEvento := '<procEventoBPe versao="' + FVersao + '" xmlns="' + ACBRBPe_NAMESPACE + '">' +
+                      SeparaDados(aEvento, 'procEventoBPe') +
+                   '</procEventoBPe>';
+
+    Inicio := Pos('Id=', aProcEvento) + 6;
+    Fim    := 52;
+
+    if Inicio = 6 then
+      aIDEvento := FormatDateTime('yyyymmddhhnnss', Now)
+    else
+      aIDEvento := Copy(aProcEvento, Inicio, Fim);
+
+    TipoEvento  := StrToTpEventoBPe(Ok, SeparaDados(aEvento, 'tpEvento'));
+    sCNPJ       := SeparaDados(aEvento, 'CNPJ');
+    sPathEvento := PathWithDelim(FPConfiguracoesBPe.Arquivos.GetPathEvento(TipoEvento, sCNPJ));
+
+    if (aProcEvento <> '') then
+      FPDFeOwner.Gravar( aIDEvento + '-procEventoBPe.xml', aProcEvento, sPathEvento);
+  end;
+end;
+
 var
   BPeRetorno: TRetConsSitBPe;
   SalvarXML, BPCancelado, Atualiza: Boolean;
@@ -1117,110 +1146,134 @@ begin
                 CstatCancelada(BPeRetorno.CStat);
     end;
 
-    for i := 0 to TACBrBPe(FPDFeOwner).Bilhetes.Count - 1 do
+    if Result then
     begin
-      with TACBrBPe(FPDFeOwner).Bilhetes.Items[i] do
+      if TACBrBPe(FPDFeOwner).Bilhetes.Count > 0 then
       begin
-        if (OnlyNumber(FBPeChave) = NumID) then
+        for i := 0 to TACBrBPe(FPDFeOwner).Bilhetes.Count - 1 do
         begin
-          Atualiza := (NaoEstaVazio(BPeRetorno.XMLprotBPe));
-          if Atualiza and TACBrBPe(FPDFeOwner).CstatCancelada(BPeRetorno.CStat) then
-            Atualiza := False;
-
-          if (FPConfiguracoesBPe.Geral.ValidarDigest) and
-            (BPeRetorno.protBPe.digVal <> '') and (BPe.signature.DigestValue <> '') and
-            (UpperCase(BPe.signature.DigestValue) <> UpperCase(BPeRetorno.protBPe.digVal)) then
+          with TACBrBPe(FPDFeOwner).Bilhetes.Items[i] do
           begin
-            raise EACBrBPeException.Create('DigestValue do documento ' +
-              NumID + ' não confere.');
-          end;
-
-          // Atualiza o Status do BPe interna //
-          BPe.procBPe.cStat := BPeRetorno.cStat;
-
-          if Atualiza then
-          begin
-            BPe.procBPe.tpAmb := BPeRetorno.tpAmb;
-            BPe.procBPe.verAplic := BPeRetorno.verAplic;
-//            BPe.procBPe.chBPe := BPeRetorno.chBPe;
-            BPe.procBPe.dhRecbto := FDhRecbto;
-            BPe.procBPe.nProt := FProtocolo;
-            BPe.procBPe.digVal := BPeRetorno.protBPe.digVal;
-            BPe.procBPe.cStat := BPeRetorno.cStat;
-            BPe.procBPe.xMotivo := BPeRetorno.xMotivo;
-
-            // O código abaixo é bem mais rápido que "GerarXML" (acima)...
-            AProcBPe := TProcBPe.Create;
-            try
-              AProcBPe.XML_BPe := RemoverDeclaracaoXML(XMLOriginal);
-              AProcBPe.XML_Prot := NativeStringToUTF8(BPeRetorno.XMLprotBPe);
-              AProcBPe.Versao := FPVersaoServico;
-              AjustarOpcoes( AProcBPe.Gerador.Opcoes );
-              AProcBPe.GerarXML;
-
-              XMLOriginal := AProcBPe.Gerador.ArquivoFormatoXML;
-            finally
-              AProcBPe.Free;
-            end;
-          end;
-
-          { Se no retorno da consulta constar que o bilhete possui eventos vinculados
-           será disponibilizado na propriedade FRetBPeDFe, e conforme configurado
-           em "ConfiguracoesBPe.Arquivos.Salvar", também será gerado o arquivo:
-           <chave>-BPeDFe.xml}
-
-          FRetBPeDFe := '';
-
-          if (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoBPe'))) then
-          begin
-            Inicio := Pos('<procEventoBPe', FPRetWS);
-            Fim    := Pos('</retConsSitBPe', FPRetWS) -1;
-
-            aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
-
-            FRetBPeDFe := '<' + ENCODING_UTF8 + '>' +
-                          '<BPeDFe>' +
-                           '<procBPe versao="' + FVersao + '">' +
-                             SeparaDados(XMLOriginal, 'BPeProc') +
-                           '</procBPe>' +
-                           '<procEventoBPe versao="' + FVersao + '">' +
-                             aEventos +
-                           '</procEventoBPe>' +
-                          '</BPeDFe>';
-          end;
-
-          SalvarXML := Result and FPConfiguracoesBPe.Arquivos.Salvar and Atualiza;
-
-          if SalvarXML then
-          begin
-            // Salva o XML do BP-e assinado, protocolado e com os eventos
-            if FPConfiguracoesBPe.Arquivos.EmissaoPathBPe then
-              dhEmissao := BPe.Ide.dhEmi
-            else
-              dhEmissao := Now;
-
-            sPathBPe := PathWithDelim(FPConfiguracoesBPe.Arquivos.GetPathBPe(dhEmissao, BPe.Emit.CNPJ));
-
-            if (FRetBPeDFe <> '') then
-              FPDFeOwner.Gravar( FBPeChave + '-BPeDFe.xml', FRetBPeDFe, sPathBPe);
-
-            if Atualiza then
+            if (OnlyNumber(FBPeChave) = NumID) then
             begin
-              // Salva o XML do BP-e assinado e protocolado
-              NomeXMLSalvo := '';
-              if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
+              Atualiza := (NaoEstaVazio(BPeRetorno.XMLprotBPe));
+              if Atualiza and TACBrBPe(FPDFeOwner).CstatCancelada(BPeRetorno.CStat) then
+                Atualiza := False;
+
+              if (FPConfiguracoesBPe.Geral.ValidarDigest) and
+                (BPeRetorno.protBPe.digVal <> '') and (BPe.signature.DigestValue <> '') and
+                (UpperCase(BPe.signature.DigestValue) <> UpperCase(BPeRetorno.protBPe.digVal)) then
               begin
-                FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
-                NomeXMLSalvo := NomeArq;
+                raise EACBrBPeException.Create('DigestValue do documento ' +
+                  NumID + ' não confere.');
               end;
 
-              // Salva na pasta baseado nas configurações do PathBPe
-              if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
-                GravarXML;
+              // Atualiza o Status do BPe interna //
+              BPe.procBPe.cStat := BPeRetorno.cStat;
+
+              if Atualiza then
+              begin
+                BPe.procBPe.tpAmb := BPeRetorno.tpAmb;
+                BPe.procBPe.verAplic := BPeRetorno.verAplic;
+    //            BPe.procBPe.chBPe := BPeRetorno.chBPe;
+                BPe.procBPe.dhRecbto := FDhRecbto;
+                BPe.procBPe.nProt := FProtocolo;
+                BPe.procBPe.digVal := BPeRetorno.protBPe.digVal;
+                BPe.procBPe.cStat := BPeRetorno.cStat;
+                BPe.procBPe.xMotivo := BPeRetorno.xMotivo;
+
+                // O código abaixo é bem mais rápido que "GerarXML" (acima)...
+                AProcBPe := TProcBPe.Create;
+                try
+                  AProcBPe.XML_BPe := RemoverDeclaracaoXML(XMLOriginal);
+                  AProcBPe.XML_Prot := NativeStringToUTF8(BPeRetorno.XMLprotBPe);
+                  AProcBPe.Versao := FPVersaoServico;
+                  AjustarOpcoes( AProcBPe.Gerador.Opcoes );
+                  AProcBPe.GerarXML;
+
+                  XMLOriginal := AProcBPe.Gerador.ArquivoFormatoXML;
+                finally
+                  AProcBPe.Free;
+                end;
+              end;
+
+              { Se no retorno da consulta constar que o bilhete possui eventos vinculados
+               será disponibilizado na propriedade FRetBPeDFe, e conforme configurado
+               em "ConfiguracoesBPe.Arquivos.Salvar", também será gerado o arquivo:
+               <chave>-BPeDFe.xml}
+
+              FRetBPeDFe := '';
+
+              if (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoBPe'))) then
+              begin
+                Inicio := Pos('<procEventoBPe', FPRetWS);
+                Fim    := Pos('</retConsSitBPe', FPRetWS) -1;
+
+                aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
+
+                FRetBPeDFe := '<' + ENCODING_UTF8 + '>' +
+                              '<BPeDFe>' +
+                               '<procBPe versao="' + FVersao + '">' +
+                                 SeparaDados(XMLOriginal, 'BPeProc') +
+                               '</procBPe>' +
+                               '<procEventoBPe versao="' + FVersao + '">' +
+                                 aEventos +
+                               '</procEventoBPe>' +
+                              '</BPeDFe>';
+              end;
+
+              SalvarXML := Result and FPConfiguracoesBPe.Arquivos.Salvar and Atualiza;
+
+              if SalvarXML then
+              begin
+                // Salva o XML do BP-e assinado, protocolado e com os eventos
+                if FPConfiguracoesBPe.Arquivos.EmissaoPathBPe then
+                  dhEmissao := BPe.Ide.dhEmi
+                else
+                  dhEmissao := Now;
+
+                sPathBPe := PathWithDelim(FPConfiguracoesBPe.Arquivos.GetPathBPe(dhEmissao, BPe.Emit.CNPJ));
+
+                if (FRetBPeDFe <> '') then
+                  FPDFeOwner.Gravar( FBPeChave + '-BPeDFe.xml', FRetBPeDFe, sPathBPe);
+
+                if Atualiza then
+                begin
+                  // Salva o XML do BP-e assinado e protocolado
+                  NomeXMLSalvo := '';
+                  if NaoEstaVazio(NomeArq) and FileExists(NomeArq) then
+                  begin
+                    FPDFeOwner.Gravar( NomeArq, XMLOriginal );  // Atualiza o XML carregado
+                    NomeXMLSalvo := NomeArq;
+                  end;
+
+                  // Salva na pasta baseado nas configurações do PathBPe
+                  if (NomeXMLSalvo <> CalcularNomeArquivoCompleto()) then
+                    GravarXML;
+
+                  // Salva o XML de eventos retornados ao consultar um BP-e
+                  if ExtrairEventos then
+                    SalvarEventos(aEventos);
+                end;
+              end;
+
+              break;
             end;
           end;
+        end;
+      end
+      else
+      begin
+        if ExtrairEventos and FPConfiguracoesBPe.Arquivos.Salvar and
+           (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoBPe'))) then
+        begin
+          Inicio := Pos('<procEventoBPe', FPRetWS);
+          Fim    := Pos('</retConsSitBPe', FPRetWS) -1;
 
-          break;
+          aEventos := Copy(FPRetWS, Inicio, Fim - Inicio + 1);
+
+          // Salva o XML de eventos retornados ao consultar um BP-e
+          SalvarEventos(aEventos);
         end;
       end;
     end;
@@ -1582,34 +1635,6 @@ begin
   end;
 end;
 
-procedure TBPeEnvEvento.SalvarEnvio;
-begin
-  if FPArqEnv = '' then
-    exit;
-
-  if FPConfiguracoesBPe.Geral.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + FPArqEnv + '.xml',
-                      FPDadosMsg, GerarPathEvento(FCNPJ));
-
-  if FPConfiguracoesBPe.WebServices.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + FPArqEnv + '-soap.xml',
-      FPEnvelopeSoap, GerarPathEvento(FCNPJ));
-end;
-
-procedure TBPeEnvEvento.SalvarResposta;
-begin
-  if FPArqResp = '' then
-    exit;
-
-  if FPConfiguracoesBPe.Geral.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + FPArqResp + '.xml',
-                      FPRetWS, GerarPathEvento(FCNPJ));
-
-  if FPConfiguracoesBPe.WebServices.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + FPArqResp + '-soap.xml',
-      FPRetornoWS, GerarPathEvento(FCNPJ));
-end;
-
 function TBPeEnvEvento.GerarMsgLog: String;
 var
   aMsg: String;
@@ -1732,7 +1757,7 @@ end;
 function TDistribuicaoDFe.TratarResposta: Boolean;
 var
   I: Integer;
-  AXML: String;
+  AXML, aPath: String;
 begin
   FPRetWS := SeparaDadosArray(['bpeResultMsg', 'bpeDistDFeInteresseResult'], FPRetornoWS );
 
@@ -1767,14 +1792,17 @@ begin
       if NaoEstaVazio(NomeArq) then
         FlistaArqs.Add( FNomeArq );
 
+      aPath := GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]);
+      FretDistDFeInt.docZip.Items[I].NomeArq := aPath + FNomeArq;
+
       if (FPConfiguracoesBPe.Arquivos.Salvar) and NaoEstaVazio(FNomeArq) then
       begin
         if FPConfiguracoesBPe.Arquivos.SalvarEvento then
-           if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoBPe]) then // salvar evento
-              FPDFeOwner.Gravar(FNomeArq, AXML, GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]));
+          if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoBPe]) then
+            FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
 
         if (FretDistDFeInt.docZip.Items[I].schema in [schprocBPe]) then
-           FPDFeOwner.Gravar(FNomeArq, AXML, GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]));
+          FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
       end;
     end;
   end;

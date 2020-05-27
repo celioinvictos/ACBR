@@ -98,6 +98,7 @@
 // Ajusta FreePascal para o modo Delphi
 //------------------------------------------------------------------------------
 {$IFDEF FPC}
+  {$DEFINE USE_UTF8}
   {$UNDEF BORLAND}
   {$DEFINE DFE_SEM_INDY}
   {$DEFINE VCL}
@@ -140,7 +141,6 @@
   {$ENDIF}
 {$ENDIF}
 
-
 {$IFNDEF MSWINDOWS}   // Linux, apenas OpenSSL, sem Capicom
   {$DEFINE DFE_SEM_CAPICOM}
   {$DEFINE DFE_SEM_MSXML}
@@ -170,6 +170,12 @@
   {$DEFINE HAS_FORMATSETTINGS}
   {$DEFINE HAS_REGEXPR}
 {$ENDIF}
+{$IfDEF DELPHIXE8_UP}
+  {$DEFINE HAS_BLUETOOTH}
+{$ENDIF}
+{$IFDEF DELPHI2009_UP}
+  {$DEFINE USE_JSONDATAOBJECTS_UNIT}
+{$ENDIF}
 
 // Definições multi-plataforma
 //------------------------------------------------------------------------------
@@ -181,10 +187,24 @@
 
 {$IFDEF DELPHILANGUAGE}
   {$IFDEF POSIX}
+    {$DEFINE USE_UTF8}
     {$DEFINE FMX}
     {$UNDEF CLX}
     {$UNDEF VisualCLX}
     {$UNDEF VCL}
+    {$DEFINE DFE_SEM_CAPICOM}
+    {$DEFINE DFE_SEM_MSXML}
+    {$UNDEF USE_DELAYED}
+    {$UNDEF HAS_BLUETOOTH}
+    {$LEGACYIFEND ON}
+  {$ENDIF}
+
+  {$IFDEF NEXTGEN}
+    {$DEFINE USE_UTF8}
+    {$DEFINE HAS_BLUETOOTH}
+    {$LEGACYIFEND ON}
+    //http://riversoftavg.com/blogs/index.php/2015/01/17/zerobasedstrings-just-dont/
+    {$ZEROBASEDSTRINGS OFF}
   {$ENDIF}
 
   {$IFDEF CLX}
@@ -209,6 +229,10 @@
   {$IFDEF QUnit}
     {$UNDEF VCL}
     {$DEFINE VisualCLX}
+  {$ENDIF}
+
+  {$IFDEF FMX}
+    {$UNDEF VCL}
   {$ENDIF}
 
   {$IFDEF VCL}
@@ -271,9 +295,6 @@
 // Ative a diretiva abaixo, para usar a Libxml2, libxslt, libxmlsec compilada
 // com MinGw ftp://ftp.zlatkovic.com/libxml/64bit/
 //{$DEFINE USE_MINGW}
-{$IfNDef MSWINDOWS}
-  {$DEFINE USE_MINGW}
-{$EndIf}
 
 // ZLib em D7 contem muitos bugs e não suporta GZip de forma correta
 {$IfNDef FPC}        
@@ -283,4 +304,3 @@
 {$Else}
  {$UnDef USE_ZLibExGZ} // ZLibExGZ não é compatível com FPC
 {$EndIf}
-

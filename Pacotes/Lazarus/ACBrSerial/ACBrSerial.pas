@@ -8,7 +8,8 @@ unit ACBrSerial;
 interface
 
 uses
-  ACBrSerialReg, ACBrDevice, ACBrBAL, ACBrBALClass, ACBrBALFilizola, 
+  ACBrSerialReg, ACBrDevice, ACBrDeviceClass, ACBrDeviceSerial, ACBrDeviceTCP, 
+  ACBrDeviceLPT, ACBrDeviceRaw, ACBrBAL, ACBrBALClass, ACBrBALFilizola, 
   ACBrBALToledo, ACBrBALUrano, ACBrBALSaturno, ACBrCHQ, ACBrCHQBematech, 
   ACBrCHQChronos, ACBrCHQClass, ACBrCHQImpressoraComum, ACBrCHQImpressoraECF, 
   ACBrCHQPerto, ACBrCHQSchalter, ACBrCHQSotomaq, ACBrCHQUrano, ACBrDIS, 
@@ -26,8 +27,8 @@ uses
   ACBrECFVirtualNaoFiscal, ACBrPosPrinter, ACBrEscBematech, ACBrEscPosEpson, 
   ACBrEscDaruma, ACBrEscDiebold, ACBrEscElgin, ACBrEscEpsonP2, 
   ACBrEscCustomPos, ACBrEscPosStar, ACBrEscZJiang, ACBrEscGPrinter, 
-  ACBrEscPosHook, ACBrEscPosHookElginDLL, ACBrEscPosHookEpsonDLL, ACBrSMS, 
-  ACBrSMSClass, ACBrSMSDaruma, ACBrSMSZTE, LazarusPackageIntf;
+  ACBrEscDatecs, ACBrSMS, ACBrSMSClass, ACBrSMSDaruma, ACBrSMSZTE, 
+  LazarusPackageIntf;
 
 implementation
 

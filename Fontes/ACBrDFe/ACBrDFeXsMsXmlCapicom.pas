@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  André Ferreira de Moraes                       }
 {                                                                              }
@@ -131,8 +131,20 @@ begin
         xmldsig.store := Store;
       end;
 
-      dsigKey := xmldsig.createKeyFromCSP(PrivateKey.ProviderType,
-        PrivateKey.ProviderName, PrivateKey.ContainerName, 0);
+      try
+        dsigKey := xmldsig.createKeyFromCSP(PrivateKey.ProviderType,
+          PrivateKey.ProviderName, PrivateKey.ContainerName, 0);
+      except
+        on E: Exception do
+        begin
+          if (pos('provider type', LowerCase(E.Message)) > 0) and
+             (pos('not supported', LowerCase(E.Message)) > 0) then
+          begin
+            dsigKey := xmldsig.createKeyFromCSP( CAPICOM_PROV_RSA_FULL, '',
+                                                 PrivateKey.ContainerName, 0);
+          end;
+        end;
+      end;
       if (dsigKey = nil) then
         raise EACBrDFeException.Create('Erro ao criar a chave do CSP.');
 

@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: José M. S. Junior                               }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 
@@ -58,6 +57,7 @@ type
     FNomeArqRemessa: String;
     FNomeArqRetorno: String;
     FNumeroArquivo: Integer;
+    FRemoveAcentosArqRemessa: Boolean;
 
   public
     constructor Create;
@@ -76,6 +76,7 @@ type
     property NomeArqRemessa: String read FNomeArqRemessa write FNomeArqRemessa;
     property NomeArqRetorno: String read FNomeArqRetorno write FNomeArqRetorno;
     property NumeroArquivo: Integer read FNumeroArquivo write FNumeroArquivo;
+    property RemoveAcentosArqRemessa: Boolean read FRemoveAcentosArqRemessa write FRemoveAcentosArqRemessa;
 
   end;
 
@@ -89,7 +90,6 @@ type
     FNumero: Integer;
     FNumeroCorrespondente: Integer;
     FOrientacaoBanco: String;
-    FTamanhoMaximoNossoNumero: Integer;
     FTipoCobranca: TACBrTipoCobranca;
 
   public
@@ -105,7 +105,6 @@ type
     property Numero: Integer read FNumero write FNumero;
     property NumeroCorrespondente: Integer read FNumeroCorrespondente write FNumeroCorrespondente;
     property OrientacaoBanco: String read FOrientacaoBanco write FOrientacaoBanco;
-    property TamanhoMaximoNossoNumero: Integer read FTamanhoMaximoNossoNumero write FTamanhoMaximoNossoNumero;
     property TipoCobranca: TACBrTipoCobranca read FTipoCobranca write FTipoCobranca;
 
   end;
@@ -234,7 +233,7 @@ type
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
-    procedure ImportarIni(FIni: TCustomIniFile); override;
+    procedure ImportarIni(AIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -288,62 +287,62 @@ begin
     TACBrLibBoleto(Owner).BoletoDM.AplicarConfiguracoes;
 end;
 
-procedure TLibBoletoConfig.ImportarIni(FIni: TCustomIniFile);
+procedure TLibBoletoConfig.ImportarIni(AIni: TCustomIniFile);
 begin
 
   with BoletoConfig do
   begin
-    emailAssuntoBoleto:= FIni.ReadString(CSecBOLETO, CKeyBOLETOEmailAssuntoBoleto, emailAssuntoBoleto );
-    emailMensagemBoleto:= FIni.ReadString(CSecBOLETO, CKeyBOLETOEmailMensagemBoleto, emailMensagemBoleto );
+    emailAssuntoBoleto:= AIni.ReadString(CSecBOLETO, CKeyBOLETOEmailAssuntoBoleto, emailAssuntoBoleto );
+    emailMensagemBoleto:= AIni.ReadString(CSecBOLETO, CKeyBOLETOEmailMensagemBoleto, emailMensagemBoleto );
   end;
 
   with BoletoCedenteConfig do
   begin
-    Agencia:= FIni.ReadString(CSecBOLETO, CKeyBOLETOAgencia, Agencia);
-    AgenciaDigito:= FIni.ReadString(CSecBOLETO, CKeyBOLETODigitoAgencia, AgenciaDigito );
-    Bairro:= FIni.ReadString(CSecBOLETO, CKeyBOLETOBairro, Bairro );
-    CEP:= FIni.ReadString(CSecBOLETO, CKeyBOLETOCEP, CEP );
-    Cidade:= FIni.ReadString(CSecBOLETO, CKeyBOLETOCidade, Cidade );
-    CNPJCPF:= FIni.ReadString(CSecBOLETO, CKeyBOLETOCNPJCPF, CNPJCPF );
-    CodigoCedente:= FIni.ReadString(CSecBOLETO, CKeyBOLETOCodCedente, CodigoCedente );
-    CodigoTransmissao:= FIni.ReadString(CSecBOLETO, CKeyBOLETOCodTransmissao, CodigoTransmissao );
-    Complemento:= FIni.ReadString(CSecBOLETO, CKeyBOLETOComplemento, Complemento );
-    Conta:= FIni.ReadString(CSecBOLETO, CKeyBOLETOConta, Conta );
-    ContaDigito:= FIni.ReadString(CSecBOLETO, CKeyBOLETODigitoConta, ContaDigito);
-    Convenio:= FIni.ReadString(CSecBOLETO, CKeyBOLETOConvenio, Convenio );
-    Logradouro:= FIni.ReadString(CSecBOLETO, CKeyBOLETOLogradouro, Logradouro );
-    Modalidade:= FIni.ReadString(CSecBOLETO, CKeyBOLETOModalidade, Modalidade );
-    Nome:= FIni.ReadString(CSecBOLETO, CKeyBOLETONome, Nome );
-    NumeroRes:= FIni.ReadString(CSecBOLETO, CKeyBOLETONumero, NumeroRes );
-    ResponEmissao:= TACBrResponEmissao(FIni.ReadInteger(CSecBOLETO, CKeyBOLETORespEmis, integer(ResponEmissao) ));
-    TipoInscricao:= TACBrPessoaCedente( FIni.ReadInteger(CSecBOLETO, CKeyBOLETOPessoa, integer(TipoInscricao) ));
-    UF:= FIni.ReadString(CSecBOLETO, CKeyBOLETOUF, UF );
-    DigitoVerificadorAgenciaConta:= FIni.ReadString(CSecBOLETO, CKeyBOLETODigitoAgenciaConta, DigitoVerificadorAgenciaConta );
+    Agencia:= AIni.ReadString(CSecBOLETO, CKeyBOLETOAgencia, Agencia);
+    AgenciaDigito:= AIni.ReadString(CSecBOLETO, CKeyBOLETODigitoAgencia, AgenciaDigito );
+    Bairro:= AIni.ReadString(CSecBOLETO, CKeyBOLETOBairro, Bairro );
+    CEP:= AIni.ReadString(CSecBOLETO, CKeyBOLETOCEP, CEP );
+    Cidade:= AIni.ReadString(CSecBOLETO, CKeyBOLETOCidade, Cidade );
+    CNPJCPF:= AIni.ReadString(CSecBOLETO, CKeyBOLETOCNPJCPF, CNPJCPF );
+    CodigoCedente:= AIni.ReadString(CSecBOLETO, CKeyBOLETOCodCedente, CodigoCedente );
+    CodigoTransmissao:= AIni.ReadString(CSecBOLETO, CKeyBOLETOCodTransmissao, CodigoTransmissao );
+    Complemento:= AIni.ReadString(CSecBOLETO, CKeyBOLETOComplemento, Complemento );
+    Conta:= AIni.ReadString(CSecBOLETO, CKeyBOLETOConta, Conta );
+    ContaDigito:= AIni.ReadString(CSecBOLETO, CKeyBOLETODigitoConta, ContaDigito);
+    Convenio:= AIni.ReadString(CSecBOLETO, CKeyBOLETOConvenio, Convenio );
+    Logradouro:= AIni.ReadString(CSecBOLETO, CKeyBOLETOLogradouro, Logradouro );
+    Modalidade:= AIni.ReadString(CSecBOLETO, CKeyBOLETOModalidade, Modalidade );
+    Nome:= AIni.ReadString(CSecBOLETO, CKeyBOLETONome, Nome );
+    NumeroRes:= AIni.ReadString(CSecBOLETO, CKeyBOLETONumero, NumeroRes );
+    ResponEmissao:= TACBrResponEmissao(AIni.ReadInteger(CSecBOLETO, CKeyBOLETORespEmis, integer(ResponEmissao) ));
+    TipoInscricao:= TACBrPessoaCedente( AIni.ReadInteger(CSecBOLETO, CKeyBOLETOPessoa, integer(TipoInscricao) ));
+    UF:= AIni.ReadString(CSecBOLETO, CKeyBOLETOUF, UF );
+    DigitoVerificadorAgenciaConta:= AIni.ReadString(CSecBOLETO, CKeyBOLETODigitoAgenciaConta, DigitoVerificadorAgenciaConta );
   end;
 
   with BoletoBancoConfig do
   begin
-    LocalPagamento:= FIni.ReadString(CSecBOLETO, CKeyBOLETOLocalPagamento, LocalPagamento );
-    TipoCobranca:= TACBrTipoCobranca( FIni.ReadInteger(CSecBOLETO, CKeyBOLETOBanco, integer(TipoCobranca) ));
+    LocalPagamento:= AIni.ReadString(CSecBOLETO, CKeyBOLETOLocalPagamento, LocalPagamento );
+    TipoCobranca:= TACBrTipoCobranca( AIni.ReadInteger(CSecBOLETO, CKeyBOLETOBanco, integer(TipoCobranca) ));
   end;
 
   with BoletoDiretorioConfig do
   begin
-    DirArqRemessa := FIni.ReadString(CSecBOLETO, CKeyBOLETODirArquivoRemessa, DirArqRemessa);
-    DirArqRetorno := FIni.ReadString(CSecBOLETO, CKeyBOLETODirArquivoRetorno, DirArqRetorno);
-    LayoutRemessa := TACBrLayoutRemessa(FIni.ReadInteger(CSecBOLETO, CKeyBOLETOCNAB, integer(LayoutRemessa)));
-    LeCedenteRetorno := FIni.ReadBool(CSecBOLETO, CKeyBOLETOLerCedenteRetorno, LeCedenteRetorno);
+    DirArqRemessa := AIni.ReadString(CSecBOLETO, CKeyBOLETODirArquivoRemessa, DirArqRemessa);
+    DirArqRetorno := AIni.ReadString(CSecBOLETO, CKeyBOLETODirArquivoRetorno, DirArqRetorno);
+    LayoutRemessa := TACBrLayoutRemessa(AIni.ReadInteger(CSecBOLETO, CKeyBOLETOCNAB, integer(LayoutRemessa)));
+    LeCedenteRetorno := AIni.ReadBool(CSecBOLETO, CKeyBOLETOLerCedenteRetorno, LeCedenteRetorno);
   end;
 
   with BoletoFCFortesConfig do
   begin
-    DirLogo:= FIni.ReadString(CSecBOLETO, CKeyBOLETODirLogos, DirLogo );
-    Filtro:= TACBrBoletoFCFiltro( FIni.Readinteger(CSecBOLETO, CKeyBOLETOFiltro, integer(Filtro)) );
-    Layout:= TACBrBolLayOut( FIni.ReadInteger(CSecBOLETO, CKeyBOLETOLayout, integer(Layout)) );
-    MostrarPreview:= FIni.ReadBool(CSecBOLETO, CKeyBOLETOPreview, MostrarPreview );
-    MostrarProgresso:= FIni.ReadBool(CSecBOLETO, CKeyBOLETOProgresso, MostrarProgresso );
-    MostrarSetup:= FIni.ReadBool(CSecBOLETO, CKeyBOLETOSetup, MostrarSetup );
-    NomeArquivo:= FIni.ReadString(CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivo );
+    DirLogo:= AIni.ReadString(CSecBOLETO, CKeyBOLETODirLogos, DirLogo );
+    Filtro:= TACBrBoletoFCFiltro( AIni.Readinteger(CSecBOLETO, CKeyBOLETOFiltro, integer(Filtro)) );
+    Layout:= TACBrBolLayOut( AIni.ReadInteger(CSecBOLETO, CKeyBOLETOLayout, integer(Layout)) );
+    MostrarPreview:= AIni.ReadBool(CSecBOLETO, CKeyBOLETOPreview, MostrarPreview );
+    MostrarProgresso:= AIni.ReadBool(CSecBOLETO, CKeyBOLETOProgresso, MostrarProgresso );
+    MostrarSetup:= AIni.ReadBool(CSecBOLETO, CKeyBOLETOSetup, MostrarSetup );
+    NomeArquivo:= AIni.ReadString(CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivo );
   end;
 
 end;
@@ -552,7 +551,6 @@ begin
   FNumero:= 0;
   FNumeroCorrespondente:= 0;
   FOrientacaoBanco:= '';
-  FTamanhoMaximoNossoNumero:= 0;
   FTipoCobranca:= cobNenhum;
 end;
 
@@ -565,7 +563,6 @@ begin
   Numero:= AIni.ReadInteger(CSessaoBoletoBancoConfig, CChaveNumero, Numero );
   NumeroCorrespondente:= AIni.ReadInteger(CSessaoBoletoBancoConfig, CChaveNumeroCorrespondente, NumeroCorrespondente );
   OrientacaoBanco:= AIni.ReadString(CSessaoBoletoBancoConfig, CChaveOrientacaoBanco, OrientacaoBanco );
-  TamanhoMaximoNossoNumero:= AIni.ReadInteger(CSessaoBoletoBancoConfig, CChaveTamanhoMaximoNossoNumero, TamanhoMaximoNossoNumero );
   TipoCobranca:= TACBrTipoCobranca( AIni.ReadInteger(CSessaoBoletoBancoConfig, CChaveTipoCobranca, integer(TipoCobranca) ));
 
 end;
@@ -579,7 +576,6 @@ begin
   AIni.WriteInteger(CSessaoBoletoBancoConfig, CChaveNumero, Numero );
   AIni.WriteInteger(CSessaoBoletoBancoConfig, CChaveNumeroCorrespondente, NumeroCorrespondente );
   AIni.WriteString(CSessaoBoletoBancoConfig, CChaveOrientacaoBanco, OrientacaoBanco );
-  AIni.WriteInteger(CSessaoBoletoBancoConfig, CChaveTamanhoMaximoNossoNumero , TamanhoMaximoNossoNumero );
   AIni.WriteInteger(CSessaoBoletoBancoConfig, CChaveTipoCobranca, integer(TipoCobranca) );
 
 end;
@@ -598,6 +594,7 @@ begin
   FNomeArqRemessa := '';
   FNomeArqRetorno := '';
   FNumeroArquivo := 0;
+  FRemoveAcentosArqRemessa := False;
 
 end;
 
@@ -609,11 +606,16 @@ begin
   DirArqRetorno := AIni.ReadString(CSessaoBoletoDiretorioConfig, CChaveDirArqRetorno, DirArqRetorno);
   DirHomologacao := AIni.ReadBool(CSessaoBoletoDiretorioConfig, CChaveDirHomologacao, DirHomologacao);
   ImprimirMensagemPadrao := AIni.ReadBool(CSessaoBoletoDiretorioConfig, CChaveImprimirMensagemPadrao, ImprimirMensagemPadrao);
-  LayoutRemessa := TACBrLayoutRemessa(AIni.ReadInteger(CSessaoBoletoDiretorioConfig, CChaveLayoutRemessa, integer(LayoutRemessa)));
+  case AIni.ReadInteger(CSessaoBoletoDiretorioConfig, CChaveLayoutRemessa, integer(LayoutRemessa)) of
+    0: LayoutRemessa:= c240;
+  else
+    LayoutRemessa:= c400;
+  end;
   LeCedenteRetorno := AIni.ReadBool(CSessaoBoletoDiretorioConfig, CChaveLeCedenteRetorno, LeCedenteRetorno);
   NomeArqRemessa := AIni.ReadString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRemessa, NomeArqRemessa);
   NomeArqRetorno := AIni.ReadString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRetorno, NomeArqRetorno);
   NumeroArquivo := AIni.ReadInteger(CSessaoBoletoDiretorioConfig, CChaveNumeroArquivo, NumeroArquivo);
+  RemoveAcentosArqRemessa := AIni.ReadBool(CSessaoBoletoDiretorioConfig, CChaveRemoveAcentosArqRemessa, RemoveAcentosArqRemessa);
 
 end;
 
@@ -625,11 +627,16 @@ begin
   AIni.WriteString(CSessaoBoletoDiretorioConfig, CChaveDirArqRetorno, DirArqRetorno);
   AIni.WriteBool(CSessaoBoletoDiretorioConfig, CChaveDirHomologacao, DirHomologacao);
   AIni.WriteBool(CSessaoBoletoDiretorioConfig, CChaveImprimirMensagemPadrao, ImprimirMensagemPadrao);
-  AIni.WriteInteger(CSessaoBoletoDiretorioConfig, CChaveLayoutRemessa, integer(LayoutRemessa) );
+  case integer(LayoutRemessa) of
+    0: AIni.WriteInteger(CSessaoBoletoDiretorioConfig, CChaveLayoutRemessa, 1 );
+  else
+    AIni.WriteInteger(CSessaoBoletoDiretorioConfig, CChaveLayoutRemessa, 0 );
+  end;
   AIni.WriteBool(CSessaoBoletoDiretorioConfig, CChaveLeCedenteRetorno, LeCedenteRetorno);
   AIni.WriteString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRemessa, NomeArqRemessa);
   AIni.WriteString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRetorno, NomeArqRetorno);
   AIni.WriteInteger(CSessaoBoletoDiretorioConfig, CChaveNumeroArquivo, NumeroArquivo);
+  AIni.WriteBool(CSessaoBoletoDiretorioConfig, CChaveRemoveAcentosArqRemessa, RemoveAcentosArqRemessa);
 
 end;
 

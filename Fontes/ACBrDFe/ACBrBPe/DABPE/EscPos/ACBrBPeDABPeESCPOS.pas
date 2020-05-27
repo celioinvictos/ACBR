@@ -1,15 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrBPe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Bilhete de }
-{ Passagem Eletrônica - BPe                                                    }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2017                                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -27,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 01/11/2017: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -96,7 +87,7 @@ type
     destructor Destroy; override;
 
     procedure ImprimirDABPE(BPE: TBPe = nil); override;
-    procedure ImprimirDABPeCancelado(BPe: TBPe = nil); override;
+    procedure ImprimirDABPECancelado(BPe: TBPe = nil); override;
     procedure ImprimirEVENTO(BPe: TBPe = nil);override;
 
     procedure ImprimirRelatorio(const ATexto: TStrings; const AVias: Integer = 1;
@@ -105,19 +96,12 @@ type
     property PosPrinter: TACBrPosPrinter read FPosPrinter write SetPosPrinter;
   end;
 
-procedure Register;
-
 implementation
 
 uses
   strutils, Math,
   ACBrBPe, ACBrValidador, ACBrUtil, ACBrDFeUtil, ACBrConsts,
   pcnConversao, pcnConversaoBPe, pcnAuxiliar;
-
-procedure Register;
-begin
-  RegisterComponents('ACBrBPe', [TACBrBPeDABPeESCPOS]);
-end;
 
 { TACBrBPeDABPeESCPOS }
 
@@ -463,7 +447,7 @@ end;
 
 procedure TACBrBPeDABPeESCPOS.GerarInformacoesQRCode(Cancelamento: Boolean = False);
 var
-  qrcode: AnsiString;
+  qrcode: String;
   ConfigQRCodeErrorLevel: Integer;
 begin
   if Cancelamento then
@@ -512,7 +496,7 @@ end;
 
 procedure TACBrBPeDABPeESCPOS.GerarMensagemFiscal;
 var
-  TextoObservacao: AnsiString;
+  TextoObservacao: String;
 begin
   TextoObservacao := Trim(FpBPe.InfAdic.infAdFisco);
   if TextoObservacao <> '' then
@@ -524,7 +508,7 @@ end;
 
 procedure TACBrBPeDABPeESCPOS.GerarMensagemInteresseContribuinte;
 var
-  TextoObservacao: AnsiString;
+  TextoObservacao: String;
 begin
   TextoObservacao := Trim(FpBPe.InfAdic.infCpl);
   if TextoObservacao <> '' then
@@ -650,7 +634,7 @@ begin
   end;
 end;
 
-procedure TACBrBPeDABPeESCPOS.ImprimirDABPeCancelado(BPe: TBPe);
+procedure TACBrBPeDABPeESCPOS.ImprimirDABPECancelado(BPe: TBPe);
 begin
   if BPe = nil then
   begin

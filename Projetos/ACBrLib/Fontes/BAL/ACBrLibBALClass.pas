@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: Italo Jurisato Junior                           }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -94,11 +93,17 @@ function BAL_Desativar: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function BAL_LePeso(MillisecTimeOut: Integer; var Peso: Double): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function BAL_LePesoStr(MillisecTimeOut: Integer; sValor: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function BAL_SolicitarPeso: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function BAL_UltimoPesoLido(var Peso: Double): longint;
-      {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function BAL_UltimoPesoLidoStr(sValor: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function BAL_InterpretarRespostaPeso(eResposta: PChar; var Peso: Double): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function BAL_InterpretarRespostaPesoStr(eResposta: PChar; sValor: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 {%endregion}
@@ -108,7 +113,7 @@ function BAL_InterpretarRespostaPeso(eResposta: PChar; var Peso: Double): longin
 implementation
 
 uses
-  ACBrLibConsts, ACBrLibBALConsts, ACBrLibConfig, ACBrLibBALConfig;
+  ACBrLibConsts, ACBrLibConfig, ACBrLibBALConfig;
 
 { TACBrLibBAL }
 
@@ -292,6 +297,42 @@ begin
   end;
 end;
 
+function BAL_LePesoStr(MillisecTimeOut: Integer; sValor: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Peso: Double;
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('BAL_LePesoStr( ' + IntToStr(MillisecTimeOut) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('BAL_LePesoStr', logNormal);
+
+    with TACBrLibBAL(pLib) do
+    begin
+      BALDM.Travar;
+
+      try
+        Peso := BALDM.ACBrBAL1.LePeso(MillisecTimeOut);
+        Resposta := FloatToStr(Peso);
+        MoverStringParaPChar(Resposta, sValor, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        BALDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
 function BAL_SolicitarPeso: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
@@ -345,6 +386,38 @@ begin
   end;
 end;
 
+function BAL_UltimoPesoLidoStr(sValor: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Peso: Double;
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+
+    pLib.GravarLog('BAL_UltimoPesoLidoStr', logNormal);
+
+    with TACBrLibBAL(pLib) do
+    begin
+      BALDM.Travar;
+      try
+        Peso := BALDM.ACBrBAL1.UltimoPesoLido;
+        Resposta := FloatToStr(Peso);
+        MoverStringParaPChar(Resposta, sValor, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        BALDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
 function BAL_InterpretarRespostaPeso(eResposta: PChar; var Peso: Double): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
@@ -365,6 +438,43 @@ begin
       try
         Peso := BALDM.ACBrBAL1.InterpretarRepostaPeso(AResposta);
         Result := SetRetorno(ErrOK);
+      finally
+        BALDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function BAL_InterpretarRespostaPesoStr(eResposta: PChar; sValor: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  AResposta: AnsiString;
+  Peso: Double;
+  Resposta: string;
+begin
+  try
+    VerificarLibInicializada;
+    AResposta := AnsiString(eResposta);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('BAL_InterpretarRespostaPesoStr( ' + AResposta + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('BAL_InterpretarRespostaPesoStr', logNormal);
+
+    with TACBrLibBAL(pLib) do
+    begin
+      BALDM.Travar;
+      try
+        Peso := BALDM.ACBrBAL1.InterpretarRepostaPeso(AResposta);
+        Resposta := FloatToStr(Peso);
+        MoverStringParaPChar(Resposta, sValor, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
       finally
         BALDM.Destravar;
       end;

@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2015   João Pedro R Costa                   }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: João Pedro R Costa                              }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,19 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Hw Sistemas e Computadores Ltda -  contato@hwsistemas.com.br                 }
-{ www.hwsistemas.com.br - joaopedro@hwsistemas.com.br                          }
-{              Rua Mogno, 236 - Governado Valadares - MG - 35065-019           }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 28/12/2015: João Pedro
-|*  - Criação e distribuição da Primeira Versao
-*******************************************************************************}
-
 unit ACBrDeSTDA;
 
 interface
@@ -153,9 +143,6 @@ type
 
   end;
 
-procedure Register;
-
-
 implementation
 
 uses ACBrUtil, ACBrDeSTDABlocos, ACBrDeSTDABloco_G, ACBrDeSTDABloco_9;
@@ -164,13 +151,7 @@ uses ACBrUtil, ACBrDeSTDABlocos, ACBrDeSTDABloco_G, ACBrDeSTDABloco_9;
  {$R ACBr_DeSTDA.dcr}
 {$ENDIF}
 
-procedure Register;
-begin
-  RegisterComponents('ACBrTXT', [TACBrDeSTDA]);
-end;
-
 { TACBrDeSTDA }
-
 procedure TACBrDeSTDA.CancelaGeracao;
 begin
   LimpaRegistros;

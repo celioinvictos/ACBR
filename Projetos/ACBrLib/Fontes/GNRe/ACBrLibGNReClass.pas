@@ -2,33 +2,32 @@
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
-
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
-
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
 { Colaboradores nesse arquivo: Rafael Teno Dias                                }
-
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{        Rua Cel.Aureliano de Camargo, 973 - Tatuí - SP - 18270-170            }
-
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -88,19 +87,18 @@ function GNRe_ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
 {%region GNRe}
 function GNRe_LimparLista: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function GNRE_CarregarXML(const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function GNRe_CarregarINI(const eArquivoOuINI: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 function GNRe_LimparListaGuiaRetorno: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function GNRe_CarregarGuiaRetorno(const eGuiaTXT: PChar): longint;
+function GNRe_CarregarGuiaRetorno(const eArquivoOuXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
 {%region Servicos}
-function RespostaEnvio: String;
-function RespostaConsulta: String;
-
 function GNRe_Enviar(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
@@ -108,11 +106,11 @@ function GNRe_Consultar(const eUF: PChar; const AReceita: Integer;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function GNRe_EnviarEmail(const ePara, eChaveGNRe: PChar; const AEnviaPDF: Boolean;
+function GNRe_EnviarEmail(const ePara, eArquivoOuXml: PChar; const AEnviaPDF: Boolean;
   const eAssunto, eCC, eAnexos, eMensagem: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function GNRe_Imprimir: longint;
+function GNRe_Imprimir(const eNomeImpressora, eMostrarPreview: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 function GNRe_ImprimirPDF: longint;
@@ -199,26 +197,26 @@ begin
   Result := LIB_UltimoRetorno(sMensagem, esTamanho);
 end;
 
-function GNRe_ConfigLer(const eArqConfig: PChar): longint;
+function GNRE_ConfigLer(const eArqConfig: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigLer(eArqConfig);
 end;
 
-function GNRe_ConfigGravar(const eArqConfig: PChar): longint;
+function GNRE_ConfigGravar(const eArqConfig: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigGravar(eArqConfig);
 end;
 
-function GNRe_ConfigLerValor(const eSessao, eChave: PChar; sValor: PChar;
+function GNRE_ConfigLerValor(const eSessao, eChave: PChar; sValor: PChar;
   var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigLerValor(eSessao, eChave, sValor, esTamanho);
 end;
 
-function GNRe_ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
+function GNRE_ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigGravarValor(eSessao, eChave, eValor);
@@ -226,12 +224,12 @@ end;
 
 {%endregion}
 
-function GNRe_LimparLista: longint;
+function GNRE_LimparLista: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
     VerificarLibInicializada;
-    pLib.GravarLog('GNRe_LimparLista', logNormal);
+    pLib.GravarLog('GNRE_LimparLista', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
@@ -252,7 +250,49 @@ begin
   end;
 end;
 
-function GNRe_CarregarINI(const eArquivoOuINI: PChar): longint;
+function GNRE_CarregarXML(const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+var
+  EhArquivo: boolean;
+  ArquivoOuXml: string;
+begin
+  try
+    VerificarLibInicializada;
+    ArquivoOuXml := string(eArquivoOuXML);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('GNRE_CarregarXML(' + ArquivoOuXml + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('GNRE_CarregarXML', logNormal);
+
+    EhArquivo := StringEhArquivo(ArquivoOuXml);
+    if EhArquivo then
+      VerificarArquivoExiste(ArquivoOuXml);
+
+    with TACBrLibGNRe(pLib) do
+    begin
+      GNReDM.Travar;
+      try
+        if EhArquivo then
+          GNReDM.ACBrGNRe1.Guias.LoadFromFile(ArquivoOuXml)
+        else
+          GNReDM.ACBrGNRe1.Guias.LoadFromString(ArquivoOuXml);
+
+        Result := SetRetornoGNReCarregados(GNReDM.ACBrGNRe1.Guias.Count);
+      finally
+        GNReDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function GNRE_CarregarINI(const eArquivoOuINI: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   ArquivoOuINI: string;
@@ -262,9 +302,9 @@ begin
     ArquivoOuINI := string(eArquivoOuINI);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('GNRe_CarregarINI(' + ArquivoOuINI + ' )', logCompleto, True)
+      pLib.GravarLog('GNRE_CarregarINI(' + ArquivoOuINI + ' )', logCompleto, True)
     else
-      pLib.GravarLog('GNRe_CarregarINI', logNormal);
+      pLib.GravarLog('GNRE_CarregarINI', logNormal);
 
     if StringEhArquivo(ArquivoOuINI) then
       VerificarArquivoExiste(ArquivoOuINI);
@@ -288,12 +328,12 @@ begin
   end;
 end;
 
-function GNRe_LimparListaGuiaRetorno: longint;
+function GNRE_LimparListaGuiaRetorno: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
     VerificarLibInicializada;
-    pLib.GravarLog('GNRe_LimparListaGuiaRetorno', logNormal);
+    pLib.GravarLog('GNRE_LimparListaGuiaRetorno', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
@@ -314,27 +354,33 @@ begin
   end;
 end;
 
-function GNRe_CarregarGuiaRetorno(const eGuiaTXT: PChar): longint;
+function GNRe_CarregarGuiaRetorno(const eArquivoOuXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  AGuiaTXT: string;
+  EhArquivo: boolean;
+  ArquivoOuXml: string;
 begin
   try
     VerificarLibInicializada;
-    AGuiaTXT := string(eGuiaTXT);
+    ArquivoOuXml := string(eArquivoOuXml);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('GNRe_CarregarGuiaRetorno(' + AGuiaTXT + ' )', logCompleto, True)
+      pLib.GravarLog('GNRE_CarregarGuiaRetorno(' + ArquivoOuXml + ' )', logCompleto, True)
     else
-      pLib.GravarLog('GNRe_CarregarGuiaRetorno', logNormal);
+      pLib.GravarLog('GNRE_CarregarGuiaRetorno', logNormal);
 
-    VerificarArquivoExiste(AGuiaTXT);
+    EhArquivo := StringEhArquivo(ArquivoOuXml);
+    if EhArquivo then
+      VerificarArquivoExiste(ArquivoOuXml);
 
     with TACBrLibGNRe(pLib) do
     begin
       GNReDM.Travar;
       try
-        GNReDM.ACBrGNRe1.GuiasRetorno.LoadFromFile(AGuiaTXT);
+        if EhArquivo then
+          GNReDM.ACBrGNRe1.GuiasRetorno.LoadFromFile(ArquivoOuXml)
+        else
+          GNReDM.ACBrGNRe1.GuiasRetorno.LoadFromString(ArquivoOuXml);
         Result := SetRetornoGNReCarregados(GNReDM.ACBrGNRe1.GuiasRetorno.Count);
       finally
         GNReDM.Destravar;
@@ -352,95 +398,47 @@ end;
 {%endregion}
 
 {%region Servicos}
-
-function RespostaEnvio: String;
-var
-  Resp: TLibGNReEnvio;
-begin
-  Resp := TLibGNReEnvio.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
-  try
-    with TACBrLibGNRe(pLib).GNReDM.ACBrGNRe1.WebServices.Retorno do
-    begin
-      Resp.Ambiente := TpAmbToStr(ambiente);
-      Resp.Codigo := IntToStr(codigo);
-      Resp.Descricao := Descricao;
-      Resp.Recibo := numeroRecibo;
-      Resp.Protocolo := Protocolo;
-
-      Result := sLineBreak + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-function RespostaConsulta: String;
-var
-  Resp: TLibGNReConsulta;
-begin
-  Resp := TLibGNReConsulta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
-  try
-    with TACBrLibGNRe(pLib).GNReDM.ACBrGNRe1.WebServices.ConsultaUF do
-    begin
-      Resp.Ambiente := TpAmbToStr(ambiente);
-      Resp.Codigo := IntToStr(codigo);
-      Resp.Descricao := Descricao;
-      Resp.UF := Uf;
-      Resp.ExigeUfFavorecida := IfThen(exigeUfFavorecida = 'S', 'SIM', 'NÃO');
-      Resp.ExigeReceita := IfThen(exigeReceita = 'S', 'SIM', 'NÃO');
-
-      Result := sLineBreak + Resp.Gerar;
-    end;
-  finally
-    Resp.Free;
-  end;
-end;
-
-function GNRe_Enviar(const sResposta: PChar; var esTamanho: longint): longint;
+function GNRE_Enviar(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
+  Resp: TLibGNReEnvio;
   Resposta: String;
 begin
   try
     VerificarLibInicializada;
 
-    pLib.GravarLog('GNRe_Enviar', logNormal);
+    pLib.GravarLog('GNRE_Enviar', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
       GNReDM.Travar;
 
-      with GNReDM.ACBrGNRe1 do
-      begin
-        if Guias.Count = 0 then
-          raise EACBrLibException.Create(ErrEnvio, Format(SInfGNReCarregados, [Guias.Count]))
-        else
+      try
+        with GNReDM.ACBrGNRe1 do
         begin
+          if Guias.Count = 0 then
+            raise EACBrLibException.Create(ErrEnvio, Format(SInfGNReCarregados, [Guias.Count]));
+
           Guias.Assinar;
           Guias.Validar;
 
-          if WebServices.Enviar.Executar then
-          begin
-            Resposta := ''; //RespostaEnvio;
+          Resp := TLibGNReEnvio.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
 
-            WebServices.Retorno.numeroRecibo := WebServices.Enviar.numero;
+          WebServices.Enviar.Executar;
+          Resposta := ''; //RespostaEnvio;
 
-            if WebServices.Retorno.Executar then
-            begin
-              Resposta := Resposta + RespostaEnvio;
+          WebServices.Retorno.numeroRecibo := WebServices.Enviar.numero;
+          WebServices.Retorno.Executar;
 
-              MoverStringParaPChar(Resposta, sResposta, esTamanho);
-              Result := SetRetorno(ErrOK, StrPas(sResposta));
-            end
-            else
-              Result := SetRetornoWebService(SSL.HTTPResultCode, 'Consultar Recibo');
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'Enviar');
+          Resp.Processar(GNReDM.ACBrGNRe1);
+
+          Resposta := Resposta + Resp.Gerar;
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, StrPas(sResposta));
         end;
+      finally
+        GNReDM.Destravar;
       end;
-
-      GNReDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -450,10 +448,11 @@ begin
   end;
 end;
 
-function GNRe_Consultar(const eUF: PChar; const AReceita: Integer;
+function GNRE_Consultar(const eUF: PChar; const AReceita: Integer;
   const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
+  Resp: TLibGNReConsulta;
   AUF, Resposta: string;
 begin
   try
@@ -462,29 +461,28 @@ begin
     AUF := string(eUF);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('GNRe_Consultar(' + AUF + ',' + IntToStr(AReceita) +' )', logCompleto, True)
+      pLib.GravarLog('GNRE_Consultar(' + AUF + ',' + IntToStr(AReceita) +' )', logCompleto, True)
     else
-      pLib.GravarLog('GNRe_Consultar', logNormal);
+      pLib.GravarLog('GNRE_Consultar', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
       GNReDM.Travar;
 
-      GNReDM.ACBrGNRe1.WebServices.ConsultaUF.Uf := AUF;
-      GNReDM.ACBrGNRe1.WebServices.ConsultaUF.receita := AReceita;
-
       try
         with GNReDM.ACBrGNRe1 do
         begin
-          if WebServices.ConsultaUF.Executar then
-          begin
-            Resposta := RespostaEnvio;
 
-            MoverStringParaPChar(Resposta, sResposta, esTamanho);
-            Result := SetRetorno(ErrOK, StrPas(sResposta));
-          end
-          else
-            Result := SetRetornoWebService(SSL.HTTPResultCode, 'Consultar');
+          WebServices.ConsultaUF.Uf := AUF;
+          WebServices.ConsultaUF.receita := AReceita;
+          WebServices.ConsultaUF.Executar;
+
+          Resp := TLibGNReConsulta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
+          Resp.Processar(GNReDM.ACBrGNRe1);
+          Resposta := Resp.Gerar;
+
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, StrPas(sResposta));
         end;
       finally
         GNReDM.Destravar;
@@ -499,11 +497,11 @@ begin
   end;
 end;
 
-function GNRe_EnviarEmail(const ePara, eChaveGNRe: PChar; const AEnviaPDF: Boolean;
+function GNRE_EnviarEmail(const ePara, eArquivoOuXml: PChar; const AEnviaPDF: Boolean;
   const eAssunto, eCC, eAnexos, eMensagem: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  APara, AChaveGNRe, AAssunto, ACC, AAnexos, AMensagem: string;
+  APara, ArquivoOuXml, AAssunto, ACC, AAnexos, AMensagem: string;
   slMensagemEmail, slCC, slAnexos: TStringList;
   EhArquivo: boolean;
 begin
@@ -511,18 +509,18 @@ begin
     VerificarLibInicializada;
 
     APara := string(ePara);
-    AChaveGNRe := string(eChaveGNRe);
+    ArquivoOuXml := string(eArquivoOuXml);
     AAssunto := string(eAssunto);
     ACC := string(eCC);
     AAnexos := string(eAnexos);
     AMensagem := string(eMensagem);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('GNRe_EnviarEmail(' + APara + ',' + AChaveGNRe + ',' +
+      pLib.GravarLog('GNRE_EnviarEmail(' + APara + ',' + ArquivoOuXml + ',' +
          BoolToStr(AEnviaPDF, 'PDF','') + ',' + AAssunto + ',' + ACC + ',' +
          AAnexos + ',' + AMensagem + ' )', logCompleto, True)
     else
-      pLib.GravarLog('GNRe_EnviarEmail', logNormal);
+      pLib.GravarLog('GNRE_EnviarEmail', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
@@ -530,13 +528,15 @@ begin
 
       with GNReDM.ACBrGNRe1 do
       begin
-        EhArquivo := StringEhArquivo(AChaveGNRe);
+        EhArquivo := StringEhArquivo(ArquivoOuXml);
 
         if EhArquivo then
-          VerificarArquivoExiste(AChaveGNRe);
+          VerificarArquivoExiste(ArquivoOuXml);
 
         if EhArquivo then
-          Guias.LoadFromFile(AchaveGNRe);
+          Guias.LoadFromFile(ArquivoOuXml)
+        else
+          Guias.LoadFromString(ArquivoOuXml);
 
         if Guias.Count = 0 then
           raise EACBrLibException.Create(ErrEnvio, Format(SInfGNReCarregados, [Guias.Count]))
@@ -591,13 +591,21 @@ begin
   end;
 end;
 
-function GNRe_Imprimir: longint;
+function GNRe_Imprimir(const eNomeImpressora, eMostrarPreview: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  NomeImpressora, MostrarPreview: string;
 begin
   try
     VerificarLibInicializada;
 
-    pLib.GravarLog('GNRe_Imprimir', logNormal);
+    NomeImpressora := string(eNomeImpressora);
+    MostrarPreview := string(eMostrarPreview);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('GNRe_Imprimir(' + NomeImpressora + ',' + MostrarPreview + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('GNRe_Imprimir', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
@@ -609,6 +617,8 @@ begin
             raise EACBrLibException.Create(ErrEnvio, Format(SInfGNReCarregados, [GuiasRetorno.Count]))
           else
           begin
+            GNReDM.ConfigurarImpressao(False, NomeImpressora, MostrarPreview);
+
             GuiasRetorno.Imprimir;
 
             Result := SetRetornoGNReCarregados(GuiasRetorno.Count);
@@ -627,12 +637,13 @@ begin
   end;
 end;
 
-function GNRe_ImprimirPDF: longint;
+function GNRE_ImprimirPDF: longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
     VerificarLibInicializada;
-    pLib.GravarLog('GNRe_ImprimirPDF', logNormal);
+
+    pLib.GravarLog('GNRE_ImprimirPDF', logNormal);
 
     with TACBrLibGNRe(pLib) do
     begin
@@ -644,6 +655,7 @@ begin
             raise EACBrLibException.Create(ErrEnvio, Format(SInfGNReCarregados, [GuiasRetorno.Count]))
           else
           begin
+            GNReDM.ConfigurarImpressao(True);
             GuiasRetorno.ImprimirPDF;
 
             Result := SetRetornoGNReCarregados(GuiasRetorno.Count);

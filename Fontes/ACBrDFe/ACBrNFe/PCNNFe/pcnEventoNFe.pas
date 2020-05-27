@@ -50,8 +50,14 @@ unit pcnEventoNFe;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  pcnConversao, pcnConversaoNFe;
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  pcnConversao, pcnConversaoNFe,
+  ACBrBase;
 
 type
   EventoException = class(Exception);
@@ -118,7 +124,7 @@ type
     property qtdeItem: Currency read FqtdeItem write FqtdeItem;
   end;
 
-  TitemPedidoCollection = class(TObjectList)
+  TitemPedidoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TitemPedidoCollectionItem;
     procedure SetItem(Index: Integer; Value: TitemPedidoCollectionItem);
@@ -177,7 +183,7 @@ type
     property idPedidoCancelado: String read FidPedidoCancelado write FidPedidoCancelado;
   end;
 
-  TRetchNFePendCollection = class(TObjectList)
+  TRetchNFePendCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TRetchNFePendCollectionItem;
     procedure SetItem(Index: Integer; Value: TRetchNFePendCollectionItem);
@@ -412,13 +418,13 @@ end;
 function TRetchNFePendCollection.GetItem(
   Index: Integer): TRetchNFePendCollectionItem;
 begin
-  Result := TRetchNFePendCollectionItem(inherited GetItem(Index));
+  Result := TRetchNFePendCollectionItem(inherited Items[Index]);
 end;
 
 procedure TRetchNFePendCollection.SetItem(Index: Integer;
   Value: TRetchNFePendCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TRetchNFePendCollection.New: TRetchNFePendCollectionItem;
@@ -451,13 +457,13 @@ end;
 function TitemPedidoCollection.GetItem(
   Index: Integer): TitemPedidoCollectionItem;
 begin
-  Result := TitemPedidoCollectionItem(inherited GetItem(Index));
+  Result := TitemPedidoCollectionItem(inherited Items[Index]);
 end;
 
 procedure TitemPedidoCollection.SetItem(Index: Integer;
   Value: TitemPedidoCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TitemPedidoCollection.New: TitemPedidoCollectionItem;

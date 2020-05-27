@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Daniel Simoes de Almeida             }
-{                                         Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020   Daniel Simoes de Almeida             }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -45,11 +44,14 @@ uses SysUtils, Windows, Messages, Classes, Forms;
   function FindDirPackage(const aDir: String; const sPacote: String): string;
 
   function VersionNumberToNome(const AVersionStr: string): string;
+  function GetSystemWindowsDirectory(lpBuffer: LPWSTR; uSize: UINT): UINT; stdcall;
 
 implementation
 
 uses
   ShellApi, Types, IOUtils;
+
+function GetSystemWindowsDirectory; external kernel32 name 'GetSystemWindowsDirectoryW';
 
 procedure GetDriveLetters(AList: TStrings);
 var
@@ -152,6 +154,7 @@ begin
       UnloadServerFunctions;
     end;
   except
+    //pra que esse try..except??
   end;
 end;
 
@@ -225,11 +228,11 @@ const
   SYS_64 = 'SysWOW64';
   SYS_32 = 'System32';
 begin
-// retorna o diretório de sistema atual
+  // retorna o diretório de sistema atual
   Result := '';
 
-  //SetLength(strTmp, MAX_PATH);
-  if Windows.GetWindowsDirectory(strTmp, MAX_PATH) > 0 then
+  // verifica se aplicacao esta rodando em sessao de terminal server.
+  if GetSystemWindowsDirectory(strTmp, MAX_PATH) > 0 then
   begin
     DirWindows := Trim(StrPas(strTmp));
     DirWindows := IncludeTrailingPathDelimiter(DirWindows);
@@ -292,6 +295,8 @@ begin
     Result := 'Delphi 10.2 Tokyo'
   else if AVersionStr = 'd26' then
     Result := 'Delphi 10.3 Rio'
+  else if AVersionStr = 'd27' then
+    Result := 'Delphi 10.4 Sydney'
   else
     Result := '';
 end;

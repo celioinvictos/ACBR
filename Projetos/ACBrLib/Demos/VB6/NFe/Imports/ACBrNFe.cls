@@ -114,12 +114,23 @@ Private Declare Function NFE_ObterCertificados _
                 Lib "ACBrNFE32.dll" (ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
                                      
+Private Declare Function NFE_GetPath _
+                Lib "ACBrNFE32.dll" (ByVal tipo As Long, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
+Private Declare Function NFE_GetPathEvento _
+                Lib "ACBrNFE32.dll" (ByVal aCodEvento As String, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferSize As Long) As Long
+                                     
 Private Declare Function NFE_StatusServico _
                 Lib "ACBrNFE32.dll" (ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
                                      
 Private Declare Function NFE_Consultar _
                 Lib "ACBrNFE32.dll" (ByVal eChaveOuNFe As String, _
+                                     ByVal AExtrairEventos As Boolean, _
                                      ByVal buffer As String, _
                                      ByRef bufferSize As Long) As Long
                                      
@@ -189,7 +200,7 @@ Private Declare Function NFE_DistribuicaoDFePorChave _
                                      ByRef bufferSize As Long) As Long
                                      
 Private Declare Function NFE_EnviarEmail _
-                Lib "ACBrNFE32.dll" (ByVal ePara As Long, _
+                Lib "ACBrNFE32.dll" (ByVal ePara As String, _
                                      ByVal eChaveNFe As String, _
                                      ByVal aEnviaPDF As Boolean, _
                                      ByVal eAssunto As String, _
@@ -198,7 +209,7 @@ Private Declare Function NFE_EnviarEmail _
                                      ByVal eMensagem As String) As Long
                                      
 Private Declare Function NFE_EnviarEmailEvento _
-                Lib "ACBrNFE32.dll" (ByVal ePara As Long, _
+                Lib "ACBrNFE32.dll" (ByVal ePara As String, _
                                      ByVal eChaveNFe As String, _
                                      ByVal aEnviaPDF As Boolean, _
                                      ByVal eAssunto As String, _
@@ -474,6 +485,34 @@ Public Function ObterCertificados() As String()
     ObterCertificados = Split(processResult(buffer, bufferLen), vbCrLf)
 End Function
 
+Public Function GetPath(ByVal tipo As Long) As String
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_GetPath(tipo, buffer, bufferLen)
+    CheckResult retorno
+    
+    GetPath = processResult(buffer, bufferLen)
+End Function
+
+Public Function GetPathEvento(ByVal aCodEvento As String) As String
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = NFE_GetPathEvento(aCodEvento, buffer, bufferLen)
+    CheckResult retorno
+    
+    GetPathEvento = processResult(buffer, bufferLen)
+End Function
+
 Public Function StatusServico() As String
     Dim retorno   As Long
     Dim buffer    As String
@@ -488,7 +527,7 @@ Public Function StatusServico() As String
     StatusServico = processResult(buffer, bufferLen)
 End Function
 
-Public Function Consultar(ByVal eChaveOuNFe As String) As String
+Public Function Consultar(ByVal eChaveOuNFe As String, Optional ByVal AExtrairEventos As Boolean = False) As String
     Dim retorno   As Long
     Dim buffer    As String
     Dim bufferLen As Long
@@ -496,7 +535,7 @@ Public Function Consultar(ByVal eChaveOuNFe As String) As String
     bufferLen = BUFFER_LENGTH
     buffer = String$(bufferLen, " ")
     
-    retorno = NFE_Consultar(eChaveOuNFe, buffer, bufferLen)
+    retorno = NFE_Consultar(eChaveOuNFe, AExtrairEventos, buffer, bufferLen)
     CheckResult retorno
     
     Consultar = processResult(buffer, bufferLen)
@@ -691,10 +730,6 @@ End Sub
 
 Public Sub ImprimirInutilizacaoPDF(ByVal eArquivoXml As String)
     Dim retorno   As Long
-
-    bufferLen = BUFFER_LENGTH
-    
-    buffer = String$(bufferLen, " ")
     
     retorno = NFE_ImprimirInutilizacaoPDF(eArquivoXml)
     CheckResult retorno

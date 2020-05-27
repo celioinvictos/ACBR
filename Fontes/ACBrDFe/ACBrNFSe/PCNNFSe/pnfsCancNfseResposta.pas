@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -34,10 +37,14 @@ unit pnfsCancNfseResposta;
 interface
 
 uses
-  SysUtils, Classes, Forms, Contnrs,
-  ACBrUtil,
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase, ACBrUtil,
   pcnAuxiliar, pcnConversao, pcnLeitor, pnfsConversao, pnfsNFSe;
-//  strutils
 
 type
 
@@ -75,7 +82,7 @@ type
     property InformacoesLote: TInformacoesLote    read FInformacoesLote write FInformacoesLote;
   end;
 
- TMsgRetornoCancCollection = class(TObjectList)
+ TMsgRetornoCancCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TMsgRetornoCancCollectionItem;
     procedure SetItem(Index: Integer; Value: TMsgRetornoCancCollectionItem);
@@ -103,7 +110,7 @@ type
     property ChaveNFeRPS: TChaveNFeRPS read FChaveNFeRPS write FChaveNFeRPS;
   end;
 
- TNotasCanceladasCollection = class(TObjectList)
+ TNotasCanceladasCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TNotasCanceladasCollectionItem;
     procedure SetItem(Index: Integer; Value: TNotasCanceladasCollectionItem);
@@ -153,6 +160,7 @@ type
     function LerXml_proGIAP: Boolean;
     function LerXml_proIPM: Boolean;
     function LerXml_proAssessorPublico: Boolean;
+    function LerXml_proSiat: Boolean;
 
     property Leitor: TLeitor         read FLeitor   write FLeitor;
     property InfCanc: TInfCanc       read FInfCanc  write FInfCanc;
@@ -203,13 +211,13 @@ end;
 function TMsgRetornoCancCollection.GetItem(
   Index: Integer): TMsgRetornoCancCollectionItem;
 begin
-  Result := TMsgRetornoCancCollectionItem(inherited GetItem(Index));
+  Result := TMsgRetornoCancCollectionItem(inherited Items[Index]);
 end;
 
 procedure TMsgRetornoCancCollection.SetItem(Index: Integer;
   Value: TMsgRetornoCancCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TMsgRetornoCancCollection.New: TMsgRetornoCancCollectionItem;
@@ -245,13 +253,13 @@ end;
 function TNotasCanceladasCollection.GetItem(
   Index: Integer): TNotasCanceladasCollectionItem;
 begin
-  Result := TNotasCanceladasCollectionItem(inherited GetItem(Index));
+  Result := TNotasCanceladasCollectionItem(inherited Items[Index]);
 end;
 
 procedure TNotasCanceladasCollection.SetItem(Index: Integer;
   Value: TNotasCanceladasCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TNotasCanceladasCollection.New: TNotasCanceladasCollectionItem;
@@ -302,6 +310,7 @@ begin
     proGiap:        Result := LerXml_proGIAP;
     proIPM:         Result := LerXml_proIPM;
     proAssessorPublico:  Result := LerXml_proAssessorPublico;
+    proSiat:        Result := LerXml_proSiat; 
   else
     Result := LerXml_ABRASF;
   end;
@@ -1094,6 +1103,71 @@ begin
         InfCanc.MsgRetorno[0].FMensagem := sMensagem;
         InfCanc.MsgRetorno[0].FCorrecao := '';
       end;
+    end;
+  except
+    Result := False;
+  end;
+end;
+
+function TretCancNFSe.LerXml_proSiat: Boolean; 
+var
+  i: Integer;
+begin
+  Result := False;
+
+  try
+    if leitor.rExtrai(1, 'RetornoCancelamentoNFSe') <> '' then
+    begin
+      if (leitor.rExtrai(2, 'Cabecalho') <> '') then
+      begin
+        FInfCanc.FSucesso := Leitor.rCampo(tcStr, 'Sucesso');
+
+        if FInfCanc.FSucesso = 'S' then
+          FInfCanc.DataHora := Date
+        else if FInfCanc.FSucesso = 'true' then 
+          FInfCanc.DataHora := Date;
+      end;
+
+      i := 0;
+      if (leitor.rExtrai(2, 'NotasCanceladas') <> '') then
+      begin
+        while (Leitor.rExtrai(2, 'Nota', '', i + 1) <> '') do
+        begin
+          FInfCanc.FNotasCanceladas.New;
+          FInfCanc.FNotasCanceladas[i].InscricaoMunicipalPrestador := Leitor.rCampo(tcStr, 'InscricaoMunicipalPrestador');
+          FInfCanc.FNotasCanceladas[i].NumeroNota                  := Leitor.rCampo(tcStr, 'NumeroNota');
+          FInfCanc.FNotasCanceladas[i].CodigoVerficacao            := Leitor.rCampo(tcStr,'CodigoVerificacao');
+          inc(i);
+        end;
+      end;
+
+      i := 0;
+      if (leitor.rExtrai(2, 'Alertas') <> '') then
+      begin
+        while (Leitor.rExtrai(2, 'Alerta', '', i + 1) <> '') do
+        begin
+          InfCanc.FMsgRetorno.New;
+          InfCanc.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
+          InfCanc.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
+          InfCanc.FMsgRetorno[i].FCorrecao := '';
+          inc(i);
+        end;
+      end;
+
+      i := 0;
+      if (leitor.rExtrai(2, 'Erros') <> '') then
+      begin
+        while (Leitor.rExtrai(2, 'Erro', '', i + 1) <> '') do
+        begin
+          InfCanc.FMsgRetorno.New;
+          InfCanc.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
+          InfCanc.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Descricao');
+          InfCanc.FMsgRetorno[i].FCorrecao := '';
+          inc(i);
+        end;
+      end;
+
+      Result := True;
     end;
   except
     Result := False;

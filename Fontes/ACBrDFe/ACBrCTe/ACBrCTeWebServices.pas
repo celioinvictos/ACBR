@@ -1,18 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrCTe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Conhecimen-}
-{ to de Transporte eletrônico - CTe - http://www.cte.fazenda.gov.br            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wiliam Zacarias da Silva Rosa          }
-{                                       Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -30,11 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
-{ Wiliam Zacarias da Silva Rosa  -  wrosa2009@yahoo.com.br -  www.motta.com.br }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -276,6 +269,7 @@ type
     FOwner: TACBrDFe;
     FConhecimentos: TConhecimentos;
     FCTeChave: String;
+    FExtrairEventos: Boolean;
     FProtocolo: String;
     FDhRecbto: TDateTime;
     FXMotivo: String;
@@ -289,6 +283,7 @@ type
     FprotCTe: TProcCTe;
     FretCancCTe: TRetCancCTe;
     FprocEventoCTe: TRetEventoCTeCollection;
+
     procedure SetCTeChave(const AValue: String);
   protected
     procedure DefinirURL; override;
@@ -306,6 +301,7 @@ type
     procedure Clear; override;
 
     property CTeChave: String read FCTeChave write SetCTeChave;
+    property ExtrairEventos: Boolean read FExtrairEventos write FExtrairEventos;
     property Protocolo: String read FProtocolo;
     property DhRecbto: TDateTime read FDhRecbto;
     property XMotivo: String read FXMotivo;
@@ -351,9 +347,7 @@ type
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
     procedure DefinirDadosMsg; override;
-    procedure SalvarEnvio; override;
     function TratarResposta: Boolean; override;
-    procedure SalvarResposta; override;
 
     function GerarMsgLog: String; override;
     function GerarPrefixoArquivo: String; override;
@@ -453,9 +447,7 @@ type
     procedure DefinirServicoEAction; override;
     procedure DefinirDadosMsg; override;
     procedure DefinirEnvelopeSoap; override;
-    procedure SalvarEnvio; override;
     function TratarResposta: Boolean; override;
-    procedure SalvarResposta; override;
 
     function GerarMsgLog: String; override;
     function GerarPrefixoArquivo: String; override;
@@ -2296,7 +2288,8 @@ begin
                     GravarXML;
 
                   // Salva o XML de eventos retornados ao consultar um CT-e
-                  SalvarEventos(aEventos);
+                  if ExtrairEventos then
+                    SalvarEventos(aEventos);
                 end;
               end;
 
@@ -2307,7 +2300,8 @@ begin
       end
       else
       begin
-        if FPConfiguracoesCTe.Arquivos.Salvar and (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoCTe'))) then
+        if ExtrairEventos and FPConfiguracoesCTe.Arquivos.Salvar and
+           (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoCTe'))) then
         begin
           Inicio := Pos('<procEventoCTe', FPRetWS);
           Fim    := Pos('</retConsSitCTe', FPRetWS) -1;
@@ -2461,32 +2455,6 @@ begin
     FID := InutCTe.ID;
   finally
     InutCTe.Free;
-  end;
-end;
-
-procedure TCTeInutilizacao.SalvarEnvio;
-var
-  aPath: String;
-begin
-  inherited SalvarEnvio;
-
-  if FPConfiguracoesCTe.Geral.Salvar then
-  begin
-    aPath := GerarPathPorCNPJ;
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '.xml', FPDadosMsg, aPath);
-  end;
-end;
-
-procedure TCTeInutilizacao.SalvarResposta;
-var
-  aPath: String;
-begin
-  inherited SalvarResposta;
-
-  if FPConfiguracoesCTe.Geral.Salvar then
-  begin
-    aPath := GerarPathPorCNPJ;
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '.xml', FPRetWS, aPath);
   end;
 end;
 
@@ -3280,34 +3248,6 @@ begin
   end;
 end;
 
-procedure TCTeEnvEvento.SalvarEnvio;
-begin
-  if ArqEnv = '' then
-    exit;
-
-  if FPConfiguracoesCTe.Geral.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '.xml',
-      FPDadosMsg, GerarPathEvento(FCNPJ, FIE));
-
-  if FPConfiguracoesCTe.WebServices.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqEnv + '-soap.xml',
-      FPEnvelopeSoap, GerarPathEvento(FCNPJ, FIE));
-end;
-
-procedure TCTeEnvEvento.SalvarResposta;
-begin
-  if ArqResp = '' then
-    exit;
-
-  if FPConfiguracoesCTe.Geral.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '.xml',
-      FPRetWS, GerarPathEvento(FCNPJ, FIE));
-
-  if FPConfiguracoesCTe.WebServices.Salvar then
-    FPDFeOwner.Gravar(GerarPrefixoArquivo + '-' + ArqResp + '-soap.xml',
-      FPRetornoWS, GerarPathEvento(FCNPJ, FIE));
-end;
-
 function TCTeEnvEvento.GerarMsgLog: String;
 var
   aMsg: String;
@@ -3429,7 +3369,7 @@ end;
 function TDistribuicaoDFe.TratarResposta: Boolean;
 var
   I: Integer;
-  AXML: String;
+  AXML, aPath: String;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'cteDistDFeInteresseResult');
 
@@ -3469,13 +3409,16 @@ begin
       if NaoEstaVazio(NomeArq) then
         FlistaArqs.Add( FNomeArq );
 
+      aPath := GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]);
+      FretDistDFeInt.docZip.Items[I].NomeArq := aPath + FNomeArq;
+
       if (FPConfiguracoesCTe.Arquivos.Salvar) and NaoEstaVazio(FNomeArq) then
       begin
-        if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoCTe]) then // salvar evento
-          FPDFeOwner.Gravar(FNomeArq, AXML, GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]));
+        if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoCTe]) then
+          FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
 
         if (FretDistDFeInt.docZip.Items[I].schema in [schprocCTe, schprocCTeOS]) then
-          FPDFeOwner.Gravar(FNomeArq, AXML, GerarPathDistribuicao(FretDistDFeInt.docZip.Items[I]));
+          FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
       end;
     end;
   end;

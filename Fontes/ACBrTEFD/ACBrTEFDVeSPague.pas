@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -26,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 26/06/2010: Daniel Simoes de Almeida
-|*  - Primeira Versao: Criaçao e Distribuiçao da Primeira Versao
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -253,7 +245,9 @@ procedure VSStringToList( const AString : AnsiString; const AList : TStrings) ;
 
 implementation
 
-Uses ACBrUtil, dateutils, StrUtils, ACBrTEFD, Math;
+Uses
+  strutils, math, dateutils,
+  ACBrUtil, ACBrTEFD, ACBrTEFComum;
 
 { TACBrTEFDVeSPagueCmd }
 
@@ -526,12 +520,12 @@ end;
 
 procedure TACBrTEFDRespVeSPague.ConteudoToProperty;
 var
-  Linha : TACBrTEFDLinha ;
+  Linha : TACBrTEFLinha ;
   Chave, ParcValorStr, ParcVenctoStr : AnsiString;
   Valor : String ;
   I : Integer ;
   ParcValorList, ParcVenctoList : TStringList ;
-  Parc : TACBrTEFDRespParcela ;
+  Parc : TACBrTEFRespParcela ;
 begin
    fpValorTotal := 0 ;
    ParcVenctoStr:= '';
@@ -592,18 +586,8 @@ begin
         fpDataVencimento := VSDateTimeToDateTime( Valor )
      else if Linha.Identificacao = 27 then
        fpFinalizacao := Valor
-     else if Linha.Identificacao = 899 then  // Tipos de Uso Interno do ACBrTEFD
-      begin
-        case Linha.Sequencia of
-            1 : fpCNFEnviado         := (UpperCase( Linha.Informacao.AsString ) = 'S' );
-            2 : fpIndiceFPG_ECF      := Linha.Informacao.AsString ;
-            3 : fpOrdemPagamento     := Linha.Informacao.AsInteger ;
-          100 : fpHeader             := Linha.Informacao.AsString ;
-          101 : fpID                 := Linha.Informacao.AsInteger;
-          102 : fpDocumentoVinculado := Linha.Informacao.AsString ;
-          103 : fpValorTotal         := fpValorTotal + Linha.Informacao.AsFloat;
-        end;
-     end;
+     else
+       ProcessarTipoInterno(Linha);
    end ;
 
    fpQtdLinhasComprovante := fpImagemComprovante1aVia.Count;
@@ -624,7 +608,7 @@ begin
        begin
          for I := 1 to ParcValorList.Count-1 do
          begin
-            Parc := TACBrTEFDRespParcela.create;
+            Parc := TACBrTEFRespParcela.create;
             Parc.Vencimento := VSDateTimeToDateTime( ParcVenctoList[I] );
             Parc.Valor      := StringToFloatDef( ParcValorList[I], 0) ;
 

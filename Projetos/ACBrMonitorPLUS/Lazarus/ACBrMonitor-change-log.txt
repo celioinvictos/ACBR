@@ -1,31 +1,32 @@
-{******************************************************************************}
+{*******************************************************************************}
 { Projeto: ACBrMonitor                                                         }
-{  Executavel que faz uso do conjunto de componentes ACBr para emissão de NFe  }
-{                                                                              }
-{ Direitos Autorais Reservados (c) 2006 Daniel Simoes de Almeida               }
-{                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{  Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo   }
-{ sob os termos da Licença Pública Geral GNU, conforme publicada pela Free     }
-{ Software Foundation; tanto a versão 2 da Licença como (a seu critério)       }
-{ qualquer versão mais nova.                                                   }
-{                                                                              }
-{  Este programa é distribuído na expectativa de ser útil, mas SEM NENHUMA     }
-{ GARANTIA; nem mesmo a garantia implícita de COMERCIALIZAÇÃO OU DE ADEQUAÇÃO A}
-{ QUALQUER PROPÓSITO EM PARTICULAR. Consulte a Licença Pública Geral GNU para  }
-{ obter mais detalhes. (Arquivo LICENCA.TXT ou LICENSE.TXT)                    }
-{                                                                              }
-{  Você deve ter recebido uma cópia da Licença Pública Geral GNU junto com este}
-{ programa; se não, escreva para a Free Software Foundation, Inc., 59 Temple   }
-{ Place, Suite 330, Boston, MA 02111-1307, USA. Você também pode obter uma     }
-{ copia da licença em:  http://www.opensource.org/licenses/gpl-license.php     }
-{                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
-{******************************************************************************}
+{  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
+{ criar uma interface de comunicação com equipamentos de automacao comercial.   }
+{                                                                               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
+{                                                                               }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
+{                                                                               }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
+{ qualquer versão posterior.                                                    }
+{                                                                               }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
+{                                                                               }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
+{ Você também pode obter uma copia da licença em:                               }
+{ http://www.opensource.org/licenses/gpl-license.php                            }
+{                                                                               }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
+{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
+{*******************************************************************************}
 
 {******************************************************************************
 |* ACBrMonitor
@@ -35,7 +36,7 @@
 
 
 Para ver os comandos dispoíveis do ACBrMonitor acesse:
-http://acbr.sourceforge.net/drupal/?q=node/40
+https://acbr.sourceforge.io/ACBrMonitor/ACBrMonitor.html
 
 Símbolo : Significado
 
@@ -43,9 +44,99 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+[+] DoACBrUnit
+Adicionado os métodos EncodeBase64 e DecodeBase64, como estes métodos é possível transferir arquivos binários utilizando
+comunicação TCP/IP, pode ser útil para transferir arquivos .pdf que são gerados no Servidor para ser emitidos na estação Client
+
+[*] DoSATUnit
+Ajuste na validação do XML passado como parâmetro no método EnviarCFe
+
+[*] DoACBrNFeUnit
+Adicionado validação na função de configuração de impressão
+
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado propriedade para RemoverEspaços do XML
+
+[*] ACBrMonitor1
+Remoção da propriedade PathArquivoMunicipios
+
+[+] ACBrMonitor1
+Adicionado funcionalidade de validar Variaveis na Mensagem personalizada do canhoto de NFe.
+
+[+] ACBrMonitor1, DoCPFUnit, DoCNPJUnit, ACBrMonitorConsts, ACBrCMD
+Adicionado Funcionalidade de ConsultaCNPJ e ConsultaCPF no site da Receita Federal
+
+13/03/2020
+[*] ACBrMonitor1
+Adicionado Informação da Porta ou arquivo de monitoramento do ACBrMonitor no Hint do SysTray
+
+12/03/2020
+[*] DoACBrUnit, DoACBrNFe, DoACBrMDFe, DoACBrCTe, DoACBrSAT, DoACBrBPe, DoACBreSocial, DoACBrReinf, DoACBrBoletoUnit, DoACBrECFUnit,
+utilUnit, cmdUnit, ACBrMonitor1
+Realizado Refatoração na classe DoACBrUnit e modificação na chamada de métódos padrão do Objeto ACBr nas demais classes.
+
+06/03/2020
+[*] DoACBrNFe, DoACBrMDFe, DoACBrCTe
+Adicionado validação de numero do protocolo nos métodos de Cancelamento
+
+02/03/2020
+[+] DoBoletoUnit, ACBrMonitorConsts
+Adicionado novos métodos componente Boleto: ImprimirBoleto, GerarPDFBoleto, EnviarEmailBoleto
+Permite o geração e envio de e-mail de um unico título da lista
+
+28/02/2020
+[+] DoACBrPosPrinter, ACBrMonitorConsts
+Adicionado novos métodos AcharPortasSeriais, AcharPortasUSB, AcharPortasRaw
+
+26/02/2020
+[+] DoACBrMDFeUnit, DoACBrBPeUnit, DoACBrCTeUnit e DoACBrNFeUnit
+Adicionado o parâmetro opcional: aExtrairEventos no método ConsultarMDFe,
+ConsultarBPe, ConsultarCTe e ConsultarNFe.  
+
+18/02/2020
+[*] ACBrMonitor1
+Adicionado botão para verificar a versão SSL que está sendo utilizada pelo Monitor
+
+11/02/2020
+[*] ConfiguraSerial
+Adicionado Unit ACBrDeviceSerial
+
+07/02/2020
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado novas configurações referente ao componente SAT: Configurações de diretórios, Prefixo de CFe e Configurações de estrutura de diretórios
+
+06/02/2020
+[*] DoECFUnit
+Removido Métodos WebService desativados: EnvioBlocoX, ConsultaBlocoX, ValidaBlocoX
+
+04/02/2020
+[+] DoACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado o campo "Espaco Entre Produtos" para impressão NFe
+
+04/02/2020
+[-] DoACBrUnit
+Ajuste na chamada do método CopyFile a partir da classe FileUtil
+
+29/01/2020
+[+] DoACBrUnit
+Adicionado método ACBr.CopyFile()
+contribuição: Fabio Souza
+https://www.projetoacbr.com.br/forum/topic/55876-sugest%C3%A3o-de-melhoria-fun%C3%A7%C3%A3o-acbrcopyfile/
+
+29/01/2020
+[*] DoACBrNFeUnit
+Validação no retorno do campo "Arquivo" no método ConsultarNFe.
+
+14/01/2020
+[*] DoACBrNFe, ACBrMonitorConfig
+Ajuste no método SetLogotipo, atualizado segundo parametro permitindo gravar Path do logo NFCe
+
+[*] DoACBrNFe
+Ajuste no método AssinarNFe, retornar o path correto da gravação do XML no caso de passar o conteúdo do XML como parâmetro
+
 10/01/2020
 [*] DoACBrNFe
-    Melhoria no metodo GerarNFeIni.
+Melhoria no metodo GerarNFeIni.
 
 09/01/2020
 [+] DoACBrUnit, DoACBrNFe, DoACBrCTe, DoACBrMDFe

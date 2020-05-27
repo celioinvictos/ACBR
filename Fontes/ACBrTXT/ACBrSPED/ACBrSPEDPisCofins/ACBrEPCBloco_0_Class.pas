@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida               }
-{                                       Isaque Pinheiro                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro eFernando Amado                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -30,13 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 15/02/2011: Isaque Pinheiro e Fernando Amado
-|*  - Criação e distribuição da Primeira Versao
-*******************************************************************************}
 
 unit ACBrEPCBloco_0_Class;
 
@@ -72,6 +64,7 @@ type
     FRegistro0450Count: Integer;
     FRegistro0500Count: Integer;
     FRegistro0600Count: Integer;
+    FRegistro0900Count: Integer;
 
     procedure WriteRegistro0035(Reg0001: TRegistro0001);
     procedure WriteRegistro0100(Reg0001: TRegistro0001);
@@ -145,6 +138,7 @@ type
     property Registro0450Count: Integer read FRegistro0450Count write FRegistro0450Count;
     property Registro0500Count: Integer read FRegistro0500Count write FRegistro0500Count;
     property Registro0600Count: Integer read FRegistro0600Count write FRegistro0600Count;
+    property Registro0900Count: Integer read FRegistro0900Count write FRegistro0900Count;
   end;
 
 implementation
@@ -1009,7 +1003,7 @@ begin
      begin
        ///
        Add(
-         {01} LFill('0990') +
+         {01} LFill('0900') +
          {02} VDFill( REC_TOTAL_BLOCO_A    , 2) +
          {03} VDFill( REC_NRB_BLOCO_A      , 2) +
          {04} VDFill( REC_TOTAL_BLOCO_C    , 2) +
@@ -1026,6 +1020,9 @@ begin
          {15} VDFill( REC_TOTAL_NRB_PERIODO, 2)
          );
        Registro0990.QTD_LIN_0 := Registro0990.QTD_LIN_0 + 1;
+
+       /// Variavél para armazenar a quantidade de registro do tipo.
+       FRegistro0900Count := FRegistro0900Count + 1;
      end;
   end
 end;

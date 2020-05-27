@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -472,43 +471,40 @@ procedure TBloco_0.WriteRegistro0001 ;
 begin
   if Assigned(FRegistro0001) then
   begin
-     with FRegistro0001 do
-     begin
-        Add( LFill( '0001' ) +
-             LFill( Integer(IND_MOV), 0 ) ) ;  
+    Add( LFill( '0001' ) +
+         LFill( Integer(FRegistro0001.IND_MOV), 0 ) ) ;
 
-        Check((not((FRegistro0000.IND_ATIV = atIndustrial) and (DT_INI >= EncodeDate(2020,01,01))) and (FRegistro0002.CLAS_ESTAB_IND = EmptyStr)),
-          '(0-0002) Contribuinte Industrial ou equiparado a industrial deve ser informada a classificação do estabelecimento conforme tabela 4.5.5!');
+    //Valida se o registro 0002 deve ser incluído no arquivo.
+    if Assigned(FRegistro0002) and (DT_INI >= EncodeDate(2020,01,01)) and
+      (FRegistro0000.IND_ATIV = atIndustrial) then
+    begin
+      //validar se o campo CLAS_ESTAB_IND está na tabela 4.5.5
+      Check( FRegistro0002.CLAS_ESTAB_IND <> EmptyStr,
+            '(0-0002) Contribuinte Industrial ou equiparado a industrial deve ser informada a classificação do estabelecimento conforme tabela 4.5.5!');
 
-        if Assigned(FRegistro0002) and (DT_INI >= EncodeDate(2020,01,01))
-        and( FRegistro0000.IND_ATIV = atIndustrial) then
-           begin
-              with FRegistro0002 do
-              begin
-                 Add( LFill( '0002' ) +
-                      LFill( CLAS_ESTAB_IND ) ) ;
-              end;
-              Registro0990.QTD_LIN_0 := Registro0990.QTD_LIN_0 + 1;
-           end;
+      Add( LFill( '0002' ) +
+           LFill( FRegistro0002.CLAS_ESTAB_IND ) ) ;
 
-        if IND_MOV = imComDados then
-        begin
-          WriteRegistro0005(FRegistro0001) ;
-          WriteRegistro0015(FRegistro0001) ;
-          WriteRegistro0100(FRegistro0001) ;
-          WriteRegistro0150(FRegistro0001) ;
-          WriteRegistro0190(FRegistro0001) ;
-          WriteRegistro0200(FRegistro0001) ;
-          WriteRegistro0300(FRegistro0001) ;
-          WriteRegistro0400(FRegistro0001) ;
-          WriteRegistro0450(FRegistro0001) ;
-          WriteRegistro0460(FRegistro0001) ;
-          WriteRegistro0500(FRegistro0001) ;
-          WriteRegistro0600(FRegistro0001) ;
-        end;
-     end;
+      Registro0990.QTD_LIN_0 := Registro0990.QTD_LIN_0 + 1;
+    end;
 
-     Registro0990.QTD_LIN_0 := Registro0990.QTD_LIN_0 + 1;
+    if FRegistro0001.IND_MOV = imComDados then
+    begin
+      WriteRegistro0005(FRegistro0001) ;
+      WriteRegistro0015(FRegistro0001) ;
+      WriteRegistro0100(FRegistro0001) ;
+      WriteRegistro0150(FRegistro0001) ;
+      WriteRegistro0190(FRegistro0001) ;
+      WriteRegistro0200(FRegistro0001) ;
+      WriteRegistro0300(FRegistro0001) ;
+      WriteRegistro0400(FRegistro0001) ;
+      WriteRegistro0450(FRegistro0001) ;
+      WriteRegistro0460(FRegistro0001) ;
+      WriteRegistro0500(FRegistro0001) ;
+      WriteRegistro0600(FRegistro0001) ;
+    end;
+
+    Registro0990.QTD_LIN_0 := Registro0990.QTD_LIN_0 + 1;
   end;
 end;
 

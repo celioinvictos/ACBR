@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit UPrincipal;
 
 {$mode objfpc}{$H+}
@@ -18,12 +48,14 @@ type
     bEtqBloco: TButton;
     bEtqCarreiras: TButton;
     bEtqSimples: TButton;
+    bQRCode: TButton;
     bImprimirImagem: TButton;
     cbBackFeed: TComboBox;
     cbOrigem: TComboBox;
     cbDPI: TComboBox;
     cbModelo: TComboBox;
     cbPorta: TComboBox;
+    cbxPagCodigo: TComboBox;
     ckMemoria: TCheckBox;
     eAvanco: TEdit;
     eCopias: TEdit;
@@ -35,6 +67,7 @@ type
     gbImagem: TGroupBox;
     gbImpressao: TGroupBox;
     Image1: TImage;
+    Label5: TLabel;
     lbAvanco: TLabel;
     lbBackFeed: TLabel;
     lbBackFeed1: TLabel;
@@ -50,6 +83,7 @@ type
     rbArquivo: TRadioButton;
     rbStream: TRadioButton;
     procedure bEtqBlocoClick(Sender: TObject);
+    procedure bQRCodeClick(Sender: TObject);
     procedure bEtqSimplesClick(Sender: TObject);
     procedure bEtqCarreirasClick(Sender: TObject);
     procedure bImprimirImagemClick(Sender : TObject);
@@ -70,7 +104,11 @@ var
 
 implementation
 uses
-  typinfo, Printers;
+  typinfo, Printers, synautil,
+  ACBrUtil, ACBrImage
+  {$IfDef MSWINDOWS}
+  ,ACBrWinUSBDevice
+  {$EndIf};
 
 {$R *.lfm}
 
@@ -82,6 +120,7 @@ var
   L: TACBrETQBackFeed;
   M: Integer;
   N: TACBrETQOrigem;
+  O: TACBrETQPaginaCodigo;
 begin
   cbModelo.Items.Clear ;
   For I := Low(TACBrETQModelo) to High(TACBrETQModelo) do
@@ -99,25 +138,38 @@ begin
   For N := Low(TACBrETQOrigem) to High(TACBrETQOrigem) do
      cbOrigem.Items.Add( GetEnumName(TypeInfo(TACBrETQOrigem), integer(N) ) ) ;
 
+  cbxPagCodigo.Items.Clear ;
+  For O := Low(TACBrETQPaginaCodigo) to High(TACBrETQPaginaCodigo) do
+     cbxPagCodigo.Items.Add( GetEnumName(TypeInfo(TACBrETQPaginaCodigo), integer(O) ) ) ;
+
   cbPorta.Items.Clear;
   ACBrETQ.Device.AcharPortasSeriais( cbPorta.Items );
+
+  {$IfDef MSWINDOWS}
+   ACBrETQ.Device.WinUSB.FindUSBPrinters();
+   for M := 0 to ACBrETQ.Device.WinUSB.DeviceList.Count-1 do
+     cbPorta.Items.Add('USB:'+ACBrETQ.Device.WinUSB.DeviceList.Items[M].DeviceName);
+  {$EndIf}
+
   cbPorta.Items.Add('LPT1') ;
-  cbPorta.Items.Add('LPT2') ;
   cbPorta.Items.Add('\\localhost\L42') ;
-  cbPorta.Items.Add('c:\temp\ecf.txt') ;
+  cbPorta.Items.Add('c:\temp\teste.txt') ;
   cbPorta.Items.Add('TCP:192.168.0.31:9100') ;
 
   For M := 0 to Printer.Printers.Count-1 do
     cbPorta.Items.Add('RAW:'+Printer.Printers[M]);
 
+  {$IfNDef MSWINDOWS}
   cbPorta.Items.Add('/dev/ttyS0') ;
   cbPorta.Items.Add('/dev/ttyS1') ;
   cbPorta.Items.Add('/dev/ttyUSB0') ;
   cbPorta.Items.Add('/dev/ttyUSB1') ;
   cbPorta.Items.Add('/tmp/ecf.txt') ;
+  {$EndIf}
 
+  cbxPagCodigo.ItemIndex := 2;
   cbDPI.ItemIndex := 0;
-  cbModelo.ItemIndex := 3;
+  cbModelo.ItemIndex := 1;
   cbPorta.ItemIndex := 0;
 end;
 
@@ -127,20 +179,20 @@ begin
 
   with ACBrETQ do
   begin
-     if Modelo in [etqPpla, etqPplb] then
+     if (Modelo <> etqZPLII) then
       begin
-        ImprimirTexto(orNormal, 2, 2, 2, 3, 3, 'BISCOITO MARILAN RECH 335G', 0, True);
-        ImprimirTexto(orNormal, 2, 2, 1, 8, 3, 'CHOC BRANCO');
+        ImprimirTexto(orNormal, 2, 2, 2, 3, 3, 'RAÇÃO PARA CÃES ÁÉÍÓÚ 5KG', 0, True);
+        ImprimirTexto(orNormal, 2, 2, 1, 8, 3, 'MÉDIO PORTE');
         ImprimirBarras(orNormal, barEAN13, 2, 2, 13, 5, '7896003701685', 10, becSIM);
-        ImprimirCaixa(13,32,56,14,1,1);
-        ImprimirTexto(orNormal, 3, 3, 2, 18, 35, 'R$');
-        ImprimirTexto(orNormal, 3, 4, 4, 15, 50, '20,59');
+        ImprimirCaixa(10,32,56,13,1,1);
+        ImprimirTexto(orNormal, 3, 3, 2, 16, 35, 'R$');
+        ImprimirTexto(orNormal, 3, 4, 4, 12, 50, '20,59');
       end
-      else  //if Modelo = etqZPLII then
+      else
       begin
         ImprimirCaixa(3,3,90,5,5,0);
-        ImprimirTexto(orNormal, 'T', 10, 10, 3, 3, 'BISCOITO MARILAN RECH 335G', 0, True);
-        ImprimirTexto(orNormal, 'S', 10, 10, 8, 3, 'CHOC BRANCO');
+        ImprimirTexto(orNormal, 'T', 10, 10, 3, 3, 'RAÇÃO PARA CÃES ÁÉÍÓÚ 5KG', 0, True);
+        ImprimirTexto(orNormal, 'S', 10, 10, 8, 3, 'MÉDIO PORTE');
         ImprimirBarras(orNormal, barEAN13, 2, 2, 13, 5, '7896003701685', 10, becSIM);
         ImprimirCaixa(13,32,56,17,1,1);
         ImprimirTexto(orNormal, 'G', 40, 80, 18, 35, 'R$');
@@ -169,7 +221,7 @@ begin
 
   with ACBrETQ do
   begin
-     if Modelo in [etqPpla, etqPplb] then
+     if (Modelo <> etqZPLII) then
      begin
        IniciarEtiqueta;
        ImprimirTexto(orNormal, 2, 2, 2, 3, 3, 'BISCOITO MARILAN RECH 335G', 0, True);
@@ -195,7 +247,7 @@ begin
        ImprimirTexto(orNormal, 3, 4, 4, 15, 50, '8,60');
        FinalizarEtiquetaComCopiasEAvanco;
      end
-     else //if Modelo = etqZPLII then
+     else
      begin
        IniciarEtiqueta;
        ImprimirCaixa(3,3,90,5,5,0);
@@ -230,13 +282,25 @@ begin
   end;
 end;
 
+procedure TFPrincipal.bQRCodeClick(Sender: TObject);
+begin
+  AtivarACBrETQ;
+  with ACBrETQ do
+  begin
+    ImprimirQRCode( 10, 10, 'https://www.projetoacbr.com.br' );
+    FinalizarEtiqueta;
+    ImprimirEtiquetaComCopiasEAvanco;
+    Desativar;
+  end;
+end;
+
 procedure TFPrincipal.bEtqCarreirasClick(Sender: TObject);
 begin
   AtivarACBrETQ;
 
   with ACBrETQ do
   begin
-     if Modelo in [etqPpla, etqPplb] then
+     if (Modelo <> etqZPLII) then
       begin
         ImprimirTexto(orNormal, 2, 1, 2, 2, 3, 'BISCOITO REC 33G');
         ImprimirTexto(orNormal, 2, 1, 1, 6, 3, 'CHOC BRANCO');
@@ -250,7 +314,7 @@ begin
         ImprimirTexto(orNormal, 2, 1, 1, 6, 61, 'CHOC BRANCO');
         ImprimirBarras(orNormal, barEAN13, 2, 2, 8, 61, '7896003701685', 10);
       end
-     else // if Modelo = etqZPLII then
+     else
       begin
          ImprimirTexto(orNormal, '0', 20, 30, 2, 3, 'BISCOITO REC 33G');
          ImprimirTexto(orNormal, '0', 20, 20, 6, 3, 'CHOC BRANCO');
@@ -264,6 +328,8 @@ begin
          ImprimirTexto(orNormal, '0', 20, 20, 6, 61, 'CHOC BRANCO');
          ImprimirBarras(orNormal, barEAN13, 2, 2, 8, 61, '7896003701685', 10);
       end;
+
+      FinalizarEtiqueta;
 
       ImprimirEtiquetaComCopiasEAvanco;
       Desativar;
@@ -287,6 +353,12 @@ var
   MS : TMemoryStream;
   OK: Boolean;
 begin
+  if (edNomeImg.Text = '') then
+  begin
+    ShowMessage('Defina um nome para a Imagem');
+    Exit;
+  end;
+
   AtivarACBrETQ;
 
   OK := False;
@@ -294,29 +366,32 @@ begin
 
   case ACBrETQ.Modelo of
     etqPplb: OpenPictureDialog1.Filter := 'PCX|*.pcx';
-    etqZPLII: OpenPictureDialog1.Filter := 'PCX|*.pcx|BMP MonoCromático|*.bmp|PNG|*.png|IMG|*.img';
   else
-    OpenPictureDialog1.Filter := 'PCX|*.pcx|BMP MonoCromático|*.bmp|IMG|*.img';
+    OpenPictureDialog1.Filter := 'PCX|*.pcx|BMP MonoCromático|*.bmp';
   end;
 
   if rbStream.Checked then
    begin
-     if OpenPictureDialog1.Execute then
+     if (Image1.Picture.Bitmap.Empty) then
      begin
-       MS := TMemoryStream.Create;
-       try
-         MS.LoadFromFile(OpenPictureDialog1.FileName) ;
-         ACBrETQ.CarregarImagem( MS, edNomeImg.Text, True, ExtractFileExt(OpenPictureDialog1.FileName) );
-         OK := True;
+       if OpenPictureDialog1.Execute then
+       begin
          try
-           MS.Position := 0;
-           Image1.Picture.LoadFromStream(MS);
+           Image1.Picture.LoadFromFile(OpenPictureDialog1.FileName);
          except
            Image1.Picture.Clear;
          end ;
-       finally
-         MS.Free ;
-       end ;
+       end;
+     end;
+
+     MS := TMemoryStream.Create;
+     try
+       Image1.Picture.SaveToStream(MS);
+       MS.Position := 0;
+       ACBrETQ.CarregarImagem( MS, edNomeImg.Text, True, ExtractFileExt(OpenPictureDialog1.FileName) );
+       OK := True;
+     finally
+       MS.Free ;
      end ;
    end
   else
@@ -367,8 +442,11 @@ begin
      Unidade       := etqMilimetros; //etqDecimoDeMilimetros;
      MargemEsquerda:= StrToIntDef(eMargemEsquerda.Text, 0);
      Origem        := TACBrETQOrigem(cbOrigem.ItemIndex);
+     PaginaDeCodigo:= TACBrETQPaginaCodigo(cbxPagCodigo.ItemIndex);
 
      Ativar;
+     cbPorta.Text := Porta;
+     cbModelo.ItemIndex := Integer(Modelo);
   end;
 end;
 

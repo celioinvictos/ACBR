@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 01/08/2012: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -41,11 +37,17 @@ unit pmdfeEventoMDFe;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
+  SysUtils, Classes,
 {$IFNDEF VER130}
   Variants,
 {$ENDIF}
-  pcnAuxiliar, pcnConversao;
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase,
+  pcnAuxiliar, pcnConversao, pmdfeMDFe;
 
 type
   TInfEvento = class;
@@ -100,7 +102,7 @@ type
     property chNFe: String         read FchNFe        write FchNFe;
   end;
 
-  TInfDocCollection = class(TObjectList)
+  TInfDocCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfDocCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfDocCollectionItem);
@@ -108,6 +110,16 @@ type
     function Add: TInfDocCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
     function New: TInfDocCollectionItem;
     property Items[Index: Integer]: TInfDocCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TInfViagens = class(TObject)
+  private
+    FqtdViagens: Integer;
+    FnroViagem: Integer;
+
+  public
+    property qtdViagens: Integer read FqtdViagens write FqtdViagens;
+    property nroViagem: Integer read FnroViagem write FnroViagem;
   end;
 
   TDetEvento = class
@@ -124,6 +136,8 @@ type
     FcMunCarrega: Integer;
     FxMunCarrega: String;
     FinfDoc: TInfDocCollection;
+    FinfViagens: TInfViagens;
+    FinfPag: TinfPagCollection;
   public
     constructor Create;
     destructor Destroy; override;
@@ -140,6 +154,9 @@ type
     property cMunCarrega: Integer      read FcMunCarrega write FcMunCarrega;
     property xMunCarrega: String       read FxMunCarrega write FxMunCarrega;
     property infDoc: TInfDocCollection read FinfDoc      write FinfDoc;
+    // Pagamento Operação MDF-e
+    property infViagens: TInfViagens   read FinfViagens  write FinfViagens;
+    property infPag: TinfPagCollection read FinfPag      write FinfPag;
   end;
 
   { TRetInfEvento }
@@ -160,7 +177,7 @@ type
     FemailDest: String;
     FdhRegEvento: TDateTime;
     FnProt: String;
-    FXML: AnsiString;
+    FXML: String;
     FNomeArquivo: String;
   public
     property Id: String              read FId          write FId;
@@ -177,7 +194,7 @@ type
     property emailDest: String       read FemailDest   write FemailDest;
     property dhRegEvento: TDateTime  read FdhRegEvento write FdhRegEvento;
     property nProt: String           read FnProt       write FnProt;
-    property XML: AnsiString         read FXML         write FXML;
+    property XML: String             read FXML         write FXML;
     property NomeArquivo: String     read FNomeArquivo write FNomeArquivo;
   end;
 
@@ -191,6 +208,7 @@ uses
 constructor TInfEvento.Create;
 begin
   inherited Create;
+
   FDetEvento  := TDetEvento.Create;
   FnSeqEvento := 0;
 end;
@@ -198,6 +216,7 @@ end;
 destructor TInfEvento.Destroy;
 begin
   FDetEvento.Free;
+
   inherited;
 end;
 
@@ -241,6 +260,7 @@ begin
     teMDFeCancelado2               : Desc := 'MDF-e Cancelado';
     teVistoriaSuframa              : Desc := 'Vistoria SUFRAMA';
     teConfInternalizacao           : Desc := 'Confirmacao de Internalizacao da Mercadoria na SUFRAMA';
+    tePagamentoOperacao            : Desc := 'Pagamento Operacao MDF-e';
   else
     Result := '';
   end;
@@ -260,31 +280,32 @@ end;
 function TInfEvento.DescricaoTipoEvento(TipoEvento: TpcnTpEvento): String;
 begin
   case TipoEvento of
-    teCCe                      : Result := 'CARTA DE CORREÇÃO ELETRÔNICA';
-    teCancelamento             : Result := 'CANCELAMENTO DO MDF-e';
-    teManifDestConfirmacao     : Result := 'CONFIRMAÇÃO DA OPERAÇÃO';
-    teManifDestCiencia         : Result := 'CIÊNCIA DA OPERAÇÃO';
-    teManifDestDesconhecimento : Result := 'DESCONHECIMENTO DA OPERAÇÃO';
-    teManifDestOperNaoRealizada: Result := 'OPERAÇÃO NÃO REALIZADA';
-    teEPECNFe                  : Result := 'EPEC';
-    teEPEC                     : Result := 'EPEC';
-    teMultiModal               : Result := 'REGISTRO MULTIMODAL';
-    teRegistroPassagem         : Result := 'REGISTRO DE PASSAGEM';
-    teRegistroPassagemBRId     : Result := 'REGISTRO DE PASSAGEM BRId';
-    teEncerramento             : Result := 'ENCERRAMENTO';
-    teInclusaoCondutor         : Result := 'INCLUSAO CONDUTOR';
-    teInclusaoDFe              : Result := 'INCLUSAO DF-e';
-    teRegistroCTe              : Result := 'CT-e Autorizado para NF-e';
-    teRegistroPassagemNFeCancelado: Result := 'Registro de Passagem para NF-e Cancelado';
-    teRegistroPassagemNFeRFID     : Result := 'Registro de Passagem para NF-e RFID';
-    teCTeAutorizado               : Result := 'CT-e Autorizado';
-    teCTeCancelado                : Result := 'CT-e Cancelado';
+    teCCe                          : Result := 'CARTA DE CORREÇÃO ELETRÔNICA';
+    teCancelamento                 : Result := 'CANCELAMENTO DO MDF-e';
+    teManifDestConfirmacao         : Result := 'CONFIRMAÇÃO DA OPERAÇÃO';
+    teManifDestCiencia             : Result := 'CIÊNCIA DA OPERAÇÃO';
+    teManifDestDesconhecimento     : Result := 'DESCONHECIMENTO DA OPERAÇÃO';
+    teManifDestOperNaoRealizada    : Result := 'OPERAÇÃO NÃO REALIZADA';
+    teEPECNFe                      : Result := 'EPEC';
+    teEPEC                         : Result := 'EPEC';
+    teMultiModal                   : Result := 'REGISTRO MULTIMODAL';
+    teRegistroPassagem             : Result := 'REGISTRO DE PASSAGEM';
+    teRegistroPassagemBRId         : Result := 'REGISTRO DE PASSAGEM BRId';
+    teEncerramento                 : Result := 'ENCERRAMENTO';
+    teInclusaoCondutor             : Result := 'INCLUSAO CONDUTOR';
+    teInclusaoDFe                  : Result := 'INCLUSAO DF-e';
+    teRegistroCTe                  : Result := 'CT-e Autorizado para NF-e';
+    teRegistroPassagemNFeCancelado : Result := 'Registro de Passagem para NF-e Cancelado';
+    teRegistroPassagemNFeRFID      : Result := 'Registro de Passagem para NF-e RFID';
+    teCTeAutorizado                : Result := 'CT-e Autorizado';
+    teCTeCancelado                 : Result := 'CT-e Cancelado';
     teMDFeAutorizado,
-    teMDFeAutorizado2             : Result := 'MDF-e Autorizado';
+    teMDFeAutorizado2              : Result := 'MDF-e Autorizado';
     teMDFeCancelado,
-    teMDFeCancelado2              : Result := 'MDF-e Cancelado';
-    teVistoriaSuframa             : Result := 'Vistoria SUFRAMA';
-    teConfInternalizacao       : Result := 'Confirmacao de Internalizacao da Mercadoria na SUFRAMA';
+    teMDFeCancelado2               : Result := 'MDF-e Cancelado';
+    teVistoriaSuframa              : Result := 'Vistoria SUFRAMA';
+    teConfInternalizacao           : Result := 'Confirmacao de Internalizacao da Mercadoria na SUFRAMA';
+    tePagamentoOperacao            : Result := 'Pagamento Operacao MDF-e';
   else
     Result := 'Não Definido';
   end;
@@ -299,7 +320,7 @@ end;
 
 function TInfDocCollection.GetItem(Index: Integer): TInfDocCollectionItem;
 begin
-  Result := TInfDocCollectionItem(inherited GetItem(Index));
+  Result := TInfDocCollectionItem(inherited Items[Index]);
 end;
 
 function TInfDocCollection.New: TInfDocCollectionItem;
@@ -311,7 +332,7 @@ end;
 procedure TInfDocCollection.SetItem(Index: Integer;
   Value: TInfDocCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 { TDetEvento }
@@ -320,12 +341,16 @@ constructor TDetEvento.Create;
 begin
   inherited Create;
 
-  FinfDoc  := TInfDocCollection.Create;
+  FinfDoc     := TInfDocCollection.Create;
+  FinfViagens := TInfViagens.Create;
+  FinfPag     := TinfPagCollection.Create;
 end;
 
 destructor TDetEvento.Destroy;
 begin
   FinfDoc.Free;
+  FinfViagens.Free;
+  FinfPag.Free;
 
   inherited;
 end;

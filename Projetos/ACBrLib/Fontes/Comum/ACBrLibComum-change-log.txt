@@ -1,9 +1,9 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,15 +22,13 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
 
 * Administradores:
 - Daniel Simões de Almeida
-- André Ferreira de Moraes
 
 {******************************************************************************
 |* ACBrLibNFe
@@ -43,6 +41,30 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+17/03/2020
+--- ACBrLibConfig ---
+[*] Ajuste para que os métodos TLibConfig.GravarValor e TLibConfig.LerValor,
+    verifique se houve modificações no arquivo de Configuração no Disco, antes
+    de processar o novo valor
+
+[-] Ajuste em TLibConfig.SetNomeArquivo, para que o Novo arquivo seja carregado
+    na memória, após atribuido
+    (por: DSA)
+
+--- ACBrLibDeviceUtils ---
+[+] Adicionado Classe para funções utilitárias do Componente ACBrDevice.
+Por: José M S Junior
+
+16/01/2020
+--- ACBrLibConsultaCadastro
+[-] Ajuste na formatação de retorno do campo CEP
+   Por: José M S Junior
+
+16/01/2020
+--- ACBrLibCTeClass, ACBrLibConsultaCadastro, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe ---
+[-] Correção nos métodos Respostas da LibDFe devido alteração na nomenclatura do Retorno de Consulta
+   Por: José M S Junior
 
 27/06/2019
 --- ACBrLibComum ---

@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Frm_ACBrNFe;
 
 interface
@@ -296,6 +326,8 @@ type
     rbEscPos: TRadioButton;
     btVersao: TButton;
     TimerInit: TTimer;
+    Label51: TLabel;
+    edtURLPFX: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathNFeClick(Sender: TObject);
@@ -365,6 +397,7 @@ type
     procedure GravarConfiguracao;
     procedure LerConfiguracao;
     procedure ConfigurarComponente;
+    procedure ConfigurarEmail;
     procedure AlimentarNFe(NumDFe: String);
     procedure AlimentarNFCe(NumDFe: String);
     Procedure AlimentarComponente(NumDFe: String);
@@ -382,7 +415,7 @@ var
 implementation
 
 uses
-  FMX.Printer,
+  FMX.Printer, System.IOUtils,
   strutils, math, TypInfo, DateUtils, synacode, blcksock,
   pcnAuxiliar, pcnNFe, pcnConversao, pcnConversaoNFe, pcnNFeRTXT, pcnRetConsReciDFe,
   ACBrUtil, ACBrDFeConfiguracoes, ACBrDFeSSL, ACBrDFeOpenSSL, ACBrDFeUtil,
@@ -1882,35 +1915,25 @@ begin
 
   OpenDialog1.InitialDir := ACBrNFe1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-  begin
-    ACBrNFe1.NotasFiscais.Clear;
-    ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
-    CC:=TstringList.Create;
+  if not OpenDialog1.Execute then
+    Exit;
 
-    try
-      CC.Add('andrefmoraes@gmail.com'); // especifique um email valido
-      CC.Add('anfm@zipmail.com.br');    // especifique um email valido
-
-      ACBrMail1.Host := edtSmtpHost.Text;
-      ACBrMail1.Port := edtSmtpPort.Text;
-      ACBrMail1.Username := edtSmtpUser.Text;
-      ACBrMail1.Password := edtSmtpPass.Text;
-      ACBrMail1.From := edtSmtpUser.Text;
-      ACBrMail1.SetSSL := cbEmailSSL.IsChecked; // SSL - Conexao Segura
-      ACBrMail1.SetTLS := cbEmailSSL.IsChecked; // Auto TLS
-      ACBrMail1.ReadingConfirmation := False; // Pede confirmacao de leitura do email
-      ACBrMail1.UseThread := False;           // Aguarda Envio do Email(nao usa thread)
-      ACBrMail1.FromName := 'Projeto ACBr - ACBrNFe';
-
-      ACBrNFe1.NotasFiscais.Items[0].EnviarEmail( Para, edtEmailAssunto.Text,
-                                               mmEmailMsg.Lines
-                                               , True  // Enviar PDF junto
-                                               , CC    // Lista com emails que serao enviado copias - TStrings
-                                               , nil); // Lista de anexos - TStrings
-    finally
-      CC.Free;
-    end;
+  ACBrNFe1.NotasFiscais.Clear;
+  ACBrNFe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
+  CC := TstringList.Create;
+  try
+    //CC.Add('email_1@provedor.com'); // especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    // especifique um email valido
+    ConfigurarEmail;
+    ACBrNFe1.NotasFiscais.Items[0].EnviarEmail(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , True  // Enviar PDF junto
+      , CC    // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      );
+  finally
+    CC.Free;
   end;
 end;
 
@@ -1941,24 +1964,28 @@ begin
 
   OpenDialog1.InitialDir := ACBrNFe1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-  begin
-    Evento := TStringList.Create;
+  if not OpenDialog1.Execute then
+    Exit;
+
+  Evento := TStringList.Create;
+  CC := TStringList.Create;
+  try
     Evento.Clear;
     Evento.Add(OpenDialog1.FileName);
     ACBrNFe1.EventoNFe.Evento.Clear;
     ACBrNFe1.EventoNFe.LerXML(OpenDialog1.FileName);
 
-    CC:=TstringList.Create;
-    CC.Add('andrefmoraes@gmail.com'); // especifique um email valido
-    CC.Add('anfm@zipmail.com.br');    // especifique um email valido
-
-    ACBrNFe1.EnviarEmailEvento(Para, edtEmailAssunto.Text, mmEmailMsg.Lines,
-                               nil, // Lista com emails que serao enviado copias - TStrings
-                               nil, // Lista de anexos - TStrings
-                               nil  // ReplyTo
-                               );
-
+    //CC.Add('email_1@provedor.com'); // especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    // especifique um email valido
+    ConfigurarEmail;
+    ACBrNFe1.EnviarEmailEvento(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , nil // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      , nil  // ReplyTo
+      );
+  finally
     CC.Free;
     Evento.Free;
   end;
@@ -3151,15 +3178,15 @@ end;
 procedure TfrmACBrNFe.btVersaoClick(Sender: TObject);
 begin
   pgRespostas.ActiveTab := tsRespostas;
-  if ACBrNFe1.SSL.SSLCryptLib = cryOpenSSL then
-    MemoResp.Lines.Add(TDFeOpenSSL(ACBrNFe1.SSL.SSLCryptClass).OpenSSLVersion)
-  else
-    MemoResp.Lines.Add('Biblioteca de Criptografia Selecionada não é OpenSSL');
+  MemoResp.Lines.Add(ACBrNFe1.SSL.SSLCryptClass.Versao);
 end;
 
 function TfrmACBrNFe.CalcularNomeArquivoConfiguracao: String;
 begin
-  {$IF Defined(FMX) and Defined(POSIX) and Defined(DEBUG)}
+  {$IfDef ANDROID}
+   Result := '/storage/emulated/0/Pictures/ACBrNFe_Exemplo.ini';
+   //Result := TPath.Combine(TPath.GetDocumentsPath, 'ACBrNFe_Exemplo.ini' );
+  {$ElseIf Defined(FMX) and Defined(POSIX) and Defined(DEBUG)}
    // Salva no diretório anterior, pois o PAServer sempre apaga a Pasta antes de executar
    Result := ApplicationPath + '../' + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini');
   {$Else}
@@ -3225,7 +3252,6 @@ var
   Y: TSSLType;
   N: TACBrPosPrinterModelo;
   O: TACBrPosPaginaCodigo;
-  l: Integer;
 begin
   FMX.Forms.Application.OnException := TratarExceptions;
 
@@ -3279,19 +3305,20 @@ begin
 
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais( cbxPorta.Items );
+  ACBrPosPrinter1.Device.AcharPortasRAW( cbxPorta.Items );
+
+  {$IfDef MSWINDOWS}
   cbxPorta.Items.Add('LPT1') ;
   cbxPorta.Items.Add('\\localhost\Epson') ;
   cbxPorta.Items.Add('c:\temp\ecf.txt') ;
+  {$EndIf}
+
   cbxPorta.Items.Add('TCP:192.168.0.31:9100') ;
-
-  for l := 0 to Printer.Count-1 do
-    cbxPorta.Items.Add('RAW:'+Printer.Printers[l].Title);
-
+  {$IfDef LINUX}
   cbxPorta.Items.Add('/dev/ttyS0') ;
-  cbxPorta.Items.Add('/dev/ttyS1') ;
   cbxPorta.Items.Add('/dev/ttyUSB0') ;
-  cbxPorta.Items.Add('/dev/ttyUSB1') ;
   cbxPorta.Items.Add('/tmp/ecf.txt') ;
+  {$EndIf}
 
   pgRespostas.First;
   PageControl1.First;
@@ -3312,6 +3339,7 @@ begin
     Ini.WriteInteger('Certificado', 'CryptLib',   cbCryptLib.ItemIndex);
     Ini.WriteInteger('Certificado', 'HttpLib',    cbHttpLib.ItemIndex);
     Ini.WriteInteger('Certificado', 'XmlSignLib', cbXmlSignLib.ItemIndex);
+    Ini.WriteString( 'Certificado', 'URL',        edtURLPFX.Text);
     Ini.WriteString( 'Certificado', 'Caminho',    edtCaminho.Text);
     Ini.WriteString( 'Certificado', 'Senha',      edtSenha.Text);
     Ini.WriteString( 'Certificado', 'NumSerie',   edtNumSerie.Text);
@@ -3403,6 +3431,7 @@ begin
     Ini.WriteBool(   'PosPrinter', 'CortarPapel',       cbCortarPapel.IsChecked  );
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -3432,6 +3461,7 @@ begin
     cbCryptLib.ItemIndex   := Ini.ReadInteger('Certificado', 'CryptLib',   0);
     cbHttpLib.ItemIndex    := Ini.ReadInteger('Certificado', 'HttpLib',    0);
     cbXmlSignLib.ItemIndex := Ini.ReadInteger('Certificado', 'XmlSignLib', 0);
+    edtURLPFX.Text         := Ini.ReadString( 'Certificado', 'URL',        '');
     edtCaminho.Text        := Ini.ReadString( 'Certificado', 'Caminho',    '');
     edtSenha.Text          := Ini.ReadString( 'Certificado', 'Senha',      '');
     edtNumSerie.Text       := Ini.ReadString( 'Certificado', 'NumSerie',   '');
@@ -3533,6 +3563,7 @@ begin
     ACBrPosPrinter1.Device.ParamsString := INI.ReadString('PosPrinter', 'ParamsString', '');
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -3542,6 +3573,7 @@ procedure TfrmACBrNFe.ConfigurarComponente;
 var
   PathMensal: string;
 begin
+  ACBrNFe1.Configuracoes.Certificados.URLPFX      := edtURLPFX.Text;
   ACBrNFe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrNFe1.Configuracoes.Certificados.Senha       := AnsiString(edtSenha.Text);
   ACBrNFe1.Configuracoes.Certificados.NumeroSerie := edtNumSerie.Text;
@@ -3656,6 +3688,20 @@ begin
   end;
 end;
 
+procedure TfrmACBrNFe.ConfigurarEmail;
+begin
+  ACBrMail1.Host := edtSmtpHost.Text;
+  ACBrMail1.Port := edtSmtpPort.Text;
+  ACBrMail1.Username := edtSmtpUser.Text;
+  ACBrMail1.Password := edtSmtpPass.Text;
+  ACBrMail1.From := edtSmtpUser.Text;
+  ACBrMail1.SetSSL := cbEmailSSL.IsChecked; // SSL - Conexao Segura
+  ACBrMail1.SetTLS := cbEmailSSL.IsChecked; // Auto TLS
+  ACBrMail1.ReadingConfirmation := False; // Pede confirmacao de leitura do email
+  ACBrMail1.UseThread := False;           // Aguarda Envio do Email(nao usa thread)
+  ACBrMail1.FromName := 'Projeto ACBr - ACBrNFe';
+end;
+
 procedure TfrmACBrNFe.LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);
 var
   TempXML: string;
@@ -3663,7 +3709,7 @@ begin
   TempXML := ApplicationPath + 'temp.xml';
   ACBrUtil.WriteToTXT(TempXML, AnsiString(RetWS), False, False);
 
-  MyWebBrowser.Navigate(TempXML);
+  MyWebBrowser.Navigate('file://'+TempXML);
 
   if (ACBrNFe1.NotasFiscais.Count > 0) then
     MemoResp.Lines.Add('Empresa: ' + ACBrNFe1.NotasFiscais.Items[0].NFe.Emit.xNome);

@@ -1,9 +1,11 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,15 +24,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
-
-* Administradores:
-- Daniel Simões de Almeida
-- André Ferreira de Moraes
 
 * Desenvolvedores:
 - Wemerson P. Souto - Doação do componente ao projeto ACBr
@@ -46,6 +43,58 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+30/04/2020
+-- Diversos --
+[*] Alterações no modal ferroviário para deixar em conformidade com o manual.
+  Por: Italo Jurisato junior
+
+24/04/2020
+-- ACBrCTeConhecimentos --
+[-] Correção o nome do campo não é Chave e sim chave na seção [infNFexxx].
+  Por: Italo Jurisato junior
+
+22/04/2020
+-- pcteCTeW --
+[-] Correção nas tags a ignorar na geração dos alertas.
+  Por: BigWings
+
+13/04/2020
+-- Diversos --
+[*] Melhorias no método EnviarEmailEvento e ImprimirEventoPDF.
+   Por: Italo Jurisato Junior
+
+10/03/2020
+-- ACBrCTe --
+[*] Ao enviar o evento por e-mail não estava sendo informado o nome do XML do 
+    evento corretamente.
+   Por: Italo Jurisato Junior
+
+02/03/2020
+-- ACBrCTe --
+[+] https://www.projetoacbr.com.br/forum/topic/56528-enviar-email-do-evento/
+   Por: Renan Eustaquio
+-- ACBrCTeWebServices --
+[+] Acrescentado no TratamentoResposta o armazenamento do Path+Nome do
+    XML retornado pelo DistribuicaoDFe.
+   Por: Italo Jurisato Junior
+
+24/02/2020
+-- ACBrCTe/ACBrCTeWebServices --
+[+] Implementado a extração dos eventos do retorno da consulta.
+   Por: Italo Jurisato Junior
+
+17/02/2020
+-- pcteCTeW --
+[*] Remoção da propriedade: AjustarTagNro.
+Por: Italo Jurisato Junior
+
+12/02/2020
+-- ACBrCTeWebServices --
+[*] Removido as procedures SalvarEnvio e SalvarRetorno do envio de eventos e
+    inutilizacão, pois já existe essas procedures padrões que salvam os XMLs 
+    de envio e de retorno na pasta correta. 
+   Por: Italo Jurisato Junior
 
 23/12/2019
 -- ACBrCTeWebServices --

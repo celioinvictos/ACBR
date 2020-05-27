@@ -1,9 +1,9 @@
 object frmACBrCIOT: TfrmACBrCIOT
   Left = 249
   Top = 82
-  Width = 882
-  Height = 651
   Caption = 'ACBrCIOT - Programa Exemplo'
+  ClientHeight = 612
+  ClientWidth = 866
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -336,22 +336,13 @@ object frmACBrCIOT: TfrmACBrCIOT
                 TabOrder = 2
               end
             end
-            object btnHTTPS: TButton
-              Left = 8
-              Top = 403
-              Width = 128
-              Height = 25
-              Caption = 'HTTPS sem Certificado'
-              TabOrder = 7
-              OnClick = btnHTTPSClick
-            end
             object btnLeituraX509: TButton
               Left = 144
               Top = 403
               Width = 115
               Height = 25
               Caption = 'Leitura de X509'
-              TabOrder = 8
+              TabOrder = 7
               OnClick = btnLeituraX509Click
             end
             object cbSSLLib: TComboBox
@@ -360,8 +351,7 @@ object frmACBrCIOT: TfrmACBrCIOT
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
-              TabOrder = 9
+              TabOrder = 8
               OnChange = cbSSLLibChange
             end
             object cbCryptLib: TComboBox
@@ -370,8 +360,7 @@ object frmACBrCIOT: TfrmACBrCIOT
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
-              TabOrder = 10
+              TabOrder = 9
               OnChange = cbCryptLibChange
             end
             object cbHttpLib: TComboBox
@@ -380,8 +369,7 @@ object frmACBrCIOT: TfrmACBrCIOT
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
-              TabOrder = 11
+              TabOrder = 10
               OnChange = cbHttpLibChange
             end
             object cbXmlSignLib: TComboBox
@@ -390,8 +378,7 @@ object frmACBrCIOT: TfrmACBrCIOT
               Width = 160
               Height = 21
               Style = csDropDownList
-              ItemHeight = 13
-              TabOrder = 12
+              TabOrder = 11
               OnChange = cbXmlSignLibChange
             end
           end
@@ -402,7 +389,7 @@ object frmACBrCIOT: TfrmACBrCIOT
               Left = 3
               Top = 12
               Width = 265
-              Height = 389
+              Height = 397
               Caption = 'Geral'
               TabOrder = 0
               object sbtnPathSalvar: TSpeedButton
@@ -529,7 +516,6 @@ object frmACBrCIOT: TfrmACBrCIOT
                 Top = 104
                 Width = 248
                 Height = 21
-                ItemHeight = 13
                 TabOrder = 2
               end
               object cbxAtualizarXML: TCheckBox
@@ -568,7 +554,6 @@ object frmACBrCIOT: TfrmACBrCIOT
                 Top = 147
                 Width = 248
                 Height = 21
-                ItemHeight = 13
                 TabOrder = 7
               end
               object edtPathSchemas: TEdit
@@ -583,7 +568,6 @@ object frmACBrCIOT: TfrmACBrCIOT
                 Top = 283
                 Width = 248
                 Height = 21
-                ItemHeight = 13
                 TabOrder = 9
               end
               object edtUsuarioWebService: TEdit
@@ -623,9 +607,9 @@ object frmACBrCIOT: TfrmACBrCIOT
               object Label6: TLabel
                 Left = 8
                 Top = 16
-                Width = 121
+                Width = 126
                 Height = 13
-                Caption = 'Selecione UF de Destino:'
+                Caption = 'Selecione UF do Emitente:'
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
                 Font.Height = -11
@@ -677,7 +661,6 @@ object frmACBrCIOT: TfrmACBrCIOT
                 Font.Height = -13
                 Font.Name = 'MS Sans Serif'
                 Font.Style = []
-                ItemHeight = 16
                 ItemIndex = 24
                 ParentFont = False
                 TabOrder = 1
@@ -750,7 +733,6 @@ object frmACBrCIOT: TfrmACBrCIOT
                 Height = 21
                 Hint = 'Depende de configura'#231#227'o de  SSL.HttpLib'
                 Style = csDropDownList
-                ItemHeight = 13
                 TabOrder = 5
                 OnChange = cbSSLTypeChange
               end
@@ -1306,8 +1288,6 @@ object frmACBrCIOT: TfrmACBrCIOT
       Width = 153
       Height = 25
       Caption = 'Salvar Configura'#231#245'es'
-      TabOrder = 1
-      OnClick = btnSalvarConfigClick
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
         04000000000000010000130B0000130B00001000000000000000000000000000
@@ -1322,6 +1302,8 @@ object frmACBrCIOT: TfrmACBrCIOT
         99337F3FF7F3733777F30F08F0F0337999337F7737F73F7777330FFFF0039999
         93337FFFF7737777733300000033333333337777773333333333}
       NumGlyphs = 2
+      TabOrder = 1
+      OnClick = btnSalvarConfigClick
     end
   end
   object pnlCentral: TPanel
@@ -1347,17 +1329,26 @@ object frmACBrCIOT: TfrmACBrCIOT
           Top = 3
           Width = 545
           Height = 208
-          Caption = 'Opera'#231#227'o'
-          ItemIndex = 1
+          Caption = ' Opera'#231#245'es do e-Frete '
+          Columns = 2
+          ItemIndex = 0
           Items.Strings = (
-            'Obter Pdf Opera'#231#227'o Transporte'
+            'Login (Necess'#225'rio se usado sem Cert.)'
+            'Cadastrar Propriet'#225'rio do Ve'#237'culo'
+            'Cadastrar Ve'#237'culo'
+            'Cadastrar Motorista'
             'Adicionar Opera'#231#227'o de Transporte'
+            'Adicionar Viagem a uma Opera'#231#227'o de Transporte'
+            'Adicionar Pagamento a uma Opera'#231#227'o de Trans.'
+            'Obter C'#243'digo Identifica'#231#227'o Opera'#231#227'o Transp.'
+            'Obter Pdf Opera'#231#227'o Transporte'
             'Retificar Opera'#231#227'o de Transporte'
             'Cancelar Opera'#231#227'o de Transporte'
-            'Adicionar Viagem a uma Opera'#231#227'o de Transporte'
-            'Adicionar Pagamento a uma opera'#231#227'o de transporte'
-            'Cancelar Pagamento Programado para uma Opera'#231#227'o de Transporte'
-            'Encerrar uma Opera'#231#227'o de Transporte')
+            'Cancelar Pag. Progr. para uma Oper. de Trans.'
+            'Encerrar uma Opera'#231#227'o de Transporte'
+            'Logout (Necess'#225'rio se usado sem Cert.)'
+            'Consultar Tipos de Carga'
+            'Alterar Data de Libera'#231#227'o de Pagamento')
           TabOrder = 0
         end
       end
@@ -1391,6 +1382,24 @@ object frmACBrCIOT: TfrmACBrCIOT
           TabOrder = 2
           OnClick = btnEnviarCiotEmailClick
         end
+        object Button1: TButton
+          Left = 9
+          Top = 46
+          Width = 177
+          Height = 25
+          Caption = 'Consultar por descri'#231#227'o'
+          TabOrder = 3
+          OnClick = btnGerarCIOTClick
+        end
+        object Button2: TButton
+          Left = 9
+          Top = 77
+          Width = 177
+          Height = 25
+          Caption = 'Consultar por Codigo'
+          TabOrder = 4
+          OnClick = Button2Click
+        end
       end
     end
     object pgRespostas: TPageControl
@@ -1409,7 +1418,7 @@ object frmACBrCIOT: TfrmACBrCIOT
           Width = 559
           Height = 334
           Align = alClient
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
@@ -1440,7 +1449,7 @@ object frmACBrCIOT: TfrmACBrCIOT
           Width = 559
           Height = 334
           Align = alClient
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
@@ -1466,7 +1475,7 @@ object frmACBrCIOT: TfrmACBrCIOT
           Width = 559
           Height = 334
           Align = alClient
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
@@ -1481,7 +1490,7 @@ object frmACBrCIOT: TfrmACBrCIOT
           Align = alClient
           Lines.Strings = (
             '')
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
           WordWrap = False
         end
@@ -1517,6 +1526,7 @@ object frmACBrCIOT: TfrmACBrCIOT
     Configuracoes.Geral.SSLHttpLib = httpNone
     Configuracoes.Geral.SSLXmlSignLib = xsNone
     Configuracoes.Geral.FormatoAlerta = 'TAG:%TAGNIVEL% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.'
+    Configuracoes.Geral.RetirarAcentos = False
     Configuracoes.Geral.Integradora = ieFrete
     Configuracoes.Arquivos.OrdenacaoPath = <>
     Configuracoes.WebServices.UF = 'SP'

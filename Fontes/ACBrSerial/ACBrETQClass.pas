@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2007 Andrews Ricardo Bejatto                }
-{                                       Anderson Rogerio Bejatto               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Daniel Simoes de Almeida               }
+{ Colaboradores nesse arquivo:                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -27,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -39,7 +37,11 @@ unit ACBrETQClass;
 interface
 
 uses
-  ACBrDevice, Classes;
+  Classes,
+  ACBrDevice
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 const
   CInchCM = 2.54;
@@ -54,6 +56,7 @@ type
 
 TACBrETQClass = class
   private
+    fPaginaDeCodigo: TACBrETQPaginaCodigo;
     fUnidade: TACBrETQUnidade;
     fTemperatura: Integer;
     fVelocidade: Integer;
@@ -80,9 +83,12 @@ TACBrETQClass = class
     function ComandoBackFeed: AnsiString; virtual;
     function ComandoUnidade: AnsiString; virtual;
     function ComandoTemperatura: AnsiString; virtual;
+    function ComandoPaginaDeCodigo: AnsiString; virtual;
     function ComandoResolucao: AnsiString; virtual;
     function ComandoOrigemCoordenadas: AnsiString; virtual;
     function ComandoVelocidade: AnsiString; virtual;
+
+    function ConverterQRCodeErrorLevel(aErrorLevel: Integer): String; virtual;
   public
     constructor Create(AOwner: TComponent);
 
@@ -105,6 +111,9 @@ TACBrETQClass = class
       aTipoBarras: String; aBarraLarga, aBarraFina, aVertical,
       aHorizontal: Integer; aTexto: String; aAlturaBarras: Integer;
       aExibeCodigo: TACBrETQBarraExibeCodigo = becPadrao): AnsiString; virtual;
+    function ComandoImprimirQRCode(aVertical, aHorizontal: Integer;
+      const aTexto: String; aLarguraModulo: Integer; aErrorLevel: Integer;
+      aTipo: Integer): AnsiString; virtual;
 
     function ComandoImprimirLinha(aVertical, aHorizontal, aLargura,
       aAltura: Integer): AnsiString; virtual;
@@ -119,6 +128,7 @@ TACBrETQClass = class
       aFlipped: Boolean; aTipo: String): AnsiString; virtual;
 
     property ModeloStr:       String           read fpModeloStr;
+    property PaginaDeCodigo:  TACBrETQPaginaCodigo read fPaginaDeCodigo write fPaginaDeCodigo;
     property Temperatura:     Integer          read fTemperatura      write fTemperatura;
     property Velocidade:      Integer          read fVelocidade       write fVelocidade;
     property BackFeed:        TACBrETQBackFeed read fpBackFeed        write fpBackFeed;
@@ -141,6 +151,7 @@ begin
   if (not (AOwner is TACBrETQ)) then
     raise Exception.create(ACBrStr('Essa Classe deve ser instanciada por TACBrETQ'));
 
+  fPaginaDeCodigo := pce850;
   fDPI            := dpi203;
   fpLimparMemoria := True;
   fAvanco         := 0;
@@ -239,6 +250,7 @@ var
 begin
   ListaComandos := '';
 
+  AdicionarComandos( ComandoPaginaDeCodigo, ListaComandos );
   AdicionarComandos( ComandoBackFeed, ListaComandos );
   AdicionarComandos( ComandoAbertura, ListaComandos );
   AdicionarComandos( ComandoUnidade, ListaComandos );
@@ -293,6 +305,11 @@ begin
   Result := EmptyStr;
 end;
 
+function TACBrETQClass.ComandoPaginaDeCodigo: AnsiString;
+begin
+  Result := EmptyStr;
+end;
+
 function TACBrETQClass.ComandoResolucao: AnsiString;
 begin
   Result := EmptyStr;
@@ -306,6 +323,17 @@ end;
 function TACBrETQClass.ComandoVelocidade: AnsiString;
 begin
   Result := EmptyStr;
+end;
+
+function TACBrETQClass.ConverterQRCodeErrorLevel(aErrorLevel: Integer): String;
+begin
+  case aErrorLevel of
+    1: Result := 'M';
+    2: Result := 'Q';
+    3: Result := 'H';
+  else
+    Result := 'L';
+  end;
 end;
 
 function TACBrETQClass.ComandoCopias(const NumCopias: Integer): AnsiString;
@@ -352,6 +380,14 @@ function TACBrETQClass.ComandoImprimirBarras(aOrientacao: TACBrETQOrientacao;
 begin
   Result := EmptyStr;
   ErroNaoImplementado('ComandoImprimirBarras');
+end;
+
+function TACBrETQClass.ComandoImprimirQRCode(aVertical, aHorizontal: Integer;
+  const aTexto: String; aLarguraModulo: Integer; aErrorLevel: Integer;
+  aTipo: Integer): AnsiString;
+begin
+  Result := EmptyStr;
+  ErroNaoImplementado('ComandoImprimirQRCode');
 end;
 
 function TACBrETQClass.ComandoImprimirLinha(aVertical, aHorizontal, aLargura,

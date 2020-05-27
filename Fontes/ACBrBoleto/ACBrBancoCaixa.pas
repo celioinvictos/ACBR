@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   João Elson                                    }
+{ Colaboradores nesse arquivo: João Elson                                      }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,12 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{Convênio SIGCB Carteira 1 ou 2 Registrada ou Sem Registro} 
 
 {$I ACBr.inc}
 
@@ -98,7 +95,6 @@ begin
    fQtRegLote              := 0;
    fpLayoutVersaoArquivo := 50;
    fpLayoutVersaoLote    := 30;
-   fpCodigosMoraAceitos     := '123';
 
    fpOrientacoesBanco.Clear;
    fpOrientacoesBanco.Add(ACBrStr(
@@ -1155,6 +1151,13 @@ begin
    if TempData <> '00/00/00' then
      ACBrBanco.ACBrBoleto.DataCreditoLanc := StringToDateTimeDef(TempData, 0, 'DD/MM/YY');
 
+    case StrToIntDef(Copy(ARetorno[0],18,1),0) of
+       1: ACBrBanco.ACBrBoleto.Cedente.TipoInscricao:= pFisica;
+       2: ACBrBanco.ACBrBoleto.Cedente.TipoInscricao:= pJuridica;
+       else
+          ACBrBanco.ACBrBoleto.Cedente.TipoInscricao:= pJuridica;
+    end;
+
    rCNPJCPF := trim( Copy(ARetorno[0],19,14)) ;
 
    if ACBrBanco.ACBrBoleto.Cedente.TipoInscricao = pJuridica then
@@ -1848,7 +1851,7 @@ begin
 
      with Titulo do
      begin
-       SeuNumero                   := copy(Linha,59,15);
+       SeuNumero                   := copy(Linha,32,25);
        NumeroDocumento             := copy(Linha,117,10);
        OcorrenciaOriginal.Tipo     := CodOcorrenciaToTipo(StrToIntDef(
                                         copy(Linha,109,2),0));

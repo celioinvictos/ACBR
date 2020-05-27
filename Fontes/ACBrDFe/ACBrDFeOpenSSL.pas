@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  André Ferreira de Moraes                       }
 {                                                                              }
@@ -37,14 +37,20 @@ unit ACBrDFeOpenSSL;
 interface
 
 uses
-  {$IFDEF DELPHIXE4_UP}
-   AnsiStrings,
-  {$ENDIF}
   Classes, SysUtils,
   ACBrDFeSSL,
   {$IfDef MSWINDOWS}ACBrDFeWinCrypt, ACBr_WinCrypt,{$EndIf}
   OpenSSLExt;
 
+resourcestring
+  sErrCarregarOpenSSL = 'Erro ao carregar bibliotecas do OpenSSL';
+  sErrUtilizePFX = 'Utilize "ArquivoPFX" ou "DadosPFX"';
+  sErrCertNaoInformado = 'Certificado não informado.' ;
+  sErrCertNaoSuportado = 'TDFeOpenSSL não suporta Leitura de Certificado pelo Número de Série.';
+  sErrCertNaoEncontrado = 'Arquivo: %s não encontrado, e DadosPFX não informado';
+  sErrCertCarregar =  'Erro ao Carregar Certificado';
+  sErrCertSenhaErrada = 'Erro ao ler informações do Certificado.'+sLineBreak+
+                        'Provavelmente a senha está errada'; 
 
 type
   { TDFeOpenSSL }
@@ -66,12 +72,14 @@ type
 
     function GetCertContextWinApi: Pointer; override;
     function LerPFXInfo(const PFXData: Ansistring): Boolean;
+    procedure CarregarCertificadoDeDadosPFX; override;
 
   public
     constructor Create(ADFeSSL: TDFeSSL); override;
     destructor Destroy; override;
     procedure Clear; override;
 
+    function Versao: String; override;
     function CalcHash( const AStream : TStream;
        const Digest: TSSLDgst;
        const Assina: Boolean =  False): AnsiString; override;
@@ -81,7 +89,6 @@ type
        const Hash: AnsiString;
        const Assinado: Boolean =  False): Boolean; override;
 
-    procedure CarregarCertificado; override;
     procedure DescarregarCertificado; override;
     function CarregarCertificadoPublico(const DadosX509Base64: Ansistring): Boolean; override;
 
@@ -138,7 +145,7 @@ begin
     Exit;
   end;
 
-  Validade := {$IFDEF DELPHIXE4_UP}AnsiStrings.{$ENDIF}StrPas( PAnsiChar(notAfter^.data) );
+  Validade := String(PAnsiChar(notAfter^.data));
   SetLength(Validade, notAfter^.length);
   Validade := OnlyNumber(Validade);
   if notAfter^.asn1_type = V_ASN1_UTCTIME then  // anos com 2 dígitos
@@ -153,7 +160,7 @@ var
   s: AnsiString;
 begin
   SN := X509GetSerialNumber(cert);
-  s := {$IFDEF DELPHIXE4_UP}AnsiStrings.{$ENDIF}StrPas( PAnsiChar(SN^.data) );
+  s := AnsiString(PAnsiChar(SN^.data));
   SetLength(s,SN^.length);
   Result := AsciiToHex(s);
 end;
@@ -192,7 +199,7 @@ var
 
   procedure LoadExtension;
   begin
-    ext := X509GetExt( cert, ExtPos);
+    ext := X509GetExt(cert, ExtPos);
   end;
 
   function AdjustAnsiOID(aOID: AnsiString): AnsiString;
@@ -226,17 +233,20 @@ begin
   LoadExtension;
   while (ext <> nil) do
   begin
-    prop := ext^.value;
-    propStr := PAnsiChar(prop^.data);
-    SetLength(propStr, prop^.length);
-    P := pos(FlagExt, propStr);
-    if P > 0 then
+    prop := X509ExtensionGetData(ext);
+    if Assigned(prop) then
     begin
-      Result := AdjustOID( AnsiString( copy(propStr,P+Length(FlagExt),Length(propStr))));
-      exit;
+      propStr := PAnsiChar(prop^.data);
+      SetLength(propStr, prop^.length);
+      P := pos(FlagExt, propStr);
+      if P > 0 then
+      begin
+        Result := AdjustOID( AnsiString( copy(propStr,P+Length(FlagExt),Length(propStr))));
+        exit;
+      end;
     end;
 
-    inc( ExtPos );
+    inc(ExtPos);
     LoadExtension;
   end;
 end;
@@ -330,6 +340,14 @@ begin
   FOldVersion := False;
 end;
 
+function TDFeOpenSSL.Versao: String;
+begin
+  if not InitSSLInterface then
+    Result := sErrCarregarOpenSSL 
+  else
+    Result := OpenSSLVersion;
+end;
+
 procedure TDFeOpenSSL.DestroyKey;
 begin
   if (FPrivKey <> Nil) then
@@ -377,56 +395,6 @@ begin
   {$EndIf}
 
   Result := FCertContextWinApi;
-end;
-
-procedure TDFeOpenSSL.CarregarCertificado;
-var
-  LoadFromFile, LoadFromData: Boolean;
-  FS: TFileStream;
-begin
-  DescarregarCertificado;
-  if not InitSSLInterface then
-    raise EACBrDFeException.Create('Erro ao carregar bibliotecas do OpenSSL');
-
-  with FpDFeSSL do
-  begin
-    // Verificando se possui parâmetros necessários //
-    if EstaVazio(ArquivoPFX) and EstaVazio(DadosPFX) then
-    begin
-      if not EstaVazio(NumeroSerie) then
-        raise EACBrDFeException.Create(
-          'TDFeOpenSSL não suporta carga de Certificado pelo número de série.' +
-          sLineBreak + 'Utilize "ArquivoPFX" ou "DadosPFX"')
-      else
-        raise EACBrDFeException.Create('Certificado não informado.' +
-          sLineBreak + 'Utilize "ArquivoPFX" ou "DadosPFX"');
-    end;
-
-    LoadFromFile := (not EstaVazio(ArquivoPFX)) and FileExists(ArquivoPFX);
-    LoadFromData := (not EstaVazio(DadosPFX));
-
-    if not (LoadFromFile or LoadFromData) then
-      raise EACBrDFeException.Create('Arquivo: ' + ArquivoPFX + ' não encontrado, e DadosPFX não informado');
-
-    if LoadFromFile then
-    begin
-      FS := TFileStream.Create(ArquivoPFX, fmOpenRead or fmShareDenyNone);
-      try
-        DadosPFX := ReadStrFromStream(FS, FS.Size);
-      finally
-        FS.Free;
-      end;
-    end;
-
-    if EstaVazio(DadosPFX) then
-      raise EACBrDFeException.Create('Erro ao Carregar Certificado');
-
-    if not LerPFXInfo(DadosPFX) then
-      raise EACBrDFeException.Create('Erro ao ler informações do Certificado.'+sLineBreak+
-                                     'Provavelmente a senha está errada' );
-  end;
-
-  FpCertificadoLido := True;
 end;
 
 procedure TDFeOpenSSL.DescarregarCertificado;
@@ -483,6 +451,15 @@ begin
   end;
 end;
 
+procedure TDFeOpenSSL.CarregarCertificadoDeDadosPFX;
+begin
+  if not InitSSLInterface then
+    raise EACBrDFeException.Create(sErrCarregarOpenSSL);
+
+  if not LerPFXInfo(FpDFeSSL.DadosPFX) then
+    raise EACBrDFeException.Create(sErrCertSenhaErrada);
+end;
+
 function TDFeOpenSSL.CarregarCertificadoPublico(const DadosX509Base64: Ansistring): Boolean;
 var
   b: PBIO;
@@ -509,28 +486,39 @@ end;
 
 function TDFeOpenSSL.OpenSSLVersion: String;
 begin
+  OpenSSLOldVersion;
   Result := OpenSSLExt.OpenSSLVersion(0);
 end;
 
 function TDFeOpenSSL.OpenSSLOldVersion: Boolean;
 var
   VersaoStr: String;
+  VersaoNum: Integer;
   P1, P2: Integer;
 begin
   if (FVersion = '') then
   begin
-    VersaoStr := OpenSSLExt.OpenSSLVersion(0);
-
-    P1 := pos(' ', VersaoStr);
-    P2 := Length(VersaoStr);
-    if P1 > 0 then
+    VersaoNum := OpenSSLExt.OpenSSLVersionNum;
+    if (VersaoNum > 0) then
     begin
-      P2 := PosEx(' ', VersaoStr, P1+1 );
-      if P2 = 0 then
-        P2 := Length(VersaoStr);
+      VersaoStr := IntToHex(VersaoNum, 9);
+      FVersion := copy(VersaoStr,1,2)+'.'+copy(VersaoStr,3,2)+'.'+copy(VersaoStr,5,2)+'.'+copy(VersaoStr,7,10);
+    end
+    else
+    begin
+      VersaoStr := OpenSSLExt.OpenSSLVersion(0);
+
+      P1 := pos(' ', VersaoStr);
+      if P1 > 0 then
+      begin
+        P2 := PosEx(' ', VersaoStr, P1+1 );
+        if P2 = 0 then
+          P2 := Length(VersaoStr);
+
+        FVersion := Trim(copy(VersaoStr, P1, P2-P1));
+      end;
     end;
 
-    FVersion := Trim(copy(VersaoStr, P1, P2-P1));
     FOldVersion := (CompareVersions(FVersion, '1.1.0') < 0);
   end;
 

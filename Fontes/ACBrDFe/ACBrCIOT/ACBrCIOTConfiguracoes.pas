@@ -1,3 +1,34 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -6,7 +37,7 @@ unit ACBrCIOTConfiguracoes;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, IniFiles,
   ACBrDFeConfiguracoes, pcnConversao, pcnConversaoCIOT;
 
 type
@@ -27,6 +58,8 @@ type
     constructor Create(AOwner: TConfiguracoes); override;
     procedure Assign(DeGeralConfCIOT: TGeralConfCIOT); reintroduce;
 
+    procedure GravarIni(const AIni: TCustomIniFile); override;
+    procedure LerIni(const AIni: TCustomIniFile); override;
   published
     property Integradora: TCIOTIntegradora read FIntegradora write FIntegradora;
     property VersaoDF: TVersaoCIOT read FVersaoDF write SetVersaoDF default ve500;
@@ -46,6 +79,9 @@ type
     constructor Create(AOwner: TConfiguracoes); override;
     destructor Destroy; override;
     procedure Assign(DeArquivosConfCIOT: TArquivosConfCIOT); reintroduce;
+
+    procedure GravarIni(const AIni: TCustomIniFile); override;
+    procedure LerIni(const AIni: TCustomIniFile); override;
 
     function GetPathCIOT(Data: TDateTime = 0; CNPJ: String = ''): String;
   published
@@ -86,6 +122,7 @@ constructor TConfiguracoesCIOT.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  FPSessaoIni := 'CIOT';
   WebServices.ResourceName := 'ACBrCIOTServicos';
 end;
 
@@ -138,6 +175,30 @@ begin
   FHashIntegrador := '';
 end;
 
+procedure TGeralConfCIOT.GravarIni(const AIni: TCustomIniFile);
+begin
+  inherited GravarIni(AIni);
+
+  AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'Integradora', Integer(Integradora));
+  AIni.WriteInteger(fpConfiguracoes.SessaoIni, 'VersaoDF', Integer(VersaoDF));
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'Usuario', Usuario);
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'Senha', Senha);
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'CNPJEmitente', CNPJEmitente);
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'HashIntegrador', HashIntegrador);
+end;
+
+procedure TGeralConfCIOT.LerIni(const AIni: TCustomIniFile);
+begin
+  inherited LerIni(AIni);
+
+  Integradora := TCIOTIntegradora(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'Integradora', Integer(Integradora)));
+  VersaoDF := TVersaoCIOT(AIni.ReadInteger(fpConfiguracoes.SessaoIni, 'VersaoDF', Integer(VersaoDF)));
+  Usuario := AIni.ReadString(fpConfiguracoes.SessaoIni, 'Usuario', Usuario);
+  Senha := AIni.ReadString(fpConfiguracoes.SessaoIni, 'Senha', Senha);
+  CNPJEmitente := AIni.ReadString(fpConfiguracoes.SessaoIni, 'CNPJEmitente', CNPJEmitente);
+  HashIntegrador := AIni.ReadString(fpConfiguracoes.SessaoIni, 'HashIntegrador', HashIntegrador);
+end;
+
 procedure TGeralConfCIOT.SetVersaoDF(const Value: TVersaoCIOT);
 begin
   FVersaoDF := Value;
@@ -170,6 +231,22 @@ end;
 function TArquivosConfCIOT.GetPathCIOT(Data: TDateTime = 0; CNPJ: String = ''): String;
 begin
   Result := GetPath(FPathCIOT, 'CIOT', CNPJ, '', Data);
+end;
+
+procedure TArquivosConfCIOT.GravarIni(const AIni: TCustomIniFile);
+begin
+  inherited GravarIni(AIni);
+
+  AIni.WriteBool(fpConfiguracoes.SessaoIni, 'EmissaoPathCIOT', EmissaoPathCIOT);
+  AIni.WriteString(fpConfiguracoes.SessaoIni, 'PathCIOT', PathCIOT);
+end;
+
+procedure TArquivosConfCIOT.LerIni(const AIni: TCustomIniFile);
+begin
+  inherited LerIni(AIni);
+
+  EmissaoPathCIOT := AIni.ReadBool(fpConfiguracoes.SessaoIni, 'EmissaoPathCIOT', EmissaoPathCIOT);
+  PathCIOT := AIni.ReadString(fpConfiguracoes.SessaoIni, 'PathCIOT', PathCIOT);
 end;
 
 end.

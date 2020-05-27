@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
+{ Colaboradores nesse arquivo: Juliana Tamizou                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -385,7 +384,7 @@ begin
                space(16)                                                        + // Brancos
                PadLeft(copy(trim(Cedente.Agencia), 1, 4) + cd, 13, '0')            + // Codigo da Agencia e Cedente AAAACCCCCCCCC
                space(7)                                                         + // Brancos
-               space(25)                                                        + // Identificação do título para o cedente (usado no arquivo de retorno)
+               PadRight(SeuNumero,25)                                               + // Identificação do título para o cedente (usado no arquivo de retorno)
                PadRight(NossoNumero, 8, '0')+CalculaDigitosChaveASBACE(NossoNumero) + // Nosso Número
                PadRight( AMensagem, 32)                                         + // Mensagem no bloqueto
                space(3)                                                         + // Brancos
@@ -568,7 +567,7 @@ function TACBrBanrisul.GerarRegistroTransacao240(
   ACBrTitulo: TACBrTitulo): String;
 var
     aAceite, DiasProt, Juros, TipoInscSacado, Ocorrencia: String;
-    sDiasBaixaDevol, ACaracTitulo: String;
+    sDiasBaixaDevol, ACaracTitulo, ATipoBoleto : String;
 begin
    with ACBrTitulo do begin
       case Aceite of
@@ -627,6 +626,13 @@ begin
          Ocorrencia := '01'; {Remessa}
       end;
 
+     {Pegando Tipo de Boleto}
+     ATipoBoleto := '1';
+     case ACBrBoleto.Cedente.ResponEmissao of
+       tbCliEmite : ATipoBoleto := '2';
+       tbBancoEmite : ATipoBoleto := '1';
+     end;
+
       ACaracTitulo := '1';
       case CaracTitulo of
         tcSimples     : ACaracTitulo  := '1';
@@ -655,7 +661,7 @@ begin
                 PadLeft(OnlyNumber(MontarCampoNossoNumero(ACBrTitulo)), 10, '0') +
                 DupeString(' ', 10) +
                 ACaracTitulo +
-                '1020' +
+                '10' + ATipoBoleto + '0' +
                 PadRight(NumeroDocumento, 15) +
                 FormatDateTime('ddmmyyyy', Vencimento) +
                 PadLeft(StringReplace(FormatFloat('#####0.00', ValorDocumento), ',', '', []), 15, '0') +

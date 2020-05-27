@@ -73,6 +73,10 @@ Special thanks to Gregor Ibic <gregor.ibic@intelicom.si>
   {$ENDIF}
 {$ENDIF}
 
+{$IFDEF NEXTGEN}
+  {$ZEROBASEDSTRINGS OFF}
+{$ENDIF}
+
 {:@abstract(OpenSSL support)
 
 This unit is Pascal interface to OpenSSL library (used by @link(ssl_openssl) unit).
@@ -90,6 +94,12 @@ uses
 {$ENDIF}
   SysUtils, Classes,
   synafpc
+{$IfDef ANDROID}
+  ,System.IOUtils
+{$EndIf}
+{$IFDEF NEXTGEN}
+  ,System.Generics.Collections, System.Generics.Defaults
+{$ENDIF}
 {$IFNDEF MSWINDOWS}
   {$IFDEF FPC}
     {$IFDEF UNIX}
@@ -145,9 +155,9 @@ var
    {$ENDIF OS2}
   {$ENDIF}
  {$ELSE}
-  DLLSSLNames: array[1..4] of string = ({$IfDef CPU64}'libssl-1_1-x64.dll'{$Else}'libssl-1_1.dll'{$EndIf},
+  DLLSSLNames: array[1..4] of string = ({$IfDef WIN64}'libssl-1_1-x64.dll'{$Else}'libssl-1_1.dll'{$EndIf},
                                         'ssleay32.dll', 'libssl32.dll', 'libssl.dll');
-  DLLUtilNames: array[1..4] of string = ({$IfDef CPU64}'libcrypto-1_1-x64.dll'{$Else}'libcrypto-1_1.dll'{$EndIf},
+  DLLUtilNames: array[1..4] of string = ({$IfDef WIN64}'libcrypto-1_1-x64.dll'{$Else}'libcrypto-1_1.dll'{$EndIf},
                                          'libeay32.dll', 'libcrypto.dll', 'libeay.dll');
  {$ENDIF}
 {$ENDIF}
@@ -259,6 +269,7 @@ const
   TLSEXT_NAMETYPE_host_name = 0;
 
 var
+  SSLLibPath: String = '';
   SSLLibHandle: TLibHandle = 0;
   SSLUtilHandle: TLibHandle = 0;
   SSLLibFile: string = '';
@@ -863,6 +874,7 @@ var
 implementation
 
 uses
+  StrUtils,
 {$IFDEF OS2}
   Sockets,
 {$ENDIF OS2}
@@ -1089,11 +1101,18 @@ var
   _CRYPTOSetLockingCallback: TCRYPTOSetLockingCallback = nil;
 {$ENDIF}
 
+type
+  {$IFDEF NEXTGEN}
+    TCriticalSectionList = TList<TCriticalSection>;
+  {$ELSE}
+    TCriticalSectionList = TList;
+  {$ENDIF}
+
 var
   SSLCS: TCriticalSection;
   SSLloaded: boolean = false;
 {$IFNDEF CIL}
-  Locks: TList;
+  Locks: TCriticalSectionList;
 {$ENDIF}
 
 {$IFNDEF CIL}
@@ -1867,7 +1886,7 @@ var
   n: integer;
   max: integer;
 begin
-  Locks := TList.Create;
+  Locks := TCriticalSectionList.Create;
   max := _CRYPTOnumlocks;
   for n := 1 to max do
     Locks.Add(TCriticalSection.Create);
@@ -1888,10 +1907,16 @@ end;
 
 function LoadLib(const Value: String): HModule;
 begin
+  if (SSLLibPath <> '') then
+  begin
+    if (RightStr(SSLLibPath, Length(PathDelim)) <> PathDelim) then
+      SSLLibPath := SSLLibPath + PathDelim;
+  end;
+
 {$IFDEF CIL}
-  Result := LoadLibrary(Value);
+  Result := LoadLibrary(SSLLibPath + Value);
 {$ELSE}
-  Result := LoadLibrary(PChar(Value));
+  Result := LoadLibrary(PChar(SSLLibPath + Value));
 {$ENDIF}
 end;
 
@@ -1904,18 +1929,61 @@ begin
 {$ENDIF}
 end;
 
+Function LoadLibraries : Boolean;
+var
+  i: Integer;
+  {$IfDef MSWINDOWS}
+   x: Integer;
+   s: String;
+  {$EndIf}
+begin
+  for i := low(DLLUtilNames) to high(DLLUtilNames) do
+  begin
+    SSLUtilHandle := LoadLib(DLLUtilNames[i]);
+    if SSLUtilHandle <> 0 then
+      break;
+  end;
+
+  {$IfDef MSWINDOWS}
+   if (i <= high(DLLSSLNames)) then
+     SSLLibHandle := LoadLib(DLLSSLNames[i]);  // Use same DLL pair
+  {$Else}
+   for i := low(DLLSSLNames) to high(DLLSSLNames) do
+   begin
+     SSLLibHandle := LoadLib(DLLSSLNames[i]);
+     if SSLLibHandle <> 0 then
+       break;
+   end;
+  {$EndIf}
+
+  {$IfDef MSWINDOWS}
+  if (SSLUtilHandle <> 0) then
+  begin
+    SetLength(s, 1024);
+    x := GetModuleFilename(SSLUtilHandle, PChar(s), Length(s));
+    SetLength(s, x);
+    SSLUtilFile := s;
+  end;
+
+  if (SSLLibHandle <> 0) then
+  begin
+    SetLength(s, 1024);
+    x := GetModuleFilename(SSLLibHandle, PChar(s), Length(s));
+    SetLength(s, x);
+    SSLLibFile := s;
+  end;
+  {$EndIf}
+
+  Result := (SSLLibHandle<>0) and (SSLUtilHandle<>0);
+end;
+
 function InitSSLInterface: Boolean;
 var
-  s: string;
-  x, i: integer;
+  Ok: Boolean;
 begin
-  {pf}
-  if SSLLoaded then
-    begin
-      Result := TRUE;
-      exit;
-    end;
-  {/pf}  
+  Result:=IsSSLloaded;
+  if Result then
+    exit;
   SSLCS.Enter;
   try
     if not IsSSLloaded then
@@ -1923,27 +1991,23 @@ begin
 {$IFDEF CIL}
       SSLLibHandle := 1;
       SSLUtilHandle := 1;
+      Ok := True;
 {$ELSE}
-      for i := low(DLLUtilNames) to high(DLLUtilNames) do
-      begin
-        SSLUtilHandle := LoadLib(DLLUtilNames[i]);
-        if SSLUtilHandle <> 0 then
-          break;
-      end;
+      {$IfDef ANDROID}
+      if (SSLLibPath = '') then     // Try to load from "./assets/internal/" first
+        SSLLibPath := TPath.GetDocumentsPath;
 
-      {$IfDef MSWINDOWS}
-       if (i <= high(DLLSSLNames)) then
-         SSLLibHandle := LoadLib(DLLSSLNames[i]);  // Use same DLL pair
+      Ok := LoadLibraries;
+      if (not Ok) then         // Try System Default Lib
+      begin
+        SSLLibPath := '';
+        Ok := LoadLibraries;
+      end;
       {$Else}
-       for i := low(DLLSSLNames) to high(DLLSSLNames) do
-       begin
-         SSLLibHandle := LoadLib(DLLSSLNames[i]);
-         if SSLLibHandle <> 0 then
-           break;
-       end;
+      Ok := LoadLibraries;
       {$EndIf}
 {$ENDIF}
-      if (SSLLibHandle <> 0) and (SSLUtilHandle <> 0) then
+      if Ok then
       begin
 {$IFNDEF CIL}
         _SslGetError := GetProcAddr(SSLLibHandle, 'SSL_get_error');
@@ -2063,14 +2127,6 @@ begin
         OPENSSLaddallalgorithms;
         RandScreen;
 {$ELSE}
-        SetLength(s, 1024);
-        x := GetModuleFilename(SSLLibHandle, PChar(s), Length(s));
-        SetLength(s, x);
-        SSLLibFile := s;
-        SetLength(s, 1024);
-        x := GetModuleFilename(SSLUtilHandle, PChar(s), Length(s));
-        SetLength(s, x);
-        SSLUtilFile := s;
         //init library
         if assigned(_SslLibraryInit) then
           _SslLibraryInit;
@@ -2267,7 +2323,8 @@ end;
 
 initialization
 begin
-  SSLCS:= TCriticalSection.Create;
+  SSLCS := TCriticalSection.Create;
+  SSLLibPath := '';
 end;
 
 finalization

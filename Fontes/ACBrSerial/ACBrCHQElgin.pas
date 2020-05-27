@@ -3,9 +3,10 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Laércio S Amici                                 }
+{                              Emerson Virissimo da Silva                      }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,19 +27,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 16/03/2015: Laércio S Amici | Emerson Virissimo da Silva
-|*  - Primeira Versao ACBrCHQElgin
-|*    Baseado na impressora Elgin ImpreCheq
-|*
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -70,11 +61,9 @@ type
 implementation
 
 uses
-  ACBrUtil,
-  ACBrConsts,
-  ACBrDevice,
   SysUtils
-  {$IFDEF COMPILER6_UP}, DateUtils {$ENDIF} ;
+  {$IFDEF COMPILER6_UP}, DateUtils {$ENDIF},
+  ACBrUtil, ACBrConsts, ACBrDeviceSerial;
 
 { TACBrCHQBematech }
 
@@ -155,7 +144,7 @@ begin
   EnviarStr( #27 + #67 + Copy(fpCidade,1,20) + '$' ) ;  // Cidade - termina com caracter $ #36
 
   { Data }
-  DataStr := FormatDateTime('dd/mm/yy',fpData) ;
+  DataStr := FormatDateTime('dd/mm/yyyy',fpData) ;
   DataStr := StringReplace(DataStr, DateSeparator, '',[rfReplaceAll]) ;
   EnviarStr( #27 + #68 + DataStr ) ;
 

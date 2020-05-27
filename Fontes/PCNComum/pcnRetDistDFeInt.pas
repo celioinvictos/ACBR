@@ -1,47 +1,34 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//              PCN - Projeto Cooperar NFe                                    //
-//                                                                            //
-//   Descrição: Classes para geração/leitura dos arquivos xml da NFe          //
-//                                                                            //
-//        site: www.projetocooperar.org                                       //
-//       email: projetocooperar@zipmail.com.br                                //
-//       forum: http://br.groups.yahoo.com/group/projeto_cooperar_nfe/        //
-//     projeto: http://code.google.com/p/projetocooperar/                     //
-//         svn: http://projetocooperar.googlecode.com/svn/trunk/              //
-//                                                                            //
-// Coordenação: (c) 2009 - Paulo Casagrande                                   //
-//                                                                            //
-//      Equipe: Vide o arquivo leiame.txt na pasta raiz do projeto            //
-//                                                                            //
-//      Versão: Vide o arquivo leiame.txt na pasta raiz do projeto            //
-//                                                                            //
-//     Licença: GNU Lesser General Public License (GNU LGPL)                  //
-//                                                                            //
-//              - Este programa é software livre; você pode redistribuí-lo    //
-//              e/ou modificá-lo sob os termos da Licença Pública Geral GNU,  //
-//              conforme publicada pela Free Software Foundation; tanto a     //
-//              versão 2 da Licença como (a seu critério) qualquer versão     //
-//              mais nova.                                                    //
-//                                                                            //
-//              - Este programa é distribuído na expectativa de ser útil,     //
-//              mas SEM QUALQUER GARANTIA; sem mesmo a garantia implícita de  //
-//              COMERCIALIZAÇÃO ou de ADEQUAÇÃO A QUALQUER PROPÓSITO EM       //
-//              PARTICULAR. Consulte a Licença Pública Geral GNU para obter   //
-//              mais detalhes. Você deve ter recebido uma cópia da Licença    //
-//              Pública Geral GNU junto com este programa; se não, escreva    //
-//              para a Free Software Foundation, Inc., 59 Temple Place,       //
-//              Suite 330, Boston, MA - 02111-1307, USA ou consulte a         //
-//              licença oficial em http://www.gnu.org/licenses/gpl.txt        //
-//                                                                            //
-//    Nota (1): - Esta  licença  não  concede  o  direito  de  uso  do nome   //
-//              "PCN  -  Projeto  Cooperar  NFe", não  podendo o mesmo ser    //
-//              utilizado sem previa autorização.                             //
-//                                                                            //
-//    Nota (2): - O uso integral (ou parcial) das units do projeto esta       //
-//              condicionado a manutenção deste cabeçalho junto ao código     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -50,8 +37,14 @@ unit pcnRetDistDFeInt;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  pcnConversao, {pcnConversaoNFe, }pcnLeitor, synacode;
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
+  pcnConversao, pcnLeitor, synacode;
 
 type
   TresDFe               = class;
@@ -89,7 +82,7 @@ type
     property xNome: String read FxNome write FxNome;
   end;
 
-  TitensAverbadosCollection = class(TObjectList)
+  TitensAverbadosCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TitensAverbadosCollectionItem;
     procedure SetItem(Index: Integer; Value: TitensAverbadosCollectionItem);
@@ -273,7 +266,7 @@ type
     property RetinfEvento: TprocEvento_RetInfEvento read FRetInfEvento write FRetInfEvento;
   end;
 
-  TdocZipCollection = class(TObjectList)
+  TdocZipCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TdocZipCollectionItem;
     procedure SetItem(Index: Integer; Value: TdocZipCollectionItem);
@@ -299,6 +292,7 @@ type
 
     // XML do Resumo ou Documento descompactado
     FXML: String;
+    FNomeArq: String;
 
   public
     constructor Create;
@@ -312,6 +306,7 @@ type
     property resEvento: TresEvento   read FresEvento  write FresEvento;
     property procEvento: TprocEvento read FprocEvento write FprocEvento;
     property XML: String             read FXML        write FXML;
+    property NomeArq: String         read FNomeArq    write FNomeArq;
   end;
 
   TRetDistDFeInt = class
@@ -358,7 +353,7 @@ uses
 function TitensAverbadosCollection.GetItem(
   Index: Integer): TitensAverbadosCollectionItem;
 begin
-  Result := TitensAverbadosCollectionItem(inherited GetItem(Index));
+  Result := TitensAverbadosCollectionItem(inherited Items[Index]);
 end;
 
 function TitensAverbadosCollection.New: TitensAverbadosCollectionItem;
@@ -370,7 +365,7 @@ end;
 procedure TitensAverbadosCollection.SetItem(Index: Integer;
   Value: TitensAverbadosCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 { TprocEvento_DetEvento }
@@ -420,13 +415,13 @@ end;
 
 function TdocZipCollection.GetItem(Index: Integer): TdocZipCollectionItem;
 begin
-  Result := TdocZipCollectionItem(inherited GetItem(Index));
+  Result := TdocZipCollectionItem(inherited Items[Index]);
 end;
 
 procedure TdocZipCollection.SetItem(Index: Integer;
   Value: TdocZipCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TdocZipCollection.New: TdocZipCollectionItem;

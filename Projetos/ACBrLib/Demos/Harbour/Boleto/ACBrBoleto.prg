@@ -1,4 +1,4 @@
-#include 'acbrlib.ch'
+#include '..\Comum\acbrlib.ch'
 
 #ifdef __PLATFORM__WINDOWS
    #define ACBrLIB 'ACBrBoleto32.dll'
@@ -29,6 +29,7 @@ CREATE CLASS ACBrBoleto
    METHOD LimparLista()
    METHOD TotalTitulosLista()
    METHOD Imprimir(eNomeImpressora)
+   METHOD ImprimirBoleto(eIndice, eNomeImpressora)
    METHOD GerarPDF()
    METHOD GerarHTML()
    METHOD GerarRemessa(eDir, eNumArquivo, eNomeArq)
@@ -179,6 +180,12 @@ METHOD TotalTitulosLista() CLASS ACBrBoleto
 METHOD Imprimir(eNomeImpressora) CLASS ACBrBoleto
     local hResult 
     hResult := DllCall(::hHandle, DLL_OSAPI, "Boleto_Imprimir", hb_StrToUTF8(eNomeImpressora))
+    ::CheckResult(hResult)
+    RETURN nil
+
+METHOD ImprimirBoleto(eIndice, eNomeImpressora) CLASS ACBrBoleto
+    local hResult 
+    hResult := DllCall(::hHandle, DLL_OSAPI, "Boleto_ImprimirBoleto", eIndice, hb_StrToUTF8(eNomeImpressora))
     ::CheckResult(hResult)
     RETURN nil
 

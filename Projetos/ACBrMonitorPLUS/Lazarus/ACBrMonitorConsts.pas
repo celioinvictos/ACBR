@@ -1,11 +1,9 @@
 {*******************************************************************************}
-{ Projeto: ACBrMonitor                                                         }
+{ Projeto: ACBrMonitor                                                          }
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -344,7 +342,7 @@ const
   CMetodoECFConsultarHistoricoArq =                      'consultarhistoricoarq';
   CMetodoECFConsultarPendenciasContrib =                 'consultarpendenciascontrib';
   CMetodoECFConsultarPendenciasDevPAFECF =               'consultarpendenciasdevpafecf';
-  CMetodoECFDownloadArquivo =                            'dowloadarquivo';
+  CMetodoECFDownloadArquivo =                            'downloadarquivo';
   CMetodoECFListarArquivos =                             'listararquivos';
   CMetodoECFReprocessarArquivo =                         'reprocessararquivo';
 
@@ -397,6 +395,18 @@ const
   CMetodoFim  =                        'fim';
   CMetodoSair =                        'sair';
   CMetodoObterCertificados =           'obtercertificados';
+  CMetodoRun =                         'run';
+  CMetodoSendKeys =                    'sendkeys';
+  CMetodoAppActivate =                 'appactivate';
+  CMetodoAppExists =                   'appexists';
+  CMetodoBlockInput =                  'blockinput';
+  CMetodoFileExists =                  'filesexists';
+  CMetodoCopyFile =                    'copyfile';
+  CMetodoDeleteFiles =                 'deletefiles';
+  CMetodoAjustaLnhasLog =              'ajustalinhaslog';
+  CMetodoSetWebservice =               'setwebservice';
+  CMetodoEncodeBase64 =                'encodebase64';
+  CMetodoDecodeBase64 =                'decodebase64';
 
   CMetodoValidarnfe =                  'validarnfe';
   CMetodoAssinarnfe =                  'assinarnfe';
@@ -522,6 +532,9 @@ const
   CMetodoMontarNossoNumero =         'montarnossonumero';
   CMetodoRetornaLinhaDigitavel =     'retornalinhadigitavel';
   CMetodoRetornaCodigoBarras =       'retornacodigobarras';
+  CMetodoImprimirBoleto =            'imprimirboleto';
+  CMetodoGerarPDFBoleto =            'gerarpdfboleto';
+  CMetodoEnviarEmailBoleto =         'enviaremailboleto';
 
   CMetodoAtivar =               'ativar';
   CMetodoDesativar =            'desativar';
@@ -629,6 +642,7 @@ const
 
   CMetodoConsultar = 'consultar';
   CMetodoRastrear  = 'rastrear';
+  CMetodoConsultarCaptcha = 'consultarcaptcha';
 
   CMetodoSetPorta          = 'setporta';
   CMetodoTemperatura       = 'temperatura';
@@ -685,6 +699,9 @@ const
   CMetodoImprimirLogo           = 'imprimirlogo';
   CMetodoGravarLogoArquivo      = 'gravarlogoarquivo';
   CMetodoApagarLogo             = 'apagarlogo';
+  CMetodoAcharPortasSeriais     = 'acharportasseriais';
+  CMetodoAcharPortasUSB         = 'acharportasusb';
+  CMetodoAcharPortasRAW         = 'acharportasraw';
 
   CExtensaoXML =                     '.xml';
 
@@ -848,6 +865,7 @@ const
   CKeyIgnorarComandoModoEmissao =     'IgnorarComandoModoEmissao';
   CKeyModoXML =                       'ModoXML';
   CKeyRetirarAcentos =                'RetirarAcentos';
+  CKeyRetirarEspacos =                'RetirarEspacos';
   CKeyGravar_Log_Comp =               'Gravar_Log_Comp';
   CKeyArquivo_Log_Comp =              'Arquivo_Log_Comp';
   CKeyLinhas_Log_Comp =               'Linhas_Log_Comp';
@@ -965,7 +983,7 @@ const
   CKeyDANFECopias =                    'Copias';
   CKeyDANFECopiasNFCe =                'CopiasNFCe';
   CKeyDANFELarguraCodigoProduto =      'LarguraCodigoProduto';
-  CKeyDANFEEspessuraBorda =            'EspessuraBorda';
+  CKeyDANFEEspacoEntreProdutos =       'EspacoEntreProdutos';
   CKeyDANFEFonteRazao =                'FonteRazao';
   CKeyDANFEFonteEndereco =             'FonteEndereco';
   CKeyDANFEFonteCampos =               'FonteCampos';
@@ -1073,7 +1091,14 @@ const
   CKeySATSalvarEnvio =                      'SalvarEnvio';
   CKeySATSepararPorCNPJ =                   'SepararPorCNPJ';
   CKeySATSepararPorMES =                    'SepararPorMES';
+  CKeySATSepararPorANO =                    'SepararPorANO';
+  CKeySATSepararPorDIA =                    'SepararPorDIA';
+  CKeySATSepararPorModelo =                 'SepararPorModelo';
   CKeySATValidarNumeroSessaoResposta =      'ValidarNumeroSessaoResposta';
+  CKeySATPathCFeCanc =                      'PathCFeCanc';
+  CKeySATPathCFeEnvio =                     'PathCFeEnvio';
+  CKeySATPrefixoArqCFe =                    'PrefixoArqCFe';
+  CKeySATPrefixoArqCFeCanc =                'PrefixoArqCFeCanc';
 
   CSecSATExtrato =                          'SATExtrato';
   CKeySATExtParamsString =                  'ParamsString';

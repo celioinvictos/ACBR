@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  André Ferreira de Moraes                       }
 {                               Wemerson Souto                                 }
@@ -393,7 +393,7 @@ begin
         if (FPDFeOwner.Integrador.Respostas.Count >= 6) then
         begin
           if StrIsBase64(FPDFeOwner.Integrador.Respostas[6]) then
-            FPRetornoWS := DecodeBase64(FPDFeOwner.Integrador.Respostas[6])
+            FPRetornoWS := DecodeBase64(AnsiString(FPDFeOwner.Integrador.Respostas[6]))
           else
             FPRetornoWS := FPDFeOwner.Integrador.Respostas[6];
         end

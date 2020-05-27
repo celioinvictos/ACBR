@@ -44,7 +44,7 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
         DrawKind = dkLine
       end
       object rllNumNF0: TRLLabel
-        Left = 606
+        Left = 605
         Top = 28
         Width = 140
         Height = 18
@@ -52,7 +52,7 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
         AutoSize = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -13
+        Font.Height = -16
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
         ParentFont = False
@@ -1159,9 +1159,9 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
       end
       object rlmCodServico: TRLMemo
         Left = 100
-        Top = 2
+        Top = 4
         Width = 645
-        Height = 36
+        Height = 16
         AutoSize = False
         Behavior = [beSiteExpander]
         Font.Charset = DEFAULT_CHARSET
@@ -1984,8 +1984,8 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
         Transparent = False
       end
       object rllMsgTeste: TRLLabel
-        Left = 12
-        Top = 6
+        Left = 15
+        Top = 57
         Width = 724
         Height = 31
         Alignment = taCenter
@@ -1996,6 +1996,35 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
         ParentFont = False
+      end
+      object rllCodTributacaoMunicipio: TRLLabel
+        Left = 4
+        Top = 22
+        Width = 168
+        Height = 14
+        Caption = 'C'#243'digo de Tributa'#231#227'o do Munic'#237'pio:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Times New Roman'
+        Font.Style = []
+        ParentFont = False
+        Transparent = False
+      end
+      object rlmDescCodTributacaoMunicipio: TRLMemo
+        Left = 178
+        Top = 21
+        Width = 565
+        Height = 16
+        AutoSize = False
+        Behavior = [beSiteExpander]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Times New Roman'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Transparent = False
       end
     end
     object rbOutrasInformacoes: TRLBand
@@ -2273,7 +2302,7 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
         Transparent = False
       end
       object RLLabel67: TRLLabel
-        Left = 670
+        Left = 710
         Top = 1
         Width = 29
         Height = 14
@@ -2287,7 +2316,7 @@ inherited frlDANFSeRLRetrato: TfrlDANFSeRLRetrato
         Transparent = False
       end
       object RLLabel68: TRLLabel
-        Left = 611
+        Left = 640
         Top = 1
         Width = 28
         Height = 14

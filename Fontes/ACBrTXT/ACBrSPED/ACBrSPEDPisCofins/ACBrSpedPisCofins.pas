@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2010   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 07/12/2010: Isaque Pinheiro
-|*  - Criação e distribuição da Primeira Versao
-*******************************************************************************}
 
 unit ACBrSpedPisCofins;
 
@@ -195,8 +187,6 @@ type
     property EventsBloco_C: TEventsBloco_C read FEventsBloco_C;
   end;
 
-procedure Register;
-
 implementation
 
 uses ACBrUtil;
@@ -204,11 +194,6 @@ uses ACBrUtil;
 {$IFNDEF FPC}
  {$R ACBr_SPEDPisCofins.dcr}
 {$ENDIF}
-
-procedure Register;
-begin
-  RegisterComponents('ACBrTXT', [TACBrSPEDPisCofins]);
-end;
 
 (* TACBrSPEDPisCofins *)
 
@@ -899,6 +884,14 @@ begin
                QTD_REG_BLC := Bloco_0.Registro0600Count;
             end;
          end;
+         if Bloco_0.Registro0900Count > 0 then
+         begin
+            with New do
+            begin
+               REG_BLC := '0900';
+               QTD_REG_BLC := Bloco_0.Registro0900Count;
+            end;
+         end;
       end;
    end;
 end;
@@ -935,6 +928,14 @@ begin
             begin
                REG_BLC := '1010';
                QTD_REG_BLC := Bloco_1.Registro1010Count;
+            end;
+            if Bloco_1.Registro1011Count > 0 then
+            begin
+              with New do
+              begin
+                REG_BLC := '1011';
+                QTD_REG_BLC := Bloco_1.Registro1011Count;
+              end;
             end;
          end;
          if Bloco_1.Registro1020Count > 0 then

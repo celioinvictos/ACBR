@@ -1,47 +1,35 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Nota Fiscal}
-{ eletrônica - NFe - http://www.nfe.fazenda.gov.br                             }
-
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
-
-{ Colaboradores nesse arquivo:                                                 }
-
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-
-
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Wemerson Souto, Daniel Simoes de Almeida        }
+{							   André Ferreira de Moraes, Rafael Dias           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
-
+{                                                                              }
 {  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
-
+{                                                                              }
 {  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
-
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 16/12/2008: Wemerson Souto
-|*  - Doação do componente para o Projeto ACBr
-|* 23/01/2018: Rafael Dias
-|*  - Refactory com objetivo de tornar a classe mais organizada
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -81,7 +69,6 @@ type
   TACBrNFeDANFEClass = class(TACBrDFeDANFeReport)
   private
     FImprimeDescPorPercentual: Boolean;
-    FFormularioContinuo: Boolean;
     FImprimeValor: TImprimirUnidQtdeValor;
     FImprimeDetalhamentoEspecifico: Boolean;
     FImprimeDescAcrescItem: TpcnImprimeDescAcrescItem;
@@ -125,7 +112,6 @@ type
     function ManterInformacoesDadosAdicionais(aNFE: TNFe): String;
 
   published
-    property FormularioContinuo: Boolean read FFormularioContinuo write FFormularioContinuo default False;
     property ImprimeValor: TImprimirUnidQtdeValor read FImprimeValor write FImprimeValor default iuComercial;
     property ImprimeDescPorPercentual: Boolean read FImprimeDescPorPercentual write FImprimeDescPorPercentual default False;
     property ImprimeDetalhamentoEspecifico: Boolean read FImprimeDetalhamentoEspecifico write FImprimeDetalhamentoEspecifico default True;
@@ -146,6 +132,7 @@ type
     property TributosPercentualPersonalizado: Double read FTributosPercentualPersonalizado write SetTributosPercentualPersonalizado;
     property ExpandirDadosAdicionaisAuto: boolean read FExpandirDadosAdicionaisAuto write FExpandirDadosAdicionaisAuto default False;
     property ExibeCampoDePagamento: TpcnInformacoesDePagamento read FExibeCampoDePagamento write FExibeCampoDePagamento default eipNunca;
+    property FormularioContinuo;
   end;
 
 
@@ -187,6 +174,7 @@ type
     property DescricaoPagamentos: TDescricaoPagamentos read FDescricaoPagamentos write FDescricaoPagamentos default [icaTipo, icaBandeira];
     property ImprimeEmUmaLinha: Boolean read FImprimeEmUmaLinha write setImprimeEmUmaLinha default False;
     property ImprimeEmDuasLinhas: Boolean read FImprimeEmDuasLinhas write setImprimeEmDuasLinhas default False;
+    property FormularioContinuo;
   end;
 
 implementation
@@ -201,7 +189,6 @@ constructor TACBrNFeDANFEClass.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FFormularioContinuo              := False;
   FImprimeValor                    := iuComercial;
   FImprimeDetalhamentoEspecifico   := True;
   FImprimeDescAcrescItem           := idaiSempre;
@@ -510,7 +497,7 @@ begin
         if (dr_dVal in FDetRastros) then
           Result := Result + 'VAL: ' + FormatDateBr(rastro.Items[i].dVal) + sQuebraLinha;
 
-        if (dr_cAgreg in FDetRastros) then
+        if (dr_cAgreg in FDetRastros) and NaoEstaVazio(rastro.Items[i].cAgreg) then
           Result := Result + ACBrStr('C.AGREGAÇÃO: ') + rastro.Items[i].cAgreg + sQuebraLinha;
       end;
     end;
@@ -669,7 +656,6 @@ begin
   FDescricaoPagamentos   := [icaTipo, icaBandeira];
   FImprimeEmUmaLinha     := False;
   FImprimeEmDuasLinhas   := False;
-
 end;
 
 function TACBrNFeDANFCEClass.ManterDescricaoPagamentos(aPagto: TpagCollectionItem
@@ -683,7 +669,8 @@ begin
 
   with aPagto do
   begin
-    if ((tPag in [fpCartaoCredito, fpCartaoDebito]) and (tpIntegra = tiPagIntegrado)) then
+    if ((tPag in [fpCartaoCredito, fpCartaoDebito]) and (tpIntegra = tiPagIntegrado)) or
+       ((tPag in [fpCartaoCredito, fpCartaoDebito]) and (cAut <>'')) then
     begin
       descBandeira:= BandeiraCartaoToDescStr(tBand);
       CodigoAutorizacao := '- Aut: ' + cAut;
@@ -695,9 +682,7 @@ begin
       Result := Result + descBandeira + Space(1);
     if (icaAutorizacao in FDescricaoPagamentos) then
       Result := Result + CodigoAutorizacao;
-
   end;
-
 end;
 
 procedure TACBrNFeDANFCEClass.setImprimeEmDuasLinhas(const Value: Boolean);

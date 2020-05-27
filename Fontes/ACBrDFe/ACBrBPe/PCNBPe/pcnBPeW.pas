@@ -1,54 +1,34 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//              PCN - Projeto Cooperar BPe                                    //
-//                                                                            //
-//   Descrição: Classes para geração/leitura dos arquivos xml do BPe          //
-//                                                                            //
-//        site: www.projetocooperar.org                                       //
-//       email: projetocooperar@zipmail.com.br                                //
-//       forum: http://br.groups.yahoo.com/group/projeto_cooperar_nfe/        //
-//     projeto: http://code.google.com/p/projetocooperar/                     //
-//         svn: http://projetocooperar.googlecode.com/svn/trunk/              //
-//                                                                            //
-// Coordenação: (c) 2009 - Paulo Casagrande                                   //
-//                                                                            //
-//      Equipe: Vide o arquivo leiame.txt na pasta raiz do projeto            //
-//                                                                            //
-//      Versão: Vide o arquivo leiame.txt na pasta raiz do projeto            //
-//                                                                            //
-//     Licença: GNU Lesser General Public License (GNU LGPL)                  //
-//                                                                            //
-//              - Este programa é software livre; você pode redistribuí-lo    //
-//              e/ou modificá-lo sob os termos da Licença Pública Geral GNU,  //
-//              conforme publicada pela Free Software Foundation; tanto a     //
-//              versão 2 da Licença como (a seu critério) qualquer versão     //
-//              mais nova.                                                    //
-//                                                                            //
-//              - Este programa é distribuído na expectativa de ser útil,     //
-//              mas SEM QUALQUER GARANTIA; sem mesmo a garantia implícita de  //
-//              COMERCIALIZAÇÃO ou de ADEQUAÇÃO A QUALQUER PROPÓSITO EM       //
-//              PARTICULAR. Consulte a Licença Pública Geral GNU para obter   //
-//              mais detalhes. Você deve ter recebido uma cópia da Licença    //
-//              Pública Geral GNU junto com este programa; se não, escreva    //
-//              para a Free Software Foundation, Inc., 59 Temple Place,       //
-//              Suite 330, Boston, MA - 02111-1307, USA ou consulte a         //
-//              licença oficial em http://www.gnu.org/licenses/gpl.txt        //
-//                                                                            //
-//    Nota (1): - Esta  licença  não  concede  o  direito  de  uso  do nome   //
-//              "PCN  -  Projeto  Cooperar  NFe", não  podendo o mesmo ser    //
-//              utilizado sem previa autorização.                             //
-//                                                                            //
-//    Nota (2): - O uso integral (ou parcial) das units do projeto esta       //
-//              condicionado a manutenção deste cabeçalho junto ao código     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-{*******************************************************************************
-|* Historico
-|*
-|* 20/06/2017: Italo Jurisato Junior
-|*  - Doação do componente para o Projeto ACBr
-*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -119,7 +99,6 @@ type
 
   TGeradorOpcoes = class(TPersistent)
   private
-    FAjustarTagNro: Boolean;
     FGerarTagIPIparaNaoTributado: Boolean;
     FGerarTXTSimultaneamente: Boolean;
     FNormatizarMunicipios: Boolean;
@@ -128,7 +107,6 @@ type
     FValidarInscricoes: Boolean;
     FValidarListaServicos: Boolean;
   published
-    property AjustarTagNro: Boolean read FAjustarTagNro;
     property GerarTagIPIparaNaoTributado: Boolean read FGerarTagIPIparaNaoTributado write FGerarTagIPIparaNaoTributado;
     property GerarTXTSimultaneamente: Boolean read FGerarTXTSimultaneamente write FGerarTXTSimultaneamente;
     property NormatizarMunicipios: Boolean read FNormatizarMunicipios write FNormatizarMunicipios;
@@ -149,11 +127,15 @@ uses
 constructor TBPeW.Create(AOwner: TBPe);
 begin
   inherited Create;
-  FBPe                      := AOwner;
-  FGerador                  := TGerador.Create;
-  FGerador.FIgnorarTagNivel := '|?xml version|BPe xmlns|infBPe versao|obsCont|obsFisco|';
-  FOpcoes                   := TGeradorOpcoes.Create;
-  FOpcoes.FAjustarTagNro               := True;
+
+  FBPe     := AOwner;
+  FGerador := TGerador.Create;
+
+  FGerador.FIgnorarTagNivel   := '|?xml version|BPe xmlns|infBPe versao|obsCont|obsFisco|';
+  FGerador.Opcoes.QuebraLinha := ';';
+
+  FOpcoes := TGeradorOpcoes.Create;
+
   FOpcoes.FGerarTXTSimultaneamente     := False;
   FOpcoes.FGerarTagIPIparaNaoTributado := True;
   FOpcoes.FNormatizarMunicipios        := False;
@@ -372,7 +354,7 @@ begin
   Gerador.wGrupo('enderEmit', '#033');
 
   Gerador.wCampo(tcStr, '#034', 'xLgr   ', 02, 60, 1, BPe.Emit.enderEmit.xLgr, DSC_XLGR);
-  Gerador.wCampo(tcStr, '#035', 'nro    ', 01, 60, 1, ExecutarAjusteTagNro(FOpcoes.FAjustarTagNro, BPe.Emit.enderEmit.nro), DSC_NRO);
+  Gerador.wCampo(tcStr, '#035', 'nro    ', 01, 60, 1, BPe.Emit.enderEmit.nro, DSC_NRO);
   Gerador.wCampo(tcStr, '#036', 'xCpl   ', 01, 60, 0, BPe.Emit.enderEmit.xCpl, DSC_XCPL);
   Gerador.wCampo(tcStr, '#037', 'xBairro', 02, 60, 1, BPe.Emit.enderEmit.xBairro, DSC_XBAIRRO);
   Gerador.wCampo(tcInt, '#038', 'cMun   ', 07, 07, 1, cMun, DSC_CMUN);
@@ -442,7 +424,7 @@ begin
   Gerador.wGrupo('enderComp', '#051');
 
   Gerador.wCampo(tcStr, '#052', 'xLgr   ', 02, 60, 1, BPe.Comp.enderComp.xLgr, DSC_XLGR);
-  Gerador.wCampo(tcStr, '#053', 'nro    ', 01, 60, 1, ExecutarAjusteTagNro(FOpcoes.FAjustarTagNro, BPe.Comp.enderComp.nro), DSC_NRO);
+  Gerador.wCampo(tcStr, '#053', 'nro    ', 01, 60, 1, BPe.Comp.enderComp.nro, DSC_NRO);
   Gerador.wCampo(tcStr, '#054', 'xCpl   ', 01, 60, 0, BPe.Comp.enderComp.xCpl, DSC_XCPL);
   Gerador.wCampo(tcStr, '#055', 'xBairro', 01, 60, 1, BPe.Comp.enderComp.xBairro, DSC_XBAIRRO);
   Gerador.wCampo(tcInt, '#056', 'cMun   ', 07, 07, 1, cMun, DSC_CMUN);
@@ -493,7 +475,7 @@ begin
   Gerador.wGrupo('enderAgencia', '#067');
 
   Gerador.wCampo(tcStr, '#068', 'xLgr   ', 02, 60, 1, BPe.Agencia.enderAgencia.xLgr, DSC_XLGR);
-  Gerador.wCampo(tcStr, '#069', 'nro    ', 01, 60, 1, ExecutarAjusteTagNro(FOpcoes.FAjustarTagNro, BPe.Agencia.enderAgencia.nro), DSC_NRO);
+  Gerador.wCampo(tcStr, '#069', 'nro    ', 01, 60, 1, BPe.Agencia.enderAgencia.nro, DSC_NRO);
   Gerador.wCampo(tcStr, '#070', 'xCpl   ', 01, 60, 0, BPe.Agencia.enderAgencia.xCpl, DSC_XCPL);
   Gerador.wCampo(tcStr, '#071', 'xBairro', 02, 60, 1, BPe.Agencia.enderAgencia.xBairro, DSC_XBAIRRO);
   Gerador.wCampo(tcInt, '#072', 'cMun   ', 07, 07, 1, cMun, DSC_CMUN);
@@ -753,7 +735,7 @@ begin
   Gerador.wCampo(tcDe2, '#154', 'pFCPUFFim     ', 01, 05, 1, BPe.Imp.ICMSUFFim.pFCPUFFim, DSC_PFCPUFFIM);
   Gerador.wCampo(tcDe2, '#155', 'pICMSUFFim    ', 01, 05, 1, BPe.Imp.ICMSUFFim.pICMSUFFim, DSC_PICMSUFFIM);
   Gerador.wCampo(tcDe2, '#156', 'pICMSInter    ', 01, 05, 1, BPe.Imp.ICMSUFFim.pICMSInter, DSC_PICMSINTER);
-  Gerador.wCampo(tcDe2, '#157', 'pICMSInterPart', 01, 05, 1, BPe.Imp.ICMSUFFim.pICMSInterPart, DSC_PICMSINTERPART);
+//  Gerador.wCampo(tcDe2, '#157', 'pICMSInterPart', 01, 05, 1, BPe.Imp.ICMSUFFim.pICMSInterPart, DSC_PICMSINTERPART);
   Gerador.wCampo(tcDe2, '#158', 'vFCPUFFim     ', 01, 15, 1, BPe.Imp.ICMSUFFim.vFCPUFFim, DSC_VFCPUFFIM);
   Gerador.wCampo(tcDe2, '#159', 'vICMSUFFim    ', 01, 15, 1, BPe.Imp.ICMSUFFim.vICMSUFFim, DSC_VICMSUFFIM);
   Gerador.wCampo(tcDe2, '#160', 'vICMSUFIni    ', 01, 15, 1, BPe.Imp.ICMSUFFim.vICMSUFIni, DSC_VICMSUFINI);

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -24,34 +24,23 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 15/03/2006:  Daniel Simoes de Almeida
-|*   Primeira Versao: Criaçao e Distribuiçao da Primeira Versao
-|* 15/05/2006:  Daniel Simoes de Almeida
-|*   - Corrigido vários bugs: GetEstado, GetTotalPago, FechaRelatorio,
-|*     FechaCupom
-|* 18/06/2008:  Joao Victor Maia Fernandes
-|*   LerTotaisAliquota, LerTotaisFormaPagamento, LerTotaisComprovanteNaoFiscal,
-|*   TotalSubstituicaoTributaria, CNPJ, IE, DataMovimento, GrandeTotal,
-|*   VendaBruta, TotalDescontos, TotalCancelamentos, TotalAcrescimos,
-|*   NumCOOInicial, NumUltimoItem, TotalIsencao, TotalNaoTributado
-******************************************************************************}
 {$I ACBr.inc}
 
 unit ACBrECFQuattro ;
 
 interface
-uses Classes,
-     ACBrECFClass, ACBrDevice;
+uses
+  Classes,
+  {$IFDEF NEXTGEN}
+   ACBrBase,
+  {$ENDIF}
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial;
 
 type
 { Classe filha de TACBrECFClass com implementaçao para Quattro }
@@ -1491,7 +1480,7 @@ begin
   end ;
 
   if fsArqFormato_ChequeTXT = '' then
-     ArqTemp := ExtractFilePath( ParamStr(0) )+'Formato_cheque.txt'
+     ArqTemp := ApplicationPath+'Formato_cheque.txt'
   else
      ArqTemp := fsArqFormato_ChequeTXT ;
 

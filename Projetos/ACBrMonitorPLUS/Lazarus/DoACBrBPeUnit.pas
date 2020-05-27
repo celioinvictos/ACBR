@@ -3,9 +3,7 @@
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -390,6 +388,7 @@ var
   AMetodoClass: TACBrMetodoClass;
   CmdNum: Integer;
   Ametodo: TACBrMetodo;
+  AACBrUnit: TACBrObjetoACBr;
 begin
   inherited Executar(ACmd);
 
@@ -430,7 +429,15 @@ begin
     30 : AMetodoClass := TMetodoCertificadoDataVencimento; // DataVencimentoCertificado
 
   else
-    DoACbr(ACmd);
+    begin
+        AACBrUnit := TACBrObjetoACBr.Create(Nil); //Instancia DoACBrUnit para validar métodos padrão para todos os objetos
+        try
+          AACBrUnit.Executar(ACmd);
+        finally
+          AACBrUnit.Free;
+        end;
+
+      end;
   end;
 
   if Assigned(AMetodoClass) then
@@ -1182,19 +1189,24 @@ end;
 { TMetodoConsultarBPe }
 
 { Params: 0 - XML - Uma String com um Path completo XML ou chave BPe
+          1 - AExtrairEventos (1 para extrair)
 }
 procedure TMetodoConsultarBPe.Executar;
 var
   CargaDFe: TACBrCarregarBPe;
   AXML: String;
+  AExtrairEventos: Boolean;
 begin
   AXML := fpCmd.Params(0);
+  AExtrairEventos := StrToBoolDef(fpCmd.Params(1), False);
 
   with TACBrObjetoBPe(fpObjetoDono) do
   begin
     ACBrBPe.Bilhetes.Clear;
     CargaDFe := TACBrCarregarBPe.Create(ACBrBPe, AXML);
     try
+      ACBrBPe.WebServices.Consulta.ExtrairEventos := AExtrairEventos;
+
       if (ACBrBPe.Bilhetes.Count = 0) then
       begin
         if ValidarChave(AXML) then

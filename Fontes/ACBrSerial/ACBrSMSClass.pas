@@ -3,15 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Alexandre Rocha Lima e Marcondes                }
+{ Colaboradores nesse arquivo:   Regys Silveira                                }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{ Esse arquivo usa a classe  SynaSer   Copyright (c)2001-2003, Lukas Gebauer   }
-{  Project : Ararat Synapse     (Found at URL: http://www.ararat.cz/synapse/)  }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -41,7 +37,18 @@ unit ACBrSMSClass;
 interface
 
 uses
-  ACBrDevice, Classes, SysUtils, Contnrs, strUtils;
+  Classes, SysUtils,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
+  ACBrDevice
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 const
   CTRL_Z = #26;
@@ -79,7 +86,7 @@ type
     property Mensagem: String read FMensagem write FMensagem;
   end;
 
-  TACBrSMSMensagens = class(TObjectList)
+  TACBrSMSMensagens = class(TObjectList{$IfDef NEXTGEN}<TACBrSMSMensagem>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TACBrSMSMensagem);
     function GetObject (Index: Integer): TACBrSMSMensagem;
@@ -152,7 +159,8 @@ type
 implementation
 
 uses
-  ACBrSMS, ACBrUtil;
+  strutils, dateutils,
+  ACBrSMS, ACBrUtil, ACBrConsts;
 
 { TACBrSMSMensagens }
 
@@ -168,14 +176,51 @@ begin
 end;
 
 procedure TACBrSMSMensagens.CarregaSMS(const APath: string);
-function FormaDataHora(ADataHora : String) : TDateTime;
-begin
-  Result := StrToDateTimeDef(Copy(ADataHora, 9, 2) + '/' +
-                             Copy(ADataHora, 6, 2) + '/' +
-                             Copy(ADataHora, 1, 4) +
-                             Copy(ADataHora, 11, Length(ADataHora) -6),
-                             StrToDate('01/01/1990'));
-end;
+
+  function FormataDataHora(ADataHora : String) : TDateTime;
+  begin
+    try
+      Result := EncodeDateTime(
+                      StrToInt(Copy(ADataHora, 1, 4)),
+                      StrToInt(Copy(ADataHora, 6, 2)),
+                      StrToInt(Copy(ADataHora, 9, 2)),
+                      StrToIntDef(Copy(ADataHora,11, 2), 0),
+                      StrToIntDef(Copy(ADataHora,14, 2), 0),
+                      StrToIntDef(Copy(ADataHora,17, 2), 0),
+                      0 );
+    except
+      Result := StrToDateTimeDef( Copy(ADataHora, 7, 2) + DateSeparator +
+                                  Copy(ADataHora, 4, 2) + DateSeparator +
+                                  Copy(ADataHora, 1, 2)+' '+
+                                  Copy(ADataHora,10, 8), 0);
+    end;
+  end;
+
+  function ConvertMsg(AData: String): String;
+  var
+    BinaryStr: AnsiString;
+    WideStr: WideString;
+    LenData, i: Integer;
+    B1, B2: Byte;
+  begin
+    BinaryStr := '';
+    LenData := Length(AData);
+
+    i := 1;
+    while i < LenData do
+    begin
+       B2 := StrToInt('$' + copy(AData, i  , 2));
+       B1 := StrToInt('$' + copy(AData, i+2, 2));
+       BinaryStr := BinaryStr + AnsiChr(B1)+AnsiChr(B2) ;
+       Inc(i, 4) ;
+    end ;
+
+    LenData := Trunc(Length(BinaryStr)/2);
+    SetLength(WideStr, LenData);
+    System.Move(BinaryStr[1], WideStr[1], LenData*2);
+    Result := String(WideStr);
+  end;
+
 const
   DelimitadorSMS = 'READ","';
   DelimitadorID = '+CMGL:';  
@@ -217,7 +262,7 @@ begin
           Conteudo := StringReplace(Conteudo, Telefone, '', [rfReplaceAll]);
           Conteudo := StringReplace(Conteudo, '"', '', [rfReplaceAll]);
           Conteudo := StringReplace(Conteudo, ',', ' ', [rfReplaceAll]);
-          DataHora := FormaDataHora(Trim(Copy(Conteudo, 1, 21)));
+          DataHora := FormataDataHora(Trim(Copy(Conteudo, 1, 21)));
           Mensagem := '';
           J := I + 1;
           FimSMS := (J > ListaSMS.Count -1);
@@ -233,6 +278,9 @@ begin
             if not FimSMS then
               FimSMS := Pos(DelimitadorSMS, ListaSMS[J]) > 0;
           end;
+
+          if (copy(Mensagem,1,2) = '00') and StrIsNumber(Trim(Mensagem)) then
+            Mensagem := ConvertMsg(Mensagem);
         end;
       end
     end;
@@ -243,7 +291,7 @@ end;
 
 function TACBrSMSMensagens.GetObject(Index: Integer): TACBrSMSMensagem;
 begin
-  Result := inherited GetItem(Index) as TACBrSMSMensagem ;
+  Result := TACBrSMSMensagem(inherited Items[Index])
 end;
 
 procedure TACBrSMSMensagens.Insert(Index: Integer; Obj: TACBrSMSMensagem);
@@ -286,7 +334,7 @@ end;
 
 procedure TACBrSMSMensagens.SetObject(Index: Integer; Item: TACBrSMSMensagem);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 { TACBrSMSClass }

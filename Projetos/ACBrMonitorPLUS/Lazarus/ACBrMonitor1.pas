@@ -1,9 +1,9 @@
 {*******************************************************************************}
-{ Projeto: ACBrMonitor                                                         }
+{ Projeto: ACBrMonitor                                                          }
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 { Colaboradores nesse arquivo: 2005 Fábio Rogério Baía                          }
 {                                                                               }
@@ -43,21 +43,23 @@ uses
   ACBrCHQ, ACBrLCB, ACBrRFD, Dialogs, ExtCtrls, Menus, Buttons, StdCtrls,
   ComCtrls, Controls, Graphics, Spin, MaskEdit, EditBtn, ACBrBAL, ACBrETQ,
   ACBrPosPrinter, ACBrSocket, ACBrCEP, ACBrIBGE, blcksock, ACBrValidador,
-  ACBrGIF, ACBrEAD, ACBrMail, ACBrSedex, ACBrNCMs, ACBrNFe, ACBrNFeDANFeESCPOS,
-  ACBrDANFCeFortesFr, ACBrDANFCeFortesFrA4, ACBrNFeDANFeRLClass, ACBrBoleto,
-  ACBrBoletoFCFortesFr, Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo,
-  PrintersDlgs, IpHtml, pcnConversao, pcnConversaoNFe, pcteConversaoCTe, pcnConversaoBPe,
-  ACBrSAT, ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede, pgnreConversao,
-  ACBrDFeSSL, ACBrGNRE2, ACBrGNReGuiaRLClass, ACBrBlocoX, ACBrMDFe,
-  ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types, fileinfo,
-  ACBrDFeConfiguracoes, ACBrBPe, ACBrBPeDABPeESCPOS, ACBrReinf, ACBreSocial,
-  ACBrIntegrador, LazHelpCHM, pmdfeConversaoMDFe, pcesConversaoeSocial,
-  pcnConversaoReinf, ACBrMonitorConfig, ACBrMonitorConsts, DOACBrNFeUnit,
-  DoACBrCTeUnit, DoACBrMDFeUnit, DoBoletoUnit, DoACBrReinfUnit, DoBALUnit,
-  DoEmailUnit, DoCEPUnit, DoCHQUnit, DoGAVUnit, DoIBGEUnit, DoNcmUnit,
-  DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit, DoACBrGNReUnit,
+  ACBrGIF, ACBrEAD, ACBrMail, ACBrSedex, ACBrNCMs, ACBrConsultaCNPJ,
+  ACBrConsultaCPF, ACBrNFe, ACBrNFeDANFeESCPOS, ACBrDANFCeFortesFr,
+  ACBrDANFCeFortesFrA4, ACBrNFeDANFeRLClass, ACBrBoleto, ACBrBoletoFCFortesFr,
+  Printers, DbCtrls, DBGrids, SynHighlighterXML, SynMemo, PrintersDlgs, IpHtml,
+  pcnConversao, pcnConversaoNFe, pcteConversaoCTe, pcnConversaoBPe, ACBrSAT,
+  ACBrSATExtratoESCPOS, ACBrSATExtratoFortesFr, ACBrSATClass, pcnRede,
+  pgnreConversao, ACBrDFeSSL, ACBrGNRE2, ACBrGNReGuiaRLClass, ACBrBlocoX,
+  ACBrMDFe, ACBrMDFeDAMDFeRLClass, ACBrCTe, ACBrCTeDACTeRLClass, types,
+  fileinfo, ACBrDFeConfiguracoes, ACBrBPe, ACBrBPeDABPeESCPOS, ACBrReinf,
+  ACBreSocial, ACBrIntegrador, LazHelpCHM, pmdfeConversaoMDFe,
+  pcesConversaoeSocial, pcnConversaoReinf, ACBrMonitorConfig, ACBrMonitorConsts,
+  DOACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit, DoBoletoUnit, DoACBrReinfUnit,
+  DoBALUnit, DoEmailUnit, DoCEPUnit, DoCHQUnit, DoGAVUnit, DoIBGEUnit,
+  DoNcmUnit, DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit, DoACBrGNReUnit,
   DoPosPrinterUnit, DoECFUnit, DoECFObserver, DoECFBemafi32, DoSATUnit,
-  DoACBreSocialUnit, DoACBrBPeUnit, ACBrLibResposta;
+  DoACBreSocialUnit, DoACBrBPeUnit, ACBrLibResposta, DoACBrUnit, DoCNPJUnit,
+  DoCPFUnit;
 
 const
   CEstados: array[TACBrECFEstado] of string =
@@ -69,6 +71,10 @@ const
   UTF8BOM : AnsiString = #$EF#$BB#$BF;
   HelpShortcut = 'F1';
   ClHelp = 'lhelp';
+  CMODELO_NFCE_FORTES = 0;
+  CMODELO_NFCE_ESCPOS = 1;
+  CIMPRESSAO_NFCE_A4 = 0;
+  CIMPRESSAO_NFCE_BOBINA = 1;
 
 type
   TCores = class
@@ -97,6 +103,8 @@ type
     ACBrBPe1: TACBrBPe;
     ACBrBPeDABPeESCPOS1: TACBrBPeDABPeESCPOS;
     ACBrCEP1: TACBrCEP;
+    ACBrConsultaCNPJ1: TACBrConsultaCNPJ;
+    ACBrConsultaCPF1: TACBrConsultaCPF;
     ACBrCTe1: TACBrCTe;
     ACBrCTeDACTeRL1: TACBrCTeDACTeRL;
     ACBrEAD1: TACBrEAD;
@@ -148,6 +156,7 @@ type
     btnGerarAssinaturaSAT: TButton;
     btnFonteItens: TButton;
     btnSATEMAIL: TPanel;
+    btnVersaoSSL: TButton;
     bvCadastro: TBevel;
     bExecECFTeste: TBitBtn;
     bGAVAbrir: TBitBtn;
@@ -259,17 +268,33 @@ type
     cbFormaEmissaoBPe: TComboBox;
     cbFormaEmissaoMDFe: TComboBox;
     cbFormaEmissaoGNRe: TComboBox;
+    cbRetirarEspacos: TCheckBox;
     cbVersaoWSBPe: TComboBox;
     cbVersaoWSGNRE: TComboBox;
     cbxExibeResumo: TCheckBox;
     cbxExpandirDadosAdicionaisAuto: TCheckBox;
     cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina: TCheckBox;
+    cbxSATSalvarCFe: TCheckBox;
+    cbxSATSalvarCFeCanc: TCheckBox;
+    cbxSATSalvarEnvio: TCheckBox;
+    cbxSATSepararPorCNPJ: TCheckBox;
+    cbxSATSepararPorANO: TCheckBox;
+    cbxSATSepararPorModelo: TCheckBox;
+    cbxSATSepararPorMES: TCheckBox;
+    cbxSATSepararPorDIA: TCheckBox;
     cbxValidarNumeroSessaoResposta: TCheckBox;
     cbxImprimirLogoLateralNFCe: TCheckBox;
     cbxSepararPorNome: TCheckBox;
     ckCamposFatObrigatorio: TCheckBox;
     cbFormatoDecimais: TComboBox;
     cbTipoResposta: TComboBox;
+    edSATPathArqs: TEdit;
+    edSATPathArqsCanc: TEdit;
+    edSATPathArqsEnvio: TEdit;
+    edSATPrefixoCFe: TEdit;
+    Label247: TLabel;
+    Label248: TLabel;
+    edSATPrefixoCFeCanc: TEdit;
     edtMsgResumoCanhoto: TEdit;
     edtSATCasasMaskQtd: TEdit;
     edtSATMaskVUnit: TEdit;
@@ -279,6 +304,8 @@ type
     edtNumCopiaNFCe: TSpinEdit;
     edtPathDownload: TEdit;
     edtPathSchemasDFe: TEdit;
+    grbConfigArqs: TGroupBox;
+    Label154: TLabel;
     Label240: TLabel;
     Label244: TLabel;
     grbPathSchemas: TGroupBox;
@@ -402,17 +429,12 @@ type
     cbxRegTributario: TComboBox;
     cbxSalvaPathEvento: TCheckBox;
     cbxSalvarArqs: TCheckBox;
-    cbxSATSalvarCFe: TCheckBox;
-    cbxSATSalvarCFeCanc: TCheckBox;
-    cbxSATSalvarEnvio: TCheckBox;
     cbxSalvarNFesProcessadas: TCheckBox;
     cbxSedexAvisoReceb: TComboBox;
     cbxSedexFormato: TComboBox;
     cbxSedexMaoPropria: TComboBox;
     cbxSedexServico: TComboBox;
     cbxSepararPorCNPJ: TCheckBox;
-    cbxSATSepararPorCNPJ: TCheckBox;
-    cbxSATSepararPorMES: TCheckBox;
     cbxSepararporModelo: TCheckBox;
     cbxTCModelo: TComboBox;
     cbxUTF8: TCheckBox;
@@ -541,6 +563,8 @@ type
     Label241: TLabel;
     Label242: TLabel;
     Label243: TLabel;
+    Label245: TLabel;
+    Label246: TLabel;
     lbTipoResp: TLabel;
     lblMsgCanhoto: TLabel;
     Label26: TLabel;
@@ -597,6 +621,9 @@ type
     rdgImprimeChave1LinhaSAT: TRadioGroup;
     rgLayoutCanhoto: TRadioGroup;
     rgTipoFonte: TRadioGroup;
+    SbArqLog2: TSpeedButton;
+    SbArqLog3: TSpeedButton;
+    SbArqLog4: TSpeedButton;
     sbArquivoCert: TSpeedButton;
     sbSchemaDFe: TSpeedButton;
     sbArquivoWebServicesReinf: TSpeedButton;
@@ -620,7 +647,7 @@ type
     spedtCasasDecimaisQtd: TSpinEdit;
     spedtSATCasasDecimaisQtd: TSpinEdit;
     spedtSATDecimaisVUnit: TSpinEdit;
-    speEspBorda: TSpinEdit;
+    speEspEntreProd: TSpinEdit;
     speFonteCampos: TSpinEdit;
     speFonteEndereco: TSpinEdit;
     speFonteRazao: TSpinEdit;
@@ -734,7 +761,6 @@ type
     edRedeSSID: TEdit;
     edRedeUsuario: TEdit;
     edSATLog: TEdit;
-    edSATPathArqs: TEdit;
     edLogComp: TEdit;
     edtCodigoAtivacao: TEdit;
     edtCodUF: TEdit;
@@ -885,7 +911,6 @@ type
     Label135: TLabel;
     Label136: TLabel;
     Label137: TLabel;
-    Label154: TLabel;
     lbBuffer: TLabel;
     lbColunas: TLabel;
     lbEspacosLinhas: TLabel;
@@ -1102,7 +1127,6 @@ type
     rgModoImpressaoEvento: TRadioGroup;
     rgTipoDanfe: TRadioGroup;
     SbArqLog: TSpeedButton;
-    SbArqLog2: TSpeedButton;
     sbBALSerial: TSpeedButton;
     sbBALLog: TSpeedButton;
     sbCHQBemafiINI: TSpeedButton;
@@ -1337,6 +1361,7 @@ type
     procedure btnValidarXMLClick(Sender: TObject);
     procedure btnValidarXMLCTeClick(Sender: TObject);
     procedure btnValidarXMLMDFeClick(Sender: TObject);
+    procedure btnVersaoSSLClick(Sender: TObject);
     procedure btSATAssociaClick(Sender: TObject);
     procedure btSATConfigRedeClick(Sender: TObject);
     procedure cbControlePortaChange(Sender: TObject);
@@ -1367,6 +1392,9 @@ type
     procedure cbxSATSalvarCFeCancChange(Sender: TObject);
     procedure cbxSATSalvarCFeChange(Sender: TObject);
     procedure cbxSATSalvarEnvioChange(Sender: TObject);
+    procedure cbxSATSepararPorANOChange(Sender: TObject);
+    procedure cbxSATSepararPorDIAChange(Sender: TObject);
+    procedure cbxSATSepararPorModeloChange(Sender: TObject);
     procedure cbxSedexAvisoRecebChange(Sender: TObject);
     procedure cbxSedexFormatoChange(Sender: TObject);
     procedure cbxSedexMaoPropriaChange(Sender: TObject);
@@ -1410,6 +1438,8 @@ type
     procedure rgRedeTipoInterClick(Sender: TObject);
     procedure rgRedeTipoLanClick(Sender: TObject);
     procedure SbArqLog2Click(Sender: TObject);
+    procedure SbArqLog3Click(Sender: TObject);
+    procedure SbArqLog4Click(Sender: TObject);
     procedure SbArqLogClick(Sender: TObject);
     procedure sbArquivoCertClick(Sender: TObject);
     procedure sbArquivoWebServicesCTeClick(Sender: TObject);
@@ -1580,6 +1610,7 @@ type
     FLastHandle: Integer;
 
     FMonitorConfig: TMonitorConfig;
+    FDoACBr: TACBrObjetoACBr;
     FDoNFe: TACBrObjetoNFe;
     FDoCTe: TACBrObjetoCTe;
     FDoMDFe: TACBrObjetoMDFe;
@@ -1602,6 +1633,8 @@ type
     FDoSAT: TACBrObjetoSAT;
     FDoECF: TACBrObjetoECF;
     FDoBPe: TACBrObjetoBPe;
+    FDoCNPJ: TACBrObjetoConsultaCNPJ;
+    FDoCPF: TACBrObjetoConsultaCPF;
 
     function IsVisible : Boolean; virtual;
 
@@ -1659,7 +1692,7 @@ type
 
     procedure LerIni(AtualizaMonitoramento: Boolean = True);
     procedure SalvarIni;
-    procedure ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);
+    procedure ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview : String);    //MostrarPreview está sendo Tratado como String, pois pode receber três parâmetros: True, False, Vazio ''
     procedure ConfiguraDACTe(GerarPDF: Boolean; MostrarPreview : String);
     procedure ConfiguraDABPe(GerarPDF: Boolean; MostrarPreview : String);
     procedure VerificaDiretorios;
@@ -1673,9 +1706,6 @@ type
     procedure ConfiguraPosPrinter(SerialParams : String = '');
     procedure SetComumConfig(Configuracoes : TConfiguracoes) ;
     procedure AtualizaSSLLibsCombo ;
-
-    procedure CarregarDFe( XMLorFile : String; var PathDfe: String; tipoDFe : TDFeCarregar = tDFeNFe); overload;
-    procedure CarregarDFe( XMLsorFiles : TStrings; var PathDfe: String; tipoDFe : TDFeCarregar = tDFeNFe); overload;
 
     procedure AntesDeImprimir(ShowPreview: Boolean = true);
     procedure DepoisDeImprimir;
@@ -1697,7 +1727,7 @@ implementation
 
 uses
   IniFiles, TypInfo, LCLType, strutils,
-  UtilUnit, pcnAuxiliar, DoACBrUnit,
+  UtilUnit, pcnAuxiliar,
   {$IFDEF MSWINDOWS} sndkey32, {$ENDIF}
   {$IFDEF LINUX} unix, baseunix, termio, {$ENDIF}
   ACBrECFNaoFiscal, ACBrUtil, ACBrConsts, Math, Sobre, DateUtils,
@@ -1784,6 +1814,8 @@ begin
                  PathWithDelim(ExtractFilePath(Application.ExeName)) + CMonitorIni );
   FMonitorConfig.OnGravarConfig := @AtualizarTela;
 
+  FDoACBr := TACBrObjetoACBr.Create(MonitorConfig);
+
   FDoNFe := TACBrObjetoNFe.Create(MonitorConfig, ACBrNFe1);
   FDoNFe.OnAntesDeImprimir  := @AntesDeImprimir;
   FDoNFe.OnDepoisDeImprimir := @DepoisDeImprimir;
@@ -1828,6 +1860,9 @@ begin
   FDoSedex := TACBrObjetoSedex.Create(MonitorConfig, ACBrSedex1);
 
   FDoETQ := TACBrObjetoETQ.Create(MonitorConfig, ACBrETQ1);
+
+  FDoCNPJ := TACBrObjetoConsultaCNPJ.Create(MonitorConfig, ACBrConsultaCNPJ1);
+  FDoCPF := TACBrObjetoConsultaCPF.Create(MonitorConfig, ACBrConsultaCPF1);
 
   FDoGNRe := TACBrObjetoGNRe.Create(MonitorConfig, ACBrGNRe1);
   FDoGNRe.OnAntesDeImprimir := @AntesDeImprimir;
@@ -3710,6 +3745,11 @@ begin
   end;
 end;
 
+procedure TFrmACBrMonitor.btnVersaoSSLClick(Sender: TObject);
+begin
+  MessageDlg( ACBrNFe1.SSL.SSLCryptClass.Versao , mtInformation, [mbOK], 0);
+end;
+
 procedure TFrmACBrMonitor.btSATAssociaClick(Sender: TObject);
 begin
   ACBrSAT1.AssociarAssinatura( edtSwHCNPJ.Text + edtEmitCNPJ.Text, edtSwHAssinatura.Text );
@@ -3854,6 +3894,21 @@ end;
 procedure TFrmACBrMonitor.cbxSATSalvarEnvioChange(Sender: TObject);
 begin
   ACBrSAT1.ConfigArquivos.SalvarEnvio := cbxSATSalvarEnvio.Checked;
+end;
+
+procedure TFrmACBrMonitor.cbxSATSepararPorANOChange(Sender: TObject);
+begin
+  ACBrSAT1.ConfigArquivos.SepararPorAno := cbxSATSepararPorANO.Checked;
+end;
+
+procedure TFrmACBrMonitor.cbxSATSepararPorDIAChange(Sender: TObject);
+begin
+  ACBrSAT1.ConfigArquivos.SepararPorDia := cbxSATSepararPorDIA.Checked;
+end;
+
+procedure TFrmACBrMonitor.cbxSATSepararPorModeloChange(Sender: TObject);
+begin
+  ACBrSAT1.ConfigArquivos.SepararPorModelo := cbxSATSepararPorModelo.Checked;
 end;
 
 procedure TFrmACBrMonitor.cbxSedexAvisoRecebChange(Sender: TObject);
@@ -4078,6 +4133,7 @@ begin
 
   fsSLPrecos.Free;
 
+  FDoACBr.Free;
   FDoSAT.Free;
   FDoECF.Free;
   FDoMDFe.Free;
@@ -4097,6 +4153,8 @@ begin
   FDoDIS.Free;
   FDoSedex.Free;
   FDoETQ.Free;
+  FDoCNPJ.Free;
+  FDoCPF.Free;
   FDoGNRe.Free;
   FDoPosPrinter.Free;
   FDoBPe.Free;
@@ -4728,6 +4786,7 @@ begin
     ACBrBPeDABPeESCPOS1.PosPrinter.Device.Desativar;
 
     cbRetirarAcentos.Checked           := RetirarAcentos;
+    cbRetirarEspacos.Checked           := RetirarEspacos;
     edLogComp.Text                     := Arquivo_Log_Comp;
     cbLogComp.Checked                  := Gravar_Log_Comp;
     sedLogLinhasComp.Value             := Linhas_Log_Comp;
@@ -4898,7 +4957,7 @@ begin
       edtNumCopia.Value                   := Copias;
       edtNumCopiaNFCe.Value               := CopiasNFCe;
       speLargCodProd.Value                := LarguraCodigoProduto;
-      speEspBorda.Value                   := EspessuraBorda;
+      speEspEntreProd.Value               := EspacoEntreProdutos;
       speFonteRazao.Value                 := FonteRazao;
       speFonteEndereco.Value              := FonteEndereco;
       speFonteCampos.Value                := FonteCampos;
@@ -5104,7 +5163,14 @@ begin
     cbxSATSalvarEnvio.Checked          := SalvarEnvio;
     cbxSATSepararPorCNPJ.Checked       := SepararPorCNPJ;
     cbxSATSepararPorMES.Checked        := SepararPorMES;
+    cbxSATSepararPorANO.Checked        := SepararPorANO;
+    cbxSATSepararPorDIA.Checked        := SepararPorDIA;
+    cbxSATSepararporModelo.Checked     := SepararPorModelo;
     cbxValidarNumeroSessaoResposta.Checked:= ValidarNumeroSessaoResposta;
+    edSATPathArqsCanc.Text             := ifthen((PathCFeCanc = '') and (PathCFe <> ''), PathCFe, PathCFeCanc);
+    edSATPathArqsEnvio.Text            := ifthen((PathCFeEnvio = '') and (PathCFe <> ''), PathCFe, PathCFeEnvio);
+    edSATPrefixoCFe.Text               := PrefixoArqCFe;
+    edSATPrefixoCFeCanc.Text           := PrefixoArqCFeCanc;
 
     with SATImpressao.SATExtrato do
     begin
@@ -5908,6 +5974,7 @@ begin
     begin
       IgnorarComandoModoEmissao := cbModoEmissao.Checked;
       RetirarAcentos            := cbRetirarAcentos.Checked;
+      RetirarEspacos            := cbRetirarEspacos.Checked;
       Gravar_Log_Comp           := cbLogComp.Checked;
       Arquivo_Log_Comp          := edLogComp.Text;
       Linhas_Log_Comp           := sedLogLinhasComp.Value;
@@ -6072,7 +6139,7 @@ begin
         Copias                     := edtNumCopia.Value;
         CopiasNFCe                 := edtNumCopiaNFCe.Value;
         LarguraCodigoProduto       := speLargCodProd.Value;
-        EspessuraBorda             := speEspBorda.Value;
+        EspacoEntreProdutos        := speEspEntreProd.Value;
         FonteRazao                 := speFonteRazao.Value;
         FonteEndereco              := speFonteEndereco.Value;
         FonteCampos                := speFonteCampos.Value;
@@ -6156,7 +6223,14 @@ begin
       SalvarEnvio                      := cbxSATSalvarEnvio.Checked;
       SepararPorCNPJ                   := cbxSATSepararPorCNPJ.Checked;
       SepararPorMES                    := cbxSATSepararPorMES.Checked;
+      SepararPorANO                    := cbxSATSepararPorANO.Checked;
+      SepararPorDIA                    := cbxSATSepararPorDIA.Checked;
+      SepararPorModelo                 := cbxSATSepararPorModelo.Checked;
       ValidarNumeroSessaoResposta      := cbxValidarNumeroSessaoResposta.Checked;
+      PathCFeCanc                      := edSATPathArqsCanc.Text;
+      PathCFeEnvio                     := edSATPathArqsEnvio.Text;
+      PrefixoArqCFe                    := edSATPrefixoCFe.Text;
+      PrefixoArqCFeCanc                := edSATPrefixoCFeCanc.Text;
 
       with SATImpressao.SATExtrato do
       begin
@@ -6572,7 +6646,9 @@ begin
        (UpperCase(Copy(Objeto, 1, 7)) = 'ESOCIAL') or
        (UpperCase(Copy(Objeto, 1, 5)) = 'REINF') or
        (UpperCase(Copy(Objeto, 1, 3)) = 'BPE') or
-       (UpperCase(Copy(Objeto, 1, 3)) = 'CTE')then
+       (UpperCase(Copy(Objeto, 1, 3)) = 'CTE') or
+       (UpperCase(Copy(Objeto, 1, 4)) = 'CNPJ') or
+       (UpperCase(Copy(Objeto, 1, 3)) = 'CPF') then
     begin
       Linha := Trim(fsProcessar.Text);
       if Copy(Linha, 1, 3) = UTF8BOM then
@@ -6601,51 +6677,41 @@ begin
         AddLinesLog(Linha);
 
         if fsCmd.Objeto = 'ACBR' then
-          DoACBr(fsCmd)
+          FDoACBr.Executar(fsCmd)
         else if fsCmd.Objeto = 'ECF' then
           FDoECF.Executar(fsCmd)
         else if fsCmd.Objeto = 'GAV' then
-        FDoGAV.Executar(fsCmd)
-//          DoGAV(fsCmd)
+          FDoGAV.Executar(fsCmd)
         else if fsCmd.Objeto = 'CHQ' then
-        FDoCHQ.Executar(fsCmd)
-//          DoCHQ(fsCmd)
+          FDoCHQ.Executar(fsCmd)
         else if fsCmd.Objeto = 'DIS' then
-        FDoDIS.Executar(fsCmd)
-//          DoDIS(fsCmd)
+          FDoDIS.Executar(fsCmd)
         else if fsCmd.Objeto = 'LCB' then
-        FDoLCB.Executar(fsCmd)
-//          DoLCB(fsCmd)
+          FDoLCB.Executar(fsCmd)
         else if fsCmd.Objeto = 'BAL' then
-        FDoBAL.Executar(fsCmd)
-//          DoBAL(fsCmd)
+          FDoBAL.Executar(fsCmd)
         else if fsCmd.Objeto = 'ETQ' then
-        FDoETQ.Executar(fsCmd)
-//          DoETQ(fsCmd)
+          FDoETQ.Executar(fsCmd)
         else if fsCmd.Objeto = 'BOLETO' then
           FDoBoleto.Executar(fsCmd)
-//          DoBoleto(fsCmd)
         else if fsCmd.Objeto = 'CEP' then
-        FDoCEP.Executar(fsCmd)
-//          DoCEP(fsCmd)
+          FDoCEP.Executar(fsCmd)
         else if fsCmd.Objeto = 'IBGE' then
-        FDoIBGE.Executar(fsCmd)
-//          DoIBGE(fsCmd)
+          FDoIBGE.Executar(fsCmd)
         else if fsCmd.Objeto = 'EMAIL' then
-        FDoEmail.Executar(fsCmd)
-//          DoEmail(fsCmd)
+          FDoEmail.Executar(fsCmd)
         else if fsCmd.Objeto = 'SEDEX' then
-        FDoSedex.Executar(fsCmd)
-//          DoSedex(fsCmd)
+          FDoSedex.Executar(fsCmd)
+        else if fsCmd.Objeto = 'CNPJ' then
+          FDoCNPJ.Executar(fsCmd)
+        else if fsCmd.Objeto = 'CPF' then
+          FDoCPF.Executar(fsCmd)
         else if fsCmd.Objeto = 'NCM' then
-        FDoNcm.Executar(fsCmd)
-//          DoNcm(fsCmd)
+          FDoNcm.Executar(fsCmd)
         else if fsCmd.Objeto = 'NFE' then
           FDoNFe.Executar(fsCmd)
-//          DoACBrNFe(fsCmd)
         else if fsCmd.Objeto = 'CTE' then
           FDoCTe.Executar(fsCmd)
-//          DoACBrCTe(fsCmd)
         else if fsCmd.Objeto = 'MDFE' then
           FDoMDFe.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESOCIAL' then
@@ -6653,15 +6719,13 @@ begin
         else if fsCmd.Objeto = 'REINF' then
           FDoReinf.Executar(fsCmd)
         else if fsCmd.Objeto = 'GNRE' then
-        FDoGNRe.Executar(fsCmd)
-//          DoACBrGNRe(fsCmd)
+          FDoGNRe.Executar(fsCmd)
         else if fsCmd.Objeto = 'SAT' then
           FDoSAT.Executar(fsCmd)
         else if fsCmd.Objeto = 'BPE' then
           FDoBPe.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESCPOS' then
           FDoPosPrinter.Executar(fsCmd);
-//          DoPosPrinter(fsCmd);
 
         // Atualiza Memo de Entrada //
         mCmd.Lines.Assign(fsProcessar);
@@ -7186,6 +7250,16 @@ end;
 procedure TFrmACBrMonitor.SbArqLog2Click(Sender: TObject);
 begin
   PathClick(edSATPathArqs);
+end;
+
+procedure TFrmACBrMonitor.SbArqLog3Click(Sender: TObject);
+begin
+  PathClick(edSATPathArqsCanc);
+end;
+
+procedure TFrmACBrMonitor.SbArqLog4Click(Sender: TObject);
+begin
+  PathClick(edSATPathArqsEnvio);
 end;
 
 procedure TFrmACBrMonitor.SbArqLogClick(Sender: TObject);
@@ -8565,13 +8639,18 @@ begin
     ValidarNumeroSessaoResposta := cbxValidarNumeroSessaoResposta.Checked;
 
     ConfigArquivos.PastaCFeVenda := PathWithDelim(edSATPathArqs.Text)+'Vendas';
-    ConfigArquivos.PastaCFeCancelamento := PathWithDelim(edSATPathArqs.Text)+'Cancelamentos';
-    ConfigArquivos.PastaEnvio:= PathWithDelim(edSATPathArqs.Text)+'Enviados';
+    ConfigArquivos.PastaCFeCancelamento := PathWithDelim(edSATPathArqsCanc.Text)+'Cancelamentos';
+    ConfigArquivos.PastaEnvio:= PathWithDelim(edSATPathArqsEnvio.Text)+'Enviados';
     ConfigArquivos.SalvarCFe := cbxSATSalvarCFe.Checked;
     ConfigArquivos.SalvarCFeCanc := cbxSATSalvarCFeCanc.Checked;
     ConfigArquivos.SalvarEnvio := cbxSATSalvarEnvio.Checked;
     ConfigArquivos.SepararPorCNPJ := cbxSATSepararPorCNPJ.Checked;
     ConfigArquivos.SepararPorMes := cbxSATSepararPorMES.Checked;
+    ConfigArquivos.SepararPorAno := cbxSATSepararPorANO.Checked;
+    ConfigArquivos.SepararPorDia := cbxSATSepararPorDIA.Checked;
+    ConfigArquivos.SepararPorModelo := cbxSATSepararPorModelo.Checked;
+    ConfigArquivos.PrefixoArqCFe := edSATPrefixoCFe.Text;
+    ConfigArquivos.PrefixoArqCFeCanc := edSATPrefixoCFeCanc.Text;
 
   end;
 
@@ -8852,6 +8931,8 @@ begin
 end;
 
 procedure TFrmACBrMonitor.ConfiguraDANFe(GerarPDF: Boolean; MostrarPreview: String);
+//MostrarPreview está sendo Tratado como String, pois pode receber três parâmetros: True, False, Vazio
+//(a definição vazio '' permite utilizar a configuração preview definida em tela)
 var
   OK: boolean;
   tDescPagto: TDescricaoPagamento;
@@ -8860,9 +8941,9 @@ begin
   begin
     if ACBrNFe1.NotasFiscais.Items[0].NFe.Ide.modelo = 65 then
     begin
-      if (rgModeloDANFeNFCE.ItemIndex = 0) or GerarPDF then
+      if (rgModeloDANFeNFCE.ItemIndex = CMODELO_NFCE_FORTES) or GerarPDF then
       begin
-        if (rgModoImpressaoEvento.ItemIndex = 0) then
+        if (rgModoImpressaoEvento.ItemIndex = CIMPRESSAO_NFCE_A4) then
           ACBrNFe1.DANFE := ACBrNFeDANFCeFortesA4_1
         else
           ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1;
@@ -8906,7 +8987,6 @@ begin
     ACBrNFe1.DANFE.PathPDF              := PathWithDelim(edtPathPDF.Text);
     ACBrNFe1.DANFE.CasasDecimais.qCom   := spedtCasasDecimaisQtd.Value;
     ACBrNFe1.DANFE.CasasDecimais.vUnCom := spedtDecimaisVUnit.Value;
-    //
     ACBrNFe1.DANFE.ImprimeTotalLiquido := cbxImpValLiq.Checked;
     ACBrNFe1.DANFE.MostraStatus := cbxMostraStatus.Checked;
     ACBrNFe1.DANFE.ExpandeLogoMarca := cbxExpandirLogo.Checked;
@@ -8916,7 +8996,11 @@ begin
     begin
       (ACBrNFe1.DANFE as TACBrNFeDANFEClass).ImprimeDescPorPercentual := cbxImpDescPorc.Checked;
       (ACBrNFe1.DANFE as TACBrNFeDANFEClass).ExibeResumoCanhoto       := cbxExibeResumo.Checked;
-      (ACBrNFe1.DANFE as TACBrNFeDANFEClass).TextoResumoCanhoto       := edtMsgResumoCanhoto.Text;
+      if (cbxExibeResumo.Checked) and (trim(edtMsgResumoCanhoto.Text) <> '') then
+        (ACBrNFe1.DANFE as TACBrNFeDANFEClass).TextoResumoCanhoto     := SubstituirVariaveis(edtMsgResumoCanhoto.Text)
+      else
+        (ACBrNFe1.DANFE as TACBrNFeDANFEClass).TextoResumoCanhoto     := edtMsgResumoCanhoto.Text;
+
       (ACBrNFe1.DANFE as TACBrNFeDANFEClass).FormularioContinuo       := cbxFormCont.Checked;
       (ACBrNFe1.DANFE as TACBrNFeDANFEClass).PosCanhoto               := TPosRecibo( rgLocalCanhoto.ItemIndex );
     end;
@@ -8931,6 +9015,7 @@ begin
       ACBrNFeDANFeRL1.ExibeCampoFatura := cbxExibirCampoFatura.Checked;
       ACBrNFeDANFeRL1.QuebraLinhaEmDetalhamentos := cbxQuebrarLinhasDetalhesItens.Checked;
       ACBrNFeDANFeRL1.Fonte.TamanhoFonteRazaoSocial := speFonteRazao.Value;
+      ACBrNFeDANFeRL1.EspacoEntreProdutos := speEspEntreProd.Value;
       ACBrNFeDANFeRL1.AltLinhaComun := speAlturaCampos.Value;
       ACBrNFeDANFeRL1.PosCanhoto := TPosRecibo( rgLocalCanhoto.ItemIndex );
       ACBrNFeDANFeRL1.PosCanhotoLayout := TPosReciboLayout( rgLayoutCanhoto.ItemIndex );
@@ -8942,6 +9027,7 @@ begin
       ACBrNFeDANFeRL1.ExpandirDadosAdicionaisAuto:= cbxExpandirDadosAdicionaisAuto.Checked;
       ACBrNFeDANFeRL1.ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina.Checked;
       ACBrNFeDANFeRL1.ImprimeDescAcrescItem:= TpcnImprimeDescAcrescItem(rgImprimeDescAcrescItemNFe.ItemIndex);
+
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortesA4_1 then
     begin
@@ -9040,8 +9126,9 @@ begin
   //  ForceForeground(Self.Handle);
 end;
 
-procedure TFrmACBrMonitor.ConfiguraDACTe(GerarPDF: Boolean;
-  MostrarPreview: String);
+procedure TFrmACBrMonitor.ConfiguraDACTe(GerarPDF: Boolean; MostrarPreview: String);
+//MostrarPreview está sendo Tratado como String, pois pode receber três parâmetros: True, False, Vazio
+//(a definição vazio '' permite utilizar a configuração preview definida em tela)
 var
   OK: boolean;
 begin
@@ -9471,11 +9558,11 @@ end;
 procedure TFrmACBrMonitor.SetComumConfig(Configuracoes: TConfiguracoes);
 var
   OK: boolean;
-  PathMunIBGE: String;
+  //PathMunIBGE: String;
   PathSchemaDFe: String;
 begin
   PathSchemaDFe := '';
-  PathMunIBGE := PathWithDelim(ExtractFilePath(Application.ExeName)) + 'MunIBGE' + PathDelim ;
+  //PathMunIBGE := PathWithDelim(ExtractFilePath(Application.ExeName)) + 'MunIBGE' + PathDelim ;
   with Configuracoes do
   begin
     with Geral do
@@ -9544,6 +9631,7 @@ begin
 
       ValidarDigest  := cbValidarDigest.Checked;
       RetirarAcentos := cbRetirarAcentos.Checked;
+      RetirarEspacos := cbRetirarEspacos.Checked;
     end;
 
     with Certificados do
@@ -9624,7 +9712,7 @@ begin
     TConfiguracoesNFe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.SalvarApenasNFeProcessadas := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesNFe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
-    TConfiguracoesNFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+    //TConfiguracoesNFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
     TConfiguracoesNFe(Configuracoes).Geral.CamposFatObrigatorios    := ckCamposFatObrigatorio.Checked;
     TConfiguracoesNFe(Configuracoes).Geral.ForcarGerarTagRejeicao938 := TForcarGeracaoTag(cbTagRejeicao938.ItemIndex);
 
@@ -9647,7 +9735,7 @@ begin
     TConfiguracoesCTe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesCTe(Configuracoes).Arquivos.SalvarApenasCTeProcessados := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesCTe(Configuracoes).Arquivos.NormatizarMunicipios  := cbxNormatizarMunicipios.Checked;
-    TConfiguracoesCTe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+    //TConfiguracoesCTe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
 
     PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'CTe';
     if DirectoryExists(PathSchemaDFe) then
@@ -9667,7 +9755,7 @@ begin
     TConfiguracoesMDFe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesMDFe(Configuracoes).Arquivos.SalvarApenasMDFeProcessados := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesMDFe(Configuracoes).Arquivos.NormatizarMunicipios := cbxNormatizarMunicipios.Checked;
-    TConfiguracoesMDFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+    //TConfiguracoesMDFe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
 
     PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'MDFe';
     if DirectoryExists(PathSchemaDFe) then
@@ -9687,7 +9775,7 @@ begin
     TConfiguracoesBPe(Configuracoes).Arquivos.DownloadDFe.SepararPorNome:= cbxSepararPorNome.Checked;
     TConfiguracoesBPe(Configuracoes).Arquivos.SalvarApenasBPeProcessadas := cbxSalvarNFesProcessadas.Checked;
     TConfiguracoesBPe(Configuracoes).Arquivos.NormatizarMunicipios := cbxNormatizarMunicipios.Checked;
-    TConfiguracoesBPe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
+    //TConfiguracoesBPe(Configuracoes).Arquivos.PathArquivoMunicipios := PathMunIBGE;
 
     PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'BPe';
     if DirectoryExists(PathSchemaDFe) then
@@ -9750,305 +9838,6 @@ begin
   cbXmlSignLib.ItemIndex := Integer( ACBrNFe1.Configuracoes.Geral.SSLXmlSignLib );
 
   cbSSLType.Enabled := (ACBrNFe1.Configuracoes.Geral.SSLHttpLib in [httpWinHttp, httpOpenSSL]);
-end;
-
-procedure TFrmACBrMonitor.CarregarDFe( XMLorFile : String; var PathDfe: String;
-  tipoDFe : TDFeCarregar = tDFeNFe);
-var
-  IsXML : Boolean;
-begin
-  IsXML := StringIsXML(XMLorFile);
-  if IsXML then
-  begin
-    case tipoDFe of
-      tDFeNFe :
-      begin
-        if not ACBrNFe1.NotasFiscais.LoadFromString(XMLorFile) then
-           raise Exception.Create('Erro ao carregar a nfe.');
-      end;
-
-      tDFeEventoNFe :
-      begin
-        if not ACBrNFe1.EventoNFe.LerXMLFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar o evento da nota.');
-      end;
-
-      tDFeInutNFe :
-      begin
-        if not ACBrNFe1.InutNFe.LerXMLFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar a inutilização da nota.');
-      end;
-
-      tDFeCTe :
-      begin
-        if not ACBrCTe1.Conhecimentos.LoadFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar CTe');
-      end;
-
-      tDFeEventoCTe:
-      begin
-        if not ACBrCTe1.EventoCTe.LerXMLFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar o evento do CTe');
-      end;
-
-      tDFeInutCTe:
-      begin
-        if not ACBrCTe1.InutCTe.LerXMLFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar inutilização do CTe');
-      end;
-
-      tDFeMDFe:
-      begin
-        if not ACBrMDFe1.Manifestos.LoadFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar MDFe');
-      end;
-
-      tDFeEventoMDFe:
-      begin
-        if not ACBrMDFe1.EventoMDFe.LerXMLFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar o evento do MDFe');
-      end;
-
-      tDFeBPe:
-      begin
-        if not ACBrBPe1.Bilhetes.LoadFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar BPe');
-      end;
-
-      tDFeEventoBPe:
-      begin
-        if not ACBrBPe1.EventoBPe.LerXMLFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar o evento do BPe');
-      end;
-
-      tDFeGNRe:
-      begin
-        if not ACBrGNRE1.GuiasRetorno.LoadFromString(XMLorFile) then
-          raise Exception.Create('Erro ao carregar a GNRe');
-      end;
-    end;
-  end
-  else
-  begin
-    case tipoDFe of
-      tDFeNFe :
-      begin
-        if FilesExists(XMLorFile) then
-        begin
-           if not ACBrNFe1.NotasFiscais.LoadFromFile(XMLorFile) then
-             raise Exception.Create('Erro ao abrir o arquivo '+ XMLorFile)
-           else
-             PathDfe := XMLorFile;
-        end
-        else
-          raise Exception.Create('Arquivo '+ XMLorFile +' não encontrado.');
-      end;
-
-      tDFeEventoNFe :
-      begin
-        if FilesExists(XMLorFile) then
-        begin
-          if not ACBrNFe1.EventoNFe.LerXML(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo '+ XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end
-        else
-          raise Exception.Create('Arquivo '+ XMLorFile +' não encontrado.');
-      end;
-
-      tDFeInutNFe :
-      begin
-        if FilesExists(XMLorFile) then
-        begin
-          if not ACBrNFe1.InutNFe.LerXML(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo '+ XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end
-        else
-          raise Exception.Create('Arquivo '+ XMLorFile +' não encontrado.');
-      end;
-
-      tDFeCTe:
-      begin
-        if FilesExists(XMLorFile) then
-        begin
-          if not ACBrCTe1.Conhecimentos.LoadFromFile(XMLorFile) then
-            raise Exception.Create('Erro ao abrir do arquivo do CTe '+ XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end
-        else
-          raise Exception.Create('Arquivo do CTe '+ XMLorFile +' não encontrado.');
-      end;
-
-      tDFeEventoCTe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrCTe1.EventoCTe.LerXML(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo de Evento do CTe '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end
-        else
-          raise Exception.Create('Arquivo '+ XMLorFile +' não encontrado.');
-      end;
-
-      tDFeInutCTe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrCTe1.InutCTe.LerXML(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo de Inutilização do CTe '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end;
-      end;
-
-      tDFeMDFe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrMDFe1.Manifestos.LoadFromFile(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo do Manifesto: '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end;
-      end;
-
-      tDFeEventoMDFe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrMDFe1.EventoMDFe.LerXML(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o evento do MDFe '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end;
-      end;
-
-      tDFeBPe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrBPe1.Bilhetes.LoadFromFile(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo do Bilhete: '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end;
-      end;
-
-      tDFeEventoBPe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrBPe1.EventoBPe.LerXML(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o evento do BPe '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end;
-      end;
-
-      tDFeGNRe:
-      begin
-        if FileExists(XMLorFile) then
-        begin
-          if not ACBrGNRE1.GuiasRetorno.LoadFromFile(XMLorFile) then
-            raise Exception.Create('Erro ao abrir o arquivo da Guia: '+XMLorFile)
-          else
-            PathDfe := XMLorFile;
-        end;
-      end;
-    end;
-  end;
-end;
-
-procedure TFrmACBrMonitor.CarregarDFe(XMLsorFiles : TStrings;
-  var PathDfe: String; tipoDFe : TDFeCarregar = tDFeNFe);
-var
-  i : Integer;
-begin
-  for i := 0 to XMLsorFiles.Count -1 do
-  begin
-    try
-      CarregarDFe(XMLsorFiles[i], PathDfe, tipoDFe);
-      case tipoDFe of
-        tDFeNFe :
-        begin
-          if ACBrNFe1.NotasFiscais.Count > 0 then
-             Exit;
-        end;
-
-        tDFeEventoNFe:
-        begin
-          if ACBrNFe1.EventoNFe.Evento.Count > 0 then
-             Exit;
-        end;
-
-        tDFeInutNFe:
-        begin
-          if Assigned(ACBrNFe1.InutNFe) then
-             Exit;
-        end;
-
-        tDFeCTe:
-        begin
-          if ACBrCTe1.Conhecimentos.Count > 0 then
-             Exit;
-        end;
-
-        tDFeEventoCTe:
-        begin
-          if ACBrCTe1.EventoCTe.Evento.Count > 0 then
-             Exit;
-        end;
-
-        tDFeInutCTe:
-        begin
-          if Assigned(ACBrCTe1.InutCTe) then
-             Exit;
-        end;
-
-        tDFeMDFe:
-        begin
-          if ACBrMDFe1.Manifestos.Count > 0 then
-             Exit;
-        end;
-
-        tDFeEventoMDFe:
-        begin
-          if ACBrMDFe1.EventoMDFe.Evento.Count > 0 then
-             Exit;
-        end;
-
-        tDFeBPe:
-        begin
-          if ACBrBPe1.Bilhetes.Count > 0 then
-             Exit;
-        end;
-
-        tDFeEventoBPe:
-        begin
-          if ACBrBPe1.EventoBPe.Evento.Count > 0 then
-             Exit;
-        end;
-
-        tDFeGNRe:
-        begin
-          if ACBrGNRE1.GuiasRetorno.Count > 0 then
-             Exit;
-        end;
-      end;
-    except
-      on E: Exception do
-      begin
-        if i = XMLsorFiles.Count -1 then
-          raise Exception.Create(E.Message);
-      end;
-    end;
-  end;
 end;
 
 procedure TFrmACBrMonitor.AntesDeImprimir(ShowPreview: Boolean);
@@ -10497,8 +10286,23 @@ begin
 end;
 
 procedure TFrmACBrMonitor.DefineTextoTrayTitulo;
+  function LocalMonitoramento:String;
+  begin
+    if rbTCP.Checked then
+      Result := 'Monitorando Porta: ' + edPortaTCP.Text
+    else
+    begin
+      if cbMonitorarPasta.Checked then
+        Result := 'Monitorando Dir.: ' + ExtractFilePath(ArqEntTXT)
+      else
+        Result := 'Monitorando Arq.: ' + ExtractFileName(ArqEntTXT);
+    end;
+
+  end;
+
 begin
-  TrayIcon1.Hint := 'ACBrMonitor PLUS' + sVersaoACBr;
+  TrayIcon1.Hint := 'ACBrMonitorPLUS ' + sVersaoACBr +
+                    sLineBreak + LocalMonitoramento + ' ';
   TrayIcon1.BalloonTitle := TrayIcon1.Hint;
   TrayIcon1.BalloonHint := 'Projeto ACBr' + sLineBreak + 'http://acbr.sf.net';
 

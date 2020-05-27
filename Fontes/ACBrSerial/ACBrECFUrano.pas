@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Aurimenes Apolonio B Silva             }
-{                                       Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo:  Aurimenes Apolonio B Silva                     }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -25,54 +24,22 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 21/09/2005: Daniel Simões de Almeida / Aurimenes Apolonio B Silva
-|* Primeira Versao: Criaçao e Distribuiçao da Primeira Versao
-|* 08/12/2005:  Daniel Simoes de Almeida
-|*  - Diminuido tempo de alguns Sleeps de 100 para 10 a fim de agilizar a
-|*    comunicaçao com o ECF (experimental)
-|* 29/02/2008:  Valmor Flores
-|*  - Implementado CarregaAliquotas
-|* 11/03/2008:  Gelson Oliveira
-|*  - Adequacao da Rotina FechaCupom para imprimir a mensagem promocional.
-|*  (Quatro linhas ao final do cupom contendo 48 caracteres cada linha.)
-|* 13/07/2009:  Carlos Antonio da Silva
-|*  - Alteração do método GetEstado para obter estado de Redução Z
-|*  - Implementados novos métodos:
-|*    - RetornaInfoECF
-|*    - GetCNPJ
-|*    - GetIE
-|*    - GetGrandeTotal
-|*    - GetVendaBruta
-|*    - GetNumCRZ
-|*    - GetNumGNF
-|*    - GetNumCOOInicial
-|*    - GetTotalCancelamentos
-|*    - GetTotalDescontos
-|*    - GetTotalAcrescimos
-|*    - GetTotalIsencao
-|*    - GetTotalNaoTributado
-|*    - GetTotalSubstituicaoTributaria
-|*    - LerTotaisAliquota
-|*    - LerTotaisFormaPagamento
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrECFUrano ;
 
 interface
-uses Classes,
-     ACBrECFClass, ACBrDevice;
+uses
+  Classes,
+  {$IFDEF NEXTGEN}
+   ACBrBase,
+  {$ENDIF} 
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial;
 
 const R = 'XXXXX' ;
 

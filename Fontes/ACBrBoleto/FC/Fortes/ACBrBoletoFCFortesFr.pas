@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2014   http://www.produsys.com.br/          }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:  Juliana Rodrigues Prado, Daniel Simoes Almeida }
+{ Colaboradores nesse arquivo: Juliana Tamizou                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -1001,8 +1000,6 @@ type
 var
   ACBrBoletoFCFortesForm: TACBrBoletoFCFortesFr;
 
-procedure Register;
-
 implementation
 
 Uses ACBrUtil, strutils ;
@@ -1013,11 +1010,6 @@ Uses ACBrUtil, strutils ;
   {$R *.dfm}
   {$R ACBrBoletoFCFortes.dcr}
 {$ENDIF}
-
-procedure Register;
-begin
-  RegisterComponents('ACBrBoleto',[TACBrBoletoFCFortes]);
-end;
 
 { TACBrBoletoFCFortes }
 
@@ -1058,6 +1050,14 @@ begin
         RLLayout.PrintDialog  := MostrarSetup;
         RLLayout.ShowProgress := MostrarProgresso;
         RLLayout.Title        := TituloRelatorio;
+
+        if TituloPreview <> '' then
+        begin
+          RLLayout.PreviewOptions.Defaults := pdIgnoreDefaults;
+          RLLayout.PreviewOptions.Caption  := TituloPreview;
+        end
+        else
+          RLLayout.PreviewOptions.Defaults := pdUseDefaults;
 
         if PrinterName <> '' then
            RLPrinter.PrinterName := PrinterName;
@@ -1183,13 +1183,20 @@ procedure TACBrBoletoFCFortesFr.BoletoCarneDataRecord(Sender: TObject;
 begin
    fIndice := RecNo - 1 ;
 
-   Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+   if (fBoletoFC.IndiceImprimirIndividual >= 0) then
+     Eof := (RecNo > 1)
+   else
+     Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+
    RecordAction := raUseIt ;
 end;
 
 function TACBrBoletoFCFortesFr.GetACBrTitulo: TACBrTitulo;
 begin
-   Result := fBoletoFC.ACBrBoleto.ListadeBoletos[ fIndice ] ;
+  if (fBoletoFC.IndiceImprimirIndividual >= 0) then
+    Result := fBoletoFC.ACBrBoleto.ListadeBoletos[ fBoletoFC.IndiceImprimirIndividual ]
+  else
+    Result := fBoletoFC.ACBrBoleto.ListadeBoletos[ fIndice ];
 end;
 
 procedure TACBrBoletoFCFortesFr.LayoutBoletoBeforePrint(Sender: TObject;
@@ -1211,7 +1218,11 @@ procedure TACBrBoletoFCFortesFr.LayoutBoletoDataRecord(Sender: TObject;
 begin
    fIndice := RecNo - 1 ;
 
-   Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+   if (fBoletoFC.IndiceImprimirIndividual >= 0) then
+     Eof := (RecNo > 1)
+   else
+     Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+
    RecordAction := raUseIt ;
 end;
 
@@ -1234,7 +1245,11 @@ procedure TACBrBoletoFCFortesFr.LayoutFaturaDetalDataRecord(Sender: TObject;
 begin
   fIndice := RecNo - 1 ;
 
-  Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+  if (fBoletoFC.IndiceImprimirIndividual >= 0) then
+     Eof := (RecNo > 1)
+  else
+    Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+
   RecordAction := raUseIt ;
 end;
 
@@ -1257,14 +1272,18 @@ procedure TACBrBoletoFCFortesFr.LayoutTermicaDataRecord(Sender: TObject;
 begin
    fIndice := RecNo - 1 ;
 
-   Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+   if (fBoletoFC.IndiceImprimirIndividual >= 0) then
+     Eof := (RecNo > 1)
+   else
+     Eof := (RecNo > fBoletoFC.ACBrBoleto.ListadeBoletos.Count) ;
+
    RecordAction := raUseIt ;
 end;
 
 procedure TACBrBoletoFCFortesFr.RLBand1BeforePrint(Sender: TObject;
    var PrintIt: boolean);
 Var
-   NossoNum,CodCedente,TipoDoc, Carteira : String;
+   NossoNum,CodCedente,TipoDoc, Carteira: String;
 begin
    with fBoletoFC.ACBrBoleto do
    begin

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -29,19 +29,6 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 04/10/2005: Daniel Simões de Almeida
-|*  - Primeira Versao ACBrBALToledo
-|* 11/04/2007 Daniel Simões de Almeida
-|*  - Corrigido para trabalhar com diversos protocolos da Toledo
-|*
-|* 11/10/2016 - Elias César Vieira
-|*  - Refatoração de ACBrBALToledo2180
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrBALToledo2180;
@@ -49,8 +36,12 @@ unit ACBrBALToledo2180;
 interface
 
 uses
-  ACBrBALClass, Classes;
-
+  Classes,
+  ACBrBALClass
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
+  
 type
 
   { TACBrBALToledo2180 }

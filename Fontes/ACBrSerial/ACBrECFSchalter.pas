@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -24,68 +24,35 @@
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
-{ http://www.opensource.org/licenses/gpl-license.php                           }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 06/09/2004:  Daniel Simoes de Almeida
-|*   Primeira Versao: Criaçao e Distribuiçao da Primeira Versao
-|* 22/03/2005:  Daniel Simoes de Almeida  / Valmor Florez
-|*   Corrigido Bug na AbreCupom, que omitia o Endereço do Emissor,
-|*    -  Bug Reportado por: Valmor Florez - Evoluthiva
-|*   Inserido novo comando que permite imprimir o CNPJ / CPF do Cliente, na
-|*      AbreCupom
-|* 22/06/2005:  Valmor Florez
-|*   Corrigido Bug na VendeItem, que interpretava errado Produtos vendidos sem
-|*   sem nenhuma casa decimal como 3 casas decimais.
-|* 08/12/2005:  Daniel Simoes de Almeida
-|*  - Diminuido tempo de alguns Sleeps de 100 para 10 a fim de agilizar a
-|*    comunicaçao com o ECF (experimental)
-|* 07/05/2006:  Alan Lucas
-|*  - Corrigido Bug em Método ZeraVinculados, que não cancelava o Vinculo 0
-|* 25/03/2007:  Alan Lucas
-|*   - Método: GetNumUltimoItem
-|* 01/04/2007:  Daniel Simoes de Almeida
-|*  - Implementados métodos de Cupom Não Fiscal
-|* 20/04/2007:  Daniel Simoes de Almeida
-|*  - Corrigido BUG na leitura do NumCupom após a abertura do Cupom Fiscal
-|*  - Corrigido BUG na detecção de Estado estPagamento, quando ocorre
-|*    SubtotalizaCupom sem desconto ou acrescimo
-|*  - Corrigido BUG no VerificaFimImpressao (não estava lendo toda a resposta)
-|* 18/08/2007:  Daniel Simoes de Almeida
-|*  - Adicionada as propriedades: NumLoja, IE, CNPJ, NumCRO, DataMovimento,
-|*    VendaBruta, TotalDescontos, TotalAcrescimos, TotalCancelamentos,
-|*    NumCOOInicial, TotalIsenca, TotalNaoTributado, TotalSubstituicaoTributaria,
-|*  - Adicionado os métodos: LerTotaisAliquota, LerTotaisFormaPagamento,
-|*    LerTotaisComprovanteNaoFiscal,
-|*  - Corrigido Bug em: LeituraMemoriaFiscalSerial (TimeOut e VerificaFimLeitura)
-******************************************************************************}
 
 {$I ACBr.inc}
 
 unit ACBrECFSchalter ;
 
 interface
-uses Classes,
-     {$IFNDEF NOGUI}
-       {$IF DEFINED(VisualCLX)}
-          QControls, QDialogs,
-       {$ELSEIF DEFINED(FMX)}
-          FMX.Controls, FMX.Dialogs, System.UITypes,
-       {$ELSE}
-          Controls, Dialogs,
-          {$IFDEF DELPHIXE2_UP}
-            System.UITypes,
-          {$ENDIF}  
-       {$IFEND}
-     {$ENDIF}
-     ACBrECFClass, ACBrDevice;
+uses
+  Classes,
+  {$IFNDEF NOGUI}
+   {$IF DEFINED(VisualCLX)}
+      QControls, QDialogs,
+   {$ELSEIF DEFINED(FMX)}
+      FMX.Controls, FMX.Dialogs, System.UITypes,
+   {$ELSE}
+      Controls, Dialogs,
+      {$IFDEF DELPHIXE2_UP}
+        System.UITypes,
+      {$ENDIF}
+   {$IFEND}
+  {$ENDIF}
+  {$IFDEF NEXTGEN}
+   ACBrBase,
+  {$ENDIF}
+  ACBrECFClass, ACBrDevice, ACBrDeviceSerial;
 
 const
    ByteCabecalho = #146 ;        { #146 -> Ligando os bits 1,4,7 }

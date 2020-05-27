@@ -1,19 +1,16 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrCTe                                                  }
-{  Biblioteca multiplataforma de componentes Delphi para emissão de Conhecimen-}
-{ to de Transporte eletrônico - CTe - http://www.cte.fazenda.gov.br            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Wiliam Zacarias da Silva Rosa          }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Desenvolvimento                                                              }
-{         de Cte: Wiliam Zacarias da Silva Rosa                                }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Wemerson Souto                                  }
+{                              Wiliam Zacarias da Silva Rosa                   }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -31,9 +28,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -43,7 +39,7 @@ unit ACBrCTe;
 interface
 
 uses
-  Classes, Sysutils,
+  Classes, Sysutils, synautil,
   ACBrDFe, ACBrDFeConfiguracoes, ACBrBase,
   ACBrCTeConfiguracoes, ACBrCTeWebServices, ACBrCTeConhecimentos,
   ACBrCTeDACTEClass, ACBrDFeException,
@@ -123,7 +119,7 @@ type
     function Enviar(const ALote: String; Imprimir: Boolean = True;
       ASincrono: Boolean = False): Boolean;  overload;
 
-    function Consultar( const AChave: String = ''): Boolean;
+    function Consultar( const AChave: String = ''; AExtrairEventos: Boolean = False): Boolean;
     function Cancelamento(const AJustificativa: String; ALote: Integer = 0): Boolean;
     function EnviarEvento(idLote: Integer): Boolean;
     function Inutilizar(const ACNPJ, AJustificativa: String;
@@ -141,6 +137,8 @@ type
     procedure EnviarEmailEvento(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
       sReplyTo: TStrings = nil);
+
+    function GravarStream(AStream: TStream): Boolean;
 
     procedure ImprimirEvento;
     procedure ImprimirEventoPDF;
@@ -342,6 +340,16 @@ begin
   end;
 
   Result := urlUF + sEntrada;
+end;
+
+function TACBrCTe.GravarStream(AStream: TStream): Boolean;
+begin
+  if EstaVazio(FEventoCTe.Gerador.ArquivoFormatoXML) then
+    FEventoCTe.GerarXML;
+
+  AStream.Size := 0;
+  WriteStrToStream(AStream, AnsiString(FEventoCTe.Gerador.ArquivoFormatoXML));
+  Result := True;
 end;
 
 function TACBrCTe.GetNameSpaceURI: String;
@@ -750,7 +758,7 @@ begin
   end;
 end;
 
-function TACBrCTe.Consultar(const AChave: String): Boolean;
+function TACBrCTe.Consultar(const AChave: String; AExtrairEventos: Boolean): Boolean;
 var
   i: Integer;
 begin
@@ -760,14 +768,16 @@ begin
   if NaoEstaVazio(AChave) then
   begin
     Conhecimentos.Clear;
-    WebServices.Consulta.CTeChave := AChave;
+    WebServices.Consulta.CTeChave       := AChave;
+    WebServices.Consulta.ExtrairEventos := AExtrairEventos;
     WebServices.Consulta.Executar;
   end
   else
   begin
     for i := 0 to Conhecimentos.Count - 1 do
     begin
-      WebServices.Consulta.CTeChave := Conhecimentos.Items[i].NumID;
+      WebServices.Consulta.CTeChave       := Conhecimentos.Items[i].NumID;
+      WebServices.Consulta.ExtrairEventos := AExtrairEventos;
       WebServices.Consulta.Executar;
     end;
   end;
@@ -949,22 +959,27 @@ procedure TACBrCTe.EnviarEmailEvento(const sPara, sAssunto: String;
 var
   NomeArq: String;
   AnexosEmail: TStrings;
+  StreamCTe : TMemoryStream;
 begin
   AnexosEmail := TStringList.Create;
+  StreamCTe := TMemoryStream.Create;
   try
     AnexosEmail.Clear;
 
     if Anexos <> nil then
       AnexosEmail.Text := Anexos.Text;
 
-    ImprimirEventoPDF;
-    NomeArq := OnlyNumber(EventoCTe.Evento[0].InfEvento.Id);
-    NomeArq := PathWithDelim(DACTE.PathPDF) + NomeArq + '-procEventoCTe.pdf';
-    AnexosEmail.Add(NomeArq);
+    GravarStream(StreamCTe);
 
-    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, nil, '', sReplyTo);
+    ImprimirEventoPDF;
+    AnexosEmail.Add(DACTE.ArquivoPDF);
+
+    NomeArq := OnlyNumber(EventoCTe.Evento[0].InfEvento.Id);
+    EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamCTe,
+  	  NomeArq + '-procEventoCTe.xml', sReplyTo);
   finally
     AnexosEmail.Free;
+    StreamCTe.Free;
   end;
 end;
 

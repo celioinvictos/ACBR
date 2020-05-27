@@ -1,20 +1,14 @@
 {******************************************************************************}
-{ Projeto: TACBrConvenio115                                                    }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Função: Gerar arquivo magnético para Notas Fiscais emitidas referentes aos   }
-{         modelos abaixo relacionados, conforme estabelecido no Convênio       }
-{         ICMS 115/03:                                                         }
-{         - Nota Fiscal/Conta de Energia Elétrica, modelo 6;                   }
-{         - Nota Fiscal de Serviço de Comunicação, modelo 21;                  }
-{         - Nota Fiscal de Serviço de Telecomunicações, modelo 22;             }
-{         - Qualquer outro documento fiscal relativo à prestação de serviço de }
-{           comunicação ou ao fornecimento de energia elétrica.                }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{         As informações do referido convênio pode ser encontrada em:          }
-{         https://www.confaz.fazenda.gov.br/legislacao/convenios/2003/cv115_03 }
+{ Colaboradores nesse arquivo: Jéter Rabelo Ferreira                           }
 {                                                                              }
-{         Programa validador e demais informações podem ser acessadas em:      }
-{         https://portal.fazenda.sp.gov.br/servicos/nf-comunicacao-energia/Paginas/Sobre.aspx                 }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -31,23 +25,11 @@
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************}
-{ Direitos Autorais Reservados © 2013 - Jéter Rabelo Ferreira                  }
-{ Contato: jeter.rabelo@jerasoft.com.br                                        }
-{******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 19/02/2013: Jéter Rabelo Ferreira
-|*  - Disponibilização do componente para o projeto ACBr
-|*
-|* 01/02/2017: Jéter Rabelo Ferreira
-|*  - Modificação conforme mudança da legislação
-|*  https://www.confaz.fazenda.gov.br/legislacao/convenios/2003/cv115_03an0-1.pdf
-*******************************************************************************}
 {$I ACBr.inc}
 
 unit ACBrConvenio115;
@@ -429,8 +411,6 @@ type
 
 function SortMestre(Item1: Pointer; Item2: Pointer): Integer;
 
-procedure Register;
-
 const
   TTipoAssinanteConv115_Tab11_1DS: array [0 .. 6] of string =
     ('Sem Classificação',
@@ -477,11 +457,6 @@ implementation
 
 uses
   ACBrUtil, ACBrEAD, Variants, ACBrValidador;
-
-procedure Register;
-begin
-  RegisterComponents('ACBrTXT', [TACBrConvenio115]);
-end;
 
 function MD5String(const texto: string): string;
 var
@@ -634,6 +609,22 @@ begin
   end
   else
   begin
+
+    if (Length(OnlyNumber(Destinatario.CnpjCpf)) <= 11) then
+    begin
+      if (OnlyNumber(Destinatario.CnpjCpf) = '00000000000') then
+        IndicadorPessoa := ipmFisicaSemCpf
+      else
+        IndicadorPessoa := ipmCpf;
+    end
+    else
+      begin
+        if (OnlyNumber(Destinatario.CnpjCpf) = '00000000000000') then
+          IndicadorPessoa := ipmJuridicaSemCnpj
+        else
+          IndicadorPessoa := ipmCNPJ;
+      end;
+
     SRec := SRec +
           {23} IntToStr(Ord(IndicadorPessoa) + 1) +
           {24} _GetTab11_8_2 +
@@ -1177,7 +1168,16 @@ end;
 procedure TACBrConvenio115Destinatario.SetCnpjCpf(const Value: string);
 var
   OValidador: TACBrValidador;
+  lNumero: String;
 begin
+  lNumero := OnlyNumber(Value);
+
+  if (lNumero = '00000000000000') or (lNumero = '00000000000') then
+  begin
+    FCnpjCpf := Value;
+    Exit;
+  end;
+  
   OValidador := TACBrValidador.Create(nil);
   try
     with OValidador do

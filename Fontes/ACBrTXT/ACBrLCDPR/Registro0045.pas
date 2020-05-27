@@ -1,16 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrLCDPR                                                }
-{  Biblioteca multiplataforma de componentes Delphi para geração do LCDPR -    }
-{ Lirvro Caixa Digital do Produtor Rural                                       }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Desenvolvimento e doação ao Projeto ACBr: Willian Hübner                     }
+{ Colaboradores nesse arquivo: Willian Hübner e Elton Barbosa (EMBarbosa)      }
 {                                                                              }
-{ Ajustes e correções para doação: Elton Barbosa (EMBarbosa)                   }
-{                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -28,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 unit Registro0045;
 
@@ -45,16 +42,16 @@ type
     FTIPO_CONTRAPARTE: TTipoContraparte;
     FCOD_IMOVEL: Integer;
     FPERC_CONTRAPARTE: Double;
-    FCPF_CONTRAPARTE: String;
+    FID_CONTRAPARTE: String;
     procedure SetCOD_IMOVEL(const Value: Integer);
-    procedure SetCPF_CONTRAPARTE(const Value: String);
+    procedure SetID_CONTRAPARTE(const Value: String);
     procedure SetNOME_CONTRAPARTE(const Value: String);
     procedure SetPERC_CONTRAPARTE(const Value: Double);
     procedure SetTIPO_CONTRAPARTE(const Value: TTipoContraparte);
   public
     property COD_IMOVEL : Integer read FCOD_IMOVEL write SetCOD_IMOVEL;
     property TIPO_CONTRAPARTE : TTipoContraparte read FTIPO_CONTRAPARTE write SetTIPO_CONTRAPARTE;
-    property CPF_CONTRAPARTE : String read FCPF_CONTRAPARTE write SetCPF_CONTRAPARTE;
+    property ID_CONTRAPARTE : String read FID_CONTRAPARTE write SetID_CONTRAPARTE;
     property NOME_CONTRAPARTE : String read FNOME_CONTRAPARTE write SetNOME_CONTRAPARTE;
     property PERC_CONTRAPARTE : Double read FPERC_CONTRAPARTE write SetPERC_CONTRAPARTE;
   End;
@@ -80,15 +77,16 @@ begin
   FCOD_IMOVEL := Value;
 end;
 
-procedure TRegistro0045.SetCPF_CONTRAPARTE(const Value: String);
+procedure TRegistro0045.SetID_CONTRAPARTE(const Value: String);
 var
   TempDoc: string;
 begin
   TempDoc := OnlyNumber(Value);
-  if Length(TempDoc) > 11 then
-    raise Exception.Create('CPF_CONTRAPARTE - Tamanho máximo permitido é 11 caracteres!');
+  if (Length(TempDoc) < 11) and
+    (Length(TempDoc) > 14) then
+    raise Exception.Create('ID_CONTRAPARTE - Tamanho difere permitido entre 11 e 14 caracteres!');
 
-  FCPF_CONTRAPARTE := TempDoc;
+  FID_CONTRAPARTE := TempDoc;
 end;
 
 procedure TRegistro0045.SetNOME_CONTRAPARTE(const Value: String);

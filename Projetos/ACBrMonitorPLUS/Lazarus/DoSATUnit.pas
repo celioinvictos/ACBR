@@ -1,11 +1,9 @@
 {*******************************************************************************}
-{ Projeto: ACBrMonitor                                                         }
+{ Projeto: ACBrMonitor                                                          }
 {  Executavel multiplataforma que faz uso do conjunto de componentes ACBr para  }
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2010 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo:                                  }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
 {                                                                               }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
@@ -65,7 +63,6 @@ public
 
   procedure CarregarDadosVenda(aStr: String; aNomePDF : String = '');
   procedure CarregarDadosCancelamento(aStr: String);
-  function ParamAsXML(AParam: String): String;
 
   procedure GerarIniCFe( AStr: String);
 
@@ -280,7 +277,7 @@ implementation
 
 uses
   ACBrUtil,DoACBrUnit,IniFiles, pcnAuxiliar, typinfo,
-  ACBrSATExtratoClass;
+  ACBrSATExtratoClass, UtilUnit;
 
 procedure TACBrObjetoSAT.CarregarDadosVenda(aStr: String; aNomePDF: String);
 begin
@@ -309,26 +306,6 @@ begin
         CalcCFeNomeArq(ConfigArquivos.PastaCFeVenda,CFe.infCFe.ID,'','.pdf'));
   end;
 
-end;
-
-function TACBrObjetoSAT.ParamAsXML(AParam: String): String;
-var
-  SL : TStringList;
-begin
-  Result := '';
-
-  if (pos(#10,AParam) = 0) and FileExists(AParam) then
-  begin
-    SL := TStringList.Create;
-    try
-      SL.LoadFromFile( AParam );
-      Result := SL.Text;
-    finally
-      SL.Free;
-    end;
-  end
-  else
-    raise Exception.Create('Diretório ou Arquivo: '+AParam+' não encontrado! ');
 end;
 
 procedure TACBrObjetoSAT.CarregarDadosCancelamento(aStr: String);
@@ -484,7 +461,7 @@ begin
     slAnexos := TStringList.Create;
     try
       CarregarDadosVenda(cXMLVenda);
-      DoPrepararImpressaoSAT(' ',False);
+      DoPrepararImpressaoSAT('',False);
 
       with MonitorConfig.SAT.SATEmail do
       begin
@@ -618,7 +595,7 @@ begin
 
   with TACBrObjetoSAT(fpObjetoDono) do
   begin
-    DoPrepararImpressaoSAT(cXMLVenda, True);
+    DoPrepararImpressaoSAT('', True);
     CarregarDadosVenda(cXMLVenda, cNomeArq);
     ACBrSAT.ImprimirExtrato;
 
@@ -759,7 +736,7 @@ end;
 }
 procedure TMetodoEnviarCFe.Executar;
 var
-  cArqXML, ArqCFe, Resultado: String;
+  cArqXML, Resultado: String;
 begin
   cArqXML := fpCmd.Params(0);
 
@@ -767,11 +744,18 @@ begin
   begin
     if NaoEstaVazio(cArqXML) then
     begin
-      ArqCFe := ParamAsXML(cArqXML);
-      if StringIsXML( ArqCFe ) then
-        Resultado := ACBrSAT.EnviarDadosVenda( ArqCFe )
+      ACBrSAT.CFe.Clear;
+      if (pos(#10,cArqXML) = 0) and FileExists(cArqXML) then
+      begin
+        if not(ACBrSAT.CFe.LoadFromFile(cArqXML)) then
+          raise Exception.Create('Falha ao carregar o arquivo '+cArqXML+'. XML inválido! ');
+        Resultado := ACBrSAT.EnviarDadosVenda;
+      end
       else
-        raise Exception.Create('XML em: '+cArqXML+' é inválido! ');
+      if StringIsXML( cArqXML ) then
+        Resultado := ACBrSAT.EnviarDadosVenda( cArqXML )
+      else
+        raise Exception.Create('Diretório ou XML: '+cArqXML+' inválido! ');
 
     end
     else if (ACBrSAT.CFe.ide.signAC <> '') then
@@ -1165,6 +1149,7 @@ var
   AMetodoClass: TACBrMetodoClass;
   CmdNum: Integer;
   Ametodo: TACBrMetodo;
+  AACBrUnit: TACBrObjetoACBr;
 begin
   inherited Executar(ACmd);
 
@@ -1206,7 +1191,16 @@ begin
     31 : AMetodoClass := TMetodoEnviarEmailCFe;
 
     else
-      DoACbr(ACmd);
+      begin
+        AACBrUnit := TACBrObjetoACBr.Create(Nil); //Instancia DoACBrUnit para validar métodos padrão para todos os objetos
+        try
+          AACBrUnit.Executar(ACmd);
+        finally
+          AACBrUnit.Free;
+        end;
+
+      end;
+
   end;
 
   if Assigned(AMetodoClass) then

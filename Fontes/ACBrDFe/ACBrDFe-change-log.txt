@@ -1,9 +1,11 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,16 +24,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-Agradecimentos:
-
-* Administradores:
-- Daniel Simões de Almeida
-- André Ferreira de Moraes
-
 {******************************************************************************
 |* ACBrDFeComum
 |*
@@ -43,6 +38,130 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+
+14/05/2020
+-- ACBrDFeXsMsXmlCapicom --
+[-] Correção para erro 'Conjunto de chaves não está definido' quando usando
+    certificados A3.
+    (por: BigWings)
+
+13/05/2020
+-- ACBrDFeHttpOpenSSL, ACBrDFeSSL --
+[-] Correção para exibir Erros não relacionados a transmissão
+    (por: Bigwings e DSA)
+
+07/05/2020
+-- ACBrDFeUtil --
+[-] Correçao no método: "EncontrarURI", quando "docElement", não for informado
+    https://www.projetoacbr.com.br/forum/topic/57466-erro-cancelamento-nfs-betha/
+
+28/04/2020
+-- ACBrDFeSSL --
+[*] Melhoria na rotina de Download do Certificado por URLPFX
+    - Adicionada verificação do código de retorno HTTP
+    - Adicionada verificação da integridade do Certificado baixado
+    - Adicionada verificação do CNPJ, do novo Certificado
+    O Certificado antigo, somente será substituido, se as condições acima foram
+    válidas e o Faltarem menos de 10 dias para o vencimento do Certificado em
+    ArquivoPFX
+    (por: DSA)
+
+13/04/2020
+-- ACBrXmlDocument --
+[-] Correção na passagem de parametros do método: AddChild.
+   Por: Italo  Jurisato Junior
+
+01/04/2020
+-- ACBrDFeUtil --
+[*] Métodos "ObterCodigoMunicipio" e "ObterNomeMunicipio", modificados para usar
+    o componente ACBrIBGE, e não a antiga e obsoleta listas de TXT de cidades
+    (por: DSA)
+
+31/03/2020
+-- ACBrDFeCapicom --
+[*] Ajustes para compatibilizar com último refactoring
+    (por: DSA)
+
+30/03/2020
+-- ACBrDFe, ACBrDFeConfiguracoes --
+[+] Adicionada a propriedade "Configuracoes.Certificados.URLPFX: String"
+    Permite informar uma URL, para Download de um Certificado PFX (A1)
+    - O URL será chamada com o método GET, e deve ser um Link para download
+      direto ao arquivo (URLs com redirecionamentos podem não funcionar)
+    - Após o arquivo ser baixado, se a propriedade Configuracoes.Certificados.ArquivoPFX,
+      também estiver especificada, uma cópia Local será salva, e usada na próxima
+      carga do certificado
+      - Um novo download será efetuado, quando a Data de Vencimento do Certificado
+        atingir 15 dias para expirar.
+        - A tentativa de baixar um novo certificado ocorrerá apenas uma vez por dia
+
+-- ACBrDFeSSL, ACBrDFeOpenSSL, ACBrDFeWinCrypt --
+[*] TDFeSSLCryptClass, e TDFeSSL, refatoração nas rotinas internas, de
+    Carga do Certificado
+[+] TDFeSSLHttpClass, refatoração e adicionada as Propriedades:
+    DataReq: TMemoryStream -> Stream com Dados a serem enviados na requisição
+    HeaderReq: THttpHeader -> StringList com Header a serem incluídos na requisição
+    DataResp: TMemoryStream -> Stream com Dados da resposta
+    HeaderResp: THttpHeader -> StringList com Header da resposta
+    URL: String -> URL que será ussada na requisição
+    Method: String -> Método que será ussada na requisição (GET, POST, etc)
+    SoapAction: String -> Informação do SoapAction (apenas se for necessário), para inclusão no Header de requisição
+    MimeType: String -> Informação do MimeType, para inclusão no Header de requisição
+    LastErrorDesc: String -> Retorna a Descrição do último Erro
+
+[+] TDFeSSLHttpClass, adicionado as Metodos:
+    procedure HTTPMethod(const AMethod, AURL: String); -> Informa o Método e a URL e Executa a requisição
+    procedure Execute; -> Executa a requisição
+    procedure Clear; -> Limpa da memória, todos os dados enviados e recebidos
+
+[+] TDFeSSL, Adicionada a propriedade: "URLPFX: String"
+[+] TDFeSSL, Adicionado os métodos:
+    procedure HTTPMethod(const AMethod, AURL: String);
+    function HTTPGet(const AURL: String): AnsiString;
+    function HTTPPost(const ADataToSend: AnsiString; const AURL: String): AnsiString;
+
+[-] TDFeSSL.SetSSLCryptLib, correção para evitar A.V., quando atribuindo um
+    Modelo desativado por diretiva de compilação
+
+09/02/2020
+-- ACBrDFe --
+[*] Diversos ajustes para compatibilizar com a compilação em Delphi FMX,
+    Android e Linux
+
+-- ACBrDFeOpenSSL --
+[*] Ajuestes para mensagens de erros fiquem em Resourcestring.
+[*] Método TDFeOpenSSL.Versao modificado para sinalizar erro na carga das Libs,
+    quando houver
+
+-- ACBrLibXml2 --
+[+] Nova Unit de Bind da biblioteca libxml2, substituindo o uso da Unit "libxml2.pas"
+    Permitindo a Carga dinâmica da Biblioteca, e compatibilização com Android FMX
+
+-- ACBrDFeXsLibXml2 --
+[*] Modificado para usar a nova Unit de Bind "ACBrLibXml2.pas"
+
+-- ACBrDFeXsXmlSec --
+[*] Unit depreciada. Ajustada para continuar usando a antiga "libxml2.pas"
+    (por: DSA)
+
+23/01/2020
+-- ACBrDFeSSL --
+[+] Classe TDFeSSLCryptClass, Adicionado o método: "function Versao: String;"
+    - Retorna o número da versão da bibiolteca de Criptografia
+
+-- ACBrDFeWinCrypt, ACBrDFeOpenSSL --
+[+] Adicionado suporte ao método TDFeSSLCryptClass.Versao
+
+-- ACBrDFeOpenSSL --
+[-] Possível correção no método "GetCertExt", quando usando OpenSSL 1.1.1
+   https://www.projetoacbr.com.br/forum/topic/55859-erro-access-violation-ao-atualizar-openssl-11/
+   (por: DSA)
+
+15/01/2020
+-- ACBrDFeReport --
+[+] TACBrDFeReport, adicionada a propriedade "FormularioContinuo: Boolea default False",
+    que foi migrada de TACBrNFeDANFEClass
+    (por: DSA)
 
 30/12/2019
 -- ACBrDFeUtil -- 

@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
-{          Rennes Moreira Pimentel - InforSystem - Validaçao do CEP            }              
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -27,37 +26,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 17/08/2004: Daniel Simoes de Almeida
-|*  - Primeira Versao ACBrValidador
-|* 17/11/2004: Rennes Moreira Pimentel - InforSystem
-|*  - Adcionado Validaçao do CEP
-|* 07/02/2005: Daniel Simoes de Almeida
-|*  - Adcionado verificaçao de CARTOES de Crédito, extraida do site:
-|*    www.tcsystems.com.br
-|*  - Adcionada a propriedade: ExibeDigitoCorreto : Boolean ( default False )
-|* 24/05/2005: Daniel Simoes de Almeida
-|*  - Adicionada a propriedade Publica DigitoCalculado readonly, que assim como
-|*    MsgErro, terá um valor definido apenas após chamar o método Validar 
-|* 21/12/2005: Daniel Simoes de Almeida
-|*  - Inscrição Estadual de AL aparentemente também aceita o numero 6 no 3
-|*    dígito, apesar do site do sintegra informar o contrário... Corrigido
-|* 30/08/2007: Carlos do Nascimento Filho
-|*  - Inscrição Estadual de TO corrigida para suportar numeros com 10 digitos
-|* 29/10/2008: Jhony Alceu Pereira
-|*  - Inscrição Estadual de AL para permitir o digito 1 no tipo do contribuinte
-|* 21/12/2008: Daniel Simoes de Almeida
-|*  - CNPJ 00000000000000 era aceito como válido
-|* 08/02/2009: Daniel Simoes de Almeida
-|*  - Correção na validação de CEPs de MG e ES
-******************************************************************************}
 {$I ACBr.inc}
 
 unit ACBrValidador;
@@ -210,7 +182,8 @@ Function FormatarCEP( const AValue: String )     : String ; overload;
 Function FormatarCEP( const AValue: Integer )    : String ; overload;
 function FormatarSUFRAMA( const AValue: String ) : String ;
 
-Function FormatarMascaraNumerica(ANumValue: string; const Mascara: String): String;
+Function FormatarMascaraNumerica(const ANumValue: string; const Mascara: String): String;
+Function FormatarMascaraDinamica(const AValue: String; const Mascara: String): String;
 
 Function OnlyCNPJorCPF( const Documento : String ) : String ;
 
@@ -556,16 +529,17 @@ begin
   Result := AValue;
 end;
 
-function FormatarMascaraNumerica(ANumValue: string; const Mascara: String): String;
+function FormatarMascaraNumerica(const ANumValue: string; const Mascara: String): String;
 var
   LenMas, LenDoc: Integer;
   I, J: Integer;
   C: Char;
+  wNumValue: String;
 begin
   Result := '';
-  ANumValue := Trim( ANumValue );
+  wNumValue := Trim( ANumValue );
   LenMas := Length( Mascara ) ;
-  LenDoc := Length( ANumValue );
+  LenDoc := Length( wNumValue );
 
   J := LenMas ;
   For I := LenMas downto 1 do
@@ -577,12 +551,39 @@ begin
       if J <= ( LenMas - LenDoc ) then
         C := '0'
       else
-        C := ANumValue[( J - ( LenMas - LenDoc ) )] ;
+        C := wNumValue[( J - ( LenMas - LenDoc ) )] ;
 
       Dec( J ) ;
     end;
 
     Result := C + Result;
+  end;
+end;
+
+Function FormatarMascaraDinamica(const AValue: String; const Mascara: String): String;
+var
+  LenMas, LenDoc: Integer;
+  i, j: Integer;
+  c: Char;
+  wValue: String;
+begin
+  Result := '';
+  wValue := Trim( AValue );
+  LenMas := Length( Mascara ) ;
+  LenDoc := Length( wValue );
+
+  i := 1; j := 1 ;
+  while (i <= LenMas) and (j <= LenDoc) do
+  begin
+    c := Mascara[i];
+    if c = '*' then
+    begin
+      c := wValue[j];
+      Inc(j);
+    end;
+
+    Result := Result + c;
+    Inc(i);
   end;
 end;
 

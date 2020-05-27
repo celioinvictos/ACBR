@@ -1,17 +1,17 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,19 +29,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 29/02/2016: Guilherme Costa
-|*  - Alterado os atributos que não estavam de acordo com o leiaute/xsd
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesS1202;
@@ -49,7 +40,13 @@ unit pcesS1202;
 interface
 
 uses
-  SysUtils, Classes, Dialogs, Controls, Contnrs,
+  SysUtils, Classes, Dialogs, Controls,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  ACBrBase,
   pcnConversao, pcnGerador, ACBrUtil,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -93,7 +90,7 @@ type
     property evtRmnRPPS: TEvtRemunRPPS read FEvtRmnRPPS write FEvtRmnRPPS;
   end;
 
-  TDMDevCollection = class(TObjectList)
+  TDMDevCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TDMDevCollectionItem;
     procedure SetItem(Index: integer; Value: TDMDevCollectionItem);
@@ -156,7 +153,7 @@ type
     property dmDev: TDMDevCollection read FDMDev write FDMDev;
   end;
 
-  TRemunPer1202Collection = class(TObjectList)
+  TRemunPer1202Collection = class(TACBrObjectList)
   private
     FNomeGrupoXML: string;
 
@@ -176,7 +173,7 @@ type
     property codCateg: Integer read FCodCateg write FCodCateg;
   end;
 
-  TIdeEstabCollection = class(TObjectList)
+  TIdeEstabCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TIdeEstabCollectionItem;
     procedure SetItem(Index: integer; Value: TIdeEstabCollectionItem);
@@ -203,7 +200,7 @@ type
     property remunPerAnt: TRemunPer1202Collection read FRemunPerAnt write FRemunPerAnt;
   end;
 
-  TIdePeriodoCollection = class(TObjectList)
+  TIdePeriodoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TIdePeriodoCollectionItem;
     procedure SetItem(Index: integer; Value: TIdePeriodoCollectionItem);
@@ -225,7 +222,7 @@ type
     property ideEstab: TIdeEstabCollection read FIdeEstab write FIdeEstab;
   end;
 
-  TIdeADCCollection = class(TObjectList)
+  TIdeADCCollection = class(TACBrObjectList)
   private
     function GetItem(Index: integer): TIdeADCCollectionItem;
     procedure SetItem(Index: integer; Value: TIdeADCCollectionItem);
@@ -301,12 +298,12 @@ end;
 
 function TRemunPer1202Collection.GetItem(Index: integer): TRemunPer1202CollectionItem;
 begin
-  Result := TRemunPer1202CollectionItem(inherited GetItem(Index));
+  Result := TRemunPer1202CollectionItem(inherited Items[Index]);
 end;
 
 procedure TRemunPer1202Collection.SetItem(Index: integer; Value: TRemunPer1202CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TRemunPer1202Collection.New: TRemunPer1202CollectionItem;
@@ -340,13 +337,13 @@ end;
 
 function TIdeEstabCollection.GetItem(Index: integer): TIdeEstabCollectionItem;
 begin
-  Result := TIdeEstabCollectionItem(inherited GetItem(Index));
+  Result := TIdeEstabCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdeEstabCollection.SetItem(Index: integer;
   Value: TIdeEstabCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeEstabCollection.New: TIdeEstabCollectionItem;
@@ -377,13 +374,13 @@ end;
 
 function TIdePeriodoCollection.GetItem(Index: integer): TIdePeriodoCollectionItem;
 begin
-  Result := TIdePeriodoCollectionItem(inherited GetItem(Index));
+  Result := TIdePeriodoCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdePeriodoCollection.SetItem(Index: integer;
   Value: TIdePeriodoCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdePeriodoCollection.New: TIdePeriodoCollectionItem;
@@ -407,12 +404,12 @@ end;
 
 function TIdeADCCollection.GetItem(Index: integer): TIdeADCCollectionItem;
 begin
-  Result := TIdeADCCollectionItem(inherited GetItem(Index));
+  Result := TIdeADCCollectionItem(inherited Items[Index]);
 end;
 
 procedure TIdeADCCollection.SetItem(Index: integer; Value: TIdeADCCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TIdeADCCollection.New: TIdeADCCollectionItem;
@@ -486,12 +483,12 @@ end;
 
 function TDMDevCollection.GetItem(Index: integer): TDMDevCollectionItem;
 begin
-  Result := TDMDevCollectionItem(inherited GetItem(Index));
+  Result := TDMDevCollectionItem(inherited Items[Index]);
 end;
 
 procedure TDMDevCollection.SetItem(Index: integer; Value: TDMDevCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TDMDevCollection.New: TDMDevCollectionItem;
@@ -1066,12 +1063,12 @@ end;
 
 function TS1202Collection.GetItem(Index: integer): TS1202CollectionItem;
 begin
-  Result := TS1202CollectionItem(inherited GetItem(Index));
+  Result := TS1202CollectionItem(inherited Items[Index]);
 end;
 
 procedure TS1202Collection.SetItem(Index: integer; Value: TS1202CollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TS1202Collection.New: TS1202CollectionItem;

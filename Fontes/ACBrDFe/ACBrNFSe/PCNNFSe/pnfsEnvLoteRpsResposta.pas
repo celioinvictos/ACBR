@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -34,8 +37,13 @@ unit pnfsEnvLoteRpsResposta;
 interface
 
 uses
-  SysUtils, Classes, Variants, StrUtils, Contnrs,
-  ACBrUtil,
+  SysUtils, Classes, Variants, StrUtils,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase, ACBrUtil,
   pcnAuxiliar, pcnConversao, pcnLeitor, pnfsConversao, pnfsNFSe;
 
 type
@@ -54,7 +62,7 @@ type
     property ChaveNFeRPS: TChaveNFeRPS read FChaveNFeRPS write FChaveNFeRPS;
   end;
 
- TChaveNFeRPSCollection = class(TObjectList)
+ TChaveNFeRPSCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TChaveNFeRPSCollectionItem;
     procedure SetItem(Index: Integer; Value: TChaveNFeRPSCollectionItem);
@@ -89,7 +97,7 @@ type
     property ListaChaveNFeRPS: TChaveNFeRPSCollection  read FListaChaveNFeRPS     write SetListaChaveNFeRPS;
   end;
 
- TMsgRetornoEnvCollection = class(TObjectList)
+ TMsgRetornoEnvCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TMsgRetornoEnvCollectionItem;
     procedure SetItem(Index: Integer; Value: TMsgRetornoEnvCollectionItem);
@@ -144,6 +152,8 @@ type
     function LerXML_proIPM: Boolean;
     function LerXML_proGiap: Boolean;
     function LerXML_proAssessorPublica: Boolean;
+    function LerXML_proSiat: Boolean; 
+
 
     property Leitor: TLeitor         read FLeitor   write FLeitor;
     property InfRec: TInfRec         read FInfRec   write FInfRec;
@@ -190,13 +200,13 @@ end;
 function TMsgRetornoEnvCollection.GetItem(
   Index: Integer): TMsgRetornoEnvCollectionItem;
 begin
-  Result := TMsgRetornoEnvCollectionItem(inherited GetItem(Index));
+  Result := TMsgRetornoEnvCollectionItem(inherited Items[Index]);
 end;
 
 procedure TMsgRetornoEnvCollection.SetItem(Index: Integer;
   Value: TMsgRetornoEnvCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TMsgRetornoEnvCollection.New: TMsgRetornoEnvCollectionItem;
@@ -232,13 +242,13 @@ end;
 function TChaveNFeRPSCollection.GetItem(
   Index: Integer): TChaveNFeRPSCollectionItem;
 begin
-  Result := TChaveNFeRPSCollectionItem(inherited GetItem(Index));
+  Result := TChaveNFeRPSCollectionItem(inherited Items[Index]);
 end;
 
 procedure TChaveNFeRPSCollection.SetItem(Index: Integer;
   Value: TChaveNFeRPSCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TChaveNFeRPSCollection.New: TChaveNFeRPSCollectionItem;
@@ -305,6 +315,7 @@ begin
     proIPM:        Result := LerXML_proIPM;
     proGiap:       Result := LerXML_proGiap;
     proAssessorPublico : Result := LerXML_proAssessorPublica;
+    proSiat:       Result := LerXML_proSiat;
   else
     Result := LerXml_ABRASF;
   end;
@@ -408,24 +419,6 @@ begin
 
       inc(i);
     end;
-    {
-    i := 0;
-    while (Leitor.rExtrai(1, 'Fault', '', i + 1) <> '') do
-    begin
-      InfRec.FMsgRetorno.New;
-      InfRec.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'faultcode');
-      if InfRec.FMsgRetorno[i].FCodigo = '' then
-        InfRec.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Code');
-
-      InfRec.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'faultstring');
-      if InfRec.FMsgRetorno[i].FMensagem = '' then
-        InfRec.FMsgRetorno[i].FMensagem   := Leitor.rCampo(tcStr, 'Reason');
-
-      InfRec.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Detail');
-
-      inc(i);
-    end;
-    }
   except
     Result := False;
   end;
@@ -1165,6 +1158,18 @@ begin
           end;
         end;
       end;
+    end 
+    else 
+    begin
+      with FInfRec.MsgRetorno.New do
+      begin
+        FCodigo   := '00002'; // não tem codigo...
+
+        if Pos('Nao foi encontrado na tb.dcarq.unico a cidade(codmun) do Usuario:', leitor.Arquivo) > 0 then
+          FMensagem := 'Usuário e/ou senha informados são inválidos'
+        else
+          FMensagem := leitor.Arquivo;
+      end;
     end;
   except
     Result := False;
@@ -1245,6 +1250,103 @@ begin
   finally
     FreeAndNil(sMessage);
     FreeAndNil(sValue);
+  end;
+end;
+
+function TretEnvLote.LerXML_proSiat: Boolean; 
+var
+  i, posI, count: Integer;
+  strAux: AnsiString;
+  leitorAux: TLeitor;
+begin
+  try
+    Result := True;
+
+    if leitor.rExtrai(1, 'RetornoEnvioLoteRPS') <> '' then
+    begin
+      if (leitor.rExtrai(2, 'Cabecalho') <> '') then
+      begin
+        FInfRec.FSucesso := Leitor.rCampo(tcStr, 'Sucesso');
+        if (FInfRec.FSucesso = 'true') then
+        begin
+          FInfRec.FNumeroLote      := Leitor.rCampo(tcStr, 'NumeroLote');
+          FInfRec.FProtocolo       := Leitor.rCampo(tcStr, 'NumeroLote');
+          FinfRec.FDataRecebimento := Leitor.rCampo(tcDatHor, 'DataEnvioLote')
+        end;
+      end;
+
+      i := 0;
+      if (leitor.rExtrai(1, 'Alertas') <> '') then
+      begin
+        strAux := leitor.rExtrai(1, 'Alertas');
+        if (strAux <> '') then
+        begin
+          posI := pos('<Alerta>', strAux);
+
+          while ( posI > 0 ) do
+          begin
+            count := pos('</Alerta>', strAux) + 7;
+
+            FInfRec.FMsgRetorno.New;
+
+            LeitorAux := TLeitor.Create;
+            leitorAux.Arquivo := copy(strAux, PosI, count);
+            leitorAux.Grupo   := leitorAux.Arquivo;
+
+            FInfRec.FMsgRetorno[i].FCodigo   := leitorAux.rCampo(tcStr, 'Codigo');
+            FInfRec.FMsgRetorno[i].FMensagem := leitorAux.rCampo(tcStr, 'Descricao');
+            FInfRec.FMsgRetorno[i].FCorrecao := '';
+
+            inc(i);
+            LeitorAux.free;
+
+            Delete(strAux, PosI, count);
+            posI := pos('<Alerta>', strAux);
+          end;
+        end;
+      end;
+
+      if (leitor.rExtrai(1, 'Erros') <> '') then
+      begin
+        strAux := leitor.rExtrai(1, 'Erros');
+        if (strAux <> '') then
+        begin
+            //i := 0 ;
+          posI := pos('<Erro>', strAux);
+
+          while (posI > 0) do
+          begin
+            count := pos('</Erro>', strAux) + 6;
+
+            FInfRec.FMsgRetorno.New;
+
+            LeitorAux := TLeitor.Create;
+            leitorAux.Arquivo := copy(strAux, PosI, count);
+            leitorAux.Grupo   := leitorAux.Arquivo;
+
+            FInfRec.FMsgRetorno[i].FCodigo   := leitorAux.rCampo(tcStr, 'Codigo');
+            FInfRec.FMsgRetorno[i].FMensagem := leitorAux.rCampo(tcStr, 'Descricao');
+            FInfRec.FMsgRetorno[i].FCorrecao := '';
+
+            inc(i);
+            LeitorAux.free;
+
+            Delete(strAux, PosI, count);
+            posI := pos('<Erro>', strAux);
+          end;
+        end;
+      end;
+    end
+    else
+    begin
+      i := 0;
+      FInfRec.FMsgRetorno.New;
+      FInfRec.FMsgRetorno[i].FCodigo   := '';
+      FInfRec.FMsgRetorno[i].FMensagem := Leitor.Grupo;
+      FInfRec.FMsgRetorno[i].FCorrecao := '';
+    end;
+  except
+    Result := False;
   end;
 end;
 

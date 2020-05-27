@@ -1,37 +1,34 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{ Biblioteca multiplataforma de componentes Delphi                             }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Você pode obter a última versão desse arquivo na pagina do Projeto ACBr      }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{ Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
 { Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
 { qualquer versão posterior.                                                   }
 {                                                                              }
-{ Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
 { NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
 { ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
 { do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{ Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
 { com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
 { no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{ Praça Anita Costa, 34 - Tatuí - SP - 18270-410                               }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-{******************************************************************************
-  |* Historico
-  |*
-  |* 18/10/2013: Jeanny Paiva Lopes
-  |*  - Inicio do desenvolvimento DAMDFE FastReport
- ******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -394,6 +391,7 @@ begin
     Add('Sistema', ftString, 150);
     Add('Usuario', ftString, 60);
     Add('QrCodeCarregado', ftGraphic, 1000);
+    Add('LogoCarregado', ftBlob);
     CreateDataSet;
   end;
 
@@ -741,7 +739,6 @@ begin
       Page.LeftMargin := MargemEsquerda;
     if (MargemDireita > 0) then
       Page.RightMargin := MargemDireita;
-    frxReport.PreviewPages.ModifyPage(I, Page);
   end;
 end;
 
@@ -783,17 +780,17 @@ begin
 end;
 
 procedure TACBrMDFeDAMDFEFR.ImprimirDAMDFePDF(AMDFe: TMDFe);
+const
+  TITULO_PDF = 'Manifesto de Documento Eletrônico';
 var
   I:          Integer;
-  TITULO_PDF: string;
   OldShowDialog : Boolean;
+  NomeArq:string;
 begin
   if PrepareReport(AMDFe) then
   begin
     for I := 0 to TACBrMDFe(ACBrMDFe).Manifestos.Count - 1 do
     begin
-      TITULO_PDF := OnlyNumber(TACBrMDFe(ACBrMDFe).Manifestos.Items[i].MDFe.infMDFe.ID);
-
       frxPDFExport.Author     := Sistema;
       frxPDFExport.Creator    := Sistema;
       frxPDFExport.Producer   := Sistema;
@@ -803,7 +800,10 @@ begin
       OldShowDialog := frxPDFExport.ShowDialog;
       try
         frxPDFExport.ShowDialog := False;
-        frxPDFExport.FileName   := IncludeTrailingPathDelimiter(PathPDF) + TITULO_PDF + '-mdfe.pdf';
+	      NomeArq := Trim(DAMDFEClassOwner.NomeDocumento);
+	      if EstaVazio(NomeArq) then
+	        NomeArq := OnlyNumber(TACBrMDFe(ACBrMDFe).Manifestos.Items[i].MDFe.infMDFe.ID) + '-mdfe.pdf';
+	      frxPDFExport.FileName := PathWithDelim(DAMDFEClassOwner.PathPDF) + NomeArq;
 
         if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
           ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
@@ -846,8 +846,10 @@ begin
     OldShowDialog := frxPDFExport.ShowDialog;
     try
       frxPDFExport.ShowDialog := False;
-      NomeArq                 := StringReplace(TACBrMDFe(ACBrMDFe).EventoMDFe.Evento.Items[0].InfEvento.Id, 'ID', '', [rfIgnoreCase]);
-      frxPDFExport.FileName   := IncludeTrailingPathDelimiter(PathPDF) + NomeArq + '-procEventoMDFe.pdf';
+      NomeArq := Trim(DAMDFEClassOwner.NomeDocumento);
+      if EstaVazio(NomeArq) then
+        NomeArq := OnlyNumber(TACBrMDFe(ACBrMDFe).EventoMDFe.Evento.Items[0].InfEvento.Id) + '-procEventoMDFe.pdf';
+      frxPDFExport.FileName := PathWithDelim(DAMDFEClassOwner.PathPDF) + NomeArq;
 
       if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
         ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
@@ -1119,15 +1121,35 @@ begin
 end;
 
 procedure TACBrMDFeDAMDFEFR.CarregaParametros;
+var
+  LogoStream: TStringStream;
 begin
   with cdsParametros do
   begin
     Append;
 
-    FieldByName('Versao').AsString := FloatToString(FMDFe.infMDFe.Versao,'.','#0.00');
-
     // Carregamento da imagem
-    FieldByName('Imagem').AsString := Ifthen(DAMDFEClassOwner.Logo <> '', DAMDFEClassOwner.Logo,'');
+    if DAMDFEClassOwner.Logo <> '' then
+    begin
+      FieldByName('Imagem').AsString := DAMDFEClassOwner.Logo;
+
+      if not FileExists(DAMDFEClassOwner.Logo) then
+        LogoStream := TStringStream.Create(DAMDFEClassOwner.Logo)
+      else
+      begin
+        LogoStream := TStringStream.Create('');
+        LogoStream.LoadFromFile(DAMDFEClassOwner.Logo);
+      end;
+
+      try
+        LogoStream.Position := 0;
+        TBlobField(cdsParametros.FieldByName('LogoCarregado')).LoadFromStream(LogoStream);
+      finally
+        LogoStream.Free;
+      end;
+    end;
+
+    FieldByName('Versao').AsString  := FloatToString(FMDFe.infMDFe.Versao,'.','#0.00');
     FieldByName('Sistema').AsString := Ifthen(DAMDFEClassOwner.Sistema <> '',DAMDFEClassOwner.Sistema,'Projeto ACBr - http://acbr.sf.net');
     FieldByName('Usuario').AsString := Ifthen(DAMDFEClassOwner.Usuario <> '', DAMDFEClassOwner.Usuario,'');
     Post;

@@ -1,35 +1,34 @@
-{*******************************************************************************}
-{ Projeto: ACBrLib                                                              }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
-{ mentos de Automação Comercial utilizados no Brasil                            }
-{                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
-{                                                                               }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
-{                                                                               }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
-{ qualquer versão posterior.                                                    }
-{                                                                               }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
-{                                                                               }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
-{ Você também pode obter uma copia da licença em:                               }
-{ http://www.opensource.org/licenses/gpl-license.php                            }
-{                                                                               }
-{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
-{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
-{                                                                               }
-{*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -120,12 +119,16 @@ function NFE_GerarChave(ACodigoUF, ACodigoNumerico, AModelo, ASerie, ANumero, AT
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_GetPath(ATipo: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function NFE_GetPathEvento(ACodEvento: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 {%endregion}
 
 {%region Servicos}
 function NFE_StatusServico(const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function NFE_Consultar(const eChaveOuNFe: PChar;
+function NFE_Consultar(const eChaveOuNFe: PChar; AExtrairEventos: Boolean;
   const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function NFE_Inutilizar(const ACNPJ, AJustificativa: PChar;
@@ -186,7 +189,7 @@ uses
   ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
   ACBrLibConsultaCadastro, ACBrLibNFeConfig, ACBrLibNFeRespostas,
   ACBrDFeUtil, ACBrNFe, ACBrMail, ACBrUtil, ACBrLibCertUtils,
-  pcnConversao, pcnAuxiliar, blcksock;
+  pcnConversao, pcnConversaoNFe, pcnAuxiliar, blcksock;
 
 { TACBrLibNFe }
 
@@ -871,6 +874,93 @@ begin
   end;
 end;
 
+function NFE_GetPath(ATipo: longint; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta: string;
+  ok: Boolean;
+begin
+  try
+    VerificarLibInicializada;
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('NFE_GetPath(' + IntToStr(ATipo) + ' )', logCompleto, True)
+    else
+      pLib.GravarLog('NFE_GetPath', logNormal);
+
+    with TACBrLibNFe(pLib) do
+    begin
+      NFeDM.Travar;
+
+      try
+        with NFeDM do
+        begin
+          Resposta := '';
+
+          case ATipo of
+            0: Resposta := ACBrNFe1.Configuracoes.Arquivos.GetPathNFe();
+            1: Resposta := ACBrNFe1.Configuracoes.Arquivos.GetPathInu();
+            2: Resposta := ACBrNFe1.Configuracoes.Arquivos.GetPathEvento(teCCe);
+            3: Resposta := ACBrNFe1.Configuracoes.Arquivos.GetPathEvento(teCancelamento);
+          end;
+
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
+        end;
+      finally
+        NFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function NFE_GetPathEvento(ACodEvento: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+Var
+  Resposta, CodEvento: string;
+  ok: Boolean;
+begin
+  try
+    VerificarLibInicializada;
+
+    CodEvento := String(ACodEvento);
+
+    if pLib.Config.Log.Nivel > logNormal then
+      pLib.GravarLog('NFE_GetPathEvento(' + CodEvento +' )', logCompleto, True)
+    else
+      pLib.GravarLog('NFE_GetPathEvento', logNormal);
+
+    with TACBrLibNFe(pLib) do
+    begin
+      NFeDM.Travar;
+
+      try
+        with NFeDM do
+        begin
+          Resposta := '';
+          Resposta := ACBrNFe1.Configuracoes.Arquivos.GetPathEvento(StrToTpEventoNFe(ok, CodEvento));
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+          Result := SetRetorno(ErrOK, Resposta);
+        end;
+      finally
+        NFeDM.Destravar;
+      end;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
 {%endregion}
 
 {%region Servicos}
@@ -887,6 +977,7 @@ begin
 
     with TACBrLibNFe(pLib) do
     begin
+      NFeDM.ValidarIntegradorNFCe;
       NFeDM.Travar;
       Resp := TStatusServicoResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
@@ -913,7 +1004,7 @@ begin
   end;
 end;
 
-function NFE_Consultar(const eChaveOuNFe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function NFE_Consultar(const eChaveOuNFe: PChar; AExtrairEventos: Boolean; const sResposta: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
   EhArquivo: boolean;
@@ -927,7 +1018,7 @@ begin
     ChaveOuNFe := string(eChaveOuNFe);
 
     if pLib.Config.Log.Nivel > logNormal then
-      pLib.GravarLog('NFE_Consultar(' + ChaveOuNFe + ' )', logCompleto, True)
+      pLib.GravarLog('NFE_Consultar(' + ChaveOuNFe + ', ' + BoolToStr(AExtrairEventos, True) + ' )', logCompleto, True)
     else
       pLib.GravarLog('NFE_Consultar', logNormal);
 
@@ -951,10 +1042,9 @@ begin
           raise EACBrLibException.Create(ErrChaveNFe, Format(SErrChaveInvalida, [ChaveOuNFe]));
       end
       else
-        NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave := StringReplace(
-          NFeDM.ACBrNFe1.NotasFiscais.Items[NFeDM.ACBrNFe1.NotasFiscais.Count - 1].NFe.infNFe.ID,
-          'NFe','',[rfIgnoreCase]);
+        NFeDM.ACBrNFe1.WebServices.Consulta.NFeChave := NFeDM.ACBrNFe1.NotasFiscais.Items[NFeDM.ACBrNFe1.NotasFiscais.Count - 1].NumID;
 
+      NFeDM.ACBrNFe1.WebServices.Consulta.ExtrairEventos := AExtrairEventos;
       Resp := TConsultaNFeResposta.Create(pLib.Config.TipoResposta, pLib.Config.CodResposta);
       try
         with NFeDM.ACBrNFe1 do
@@ -1673,10 +1763,10 @@ function NFE_EnviarEmail(const ePara, eChaveNFe: PChar; const AEnviaPDF: Boolean
   const eAssunto, eCC, eAnexos, eMensagem: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 var
-  APara, AChaveNFe, AAssunto, ACC, AAnexos, AMensagem: string;
+  Resposta, APara, AChaveNFe, AAssunto, ACC, AAnexos, AMensagem: string;
   slMensagemEmail, slCC, slAnexos: TStringList;
   EhArquivo: boolean;
-  Resposta: TLibNFeResposta;
+  Resp: TLibNFeResposta;
 begin
   try
     VerificarLibInicializada;
@@ -1716,9 +1806,9 @@ begin
             slMensagemEmail := TStringList.Create;
             slCC := TStringList.Create;
             slAnexos := TStringList.Create;
-            Resposta := TLibNFeResposta.Create('EnviaEmail', pLib.Config.TipoResposta, pLib.Config.CodResposta);
+            Resp := TLibNFeResposta.Create('EnviaEmail', pLib.Config.TipoResposta, pLib.Config.CodResposta);
             try
-              with ACBrNFe1.Mail do
+              with ACBrNFe1 do
               begin
                 slMensagemEmail.DelimitedText:= sLineBreak;
                 slMensagemEmail.Text := StringReplace(AMensagem, ';', sLineBreak, [rfReplaceAll]);
@@ -1729,7 +1819,10 @@ begin
                 slAnexos.DelimitedText := sLineBreak;
                 slAnexos.Text := StringReplace(AAnexos, ';', sLineBreak, [rfReplaceAll]);
 
-                NFeDM.ACBrNFe1.NotasFiscais.Items[0].EnviarEmail(
+                if(AEnviaPDF) then
+                  NFeDM.ConfigurarImpressao('', True);
+
+                NotasFiscais.Items[0].EnviarEmail(
                     APara,
                     AAssunto,
                     slMensagemEmail,
@@ -1737,11 +1830,13 @@ begin
                     slCC,      // Lista com emails que serão enviado cópias - TStrings
                     slAnexos); // Lista de slAnexos - TStrings
 
-                Resposta.Msg := 'Email enviado com sucesso';
-                Result := SetRetorno(ErrOK, Resposta.Gerar);
+                Resp.Msg := 'Email enviado com sucesso';
+                Resposta := Resp.Gerar;
+
+                Result := SetRetorno(ErrOK, Resposta);
               end;
             finally
-              Resposta.Free;
+              Resp.Free;
               slCC.Free;
               slAnexos.Free;
               slMensagemEmail.Free;
@@ -1827,6 +1922,7 @@ begin
               if AEnviaPDF then
               begin
                 try
+                  NFeDM.ConfigurarImpressao('', True);
                   ImprimirEventoPDF;
 
                   ArqPDF := OnlyNumber(EventoNFe.Evento[0].Infevento.id);

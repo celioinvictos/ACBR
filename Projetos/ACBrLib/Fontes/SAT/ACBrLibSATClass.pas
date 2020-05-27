@@ -1,35 +1,34 @@
-{*******************************************************************************}
-{ Projeto: Componentes ACBr                                                     }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
-{ mentos de Automação Comercial utilizados no Brasil                            }
-{                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
-{                                                                               }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
-{                                                                               }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
-{ qualquer versão posterior.                                                    }
-{                                                                               }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
-{                                                                               }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
-{ Você também pode obter uma copia da licença em:                               }
-{ http://www.opensource.org/licenses/gpl-license.php                            }
-{                                                                               }
-{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
-{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
-{                                                                               }
-{*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -74,6 +73,8 @@ function SAT_Nome(const sNome: PChar; var esTamanho: longint): longint;
 function SAT_Versao(const sVersao: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function SAT_ImportarConfig(const eArqConfig: PChar): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_ConfigLer(const eArqConfig: PChar): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
@@ -230,6 +231,12 @@ function SAT_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): long
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_UltimoRetorno(sMensagem, esTamanho);
+end;
+
+function SAT_ImportarConfig(const eArqConfig: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_ImportarConfig(eArqConfig);
 end;
 
 function SAT_ConfigLer(const eArqConfig: PChar): longint;
@@ -1199,7 +1206,7 @@ var
   Resp: TPadraoSATResposta;
   ArqXMLVenda, NomeArquivo, Resposta: String;
 begin
-   try
+  try
     VerificarLibInicializada;
     ArqXMLVenda := String(eArqXMLVenda);
     NomeArquivo := String(eNomeArquivo);
@@ -1215,12 +1222,12 @@ begin
       Resp := TPadraoSATResposta.Create('CFe', Config.TipoResposta, pLib.Config.CodResposta);
       try
         Resposta := '';
-        SatDM.ConfigurarImpressao('', True);
-        SatDM.CarregarDadosVenda(ArqXMLVenda, NomeArquivo);
+        SatDM.CarregarDadosVenda(ArqXMLVenda);
+        SatDM.ConfigurarImpressao('', True, NomeArquivo);
 
         SatDM.ACBrSAT1.ImprimirExtrato;
 
-        Resp.Arquivo:= SatDM.ACBrSAT1.Extrato.NomeDocumento;
+        Resp.Arquivo:= SatDM.ACBrSAT1.Extrato.ArquivoPDF;
         Resp.XML:= SatDM.ACBrSAT1.CFe.XMLOriginal;
         Resposta := Resp.Gerar;
 
@@ -1266,13 +1273,13 @@ begin
       Resp := TPadraoSATResposta.Create('CFe', Config.TipoResposta, pLib.Config.CodResposta);
       try
        Resposta := '';
-        SatDM.ConfigurarImpressao('', True);
         SatDM.CarregarDadosVenda(ArqXMLVenda);
-        SatDM.CarregarDadosCancelamento(ArqXMLCancelamento, NomeArquivo);
+        SatDM.CarregarDadosCancelamento(ArqXMLCancelamento);
+        SatDM.ConfigurarImpressao('', True, NomeArquivo);
 
         SatDM.ACBrSAT1.ImprimirExtratoCancelamento;
 
-        Resp.Arquivo:= SatDM.ACBrSAT1.Extrato.NomeDocumento;
+        Resp.Arquivo:= SatDM.ACBrSAT1.Extrato.ArquivoPDF;
         Resp.XML:= SatDM.ACBrSAT1.CFeCanc.XMLOriginal;
         Resposta := Resp.Gerar;
 
@@ -1327,8 +1334,14 @@ begin
         slCC.Text := CC;
         slAnexos.Text := Anexos;
 
-        SatDM.ConfigurarImpressao;
-        SatDM.CarregarDadosVenda(ArqXMLVenda, NomeArquivo);
+        SatDM.CarregarDadosVenda(ArqXMLVenda);
+        if (NomeArquivo <> '') then
+        begin
+          SatDM.ConfigurarImpressao('', True, NomeArquivo);
+          SatDM.ACBrSAT1.ImprimirExtrato;
+          slAnexos.Add(SatDM.ACBrSAT1.Extrato.ArquivoPDF);
+        end;
+
         SatDM.ACBrSAT1.EnviarEmail(Para, Assunto, slMensagem, slCC, slAnexos);
         Result := SetRetorno(ErrOK);
       finally

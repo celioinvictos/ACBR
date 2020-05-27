@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Frm_ACBrMDFe;
 
 interface
@@ -202,6 +232,8 @@ type
     btnInclusaoDFe: TButton;
     btnConsultarNaoEncerrados: TButton;
     ACBrMDFeDAMDFeRL1: TACBrMDFeDAMDFeRL;
+    btnPagOperacaoTransp: TButton;
+    btnEnviarEventoEmail: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathMDFeClick(Sender: TObject);
@@ -258,11 +290,14 @@ type
     procedure btnConsultarNaoEncerradosClick(Sender: TObject);
     procedure btnInclusaoCondutorClick(Sender: TObject);
     procedure btnInclusaoDFeClick(Sender: TObject);
+    procedure btnPagOperacaoTranspClick(Sender: TObject);
+    procedure btnEnviarEventoEmailClick(Sender: TObject);
   private
     { Private declarations }
     procedure GravarConfiguracao;
     procedure LerConfiguracao;
     procedure ConfigurarComponente;
+    procedure ConfigurarEmail;
     procedure AlimentarMDFe(NumDFe: String);
     Procedure AlimentarComponente(NumDFe: String);
     procedure LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);
@@ -444,9 +479,96 @@ begin
     Emit.EnderEmit.fone    := edtEmitFone.Text;
     Emit.enderEmit.email   := 'endereco@provedor.com.br';
 
-    rodo.RNTRC := '12345678';
-    rodo.CIOT  := '123456789012';
+    rodo.infANTT.RNTRC := '12345678';
 
+    with rodo.infANTT.infCIOT.New do
+    begin
+      CIOT    := '123456789012';
+      CNPJCPF := edtEmitCNPJ.Text;
+    end;
+
+    with rodo.infANTT.valePed.disp.New do
+    begin
+      CNPJForn := edtEmitCNPJ.Text;
+      CNPJPg   := edtEmitCNPJ.Text;
+      nCompra  := '789';
+    end;
+
+    with rodo.infANTT.infContratante.New do
+    begin
+      CNPJCPF       := edtEmitCNPJ.Text;
+      idEstrangeiro := '';
+      xNome         := 'Nome do Contatratante';
+    end;
+
+    {
+    Informações OPCIONAIS sobre o Pagamento do Frete
+    }
+    with rodo.infANTT.infPag.New do
+    begin
+      xNome         := 'Nome do Responsavel pelo Pagamento';
+      idEstrangeiro := '';
+      CNPJCPF       := edtEmitCNPJ.Text;
+
+      vContrato := 1000.00;
+      indPag    := ipPrazo;
+
+      with rodo.infANTT.infPag[0].Comp.New do
+      begin
+        tpComp := tcValePedagio;
+        vComp  := 250.00;
+        xComp  := '';
+      end;
+
+      with rodo.infANTT.infPag[0].Comp.New do
+      begin
+        tpComp := tcImpostos;
+        vComp  := 250.00;
+        xComp  := '';
+      end;
+
+      with rodo.infANTT.infPag[0].Comp.New do
+      begin
+        tpComp := tcDespesas;
+        vComp  := 250.00;
+        xComp  := '';
+      end;
+
+      with rodo.infANTT.infPag[0].Comp.New do
+      begin
+        tpComp := tcOutros;
+        vComp  := 250.00;
+        xComp  := 'Outros custos do Frete';
+      end;
+
+      if rodo.infANTT.infPag[0].indPag = ipPrazo then
+      begin
+        with rodo.infANTT.infPag[0].infPrazo.New do
+        begin
+          nParcela := 1;
+          dVenc    := StringToDateTime('10/03/2020');
+          vParcela := 500.00;
+        end;
+
+        with rodo.infANTT.infPag[0].infPrazo.New do
+        begin
+          nParcela := 2;
+          dVenc    := StringToDateTime('10/04/2020');
+          vParcela := 500.00;
+        end;
+      end;
+
+      // CNPJ da Instituição de pagamento Eletrônico do Frete
+      rodo.infANTT.infPag[0].infBanc.CNPJIPEF := '12345678000199';
+
+      if rodo.infANTT.infPag[0].infBanc.CNPJIPEF = '' then
+      begin
+        rodo.infANTT.infPag[0].infBanc.codBanco   := '001';
+        rodo.infANTT.infPag[0].infBanc.codAgencia := '00001';
+      end;
+    end;
+
+    // Informações sobre o veiculo de tração
     rodo.veicTracao.cInt    := '001';
     rodo.veicTracao.placa   := 'ABC1234';
     rodo.veicTracao.RENAVAM := '123456789';
@@ -482,13 +604,6 @@ begin
       tpCar := tcFechada;
 
       UF := edtEmitUF.Text;
-    end;
-
-    with rodo.infANTT.valePed.disp.New do
-    begin
-      CNPJForn := '12345678000199';
-      CNPJPg   := '21543876000188';
-      nCompra  := '789';
     end;
 
     with infDoc.infMunDescarga.New do
@@ -568,6 +683,51 @@ begin
         end;
       end; // fim do with
     end;
+
+    {
+    Informações sobre o Seguro da Carga
+    }
+    if Ide.tpEmit = teTransportadora then
+    begin
+      with seg.New do
+      begin
+        respSeg := rsEmitente;
+
+        if respSeg = rsTomadorServico then
+          CNPJCPF := edtEmitCNPJ.Text; // CNPJ do Responsável pelo seguro
+
+        xSeg := 'Nome da Seguradora';
+
+        CNPJ := edtEmitCNPJ.Text; // CNPJ da Seguradora
+
+        nApol := '1234';
+
+        with aver.New do
+        begin
+          nAver := '67890';
+        end;
+      end;
+    end;
+
+    {
+    Informações OPCIONAIS sobre o produto predominante
+    }
+    prodPred.tpCarga := tcGranelSolido;
+    prodPred.xProd   := 'Descricao do Produto';
+    prodPred.cEAN    := '78967142344650';
+    prodPred.NCM     := '01012100';
+
+    // Informações do Local de Carregamento
+    // Informar somente quando MDF-e for de carga lotação
+    prodPred.infLocalCarrega.CEP       := 14800000;
+    prodPred.infLocalCarrega.latitude  := 0;
+    prodPred.infLocalCarrega.longitude := 0;
+
+    // Informações do Local de Descarregamento
+    // Informar somente quando MDF-e for de carga lotação
+    prodPred.infLocalDescarrega.CEP       := 14800000;
+    prodPred.infLocalDescarrega.latitude  := 0;
+    prodPred.infLocalDescarrega.longitude := 0;
 
     tot.qCTe := 2;
     tot.vCarga := 3500.00;
@@ -1044,36 +1204,83 @@ begin
 
   OpenDialog1.InitialDir := ACBrMDFe1.Configuracoes.Arquivos.PathSalvar;
 
+  if not OpenDialog1.Execute then
+    Exit;
+
+  ACBrMDFe1.Manifestos.Clear;
+  ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
+
+  CC := TStringList.Create;
+  try
+    //CC.Add('email_1@provedor.com'); //especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    //especifique um email valido
+    ConfigurarEmail;
+    ACBrMDFe1.Manifestos.Items[0].EnviarEmail(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , True  // Enviar PDF junto
+      , CC    // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      );
+  finally
+    CC.Free;
+  end;
+
+end;
+
+procedure TfrmACBrMDFe.btnEnviarEventoEmailClick(Sender: TObject);
+var
+  Para: String;
+  CC, Evento: Tstrings;
+begin
+  if not(InputQuery('Enviar Email', 'Email de destino', Para)) then
+    exit;
+
+  OpenDialog1.Title := 'Selecione o MDFe';
+  OpenDialog1.DefaultExt := '*-MDFe.xml';
+  OpenDialog1.Filter := 'Arquivos MDFe (*-MDFe.xml)|*-MDFe.xml|Arquivos XML (*.xml)|*.xml|Todos os arquivos (*.*)|*.*';
+
+  OpenDialog1.InitialDir := ACBrMDFe1.Configuracoes.Arquivos.PathSalvar;
+
   if OpenDialog1.Execute then
   begin
     ACBrMDFe1.Manifestos.Clear;
     ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
-    CC:=TstringList.Create;
-
-    try
-      CC.Add('andrefmoraes@gmail.com'); //especifique um email valido
-      CC.Add('anfm@zipmail.com.br');    //especifique um email valido
-
-      ACBrMail1.Host := edtSmtpHost.Text;
-      ACBrMail1.Port := edtSmtpPort.Text;
-      ACBrMail1.Username := edtSmtpUser.Text;
-      ACBrMail1.Password := edtSmtpPass.Text;
-      ACBrMail1.From := edtSmtpUser.Text;
-      ACBrMail1.SetSSL := cbEmailSSL.Checked; // SSL - Conexao Segura
-      ACBrMail1.SetTLS := cbEmailSSL.Checked; // Auto TLS
-      ACBrMail1.ReadingConfirmation := False; //Pede confirmacao de leitura do email
-      ACBrMail1.UseThread := False;           //Aguarda Envio do Email(nao usa thread)
-      ACBrMail1.FromName := 'Projeto ACBr - ACBrMDFe';
-
-      ACBrMDFe1.Manifestos.Items[0].EnviarEmail( Para, edtEmailAssunto.Text,
-                                               mmEmailMsg.Lines
-                                               , True  // Enviar PDF junto
-                                               , CC    // Lista com emails que serao enviado copias - TStrings
-                                               , nil); // Lista de anexos - TStrings
-    finally
-      CC.Free;
-    end;
   end;
+
+  OpenDialog1.Title := 'Selecione o evento';
+  OpenDialog1.DefaultExt := '*.XML';
+  OpenDialog1.Filter := 'Arquivos XML (*.xml)|*.xml|Todos os arquivos (*.*)|*.*';
+
+  OpenDialog1.InitialDir := ACBrMDFe1.Configuracoes.Arquivos.PathSalvar;
+
+  if not OpenDialog1.Execute then
+    Exit;
+
+  Evento := TStringList.Create;
+  CC := TStringList.Create;
+  try
+    Evento.Clear;
+    Evento.Add(OpenDialog1.FileName);
+
+    ACBrMDFe1.EventoMDFe.Evento.Clear;
+    ACBrMDFe1.EventoMDFe.LerXML(OpenDialog1.FileName);
+
+    //CC.Add('email_1@provedor.com'); // especifique um email valido
+    //CC.Add('email_2@provedor.com.br');    // especifique um email valido
+    ConfigurarEmail;
+    ACBrMDFe1.EnviarEmailEvento(Para
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , CC // Lista com emails que serao enviado copias - TStrings
+      , nil // Lista de anexos - TStrings
+      , nil  // ReplyTo
+      );
+  finally
+    CC.Free;
+    Evento.Free;
+  end;
+
 end;
 
 procedure TfrmACBrMDFe.btnGerarPDFClick(Sender: TObject);
@@ -1320,6 +1527,136 @@ begin
         infEvento.detEvento.infDoc[0].cMunDescarga := StrToIntDef(cMunDescarrega, 0);
         infEvento.detEvento.infDoc[0].xMunDescarga := xMunDescarrega;
         infEvento.detEvento.infDoc[0].chNFe        := chaveNFe;
+      end;
+    end;
+
+    ACBrMDFe1.EnviarEvento( 1 ); // 1 = Numero do Lote
+
+    MemoResp.Lines.Text := ACBrMDFe1.WebServices.EnvEvento.RetWS;
+    LoadXML(ACBrMDFe1.WebServices.EnvEvento.RetWS, WBResposta);
+  end;
+end;
+
+procedure TfrmACBrMDFe.btnPagOperacaoTranspClick(Sender: TObject);
+var
+  qtdViagens, nroViagem, xNomeContratante, idEstrang, sCNPJCPF,
+  vlrContrato, xindPag, xCNPJIPEF, xcodBanco, xcodAgencia: string;
+  ok: Boolean;
+begin
+  OpenDialog1.Title := 'Selecione o MDFe';
+  OpenDialog1.DefaultExt := '*-MDFe.xml';
+  OpenDialog1.Filter := 'Arquivos MDFe (*-MDFe.xml)|*-MDFe.xml|Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ACBrMDFe1.Configuracoes.Arquivos.PathSalvar;
+
+  qtdViagens := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                      'Quantidade de Viagens', qtdViagens)) then
+    exit;
+
+  nroViagem := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                           'Numero de Viagens', nroViagem)) then
+    exit;
+
+  xNomeContratante := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                  'Nome do Contratante', xNomeContratante)) then
+    exit;
+
+  idEstrang := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                'Identificação do Estrangeiro', idEstrang)) then
+    exit;
+
+  sCNPJCPF := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                      'CNPJ/CPF do Contratante', sCNPJCPF)) then
+    exit;
+
+  vlrContrato := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                         'Valor do Contrato', vlrContrato)) then
+    exit;
+
+  xindPag := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                  'Indicador de Pagamento (0=A Vista, 1=A Prazo)', xindPag)) then
+    exit;
+
+  xCNPJIPEF := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+        'CNPJ da Instituição de pagamento Eletrônico do Frete', xCNPJIPEF)) then
+    exit;
+
+  xcodBanco := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                             'Código do Banco', xcodBanco)) then
+    exit;
+
+  xcodAgencia := '';
+  if not(InputQuery('WebServices Eventos: Pagamento Operação Transporte',
+                                         'Código da Agência', xcodAgencia)) then
+    exit;
+
+  if OpenDialog1.Execute then
+  begin
+    ACBrMDFe1.Manifestos.Clear;
+    ACBrMDFe1.Manifestos.LoadFromFile(OpenDialog1.FileName);
+
+    ACBrMDFe1.EventoMDFe.Evento.Clear;
+
+    with ACBrMDFe1.EventoMDFe.Evento.New do
+    begin
+      infEvento.chMDFe     := Copy(ACBrMDFe1.Manifestos.Items[0].MDFe.infMDFe.ID, 5, 44);
+      infEvento.CNPJCPF    := edtEmitCNPJ.Text;
+      infEvento.dhEvento   := now;
+      infEvento.tpEvento   := tePagamentoOperacao;
+      infEvento.nSeqEvento := 1;
+
+      infEvento.detEvento.nProt := ACBrMDFe1.Manifestos.Items[0].MDFe.procMDFe.nProt;
+
+      infEvento.detEvento.infViagens.qtdViagens := StrToIntDef(qtdViagens, 0);
+      infEvento.detEvento.infViagens.nroViagem  := StrToIntDef(nroViagem, 0);
+
+      ACBrMDFe1.EventoMDFe.Evento[0].InfEvento.detEvento.infPag.Clear;
+
+      with ACBrMDFe1.EventoMDFe.Evento[0].InfEvento.detEvento.infPag.New do
+      begin
+        xNome         := xNomeContratante;
+        idEstrangeiro := idEstrang;
+
+        if idEstrangeiro = '' then
+          CNPJCPF := sCNPJCPF;
+
+        ACBrMDFe1.EventoMDFe.Evento[0].InfEvento.detEvento.infPag[0].Comp.Clear;
+        with ACBrMDFe1.EventoMDFe.Evento[0].InfEvento.detEvento.infPag[0].Comp.New do
+        begin
+          tpComp := tcValePedagio;
+          vComp  := StringToFloatDef(vlrContrato, 0);
+          xComp  := '';
+        end;
+
+        vContrato := StringToFloatDef(vlrContrato, 0);
+        indPag    := StrToTIndPag(ok, xindPag);
+
+        if indPag = ipPrazo then
+        begin
+          ACBrMDFe1.EventoMDFe.Evento[0].InfEvento.detEvento.infPag[0].infPrazo.Clear;
+          with ACBrMDFe1.EventoMDFe.Evento[0].InfEvento.detEvento.infPag[0].infPrazo.New do
+          begin
+            nParcela := 1;
+            dVenc    := Date + 30;
+            vParcela := StringToFloatDef(vlrContrato, 0);
+          end;
+        end;
+
+        infBanc.CNPJIPEF := xCNPJIPEF;
+
+        if infBanc.CNPJIPEF = '' then
+        begin
+          infBanc.codBanco   := xcodBanco;
+          infBanc.codAgencia := xcodAgencia;
+        end;
       end;
     end;
 
@@ -1690,6 +2027,7 @@ begin
     Ini.WriteString( 'DAMDFE', 'LogoMarca', edtLogoMarca.Text);
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -1811,6 +2149,7 @@ begin
     edtLogoMarca.Text      := Ini.ReadString( 'DAMDFe', 'LogoMarca',  '');
 
     ConfigurarComponente;
+    ConfigurarEmail;
   finally
     Ini.Free;
   end;
@@ -1909,6 +2248,20 @@ begin
 //    ACBrMDFe1.DAMDFE.ImprimeDadosExtras := [deRelacaoDFe];
     ACBrMDFe1.DAMDFE.ImprimeDadosExtras := [deValorTotal];
   end;
+end;
+
+procedure TfrmACBrMDFe.ConfigurarEmail;
+begin
+  ACBrMail1.Host := edtSmtpHost.Text;
+  ACBrMail1.Port := edtSmtpPort.Text;
+  ACBrMail1.Username := edtSmtpUser.Text;
+  ACBrMail1.Password := edtSmtpPass.Text;
+  ACBrMail1.From := edtSmtpUser.Text;
+  ACBrMail1.SetSSL := cbEmailSSL.Checked; // SSL - Conexao Segura
+  ACBrMail1.SetTLS := cbEmailSSL.Checked; // Auto TLS
+  ACBrMail1.ReadingConfirmation := False; //Pede confirmacao de leitura do email
+  ACBrMail1.UseThread := False;           //Aguarda Envio do Email(nao usa thread)
+  ACBrMail1.FromName := 'Projeto ACBr - ACBrMDFe';
 end;
 
 procedure TfrmACBrMDFe.LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);

@@ -1,3 +1,33 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{																			   }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
 unit Frm_ACBrNFSe;
 
 {$MODE Delphi}
@@ -788,32 +818,37 @@ begin
     'Arquivos NFSe (*-NFSe.xml)|*-NFSe.xml|Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
   OpenDialog1.InitialDir := ACBrNFSe1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-  begin
-    ACBrNFSe1.NotasFiscais.Clear;
-    ACBrNFSe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
+  if not OpenDialog1.Execute then
+    Exit;
 
-    vAux := '';
-    if not(InputQuery('Enviar e-mail', 'Destinatário', vAux)) then
-      exit;
+  ACBrNFSe1.NotasFiscais.Clear;
+  ACBrNFSe1.NotasFiscais.LoadFromFile(OpenDialog1.FileName);
 
-    sCC := TStringList.Create;
+  vAux := '';
+  if not(InputQuery('Enviar e-mail', 'Destinatário', vAux)) then
+    exit;
+
+  sCC := TStringList.Create;
+  try
     sCC.Clear; // Usando para add outros e-mail como Com-Cópia
-
-    ACBrNFSe1.NotasFiscais.Items[0].EnviarEmail(vAux, edtEmailAssunto.Text,
-      mmEmailMsg.Lines, True // Enviar PDF junto
-      , nil // Lista com emails que serão enviado cópias - TStrings
+    //sCC.Add('email_1@provedor.com');
+    //sCC.Add('email_2@provedor.com.br');
+    ACBrNFSe1.NotasFiscais.Items[0].EnviarEmail(vAux
+      , edtEmailAssunto.Text
+      , mmEmailMsg.Lines
+      , True // Enviar PDF junto
+      , sCC // Lista com emails que serão enviado cópias - TStrings
       , nil // Lista de anexos - TStrings
-      );
-
+    );
+  finally
     sCC.Free;
-
-    MemoDados.Lines.Add('Arquivo Carregado de: ' + ACBrNFSe1.NotasFiscais.Items[0].NomeArq);
-    MemoResp.Lines.LoadFromFile(ACBrNFSe1.NotasFiscais.Items[0].NomeArq);
-    LoadXML(MemoResp, WBResposta);
-
-    pgRespostas.ActivePageIndex := 1;
   end;
+
+  MemoDados.Lines.Add('Arquivo Carregado de: ' + ACBrNFSe1.NotasFiscais.Items[0].NomeArq);
+  MemoResp.Lines.LoadFromFile(ACBrNFSe1.NotasFiscais.Items[0].NomeArq);
+  LoadXML(MemoResp, WBResposta);
+
+  pgRespostas.ActivePageIndex := 1;
 end;
 
 procedure TfrmACBrNFSe.btnGerarEnviarLoteClick(Sender: TObject);

@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2010   Macgayver Armini Apolonio            }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Macgayver Armini Apolonio e Rodrigo Buschmann   }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,17 +26,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 23/02/2015: Macgayver Armini Apolonio - Criação
-|* 03/07/2017: Rodrigo Buschmann | Digibyte - Importação ICMS Fiscal
-*******************************************************************************}
 unit ACBrEFDBloco_0_Importar;
 
 interface
@@ -62,6 +55,7 @@ type
     procedure Reg0200;
     procedure Reg0205;
     procedure Reg0206;
+    procedure Reg0220;
     procedure Reg0400;
     procedure Reg0450;
     procedure Reg0460;
@@ -90,6 +84,7 @@ begin
   else if (vHead = '0200') then Reg0200
   else if (vHead = '0205') then Reg0205
   else if (vHead = '0206') then Reg0206
+  else if (vHead = '0220') then Reg0220
   else if (vHead = '0400') then Reg0400
   else if (vHead = '0450') then Reg0450
   else if (vHead = '0460') then Reg0460
@@ -255,6 +250,15 @@ begin
   with ACBrSpedFiscal.Bloco_0.Registro0206New do
   begin
     COD_COMB := Valor;
+  end;
+end;
+
+procedure TACBrSpedFiscalImportar_Bloco0.Reg0220;
+begin
+  with ACBrSpedFiscal.Bloco_0.Registro0220New do
+  begin
+    UNID_CONV := Valor;
+    FAT_CONV := ValorFV;
   end;
 end;
 

@@ -1,10 +1,9 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{ Biblioteca multiplataforma de componentes Delphi para                        }
-{ Emissão de Nota Fiscal de Serviço                                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2015 Italo Jurisato Junior                  }
-{                                       Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -27,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -172,7 +170,7 @@ const
   TITULO_PDF = 'Nota Fiscal de Serviço Eletrônica';
 var
   I         : Integer;
-  NomeArqXML: string;
+  NomeArq: string;
   OldShowDialog: Boolean;
 begin
   if PrepareReport(NFSe) then
@@ -188,14 +186,14 @@ begin
       frxPDFExport.ShowDialog := False;
       for I := 0 to TACBrNFSe(ACBrNFSe).NotasFiscais.Count - 1 do
       begin
-        with TACBrNFSe(ACBrNFSe).NotasFiscais.Items[I] do
-        begin
-//         NomeArqXML := TACBrNFSe(ACBrNFSe).NumID[TACBrNFSe(ACBrNFSe).NotasFiscais.Items[I].NFSe];
-         NomeArqXML := TACBrNFSe(ACBrNFSe).NumID[NFSe];
-        end;
 
-        // Correção aplicada do nome do arquivo para o envio de e-mail
-        frxPDFExport.FileName := PathPDF + NomeArqXML + '-nfse.pdf';
+        NomeArq := Trim(DANFSEClassOwner.NomeDocumento);
+        if EstaVazio(NomeArq) then
+          with TACBrNFSe(ACBrNFSe).NotasFiscais.Items[I] do
+          begin
+            NomeArq :=  TACBrNFSe(ACBrNFSe).NumID[NFSe] + '-nfse.pdf';
+          end;
+        frxPDFExport.FileName := PathWithDelim(DANFSEClassOwner.PathPDF) + NomeArq;
 
         if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
           ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
@@ -313,7 +311,7 @@ begin
   frxReport := TfrxReport.Create(nil);
 	frxReport.PreviewOptions.Buttons := [pbPrint, pbLoad, pbSave, pbExport, pbZoom, pbFind,
     pbOutline, pbPageSetup, pbTools, pbNavigator, pbExportQuick];
-	frxReport.EngineOptions.UseGlobalDataSetList := False; 
+	frxReport.EngineOptions.UseGlobalDataSetList := False;
   with frxReport do
   begin
     Tag := 1;
@@ -846,13 +844,14 @@ begin
         Append;
         cdsItensServico.FieldByName('DiscriminacaoServico').AsString := Descricao;
         cdsItensServico.FieldByName('Quantidade').AsString           := FloatToStr( Quantidade );
-        cdsItensServico.FieldByName('ValorUnitario').AsString        := FormatFloatBr( ValorUnitario, '###,###,##0.00');
-        cdsItensServico.FieldByName('ValorTotal').AsString           := FormatFloatBr( ValorTotal, '###,###,##0.00');
+        cdsItensServico.FieldByName('ValorUnitario').AsString        := FormatFloatBr( ValorUnitario, ',0.00');
+        cdsItensServico.FieldByName('ValorTotal').AsString           := FormatFloatBr( ValorTotal, ',0.00');
         cdsItensServico.FieldByName('Tributavel').AsString           := SimNaoToStr(Tributavel);
 
-        if Provedor = proEL then
-          cdsItensServico.FieldByName('Aliquota').AsString := FormatFloatBr( Aliquota * 100, '0.00')
-        else
+//        if Provedor = proEL then
+//          cdsItensServico.FieldByName('Aliquota').AsString := FormatFloatBr( Aliquota * 100, '0.00')
+//        else
+        // A multiplicação por 100 agora é feita pela rotina que lê o XML
           cdsItensServico.FieldByName('Aliquota').AsString := FormatFloatBr( Aliquota, '0.00');
 
         cdsItensServico.FieldByName('Unidade').AsString              := Unidade;
@@ -963,6 +962,9 @@ begin
     else
       FieldByName('Mensagem0').AsString := IfThen(ANFSe.Cancelada = snSim, 'NFSe CANCELADA', '');  // LUIZ
 
+    if (ANFSe.Producao = snNao) then
+      FieldByName('Mensagem0').AsString := Trim(FieldByName('Mensagem0').AsString + sLineBreak + ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL'));
+
     Post;
   end;
 end;
@@ -1005,6 +1007,30 @@ begin
         FieldByName('Email').AsString    := Email;
       end;
     end;
+
+    with TACBrNFSe(DANFSeClassOwner.ACBrNFSe).Configuracoes.Geral do
+      if Emitente.DadosEmitente.Endereco <> EmptyStr then
+      begin
+        FieldByName('RazaoSocial').AsString  := Emitente.RazSocial;
+        FieldByName('NomeFantasia').AsString := Emitente.DadosEmitente.NomeFantasia;
+
+        FieldByName('Cnpj').AsString               := FormatarCNPJ(Emitente.CNPJ);
+        FieldByName('InscricaoMunicipal').AsString := Emitente.InscMun;
+        FieldByName('InscricaoEstadual').AsString  := FormatarIE(Emitente.DadosEmitente.InscricaoEstadual, Emitente.DadosEmitente.UF);
+
+        FieldByName('Endereco').AsString        := Emitente.DadosEmitente.Endereco;
+        FieldByName('Numero').AsString          := Emitente.DadosEmitente.Numero;
+        FieldByName('Complemento').AsString     := Emitente.DadosEmitente.Complemento;
+        FieldByName('Bairro').AsString          := Emitente.DadosEmitente.Bairro;
+        FieldByName('CodigoMunicipio').AsString := Emitente.DadosEmitente.CodigoMunicipio;
+        FieldByName('UF').AsString              := Emitente.DadosEmitente.UF;
+        FieldByName('CEP').AsString             := FormatarCEP(Emitente.DadosEmitente.CEP);
+        FieldByName('xMunicipio').AsString      := Emitente.DadosEmitente.Municipio;
+
+        FieldByName('Telefone').AsString := FormatarFone(Emitente.DadosEmitente.Telefone);
+        FieldByName('Email').AsString    := Emitente.DadosEmitente.Email;
+      end;
+
     Post;
   end;
 end;
@@ -1035,7 +1061,7 @@ begin
       FieldByName('NumeroProcesso').AsString            := NumeroProcesso;
       FieldByName('Descricao').AsString                 := Descricao;
       FieldByName('ResponsavelRetencao').AsString       := ResponsavelRetencaoToStr(ResponsavelRetencao);
-      FieldByName('Tributacao').AsString                := TributacaoToStr(Tributacao); 
+      FieldByName('Tributacao').AsString                := TributacaoToStr(Tributacao);
 
       with Valores do
       begin
@@ -1050,9 +1076,10 @@ begin
         FieldByName('ValorIss').AsFloat               := ValorIss;
         FieldByName('OutrasRetencoes').AsFloat        := OutrasRetencoes;
         FieldByName('BaseCalculo').AsFloat            := BaseCalculo;
-        if Provedor = proWebISS then
-          FieldByName('Aliquota').AsFloat := Aliquota * 100
-        else
+//        if Provedor = proWebISS then
+//          FieldByName('Aliquota').AsFloat := Aliquota * 100
+//        else
+        // Agora a multiplicação por 100 é feita pela rotina que lê o XML
           FieldByName('Aliquota').AsFloat := Aliquota;
 
         FieldByName('ValorLiquidoNfse').AsFloat       := ValorLiquidoNfse;

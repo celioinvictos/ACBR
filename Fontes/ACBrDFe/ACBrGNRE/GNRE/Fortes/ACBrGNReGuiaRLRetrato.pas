@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo:                                                 }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,15 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -359,17 +357,17 @@ begin
   // 1ª Via
   RLLabel18.Caption             := FGNRe.DocDestinatario;
   RLLabel26.Caption             := IntToStrZero( FGNRe.Parcela,3);
-  RLLabel28.Caption             := FormatFloat('R$ ###,###,###,##0.00',  FGNRe.ValorPrincipal);
+  RLLabel28.Caption             := FormatFloat('R$ ,0.00',  FGNRe.ValorPrincipal);
   RLLabel30.Caption             := IfThen( FGNRe.AtualizacaoMonetaria = 0 , '' ,
-                                    FormatFloat('R$ ###,###,###,##0.00', FGNRe.AtualizacaoMonetaria));
+                                    FormatFloat('R$ ,0.00', FGNRe.AtualizacaoMonetaria));
   RLLabel32.Caption             := IfThen( FGNRe.Juros = 0 , '' ,
-                                    FormatFloat('R$ ###,###,###,##0.00', FGNRe.Juros));
+                                    FormatFloat('R$ ,0.00', FGNRe.Juros));
   RLLabel34.Caption             := IfThen( FGNRe.Multa = 0 , '' ,
-                                    FormatFloat('R$ ###,###,###,##0.00', FGNRe.Multa));
-  RLLabel36.Caption             := FormatFloat('R$ ###,###,###,##0.00',( FGNRe.ValorPrincipal +
-                                                                         FGNRe.AtualizacaoMonetaria+
-                                                                         FGNRe.Juros +
-                                                                         FGNRe.Multa));
+                                    FormatFloat('R$ ,0.00', FGNRe.Multa));
+  RLLabel36.Caption             := FormatFloat('R$ ,0.00',( FGNRe.ValorPrincipal +
+                                                            FGNRe.AtualizacaoMonetaria+
+                                                            FGNRe.Juros +
+                                                            FGNRe.Multa));
   RLMemo2.Visible               := FGNRe.InfoCabec.Ambiente = 9;
 
   // 2ª Via

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  André Ferreira de Moraes                       }
 {                                                                              }
@@ -37,11 +37,20 @@ unit ACBrDFeSSL;
 interface
 
 uses
-  Classes, SysUtils, Contnrs,
-  blcksock, syncobjs;
+  Classes, SysUtils,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
+  blcksock, syncobjs,
+  ACBrBase;
 
 Const
-  CBufferSize = 32768;
+  CBufferSize = 32768;  // 32k
+  CDiasRestantesBuscarNovoCeriticado = 15;
 
   CDSIGNS = 'xmlns:ds="http://www.w3.org/2000/09/xmldsig#"';
   CSIGNATURE_NODE = './/ds:Signature';
@@ -101,7 +110,7 @@ type
 
   { TListaCertificados }
 
-  TListaCertificados = class(TObjectList)
+  TListaCertificados = class(TObjectList{$IfDef NEXTGEN}<TDadosCertificado>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TDadosCertificado);
     function GetObject (Index: Integer): TDadosCertificado;
@@ -137,11 +146,19 @@ type
 
     function GetCertContextWinApi: Pointer; virtual;
     function GetCertPFXData: AnsiString; virtual;
+
+    procedure CarregarCertificadoDeArquivoPFX; virtual;
+    procedure CarregarCertificadoDeURLPFX; virtual;
+    procedure CarregarCertificadoDeDadosPFX; virtual;
+    procedure CarregarCertificadoDeNumeroSerie; virtual;
+    procedure LerInfoCertificadoCarregado; virtual;
+
   public
     constructor Create(ADFeSSL: TDFeSSL); virtual;
     destructor Destroy; override;
     procedure Clear; virtual;
 
+    function Versao: String; virtual;
     function CalcHash( const AStream : TStream;
        const Digest: TSSLDgst;
        const Assina: Boolean =  False): AnsiString; virtual;
@@ -151,7 +168,7 @@ type
        const Hash: AnsiString;
        const Assinado: Boolean =  False): Boolean; virtual;
 
-    procedure CarregarCertificado; virtual;
+    procedure CarregarCertificado;
     procedure DescarregarCertificado; virtual;
     function SelecionarCertificado: String; virtual;
     procedure LerCertificadosStore; virtual;
@@ -179,23 +196,46 @@ type
 
   TDFeSSLHttpClass = class
   private
+    FDataResp: TMemoryStream;
+    FDataReq: TMemoryStream;
+    FHeaderReq: THttpHeader;
+    FHeaderResp: THttpHeader;
+    FURL: String;
+    FMethod: String;
+    FMimeType: String;
+    FSoapAction: String;
   protected
     FpDFeSSL: TDFeSSL;
+    FpHTTPResultCode: Integer;
+    FpInternalErrorCode: Integer;
 
-    function GetHTTPResultCode: Integer; virtual;
-    function GetInternalErrorCode: Integer; virtual;
-    procedure ConfigurarHTTP(const AURL, ASoapAction: String; const AMimeType: String);
-      virtual;
+    procedure ConfigConnection; virtual;
+    function GetLastErrorDesc: String; virtual;
   public
     constructor Create(ADFeSSL: TDFeSSL); virtual;
     destructor Destroy; override;
 
     function Enviar(const ConteudoXML: String; const AURL: String;
-      const ASoapAction: String; const AMimeType: String = ''): String; virtual;
-    procedure Abortar; virtual;
+      const ASoapAction: String; const AMimeType: String = ''): String;
+    procedure HTTPMethod(const AMethod, AURL: String);
 
-    property HTTPResultCode: Integer read GetHTTPResultCode;
-    property InternalErrorCode: Integer read GetInternalErrorCode;
+    procedure Execute; virtual;
+    procedure Abortar; virtual;
+    procedure Clear;
+
+    property DataReq: TMemoryStream read FDataReq;
+    property HeaderReq: THttpHeader read FHeaderReq;
+    property DataResp: TMemoryStream read FDataResp;
+    property HeaderResp: THttpHeader read FHeaderResp;
+
+    property URL: String read FURL write FURL;
+    property Method: String read FMethod write FMethod;
+    property SoapAction: String read FSoapAction write FSoapAction;
+    property MimeType: String read FMimeType write FMimeType;
+
+    property HTTPResultCode: Integer read FpHTTPResultCode;
+    property InternalErrorCode: Integer read FpInternalErrorCode;
+    property LastErrorDesc: String read GetLastErrorDesc;
   end;
 
 
@@ -263,6 +303,7 @@ type
   TDFeSSL = class(TPersistent)
   private
     FAntesDeAssinar: TDFeSSLAntesDeAssinar;
+    FURLPFX: String;
     FArquivoPFX: String;
     FDadosPFX: AnsiString;
     FNameSpaceURI: String;
@@ -306,6 +347,7 @@ type
 
     procedure SetArquivoPFX(const AValue: String);
     procedure SetDadosPFX(const AValue: AnsiString);
+    procedure SetURLPFX(AValue: String);
     procedure SetNumeroSerie(const AValue: String);
     procedure SetSenha(const AValue: AnsiString);
 
@@ -330,6 +372,10 @@ type
       const ASoapAction: String; AMimeType: String = ''): String;
     // Valida um Arquivo contra o seu Schema. Retorna True se OK, preenche MsgErro se False //
     // ConteudoXML, DEVE estar em UTF8
+    procedure HTTPMethod(const AMethod, AURL: String);
+    function HTTPGet(const AURL: String): AnsiString;
+    function HTTPPost(const ADataToSend: AnsiString; const AURL: String): AnsiString;
+
     function Validar(const ConteudoXML: String; const ArqSchema: String;
       out MsgErro: String): Boolean;
     // Verifica se assinatura de um XML é válida. Retorna True se OK, preenche MsgErro se False //
@@ -419,6 +465,7 @@ type
 
     property ArquivoPFX: String read FArquivoPFX write SetArquivoPFX;
     property DadosPFX: AnsiString read FDadosPFX write SetDadosPFX;
+    property URLPFX: String read FURLPFX write SetURLPFX;
     property NumeroSerie: String read FNumeroSerie write SetNumeroSerie;
     property Senha: AnsiString read GetSenha write SetSenha;
 
@@ -441,8 +488,8 @@ implementation
 
 uses
   strutils, dateutils,
-  synacode,
-  ACBrDFeUtil, ACBrValidador, ACBrUtil, ACBrDFeException
+  synacode, synautil,
+  ACBrDFeUtil, ACBrValidador, ACBrUtil, ACBrDFeException, ACBrConsts
   {$IfNDef DFE_SEM_OPENSSL}
    ,ACBrDFeOpenSSL, ACBrDFeHttpOpenSSL
    {$IfNDef DFE_SEM_XMLSEC}
@@ -639,12 +686,12 @@ end;
 
 procedure TListaCertificados.SetObject(Index: Integer; Item: TDadosCertificado);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 function TListaCertificados.GetObject(Index: Integer): TDadosCertificado;
 begin
-  Result := inherited GetItem(Index) as TDadosCertificado ;
+  Result := TDadosCertificado(inherited Items[Index]);
 end;
 
 procedure TListaCertificados.Insert(Index: Integer; Obj: TDadosCertificado);
@@ -688,6 +735,11 @@ begin
   FpListaCertificados.Clear;
 end;
 
+function TDFeSSLCryptClass.Versao: String;
+begin
+  Result := '';
+end;
+
 function TDFeSSLCryptClass.CalcHash(const AStream: TStream; const Digest: TSSLDgst;
   const Assina: Boolean): AnsiString;
 begin
@@ -723,7 +775,129 @@ end;
 
 procedure TDFeSSLCryptClass.CarregarCertificado;
 begin
+  DescarregarCertificado;
+
+  Clear;
+  if not EstaVazio(FpDFeSSL.URLPFX) then
+    CarregarCertificadoDeURLPFX
+
+  else if (not EstaVazio(FpDFeSSL.DadosPFX)) then
+      CarregarCertificadoDeDadosPFX
+
+  else if not EstaVazio(FpDFeSSL.ArquivoPFX) then
+    CarregarCertificadoDeArquivoPFX
+
+  else if NaoEstaVazio(FpDFeSSL.NumeroSerie) then
+    CarregarCertificadoDeNumeroSerie
+
+  else
+    raise EACBrDFeException.Create( 'DadosPFX, ArquivoPFX, URLPFX ou NumeroSerie não especificados !');
+
+  LerInfoCertificadoCarregado;
   FpCertificadoLido := True;
+end;
+
+procedure TDFeSSLCryptClass.CarregarCertificadoDeArquivoPFX;
+var
+  PFXStream: TFileStream;
+begin
+  if not FileExists(FpDFeSSL.ArquivoPFX) then
+    raise EACBrDFeException.Create('Arquivo: ' + FpDFeSSL.ArquivoPFX + ' não encontrado');
+
+  PFXStream := TFileStream.Create(FpDFeSSL.ArquivoPFX, fmOpenRead or fmShareDenyNone);
+  try
+    PFXStream.Position := 0;
+    FpDFeSSL.DadosPFX := ReadStrFromStream(PFXStream, PFXStream.Size);
+  finally
+    PFXStream.Free;
+  end;
+
+  CarregarCertificadoDeDadosPFX;
+end;
+
+procedure TDFeSSLCryptClass.CarregarCertificadoDeURLPFX;
+var
+  UsarCertificadoLocal, UsarCertificadoConexao: Boolean;
+  DataArquivoPFX: TDateTime;
+  OldArquivoPFX, OldURLPFX, OldCNPJ: String;
+  OldDadosPFX, DownloadDadosPFX: AnsiString;
+  DiasRestantes: Integer;
+begin
+  OldArquivoPFX := FpDFeSSL.ArquivoPFX;
+  OldURLPFX     := FpDFeSSL.URLPFX;
+  OldDadosPFX   := FpDFeSSL.DadosPFX;
+  DownloadDadosPFX := '';
+  OldCNPJ := '';
+  UsarCertificadoLocal := (not EstaVazio(OldArquivoPFX)) and FileExists(OldArquivoPFX);
+
+  if UsarCertificadoLocal then
+  begin
+    CarregarCertificadoDeArquivoPFX;
+    LerInfoCertificadoCarregado;
+    // Verifica se Certificado está vencendo. Se estiver, deve tentar baixar outro //
+    DiasRestantes := Trunc(CertDataVenc) - Trunc(Today);
+    OldCNPJ := CertCNPJ;
+    UsarCertificadoLocal := (DiasRestantes > CDiasRestantesBuscarNovoCeriticado);
+
+    // Verificando se já baixou Certitificado, hoje. Se SIM, não deve baixar novamente //
+    if not UsarCertificadoLocal then
+    begin
+      DataArquivoPFX := FileDateToDateTime(FileAge(OldArquivoPFX));
+      UsarCertificadoLocal := (DateOf(DataArquivoPFX) >= Today);
+    end;
+  end;
+
+  if not UsarCertificadoLocal then
+  begin
+    UsarCertificadoConexao := FpDFeSSL.UseCertificateHTTP;
+    try
+      FpDFeSSL.UseCertificateHTTP := False;
+      DownloadDadosPFX := FpDFeSSL.HTTPGet(OldURLPFX);  // Faz Download do PFX
+      if not (FpDFeSSL.SSLHttpClass.HTTPResultCode in [200..202]) then  // Erro na resposta
+        raise EACBrDFeException.CreateFmt('Http erro %d, baixando Certificado de %s',
+                                         [FpDFeSSL.SSLHttpClass.HTTPResultCode,
+                                          OldURLPFX]);
+    finally
+      FpDFeSSL.UseCertificateHTTP := UsarCertificadoConexao;
+    end;
+
+    if EstaVazio(DownloadDadosPFX) then
+      raise EACBrDFeException.CreateFmt(ACBrStr('Certificado obtido de %s é inválido'),[OldURLPFX]);
+
+    // Testando se Certificado baixado, é válido...
+    try
+      FpDFeSSL.DadosPFX := DownloadDadosPFX;
+      DescarregarCertificado;
+      CarregarCertificadoDeDadosPFX;
+    except
+      raise EACBrDFeException.CreateFmt(ACBrStr('Certificado obtido de %s é inválido'),[OldURLPFX]);
+    end;
+
+    if (OldCNPJ <> '') and (CertCNPJ <> OldCNPJ) then
+      raise  EACBrDFeException.CreateFmt(ACBrStr('CNPJ do Certificado obtido de %s é diferente do CNPJ atual'),[OldURLPFX]);
+
+    // Certificado lido com sucesso... Devemos salvar uma Copia Local ?
+    if (not EstaVazio(DownloadDadosPFX)) and (not EstaVazio(OldArquivoPFX)) then
+    begin
+      SysUtils.DeleteFile(OldArquivoPFX);
+      WriteToFile(OldArquivoPFX, DownloadDadosPFX, True);
+    end;
+  end;
+end;
+
+procedure TDFeSSLCryptClass.CarregarCertificadoDeDadosPFX;
+begin
+  raise EACBrDFeException.Create('"CarregarCertificadoDeDadosPFX" não implementado em: ' +ClassName);
+end;
+
+procedure TDFeSSLCryptClass.CarregarCertificadoDeNumeroSerie;
+begin
+  raise EACBrDFeException.Create('"CarregarCertificadoDeNumeroSerie" não suportado em: ' +ClassName);
+end;
+
+procedure TDFeSSLCryptClass.LerInfoCertificadoCarregado;
+begin
+  { Sobreescrever apenas se necessário }
 end;
 
 procedure TDFeSSLCryptClass.DescarregarCertificado;
@@ -808,36 +982,100 @@ constructor TDFeSSLHttpClass.Create(ADFeSSL: TDFeSSL);
 begin
   inherited Create;
   FpDFeSSL := ADFeSSL;
+  FDataReq := TMemoryStream.Create;
+  FDataResp := TMemoryStream.Create;
+  FHeaderReq := THttpHeader.Create;
+  FHeaderResp := THttpHeader.Create;
+  Clear;
 end;
 
 destructor TDFeSSLHttpClass.Destroy;
 begin
+  FDataReq.Free;
+  FDataResp.Free;
+  FHeaderReq.Free;
+  FHeaderResp.Free;
+
   inherited Destroy;
 end;
 
-function TDFeSSLHttpClass.GetHTTPResultCode: Integer;
+procedure TDFeSSLHttpClass.Clear;
 begin
-  Result := 0;
+  FDataResp.Clear;
+  FDataReq.Clear;
+  FHeaderReq.Clear;
+  FHeaderResp.Clear;
+  FpHTTPResultCode := 0;
+  FpInternalErrorCode := 0;
+  FURL := '';
+  FMethod := '';
+  FSoapAction := '';
+  FMimeType := '';
 end;
 
-function TDFeSSLHttpClass.GetInternalErrorCode: Integer;
+function TDFeSSLHttpClass.GetLastErrorDesc: String;
 begin
-  Result := 0;
+  Result := '';
 end;
 
-procedure TDFeSSLHttpClass.ConfigurarHTTP(const AURL, ASoapAction: String;
-  const AMimeType: String);
+procedure TDFeSSLHttpClass.ConfigConnection;
 begin
-  raise EACBrDFeException.Create('Método "ConfigurarHTTP" não implementado em: '+ClassName);
+  FDataResp.Clear;
+  FpHTTPResultCode := 0;
+  FpInternalErrorCode := 0;
 end;
 
 function TDFeSSLHttpClass.Enviar(const ConteudoXML: String; const AURL: String;
   const ASoapAction: String; const AMimeType: String): String;
+var
+  AMethod: String;
 begin
-  {$IFDEF FPC}
-  Result := '';
-  {$ENDIF}
-  raise EACBrDFeException.Create('Método "Enviar" não implementado em: '+ClassName);
+  FDataReq.Clear;
+  if (ConteudoXML <> '') then
+  begin
+    AMethod := 'POST';
+    WriteStrToStream(FDataReq, AnsiString(ConteudoXML));
+  end
+  else
+    AMethod := 'GET';
+
+  HeaderReq.Clear; // Para informar Haders na requisição, use HTTPMethod();
+  FSoapAction := ASoapAction;
+  FMimeType := AMimeType;
+  try
+    HTTPMethod( AMethod, AURL ) ;
+
+    FDataResp.Position := 0;
+    Result := ReadStrFromStream(FDataResp, FDataResp.Size);
+
+    // Verifica se o ResultCode é: 200 OK; 201 Created; 202 Accepted
+    // https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+    if not (FpHTTPResultCode in [200..202]) then
+      raise EACBrDFeException.Create('');
+  except
+//    on E:EACBrDFeException do
+//      raise;
+    on E:Exception do
+    begin
+      raise EACBrDFeException.CreateDef( Format(ACBrStr(cACBrDFeSSLEnviarException),
+                                         [FpInternalErrorCode, FpHTTPResultCode, FURL] )
+                                         + sLineBreak + LastErrorDesc);
+    end;
+  end;
+
+end;
+
+procedure TDFeSSLHttpClass.HTTPMethod(const AMethod, AURL: String);
+begin
+  FMethod := AMethod;
+  FURL := AURL;
+  Execute;
+end;
+
+procedure TDFeSSLHttpClass.Execute;
+begin
+  ConfigConnection;
+  { Implementar restante, com Override nas classes filhas }
 end;
 
 procedure TDFeSSLHttpClass.Abortar;
@@ -1033,6 +1271,7 @@ procedure TDFeSSL.Clear;
 begin
   FArquivoPFX  := '';
   FDadosPFX    := '';
+  FURLPFX      := '';
   FNumeroSerie := '';
   FProxyHost   := '';
   FProxyPass   := '';
@@ -1185,6 +1424,29 @@ begin
       FHttpSendCriticalSection.Release;
     end;
   end;
+end;
+
+procedure TDFeSSL.HTTPMethod(const AMethod, AURL: String);
+begin
+  FSSLHttpClass.HTTPMethod(AMethod, AURL);
+end;
+
+function TDFeSSL.HTTPGet(const AURL: String): AnsiString;
+begin
+  FSSLHttpClass.Clear;
+  FSSLHttpClass.HTTPMethod('GET', AURL);
+  FSSLHttpClass.DataResp.Position := 0;
+  Result := ReadStrFromStream(FSSLHttpClass.DataResp, FSSLHttpClass.DataResp.Size);
+end;
+
+function TDFeSSL.HTTPPost(const ADataToSend: AnsiString; const AURL: String
+  ): AnsiString;
+begin
+  FSSLHttpClass.Clear;
+  WriteStrToStream(FSSLHttpClass.DataReq, ADataToSend);
+  FSSLHttpClass.HTTPMethod('POST', AURL);
+  FSSLHttpClass.DataResp.Position := 0;
+  Result := ReadStrFromStream(FSSLHttpClass.DataResp, FSSLHttpClass.DataResp.Size);
 end;
 
 function TDFeSSL.Validar(const ConteudoXML: String; const ArqSchema: String;
@@ -1495,6 +1757,9 @@ procedure TDFeSSL.SetArquivoPFX(const AValue: String);
 begin
   if FArquivoPFX = AValue then Exit;
   FArquivoPFX := AValue;
+
+  if FArquivoPFX = '' then Exit;
+ 
   FNumeroSerie := ''; // Evitar erro ao trocar o tipo de certificado;
   FDadosPFX := '';    // Força a releitura de DadosPFX;
   if CertificadoLido then
@@ -1505,8 +1770,25 @@ procedure TDFeSSL.SetDadosPFX(const AValue: AnsiString);
 begin
   if FDadosPFX = AValue then Exit;
   FDadosPFX := AValue;
+
+  if FDadosPFX = '' then Exit;
+
   FArquivoPFX := '';  // Evitar erro ao trocar o tipo de certificado;
+  FURLPFX := '';
+  FNumeroSerie := '';
+  if CertificadoLido then
+    DescarregarCertificado;
+end;
+
+procedure TDFeSSL.SetURLPFX(AValue: String);
+begin
+  if FURLPFX = AValue then Exit;
+  FURLPFX := AValue;
+  if FURLPFX = '' then Exit;
+  
+  // Não Zera ArquivoPFX, pois se ele estiver preenchido (recomendado), será usado como Cache Local
   FNumeroSerie := ''; // Evitar erro ao trocar o tipo de certificado;
+  FDadosPFX := '';    // Força a releitura de DadosPFX;
   if CertificadoLido then
     DescarregarCertificado;
 end;
@@ -1515,8 +1797,11 @@ procedure TDFeSSL.SetNumeroSerie(const AValue: String);
 begin
   if FNumeroSerie = AValue then Exit;
   FNumeroSerie := Trim(UpperCase(StringReplace(AValue, ' ', '', [rfReplaceAll])));
+  if FNumeroSerie = '' then Exit;
+  
   FArquivoPFX := '';   // Evitar erro ao trocar o tipo de certificado;
-  FDadosPFX := '';     // Força a releitura de DadosPFX;
+  FDadosPFX := '';
+  FURLPFX := '';
   if CertificadoLido then
     DescarregarCertificado;
 end;
@@ -1534,17 +1819,20 @@ begin
 end;
 
 procedure TDFeSSL.SetSSLCryptLib(ASSLCryptLib: TSSLCryptLib);
+  procedure FreeSSLCryptLib;
+  begin
+    if Assigned(FSSLCryptClass) then
+      FreeAndNil(FSSLCryptClass);
+  end;
 begin
   if ASSLCryptLib = FSSLCryptLib then
     exit;
-
-  if Assigned(FSSLCryptClass) then
-    FreeAndNil(FSSLCryptClass);
 
   case ASSLCryptLib of
     cryOpenSSL:
     begin
       {$IfNDef DFE_SEM_OPENSSL}
+       FreeSSLCryptLib;
        FSSLCryptClass := TDFeOpenSSL.Create(Self);
       {$Else}
        raise EACBrDFeException.Create('Suporte a libOpenSSL foi desativado por compilação {$DEFINE DFE_SEM_OPENSSL}');
@@ -1554,6 +1842,7 @@ begin
     cryCapicom:
     begin
       {$IfNDef DFE_SEM_CAPICOM}
+       FreeSSLCryptLib;
        FSSLCryptClass := TDFeCapicom.Create(Self);
       {$Else}
        raise EACBrDFeException.Create('Suporte a libCapicom foi desativado por compilação {$DEFINE DFE_SEM_CAPICOM}');
@@ -1563,6 +1852,7 @@ begin
     cryWinCrypt:
     begin
       {$IfDef MSWINDOWS}
+       FreeSSLCryptLib;
        FSSLCryptClass := TDFeWinCrypt.Create(Self);
       {$Else}
        raise EACBrDFeException.Create('Suporte a libWinCrypt disponível apenas em MSWINDOWS');
@@ -1570,6 +1860,7 @@ begin
     end;
 
   else
+    FreeSSLCryptLib;
     FSSLCryptClass := TDFeSSLCryptClass.Create(Self);
   end;
 

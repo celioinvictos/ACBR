@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -30,13 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 20/04/2013:  Daniel Simões de Almeida
-|*   Inicio do desenvolvimento
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrEscPosEpson;
@@ -44,18 +37,23 @@ unit ACBrEscPosEpson;
 interface
 
 uses
-  Classes, SysUtils, ACBrPosPrinter;
+  Classes, SysUtils, Types,
+  ACBrPosPrinter, ACBrBase;
 
 const
-  MAX_LEN_CMD=65535;
+  MAX_LEN_CMD = 65535;
 
 type
 
   { TACBrEscPosEpson }
 
   TACBrEscPosEpson = class(TACBrPosPrinterClass)
+  private
+    FInfo: String;
   protected
+    function ComandoEsperaCheque(const SegundosEspera: Byte): AnsiString;
     procedure VerificarKeyCodes; virtual;
+
   public
     constructor Create(AOwner: TACBrPosPrinter);
 
@@ -68,9 +66,14 @@ type
       override;
     function ComandoGaveta(NumGaveta: Integer = 1): AnsiString; override;
     function ComandoConfiguraModoPagina: AnsiString; override;
+    function ComandoPosicionaModoPagina(APoint: TPoint): AnsiString; override;
+    function ComandoCarregaCheque(LerCMC7: Boolean=True; SegundosEspera: Byte=5): AnsiString; override;
+    function ComandoEjetarCheque: AnsiString; override;
 
     procedure LerStatus(var AStatus: TACBrPosPrinterStatus); override;
     function LerInfo: String; override;
+    function ComandoLerCMC7(SegundosEspera: Byte = 0): AnsiString; override;
+    function LeituraCheque: AnsiString; override;
 
     function ComandoImprimirImagemRasterStr(const RasterStr: AnsiString; AWidth: Integer;
       AHeight: Integer): AnsiString; override;
@@ -87,7 +90,8 @@ type
     const AMostrarCodigo: Boolean; const AAltura, ALarguraLinha: Integer): AnsiString;
 
   function ComandoImprimirImagemColumnStr(APosPrinter: TACBrPosPrinter;
-    const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer): AnsiString;
+    const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer;
+    AddLF: Boolean = True): AnsiString;
   function AjustarKeyCodeUnico(AKeyCode: Byte): Byte;
   function ComandoGravarLogoColumnStr(const RasterStr: AnsiString; AWidth: Integer;
     AHeight: Integer; KeyCode: Byte): AnsiString;
@@ -214,27 +218,31 @@ end;
 
 //https://bitbucket.org/bernd_summerswell/delphi_escpos_bitmap/overview
 function ComandoImprimirImagemColumnStr( APosPrinter: TACBrPosPrinter;
-  const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer): AnsiString;
+  const RasterStr: AnsiString; AWidth: Integer; AHeight: Integer;
+  AddLF: Boolean): AnsiString;
 var
-  Slices: TStrings;
+  Slices: TAnsiStringList;
   i: Integer;
+  ASlice: AnsiString;
 begin
   with APosPrinter do
   begin
     Result := PosPrinter.ComandoEspacoEntreLinhas(16);  // 24 dots
 
-    Slices := TStringList.Create;
+    Slices := TAnsiStringList.Create;
     try
       RasterStrToColumnStr(RasterStr, AWidth, Slices, 3);
 
       For i := 0 to Slices.Count-1 do
       begin
-          Result := Result + ESC +
-                             '*' + // Bit image mode
-                             #33 + // 24-dot double density
-                             IntToLEStr(AWidth) +
-                             Slices[i] +
-                             LF;
+        ASlice := Slices[i];
+        Result := Result + ESC +
+                           '*' + // Bit image mode
+                           #33 + // 24-dot double density
+                           IntToLEStr(AWidth) +
+                           ASlice;
+        if AddLF then
+          Result := Result + LF;
       end;
     finally
       Slices.Free;
@@ -255,20 +263,17 @@ end;
 function ComandoGravarLogoColumnStr( const RasterStr: AnsiString; AWidth: Integer;
   AHeight: Integer; KeyCode: Byte): AnsiString;
 var
-  SLColumnStr: TStrings;
-  HeightInBytes, LenBuffer, LenSLineBreak, LenK: Integer;
+  SLColumnStr: TAnsiStringList;
+  HeightInBytes, LenBuffer, LenK: Integer;
   Buffer: AnsiString;
 begin
   if KeyCode <> 1 then
     raise EPosPrinterException.Create(ACBrStr('ACBrPosPrinter gravando Logo em modo Legado (FS q), somente aceita a posição "1"'));
 
-  SLColumnStr := TStringList.Create;
+  SLColumnStr := TAnsiStringList.Create;
   try
     RasterStrToColumnStr(RasterStr, AWidth, SLColumnStr, 0);
     Buffer := SLColumnStr.Text;
-    LenSLineBreak := Length(sLineBreak);
-    LenBuffer := Length(Buffer);
-    Delete(Buffer, LenBuffer-LenSLineBreak+1, LenSLineBreak) ;  // Remove sLineBreak do final
   finally
     SLColumnStr.Free;
   end;
@@ -312,6 +317,7 @@ begin
   begin
     Zera                    := ESC + '@';
     PuloDeLinha             := LF;
+    PuloDePagina            := FF;
     EspacoEntreLinhasPadrao := ESC + '2';
     EspacoEntreLinhas       := ESC + '3';
     FonteNormal             := ESC + '!' + #0;
@@ -327,8 +333,6 @@ begin
     DesligaSublinhado       := ESC + '-' + #0;
     LigaInvertido           := GS  + 'B' + #1;
     DesligaInvertido        := GS  + 'B' + #0;
-    LigaItalico             := ESC + '4';
-    DesligaItalico          := ESC + '5';
     LigaCondensado          := SI;
     DesligaCondensado       := DC2;
     AlinhadoEsquerda        := ESC + 'a' + #0;
@@ -344,6 +348,8 @@ begin
   {*)}
 
   TagsNaoSuportadas.Add( cTagBarraMSI );
+  TagsNaoSuportadas.Add( cTagLigaItalico );
+  TagsNaoSuportadas.Add( cTagDesligaItalico );
 end;
 
 function TACBrEscPosEpson.ComandoFonte(TipoFonte: TACBrPosTipoFonte;
@@ -351,6 +357,7 @@ function TACBrEscPosEpson.ComandoFonte(TipoFonte: TACBrPosTipoFonte;
 var
   NovoFonteStatus: TACBrPosFonte;
   AByte: Integer;
+  AChar: AnsiChar;
 begin
   Result := '';
   NovoFonteStatus := fpPosPrinter.FonteStatus;
@@ -378,7 +385,9 @@ begin
     if ftSublinhado in NovoFonteStatus then
       SetBit(AByte, 7);
 
-    Result := ESC + '!' + AnsiChr(Byte(AByte));
+    Result := ESC + '!';
+    AChar := AnsiChr(Byte(AByte));
+    Result := Result + AChar;
 
     // ESC ! desliga Invertido, enviando o comando novamente
     if ftInvertido in NovoFonteStatus then
@@ -405,9 +414,9 @@ function TACBrEscPosEpson.ComandoQrCode(const ACodigo: AnsiString): AnsiString;
 begin
   with fpPosPrinter.ConfigQRCode do
   begin
-     Result := GS + '(k' + #4 + #0 + '1A' + IntToStr(Tipo) + #0 +  // Tipo
+     Result := GS + '(k' + #4 + #0 + '1A' + AnsiString(IntToStr(Tipo)) + #0 +  // Tipo
                GS + '(k' + #3 + #0 + '1C' + AnsiChr(LarguraModulo) +   // Largura Modulo
-               GS + '(k' + #3 + #0 + '1E' + IntToStr(ErrorLevel) + // Error Level
+               GS + '(k' + #3 + #0 + '1E' + AnsiString(IntToStr(ErrorLevel)) + // Error Level
                GS + '(k' + IntToLEStr(length(ACodigo)+3)+'1P0' + ACodigo +  // Codifica
                GS + '(k' + #3 + #0 +'1Q0';  // Imprime
   end;
@@ -580,11 +589,99 @@ begin
 
     Result := ESC + 'T' + CharDir +                  // Ajusta a Direcao
               ComandoEspacoEntreLinhas(EspacoEntreLinhas) +
-              {GS + '$' + AnsiChr(0)+ AnsiChr(0) +}  // Ajusta posição Vertical Absoluta em 0
               ESC + 'W' + IntToLEStr(Esquerda) +     // Ajusta a Regiao
                           IntToLEStr(Topo) +
                           IntToLEStr(Largura) +
                           IntToLEStr(Altura);
+  end;
+end;
+
+function TACBrEscPosEpson.ComandoPosicionaModoPagina(APoint: TPoint): AnsiString;
+begin
+  Result := ESC + '$' + IntToLEStr(APoint.x)+
+            GS  + '$' + IntToLEStr(APoint.y);
+end;
+
+function TACBrEscPosEpson.ComandoEsperaCheque(const SegundosEspera: Byte): AnsiString;
+begin
+  Result := ESC + '=' + #1 +                                 // ESC = n - Select peripheral device, n = 1 Specifies printer only
+            ESC + 'f' + #0 + AnsiChr(SegundosEspera * 10) +  // ESC f t1 t2 - Set cut sheet wait time
+            ESC + 'J' + #0;                                  // ESC J n - Print and feed paper
+end;
+
+function TACBrEscPosEpson.ComandoCarregaCheque(LerCMC7: Boolean; SegundosEspera: Byte): AnsiString;
+begin
+  if LerCMC7 then
+    Result := ComandoLerCMC7
+  else
+    Result := ComandoEsperaCheque(SegundosEspera);
+
+  Result := Result +
+            GS + '(G' +#2+#0+ #48+#4 +    //GS ( G pL pH fn m - <Function 48> - Select the side of the slip (#4 = face or #68 = back).
+            GS + '(G' +#2+#0+ #84+#1;     //GS ( G pL pH fn m - <Function 84> - Feed to the print starting position for the slip.;
+end;
+
+function TACBrEscPosEpson.ComandoEjetarCheque: AnsiString;
+begin
+  Result := DLE + ENQ + #3 +   // Real-time request to printer; 3=Cancels the slip waiting status after clearing the receive and print buffers
+            #24 +              // CAN Cancel print data in page mode
+            Cmd.DesligaModoPagina +
+            FS  + 'a2'+        // Ejects check paper in MICR mode
+            Cmd.PuloDePagina;  // FF - Eject
+end;
+
+function TACBrEscPosEpson.ComandoLerCMC7(SegundosEspera: Byte): AnsiString;
+begin
+  // FS ( f pL pH [n m]1...[n m]k - Select MICR data handling
+  //              #3+#0 -> Header = '_'
+  Result := ComandoEsperaCheque(SegundosEspera) +
+            FS  + '(f' +#8+#0+ #0+#255 +#1+#1 +#2+#1 + #3+#0 +
+            FS  + 'a0' +#1;  // FS a 0 n - Read check paper - #1 = CMC7
+end;
+
+function TACBrEscPosEpson.LeituraCheque: AnsiString;
+var
+  Resp: AnsiString;
+  B: Byte;
+  P: Integer;
+begin
+  Result := '';
+  Resp := fpPosPrinter.TxRx( FS + 'b', 0, 2000, True );
+
+  // Verificando o Header
+  if copy(Resp,1,1) = '_' then        // Header formarto 1
+    P := 2
+  else if copy(Resp,1,2) = '7*' then  // Header formarto 2
+    P := 3
+  else if copy(Resp,1,1) = '=' then   // Resposta por Hook da DLL
+    P := 1
+  else
+    P := 0;
+
+  // Verificando o Byte de Status
+  if (P > 0) and (P <= Length(Resp)) then
+  begin
+    if P > 1 then
+    begin
+      B := Ord(Resp[P]);
+      if not TestBit(B, 5) then   // Reading normal ?
+        Result := Trim(copy(Resp, P+1, Length(Resp)));  // Remove Header e Status
+    end
+    else
+      Result := Trim(Resp);   // Resposta por Hook da DLL
+  end;
+
+  if (Result <> '') then
+  begin
+    // Remove espaços dos blocos
+    Result := StringReplace(Result,' ','',[rfReplaceAll]);
+
+    // Acha Inicio do Bloco CMC7
+    P := pos('=', Result);
+    if (P < 0) then
+      P := 1;
+
+    Result := Copy(Result, P, Length(Result));
   end;
 end;
 
@@ -633,6 +730,38 @@ begin
       if TestBit(B, 5) and TestBit(B, 6) then
         AStatus := AStatus + [stSemPapel];
     end;
+
+    if (fpPosPrinter.TemCheque = 1) then
+    begin
+      C := fpPosPrinter.TxRx( DLE + EOT + #5 );
+      if (Length(C) > 0) then
+      begin
+        B := Ord(C[1]);
+        if not TestBit(B, 2) then
+          AStatus := AStatus + [stSlip];
+        if TestBit(B, 3) then
+          AStatus := AStatus + [stAguardandoSlip];
+        if not TestBit(B, 5) then
+          AStatus := AStatus + [stTOF];
+        if not TestBit(B, 6) then
+          AStatus := AStatus + [stBOF];
+      end;
+
+      C := fpPosPrinter.TxRx( DLE + EOT + BS + #1 );
+      if (Length(C) > 0) then
+      begin
+        B := Ord(C[1]);
+        if not TestBit(B, 2) then
+          AStatus := AStatus + [stMICR];
+        if TestBit(B, 3) then
+          AStatus := AStatus + [stAguardandoSlip];
+        if not TestBit(B, 5) then
+          AStatus := AStatus + [stTOF];
+        if not TestBit(B, 6) then
+          AStatus := AStatus + [stBOF];
+      end;
+    end;
+
   except
     AStatus := AStatus + [stErroLeitura];
   end;
@@ -653,20 +782,28 @@ var
     Info := Info + Titulo+'='+AInfo + sLineBreak;
   end;
 
+  function BoolToChar(ABool: Boolean): AnsiChar;
+  begin
+    if ABool then
+      Result := '1'
+    else
+      Result := '0';
+  end;
+
 begin
   Info := '';
 
   // Lendo o Fabricante
   Ret := fpPosPrinter.TxRx( GS + 'IB', 0, 500, True );
-  AddInfo('Fabricante', Ret);
+  AddInfo(cKeyFabricante, Ret);
 
   // Lendo a versão do Firmware
   Ret := fpPosPrinter.TxRx( GS + 'IA', 0, 500, True );
-  AddInfo('Firmware', Ret);
+  AddInfo(cKeyFirmware, Ret);
 
   // Lendo o Modelo
   Ret := fpPosPrinter.TxRx( GS + 'IC', 0, 500, True );
-  AddInfo('Modelo', Ret);
+  AddInfo(cKeyModelo, Ret);
 
   // Lendo o Número Serial
   Ret := '';
@@ -686,9 +823,13 @@ begin
   if Length(Ret) > 0 then
   begin
     B := Ord(Ret[1]);
-    Info := Info + 'Guilhotina='+IfThen(TestBit(B, 1),'1','0') + sLineBreak ;
+    AddInfo(cKeyGuilhotina, BoolToChar(TestBit(B, 1)) );
+    AddInfo(cKeyCheque, BoolToChar(TestBit(B, 3)) );
+    AddInfo(cKeyMICR, BoolToChar(TestBit(B, 3)) );
+    AddInfo(cKeyAutenticacao, BoolToChar(TestBit(B, 6)) );
   end;
 
+  FInfo  := Info;
   Result := Info;
 end;
 

@@ -32,7 +32,7 @@ object Form1: TForm1
     Top = 0
     Width = 600
     Height = 136
-    ActivePage = TabSheet2
+    ActivePage = tsIBGE
     Align = alTop
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -116,7 +116,7 @@ object Form1: TForm1
         end
         object edProxyHost: TEdit
           Left = 22
-          Top = 32
+          Top = 30
           Width = 154
           Height = 21
           TabOrder = 0
@@ -315,7 +315,7 @@ object Form1: TForm1
           428
           108)
         object bBuscarLogradouro1: TButton
-          Left = 142
+          Left = 38
           Top = 59
           Width = 112
           Height = 33
@@ -330,7 +330,15 @@ object Form1: TForm1
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
-          Text = 'Petrolina'
+          Text = 'Bragan'#231'a Paulista'
+        end
+        object cbIgnorar: TCheckBox
+          Left = 184
+          Top = 64
+          Width = 153
+          Height = 17
+          Caption = 'Ignorar Caixa e Acentos'
+          TabOrder = 2
         end
       end
     end
@@ -340,6 +348,7 @@ object Form1: TForm1
     ParseText = True
     OnAntesAbrirHTTP = ACBrCEP1AntesAbrirHTTP
     WebService = wsBuscarCep
+    PesquisarIBGE = True
     OnBuscaEfetuada = ACBrCEP1BuscaEfetuada
     Left = 248
     Top = 160
@@ -347,6 +356,7 @@ object Form1: TForm1
   object ACBrIBGE1: TACBrIBGE
     ProxyPort = '8080'
     OnAntesAbrirHTTP = ACBrIBGE1AntesAbrirHTTP
+    CacheArquivo = 'ACBrIBGE.txt'
     OnBuscaEfetuada = ACBrIBGE1BuscaEfetuada
     Left = 312
     Top = 160

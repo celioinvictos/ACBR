@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2007 Andrews Ricardo Bejatto                }
-{                                       Anderson Rogerio Bejatto               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:          Daniel Simooes de Almeida              }
+{ Colaboradores nesse arquivo:                                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -27,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -40,7 +38,10 @@ interface
 
 uses
   Classes,
-  ACBrETQClass, ACBrDevice;
+  ACBrETQClass, ACBrDevice
+  {$IFDEF NEXTGEN}
+   ,ACBrBase
+  {$ENDIF};
 
 type
 
@@ -66,10 +67,12 @@ type
     function ComandoLinhaCaixa(aAltura, aLargura, Espessura: Integer): String;
     function AjustarNomeArquivoImagem( const aNomeImagem: String): String;
     function ConverterMultiplicadorImagem(aMultiplicador: Integer): String;
+    function ConverterPaginaDeCodigo(aPaginaDeCodigo: TACBrETQPaginaCodigo): String;
   protected
     function ComandoAbertura: AnsiString; override;
     function ComandoUnidade: AnsiString; override;
     function ComandoTemperatura: AnsiString; override;
+    function ComandoPaginaDeCodigo: AnsiString; override;
     function ComandoOrigemCoordenadas: AnsiString; override;
     function ComandoResolucao: AnsiString; override;
     function ComandoVelocidade: AnsiString; override;
@@ -94,6 +97,9 @@ type
       aBarraLarga, aBarraFina, aVertical, aHorizontal: Integer; aTexto: String;
       aAlturaBarras: Integer; aExibeCodigo: TACBrETQBarraExibeCodigo = becPadrao
       ): AnsiString; override;
+    function ComandoImprimirQRCode(aVertical, aHorizontal: Integer;
+      const aTexto: String; aLarguraModulo: Integer; aErrorLevel: Integer;
+      aTipo: Integer): AnsiString; override;
 
     function ComandoImprimirLinha(aVertical, aHorizontal, aLargura, aAltura: Integer
       ): AnsiString; override;
@@ -228,6 +234,18 @@ begin
   Result := IntToStr(aMultiplicador);
 end;
 
+function TACBrETQZplII.ConverterPaginaDeCodigo(
+  aPaginaDeCodigo: TACBrETQPaginaCodigo): String;
+begin
+  case aPaginaDeCodigo of
+    pce437 : Result := '0';
+    pce850, pce852, pce860 : Result := '13';
+    pce1250, pce1252: Result := '27';
+  else
+    Result := '';;
+  end;
+end;
+
 function TACBrETQZplII.ConverterExibeCodigo(
   aExibeCodigo: TACBrETQBarraExibeCodigo): String;
 begin
@@ -292,6 +310,11 @@ begin
     raise Exception.Create('Temperatura deve ser de 0 a 30');
 
   Result := '~SD' + IntToStrZero(Temperatura, 2);
+end;
+
+function TACBrETQZplII.ComandoPaginaDeCodigo: AnsiString;
+begin
+  Result := '^CI' + ConverterPaginaDeCodigo(PaginaDeCodigo);
 end;
 
 function TACBrETQZplII.ComandoOrigemCoordenadas: AnsiString;
@@ -405,6 +428,18 @@ begin
   Result := ComandoCoordenadas(aVertical, aHorizontal) +
             ComandoBarras(aTipoBarras, aOrientacao, aAlturaBarras, aExibeCodigo ) +
             ComandoCampo(aTexto);
+end;
+
+function TACBrETQZplII.ComandoImprimirQRCode(aVertical, aHorizontal: Integer;
+  const aTexto: String; aLarguraModulo: Integer; aErrorLevel: Integer;
+  aTipo: Integer): AnsiString;
+begin
+  Result := ComandoCoordenadas(aVertical, aHorizontal) +
+            '^BQ'+
+            ConverterOrientacao(orNormal) + ',' +
+            IntToStr(aTipo) + ',' +
+            IntToStr(aLarguraModulo) + ',' +
+            ComandoCampo( ConverterQRCodeErrorLevel(aErrorLevel) +'A,'+ aTexto);
 end;
 
 function TACBrETQZplII.ComandoImprimirLinha(aVertical, aHorizontal, aLargura,

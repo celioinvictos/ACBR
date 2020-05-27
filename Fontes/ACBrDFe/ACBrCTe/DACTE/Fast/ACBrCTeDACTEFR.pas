@@ -1,17 +1,17 @@
-{******************************************************************************
-{ Projeto: Componente ACBrCTe                                                  }
-{ Biblioteca multiplataforma de componentes Delphi para emissão de Conhecimento}
-{ Transporte eletrônica - CTe - http://www.cte.fazenda.gov.br                  }
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Wemerson Souto                                  }
+{                              André Ferreira de Moraes                        }
+{                              Jeickson Gobeti                                 }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,17 +29,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-  |* Historico
-  |*
-  |* 30/03/2011: Jeickson Gobeti
-  |*  - Inicio do desenvolvimento Dacte FastReport
- ******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -1278,6 +1270,7 @@ const
   TITULO_PDF = 'Conhecimento de Transporte Eletrônico';
 var
   OldShowDialog: Boolean;
+  NomeArq :string;
 begin
   if PrepareReport(ACTE) then
   begin
@@ -1290,8 +1283,11 @@ begin
     OldShowDialog         := frxPDFExport.ShowDialog;
     try
       frxPDFExport.ShowDialog := False;
-      frxPDFExport.FileName   := IncludeTrailingPathDelimiter(PathPDF) + OnlyNumber(CTE.infCTe.Id) + '-cte.pdf';
-
+      NomeArq := Trim(DACTEClassOwner.NomeDocumento);
+      if EstaVazio(NomeArq) then
+        NomeArq := OnlyNumber(CTE.infCTe.Id) + '-cte.pdf';
+      frxPDFExport.FileName := PathWithDelim(DACTEClassOwner.PathPDF) + NomeArq;
+      
       if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
          ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
 
@@ -1332,9 +1328,11 @@ begin
     OldShowDialog         := frxPDFExport.ShowDialog;
     try
       frxPDFExport.ShowDialog := False;
-      NomeArq                 := StringReplace(TACBrCTe(ACBrCTe).EventoCTe.Evento.Items[0].InfEvento.Id, 'ID', '', [rfIgnoreCase]);
-      frxPDFExport.FileName   := IncludeTrailingPathDelimiter(PathPDF) + NomeArq + '-procEventoCTe.pdf';
-
+      NomeArq := Trim(DACTEClassOwner.NomeDocumento);
+      if EstaVazio(NomeArq) then
+        NomeArq := OnlyNumber(TACBrCTe(ACBrCTe).EventoCTe.Evento.Items[0].InfEvento.Id) + '-procEventoCTe.pdf';
+      frxPDFExport.FileName := PathWithDelim(DACTEClassOwner.PathPDF) + NomeArq;
+            
       if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
         ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
 
@@ -1375,8 +1373,11 @@ begin
     OldShowDialog         := frxPDFExport.ShowDialog;
     try
       frxPDFExport.ShowDialog := False;
-      NomeArq                 := OnlyNumber(TACBrCTe(ACBrCTe).InutCTe.RetInutCTe.Id);
-      frxPDFExport.FileName   := PathWithDelim(Self.PathPDF) + NomeArq + '-procInutCTe.pdf';
+      NomeArq := Trim(DACTEClassOwner.NomeDocumento);
+      if EstaVazio(NomeArq) then
+        NomeArq := OnlyNumber(TACBrCTe(ACBrCTe).InutCTe.RetInutCTe.Id) + '-procInutCTe.pdf';
+      frxPDFExport.FileName := PathWithDelim(DACTEClassOwner.PathPDF) + NomeArq;
+            
 
       if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
         ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
@@ -1405,7 +1406,6 @@ begin
       Page.LeftMargin := MargemEsquerda;
     if (MargemDireita > 0) then
       Page.RightMargin := MargemDireita;
-    frxReport.PreviewPages.ModifyPage(I, Page);
   end;
 end;
 
@@ -2906,7 +2906,7 @@ begin
           vResumo := vResumo + FCTe.Ide.Toma4.xNome;
       end;
 
-      vResumo := vResumo + ' - VALOR A RECEBER: R$ ' + FormatFloat('###,###,###,##0.00',FCTe.vPrest.vRec);
+      vResumo := vResumo + ' - VALOR A RECEBER: R$ ' + FormatFloat(',0.00',FCTe.vPrest.vRec);
     end;
     FieldByName('ResumoCanhoto').AsString := vResumo;
 

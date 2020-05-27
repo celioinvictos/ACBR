@@ -1,9 +1,11 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{ Biblioteca multi plataforma de componentes Delphi para interação com equipa- }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na página do Projeto ACBr     }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
@@ -22,15 +24,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 Agradecimentos:
-
-* Administradores:
-- Daniel Simões de Almeida
-- André Ferreira de Moraes
 
 * Desenvolvedores:
 - Isaque Pinheiro - Doação do componente ao projeto ACBr
@@ -47,6 +44,43 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+Data 17/02/2020
+-- ACBrSPEDContabil --
+[*] Alterações nos registros I051 para deixar em conformidade com a versão 8. 
+    https://www.projetoacbr.com.br/forum/topic/56130-ecd-layout-800/?do=findComment&comment=369202
+   Por: Falcon
+
+Data 11/02/2020
+-- ACBrSPEDContabil --
+[*] Alterações nos registros 0000 e J150 para deixar em conformidade com a 
+    versão 8. 
+    https://www.projetoacbr.com.br/forum/topic/56130-ecd-layout-800/?do=findComment&comment=368153
+   Por: Renato Rubinho
+
+Data 07/02/2020
+-- ACBrSPEDFiscal --
+[-] Inclusão do registro 9900 pra totalizar as ocorrências do registro C597. (Juliana Tamizou)
+
+Data 05/02/2020
+-- ACBrSPEDFiscal --
+[-] Inclusão do registro 9900 pra totalizar as ocorrências do registro H030. (Ezequiel Brandalise)
+
+Data 28/01/2020
+-- ACBrEFDBlocos --
+[*] Inclusão de novo item para o tipo enumerado TACBrMotInv devido a versão 3.03 do Guia Prático EFD
+
+Data: 15/09/2019
+-- ACBrEFDImportar --
+[+] Início do bloco 1 (por Marcelo Silva | Apollo Sistemas)
+
+Data: 08/05/2019
+-- ACBrEFDImportar --
+[-] Verificação se existe mais de um delimitador para cada linha no momento da
+    importação. Isso se faz necessário pois em arquivos SPED que já foram
+    assinados existem linhas após a finalização do arquivo (Bloco 9999) e estas
+    linhas devem ser ignoradas na importação para não ocasionarem erro.
+(por Rodrigo Coelho | Bunny Soft)
+
 Data 03/08/2018
 -- ACBrEFDBlocos --
 [-] Correção na definição de tipo dos campos IND_VEIC e VEIC_ID no registro D140.
@@ -58,6 +92,10 @@ Data 17/04/2018
 [*] Atualização de valores válidos para o campo IND_DOC do registro 1100 EFD ICMS/IPI.
     https://www.projetoacbr.com.br/forum/topic/42786-declara%C3%A7%C3%A3o-%C3%BAnica-de-exporta%C3%A7%C3%A3o/  
   Por: Wesley Oliveira
+  
+Data 03/07/2017
+-- ACBrEFDImportar --
+[+] Importação ICMS IPI. (por Rodrigo Buschmann | Digibyte) 
   
 Data 22/06/2017
 [-] Correção nos regystros Ya do SpedECF
@@ -223,6 +261,10 @@ Versão 1.02 05/05/2015
 [*] O Objeto do Registro agora é passado como parâmetro nos eventos, para que possa
     ser lido alguma informação do registro atual a que o evento for disparado.
     (por Isaque Pinheiro)
+	
+Data: 23/02/2015
+-- ACBrEFDImportar --
+[+] Criação da classe. (por Macgayver Armini Apolonio)
 
 Versão 1.02  16/01/2014
 -- ACBrSPEDFiscal --
@@ -762,7 +804,8 @@ Versão 0.01a   30/10/09
 [+] Início do Projeto
 [+] Primeira Versao lançada baseado no componente fornecido por Isaque Pinheiro.
 
-
+10/04/2009: Isaque Pinheiro
+Criação e distribuição da Primeira Versao
 
 
 

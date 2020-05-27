@@ -50,8 +50,14 @@ unit pcnEnvEventoNFe;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  pcnConversao, pcnGerador, pcnEventoNFe, pcnConsts, pcnNFeConsts, pcnSignature;
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  pcnConversao, pcnGerador, pcnEventoNFe, pcnConsts, pcnNFeConsts, pcnSignature,
+  ACBrBase;
 
 type
   EventoException          = class(Exception);
@@ -59,7 +65,7 @@ type
   TInfEventoCollectionItem = class;
   TEventoNFe               = class;
 
-  TInfEventoCollection = class(TObjectList)
+  TInfEventoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TInfEventoCollectionItem;
     procedure SetItem(Index: Integer; Value: TInfEventoCollectionItem);
@@ -74,6 +80,7 @@ type
     FInfEvento: TInfEvento;
     Fsignature: Tsignature;
     FRetInfEvento: TRetInfEvento;
+    FXML: String;
   public
     constructor Create;
     destructor Destroy; override;
@@ -81,6 +88,7 @@ type
     property InfEvento: TInfEvento       read FInfEvento    write FInfEvento;
     property signature: Tsignature       read Fsignature    write Fsignature;
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
+    property XML: String                 read FXML          write FXML;
   end;
 
   { TEventoNFe }
@@ -403,6 +411,7 @@ begin
      Result := RetEventoNFe.LerXml;
      with FEvento.New do
       begin
+        XML                     := AXML;
         infEvento.ID            := RetEventoNFe.InfEvento.id;
         infEvento.cOrgao        := RetEventoNFe.InfEvento.cOrgao;
         infEvento.tpAmb         := RetEventoNFe.InfEvento.tpAmb;
@@ -553,13 +562,13 @@ end;
 function TInfEventoCollection.GetItem(
   Index: Integer): TInfEventoCollectionItem;
 begin
-  Result := TInfEventoCollectionItem(inherited GetItem(Index));
+  Result := TInfEventoCollectionItem(inherited Items[Index]);
 end;
 
 procedure TInfEventoCollection.SetItem(Index: Integer;
   Value: TInfEventoCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TInfEventoCollection.New: TInfEventoCollectionItem;
@@ -587,3 +596,4 @@ begin
 end;
 
 end.
+

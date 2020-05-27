@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrNFSe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {$I ACBr.inc}
@@ -34,8 +37,13 @@ unit pnfsConsSitLoteRpsResposta;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  ACBrUtil, 
+  SysUtils, Classes,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IFEND}
+  ACBrBase, ACBrUtil,
   pcnAuxiliar, pcnConversao, pcnLeitor, pnfsConversao, pnfsNFSe;
 
 type
@@ -63,7 +71,7 @@ type
     property InformacoesLote: TInformacoesLote    read FInformacoesLote write FInformacoesLote;
   end;
 
- TMsgRetornoSitCollection = class(TObjectList)
+ TMsgRetornoSitCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TMsgRetornoSitCollectionItem;
     procedure SetItem(Index: Integer; Value: TMsgRetornoSitCollectionItem);
@@ -118,6 +126,7 @@ type
     function LerXml_proNFSeBrasil: Boolean;
     function LerXml_proSP: Boolean;
     function LerXML_proAssessorPublico: boolean;
+    function LerXML_proSiat: Boolean;
     property Leitor: TLeitor         read FLeitor   write FLeitor;
     property InfSit: TInfSit         read FInfSit   write FInfSit;
     property Provedor: TnfseProvedor read FProvedor write FProvedor;
@@ -156,13 +165,13 @@ end;
 function TMsgRetornoSitCollection.GetItem(
   Index: Integer): TMsgRetornoSitCollectionItem;
 begin
-  Result := TMsgRetornoSitCollectionItem(inherited GetItem(Index));
+  Result := TMsgRetornoSitCollectionItem(inherited Items[Index]);
 end;
 
 procedure TMsgRetornoSitCollection.SetItem(Index: Integer;
   Value: TMsgRetornoSitCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TMsgRetornoSitCollection.New: TMsgRetornoSitCollectionItem;
@@ -223,7 +232,8 @@ begin
     proNFSeBrasil: Result := LerXml_proNFSeBrasil;
     proSP, 
     proNotaBlu:    Result := LerXml_proSP;
-    proAssessorPublico: Result := LerXML_proAssessorPublico;															 
+    proAssessorPublico: Result := LerXML_proAssessorPublico;
+    proSiat:       Result := LerXML_proSiat;
   else
     Result := LerXml_ABRASF;
   end;
@@ -422,13 +432,15 @@ begin
           InfSit.FSituacao := Leitor.rCampo(tcStr, 'sit');
 
           if InfSit.FSituacao = '100' then
-            InfSit.FSituacao := '4';
+            InfSit.FSituacao := '4'
+          else if InfSit.FSituacao = '217' then
+            InfSit.FSituacao := '2';
         end;
 
-        j := 0;
         if (leitor.rExtrai(1, 'motivos') <> '') then
         begin
-          while Leitor.rExtrai(2, 'mot', '', j + 1) <> '' do
+          j := 0;
+          while Leitor.rExtrai(2, 'mot', '', j) <> '' do
           begin
             sMotDes := Leitor.rCampo(tcStr, 'mot');
 
@@ -743,6 +755,11 @@ begin
   except
     Result := False;
   end;
+end;
+
+function TretSitLote.LerXML_proSiat: Boolean; 
+begin
+  Result := False;
 end;
 
 end.

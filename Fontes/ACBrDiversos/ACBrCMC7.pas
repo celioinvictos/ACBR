@@ -3,12 +3,11 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 André Ferreira de Moraes               }
-{                                       Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:  Cirilo Veloso  -  www.veloso.adm.br            }
-{                               Aroldo Zanella -  www.forumweb.com.b           }
-{                                                                              }
+{ Colaboradores nesse arquivo: André Ferreira de Moraes						   }
+{                              Cirilo Veloso  -  www.veloso.adm.br             }
+{                              Aroldo Zanella -  www.forumweb.com.br           }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
@@ -28,21 +27,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 06/01/2005: André Ferreira de Moraes
-|*  - Primeira Versao ACBrCMC7
-|* 29/05/2006: André Ferreira de Moraes
-|*  - Corrigido Bug no calculo do digito Verificador 2
-|* 29/05/2006: Diogo Augusto Pereira
-|*  - Calculo de CMC7 compatiblizado com o Banrisul 
-******************************************************************************}
 unit ACBrCMC7;
 
 interface
@@ -284,7 +272,9 @@ begin
 end;
 
 procedure TACBrCMC7.SetCMC7(Banda: String);
-Const  vDigitos = '<99999999<9999999999>999999999999:' ;
+Const
+  vDigitos1 = '<99999999<9999999999>999999999999:' ;
+  vDigitos2 = '=99999999=9999999999^999999999999/' ;  // EPSON Printers
 var
   Ignorar : Integer;
   I : Integer ;
@@ -303,14 +293,14 @@ begin
 
   for I := 1 to 33 do // Desprezando último caracter
   begin
-    if vDigitos[I] = '9' then
+    if vDigitos1[I] = '9' then
      begin
        if not CharIsNum(Banda[I]) then
            raise Exception.CreateFmt(ACBrStr('Caracter da posição %d da Banda deve ser numérico'),[I]);
      end
     else
-       if vDigitos[I] <> Banda[I] then
-          raise Exception.CreateFmt(ACBrStr('Caracter da posição %d da Banda deve ser %s'),[I,vDigitos[I]]);
+       if (vDigitos1[I] <> Banda[I]) and (vDigitos2[I] <> Banda[I]) then
+          raise Exception.CreateFmt(ACBrStr('Caracter da posição %d da Banda deve ser %s ou %s'),[I, vDigitos1[I], vDigitos2[I]]);
 
   end ;
 

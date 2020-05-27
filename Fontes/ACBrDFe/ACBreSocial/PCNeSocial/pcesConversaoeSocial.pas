@@ -1,17 +1,18 @@
 {******************************************************************************}
-{ Projeto: Componente ACBreSocial                                              }
-{  Biblioteca multiplataforma de componentes Delphi para envio dos eventos do  }
-{ eSocial - http://www.esocial.gov.br/                                         }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2008 Wemerson Souto                         }
-{                                       Daniel Simoes de Almeida               }
-{                                       André Ferreira de Moraes               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                              Jean Carlo Cantu                                }
+{                              Tiago Ravache                                   }
+{                              Guilherme Costa                                 }
+{                              Leivio Fontenele                                }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
-{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -29,21 +30,10 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
-|*  - Doação do componente para o Projeto ACBr
-|* 29/02/2015: Guilherme Costa
-|*  - Adicionado algumas conversões
-|* 28/08/2017: Leivio Fontenele - leivio@yahoo.com.br
-|*  - Implementação comunicação, envelope, status e retorno do componente com webservice.
-******************************************************************************}
 {$I ACBr.inc}
 
 unit pcesConversaoeSocial;
@@ -410,7 +400,8 @@ type
                               mtvLicencaMaternidadeAdocaoGuardaJudicial, mtvLicencaNaoRemunerada, mtvMandatoEleitoralSemRemuneracao,
                               mtvMandatoEleitoralComRemuneracao, mtvMandatoSindical, mtvMulherVitimaViolencia, mtvParticipacaoCNPS,
                               mtvQualificacao, mtvRepresentanteSindical, mtvServicoMilitar, mtvSuspensaoDisciplinar, mtvServidorPublicoDisponibilidade,
-                              mtvLicencaMaternidade180Dias, mtvInatividadetrabalhadorAvulso90Dias, mtvLicencaMaternidadeAntecipacaoProrrogacao);
+                              mtvLicencaMaternidade180Dias, mtvInatividadetrabalhadorAvulso90Dias, mtvLicencaMaternidadeAntecipacaoProrrogacao,
+                              mtvSuspensaoTemporariaContratoTrabalhoNosTermosMP936_2020, mtvImpedimentoConcorrenciaEscalaTrabalhoAvulso);
 
   tpTpAcidTransito        = (tpatAtropelamento, tpatColisao, tpatOutros, tpatNao);
 
@@ -941,13 +932,13 @@ const
 
   TMotivoAlteracaoCargoFuncao: array[0..3] of string = ('1', '2', '3', '9');
 
-  TMotivoAfastamento: array[0..30] of string = ('01', '03', '05', '06', '07',
+  TMotivoAfastamento: array[0..32] of string = ('01', '03', '05', '06', '07',
                                                 '08', '10', '11', '12', '13',
                                                 '14', '15', '16', '17', '18',
                                                 '19', '20', '21', '22', '23',
                                                 '24', '25', '26', '27', '28',
                                                 '29', '30', '31', '33', '34',
-                                                '35');
+                                                '35', '37', '38');
 
   TGenericosString0_1 : array[0..1] of string = ('0','1' );
   TGenericosString0_2 : array[0..2] of string = ('0','1','2' );
@@ -2421,7 +2412,7 @@ end;
 
 function eSStrTotpMotivosAfastamento(var ok: boolean; const s: string): tpMotivosAfastamento;
 begin
-   result := tpMotivosAfastamento(StrToEnumerado2(ok , s, TMotivoAfastamento));
+  result := tpMotivosAfastamento(StrToEnumerado2(ok , s, TMotivoAfastamento));
 end;
 
 function StrEventoToTipoEvento(out ok: boolean; const s: string): TTipoEvento;

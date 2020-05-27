@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:   Juliana Rodrigues Prado                       }
+{ Colaboradores nesse arquivo: Juliana Tamizou                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 {$I ACBr.inc}
 
@@ -93,7 +92,6 @@ begin
    fpTamanhoCarteira       := 3;
    fValorTotalDocs         := 0;
    fQtRegLote              := 0;
-   fpCodigosMoraAceitos    := '123';
 end;
 
 function TACBrBancoItau.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -592,6 +590,7 @@ var
    ATipoEspecieDoc, ANossoNumero,wLinha,wCarteira :String;
    wLinhaMulta :String;
    iSequencia : integer;
+   AProtesto : String;
 
   function DoMontaInstrucoes1: string;
   begin
@@ -770,7 +769,24 @@ begin
       else
         ATipoSacado := '99';
       end;
-    
+
+      {Pegando campo Intruções conforme código protesto}
+      if ((DataProtesto > 0) and (DataProtesto > Vencimento)) then
+      begin
+        case TipoDiasProtesto of
+             diCorridos : AProtesto := '34';
+             diUteis    : AProtesto := '35';
+        else
+          AProtesto := '';
+        end;
+      end
+      else
+        AProtesto := '';
+
+      if (PadLeft(trim(Instrucao1),2,'0') = '00') and (AProtesto <> '')  then
+        Instrucao1:= AProtesto;
+
+
     with ACBrBoleto do
     begin
        wCarteira:= Trim(Carteira);

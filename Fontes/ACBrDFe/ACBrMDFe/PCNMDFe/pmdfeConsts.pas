@@ -1,10 +1,14 @@
 {******************************************************************************}
-{ Projeto: Componente ACBrMDFe                                                 }
-{  Biblioteca multiplataforma de componentes Delphi                            }
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{  Você pode obter a última versão desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -22,18 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 17/08/2016: Italo Jurisato Junior
-|*  - Criado uma Unit especifica para as constantes usadas pelo componente
-|*    ACBrMDFe
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -110,10 +105,23 @@ const
   DSC_NVAG        = 'Número de Identificação do vagão';
   DSC_NSEQ        = 'Sequência do vagão na composição';
   DSC_TU          = 'Tonelada Útil';
+  DSC_TPCARGA     = 'Tipo de Carga';
+  DSC_LATITUDE    = 'Latitude';
+  DSC_LONGITUDE   = 'Longitude';
+  DSC_VCONTRATO   = 'Valor do Contrato';
+  DSC_TPCOMP      = 'Tipo de Componente de Pagamento do Frete';
+  DSC_VCOMP       = 'Valor do Componente de Pagamento do Frete';
+  DSC_XCOMP       = 'Descrição do Componente de Pagamento do Frete (Outros)';
+  DSC_NPARCELA    = 'Numero da Parcela';
+  DSC_VPARCELA    = 'Valor da Parcela';
+  DSC_CNPJIPEF    = 'CNPJ da Instituição de pagamento Eletrônico do Frete';
+  DSC_CODBANCO    = 'Código do Banco';
+  DSC_CODAGENCIA  = 'Código da Agência';
 
   DSC_INDCANALVERDE = 'Indicador de Canal Verde';
   DSC_INDCARREGAPOSTERIOR = 'Indicador de Carregamento Posterior';
   DSC_INFQRCODMDFE  = 'Texto com o QR-Code impresso no DAMDFE';
+  DSC_IDESTRANGEIRO = 'Identificação do Estrangeiro';
 
 implementation
 

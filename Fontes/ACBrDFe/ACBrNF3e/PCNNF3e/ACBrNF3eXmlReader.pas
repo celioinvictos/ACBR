@@ -1,42 +1,34 @@
-Ôªø{******************************************************************************}
-{ Projeto: Componente ACBrNF3e                                                 }
-{  Nota Fiscal de Energia Eletrica Eletr√¥nica - NF3e                           }
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interaÁ„o com equipa- }
+{ mentos de AutomaÁ„o Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2019                                        }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
 {                                                                              }
-{  Voc√™ pode obter a √∫ltima vers√£o desse arquivo na pagina do Projeto ACBr     }
-{ Componentes localizado em http://www.sourceforge.net/projects/acbr           }
+{  VocÍ pode obter a ˙ltima vers„o desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
+{  Esta biblioteca È software livre; vocÍ pode redistribuÌ-la e/ou modific·-la }
+{ sob os termos da LicenÁa P˙blica Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a vers„o 2.1 da LicenÁa, ou (a seu critÈrio) }
+{ qualquer vers„o posterior.                                                   }
 {                                                                              }
-{  Esta biblioteca √© software livre; voc√™ pode redistribu√≠-la e/ou modific√°-la }
-{ sob os termos da Licen√ßa P√∫blica Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a vers√£o 2.1 da Licen√ßa, ou (a seu crit√©rio) }
-{ qualquer vers√£o posterior.                                                   }
+{  Esta biblioteca È distribuÌda na expectativa de que seja ˙til, porÈm, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implÌcita de COMERCIABILIDADE OU      }
+{ ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICEN«A.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{  Esta biblioteca √© distribu√≠da na expectativa de que seja √∫til, por√©m, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia impl√≠cita de COMERCIABILIDADE OU      }
-{ ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICEN√áA.TXT ou LICENSE.TXT)              }
-{                                                                              }
-{  Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral Menor do GNU junto}
-{ com esta biblioteca; se n√£o, escreva para a Free Software Foundation, Inc.,  }
-{ no endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Voc√™ tamb√©m pode obter uma copia da licen√ßa em:                              }
+{  VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral Menor do GNU junto}
+{ com esta biblioteca; se n„o, escreva para a Free Software Foundation, Inc.,  }
+{ no endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ VocÍ tambÈm pode obter uma copia da licenÁa em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Sim√µes de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Pra√ßa Anita Costa, 34 - Tatu√≠ - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simıes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - TatuÌ - SP - 18270-170         }
 {******************************************************************************}
-
-{*******************************************************************************
-|* Historico
-|*
-|* 18/12/2019: Italo Jurisato Junior
-|*  - Doa√ß√£o do componente para o Projeto ACBr
-*******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -117,10 +109,10 @@ Var
   att: TACBrXmlAttribute;
 begin
   if not Assigned(FNF3e) or (FNF3e = nil) then
-    raise Exception.Create('Destino n√£o informado, informe a classe [TNF3e] de destino.');
+    raise Exception.Create('Destino n„o informado, informe a classe [TNF3e] de destino.');
 
   if EstaVazio(Arquivo) then
-    raise Exception.Create('Arquivo xml da NF3e n√£o carregado.');
+    raise Exception.Create('Arquivo xml da NF3e n„o carregado.');
 
   Result := False;
   Document.Clear();
@@ -144,13 +136,13 @@ begin
 
   att := infNF3eNode.Attributes.Items['Id'];
   if att = nil then
-    raise Exception.Create('N√£o encontrei o atributo: Id');
+    raise Exception.Create('N„o encontrei o atributo: Id');
 
   NF3e.infNF3e.Id := att.Content;
 
   att := infNF3eNode.Attributes.Items['versao'];
   if att = nil then
-    raise Exception.Create('N√£o encontrei o atributo: versao');
+    raise Exception.Create('N„o encontrei o atributo: versao');
 
   NF3e.infNF3e.Versao := StringToFloat(att.Content);
 
@@ -893,8 +885,8 @@ begin
     (*O05*)Item.Imposto.IPI.qSelo    := ProcessarConteudo(AuxNode.Childrens.Find('qSelo'), tcInt);
     (*O06*)Item.Imposto.IPI.cEnq     := ProcessarConteudo(AuxNode.Childrens.Find('cEnq'), tcStr);
 
-    // Inicializa CST com sendo N√£o tributada e conforme o TIPO entrada ou saida
-    // Caso a Tag n√£o seja informada sera gravada com sendo n√£o tributada
+    // Inicializa CST com sendo N„o tributada e conforme o TIPO entrada ou saida
+    // Caso a Tag n„o seja informada sera gravada com sendo n„o tributada
     if NF3e.ide.tpNF = tnEntrada then
       Item.Imposto.IPI.CST := ipi53;
     if NF3e.ide.tpNF = tnSaida then

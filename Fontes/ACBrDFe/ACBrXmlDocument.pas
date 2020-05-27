@@ -1,33 +1,33 @@
-Ôªø{******************************************************************************}
+{******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para intera√ß√£o com equipa- }
-{ mentos de Automa√ß√£o Comercial utilizados no Brasil                           }
+{  Biblioteca multiplataforma de componentes Delphi para interaÁ„o com equipa- }
+{ mentos de AutomaÁ„o Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:  Rafael Teno Dias                               }
 {                                                                              }
-{  Voc√™ pode obter a √∫ltima vers√£o desse arquivo na pagina do  Projeto ACBr    }
+{  VocÍ pode obter a ˙ltima vers„o desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
-{  Esta biblioteca √© software livre; voc√™ pode redistribu√≠-la e/ou modific√°-la }
-{ sob os termos da Licen√ßa P√∫blica Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a vers√£o 2.1 da Licen√ßa, ou (a seu crit√©rio) }
-{ qualquer vers√£o posterior.                                                   }
+{  Esta biblioteca È software livre; vocÍ pode redistribuÌ-la e/ou modific·-la }
+{ sob os termos da LicenÁa P˙blica Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a vers„o 2.1 da LicenÁa, ou (a seu critÈrio) }
+{ qualquer vers„o posterior.                                                   }
 {                                                                              }
-{  Esta biblioteca √© distribu√≠da na expectativa de que seja √∫til, por√©m, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia impl√≠cita de COMERCIABILIDADE OU      }
-{ ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICEN√áA.TXT ou LICENSE.TXT)              }
+{  Esta biblioteca È distribuÌda na expectativa de que seja ˙til, porÈm, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implÌcita de COMERCIABILIDADE OU      }
+{ ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICEN«A.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{  Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral Menor do GNU junto}
-{ com esta biblioteca; se n√£o, escreva para a Free Software Foundation, Inc.,  }
-{ no endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Voc√™ tamb√©m pode obter uma copia da licen√ßa em:                              }
+{  VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral Menor do GNU junto}
+{ com esta biblioteca; se n„o, escreva para a Free Software Foundation, Inc.,  }
+{ no endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ VocÍ tambÈm pode obter uma copia da licenÁa em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Sim√µes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
-{       Rua Coronel Aureliano de Camargo, 963 - Tatu√≠ - SP - 18270-170         }
+{ Daniel Simıes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - TatuÌ - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -44,7 +44,8 @@ unit ACBrXmlDocument;
 interface
 
 uses
-  Classes, SysUtils, libxml2;
+  Classes, SysUtils,
+  ACBrLibXml2;
 
 type
   TSaveOption = (xmlNone = 0, xmlFormat = 1, xmlNoDecl = 2, xmlNoEmpty = 4,
@@ -63,6 +64,8 @@ type
   TACBrXMLAttributeListEnumerator = class;
   TACBrXmlDocument = class;
   TACBrXmlNodeArray = array of TACBrXmlNode;
+
+  { TACBrXmlNode }
 
   TACBrXmlNode = class
   private
@@ -97,7 +100,7 @@ type
     procedure SetAttribute(AName, AContent: string);
     procedure SetNamespace(AHref: string; APrefix: string = '');
 
-    function AddChild(AName: string; ANamespace: string = ''): TACBrXmlNode;
+    function AddChild(AName: string; ANamespace: string = ''; APrefix: string = ''): TACBrXmlNode;
     function GetNextNamespace(var ANamespace: TACBrXmlNamespace): boolean;
     function GetNextChild(var ANode: TACBrXmlNode): boolean;
     function GetNextAttribute(var AAttribute: TACBrXmlAttribute): boolean;
@@ -285,10 +288,10 @@ type
     procedure SetRootElement(ARootNode: TACBrXmlNode);
 
   public
-    constructor Create(AName: string = ''; ANamespace: string = ''; APrefixNamespace: string = '');
+    constructor Create(AName: string = ''; ANamespace: string = ''; APrefix: string = '');
     destructor Destroy; override;
 
-    function CreateElement(AName: string; ANamespace: string = ''): TACBrXmlNode;
+    function CreateElement(AName: string; ANamespace: string = ''; APrefix: string = ''): TACBrXmlNode;
 
     procedure Clear();
     procedure SaveToFile(AFilename: string);
@@ -307,15 +310,15 @@ type
 implementation
 
 uses
-  TypInfo, ACBrUtil, ACBrLibXml2, synautil;
+  TypInfo, ACBrUtil, synautil;
 
 { XmlNode }
 constructor TACBrXmlNode.Create(xmlDoc: TACBrXmlDocument; xmlNode: xmlNodePtr);
 begin
   if not Assigned(xmlDoc) then
-    raise EACBrXmlException.Create('XmlDocument n√£o pode ser nulo.');
+    raise EACBrXmlException.Create('XmlDocument n„o pode ser nulo.');
   if not Assigned(xmlNode) then
-    raise EACBrXmlException.Create('XmlNode n√£o pode ser nulo.');
+    raise EACBrXmlException.Create('XmlNode n„o pode ser nulo.');
 
   FXmlDoc := xmlDoc;
   FXmlNode := xmlNode;
@@ -355,7 +358,7 @@ end;
 procedure TACBrXmlNode.SetName(AName: string);
 begin
   if AName = EmptyStr then
-    raise EACBrXmlException.Create('O nome do n√≥ n√£o pode ser vazio.');
+    raise EACBrXmlException.Create('O nome do nÛ n„o pode ser vazio.');
 
   xmlNodeSetName(FXmlNode, PAnsiChar(ansistring(AName)));
 end;
@@ -388,9 +391,9 @@ begin
   FXmlCdataNode := cdataNode;
 end;
 
-function TACBrXmlNode.AddChild(AName: string; ANamespace: string): TACBrXmlNode;
+function TACBrXmlNode.AddChild(AName: string; ANamespace: string = ''; APrefix: string = ''): TACBrXmlNode;
 begin
-  Result := FXmlDoc.CreateElement(AName, ANamespace);
+  Result := FXmlDoc.CreateElement(AName, ANamespace, APrefix);
   AppendChild(Result);
 end;
 
@@ -408,8 +411,7 @@ procedure TACBrXmlNode.SetAttribute(AName, AContent: string);
 var
   xmlAtt: xmlAttrPtr;
 begin
-  xmlAtt := xmlSetProp(FXmlNode, PAnsichar(ansistring(AName)),
-    PAnsichar(ansistring(AContent)));
+  xmlAtt := xmlSetProp(FXmlNode, PAnsichar(ansistring(AName)), PAnsichar(ansistring(AContent)));
   if xmlAtt = nil then
     raise EACBrXmlException.Create('Erro ao adicionar atributo');
 
@@ -419,9 +421,16 @@ end;
 procedure TACBrXmlNode.SetNamespace(AHref: string; APrefix: string);
 Var
   xmlNs: xmlNsPtr;
+  Prefix: PAnsichar;
 begin
-  xmlNs := xmlNewNs(FXmlNode, PAnsichar(ansistring(AHref)),
-    PAnsichar(ansistring(APrefix)));
+  if Trim(AHref) = EmptyStr then
+    raise EACBrXmlException.Create('Erro Namespace n„o pode ser vazio ou nulo');
+
+  Prefix := nil;
+  if Trim(APrefix) <> EmptyStr then
+    Prefix := PAnsichar(ansistring(APrefix));
+
+  xmlNs := xmlNewNs(FXmlNode, PAnsichar(ansistring(AHref)),  Prefix);
   if xmlNs = nil then
     raise EACBrXmlException.Create('Erro ao adicionar namespace');
 
@@ -566,7 +575,7 @@ var
   AContent: string;
 begin
   if AName = EmptyStr then
-    raise EACBrXmlException.Create('O nome do atributo n√£o pode ser vazio.');
+    raise EACBrXmlException.Create('O nome do atributo n„o pode ser vazio.');
 
   AContent := Content;
   if xmlAttInternal <> nil then
@@ -649,7 +658,7 @@ begin
     end;
   end;
 
-  raise EACBrXmlException.Create('Item n√£o se encontra na lista.');
+  raise EACBrXmlException.Create('Item n„o se encontra na lista.');
 end;
 
 function TACBrXMLNamespaceList.GetEnumerator: TACBrXMLNamespaceListEnumerator;
@@ -787,7 +796,7 @@ begin
     end;
   end;
 
-  raise EACBrXmlException.Create('Item n√£o se encontra na lista.');
+  raise EACBrXmlException.Create('Item n„o se encontra na lista.');
 end;
 
 function TACBrXMLNodeList.GetEnumerator: TACBrXMLNodeListEnumerator;
@@ -899,7 +908,7 @@ begin
     end;
   end;
 
-  raise EACBrXmlException.Create('Item n√£o se encontra na lista.');
+  raise EACBrXmlException.Create('Item n„o se encontra na lista.');
 end;
 
 function TACBrXMLAttributeList.GetEnumerator: TACBrXMLAttributeListEnumerator;
@@ -931,11 +940,12 @@ begin
 end;
 
 { XmlDocument }
-constructor TACBrXmlDocument.Create(AName: string; ANamespace: string; APrefixNamespace: string);
+constructor TACBrXmlDocument.Create(AName: string; ANamespace: string; APrefix: string);
 var
   xmlNode: xmlNodePtr;
 begin
-  LibXmlInit;
+  InitLibXml2Interface;
+
   FSaveOptions := [xmlFormat, xmlAsXml];
   xmlDocInternal := xmlNewDoc(PAnsichar(ansistring('1.0')));
 
@@ -947,7 +957,7 @@ begin
 
     if ANamespace <> EmptyStr then
     begin
-      xmlRootElement.SetNamespace(ANamespace, APrefixNamespace);
+      xmlRootElement.SetNamespace(ANamespace, APrefix);
     end;
   end
   else
@@ -1012,9 +1022,9 @@ begin
   if xmlRootElement <> nil then FreeAndNil(xmlRootElement);
 end;
 
-function TACBrXmlDocument.CreateElement(AName: string; ANamespace: string): TACBrXmlNode;
+function TACBrXmlDocument.CreateElement(AName: string; ANamespace: string; APrefix: string): TACBrXmlNode;
 var
-  Namespace, NodeName: PAnsichar;
+  NodeName: PAnsichar;
 begin
   Result := nil;
   NodeName := PAnsichar(ansistring(AName));
@@ -1022,8 +1032,7 @@ begin
   Result := TACBrXmlNode.Create(Self, xmlNewDocNode(xmlDocInternal, nil, NodeName, nil));
   if ANamespace <> EmptyStr then
   begin
-    Namespace := PAnsichar(ansistring(ANamespace));
-    xmlSetNs(Result.FXmlNode, xmlNewNs(Result.FXmlNode, Namespace, nil));
+    Result.SetNamespace(ANamespace, APrefix);
   end;
 end;
 
@@ -1037,7 +1046,7 @@ begin
   try
     ret := xmlSaveDoc(xmlSaveCtx, xmlDocInternal);
     if ret = -1 then
-      raise EACBrXmlException.Create(__xmlLastError()^.message);
+      raise EACBrXmlException.Create(xmlGetLastError()^.message);
   finally
     xmlSaveClose(xmlSaveCtx);
   end;
@@ -1067,10 +1076,10 @@ begin
       xmlRootElement := TACBrXmlNode.Create(Self, loadedRoot);
     end
     else
-      raise EACBrXmlException.Create(__xmlLastError()^.message);
+      raise EACBrXmlException.Create(xmlGetLastError()^.message);
   end
   else
-    raise EACBrXmlException.Create(__xmlLastError()^.message);
+    raise EACBrXmlException.Create(xmlGetLastError()^.message);
 end;
 
 procedure TACBrXmlDocument.LoadFromXml(AXmlDocument: string);
@@ -1092,10 +1101,10 @@ begin
       xmlRootElement := TACBrXmlNode.Create(Self, loadedRoot);
     end
     else
-      raise EACBrXmlException.Create(__xmlLastError()^.message);
+      raise EACBrXmlException.Create(xmlGetLastError()^.message);
   end
   else
-    raise EACBrXmlException.Create(__xmlLastError()^.message);
+    raise EACBrXmlException.Create(xmlGetLastError()^.message);
 end;
 
 procedure TACBrXmlDocument.LoadFromStream(AStream: TStream);

@@ -73,6 +73,11 @@ Internal routines knows all major charsets for Europe or America. For East-Asian
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 {$ENDIF}
 
+{$IFDEF NEXTGEN}
+  {$LEGACYIFEND ON}
+  {$ZEROBASEDSTRINGS OFF}
+{$ENDIF}
+
 unit synachar;
 
 interface
@@ -88,7 +93,10 @@ uses
   Windows,
 {$ENDIF}
   SysUtils,
-  synautil, synacode, synaicnv;
+  synautil, synacode, synaicnv
+  {$IFDEF NEXTGEN}
+   ,synafpc
+  {$ENDIF};
 
 type
   {:Type with all supported charsets.}
@@ -205,6 +213,9 @@ function GetCurOEMCP: TMimeChar;
 
 {:Converting string with charset name to TMimeChar.}
 function GetCPFromID(Value: AnsiString): TMimeChar;
+
+{:Converting a CodePage value to TMimeChar.}
+function CPToMimeChar(Value: Integer): TMimeChar;
 
 {:Converting TMimeChar to string with name of charset.}
 function GetIDFromCP(Value: TMimeChar): AnsiString;
@@ -1379,6 +1390,9 @@ var
   NotNeedTransform: Boolean;
   FromID, ToID: string;
 begin
+  if not synaicnv.InitIconvInterface then
+    DisableIconv := True;
+
   NotNeedTransform := (High(TransformTable) = 0);
   if (CharFrom = CharTo) and NotNeedTransform then
   begin
@@ -1498,26 +1512,6 @@ begin
   end;
 end;
 
-{==============================================================================}
-{$IFNDEF MSWINDOWS}
-
-function GetCurCP: TMimeChar;
-begin
-  {$If (NOT DEFINED(FPC)) AND (NOT DEFINED(POSIX))}
-  Result := GetCPFromID(nl_langinfo(_NL_CTYPE_CODESET_NAME));
-  {$Else}
-  //How to get system codepage without LIBC?
-  Result := UTF_8;
-{ TODO : Waiting for FPC 2.8 solution }
-  {$IfEnd}
-end;
-
-function GetCurOEMCP: TMimeChar;
-begin
-  Result := GetCurCP;
-end;
-
-{$ELSE}
 
 function CPToMimeChar(Value: Integer): TMimeChar;
 begin
@@ -1675,6 +1669,30 @@ begin
   end;
 end;
 
+{==============================================================================}
+{$IFNDEF MSWINDOWS}
+
+function GetCurCP: TMimeChar;
+begin
+  {$If (NOT DEFINED(FPC)) AND (NOT DEFINED(POSIX))}
+    Result := GetCPFromID(nl_langinfo(_NL_CTYPE_CODESET_NAME));
+  {$Else}
+    //How to get system codepage without LIBC?
+    {$IfDef FPC}
+      Result := UTF_8;
+    {$Else}
+      Result := CPToMimeChar(TEncoding.Default.CodePage);
+    {$EndIf}
+  {$IfEnd}
+end;
+
+function GetCurOEMCP: TMimeChar;
+begin
+  Result := GetCurCP;
+end;
+
+{$ELSE}
+
 function GetCurCP: TMimeChar;
 begin
   Result := CPToMimeChar(GetACP);
@@ -1684,6 +1702,7 @@ function GetCurOEMCP: TMimeChar;
 begin
   Result := CPToMimeChar(GetOEMCP);
 end;
+
 {$ENDIF}
 
 {==============================================================================}

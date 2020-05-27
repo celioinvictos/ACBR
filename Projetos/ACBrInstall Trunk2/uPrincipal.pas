@@ -3,10 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Daniel Simoes de Almeida             }
-{                                         Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020   Daniel Simoes de Almeida             }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -47,7 +46,7 @@ uses
   IOUtils, UITypes, JclIDEUtils, JclCompilerUtils,
   Types, JvComponentBase, JvCreateProcess, JvExControls, JvAnimatedImage,
   JvGIFCtrl, JvWizard, JvWizardRouteMapNodes, CheckLst,
-  uFrameLista, ACBrUtil, ACBrPacotes;
+  uFrameLista, ACBrUtil, ACBrPacotes, UACBrPlataformaInstalacaoAlvo;
 
 type
 
@@ -76,14 +75,6 @@ type
     Label20: TLabel;
     Label21: TLabel;
     Label10: TLabel;
-    Label11: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
-    Label14: TLabel;
-    Label15: TLabel;
-    Label16: TLabel;
-    Label17: TLabel;
-    Label18: TLabel;
     Label7: TLabel;
     btnInstalarACBr: TSpeedButton;
     btnVisualizarLogCompilacao: TSpeedButton;
@@ -109,7 +100,16 @@ type
     ckbUsarArquivoConfig: TCheckBox;
     ckbCopiarTodasDll: TCheckBox;
     rdgDLL: TRadioGroup;
-
+    btnMarcarTodas: TButton;
+    btnDesmarcarTodas: TButton;
+    Label1: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    procedure btnDesmarcarTodasClick(Sender: TObject);
     procedure imgPropaganda1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -121,6 +121,7 @@ type
     procedure wizPgConfiguracaoNextButtonClick(Sender: TObject;
       var Stop: Boolean);
     procedure btnInstalarACBrClick(Sender: TObject);
+    procedure btnMarcarTodasClick(Sender: TObject);
     procedure wizPgInstalacaoNextButtonClick(Sender: TObject;
       var Stop: Boolean);
     procedure btnVisualizarLogCompilacaoClick(Sender: TObject);
@@ -130,7 +131,8 @@ type
     procedure wizPgPacotesNextButtonClick(Sender: TObject; var Stop: Boolean);
     procedure wizPgSelectIDEsNextButtonClick(Sender: TObject; var Stop: Boolean);
   private
-    FoACBr: TJclBorRADToolInstallations;
+    FUmaListaPlataformasAlvos: TListaPlataformasAlvos;
+
     FUltimoArquivoLog: string;
 
     procedure GravarConfiguracoesEmArquivoIni;
@@ -157,7 +159,7 @@ implementation
 
 uses
   ShellApi, IniFiles, StrUtils, Math, Registry, ACBrInstallUtils, Generics.Collections,
-  ACBrInstallDelphiComponentes, DelphiData;
+  ACBrInstallDelphiComponentes;
 
 {$R *.dfm}
 
@@ -183,7 +185,7 @@ begin
       // Busca diretório do pacote
       sDirPackage := FindDirPackage(IncludeTrailingPathDelimiter(PastaACBr) + 'Pacotes\Delphi', NomePacote);
       if Trim(sDirPackage) = '' then
-        raise Exception.Create('Não foi possível retornar o diretório do pacote : ' + NomePacote);
+        raise Exception.Create('Não foi possível encontrar o diretório do pacote "' + NomePacote +'" no caminho: '+ PastaACBr);
       if IsDelphiPackage(NomePacote) then
       begin
         if not FileExists(IncludeTrailingPathDelimiter(sDirPackage) + NomePacote) then
@@ -252,8 +254,6 @@ end;
 procedure TfrmPrincipal.IniciaNovaInstalacao(const MaximoPassosProgresso: Integer; const
     NomeCaminhoArquivoLog: string; const Cabecalho: string);
 begin
-  // limpar o log
-  lstMsgInstalacao.Clear;
   // setar barra de progresso
   pgbInstalacao.Position := 0;
 
@@ -263,36 +263,36 @@ begin
   FUltimoArquivoLog := NomeCaminhoArquivoLog;
   lbInfo.Clear;
   lbInfo.Items.Text := Cabecalho;
+  lstMsgInstalacao.Clear;
 end;
 
 procedure TfrmPrincipal.MontaListaIDEsSuportadas;
+  function EhSuportada(PlataformaAlvo: TPlataformaDestino): Boolean;
+  Begin
+    Result := (not MatchText(PlataformaAlvo.InstalacaoAtual.VersionNumberStr, ['d3', 'd4', 'd5', 'd6'])) and
+              (PlataformaAlvo.tPlatformAtual in [bpWin32, bpWin64]);
+  End;
 var
   iFor: Integer;
-//  tcpt: TCompileTargetList;
+  NomeAlvo: string;
+  Habilitado: Boolean;
 begin
-
-//  tcpt := TCompileTargetList.Create;
-//
-//  for iFor := 0 to tcpt.Count - 1 do
-//  begin
-//
-//    clbDelphiVersion.Items.Add(tcpt.Items[iFor].DisplayName);
-//    //Desabilitar versões não suportadas
-//    clbDelphiVersion.ItemEnabled[iFor] := tcpt.Items[iFor].IsValid and (tcpt.Items[iFor].Version >= 7);
-//  end;
-
   // popular o combobox de versões do delphi instaladas na máquina
-  for iFor := 0 to FoACBr.Count - 1 do
+
+  for iFor := 0 to FUmaListaPlataformasAlvos.Count - 1 do
   begin
-    clbDelphiVersion.Items.Add(VersionNumberToNome(FoACBr.Installations[iFor].VersionNumberStr));
-    //Desabilitar versões não suportadas
-    clbDelphiVersion.ItemEnabled[iFor] := (not MatchText(FoACBr.Installations[iFor].VersionNumberStr, ['d3', 'd4', 'd5', 'd6']));
+    NomeAlvo := FUmaListaPlataformasAlvos[iFor].InstalacaoAtual.Name + ' ' + FUmaListaPlataformasAlvos[iFor].sPlatform;
+    Habilitado := EhSuportada(FUmaListaPlataformasAlvos[iFor]);
+
+    clbDelphiVersion.Items.Add(NomeAlvo);
+    clbDelphiVersion.ItemEnabled[iFor] := Habilitado;
   end;
 end;
 
 procedure TfrmPrincipal.FormCreate(Sender: TObject);
 begin
-  FoACBr := TJclBorRADToolInstallations.Create;
+  Caption := Caption + ' ' + sVersaoInstalador;
+  FUmaListaPlataformasAlvos := GeraListaPlataformasAlvos;
   FUltimoArquivoLog := '';
 
   MontaListaIDEsSuportadas;
@@ -302,7 +302,7 @@ end;
 
 procedure TfrmPrincipal.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  FoACBr.Free;
+  FUmaListaPlataformasAlvos.Free;
 end;
 
 procedure TfrmPrincipal.Logar(const AString: String);
@@ -323,7 +323,7 @@ begin
 
   ListaVersoesInstalacao := TList<Integer>.Create;
 
-  for i := 0 to FoACBr.Count - 1 do
+  for i := 0 to clbDelphiVersion.Count - 1 do
   begin
     // só instala as versão marcadas para instalar.
     if (clbDelphiVersion.Checked[i]) then
@@ -357,8 +357,7 @@ begin
     end;
     ACBrInstaladorAux.OpcoesInstall.DiretorioRaizACBr := IncludeTrailingPathDelimiter(edtDirDestino.Text);
 
-
-    Result := ACBrInstaladorAux.Instalar(FoACBr, ListaPacotes, ListaVersoesInstalacao);
+    Result := ACBrInstaladorAux.Instalar(ListaPacotes, ListaVersoesInstalacao, FUmaListaPlataformasAlvos);
   finally
     ACBrInstaladorAux.Free;
   end;
@@ -391,6 +390,11 @@ begin
   ShellExecute(Handle, 'open', PWideChar(FUltimoArquivoLog), '', '', 1);
 end;
 
+procedure TfrmPrincipal.btnDesmarcarTodasClick(Sender: TObject);
+begin
+  clbDelphiVersion.CheckAll(cbUnchecked, True, False);
+end;
+
 procedure TfrmPrincipal.IncrementaBarraProgresso;
 begin
   pgbInstalacao.Position := pgbInstalacao.Position + 1;
@@ -402,6 +406,9 @@ procedure TfrmPrincipal.btnInstalarACBrClick(Sender: TObject);
 var
   Instalou: Boolean;
 begin
+  // limpar o log
+  lstMsgInstalacao.Clear;
+
   Instalou := False;
   btnInstalarACBr.Enabled := False;
   btnVisualizarLogCompilacao.Enabled := False;
@@ -419,6 +426,11 @@ begin
   end;
 end;
 
+procedure TfrmPrincipal.btnMarcarTodasClick(Sender: TObject);
+begin
+  clbDelphiVersion.CheckAll(cbChecked, True, False);
+end;
+
 // chama a caixa de dialogo para selecionar o diretório de instalação
 // seria bom que a caixa fosse aquele que possui o botão de criar pasta
 procedure TfrmPrincipal.btnSelecDirInstallClick(Sender: TObject);
@@ -432,13 +444,16 @@ end;
 // quando trocar a versão verificar se libera ou não o combo
 // da plataforma de compilação
 procedure TfrmPrincipal.clbDelphiVersionClick(Sender: TObject);
+var
+  I: Integer;
 begin
   if clbDelphiVersion.ItemIndex < 0 then
   begin
     Exit
   end;
 
-  if MatchText(FoACBr.Installations[clbDelphiVersion.ItemIndex].VersionNumberStr, ['d7','d9','d10','d11']) then
+  if MatchText(FUmaListaPlataformasAlvos[clbDelphiVersion.ItemIndex].InstalacaoAtual.VersionNumberStr,
+               ['d7','d9','d10','d11']) then
   begin
     Application.MessageBox(
       'Atenção: Embora o ACBr continue suportando versões anteriores do Delphi, incentivamos que você atualize o quanto antes para versões mais recentes do Delphi ou considere migrar para o Lazarus.',
@@ -447,9 +462,42 @@ begin
     );
   end;
 
-  // C++ Builder a partir do D2006, versões anteriores tem IDE independentes.
-  ckbBCB.Enabled := MatchText(FoACBr.Installations[clbDelphiVersion.ItemIndex].VersionNumberStr, ['d10','d11','d12','d14','d15','d16','d17','d18','d19','d20','d21','d22','d23','d24','d25','d26']);
-  if not ckbBCB.Enabled then
+  if (FUmaListaPlataformasAlvos[clbDelphiVersion.ItemIndex].tPlatformAtual <> bpWin32) and
+     (clbDelphiVersion.Checked[clbDelphiVersion.ItemIndex]) then
+  begin
+    //Ligar instalacao win32 da IDE correspondente...
+    I := (clbDelphiVersion.ItemIndex - 1);
+    repeat
+      if (FUmaListaPlataformasAlvos[clbDelphiVersion.ItemIndex].InstalacaoAtual =
+          FUmaListaPlataformasAlvos[i].InstalacaoAtual) and
+         (FUmaListaPlataformasAlvos[i].tPlatformAtual = bpWin32) then
+      begin
+        clbDelphiVersion.Checked[i] := True;
+      end;
+      Dec(I);
+    until (I < 0);
+
+  end
+  else if (FUmaListaPlataformasAlvos[clbDelphiVersion.ItemIndex].tPlatformAtual = bpWin32) and
+     (not clbDelphiVersion.Checked[clbDelphiVersion.ItemIndex]) then
+  begin
+    //Desligar todas instalacoes nao win32.
+    I := (clbDelphiVersion.ItemIndex + 1);
+    repeat
+      if (FUmaListaPlataformasAlvos[clbDelphiVersion.ItemIndex].InstalacaoAtual =
+          FUmaListaPlataformasAlvos[i].InstalacaoAtual) and
+         (FUmaListaPlataformasAlvos[i].tPlatformAtual <> bpWin32)then
+      begin
+        clbDelphiVersion.Checked[i] := False;
+      end;
+      Inc(I);
+    until (I = FUmaListaPlataformasAlvos.Count);
+  end;
+
+//
+//  // C++ Builder a partir do D2006, versões anteriores tem IDE independentes.
+//  ckbBCB.Enabled := MatchText(UmaListaPlataformasAlvos[clbDelphiVersion.ItemIndex].InstalacaoAtual.VersionNumberStr, ['d10','d11','d12','d14','d15','d16','d17','d18','d19','d20','d21','d22','d23','d24','d25','d26']);
+//  if not ckbBCB.Enabled then
      ckbBCB.Checked := False;
 end;
 
@@ -466,19 +514,25 @@ begin
   ShellExecute(Handle, 'open', PWideChar(TLabel(Sender).Caption), '', '', 1);
 end;
 
-procedure TfrmPrincipal.wizPgInicioNextButtonClick(Sender: TObject;
-  var Stop: Boolean);
+procedure TfrmPrincipal.wizPgInicioNextButtonClick(Sender: TObject; var Stop: Boolean);
+var
+  InstalacoesDelphi: TJclBorRADToolInstallations;
 begin
   // Verificar se o delphi está aberto
-  if FoACBr.AnyInstanceRunning then
-  begin
-  {$IFDEF DEBUG}
-    Stop := MessageDlg('Feche a IDE do delphi antes de continuar.', mtWarning, mbAbortIgnore, 0,
-                       mbAbort) <> mrIgnore;
-  {$ELSE}
-    Stop := True;
-    MessageDlg('Feche a IDE do delphi antes de continuar.', mtWarning, [mbOK], 0, mbOK);
-  {$ENDIF}
+  InstalacoesDelphi := TJclBorRADToolInstallations.Create;
+  try
+    if InstalacoesDelphi.AnyInstanceRunning then
+    begin
+    {$IFDEF DEBUG}
+      Stop := MessageDlg('Feche a IDE do delphi antes de continuar.', mtWarning, mbAbortIgnore, 0,
+                         mbAbort) <> mrIgnore;
+    {$ELSE}
+      Stop := True;
+      MessageDlg('Feche a IDE do delphi antes de continuar.', mtWarning, [mbOK], 0, mbOK);
+    {$ENDIF}
+    end;
+  finally
+    InstalacoesDelphi.Free;
   end;
 end;
 

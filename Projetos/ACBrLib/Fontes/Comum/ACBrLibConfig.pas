@@ -1,35 +1,34 @@
-{*******************************************************************************}
-{ Projeto: Componentes ACBr                                                     }
-{  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
-{ mentos de Automação Comercial utilizados no Brasil                            }
-{                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
-{                                                                               }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                 }
-{                                                                               }
-{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr     }
-{ Componentes localizado em      http://www.sourceforge.net/projects/acbr       }
-{                                                                               }
-{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la  }
-{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela   }
-{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério)  }
-{ qualquer versão posterior.                                                    }
-{                                                                               }
-{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM    }
-{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU       }
-{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor }
-{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)               }
-{                                                                               }
-{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto }
-{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,   }
-{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.           }
-{ Você também pode obter uma copia da licença em:                               }
-{ http://www.opensource.org/licenses/gpl-license.php                            }
-{                                                                               }
-{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br }
-{        Rua Cel.Aureliano de Camargo, 963 - Tatuí - SP - 18270-170             }
-{                                                                               }
-{*******************************************************************************}
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -40,7 +39,7 @@ interface
 uses
   Classes, SysUtils, IniFiles,
   synachar, mimemess,
-  ACBrLibResposta;
+  ACBrLibResposta, ACBrDeviceConfig;
 
 type
   //               0           1          2           3             4
@@ -274,12 +273,14 @@ type
   TLibConfig = class
   private
     FOwner: TObject;
-    FEmail: TEmailConfig;
-    FPosPrinter: TPosPrinterConfig;
     FIni: TMemIniFile;
+    FIniAge: Integer;
     FLog: TLogConfig;
     FNomeArquivo: String;
     FChaveCrypt: AnsiString;
+    FEmail: TEmailConfig;
+    FPosPrinter: TPosPrinterConfig;
+    FPosDeviceConfig: TDeviceConfig;
     FProxyInfo: TProxyConfig;
     FSistema: TSistemaConfig;
     FSoftwareHouse: TEmpresaConfig;
@@ -291,6 +292,9 @@ type
     procedure VerificarNomeEPath(Gravando: Boolean);
     procedure VerificarSessaoEChave(ASessao, AChave: String);
 
+    procedure VerificarSeIniFoiModificado;
+    procedure LerDataHoraArqIni;
+
   protected
     function AtualizarArquivoConfiguracao: Boolean; virtual;
     procedure AplicarConfiguracoes; virtual;
@@ -298,7 +302,7 @@ type
     procedure INIParaClasse; virtual;
     procedure ClasseParaINI; virtual;
     procedure ClasseParaComponentes; virtual; abstract;
-    procedure ImportarIni(FIni: TCustomIniFile); virtual; abstract;
+    procedure ImportarIni(FIni: TCustomIniFile); virtual;
 
     procedure Travar; virtual;
     procedure Destravar; virtual;
@@ -328,6 +332,7 @@ type
     property ProxyInfo: TProxyConfig read FProxyInfo;
     property Email: TEmailConfig read FEmail;
     property PosPrinter: TPosPrinterConfig read FPosPrinter;
+    property PosDeviceConfig: TDeviceConfig read FPosDeviceConfig;
     property SoftwareHouse: TEmpresaConfig read FSoftwareHouse;
     property Sistema: TSistemaConfig read FSistema;
     property Emissor: TEmpresaConfig read FEmissor;
@@ -722,11 +727,13 @@ begin
   FSistema := TSistemaConfig.Create;
   FEmail := TEmailConfig.Create(FChaveCrypt);
   FPosPrinter := TPosPrinterConfig.Create();
+  FPosDeviceConfig := TDeviceConfig.Create(CSessaoPosPrinterDevice);
   FProxyInfo := TProxyConfig.Create(FChaveCrypt);
   FSoftwareHouse := TEmpresaConfig.Create(CSessaoSwHouse);
   FEmissor := TEmpresaConfig.Create(CSessaoEmissor);
 
   FIni := TMemIniFile.Create('');
+  FIniAge := 0;
 
   TACBrLib(FOwner).GravarLog(ClassName + '.Create(' + FNomeArquivo + ', ' +
     StringOfChar('*', Length(FChaveCrypt)) + ' )', logCompleto);
@@ -744,8 +751,25 @@ begin
   FProxyInfo.Free;
   FEmail.Free;
   FPosPrinter.Free;
+  FPosDeviceConfig.Free;
 
   inherited Destroy;
+end;
+
+procedure TLibConfig.VerificarSeIniFoiModificado;
+var
+  NewIniAge: LongInt;
+begin
+  if not FileExists(FNomeArquivo) then Exit;
+
+  NewIniAge := FileAge(FNomeArquivo);
+  if NewIniAge > FIniAge then
+    Ler;
+end;
+
+procedure TLibConfig.LerDataHoraArqIni;
+begin
+  FIniAge := FileAge(FNomeArquivo);
 end;
 
 procedure TLibConfig.VerificarNomeEPath(Gravando: Boolean);
@@ -845,6 +869,7 @@ begin
       Exit;
     end;
 
+    LerDataHoraArqIni;
     INIParaClasse;
     AplicarConfiguracoes;
   finally
@@ -862,6 +887,7 @@ begin
   FSistema.LerIni(FIni);
   FEmail.LerIni(FIni);
   FPosPrinter.LerIni(FIni);
+  FPosDeviceConfig.LerIni(FIni);
   FProxyInfo.LerIni(FIni);
   FSoftwareHouse.LerIni(FIni);
   FEmissor.LerIni(FIni);
@@ -880,6 +906,7 @@ begin
       FIni.Rename(FNomeArquivo, False);
 
     FIni.UpdateFile;
+    LerDataHoraArqIni;
   finally
     TACBrLib(FOwner).GravarLog(ClassName + '.Gravar - Feito', logParanoico);
     Destravar;
@@ -897,9 +924,14 @@ begin
   FSistema.GravarIni(FIni);
   FEmail.GravarIni(FIni);
   FPosPrinter.GravarIni(FIni);
+  FPosDeviceConfig.GravarIni(FIni);
   FProxyInfo.GravarIni(FIni);
   FSoftwareHouse.GravarIni(FIni);
   FEmissor.GravarIni(FIni);
+end;
+
+procedure TLibConfig.ImportarIni(FIni: TCustomIniFile);
+begin
 end;
 
 procedure TLibConfig.Travar;
@@ -988,6 +1020,7 @@ end;
 procedure TLibConfig.GravarValor(ASessao, AChave, AValor: String);
 begin
   VerificarSessaoEChave(ASessao, AChave);
+  VerificarSeIniFoiModificado;
   FIni.WriteString(ASessao, AChave, AjustarValor(tfGravar, ASessao, AChave, AValor));
   AplicarConfiguracoes;
 end;
@@ -995,6 +1028,7 @@ end;
 function TLibConfig.LerValor(ASessao, AChave: String): String;
 begin
   VerificarSessaoEChave(ASessao, AChave);
+  VerificarSeIniFoiModificado;
   Result := FIni.ReadString(ASessao, AChave, '');
   Result := AjustarValor(tfLer, ASessao, AChave, Result)
 end;
@@ -1011,13 +1045,16 @@ begin
 end;
 
 function TLibConfig.AjustarValor(Tipo: TTipoFuncao; ASessao, AChave, AValor: Ansistring): Ansistring;
+Var
+  Criptografar: Boolean;
 begin
+  Criptografar := PrecisaCriptografar(ASessao, AChave);
+
   TACBrLib(FOwner).GravarLog(ClassName + '.AjustarValor(' + GetEnumName(TypeInfo(TTipoFuncao), Integer(Tipo)) + ','
-                                                          + ASessao + ',' + AChave + ',' +
-                                                          IfThen(PrecisaCriptografar(ASessao, AChave),
+                                                          + ASessao + ',' + AChave + ',' + IfThen(Criptografar,
                                                           StringOfChar('*', Length(AValor)), AValor) +')', logParanoico);
   Result := AValor;
-  if PrecisaCriptografar(ASessao, AChave) then
+  if Criptografar then
   begin
     case Tipo of
       tfGravar: Result := StringToB64Crypt(Result, ChaveCrypt);

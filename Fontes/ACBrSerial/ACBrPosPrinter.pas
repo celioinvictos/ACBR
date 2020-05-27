@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -30,13 +30,6 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
-{******************************************************************************
-|* Historico
-|*
-|* 20/04/2013:  Daniel Simões de Almeida
-|*   Inicio do desenvolvimento
-******************************************************************************}
-
 {$I ACBr.inc}
 
 unit ACBrPosPrinter;
@@ -45,10 +38,32 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrDevice, ACBrBase, ACBrEscPosHook
   {$IfDef MSWINDOWS}
-   ,ACBrWinUSBDevice
+   windows,
+  {$EndIf}
+  Types,
+  ACBrDevice, ACBrBase,
+  {$IF DEFINED(NEXTGEN)}
+   System.Generics.Collections, System.Generics.Defaults
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs
+  {$Else}
+   Contnrs
+  {$IfEnd}
+  {$IfDef MSWINDOWS}
+   ,ACBrEscPosHook, ACBrWinUSBDevice
   {$EndIf};
+
+const
+  CACBrPosChequeINI = 'ACBrPosCheque.ini';
+  CACBrPosChequeResource = 'ACBrPosCheque';
+  cKeyFabricante = 'Fabricante';
+  cKeyFirmware = 'Firmware';
+  cKeyModelo = 'Modelo';
+  cKeyGuilhotina = 'Guilhotina';
+  cKeyCheque = 'Cheque';
+  cKeyAutenticacao = 'Autenticacao';
+  cKeyMICR = ' MICR';
 
 type
 
@@ -87,6 +102,7 @@ type
     FLigaNegrito: AnsiString;
     FLigaSublinhado: AnsiString;
     FPuloDeLinha: AnsiString;
+    FPuloDePagina: AnsiString;
     FZera: AnsiString;
   public
     constructor Create;
@@ -126,6 +142,7 @@ type
     property CorteTotal: AnsiString read FCorteTotal write FCorteTotal;
     property CorteParcial: AnsiString read FCorteParcial write FCorteParcial;
     property PuloDeLinha: AnsiString read FPuloDeLinha write FPuloDeLinha;
+    property PuloDePagina: AnsiString read FPuloDePagina write FPuloDePagina;
 
     property LigaModoPagina: AnsiString read FLigaModoPagina write FLigaModoPagina;
     property DesligaModoPagina: AnsiString read FDesligaModoPagina write FDesligaModoPagina;
@@ -142,7 +159,7 @@ type
 
   TACBrPosTipoStatus = (stErro, stApenasEscrita, stPoucoPapel, stSemPapel,
                         stGavetaAberta, stImprimindo, stOffLine, stTampaAberta,
-                        stErroLeitura);
+                        stErroLeitura, stSlip, stMICR, stAguardandoSlip, stTOF, stBOF);
   TACBrPosPrinterStatus = set of TACBrPosTipoStatus;
 
   { TACBrPosRazaoColunaFonte }
@@ -163,7 +180,7 @@ type
 
   TACBrPosPrinterModelo = (ppTexto, ppEscPosEpson, ppEscBematech, ppEscDaruma,
                            ppEscVox, ppEscDiebold, ppEscEpsonP2, ppCustomPos,
-                           ppEscPosStar, ppEscZJiang, ppEscGPrinter);
+                           ppEscPosStar, ppEscZJiang, ppEscGPrinter, ppEscDatecs);
 
   { TACBrPosPrinterClass }
 
@@ -188,10 +205,15 @@ type
     function ComandoPuloLinhas(NLinhas: Integer): AnsiString; virtual;
     function ComandoFonte(TipoFonte: TACBrPosTipoFonte; Ligar: Boolean): AnsiString; virtual;
     function ComandoConfiguraModoPagina: AnsiString; virtual;
+    function ComandoPosicionaModoPagina(APoint: TPoint): AnsiString; virtual;
+    function ComandoCarregaCheque(LerCMC7: Boolean = True; SegundosEspera: Byte = 5): AnsiString; virtual;
+    function ComandoEjetarCheque: AnsiString; virtual;
 
     procedure Configurar; virtual;
     procedure LerStatus(var AStatus: TACBrPosPrinterStatus); virtual;
     function LerInfo: String; virtual;
+    function ComandoLerCMC7(SegundosEspera: Byte = 0): AnsiString; virtual;
+    function LeituraCheque: AnsiString; virtual;
 
     function ComandoImprimirImagemRasterStr(const RasterStr: AnsiString; AWidth: Integer;
       AHeight: Integer): AnsiString; virtual;
@@ -299,7 +321,79 @@ type
 
   TACBrPosTipoCorte = (ctTotal, ctParcial);
 
+  { TACBrPosCheque }
+
+  TACBrPosCheque = class
+  private
+    FAno: TPoint;
+    FCidade: TPoint;
+    FCodBanco: Integer;
+    FComplemento: TPoint;
+    FDia: TPoint;
+    FExtenso: TPoint;
+    FFavorecido: TPoint;
+    FMes: TPoint;
+    FNome: String;
+    FValor: TPoint;
+  public
+    constructor Create;
+    procedure Clear;
+
+    property CodBanco: Integer read FCodBanco write FCodBanco;
+    property Nome: String read FNome write FNome;
+    property Valor: TPoint read FValor write FValor;
+    property Extenso: TPoint read FExtenso write FExtenso;
+    property Favorecido: TPoint read FFavorecido write FFavorecido;
+    property Cidade: TPoint read FCidade write FCidade;
+    property Dia: TPoint read FDia write FDia;
+    property Mes: TPoint read FMes write FMes;
+    property Ano: TPoint read FAno write FAno;
+    property Complemento: TPoint read FComplemento write FComplemento;
+  end;
+
+  { TACBrPosCheques }
+
+  TACBrPosCheques = class(TObjectList{$IfDef NEXTGEN}<TACBrPosCheque>{$EndIf})
+  private
+    FBancoPadrao: Integer;
+    FDimensao: TPoint;
+    procedure LoadFromStringList(AStringList: TStrings);
+
+  protected
+    FFileName: String;
+    FResourceName: String;
+    FLoaded: Boolean;
+    function LoadFromFile: Boolean;
+    function LoadFromResource: Boolean;
+    procedure SetFileName(AValue: String);
+
+    procedure SetObject (Index: Integer; Item: TACBrPosCheque);
+    function GetObject (Index: Integer): TACBrPosCheque;
+    procedure Insert (Index: Integer; Obj: TACBrPosCheque);
+  public
+    constructor Create(APosChequeIni: String = ''; AResourceName: String = '');
+    destructor Destroy; override;
+    procedure Clear; {$IfNDef NEXTGEN}override;{$EndIf}
+
+    procedure Load;
+    function FindPosCheque(ACodBanco: Integer; UsaPadraoSeNaoAchar: Boolean = True): TACBrPosCheque;
+
+    property FileName: String read FFileName write SetFileName;
+    property ResourceName: String read FResourceName;
+
+    function Add(Obj: TACBrPosCheque): Integer;
+    property Objects [Index: Integer]: TACBrPosCheque
+      read GetObject write SetObject; default;
+    property Dimensao: TPoint read FDimensao;
+    property BancoPadrao: Integer read FBancoPadrao;
+  end;
+
+  TACBrPosOperacaoCheque = (agcCancelado, agcConcluido, agcSleep, agcImpressao, agcLerCMC7);
+  TACBrPosOnAguardarCheque = procedure(const AStatus: TACBrPosPrinterStatus;
+    Operacao: TACBrPosOperacaoCheque; var CancelarEspera: Boolean) of object ;
+
   { TACBrPosPrinter }
+
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
@@ -313,12 +407,19 @@ type
     FControlePorta: Boolean;
     FDevice: TACBrDevice;
     FAtivo: Boolean;
-    FEspacoEntreLinhas: byte;
+    FEspacoEntreLinhas: Byte;
     FConfigGaveta: TACBrConfigGaveta;
     FModelo: TACBrPosPrinterModelo;
+    FOnAguardarCheque: TACBrPosOnAguardarCheque;
+    FCancelarEsperaCheque: Boolean;
     FOnGravarLog: TACBrGravarLog;
     FOnEnviarStringDevice: TACBrGravarLog;
     FTagProcessor: TACBrTagProcessor;
+    FPosCheques: TACBrPosCheques;
+    FTemGuilhotina: Integer;
+    FTemCheque: Integer;
+    FTemAutenticacao: Integer;
+    FTemMICR: Integer;
 
     FCortaPapel: Boolean;
     FTipoCorte: TACBrPosTipoCorte;
@@ -334,8 +435,11 @@ type
     FInicializada: Boolean;
     FVerificarImpressora: Boolean;
 
+    function ComandoConfigurarModoPaginaCheque: AnsiString;
+    function ComandoTextoPosCheque(const AText: AnsiString; APos, ADimensao: TPoint): String;
     function GetColunasFonteCondensada: Integer;
     function GetColunasFonteExpandida: Integer;
+    function GetLeituraCheque: AnsiString;
     function GetNumeroPaginaDeCodigo(APagCod: TACBrPosPaginaCodigo): word;
     function CodificarPaginaDeCodigo(const ATexto: AnsiString): AnsiString;
 
@@ -344,8 +448,11 @@ type
     function GetIgnorarTags: Boolean;
     function GetPorta: String;
     function GetTagsNaoSuportadas: TStringList;
+    function GetTemAutenticacao: Integer;
+    function GetTemCheque: Integer;
+    function GetTemGuilhotina: Integer;
+    function GetTemMICR: Integer;
     function GetTraduzirTags: Boolean;
-    function PodeLerDaPorta: Boolean;
     procedure SetAtivo(AValue: Boolean);
     procedure SetIgnorarTags(AValue: Boolean);
     procedure SetPorta(const AValue: String);
@@ -353,10 +460,14 @@ type
     procedure SetModelo(AValue: TACBrPosPrinterModelo);
     procedure VerificarParametrosLogo(const AKC2: Integer = -1; const AKC1: Integer = -1);
     function ProcessarComandoBMP(const ConteudoBloco: String): AnsiString;
+    function ProcessarPosicionaXY(const ConteudoBloco: String): AnsiString;
+    procedure LerInfoDispositivos;
 
   protected
     FPosPrinterClass: TACBrPosPrinterClass;
-    FHook: TACBrPosPrinterHook;
+    {$IfDef MSWINDOWS}
+     FHook: TACBrPosPrinterHook;
+    {$EndIf}
 
     procedure EnviarStringDevice(AString: AnsiString);
     procedure TraduzirTag(const ATag: AnsiString; var TagTraduzida: AnsiString);
@@ -365,19 +476,26 @@ type
 
     procedure AtivarPorta;
     procedure DesativarPorta;
+    procedure VerificaPodeLerDaPorta;
 
+    {$IfDef MSWINDOWS}
     procedure DetectarECriarHook;
     procedure LiberarHook;
     procedure PosPrinterHookAtivar(const APort: String; Params: String);
     procedure PosPrinterHookDesativar(const APort: String);
     procedure PosPrinterHookEnviaString(const cmd: AnsiString);
     procedure PosPrinterHookLeString(const NumBytes, ATimeOut: Integer; var Retorno: AnsiString);
+    {$EndIf}
+
+    function AguardarCheque(Operacao: TACBrPosOperacaoCheque): Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
     property PosPrinter: TACBrPosPrinterClass read FPosPrinterClass;
-    property Hook: TACBrPosPrinterHook read FHook;
+    {$IfDef MSWINDOWS}
+     property Hook: TACBrPosPrinterHook read FHook;
+    {$EndIf}
 
     procedure Ativar;
     procedure Desativar;
@@ -390,6 +508,13 @@ type
     procedure ImprimirCmd(const AString: AnsiString);
     procedure GravarLog(AString: AnsiString; Traduz: Boolean = False;
       AdicionaTempo: Boolean = True);
+    procedure ImprimirCheque(CodBanco: Integer; AValor: Double; ADataEmissao: TDateTime;
+      const AFavorecido, ACidade, AComplemento: String; LerCMC7: Boolean = False;
+      SegundosEspera: Integer = 5);
+    procedure ImprimirTextoCheque(const X, Y: Integer; const AString: AnsiString;
+      AguardaCheque: Boolean = False; SegundosEspera: Integer = 5);
+    procedure EjetarCheque;
+    procedure LerCMC7(AguardaCheque: Boolean = False; SegundosEspera: Integer = 5);
 
     function TxRx(const ACmd: AnsiString; BytesToRead: Byte = 1;
       ATimeOut: Integer = 500; WaitForTerminator: Boolean = False): AnsiString;
@@ -438,6 +563,13 @@ type
 
     property TagsNaoSuportadas: TStringList read GetTagsNaoSuportadas;
 
+    function PodeLerDaPorta: Boolean;
+    property TemGuilhotina: Integer read GetTemGuilhotina;
+    property TemCheque: Integer read GetTemCheque;
+    property TemAutenticacao: Integer read GetTemAutenticacao;
+    property TemMICR: Integer read GetTemMICR;
+    property LeituraCheque: AnsiString read GetLeituraCheque;
+
   published
     property Modelo: TACBrPosPrinterModelo read FModelo write SetModelo default ppTexto;
     property Porta: String read GetPorta write SetPorta;
@@ -470,12 +602,19 @@ type
     property OnGravarLog: TACBrGravarLog read FOnGravarLog write FOnGravarLog;
     property ArqLOG: String read FArqLog write FArqLog;
     property OnEnviarStringDevice: TACBrGravarLog read FOnEnviarStringDevice write FOnEnviarStringDevice;
+    property OnAguardarCheque: TACBrPosOnAguardarCheque read FOnAguardarCheque write FOnAguardarCheque;
   end;
 
 implementation
 
+{$IFDEF FPC}
+ {$R ACBrPosCheque.rc}
+{$ELSE}
+ {$R ACBrPosCheque.res}
+{$ENDIF}
+
 uses
-  strutils, Math, typinfo,
+  strutils, Math, typinfo, IniFiles, dateutils,
   {$IfNDef NOGUI}
     {$IfDef FMX}
       FMX.Graphics,
@@ -483,12 +622,255 @@ uses
       Graphics,
     {$EndIf}
   {$EndIf}
-  ACBrUtil, ACBrImage, ACBrConsts,
-  synacode,
+  ACBrUtil, ACBrImage, ACBrConsts, ACBrExtenso, ACBrCMC7,
+  synacode, synautil,
   ACBrEscPosEpson, ACBrEscEpsonP2, ACBrEscBematech, ACBrEscDaruma,
   ACBrEscElgin, ACBrEscDiebold, ACBrEscCustomPos, ACBrEscPosStar,
-  ACBrEscZJiang, ACBrEscGPrinter,
-  ACBrEscPosHookElginDLL, ACBrEscPosHookEpsonDLL;
+  ACBrEscZJiang, ACBrEscGPrinter, ACBrEscDatecs
+  {$IfDef MSWINDOWS}
+  ,ACBrEscPosHookElginDLL, ACBrEscPosHookEpsonDLL
+  {$EndIf};
+
+{ TACBrPosCheque }
+
+constructor TACBrPosCheque.Create;
+begin
+  inherited;
+  Clear;
+end;
+
+procedure TACBrPosCheque.Clear;
+begin
+  FCodBanco := 0;
+  FNome := '';
+  FAno := Point(0,0);
+  FCidade := Point(0,0);
+  FComplemento := Point(0,0);
+  FDia := Point(0,0);
+  FExtenso := Point(0,0);
+  FFavorecido := Point(0,0);
+  FMes := Point(0,0);
+  FValor := Point(0,0);
+end;
+
+{ TACBrPosCheques }
+
+constructor TACBrPosCheques.Create(APosChequeIni: String;
+  AResourceName: String);
+begin
+  inherited Create(True);
+
+  if APosChequeIni = '' then
+    FFileName := ApplicationPath + CACBrPosChequeINI
+  else
+    FFileName := APosChequeIni;
+
+  if AResourceName = '' then
+    FResourceName := CACBrPosChequeResource
+  else
+    FResourceName := AResourceName;
+
+  Clear;
+end;
+
+destructor TACBrPosCheques.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TACBrPosCheques.Clear;
+begin
+  inherited Clear;
+  FDimensao := Point(154,93);
+  FBancoPadrao := 0;
+end;
+
+procedure TACBrPosCheques.Load;
+var
+  APosCheque: TACBrPosCheque;
+begin
+  Clear;
+  FLoaded := LoadFromFile or LoadFromResource;
+
+  if not FLoaded then
+    raise Exception.Create(ACBrStr('Erro ao carregar Posições de Cheques'));
+
+  if (FindPosCheque(FBancoPadrao, False) = Nil) then  // Garante que o Banco Padrão existe..
+  begin
+    if (Count = 0) then
+    begin
+      FBancoPadrao := 0;
+      APosCheque := TACBrPosCheque.Create;
+      APosCheque.CodBanco    := 0;
+      APosCheque.Nome        := 'PADRAO';
+      APosCheque.Valor       := Point( 43,63);
+      APosCheque.Extenso     := Point(145,60);
+      APosCheque.Favorecido  := Point(165,45);
+      APosCheque.Cidade      := Point(100,38);
+      APosCheque.Dia         := Point( 70,38);
+      APosCheque.Mes         := Point( 55,38);
+      APosCheque.Ano         := Point( 17,38);
+      APosCheque.Complemento := Point(165,10);
+      Insert(0, APosCheque);
+    end
+    else
+      FBancoPadrao := Objects[0].CodBanco;    // Primeiro Banco definido no INI
+  end;
+end;
+
+function TACBrPosCheques.FindPosCheque(ACodBanco: Integer;
+  UsaPadraoSeNaoAchar: Boolean): TACBrPosCheque;
+
+  function DoFindPosCheque(ACodBanco: Integer): TACBrPosCheque;
+  var
+    i: Integer;
+  begin
+    Result := Nil;
+    for i := 0 to Count-1 do
+    begin
+      if Objects[i].CodBanco = ACodBanco then
+      begin
+        Result := Objects[i];
+        Break;
+      end;
+    end;
+  end;
+
+begin
+  if not FLoaded then
+    Load;
+
+  Result := DoFindPosCheque(ACodBanco);
+  if (Result = Nil) and UsaPadraoSeNaoAchar then
+    Result := DoFindPosCheque(FBancoPadrao);
+end;
+
+procedure TACBrPosCheques.LoadFromStringList(AStringList: TStrings);
+var
+  Ini: TMemIniFile;
+  Sections: TStringList;
+  APosCheque: TACBrPosCheque;
+  CodBanco, i: Integer;
+
+  Function StrToPoint(const AValue: String): TPoint;
+  var
+    L, P: Integer;
+  begin
+    L := Length(AValue);
+    P := pos(',', AValue);
+    if (P = 0) then
+      P := L + 1;
+
+    Result.x := StrToIntDef(copy(AValue, 1, P-1), 0);
+    Result.y := StrToIntDef(copy(AValue, P+1, L), 0);
+  end;
+
+begin
+  Sections := TStringList.Create;
+  Ini := TMemIniFile.Create(FFileName);
+  try
+    Ini.SetStrings(AStringList);
+
+    FDimensao := StrToPoint( Ini.ReadString('Cheque', 'Dimensao', '') );
+    FBancoPadrao := Ini.ReadInteger('Cheque', 'BancoPadrao', 0);
+
+    Sections.Clear;
+    Ini.ReadSections(Sections);
+    For i := 0 to Sections.Count-1 do
+    begin
+      CodBanco := StrToIntDef(Sections[i], 0);
+      if (CodBanco > 0) then
+      begin
+        APosCheque := TACBrPosCheque.Create;
+        APosCheque.CodBanco    := CodBanco;
+        APosCheque.Nome        := Ini.ReadString(Sections[i], 'Nome', '');
+        APosCheque.Valor       := StrToPoint( Ini.ReadString(Sections[i], 'Valor', '') );
+        APosCheque.Extenso     := StrToPoint( Ini.ReadString(Sections[i], 'Extenso', '') );
+        APosCheque.Favorecido  := StrToPoint( Ini.ReadString(Sections[i], 'Favorecido', '') );
+        APosCheque.Cidade      := StrToPoint( Ini.ReadString(Sections[i], 'Cidade', '') );
+        APosCheque.Dia         := StrToPoint( Ini.ReadString(Sections[i], 'Dia', '') );
+        APosCheque.Mes         := StrToPoint( Ini.ReadString(Sections[i], 'Mes', '') );
+        APosCheque.Ano         := StrToPoint( Ini.ReadString(Sections[i], 'Ano', '') );
+        APosCheque.Complemento := StrToPoint( Ini.ReadString(Sections[i], 'Complemento', '') );
+        Add(APosCheque);
+      end;
+    end;
+  finally
+    Ini.Free;
+    Sections.Free;
+  end;
+end;
+
+function TACBrPosCheques.LoadFromFile: Boolean;
+var
+  SL: TStringList;
+begin
+  Result := False;
+  if (FFileName <> '') and FileExists(FFileName) then
+  begin
+    SL := TStringList.Create;
+    try
+      SL.LoadFromFile(FFileName);
+      LoadFromStringList(SL);
+      Result := True;
+    finally
+      SL.Free;
+    end;
+  end;
+end;
+
+function TACBrPosCheques.LoadFromResource: Boolean;
+var
+  RS: TResourceStream;
+  SL: TStringList;
+begin
+  {$IfDef FPC}Result := False;{$EndIf}
+
+  RS := TResourceStream.Create(HInstance, FResourceName, RT_RCDATA);
+  SL := TStringList.Create;
+  try
+    // Leitura do Resource pode falhar
+    RS.Position := 0;
+    SL.LoadFromStream(RS);
+    LoadFromStringList(SL);
+    Result := True;
+  finally
+    RS.Free;
+    SL.Free;
+  end;
+end;
+
+procedure TACBrPosCheques.SetFileName(AValue: String);
+begin
+  if (FFileName = AValue) then
+    Exit;
+
+  if (AValue <> '') and (not FileExists(AValue)) then
+    raise Exception.CreateFmt(ACBrStr(cACBrArquivoNaoEncontrado), [AValue]);
+
+  FFileName := AValue;
+  FLoaded := False;
+end;
+
+procedure TACBrPosCheques.SetObject(Index: Integer; Item: TACBrPosCheque);
+begin
+  inherited Items[Index] := Item;
+end;
+
+function TACBrPosCheques.GetObject(Index: Integer): TACBrPosCheque;
+begin
+  Result := TACBrPosCheque(inherited Items[Index]);
+end;
+
+procedure TACBrPosCheques.Insert(Index: Integer; Obj: TACBrPosCheque);
+begin
+  inherited Insert(Index, Obj);
+end;
+
+function TACBrPosCheques.Add(Obj: TACBrPosCheque): Integer;
+begin
+  Result := inherited Add(Obj) ;
+end;
 
 { TACBrConfigModoPagina }
 
@@ -509,7 +891,38 @@ end;
 constructor TACBrPosComandos.Create;
 begin
   inherited;
-  FPuloDeLinha := sLineBreak;
+  FPuloDeLinha := LF;
+  FPuloDePagina := FF;
+  FBeep := '';
+  FAlinhadoCentro := '';
+  FAlinhadoDireita := '';
+  FAlinhadoEsquerda := '';
+  FCorteParcial := '';
+  FDesligaAlturaDupla := '';
+  FDesligaInvertido := '';
+  FDesligaModoPagina := '';
+  FEspacoEntreLinhasPadrao := '';
+  FImprimePagina := '';
+  FLigaAlturaDupla := '';
+  FLigaInvertido := '';
+  FFonteNormal := '';
+  FLigaCondensado := '';
+  FCorteTotal := '';
+  FEspacoEntreLinhas := '';
+  FLigaExpandido := '';
+  FDesligaCondensado := '';
+  FDesligaExpandido := '';
+  FDesligaItalico := '';
+  FDesligaNegrito := '';
+  FDesligaSublinhado := '';
+  FFonteA := '';
+  FFonteB := '';
+  FLigaItalico := '';
+  FLigaModoPagina := '';
+  FLigaNegrito := '';
+  FLigaSublinhado := '';
+  FPuloDeLinha := '';
+  FZera := '';
 end;
 
 { TACBrConfigGaveta }
@@ -704,6 +1117,21 @@ begin
   Result := '';
 end;
 
+function TACBrPosPrinterClass.ComandoPosicionaModoPagina(APoint: TPoint): AnsiString;
+begin
+  Result := '';
+end;
+
+function TACBrPosPrinterClass.ComandoCarregaCheque(LerCMC7: Boolean; SegundosEspera: Byte): AnsiString;
+begin
+  Result := '';
+end;
+
+function TACBrPosPrinterClass.ComandoEjetarCheque: AnsiString;
+begin
+  Result := '';
+end;
+
 function TACBrPosPrinterClass.ComandoImprimirImagemRasterStr(const RasterStr: AnsiString;
   AWidth: Integer; AHeight: Integer): AnsiString;
 begin
@@ -820,6 +1248,16 @@ begin
   Result := '';
 end;
 
+function TACBrPosPrinterClass.ComandoLerCMC7(SegundosEspera: Byte): AnsiString;
+begin
+  Result := '';
+end;
+
+function TACBrPosPrinterClass.LeituraCheque: AnsiString;
+begin
+  Result := '';
+end;
+
 { TACBrPosPrinter }
 
 constructor TACBrPosPrinter.Create(AOwner: TComponent);
@@ -844,11 +1282,11 @@ begin
   {$ENDIF}
   {$IfDef MSWINDOWS}
   FDevice.WinUSB.HardwareType := htPOSPrinter;
+  FHook := Nil;
   {$EndIf}
 
   FPosPrinterClass := TACBrPosPrinterClass.Create(Self);
   FModelo := ppTexto;
-  FHook := Nil;
 
   FTipoAlinhamento := alEsquerda;
   FFonteStatus := [ftNormal];
@@ -860,6 +1298,13 @@ begin
   FConfigLogo   := TACBrConfigLogo.Create;
   FConfigGaveta := TACBrConfigGaveta.Create;
   FConfigModoPagina := TACBrConfigModoPagina.Create;
+
+  FPosCheques := TACBrPosCheques.Create;
+
+  FTemGuilhotina := -2;
+  FTemCheque := -2;
+  FTemAutenticacao := -2;
+  FTemMICR := -2;
 
   FTagProcessor := TACBrTagProcessor.Create;
   FTagProcessor.AddTags(cTAGS_CARACTER, cTAGS_CARACTER_HELP, False);
@@ -988,6 +1433,12 @@ begin
     Nome := cTagModoPaginaConfigurar;
     Ajuda := 'Envia a configuração de Coordenadas da Região e direção do Modo Página';
   end;
+  with FTagProcessor.Tags.New do
+  begin
+    Nome := cTagModoPaginaPosiciona;
+    Ajuda := 'Define Posição X,Y no Modo Página';
+    EhBloco := True;
+  end;
 
   // Tags de configuração do LogoTipo //
   with FTagProcessor.Tags.New do
@@ -1044,15 +1495,20 @@ begin
   FArqLog := '';
   FOnGravarLog := nil;
   FOnEnviarStringDevice := nil;
+  FOnAguardarCheque := nil;
+  FCancelarEsperaCheque := False;
 
   FTipoCorte := ctTotal;
 end;
 
 destructor TACBrPosPrinter.Destroy;
 begin
+  {$IfDef MSWINDOWS}
   LiberarHook;
+  {$EndIf}
   FPosPrinterClass.Free;
   FBuffer.Free;
+  FPosCheques.Free;
   FTagProcessor.Free;
   FConfigBarras.Free;
   FConfigQRCode.Free;
@@ -1099,8 +1555,8 @@ begin
             False, False);
   {*)}
 
-  DetectarECriarHook;
   {$IfDef MSWINDOWS}
+   DetectarECriarHook;
    ProtocoloACBr := 0;
    TipoHardware := htPOSPrinter;
    FDevice.DetectarTipoEProtocoloDispositivoUSB(TipoHardware, ProtocoloACBr);
@@ -1116,6 +1572,10 @@ begin
   FAtivo := True;
   FPosPrinterClass.Configurar;
   FInicializada := False;
+  FTemGuilhotina := -2;
+  FTemCheque := -2;
+  FTemAutenticacao := -2;
+  FTemMICR := -2;
 end;
 
 procedure TACBrPosPrinter.Desativar;
@@ -1131,6 +1591,10 @@ begin
   FDevice.Desativar;
   FAtivo := False;
   FInicializada := False;
+  FTemGuilhotina := -2;
+  FTemCheque := -2;
+  FTemAutenticacao := -2;
+  FTemMICR := -2;
 end;
 
 procedure TACBrPosPrinter.SetModelo(AValue: TACBrPosPrinterModelo);
@@ -1157,6 +1621,7 @@ begin
     ppEscPosStar: FPosPrinterClass := TACBrEscPosStar.Create(Self);
     ppEscZJiang: FPosPrinterClass := TACBrEscZJiang.Create(Self);
     ppEscGPrinter: FPosPrinterClass := TACBrEscGPrinter.Create(Self);
+    ppEscDatecs: FPosPrinterClass := TACBrEscDatecs.Create(Self);
   else
     FPosPrinterClass := TACBrPosPrinterClass.Create(Self);
   end;
@@ -1218,6 +1683,46 @@ begin
     Result := FPosPrinterClass.ComandoImprimirImagemArquivo(AData);
 end;
 
+function TACBrPosPrinter.ProcessarPosicionaXY(const ConteudoBloco: String): AnsiString;
+var
+  L, P, X, Y: Integer;
+begin
+  L := Length(ConteudoBloco);
+  P := pos(',', ConteudoBloco);
+  if (P = 0) then
+    P := L+1;
+
+  X := StrToIntDef(copy(ConteudoBloco, 1, P-1), 0);
+  Y := StrToIntDef(copy(ConteudoBloco, P+1, L), 0);
+
+  Result := FPosPrinterClass.ComandoPosicionaModoPagina(Point(x,y));
+end;
+
+procedure TACBrPosPrinter.LerInfoDispositivos;
+var
+  SL: TStringList;
+begin
+  if not PodeLerDaPorta then
+  begin
+    FTemGuilhotina := -1;
+    FTemCheque := -1;
+    FTemAutenticacao := -1;
+    FTemMICR := -1;
+    Exit;
+  end;
+
+  SL := TStringList.Create;
+  try
+    SL.Text := LerInfoImpressora;
+    FTemGuilhotina := StrToIntDef(SL.Values[cKeyGuilhotina], 0);
+    FTemCheque := StrToIntDef(SL.Values[cKeyCheque], 0);
+    FTemAutenticacao := StrToIntDef(SL.Values[cKeyAutenticacao], 0);
+    FTemMICR := StrToIntDef(SL.Values[cKeyMICR], 0);
+  finally
+    SL.Free;
+  end;
+end;
+
 procedure TACBrPosPrinter.DoLinesChange(Sender: TObject);
 begin
   if (FLinhasBuffer > 0) and (FBuffer.Count > FLinhasBuffer) then
@@ -1242,9 +1747,44 @@ begin
   Result := trunc(ColunasFonteNormal / FPosPrinterClass.RazaoColunaFonte.Condensada)
 end;
 
+function TACBrPosPrinter.ComandoConfigurarModoPaginaCheque: AnsiString;
+begin
+  Result := FPosPrinterClass.Cmd.LigaModoPagina;
+
+  with FConfigModoPagina do
+  begin
+    EspacoEntreLinhas := 0;
+    Direcao := dirBaixoParaTopo;
+    Esquerda := 0;
+    Topo := 0;
+    Largura := 540;
+    Altura := 858;
+  end;
+
+  Result := Result + FPosPrinterClass.ComandoConfiguraModoPagina;
+end;
+
+function TACBrPosPrinter.ComandoTextoPosCheque(const AText: AnsiString; APos, ADimensao: TPoint): String;
+var
+  RelPos: TPoint;
+begin
+  RelPos.x := trunc(max(ADimensao.x-APos.x,1) * 5.65);
+  RelPos.y := trunc(max(ADimensao.y-APos.y,1) * 6.2);
+
+  Result := FPosPrinterClass.ComandoPosicionaModoPagina(RelPos) +
+            FTagProcessor.DecodificarTagsFormatacao( CodificarPaginaDeCodigo(AText) ) +
+            FPosPrinterClass.Cmd.PuloDeLinha;
+end;
+
 function TACBrPosPrinter.GetColunasFonteExpandida: Integer;
 begin
   Result := trunc(ColunasFonteNormal / FPosPrinterClass.RazaoColunaFonte.Expandida)
+end;
+
+function TACBrPosPrinter.GetLeituraCheque: AnsiString;
+begin
+  GravarLog('GetLeituraCheque');
+  Result := FPosPrinterClass.LeituraCheque;
 end;
 
 
@@ -1414,6 +1954,9 @@ begin
   else if ATag = cTagPulodeLinha then
     TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(1)
 
+  else if ATag = cTagPulodePagina then
+    TagTraduzida := FPosPrinterClass.Cmd.PuloDePagina
+
   else if ATag = cTagRetornoDeCarro then
     TagTraduzida := CR
 
@@ -1464,20 +2007,20 @@ end;
 procedure TACBrPosPrinter.TraduzirTagBloco(const ATag, ConteudoBloco: AnsiString;
   var BlocoTraduzido: AnsiString);
 var
-  ACodBar: String;
+  ACodBar: AnsiString;
 begin
   BlocoTraduzido := FPosPrinterClass.TraduzirTagBloco(ATag, ConteudoBloco);
 
   if ConteudoBloco = BlocoTraduzido then  // Não traduziu...
   begin
     if ATag = cTagAlinhadoEsquerda then
-      BlocoTraduzido := PadRight(ConteudoBloco,Colunas)
+      BlocoTraduzido := PadRightA(ConteudoBloco, Colunas)
 
     else if ATag = cTagAlinhadoDireita then
-      BlocoTraduzido := PadLeft(ConteudoBloco,Colunas)
+      BlocoTraduzido := PadLeftA(ConteudoBloco, Colunas)
 
     else if ATag = cTagAlinhadoCentro then
-      BlocoTraduzido := PadCenter(ConteudoBloco,Colunas)
+      BlocoTraduzido := PadCenterA(ConteudoBloco, Colunas)
 
     else if ATag = cTagAbreGavetaEsp then
       BlocoTraduzido := FPosPrinterClass.ComandoGaveta( StrToIntDef( ConteudoBloco, 1) )
@@ -1546,6 +2089,11 @@ begin
       ConfigModoPagina.Largura := StrToIntDef(ConteudoBloco, ConfigModoPagina.Largura);
     end
 
+    else if ATag = cTagModoPaginaPosiciona then
+    begin
+      BlocoTraduzido := ProcessarPosicionaXY(ConteudoBloco);
+    end
+
     else if ATag = cTagBarraMostrar then
     begin
       BlocoTraduzido := '';
@@ -1600,7 +2148,7 @@ begin
       // Ajustando os Códigos de Barras, conforme regras do Tipo do Código //
       if (ATag = cTagBarraUPCA) then
         // Apenas números, sempre 11 digitos, e 1 digito verificador
-        ACodBar := PadLeft(OnlyNumber(ConteudoBloco), 11, '0')
+        ACodBar := PadLeftA(OnlyNumber(ConteudoBloco), 11, '0')
 
       else if (ATag = cTagBarraUPCE) then
         // EPC-A compactado, Apenas números, 6 ou 11 dígitos
@@ -1608,29 +2156,29 @@ begin
 
       else if ATag = cTagBarraEAN13 then
         // Apenas números, sempre 12 digitos, e 1 digito verificador
-        ACodBar := PadLeft(OnlyNumber(ConteudoBloco), 12, '0')
+        ACodBar := PadLeftA(OnlyNumber(ConteudoBloco), 12, '0')
 
       else if ATag = cTagBarraEAN8 then
         // Apenas números, sempre 7 digitos, e 1 digito verificador
-        ACodBar := PadLeft(OnlyNumber(ConteudoBloco), 7, '0')
+        ACodBar := PadLeftA(OnlyNumber(ConteudoBloco), 7, '0')
 
       else if ATag = cTagBarraCode128c then
         // Apenas números,
-        ACodBar := OnlyNumber(ConteudoBloco)
+        ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
 
       else if ATag = cTagBarraCode39 then
         // Qualquer tamanho.. Aceita: 0~9, A~Z, ' ', '$', '%', '*', '+', '-', '.', '/'
-        ACodBar := OnlyCharsInSet(ConteudoBloco,
-          ['0'..'9', 'A'..'Z', ' ', '$', '%', '*', '+', '-', '.', '/'])
+        ACodBar := AnsiString(OnlyCharsInSet(ConteudoBloco,
+          ['0'..'9', 'A'..'Z', ' ', '$', '%', '*', '+', '-', '.', '/']))
 
       else if ATag = cTagBarraCode93 then
         // Qualquer tamanho.. Aceita: #0~#127
-        ACodBar := OnlyCharsInSet(ConteudoBloco, [#0..#127])
+        ACodBar := AnsiString(OnlyCharsInSet(ConteudoBloco, [#0..#127]))
 
       else if ATag = cTagBarraInter then
       begin
         // Interleaved 2of5. Somente números, Tamanho deve ser PAR
-        ACodBar := OnlyNumber(ConteudoBloco);
+        ACodBar := AnsiString(OnlyNumber(ConteudoBloco));
 
         if (Length(ACodBar) mod 2) <> 0 then  // Tamanho é Par ?
           ACodBar := '0' + ACodBar;
@@ -1638,25 +2186,25 @@ begin
 
       else if ATag = cTagBarraStd then
         // Apenas números, Sem dígito verificador
-        ACodBar := OnlyNumber(ConteudoBloco)
+        ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
 
       else if ATag = cTagBarraCodaBar then
         // Qualquer tamanho.. Aceita: 0~9, A~D, a~d, $, +, -, ., /, :
-        ACodBar := OnlyCharsInSet(ConteudoBloco,
-          ['0'..'9', 'A'..'D', 'a'..'d', '$', '+', '-', '.', '/', ':'])
+        ACodBar := AnsiString(OnlyCharsInSet(ConteudoBloco,
+          ['0'..'9', 'A'..'D', 'a'..'d', '$', '+', '-', '.', '/', ':']))
 
       else if ATag = cTagBarraCode11 then
         // Apenas números, Qualquer tamanho, dois dígitos verificador
-        ACodBar := OnlyNumber(ConteudoBloco)
+        ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
 
       else if ATag = cTagBarraMSI then
         // Apenas números, 1 dígito verificador
-        ACodBar := OnlyNumber(ConteudoBloco)
+        ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
 
       else
         ACodBar := ConteudoBloco;
 
-      ACodBar := LeftStr(ACodBar, 255);  // Tamanho máximo para Cod.Barras é 255 caracteres
+      ACodBar:= LeftStr(ACodBar, 255);  // Tamanho máximo para Cod.Barras é 255 caracteres
 
       BlocoTraduzido := FPosPrinterClass.ComandoCodBarras(ATag, ACodBar);
     end;
@@ -1687,6 +2235,15 @@ begin
   end;
 end;
 
+procedure TACBrPosPrinter.VerificaPodeLerDaPorta;
+begin
+  if not PodeLerDaPorta then
+    raise EPosPrinterException.Create(ACBrStr('Leitura de Informações não disponível na porta: ')+
+                                      GetEnumName(TypeInfo(TACBrDeviceType), Integer(FDevice.DeviceType)));
+end;
+
+
+{$IfDef MSWINDOWS}
 procedure TACBrPosPrinter.DetectarECriarHook;
 var
   uPorta, uMarca: String;
@@ -1795,6 +2352,58 @@ begin
   if Assigned(FHook) then
      Retorno := FHook.ReadData(NumBytes, ATimeOut);
 end;
+{$EndIf}
+
+function TACBrPosPrinter.AguardarCheque(Operacao: TACBrPosOperacaoCheque): Boolean;
+var
+  AStatus: TACBrPosPrinterStatus;
+  ProxLeitura: TDateTime;
+begin
+  Result := False;
+  if not (PodeLerDaPorta and (TemCheque = 1)) then
+    Exit;
+
+  AStatus := [];
+  FPosPrinterClass.LerStatus( AStatus );
+  if not (stAguardandoSlip in AStatus) then   // Não está aguardando inserção de Cheques
+    Exit;
+
+  FCancelarEsperaCheque := False;
+  while not (FCancelarEsperaCheque or (stTOF in AStatus)) do    // Aguada presença de sensor de Topo
+  begin
+    ProxLeitura := IncMilliSecond(Now, 500);
+    if Assigned(FOnAguardarCheque) then
+      FOnAguardarCheque(AStatus, Operacao, FCancelarEsperaCheque);
+
+    if not FCancelarEsperaCheque then
+    begin
+      while (ProxLeitura > Now) do
+      begin
+        if Assigned(FOnAguardarCheque) then
+          FOnAguardarCheque(AStatus, agcSleep, FCancelarEsperaCheque);
+        Sleep( 50 );
+      end;
+
+      FPosPrinterClass.LerStatus( AStatus )
+    end;
+  end;
+
+  Result := (not FCancelarEsperaCheque);
+  if FCancelarEsperaCheque then
+  begin
+    if Assigned(FOnAguardarCheque) then
+      FOnAguardarCheque(AStatus, agcCancelado, FCancelarEsperaCheque);
+
+    EjetarCheque;
+  end
+  else
+  begin
+    if Assigned(FOnAguardarCheque) then
+      FOnAguardarCheque(AStatus, agcConcluido, FCancelarEsperaCheque);
+  end;
+
+  FCancelarEsperaCheque := False ;
+end;
 
 procedure TACBrPosPrinter.EnviarStringDevice(AString: AnsiString);
 var
@@ -1826,11 +2435,11 @@ begin
   try
     if not Tratado then
     begin
-      GravarLog('EnviarStringDevice( ' + AString + ')', True);
+      GravarLog('EnviarStringDevice(' + AString + ')', True);
       FDevice.EnviaString(AString);
     end
     else
-      GravarLog('OnEnviarStringDevice( ' + AString + ')', True);
+      GravarLog('OnEnviarStringDevice(' + AString + ')', True);
   finally
     if ControlePorta then
       DesativarPorta;
@@ -1859,6 +2468,137 @@ begin
   end;
 end;
 
+// Rotina inspirada em Código Fonte, gentilmente cedido pela Epson do Brasil,
+procedure TACBrPosPrinter.ImprimirCheque(CodBanco: Integer; AValor: Double;
+  ADataEmissao: TDateTime; const AFavorecido, ACidade, AComplemento: String;
+  LerCMC7: Boolean; SegundosEspera: Integer);
+var
+  APosCheque: TACBrPosCheque;
+  ValorFormatado, ValorExtenso, sDia, sMes, sAno: String;
+  AACBrExtenso: TACBrExtenso;
+  AACBrCMC7: TACBrCMC7;
+  CMC7Banco: Integer;
+  BufCmd: AnsiString;
+begin
+  GravarLog( 'ImprimirCheque( '+IntToStr(CodBanco) + ', '+ FloatToStr(AValor) + ', '+
+             DateToStr(ADataEmissao)+', '+AFavorecido+', '+ACidade+', '+AComplemento+', '+
+             IfThen(LerCMC7,'LerCMC7','NaoLerCMC7')+', '+IntToStr(SegundosEspera)+ ' )');
+
+  if (TemCheque = 0) then
+    raise EPosPrinterException.Create('Sem Impressora de Cheques');
+
+  LerCMC7 := LerCMC7 and PodeLerDaPorta and (TemMICR = 1);
+
+  Buffer.Clear;
+  ImprimirCmd(FPosPrinterClass.ComandoCarregaCheque(LerCMC7, SegundosEspera));
+
+  if LerCMC7 then  // Ok, se temos o CMC7, então podemos saber o Cod.Banco com certeza
+  begin
+    if not AguardarCheque(agcImpressao) then
+      Exit;
+
+    try
+      // Lendo o CMC7 do Cheque, e achando CodBanco
+      AACBrCMC7 := TACBrCMC7.Create(nil);
+      try
+        AACBrCMC7.CMC7 := LeituraCheque;
+        CMC7Banco := StrToIntDef(AACBrCMC7.Banco, 0);
+        if (CodBanco <> CMC7Banco) then
+        begin
+          GravarLog(Format('   Usando CodBanco %d, lido do CMC7',[CMC7Banco]));
+          CodBanco := CMC7Banco;
+        end;
+      finally
+        AACBrCMC7.Free;
+      end;
+    except
+      { ignore erros }
+    end;
+  end;
+
+  APosCheque := FPosCheques.FindPosCheque(CodBanco);
+  if (APosCheque = Nil) then
+    raise EPosPrinterException.Create('Erro ao ler coordenadas do Banco: '+IntToStr(CodBanco));
+
+  if (CodBanco <> APosCheque.CodBanco) then
+    GravarLog(Format('   Banco %d nao encontrado, usando Banco: %d',[CodBanco, APosCheque.CodBanco]));
+
+  BufCmd := ComandoConfigurarModoPaginaCheque;
+
+  ValorFormatado := '#'+FormatFloatBr(AValor)+'#';
+  AACBrExtenso := TACBrExtenso.Create(nil);
+  try
+    AACBrExtenso.Valor := AValor;
+    ValorExtenso := '#'+AACBrExtenso.Texto+'#';
+  finally
+    AACBrExtenso.Free;
+  end;
+  sDia := IntToStrZero(DayOf(ADataEmissao),2);
+  sMes := cMesDescricao[MonthOf(ADataEmissao)];
+  sAno := IntToStr(YearOf(ADataEmissao));
+
+  BufCmd := BufCmd + ComandoTextoPosCheque(ValorFormatado, APosCheque.Valor, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(ValorExtenso, APosCheque.Extenso, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(AFavorecido, APosCheque.Favorecido, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(ACidade, APosCheque.Cidade, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(sDia, APosCheque.Dia, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(sMes, APosCheque.Mes, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(sAno, APosCheque.Ano, FPosCheques.Dimensao);
+  BufCmd := BufCmd + ComandoTextoPosCheque(AComplemento, APosCheque.Complemento, FPosCheques.Dimensao);
+
+  BufCmd := BufCmd + FPosPrinterClass.Cmd.ImprimePagina +
+                     FPosPrinterClass.Cmd.DesligaModoPagina +
+                     FPosPrinterClass.Cmd.PuloDePagina;
+  ImprimirCmd(BufCmd);
+end;
+
+procedure TACBrPosPrinter.ImprimirTextoCheque(const X, Y: Integer;
+  const AString: AnsiString; AguardaCheque: Boolean; SegundosEspera: Integer);
+var
+  BufCmd: AnsiString;
+begin
+  GravarLog( 'ImprimirTextoCheque( '+IntToStr(X)+', '+IntToStr(Y)+', '+AString+' )');
+
+  if (TemCheque = 0) then
+    raise EPosPrinterException.Create('Sem Impressora de Cheques');
+
+  AguardaCheque := AguardaCheque and PodeLerDaPorta;
+
+  Buffer.Clear;
+  ImprimirCmd(FPosPrinterClass.ComandoCarregaCheque(False, SegundosEspera));
+  if AguardaCheque then
+    if not AguardarCheque(agcImpressao) then
+      Exit;
+
+  BufCmd := ComandoConfigurarModoPaginaCheque +
+            ComandoTextoPosCheque(AString, Point(X,Y), FPosCheques.Dimensao) +
+            FPosPrinterClass.Cmd.ImprimePagina +
+            FPosPrinterClass.Cmd.DesligaModoPagina +
+            FPosPrinterClass.Cmd.PuloDePagina;
+  ImprimirCmd(BufCmd);
+end;
+
+procedure TACBrPosPrinter.EjetarCheque;
+begin
+  GravarLog('EjetarCheque');
+  ImprimirCmd(FPosPrinterClass.ComandoEjetarCheque);
+  FCancelarEsperaCheque := True;
+end;
+
+procedure TACBrPosPrinter.LerCMC7(AguardaCheque: Boolean;
+  SegundosEspera: Integer);
+begin
+  GravarLog('LerCMC7');
+  VerificaPodeLerDaPorta;
+  if (TemMICR = 0) then
+    raise EPosPrinterException.Create('Sem leitor MICR');
+
+  ImprimirCmd(FPosPrinterClass.ComandoLerCMC7);
+
+  if AguardaCheque then
+    AguardarCheque(agcLerCMC7);
+end;
+
 procedure TACBrPosPrinter.RetornarTags(AStringList: TStrings;
   IncluiAjuda: Boolean);
 begin
@@ -1867,6 +2607,7 @@ end;
 
 procedure TACBrPosPrinter.ImprimirTags;
 begin
+  GravarLog('ImprimirTags');
   FTagProcessor.RetornarTags(FBuffer);
   FBuffer.Insert(0,'</zera><c><ignorar_tags>');
   FBuffer.Add('</ignorar_tags>');
@@ -1878,15 +2619,17 @@ end;
 function TACBrPosPrinter.TxRx(const ACmd: AnsiString; BytesToRead: Byte;
   ATimeOut: Integer; WaitForTerminator: Boolean): AnsiString;
 var
-  OldTimeOut: Integer;
+  OldTimeOut, OldSendBytesInterval: Integer;
 begin
   FDevice.Limpar;
 
   GravarLog('TX -> '+ACmd, True);
 
   OldTimeOut := FDevice.TimeOutMilissegundos;
+  OldSendBytesInterval := FDevice.SendBytesInterval;
   try
     FDevice.TimeOutMilissegundos := ATimeOut;
+    FDevice.SendBytesInterval := 0;
     FDevice.EnviaString( ACmd );
 
     Sleep(10);  // Aguarda equipamento ficar pronto para responder
@@ -1897,6 +2640,7 @@ begin
       Result := FDevice.LeString(ATimeOut, BytesToRead);
   finally
     FDevice.TimeOutMilissegundos := OldTimeOut;
+    FDevice.SendBytesInterval := OldSendBytesInterval;
   end;
 
   GravarLog('RX <- '+Result, True);
@@ -1915,6 +2659,38 @@ end;
 function TACBrPosPrinter.GetTagsNaoSuportadas: TStringList;
 begin
   Result := FPosPrinterClass.TagsNaoSuportadas;
+end;
+
+function TACBrPosPrinter.GetTemAutenticacao: Integer;
+begin
+  if FTemAutenticacao < -1 then
+    LerInfoDispositivos;
+
+  Result := FTemAutenticacao;
+end;
+
+function TACBrPosPrinter.GetTemCheque: Integer;
+begin
+  if FTemCheque < -1 then
+    LerInfoDispositivos;
+
+  Result := FTemCheque;
+end;
+
+function TACBrPosPrinter.GetTemGuilhotina: Integer;
+begin
+  if FTemGuilhotina < -1 then
+    LerInfoDispositivos;
+
+  Result := FTemGuilhotina;
+end;
+
+function TACBrPosPrinter.GetTemMICR: Integer;
+begin
+  if FTemMICR < -1 then
+    LerInfoDispositivos;
+
+  Result := FTemMICR;
 end;
 
 function TACBrPosPrinter.LerStatusImpressora(Tentativas: Integer
@@ -1986,9 +2762,7 @@ begin
 
   OldAtivo := Ativo;
   try
-    if not PodeLerDaPorta then
-      raise EPosPrinterException.Create(ACBrStr('Leitura de Informações não disponível na porta: ')+
-                                        GetEnumName(TypeInfo(TACBrDeviceType), integer(FDevice.DeviceType)));
+    VerificaPodeLerDaPorta;
     Ativar;
     AtivarPorta;
 
@@ -2004,20 +2778,20 @@ end;
 
 procedure TACBrPosPrinter.ImprimirImagemStream(ABMPStream: TStream);
 begin
-  GravarLog('ImprimirBMP( '+IntToStr(ABMPStream.Size)+' bytes )');
+  GravarLog('ImprimirImagemStream( '+IntToStr(ABMPStream.Size)+' bytes )');
   ImprimirCmd(FPosPrinterClass.ComandoImprimirImagemStream(ABMPStream));
 end;
 
 procedure TACBrPosPrinter.ImprimirImagemArquivo(ArquivoBMP: String);
 begin
-  GravarLog('ImprimirBMP( '+ArquivoBMP+' )');
+  GravarLog('ImprimirImagemArquivo( '+ArquivoBMP+' )');
   ImprimirCmd(FPosPrinterClass.ComandoImprimirImagemArquivo(ArquivoBMP));
 end;
 
 procedure TACBrPosPrinter.ImprimirImagemRasterStr(const ARasterStr: AnsiString; AWidth,
   AHeight: Integer);
 begin
-  GravarLog('ImprimirBMP( '+IntToStr(Length(ARasterStr))+' bytes, '+
+  GravarLog('ImprimirImagemRasterStr( '+IntToStr(Length(ARasterStr))+' bytes, '+
             IntToStr(AWidth)+', '+IntToStr(AHeight)+' )');
   ImprimirCmd(FPosPrinterClass.ComandoImprimirImagemRasterStr(ARasterStr, AWidth, AHeight));
 end;
@@ -2042,7 +2816,7 @@ end;
 procedure TACBrPosPrinter.GravarLogoStream(ABMPStream: TStream; AKC1: Integer;
   AKC2: Integer);
 begin
-  GravarLog('GravarLogo( '+IntToStr(ABMPStream.Size)+' bytes, '+IntToStr(AKC1)+', '+IntToStr(AKC2)+' )');
+  GravarLog('GravarLogoStream( '+IntToStr(ABMPStream.Size)+' bytes, '+IntToStr(AKC1)+', '+IntToStr(AKC2)+' )');
   VerificarParametrosLogo(AKC2, AKC1);
   ImprimirCmd(FPosPrinterClass.ComandoGravarLogoStream(ABMPStream));
 end;
@@ -2050,7 +2824,7 @@ end;
 procedure TACBrPosPrinter.GravarLogoArquivo(ArquivoBMP: String; AKC1: Integer;
   AKC2: Integer);
 begin
-  GravarLog('GravarLogo( '+ArquivoBMP+', '+IntToStr(AKC1)+', '+IntToStr(AKC2)+' )');
+  GravarLog('GravarLogoArquivo( '+ArquivoBMP+', '+IntToStr(AKC1)+', '+IntToStr(AKC2)+' )');
   VerificarParametrosLogo(AKC2, AKC1);
   ImprimirCmd(FPosPrinterClass.ComandoGravarLogoArquivo(ArquivoBMP))
 end;
@@ -2063,8 +2837,14 @@ begin
 end;
 
 function TACBrPosPrinter.CalcularAlturaTexto(ALinhas: Integer): Integer;
+var
+  EspLin: Byte;
 begin
-  Result := (FEspacoEntreLinhas+2) * ALinhas;
+  EspLin := FEspacoEntreLinhas;
+  if EspLin = 0 then
+    EspLin := 60;
+
+  Result := (EspLin+2) * ALinhas;
 end;
 
 function TACBrPosPrinter.CalcularLinhasAltura(AAltura: Integer): Integer;
@@ -2142,7 +2922,7 @@ end;
 
 function TACBrPosPrinter.PodeLerDaPorta: Boolean;
 begin
-   Result := (FDevice.DeviceType in [dtSerial, dtTCP, dtHook, dtUSB] )
+   Result := (FDevice.DeviceType in [dtSerial, dtTCP, dtHook, dtUSB, dtBlueTooth] )
 end;
 
 procedure TACBrPosPrinter.SetAtivo(AValue: Boolean);
@@ -2227,7 +3007,13 @@ begin
   //DEBUG
   //WriteLog('c:\temp\teste2.txt', StrToPrint, True);
 
-  StrToPrint := ChangeLineBreak(StrToPrint, FPosPrinterClass.Cmd.PuloDeLinha);
+  // Ajustando a Quebra de Linha, para a usada pela Impressora
+  if (FPosPrinterClass.Cmd.PuloDeLinha <> CRLF) then
+    StrToPrint := ReplaceString(StrToPrint, CRLF, FPosPrinterClass.Cmd.PuloDeLinha);
+  if (FPosPrinterClass.Cmd.PuloDeLinha <> CR) then
+    StrToPrint := ReplaceString(StrToPrint, CR, FPosPrinterClass.Cmd.PuloDeLinha);
+  if (FPosPrinterClass.Cmd.PuloDeLinha <> LF) then
+    StrToPrint := ReplaceString(StrToPrint, LF, FPosPrinterClass.Cmd.PuloDeLinha);
 
   if DecodificarTags then
     StrToPrint := FTagProcessor.DecodificarTagsFormatacao(StrToPrint);

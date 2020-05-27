@@ -3,16 +3,12 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2004 Fabio Farias                           }
-{                                       Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo:  Fabio Farias                                   }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
-{                                                                              }
-{ Esse arquivo usa a classe  SynaSer   Copyright (c)2001-2003, Lukas Gebauer   }
-{  Project : Ararat Synapse     (Found at URL: http://www.ararat.cz/synapse/)  }
 {                                                                              }
 {  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
 { sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
@@ -30,17 +26,9 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
-
-{******************************************************************************
-|* Historico
-|*
-|* 04/10/2005: Fabio Farias  / Daniel Simões de Almeida
-|*  - Primeira Versao ACBrBAL
-******************************************************************************}
 
 {$I ACBr.inc}
 
@@ -52,16 +40,18 @@ uses
   ACBrDevice, ACBrBase, ACBrBALClass,  {Units da ACBr}
   SysUtils, Classes,
   {$IFNDEF NOGUI}
-    {$IFDEF VisualCLX}
+    {$IF DEFINED(VisualCLX)}
       QExtCtrls,
-    {$ELSE}
+    {$ElseIf DEFINED(FMX)}
+      FMX.Types,
+    {$Else}
       ExtCtrls,
-    {$ENDIF}
+    {$IfEnd}
   {$ENDIF}
   {$IFDEF COMPILER6_UP}
     Types
   {$ELSE}
-    Windows
+    Windows, ACBrD5
   {$ENDIF};
 
 type
@@ -71,7 +61,7 @@ TACBrBALModelo = (balNenhum, balFilizola, balToledo, balToledo2090, balToledo218
                   balRinnert, balMuller, balSaturno, balAFTS, balGenerica, balLibratek,
                   balMicheletti, balAlfa, balToledo9091_8530_8540, balWeightechWT1000,
                   balMarelCG62XL, balWeightechWT3000_ABS, balToledo2090N, balToledoBCS21,
-                  balPrecision, balDigitron_UL);
+                  balPrecision, balDigitron_UL, balLibratekWT3000IR, balToledoTi420);
 TACBrBALLePeso = procedure(Peso : Double; Resposta : AnsiString) of object ;
 
 { Componente ACBrBAL }
@@ -154,12 +144,12 @@ implementation
 uses
   ACBrUtil, ACBrBALFilizola, ACBrBALToledo, ACBrBALUrano, ACBrBALRinnert,
   ACBrBALMuller, ACBrBALLucasTec,  ACBrBALToledo2180, ACBrBALMagna,
-  ACBrBALDigitron,ACBrBALMagellan, ACBrBALUranoPOP, ACBrBALLider,
+  ACBrBALDigitron, ACBrBALMagellan, ACBrBALUranoPOP, ACBrBALLider,
   ACBrBALToledo2090, ACBrBALSaturno, ACBrBALAFTS, ACBrBALLibratek,
   ACBrBALMicheletti, ACBrBALAlfa, ACBrBALToledo9091_8530_8540,
   ACBrBALWeightechWT1000, ACBrBALMarelCG62XL, ACBrBALWeightechWT3000_ABS,
   ACBrBALToledo2090N, ACBrBALToledoBCS21, ACBrBALPrecision,
-  ACBrBALDigitron_UL,
+  ACBrBALDigitron_UL, ACBrBALLibratekWT3000IR, ACBrBALToledoTi420,
   {$IFDEF COMPILER6_UP} StrUtils {$ELSE} ACBrD5{$ENDIF};
 
 { TACBrBAL }
@@ -254,12 +244,14 @@ begin
      balAlfa        : fsBAL := TACBrBALAlfa.Create(Self);
      balToledo2090N : fsBAL := TACBrBALToledo2090N.Create(Self);
      balToledoBCS21 : fsBAL := TACBrBALToledoBCS21.Create(Self);
-     balPrecision   : fsBAL := TACBrBALPrecision.Create(Self);	 
+     balPrecision   : fsBAL := TACBrBALPrecision.Create(Self);
      balToledo9091_8530_8540 : fsBAL := TACBrBALToledo9091_8530_8540.Create(Self);
      balWeightechWT1000      : fsBAL := TACBrBALWeightechWT1000.Create(Self);
      balMarelCG62XL          : fsBAL := TACBrBALMarelCG62XL.Create(Self);
      balWeightechWT3000_ABS  : fsBAL := TACBrBALWeightechWT3000_ABS.Create(Self);
      balDigitron_UL          : fsBAL := TACBrBALDigitron_UL.Create(Self);
+     balLibratekWT3000IR     : fsBAL := TACBrBALLibratekWT3000IR.Create(Self);
+     balToledoTi420          : fsBAL := TACBrBALToledoTi420.Create(self);
   else
      fsBAL := TACBrBALClass.Create(Self);
   end;

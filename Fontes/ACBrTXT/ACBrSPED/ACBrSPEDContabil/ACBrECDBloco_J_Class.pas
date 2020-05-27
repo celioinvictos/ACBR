@@ -3,9 +3,9 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2009   Isaque Pinheiro                      }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo:                                                 }
+{ Colaboradores nesse arquivo: Isaque Pinheiro                                 }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -26,9 +26,8 @@
 { Você também pode obter uma copia da licença em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Simões de Almeida  -  daniel@djsystem.com.br  -  www.djsystem.com.br  }
-{              Praça Anita Costa, 34 - Tatuí - SP - 18270-410                  }
-{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
 {******************************************************************************
@@ -333,11 +332,17 @@ begin
      begin
         with RegJ005.RegistroJ150.Items[intFor] do
         begin
+           if DT_INI >= EncodeDate(2019,01,01) then
+           begin
+              Check(((IND_DC_CTA_INI = 'D') or (IND_DC_CTA_INI = 'C')), '(J-J150) No Indicador da situação do valor final da linha no período imediatamente anterior, deve ser informado: D ou C!');
+              Check(((IND_DC_CTA_FIN = 'D') or (IND_DC_CTA_FIN = 'C')), '(J-J150) No Indicador da situação do valor final da linha antes do encerramento do exercício, deve ser informado: D ou C!');
+           end;
            if DT_INI >= EncodeDate(2018,01,01) then
            begin
               Check(((IND_COD_AGL = 'T') or (IND_COD_AGL = 'D')), '(J-J150) No Indicador do tipo de código de aglutinação, deve ser informado: T ou D!');
-              Check(((IND_DC_CTA = 'D') or (IND_DC_CTA = 'C')), '(J-J150) No Indicador da situação do valor total do código de aglutinação, deve ser informado: D ou C!');
               Check(((IND_GRP_DRE = 'D') or (IND_GRP_DRE = 'R')), '(J-J150) No Indicador de grupo da DRE, deve ser informado: D ou R!');
+              if DT_INI < EncodeDate(2019,01,01) then
+                Check(((IND_DC_CTA = 'D') or (IND_DC_CTA = 'C')), '(J-J150) No Indicador da situação do valor total do código de aglutinação, deve ser informado: D ou C!');
            end
            else
            begin
@@ -346,8 +351,28 @@ begin
            end;
 
            ///
+           /// Layout 8 a partir da escrituração ano calendário 2019
+           if DT_INI >= EncodeDate(2019,01,01) then
+           begin
+             Add( LFill('J150') +
+                  LFill(NU_ORDEM) +
+                  LFill(COD_AGL) +
+                  LFill(IND_COD_AGL) +
+                  LFill(NIVEL_AGL) +
+                  LFill(COD_AGL_SUP) +
+                  LFill(DESCR_COD_AGL) +
+                  LFill(VL_CTA_INI, 19, 2) +
+                  LFill(IND_DC_CTA_INI) +
+                  LFill(VL_CTA_FIN, 19, 2) +
+                  LFill(IND_DC_CTA_FIN) +
+                  // LFill(VL_CTA, 19, 2) +
+                  // LFill(IND_DC_CTA) +
+                  LFill(IND_GRP_DRE) +
+                  LFill(NOTAS_EXP_REF)
+                  );
+           end
            /// Layout 7 a partir da escrituração ano calendário 2018
-           if DT_INI >= EncodeDate(2018,01,01) then
+           else if DT_INI >= EncodeDate(2018,01,01) then
            begin
              Add( LFill('J150') +
                   LFill(COD_AGL) +
