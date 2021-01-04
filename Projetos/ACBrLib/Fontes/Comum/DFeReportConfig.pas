@@ -69,20 +69,18 @@ type
 
  protected
     procedure DefinirValoresPadroesChild; virtual; abstract;
-    procedure ImportChild(const AIni: TCustomIniFile); virtual; abstract;
     procedure LerIniChild(const AIni: TCustomIniFile); virtual; abstract;
     procedure GravarIniChild(const AIni: TCustomIniFile); virtual; abstract;
-    procedure ApplyChild(const DFeReport: T); virtual; abstract;
+    procedure ApplyChild(const DFeReport: T; const Lib: TACBrLib); virtual; abstract;
 
  public
    constructor Create(ASessao: String);
    destructor Destroy; override;
 
    procedure DefinirValoresPadroes;
-   procedure Import(const AIni: TCustomIniFile);
    procedure LerIni(const AIni: TCustomIniFile);
    procedure GravarIni(const AIni: TCustomIniFile);
-   procedure Apply(const DFeReport: T);
+   procedure Apply(const DFeReport: T; const Lib: TACBrLib);
 
    property Sessao: String read FSessao;
    property Impressora: String read FImpressora write FImpressora;
@@ -106,9 +104,6 @@ type
  end;
 
 implementation
-
-uses
-  ACBrMonitorConsts;
 
 constructor TDFeReportConfig<T>.Create(ASessao: String);
 begin
@@ -155,29 +150,6 @@ begin
   FCasasDecimais := TCasasDecimais.Create(nil);
 
   DefinirValoresPadroesChild;
-end;
-
-procedure TDFeReportConfig<T>.Import(const AIni: TCustomIniFile);
-begin
-  //Arquivos
-  UsaSeparadorPathPDF := AIni.ReadBool(CSecArquivos, CKeyArquivosUsarSeparadorPathPDF, UsaSeparadorPathPDF);
-
-  //Geral
-  Impressora := AIni.ReadString(CSecGeral, CKeyImpressora, Impressora);
-  Logo := AIni.ReadString(CSecGeral, CKeyLogomarca, Logo);
-
-  //DANFe
-  PathPDF := AIni.ReadString(CSecDANFE, CKeyDANFEPathPDF, PathPDF);
-  MargemInferior := AIni.ReadFloat(CSecDANFE, CKeyDANFEMargem, MargemInferior);
-  MargemSuperior := AIni.ReadFloat(CSecDANFE, CKeyDANFEMargemSup, MargemSuperior);
-  MargemEsquerda := AIni.ReadFloat(CSecDANFE, CKeyDANFEMargemEsq, MargemEsquerda);
-  MargemDireita := AIni.ReadFloat(CSecDANFE, CKeyDANFEMargemDir, MargemDireita);
-  NumCopias := AIni.ReadInteger(CSecDANFE, CKeyDANFECopias, NumCopias);
-  MostraPreview := AIni.ReadBool(CSecDANFE, CKeyDANFEMostrarPreview, MostraPreview);
-  MostraStatus := AIni.ReadBool(CSecDANFE, CKeyDANFEMostrarStatus, MostraStatus);
-  ExpandeLogoMarca := AIni.ReadBool(CSecDANFE, CKeyDANFEExpandirLogo, ExpandeLogoMarca);
-
-  ImportChild(AIni);
 end;
 
 procedure TDFeReportConfig<T>.LerIni(const AIni: TCustomIniFile);
@@ -262,9 +234,9 @@ begin
   GravarIniChild(AIni);
 end;
 
-procedure TDFeReportConfig<T>.Apply(const DFeReport: T);
+procedure TDFeReportConfig<T>.Apply(const DFeReport: T; const Lib: TACBrLib);
 begin
-  if not Assigned(DFeReport) or (DFeReport = nil) then Exit;
+  if not Assigned(DFeReport) then Exit;
 
   DFeReport.PathPDF := FPathPDF;
   DFeReport.UsaSeparadorPathPDF := FUsaSeparadorPathPDF;
@@ -292,12 +264,12 @@ begin
     vUnCom := FCasasDecimais.vUnCom;
   end;
 
-  DFeReport.Sistema := pLib.Config.Sistema.Nome;
-  DFeReport.Site := pLib.Config.Emissor.WebSite;
-  DFeReport.Email := pLib.Config.Emissor.Email;
-  DFeReport.Fax := pLib.Config.Emissor.Telefone;
+  DFeReport.Sistema := Lib.Config.Sistema.Nome;
+  DFeReport.Site := Lib.Config.Emissor.WebSite;
+  DFeReport.Email := Lib.Config.Emissor.Email;
+  DFeReport.Fax := Lib.Config.Emissor.Telefone;
 
-  ApplyChild(DFeReport);
+  ApplyChild(DFeReport, Lib);
 end;
 
 end.

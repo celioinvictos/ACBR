@@ -225,7 +225,7 @@ begin
                       {$IfDef UNICODE}LPWSTR{$Else}LPSTR{$EndIf}(CertName),
                       1024);
     if BytesRead > 0 then
-      SetLength(CertName, BytesRead)
+      SetLength(CertName, BytesRead-1)
     else
       raise EACBrDFeException.Create( 'Falha ao executar "CertNameToStr" em "GetSubjectName". Erro:'+GetLastErrorAsHexaStr);
 
@@ -248,7 +248,7 @@ begin
                       {$IfDef UNICODE}LPWSTR{$Else}LPSTR{$EndIf}(CertName),
                       1024);
     if BytesRead > 0 then
-      SetLength(CertName, BytesRead)
+      SetLength(CertName, BytesRead-1)
     else
       raise EACBrDFeException.Create( 'Falha ao executar "CertNameToStr" em "GetIssuerName". Erro:'+GetLastErrorAsHexaStr);
 
@@ -1227,6 +1227,7 @@ begin
         end;
 
         mBytesLen := Length(mHashBuffer);
+        FillChar(mHashBuffer, mBytesLen, #0);
 
         if Assina then
         begin
@@ -1366,6 +1367,7 @@ begin
         else
         begin
           mBytesLen := Length(mHashBuffer);
+          FillChar(mHashBuffer, mBytesLen, 0);
           // Obtendo o Hash //
           if not CryptGetHashParam(mHash, HP_HASHVAL, @mHashBuffer, mBytesLen, 0) then
             raise Exception.Create('CryptGetHashParam');

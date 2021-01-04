@@ -442,7 +442,7 @@ uses
   ACBrDFeConfiguracoes, ACBrNFeDANFEClass,
   ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
   pcnConversao, pcnConversaoNFe,
-  pcnAuxiliar, pcnNFeR, pcnNFeRTXT, pcnNFe, DoACBrUnit;
+  pcnAuxiliar, pcnNFeR, pcnNFeRTXT, pcnNFe, DoACBrUnit, ACBrDFeSSL;
 
 { TACBrObjetoNFe }
 
@@ -654,7 +654,7 @@ begin
                          fACBrNFe.NotasFiscais.Items[J].NFe.Ide.nNF)) +']' + sLineBreak +
                          'Arquivo=' + fACBrNFe.NotasFiscais.Items[J].NomeArq;
 
-          if pPDF then
+          if (NotasFiscais.Items[J].Confirmada) and (pPDF) then
           begin
             DoConfiguraDANFe(pPDF, Trim(pPreview) );
             NotasFiscais.Items[J].ImprimirPDF;
@@ -691,17 +691,32 @@ begin
 end;
 
 procedure TACBrObjetoNFe.LerIniNFe(ArqINI: String);
+var
+  AXML: String;
+  CargaDFe: TACBrCarregarNFe;
 begin
+  AXML:= '';
   with fACBrNFe do
   begin
     NotasFiscais.Clear;
-    NotasFiscais.LoadFromIni(ArqINI);
+    NotasFiscais.LoadFromIni( ArqINI );
 
     //Campos preenchidos em tela
     if (NotasFiscais.Count > 0) and
        ( NaoEstaVazio(MonitorConfig.DFE.WebService.NFe.CNPJContador) ) then
       with NotasFiscais.Items[0].NFe.autXML.New do
         CNPJCPF := MonitorConfig.DFE.WebService.NFe.CNPJContador;
+
+    //Deve recarregar os dados do XML validado pelo componente
+    AXML := NotasFiscais.Items[0].XMLOriginal;
+    NotasFiscais.Clear;
+    CargaDFe := TACBrCarregarNFe.Create(fACBrNFe, AXML, False);
+    try
+      if (NotasFiscais.Count = 0) then
+        Raise Exception.Create('Nenhuma NFe gerada no componente!');
+    finally
+      CargaDFe.Free;
+    end;
 
   end;
 end;
@@ -979,7 +994,7 @@ begin
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
     try
-      fpCmd.Resposta := GerarNFeIni(AXML);
+      fpCmd.Resposta := sLineBreak + GerarNFeIni(AXML);
     except
       on E: Exception do
         raise Exception.Create('Erro ao gerar INI da NFe.' + sLineBreak + E.Message);
@@ -2243,7 +2258,7 @@ procedure TMetodoCNPJCertificado.Executar;
 begin
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrNFe.SSL.CertCNPJ;
+    fpCmd.Resposta := ACBrNFe.SSL.CertCNPJ
   end;
 end;
 
@@ -2390,57 +2405,116 @@ end;
 
 { TMetodoGetPathNFe }
 
+{ Params: 0 - Data: TDateTime - Data para geração do path
+          1 - CNPJ: String - CNPJ para geração do path
+          2 - IE: String - IE para geração do path
+          3 - Modelo: Integer -  Modelo para geração
+}
 procedure TMetodoGetPathNFe.Executar;
+var
+  AData: TDateTime;
+  ACNPJ: String;
+  AIE: String;
+  AModelo: Integer;
 begin
+  AData:= StrToDateTimeDef(fpCmd.Params(0),0);
+  ACNPJ:= fpCmd.Params(1);
+  AIE:= fpCmd.Params(2);
+  AModelo := StrToIntDef( fpCmd.Params(3), 0);
+
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathNFe();
+    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathNFe(AData, ACNPJ, AIE, AModelo);
   end;
 end;
 
 { TMetodoGetPathCCe }
 
+{ Params: 0 - CNPJ: String - CNPJ para geração do path
+          1 - IE: String - IE para geração do path
+          2 - Data: TDateTime - Data para geração do path
+}
 procedure TMetodoGetPathCCe.Executar;
+var
+  ACNPJ: String;
+  AIE: String;
+  AData: TDateTime;
 begin
+  ACNPJ:= fpCmd.Params(0);
+  AIE:= fpCmd.Params(1);
+  AData:= StrToDateTimeDef(fpCmd.Params(2),0);
+
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathEvento(teCCe);
+    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathEvento(teCCe, ACNPJ, AIE, AData);
   end;
 end;
 
 { TMetodoGetPathCan }
 
+{ Params: 0 - CNPJ: String - CNPJ para geração do path
+          1 - IE: String - IE para geração do path
+          2 - Data: TDateTime - Data para geração do path
+}
 procedure TMetodoGetPathCan.Executar;
+var
+  ACNPJ: String;
+  AIE: String;
+  AData: TDateTime;
 begin
+  ACNPJ:= fpCmd.Params(0);
+  AIE:= fpCmd.Params(1);
+  AData:= StrToDateTimeDef(fpCmd.Params(2),0);
+
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathEvento(teCancelamento);
+    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathEvento(teCancelamento, ACNPJ, AIE, AData);
   end;
 end;
 
 { TMetodoGetPathEvento }
 
 { Params: 0 - Código do evento
+          1 - CNPJ: String - CNPJ para geração do path
+          2 - IE: String - IE para geração do path
+          3 - Data: TDateTime - Data para geração do path
 }
 procedure TMetodoGetPathEvento.Executar;
 var
   CodEvento: String;
+  ACNPJ: String;
+  AIE: String;
+  AData: TDateTime;
   ok: Boolean;
 begin
   CodEvento := fpCmd.Params(0);
+  ACNPJ:= fpCmd.Params(1);
+  AIE:= fpCmd.Params(2);
+  AData:= StrToDateTimeDef(fpCmd.Params(3),0);
+
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathEvento(StrToTpEventoNFe(ok ,CodEvento));
+    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathEvento(StrToTpEventoNFe(ok ,CodEvento), ACNPJ, AIE, AData);
   end;
 end;
 
 { TMetodoGetPathInu }
 
+{ Params:
+          0 - CNPJ: String - CNPJ para geração do path
+          1 - IE: String - IE para geração do path
+}
 procedure TMetodoGetPathInu.Executar;
+var
+  ACNPJ: String;
+  AIE: String;
 begin
+  ACNPJ:= fpCmd.Params(0);
+  AIE:= fpCmd.Params(1);
+
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathInu(fpCmd.Params(0));
+    fpCmd.Resposta := ACBrNFe.Configuracoes.Arquivos.GetPathInu( ACNPJ, AIE );
   end;
 end;
 

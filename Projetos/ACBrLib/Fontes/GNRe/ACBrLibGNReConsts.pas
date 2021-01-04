@@ -40,9 +40,6 @@ uses
   Classes, SysUtils;
 
 const
-  CLibGNReNome = 'ACBrLibGNRe';
-  CLibGNReVersao = '0.0.1';
-
   CSessaoRespConsulta = 'STATUS';
   CSessaoRespEnvio    = 'ENVIO';
 
@@ -54,23 +51,16 @@ const
   CChaveSite = 'Site';
   CChaveTamanhoPapel = 'TamanhoPapel';
 
+  ErrValidacaoGNRe = -11;
   ErrRetorno = -16;
   ErrEnvio = -17;
+  ErrAssinarGNRe = -13;
 
 Resourcestring
   SInfGNReCarregados = '%d GNRe(s) Carregado(s)';
 
-function SetRetornoGNReCarregados(const NumGNRe: Integer): Integer;
-
 implementation
 
-uses
-  ACBrLibComum;
-
-function SetRetornoGNReCarregados(const NumGNRe: Integer): Integer;
-begin
-  Result := SetRetorno( 0, {NumGNRe,} Format(SInfGNReCarregados, [NumGNRe]));
-end;
 
 end.
 

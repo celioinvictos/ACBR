@@ -33,6 +33,13 @@ Private Declare Function SAT_UltimoRetorno _
                 Lib "ACBrSAT32.dll" (ByVal buffer As String, _
                                       ByRef bufferLen As Long) As Long
                    
+Private Declare Function SAT_ConfigImportar _
+                Lib "ACBrSAT32.dll" (ByVal eArqConfig As String) As Long
+                   
+Private Declare Function SAT_ConfigExportar _
+                Lib "ACBrSAT32.dll" (ByVal buffer As String, _
+                                     ByRef bufferLen As Long) As Long
+
 Private Declare Function SAT_ConfigLer _
                 Lib "ACBrSAT32.dll" (ByVal eArqConfig As String) As Long
 
@@ -53,6 +60,12 @@ Private Declare Function SAT_ConfigGravarValor _
 Private Declare Function SAT_InicializarSAT Lib "ACBrSAT32.dll" () As Long
 
 Private Declare Function SAT_DesInicializar Lib "ACBrSAT32.dll" () As Long
+
+Private Declare Function SAT_AtivarSAT _
+                Lib "ACBrSAT32.dll" (ByVal CNPJValue As String, _
+                                      ByVal cUF As Long, _
+                                      ByVal buffer As String, _
+                                      ByRef bufferLen As Long) As Long
 
 Private Declare Function SAT_AssociarAssinatura _
                 Lib "ACBrSAT32.dll" (ByVal CNPJValue As String, _
@@ -131,11 +144,23 @@ Private Declare Function SAT_ImprimirExtratoResumido _
                 Lib "ACBrSAT32.dll" (ByVal eArquivoXml As String, _
                                       ByVal eNomeImpressora As String) As Long
                                       
+Private Declare Function SAT_ImprimirExtratoCancelamento _
+                Lib "ACBrSAT32.dll" (ByVal eArqXMLVenda As String, _
+                                     ByVal eArqXMLCancelamento As String, _
+                                     ByVal eNomeImpressora As String) As Long
+                                      
 Private Declare Function SAT_GerarPDFExtratoVenda _
                 Lib "ACBrSAT32.dll" (ByVal eArquivoXml As String, _
                                       ByVal eNomeArquivo As String, _
                                       ByVal buffer As String, _
                                       ByRef bufferLen As Long) As Long
+                                      
+Private Declare Function SAT_GerarPDFCancelamento _
+                Lib "ACBrSAT32.dll" (ByVal eArqXMLVenda As String, _
+                                     ByVal eArqXMLCancelamento As String, _
+                                     ByVal eNomeArquivo As String, _
+                                     ByVal buffer As String, _
+                                     ByRef bufferLen As Long) As Long
                                       
 Private Declare Function SAT_GerarImpressaoFiscalMFe _
                 Lib "ACBrSAT32.dll" (ByVal eArquivoXml As String, _
@@ -169,6 +194,32 @@ Public Sub FinalizarLib()
     retorno = SAT_Finalizar
     CheckResult (retorno)
 End Sub
+
+Public Sub ConfigImportar(ByVal eArqConfig As String)
+
+    Dim retorno As Long
+
+    retorno = SAT_ConfigImportar(eArqConfig)
+    CheckResult (retorno)
+    
+End Sub
+    
+Public Function ConfigExportar() As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    
+    buffer = String$(bufferLen, " ")
+    
+    retorno = SAT_ConfigExportar(buffer, bufferLen)
+    CheckResult retorno
+    
+    ConfigExportar = processResult(buffer, bufferLen)
+    
+End Function
 
 Public Sub ConfigLer(Optional eArqConfig As String = "")
 
@@ -257,6 +308,22 @@ Public Sub DesInicializar()
     retorno = SAT_DesInicializar()
     CheckResult (retorno)
 End Sub
+
+Public Function AtivarSAT(ByVal CNPJValue As String, ByVal cUF As Long) As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    
+    buffer = String$(bufferLen, " ")
+    
+    retorno = SAT_AtivarSAT(CNPJValue, cUF, buffer, bufferLen)
+    CheckResult (retorno)
+    
+    AtivarSAT = processResult(buffer, bufferLen)
+End Function
 
 Public Function AssociarAssinatura(ByVal CNPJValue As String, ByVal assinaturaCNPJs As String) As String
 
@@ -496,6 +563,13 @@ Public Sub ImprimirExtratoResumido(ByVal eArquivoXml As String, Optional ByVal e
     CheckResult (retorno)
 End Sub
 
+Public Sub ImprimirExtratoCancelamento(ByVal eArqXMLVenda As String, ByVal eArqXMLCancelamento As String, Optional ByVal eNomeImpressora As String = "")
+    Dim retorno   As Long
+    
+    retorno = SAT_ImprimirExtratoCancelamento(eArqXMLVenda, eArqXMLCancelamento, eNomeImpressora)
+    CheckResult (retorno)
+End Sub
+
 Public Function GerarPDFExtratoVenda(ByVal eArquivoXml As String, Optional ByVal eNomeArquivo As String = "") As String
 
     Dim retorno   As Long
@@ -510,6 +584,22 @@ Public Function GerarPDFExtratoVenda(ByVal eArquivoXml As String, Optional ByVal
     CheckResult (retorno)
     
     GerarPDFExtratoVenda = processResult(buffer, bufferLen)
+End Function
+
+Public Function GerarPDFCancelamento(ByVal eArqXMLVenda As String, ByVal eArqXMLCancelamento As String, Optional ByVal eNomeArquivo As String = "") As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    
+    buffer = String$(bufferLen, " ")
+    
+    retorno = SAT_GerarPDFCancelamento(eArqXMLVenda, eArqXMLCancelamento, eNomeArquivo, buffer, bufferLen)
+    CheckResult (retorno)
+    
+    GerarPDFCancelamento = processResult(buffer, bufferLen)
 End Function
 
 Public Function GerarImpressaoFiscalMFe(ByVal eArquivoXml As String) As String

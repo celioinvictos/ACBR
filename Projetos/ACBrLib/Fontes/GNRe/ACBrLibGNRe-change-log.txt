@@ -42,6 +42,42 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+30/12/2020
+--- ACBrLibGNReConfig ---
+[-] Corrigido possível problema ao ler senha do certificado.
+    (Por: Rafael Dias)
+
+19/10/2020
+--- ACBrLibGNReBase, ACBrLibGNReDataModule ---
+[-] Corrigindo retornos da ACBrLibGNRe.
+    (Por: Rafael Dias)
+
+07/09/2020
+--- ACBrLibGNREMT, ACBrLibGNREST ---
+[+] Removido o metodo GNRE_ConfigImportar.
+   Por: Rafael Dias
+[+] Removido o metodo GNRE_ConfigExportar.
+   Por: Rafael Dias
+[-] Removido o metodo GNRE_ImportarConfig.
+   Por: Rafael Dias
+
+29/05/2020
+--- ACBrLibGNRe ---
+[+] Adicionado os metodos GNRE_Assinar, GNRE_Validar, GNRE_VerificarAssinatura e GNRE_ObterCertificados.
+   Por: Rafael Dias
+
+28/05/2020
+--- ACBrLibGNRe ---
+[+] Adicionado os metodos GNRE_ObterXml e GNRE_GravarXml.
+   Por: Rafael Dias
+[*] Ajustado campos de impressão para ler a informação do local correto do ini.
+   Por: Rafael Dias
+   
+23/05/2020
+--- ACBrLibGNRe ---
+[*] Projeto finalizado.
+   Por: Rafael Dias
+
 26/10/2018
 --- ACBrLibGNRe ---
 [+] Inicio do projeto.

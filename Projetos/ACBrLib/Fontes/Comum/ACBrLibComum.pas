@@ -37,13 +37,11 @@ unit ACBrLibComum;
 interface
 
 uses
-  Classes, SysUtils, fileinfo,
-  ACBrLibConfig;
+  Classes, SysUtils, fileinfo, ACBrLibConfig;
 
 type
 
   { EACBrLibException }
-
   EACBrLibException = class(Exception)
   private
     FErro: Integer;
@@ -54,14 +52,12 @@ type
   end;
 
   { TLibRetorno }
-
   TLibRetorno = record
     Codigo: Integer;
     Mensagem: String;
   end;
 
   { TACBrLib }
-
   TACBrLib = class
   private
     FLogNome: String;
@@ -76,6 +72,7 @@ type
 
   protected
     fpConfig: TLibConfig;
+    fpLibRetorno: TLibRetorno;
     fpFileVerInfo: TFileVersionInfo;  // Informações da Aplicação e Versão, definida em Opções do Projeto
 
     procedure Inicializar; virtual;
@@ -88,47 +85,72 @@ type
     constructor Create(ArqConfig: String = ''; ChaveCrypt: AnsiString = ''); virtual;
     destructor Destroy; override;
 
-    procedure GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean = False);
-
     property Config: TLibConfig read fpConfig;
+    property Retorno: TLibRetorno read fpLibRetorno;
 
     property Nome: String read GetNome;
     property Versao: String read GetVersao;
     property Descricao: String read GetDescricao;
+
+    procedure GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean = False);
+    procedure MoverStringParaPChar(const AString: String; sDest: PChar; var esTamanho: longint);
+
+    function SetRetorno(const ACodigo: Integer; const AMensagem: String = ''): Integer;
+    function ConverterAnsiParaUTF8(AData: AnsiString): AnsiString;
+
+    function ObterNome(const sNome: PChar; var esTamanho: longint): longint;
+    function ObterVersao(const sVersao: PChar; var esTamanho: longint): longint;
+    function UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
+
+
+    function ImportarConfig(const eArqConfig: PChar): longint;
+    function ExportarConfig(sValor: PChar; var esTamanho: longint): longint;
+    function ConfigLer(const eArqConfig: PChar): longint;
+
+    function ConfigGravar(const eArqConfig: PChar): longint;
+    function ConfigLerValor(const eSessao, eChave: PChar; sValor: PChar; var esTamanho: longint): longint;
+    function ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
+
   end;
 
+  { TLibHandle }
+  TLibHandle = record
+    Lib: TACBrLib;
+  end;
+
+
   TACBrLibClass = class of TACBrLib;
+  PLibHandle = ^TLibHandle;
 
 {%region Declaração da funções externas}
 
 {%region Constructor/Destructor}
-function LIB_Inicializar(const eArqConfig, eChaveCrypt: PChar): longint;
-function LIB_Finalizar: longint;
-function LIB_Inicalizada: Boolean;
+function LIB_Inicializar(var libHandle: PLibHandle; pLibClass: TACBrLibClass; const eArqConfig, eChaveCrypt: PChar): longint;
+function LIB_Finalizar(libHandle: PLibHandle): longint;
+function LIB_Inicalizada(const libHandle: PLibHandle): Boolean;
 {%endregion}
 
 {%region Versao/Retorno}
-function LIB_Nome(const sNome: PChar; var esTamanho: longint): longint;
-function LIB_Versao(const sVersao: PChar; var esTamanho: longint): longint;
-function LIB_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
+function LIB_Nome(const libHandle: PLibHandle; const sNome: PChar; var esTamanho: longint): longint;
+function LIB_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
+function LIB_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
 {%endregion}
 
 {%region Ler/Gravar Config }
-function LIB_ImportarConfig(const eArqConfig: PChar): longint;
-function LIB_ConfigLer(const eArqConfig: PChar): longint;
-function LIB_ConfigGravar(const eArqConfig: PChar): longint;
-function LIB_ConfigLerValor(const eSessao, eChave: PChar; sValor: PChar; var esTamanho: longint): longint;
-function LIB_ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
+function LIB_ConfigImportar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+function LIB_ConfigExportar(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+function LIB_ConfigLer(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+function LIB_ConfigGravar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+function LIB_ConfigLerValor(const libHandle: PLibHandle; const eSessao, eChave: PChar; sValor: PChar; var esTamanho: longint): longint;
+function LIB_ConfigGravarValor(const libHandle: PLibHandle; const eSessao, eChave, eValor: PChar): longint;
 {%endregion}
 
 {%endregion}
 
 {%region Funcoes auxiliares para Funcionamento da Lib}
-procedure VerificarLibInicializada;
-procedure MoverStringParaPChar(const AString: String; sDest: PChar; var esTamanho: longint);
+procedure VerificarLibInicializada(const libHandle: PLibHandle);
 procedure VerificarArquivoExiste(const NomeArquivo: String);
-procedure LiberarLib;
-function SetRetorno(const ACodigo: Integer; const AMensagem: String = ''): Integer;
+procedure LiberarLib(libHandle: PLibHandle);
 {%endregion}
 
 {%region Funcoes auxiliares Diversas }
@@ -139,14 +161,14 @@ function StringToB64Crypt(AString: String; AChave: AnsiString = ''): String;
 function B64CryptToString(ABase64Str: String; AChave: AnsiString = ''): String;
 
 function StringEhXML(AString: String): Boolean;
+function StringEhINI(AString: String): Boolean;
 function StringEhArquivo(AString: String): Boolean;
-function ConverterAnsiParaUTF8(AData: AnsiString): AnsiString;
 {%endregion}
 
+{$IFNDEF MT}
 var
-  pLib: TACBrLib;            // Classe com a Lib
-  pLibClass: TACBrLibClass;  // Tipo de Classe a ser Instanciada (definir no LPR de cada nova Lib)
-  pLibRetorno: TLibRetorno;  // Último Retorno do método executado
+  pLib: PLibHandle;
+{$ENDIF}
 
 implementation
 
@@ -181,11 +203,18 @@ begin
   fpFileVerInfo := TFileVersionInfo.Create(Nil);
   fpFileVerInfo.ReadFileInfo;
 
+  FormatSettings.ShortDateFormat := 'dd/mm/yyyy';
+  FormatSettings.LongTimeFormat := 'hh:nn:ss';
+  FormatSettings.DateSeparator := '/';
+  FormatSettings.TimeSeparator := ':';
+
   CriarConfiguracao(ArqConfig, ChaveCrypt);
 end;
 
 destructor TACBrLib.Destroy;
 begin
+  GravarLog('LIB_Finalizar', logSimples);
+
   fpFileVerInfo.Free;
   Finalizar;
   inherited Destroy;
@@ -220,12 +249,6 @@ end;
 
 procedure TACBrLib.Inicializar;
 begin
-  with pLibRetorno do
-  begin
-    Codigo := 0;
-    Mensagem := '';
-  end;
-
   FLogData := 0;
   FLogNome := '';
 
@@ -238,9 +261,9 @@ begin
   FreeAndNil(fpConfig);
 end;
 
-procedure TACBrLib.CriarConfiguracao(ArqConfig: String; ChaveCrypt: AnsiString);
+procedure TACBrLib.CriarConfiguracao(ArqConfig: Ansistring; ChaveCrypt: AnsiString);
 begin
-  fpConfig := TLibConfig.Create(Self, ArqConfig, ChaveCrypt);
+  fpConfig := TLibConfig.Create(Self, ConverterAnsiParaUTF8(ArqConfig), ConverterAnsiParaUTF8(ChaveCrypt));
 end;
 
 procedure TACBrLib.Executar;
@@ -282,262 +305,7 @@ begin
   WriteLog(NomeArq, FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now) + ' - ' + AMsg, Traduzir);
 end;
 
-{%region Constructor/Destructor}
-
-function LIB_Inicializar(const eArqConfig, eChaveCrypt: PChar): longint;
-var
-  ArqConfig, ChaveCrypt: String;
-begin
-  try
-    ArqConfig := strpas(eArqConfig);
-    ChaveCrypt := strpas(eChaveCrypt);
-
-    if (pLib = nil) then
-      pLib := pLibClass.Create(ArqConfig, ChaveCrypt);
-
-    pLib.Inicializar;
-    pLib.GravarLog('LIB_Inicializar( ' + ArqConfig + ', ' + StringOfChar('*', Length(ChaveCrypt)) + ' )', logSimples);
-    pLib.GravarLog('   ' + pLib.Nome + ' - ' + pLib.Versao, logSimples);
-
-    Result := SetRetorno(ErrOK);
-  except
-    on E: EACBrLibException do
-    begin
-      Result := SetRetorno(E.Erro, E.Message);
-      LiberarLib;
-    end;
-
-    on E: Exception do
-    begin
-      Result := SetRetorno(ErrLibNaoInicializada, E.Message);
-      LiberarLib;
-    end
-  end;
-end;
-
-function LIB_Finalizar: longint;
-begin
-  try
-    if (pLib <> nil) then
-    begin
-      pLib.GravarLog('LIB_Finalizar', logSimples);
-      FreeAndNil(pLib);
-    end;
-
-    Result := SetRetorno(ErrOK);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrLibNaoFinalizada, E.Message);
-  end;
-end;
-
-function LIB_Inicalizada: Boolean;
-begin
-  Result := (pLib <> nil);
-end;
-
-{%endregion}
-
-{%region Versao/Retorno}
-
-function LIB_Nome(const sNome: PChar; var esTamanho: longint): longint;
-begin
-  try
-    VerificarLibInicializada;
-    pLib.GravarLog('LIB_Nome', logNormal);
-    MoverStringParaPChar(pLib.Nome, sNome, esTamanho);
-    if pLib.Config.Log.Nivel >= logCompleto then
-      pLib.GravarLog('   Nome:' + strpas(sNome) + ', len:' + IntToStr(esTamanho), logCompleto, True);
-    Result := SetRetorno(ErrOK, pLib.Nome);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
-  end;
-end;
-
-function LIB_Versao(const sVersao: PChar; var esTamanho: longint): longint;
-begin
-  try
-    VerificarLibInicializada;
-    pLib.GravarLog('LIB_Versao', logNormal);
-    MoverStringParaPChar(pLib.Versao, sVersao, esTamanho);
-    if pLib.Config.Log.Nivel >= logCompleto then
-      pLib.GravarLog('   Versao:' + strpas(sVersao) + ', len:' + IntToStr(esTamanho), logCompleto, True);
-    Result := SetRetorno(ErrOK, pLib.Versao);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
-  end;
-end;
-
-function LIB_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
-begin
-  try
-    if Assigned(pLib) then pLib.GravarLog('LIB_UltimoRetorno', logNormal);
-    MoverStringParaPChar(pLibRetorno.Mensagem, sMensagem, esTamanho);
-    Result := pLibRetorno.Codigo;
-    if Assigned(pLib) and (pLib.Config.Log.Nivel >= logCompleto) then
-      pLib.GravarLog('   Codigo:' + IntToStr(Result) + ', Mensagem:' + strpas(sMensagem), logCompleto, True);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
-  end;
-end;
-
-{%endregion}
-
-{%region Ler/Gravar Config }
-
-function LIB_ImportarConfig(const eArqConfig: PChar): longint;
-var
-  ArqConfig: String;
-begin
-  try
-    VerificarLibInicializada;
-    ArqConfig := strpas(eArqConfig);
-    pLib.GravarLog('LIB_ImportarConfig(' + ArqConfig + ')', logNormal);
-
-    if NaoEstaVazio(ArqConfig) then
-      pLib.Config.Importar(ArqConfig);
-
-    pLib.Config.Gravar;
-    Result := SetRetorno(ErrOK);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrConfigLer, E.Message);
-  end;
-end;
-
-function LIB_ConfigLer(const eArqConfig: PChar): longint;
-var
-  ArqConfig: String;
-begin
-  try
-    VerificarLibInicializada;
-    ArqConfig := strpas(eArqConfig);
-    pLib.GravarLog('LIB_ConfigLer(' + ArqConfig + ')', logNormal);
-
-    if NaoEstaVazio(ArqConfig) then
-      pLib.Config.NomeArquivo := ArqConfig;
-
-    pLib.Config.Ler;
-    Result := SetRetorno(ErrOK);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrConfigLer, E.Message);
-  end;
-end;
-
-function LIB_ConfigGravar(const eArqConfig: PChar): longint;
-var
-  ArqConfig: String;
-begin
-  try
-    VerificarLibInicializada;
-    ArqConfig := strpas(eArqConfig);
-    pLib.GravarLog('LIB_ConfigGravar(' + ArqConfig + ')', logNormal);
-
-    if NaoEstaVazio(ArqConfig) then
-      pLib.Config.NomeArquivo := ArqConfig;
-
-    pLib.Config.Gravar;
-    Result := SetRetorno(ErrOK);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrConfigGravar, E.Message);
-  end;
-end;
-
-function LIB_ConfigLerValor(const eSessao, eChave: PChar; sValor: PChar;
-  var esTamanho: longint): longint;
-var
-  Sessao, Chave, Valor: Ansistring;
-begin
-  try
-    VerificarLibInicializada;
-    Sessao := Ansistring(eSessao);
-    Chave := Ansistring(eChave);
-    pLib.GravarLog('LIB_ConfigLerValor(' + Sessao + ', ' + Chave + ')', logNormal);
-
-    Valor := pLib.Config.LerValor(Sessao, Chave);
-
-    MoverStringParaPChar(Valor, sValor, esTamanho);
-
-    if (pLib.Config.Log.Nivel >= logCompleto) then
-      pLib.GravarLog('   Valor:' + IfThen(pLib.Config.PrecisaCriptografar(Sessao, Chave),
-                                          StringOfChar('*', esTamanho), sValor) +
-                                          ', len:' + IntToStr(esTamanho), logCompleto, True);
-
-    Result := SetRetorno(ErrOK, Valor);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrConfigLer, E.Message);
-  end;
-end;
-
-function LIB_ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
-var
-  Sessao, Chave, Valor: Ansistring;
-begin
-  try
-    VerificarLibInicializada;
-    Sessao := Ansistring(eSessao);
-    Chave := Ansistring(eChave);
-    Valor := Ansistring(eValor);
-
-    pLib.GravarLog('LIB_ConfigGravarValor(' + Sessao + ', ' + Chave + ', ' +
-                                          IfThen(pLib.Config.PrecisaCriptografar(Sessao, Chave),
-                                          StringOfChar('*', Length(Valor)), Valor) + ')', logNormal);
-
-    pLib.Config.GravarValor(Sessao, Chave, Valor);
-    Result := SetRetorno(ErrOK);
-  except
-    on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, E.Message);
-
-    on E: Exception do
-      Result := SetRetorno(ErrConfigGravar, E.Message);
-  end;
-end;
-
-{%endregion}
-
-{%region Funcoes auxiliares }
-
-procedure VerificarLibInicializada;
-begin
-  if not Assigned(pLib) then
-  begin
-    if (LIB_Inicializar('', '') <> ErrOK) then
-      raise EACBrLibException.Create(ErrLibNaoInicializada, SErrLibNaoInicializada);
-  end;
-end;
-
-procedure MoverStringParaPChar(const AString: String; sDest: PChar; var esTamanho: longint);
+procedure TACBrLib.MoverStringParaPChar(const AString: String; sDest: PChar; var esTamanho: longint);
 var
   AStringLen: Integer;
 begin
@@ -552,26 +320,452 @@ begin
   end;
 end;
 
+function TACBrLib.SetRetorno(const ACodigo: Integer; const AMensagem: String = ''): Integer;
+begin
+  Result := ACodigo;
+  with Retorno do
+  begin
+    Codigo := ACodigo;
+    Mensagem := AMensagem;
+  end;
+  GravarLog('   SetRetorno(' + IntToStr(Retorno.Codigo) + ', ' + Retorno.Mensagem + ')', logParanoico);
+end;
+
+function TACBrLib.ConverterAnsiParaUTF8(AData: AnsiString): AnsiString;
+begin
+  if (Config.CodResposta = codANSI) then
+    Result := ACBrAnsiToUTF8(AData)
+  else
+    Result := AData;
+end;
+
+function TACBrLib.ObterNome(const sNome: PChar; var esTamanho: longint): longint;
+Var
+  Ret: Ansistring;
+begin
+  try
+    GravarLog('LIB_Nome', logNormal);
+    Ret := IfThen(Config.CodResposta = codAnsi, ACBrUTF8ToAnsi(Nome), Nome);
+    MoverStringParaPChar(Ret, sNome, esTamanho);
+    if Config.Log.Nivel >= logCompleto then
+      GravarLog('   Nome:' + string(sNome) + ', len:' + IntToStr(esTamanho), logCompleto, True);
+    Result := SetRetorno(ErrOK, Nome);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function TACBrLib.ObterVersao(const sVersao: PChar; var esTamanho: longint): longint;
+Var
+  Ret: Ansistring;
+begin
+  try
+    GravarLog('LIB_Versao', logNormal);
+    Ret := IfThen(Config.CodResposta = codAnsi, ACBrUTF8ToAnsi(Versao), Versao);
+    MoverStringParaPChar(Ret, sVersao, esTamanho);
+    if Config.Log.Nivel >= logCompleto then
+      GravarLog('   Versao:' + string(sVersao) + ', len:' + IntToStr(esTamanho), logCompleto, True);
+    Result := SetRetorno(ErrOK, Versao);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function TACBrLib.UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
+Var
+  Ret: Ansistring;
+begin
+  try
+    GravarLog('LIB_UltimoRetorno', logNormal);
+    Ret := IfThen(Config.CodResposta = codAnsi, ACBrUTF8ToAnsi(Retorno.Mensagem), Retorno.Mensagem);
+    MoverStringParaPChar(Ret, sMensagem, esTamanho);
+    Result := Retorno.Codigo;
+    if (Config.Log.Nivel >= logCompleto) then
+      GravarLog('   Codigo:' + IntToStr(Result) + ', Mensagem:' + string(sMensagem), logCompleto, True);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, E.Message);
+  end;
+end;
+
+function TACBrLib.ImportarConfig(const eArqConfig: PChar): longint;
+var
+  ArqConfig: String;
+begin
+  ArqConfig := ConverterAnsiParaUTF8(eArqConfig);
+   try
+     GravarLog('LIB_ImportarConfig(' + ArqConfig + ')', logNormal);
+
+    if NaoEstaVazio(ArqConfig) then
+      Config.Importar(ArqConfig);
+
+    Result := SetRetorno(ErrOK);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrConfigLer, E.Message);
+  end;
+
+end;
+
+function TACBrLib.ExportarConfig(sValor: PChar; var esTamanho: longint): longint;
+var
+  ArqIni: Ansistring;
+begin
+  try
+    GravarLog('LIB_ExportarConfig', logNormal);
+    ArqIni := IfThen(Config.CodResposta = codAnsi, ACBrUTF8ToAnsi(Config.Exportar), Config.Exportar);
+    MoverStringParaPChar(ArqIni, sValor, esTamanho);
+    Result := SetRetorno(ErrOK, ArqIni);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrConfigLer, E.Message);
+  end;
+end;
+
+function TACBrLib.ConfigLer(const eArqConfig: PChar): longint;
+var
+  ArqConfigOuIni: String;
+begin
+  try
+    ArqConfigOuIni := ConverterAnsiParaUTF8(eArqConfig);
+    GravarLog('LIB_ConfigLer(' + IfThen(Config.EhMemory, CLibMemory, ArqConfigOuIni) + ')', logNormal);
+    if Config.EhMemory then
+      GravarLog('   Memory: Configuração em memória favor usar o método ImportarConfig)', logNormal);
+
+    if not Config.EhMemory then
+    begin
+
+      if NaoEstaVazio(ArqConfigOuIni) then
+        Config.NomeArquivo := ArqConfigOuIni;
+
+      Config.Ler;
+    end;
+    Result := SetRetorno(ErrOK);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrConfigLer, E.Message);
+  end;
+end;
+
+function TACBrLib.ConfigGravar(const eArqConfig: PChar): longint;
+var
+  ArqConfig: String;
+begin
+  try
+    ArqConfig := ConverterAnsiParaUTF8(eArqConfig);
+    GravarLog('LIB_ConfigGravar(' + IfThen(Config.EhMemory, CLibMemory, eArqConfig) + ')', logNormal);
+    if Config.EhMemory then
+      GravarLog('   Memory: Configuração em memória favor usar o método ExportarConfig)', logNormal);
+
+    if not Config.EhMemory then
+    begin
+      if NaoEstaVazio(ArqConfig) then
+        Config.NomeArquivo := ArqConfig;
+
+      Config.Gravar;
+    end;
+
+    Result := SetRetorno(ErrOK);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrConfigGravar, E.Message);
+  end;
+end;
+
+function TACBrLib.ConfigLerValor(const eSessao, eChave: PChar; sValor: PChar;
+  var esTamanho: longint): longint;
+var
+  Sessao, Chave, Valor: Ansistring;
+begin
+  try
+    Sessao := ConverterAnsiParaUTF8(eSessao);
+    Chave := ConverterAnsiParaUTF8(eChave);
+    GravarLog('LIB_ConfigLerValor(' + Sessao + ', ' + Chave + ')', logNormal);
+
+    Valor := Config.LerValor(Sessao, Chave);
+
+    MoverStringParaPChar(Valor, sValor, esTamanho);
+
+    if (Config.Log.Nivel >= logCompleto) then
+      GravarLog('   Valor:' + IfThen(Config.PrecisaCriptografar(Sessao, Chave),
+                                StringOfChar('*', esTamanho), sValor) +
+                                ', len:' + IntToStr(esTamanho), logCompleto, True);
+
+    Result := SetRetorno(ErrOK, Valor);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrConfigLer, E.Message);
+  end;
+end;
+
+function TACBrLib.ConfigGravarValor(const eSessao, eChave, eValor: PChar): longint;
+var
+  Sessao, Chave, Valor: Ansistring;
+begin
+  try
+    Sessao := ConverterAnsiParaUTF8(eSessao);
+    Chave := ConverterAnsiParaUTF8(eChave);
+    Valor := ConverterAnsiParaUTF8(eValor);
+
+    GravarLog('LIB_ConfigGravarValor(' + Sessao + ', ' + Chave + ', ' +
+                                          IfThen(Config.PrecisaCriptografar(Sessao, Chave),
+                                          StringOfChar('*', Length(Valor)), Valor) + ')', logNormal);
+
+    Config.GravarValor(Sessao, Chave, Valor);
+    Result := SetRetorno(ErrOK);
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := SetRetorno(ErrConfigGravar, E.Message);
+  end;
+end;
+
+{%region Constructor/Destructor}
+
+function LIB_Inicializar(var libHandle: PLibHandle; pLibClass: TACBrLibClass; const eArqConfig, eChaveCrypt: PChar): longint;
+var
+  ArqConfig, ChaveCrypt: Ansistring;
+begin
+  try
+    ArqConfig := Ansistring(eArqConfig);
+    ChaveCrypt := Ansistring(eChaveCrypt);
+
+    New(libHandle);
+    libHandle^.Lib := pLibClass.Create(eArqConfig, eChaveCrypt);
+    libHandle^.Lib.Inicializar;
+    libHandle^.Lib.GravarLog('LIB_Inicializar( ' + IfThen(libHandle^.Lib.Config.EhMemory, CLibMemory, ArqConfig) + ', ' + StringOfChar('*', Length(ChaveCrypt)) + ' )', logSimples);
+    libHandle^.Lib.GravarLog('   ' + libHandle^.Lib.Nome + ' - ' + libHandle^.Lib.Versao, logSimples);
+
+    with libHandle^.Lib.Retorno do
+    begin
+      Codigo := 0;
+      Mensagem := '';
+    end;
+
+    Result := 0;
+  except
+    on E: EACBrLibException do
+    begin
+      Result := E.Erro;
+      LiberarLib(libHandle);
+    end;
+
+    on E: Exception do
+    begin
+      Result := ErrLibNaoInicializada;
+      LiberarLib(libHandle);
+    end
+  end;
+end;
+
+function LIB_Finalizar(libHandle: PLibHandle): longint;
+begin
+  try
+    LiberarLib(libHandle);
+    Result := 0;
+  except
+    on E: EACBrLibException do
+      Result := libHandle^.Lib.SetRetorno(E.Erro, E.Message);
+
+    on E: Exception do
+      Result := libHandle^.Lib.SetRetorno(ErrLibNaoFinalizada, E.Message);
+  end;
+end;
+
+function LIB_Inicalizada(const libHandle: PLibHandle): Boolean;
+begin
+  Result := (libHandle <> nil);
+end;
+
+{%endregion}
+
+{%region Versao/Retorno}
+
+function LIB_Nome(const libHandle: PLibHandle; const sNome: PChar; var esTamanho: longint): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ObterNome(sNome, esTamanho);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_Versao(const libHandle: PLibHandle;const sVersao: PChar; var esTamanho: longint): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ObterVersao(sVersao, esTamanho);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.UltimoRetorno(sMensagem, esTamanho);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+{%endregion}
+
+{%region Ler/Gravar Config }
+
+function LIB_ConfigImportar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ImportarConfig(eArqConfig);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_ConfigExportar(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ExportarConfig(sMensagem, esTamanho);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_ConfigLer(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ConfigLer(eArqConfig);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_ConfigGravar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ConfigGravar(eArqConfig);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_ConfigLerValor(const libHandle: PLibHandle; const eSessao, eChave: PChar; sValor: PChar;
+  var esTamanho: longint): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ConfigLerValor(eSessao, eChave, sValor, esTamanho);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function LIB_ConfigGravarValor(const libHandle: PLibHandle; const eSessao, eChave, eValor: PChar): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := libHandle^.Lib.ConfigGravarValor(eSessao, eChave, eValor);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+{%endregion}
+
+{%region Funcoes auxiliares }
+
+procedure VerificarLibInicializada(const libHandle: PLibHandle);
+begin
+  if not Assigned(libHandle) then
+  begin
+      raise EACBrLibException.Create(ErrLibNaoInicializada, SErrLibNaoInicializada);
+  end;
+end;
+
 procedure VerificarArquivoExiste(const NomeArquivo: String);
 begin
   if not FileExists(NomeArquivo) then
     raise EACBrLibException.Create(ErrArquivoNaoExiste, Format(SErrArquivoNaoExiste, [NomeArquivo]));
 end;
 
-procedure LiberarLib;
+procedure LiberarLib(libHandle: PLibHandle);
 begin
-  if Assigned(pLib) then
-    FreeAndNil(pLib);
-end;
-
-function SetRetorno(const ACodigo: Integer; const AMensagem: String): Integer;
-begin
-  Result := ACodigo;
-  pLibRetorno.Codigo := ACodigo;
-  pLibRetorno.Mensagem := AMensagem;
-
-  if Assigned(pLib) then
-    pLib.GravarLog('   SetRetorno(' + IntToStr(pLibRetorno.Codigo) + ', ' + pLibRetorno.Mensagem + ')', logParanoico);
+  if Assigned(libHandle) then
+  begin
+    libHandle^.Lib.Destroy;
+    libHandle^.Lib := nil;
+    Dispose(libHandle);
+  end;
 end;
 
 function LerArquivoParaString(AArquivo: String): AnsiString;
@@ -624,28 +818,7 @@ end;
 
 function StringEhArquivo(AString: String): Boolean;
 begin
-  Result := (AString <> '') and
-    (Length(AString) <= 255) and
-    (pos(LF, AString) = 0) and
-    (pos('<', AString) = 0) and
-    (pos('=', AString) = 0);
+  Result := FileExists(AString);
 end;
-
-function ConverterAnsiParaUTF8(AData: AnsiString): AnsiString;
-begin
-  if (pLib.Config.CodResposta = codANSI) then
-    Result := ACBrAnsiToUTF8(AData)
-  else
-    Result := AData;
-end;
-
-initialization
-  pLib := nil;
-  pLibClass := TACBrLib;
-  pLibRetorno.Codigo := 0;
-  pLibRetorno.Mensagem := '';
-
-finalization
-  LiberarLib;
 
 end.

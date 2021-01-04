@@ -37,9 +37,9 @@ unit ACBrTEFD;
 interface
 
 uses
-  Classes, SysUtils, ACBrBase, ACBrTEFDClass, ACBrTEFDPayGo, ACBrTEFDAuttar,
-  ACBrTEFDDial, ACBrTEFDDisc, ACBrTEFDHiper, ACBrTEFDCliSiTef, ACBrTEFDGpu,
-  ACBrTEFDVeSPague, ACBrTEFDBanese, ACBrTEFDGoodCard, ACBrTEFDFoxWin,
+  Classes, SysUtils, ACBrBase, ACBrTEFDClass, ACBrTEFDPayGo, ACBrTEFDPayGoWeb,
+  ACBrTEFDAuttar, ACBrTEFDDial, ACBrTEFDDisc, ACBrTEFDHiper, ACBrTEFDCliSiTef,
+  ACBrTEFDGpu, ACBrTEFDVeSPague, ACBrTEFDBanese, ACBrTEFDGoodCard, ACBrTEFDFoxWin,
   ACBrTEFDCliDTEF, ACBrTEFDPetroCard, ACBrTEFDCrediShop, ACBrTEFDTicketCar,
   ACBrTEFDConvCard, ACBrTEFDCappta
   {$IfNDef NOGUI}
@@ -100,6 +100,7 @@ type
      fAutoEfetuarPagamento : Boolean;
      fCHQEmGerencial: Boolean;
      fConfirmarAntesDosComprovantes: Boolean;
+     fOnExibeQRCode: TACBrTEFDExibeQRCode;
      fTrocoMaximo: Double;
      fEsperaSleep : Integer;
      fEstadoReq : TACBrTEFDReqEstado;
@@ -139,6 +140,7 @@ type
 
      fTefClass     : TACBrTEFDClass ;
      fTefPayGo     : TACBrTEFDPayGo ;
+     fTefPayGoWeb  : TACBrTEFDPayGoWeb ;
      fTefDial      : TACBrTEFDDial ;
      fTefGPU       : TACBrTEFDGpu ;
      fTefCliSiTef  : TACBrTEFDCliSiTef;
@@ -191,7 +193,8 @@ type
         DefaultValue: Integer = -98787158) : Double ;
      Function EstadoECF : AnsiChar ;
      function DoExibeMsg( Operacao : TACBrTEFDOperacaoMensagem;
-        Mensagem : String; ManterTempoMinimo : Boolean = False ) : TModalResult;
+        const Mensagem : String; ManterTempoMinimo : Boolean = False ) : TModalResult;
+     procedure DoExibeQRCode(const Dados: String);
      function ComandarECF(Operacao : TACBrTEFDOperacaoECF) : Integer;
      function ECFSubtotaliza(DescAcres: Double) : Integer;
      function ECFPagamento(Indice : String; Valor : Double) : Integer;
@@ -247,7 +250,7 @@ type
         const Cheque     : String = ''; const ChequeDC  : String = '';
         const Compensacao: String = '' ) : Boolean ;
      Function CNC(const Rede, NSU : String; const DataHoraTransacao :
-        TDateTime; const Valor : Double) : Boolean ;
+        TDateTime; const Valor : Double; CodigoAutorizacaoTransacao: String = '') : Boolean ;
      procedure CNF(const Rede, NSU, Finalizacao : String;
         const DocumentoVinculado : String = '');
      procedure NCN(const Rede, NSU, Finalizacao : String;
@@ -259,9 +262,11 @@ type
      procedure CancelarTransacoesPendentes;
      procedure ConfirmarTransacoesPendentes(ApagarRespostasPendentes: Boolean = True);
      procedure ImprimirTransacoesPendentes;
+     procedure ApagarRespostasPendentes;
 
      procedure AgruparRespostasPendentes(
         var Grupo : TACBrTEFDArrayGrupoRespostasPendentes) ;
+     procedure ExibirMensagemPinPad(const MsgPinPad: String);
 
    published
      property Identificacao : TACBrTEFDIdentificacao read fIdentificacao
@@ -299,6 +304,7 @@ type
        write fConfirmarAntesDosComprovantes default False;
 
      property TEFPayGo   : TACBrTEFDPayGo    read fTefPayGo ;
+     property TEFPayGoWeb: TACBrTEFDPayGoWeb read FTEFPayGoWeb ;
      property TEFDial    : TACBrTEFDDial     read fTefDial ;
      property TEFDisc    : TACBrTEFDDisc     read fTefDisc ;
      property TEFHiper   : TACBrTEFDHiper    read fTefHiper ;
@@ -320,6 +326,8 @@ type
         write fOnAguardaResp ;
      property OnExibeMsg    : TACBrTEFDExibeMsg read fOnExibeMsg
         write fOnExibeMsg ;
+     property OnExibeQRCode: TACBrTEFDExibeQRCode read fOnExibeQRCode
+        write fOnExibeQRCode;
      property OnBloqueiaMouseTeclado : TACBrTEFDBloqueiaMouseTeclado
         read fOnBloqueiaMouseTeclado write fOnBloqueiaMouseTeclado ;
      property OnRestauraFocoAplicacao : TACBrTEFDExecutaAcao
@@ -379,7 +387,7 @@ end;
 procedure TACBrTEFDIdentificacao.SetSoftwareHouse(AValue: String);
 begin
    if FSoftwareHouse=AValue then Exit;
-   FSoftwareHouse := LeftStr(Trim(AValue),8);
+   FSoftwareHouse := Trim(AValue);
 end;
 
 procedure TACBrTEFDIdentificacao.SetNomeAplicacao(AValue: String);
@@ -447,6 +455,7 @@ begin
   fOnComandaECFImprimeVia     := nil ;
   fOnInfoECF                  := nil ;
   fOnExibeMsg                 := nil ;
+  fOnExibeQRCode              := nil ;
   fOnMudaEstadoReq            := nil ;
   fOnMudaEstadoResp           := nil ;
   fOnBloqueiaMouseTeclado     := nil ;
@@ -460,11 +469,18 @@ begin
   { Lista de Objetos TACBrTEFDresp com todas as Respostas Pendentes para Impressao }
   fpRespostasPendentes := TACBrTEFDRespostasPendentes.create(True);
 
-  { Criando Classe TEF_DIAL }
+  { Criando Classe TEF_PayGo }
   fTefPayGo := TACBrTEFDPayGo.Create(self);
   fTEFList.Add(fTefPayGo);     // Adicionando "fTefPayGo" na Lista Objetos de Classes de TEF
   {$IFDEF COMPILER6_UP}
    fTefPayGo.SetSubComponent(True);   // Ajustando como SubComponente para aparecer no ObjectInspector
+  {$ENDIF}
+
+  { Criando Classe TEF_PayGo }
+  fTefPayGoWeb := TACBrTEFDPayGoWeb.Create(self);
+  fTEFList.Add(fTefPayGoWeb);     // Adicionando "fTefPayGoWeb" na Lista Objetos de Classes de TEF
+  {$IFDEF COMPILER6_UP}
+   fTefPayGoWeb.SetSubComponent(True);   // Ajustando como SubComponente para aparecer no ObjectInspector
   {$ENDIF}
 
   { Criando Classe TEF_DIAL }
@@ -681,6 +697,7 @@ begin
 
   case AValue of
     gpPayGo     : fTefClass := fTefPayGo ;
+    gpPayGoWeb  : fTefClass := fTefPayGoWeb ;
     gpTefDial   : fTefClass := fTefDial ;
     gpTefDisc   : fTefClass := fTefDisc ;
     gpHiperTef  : fTefClass := fTefHiper ;
@@ -777,9 +794,10 @@ begin
 end;
 
 function TACBrTEFD.CNC(const Rede, NSU: String;
-  const DataHoraTransacao: TDateTime; const Valor: Double): Boolean;
+  const DataHoraTransacao: TDateTime; const Valor: Double;
+  CodigoAutorizacaoTransacao: String): Boolean;
 begin
-  Result := fTefClass.CNC( Rede, NSU, DataHoraTransacao, Valor);
+  Result := fTefClass.CNC( Rede, NSU, DataHoraTransacao, Valor, CodigoAutorizacaoTransacao);
 end;
 
 procedure TACBrTEFD.CNF(const Rede, NSU, Finalizacao : String;
@@ -828,12 +846,10 @@ end;
 
 procedure TACBrTEFD.ConfirmarTransacoesPendentes(ApagarRespostasPendentes: Boolean);
 var
-  HouveConfirmacao: Boolean;
   I : Integer;
 begin
   fTefClass.GravaLog( 'ConfirmarTransacoesPendentes' );
 
-  HouveConfirmacao := False;
   I := 0;
   while I < RespostasPendentes.Count do
   begin
@@ -845,8 +861,7 @@ begin
         if not CNFEnviado then
         begin
           CNF( Rede, NSU, Finalizacao, DocumentoVinculado );
-          CNFEnviado       := True;
-          HouveConfirmacao := True;
+          CNFEnviado := True;
         end;
 
         if ApagarRespostasPendentes then
@@ -863,7 +878,7 @@ begin
   end ;
 
   try
-    if HouveConfirmacao and Assigned( fOnDepoisConfirmarTransacoes ) then
+    if (RespostasPendentes.Count > 0) and Assigned( fOnDepoisConfirmarTransacoes ) then
       fOnDepoisConfirmarTransacoes( RespostasPendentes );
   finally
     if ApagarRespostasPendentes then
@@ -900,7 +915,7 @@ begin
   end;
 
   if fConfirmarAntesDosComprovantes then
-    ConfirmarTransacoesPendentes(False);
+    ConfirmarTransacoesPendentes(False); //Não apaga agora, pois será usado na impressão
 
   ImpressaoOk            := False ;
   Gerencial              := False ;
@@ -1185,8 +1200,11 @@ begin
       try ComandarECF(opeCancelaCupom); except {Exceção Muda} end;
       CancelarTransacoesPendentes;
     end
+    else if (not fConfirmarAntesDosComprovantes) then
+      ConfirmarTransacoesPendentes
     else
-      ConfirmarTransacoesPendentes;
+      ApagarRespostasPendentes;
+
 
     BloquearMouseTeclado( False );
 
@@ -1197,8 +1215,35 @@ begin
   RespostasPendentes.Clear;
 end;
 
+procedure TACBrTEFD.ApagarRespostasPendentes;
+var
+  I : Integer;
+begin
+  fTefClass.GravaLog( 'ApagarRespostasPendentes' );
+
+  I := 0;
+  while I < RespostasPendentes.Count do
+  begin
+    try
+      with TACBrTEFDResp(RespostasPendentes[I]) do
+      begin
+        GPAtual := TipoGP;   // Seleciona a Classe do GP
+
+        ApagaEVerifica( ArqRespPendente );
+        ApagaEVerifica( ArqBackup );
+
+        Inc( I ) ;
+      end;
+    except
+      { Exceção Muda... Fica em Loop até conseguir confirmar e apagar Backup }
+    end;
+  end ;
+
+  RespostasPendentes.Clear;
+end;
+
 function TACBrTEFD.DoExibeMsg(Operacao: TACBrTEFDOperacaoMensagem;
-  Mensagem: String; ManterTempoMinimo: Boolean): TModalResult;
+  const Mensagem: String; ManterTempoMinimo: Boolean): TModalResult;
 var
   OldTecladoBloqueado : Boolean;
   TempoInicial : TDateTime;
@@ -1238,6 +1283,14 @@ begin
      fTempoInicialMensagemCliente  := TempoInicial
   else
      fTempoInicialMensagemOperador := TempoInicial ;
+end;
+
+procedure TACBrTEFD.DoExibeQRCode(const Dados: String);
+begin
+  if not Assigned(fOnExibeQRCode) then
+    DoExibeMsg( opmExibirMsgCliente, 'QRCODE=' + Dados)
+  else
+    fOnExibeQRCode(Dados);
 end;
 
 function TACBrTEFD.ComandarECF(Operacao: TACBrTEFDOperacaoECF): Integer;
@@ -1605,6 +1658,10 @@ begin
   until not Trocou;
 end;
 
+procedure TACBrTEFD.ExibirMensagemPinPad(const MsgPinPad: String);
+begin
+  fTefClass.ExibirMensagemPinPad(MsgPinPad);
+end;
 
 function TACBrTEFD.Inicializado( GP : TACBrTEFDTipo = gpNenhum ) : Boolean;
 begin
@@ -1711,9 +1768,9 @@ var
 begin
   For I := 0 to fTEFList.Count-1 do
   begin
-    if fTEFList[I] is TACBrTEFDClassTXT then
+    if fTEFList[I] is TACBrTEFDClass then
     begin
-       with TACBrTEFDClassTXT( fTEFList[I] ) do
+       with TACBrTEFDClass( fTEFList[I] ) do
        begin
           if NumVias = fNumVias then
              NumVias := AValue;

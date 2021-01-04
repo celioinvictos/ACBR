@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, syncobjs,
   ACBrMail, ACBrGNRE2, ACBrGNReGuiaRLClass,
-  ACBrLibConfig, ACBrLibMailImport;
+  ACBrLibComum, ACBrLibConfig;
 
 type
 
@@ -15,31 +15,33 @@ type
 
   TLibGNReDM = class(TDataModule)
     ACBrGNRE1: TACBrGNRE;
-    ACBrGNREGuiaRL1: TACBrGNREGuiaRL;
+    ACBrMail1: TACBrMail;
 
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
     FLock: TCriticalSection;
-    FACBrMail: TACBrMail;
+    fpLib: TACBrLib;
+    GNREGuia: TACBrGNREGuiaRL;
 
-    FLibMail: TACBrLibMail;
   public
-    procedure CriarACBrMail;
-
     procedure AplicarConfiguracoes;
     procedure AplicarConfigMail;
     procedure ConfigurarImpressao(GerarPDF: Boolean; NomeImpressora: String = ''; MostrarPreview: String = '');
+    procedure FinalizarImpressao;
     procedure GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean = False);
     procedure Travar;
     procedure Destravar;
+
+    property Lib: TACBrLib read fpLib write fpLib;
+
   end;
 
 implementation
 
 uses
   ACBrUtil, FileUtil,
-  ACBrLibGNReConfig, ACBrLibComum, ACBrLibGNReClass;
+  ACBrLibGNReConfig, ACBrLibGNReBase;
 
 {$R *.lfm}
 
@@ -48,133 +50,108 @@ uses
 procedure TLibGNReDM.DataModuleCreate(Sender: TObject);
 begin
   FLock := TCriticalSection.Create;
-  FACBrMail := Nil;
-  FLibMail := Nil;
 end;
 
 procedure TLibGNReDM.DataModuleDestroy(Sender: TObject);
 begin
   FLock.Destroy;
-
-  if Assigned(FLibMail) then
-    FreeAndNil(FLibMail)
-  else if Assigned(FACBrMail) then
-    FreeAndNil(FACBrMail);
-end;
-
-procedure TLibGNReDM.CriarACBrMail;
-var
-  NomeLib: String;
-begin
-  if Assigned(FLibMail) or Assigned(FACBrMail) then
-    Exit;
-
-  GravarLog('  CriarACBrMail', logCompleto);
-
-  NomeLib := ApplicationPath + CACBrMailLIBName;
-  if FileExists(NomeLib) then
-  begin
-    GravarLog('      Carregando MAIL de: ' + NomeLib, logCompleto);
-    // Criando Classe para Leitura da Lib //
-    FLibMail  := TACBrLibMail.Create(NomeLib, pLib.Config.NomeArquivo, pLib.Config.ChaveCrypt);
-    FACBrMail := FLibMail.ACBrMail;
-  end
-  else
-  begin
-    GravarLog('     Criando MAIL Interno', logCompleto);
-    FACBrMail := TACBrMail.Create(Nil);
-  end;
-
-  ACBrGNRe1.MAIL := FACBrMail;
 end;
 
 procedure TLibGNReDM.AplicarConfiguracoes;
 var
-  pLibConfig: TLibGNReConfig;
+  LibConfig: TLibGNReConfig;
 begin
   ACBrGNRe1.SSL.DescarregarCertificado;
-  pLibConfig := TLibGNReConfig(TACBrLibGNRe(pLib).Config);
-  ACBrGNRe1.Configuracoes.Assign(pLibConfig.GNReConfig);
+  LibConfig := TLibGNReConfig(TACBrLibGNRe(Lib).Config);
+  ACBrGNRe1.Configuracoes.Assign(LibConfig.GNReConfig);
 
   AplicarConfigMail;
 end;
 
 procedure TLibGNReDM.AplicarConfigMail;
 begin
-  if Assigned(FLibMail) or (not Assigned(FACBrMail)) then
-    Exit;
-
-  with FACBrMail do
+  with ACBrMail1 do
   begin
-    Attempts := pLib.Config.Email.Tentativas;
-    SetTLS := pLib.Config.Email.TLS;
-    DefaultCharset := pLib.Config.Email.Codificacao;
-    From := pLib.Config.Email.Conta;
-    FromName := pLib.Config.Email.Nome;
-    SetSSL := pLib.Config.Email.SSL;
-    Host := pLib.Config.Email.Servidor;
-    IDECharset := pLib.Config.Email.Codificacao;
-    IsHTML := pLib.Config.Email.IsHTML;
-    Password := pLib.Config.Email.Senha;
-    Port := IntToStr(pLib.Config.Email.Porta);
-    Priority := pLib.Config.Email.Priority;
-    ReadingConfirmation := pLib.Config.Email.Confirmacao;
-    DeliveryConfirmation := pLib.Config.Email.ConfirmacaoEntrega;
-    TimeOut := pLib.Config.Email.TimeOut;
-    Username := pLib.Config.Email.Usuario;
-    UseThread := pLib.Config.Email.SegundoPlano;
+    Attempts := Lib.Config.Email.Tentativas;
+    SetTLS := Lib.Config.Email.TLS;
+    DefaultCharset := Lib.Config.Email.Codificacao;
+    From := Lib.Config.Email.Conta;
+    FromName := Lib.Config.Email.Nome;
+    SetSSL := Lib.Config.Email.SSL;
+    Host := Lib.Config.Email.Servidor;
+    IDECharset := Lib.Config.Email.Codificacao;
+    IsHTML := Lib.Config.Email.IsHTML;
+    Password := Lib.Config.Email.Senha;
+    Port := IntToStr(Lib.Config.Email.Porta);
+    Priority := Lib.Config.Email.Priority;
+    ReadingConfirmation := Lib.Config.Email.Confirmacao;
+    DeliveryConfirmation := Lib.Config.Email.ConfirmacaoEntrega;
+    TimeOut := Lib.Config.Email.TimeOut;
+    Username := Lib.Config.Email.Usuario;
+    UseThread := Lib.Config.Email.SegundoPlano;
   end;
 end;
 
 procedure TLibGNReDM.ConfigurarImpressao(GerarPDF: Boolean; NomeImpressora, MostrarPreview: String);
 var
-  pLibConfig: TLibGNReConfig;
+  LibConfig: TLibGNReConfig;
 begin
   GravarLog('ConfigurarImpressao - Iniciado', logNormal);
 
-  pLibConfig := TLibGNReConfig(pLib.Config);
-  ACBrGNRE1.GNREGuia := ACBrGNREGuiaRL1;
+  LibConfig := TLibGNReConfig(Lib.Config);
+  GNREGuia := TACBrGNREGuiaRL.Create(nil);
+  ACBrGNRE1.GNREGuia := GNREGuia;
 
-  with ACBrGNREGuiaRL1 do
+  with GNREGuia do
   begin
-    eMail := pLibConfig.GuiaConfig.eMail;
-    Fax := pLibConfig.GuiaConfig.Fax;
-    Impressora := pLibConfig.GuiaConfig.Impressora;
-    MargemInferior := pLibConfig.GuiaConfig.MargemInferior;
-    MargemSuperior := pLibConfig.GuiaConfig.MargemSuperior;
-    MargemEsquerda := pLibConfig.GuiaConfig.MargemEsquerda;
-    MargemDireita := pLibConfig.GuiaConfig.MargemDireita;
-    MostrarPreview := pLibConfig.GuiaConfig.MostrarPreview;
-    MostrarStatus := pLibConfig.GuiaConfig.MostrarStatus;
-    NumCopias := pLibConfig.GuiaConfig.NumCopias;
-    PathPDF := pLibConfig.GuiaConfig.PathPDF;
-    PrintDialog := pLibConfig.GuiaConfig.PrintDialog;
-    Sistema := pLibConfig.GuiaConfig.Sistema;
-    Site := pLibConfig.GuiaConfig.Site;
-    TamanhoPapel := pLibConfig.GuiaConfig.TamanhoPapel;
-    Usuario := pLibConfig.GuiaConfig.Usuario;
+    Impressora := LibConfig.GuiaConfig.Impressora;
+    MargemInferior := LibConfig.GuiaConfig.MargemInferior;
+    MargemSuperior := LibConfig.GuiaConfig.MargemSuperior;
+    MargemEsquerda := LibConfig.GuiaConfig.MargemEsquerda;
+    MargemDireita := LibConfig.GuiaConfig.MargemDireita;
+    MostrarPreview := LibConfig.GuiaConfig.MostrarPreview;
+    MostrarStatus := LibConfig.GuiaConfig.MostrarStatus;
+    NumCopias := LibConfig.GuiaConfig.NumCopias;
+    PathPDF := LibConfig.GuiaConfig.PathPDF;
+    PrintDialog := LibConfig.GuiaConfig.PrintDialog;
+    TamanhoPapel := LibConfig.GuiaConfig.TamanhoPapel;
+    Sistema := Lib.Config.Sistema.Nome;
+    Site := Lib.Config.Emissor.WebSite;
+    Email := Lib.Config.Emissor.Email;
+    Fax := Lib.Config.Emissor.Telefone;
+    Usuario := LibConfig.GuiaConfig.Usuario;
   end;
 
   if GerarPDF then
   begin
-    if (pLibConfig.GuiaConfig.PathPDF <> '') then
-      if not DirectoryExists(PathWithDelim(pLibConfig.GuiaConfig.PathPDF))then
-        ForceDirectories(PathWithDelim(pLibConfig.GuiaConfig.PathPDF));
+    if (LibConfig.GuiaConfig.PathPDF <> '') then
+      if not DirectoryExists(PathWithDelim(LibConfig.GuiaConfig.PathPDF))then
+        ForceDirectories(PathWithDelim(LibConfig.GuiaConfig.PathPDF));
   end;
 
   if NaoEstaVazio(NomeImpressora) then
-    ACBrGNREGuiaRL1.Impressora := NomeImpressora;
+    GNREGuia.Impressora := NomeImpressora;
 
   if NaoEstaVazio(MostrarPreview) then
-    ACBrGNREGuiaRL1.MostrarPreview := StrToBoolDef(MostrarPreview, False);
+    GNREGuia.MostrarPreview := StrToBoolDef(MostrarPreview, False);
 
   GravarLog('ConfigurarImpressao - Feito', logNormal);
 end;
 
+procedure TLibGNReDM.FinalizarImpressao;
+begin
+  GravarLog('FinalizarImpressao - Iniciado', logNormal);
+
+  ACBrGNRE1.GNREGuia := nil;
+  if Assigned(GNREGuia) then FreeAndNil(GNREGuia);
+
+  GravarLog('FinalizarImpressao - Feito', logNormal);
+end;
+
 procedure TLibGNReDM.GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean);
 begin
-  if Assigned(pLib) then
-    pLib.GravarLog(AMsg, NivelLog, Traduzir);
+  if Assigned(Lib) then
+    Lib.GravarLog(AMsg, NivelLog, Traduzir);
 end;
 
 procedure TLibGNReDM.Travar;

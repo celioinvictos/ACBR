@@ -49,6 +49,289 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+23/12/2020
+--ACBrBancoSicred, ACBrBoleto--
+[+] Adicionado validação do campo Desconto3 no CNAB240 e validação de todos os descontos pela DataDesconto correspondente
+https://www.projetoacbr.com.br/forum/topic/60604-datadesconto3/
+
+-- ACBrBancoCaixa --
+[*] Ajuste CNAB400 na ultima posição do campo CódigoCedente
+https://www.projetoacbr.com.br/forum/topic/60535-cobran%C3%A7a-sigeb-cnab-400-sugest%C3%A3o-de-ajustes/
+
+18/12/2020
+
+-- ACBrBancoSafra --
+[*] Ajuste na geracao CNAB400 Header
+Adicionado Agencia e Conta conforme especificação do manual
+
+
+04/12/2020
+
+-- ACBrBancoBrasil --
+[*] Ajuste na geracao CNAB400 Registro Tipo 5 - validar qtd dias de recebimento após vencimento
+https://www.projetoacbr.com.br/forum/topic/60402-remessa-banco-do-brasil/
+
+30/11/2020
+
+-- ACBrBancoCaixa --
+[*] Ajuste na geração do campo SeuNumero na remassa CNAB400.
+https://www.projetoacbr.com.br/forum/topic/60240-problema-no-campo-identifica%C3%A7%C3%A3o-do-t%C3%ADtulo-na-empresa-da-remessa-cef/
+
+11/11/2020
+
+-- ACBrBoleto --
+[*] Ajuste na validação SET do campo Parcela e TotalParcela.
+
+28/10/2020
+
+-- ACBrBancoABCBrasil --
+[*] Adicionado campo DataMoraJuros para CNAB240.
+
+-- ACBrBancoCaixa --
+[*] Adicionado validação para leitura do código Cedente CNAB240 Layout de 7 posições.
+
+26/10/2020
+
+-- ACBrBancoCaixa --
+[*] Adicionado Instrução "03" para CNAB400
+
+22/10/2020
+
+-- ACBrSantander --
+[*] Adicionado validação para o tipo CaracTitulo = "tcDireta"
+
+-- ACBrBoleto --
+[*] Validação do componente ACBrBoletoFC na leitura do .ini.
+
+21/10/2020
+
+-- ACBrBoleto, ACBrBoletoWS, ACBrBoletoW_BancoBrasil, ACBrBoletoW_Itau  --
+[*] Ajustes e melhorias na integração boleto On-line.
+
+19/10/2020
+
+-- ACBrBancoBancoob --
+[*] Atualização das ocorrências de remessa na geração CNAB240
+
+09/10/2020
+
+-- ACBrBancoSicred --
+[*] Correção na validação Postagem Titulo CNAB400 posição72 da remessa com o campo: CarteiraEnvio
+Contribuição: https://www.projetoacbr.com.br/forum/topic/41349-remessa-sicredi/
+
+-- ACBrBancoSafra --
+[*] Correção no tratamento do desconto 2 e 3 para CNB240 seguindo manual atualizado
+Contribuição: https://www.projetoacbr.com.br/forum/topic/58445-banco-safra-n%C3%A3o-trata-desconto-segmento-r/
+
+-- ACBrBancoCresol --
+[*] Ajuste na validação Código de ocorrências conforme manual atualizado função: CodMotivoRejeicaoToDescricao
+Contribuição: https://www.projetoacbr.com.br/forum/topic/59352-problema-ao-processar-arquivo-de-retorno-do-banco-cresol-c%C3%B3digo-do-motivo-a4-is-not-a-valid-integer-value/
+
+-- ACBrBancoCaixaSicob --
+[*] Ajuste na validação da função: CalcularTamanhoNossoNumero
+Contribuição: https://www.projetoacbr.com.br/forum/topic/58457-acbrbancocaixasicoob-calculartammaximonossonumero/
+
+24/09/2020
+-- ACBrBancoCresol --
+[*] Ajuste na validação código Convenio na leitura Retorno CNAB400.
+
+17/09/2020
+--ACBrBancoCecred--
+[+] Adicionado validação de Protesto e Negativação para CNAB240
+https://www.projetoacbr.com.br/forum/topic/59013-acbrboleto-bb/
+
+10/09/2020
+
+--ACBrBancoABCBrasil--
+[+] Adicionado Segmento Y para CNAB240.
+
+--ACBrBancoBanestes--
+[*] Ajustes e melhorias na leitura do Retorno CNAB240.
+https://www.projetoacbr.com.br/forum/topic/58863-cnab240-banestes/
+
+--ACBrBoleto--
+[+] Adicionado campo Telefone na leitura dos dados Cedente no arquivo .ini.
+
+04/09/2020
+
+--ACBrBancoUnicredES--
+[+] Adicionado Remessa CNAB240 ao Banco Unicred236.
+https://www.projetoacbr.com.br/forum/topic/58186-n%C3%A3o-gerou-os-registros-da-remessa-unicred-136-ref-aos-dados-do-t%C3%ADtulo/?tab=comments#comment-381460
+
+--ACBrBancoSantander--
+[+] Melhoria no validação do código de Carteira.
+
+--ACBrBancoCredSis--
+[*] Ajustes e melhorias na Remessa CNAB240 Segmento R.
+
+--ACBrBancoBanestes--
+[*] Ajustes e melhorias na leitura do Retorno CNAB240.
+
+--ACBrBoleto--
+[*] Ajustes na geraçao do nome do PDF utilizando da lista de títulos para pdf individual.
+
+01/09/2020
+
+--ACBrBancoBanestes--
+[*] Ajustes leitura Retorno CNAB240, validando Criação de Titulos na lista.
+
+
+27/08/2020
+
+--ACBrBancoSicred--
+[*] Ajustes leitura CNAB400 ref códigos ainda não validados.
+https://www.projetoacbr.com.br/forum/topic/56114-erro-na-leitura-do-arquivo-de-retorno-do-sicredi/
+
+--ACBrBancoItau--
+[*] Validação relativos a códigos de negativação na geracao CNAB400
+https://www.projetoacbr.com.br/forum/topic/58790-negativação-no-banco-itau-cnab-400/
+
+--ACBrBancoSantander--
+[+] Adicionado validação para geração do segmento R
+https://www.projetoacbr.com.br/forum/topic/58665-d%C3%BAvida-gerar-remessa-sem-segmento-r/
+
+-- ACBrBancoBrasil --
+[+] Adicionado novos códigos de Motivo Rejeiçao.
+https://www.projetoacbr.com.br/forum/topic/57211-correção-do-retorno-do-bb-cnab-240/
+
+-- ACBrBancoUnicredES, ACBrBoleto --
+[+] Atualizado códigos de retorno conforme novo manual Unicred 136.
+https://www.projetoacbr.com.br/forum/topic/57230-arquivo-de-retorno-unicred-136/
+
+-- ACBrBancoNordeste --
+[*] Ajuste código de rejeiçao no arquivo de retorno.
+https://www.projetoacbr.com.br/forum/topic/58530-ajuste-retorno-bnb-codigo-rejeição-errado/
+
+28/08/2020
+-- ACBrBoletoConversao
+[+] Adicionado enum pNenhum em TACBrPessoa
+
+19/08/2020
+-- ACBrBoletoW_Itau, ACBrBoletoRet_Itau, ACBrBoletoWS --
+[+] Implementação de integração Web do Banco Itaú.
+
+18/08/2020
+-- ACBrBoletoW_Caixa --
+[*] Ajustes no calculo de Hash para geração do WebService.
+
+18/08/2020
+-- ACBrBancoSafra --
+[*] Ajuste na leitura do campo Seu numero
+https://www.projetoacbr.com.br/forum/topic/58867-retorno-400-do-banco-safra-422/
+
+-- ACBrBancoBanestes --
+[+] Adicionado geração de remessa e Retorno CNAB240
+Contribuição: Patrick Alves
+https://www.projetoacbr.com.br/forum/topic/58863-cnab240-banestes/
+
+10/08/2020
+-- ACBrBancoBRB --
+[*] Ajuste para informar 00, quando as instruções forem relativas a informações que não
+requerem prazo no CNAB400. (Juliana Tamizou)
+https://www.projetoacbr.com.br/forum/topic/58719-arquivo-de-remessa-banco-brb/
+
+15/07/2020
+-- ACBrBancoBrasil --
+[*] Adicionado Novos códigos de Rejeição no retorno CNAB240
+
+-- ACBrBoletoWS --
+[*] Melhorias, remoção de Hints e conversão das Units.
+
+-- ACBrBancoSantander --
+[*] Melhorias e refatoração das funções
+
+07/07/2020
+-- ACBrBancoCaixa --
+[*] Ajustes no Header para o layout 007 CNAB400
+https://www.projetoacbr.com.br/forum/topic/58310-ajustes-nos-layouts-do-bradesco-e-caixa-economica-federal/
+
+07/07/2020
+-- ACBrBancoBradesco, ACBrBoleto --
+[*] Adicionado a propriedade mensagem do Sacado
+https://www.projetoacbr.com.br/forum/topic/58310-ajustes-nos-layouts-do-bradesco-e-caixa-economica-federal/
+
+06/07/2020
+-- ACBrBancoSantander --
+[*] Ajustes na validação de arredondamento do valor Mora ao gerar remessa.
+https://www.projetoacbr.com.br/forum/topic/58242-erro-remessa-cnab-240-santander/
+
+-- ACBrBancoDaycoval --
+[*] [*] Ajustes no tamanho do Nosso Numero no Retorno CNAB400 ref. codCedente
+
+-- ACBrBancoBanrisul --
+[*] Ajustes no arredondamento do valor de multa  na geração de Remessa.
+
+30/06/2020
+-- ACBrBancoSafra --
+[*] Ajustes na validação do campo agencia com 5 dígitos seguindo especificação do manual atualizado.
+https://www.projetoacbr.com.br/forum/topic/54921-diverg%C3%AAncias-no-layout-banco-safra/?page=2
+
+30/06/2020
+-- ACBrBancoUnicredES --
+[*] Ajustes no tamanho do Nosso Numero no Retorno CNAB400
+https://www.projetoacbr.com.br/forum/topic/54998-unicred-c%C3%B3digo-136/
+
+25/06/2020
+-- ACBrBancoUnicredRS --
+[-] Correção para poder compilar no Delphi 7
+   Por: Italo Jurisato Junior
+
+23/06/2020
+
+-- ACBrBancoCaixa --
+[-] Ajuste para validar layout 101 e 007 ajuste na geração da Remessa400
+https://www.projetoacbr.com.br/forum/topic/57786-acbr-boleto-layout-do-arquivo/
+
+-- ACBrBancoUnicredRS --
+[*] Adicionado Remessa e Retorno CNAB240 para o Banco UnicredRS
+https://www.projetoacbr.com.br/forum/topic/56340-unicred-cnab-240/
+
+-- ACBrBancoUnicredES --
+[*] Ajustes layout de Retorno especifico do Banco 136 baseado no manual
+https://www.projetoacbr.com.br/forum/topic/54998-unicred-c%C3%B3digo-136/
+
+17/06/2020
+-- ACBrBancoBanrisul --
+[*] Ajuste na Leitura Retorno CNAB400 ref. campo SeuNumero
+https://www.projetoacbr.com.br/forum/topic/58016-altera%C3%A7%C3%A3o-banrisul/
+
+-- ACBrBancoSafra --
+[*] Ajuste na geração remessa CNAB240 campo Instrucao2
+
+-- ACBrBancoUnicredES --
+[*] Adicionado layout de Retorno especifico do Banco 136 baseado no manual
+https://www.projetoacbr.com.br/forum/topic/54998-unicred-c%C3%B3digo-136/
+
+-- ACBrBancoCresol --
+[*] Setado no create o correspondente 133.
+https://www.projetoacbr.com.br/forum/topic/57935-cooperativa-cresol-acrescentar-informa%C3%A7%C3%A3o-referente-ao-c%C3%B3digo-da-cresol/
+
+12/06/2020
+ACBrBancoSantander
+[*] Ajuste no contador de registros na Geração de Remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/57865-n%C3%BAmero-do-sequencial-do-lote-incorreto-santander-240/?tab=comments#comment-379158
+
+ACBrBancoCaixa
+[*] Ajuste para validar layout 101 e 007 com código Cedente de 7 dígitos
+https://www.projetoacbr.com.br/forum/topic/57786-acbr-boleto-layout-do-arquivo/
+
+10/06/2020
+--ACBrBoleto, ACBrBoletoWS, ACBrBoletoW_Caixa, ACBrBoletoW_BancoBrasil, ACBrBoletoPcnConsts
+[*] Correções e ajustes referente integração WebService
+
+09/06/2020
+--ACBrBoleto, ACBrBoletoWS, ACBRBoletoConversao--
+--ACBrBoletoRetorno, ACBrBoletoPcnConsts, ACBrBoletoW_BancoBrasil, ACBrBoletoRet_BancoBrasil, ACBrBoletoW_Caixa, ACBrBoletoRet_Caixa--
+[+] Adicionado Classes implementadas para integração via WebService
+
+03/06/2020
+-- ACBrBoleto --
+[*] Ajuste na função de leitura NossoNumero no Retorno da classe principal
+
+02/06/2020
+-- ACBrBoleto, ACBrBancoItau --
+[*] Realizado Refatoração na Classe Banco Itau e Criação de Testes Unitários para a classe
+
 22/05/2020
 
 -- ACBrBoleto --

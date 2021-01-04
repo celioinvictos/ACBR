@@ -26,6 +26,8 @@ namespace ACBrLib.NFe.Demo
         {
             InitializeComponent();
 
+            //ACBrNFe = new ACBrNFe(File.ReadAllText("ACBrLib2.ini"));
+            //ACBrNFe = new ACBrNFe("[Memory]");
             ACBrNFe = new ACBrNFe();
         }
 
@@ -181,7 +183,9 @@ namespace ACBrLib.NFe.Demo
                 ACBrNFe.ConfigGravarValor(ACBrSessao.Email, "Porta", nudPorta.Text);
                 ACBrNFe.ConfigGravarValor(ACBrSessao.Email, "SSL", ckbSSL.Checked);
                 ACBrNFe.ConfigGravarValor(ACBrSessao.Email, "TLS", ckbTLS.Checked);
-                ACBrNFe.ConfigGravar("");
+
+                ACBrNFe.ConfigGravar();
+                //rtbRespostas.AppendLine(ACBrNFe.ConfigExportar());
 
                 Application.DoEvents();
             }
@@ -194,6 +198,8 @@ namespace ACBrLib.NFe.Demo
         private void LoadConfig(string file = "ACBrLib.ini")
         {
             ACBrNFe.ConfigLer(file);
+            //if (File.Exists(file))
+            //    ACBrNFe.ConfigImportar(file);
 
             //Config Geral
             ckbAtualizarXML.Checked = ACBrNFe.ConfigLerValor<bool>(ACBrSessao.NFe, "AtualizarXMLCancelado");
@@ -519,7 +525,7 @@ namespace ACBrLib.NFe.Demo
 
                 ACBrNFe.LimparLista();
                 ACBrNFe.CarregarXML(arquivoXml);
-                ACBrNFe.Imprimir(bMostrarPreview: true);
+                ACBrNFe.ImprimirPDF();
             }
             catch (Exception exception)
             {
@@ -567,6 +573,40 @@ namespace ACBrLib.NFe.Demo
                 CheckNFeLista(true);
 
                 rtbRespostas.AppendText(ACBrNFe.ValidarRegrasdeNegocios());
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnGerarChave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var uf = 35;
+                if (InputBox.Show("Gerar Chave", "Digite o codigo da UF", ref uf) != DialogResult.OK) return;
+
+                var cod = 45812;
+                if (InputBox.Show("Gerar Chave", "Digite o codigo da Númerico", ref cod) != DialogResult.OK) return;
+
+                var doc = 55;
+                if (InputBox.Show("Gerar Chave", "Digite o modelo do documento", ref doc) != DialogResult.OK) return;
+
+                var serie = 1;
+                if (InputBox.Show("Gerar Chave", "Digite a serie do documento", ref serie) != DialogResult.OK) return;
+
+                var numero = 1;
+                if (InputBox.Show("Gerar Chave", "Digite o numero do documento", ref numero) != DialogResult.OK) return;
+
+                var emissao = 1;
+                if (InputBox.Show("Gerar Chave", "Digite o tipo de emissão do documento", ref emissao) != DialogResult.OK) return;
+
+                var cnpjCPF = "";
+                if (InputBox.Show("Gerar Chave", "Digite o CPF/CNPJ para Gerar a Chave", ref cnpjCPF) != DialogResult.OK) return;
+                if (string.IsNullOrEmpty(cnpjCPF)) return;
+
+                rtbRespostas.AppendText(ACBrNFe.GerarChave(uf, cod, doc, serie, numero, emissao, DateTime.Now, cnpjCPF));
             }
             catch (Exception exception)
             {

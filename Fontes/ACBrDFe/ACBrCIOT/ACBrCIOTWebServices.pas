@@ -38,7 +38,7 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrDFe, ACBrDFeWebService,
+  ACBrDFe, ACBrDFeWebService, pcnConsts,
   ACBrCIOTContratos, ACBrCIOTConfiguracoes,
   pcnAuxiliar, pcnConversao, pcnConversaoCIOT, pcnCIOT, pcnRetEnvCIOT;
 
@@ -221,11 +221,6 @@ begin
 
   TACBrCIOT(FPDFeOwner).LerServicoDeParams(FPLayout, Versao, FPURL);
   FPVersaoServico := FloatToString(Versao, '.', '0.00');
-
-  // Se o componente estiver configurado para não usar o certificado digital é
-  // preciso trocar o https por http.
-  if not FPDFeOwner.SSL.UseCertificateHTTP then
-    FPURL := StringReplace(FPURL, 'https://', 'http://', [rfReplaceAll]);
 end;
 
 function TCIOTWebService.GerarVersaoDadosSoap: String;
@@ -676,11 +671,13 @@ begin
   if FRetornoEnvio.RetEnvio.PDF <> '' then
   begin
     if FNomePDF = '' then
-      NomeArq := GerarPathDownload + FRetornoEnvio.RetEnvio.ProtocoloServico + '.pdf'
+      NomeArq := PathWithDelim(GerarPathDownload) + FRetornoEnvio.RetEnvio.ProtocoloServico + '.pdf'
     else
       NomeArq := PathWithDelim(GerarPathDownload) + FNomePDF + '.pdf';
 
     WriteToTXT(NomeArq, FRetornoEnvio.RetEnvio.PDF, False, False, True);
+
+    FRetornoEnvio.RetEnvio.PDFNomeArquivo := NomeArq;
   end;
 
   FPMsg := '';

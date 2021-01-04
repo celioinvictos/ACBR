@@ -46,6 +46,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+01/10/2020
+ACBrBoletoFCFortesFr
+[*] Ajustes na configuração de impressão do código de barras, mantendo as barras em tamanho fixo. 
+A solução é para sanar problemas de impressão de Código de barras colorido em Linux
+
+27/08/2020
+ACBrBoletoFCFortesFr
+[*] Adicionado formatação CNPJCPF nos dados do sacado e avalista
+https://www.projetoacbr.com.br/forum/topic/58572-cnpj-ou-cpf-formatado/
+   Por: José M S Junior
+
+18/06/2020
+ACBrBoletoFCFortesFr
+[*] Ajuste na margem do código de Barras do Boleto
+https://www.projetoacbr.com.br/forum/topic/57198-impress%C3%A3o-de-boletos-fortesreport-cortando-margens/
+   Por: José M S Junior
+
 10/01/2020
 ACBrBoletoFCFortesFr
 [+] Acrescentado a impressão do telefone do Cedente.

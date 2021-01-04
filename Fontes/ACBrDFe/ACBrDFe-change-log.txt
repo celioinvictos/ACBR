@@ -39,6 +39,55 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/12/2020
+-- ACBrDFeSSL --
+[*] Ajuste em "TDFeSSLHttpClass.Enviar", para exibir as informações do Retorno
+    (por: DSA)
+
+13/11/2020
+-- ACBrDFeUtil --
+[+] Incluido a função ObterDFeXML que extrai o XML de um DF-e de um XML informado.
+-- ACBrXmlWriter --
+[*] Remoção de warnings.
+  Por: Italo Giurizzato Junior
+
+12/11/2020
+-- ACBrDFeSSL, ACBrDFeWebService --
+[+] Adicionado o parâmetro ""AuthorizationHeader", no método "Enviar"
+    https://www.projetoacbr.com.br/forum/topic/60033-nfse-em-bragança-paulista/
+
+-- ACBrDFeReportFortes --
+[*] Ajuste para permitir a leitura de imagens em formato PNG e JPG, se a IDE permitir
+    https://www.projetoacbr.com.br/forum/topic/60096-wrong-format-invalid-danfe/
+
+14/09/2020
+-- ACBrDFeWinCrypt --
+[-] Revertendo diretiva para funcionamento correto em Lazarus.
+    https://www.projetoacbr.com.br/forum/topic/59332-n%C3%A3o-lista-certificados-store-windows/?do=findComment&comment=389520&_rid=775
+  Por: Antonio Tota
+
+02/09/2020
+-- ACBrDFeWinCrypt --
+[*] Ajuste em "CalcHash" e "ValidarHash", para inicializar o conteúdo do Buffer do Hash
+    https://www.projetoacbr.com.br/forum/topic/59104-problema-com-certificado-remoteid/
+    (por: DSA)
+
+22/07/2020
+-- ACBrXmlDocument --
+[+] Inclusão do método ImportXml e da propriedade OuterXml.
+  Por: Rafael Dias
+
+27/05/2020
+-- ACBrDFeWinCrypt --
+[-] Correção para remover o terminador #0 no retorno dos métodos "CertSubjectName" 
+    e "CertIssuerName".
+  Por: BigWings / DSA
+
+-- ACBrDFeOpenSSL --
+[*] Ajuste para que o método "CertDataVenc" retorne a hora ajustada para o
+    fuso horário da máquina.
+  Por: BigWings
+
 14/05/2020
 -- ACBrDFeXsMsXmlCapicom --
 [-] Correção para erro 'Conjunto de chaves não está definido' quando usando

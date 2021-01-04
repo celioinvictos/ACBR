@@ -36,8 +36,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, StdCtrls,
-  Spin, Buttons, DBCtrls, ExtCtrls, Grids, ACBrTEFD,
-  ACBrPosPrinter, ACBrTEFDClass, uVendaClass, ACBrTEFDCliSiTef;
+  Spin, Buttons, DBCtrls, ExtCtrls, Grids, ACBrTEFD, ACBrPosPrinter,
+  ACBrTEFDClass, uVendaClass, ACBrTEFDCliSiTef, ACBrTEFPayGoComum, ACBrTEFPayGoWebComum,
+  ACBrTEFComum, ACBrTEFDPayGoWeb;
 
 type
 
@@ -55,6 +56,7 @@ type
     btLerParametros: TBitBtn;
     btLimparImpressora: TBitBtn;
     btMudaPagina: TBitBtn;
+    btMsgPinPad: TButton;
     btOperacao: TBitBtn;
     btEfetuarPagamentos: TBitBtn;
     btSalvarParametros: TBitBtn;
@@ -62,6 +64,7 @@ type
     btProcuraImpressoras: TSpeedButton;
     btTestarPosPrinter: TBitBtn;
     btTestarTEF: TBitBtn;
+    btObterCPF: TButton;
     cbTestePayGo: TComboBox;
     cbIMprimirViaReduzida: TCheckBox;
     cbMultiplosCartoes: TCheckBox;
@@ -70,6 +73,7 @@ type
     cbSuportaReajusteValor: TCheckBox;
     cbSuportaSaque: TCheckBox;
     cbxGP: TComboBox;
+    cbxQRCode: TComboBox;
     cbxModeloPosPrinter: TComboBox;
     cbxPagCodigo: TComboBox;
     cbxPorta: TComboBox;
@@ -83,6 +87,7 @@ type
     gbConfigTEF: TGroupBox;
     gbPagamentos: TGroupBox;
     GroupBox1: TGroupBox;
+    imgQRCode: TImage;
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
@@ -92,9 +97,12 @@ type
     Label18: TLabel;
     Label19: TLabel;
     Label8: TLabel;
+    Label9: TLabel;
+    lMensagemCliente: TLabel;
+    lMensagemOperador: TLabel;
     lNumOperacao: TLabel;
-    Label15: TLabel;
-    Label17: TLabel;
+    lTituloMsgOperador: TLabel;
+    lTituloMensagemCliente: TLabel;
     Label25: TLabel;
     Label26: TLabel;
     Label27: TLabel;
@@ -102,8 +110,10 @@ type
     Label29: TLabel;
     Label7: TLabel;
     lSaidaImpressao: TLabel;
+    lURLTEF: TLabel;
     mImpressao: TMemo;
     mLog: TMemo;
+    pQRCode: TPanel;
     pImpressoraBotes: TPanel;
     pImpressao: TPanel;
     pMensagem: TPanel;
@@ -161,17 +171,22 @@ type
       var RetornoECF: Integer);
     procedure ACBrTEFD1ComandaECFSubtotaliza(DescAcre: Double;
       var RetornoECF: Integer);
+    procedure ACBrTEFD1DepoisCancelarTransacoes(
+      RespostasPendentes: TACBrTEFDRespostasPendentes);
     procedure ACBrTEFD1DepoisConfirmarTransacoes(
       RespostasPendentes: TACBrTEFDRespostasPendentes);
     procedure ACBrTEFD1ExibeMsg(Operacao: TACBrTEFDOperacaoMensagem;
       Mensagem: String; var AModalResult: TModalResult);
+    procedure ACBrTEFD1ExibeQRCode(const Dados: String);
     procedure ACBrTEFD1GravarLog(const GP: TACBrTEFDTipo; ALogLine: String;
       var Tratado: Boolean);
     procedure ACBrTEFD1InfoECF(Operacao: TACBrTEFDInfoECF;
       var RetornoECF: String);
     procedure btAdministrativoClick(Sender: TObject);
     procedure btEfetuarPagamentosClick(Sender: TObject);
+    procedure btExcluirPagamentoClick(Sender: TObject);
     procedure btIncluirPagamentosClick(Sender: TObject);
+    procedure btMsgPinPadClick(Sender: TObject);
     procedure btOperacaoClick(Sender: TObject);
     procedure btLerParametrosClick(Sender: TObject);
     procedure btMudaPaginaClick(Sender: TObject);
@@ -180,6 +195,7 @@ type
     procedure btSerialClick(Sender: TObject);
     procedure btTestarPosPrinterClick(Sender: TObject);
     procedure btTestarTEFClick(Sender: TObject);
+    procedure btObterCPFClick(Sender: TObject);
     procedure cbEnviarImpressoraChange(Sender: TObject);
     procedure CliSiTefExibeMenu(Titulo: String; Opcoes: TStringList;
       var ItemSelecionado: Integer; var VoltarMenu: Boolean);
@@ -192,6 +208,19 @@ type
     procedure btLimparImpressoraClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure lURLTEFClick(Sender: TObject);
+    procedure PayGoWebAguardaPinPad(
+      OperacaoPinPad: TACBrTEFPGWebAPIOperacaoPinPad; var Cancelar: Boolean);
+    procedure PayGoWebAvaliarTransacaoPendente(var Status: LongWord;
+      const Mensagem: String; Resp: TACBrTEFDResp);
+    procedure PayGoWebExibeMensagem(Mensagem: String;
+      Terminal: TACBrTEFPGWebAPITerminalMensagem; MilissegundosExibicao: Integer);
+    procedure PayGoWebExibeMenu(Titulo: String; Opcoes: TStringList;
+      var ItemSelecionado: Integer; var Cancelado: Boolean);
+    procedure PayGoWebObtemCampo(
+      DefinicaoCampo: TACBrTEFPGWebAPIDefinicaoCampo; var Resposta: String;
+      var Validado: Boolean; var Cancelado: Boolean);
+    procedure SbArqLogClick(Sender: TObject);
     procedure sbLimparLogClick(Sender: TObject);
     procedure seTotalAcrescimoChange(Sender: TObject);
     procedure seTotalDescontoChange(Sender: TObject);
@@ -202,6 +231,7 @@ type
     FCanceladoPeloOperador: Boolean;
     FTempoDeEspera: TDateTime;
     FTestePayGo: Integer;
+    FIndicePagto: String;
 
     function GetNomeArquivoConfiguracao: String;
     function GetNomeArquivoVenda: String;
@@ -226,6 +256,8 @@ type
 
     procedure IniciarOperacao;
     procedure AdicionarPagamento(const Indice: String; AValor: Double);
+    procedure ExcluirPagamento(IndicePagto: Integer);
+    function AcharTransacaoTEFPendente(IndicePagto: Integer): TACBrTEFResp;
     procedure CancelarVenda;
     procedure FinalizarVenda; // Em caso de Venda, Gere e transmita seu Documento Fiscal
     procedure VerificarTestePayGo;
@@ -236,6 +268,8 @@ type
     procedure AtualizarPagamentosVendaNaInterface;
     procedure MensagemTEF(const MsgOperador, MsgCliente: String);
     procedure LimparMensagensTEF;
+    procedure ExibirPainelQRCode;
+    procedure OcultatPainelQRCode;
 
     procedure AdicionarLinhaLog(AMensagem: String);
     procedure AdicionarLinhaImpressao(ALinha: String);
@@ -256,9 +290,9 @@ implementation
 
 uses
   IniFiles, typinfo, dateutils, math, strutils, LCLType,
-  frIncluirPagamento, frMenuTEF, frObtemCampo,
+  frIncluirPagamento, frMenuTEF, frObtemCampo, frExibeMensagem,
   configuraserial,
-  ACBrUtil;
+  ACBrUtil, ACBrDelphiZXingQRCode;
 
 {$R *.lfm}
 
@@ -295,6 +329,7 @@ begin
   FCanceladoPeloOperador := False;
   FTempoDeEspera := 0;
   FTestePayGo := 0;
+  FIndicePagto := '';
 
   Application.OnException := @TratarException;
 
@@ -314,6 +349,200 @@ begin
     btOperacao.Click;
     Key := 0;
   end;
+end;
+
+procedure TFormPrincipal.lURLTEFClick(Sender: TObject);
+begin
+  OpenURL('https://projetoacbr.com.br/tef/');
+end;
+
+procedure TFormPrincipal.PayGoWebAguardaPinPad(
+  OperacaoPinPad: TACBrTEFPGWebAPIOperacaoPinPad; var Cancelar: Boolean);
+begin
+   AdicionarLinhaLog( 'PayGoWebAguardaPinPad: '+
+                      GetEnumName(TypeInfo(TACBrTEFPGWebAPIOperacaoPinPad), integer(OperacaoPinPad) ) );
+
+   if FCanceladoPeloOperador then
+   begin
+     FCanceladoPeloOperador := False;
+     Cancelar := True ;
+   end
+   else if (StatusVenda <> stsAguardandoTEF) then
+   begin
+     StatusVenda := stsAguardandoTEF;   // Liga Botão que permite cancelar
+     FCanceladoPeloOperador := False;
+   end;
+
+   Application.ProcessMessages;
+end;
+
+procedure TFormPrincipal.PayGoWebAvaliarTransacaoPendente(
+  var Status: LongWord; const Mensagem: String; Resp: TACBrTEFDResp);
+var
+  MR: TModalResult;
+begin
+  // Aqui você pode Confirmar ou Cancelar as transações pendentes de acordo com a sua lógica
+  // Ou ainda, fazer uma pergunta ao usuário, como nesse exemplo...
+  // Veja os valores possíveis, para "Status", em ACBrTEFPayGoWebComum.pas, procure por: "PWCNF_"
+
+  MR := mrYes;
+  ACBrTEFD1ExibeMsg( opmYesNo, Mensagem + sLineBreak + sLineBreak + 'Confirmar ?', MR);
+
+  if (MR = mrNo) then
+    Status := PWCNF_REV_MANU_AUT
+  else
+  begin
+    // Imprimindo comrovante pendente //
+    AdicionarLinhaImpressao( Resp.ImagemComprovante1aVia.Text );
+    AdicionarLinhaImpressao('</pular_linhas>');
+    AdicionarLinhaImpressao('</corte>');
+    AdicionarLinhaImpressao( Resp.ImagemComprovante2aVia.Text );
+    AdicionarLinhaImpressao('</pular_linhas>');
+    AdicionarLinhaImpressao('</corte>');
+
+    Status := PWCNF_CNF_MANU_AUT;
+  end;
+end;
+
+procedure TFormPrincipal.PayGoWebExibeMensagem(Mensagem: String;
+  Terminal: TACBrTEFPGWebAPITerminalMensagem; MilissegundosExibicao: Integer);
+var
+  FormExibeMensagem: TFormExibeMensagem;
+begin
+  if (Mensagem = '') then
+  begin
+    if Terminal = tmCliente then
+      MensagemTEF('',' ') ;
+    if Terminal = tmOperador then
+      MensagemTEF(' ','') ;
+  end
+
+  else if MilissegundosExibicao >= 0 then
+  begin
+    FormExibeMensagem := TFormExibeMensagem.Create(Self);
+    try
+      FormExibeMensagem.Mensagem := Mensagem;
+      FormExibeMensagem.TempoEspera := MilissegundosExibicao;
+      FormExibeMensagem.ShowModal;
+    finally
+      FormExibeMensagem.Free;
+    end;
+  end
+
+  else
+  begin
+    if Terminal = tmCliente then
+      MensagemTEF('',Mensagem) ;
+    if Terminal = tmOperador then
+      MensagemTEF(Mensagem,'') ;
+  end;
+end;
+
+procedure TFormPrincipal.PayGoWebExibeMenu(Titulo: String; Opcoes: TStringList;
+  var ItemSelecionado: Integer; var Cancelado: Boolean);
+Var
+  MR: TModalResult ;
+  FormMenuTEF : TFormMenuTEF;
+begin
+  AdicionarLinhaLog( 'PayGoWebExibeMenu: '+Titulo + sLineBreak + Opcoes.Text );
+  if Opcoes.Count < 1 then
+  begin
+    Cancelado := True;
+    Exit;
+  end;
+
+  FormMenuTEF := TFormMenuTEF.Create(self);
+  try
+    FormMenuTEF.Titulo := Titulo;
+    FormMenuTEF.Opcoes := Opcoes;
+    FormMenuTEF.btVoltar.Visible := False;  // PayGoWeb não suporta Voltar
+    FormMenuTEF.UsaTeclasDeAtalho := (copy(Opcoes[0],1,4) = '1 - ');
+    FormMenuTEF.ItemSelecionado := ItemSelecionado;
+
+    MR := FormMenuTEF.ShowModal ;
+
+    if (MR = mrOK) then
+      ItemSelecionado := FormMenuTEF.ItemSelecionado
+    else
+      Cancelado := True;
+  finally
+    FormMenuTEF.Free;
+  end;
+end;
+
+procedure TFormPrincipal.PayGoWebObtemCampo(
+  DefinicaoCampo: TACBrTEFPGWebAPIDefinicaoCampo; var Resposta: String;
+  var Validado: Boolean; var Cancelado: Boolean);
+Var
+  MR: TModalResult ;
+  FormObtemCampo: TFormObtemCampo;
+begin
+  AdicionarLinhaLog( 'PayGoWebObtemCampo: '+DefinicaoCampo.Titulo );
+
+  { NOTA: Se DefinicaoCampo.ValidacaoDado = "pgvSenhaLojista"
+          Você deve chamar a Tela de Senha do seu sistema, e retornar o NOME do
+          Operador, NUNCA a Senha digitada
+
+  if (DefinicaoCampo.ValidacaoDado = pgvSenhaLojista) then
+  begin
+    Validado := True;
+    Cancelado := False;
+    Resposta := fOperador;
+    Exit;
+  end;
+  }
+
+  FormObtemCampo := TFormObtemCampo.Create(self);
+  try
+    FormObtemCampo.Titulo := DefinicaoCampo.Titulo;
+    FormObtemCampo.TamanhoMaximo := DefinicaoCampo.TamanhoMaximo;
+    FormObtemCampo.TamanhoMinimo := DefinicaoCampo.TamanhoMinimo;
+    FormObtemCampo.Resposta := DefinicaoCampo.ValorInicial;
+    FormObtemCampo.Ocultar := DefinicaoCampo.OcultarDadosDigitados;
+    FormObtemCampo.Mascara := DefinicaoCampo.MascaraDeCaptura;
+    FormObtemCampo.btVoltar.Visible := False;  // PayGoWeb não suporta Voltar;
+
+    if (pos('R$', DefinicaoCampo.MascaraDeCaptura) > 0) or
+       (pos('@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) then
+      FormObtemCampo.TipoCampo := tcoCurrency
+    else
+    begin
+      case DefinicaoCampo.TiposEntradaPermitidos of
+        pgApenasLeitura:
+          FormObtemCampo.edtResposta.ReadOnly := True;
+        pgtNumerico:
+          FormObtemCampo.TipoCampo := tcoNumeric;
+        pgtAlfabetico:
+          FormObtemCampo.TipoCampo := tcoAlfa;
+        pgtAlfaNum:
+          FormObtemCampo.TipoCampo := tcoAlfaNum;
+      else
+        FormObtemCampo.TipoCampo := tcoString;
+      end;
+    end;
+
+    MR := FormObtemCampo.ShowModal ;
+
+    Cancelado := (MR <> mrOK) ;
+    Resposta := FormObtemCampo.Resposta;
+
+    if (FormObtemCampo.TipoCampo = tcoCurrency) then  // PayGoWeb não precisa de ponto decimal
+      Resposta := OnlyNumber(Resposta);
+  finally
+    FormObtemCampo.Free;
+  end;
+end;
+
+procedure TFormPrincipal.SbArqLogClick(Sender: TObject);
+var
+  AFileLog: String;
+begin
+  if pos(PathDelim,edLog.Text) = 0 then
+    AFileLog := ExtractFilePath( Application.ExeName ) + edLog.Text
+  else
+    AFileLog := edLog.Text;
+
+  OpenURL( AFileLog );
 end;
 
 procedure TFormPrincipal.btImprimirClick(Sender: TObject);
@@ -390,7 +619,10 @@ begin
       CancelarVenda;
 
     bopCancelarEsperaTEF:
+    begin
+      AdicionarLinhaLog( '  Operação Cancelada Pelo Operador');
       FCanceladoPeloOperador := True;
+    end;
   end;
 end;
 
@@ -399,6 +631,14 @@ begin
   VerificarTestePayGo;
   StatusVenda := stsEmPagamento;
   btIncluirPagamentos.Click;
+end;
+
+procedure TFormPrincipal.btExcluirPagamentoClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  i := sgPagamentos.Row-1;
+  ExcluirPagamento(i);
 end;
 
 procedure TFormPrincipal.btIncluirPagamentosClick(Sender: TObject);
@@ -419,6 +659,14 @@ begin
   end;
 end;
 
+procedure TFormPrincipal.btMsgPinPadClick(Sender: TObject);
+var
+  Msg: String;
+begin
+  Msg := 'PROJETO ACBR|'+FormatDateTimeBr(now,'DD/MM HH:NN:SS');
+  ACBrTEFD1.ExibirMensagemPinPad(Msg);
+end;
+
 procedure TFormPrincipal.ACBrTEFD1ExibeMsg(Operacao: TACBrTEFDOperacaoMensagem;
   Mensagem: String; var AModalResult: TModalResult);
 var
@@ -426,9 +674,13 @@ var
    OldMensagem : String;
 begin
   case Operacao of
-
     opmOK:
-       AModalResult := MessageDlg( Mensagem, mtInformation, [mbOK], 0);
+      begin
+        if ACBrTEFD1.GPAtual = gpPayGoWeb then
+          PayGoWebExibeMensagem( Mensagem, tmOperador, CMilissegundosMensagem)
+        else
+          AModalResult := MessageDlg( Mensagem, mtInformation, [mbOK], 0);
+      end;
 
     opmYesNo:
        AModalResult := MessageDlg( Mensagem, mtConfirmation, [mbYes, mbNo], 0);
@@ -447,7 +699,7 @@ begin
 
     opmDestaqueVia:
       begin
-        OldMensagem := pMensagemOperador.Caption ;
+        OldMensagem := lMensagemOperador.Caption;
         try
           { Aguardando 3 segundos }
           Fim := IncSecond(now, 3)  ;
@@ -462,37 +714,102 @@ begin
   end;
 end;
 
-procedure TFormPrincipal.ACBrTEFD1DepoisConfirmarTransacoes(
+procedure TFormPrincipal.ACBrTEFD1ExibeQRCode(const Dados: String);
+var
+  QRCode: TDelphiZXingQRCode;
+  QRCodeBitmap: TBitmap;
+  Row, Column: Integer;
+begin
+  if (cbxQRCode.ItemIndex = 4) then  // 4 - Imprimir
+  begin
+    if (Dados <> '') then
+      AdicionarLinhaImpressao( '</zera></ce>'+
+                               '<qrcode_largura>8</qrcode_largura>'+
+                               '<qrcode>'+Dados+'</qrcode>'+
+                               '</lf></lf></corte_total>');
+
+    Exit;
+  end;
+
+  if (Dados <> '') then
+    ExibirPainelQRCode
+  else
+  begin
+    OcultatPainelQRCode;
+    Exit;
+  end;
+
+  QRCode := TDelphiZXingQRCode.Create;
+  QRCodeBitmap := TBitmap.Create;
+  try
+    QRCode.Encoding  := qrUTF8NoBOM;
+    QRCode.QuietZone := 2;
+    QRCode.Data      := widestring(Dados);
+
+    QRCodeBitmap.Width  := QRCode.Columns;
+    QRCodeBitmap.Height := QRCode.Rows;
+
+    for Row := 0 to QRCode.Rows - 1 do
+    begin
+      for Column := 0 to QRCode.Columns - 1 do
+      begin
+        if (QRCode.IsBlack[Row, Column]) then
+          QRCodeBitmap.Canvas.Pixels[Column, Row] := clBlack
+        else
+          QRCodeBitmap.Canvas.Pixels[Column, Row] := clWhite;
+      end;
+    end;
+
+    imgQRCode.Picture.Bitmap.Assign(QRCodeBitmap);
+  finally
+    QRCode.Free;
+    QRCodeBitmap.Free;
+  end;
+end;
+
+procedure TFormPrincipal.ACBrTEFD1DepoisCancelarTransacoes(
   RespostasPendentes: TACBrTEFDRespostasPendentes);
 var
-  i , j: Integer;
+  i: Integer;
 begin
   for i := 0 to RespostasPendentes.Count-1  do
   begin
-     with RespostasPendentes[i] do
-     begin
-        AdicionarLinhaLog('Confirmado: '+Header+' ID: '+IntToStr( ID ) );
+    with RespostasPendentes[i] do
+    begin
+      AdicionarLinhaLog('Cancelada: '+Header+' ID: '+IntToStr( ID ) );
+      AdicionarLinhaLog('- Rede: '  + Rede + ', NSU: '  + NSU );
 
-        // Lendo os campos mapeados //
-        AdicionarLinhaLog('- Rede: '  + Rede + ', NSU: '  + NSU );
-        //AdicionarLinhaLog('- Parcelas: '+ IntToStr(QtdParcelas) +
-        //                  ', parcelado por: '+ GetEnumName(TypeInfo(TACBrTEFRespParceladoPor), integer(ParceladoPor) ));
-        AdicionarLinhaLog('- É Débito: '+BoolToStr(Debito)+
-                          ', É Crédito: '+BoolToStr(Credito)+
-                          ', Valor: '+ FormatFloat('###,###,##0.00',ValorTotal)) ;
+      Venda.Pagamentos.CancelarPagamento(Rede, NSU, ValorTotal);
+    end;
+  end;
 
-        // Lendo um Campo Específico //
-        //AdicionarLinhaLog('- Campo 11: ' + LeInformacao(11,0).AsString );
+  AtualizarPagamentosVendaNaInterface;
+end;
 
-        for j := 0 to Venda.Pagamentos.Count-1 do
-        begin
-          if NSU = Venda.Pagamentos[j].NSU then
-          begin
-            Venda.Pagamentos[j].Confirmada := True;
-            Break;
-          end;
-        end;
-     end;
+procedure TFormPrincipal.ACBrTEFD1DepoisConfirmarTransacoes(
+  RespostasPendentes: TACBrTEFDRespostasPendentes);
+var
+  i: Integer;
+begin
+  for i := 0 to RespostasPendentes.Count-1  do
+  begin
+    with RespostasPendentes[i] do
+    begin
+      AdicionarLinhaLog('Confirmado: '+Header+' ID: '+IntToStr( ID ) );
+
+      // Lendo os campos mapeados //
+      AdicionarLinhaLog('- Rede: '  + Rede + ', NSU: '  + NSU );
+      //AdicionarLinhaLog('- Parcelas: '+ IntToStr(QtdParcelas) +
+      //                  ', parcelado por: '+ GetEnumName(TypeInfo(TACBrTEFRespParceladoPor), integer(ParceladoPor) ));
+      AdicionarLinhaLog('- É Débito: '+BoolToStr(Debito)+
+                        ', É Crédito: '+BoolToStr(Credito)+
+                        ', Valor: '+ FormatFloat('###,###,##0.00',ValorTotal)) ;
+
+      // Lendo um Campo Específico //
+      //AdicionarLinhaLog('- Campo 11: ' + LeInformacao(11,0).AsString );
+
+      Venda.Pagamentos.ConfirmarPagamento(Rede, NSU, ValorTotal);
+    end;
   end;
 
   AtualizarPagamentosVendaNaInterface;
@@ -553,44 +870,65 @@ begin
   // Use esse evento, para inserir campos personalizados, ou modificar o arquivo
   // de requisião, que será criado e envido para o Gerenciador Padrão
 
-  if (FTestePayGo > 0) then
+  if (ACBrTEFD1.GPAtual = gpPayGo) then
   begin
-    if (Req.Header = 'CRT') and (FTestePayGo = 2) then // Passo 02 - Venda à vista aprovada com pré-seleção de parâmetros
+    if (Req.Header = 'CRT') then
     begin
-      Req.GravaInformacao(010,000,'CERTIF');
-      Req.GravaInformacao(730,000,'1');  // operação “VENDA”
-      Req.GravaInformacao(731,000,'1');  // tipo de cartão “CRÉDITO”
-      Req.GravaInformacao(732,000,'1');  // tipo de financiamento “À VISTA”
-      FTestePayGo := 0;
-    end
+      // Instruindo CRT a apenas transações de Crédito
+      if (FIndicePagto = '03') then
+      begin
+        Req.GravaInformacao(730,000,'1');  // 1: venda (pagamento com cartão)
+        Req.GravaInformacao(731,000,'1');  // 1: crédito
+        //Req.GravaInformacao(732,000,'1');  // 1: à vista
+      end
 
-    else if (Req.Header = 'CRT') and (FTestePayGo = 3) then // Passo 03 - Venda parcelada aprovada com pré-seleção de parâmetros
-    begin
-      Req.GravaInformacao(010,000,'CERTIF');
-      Req.GravaInformacao(018,000,'3');  // número de parcelas = 3
-      Req.GravaInformacao(730,000,'1');  // operação “VENDA”
-      Req.GravaInformacao(731,000,'2');  // tipo de cartão “DÉBITO”
-      Req.GravaInformacao(732,000,'3');  // tipo de financiamento “PARCELADO PELO ESTABELECIMENTO”
-      FTestePayGo := 0;
-    end
+      // Instruindo CRT a apenas transações de Débito
+      else if (FIndicePagto = '04') then
+      begin
+        Req.GravaInformacao(730,000,'1');  // 1: venda (pagamento com cartão)
+        Req.GravaInformacao(731,000,'2');  // 2: débito
+        //Req.GravaInformacao(732,000,'1');  // 1: à vista
+      end;
 
-    else if (Req.Header = 'CRT') and (FTestePayGo = 4) then // Passo 04 - Venda aprovada em moeda estrangeira
-    begin
-      Req.GravaInformacao(004,000,'1');  // Dólar americano
-      FTestePayGo := 0;
-    end
+      FIndicePagto := '';
+    end;
 
-    else if (Req.Header = 'CRT') and (FTestePayGo = 27) then // Passo 27 - Venda aprovada com pré-seleção de parâmetros de carteira digital
+    if (FTestePayGo > 0) then
     begin
-      Req.GravaInformacao(010,000,'CERTIF');
-      Req.GravaInformacao(749,000,'8');  // Tipo de Pagamento como carteira digital
-      Req.GravaInformacao(750,000,'1');  // Identificação da Carteira Digital como QR Code
-      FTestePayGo := 0;
-    end
+      if (Req.Header = 'CRT') and (FTestePayGo = 2) then // Passo 02 - Venda à vista aprovada com pré-seleção de parâmetros
+      begin
+        Req.GravaInformacao(010,000,'CERTIF');
+        Req.GravaInformacao(730,000,'1');  // operação “VENDA”
+        Req.GravaInformacao(731,000,'1');  // tipo de cartão “CRÉDITO”
+        Req.GravaInformacao(732,000,'1');  // tipo de financiamento “À VISTA”
+      end
 
-    else if (Req.Header = 'ADM') and (FTestePayGo = 31) then // Passo 31 - Operação bem sucedida com valor pré-definido
-    begin
-      Req.GravaInformacao(003,000,'1');
+      else if (Req.Header = 'CRT') and (FTestePayGo = 3) then // Passo 03 - Venda parcelada aprovada com pré-seleção de parâmetros
+      begin
+        Req.GravaInformacao(010,000,'CERTIF');
+        Req.GravaInformacao(018,000,'3');  // número de parcelas = 3
+        Req.GravaInformacao(730,000,'1');  // operação “VENDA”
+        Req.GravaInformacao(731,000,'2');  // tipo de cartão “DÉBITO”
+        Req.GravaInformacao(732,000,'3');  // tipo de financiamento “PARCELADO PELO ESTABELECIMENTO”
+      end
+
+      else if (Req.Header = 'CRT') and (FTestePayGo = 4) then // Passo 04 - Venda aprovada em moeda estrangeira
+      begin
+        Req.GravaInformacao(004,000,'1');  // Dólar americano
+      end
+
+      else if (Req.Header = 'CRT') and (FTestePayGo = 27) then // Passo 27 - Venda aprovada com pré-seleção de parâmetros de carteira digital
+      begin
+        Req.GravaInformacao(010,000,'CERTIF');
+        Req.GravaInformacao(749,000,'8');  // Tipo de Pagamento como carteira digital
+        Req.GravaInformacao(750,000,'1');  // Identificação da Carteira Digital como QR Code
+      end
+
+      else if (Req.Header = 'ADM') and (FTestePayGo = 31) then // Passo 31 - Operação bem sucedida com valor pré-definido
+      begin
+        Req.GravaInformacao(003,000,'1');
+      end;
+
       FTestePayGo := 0;
     end;
   end;
@@ -609,7 +947,7 @@ begin
   end;
 
   Msg := '' ;
-  if (ACBrTEFD1.GPAtual in [gpCliSiTef, gpVeSPague]) then   // É TEF dedicado ?
+  if (ACBrTEFD1.GPAtual in [gpCliSiTef, gpVeSPague, gpPayGoWeb]) then   // É TEF dedicado ?
    begin
      if (Arquivo = '23') and ACBrTEFD1.TecladoBloqueado then  // Está aguardando Pin-Pad ?
      begin
@@ -718,10 +1056,13 @@ begin
 
    case Operacao of
      ineSubTotal :
-       RetornoECF := FloatToStr( Venda.TotalVenda - Venda.TotalPago ) ;
+       RetornoECF := FloatToStr( Venda.TotalVenda ) ;
 
      ineTotalAPagar :
-       RetornoECF := FloatToStr( Venda.TotalPago ) ;
+     begin
+       // ACBrTEFD1.RespostasPendentes.TotalPago  deve ser subtraido, pois ACBrTEFD já subtrai o total dos pagamentos em TEF internamente
+       RetornoECF := FloatToStr( RoundTo(Venda.TotalPago - ACBrTEFD1.RespostasPendentes.TotalPago, -2) );
+     end;
 
      ineEstadoECF :
        begin
@@ -737,7 +1078,7 @@ begin
              RetornoECF := 'V' ;
            stsEmPagamento:
              RetornoECF := 'P' ;
-           stsLivre, stsFinalizada, stsCancelada, stsOperacaoTEF:
+           stsLivre, stsFinalizada, stsCancelada, stsAguardandoTEF, stsOperacaoTEF:
              RetornoECF := 'L' ;
          else
            RetornoECF := 'O' ;
@@ -800,6 +1141,7 @@ begin
     seTrocoMaximo.Value := INI.ReadFloat('TEF', 'TrocoMaximo', seTrocoMaximo.Value);
     cbImprimirViaReduzida.Checked := INI.ReadBool('TEF', 'ImprimirViaReduzida', cbImprimirViaReduzida.Checked);
     cbMultiplosCartoes.Checked := INI.ReadBool('TEF', 'MultiplosCartoes', cbMultiplosCartoes.Checked);
+    cbxQRCode.ItemIndex := INI.ReadInteger('TEF', 'QRCode', cbxQRCode.ItemIndex);
     cbSuportaDesconto.Checked := INI.ReadBool('TEF', 'SuportaDesconto', cbSuportaDesconto.Checked);
     cbSuportaSaque.Checked := INI.ReadBool('TEF', 'SuportaSaque', cbSuportaSaque.Checked);
     cbSuportaReajusteValor.Checked := INI.ReadBool('TEF', 'SuportaReajusteValor', cbSuportaReajusteValor.Checked);
@@ -835,6 +1177,7 @@ begin
     INI.WriteFloat('TEF', 'TrocoMaximo', seTrocoMaximo.Value);
     INI.WriteBool('TEF', 'ImprimirViaReduzida', cbImprimirViaReduzida.Checked);
     INI.WriteBool('TEF', 'MultiplosCartoes', cbMultiplosCartoes.Checked);
+    INI.WriteInteger('TEF', 'QRCode', cbxQRCode.ItemIndex);
     INI.WriteBool('TEF', 'SuportaDesconto', cbSuportaDesconto.Checked);
     INI.WriteBool('TEF', 'SuportaSaque', cbSuportaSaque.Checked);
     INI.WriteBool('TEF', 'SuportaReajusteValor', cbSuportaReajusteValor.Checked);
@@ -878,7 +1221,7 @@ end;
 procedure TFormPrincipal.AdicionarLinhaImpressao(ALinha: String);
 begin
   mImpressao.Lines.Add(ALinha);
-  if cbEnviarImpressora.Checked then
+  if ACBrPosPrinter1.Ativo then
     ACBrPosPrinter1.Imprimir(ALinha);
 end;
 
@@ -916,6 +1259,7 @@ begin
   gbTotaisVenda.Enabled := (AValue in [stsLivre, stsIniciada]);
   gbPagamentos.Enabled := (AValue = stsEmPagamento);
   btAdministrativo.Enabled := (AValue = stsLivre);
+  btObterCPF.Enabled := btAdministrativo.Enabled;
   pImpressao.Enabled := (AValue in [stsLivre, stsFinalizada, stsCancelada]);
   btEfetuarPagamentos.Enabled := (AValue = stsIniciada);
   lNumOperacao.Visible := (AValue <> stsLivre);
@@ -963,8 +1307,9 @@ begin
   else
     MsgStatus := 'CAIXA LIVRE';
     TipoBotaoOperacao := bopNaoExibir;
-    seValorInicialVenda.SetFocus;
     AtualizarCaixaLivreNaInterface;
+    if pgPrincipal.ActivePage = tsOperacao then
+      seValorInicialVenda.SetFocus;
   end;
 
   pStatus.Caption := MsgStatus;
@@ -979,6 +1324,7 @@ begin
   AdicionarLinhaLog('***************' + E.ClassName + '***************');
   AdicionarLinhaLog(E.Message);
   AdicionarLinhaLog('');
+  //MessageDlg(E.Message, mtError, [mbOK], 0);
 end;
 
 procedure TFormPrincipal.btSerialClick(Sender: TObject);
@@ -1050,15 +1396,38 @@ begin
   NomeTEF := GetEnumName(TypeInfo(TACBrTEFDTipo), cbxGP.ItemIndex);
   AdicionarLinhaLog('- btTestarTEFClick: '+NomeTEF);
   try
-    AtivarTEF;
-    ACBrTEFD1.ATV;
-    MessageDlg(Format('TEF %S ATIVO', [NomeTEF]), mtInformation, [mbOK], 0);
+    try
+      AtivarTEF;
+      ACBrTEFD1.ATV;
+      MessageDlg(Format('TEF %S ATIVO', [NomeTEF]), mtInformation, [mbOK], 0);
+    finally
+      StatusVenda := stsLivre;
+    end;
   except
     On E: Exception do
     begin
       MessageDlg(Format('Falha ao ativar TEF %S' + sLineBreak + E.Message, [NomeTEF]), mtError, [mbOK], 0);
     end;
   end;
+end;
+
+procedure TFormPrincipal.btObterCPFClick(Sender: TObject);
+var
+  Saida: String;
+begin
+  Saida := '';
+  if ACBrTEFD1.GPAtual = gpCliSiTef then
+  begin
+    // SiTef precisa de parâmetros extras, vamos informar...
+    ACBrTEFD1.TEFCliSiTef.PinPadIdentificador := '01.123.456/0001-07';
+    ACBrTEFD1.TEFCliSiTef.PinPadChaveAcesso := 'Chave Fornecida pela Software Express, exclusiva para o Identificador acima';
+  end;
+
+  ACBrTEFD1.CDP('F', Saida);  // F=CPF
+  if (Saida <> '') then
+    ShowMessage(Saida)
+  else
+    ShowMessage('Falha ao Obter CPF no PinPad');
 end;
 
 procedure TFormPrincipal.cbEnviarImpressoraChange(Sender: TObject);
@@ -1070,18 +1439,19 @@ procedure TFormPrincipal.CliSiTefExibeMenu(Titulo: String; Opcoes: TStringList;
   var ItemSelecionado: Integer; var VoltarMenu: Boolean);
 Var
   MR: TModalResult ;
+  FormMenuTEF: TFormMenuTEF;
 begin
   FormMenuTEF := TFormMenuTEF.Create(self);
   try
-    FormMenuTEF.Panel1.Caption := Titulo;
-    FormMenuTEF.ListBox1.Items.AddStrings(Opcoes);
+    FormMenuTEF.Titulo := Titulo;
+    FormMenuTEF.Opcoes := Opcoes;
 
     MR := FormMenuTEF.ShowModal ;
 
     VoltarMenu := (MR = mrRetry) ;
 
     if (MR = mrOK) then
-      ItemSelecionado := FormMenuTEF.ListBox1.ItemIndex;
+      ItemSelecionado := FormMenuTEF.ItemSelecionado;
   finally
     FormMenuTEF.Free;
   end;
@@ -1093,23 +1463,34 @@ procedure TFormPrincipal.CliSiTefObtemCampo(Titulo: String; TamanhoMinimo,
   var Digitado: Boolean; var VoltarMenu: Boolean);
 Var
   MR: TModalResult ;
+  FormObtemCampo: TFormObtemCampo;
 begin
   FormObtemCampo := TFormObtemCampo.Create(self);
   try
-    FormObtemCampo.Panel1.Caption := Titulo;
-    FormObtemCampo.TamanhoMaximo  := TamanhoMaximo;
-    FormObtemCampo.TamanhoMinimo  := TamanhoMinimo;
-    FormObtemCampo.Operacao       := Operacao;
-    FormObtemCampo.TipoCampo      := TipoCampo;
-    FormObtemCampo.Edit1.Text     := Resposta; { Para usar Valores Previamente informados }
+    FormObtemCampo.Titulo := Titulo;
+    FormObtemCampo.TamanhoMaximo := TamanhoMaximo;
+    FormObtemCampo.TamanhoMinimo := TamanhoMinimo;
+    FormObtemCampo.Resposta := Resposta; { Para usar Valores Previamente informados }
+
+    case Operacao of
+      tcDouble:
+        FormObtemCampo.TipoCampo := tcoCurrency;
+      tcCMC7, tcBarCode:
+        FormObtemCampo.TipoCampo := tcoNumeric;
+    else
+      FormObtemCampo.TipoCampo := tcoString;
+    end;
+
+    if (Operacao = tcStringMask) then
+      FormObtemCampo.Ocultar := True;
 
     MR := FormObtemCampo.ShowModal ;
 
-    Digitado   := (MR = mrOK) ;
+    Digitado := (MR = mrOK) ;
     VoltarMenu := (MR = mrRetry) ;
 
     if Digitado then
-       Resposta := FormObtemCampo.Edit1.Text;
+       Resposta := FormObtemCampo.Resposta;
   finally
     FormObtemCampo.Free;
   end;
@@ -1162,25 +1543,92 @@ procedure TFormPrincipal.AdicionarPagamento(const Indice: String; AValor: Double
 var
   Ok, TemTEF: Boolean;
   ReajusteValor: Double;
+  UltResp: TACBrTEFResp;
+
+  procedure InformarParametrosCartaoCredito;
+  begin
+    // Instruindo CRT a apenas transações de Crédito...
+    // Isso é Opcional, e está aqui apenas para demonstração
+    if (ACBrTEFD1.GPAtual = gpPayGoWeb) then
+    begin
+      ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_CARDTYPE]:='01'; //01: crédito;  3 = 1 crédito + 2 débito
+      //ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_PAYMNTTYPE]:='1'; //01: crédito
+      //ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_FINTYPE]:='1'; //01: à vista, 2: parcelado
+      //ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_AUTHSYST]:='REDE';
+      //ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_INSTALLMENTS]:='3';
+    end
+    else if (ACBrTEFD1.GPAtual = gpCliSiTef) then
+      ACBrTEFD1.TEFCliSiTef.OperacaoCRT := 3;
+  end;
+
+  procedure InformarParametrosCartaoDebito;
+  begin
+    // Instruindo CRT a apenas transações de Débito
+    if (ACBrTEFD1.GPAtual = gpPayGoWeb) then
+    begin
+      ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_CARDTYPE]:='02'; //02: débito
+      //ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_FINTYPE]:='01'; //01: à vista
+    end
+    else if (ACBrTEFD1.GPAtual = gpCliSiTef) then
+      ACBrTEFD1.TEFCliSiTef.OperacaoCRT := 2;
+  end;
+
+  procedure InformarParametrosCarteiraDigital;
+  begin
+    // Instruindo CRT a apenas transações de Débito
+    if (ACBrTEFD1.GPAtual = gpPayGoWeb) then
+      ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_PAYMNTTYPE]:='8'; // Modalidade de pagamento:   1: cartão   2: dinheiro   4: cheque   8: carteira virtual
+    //else if (ACBrTEFD1.GPAtual = gpCliSiTef) then
+    //  ACBrTEFD1.TEFCliSiTef.OperacaoCRT := 2;
+  end;
+
 begin
-  Ok := True;
+  Ok := False;
   TemTEF := False;
 
-  if (Indice = '02') then
-  begin
-    Ok := ACBrTEFD1.CHQ(AValor, Indice);
-    TemTEF := True;
-  end
-  else if (Indice = '03') or (Indice = '04') then
-  begin
-    Ok := ACBrTEFD1.CRT(AValor, Indice);
-    TemTEF := True;
-  end
-  else if (Indice = '05') then
-  begin
-    FTestePayGo := 27;
-    Ok := ACBrTEFD1.CRT(AValor, Indice);
-    TemTEF := True;
+  FIndicePagto := Indice;
+  if (ACBrTEFD1.GPAtual = gpPayGoWeb) then
+    ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.Clear
+  else if (ACBrTEFD1.GPAtual = gpCliSiTef) then
+    ACBrTEFD1.TEFCliSiTef.OperacaoCRT := 0;
+
+  try
+    // ** NOTA **
+    // Usa '01' como Indice de Forma de Pagamento de ECF, para todas as operações TEF,
+    // para evitar que o ACBrTEFD tente separar os Comprovantes por Forma de Pagamento
+
+    if (Indice = '02') then          // 02-CHEQUE
+    begin
+      Ok := ACBrTEFD1.CHQ(AValor, '01');
+      TemTEF := True;
+    end
+
+    else if (Indice = '03') then     // 03-CREDITO
+    begin
+      InformarParametrosCartaoCredito;
+      Ok := ACBrTEFD1.CRT(AValor, '01');
+      TemTEF := True;
+    end
+
+    else if (Indice = '04') then     // 04-DEBITO
+    begin
+      InformarParametrosCartaoDebito;
+      Ok := ACBrTEFD1.CRT(AValor, '01');
+      TemTEF := True;
+    end
+
+    else if (Indice = '05') then    // 05-CARTEIRA DIGITAL
+    begin
+      FTestePayGo := 27;
+      InformarParametrosCarteiraDigital;
+      Ok := ACBrTEFD1.CRT(AValor, '01');
+      TemTEF := True;
+    end
+    else
+      Ok := True;                  // Pagamentos não TEF
+
+  finally
+    StatusVenda := stsEmPagamento;
   end;
 
   if Ok then
@@ -1192,17 +1640,20 @@ begin
 
       if TemTEF then
       begin
-        NSU := ACBrTEFD1.RespostasPendentes[ACBrTEFD1.RespostasPendentes.Count-1].NSU;
-        Rede := ACBrTEFD1.RespostasPendentes[ACBrTEFD1.RespostasPendentes.Count-1].Rede;
+        UltResp := ACBrTEFD1.RespostasPendentes[ACBrTEFD1.RespostasPendentes.Count-1];
+
+        NSU := UltResp.NSU;
+        Rede := UltResp.Rede;
+        RedeCNPJ := UltResp.NFCeSAT.CNPJCredenciadora;
 
         // Calcula a Diferença do Valor Retornado pela Operação TEF do Valor que
         //   Informamos no CRT/CHQ
-        ReajusteValor := RoundTo(ACBrTEFD1.RespostasPendentes[ACBrTEFD1.RespostasPendentes.Count-1].ValorTotal - ValorPago, -2);
+        ReajusteValor := RoundTo(UltResp.ValorTotal - ValorPago, -2);
 
-        Saque := ACBrTEFD1.RespostasPendentes[ACBrTEFD1.RespostasPendentes.Count-1].Saque;
+        Saque := UltResp.Saque;
         if (Saque > 0) then
         begin
-          // Se houve Saque na operação TEF, devemos adicionar no ValorPago Pago,
+          // Se houve Saque na operação TEF, devemos adicionar no ValorPago,
           //   para que o Saque conste como Troco
           ValorPago := ValorPago + Saque
         end
@@ -1213,10 +1664,10 @@ begin
           Venda.TotalAcrescimo := Venda.TotalAcrescimo + ReajusteValor;
         end;
 
-        Desconto := ACBrTEFD1.RespostasPendentes[ACBrTEFD1.RespostasPendentes.Count-1].Desconto;
+        Desconto := UltResp.Desconto;
         if Desconto > 0 then
         begin
-          // Se houve Desconto na Operação TEF, devemos subtrair do ValorPago Pago
+          // Se houve Desconto na Operação TEF, devemos subtrair do ValorPago
           //   e lançar um Desconto no Total da Transacao
           ValorPago := ValorPago - Desconto;
           Venda.TotalDesconto := Venda.TotalDesconto + Desconto;
@@ -1229,13 +1680,90 @@ begin
           //   com outra forma de Pagamento
           ValorPago := ValorPago + ReajusteValor;
         end;
-      end;
+      end
+      else
+        Confirmada := True;
     end;
 
     AtualizarPagamentosVendaNaInterface;
 
     if (Venda.TotalPago >= Venda.TotalVenda) then
       FinalizarVenda;
+  end;
+end;
+
+procedure TFormPrincipal.ExcluirPagamento(IndicePagto: Integer);
+var
+  i: Integer;
+  AResp: TACBrTEFResp;
+  Cancelada: Boolean;
+begin
+  if (IndicePagto < 0) or (IndicePagto >=  Venda.Pagamentos.Count) then
+    raise Exception.CreateFmt( 'Indice de pagamento [%d] inválido', [IndicePagto]);
+
+  if Venda.Pagamentos[IndicePagto].Cancelada then
+    raise Exception.CreateFmt( 'Pagamento [%d] já foi Cancelado', [IndicePagto]);
+
+  Cancelada := False;
+  AResp := AcharTransacaoTEFPendente(IndicePagto);
+  if Assigned(AResp) then
+  begin
+    if AResp.CNFEnviado then
+      raise Exception.CreateFmt( 'Pagamento TEF [%s] já foi Confirmado.'+sLineBreak+
+                                 'Para cancelar o mesmo, cancele Toda a Operação',
+                                 [AResp.NSU])
+    else
+    begin
+      ACBrTEFD1.NCN( AResp.Rede,
+                     AResp.NSU,
+                     AResp.Finalizacao,
+                     AResp.ValorTotal,
+                     AResp.DocumentoVinculado);
+      Cancelada := True;
+    end;
+
+    if Cancelada then
+    begin
+      if (AResp.ArqBackup <> '') and FileExists(AResp.ArqBackup) then
+        DeleteFile( AResp.ArqBackup );
+
+      ACBrTEFD1.RespostasPendentes.Remove(AResp);
+    end;
+  end
+  else
+  begin
+    if (Venda.Pagamentos[IndicePagto].NSU <> '') then
+      raise Exception.CreateFmt( 'Transação TEF [%s] não foi Localizada.',
+                                 [Venda.Pagamentos[IndicePagto].NSU])
+    else
+      Cancelada := True;
+  end;
+
+  if Cancelada then
+  begin
+    Venda.Pagamentos[IndicePagto].Cancelada := True;
+    AtualizarPagamentosVendaNaInterface;
+  end;
+end;
+
+function TFormPrincipal.AcharTransacaoTEFPendente(IndicePagto: Integer
+  ): TACBrTEFResp;
+var
+  i: Integer;
+begin
+  Result := Nil;
+  if (IndicePagto < 0) and (IndicePagto >=  Venda.Pagamentos.Count) then
+    Exit;
+
+  i := 0;
+  while (i < ACBrTEFD1.RespostasPendentes.Count) and (Result = Nil) do
+  begin
+    if (ACBrTEFD1.RespostasPendentes[i].Rede = Venda.Pagamentos[IndicePagto].Rede) and
+       (ACBrTEFD1.RespostasPendentes[i].NSU = Venda.Pagamentos[IndicePagto].NSU) and
+       (ACBrTEFD1.RespostasPendentes[i].ValorTotal = Venda.Pagamentos[IndicePagto].ValorPago) then
+      Result := ACBrTEFD1.RespostasPendentes[i];
+
+    Inc(i);
   end;
 end;
 
@@ -1293,8 +1821,9 @@ begin
       begin
         with Venda.Pagamentos[i] do
         begin
-          SL.Add(PadSpace( TipoPagamento+' - '+DescricaoTipoPagamento(TipoPagamento)+'|'+
-                           FormatFloatBr(ValorPago)+'|'+Rede, ACBrPosPrinter1.Colunas, '|') );
+          if not Cancelada then
+            SL.Add(PadSpace( TipoPagamento+' - '+DescricaoTipoPagamento(TipoPagamento)+'|'+
+                             FormatFloatBr(ValorPago)+'|'+Rede, ACBrPosPrinter1.Colunas, '|') );
         end;
       end;
       SL.Add('</linha_simples>');
@@ -1322,30 +1851,44 @@ var
   P: Integer;
   ATeste: String;
 begin
-  P := pos('-',cbTestePayGo.Text);
-  ATeste := copy(cbTestePayGo.Text, 1, P-1);
+  ATeste := cbTestePayGo.Text;
+  P := pos('-',ATeste);
+  ATeste := Trim(copy(ATeste, 1, P-1));
   FTestePayGo := StrToIntDef(ATeste, 0);
 end;
 
 procedure TFormPrincipal.AtualizarVendaNaInterface;
 begin
   lNumOperacao.Caption := FormatFloat('000000',Venda.NumOperacao);
-  seValorInicialVenda.Value := Venda.ValorInicial;
+  seValorInicialVenda.OnChange := Nil;
+  try
+    seValorInicialVenda.Value := Venda.ValorInicial;
+  finally
+    seValorInicialVenda.OnChange := @seValorInicialVendaChange;
+  end;
   AtualizarPagamentosVendaNaInterface;
 end;
 
 procedure TFormPrincipal.AtualizarTotaisVendaNaInterface;
 begin
-  seTotalDesconto.Value := Venda.TotalDesconto;
-  seTotalAcrescimo.Value := Venda.TotalAcrescimo;
-  edTotalVenda.Text := FormatFloatBr(Venda.TotalVenda);
-  edTotalPago.Text := FormatFloatBr(Venda.TotalPago);
-  edTroco.Text := FormatFloatBr(max(Venda.Troco,0));
+  seTotalDesconto.OnChange := Nil;
+  seTotalAcrescimo.OnChange := Nil;
+  try
+    seTotalDesconto.Value := Venda.TotalDesconto;
+    seTotalAcrescimo.Value := Venda.TotalAcrescimo;
+    edTotalVenda.Text := FormatFloatBr(Venda.TotalVenda);
+    edTotalPago.Text := FormatFloatBr(Venda.TotalPago);
+    edTroco.Text := FormatFloatBr(max(Venda.Troco,0));
+  finally
+    seTotalDesconto.OnChange := @seTotalDescontoChange;
+    seTotalAcrescimo.OnChange := @seTotalAcrescimoChange;
+  end;
 end;
 
 procedure TFormPrincipal.AtualizarPagamentosVendaNaInterface;
 var
   i, ARow: Integer;
+  AResp: TACBrTEFResp;
 begin
   sgPagamentos.RowCount := 1;
   for i := 0 to Venda.Pagamentos.Count-1 do
@@ -1355,12 +1898,20 @@ begin
 
     with Venda.Pagamentos[i] do
     begin
+      if not Cancelada then
+      begin
+        AResp := AcharTransacaoTEFPendente(i);
+        if Assigned(AResp) then
+          Confirmada := AResp.CNFEnviado;
+      end;
+
       sgPagamentos.Cells[0, ARow] := FormatFloat('000', ARow);
       sgPagamentos.Cells[1, ARow] := TipoPagamento + ' - ' + DescricaoTipoPagamento(TipoPagamento);
       sgPagamentos.Cells[2, ARow] := FormatFloatBr(ValorPago);
       sgPagamentos.Cells[3, ARow] := NSU;
       sgPagamentos.Cells[4, ARow] := Rede;
-      sgPagamentos.Cells[5, ARow] := ifthen(Confirmada, 'Sim', 'Não');
+      sgPagamentos.Cells[5, ARow] := ifthen(Cancelada, 'Cancelada', ifthen(Confirmada, 'Confirmada', 'Pendente'));
+      sgPagamentos.Cells[6, ARow] := RedeCNPJ;
     end;
   end;
 
@@ -1370,13 +1921,13 @@ end;
 procedure TFormPrincipal.MensagemTEF(const MsgOperador, MsgCliente: String);
 begin
   if (MsgOperador <> '') then
-    pMensagemOperador.Caption := MsgOperador;
+    lMensagemOperador.Caption := MsgOperador;
 
   if (MsgCliente <> '') then
-    pMensagemCliente.Caption := MsgCliente;
+    lMensagemCliente.Caption := MsgCliente;
 
-  pMensagemOperador.Visible := (Trim(pMensagemOperador.Caption) <> '');
-  pMensagemCliente.Visible := (Trim(pMensagemCliente.Caption) <> '');
+  pMensagemOperador.Visible := (Trim(lMensagemOperador.Caption) <> '');
+  pMensagemCliente.Visible := (Trim(lMensagemCliente.Caption) <> '');
   pMensagem.Visible := pMensagemOperador.Visible or pMensagemCliente.Visible;
   Application.ProcessMessages;
 end;
@@ -1384,6 +1935,27 @@ end;
 procedure TFormPrincipal.LimparMensagensTEF;
 begin
   MensagemTEF(' ',' ');
+end;
+
+procedure TFormPrincipal.ExibirPainelQRCode;
+begin
+  if pQRCode.Visible then
+    Exit;
+
+  mImpressao.Visible := False;
+  lSaidaImpressao.Visible := False;
+  pQRCode.Visible := True;
+  pQRCode.Align := alClient;
+end;
+
+procedure TFormPrincipal.OcultatPainelQRCode;
+begin
+  if not pQRCode.Visible then
+    Exit;
+
+  pQRCode.Visible := False;
+  mImpressao.Visible := True;
+  lSaidaImpressao.Visible := True;
 end;
 
 procedure TFormPrincipal.ConfigurarTEF;
@@ -1397,7 +1969,7 @@ begin
   ACBrTEFD1.SuportaDesconto := cbSuportaDesconto.Checked;
   ACBrTEFD1.SuportaSaque := cbSuportaSaque.Checked;
 
-  ACBrTEFD1.Identificacao.RazaoSocial := edRazaoSocial.Text;
+  ACBrTEFD1.Identificacao.SoftwareHouse := edRazaoSocial.Text;
   ACBrTEFD1.Identificacao.RegistroCertificacao := edRegistro.Text;
   ACBrTEFD1.Identificacao.NomeAplicacao := edAplicacaoNome.Text;
   ACBrTEFD1.Identificacao.VersaoAplicacao := edAplicacaoVersao.Text;
@@ -1405,6 +1977,16 @@ begin
   ACBrTEFD1.TEFPayGo.SuportaReajusteValor := cbSuportaReajusteValor.Checked;
   ACBrTEFD1.TEFPayGo.SuportaNSUEstendido := True;
   ACBrTEFD1.TEFPayGo.SuportaViasDiferenciadas := True;
+
+  case cbxQRCode.ItemIndex of
+    0: ACBrTEFD1.TEFPayGoWeb.ExibicaoQRCode := qreNaoSuportado;
+    2: ACBrTEFD1.TEFPayGoWeb.ExibicaoQRCode := qreExibirNoPinPad;
+    3, 4: ACBrTEFD1.TEFPayGoWeb.ExibicaoQRCode := qreExibirNoCheckOut;
+  else
+    ACBrTEFD1.TEFPayGoWeb.ExibicaoQRCode := qreAuto;
+  end;
+
+  //ACBrTEFD1.TEFPayGoWeb.DiretorioTrabalho := 'C:\PAYGOWEB';
 
   // Configurações abaixo são obrigatórios, para funcionamento de Não Fiscal //
   ACBrTEFD1.AutoEfetuarPagamento := False;
@@ -1444,7 +2026,6 @@ procedure TFormPrincipal.Ativar;
 begin
   AdicionarLinhaLog('- Ativar');
   GravarConfiguracao;
-  AtivarTEF;
   try
     AtivarPosPrinter;
   except
@@ -1453,6 +2034,7 @@ begin
       TratarException(nil, E);
     end;
   end;
+  AtivarTEF;
 end;
 
 procedure TFormPrincipal.Desativar;

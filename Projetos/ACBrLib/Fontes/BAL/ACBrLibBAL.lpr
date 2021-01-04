@@ -37,7 +37,8 @@ library ACBrLibBAL;
 uses
   Interfaces, sysutils, Classes,
   ACBrLibConfig, ACBrLibComum,
-  ACBrLibBALClass, ACBrLibBALConfig, ACBrLibBALDataModule;
+  {$IFDEF MT}ACBrLibBALMT{$ELSE}ACBrLibBALST{$ENDIF},
+  ACBrLibBALConfig, ACBrLibBALDataModule;
 
 {$R *.res}
 
@@ -53,7 +54,8 @@ exports
   BAL_Nome,
   BAL_Versao,
   BAL_UltimoRetorno,
-  BAL_ImportarConfig,
+  BAL_ConfigImportar,
+  BAL_ConfigExportar,
   BAL_ConfigLer,
   BAL_ConfigGravar,
   BAL_ConfigLerValor,
@@ -77,7 +79,6 @@ begin
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
 
-  pLibClass := TACBrLibBAL; // Ajusta a classe a ser criada
   MainThreadID := GetCurrentThreadId();
 end.
 

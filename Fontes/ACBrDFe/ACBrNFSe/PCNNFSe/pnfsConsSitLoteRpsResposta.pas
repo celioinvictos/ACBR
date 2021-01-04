@@ -38,7 +38,7 @@ interface
 
 uses
   SysUtils, Classes,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -306,9 +306,38 @@ begin
 end;
 
 function TretSitLote.LerXML_proAssessorPublico: boolean;
+var
+  i: Integer;
 begin
-  // nada feito aqui
-  Result := False;
+  try
+    InfSit.FNumeroLote := Leitor.rCampo(tcStr, 'LOTE');
+
+    if leitor.rExtrai(1, 'NFSE') <> '' then
+    begin
+      i := 0;
+      if (leitor.rExtrai(2, 'INCONSISTENCIA') <> '') then
+      begin
+        while Leitor.rExtrai(3, 'STATUS', '', i + 1) <> '' do
+        begin
+          InfSit.FMsgRetorno.New;
+
+          if  (Leitor.rExtrai(3, 'CHAVE', '', i + 1) <> '') then
+             InfSit.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'CHAVE');
+
+          if  (Leitor.rExtrai(3, 'ERRO', '', i + 1) <> '') then
+             InfSit.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'ERRO');
+
+          InfSit.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'STATUS');
+
+          inc(i);
+        end;
+      end;
+    end;
+
+    Result := True;
+  except
+    Result := False;
+  end;
 end;
 
 function TretSitLote.LerXml_proCONAM: Boolean;

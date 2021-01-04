@@ -37,7 +37,8 @@ library ACBrLibMail;
 uses
   Interfaces, sysutils, Classes,
   ACBrLibConfig, ACBrLibComum,
-  ACBrLibMailClass, ACBrLibMailConfig, ACBrLibMailDataModule;
+  {$IFDEF MT}ACBrLibMailMT{$ELSE}ACBrLibMailST{$ENDIF},
+  ACBrLibMailConfig, ACBrLibMailDataModule;
 
 {$R *.res}
 
@@ -54,7 +55,8 @@ exports
   MAIL_Nome,
   MAIL_Versao,
   MAIL_UltimoRetorno,
-  MAIL_ImportarConfig,
+  MAIL_ConfigImportar,
+  MAIL_ConfigExportar,
   MAIL_ConfigLer,
   MAIL_ConfigGravar,
   MAIL_ConfigLerValor,
@@ -71,7 +73,6 @@ exports
   MAIL_AddBody,
   MAIL_AddAltBody,
   MAIL_SaveToFile,
-  MAIL_GetMail,
 
   // Envio
   MAIL_Clear,
@@ -84,7 +85,6 @@ begin
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
 
-  pLibClass := TACBrLibMail; // Ajusta a classe a ser criada
   MainThreadID := GetCurrentThreadId();
 end.
 

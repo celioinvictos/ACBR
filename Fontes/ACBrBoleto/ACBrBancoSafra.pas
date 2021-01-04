@@ -39,7 +39,7 @@ unit ACBrBancoSafra;
 
 interface
 
-uses Classes, SysUtils, StrUtils, ACBrBoleto, DateUtils, Math;
+uses Classes, SysUtils, StrUtils, ACBrBoleto, DateUtils, Math, ACBrBoletoConversao;
 
 type
 
@@ -379,11 +379,16 @@ end;
 procedure TACBrBancoSafra.GerarRegistroHeader400(NumeroRemessa: integer;
   ARemessa: TStringList);
 var wLinha: String;
+  aAgencia,
+  aConta: String;
 begin
   aTotal := 0;
   aCount := 0;
-  FNumeroRemessa := NumeroRemessa;
+  aAgencia := PadLeft(RightStr( ACBrBanco.ACBrBoleto.Cedente.Agencia, 5), 5, '0');
 
+  aConta := PadLeft(ACBrBanco.ACBrBoleto.Cedente.Conta, 8, '0') +
+              PadLeft(ACBrBanco.ACBrBoleto.Cedente.ContaDigito, 1, '0');
+  FNumeroRemessa := NumeroRemessa;
   with ACBrBanco.ACBrBoleto.Cedente do
   begin
     wLinha := '0'                             + // ID do Registro Header
@@ -391,7 +396,7 @@ begin
               'REMESSA'                       + // Literal de Remessa
               '01'                            + // Código do Tipo de Serviço
               PadRight('COBRANCA', 15)        + // Descrição do tipo de serviço + "brancos"
-              PadLeft(CodigoCedente, 14, '0') + // Codigo da Empresa no Banco
+              aAgencia + aConta               + // Codigo da Empresa no Banco
               Space(6)                        + // "brancos"
               PadRight(Nome, 30)              + // Nome da Empresa
               IntToStr(Numero)                + // Código do Banco - 237
@@ -774,7 +779,7 @@ begin
                  PadRight(ACBrTitulo.SeuNumero, 25)                                    + // 196-220 / Identificação do título na empresa
                  PadLeft(ACBrTitulo.Instrucao1, 1)                                     + // 221-221 / Código para protesto
                  sDiasProtesto                                                         + // 222-223 / Número de dias para protesto
-                 PadLeft(ACBrTitulo.Instrucao2, 1)                                     + // 224-224 / Código para Baixa/Devolução
+                 PadLeft(Trim(ACBrTitulo.Instrucao2), 1)                               + // 224-224 / Código para Baixa/Devolução
                  sDiasBaixaDevol                                                       + // 225-227 / Número de Dias para Baixa/Devolução
                  '09'                                                                  + // 228-229 / Código da moeda
                  PadLeft('0', 10, '0')                                                 + // 230-239 / Nº do Contrato da Operação de Créd.
@@ -818,11 +823,14 @@ begin
                   '0'                                                                                   + // 018 - 018 / Código do desconto 2
                   PadLeft('', 8, '0')                                                                   + // 019 - 026 / Data do desconto 2
                   IntToStrZero(0, 15)                                                                   + // 027 - 041 / Valor/Percentual a ser concedido
-                  sTipoDesconto                                                                         + // 42 - 42 1 = Valor Fixo ate a Data Informada / 2 = Percentual ate a Data Informada / 3 = Valor por Antecipação dia Corrido
-                                                                                                          //         5 = Percentual por Antecipação dia corrido
+                  '0'                                                                                   + // 042 - 042 / Código do desconto 3
+                  PadLeft('', 8, '0')                                                                   + // 043 - 050 / Data do desconto 3
+                  IntToStrZero(0, 15)                                                                   + // 051 - 065 / Valor/Percentual a ser concedido
+                  {sTipoDesconto                                                                        + // 042 - 042 1 = Valor Fixo ate a Data Informada / 2 = Percentual ate a Data Informada / 3 = Valor por Antecipação dia Corrido
+                                                                                                          //           5 = Percentual por Antecipação dia corrido
                   IfThen((ACBrTitulo.ValorDesconto > 0),
-                          FormatDateTime('ddmmyyyy', ACBrTitulo.DataDesconto), '00000000')              + // 43 - 50 Campo numerico e deve ser preenchido, caso não tenha desconto manter o campo zerado. DDMMAAAA
-                  IntToStrZero(round(ACBrTitulo.ValorDesconto), 15)                                     + // 51 - 65 / Valor/Percentual a ser aplicado
+                          FormatDateTime('ddmmyyyy', ACBrTitulo.DataDesconto), '00000000')              + // 043 - 050 Campo numerico e deve ser preenchido, caso não tenha desconto manter o campo zerado. DDMMAAAA
+                  IntToStrZero(round(ACBrTitulo.ValorDesconto), 15)                                     + // 051 - 065 / Valor/Percentual a ser aplicado}
                   IfThen((ACBrTitulo.PercentualMulta > 0),
                          IfThen(ACBrTitulo.MultaValorFixo,'1','2'), '0')                + // 66 - 66 1-Cobrar Multa Valor Fixo / 2-Percentual / 0-Não cobrar multa
                   IfThen((ACBrTitulo.PercentualMulta > 0),
@@ -859,8 +867,7 @@ begin
     else
       tipoInscricao := '02';
 
-    aAgencia := PadLeft(RightStr( ACBrBoleto.Cedente.Agencia, 4), 4, '0') +
-                PadLeft(ACBrBoleto.Cedente.AgenciaDigito, 1, '0');
+    aAgencia := PadLeft(RightStr( ACBrBoleto.Cedente.Agencia, 5), 5, '0');
 
     aConta := PadLeft(ACBrBoleto.Cedente.Conta, 8, '0') +
               PadLeft(ACBrBoleto.Cedente.ContaDigito, 1, '0');
@@ -1164,7 +1171,7 @@ begin
 
     with Titulo do
     begin
-      SeuNumero      := Copy(Linha,38,62);
+      SeuNumero      := Copy(Linha,38,25); 
       NossoNumero    := Copy(Linha, 63, 9);
       CodOcorrencia  := StrToIntDef(copy(Linha, 109, 2),0);
       OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(CodOcorrencia);
@@ -1212,7 +1219,7 @@ function TACBrBancoSafra.MontarCampoCodigoCedente(
 begin
   with ACBrTitulo.ACBrBoleto.Cedente do
   begin
-    Result := PadLeft(RightStr(Agencia,4), 4, '0') + PadLeft(AgenciaDigito, 1, '0') + ' / ' + PadLeft(ACBrBoleto.Cedente.Conta, 8, '0') + PadLeft(ACBrBoleto.Cedente.ContaDigito, 1, '0');
+    Result := PadLeft(RightStr(Agencia,5), 5, '0') + ' / ' + PadLeft(ACBrBoleto.Cedente.Conta, 8, '0') + PadLeft(ACBrBoleto.Cedente.ContaDigito, 1, '0');
   end;
 end;
 
@@ -1227,22 +1234,21 @@ end;
 function TACBrBancoSafra.MontarCodigoBarras(const ACBrTitulo: TACBrTitulo): string;
 var
   CodigoBarras, FatorVencimento, DigitoCodBarras ,
-  valorDocumento, agencia, agenciaDigito, conta,
+  valorDocumento, agencia, conta,
   ContaDigito, NossoNumero: string;
 begin
   with ACBrTitulo.ACBrBoleto do
   begin
     FatorVencimento  := CalcularFatorVencimento(ACBrTitulo.Vencimento);
     valorDocumento   := IntToStrZero(Round(ACBrTitulo.ValorDocumento * 100), 10);
-    agencia          := PadLeft(RightStr(Cedente.Agencia,4), 4, '0');
-    agenciaDigito    := PadLeft(Cedente.AgenciaDigito, 1, '0');
-    conta            := Cedente.Conta;
+    agencia          := PadLeft(RightStr(Cedente.Agencia,5), 5, '0');
+    conta            := PadLeft(Cedente.Conta, 8, '0');
     ContaDigito      := PadLeft(Cedente.ContaDigito, 1, '0');
     NossoNumero      := PadLeft(RightStr(ACBrTitulo.NossoNumero,9),9,'0');
 
     CodigoBarras := IntToStr(Banco.Numero) + '9' + FatorVencimento +
                     valorDocumento +
-                    '7' + agencia + trim(agenciaDigito) + trim(conta) + ContaDigito +
+                    '7' + agencia + trim(conta) + ContaDigito +
                     NossoNumero +  '2';
 
 

@@ -41,7 +41,7 @@ uses
   Classes, SysUtils, dateutils,
   ACBrDFe, ACBrDFeWebService,
   blcksock, synacode,
-  pcnNFe, pcnRetConsReciDFe, pcnRetConsCad, pcnAuxiliar, pcnConversao,
+  pcnNFe, pcnRetConsReciDFe, pcnRetConsCad, pcnAuxiliar, pcnConversao, pcnConsts,
   pcnConversaoNFe, pcnProcNFe, pcnEnvEventoNFe, pcnRetEnvEventoNFe, pcnRetConsSitNFe, 
   pcnAdmCSCNFCe, pcnRetAdmCSCNFCe, pcnDistDFeInt, pcnRetDistDFeInt, pcnRetEnvNFe,
   ACBrNFeNotasFiscais, ACBrNFeConfiguracoes;
@@ -67,6 +67,7 @@ type
     function GerarVersaoDadosSoap: String; override;
     procedure EnviarDados; override;
     procedure FinalizarServico; override;
+    function ModeloDFe(const Chave: string): TpcnModeloDF;
 
   public
     constructor Create(AOwner: TACBrDFe); override;
@@ -667,6 +668,21 @@ begin
     FPHeaderElement := ''; //Versão 4.00 não tem o elemento <soap12:Header>
 
   TACBrNFe(FPDFeOwner).SetStatus(FPStatus);
+end;
+
+function TNFeWebService.ModeloDFe(const Chave: string): TpcnModeloDF;
+var
+  Ok: Boolean;
+  xChave: string;
+begin
+  xChave := Trim(Chave);
+  if xChave <> '' then
+  begin
+    result := StrToModeloDF(Ok, ExtrairModeloChaveAcesso(xChave));
+    if Ok then
+      Exit;
+  end;
+  result := FPConfiguracoesNFe.Geral.ModeloDF;
 end;
 
 procedure TNFeWebService.DefinirURL;
@@ -2023,7 +2039,7 @@ var
 begin
   FPVersaoServico := '';
   FPURL  := '';
-  Modelo := ModeloDFToPrefixo( StrToModeloDF(ok, ExtrairModeloChaveAcesso(FNFeChave) ));
+  Modelo := ModeloDFToPrefixo(ModeloDFe(FNFeChave));
   FcUF   := ExtrairUFChaveAcesso(FNFeChave);
   VerServ:= VersaoDFToDbl(FPConfiguracoesNFe.Geral.VersaoDF);
 
@@ -2400,7 +2416,13 @@ begin
                   AProcNFe := TProcNFe.Create;
                   try
                     AProcNFe.XML_NFe := RemoverDeclaracaoXML(XMLOriginal);
-                    AProcNFe.XML_Prot := NFeRetorno.XMLprotNFe;
+//                    AProcNFe.XML_Prot := NFeRetorno.XMLprotNFe;
+
+                    // A SEFAZ-PR esta retornado o XML de processamento da NFe
+                    // fora do padrão, os atributos versao e Id estão sendo
+                    // gerados com apostrofe em vez de aspas.
+                    AProcNFe.XML_Prot := StringReplace(NFeRetorno.XMLprotNFe, '''', '"', [rfReplaceAll]);
+
                     AProcNFe.Versao := NFeRetorno.protNFe.Versao;
                     if AProcNFe.Versao = '' then
                       AProcNFe.Versao := FPVersaoServico;
@@ -2881,10 +2903,8 @@ begin
     ConCadNFe.IE := FIE;
     ConCadNFe.CNPJ := FCNPJ;
     ConCadNFe.CPF := FCPF;
-    if UpperCase(FUF) = 'MT' then
-      ConCadNFe.Versao :=  '2.00'
-    else
-      ConCadNFe.Versao :=  FPVersaoServico;
+    ConCadNFe.Versao :=  '2.00';
+
     AjustarOpcoes( ConCadNFe.Gerador.Opcoes );
     ConCadNFe.GerarXML;
 
@@ -3015,7 +3035,7 @@ begin
   VerServ  := VersaoDFToDbl(FPConfiguracoesNFe.Geral.VersaoDF);
   FCNPJ    := FEvento.Evento.Items[0].InfEvento.CNPJ;
   FTpAmb   := FEvento.Evento.Items[0].InfEvento.tpAmb;
-  Modelo   := ModeloDFToPrefixo( StrToModeloDF(ok, ExtrairModeloChaveAcesso(FEvento.Evento.Items[0].InfEvento.chNFe) ));
+  Modelo   := ModeloDFToPrefixo(ModeloDFe(FEvento.Evento.Items[0].InfEvento.chNFe));
   FIE      := FEvento.Evento.Items[0].InfEvento.detEvento.IE;
 
   // Configuração correta ao enviar para o SVC
@@ -3579,16 +3599,10 @@ end;
 
 procedure TDistribuicaoDFe.DefinirURL;
 var
-  UF, Modelo: String;
+  UF: String;
   Versao: Double;
-  Ok: Boolean;
 begin
   { Esse método é tratado diretamente pela RFB }
-
-  if FchNFe <> '' then
-    Modelo := ModeloDFToPrefixo(StrToModeloDF(ok, ExtrairModeloChaveAcesso(FchNFe)))
-  else
-    Modelo := TACBrNFe(FPDFeOwner).GetNomeModeloDFe;
 
   UF := 'AN';
 
@@ -3598,7 +3612,7 @@ begin
   Versao := VersaoDFToDbl(FPConfiguracoesNFe.Geral.VersaoDF);
 
   TACBrNFe(FPDFeOwner).LerServicoDeParams(
-    Modelo,
+    ModeloDFToPrefixo(ModeloDFe(FchNFe)),
     UF ,
     FPConfiguracoesNFe.WebServices.Ambiente,
     LayOutToServico(FPLayout),

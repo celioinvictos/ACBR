@@ -70,7 +70,6 @@ type
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
-    procedure ImportarIni(AIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -80,14 +79,14 @@ type
     destructor Destroy; override;
 
     property CHQConfig: TCHQConfig read FCHQConfig;
-    property DeviceConfig: TDeviceConfig read FDeviceConfig;
+    property CHQDeviceConfig: TDeviceConfig read FDeviceConfig;
   end;
 
 implementation
 
 uses
-  ACBrMonitorConsts, ACBrLibCHQClass, ACBrLibCHQConsts,
-  ACBrLibConsts, ACBrLibComum, ACBrUtil;
+  ACBrLibCHQBase, ACBrLibCHQConsts,
+  ACBrLibConsts, ACBrUtil;
 
 { TCHQConfig }
 constructor TCHQConfig.Create;
@@ -153,12 +152,6 @@ procedure TLibCHQConfig.ClasseParaComponentes;
 begin
   if Assigned(Owner) then
     TACBrLibCHQ(Owner).CHQDM.AplicarConfiguracoes;
-end;
-
-procedure TLibCHQConfig.ImportarIni(AIni: TCustomIniFile);
-begin
-  FCHQConfig.Porta := AIni.ReadString(CSecCHQ, CKeyCHQPorta, FCHQConfig.Porta);
-  FCHQConfig.Modelo := TACBrCHQModelo(AIni.ReadInteger(CSecCHQ, CKeyCHQModelo, Integer(FCHQConfig.Modelo)));
 end;
 
 procedure TLibCHQConfig.Travar;

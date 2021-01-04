@@ -39,7 +39,7 @@ interface
 uses
   Classes, SysUtils, IniFiles,
   ACBrLibConfig, ACBrDFeReport, DFeReportConfig,
-  ACBrSAT, ACBrSATClass, ACBrSATExtratoClass,
+  ACBrSAT, ACBrSATClass, ACBrSATExtratoClass, ACBrLibComum,
   ACBrIntegradorConfig, ACBrDFeSSL, ACBrSATExtratoESCPOS,
   pcnRede, pcnConversao;
 
@@ -71,10 +71,9 @@ type
 
   protected
     procedure DefinirValoresPadroesChild; override;
-    procedure ImportChild(const AIni: TCustomIniFile); override;
     procedure LerIniChild(const AIni: TCustomIniFile); override;
     procedure GravarIniChild(const AIni: TCustomIniFile); override;
-    procedure ApplyChild(const DFeReport: TACBrSATExtratoClass); override;
+    procedure ApplyChild(const DFeReport: TACBrSATExtratoClass; const Lib: TACBrLib); override;
 
   public
     constructor Create;
@@ -230,7 +229,6 @@ type
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
-    procedure ImportarIni(FIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -263,8 +261,8 @@ type
 implementation
 
 uses
-  ACBrMonitorConsts, ACBrLibConsts, ACBrLibSATConsts, ACBrLibComum,
-  ACBrLibSATClass, ACBrUtil, ACBrConsts, ACBrSATExtratoFortesFr;
+  ACBrLibConsts, ACBrLibSATConsts,
+  ACBrLibSATBase, ACBrUtil, ACBrConsts, ACBrSATExtratoFortesFr;
 
 { TExtratoConfig }
 constructor TExtratoConfig.Create;
@@ -293,11 +291,6 @@ begin
   FImprimeChaveEmUmaLinha := rAuto;
   FImprimeQRCodeLateral := True;
   FImprimeLogoLateral := True;
-end;
-
-procedure TExtratoConfig.ImportChild(const AIni: TCustomIniFile);
-begin
-
 end;
 
 procedure TExtratoConfig.LerIniChild(const AIni: TCustomIniFile);
@@ -347,7 +340,7 @@ begin
   AIni.WriteBool(FSessao, CChaveImprimeLogoLateral, FImprimeLogoLateral);
 end;
 
-procedure TExtratoConfig.ApplyChild(const DFeReport: TACBrSATExtratoClass);
+procedure TExtratoConfig.ApplyChild(const DFeReport: TACBrSATExtratoClass; const Lib: TACBrLib);
 Var
   LogoVisible: Boolean;
 begin
@@ -667,11 +660,6 @@ procedure TLibSATConfig.ClasseParaComponentes;
 begin
   if Assigned(Owner) then
     TACBrLibSAT(Owner).SatDM.AplicarConfiguracoes;
-end;
-
-procedure TLibSATConfig.ImportarIni(FIni: TCustomIniFile);
-begin
-
 end;
 
 procedure TLibSATConfig.Travar;

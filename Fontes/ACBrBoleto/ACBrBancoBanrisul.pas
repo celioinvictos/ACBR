@@ -38,7 +38,7 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrBoleto;
+  ACBrBoleto, ACBrBoletoConversao;
 
 type
 
@@ -711,7 +711,7 @@ begin
                    DupeString('0', 48) +
                    '1' +
                    FormatDateTime('ddmmyyyy', DataMulta) +
-                   PadLeft(StringReplace(FormatFloat('#####0.00', PercentualMulta * ValorDocumento / 100), ',', '', []), 15, '0') +
+                   PadLeft(StringReplace(FormatFloat('#####0.00', TruncTo(((PercentualMulta * ValorDocumento) / 100),2)), ',', '', []), 15, '0') +
                    DupeString(' ', 90) +
                    DupeString('0', 28) +
                    DupeString(' ', 33);
@@ -963,7 +963,7 @@ begin
     with Titulo do
     begin
       NossoNumero          := Copy(Linha,63,10);
-      SeuNumero            := copy(Linha,117,10);
+      SeuNumero            := copy(Linha,38,25);
       NumeroDocumento      := copy(Linha,117,10);
 
       ValorDocumento       := StrToFloatDef(Copy(Linha,153,13),0)/100;

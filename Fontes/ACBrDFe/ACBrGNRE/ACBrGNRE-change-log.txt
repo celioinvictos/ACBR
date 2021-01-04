@@ -45,6 +45,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+11/11/2020
+-- ACBrGNREWebServices --
+[*] Ajustes na definição do path do XML Retorno seguindo a estrutura de diretórios do componente, para gravação das Guias.xml
+  Por: José M S Junior
+
+01/10/2020
+-- ACBrGNREWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/59481-mensagem-vazia/
+  Por: Marco Moreira
+
+23/07/2020
+-- Diversos --
+[+] Acrescentado a unit pcnConsts em algumas units do componente.
+    Por conta da migração de algumas constantes de pcnGerador para
+    pcnConsts.
+   Por: Italo Jurisato Junior
+
 14/05/2020
 -- ACBrGNREWebServices --
 [*] No método TGNRERecepcao.DefinirDadosMsg foi incluido a chamada ao 

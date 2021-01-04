@@ -43,6 +43,22 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+04/08/2020
+[*] Ajustes para melhor impressão, em 40 colunas
+    (por: DSA)
+
+21/07/2020
+[-] Correção para usar as propriedade ImprimeLogoLateral e ImprimeQRCodeLateral corretamente.
+    (por: Rafael Dias)
+
+09/07/2020
+[*] Melhor suporte a impressoras com 32 colunas
+[+] Adicionada a propriedade "SuportaCondensado: Boolean default True"
+    Se essa propriedade for False, o relatorio evitará o uso de Fontes
+    Condensada, e calculará os espaços usando a Fonte Normal
+[*] Linhas que usavam Caractere Expandido, verificam se o número de colunas
+    é o suficiente, caso contrário, usa a fonte normal.
+    (por: DSA)
 
 06/05/2015 
 [*] Refatoração para usar TACBrPosPrinter (por DSA)

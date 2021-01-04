@@ -269,7 +269,7 @@ begin
     Add('qCarga', ftCurrency);
     Add('dhIniViagem', ftDateTime);
     Add('Lacres', ftMemo);
-	  Add('vCarga', ftCurrency);
+    Add('vCarga', ftCurrency);
 
     // Outros
     Add('URL', ftString, 1000);
@@ -306,8 +306,8 @@ begin
     Close;
     Clear;
     // Aereo
-    Add('nac', ftInteger);
-    Add('matr', ftInteger);
+    Add('nac', ftString, 4);
+    Add('matr', ftString, 6);
     Add('nVoo', ftString, 9);
     Add('cAerEmb', ftString, 4);
     Add('cAerDes', ftString, 4);
@@ -739,6 +739,7 @@ begin
       Page.LeftMargin := MargemEsquerda;
     if (MargemDireita > 0) then
       Page.RightMargin := MargemDireita;
+    frxReport.PreviewPages.ModifyPage(I, Page);
   end;
 end;
 
@@ -1124,23 +1125,18 @@ procedure TACBrMDFeDAMDFEFR.CarregaParametros;
 var
   LogoStream: TStringStream;
 begin
-  with cdsParametros do
+  cdsParametros.Append;
+
+  // Carregamento da imagem
+  if NaoEstaVazio(FDAMDFEClassOwner.Logo) then
   begin
-    Append;
+    cdsParametros.FieldByName('Imagem').AsString := DAMDFEClassOwner.Logo;
 
-    // Carregamento da imagem
-    if DAMDFEClassOwner.Logo <> '' then
+    if FileExists(FDAMDFEClassOwner.Logo) then
+      TBlobField(cdsParametros.FieldByName('LogoCarregado')).LoadFromFile(DAMDFEClassOwner.Logo)
+    else
     begin
-      FieldByName('Imagem').AsString := DAMDFEClassOwner.Logo;
-
-      if not FileExists(DAMDFEClassOwner.Logo) then
-        LogoStream := TStringStream.Create(DAMDFEClassOwner.Logo)
-      else
-      begin
-        LogoStream := TStringStream.Create('');
-        LogoStream.LoadFromFile(DAMDFEClassOwner.Logo);
-      end;
-
+      LogoStream := TStringStream.Create(FDAMDFEClassOwner.Logo);
       try
         LogoStream.Position := 0;
         TBlobField(cdsParametros.FieldByName('LogoCarregado')).LoadFromStream(LogoStream);
@@ -1148,13 +1144,12 @@ begin
         LogoStream.Free;
       end;
     end;
-
-    FieldByName('Versao').AsString  := FloatToString(FMDFe.infMDFe.Versao,'.','#0.00');
-    FieldByName('Sistema').AsString := Ifthen(DAMDFEClassOwner.Sistema <> '',DAMDFEClassOwner.Sistema,'Projeto ACBr - http://acbr.sf.net');
-    FieldByName('Usuario').AsString := Ifthen(DAMDFEClassOwner.Usuario <> '', DAMDFEClassOwner.Usuario,'');
-    Post;
-
   end;
+
+  cdsParametros.FieldByName('Versao').AsString  := FloatToString(FMDFe.infMDFe.Versao,'.','#0.00');
+  cdsParametros.FieldByName('Sistema').AsString := Ifthen(DAMDFEClassOwner.Sistema <> '',DAMDFEClassOwner.Sistema,'Projeto ACBr - http://acbr.sf.net');
+  cdsParametros.FieldByName('Usuario').AsString := Ifthen(DAMDFEClassOwner.Usuario <> '', DAMDFEClassOwner.Usuario,'');
+  cdsParametros.Post;
 end;
 
 procedure TACBrMDFeDAMDFEFR.CarregaIdentificacao;
@@ -1287,12 +1282,12 @@ begin
     Append;
     with FMDFe.emit do
     begin
-      
+
 	  if Length(CNPJCPF)=11 then
         FieldByName('CNPJ').AsString := FormatarCPF(CNPJCPF)
       else
         FieldByName('CNPJ').AsString := FormatarCNPJ(CNPJCPF);
-		
+
       FieldByName('IE').AsString    := IE;
       FieldByName('XNome').AsString := xNome;
       FieldByName('XFant').AsString := XFant;
@@ -1565,8 +1560,8 @@ begin
   with cdsModalAereo, FMDFe.aereo do
   begin
     Append;
-    FieldByName('nac').AsInteger    := nac;
-    FieldByName('matr').AsInteger   := matr;
+    FieldByName('nac').AsString     := nac;
+    FieldByName('matr').AsString    := matr;
     FieldByName('nVoo').AsString    := nVoo;
     FieldByName('cAerEmb').AsString := cAerEmb;
     FieldByName('cAerDes').AsString := cAerDes;
@@ -1742,10 +1737,10 @@ begin
         FieldByName('dhRegEvento').AsDateTime := RetInfEvento.dhRegEvento;
         FieldByName('xJust').AsString         := InfEvento.detEvento.xJust;
         FieldByName('xNome').AsString         := InfEvento.detEvento.xNome;
-		
+
         if (InfEvento.detEvento.CPF <> '') then
           FieldByName('CPF').AsString := FormatarCPF(InfEvento.detEvento.CPF);
-		  
+
         FieldByName('nProtEvento').AsString   := InfEvento.detEvento.nProt;
         FieldByName('dtEnc').AsDateTime       := InfEvento.detEvento.dtEnc;
         FieldByName('cUf').AsInteger          := InfEvento.detEvento.cUF;

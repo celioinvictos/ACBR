@@ -38,7 +38,7 @@ interface
 
 uses
   Classes, SysUtils,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -110,7 +110,7 @@ type
 
   { TListaCertificados }
 
-  TListaCertificados = class(TObjectList{$IfDef NEXTGEN}<TDadosCertificado>{$EndIf})
+  TListaCertificados = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TDadosCertificado>{$EndIf})
   protected
     procedure SetObject (Index: Integer; Item: TDadosCertificado);
     function GetObject (Index: Integer): TDadosCertificado;
@@ -216,7 +216,8 @@ type
     destructor Destroy; override;
 
     function Enviar(const ConteudoXML: String; const AURL: String;
-      const ASoapAction: String; const AMimeType: String = ''): String;
+      const ASoapAction: String; const AMimeType: String = '';
+      const AAuthorizationHeader : String = ''): String;
     procedure HTTPMethod(const AMethod, AURL: String);
 
     procedure Execute; virtual;
@@ -369,7 +370,8 @@ type
       const IdSignature: String = ''; const IdAttr: String = ''): String;
     // Envia por SoapAction o ConteudoXML (em UTF8) para URL. Retorna a resposta do Servico //
     function Enviar(var ConteudoXML: String; const AURL: String;
-      const ASoapAction: String; AMimeType: String = ''): String;
+      const ASoapAction: String; AMimeType: String = ''; 
+      const AAuthorizationHeader : String = '' ): String;
     // Valida um Arquivo contra o seu Schema. Retorna True se OK, preenche MsgErro se False //
     // ConteudoXML, DEVE estar em UTF8
     procedure HTTPMethod(const AMethod, AURL: String);
@@ -1026,7 +1028,8 @@ begin
 end;
 
 function TDFeSSLHttpClass.Enviar(const ConteudoXML: String; const AURL: String;
-  const ASoapAction: String; const AMimeType: String): String;
+  const ASoapAction: String; const AMimeType: String = '';
+  const AAuthorizationHeader : String = ''): String;
 var
   AMethod: String;
 begin
@@ -1040,8 +1043,12 @@ begin
     AMethod := 'GET';
 
   HeaderReq.Clear; // Para informar Haders na requisição, use HTTPMethod();
+  if (AAuthorizationHeader <> '') then
+    HeaderReq.AddHeader('Authorization', AAuthorizationHeader);
+
   FSoapAction := ASoapAction;
   FMimeType := AMimeType;
+  Result := '';
   try
     HTTPMethod( AMethod, AURL ) ;
 
@@ -1059,7 +1066,7 @@ begin
     begin
       raise EACBrDFeException.CreateDef( Format(ACBrStr(cACBrDFeSSLEnviarException),
                                          [FpInternalErrorCode, FpHTTPResultCode, FURL] )
-                                         + sLineBreak + LastErrorDesc);
+                                         + sLineBreak + LastErrorDesc + sLineBreak + Result);
     end;
   end;
 
@@ -1375,7 +1382,8 @@ begin
 end;
 
 function TDFeSSL.Enviar(var ConteudoXML: String; const AURL: String;
-  const ASoapAction: String; AMimeType: String): String;
+  const ASoapAction: String; AMimeType: String;
+  const AAuthorizationHeader: String): String;
 var
   SendThread : TDFeSendThread;
   EndTime : TDateTime ;
@@ -1419,7 +1427,7 @@ begin
   begin
     FHttpSendCriticalSection.Acquire;
     try
-      Result := FSSLHttpClass.Enviar(ConteudoXML, AURL, ASoapAction, AMimeType);
+      Result := FSSLHttpClass.Enviar(ConteudoXML, AURL, ASoapAction, AMimeType, AAuthorizationHeader);
     finally
       FHttpSendCriticalSection.Release;
     end;

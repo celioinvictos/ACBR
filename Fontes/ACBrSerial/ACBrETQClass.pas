@@ -127,6 +127,10 @@ TACBrETQClass = class
     function ComandoCarregarImagem(aStream: TStream; aNomeImagem: String;
       aFlipped: Boolean; aTipo: String): AnsiString; virtual;
 
+    function ComandoGravaRFIDHexaDecimal(aValue:String): AnsiString; virtual;
+    function ComandoGravaRFIDASCII( aValue:String ): AnsiString; virtual;
+
+
     property ModeloStr:       String           read fpModeloStr;
     property PaginaDeCodigo:  TACBrETQPaginaCodigo read fPaginaDeCodigo write fPaginaDeCodigo;
     property Temperatura:     Integer          read fTemperatura      write fTemperatura;
@@ -151,7 +155,7 @@ begin
   if (not (AOwner is TACBrETQ)) then
     raise Exception.create(ACBrStr('Essa Classe deve ser instanciada por TACBrETQ'));
 
-  fPaginaDeCodigo := pce850;
+  fPaginaDeCodigo := pceNone;
   fDPI            := dpi203;
   fpLimparMemoria := True;
   fAvanco         := 0;
@@ -250,7 +254,6 @@ var
 begin
   ListaComandos := '';
 
-  AdicionarComandos( ComandoPaginaDeCodigo, ListaComandos );
   AdicionarComandos( ComandoBackFeed, ListaComandos );
   AdicionarComandos( ComandoAbertura, ListaComandos );
   AdicionarComandos( ComandoUnidade, ListaComandos );
@@ -261,6 +264,8 @@ begin
   AdicionarComandos( ComandoResolucao, ListaComandos );
   AdicionarComandos( ComandoOrigemCoordenadas, ListaComandos );
   AdicionarComandos( ComandoVelocidade, ListaComandos );
+  if (PaginaDeCodigo <> pceNone) then
+    AdicionarComandos( ComandoPaginaDeCodigo, ListaComandos );
 
   Result := ListaComandos;
 end;
@@ -340,6 +345,18 @@ function TACBrETQClass.ComandoCopias(const NumCopias: Integer): AnsiString;
 begin
   VerificarLimiteCopias(NumCopias);
   Result := EmptyStr;
+end;
+
+function TACBrETQClass.ComandoGravaRFIDASCII(aValue: String): AnsiString;
+begin
+  ErroNaoImplementado('ComandoGravaRFIDASCII');
+  result := EmptySTr;
+end;
+
+function TACBrETQClass.ComandoGravaRFIDHexaDecimal(aValue: String): AnsiString;
+begin
+  ErroNaoImplementado('ComandoGravaRFIDHexaDecimal');
+  result := EmptySTr;
 end;
 
 function TACBrETQClass.ComandoImprimir: AnsiString;

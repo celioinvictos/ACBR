@@ -37,8 +37,8 @@ unit ACBrLibBoletoDataModule;
 interface
 
 uses
-  Classes, SysUtils, ACBrBoleto, ACBrBoletoFCFortesFr, syncobjs,
-  ACBrLibConfig, ACBrLibMailImport, ACBrMail;
+  Classes, SysUtils, SyncObjs, ACBrBoleto, ACBrBoletoFCFortesFr, ACBrLibComum,
+  ACBrLibConfig, ACBrMail;
 
 type
 
@@ -46,22 +46,25 @@ type
 
   TLibBoletoDM = class(TDataModule)
     ACBrBoleto1: TACBrBoleto;
-    ACBrBoletoFCFortes1: TACBrBoletoFCFortes;
+    ACBrMail1: TACBrMail;
 
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
     FLock: TCriticalSection;
-    FACBrMail: TACBrMail;
-    FLibMail: TACBrLibMail;
+    fpLib: TACBrLib;
+    BoletoFortes: TACBrBoletoFCFortes;
 
   public
     procedure AplicarConfiguracoes;
+    procedure ConfigurarImpressao(NomeImpressora: String = '');
+    procedure FinalizarImpressao;
     procedure GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean = False);
     procedure Travar;
     procedure Destravar;
-    procedure CriarACBrMail;
     procedure AplicarConfigMail;
+
+    property Lib: TACBrLib read fpLib write fpLib;
 
   end;
 
@@ -71,7 +74,7 @@ var
 implementation
 
 uses
-  ACBrUtil, ACBrLibComum, FileUtil, ACBrLibBoletoConfig, ACBrLibBoletoClass;
+  ACBrUtil, FileUtil, ACBrLibBoletoConfig;
 
 {$R *.lfm}
 
@@ -80,104 +83,122 @@ uses
 procedure TLibBoletoDM.DataModuleCreate(Sender: TObject);
 begin
   FLock := TCriticalSection.Create;
-  FACBrMail := Nil;
-  FLibMail := Nil;
 end;
 
 procedure TLibBoletoDM.DataModuleDestroy(Sender: TObject);
 begin
   FLock.Destroy;
-  if Assigned(FLibMail) then
-    FreeAndNil(FLibMail)
-  else if Assigned(FACBrMail) then
-    FreeAndNil(FACBrMail);
 end;
 
 procedure TLibBoletoDM.AplicarConfiguracoes;
 var
-  pLibConfig: TLibBoletoConfig;
+  LibConfig: TLibBoletoConfig;
 begin
-  pLibConfig := TLibBoletoConfig(TACBrLibBoleto(pLib).Config);
+  LibConfig := TLibBoletoConfig(Lib.Config);
 
   with ACBrBoleto1 do
   begin
-    DataArquivo := pLibConfig.BoletoDiretorioConfig.DataArquivo;
-    DataCreditoLanc := pLibConfig.BoletoDiretorioConfig.DataCreditoLanc;
-    DirArqRemessa := pLibConfig.BoletoDiretorioConfig.DirArqRemessa;
-    DirArqRetorno := pLibConfig.BoletoDiretorioConfig.DirArqRetorno;
-    Homologacao := pLibConfig.BoletoDiretorioConfig.DirHomologacao;
-    ImprimirMensagemPadrao := pLibConfig.BoletoDiretorioConfig.ImprimirMensagemPadrao;
-    LayoutRemessa := pLibConfig.BoletoDiretorioConfig.LayoutRemessa;
-    LeCedenteRetorno := pLibConfig.BoletoDiretorioConfig.LeCedenteRetorno;
-    NomeArqRemessa := pLibConfig.BoletoDiretorioConfig.NomeArqRemessa;
-    NomeArqRetorno := pLibConfig.BoletoDiretorioConfig.NomeArqRetorno;
-    NumeroArquivo := pLibConfig.BoletoDiretorioConfig.NumeroArquivo;
-    RemoveAcentosArqRemessa := pLibConfig.BoletoDiretorioConfig.RemoveAcentosArqRemessa;
+    DataArquivo := LibConfig.BoletoDiretorioConfig.DataArquivo;
+    DataCreditoLanc := LibConfig.BoletoDiretorioConfig.DataCreditoLanc;
+    DirArqRemessa := LibConfig.BoletoDiretorioConfig.DirArqRemessa;
+    DirArqRetorno := LibConfig.BoletoDiretorioConfig.DirArqRetorno;
+    Homologacao := LibConfig.BoletoDiretorioConfig.DirHomologacao;
+    ImprimirMensagemPadrao := LibConfig.BoletoDiretorioConfig.ImprimirMensagemPadrao;
+    LayoutRemessa := LibConfig.BoletoDiretorioConfig.LayoutRemessa;
+    LeCedenteRetorno := LibConfig.BoletoDiretorioConfig.LeCedenteRetorno;
+    NomeArqRemessa := LibConfig.BoletoDiretorioConfig.NomeArqRemessa;
+    NomeArqRetorno := LibConfig.BoletoDiretorioConfig.NomeArqRetorno;
+    NumeroArquivo := LibConfig.BoletoDiretorioConfig.NumeroArquivo;
+    RemoveAcentosArqRemessa := LibConfig.BoletoDiretorioConfig.RemoveAcentosArqRemessa;
 
     with ACBrBoleto1.Banco do
     begin
-      LayoutVersaoArquivo := pLibConfig.BoletoBancoConfig.LayoutVersaoArquivo;
-      LayoutVersaoLote := pLibConfig.BoletoBancoConfig.LayoutVersaoLote;
-      Digito := pLibConfig.BoletoBancoConfig.Digito;
-      LocalPagamento := pLibConfig.BoletoBancoConfig.LocalPagamento;
-      Numero := pLibConfig.BoletoBancoConfig.Numero;
-      NumeroCorrespondente := pLibConfig.BoletoBancoConfig.NumeroCorrespondente;
-      OrientacoesBanco.Text := pLibConfig.BoletoBancoConfig.OrientacaoBanco;
-      TipoCobranca := pLibConfig.BoletoBancoConfig.TipoCobranca;
+      LayoutVersaoArquivo := LibConfig.BoletoBancoConfig.LayoutVersaoArquivo;
+      LayoutVersaoLote := LibConfig.BoletoBancoConfig.LayoutVersaoLote;
+      Digito := LibConfig.BoletoBancoConfig.Digito;
+      LocalPagamento := LibConfig.BoletoBancoConfig.LocalPagamento;
+      Numero := LibConfig.BoletoBancoConfig.Numero;
+      NumeroCorrespondente := LibConfig.BoletoBancoConfig.NumeroCorrespondente;
+      OrientacoesBanco.Text := LibConfig.BoletoBancoConfig.OrientacaoBanco;
+      TipoCobranca := LibConfig.BoletoBancoConfig.TipoCobranca;
     end;
 
     with ACBrBoleto1.Cedente do
     begin
-      TipoCarteira := pLibConfig.BoletoCedenteConfig.TipoCarteira;
-      TipoDocumento := pLibConfig.BoletoCedenteConfig.TipoDocumento;
-      TipoInscricao := pLibConfig.BoletoCedenteConfig.TipoInscricao;
-      Agencia := pLibConfig.BoletoCedenteConfig.Agencia;
-      AgenciaDigito := pLibConfig.BoletoCedenteConfig.AgenciaDigito;
-      Bairro := pLibConfig.BoletoCedenteConfig.Bairro;
-      CaracTitulo := pLibConfig.BoletoCedenteConfig.CaracTitulo;
-      CEP := pLibConfig.BoletoCedenteConfig.CEP;
-      Cidade := pLibConfig.BoletoCedenteConfig.Cidade;
-      CNPJCPF := pLibConfig.BoletoCedenteConfig.CNPJCPF;
-      CodigoCedente := pLibConfig.BoletoCedenteConfig.CodigoCedente;
-      CodigoTransmissao := pLibConfig.BoletoCedenteConfig.CodigoTransmissao;
-      Complemento := pLibConfig.BoletoCedenteConfig.Complemento;
-      Conta := pLibConfig.BoletoCedenteConfig.Conta;
-      ContaDigito := pLibConfig.BoletoCedenteConfig.ContaDigito;
-      Convenio := pLibConfig.BoletoCedenteConfig.Convenio;
-      Logradouro := pLibConfig.BoletoCedenteConfig.Logradouro;
-      Modalidade := pLibConfig.BoletoCedenteConfig.Modalidade;
-      Nome := pLibConfig.BoletoCedenteConfig.Nome;
-      NumeroRes := pLibConfig.BoletoCedenteConfig.NumeroRes;
-      ResponEmissao := pLibConfig.BoletoCedenteConfig.ResponEmissao;
-      Telefone := pLibConfig.BoletoCedenteConfig.Telefone;
-      UF := pLibConfig.BoletoCedenteConfig.UF;
-      DigitoVerificadorAgenciaConta := pLibConfig.BoletoCedenteConfig.DigitoVerificadorAgenciaConta;
+      TipoCarteira := LibConfig.BoletoCedenteConfig.TipoCarteira;
+      TipoDocumento := LibConfig.BoletoCedenteConfig.TipoDocumento;
+      TipoInscricao := LibConfig.BoletoCedenteConfig.TipoInscricao;
+      Agencia := LibConfig.BoletoCedenteConfig.Agencia;
+      AgenciaDigito := LibConfig.BoletoCedenteConfig.AgenciaDigito;
+      Bairro := LibConfig.BoletoCedenteConfig.Bairro;
+      CaracTitulo := LibConfig.BoletoCedenteConfig.CaracTitulo;
+      CEP := LibConfig.BoletoCedenteConfig.CEP;
+      Cidade := LibConfig.BoletoCedenteConfig.Cidade;
+      CNPJCPF := LibConfig.BoletoCedenteConfig.CNPJCPF;
+      CodigoCedente := LibConfig.BoletoCedenteConfig.CodigoCedente;
+      CodigoTransmissao := LibConfig.BoletoCedenteConfig.CodigoTransmissao;
+      Complemento := LibConfig.BoletoCedenteConfig.Complemento;
+      Conta := LibConfig.BoletoCedenteConfig.Conta;
+      ContaDigito := LibConfig.BoletoCedenteConfig.ContaDigito;
+      Convenio := LibConfig.BoletoCedenteConfig.Convenio;
+      Logradouro := LibConfig.BoletoCedenteConfig.Logradouro;
+      Modalidade := LibConfig.BoletoCedenteConfig.Modalidade;
+      Nome := LibConfig.BoletoCedenteConfig.Nome;
+      NumeroRes := LibConfig.BoletoCedenteConfig.NumeroRes;
+      ResponEmissao := LibConfig.BoletoCedenteConfig.ResponEmissao;
+      Telefone := LibConfig.BoletoCedenteConfig.Telefone;
+      UF := LibConfig.BoletoCedenteConfig.UF;
+      DigitoVerificadorAgenciaConta := LibConfig.BoletoCedenteConfig.DigitoVerificadorAgenciaConta;
     end;
-  end;
-
-  with ACBrBoletoFCFortes1 do
-  begin
-     DirLogo := pLibConfig.BoletoFCFortesConfig.DirLogo;
-     Filtro := pLibConfig.BoletoFCFortesConfig.Filtro;
-     Layout := pLibConfig.BoletoFCFortesConfig.Layout;
-     MostrarPreview := pLibConfig.BoletoFCFortesConfig.MostrarPreview;
-     MostrarProgresso := pLibConfig.BoletoFCFortesConfig.MostrarProgresso;
-     MostrarSetup := pLibConfig.BoletoFCFortesConfig.MostrarSetup;
-     NomeArquivo := pLibConfig.BoletoFCFortesConfig.NomeArquivo;
-     NumCopias := pLibConfig.BoletoFCFortesConfig.NumeroCopias;
-     PrinterName := pLibConfig.BoletoFCFortesConfig.PrinterName;
-     SoftwareHouse := pLibConfig.BoletoFCFortesConfig.SoftwareHouse;
   end;
 
   AplicarConfigMail;
 
 end;
 
+procedure TLibBoletoDM.ConfigurarImpressao(NomeImpressora: String = '');
+var
+  LibConfig: TLibBoletoConfig;
+begin
+  LibConfig := TLibBoletoConfig(Lib.Config);
+
+  BoletoFortes := TACBrBoletoFCFortes.Create(nil);
+
+  with BoletoFortes do
+  begin
+     DirLogo := LibConfig.BoletoFCFortesConfig.DirLogo;
+     Filtro := LibConfig.BoletoFCFortesConfig.Filtro;
+     Layout := LibConfig.BoletoFCFortesConfig.Layout;
+     MostrarPreview := LibConfig.BoletoFCFortesConfig.MostrarPreview;
+     MostrarProgresso := LibConfig.BoletoFCFortesConfig.MostrarProgresso;
+     MostrarSetup := LibConfig.BoletoFCFortesConfig.MostrarSetup;
+     NomeArquivo := LibConfig.BoletoFCFortesConfig.NomeArquivo;
+     NumCopias := LibConfig.BoletoFCFortesConfig.NumeroCopias;
+     PrinterName := LibConfig.BoletoFCFortesConfig.PrinterName;
+     SoftwareHouse := LibConfig.BoletoFCFortesConfig.SoftwareHouse;
+  end;
+
+  if NaoEstaVazio(NomeImpressora) then
+    BoletoFortes.PrinterName := NomeImpressora;
+
+  ACBrBoleto1.ACBrBoletoFC := BoletoFortes;
+end;
+
+procedure TLibBoletoDM.FinalizarImpressao;
+begin
+  GravarLog('FinalizarImpressao - Iniciado', logNormal);
+
+  ACBrBoleto1.ACBrBoletoFC := nil;
+  if Assigned(BoletoFortes) then FreeAndNil(BoletoFortes);
+
+  GravarLog('FinalizarImpressao - Feito', logNormal);
+end;
+
 procedure TLibBoletoDM.GravarLog(AMsg: String; NivelLog: TNivelLog;
   Traduzir: Boolean);
 begin
-  if Assigned(pLib) then
-    pLib.GravarLog(AMsg, NivelLog, Traduzir);
+  if Assigned(Lib) then
+    Lib.GravarLog(AMsg, NivelLog, Traduzir);
 end;
 
 procedure TLibBoletoDM.Travar;
@@ -192,56 +213,27 @@ begin
   FLock.Release;
 end;
 
-procedure TLibBoletoDM.CriarACBrMail;
-var
-  NomeLib: String;
-begin
-  if Assigned(FLibMail) or Assigned(FACBrMail) then
-      Exit;
-
-  GravarLog('  CriarACBrMail', logCompleto);
-
-  NomeLib := ApplicationPath + CACBrMailLIBName;
-  if FileExists(NomeLib) then
-  begin
-    GravarLog('      Carregando MAIL de: ' + NomeLib, logCompleto);
-    // Criando Classe para Leitura da Lib //
-    FLibMail  := TACBrLibMail.Create(NomeLib, pLib.Config.NomeArquivo, pLib.Config.ChaveCrypt);
-    FACBrMail := FLibMail.ACBrMail;
-  end
-  else
-  begin
-    GravarLog('     Criando MAIL Interno', logCompleto);
-    FACBrMail := TACBrMail.Create(Nil);
-  end;
-
-  ACBrBoleto1.MAIL := FACBrMail;
-end;
-
 procedure TLibBoletoDM.AplicarConfigMail;
 begin
-  if Assigned(FLibMail) or (not Assigned(FACBrMail)) then
-    Exit;
-
-  with FACBrMail do
+  with ACBrMail1 do
   begin
-    Attempts := pLib.Config.Email.Tentativas;
-    SetTLS := pLib.Config.Email.TLS;
-    DefaultCharset := pLib.Config.Email.Codificacao;
-    From := pLib.Config.Email.Conta;
-    FromName := pLib.Config.Email.Nome;
-    SetSSL := pLib.Config.Email.SSL;
-    Host := pLib.Config.Email.Servidor;
-    IDECharset := pLib.Config.Email.Codificacao;
-    IsHTML := pLib.Config.Email.IsHTML;
-    Password := pLib.Config.Email.Senha;
-    Port := IntToStr(pLib.Config.Email.Porta);
-    Priority := pLib.Config.Email.Priority;
-    ReadingConfirmation := pLib.Config.Email.Confirmacao;
-    DeliveryConfirmation := pLib.Config.Email.ConfirmacaoEntrega;
-    TimeOut := pLib.Config.Email.TimeOut;
-    Username := pLib.Config.Email.Usuario;
-    UseThread := pLib.Config.Email.SegundoPlano;
+    Attempts := Lib.Config.Email.Tentativas;
+    SetTLS := Lib.Config.Email.TLS;
+    DefaultCharset := Lib.Config.Email.Codificacao;
+    From := Lib.Config.Email.Conta;
+    FromName := Lib.Config.Email.Nome;
+    SetSSL := Lib.Config.Email.SSL;
+    Host := Lib.Config.Email.Servidor;
+    IDECharset := Lib.Config.Email.Codificacao;
+    IsHTML := Lib.Config.Email.IsHTML;
+    Password := Lib.Config.Email.Senha;
+    Port := IntToStr(Lib.Config.Email.Porta);
+    Priority := Lib.Config.Email.Priority;
+    ReadingConfirmation := Lib.Config.Email.Confirmacao;
+    DeliveryConfirmation := Lib.Config.Email.ConfirmacaoEntrega;
+    TimeOut := Lib.Config.Email.TimeOut;
+    Username := Lib.Config.Email.Usuario;
+    UseThread := Lib.Config.Email.SegundoPlano;
   end;
 
 end;

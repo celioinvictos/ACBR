@@ -44,6 +44,103 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+13/11/2020
+-- ACBrNFeNotasFiscais --
+[*] Uso da função ObterDFeXML nos métodos Validar e VerificarAssinatura
+   Por: Italo Giurizzato Junior
+
+26/10/2020
+-- pncNFeRTXT --
+[-] Correção na leitura da tag vIPIDevol.
+    https://www.projetoacbr.com.br/forum/topic/59946-ipi-devolu%C3%A7%C3%A3o-n%C3%A3o-aparece-no-xml/
+  Por: BigWings
+
+10/10/2020
+-- pcnNFeW --
+[*] Remoção da seção "CDATA" na geração da tag qrCode versão 2.00.
+[*] Inclusão de alerta para validação do NCM se tamanho informado for diferente
+    de 8 ou 2.
+[*] Remoção da validação da DI/DSI/DIRE por a regra ainda estar como implementação
+    futura e as SEFAZ aceitam tipos não validados.
+  Por: BigWings
+
+28/09/2020
+-- pcnInutNFe --
+[*] Ajuste na leitura do XML de retorno de inutilização em UTF-8 com caracteres especiais.
+    https://www.projetoacbr.com.br/forum/topic/59542-sugestão-de-melhoria-na-impressão-da-inutilização-de-nota-fiscal/
+   Por: BigWings
+
+25/09/2020
+-- ACBrNFeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/59543-sugest%C3%A3o-de-melhoria-no-retorno-da-nfe-do-sefaz/
+   Por: Higor Craco Baltieri
+
+17/09/2020
+-- ACBrNFeNotasFiscais --
+[*] Adicionado prioridade de leitura do total ISSQNtot com nomes padrão do manual
+Por: José M S Junior
+
+-- ACBrNFeNotasFiscais --
+[*] Possível correção na leitura do arquivo INI
+Por: Italo Jurisato Junior
+
+04/09/2020
+-- pcnConversaoNFe --
+[*] Acrescentado o enumerador: teMDFeAutorizado, pois o serviço DistribuicaoDFe
+    estava retornado teNaoMapeado.
+   Por: Victor H. Gonzales - Panda
+
+02/09/2020
+-- ACBrNFeNotasFiscais --
+[*] Atualização na leitura do .ini com tags prioritarias seguindo nomenclatura do manual SEFAZ
+Por: José M S Junior
+
+02/09/2020
+-- pcnConversaoNFe --
+[*] Acrescentado mais enumeradores, pois o serviço DistribuicaoDFe
+    estava retornado teNaoMapeado (tipo de evento).
+   Por: Victor H. Gonzales - Panda
+
+01/09/2020
+-- pcnConversaoNFe/pcnEventoNFe --
+[*] Acrescentado o enumerador teComprEntrega, pois o serviço DistribuicaoDFe
+    vai retornar caso tenha o evento de Comprovante de Entrega emitido pela
+    transportadora.
+   Por: Italo Jurisato Junior
+
+31/07/2020
+-- ACBrNFeNotasFiscais --
+[*] Ajuste e padronização na leitura do .ini ref campo autXML
+
+23/07/2020
+-- Diversos --
+[+] Acrescentado a unit pcnConsts em algumas units do componente.
+    Por conta da migração de algumas constantes de pcnGerador para
+    pcnConsts.
+   Por: Italo Jurisato Junior
+
+23/06/2020
+-- ACBrNFeNotasFiscais --
+[*] Ao enviar um email o componente não estava levando em conta o nome do PDF 
+    atribuido na propriedade NomeDocumento.
+  Por: Italo Jurisato Junior
+
+03/06/2020
+-- ACBrNFeNotasFiscais --
+[*] Ajuste na leitura do arquivo .ini referente ao grupo detExport validando todos os campos obrigatórios que não precisam ser preenchidos
+  Por: José M S Junior
+
+28/05/2020
+-- ACBrNFeServicos --
+[*] Alteração nas URL do QR-Code de homologação e produção da SEFAZ-PB
+   Por: Italo Jurisato Junior
+
+28/05/2020
+-- ACBrNFeWebServices --
+[*] Removido a condição que define a versão da Consulta ao Cadastro,
+    esse tipo de consulta se encontra na versão 2.00
+   Por: Italo Jurisato Junior
+
 22/05/2020
 -- pcnNFeW --
 [*] Descomentado as linhas que verificam o valor de cEAN e cEANTrib.

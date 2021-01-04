@@ -100,22 +100,29 @@ type
                                const ANumLote: String = ''): Boolean;
     function ConsultarLoteRps(const ANumLote, AProtocolo: string): Boolean;
     function ConsultarNFSeporRps(const ANumero, ASerie, ATipo: String;
-                                 const ANumLote: String = ''): Boolean;
+                                 const ANumLote: String = '';
+                                 const ACodMunicipioTOM: Integer = 0): Boolean;
     function ConsultarNFSe(ADataInicial, ADataFinal: TDateTime;
       const ANumeroNFSe: String = ''; APagina: Integer = 1;
       const ACNPJTomador: String = ''; const AIMTomador: String = '';
       const ANomeInter: String = ''; const ACNPJInter: String = ''; const AIMInter: String = '';
-      const ASerie: String = ''): Boolean;
+      const ASerie: String = ''; const ANumeroLote: String = ''): Boolean;
+
+    function ConsultarURL(const ACNPJPrestador, AIMPrestador : string;
+                          const ANumeroNFSe, ACodigoTribMun : string) : Boolean;
 
     function CancelarNFSe(const ACodigoCancelamento: String;
                           const ANumeroNFSe: String = '';
                           const AMotivoCancelamento: String = '';
-                          const ANumLote: String = ''): Boolean;
+                          const ANumLote: String = '';
+                          const ACodigoVerificacao: string = ''): Boolean;
 
     function SubstituirNFSe(const ACodigoCancelamento, ANumeroNFSe: String;
                             const AMotivoCancelamento: String = ''): Boolean;
 
-    function LinkNFSe(ANumeroNFSe: Integer; const ACodVerificacao: String; const AChaveAcesso: String = ''): String;
+    function LinkNFSe(ANumeroNFSe: Integer; const ACodVerificacao: String; const AChaveAcesso: String = ''): String; overload;
+    function LinkNFSe(ANumeroNFSe: Double; const ACodVerificacao: String; const AChaveAcesso: String = ''): String; overload;
+    function LinkNFSe(ANumeroNFSe: String; const ACodVerificacao: String; const AChaveAcesso: String = ''): String; overload;
 
     function GetNomeModeloDFe: String; override;
     function GetNameSpaceURI: String; override;
@@ -365,6 +372,7 @@ begin
       LayNfseSubstituiNfse:        URL := Configuracoes.Geral.ConfigURL.HomSubstituiNFSe;
       LayNfseAbrirSessao:          URL := Configuracoes.Geral.ConfigURL.HomAbrirSessao;
       LayNfseFecharSessao:         URL := Configuracoes.Geral.ConfigURL.HomFecharSessao;
+      LayNfseConsultaURL:          URL := Configuracoes.Geral.ConfigURL.HomConsultaURL;
     end;
   end
   else begin
@@ -380,6 +388,7 @@ begin
       LayNfseSubstituiNfse:        URL := Configuracoes.Geral.ConfigURL.ProSubstituiNFSe;
       LayNfseAbrirSessao:          URL := Configuracoes.Geral.ConfigURL.ProAbrirSessao;
       LayNfseFecharSessao:         URL := Configuracoes.Geral.ConfigURL.ProFecharSessao;
+      LayNfseConsultaURL:          URL := Configuracoes.Geral.ConfigURL.ProConsultaURL;
     end;
   end;
 end;
@@ -539,52 +548,59 @@ begin
   Result := WebServices.ConsultaSituacao(AProtocolo, ANumLote);
 end;
 
+function TACBrNFSe.ConsultarURL(const ACNPJPrestador, AIMPrestador, ANumeroNFSe,
+  ACodigoTribMun: string): Boolean;
+begin
+  Result := WebServices.ConsultaURL(ACNPJPrestador, AIMPrestador, ANumeroNFSe, ACodigoTribMun);
+end;
+
 function TACBrNFSe.ConsultarLoteRps(const ANumLote, AProtocolo: string): Boolean;
 begin
   Result := WebServices.ConsultaLoteRps(ANumLote, AProtocolo);
 end;
 
 function TACBrNFSe.ConsultarNFSeporRps(const ANumero, ASerie, ATipo: String;
-                                       const ANumLote: String = ''): Boolean;
+                                       const ANumLote: String = '';
+                                       const ACodMunicipioTOM: Integer = 0): Boolean;
 begin
 //Removido por não ter necessidade de preencher o componente.
 //  if NotasFiscais.Count <= 0 then
 //    GerarException(ACBrStr('ERRO: Nenhum RPS carregado ao componente'));
 
-  Result := WebServices.ConsultaNFSeporRps(ANumero, ASerie, ATipo, ANumLote);
+  Result := WebServices.ConsultaNFSeporRps(ANumero, ASerie, ATipo, ANumLote, ACodMunicipioTOM);
 end;
 
 function TACBrNFSe.ConsultarNFSe(ADataInicial, ADataFinal: TDateTime;
   const ANumeroNFSe: String; APagina: Integer; const ACNPJTomador, AIMTomador,
-  ANomeInter, ACNPJInter, AIMInter, ASerie: String): Boolean;
+  ANomeInter, ACNPJInter, AIMInter, ASerie, ANumeroLote: String): Boolean;
 begin
   Result := WebServices.ConsultaNFSe(ADataInicial, ADataFinal, ANumeroNFSe,
             APagina, ACNPJTomador, AIMTomador, ANomeInter, ACNPJInter, AIMInter,
-            ASerie);
+            ASerie, ANumeroLote);
 end;
 
 function TACBrNFSe.CancelarNFSe(const ACodigoCancelamento: String;
   const ANumeroNFSe: String = ''; const AMotivoCancelamento: String = '';
-  const ANumLote: String = ''): Boolean;
+  const ANumLote: String = ''; const ACodigoVerificacao: String = ''): Boolean;
 begin
-  if NotasFiscais.Count <= 0 then
-    GerarException(ACBrStr('ERRO: Nenhuma NFS-e carregada ao componente'));
-
   if( Configuracoes.Geral.Provedor = proIPM )then
-    begin
-      NotasFiscais.Items[0].NFSe.Status := srCancelado;
+  begin
+    if NotasFiscais.Count <= 0 then
+      GerarException(ACBrStr('ERRO: Nenhuma NFS-e carregada ao componente'));
 
-      if (ANumeroNFSe <> '') then
-        NotasFiscais.Items[0].NFSe.Numero := ANumeroNFSe;
+    NotasFiscais.Items[0].NFSe.Status := srCancelado;
 
-      if (AMotivoCancelamento <> '') then
-        NotasFiscais.Items[0].NFSe.OutrasInformacoes := AMotivoCancelamento;
+    if (ANumeroNFSe <> '') then
+      NotasFiscais.Items[0].NFSe.Numero := ANumeroNFSe;
 
-      Result := Gerar( StrToIntDef( NotasFiscais.Items[0].NFSe.IdentificacaoRps.Numero, 0 ), 1, False )
-    end
+    if (AMotivoCancelamento <> '') then
+      NotasFiscais.Items[0].NFSe.OutrasInformacoes := AMotivoCancelamento;
+
+    Result := Gerar( StrToIntDef( NotasFiscais.Items[0].NFSe.IdentificacaoRps.Numero, 0 ), 1, False )
+  end
   else
     Result := WebServices.CancelaNFSe(ACodigoCancelamento, ANumeroNFSe,
-                                      AMotivoCancelamento, ANumLote);
+                             AMotivoCancelamento, ANumLote, ACodigoVerificacao);
 end;
 
 function TACBrNFSe.SubstituirNFSe(const ACodigoCancelamento,
@@ -625,6 +641,18 @@ begin
 end;
 
 function TACBrNFSe.LinkNFSe(ANumeroNFSe: Integer; const ACodVerificacao: String; const AChaveAcesso: String = ''): String;
+begin
+  Result := LinkNFSe(IntToStr(ANumeroNFSe), ACodVerificacao, AChaveAcesso);
+end;
+
+function TACBrNFSe.LinkNFSe(ANumeroNFSe: Double; const ACodVerificacao,
+  AChaveAcesso: String): String;
+begin
+  Result := LinkNFSe(FloatToStr(ANumeroNFSe), ACodVerificacao, AChaveAcesso);
+end;
+
+function TACBrNFSe.LinkNFSe(ANumeroNFSe: String; const ACodVerificacao,
+  AChaveAcesso: String): String;
 var
   Texto, xNumeroNFSe, xNomeMunic, xLink: String;
 begin
@@ -646,7 +674,7 @@ begin
   // %InscMunic%     : Representa a Inscrição Municipal do Emitente
   // %Cnpj%          : Representa o CNPJ do Emitente
 
-  xNumeroNFSe := IntToStr(ANumeroNFSe);
+  xNumeroNFSe := ANumeroNFSe;
 
   Texto := StringReplace(Texto, '%CodVerif%', ACodVerificacao, [rfReplaceAll]);
   Texto := StringReplace(Texto, '%NumeroNFSe%', xNumeroNFSe, [rfReplaceAll]);

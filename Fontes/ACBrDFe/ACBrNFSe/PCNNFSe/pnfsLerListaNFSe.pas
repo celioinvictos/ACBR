@@ -38,7 +38,7 @@ interface
 
 uses
   SysUtils, Classes, variants,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -321,6 +321,8 @@ begin
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'ConsultarLoteRpsResposta') <> '');
     if not Nivel1 then
+      Nivel1 := (leitor.rExtrai(1, 'ConsultaLoteRpsResposta') <> '');
+    if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'ConsultarLoteRpsResult') <> '');
 
     if not Nivel1 then
@@ -425,6 +427,10 @@ begin
     if not Nivel1 then
       Nivel1 := (leitor.rExtrai(1, 'retorno') <> '');
 
+    //SigIss
+    if not Nivel1 then
+      Nivel1 := (leitor.rExtrai(1, 'DadosNota') <> '');
+
     //DataSmart
     if ((not Nivel1) and (Provedor = proDataSmart)) then
       Nivel1 := (leitor.rExtrai(1, 'CompNfse') <> '');
@@ -464,9 +470,14 @@ begin
 //      if (Provedor in [ProTecnos]) and (ProtocoloTemp <> '') then
       FProtocolo := ProtocoloTemp;
 
-      SituacaoTemp:= Leitor.rCampo(tcStr, 'Situacao');
-      if trim(SituacaoTemp) = '' then
-        SituacaoTemp := '4';
+      if Provedor = proCenti then
+        SituacaoTemp := Leitor.rCampo(tcStr, 'Status')
+      else
+      begin
+        SituacaoTemp:= Leitor.rCampo(tcStr, 'Situacao');
+        if trim(SituacaoTemp) = '' then
+          SituacaoTemp := '4';
+      end;
       FSituacao := SituacaoTemp;
 
       // Ler a Lista de NFSe
@@ -519,7 +530,8 @@ begin
             ((Provedor in [proEL]) and (Leitor.rExtrai(Nivel, 'nfeRpsNotaFiscal', '', i + 1) <> '')) or
             ((Provedor in [proSMARAPD]) and (Leitor.rExtrai(Nivel, 'nfdok', '', i + 1) <> '')) or
             ((Provedor in [proISSNET]) and (Leitor.rExtrai(Nivel, 'NotaFiscalRelatorioDTO', '', i + 1) <> '')) or
-            ((Provedor in [proAssessorPublico]) and (Leitor.rExtrai(Nivel, 'NOTA', '', i + 1) <> '')) do
+            ((Provedor in [proAssessorPublico]) and (Leitor.rExtrai(Nivel, 'NOTA', '', i + 1) <> '')) or
+            ((Provedor in [proSigIss]) and (Leitor.rExtrai(Nivel, 'DadosNota', '', i + 1) <> '')) do
       begin
         NFSe := TNFSe.Create;
         NFSeLida := TNFSeR.Create(NFSe);
@@ -676,6 +688,7 @@ begin
               FNFSe.NaturezaOperacao         := NFSeLida.NFSe.NaturezaOperacao;
               FNFSe.RegimeEspecialTributacao := NFSeLida.NFSe.RegimeEspecialTributacao;
               FNFSe.OptanteSimplesNacional   := NFSeLida.NFSe.OptanteSimplesNacional;
+              FNFSe.OptanteMEISimei          := NFSeLida.NFSe.OptanteMEISimei;
               FNFSe.IncentivadorCultural     := NFSeLida.NFSe.IncentivadorCultural;
 
               FNFSe.Competencia       := NFSeLida.NFSe.Competencia;
@@ -1320,7 +1333,7 @@ begin
           else
             ListaNfse.FMsgRetorno[i].FMensagem := leitor.Arquivo;
         end;
-     except
+      except
         Result := False;
       end;
     end;
@@ -1386,6 +1399,74 @@ begin
       end;
     end;
 
+    {Provedor SigIss}
+    if FProvedor = proSigIss then
+    begin
+      if Leitor.rExtrai(1, 'RetornoNota') <> EmptyStr then
+      begin
+        if Leitor.rCampo(tcStr, 'Resultado') = '1' then
+        begin
+          with ListaNFSe.FCompNFSe.New do
+          begin
+            NFSe.Numero             := Leitor.rCampo(tcStr, 'Nota');
+            NFSe.Link               := Leitor.rCampo(tcStr, 'LinkImpressao');
+          end;
+        end
+        {
+        else if Leitor.rCampo(tcStr, 'nota') <> '' then
+        begin
+          with ListaNFSe.FCompNFSe.Items[0] do
+          begin
+            NFSe.Numero             := Leitor.rCampo(tcStr, 'Nota');
+            NFSe.Link               := Leitor.rCampo(tcStr, 'LinkImpressao');
+          end;
+        end
+        }
+        else if Leitor.rExtrai(1, 'DescricaoErros') <> EmptyStr then
+        begin
+          Result := False;
+          if Leitor.rCampo(tcStr, 'DescricaoErro') <> EmptyStr then
+          begin
+            with ListaNFSe.MsgRetorno.New do
+            begin
+              Codigo := Leitor.rCampo(tcStr, 'id');
+              Mensagem:= Leitor.rCampo(tcStr, 'DescricaoProcesso')+ ': '+Leitor.rCampo(tcStr, 'DescricaoErro');
+            end;
+          end;
+        end
+        else
+        begin
+          with ListaNFSe.MsgRetorno.New do
+          begin
+            Codigo := '0';
+            Mensagem:= 'Nota Não Existe';
+          end;
+          Result := False;
+        end;
+      end;
+    end;
+
+    if FProvedor = proGeisWeb then
+    begin
+      if (leitor.rExtrai(1, 'ConsultaLoteRpsResposta') <> '') or
+         (leitor.rExtrai(1, 'ConsultaNfseResposta') <> '') then
+      begin
+        if (leitor.rExtrai(2, 'ConsultaLoteRpsResposta') <> '') or
+           (leitor.rExtrai(2, 'ConsultaNfseResposta') <> '') then
+        begin
+          i := 0;
+          while Leitor.rExtrai(3, 'Msg', '', i + 1) <> '' do
+          begin
+            ListaNFSe.FMsgRetorno.New;
+            ListaNFSe.FMsgRetorno[i].FCodigo  := Leitor.rCampo(tcStr, 'Erro');
+            ListaNFSe.FMsgRetorno[i].FMensagem:= Leitor.rCampo(tcStr, 'Status');
+            ListaNFSe.FMsgRetorno[i].FCorrecao:= Leitor.rCampo(tcStr, '');
+
+            inc(i);
+          end;
+        end;
+      end;
+    end;
   except
     Result := False;
   end;

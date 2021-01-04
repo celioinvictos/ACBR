@@ -44,6 +44,66 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/11/2020
+-- DoSATUnit --
+[*] Ajuste no método ConsultarModeloSat
+   Por: José M S Junior
+
+19/11/2020
+-- ACBrMonitor1, DoSATUnit, ACBrMonitorConsts, ACBrMonitorConfig --
+[+] Adicionado Configuração Automática do SAT através da Marca do Aparelho
+   Por: José M S Junior
+
+27/10/2020
+-- DoACBrCTeUnit --
+[+] Adicionado a Procedure LerIniCTe aos moldes do que foi implementado no DoACBrNFeUnit.
+   Por: Italo Giurizzato Junior
+
+26/10/2020
+-- DoACBrNFe --
+[+] Adicionado parâmetros para validação de retorno nos métodos getPathNFe, GetPathEvento, GetPathInu
+-- DoACBrCTe --
+[+] Adicionado parâmetros para validação de retorno nos métodos getPathNFe, GetPathEvento, GetPathInu
+-- DoACBrMDFe --
+[+] Adicionado parâmetros para validação de retorno nos métodos getPathNFe, GetPathEvento, GetPathInu
+
+07/10/2020
+-- ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts --
+[+] Adicionado campo de configuração do tamanho de Fonte para informações complementares no menu DFe / Impressao / NFe
+
+-- ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts --
+[+] Adicionado configuração Attempts e TimeOut para o componente ACBrMail
+
+-- DoACBrNFeUnit, DoACBrCTeUnit, DoACBrMDFeUnit --
+[+] Adicionado validação de Status de Envio para geração do PDF nos métodos de Impressão junto ao método de Envio de NFe.
+
+25/09/2020
+-- ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts --
+[+] Adicionado configuração para impressão das Formas de Pagamento na NFe  (Menu: DFe/NFe/Impressao)
+
+19/08/2020
+-- DoACBrNFeUnit --
+[*] Ajuste ao ler arquivo .ini e atualizar dados validados pelo componente
+
+31/07/2020
+-- ACBrMonitor1 --
+[*] Ajuste na Definição de geração de path para os DFes "Salvar Arquivos Em Pastas Separadas"
+
+-- ACBrMDFeManifestos, ACBrCTeConhecimentos, ACBrNFeNotasFiscais --
+[*] Ajuste e padronização na leitura do .ini ref campo autXML
+
+24/07/2020
+-- ACBrMonitor1 --
+[*] Retirado mensagens de leitura do arquivo swh.ini
+
+05/06/2020
+
+-- DoBoletoUnit, ACBrMonitor1 --
+[*] Ajustes nas declaraçoes de Uses referente ao componente Boleto
+
+-- DoACBrUnit, ACBrMonitorConsts --
+[+] Adicionado o método ACBr.RoundABNT para facilitar o arredondamento de valores seguindo a especificação da SEFAZ
+
 [+] DoACBrUnit
 Adicionado os métodos EncodeBase64 e DecodeBase64, como estes métodos é possível transferir arquivos binários utilizando
 comunicação TCP/IP, pode ser útil para transferir arquivos .pdf que são gerados no Servidor para ser emitidos na estação Client

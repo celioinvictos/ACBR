@@ -37,7 +37,7 @@ unit ACBrBancoCaixaSICOB;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, ACBrBoleto;
+  Classes, SysUtils, Contnrs, ACBrBoleto, ACBrBoletoConversao;
 
 type
 
@@ -307,7 +307,7 @@ begin
 
    if (wOperacao = 870) and (Carteira = 'SR') then
      Result := 15
-   else if (Carteira = 'CR') then
+   else
      Result := 10;
 end;
 

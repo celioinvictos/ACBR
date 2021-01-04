@@ -37,6 +37,53 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+Data: 22/10/2020
+-- ACBrUtil --
+[+] Adicionado novo método, PosExA, para funcionar sem a necessidade de converter
+    AnsiStrings para Strings.
+    function PosExA(const SubStr, S: AnsiString; Offset: Integer = 1): Integer;
+    (por: DSA)
+
+-- ACBrImage --
+[-] Ajuste em "BMPMonoToRasterStr", para imagens que informam o valor de
+    "Pixel Array", inválido.
+    https://www.projetoacbr.com.br/forum/topic/59745-configuração-correta-para-impressão-de-imagem/
+    (por: DSA)
+
+Data: 22/09/2020
+-- ACBrBase --
+[+] TACBrInformacao, adicionada a propriedade: "AsBoolean"
+[+] TACBrInformacao, adicionada a propriedade: "Tipo: TACBrInformacaoTipo"
+      TACBrInformacaoTipo = ( tiString, tiAnsiString, tiBoolean,
+                              tiInteger, tiInt64, tiFloat,
+                              tiDate, tiTime, tiDateTime);
+[+] TACBrInformacoes, adicionado sobrecarga no método:
+    function AddField(const AName: String): TACBrInformacao;
+    (por: DSA)
+
+Data: 07/07/2020
+-- ACBrBase --
+[+] Nova propriedade na Classe TACBrInformacao.AsInt64
+    (por: DSA)
+
+Data: 03/07/2020
+-- ACBrBase --
+[*] Ajuste em "TACBrInformacao.GetAsDate", para suportar Datas no formato DDMMYY
+    (por: DSA)
+
+Data: 26/06/2020
+-- ACBrBase, ACBrReg --
+[*] Ajustes no endereço de URL do ACBr, em TACBrAboutDialogProperty
+
+-- ACBrBase --
+[*] "TACBrThreadTimer.Destroy", modificação para que o método "WaitFor" sempre
+    seja chamado, antes da liberar, pois o "OnTimer" pode ainda estar em execução
+    (por: DSA)
+
+Data: 27/05/2020
+-- ACBr.inc --
+[-] Ajuste para compilação em Android FMX, com Delphi 10.4 Sidney
+    (por: DSA)
 
 Data: 12/05/2020
 -- ACBrUtil --

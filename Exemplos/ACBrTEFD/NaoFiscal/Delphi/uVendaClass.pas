@@ -4,7 +4,7 @@
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
-{																			   }
+{                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
@@ -52,10 +52,11 @@ type
   TPagamento = class
   private
     FAcrescimo: Double;
+    FCancelada: Boolean;
     FConfirmada: Boolean;
     FDesconto: Double;
     FHora: TDateTime;
-    FNomeAdministradora: String;
+    FRedeCNPJ: String;
     FNSU: String;
     FRede: String;
     FSaque: Double;
@@ -71,11 +72,12 @@ type
     property Hora: TDateTime read FHora write FHora;
     property NSU: String read FNSU write FNSU;
     property Rede: String read FRede write FRede;
-    property NomeAdministradora: String read FNomeAdministradora write FNomeAdministradora;
+    property RedeCNPJ: String read FRedeCNPJ write FRedeCNPJ;
     property Acrescimo: Double read FAcrescimo write FAcrescimo;
     property Desconto: Double read FDesconto write FDesconto;
     property Saque: Double read FSaque write FSaque;
     property Confirmada: Boolean read FConfirmada write FConfirmada;
+    property Cancelada: Boolean read FCancelada write FCancelada;
   end;
 
   { TListaPagamentos }
@@ -93,6 +95,9 @@ type
     property Objects[Index: Integer]: TPagamento read GetObject write SetObject; default;
 
     property TotalPago: Double read GetTotalPago;
+    function AcharPagamento(const ARede, ANSU: String; AValor: Double): TPagamento;
+    function ConfirmarPagamento(const ARede, ANSU: String; AValor: Double): Boolean;
+    function CancelarPagamento(const ARede, ANSU: String; AValor: Double): Boolean;
   end;
 
   { TVenda }
@@ -175,7 +180,8 @@ begin
   FNSU := '';
   FRede := '';
   FConfirmada := False;
-  FNomeAdministradora := '';
+  FCancelada := False;
+  FRedeCNPJ := '';
   FDesconto := 0;
   FAcrescimo := 0;
   FSaque := 0;
@@ -191,7 +197,10 @@ begin
   for I := 0 to Count-1 do
   begin
     with Objects[I] do
-      Result := Result + ValorPago;
+    begin
+      if not Cancelada then
+        Result := Result + ValorPago;
+    end;
   end;
 
   Result := RoundTo(Result, -2);
@@ -222,6 +231,54 @@ end;
 procedure TListaPagamentos.Insert(Index: Integer; Obj: TPagamento);
 begin
   inherited Insert(Index, Obj);
+end;
+
+function TListaPagamentos.AcharPagamento(const ARede, ANSU: String;
+  AValor: Double): TPagamento;
+var
+  i: Integer;
+begin
+  Result := Nil;
+  for i := 0 to Count-1 do
+  begin
+    if (ARede = Objects[i].Rede) and
+       (ANSU = Objects[i].NSU) and
+       (AValor = Objects[i].ValorPago) then
+    begin
+      Result := Objects[i];
+      Break;
+    end;
+  end;
+end;
+
+function TListaPagamentos.ConfirmarPagamento(const ARede, ANSU: String;
+  AValor: Double): Boolean;
+var
+  APag: TPagamento;
+begin
+  APag := AcharPagamento(ARede, ANSU, AValor);
+  if Assigned(APag) then
+  begin
+    APag.Confirmada := True;
+    Result := True;
+  end
+  else
+    Result := False;
+end;
+
+function TListaPagamentos.CancelarPagamento(const ARede, ANSU: String;
+  AValor: Double): Boolean;
+var
+  APag: TPagamento;
+begin
+  APag := AcharPagamento(ARede, ANSU, AValor);
+  if Assigned(APag) then
+  begin
+    APag.Cancelada := True;
+    Result := True;
+  end
+  else
+    Result := False;
 end;
 
 { TVenda }
@@ -280,11 +337,12 @@ begin
       Ini.WriteDateTime(ASecPag,'Hora', Pagamentos[i].Hora);
       Ini.WriteString(ASecPag,'NSU', Pagamentos[i].NSU);
       Ini.WriteString(ASecPag,'Rede', Pagamentos[i].Rede);
-      Ini.WriteString(ASecPag,'NomeAdministradora', Pagamentos[i].NomeAdministradora);
+      Ini.WriteString(ASecPag,'RedeCNPJ', Pagamentos[i].RedeCNPJ);
       Ini.WriteFloat(ASecPag,'Acrescimo', Pagamentos[i].Acrescimo);
       Ini.WriteFloat(ASecPag,'Desconto', Pagamentos[i].Desconto);
       Ini.WriteFloat(ASecPag,'Saque', Pagamentos[i].Saque);
       Ini.WriteBool(ASecPag,'Confirmada', Pagamentos[i].Confirmada);
+      Ini.WriteBool(ASecPag,'Cancelada', Pagamentos[i].Cancelada);
       Inc(i);
     end;
   finally
@@ -319,11 +377,12 @@ begin
       APag.Hora := Ini.ReadDateTime(ASecPag,'Hora', 0);
       APag.NSU := Ini.ReadString(ASecPag,'NSU', '');
       APag.Rede := Ini.ReadString(ASecPag,'Rede', '');
-      APag.NomeAdministradora := Ini.ReadString(ASecPag,'NomeAdministradora', '');
+      APag.RedeCNPJ := Ini.ReadString(ASecPag,'RedeCNPJ', '');
       APag.Acrescimo := Ini.ReadFloat(ASecPag,'Acrescimo', 0);
       APag.Desconto := Ini.ReadFloat(ASecPag,'Desconto', 0);
       APag.Saque := Ini.ReadFloat(ASecPag,'Saque', 0);
       APag.Confirmada := Ini.ReadBool(ASecPag,'Confirmada', False);
+      APag.Cancelada := Ini.ReadBool(ASecPag,'Cancelada', False);
 
       Pagamentos.Add(APag);
 

@@ -38,13 +38,13 @@ interface
 
 uses
   SysUtils, Classes,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IFEND}
   ACBrBase,
-  pcnConversao, pcnGerador, ACBrUtil,
+  pcnConversao, pcnGerador, ACBrUtil, pcnConsts,
   pcnCommonReinf, pcnConversaoReinf, pcnGeradorReinf;
 
 type
@@ -140,7 +140,7 @@ type
   end;
 
   { TideTomador }
-  TideTomador = class(TObject)
+  TideTomador = class(TObject)
   private
     FtpInscTomador: TtpInsc;
     FnrInscTomador: string;

@@ -33,6 +33,13 @@ Private Declare Function MDFE_UltimoRetorno _
                 Lib "ACBrMDFE32.dll" (ByVal buffer As String, _
                                       ByRef bufferLen As Long) As Long
                    
+Private Declare Function MDFE_ConfigImportar _
+                Lib "ACBrMDFE32.dll" (ByVal eArqConfig As String) As Long
+                   
+Private Declare Function MDFE_ConfigExportar _
+                Lib "ACBrMDFE32.dll" (ByVal buffer As String, _
+                                      ByRef bufferLen As Long) As Long
+                   
 Private Declare Function MDFE_ConfigLer _
                 Lib "ACBrMDFE32.dll" (ByVal eArqConfig As String) As Long
 
@@ -214,6 +221,19 @@ Private Declare Function MDFE_ImprimirEventoPDF _
                 Lib "ACBrMDFE32.dll" (ByVal eArquivoXmlNFe As String, _
                                      ByVal eArquivoXmlEvento As String) As Long
 
+Private Declare Function MDFE_ConsultaMDFENaoEnc Lib "ACBrMDFE32.dll" (ByVal nCNPJ As String, _
+                                                                       ByVal buffer As String, _
+                                                                       ByRef bufferSize As Long) As Long
+
+Private Declare Function MDFE_EncerrarMDFE Lib "ABCrMDFE32.dll" (ByVal eChaveouMDFe As String, _
+                                                                 ByVal eDtEnc As String, _
+                                                                 ByVal cMunicipioDescarga As String, _
+                                                                 ByVal nCNPJ As String, _
+                                                                 ByVal nProtocolo As String, _
+                                                                 ByVal buffer As String, _
+                                                                 ByRef bufferSize As Long) As Long
+
+
 Public Sub InicializarLib(Optional ByVal eArqConfig As String = "", _
                           Optional ByVal eChaveCrypt As String = "")
                           
@@ -232,6 +252,64 @@ Public Sub FinalizarLib()
     retorno = MDFE_Finalizar
     CheckResult retorno
 End Sub
+
+Public Sub EncerrarMDFE(ByVal eChaveouMDFe As String, ByVal eDtEnc As String, ByVal cMunicipioDescarga As String, ByVal nCNPJ As String, ByVal nProtocolo As String)
+
+    Dim retorno As Long
+    Dim buffer As String
+    Dim bufferLen As Long
+    
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = MDFE_EncerrarMDFE(eChaveouMDFe, eDtEnc, cMunicipioDescarga, nCNPJ, nProtocolo, buffer, bufferLen)
+    CheckResult retorno
+    
+    EncerrarMDFE = processResult(buffer, bufferLen)
+
+End Sub
+
+Public Sub ConsultaMDFeNaoEnc(ByVal nCNPJ As String)
+
+    Dim retorno As Long
+    Dim buffer As String
+    Dim bufferLen As Long
+    
+    bufferLen = BUFFER_LENGTH
+    buffer = String$(bufferLen, " ")
+    
+    retorno = MDFE_ConsultaMDFENaoEnc(nCNPJ, buffer, bufferLen)
+    CheckResult retorno
+    
+    ConsultaMDFeNaoEnc = processResult(buffer, bufferLen)
+
+End Sub
+
+Public Sub ConfigImportar(ByVal eArqConfig As String)
+
+    Dim retorno As Long
+
+    retorno = MDFE_ConfigImportar(eArqConfig)
+    CheckResult (retorno)
+    
+End Sub
+    
+Public Function ConfigExportar() As String
+
+    Dim retorno   As Long
+    Dim buffer    As String
+    Dim bufferLen As Long
+
+    bufferLen = BUFFER_LENGTH
+    
+    buffer = String$(bufferLen, " ")
+    
+    retorno = MDFE_ConfigExportar(buffer, bufferLen)
+    CheckResult retorno
+    
+    ConfigExportar = processResult(buffer, bufferLen)
+    
+End Function
 
 Public Sub ConfigLer(Optional eArqConfig As String = "")
 

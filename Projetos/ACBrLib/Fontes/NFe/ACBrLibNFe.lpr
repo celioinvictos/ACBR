@@ -36,8 +36,9 @@
 library ACBrLibNFe;
 
 uses
-  Interfaces, sysutils, Classes, Forms, ACBrLibNFeClass, ACBrLibConfig,
+  Interfaces, sysutils, Classes, Forms, ACBrLibConfig,
   ACBrLibComum, ACBrLibConsts, ACBrLibNFeConfig, ACBrLibResposta,
+  {$IFDEF MT}ACBrLibNFeMT{$ELSE}ACBrLibNFeST{$ENDIF},
   DFeReportConfig, ACBrLibNFeRespostas;
 
 {$R *.res}
@@ -54,7 +55,8 @@ exports
   NFE_Nome,
   NFE_Versao,
   NFE_UltimoRetorno,
-  NFE_ImportarConfig,
+  NFE_ConfigImportar,
+  NFE_ConfigExportar,
   NFE_ConfigLer,
   NFE_ConfigGravar,
   NFE_ConfigLerValor,
@@ -107,8 +109,6 @@ begin
    DeleteFile( HeapTraceFile );
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
-
-  pLibClass := TACBrLibNFe; // Ajusta a classe a ser criada
 
   MainThreadID := GetCurrentThreadId();
   Application.Initialize;

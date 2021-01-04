@@ -37,7 +37,8 @@ library ACBrLibCHQ;
 uses
   Interfaces, sysutils, Classes,
   ACBrLibConfig, ACBrLibComum,
-  ACBrLibCHQClass, ACBrLibCHQConfig, ACBrLibCHQDataModule;
+  {$IFDEF MT}ACBrLibCHQMT{$ELSE}ACBrLibCHQST{$ENDIF},
+  ACBrLibCHQConfig, ACBrLibCHQDataModule;
 
 {$R *.res}
 
@@ -53,7 +54,8 @@ exports
   CHQ_Nome,
   CHQ_Versao,
   CHQ_UltimoRetorno,
-  CHQ_ImportarConfig,
+  CHQ_ConfigImportar,
+  CHQ_ConfigExportar,
   CHQ_ConfigLer,
   CHQ_ConfigGravar,
   CHQ_ConfigLerValor,
@@ -83,7 +85,6 @@ begin
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
 
-  pLibClass := TACBrLibCHQ; // Ajusta a classe a ser criada
   MainThreadID := GetCurrentThreadId();
 end.
 

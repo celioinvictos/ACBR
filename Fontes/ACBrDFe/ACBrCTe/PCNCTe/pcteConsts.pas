@@ -40,6 +40,8 @@ uses
   SysUtils;
 
 const
+  NAME_SPACE_CTE = 'xmlns="http://www.portalfiscal.inf.br/cte"';
+
   xRazao = 'CT-E EMITIDO EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL';
 
   DSC_TPCTe    = 'Tipo do Conhecimento';
@@ -161,6 +163,15 @@ const
   DSC_TPFRETAMENTO     = 'Tipo de Fretamento';
   DSC_DHVIAGEM         = 'Data / Hora da Viagem';
   DSC_INFQRCODCTE      = 'Texto com o QR-Code impresso no DACTE';
+
+  DSC_CHBPE       = 'Chave do BP-e';
+  DSC_INFGTVE     = 'Informações do GTVe';
+  DSC_TPCOMP      = 'Tipo de Componente';
+  DSC_XCOMP       = 'Descrição do Componente';
+  DSC_TPESPECIE   = 'Tipo de Espécie';
+  DSC_VESPECIE    = 'Valor em Espécie';
+  DSC_TPNUMERARIO = 'Tipo de Numerário';
+  DSC_XMOEDAESTR  = 'Nome da Moeda Estrangeira';
 
 implementation
 

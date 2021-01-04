@@ -4,7 +4,7 @@ object FormIncluirPagamento: TFormIncluirPagamento
   BorderStyle = bsDialog
   Caption = 'Incluir Pagamento'
   ClientHeight = 94
-  ClientWidth = 269
+  ClientWidth = 330
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,7 +17,7 @@ object FormIncluirPagamento: TFormIncluirPagamento
   PixelsPerInch = 96
   TextHeight = 13
   object Label14: TLabel
-    Left = 11
+    Left = 19
     Top = 8
     Width = 101
     Height = 13
@@ -26,7 +26,7 @@ object FormIncluirPagamento: TFormIncluirPagamento
     ParentColor = False
   end
   object Label16: TLabel
-    Left = 163
+    Left = 227
     Top = 8
     Width = 52
     Height = 13
@@ -35,31 +35,22 @@ object FormIncluirPagamento: TFormIncluirPagamento
     ParentColor = False
   end
   object cbFormaPagamento: TComboBox
-    Left = 11
+    Left = 19
     Top = 24
-    Width = 137
+    Width = 182
     Height = 21
     Style = csDropDownList
     ItemHeight = 13
-    ItemIndex = 0
-    TabOrder = 1
-    Text = '01 - Dinheiro'
+    TabOrder = 0
     OnChange = seValorPagoChange
-    Items.Strings = (
-      '01 - Dinheiro'
-      '02 - Cheque'
-      '03 - Cart'#227'o de Cr'#233'dito'
-      '04 - Cart'#227'o de D'#233'bito'
-      '99 - Outros')
   end
   object btGravar: TBitBtn
-    Left = 163
+    Left = 227
     Top = 56
     Width = 89
     Height = 28
     Caption = 'Gravar'
     Default = True
-    Enabled = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -67,10 +58,10 @@ object FormIncluirPagamento: TFormIncluirPagamento
     Font.Style = []
     ModalResult = 1
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 2
   end
   object btCancelar: TBitBtn
-    Left = 11
+    Left = 19
     Top = 56
     Width = 89
     Height = 28
@@ -83,17 +74,15 @@ object FormIncluirPagamento: TFormIncluirPagamento
     Font.Style = []
     ModalResult = 2
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 3
   end
-  object seValorPago: TSpinEdit
-    Left = 163
+  object seValorPago: TEdit
+    Left = 227
     Top = 22
     Width = 86
-    Height = 22
-    MaxValue = 1000000
-    MinValue = 1
-    TabOrder = 0
-    Value = 0
+    Height = 21
+    TabOrder = 1
     OnChange = seValorPagoChange
+    OnKeyPress = seValorPagoKeyPress
   end
 end

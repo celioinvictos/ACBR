@@ -271,6 +271,7 @@ begin
       proSMARAPD: DocElemento := 'tbnfd';
       proGiap:    DocElemento := 'nfe';
       proInfiscv11: DocElemento := 'infNFSe';
+      proTecnos: DocElemento := 'tcDeclaracaoPrestacaoServico';
     else
       DocElemento := 'Rps';
     end;
@@ -530,7 +531,7 @@ end;
 
 function NotaFiscal.CorrigirAssinatura(const AXML: string): string;
 var
-  XML:string;
+  XML: string;
 begin
   with TACBrNFSe(TNotasFiscais(Collection).ACBrNFSe) do
   begin
@@ -936,7 +937,7 @@ var
   Ok: Boolean;
   AXML: AnsiString;
   N, TamTAG, i: integer;
-  TagF: Array[1..12] of String;
+  TagF: Array[1..13] of String;
 
   function PosNFSe: Integer;
   begin
@@ -952,6 +953,7 @@ var
     TagF[10] := '</nfeRpsNotaFiscal>'; // Provedor EL
     TagF[11] := '</notasFiscais>';     // Provedor EL
     TagF[12] := '</notaFiscal>';       // Provedor GIAP
+    TagF[13] := '</NOTA>';             // Provedor AssessorPublico
 
     i := 0;
 

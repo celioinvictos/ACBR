@@ -211,6 +211,7 @@ function RandomName(const LenName : Integer = 8) : String ;
 {$IFNDEF COMPILER7_UP}
 function PosEx(const SubStr, S: AnsiString; Offset: Cardinal = 1): Integer;
 {$ENDIF}
+function PosExA(const SubStr, S: AnsiString; Offset: Integer = 1): Integer;
 
 {$IFNDEF COMPILER6_UP}
   type TRoundToRange = -37..37;
@@ -559,7 +560,7 @@ function NativeStringToUTF8(const AString : String ) : AnsiString;
 {$ENDIF}
 begin
   {$IFDEF USE_UTF8}
-    Result := AString;  // FPC, NEXTGEN usam UTF8 de forma nativa
+    Result := AString;  // FPC, DELPHI LINUX e NEXTGEN usam UTF8 de forma nativa
   {$ELSE}
     {$IFDEF UNICODE}
       RBS := UTF8Encode(AString);
@@ -574,7 +575,7 @@ end;
 function UTF8ToNativeString(const AUTF8String: AnsiString): String;
 begin
   {$IfDef USE_UTF8}
-   Result := AUTF8String;  // FPC, NEXTGEN usam UTF8 de forma nativa
+   Result := AUTF8String;  // FPC, DELPHI LINUX e NEXTGEN usam UTF8 de forma nativa
   {$Else}
    {$IfDef UNICODE}
     {$IfDef DELPHI12_UP}  // delphi 2009 em diante
@@ -1385,11 +1386,11 @@ var
    PosTagAux, FimTag, LenTag : Integer ;
 begin
   ATag   := '';
-  PosTag := PosEx( '<', ABinaryString, PosIni);
+  PosTag := PosExA( '<', ABinaryString, PosIni);
   if PosTag > 0 then
   begin
-    PosTagAux := PosEx( '<', ABinaryString, PosTag + 1);  // Verificando se Tag é inválida
-    FimTag    := PosEx( '>', ABinaryString, PosTag + 1);
+    PosTagAux := PosExA( '<', ABinaryString, PosTag + 1);  // Verificando se Tag é inválida
+    FimTag    := PosExA( '>', ABinaryString, PosTag + 1);
     if FimTag = 0 then                             // Tag não fechada ?
     begin
       PosTag := 0;
@@ -1399,7 +1400,7 @@ begin
     while (PosTagAux > 0) and (PosTagAux < FimTag) do  // Achou duas aberturas Ex: <<e>
     begin
       PosTag    := PosTagAux;
-      PosTagAux := PosEx( '<', ABinaryString, PosTag + 1);
+      PosTagAux := PosExA( '<', ABinaryString, PosTag + 1);
     end ;
 
     LenTag := FimTag - PosTag + 1 ;
@@ -1560,7 +1561,16 @@ begin
     Result := 0;
   end;
 end;
-{$endif}
+{$EndIf}
+
+function PosExA(const SubStr, S: AnsiString; Offset: Integer): Integer;
+begin
+  {$IFDEF DELPHIXE3_UP}
+   Result := Pos(SubStr, S, Offset);
+  {$Else}
+   Result := PosEx(SubStr, S, Offset);
+  {$EndIf}
+end;
 
 {-----------------------------------------------------------------------------
   Verifica se "AValue" é vazio, se for retorna "DefaultValue". "DoTrim", se
@@ -1777,22 +1787,25 @@ end;
   verifica se a virgula é '.' ou ',' efetuando a conversão se necessário
   Se não for possivel converter, dispara Exception
  ---------------------------------------------------------------------------- }
-function StringToFloat(NumString : String) : Double ;
+function StringToFloat(NumString: String): Double;
 var
   DS: Char;
 begin
-  NumString := Trim( NumString ) ;
+  NumString := Trim(NumString);
 
   DS := {$IFDEF HAS_FORMATSETTINGS}FormatSettings.{$ENDIF}DecimalSeparator;
 
   if DS <> '.' then
-     NumString := StringReplace(NumString,'.',DS,[rfReplaceAll]) ;
+    NumString := StringReplace(NumString, '.', DS, [rfReplaceAll]);
 
   if DS <> ',' then
-     NumString := StringReplace(NumString,',',DS,[rfReplaceAll]) ;
+    NumString := StringReplace(NumString, ',', DS, [rfReplaceAll]);
 
-  Result := StrToFloat(NumString)
-end ;
+  while CountStr(NumString, DS) > 1 do
+    NumString := StringReplace(NumString, DS, '', []);
+
+  Result := StrToFloat(NumString);
+end;
 
 {-----------------------------------------------------------------------------
   Converte um Double para string, SEM o separator decimal, considerando as
@@ -2442,11 +2455,11 @@ begin
   VTexto := String(Texto);
   { Trocando todos os #13+#10 por #10 }
   CurrLineBreak := sLineBreak ;
-  if (CurrLineBreak <> #13+#10) then
-     VTexto := StringReplace(VTexto, #13+#10, #10, [rfReplaceAll]) ;
+  if (CurrLineBreak <> CRLF) then
+     VTexto := StringReplace(VTexto, CRLF, LF, [rfReplaceAll]) ;
 
-  if (CurrLineBreak <> #10) then
-     VTexto := StringReplace(VTexto, CurrLineBreak, #10, [rfReplaceAll]) ;
+  if (CurrLineBreak <> LF) then
+     VTexto := StringReplace(VTexto, CurrLineBreak, LF, [rfReplaceAll]) ;
 
   { Ajustando a largura das Linhas para o máximo permitido em  "Colunas"
     e limitando em "NumMaxLinhas" o total de Linhas}

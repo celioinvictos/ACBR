@@ -45,11 +45,8 @@ uses
 type
 
   { TGuiaConfig }
-
   TGuiaConfig = class
   private
-    FeMail: String;
-    FFax: String;
     FImpressora: String;
     FMargemInferior: Double;
     FMargemSuperior: Double;
@@ -60,8 +57,6 @@ type
     FNumCopias: Integer;
     FPathPDF: String;
     FPrintDialog: Boolean;
-    FSistema: String;
-    FSite: String;
     FTamanhoPapel: TpcnTamanhoPapel;
     FUsuario: String;
   public
@@ -70,8 +65,6 @@ type
     procedure LerIni(const AIni: TCustomIniFile);
     procedure GravarIni(const AIni: TCustomIniFile);
 
-    property eMail: String read FeMail write FeMail;
-    property Fax: String read FFax write FFax;
     property Impressora: String read FImpressora write FImpressora;
     property MargemInferior: Double read FMargemInferior write FMargemInferior;
     property MargemSuperior: Double read FMargemSuperior write FMargemSuperior;
@@ -82,21 +75,16 @@ type
     property NumCopias: Integer read FNumCopias write FNumCopias;
     property PathPDF: String read FPathPDF write FPathPDF;
     property PrintDialog: Boolean read FPrintDialog write FPrintDialog;
-    property Sistema: String read FSistema write FSistema;
-    property Site: String read FSite write FSite;
     property TamanhoPapel: TpcnTamanhoPapel read FTamanhoPapel write FTamanhoPapel;
     property Usuario: String read FUsuario write FUsuario;
   end;
 
   { TLibGNReConfig }
-
   TLibGNReConfig = class(TLibConfig)
   private
     FGuiaConfig: TGuiaConfig;
     FGNReConfig: TConfiguracoesGNRe;
   protected
-    function AtualizarArquivoConfiguracao: Boolean; override;
-
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
@@ -115,11 +103,10 @@ type
 implementation
 
 uses
-  ACBrLibGNReClass, ACBrLibGNReConsts, ACBrLibConsts, ACBrLibComum,
-  ACBrUtil;
+  ACBrLibGNReBase, ACBrLibGNReConsts,
+  ACBrLibConsts, ACBrUtil;
 
 { TGuiaConfig }
-
 constructor TGuiaConfig.Create;
 begin
   inherited Create;
@@ -128,8 +115,6 @@ end;
 
 procedure TGuiaConfig.DefinirValoresPadroes;
 begin
-  FeMail := '';
-  FFax := '';
   FImpressora := '';
   FMargemInferior := 0.7;
   FMargemSuperior := 0.7;
@@ -140,16 +125,12 @@ begin
   FNumCopias := 1;
   FPathPDF := '';
   FPrintDialog := False;
-  FSistema := '';
-  FSite := '';
   FTamanhoPapel := tpA4;
   FUsuario := '';
 end;
 
 procedure TGuiaConfig.LerIni(const AIni: TCustomIniFile);
 begin
-  FeMail := AIni.ReadString(CSessaoGuia, CChaveeMail, FeMail);
-  FFax := AIni.ReadString(CSessaoGuia, CChaveFax, FFax);
   FImpressora := AIni.ReadString(CSessaoGuia, CChaveImpressora, FImpressora);
   FMargemInferior := AIni.ReadFloat(CSessaoGuia, CChaveMargemInferior, FMargemInferior);
   FMargemSuperior := AIni.ReadFloat(CSessaoGuia, CChaveMargemSuperior, FMargemSuperior);
@@ -160,16 +141,12 @@ begin
   FNumCopias := AIni.ReadInteger(CSessaoGuia, CChaveCopias, FNumCopias);
   FPathPDF := AIni.ReadString(CSessaoGuia, CChavePathPDF, FPathPDF);
   FPrintDialog := AIni.ReadBool(CSessaoGuia, CChavePrintDialog, FPrintDialog);
-  FSistema := AIni.ReadString(CSessaoGuia, CChaveSistema, FSistema);
-  FSite := AIni.ReadString(CSessaoGuia, CChaveSite, FSite);
   FTamanhoPapel := TpcnTamanhoPapel(AIni.ReadInteger(CSessaoGuia, CChaveTamanhoPapel, Integer(FTamanhoPapel)));
   FUsuario := AIni.ReadString(CSessaoGuia, CChaveUsuario, FUsuario);
 end;
 
 procedure TGuiaConfig.GravarIni(const AIni: TCustomIniFile);
 begin
-  AIni.WriteString(CSessaoGuia, CChaveeMail, FeMail);
-  AIni.WriteString(CSessaoGuia, CChaveFax, FFax);
   AIni.WriteString(CSessaoGuia, CChaveImpressora, FImpressora);
   AIni.WriteFloat(CSessaoGuia, CChaveMargemInferior, FMargemInferior);
   AIni.WriteFloat(CSessaoGuia, CChaveMargemSuperior, FMargemSuperior);
@@ -180,14 +157,11 @@ begin
   AIni.WriteInteger(CSessaoGuia, CChaveCopias, FNumCopias);
   AIni.WriteString(CSessaoGuia, CChavePathPDF, FPathPDF);
   AIni.WriteBool(CSessaoGuia, CChavePrintDialog, FPrintDialog);
-  AIni.WriteString(CSessaoGuia, CChaveSistema, FSistema);
-  AIni.WriteString(CSessaoGuia, CChaveSite, FSite);
   AIni.WriteInteger(CSessaoGuia, CChaveTamanhoPapel, Integer(FTamanhoPapel));
   AIni.WriteString(CSessaoGuia, CChaveUsuario, FUsuario);
 end;
 
 { TLibGNReConfig }
-
 constructor TLibGNReConfig.Create(AOwner: TObject; ANomeArquivo: String; AChaveCrypt: AnsiString);
 begin
   inherited Create(AOwner, ANomeArquivo, AChaveCrypt);
@@ -204,18 +178,11 @@ begin
   inherited Destroy;
 end;
 
-function TLibGNReConfig.AtualizarArquivoConfiguracao: Boolean;
-var
-  Versao: String;
-begin
-  Versao := Ini.ReadString(CSessaoVersao, CLibGNReNome, '0');
-  Result := (CompareVersions(CLibGNReVersao, Versao) > 0) or
-            (inherited AtualizarArquivoConfiguracao);
-end;
-
 procedure TLibGNReConfig.INIParaClasse;
 begin
   inherited INIParaClasse;
+
+  FGNReConfig.ChaveCryptINI := ChaveCrypt;
 
   FGNReConfig.LerIni(Ini);
   FGuiaConfig.LerIni(Ini);
@@ -225,7 +192,7 @@ procedure TLibGNReConfig.ClasseParaINI;
 begin
   inherited ClasseParaINI;
 
-  Ini.WriteString(CSessaoVersao, CLibGNReNome, CLibGNReVersao);
+  FGNReConfig.ChaveCryptINI := ChaveCrypt;
 
   FGNReConfig.GravarIni(Ini);
   FGuiaConfig.GravarIni(Ini);
@@ -233,6 +200,8 @@ end;
 
 procedure TLibGNReConfig.ClasseParaComponentes;
 begin
+  FGNReConfig.ChaveCryptINI := ChaveCrypt;
+
   if Assigned(Owner) then
     TACBrLibGNRe(Owner).GNReDM.AplicarConfiguracoes;
 end;

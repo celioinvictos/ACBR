@@ -232,6 +232,7 @@ type
     btnConsultarNFSeRPS: TButton;
     btnConsultarNFSePeriodo: TButton;
     btnCancNFSe: TButton;
+    btnCancelarNFSeSemXML: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathNFSeClick(Sender: TObject);
@@ -279,6 +280,7 @@ type
     procedure btnConsultarNFSePeriodoClick(Sender: TObject);
     procedure btnCancNFSeClick(Sender: TObject);
     procedure cbCidadesChange(Sender: TObject);
+    procedure btnCancelarNFSeSemXMLClick(Sender: TObject);
   private
     { Private declarations }
     procedure GravarConfiguracao;
@@ -387,6 +389,9 @@ begin
 //    Configuracoes.Geral.Emitente.WebChaveAcesso := 'TLXX4JN38KXTRNSEAJYYEA==';
     Configuracoes.Geral.Emitente.WebChaveAcesso := 'TLXX4JN38KXTRNSE';
 
+    if Configuracoes.Geral.Provedor = proAgili then
+      Configuracoes.Geral.Emitente.WebChaveAcesso := 'TLXX4JN38KXTRNSETLXX4JN38KXTRNSE';
+
     with Configuracoes.Geral.Emitente.DadosSenhaParams.Add do
     begin
       Param := 'ChaveAutorizacao';
@@ -407,13 +412,18 @@ begin
       IdentificacaoRps.Numero := FormatFloat('#########0', StrToInt(NumDFe));
 
       // Para o provedor ISS.NET em ambiente de Homologação mudar a série para '8'
-      IdentificacaoRps.Serie := 'NF'; //'85';
+//      IdentificacaoRps.Serie := 'NF'; //'85';
+      IdentificacaoRps.Serie := '85';
 
       // TnfseTipoRPS = ( trRPS, trNFConjugada, trCupom );
       IdentificacaoRps.Tipo := trRPS;
 
-      DataEmissao := Date;
-      DataEmissaoRPS := Date;
+      DataEmissao := Now;
+      DataEmissaoRPS := Now;
+
+      // Provedor Conam
+      DataOptanteSimplesNacional := Date;
+
       (*
         TnfseNaturezaOperacao = ( no1, no2, no3, no4, no5, no6, no7,
         no50, no51, no52, no53, no54, no55, no56, no57, no58, no59,
@@ -426,11 +436,11 @@ begin
       // NaturezaOperacao := no51;
 
       // TnfseRegimeEspecialTributacao = ( retNenhum, retMicroempresaMunicipal, retEstimativa, retSociedadeProfissionais, retCooperativa, retMicroempresarioIndividual, retMicroempresarioEmpresaPP );
-       RegimeEspecialTributacao := retNenhum;
+       RegimeEspecialTributacao := retMicroempresaMunicipal;
 //      RegimeEspecialTributacao := retLucroReal;
 
       // TnfseSimNao = ( snSim, snNao );
-      OptanteSimplesNacional := snNao;
+      OptanteSimplesNacional := snSim;
 
       // TnfseSimNao = ( snSim, snNao );
       IncentivadorCultural := snNao;
@@ -488,6 +498,8 @@ begin
       // para outros provedores devemos informar por exemplo 3, mas ao fazer o calculo
       // do valor do ISS devemos dividir por 100
       Servico.Valores.Aliquota := 4;
+      // Provedor Conam
+      Servico.Valores.AliquotaSN := 2.01;
 
       // Valor do ISS calculado multiplicando-se a base de calculo pela aliquota
       ValorISS := Servico.Valores.BaseCalculo * Servico.Valores.Aliquota / 100;
@@ -535,10 +547,12 @@ begin
       Servico.MunicipioIncidencia := StrToIntDef(edtCodCidade.Text, 0);
 
       // Somente o provedor SimplISS permite infomar mais de 1 serviço
-      with Servico.ItemServico.Add do
+      with Servico.ItemServico.New do
       begin
+        ItemListaServico := '09.01';
         codLCServ := '123';
         Descricao := 'SERVICO 1';
+        Discriminacao := 'Servico 1';
         Quantidade := 1;
         ValorUnitario := 15.00;
         ValorServicos := Quantidade * ValorUnitario;
@@ -550,6 +564,9 @@ begin
       // Para o provedor ISSDigital deve-se informar também:
       Prestador.Senha := edtSenhaWeb.Text;
       Prestador.FraseSecreta := edtFraseSecWeb.Text;
+      // Provedor Agili
+      Prestador.ChaveAcesso := ACBrNFSe1.Configuracoes.Geral.Emitente.WebChaveAcesso;
+
       Prestador.cUF := 33;
 
       // Provedor WebFisco
@@ -569,7 +586,7 @@ begin
       PrestadorServico.RazaoSocial  := edtEmitRazao.Text;
       PrestadorServico.NomeFantasia := edtEmitRazao.Text;
 
-      PrestadorServico.Contato.Telefone := '1633224455';
+      PrestadorServico.Contato.Telefone := '33224455';
 
       Tomador.IdentificacaoTomador.CpfCnpj := '55555555555555';
       Tomador.IdentificacaoTomador.InscricaoMunicipal := '17331600';
@@ -649,6 +666,44 @@ begin
   cbXmlSignLib.ItemIndex := Integer(ACBrNFSe1.Configuracoes.Geral.SSLXmlSignLib);
 
   cbSSLType.Enabled := (ACBrNFSe1.Configuracoes.Geral.SSLHttpLib in [httpWinHttp, httpOpenSSL]);
+end;
+
+procedure TfrmACBrNFSe.btnCancelarNFSeSemXMLClick(Sender: TObject);
+var
+  Codigo, NumeroNFSe, Motivo, NumeroLote, CodVerificacao: String;
+begin
+  // Codigo de Cancelamento
+  // 1 - Erro de emissão
+  // 2 - Serviço não concluido
+  // 3 - RPS Cancelado na Emissão
+
+  if not (InputQuery('Cancelar NFSe', 'Código de Cancelamento', Codigo)) then
+    exit;
+
+  if not (InputQuery('Cancelar NFSe', 'Numero da NFS-e', NumeroNFSe)) then
+    exit;
+
+  if not (InputQuery('Cancelar NFSe', 'Motivo de Cancelamento', Motivo)) then
+    exit;
+
+  if not (InputQuery('Cancelar NFSe', 'Numero do Lote', NumeroLote)) then
+    exit;
+
+  if not (InputQuery('Cancelar NFSe', 'Codigo de Verificação', CodVerificacao)) then
+    exit;
+
+  ACBrNFSe1.CancelarNFSe(Codigo, NumeroNFSe, Motivo, NumeroLote, CodVerificacao);
+
+  MemoDados.Lines.Add('Retorno do Cancelamento:');
+
+  MemoDados.Lines.Add('Cód. Cancelamento: ' +
+    ACBrNFSe1.WebServices.CancNfse.CodigoCancelamento);
+  if ACBrNFSe1.WebServices.CancNfse.DataHora <> 0 then
+    MemoDados.Lines.Add('Data / Hora      : ' +
+      DateTimeToStr(ACBrNFSe1.WebServices.CancNfse.DataHora));
+  LoadXML(MemoResp.Text, WBResposta);
+
+  pgRespostas.ActivePageIndex := 1;
 end;
 
 procedure TfrmACBrNFSe.btnCancNFSeClick(Sender: TObject);
@@ -737,9 +792,12 @@ procedure TfrmACBrNFSe.btnConsultarNFSePeriodoClick(Sender: TObject);
 var
   DataInicial, DataFinal, NumeroNFSe: String;
 begin
+  DataInicial := DateToStr(Date);
   if not(InputQuery('Consultar NFSe por Período', 'Data Inicial (DD/MM/AAAA):',
     DataInicial)) then
     exit;
+
+  DataFinal := DateToStr(Date);
   if not(InputQuery('Consultar NFSe por Período', 'Data Final (DD/MM/AAAA):',
     DataFinal)) then
     exit;
@@ -747,6 +805,12 @@ begin
   if not(InputQuery('Consultar NFSe por Período', 'Numero da NFSe:',
     NumeroNFSe)) then
     exit;
+
+  if Trim(DataInicial) = '' then
+    DataInicial := DateToStr(Date);
+
+  if Trim(DataFinal) = '' then
+    DataFinal := DateToStr(Date);
 
   ACBrNFSe1.ConsultarNFSe(StrToDate(DataInicial), StrToDate(DataFinal), NumeroNFSe);
 
@@ -1441,6 +1505,7 @@ var
   Ok: Boolean;
   PathMensal: String;
 begin
+  ACBrNFSe1.Configuracoes.Certificados.DadosPFX    := '';
   ACBrNFSe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
   ACBrNFSe1.Configuracoes.Certificados.Senha       := edtSenha.Text;
   ACBrNFSe1.Configuracoes.Certificados.NumeroSerie := edtNumSerie.Text;
@@ -1523,8 +1588,8 @@ begin
     PathSchemas      := edtPathSchemas.Text;
     PathNFSe         := edtPathNFSe.Text;
     PathGer          := edtPathLogs.Text;
-    PathCan          := PathMensal;
     PathMensal       := GetPathGer(0);
+    PathCan          := PathMensal;
     PathSalvar       := PathMensal;
   end;
 
@@ -1544,7 +1609,7 @@ begin
 
     // Para os provedores que possuem uma lista de serviços como é o caso do Infisc
     // devemos atribuir o valor True a propriedade DetalharServico
-    ACBrNFSeDANFSeRL1.DetalharServico := (ACBrNFSe1.Configuracoes.Geral.Provedor = proInfisc);
+//    ACBrNFSeDANFSeRL1.DetalharServico := (ACBrNFSe1.Configuracoes.Geral.Provedor = proInfisc);
   end;
 
   with ACBrNFSe1.MAIL do

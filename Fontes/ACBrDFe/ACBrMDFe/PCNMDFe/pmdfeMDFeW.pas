@@ -670,8 +670,8 @@ end;
 procedure TMDFeW.GerarAereo;
 begin
   Gerador.wGrupo('aereo', '#01');
-  Gerador.wCampo(tcInt, '#02', 'nac    ', 01, 04, 1, MDFe.Aereo.nac, DSC_NAC);
-  Gerador.wCampo(tcInt, '#03', 'matr   ', 01, 06, 1, MDFe.Aereo.matr, DSC_MATR);
+  Gerador.wCampo(tcStr, '#02', 'nac    ', 01, 04, 1, MDFe.Aereo.nac, DSC_NAC);
+  Gerador.wCampo(tcStr, '#03', 'matr   ', 01, 06, 1, MDFe.Aereo.matr, DSC_MATR);
   Gerador.wCampo(tcStr, '#04', 'nVoo   ', 05, 09, 1, MDFe.Aereo.nVoo, DSC_NVOO);
   Gerador.wCampo(tcStr, '#05', 'cAerEmb', 03, 04, 1, MDFe.Aereo.cAerEmb, DSC_CAEREMB);
   Gerador.wCampo(tcStr, '#06', 'cAerDes', 03, 04, 1, MDFe.Aereo.cAerDes, DSC_CAERDES);
@@ -831,7 +831,7 @@ begin
            if OnlyNumber(MDFe.infDoc.infMunDescarga[i].infCTe[j].chCTe) <> '' then
             if not ValidarChave(MDFe.infDoc.infMunDescarga[i].infCTe[j].chCTe) then
            Gerador.wAlerta('#049', 'chCTe', DSC_REFNFE, ERR_MSG_INVALIDO);
-           Gerador.wCampo(tcStr, '#050', 'SegCodBarra', 44, 44, 0, MDFe.infDoc.infMunDescarga[i].infCTe[j].SegCodBarra, DSC_SEGCODBARRA);
+           Gerador.wCampo(tcStr, '#050', 'SegCodBarra', 36, 36, 0, MDFe.infDoc.infMunDescarga[i].infCTe[j].SegCodBarra, DSC_SEGCODBARRA);
 
            if VersaoDF >= ve300 then
              Gerador.wCampo(tcStr, '#050', 'indReentrega', 1, 1, 0, MDFe.infDoc.infMunDescarga[i].infCTe[j].indReentrega, DSC_INDREENTREGA);
@@ -965,7 +965,7 @@ begin
            if OnlyNumber(MDFe.infDoc.infMunDescarga[i].infNFe[j].chNFe) <> '' then
             if not ValidarChave(MDFe.infDoc.infMunDescarga[i].infNFe[j].chNFe) then
              Gerador.wAlerta('#058', 'chNFe', DSC_REFNFE, ERR_MSG_INVALIDO);
-           Gerador.wCampo(tcStr, '#059', 'SegCodBarra', 44, 44, 0, MDFe.infDoc.infMunDescarga[i].infNFe[j].SegCodBarra, DSC_SEGCODBARRA);
+           Gerador.wCampo(tcStr, '#059', 'SegCodBarra', 36, 36, 0, MDFe.infDoc.infMunDescarga[i].infNFe[j].SegCodBarra, DSC_SEGCODBARRA);
 
            if VersaoDF >= ve300 then
              Gerador.wCampo(tcStr, '#050', 'indReentrega', 1, 1, 0, MDFe.infDoc.infMunDescarga[i].infNFe[j].indReentrega, DSC_INDREENTREGA);
@@ -1173,12 +1173,12 @@ begin
 
     Gerador.wGrupo('/infResp');
 
-    if MDFe.Ide.tpEmit in [teTransportadora, teTranspCTeGlobalizado] then
-//    if MDFe.seg[i].respSeg = rsTomadorServico {MDFe.seg[i].xSeg <> ''} then
+    if (MDFe.Ide.tpEmit in [teTransportadora, teTranspCTeGlobalizado]) or
+       ((MDFe.seg[i].xSeg <> '') and (MDFe.seg[i].CNPJ <> '')) then
     begin
       Gerador.wGrupo('infSeg', '#123');
       Gerador.wCampo(tcStr, '#124', 'xSeg', 01, 30, 1, MDFe.seg[i].xSeg, DSC_XSEG);
-      Gerador.wCampoCNPJ('#125', MDFe.seg[i].CNPJ, CODIGO_BRASIL, False);
+      Gerador.wCampoCNPJ('#125', MDFe.seg[i].CNPJ, CODIGO_BRASIL, True);
       Gerador.wGrupo('/infSeg');
     end;
 
@@ -1311,8 +1311,8 @@ begin
       else
         if (MDFe.prodPred.infLocalCarrega.latitude <> 0) or (MDFe.prodPred.infLocalCarrega.Longitude <> 0) then
         begin
-          Gerador.wCampo(tcDe6, '#', 'latitude ', 01, 06, 1, MDFe.prodPred.infLocalCarrega.latitude, DSC_LATITUDE);
-          Gerador.wCampo(tcDe6, '#', 'longitude', 01, 06, 1, MDFe.prodPred.infLocalCarrega.Longitude, DSC_LONGITUDE);
+          Gerador.wCampo(tcDe6, '#', 'latitude ', 01, 10, 1, MDFe.prodPred.infLocalCarrega.latitude, DSC_LATITUDE);
+          Gerador.wCampo(tcDe6, '#', 'longitude', 01, 11, 1, MDFe.prodPred.infLocalCarrega.Longitude, DSC_LONGITUDE);
         end;
 
       Gerador.wGrupo('/infLocalCarrega');
@@ -1324,8 +1324,8 @@ begin
       else
         if (MDFe.prodPred.infLocalDescarrega.latitude <> 0) or (MDFe.prodPred.infLocalDescarrega.Longitude <> 0) then
         begin
-          Gerador.wCampo(tcDe6, '#', 'latitude ', 01, 06, 1, MDFe.prodPred.infLocalDescarrega.latitude, DSC_LATITUDE);
-          Gerador.wCampo(tcDe6, '#', 'longitude', 01, 06, 1, MDFe.prodPred.infLocalDescarrega.Longitude, DSC_LONGITUDE);
+          Gerador.wCampo(tcDe6, '#', 'latitude ', 01, 10, 1, MDFe.prodPred.infLocalDescarrega.latitude, DSC_LATITUDE);
+          Gerador.wCampo(tcDe6, '#', 'longitude', 01, 11, 1, MDFe.prodPred.infLocalDescarrega.Longitude, DSC_LONGITUDE);
         end;
 
       Gerador.wGrupo('/infLocalDescarrega');

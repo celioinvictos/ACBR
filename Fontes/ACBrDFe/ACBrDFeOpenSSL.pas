@@ -152,6 +152,8 @@ begin
     Validade :=  LeftStr(IntToStrZero(YearOf(Now),4),2) + Validade;
 
   Result := StoD(Validade);
+  Result := IncMinute(Result, TimeZoneBias);
+  
 end;
 
 function GetSerialNumber( cert: pX509 ): String;
@@ -380,6 +382,7 @@ begin
     DataVenc := GetNotAfter( cert );
     IssuerName := GetIssuerName( cert );
     DERBase64 := CertToDERBase64( cert );
+    Tipo := tpcA1;  // OpenSSL somente suporta A1
   end;
 end;
 

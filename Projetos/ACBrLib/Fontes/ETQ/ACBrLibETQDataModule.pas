@@ -37,7 +37,8 @@ unit ACBrLibETQDataModule;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, ACBrLibConfig, syncobjs, ACBrETQ;
+  Classes, SysUtils, FileUtil, syncobjs,
+  ACBrLibComum, ACBrLibConfig, ACBrETQ;
 
 type
 
@@ -50,19 +51,22 @@ type
     procedure DataModuleDestroy(Sender: TObject);
   private
     FLock: TCriticalSection;
+    pLib: TACBrLib;
 
   public
     procedure AplicarConfiguracoes;
     procedure GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean = False);
     procedure Travar;
     procedure Destravar;
+
+    property Lib: TACBrLib read pLib write pLib;
   end;
 
 implementation
 
 uses
   ACBrUtil, ACBrDeviceSerial,
-  ACBrLibETQConfig, ACBrLibComum, ACBrLibETQClass;
+  ACBrLibETQConfig;
 
 {$R *.lfm}
 
@@ -82,7 +86,7 @@ procedure TLibETQDM.AplicarConfiguracoes;
 var
   pLibConfig: TLibETQConfig;
 begin
-  pLibConfig := TLibETQConfig(TACBrLibETQ(pLib).Config);
+  pLibConfig := TLibETQConfig(Lib.Config);
 
   with ACBrETQ1 do
   begin
@@ -101,25 +105,25 @@ begin
     Origem         := pLibConfig.ETQConfig.Origem;
     DPI            := pLibConfig.ETQConfig.DPI;
 
-    Device.Baud := pLibConfig.PosDeviceConfig.Baud;
-    Device.Data := pLibConfig.PosDeviceConfig.Data;
-    Device.TimeOut := pLibConfig.PosDeviceConfig.TimeOut;
-    Device.Parity := TACBrSerialParity(pLibConfig.PosDeviceConfig.Parity);
-    Device.Stop := TACBrSerialStop(pLibConfig.PosDeviceConfig.Stop);
-    Device.MaxBandwidth := pLibConfig.PosDeviceConfig.MaxBandwidth;
-    Device.SendBytesCount := pLibConfig.PosDeviceConfig.SendBytesCount;
-    Device.SendBytesInterval := pLibConfig.PosDeviceConfig.SendBytesInterval;
-    Device.HandShake := TACBrHandShake(pLibConfig.PosDeviceConfig.HandShake);
-    Device.HardFlow := pLibConfig.PosDeviceConfig.HardFlow;
-    Device.SoftFlow := pLibConfig.PosDeviceConfig.SoftFlow;
+    Device.Baud := pLibConfig.ETQDeviceConfig.Baud;
+    Device.Data := pLibConfig.ETQDeviceConfig.Data;
+    Device.TimeOut := pLibConfig.ETQDeviceConfig.TimeOut;
+    Device.Parity := TACBrSerialParity(pLibConfig.ETQDeviceConfig.Parity);
+    Device.Stop := TACBrSerialStop(pLibConfig.ETQDeviceConfig.Stop);
+    Device.MaxBandwidth := pLibConfig.ETQDeviceConfig.MaxBandwidth;
+    Device.SendBytesCount := pLibConfig.ETQDeviceConfig.SendBytesCount;
+    Device.SendBytesInterval := pLibConfig.ETQDeviceConfig.SendBytesInterval;
+    Device.HandShake := TACBrHandShake(pLibConfig.ETQDeviceConfig.HandShake);
+    Device.HardFlow := pLibConfig.ETQDeviceConfig.HardFlow;
+    Device.SoftFlow := pLibConfig.ETQDeviceConfig.SoftFlow;
   end;
 end;
 
 procedure TLibETQDM.GravarLog(AMsg: String; NivelLog: TNivelLog;
   Traduzir: Boolean);
 begin
-  if Assigned(pLib) then
-    pLib.GravarLog(AMsg, NivelLog, Traduzir);
+  if Assigned(Lib) then
+    Lib.GravarLog(AMsg, NivelLog, Traduzir);
 end;
 
 procedure TLibETQDM.Travar;

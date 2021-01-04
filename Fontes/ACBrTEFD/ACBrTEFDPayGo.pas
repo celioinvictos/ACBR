@@ -37,23 +37,31 @@ unit ACBrTEFDPayGo;
 interface
 
 uses
-  Classes, SysUtils, ACBrTEFDClass, ACBrTEFComum;
+  Classes, SysUtils,
+  ACBrTEFDClass, ACBrTEFComum;
 
 const
+  CACBrTEFDPayGoNome = 'ACBrTEFDPayGo';
+  CACBrTEFDPayGoVersao = '1.0.2';
+  CACBrTEFDPayGoVersaoInterface = '225';
+
   CACBrTEFDPayGo_ArqTemp = 'C:\PAYGO\REQ\intpos.tmp';
   CACBrTEFDPayGo_ArqReq  = 'C:\PAYGO\REQ\intpos.001';
   CACBrTEFDPayGo_ArqResp = 'C:\PAYGO\RESP\intpos.001';
   CACBrTEFDPayGo_ArqSTS  = 'C:\PAYGO\RESP\intpos.sts';
-
+  CACBrTEFDDial_ArqTemp   = 'C:\TEF_DIAL\req\intpos.tmp';
+  CACBrTEFDDial_ArqReq    = 'C:\TEF_DIAL\req\intpos.001';
+  CACBrTEFDDial_ArqResp   = 'C:\TEF_DIAL\resp\intpos.001';
+  CACBrTEFDDial_ArqSTS    = 'C:\TEF_DIAL\resp\intpos.sts';
+  CACBrTEFDDial_GPExeName = 'C:\TEF_DIAL\tef_dial.exe';
 
 type
 
   { TACBrTEFDRespPayGo }
 
   TACBrTEFDRespPayGo = class( TACBrTEFDRespTXT )
-  protected
-    procedure ProcessarTipoInterno(ALinha: TACBrTEFLinha); override;
   public
+    procedure ProcessarTipoInterno(ALinha: TACBrTEFLinha); override;
     procedure ConteudoToProperty; override;
   end;
 
@@ -72,6 +80,7 @@ type
 
   public
     constructor Create(AOwner: TComponent); override;
+    procedure Inicializar; override;
 
   published
     Property SuportaReajusteValor: Boolean read fSuportaReajusteValor write fSuportaReajusteValor default False;
@@ -82,15 +91,15 @@ type
 implementation
 
 uses
-  math,
-  ACBrTEFD;
+  math, Types, strutils,
+  ACBrTEFD, ACBrTEFPayGoRedes, ACBrUtil, ACBrConsts;
 
 { TACBrTEFDRespPayGo }
 
 procedure TACBrTEFDRespPayGo.ConteudoToProperty;
 var
   IndiceViaCliente, Linhas, I: Integer;
-  ViasDeComprovante, TipoDeCartao, TipoDeFinanciamento, AString: String;
+  ViasDeComprovante, TipoDeCartao, TipoDeFinanciamento, StatusConfirmacao: String;
   ImprimirViaCliente, ImprimirViaEstabelecimento: Boolean;
 begin
   inherited ConteudoToProperty;
@@ -130,7 +139,7 @@ begin
   begin
     IndiceViaCliente := 0;
     Linhas := LeInformacao(710, 0).AsInteger;    // 710-000 Linhas Via Reduzida Cliente
-    if (Linhas > 0) then
+    if ViaClienteReduzida and (Linhas > 0) then
       IndiceViaCliente := 711
     else
     begin
@@ -200,13 +209,23 @@ begin
 
     else if (TipoDeFinanciamento = '4') or (TipoDeFinanciamento = '5') then
       fpTipoOperacao := opPreDatado;
-
   end;
 
   fpNFCeSAT.Autorizacao := fpNSU;
+
+  // 729-000 - Status da confirmação
+  //    1: transação não requer confirmação, ou já confirmada
+  //    2: transação requer confirmação
+  //    Se não encontrado, assumir que a transação requer confirmação se houver comprovantes a serem impressos.
+  StatusConfirmacao := Trim(LeInformacao(729,0).AsString);
+  if (StatusConfirmacao <> '') then
+    fpConfirmar := (StatusConfirmacao = '2');
 end;
 
 procedure TACBrTEFDRespPayGo.ProcessarTipoInterno(ALinha: TACBrTEFLinha);
+var
+  ARede: TACBrTEFPayGoRede;
+  CodRede: Integer;
 begin
   case ALinha.Identificacao of
     707 : fpValorOriginal := ALinha.Informacao.AsFloat;
@@ -218,13 +237,23 @@ begin
       // 739-000 Índice da Rede Adquirente
       fpCodigoRedeAutorizada := ALinha.Informacao.AsString;
       fpNFCeSAT.CodCredenciadora := fpCodigoRedeAutorizada;
-      //TODO: Criar tabela interna -> fpNFCeSAT.CNPJCredenciadora := LinStr;
+      CodRede := StrToIntDef(fpCodigoRedeAutorizada, 0);
+      if (CodRede > 0) then
+      begin
+        ARede := TabelaRedes.Find(CodRede);
+        if Assigned(ARede) then
+        begin
+          fpNFCeSAT.Bandeira := ARede.NomeTrad;
+          fpNFCeSAT.CNPJCredenciadora := ARede.CNPJ;
+          fpNFCeSAT.CodCredenciadora := IntToStrZero(ARede.CodSATCFe, 3);
+        end;
+      end;
     end;
     740 :
     begin
       // 740-000 - Número do cartão, mascarado
       fpBin := ALinha.Informacao.AsString;
-      fpNFCeSAT.UltimosQuatroDigitos := fpBin;
+      fpNFCeSAT.UltimosQuatroDigitos := RightStr(fpBin,4);
     end;
     741 :
     begin
@@ -272,12 +301,42 @@ begin
   fpResp.TipoGP := fpTipo;
 end;
 
+procedure TACBrTEFDPayGo.Inicializar;
+var
+  DirPayGo, DirTefDial: String;
+begin
+  if Inicializado then exit ;
+
+  // Verificando se Diretório "C:\PAYGO" existe.
+  //  Se não existir usa em modo de compatibilidade "C:\TEF_DIAL"
+  if (ArqReq = CACBrTEFDPayGo_ArqReq) then
+  begin
+    DirPayGo := ExtractFileDir(CACBrTEFDPayGo_ArqReq);
+    DirTefDial := ExtractFileDir(CACBrTEFDDial_ArqReq);
+
+    if (not DirectoryExists(DirPayGo)) and DirectoryExists(DirTefDial) then
+    begin
+      ArqReq    := CACBrTEFDDial_ArqReq;
+      ArqResp   := CACBrTEFDDial_ArqResp;
+      ArqSTS    := CACBrTEFDDial_ArqSTS;
+      ArqTemp   := CACBrTEFDDial_ArqTemp;
+      GPExeName := CACBrTEFDDial_GPExeName;
+    end;
+  end;
+
+  inherited Inicializar;
+end;
+
 procedure TACBrTEFDPayGo.AdicionarIdentificacao;
 var
   Operacoes: Integer ;
 begin
   with TACBrTEFD(Owner) do
   begin
+    // 733-000 Versão da interface n..3 Valor fixo, identificando a versão deste documento
+    // implementada pela Automação Comercial (somente números, por exemplo, 210 para “v2.10”)
+    Req.Conteudo.GravaInformacao(733,000, CACBrTEFDPayGoVersaoInterface);
+
     if (Identificacao.NomeAplicacao  <> '') then
       Req.Conteudo.GravaInformacao(735,000, Identificacao.NomeAplicacao);
 
@@ -331,22 +390,8 @@ begin
 end;
 
 procedure TACBrTEFDPayGo.ProcessarResposta;
-var
-  StatusConfirmacao: String;
 begin
-  StatusConfirmacao := Trim(Resp.LeInformacao(729,0).AsString);
-  // 729-000 - Status da confirmação
-  //    1: transação não requer confirmação, ou já confirmada
-  //    2: transação requer confirmação
-  //    Se não encontrado c
-
-  if (StatusConfirmacao = '1') then
-    fpSalvarArquivoBackup := False
-  else if (StatusConfirmacao = '2') then
-    fpSalvarArquivoBackup := True
-  else
-    fpSalvarArquivoBackup := (Resp.QtdLinhasComprovante > 0);
-
+  fpSalvarArquivoBackup := Resp.Confirmar;
   inherited ProcessarResposta;
 end;
 
@@ -359,12 +404,12 @@ begin
     if (pos(Req.Header, 'CRT,CHQ,ADM,CNC,CNF,NCN') > 0) then
       Req.GravaInformacao(717,0, FormatDateTime('YYMMDDhhnnss', Req.DataHoraTransacaoComprovante) );
 
+  if (pos(Req.Header, 'CRT,ADM,CNC') > 0) then
+    Req.GravaInformacao(725,0, CACBrTEFDPayGoNome+' '+CACBrTEFDPayGoVersao );  // 725-000 Dados adicionais #4
+
   inherited FinalizarRequisicao;
 end;
 
-
 end.
-
-
 
 

@@ -44,7 +44,7 @@ uses
 {$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrConsts,
-  pcnAuxiliar, pcnConversao, pcnGerador,
+  pcnAuxiliar, pcnConversao, pcnGerador, pcnConsts,
   pnfsNFSe, pnfsNFSeW, pnfsConversao, pnfsConsts;
 
 type
@@ -122,9 +122,9 @@ function _ExigibilidadeISSToStr(const t: TnfseExigibilidadeISS): String;
 begin
   // -8 = Fixo
   result := EnumeradoToStr(t,
-                           ['-1','-2','-3','-4','-5','-6','-7'],
+                           ['-1','-2','-3','-4','-5','-6','-7', '-8'],
                            [exiExigivel, exiNaoIncidencia, exiIsencao, exiExportacao, exiImunidade,
-                            exiSuspensaDecisaoJudicial, exiSuspensaProcessoAdministrativo]);
+                            exiSuspensaDecisaoJudicial, exiSuspensaProcessoAdministrativo, exiISSFixo]);
 end;
 
 function _TipoRPSToStr(const t: TnfseTipoRPS): String;
@@ -253,13 +253,13 @@ begin
         Gerador.wCampo(tcStr, '#42', 'Bairro     ', 001, 120, 0, NFSe.Tomador.Endereco.Bairro, '');
 
         Gerador.wGrupo('Municipio');
-        Gerador.wCampo(tcStr, '#43', 'CodigoMunicipioIBGE', 7, 7, 0, OnlyNumber(NFSe.Tomador.Endereco.CodigoMunicipio), '');
+        Gerador.wCampo(tcStr, '#43', 'CodigoMunicipioIBGE', 7, 7, 1, OnlyNumber(NFSe.Tomador.Endereco.CodigoMunicipio), '');
         Gerador.wCampo(tcStr, '', 'Descricao', 1, 300, 0, NFSe.Tomador.Endereco.xMunicipio, '');
         Gerador.wCampo(tcStr, '#44', 'Uf', 2, 2, 0, NFSe.Tomador.Endereco.UF, '');
         Gerador.wGrupo('/Municipio');
 
         Gerador.wGrupo('Pais');
-        Gerador.wCampo(tcStr, '', 'CodigoPaisBacen', 04, 04, 0, NFSe.Tomador.Endereco.CodigoPais, '');
+        Gerador.wCampo(tcStr, '', 'CodigoPaisBacen', 04, 04, 1, NFSe.Tomador.Endereco.CodigoPais, '');
         Gerador.wCampo(tcStr, '', 'Descricao', 0, 300, 0, NFSe.Tomador.Endereco.xPais, '');
         Gerador.wGrupo('/Pais');
       end
@@ -276,7 +276,7 @@ begin
         Gerador.wCampo(tcStr, '', 'CodigoPais', 04, 04, 0, NFSe.Tomador.Endereco.CodigoPais, '');
       end;
 
-      Gerador.wCampo(tcStr, '#45', 'Cep', 008, 008, 0, OnlyNumber(NFSe.Tomador.Endereco.CEP), '');
+      Gerador.wCampo(tcStr, '#45', 'Cep', 008, 008, 1, OnlyNumber(NFSe.Tomador.Endereco.CEP), '');
       Gerador.wGrupo('/Endereco');
     end;
 
@@ -516,10 +516,10 @@ begin
   GerarRegimeEspecialTributacao;
 
   Gerador.wCampo(tcStr, '#7', 'OptanteSimplesNacional', 01, 01, 1, SimNaoToStr(NFSe.OptanteSimplesNacional), '');
+  Gerador.wCampo(tcStr, '', 'OptanteMEISimei', 01, 01, 1, SimNaoToStr(NFSe.OptanteMEISimei), '');
 
   if VersaoNFSe = ve100 then
   begin
-    Gerador.wCampo(tcStr, '', 'OptanteMEISimei', 01, 01, 1, SimNaoToStr(snNao), '');
 
     if NFSe.Servico.Valores.IssRetido = stRetencao then
       Gerador.wCampo(tcStr, '', 'ISSQNRetido', 01, 01, 1, SimNaoToStr(snSim), '')

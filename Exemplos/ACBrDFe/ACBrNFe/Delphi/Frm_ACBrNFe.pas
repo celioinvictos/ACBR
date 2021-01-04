@@ -279,6 +279,7 @@ type
     edtURLPFX: TEdit;
     Label52: TLabel;
     cbTipoEmpresa: TComboBox;
+    btnDistribuicaoDFeNSU: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
@@ -342,6 +343,7 @@ type
     procedure btnImprimirDANFCEClick(Sender: TObject);
     procedure btnImprimirDANFCEOfflineClick(Sender: TObject);
     procedure btVersaoClick(Sender: TObject);
+    procedure btnDistribuicaoDFeNSUClick(Sender: TObject);
   private
     { Private declarations }
     procedure GravarConfiguracao;
@@ -1887,6 +1889,7 @@ end;
 procedure TfrmACBrNFe.btnDistribuicaoDFeClick(Sender: TObject);
 var
   cUFAutor, CNPJ, ultNSU, ANSU: string;
+  contaArquivos:integer;
 begin
   cUFAutor := '';
   if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Código da UF do Autor', cUFAutor)) then
@@ -1906,10 +1909,65 @@ begin
 
   ACBrNFe1.DistribuicaoDFe(StrToInt(cUFAutor), CNPJ, ultNSU, ANSU);
 
-  MemoResp.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetWS;
+//  MemoResp.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetWS;
   memoRespWS.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetornoWS;
 
   LoadXML(ACBrNFe1.WebServices.DistribuicaoDFe.RetWS, WBResposta);
+
+//  MemoResp.Lines.Clear;
+  for contaArquivos:=0 to ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count-1 do
+  begin
+    MemoResp.Lines.Add('     Posição: ' + IntToStr(contaArquivos)+' NSU: '+ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[contaArquivos].NSU+' Tipo: '+ SchemaDFeToStr(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[contaArquivos].schema));
+    MemoResp.Lines.Add(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[contaArquivos].XML);
+    MemoResp.Lines.Add(' ');
+  end;
+
+end;
+
+procedure TfrmACBrNFe.btnDistribuicaoDFeNSUClick(Sender: TObject);
+var
+  cUFAutor, CNPJ, ultNSU, ANSU: string;
+
+  contaArquivos,itens:integer;
+begin
+  cUFAutor := '';
+  if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Código da UF do Autor', cUFAutor)) then
+     exit;
+
+  CNPJ := '';
+  if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'CNPJ/CPF do interessado no DF-e', CNPJ)) then
+     exit;
+
+  ultNSU := '';
+  if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'Último NSU recebido pelo ator', ultNSU)) then
+     exit;
+
+  ANSU := '';
+  if not(InputQuery('WebServices Distribuição Documentos Fiscais', 'NSU específico', ANSU)) then
+     exit;
+
+
+  ACBrNFe1.Configuracoes.Arquivos.DownloadDFe.PathDownload:=ExtractFilePath(Application.ExeName);
+
+
+  ACBrNFe1.DistribuicaoDFePorNSU(StrToInt(cUFAutor),CNPJ,ANSU);
+
+//  MemoResp.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetWS;
+  memoRespWS.Lines.Text := ACBrNFe1.WebServices.DistribuicaoDFe.RetornoWS;
+
+  LoadXML(ACBrNFe1.WebServices.DistribuicaoDFe.RetWS, WBResposta);
+
+
+
+//  MemoResp.Lines.Clear;
+  for contaArquivos:=0 to ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Count-1 do
+  begin
+    MemoResp.Lines.Add('     Posição: ' + IntToStr(contaArquivos)+' NSU: '+ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[contaArquivos].NSU+' Tipo: '+ SchemaDFeToStr(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[contaArquivos].schema));
+    MemoResp.Lines.Add(ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt.docZip.Items[contaArquivos].XML);
+    MemoResp.Lines.Add(' ');
+  end;
+
+
 end;
 
 procedure TfrmACBrNFe.btnEnviarEmailClick(Sender: TObject);
@@ -3257,7 +3315,6 @@ var
   Y: TSSLType;
   N: TACBrPosPrinterModelo;
   O: TACBrPosPaginaCodigo;
-  l: Integer;
 begin
   cbSSLLib.Items.Clear;
   for T := Low(TSSLLib) to High(TSSLLib) do

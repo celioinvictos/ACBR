@@ -2,14 +2,14 @@ object LibMDFeDM: TLibMDFeDM
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
   OldCreateOrder = False
-  left = 346
-  top = 174
-  Height = 231
+  Left = 346
+  Top = 174
+  Height = 88
   HorizontalOffset = 238
   VerticalOffset = 116
-  Width = 491
-  PPI = 96
+  Width = 186
   object ACBrMDFe1: TACBrMDFe
+    MAIL = ACBrMail1
     Configuracoes.Geral.SSLLib = libNone
     Configuracoes.Geral.SSLCryptLib = cryNone
     Configuracoes.Geral.SSLHttpLib = httpNone
@@ -20,29 +20,18 @@ object LibMDFeDM: TLibMDFeDM
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
     Configuracoes.RespTec.IdCSRT = 0
-    DAMDFE = ACBrMDFeDAMDFeRL1
-    left = 94
-    top = 72
+    Left = 32
+    Top = 24
   end
-  object ACBrMDFeDAMDFeRL1: TACBrMDFeDAMDFeRL
-    Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
-    MargemInferior = 0.8
-    MargemSuperior = 0.8
-    MargemEsquerda = 0.6
-    MargemDireita = 0.51
-    CasasDecimais.Formato = tdetInteger
-    CasasDecimais.qCom = 2
-    CasasDecimais.vUnCom = 2
-    CasasDecimais.MaskqCom = ',0.00'
-    CasasDecimais.MaskvUnCom = ',0.00'
-    ACBrMDFe = ACBrMDFe1
-    ImprimeHoraSaida = False
-    TipoDAMDFe = tiSemGeracao
-    TamanhoPapel = tpA4
-    Cancelada = False
-    Encerrado = False
-    PrintDialog = True
-    left = 208
-    top = 80
+  object ACBrMail1: TACBrMail
+    Host = '127.0.0.1'
+    Port = '25'
+    SetSSL = False
+    SetTLS = False
+    Attempts = 3
+    DefaultCharset = UTF_8
+    IDECharset = UTF_8
+    Left = 112
+    Top = 24
   end
 end

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\ACBr.PDV\packages\ExtraConstraints.Fody.1.14.0\build\ExtraConstraints.Fody.props" Condition="Exists('..\..\ACBr.PDV\packages\ExtraConstraints.Fody.1.14.0\build\ExtraConstraints.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -67,8 +68,10 @@
     <Compile Include="ETQ\ETQDPI.cs" />
     <Compile Include="ETQ\ETQModelo.cs" />
     <Compile Include="ETQ\ETQOrientacao.cs" />
+    <Compile Include="ETQ\ETQPageCode.cs" />
     <Compile Include="ETQ\ETQUnidade.cs" />
     <Compile Include="ETQ\TipoCodBarra.cs" />
+    <Compile Include="GNRe\VersaoGNRe.cs" />
     <Compile Include="Ini\ACBrIniFile.cs" />
     <Compile Include="Ini\ACBrIniSection.cs" />
     <Compile Include="Mail\MailAttachmentDisposition.cs" />
@@ -78,6 +81,7 @@
     <Compile Include="MDFe\TipoDAMDFE.cs" />
     <Compile Include="MDFe\TipoPathMDFe.cs" />
     <Compile Include="MDFe\VersaoMDFe.cs" />
+    <Compile Include="NFe\CRT.cs" />
     <Compile Include="NFe\ModeloNFe.cs" />
     <Compile Include="NFe\TipoDANFE.cs" />
     <Compile Include="NFe\TipoPathNFe.cs" />
@@ -105,9 +109,6 @@
     <Compile Include="Serial\SerialParity.cs" />
     <Compile Include="Serial\SerialStopBytes.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="FodyWeavers.xml" />
-  </ItemGroup>
   <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" /> 
 </Project>

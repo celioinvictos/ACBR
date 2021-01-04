@@ -287,6 +287,7 @@ type
     FEmissor: TEmpresaConfig;
     FTipoResposta: TACBrLibRespostaTipo;
     FCodificaoResposta: TACBrLibCodificacao;
+    FEhMemory: boolean;
 
     procedure SetNomeArquivo(AValue: String);
     procedure VerificarNomeEPath(Gravando: Boolean);
@@ -299,24 +300,25 @@ type
     function AtualizarArquivoConfiguracao: Boolean; virtual;
     procedure AplicarConfiguracoes; virtual;
 
+    procedure Travar; virtual;
+    procedure Destravar; virtual;
+
     procedure INIParaClasse; virtual;
     procedure ClasseParaINI; virtual;
     procedure ClasseParaComponentes; virtual; abstract;
-    procedure ImportarIni(FIni: TCustomIniFile); virtual;
-
-    procedure Travar; virtual;
-    procedure Destravar; virtual;
 
     property Owner: TObject read FOwner;
 
   public
-    constructor Create(AOwner: TObject; ANomeArquivo: String = ''; AChaveCrypt: AnsiString = ''); virtual;
+    constructor Create(AOwner: TObject; AArquivoOuIni: String = ''; AChaveCrypt: AnsiString = ''); virtual;
     destructor Destroy; override;
 
     procedure Ler; virtual;
     procedure Gravar; virtual;
 
-    procedure Importar(AConfig: String);
+    procedure Importar(AIniOuFile: String);
+    function Exportar: String;
+
     procedure GravarValor(ASessao, AChave, AValor: String);
     function LerValor(ASessao, AChave: String): String;
 
@@ -326,6 +328,7 @@ type
     property NomeArquivo: String read FNomeArquivo write SetNomeArquivo;
     property ChaveCrypt: String read FChaveCrypt;
 
+    property EhMemory: boolean read FEhMemory;
     property TipoResposta: TACBrLibRespostaTipo read FTipoResposta;
     property CodResposta: TACBrLibCodificacao read FCodificaoResposta;
     property Log: TLogConfig read FLog;
@@ -345,7 +348,7 @@ implementation
 uses
   TypInfo, strutils,
   ACBrLibConsts, ACBrLibComum,
-  ACBrMonitorConsts, ACBrUtil;
+  ACBrLibHelpers, ACBrUtil;
 
 { TSistemaConfig }
 
@@ -707,15 +710,20 @@ end;
 
 { TLibConfig }
 
-constructor TLibConfig.Create(AOwner: TObject; ANomeArquivo: String; AChaveCrypt: AnsiString);
+constructor TLibConfig.Create(AOwner: TObject; AArquivoOuIni: String; AChaveCrypt: AnsiString);
 begin
   if not (AOwner is TACBrLib) then
     raise EACBrLibException.Create(ErrLibNaoInicializada, SErrLibDono);
 
   inherited Create;
 
+  FEhMemory := StringEhIni(AArquivoOuIni) or (AArquivoOuIni = CLibMemory);
   FOwner := AOwner;
-  FNomeArquivo := Trim(ANomeArquivo);
+  FNomeArquivo := '';
+
+  if not FEhMemory then
+    FNomeArquivo := Trim(AArquivoOuIni);
+
   if Length(Trim(AChaveCrypt)) = 0 then
     FChaveCrypt := CLibChaveCrypt
   else
@@ -735,8 +743,14 @@ begin
   FIni := TMemIniFile.Create('');
   FIniAge := 0;
 
-  TACBrLib(FOwner).GravarLog(ClassName + '.Create(' + FNomeArquivo + ', ' +
-    StringOfChar('*', Length(FChaveCrypt)) + ' )', logCompleto);
+  if FEhMemory and StringEhIni(AArquivoOuIni) then
+  begin
+    FIni.LoadFromString(AArquivoOuIni);
+    FNomeArquivo := CLibMemory;
+  end;
+
+  TACBrLib(FOwner).GravarLog(ClassName + '.Create(' + IfThen(FEhMemory, CLibMemory, FNomeArquivo) + ', ' +
+                             StringOfChar('*', Length(FChaveCrypt)) + ' )', logCompleto);
 end;
 
 destructor TLibConfig.Destroy;
@@ -760,7 +774,7 @@ procedure TLibConfig.VerificarSeIniFoiModificado;
 var
   NewIniAge: LongInt;
 begin
-  if not FileExists(FNomeArquivo) then Exit;
+  if (FEhMemory or  not FileExists(FNomeArquivo)) then Exit;
 
   NewIniAge := FileAge(FNomeArquivo);
   if NewIniAge > FIniAge then
@@ -837,13 +851,14 @@ end;
 procedure TLibConfig.AplicarConfiguracoes;
 begin
   TACBrLib(FOwner).GravarLog(ClassName + '.AplicarConfiguracoes: ' + FNomeArquivo, logCompleto);
-  if AtualizarArquivoConfiguracao then
-    Gravar;
 
   Travar;
   try
     INIParaClasse;
     ClasseParaComponentes;
+    if AtualizarArquivoConfiguracao then
+      Gravar;
+
     TACBrLib(FOwner).GravarLog(ClassName + '.AplicarConfiguracoes - Feito', logParanoico);
   finally
     Destravar;
@@ -855,21 +870,32 @@ var
   ArquivoInformado: Boolean;
 begin
   Travar;
-  try
-    ArquivoInformado := (FNomeArquivo <> '') and FileExists(FNomeArquivo);
-    VerificarNomeEPath(not ArquivoInformado);
-    TACBrLib(FOwner).GravarLog(ClassName + '.Ler: ' + FNomeArquivo, logCompleto);
 
-    if FIni.FileName <> FNomeArquivo then
+  try
+    if not EhMemory then
+    begin
+      ArquivoInformado := (FNomeArquivo <> '') and FileExists(FNomeArquivo);
+      VerificarNomeEPath(not ArquivoInformado);
+
+      TACBrLib(FOwner).GravarLog(ClassName + '.Ler: ' + FNomeArquivo, logCompleto);
+
+      // Força ler atualizações do Disco
       FIni.Rename(FNomeArquivo, FileExists(FNomeArquivo));
 
-    if not FileExists(FNomeArquivo) then
+      if not FileExists(FNomeArquivo) then
+      begin
+        Gravar;
+        Exit;
+      end;
+
+      LerDataHoraArqIni;
+    end
+    else if (FNomeArquivo.IsEmpty) then
     begin
-      Gravar;
-      Exit;
+      ClasseParaINI;
+      FNomeArquivo := CLibMemory;
     end;
 
-    LerDataHoraArqIni;
     INIParaClasse;
     AplicarConfiguracoes;
   finally
@@ -895,7 +921,10 @@ end;
 
 procedure TLibConfig.Gravar;
 begin
+  if EhMemory then Exit;
+
   Travar;
+
   try
     TACBrLib(FOwner).GravarLog(ClassName + '.Gravar: ' + FNomeArquivo, logCompleto);
     VerificarNomeEPath(True);
@@ -930,10 +959,6 @@ begin
   FEmissor.GravarIni(FIni);
 end;
 
-procedure TLibConfig.ImportarIni(FIni: TCustomIniFile);
-begin
-end;
-
 procedure TLibConfig.Travar;
 begin
   {}
@@ -944,76 +969,32 @@ begin
   {}
 end;
 
-procedure TLibConfig.Importar(AConfig: String);
-Var
-  FMIni: TIniFile;
-  AuxStr: String;
+procedure TLibConfig.Importar(AIniOuFile: String);
 begin
-  FMIni := TIniFile.Create(AConfig);
+  TACBrLib(FOwner).GravarLog(ClassName + '.Importar: ' + AIniOuFile, logCompleto);
 
   try
-    //Proxy
-    ProxyInfo.FPorta := FMIni.ReadInteger(CSecProxy, CKeyProxyPorta, ProxyInfo.Porta);
-    ProxyInfo.FServidor := FMIni.ReadString(CSecProxy, CKeyProxyHost, ProxyInfo.Servidor);
-    ProxyInfo.FUsuario := FMIni.ReadString(CSecProxy, CKeyProxyUser, ProxyInfo.Usuario);
+    if StringEhINI(AIniOuFile) then
+      FIni.LoadFromString(AIniOuFile)
+    else
+      FIni.LoadFromFile(AIniOuFile);
 
-    AuxStr := '';
-    AuxStr := FMIni.ReadString(CSecProxy, CKeyProxyPass, '');
-    if(AuxStr <> '') then
-      ProxyInfo.FSenha := StringToB64Crypt(B64CryptToString(AuxStr), FChaveCrypt);
-
-    // Email
-    Email.FNome := FMIni.ReadString(CSecEmail, CKeyEmailNomeExibicao, Email.Nome);
-    Email.FServidor := FMIni.ReadString(CSecEmail, CKeyEmailEndereco, Email.Servidor);
-    Email.FPorta := FMIni.ReadInteger(CSecEmail, CKeyEmailPorta, Email.Porta);
-    Email.FUsuario := FMIni.ReadString(CSecEmail, CKeyEmailUsuario, Email.Usuario);
-
-    AuxStr := '';
-    AuxStr := FMIni.ReadString(CSecEmail, CKeyEmailSenha, '');
-    if(AuxStr <> '') then
-      Email.FSenha := StringToB64Crypt(B64CryptToString(AuxStr), FChaveCrypt);
-
-    Email.FSSL := FMIni.ReadBool(CSecEmail, CKeyEmailExigeSSL, Email.SSL);
-    Email.FTLS := FMIni.ReadBool(CSecEmail, CKeyEmailExigeTLS, Email.TLS);
-    Email.FSegundoPlano := FMIni.ReadBool(CSecEmail, CKeyEmailSegundoPlano, Email.SegundoPlano);
-    Email.FConfirmacao := FMIni.ReadBool(CSecEmail, CKeyEmailConfirmacao, Email.Confirmacao);
-    Email.FIsHTML := FMIni.ReadBool(CSecEmail, CKeyEmailHTML, Email.IsHTML);
-    Email.FCodificacao := TMimeChar(FMIni.ReadInteger(CSecEmail, CKeyEmailConfirmacao, Integer(Email.Codificacao)));
-
-    //PosPrinter
-    PosPrinter.Modelo := FMIni.ReadInteger(CSecPosPrinter, CKeyPosPrinterModelo, PosPrinter.Modelo);
-    PosPrinter.Porta := FMIni.ReadString(CSecPosPrinter, CKeyPosPrinterPorta, PosPrinter.Porta);
-    PosPrinter.ColunasFonteNormal := FMIni.ReadInteger(CSecPosPrinter, CKeyPosPrinterColunas, PosPrinter.ColunasFonteNormal);
-    PosPrinter.EspacoEntreLinhas := FMIni.ReadInteger(CSecPosPrinter, CKeyPosPrinterEspacoEntreLinhas, PosPrinter.EspacoEntreLinhas);
-    PosPrinter.LinhasBuffer := FMIni.ReadInteger(CSecPosPrinter, CKeyPosPrinterLinhasBuffer, PosPrinter.LinhasBuffer);
-    PosPrinter.LinhasEntreCupons := FMIni.ReadInteger(CSecPosPrinter, CKeyPosPrinterLinhasPular, PosPrinter.LinhasEntreCupons);
-    PosPrinter.PaginaDeCodigo := FMIni.ReadInteger(CSecPosPrinter, CKeyPosPrinterPaginaDeCodigo, PosPrinter.PaginaDeCodigo);
-    PosPrinter.ControlePorta := FMIni.ReadBool(CSecPosPrinter, CKeyPosPrinterControlePorta, PosPrinter.ControlePorta);
-    PosPrinter.CortaPapel := FMIni.ReadBool(CSecPosPrinter, CKeyPosPrinterCortarPapel, PosPrinter.CortaPapel);
-    PosPrinter.TraduzirTags := FMIni.ReadBool(CSecPosPrinter, CKeyPosPrinterTraduzirTags, PosPrinter.TraduzirTags);
-    PosPrinter.IgnorarTags := FMIni.ReadBool(CSecPosPrinter, CKeyPosPrinterIgnorarTags, PosPrinter.IgnorarTags);
-    PosPrinter.ArqLog := FMIni.ReadString(CSecPosPrinter, CKeyPosPrinterArqLog, PosPrinter.ArqLog);
-
-    PosPrinter.BcLarguraLinha := FMIni.ReadInteger(CSecBarras, CKeyBarrasLargura, PosPrinter.BcLarguraLinha);
-    PosPrinter.BcAltura := FMIni.ReadInteger(CSecBarras, CKeyBarrasAltura, PosPrinter.BcAltura);
-
-    PosPrinter.QrTipo := FMIni.ReadInteger(CSecQRCode, CKeyQRCodeTipo, PosPrinter.QrTipo);
-    PosPrinter.QrLarguraModulo := FMIni.ReadInteger(CSecQRCode, CKeyQRCodeLarguraModulo, PosPrinter.QrLarguraModulo);
-    PosPrinter.QrErrorLevel := FMIni.ReadInteger(CSecQRCode, CKeyQRCodeErrorLevel, PosPrinter.QrErrorLevel);
-
-    PosPrinter.LgIgnorarLogo := not FMIni.ReadBool(CSecLogo, CKeyLogoImprimir, not PosPrinter.LgIgnorarLogo);
-    PosPrinter.LgKeyCode1 := FMIni.ReadInteger(CSecLogo, CKeyLogoKC1, PosPrinter.LgKeyCode1);
-    PosPrinter.LgKeyCode2 := FMIni.ReadInteger(CSecLogo, CKeyLogoKC2, PosPrinter.LgKeyCode2);
-    PosPrinter.LgFatorX := FMIni.ReadInteger(CSecLogo, CKeyLogoFatorX, PosPrinter.LgFatorX);
-    PosPrinter.LgFatorY := FMIni.ReadInteger(CSecLogo, CKeyLogoFatorY, PosPrinter.LgFatorY);
-
-    PosPrinter.GvTempoON := FMIni.ReadInteger(CSecGaveta, CKeyGavetaTempoON, PosPrinter.GvTempoON);
-    PosPrinter.GvTempoOFF := FMIni.ReadInteger(CSecGaveta, CKeyGavetaTempoOFF, PosPrinter.GvTempoOFF);
-    PosPrinter.GvSinalInvertido := FMIni.ReadBool(CSecGaveta, CKeyGavSinalInvertido, PosPrinter.GvSinalInvertido);
-
-    ImportarIni(FMIni);
+    INIParaClasse;
+    AplicarConfiguracoes;
   finally
-    FreeAndNil(FMIni);
+    TACBrLib(FOwner).GravarLog(ClassName + '.Importar - Feito', logParanoico);
+  end;
+end;
+
+function TLibConfig.Exportar: String;
+begin
+  TACBrLib(FOwner).GravarLog(ClassName + '.Exportar', logCompleto);
+
+  try
+    ClasseParaINI;
+    Result := FIni.AsString;
+  finally
+    TACBrLib(FOwner).GravarLog(ClassName + '.Exportar - Feito', logParanoico);
   end;
 end;
 

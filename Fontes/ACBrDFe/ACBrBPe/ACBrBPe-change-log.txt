@@ -45,6 +45,31 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+13/11/2020
+-- ACBrBPeBilhetes --
+[*] Uso da função ObterDFeXML nos métodos Validar e VerificarAssinatura
+   Por: Italo Giurizzato Junior
+-- ACBrBPeServicos --
+[*] Correção nas URLs para recepcção do BP-e TM
+   Por: Italo Giurizzato Junior
+
+11/09/2020
+-- ACBrBPeDABPeESCPOS --
+[+] Impressão do valor do Excesso de Bagagem na impressão do Evento
+   Por: Italo Jurisato Junior
+
+03/08/2020
+-- ACBrBPeBilhetes --
+[-] Resolvido o problema de: Falha ao interpretar o XML "xmlParseDoc" 
+   Por: Italo Jurisato Junior
+
+23/07/2020
+-- Diversos --
+[+] Acrescentado a unit pcnConsts em algumas units do componente.
+    Por conta da migração de algumas constantes de pcnGerador para
+    pcnConsts.
+   Por: Italo Jurisato Junior
+
 13/04/2020
 -- Diversos --
 [*] Melhorias no método EnviarEmailEvento.

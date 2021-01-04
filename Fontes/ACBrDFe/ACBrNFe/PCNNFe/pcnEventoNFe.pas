@@ -51,7 +51,7 @@ interface
 
 uses
   SysUtils, Classes,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -309,6 +309,7 @@ begin
     teEventoFiscoCPP1,
     teEventoFiscoCPP2          : Result := 'Evento Fisco';
     teConfInternalizacao       : Result := 'Confirmacao de Internalizacao da Mercadoria na SUFRAMA';
+    teComprEntrega             : Result := 'Comprovante de Entrega do CT-e';
   else
     Result := '';
   end;
@@ -365,6 +366,7 @@ begin
     teEventoFiscoCPP1,
     teEventoFiscoCPP2          : Result := 'Evento Fisco';
     teConfInternalizacao       : Result := 'Confirmacao de Internalizacao da Mercadoria na SUFRAMA';
+    teComprEntrega             : Result := 'Comprovante de Entrega do CT-e';
   else
     Result := 'Não Definido';
   end;

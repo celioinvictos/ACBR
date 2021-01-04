@@ -190,12 +190,17 @@ begin
 
   with TACBrBPe(TBilhetes(Collection).ACBrBPe) do
   begin
-    FBPe.Ide.modelo := 63;
+//    FBPe.Ide.modelo := 63;
+    FBPe.Ide.modelo := StrToInt(ModeloBPeToStr(Configuracoes.Geral.ModeloDF));
     FBPe.infBPe.Versao := VersaoBPeToDbl(Configuracoes.Geral.VersaoDF);
     FBPe.Ide.tpBPe := tbNormal;
     FBPe.Ide.verProc := 'ACBrBPe';
     FBPe.Ide.tpAmb := Configuracoes.WebServices.Ambiente;
-    FBPe.Ide.tpEmis := Configuracoes.Geral.FormaEmissao;
+
+    if Configuracoes.Geral.FormaEmissao = pcnConversao.teNormal then
+      FBPe.Ide.tpEmis := teNormal
+    else
+      FBPe.Ide.tpEmis := teOffLine;
   end;
 end;
 
@@ -249,7 +254,11 @@ begin
 
   with TACBrBPe(TBilhetes(Collection).ACBrBPe) do
   begin
-    FXMLAssinado := SSL.Assinar(String(XMLUTF8), 'BPe', 'infBPe');
+    if Configuracoes.Geral.ModeloDF = moBPe then
+      FXMLAssinado := SSL.Assinar(String(XMLUTF8), 'BPe', 'infBPe')
+    else
+      FXMLAssinado := SSL.Assinar(String(XMLUTF8), 'BPeTM', 'infBPe');
+
     // SSL.Assinar() sempre responde em UTF8...
     FXMLOriginal := FXMLAssinado;
 
@@ -264,15 +273,18 @@ begin
       Leitor.Free;
     end;
 
-    with TACBrBPe(TBilhetes(Collection).ACBrBPe) do
+    if Configuracoes.Geral.ModeloDF = moBPe then
     begin
-      BPe.infBPeSupl.qrCodBPe := GetURLQRCode(BPe.Ide.cUF,
-                                              BPe.Ide.tpAmb,
-                                              BPe.infBPe.ID);
+      with TACBrBPe(TBilhetes(Collection).ACBrBPe) do
+      begin
+        BPe.infBPeSupl.qrCodBPe := GetURLQRCode(BPe.Ide.cUF,
+                                                BPe.Ide.tpAmb,
+                                                BPe.infBPe.ID);
 
-//      BPe.infBPeSupl.boardPassBPe := GetURLConsultaNFCe(BPe.Ide.cUF, BPe.Ide.tpAmb);
+  //      BPe.infBPeSupl.boardPassBPe := GetURLConsultaNFCe(BPe.Ide.cUF, BPe.Ide.tpAmb);
 
-      GerarXML;
+        GerarXML;
+      end;
     end;
 
     if Configuracoes.Arquivos.Salvar and
@@ -288,8 +300,8 @@ end;
 
 procedure Bilhete.Validar;
 var
-  Erro, AXML, DeclaracaoXML: String;
-  BilheteEhValida: Boolean;
+  Erro, AXML, Grupo: String;
+  BilheteEhValida, Ok: Boolean;
   ALayout: TLayOutBPe;
   VerServ: Real;
 begin
@@ -300,15 +312,28 @@ begin
   with TACBrBPe(TBilhetes(Collection).ACBrBPe) do
   begin
     VerServ := FBPe.infBPe.Versao;
-    ALayout := LayBPeRecepcao;
 
-    // Extraindo apenas os dados da BPe (sem BPeProc)
-    DeclaracaoXML := ObtemDeclaracaoXML(AXML);
-    AXML := DeclaracaoXML + '<BPe xmlns' +
-            RetornarConteudoEntre(AXML, '<BPe xmlns', '</BPe>') +
-            '</BPe>';
+    if Pos('BPeTM', AXML) > 0 then
+    begin
+      ALayout := LayBPeRecepcaoTM;
+      Grupo := 'BPeTM';
+    end
+    else
+    begin
+      ALayout := LayBPeRecepcao;
+      Grupo := 'BPe';
+    end;
 
-    BilheteEhValida := SSL.Validar(AXML, GerarNomeArqSchema(ALayout, VerServ), Erro);
+    // Extraindo apenas os dados da BPe (sem bpeProc)
+    AXML := ObterDFeXML(AXML, Grupo, ACBRBPE_NAMESPACE);
+
+    if EstaVazio(AXML) then
+    begin
+      Erro := ACBrStr(Grupo + ' não encontrada no XML');
+      BilheteEhValida := False;
+    end
+    else
+      BilheteEhValida := SSL.Validar(AXML, GerarNomeArqSchema(ALayout, VerServ), Erro);
 
     if not BilheteEhValida then
     begin
@@ -325,8 +350,9 @@ end;
 
 function Bilhete.VerificarAssinatura: Boolean;
 var
-  Erro, AXML, DeclaracaoXML: String;
-  AssEhValida: Boolean;
+  Erro, AXML, Grupo: String;
+  AssEhValida, Ok: Boolean;
+  Modelo: TModeloBPe;
 begin
   AXML := FXMLAssinado;
   if AXML = '' then
@@ -334,14 +360,21 @@ begin
 
   with TACBrBPe(TBilhetes(Collection).ACBrBPe) do
   begin
+    if Pos('BPeTM', AXML) > 0 then
+      Grupo := 'BPeTM'
+    else
+      Grupo := 'BPe';
 
-    // Extraindo apenas os dados do BPe (sem bpeProc)
-    DeclaracaoXML := ObtemDeclaracaoXML(AXML);
-    AXML := DeclaracaoXML + '<BPe xmlns' +
-            RetornarConteudoEntre(AXML, '<BPe xmlns', '</BPe>') +
-            '</BPe>';
+    // Extraindo apenas os dados da BPe (sem bpeProc)
+    AXML := ObterDFeXML(AXML, Grupo, ACBRBPE_NAMESPACE);
 
-    AssEhValida := SSL.VerificarAssinatura(AXML, Erro, 'infBPe');
+    if EstaVazio(AXML) then
+    begin
+      Erro := ACBrStr(Grupo + ' não encontrada no XML');
+      AssEhValida := False;
+    end
+    else
+      AssEhValida := SSL.VerificarAssinatura(AXML, Erro, 'infBPe');
 
     if not AssEhValida then
     begin
@@ -565,7 +598,7 @@ begin
       INIRec.WriteInteger('ide', 'cBP', Ide.cBP);
       INIRec.WriteString('ide', 'modal', ModalBPeToStr(Ide.modal));
       INIRec.WriteString('ide', 'dhEmi', DateTimeToStr(Ide.dhEmi));
-      INIRec.WriteString('ide', 'tpEmis', tpEmisToStr(Ide.tpEmis));
+      INIRec.WriteString('ide', 'tpEmis', tpEmisBPeToStr(Ide.tpEmis));
       INIRec.WriteString('ide', 'verProc', Ide.verProc);
       INIRec.WriteString('ide', 'tpBPe', tpBPeToStr(Ide.tpBPe));
       INIRec.WriteString('ide','indPres', PresencaCompradorToStr(Ide.indPres));
@@ -854,7 +887,7 @@ begin
     else
       Data := Now;
 
-    Result := PathWithDelim(Configuracoes.Arquivos.GetPathBPe(Data, FBPe.Emit.CNPJ, FBPe.Emit.IE));
+    Result := PathWithDelim(Configuracoes.Arquivos.GetPathBPe(Data, FBPe.Emit.CNPJ, FBPe.Emit.IE, Configuracoes.Geral.ModeloDF));
   end;
 end;
 
@@ -991,7 +1024,7 @@ begin
       Ide.cBP     := INIRec.ReadInteger('ide', 'cBP', 0);
       Ide.modal   := StrToModalBPe(OK, INIRec.ReadString('ide', 'modal', '1'));
       Ide.dhEmi   := StringToDateTime(INIRec.ReadString('ide', 'dhEmi', '0'));
-      Ide.tpEmis  := StrToTpEmis(OK, INIRec.ReadString('ide', 'tpEmis', IntToStr(FConfiguracoes.Geral.FormaEmissaoCodigo)));
+      Ide.tpEmis  := StrToTpEmisBPe(OK, INIRec.ReadString('ide', 'tpEmis', IntToStr(FConfiguracoes.Geral.FormaEmissaoCodigo)));
       Ide.verProc := INIRec.ReadString('ide', 'verProc', 'ACBrBPe');
       Ide.tpBPe   := StrTotpBPe(OK,INIRec.ReadString('ide', 'tpBPe', '0'));
       Ide.indPres := StrToPresencaComprador(OK, INIRec.ReadString('ide', 'indPres', '1'));
@@ -1498,15 +1531,24 @@ function TBilhetes.LoadFromString(const AXMLString: String;
 var
   ABPeXML, XMLStr: AnsiString;
   P, N: integer;
+  Modelo: TModeloBPe;
 
   function PosBPe: integer;
   begin
-    Result := pos('</BPe>', XMLStr);
+    if Modelo = moBPeTM then
+      Result := Pos('</BPeTM>', XMLStr)
+    else
+      Result := pos('</BPe>', XMLStr);
   end;
 
 begin
   // Verifica se precisa Converter de UTF8 para a String nativa da IDE //
   XMLStr := ConverteXMLtoNativeString(AXMLString);
+
+  if Pos('</BPeTM>', XMLStr) > 0 then
+    Modelo := moBPeTM
+  else
+    Modelo := moBPe;
 
   N := PosBPe;
   while N > 0 do

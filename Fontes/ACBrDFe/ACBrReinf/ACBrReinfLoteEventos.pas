@@ -38,14 +38,14 @@ interface
 
 uses
   Classes, SysUtils, Dialogs, StrUtils, synautil,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IFEND}
   ACBrBase, ACBrUtil,
   pcnConversao, pcnAuxiliar, pcnLeitor, pcnGerador,
-  ACBrReinfConfiguracoes, ACBrReinfEventos,
+  ACBrReinfConfiguracoes, ACBrReinfEventos, pcnConsts,
   pcnCommonReinf, pcnConversaoReinf;
 
 type

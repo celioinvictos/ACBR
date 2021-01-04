@@ -4,7 +4,7 @@
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
-{																			   }
+{															                                      				   }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
@@ -27,6 +27,15 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
+
+{******************************************************************************
+|* Historico
+|*
+|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
+|*  - Doação do componente para o Projeto ACBr
+|* 28/08/2017: Leivio Fontenele - leivio@yahoo.com.br
+|*  - Implementação comunicação, envelope, status e retorno do componente com webservice.
+******************************************************************************}
 
 unit Frm_ACBreSocial;
 
@@ -4760,16 +4769,20 @@ end;
 procedure TfrmACBreSocial.btnCarregarXMLClick(Sender: TObject);
 var
   i: Integer;
+  LidoXML: Boolean;
 begin
-  OpenDialog1.Title := 'Selecione o Evento (Arquivo XML)';
-  OpenDialog1.DefaultExt := '*.xml';
-  OpenDialog1.Filter :=
-    'Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
-  OpenDialog1.InitialDir := ACBreSocial1.Configuracoes.Arquivos.PathSalvar;
+  repeat
+    OpenDialog1.Title := 'Selecione o Evento (Arquivo XML)';
+    OpenDialog1.DefaultExt := '*.xml';
+    OpenDialog1.Filter :=
+      'Arquivos XML (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*';
+    OpenDialog1.InitialDir := ACBreSocial1.Configuracoes.Arquivos.PathSalvar;
 
-  if OpenDialog1.Execute then
-    ACBreSocial1.Eventos.LoadFromFile(OpenDialog1.FileName);
+    LidoXML := OpenDialog1.Execute;
 
+    if LidoXML then
+      ACBreSocial1.Eventos.LoadFromFile(OpenDialog1.FileName);
+  until not LidoXML;
 
   MemoResp.Clear;
   MemoResp.Lines.Clear;

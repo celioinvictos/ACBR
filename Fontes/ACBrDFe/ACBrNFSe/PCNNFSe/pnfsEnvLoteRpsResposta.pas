@@ -38,7 +38,7 @@ interface
 
 uses
   SysUtils, Classes, Variants, StrUtils,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -153,7 +153,8 @@ type
     function LerXML_proGiap: Boolean;
     function LerXML_proAssessorPublica: Boolean;
     function LerXML_proSiat: Boolean; 
-
+    function LerXML_proSigIss: Boolean;
+    function LerXML_proGeisWeb: Boolean;
 
     property Leitor: TLeitor         read FLeitor   write FLeitor;
     property InfRec: TInfRec         read FInfRec   write FInfRec;
@@ -316,6 +317,8 @@ begin
     proGiap:       Result := LerXML_proGiap;
     proAssessorPublico : Result := LerXML_proAssessorPublica;
     proSiat:       Result := LerXML_proSiat;
+    proSigIss:     Result := LerXML_proSigIss;
+    proGeisWeb:    Result := LerXML_proGeisWeb;
   else
     Result := LerXml_ABRASF;
   end;
@@ -398,6 +401,33 @@ begin
       end;
     end;
 
+    if Provedor in [proAbase] then
+    begin
+      i := InfRec.FMsgRetorno.Count;
+      if (Leitor.rExtrai(1, 'ListaMensagemRetornoLote', '', 1) <> '') then
+      begin
+        InfRec.FMsgRetorno.New;
+        InfRec.FMsgRetorno[i].FIdentificacaoRps.Numero := Leitor.rCampo(tcStr, 'Numero');
+        InfRec.FMsgRetorno[i].FIdentificacaoRps.Serie  := Leitor.rCampo(tcStr, 'Serie');
+        InfRec.FMsgRetorno[i].FIdentificacaoRps.Tipo   := StrToTipoRPS(Ok, Leitor.rCampo(tcStr, 'Tipo'));
+
+        InfRec.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'Codigo');
+        InfRec.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'Mensagem');
+        InfRec.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'Correcao');
+      end;
+    end;
+
+    if Provedor in [proElotech] then
+    begin
+      i := 0;
+      while (Leitor.rExtrai(1, 'InfNfse', '', i + 1) <> '') do
+      begin
+        InfRec.FListaChaveNFeRPS.New;
+        infRec.FListaChaveNFeRPS[i].FChaveNFeRPS.Numero := Leitor.rCampo(tcStr, 'ChaveAcesso');
+        inc(i);
+      end;
+    end;
+
     i := 0;
     while Leitor.rExtrai(iNivel, 'ErroWebServiceResposta', '', i + 1) <> '' do
     begin
@@ -418,6 +448,19 @@ begin
       InfRec.FMsgRetorno[i].FCorrecao := Leitor.rCampo(tcStr, 'ErroSolucao');
 
       inc(i);
+    end;
+
+    if (Provedor in [proAEG]) and (Pos('ResultadoErro', Leitor.Arquivo) > 0) then
+    begin
+      while Leitor.rExtrai(iNivel, 'Resultado', '', i + 1) <> '' do
+      begin
+        InfRec.FMsgRetorno.New;
+        InfRec.FMsgRetorno[i].FCodigo   := Leitor.rCampo(tcStr, 'ResultadoCodigo');
+        InfRec.FMsgRetorno[i].FMensagem := Leitor.rCampo(tcStr, 'ResultadoErro');
+        InfRec.FMsgRetorno[i].FCorrecao := '';
+
+        inc(i);
+      end;
     end;
   except
     Result := False;
@@ -911,7 +954,7 @@ begin
         while Leitor.rExtrai(2, 'DesOco', '', j + 1) <> '' do
         begin
           Msg  := Leitor.rCampo(tcStr, 'DesOco');
-          if (Pos('OK!', Msg) = 0) and (Pos('importado com sucesso', Msg) = 0) then
+          if (Pos('OK!', Msg) = 0) and (Pos('Importado com sucesso', Msg) = 0) then
           begin
             InfRec.FMsgRetorno.New;
             InfRec.FMsgRetorno[MsgErro].FMensagem := Msg;
@@ -1176,6 +1219,38 @@ begin
   end;
 end;
 
+function TretEnvLote.LerXML_proGeisWeb: Boolean;
+var
+  i: Integer;
+begin
+  try
+    Result := True;
+
+//    infRec.FNumeroLote      := Leitor.rCampo(tcStr, 'nrLote');
+//    infRec.FDataRecebimento := Leitor.rCampo(tcDatHor, 'dtRecebimento');
+//    infRec.FProtocolo       := Leitor.rCampo(tcStr, 'nrProtocolo');
+
+    if leitor.rExtrai(1, 'EnviaLoteRpsResposta') <> '' then
+    begin
+      if leitor.rExtrai(2, 'EnviaLoteRpsResposta') <> '' then
+      begin
+        i := 0;
+        while Leitor.rExtrai(3, 'Msg', '', i + 1) <> '' do
+        begin
+          InfRec.FMsgRetorno.New;
+          InfRec.FMsgRetorno[i].FCodigo  := Leitor.rCampo(tcStr, 'Erro');
+          InfRec.FMsgRetorno[i].FMensagem:= Leitor.rCampo(tcStr, 'Status');
+          InfRec.FMsgRetorno[i].FCorrecao:= Leitor.rCampo(tcStr, '');
+
+          inc(i);
+        end;
+      end;
+    end;
+  except
+    Result := False;
+  end;
+end;
+
 function TretEnvLote.LerXML_proGiap: Boolean;
 var
   i, j : Smallint;
@@ -1345,6 +1420,66 @@ begin
       FInfRec.FMsgRetorno[i].FMensagem := Leitor.Grupo;
       FInfRec.FMsgRetorno[i].FCorrecao := '';
     end;
+  except
+    Result := False;
+  end;
+end;
+
+function TretEnvLote.LerXML_proSigIss: Boolean;
+var
+  i: Integer;
+  j: string;
+  leitorAux: TLeitor;
+begin
+  Result := True;
+  try
+    if leitor.rExtrai(1, 'GerarNotaResponse') <> ''
+     then begin
+       j := leitor.Arquivo;
+       j := StringReplace(j, ' xsi:type="xsd:int"', '', [rfReplaceAll]);
+       j := StringReplace(j, ' xsi:type="xsd:string"', '', [rfReplaceAll]);
+
+       leitorAux := TLeitor.Create;
+       leitorAux.Arquivo := j;
+       leitorAux.Grupo   := j;
+
+       FInfRec.FSucesso := leitorAux.rCampo(tcStr, 'Resultado');
+
+       if (FInfRec.FSucesso = '1')
+        then begin
+          FInfRec.FDataRecebimento := now;
+          FInfRec.FProtocolo       := leitorAux.rCampo(tcStr, 'Nota');
+
+          if (leitorAux.rExtrai(1, 'DescricaoErros') <> '')
+           then begin
+             i := 0;
+
+             while leitorAux.rExtrai(1, 'DescricaoErros', '', i + 1) <> '' do
+              begin
+                FInfRec.MsgRetorno.New;
+                FInfRec.FMsgRetorno[i].FCodigo   := leitorAux.rCampo(tcStr, 'id');
+                FInfRec.FMsgRetorno[i].FMensagem := leitorAux.rCampo(tcStr, 'DescricaoProcesso');
+
+                Inc(i);
+              end;
+           end;
+        end
+        else begin
+          if (leitorAux.rExtrai(1, 'DescricaoErros') <> '')
+           then begin
+             i := 0;
+
+             while Leitor.rExtrai(1, 'DescricaoErros', '', i + 1) <> '' do
+              begin
+                FInfRec.MsgRetorno.New;
+                FInfRec.FMsgRetorno[i].FCodigo   := leitorAux.rCampo(tcStr, 'id');
+                FInfRec.FMsgRetorno[i].FMensagem := leitorAux.rCampo(tcStr, 'DescricaoErro');
+
+                Inc(i);
+              end;
+           end;
+        end;
+     end;
   except
     Result := False;
   end;

@@ -61,7 +61,6 @@ begin
   finally
     ListPorts.Free;
   end;
-
 end;
 
 function PortasUSB(const Device: TACBrDevice): ansistring;
@@ -70,19 +69,21 @@ var
   i: Integer;
 begin
   Result := '';
+  {$IfDef MSWINDOWS}
   ListPorts:= TStringList.Create;
   try
-    {$IfDef MSWINDOWS}
-      Device.AcharPortasUSB(ListPorts);
-    {$EndIf}
+
+    Device.AcharPortasUSB(ListPorts);
+
     for i:= 0 to ListPorts.Count - 1 do
     begin
       Result:= Result + ListPorts[i] + '|';
     end;
+
   finally
     ListPorts.Free;
   end;
-
+  {$EndIf}
 end;
 
 function PortasRAW(const Device: TACBrDevice): ansistring;
@@ -101,7 +102,6 @@ begin
   finally
     ListPorts.Free;
   end;
-
 end;
 
 end.

@@ -51,7 +51,7 @@ interface
 
 uses
   SysUtils, Classes,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -194,6 +194,8 @@ begin
         InfEvento.cOrgao       := Leitor.rCampo(tcInt, 'cOrgao');
         infEvento.tpAmb        := StrToTpAmb(ok, Leitor.rCampo(tcStr, 'tpAmb'));
         infEvento.CNPJ         := Leitor.rCampo(tcStr, 'CNPJ');
+        if InfEvento.CNPJ = EmptyStr then
+           infEvento.CNPJ         := Leitor.rCampo(tcStr, 'CPF');
         infEvento.chNFe        := Leitor.rCampo(tcStr, 'chNFe');
         infEvento.dhEvento     := Leitor.rCampo(tcDatHor, 'dhEvento');
         infEvento.tpEvento     := StrToTpEventoNFe(ok,Leitor.rCampo(tcStr, 'tpEvento'));

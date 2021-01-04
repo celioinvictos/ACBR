@@ -423,7 +423,7 @@ begin
 
   With fpNFSe do
   begin
-    rllNatOperacao.Caption    := ACBrStr(NaturezaOperacaoDescricao( NaturezaOperacao ));
+    rllNatOperacao.Caption    := ACBrStr(NaturezaOperacaoDescricao( NaturezaOperacao, fpDANFSe.Provedor ));
     MostrarNaturezaOperacao   := rllNatOperacao.Caption<>'';
     RLLabel137.Visible        := MostrarNaturezaOperacao;
     rllRegimeEspecial.Caption := ACBrStr(nfseRegimeEspecialTributacaoDescricao( RegimeEspecialTributacao ));
@@ -526,7 +526,7 @@ begin
 
       with IdentificacaoPrestador do
       begin
-        rllPrestCNPJ.Caption          := FormatarCNPJouCPF( Cnpj );
+        rllPrestCNPJ.Caption          := FormatarCNPJouCPF( ifThen (Cnpj <> '', Cnpj,fpDANFSe.CNPJ_Prestador) );
         rllPrestInscMunicipal.Caption := IfThen(InscricaoMunicipal <> '', InscricaoMunicipal, fpDANFSe.InscMunicipal);
       end;
 

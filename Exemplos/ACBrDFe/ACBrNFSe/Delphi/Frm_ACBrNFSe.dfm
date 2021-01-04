@@ -1720,9 +1720,18 @@ object frmACBrNFSe: TfrmACBrNFSe
           Top = 3
           Width = 177
           Height = 25
-          Caption = 'Cancelar NFSe'
+          Caption = 'Cancelar NFSe (Com XML)'
           TabOrder = 0
           OnClick = btnCancNFSeClick
+        end
+        object btnCancelarNFSeSemXML: TButton
+          Left = 186
+          Top = 3
+          Width = 177
+          Height = 25
+          Caption = 'Cancelar NFSe (Sem XML)'
+          TabOrder = 1
+          OnClick = btnCancelarNFSeSemXMLClick
         end
       end
     end
@@ -1874,6 +1883,7 @@ object frmACBrNFSe: TfrmACBrNFSe
     TamanhoFonte = 6
     FormatarNumeroDocumentoNFSe = True
     PrintDialog = True
+    DetalharServico = True
     Left = 432
     Top = 248
   end

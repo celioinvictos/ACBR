@@ -298,8 +298,12 @@ begin
   end;
 
   case FProvedor of
-    proThema,
-    proGINFES:  Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 1, (NFSe.Servico.Valores.Aliquota / 100), DSC_VALIQ);
+    proThema :  Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 1, (NFSe.Servico.Valores.Aliquota / 100), DSC_VALIQ);
+
+    proGINFES:  if NFSe.OptanteSimplesNacional = snSim then
+                  Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 1, (NFSe.Servico.Valores.Aliquota / 100), DSC_VALIQ)
+                else
+                  Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 0, (NFSe.Servico.Valores.Aliquota / 100), DSC_VALIQ);
 
     proRJ,
     proPublica,
@@ -312,7 +316,7 @@ begin
     proWebISS,
     proDSFSJC:  Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
 
-    proNFSEBrasil: Gerador.wCampo(tcDe2, '#25', 'Aliquota', 01, 05, 1, (NFSe.Servico.Valores.Aliquota * 100), DSC_VALIQ);
+    proNFSEBrasil: Gerador.wCampo(tcDe2, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
 
     proRecife:   if NFSe.OptanteSimplesNacional = snSim then
                    Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ)

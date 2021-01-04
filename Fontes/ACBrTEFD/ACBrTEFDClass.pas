@@ -37,7 +37,14 @@ unit ACBrTEFDClass ;
 interface
 
 uses
-  Classes, Contnrs,
+  Classes,
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
   ACBrBase, ACBrTEFComum
   {$IFNDEF NOGUI}
     {$IfDef MSWINDOWS}
@@ -83,7 +90,7 @@ type
   TACBrTEFDTipo = ( gpNenhum, gpTefDial, gpTefDisc, gpHiperTef, gpCliSiTef,
                     gpTefGpu, gpVeSPague, gpBanese, gpTefAuttar, gpGoodCard,
                     gpFoxWin, gpCliDTEF, gpPetrocard, gpCrediShop, gpTicketCar,
-                    gpConvCard, gpCappta, gpPayGo ) ;
+                    gpConvCard, gpCappta, gpPayGo, gpPayGoWeb ) ;
 
   TACBrTEFDReqEstado = ( reqNenhum,             // Nennhuma Requisição em andamento
                          reqIniciando,          // Iniciando uma nova Requisicao
@@ -121,10 +128,11 @@ type
     fpOrdemPagamento: Integer;
     fpIndiceFPG_ECF: String;
 
-    procedure ProcessarTipoInterno(ALinha: TACBrTEFLinha); override;
     procedure SetIndiceFPG_ECF(const AValue: String);
     procedure SetOrdemPagamento(const AValue: Integer);
   public
+    procedure ProcessarTipoInterno(ALinha: TACBrTEFLinha); override;
+
     procedure Clear; override;
     procedure Assign(Source: TACBrTEFResp); override;
 
@@ -159,6 +167,8 @@ type
 
   TACBrTEFDExibeMsg = procedure( Operacao : TACBrTEFDOperacaoMensagem;
      Mensagem : String; var AModalResult : TModalResult ) of object ;
+
+  TACBrTEFDExibeQRCode = procedure(const Dados: String) of object ;
 
   TACBrTEFDOperacaoECF = ( opeAbreGerencial, opeFechaGerencial,
                            opePulaLinhas, opeSubTotalizaCupom, opeFechaCupom,
@@ -211,6 +221,7 @@ type
      fCheque : String;
      fChequeDC : String;
      fCMC7 : String;
+     fCodigoAutorizacaoTransacao: String;
      fConta : String;
      fContaDC : String;
      fConteudo   : TACBrTEFArquivo;
@@ -233,6 +244,7 @@ type
      procedure SetCheque(const AValue : String);
      procedure SetChequeDC(const AValue : String);
      procedure SetCMC7(const AValue : String);
+     procedure SetCodigoAutorizacaoTransacao(AValue: String);
      procedure SetConta(const AValue : String);
      procedure SetContaDC(const AValue : String);
      procedure SetDataCheque(const AValue : TDateTime);
@@ -275,6 +287,7 @@ type
      property Cheque            : String    read fCheque             write SetCheque ;
      property ChequeDC          : String    read fChequeDC           write SetChequeDC ;
      property DataHoraTransacaoComprovante : TDateTime read fDataHoraTransacaoComprovante write SetDataHoraTransacaoComprovante ;
+     property CodigoAutorizacaoTransacao: String read fCodigoAutorizacaoTransacao write SetCodigoAutorizacaoTransacao;
 
      procedure GravaInformacao( const Identificacao : Integer;
         const Sequencia : Integer; const Informacao : String ) ;
@@ -424,9 +437,11 @@ type
         DocumentoVinculado : String = ''); overload; virtual;
      Function CNC : Boolean ; overload; virtual;
      Function CNC(Rede, NSU : String; DataHoraTransacao : TDateTime;
-        Valor : Double) : Boolean; overload; virtual;
+        Valor : Double; CodigoAutorizacaoTransacao: String = '') : Boolean; overload; virtual;
      Function PRE(Valor : Double; DocumentoVinculado : String = '';
         Moeda : Integer = 0) : Boolean; virtual;
+
+     procedure ExibirMensagemPinPad(const MsgPinPad: String); virtual;
    published
      property ArqLOG : String read fArqLOG write fArqLOG ;
      property LogDebug : Boolean read fLogDebug write fLogDebug default false;
@@ -440,7 +455,7 @@ type
 
    { TACBrTEFDClasses }
 
-   TACBrTEFDClassList = class(TObjectList)
+   TACBrTEFDClassList = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TObject>{$EndIf})
      protected
        procedure SetObject (Index: Integer; Item: TACBrTEFDClass);
        function GetObject (Index: Integer): TACBrTEFDClass;
@@ -475,7 +490,8 @@ implementation
 
 Uses
   dateutils, StrUtils, Math, {$IFDEF FMX} System.Types {$ELSE} types{$ENDIF},
-  ACBrTEFD, ACBrTEFDCliSiTef, ACBrTEFCliSiTefComum, ACBrTEFDVeSPague, ACBrTEFDPayGo,
+  ACBrTEFD, ACBrTEFDCliSiTef, ACBrTEFCliSiTefComum, ACBrTEFDVeSPague,
+  ACBrTEFDPayGo, ACBrTEFDPayGoWeb,
   ACBrUtil;
 
 { TACBrTEFDRespostasPendentes }
@@ -578,8 +594,27 @@ procedure TACBrTEFDReq.Clear;
 begin
   fConteudo.Clear;
 
-  fID     := 0 ;
+  fID := 0 ;
   fHeader := '' ;
+  fAgencia := '';
+  fAgenciaDC := '';
+  fBanco := '';
+  fCheque := '';
+  fChequeDC := '';
+  fCMC7 := '';
+  fCodigoAutorizacaoTransacao := '';
+  fConta := '';
+  fContaDC := '';
+  fDataCheque := 0;
+  fDataHoraTransacaoComprovante := 0;
+  fDocumentoPessoa := '';
+  fFinalizacao := '';
+  fMoeda := 0;
+  fNSU := '';
+  fRede := '';
+  fTipoPessoa := 'F';
+  fValorTotal := 0;
+  fDocumentoVinculado := '';
 end;
 
 procedure TACBrTEFDReq.GravaInformacao(const Identificacao : Integer;
@@ -656,6 +691,12 @@ procedure TACBrTEFDReq.SetNSU(const AValue : String);
 begin
   fNSU := Trim(AValue);
   fConteudo.GravaInformacao(12,0,fNSU);
+end;
+
+procedure TACBrTEFDReq.SetCodigoAutorizacaoTransacao(AValue: String);
+begin
+  fCodigoAutorizacaoTransacao := Trim(AValue);
+  fConteudo.GravaInformacao(13,0,fCodigoAutorizacaoTransacao);
 end;
 
 procedure TACBrTEFDReq.SetDataHoraTransacaoComprovante(const AValue : TDateTime);
@@ -792,7 +833,7 @@ begin
        39  : fpChequeDC  := Linha.Informacao.AsString;
        40  : fpNomeAdministradora := Linha.Informacao.AsString;
        131 : fpInstituicao := Linha.Informacao.AsString;
-       132 : fpCodigoBandeiraPadrao  := Linha.Informacao.AsString;
+       132 : fpCodigoBandeiraPadrao := Linha.Informacao.AsString;
        136 : fpBin := Linha.Informacao.AsString;
 
        300 :
@@ -830,7 +871,12 @@ begin
        Inc(I);
        LinhaComprovante := Trim(LeInformacao(29 , I).AsString);
      end;
+
+     if (fpImagemComprovante2aVia.Count = 0) then
+        fpImagemComprovante2aVia.Text := fpImagemComprovante1aVia.Text;
    end;
+
+   fpConfirmar := (fpQtdLinhasComprovante > 0);
 
    fpParcelas.Clear;
    if TemParcelas then
@@ -1132,7 +1178,8 @@ Var
 begin
   OldResp := CriarResposta(fpTipo);
   try
-     OldResp.Assign(Resp);      { Salvando dados da Resposta Atual }
+     { Salvando dados da Resposta Atual, pois 'Resp' será zerado em "IniciarRequisicao" }
+     OldResp.Assign(Resp);
 
      IniciarRequisicao('CNC');
      Req.DocumentoVinculado           := OldResp.DocumentoVinculado;
@@ -1145,6 +1192,7 @@ begin
      Req.Rede                         := OldResp.Rede;
      Req.NSU                          := OldResp.NSU;
      Req.DataHoraTransacaoComprovante := OldResp.DataHoraTransacaoComprovante;
+     Req.CodigoAutorizacaoTransacao   := OldResp.CodigoAutorizacaoTransacao;
      Req.Banco                        := OldResp.Banco;
      Req.Agencia                      := OldResp.Agencia;
      Req.AgenciaDC                    := OldResp.AgenciaDC;
@@ -1170,13 +1218,16 @@ begin
 end;
 
 function TACBrTEFDClass.CNC(Rede, NSU: String; DataHoraTransacao: TDateTime;
-  Valor: Double): Boolean;
+  Valor: Double; CodigoAutorizacaoTransacao: String): Boolean;
 begin
   IniciarRequisicao('CNC');
-  Req.ValorTotal                   := Valor;
-  Req.Rede                         := Rede;
-  Req.NSU                          := NSU;
+  Req.ValorTotal := Valor;
+  Req.Rede := Rede;
+  Req.NSU := NSU;
   Req.DataHoraTransacaoComprovante := DataHoraTransacao;
+  if (CodigoAutorizacaoTransacao <> '') then
+    Req.CodigoAutorizacaoTransacao := CodigoAutorizacaoTransacao;
+
   AdicionarIdentificacao;
   FinalizarRequisicao;
 
@@ -1485,6 +1536,11 @@ begin
   end;
 end;
 
+procedure TACBrTEFDClass.ExibirMensagemPinPad(const MsgPinPad: String);
+begin
+  raise EACBrTEFDErro.Create('ExibirMensagemPinPad não disponível para: '+ClassName) ;
+end;
+
 procedure TACBrTEFDClass.ProcessarResposta ;
 var
    RespostaPendente: TACBrTEFDResp;
@@ -1606,6 +1662,15 @@ begin
               with RespostasCanceladas[I] do
               begin
                  JaCancelado := (Resp.DocumentoVinculado = DocumentoVinculado) ;
+
+                 // Se a resposta já foi cancelada em outro arquivo, adiciona a lista de respostas canceladas para que no evento
+                 // OnDepoisCancelarTransacoes a lista retornada no argumento RespostasCanceladas esteja devidamente preenchida com todas transações canceladas.
+                 if JaCancelado then
+                 begin
+                   RespostaCancela := CriarResposta( Tipo );
+                   RespostaCancela.Assign( Resp );
+                   RespostasCanceladas.Add( RespostaCancela );
+                 end;
               end;
             end;
 
@@ -1851,10 +1916,13 @@ begin
        while FileExists( ArqBackup ) do
        begin
           try
-             if ImpressaoOk then
-                self.CNF
-             else
-                self.NCN ;
+             if Resp.Confirmar then
+             begin
+               if ImpressaoOk then
+                  self.CNF
+               else
+                  self.NCN ;
+             end;
           except
           end;
 
@@ -2196,6 +2264,7 @@ begin
     gpCliSiTef: Result := TACBrTEFDRespCliSiTef.Create;
     gpVeSPague: Result := TACBrTEFDRespVeSPague.Create;
     gpPayGo: Result := TACBrTEFDRespPayGo.Create;
+    gpPayGoWeb: Result := TACBrTEFDRespPayGoWeb.Create;
   else
     Result := TACBrTEFDRespTXT.Create;
   end;
@@ -2205,12 +2274,12 @@ end;
 
 procedure TACBrTEFDClassList.SetObject(Index : Integer; Item : TACBrTEFDClass);
 begin
-  inherited SetItem (Index, Item) ;
+  inherited Items[Index] := Item;
 end;
 
 function TACBrTEFDClassList.GetObject(Index : Integer) : TACBrTEFDClass;
 begin
-  Result := inherited GetItem(Index) as TACBrTEFDClass ;
+  Result := TACBrTEFDClass(inherited Items[Index]);
 end;
 
 procedure TACBrTEFDClassList.Insert(Index : Integer; Obj : TACBrTEFDClass);

@@ -30,6 +30,15 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
+{******************************************************************************
+|* Historico
+|*
+|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
+|*  - Doação do componente para o Projeto ACBr
+|* 28/08/2017: Leivio Fontenele - leivio@yahoo.com.br
+|*  - Implementação comunicação, envelope, status e retorno do componente com webservice.
+******************************************************************************}
+
 {$I ACBr.inc}
 
 unit ACBreSocialLoteEventos;
@@ -38,7 +47,7 @@ interface
 
 uses
   Classes, SysUtils, Dialogs, StrUtils, synautil,
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -105,7 +114,7 @@ type
 implementation
 
 uses
-  ACBreSocial, DateUtils;
+  ACBreSocial, DateUtils, pcnConsts;
 
 { TLoteEventos }
 
@@ -267,7 +276,7 @@ begin
     '<envioLoteEventos grupo="' + Inttostr(ord(AGrupo)) + '">'+
       '<ideEmpregador>'+
         '<tpInsc>' + Inttostr(ord(FIdeEmpregador.TpInsc) + 1) + '</tpInsc>'+
-        '<nrInsc>' + IIf(FIdeEmpregador.TpInsc <> tiCNPJ, FIdeEmpregador.NrInsc, Copy(FIdeEmpregador.NrInsc, 1, 8)) +'</nrInsc>'+
+        '<nrInsc>' + IIf((FIdeEmpregador.TpInsc <> tiCNPJ) or (FIdeEmpregador.OrgaoPublico), FIdeEmpregador.NrInsc, Copy(FIdeEmpregador.NrInsc, 1, 8)) +'</nrInsc>'+
       '</ideEmpregador>'+
       '<ideTransmissor>'+
         '<tpInsc>' + Inttostr(ord(FIdeTransmissor.TpInsc) + 1) +'</tpInsc>'+

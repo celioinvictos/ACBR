@@ -39,8 +39,7 @@ interface
 uses
   Classes, SysUtils, syncobjs, ACBrNFe, ACBrNFeDANFeRLClass, ACBrMail,
   ACBrPosPrinter, ACBrIntegrador, ACBrNFeDANFeESCPOS, ACBrDANFCeFortesFr,
-  ACBrDANFCeFortesFrA4, ACBrLibConfig, ACBrLibMailImport,
-  ACBrLibPosPrinterImport;
+  ACBrDANFCeFortesFrA4, ACBrLibConfig, ACBrLibComum;
 
 type
 
@@ -48,35 +47,34 @@ type
 
   TLibNFeDM = class(TDataModule)
     ACBrIntegrador1: TACBrIntegrador;
+    ACBrMail1: TACBrMail;
     ACBrNFe1: TACBrNFe;
-    ACBrNFeDANFCeFortes1: TACBrNFeDANFCeFortes;
-    ACBrNFeDANFCeFortesA4: TACBrNFeDANFCeFortesA4;
-    ACBrNFeDANFeESCPOS1: TACBrNFeDANFeESCPOS;
-    ACBrNFeDANFeRL1: TACBrNFeDANFeRL;
+    ACBrPosPrinter1: TACBrPosPrinter;
 
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
     FLock: TCriticalSection;
-    FACBrMail: TACBrMail;
-    FACBrPosPrinter: TACBrPosPrinter;
+    fpLib: TACBrLib;
+    DANFCeFortes: TACBrNFeDANFCeFortes;
+    DANFCeA4: TACBrNFeDANFCeFortesA4;
+    DANFCeEscPos: TACBrNFeDANFeESCPOS;
+    NFeDANFe: TACBrNFeDANFeRL;
 
-    FLibMail: TACBrLibMail;
-    FLibPosPrinter: TACBrLibPosPrinter;
   public
-    procedure CriarACBrMail;
-    procedure CriarACBrPosPrinter;
-
     procedure AplicarConfiguracoes;
     procedure AplicarConfigMail;
     procedure AplicarConfigPosPrinter;
-    procedure ValidarIntegradorNFCe();
+    procedure ValidarIntegradorNFCe;
     procedure ConfigurarImpressao(NomeImpressora: String = ''; GerarPDF: Boolean = False;
                                   Protocolo: String = ''; MostrarPreview: String = ''; MarcaDagua: String = '';
                                   ViaConsumidor: String = ''; Simplificado: String = '');
+    procedure FinalizarImpressao;
     procedure GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean = False);
     procedure Travar;
     procedure Destravar;
+
+    property Lib: TACBrLib read fpLib write fpLib;
   end;
 
 implementation
@@ -84,7 +82,7 @@ implementation
 uses
   pcnConversao, pcnConversaoNFe,
   ACBrUtil, FileUtil, ACBrDeviceSerial, ACBrNFeDANFEClass,
-  ACBrDeviceConfig, ACBrLibNFeConfig, ACBrLibComum;
+  ACBrDeviceConfig, ACBrLibNFeConfig;
 
 {$R *.lfm}
 
@@ -93,78 +91,11 @@ uses
 procedure TLibNFeDM.DataModuleCreate(Sender: TObject);
 begin
   FLock := TCriticalSection.Create;
-
-  FACBrMail := Nil;
-  FLibMail := Nil;
-  FACBrPosPrinter := Nil;
-  FLibPosPrinter := Nil;
 end;
 
 procedure TLibNFeDM.DataModuleDestroy(Sender: TObject);
 begin
   FLock.Destroy;
-
-  if Assigned(FLibMail) then
-    FreeAndNil(FLibMail)
-  else if Assigned(FACBrMail) then
-    FreeAndNil(FACBrMail);
-
-  if Assigned(FLibPosPrinter) then
-    FreeAndNil(FLibPosPrinter)
-  else if Assigned(FACBrPosPrinter) then
-    FreeAndNil(FACBrPosPrinter);
-end;
-
-procedure TLibNFeDM.CriarACBrMail;
-var
-  NomeLib: String;
-begin
-  if Assigned(FLibMail) or Assigned(FACBrMail) then
-    Exit;
-
-  GravarLog('  CriarACBrMail', logCompleto);
-
-  NomeLib := ApplicationPath + CACBrMailLIBName;
-  if FileExists(NomeLib) then
-  begin
-    GravarLog('      Carregando MAIL de: ' + NomeLib, logCompleto);
-    // Criando Classe para Leitura da Lib //
-    FLibMail  := TACBrLibMail.Create(NomeLib, pLib.Config.NomeArquivo, pLib.Config.ChaveCrypt);
-    FACBrMail := FLibMail.ACBrMail;
-  end
-  else
-  begin
-    GravarLog('     Criando MAIL Interno', logCompleto);
-    FACBrMail := TACBrMail.Create(Nil);
-  end;
-
-  ACBrNFe1.MAIL := FACBrMail;
-end;
-
-procedure TLibNFeDM.CriarACBrPosPrinter;
-var
-  NomeLib: String;
-begin
-  if Assigned(FLibPosPrinter) or Assigned(FACBrPosPrinter) then
-    Exit;
-
-  GravarLog('  CriarACBrPosPrinter', logCompleto);
-
-  NomeLib := ApplicationPath + CACBrPosPrinterLIBName;
-  if FileExists(NomeLib) then
-  begin
-    GravarLog('      Carregando PosPrinter de: ' + NomeLib, logCompleto);
-    // Criando Classe para Leitura da Lib //
-    FLibPosPrinter  := TACBrLibPosPrinter.Create(NomeLib, pLib.Config.NomeArquivo, pLib.Config.ChaveCrypt);
-    FACBrPosPrinter := FLibPosPrinter.ACBrPosPrinter;
-  end
-  else
-  begin
-    GravarLog('     Criando PosPrinter Interno', logCompleto);
-    FACBrPosPrinter := TACBrPosPrinter.Create(Nil);
-  end;
-
-  ACBrNFeDANFeESCPOS1.PosPrinter := FACBrPosPrinter;
 end;
 
 procedure TLibNFeDM.AplicarConfiguracoes;
@@ -172,7 +103,7 @@ var
   pLibConfig: TLibNFeConfig;
 begin
   ACBrNFe1.SSL.DescarregarCertificado;
-  pLibConfig := TLibNFeConfig(pLib.Config);
+  pLibConfig := TLibNFeConfig(Lib.Config);
   ACBrNFe1.Configuracoes.Assign(pLibConfig.NFe);
 
   with ACBrIntegrador1 do
@@ -189,99 +120,87 @@ end;
 
 procedure TLibNFeDM.AplicarConfigMail;
 begin
-  if Assigned(FLibMail) then
+  with ACBrMail1 do
   begin
-    FLibMail.ConfigLer(pLib.Config.NomeArquivo);
-    Exit;
-  end;
-
-  with FACBrMail do
-  begin
-    Attempts := pLib.Config.Email.Tentativas;
-    SetTLS := pLib.Config.Email.TLS;
-    DefaultCharset := pLib.Config.Email.Codificacao;
-    From := pLib.Config.Email.Conta;
-    FromName := pLib.Config.Email.Nome;
-    SetSSL := pLib.Config.Email.SSL;
-    Host := pLib.Config.Email.Servidor;
-    IDECharset := pLib.Config.Email.Codificacao;
-    IsHTML := pLib.Config.Email.IsHTML;
-    Password := pLib.Config.Email.Senha;
-    Port := IntToStr(pLib.Config.Email.Porta);
-    Priority := pLib.Config.Email.Priority;
-    ReadingConfirmation := pLib.Config.Email.Confirmacao;
-    DeliveryConfirmation := pLib.Config.Email.ConfirmacaoEntrega;
-    TimeOut := pLib.Config.Email.TimeOut;
-    Username := pLib.Config.Email.Usuario;
-    UseThread := pLib.Config.Email.SegundoPlano;
+    Attempts := Lib.Config.Email.Tentativas;
+    SetTLS := Lib.Config.Email.TLS;
+    DefaultCharset := Lib.Config.Email.Codificacao;
+    From := Lib.Config.Email.Conta;
+    FromName := Lib.Config.Email.Nome;
+    SetSSL := Lib.Config.Email.SSL;
+    Host := Lib.Config.Email.Servidor;
+    IDECharset := Lib.Config.Email.Codificacao;
+    IsHTML := Lib.Config.Email.IsHTML;
+    Password := Lib.Config.Email.Senha;
+    Port := IntToStr(Lib.Config.Email.Porta);
+    Priority := Lib.Config.Email.Priority;
+    ReadingConfirmation := Lib.Config.Email.Confirmacao;
+    DeliveryConfirmation := Lib.Config.Email.ConfirmacaoEntrega;
+    TimeOut := Lib.Config.Email.TimeOut;
+    Username := Lib.Config.Email.Usuario;
+    UseThread := Lib.Config.Email.SegundoPlano;
   end;
 end;
 
 procedure TLibNFeDM.AplicarConfigPosPrinter;
 var
-  pLibConfig: TLibNFeConfig;
+  LibConfig: TLibNFeConfig;
 begin
-  if Assigned(FLibPosPrinter) then
+  LibConfig := TLibNFeConfig(Lib.Config);
+
+  with ACBrPosPrinter1 do
   begin
-    FLibPosPrinter.ConfigLer(pLib.Config.NomeArquivo);
-    Exit;
-  end;
+    ArqLog := LibConfig.PosPrinter.ArqLog;
+    Modelo := TACBrPosPrinterModelo(LibConfig.PosPrinter.Modelo);
+    Porta := LibConfig.PosPrinter.Porta;
+    PaginaDeCodigo := TACBrPosPaginaCodigo(LibConfig.PosPrinter.PaginaDeCodigo);
+    ColunasFonteNormal := LibConfig.PosPrinter.ColunasFonteNormal;
+    EspacoEntreLinhas := LibConfig.PosPrinter.EspacoEntreLinhas;
+    LinhasEntreCupons := LibConfig.PosPrinter.LinhasEntreCupons;
+    CortaPapel := LibConfig.PosPrinter.CortaPapel;
+    TraduzirTags := LibConfig.PosPrinter.TraduzirTags;
+    IgnorarTags := LibConfig.PosPrinter.IgnorarTags;
+    LinhasBuffer := LibConfig.PosPrinter.LinhasBuffer;
+    ControlePorta := LibConfig.PosPrinter.ControlePorta;
+    VerificarImpressora := LibConfig.PosPrinter.VerificarImpressora;
 
-  pLibConfig := TLibNFeConfig(pLib.Config);
+    ConfigBarras.MostrarCodigo := LibConfig.PosPrinter.BcMostrarCodigo;
+    ConfigBarras.LarguraLinha := LibConfig.PosPrinter.BcLarguraLinha;
+    ConfigBarras.Altura := LibConfig.PosPrinter.BcAltura;
+    ConfigBarras.Margem := LibConfig.PosPrinter.BcMargem;
 
-  with FACBrPosPrinter do
-  begin
-    ArqLog := pLibConfig.PosPrinter.ArqLog;
-    Modelo := TACBrPosPrinterModelo(pLibConfig.PosPrinter.Modelo);
-    Porta := pLibConfig.PosPrinter.Porta;
-    PaginaDeCodigo := TACBrPosPaginaCodigo(pLibConfig.PosPrinter.PaginaDeCodigo);
-    ColunasFonteNormal := pLibConfig.PosPrinter.ColunasFonteNormal;
-    EspacoEntreLinhas := pLibConfig.PosPrinter.EspacoEntreLinhas;
-    LinhasEntreCupons := pLibConfig.PosPrinter.LinhasEntreCupons;
-    CortaPapel := pLibConfig.PosPrinter.CortaPapel;
-    TraduzirTags := pLibConfig.PosPrinter.TraduzirTags;
-    IgnorarTags := pLibConfig.PosPrinter.IgnorarTags;
-    LinhasBuffer := pLibConfig.PosPrinter.LinhasBuffer;
-    ControlePorta := pLibConfig.PosPrinter.ControlePorta;
-    VerificarImpressora := pLibConfig.PosPrinter.VerificarImpressora;
+    ConfigQRCode.Tipo := LibConfig.PosPrinter.QrTipo;
+    ConfigQRCode.LarguraModulo := LibConfig.PosPrinter.QrLarguraModulo;
+    ConfigQRCode.ErrorLevel := LibConfig.PosPrinter.QrErrorLevel;
 
-    ConfigBarras.MostrarCodigo := pLibConfig.PosPrinter.BcMostrarCodigo;
-    ConfigBarras.LarguraLinha := pLibConfig.PosPrinter.BcLarguraLinha;
-    ConfigBarras.Altura := pLibConfig.PosPrinter.BcAltura;
-    ConfigBarras.Margem := pLibConfig.PosPrinter.BcMargem;
+    ConfigLogo.IgnorarLogo := LibConfig.PosPrinter.LgIgnorarLogo;
+    ConfigLogo.KeyCode1 := LibConfig.PosPrinter.LgKeyCode1;
+    ConfigLogo.KeyCode2 := LibConfig.PosPrinter.LgKeyCode2;
+    ConfigLogo.FatorX := LibConfig.PosPrinter.LgFatorX;
+    ConfigLogo.FatorY := LibConfig.PosPrinter.LgFatorY;
 
-    ConfigQRCode.Tipo := pLibConfig.PosPrinter.QrTipo;
-    ConfigQRCode.LarguraModulo := pLibConfig.PosPrinter.QrLarguraModulo;
-    ConfigQRCode.ErrorLevel := pLibConfig.PosPrinter.QrErrorLevel;
+    ConfigGaveta.SinalInvertido := LibConfig.PosPrinter.GvSinalInvertido;
+    ConfigGaveta.TempoON := LibConfig.PosPrinter.GvTempoON;
+    ConfigGaveta.TempoOFF := LibConfig.PosPrinter.GvTempoOFF;
 
-    ConfigLogo.IgnorarLogo := pLibConfig.PosPrinter.LgIgnorarLogo;
-    ConfigLogo.KeyCode1 := pLibConfig.PosPrinter.LgKeyCode1;
-    ConfigLogo.KeyCode2 := pLibConfig.PosPrinter.LgKeyCode2;
-    ConfigLogo.FatorX := pLibConfig.PosPrinter.LgFatorX;
-    ConfigLogo.FatorY := pLibConfig.PosPrinter.LgFatorY;
+    ConfigModoPagina.Largura := LibConfig.PosPrinter.MpLargura;
+    ConfigModoPagina.Altura := LibConfig.PosPrinter.MpAltura;
+    ConfigModoPagina.Esquerda := LibConfig.PosPrinter.MpEsquerda;
+    ConfigModoPagina.Topo := LibConfig.PosPrinter.MpTopo;
+    ConfigModoPagina.Direcao := TACBrPosDirecao(LibConfig.PosPrinter.MpDirecao);
+    ConfigModoPagina.EspacoEntreLinhas := LibConfig.PosPrinter.MpEspacoEntreLinhas;
 
-    ConfigGaveta.SinalInvertido := pLibConfig.PosPrinter.GvSinalInvertido;
-    ConfigGaveta.TempoON := pLibConfig.PosPrinter.GvTempoON;
-    ConfigGaveta.TempoOFF := pLibConfig.PosPrinter.GvTempoOFF;
-
-    ConfigModoPagina.Largura := pLibConfig.PosPrinter.MpLargura;
-    ConfigModoPagina.Altura := pLibConfig.PosPrinter.MpAltura;
-    ConfigModoPagina.Esquerda := pLibConfig.PosPrinter.MpEsquerda;
-    ConfigModoPagina.Topo := pLibConfig.PosPrinter.MpTopo;
-    ConfigModoPagina.Direcao := TACBrPosDirecao(pLibConfig.PosPrinter.MpDirecao);
-    ConfigModoPagina.EspacoEntreLinhas := pLibConfig.PosPrinter.MpEspacoEntreLinhas;
-
-    Device.Baud := pLibConfig.PosDeviceConfig.Baud;
-    Device.Data := pLibConfig.PosDeviceConfig.Data;
-    Device.TimeOut := pLibConfig.PosDeviceConfig.TimeOut;
-    Device.Parity := TACBrSerialParity(pLibConfig.PosDeviceConfig.Parity);
-    Device.Stop := TACBrSerialStop(pLibConfig.PosDeviceConfig.Stop);
-    Device.MaxBandwidth := pLibConfig.PosDeviceConfig.MaxBandwidth;
-    Device.SendBytesCount := pLibConfig.PosDeviceConfig.SendBytesCount;
-    Device.SendBytesInterval := pLibConfig.PosDeviceConfig.SendBytesInterval;
-    Device.HandShake := TACBrHandShake(pLibConfig.PosDeviceConfig.HandShake);
-    Device.HardFlow := pLibConfig.PosDeviceConfig.HardFlow;
-    Device.SoftFlow := pLibConfig.PosDeviceConfig.SoftFlow;
+    Device.Baud := LibConfig.PosDeviceConfig.Baud;
+    Device.Data := LibConfig.PosDeviceConfig.Data;
+    Device.TimeOut := LibConfig.PosDeviceConfig.TimeOut;
+    Device.Parity := TACBrSerialParity(LibConfig.PosDeviceConfig.Parity);
+    Device.Stop := TACBrSerialStop(LibConfig.PosDeviceConfig.Stop);
+    Device.MaxBandwidth := LibConfig.PosDeviceConfig.MaxBandwidth;
+    Device.SendBytesCount := LibConfig.PosDeviceConfig.SendBytesCount;
+    Device.SendBytesInterval := LibConfig.PosDeviceConfig.SendBytesInterval;
+    Device.HandShake := TACBrHandShake(LibConfig.PosDeviceConfig.HandShake);
+    Device.HardFlow := LibConfig.PosDeviceConfig.HardFlow;
+    Device.SoftFlow := LibConfig.PosDeviceConfig.SoftFlow;
   end;
 end;
 
@@ -289,43 +208,63 @@ procedure TLibNFeDM.ConfigurarImpressao(NomeImpressora: String; GerarPDF: Boolea
   Protocolo: String = ''; MostrarPreview: String = ''; MarcaDagua: String = '';
   ViaConsumidor: String = ''; Simplificado: String = '');
 var
-  pLibConfig: TLibNFeConfig;
+  LibConfig: TLibNFeConfig;
 begin
-  pLibConfig := TLibNFeConfig(pLib.Config);
+  LibConfig := TLibNFeConfig(Lib.Config);
 
   GravarLog('ConfigurarImpressao - Iniciado', logNormal);
-
-  ACBrNFe1.DANFE := ACBrNFeDANFeRL1;
 
   if ACBrNFe1.NotasFiscais.Count > 0 then
   begin
     if ACBrNFe1.NotasFiscais.Items[0].NFe.Ide.modelo = 65 then
     begin
-      if (pLibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortes) then
-        ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1
-      else if (pLibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortesA4) then
-        ACBrNFe1.DANFE := ACBrNFeDANFCeFortesA4
+      if GerarPDF and not (LibConfig.DANFe.NFCe.TipoRelatorioBobina in [tpFortes, tpFortesA4]) then
+      begin
+        DANFCeFortes := TACBrNFeDANFCeFortes.Create(nil);
+        ACBrNFe1.DANFE := DANFCeFortes
+      end
+      else if LibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortes then
+      begin
+        DANFCeFortes := TACBrNFeDANFCeFortes.Create(nil);
+        ACBrNFe1.DANFE := DANFCeFortes
+      end
+      else if LibConfig.DANFe.NFCe.TipoRelatorioBobina = tpFortesA4 then
+      begin
+        DANFCeA4 := TACBrNFeDANFCeFortesA4.Create(nil);
+        ACBrNFe1.DANFE := DANFCeA4
+      end
       else
-        ACBrNFe1.DANFE := ACBrNFeDANFeESCPOS1;
-
-      if GerarPDF and not (pLibConfig.DANFe.NFCe.TipoRelatorioBobina in [tpFortes, tpFortesA4]) then
-        ACBrNFe1.DANFE := ACBrNFeDANFCeFortes1;
+      begin
+         DANFCeEscPos := TACBrNFeDANFeESCPOS.Create(nil);
+         DANFCeEscPos.PosPrinter := ACBrPosPrinter1;
+         ACBrNFe1.DANFE := DANFCeEscPos;
+      end;
+    end
+    else
+    begin
+       NFeDANFe := TACBrNFeDANFeRL.Create(nil);
+       ACBrNFe1.DANFE := NFeDANFe;
     end;
 
     if (ACBrNFe1.NotasFiscais.Items[0].NFe.procNFe.cStat in [101, 151, 155]) then
       ACBrNFe1.DANFE.Cancelada := True
     else
       ACBrNFe1.DANFE.Cancelada := False;
+  end
+  else
+  begin
+    NFeDANFe := TACBrNFeDANFeRL.Create(nil);
+    ACBrNFe1.DANFE := NFeDANFe;
   end;
 
   if GerarPDF then
   begin
-    if (pLibConfig.DANFe.PathPDF <> '') then
-      if not DirectoryExists(PathWithDelim(pLibConfig.DANFe.PathPDF))then
-        ForceDirectories(PathWithDelim(pLibConfig.DANFe.PathPDF));
+    if (LibConfig.DANFe.PathPDF <> '') then
+      if not DirectoryExists(PathWithDelim(LibConfig.DANFe.PathPDF))then
+        ForceDirectories(PathWithDelim(LibConfig.DANFe.PathPDF));
   end;
 
-  pLibConfig.DANFe.Apply(ACBrNFe1.DANFE);
+  LibConfig.DANFe.Apply(ACBrNFe1.DANFE, Lib);
 
   if NaoEstaVazio(NomeImpressora) then
     ACBrNFe1.DANFE.Impressora := NomeImpressora;
@@ -343,13 +282,13 @@ begin
      if NaoEstaVazio(ViaConsumidor) then
        TACBrNFeDANFCEClass(ACBrNFe1.DANFE).ViaConsumidor := StrToBoolDef(ViaConsumidor, False);
 
-     if ACBrNFe1.DANFE = ACBrNFeDANFeESCPOS1 then
+     if ACBrNFe1.DANFE = DANFCeEscPos then
      begin
-        if not ACBrNFeDANFeESCPOS1.PosPrinter.ControlePorta then
+        if not DANFCeEscPos.PosPrinter.ControlePorta then
         begin
-          ACBrNFeDANFeESCPOS1.PosPrinter.Ativar;
-          if not ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativo then
-            ACBrNFeDANFeESCPOS1.PosPrinter.Device.Ativar;
+          DANFCeEscPos.PosPrinter.Ativar;
+          if not DANFCeEscPos.PosPrinter.Device.Ativo then
+            DANFCeEscPos.PosPrinter.Device.Ativar;
         end;
      end;
   end
@@ -358,16 +297,32 @@ begin
     if NaoEstaVazio(Simplificado) then
     begin
       if StrToBoolDef(Simplificado, False) then
-        ACBrNFeDANFeRL1.TipoDANFE := tiSimplificado;
+        NFeDANFe.TipoDANFE := tiSimplificado;
     end;
 
      if NaoEstaVazio(MarcaDagua) then
-       ACBrNFeDANFeRL1.MarcaDagua := MarcaDagua
+       NFeDANFe.MarcaDagua := MarcaDagua
      else
-       ACBrNFeDANFeRL1.MarcaDagua := '';
+       NFeDANFe.MarcaDagua := '';
   end;
 
   GravarLog('ConfigurarImpressao - Feito', logNormal);
+end;
+
+procedure TLibNFeDM.FinalizarImpressao;
+begin
+  GravarLog('FinalizarImpressao - Iniciado', logNormal);
+
+  if ACBrPosPrinter1.Ativo then
+          ACBrPosPrinter1.Desativar;
+
+  ACBrNFe1.DANFE := nil;
+  if Assigned(NFeDANFe) then FreeAndNil(NFeDANFe);
+  if Assigned(DANFCeFortes) then FreeAndNil(DANFCeFortes);
+  if Assigned(DANFCeA4) then FreeAndNil(DANFCeA4);
+  if Assigned(DANFCeEscPos) then FreeAndNil(DANFCeEscPos);
+
+  GravarLog('FinalizarImpressao - Feito', logNormal);
 end;
 
 procedure TLibNFeDM.ValidarIntegradorNFCe;
@@ -382,8 +337,8 @@ end;
 
 procedure TLibNFeDM.GravarLog(AMsg: String; NivelLog: TNivelLog; Traduzir: Boolean);
 begin
-  if Assigned(pLib) then
-    pLib.GravarLog(AMsg, NivelLog, Traduzir);
+  if Assigned(Lib) then
+    Lib.GravarLog(AMsg, NivelLog, Traduzir);
 end;
 
 procedure TLibNFeDM.Travar;

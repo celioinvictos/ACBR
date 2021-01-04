@@ -36,7 +36,8 @@
 library ACBrLibMDFe;
 
 uses
-  Interfaces, sysutils, Classes, Forms, ACBrLibMDFeClass, ACBrLibConfig,
+  Interfaces, sysutils, Classes, Forms, ACBrLibConfig,
+  {$IFDEF MT}ACBrLibMDFeMT{$ELSE}ACBrLibMDFeST{$ENDIF},
   ACBrLibComum, ACBrLibConsts, ACBrLibMDFeConfig, ACBrLibResposta,
   ACBrLibMDFeRespostas, ACBrLibMDFeConsts;
 
@@ -54,7 +55,8 @@ exports
   MDFE_Nome,
   MDFE_Versao,
   MDFE_UltimoRetorno,
-  MDFE_ImportarConfig,
+  MDFE_ConfigImportar,
+  MDFE_ConfigExportar,
   MDFE_ConfigLer,
   MDFE_ConfigGravar,
   MDFE_ConfigLerValor,
@@ -105,8 +107,6 @@ begin
    DeleteFile( HeapTraceFile );
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
-
-  pLibClass := TACBrLibMDFe; // Ajusta a classe a ser criada
 
   MainThreadID := GetCurrentThreadId();
   Application.Initialize;

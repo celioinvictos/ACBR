@@ -34,6 +34,15 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
+{******************************************************************************
+|* Historico
+|*
+|* 27/10/2015: Jean Carlo Cantu, Tiago Ravache
+|*  - Doação do componente para o Projeto ACBr
+|* 28/08/2017: Leivio Fontenele - leivio@yahoo.com.br
+|*  - Implementação comunicação, envelope, status e retorno do componente com webservice.
+******************************************************************************}
+
 {$I ACBr.inc}
 
 unit pcesGerador;
@@ -43,7 +52,7 @@ interface
 uses
   SysUtils, Classes, StrUtils, variants,
   ACBrUtil,
-  pcnGerador, pcnLeitor, pcnConversao, pcnAuxiliar,
+  pcnGerador, pcnLeitor, pcnConversao, pcnAuxiliar, pcnConsts,
   pcesCommon, pcesConversaoeSocial;
 
 type
@@ -137,7 +146,6 @@ type
     procedure GerarInfoEstatutario(pInfoEstatutario: TInfoEstatutario);
     procedure GerarIdeTrabalhador(pideTrabalhador: TideTrabalhador; const GeraGrupo: boolean = True);
     procedure GerarIdeTrabalhador2(pideTrabalhador: TideTrabalhador2; const GeraGrupo: boolean);
-//    procedure GerarIdeTrabalhador3(pideTrabalhador: TideTrabalhador3);
     procedure GerarIdeFolhaPagto(pIdeFolhaPagto: TIdeFolhaPagto);
     procedure GerarEmitente(pEmitente: TEmitente; ATipoEvento: TTipoEvento);
     procedure GerarEndExt(pEndExt: TEndExt);
@@ -1544,17 +1552,6 @@ begin
   if GeraGrupo then
     Gerador.wGrupo('/ideTrabalhador');
 end;
-
-//procedure TeSocialEvento.GerarIdeTrabalhador3(pideTrabalhador: TideTrabalhador3: boolean);
-//begin
-//  Gerador.wGrupo('ideTrabalhador');
-//
-//  Gerador.wCampo(tcStr, '', 'cpfTrab', 11, 11, 1, pideTrabalhador.CpfTrab);
-//
-//  GerarProcJudTrab(pideTrabalhador.procJudTrab, False);
-//
-//  Gerador.wGrupo('/ideTrabalhador');
-//end;
 
 procedure TeSocialEvento.GerarIdeFolhaPagto(
   pIdeFolhaPagto: TIdeFolhaPagto);

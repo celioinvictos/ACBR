@@ -42,6 +42,42 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+13/11/2020
+-- ACBrMDFeManifestos --
+[*] Uso da função ObterDFeXML nos métodos Validar e VerificarAssinatura
+   Por: Italo Giurizzato Junior
+
+18/09/2020
+-- pmdfeMDFeW--
+[*] https://www.projetoacbr.com.br/forum/topic/59433-segcodbarra-validar-wcampo-tamanho-m%C3%ADnimo-44-errado-correto-36/
+   Por: Theiller
+
+24/08/2020
+-- pmdfeConversaoMDFe/pmdfeEventoMDFe --
+[+] Incluido os tipos de eventos: teEncerramentoFisco e teRegistroPassagemBRId.
+   Por: Italo Jurisato Junior
+
+31/07/2020
+-- ACBrMDFeManifestos --
+[*] Ajuste e padronização na leitura do .ini ref campo autXML
+
+23/07/2020
+-- Diversos --
+[+] Acrescentado a unit pcnConsts em algumas units do componente.
+    Por conta da migração de algumas constantes de pcnGerador para
+    pcnConsts.
+   Por: Italo Jurisato Junior
+
+17/06/2020
+-- pmdfeMDFeW--
+[*] https://www.projetoacbr.com.br/forum/topic/58115-erro-campo-latitude-e-longitude-produto-predominante/
+   Por: Julio Aguilar
+
+28/05/2020
+-- pmdfeMDFeW--
+[*] Corrigido a condição para definir se o campo CNPJ do grupo <infSeg> vai ser gerado, pois campo é obrigatório no manual.
+   Por: José M. S. Junior
+
 14/05/2020
 -- pmdfeMDFeW--
 [*] Corrigido a condição para definir se o grupo <infSeg> vai ser gerado ou não.

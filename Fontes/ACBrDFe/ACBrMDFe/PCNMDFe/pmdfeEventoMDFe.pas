@@ -41,7 +41,7 @@ uses
 {$IFNDEF VER130}
   Variants,
 {$ENDIF}
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -247,6 +247,7 @@ begin
     teRegistroPassagem             : Desc := 'Registro de Passagem';
     teRegistroPassagemBRId         : Desc := 'Registro de Passagem BRId';
     teEncerramento                 : Desc := 'Encerramento';
+    teEncerramentoFisco            : Desc := 'Encerramento Fisco';
     teInclusaoCondutor             : Desc := 'Inclusao Condutor';
     teInclusaoDFe                  : Desc := 'Inclusao DF-e';
     teRegistroCTe                  : Desc := 'CT-e Autorizado para NF-e';
@@ -292,6 +293,7 @@ begin
     teRegistroPassagem             : Result := 'REGISTRO DE PASSAGEM';
     teRegistroPassagemBRId         : Result := 'REGISTRO DE PASSAGEM BRId';
     teEncerramento                 : Result := 'ENCERRAMENTO';
+    teEncerramentoFisco            : Result := 'ENCERRAMENTO FISCO';
     teInclusaoCondutor             : Result := 'INCLUSAO CONDUTOR';
     teInclusaoDFe                  : Result := 'INCLUSAO DF-e';
     teRegistroCTe                  : Result := 'CT-e Autorizado para NF-e';

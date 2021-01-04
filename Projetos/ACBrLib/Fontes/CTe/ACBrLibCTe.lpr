@@ -3,8 +3,9 @@
 library ACBrLibCTe;
 
 uses
-  Interfaces, sysutils, Classes, Forms, ACBrLibCTeClass, ACBrLibConfig,
+  Interfaces, sysutils, Classes, Forms, ACBrLibConfig,
   ACBrLibComum, ACBrLibConsts, ACBrLibCTeConfig, ACBrLibResposta,
+  {$IFDEF MT}ACBrLibCTeMT{$ELSE}ACBrLibCTeST{$ENDIF},
   ACBrLibDistribuicaoDFe, ACBrLibCTeRespostas, ACBrLibCTeConsts;
 
 {$R *.res}
@@ -21,6 +22,8 @@ exports
   CTE_Nome,
   CTE_Versao,
   CTE_UltimoRetorno,
+  CTE_ConfigImportar,
+  CTE_ConfigExportar,
   CTE_ConfigLer,
   CTE_ConfigGravar,
   CTE_ConfigLerValor,
@@ -74,8 +77,6 @@ begin
    DeleteFile( HeapTraceFile );
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
-
-  pLibClass := TACBrLibCTe; // Ajusta a classe a ser criada
 
   MainThreadID := GetCurrentThreadId();
   Application.Initialize;

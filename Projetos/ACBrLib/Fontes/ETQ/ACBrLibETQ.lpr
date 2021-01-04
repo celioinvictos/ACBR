@@ -37,7 +37,8 @@ library ACBrLibETQ;
 uses
   Interfaces, sysutils, Classes,
   ACBrLibConfig, ACBrLibComum,
-  ACBrLibETQClass, ACBrLibETQConfig, ACBrLibETQDataModule;
+  {$IFDEF MT}ACBrLibETQMT{$ELSE}ACBrLibETQST{$ENDIF},
+  ACBrLibETQConfig, ACBrLibETQDataModule;
 
 {$R *.res}
 
@@ -53,7 +54,8 @@ exports
   ETQ_Nome,
   ETQ_Versao,
   ETQ_UltimoRetorno,
-  ETQ_ImportarConfig,
+  ETQ_ConfigImportar,
+  ETQ_ConfigExportar,
   ETQ_ConfigLer,
   ETQ_ConfigGravar,
   ETQ_ConfigLerValor,
@@ -83,7 +85,6 @@ begin
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
 
-  pLibClass := TACBrLibETQ; // Ajusta a classe a ser criada
   MainThreadID := GetCurrentThreadId();
 end.
 

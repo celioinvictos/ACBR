@@ -192,6 +192,8 @@ type
     SegundoPlano      : Boolean;
     Codificacao       : String;
     HTML              : Boolean;
+    AttemptsMail      : Integer;
+    TimeOutMail       : Integer;
   end;
 
   TCertificado = record
@@ -314,6 +316,7 @@ type
     FonteRazao                       : Integer;
     FonteEndereco                    : Integer;
     FonteCampos                      : Integer;
+    FonteAdicionais                  : Integer;
     AlturaCampos                     : Integer;
     Margem                           : Double;
     MargemSup                        : Double;
@@ -343,6 +346,7 @@ type
     LogoEmCima                       : Boolean;
     ExpandirDadosAdicionaisAuto      : Boolean;
     ImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean;
+    ImprimirCampoFormaPagamento      : Integer;
   end;
 
   TDACTE = record
@@ -511,6 +515,7 @@ type
 
   TSAT = record
     Modelo                       : Integer;
+    Marca                        : String;
     ArqLog                       : String;
     NomeDLL                      : String;
     CodigoAtivacao               : String;
@@ -923,6 +928,8 @@ begin
       Ini.WriteBool( CSecEmail, CKeyEmailSegundoPlano, SegundoPlano );
       Ini.WriteString( CSecEmail, CKeyEmailCodificacao, Codificacao );
       Ini.WriteBool( CSecEmail, CKeyEmailHTML, HTML );
+      Ini.WriteInteger( CSecEmail, CKeyAttemptsMail, AttemptsMail );
+      Ini.WriteInteger( CSecEmail, CKeyTimeoutMail, TimeOutMail );
     end;
 
     with DFe do
@@ -1108,6 +1115,7 @@ begin
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteRazao             , FonteRazao );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteEndereco          , FonteEndereco );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteCampos            , FonteCampos );
+      Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteAdicionais        , FonteAdicionais );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEAlturaCampos           , AlturaCampos );
       Ini.WriteFloat( CSecDANFE,   CKeyDANFEMargem                  , Margem );
       Ini.WriteFloat( CSecDANFE,   CKeyDANFEMargemSup               , MargemSup );
@@ -1137,6 +1145,8 @@ begin
       Ini.WriteBool( CSecDANFE,  CKeyDANFELogoEmCima                     , LogoEmCima );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto , ExpandirDadosAdicionaisAuto );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina, ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
+      Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimirCampoFormaPagamento, ImprimirCampoFormaPagamento);
+
     end;
 
     with DFe.Impressao.DACTE do
@@ -1170,6 +1180,7 @@ begin
     with SAT do
     begin
       ini.WriteInteger( CSecSAT, CKeySATModelo         , Modelo         );
+      ini.WriteString(  CSecSAT, CKeySATMarca          , Marca          );
       ini.WriteString(  CSecSAT, CKeySATArqLog         , ArqLog         );
       ini.WriteString(  CSecSAT, CKeySATNomeDLL        , NomeDLL        );
       ini.WriteString(  CSecSAT, CKeySATCodigoAtivacao , CodigoAtivacao );
@@ -1606,6 +1617,8 @@ begin
       SegundoPlano              := Ini.ReadBool( CSecEmail, CKeyEmailSegundoPlano, SegundoPlano );
       Codificacao               := Ini.ReadString( CSecEmail, CKeyEmailCodificacao, Codificacao );
       HTML                      := Ini.ReadBool( CSecEmail, CKeyEmailHTML, HTML );
+      AttemptsMail              := Ini.ReadInteger( CSecEmail, CKeyAttemptsMail, AttemptsMail );
+      TimeOutMail               := Ini.ReadInteger( CSecEmail, CKeyTimeoutMail, TimeOutMail );
     end;
 
     with DFe do
@@ -1776,6 +1789,7 @@ begin
       FonteRazao                :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteRazao                     , FonteRazao );
       FonteEndereco             :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteEndereco                  , FonteEndereco );
       FonteCampos               :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteCampos                    , FonteCampos );
+      FonteAdicionais           :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteAdicionais                , FonteAdicionais );
       AlturaCampos              :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEAlturaCampos                   , AlturaCampos );
       Margem                    :=  Ini.ReadFloat( CSecDANFE,   CKeyDANFEMargem                          , Margem );
       MargemSup                 :=  Ini.ReadFloat( CSecDANFE,   CKeyDANFEMargemSup                       , MargemSup );
@@ -1806,6 +1820,8 @@ begin
       ExpandirDadosAdicionaisAuto:= Ini.ReadBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto      , ExpandirDadosAdicionaisAuto );
       ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina,
                                                         ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
+      ImprimirCampoFormaPagamento   := Ini.ReadInteger( CSecDANFE, CKeyDANFEImprimirCampoFormaPagamento  , ImprimirCampoFormaPagamento );
+
     end;
 
     with DFe.Impressao.DACTE do
@@ -1860,6 +1876,7 @@ begin
     with SAT do
     begin
       Modelo                    := ini.ReadInteger( CSecSAT, CKeySATModelo         , Modelo         );
+      Marca                     := ini.ReadString(  CSecSAT, CKeySATMarca          , Marca          );
       ArqLog                    := ini.ReadString(  CSecSAT, CKeySATArqLog         , ArqLog         );
       NomeDLL                   := ini.ReadString(  CSecSAT, CKeySATNomeDLL        , NomeDLL        );
       CodigoAtivacao            := ini.ReadString(  CSecSAT, CKeySATCodigoAtivacao , CodigoAtivacao );
@@ -2276,6 +2293,8 @@ begin
     SegundoPlano              := False;
     Codificacao               := '';
     HTML                      := False;
+    AttemptsMail              := 3;
+    TimeOutMail               := 0;
   end;
 
   with DFe do
@@ -2438,6 +2457,7 @@ begin
     FonteRazao                :=  8;
     FonteEndereco             :=  7;
     FonteCampos               :=  8;
+    FonteAdicionais           :=  8;
     AlturaCampos              :=  30;
     Margem                    :=  7;
     MargemSup                 :=  7;
@@ -2464,6 +2484,7 @@ begin
     ImprimirDadosDocReferenciados := True;
     ExibirBandInforAdicProduto := 0;
     ImprimeDescAcrescItemNFe   := 0;
+    ImprimirCampoFormaPagamento:= 0;
     LogoEmCima                 := False;
     ExpandirDadosAdicionaisAuto := False;
     ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= False;
@@ -2520,6 +2541,7 @@ begin
   with SAT do
   begin
     Modelo                    := 0;
+    Marca                     := '';
     ArqLog                    := 'ACBrSAT.log';
     NomeDLL                   := AcertaPath('SAT\Emulador\SAT.DLL');
     CodigoAtivacao            := '123456';

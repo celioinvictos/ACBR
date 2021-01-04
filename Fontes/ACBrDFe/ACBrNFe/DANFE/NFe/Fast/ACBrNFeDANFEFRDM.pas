@@ -104,6 +104,7 @@ type
     FIncorporarFontesPdf: Boolean;
     FIncorporarBackgroundPdf: Boolean;
     FOtimizaImpressaoPdf: Boolean;
+    FThreadSafe: Boolean;
 
     procedure frxReportBeforePrint(Sender: TfrxReportComponent);
     procedure frxReportPreview(Sender: TObject);
@@ -156,6 +157,7 @@ type
     property IncorporarBackgroundPdf: Boolean read FIncorporarBackgroundPdf write FIncorporarBackgroundPdf;
     property IncorporarFontesPdf: Boolean read FIncorporarFontesPdf write FIncorporarFontesPdf;
     property OtimizaImpressaoPdf: Boolean read FOtimizaImpressaoPdf write FOtimizaImpressaoPdf;
+    property ThreadSafe: Boolean read FThreadSafe write FThreadSafe;
 
     function PrepareReport(ANFE: TNFe = nil): Boolean;
     function PrepareReportEvento(ANFE: TNFe = nil): Boolean;
@@ -188,6 +190,7 @@ begin
   if not (AOwner is TACBrDFeDANFeReport) then
     raise EACBrNFeException.Create('AOwner deve ser do tipo TACBrDFeDANFeReport');
 
+  FThreadSafe := False;
   FFastFile := '';
   FExibeCaptionButton := False;
   FZoomModePadrao := ZMDEFAULT;
@@ -294,7 +297,7 @@ begin
         FieldDefs.Add('CEP', ftString, 9);
         FieldDefs.Add('CPais', ftString, 4);
         FieldDefs.Add('XPais', ftString, 60);
-        FieldDefs.Add('Fone', ftString, 15);
+        FieldDefs.Add('Fone', ftString, 17);
         FieldDefs.Add('IE', ftString, 15);
         FieldDefs.Add('IM', ftString, 15);
         FieldDefs.Add('IEST', ftString, 15);
@@ -332,7 +335,7 @@ begin
         FieldDefs.Add('CEP', ftString, 9);
         FieldDefs.Add('CPais', ftString, 4);
         FieldDefs.Add('XPais', ftString, 60);
-        FieldDefs.Add('Fone', ftString, 15);
+        FieldDefs.Add('Fone', ftString, 17);
         FieldDefs.Add('IE', ftString, 18);
         FieldDefs.Add('Consumidor', ftString, 400);
         CreateDataSet;
@@ -380,6 +383,7 @@ begin
         FieldDefs.Add('pICMS'     , ftString, 18);
         FieldDefs.Add('vICMS'     , ftString, 18);
         FieldDefs.Add('vIPI'      , ftString, 18);
+        FieldDefs.Add('vIPIDevol'      , ftString, 18);
         FieldDefs.Add('pIPI'      , ftString, 18);
         FieldDefs.Add('VTotTrib'  , ftString, 18);
         FieldDefs.Add('ChaveNFe'  , ftString, 50);
@@ -686,7 +690,7 @@ begin
          FieldDefs.Add('CEP', ftString, 9);
          FieldDefs.Add('CPais', ftString, 4);
          FieldDefs.Add('XPais', ftString, 60);
-         FieldDefs.Add('Fone', ftString, 15);
+         FieldDefs.Add('Fone', ftString, 17);
          FieldDefs.Add('IE', ftString, 15);
          CreateDataSet;
       end;
@@ -719,7 +723,7 @@ begin
          FieldDefs.Add('CEP', ftString, 9);
          FieldDefs.Add('CPais', ftString, 4);
          FieldDefs.Add('XPais', ftString, 60);
-         FieldDefs.Add('Fone', ftString, 15);
+         FieldDefs.Add('Fone', ftString, 17);
          FieldDefs.Add('IE', ftString, 15);
          CreateDataSet;
       end;
@@ -893,6 +897,8 @@ begin
 end;
 
 procedure TACBrNFeFRClass.CarregaCalculoImposto;
+var
+  lvTroco: Currency;
 begin
   with cdsCalculoImposto do
   begin
@@ -928,17 +934,12 @@ begin
 
       if NaoEstaVazio(FDANFEClassOwner.FonteTributos) then
         FieldByName('VTribFonte').AsString := '(Fonte: '+FDANFEClassOwner.FonteTributos+')';
-    end;
 
-    if FNFe.pag.vTroco > 0 then
-    begin
-      FieldByName('vTroco').AsCurrency    := FNFe.pag.vTroco;
-      FieldByName('vTotPago').AsCurrency  := FNFe.pag.vTroco+FieldByName('VProd').AsFloat;
-    end
-    else if (FDANFEClassOwner is TACBrNFeDANFCEClass) then
-    begin
-      FieldByName('vTroco').AsCurrency    := TACBrNFeDANFCEClass(DANFEClassOwner).vTroco;
-      FieldByName('vTotPago').AsCurrency  := TACBrNFeDANFCEClass(DANFEClassOwner).vTroco + FieldByName('VProd').AsFloat;
+      lvTroco := FNFe.pag.vTroco;
+      if (lvTroco = 0) and (FDANFEClassOwner is TACBrNFeDANFCEClass) then
+        lvTroco := TACBrNFeDANFCEClass(FDANFEClassOwner).vTroco;
+      FieldByName('vTroco').AsCurrency    := lvTroco;
+      FieldByName('vTotPago').AsCurrency  := lvTroco + vNF;
     end;
 
     Post;
@@ -1064,6 +1065,7 @@ begin
         FieldByName('pICMSST').AsString           := FormatFloatBr( Imposto.ICMS.pICMSST    ,',0.00');
         FieldByName('VICMSST').AsString           := FormatFloatBr( Imposto.ICMS.vICMSST    ,',0.00');
         FieldByName('VIPI').AsString              := FormatFloatBr( Imposto.IPI.VIPI        ,',0.00');
+        FieldByName('vIPIDevol').AsString         := FormatFloatBr( vIPIDevol               ,',0.00');
         FieldByName('PIPI').AsString              := FormatFloatBr( Imposto.IPI.PIPI        ,',0.00');
         FieldByName('vISSQN').AsString            := FormatFloatBr( Imposto.ISSQN.vISSQN    ,',0.00');
         FieldByName('vBcISSQN').AsString          := FormatFloatBr( Imposto.ISSQN.vBC       ,',0.00');
@@ -1124,7 +1126,7 @@ begin
               IfThen(Length(CNPJCPF) = 11, 'CONSUMIDOR CPF: ', 'CONSUMIDOR CNPJ: ') + Trim(FieldByName('CNPJCPF').AsString) + ' ' + trim(FieldByName('XNome').AsString);
         end;
 
-        if NaoEstaVazio(Trim(FieldByName('XNome').AsString)) then
+        if NaoEstaVazio(Trim(FieldByName('XLgr').AsString)) then
           FieldByName('Consumidor').AsString := FieldByName('Consumidor').AsString + #13 +
             Trim(FieldByName('XLgr').AsString) + ', ' + Trim(FieldByName('Nro').AsString);
         if NaoEstaVazio(Trim(FieldByName('XCpl').AsString)) then
@@ -1401,7 +1403,7 @@ begin
   wLinhasObs  := 0;
   BufferInfCpl:= '';
   vTemp       := TStringList.Create;
-  
+
   try
     if (FDANFEClassOwner is TACBrNFeDANFEClass) then
     begin
@@ -1422,7 +1424,7 @@ begin
               FDANFEClassOwner.ManterInfContr(FNFe) +
               FDANFEClassOwner.ManterInfCompl(FNFe);
     end;
-	
+
     if Trim(wObs) <> '' then
     begin
       Campos := Split(';', wObs);
@@ -1432,7 +1434,7 @@ begin
       wLinhasObs    := 1; //TotalObS(vTemp.Text);
       BufferInfCpl  := vTemp.Text;
     end;
-	
+
     with cdsInformacoesAdicionais do
     begin
       Close;
@@ -1443,7 +1445,7 @@ begin
       FieldByName('MensagemSEFAZ').AsString := FNFe.procNFe.xMsg;
       Post;
     end;
-	
+
   finally
     vTemp.Free;
   end;
@@ -2012,6 +2014,16 @@ begin
   frxReport.PreviewOptions.ZoomMode     := FZoomModePadrao;
   frxReport.OnPreview := frxReportPreview;
 
+  if FThreadSafe then
+  begin
+    // Desabilita todo e qualquer tipo de mensagem
+    frxReport.EngineOptions.SilentMode := True;
+    // Habilita o FR a trabalhar com multiplas threads com segurança
+    frxReport.EngineOptions.EnableThreadSafe := True;
+    // Desabilita o cache, que no caso de múltiplas threas pode dar conflito de conteúdo entre arquivos.
+    frxReport.EngineOptions.UseFileCache := false;
+  end;
+
   if NaoEstaVazio(DANFEClassOwner.NomeDocumento) then
     frxReport.FileName := DANFEClassOwner.NomeDocumento;
 
@@ -2487,6 +2499,7 @@ begin
       Page.LeftMargin := DANFEClassOwner.MargemEsquerda;
     if (DANFEClassOwner.MargemDireita > 0) then
       Page.RightMargin := DANFEClassOwner.MargemDireita;
+    frxReport.PreviewPages.ModifyPage(I, Page);
   end;
 end;
 

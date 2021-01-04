@@ -38,7 +38,7 @@ interface
 
 uses
   Classes, SysUtils, Contnrs,
-  ACBrBoleto;
+  ACBrBoleto, ACBrBoletoConversao;
 
 const
   CACBrBancoBrasil_Versao = '0.0.1';
@@ -890,6 +890,7 @@ var
   aModalidade,wLinha, aTipoCobranca:String;
   TamConvenioMaior6                :Boolean;
   wCarteira: Integer;
+  wDiasPagto : Integer;
 begin
 
    with ACBrTitulo do
@@ -1053,6 +1054,10 @@ begin
      if Mensagem.Text <> '' then
        AMensagem   := Mensagem.Strings[0];
 
+     wDiasPagto := 0;
+     if (ATipoOcorrencia = '01') and ( DataLimitePagto > Vencimento ) then
+       wDiasPagto:= DaysBetween(Vencimento, DataLimitePagto);
+
      with ACBrBoleto do
      begin
        if TamConvenioMaior6 then
@@ -1134,7 +1139,8 @@ begin
                        FormatDateTime('ddmmyy', DataMulta),
                                       '000000')                  + //Data Multa
                 IntToStrZero( round( PercentualMulta * 100), 12) + //Perc. Multa
-                Space(372)                                       + //Brancos
+                IntToStrZero(wDiasPagto ,3)                      + //Qtd dias Recebimento após vencimento
+                Space(369)                                       + //Brancos
                 IntToStrZero(aRemessa.Count + 2 ,6);
 
        aRemessa.Text := aRemessa.Text + UpperCase(wLinha);
@@ -1160,6 +1166,7 @@ var
   ContLinha : Integer;
   idxMotivo: Integer;
   rConvenioCedente: String;
+  CodMotivo: Integer;
 begin
    // informação do Header
    // Verifica se o arquivo pertence ao banco
@@ -1246,7 +1253,21 @@ begin
                if (trim(Copy(Linha, IdxMotivo, 2)) <> '') then
                begin
                   MotivoRejeicaoComando.Add(Copy(Linha, IdxMotivo, 2));
-                  DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo, StrToIntDef(Copy(Linha, IdxMotivo, 2), 0)));
+
+                  case AnsiIndexStr(Copy(Linha, IdxMotivo, 2), ['A1','A2','A3','A4','A5','A6','A7','A8','A9']) of
+                    0: CodMotivo := 101;
+                    1: CodMotivo := 102;
+                    2: CodMotivo := 103;
+                    3: CodMotivo := 104;
+                    4: CodMotivo := 105;
+                    5: CodMotivo := 106;
+                    6: CodMotivo := 107;
+                    7: CodMotivo := 108;
+                    8: CodMotivo := 109;
+                  else
+                    CodMotivo := StrToIntDef(Copy(Linha, IdxMotivo, 2),0);
+                  end;
+                  DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo, CodMotivo));
                end;
                Inc(IdxMotivo, 2);
             end;
@@ -1254,6 +1275,7 @@ begin
           end
          else if copy(Linha, 14, 1) = 'U' then // segmento U
           begin
+            CodigoLiquidacao    := copy(Linha, 16, 2);  //Código de Movimento Retorno  página 156
             ValorIOF            := StrToFloatDef(copy(Linha, 63, 15), 0) / 100;
             ValorAbatimento     := StrToFloatDef(copy(Linha, 48, 15), 0) / 100;
             ValorDesconto       := StrToFloatDef(copy(Linha, 33, 15), 0) / 100;
@@ -1761,7 +1783,16 @@ begin
         67: Result:='67-Dados para debito incompativel com a identificacao da emissao do bloqueto';
         88: Result:='88-Arquivo em duplicidade';
         99: Result:='99-Contrato inexistente';
-        end;
+        101 { A1 } : Result := 'Rejeição da alteração do número controle do participante';
+        102 { A2 } : Result := 'Rejeição da alteração dos dados do Pagador';
+        103 { A3 } : Result := 'Rejeição da alteração dos dados do Sacador/avalista';
+        104 { A4 } : Result := 'Pagador DDA';
+        105 { A5 } : Result := 'Registro Rejeitado – Título já Liquidado';
+        106 { A6 } : Result := 'Código do Convenente Inválido ou Encerrado';
+        107 { A7 } : Result := 'Título já se encontra na situação Pretendida';
+        108 { A8 } : Result := 'Valor do Abatimento inválido para cancelamento';
+        109 { A9 } : Result := 'Não autoriza pagamento parcial';
+      end;
       toRetornoLiquidado, toRetornoBaixaAutomatica, toRetornoLiquidadoSemRegistro: // 06, 09 e 17 (Liquidado)
       case CodMotivo of
         01: Result:='01-Por saldo';

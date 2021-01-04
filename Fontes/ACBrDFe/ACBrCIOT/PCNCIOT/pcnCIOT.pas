@@ -41,7 +41,7 @@ uses
 {$IFNDEF VER130}
   Variants,
 {$ENDIF}
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -986,6 +986,7 @@ type
     FMotorista: TGravarMotorista;
 
     FPDF: AnsiString;
+    FPDFNomeArquivo :string;
     FCodigoIdentificacaoOperacao: string;
     FDataRetificacao: TDateTime;
     FData: TDateTime;
@@ -1020,6 +1021,7 @@ type
     property Motorista: TGravarMotorista read FMotorista write FMotorista;
 
     property PDF: AnsiString read FPDF write FPDF;
+    property PDFNomeArquivo : String read FPDFNomeArquivo write FPDFNomeArquivo;
     property CodigoIdentificacaoOperacao: string read FCodigoIdentificacaoOperacao write FCodigoIdentificacaoOperacao;
     property DataRetificacao: TDateTime read FDataRetificacao write FDataRetificacao;
     property Data: TDateTime read FData write FData;

@@ -9,9 +9,11 @@ interface
 
 uses
   ACBrTEFDReg, ACBrTEFD, ACBrTEFDClass, ACBrTEFComum, ACBrTEFAPIClass, 
-  ACBrTEFAPI, ACBrTEFDDial, ACBrTEFDPayGo, ACBrTEFDDisc, ACBrTEFDHiper, 
-  ACBrTEFDCliSiTef, ACBrTEFDVeSPague, ACBrTEFDBanese, ACBrTEFDCappta, 
-  ACBrTEFCliSiTefComum, ACBrPicpay, LazarusPackageIntf;
+  ACBrTEFAPI, ACBrTEFDDial, ACBrTEFDPayGo, ACBrTEFDPayGoWeb, ACBrTEFDDisc, 
+  ACBrTEFDHiper, ACBrTEFDCliSiTef, ACBrTEFDVeSPague, ACBrTEFDBanese, 
+  ACBrTEFDCappta, ACBrTEFCliSiTefComum, ACBrTEFPayGoComum, 
+  ACBrTEFPayGoWebComum, ACBrPOS, ACBrPOSPGWebAPI, ACBrPicpay, 
+  LazarusPackageIntf;
 
 implementation
 

@@ -78,7 +78,6 @@ type
     procedure INIParaClasse; override;
     procedure ClasseParaINI; override;
     procedure ClasseParaComponentes; override;
-    procedure ImportarIni(AIni: TCustomIniFile); override;
 
     procedure Travar; override;
     procedure Destravar; override;
@@ -88,14 +87,14 @@ type
     destructor Destroy; override;
 
     property BALConfig: TBALConfig read FBALConfig;
-    property DeviceConfig: TDeviceConfig read FDeviceConfig;
+    property BalDeviceConfig: TDeviceConfig read FDeviceConfig;
   end;
 
 implementation
 
 uses
-  ACBrMonitorConsts, ACBrLibConsts, ACBrLibBALConsts,
-  ACBrLibBALClass, ACBrLibComum, ACBrUtil;
+  ACBrLibConsts, ACBrLibBALConsts,
+  ACBrLibBALBase, ACBrUtil;
 
 { TBALConfig }
 
@@ -144,7 +143,7 @@ begin
   inherited Create(AOwner, ANomeArquivo, AChaveCrypt);
 
   FBALConfig := TBALConfig.Create;
-  FDeviceConfig := TDeviceConfig.Create('BAL_Device');
+  FDeviceConfig := TDeviceConfig.Create(CSessaoBALDevice);
 end;
 
 destructor TLibBALConfig.Destroy;
@@ -175,14 +174,6 @@ procedure TLibBALConfig.ClasseParaComponentes;
 begin
   if Assigned(Owner) then
     TACBrLibBAL(Owner).BALDM.AplicarConfiguracoes;
-end;
-
-procedure TLibBALConfig.ImportarIni(AIni: TCustomIniFile);
-begin
-  BALConfig.ArqLog    := AIni.ReadString(CSecBAL, CKeyBALArqLog, BALConfig.ArqLog);
-  BALConfig.Porta     := AIni.ReadString(CSecBAL, CKeyBALPorta, BALConfig.Porta);
-  BALConfig.Modelo    := TACBrBALModelo(AIni.ReadInteger(CSecBAL, CKeyBALModelo, Integer(BALConfig.Modelo)));
-  BALConfig.Intervalo := AIni.ReadInteger(CSecBAL, CKeyBALIntervalo, BALConfig.Intervalo);
 end;
 
 procedure TLibBALConfig.Travar;

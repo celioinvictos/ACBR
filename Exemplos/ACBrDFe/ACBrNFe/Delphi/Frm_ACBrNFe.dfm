@@ -1677,7 +1677,7 @@ object frmACBrNFe: TfrmACBrNFe
       Top = 1
       Width = 567
       Height = 197
-      ActivePage = tsEnvios
+      ActivePage = tsDistribuicao
       Align = alTop
       TabOrder = 0
       object tsEnvios: TTabSheet
@@ -1951,6 +1951,15 @@ object frmACBrNFe: TfrmACBrNFe
           TabOrder = 1
           OnClick = btnDistribuicaoDFeClick
         end
+        object btnDistribuicaoDFeNSU: TButton
+          Left = 8
+          Top = 40
+          Width = 178
+          Height = 25
+          Caption = 'Distribui'#231#227'o Documentos Fiscais NSU'
+          TabOrder = 2
+          OnClick = btnDistribuicaoDFeNSUClick
+        end
       end
     end
     object pgRespostas: TPageControl
@@ -1958,7 +1967,7 @@ object frmACBrNFe: TfrmACBrNFe
       Top = 198
       Width = 567
       Height = 413
-      ActivePage = TabSheet5
+      ActivePage = TabSheet6
       Align = alClient
       TabOrder = 1
       object TabSheet5: TTabSheet

@@ -42,6 +42,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+21/12/2020
+-- pcnRetRecepcaoLeitura --
+[+] Inclusão de um novo campo no retorno do envio da leitura.
+   Por: Italo Giurizzato Junior
+
+10/11/2020
+-- Diversos --
+[+] Novo método de Consulta a Foto.
+   Por: Italo Giurizzato Junior
+
+22/07/2020
+-- Diversos --
+[+] Acrescentado a unit pcnConsts em algumas units do componente.
+    Por conta da migração de algumas constantes de pcnGerador para
+    pcnConsts.
+   Por: Italo Jurisato Junior
+
 14/10/2019
 [+] Doação do componente para o Projeto ACBr
    Por: Italo Jurisato Junior

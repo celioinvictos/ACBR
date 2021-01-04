@@ -1,33 +1,33 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para intera√ß√£o com equipa- }
-{ mentos de Automa√ß√£o Comercial utilizados no Brasil                           }
+{  Biblioteca multiplataforma de componentes Delphi para interaÁ„o com equipa- }
+{ mentos de AutomaÁ„o Comercial utilizados no Brasil                           }
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
-{  Voc√™ pode obter a √∫ltima vers√£o desse arquivo na pagina do  Projeto ACBr    }
+{  VocÍ pode obter a ˙ltima vers„o desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
-{  Esta biblioteca √© software livre; voc√™ pode redistribu√≠-la e/ou modific√°-la }
-{ sob os termos da Licen√ßa P√∫blica Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a vers√£o 2.1 da Licen√ßa, ou (a seu crit√©rio) }
-{ qualquer vers√£o posterior.                                                   }
+{  Esta biblioteca È software livre; vocÍ pode redistribuÌ-la e/ou modific·-la }
+{ sob os termos da LicenÁa P˙blica Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a vers„o 2.1 da LicenÁa, ou (a seu critÈrio) }
+{ qualquer vers„o posterior.                                                   }
 {                                                                              }
-{  Esta biblioteca √© distribu√≠da na expectativa de que seja √∫til, por√©m, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia impl√≠cita de COMERCIABILIDADE OU      }
-{ ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICEN√áA.TXT ou LICENSE.TXT)              }
+{  Esta biblioteca È distribuÌda na expectativa de que seja ˙til, porÈm, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implÌcita de COMERCIABILIDADE OU      }
+{ ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICEN«A.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{  Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral Menor do GNU junto}
-{ com esta biblioteca; se n√£o, escreva para a Free Software Foundation, Inc.,  }
-{ no endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Voc√™ tamb√©m pode obter uma copia da licen√ßa em:                              }
+{  VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral Menor do GNU junto}
+{ com esta biblioteca; se n„o, escreva para a Free Software Foundation, Inc.,  }
+{ no endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ VocÍ tambÈm pode obter uma copia da licenÁa em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Sim√µes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
-{       Rua Coronel Aureliano de Camargo, 963 - Tatu√≠ - SP - 18270-170         }
+{ Daniel Simıes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - TatuÌ - SP - 18270-170         }
 {******************************************************************************}
 
 unit ACBrTEFComum;
@@ -37,7 +37,14 @@ unit ACBrTEFComum;
 interface
 
 uses
-  Classes, SysUtils, contnrs,
+  Classes, SysUtils,
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
   ACBrBase;
 
 type
@@ -103,7 +110,7 @@ type
 
   TACBrTEFRespTipoOperacao = (opOutras, opAvista, opParcelado, opPreDatado);
 
-  { TACBrTEFRespCB - Armazena dados dos Correspondente Banc√°rio }
+  { TACBrTEFRespCB - Armazena dados dos Correspondente Banc·rio }
 
   TACBrTEFRespCB = class
   private
@@ -135,7 +142,7 @@ type
 
   { TACBrTEFRespListaCB - Lista para armazenar Objetos do tipo TACBrTEFRespCB }
 
-  TACBrTEFRespListaCB = class(TObjectList)
+  TACBrTEFRespListaCB = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TObject>{$EndIf})
   protected
     FTotalTitulos: Double;
     FTotalTitulosNaoPago: Double;
@@ -173,7 +180,7 @@ type
   { TACBrTEFRespParcelas }
   { Lista de Objetos do tipo TACBrTEFParcela }
 
-  TACBrTEFRespParcelas = class(TObjectList)
+  TACBrTEFRespParcelas = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TObject>{$EndIf})
   protected
     procedure SetObject(Index: Integer; Item: TACBrTEFRespParcela);
     function GetObject(Index: Integer): TACBrTEFRespParcela;
@@ -224,7 +231,7 @@ type
     fpChequeDC: String;
     fpCMC7: String;
     fpCNFEnviado: Boolean;
-    fpCodigoAutorizacaoTransacao: String;
+    fpCodigoAutorizacaoTransacao: String;  // Dial-13, SiTef-135. ContÈm o CÛdigo de AutorizaÁ„o para as transaÁıes de crÈdito (15 posiÁıes no m·ximo)
     fpCodigoOperadoraCelular: String;
     fpConta: String;
     fpContaDC: String;
@@ -240,12 +247,12 @@ type
     fpFinalizacao: String;
     fpHeader: String;
     fpID: Integer;
-    fpMoeda: Integer;
+    fpMoeda: Integer;     //  0: Real, 1: DÛlar americano, 2: Euro
     fpNomeAdministradora: String;
     fpNomeOperadoraCelular: String;
     fpNSU: String;
     fpNSUTransacaoCancelada: String;
-    fpNumeroLoteTransacao: Integer;
+    fpNumeroLoteTransacao: Int64;
     fpNumeroRecargaCelular: String;
     fpQtdLinhasComprovante: Integer;
     fpQtdParcelas: Integer;
@@ -257,48 +264,52 @@ type
     fpTipoTransacao: Integer;
     fpTrailer: String;
     fpBin: String;
-    fpValorTotal: Double;
+    fpValorTotal: Double;     // Valor Total da TransaÁ„o, j· considerando Descontos/ AcrÈscimos e Saque
     fpValorOriginal: Double;
     fpValorRecargaCelular: Double;
     fpSaque: Double;
     fpDesconto: Double;
     fpTaxaServico: Double;
-    fpDocumentoVinculado: String;
+    fpDocumentoVinculado: String;    // N˙mero do documento fiscal ao qual a operaÁ„o de TEF est· vinculada.
     fpTipoParcelamento: Integer;
     fpParcelas: TACBrTEFRespParcelas;
     fpImagemComprovante1aVia: TStringList;
     fpImagemComprovante2aVia: TStringList;
-    fpDataVencimento: TDateTime;
-    fpInstituicao: String;
+    fpDataVencimento: TDateTime;     // Data Vencimento do Cheque
+    fpInstituicao: String;     // Sitef-131, ContÈm um Ìndice que indica qual a instituiÁ„o que ir· processar a transaÁ„o segundo a tabela presente no final do documento (atÈ 5 dÌgitos significativos)
     fpModalidadePagto: String;
     fpModalidadePagtoDescrita: String;
     fpModalidadePagtoExtenso: String;
-    fpCodigoRedeAutorizada: String;
-    fpDebito: Boolean;
-    fpCredito: Boolean;
-    fpDigitado: Boolean;
+    fpCodigoRedeAutorizada: String;     // 739-000 Õndice da Rede Adquirente
+    fpDebito: Boolean;      // Se True, foi usado Cart„o de DÈbito
+    fpCredito: Boolean;     // Se True, foi usado Cart„o de CrÈdito
+    fpDigitado: Boolean;    // Se True, foi Digitado o n˙mero do Cart„o de DÈbito
     fpParceladoPor: TACBrTEFRespParceladoPor;
     fpValorEntradaCDC: Double;
     fpDataEntradaCDC: TDateTime;
     fpTipoOperacao: TACBrTEFRespTipoOperacao;
     fpNFCeSAT: TACBrTEFRespNFCeSAT;
-    fpIdPagamento: longint;
-    fpIdRespostaFiscal: longint;
-    fpSerialPOS: String;
-    fpCodigoBandeiraPadrao: String;
-    fpEstabelecimento: String;
+    fpIdPagamento: Integer;          // 899-500 - VFP Integrador CE
+    fpIdRespostaFiscal: Integer;     // 899-501 - VFP Integrador CE
+    fpSerialPOS: String;             // 899-502 - VFP Integrador CE
+    fpEstabelecimento: String;       // 899-503  - VFP Integrador CE
+    fpCodigoBandeiraPadrao: String;  // SiTef-132, ContÈm um Ìndice que indica qual o tipo do cart„o quando esse tipo for identific·vel, segundo uma tabela a ser fornecida (5 posiÁıes)
+    fpConfirmar: Boolean;     // Se Verdadeiro, deve confirmar essa transaÁ„o
+    fpQRCode: String;       // String com o Conte˙do do QRCode
+    fpIdCarteiraDigital : String; // CÛdigo de identificaÁ„o da carteira digital
+    fpNomeCarteiraDigital : String; // Nome da carteira digital
 
     procedure SetCNFEnviado(const AValue: Boolean);
     procedure SetArqBackup(const AValue: String);
 
     function GetTransacaoAprovada: Boolean; virtual;
-    procedure ProcessarTipoInterno(ALinha: TACBrTEFLinha); virtual;
   public
     constructor Create;
     destructor Destroy; override;
 
     procedure Assign(Source: TACBrTEFResp); virtual;
     procedure ConteudoToProperty; virtual;
+    procedure ProcessarTipoInterno(ALinha: TACBrTEFLinha); virtual;
 
     procedure Clear; virtual;
     procedure LeArquivo(const NomeArquivo: String);
@@ -308,55 +319,55 @@ type
 
     property Header: String read fpHeader;
     property ID: Integer read fpID;
-    property DocumentoVinculado: String read fpDocumentoVinculado;
-    property ValorTotal: Double read fpValorTotal;
-    property ValorOriginal: Double read fpValorOriginal;
-    property Saque: Double read fpSaque;
-    property Desconto: Double read fpDesconto;
-    property TaxaServico: Double read fpTaxaServico;
-    property Moeda: Integer read fpMoeda;
-    property CMC7: String read fpCMC7;
-    property TipoPessoa: AnsiChar read fpTipoPessoa;
-    property DocumentoPessoa: String read fpDocumentoPessoa;
-    property DataCheque: TDateTime read fpDataCheque;
-    property Rede: String read fpRede;
-    property NSU: String read fpNSU;
-    property Finalizacao: String read fpFinalizacao;
-    property StatusTransacao: String read fpStatusTransacao;
+    property DocumentoVinculado: String read fpDocumentoVinculado write fpDocumentoVinculado;
+    property ValorTotal: Double read fpValorTotal write fpValorTotal;
+    property ValorOriginal: Double read fpValorOriginal write fpValorOriginal;
+    property Saque: Double read fpSaque write fpSaque;
+    property Desconto: Double read fpDesconto write fpDesconto;
+    property TaxaServico: Double read fpTaxaServico write fpTaxaServico;
+    property Moeda: Integer read fpMoeda write fpMoeda;
+    property CMC7: String read fpCMC7 write fpCMC7;
+    property TipoPessoa: AnsiChar read fpTipoPessoa write fpTipoPessoa;
+    property DocumentoPessoa: String read fpDocumentoPessoa write fpDocumentoPessoa;
+    property DataCheque: TDateTime read fpDataCheque write fpDataCheque;
+    property Rede: String read fpRede write fpRede;
+    property NSU: String read fpNSU write fpNSU;
+    property Finalizacao: String read fpFinalizacao write fpFinalizacao;
+    property StatusTransacao: String read fpStatusTransacao write fpStatusTransacao;
     property TransacaoAprovada: Boolean read GetTransacaoAprovada;
-    property TipoTransacao: Integer read fpTipoTransacao;
-    property CodigoAutorizacaoTransacao: String read fpCodigoAutorizacaoTransacao;
-    property NumeroLoteTransacao: Integer read fpNumeroLoteTransacao;
-    property DataHoraTransacaoHost: TDateTime read fpDataHoraTransacaoHost;
-    property DataHoraTransacaoLocal: TDateTime read fpDataHoraTransacaoLocal;
-    property TipoParcelamento: Integer read fpTipoParcelamento;
-    property QtdParcelas: Integer read fpQtdParcelas;
-    property DataPreDatado: TDateTime read fpDataPreDatado;
-    property NSUTransacaoCancelada: String read fpNSUTransacaoCancelada;
-    property DataHoraTransacaoCancelada: TDateTime read fpDataHoraTransacaoCancelada;
-    property QtdLinhasComprovante: Integer read fpQtdLinhasComprovante;
-    property TextoEspecialOperador: String read fpTextoEspecialOperador;
-    property TextoEspecialCliente: String read fpTextoEspecialCliente;
-    property Autenticacao: String read fpAutenticacao;
-    property Banco: String read fpBanco;
-    property Agencia: String read fpAgencia;
-    property AgenciaDC: String read fpAgenciaDC;
-    property Conta: String read fpConta;
-    property ContaDC: String read fpContaDC;
-    property Cheque: String read fpCheque;
-    property ChequeDC: String read fpChequeDC;
-    property NomeAdministradora: String read fpNomeAdministradora;
-    property DataHoraTransacaoComprovante: TDateTime read fpDataHoraTransacaoComprovante;
-    property Trailer: String read fpTrailer;
-    property BIN: String read fpBin;
-    property CodigoBandeiraPadrao: String read fpCodigoBandeiraPadrao;
+    property TipoTransacao: Integer read fpTipoTransacao write fpTipoTransacao;
+    property CodigoAutorizacaoTransacao: String read fpCodigoAutorizacaoTransacao write fpCodigoAutorizacaoTransacao;
+    property NumeroLoteTransacao: Int64 read fpNumeroLoteTransacao write fpNumeroLoteTransacao;
+    property DataHoraTransacaoHost: TDateTime read fpDataHoraTransacaoHost write fpDataHoraTransacaoHost;
+    property DataHoraTransacaoLocal: TDateTime read fpDataHoraTransacaoLocal write fpDataHoraTransacaoLocal;
+    property TipoParcelamento: Integer read fpTipoParcelamento write fpTipoParcelamento;
+    property QtdParcelas: Integer read fpQtdParcelas write fpQtdParcelas;
+    property DataPreDatado: TDateTime read fpDataPreDatado write fpDataPreDatado;
+    property NSUTransacaoCancelada: String read fpNSUTransacaoCancelada write fpNSUTransacaoCancelada;
+    property DataHoraTransacaoCancelada: TDateTime read fpDataHoraTransacaoCancelada write fpDataHoraTransacaoCancelada;
+    property QtdLinhasComprovante: Integer read fpQtdLinhasComprovante write fpQtdLinhasComprovante;
+    property TextoEspecialOperador: String read fpTextoEspecialOperador write fpTextoEspecialOperador;
+    property TextoEspecialCliente: String read fpTextoEspecialCliente write fpTextoEspecialCliente;
+    property Autenticacao: String read fpAutenticacao write fpAutenticacao;
+    property Banco: String read fpBanco write fpBanco;
+    property Agencia: String read fpAgencia write fpAgencia;
+    property AgenciaDC: String read fpAgenciaDC write fpAgenciaDC;
+    property Conta: String read fpConta write fpConta;
+    property ContaDC: String read fpContaDC write fpContaDC;
+    property Cheque: String read fpCheque write fpCheque;
+    property ChequeDC: String read fpChequeDC write fpChequeDC;
+    property NomeAdministradora: String read fpNomeAdministradora write fpNomeAdministradora;
+    property DataHoraTransacaoComprovante: TDateTime read fpDataHoraTransacaoComprovante write fpDataHoraTransacaoComprovante;
+    property Trailer: String read fpTrailer write fpTrailer;
+    property BIN: String read fpBin write fpBin;
+    property CodigoBandeiraPadrao: String read fpCodigoBandeiraPadrao write fpCodigoBandeiraPadrao;
 
     property CorrespBancarios: TACBrTEFRespListaCB read fpCorrespBancarios;
 
-    property CodigoOperadoraCelular: String read fpCodigoOperadoraCelular;
-    property NomeOperadoraCelular: String read fpNomeOperadoraCelular;
-    property ValorRecargaCelular: Double read fpValorRecargaCelular;
-    property NumeroRecargaCelular: String read fpNumeroRecargaCelular;
+    property CodigoOperadoraCelular: String read fpCodigoOperadoraCelular write fpCodigoOperadoraCelular;
+    property NomeOperadoraCelular: String read fpNomeOperadoraCelular write fpNomeOperadoraCelular;
+    property ValorRecargaCelular: Double read fpValorRecargaCelular write fpValorRecargaCelular;
+    property NumeroRecargaCelular: String read fpNumeroRecargaCelular write fpNumeroRecargaCelular;
 
     property Parcelas: TACBrTEFRespParcelas read fpParcelas;
 
@@ -366,35 +377,39 @@ type
     property ArqBackup: String read fpArqBackup write SetArqBackup;
     property ArqRespPendente: String read fpArqRespPendente write fpArqRespPendente;
 
+    property Confirmar: Boolean read fpConfirmar write fpConfirmar;
     property CNFEnviado: Boolean read fpCNFEnviado write SetCNFEnviado;
 
     property ViaClienteReduzida: Boolean read fpViaClienteReduzida write fpViaClienteReduzida;
 
-    property DataVencimento: TDateTime read fpDataVencimento;
-    property Instituicao: String read fpInstituicao;
-    property ModalidadePagto: String read fpModalidadePagto;
-    property ModalidadePagtoDescrita: String read fpModalidadePagtoDescrita;
-    property ModalidadeExtenso: String read fpModalidadePagtoExtenso;
-    property CodigoRedeAutorizada: String read fpCodigoRedeAutorizada;
-    property Debito: Boolean read fpDebito;
-    property Credito: Boolean read fpCredito;
-    property Digitado: Boolean read fpDigitado;
-    property ParceladoPor: TACBrTEFRespParceladoPor read fpParceladoPor;
-    property ValorEntradaCDC: Double read fpValorEntradaCDC;
-    property DataEntradaCDC: TDateTime read fpDataEntradaCDC;
-    property TipoOperacao: TACBrTEFRespTipoOperacao read fpTipoOperacao;
+    property DataVencimento: TDateTime read fpDataVencimento write fpDataVencimento;
+    property Instituicao: String read fpInstituicao write fpInstituicao;
+    property ModalidadePagto: String read fpModalidadePagto write fpModalidadePagto;
+    property ModalidadePagtoDescrita: String read fpModalidadePagtoDescrita write fpModalidadePagtoDescrita;
+    property ModalidadePagtoExtenso: String read fpModalidadePagtoExtenso write fpModalidadePagtoExtenso;
+    property CodigoRedeAutorizada: String read fpCodigoRedeAutorizada write fpCodigoRedeAutorizada;
+    property Debito: Boolean read fpDebito write fpDebito;
+    property Credito: Boolean read fpCredito write fpCredito;
+    property Digitado: Boolean read fpDigitado write fpDigitado;
+    property ParceladoPor: TACBrTEFRespParceladoPor read fpParceladoPor write fpParceladoPor;
+    property ValorEntradaCDC: Double read fpValorEntradaCDC write fpValorEntradaCDC;
+    property DataEntradaCDC: TDateTime read fpDataEntradaCDC write fpDataEntradaCDC;
+    property TipoOperacao: TACBrTEFRespTipoOperacao read fpTipoOperacao write fpTipoOperacao;
+    property QRCode: String read fpQRCode write fpQRCode;
+    property IdCarteiraDigital: String read fpIdCarteiraDigital write fpIdCarteiraDigital;
+    property NomeCarteiraDigital: String read fpNomeCarteiraDigital write fpNomeCarteiraDigital;
 
     property NFCeSAT: TACBrTEFRespNFCeSAT read fpNFCeSAT;
 
-    property IdPagamento: Integer read fpIdPagamento;
-    property IdRespostaFiscal: Integer read fpIdRespostaFiscal;
-    property SerialPOS: String read fpSerialPOS;
-    property Estabelecimento: String read fpEstabelecimento;
+    property IdPagamento: Integer read fpIdPagamento write fpIdPagamento;
+    property IdRespostaFiscal: Integer read fpIdRespostaFiscal write fpIdRespostaFiscal;
+    property SerialPOS: String read fpSerialPOS write fpSerialPOS;
+    property Estabelecimento: String read fpEstabelecimento write fpEstabelecimento;
   end;
 
   { TACBrTEFRespostasPendentes }
 
-  TACBrTEFRespostasPendentes = class(TObjectList)
+  TACBrTEFRespostasPendentes = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TObject>{$EndIf})
   private
     function GetTotalPago: Double;
     function GetTotalDesconto: Double;
@@ -452,7 +467,7 @@ begin
 
   if (FLinha <> '') then
   begin
-    P := pos(' = ', FLinha + ' ');  // +' ' serve para que o POS funcione em Strings que nao tenham o ultimo espa√ßo " ="
+    P := pos(' = ', FLinha + ' ');  // +' ' serve para que o POS funcione em Strings que nao tenham o ultimo espaÁo " ="
     Result := copy(FLinha, 1, P - 1);
   end
   else if (FIdentificacao <> 0) then
@@ -479,7 +494,7 @@ begin
 
   FLinha := AValue;
 
-  P := pos(' = ', FLinha + ' ');   // +' ' serve para que o POS funcione em Strings que nao tenham o ultimo espa√ßo " ="
+  P := pos(' = ', FLinha + ' ');   // +' ' serve para que o POS funcione em Strings que nao tenham o ultimo espaÁo " ="
   if (P = 0) then
   begin
     Informacao.AsString := '';
@@ -664,12 +679,12 @@ end;
 
 procedure TACBrTEFRespListaCB.SetObject(Index: Integer; Item: TACBrTEFRespCB);
 begin
-  inherited SetItem(Index, Item);
+  inherited Items[Index] := Item;
 end;
 
 function TACBrTEFRespListaCB.GetObject(Index: Integer): TACBrTEFRespCB;
 begin
-  Result := inherited GetItem(Index) as TACBrTEFRespCB;
+  Result := TACBrTEFRespCB(inherited Items[Index]);
 end;
 
 function TACBrTEFRespListaCB.Add(Obj: TACBrTEFRespCB): Integer;
@@ -701,12 +716,12 @@ end;
 
 procedure TACBrTEFRespParcelas.SetObject(Index: Integer; Item: TACBrTEFRespParcela);
 begin
-  inherited SetItem(Index, Item);
+  inherited Items[Index] := Item;
 end;
 
 function TACBrTEFRespParcelas.GetObject(Index: Integer): TACBrTEFRespParcela;
 begin
-  Result := inherited GetItem(Index) as TACBrTEFRespParcela;
+  Result := TACBrTEFRespParcela(inherited Items[Index]);
 end;
 
 function TACBrTEFRespParcelas.Add(Obj: TACBrTEFRespParcela): Integer;
@@ -753,7 +768,7 @@ begin
 
   fpNFCeSAT := TACBrTEFRespNFCeSAT.Create;
 
-  // Inicializa as vari√°veis internas //
+  // Inicializa as vari·veis internas //
   Clear;
 end;
 
@@ -777,7 +792,7 @@ begin
   Conteudo.Conteudo.Assign(Source.Conteudo.Conteudo);
   ConteudoToProperty;
 
-  ArqBackup := Source.ArqBackup; { ArqBackup n√£o √© salva em Conteudo (memory only) }
+  ArqBackup := Source.ArqBackup; { ArqBackup n„o È salva em Conteudo (memory only) }
   fpViaClienteReduzida := Source.ViaClienteReduzida;
 end;
 
@@ -839,6 +854,7 @@ begin
   fpValorEntradaCDC := 0;
   fpDataEntradaCDC := 0;
   fpCodigoBandeiraPadrao := '';
+  fpQRCode := '';
 
   fpCodigoOperadoraCelular := '';
   fpNomeOperadoraCelular := '';
@@ -852,6 +868,7 @@ begin
   fpDebito := False;
   fpDigitado := False;
 
+  fpConfirmar := False;
   fpCNFEnviado := False;
 
   fpArqBackup := '';
@@ -949,12 +966,12 @@ end;
 
 procedure TACBrTEFRespostasPendentes.SetObject(Index: Integer; Item: TACBrTEFResp);
 begin
-  inherited SetItem(Index, Item);
+  inherited Items[Index] := Item;
 end;
 
 function TACBrTEFRespostasPendentes.GetObject(Index: Integer): TACBrTEFResp;
 begin
-  Result := inherited GetItem(Index) as TACBrTEFResp;
+  Result := TACBrTEFResp(inherited Items[Index]);
 end;
 
 function TACBrTEFRespostasPendentes.Add(Obj: TACBrTEFResp): Integer;

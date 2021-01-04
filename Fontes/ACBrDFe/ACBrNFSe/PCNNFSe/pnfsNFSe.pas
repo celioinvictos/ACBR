@@ -41,7 +41,7 @@ uses
   {$IFNDEF VER130}
     Variants,
   {$ENDIF}
-  {$IF DEFINED(NEXTGEN)}
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
@@ -450,6 +450,10 @@ type
     FEndereco: TEndereco;
     FTelefone: String;
     FEmail: String;
+    Fcrc_estado: string;
+    Fcrc: string;
+    procedure Setcrc(const Value: string);
+    procedure Setcrc_estado(const Value: string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -468,6 +472,9 @@ type
     property CNPJ_Prefeitura: String read FCNPJ_Prefeitura write FCNPJ_Prefeitura;
     property ValorReceitaBruta: Currency read FValorReceitaBruta write FValorReceitaBruta;
     property DataInicioAtividade: TDateTime read FDataInicioAtividade write FDataInicioAtividade;
+    //usado por SIG-ISS
+    property crc : string read Fcrc write Setcrc;
+    property crc_estado: string read Fcrc_estado write Setcrc_estado;
     //usado por Elotech
     property RazaoSocial: String read FRazaoSocial write FRazaoSocial;
     property Fantasia: String read FFantasia write FFantasia;
@@ -769,6 +776,7 @@ type
     FNaturezaOperacao: TnfseNaturezaOperacao;
     FRegimeEspecialTributacao: TnfseRegimeEspecialTributacao;
     FOptanteSimplesNacional: TnfseSimNao;
+    FOptanteMEISimei: TnfseSimNao;
     //Provedor Conam
     FDataOptanteSimplesNacional: TDateTime;
     FLogradouroLocalPrestacaoServico: TnfseLogradouroLocalPrestacaoServico;
@@ -834,12 +842,14 @@ type
     FValorCargaTributariaMunicipal: Double;
     FPercentualCargaTributariaEstadual: Double;
     FValorCargaTributariaEstadual: Double;
+    Fid_sis_legado: integer;
 
     procedure Setemail(const Value: TemailCollection);
     procedure SetInformacoesComplementares(const Value: String);
     procedure SetDespesa(const Value: TDespesaCollection);
     procedure SetAssinaComChaveParams(
       const Value: TAssinaComChaveParamsCollection);
+    procedure Setid_sis_legado(const Value: integer);
 
   public
     constructor Create;
@@ -854,6 +864,7 @@ type
     property NaturezaOperacao: TnfseNaturezaOperacao read FNaturezaOperacao write FNaturezaOperacao;
     property RegimeEspecialTributacao: TnfseRegimeEspecialTributacao read FRegimeEspecialTributacao write FRegimeEspecialTributacao;
     property OptanteSimplesNacional: TnfseSimNao read FOptanteSimplesNacional write FOptanteSimplesNacional;
+    property OptanteMEISimei: TnfseSimNao read FOptanteMEISimei write FOptanteMEISimei;
     //Provedor Conam
     property DataOptanteSimplesNacional: TDateTime read FDataOptanteSimplesNacional write FDataOptanteSimplesNacional;
     property LogradouLocalPrestacaoServico: TnfseLogradouroLocalPrestacaoServico read FLogradouroLocalPrestacaoServico write FLogradouroLocalPrestacaoServico;
@@ -909,6 +920,9 @@ type
     property TipoTributacaoRPS: TnfseTTributacaoRPS read FTipoTributacaoRPS write FTipoTributacaoRPS;
 
     property AssinaComChaveParams: TAssinaComChaveParamsCollection read FAssinaComChaveParams write SetAssinaComChaveParams;
+
+    //usado por SIG-ISS
+    property id_sis_legado : integer read Fid_sis_legado write Setid_sis_legado; //Código da nota no sistema legado do contribuinte.
 
     // Provedor SP
     property Assinatura: String read FAssinatura write FAssinatura;
@@ -1102,6 +1116,7 @@ begin
   FNaturezaOperacao             := no1;
   FRegimeEspecialTributacao     := retNenhum;
   FOptanteSimplesNacional       := snNao;
+  FOptanteMEISimei              := snNao;
   FIncentivadorCultural         := snNao;
   FStatus                       := srNormal;
   FRpsSubstituido               := TIdentificacaoRps.Create;
@@ -1191,6 +1206,11 @@ procedure TNFSe.SetAssinaComChaveParams(
   const Value: TAssinaComChaveParamsCollection);
 begin
   FAssinaComChaveParams := Value;
+end;
+
+procedure TNFSe.Setid_sis_legado(const Value: integer);
+begin
+  Fid_sis_legado := Value;
 end;
 
 { TLoteRps }
@@ -1455,6 +1475,16 @@ begin
   FEndereco.Free;
 
   inherited Destroy;
+end;
+
+procedure TIdentificacaoPrestador.Setcrc(const Value: string);
+begin
+  Fcrc := Value;
+end;
+
+procedure TIdentificacaoPrestador.Setcrc_estado(const Value: string);
+begin
+  Fcrc_estado := Value;
 end;
 
 end.

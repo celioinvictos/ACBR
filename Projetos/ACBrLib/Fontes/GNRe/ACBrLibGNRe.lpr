@@ -3,7 +3,8 @@
 library ACBrLibGNRe;
 
 uses
-  Interfaces, sysutils, Classes, Forms, ACBrLibGNReClass, ACBrLibConfig,
+  Interfaces, sysutils, Classes, Forms, ACBrLibConfig,
+  {$IFDEF MT}ACBrLibGNReMT{$ELSE}ACBrLibGNReST{$ENDIF},
   ACBrLibComum, ACBrLibConsts, ACBrLibGNReConfig, ACBrLibResposta,
   ACBrLibGNReRespostas, ACBrLibGNReConsts;
 
@@ -21,6 +22,8 @@ exports
   GNRE_Nome,
   GNRE_Versao,
   GNRE_UltimoRetorno,
+  GNRE_ConfigImportar,
+  GNRE_ConfigExportar,
   GNRE_ConfigLer,
   GNRE_ConfigGravar,
   GNRE_ConfigLerValor,
@@ -37,8 +40,14 @@ exports
   GNRE_LimparLista,
   GNRE_CarregarXML,
   GNRE_CarregarINI,
+  GNRE_ObterXml,
+  GNRE_GravarXml,
   GNRE_LimparListaGuiaRetorno,
-  GNRe_CarregarGuiaRetorno;
+  GNRe_CarregarGuiaRetorno,
+  GNRE_Assinar,
+  GNRE_Validar,
+  GNRE_VerificarAssinatura,
+  GNRE_ObterCertificados;
 
 begin
   {$IFDEF DEBUG}
@@ -46,8 +55,6 @@ begin
    DeleteFile( HeapTraceFile );
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
-
-  pLibClass := TACBrLibGNRe; // Ajusta a classe a ser criada
 
   MainThreadID := GetCurrentThreadId();
   Application.Initialize;
