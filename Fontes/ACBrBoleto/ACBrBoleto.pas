@@ -1597,7 +1597,7 @@ type
     function GetOcorrenciasRemessa() : TACBrOcorrenciasRemessa;
     function GetTipoCobranca(NumeroBanco: Integer; Carteira: String = ''): TACBrTipoCobranca;
     function LerArqIni(const AIniBoletos: String): Boolean;
-    procedure GravarArqIni(DirIniRetorno: string; const NomeArquivo: String);
+    function GravarArqIni(DirIniRetorno: string; const NomeArquivo: String): String;
     procedure GravarIniRetornoWeb(DirRetorno: String; const NomeArquivo: String);
 
   published
@@ -3897,25 +3897,24 @@ begin
         Result := '';
         Exit;
      end;
-
      Result := '2'               +                                         // IDENTIFICAÇÃO DO LAYOUT PARA O REGISTRO
-               Copy(PadRight(Mensagem[1], 80, ' '), 1, 80);                // CONTEÚDO DA 1ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
+               Copy(PadRight(TiraAcentos(Mensagem[1]), 80, ' '), 1, 80);                // CONTEÚDO DA 1ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
 
      if Mensagem.Count >= 3 then
         Result := Result +
-                  Copy(PadRight(Mensagem[2], 80, ' '), 1, 80)              // CONTEÚDO DA 2ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
+                  Copy(PadRight(TiraAcentos(Mensagem[2]), 80, ' '), 1, 80)              // CONTEÚDO DA 2ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
      else
         Result := Result + PadRight('', 80, ' ');                          // CONTEÚDO DO RESTANTE DAS LINHAS
 
      if Mensagem.Count >= 4 then
         Result := Result +
-                  Copy(PadRight(Mensagem[3], 80, ' '), 1, 80)              // CONTEÚDO DA 3ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
+                  Copy(PadRight(TiraAcentos(Mensagem[3]), 80, ' '), 1, 80)              // CONTEÚDO DA 3ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
      else
         Result := Result + PadRight('', 80, ' ');                          // CONTEÚDO DO RESTANTE DAS LINHAS
 
      if Mensagem.Count >= 5 then
         Result := Result +
-                  Copy(PadRight(Mensagem[4], 80, ' '), 1, 80)              // CONTEÚDO DA 4ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
+                  Copy(PadRight(TiraAcentos(Mensagem[4]), 80, ' '), 1, 80)              // CONTEÚDO DA 4ª LINHA DE IMPRESSÃO DA ÁREA "INSTRUÇÕES” DO BOLETO
      else
         Result := Result + PadRight('', 80, ' ');                          // CONTEÚDO DO RESTANTE DAS LINHAS
 
@@ -4926,6 +4925,7 @@ begin
             Competencia         := IniBoletos.ReadString(Sessao,'Competencia', Competencia);
             ArquivoLogoEmp      := IniBoletos.ReadString(Sessao,'ArquivoLogoEmp', ArquivoLogoEmp);
             Verso               := IniBoletos.ReadBool(Sessao,'Verso', False);
+            Sacado.SacadoAvalista.Pessoa        := TACBrPessoa( IniBoletos.ReadInteger(Sessao,'Sacado.SacadoAvalista.Pessoa',2) );
             Sacado.SacadoAvalista.NomeAvalista  := IniBoletos.ReadString(Sessao,'Sacado.SacadoAvalista.NomeAvalista','');
             Sacado.SacadoAvalista.CNPJCPF       := IniBoletos.ReadString(Sessao,'Sacado.SacadoAvalista.CNPJCPF','');
             Sacado.SacadoAvalista.Logradouro    := IniBoletos.ReadString(Sessao,'Sacado.SacadoAvalista.Logradouro','');
@@ -4977,13 +4977,15 @@ begin
 
 end;
 
-procedure TACBrBoleto.GravarArqIni(DirIniRetorno: string; const NomeArquivo: String);
+function TACBrBoleto.GravarArqIni(DirIniRetorno: string; const NomeArquivo: String): String;
 var
   IniRetorno: TMemIniFile;
+  SL: TStringList;
   wSessao: String;
   I: Integer;
   J: Integer;
 begin
+  Result:= '';
   if Pos(PathDelim,DirIniRetorno) <> Length(DirIniRetorno) then
      DirIniRetorno:= DirIniRetorno + PathDelim;
 
@@ -5045,6 +5047,14 @@ begin
                                    ListadeBoletos[I].DescricaoMotivoRejeicaoComando[J]);
        end;
 
+    end;
+
+    SL:= TStringList.Create;
+    try
+      IniRetorno.GetStrings(SL);
+      Result:= SL.Text;
+    finally
+      SL.Free;
     end;
 
   finally

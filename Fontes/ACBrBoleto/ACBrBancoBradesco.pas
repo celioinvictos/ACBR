@@ -50,6 +50,8 @@ type
   protected
     function ConverterDigitoModuloFinal(): String; override;
     function DefineCampoLivreCodigoBarras(const ACBrTitulo: TACBrTitulo): String; override;
+    procedure ValidaNossoNumeroResponsavel(out ANossoNumero: String; out ADigVerificador: String;
+              const ACBrTitulo: TACBrTitulo); override;
 
   public
     Constructor create(AOwner: TACBrBanco);
@@ -95,6 +97,36 @@ begin
   end;
 end;
 
+procedure TACBrBancoBradesco.ValidaNossoNumeroResponsavel(out
+  ANossoNumero: String; out ADigVerificador: String;
+  const ACBrTitulo: TACBrTitulo);
+begin
+  ANossoNumero:= '0';
+  ADigVerificador:= '0';
+
+  if (ACBrTitulo.ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite) then
+  begin
+    if (ACBrTitulo.NossoNumero = '') then
+    begin
+      ANossoNumero := StringOfChar('0', CalcularTamMaximoNossoNumero(ACBrTitulo.Carteira, ACBrTitulo.NossoNumero) );
+      ADigVerificador := '0';
+    end
+    else
+    begin
+      ANossoNumero := ACBrTitulo.NossoNumero;
+      ADigVerificador := CalcularDigitoVerificador(ACBrTitulo);
+    end;
+  end
+  else
+  begin
+    ANossoNumero := ACBrTitulo.NossoNumero;
+    ADigVerificador := CalcularDigitoVerificador(ACBrTitulo);
+    if (ANossoNumero = EmptyStr) then
+      ADigVerificador := '0';
+  end;
+
+end;
+
 function TACBrBancoBradesco.ConverterMultaPercentual(
   const ACBrTitulo: TACBrTitulo): Double;
 begin
@@ -127,7 +159,6 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 7;
    fpCodParametroMovimento:= 'MX';
-   fpCodigosMoraAceitos:='123';
 end;
 
 function TACBrBancoBradesco.MontarCampoNossoNumero (

@@ -121,7 +121,6 @@ begin
    fpModuloMultiplicadorInicial:= 1;
    fpModuloMultiplicadorFinal:= 2;
    fpModuloMultiplicadorAtual:= 2;
-   fpCodigosMoraAceitos    := '123';
 end;
 
 function TACBrBancoItau.DefineNumeroDocumentoModulo(
