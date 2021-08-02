@@ -630,7 +630,8 @@ begin
     proInfisc,
     proInfiscv11: begin
                     Gerador.Prefixo := Prefixo3;
-                    Gerador.wGrupo('envioLote versao="1.0" xmlns:ws="http://ws.pc.gif.com.br/"');
+//                    Gerador.wGrupo('envioLote versao="1.0" xmlns:ws="http://ws.pc.gif.com.br/"');
+                    Gerador.wGrupo('envioLote versao="1.0"');
                     Gerador.wCampo(tcStr, '', 'CNPJ'   , 01, 14, 1, Cnpj, '');
                     Gerador.wCampo(tcStr, '', 'dhTrans', 01, 19, 1, FormatDateTime('yyyy-mm-dd hh:mm:ss', Now), '');
                     Gerador.ArquivoFormatoXML := Gerador.ArquivoFormatoXML + Notas;
@@ -733,7 +734,8 @@ begin
             Gerador.ArquivoFormatoXML := Gerador.ArquivoFormatoXML + Notas
           end;
 
-     proISSJoinville:
+     proISSJoinville,
+     proAbacov2:
           begin
             Gerador.wGrupo('LoteRps' + FaVersao + FaIdentificador);
             Gerador.Prefixo := Prefixo4;
@@ -741,6 +743,8 @@ begin
             Gerador.wGrupo('Prestador');
 
             GerarGrupoCNPJCPF(Cnpj, True);
+
+            Gerador.wCampo(tcStr, '#3', 'InscricaoMunicipal', 01, 15, 0, IM, '');
 
             Gerador.wGrupo('/Prestador');
             Gerador.wCampo(tcInt, '#4', 'QuantidadeRps', 01, 02, 1, QtdeNotas, '');
@@ -1026,7 +1030,7 @@ begin
 
   GerarGrupoCNPJCPF(Cnpj, (VersaoNFSe <> ve100) or (Provedor in [proISSNet, proActcon]));
 
-  if (Provedor <> proBetha) or (IM <> '') then
+  if (not (Provedor in [proBetha, proBethav2])) or (IM <> '') then
     Gerador.wCampo(tcStr, '#3', 'InscricaoMunicipal', 01, 15, 1, IM, '');
 
   Gerador.Prefixo := Prefixo3;
@@ -1435,8 +1439,11 @@ begin
       if Provedor = proTecnos then
         Gerador.wCampo(tcStr, '#3', 'RazaoSocial', 01, 115, 1, RazaoSocial, '');
 
-      if (Provedor <> proBetha) or (IM <> '') then
+      if (not (Provedor in [proBetha, proBethav2])) or (IM <> '') then
         Gerador.wCampo(tcStr, '#4', 'InscricaoMunicipal', 01, 15, 1, IM, '');
+
+      if Provedor = proAsten then
+        Gerador.wCampo(tcStr, '#4', 'Token', 01, 30, 1,  ChaveAcessoPrefeitura , '');
 
       if Provedor = proISSDigital then
       begin
@@ -2065,6 +2072,26 @@ begin
 
     proIPM:
       begin
+        Gerador.wGrupo('solicitacao_cancelamento');
+        Gerador.wGrupo('prestador');
+        Gerador.wCampo(tcStr, '#1', 'cpfcnpj', 01, 15, 1, Cnpj, '');
+        Gerador.wCampo(tcStr, '#2', 'cidade', 01, 04, 1, CodCidadeToCodSiafi(CodMunicipio), '');
+        Gerador.wGrupo('/prestador');
+        Gerador.wGrupo('documentos');
+        Gerador.wGrupo('nfse');
+        Gerador.wCampo(tcStr, '#1', 'numero', 01, 15, 1, NumeroNfse, '');
+        Gerador.wCampo(tcStr, '#2', 'serie', 01, 01, 1, SerieNFSe, '');
+        Gerador.wCampo(tcStr, '#3', 'observacao', 01, 01, 1, MotivoCanc, '');
+        {
+        Gerador.wGrupo('substituta');
+        Gerador.wCampo(tcStr, '#1', 'numero', 01, 15, 1, NumeroNfse, '');
+        Gerador.wCampo(tcStr, '#2', 'serie', 01, 01, 1, SerieNFSe, '');
+        Gerador.wGrupo('/substituta');
+        }
+        Gerador.wGrupo('/nfse');
+        Gerador.wGrupo('/documentos');
+        Gerador.wGrupo('/solicitacao_cancelamento');
+        {
         Gerador.wGrupo('nfse');
         Gerador.wGrupo('nf');
         Gerador.wCampo(tcStr, '#1', 'numero', 01, 15, 1, NumeroNfse, '');
@@ -2073,9 +2100,10 @@ begin
         Gerador.wGrupo('/nf');
         Gerador.wGrupo('prestador');
         Gerador.wCampo(tcStr, '#1', 'cpfcnpj', 01, 15, 1, Cnpj, '');
-        Gerador.wCampo(tcInt, '#2', 'cidade', 01, 07, 1, CodMunicipio, '');
+        Gerador.wCampo(tcStr, '#2', 'cidade', 01, 04, 1, CodCidadeToCodSiafi(CodMunicipio), '');
         Gerador.wGrupo('/prestador');
         Gerador.wGrupo('/nfse');
+        }
       end;
 
      proGeisWeb:
@@ -2098,7 +2126,7 @@ begin
 
       GerarGrupoCNPJCPF(Cnpj, (VersaoNFSe <> ve100) or (Provedor in [proActcon, pro4R]));
 
-      if (Provedor <> proBetha) or (IM <> '') then
+      if (not (Provedor in [proBetha, proBethav2])) or (IM <> '') then
         Gerador.wCampo(tcStr, '#2', 'InscricaoMunicipal', 01, 15, 1, IM, '');
 
       if Provedor <> proSigep then
@@ -2143,7 +2171,9 @@ begin
         TagF := '</' + Prefixo3 + 'Pedido>';
       end;
 
-    proTecnos:
+    proTecnos,
+    proDeISS,
+    proFiorilli:
       begin
         TagI := '<' + Prefixo3 + 'Pedido>' +
                    '<' + Prefixo4 + 'InfPedidoCancelamento ' + FaIdentificadorCanc +

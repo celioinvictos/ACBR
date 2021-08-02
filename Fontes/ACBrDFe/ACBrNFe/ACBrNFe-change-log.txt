@@ -44,6 +44,45 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+16/07/2021
+-- ACBrNFeServicos --
+[*] Troca da URL "URL-ConsultaNFCe_2.00 de GO para o ambiente de homologação.
+   Ref.: https://www.projetoacbr.com.br/forum/topic/62776-nfc-e-go-url-consultanfce_200/
+   Por: José M S Junior
+
+30/06/2021
+-- ACBrNFeXmlWriter/pcnNFeW --
+[*] Alterado de opcional para obrigatório os campos: pFCPDif e vFCPDif conforme
+    os novos Schemas.
+  Por: Italo Giurizzato Junior
+
+28/06/2021
+-- Diversos --
+[*] Diversas alterações para deixar o componente em conformidade com a 
+    NT  2020/005
+  Por: Italo Giurizzato Junior
+
+17/06/2021
+-- ACBrNFeServicos --
+[*] Troca da URL "URL-ConsultaNFCe_2.00 de GO.
+   Por: Italo Giurizzato Junior
+
+15/06/2021
+-- pcnEventoNFe --
+[*] Correção na descrição do evento de cancelamento de comprovante de 
+    entrega da NF-e.
+   Por: Italo Giurizzato Junior
+
+02/06/2021
+-- ACBrNFeWebServices/pcnEnvEventoNFe --
+[*] https://www.projetoacbr.com.br/forum/topic/62809-evento-comprovante-entrega-nf-e-campos-n%C3%A3o-est%C3%A3o-sendo-preenchidos/
+   Por: Guilherme Vieira Muniz / Italo Giurizzato Junior
+
+17/05/2021
+-- ACBrNFeDANFEClass --
+[*] Impressão da tag "xPag" como descrição da forma de pagamento.
+  Por: BigWings
+
 26/02/2021
 --ACBrNFeNotasFiscais--
 [*] Adicionado sessão InfRespTec na função GerarNFeIn

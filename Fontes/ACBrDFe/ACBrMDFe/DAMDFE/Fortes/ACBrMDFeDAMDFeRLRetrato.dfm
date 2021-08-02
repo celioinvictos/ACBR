@@ -1,7 +1,6 @@
 inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
   Left = 279
   Top = 68
-  Height = 780
   Caption = 'Manifesto - Retrato'
   Font.Height = -8
   Font.Name = 'Arial'
@@ -12,19 +11,19 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     Tag = 1
     Left = 26
     Top = 2
-    Background.Align = faBottom
-    Borders.Sides = sdCustom
-    Font.Height = -8
-    Font.Name = 'Courier New'
     Margins.LeftMargin = 7.000000000000000000
     Margins.TopMargin = 7.000000000000000000
     Margins.RightMargin = 7.000000000000000000
     Margins.BottomMargin = 7.000000000000000000
+    Background.Align = faBottom
+    Borders.Sides = sdCustom
+    Font.Height = -8
+    Font.Name = 'Courier New'
     BeforePrint = rlMDFeBeforePrint
     OnDataRecord = RLMDFeDataRecord
     object rlb_2_Rodo: TRLBand
       Left = 26
-      Top = 313
+      Top = 341
       Width = 742
       Height = 208
       AutoExpand = False
@@ -506,7 +505,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object rlb_3_Aereo: TRLBand
       Left = 26
-      Top = 521
+      Top = 549
       Width = 742
       Height = 20
       AutoExpand = False
@@ -523,7 +522,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object rlb_4_Aquav: TRLBand
       Left = 26
-      Top = 541
+      Top = 569
       Width = 742
       Height = 121
       BandType = btHeader
@@ -795,7 +794,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object rlb_5_Ferrov: TRLBand
       Left = 26
-      Top = 662
+      Top = 690
       Width = 742
       Height = 20
       BandType = btHeader
@@ -811,7 +810,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object rlb_6_Observacao: TRLBand
       Left = 26
-      Top = 814
+      Top = 842
       Width = 742
       Height = 152
       BandType = btSummary
@@ -937,7 +936,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object rlb_7_Documentos_Titulos: TRLBand
       Left = 26
-      Top = 682
+      Top = 710
       Width = 742
       Height = 46
       AutoExpand = False
@@ -1091,7 +1090,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object rlb_2: TRLBand
       Left = 26
-      Top = 185
+      Top = 213
       Width = 742
       Height = 128
       AutoExpand = False
@@ -1259,6 +1258,8 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
           Top = 18
           Width = 286
           Height = 54
+          Margins.LeftMargin = 1.000000000000000000
+          Margins.RightMargin = 1.000000000000000000
           Alignment = taJustify
           BarcodeType = bcCode128C
           Caption = '12345678901234567890123456789012345678901324'
@@ -1268,8 +1269,6 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
           Font.Name = 'Arial'
           Font.Style = []
           Layout = tlJustify
-          Margins.LeftMargin = 1.000000000000000000
-          Margins.RightMargin = 1.000000000000000000
           ParentFont = False
         end
         object rlLabel74: TRLLabel
@@ -1415,7 +1414,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
     end
     object subItens: TRLSubDetail
       Left = 26
-      Top = 728
+      Top = 756
       Width = 742
       Height = 86
       Borders.Sides = sdCustom
@@ -1496,7 +1495,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
       Left = 26
       Top = 26
       Width = 742
-      Height = 159
+      Height = 187
       AutoExpand = False
       BandType = btHeader
       Borders.Sides = sdCustom
@@ -1536,7 +1535,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
         Left = 134
         Top = 35
         Width = 433
-        Height = 60
+        Height = 89
         AutoSize = False
         Behavior = [beSiteExpander]
         Color = clWhite
@@ -1557,7 +1556,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
       end
       object rlLabel17: TRLLabel
         Left = 4
-        Top = 96
+        Top = 127
         Width = 73
         Height = 19
         Caption = 'DAMDFE'
@@ -1572,7 +1571,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
       end
       object RLMemo1: TRLMemo
         Left = 83
-        Top = 97
+        Top = 128
         Width = 486
         Height = 20
         Behavior = [beSiteExpander]
@@ -1595,7 +1594,7 @@ inherited frlDAMDFeRLRetrato: TfrlDAMDFeRLRetrato
       end
       object RLPanel6: TRLPanel
         Left = 0
-        Top = 116
+        Top = 147
         Width = 569
         Height = 38
         Borders.Sides = sdCustom

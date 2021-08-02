@@ -59,6 +59,7 @@ type
     procedure GerarRegistroTransacao400(ACBrTitulo : TACBrTitulo; aRemessa: TStringList); override;
     procedure GerarRegistroTrailler400(ARemessa:TStringList);  override;
     procedure LerRetorno400(ARetorno: TStringList); override;
+    function DefineDataDesconto(const ACBrTitulo: TACBrTitulo; AFormat: String = 'ddmmyyyy'): String; override;
 
     function GerarRegistroHeader240(NumeroRemessa : Integer): String; override;
     function GerarRegistroTransacao240(ACBrTitulo : TACBrTitulo): String; override;
@@ -99,7 +100,7 @@ begin
    fpTamanhoAgencia        := 4;
    fpTamanhoConta          := 5;
    fpTamanhoCarteira       := 1;
-   fpCodigosMoraAceitos    := 'AB0123';
+   fpCodigosMoraAceitos    := 'AB012';
    fpCodigosGeracaoAceitos := '23456789';
    fpLayoutVersaoArquivo   := 81;
    fpLayoutVersaoLote      := 40;
@@ -211,14 +212,16 @@ end;
 procedure TACBrBancoSicredi.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo; aRemessa: TStringList);
 var
   wNossoNumeroCompleto, CodProtesto, DiasProtesto, CodNegativacao, DiasNegativacao: String;
-  TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto, CompOcorrenciaOutrosDados  : String;
+  TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto, CompOcorrenciaOutrosDados : String;
   TipoBoleto, wModalidade: Char;
   TextoRegInfo: String;
+  ANumeroDocumento: String;
 begin
 
    with ACBrTitulo do
    begin
       wNossoNumeroCompleto := OnlyNumber(MontarCampoNossoNumero(ACBrTitulo));
+      ANumeroDocumento := PadRight(IfThen(SeuNumero <> '', SeuNumero, NumeroDocumento), 10, ' ');
 
       {Pegando Código da Ocorrencia}
       case OcorrenciaOriginal.Tipo of
@@ -364,7 +367,7 @@ begin
                   IntToStrZero( round( PercentualMulta * 100 ), 4)                      +  // 093 a 096 - % multa por pagamento em atraso
                   Space(12)                                                             +  // 097 a 108 - Filler - Brancos
                   Ocorrencia                                                            +  // 109 a 110 - Instrução = "01" Cadastro de título ... ---Anderson
-                  PadRight( NumeroDocumento,  10)                                       +  // 111 a 120 - Seu número
+                  ANumeroDocumento                                                      +  // 111 a 120 - Seu número
                   FormatDateTime( 'ddmmyy', Vencimento)                                 +  // 121 a 126 - Data de vencimento
                   IntToStrZero( Round( ValorDocumento * 100 ), 13)                      +  // 127 a 139 - Valor do título
                   Space(9)                                                              +  // 140 a 148 - Filler - Brancos
@@ -463,7 +466,7 @@ begin
            wLinha:=  '5'                                                         + // 001 a 001 - Identificação do registro Informativo
                      'E'                                                         + // 002 a 002 - Tipo de informativo
                      PadLeft( ACBrBanco.ACBrBoleto.Cedente.CodigoCedente, 5, '0')+ // 003 a 004 - Codigo do Cedente
-                     ifthen(wModalidade = 'A', PadRight(NumeroDocumento, 10),
+                     ifthen(wModalidade = 'A', ANumeroDocumento,
                             padLeft(wNossoNumeroCompleto,10,'0'))                + // 008 a 017 - Seu numero
                      Space(1)                                                    + // 018 a 018 - Filler
                      wModalidade                                                 + // 019 a 019 - "A"-Com registro  "C"-Sem registro
@@ -498,7 +501,7 @@ begin
              wLinha:=  '5'                                                         + // 001 a 001 - Identificação do registro Informativo
                        'E'                                                         + // 002 a 002 - Tipo de informativo
                        PadLeft( ACBrBanco.ACBrBoleto.Cedente.CodigoCedente, 5, '0')+ // 003 a 004 - Codigo do Cedente
-                       ifthen(wModalidade = 'A', padRight(NumeroDocumento, 10), 
+                       ifthen(wModalidade = 'A', ANumeroDocumento,
                               padLeft(wNossoNumeroCompleto, 10,'0'))                                  +// 008 a 017 - Seu numero
                        Space(1)                                                    + // 018 a 018 - Filler
                        'A'                                                         + // 019 a 019 - "A"-Com registro  "C"-Sem registro
@@ -515,7 +518,7 @@ begin
         begin
           wLinha:=  '6'                                                            + // 001 a 001 - Identificação do registro Informativo (6)
                     PadLeft(wNossoNumeroCompleto,15,' ')                           + // 002 a 016 - Nosso número Sicredi
-                    PadRight( NumeroDocumento,  10)                                + // 017 a 026 - Seu número
+                    ANumeroDocumento                                               + // 017 a 026 - Seu número
                     PadRight('', 5, '0')                                           + // 027 a 031 - Código do pagador junto ao cliente
                     PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 14, '0')    + // 032 a 045 - CPF/CNPJ do Sacador Avalista ( Obrigatório )
                     PadRight( TiraAcentos( Sacado.SacadoAvalista.NomeAvalista
@@ -537,7 +540,7 @@ begin
         begin
           wLinha := '7'                                                            + // 001 a 001 - Identificação do registro detalhe (7)
                     PadLeft(wNossoNumeroCompleto, 15, ' ')                         + // 002 a 016 - Nosso número Sicredi
-                    PadRight(NumeroDocumento, 10)                                  + // 017 a 026 - Seu número
+                    ANumeroDocumento                                               + // 017 a 026 - Seu número
                     PadLeft(OnlyNumber(Sacado.CNPJCPF), 14, '0')                   + // 027 a 040 - CPF/CNPJ do pagador
                     PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 14, '0')    + // 041 a 054 - CPF/CNPJ do Sacador Avalista
                     IfThen(DataDesconto2 < EncodeDate(2000, 01, 01), '000000',
@@ -608,14 +611,20 @@ begin
     if (not LeCedenteRetorno) and (rCodCedente <> OnlyNumber(Cedente.CodigoCedente)) then
        raise Exception.Create(ACBrStr('Agencia\Conta do arquivo inválido'));
 
-    Cedente.Nome := rCedente;
+    Cedente.Nome         := rCedente;
+    Cedente.TipoInscricao:= pJuridica;
 
     if Copy(rCNPJCPF,1,10) <> '0000000000' then
     begin
-      if Copy(rCNPJCPF,1,3)= '000' then
-        rCNPJCPF := Copy(rCNPJCPF,4,11);
 
-      Cedente.CNPJCPF := rCNPJCPF; 
+      if Copy(rCNPJCPF,1,3)= '000' then 
+      begin
+        rCNPJCPF := Copy(rCNPJCPF,4,11);
+        Cedente.TipoInscricao := pFisica;
+      end;
+
+      Cedente.CNPJCPF := rCNPJCPF;
+
     end;
 
     Cedente.CodigoCedente:= rCodCedente;
@@ -681,7 +690,7 @@ begin
         qtdMotivo:=1;
       end;
       SeuNumero                   := copy(Linha,117,10);
-      NumeroDocumento             := copy(Linha,117,10);
+      NumeroDocumento             := copy(Linha,117,10);  //Se repete pois esse layout não se utiliza de campo específico para Numero Documento
 
       ValorDocumento       := StrToFloatDef(Copy(Linha,153,13),0)/100;
       ValorAbatimento      := StrToFloatDef(Copy(Linha,228,13),0)/100;
@@ -749,6 +758,25 @@ begin
     end;
   end;
   fpTamanhoMaximoNossoNum := 5;
+end;
+
+function TACBrBancoSicredi.DefineDataDesconto(const ACBrTitulo: TACBrTitulo;
+  AFormat: String): String;
+begin
+  with ACBrTitulo do
+  begin
+    if (ValorDesconto > 0) then
+    begin
+      if (DataDesconto > 0) and (TipoDesconto in [ tdValorFixoAteDataInformada, tdPercentualAteDataInformada]) then
+        Result := FormatDateTime(AFormat, DataDesconto)
+      else
+        Result := PadRight('', Length(AFormat), '0');
+    end
+    else
+      Result := PadRight('', Length(AFormat), '0');
+
+  end;
+
 end;
 
 function TACBrBancoSicredi.CodMotivoRejeicaoToDescricao(
@@ -1397,7 +1425,8 @@ begin
    end;
 end;
 
-function TACBrBancoSicredi.TipoDescontoToString(const AValue: TACBrTipoDesconto): string;
+function TACBrBancoSicredi.TipoDescontoToString(const AValue: TACBrTipoDesconto
+  ): String;
 begin
   // Gera o tipo de desconto numero, utilizado no padrao febraban cnab240
   Result := inherited TipoDescontoToString(AValue);
@@ -1438,11 +1467,13 @@ begin
       36: Result := '36-Baixa Rejeitada';
       51: Result := '51-Título Dda Reconhecido Pelo Pagador';
       52: Result := '52-Título Dda não Reconhecido Pelo Pagador';
+      91: Result := '07-Intenção de pagamento';
     end;
   end
   else
   begin
     case CodOcorrencia of
+      07: Result := '07-Intenção de pagamento';
       10: Result := '10-Baixado Conforme Instruções da Cooperativa de Crédito';
       15: Result := '15-Liquidação em Cartório';
       24: Result := '24-Entrada Rejeitada Por Cep Irregular';
@@ -1500,11 +1531,13 @@ begin
       36: Result := toRetornoBaixaRejeitada;
       51: Result := toRetornoTituloDDAReconhecidoPagador;
       52: Result := toRetornoTituloDDANaoReconhecidoPagador;
+      91: Result := toRetornoIntensaoPagamento;
     end;
   end
   else
   begin
     case CodOcorrencia of
+      07: Result := toRetornoIntensaoPagamento;
       10: Result := toRetornoBaixadoInstAgencia;
       15: Result := toRetornoLiquidadoEmCartorio;
       24: Result := toRetornoEntradaRejeitaCEPIrregular;
@@ -1581,11 +1614,13 @@ begin
       toRetornoBaixaRejeitada                                  : Result := '36';
       toRetornoTituloDDAReconhecidoPagador                     : Result := '51';
       toRetornoTituloDDANaoReconhecidoPagador                  : Result := '52';
+      toRetornoIntensaoPagamento                               : Result := '91';
     end;
   end
   else
   begin
     case TipoOcorrencia of
+      toRetornoIntensaoPagamento                               : Result := '07';
       toRetornoBaixadoInstAgencia                              : Result := '10';
       toRetornoLiquidadoEmCartorio                             : Result := '15';
       toRetornoEntradaRejeitaCEPIrregular                      : Result := '24';
@@ -1735,9 +1770,10 @@ end;
 function TACBrBancoSicredi.GerarRegistroTransacao240(
   ACBrTitulo: TACBrTitulo): String;
 var
-    AceiteStr, CodProtestoNegativacao, DiasProtestoNegativacao, TipoSacado, ATipoBoleto: String;
+    AceiteStr, CodProtestoNegativacao, DiasProtestoNegativacao, TipoSacado, ATipoBoleto, ATipoDoc: String;
     Especie, EndSacado, Ocorrencia: String;
     TipoAvalista: Char;
+    lDataDesconto: String;
 begin
   with ACBrBanco.ACBrBoleto.Cedente, ACBrTitulo do
   begin
@@ -1835,6 +1871,12 @@ begin
        tbBancoNaoReemite : ATipoBoleto := '5' + '2';
      end;
 
+    {Tipo Documento}
+    ATipoDoc:= DefineTipoDocumento;
+
+    {Data Desconto}
+    lDataDesconto := DefineDataDesconto(ACBrTitulo);
+
     {SEGMENTO P}
     Result:= '748'                                                            + // 001 a 003 - Código do banco na compensação
              '0001'                                                           + // 004 a 007 - Lote de serviço = "0001"
@@ -1852,7 +1894,7 @@ begin
              PadRight(OnlyNumber(MontarCampoNossoNumero(ACBrTitulo)), 20, '0')+ // 038 a 057 - Identificação do título no banco
              '1'                                                              + // 058 a 058 - Código da carteira
              '1'                                                              + // 059 a 059 - Forma de cadastro do título no banco
-             InttoStr(Integer(ACBrBoleto.Cedente.TipoDocumento))              + // 060 a 060 - Tipo de documento
+             ATipoDoc                                                         + // 060 a 060 - Tipo de documento
              ATipoBoleto                                                      + // 061 a 062 - Identificação de emissão do bloqueto + 062 a 062 - Identificação da distribuição
              PadRight(NumeroDocumento, 15)                                    + // 063 a 077 - Nº do documento de cobrança
              FormatDateTime('ddmmyyyy', Vencimento)                           + // 078 a 085 - Data de vencimento do título
@@ -1868,8 +1910,7 @@ begin
                                     '00000000')                               + // 119 a 126 - Data do juro de mora
              IntToStrZero(Round(ValorMoraJuros * 100), 15)                    + // 127 a 141 - Juros de mora por dia/taxa
              TipoDescontoToString(ACBrTitulo.TipoDesconto)                    + // 142 a 142 - Código do desconto 1
-             IfThen(ValorDesconto = 0, '00000000', FormatDateTime('ddmmyyyy', DataDesconto)) + // 143 a 150 - Data do desconto 1
-
+             lDataDesconto                                                    + // 143 a 150 - Data do desconto 1
              IntToStrZero(Round(ValorDesconto * 100), 15)                     + // 151 a 165 - Valor percentual a ser concedido
              IntToStrZero(Round(ValorIOF * 100), 15)                          + // 166 a 180 - Valor do IOF a ser recolhido
              IntToStrZero(Round(ValorAbatimento * 100), 15)                   + // 181 a 195 - Valor do abatimento

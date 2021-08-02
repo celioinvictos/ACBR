@@ -84,7 +84,8 @@ implementation
 
 uses {$IFDEF COMPILER6_UP} DateUtils {$ELSE} ACBrD5, FileCtrl {$ENDIF},
   StrUtils, Variants,
-  ACBrUtil;
+  ACBrUtil,
+  Math;
 
 constructor TACBrBancoBrasil.create(AOwner: TACBrBanco);
 begin
@@ -171,6 +172,10 @@ begin
       ANossoNumero := PadLeft(AConvenio, 6, '0') + PadLeft(ANossoNumero, 5, '0')
     else if (Length(AConvenio) = 7) then
       ANossoNumero := PadLeft(AConvenio, 7, '0') + RightStr(ANossoNumero, 10);
+
+    if (ACBrTitulo.ACBrBoleto.Banco.TipoCobranca = cobBancoDoBrasilAPI) then
+      ANossoNumero := '000'+ ANossoNumero;
+
   end;
   Result := ANossoNumero;
 end;
@@ -210,6 +215,9 @@ begin
    begin
       FatorVencimento := CalcularFatorVencimento(ACBrTitulo.Vencimento);
 
+      if (Banco.TipoCobranca = cobBancoDoBrasilAPI) then
+        ANossoNumero := Copy(ANossoNumero,4,Length(ANossoNumero));
+
       if ((ACBrTitulo.Carteira = '18') or (ACBrTitulo.Carteira = '16')) and
          (Length(AConvenio) = 6) and (wTamNossNum = 17) then
        begin
@@ -232,6 +240,7 @@ begin
                          ACBrTitulo.Carteira;
        end;
 
+
       DigitoCodBarras := CalcularDigitoCodigoBarras(CodigoBarras);
    end;
 
@@ -241,10 +250,17 @@ end;
 function TACBrBancoBrasil.MontarCampoCodigoCedente (
    const ACBrTitulo: TACBrTitulo ) : String;
 begin
-   Result := ACBrTitulo.ACBrBoleto.Cedente.Agencia+'-'+
+  if(ACBrTitulo.ACBrBoleto.Banco.TipoCobranca = cobBancoDoBrasilAPI) then
+  begin
+    Result := ACBrTitulo.ACBrBoleto.Cedente.Agencia+'/'+
+             IntToStr(StrToIntDef(ACBrTitulo.ACBrBoleto.Cedente.Conta,0));
+  end else
+  begin
+    Result := ACBrTitulo.ACBrBoleto.Cedente.Agencia+'-'+
              ACBrTitulo.ACBrBoleto.Cedente.AgenciaDigito+'/'+
              IntToStr(StrToIntDef(ACBrTitulo.ACBrBoleto.Cedente.Conta,0)) +'-'+
              ACBrTitulo.ACBrBoleto.Cedente.ContaDigito;
+   end;
 end;
 
 function TACBrBancoBrasil.MontarCampoCarteira(const ACBrTitulo: TACBrTitulo
@@ -303,7 +319,7 @@ begin
       if VersaoArquivo = 030 then 
       begin
         aCSP := 'CSP';
-        str0 := '0';
+        str0 := '000';
       end 
       else 
       begin
@@ -401,7 +417,8 @@ end;
 function TACBrBancoBrasil.GerarRegistroTransacao240(ACBrTitulo : TACBrTitulo): String;
 var
    ATipoOcorrencia, ATipoBoleto : String;
-   ADataMoraJuros, ADataDesconto: String;
+   ADataMoraJuros, ADataDesconto, ADataDesconto2, ADataDesconto3: String;
+   ACodigoDesconto: String;
    ANossoNumero, ATipoAceite    : String;
    aAgencia, aConta, aDV        : String;
    wTamConvenio, wTamNossoNum   : Integer;
@@ -412,6 +429,8 @@ var
    BoletoEmail,GeraSegS         : Boolean;
    DataProtestoNegativacao      : string;
    DiasProtestoNegativacao      : string;
+   ATipoDocumento               : String;
+   sDiasBaixa                   : String;
 
   function MontarInstrucoes2: string;
   begin
@@ -480,12 +499,12 @@ begin
         cnProtestarCorrido :  ACodProtesto := '1';
         cnProtestarUteis   :  ACodProtesto := '2';
         cnNegativar        :  ACodProtesto := '8';
+        cnNaoProtestar     :  ACodProtesto := '3';
       else
         case TipoDiasProtesto of
           diCorridos       : ACodProtesto := '1';
-          diUteis          : ACodProtesto := '2';
         else
-          ACodProtesto := '3';
+          ACodProtesto     := '2';
         end;
       end;
 
@@ -496,8 +515,8 @@ begin
         DiasProtestoNegativacao := IntToStr(DiasDeNegativacao);
       end
       else
-	  begin
-  	    if (ACodProtesto <> '3') then
+      begin
+        if (ACodProtesto <> '3') then
         begin
           DataProtestoNegativacao := DateToStr(DataProtesto);
           DiasProtestoNegativacao := IntToStr(DiasDeProtesto);
@@ -507,7 +526,7 @@ begin
           DataProtestoNegativacao := '';
           DiasProtestoNegativacao := '0';
         end;
-	  end;
+      end;
 
      {Pegando o Tipo de Ocorrencia}
      case OcorrenciaOriginal.Tipo of
@@ -661,12 +680,43 @@ begin
 
      {Descontos}
      if (ValorDesconto > 0) and (DataDesconto > 0) then
-       ADataDesconto := FormatDateTime('ddmmyyyy', DataDesconto)
+     begin
+       if TipoDesconto = tdPercentualAteDataInformada then
+         ACodigoDesconto := '2'
+       else
+         ACodigoDesconto := '1';
+       ADataDesconto := FormatDateTime('ddmmyyyy', DataDesconto);
+     end
      else
+     begin
+       if ValorDesconto > 0 then
+         ACodigoDesconto := '3'
+       else
+         ACodigoDesconto := '0';
        ADataDesconto := PadRight('', 8, '0');
+     end;
+
+     if (ValorDesconto2 > 0) and (DataDesconto2 > DataDesconto) then
+       ADataDesconto2 := FormatDateTime('ddmmyyyy', DataDesconto2)
+     else
+       ADataDesconto2 := PadRight('', 8, '0');
+
+     if (ValorDesconto3 > 0) and (DataDesconto3 > DataDesconto2) then
+       ADataDesconto3 := FormatDateTime('ddmmyyyy', DataDesconto3)
+     else
+       ADataDesconto3 := PadRight('', 8, '0');
+
      AMensagem   := '';
      if Mensagem.Text <> '' then
        AMensagem   := Mensagem.Strings[0];
+
+     {Tipo Documento}
+     ATipoDocumento:= DefineTipoDocumento;
+
+     // Nº Dias para Baixa/Devolucao
+     sDiasBaixa  := '   ';
+     if ((ATipoOcorrencia = '01') or (ATipoOcorrencia = '39')) and (Max(DataBaixa, DataLimitePagto) > Vencimento) then
+       sDiasBaixa  := IntToStrZero(DaysBetween(Vencimento, Max(DataBaixa, DataLimitePagto)), 3);
 
      {SEGMENTO P}
      Result:= IntToStrZero(ACBrBanco.Numero, 3)                                         + // 1 a 3 - Código do banco
@@ -684,7 +734,7 @@ begin
               PadRight(ANossoNumero+aDV, 20, ' ')                                       + // 38 a 57 - Nosso número - identificação do título no banco
               wTipoCarteira                                                             + // 58 - Cobrança Simples
               '1'                                                                       + // 59 - Forma de cadastramento do título no banco: com cadastramento
-              InttoStr(Integer(ACBrBoleto.Cedente.TipoDocumento))                       + // 60 - Tipo de documento: Tradicional
+              ATipoDocumento                                                            + // 60 - Tipo de documento: Tradicional
               ATipoBoleto                                                               + // 61 a 62 - Quem emite e quem distribui o boleto?
               PadRight(NumeroDocumento, 15, ' ')                                        + // 63 a 77 - Número que identifica o título na empresa [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               FormatDateTime('ddmmyyyy', Vencimento)                                    + // 78 a 85 - Data de vencimento do título
@@ -698,11 +748,8 @@ begin
               IfThen(ValorMoraJuros > 0,
                      IntToStrZero(round(ValorMoraJuros * 100), 15),
                      PadRight('', 15, '0'))                                             + // 127 a 141 - Valor de juros de mora por dia
-              IfThen(ValorDesconto > 0,IfThen(DataDesconto > 0,
-                     IfThen(TipoDesconto = tdPercentualAteDataInformada,'2','1'),
-                     '3'),'0')                                                          + // 142 - Código de desconto: 1 - Valor fixo até a data informada, 2 - Percentual desconto 4-Desconto por dia de antecipacao 0 - Sem desconto
-              IfThen(ValorDesconto > 0,
-                     IfThen(DataDesconto > 0, ADataDesconto,'00000000'), '00000000')    + // 143 a 150 - Data do desconto
+              ACodigoDesconto                                                           + // 142 - Código de desconto: 1 - Valor fixo até a data informada, 2 - Percentual desconto 4-Desconto por dia de antecipacao 0 - Sem desconto
+              ADataDesconto                                                             + // 143 a 150 - Data do desconto
               IfThen(ValorDesconto > 0, IntToStrZero( round(ValorDesconto * 100), 15),
                      PadRight('', 15, '0'))                                             + // 151 a 165 - Valor do desconto por dia
               IntToStrZero( round(ValorIOF * 100), 15)                                  + // 166 a 180 - Valor do IOF a ser recolhido
@@ -717,7 +764,7 @@ begin
                      (StrToInt(DiasProtestoNegativacao) > 0),
                       PadLeft(DiasProtestoNegativacao, 2, '0'), '00')                   + // 222 a 223 - Prazo para protesto (em dias)
               '0'                                                                       + // 224 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
-              '000'                                                                     + // 225 a 227 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
+              sDiasBaixa                                                                + // 225 a 227 - Campo não tratado pelo BB [ Alterado conforme instruções da CSO Brasília ] {27-07-09}
               '09'                                                                      + // 228 a 229 - Código da moeda: Real
               StringOfChar('0', 10)                                                     + // 230 a 239 - Uso exclusivo FEBRABAN/CNAB
               ' ';
@@ -758,7 +805,17 @@ begin
               'R'                                                                     + // 14 - 14 Código do segmento do registro detalhe
               ' '                                                                     + // 15 - 15 Uso exclusivo FEBRABAN/CNAB: Branco
               ATipoOcorrencia                                                         + // 16 - 17 Tipo Ocorrencia
-              PadLeft('', 48, '0')                                                    + // 18 - 65 Brancos (Não definido pelo FEBRAN)
+
+              ACodigoDesconto                                                         + // 18 - Código de desconto 2: Repetir o valor do código de desconto 1
+              ADataDesconto2                                                          + // 19 a 26 - Data do desconto 2
+              IfThen(ValorDesconto2 > 0, IntToStrZero( round(ValorDesconto2 * 100), 15),
+                     PadRight('', 15, '0'))                                             + // 27 a 41 - Valor do desconto 2 por dia
+
+              ACodigoDesconto                                                         +  // 42 - Código de desconto 3: Repetir o valor do código de desconto 1
+              ADataDesconto3                                                          + // 43 a 50 - Data do desconto 3
+              IfThen(ValorDesconto3 > 0, IntToStrZero( round(ValorDesconto3 * 100), 15),
+                     PadRight('', 15, '0'))                                             + // 51 a 65 - Valor do desconto 3 por dia
+
               IfThen((PercentualMulta > 0),
                      IfThen(MultaValorFixo,'1','2'), '0')                             + // 66 - 66 1-Cobrar Multa Valor Fixo / 2-Percentual / 0-Não cobrar multa
               IfThen((PercentualMulta > 0),
@@ -896,7 +953,7 @@ var
   aModalidade,wLinha, aTipoCobranca:String;
   TamConvenioMaior6                :Boolean;
   wCarteira: Integer;
-  wDiasPagto : Integer;
+  sDiasBaixa: String;
 begin
 
    with ACBrTitulo do
@@ -935,6 +992,9 @@ begin
        toRemessaAlterarNomeEnderecoSacado      : ATipoOcorrencia := '12'; {Alteração de nome e endereço do Sacado}
        toRemessaOutrasOcorrencias              : ATipoOcorrencia := '31'; {Alteração de Outros Dados}
        toRemessaCancelarDesconto               : ATipoOcorrencia := '32'; {Não conceder desconto}
+       toRemessaDispensarMulta                 : ATipoOcorrencia := '36';
+       toRemessaDispensarPrazoLimiteRecebimento: ATipoOcorrencia := '38';
+       toRemessaAlterarPrazoLimiteRecebimento  : ATipoOcorrencia := '39';
        toRemessaAlterarModalidade              : ATipoOcorrencia := '40'; {Alterar modalidade (Vide Observações)}
      else
        ATipoOcorrencia := '01'; {Remessa}
@@ -1060,9 +1120,16 @@ begin
      if Mensagem.Text <> '' then
        AMensagem   := Mensagem.Strings[0];
 
-     wDiasPagto := 0;
-     if (ATipoOcorrencia = '01') and ( DataLimitePagto > Vencimento ) then
-       wDiasPagto:= DaysBetween(Vencimento, DataLimitePagto);
+     sDiasBaixa := '   ';
+     if ((ATipoOcorrencia = '01') or (ATipoOcorrencia = '39')) and (Max(DataBaixa, DataLimitePagto) > Vencimento ) then
+       sDiasBaixa := IntToStrZero(DaysBetween(Vencimento, Max(DataBaixa, DataLimitePagto)), 3);
+	 if ATipoOcorrencia = '39' then
+     begin
+       Instrucao1:= '00';
+       Instrucao2:= '00';
+       AInstrucao:= '0000';
+       aDataDesconto:= '000000';
+     end;
 
      with ACBrBoleto do
      begin
@@ -1135,8 +1202,9 @@ begin
                 PadLeft(DiasProtesto,2,'0')+ ' '                        + // Número de dias para protesto + Branco
                 IntToStrZero( aRemessa.Count + 1, 6 );
 
-
-       wLinha:= wLinha + sLineBreak                              +
+       if ATipoOcorrencia = '01' then
+       begin
+         wLinha:= wLinha + sLineBreak                            +
                 '5'                                              + //Tipo Registro
                 '99'                                             + //Tipo de Serviço (Cobrança de Multa)
                 IfThen((PercentualMulta > 0),
@@ -1145,9 +1213,10 @@ begin
                        FormatDateTime('ddmmyy', DataMulta),
                                       '000000')                  + //Data Multa
                 IntToStrZero( round( PercentualMulta * 100), 12) + //Perc. Multa
-                IntToStrZero(wDiasPagto ,3)                      + //Qtd dias Recebimento após vencimento
+                sDiasBaixa                                       + //Qtd dias Recebimento após vencimento
                 Space(369)                                       + //Brancos
                 IntToStrZero(aRemessa.Count + 2 ,6);
+       end;
 
        aRemessa.Text := aRemessa.Text + UpperCase(wLinha);
      end;

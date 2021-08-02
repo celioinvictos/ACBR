@@ -265,12 +265,11 @@ begin
   Leitor.Grupo   := Leitor.Arquivo;
 
   try
-    GNRERetorno := TACBrGNRE(ACBrGNRE).GuiasRetorno.Add.GNRE;
-
     Nivel := 1;
     i := 0;
     while Leitor.rExtrai(Nivel, 'guia', '', i + 1) <> '' do
     begin
+      GNRERetorno := TACBrGNRE(ACBrGNRE).GuiasRetorno.Add.GNRE;
       GNRERetorno.SituacaoGuia          := Leitor.rCampo(tcStr, 'situacaoGuia');
       GNRERetorno.UFFavorecida          := Leitor.rCampo(tcStr, 'ufFavorecida');
       GNRERetorno.tipoGnre              := Leitor.rCampo(tcStr, 'tipoGnre');
@@ -303,7 +302,7 @@ begin
       if Leitor.rExtrai(Nivel, 'informacoesComplementares') <> '' then
       begin
         j := 0;
-        while Leitor.rExtrai(Nivel, 'item', '', j + 1) <> '' do
+        while Leitor.rExtrai(Nivel, 'informacao', '', j + 1) <> '' do
         begin
           GNRERetorno.InfoComplementares := GNRERetorno.InfoComplementares + Leitor.rCampo(tcStr, 'informacao')+ sLineBreak;
           Inc(j);
@@ -319,6 +318,11 @@ begin
           GNRERetorno.CodReceita     := Leitor.rCampo(tcInt, 'receita');
           GNRERetorno.DataVencimento := DateToStr(Leitor.rCampo(tcDat, 'dataVencimento'));
           GNRERetorno.NumDocOrigem   := Leitor.rCampo(tcStr, 'documentoOrigem');
+
+          // se o tamanho for 44 o conteudo de NumDocOrigem é a chave da NF-e
+          // neste caso devemos extrair o numero da nota da chave.
+          if Length(GNRERetorno.NumDocOrigem) = 44 then
+            GNRERetorno.NumDocOrigem := IntToStr(ExtrairNumeroChaveAcesso(GNRERetorno.NumDocOrigem));
 
           cProd := StrToIntDef(Leitor.rCampo(tcStr, 'produto'), 0);
 
@@ -361,7 +365,7 @@ begin
             52 - Valor Atualização Monetaria FP
             }
             if Leitor.rAtributo('tipo=', 'valor') = '11' then
-              GNRERetorno.ValorPrincipal := Leitor.rCampo(tcDe2, 'valor');
+              GNRERetorno.ValorPrincICMS := Leitor.rCampo(tcDe2, 'valor');
 
             if Leitor.rAtributo('tipo=', 'valor') = '12' then
               GNRERetorno.ValorFECP := Leitor.rCampo(tcDe2, 'valor');
@@ -410,6 +414,7 @@ begin
       end;
 
       Inc(i);
+      Nivel := 1;
     end;
   finally
     Leitor.Free;

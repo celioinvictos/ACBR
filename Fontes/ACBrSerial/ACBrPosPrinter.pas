@@ -244,6 +244,7 @@ type
     property RazaoColunaFonte: TACBrPosRazaoColunaFonte read FRazaoColunaFonte;
     property Cmd: TACBrPosComandos read FCmd;
     property ModeloStr: String read fpModeloStr;
+    property PosPrinter: TACBrPosPrinter read fpPosPrinter;
 
     property TagsNaoSuportadas: TStringList read FTagsNaoSuportadas;
   end;
@@ -423,6 +424,7 @@ type
     FCancelarEsperaCheque: Boolean;
     FOnGravarLog: TACBrGravarLog;
     FOnEnviarStringDevice: TACBrGravarLog;
+    FOnEnviarStringDeviceDefault: TACBrGravarLog;
     FTagProcessor: TACBrTagProcessor;
     FPosCheques: TACBrPosCheques;
     FTemGuilhotina: Integer;
@@ -480,6 +482,7 @@ type
      FHook: TACBrPosPrinterHook;
     {$EndIf}
 
+    procedure Loaded; override;
     procedure EnviarStringDevice(AString: AnsiString);
 
     function DecodificarTagsFormatacao(ABinaryString: AnsiString): AnsiString;
@@ -487,6 +490,8 @@ type
     procedure DoAdicionarBlocoResposta(const ConteudoBloco: AnsiString);
     procedure DoTraduzirTagBloco(const ATag, ConteudoBloco: AnsiString;
       var BlocoTraduzido: AnsiString);
+
+    procedure AjustarEstadoFonteAlinhamento(const ATag: AnsiString);
 
     procedure AtivarPorta;
     procedure DesativarPorta;
@@ -565,6 +570,8 @@ type
     function CalcularLinhasAltura(AAltura: Integer): Integer;
     function CalcularAlturaQRCodeAlfaNumM(const QRCodeData: String): Integer;
     function ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura, ALargura: Integer): String;
+
+    function AjustarCodBarras(const ABarCode, ABarCodeTag: AnsiString): AnsiString;
 
     property Buffer: TStringList read FBuffer;
 
@@ -1278,7 +1285,7 @@ end;
 
 procedure TACBrPosPrinterClass.Configurar;
 begin
-  fpPosPrinter.OnEnviarStringDevice := Nil;
+  {nada aqui, método virtual}
 end;
 
 procedure TACBrPosPrinterClass.LerStatus(var AStatus: TACBrPosPrinterStatus);
@@ -1541,10 +1548,17 @@ begin
   FArqLog := '';
   FOnGravarLog := nil;
   FOnEnviarStringDevice := nil;
+  FOnEnviarStringDeviceDefault := nil;
   FOnAguardarCheque := nil;
   FCancelarEsperaCheque := False;
 
   FTipoCorte := ctTotal;
+end;
+
+procedure TACBrPosPrinter.Loaded;
+begin
+  inherited Loaded;
+  FOnEnviarStringDeviceDefault := FOnEnviarStringDevice;
 end;
 
 destructor TACBrPosPrinter.Destroy;
@@ -1659,7 +1673,9 @@ begin
     raise EPosPrinterException.Create(ACBrStr('Nenhum Modelo Externo atribuído'));
 
   if (FPosPrinterClass <> FModeloExterno) then
-    FPosPrinterClass.Free;
+    FPosPrinterClass.Free
+  else
+    FOnEnviarStringDevice := FOnEnviarStringDeviceDefault;
 
   case AValue of
     ppEscPosEpson: FPosPrinterClass := TACBrEscPosEpson.Create(Self);
@@ -1869,216 +1885,105 @@ procedure TACBrPosPrinter.DoTraduzirTag(const ATag: AnsiString;
 begin
   // GravarLog(AnsiString('TraduzirTag(' + ATag + ')'));   // DEBUG - permite medir de tradução de cada Tag
   TagTraduzida := '';
-  if FPosPrinterClass.TraduzirTag(ATag, TagTraduzida) then
+  if (TagsNaoSuportadas.IndexOf(ATag) >= 0) then
     Exit;
 
-  TagTraduzida := '';
-
-  if ATag = cTagLigaExpandido then
+  if not FPosPrinterClass.TraduzirTag(ATag, TagTraduzida) then
   begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftExpandido, True);
-    FFonteStatus := FFonteStatus + [ftExpandido];
-  end
-
-  else if ATag = cTagDesligaExpandido then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftExpandido, False);
-    FFonteStatus := FFonteStatus - [ftExpandido];
-  end
-
-  else if ATag = cTagLigaAlturaDupla then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftAlturaDupla, True);
-    FFonteStatus := FFonteStatus + [ftAlturaDupla];
-  end
-
-  else if ATag = cTagDesligaAlturaDupla then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftAlturaDupla, False);
-    FFonteStatus := FFonteStatus - [ftAlturaDupla];
-  end
-
-  else if ATag = cTagLigaNegrito then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftNegrito, True);
-    FFonteStatus := FFonteStatus + [ftNegrito];
-  end
-
-  else if ATag = cTagDesligaNegrito then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftNegrito, False);
-    FFonteStatus := FFonteStatus - [ftNegrito];
-  end
-
-  else if ATag = cTagLigaSublinhado then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftSublinhado, True);
-    FFonteStatus := FFonteStatus + [ftSublinhado];
-  end
-
-  else if ATag = cTagDesligaSublinhado then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftSublinhado, False);
-    FFonteStatus := FFonteStatus - [ftSublinhado];
-  end
-
-  else if ATag = cTagLigaCondensado then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftCondensado, True);
-    FFonteStatus := FFonteStatus + [ftCondensado];
-  end
-
-  else if ATag = cTagDesligaCondensado then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftCondensado, False);
-    FFonteStatus := FFonteStatus - [ftCondensado];
-  end
-
-  else if ATag = cTagLigaItalico then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftItalico, True);
-    FFonteStatus := FFonteStatus + [ftItalico];
-  end
-
-  else if ATag = cTagDesligaItalico then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftItalico, False);
-    FFonteStatus := FFonteStatus - [ftItalico];
-  end
-
-  else if ATag = cTagFonteNormal then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.FonteNormal;
-    FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
-                                    ftNegrito, ftSublinhado, ftItalico, ftInvertido, ftFonteB];
-  end
-
-  else if ATag = cTagZera then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.Zera + FPosPrinterClass.ComandoInicializa;
-
-    FInicializada := True;
-    FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
-                                    ftNegrito, ftSublinhado, ftItalico, ftInvertido];
-  end
-
-  else if ATag = cTagReset then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.Zera;
-
-    FInicializada := False;
-    FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
-                                    ftNegrito, ftSublinhado, ftItalico, ftInvertido];
-  end
-
-  else if ATag = cTagLigaInvertido then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftInvertido, True);
-    FFonteStatus := FFonteStatus + [ftInvertido];
-  end
-
-  else if ATag = cTagDesligaInvertido then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftInvertido, False);
-    FFonteStatus := FFonteStatus - [ftInvertido];
-  end
-
-  else if ATag = cTagFonteA then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftFonteB, False);
-    FFonteStatus := FFonteStatus - [ftFonteB];
-  end
-
-  else if ATag = cTagFonteB then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoFonte(ftFonteB, True);
-    FFonteStatus := FFonteStatus + [ftFonteB];
-  end
-
-  else if ATag = cTagLinhaSimples then
-    TagTraduzida := AnsiString(StringOfChar('-', Colunas))
-
-  else if ATag = cTagLinhaDupla then
-    TagTraduzida := AnsiString(StringOfChar('=', Colunas))
-
-  else if ATag = cTagPuloDeLinhas then
-    TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons)
-
-  else if (ATag = cTagCorteParcial) or ( (ATag = cTagCorte) and (FTipoCorte = ctParcial) ) then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons);
-    if CortaPapel then
-      TagTraduzida := TagTraduzida + FPosPrinterClass.Cmd.CorteParcial;
-  end
-
-  else if (ATag = cTagCorteTotal) or ( (ATag = cTagCorte) and (FTipoCorte = ctTotal) ) then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons);
-    if CortaPapel then
-      TagTraduzida := TagTraduzida + FPosPrinterClass.Cmd.CorteTotal;
-  end
-
-  else if ATag = cTagAbreGaveta then
-    TagTraduzida := FPosPrinterClass.ComandoGaveta()
-
-  else if ATag = cTagBeep then
-    TagTraduzida := FPosPrinterClass.Cmd.Beep
-
-  else if ATag = cTagLogotipo then
-    if FConfigLogo.IgnorarLogo then
-      TagTraduzida := ''
-    else
-      TagTraduzida := FPosPrinterClass.ComandoLogo
-
-  else if ATag = cTagPulodeLinha then
-    TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(1)
-
-  else if ATag = cTagPulodePagina then
-    TagTraduzida := FPosPrinterClass.Cmd.PuloDePagina
-
-  else if ATag = cTagRetornoDeCarro then
-    TagTraduzida := CR
-
-  else if ATag = cTagFonteAlinhadaEsquerda then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.AlinhadoEsquerda;
-    FTipoAlinhamento := alEsquerda;
-  end
-
-  else if ATag = cTagFonteAlinhadaDireita then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.AlinhadoDireita;
-    FTipoAlinhamento := alDireita;
-  end
-
-  else if ATag = cTagfonteAlinhadaCentro then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.AlinhadoCentro;
-    FTipoAlinhamento := alCentro;
-  end
-
-  else if ATag = cTagModoPaginaLiga then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.LigaModoPagina;
-    FModoPaginaLigado := True;
-  end
-
-  else if ATag = cTagModoPaginaDesliga then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.ImprimePagina +
-                    FPosPrinterClass.Cmd.DesligaModoPagina;
-    FModoPaginaLigado := False;
-  end
-
-  else if ATag = cTagModoPaginaImprimir then
-  begin
-    TagTraduzida := FPosPrinterClass.Cmd.ImprimePagina;
-  end
-
-  else if ATag = cTagModoPaginaConfigurar then
-  begin
-    TagTraduzida := FPosPrinterClass.ComandoConfiguraModoPagina;
+    TagTraduzida := '';
+    if (ATag = cTagLigaExpandido) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftExpandido, True)
+    else if (ATag = cTagDesligaExpandido) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftExpandido, False)
+    else if (ATag = cTagLigaAlturaDupla) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftAlturaDupla, True)
+    else if (ATag = cTagDesligaAlturaDupla) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftAlturaDupla, False)
+    else if (ATag = cTagLigaNegrito) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftNegrito, True)
+    else if (ATag = cTagDesligaNegrito) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftNegrito, False)
+    else if (ATag = cTagLigaSublinhado) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftSublinhado, True)
+    else if (ATag = cTagDesligaSublinhado) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftSublinhado, False)
+    else if (ATag = cTagLigaCondensado) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftCondensado, True)
+    else if (ATag = cTagDesligaCondensado) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftCondensado, False)
+    else if (ATag = cTagLigaItalico) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftItalico, True)
+    else if (ATag = cTagDesligaItalico) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftItalico, False)
+    else if (ATag = cTagLigaInvertido) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftInvertido, True)
+    else if (ATag = cTagDesligaInvertido) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftInvertido, False)
+    else if (ATag = cTagFonteA) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftFonteB, False)
+    else if (ATag = cTagFonteB) then
+      TagTraduzida := FPosPrinterClass.ComandoFonte(ftFonteB, True)
+    else if (ATag = cTagFonteAlinhadaEsquerda) then
+      TagTraduzida := FPosPrinterClass.Cmd.AlinhadoEsquerda
+    else if (ATag = cTagFonteAlinhadaDireita) then
+      TagTraduzida := FPosPrinterClass.Cmd.AlinhadoDireita
+    else if (ATag = cTagfonteAlinhadaCentro) then
+      TagTraduzida := FPosPrinterClass.Cmd.AlinhadoCentro
+    else if (ATag = cTagFonteNormal) then
+      TagTraduzida := FPosPrinterClass.Cmd.FonteNormal
+    else if (ATag = cTagZera) then
+      TagTraduzida := FPosPrinterClass.Cmd.Zera + FPosPrinterClass.ComandoInicializa
+    else if (ATag = cTagReset) then
+      TagTraduzida := FPosPrinterClass.Cmd.Zera
+    else if (ATag = cTagLinhaSimples) then
+      TagTraduzida := AnsiString(StringOfChar('-', Colunas))
+    else if (ATag = cTagLinhaDupla) then
+      TagTraduzida := AnsiString(StringOfChar('=', Colunas))
+    else if (ATag = cTagPuloDeLinhas) then
+      TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons)
+    else if (ATag = cTagCorteParcial) or ( (ATag = cTagCorte) and (FTipoCorte = ctParcial) ) then
+    begin
+      TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons);
+      if CortaPapel then
+        TagTraduzida := TagTraduzida + FPosPrinterClass.Cmd.CorteParcial;
+    end
+    else if (ATag = cTagCorteTotal) or ( (ATag = cTagCorte) and (FTipoCorte = ctTotal) ) then
+    begin
+      TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(LinhasEntreCupons);
+      if CortaPapel then
+        TagTraduzida := TagTraduzida + FPosPrinterClass.Cmd.CorteTotal;
+    end
+    else if (ATag = cTagAbreGaveta) then
+      TagTraduzida := FPosPrinterClass.ComandoGaveta()
+    else if (ATag = cTagBeep) then
+      TagTraduzida := FPosPrinterClass.Cmd.Beep
+    else if (ATag = cTagLogotipo) then
+    begin
+      if FConfigLogo.IgnorarLogo then
+        TagTraduzida := ''
+      else
+        TagTraduzida := FPosPrinterClass.ComandoLogo;
+    end
+    else if (ATag = cTagPulodeLinha) then
+      TagTraduzida := FPosPrinterClass.ComandoPuloLinhas(1)
+    else if (ATag = cTagPulodePagina) then
+      TagTraduzida := FPosPrinterClass.Cmd.PuloDePagina
+    else if (ATag = cTagRetornoDeCarro) then
+      TagTraduzida := CR
+    else if (ATag = cTagModoPaginaLiga) then
+      TagTraduzida := FPosPrinterClass.Cmd.LigaModoPagina
+    else if (ATag = cTagModoPaginaDesliga) then
+    begin
+      TagTraduzida := FPosPrinterClass.Cmd.ImprimePagina +
+                      FPosPrinterClass.Cmd.DesligaModoPagina;
+    end
+    else if (ATag = cTagModoPaginaImprimir) then
+      TagTraduzida := FPosPrinterClass.Cmd.ImprimePagina
+    else if (ATag = cTagModoPaginaConfigurar) then
+      TagTraduzida := FPosPrinterClass.ComandoConfiguraModoPagina;
   end;
+
+  AjustarEstadoFonteAlinhamento(ATag);
 
   GravarLog(AnsiString('TraduzirTag(' + ATag + ') -> ') + TagTraduzida, True);
 end;
@@ -2095,9 +2000,13 @@ var
   ACodBar: AnsiString;
 begin
   BlocoTraduzido := ConteudoBloco;
+  if (TagsNaoSuportadas.IndexOf(ATag) >= 0) then
+    Exit;
+
   if FPosPrinterClass.TraduzirTagBloco(ATag, ConteudoBloco, BlocoTraduzido) then
     Exit;
 
+  BlocoTraduzido := ConteudoBloco;
   if ATag = cTagAlinhadoEsquerda then
     BlocoTraduzido := PadRightA(ConteudoBloco, Colunas)
 
@@ -2229,71 +2138,75 @@ begin
 
   else if (AnsiIndexText(ATag, cTAGS_BARRAS) >= 0) then
   begin
-    // Ajustando os Códigos de Barras, conforme regras do Tipo do Código //
-    if (ATag = cTagBarraUPCA) then
-      // Apenas números, sempre 11 digitos, e 1 digito verificador
-      ACodBar := PadLeftA(OnlyNumber(ConteudoBloco), 11, '0')
-
-    else if (ATag = cTagBarraUPCE) then
-      // EPC-A compactado, Apenas números, 6 ou 11 dígitos
-      ACodBar := OnlyNumber(ConteudoBloco)
-
-    else if ATag = cTagBarraEAN13 then
-      // Apenas números, sempre 12 digitos, e 1 digito verificador
-      ACodBar := PadLeftA(OnlyNumber(ConteudoBloco), 12, '0')
-
-    else if ATag = cTagBarraEAN8 then
-      // Apenas números, sempre 7 digitos, e 1 digito verificador
-      ACodBar := PadLeftA(OnlyNumber(ConteudoBloco), 7, '0')
-
-    else if ATag = cTagBarraCode128c then
-      // Apenas números,
-      ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
-
-    else if ATag = cTagBarraCode39 then
-      // Qualquer tamanho.. Aceita: 0~9, A~Z, ' ', '$', '%', '*', '+', '-', '.', '/'
-      ACodBar := AnsiString(OnlyCharsInSet(ConteudoBloco,
-        ['0'..'9', 'A'..'Z', ' ', '$', '%', '*', '+', '-', '.', '/']))
-
-    else if ATag = cTagBarraCode93 then
-      // Qualquer tamanho.. Aceita: #0~#127
-      ACodBar := AnsiString(OnlyCharsInSet(ConteudoBloco, [#0..#127]))
-
-    else if ATag = cTagBarraInter then
-    begin
-      // Interleaved 2of5. Somente números, Tamanho deve ser PAR
-      ACodBar := AnsiString(OnlyNumber(ConteudoBloco));
-
-      if (Length(ACodBar) mod 2) <> 0 then  // Tamanho é Par ?
-        ACodBar := '0' + ACodBar;
-    end
-
-    else if ATag = cTagBarraStd then
-      // Apenas números, Sem dígito verificador
-      ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
-
-    else if ATag = cTagBarraCodaBar then
-      // Qualquer tamanho.. Aceita: 0~9, A~D, a~d, $, +, -, ., /, :
-      ACodBar := AnsiString(OnlyCharsInSet(ConteudoBloco,
-        ['0'..'9', 'A'..'D', 'a'..'d', '$', '+', '-', '.', '/', ':']))
-
-    else if ATag = cTagBarraCode11 then
-      // Apenas números, Qualquer tamanho, dois dígitos verificador
-      ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
-
-    else if ATag = cTagBarraMSI then
-      // Apenas números, 1 dígito verificador
-      ACodBar := AnsiString(OnlyNumber(ConteudoBloco))
-
-    else
-      ACodBar := ConteudoBloco;
-
-    ACodBar:= LeftStr(ACodBar, 255);  // Tamanho máximo para Cod.Barras é 255 caracteres
-
+    ACodBar := AjustarCodBarras(ConteudoBloco, ATag);
     BlocoTraduzido := FPosPrinterClass.ComandoCodBarras(ATag, ACodBar);
   end;
 
   GravarLog('TraduzirTagBloco(' + ATag + ', ' + ConteudoBloco + ') -> ' + BlocoTraduzido, True);
+end;
+
+procedure TACBrPosPrinter.AjustarEstadoFonteAlinhamento(const ATag: AnsiString);
+begin
+  if (ATag = cTagLigaExpandido) then
+    FFonteStatus := FFonteStatus + [ftExpandido]
+  else if (ATag = cTagDesligaExpandido) then
+    FFonteStatus := FFonteStatus - [ftExpandido]
+  else if (ATag = cTagLigaAlturaDupla) then
+    FFonteStatus := FFonteStatus + [ftAlturaDupla]
+  else if (ATag = cTagDesligaAlturaDupla) then
+    FFonteStatus := FFonteStatus - [ftAlturaDupla]
+  else if (ATag = cTagLigaNegrito) then
+    FFonteStatus := FFonteStatus + [ftNegrito]
+  else if (ATag = cTagDesligaNegrito) then
+    FFonteStatus := FFonteStatus - [ftNegrito]
+  else if (ATag = cTagLigaSublinhado) then
+    FFonteStatus := FFonteStatus + [ftSublinhado]
+  else if (ATag = cTagDesligaSublinhado) then
+    FFonteStatus := FFonteStatus - [ftSublinhado]
+  else if (ATag = cTagLigaCondensado) then
+    FFonteStatus := FFonteStatus + [ftCondensado]
+  else if (ATag = cTagDesligaCondensado) then
+    FFonteStatus := FFonteStatus - [ftCondensado]
+  else if (ATag = cTagLigaItalico) then
+    FFonteStatus := FFonteStatus + [ftItalico]
+  else if (ATag = cTagDesligaItalico) then
+    FFonteStatus := FFonteStatus - [ftItalico]
+  else if (ATag = cTagLigaInvertido) then
+    FFonteStatus := FFonteStatus + [ftInvertido]
+  else if (ATag = cTagDesligaInvertido) then
+    FFonteStatus := FFonteStatus - [ftInvertido]
+  else if (ATag = cTagFonteA) then
+    FFonteStatus := FFonteStatus - [ftFonteB]
+  else if (ATag = cTagFonteB) then
+    FFonteStatus := FFonteStatus + [ftFonteB]
+  else if (ATag = cTagFonteAlinhadaEsquerda) then
+    FTipoAlinhamento := alEsquerda
+  else if (ATag = cTagFonteAlinhadaDireita) then
+    FTipoAlinhamento := alDireita
+  else if (ATag = cTagfonteAlinhadaCentro) then
+    FTipoAlinhamento := alCentro
+  else if (ATag = cTagModoPaginaLiga) then
+    FModoPaginaLigado := True
+  else if (ATag = cTagModoPaginaDesliga) then
+    FModoPaginaLigado := False
+  else if (ATag = cTagFonteNormal) then
+  begin
+    FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
+                                    ftNegrito, ftSublinhado, ftItalico, ftInvertido,
+                                    ftFonteB]
+  end
+  else if (ATag = cTagZera) then
+  begin
+    FInicializada := True;
+    FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
+                                    ftNegrito, ftSublinhado, ftItalico, ftInvertido];
+  end
+  else if (ATag = cTagReset) then
+  begin
+    FInicializada := False;
+    FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
+                                    ftNegrito, ftSublinhado, ftItalico, ftInvertido];
+  end
 end;
 
 procedure TACBrPosPrinter.AtivarPorta;
@@ -2987,6 +2900,72 @@ begin
 
   // http://www.qrcode.com/en/howto/code.html
   Result := (QRCodeModules + 10) * CDotsMM;
+end;
+
+function TACBrPosPrinter.AjustarCodBarras(const ABarCode, ABarCodeTag: AnsiString): AnsiString;
+var
+  ACodBar: AnsiString;
+begin
+  // Ajustando os Códigos de Barras, conforme regras do Tipo do Código //
+  if (ABarCodeTag = cTagBarraUPCA) then
+    // Apenas números, sempre 11 digitos, e 1 digito verificador
+    ACodBar := PadLeftA(OnlyNumber(ABarCode), 11, '0')
+
+  else if (ABarCodeTag = cTagBarraUPCE) then
+    // EPC-A compactado, Apenas números, 6 ou 11 dígitos
+    ACodBar := AnsiString(OnlyNumber(ABarCode))
+
+  else if ABarCodeTag = cTagBarraEAN13 then
+    // Apenas números, sempre 12 digitos, e 1 digito verificador
+    ACodBar := PadLeftA(OnlyNumber(ABarCode), 12, '0')
+
+  else if ABarCodeTag = cTagBarraEAN8 then
+    // Apenas números, sempre 7 digitos, e 1 digito verificador
+    ACodBar := PadLeftA(OnlyNumber(ABarCode), 7, '0')
+
+  else if ABarCodeTag = cTagBarraCode128c then
+    // Apenas números,
+    ACodBar := AnsiString(OnlyNumber(ABarCode))
+
+  else if ABarCodeTag = cTagBarraCode39 then
+    // Qualquer tamanho.. Aceita: 0~9, A~Z, ' ', '$', '%', '*', '+', '-', '.', '/'
+    ACodBar := AnsiString(OnlyCharsInSet(ABarCode,
+      ['0'..'9', 'A'..'Z', ' ', '$', '%', '*', '+', '-', '.', '/']))
+
+  else if ABarCodeTag = cTagBarraCode93 then
+    // Qualquer tamanho.. Aceita: #0~#127
+    ACodBar := AnsiString(OnlyCharsInSet(ABarCode, [#0..#127]))
+
+  else if ABarCodeTag = cTagBarraInter then
+  begin
+    // Interleaved 2of5. Somente números, Tamanho deve ser PAR
+    ACodBar := AnsiString(OnlyNumber(ABarCode));
+
+    if (Length(ACodBar) mod 2) <> 0 then  // Tamanho é Par ?
+      ACodBar := '0' + ACodBar;
+  end
+
+  else if ABarCodeTag = cTagBarraStd then
+    // Apenas números, Sem dígito verificador
+    ACodBar := AnsiString(OnlyNumber(ABarCode))
+
+  else if ABarCodeTag = cTagBarraCodaBar then
+    // Qualquer tamanho.. Aceita: 0~9, A~D, a~d, $, +, -, ., /, :
+    ACodBar := AnsiString(OnlyCharsInSet(ABarCode,
+      ['0'..'9', 'A'..'D', 'a'..'d', '$', '+', '-', '.', '/', ':']))
+
+  else if ABarCodeTag = cTagBarraCode11 then
+    // Apenas números, Qualquer tamanho, dois dígitos verificador
+    ACodBar := AnsiString(OnlyNumber(ABarCode))
+
+  else if ABarCodeTag = cTagBarraMSI then
+    // Apenas números, 1 dígito verificador
+    ACodBar := AnsiString(OnlyNumber(ABarCode))
+
+  else
+    ACodBar := ABarCode;
+
+  Result := AnsiString(LeftStr(ACodBar, 255));  // Tamanho máximo para Cod.Barras é 255 caracteres
 end;
 
 function TACBrPosPrinter.ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura,

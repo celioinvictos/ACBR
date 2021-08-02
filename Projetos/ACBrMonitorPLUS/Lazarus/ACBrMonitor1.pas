@@ -60,7 +60,7 @@ uses
   DoNcmUnit, DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit, DoACBrGNReUnit,
   DoPosPrinterUnit, DoECFUnit, DoECFObserver, DoECFBemafi32, DoSATUnit,
   DoACBreSocialUnit, DoACBrBPeUnit, ACBrLibResposta, DoACBrUnit, DoCNPJUnit,
-  DoCPFUnit, ACBrBoletoConversao, FormConsultaCNPJ, ACBrMonitorMenu;
+  DoCPFUnit, ACBrBoletoConversao, FormConsultaCNPJ, ACBrMonitorMenu, ACBrDFeReport;
 
 const
   CEstados: array[TACBrECFEstado] of string =
@@ -305,6 +305,7 @@ type
     cbGAVStrAbre: TComboBox;
     cbHRI: TCheckBox;
     cbHttpLib: TComboBox;
+    cbHttpLibBoleto: TComboBox;
     cbIgnorarTags: TCheckBox;
     cbLCBDispositivo: TComboBox;
     cbLCBPorta: TComboBox;
@@ -325,6 +326,8 @@ type
     cbSenha: TCheckBox;
     cbSSLLib: TComboBox;
     cbSSLType: TComboBox;
+    cbSSLTypeBoleto: TComboBox;
+    cbOperacaoBoleto: TComboBox;
     cbTagRejeicao938: TComboBox;
     cbTipoContribuinte: TComboBox;
     cbTipoEmpregador: TComboBox;
@@ -435,12 +438,14 @@ type
     chECFDescrGrande: TCheckBox;
     chECFIgnorarTagsFormatacao: TCheckBox;
     chECFSinalGavetaInvertido: TCheckBox;
+    ChkPix: TCheckBox;
     chgDescricaoPagamento: TCheckGroup;
     chkBOLRelMostraPreview: TCheckBox;
     chkExibeRazaoSocial: TCheckBox;
     chkLerCedenteRetorno: TCheckBox;
     cbxBOLEmailMensagemHTML: TCheckBox;
     chkMostraLogNaTela: TCheckBox;
+    ChkLogBoletoWeb: TCheckBox;
     chkRemoveAcentos: TCheckBox;
     chkVerificarValidadeCertificado: TCheckBox;
     chLCBExcluirSufixo: TCheckBox;
@@ -549,6 +554,9 @@ type
     edtBOLNumero: TEdit;
     edtBOLRazaoSocial: TEdit;
     edTCArqPrecos: TEdit;
+    edtClientID: TEdit;
+    edtClientSecret: TEdit;
+    edtKeyUser: TEdit;
     edTCNaoEncontrado: TEdit;
     edtCNPJContador: TEdit;
     edtCodCliente: TEdit;
@@ -576,6 +584,7 @@ type
     edTimeOutTCP: TEdit;
     edTimeZoneStr: TEdit;
     edtIntervalo: TEdit;
+    edtScope: TEdit;
     edtLogoMarca: TEdit;
     edtLogoMarcaNFCeSAT: TEdit;
     edtModalidade: TEdit;
@@ -598,6 +607,8 @@ type
     edtProxyUser: TEdit;
     edtSATCasasMaskQtd: TEdit;
     edtSATMaskVUnit: TEdit;
+    edtVersaoBoleto: TEdit;
+    edtPathLogBoleto: TEdit;
     edtSedexAltura: TEdit;
     edtSedexCEPDestino: TEdit;
     edtSedexCEPOrigem: TEdit;
@@ -614,6 +625,7 @@ type
     edtSwHCNPJ: TEdit;
     edtTentativas: TEdit;
     edtTimeoutWebServices: TSpinEdit;
+    edtTimeoutWebServicesBoleto: TSpinEdit;
     edtToken: TEdit;
     edtURLPFX: TEdit;
     edUSUCNPJ: TEdit;
@@ -678,6 +690,8 @@ type
     GroupBox12: TGroupBox;
     GroupBox13: TGroupBox;
     GrbVersaoDFe: TGroupBox;
+    GrbDadosCedenteBoletoWeb: TGroupBox;
+    grbWsConfig: TGroupBox;
     GroupBox2: TGroupBox;
     GroupBox3: TGroupBox;
     GroupBox4: TGroupBox;
@@ -745,8 +759,18 @@ type
     Label103: TLabel;
     Label104: TLabel;
     Label105: TLabel;
+    Label106: TLabel;
+    Label107: TLabel;
     Label108: TLabel;
     Label109: TLabel;
+    Label114: TLabel;
+    Label118: TLabel;
+    Label255: TLabel;
+    Label256: TLabel;
+    Label257: TLabel;
+    Label258: TLabel;
+    Label259: TLabel;
+    lblPathLogBoleto: TLabel;
     labelbolcep: TLabel;
     lBolUF: TLabel;
     lBOLLogradouro: TLabel;
@@ -1137,6 +1161,7 @@ type
     rgrMsgCanhoto: TRadioGroup;
     rgTamanhoPapelDacte: TRadioGroup;
     rgTipoAmb: TRadioGroup;
+    rgTipoAmbBoleto: TRadioGroup;
     rgTipoDanfe: TRadioGroup;
     rgTipoFonte: TRadioGroup;
     SbArqLog: TSpeedButton;
@@ -1276,6 +1301,7 @@ type
     SynXMLSyn1: TSynXMLSyn;
     TabControl1: TTabControl;
     TabSheet1: TTabSheet;
+    tsWebBoleto: TTabSheet;
     TrayIcon1: TTrayIcon;
     bCancelar: TBitBtn;
     Timer1: TTimer;
@@ -1814,6 +1840,9 @@ type
 
     procedure SetDisWorking(const Value: boolean);
 
+    procedure AtualizarHomologacaoDFe(Config: TConfiguracoes);
+    procedure AtualizarImpressaoHomologacaoDFe(Report: TACBrDFeReport);
+    procedure AtualizaAplicacaoDemo;
     procedure ValidarComunicacao;
     procedure ValidarConfigCertificado;
     procedure ValidarConfigWebService;
@@ -1981,6 +2010,7 @@ var
   iETQBackFeed: TACBrETQBackFeed;
   iETQOrigem: TACBrETQOrigem;
   iFormatoDecimal: TDetFormato;
+  iOperacao: TOperacao;
   M: Integer;
   K: Integer;
   vFormatSettings: TFormatSettings;
@@ -2221,7 +2251,7 @@ begin
   iESO := Low(TVersaoeSocial);
   while iESO <= High(TVersaoeSocial) do
   begin
-    cbVersaoWSeSocial.Items.Add( copy( GetEnumName(TypeInfo(TVersaoeSocial), integer(iESO)), 3, 8) );
+    cbVersaoWSeSocial.Items.Add( Trim(copy( GetEnumName(TypeInfo(TVersaoeSocial), integer(iESO)), 3, 9) ) );
     Inc(iESO);
   end;
 
@@ -2306,6 +2336,22 @@ begin
   For Y := Low(TSSLType) to High(TSSLType) do
     cbSSLType.Items.Add( GetEnumName(TypeInfo(TSSLType), integer(Y) ) ) ;
   cbSSLType.ItemIndex := 0 ;
+
+  {Boleto}
+  cbHttpLibBoleto.Items.Clear ;
+  For V := Low(TSSLHttpLib) to High(TSSLHttpLib) do
+    cbHttpLibBoleto.Items.Add( GetEnumName(TypeInfo(TSSLHttpLib), integer(V) ) ) ;
+  cbHttpLibBoleto.ItemIndex := 0 ;
+
+  cbSSLTypeBoleto.Items.Clear ;
+  For Y := Low(TSSLType) to High(TSSLType) do
+    cbSSLTypeBoleto.Items.Add( GetEnumName(TypeInfo(TSSLType), integer(Y) ) ) ;
+  cbSSLTypeBoleto.ItemIndex := 0 ;
+
+  cbOperacaoBoleto.Items.Clear ;
+  For iOperacao := Low(TOperacao) to High(TOperacao) do
+    cbOperacaoBoleto.Items.Add( GetEnumName(TypeInfo(TOperacao), integer(iOperacao) ) ) ;
+  cbOperacaoBoleto.ItemIndex := 0 ;
 
   {SAT}
   cbxModeloSAT.Items.Clear;
@@ -2464,6 +2510,11 @@ begin
   end;
 
   DefineTextoTrayTitulo;
+
+  {$IFDEF Demo}
+  rgTipoAmb.Enabled:= False;
+  cbxAmbiente.Enabled:= False;
+  {$ENDIF}
 
   {$IFDEF LINUX}
   rbLCBTeclado.Caption := 'Dispositivo';
@@ -4691,7 +4742,7 @@ end;
 
 procedure TFrmACBrMonitor.ImgCanalClick(Sender: TObject);
 begin
-  OpenURL('https://www.projetoacbr.com.br/forum/video/browse/13-curso-dominando-o-acbrmonitor/');
+  OpenURL('https://www.youtube.com/playlist?list=PLhDFxIHG3stqHUbfs_eOtMoWRKvO1NCpT');
 end;
 
 procedure TFrmACBrMonitor.ImgCanalMouseEnter(Sender: TObject);
@@ -4706,7 +4757,7 @@ end;
 
 procedure TFrmACBrMonitor.ImgChatClick(Sender: TObject);
 begin
-  OpenURL('https://discord.gg/VM7pqruV68');
+  OpenURL('https://discord.com/invite/PVHbMRktsG');
 end;
 
 procedure TFrmACBrMonitor.ImgChatMouseEnter(Sender: TObject);
@@ -5416,6 +5467,31 @@ begin
       cbxBOLEmailMensagemHTML.Checked  := EmailFormatoHTML;
     end;
 
+    with WS.CedenteWS do
+     begin
+       edtClientID.Text := ClientID;
+       edtClientSecret.Text := ClientSecret;
+       edtKeyUser.Text := KeyUser;
+       edtScope.Text := Scope;
+       chkPix.Checked := IndicadorPix;
+     end;
+
+     with WS.Config do
+     begin
+       ChkLogBoletoWeb.Checked := LogRegistro;
+       edtPathLogBoleto.Text := PathGravarRegistro;
+     end;
+
+     with WS.Config.SSL do
+     begin
+       rgTipoAmbBoleto.ItemIndex := Ambiente;
+       cbOperacaoBoleto.ItemIndex := Operacao;
+       edtVersaoBoleto.Text := VersaoDF;
+       cbHttpLibBoleto.ItemIndex := HttpLib;
+       edtTimeoutWebServicesBoleto.Value := TimeOut ;
+       cbSSLTypeBoleto.ItemIndex := SSLType;
+     end;
+
   end;
 
   {Parametro e-mail}
@@ -5511,7 +5587,11 @@ begin
       edtTentativas.Text               := Tentativas;
       edtIntervalo.Text                := Intervalo;
       cbUF.ItemIndex                   := cbUF.Items.IndexOf(UF);
+      {$IFDEF Demo}
+      rgTipoAmb.ItemIndex              := CODIGO_HOMOLOGACAO;
+      {$ELSE}
       rgTipoAmb.ItemIndex              := Ambiente;
+      {$ENDIF}
       cbVersaoWS.ItemIndex             := cbVersaoWS.Items.IndexOf(Versao);
       cbVersaoWSCTe.ItemIndex          := cbVersaoWSCTe.Items.IndexOf(VersaoCTe);
       cbVersaoWSMDFe.ItemIndex         := cbVersaoWSMDFe.Items.IndexOf(VersaoMDFe);
@@ -5826,7 +5906,11 @@ begin
     edtCodigoAtivacao.Text             := CodigoAtivacao;
     edtCodUF.Text                      := CodigoUF;
     seNumeroCaixa.Value                := NumeroCaixa;
+    {$IFDEF Demo}
+    cbxAmbiente.ItemIndex              := CODIGO_HOMOLOGACAO;
+    {$ELSE}
     cbxAmbiente.ItemIndex              := Ambiente;
+    {$ENDIF}
     sePagCod.Value                     := PaginaDeCodigo;
     sePagCodChange(self);
     sfeVersaoEnt.Value                 := versaoDadosEnt;
@@ -6238,6 +6322,25 @@ begin
     RemoveAcentosArqRemessa:= chkRemoveAcentos.Checked;
 
     MAIL := ACBrMail1;
+
+    //Configurações Boleto Web
+
+    Cedente.CedenteWS.ClientID := edtClientID.Text;
+    Cedente.CedenteWS.ClientSecret := edtClientSecret.Text;
+    Cedente.CedenteWS.KeyUser := edtKeyUser.Text;
+    Cedente.CedenteWS.Scope := edtScope.Text;
+    Cedente.CedenteWS.IndicadorPix := ChkPix.Checked;
+
+    Configuracoes.Arquivos.LogRegistro := ChkLogBoletoWeb.Checked;
+    Configuracoes.Arquivos.PathGravarRegistro := PathWithoutDelim(edtPathLogBoleto.Text);
+
+    Configuracoes.WebService.Ambiente := TpcnTipoAmbiente( rgTipoAmbBoleto.ItemIndex );
+    Configuracoes.WebService.Operacao := TOperacao( cbOperacaoBoleto.ItemIndex );
+    Configuracoes.WebService.VersaoDF := edtVersaoBoleto.Text;
+    Configuracoes.WebService.SSLHttpLib := TSSLHttpLib( cbHttpLibBoleto.ItemIndex );
+    Configuracoes.WebService.TimeOut := edtTimeoutWebServicesBoleto.Value * 1000;
+    Configuracoes.WebService.SSLType := TSSLType( cbSSLTypeBoleto.ItemIndex );
+
   end;
 
   with ACBrBoleto1.ACBrBoletoFC do
@@ -6252,6 +6355,9 @@ begin
     MostrarProgresso := ckgBOLMostrar.Checked[1];
     MostrarSetup := ckgBOLMostrar.Checked[2];
     PrinterName := cbxBOLImpressora.Text;
+
+    AlterarEscalaPadrao:= FMonitorConfig.BOLETO.Layout.AlteraEscala;
+    NovaEscala := FMonitorConfig.BOLETO.Layout.Escala;
 
     wDirArquivo := Trim(deBOLDirArquivo.Text);
     if wDirArquivo = '' then
@@ -7155,9 +7261,35 @@ begin
 
      with Relatorio do
      begin
-       MostraPreviewRelRetorno :=chkBOLRelMostraPreview.Checked;
+       MostraPreviewRelRetorno := chkBOLRelMostraPreview.Checked;
        LogoEmpresa             := edtBOLLogoEmpresa.Text;
      end;
+
+     with WS.CedenteWS do
+     begin
+       ClientID := edtClientID.Text;
+       ClientSecret := edtClientSecret.Text;
+       KeyUser := edtKeyUser.Text;
+       Scope := edtScope.Text;
+       IndicadorPix := ChkPix.Checked;
+     end;
+
+     with WS.Config do
+     begin
+       LogRegistro := ChkLogBoletoWeb.Checked;
+       PathGravarRegistro := PathWithoutDelim(edtPathLogBoleto.Text);
+     end;
+
+     with WS.Config.SSL do
+     begin
+       Ambiente := rgTipoAmbBoleto.ItemIndex;
+       Operacao := cbOperacaoBoleto.ItemIndex;
+       VersaoDF := edtVersaoBoleto.Text;
+       HttpLib := cbHttpLibBoleto.ItemIndex;
+       TimeOut := edtTimeoutWebServicesBoleto.Value;
+       SSLType := cbSSLTypeBoleto.ItemIndex;
+     end;
+
    end;
 
 end;
@@ -7355,6 +7487,12 @@ begin
         { Interpretanto o Comando }
         fsCmd.Comando := Linha;
 
+        //Verifica ajustes p/ versao demo
+        {$IFDEF Demo}
+        AtualizaAplicacaoDemo;
+        {$ENDIF}
+
+        //Validar Erros de configuração dos Componentes
         VerificarErrosConfiguracaoComponentes(fsCmd);
 
         //Log Comando
@@ -8240,7 +8378,11 @@ end;
 
 procedure TFrmACBrMonitor.sbNomeDLLClick(Sender: TObject);
 begin
-  OpenDialog1.Filter := 'Arquivo DLL|*.dll';
+  {$IFDEF LINUX}
+    OpenDialog1.Filter := 'Arquivo LIB|*.so';
+  {$ELSE}
+    OpenDialog1.Filter := 'Arquivo DLL|*.dll';
+  {$ENDIF}
   OpenDialog1.InitialDir := ExtractFilePath(edNomeDLL.Text);
   OpenDialog1.FileName := edNomeDLL.Text;
   if OpenDialog1.Execute then
@@ -9427,6 +9569,39 @@ begin
   fsDisWorking := Value;
 end;
 
+procedure TFrmACBrMonitor.AtualizarHomologacaoDFe(Config: TConfiguracoes);
+begin
+  Config.WebServices.Ambiente:= taHomologacao;
+
+end;
+
+procedure TFrmACBrMonitor.AtualizarImpressaoHomologacaoDFe(Report: TACBrDFeReport);
+begin
+  Report.Sistema:= C_PROJETO_ACBR;
+  Report.Site:= C_PROJETOACBR_COM_BR;
+
+end;
+
+procedure TFrmACBrMonitor.AtualizaAplicacaoDemo;
+begin
+  AtualizarHomologacaoDFe(ACBrNFe1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBrCTe1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBrMDFe1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBrGNRE1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBrBPe1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBrBlocoX1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBreSocial1.Configuracoes);
+  AtualizarHomologacaoDFe(ACBrReinf1.Configuracoes);
+  ACBrSAT1.Config.ide_tpAmb:= taHomologacao;
+
+  AtualizarImpressaoHomologacaoDFe(ACBrNFe1.DANFE);
+  AtualizarImpressaoHomologacaoDFe(ACBrCTe1.DACTE);
+  AtualizarImpressaoHomologacaoDFe(ACBrMDFe1.DAMDFE);
+  AtualizarImpressaoHomologacaoDFe(ACBrBPe1.DABPE);
+  AtualizarImpressaoHomologacaoDFe(ACBrSAT1.Extrato);
+
+end;
+
 procedure TFrmACBrMonitor.ValidarComunicacao;
 begin
   imgErrComunicacao.Visible :=  ( not(rbTCP.Checked)) and ( not(rbTXT.Checked)) ;
@@ -9761,7 +9936,6 @@ begin
   end;
 end;
 
-
 procedure TFrmACBrMonitor.LeDadosRedeSAT;
 begin
   with ACBrSAT1.Rede do
@@ -10080,11 +10254,16 @@ begin
     ACBrSATExtratoESCPOS1.ImprimeQRCode := True;
   end;
 
+  {$IFDEF Demo}
+  AtualizarImpressaoHomologacaoDFe(ACBrSAT1.Extrato);
+  {$ELSE}
   if (edSH_RazaoSocial.Text <> '') then
   begin
     ACBrSAT1.Extrato.Sistema := edSH_RazaoSocial.Text;
     ACBrSAT1.Extrato.Site    := edSH_Site.Text;
   end;
+  {$ENDIF}
+
 end;
 
 procedure TFrmACBrMonitor.PathClick(Sender: TObject);
@@ -10334,8 +10513,6 @@ begin
   begin
     ACBrNFe1.DANFE.TipoDANFE            := StrToTpImp(OK, IntToStr(rgTipoDanfe.ItemIndex + 1));
     ACBrNFe1.DANFE.Logo                 := edtLogoMarca.Text;
-    ACBrNFe1.DANFE.Sistema              := edSH_RazaoSocial.Text;
-    ACBrNFe1.DANFE.Site                 := edtSiteEmpresa.Text;
     ACBrNFe1.DANFE.Email                := edtEmailEmpresa.Text;
     ACBrNFe1.DANFE.Fax                  := edtFaxEmpresa.Text;
     ACBrNFe1.DANFE.NumCopias            := edtNumCopia.Value;
@@ -10350,6 +10527,13 @@ begin
     ACBrNFe1.DANFE.MostraStatus := cbxMostraStatus.Checked;
     ACBrNFe1.DANFE.ExpandeLogoMarca := cbxExpandirLogo.Checked;
     ACBrNFe1.DANFE.UsaSeparadorPathPDF := cbxUsarSeparadorPathPDF.Checked;
+
+    {$IFDEF Demo}
+    AtualizarImpressaoHomologacaoDFe(ACBrNFe1.DANFE);
+    {$ELSE}
+    ACBrNFe1.DANFE.Sistema              := edSH_RazaoSocial.Text;
+    ACBrNFe1.DANFE.Site                 := edtSiteEmpresa.Text;
+    {$ENDIF}
 
     if (ACBrNFe1.DANFE is TACBrNFeDANFEClass) then
     begin
@@ -10513,8 +10697,6 @@ begin
   begin
     ACBrCTe1.DACTE.TipoDACTE := StrToTpImp(OK, IntToStr(rgTipoDanfe.ItemIndex + 1));
     ACBrCTe1.DACTE.Logo := edtLogoMarca.Text;
-    ACBrCTe1.DACTE.Sistema := edSH_RazaoSocial.Text;
-    ACBrCTe1.DACTE.Site := edtSiteEmpresa.Text;
     ACBrCTe1.DACTE.Email := edtEmailEmpresa.Text;
     ACBrCTe1.DACTE.Fax := edtFaxEmpresa.Text;
     ACBrCTe1.DACTE.ImprimeDescPorc := cbxImpDescPorc.Checked;
@@ -10529,6 +10711,13 @@ begin
     ACBrCTe1.DACTE.ExpandeLogoMarca := cbxExpandirLogo.Checked;
     ACBrCTe1.DACTE.PosCanhoto := TPosRecibo( rgLocalCanhoto.ItemIndex );
     ACBrCTe1.DACTE.UsaSeparadorPathPDF := cbxUsarSeparadorPathPDF.Checked;
+
+    {$IFDEF Demo}
+    AtualizarImpressaoHomologacaoDFe(ACBrCTe1.DACTE);
+    {$ELSE}
+    ACBrCTe1.DACTE.Sistema := edSH_RazaoSocial.Text;
+    ACBrCTe1.DACTE.Site := edtSiteEmpresa.Text;
+    {$ENDIF}
 
     if ACBrCTe1.DACTE = ACBrCTeDACTeRL1 then
     begin
@@ -10642,6 +10831,9 @@ begin
 
         mResp.Lines.Add(aLineLog);
       end;
+
+      if (chkMostraLogNaTela.Checked) and (mResp.GetTextLen = 0) and (Self.WindowState = wsMinimized) then
+        mResp.Lines.Add('Gerando Log em: '+ AcertaPath(edLogArq.Text) + sLineBreak + 'O Log em tela é apresentado apenas com o ACBrMonitor aberto!');
 
       AddLinesLogFile(ArqLogTXT, aLineLog, True, True, True);
 
@@ -11853,12 +12045,12 @@ procedure TFrmACBrMonitor.DefineTextoTrayTitulo;
   end;
 
 begin
-  TrayIcon1.Hint := 'ACBrMonitorPLUS ' + sVersaoACBr +
+  TrayIcon1.Hint := {$IFDEF Demo} 'DEMO - ' + {$ENDIF} 'ACBrMonitorPLUS ' + sVersaoACBr +
                     sLineBreak + LocalMonitoramento + ' ';
   TrayIcon1.BalloonTitle := TrayIcon1.Hint;
   TrayIcon1.BalloonHint := 'Projeto ACBr' + sLineBreak + 'http://acbr.sf.net';
 
-  FrmACBrMonitor.Caption := ' ACBrMonitorPLUS ' + sVersaoACBr + ' ';
+  FrmACBrMonitor.Caption := {$IFDEF Demo} 'DEMO - ' + {$ENDIF} ' ACBrMonitorPLUS ' + sVersaoACBr + ' ';
 
   try
     if (chkExibeRazaoSocial.Checked and Assigned(ACBrNFe1.SSL)) then

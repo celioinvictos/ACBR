@@ -4,14 +4,14 @@
 	<xs:include schemaLocation="tiposBasico_v1.03.xsd"/>
 	<xs:element name="detEvento">
 		<xs:annotation>
-			<xs:documentation>Schema XML de validação do evento de Comprovante de Entrega de NF-e</xs:documentation>
+			<xs:documentation>Schema XML de validação do evento de Comprovante de Entrega da NF-e</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="descEvento">
 					<xs:simpleType>
 						<xs:restriction base="xs:string">
-							<xs:enumeration value="“Comprovante de Entrega da NF-e"/>
+							<xs:enumeration value="Comprovante de Entrega da NF-e"/>
 						</xs:restriction>
 					</xs:simpleType>
 				</xs:element>

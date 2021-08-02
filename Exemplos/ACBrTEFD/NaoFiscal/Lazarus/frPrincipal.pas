@@ -65,6 +65,7 @@ type
     btTestarPosPrinter: TBitBtn;
     btTestarTEF: TBitBtn;
     btObterCPF: TButton;
+    cbConfirmarAntesComprovantes: TCheckBox;
     cbTestePayGo: TComboBox;
     cbIMprimirViaReduzida: TCheckBox;
     cbMultiplosCartoes: TCheckBox;
@@ -378,9 +379,15 @@ end;
 
 procedure TFormPrincipal.PayGoWebAvaliarTransacaoPendente(
   var Status: LongWord; const Mensagem: String; Resp: TACBrTEFDResp);
-var
-  MR: TModalResult;
+//var
+//  MR: TModalResult;
 begin
+  // Opção 1: Confirmando todas as transações pendentes...
+  Status := PWCNF_CNF_MANU_AUT;
+
+(*
+  // Opção 2: Perguntando ao Operador, o que fazer com a transação pendente
+
   // Aqui você pode Confirmar ou Cancelar as transações pendentes de acordo com a sua lógica
   // Ou ainda, fazer uma pergunta ao usuário, como nesse exemplo...
   // Veja os valores possíveis, para "Status", em ACBrTEFPayGoWebComum.pas, procure por: "PWCNF_"
@@ -402,6 +409,7 @@ begin
 
     Status := PWCNF_CNF_MANU_AUT;
   end;
+*)
 end;
 
 procedure TFormPrincipal.PayGoWebExibeMensagem(Mensagem: String;
@@ -503,7 +511,8 @@ begin
     FormObtemCampo.btVoltar.Visible := False;  // PayGoWeb não suporta Voltar;
 
     if (pos('R$', DefinicaoCampo.MascaraDeCaptura) > 0) or
-       (pos('@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) then
+       (pos('@.@@@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) or
+       (pos('@@@@@@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) then
       FormObtemCampo.TipoCampo := tcoCurrency
     else
     begin
@@ -511,7 +520,10 @@ begin
         pgApenasLeitura:
           FormObtemCampo.edtResposta.ReadOnly := True;
         pgtNumerico:
-          FormObtemCampo.TipoCampo := tcoNumeric;
+          if (pos('@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) then
+            FormObtemCampo.TipoCampo := tcoDecimal
+          else
+            FormObtemCampo.TipoCampo := tcoNumeric;
         pgtAlfabetico:
           FormObtemCampo.TipoCampo := tcoAlfa;
         pgtAlfaNum:
@@ -622,6 +634,8 @@ begin
     begin
       AdicionarLinhaLog( '  Operação Cancelada Pelo Operador');
       FCanceladoPeloOperador := True;
+      if (StatusVenda in [stsOperacaoTEF, stsAguardandoTEF]) then
+        StatusVenda := stsEmPagamento;
     end;
   end;
 end;
@@ -639,6 +653,7 @@ var
 begin
   i := sgPagamentos.Row-1;
   ExcluirPagamento(i);
+  StatusVenda := stsEmPagamento;
 end;
 
 procedure TFormPrincipal.btIncluirPagamentosClick(Sender: TObject);
@@ -1061,7 +1076,7 @@ begin
      ineTotalAPagar :
      begin
        // ACBrTEFD1.RespostasPendentes.TotalPago  deve ser subtraido, pois ACBrTEFD já subtrai o total dos pagamentos em TEF internamente
-       RetornoECF := FloatToStr( RoundTo(Venda.TotalPago - ACBrTEFD1.RespostasPendentes.TotalPago, -2) );
+       RetornoECF := FloatToStr( RoundTo(Double(Venda.TotalPago - ACBrTEFD1.RespostasPendentes.TotalPago), -2) );
      end;
 
      ineEstadoECF :
@@ -1137,14 +1152,15 @@ begin
 
     cbxGP.ItemIndex := INI.ReadInteger('TEF', 'GP', 0);
     edLog.Text := INI.ReadString('TEF', 'Log', '');
-    seMaxCartoes.Value := INI.ReadInteger('TEF', 'MaxCartoes', seMaxCartoes.Value);
-    seTrocoMaximo.Value := INI.ReadFloat('TEF', 'TrocoMaximo', seTrocoMaximo.Value);
-    cbImprimirViaReduzida.Checked := INI.ReadBool('TEF', 'ImprimirViaReduzida', cbImprimirViaReduzida.Checked);
-    cbMultiplosCartoes.Checked := INI.ReadBool('TEF', 'MultiplosCartoes', cbMultiplosCartoes.Checked);
-    cbxQRCode.ItemIndex := INI.ReadInteger('TEF', 'QRCode', cbxQRCode.ItemIndex);
-    cbSuportaDesconto.Checked := INI.ReadBool('TEF', 'SuportaDesconto', cbSuportaDesconto.Checked);
-    cbSuportaSaque.Checked := INI.ReadBool('TEF', 'SuportaSaque', cbSuportaSaque.Checked);
-    cbSuportaReajusteValor.Checked := INI.ReadBool('TEF', 'SuportaReajusteValor', cbSuportaReajusteValor.Checked);
+    seMaxCartoes.Value := INI.ReadInteger('TEF', 'MaxCartoes', 5);
+    seTrocoMaximo.Value := INI.ReadFloat('TEF', 'TrocoMaximo', 0);
+    cbImprimirViaReduzida.Checked := INI.ReadBool('TEF', 'ImprimirViaReduzida', False);
+    cbMultiplosCartoes.Checked := INI.ReadBool('TEF', 'MultiplosCartoes', True);
+    cbConfirmarAntesComprovantes.Checked := INI.ReadBool('TEF', 'ConfirmarAntesComprovantes', True);
+    cbxQRCode.ItemIndex := INI.ReadInteger('TEF', 'QRCode', 0);
+    cbSuportaDesconto.Checked := INI.ReadBool('TEF', 'SuportaDesconto', True);
+    cbSuportaSaque.Checked := INI.ReadBool('TEF', 'SuportaSaque', True);
+    cbSuportaReajusteValor.Checked := INI.ReadBool('TEF', 'SuportaReajusteValor', True);
 
     edRazaoSocial.Text := INI.ReadString('Aplicacao', 'RazaoSocial', edRazaoSocial.Text);
     edRegistro.Text := INI.ReadString('Aplicacao', 'Registro', edRegistro.Text);
@@ -1177,6 +1193,7 @@ begin
     INI.WriteFloat('TEF', 'TrocoMaximo', seTrocoMaximo.Value);
     INI.WriteBool('TEF', 'ImprimirViaReduzida', cbImprimirViaReduzida.Checked);
     INI.WriteBool('TEF', 'MultiplosCartoes', cbMultiplosCartoes.Checked);
+    INI.WriteBool('TEF', 'ConfirmarAntesComprovantes', cbConfirmarAntesComprovantes.Checked);
     INI.WriteInteger('TEF', 'QRCode', cbxQRCode.ItemIndex);
     INI.WriteBool('TEF', 'SuportaDesconto', cbSuportaDesconto.Checked);
     INI.WriteBool('TEF', 'SuportaSaque', cbSuportaSaque.Checked);
@@ -1577,9 +1594,16 @@ var
   begin
     // Instruindo CRT a apenas transações de Débito
     if (ACBrTEFD1.GPAtual = gpPayGoWeb) then
-      ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_PAYMNTTYPE]:='8'; // Modalidade de pagamento:   1: cartão   2: dinheiro   4: cheque   8: carteira virtual
-    //else if (ACBrTEFD1.GPAtual = gpCliSiTef) then
-    //  ACBrTEFD1.TEFCliSiTef.OperacaoCRT := 2;
+      ACBrTEFD1.TEFPayGoWeb.ParametrosAdicionais.ValueInfo[PWINFO_PAYMNTTYPE]:='8' // Modalidade de pagamento:   1: cartão   2: dinheiro   4: cheque   8: carteira virtual
+    else if (ACBrTEFD1.GPAtual = gpCliSiTef) then
+    begin
+      case cbxQRCode.ItemIndex of
+        3,4:ACBrTEFD1.TEFCliSiTef.Restricoes  := '{DevolveStringQRCode=1}'; {No CheckOut}
+      else
+        ACBrTEFD1.TEFCliSiTef.Restricoes := '{DevolveStringQRCode=0}'; {No PinPad}
+      end;
+      ACBrTEFD1.TEFCliSiTef.OperacaoCRT := 122;
+    end;
   end;
 
 begin
@@ -1648,7 +1672,7 @@ begin
 
         // Calcula a Diferença do Valor Retornado pela Operação TEF do Valor que
         //   Informamos no CRT/CHQ
-        ReajusteValor := RoundTo(UltResp.ValorTotal - ValorPago, -2);
+        ReajusteValor := RoundTo(Double(UltResp.ValorTotal - ValorPago), -2);
 
         Saque := UltResp.Saque;
         if (Saque > 0) then
@@ -1965,6 +1989,7 @@ begin
   ACBrTEFD1.TrocoMaximo := seTrocoMaximo.Value;
   ACBrTEFD1.ImprimirViaClienteReduzida := cbImprimirViaReduzida.Checked;
   ACBrTEFD1.MultiplosCartoes := cbMultiplosCartoes.Checked;
+  ACBrTEFD1.ConfirmarAntesDosComprovantes := cbConfirmarAntesComprovantes.Checked;
   ACBrTEFD1.NumeroMaximoCartoes := seMaxCartoes.Value;
   ACBrTEFD1.SuportaDesconto := cbSuportaDesconto.Checked;
   ACBrTEFD1.SuportaSaque := cbSuportaSaque.Checked;
@@ -1986,7 +2011,9 @@ begin
     ACBrTEFD1.TEFPayGoWeb.ExibicaoQRCode := qreAuto;
   end;
 
-  //ACBrTEFD1.TEFPayGoWeb.DiretorioTrabalho := 'C:\PAYGOWEB';
+  ACBrTEFD1.TEFPayGoWeb.DiretorioTrabalho := 'C:\PAYGOWEB';
+  //ACBrTEFD1.PathBackup := 'C:\TEF\TER01';
+  //ACBrTEFD1.TEFPayGoWeb.PathDLL := 'C:\DLLs';
 
   // Configurações abaixo são obrigatórios, para funcionamento de Não Fiscal //
   ACBrTEFD1.AutoEfetuarPagamento := False;

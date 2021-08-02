@@ -53,17 +53,26 @@ type
 
   TACBrCustomIniFileHelper = class helper for TCustomIniFile
     procedure WriteStringLine(const Section, Ident, Value: String);
+    procedure ClearEmptySections;
   end;
 
   TACBrPropInfoListHelper = class helper for TPropInfoList
     function GetProperties: TArray<TRttiProperty>;
   end;
- 
+
+  TEnum = record
+    class function TryParse<T>(const Value: Integer; out AEnum: T): Boolean; overload; static;
+    class function TryParse<T>(const Value: string; out AEnum: T): Boolean; overload; static;
+    class function Parse<T>(const Value: Integer): T; overload; static;
+    class function Parse<T>(const Value: String): T; overload; static;
+  end;
+
 implementation
 
 uses
-  ACBrLibComum, ACBrUtil;
+  TypInfo, ACBrLibComum, ACBrUtil;
 
+{ TACBrMemIniFileHelper }
 procedure TACBrMemIniFileHelper.LoadFromString(const IniString: string);
 Var
   FIniFile: TStringList;
@@ -122,11 +131,36 @@ begin
   end;
 end;
 
+ { TACBrCustomIniFileHelper }
 procedure TACBrCustomIniFileHelper.WriteStringLine(const Section, Ident, Value: String);
 begin
   Self.WriteString(Section, Ident, ChangeLineBreak(Value, ''));
 end;
 
+procedure TACBrCustomIniFileHelper.ClearEmptySections;
+Var
+  FSections, FValues: TStringList;
+  I: Integer;
+begin
+  FSections := TStringList.Create;
+  FValues := TStringList.Create;
+
+  try
+    Self.ReadSections(FSections);
+    for I := 0 to FSections.Count - 1 do
+    begin
+      FValues.Clear;
+      Self.ReadSectionValues(FSections.Strings[I], FValues);
+      if FValues.Count = 0 then
+        Self.EraseSection(FSections.Strings[I]);
+    end;
+  finally
+    FSections.Free;
+    FValues.Free;
+  end;
+end;
+
+{ TACBrPropInfoListHelper }
 function TACBrPropInfoListHelper.GetProperties: TArray<TRttiProperty>;
 Var
   i: Integer;
@@ -136,6 +170,49 @@ begin
   begin
     Result[i] := TRttiProperty.Create(Self.Items[i]);
   end;
+end;
+
+{ TEnum }
+class function TEnum.TryParse<T>(const Value: Integer; out AEnum: T): Boolean;
+begin
+  if PTypeInfo(TypeInfo(T))^.Kind <> tkEnumeration then
+      Exit;
+
+  try
+    AEnum := T(GetEnumValue(TypeInfo(T), GetEnumName(TypeInfo(T), Value)));
+    Result := True;
+  except
+    Result := false;
+  end;
+end;
+
+class function TEnum.TryParse<T>(const Value: String; out AEnum: T): Boolean;
+begin
+  if PTypeInfo(TypeInfo(T))^.Kind <> tkEnumeration then
+      Exit;
+
+  try
+    AEnum := T(GetEnumValue(TypeInfo(T), Value));
+    Result := True;
+  except
+    Result := false;
+  end;
+end;
+
+class function TEnum.Parse<T>(const Value: Integer): T;
+begin
+  if PTypeInfo(TypeInfo(T))^.Kind <> tkEnumeration then
+      Exit;
+
+  Result := T(GetEnumValue(TypeInfo(T), GetEnumName(TypeInfo(T), Value)));
+end;
+
+class function TEnum.Parse<T>(const Value: String): T;
+begin
+  if PTypeInfo(TypeInfo(T))^.Kind <> tkEnumeration then
+      Exit;
+
+  Result := T(GetEnumValue(TypeInfo(T), Value));
 end;
 
 end.

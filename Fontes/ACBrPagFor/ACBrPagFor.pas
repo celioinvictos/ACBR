@@ -63,7 +63,7 @@ type
 
     procedure Limpar;
     function GravarTXT(const ANomeArquivo: String = ''): Boolean;
-    function LerTXT(const AArquivoTXT: String; ACarregarArquivo: Boolean): Boolean;
+    function LerTXT(const AArquivoTXT: String; ACarregarArquivo: Boolean = True): Boolean;
 
     property Arquivo: TACBrPagForArquivoClass read FArquivo write SetArquivo;
     property Arquivos: TArquivos read FArquivos write FArquivos;
@@ -86,7 +86,7 @@ begin
    FConfiguracoes.SetSubComponent( true );{ para gravar no DFM/XFM }
   {$ENDIF}
 
-  FArquivos := TArquivos.Create(Self, TRegistro);
+  FArquivos := TArquivos.Create(Self);
   FArquivos.Configuracoes := FConfiguracoes;
 end;
 
@@ -105,7 +105,7 @@ begin
   Result := Self.Arquivos.GerarPagFor(ANomeArquivo);
 end;
 
-function TACBrPagFor.LerTXT(const AArquivoTXT: String; ACarregarArquivo: Boolean): Boolean;
+function TACBrPagFor.LerTXT(const AArquivoTXT: String; ACarregarArquivo: Boolean = True): Boolean;
 begin
   FArquivos.Ler(AArquivoTXT, ACarregarArquivo);
   
@@ -222,3 +222,4 @@ Const
  flExtratoContaInvestimento       = 73;
 *)
 end.
+

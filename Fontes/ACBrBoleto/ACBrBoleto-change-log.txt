@@ -49,6 +49,152 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+16/07/2021
+--ACBrBoleto, ACBrBoletoWS, ACBrBoletoConversao, ACBrBoletoRet_BancoBrasil_API
+ ACBrBoletoW_BancoBrasil_API, ACBrBoletoRetorno--
+[+] Adicionados Serviços de Consulta, Baixa, Alteração e realizado melhorias na solução WebService Boleto.
+
+15/07/2021
+--ACBrBancoSantander, ACBrBoleto--
+[*] Atualização Remessa CNAB400 ref Avalista e Validação Agencia no arquivo de retorno.
+
+08/07/2021
+--ACBrBancoCresol--
+[*] Atualização na verificação de motivo do Retorno CNAB400 validando códigos AlfaNuméricos.
+
+07/07/2021
+--ACBrBoleto, ACBrBancoAlpha--
+[+] Adicionado a classe para o Banco Alpha CNAB400 e geração de Boleto
+
+05/07/2021
+--ACBrBoletoBancoBrasil--
+[+] Adicionado campos Descontos2 e Descontos3  na geração da Remessa
+[*] Ajuste na validação do campo DataLimitePagamento
+[*] Validação da Ocorrencia de Alteração de DataLimitePagamento
+Contribuição: BigWings e
+https://www.projetoacbr.com.br/forum/topic/62359-altera%C3%A7%C3%A3o-da-gera%C3%A7%C3%A3o-da-remessa-para-o-tipo-alterar-prazo-limite-recebimento-banco-do-brasil/
+
+--ACBrBoletoW_BancoBrasil_API, ACBrBoletoRet_BancoBrasil_API--
+[*] Ajustes para validação da Paylod de Autenticação e endPoint de Homologação 
+
+25/06/2021
+--ACBrBancoSicred--
+[*] Validação no preenchimento do campo SeuNumero ou NumeroDocumento para CNAB400
+
+--ACBrBancoBrasil--
+[*] Validação campo CodigoProtesto - Não Protestar (Campo não estava sendo verificado)
+
+21/06/2021
+--ACBrBancoUniprime--
+[*] Ajuste digito banco conforme especificação Manual Banco 099
+
+15/06/2021
+--ACBrBancoSantander, ACBrBancoCaixaSicob, ACBrBoletoRet_BancoBrasil_API--
+[*] Ajuste para remoção de Hints
+
+14/06/2021
+--ACBrBancoABCBrasil--
+[*] Ajuste na geração remessa CNAB240
+Contribuição: https://www.projetoacbr.com.br/forum/topic/62789-banco-abc-brasil-homologa%C3%A7%C3%A3o-para-cnab240-com-emiss%C3%A3o-do-boleto-pelo-banco/
+
+10/06/2021
+--ACBrBoleto--
+[*] Ajuste na leitura do .ini referente ao grupo NFe vinculado ao Boleto
+
+10/06/2021
+--ACBrBoleto, ACBrBoletoWS, ACBrBoletoConversão, ACBrBoletoW_BancoBrasil_API, ACBrBoletoRet_BancoBrasil_API, ACBrBoletoRetorno--
+[+] Implementado layout do Banco do Brasil por API, Registro de Boleto e Consulta
+Contribuição: [Panda] Victor Gonzales 
+
+04/06/2021
+
+--ACBrBoletoItau--
+[*] Corrigido Informação de e-mail do Avalista
+https://www.projetoacbr.com.br/forum/topic/62586-remessa-banco-ita%C3%BA-cnab-400-readequa%C3%A7%C3%A3o-do-e-mail-na-remessa/
+
+25/05/2021
+--ACBrBoleto--
+[+] Adicionado o campo CIP para impressão no Boleto
+Contribuição: [Panda]Victor Gonzales
+https://www.projetoacbr.com.br/forum/topic/62571-informa%C3%A7%C3%B5es-de-cip-e-benefici%C3%A1rio-no-boleto-do-bradesco-cnab-400/
+
+24/05/2021
+--ACBrBancoCresol--
+[*] Ajuste na validação do codigo de retorno tipo String
+https://www.projetoacbr.com.br/forum/topic/62694-boleto-cresol-e-safra-altera%C3%A7oes/
+
+13/05/2021
+--ACBrBancoSafra--
+[*] Ajuste na propriedade de definição de versão do Header e Lote CNAB240
+https://www.projetoacbr.com.br/forum/topic/62533-n%C3%BAmero-da-vers%C3%A3o-do-layout-do-lote-banco-safra-acbrbancosafra/
+
+--ACBrBancoSicred--
+[*] Correção na geração de DataDesconto CNAB240, validar data com valor zero pelo codigo do Desconto
+https://www.projetoacbr.com.br/forum/topic/62516-arquivo-remessa-cnab-240-banco-sicred-segmento-p-no-campo-142-c%C3%B3digo-de-desconto-1/
+
+29/04/2021
+--ACBrBancoSicred--
+[*] Ajuste na leitura do CNPJ ou CPF na leitura do Retorno CNAB400
+
+23/04/2021
+--ACBrBoleto--
+[*] Alteração na formatação de campos FormatFloat utilizando a função FormatFloatBr devido compatibilização com Linux
+
+15/04/2021
+--ACBrBoletoRet_Itau, ACBrBoleto--
+[*] Ajuste na leitura do Json de Resposta e geração do Log de Retorno
+
+08/04/2021
+--ACBrBoletoW_Caixa, ACBrBoletoRet_Caixa--
+[*] Ajuste na geração do XML para transmissão de Remessa WebService
+https://www.projetoacbr.com.br/forum/topic/61882-sugest%C3%A3o-e-ajustes-boleto-via-webservice-caixa/
+
+--ACBrBancoCecred--
+[*] Ajuste na informação de dias de protesto na remessa
+
+--ACBrBancoDaycoval--
+[*] Ajuste na geração do NossoNumero na remessa e Retorno
+https://www.projetoacbr.com.br/forum/topic/61228-layout-banco-daycoval/
+
+08/04/2021
+--ACBrBoletoRet_Itau--
+[*] Ajuste na validação de retorno com rejeição na API Itaú
+
+05/04/2021
+--ACBrBancoBrasil--
+[*] Validação na qtd de dias para Baixa em Remessa CNAB240
+https://www.projetoacbr.com.br/forum/topic/61783-boleto-banco-do-brasil-cnab240/
+
+05/04/2021
+--ACBrBancoBrasil--
+[*] Adicionado códigos de Ocorrencia para Remessa CNAB400
+https://www.projetoacbr.com.br/forum/topic/61921-ajuste-da-instru%C3%A7%C3%B5es-de-remessa-banco-do-brasil/
+
+
+30/03/2021
+--ACBrBancoBrasil--
+[*] Correçao no Header CNAB240 posicao 226-228 referente validação do layout 030 
+
+16/03/2021
+--ACBrBoleto, ACBrBancoSicred--
+[+] Adicionado ocorrencia para Intenção de Pagamento
+
+16/03/2021
+--ACBrBancoBanrisul--
+[*] Correção na geração da Instrucao2 em CNAB240, Banco utiliza apenas 1 dígito
+
+16/03/2021
+--ACBrBoleto, ACBrBancoBrasil, ACBrBancoSicred--
+[*] Ajuste na validação do campo TipoDocumento, adicionado função DefineTipoDocumento
+
+16/03/2021
+--ACBrBancoBanrisul--
+[*] Ajuste na validação do código Instrucao2 em CNAB240
+
+09/03/2021
+--ACBrBancoSafra--
+[-] Correção na chamada BancoSafra na função GetTipoCobranca
+
 27/02/2021
 --ACBrBancoBrasil--
 [*] Alteração na função GravarRetorno para obter arquivo Retorno como resposta

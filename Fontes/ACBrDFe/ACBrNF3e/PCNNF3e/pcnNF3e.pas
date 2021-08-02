@@ -131,20 +131,32 @@ type
     FvCOFINS: Double;
     FvPIS: Double;
     FvNF: Double;
+    FvRetCSLL: Double;
+    FvRetPIS: Double;
+    FvRetCOFINS: Double;
+    FvPISEfet: Double;
+    FvCOFINSEfet: Double;
+    FvIRRF: Double;
   public
     procedure Assign(Source: TTotal);
 
-    property vProd: Double      read FvProd      write FvProd;
-    property vBC: Double        read FvBC        write FvBC;
-    property vICMS: Double      read FvICMS      write FvICMS;
-    property vICMSDeson: Double read FvICMSDeson write FvICMSDeson;
-    property vFCP: Double       read FvFCP       write FvFCP;
-    property vBCST: Double      read FvBCST      write FvBCST;
-    property vST: Double        read FvST        write FvST;
-    property vFCPST: Double     read FvFCPST     write FvFCPST;
-    property vCOFINS: Double    read FvCOFINS    write FvCOFINS;
-    property vPIS: Double       read FvPIS       write FvPIS;
-    property vNF: Double        read FvNF        write FvNF;
+    property vProd: Double       read FvProd       write FvProd;
+    property vBC: Double         read FvBC         write FvBC;
+    property vICMS: Double       read FvICMS       write FvICMS;
+    property vICMSDeson: Double  read FvICMSDeson  write FvICMSDeson;
+    property vFCP: Double        read FvFCP        write FvFCP;
+    property vBCST: Double       read FvBCST       write FvBCST;
+    property vST: Double         read FvST         write FvST;
+    property vFCPST: Double      read FvFCPST      write FvFCPST;
+    property vCOFINS: Double     read FvCOFINS     write FvCOFINS;
+    property vPIS: Double        read FvPIS        write FvPIS;
+    property vNF: Double         read FvNF         write FvNF;
+    property vRetPIS: Double     read FvRetPIS     write FvRetPIS;
+    property vRetCOFINS: Double  read FvRetCOFINS  write FvRetCOFINS;
+    property vRetCSLL: Double    read FvRetCSLL    write FvRetCSLL;
+    property vIRRF: Double       read FvIRRF       write FvIRRF;
+    property vCOFINSEfet: Double read FvCOFINSEfet write FvCOFINSEfet;
+    property vPISEfet: Double    read FvPISEfet    write FvPISEfet;
   end;
 
   { TEndereco }
@@ -206,6 +218,17 @@ type
     property codBanco: String        read FcodBanco     write FcodBanco;
     property codAgencia: String      read FcodAgencia   write FcodAgencia;
     property enderCorresp: TEndereco read FenderCorresp write FenderCorresp;
+  end;
+
+  { TgPIX }
+
+  TgPIX = class(TObject)
+  private
+    FurlQRCodePIX: String;
+  public
+    procedure Assign(Source: TgPIX);
+
+    property urlQRCodePIX: String read FurlQRCodePIX write FurlQRCodePIX;
   end;
 
   { TgGrandFatCollectionItem }
@@ -382,6 +405,40 @@ type
     property vCOFINS: Double    read FvCOFINS write FvCOFINS;
   end;
 
+  { TCOFINSEfet }
+
+  TCOFINSEfet = class(TObject)
+  private
+    FvBCCOFINSEfet: Double;
+    FpCOFINSEfet: Double;
+    FvCOFINSEfet: Double;
+  public
+    procedure Assign(Source: TCOFINSEfet);
+
+    property vBCCOFINSEfet: Double read FvBCCOFINSEfet write FvBCCOFINSEfet;
+    property pCOFINSEfet: Double   read FpCOFINSEfet   write FpCOFINSEfet;
+    property vCOFINSEfet: Double   read FvCOFINSEfet   write FvCOFINSEfet;
+  end;
+
+  { TretTrib }
+
+  TretTrib = class(TObject)
+  private
+    FvRetPIS: Double;
+    FvRetCOFINS: Double;
+    FvRetCSLL: Double;
+    FvBCIRRF: Double;
+    FvIRRF: Double;
+  public
+    procedure Assign(Source: TretTrib);
+
+    property vRetPIS: Double    read FvRetPIS    write FvRetPIS;
+    property vRetCOFINS: Double read FvRetCOFINS write FvRetCOFINS;
+    property vRetCSLL: Double   read FvRetCSLL   write FvRetCSLL;
+    property vBCIRRF: Double    read FvBCIRRF    write FvBCIRRF;
+    property vIRRF: Double      read FvIRRF      write FvIRRF;
+  end;
+
   { TPIS }
 
   TPIS = class(TObject)
@@ -397,6 +454,21 @@ type
     property vBC: Double     read FvBC  write FvBC;
     property pPIS: Double    read FpPIS write FpPIS;
     property vPIS: Double    read FvPIS write FvPIS;
+  end;
+
+  { TPISEfet }
+
+  TPISEfet = class(TObject)
+  private
+    FvBCPISEfet: Double;
+    FpPISEfet: Double;
+    FvPISEfet: Double;
+  public
+    procedure Assign(Source: TPISEfet);
+
+    property vBCPISEfet: Double read FvBCPISEfet write FvBCPISEfet;
+    property pPISEfet: Double   read FpPISEfet   write FpPISEfet;
+    property vPISEfet: Double   read FvPISEfet   write FvPISEfet;
   end;
 
   { TICMS }
@@ -442,16 +514,22 @@ type
   private
     FICMS: TICMS;
     FPIS: TPIS;
+    FPISEfet: TPISEfet;
     FCOFINS: TCOFINS;
+    FCOFINSEfet: TCOFINSEfet;
+    FretTrib: TretTrib;
   public
     constructor Create();
     destructor Destroy; override;
 
     procedure Assign(Source: TImposto);
 
-    property ICMS: TICMS     read FICMS   write FICMS;
-    property PIS: TPIS       read FPIS    write FPIS;
-    property COFINS: TCOFINS read FCOFINS write FCOFINS;
+    property ICMS: TICMS             read FICMS       write FICMS;
+    property PIS: TPIS               read FPIS        write FPIS;
+    property PISEfet: TPISEfet       read FPISEfet    write FPISEfet;
+    property COFINS: TCOFINS         read FCOFINS     write FCOFINS;
+    property COFINSEfet: TCOFINSEfet read FCOFINSEfet write FCOFINSEfet;
+    property retTrib: TretTrib       read FretTrib    write FretTrib;
   end;
 
   { TgMedicao }
@@ -645,6 +723,7 @@ type
     FvICMS: Double;
     FvPIS: Double;
     FvCOFINS: Double;
+    FretTrib: TretTrib;
   public
     procedure Assign(Source: TdetItemAnt);
 
@@ -658,6 +737,7 @@ type
     property vICMS: Double      read FvICMS     write FvICMS;
     property vPIS: Double       read FvPIS      write FvPIS;
     property vCOFINS: Double    read FvCOFINS   write FvCOFINS;
+    property retTrib: TretTrib  read FretTrib   write FretTrib;
   end;
 
   { TgAjusteNF3eAnt }
@@ -710,6 +790,7 @@ type
   TNFDetCollectionItem = class(TObject)
   private
     FchNF3eAnt: String;
+    Fmod6HashAnt: String;
     FDet: TDetCollection;
 
     procedure SetDet(const Value: TDetCollection);
@@ -719,8 +800,9 @@ type
 
     procedure Assign(Source: TNFDetCollectionItem);
 
-    property chNF3eAnt: String   read FchNF3eAnt write FchNF3eAnt;
-    property Det: TDetCollection read FDet       write SetDet;
+    property chNF3eAnt: String   read FchNF3eAnt   write FchNF3eAnt;
+    property mod6HashAnt: String read Fmod6HashAnt write Fmod6HashAnt;
+    property Det: TDetCollection read FDet         write SetDet;
   end;
 
   { TNFDetCollection }
@@ -739,19 +821,19 @@ type
   TgSaldoCredCollectionItem = class(TObject)
   private
     FtpPosTar: TtpPosTar;
-    FvSaldAnt: Integer;
-    FvCredExpirado: Integer;
-    FvSaldAtual: Integer;
-    FvCredExpirar: Integer;
+    FvSaldAnt: Double;
+    FvCredExpirado: Double;
+    FvSaldAtual: Double;
+    FvCredExpirar: Double;
     FCompetExpirar: TDateTime;
   public
     procedure Assign(Source: TgSaldoCredCollectionItem);
 
     property tpPosTar: TtpPosTar      read FtpPosTar      write FtpPosTar;
-    property vSaldAnt: Integer        read FvSaldAnt      write FvSaldAnt;
-    property vCredExpirado: Integer   read FvCredExpirado write FvCredExpirado;
-    property vSaldAtual: Integer      read FvSaldAtual    write FvSaldAtual;
-    property vCredExpirar: Integer    read FvCredExpirar  write FvCredExpirar;
+    property vSaldAnt: Double         read FvSaldAnt      write FvSaldAnt;
+    property vCredExpirado: Double   read FvCredExpirado write FvCredExpirado;
+    property vSaldAtual: Double      read FvSaldAtual    write FvSaldAtual;
+    property vCredExpirar: Double    read FvCredExpirar  write FvCredExpirar;
     property CompetExpirar: TDateTime read FCompetExpirar write FCompetExpirar;
   end;
 
@@ -771,12 +853,16 @@ type
   TgConsumidorCollectionItem = class(TObject)
   private
     FidAcessGer: String;
+    FvPotInst: Double;
+    FtpFonteEnergia: TtpFonteEnergia;
     FenerAloc: Double;
     FtpPosTar: TtpPosTar;
   public
     procedure Assign(Source: TgConsumidorCollectionItem);
 
     property idAcessGer: String  read FidAcessGer write FidAcessGer;
+    property vPotInst: Double    read FvPotInst   write FvPotInst;
+    property tpFonteEnergia: TtpFonteEnergia read FtpFonteEnergia write FtpFonteEnergia;
     property enerAloc: Double    read FenerAloc   write FenerAloc;
     property tpPosTar: TtpPosTar read FtpPosTar   write FtpPosTar;
   end;
@@ -797,7 +883,6 @@ type
   TgSCEE = class(TObject)
   private
     FtpPartComp: TtpPartComp;
-    FvPotInst: Double;
     FgConsumidor: TgConsumidorCollection;
     FgSaldoCred: TgSaldoCredCollection;
 
@@ -810,7 +895,6 @@ type
     procedure Assign(Source: TgSCEE);
 
     property tpPartComp: TtpPartComp             read FtpPartComp  write FtpPartComp;
-    property vPotInst: Double                    read FvPotInst    write FvPotInst;
     property gConsumidor: TgConsumidorCollection read FgConsumidor write SetgConsumidor;
     property gSaldoCred: TgSaldoCredCollection   read FgSaldoCred  write SetgSaldoCred;
   end;
@@ -951,6 +1035,7 @@ type
     FIE: String;
     FIM: String;
     FcNIS: String;
+    FNB: String;
     FxNomeAdicional: String;
     FEnderDest: TEndereco;
   public
@@ -965,6 +1050,7 @@ type
     property indIEDest: TpcnindIEDest read FindIEDest      write FindIEDest;
     property IE: String               read FIE             write FIE;
     property cNIS: String             read FcNIS           write FcNIS;
+    property NB: String               read FNB             write FNB;
     property IM: String               read FIM             write FIM;
     property xNomeAdicional: String   read FxNomeAdicional write FxNomeAdicional;
     property EnderDest: TEndereco     read FEnderDest      write FEnderDest;
@@ -1065,6 +1151,7 @@ type
 
     FTotal: TTotal;
     FgFat: TgFat;
+    FgPIX: TgPIX;
     FgANEEL: TgANEEL;
     FautXML: TautXMLCollection;
     FinfAdic: TInfAdic;
@@ -1099,6 +1186,7 @@ type
     property NFDet: TNFDetCollection           read FNFDet       write SetNFDet;
     property Total: TTotal                     read FTotal       write FTotal;
     property gFat: TgFat                       read FgFat        write FgFat;
+    property gPIX: TgPIX                       read FgPIX        write FgPIX;
     property gANEEL: TgANEEL                   read FgANEEL      write FgANEEL;
     property autXML: TautXMLCollection         read FautXML      write SetautXML;
     property infAdic: TInfAdic                 read FinfAdic     write FinfAdic;
@@ -1309,17 +1397,23 @@ end;
 
 procedure TTotal.Assign(Source: TTotal);
 begin
-  vProd      := Source.vProd;
-  vBC        := Source.vBC;
-  vICMS      := Source.vICMS;
-  vICMSDeson := Source.vICMSDeson;
-  vFCP       := Source.vFCP;
-  vBCST      := Source.vBCST;
-  vST        := Source.vST;
-  vFCPST     := Source.vFCPST;
-  vCOFINS    := Source.vCOFINS;
-  vPIS       := Source.vPIS;
-  vNF        := Source.vNF;
+  vProd       := Source.vProd;
+  vBC         := Source.vBC;
+  vICMS       := Source.vICMS;
+  vICMSDeson  := Source.vICMSDeson;
+  vFCP        := Source.vFCP;
+  vBCST       := Source.vBCST;
+  vST         := Source.vST;
+  vFCPST      := Source.vFCPST;
+  vCOFINS     := Source.vCOFINS;
+  vPIS        := Source.vPIS;
+  vNF         := Source.vNF;
+  vRetCSLL    := Source.vRetCSLL;
+  vRetPIS     := Source.vRetPIS;
+  vRetCOFINS  := Source.vRetCOFINS;
+  vPISEfet    := Source.vPISEfet;
+  vCOFINSEfet := Source.vCOFINSEfet;
+  vIRRF       := Source.vIRRF;
 end;
 
 { TgContabCollectionItem }
@@ -1423,6 +1517,15 @@ begin
   vCOFINS := Source.vCOFINS;
 end;
 
+{ TCOFINS }
+
+procedure TCOFINSEfet.Assign(Source: TCOFINSEfet);
+begin
+  vBCCOFINSEfet := Source.vBCCOFINSEfet;
+  pCOFINSEfet   := Source.pCOFINSEfet;
+  vCOFINSEfet   := Source.vCOFINSEfet;
+end;
+
 { TPIS }
 
 procedure TPIS.Assign(Source: TPIS);
@@ -1431,6 +1534,15 @@ begin
   vBC  := Source.vBC;
   pPIS := Source.pPIS;
   vPIS := Source.vPIS;
+end;
+
+{ TPISEfet }
+
+procedure TPISEfet.Assign(Source: TPISEfet);
+begin
+  vBCPISEfet := Source.vBCPISEfet;
+  pPISEfet   := Source.pPISEfet;
+  vPISEfet   := Source.vPISEfet;
 end;
 
 { TICMS }
@@ -1466,16 +1578,22 @@ constructor TImposto.Create;
 begin
   inherited Create;
 
-  FICMS   := TICMS.Create;
-  FPIS    := TPIS.Create;
-  FCOFINS := TCOFINS.Create;
+  FICMS       := TICMS.Create;
+  FPIS        := TPIS.Create;
+  FPISEfet    := TPISEfet.Create;
+  FCOFINS     := TCOFINS.Create;
+  FCOFINSEfet := TCOFINSEfet.Create;
+  FretTrib    := TretTrib.Create;
 end;
 
 destructor TImposto.Destroy;
 begin
   FICMS.Free;
   FPIS.Free;
+  FPISEfet.Free;
   FCOFINS.Free;
+  FCOFINSEfet.Free;
+  FretTrib.Free;
 
   inherited Destroy;
 end;
@@ -1666,6 +1784,8 @@ begin
   vICMS     := Source.vICMS;
   vPIS      := Source.vPIS;
   vCOFINS   := Source.vCOFINS;
+
+  retTrib.Assign(Source.retTrib);
 end;
 
 { TgAjusteNF3eAnt }
@@ -1727,7 +1847,8 @@ end;
 
 procedure TNFDetCollectionItem.Assign(Source: TNFDetCollectionItem);
 begin
-  chNF3eAnt := Source.chNF3eAnt;
+  chNF3eAnt   := Source.chNF3eAnt;
+  mod6HashAnt := Source.mod6HashAnt;
 
   Det.Assign(Source.Det);
 end;
@@ -1806,6 +1927,8 @@ end;
 procedure TgConsumidorCollectionItem.Assign(Source: TgConsumidorCollectionItem);
 begin
   idAcessGer := Source.idAcessGer;
+  vPotInst   := Source.vPotInst;
+  tpFonteEnergia := Source.tpFonteEnergia;
   enerAloc   := Source.enerAloc;
   tpPosTar   := Source.tpPosTar;
 end;
@@ -1835,7 +1958,6 @@ end;
 procedure TgSCEE.Assign(Source: TgSCEE);
 begin
   tpPartComp := Source.tpPartComp;
-  vPotInst   := Source.vPotInst;
 
   gConsumidor.Assign(Source.gConsumidor);
   gSaldoCred.Assign(Source.gSaldoCred);
@@ -1990,6 +2112,7 @@ begin
   IE             := Source.IE;
   IM             := Source.IM;
   cNIS           := Source.cNIS;
+  NB             := Source.NB;
   xNomeAdicional := Source.xNomeAdicional;
 
   EnderDest.Assign(Source.EnderDest);
@@ -2195,6 +2318,24 @@ end;
 procedure TNF3e.SetautXML(const Value: TautXMLCollection);
 begin
   FautXML := Value;
+end;
+
+{ TretTrib }
+
+procedure TretTrib.Assign(Source: TretTrib);
+begin
+  vRetPIS    := Source.vRetPIS;
+  vRetCOFINS := Source.vRetCOFINS;
+  vRetCSLL   := Source.vRetCSLL;
+  vBCIRRF    := Source.vBCIRRF;
+  vIRRF      := Source.vIRRF;
+end;
+
+{ TgPIX }
+
+procedure TgPIX.Assign(Source: TgPIX);
+begin
+  urlQRCodePIX := Source.urlQRCodePIX;
 end;
 
 end.

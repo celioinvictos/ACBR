@@ -44,8 +44,7 @@ unit ACBrXmlDocument;
 interface
 
 uses
-  Classes, SysUtils,
-  ACBrLibXml2;
+  Classes, SysUtils, ACBrLibXml2;
 
 type
   TSaveOption = (xmlNone = 0, xmlFormat = 1, xmlNoDecl = 2, xmlNoEmpty = 4,
@@ -82,6 +81,7 @@ type
     constructor Create(xmlDoc: TACBrXmlDocument; xmlNode: xmlNodePtr);
 
     function GetName: string;
+    function GetLocalName: string;
     function GetContent: string;
     function GetOuterXml: string;
     procedure SetName(AName: string);
@@ -92,6 +92,7 @@ type
 
     property Document: TACBrXmlDocument read FXmlDoc;
     property Name: string read GetName write SetName;
+    property LocalName: string read GetLocalName;
     property Namespaces: TACBrXMLNamespaceList read FNamespaceList;
     property Childrens: TACBrXMLNodeList read FNodeList;
     property Attributes: TACBrXMLAttributeList read FAttributeList;
@@ -107,6 +108,13 @@ type
     function GetNextNamespace(var ANamespace: TACBrXmlNamespace): boolean;
     function GetNextChild(var ANode: TACBrXmlNode): boolean;
     function GetNextAttribute(var AAttribute: TACBrXmlAttribute): boolean;
+
+    function AsString: String;
+    function AsInteger: Integer;
+    function AsDouble: Double;
+    function AsDateTime(const Format: string = ''): TDateTime;
+    function AsDate(const Format: string = ''): TDateTime;
+    function AsTime(const Format: string = ''): TDateTime;
 
   end;
 
@@ -158,12 +166,11 @@ type
   TACBrXMLNamespaceList = class
   private
     FParent: TACBrXmlNode;
-    FItens: array of TACBrXmlNamespace;
-
-    procedure Insert(Item: TACBrXmlNamespace);
+    FItems: array of TACBrXmlNamespace;
 
     function GetCount: integer;
     function GetItem(Index: integer): TACBrXmlNamespace;
+    procedure Insert(Item: TACBrXmlNamespace);
 
     constructor Create(AParent: TACBrXmlNode);
 
@@ -174,6 +181,7 @@ type
     property Count: integer read GetCount;
     property Items[Index: integer]: TACBrXmlNamespace read GetItem;
 
+    procedure Add(ANamespace: string; APrefix: string = '');
     procedure Remove(Item: TACBrXmlNamespace);
     function GetEnumerator: TACBrXMLNamespaceListEnumerator;
 
@@ -198,7 +206,7 @@ type
   TACBrXMLNodeList = class
   private
     FParent: TACBrXmlNode;
-    FItens: array of TACBrXmlNode;
+    FItems: array of TACBrXmlNode;
 
     procedure Insert(Item: TACBrXmlNode);
 
@@ -214,11 +222,13 @@ type
     property Count: integer read GetCount;
     property Items[Index: integer]: TACBrXmlNode read GetItem; default;
 
+    procedure Remove(Item: TACBrXmlNode);
+
+    function GetEnumerator: TACBrXMLNodeListEnumerator;
     function Find(const Name: string): TACBrXmlNode;
     function FindAll(const Name: string): TACBrXmlNodeArray;
-
-    procedure Remove(Item: TACBrXmlNode);
-    function GetEnumerator: TACBrXMLNodeListEnumerator;
+    function FindAnyNs(const Name: string): TACBrXmlNode;
+    function FindAllAnyNs(const Name: string): TACBrXmlNodeArray;
 
   end;
 
@@ -241,7 +251,7 @@ type
   TACBrXMLAttributeList = class
   private
     FParent: TACBrXmlNode;
-    FItens: array of TACBrXmlAttribute;
+    FItems: array of TACBrXmlAttribute;
 
     procedure Insert(Item: TACBrXmlAttribute);
 
@@ -353,6 +363,14 @@ begin
   Result := string(FXmlNode^.Name);
 end;
 
+function TACBrXmlNode.GetLocalName: string;
+Var
+  AName: string;
+begin
+  AName := string(FXmlNode^.Name);;
+  Result := copy(AName, Pos(':', AName) + 1, Length(AName));
+end;
+
 function TACBrXmlNode.GetContent: string;
 begin
   Result := string(xmlNodeGetContent(FXmlNode));
@@ -395,7 +413,7 @@ begin
     cdataValue := RetornarConteudoEntre(AContent, '<![CDATA[', ']]>');
     cdataNode := xmlNewCDataBlock(FXmlDoc.xmlDocInternal,
                PAnsichar(ansistring(cdataValue)), Length(cdataValue));
-    xmlAddChild(FXmlNode, FXmlCdataNode);
+    xmlAddChild(FXmlNode, cdataNode);
   end
   else
     xmlNodeSetContent(FXmlNode, PAnsichar(ansistring(AContent)));
@@ -505,6 +523,36 @@ begin
   AAttribute := FAttributeEnumerator.Current;
 end;
 
+function TACBrXmlNode.AsString: String;
+begin
+  Result := Content;
+end;
+
+function TACBrXmlNode.AsInteger: Integer;
+begin
+  Result := StrToInt(Content);
+end;
+
+function TACBrXmlNode.AsDouble: Double;
+begin
+  Result := StrToFloat(Content);
+end;
+
+function TACBrXmlNode.AsDateTime(const Format: string): TDateTime;
+begin
+  Result := StringToDateTime(Content, Format);
+end;
+
+function TACBrXmlNode.AsDate(const Format: string): TDateTime;
+begin
+  Result := StringToDateTime(Content, Format);
+end;
+
+function TACBrXmlNode.AsTime(const Format: string): TDateTime;
+begin
+  Result := StringToDateTime(Content, Format);
+end;
+
 { TACBrXmlNamespace }
 constructor TACBrXmlNamespace.Create(ParentNode: TACBrXmlNode; xmlNs: xmlNsPtr);
 begin
@@ -556,8 +604,7 @@ procedure TACBrXmlNamespace.SetPrefixo(AName: string);
 Var
   xmlNs: xmlNsPtr;
 begin
-  xmlNs := xmlNewNs(FParentNode.FXmlNode, xmlNsInternal^.href,
-    PAnsichar(ansistring(AName)));
+  xmlNs := xmlNewNs(FParentNode.FXmlNode, xmlNsInternal^.href, PAnsichar(ansistring(AName)));
   ReplaceNamespace(xmlNs);
 end;
 
@@ -647,7 +694,7 @@ var
   curNs: xmlNsPtr;
 begin
   FParent := AParent;
-  SetLength(FItens, 0);
+  SetLength(FItems, 0);
   if FParent.FXmlNode.nsDef <> nil then
   begin
     curNs := FParent.FXmlNode.nsDef;
@@ -665,32 +712,44 @@ var
 begin
   ACount := Count - 1;
   for i := 0 to ACount do
-    FreeAndNil(FItens[i]);
+    FreeAndNil(FItems[i]);
 
-  SetLength(FItens, 0);
-  Finalize(FItens);
-  FItens := nil;
+  SetLength(FItems, 0);
+  Finalize(FItems);
+  FItems := nil;
 
   inherited Destroy;
 end;
 
 function TACBrXMLNamespaceList.GetCount: integer;
 begin
-  Result := Length(FItens);
+  Result := Length(FItems);
 end;
 
 function TACBrXMLNamespaceList.GetItem(Index: integer): TACBrXmlNamespace;
 begin
-  Result := FItens[Index];
+  Result := FItems[Index];
+end;
+
+procedure TACBrXMLNamespaceList.Add(ANamespace: string; APrefix: string = '');
+var
+  ns: xmlNsPtr;
+  Item: TACBrXmlNamespace;
+begin
+  ns := xmlNewNs(FParent.FXmlNode, PAnsiChar(ansistring(ANamespace)), PAnsiChar(ansistring(APrefix)));
+  xmlSetNs(FParent.FXmlNode, ns);
+  Item := TACBrXmlNamespace.Create(FParent, ns);
+  Insert(Item);
 end;
 
 procedure TACBrXMLNamespaceList.Insert(Item: TACBrXmlNamespace);
 var
   idx: integer;
+//  ns: xmlNsPtr;
 begin
   idx := Count + 1;
-  SetLength(FItens, idx);
-  FItens[idx - 1] := Item;
+  SetLength(FItems, idx);
+  FItems[idx - 1] := Item;
 end;
 
 procedure TACBrXMLNamespaceList.Remove(Item: TACBrXmlNamespace);
@@ -700,10 +759,11 @@ begin
   ALength := Count;
   for idx := 0 to ALength do
   begin
-    if FItens[idx] = Item then
+    if FItems[idx] = Item then
     begin
+      xmlUnsetNsProp(Item.FParentNode.FXmlNode, Item.xmlNsInternal, Item.xmlNsInternal.href);
       Item.Destroy;
-      SetLength(FItens, ALength - 1);
+      SetLength(FItems, ALength - 1);
       Exit;
     end;
   end;
@@ -727,7 +787,7 @@ end;
 
 function TACBrXMLNamespaceListEnumerator.GetCurrent: TACBrXmlNamespace;
 begin
-  Result := FList.FItens[FIndex];
+  Result := FList.Items[FIndex];
 end;
 
 function TACBrXMLNamespaceListEnumerator.MoveNext: boolean;
@@ -745,7 +805,7 @@ var
   curNode: xmlNodePtr;
 begin
   FParent := AParent;
-  SetLength(FItens, 0);
+  SetLength(FItems, 0);
   if FParent.FXmlNode.children <> nil then
   begin
     curNode := FParent.FXmlNode.children;
@@ -765,23 +825,55 @@ var
 begin
   ACount := Count - 1;
   for i := 0 to ACount do
-    FreeAndNil(FItens[i]);
+    FreeAndNil(FItems[i]);
 
-  SetLength(FItens, 0);
-  Finalize(FItens);
-  FItens := nil;
+  SetLength(FItems, 0);
+  Finalize(FItems);
+  FItems := nil;
 
   inherited Destroy;
 end;
 
 function TACBrXMLNodeList.GetCount: integer;
 begin
-  Result := Length(FItens);
+  Result := Length(FItems);
 end;
 
 function TACBrXMLNodeList.GetItem(Index: integer): TACBrXmlNode;
 begin
-  Result := FItens[Index];
+  Result := FItems[Index];
+end;
+
+procedure TACBrXMLNodeList.Insert(Item: TACBrXmlNode);
+var
+  idx: integer;
+begin
+  idx := Count + 1;
+  SetLength(FItems, idx);
+  FItems[idx - 1] := Item;
+end;
+
+procedure TACBrXMLNodeList.Remove(Item: TACBrXmlNode);
+var
+  idx, ALength: integer;
+begin
+  ALength := Count;
+  for idx := 0 to ALength do
+  begin
+    if FItems[idx] = Item then
+    begin
+      Item.Destroy;
+      SetLength(FItems, ALength - 1);
+      Exit;
+    end;
+  end;
+
+  raise EACBrXmlException.Create('Item não se encontra na lista.');
+end;
+
+function TACBrXMLNodeList.GetEnumerator: TACBrXMLNodeListEnumerator;
+begin
+  Result := TACBrXMLNodeListEnumerator.Create(Self);
 end;
 
 function TACBrXMLNodeList.Find(const Name: string):TACBrXmlNode;
@@ -793,7 +885,7 @@ begin
   ACount := Count - 1;
   for i := 0 to ACount do
   begin
-    Node := TACBrXmlNode(FItens[i]);
+    Node := Items[i];
     if Node.Name <> Name then continue;
 
     Result := Node;
@@ -813,7 +905,7 @@ begin
   ACount := Count - 1;
   for i := 0 to ACount do
   begin
-    Node := TACBrXmlNode(FItens[i]);
+    Node := Items[i];
     if Node.Name <> Name then continue;
 
     SetLength(Result, j+1);
@@ -822,36 +914,42 @@ begin
   end;
 end;
 
-procedure TACBrXMLNodeList.Insert(Item: TACBrXmlNode);
-var
-  idx: integer;
+function TACBrXMLNodeList.FindAnyNs(const Name: string):TACBrXmlNode;
+Var
+  i, ACount: integer;
+  Node: TACBrXmlNode;
 begin
-  idx := Count + 1;
-  SetLength(FItens, idx);
-  FItens[idx - 1] := Item;
-end;
-
-procedure TACBrXMLNodeList.Remove(Item: TACBrXmlNode);
-var
-  idx, ALength: integer;
-begin
-  ALength := Count;
-  for idx := 0 to ALength do
+  Result := nil;
+  ACount := Count - 1;
+  for i := 0 to ACount do
   begin
-    if FItens[idx] = Item then
-    begin
-      Item.Destroy;
-      SetLength(FItens, ALength - 1);
-      Exit;
-    end;
-  end;
+    Node := Items[i];
+    if Node.LocalName <> Name then continue;
 
-  raise EACBrXmlException.Create('Item não se encontra na lista.');
+    Result := Node;
+    Exit;
+  end;
 end;
 
-function TACBrXMLNodeList.GetEnumerator: TACBrXMLNodeListEnumerator;
+function TACBrXMLNodeList.FindAllAnyNs(const Name: string):TACBrXmlNodeArray;
+Var
+  Node: TACBrXmlNode;
+  i, j, ACount: integer;
 begin
-  Result := TACBrXMLNodeListEnumerator.Create(Self);
+  Result := nil;
+  SetLength(Result, 0);
+
+  j := 0;
+  ACount := Count - 1;
+  for i := 0 to ACount do
+  begin
+    Node := Items[i];
+    if Node.LocalName <> Name then continue;
+
+    SetLength(Result, j+1);
+    Result[j] := Node;
+    inc(j);
+  end;
 end;
 
 { TACBrXMLNodeListEnumerator }
@@ -865,7 +963,7 @@ end;
 
 function TACBrXMLNodeListEnumerator.GetCurrent: TACBrXmlNode;
 begin
-  Result := FList.FItens[FIndex];
+  Result := FList.FItems[FIndex];
 end;
 
 function TACBrXMLNodeListEnumerator.MoveNext: boolean;
@@ -883,7 +981,7 @@ var
   curAtt: xmlAttrPtr;
 begin
   FParent := AParent;
-  SetLength(FItens, 0);
+  SetLength(FItems, 0);
   if FParent.FXmlNode.properties <> nil then
   begin
     curAtt := xmlAttrPtr(FParent.FXmlNode.properties);
@@ -903,18 +1001,18 @@ var
 begin
   ACount := Count - 1;
   for i := 0 to ACount do
-    FreeAndNil(FItens[i]);
+    FreeAndNil(FItems[i]);
 
-  SetLength(FItens, 0);
-  Finalize(FItens);
-  FItens := nil;
+  SetLength(FItems, 0);
+  Finalize(FItems);
+  FItems := nil;
 
   inherited Destroy;
 end;
 
 function TACBrXMLAttributeList.GetCount: integer;
 begin
-  Result := Length(FItens);
+  Result := Length(FItems);
 end;
 
 function TACBrXMLAttributeList.GetItem(AName: string): TACBrXmlAttribute;
@@ -926,7 +1024,7 @@ begin
   ACount := Count - 1;
   for i := 0 to ACount do
   begin
-    Att := TACBrXmlAttribute(FItens[i]);
+    Att := TACBrXmlAttribute(FItems[i]);
     if Att.Name <> AName then continue;
 
     Result := Att;
@@ -939,8 +1037,8 @@ var
   idx: integer;
 begin
   idx := Count + 1;
-  SetLength(FItens, idx);
-  FItens[idx - 1] := Item;
+  SetLength(FItems, idx);
+  FItems[idx - 1] := Item;
 end;
 
 procedure TACBrXMLAttributeList.Remove(Item: TACBrXmlAttribute);
@@ -950,10 +1048,10 @@ begin
   ALength := Count;
   for idx := 0 to ALength do
   begin
-    if FItens[idx] = Item then
+    if FItems[idx] = Item then
     begin
       Item.Destroy;
-      SetLength(FItens, ALength - 1);
+      SetLength(FItems, ALength - 1);
       Exit;
     end;
   end;
@@ -977,7 +1075,7 @@ end;
 
 function TACBrXMLAttributeListEnumerator.GetCurrent: TACBrXmlAttribute;
 begin
-  Result := FList.FItens[FIndex];
+  Result := FList.FItems[FIndex];
 end;
 
 function TACBrXMLAttributeListEnumerator.MoveNext: boolean;
@@ -1044,16 +1142,22 @@ function TACBrXmlDocument.GetXml: string;
 var
   buffer: xmlBufferPtr;
   xmlSaveCtx: xmlSaveCtxtPtr;
+  ret: integer;
 begin
     buffer := xmlBufferCreate();
-  try
     xmlSaveCtx := xmlSaveToBuffer(buffer, PAnsiChar(ansistring('UTF-8')), GetSaveOptions);
-    xmlSaveDoc(xmlSaveCtx, xmlDocInternal);
-    xmlSaveClose(xmlSaveCtx);
+
+  try
+    try
+      ret := xmlSaveDoc(xmlSaveCtx, xmlDocInternal);
+      if ret = -1 then
+        raise EACBrXmlException.Create(xmlGetLastError()^.message);
+    finally
+      if Assigned(xmlSaveCtx) then xmlSaveClose(xmlSaveCtx);
+    end;
     Result := string(buffer.content);
   finally
-    if (buffer <> nil) then
-      xmlBufferFree(buffer);
+    if Assigned(buffer) then xmlBufferFree(buffer);
   end;
 end;
 

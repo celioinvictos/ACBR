@@ -45,6 +45,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+11/06/2021
+-- ACBrGNREGuiasRetorno --
+[-] Possível correção, ao imprimir a Guia estava sendo impresso parte da chave
+    da NF-e sendo que o correto seria o numero da nota.
+  Por: Italo Giurizzato Junior
+
+29/04/2021
+-- ACBrGNREGuiasRetorno/pgnreGNRERetorno --
+[+] Acrescentado o campo ValorPrincICMS na classe GNRERetorno para receber o valor do tipo 11
+    (Valor Principal ICMS)
+  Por: Italo Giurizzato Junior
+
+18/03/2021
+-- ACBrGNREGuiasRetorno/pgnreRetConsResLoteGNRE --
+[*] https://www.projetoacbr.com.br/forum/topic/61723-retorno-rejei%C3%A7%C3%B5es-gnre-vers%C3%A3o-20/
+  Por: Danilo Caneschi
+
 01/03/2021
 -- Diversos --
 [+] Foi incluido na classe TGuiaCollectionItem as propriedades: NomeArq e TXT

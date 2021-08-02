@@ -46,7 +46,7 @@ type
                       tcSimplesRapComReg, tcCaucionadaRapComReg, tcDiretaEspecial);
   TACBrPessoa = (pFisica,pJuridica,pOutras, pNenhum);
   TACBrPessoaCedente = pFisica..pJuridica;
-  TACBrBolLayOut = (lPadrao, lCarne, lFatura, lPadraoEntrega, lReciboTopo, lPadraoEntrega2, lFaturaDetal, lTermica80mm);
+  TACBrBolLayOut = (lPadrao, lCarne, lFatura, lPadraoEntrega, lReciboTopo, lPadraoEntrega2, lFaturaDetal, lTermica80mm, lPadraoPIX);
 
   {Aceite do titulo}
   TACBrAceiteTitulo = (atSim, atNao);
@@ -78,11 +78,21 @@ type
   TACBrCodigoNegativacao = (cnNenhum, cnProtestarCorrido, cnProtestarUteis, cnNaoProtestar, cnNegativar, cnNaoNegativar, cnCancelamento);
 
   {Definir Tipo de Operação para Registro de Cobrança via WebService}
-  TOperacao = (tpInclui, tpAltera, tpBaixa, tpConsulta);
+  TOperacao = (tpInclui, tpAltera, tpBaixa, tpConsulta, tpConsultaDetalhe);
 
   {Definir Tipo de Pagamento Aceito para Registro de Cobrança via WebService }
   TTipo_Pagamento = (tpAceita_Qualquer_Valor, tpAceita_Valores_entre_Minimo_Maximo,
                      tpNao_Aceita_Valor_Divergente, tpSomente_Valor_Minimo);
+
+    { Situação do boleto. Campo obrigatoriamente MAIÚSCULO. Domínios: A - Em ser B - Baixados/Protestados/Liquidados }
+  TACBrIndicadorSituacaoBoleto    = (isbNenhum,isbAberto,isbBaixado);
+
+  { Indica se o Boleto está vencido ou não. Campo obrigatoriamente MAIÚSCULO. Domínio: S para boletos vencidos N para boletos não vencidos }
+  TACBrIndicadorBoletoVencido     = (ibvNenhum,ibvNao,ibvSim);
+
+  {Definir Metodo HTTP}
+  TMetodoHTTP = (htPOST, htGET, htPATCH);
+
 
   function StrToTipoOperacao(out ok: Boolean; const s: String): TOperacao;
   function TipoOperacaoToStr(const t: TOperacao): String;
@@ -98,6 +108,9 @@ type
 
   function StrToAceite(out ok: Boolean; const s: String): TACBrAceiteTitulo;
   function AceiteToStr(const t: TACBrAceiteTitulo): String;
+
+  function StrToMetodoHTTP(out ok: Boolean; const s: String): TMetodoHTTP;
+  function MetodoHTTPToStr(const t: TMetodoHTTP): String;
 
 const
   CFormatoDataPadrao = 'ddmmyyyy';
@@ -181,6 +194,19 @@ begin
   Result := EnumeradoToStr(t, ['S', 'N'],
                               [atSim, atNao]);
 end;
+
+function StrToMetodoHTTP(out ok: Boolean; const s: String): TMetodoHTTP;
+begin
+  Result := StrToEnumerado(ok, s, ['POST', 'GET', 'PATCH'],
+                                  [htPOST, htGET, htPATCH]);
+end;
+
+function MetodoHTTPToStr(const t: TMetodoHTTP): String;
+begin
+  Result := EnumeradoToStr(t, ['POST', 'GET', 'PATCH'],
+                              [htPOST, htGET, htPATCH]);
+end;
+
 
 end.
 

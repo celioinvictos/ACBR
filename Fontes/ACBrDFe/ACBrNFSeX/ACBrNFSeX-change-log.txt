@@ -1,0 +1,375 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{                                                                              }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+
+{******************************************************************************
+|* ACBrNFSeX
+|*
+|* PROPÓSITO: Registro de Alterações
+******************************************************************************}
+
+Símbolo : Significado
+
+[+]     : Novo recurso
+[*]     : Recurso modificado/melhorado
+[-]     : Correção de Bug (assim esperamos)
+
+24/07/2021
+-- Diversos --
+[*] Implementado a função AjustarAliquota e movido a função PadronizarItemListaServico
+    para unit ACBrNFSeXGravarXml.
+   Por: Italo Giurizzato Junior
+
+23/07/2021
+-- Diversos --
+[*] A propriedade FormatoItemListaServico que antes se encontrava em ConfigGeral agora
+    se encontra na classe TNSFeWClass, pois tem haver com a escrita do XML.
+   Por: Italo Giurizzato Junior
+
+22/07/2021
+-- ACBrNFSeXProviderABRASFv2 --
+[+] Incluido a leitura e a gravação do XML da NFS-e no TratarRetornoEmitir,
+    quando se tratar do retorno dos serviços: EnviarLoteRpsSincrono e GerarNfse.
+   Por: Italo Giurizzato Junior
+
+22/07/2021
+-- ACBrNFSeXGravarXml_ABRASFv1 --
+[*] Possível correção no retorno da Consulta ao Lote de Rps do provedor
+    ISSCuritiba.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXGravarXml_ABRASFv2 --
+[*] A tag CodigoCnae por padrão é opcional e não obrigatória.
+   Por: Maurício Sareto
+
+21/07/2021
+-- SmarAPD.Provider/SmarAPD.GravarXml --
+[*] Realizado um alterazação visando não gerar tag vazia de forma compacta.
+   Por: Italo Giurizzato Junior
+
+21/07/2021
+-- ACBrNFSeXGravarXml_ABRASFv1/ACBrNFSeXGravarXml_ABRASFv2 --
+[+] Incluida a função PadronizaItemServico que faz com que o código do 
+    ItemListaServico tenha sempre o formato xx.xx.
+-- TcheInfo.Provider --
+[+] Incluida a função AjustaCabecalho, pois ao enviar para o ambiente de
+    homologação o valor da tag <CodigoIBGE> deve ser 9999999.
+   Por: Italo Giurizzato Junior
+
+21/07/2021
+-- ACBrNFSeXGravarXml_ABRASFv2 --
+[*] O valor padrão da propriedade NrOcorrCodigoPaisTomador agora é zero, isso
+    significa que a tag <CodigoPais> é opcional, antes estava obrigatória.
+   Por: Marcelo Ogliari
+
+21/07/2021
+-- Betha.Provider --
+[*] Remoção de prefixos gerados nas consultas e cancelamento.
+-- IPM.Provider/SimplISS.provider --
+[*] Aplicado o ParseText na senha.
+   Por: Italo Giurizzato Junior
+
+20/07/2021
+-- SmarAPD.Provider --
+[*] Auterado a geração da tag <hashSenha> para que o seu conteudo já esteja
+    codificado.
+   Por: Italo Giurizzato Junior
+-- Equiplano.Provider --
+[*] Auterado o tratamento de retorno da consulta ao lote para que seja lido
+    o numero do protocolo.
+   Por: Italo Giurizzato Junior
+
+20/07/2021
+-- SafeWeb.Provider --
+[*] Ajustes visando funcionar o provedor
+   Por: Italo Giurizzato Junior / Wallace Oliveira
+
+20/07/2021
+-- SmarAPD.GravarXml --
+[*] Para esse provedor Tag obrigatória com conteudo vazio não pode ser gerada
+    no formato reduzido.
+   Por: Italo Giurizzato Junior
+
+19/07/2021
+-- ACBrNFSeXGravarXml_ABRASFv1/ACBrNFSeXProviderBase/Betha.Provider --
+[*] Mais algumas alterações visando resolver o problema de assinatura invalida
+    no provedor Betha.
+   Por: Italo Giurizzato Junior
+
+19/07/2021
+-- ACBrNFSeXDANFSeRL --
+[-] Correção, não estava imprimindo o campo Discriminação dos Serviços.
+   Por: edv4ld0
+
+19/07/2021
+-- ACBrNFSeXConversao/ISSDSF.GravarXml/ISSDSF.LerXml --
+[*] https://www.projetoacbr.com.br/forum/topic/63310-acbrnfse-inclus%C3%A3o-de-tipo-de-dedu%C3%A7%C3%A3o-provedor-issdsf-campinas-sp/
+   Por: Luciana Cristina Pereira
+
+19/07/2021
+-- ISSDSF.Provider/ISSDSF.GravarXml/ISSDSF.LerXml --
+[*] https://www.projetoacbr.com.br/forum/topic/63270-acbrnfsex-provedor-issdsf/
+   Por: edv4ld0
+
+19/07/2021
+-- ACBrNFSeXServicos --
+[*] Troca de URL de Homologação da cidade Parauapebas/PA.
+   Por: Glênio Duarte Moura
+
+19/07/2021
+-- ACBrNFSeXParametros --
+[+] Acrescentado as propriedades: ConsultaSitLote e ConsultaLote com finalidade
+    de auxiliar nas consultas automaticas após o envio do Rps para o WebService.
+-- Diversos --
+[*] Definição de valores para as propriedades ConsultaSitLote e ConsultaLote.
+-- ACBrNFSeXProviderBase --
+[*] Incluido na function Emitir a chamada as consultas: ConsultaSituacao e 
+    ConsultaLoteRps.
+-- Salvador.Provider, Salvador.GravarXml --
+[-] Possível correção na geração do Xml do Rps.
+-- Betha.Provider --
+[-] Possível correção na assinatura do Rps/Lote.
+   Por: Italo Giurizzato Junior
+
+13/07/2021
+-- ACBrNFSeXGravarXml_ABRASFv1, DBSeller.GravarXml --
+[-] Correção na geração da tag RegimeEspecialTributacao.
+   Por: Rafael Dias
+
+10/07/2021
+-- ACBrNFSeXNotasFiscais--
+[*] Possível correção para o erro de conversão do numero da nota de string para inteiro.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Possível correção para as assinaturas invalidas ao emitir o Rps.
+   Por: Italo Giurizzato Junior
+
+08/07/2021
+-- ACBrNFSeXDANFSeClass, ACBrNFSeXDANFSeRLClass, ACBrNFSeXDANFSeRL --
+[+] Adicionado a possibilidade de Imprimir o PDF da DANFSe direto em um Stream.
+    Por: Rafael Dias
+
+08/07/2021
+-- ACBrNFSeXConversao --
+[*] Novos Códigos de Natureza de Operação utilizados pela prefeitura de Serra/ES
+   Por: Thiago Ribeiro da Silva
+-- Betha.Provider --
+[*] Possível correção na geração do cabeçalho do envelope soap.
+   Por: Italo Giurizzato Junior
+
+07/07/2021
+-- BHISS.Provider --
+[*] Possível correção na geração do cabeçalho do envelope soap.
+   Por: Italo Giurizzato Junior
+-- ISSCuritiba.Provider --
+[*] Possível correção na geração do envelope soap.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Ajustes para o provedor SP e ISSDSF.
+   Por: Italo Giurizzato Junior
+
+06/07/2021
+-- Diversos --
+[*] Refactoring nas propriedades no DANFSE feito em Fortes Report.
+   Por: Rafael Dias
+-- Diversos --
+[*] Ajustes na leitura do retorno das consultas do provedor SP.
+   Por: Italo Giurizzato Junior
+
+02/07/2021
+-- Diversos --
+[*] Documentada todas as propriedades de Parametrização.
+[*] Alterado o valor padrão de NrOcorrInscMunTomador para zero que indica que
+    a tag <InscricaoMunicipal> do tomador é opcional.
+   Por: Italo Giurizzato Junior
+-- SmarAPD.Gravar --
+[*] Alterado para zero o numero de ocorrências da Insc. Munic. do Tomador.
+   Por: Italo Giurizzato Junior
+
+01/07/2021
+-- Diversos --
+[*] Troca do método de busca de tag por outro que ignora prefixo caso tenha na
+    tag e outros ajustes.
+   Por: Italo Giurizzato Junior
+
+30/06/2021
+-- Diversos --
+[*] Ajustes necessários para o provedor fintelISS.
+   Por: Italo Giurizzato Junior
+
+29/06/2021
+-- SP.Provider/ISSDSF.Provider/Siat.Provider --
+[*] Estava faltando a leitura da tag NumNFe ao ler o grupo ChaveNFe.
+   Por: Italo Giurizzato Junior
+-- SigISS.GravarXml --
+[*] Ajustes no na geração do XML do Rps - Provedor SigISS.
+   Por: Italo Giurizzato Junior
+
+25/06/2021
+-- Digifred.GravarXml --
+[*] Ajustes no na geração do XML do Rps - Provedor Digifred.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Ajustes no numero de ocorrencias da tag <InscricaoMunicipal> do Tomador.
+   Por: Italo Giurizzato Junior
+
+24/06/2021
+-- Diversos --
+[*] Ajustes em diversas Units visando o provedor SP.
+   Por: Italo Giurizzato Junior
+
+23/06/2021
+-- Diversos --
+[*] Ajustes em diversas Units visando o tratamento do retorno dos métodos.
+[*] Ajustes nas Units do provedor SigISS pois possui layout diferentes para
+    algumas cidades atendidas por esse provedor.
+   Por: Italo Giurizzato Junior
+
+22/06/2021
+-- SigISS.GravarXml --
+[*] Ajustes para a cidade de Londrina, nos ajustes vão ser necessários para as
+    demais cidades do provedor SigISS.
+   Por: Italo Giurizzato Junior
+-- SigISS.Provider --
+[*] Dependendo da versão a tag que contem a lista de mensagens de erro muda de 
+    <DescricaoErros> para <Mensagens>
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXNotasFiscais --
+[*] Incluido no function FindByRps a chamada ao Sort caso a lista não
+    esteja ordenada.
+   Por: Rafael Dias
+
+17/06/2021
+-- ACBrNFSeXProviderABRASFv2 --
+[*] Corrigido as condições para assinar ou não o XML do Rps.
+   Por: Italo Giurizzato Junior
+-- Pronim.Provider --
+[*] Corrigido a tag de retorno do envio de lote no modo síncrono.
+   Por: Italo Giurizzato Junior
+
+16/06/2021
+-- Diversos --
+[*] Ajustes diversos em diversas units.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Implementado o provedor FGMaiss.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Simplificação nas chamadas aos métodos: function CriarServiceClient
+    Provedores da versão 1 e 2 do layout da ABRASF.
+   Por: Italo Giurizzato Junior
+
+14/06/2021
+-- Diversos --
+[*] Simplificação nas chamadas aos métodos: function CriarServiceClient
+    Primeira etapa, provedores que possuem layout próprio.
+   Por: Italo Giurizzato Junior
+
+11/06/2021
+-- Sistemas4R.Provider --
+[-] Corrigido a chamada aos métodos.
+   Por: Italo Giurizzato Junior
+
+10/06/2021
+-- MetropolisWeb.GravarXml --
+[*] Incluido a configuração para tornar a tag <Aliquota> obrigatória.
+   Por: Italo Giurizzato Junior
+
+10/06/2021
+-- Diversos --
+[*] Trocado o nome das funções:
+      CodigoToSesc -> CodItemServToDesc
+      CodCidadeToCidade -> CodIBGEToCidade
+      CodCidadeToCodSiafi -> CodIBGEToCodTOM
+      CodSiafiToCodCidade -> CodTOMToCodIBGE
+   Por: Italo Giurizzato Junior
+
+09/06/2021
+-- Diversos --
+[*] Criado constantes para os códigos e descrição das mensagens com o objetivo
+    de manter um padrão.
+   Por: Italo Giurizzato Junior
+
+08/06/2021
+-- Diversos --
+[*] Inicio da troca do código 999 definido para as mensagens de erros geradas pelo
+    componente por um código especifico para cada mensagem.
+   Por: Italo Giurizzato Junior
+
+07/06/2021
+-- Diversos --
+[*] Remoção de linhas de código desnecessárias.
+   Por: Italo Giurizzato Junior
+
+04/06/2021
+-- Diversos --
+[*] Remoção de linhas de código desnecessárias.
+   Por: Italo Giurizzato Junior
+
+02/06/2021
+-- SmarAPD.GravarXml --
+[*] Imposta uma condição ao gerar a tag <tributadonomunicipio>, estava gerado
+    sempre com o mesmo valor.
+  Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Remoção de linhas de código desnecessárias.
+   Por: Italo Giurizzato Junior
+
+01/06/2021
+-- IPM.Provider --
+[*] Ajustes necessários para algumas cidades atendidas pelo provedor
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Remoção de linhas de código desnecessárias.
+   Por: Italo Giurizzato Junior
+-- SmarAPD.GravarXml --
+[*] Correção no valor da tag <impostoretido>
+   Por: Italo Giurizzato Junior
+
+28/05/2021
+-- Diversos --
+[*] Ajustes visando deixar todas as assinaturas do SubstituicaoNfse validas.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[+] Implementação do provedor ADPM.
+   Por: Italo Giurizzato Junior
+
+27/05/2021
+-- Diversos --
+[*] Ajustes visando atender o provedor iiBrasil
+   Por: Italo Giurizzato Junior
+
+26/05/2021
+[*] Ajustes no provedor VersaTecnologia
+   Por: Italo Giurizzato Junior
+
+24/05/2021
+[+] Envio do novo componente para o Trunk2
+   Por: Italo Giurizzato Junior

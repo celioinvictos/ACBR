@@ -52,7 +52,7 @@ public
   constructor Create(AConfig: TMonitorConfig; ACBrCEP: TACBrCEP); reintroduce;
   procedure Executar(ACmd: TACBrCmd); override;
 
-  procedure RespostaItensConsulta(ItemID: integer = 0);
+  procedure ProcessarResposta;
 
   property ACBrCEP: TACBrCEP read fACBrCEP;
 end;
@@ -110,28 +110,14 @@ begin
   end;
 end;
 
-procedure TACBrObjetoCEP.RespostaItensConsulta(ItemID: integer);
+procedure TACBrObjetoCEP.ProcessarResposta;
 var
-  Resp: TLibCEPResposta;
+  Resp: TCepResposta;
 begin
-  Resp := TLibCEPResposta.Create(
-          CSessaoRespConsulta + IntToStr(ItemID +1), TpResp, codUTF8);
+   Resp := TCepResposta.Create(TpResp, codUTF8);
   try
-    with fACBrCEP.Enderecos[ItemID] do
-    begin
-      Resp.CEP := CEP;
-      Resp.Tipo_Logradouro := Tipo_Logradouro;
-      Resp.Logradouro := Logradouro;
-      Resp.Logradouro := Logradouro;
-      Resp.Complemento := Complemento;
-      Resp.Bairro := Bairro;
-      Resp.Municipio := Municipio;
-      Resp.UF := UF;
-      Resp.IBGE_Municipio := IBGE_Municipio;
-      Resp.IBGE_UF := IBGE_UF;
-
-      fpCmd.Resposta := fpCmd.Resposta + Resp.Gerar;
-    end;
+    Resp.Processar(ACBrCEP);
+    fpCmd.Resposta := sLineBreak + Resp.Gerar;
   finally
     Resp.Free;
   end;
@@ -146,7 +132,7 @@ begin
   with TACBrObjetoCEP(fpObjetoDono) do
   begin
     ACBrCEP.BuscarPorCEP( fpCmd.Params(0) );
-    RespostaItensConsulta(0);
+    ProcessarResposta;
   end;
 end;
 
@@ -159,17 +145,13 @@ end;
           4 - Bairo
 }
 procedure TMetodoBuscarPorLogradouro.Executar;
-var
-  I: integer;
 begin
   with TACBrObjetoCEP(fpObjetoDono) do
   begin
     ACBrCEP.BuscarPorLogradouro( fpCmd.Params(0), fpCmd.Params(1),
                                  fpCmd.Params(2), fpCmd.Params(3),
                                  fpCmd.Params(4) );
-
-    for I := 0 to ACBrCEP.Enderecos.Count - 1 do
-      RespostaItensConsulta(I);
+    ProcessarResposta;
   end;
 end;
 

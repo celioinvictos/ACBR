@@ -38,6 +38,64 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+Data: 29/07/2021
+-- ACBrPosPrinter --
+[-] Método "TACBrPosPrinter.DoTraduzirTag", modificado, para que os Flags internos
+    de Fonte e Alinhamento, sejam processados, mesmo quando a tradução da Tag é
+    sobreposta em uma Classe Externa
+    (por: DSA)
+
+Data: 06/07/2021
+-- ACBrPosPrinter --
+[-] Ajuste para evitar apagar a atribuição do evento: OnEnviarStringDevice,
+    quando o método padrão, "Configurar" era chamado
+    (por: DSA)
+
+Data: 10/06/2021
+-- ACBrWinUSBDevice --
+[+] Adicionado suporte USB a Epson VendorClass
+[-] Ajuste no retorno da Windows SetupAPI, que poderiam conter caracteres
+    inválidos, no final das Strings, em algumas situações
+    (por: DSA)
+
+Data: 28/05/2021
+-- ACBrPosPrinter --
+[*] TACBrPosPrinterClass, expondo componente Pai, Propriedade Pública e ReadOnly
+
+-- ACBrPosPrinterElginE1Lib --
+[+] Adicionada nova Classe externa, para tradução das Tags suportadas pelo
+    ACBrPosPrinter, para a biblioteca de Impressão para Android, E1 da Elgin (M8)
+
+-- ACBrPosPrinterElginE1Service --
+[+] Adicionado comando, para emular Beep
+    (por: DSA)
+
+Data: 16/05/2021
+-- ACBrDevice --
+[-] Ajustes no método "TACBrTagProcessor.DecodificarTagsFormatacao", para
+    funcionar corretamente no compilador NEXTGEN, com Strings em UTF8
+    (por: DSA)
+
+-- ACBrPosPrinterGEDI --
+[-] Ajuste para imprimir corretamente Linhas em branco e Linhas com espaços no
+    Final
+    (por: DSA)
+
+Data: 14/05/2021
+-- ACBrPosPrinter --
+[*] Método "AjustarCodBarras" criado após refatoração, para permitir o seu uso
+    em outras classes.
+[*] Método "TACBrPosPrinter.DoTraduzirTag", modificado para remover Tags
+    marcadas em "TagsNaoSuportadas"
+[*] Método "TACBrPosPrinter.DoTraduzirTagBloco", modificado para remover Tags
+    marcadas em "TagsNaoSuportadas"
+    (por: DSA)
+
+-- ACBrPosPrinterGEDI --
+[+] Adicionada nova classe, para tradução das Tags suportadas pelo ACBrPosPriniter,
+    para a biblioteca de Impressão para Android, GEDI da Gertec (GPOS700)
+    (por: DSA)
+
 Data: 06/01/2021
 -- ACBrCHQBematech --
 [*] Ajuste para impressão do ano com 4 dígitos na Bematech DP-20.

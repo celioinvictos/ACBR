@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2021 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -410,7 +410,7 @@ begin
     PA.ValueInfo[PWINFO_TRNORIGNSU] := NSU;                                            // Mandatorio
     PA.ValueInfo[PWINFO_TRNORIGDATE] := FormatDateTime('DDMMYY', DataHoraTransacao);   // Mandatorio
     PA.ValueInfo[PWINFO_TRNORIGTIME] := FormatDateTime('hhnnss', DataHoraTransacao);   // Mandatorio
-    PA.ValueInfo[PWINFO_TRNORIGDATETIME] := FormatDateTime('YYYYMMDDhhnnss', DataHoraTransacao);
+    //PA.ValueInfo[PWINFO_TRNORIGDATETIME] := FormatDateTime('YYYYMMDDhhnnss', DataHoraTransacao);
     PA.ValueInfo[PWINFO_TRNORIGAMNT] :=  IntToStr(Trunc(RoundTo(Valor * 100,-2)));     // Mandatorio
     if (CodigoAutorizacaoTransacao <> '') then
     begin
@@ -424,7 +424,7 @@ begin
     begin
       PA.ValueInfo[PWINFO_TRNORIGLOCREF] := Resp.Finalizacao;
       PA.ValueInfo[PWINFO_TRNORIGREQNUM] := IntToStr(Resp.NumeroLoteTransacao);
-      CopiarValorDaUltimaResposta(PWINFO_MERCHCNPJCPF);
+      //CopiarValorDaUltimaResposta(PWINFO_MERCHCNPJCPF);
       CopiarValorDaUltimaResposta(PWINFO_CARDTYPE);
       CopiarValorDaUltimaResposta(PWINFO_VIRTMERCH);
       CopiarValorDaUltimaResposta(PWINFO_AUTMERCHID);
@@ -463,7 +463,7 @@ begin
   else if EntidadeCliente = 'X' then
     TipoMsg := PWDPIN_DIGITE_O_TELEFONE
   else if EntidadeCliente = 'J' then
-    raise EACBrTEFDErro.Create( ACBrStr('Captura de CNPJ não suportada por: ')+ClassName )
+    TipoMsg := PWDPIN_DIGITE_O_CNPJ
   else
     TipoMsg := StrToIntDef(EntidadeCliente, 0);
 
@@ -496,6 +496,11 @@ begin
     begin
       MinLen := 3; MaxLen := 5;
     end;
+    PWDPIN_DIGITE_O_CNPJ, PWDPIN_REDIGITE_O_CNPJ:
+    begin
+      MinLen := 14; MaxLen := 14;
+    end;
+
   else
     raise EACBrTEFDErro.CreateFmt( ACBrStr('Captura Tipo: %s não suportada por: %s'), [EntidadeCliente, ClassName] )
   end;

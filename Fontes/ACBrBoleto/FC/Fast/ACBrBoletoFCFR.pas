@@ -96,6 +96,7 @@ type
     procedure DataModuleCreate(Sender: TObject);
     procedure frxReportProgressStart(Sender: TfrxReport;
       ProgressType: TfrxProgressType; Progress: Integer);
+    procedure frxReportBeforePrint(Sender: TfrxReportComponent);
   private
     { Private declarations }
     FACBrBoletoReport: TACBrBoletoFCFR;
@@ -110,9 +111,21 @@ implementation
 
 {$R *.dfm}
 
-uses ACBrUtil, ACBrBancoBanestes;
+uses ACBrUtil, ACBrBancoBanestes, ACBrDFeReport, ACBrDelphiZXingQRCode;
 
 { TdmACBrBoletoFCFR }
+
+procedure TdmACBrBoletoFCFR.frxReportBeforePrint(Sender: TfrxReportComponent);
+var
+  emvQrCode: String;
+begin
+  emvQrCode := Trim(FACBrBoletoReport.Titulo.QrCode.emv);
+  if Assigned(Sender) and (Trim(emvQrCode) = '') and (Sender.Name = 'ImgEmvQrcode') then
+    TfrxPictureView(Sender).Visible := False
+  else
+  if Assigned(Sender) and (Sender.Name = 'ImgEmvQrcode') then
+     PintarQRCode(emvQrCode, TfrxPictureView(Sender).Picture.Bitmap, qrAuto);
+end;
 
 procedure TdmACBrBoletoFCFR.frxReportProgressStart(Sender: TfrxReport;
   ProgressType: TfrxProgressType; Progress: Integer);
@@ -168,6 +181,7 @@ begin
     FieldDefs.Add('Nome', ftString, 100);
     FieldDefs.Add('DirLogo', ftString, 254);
     FieldDefs.Add('OrientacoesBanco', ftString, 254);
+    FieldDefs.Add('CIP', ftString, 3);
     CreateDataSet;
   end;
   // Cedente
@@ -214,6 +228,7 @@ begin
     FieldDefs.Add('Parcela', ftInteger);
     FieldDefs.Add('EspecieDoc', ftString, 10);
     FieldDefs.Add('EspecieMod', ftString, 10);
+    FieldDefs.Add('UsoBanco', ftString, 4);
     FieldDefs.Add('Aceite', ftInteger);
     FieldDefs.Add('DataProcessamento', ftDateTime);
     FieldDefs.Add('NossoNumero', ftString, 20);
@@ -234,6 +249,7 @@ begin
     FieldDefs.Add('Instrucao2', ftString, 300);
     FieldDefs.Add('TextoLivre', ftMemo, 2000);
     FieldDefs.Add('Asbace', ftString, 40);
+    FieldDefs.Add('EMV', ftString, 500);
     // Sacado
     FieldDefs.Add('Sacado_NomeSacado', ftString, 100);
     FieldDefs.Add('Sacado_CNPJCPF', ftString, 18);
@@ -480,6 +496,7 @@ var
   Field_Parcela: TField;
   Field_EspecieMod: TField;
   Field_EspecieDoc: TField;
+  Field_UsoBanco: TField;
   Field_Aceite: TField;
   Field_DataProcessamento: TField;
   Field_NossoNumero: TField;
@@ -500,6 +517,7 @@ var
   Field_Instrucao2: TField;
   Field_TextoLivre: TField;
   Field_Asbace: TField;
+  Field_EMV: TField;
 
   // Sacado
   Field_Sacado_NomeSacado: TField;
@@ -547,6 +565,7 @@ var
         Field_Parcela.AsInteger := ListadeBoletos[Indice].Parcela;
         Field_EspecieMod.AsString := ListadeBoletos[Indice].EspecieMod;
         Field_EspecieDoc.AsString := ListadeBoletos[Indice].EspecieDoc;
+        Field_UsoBanco.AsString := ListadeBoletos[Indice].UsoBanco;
         Field_Aceite.AsInteger := Integer(ListadeBoletos[Indice].Aceite);
         Field_DataProcessamento.AsDateTime := ListadeBoletos[Indice].DataProcessamento;
         Field_NossoNumero.AsString := ListadeBoletos[Indice].NossoNumero;
@@ -568,7 +587,7 @@ var
         Field_TextoLivre.AsString := ListadeBoletos[Indice].TextoLivre;
         if ACBrBoleto.Banco.Numero = 21 then
           Field_Asbace.AsString := TACBrBancoBanestes(Banco).CalcularCampoASBACE(ListadeBoletos[Indice]);
-
+        Field_EMV.AsString := ListadeBoletos[Indice].QrCode.emv;
         // Sacado
         Field_Sacado_NomeSacado.AsString := ListadeBoletos[Indice].Sacado.NomeSacado;
         Field_Sacado_CNPJCPF.AsString := ListadeBoletos[Indice].Sacado.CNPJCPF;
@@ -594,11 +613,12 @@ begin
     with FdmBoleto.cdsBanco do
     begin
       Append;
-      FieldByName('Numero').AsString := FormatFloat('000', Banco.Numero);
-      FieldByName('Digito').AsString := IfThen(Banco.Digito >= 10, 'X', IntToStrZero(Banco.Digito, 1));
-      FieldByName('Nome').AsString := Banco.Nome;
-      FieldByName('DirLogo').AsString := DirLogo;
+      FieldByName('Numero').AsString           := FormatFloat('000', Banco.Numero);
+      FieldByName('Digito').AsString           := IfThen(Banco.Digito >= 10, 'X', IntToStrZero(Banco.Digito, 1));
+      FieldByName('Nome').AsString             := Banco.Nome;
+      FieldByName('DirLogo').AsString          := DirLogo;
       FieldByName('OrientacoesBanco').AsString := Banco.OrientacoesBanco.Text;
+      FieldByName('CIP').AsString              := Banco.CIP;
       Post;
     end;
     // Cedente
@@ -643,6 +663,7 @@ begin
       Field_Parcela := FieldByName('Parcela');
       Field_EspecieMod := FieldByName('EspecieMod');
       Field_EspecieDoc := FieldByName('EspecieDoc');
+      Field_UsoBanco := FieldByName('UsoBanco');
       Field_Aceite := FieldByName('Aceite');
       Field_DataProcessamento := FieldByName('DataProcessamento');
       Field_NossoNumero := FieldByName('NossoNumero');
@@ -663,6 +684,7 @@ begin
       Field_Instrucao2 := FieldByName('Instrucao2');
       Field_TextoLivre := FieldByName('TextoLivre');
       Field_Asbace := FieldByName('Asbace');
+      Field_EMV := FieldByName('EMV');
 
       // Sacado
       Field_Sacado_NomeSacado := FieldByName('Sacado_NomeSacado');

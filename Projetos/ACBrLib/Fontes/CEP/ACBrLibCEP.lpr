@@ -35,9 +35,9 @@
 library ACBrLibCEP;
 
 uses
-  Interfaces, sysutils, Classes,
-  ACBrLibConfig, ACBrLibComum,
-  ACBrLibCEPClass, ACBrLibCEPConfig, ACBrLibCEPDataModule;
+  Interfaces, sysutils, Classes, ACBrLibConfig, ACBrLibComum,
+  ACBrLibCEPConfig, ACBrLibCEPDataModule, ACBrLibCEPBase,
+  {$IFDEF MT}ACBrLibCEPMT{$ELSE}ACBrLibCEPST{$ENDIF};
 
 {$R *.res}
 
@@ -53,6 +53,8 @@ exports
   CEP_Nome,
   CEP_Versao,
   CEP_UltimoRetorno,
+  CEP_ConfigImportar,
+  CEP_ConfigExportar,
   CEP_ConfigLer,
   CEP_ConfigGravar,
   CEP_ConfigLerValor,

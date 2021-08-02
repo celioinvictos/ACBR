@@ -28,6 +28,8 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
+{$I ACBr.inc}
+
 unit Frm_ACBrNFSe;
 
 interface
@@ -290,7 +292,7 @@ type
     procedure LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);
     procedure AtualizarSSLLibsCombo;
     procedure AtualizarCidades;
-    function RoundTo5(Valor: Double; Casas: Integer): Double;
+    function RoundTo5(const Valor: Double; const Casas: Integer): Double;
   public
     { Public declarations }
   end;
@@ -581,7 +583,7 @@ begin
       PrestadorServico.RazaoSocial  := edtEmitRazao.Text;
       PrestadorServico.NomeFantasia := edtEmitRazao.Text;
 
-      PrestadorServico.Contato.Telefone := '33224455';
+      PrestadorServico.Contato.Telefone := '1633224455';
 
       Tomador.IdentificacaoTomador.CpfCnpj := '55555555555555';
 
@@ -601,7 +603,7 @@ begin
       Tomador.Endereco.xPais := 'BRASIL';
       Tomador.IdentificacaoTomador.InscricaoEstadual := '123456';
 
-      Tomador.Contato.Telefone := '22223333';
+      Tomador.Contato.Telefone := '1622223333';
       Tomador.Contato.Email := 'nome@provedor.com.br';
 
       Tomador.AtualizaTomador := snNao;
@@ -933,10 +935,12 @@ begin
   for I := 0 to iQtde - 1 do
   begin
     MemoDados.Lines.Add('Nome XML: ' + ACBrNFSe1.NotasFiscais.Items[I].NomeArq);
-    MemoDados.Lines.Add('Nota Numero: ' + ACBrNFSe1.NotasFiscais.Items[I]
-      .NFSe.Numero);
-    MemoDados.Lines.Add('Código de Verificação: ' + ACBrNFSe1.NotasFiscais.Items
-      [I].NFSe.CodigoVerificacao);
+    MemoDados.Lines.Add('Nota Numero: ' +
+                                   ACBrNFSe1.NotasFiscais.Items[I].NFSe.Numero);
+    MemoDados.Lines.Add('ID da Nota: ' +
+                                 ACBrNFSe1.NotasFiscais.Items[I].NFSe.InfID.ID);
+    MemoDados.Lines.Add('Código de Verificação: ' +
+                        ACBrNFSe1.NotasFiscais.Items[I].NFSe.CodigoVerificacao);
   end;
 
   ACBrNFSe1.NotasFiscais.Clear;
@@ -1530,6 +1534,10 @@ begin
     if Provedor = proAgili then
       Emitente.WebChaveAcesso := 'TLXX4JN38KXTRNSETLXX4JN38KXTRNSE';
 
+    if Provedor = proIPM then
+      Emitente.WebChaveAcesso := string(EncodeBase64(Emitente.WebUser + ':' +
+                                                     Emitente.WebSenha));
+
     with Emitente.DadosSenhaParams.Add do
     begin
       Param := 'ChaveAutorizacao';
@@ -1650,11 +1658,16 @@ begin
     TEdit(Sender).Text := Dir;
 end;
 
-function TfrmACBrNFSe.RoundTo5(Valor: Double; Casas: Integer): Double;
+function TfrmACBrNFSe.RoundTo5(const Valor: Double; const Casas: Integer): Double;
 var
   xValor, xDecimais: String;
   p, nCasas: Integer;
   nValor: Double;
+  {$IFDEF DELPHIXE2_UP}
+  OldRoundMode: TRoundingMode;
+  {$ELSE}
+  OldRoundMode: TFPURoundingMode;
+  {$ENDIF}
 begin
   nValor := Valor;
   xValor := Trim(FloatToStr(Valor));
@@ -1666,14 +1679,19 @@ begin
   if p > 0 then
   begin
     xDecimais := Copy(xValor, p + 1, Length(xValor));
-    if Length(xDecimais) > nCasas then
-    begin
-      if xDecimais[nCasas + 1] >= '5' then
-        SetRoundMode(rmUP)
-      else
-        SetRoundMode(rmNearest);
+    OldRoundMode := GetRoundMode;
+    try
+      if Length(xDecimais) > nCasas then
+      begin
+        if xDecimais[nCasas + 1] >= '5' then
+          SetRoundMode(rmUP)
+        else
+          SetRoundMode(rmNearest);
+      end;
+      nValor := RoundTo(Valor, Casas);
+    finally
+      SetRoundMode(OldRoundMode);
     end;
-    nValor := RoundTo(Valor, Casas);
   end;
   Result := nValor;
 end;

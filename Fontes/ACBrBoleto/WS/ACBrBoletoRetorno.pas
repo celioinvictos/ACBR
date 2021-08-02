@@ -188,6 +188,7 @@ type
     FDataProtesto: TDateTime;
     FDiasDeProtesto: Integer;
     FDataBaixa: TDateTime;
+    FHoraBaixa: String;
     FDataLimitePagto: TDateTime;
     FValorDespesaCobranca: Currency;
     FValorAbatimento: Currency;
@@ -213,7 +214,17 @@ type
     FValorMaxPagamento: Currency;
     FPercentualMinPagamento: Currency;
     FPercentualMaxPagamento: Currency;
-
+    FModalidade : Integer;
+    FCodigoCliente : Extended;
+    FDataRegistro: TDateTime;
+    FValorAtual: Extended;
+    FContrato: String;
+    FCodigoEstadoTituloCobranca: String;
+    FEstadoTituloCobranca: String;
+    FDataMovimento: TDateTime;
+    Femv: String;
+    FurlPix: String;
+    FtxId: String;
   public
     constructor Create;
     destructor Destroy; override;
@@ -254,6 +265,7 @@ type
     property DataProtesto: TDateTime read FDataProtesto write FDataProtesto ;
     property DiasDeProtesto: Integer read FDiasDeProtesto write FDiasDeProtesto ;
     property DataBaixa: TDateTime read FDataBaixa write FDataBaixa ;
+    property HoraBaixa: String read FHoraBaixa write FHoraBaixa;
     property DataLimitePagto: TDateTime read FDataLimitePagto write FDataLimitePagto ;
     property ValorDespesaCobranca: Currency read FValorDespesaCobranca write FValorDespesaCobranca ;
     property ValorAbatimento: Currency read FValorAbatimento write FValorAbatimento ;
@@ -279,7 +291,17 @@ type
     property ValorMaxPagamento: currency read FValorMaxPagamento write FValorMaxPagamento ;
     property PercentualMinPagamento: currency read FPercentualMinPagamento write FPercentualMinPagamento ;
     property PercentualMaxPagamento: currency read FPercentualMaxPagamento write FPercentualMaxPagamento ;
-
+    property Modalidade : Integer read FModalidade write FModalidade;
+    property CodigoCliente : Extended read FCodigoCliente write FCodigoCliente;
+    property DataRegistro: TDateTime read FDataRegistro write FDataRegistro;
+    property ValorAtual: Extended read FValorAtual write FValorAtual;
+    property Contrato: String read FContrato write FContrato;
+    property CodigoEstadoTituloCobranca: String read FCodigoEstadoTituloCobranca write FCodigoEstadoTituloCobranca;
+    property EstadoTituloCobranca: String read FEstadoTituloCobranca write FEstadoTituloCobranca;
+    property DataMovimento: TDateTime read FDataMovimento write FDataMovimento;
+    property EMV: String read Femv write Femv;
+    property UrlPix: String read FurlPix write FurlPix;
+    property TxId: String read FtxId write FtxId;
   end;
 
   { TDadosRet }
@@ -305,13 +327,19 @@ type
 
   TRejeicao = class
   private
-    FCampo: String;
-    FMensagem: String;
-    FValor: String;
+    FCampo      : String;
+    FMensagem   : String;
+    FValor      : String;
+    FCodigo     : String;
+    FVersao     : String;
+    FOcorrencia : String;
   public
-    property Campo: String  read FCampo write FCampo;
-    property Mensagem: String  read FMensagem write FMensagem;
-    property Valor: String read FValor write FValor;
+    property Campo      : String  read FCampo      write FCampo;
+    property Mensagem   : String  read FMensagem   write FMensagem;
+    property Valor      : String  read FValor      write FValor;
+    property Codigo     : String  read FCodigo     write FCodigo;
+    property Versao     : String  read FVersao     write FVersao;
+    property Ocorrencia : String  read FOcorrencia write FOcorrencia;
   end;
 
   { TListaRejeicao }
@@ -330,22 +358,30 @@ type
   TRetEnvio = class
   private
     FHeader: THeader;
-    FCodRetorno: String;
-    FOriRetorno: String;
-    FMsgRetorno: String;
-    FDadosRet: TDadosRet;
-    FListaRejeicao: TListaRejeicao;
+    FCodRetorno     : String;
+    FOriRetorno     : String;
+    FMsgRetorno     : String;
+    FDadosRet       : TDadosRet;
+    FListaRejeicao  : TListaRejeicao;
+    FHTTPResultCode : Integer;
+    FJSON           : String;
+    FIndicadorContinuidade: boolean;
+    FProximoIndice: integer;
   public
     constructor Create;
     destructor Destroy; override;
 
-    function CriarRejeicaoLista: TRejeicao;
-    property Header: THeader     read FHeader     write FHeader;
-    property CodRetorno: String  read FCodRetorno write FCodRetorno;
-    property OriRetorno: String  read FOriRetorno write FOriRetorno;
-    property MsgRetorno: String  read FMsgRetorno write FMsgRetorno;
-    property DadosRet: TDadosRet read FDadosRet   write FDadosRet;
-    property ListaRejeicao: TListaRejeicao read FListaRejeicao;
+    function CriarRejeicaoLista : TRejeicao;
+    property Header                : THeader        read FHeader                write FHeader;
+    property CodRetorno            : String         read FCodRetorno            write FCodRetorno;
+    property OriRetorno            : String         read FOriRetorno            write FOriRetorno;
+    property MsgRetorno            : String         read FMsgRetorno            write FMsgRetorno;
+    property HTTPResultCode        : Integer        read FHTTPResultCode        write FHTTPResultCode;
+    property JSON                  : String         read FJSON                  write FJSON;
+    property DadosRet              : TDadosRet      read FDadosRet              write FDadosRet;
+    property ListaRejeicao         : TListaRejeicao read FListaRejeicao;
+    property indicadorContinuidade : boolean        read FIndicadorContinuidade write FIndicadorContinuidade;
+    property proximoIndice         : integer        read FProximoIndice         write FProximoIndice;
   end;
 
   { TListaRetEnvio }
@@ -443,6 +479,7 @@ begin
   inherited;
 end;
 
+
 function TRetEnvio.CriarRejeicaoLista: TRejeicao;
 var
   I: Integer;
@@ -471,6 +508,8 @@ begin
 
   inherited;
 end;
+
+
 
 end.
 

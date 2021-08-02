@@ -416,8 +416,8 @@ var
   Inicio, Agora, UltVencto: TDateTime;
   fsvTotTrib, fsvBC, fsvICMS, fsvICMSDeson, fsvBCST, fsvST, fsvProd, fsvFrete : Currency;
   fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF, fsvTotPag : Currency;
-  fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol, fsvDup : Currency;
-  FaturamentoDireto, NFImportacao, UFCons : Boolean;
+  fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol, fsvDup, fsvPISServico, fsvCOFINSServico : Currency;
+  FaturamentoDireto, NFImportacao, UFCons, bServico : Boolean;
 
   procedure GravaLog(AString: String);
   begin
@@ -432,7 +432,7 @@ var
 
 begin
   Inicio := Now;
-  Agora := IncMinute(Now,5);  //Aceita uma tolerância de até 5 minutos, devido ao sincronismo de horário do servidor da Empresa e o servidor da SEFAZ.
+  Agora := IncMinute(Inicio, 5);  //Aceita uma tolerância de até 5 minutos, devido ao sincronismo de horário do servidor da Empresa e o servidor da SEFAZ.
   GravaLog('Inicio da Validação');
 
   with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
@@ -997,6 +997,8 @@ begin
     fsvFCPST   := 0;
     fsvFCPSTRet:= 0;
     fsvIPIDevol:= 0;
+    fsvPISServico := 0;
+    fsvCOFINSServico := 0;
     FaturamentoDireto := False;
     NFImportacao := False;
     UFCons := False;
@@ -1005,7 +1007,8 @@ begin
     begin
       with NFe.Det[I] do
       begin
-        if Trim(Prod.NCM) <> '00' then
+        bServico := (Trim(Prod.NCM) = '00') or (Trim(Imposto.ISSQN.cListServ) <> '');
+        if (not bServico) then
         begin
           // validar NCM completo somente quando não for serviço
           GravaLog('Validar: 777-NCM info [nItem: '+IntToStr(Prod.nItem)+']');
@@ -1266,17 +1269,24 @@ begin
           fsvDesc    := fsvDesc + Prod.vDesc;
           fsvII      := fsvII + Imposto.II.vII;
           fsvIPI     := fsvIPI + Imposto.IPI.vIPI;
-          fsvPIS     := fsvPIS + Imposto.PIS.vPIS;
-          fsvCOFINS  := fsvCOFINS + Imposto.COFINS.vCOFINS;
+          if bServico then
+            begin
+              fsvPISServico    := fsvPISServico + Imposto.PIS.vPIS;
+              fsvCOFINSServico := fsvCOFINSServico + Imposto.COFINS.vCOFINS;
+            end
+          else
+            begin
+              fsvPIS     := fsvPIS + Imposto.PIS.vPIS;
+              fsvCOFINS  := fsvCOFINS + Imposto.COFINS.vCOFINS;
+            end;
           fsvOutro   := fsvOutro + Prod.vOutro;
-          fsvServ    := fsvServ + Imposto.ISSQN.vBC; //VERIFICAR
           fsvFCP     := fsvFCP + Imposto.ICMS.vFCP;;
           fsvFCPST   := fsvFCPST + Imposto.ICMS.vFCPST;;
           fsvFCPSTRet:= fsvFCPSTRet + Imposto.ICMS.vFCPSTRet;;
           fsvIPIDevol:= fsvIPIDevol + vIPIDevol;
 
           // quando for serviço o produto não soma do total de produtos, quando for nota de ajuste também irá somar
-          if (Prod.NCM <> '00') or ((Prod.NCM = '00') and (NFe.Ide.finNFe = fnAjuste)) then
+          if (not bServico) or (NFe.Ide.finNFe = fnAjuste) then
             fsvProd := fsvProd + Prod.vProd;
         end;
 
@@ -1287,6 +1297,9 @@ begin
           NFImportacao := True;
       end;
     end;
+
+    // O campo abaixo é pego diretamento do total. Não foi implementada validação 605 para os itens.
+    fsvServ := NFe.Total.ISSQNtot.vServ;
 
     if not UFCons then
     begin
@@ -1357,6 +1370,14 @@ begin
     GravaLog('Validar: 604-Total vOutro');
     if (NFe.Total.ICMSTot.vOutro <> fsvOutro) then
       AdicionaErro('604-Rejeição: Total do vOutro difere do somatório dos itens');
+
+    GravaLog('Validar: 608-Total PIS ISSQN');
+    if (NFe.Total.ISSQNtot.vPIS <> fsvPISServico) then
+      AdicionaErro('608-Rejeição: Total do PIS difere do somatório dos itens sujeitos ao ISSQN');
+
+    GravaLog('Validar: 609-Total COFINS ISSQN');
+    if (NFe.Total.ISSQNtot.vCOFINS <> fsvCOFINSServico) then
+      AdicionaErro('609-Rejeição: Total da COFINS difere do somatório dos itens sujeitos ao ISSQN');
 
     GravaLog('Validar: 861-Total do FCP');
     if (NFe.Total.ICMSTot.vFCP <> fsvFCP) then
@@ -1768,6 +1789,7 @@ begin
           if (Length(INIRec.ReadString( sSecao,'cEAN','')) > 0) or (Length(INIRec.ReadString( sSecao,'EAN','')) > 0)  then
             Prod.cEAN := INIRec.ReadString( sSecao,'cEAN'      ,INIRec.ReadString( sSecao,'EAN'      ,''));
 
+          Prod.cBarra   := INIRec.ReadString( sSecao,'cBarra', '');
           Prod.xProd    := INIRec.ReadString( sSecao,'xProd',INIRec.ReadString( sSecao,'Descricao',''));
           Prod.NCM      := INIRec.ReadString( sSecao,'NCM'      ,'');
           Prod.CEST     := INIRec.ReadString( sSecao,'CEST'     ,'');
@@ -1784,6 +1806,7 @@ begin
           if Length(INIRec.ReadString( sSecao,'cEANTrib','')) > 0 then
             Prod.cEANTrib      := INIRec.ReadString( sSecao,'cEANTrib'      ,'');
 
+          Prod.cBarraTrib := INIRec.ReadString( sSecao,'cBarraTrib', '');
           Prod.uTrib     := INIRec.ReadString( sSecao,'uTrib'  , Prod.uCom);
           Prod.qTrib     := StringToFloatDef( INIRec.ReadString(sSecao,'qTrib'  ,''), Prod.qCom);
           Prod.vUnTrib   := StringToFloatDef( INIRec.ReadString(sSecao,'vUnTrib','') ,Prod.vUnCom);
@@ -2110,6 +2133,12 @@ begin
                 ICMS.vICMSEfet  := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSEfet','') ,0);
 
                 ICMS.vICMSSubstituto := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSSubstituto','') ,0);
+
+                ICMS.vICMSSTDeson := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSSTDeson','') ,0);
+                ICMS.motDesICMSST := StrTomotDesICMS(ok, INIRec.ReadString(sSecao,'motDesICMSST','0'));
+                ICMS.pFCPDif      := StringToFloatDef( INIRec.ReadString(sSecao,'pFCPDif','') ,0);
+                ICMS.vFCPDif      := StringToFloatDef( INIRec.ReadString(sSecao,'vFCPDif','') ,0);
+                ICMS.vFCPEfet     := StringToFloatDef( INIRec.ReadString(sSecao,'vFCPEfet','') ,0);
               end;
             end;
 
@@ -2199,6 +2228,7 @@ begin
                 qBCProd   := StringToFloatDef( INIRec.ReadString(sSecao,'qBCProd',INIRec.ReadString(sSecao,'Quantidade'   ,'')) ,0);
                 vAliqProd := StringToFloatDef( INIRec.ReadString(sSecao,'vAliqProd',INIRec.ReadString(sSecao,'AliquotaValor','')) ,0);
                 vPIS      := StringToFloatDef( INIRec.ReadString(sSecao,'vPIS'   ,INIRec.ReadString(sSecao,'ValorPISST'   ,'')) ,0);
+                indSomaPISST := StrToindSomaPISST(ok, INIRec.ReadString(sSecao,'indSomaPISST', ''));
               end;
             end;
 
@@ -2234,6 +2264,7 @@ begin
                 qBCProd   := StringToFloatDef( INIRec.ReadString(sSecao,'qBCProd',INIRec.ReadString(sSecao,'Quantidade'    ,'')) ,0);
                 vAliqProd := StringToFloatDef( INIRec.ReadString(sSecao,'vAliqProd',INIRec.ReadString(sSecao,'AliquotaValor','')) ,0);
                 vCOFINS   := StringToFloatDef( INIRec.ReadString(sSecao,'vCOFINS',INIRec.ReadString(sSecao,'ValorCOFINSST'  ,'')) ,0);
+                indSomaCOFINSST := StrToindSomaCOFINSST(ok, INIRec.ReadString(sSecao,'indSomaCOFINSST', ''));
               end;
             end;
 
@@ -2441,6 +2472,7 @@ begin
         with pag.New do
         begin
           tPag  := StrToFormaPagamento(OK,sFim);
+          xPag  := INIRec.ReadString(sSecao,'xPag','');
           vPag  := StringToFloatDef( INIRec.ReadString(sSecao,'vPag','') ,0);
           // Se não for informado 0=Pagamento à Vista ou 1=Pagamento à Prazo
           // a tag <indPag> não deve ser gerada.
@@ -2778,6 +2810,7 @@ begin
           INIRec.WriteString(sSecao, 'infAdProd', infAdProd);
           INIRec.WriteString(sSecao, 'cProd', Prod.cProd);
           INIRec.WriteString(sSecao, 'cEAN', Prod.cEAN);
+          INIRec.WriteString(sSecao, 'cBarra', Prod.cBarra);
           INIRec.WriteString(sSecao, 'xProd', Prod.xProd);
           INIRec.WriteString(sSecao, 'NCM', Prod.NCM);
           INIRec.WriteString(sSecao, 'CEST', Prod.CEST);
@@ -2791,6 +2824,7 @@ begin
           INIRec.WriteFloat(sSecao, 'vUnCom', Prod.vUnCom);
           INIRec.WriteFloat(sSecao, 'vProd', Prod.vProd);
           INIRec.WriteString(sSecao, 'cEANTrib', Prod.cEANTrib);
+          INIRec.WriteString(sSecao, 'cBarraTrib', Prod.cBarraTrib);
           INIRec.WriteString(sSecao, 'uTrib', Prod.uTrib);
           INIRec.WriteFloat(sSecao, 'qTrib', Prod.qTrib);
           INIRec.WriteFloat(sSecao, 'vUnTrib', Prod.vUnTrib);
@@ -3067,6 +3101,12 @@ begin
               INIRec.WriteFloat(sSecao, 'vICMSEfet', ICMS.vICMSEfet);
 
               INIRec.WriteFloat(sSecao, 'vICMSSubstituto', ICMS.vICMSSubstituto);
+
+              INIRec.WriteFloat(sSecao, 'vICMSSTDeson', ICMS.vICMSSTDeson);
+              INIRec.WriteString(sSecao, 'motDesICMSST', motDesICMSToStr(ICMS.motDesICMSST));
+              INIRec.WriteFloat(sSecao, 'pFCPDif', ICMS.pFCPDif);
+              INIRec.WriteFloat(sSecao, 'vFCPDif', ICMS.vFCPDif);
+              INIRec.WriteFloat(sSecao, 'vFCPEfet', ICMS.vFCPEfet);
             end;
             sSecao := 'ICMSUFDEST' + IntToStrZero(I + 1, 3);
             with ICMSUFDest do
@@ -3146,6 +3186,7 @@ begin
                 INIRec.WriteFloat(sSecao, 'qBCProd', qBCProd);
                 INIRec.WriteFloat(sSecao, 'vAliqProd', vAliqProd);
                 INIRec.WriteFloat(sSecao, 'vPIS', vPIS);
+                INIRec.WriteString(sSecao, 'indSomaPISST', indSomaPISSTToStr(indSomaPISST));
               end;
             end;
             sSecao := 'COFINS' + IntToStrZero(I + 1, 3);
@@ -3183,6 +3224,7 @@ begin
                 INIRec.WriteFloat(sSecao, 'qBCProd', qBCProd);
                 INIRec.WriteFloat(sSecao, 'vAliqProd', vAliqProd);
                 INIRec.WriteFloat(sSecao, 'vCOFINS', vCOFINS);
+                INIRec.WriteString(sSecao, 'indSomaCOFINSST', indSomaCOFINSSTToStr(indSomaCOFINSST));
               end;
             end;
             if (ISSQN.vBC > 0) then
@@ -3332,6 +3374,7 @@ begin
         with pag.Items[I] do
         begin
           INIRec.WriteString(sSecao, 'tPag', FormaPagamentoToStr(tPag));
+          INIRec.WriteString(sSecao, 'xPag', xPag);
           INIRec.WriteFloat(sSecao, 'vPag', vPag);
           INIRec.WriteString(sSecao, 'indPag', IndpagToStr(indPag));
           INIRec.WriteString(sSecao, 'tpIntegra', tpIntegraToStr(tpIntegra));

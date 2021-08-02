@@ -42,7 +42,191 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+21/07/2021
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/63365-provedor-el-cidade-colatina/
+  Por: Guilherme Martin Ewz
+
+06/07/2021
+-- pnfsNFSeW_ABRASFv2 --
+[*] Ajuste na geração do XML do Rps - Provedor 4R.
+  Por: Danny
+
+22/06/2021
+-- ACBrNFSeWebServices/pnfsLerListaNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/62824-nfse-com-erro-ao-consultar-rps-provedor-ipm/?tab=comments#comment-411835
+  Por: Jefferson Damian
+
+16/06/2021
+-- pnfsNFSeW_ABRASFv1 --
+[*] https://www.projetoacbr.com.br/forum/topic/62907-tag-aliquota-zerada-no-metropolisweb/
+  Por: Claudio Freire / Italo Giurizzato Junior
+
+10/06/2021
+-- pnfsNFSeG --
+[*] O provedor IPM se utiliza do código TOM em vez do código IBGE 
+    no que diz respeito ao código do município.
+  Por: Italo Giurizzato Junior
+
+02/06/2021
+-- pnfsNFSeW_SMARAPD --
+[*] Imposta uma condição ao gerar a tag <tributadonomunicipio>, estava gerado
+    sempre com o mesmo valor.
+  Por: Italo Giurizzato Junior
+
+01/06/2021
+-- ACBrNFSeWebServices --
+[*] Possível ajuste para o provedor IPM.
+  Por: Italo Giurizzato Junior
+-- pnfsNFSeW_SMARAPD --
+[*] https://www.projetoacbr.com.br/forum/topic/62753-nfs-e-pra-cidade-de-serra-gerando-valor-de-campo-incorreto/
+   Por: Matheus Rodrigo Koch
+
+28/05/2021
+-- pnfsNFSeG --
+[*] Ajuste visando deixar todas as assinaturas do SubstituicaoNfse validas.
+   Por: Alessandro Risse
+-- Diversos --
+[*] Ajustes nos fontes para atender o Provedor Asten.
+  Por: VeleiroPedeVento / Italo Giurizzato Junior
+-- pnfsNFSeR --
+[*] Incluindo um cálculo para a propriedade ValorLiquidoNfse - Provedor IPM.
+  Por: Tiago FZ
+-- pnfsNFSeW_ABRASFv2 --
+[*] Corrigido a geração da tag Competencia para o provedor 4R que tem que ser
+    Data e Hora.
+  Por: Bruto do Delphi
+
+27/05/2021
+-- pnfsNFSeR --
+[*] Possível correção para a leituro do XML do RPS da versão 1 do
+    layout da ABRASF.
+  Por: Italo Giurizzato Junior
+
+25/05/2021
+-- ACBrNFSeWebServices --
+[*] Possível correção para o SubstituicaoNfse com relação a assinatura.
+  Por: Italo Giurizzato Junior
+-- pnfsNFSeG --
+[*] Possível correção para o cancelamento de NFS-e - provedor IPM.
+  Por: Italo Giurizzato Junior
+
+18/05/2021
+-- pnfsNFSeW_ABRASFv2 --
+[*] https://www.projetoacbr.com.br/forum/topic/62596-iibrasil-emiss%C3%A3o-de-nfse-limeira/
+  Por: Ricardo Gabriel
+-- ACBrNFSeWebServices --
+[*] https://www.projetoacbr.com.br/forum/topic/62549-3530607-mogidascruzessp-smarapdv23/?do=findComment&comment=409488&_rid=63
+  Por: Renato Rubinho
+
+14/05/2021
+-- pnfsNFSeG --
+[*] https://www.projetoacbr.com.br/forum/topic/62485-erro-schema-utilizando-bethav2/
+  Por: Haroldo
+-- pnfsNFSeW_ABRASFv2/pnfsLerListaNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/62461-ajustes-provedor-systempro/
+  Por: Rafael Sartori
+-- pnfsNFSeW_ABRASFv2 --
+[*] https://www.projetoacbr.com.br/forum/topic/62441-ajuste-de-envio-provedor-elotech/
+  Por: Will Mesquita
+
+29/04/2021
+-- pnfsNFSeW_AssessorPublico --
+[*] https://www.projetoacbr.com.br/forum/topic/62299-contribui%C3%A7%C3%A3oaltera%C3%A7%C3%A3o-feita-na-nfs-e-provedor-assessor-p%C3%BAblico-issonline/
+  Por: Alex Pereira
+-- Diversos -- 
+[*] https://www.projetoacbr.com.br/forum/topic/60344-nfs-e-vila-velha-es-rps-is-unexpected-expecting-loterps/?tab=comments#comment-406305
+  Por: Sérgio Caldeira Silva / Italo Giurizzato Junior
+-- pnfsNFSeW_EL --
+[*] https://www.projetoacbr.com.br/forum/topic/62297-contribui%C3%A7%C3%A3o-projeto-provedor-el/
+  Por: Edulamy
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/62307-troca-de-provedor-s%C3%A3o-sebasti%C3%A3o-sp-e-altera%C3%A7%C3%A3o-no-schema-provedor-iibrasil-adicionado-nova-tag-no-xml/
+  Por: igsrc
+
+16/04/2021
+-- pnfsNFSeG --
+[*] https://www.projetoacbr.com.br/forum/topic/61615-troca-webservice-nova-lima-issdigital-para-abaco/?do=findComment&comment=407414&_rid=63
+  Por: esdmjr
+
+13/04/2021
+-- pnfsLerListaNFSe --
+[*] https://www.projetoacbr.com.br/forum/topic/62188-problema-nfsebrasil/
+  Por: Jéter Rabelo Ferreira
+-- pnfsNFSeW_ABRASFv2 --
+[*] Removido do CASA o provedor Pronimv2, para que a tag Aliquota não seja
+    gerada quando o seu valor for zero.
+  Por: Italo Giurizzato Junior
+
+06/04/2021
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/61863-equiplano-acbrnfse-n%C3%A3o-carrega-o-pr%C3%B3prio-xml-gerado/?do=findComment&comment=405852&_rid=63
+  Por: Marcos
+
+29/03/2021
+-- ACBrNFSeWebServices --
+[*] Possível correção para o provedor SmarAPDv23.
+  Por: Italo Giurizzato Junior
+-- pnfsNFSeG --
+[*] Correção para o provedor Infiscv11.
+  Por: Italo Giurizzato Junior
+-- pnfsNFSeW_ABRASFv2 --
+[*] https://www.projetoacbr.com.br/forum/topic/61615-troca-webservice-nova-lima-issdigital-para-abaco/?do=findComment&comment=405874&_rid=63
+  Por: Deivid de Sá Rodrigues
+
+25/03/2021
+-- ACBrNFSeWebServices/pnfsNFSeR --
+[*] Ajustes para o provedor AEG.
+  Por: KelVin Alexandre Ferreira
+-- pnfsNFSeW_Agili --
+[*] Ajustes para o provedor Agili.
+  Por: Eder Lacerda
+
+19/03/2021
+-- ACBrNFSeWebServices --
+[*] Ajustes para o provedor InfIsc
+  Por: Anderson GR
+
+18/03/2021
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/61681-cpfcnpjtomador-informado-incorretamente/?do=findComment&comment=404453&_rid=63
+  Por: Igor Cibiac
+
+15/03/2021
+-- pnfsNFSeW_ABRASFv2 --
+[*] Ajustes para o provedor Abacov2 no que se refere a tag Aliquota.
+  Por: Deivid de Sá Rodrigues
+
+11/03/2021
+-- Diversos --
+[+] Implementado o provedor Abacov2 que segue a versão 2 do layout da ABRASF.
+  Por: Italo Giurizzato Junior
+
+10/03/2021
+-- pnfsNFSeW_SigISS --
+[*] https://www.projetoacbr.com.br/forum/topic/59632-t%C3%B3pico-exclusivo-para-troca-de-provedor-e-novas-cidades/?do=findComment&comment=404035&_rid=63
+  Por: CrasH
+
+09/03/2021
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/61574-prefeitura-porto-alegre-problema-ao-enviar-nota/
+  Por: Wendell Gasparoni
+
+04/03/2021
+-- pnfsNFSeW_ABRASFv2/ACBrNFSeWebServices --
+[*] Possível correção para o provedor VersaTecnologia.
+  Por: Italo Giurizzato Junior
+
+03/03/2021
+-- pnfsNFSeW_Agili --
+[*] Possível correção para o provedor Agili.
+  Por: Italo Giurizzato Junior
+
 02/03/2021
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/61425-troca-de-sistema-prefeitura-de-vila-velhaes/?do=findComment&comment=403318&_rid=63
+  Por: Luiz Vaz
+
 -- pnfsNFSeR --
 [*] https://www.projetoacbr.com.br/forum/topic/59632-t%C3%B3pico-exclusivo-para-troca-de-provedor-e-novas-cidades/?do=findComment&comment=403324&_rid=63
   Por: Matheus Rodrigo Koch

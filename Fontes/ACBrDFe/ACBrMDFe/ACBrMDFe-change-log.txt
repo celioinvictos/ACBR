@@ -42,6 +42,51 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+25/06/2021
+-- ACBrMDFeManifestos/pmdfeMDFeW  --
+[*] Corrigido a leitura do novo campo categCombVeic.
+    Esse campo agora é lido da sessão [valePed] e a os campos da sessão
+    [valePedxxx] também podem ser lidos da sessão [dispxxx].
+   Por: Italo Giurizzato Junior
+
+22/06/2021
+-- pmdfeConversaoMDFe --
+[+] Incluido as funções: tpValePedToStrText e categCombVeicToStrText que retornam a 
+    descrição do tipo de vale pedágio e categoria de combinação de veiculos respectivamente.
+   Por: Eliezer fb
+
+17/06/2021
+-- ACBrMDFeDAMDFeRLRetrato --
+[*] Alterado a impressão da Data/Hora de impressão, Usuário e Sistema visando
+    deixar identico da NF-e
+   Por: Italo Giurizzato Junior
+
+15/06/2021
+-- pmdfeMDFeR --
+[*] https://www.projetoacbr.com.br/forum/topic/62918-nt_2021_002_v103-uf-do-grupo-veictracao-e-veicreboque-opcional/
+   Por: Rômulo da Costa de Souza
+
+17/05/2021
+-- pmdfeEnvEventoMDFe --
+[*] Incluido a linha para ler do arquivo INI o valor do campo vAdiant
+   Por: Italo Giurizzato Junior
+
+26/04/2021
+-- Diversos --
+[*] Alterações visando atender a NT 2021/002.
+   Por: Italo Giurizzato Junior
+
+06/04/2021
+-- pmdfeMDFeW --
+[-] Correção na grafia da tag "indAltoDesemp".
+    https://www.projetoacbr.com.br/forum/topic/62080-corre%C3%A7%C3%A3o-tag-indaltodesemp/
+  Por: eliezerfb
+
+31/03/2021
+-- Diversos --
+[*] Alteração visando atender a NT 2021/001.
+   Por: Italo Giurizzato Junior
+
 13/11/2020
 -- ACBrMDFeManifestos --
 [*] Uso da função ObterDFeXML nos métodos Validar e VerificarAssinatura

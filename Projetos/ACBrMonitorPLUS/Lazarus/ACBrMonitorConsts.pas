@@ -39,6 +39,7 @@ uses
   Classes, SysUtils;
 
 ResourceString
+  SErrTempoUsoExpirou = 'Tempo de Uso Expirou!';
   SErrArqConfNaoEncontrado = 'Arquivo de configuração não encontrado';
   SErrArqConfigNaoDefinido = 'Arquivo de configuração não definido';
   SErrDiretorioInvalido = 'Diretório Invalido: %s';
@@ -83,6 +84,10 @@ ResourceString
 
 const
   CMonitorIni = 'ACBrMonitor.ini';
+  C_PROJETO_ACBR = 'Projeto ACBr';
+  C_PROJETOACBR_COM_BR = 'www.projetoacbr.com.br';
+  CODIGO_HOMOLOGACAO = 1;
+
   _C = 'tYk*5W@';
   C_LEVEL0 = 0;
   C_LEVEL1 = 1;
@@ -462,6 +467,33 @@ const
   CMetodoDistribuicaoDFe =             'distribuicaodfe';
   CMetodoDataVencimentoCertificado =   'datavencimentocertificado';
 
+  CMetodoCriarEnviarRPS =              'criarenviarrps';
+  CMetodoAdicionarRPS =                'adicionarrps';
+  CMetodoEnviarLoteRPS =               'enviarloterps';
+  CMetodoGerarLoteRPS =                'gerarloterps';
+  CMetodoConsultarSituacaoLote =       'ConsultarSituacaoLote';
+  CMetodoConsultarLote =               'ConsultarLote';
+  CMetodoConsultarNFSeporRPS =         'ConsultarNFSeporRPS';
+  CMetodoConsultarNFSeporNumero =      'ConsultarNFSeporNumero';
+  CMetodoConsultarNFSeporPeriodo =     'ConsultarNFSeporPeriodo';
+  CMetodoConsultarNFSeporFaixa =       'ConsultarNFSeporFaixa';
+  CMetodoConsultarNFSeGenerico =       'ConsultarNFSeGenerico';
+  CMetodoConsultarNFSeServicoPrestadoPorNumero = 'ConsultarNFSeServicoPrestadoPorNumero';
+  CMetodoConsultarNFSeServicoPrestadoPorTomador = 'ConsultarNFSeServicoPrestadoPorTomador';
+  CMetodoConsultarNFSeServicoPrestadoPorIntermediario = 'ConsultarNFSeServicoPrestadoPorIntermediario';
+  CMetodoConsultarNFSeServicoPrestadoPorPeriodo = 'ConsultarNFSeServicoPrestadoPorPeriodo';
+  CMetodoConsultarNFSeServicoTomadoPorNumero = 'ConsultarNFSeServicoTomadoPorNumero';
+  CMetodoConsultarNFSeServicoTomadoPorPrestador = 'ConsultarNFSeServicoTomadoPorPrestador';
+  CMetodoConsultarNFSeServicoTomadoPorTomador = 'ConsultarNFSeServicoTomadoPorTomador';
+  CMetodoConsultarNFSeServicoTomadoPorIntermediario = 'ConsultarNFSeServicoTomadoPorIntermediario';
+  CMetodoConsultarNFSeServicoTomadoPorPeriodo = 'ConsultarNFSeServicoTomadoPorPeriodo';
+  CMetodoCancelarNFSe =                'CancelarNFSe';
+  CMetodoLinkNFSe =                    'LinkNFSe';
+  CMetodoSubstituirNFSe =              'SubstituirNFSe';
+  CMetodoEnviarEmailNFSe =             'EnviarEmailNFSe';
+  CMetodoImprimirNFSe =                'ImprimirNFSe';
+  CMetodoImprimirPDFNFSe =             'ImprimirPDFNFSe';
+
   CMetodoValidarCTe =                  'validarcte';
   CMetodoAssinarCTe =                  'assinarcte';
   CMetodoConsultarCTe =                'consultarcte';
@@ -544,6 +576,7 @@ const
   CMetodoImprimirBoleto =            'imprimirboleto';
   CMetodoGerarPDFBoleto =            'gerarpdfboleto';
   CMetodoEnviarEmailBoleto =         'enviaremailboleto';
+  CMetodoEnviarBoleto =              'enviarboleto';
 
   CMetodoAtivar =               'ativar';
   CMetodoDesativar =            'desativar';
@@ -728,6 +761,8 @@ const
 
   CExtensaoXmlBPe =                 '-bpe.xml';
   CExtensaoXmlBPeEve =              '-eve.xml';
+
+  CExtensaoXmlNFSe =                 '-nfse.xml';
 
   CPathLogs =                        'Logs';
 
@@ -1254,6 +1289,8 @@ const
   CKeyBOLETOPreview =                       'Preview';
   CKeyBOLETOProgresso =                     'Progresso';
   CKeyBOLETOSetup =                         'Setup';
+  CKeyBOLETOAlteraEscala =                  'AlteraEscala';
+  CKeyBOLETOEscala =                        'Escala';
   CKeyBOLETOLayout =                        'Layout';
   CKeyBOLETOFiltro =                        'Filtro';
   CKeyBOLETODirArquivoBoleto =              'DirArquivoBoleto';
@@ -1284,6 +1321,27 @@ const
   CKeyBOLETOCedenteCodTransmissao =         'Cedente.CodTransmissao';
   CKeyBOLETOCedenteModalidade =             'Cedente.Modalidade';
   CKeyBOLETOCedenteConvenio =               'Cedente.Convenio';
+
+  CKeyBOLETOClientID =                      'ClientID';
+  CKeyBOLETOClientSecret =                  'ClientSecret';
+  CKeyBOLETOKeyUser =                       'KeyUser';
+  CKeyBOLETOScope =                         'Scope';
+  CKeyBOLETOIndicadorPix =                  'IndicadorPix';
+  CKeyBOLETOLogRegistro =                   'LogRegistro';
+  CKeyBOLETOPathGravarRegistro =            'PathGravarRegistro';
+  CKeyBOLETOAmbiente =                      'Ambiente';
+  CKeyBOLETOOperacao =                      'Operacao';
+  CKeyBOLETOProxyHost =                     'ProxyHost';
+  CKeyBOLETOProxyPass =                     'ProxyPass';
+  CKeyBOLETOProxyPort =                     'ProxyPort';
+  CKeyBOLETOProxyUser =                     'ProxyUser';
+  CKeyBOLETOCryptLib =                      'CryptLib';
+  CKeyBOLETOHttpLib =                       'HttpLib';
+  CKeyBOLETOXmlSignLib =                    'XmlSignLib';
+  CKeyBOLETOSSLType =                       'SSLType';
+  CKeyBOLETOTimeOut =                       'TimeOut';
+  CKeyBOLETOCertificadoHTTP =               'CertificadoHTTP';
+  CKeyBOLETOVersaoDF =                      'VersaoDF';
 
   CValueTipoEmpregador =                    'tePessoaJuridica';
   CValueTipoContribuinte =                  'tcPessoaJuridica';

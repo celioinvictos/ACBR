@@ -45,7 +45,7 @@ object dmACBrBoletoFCFR: TdmACBrBoletoFCFR
     Top = 200
   end
   object frxReport: TfrxReport
-    Version = '5.6.14'
+    Version = '5.6.18'
     DotMatrixReport = False
     IniFile = '\Software\Fast Reports'
     PreviewOptions.AllowEdit = False
@@ -57,6 +57,7 @@ object dmACBrBoletoFCFR: TdmACBrBoletoFCFR
     ReportOptions.LastChange = 42257.626775173600000000
     ScriptLanguage = 'PascalScript'
     StoreInDFM = False
+    OnBeforePrint = frxReportBeforePrint
     OnProgressStart = frxReportProgressStart
     Left = 50
     Top = 36

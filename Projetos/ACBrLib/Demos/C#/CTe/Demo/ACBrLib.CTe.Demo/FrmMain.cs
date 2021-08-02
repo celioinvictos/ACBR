@@ -44,13 +44,13 @@ namespace ACBrLib.CTe.Demo
             cmbSSlType.EnumDataSource(SSLType.LT_all);
 
             // Altera as config de log
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Principal, "LogNivel", 4);
+            ACBrCTe.Config.Principal.LogNivel = NivelLog.logCompleto;
 
             var logPath = Path.Combine(Application.StartupPath, "Logs");
             if (!Directory.Exists(logPath))
                 Directory.CreateDirectory(logPath);
 
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Principal, "LogPath", logPath);
+            ACBrCTe.Config.Principal.LogPath = logPath;
             ACBrCTe.ConfigGravar();
 
             LoadConfig();
@@ -62,113 +62,201 @@ namespace ACBrLib.CTe.Demo
 
         private void SalvarConfig()
         {
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "VersaoDF", cmbVersao.GetSelectedValue<VersaoCTe>());
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "ModeloDF", cmbModeloDocumento.GetSelectedValue<ModeloCTe>());
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "SSLCryptLib", cmbCrypt.GetSelectedValue<SSLCryptLib>());
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "SSLHttpLib", cmbHttp.GetSelectedValue<SSLHttpLib>());
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "SSLXmlSignLib", cmbXmlSign.GetSelectedValue<SSLXmlSignLib>());
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "ArquivoPFX", txtCertPath.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "DadosPFX", txtDadosPFX.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "Senha", txtCertPassword.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "NumeroSerie", txtCertNumero.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "PathSchemas", txtSchemaPath.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DFe, "UF", cmbUfDestino.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "Ambiente", rdbHomologacao.Checked ? TipoAmbiente.taHomologacao : TipoAmbiente.taProducao);
+            ACBrCTe.Config.VersaoDF = cmbVersao.GetSelectedValue<VersaoCTe>();
+            ACBrCTe.Config.ModeloDF = cmbModeloDocumento.GetSelectedValue<ModeloCTe>();
+            ACBrCTe.Config.DFe.SSLCryptLib = cmbCrypt.GetSelectedValue<SSLCryptLib>();
+            ACBrCTe.Config.DFe.SSLHttpLib = cmbHttp.GetSelectedValue<SSLHttpLib>();
+            ACBrCTe.Config.DFe.SSLXmlSignLib = cmbXmlSign.GetSelectedValue<SSLXmlSignLib>();
+            ACBrCTe.Config.DFe.ArquivoPFX = txtCertPath.Text;
+            ACBrCTe.Config.DFe.Senha = txtCertPassword.Text;
+            ACBrCTe.Config.DFe.NumeroSerie = txtCertNumero.Text;
+            ACBrCTe.Config.PathSchemas = txtSchemaPath.Text;
+            ACBrCTe.Config.DFe.UF = cmbUfDestino.Text;
+            ACBrCTe.Config.Ambiente = rdbHomologacao.Checked ? TipoAmbiente.taHomologacao : TipoAmbiente.taProducao;
 
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "SSLType", cmbSSlType.GetSelectedValue<SSLType>());
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "Timeout", nudTimeOut.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Proxy, "Servidor", txtProxyServidor.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Proxy, "Porta", nudProxyPorta.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Proxy, "Usuario", txtProxyUsuario.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Proxy, "Senha", txtProxySenha.Text);
+            ACBrCTe.Config.SSLType = cmbSSlType.GetSelectedValue<SSLType>();
+            ACBrCTe.Config.Timeout = (int)nudTimeOut.Value;
+            ACBrCTe.Config.Proxy.Servidor = txtProxyServidor.Text;
+            ACBrCTe.Config.Proxy.Porta = nudProxyPorta.Text;
+            ACBrCTe.Config.Proxy.Usuario = txtProxyUsuario.Text;
+            ACBrCTe.Config.Proxy.Senha = txtProxySenha.Text;
 
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "SalvarGer", ckbSalvarArqs.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "SepararPorMes", ckbPastaMensal.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "AdicionarLiteral", ckbAdicionaLiteral.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "EmissaoPathCTe", ckbEmissaoPathCTe.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "SalvarArq", ckbSalvaPathEvento.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "SepararPorCNPJ", ckbSepararPorCNPJ.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "SepararPorModelo", ckbSepararPorModelo.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "PathCTe", txtArqCTe.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "PathInu", txtArqInu.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.CTe, "PathEvento", txtArqEvento.Text);
+            ACBrCTe.Config.SalvarGer = ckbSalvarArqs.Checked;
+            ACBrCTe.Config.SepararPorMes = ckbPastaMensal.Checked;
+            ACBrCTe.Config.AdicionarLiteral = ckbAdicionaLiteral.Checked;
+            ACBrCTe.Config.EmissaoPathCTe = ckbEmissaoPathCTe.Checked;
+            ACBrCTe.Config.SalvarArq = ckbSalvaPathEvento.Checked;
+            ACBrCTe.Config.SepararPorCNPJ = ckbSepararPorCNPJ.Checked;
+            ACBrCTe.Config.SepararPorModelo = ckbSepararPorModelo.Checked;
+            ACBrCTe.Config.PathCTe = txtArqCTe.Text;
+            ACBrCTe.Config.PathInu = txtArqInu.Text;
+            ACBrCTe.Config.PathEvento = txtArqEvento.Text;
 
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DACTe, "PathLogo", txtLogomarca.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.DACTe, "TipoDACTe", rdbRetrato.Checked ? TipoDACTE.tiRetrato : TipoDACTE.tiPaisagem);
+            ACBrCTe.Config.DACTe.PathLogo = txtLogomarca.Text;
+            ACBrCTe.Config.DACTe.TipoDACTe = rdbRetrato.Checked ? TipoDACTE.tiRetrato : TipoDACTE.tiPaisagem;
 
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "Nome", txtNome.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "Conta", txtEmail.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "Usuario", txtUsuario.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "Senha", txtSenha.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "Servidor", txtHost.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "Porta", nudPorta.Text);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "SSL", ckbSSL.Checked);
-            ACBrCTe.ConfigGravarValor(ACBrSessao.Email, "TLS", ckbTLS.Checked);
-            ACBrCTe.ConfigGravar("");
+            ACBrCTe.Config.Email.Nome = txtNome.Text;
+            ACBrCTe.Config.Email.Conta = txtEmail.Text;
+            ACBrCTe.Config.Email.Usuario = txtUsuario.Text;
+            ACBrCTe.Config.Email.Senha = txtSenha.Text;
+            ACBrCTe.Config.Email.Servidor = txtHost.Text;
+            ACBrCTe.Config.Email.Porta = nudPorta.Text;
+            ACBrCTe.Config.Email.SSL = ckbSSL.Checked;
+            ACBrCTe.Config.Email.TLS = ckbTLS.Checked;
+            ACBrCTe.ConfigGravar();
         }
 
-        private void LoadConfig()
+        private void LoadConfig(string file = "")
         {
-            ACBrCTe.ConfigLer();
+            ACBrCTe.ConfigLer(file);
 
-            cmbVersao.SetSelectedValue(ACBrCTe.ConfigLerValor<VersaoCTe>(ACBrSessao.CTe, "VersaoDF"));
-            cmbModeloDocumento.SetSelectedValue(ACBrCTe.ConfigLerValor<ModeloCTe>(ACBrSessao.CTe, "ModeloDF"));
-            cmbCrypt.SetSelectedValue(ACBrCTe.ConfigLerValor<SSLCryptLib>(ACBrSessao.DFe, "SSLCryptLib"));
-            cmbHttp.SetSelectedValue(ACBrCTe.ConfigLerValor<SSLHttpLib>(ACBrSessao.DFe, "SSLHttpLib"));
-            cmbXmlSign.SetSelectedValue(ACBrCTe.ConfigLerValor<SSLXmlSignLib>(ACBrSessao.DFe, "SSLXmlSignLib"));
-            txtCertPath.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.DFe, "ArquivoPFX");
-            txtDadosPFX.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.DFe, "DadosPFX");
-            txtCertPassword.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.DFe, "Senha");
-            txtCertNumero.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.DFe, "NumeroSerie");
-            txtSchemaPath.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.CTe, "PathSchemas");
-            cmbUfDestino.SelectedItem = ACBrCTe.ConfigLerValor<string>(ACBrSessao.DFe, "UF");
+            cmbVersao.SetSelectedValue(ACBrCTe.Config.VersaoDF);
+            cmbModeloDocumento.SetSelectedValue(ACBrCTe.Config.ModeloDF);
+            cmbCrypt.SetSelectedValue(ACBrCTe.Config.DFe.SSLCryptLib);
+            cmbHttp.SetSelectedValue(ACBrCTe.Config.DFe.SSLHttpLib);
+            cmbXmlSign.SetSelectedValue(ACBrCTe.Config.DFe.SSLXmlSignLib);
+            txtCertPath.Text = ACBrCTe.Config.DFe.ArquivoPFX;
+            txtCertPassword.Text = ACBrCTe.Config.DFe.Senha;
+            txtCertNumero.Text = ACBrCTe.Config.DFe.NumeroSerie;
+            txtSchemaPath.Text = ACBrCTe.Config.PathSchemas;
+            cmbUfDestino.SelectedItem = ACBrCTe.Config.DFe.UF;
 
-            var ambiente = ACBrCTe.ConfigLerValor<TipoAmbiente>(ACBrSessao.CTe, "Ambiente");
+            var ambiente = ACBrCTe.Config.Ambiente;
             rdbHomologacao.Checked = ambiente == TipoAmbiente.taHomologacao;
             rdbProducao.Checked = ambiente == TipoAmbiente.taProducao;
 
-            cmbSSlType.SetSelectedValue(ACBrCTe.ConfigLerValor<SSLType>(ACBrSessao.CTe, "SSLType"));
-            nudTimeOut.Value = ACBrCTe.ConfigLerValor<decimal>(ACBrSessao.CTe, "Timeout");
-            txtProxyServidor.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Proxy, "Servidor");
-            nudProxyPorta.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Proxy, "Porta");
-            txtProxyUsuario.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Proxy, "Usuario");
-            txtProxySenha.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Proxy, "Senha");
+            cmbSSlType.SetSelectedValue(ACBrCTe.Config.SSLType);
+            nudTimeOut.Value = ACBrCTe.Config.Timeout;
+            txtProxyServidor.Text = ACBrCTe.Config.Proxy.Servidor;
+            nudProxyPorta.Text = ACBrCTe.Config.Proxy.Porta;
+            txtProxyUsuario.Text = ACBrCTe.Config.Proxy.Usuario;
+            txtProxySenha.Text = ACBrCTe.Config.Proxy.Senha;
 
-            ckbSalvarArqs.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "SalvarGer");
-            ckbPastaMensal.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "SepararPorMes");
-            ckbAdicionaLiteral.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "AdicionarLiteral");
-            ckbEmissaoPathCTe.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "EmissaoPathCTe");
-            ckbSalvaPathEvento.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "SalvarArq");
-            ckbSepararPorCNPJ.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "SepararPorCNPJ");
-            ckbSepararPorModelo.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.CTe, "SepararPorModelo");
-            txtArqCTe.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.CTe, "PathCTe");
-            txtArqInu.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.CTe, "PathInu");
-            txtArqEvento.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.CTe, "PathEvento");
+            ckbSalvarArqs.Checked = ACBrCTe.Config.SalvarGer;
+            ckbPastaMensal.Checked = ACBrCTe.Config.SepararPorMes;
+            ckbAdicionaLiteral.Checked = ACBrCTe.Config.AdicionarLiteral;
+            ckbEmissaoPathCTe.Checked = ACBrCTe.Config.EmissaoPathCTe;
+            ckbSalvaPathEvento.Checked = ACBrCTe.Config.SalvarArq;
+            ckbSepararPorCNPJ.Checked = ACBrCTe.Config.SepararPorCNPJ;
+            ckbSepararPorModelo.Checked = ACBrCTe.Config.SepararPorModelo;
+            txtArqCTe.Text = ACBrCTe.Config.PathCTe;
+            txtArqInu.Text = ACBrCTe.Config.PathInu;
+            txtArqEvento.Text = ACBrCTe.Config.PathEvento;
 
-            txtLogomarca.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.DACTe, "PathLogo");
-            var tipoImpressao = ACBrCTe.ConfigLerValor<TipoDACTE>(ACBrSessao.DACTe, "TipoDACTe");
+            txtLogomarca.Text = ACBrCTe.Config.DACTe.PathLogo;
+            var tipoImpressao = ACBrCTe.Config.DACTe.TipoDACTe;
             rdbRetrato.Checked = tipoImpressao == TipoDACTE.tiRetrato;
             rdbPaisagem.Checked = tipoImpressao == TipoDACTE.tiPaisagem;
 
-            txtNome.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Email, "Nome");
-            txtEmail.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Email, "Conta");
-            txtUsuario.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Email, "Usuario");
-            txtSenha.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Email, "Senha");
-            txtHost.Text = ACBrCTe.ConfigLerValor<string>(ACBrSessao.Email, "Servidor");
-            nudPorta.Value = ACBrCTe.ConfigLerValor<int>(ACBrSessao.Email, "Porta");
-            ckbSSL.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.Email, "SSL");
-            ckbTLS.Checked = ACBrCTe.ConfigLerValor<bool>(ACBrSessao.Email, "TLS");
+            txtNome.Text = ACBrCTe.Config.Email.Nome;
+            txtEmail.Text = ACBrCTe.Config.Email.Conta;
+            txtUsuario.Text = ACBrCTe.Config.Email.Usuario;
+            txtSenha.Text = ACBrCTe.Config.Email.Senha;
+            txtHost.Text = ACBrCTe.Config.Email.Servidor;
+            nudPorta.Text = ACBrCTe.Config.Email.Porta;
+            ckbSSL.Checked = ACBrCTe.Config.Email.SSL;
+            ckbTLS.Checked = ACBrCTe.Config.Email.TLS;
         }
 
         private void CheckCTeLista(bool xml = false)
         {
-            if (MessageBox.Show(@"Limpar a lista ?", @"ACBrLibCTe", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show(@"Limpar a lista ?", "ACBrLibCTe", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 ACBrCTe.LimparLista();
 
             if (xml)
                 CarregarCTeXml();
             else
                 CarregarCTeIni();
+        }
+
+        public bool validacaoEmail()
+        {
+            if (txtHost.Text == "")
+            {
+                errorProvider.SetError(txtHost, "Informe Host SMTP");
+                return false;
+            }
+            else if (txtUsuario.Text == "")
+            {
+                errorProvider.SetError(txtUsuario, "Informe Usuário");
+                return false;
+            }
+            else if (txtSenha.Text == "")
+            {
+                errorProvider.SetError(txtSenha, "Informe Senha");
+                return false;
+            }
+            else if (txtNome.Text == "")
+            {
+                errorProvider.SetError(txtNome, "Informe Nome do Proprietario do e-mail");
+                return false;
+            }
+            else if (txtEmail.Text == "")
+            {
+                errorProvider.SetError(txtEmail, "Informe e-mail do Proprietario");
+                return false;
+            }
+            else if (nudPorta.Value == 0)
+            {
+                errorProvider.SetError(nudPorta, "Informe porta de conexão");
+                return false;
+            }
+            else if (ckbSSL.Checked == false && ckbTLS.Checked == false)
+            {
+                errorProvider.SetError(ckbSSL, "Informe o certificado SSL");
+                errorProvider.SetError(ckbTLS, "Informe o certificado TLS");
+                return false;
+            }
+            {
+                return true;
+            }
+        }
+
+        public bool validacao()
+        {
+            if (txtSchemaPath.Text == "")
+            {
+                errorProvider.SetError(txtSchemaPath, "Informe Path com Schema");
+                return false;
+            }
+            else if (txtCertPath.Text == "")
+            {
+                errorProvider.SetError(txtCertPath, "Informe o certificado");
+                return false;
+            }
+            else if (txtCertPassword.Text == "")
+            {
+                errorProvider.SetError(txtCertPassword, "Informe a senha");
+                return false;
+            }
+            else if (txtCertNumero.Text == "")
+            {
+                errorProvider.SetError(txtCertNumero, "Informe o número de série");
+                return false;
+            }
+            else if (cmbCrypt.Text == "cryNone")
+            {
+                errorProvider.SetError(cmbCrypt, "Informe Criptografia");
+                return false;
+            }
+            else if (cmbHttp.Text == "httpNone")
+            {
+                errorProvider.SetError(cmbHttp, "Informe o tipo SSL");
+                return false;
+            }
+            else if (cmbXmlSign.Text == "xsNone")
+            {
+                errorProvider.SetError(cmbXmlSign, "Informe assinatura do XML");
+                return false;
+            }
+            else if (cmbSSlType.Text == "LT_all")
+            {
+                errorProvider.SetError(cmbSSlType, "Informe o tipo SSL");
+                return false;
+            }
+            {
+                return true;
+            }
         }
 
         private void CarregarCTeIni()
@@ -249,6 +337,12 @@ namespace ACBrLib.CTe.Demo
 
         private void btnGerarXml_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 ACBrCTe.LimparLista();
@@ -260,12 +354,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnEnviarSincrono_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 CheckCTeLista();
@@ -278,12 +378,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnEnviarAssincrono_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 CheckCTeLista();
@@ -296,7 +402,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -308,7 +414,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -320,7 +426,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -328,12 +434,12 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                if (MessageBox.Show(@"Limpar a lista ?", @"ACBrLibCTe", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                if (MessageBox.Show(@"Limpar a lista ?", "ACBrLibCTe", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     ACBrCTe.LimparLista();
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -358,7 +464,7 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                var arquivoXml = Helpers.OpenFile("Arquivo Xml CTe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+                var arquivoXml = Helpers.OpenFile("Arquivo Xml CTe(*.xml) | *.xml | Todos os Arquivos(*.*) | *.* ");
                 if (string.IsNullOrEmpty(arquivoXml)) return;
 
                 ACBrCTe.LimparLista();
@@ -367,12 +473,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnEnviarEmail_Click(object sender, EventArgs e)
         {
+            if (!validacaoEmail())
+            {
+                MessageBox.Show("Erro - Verifique as configurações de E - mail");
+                return;
+            }
+
             try
             {
                 var arquivoXml = Helpers.OpenFile("Arquivo Xmnl CTe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
@@ -386,12 +498,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnAssinar_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 CheckCTeLista(true);
@@ -400,7 +518,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -414,24 +532,36 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnStatusServ_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 rtbRespostas.AppendText(ACBrCTe.StatusServico());
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnConsultaXml_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var chaveOuNFe = Helpers.OpenFile("Arquivo Xmnl CTe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
@@ -444,16 +574,22 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnConsultaChave_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var chaveOuNFe = "";
-                if (InputBox.Show("WebServices Consultar", "Chave da CT-e:", ref chaveOuNFe) != DialogResult.OK) return;
+                if (InputBox.Show("WebServices Consultar", "Chave da CT - e:", ref chaveOuNFe) != DialogResult.OK) return;
                 if (string.IsNullOrEmpty(chaveOuNFe)) return;
 
                 ACBrCTe.LimparLista();
@@ -462,12 +598,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnConsultarRecibo_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var aRecibo = "";
@@ -478,12 +620,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnConsultarCadastro_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var uf = "SP";
@@ -498,12 +646,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var idLote = 1;
@@ -520,12 +674,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnEnviarEvento_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var idLote = 1;
@@ -536,7 +696,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -544,14 +704,14 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                var arquivoIni = Helpers.OpenFile("Arquivo Ini CTe (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
+                var arquivoIni = Helpers.OpenFile("Arquivo Ini CTe(*.ini) | *.ini | Todos os Arquivos(*.*) | *.* ");
                 if (string.IsNullOrEmpty(arquivoIni)) return;
 
                 ACBrCTe.CarregarEventoINI(arquivoIni);
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -559,12 +719,12 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                if (MessageBox.Show(@"Limpar a lista de eventos ?", @"ACBrLibCTe", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                if (MessageBox.Show(@"Limpar a lista de eventos ?", "ACBrLibCTe", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     ACBrCTe.LimparListaEventos();
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -572,7 +732,7 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                var arquivoXmlEvento = Helpers.OpenFile("Arquivo Xml Evento (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+                var arquivoXmlEvento = Helpers.OpenFile("Arquivo Xml Evento(*.xml) | *.xml | Todos os Arquivos(*.*) | *.* ");
                 if (string.IsNullOrEmpty(arquivoXmlEvento)) return;
 
                 var arquivoXml = Helpers.OpenFile("Arquivo Xml CTe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
@@ -582,7 +742,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -590,7 +750,7 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                var arquivoXmlEvento = Helpers.OpenFile("Arquivo Xml Evento (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+                var arquivoXmlEvento = Helpers.OpenFile("Arquivo Xml Evento(*.xml) | *.xml | Todos os Arquivos(*.*) | *.* ");
                 if (string.IsNullOrEmpty(arquivoXmlEvento)) return;
 
                 var arquivoXml = Helpers.OpenFile("Arquivo Xml CTe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
@@ -600,12 +760,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnEnviarEmailEvento_Click(object sender, EventArgs e)
         {
+            if (!validacaoEmail())
+            {
+                MessageBox.Show("Erro - Verifique as configurações de E - mail");
+                return;
+            }
+
             try
             {
                 var arquivoXmlEvento = Helpers.OpenFile("Arquivo Xml Evento (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
@@ -622,12 +788,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnInutilizar_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var ano = 1;
@@ -650,7 +822,7 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -658,14 +830,14 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                var arquivoXml = Helpers.OpenFile("Arquivo Xml Inutilização (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+                var arquivoXml = Helpers.OpenFile("Arquivo Xml Inutilização(*.xml) | *.xml | Todos os Arquivos(*.*) | *.* ");
                 if (string.IsNullOrEmpty(arquivoXml)) return;
 
                 ACBrCTe.ImprimirInutilizacao(arquivoXml);
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -673,19 +845,25 @@ namespace ACBrLib.CTe.Demo
         {
             try
             {
-                var arquivoXml = Helpers.OpenFile("Arquivo Xml Inutilização (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+                var arquivoXml = Helpers.OpenFile("Arquivo Xml Inutilização(*.xml) | *.xml | Todos os Arquivos(*.*) | *.* ");
                 if (string.IsNullOrEmpty(arquivoXml)) return;
 
                 ACBrCTe.ImprimirInutilizacaoPDF(arquivoXml);
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnDFePorChave_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             try
             {
                 var codUf = 35;
@@ -701,12 +879,18 @@ namespace ACBrLib.CTe.Demo
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnDFePorNSU_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             var codUf = 35;
             var cnpj = "";
             var eNsu = "";
@@ -721,6 +905,12 @@ namespace ACBrLib.CTe.Demo
 
         private void btnDFePorUltNSU_Click(object sender, EventArgs e)
         {
+            if (!validacao())
+            {
+                MessageBox.Show("Erro Verifique as configurações do certificado");
+                return;
+            }
+
             var codUf = 35;
             var cnpj = "";
             var eNsu = "";
@@ -734,5 +924,47 @@ namespace ACBrLib.CTe.Demo
         }
 
         #endregion EventHandlers
+
+        private void BtnCarregarConfiguracoes_Click(object sender, EventArgs e)
+        {
+            var file = Helpers.OpenFile("Arquivos Ini (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
+            if (!File.Exists(file)) return;
+
+            LoadConfig(file);
+        }
+
+        private void BtnGerarChaveCTe_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var uf = 35;
+                if (InputBox.Show("Gerar Chave", "Digite o codigo da UF", ref uf) != DialogResult.OK) return;
+
+                var cod = 45812;
+                if (InputBox.Show("Gerar Chave", "Digite o codigo da Númerico", ref cod) != DialogResult.OK) return;
+
+                var doc = 55;
+                if (InputBox.Show("Gerar Chave", "Digite o modelo do documento", ref doc) != DialogResult.OK) return;
+
+                var serie = 1;
+                if (InputBox.Show("Gerar Chave", "Digite a serie do documento", ref serie) != DialogResult.OK) return;
+
+                var numero = 1;
+                if (InputBox.Show("Gerar Chave", "Digite o numero do documento", ref numero) != DialogResult.OK) return;
+
+                var emissao = 1;
+                if (InputBox.Show("Gerar Chave", "Digite o tipo de emissão do documento", ref emissao) != DialogResult.OK) return;
+
+                var cnpjCPF = "";
+                if (InputBox.Show("Gerar Chave", "Digite o CPF / CNPJ para Gerar a Chave", ref cnpjCPF) != DialogResult.OK) return;
+                if (string.IsNullOrEmpty(cnpjCPF)) return;
+
+                rtbRespostas.AppendText(ACBrCTe.GerarChave(uf, cod, doc, serie, numero, emissao, DateTime.Now, cnpjCPF));
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
