@@ -37,16 +37,13 @@ unit SiapSistemas.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_SiapSistemas }
+  { TNFSeR_SiapSistemas203 }
 
-  TNFSeR_SiapSistemas = class(TNFSeR_ABRASFv2)
+  TNFSeR_SiapSistemas203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

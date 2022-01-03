@@ -577,6 +577,7 @@ const
   CMetodoGerarPDFBoleto =            'gerarpdfboleto';
   CMetodoEnviarEmailBoleto =         'enviaremailboleto';
   CMetodoEnviarBoleto =              'enviarboleto';
+  CMetodoSetOperacaoWS =             'setoperacaows';
 
   CMetodoAtivar =               'ativar';
   CMetodoDesativar =            'desativar';
@@ -1018,6 +1019,7 @@ const
   CKeyNFCEImprimeTributos =            'ImprimeTributos';
   CKeyNFCeExibeTotalTributosItem =     'ExibeTotalTributosItem';
   CKeyNFCeLogoLateral =                'LogoLateral';
+  CKeyNFCeImprimeItens =               'ImprimeItens';
 
   CSecDANFE =                          'DANFE';
   CKeyDANFEModelo =                    'Modelo';
@@ -1300,6 +1302,7 @@ const
   CKeyBOLETOLerCedenteRetorno =             'LerCedenteRetorno';
   CKeyBOLETOMostraPreviewRelRetorno =       'MostraPreviewRelRetorno';
   CKeyBOLETORemoveAcentos =                 'RemoveAcentos';
+  CKeyBoletoPrefixArqRemessa =              'PrefixArqRemessa';
   CKeyBOLETOLogoEmpresa =                   'LogoEmpresa';
   CKeyBOLETOEmailAssuntoBoleto =            'EmailAssuntoBoleto';
   CKeyBOLETOEmailMensagemBoleto =           'EmailMensagemBoleto';

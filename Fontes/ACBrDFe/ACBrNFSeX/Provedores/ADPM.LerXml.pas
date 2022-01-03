@@ -37,16 +37,13 @@ unit ADPM.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_ADPM }
+  { TNFSeR_ADPM203 }
 
-  TNFSeR_ADPM = class(TNFSeR_ABRASFv2)
+  TNFSeR_ADPM203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

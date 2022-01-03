@@ -37,16 +37,13 @@ unit EloTech.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_EloTech }
+  { TNFSeR_EloTech203 }
 
-  TNFSeR_EloTech = class(TNFSeR_ABRASFv2)
+  TNFSeR_EloTech203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

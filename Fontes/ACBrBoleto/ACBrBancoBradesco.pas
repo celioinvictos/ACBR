@@ -159,7 +159,6 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 7;
    fpCodParametroMovimento:= 'MX';
-   fpCodigosMoraAceitos:='123';
 end;
 
 function TACBrBancoBradesco.MontarCampoNossoNumero (
@@ -508,7 +507,10 @@ begin
   end;
 
   if (Result <> '') then
+  begin
+    Result := ACBrSTr(Result);
     Exit;
+  end;
 
   case CodOcorrencia of
     02: Result := '02-Entrada Confirmada';
@@ -529,6 +531,8 @@ begin
     35: Result := '35-Desagendamento do débito automático';
     73: Result := '73-Confirmação Recebimento Pedido de Negativação';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoBradesco.CodOcorrenciaToTipo(const CodOcorrencia:
@@ -1064,6 +1068,7 @@ begin
       Result:= IntToStrZero(CodMotivo,2) +' - Outros Motivos';
    end;
 
+   Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoBradesco.CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia;

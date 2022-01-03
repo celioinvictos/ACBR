@@ -69,19 +69,18 @@ type
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
-    //metodos para geração e tratamento dos dados do metodo emitir
-    procedure PrepararEmitir(Response: TNFSeEmiteResponse); override;
+    function PrepararRpsParaLote(const aXml: string): string; override;
+
+    procedure GerarMsgDadosEmitir(Response: TNFSeEmiteResponse;
+      Params: TNFSeParamsResponse); override;
     procedure TratarRetornoEmitir(Response: TNFSeEmiteResponse); override;
 
-    //metodos para geração e tratamento dos dados do metodo ConsultaLoteRps
     procedure PrepararConsultaLoteRps(Response: TNFSeConsultaLoteRpsResponse); override;
     procedure TratarRetornoConsultaLoteRps(Response: TNFSeConsultaLoteRpsResponse); override;
 
-    //metodos para geração e tratamento dos dados do metodo ConsultaNFSe
     procedure PrepararConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
     procedure TratarRetornoConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
 
-    //metodos para geração e tratamento dos dados do metodo CancelaNFSe
     procedure PrepararCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
     procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
 
@@ -117,6 +116,8 @@ begin
 
   with ConfigMsgDados do
   begin
+    UsarNumLoteConsLote := True;
+
     with XmlRps do
     begin
       DocElemento := 'Rps';
@@ -157,7 +158,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceGeisWeb.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 procedure TACBrNFSeProviderGeisWeb.ProcessarMensagemErros(
@@ -181,94 +187,38 @@ begin
   for I := Low(ANodeArray) to High(ANodeArray) do
   begin
     AErro := Response.Erros.New;
-    AErro.Codigo := ProcessarConteudoXml(ANodeArray[I].Childrens.FindAnyNs('Erro'), tcStr);
-    AErro.Descricao := ProcessarConteudoXml(ANodeArray[I].Childrens.FindAnyNs('Status'), tcStr);
+    AErro.Codigo := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('Erro'), tcStr);
+    AErro.Descricao := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('Status'), tcStr);
     AErro.Correcao := '';
   end;
 end;
 
-procedure TACBrNFSeProviderGeisWeb.PrepararEmitir(Response: TNFSeEmiteResponse);
-var
-  AErro: TNFSeEventoCollectionItem;
-  Emitente: TEmitenteConfNFSe;
-  Nota: NotaFiscal;
-  IdAttr, NameSpace, ListaRps, xRps: string;
-  I: Integer;
+function TACBrNFSeProviderGeisWeb.PrepararRpsParaLote(
+  const aXml: string): string;
 begin
-  if TACBrNFSeX(FAOwner).NotasFiscais.Count <= 0 then
-  begin
-    AErro := Response.Erros.New;
-    AErro.Codigo := Cod002;
-    AErro.Descricao := Desc002;
-  end;
+  Result := '<Rps xmlns="http://www.geisweb.net.br/xsd/envio_lote_rps.xsd">' +
+            SeparaDados(aXml, 'Rps') + '</Rps>';
+end;
 
-  if TACBrNFSeX(FAOwner).NotasFiscais.Count > Response.MaxRps then
-  begin
-    AErro := Response.Erros.New;
-    AErro.Codigo := Cod003;
-    AErro.Descricao := 'Conjunto de RPS transmitidos (máximo de ' +
-                       IntToStr(Response.MaxRps) + ' RPS)' +
-                       ' excedido. Quantidade atual: ' +
-                       IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count);
-  end;
-
-  if Response.Erros.Count > 0 then Exit;
-
-  ListaRps := '';
-
-  if ConfigAssinar.IncluirURI then
-    IdAttr := ConfigGeral.Identificador
-  else
-    IdAttr := 'ID';
-
-  for I := 0 to TACBrNFSeX(FAOwner).NotasFiscais.Count -1 do
-  begin
-    Nota := TACBrNFSeX(FAOwner).NotasFiscais.Items[I];
-
-    if EstaVazio(Nota.XMLAssinado) then
-    begin
-      Nota.GerarXML;
-      if ConfigAssinar.Rps or ConfigAssinar.RpsGerarNFSe then
-      begin
-        Nota.XMLOriginal := FAOwner.SSL.Assinar(ConverteXMLtoUTF8(Nota.XMLOriginal), ConfigMsgDados.XmlRps.DocElemento,
-                                                ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
-      end;
-    end;
-
-    if FAOwner.Configuracoes.Arquivos.Salvar then
-    begin
-      if NaoEstaVazio(Nota.NomeArqRps) then
-        TACBrNFSeX(FAOwner).Gravar(Nota.NomeArqRps, Nota.XMLOriginal)
-      else
-      begin
-        Nota.NomeArqRps := Nota.CalcularNomeArquivoCompleto(Nota.NomeArqRps, '');
-        TACBrNFSeX(FAOwner).Gravar(Nota.NomeArqRps, Nota.XMLOriginal);
-      end;
-    end;
-
-    xRps := RemoverDeclaracaoXML(Nota.XMLOriginal);
-
-    xRps := '<Rps xmlns="http://www.geisweb.net.br/xsd/envio_lote_rps.xsd">' +
-            SeparaDados(xRps, 'Rps') + '</Rps>';
-
-    ListaRps := ListaRps + xRps;
-  end;
-
+procedure TACBrNFSeProviderGeisWeb.GerarMsgDadosEmitir(
+  Response: TNFSeEmiteResponse; Params: TNFSeParamsResponse);
+var
+  Emitente: TEmitenteConfNFSe;
+begin
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
-  ListaRps := ChangeLineBreak(ListaRps, '');
-
-  NameSpace := ' xmlns="' + ConfigMsgDados.LoteRps.xmlns + '"';
-
-  Response.XmlEnvio := '<EnviaLoteRps' + NameSpace + '>' +
-                         '<CnpjCpf>' +
-                           OnlyNumber(Emitente.CNPJ) +
-                         '</CnpjCpf>' +
-                         '<NumeroLote>' +
-                           Response.Lote +
-                         '</NumeroLote>' +
-                         ListaRps +
-                       '</EnviaLoteRps>';
+  with Params do
+  begin
+    Response.XmlEnvio := '<EnviaLoteRps' + NameSpace + '>' +
+                           '<CnpjCpf>' +
+                             OnlyNumber(Emitente.CNPJ) +
+                           '</CnpjCpf>' +
+                           '<NumeroLote>' +
+                             Response.Lote +
+                           '</NumeroLote>' +
+                           Xml +
+                         '</EnviaLoteRps>';
+  end;
 end;
 
 procedure TACBrNFSeProviderGeisWeb.TratarRetornoEmitir(Response: TNFSeEmiteResponse);
@@ -302,7 +252,7 @@ begin
       ANode := Document.Root;
 
       ANodeArray := ANode.Childrens.FindAllAnyNs('Nfse');
-      if not Assigned(ANode) then
+      if not Assigned(ANodeArray) then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod203;
@@ -313,11 +263,10 @@ begin
       for I := Low(ANodeArray) to High(ANodeArray) do
       begin
         ANode := ANodeArray[I];
-        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoRps');
-        AuxNode := AuxNode.Childrens.FindAnyNs('NumeroRps');
+        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoNfse');
 
         if AuxNode <> nil then
-          NumRps := ProcessarConteudoXml(AuxNode, tcStr);
+          NumRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('NumeroRps'), tcStr);
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
 
@@ -336,7 +285,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := E.Message;
+        AErro.Descricao := Desc999 + E.Message;
       end;
     end;
   finally
@@ -418,11 +367,10 @@ begin
       for I := Low(ANodeArray) to High(ANodeArray) do
       begin
         ANode := ANodeArray[I];
-        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoRps');
-        AuxNode := AuxNode.Childrens.FindAnyNs('NumeroRps');
+        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoNfse');
 
         if AuxNode <> nil then
-          NumRps := ProcessarConteudoXml(AuxNode, tcStr);
+          NumRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('NumeroRps'), tcStr);
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
 
@@ -441,7 +389,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := E.Message;
+        AErro.Descricao := Desc999 + E.Message;
       end;
     end;
   finally
@@ -573,11 +521,10 @@ begin
       for I := Low(ANodeArray) to High(ANodeArray) do
       begin
         ANode := ANodeArray[I];
-        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoRps');
-        AuxNode := AuxNode.Childrens.FindAnyNs('NumeroRps');
+        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoNfse');
 
         if AuxNode <> nil then
-          NumRps := ProcessarConteudoXml(AuxNode, tcStr);
+          NumRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('NumeroRps'), tcStr);
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
 
@@ -596,7 +543,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := E.Message;
+        AErro.Descricao := Desc999 + E.Message;
       end;
     end;
   finally
@@ -666,7 +613,7 @@ begin
 
       ANode := Document.Root;
 
-      Response.InfRetorno.NumeroLote := ProcessarConteudoXml(ANode.Childrens.FindAnyNs('NumeroLote'), tcStr);
+      Response.Lote := ObterConteudoTag(ANode.Childrens.FindAnyNs('NumeroLote'), tcStr);
 
       ANodeArray := ANode.Childrens.FindAllAnyNs('Nfse');
       if not Assigned(ANode) then
@@ -680,11 +627,10 @@ begin
       for I := Low(ANodeArray) to High(ANodeArray) do
       begin
         ANode := ANodeArray[I];
-        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoRps');
-        AuxNode := AuxNode.Childrens.FindAnyNs('NumeroRps');
+        AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoNfse');
 
         if AuxNode <> nil then
-          NumRps := ProcessarConteudoXml(AuxNode, tcStr);
+          NumRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('NumeroRps'), tcStr);
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
 
@@ -703,7 +649,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := E.Message;
+        AErro.Descricao := Desc999 + E.Message;
       end;
     end;
   finally
@@ -753,7 +699,7 @@ begin
   Request := Request + '</geis:EnviaLoteRps>';
 
   Result := Executar(SoapAction + 'EnviaLoteRps', Request,
-                     ['EnviaLoteRpsResposta', 'EnviaLoteRpsResposta'],
+                     ['EnviaLoteRpsResposta', 'EnviaLoteRPSResposta'],
                      ['xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
                       'xmlns:xsd="http://www.w3.org/2001/XMLSchema"',
                       NameSpace]);

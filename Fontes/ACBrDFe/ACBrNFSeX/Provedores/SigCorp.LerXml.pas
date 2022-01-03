@@ -37,16 +37,13 @@ unit SigCorp.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_SigCorp }
+  { TNFSeR_SigCorp203 }
 
-  TNFSeR_SigCorp = class(TNFSeR_ABRASFv2)
+  TNFSeR_SigCorp203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

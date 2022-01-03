@@ -37,9 +37,6 @@ unit SilTecnologia.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv1, ACBrNFSeXLerXml_ABRASFv2;
 
@@ -53,9 +50,9 @@ type
 
   end;
 
-  { TNFSeR_SilTecnologiaV203 }
+  { TNFSeR_SilTecnologia203 }
 
-  TNFSeR_SilTecnologiaV203 = class(TNFSeR_ABRASFv2)
+  TNFSeR_SilTecnologia203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

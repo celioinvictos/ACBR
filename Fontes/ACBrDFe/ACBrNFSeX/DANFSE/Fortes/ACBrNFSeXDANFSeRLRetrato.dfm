@@ -9,7 +9,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     Top = 2
     Margins.LeftMargin = 6.000000000000000000
     Margins.TopMargin = 8.000000000000000000
-    Margins.RightMargin = 5.100000000000000000
+    Margins.RightMargin = 5.099999999999999000
     Margins.BottomMargin = 8.000000000000000000
     BeforePrint = RLNFSeBeforePrint
     object rlbCabecalho: TRLBand
@@ -228,9 +228,9 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       object RLLabel20: TRLLabel
         Left = 601
         Top = 96
-        Width = 149
+        Width = 147
         Height = 15
-        Caption = 'N'#250'mero NFSe substitu'#231#227'o:'
+        Caption = 'N'#250'mero NFSe substitu'#237'da:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -1013,7 +1013,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       BeforePrint = rlbISSQNBeforePrint
       object RLDraw52: TRLDraw
         Left = 1
-        Top = 72
+        Top = 76
         Width = 751
         Height = 1
         DrawKind = dkLine
@@ -1210,18 +1210,18 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       end
       object rlsLinhaH1: TRLDraw
         Left = 0
-        Top = 38
+        Top = 56
         Width = 752
         Height = 1
         Brush.Style = bsClear
         DrawKind = dkLine
       end
       object rllCodigoObra: TRLLabel
-        Left = 12
-        Top = 56
+        Left = 346
+        Top = 61
         Width = 76
         Height = 14
-        Caption = 'C'#195#179'digo da Obra:'
+        Caption = 'C'#243'digo da Obra:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -1231,8 +1231,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllCodObra: TRLLabel
-        Left = 92
-        Top = 56
+        Left = 426
+        Top = 61
         Width = 64
         Height = 13
         Font.Charset = DEFAULT_CHARSET
@@ -1244,8 +1244,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllTituloConstCivil: TRLLabel
-        Left = 205
-        Top = 40
+        Left = 6
+        Top = 60
         Width = 334
         Height = 15
         Alignment = taCenter
@@ -1259,11 +1259,11 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllCodigoArt: TRLLabel
-        Left = 404
-        Top = 56
+        Left = 527
+        Top = 61
         Width = 64
         Height = 14
-        Caption = 'C'#195#179'digo ART:'
+        Caption = 'C'#243'digo ART:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -1273,8 +1273,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllCodART: TRLLabel
-        Left = 484
-        Top = 56
+        Left = 597
+        Top = 62
         Width = 59
         Height = 13
         Font.Charset = DEFAULT_CHARSET
@@ -1442,7 +1442,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       end
       object RLLabel44: TRLLabel
         Left = 311
-        Top = 75
+        Top = 79
         Width = 130
         Height = 15
         Alignment = taCenter
@@ -1981,8 +1981,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllMsgTeste: TRLLabel
-        Left = 15
-        Top = 57
+        Left = 13
+        Top = 45
         Width = 724
         Height = 31
         Alignment = taCenter
@@ -2405,5 +2405,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         end
       end
     end
+  end
+  inherited RLPDFFilter1: TRLPDFFilter
+    Left = 96
   end
 end

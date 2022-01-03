@@ -7,7 +7,8 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
   PixelsPerInch = 96
   TextHeight = 13
   inherited RLNFe: TRLReport
-    Top = -500
+    Left = -8
+    Top = -20
     Width = 1123
     Height = 794
     Margins.LeftMargin = 7.000000000000000000
@@ -5169,7 +5170,7 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         Tag = 10
         Left = 3
         Top = 107
-        Width = 94
+        Width = 95
         Height = 7
         Caption = 'NATUREZA DE OPERA'#199#195'O'
         Font.Charset = DEFAULT_CHARSET
@@ -6338,10 +6339,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
       end
       object RLLabelValor01: TRLLabel
         Tag = 10
-        Left = 140
+        Left = 145
         Top = 3
         Width = 80
         Height = 7
+        Alignment = taRightJustify
         AutoSize = False
         Caption = 'VALOR'
         Font.Charset = DEFAULT_CHARSET
@@ -6367,10 +6369,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
       end
       object RLLabelValor02: TRLLabel
         Tag = 10
-        Left = 329
+        Left = 334
         Top = 3
         Width = 80
         Height = 7
+        Alignment = taRightJustify
         AutoSize = False
         Caption = 'VALOR'
         Font.Charset = DEFAULT_CHARSET
@@ -6396,7 +6399,7 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
       end
       object RLLabelValor03: TRLLabel
         Tag = 10
-        Left = 520
+        Left = 525
         Top = 3
         Width = 80
         Height = 7
@@ -6425,10 +6428,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
       end
       object RLLabelValor04: TRLLabel
         Tag = 10
-        Left = 710
+        Left = 715
         Top = 3
         Width = 80
         Height = 7
+        Alignment = taRightJustify
         AutoSize = False
         Caption = 'VALOR'
         Font.Charset = DEFAULT_CHARSET
@@ -6454,10 +6458,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
       end
       object RLLabelValor05: TRLLabel
         Tag = 10
-        Left = 904
+        Left = 909
         Top = 3
         Width = 80
         Height = 7
+        Alignment = taRightJustify
         AutoSize = False
         Caption = 'VALOR'
         Font.Charset = DEFAULT_CHARSET
@@ -6482,10 +6487,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         SecondHolder = RLLabelDescricao01
       end
       object RLPagValor0: TRLLabel
-        Left = 140
+        Left = 145
         Top = 15
         Width = 80
         Height = 12
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6511,10 +6517,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor1: TRLLabel
-        Left = 329
+        Left = 334
         Top = 15
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6540,7 +6547,7 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor2: TRLLabel
-        Left = 520
+        Left = 525
         Top = 15
         Width = 80
         Height = 10
@@ -6569,10 +6576,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor3: TRLLabel
-        Left = 710
+        Left = 715
         Top = 16
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6598,10 +6606,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         SecondHolder = RLLabelDescricao01
       end
       object RLPagValor5: TRLLabel
-        Left = 140
+        Left = 145
         Top = 27
         Width = 80
         Height = 12
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6627,10 +6636,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor6: TRLLabel
-        Left = 329
+        Left = 334
         Top = 27
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6656,7 +6666,7 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor7: TRLLabel
-        Left = 520
+        Left = 525
         Top = 27
         Width = 80
         Height = 10
@@ -6685,10 +6695,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor8: TRLLabel
-        Left = 710
+        Left = 715
         Top = 28
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6714,10 +6725,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor13: TRLLabel
-        Left = 710
+        Left = 715
         Top = 40
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6741,7 +6753,7 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor12: TRLLabel
-        Left = 520
+        Left = 525
         Top = 39
         Width = 80
         Height = 10
@@ -6770,10 +6782,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor11: TRLLabel
-        Left = 329
+        Left = 334
         Top = 39
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6785,10 +6798,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor10: TRLLabel
-        Left = 140
+        Left = 145
         Top = 39
         Width = 80
         Height = 12
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6828,10 +6842,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor4: TRLLabel
-        Left = 904
+        Left = 909
         Top = 16
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6857,10 +6872,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor9: TRLLabel
-        Left = 904
+        Left = 909
         Top = 28
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET
@@ -6886,10 +6902,11 @@ inherited frlDANFeRLPaisagem: TfrlDANFeRLPaisagem
         ParentFont = False
       end
       object RLPagValor14: TRLLabel
-        Left = 904
+        Left = 909
         Top = 40
         Width = 80
         Height = 10
+        Alignment = taRightJustify
         AutoSize = False
         Caption = '9.999.999,99'
         Font.Charset = DEFAULT_CHARSET

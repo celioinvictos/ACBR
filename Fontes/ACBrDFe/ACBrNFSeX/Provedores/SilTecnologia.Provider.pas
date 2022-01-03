@@ -40,7 +40,8 @@ uses
   SysUtils, Classes,
   ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
   ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
-  ACBrNFSeXProviderABRASFv1, ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
+  ACBrNFSeXProviderABRASFv1, ACBrNFSeXProviderABRASFv2,
+  ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
   TACBrNFSeXWebserviceSilTecnologia = class(TACBrNFSeXWebserviceSoap11)
@@ -64,7 +65,7 @@ type
 
   end;
 
-  TACBrNFSeXWebserviceSilTecnologiaV203 = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceSilTecnologia203 = class(TACBrNFSeXWebserviceSoap11)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -79,7 +80,7 @@ type
 
   end;
 
-  TACBrNFSeProviderSilTecnologiaV203 = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderSilTecnologia203 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -87,6 +88,7 @@ type
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
+    procedure TratarRetornoEmitir(Response: TNFSeEmiteResponse); override;
   end;
 
 implementation
@@ -223,19 +225,30 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceSilTecnologia.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeProviderSilTecnologiaV203 }
+{ TACBrNFSeProviderSilTecnologia203 }
 
-procedure TACBrNFSeProviderSilTecnologiaV203.Configuracao;
+procedure TACBrNFSeProviderSilTecnologia203.Configuracao;
 begin
   inherited Configuracao;
 
+  ConfigGeral.ConsultaPorFaixaPreencherNumNfseFinal := True;
+
   with ConfigAssinar do
   begin
-    Rps := True;
     LoteRps := True;
+    ConsultarLote := True;
+    ConsultarNFSeRps := True;
+    ConsultarNFSePorFaixa := True;
+    ConsultarNFSeServicoPrestado := True;
+    ConsultarNFSeServicoTomado := True;
     CancelarNFSe := True;
     RpsGerarNFSe := True;
     RpsSubstituirNFSe := True;
@@ -250,21 +263,21 @@ begin
   end;
 end;
 
-function TACBrNFSeProviderSilTecnologiaV203.CriarGeradorXml(
+function TACBrNFSeProviderSilTecnologia203.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_SilTecnologiaV203.Create(Self);
+  Result := TNFSeW_SilTecnologia203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSilTecnologiaV203.CriarLeitorXml(
+function TACBrNFSeProviderSilTecnologia203.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_SilTecnologiaV203.Create(Self);
+  Result := TNFSeR_SilTecnologia203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSilTecnologiaV203.CriarServiceClient(
+function TACBrNFSeProviderSilTecnologia203.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -272,14 +285,37 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceSilTecnologiaV203.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceSilTecnologia203.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceSilTecnologiaV203 }
+procedure TACBrNFSeProviderSilTecnologia203.TratarRetornoEmitir(
+  Response: TNFSeEmiteResponse);
+var
+  AErro: TNFSeEventoCollectionItem;
+begin
+  inherited TratarRetornoEmitir(Response);
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.Recepcionar(ACabecalho,
+  if not Response.Sucesso then
+  begin
+    if Pos(Response.XmlRetorno, '<return>') > 0 then
+    begin
+      AErro := Response.Erros.New;
+      AErro.Codigo := '';
+      AErro.Descricao := SeparaDados(Response.XmlRetorno, 'return');
+    end;
+  end;
+end;
+
+{ TACBrNFSeXWebserviceSilTecnologia203 }
+
+function TACBrNFSeXWebserviceSilTecnologia203.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -287,7 +323,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:recepcionarLoteRps>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:recepcionarLoteRps>';
 
   Result := Executar('', Request,
@@ -295,7 +331,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -303,7 +339,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:recepcionarLoteRpsSincrono>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:recepcionarLoteRpsSincrono>';
 
   Result := Executar('', Request,
@@ -311,7 +347,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -319,7 +355,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:gerarNfse>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:gerarNfse>';
 
   Result := Executar('', Request,
@@ -327,7 +363,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -335,7 +371,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:consultarLoteRps>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:consultarLoteRps>';
 
   Result := Executar('', Request,
@@ -343,7 +379,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -351,7 +387,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:consultarNfsePorFaixa>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:consultarNfsePorFaixa>';
 
   Result := Executar('', Request,
@@ -359,7 +395,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -367,7 +403,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:consultarNfsePorRps>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:consultarNfsePorRps>';
 
   Result := Executar('', Request,
@@ -375,7 +411,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.ConsultarNFSeServicoPrestado(
+function TACBrNFSeXWebserviceSilTecnologia203.ConsultarNFSeServicoPrestado(
   ACabecalho, AMSG: String): string;
 var
   Request: string;
@@ -383,15 +419,15 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:consultarNfseServicoPrestado>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:consultarNfseServicoPrestado>';
 
   Result := Executar('', Request,
-                     ['return', 'ConsultarNfseServicoPrestadoResposta'],
+                     ['return', 'ConsultarNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.ConsultarNFSeServicoTomado(
+function TACBrNFSeXWebserviceSilTecnologia203.ConsultarNFSeServicoTomado(
   ACabecalho, AMSG: String): string;
 var
   Request: string;
@@ -399,15 +435,15 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:consultarNfseServicoTomado>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:consultarNfseServicoTomado>';
 
   Result := Executar('', Request,
-                     ['return', 'ConsultarNfseServicoTomadoResposta'],
+                     ['return', 'ConsultarNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.Cancelar(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.Cancelar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -415,7 +451,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:cancelarNfse>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:cancelarNfse>';
 
   Result := Executar('', Request,
@@ -423,7 +459,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSilTecnologiaV203.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSilTecnologia203.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -431,7 +467,7 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:substituirNfse>';
-  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '<xml>' + IncluirCDATA(AMSG) + '</xml>';
   Request := Request + '</nfse:substituirNfse>';
 
   Result := Executar('', Request,

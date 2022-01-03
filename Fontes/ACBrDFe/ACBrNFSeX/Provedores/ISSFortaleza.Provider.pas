@@ -155,7 +155,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceISSFortaleza.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 procedure TACBrNFSeProviderISSFortaleza.PrepararCancelaNFSe(
@@ -260,7 +265,7 @@ begin
 
   Result := Executar('', Request,
                      ['EnviarLoteRpsResposta', 'EnviarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceISSFortaleza.ConsultarLote(ACabecalho, AMSG: String): string;
@@ -276,7 +281,7 @@ begin
 
   Result := Executar('', Request,
                      ['ConsultarLoteRpsResposta', 'ConsultarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceISSFortaleza.ConsultarSituacao(ACabecalho, AMSG: String): string;
@@ -292,7 +297,7 @@ begin
 
   Result := Executar('', Request,
                      ['ConsultarSituacaoLoteRpsResposta', 'ConsultarSituacaoLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceISSFortaleza.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
@@ -308,7 +313,7 @@ begin
 
   Result := Executar('', Request,
                      ['ConsultarNfseRpsResposta', 'ConsultarNfseRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceISSFortaleza.ConsultarNFSe(ACabecalho, AMSG: String): string;
@@ -324,7 +329,7 @@ begin
 
   Result := Executar('', Request,
                      ['ConsultarNfseResposta', 'ConsultarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceISSFortaleza.Cancelar(ACabecalho, AMSG: String): string;
@@ -339,7 +344,7 @@ begin
 
   Result := Executar('', Request,
                      ['CancelarNfseResposta', 'CancelarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 end.

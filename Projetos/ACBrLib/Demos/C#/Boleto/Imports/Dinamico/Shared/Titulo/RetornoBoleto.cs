@@ -23,28 +23,37 @@ namespace ACBrLib.Boleto
 
         #region Methods
 
+        /// <summary>
+        /// Metodo para ler o retorno e ini do metodo ObterRetorno.
+        /// </summary>
+        /// <param name="retorno"></param>
+        /// <returns></returns>
         public static RetornoBoleto LerRetorno(string retorno)
         {
             var iniFile = ACBrIniFile.Parse(retorno);
 
-            var ret = new RetornoBoleto();
+            var ret = new RetornoBoleto
+            {
+                Retorno = retorno
+            };
+
             iniFile.ReadFromIni(ret.Cedente, "CEDENTE");
             iniFile.ReadFromIni(ret.Banco, "BANCO");
             iniFile.ReadFromIni(ret.Conta, "CONTA");
 
             foreach (var section in iniFile.Where(x => x.Name.StartsWith("TITULO")))
             {
-                var item = new RetornoTitulo();
-                section.ReadFromINi(item);
+                var item = section.ReadFromINi<RetornoTitulo>();
+                section.ReadFromINi(item.Sacado);
 
                 var id = Regex.Replace(section.Name, "[^0-9]", string.Empty);
-                if (string.IsNullOrEmpty(id)) continue;
-
-                foreach (var sec in iniFile.Where(x => x.Name.StartsWith($"MotivoRejeicao{id}-")))
+                if (!string.IsNullOrWhiteSpace(id))
                 {
-                    var rejeicao = new RetornoRejeicao();
-                    sec.ReadFromINi(rejeicao);
-                    item.Rejeicoes.Add(rejeicao);
+                    foreach (var sec in iniFile.Where(x => x.Name.StartsWith($"MotivoRejeicao{id}-")))
+                    {
+                        var rejeicao = sec.ReadFromINi<RetornoRejeicao>();
+                        item.Rejeicoes.Add(rejeicao);
+                    }
                 }
 
                 ret.Titulos.Add(item);

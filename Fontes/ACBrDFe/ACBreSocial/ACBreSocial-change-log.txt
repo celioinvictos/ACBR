@@ -52,6 +52,20 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+18/11/2021
+-- ACBreSocialLoteEventos --
+[-] Trocado o StringReplace por RemoverDeclaracaoXML ao concatenar os eventos.
+   Por: Italo Giurizzato Junior
+
+01/11/2021
+-- pcesS1200 --
+[+] Adicionado grupo infoComplCont na leitura do .ini
+   Por: José M. S. Junior
+
+05/08/2021
+-- pcesConversaoeSocial --
+[-] Correção de valor na função VersaoeSocialToStr
+
 24/05/2021
 -- PCNeSocial --
 [+] Atualização das funçoes de leitura do .ini de eventos, compatibilizando com a versão simplificada do e-social

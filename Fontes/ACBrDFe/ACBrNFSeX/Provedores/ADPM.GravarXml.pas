@@ -37,17 +37,14 @@ unit ADPM.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXGravarXml_ABRASFv2;
 
 type
-  { TNFSeW_ADPM }
+  { TNFSeW_ADPM203 }
 
-  TNFSeW_ADPM = class(TNFSeW_ABRASFv2)
+  TNFSeW_ADPM203 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -60,9 +57,9 @@ implementation
 //     ADPM
 //==============================================================================
 
-{ TNFSeW_ADPM }
+{ TNFSeW_ADPM203 }
 
-procedure TNFSeW_ADPM.Configuracao;
+procedure TNFSeW_ADPM203.Configuracao;
 begin
   inherited Configuracao;
 

@@ -37,16 +37,13 @@ unit Fiorilli.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_Fiorilli }
+  { TNFSeR_Fiorilli200 }
 
-  TNFSeR_Fiorilli = class(TNFSeR_ABRASFv2)
+  TNFSeR_Fiorilli200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

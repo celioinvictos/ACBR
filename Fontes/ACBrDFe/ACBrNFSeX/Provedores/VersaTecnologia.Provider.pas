@@ -43,7 +43,7 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
-  TACBrNFSeXWebserviceVersaTecnologia = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceVersaTecnologia200 = class(TACBrNFSeXWebserviceSoap11)
   private
     function GetURL: string;
     function GetNameSpace: string;
@@ -65,29 +65,37 @@ type
     property SoapAction: string read GetSoapAction;
   end;
 
-  TACBrNFSeProviderVersaTecnologia = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderVersaTecnologia200 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
+    function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
+    function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
     procedure ValidarSchema(Response: TNFSeWebserviceResponse; aMetodo: TMetodo); override;
   end;
 
-  TACBrNFSeProviderVersaTecnologiav201 = class (TACBrNFSeProviderVersaTecnologia)
+  TACBrNFSeProviderVersaTecnologia201 = class (TACBrNFSeProviderVersaTecnologia200)
   protected
     procedure Configuracao; override;
 
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
+
+    function GetSchemaPath: string; override;
+    procedure GerarMsgDadosCancelaNFSe(Response: TNFSeCancelaNFSeResponse;
+      Params: TNFSeParamsResponse); override;
   end;
 
-  TACBrNFSeProviderVersaTecnologiav202 = class (TACBrNFSeProviderVersaTecnologia)
+  TACBrNFSeProviderVersaTecnologia202 = class (TACBrNFSeProviderVersaTecnologia200)
   protected
     procedure Configuracao; override;
 
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
+
+    function GetSchemaPath: string; override;
   end;
 
 implementation
@@ -97,9 +105,9 @@ uses
   ACBrNFSeXNotasFiscais,
   VersaTecnologia.GravarXml, VersaTecnologia.LerXml;
 
-{ TACBrNFSeProviderVersaTecnologia }
+{ TACBrNFSeProviderVersaTecnologia200 }
 
-procedure TACBrNFSeProviderVersaTecnologia.Configuracao;
+procedure TACBrNFSeProviderVersaTecnologia200.Configuracao;
 begin
   inherited Configuracao;
 
@@ -114,21 +122,21 @@ begin
   end;
 end;
 
-function TACBrNFSeProviderVersaTecnologiav201.CriarGeradorXml(
+function TACBrNFSeProviderVersaTecnologia200.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_VersaTecnologiav201.Create(Self);
+  Result := TNFSeW_VersaTecnologia200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderVersaTecnologiav201.CriarLeitorXml(
+function TACBrNFSeProviderVersaTecnologia200.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_VersaTecnologiav201.Create(Self);
+  Result := TNFSeR_VersaTecnologia200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderVersaTecnologia.CriarServiceClient(
+function TACBrNFSeProviderVersaTecnologia200.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -136,12 +144,17 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceVersaTecnologia.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceVersaTecnologia200.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-procedure TACBrNFSeProviderVersaTecnologia.ValidarSchema(
+procedure TACBrNFSeProviderVersaTecnologia200.ValidarSchema(
   Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
 var
   xXml, xNameSpace1, xNameSpace2: string;
@@ -257,9 +270,9 @@ begin
   Response.XmlEnvio := xXml;
 end;
 
-{ TACBrNFSeXWebserviceVersaTecnologia }
+{ TACBrNFSeXWebserviceVersaTecnologia200 }
 
-function TACBrNFSeXWebserviceVersaTecnologia.GetURL: string;
+function TACBrNFSeXWebserviceVersaTecnologia200.GetURL: string;
 var
   xURL: string;
 begin
@@ -268,7 +281,7 @@ begin
   else
     xURL := TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.Params2;
 
-  if TACBrNFSeX(FPDFeOwner).Configuracoes.Geral.Provedor = proVersaTecnologia_201 then
+  if TACBrNFSeX(FPDFeOwner).Configuracoes.Geral.Versao = ve201 then
     xURL := xURL + '/webservice'
   else
     xURL := xURL + '/webservices/2.02';
@@ -276,17 +289,17 @@ begin
   Result := xURL;
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.GetNameSpace: string;
+function TACBrNFSeXWebserviceVersaTecnologia200.GetNameSpace: string;
 begin
   Result := 'xmlns:ns1="http://' + URL + '/nfse.wsdl"';
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.GetSoapAction: string;
+function TACBrNFSeXWebserviceVersaTecnologia200.GetSoapAction: string;
 begin
   Result := 'http://' + URL + '/servicos#';
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -303,7 +316,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -320,7 +333,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -337,7 +350,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -354,7 +367,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -371,7 +384,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -388,7 +401,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.ConsultarNFSeServicoPrestado(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.ConsultarNFSeServicoPrestado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -405,7 +418,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.ConsultarNFSeServicoTomado(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.ConsultarNFSeServicoTomado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -422,7 +435,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceVersaTecnologia200.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -438,7 +451,7 @@ begin
                      [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceVersaTecnologia.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceVersaTecnologia200.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -455,9 +468,9 @@ begin
                      [NameSpace]);
 end;
 
-{ TACBrNFSeProviderVersaTecnologiav201 }
+{ TACBrNFSeProviderVersaTecnologia201 }
 
-procedure TACBrNFSeProviderVersaTecnologiav201.Configuracao;
+procedure TACBrNFSeProviderVersaTecnologia201.Configuracao;
 var
   FpURL: string;
 begin
@@ -481,9 +494,68 @@ begin
   SetNomeXSD('nfse_v201.xsd');
 end;
 
-{ TACBrNFSeProviderVersaTecnologiav202 }
+function TACBrNFSeProviderVersaTecnologia201.CriarGeradorXml(
+  const ANFSe: TNFSe): TNFSeWClass;
+begin
+  Result := TNFSeW_VersaTecnologia201.Create(Self);
+  Result.NFSe := ANFSe;
+end;
 
-procedure TACBrNFSeProviderVersaTecnologiav202.Configuracao;
+function TACBrNFSeProviderVersaTecnologia201.CriarLeitorXml(
+  const ANFSe: TNFSe): TNFSeRClass;
+begin
+  Result := TNFSeR_VersaTecnologia201.Create(Self);
+  Result.NFSe := ANFSe;
+end;
+
+procedure TACBrNFSeProviderVersaTecnologia201.GerarMsgDadosCancelaNFSe(
+  Response: TNFSeCancelaNFSeResponse; Params: TNFSeParamsResponse);
+var
+  Emitente: TEmitenteConfNFSe;
+  InfoCanc: TInfCancelamento;
+begin
+  Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
+  InfoCanc := Response.InfCancelamento;
+
+  with Params do
+  begin
+    Response.XmlEnvio := '<' + Prefixo + 'CancelarNfseEnvio' + NameSpace + '>' +
+                           '<' + Prefixo2 + 'Pedido>' +
+                             '<' + Prefixo2 + 'InfPedidoCancelamento' + IdAttr + '>' +
+                               '<' + Prefixo2 + 'IdentificacaoNfse>' +
+                                 '<' + Prefixo2 + 'Numero>' +
+                                    InfoCanc.NumeroNFSe +
+                                 '</' + Prefixo2 + 'Numero>' +
+                                 Serie +
+                                 '<' + Prefixo2 + 'CpfCnpj>' +
+                                   GetCpfCnpj(Emitente.CNPJ, Prefixo2) +
+                                 '</' + Prefixo2 + 'CpfCnpj>' +
+                                 GetInscMunic(Emitente.InscMun, Prefixo2) +
+                                 '<' + Prefixo2 + 'CodigoMunicipio>' +
+                                    IntToStr(TACBrNFSeX(FAOwner).Configuracoes.Geral.CodigoMunicipio) +
+                                 '</' + Prefixo2 + 'CodigoMunicipio>' +
+                                 CodVerif +
+                               '</' + Prefixo2 + 'IdentificacaoNfse>' +
+                               '<' + Prefixo2 + 'CodigoCancelamento>' +
+                                  InfoCanc.CodCancelamento +
+                               '</' + Prefixo2 + 'CodigoCancelamento>' +
+                               Motivo +
+                             '</' + Prefixo2 + 'InfPedidoCancelamento>' +
+                           '</' + Prefixo2 + 'Pedido>' +
+                         '</' + Prefixo + 'CancelarNfseEnvio>';
+  end;
+end;
+
+function TACBrNFSeProviderVersaTecnologia201.GetSchemaPath: string;
+begin
+  Result := inherited GetSchemaPath;
+
+  Result := Result + ConfigGeral.CodIBGE + '\';
+end;
+
+{ TACBrNFSeProviderVersaTecnologia202 }
+
+procedure TACBrNFSeProviderVersaTecnologia202.Configuracao;
 var
   FpURL: string;
 begin
@@ -507,18 +579,25 @@ begin
   SetNomeXSD('nfse_v202.xsd');
 end;
 
-function TACBrNFSeProviderVersaTecnologiav202.CriarGeradorXml(
+function TACBrNFSeProviderVersaTecnologia202.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_VersaTecnologiav202.Create(Self);
+  Result := TNFSeW_VersaTecnologia202.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderVersaTecnologiav202.CriarLeitorXml(
+function TACBrNFSeProviderVersaTecnologia202.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_VersaTecnologiav202.Create(Self);
+  Result := TNFSeR_VersaTecnologia202.Create(Self);
   Result.NFSe := ANFSe;
+end;
+
+function TACBrNFSeProviderVersaTecnologia202.GetSchemaPath: string;
+begin
+  Result := inherited GetSchemaPath;
+
+  Result := Result + ConfigGeral.CodIBGE + '\';
 end;
 
 end.

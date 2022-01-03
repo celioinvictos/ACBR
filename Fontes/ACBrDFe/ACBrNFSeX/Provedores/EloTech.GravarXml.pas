@@ -37,18 +37,15 @@ unit EloTech.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase, ACBrXmlDocument,
   pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_Elotech }
+  { TNFSeW_Elotech203 }
 
-  TNFSeW_Elotech = class(TNFSeW_ABRASFv2)
+  TNFSeW_Elotech203 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -64,23 +61,23 @@ implementation
 //     Chave de Acesso tem que ter 32 caracteres.
 //==============================================================================
 
-{ TNFSeW_Elotech }
+{ TNFSeW_Elotech203 }
 
-procedure TNFSeW_Elotech.Configuracao;
+procedure TNFSeW_Elotech203.Configuracao;
 begin
   inherited Configuracao;
 
-  NrOcorrRespRetencao := 0;
   NrOcorrCodigoMunic_2 := 1;
   NrOcorrOptanteSimplesNacional := -1;
   NrOcorrItemListaServico := -1;
   NrOcorrCodigoCNAE := -1;
   NrOcorrCodTribMun_1 := -1;
   NrOcorrCodigoMunic_1 := -1;
+
   GerarIDDeclaracao := False;
 end;
 
-function TNFSeW_Elotech.GerarItemServico: TACBrXmlNodeArray;
+function TNFSeW_Elotech203.GerarItemServico: TACBrXmlNodeArray;
 var
   i: integer;
 begin
@@ -120,7 +117,7 @@ begin
     wAlerta('#54', 'ItemServico', '', ERR_MSG_MAIOR_MAXIMO + '10');
 end;
 
-function TNFSeW_Elotech.GerarListaItensServico: TACBrXmlNode;
+function TNFSeW_Elotech203.GerarListaItensServico: TACBrXmlNode;
 var
   nodeArray: TACBrXmlNodeArray;
   i: Integer;

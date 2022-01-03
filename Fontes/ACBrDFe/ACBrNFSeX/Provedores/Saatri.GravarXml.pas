@@ -37,17 +37,14 @@ unit Saatri.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrNFSeXConversao, ACBrNFSeXGravarXml_ABRASFv2;
 
 type
-  { TNFSeW_Saatri }
+  { TNFSeW_Saatri201 }
 
-  TNFSeW_Saatri = class(TNFSeW_ABRASFv2)
+  TNFSeW_Saatri201 = class(TNFSeW_ABRASFv2)
   protected
     procedure DefinirIDDeclaracao; override;
     procedure DefinirIDRps; override;
@@ -63,9 +60,9 @@ implementation
 //     Saatri
 //==============================================================================
 
-{ TNFSeW_Saatri }
+{ TNFSeW_Saatri201 }
 
-procedure TNFSeW_Saatri.Configuracao;
+procedure TNFSeW_Saatri201.Configuracao;
 begin
   inherited Configuracao;
 
@@ -75,13 +72,13 @@ begin
   GerarIDRps := True;
 end;
 
-procedure TNFSeW_Saatri.DefinirIDDeclaracao;
+procedure TNFSeW_Saatri201.DefinirIDDeclaracao;
 begin
   NFSe.InfID.ID := 'Declaracao_' +
-                         OnlyNumber(NFSe.Prestador.IdentificacaoPrestador.Cnpj);
+                      OnlyNumber(NFSe.Prestador.IdentificacaoPrestador.CpfCnpj);
 end;
 
-procedure TNFSeW_Saatri.DefinirIDRps;
+procedure TNFSeW_Saatri201.DefinirIDRps;
 begin
   NFSe.InfID.ID := 'rps' + OnlyNumber(NFSe.IdentificacaoRps.Numero) +
                     NFSe.IdentificacaoRps.Serie +

@@ -47,6 +47,9 @@ namespace ACBrLib.Core
 
             var pNewSession = LibLoader.LoadLibrary(dllName);
             if (pNewSession == IntPtr.Zero || pNewSession == MinusOne)
+                pNewSession = LibLoader.LoadLibrary(Path.Combine(LibraryPath, dllName));
+
+            if (pNewSession == IntPtr.Zero || pNewSession == MinusOne)
                 throw CreateException("Não foi possivel carregar a biblioteca.");
 
             SetHandle(pNewSession);
@@ -105,6 +108,15 @@ namespace ACBrLib.Core
         public abstract string ExportarConfig();
 
         #region Methods
+
+        protected async void Base64ToStream(string base64, Stream aStream)
+        {
+            var pdfBytes = Convert.FromBase64String(base64);
+            await aStream.WriteAsync(pdfBytes, 0, pdfBytes.Length);
+            await aStream.FlushAsync();
+
+            aStream.Position = 0;
+        }
 
         /// <inheritdoc />
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

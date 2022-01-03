@@ -86,7 +86,7 @@ type
     procedure GerarObservacoes(pObservacoes: TObservacoesCollection);
     procedure GerarTransfDom(pTransfDom: TTransfDom);
     procedure GerarCTPS(pCTPS: TCTPS);
-    procedure GerarDependente(pDependente: TDependenteCollection);
+    procedure GerarDependente(pDependente: TDependenteCollection; pBeneficiario: boolean = false);
     procedure GerarDescAtividade(pDescAtividade: TDescAtividadeCollection);
     procedure GerarDocumentos(pDocumentos: TDocumentos);
     procedure GerarDuracao(pDuracao: TDuracao; pTipo: Integer);
@@ -99,9 +99,9 @@ type
     procedure GerarHorario(pHorario: THorarioCollection);
     procedure GerarHorContratual(pHorContratual: THorContratual);
     procedure GerarIdeEvento(pEvt: TIdeEvento; const GeraGrupo: boolean = True);
-    procedure GerarIdeEvento2(pEvt: TIdeEvento2; const GeraGrupo: boolean = True; GeraRetif: Boolean = True);
-    procedure GerarIdeEvento3(pEvt: TIdeEvento3; IndRetif: Boolean=True);
-    procedure GerarIdeEvento4(pEvt: TIdeEvento4);
+    procedure GerarIdeEvento2(pEvt: TIdeEvento2; const GeraGrupo: Boolean=True; GeraIndRetif: Boolean=True; GeraIndGuia: Boolean=False);
+    procedure GerarIdeEvento3(pEvt: TIdeEvento3; GeraIndRetif: Boolean=True; GeraIndApuracao: Boolean=True; GeraIndGuia: Boolean=True);
+    procedure GerarIdeEvento4(pEvt: TIdeEvento4; GeraIndApuracao: Boolean=True; GeraIndGuia: Boolean=True);
     procedure GerarIdeEvento5(pEvt: TIdeEvento5; nrRecArqBase: Boolean = True; IndApuracao: Boolean = True);
     procedure GerarIdePeriodo(pIdePeriodo: TidePeriodo; const GroupName: string = 'idePeriodo');
     procedure GerarIdeEmpregador(pEmp: TIdeEmpregador);
@@ -109,7 +109,7 @@ type
     procedure GerarIdeEstabVinc(pIdeEstabVinc: TIdeEstabVinc);
     procedure GerarIdeTrabSubstituido(pIdeTrabSubstituido: TIdeTrabSubstituidoCollection);
     procedure GerarIdVersao(pIdEsocial: TeSocial);
-    procedure GerarIdeVinculo(pIdeVinculo: TIdeVinculo; pcodCateg: Boolean = True);
+    procedure GerarIdeVinculo(pIdeVinculo: TIdeVinculo; pcodCateg: Boolean = True; pCessao: Boolean = False);
     procedure GerarInfoAtivDesemp(pInfoAtivDesemp: TInfoAtivDesemp);
     procedure GerarInfoDeficiencia(pInfoDeficiencia: TInfoDeficiencia; pTipo: integer = 0);
     procedure GerarLocalTrabGeral(pLocalTrabGeral: TLocalTrabGeral);
@@ -496,9 +496,12 @@ begin
     Gerador.wCampo(tcStr, '', 'codCarreira', 0, 30,  0, pInfoContrato.codCarreira);
     Gerador.wCampo(tcDat, '', 'dtIngrCarr',  0, 10,  0, pInfoContrato.dtIngrCarr);
   end;
-  
-  GerarRemuneracao(pInfoContrato.Remuneracao);
-  GerarDuracao(pInfoContrato.Duracao, pTipo);
+
+  if (pInfoContrato.Remuneracao.vrSalFx > 0) or 
+     (pInfoContrato.Remuneracao.undSalFixo = sfNaoaplicavel) then
+    GerarRemuneracao(pInfoContrato.Remuneracao);
+  if pInfoContrato.Duracao.tpContr <> PrazoNaoAplicavel then
+    GerarDuracao(pInfoContrato.Duracao, pTipo);
   GerarLocalTrabalho(pInfoContrato.LocalTrabalho);
 
   //Informações do Horário Contratual do Trabalhador. O preenchimento é obrigatório se {tpRegJor} = [1]
@@ -532,7 +535,7 @@ begin
   Gerador.wGrupo('/CTPS');
 end;
 
-procedure TeSocialEvento.GerarDependente(pDependente: TDependenteCollection);
+procedure TeSocialEvento.GerarDependente(pDependente: TDependenteCollection; pBeneficiario: boolean = false);
 var
   i: integer;
 begin
@@ -545,13 +548,19 @@ begin
     Gerador.wCampo(tcDat, '', 'dtNascto', 10, 10, 1, pDependente.Items[i].DtNascto);
     Gerador.wCampo(tcStr, '', 'cpfDep',   11, 11, 0, pDependente.Items[i].CpfDep);
     
-    if VersaoDF > ve02_05_00 then
+    if (VersaoDF > ve02_05_00) and (pBeneficiario) then
       if (pDependente.Items[i].sexoDep = 'F') or (pDependente.Items[i].sexoDep = 'M') then
         Gerador.wCampo(tcStr, '', 'sexoDep',   1,  1, 0, pDependente.Items[i].sexoDep);
 
-    Gerador.wCampo(tcStr, '', 'depIRRF',   1,  1, 1, eSSimNaoToStr(pDependente.Items[i].DepIRRF));
-    Gerador.wCampo(tcStr, '', 'depSF',     1,  1, 1, eSSimNaoToStr(pDependente.Items[i].DepSF));
-    Gerador.wCampo(tcStr, '', 'incTrab',   1,  1, 1, eSSimNaoToStr(pDependente.Items[i].incTrab));
+    Gerador.wCampo(tcStr, '', 'depIRRF',   1,  1, 1, eSSimNaoToStr(pDependente.Items[i].depIRRF));
+
+    if not(pBeneficiario) then
+      Gerador.wCampo(tcStr, '', 'depSF',     1,  1, 1, eSSimNaoToStr(pDependente.Items[i].depSF));
+
+    if (pBeneficiario ) then
+      Gerador.wCampo(tcStr, '', 'incFisMen', 1,  1, 1, eSSimNaoToStr(pDependente.Items[i].incFisMen))
+    else
+      Gerador.wCampo(tcStr, '', 'incTrab',   1,  1, 1, eSSimNaoToStr(pDependente.Items[i].incTrab));
 
     Gerador.wGrupo('/dependente');
   end;
@@ -632,10 +641,14 @@ procedure TeSocialEvento.GerarEndereco(pEndereco: TEndereco;
 begin
   Gerador.wGrupo('endereco');
 
-  if not pExterior then
-    GerarEnderecoBrasil(pEndereco.Brasil)
+  if (not pExterior) or (pEndereco.Exterior.PaisResid = '105') or (pEndereco.Exterior.PaisResid = '') then
+  begin // Mora no Brasil
+     GerarEnderecoBrasil(pEndereco.Brasil);
+  end
   else
-    GerarEnderecoExterior(pEndereco.Exterior);
+  begin
+     GerarEnderecoExterior(pEndereco.Exterior);
+  end;
 
   Gerador.wGrupo('/endereco');
 end;
@@ -1090,7 +1103,8 @@ begin
     if pAliqRat.ProcAdmJudFap.nrProc <> EmptyStr then
       bProcJudFap := True;
 
-  if not(VersaoDF <= ve02_05_00) and not(bProcJudRat) and not(bProcJudFap) and not(pTpInscEstab = tiCNO) then
+  if (VersaoDF >= veS01_00_00) and (not bProcJudRat) and (not bProcJudFap) and 
+     (pTpInscEstab <> tiCNO) and (pAliqRat.Fap <= 0) then
     Exit;
 
   Gerador.wGrupo(GroupName);
@@ -1100,7 +1114,7 @@ begin
 
   if (pEmp.TpInsc = tiCNPJ) then
   begin
-    if (VersaoDF <= ve02_05_00) or bProcJudFap or (pTpInscEstab = tiCNO) then
+    if (VersaoDF <= veS01_00_00) or bProcJudFap or (pTpInscEstab = tiCNO) then
       Gerador.wCampo(tcDe4, '', 'fap',          1, 5, 0, pAliqRat.Fap);
     
     if (VersaoDF <= ve02_05_00) then
@@ -1170,16 +1184,19 @@ begin
   	Gerador.wGrupo('/ideEvento');
 end;
 
-procedure TeSocialEvento.GerarIdeEvento2(pEvt: TIdeEvento2; const GeraGrupo: boolean = True; GeraRetif: Boolean = True);
+procedure TeSocialEvento.GerarIdeEvento2(pEvt: TIdeEvento2; const GeraGrupo: Boolean=True; GeraIndRetif: Boolean=True; GeraIndGuia: Boolean=False);
 begin
   if GeraGrupo then
     Gerador.wGrupo('ideEvento');
 
-  if (GeraRetif) then
+  if (GeraIndRetif) then
     Gerador.wCampo(tcStr, '', 'indRetif', 1, 1, 1, eSIndRetificacaoToStr(pEvt.indRetif));
 
   if (eSIndRetificacaoToStr(pEvt.indRetif) = '2') then
     Gerador.wCampo(tcStr, '', 'nrRecibo', 1, 40, 0, pEvt.nrRecibo);
+
+  if (GeraIndGuia) and (VersaoDF >= veS01_00_00) and (pEvt.indGuia <> '') then
+    Gerador.wCampo(tcStr, '', 'indGuia', 1, 1, 0, pEvt.indGuia);
 
   if GeraGrupo then
     GerarIdeEvento(pEvt, False);
@@ -1188,30 +1205,38 @@ begin
     Gerador.wGrupo('/ideEvento');
 end;
 
-procedure TeSocialEvento.GerarIdeEvento3(pEvt: TIdeEvento3; IndRetif: Boolean=True);
+procedure TeSocialEvento.GerarIdeEvento3(pEvt: TIdeEvento3; GeraIndRetif: Boolean=True; GeraIndApuracao: Boolean=True; GeraIndGuia: Boolean=True);
 begin
   Gerador.wGrupo('ideEvento');
 
-  if (indRetif) then
-    GerarIdeEvento2(pEvt, false, indRetif);
+  GerarIdeEvento2(pEvt, false, GeraIndRetif, false);
 
-  Gerador.wCampo(tcStr, '', 'indApuracao', 1, 1, 1, eSIndApuracaoToStr(pEvt.IndApuracao));
+  if (GeraIndApuracao) then
+    Gerador.wCampo(tcStr, '', 'indApuracao', 1, 1, 1, eSIndApuracaoToStr(pEvt.IndApuracao));
+
   Gerador.wCampo(tcStr, '', 'perApur',     7, 7, 1, pEvt.perApur);
+
+  if (GeraIndGuia) and (VersaoDF >= veS01_00_00) and (pEvt.indGuia <> '') then
+    Gerador.wCampo(tcStr, '', 'indGuia', 1, 1, 0, pEvt.indGuia);
 
   GerarIdeEvento(pEvt, false);
 
   Gerador.wGrupo('/ideEvento');
 end;
 
-procedure TeSocialEvento.GerarIdeEvento4(pEvt: TIdeEvento4);
+procedure TeSocialEvento.GerarIdeEvento4(pEvt: TIdeEvento4; GeraIndApuracao: Boolean=True; GeraIndGuia: Boolean=True);
 begin
   Gerador.wGrupo('ideEvento');
 
-  Gerador.wCampo(tcStr, '', 'indApuracao', 1,  1, 1, eSIndApuracaoToStr(pEvt.IndApuracao));
-  Gerador.wCampo(tcStr, '', 'perApur',     7,  7, 1, pEvt.perApur);
-  Gerador.wCampo(tcStr, '', 'tpAmb',       1,  1, 1, TpAmbToStr(TACBreSocial(FACBreSocial).Configuracoes.WebServices.Ambiente));
-  Gerador.wCampo(tcStr, '', 'procEmi',     1,  1, 1, eSProcEmiToStr(pEvt.ProcEmi));
-  Gerador.wCampo(tcStr, '', 'verProc',     1, 20, 1, pEvt.VerProc);
+  if (GeraIndApuracao) then
+    Gerador.wCampo(tcStr, '', 'indApuracao', 1, 1, 1, eSIndApuracaoToStr(pEvt.IndApuracao));
+
+  Gerador.wCampo(tcStr, '', 'perApur',     7, 7, 1, pEvt.perApur);
+
+  if (GeraIndGuia) and (VersaoDF >= veS01_00_00) and (pEvt.indGuia <> '') then
+    Gerador.wCampo(tcStr, '', 'indGuia', 1, 1, 0, pEvt.indGuia);
+
+  GerarIdeEvento(pEvt, false);
 
   Gerador.wGrupo('/ideEvento');
 end;
@@ -1301,24 +1326,27 @@ begin
     Gerador.wAlerta('', 'ideTrabSubstituido', 'Lista de Trabalhadores Substituido', ERR_MSG_MAIOR_MAXIMO + '9');
 end;
 
-procedure TeSocialEvento.GerarIdeVinculo(pIdeVinculo: TIdeVinculo; pcodCateg: Boolean = True);
+procedure TeSocialEvento.GerarIdeVinculo(pIdeVinculo: TIdeVinculo; pcodCateg: Boolean = True; pCessao: Boolean = False);
 begin
   Gerador.wGrupo('ideVinculo');
 
   Gerador.wCampo(tcStr, '', 'cpfTrab', 11, 11, 1, pIdeVinculo.cpfTrab);
 
-  if VersaoDF <= ve02_05_00 then
-  begin
-    if ((pIdeVinculo.codCateg = 901) or (pIdeVinculo.codCateg = 903) or (pIdeVinculo.codCateg = 904)) then
-      Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 0, pIdeVinculo.nisTrab)
-    else
-      Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 1, pIdeVinculo.nisTrab);
-  end;
+  if not(pCessao) then
+    if VersaoDF <= ve02_05_00 then
+    begin
+      if ((pIdeVinculo.codCateg = 901) or (pIdeVinculo.codCateg = 903) or (pIdeVinculo.codCateg = 904)) then
+        Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 0, pIdeVinculo.nisTrab)
+      else
+        Gerador.wCampo(tcStr, '', 'nisTrab', 1, 11, 1, pIdeVinculo.nisTrab);
+    end;
+
+  if (IntToTpProf(pIdeVinculo.codCateg) = ttpProfissionalEmpregado) then
+          Gerador.wCampo(tcStr, '', 'matricula', 1, 30, 1, pIdeVinculo.matricula);
   
-  Gerador.wCampo(tcStr, '', 'matricula', 1, 30, 0, pIdeVinculo.matricula);
-  
-  if pcodCateg then
-    Gerador.wCampo(tcInt, '', 'codCateg',  1,  3, 0, pIdeVinculo.codCateg);
+  if not(pCessao) then
+    if (pcodCateg) then
+      Gerador.wCampo(tcInt, '', 'codCateg',  3,  3, 0, pIdeVinculo.codCateg);
 
   Gerador.wGrupo('/ideVinculo');
 end;

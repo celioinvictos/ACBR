@@ -37,26 +37,21 @@ unit ACBrNFSeXInterface;
 interface
 
 uses
-  SysUtils, Classes,
-  ACBrNFSeXClass, ACBrNFSeXConversao, ACBrNFSeXWebservicesResponse,
-  ACBrNFSeXWebserviceBase, ACBrNFSeXParametros;
+  ACBrNFSeXClass, ACBrNFSeXParametros;
 
 type
   IACBrNFSeXProvider = interface ['{6A71A59C-9EA1-45BF-BCAB-59BB90B62AAA}']
     function GerarXml(const ANFSe: TNFSe; var AXml, AAlerts: string): Boolean;
     function LerXml(const AXML: String; var ANFSe: TNFSe): Boolean;
 
-    function GeraLote(const aLote: String; aqMaxRps: Integer; aModoEnvio: TmodoEnvio): TNFSeEmiteResponse;
-    function Emite(const ALote: String; aModoEnvio: TmodoEnvio): TNFSeEmiteResponse;
-    function ConsultaSituacao(const AProtocolo, ANumLote: String): TNFSeConsultaSituacaoResponse;
-    function ConsultaLoteRps(const AProtocolo, ANumLote: String): TNFSeConsultaLoteRpsResponse;
-    function ConsultaNFSeporRps(const ANumRPS, ASerie, ATipo,
-                                ACodVerificacao: String): TNFSeConsultaNFSeporRpsResponse;
-    function ConsultaNFSe(aInfConsultaNFSe: TInfConsultaNFSe): TNFSeConsultaNFSeResponse;
-    function CancelaNFSe(aInfCancelamento: TInfCancelamento): TNFSeCancelaNFSeResponse;
-    function SubstituiNFSe(const ANumNFSe, ASerieNFSe, ACodCancelamento,
-                           AMotCancelamento, ANumLote,
-                           ACodVerificacao: String): TNFSeSubstituiNFSeResponse;
+    procedure GeraLote;
+    procedure Emite;
+    procedure ConsultaSituacao;
+    procedure ConsultaLoteRps;
+    procedure ConsultaNFSeporRps;
+    procedure ConsultaNFSe;
+    procedure CancelaNFSe;
+    procedure SubstituiNFSe;
 
     function GetConfigGeral: TConfigGeral;
     function GetConfigWebServices: TConfigWebServices;

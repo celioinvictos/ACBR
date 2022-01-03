@@ -1,5 +1,5 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 003.008.000 |
+| Project : Ararat Synapse                                       | 003.009.000 |
 |==============================================================================|
 | Content: SSL support by OpenSSL                                              |
 |==============================================================================|
@@ -35,10 +35,12 @@
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
 | Portions created by Lukas Gebauer are Copyright (c)2002-2017.                |
 | Portions created by Petr Fejfar are Copyright (c)2011-2012.                  |
+| Portions created by Pepak are Copyright (c)2018.                             |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
 |   Tomas Hajny (OS2 support)                                                  |
+|   Pepak (multiversion support)                                               |
 |   Silvio Clecio, Waldir Paim e DSA  (Delphi POSIX support)                   |
 |==============================================================================|
 | History: see HISTORY.HTM from distribution package                           |
@@ -1929,13 +1931,19 @@ begin
 {$ENDIF}
 end;
 
+function GetLibFileName(Handle: THandle): string;
+var
+  n: integer;
+begin
+  n := MAX_PATH + 1024;
+  SetLength(Result, n);
+  n := GetModuleFilename(Handle, PChar(Result), n);
+  SetLength(Result, n);
+end;
+
 Function LoadLibraries : Boolean;
 var
   i: Integer;
-  {$IfDef MSWINDOWS}
-   x: Integer;
-   s: String;
-  {$EndIf}
 begin
   for i := low(DLLUtilNames) to high(DLLUtilNames) do
   begin
@@ -1958,20 +1966,10 @@ begin
 
   {$IfDef MSWINDOWS}
   if (SSLUtilHandle <> 0) then
-  begin
-    SetLength(s, 1024);
-    x := GetModuleFilename(SSLUtilHandle, PChar(s), Length(s));
-    SetLength(s, x);
-    SSLUtilFile := s;
-  end;
+    SSLUtilFile := GetLibFileName(SSLUtilHandle);
 
   if (SSLLibHandle <> 0) then
-  begin
-    SetLength(s, 1024);
-    x := GetModuleFilename(SSLLibHandle, PChar(s), Length(s));
-    SetLength(s, x);
-    SSLLibFile := s;
-  end;
+    SSLLibFile := GetLibFileName(SSLLibHandle);
   {$EndIf}
 
   Result := (SSLLibHandle<>0) and (SSLUtilHandle<>0);

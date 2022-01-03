@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ACBrLib.Core;
 
 namespace ACBrLib.Boleto
@@ -52,6 +53,8 @@ namespace ACBrLib.Boleto
 
         public DateTime? DataProtesto { get; set; }
 
+        public CodigoNegativacao CodigoNegativacao { get; set; } = CodigoNegativacao.cnNaoProtestar;
+
         public int DiasDeNegativacao { get; set; }
 
         public DateTime? DataNegativacao { get; set; }
@@ -72,9 +75,11 @@ namespace ACBrLib.Boleto
 
         public string EspecieMod { get; set; }
 
-        public List<string> Mensagem { get; } = new List<string>();
+        public List<string> Mensagem { get; } = new List<string>(2);
 
-        public List<string> Detalhamento { get; } = new List<string>();
+        public List<string> Detalhamento { get; } = new List<string>(3);
+
+        public List<string> Informativo { get; } = new List<string>(4);
 
         public string Instrucao1 { get; set; }
 
@@ -131,15 +136,21 @@ namespace ACBrLib.Boleto
             var sessao = Index > 0 ? $"Titulo{Index}" : "Titulo";
 
             iniFile.WriteToIni(this, sessao);
+            iniFile.WriteToIni(OcorrenciaOriginal, sessao);
             iniFile.WriteToIni(Sacado, sessao);
             if (!string.IsNullOrEmpty(Sacado.Avalista.CNPJCPF))
                 iniFile.WriteToIni(Sacado.Avalista, sessao);
 
             if (Mensagem.Any())
-                iniFile[sessao]["Mensagem"] = string.Join("|", Mensagem);
+                iniFile[sessao]["Mensagem"] = string.Join("|", Mensagem.Select(x => Regex.Replace(x, @"\r\n?|\n", "")));
 
             if (Detalhamento.Any())
-                iniFile[sessao]["Detalhamento"] = string.Join("|", Detalhamento);
+                iniFile[sessao]["Detalhamento"] = string.Join("|", Detalhamento.Select(x => Regex.Replace(x, @"\r\n?|\n", "")));
+
+            if (Informativo.Any())
+                iniFile[sessao]["Informativo"] = string.Join("|", Informativo.Select(x => Regex.Replace(x, @"\r\n?|\n", "")));
+
+            if (!NotaFiscais.Any()) return;
 
             var sessaoNfe = Index > 0 ? $"NFe{Index}-" : "NFe";
             for (var i = 0; i < NotaFiscais.Count; i++)

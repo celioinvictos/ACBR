@@ -600,7 +600,10 @@ begin
   end;
 
   if (Result <> '') then
+  begin
+    Result := ACBrSTr(Result);
     Exit;
+  end;
 
   case CodOcorrencia of
     02: Result := '02-Entrada Confirmada';
@@ -621,6 +624,8 @@ begin
     35: Result := '35-Desagendamento do débito automático';
     73: Result := '73-Confirmação Recebimento Pedido de Negativação';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrUniprime.CodOcorrenciaToTipo(const CodOcorrencia:
@@ -800,7 +805,7 @@ begin
   end;
 end;
 
-function TACBrUniprime.COdMotivoRejeicaoToDescricao( const TipoOcorrencia:TACBrTipoOcorrencia ;CodMotivo: Integer) : String;
+function TACBrUniprime.CodMotivoRejeicaoToDescricao( const TipoOcorrencia:TACBrTipoOcorrencia ;CodMotivo: Integer) : String;
 begin
    case TipoOcorrencia of
       toRetornoRegistroConfirmado:
@@ -1152,6 +1157,8 @@ begin
    else
       Result:= IntToStrZero(CodMotivo,2) +' - Outros Motivos';
    end;
+
+   Result := ACBrSTr(Result);
 end;
 
 
@@ -1226,7 +1233,7 @@ begin
 
             TempData := copy(Linha, 74, 2) + '/'+copy(Linha, 76, 2)+'/'+copy(Linha, 78, 4);
             if TempData<>'00/00/0000' then
-               Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+               Vencimento := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
             ValorDocumento := StrToFloatDef(copy(Linha, 82, 15), 0) / 100;
 
@@ -1260,11 +1267,11 @@ begin
 
             TempData            := copy(Linha, 138, 2)+'/'+copy(Linha, 140, 2)+'/'+copy(Linha, 142, 4);
             if TempData<>'00/00/0000' then
-                DataOcorrencia  := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+                DataOcorrencia  := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
             TempData := copy(Linha, 146, 2)+'/'+copy(Linha, 148, 2)+'/'+copy(Linha, 150, 4);
             if TempData<>'00/00/0000' then
-                DataCredito     := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+                DataCredito     := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
           end;
       end;
    end;

@@ -44,14 +44,14 @@ uses
   ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
-  TACBrNFSeXWebserviceMegaSoft = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceMegaSoft200 = class(TACBrNFSeXWebserviceSoap11)
   public
     function GerarNFSe(ACabecalho, AMSG: String): string; override;
     function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
 
   end;
 
-  TACBrNFSeProviderMegaSoft = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderMegaSoft200 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -68,36 +68,48 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, MegaSoft.GravarXml, MegaSoft.LerXml;
 
-{ TACBrNFSeProviderMegaSoft }
+{ TACBrNFSeProviderMegaSoft200 }
 
-procedure TACBrNFSeProviderMegaSoft.Configuracao;
+procedure TACBrNFSeProviderMegaSoft200.Configuracao;
 begin
   inherited Configuracao;
 
-  ConfigGeral.ModoEnvio := meUnitario;
+  with ConfigGeral do
+  begin
+    ModoEnvio := meUnitario;
+    ConsultaNFSe := False;
+  end;
 
   ConfigAssinar.RpsGerarNFSe := True;
 
+  with ConfigWebServices do
+  begin
+    VersaoDados := '1.00';
+    VersaoAtrib := '1.00';
+  end;
+
   SetXmlNameSpace('http://megasoftarrecadanet.com.br/xsd/nfse_v01.xsd');
+
+  ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 
   SetNomeXSD('nfse_v01.xsd');
 end;
 
-function TACBrNFSeProviderMegaSoft.CriarGeradorXml(
+function TACBrNFSeProviderMegaSoft200.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_MegaSoft.Create(Self);
+  Result := TNFSeW_MegaSoft200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderMegaSoft.CriarLeitorXml(
+function TACBrNFSeProviderMegaSoft200.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_MegaSoft.Create(Self);
+  Result := TNFSeR_MegaSoft200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderMegaSoft.CriarServiceClient(
+function TACBrNFSeProviderMegaSoft200.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -105,12 +117,17 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceMegaSoft.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceMegaSoft200.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-procedure TACBrNFSeProviderMegaSoft.ValidarSchema(
+procedure TACBrNFSeProviderMegaSoft200.ValidarSchema(
   Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
 var
   xXml: string;
@@ -135,9 +152,9 @@ begin
   inherited ValidarSchema(Response, aMetodo);
 end;
 
-{ TACBrNFSeXWebserviceMegaSoft }
+{ TACBrNFSeXWebserviceMegaSoft200 }
 
-function TACBrNFSeXWebserviceMegaSoft.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceMegaSoft200.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -154,7 +171,7 @@ begin
                      ['xmlns:ws="http://ws.megasoftarrecadanet.com.br"']);
 end;
 
-function TACBrNFSeXWebserviceMegaSoft.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceMegaSoft200.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;

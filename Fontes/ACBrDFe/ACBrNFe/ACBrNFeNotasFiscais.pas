@@ -90,7 +90,8 @@ type
     constructor Create(Collection2: TCollection); override;
     destructor Destroy; override;
     procedure Imprimir;
-    procedure ImprimirPDF;
+    procedure ImprimirPDF; overload;
+    function ImprimirPDF(AStream: TStream): Boolean; overload;
 
     procedure Assinar;
     procedure Validar;
@@ -160,8 +161,10 @@ type
     procedure Imprimir;
     procedure ImprimirCancelado;
     procedure ImprimirResumido;
-    procedure ImprimirPDF;
-    procedure ImprimirResumidoPDF;
+    procedure ImprimirPDF; overload;
+    procedure ImprimirPDF(AStream: TStream); overload;
+    procedure ImprimirResumidoPDF; overload;
+    procedure ImprimirResumidoPDF(AStream: TStream); overload;
     function Add: NotaFiscal;
     function Insert(Index: integer): NotaFiscal;
 
@@ -255,6 +258,21 @@ begin
       raise EACBrNFeException.Create('Componente DA'+ModeloDFToPrefixo(Configuracoes.Geral.ModeloDF)+' não associado.')
     else
       DANFE.ImprimirDANFEPDF(NFe);
+  end;
+end;
+
+function NotaFiscal.ImprimirPDF(AStream: TStream): Boolean;
+begin
+  with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
+  begin
+    if not Assigned(DANFE) then
+      raise EACBrNFeException.Create('Componente DA'+ModeloDFToPrefixo(Configuracoes.Geral.ModeloDF)+' não associado.')
+    else
+    begin
+      AStream.Size := 0;
+      DANFE.ImprimirDANFEPDF(AStream, NFe);
+      Result := True;
+    end;
   end;
 end;
 
@@ -415,7 +433,7 @@ var
   I, J: Integer;
   Inicio, Agora, UltVencto: TDateTime;
   fsvTotTrib, fsvBC, fsvICMS, fsvICMSDeson, fsvBCST, fsvST, fsvProd, fsvFrete : Currency;
-  fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF, fsvTotPag : Currency;
+  fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF, fsvTotPag, fsvPISST, fsvCOFINSST : Currency;
   fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol, fsvDup, fsvPISServico, fsvCOFINSServico : Currency;
   FaturamentoDireto, NFImportacao, UFCons, bServico : Boolean;
 
@@ -999,6 +1017,8 @@ begin
     fsvIPIDevol:= 0;
     fsvPISServico := 0;
     fsvCOFINSServico := 0;
+    fsvPISST     := 0;
+    fsvCOFINSST  := 0;
     FaturamentoDireto := False;
     NFImportacao := False;
     UFCons := False;
@@ -1279,15 +1299,21 @@ begin
               fsvPIS     := fsvPIS + Imposto.PIS.vPIS;
               fsvCOFINS  := fsvCOFINS + Imposto.COFINS.vCOFINS;
             end;
+          if (Imposto.PISST.indSomaPISST = ispPISSTCompoe) then
+            fsvPISST     := fsvPISST + Imposto.PISST.vPIS;
+          if (Imposto.COFINSST.indSomaCOFINSST = iscCOFINSSTCompoe ) then
+            fsvCOFINSST  := fsvCOFINSST + Imposto.COFINSST.vCOFINS;
+
           fsvOutro   := fsvOutro + Prod.vOutro;
-          fsvFCP     := fsvFCP + Imposto.ICMS.vFCP;;
-          fsvFCPST   := fsvFCPST + Imposto.ICMS.vFCPST;;
-          fsvFCPSTRet:= fsvFCPSTRet + Imposto.ICMS.vFCPSTRet;;
+          fsvFCP     := fsvFCP + Imposto.ICMS.vFCP;
+          fsvFCPST   := fsvFCPST + Imposto.ICMS.vFCPST;
+          fsvFCPSTRet:= fsvFCPSTRet + Imposto.ICMS.vFCPSTRet;
           fsvIPIDevol:= fsvIPIDevol + vIPIDevol;
 
           // quando for serviço o produto não soma do total de produtos, quando for nota de ajuste também irá somar
           if (not bServico) or (NFe.Ide.finNFe = fnAjuste) then
             fsvProd := fsvProd + Prod.vProd;
+
         end;
 
         if Prod.veicProd.tpOP = toFaturamentoDireto then
@@ -1311,9 +1337,9 @@ begin
     end;
 
     if FaturamentoDireto then
-      fsvNF := (fsvProd+fsvFrete+fsvSeg+fsvOutro+fsvII+fsvIPI+fsvServ)-(fsvDesc+fsvICMSDeson)
+      fsvNF := (fsvProd+fsvFrete+fsvSeg+fsvOutro+fsvII+fsvIPI+fsvServ+fsvPISST+fsvCOFINSST)-(fsvDesc+fsvICMSDeson)
     else
-      fsvNF := (fsvProd+fsvST+fsvFrete+fsvSeg+fsvOutro+fsvII+fsvIPI+fsvServ+fsvFCPST+fsvIPIDevol)-(fsvDesc+fsvICMSDeson);
+      fsvNF := (fsvProd+fsvST+fsvFrete+fsvSeg+fsvOutro+fsvII+fsvIPI+fsvServ+fsvFCPST+fsvIPIDevol+fsvPISST+fsvCOFINSST)-(fsvDesc+fsvICMSDeson);
 
     GravaLog('Validar: 531-Total BC ICMS');
     if (NFe.Total.ICMSTot.vBC <> fsvBC) then
@@ -3794,7 +3820,6 @@ begin
     FXMLAssinado := '';
 end;
 
-
 { TNotasFiscais }
 
 constructor TNotasFiscais.Create(AOwner: TPersistent; ItemClass: TCollectionItemClass);
@@ -3866,13 +3891,25 @@ end;
 procedure TNotasFiscais.ImprimirPDF;
 begin
   VerificarDANFE;
-  TACBrNFe(FACBrNFe).DANFE.ImprimirDANFEPDF(nil);
+  TACBrNFe(FACBrNFe).DANFE.ImprimirDANFEPDF;
+end;
+
+procedure TNotasFiscais.ImprimirPDF(AStream: TStream);
+begin
+  VerificarDANFE;
+  TACBrNFe(FACBrNFe).DANFE.ImprimirDANFEPDF(AStream);
 end;
 
 procedure TNotasFiscais.ImprimirResumidoPDF;
 begin
   VerificarDANFE;
-  TACBrNFe(FACBrNFe).DANFE.ImprimirDANFEResumidoPDF(nil);
+  TACBrNFe(FACBrNFe).DANFE.ImprimirDANFEResumidoPDF;
+end;
+
+procedure TNotasFiscais.ImprimirResumidoPDF(AStream: TStream);
+begin
+  VerificarDANFE;
+  TACBrNFe(FACBrNFe).DANFE.ImprimirDANFEResumidoPDF(AStream);
 end;
 
 function TNotasFiscais.Insert(Index: integer): NotaFiscal;

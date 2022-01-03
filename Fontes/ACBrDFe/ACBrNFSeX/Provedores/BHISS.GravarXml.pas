@@ -37,9 +37,6 @@ unit BHISS.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv1, ACBrNFSeXConversao;
 
@@ -66,6 +63,7 @@ begin
   inherited Configuracao;
 
   NrOcorrCodPaisTomador := -1;
+  FormatoItemListaServico := filsComFormatacaoSemZeroEsquerda;
 end;
 
 end.

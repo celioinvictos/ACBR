@@ -47,6 +47,22 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+25/10/2021
+-- ACBrSAT, pcnCFe, pcnCFeCanc --
+[+] Adicionado novo método:
+    function LerLoteCFe(const AFileName: String; AGravarXml: Boolean = True): boolean;
+    Que permite processar um XML com Lote de CFe ou CFeCanc, retornados pela
+    Consulta de Lote, do Portal COMSAT
+    Adicionada as propriedades "LoteCFe" e "LoteCFeCanc", que conterão a lista de
+    documentos, após a chamada de "LerLoteCFe"
+    (por:  Italo Giurizzato Junior e DSA)
+
+04/08/2021
+-- ACBrSATClass, ACBrSATDinamico_stdcall, ACBrSATDinamico_cdecl, pcnCFe, pcnCFeR,
+   pcnCFeCanc, pcnRede --
+[*] Diversos ajustes para compatibilizar com a compilação em Delphi FMX,
+    Android e Linux
+    http://www.projetoacbr.com.br/forum/index.php?showtopic=63547
 
 21/07/2021
 -- ACBrECFVirtualSAT --

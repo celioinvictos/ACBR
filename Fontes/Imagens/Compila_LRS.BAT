@@ -51,6 +51,15 @@ echo "* Arquivo   ACBrTEFD.lrs   gerado      *"
 echo "****************************************"
 echo.
 
+:PIXCD
+%1\tools\lazres.exe ACBrPIXCD.lrs TACBrPixCD.png TACBrPSPItau.png
+move ACBrPIXCD.lrs ..\ACBrPIXCD
+echo.
+echo "****************************************"
+echo "* Arquivo   ACBrPIXCD.lrs   gerado     *"
+echo "****************************************"
+echo.
+
 :TCP
 %1\tools\lazres.exe ACBrTCP.lrs TACBrTCPServer.png TACBrCEP.png TACBrIBGE.png TACBrNFPws.png TACBrCNIEE.png TACBrSuframa.png TACBrDownload.png TACBrIBPTax.png TACBrConsultaCNPJ.png TACBrMail.png TACBrConsultaCPF.png TACBrSpedTabelas.png TACBrSedex.png TACBrNCMs.png
 move ACBrTCP.lrs ..\ACBrTCP
@@ -183,6 +192,23 @@ move ACBrNFSe.lrs ..\ACBrDFe\ACBrNFSe
 echo.
 echo "****************************************"
 echo "* Arquivo    ACBrNFSe.lrs     gerado    *"
+echo "****************************************"
+echo.
+
+%1\tools\lazres.exe ACBrNFSeX.lrs TACBrNFSeX.png 
+move ACBrNFSeX.lrs ../ACBrDFe/ACBrNFSeX
+
+%1\tools\lazres.exe ACBrNFSeXDANFSeFR.lrs TACBrNFSeXDANFSeFR.png
+move ACBrNFSeXDANFSeFR.lrs ../ACBrDFe/ACBrNFSeX/DANFSE/Fast
+
+%1\tools\lazres.exe ACBrNFSeXDANFSeRL.lrs TACBrNFSeXDANFSeRL.png
+move ACBrNFSeXDANFSeRL.lrs ../ACBrDFe/ACBrNFSeX/DANFSE/Fortes
+
+echo.
+echo "****************************************"
+echo "* Arquivo    ACBrNFSeX.lrs     gerado    *"
+echo "* Arquivo    ACBrNFSeXDANFSeFR.lrs     gerado    *"
+echo "* Arquivo    ACBrNFSeXDANFSeRL.lrs     gerado    *"
 echo "****************************************"
 echo.
 

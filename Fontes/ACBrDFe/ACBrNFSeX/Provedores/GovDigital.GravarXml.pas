@@ -37,17 +37,15 @@ unit GovDigital.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_GovDigital }
+  { TNFSeW_GovDigital200 }
 
-  TNFSeW_GovDigital = class(TNFSeW_ABRASFv2)
+  TNFSeW_GovDigital200 = class(TNFSeW_ABRASFv2)
   protected
+    procedure Configuracao; override;
 
   end;
 
@@ -57,5 +55,15 @@ implementation
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
 //     GovDigital
 //==============================================================================
+
+{ TNFSeW_GovDigital200 }
+
+procedure TNFSeW_GovDigital200.Configuracao;
+begin
+  inherited Configuracao;
+
+  // Comentado a linha abaixo para atender a cidade Ouro Preto
+//  DivAliq100  := True;
+end;
 
 end.

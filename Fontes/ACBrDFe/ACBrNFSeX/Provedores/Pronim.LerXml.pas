@@ -37,9 +37,6 @@ unit Pronim.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv1, ACBrNFSeXLerXml_ABRASFv2;
 
@@ -53,14 +50,15 @@ type
 
   end;
 
-  { TNFSeR_Pronimv2 }
+  { TNFSeR_Pronim202 }
 
-  TNFSeR_Pronimv2 = class(TNFSeR_ABRASFv2)
+  TNFSeR_Pronim202 = class(TNFSeR_ABRASFv2)
   protected
 
   public
 
   end;
+
 implementation
 
 //==============================================================================

@@ -252,6 +252,7 @@ type
     ImprimeTributos   : Integer;
     ExibeTotalTributosItem : Boolean;
     LogoLateral       : Boolean;
+    ImprimeItens      : Boolean;
   end;
 
   TNFCe = record
@@ -636,6 +637,7 @@ type
     LerCedenteRetorno          : Boolean;
     CodTransmissao             : String ;
     RemoveAcentos              : Boolean;
+    PrefixArqRemessa           : String;
   end;
 
   TBoletoRelatorio = record
@@ -1115,6 +1117,7 @@ begin
       Ini.WriteInteger( CSecNFCe, CKeyNFCeImprimeTributos, ImprimeTributos);
       Ini.WriteBool( CSecNFCe, CKeyNFCeExibeTotalTributosItem, ExibeTotalTributosItem);
       Ini.WriteBool( CSecNFCe, CKeyNFCeLogoLateral, LogoLateral);
+      Ini.WriteBool( CSecNFCe, CKeyNFCeImprimeItens, imprimeitens);
     end;
 
     with DFE.Impressao.NFCe.Emissao.DANFCe do
@@ -1434,6 +1437,7 @@ begin
       Ini.WriteBool(   CSecBOLETO, CKeyBOLETOLerCedenteRetorno, LerCedenteRetorno      );
       ini.WriteString( CSecBOLETO, CKeyBOLETOCodTransmissao,CodTransmissao);
       Ini.WriteBool(   CSecBOLETO, CKeyBOLETORemoveAcentos, RemoveAcentos      );
+      ini.WriteString( CSecBOLETO, CKeyBoletoPrefixArqRemessa, PrefixArqRemessa );
     end;
 
     with BOLETO.Relatorio do
@@ -1821,6 +1825,7 @@ begin
       ImprimeTributos           := Ini.ReadInteger( CSecNFCe, CKeyNFCeImprimeTributos, ImprimeTributos );
       ExibeTotalTributosItem    := Ini.ReadBool( CSecNFCe, CKeyNFCeExibeTotalTributosItem, ExibeTotalTributosItem);
       LogoLateral               := Ini.ReadBool( CSecNFCe, CKeyNFCeLogoLateral, LogoLateral );
+      ImprimeItens              := Ini.ReadBool( CSecNFCe, CKeyNFCeImprimeItens, ImprimeItens );
     end;
 
     with DFE.Impressao.NFCe.Emissao.DANFCe do
@@ -2169,6 +2174,7 @@ begin
       LerCedenteRetorno      :=  Ini.ReadBool(   CSecBOLETO, CKeyBOLETOLerCedenteRetorno,  LerCedenteRetorno      );
       CodTransmissao         :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCodTransmissao,     ini.ReadString( CSecBOLETO,CKeyBOLETOCedenteCodTransmissao,'') );
       RemoveAcentos          :=  Ini.ReadBool(   CSecBOLETO, CKeyBOLETORemoveAcentos,      RemoveAcentos      );
+      PrefixArqRemessa       :=  Ini.ReadString( CSecBOLETO, CKeyBoletoPrefixArqRemessa,   PrefixArqRemessa );
     end;
 
     with BOLETO.Relatorio do
@@ -2534,6 +2540,7 @@ begin
     ImprimeTributos           := 1;
     ExibeTotalTributosItem    := False;
     LogoLateral               := False;
+    ImprimeItens              := True;
   end;
 
   with DFE.Impressao.NFCe.Emissao.DANFCe do
@@ -2869,6 +2876,7 @@ begin
     LerCedenteRetorno      :=  False;
     CodTransmissao         :=  '';
     RemoveAcentos          :=  False;
+    PrefixArqRemessa       := '';
   end;
 
   with BOLETO.Relatorio do

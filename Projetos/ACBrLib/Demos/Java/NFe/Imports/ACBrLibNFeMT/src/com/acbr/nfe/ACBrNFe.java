@@ -16,21 +16,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Implementa AutoCloseable para ser possível usar em try-with-resources
- *  Uso:
- *  try( ACBrNFe wrapper =  new ACBrNFe(...) ){
- *  nfe.statusServico();
- *  }
- *  Dessa forma ele retirará o ACBrNFe da memória ao terminar de utilizar, então não precisa do bloco
- *  finally, para setar tirar o nfe da memória, pois ele chama o finalize() no método close();
- *
- *  É melhor utilizar em um try-with-resources, que depender do método finalize(), pois o finalize() será
- *  chamado somente quando for efetuado o garbage collection do objeto, então fica impossível determinar
- *  QUANDO e SE o finalize() será chamado. Já o try-with-resources chama o close() ao finalizar seu escopo.
- */
-
-public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
+public final class ACBrNFe extends ACBrLibBase {
 
     private interface ACBrNFeLib extends Library {
     
@@ -44,21 +30,26 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
 
             private static String getLibraryName() {
                 if ( library.isEmpty() ) {
-                    library = Platform.is64Bit() ? "ACBrNFe64" : "ACBrNFe32";
-                }
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrNFe64" : "ACBrNFe32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrnfe64" : "acbrnfe32";
+                    }
+                  }
                 return library;
+                
             }
 
             public static ACBrNFeLib getInstance() {
                 if ( instance == null ) {
                     instance = ( ACBrNFeLib ) Native.synchronizedLibrary(
-                ( Library ) Native.loadLibrary( JNA_LIBRARY_NAME, ACBrNFeLib.class ) );
+                ( Library ) Native.load( JNA_LIBRARY_NAME, ACBrNFeLib.class ) );
                 }
                 return instance;
             }
     }
         
-    int NFE_Inicializar( PointerByReference libHandler,String eArqConfig, String eChaveCrypt );
+    int NFE_Inicializar( PointerByReference libHandler, String eArqConfig, String eChaveCrypt );
 
     int NFE_Finalizar(Pointer libHandler);
 
@@ -185,20 +176,9 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  protected void dispose() throws Exception {
     int ret = ACBrNFeLib.INSTANCE.NFE_Finalizar(getHandle());
     checkResult( ret );
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    try {
-      int ret = ACBrNFeLib.INSTANCE.NFE_Finalizar(getHandle());
-      checkResult( ret );
-    }
-    finally {
-      super.finalize();
-    }
   }
 
   public String nome() throws Exception {
@@ -239,6 +219,7 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     checkResult( ret );
   }
 
+    @Override
   public String configLerValor( ACBrSessao eSessao, String eChave ) throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
     IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
@@ -249,6 +230,7 @@ public final class ACBrNFe extends ACBrLibBase implements AutoCloseable {
     return processResult( buffer, bufferLen );
   }
 
+    @Override
   public void configGravarValor( ACBrSessao eSessao, String eChave, Object value ) throws Exception {
     int ret = ACBrNFeLib.INSTANCE.NFE_ConfigGravarValor(getHandle(), toUTF8(eSessao.name()), toUTF8(eChave), toUTF8(value.toString()) );
     checkResult( ret );

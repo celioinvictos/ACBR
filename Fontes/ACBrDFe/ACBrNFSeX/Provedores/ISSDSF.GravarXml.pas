@@ -37,9 +37,6 @@ unit ISSDSF.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils, synacode,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -51,8 +48,8 @@ type
 
   TNFSeW_ISSDSF = class(TNFSeWClass)
   private
-    FTipoRecolhimento: String;
-    FSituacao: String;
+    FPTipoRecolhimento: String;
+    FPSituacao: String;
   protected
     function GerarDeducoes: TACBrXmlNode;
     function GerarDeducao: TACBrXmlNodeArray;
@@ -61,8 +58,8 @@ type
   public
     function GerarXml: Boolean; override;
 
-    property Situacao: String         read FSituacao;
-    property TipoRecolhimento: String read FTipoRecolhimento;
+//    property Situacao: String         read FSituacao;
+//    property TipoRecolhimento: String read FTipoRecolhimento;
   end;
 
 implementation
@@ -217,21 +214,21 @@ begin
 
   FDocument.Clear();
 
-  NFSe.InfID.ID := 'rps:' + NFSe.IdentificacaoRps.Numero;
+  NFSe.InfID.ID := 'Rps_' + NFSe.IdentificacaoRps.Numero;
 
   NFSeNode := CreateElement('RPS');
-  NFSeNode.SetNamespace(FAOwner.ConfigMsgDados.LoteRps.xmlns, Self.PrefixoPadrao);
+  NFSeNode.SetAttribute(FAOwner.ConfigGeral.Identificador, NFSe.infID.ID);
 
   FDocument.Root := NFSeNode;
 
-  FSituacao := EnumeradoToStr( NFSe.Status, ['N','C'], [srNormal, srCancelado]);
+  FPSituacao := EnumeradoToStr( NFSe.Status, ['N','C'], [srNormal, srCancelado]);
 
   sIEEmit           := Poem_Zeros(NFSe.Prestador.IdentificacaoPrestador.InscricaoMunicipal, 11);
   SerieRPS          := PadRight( NFSe.IdentificacaoRps.Serie, 5 , ' ');
   NumeroRPS         := Poem_Zeros(NFSe.IdentificacaoRps.Numero, 12);
   sDataEmis         := FormatDateTime('yyyymmdd',NFse.DataEmissaoRps);
   sTributacao       := TributacaoToStr(NFSe.Servico.Tributacao) + ' ';
-  sSituacaoRPS      := FSituacao;
+  sSituacaoRPS      := FPSituacao;
   sTipoRecolhimento := EnumeradoToStr( NFSe.Servico.Valores.IssRetido, ['N','S'], [stNormal, stRetencao]);
 
   sValorServico   := Poem_Zeros( OnlyNumber( FormatFloat('#0.00',
@@ -274,7 +271,7 @@ begin
                                                       NFSe.DataEmissaoRps, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'SituacaoRPS', 1, 1, 1,
-                                                                 Situacao, ''));
+                                                               FPSituacao, ''));
 
   if NFSe.RpsSubstituido.Numero <> '' then
   begin
@@ -307,9 +304,6 @@ begin
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'RazaoSocialTomador', 1, 120, 1,
                                                  NFSe.Tomador.RazaoSocial, ''));
-
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'DocTomadorEstrangeiro', 0, 20, 0,
-                  NFSe.Tomador.IdentificacaoTomador.DocTomadorEstrangeiro, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'TipoLogradouroTomador', 0, 10, 1,
                                      NFSe.Tomador.Endereco.TipoLogradouro, ''));
@@ -345,21 +339,24 @@ begin
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'EmailTomador', 1, 60, 1,
                                                NFSe.Tomador.Contato.Email, ''));
 
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'DocTomadorEstrangeiro', 0, 20, 0,
+                  NFSe.Tomador.IdentificacaoTomador.DocTomadorEstrangeiro, ''));
+
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CodigoAtividade', 1, 9, 1,
                                                   NFSe.Servico.CodigoCnae, ''));
 
-  //NFSeNode.AppendChild(AddNode(tcInt, '#1', 'CodigoServico', 4, 5, 0,
-  //                              OnlyNumber(NFSe.Servico.ItemListaServico), ''));
+//  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CodigoServico', 4, 5, 0,
+//                                OnlyNumber(NFSe.Servico.ItemListaServico), ''));
 
   NFSeNode.AppendChild(AddNode(tcDe4, '#1', 'AliquotaAtividade', 1, 11, 1,
                                             NFSe.Servico.Valores.Aliquota, ''));
 
   // "A" a receber; "R" retido na Fonte
-  FTipoRecolhimento := EnumeradoToStr( NFSe.Servico.Valores.IssRetido,
+  FPTipoRecolhimento := EnumeradoToStr( NFSe.Servico.Valores.IssRetido,
                                        ['A','R'], [stNormal, stRetencao]);
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'TipoRecolhimento', 1, 1, 1,
-                                                         TipoRecolhimento, ''));
+                                                       FPTipoRecolhimento, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'MunicipioPrestacao', 1, 10, 1,
             CodIBGEToCodTOM(strtoint64(NFSe.Servico.CodigoMunicipio)), ''));

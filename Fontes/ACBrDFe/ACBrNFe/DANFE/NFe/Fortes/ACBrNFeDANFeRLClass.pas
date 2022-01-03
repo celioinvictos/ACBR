@@ -104,10 +104,13 @@ type
     procedure ImprimirDANFE(ANFe: TNFe = nil); override;
     procedure ImprimirDANFECancelado(ANFe: TNFe = nil); override;
     procedure ImprimirDANFEPDF(ANFe: TNFe = nil); override;
+    procedure ImprimirDANFEPDF(AStream: TStream; ANFe: TNFe = nil); override;
     procedure ImprimirEVENTO(ANFe: TNFe = nil); override;
     procedure ImprimirEVENTOPDF(ANFe: TNFe = nil); override;
+    procedure ImprimirEVENTOPDF(AStream: TStream; ANFe: TNFe = nil); override;
     procedure ImprimirINUTILIZACAO(ANFe: TNFe = nil); override;
     procedure ImprimirINUTILIZACAOPDF(ANFe: TNFe = nil); override;
+    procedure ImprimirINUTILIZACAOPDF(AStream: TStream; ANFe: TNFe = nil); override;
 
   published
     property MarcadAgua: String read FMarcadagua write FMarcadagua;
@@ -138,7 +141,7 @@ type
 implementation
 
 uses
-  ACBrNFe, ACBrUtil, ACBrNFeNotasFiscais, pcnEnvEventoNFe,
+  synautil, ACBrNFe, ACBrUtil, ACBrNFeNotasFiscais, pcnEnvEventoNFe,
   ACBrNFeDANFeRL, ACBrNFeDANFeEventoRL,
   ACBrNFeDANFeRLRetrato, ACBrNFeDANFeRLPaisagem,
   ACBrNFeDANFeEventoRLRetrato, ACBrNFeDANFeRLSimplificado,
@@ -283,6 +286,36 @@ begin
     FPArquivoPDF := ImprimirDANFEPDFTipo(ANFe);
 end;
 
+procedure TACBrNFeDANFeRL.ImprimirDANFEPDF(AStream: TStream; ANFe: TNFe = nil);
+var
+  i: Integer;
+
+  procedure StreamDANFEPDFTipo(ANFe: TNFe; const AStream: TStream);
+  begin
+    AStream.Size := 0;
+    case Self.TipoDANFE of
+      tiPaisagem:
+        TfrlDANFeRLPaisagem.SalvarPDF(Self, ANFe, AStream);
+      tiSimplificado:
+        TfrlDANFeRLSimplificado.SalvarPDF(Self, ANFe, AStream);
+    else
+      TfrlDANFeRLRetrato.SalvarPDF(Self, ANFe, AStream);
+    end;
+  end;
+
+begin
+  if not Assigned(AStream) then
+    raise EACBrNFeException.Create('AStream precisa estar definido');
+
+  if (ANFe = nil) then
+  begin
+    for i := 0 to (TACBrNFe(ACBrNFe).NotasFiscais.Count - 1) do
+      StreamDANFEPDFTipo(TACBrNFe(ACBrNFe).NotasFiscais.Items[i].NFe, AStream);
+  end
+  else
+    StreamDANFEPDFTipo(ANFe, AStream);
+end;
+
 procedure TACBrNFeDANFeRL.ImprimirEVENTO(ANFe: TNFe);
 var
   Impresso: Boolean;
@@ -379,6 +412,55 @@ begin
   end;
 end;
 
+procedure TACBrNFeDANFeRL.ImprimirEVENTOPDF(AStream: TStream; ANFe: TNFe);
+var
+  Impresso: Boolean;
+  I, J: Integer;
+  NumID: String;
+begin
+  with TACBrNFe(ACBrNFe) do
+  begin
+    if (ANFe = nil) and (NotasFiscais.Count > 0) then
+    begin
+      for i := 0 to (EventoNFe.Evento.Count - 1) do
+      begin
+        Impresso := False;
+        for j := 0 to (NotasFiscais.Count - 1) do
+        begin
+          NumID := OnlyNumber(NotasFiscais.Items[j].NFe.infNFe.ID);
+          if (NumID = OnlyNumber(EventoNFe.Evento.Items[i].InfEvento.chNFe)) then
+          begin
+            TfrlDANFeEventoRLRetrato.SalvarPDF(Self, EventoNFe.Evento.Items[i], AStream, NotasFiscais.Items[j].NFe);
+            Impresso := True;
+            Break;
+          end;
+        end;
+
+        if not Impresso and (EventoNFe.Evento.Count > 0) then
+          TfrlDANFeEventoRLRetrato.SalvarPDF(Self, EventoNFe.Evento.Items[0], AStream, nil);
+      end;
+    end
+    else
+    begin
+      NumID := OnlyNumber(ANFe.infNFe.ID);
+      Impresso := False;
+
+      for i := 0 to (EventoNFe.Evento.Count - 1) do
+      begin
+        if (NumID = OnlyNumber(EventoNFe.Evento.Items[i].InfEvento.chNFe)) then
+        begin
+          TfrlDANFeEventoRLRetrato.SalvarPDF(Self, EventoNFe.Evento.Items[i], AStream, ANFe);
+          Impresso := True;
+          Break;
+        end;
+      end;
+
+      if not Impresso and (EventoNFe.Evento.Count > 0) then
+        TfrlDANFeEventoRLRetrato.SalvarPDF(Self, EventoNFe.Evento.Items[0], AStream, nil);
+    end;
+  end;
+end;
+
 procedure TACBrNFeDANFeRL.ImprimirINUTILIZACAO(ANFe: TNFe);
 begin
   TfrmNFeDAInutRLRetrato.Imprimir(Self, TACBrNFe(ACBrNFe).InutNFe, ANFe);
@@ -391,6 +473,11 @@ begin
   else
     FPArquivoPDF := Self.PathPDF + OnlyNumber(TACBrNFe(ACBrNFe).InutNFe.ID) + '-procInutNFe.pdf';
   TfrmNFeDAInutRLRetrato.SalvarPDF(Self, TACBrNFe(ACBrNFe).InutNFe, FPArquivoPDF, ANFe);
+end;
+
+procedure TACBrNFeDANFeRL.ImprimirINUTILIZACAOPDF(AStream: TStream; ANFe: TNFe);
+begin
+  TfrmNFeDAInutRLRetrato.SalvarPDF(Self, TACBrNFe(ACBrNFe).InutNFe, AStream, ANFe);
 end;
 
 end.

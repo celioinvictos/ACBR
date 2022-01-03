@@ -37,9 +37,6 @@ unit ACBrNFSeXGravarXml_ABRASFv1;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -262,7 +259,7 @@ begin
   Result.AppendChild(AddNode(FormatoEmissao, '#4', 'DataEmissao', 19, 19, 1,
                                                    NFSe.DataEmissao, DSC_DEMI));
 
-  Result.AppendChild(AddNode(tcStr, '#5', 'NaturezaOperacao', 1, 1, NrOcorrNaturezaOperacao,
+  Result.AppendChild(AddNode(tcStr, '#5', 'NaturezaOperacao', 1, 3, NrOcorrNaturezaOperacao,
                    NaturezaOperacaoToStr(NFSe.NaturezaOperacao), DSC_INDNATOP));
 
   if (NFSe.RegimeEspecialTributacao <> retNenhum) then
@@ -336,24 +333,10 @@ begin
 
   Result.AppendChild(GerarValores);
 
-  item := PadronizarItemServico(NFSe.Servico.ItemListaServico);
+  item := FormatarItemServico(NFSe.Servico.ItemListaServico, FormatoItemListaServico);
 
-  case FormatoItemListaServico of
-    filsSemFormatacao:
-      Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 4, NrOcorrItemListaServico,
-                              StringReplace(item, '.', '', []), DSC_CLISTSERV));
-
-    filsComFormatacaoSemZeroEsquerda:
-      if Copy(NFSe.Servico.ItemListaServico, 1, 1) = '0' then
-        Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
-                                               Copy(item, 2, 4), DSC_CLISTSERV))
-      else
-        Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
+  Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
                                                           item, DSC_CLISTSERV));
-  else
-    Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
-                                                          item, DSC_CLISTSERV));
-  end;
 
   Result.AppendChild(AddNode(tcStr, '#30', 'CodigoCnae', 1, 7, NrOcorrCodigoCnae,
                                 OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE));
@@ -363,9 +346,13 @@ begin
 
   Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, 1,
     StringReplace(NFSe.Servico.Discriminacao, ';', FAOwner.ConfigGeral.QuebradeLinha,
+                                     [rfReplaceAll, rfIgnoreCase]), DSC_DISCR));
+{
+  Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, 1,
+    StringReplace(NFSe.Servico.Discriminacao, ';', FAOwner.ConfigGeral.QuebradeLinha,
                                        [rfReplaceAll, rfIgnoreCase]), DSC_DISCR,
                        (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
-
+}
   Result.AppendChild(AddNode(tcStr, '#', 'InformacoesComplementares', 1, 255, NrOcorrInformacoesComplemetares,
                                                    NFSe.OutrasInformacoes, ''));
 
@@ -478,7 +465,7 @@ begin
   // Em conformidade com a versão 1 do layout da ABRASF não deve ser alterado
   Result := CreateElement('Prestador');
 
-  Result.AppendChild(GerarCNPJ(NFSe.Prestador.IdentificacaoPrestador.Cnpj));
+  Result.AppendChild(GerarCNPJ(NFSe.Prestador.IdentificacaoPrestador.CpfCnpj));
 
   Result.AppendChild(AddNode(tcStr, '#35', 'InscricaoMunicipal', 1, 15, 0,
              NFSe.Prestador.IdentificacaoPrestador.InscricaoMunicipal, DSC_IM));

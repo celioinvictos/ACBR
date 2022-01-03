@@ -96,13 +96,14 @@ begin
    fQtRegLote              := 0;
    fpLayoutVersaoArquivo := 50;
    fpLayoutVersaoLote    := 30;
-   fpCodigosMoraAceitos     := '123';
+   fpCodigosMoraAceitos    := '123';
 
    fpOrientacoesBanco.Clear;
    fpOrientacoesBanco.Add(ACBrStr(
                           'SAC CAIXA: 0800 726 0101 (informações, reclamações, sugestões e elogios) ' + sLineBreak +
                           'Para pessoas com deficiência auditiva ou de fala: 0800 726 2492 ' + sLineBreak +
                           'Ouvidoria: 0800 725 7474 - caixa.gov.br'));
+   
 end;
 
 function TACBrCaixaEconomica.CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String;
@@ -948,6 +949,7 @@ begin
          toRemessaAlterarDadosEmissaoBloqueto    : ATipoOcorrencia := '10'; {Alt de dados c/ emissão / emissão de bloqueto}
          toRemessaAlterarProtestoDevolucao       : ATipoOcorrencia := '11'; {Alteração da opção de Protesto para Devolução}
          toRemessaAlterarDevolucaoProtesto       : ATipoOcorrencia := '12'; {Alteração da opção de Devolução para Protesto}
+         toRemessaAlterarValorTitulo             : ATipoOcorrencia := '13'; {Alteração do Valor Nominal do Título - 19/08/2021}
       else
          ATipoOcorrencia := '01';                                      {Remessa}
       end;
@@ -1757,7 +1759,9 @@ begin
       Result := IntToStrZero(CodMotivo, 2) + ' - Outros Motivos';
     end;
   end;  
-  end
+  end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrCaixaEconomica.TipoOcorrenciaToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia): String;
@@ -1840,6 +1844,8 @@ begin
       99: Result := '99-Rejeição do Título';
     end;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrCaixaEconomica.CodigoLiquidacao_Descricao(CodLiquidacao: Integer): String;
@@ -1859,6 +1865,8 @@ begin
     13 : result := 'Decurso Prazo - Banco';
     14 : result := 'Protestado';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 procedure TACBrCaixaEconomica.LerRetorno400(ARetorno: TStringList);

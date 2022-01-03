@@ -183,6 +183,7 @@ var
   GNRERetorno: TGNRERetorno;
   i: Integer;
 begin
+  Result:= False;
   GNRERetorno := TACBrGNRE(ACBrGNRE).GuiasRetorno.Add.GNRE;
 
   for i := 0 to ArqRetorno.Count - 1 do
@@ -193,6 +194,7 @@ begin
       GNRERetorno.InfoCabec.IdentificadorSolicitante := Trim(Copy(ArqRetorno.Strings[i], 3, 14));
       GNRERetorno.InfoCabec.NumeroProtocoloLote := Trim(Copy(ArqRetorno.Strings[i], 17, 10));
       GNRERetorno.InfoCabec.Ambiente := StrToInt(Copy(ArqRetorno.Strings[i], 27, 1));
+      Result := True;
     end;
 
     if SameText(Copy(ArqRetorno.Strings[i], 1, 1), '1') then
@@ -245,10 +247,10 @@ begin
       GNRERetorno.IdentificadorGuia := Copy(ArqRetorno.Strings[i], 1088, 10);
       GNRERetorno.GuiaGeradaContingencia := StrToInt(Copy(ArqRetorno.Strings[i], 1098, 1));
       GNRERetorno.Reservado := Trim(Copy(ArqRetorno.Strings[i], 1099, 126));
+      Result := True;
     end
   end;
 
-  Result := True;
 end;
 
 function TGuiasRetorno.LerXML(AXML: String): Boolean;
@@ -318,6 +320,7 @@ begin
           GNRERetorno.CodReceita     := Leitor.rCampo(tcInt, 'receita');
           GNRERetorno.DataVencimento := DateToStr(Leitor.rCampo(tcDat, 'dataVencimento'));
           GNRERetorno.NumDocOrigem   := Leitor.rCampo(tcStr, 'documentoOrigem');
+          GNRERetorno.Convenio       := Leitor.rCampo(tcStr, 'convenio');
 
           // se o tamanho for 44 o conteudo de NumDocOrigem é a chave da NF-e
           // neste caso devemos extrair o numero da nota da chave.
@@ -368,19 +371,34 @@ begin
               GNRERetorno.ValorPrincICMS := Leitor.rCampo(tcDe2, 'valor');
 
             if Leitor.rAtributo('tipo=', 'valor') = '12' then
+            begin
               GNRERetorno.ValorFECP := Leitor.rCampo(tcDe2, 'valor');
+              GNRERetorno.ValorPrincipal := GNRERetorno.ValorPrincipal - GNRERetorno.ValorFECP;
+            end;
 
             if Leitor.rAtributo('tipo=', 'valor') = '21' then
               GNRERetorno.ValorICMS := Leitor.rCampo(tcDe2, 'valor');
 
+            if Leitor.rAtributo('tipo=', 'valor') = '22' then
+              GNRERetorno.ValorFCP := Leitor.rCampo(tcDe2, 'valor');
+
             if Leitor.rAtributo('tipo=', 'valor') = '31' then
               GNRERetorno.Multa := Leitor.rCampo(tcDe2, 'valor');
+
+            if Leitor.rAtributo('tipo=', 'valor') = '32' then
+              GNRERetorno.MultaFCP := Leitor.rCampo(tcDe2, 'valor');
 
             if Leitor.rAtributo('tipo=', 'valor') = '41' then
               GNRERetorno.Juros := Leitor.rCampo(tcDe2, 'valor');
 
+            if Leitor.rAtributo('tipo=', 'valor') = '42' then
+              GNRERetorno.JurosFCP := Leitor.rCampo(tcDe2, 'valor');
+
             if Leitor.rAtributo('tipo=', 'valor') = '51' then
               GNRERetorno.AtualizacaoMonetaria := Leitor.rCampo(tcDe2, 'valor');
+
+            if Leitor.rAtributo('tipo=', 'valor') = '52' then
+              GNRERetorno.AtualizacaoMonetariaFCP := Leitor.rCampo(tcDe2, 'valor');
 
             Inc(k);
           end;

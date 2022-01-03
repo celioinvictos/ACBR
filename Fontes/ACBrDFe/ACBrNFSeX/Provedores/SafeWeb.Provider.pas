@@ -43,7 +43,7 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
 
 type
-  TACBrNFSeXWebserviceSafeWeb = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceSafeWeb200 = class(TACBrNFSeXWebserviceSoap11)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function ConsultarLote(ACabecalho, AMSG: String): string; override;
@@ -54,7 +54,7 @@ type
 
   end;
 
-  TACBrNFSeProviderSafeWeb = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderSafeWeb200 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -70,9 +70,9 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, SafeWeb.GravarXml, SafeWeb.LerXml;
 
-{ TACBrNFSeProviderSafeWeb }
+{ TACBrNFSeProviderSafeWeb200 }
 
-procedure TACBrNFSeProviderSafeWeb.Configuracao;
+procedure TACBrNFSeProviderSafeWeb200.Configuracao;
 begin
   inherited Configuracao;
 
@@ -83,6 +83,7 @@ begin
     Rps := True;
     LoteRps := True;
     CancelarNFSe := True;
+    RpsGerarNFSe := True;
     RpsSubstituirNFSe := True;
   end;
 
@@ -102,21 +103,21 @@ begin
   end;
 end;
 
-function TACBrNFSeProviderSafeWeb.CriarGeradorXml(
+function TACBrNFSeProviderSafeWeb200.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_SafeWeb.Create(Self);
+  Result := TNFSeW_SafeWeb200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSafeWeb.CriarLeitorXml(
+function TACBrNFSeProviderSafeWeb200.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_SafeWeb.Create(Self);
+  Result := TNFSeR_SafeWeb200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSafeWeb.CriarServiceClient(
+function TACBrNFSeProviderSafeWeb200.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -124,14 +125,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceSafeWeb.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceSafeWeb200.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceSafeWeb }
+{ TACBrNFSeXWebserviceSafeWeb200 }
 
-function TACBrNFSeXWebserviceSafeWeb.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceSafeWeb200.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -144,10 +150,10 @@ begin
   Request := Request + '</RecepcionarLoteRps>';
 
   Result := Executar('http://tempuri.org/RecepcionarLoteRps', Request,
-                     ['RecepcionarLoteRpsResult', 'EnviarLoteRpsResposta'], ['']);
+                     ['RecepcionarLoteRpsResult', 'EnviarLoteRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceSafeWeb.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceSafeWeb200.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -160,10 +166,10 @@ begin
   Request := Request + '</ConsultarLoteRps>';
 
   Result := Executar('http://tempuri.org/ConsultarLoteRps', Request,
-                     ['ConsultarLoteRpsResult', 'ConsultarLoteRpsResposta'], ['']);
+                     ['ConsultarLoteRpsResult', 'ConsultarLoteRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceSafeWeb.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceSafeWeb200.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -176,10 +182,10 @@ begin
   Request := Request + '</ConsultarNfseFaixa>';
 
   Result := Executar('http://tempuri.org/ConsultarNfseFaixa', Request,
-                     ['ConsultarNfseFaixaResult', 'ConsultarNfseFaixaResposta'], ['']);
+                     ['ConsultarNfseFaixaResult', 'ConsultarNfseFaixaResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceSafeWeb.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceSafeWeb200.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -192,10 +198,10 @@ begin
   Request := Request + '</ConsultarNfsePorRps>';
 
   Result := Executar('http://tempuri.org/ConsultarNfsePorRps', Request,
-                     ['ConsultarNfsePorRpsResult', 'ConsultarNfseRpsResposta'], ['']);
+                     ['ConsultarNfsePorRpsResult', 'ConsultarNfseRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceSafeWeb.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceSafeWeb200.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -207,10 +213,10 @@ begin
   Request := Request + '</CancelarNfse>';
 
   Result := Executar('http://tempuri.org/CancelarNfse', Request,
-                     ['CancelarNfseResult', 'CancelarNfseResposta'], ['']);
+                     ['CancelarNfseResult', 'CancelarNfseResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceSafeWeb.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSafeWeb200.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -223,7 +229,7 @@ begin
   Request := Request + '</SubstituirNfse>';
 
   Result := Executar('http://tempuri.org/SubstituirNfse', Request,
-                     ['SubstituirNfseResult', 'SubstituirNfseResposta'], ['']);
+                     ['SubstituirNfseResult', 'SubstituirNfseResposta'], []);
 end;
 
 end.

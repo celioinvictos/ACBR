@@ -55,6 +55,8 @@ uses
 
 resourcestring
   ERR_NAO_IMP = 'Serviço não implementado para este provedor.';
+  ERR_SEM_URL_PRO = 'Não informado a URL de Produção, favor entrar em contato com a Prefeitura ou Provedor.';
+  ERR_SEM_URL_HOM = 'Não informado a URL de Homologação, favor entrar em contato com a Prefeitura ou Provedor.';
 
 type
 
@@ -108,14 +110,13 @@ type
                       responseTag, namespace: array of string): string; overload;
 
   public
-    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURl: string);
+    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
 
     function Recepcionar(ACabecalho, AMSG: String): string; virtual;
     function ConsultarLote(ACabecalho, AMSG: String): string; virtual;
     function ConsultarSituacao(ACabecalho, AMSG: String): string; virtual;
     function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; virtual;
     function ConsultarNFSe(ACabecalho, AMSG: String): string; virtual;
-    function ConsultarNFSeUrl(ACabecalho, AMSG: String): string; virtual;
     function ConsultarNFSePorFaixa(ACabecalho, AMSG: String): string; virtual;
     function ConsultarNFSeServicoPrestado(ACabecalho, AMSG: String): string; virtual;
     function ConsultarNFSeServicoTomado(ACabecalho, AMSG: String): string; virtual;
@@ -141,7 +142,7 @@ type
     function PrepararEnvio(const Message, SoapAction, SoapHeader: string;
                                   namespace: array of string): string; override;
   public
-    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURl: string);
+    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
 
   end;
 
@@ -150,7 +151,7 @@ type
     function PrepararEnvio(const Message, SoapAction, SoapHeader: string;
                                   namespace: array of string): string; override;
   public
-    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURl: string);
+    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
 
   end;
 
@@ -161,7 +162,7 @@ type
     function PrepararEnvio(const Message, SoapAction, SoapHeader: string;
                                   namespace: array of string): string; override;
   public
-    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURl: string);
+    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
 
   end;
 
@@ -175,15 +176,26 @@ type
 
   end;
 
-  TACBrNFSeXWebserviceMulti = class(TACBrNFSeXWebserviceNoSoap)
+  TACBrNFSeXWebserviceMulti1 = class(TACBrNFSeXWebserviceNoSoap)
   protected
     FPBound: string;
 
-    function GerarPrefixoArquivo: String; override;
     function PrepararEnvio(const Message, SoapAction, SoapHeader: string;
                                   namespace: array of string): string; override;
   public
-    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURl: string);
+    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
+
+  end;
+
+  TACBrNFSeXWebserviceMulti2 = class(TACBrNFSeXWebserviceNoSoap)
+  protected
+    FPBound: string;
+
+    function PrepararEnvio(const Message, SoapAction, SoapHeader: string;
+                           namespace: array of string): string; override;
+
+  public
+    constructor Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
 
   end;
 
@@ -207,7 +219,8 @@ type
    FtpConsulta: TtpConsulta;
    FtpPeriodo: TtpPeriodo;
    FTipo: String;
-   FCodTribMun: String;
+   FCadEconomico: String;
+   FSerieNFSe: String;
 
  public
    constructor Create;
@@ -230,7 +243,8 @@ type
    property tpConsulta: TtpConsulta read FtpConsulta    write FtpConsulta;
    property tpPeriodo: TtpPeriodo   read FtpPeriodo     write FtpPeriodo;
    property Tipo: String            read FTipo          write FTipo;
-   property CodTribMun: String      read FCodTribMun    write FCodTribMun;
+   property CadEconomico: String    read FCadEconomico  write FCadEconomico;
+   property SerieNFSe: String       read FSerieNFSe     write FSerieNFSe;
  end;
 
   TInfCancelamento = class
@@ -272,7 +286,7 @@ uses
 
 { TACBrNFSeXWebservice }
 
-constructor TACBrNFSeXWebservice.Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURl: string);
+constructor TACBrNFSeXWebservice.Create(AOwner: TACBrDFe; AMetodo: TMetodo; AURL: string);
 begin
   FPDFeOwner := AOwner;
   if Assigned(AOwner) then
@@ -319,12 +333,6 @@ begin
       begin
         FPArqEnv := 'con-nfse';
         FPArqResp := 'lista-nfse-con';
-      end;
-
-    tmConsultarNFSeURL:
-      begin
-        FPArqEnv := 'con-url-nfse';
-        FPArqResp := 'lista-nfse-url';
       end;
 
     tmConsultarNFSePorFaixa:
@@ -382,7 +390,7 @@ begin
       end;
   end;
 
-  FPURL := AURl;
+  FPURL := AURL;
 end;
 
 procedure TACBrNFSeXWebservice.FazerLog(const Msg: String; Exibir: Boolean);
@@ -439,7 +447,6 @@ end;
 procedure TACBrNFSeXWebservice.SalvarEnvio(ADadosSoap, ADadosMsg: string);
 var
   Prefixo, ArqEnv: String;
-  IsUTF8: Boolean;
 begin
   { Sobrescrever apenas se necessário }
 
@@ -451,23 +458,20 @@ begin
   begin
     ArqEnv := Prefixo + '-' + FPArqEnv + '.xml';
 
-    IsUTF8  := XmlEstaAssinado(ADadosMsg);
-    FPDFeOwner.Gravar(ArqEnv, ADadosMsg, '', IsUTF8);
+    FPDFeOwner.Gravar(ArqEnv, ADadosMsg);
   end;
 
   if FPConfiguracoes.WebServices.Salvar then
   begin
     ArqEnv := Prefixo + '-' + FPArqEnv + '-soap.xml';
 
-    IsUTF8  := XmlEstaAssinado(ADadosSoap);
-    FPDFeOwner.Gravar(ArqEnv, ADadosSoap, '', IsUTF8);
+    FPDFeOwner.Gravar(ArqEnv, ADadosSoap);
   end;
 end;
 
 procedure TACBrNFSeXWebservice.SalvarRetorno(ADadosSoap, ADadosMsg: string);
 var
   Prefixo, ArqEnv: String;
-  IsUTF8: Boolean;
 begin
   { Sobrescrever apenas se necessário }
 
@@ -479,16 +483,14 @@ begin
   begin
     ArqEnv := Prefixo + '-' + FPArqResp + '.xml';
 
-    IsUTF8  := XmlEstaAssinado(ADadosMsg);
-    FPDFeOwner.Gravar(ArqEnv, ADadosMsg, '', IsUTF8);
+    FPDFeOwner.Gravar(ArqEnv, ADadosMsg);
   end;
 
   if FPDFeOwner.Configuracoes.WebServices.Salvar then
   begin
     ArqEnv := Prefixo + '-' + FPArqResp + '-soap.xml';
 
-    IsUTF8  := XmlEstaAssinado(ADadosSoap);
-    FPDFeOwner.Gravar(ArqEnv, ADadosSoap, '', IsUTF8);
+    FPDFeOwner.Gravar(ArqEnv, ADadosSoap);
   end;
 end;
 
@@ -506,14 +508,14 @@ begin
 
   if aXml = '' then
     aXml := '<a>' +
-                '<ListaMensagemRetorno>' +
-                 '<MensagemRetorno>' +
+              '<ListaMensagemRetorno>' +
+                '<MensagemRetorno>' +
                   '<Codigo>' + '</Codigo>' +
                   '<Mensagem>' + Response + '</Mensagem>' +
                   '<Correcao>' + '</Correcao>' +
-                 '</MensagemRetorno>' +
-                '</ListaMensagemRetorno>' +
-               '</a>';
+                '</MensagemRetorno>' +
+              '</ListaMensagemRetorno>' +
+            '</a>';
 
   Result :=  aXml;
 end;
@@ -530,16 +532,16 @@ begin
 
   if (ANode <> nil) then
   begin
-    aMsg := ProcessarConteudoXml(ANode.Childrens.FindAnyNs(FPFaultCodeNode), tcStr) +
+    aMsg := ObterConteudoTag(ANode.Childrens.FindAnyNs(FPFaultCodeNode), tcStr) +
        ' - ' +
-       ProcessarConteudoXml(ANode.Childrens.FindAnyNs(FPFaultMsgNode), tcStr);
+       ObterConteudoTag(ANode.Childrens.FindAnyNs(FPFaultMsgNode), tcStr);
 
     if aMsg = ' - ' then
-      aMsg := ProcessarConteudoXml(ANode.Childrens.FindAnyNs('Code'), tcStr) +
+      aMsg := ObterConteudoTag(ANode.Childrens.FindAnyNs('Code'), tcStr) +
        ' - ' +
-       ProcessarConteudoXml(ANode.Childrens.FindAnyNs('Reason'), tcStr) +
+       ObterConteudoTag(ANode.Childrens.FindAnyNs('Reason'), tcStr) +
        ' - ' +
-       ProcessarConteudoXml(ANode.Childrens.FindAnyNs('Detail'), tcStr);
+       ObterConteudoTag(ANode.Childrens.FindAnyNs('Detail'), tcStr);
 
     raise EACBrDFeException.Create(aMsg);
   end;
@@ -625,6 +627,7 @@ var
   Tentar, Tratado, TemCertificadoConfigurado: Boolean;
   HTTPResultCode, InternalErrorCode: Integer;
   aRetorno: TACBrXmlDocument;
+  CharSet: string;
 begin
   FPEnvio := PrepararEnvio(Message, SoapAction, SoapHeader, namespace);
 
@@ -656,7 +659,8 @@ begin
     InternalErrorCode := 0;
 
     try
-      if Assigned(FPDFeOwner.OnTransmit) then  // Envio por Evento... Aplicação cuidará do envio
+      // Envio por Evento... Aplicação cuidará do envio
+      if Assigned(FPDFeOwner.OnTransmit) then
       begin
         FPDFeOwner.OnTransmit( FPEnvio, FPURL, SoapAction,
                                FPMimeType, FPRetorno, HTTPResultCode, InternalErrorCode);
@@ -669,7 +673,7 @@ begin
         try
           HttpClient.URL := FPURL;
           HttpClient.Method := 'POST';
-          HttpClient.MimeType := MimeType;
+          HttpClient.MimeType := FPMimeType;
 
           SetHeaders(HttpClient.HeaderReq);
 
@@ -679,7 +683,35 @@ begin
             HttpClient.Execute;
 
             HttpClient.DataResp.Position := 0;
-            FPRetorno := string(ReadStrFromStream(HttpClient.DataResp, HttpClient.DataResp.Size));
+
+            CharSet := LowerCase(HttpClient.HeaderResp.GetHeaderValue('Content-Type'));
+
+            if (Pos('application/xml', CharSet) > 0) and (Pos('utf-8', CharSet) > 0) then
+              FPRetorno := UTF8ToNativeString(ReadStrFromStream(HttpClient.DataResp, HttpClient.DataResp.Size))
+            else
+              FPRetorno := string(ReadStrFromStream(HttpClient.DataResp, HttpClient.DataResp.Size));
+
+            // Alsuns provedores retorna uma string apenas com a mensagem de erro
+            if Pos('Body', FPRetorno) = 0 then
+              FPRetorno := GetSoapBody(FPRetorno);
+
+            if Pos('ISO-8859-1', FPRetorno) > 0 then
+            begin
+              FPRetorno := RemoverDeclaracaoXML(FPRetorno);
+              FPRetorno := string(TranslateString(AnsiString(FPRetorno), 0, 28591));
+            end;
+
+            if Pos('<?xml version="1.0" ?>', FPRetorno) > 0 then
+              FPRetorno := RemoverDeclaracaoXML(FPRetorno);
+
+            // Alguns provedores não retornam o XML em UTF-8
+            FPRetorno := ConverteXMLtoUTF8(FPRetorno);
+
+            (*
+            // {"retorno":{"msg":"Acesso Negado!","sis":false,"code":401}}
+            if not StringIsXML(FPRetorno) then
+              FPRetorno := JsonToXML(FPRetorno);
+            *)
 
             // Verifica se o ResultCode é: 200 OK; 201 Created; 202 Accepted
             // https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
@@ -757,12 +789,6 @@ begin
   raise EACBrDFeException.Create(ERR_NAO_IMP);
 end;
 
-function TACBrNFSeXWebservice.ConsultarNFSeUrl(ACabecalho, AMSG: String): string;
-begin
-  Result := '';
-  raise EACBrDFeException.Create(ERR_NAO_IMP);
-end;
-
 function TACBrNFSeXWebservice.ConsultarNFSePorFaixa(ACabecalho, AMSG: String): string;
 begin
   Result := '';
@@ -826,11 +852,11 @@ end;
 { TACBrNFSeXWebserviceSoap11 }
 
 constructor TACBrNFSeXWebserviceSoap11.Create(AOwner: TACBrDFe; AMetodo: TMetodo;
-  AURl: string);
+  AURL: string);
 begin
-  inherited Create(AOwner, AMetodo, AURl);
+  inherited Create(AOwner, AMetodo, AURL);
 
-  FPMimeType := 'text/xml; charset=utf-8';
+  FPMimeType := 'text/xml';
 end;
 
 function TACBrNFSeXWebserviceSoap11.PrepararEnvio(const Message, SoapAction,
@@ -866,11 +892,11 @@ end;
 { TACBrNFSeXWebserviceSoap12 }
 
 constructor TACBrNFSeXWebserviceSoap12.Create(AOwner: TACBrDFe; AMetodo: TMetodo;
-  AURl: string);
+  AURL: string);
 begin
-  inherited Create(AOwner, AMetodo, AURl);
+  inherited Create(AOwner, AMetodo, AURL);
 
-  FPMimeType := 'application/soap+xml; charset=utf-8';
+  FPMimeType := 'application/soap+xml';
 end;
 
 function TACBrNFSeXWebserviceSoap12.PrepararEnvio(const Message, SoapAction,
@@ -907,16 +933,27 @@ end;
 { TACBrNFSeXWebserviceNoSoap }
 
 constructor TACBrNFSeXWebserviceNoSoap.Create(AOwner: TACBrDFe;
-  AMetodo: TMetodo; AURl: string);
+  AMetodo: TMetodo; AURL: string);
 begin
-  inherited Create(AOwner, AMetodo, AURl);
+  inherited Create(AOwner, AMetodo, AURL);
 
-  FPMimeType := 'application/xml; charset=utf-8';
+  FPMimeType := 'application/xml';
 end;
 
 function TACBrNFSeXWebserviceNoSoap.GetSoapBody(const Response: string): string;
 begin
-  Result := Response;
+  if Pos('<', Response) = 0 then
+    Result := '<a>' +
+                '<ListaMensagemRetorno>' +
+                  '<MensagemRetorno>' +
+                    '<Codigo>' + '</Codigo>' +
+                    '<Mensagem>' + Response + '</Mensagem>' +
+                    '<Correcao>' + '</Correcao>' +
+                  '</MensagemRetorno>' +
+                '</ListaMensagemRetorno>' +
+              '</a>'
+  else
+    Result := Response;
 end;
 
 function TACBrNFSeXWebserviceNoSoap.PrepararEnvio(const Message, SoapAction,
@@ -970,23 +1007,18 @@ begin
   HttpClient.Clear;
 end;
 
-{ TACBrNFSeXWebserviceMulti }
+{ TACBrNFSeXWebserviceMulti1 }
 
-constructor TACBrNFSeXWebserviceMulti.Create(AOwner: TACBrDFe; AMetodo: TMetodo;
-  AURl: string);
+constructor TACBrNFSeXWebserviceMulti1.Create(AOwner: TACBrDFe; AMetodo: TMetodo;
+  AURL: string);
 begin
-  inherited Create(AOwner, AMetodo, AURl);
+  inherited Create(AOwner, AMetodo, AURL);
 
   FPBound := IntToHex(Random(MaxInt), 8) + '_Synapse_boundary';
   FPMimeType := 'multipart/form-data; boundary=' + AnsiQuotedStr(FPBound, '"');
 end;
 
-function TACBrNFSeXWebserviceMulti.GerarPrefixoArquivo: String;
-begin
-  Result := IntToHex(Random(MaxInt), 8);
-end;
-
-function TACBrNFSeXWebserviceMulti.PrepararEnvio(const Message, SoapAction,
+function TACBrNFSeXWebserviceMulti1.PrepararEnvio(const Message, SoapAction,
   SoapHeader: string; namespace: array of string): string;
 var
   UsuarioWeb, SenhaWeb: String;
@@ -1012,8 +1044,41 @@ begin
             '--' + FPBound + sLineBreak +
             'Content-Disposition: form-data; name=' +
             AnsiQuotedStr('f1', '"' ) + '; ' + 'filename=' +
-            AnsiQuotedStr(GerarPrefixoArquivo + '-lot-rps.xml', '"') + sLineBreak +
+            AnsiQuotedStr(GerarPrefixoArquivo + '-' + FPArqEnv + '.xml', '"') + sLineBreak +
             'Content-Type: text/xml' + sLineBreak + sLineBreak + Message + sLineBreak +
+            '--' + FPBound + '--' + sLineBreak;
+
+  HttpClient := FPDFeOwner.SSL.SSLHttpClass;
+
+  HttpClient.Clear;
+end;
+
+{ TACBrNFSeXWebserviceMulti2 }
+
+constructor TACBrNFSeXWebserviceMulti2.Create(AOwner: TACBrDFe; AMetodo: TMetodo;
+  AURL: string);
+begin
+  inherited Create(AOwner, AMetodo, AURL);
+
+  FPBound := '----=_Part_1_' + IntToHex(Random(MaxInt), 8);
+  FPMimeType := 'multipart/form-data; boundary=' + AnsiQuotedStr(FPBound, '"');
+end;
+
+function TACBrNFSeXWebserviceMulti2.PrepararEnvio(const Message, SoapAction,
+  SoapHeader: string; namespace: array of string): string;
+var
+  NomeArq: String;
+begin
+  NomeArq := GerarPrefixoArquivo + '-' + FPArqEnv + '.xml';
+
+  Result := '--' + FPBound + sLineBreak +
+            'Content-Type: text/xml; charset=Cp1252; name=' +
+            NomeArq + sLineBreak +
+            'Content-Transfer-Encoding: binary' + sLineBreak +
+            'Content-Disposition: form-data; name=' + AnsiQuotedStr(NomeArq, '"') +
+            '; filename=' + AnsiQuotedStr(NomeArq, '"') + sLineBreak +
+            sLineBreak +
+            Message + sLineBreak +
             '--' + FPBound + '--' + sLineBreak;
 
   HttpClient := FPDFeOwner.SSL.SSLHttpClass;
@@ -1039,7 +1104,8 @@ begin
   CNPJInter     := '';
   IMInter       := '';
   RazaoInter    := '';
-  CodTribMun    := '';
+  CadEconomico  := '';
+  SerieNFSe     := '';
   Pagina        := 1;
   Tipo          := '';
 end;
@@ -1077,7 +1143,8 @@ begin
     IMInter       := INIRec.ReadString(sSecao, 'IMInter', '');
     RazaoInter    := INIRec.ReadString(sSecao, 'RazaoInter', '');
     Tipo          := INIRec.ReadString(sSecao, 'Tipo', '');
-    CodTribMun    := INIRec.ReadString(sSecao, 'CodTribMun', '');
+    CadEconomico  := INIRec.ReadString(sSecao, 'CadEconomico', '');
+    SerieNFSe     := INIRec.ReadString(sSecao, 'SerieNFSe', '');
 
     Pagina        := INIRec.ReadInteger(sSecao, 'Pagina', 1);
 

@@ -99,9 +99,18 @@ begin
 
     TabServicosExt := False;
     Identificador := 'Id';
+    QuebradeLinha := ';';
 
     // meLoteAssincrono, meLoteSincrono ou meUnitario
     ModoEnvio := meLoteAssincrono;
+
+    ConsultaSitLote := True;
+    ConsultaLote := True;
+    ConsultaNFSe := True;
+    ConsultaPorFaixa := False;
+    CancPreencherMotivo := False;
+    CancPreencherSerieNfse := False;
+    CancPreencherCodVerificacao := False;
   end;
 
   // Inicializa os parâmetros de configuração: WebServices
@@ -121,6 +130,8 @@ begin
   begin
     // Usado na tag raiz dos XML de envio do Lote, Consultas, etc.
     Prefixo := '';
+
+    UsarNumLoteConsLote := False;
 
     DadosCabecalho := GetCabecalho('');
 
@@ -264,7 +275,6 @@ begin
     ConsultarLote := 'nfse.xsd';
     ConsultarNFSeRps := 'nfse.xsd';
     ConsultarNFSe := 'nfse.xsd';
-    ConsultarNFSeURL := 'nfse.xsd';
     ConsultarNFSePorFaixa := 'nfse.xsd';
     ConsultarNFSeServicoPrestado := 'nfse.xsd';
     ConsultarNFSeServicoTomado := 'nfse.xsd';
@@ -300,7 +310,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceModeloV1.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 { TACBrNFSeXWebserviceModeloV1 }
@@ -318,7 +333,7 @@ begin
 
   Result := Executar('', Request,
                      ['outputXML', 'EnviarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceModeloV1.ConsultarLote(ACabecalho, AMSG: String): string;
@@ -334,7 +349,7 @@ begin
 
   Result := Executar('', Request,
                      ['outputXML', 'ConsultarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceModeloV1.ConsultarSituacao(ACabecalho, AMSG: String): string;
@@ -350,7 +365,7 @@ begin
 
   Result := Executar('', Request,
                      ['outputXML', 'ConsultarSituacaoLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceModeloV1.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
@@ -366,7 +381,7 @@ begin
 
   Result := Executar('', Request,
                      ['outputXML', 'ConsultarNfseRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceModeloV1.ConsultarNFSe(ACabecalho, AMSG: String): string;
@@ -382,7 +397,7 @@ begin
 
   Result := Executar('', Request,
                      ['outputXML', 'ConsultarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceModeloV1.Cancelar(ACabecalho, AMSG: String): string;
@@ -398,7 +413,7 @@ begin
 
   Result := Executar('', Request,
                      ['outputXML', 'CancelarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 end.

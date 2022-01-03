@@ -3,14 +3,14 @@ using ACBrLib.Core.DFe;
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoAtorIntNFe : EventoBase
+    public sealed class EventoAtorIntNFe : EventoNFeBase
     {
         #region Constructor
 
         public EventoAtorIntNFe()
         {
             verAplic = "1.0";
-            tpEvento = TipoEvento.teAtorInteressadoNFe;
+            tpEvento = TipoEventoNFe.teAtorInteressadoNFe;
             AutXml = new AutXML();
         }
 

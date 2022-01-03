@@ -14,8 +14,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 
-public final class ACBrBAL extends ACBrLibBase implements AutoCloseable {
-    
+public final class ACBrBAL extends ACBrLibBase {    
     private interface ACBrBALLib extends Library {
         
         static String JNA_LIBRARY_NAME = LibraryLoader.getLibraryName();
@@ -28,15 +27,19 @@ public final class ACBrBAL extends ACBrLibBase implements AutoCloseable {
                         
             private static String getLibraryName() {
                 if ( library.isEmpty() ) {
-                    library = Platform.is64Bit() ? "ACBrBAL64" : "ACBrBAL32";
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrBAL64" : "ACBrBAL32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrbal64" : "acbrbal32";
+                    }
+                    
                 }  
                 return library;
             }
             
             public static ACBrBALLib getInstance() {
                 if ( instance == null ) {
-                    instance = (ACBrBALLib) Native.synchronizedLibrary(
-                            (Library) Native.loadLibrary(JNA_LIBRARY_NAME, ACBrBALLib.class));
+                    instance = (ACBrBALLib)Native.synchronizedLibrary((Library) Native.load(JNA_LIBRARY_NAME, ACBrBALLib.class));
                 }
                 
                 return instance;
@@ -98,19 +101,9 @@ public final class ACBrBAL extends ACBrLibBase implements AutoCloseable {
     }
     
     @Override
-    public void close() throws Exception {
+    protected void dispose() throws Exception {
         int ret = ACBrBALLib.INSTANCE.BAL_Finalizar(getHandle());
         checkResult(ret);
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            int ret = ACBrBALLib.INSTANCE.BAL_Finalizar(getHandle());
-            checkResult(ret);
-        } catch (Exception e) {
-            super.finalize();
-        }
     }
     
     public String nome() throws Exception {
@@ -151,6 +144,7 @@ public final class ACBrBAL extends ACBrLibBase implements AutoCloseable {
         checkResult(ret);
     }
 
+    @Override
     public String configLerValor(ACBrSessao eSessao, String eChave) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
         IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
@@ -161,6 +155,7 @@ public final class ACBrBAL extends ACBrLibBase implements AutoCloseable {
         return processResult(buffer, bufferLen);
     }
 
+    @Override
     public void configGravarValor(ACBrSessao eSessao, String eChave, Object value) throws Exception {
         int ret = ACBrBALLib.INSTANCE.BAL_ConfigGravarValor(getHandle(), toUTF8(eSessao.name()), toUTF8(eChave), toUTF8(value.toString()));
         checkResult(ret);

@@ -37,9 +37,6 @@ unit GovBr.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXGravarXml_ABRASFv1;
 
@@ -56,7 +53,7 @@ implementation
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
-//     GovBR
+//     GovBr
 //==============================================================================
 
 { TNFSeW_GovBr }

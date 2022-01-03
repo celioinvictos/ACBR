@@ -43,7 +43,7 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
 
 type
-  TACBrNFSeXWebserviceGiss = class(TACBrNFSeXWebserviceSoap12)
+  TACBrNFSeXWebserviceGiss204 = class(TACBrNFSeXWebserviceSoap12)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -58,7 +58,7 @@ type
 
   end;
 
-  TACBrNFSeProviderGiss = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderGiss204 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -74,9 +74,9 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, Giss.GravarXml, Giss.LerXml;
 
-{ TACBrNFSeProviderGiss }
+{ TACBrNFSeProviderGiss204 }
 
-procedure TACBrNFSeProviderGiss.Configuracao;
+procedure TACBrNFSeProviderGiss204.Configuracao;
 begin
   inherited Configuracao;
 
@@ -86,8 +86,16 @@ begin
     CancelarNFSe := True;
   end;
 
+  with ConfigWebServices do
+  begin
+    VersaoDados := '2.04';
+    VersaoAtrib := '2.04';
+  end;
+
   with ConfigMsgDados do
   begin
+    GerarPrestadorLoteRps := True;
+    {
     XmlRps.xmlns := 'http://www.giss.com.br/tipos-v2_04.xsd';
 
     LoteRps.xmlns := 'http://www.giss.com.br/enviar-lote-rps-envio-v2_04.xsd';
@@ -109,8 +117,10 @@ begin
     DadosCabecalho := '<cabecalho versao="1.0" xmlns="http://www.giss.com.br/cabecalho-v2_04.xsd">' +
                       '<versaoDados>1.0</versaoDados>' +
                       '</cabecalho>';
+    }
+    DadosCabecalho := GetCabecalho('');
   end;
-
+  {
   with ConfigSchemas do
   begin
     Recepcionar := 'enviar-lote-rps-envio-v2_04.xsd';
@@ -125,24 +135,26 @@ begin
     GerarNFSe := 'gerar-nfse-envio-v2_04.xsd';
     RecepcionarSincrono := 'enviar-lote-rps-sincrono-envio-v2_04.xsd';
     SubstituirNFSe := 'substituir-nfse-envio-v2_04.xsd';
+    Validar := False;
   end;
+  }
 end;
 
-function TACBrNFSeProviderGiss.CriarGeradorXml(
+function TACBrNFSeProviderGiss204.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_Giss.Create(Self);
+  Result := TNFSeW_Giss204.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderGiss.CriarLeitorXml(
+function TACBrNFSeProviderGiss204.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_Giss.Create(Self);
+  Result := TNFSeR_Giss204.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderGiss.CriarServiceClient(
+function TACBrNFSeProviderGiss204.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -150,14 +162,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceGiss.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceGiss204.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceGiss }
+{ TACBrNFSeXWebserviceGiss204 }
 
-function TACBrNFSeXWebserviceGiss.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -174,7 +191,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -191,7 +208,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -208,7 +225,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -225,7 +242,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -242,7 +259,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -259,7 +276,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.ConsultarNFSeServicoPrestado(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.ConsultarNFSeServicoPrestado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -276,7 +293,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.ConsultarNFSeServicoTomado(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.ConsultarNFSeServicoTomado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -293,7 +310,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceGiss204.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -309,7 +326,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceGiss.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceGiss204.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;

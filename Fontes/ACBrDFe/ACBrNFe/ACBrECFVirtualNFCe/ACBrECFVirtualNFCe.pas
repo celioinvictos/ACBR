@@ -355,6 +355,10 @@ begin
     Result := fpValePresente
   else if Descricao = 'vale combustivel' then
     Result := fpValeCombustivel
+  else if Descricao = 'pix' then
+    Result := fpPagamentoInstantaneo
+  else if Descricao = 'carteira digital' then
+    Result := fpTransfBancario
   else
   begin
     if pos('cartao', Descricao) > 0 then
@@ -492,6 +496,8 @@ begin
     with fsACBrNFCe do
     begin
       NotasFiscais.Clear;
+      WebServices.EnvEvento.Clear;
+
       NotasFiscais.Add;
       Consumidor.Enviado := False;
 
@@ -662,13 +668,6 @@ begin
   begin
     with fsACBrNFCe do
     begin
-      //Verifica se já tem desconto no item , caso tenha não faz o rateio nos itens
-      for i := 0 to NotasFiscais.Items[0].NFe.Det.Count - 1 do
-      begin
-        if (NotasFiscais.Items[0].NFe.Det[i].Prod.cProd <> cItemCancelado) and (NotasFiscais.Items[0].NFe.Det[i].Prod.vDesc > 0) then
-          Exit;
-      end;
-
       if fpCupom.DescAcresSubtotal > 0 then
         VlDescAcres := fpCupom.DescAcresSubtotal
       else
@@ -766,6 +765,9 @@ begin
 
       NFCePagto.vPag := Pagto.ValorPago;
       NFCePagto.tPag := AdivinharFormaPagamento(fpFormasPagamentos[Pagto.PosFPG].Descricao);
+
+      if NFCePagto.tPag = fpOutro then
+        NFCePagto.xPag := fpFormasPagamentos[Pagto.PosFPG].Descricao;
 
       if (NFCePagto.tPag in [fpCartaoCredito, fpCartaoDebito]) then
       begin
@@ -888,7 +890,7 @@ begin
 
         if NotasFiscais.Items[0].Confirmada then
           FazerImpressaoDocumento;
-    end;
+      end;
     end;
   end
   else

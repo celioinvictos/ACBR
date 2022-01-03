@@ -37,9 +37,6 @@ unit DBSeller.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXGravarXml_ABRASFv1;
 
@@ -54,7 +51,12 @@ type
 
 implementation
 
-{ TNFSeW_Publica }
+//==============================================================================
+// Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
+//     DBSeller
+//==============================================================================
+
+{ TNFSeW_DBSeller }
 
 procedure TNFSeW_DBSeller.Configuracao;
 begin

@@ -37,16 +37,13 @@ unit DeISS.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_DeISS }
+  { TNFSeR_DeISS203 }
 
-  TNFSeR_DeISS = class(TNFSeR_ABRASFv2)
+  TNFSeR_DeISS203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

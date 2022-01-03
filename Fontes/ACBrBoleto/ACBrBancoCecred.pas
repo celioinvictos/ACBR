@@ -936,7 +936,10 @@ begin
   end;
 
   if (Result <> '') then
-  Exit;
+  begin
+    Result := ACBrSTr(Result);
+    Exit;
+  end;
 
   case CodOcorrencia of
     02: Result := '02-Confirmação de Entrada de Título';
@@ -950,6 +953,8 @@ begin
     19: Result := '19-Confirmação de Recebimento de Instruções para Protesto';
     23: Result := '23-Indicação de Encaminhamento a Cartório';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoCecred.CodOcorrenciaToTipo(const CodOcorrencia:
@@ -1086,6 +1091,8 @@ begin
         90: Result:='90-Baixa automática';
       end;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 procedure TACBrBancoCecred.LerRetorno240(ARetorno: TStringList);
@@ -1155,7 +1162,7 @@ begin
 
          TempData := copy(Linha, 74, 2) + '/'+copy(Linha, 76, 2)+'/'+copy(Linha, 78, 4);
          if TempData<>'00/00/0000' then
-           Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+           Vencimento := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
          ValorDocumento       := StrToFloatDef(copy(Linha, 82, 15), 0) / 100;
          NossoNumero          := copy(Linha, 38, 20);
@@ -1186,11 +1193,11 @@ begin
 
          TempData := copy(Linha, 138, 2)+'/'+copy(Linha, 140, 2)+'/'+copy(Linha, 142, 4);
          if TempData <> '00/00/0000' then
-           DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+           DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
          TempData := copy(Linha, 146, 2)+'/'+copy(Linha, 148, 2)+'/'+copy(Linha, 150, 4);
          if TempData<>'00/00/0000' then
-           DataCredito := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+           DataCredito := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
        end;
      end;
    end;

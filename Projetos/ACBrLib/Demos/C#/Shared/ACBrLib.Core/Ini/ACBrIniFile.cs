@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -81,11 +80,13 @@ namespace ACBrLib.Core
 
         public bool Contains(ACBrIniSection section)
         {
-            return sections.Contains(section);
+            return Contains(section.Name);
         }
 
         public ACBrIniSection AddNew(string section)
         {
+            if (Contains(section)) throw new ArgumentException("Sessão já existe no arquivo.");
+
             var ret = new ACBrIniSection(this, section);
             sections.Add(ret);
             return ret;
@@ -93,37 +94,42 @@ namespace ACBrLib.Core
 
         public void Add(ACBrIniSection section)
         {
+            if (Contains(section.Name)) throw new ArgumentException("Sessão já existe no arquivo.");
+
             section.Parent = this;
             sections.Add(section);
         }
 
         public void Remove(string section)
         {
-            var ret = sections.Single(x => x.Name == section);
-            sections.Remove(ret);
+            var ret = sections.SingleOrDefault(x => x.Name == section);
+            Remove(ret);
         }
 
         public void Remove(ACBrIniSection section)
         {
+            if (section == null) return;
+            Remove(section.Name);
             sections.Remove(section);
         }
 
-        public TType Read<TType>(string section, string propertie, TType defaultValue = default, IFormatProvider format = null)
+        public TType Read<TType>(string section, string propertie, TType defaultValue = default)
         {
             if (string.IsNullOrEmpty(propertie) || string.IsNullOrWhiteSpace(propertie)) return defaultValue;
             if (string.IsNullOrEmpty(section) || string.IsNullOrWhiteSpace(section)) return defaultValue;
 
             var iniSection = this[section];
-            return iniSection.GetValue(propertie, defaultValue, format);
+            return iniSection.GetValue(propertie, defaultValue);
         }
 
         public void Write(string section, string propertie, object value)
         {
             if (string.IsNullOrEmpty(propertie) || string.IsNullOrWhiteSpace(propertie)) return;
             if (string.IsNullOrEmpty(section) || string.IsNullOrWhiteSpace(section)) return;
+            if (value == null) return;
 
             var iniSection = this[section];
-            iniSection.Add(propertie, string.Format(CultureInfo.InvariantCulture, "{0}", value));
+            iniSection.SetValue(propertie, value);
         }
 
         public void Save()

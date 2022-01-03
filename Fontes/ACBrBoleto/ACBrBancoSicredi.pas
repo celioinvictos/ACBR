@@ -86,7 +86,8 @@ implementation
 uses
   {$IFDEF COMPILER6_UP} dateutils {$ELSE} ACBrD5 {$ENDIF},
   StrUtils,
-  ACBrUtil;
+  ACBrUtil,
+  ACBrValidador;
 
 { TACBrBancoSicredi }
 
@@ -100,7 +101,7 @@ begin
    fpTamanhoAgencia        := 4;
    fpTamanhoConta          := 5;
    fpTamanhoCarteira       := 1;
-   fpCodigosMoraAceitos    := 'AB0123';
+   fpCodigosMoraAceitos    := 'AB012';
    fpCodigosGeracaoAceitos := '23456789';
    fpLayoutVersaoArquivo   := 81;
    fpLayoutVersaoLote      := 40;
@@ -171,9 +172,12 @@ end;
 
 function TACBrBancoSicredi.MontarCampoNossoNumero (const ACBrTitulo: TACBrTitulo ) : String;
 begin
-  Result:= FormatDateTime('yy',ACBrTitulo.DataDocumento) + '/' +
-           ACBrTitulo.CodigoGeracao + RightStr(ACBrTitulo.NossoNumero,5) + '-' +
-           CalcularDigitoVerificador(ACBrTitulo);
+  if ( (ACBrBanco.ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite) and ( (Trim(ACBrTitulo.NossoNumero) = '') or (Trim(ACBrTitulo.NossoNumero) = '00000') ) ) then
+    Result := ''
+  else
+    Result:= FormatDateTime('yy',ACBrTitulo.DataDocumento) + '/' +
+             ACBrTitulo.CodigoGeracao + RightStr(ACBrTitulo.NossoNumero,5) + '-' +
+             CalcularDigitoVerificador(ACBrTitulo);
 end;
 
 function TACBrBancoSicredi.MontarCampoCodigoCedente (const ACBrTitulo: TACBrTitulo ) : String;
@@ -439,6 +443,39 @@ begin
 
          aRemessa.Text:= aRemessa.Text + UpperCase(wLinha);
 
+         {8.3 Registro Mensagem}
+         if Mensagem.Count > 0 then
+         begin
+           TextoRegInfo := PadRight(Mensagem[0], 80);
+           if Mensagem.Count > 1 then
+             TextoRegInfo := TextoRegInfo + PadRight(Mensagem[1], 80)
+           else
+             TextoRegInfo := TextoRegInfo + PadRight('', 80);
+
+           if Mensagem.Count > 2 then
+             TextoRegInfo := TextoRegInfo + PadRight(Mensagem[2], 80)
+           else
+             TextoRegInfo := TextoRegInfo + PadRight('', 80);
+
+           if Mensagem.Count > 3 then
+             TextoRegInfo := TextoRegInfo + PadRight(Mensagem[3], 80)
+           else
+             TextoRegInfo := TextoRegInfo + PadRight('', 80);
+
+           wLinha:=
+             '2'                                                  + // 001 - 001 Tipo do Registro Detalhe
+             PadRight('', 11, ' ')                                + // 002 - 012 Filler - Deixar em Branco
+             PadLeft(wNossoNumeroCompleto,9,'0')                  + // 013 - 021 Nosso Número
+             TextoRegInfo                                         +  //022 - 341 1,2,3,4 instrucao impressa no boleto
+             ANumeroDocumento                                     + // 342 - 351 Seu Número
+             PadRight('', 43, ' ');                                 // 352 - 394 Filler - Deixar em Branco
+
+           wLinha:= wLinha + IntToStrZero(aRemessa.Count + 1, 6 );  // 395 - 400 Número sequencial do registro
+
+           ARemessa.Text:= ARemessa.Text + UpperCase(wLinha);
+
+         end;
+
          { Registro Informativo }
          if Informativo.Count > 0 then
          begin
@@ -616,15 +653,12 @@ begin
 
     if Copy(rCNPJCPF,1,10) <> '0000000000' then
     begin
-
-      if Copy(rCNPJCPF,1,3)= '000' then 
+      if ValidarCNPJ(rCNPJCPF) <> '' then
       begin
         rCNPJCPF := Copy(rCNPJCPF,4,11);
         Cedente.TipoInscricao := pFisica;
       end;
-
       Cedente.CNPJCPF := rCNPJCPF;
-
     end;
 
     Cedente.CodigoCedente:= rCodCedente;
@@ -633,7 +667,6 @@ begin
     Cedente.Conta        := rConta;
     Cedente.ContaDigito  := rDigitoConta;
 
-    Cedente.TipoInscricao:= pJuridica;
     ACBrBanco.ACBrBoleto.ListadeBoletos.Clear;
   end;
 
@@ -1372,6 +1405,8 @@ begin
       end; //---- Fim Anderson
     end;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoSicredi.CalcularNomeArquivoRemessa: String;
@@ -1487,7 +1522,10 @@ begin
   end;
 
   if (Result <> '') then
+  begin
+    Result := ACBrSTr(Result);
     Exit;
+  end;
 
   case CodOcorrencia of
     02: Result := '02-Entrada Confirmada';
@@ -1512,6 +1550,8 @@ begin
     84: Result := '84-Exclusão de Negativação por Outros Motivos';
     85: Result := '85-Ocorrência Informacional por Outros Motivos';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoSicredi.CodOcorrenciaToTipo(
@@ -2033,13 +2073,13 @@ begin
       DataArquivo     := StringToDateTimeDef( Copy(ARetorno[0],144,2) +'/'+
                                               Copy(ARetorno[0],146,2) +'/'+
                                               Copy(ARetorno[0],148,4),
-                                              0, 'dd/mm/yyyy' );
+                                              0, 'DD/MM/YYYY' );
       if (Copy(ARetorno[1], 200, 2) <> '00') and (Trim(Copy(ARetorno[1], 200, 2)) <> '') then
         begin
         DataCreditoLanc := StringToDateTimeDef( Copy(ARetorno[1], 200, 2) +'/'+
                                                 Copy(ARetorno[1], 202, 2) +'/'+
                                                 Copy(ARetorno[1], 204, 4),
-                                                0, 'dd/mm/yyyy' );
+                                                0, 'DD/MM/YYYY' );
         end;
 
    end;
@@ -2102,7 +2142,7 @@ begin
         Vencimento           := StringToDateTimeDef( Copy(SegT,74,2) +'/'+
                                                      Copy(SegT,76,2) +'/'+
                                                      Copy(SegT,78,4),
-                                                     0, 'dd/mm/yyyy' );
+                                                     0, 'DD/MM/YYYY' );
         ValorDocumento       := StrToFloatDef(Copy(SegT, 82,15),0)/100;
         ValorDespesaCobranca := StrToFloatDef(Copy(SegT,199,15),0)/100;
         ValorMoraJuros       := StrToFloatDef(Copy(SegU, 18,15),0)/100;
@@ -2116,13 +2156,13 @@ begin
         DataOcorrencia       := StringToDateTimeDef( Copy(SegU,138,2) +'/'+
                                                      Copy(SegU,140,2) +'/'+
                                                      Copy(SegU,142,4),
-                                                     0, 'dd/mm/yyyy' );
+                                                     0, 'DD/MM/YYYY' );
         if Trim(Copy(SegU,146,2))<>'' then
           begin
           DataCredito          := StringToDateTimeDef( Copy(SegU,146,2) +'/'+
                                                       Copy(SegU,148,2) +'/'+
                                                       Copy(SegU,150,4),
-                                                      0, 'dd/mm/yyyy' );
+                                                      0, 'DD/MM/YYYY' );
           end
         else
           begin
@@ -2173,6 +2213,8 @@ begin
   TCompCarteiraCobranca:              Result := 'Carteira de cobrança';
   TCompCancelaNegativacaoAutomatica:  Result := 'Cancelamento de negativação automática';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 end.

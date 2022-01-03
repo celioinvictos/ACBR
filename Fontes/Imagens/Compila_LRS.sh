@@ -57,6 +57,15 @@ echo "* Arquivo   ACBrTEFD.lrs   gerado      *"
 echo "****************************************"
 echo
 
+:PIXCD
+$LAZRES ACBrPIXCD.lrs TACBrPixCD.png TACBrPSPItau.png
+mv ACBrPIXCD.lrs ../ACBrPIXCD
+echo
+echo "****************************************"
+echo "* Arquivo   ACBrPIXCD.lrs   gerado     *"
+echo "****************************************"
+echo
+
 :TCP
 $LAZRES ACBrTCP.lrs TACBrTCPServer.png TACBrCEP.png TACBrIBGE.png TACBrNFPws.png TACBrCNIEE.png TACBrSuframa.png TACBrDownload.png TACBrIBPTax.png TACBrConsultaCNPJ.png TACBrMail.png TACBrConsultaCPF.png TACBrSpedTabelas.png TACBrSedex.png TACBrNCMs.png
 mv ACBrTCP.lrs ../ACBrTCP
@@ -189,6 +198,23 @@ mv ACBrNFSe.lrs ../ACBrDFe/ACBrNFSe
 echo
 echo "****************************************"
 echo "* Arquivo    ACBrNFSe.lrs     gerado    *"
+echo "****************************************"
+echo
+
+$LAZRES ACBrNFSeX.lrs TACBrNFSeX.png 
+mv ACBrNFSeX.lrs ../ACBrDFe/ACBrNFSeX
+
+$LAZRES ACBrNFSeXDANFSeFR.lrs TACBrNFSeXDANFSeFR.png
+mv ACBrNFSeXDANFSeFR.lrs ../ACBrDFe/ACBrNFSeX/DANFSE/Fast
+
+$LAZRES ACBrNFSeXDANFSeRL.lrs TACBrNFSeXDANFSeRL.png
+mv ACBrNFSeXDANFSeRL.lrs ../ACBrDFe/ACBrNFSeX/DANFSE/Fortes
+
+echo
+echo "****************************************"
+echo "* Arquivo    ACBrNFSeX.lrs     gerado    *"
+echo "* Arquivo    ACBrNFSeXDANFSeFR.lrs     gerado    *"
+echo "* Arquivo    ACBrNFSeXDANFSeRL.lrs     gerado    *"
 echo "****************************************"
 echo
 

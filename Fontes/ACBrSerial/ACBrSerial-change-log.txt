@@ -38,6 +38,19 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+-- ACBrDeviceLPT --
+[-] Correção para envio de Dados em Linux, Delphi FMX, por Stream
+    (por: DSA)
+
+-- ACBrWinUSBDevice --
+[-] Correções para funcionamento da SetupApi.dll em Win64
+    (por: DSA)
+
+Data: 04/08/2021
+-- ACBrPosPrinterGEDI --
+[-] Ajuste para compatibilizar com G800Interface
+    http://www.projetoacbr.com.br/forum/index.php?showtopic=63498
+
 Data: 29/07/2021
 -- ACBrPosPrinter --
 [-] Método "TACBrPosPrinter.DoTraduzirTag", modificado, para que os Flags internos

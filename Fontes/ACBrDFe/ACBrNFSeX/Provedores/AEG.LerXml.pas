@@ -37,16 +37,13 @@ unit AEG.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_AEG }
+  { TNFSeR_AEG202 }
 
-  TNFSeR_AEG = class(TNFSeR_ABRASFv2)
+  TNFSeR_AEG202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

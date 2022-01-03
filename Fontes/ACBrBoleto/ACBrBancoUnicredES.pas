@@ -58,12 +58,13 @@ type
     function GerarRegistroHeader240 ( NumeroRemessa: Integer ) : String;override;
     function GerarRegistroTransacao240(ACBrTitulo : TACBrTitulo): String; override;
     procedure GerarRegistroTransacao400(ACBrTitulo : TACBrTitulo; aRemessa: TStringList); override;
+    procedure GerarRegistroHeader400(NumeroRemessa: Integer; ARemessa: TStringList);override;
     Procedure LerRetorno400(ARetorno:TStringList); override;
     function TipoOcorrenciaToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
     function CodOcorrenciaToTipo(const CodOcorrencia: Integer ) : TACBrTipoOcorrencia; override;
     function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): String; Override;
     function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
-
+    function CodMotivoRejeicaoToDescricao(const TipoOcorrencia : TACBrTipoOcorrencia ; CodMotivo : Integer) : String ; override;
     function TipoOcorrenciaToCodRemessa(const ATipoOcorrencia: TACBrTipoOcorrencia): String; override;
 
   end;
@@ -102,7 +103,7 @@ procedure TACBrBancoUnicredES.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo;
 var
   sDigitoNossoNumero, sAgencia : String;
   sTipoSacado, sConta, sProtesto    : String;
-  sCarteira, sLinha, sNossoNumero, sTipoMulta : String;
+  sCarteira, sLinha, sNossoNumero, sTipoMulta,sValorMulta : String;
 begin
 
   with ACBrTitulo do
@@ -116,13 +117,25 @@ begin
     sTipoSacado := DefineTipoSacado(ACBrTitulo);
 
     {Pegando campo Intruções}
-    sProtesto:= DefineTipoDiasProtesto(ACBrTitulo); //InstrucoesProtesto(ACBrTitulo);
+    sProtesto:= DefineCodigoProtesto(ACBrTitulo); //InstrucoesProtesto(ACBrTitulo);
+    {Verifica o Tipo da Multa}
+    if MultaValorFixo then
+      CodigoMulta := cmValorFixo;
 
+    sTipoMulta := IfThen( PercentualMulta > 0, CodMultaToStr(CodigoMulta), '3');
+
+    {Calculo de Multa}
+    if PercentualMulta > 0 then
+    begin
+      case StrToIntDef(sTipoMulta,3) of
+        1: sValorMulta := FloatToStr(TruncTo((ValorDocumento*( 1 + PercentualMulta/100)-ValorDocumento),2)*100);
+        2: sValorMulta := IntToStrZero(Round(PercentualMulta * 100), 10);
+        else
+          sValorMulta  := PadRight('', 10, '0');
+      end;
+    end;
     with ACBrBoleto do
     begin
-
-       sTipoMulta := IfThen( PercentualMulta > 0, CodMultaToStr(CodigoMulta), '3');
-
        sLinha:= '1'                                                           +{ 001 a 001  	Identificação do Registro }
                 sAgencia                                                      +{ 002 a 006  	Agência do BENEFICIÁRIO na UNICRED }
                 Cedente.AgenciaDigito                                         +{ 007 a 007  	Dígito da Agência  	001 }
@@ -137,7 +150,7 @@ begin
                 Space(25)                                                     +{ 068 a 092	  Branco	025	Branco}
                 '0'                                                           +{ 093 a 093	  Filler	001	Zeros}
                 sTipoMulta                                                    +{ 094 a 094	  Código da Multa	001}
-                IntToStrZero(Round(PercentualMulta * 100), 10)                +{ 095 a 104	  Valor/Percentual da Multa	010 }
+                PadLeft(sValorMulta, 10, '0')                                 +{ 095 a 104	  Valor/Percentual da Multa	010 }
                 CodJurosToStr(CodigoMoraJuros,ValorMoraJuros)                 +{ 105 a 105	  Tipo de Valor Mora	001}
                 'N'                                                           +{ 106 a 106	  Filler	001 }
                 Space(2)                                                      +{ 107 a 108	  Branco	002	Branco }
@@ -188,6 +201,7 @@ var
   rConta, rDigitoConta      :String;
   Linha, rCedente, rCNPJCPF :String;
   rCodEmpresa               :String;
+  codInstrucao              :String;
 begin
 
   if StrToIntDef(copy(ARetorno.Strings[0],77,3),-1) <> Numero then
@@ -265,6 +279,13 @@ begin
           OcorrenciaOriginal.Tipo     := CodOcorrenciaToTipo(StrToIntDef(
                                          copy(Linha,109,2),0));
 
+          codInstrucao := copy(Linha,327,2);
+          MotivoRejeicaoComando.Add(codInstrucao);
+
+          DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo,StrToIntDef(codInstrucao,0)));
+
+
+
           if (StrToIntDef(Copy(Linha,111,6),0) > 0) then
             DataOcorrencia := StringToDateTimeDef( Copy(Linha,111,2)+'/'+
                                                  Copy(Linha,113,2)+'/'+
@@ -339,6 +360,29 @@ begin
   End;
 end;
 
+function TACBrBancoUnicredES.CodMotivoRejeicaoToDescricao(
+  const TipoOcorrencia: TACBrTipoOcorrencia; CodMotivo: Integer): String;
+begin
+  case CodMotivo of
+    00 : Result := '00 – Sem Tipo de Instrução Origem a informar';
+    01 : Result := '01 - Remessa';
+    02 : Result := '02 - Pedido de Baixa';
+    04 : Result := '04 - Concessão de Abatimento';
+    05 : Result := '05 - Cancelamento de Abatimento';
+    06 : Result := '06 - Alteração de vencimento';
+    08 : Result := '08 - Alteração de Seu Número';
+    09 : Result := '09 – Protestar';
+    10 : Result := '10 - Baixa por Decurso de Prazo – Solicitação CIP';
+    11 : Result := '11 - Sustar Protesto e Manter em Carteira';
+    31 : Result := '31 - Alteração de outros dados (Alteração de dados do pagador)';
+    25 : Result := '25 - Sustar Protesto e Baixar Título';
+    26 : Result := '26 – Protesto automático';
+    40 : Result := '40 - Alteração de Carteira';
+    else
+      Result := 'XX – Evento Não Mapeado';
+  end;
+end;
+
 function TACBrBancoUnicredES.CodMultaToStr(const pCodigoMulta: TACBrCodigoMulta): String;
 begin
   case pCodigoMulta of
@@ -379,7 +423,7 @@ begin
     ADataDesconto := DefineDataDesconto(ACBrTitulo);
 
     {Código para Protesto}
-    ACodProtesto := DefineTipoDiasProtesto(ACBrTitulo);
+    ACodProtesto := DefineCodigoProtesto(ACBrTitulo);
 
     {Define Codigo Multa}
     ACodMulta := DefineCodigoMulta(ACBrTitulo);
@@ -388,7 +432,7 @@ begin
     if PercentualMulta > 0 then
     begin
       case StrToIntDef(ACodMulta,3) of
-        1: AValorMulta := IntToStrZero(Round(ValorDocumento*(PercentualMulta/100)*100), 15);
+        1: AValorMulta := PadLeft(FloatToStr(TruncTo((ValorDocumento*( 1 + PercentualMulta/100)-ValorDocumento),2)*100), 15, '0');
         2: AValorMulta := IntToStrZero(Round(PercentualMulta * 100), 15);
         else
           AValorMulta  := PadRight('', 15, '0');
@@ -519,6 +563,8 @@ begin
     13: Result := '13-Título Utilizado Como Garantia em Operação de Desconto';
     14: Result := '14-Título Com Desistência de Garantia em Operação de Desconto';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoUnicredES.CodOcorrenciaToTipo(const CodOcorrencia: Integer ) : TACBrTipoOcorrencia;
@@ -629,6 +675,8 @@ function TACBrBancoUnicredES.GerarRegistroHeader240 ( NumeroRemessa: Integer ) :
 var
   ListHeader: TStringList;
   ACodBeneficiario: String;
+  sNomeBanco : String;
+  LayoutLote : Integer;
 begin
   Result := '';
   //ErroAbstract('GerarRemessa240');
@@ -639,6 +687,13 @@ begin
       DigitoVerificadorAgenciaConta:=  copy(ContaDigito,length(ContaDigito ),1) ;
   end;
   ACodBeneficiario:= trim(DefineCodBeneficiarioHeader);
+  LayoutLote := fpLayoutVersaoLote;
+  if (fpLayoutVersaoLote = 944) then
+  begin
+    sNomeBanco := 'UNICRED';
+    LayoutLote := 44;
+  end else
+    sNomeBanco := fpNome;
 
   ListHeader:= TStringList.Create;
   try
@@ -657,7 +712,7 @@ begin
       DefineCampoDigitoAgencia                         + //58 - Dígito da agência do cedente -Alfa
       Padleft(ACodBeneficiario,14,'0')                 + //59 a 72 - Código do Beneficiário
       PadRight(nome, 30, ' ')                          + //73 102 - Nome da Empresa-Alfa
-      PadRight(fpNome, 30, ' ')                        + //103 a 132 -Nome do banco-Alfa
+      PadRight(sNomeBanco, 30, ' ')                        + //103 a 132 -Nome do banco-Alfa
       PadRight('', 10, ' ')                            + //133 a 142 - Uso exclusivo FEBRABAN/CNAB  -Alfa
       '1'                                              + //143 - Código de Remessa (1) / Retorno (2)
       FormatDateTime('ddmmyyyy', Now)                  + //144 a 151 - Data do de geração do arquivo
@@ -677,7 +732,7 @@ begin
       'R'                                        + //9 - Tipo de operação 'R'
       '01'                                       + //10 a 11 - Tipo de serviço: 01 (Cobrança)
       '  '                                       + //12 a 13 - Uso Exclusivo FEBRABAN/CNAB /Alfa
-      PadLeft(IntToStr(fpLayoutVersaoLote), 3, '0') + //14 a 16 - Número da versão do layout do lote
+      PadLeft(IntToStr(LayoutLote), 3, '0')      + //14 a 16 - Número da versão do layout do lote
       ' '                                        + //17 - Uso exclusivo FEBRABAN/CNAB
       DefineTipoInscricao                        + //18 - Tipo de inscrição do cedente
       PadLeft(OnlyNumber(CNPJCPF), 15, '0')      + //19 a 33 -Número de inscrição do cedente
@@ -705,7 +760,19 @@ begin
 
 end;
 
-
+procedure TACBrBancoUnicredES.GerarRegistroHeader400(NumeroRemessa: Integer;
+  ARemessa: TStringList);
+var sNome : String;
+begin
+  sNome := fpNome;
+  try
+    if (fpLayoutVersaoLote = 944) then
+      fpNome := 'UNICRED';
+    inherited;
+  finally
+    fpNome := sNome;
+  end;
+end;
 
 end.
 

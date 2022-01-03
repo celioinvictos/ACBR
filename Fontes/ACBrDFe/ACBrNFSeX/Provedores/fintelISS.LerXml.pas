@@ -37,25 +37,22 @@ unit fintelISS.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_fintelISS }
+  { TNFSeR_fintelISS200 }
 
-  TNFSeR_fintelISS = class(TNFSeR_ABRASFv2)
+  TNFSeR_fintelISS200 = class(TNFSeR_ABRASFv2)
   protected
 
   public
 
   end;
 
-  { TNFSeR_fintelISS_A }
+  { TNFSeR_fintelISS202 }
 
-  TNFSeR_fintelISS_A = class(TNFSeR_ABRASFv2)
+  TNFSeR_fintelISS202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

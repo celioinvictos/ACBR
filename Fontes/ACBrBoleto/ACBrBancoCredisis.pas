@@ -434,8 +434,8 @@ begin
               StringOfChar(' ', 15)                                                    + // 155 a 169 Número de inscrição
               StringOfChar(' ', 40)                                                    + // 170 a 209 Nome do sacador/avalista
               PadRight('097', 3, ' ')                                                  + // 210 a 212 Uso exclusivo FEBRABAN/CNAB
-              PadRight(Copy(ANossoNumero,4,20),20, ' ')                                + // 213 a 232 Identificação do Título - Nosso Numero
-              PadRight('', 8, ' ');                                                      // 233 a 240 Uso exclusivo FEBRABAN/CNAB
+              PadRight(ANossoNumero,20, ' ')                                           + // 213 a 232 Identificação do Título - Nosso Numero
+              StringOfChar(' ', 8);                                                      // 233 a 240 Uso exclusivo FEBRABAN/CNAB
 
      {SEGMENTO R}
      Result:= Result + #13#10 +
@@ -879,7 +879,7 @@ begin
 
             TempData := copy(Linha, 74, 2) + '/'+copy(Linha, 76, 2)+'/'+copy(Linha, 78, 4);
             if TempData<>'00/00/0000' then
-               Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+               Vencimento := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
             ValorDocumento := StrToFloatDef(copy(Linha, 82, 15), 0) / 100;
            
@@ -919,10 +919,10 @@ begin
             ValorRecebido       := StrToFloatDef(copy(Linha, 78, 15), 0) / 100;
             TempData := copy(Linha, 138, 2)+'/'+copy(Linha, 140, 2)+'/'+copy(Linha, 142, 4);
             if TempData<>'00/00/0000' then
-              DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+              DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
             TempData := copy(Linha, 146, 2)+'/'+copy(Linha, 148, 2)+'/'+copy(Linha, 150, 4);
             if TempData<>'00/00/0000' then
-              DataCredito := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+              DataCredito := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
           end;
       end;
    end;
@@ -1084,6 +1084,8 @@ begin
       98: Result:= '98-Débito de Custas Antecipadas';
     end;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoCredisis.CodOcorrenciaToTipo(const CodOcorrencia:
@@ -1420,6 +1422,8 @@ begin
         90: Result:='90-Baixa automática';
     end;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 procedure TACBrBancoCredisis.LerRetorno400(ARetorno: TStringList);

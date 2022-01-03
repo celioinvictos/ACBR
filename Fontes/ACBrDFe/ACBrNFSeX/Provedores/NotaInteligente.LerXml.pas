@@ -37,16 +37,13 @@ unit NotaInteligente.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_NotaInteligente }
+  { TNFSeR_NotaInteligente200 }
 
-  TNFSeR_NotaInteligente = class(TNFSeR_ABRASFv2)
+  TNFSeR_NotaInteligente200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

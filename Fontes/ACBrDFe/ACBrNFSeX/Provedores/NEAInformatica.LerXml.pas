@@ -37,16 +37,13 @@ unit NEAInformatica.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_NEAInformatica }
+  { TNFSeR_NEAInformatica200 }
 
-  TNFSeR_NEAInformatica = class(TNFSeR_ABRASFv2)
+  TNFSeR_NEAInformatica200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

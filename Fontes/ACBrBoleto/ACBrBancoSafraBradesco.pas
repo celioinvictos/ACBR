@@ -95,7 +95,7 @@ function TACBrBancoSafraBradesco.CalcularDigitoVerificador(const ACBrTitulo: TAC
 begin
   Modulo.CalculoPadrao;
   Modulo.MultiplicadorFinal := 7;
-  Modulo.Documento := ACBrTitulo.Carteira + FormatDateTime('YY', Date) + ACBrTitulo.NossoNumero;
+  Modulo.Documento := ACBrTitulo.Carteira + FormatDateTime('YY', ACBrTitulo.DataDocumento) + ACBrTitulo.NossoNumero;
   Modulo.Calcular;
 
   if Modulo.ModuloFinal = 1 then
@@ -117,7 +117,7 @@ begin
       IntToStrZero(Round(ACBrTitulo.ValorDocumento * 100), 10) +
       PadLeft(OnlyNumber(Cedente.Agencia), 4, '0') +
       ACBrTitulo.Carteira +
-      FormatDateTime('YY', Date) +
+      FormatDateTime('YY', ACBrTitulo.DataDocumento) +
       ACBrTitulo.NossoNumero +
       PadLeft(RightStr(Cedente.Conta, 7), 7, '0') + '0';
 
@@ -129,7 +129,7 @@ end;
 
 function TACBrBancoSafraBradesco.MontarCampoNossoNumero(const ACBrTitulo: TACBrTitulo): String;
 begin
-  Result:= ACBrTitulo.Carteira + '/' + FormatDateTime('YY', Date) + ' ' +
+  Result:= ACBrTitulo.Carteira + '/' + FormatDateTime('YY', ACBrTitulo.DataDocumento) + ' ' +
            ACBrTitulo.NossoNumero + '-' + CalcularDigitoVerificador(ACBrTitulo);
 end;
 
@@ -341,7 +341,7 @@ begin
     StringToDateTimeDef(
       Copy(ARetorno[0], 95, 2) + '/' +
       Copy(ARetorno[0], 97, 2) + '/' +
-      Copy(ARetorno[0], 99, 2), 0, 'dd/mm/yy');
+      Copy(ARetorno[0], 99, 2), 0, 'DD/MM/YY');
 
   case StrToIntDef(Copy(ARetorno[1], 2, 2), 0) of
     1: rCNPJCPF := Copy(ARetorno[1], 7, 11);
@@ -402,14 +402,14 @@ begin
         StringToDateTimeDef(
           Copy(Linha, 111, 2) + '/' +
           Copy(Linha, 113, 2) + '/'+
-          Copy(Linha, 115, 2), 0, 'dd/mm/yy');
+          Copy(Linha, 115, 2), 0, 'DD/MM/YY');
 
       if Copy(Linha, 147, 2) <> '00' then
         Vencimento :=
           StringToDateTimeDef(
             Copy(Linha, 147, 2) + '/' +
             Copy(Linha, 149, 2) + '/'+
-            Copy(Linha, 151, 2), 0, 'dd/mm/yy');
+            Copy(Linha, 151, 2), 0, 'DD/MM/YY');
 
       ValorDocumento       := StrToFloatDef(Copy(Linha, 153, 13), 0) / 100;
       ValorIOF             := StrToFloatDef(Copy(Linha, 215, 13), 0) / 100;
@@ -428,7 +428,7 @@ begin
           StringToDateTimeDef(
             Copy(Linha, 296, 2) + '/' +
             Copy(Linha, 298, 2) + '/' +
-            Copy(Linha, 300, 2), 0, 'dd/mm/yy');
+            Copy(Linha, 300, 2), 0, 'DD/MM/YY');
     end;
   end;
 end;
@@ -473,6 +473,8 @@ begin
     60: Result := '60-Equalizacao Vendor';
     77: Result := '77-Alt. Instr. Cobr. - Juros;';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoSafraBradesco.CodOcorrenciaToTipo(const CodOcorrencia: Integer): TACBrTipoOcorrencia;
@@ -653,6 +655,8 @@ begin
   else
     Result := IntToStrZero(CodMotivo, 3) + ' - Outros Motivos';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 end.

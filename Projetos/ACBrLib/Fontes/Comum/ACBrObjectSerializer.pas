@@ -41,6 +41,10 @@ uses
   inifiles, fpjson, jsonparser, TypInfo,
   rttiutils, ACBrUtil, ACBrLibResposta;
 
+const
+  CSessionFormat = '%s%.3d';
+  CSufixFormat = '%.3d';
+
 type
   { TACBrObjectSerializer }
   TACBrObjectSerializer = class
@@ -91,10 +95,10 @@ begin
 
   For I := 0 to High(Items) do
   begin
-    Item := Items[I];
+    Item := Items[I] as TACBrLibRespostaBase;
     case Tipo of
       resXML: Result := Result + TACBrObjectSerializer.GerarXml(Item);
-      resJSON: Result := Result + TACBrObjectSerializer.GerarJson(Item);
+      resJSON: Result := Result + ',' + TACBrObjectSerializer.GerarJson(Item);
     else
       Result := Result + TACBrObjectSerializer.GerarIni(Item);
     end;
@@ -391,9 +395,9 @@ begin
         tkBool:
           AIni.WriteBool(ASessao, Propertie.Name, AValue.AsBoolean);
         tkEnumeration:
-          AIni.WriteInt64(ASessao, Propertie.Name, AValue.AsOrdinal);
+          AIni.WriteInteger(ASessao, Propertie.Name, AValue.AsOrdinal);
         tkInteger:
-          AIni.WriteInt64(ASessao, Propertie.Name, AValue.AsInteger);
+          AIni.WriteInteger(ASessao, Propertie.Name, AValue.AsInteger);
         tkInt64:
           AIni.WriteInt64(ASessao, Propertie.Name, AValue.AsInt64);
         tkWString,

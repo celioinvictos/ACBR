@@ -2,13 +2,13 @@
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoCancelamento : EventoBase
+    public sealed class EventoCancelamento : EventoNFeBase
     {
         #region Constructor
 
         public EventoCancelamento()
         {
-            tpEvento = TipoEvento.teCancelamento;
+            tpEvento = TipoEventoNFe.teCancelamento;
         }
 
         #endregion Constructor

@@ -37,9 +37,6 @@ unit SimplISS.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -57,9 +54,9 @@ type
     function GerarItensServico: TACBrXmlNodeArray; override;
   end;
 
-  { TNFSeW_SimplISSv2 }
+  { TNFSeW_SimplISS203 }
 
-  TNFSeW_SimplISSv2 = class(TNFSeW_ABRASFv2)
+  TNFSeW_SimplISS203 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -77,6 +74,8 @@ implementation
 procedure TNFSeW_SimplISS.Configuracao;
 begin
   inherited Configuracao;
+
+  FormatoItemListaServico := filsComFormatacaoSemZeroEsquerda;
 
   NrOcorrOutrasInformacoes := 0;
   NrOcorrInscEstTomador := 0;
@@ -109,13 +108,14 @@ begin
     wAlerta('#54', 'ItensServico', '', ERR_MSG_MAIOR_MAXIMO + '999');
 end;
 
-{ TNFSeW_SimplISSv2 }
+{ TNFSeW_SimplISS203 }
 
-procedure TNFSeW_SimplISSv2.Configuracao;
+procedure TNFSeW_SimplISS203.Configuracao;
 begin
   inherited Configuracao;
 
   FormatoAliq := tcDe2;
+
   NrOcorrValorDeducoes := 1;
   NrOcorrValorPis := 1;
   NrOcorrValorCofins := 1;
@@ -129,7 +129,8 @@ begin
   NrOcorrDescIncond := 1;
   NrOcorrDescCond := 1;
   NrOcorrCodigoPaisServico := 1;
-  NrOcorrValorISS := -1;
+
+  GerarIDRps := True;
 end;
 
 end.

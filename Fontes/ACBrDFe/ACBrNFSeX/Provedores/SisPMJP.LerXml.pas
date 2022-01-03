@@ -37,16 +37,13 @@ unit SisPMJP.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_SisPMJP }
+  { TNFSeR_SisPMJP202 }
 
-  TNFSeR_SisPMJP = class(TNFSeR_ABRASFv2)
+  TNFSeR_SisPMJP202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

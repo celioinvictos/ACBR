@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
  *
  * @author Rafael Dias
  */
-public abstract class ACBrLibBase {
+public abstract class ACBrLibBase implements AutoCloseable {
     
     protected static final Charset UTF8 = Charset.forName("UTF-8");
     protected static final int STR_BUFFER_LEN = 256;
@@ -27,6 +27,40 @@ public abstract class ACBrLibBase {
     protected void setHandle(Pointer value) {
         this.libHandler = value;
     }
+    
+    @Override
+    public void close() throws Exception {
+        if(libHandler != null)
+            dispose();
+        
+        libHandler = null;
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            if(libHandler != null)
+                dispose();
+            
+            libHandler = null;
+        } finally {
+            super.finalize();
+        }
+    }
+    
+    public abstract String configLerValor(ACBrSessao eSessao, String eChave) throws Exception;
+    
+    public abstract void configGravarValor(ACBrSessao eSessao, String eChave, Object value) throws Exception;
+    
+    protected abstract void dispose() throws Exception;
+        
+    /**
+     * Função para pegar o ultimo retorno da biblioteca caso o retorno seja 
+     * maior que o esperado, ou tenha ocorrido um erro.
+     * @param buffer
+     * @param bufferLen
+     */
+    protected abstract void UltimoRetorno(ByteBuffer buffer, IntByReference bufferLen);
     
     /**
      *
@@ -88,24 +122,13 @@ public abstract class ACBrLibBase {
      */
     protected String processResult(ByteBuffer buffer, IntByReference bufferLen){
         int bLen = bufferLen.getValue();
-        if (bLen <= STR_BUFFER_LEN) {
-            return fromUTF8(buffer, bufferLen);
-        }
-
         if (bLen > STR_BUFFER_LEN) {
-            buffer = ByteBuffer.allocate(bLen);
-            bufferLen = new IntByReference(bLen);
-            UltimoRetorno(buffer, bufferLen);
+            ByteBuffer nBuffer = ByteBuffer.allocate(bLen);
+            IntByReference nBufferLen = new IntByReference(bLen);
+            UltimoRetorno(nBuffer, nBufferLen);
+            return fromUTF8(nBuffer, nBufferLen);
         }
 
         return fromUTF8(buffer, bufferLen);
-    }
-    
-    /**
-     * Função para pegar o ultimo retorno da biblioteca caso o retorno seja 
-     * maior que o esperado, ou tenha ocorrido um erro.
-     * @param buffer
-     * @param bufferLen
-     */
-    protected abstract void UltimoRetorno(ByteBuffer buffer, IntByReference bufferLen);
+    }    
 }

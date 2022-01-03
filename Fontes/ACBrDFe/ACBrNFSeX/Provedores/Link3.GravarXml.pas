@@ -37,16 +37,13 @@ unit Link3.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2;
 
 type
-  { TNFSeW_Link3 }
+  { TNFSeW_Link3200 }
 
-  TNFSeW_Link3 = class(TNFSeW_ABRASFv2)
+  TNFSeW_Link3200 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -59,9 +56,9 @@ implementation
 //     Link3
 //==============================================================================
 
-{ TNFSeW_Link3 }
+{ TNFSeW_Link3200 }
 
-procedure TNFSeW_Link3.Configuracao;
+procedure TNFSeW_Link3200.Configuracao;
 begin
   inherited Configuracao;
 

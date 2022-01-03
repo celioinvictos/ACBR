@@ -39,6 +39,89 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+30/12/2021
+-- ACBrXmlBase --
+[*] Alteração na função StrToXml para trocar o <br> por ;
+   Por: Italo Giurizzato Junior
+
+20/12/2021
+-- ACBrXmlBase --
+[*] Alteração do nome da função de ProcessarConteudoXml para ObterConteudoTag.
+   Por: Italo Giurizzato Junior
+-- ACBrXmlReader --
+[*] Alteração do nome da função de ProcessarCNPJCPF e ProcessarConteudo para 
+    ObterCNPJCPF e ObterConteudo respectivamente.
+   Por: Italo Giurizzato Junior
+
+17/12/2021
+-- ACBrDFeConfiguracoes --
+[*] Ajuste em "TWebServicesConf.LerParamsIniServicos", para ficar mais amigável
+    em ambientes Multi-Thread
+    (por: DSA)
+
+16/12/2021
+-- ACBrXmlBase --
+[+] Implementado a leitura de atributos em um XML.
+  Por: Italo Giurizzato Junior
+
+08/12/2021
+-- ACBrXmlBase --
+[*] Possível correção para o AV que ocorria ao ler uma tag numérica ausente no XML.
+  Por: Italo Giurizzato Junior
+
+07/12/2021
+-- ACBrXmlBase/ACBrXmlDocument --
+[*] Melhoria na leitura de valores decimais.
+  Por: Italo Giurizzato Junior
+
+11/11/2021
+-- ACBrXmlBase --
+[*] Melhoria na leitura de data de competencia.
+  Por: Italo Giurizzato Junior
+
+10/11/2021
+-- ACBrXmlBase --
+[*] Possível correção para a leitura de data de competencia.
+  Por: Italo Giurizzato Junior
+
+03/11/2021
+-- ACBrDFeUtil/ACBrDFeXsLibXml2 --
+[*] Substituição da função LerTagXML por SeparaDados.
+  Por: Italo Giurizzato Junior
+
+21/10/2021
+-- ACBrXmlBase --
+[*] Ao ler um campo data o seu conteudo vai ser passado pela função LerDatas
+    que tem como objetivo interpretar os varios tipos de formatação de data/hora.
+  Por: Italo Giurizzato Junior
+
+28/09/2021
+-- ACBrXmlDocument --
+[*] Possível correção para o vazamento de memória.
+  Por: Italo Giurizzato Junior
+
+27/09/2021
+-- ACBrXmlBase --
+[*] Incluido o tratamento para quando existe no XML o caractere #9 usado por 
+    alguns provedores.
+  Por: Italo Giurizzato Junior
+
+24/09/2021
+-- ACBrXmlBase --
+[*] Incluido o tratamento para quando existe no XML o caractere "<br >" usado por 
+    alguns provedores para quebra de linha.
+  Por: Italo Giurizzato Junior
+
+11/09/2021
+-- ACBrXmlBase --
+[*] Trocado o StringReplace por FastStringReplace.
+  Por: Italo Giurizzato Junior
+
+10/09/2021
+-- ACBrDFeReportFortes --
+[*] https://www.projetoacbr.com.br/forum/topic/63913-gerar-pdf-danfe-fortesreport-via-iis/?tab=comments#comment-417640
+  Por: edv4ld0
+
 09/03/2021
 -- ACBrXmlBase/ACBrXmlDocument/ACBrXmlWriter/ACBrXmlReader --
 [+] Inclusão da Unit ACBrXmlBase para tormar as outras 3 units idenpendentes das

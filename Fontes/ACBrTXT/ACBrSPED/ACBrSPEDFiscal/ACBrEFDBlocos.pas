@@ -62,23 +62,25 @@ type
   TACBrAtividade = TACBrIndAtiv;
 
   /// Versão do Leiaute do arquivo - TRegistro0000
-  TACBrCodVer             = (vlVersao100,  // Código 001 - Versão 100 Ato COTEPE 01/01/2008
-                             vlVersao101,  // Código 002 - Versão 101 Ato COTEPE 01/01/2009
-                             vlVersao102,  // Código 003 - Versão 102 Ato COTEPE 01/01/2010
-                             vlVersao103,  // Código 004 - Versão 103 Ato COTEPE 01/01/2011
-                             vlVersao104,  // Código 005 - Versão 104 Ato COTEPE 01/07/2012
-                             vlVersao105,  // Código 006 - Versão 105 Ato COTEPE 01/07/2012
-                             vlVersao106,  // Código 007 - Versão 106 Ato COTEPE 01/07/2013
-                             vlVersao107,  // Código 008 - Versão 107 Ato COTEPE 01/07/2014
-                             vlVersao108,  // Código 009 - Versão 108 Ato COTEPE 01/07/2015
-                             vlVersao109,  // Código 010 - Versão 109 Ato COTEPE 01/07/2016
-                             vlVersao110,  // Código 011 - Versão 110 Ato COTEPE 01/01/2017
-                             vlVersao111,  // Código 012 - Versão 111 Ato COTEPE 01/01/2018
-                             vlVersao112,  // Código 013 - Versão 112 Ato COTEPE 01/01/2019
-                             vlVersao113,  // Código 014 - Versão 113 Ato COTEPE 01/01/2020
-                             vlVersao114   // Código 015 - Versão 114 Ato COTEPE 01/01/2021
-                             );
-  TACBrVersaoLeiaute = TACBrCodVer;
+  TACBrVersaoLeiauteSPEDFiscal = (vlVersao100,  // Código 001 - Versão 100 Ato COTEPE 01/01/2008
+                                  vlVersao101,  // Código 002 - Versão 101 Ato COTEPE 01/01/2009
+                                  vlVersao102,  // Código 003 - Versão 102 Ato COTEPE 01/01/2010
+                                  vlVersao103,  // Código 004 - Versão 103 Ato COTEPE 01/01/2011
+                                  vlVersao104,  // Código 005 - Versão 104 Ato COTEPE 01/07/2012
+                                  vlVersao105,  // Código 006 - Versão 105 Ato COTEPE 01/07/2012
+                                  vlVersao106,  // Código 007 - Versão 106 Ato COTEPE 01/07/2013
+                                  vlVersao107,  // Código 008 - Versão 107 Ato COTEPE 01/07/2014
+                                  vlVersao108,  // Código 009 - Versão 108 Ato COTEPE 01/07/2015
+                                  vlVersao109,  // Código 010 - Versão 109 Ato COTEPE 01/07/2016
+                                  vlVersao110,  // Código 011 - Versão 110 Ato COTEPE 01/01/2017
+                                  vlVersao111,  // Código 012 - Versão 111 Ato COTEPE 01/01/2018
+                                  vlVersao112,  // Código 013 - Versão 112 Ato COTEPE 01/01/2019
+                                  vlVersao113,  // Código 014 - Versão 113 Ato COTEPE 01/01/2020
+                                  vlVersao114,  // Código 015 - Versão 114 Ato COTEPE 01/01/2021
+                                  vlVersao115   // Código 016 - Versão 115 Ato COTEPE 01/01/2022
+                                 );
+  TACBrVersaoLeiaute = TACBrVersaoLeiauteSPEDFiscal {$IfDef DELPHI2009_UP} deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Esse tipo é obsoleto: Use o tipo TACBrVersaoLeiauteSPEDFiscal'{$EndIf}{$EndIf};
+  TACBrCodVer = TACBrVersaoLeiauteSPEDFiscal {$IfDef DELPHI2009_UP} deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Esse tipo é obsoleto: Use o tipo TACBrVersaoLeiauteSPEDFiscal'{$EndIf}{$EndIf};
 
   /// Código da finalidade do arquivo - TRegistro0000
   TACBrCodFin           = (raOriginal,     // 0 - Remessa do arquivo original
@@ -656,13 +658,14 @@ type
   TACBrSituacaoTribCOFINS = TACBrCstCofins;
 
 
-  TACBrMotivoRessarcimento = (tmrVendaOutraUF,             // 1 – Venda para outra UF;
-                              tmrSaidaInsetaNaoIncidencia, // 2 – Saída amparada por isenção ou não incidência;
-                              tmrPerdaDeterioracao,        // 3 – Perda ou deterioração;
-                              tmrFurtoRoubo,               // 4 – Furto ou roubo;
-                              tmrExportacao,               // 5 – Exportação;
-                              tmrVendaSimpleNacional,      // 6 – Venda interna para Simples Nacional
-                              tmrOutros);                  // 9 – Outros
+  TACBrMotivoRessarcimento = (tmrVendaOutraUF = 1,             // 1 – Venda para outra UF;
+                              tmrSaidaInsetaNaoIncidencia = 2, // 2 – Saída amparada por isenção ou não incidência;
+                              tmrPerdaDeterioracao = 3,        // 3 – Perda ou deterioração;
+                              tmrFurtoRoubo = 4,               // 4 – Furto ou roubo;
+                              tmrExportacao = 5,               // 5 – Exportação;
+                              tmrVendaSimpleNacional = 6,      // 6 – Venda interna para Simples Nacional
+                              tmrOutros = 9,                   // 9 – Outros
+                              tmrNenhum = 0);                  // 0  - Nenhum
 
    TACBrIndicadorDeducao = (tidCompensacaoISS,        // 0- Compensação do ISS calculado a maior;
                             tidBeneficioFiscal,       // 1- Benefício fiscal por incentivo à cultura;
@@ -701,8 +704,8 @@ type
   end;
 
   // Fuções do ACBrEFDBlocos.
-  function StrToCodVer(const AValue: string): TACBrCodVer;
-  function CodVerToStr(AValue: TACBrCodVer): string;
+  function StrToCodVer(const AValue: string): TACBrVersaoLeiauteSPEDFiscal;
+  function CodVerToStr(AValue: TACBrVersaoLeiauteSPEDFiscal): string;
 
   function IndOperToStr(AVAlue: TACBrIndOper): string;
   function StrToIndOper(const AValue: string): TACBrIndOper;
@@ -816,7 +819,7 @@ implementation
 
 { TOpenBlocos }
 
-function StrToCodVer(const AValue: string): TACBrCodVer;
+function StrToCodVer(const AValue: string): TACBrVersaoLeiauteSPEDFiscal;
 begin
    if AValue = '001' then
       Result := vlVersao100
@@ -863,10 +866,13 @@ begin
    if AValue = '015' then
       Result := vlVersao114
    else
+   if AValue = '016' then
+      Result := vlVersao115
+   else
      raise EACBrSPEDFiscalException.CreateFmt('Versão desconhecida. Versao "%s" não é um valor válido.', [AValue]);
 end;
 
-function CodVerToStr(AValue: TACBrCodVer): string;
+function CodVerToStr(AValue: TACBrVersaoLeiauteSPEDFiscal): string;
 begin
   case AValue of
     vlVersao100:
@@ -899,6 +905,8 @@ begin
       Result := '014';
     vlVersao114:
       Result := '015';
+    vlVersao115:
+      Result := '016';
   else
     Result := EmptyStr;
   end;
@@ -1773,12 +1781,14 @@ begin
       Result := '6';
     tmrOutros:
       Result := '9';
+    tmrNenhum:
+      Result := EmptyStr;
   end;
 end;
 
 function StrToMotivoRessarcimento(const AValue: string): TACBrMotivoRessarcimento;
 begin
- Result := tmrOutros; //podemos criar um tmrNenhum se o campo for opcional
+ Result := tmrNenhum;
   if AValue = '1' then
     Result := tmrVendaOutraUF
   else

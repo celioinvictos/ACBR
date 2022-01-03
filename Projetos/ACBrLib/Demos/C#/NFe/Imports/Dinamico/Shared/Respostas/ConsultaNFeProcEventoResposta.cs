@@ -19,11 +19,13 @@ namespace ACBrLib.NFe
 
         public DateTime dhEvento { get; set; }
 
-        public TipoEvento tpEvento { get; set; }
+        public TipoEventoNFe tpEvento { get; set; }
 
         public int nSeqEvento { get; set; }
 
         public string verEvento { get; set; }
+
+        public string Xml { get; set; }
 
         public ConsultaNFeDetEventoResposta DetEvento { get; set; }
 

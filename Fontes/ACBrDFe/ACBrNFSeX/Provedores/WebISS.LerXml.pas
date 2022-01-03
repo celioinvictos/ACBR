@@ -37,9 +37,6 @@ unit WebISS.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
    ACBrNFSeXLerXml_ABRASFv1, ACBrNFSeXLerXml_ABRASFv2;
 
@@ -53,9 +50,9 @@ type
 
   end;
 
-  { TNFSeR_WebISSv2 }
+  { TNFSeR_WebISS202 }
 
-  TNFSeR_WebISSv2 = class(TNFSeR_ABRASFv2)
+  TNFSeR_WebISS202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

@@ -37,9 +37,6 @@ unit WebFisco.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase, ACBrXmlDocument,
   pcnAuxiliar,
@@ -92,12 +89,12 @@ begin
   begin
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'usuario', 1, 6, 1,
                                                     Usuario, '', True, xAtrib));
-    NFSeNode.AppendChild(AddNode(tcInt, '#', 'pass', 1, 6, 1,
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'pass', 1, 6, 1,
                                                       Senha, '', True, xAtrib));
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'prf', 1, 18, 1,
                                              CNPJPrefeitura, '', True, xAtrib));
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'usr', 1, 18, 1,
-                 NFSe.Prestador.IdentificacaoPrestador.Cnpj, '', True, xAtrib));
+              NFSe.Prestador.IdentificacaoPrestador.CpfCnpj, '', True, xAtrib));
   end
   else
   begin
@@ -116,10 +113,10 @@ begin
     }
     if cSimples then
     begin
-      NFSeNode.AppendChild(AddNode(tcInt, '#', 'usuario', 1, 6, 1,
-                                                     142826, '', True, xAtrib));
-      NFSeNode.AppendChild(AddNode(tcInt, '#', 'pass', 1, 6, 1,
-                                                     123456, '', True, xAtrib));
+      NFSeNode.AppendChild(AddNode(tcStr, '#', 'usuario', 1, 6, 1,
+                                                   '142826', '', True, xAtrib));
+      NFSeNode.AppendChild(AddNode(tcStr, '#', 'pass', 1, 6, 1,
+                                                   '123456', '', True, xAtrib));
       NFSeNode.AppendChild(AddNode(tcStr, '#', 'prf', 1, 18, 1,
                                        '00.000.000/0000-00', '', True, xAtrib));
       NFSeNode.AppendChild(AddNode(tcStr, '#', 'usr', 1, 18, 1,

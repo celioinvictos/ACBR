@@ -60,13 +60,8 @@ uses
 type
   TS2400Collection = class;
   TS2400CollectionItem = class;
-  TEvtCdBenPrRP = class;
-  TIdeBenef = class;
-  TDadosBenef = class;
-  TInfoBeneficio = class;
-  TBeneficio = class;
-  TInfoPenMorte = class;
-  TFimBeneficio = class;
+  TEvtCdBenefIn = class;
+  TBeneficiario = class;
 
   TS2400Collection = class(TeSocialCollection)
   private
@@ -81,27 +76,21 @@ type
   TS2400CollectionItem = class(TObject)
   private
     FTipoEvento: TTipoEvento;
-    FEvtCdBenPrRP : TEvtCdBenPrRP;
+    FEvtCdBenefIn : TEvtCdBenefIn;
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
     property TipoEvento: TTipoEvento read FTipoEvento;
-    property evtCdBenPrRP: TEvtCdBenPrRP read FEvtCdBenPrRP write FEvtCdBenPrRP;
+    property EvtCdBenefIn: TEvtCdBenefIn read FEvtCdBenefIn write FEvtCdBenefIn;
   end;
 
-  TEvtCdBenPrRP = class(TeSocialEvento)
+  TEvtCdBenefIn = class(TeSocialEvento)
   private
     FIdeEvento: TIdeEvento2;
     FIdeEmpregador: TIdeEmpregador;
-    FIdeBenef: TIdeBenef;
-    FInfoBeneficio: TInfoBeneficio;
-
-    procedure GerarIdeBenef(pIdeBenef: TIdeBenef);
-    procedure GerarDadosBenef(pDadosBenef: TDadosBenef);
-    procedure GerarInfoBeneficio(pInfoBeneficio: TInfoBeneficio);
-    procedure GerarBeneficio(pBeneficio: TBeneficio; const pGroupName: String);
-    procedure GerarInfoPenMorte(pInfoPenMorte: TInfoPenMorte);
-    procedure GerarFimBeneficio(pFimBeneficio: TFimBeneficio);
+    FBeneficiario: TBeneficiario;
+    
+    procedure GerarBeneficiario(pBeneficiario: TBeneficiario);
   public
     constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
@@ -111,100 +100,37 @@ type
 
     property IdeEvento: TIdeEvento2 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
-    property ideBenef: TIdeBenef read FIdeBenef write FIdeBenef;
-    property infoBeneficio: TInfoBeneficio read FInfoBeneficio write FInfoBeneficio;
+    property Beneficiario: TBeneficiario read FBeneficiario write FBeneficiario;
   end;
 
-  TFimBeneficio = class(TObject)
+  TBeneficiario = class(TObject)
   private
-    FTpBenef: integer;
-    FNrBenefic: string;
-    FDtFimBenef: TDateTime;
-    FMtvFim: integer;
-  public
-    property tpBenef: integer read FTpBenef write FTpBenef;
-    property nrBenefic: string read FNrBenefic write FNrBenefic;
-    property dtFimBenef: TDateTime read FDtFimBenef write FDtFimBenef;
-    property mtvFim: Integer read FMtvFim write FMtvFim;
-  end;
-
-  TInfoPenMorte = class(TObject)
-  private
-    FIdQuota: String;
-    FCpfInst: String;
-  public
-    property idQuota: string read FIdQuota write FIdQuota;
-    property cpfInst: string read FCpfInst write FCpfInst;
-  end;
-
-  TBeneficio = class(TObject)
-  private
-    FTpBenef: integer;
-    FNrBenefic: string;
-    FDtIniBenef: TDateTime;
-    FVrBenef: Double;
-    FInfoPenMorte: TInfoPenMorte;
-
-    function getInfoPenMorte: TInfoPenMorte;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    function infoPenMorteInst: boolean;
-
-    property tpBenef: integer read FTpBenef write FTpBenef;
-    property nrBenefic: string read FNrBenefic write FNrBenefic;
-    property dtIniBenef: TDateTime read FDtIniBenef write FDtIniBenef;
-    property vrBenef: Double read FVrBenef write FVrBenef;
-    property infoPenMorte: TInfoPenMorte read getInfoPenMorte write FInfoPenMorte;
-  end;
-
-  TInfoBeneficio = class(TObject)
-  private
-    FTpPlanRP: tpPlanRP;
-    FIniBeneficio: TBeneficio;
-    FAltBeneficio: TBeneficio;
-    FFimBeneficio: TFimBeneficio;
-
-    function getIniBeneficio: TBeneficio;
-    function getAltBeneficio: TBeneficio;
-    function getFimBeneficio: TFimBeneficio;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    function iniBeneficioInst: boolean;
-    function altBeneficioInst: boolean;
-    function fimBeneficioInst: boolean;
-
-    property tpPlanRP: tpPlanRP read FTpPlanRP write FTpPlanRP;
-    property iniBeneficio: TBeneficio read getIniBeneficio write FIniBeneficio;
-    property altBeneficio: TBeneficio read getAltBeneficio write FAltBeneficio;
-    property fimBeneficio: TFimBeneficio read getFimBeneficio write FFimBeneficio;
-  end;
-
-  TDadosBenef = class(TObject)
-  private
-    FDadosNasc: TNascimento;
-    FEndereco: TEndereco;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property dadosNasc: TNascimento read FDadosNasc write FDadosNasc;
-    property endereco: TEndereco read FEndereco write FEndereco;
-  end;
-
-  TIdeBenef = class(TObject)
-  private
-    FCpfBEnef: string;
+    FCpfBenef: string;
     FNmBenefic: string;
-    FDadosBenef: TDadosBenef;
+    FDtNascto: TDateTime;
+    FDtInicio: TDateTime;
+    FSexo: string;
+    FRacaCor: integer;
+    FEstCiv: integer;
+    FIncFisMen: TpSimNao;
+    FDtIncFisMen: TDateTime;
+    FEndereco: TEndereco;
+    FDependente: TDependenteCollection;
   public
     constructor Create;
     destructor Destroy; override;
+    
     property cpfBenef: String read FCpfBEnef write FCpfBEnef;
     property nmBenefic: string read FNmBenefic write FNmBenefic;
-    property dadosBenef: TDadosBenef read FDadosBenef write FDadosBenef;
+    property dtNascto: TDateTime read FDtNascto write FDtNascto;
+    property dtInicio: TDateTime read FDtInicio write FDtInicio;
+    property sexo: string read FSexo write FSexo;
+    property racaCor: integer read FRacaCor write FRacaCor;
+    property estCiv: integer read FEstCiv write FEstCiv;
+    property incFisMen: TpSimNao read FIncFisMen write FIncFisMen;
+    property dtIncFisMen: TDateTime read FDtIncFisMen write FDtIncFisMen;
+    property endereco: TEndereco read FEndereco write FEndereco;
+    property dependente: TDependenteCollection read FDependente write FDependente;
   end;
 
 implementation
@@ -242,249 +168,98 @@ constructor TS2400CollectionItem.Create(AOwner: TComponent);
 begin
   inherited Create;
   FTipoEvento   := teS2400;
-  FEvtCdBenPrRP := TEvtCdBenPrRP.Create(AOwner);
+  FEvtCdBenefIn := TEvtCdBenefIn.Create(AOwner);
 end;
 
 destructor TS2400CollectionItem.Destroy;
 begin
-  FEvtCdBenPrRP.Free;
+  FEvtCdBenefIn.Free;
 
   inherited;
 end;
 
-{ TBeneficio }
+{ TBeneficiario }
 
-constructor TBeneficio.Create;
+constructor TBeneficiario.Create;
 begin
   inherited Create;
-  FInfoPenMorte := nil;
+  FEndereco := TEndereco.Create;
+  FDependente := TDependenteCollection.Create;
 end;
 
-destructor TBeneficio.Destroy;
+destructor TBeneficiario.Destroy;
 begin
-  FreeAndNil(FInfoPenMorte);
-  inherited;
-end;
-
-function TBeneficio.getInfoPenMorte: TInfoPenMorte;
-begin
-  if not Assigned(FInfoPenMorte) then
-    FInfoPenMorte := TInfoPenMorte.Create;
-  Result := FInfoPenMorte;
-end;
-
-function TBeneficio.infoPenMorteInst: boolean;
-begin
-  result := Assigned(FInfoPenMorte);
-end;
-
-{ TInfoBeneficio }
-
-constructor TInfoBeneficio.Create;
-begin
-  inherited Create;
-  FIniBeneficio := nil;
-  FAltBeneficio := nil;
-  FFimBeneficio := nil;
-end;
-
-destructor TInfoBeneficio.Destroy;
-begin
-  FreeAndNil(FIniBeneficio);
-  FreeAndNil(FAltBeneficio);
-  FreeAndNil(FFimBeneficio);
-  inherited;
-end;
-
-function TInfoBeneficio.getIniBeneficio: TBeneficio;
-begin
-  if not Assigned(FIniBeneficio) then
-    FIniBeneficio := TBeneficio.Create;
-  result := FIniBeneficio;
-end;
-
-function TInfoBeneficio.getAltBeneficio: TBeneficio;
-begin
-  if not Assigned(FAltBeneficio) then
-    FAltBeneficio := TBeneficio.Create;
-  result := FAltBeneficio;
-end;
-
-function TInfoBeneficio.getFimBeneficio: TFimBeneficio;
-begin
-  if not Assigned(FFimBeneficio) then
-    FFimBeneficio := TFimBeneficio.Create;
-  Result := FFimBeneficio;
-end;
-
-function TInfoBeneficio.iniBeneficioInst: boolean;
-begin
-  result := Assigned(FIniBeneficio);
-end;
-
-function TInfoBeneficio.altBeneficioInst: boolean;
-begin
-  result := Assigned(FAltBeneficio);
-end;
-
-function TInfoBeneficio.fimBeneficioInst: boolean;
-begin
-  Result := Assigned(FFimBeneficio);
-end;
-
-{ TIdeBenef }
-
-constructor TIdeBenef.Create;
-begin
-  inherited Create;
-  FDadosBenef := TDadosBenef.Create;
-end;
-
-destructor TIdeBenef.Destroy;
-begin
-  FDadosBenef.Free;
-  inherited;
-end;
-
-{ TDadosBenef }
-
-constructor TDadosBenef.Create;
-begin
-  inherited Create;
-  FDadosNasc := TNascimento.Create;
-  FEndereco  := TEndereco.Create;
-end;
-
-destructor TDadosBenef.Destroy;
-begin
-  FDadosNasc.Free;
   FEndereco.Free;
+  FDependente.Free;
   inherited;
 end;
 
-{ TEvtCdBenPrRP }
+{ TEvtCdBenefIn }
 
-constructor TEvtCdBenPrRP.Create(AACBreSocial: TObject);
+constructor TEvtCdBenefIn.Create(AACBreSocial: TObject);
 begin
   inherited Create(AACBreSocial);
 
   FIdeEvento     := TIdeEvento2.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
-  FIdeBenef      := TIdeBenef.Create;
-  FInfoBeneficio := TInfoBeneficio.Create;
+  FBeneficiario  := TBeneficiario.Create;
 end;
 
-destructor TEvtCdBenPrRP.Destroy;
+destructor TEvtCdBenefIn.Destroy;
 begin
   FIdeEvento.Free;
   FIdeEmpregador.Free;
-  FIdeBenef.Free;
-  FInfoBeneficio.Free;
+  FBeneficiario.Free;
 
   inherited;
 end;
 
-procedure TEvtCdBenPrRP.GerarDadosBenef(pDadosBenef: TDadosBenef);
+procedure TEvtCdBenefIn.GerarBeneficiario(pBeneficiario: TBeneficiario);
 begin
-  Gerador.wGrupo('dadosBenef');
+  Gerador.wGrupo('beneficiario');
 
-  GerarNascimento(pDadosBenef.dadosNasc, 'dadosNasc');
+  Gerador.wCampo(tcStr, '', 'cpfBenef',    11, 11, 1, pBeneficiario.cpfBenef);
+  Gerador.wCampo(tcStr, '', 'nmBenefic',   70, 70, 1, pBeneficiario.nmBenefic);
+  Gerador.wCampo(tcDat, '', 'dtNascto',    10, 10, 1, pBeneficiario.dtNascto);
+  Gerador.wCampo(tcDat, '', 'dtInicio',    10, 10, 1, pBeneficiario.dtInicio);
+  Gerador.wCampo(tcStr, '', 'sexo',         0,  1, 1, pBeneficiario.sexo);
+  Gerador.wCampo(tcInt, '', 'racaCor',      1,  1, 1, pBeneficiario.racaCor);
 
-  GerarEndereco(pDadosBenef.endereco, (pDadosBenef.endereco.Exterior.PaisResid <> ''));
+  if ((pBeneficiario.EstCiv >= 1) and (pBeneficiario.EstCiv <= 5)) then
+    Gerador.wCampo(tcInt, '', 'estCiv',     1,  1, 0, pBeneficiario.estCiv);
 
-  Gerador.wGrupo('/dadosBenef');
+  Gerador.wCampo(tcStr, '', 'incFisMen',    1,  1, 1, eSSimNaoToStr(pBeneficiario.incFisMen));
+  Gerador.wCampo(tcDat, '', 'dtIncFisMen',  0, 10, 0, pBeneficiario.dtIncFisMen);
+    
+  GerarEndereco(pBeneficiario.endereco, (pBeneficiario.endereco.exterior.paisResid <> ''));
+
+  GerarDependente(pBeneficiario.dependente, true);
+ 
+  Gerador.wGrupo('/beneficiario');
 end;
 
-procedure TEvtCdBenPrRP.GerarIdeBenef(pIdeBenef: TIdeBenef);
-begin
-  Gerador.wGrupo('ideBenef');
-
-  Gerador.wCampo(tcStr, '', 'cpfBenef',  11, 11, 1, pIdeBenef.cpfBenef);
-  Gerador.wCampo(tcStr, '', 'nmBenefic',  0, 70, 1, pIdeBenef.nmBenefic);
-
-  GerarDadosBenef(pIdeBenef.dadosBenef);
-
-  Gerador.wGrupo('/ideBenef');
-end;
-
-procedure TEvtCdBenPrRP.GerarInfoPenMorte(pInfoPenMorte: TInfoPenMorte);
-begin
-  Gerador.wGrupo('infoPenMorte');
-
-  Gerador.wCampo(tcStr, '', 'idQuota',  1, 30, 1, pInfoPenMorte.idQuota);
-  Gerador.wCampo(tcStr, '', 'cpfInst', 11, 11, 1, pInfoPenMorte.cpfInst);
-
-  Gerador.wGrupo('/infoPenMorte');
-end;
-
-procedure TEvtCdBenPrRP.GerarBeneficio(pBeneficio: TBeneficio; const pGroupName: String);
-begin
-  Gerador.wGrupo(pGroupName);
-
-  Gerador.wCampo(tcInt, '', 'tpBenef',     1,  2, 1, pBeneficio.tpBenef);
-  Gerador.wCampo(tcStr, '', 'nrBenefic',   1, 20, 1, pBeneficio.nrBenefic);
-  Gerador.wCampo(tcDat, '', 'dtIniBenef', 10, 10, 1, pBeneficio.dtIniBenef);
-  Gerador.wCampo(tcDe2, '', 'vrBenef',     1, 14, 1, pBeneficio.vrBenef);
-
-  if pBeneficio.infoPenMorteInst then
-    GerarInfoPenMorte(pBeneficio.infoPenMorte);
-
-  Gerador.wGrupo('/' + pGroupName);
-end;
-
-procedure TEvtCdBenPrRP.GerarFimBeneficio(pFimBeneficio: TFimBeneficio);
-begin
-  Gerador.wGrupo('fimBeneficio');
-
-  Gerador.wCampo(tcInt, '', 'tpBenef',     1,  2, 1, pFimBeneficio.tpBenef);
-  Gerador.wCampo(tcStr, '', 'nrBenefic',   1, 20, 1, pFimBeneficio.nrBenefic);
-  Gerador.wCampo(tcDat, '', 'dtFimBenef', 10, 10, 1, pFimBeneficio.dtFimBenef);
-  Gerador.wCampo(tcInt, '', 'mtvFim',      1,  2, 1, pFimBeneficio.mtvFim);
-
-  Gerador.wGrupo('/fimBeneficio');
-end;
-
-procedure TEvtCdBenPrRP.GerarInfoBeneficio(pInfoBeneficio: TInfoBeneficio);
-begin
-  Gerador.wGrupo('infoBeneficio');
-
-  Gerador.wCampo(tcStr, '', 'tpPlanRP', 1, 1, 1, eSTpPlanRPToStr(pInfoBeneficio.tpPlanRP));
-
-  if pInfoBeneficio.iniBeneficioInst then
-    GerarBeneficio(pInfoBeneficio.iniBeneficio, 'iniBeneficio');
-
-  if pInfoBeneficio.altBeneficioInst then
-    GerarBeneficio(pInfoBeneficio.altBeneficio, 'altBeneficio');
-
-  if pInfoBeneficio.fimBeneficioInst then
-    GerarFimBeneficio(pInfoBeneficio.fimBeneficio);
-
-  Gerador.wGrupo('/infoBeneficio');
-end;
-
-function TEvtCdBenPrRP.GerarXML: boolean;
+function TEvtCdBenefIn.GerarXML: boolean;
 begin
   try
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
-    GerarCabecalho('evtCdBenPrRP');
-    Gerador.wGrupo('evtCdBenPrRP Id="' + Self.Id + '"');
+    GerarCabecalho('evtCdBenefIn');
+    Gerador.wGrupo('evtCdBenefIn Id="' + Self.Id + '"');
 
     GerarIdeEvento2(self.IdeEvento);
     GerarIdeEmpregador(self.IdeEmpregador);
-    GerarIdeBenef(ideBenef);
-    GerarInfoBeneficio(infoBeneficio);
-
-    Gerador.wGrupo('/evtCdBenPrRP');
+    GerarBeneficiario(self.Beneficiario);
+    
+    Gerador.wGrupo('/evtCdBenefIn');
 
     GerarRodape;
 
     FXML := Gerador.ArquivoFormatoXML;
-//    XML := Assinar(Gerador.ArquivoFormatoXML, 'evtCdBenPrRP');
+//    XML := Assinar(Gerador.ArquivoFormatoXML, 'EvtCdBenefIn');
 
-//    Validar(schevtCdBenPrRP);
+//    Validar(schEvtCdBenefIn);
   except on e:exception do
     raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
@@ -492,123 +267,13 @@ begin
   Result := (Gerador.ArquivoFormatoXML <> '')
 end;
 
-function TEvtCdBenPrRP.LerArqIni(const AIniString: String): Boolean;
-var
-  INIRec: TMemIniFile;
-  Ok: Boolean;
-  sSecao: String;
+function TEvtCdBenefIn.LerArqIni(const AIniString: String): Boolean;
+//var
+//  INIRec: TMemIniFile;
+//  Ok: Boolean;
+//  sSecao: String;
 begin
   Result := True;
-
-  INIRec := TMemIniFile.Create('');
-  try
-    LerIniArquivoOuString(AIniString, INIRec);
-
-    with Self do
-    begin
-      sSecao := 'evtCdBenPrRP';
-      Id         := INIRec.ReadString(sSecao, 'Id', '');
-      Sequencial := INIRec.ReadInteger(sSecao, 'Sequencial', 0);
-
-      sSecao := 'ideEvento';
-      ideEvento.indRetif    := eSStrToIndRetificacao(Ok, INIRec.ReadString(sSecao, 'indRetif', '1'));
-      ideEvento.NrRecibo    := INIRec.ReadString(sSecao, 'nrRecibo', EmptyStr);
-      ideEvento.ProcEmi     := eSStrToProcEmi(Ok, INIRec.ReadString(sSecao, 'procEmi', '1'));
-      ideEvento.VerProc     := INIRec.ReadString(sSecao, 'verProc', EmptyStr);
-
-      sSecao := 'ideEmpregador';
-      ideEmpregador.OrgaoPublico := (TACBreSocial(FACBreSocial).Configuracoes.Geral.TipoEmpregador = teOrgaoPublico);
-      ideEmpregador.TpInsc       := eSStrToTpInscricao(Ok, INIRec.ReadString(sSecao, 'tpInsc', '1'));
-      ideEmpregador.NrInsc       := INIRec.ReadString(sSecao, 'nrInsc', EmptyStr);
-
-      sSecao := 'ideBenef';
-      ideBenef.cpfBenef  := INIRec.ReadString(sSecao, 'cpfBenef', EmptyStr);
-      ideBenef.nmBenefic := INIRec.ReadString(sSecao, 'nmBenefic', EmptyStr);
-
-      sSecao := 'dadosNasc';
-      ideBenef.dadosBenef.dadosNasc.dtNascto   := StringToDateTime(INIRec.ReadString(sSecao, 'dtNascto', '0'));
-      ideBenef.dadosBenef.dadosNasc.codMunic   := INIRec.ReadInteger(sSecao, 'codMunic', 0);
-      ideBenef.dadosBenef.dadosNasc.UF         := INIRec.ReadString(sSecao, 'uf', '');
-      ideBenef.dadosBenef.dadosNasc.PaisNascto := INIRec.ReadString(sSecao, 'paisNascto', '');
-      ideBenef.dadosBenef.dadosNasc.PaisNac    := INIRec.ReadString(sSecao, 'paisNac', '');
-      ideBenef.dadosBenef.dadosNasc.NmMae      := INIRec.ReadString(sSecao, 'nmMae', '');
-      ideBenef.dadosBenef.dadosNasc.NmPai      := INIRec.ReadString(sSecao, 'nmPai', '');
-
-      sSecao := 'enderecoBrasil';
-      if INIRec.ReadString(sSecao, 'tpLograd', '') <> '' then
-      begin
-        ideBenef.dadosBenef.Endereco.Brasil.TpLograd    := INIRec.ReadString(sSecao, 'tpLograd', '');
-        ideBenef.dadosBenef.Endereco.Brasil.DscLograd   := INIRec.ReadString(sSecao, 'dscLograd', '');
-        ideBenef.dadosBenef.Endereco.Brasil.NrLograd    := INIRec.ReadString(sSecao, 'nrLograd', '');
-        ideBenef.dadosBenef.Endereco.Brasil.Complemento := INIRec.ReadString(sSecao, 'complemento', '');
-        ideBenef.dadosBenef.Endereco.Brasil.Bairro      := INIRec.ReadString(sSecao, 'bairro', '');
-        ideBenef.dadosBenef.Endereco.Brasil.Cep         := INIRec.ReadString(sSecao, 'cep', '');
-        ideBenef.dadosBenef.Endereco.Brasil.CodMunic    := INIRec.ReadInteger(sSecao, 'codMunic', 0);
-        ideBenef.dadosBenef.Endereco.Brasil.UF          := INIRec.ReadString(sSecao, 'uf', 'SP');
-      end;
-
-      sSecao := 'enderecoExterior';
-      if INIRec.ReadString(sSecao, 'paisResid', '') <> '' then
-      begin
-        ideBenef.dadosBenef.Endereco.Exterior.PaisResid   := INIRec.ReadString(sSecao, 'paisResid', '');
-        ideBenef.dadosBenef.Endereco.Exterior.DscLograd   := INIRec.ReadString(sSecao, 'dscLograd', '');
-        ideBenef.dadosBenef.Endereco.Exterior.NrLograd    := INIRec.ReadString(sSecao, 'nrLograd', '');
-        ideBenef.dadosBenef.Endereco.Exterior.Complemento := INIRec.ReadString(sSecao, 'complemento', '');
-        ideBenef.dadosBenef.Endereco.Exterior.Bairro      := INIRec.ReadString(sSecao, 'bairro', '');
-        ideBenef.dadosBenef.Endereco.Exterior.NmCid       := INIRec.ReadString(sSecao, 'nmCid', '');
-        ideBenef.dadosBenef.Endereco.Exterior.CodPostal   := INIRec.ReadString(sSecao, 'codPostal', '');
-      end;
-
-      sSecao := 'infoBeneficio';
-      infoBeneficio.tpPlanRP := eSStrToTpPlanRP(Ok, INIRec.ReadString(sSecao, 'dtTerm', '1'));
-
-      sSecao := 'iniBeneficio';
-      if INIRec.ReadString(sSecao, 'tpBenef', '') <> '' then
-      begin
-        infoBeneficio.iniBeneficio.tpBenef    := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
-        infoBeneficio.iniBeneficio.nrBenefic  := INIRec.ReadString(sSecao, 'nrBenefic', '');
-        infoBeneficio.iniBeneficio.dtIniBenef := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniBenef', '0'));
-        infoBeneficio.iniBeneficio.vrBenef    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBenef', ''), 0);
-
-        sSecao := 'infoPenMorte';
-        if INIRec.ReadString(sSecao, 'idQuota', '') <> '' then
-        begin
-          infoBeneficio.iniBeneficio.infoPenMorte.idQuota := INIRec.ReadString(sSecao, 'idQuota', '');
-          infoBeneficio.iniBeneficio.infoPenMorte.cpfInst := INIRec.ReadString(sSecao, 'cpfInst', '');
-        end;
-      end;
-
-      sSecao := 'altBeneficio';
-      if INIRec.ReadString(sSecao, 'tpBenef', '') <> '' then
-      begin
-        infoBeneficio.altBeneficio.tpBenef    := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
-        infoBeneficio.altBeneficio.nrBenefic  := INIRec.ReadString(sSecao, 'nrBenefic', '');
-        infoBeneficio.altBeneficio.dtIniBenef := StringToDateTime(INIRec.ReadString(sSecao, 'dtIniBenef', '0'));
-        infoBeneficio.altBeneficio.vrBenef    := StringToFloatDef(INIRec.ReadString(sSecao, 'vrBenef', ''), 0);
-
-        sSecao := 'infoPenMorte';
-        if INIRec.ReadString(sSecao, 'idQuota', '') <> '' then
-        begin
-          infoBeneficio.altBeneficio.infoPenMorte.idQuota := INIRec.ReadString(sSecao, 'idQuota', '');
-          infoBeneficio.altBeneficio.infoPenMorte.cpfInst := INIRec.ReadString(sSecao, 'cpfInst', '');
-        end;
-      end;
-
-      sSecao := 'fimBeneficio';
-      if INIRec.ReadString(sSecao, 'tpBenef', '') <> '' then
-      begin
-        infoBeneficio.fimBeneficio.tpBenef    := INIRec.ReadInteger(sSecao, 'tpBenef', 0);
-        infoBeneficio.fimBeneficio.nrBenefic  := INIRec.ReadString(sSecao, 'nrBenefic', '');
-        infoBeneficio.fimBeneficio.dtFimBenef := StringToDateTime(INIRec.ReadString(sSecao, 'dtFimBenef', '0'));
-        infoBeneficio.fimBeneficio.mtvFim     := INIRec.ReadInteger(sSecao, 'mtvFim', 0);
-      end;
-    end;
-
-    GerarXML;
-    XML := FXML;
-  finally
-    INIRec.Free;
-  end;
 end;
 
 end.

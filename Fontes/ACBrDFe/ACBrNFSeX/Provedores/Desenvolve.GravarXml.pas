@@ -37,17 +37,14 @@ unit Desenvolve.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_Desenvolve }
+  { TNFSeW_Desenvolve203 }
 
-  TNFSeW_Desenvolve = class(TNFSeW_ABRASFv2)
+  TNFSeW_Desenvolve203 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -60,9 +57,9 @@ implementation
 //     Desenvolve
 //==============================================================================
 
-{ TNFSeW_Desenvolve }
+{ TNFSeW_Desenvolve203 }
 
-procedure TNFSeW_Desenvolve.Configuracao;
+procedure TNFSeW_Desenvolve203.Configuracao;
 begin
   inherited Configuracao;
 

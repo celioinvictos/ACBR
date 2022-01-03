@@ -37,16 +37,13 @@ unit NEAInformatica.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXGravarXml_ABRASFv2;
 
 type
-  { TNFSeW_NEAInformatica }
+  { TNFSeW_NEAInformatica200 }
 
-  TNFSeW_NEAInformatica = class(TNFSeW_ABRASFv2)
+  TNFSeW_NEAInformatica200 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -59,9 +56,9 @@ implementation
 //     NEAInformatica
 //==============================================================================
 
-{ TNFSeW_NEAInformatica }
+{ TNFSeW_NEAInformatica200 }
 
-procedure TNFSeW_NEAInformatica.Configuracao;
+procedure TNFSeW_NEAInformatica200.Configuracao;
 begin
   inherited Configuracao;
 

@@ -37,16 +37,13 @@ unit SystemPro.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_SystemPro }
+  { TNFSeR_SystemPro201 }
 
-  TNFSeR_SystemPro = class(TNFSeR_ABRASFv2)
+  TNFSeR_SystemPro201 = class(TNFSeR_ABRASFv2)
   protected
 
   public

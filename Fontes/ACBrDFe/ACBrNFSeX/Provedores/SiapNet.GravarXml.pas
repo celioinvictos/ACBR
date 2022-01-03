@@ -37,16 +37,13 @@ unit SiapNet.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_SiapNet }
+  { TNFSeW_SiapNet200 }
 
-  TNFSeW_SiapNet = class(TNFSeW_ABRASFv2)
+  TNFSeW_SiapNet200 = class(TNFSeW_ABRASFv2)
   protected
 
   end;

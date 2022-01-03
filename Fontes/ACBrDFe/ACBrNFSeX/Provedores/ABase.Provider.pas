@@ -44,7 +44,7 @@ uses
   ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
-  TACBrNFSeXWebserviceABase = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceABase201 = class(TACBrNFSeXWebserviceSoap11)
 
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
@@ -54,7 +54,7 @@ type
 
   end;
 
-  TACBrNFSeProviderABase = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderABase201 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -69,9 +69,9 @@ implementation
 uses
   ACBrDFeException, ABase.GravarXml, ABase.LerXml;
 
-{ TACBrNFSeXWebserviceABase }
+{ TACBrNFSeXWebserviceABase201 }
 
-function TACBrNFSeXWebserviceABase.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceABase201.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -87,10 +87,10 @@ begin
 
   Result := Executar('http://nfse.abase.com.br/NFSeWS/RecepcionarLoteRps',
                      Request,
-                     ['RecepcionarLoteRpsResult', 'EnviarLoteRpsResposta'], ['']);
+                     ['RecepcionarLoteRpsResult', 'EnviarLoteRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceABase.ConsultarLote(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceABase201.ConsultarLote(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -105,10 +105,10 @@ begin
 
   Result := Executar('http://nfse.abase.com.br/NFSeWS/ConsultaLoteRps',
                      Request,
-                     ['ConsultaLoteRpsResult', 'ConsultarLoteRpsResposta'], ['']);
+                     ['ConsultaLoteRpsResult', 'ConsultarLoteRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceABase.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceABase201.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -121,10 +121,10 @@ begin
 
   Result := Executar('http://nfse.abase.com.br/NFSeWS/ConsultaNfseRps',
                      Request,
-                     ['ConsultaNfseRpsResult', 'ConsultarNfseRpsResposta'], ['']);
+                     ['ConsultaNfseRpsResult', 'ConsultarNfseRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceABase.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceABase201.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -137,14 +137,21 @@ begin
 
   Result := Executar('http://nfse.abase.com.br/NFSeWS/CancelaNfse',
                      Request,
-                     ['CancelaNfseResult', 'CancelarNfseResposta'], ['']);
+                     ['CancelaNfseResult', 'CancelarNfseResposta'], []);
 end;
 
-{ TACBrNFSeProviderABase }
+{ TACBrNFSeProviderABase201 }
 
-procedure TACBrNFSeProviderABase.Configuracao;
+procedure TACBrNFSeProviderABase201.Configuracao;
 begin
   inherited Configuracao;
+
+  with ConfigGeral do
+  begin
+    UseCertificateHTTP := False;
+    ModoEnvio := meLoteAssincrono;
+    ConsultaNFSe := False;
+  end;
 
   with ConfigAssinar do
   begin
@@ -152,12 +159,7 @@ begin
     LoteRps := True;
     CancelarNFSe := True;
     RpsGerarNFSe := True;
-  end;
-
-  with ConfigGeral do
-  begin
-    UseCertificateHTTP := False;
-    ModoEnvio := meLoteAssincrono;
+    RpsSubstituirNFSe := True;
   end;
 
   SetXmlNameSpace('http://nfse.abase.com.br/nfse.xsd');
@@ -171,28 +173,33 @@ begin
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 end;
 
-function TACBrNFSeProviderABase.CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass;
+function TACBrNFSeProviderABase201.CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_ABase.Create(Self);
+  Result := TNFSeW_ABase201.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderABase.CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass;
+function TACBrNFSeProviderABase201.CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_ABase.Create(Self);
+  Result := TNFSeR_ABase201.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderABase.CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice;
+function TACBrNFSeProviderABase201.CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
 begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceABase.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceABase201.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 end.

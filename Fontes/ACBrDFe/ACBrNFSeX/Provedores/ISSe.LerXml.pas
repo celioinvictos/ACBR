@@ -37,16 +37,13 @@ unit ISSe.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_ISSe }
+  { TNFSeR_ISSe200 }
 
-  TNFSeR_ISSe = class(TNFSeR_ABRASFv2)
+  TNFSeR_ISSe200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

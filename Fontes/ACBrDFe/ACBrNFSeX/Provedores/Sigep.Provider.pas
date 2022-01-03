@@ -44,7 +44,7 @@ uses
   ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
-  TACBrNFSeXWebserviceSigep = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceSigep200 = class(TACBrNFSeXWebserviceSoap11)
   public
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
     function GerarNFSe(ACabecalho, AMSG: String): string; override;
@@ -54,7 +54,7 @@ type
 
   end;
 
-  TACBrNFSeProviderSigep = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderSigep200 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -71,13 +71,19 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, Sigep.GravarXml, Sigep.LerXml;
 
-{ TACBrNFSeProviderSigep }
+{ TACBrNFSeProviderSigep200 }
 
-procedure TACBrNFSeProviderSigep.Configuracao;
+procedure TACBrNFSeProviderSigep200.Configuracao;
 begin
   inherited Configuracao;
 
-  ConfigGeral.Identificador := '';
+  with ConfigGeral do
+  begin
+    Identificador := '';
+    ConsultaNFSe := False;
+    CancPreencherMotivo := True;
+    CancPreencherCodVerificacao := True;
+  end;
 
   with ConfigAssinar do
   begin
@@ -90,21 +96,21 @@ begin
   end;
 end;
 
-function TACBrNFSeProviderSigep.CriarGeradorXml(
+function TACBrNFSeProviderSigep200.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_Sigep.Create(Self);
+  Result := TNFSeW_Sigep200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSigep.CriarLeitorXml(
+function TACBrNFSeProviderSigep200.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_Sigep.Create(Self);
+  Result := TNFSeR_Sigep200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSigep.CriarServiceClient(
+function TACBrNFSeProviderSigep200.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -112,12 +118,17 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceSigep.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceSigep200.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-procedure TACBrNFSeProviderSigep.ValidarSchema(
+procedure TACBrNFSeProviderSigep200.ValidarSchema(
   Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
 var
   xXml, credenciais: string;
@@ -208,9 +219,9 @@ begin
   inherited ValidarSchema(Response, aMetodo);
 end;
 
-{ TACBrNFSeXWebserviceSigep }
+{ TACBrNFSeXWebserviceSigep200 }
 
-function TACBrNFSeXWebserviceSigep.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceSigep200.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -226,7 +237,7 @@ begin
                      ['xmlns:ws="http://ws.integration.pm.bsit.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSigep.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSigep200.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -242,7 +253,7 @@ begin
                      ['xmlns:ws="http://ws.integration.pm.bsit.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSigep.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceSigep200.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -258,7 +269,7 @@ begin
                      ['xmlns:ws="http://ws.integration.pm.bsit.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSigep.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceSigep200.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -274,7 +285,7 @@ begin
                      ['xmlns:ws="http://ws.integration.pm.bsit.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSigep.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceSigep200.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin

@@ -37,7 +37,8 @@ library ACBrLibDIS;
 uses
   Interfaces, sysutils, Classes,
   ACBrLibConfig, ACBrLibComum,
-  ACBrLibDISClass, ACBrLibDISConfig, ACBrLibDISDataModule;
+  {$IFDEF MT}ACBrLibDISMT{$ELSE}ACBrLibDISST{$ENDIF},
+  ACBrLibDISConfig, ACBrLibDISDataModule;
 
 {$R *.res}
 
@@ -66,6 +67,8 @@ exports
   DIS_PosicionarCursor,
   DIS_Escrever,
   DIS_ExibirLinha,
+  DIS_ExibirLinhaAlinhada,
+  DIS_ExibirLinhaEfeito,
   DIS_RolarLinha,
   DIS_Parar,
   DIS_Continuar,
@@ -79,7 +82,6 @@ begin
    SetHeapTraceOutput( HeapTraceFile );
   {$ENDIF}
 
-  pLibClass := TACBrLibDIS; // Ajusta a classe a ser criada
   MainThreadID := GetCurrentThreadId();
 end.
 

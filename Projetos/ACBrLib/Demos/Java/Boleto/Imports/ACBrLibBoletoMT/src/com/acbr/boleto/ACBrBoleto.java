@@ -12,8 +12,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 
-public final class ACBrBoleto extends ACBrLibBase implements AutoCloseable {
-       
+public final class ACBrBoleto extends ACBrLibBase {       
     private interface ACBrBoletoLib extends Library {
         static String JNA_LIBRARY_NAME = LibraryLoader.getLibraryName();
         public final static ACBrBoletoLib INSTANCE = LibraryLoader.getInstance();       
@@ -24,14 +23,19 @@ public final class ACBrBoleto extends ACBrLibBase implements AutoCloseable {
 
             public static String getLibraryName() {
                 if (library.isEmpty()) {
-                    library = Platform.is64Bit() ? "ACBrBoleto64" : "ACBrBoleto32";
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrBoleto64" : "ACBrBoleto32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrboleto64" : "acbrboleto32";
+                    }
+                    
                 }
                 return library;
             }           
 
             public static ACBrBoletoLib getInstance() {
                 if (instance == null) {
-                    instance = (ACBrBoletoLib) Native.synchronizedLibrary((Library) Native.loadLibrary(JNA_LIBRARY_NAME, ACBrBoletoLib.class));
+                    instance = (ACBrBoletoLib) Native.synchronizedLibrary((Library) Native.load(JNA_LIBRARY_NAME, ACBrBoletoLib.class));
                 }
                 return instance;
             }
@@ -126,22 +130,12 @@ public final class ACBrBoleto extends ACBrLibBase implements AutoCloseable {
         int ret = ACBrBoletoLib.INSTANCE.Boleto_Inicializar(handle, toUTF8(eArqConfig), toUTF8(eChaveCrypt));
         checkResult(ret);
 		setHandle(handle.getValue());
-    }   
-    
-    @Override
-    public void close() throws Exception {
-        int ret = ACBrBoletoLib.INSTANCE.Boleto_Finalizar(getHandle());
-        checkResult(ret);
     }
     
     @Override
-    protected void finalize() throws Throwable {
-        try {
-            int ret = ACBrBoletoLib.INSTANCE.Boleto_Finalizar(getHandle());
-            checkResult(ret);
-        } finally {
-            super.finalize();
-        }
+    protected void dispose() throws Exception {
+        int ret = ACBrBoletoLib.INSTANCE.Boleto_Finalizar(getHandle());
+        checkResult(ret);
     }
     
     public String nome() throws Exception {
@@ -182,6 +176,7 @@ public final class ACBrBoleto extends ACBrLibBase implements AutoCloseable {
         checkResult(ret);
     }
 
+    @Override
     public String configLerValor(ACBrSessao eSessao, String eChave) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
         IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
@@ -192,6 +187,7 @@ public final class ACBrBoleto extends ACBrLibBase implements AutoCloseable {
         return processResult(buffer, bufferLen);
     }
 
+    @Override
     public void configGravarValor(ACBrSessao eSessao, String eChave, Object value) throws Exception {
         int ret = ACBrBoletoLib.INSTANCE.Boleto_ConfigGravarValor(getHandle(), toUTF8(eSessao.name()), toUTF8(eChave), toUTF8(value.toString()));
         checkResult(ret);

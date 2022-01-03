@@ -36,8 +36,13 @@ unit pcnCFeCanc;
 interface
 
 uses
-  SysUtils, Classes, Contnrs,
-  pcnConversao, pcnSignature;
+  SysUtils, Classes,
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$IfEnd}
+  pcnConversao, pcnSignature, ACBrBase;
 
 type
 
@@ -51,6 +56,7 @@ type
   TInfAdic = class;
   TobsFiscoCollection = class;
   TobsFiscoCollectionItem = class;
+  TLoteCFeCancCollection = class;
 
   { TCFeCanc }
 
@@ -246,7 +252,7 @@ type
 
   { TobsFiscoCollection }
 
-  TobsFiscoCollection = class(TObjectList)
+  TobsFiscoCollection = class(TACBrObjectList)
   private
     function GetItem(Index: Integer): TobsFiscoCollectionItem;
     procedure SetItem(Index: Integer; Value: TobsFiscoCollectionItem);
@@ -265,6 +271,17 @@ type
   public
     property xCampo: string read FxCampo write FxCampo;
     property xTexto: string read FxTexto write FxTexto;
+  end;
+
+  { TLoteCFeCancCollection }
+
+  TLoteCFeCancCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TCFeCanc;
+    procedure SetItem(Index: Integer; Value: TCFeCanc);
+  public
+    function New: TCFeCanc;
+    property Items[Index: Integer]: TCFeCanc read GetItem write SetItem; default;
   end;
 
 implementation
@@ -393,13 +410,13 @@ end;
 function TobsFiscoCollection.GetItem(
   Index: Integer): TobsFiscoCollectionItem;
 begin
-  Result := TobsFiscoCollectionItem(inherited GetItem(Index));
+  Result := TobsFiscoCollectionItem(inherited Items[Index]);
 end;
 
 procedure TobsFiscoCollection.SetItem(Index: Integer;
   Value: TobsFiscoCollectionItem);
 begin
-  inherited SetItem(Index, Value);
+  inherited Items[Index] := Value;
 end;
 
 function TobsFiscoCollection.New: TobsFiscoCollectionItem;
@@ -594,5 +611,23 @@ begin
   Result := True;
 end;
 
+{ TLoteCFeCancCollection }
+
+function TLoteCFeCancCollection.GetItem(Index: Integer): TCFeCanc;
+begin
+  Result := TCFeCanc(inherited Items[Index]);
+end;
+
+function TLoteCFeCancCollection.New: TCFeCanc;
+begin
+  Result := TCFeCanc.Create;
+  Self.Add(Result);
+end;
+
+procedure TLoteCFeCancCollection.SetItem(Index: Integer; Value: TCFeCanc);
+begin
+  inherited Items[Index] := Value;
+end;
+
 end.
- 
+

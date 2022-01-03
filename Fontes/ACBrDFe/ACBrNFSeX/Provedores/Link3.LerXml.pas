@@ -37,16 +37,13 @@ unit Link3.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_Link3 }
+  { TNFSeR_Link3200 }
 
-  TNFSeR_Link3 = class(TNFSeR_ABRASFv2)
+  TNFSeR_Link3200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

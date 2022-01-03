@@ -2,13 +2,13 @@
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoComprovanteEntrega : EventoBase
+    public sealed class EventoComprovanteEntrega : EventoNFeBase
     {
         #region Constructor
 
         public EventoComprovanteEntrega()
         {
-            tpEvento = TipoEvento.teComprEntregaNFe;
+            tpEvento = TipoEventoNFe.teComprEntregaNFe;
             verAplic = "1.0";
         }
 

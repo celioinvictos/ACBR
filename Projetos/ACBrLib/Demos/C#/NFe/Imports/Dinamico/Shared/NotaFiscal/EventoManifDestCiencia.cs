@@ -2,13 +2,13 @@
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoManifDestCiencia : EventoBase
+    public sealed class EventoManifDestCiencia : EventoNFeBase
     {
         #region Constructors
 
         public EventoManifDestCiencia()
         {
-            tpEvento = TipoEvento.teManifDestCiencia;
+            tpEvento = TipoEventoNFe.teManifDestCiencia;
             cOrgao = 91;
         }
 

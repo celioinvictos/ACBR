@@ -46,7 +46,7 @@ type
                       tcSimplesRapComReg, tcCaucionadaRapComReg, tcDiretaEspecial);
   TACBrPessoa = (pFisica,pJuridica,pOutras, pNenhum);
   TACBrPessoaCedente = pFisica..pJuridica;
-  TACBrBolLayOut = (lPadrao, lCarne, lFatura, lPadraoEntrega, lReciboTopo, lPadraoEntrega2, lFaturaDetal, lTermica80mm, lPadraoPIX);
+  TACBrBolLayOut = (lPadrao, lCarne, lFatura, lPadraoEntrega, lReciboTopo, lPadraoEntrega2, lFaturaDetal, lTermica80mm, lPadraoPIX, lPrestaServicos);
 
   {Aceite do titulo}
   TACBrAceiteTitulo = (atSim, atNao);
@@ -72,7 +72,7 @@ type
   TACBrCodigoJuros       = (cjValorDia, cjTaxaMensal, cjIsento, cjValorMensal, cjTaxaDiaria);
 
   {Definir codigo Multa }
-  TACBrCodigoMulta       = (cmValorFixo, cmPercentual);
+  TACBrCodigoMulta       = (cmValorFixo, cmPercentual, cmIsento);
 
   {Definir se o titulo será protestado, não protestado ou negativado }
   TACBrCodigoNegativacao = (cnNenhum, cnProtestarCorrido, cnProtestarUteis, cnNaoProtestar, cnNegativar, cnNaoNegativar, cnCancelamento);

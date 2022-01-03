@@ -12,8 +12,8 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 
-public final class ACBrSat extends ACBrLibBase implements AutoCloseable {
-      
+public final class ACBrSat extends ACBrLibBase {
+         
     private interface ACBrSatLib extends Library {
         static String JNA_LIBRARY_NAME = LibraryLoader.getLibraryName();
         public final static ACBrSatLib INSTANCE = LibraryLoader.getInstance();
@@ -24,14 +24,19 @@ public final class ACBrSat extends ACBrLibBase implements AutoCloseable {
             
             public static String getLibraryName() {
                 if (library.isEmpty()) {
-                    library = Platform.is64Bit() ? "ACBrSAT64" : "ACBrSAT32";
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrSAT64" : "ACBrSAT32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrsat64" : "acbrsat32";
+                    }
+                         
                 }
                 return library;
             }
             
             public static ACBrSatLib getInstance() {
                 if (instance == null) {
-                    instance = (ACBrSatLib) Native.synchronizedLibrary((Library) Native.loadLibrary(JNA_LIBRARY_NAME, ACBrSatLib.class));
+                    instance = (ACBrSatLib) Native.synchronizedLibrary((Library) Native.load(JNA_LIBRARY_NAME, ACBrSatLib.class));
                 }
                 return instance;
             }
@@ -116,30 +121,20 @@ public final class ACBrSat extends ACBrLibBase implements AutoCloseable {
         PointerByReference handle = new PointerByReference();
         int ret = ACBrSatLib.INSTANCE.SAT_Inicializar(handle, toUTF8(iniFile.getAbsolutePath()), toUTF8(""));
         checkResult(ret);
-		setHandle(handle.getValue());
+        setHandle(handle.getValue());
     }
 
     public ACBrSat(String eArqConfig, String eChaveCrypt) throws Exception {
         PointerByReference handle = new PointerByReference();
         int ret = ACBrSatLib.INSTANCE.SAT_Inicializar(handle, toUTF8(eArqConfig), toUTF8(eChaveCrypt));
         checkResult(ret);
-		setHandle(handle.getValue());
+        setHandle(handle.getValue());
     }
-    
+           
     @Override
-    public void close() throws Exception {
-        int ret = ACBrSatLib.INSTANCE.SAT_Finalizar(getHandle());
-        checkResult(ret);
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            int ret = ACBrSatLib.INSTANCE.SAT_Finalizar(getHandle());
-            checkResult(ret);
-        } finally {
-            super.finalize();
-        }
+    protected void dispose() throws Exception {
+        int ret = ACBrSatLib.INSTANCE.SAT_Finalizar(this.getHandle());
+        checkResult(ret);        
     }
     
     public String nome() throws Exception {
@@ -149,7 +144,7 @@ public final class ACBrSat extends ACBrLibBase implements AutoCloseable {
         int ret = ACBrSatLib.INSTANCE.SAT_Nome(getHandle(), buffer, bufferLen);
         checkResult(ret);
 
-        return fromUTF8(buffer, bufferLen.getValue());
+        return fromUTF8(buffer, bufferLen.getValue());        
     }
 
     public String versao() throws Exception {
@@ -180,6 +175,7 @@ public final class ACBrSat extends ACBrLibBase implements AutoCloseable {
         checkResult(ret);
     }
 
+    @Override
     public String configLerValor(ACBrSessao eSessao, String eChave) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
         IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
@@ -190,6 +186,7 @@ public final class ACBrSat extends ACBrLibBase implements AutoCloseable {
         return processResult(buffer, bufferLen);
     }
 
+    @Override
     public void configGravarValor(ACBrSessao eSessao, String eChave, Object value) throws Exception {
         int ret = ACBrSatLib.INSTANCE.SAT_ConfigGravarValor(getHandle(), toUTF8(eSessao.name()), toUTF8(eChave), toUTF8(value.toString()));
         checkResult(ret);

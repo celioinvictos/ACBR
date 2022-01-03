@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ACBrLib.Core;
@@ -132,25 +133,16 @@ namespace ACBrLib.NFe
         /// Adiciona uma nota fiscal na lista.
         /// </summary>
         /// <param name="nfe"></param>
-        public void CarregarNFe(NotaFiscal nfe)
-        {
-            CarregarINI(nfe.ToString());
-        }
+        public void CarregarNFe(NotaFiscal nfe) => CarregarINI(nfe.ToString());
 
         /// <summary>
         /// Retornar os dados da NFe no index informado.
         /// </summary>
         /// <param name="aIndex"></param>
         /// <returns></returns>
-        public NotaFiscal ObterNFe(int aIndex)
-        {
-            return NotaFiscal.Load(ObterIni(aIndex));
-        }
+        public NotaFiscal ObterNFe(int aIndex) => NotaFiscal.Load(ObterIni(aIndex));
 
-        public void CarregarEvento(EventoBase evento)
-        {
-            CarregarEventoINI(evento.ToString());
-        }
+        public void CarregarEvento(EventoNFeBase evento) => CarregarEventoINI(evento.ToString());
 
         public void CarregarXML(string eArquivoOuXml)
         {
@@ -399,7 +391,7 @@ namespace ACBrLib.NFe
 
             CheckResult(ret);
 
-            return EnvioRetornoResposta.LerResposta(ProcessResult(buffer, bufferLen));
+            return EnvioRetornoResposta.LerResposta(ProcessResult(buffer, bufferLen), "NFe");
         }
 
         public RetornoResposta ConsultarRecibo(string aRecibo)
@@ -415,7 +407,7 @@ namespace ACBrLib.NFe
             return RetornoResposta.LerResposta(ProcessResult(buffer, bufferLen), "NFe");
         }
 
-        public CancelamentoResposta Cancelar(string eChave, string eJustificativa, string eCNPJ, int aLote)
+        public CancelamentoNFeResposta Cancelar(string eChave, string eJustificativa, string eCNPJ, int aLote)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
@@ -425,7 +417,7 @@ namespace ACBrLib.NFe
 
             CheckResult(ret);
 
-            return CancelamentoResposta.LerResposta(ProcessResult(buffer, bufferLen));
+            return CancelamentoNFeResposta.LerResposta(ProcessResult(buffer, bufferLen));
         }
 
         public EventoResposta EnviarEvento(int aLote)
@@ -441,7 +433,7 @@ namespace ACBrLib.NFe
             return EventoResposta.LerResposta(ProcessResult(buffer, bufferLen));
         }
 
-        public DistribuicaoDFeResposta DistribuicaoDFePorUltNSU(int acUFAutor, string eCnpjcpf, string eultNsu)
+        public DistribuicaoDFeResposta<TipoEventoNFe> DistribuicaoDFePorUltNSU(int acUFAutor, string eCnpjcpf, string eultNsu)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
@@ -451,10 +443,10 @@ namespace ACBrLib.NFe
 
             CheckResult(ret);
 
-            return DistribuicaoDFeResposta.LerResposta(ProcessResult(buffer, bufferLen));
+            return DistribuicaoDFeResposta<TipoEventoNFe>.LerResposta(ProcessResult(buffer, bufferLen));
         }
 
-        public DistribuicaoDFeResposta DistribuicaoDFePorNSU(int acUFAutor, string eCnpjcpf, string eNsu)
+        public DistribuicaoDFeResposta<TipoEventoNFe> DistribuicaoDFePorNSU(int acUFAutor, string eCnpjcpf, string eNsu)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
@@ -464,10 +456,10 @@ namespace ACBrLib.NFe
 
             CheckResult(ret);
 
-            return DistribuicaoDFeResposta.LerResposta(ProcessResult(buffer, bufferLen));
+            return DistribuicaoDFeResposta<TipoEventoNFe>.LerResposta(ProcessResult(buffer, bufferLen));
         }
 
-        public DistribuicaoDFeResposta DistribuicaoDFePorChave(int acUFAutor, string eCnpjcpf, string echNFe)
+        public DistribuicaoDFeResposta<TipoEventoNFe> DistribuicaoDFePorChave(int acUFAutor, string eCnpjcpf, string echNFe)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
@@ -477,7 +469,7 @@ namespace ACBrLib.NFe
 
             CheckResult(ret);
 
-            return DistribuicaoDFeResposta.LerResposta(ProcessResult(buffer, bufferLen));
+            return DistribuicaoDFeResposta<TipoEventoNFe>.LerResposta(ProcessResult(buffer, bufferLen));
         }
 
         public void EnviarEmail(string ePara, string eChaveNFe, bool aEnviaPDF, string eAssunto, string eMensagem, string[] eCc = null, string[] eAnexos = null)
@@ -521,6 +513,22 @@ namespace ACBrLib.NFe
             CheckResult(ret);
         }
 
+        public async void ImprimirPDF(Stream aStream)
+        {
+            if (aStream == null) throw new ArgumentNullException(nameof(aStream));
+
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFE_SalvarPDF>();
+            var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var pdf = ProcessResult(buffer, bufferLen);
+            Base64ToStream(pdf, aStream);
+        }
+
         public void ImprimirEvento(string eArquivoXmlNFe, string eArquivoXmlEvento)
         {
             var method = GetMethod<NFE_ImprimirEvento>();
@@ -537,6 +545,22 @@ namespace ACBrLib.NFe
             CheckResult(ret);
         }
 
+        public void ImprimirEventoPDF(string eArquivoXmlNFe, string eArquivoXmlEvento, Stream aStream)
+        {
+            if (aStream == null) throw new ArgumentNullException(nameof(aStream));
+
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFE_SalvarEventoPDF>();
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXmlNFe), ToUTF8(eArquivoXmlEvento), buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var pdf = ProcessResult(buffer, bufferLen);
+            Base64ToStream(pdf, aStream);
+        }
+
         public void ImprimirInutilizacao(string eArquivoXml)
         {
             var method = GetMethod<NFE_ImprimirInutilizacao>();
@@ -551,6 +575,22 @@ namespace ACBrLib.NFe
             var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXml)));
 
             CheckResult(ret);
+        }
+
+        public void ImprimirInutilizacaoPDF(string eArquivoXml, Stream aStream)
+        {
+            if (aStream == null) throw new ArgumentNullException(nameof(aStream));
+
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFE_SalvarInutilizacaoPDF>();
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoXml), buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var pdf = ProcessResult(buffer, bufferLen);
+            Base64ToStream(pdf, aStream);
         }
 
         #region Private Methods

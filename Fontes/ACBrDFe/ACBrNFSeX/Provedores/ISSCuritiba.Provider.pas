@@ -68,7 +68,7 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException,
+  ACBrXmlBase, ACBrUtil, ACBrDFeException,
   ISSCuritiba.GravarXml, ISSCuritiba.LerXml;
 
 { TACBrNFSeProviderISSCuritiba }
@@ -82,8 +82,6 @@ begin
   SetXmlNameSpace('http://srv2-isscuritiba.curitiba.pr.gov.br/iss/nfse.xsd');
 
   ConfigAssinar.LoteRps := True;
-
-  SetNomeXSD('nfse.xsd');
 end;
 
 function TACBrNFSeProviderISSCuritiba.CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass;
@@ -107,7 +105,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceISSCuritiba.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 { TACBrNFSeXWebserviceISSCuritiba }
@@ -123,7 +126,7 @@ begin
   Request := Request + '</RecepcionarLoteRps>';
 
   Result := Executar('http://www.e-governeapps2.com.br/RecepcionarLoteRps', Request,
-                     ['RecepcionarLoteRpsResult'], ['']);
+                     ['RecepcionarLoteRpsResult'], []);
 end;
 
 function TACBrNFSeXWebserviceISSCuritiba.ConsultarLote(ACabecalho, AMSG: String): string;
@@ -137,7 +140,7 @@ begin
   Request := Request + '</ConsultarLoteRps>';
 
   Result := Executar('http://www.e-governeapps2.com.br/ConsultarLoteRps', Request,
-                     ['ConsultarLoteRpsResult'], ['']);
+                     ['ConsultarLoteRpsResult'], []);
 end;
 
 function TACBrNFSeXWebserviceISSCuritiba.ConsultarSituacao(ACabecalho, AMSG: String): string;
@@ -151,7 +154,7 @@ begin
   Request := Request + '</ConsultarSituacaoLoteRps>';
 
   Result := Executar('http://www.e-governeapps2.com.br/ConsultarSituacaoLoteRps', Request,
-                     ['ConsultarSituacaoLoteRpsResult'], ['']);
+                     ['ConsultarSituacaoLoteRpsResult'], []);
 end;
 
 function TACBrNFSeXWebserviceISSCuritiba.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
@@ -165,7 +168,7 @@ begin
   Request := Request + '</ConsultarNfsePorRps>';
 
   Result := Executar('http://www.e-governeapps2.com.br/ConsultarNfsePorRps', Request,
-                     ['ConsultarNfsePorRpsResult'], ['']);
+                     ['ConsultarNfsePorRpsResult'], []);
 end;
 
 function TACBrNFSeXWebserviceISSCuritiba.ConsultarNFSe(ACabecalho, AMSG: String): string;
@@ -179,7 +182,7 @@ begin
   Request := Request + '</ConsultarNfse>';
 
   Result := Executar('http://www.e-governeapps2.com.br/ConsultarNfse', Request,
-                     ['ConsultarNfseResult'], ['']);
+                     ['ConsultarNfseResult'], []);
 end;
 
 function TACBrNFSeXWebserviceISSCuritiba.Cancelar(ACabecalho, AMSG: String): string;
@@ -193,7 +196,7 @@ begin
   Request := Request + '</CancelarNfse>';
 
   Result := Executar('http://www.e-governeapps2.com.br/CancelarNfse', Request,
-                     ['CancelarNfseResult'], ['']);
+                     ['CancelarNfseResult'], []);
 end;
 
 end.

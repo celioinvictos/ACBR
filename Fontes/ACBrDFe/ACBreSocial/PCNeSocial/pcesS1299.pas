@@ -85,7 +85,7 @@ type
 
   TEvtFechaEvPer = class(TESocialEvento)
   private
-    FIdeEvento: TIdeEvento3;
+    FIdeEvento: TIdeEvento4;
     FIdeEmpregador: TIdeEmpregador;
     FIdeRespInf : TIdeRespInf;
     FInfoFech: TInfoFech;
@@ -99,7 +99,7 @@ type
     function GerarXML: boolean; override;
     function LerArqIni(const AIniString: String): Boolean;
 
-    property IdeEvento: TIdeEvento3 read FIdeEvento write FIdeEvento;
+    property IdeEvento: TIdeEvento4 read FIdeEvento write FIdeEvento;
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
     property IdeRespInf: TIdeRespInf read FIdeRespInf write FIdeRespInf;
     property InfoFech: TInfoFech read FInfoFech write FInfoFech;
@@ -115,6 +115,7 @@ type
     FevtInfoComplPer: TpSimNao;
     FcompSemMovto : string;
     FindExcApur1250: tpSimNaoFacultativo;
+    FtransDCTFWeb: tpSimNaoFacultativo;
   public
     constructor create;
     destructor Destroy; override;
@@ -127,6 +128,7 @@ type
     property evtInfoComplPer: TpSimNao read FevtInfoComplPer write FevtInfoComplPer;
     property compSemMovto : string read FcompSemMovto write FcompSemMovto;
     property indExcApur1250: tpSimNaoFacultativo read FindExcApur1250 write FindExcApur1250;
+    property transDCTFWeb: tpSimNaoFacultativo read FtransDCTFWeb write FtransDCTFWeb;
   end;
 
 implementation
@@ -178,7 +180,7 @@ constructor TEvtFechaEvPer.Create(AACBreSocial: TObject);
 begin
   inherited Create(AACBreSocial);
 
-  FIdeEvento     := TIdeEvento3.Create;
+  FIdeEvento     := TIdeEvento4.Create;
   FIdeEmpregador := TIdeEmpregador.Create;
   FIdeRespInf    := TIdeRespInf.Create;
   FInfoFech      := TInfoFech.Create;
@@ -228,6 +230,14 @@ begin
   then
     Gerador.wCampo(tcStr, '', 'indExcApur1250', 1, 1, 1, eSSimNaoFacultativoToStr(self.InfoFech.indExcApur1250));
 
+  { De acordo com a NT S-1.0 de 03/2021 a tag "transDCTFWeb" só poderá ser 
+    preenchida com "S" a partir da competência 10/2021 e a data de envio ao ambiente nacional
+    a partir de 21/11/2021 }
+
+  if (VersaoDF >= veS01_00_00) and
+     (Self.infoFech.transDCTFWeb = snfSim) then
+    Gerador.wCampo(tcStr, '', 'transDCTFWeb', 1, 1, 1, eSSimNaoFacultativoToStr(self.infoFech.transDCTFWeb));
+
   Gerador.wGrupo('/infoFech');
 end;
 
@@ -241,7 +251,7 @@ begin
     GerarCabecalho('evtFechaEvPer');
     Gerador.wGrupo('evtFechaEvPer Id="' + Self.Id + '"');
 
-    GerarIdeEvento3(self.IdeEvento, False);
+    GerarIdeEvento4(self.IdeEvento);
     GerarIdeEmpregador(self.IdeEmpregador);
 
     if VersaoDF <= ve02_05_00 then
@@ -322,6 +332,7 @@ begin
       infoFech.evtInfoComplPer := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'evtInfoComplPer', 'S'));
       infoFech.compSemMovto    := INIRec.ReadString(sSecao, 'compSemMovto', '');
       infoFech.indExcApur1250  := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indExcApur1250', 'S'));
+      infoFech.transDCTFWeb    := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'transDCTFWeb', 'N'));
     end;
 
     GerarXML;

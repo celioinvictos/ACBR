@@ -72,7 +72,7 @@ type
 implementation
 
 uses
-  ACBrDFeException,
+  ACBrXmlBase, ACBrDFeException,
   DBSeller.GravarXml, DBSeller.LerXml;
 
 { TACBrNFSeXWebserviceDBSeller }
@@ -179,7 +179,7 @@ begin
 
   with ConfigGeral do
   begin
-    Identificador := 'id';
+    Identificador := 'Id';
     UseCertificateHTTP := False;
   end;
 
@@ -211,7 +211,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceDBSeller.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 (*

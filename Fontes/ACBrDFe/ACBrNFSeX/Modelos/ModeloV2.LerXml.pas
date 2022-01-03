@@ -40,16 +40,13 @@ unit ModeloV2.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_ModeloV2 }
+  { TNFSeR_ModeloV2200 }
 
-  TNFSeR_ModeloV2 = class(TNFSeR_ABRASFv2)
+  TNFSeR_ModeloV2200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

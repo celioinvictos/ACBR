@@ -40,7 +40,7 @@ uses
   StdCtrls, ActnList, Menus, ExtCtrls, Buttons, ComCtrls, Spin,
   RLPDFFilter, ACBrSAT, ACBrSATClass, ACBrSATExtratoESCPOS,
   dateutils, ACBrSATExtratoFortesFr, ACBrPosPrinter, ACBrDFeSSL,
-  ACBrIntegrador;
+  ACBrIntegrador, Unit2;
 
 const
   cAssinatura = '9d4c4eef8c515e2c1269c2e4fff0719d526c5096422bf1defa20df50ba06469'+
@@ -68,6 +68,7 @@ type
     btSalvarParams: TButton;
     btSerial: TSpeedButton;
     btMFEEnviarPagamento: TButton;
+    bCronometro: TButton;
     cbImprimir1Linha: TCheckBox;
     cbContinuo: TCheckBox;
     cbLogotipo: TCheckBox;
@@ -177,6 +178,8 @@ type
     MenuItem20: TMenuItem;
     MenuItem21: TMenuItem;
     MenuItem22: TMenuItem;
+    MenuItem23: TMenuItem;
+    N1: TMenuItem;
     mRede: TSynMemo;
     MenuItem10: TMenuItem;
     MenuItem11: TMenuItem;
@@ -291,6 +294,7 @@ type
     procedure ACBrSAT1GetsignAC(var Chave : AnsiString) ;
     procedure ACBrSAT1GravarLog(const ALogLine: String; var Tratado: Boolean);
     procedure ACBrSAT1MensagemSEFAZ(ACod: Integer; AMensagem: String);
+    procedure bCronometroClick(Sender: TObject);
     procedure bImpressoraClick(Sender: TObject);
     procedure bInicializarClick(Sender : TObject) ;
     procedure btLerParamsClick(Sender : TObject) ;
@@ -323,6 +327,7 @@ type
     procedure MenuItem18Click(Sender: TObject);
     procedure MenuItem19Click(Sender: TObject);
     procedure MenuItem22Click(Sender: TObject);
+    procedure MenuItem23Click(Sender: TObject);
     procedure miGerarXMLCancelamentoClick(Sender: TObject);
     procedure miEnviarCancelamentoClick(Sender: TObject);
     procedure miImprimirExtratoCancelamentoClick(Sender: TObject);
@@ -357,8 +362,6 @@ type
     procedure mLimparClick(Sender : TObject) ;
     procedure SbArqLogClick(Sender : TObject) ;
     procedure sePagCodChange(Sender: TObject);
-    procedure tsDadosEmitContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
   private
     procedure ConfiguraRedeSAT;
     procedure LeDadosRedeSAT;
@@ -428,21 +431,20 @@ begin
 
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais( cbxPorta.Items );
-  ACBrPosPrinter1.Device.AcharPortasRAW( cbxPorta.Items );
   {$IfDef MSWINDOWS}
   ACBrPosPrinter1.Device.AcharPortasUSB( cbxPorta.Items );
   {$EndIf}
+  ACBrPosPrinter1.Device.AcharPortasRAW( cbxPorta.Items );
 
-  cbxPorta.Items.Add('\\localhost\Epson') ;
-  cbxPorta.Items.Add('c:\temp\ecf.txt') ;
   cbxPorta.Items.Add('TCP:192.168.0.31:9100') ;
 
   {$IfNDef MSWINDOWS}
    cbxPorta.Items.Add('/dev/ttyS0') ;
-   cbxPorta.Items.Add('/dev/ttyS1') ;
    cbxPorta.Items.Add('/dev/ttyUSB0') ;
-   cbxPorta.Items.Add('/dev/ttyUSB1') ;
    cbxPorta.Items.Add('/tmp/ecf.txt') ;
+  {$Else}
+   cbxPorta.Items.Add('\\localhost\Epson') ;
+   cbxPorta.Items.Add('c:\temp\ecf.txt') ;
   {$EndIf}
 
   Application.OnException := @TrataErros ;
@@ -531,6 +533,13 @@ end;
 procedure TForm1.ACBrSAT1MensagemSEFAZ(ACod: Integer; AMensagem: String);
 begin
   MessageDlg('Mensagem do SEFAZ', IntToStr(ACod)+'-'+AMensagem, mtWarning, [mbOK], 0);
+end;
+
+procedure TForm1.bCronometroClick(Sender: TObject);
+begin
+  Form3:=  TForm3.Create(Self);
+  Form3.Show;
+
 end;
 
 procedure TForm1.ACBrSAT1GetcodigoDeAtivacao(var Chave: AnsiString);
@@ -1141,7 +1150,7 @@ begin
   tfim := now;
   mLog.Lines.Add('Inciado em: '+DateTimeToStr(tini)) ;
   mLog.Lines.Add('Finalizado em: '+DateTimeToStr(tFim)) ;
-  mLog.Lines.Add('Diferença: '+ FormatFloat('###.##',SecondSpan(tini,tfim))+' segundos' ) ;
+  mLog.Lines.Add('Diferença: '+ FormatFloat('###.##',SecondSpan(tini,tfim))+' milissegundos' ) ;
 end;
 
 procedure TForm1.MenuItem19Click(Sender: TObject);
@@ -1187,6 +1196,40 @@ begin
   begin
     mLog.Lines.Add('ERRO: Erro na Validação de Schema, do XML Recebido do SAT.');
     mLog.Lines.Add(Erro);
+  end;
+end;
+
+procedure TForm1.MenuItem23Click(Sender: TObject);
+var
+  i: Integer;
+begin
+  OpenDialog1.Filter := 'Arquivo XML|*.xml';
+  if OpenDialog1.Execute then
+  begin
+    ACBrSAT1.LerLoteCFe( OpenDialog1.FileName );
+  end;
+
+  mLog.Lines.Clear;
+
+  if ACBrSAT1.LoteCFe.Count > 0 then
+  begin
+    for i := 0 to ACBrSAT1.LoteCFe.Count -1 do
+      mLog.Lines.Add(ACBrSAT1.LoteCFe[i].infCFe.ID + ' - ' +
+                     IntToStr(ACBrSAT1.LoteCFe[i].ide.nCFe) + ' - ' +
+                     DateToStr(ACBrSAT1.LoteCFe[i].ide.dEmi));
+
+    mLog.Lines.Add('Qtde: ' + IntToStr(ACBrSAT1.LoteCFe.Count));
+  end;
+
+  if ACBrSAT1.LoteCFeCanc.Count > 0 then
+  begin
+    for i := 0 to ACBrSAT1.LoteCFeCanc.Count -1 do
+      mLog.Lines.Add(ACBrSAT1.LoteCFeCanc.Items[i].infCFe.ID + ' - ' +
+                     IntToStr(ACBrSAT1.LoteCFeCanc.Items[i].ide.nCFe) + ' - ' +
+                     DateToStr(ACBrSAT1.LoteCFeCanc.Items[i].ide.dEmi) +
+                     ' - Cancelada');
+
+    mLog.Lines.Add('Qtde: ' + IntToStr(ACBrSAT1.LoteCFeCanc.Count));
   end;
 end;
 
@@ -1400,7 +1443,7 @@ begin
       mLog.Lines.Add('LISTA_INICIAL..: '+LISTA_INICIAL);
       mLog.Lines.Add('LISTA_FINAL....: '+LISTA_FINAL);
       mLog.Lines.Add('DH_CFe.........: '+DateTimeToStr(DH_CFe));
-      mLog.Lines.Add('DH_ULTIMA......: '+DateTimeToStr(DH_CFe));
+      mLog.Lines.Add('DH_ULTIMA......: '+DateTimeToStr(DH_ULTIMA));
       mLog.Lines.Add('CERT_EMISSAO...: '+DateToStr(CERT_EMISSAO));
       mLog.Lines.Add('CERT_VENCIMENTO: '+DateToStr(CERT_VENCIMENTO));
       mLog.Lines.Add('ESTADO_OPERACAO: '+EstadoOperacaoToStr(ESTADO_OPERACAO));
@@ -1514,8 +1557,8 @@ begin
     ide.numeroCaixa := 1;
     ide.cNF := Random(999999);
 
-    Dest.CNPJCPF := '5481336000137';
-    Dest.xNome := 'D.J. SYSTEM ÁÉÍÓÚáéíóúÇç teste de nome Longo';
+    Dest.CNPJCPF := '18760540000139';
+    Dest.xNome := 'Projeto ACBr ÁÉÍÓÚáéíóúÇç teste de nome Longo';
 
     Entrega.xLgr := 'logradouro';
     Entrega.nro := '112233';
@@ -1713,9 +1756,23 @@ begin
   //ACBrSATExtratoFortes1.ImprimirExtrato;
   ACBrSAT1.ImprimirExtrato;
   tfim := now;
+
+  if (form3 <> nil) then
+  begin
+    if not form3.timer1.enabled then
+      form3.tempo:=time;
+    form3.timer1.enabled:=not form3.timer1.enabled;
+    form3.bitbtn1.caption:='Parar';
+
+  end;
+
+  mLog.Lines.Add('------------------------------------------------') ;
   mLog.Lines.Add('Inciado em: '+DateTimeToStr(tini)) ;
   mLog.Lines.Add('Finalizado em: '+DateTimeToStr(tFim)) ;
-  mLog.Lines.Add('Diferença: '+ FormatFloat('###.##',SecondSpan(tini,tfim))+' segundos' ) ;
+  mLog.Lines.Add('') ;
+  mLog.Lines.Add('Tempo de Envio Impressão: '+ FormatFloat('###.##',SecondSpan(tini,tfim))+' milissegundos' ) ;
+  mLog.Lines.Add('------------------------------------------------') ;
+
 end;
 
 procedure TForm1.mImprimirExtratoVendaResumidoClick(Sender : TObject) ;
@@ -1740,12 +1797,6 @@ procedure TForm1.sePagCodChange(Sender: TObject);
 begin
   ACBrSAT1.Config.PaginaDeCodigo := sePagCod.Value;
   cbxUTF8.Checked := ACBrSAT1.Config.EhUTF8;
-end;
-
-procedure TForm1.tsDadosEmitContextPopup(Sender: TObject; MousePos: TPoint;
-  var Handled: Boolean);
-begin
-
 end;
 
 procedure TForm1.ConfiguraRedeSAT;

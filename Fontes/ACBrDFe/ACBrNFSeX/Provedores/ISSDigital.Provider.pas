@@ -30,6 +30,8 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
+//     Funcionou informando httpWinINet para HTTPLib
+
 {$I ACBr.inc}
 
 unit ISSDigital.Provider;
@@ -44,7 +46,7 @@ uses
   ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
-  TACBrNFSeXWebserviceISSDigital = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceISSDigital200 = class(TACBrNFSeXWebserviceSoap11)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -59,7 +61,7 @@ type
 
   end;
 
-  TACBrNFSeProviderISSDigital = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderISSDigital200 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -76,30 +78,30 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, ISSDigital.GravarXml, ISSDigital.LerXml;
 
-{ TACBrNFSeProviderISSDigital }
+{ TACBrNFSeProviderISSDigital200 }
 
-procedure TACBrNFSeProviderISSDigital.Configuracao;
+procedure TACBrNFSeProviderISSDigital200.Configuracao;
 begin
   inherited Configuracao;
 
   ConfigGeral.UseCertificateHTTP := False;
 end;
 
-function TACBrNFSeProviderISSDigital.CriarGeradorXml(
+function TACBrNFSeProviderISSDigital200.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_ISSDigital.Create(Self);
+  Result := TNFSeW_ISSDigital200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderISSDigital.CriarLeitorXml(
+function TACBrNFSeProviderISSDigital200.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_ISSDigital.Create(Self);
+  Result := TNFSeR_ISSDigital200.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderISSDigital.CriarServiceClient(
+function TACBrNFSeProviderISSDigital200.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -107,12 +109,17 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceISSDigital.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceISSDigital200.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-procedure TACBrNFSeProviderISSDigital.ValidarSchema(
+procedure TACBrNFSeProviderISSDigital200.ValidarSchema(
   Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
 var
   xXml, Senha: string;
@@ -145,9 +152,9 @@ begin
   inherited ValidarSchema(Response, aMetodo);
 end;
 
-{ TACBrNFSeXWebserviceISSDigital }
+{ TACBrNFSeXWebserviceISSDigital200 }
 
-function TACBrNFSeXWebserviceISSDigital.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -163,7 +170,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -179,7 +186,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -195,7 +202,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -211,7 +218,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -227,7 +234,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -243,7 +250,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.ConsultarNFSeServicoPrestado(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.ConsultarNFSeServicoPrestado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -259,7 +266,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.ConsultarNFSeServicoTomado(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.ConsultarNFSeServicoTomado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -275,7 +282,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceISSDigital200.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -290,7 +297,7 @@ begin
                      ['xmlns:ws="http://ws.supernova.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceISSDigital.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceISSDigital200.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;

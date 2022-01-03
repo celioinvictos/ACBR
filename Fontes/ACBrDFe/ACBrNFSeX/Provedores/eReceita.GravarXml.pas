@@ -37,17 +37,14 @@ unit eReceita.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_eReceita }
+  { TNFSeW_eReceita202 }
 
-  TNFSeW_eReceita = class(TNFSeW_ABRASFv2)
+  TNFSeW_eReceita202 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -60,14 +57,15 @@ implementation
 //     eReceita
 //==============================================================================
 
-{ TNFSeW_eReceita }
+{ TNFSeW_eReceita202 }
 
-procedure TNFSeW_eReceita.Configuracao;
+procedure TNFSeW_eReceita202.Configuracao;
 begin
   inherited Configuracao;
 
   FormatoAliq := tcDe2;
   NrOcorrAliquota := 1;
+  FormatoItemListaServico := filsComFormatacaoSemZeroEsquerda;
 end;
 
 end.

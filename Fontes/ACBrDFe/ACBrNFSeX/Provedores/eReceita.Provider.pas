@@ -43,7 +43,10 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
 
 type
-  TACBrNFSeXWebserviceeReceita = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceeReceita202 = class(TACBrNFSeXWebserviceSoap11)
+  private
+    function GetSoapAction: string;
+    function GetNameSpace: string;
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -54,9 +57,11 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    property SoapAction: string read GetSoapAction;
+    property NameSpace: string read GetNameSpace;
   end;
 
-  TACBrNFSeProvidereReceita = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProvidereReceita202 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -72,9 +77,9 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, eReceita.GravarXml, eReceita.LerXml;
 
-{ TACBrNFSeProvidereReceita }
+{ TACBrNFSeProvidereReceita202 }
 
-procedure TACBrNFSeProvidereReceita.Configuracao;
+procedure TACBrNFSeProvidereReceita202.Configuracao;
 begin
   inherited Configuracao;
 
@@ -95,21 +100,21 @@ begin
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 end;
 
-function TACBrNFSeProvidereReceita.CriarGeradorXml(
+function TACBrNFSeProvidereReceita202.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_eReceita.Create(Self);
+  Result := TNFSeW_eReceita202.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProvidereReceita.CriarLeitorXml(
+function TACBrNFSeProvidereReceita202.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_eReceita.Create(Self);
+  Result := TNFSeR_eReceita202.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProvidereReceita.CriarServiceClient(
+function TACBrNFSeProvidereReceita202.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -117,14 +122,35 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceeReceita.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceeReceita202.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceeReceita }
+{ TACBrNFSeXWebserviceeReceita202 }
 
-function TACBrNFSeXWebserviceeReceita.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.GetNameSpace: string;
+begin
+  if TACBrNFSeX(FPDFeOwner).Configuracoes.WebServices.AmbienteCodigo = 1 then
+    Result := 'xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"'
+  else
+    Result := 'xmlns:nfs="http://www3.ereceita.net.br/soap/NfseWebService"';
+end;
+
+function TACBrNFSeXWebserviceeReceita202.GetSoapAction: string;
+begin
+  if TACBrNFSeX(FPDFeOwner).Configuracoes.WebServices.AmbienteCodigo = 1 then
+    Result := 'https://www.ereceita.net.br/'
+  else
+    Result := 'https://www3.ereceita.net.br/ereceita/rpp/';
+end;
+
+function TACBrNFSeXWebserviceeReceita202.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -136,12 +162,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:RecepcionarLoteRpsRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/RecepcionarLoteRps', Request,
-                     ['outputXML', 'EnviarLoteRpsResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'RecepcionarLoteRps', Request,
+                     ['outputXML', 'EnviarLoteRpsResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -153,12 +178,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:RecepcionarLoteRpsSincronoRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/RecepcionarLoteRpsSincrono', Request,
-                     ['outputXML', 'EnviarLoteRpsSincronoResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'RecepcionarLoteRpsSincrono', Request,
+                     ['outputXML', 'EnviarLoteRpsSincronoResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -170,12 +194,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:GerarNfseRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/GerarNfse', Request,
-                     ['outputXML', 'GerarNfseResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'GerarNfse', Request,
+                     ['outputXML', 'GerarNfseResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -187,12 +210,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:ConsultarLoteRpsRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/ConsultarLoteRps', Request,
-                     ['outputXML', 'ConsultarLoteRpsResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'ConsultarLoteRps', Request,
+                     ['outputXML', 'ConsultarLoteRpsResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -204,12 +226,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:ConsultarNfseFaixaRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/ConsultarNfseFaixa', Request,
-                     ['outputXML', 'ConsultarNfseFaixaResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'ConsultarNfseFaixa', Request,
+                     ['outputXML', 'ConsultarNfseFaixaResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -221,12 +242,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:ConsultarNfsePorRpsRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/ConsultarNfsePorRps', Request,
-                     ['outputXML', 'ConsultarNfseRpsResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'ConsultarNfsePorRps', Request,
+                     ['outputXML', 'ConsultarNfseRpsResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceeReceita202.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -237,12 +257,11 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:CancelarNfseRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/CancelarNfse', Request,
-                     ['outputXML', 'CancelarNfseResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'CancelarNfse', Request,
+                     ['outputXML', 'CancelarNfseResposta'], [NameSpace]);
 end;
 
-function TACBrNFSeXWebserviceeReceita.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceeReceita202.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -254,9 +273,8 @@ begin
   Request := Request + '<nfs:nfseDadosMsg>' + XmlToStr(AMSG) + '</nfs:nfseDadosMsg>';
   Request := Request + '</nfs:SubstituirNfseRequest>';
 
-  Result := Executar('https://www.ereceita.net.br/SubstituirNfse', Request,
-                     ['outputXML', 'SubstituirNfseResposta'],
-         ['xmlns:nfs="http://webservice.ereceita.net.br/soap/NfseWebService"']);
+  Result := Executar(SoapAction + 'SubstituirNfse', Request,
+                     ['outputXML', 'SubstituirNfseResposta'], [NameSpace]);
 end;
 
 end.

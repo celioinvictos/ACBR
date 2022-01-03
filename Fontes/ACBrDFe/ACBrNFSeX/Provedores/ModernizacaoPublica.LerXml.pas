@@ -37,16 +37,13 @@ unit ModernizacaoPublica.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_ModernizacaoPublica }
+  { TNFSeR_ModernizacaoPublica202 }
 
-  TNFSeR_ModernizacaoPublica = class(TNFSeR_ABRASFv2)
+  TNFSeR_ModernizacaoPublica202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

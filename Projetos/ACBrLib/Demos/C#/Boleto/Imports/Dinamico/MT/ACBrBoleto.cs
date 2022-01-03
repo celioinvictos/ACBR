@@ -148,7 +148,7 @@ namespace ACBrLib.Boleto
             var iniFile = new ACBrIniFile();
             for (var i = 0; i < titulos.Length; i++)
             {
-                titulos[i].Index = i++;
+                titulos[i].Index = i + 1;
                 titulos[i].WriteToIni(iniFile);
             }
 
@@ -160,7 +160,7 @@ namespace ACBrLib.Boleto
             var iniFile = new ACBrIniFile();
             for (var i = 0; i < titulos.Length; i++)
             {
-                titulos[i].Index = i++;
+                titulos[i].Index = i + 1;
                 titulos[i].WriteToIni(iniFile);
             }
 
@@ -395,6 +395,19 @@ namespace ACBrLib.Boleto
             CheckResult(ret);
 
             return ProcessResult(buffer, bufferLen);
+        }
+
+        public RetornoWeb EnviarBoleto(OperacaoBoleto opercao)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Boleto_EnviarBoleto>();
+            var ret = ExecuteMethod(() => method(libHandle, (int)opercao, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return RetornoWeb.LerRetorno(ProcessResult(buffer, bufferLen));
         }
 
         #region Private Methods

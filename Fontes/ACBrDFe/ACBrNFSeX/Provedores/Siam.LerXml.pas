@@ -37,16 +37,13 @@ unit Siam.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_Siam }
+  { TNFSeR_Siam200 }
 
-  TNFSeR_Siam = class(TNFSeR_ABRASFv2)
+  TNFSeR_Siam200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

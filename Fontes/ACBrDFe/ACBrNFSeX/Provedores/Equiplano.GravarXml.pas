@@ -37,9 +37,6 @@ unit Equiplano.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -281,7 +278,7 @@ begin
                        NFSe.Servico.ItemServico.Items[Indice].BaseCalculo, ''));
 
     Result.AppendChild(AddNode(tcDe2, '#1', 'vlIssServico', 1, 15, 1,
-                          NFSe.Servico.ItemServico.Items[Indice].ValorIss, ''));
+                          NFSe.Servico.ItemServico.Items[Indice].ValorISS, ''));
 
     Result.AppendChild(AddNode(tcStr, '#1', 'dsDiscriminacaoServico', 1, 1024, 1,
                      NFSe.Servico.ItemServico.Items[Indice].Descricao, ''));

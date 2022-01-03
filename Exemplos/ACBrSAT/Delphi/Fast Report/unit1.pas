@@ -1186,7 +1186,7 @@ begin
       mLog.Lines.Add('LISTA_INICIAL..: '+LISTA_INICIAL);
       mLog.Lines.Add('LISTA_FINAL....: '+LISTA_FINAL);
       mLog.Lines.Add('DH_CFe.........: '+DateTimeToStr(DH_CFe));
-      mLog.Lines.Add('DH_ULTIMA......: '+DateTimeToStr(DH_CFe));
+      mLog.Lines.Add('DH_ULTIMA......: '+DateTimeToStr(DH_ULTIMA));
       mLog.Lines.Add('CERT_EMISSAO...: '+DateToStr(CERT_EMISSAO));
       mLog.Lines.Add('CERT_VENCIMENTO: '+DateToStr(CERT_VENCIMENTO));
       mLog.Lines.Add('ESTADO_OPERACAO: '+EstadoOperacaoToStr(ESTADO_OPERACAO));
@@ -1306,8 +1306,8 @@ begin
     ide.numeroCaixa := 1;
     ide.cNF := Random(999999);
 
-    Dest.CNPJCPF := '5481336000137';
-    Dest.xNome := 'D.J. SYSTEM ¡…Õ”⁄·ÈÌÛ˙«Á teste de nome Longo';
+    Dest.CNPJCPF := '18760540000139';
+    Dest.xNome := 'Projeto ACBr ¡…Õ”⁄·ÈÌÛ˙«Á teste de nome Longo';
 
     Entrega.xLgr := 'logradouro';
     Entrega.nro := '112233';

@@ -37,16 +37,13 @@ unit TcheInfo.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_TcheInfo }
+  { TNFSeR_TcheInfo204 }
 
-  TNFSeR_TcheInfo = class(TNFSeR_ABRASFv2)
+  TNFSeR_TcheInfo204 = class(TNFSeR_ABRASFv2)
   protected
 
   public

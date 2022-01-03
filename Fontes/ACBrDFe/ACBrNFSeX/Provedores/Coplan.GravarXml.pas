@@ -37,20 +37,18 @@ unit Coplan.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_Coplan }
+  { TNFSeW_Coplan201 }
 
-  TNFSeW_Coplan = class(TNFSeW_ABRASFv2)
+  TNFSeW_Coplan201 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
-
+  public
+    function GerarXml: Boolean; override;
   end;
 
 implementation
@@ -60,16 +58,16 @@ implementation
 //     Coplan
 //==============================================================================
 
-{ TNFSeW_Coplan }
+{ TNFSeW_Coplan201 }
 
-procedure TNFSeW_Coplan.Configuracao;
+procedure TNFSeW_Coplan201.Configuracao;
 begin
   inherited Configuracao;
 
   FormatoAliq := tcDe2;
+  FormatoItemListaServico := filsSemFormatacao;
 
   NrOcorrInscEstTomador := 0;
-  NrOcorrCodigoPaisServico := 0;
 
   NrOcorrValorPis := 1;
   NrOcorrValorCofins := 1;
@@ -80,6 +78,16 @@ begin
   NrOcorrValorISS := 1;
   NrOcorrDescCond := 1;
   NrOcorrDescIncond := 1;
+end;
+
+function TNFSeW_Coplan201.GerarXml: Boolean;
+begin
+  if NFSe.Servico.Valores.IssRetido <> stNormal then
+    NrOcorrRespRetencao := -1
+  else
+    NrOcorrRespRetencao := 0;
+
+  Result := inherited GerarXml;
 end;
 
 end.

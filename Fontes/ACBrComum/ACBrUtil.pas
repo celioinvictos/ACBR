@@ -105,7 +105,7 @@ type
 function ParseText( const Texto : AnsiString; const Decode : Boolean = True;
    const IsUTF8: Boolean = True) : String;
 
-function LerTagXML( const AXML, ATag: String; IgnoreCase: Boolean = True) : String;
+function LerTagXML( const AXML, ATag: String; IgnoreCase: Boolean = True) : String; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o método SeparaDados()' {$ENDIF};
 function XmlEhUTF8(const AXML: String): Boolean;
 function ConverteXMLtoUTF8(const AXML: String): String;
 function ConverteXMLtoNativeString(const AXML: String): String;
@@ -117,9 +117,9 @@ function InserirDeclaracaoXMLSeNecessario(const AXML: String;
 function Split(const ADelimiter: Char; const AString: string): TSplitResult;
 function DecodeToString( const ABinaryString : AnsiString; const StrIsUTF8: Boolean ) : String ;
 function SeparaDados(const AString: String; const Chave: String; const MantemChave : Boolean = False;
-  const PermitePrefixo: Boolean = True) : String;
+  const PermitePrefixo: Boolean = True; const AIgnoreCase: Boolean = True) : String;
 function SeparaDadosArray(const AArray: Array of String; const AString: String; const MantemChave: Boolean = False;
-  const PermitePrefixo: Boolean = True) : String;
+  const PermitePrefixo: Boolean = True; const AIgnoreCase: Boolean = True) : String;
 function RetornarConteudoEntre(const Frase, Inicio, Fim: String; IncluiInicioFim: Boolean = False): string;
 procedure EncontrarInicioFinalTag(const aText, ATag: String;
   var PosIni, PosFim: integer;const PosOffset: integer = 0);
@@ -251,7 +251,8 @@ function FloatToString(const AValue: Double; SeparadorDecimal: Char = '.';
 function FormatFloatBr(const AValue: Extended; AFormat: String = ''): String; overload;
 function FormatFloatBr(const AFormat: TFormatMask; const AValue: Extended): String; overload;
 function FloatMask(const DecimalDigits: SmallInt = 2; UseThousandSeparator: Boolean = True): String;
-Function StringToFloat( NumString : String ) : Double ;
+function StringDecimalToFloat(const AValue: String; const DecimalDigits: SmallInt = 2): Double;
+Function StringToFloat(NumString : String): Double;
 Function StringToFloatDef( const NumString : String ;
    const DefaultValue : Double ) : Double ;
 
@@ -397,6 +398,8 @@ function StringIsINI(const AString: String): Boolean;
 function StringIsAFile(const AString: String): Boolean;
 function StringIsXML(const AString: String): Boolean;
 
+procedure RttiSetProp(AObject: TObject; AProp: String; AValue: String);
+
 {$IfDef FPC}
 var ACBrANSIEncoding: String;
 {$EndIf}
@@ -421,7 +424,7 @@ implementation
 
 Uses
   synautil,
-  ACBrCompress, StrUtilsEx;
+  ACBrCompress, StrUtilsEx, typinfo;
 
 var
   Randomized : Boolean ;
@@ -1821,6 +1824,25 @@ begin
 end;
 
 {-----------------------------------------------------------------------------
+  Converte um String, SEM separador decimal, para Double, considerando a
+  parte final da String como as decimais. Ex: 10000 = "100,00"; 123 = "1,23"
+ ---------------------------------------------------------------------------- }
+function StringDecimalToFloat(const AValue: String; const DecimalDigits: SmallInt): Double;
+var
+  iTam: Integer;
+  sValue: String;
+begin
+  sValue := AValue;
+  iTam   := LengthNativeString(sValue);
+  if (iTam < DecimalDigits) then
+    sValue := StringOfChar('0', (DecimalDigits - iTam)) + sValue;
+
+  sValue := ReverseString(sValue);
+  Insert({$IFDEF HAS_FORMATSETTINGS}FormatSettings.{$ENDIF}DecimalSeparator, sValue, DecimalDigits+1);
+  Result := StrToFloat(ReverseString(sValue));
+end;
+
+{-----------------------------------------------------------------------------
   Converte um Double para string, semelhante a FloatToStr(), porém
   garante que não haverá separador de Milhar e o Separador Decimal será igual a
   "SeparadorDecimal" ( o default é .(ponto))
@@ -1910,9 +1932,31 @@ Var
   DS, TS: Char;
   {$IFDEF HAS_FORMATSETTINGS}
   FS: TFormatSettings;
+  DateFormat, TimeFormat: String;
+  p: Integer;
   {$ELSE}
   OldShortDateFormat: String ;
   {$ENDIF}
+
+  function AjustarDateTimeString(const DateTimeString: String; DS, TS: Char): String;
+  var
+    AStr: String;
+  begin
+    AStr := Trim(DateTimeString);
+    if (DS <> '.') then
+      AStr := StringReplace(AStr, '.', DS, [rfReplaceAll]);
+
+    if (DS <> '-') then
+      AStr := StringReplace(AStr, '-', DS, [rfReplaceAll]);
+
+    if (DS <> '/') then
+      AStr := StringReplace(AStr, '/', DS, [rfReplaceAll]);
+
+    if (TS <> ':') then
+      AStr := StringReplace(AStr, ':', TS, [rfReplaceAll]) ;
+
+    Result := AStr;
+  end;
 begin
   Result := 0;
   if (DateTimeString = '0') or (DateTimeString = '') then
@@ -1920,21 +1964,38 @@ begin
 
   {$IFDEF HAS_FORMATSETTINGS}
   FS := CreateFormatSettings;
-  if Format <> '' then
-    FS.ShortDateFormat := Format;
+  if (Format <> '') then
+  begin
+    DateFormat := Format;
+    TimeFormat := '';
+    p := pos(' ',Format);
+    if (p > 0) then
+    begin
+      TimeFormat := Trim(Copy(Format, p, Length(Format)));
+      DateFormat := Trim(copy(Format, 1, p));
+    end;
+    FS.ShortDateFormat := DateFormat;
+    if (TimeFormat <> '') then
+      FS.ShortTimeFormat := TimeFormat;
+  end;
 
   DS := FS.DateSeparator;
   TS := FS.TimeSeparator;
+                           
+  if (Format <> '') then
+  begin
+    if (DS <> '/') and (pos('/', Format) > 0) then
+      DS := '/'
+    else if (DS <> '-') and (pos('-', Format) > 0) then
+      DS := '-'
+    else if (DS <> '.') and (pos('.', Format) > 0) then
+      DS := '.';
 
-  if DS <> '-' then
-    AStr := Trim( StringReplace(DateTimeString,'-',DS, [rfReplaceAll])) ;
+    if (DS <> FS.DateSeparator) then
+      FS.DateSeparator := DS;
+  end;
 
-  if DS <> '/' then
-    AStr := Trim( StringReplace(DateTimeString,'/',DS, [rfReplaceAll])) ;
-
-  if TS <> ':' then
-    AStr := StringReplace(AStr,':',TS, [rfReplaceAll]) ;
-
+  AStr := AjustarDateTimeString(DateTimeString, DS, TS);
   Result := StrToDateTime(AStr, FS);
   {$ELSE}
   OldShortDateFormat := ShortDateFormat ;
@@ -1945,15 +2006,7 @@ begin
     DS := DateSeparator;
     TS := TimeSeparator;
 
-    if DS <> '-' then
-      AStr := Trim( StringReplace(DateTimeString,'-',DS, [rfReplaceAll])) ;
-
-    if DS <> '/' then
-      AStr := Trim( StringReplace(DateTimeString,'/',DS, [rfReplaceAll])) ;
-
-    if TS <> ':' then
-      AStr := StringReplace(AStr,':',TS, [rfReplaceAll]) ;
-
+    AStr := AjustarDateTimeString(DateTimeString, DS, TS);
     Result := StrToDateTime( AStr ) ;
   finally
     ShortDateFormat := OldShortDateFormat ;
@@ -2947,7 +3000,7 @@ begin
         AFileName := APath + LastFile;
         if (SortType = fstDateTime) then
         begin
-          {$IfDef FMX}
+          {$IfDef DELPHIXE_UP}
             AFileDateTime := SearchRec.TimeStamp;
           {$Else}
             AFileDateTime := FileDateToDateTime(SearchRec.Time);
@@ -4069,28 +4122,36 @@ begin
 end;
 
 function SeparaDados(const AString: String; const Chave: String; const MantemChave: Boolean = False;
-  const PermitePrefixo: Boolean = True): String;
+  const PermitePrefixo: Boolean = True; const AIgnoreCase: Boolean = True): String;
 var
   PosIni, PosFim: Integer;
   UTexto, UChave: String;
   Prefixo: String;
 begin
   Result := '';
-  UTexto := AnsiUpperCase(AString);
-  UChave := AnsiUpperCase(Chave);
   PosFim := 0;
   Prefixo := '';
 
-  if MantemChave then
+  if AIgnoreCase then
   begin
-    PosIni := Pos('<' + UChave, UTexto);
-    if PosIni > 0 then
-      PosFim := Pos('/' + UChave, UTexto) + length(UChave) + 3;
+    UTexto := AnsiUpperCase(AString);
+    UChave := AnsiUpperCase(Chave);
   end
   else
   begin
-    PosIni := Pos('<' + UChave, UTexto);
-    if PosIni > 0 then
+    UTexto := AString;
+    UChave := Chave;
+  end;
+
+  PosIni := Pos('<' + UChave, UTexto);
+  while (PosIni > 0) and not CharInSet(UTexto[PosIni + Length('<' + UChave)], ['>', ' ']) do
+    PosIni := PosEx('<' + UChave, UTexto, PosIni + 1);
+
+  if PosIni > 0 then
+  begin
+    if MantemChave then
+      PosFim := Pos('/' + UChave, UTexto) + length(UChave) + 3
+    else
     begin
       PosIni := PosIni + Pos('>', copy(UTexto, PosIni, length(UTexto)));
       PosFim := Pos('/' + UChave + '>', UTexto);
@@ -4107,7 +4168,7 @@ begin
         Prefixo := AString[PosIni - 1] + Prefixo;
         PosIni := PosIni - 1;
       end;
-      Result := SeparaDados(AString, Prefixo + ':' + Chave, MantemChave, False);
+      Result := SeparaDados(AString, Prefixo + ':' + Chave, MantemChave, False, AIgnoreCase);
     end
   end
   else
@@ -4116,14 +4177,14 @@ begin
 end;
 
 function SeparaDadosArray(const AArray: array of String; const AString: String; const MantemChave: Boolean = False;
-  const PermitePrefixo: Boolean = True): String;
+  const PermitePrefixo: Boolean = True; const AIgnoreCase: Boolean = True): String;
 var
   I : Integer;
 begin
   Result := '';
  for I:=Low(AArray) to High(AArray) do
  begin
-   Result := Trim(SeparaDados(AString,AArray[I], MantemChave, PermitePrefixo));
+   Result := Trim(SeparaDados(AString,AArray[I], MantemChave, PermitePrefixo, AIgnoreCase));
    if Result <> '' then
       Exit;
  end;
@@ -4245,33 +4306,9 @@ end;
    Retorna o conteudo de uma Tag dentro de um arquivo XML
  ------------------------------------------------------------------------------}
 function LerTagXML(const AXML, ATag: String; IgnoreCase: Boolean): String;
-Var
-  PI, PF : Integer ;
-  UXML, UTAG: String;
 begin
-  Result := '';
-  if IgnoreCase then
-  begin
-    UXML := UpperCase(AXML) ;
-    UTAG := UpperCase(ATag) ;
-  end
-  else
-  begin
-    UXML := AXML ;
-    UTAG := ATag ;
-  end;
-
-  PI := pos('<'+UTAG+'>', UXML ) ;
-  if PI = 0 then exit ;
-
-  PI := PI + Length(UTAG) + 2;
-  PF := PosEx('</'+UTAG+'>', UXML, PI) ;
-  if PF = 0 then
-     PF := Length(AXML);
-
-  Result := copy(AXML, PI, PF-PI)
+  Result := SeparaDados(AXML, ATag, False, True, IgnoreCase);
 end ;
-
 
 {------------------------------------------------------------------------------
    Retorna True se o XML contêm a TAG de encoding em UTF8, no seu início.
@@ -4580,6 +4617,18 @@ begin
 end;
 
 {$ENDIF}
+{------------------------------------------------------------------------------
+   Inserir um valor a propriedade por RTTI
+ ------------------------------------------------------------------------------}
+procedure RttiSetProp(AObject: TObject; AProp, AValue: String);
+var
+  Propinfo: PPropInfo;
+begin
+  PropInfo := GetPropInfo(AObject.ClassInfo, AProp);
+  if (PropInfo = nil) then
+    Exit;
+  SetPropValue(AObject, AProp, AValue);
+end;
 
 initialization
 {$IfDef MSWINDOWS}

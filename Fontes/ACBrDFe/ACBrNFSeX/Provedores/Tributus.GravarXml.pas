@@ -37,17 +37,14 @@ unit Tributus.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_Tributus }
+  { TNFSeW_Tributus204 }
 
-  TNFSeW_Tributus = class(TNFSeW_ABRASFv2)
+  TNFSeW_Tributus204 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -60,16 +57,17 @@ implementation
 //     Tributus
 //==============================================================================
 
-{ TNFSeW_Tributus }
+{ TNFSeW_Tributus204 }
 
-procedure TNFSeW_Tributus.Configuracao;
+procedure TNFSeW_Tributus204.Configuracao;
 begin
   inherited Configuracao;
 
-  FormatoEmissao := tcDatHor;
-  FormatoCompetencia := tcDatHor;
   FormatoAliq := tcDe2;
-  NrOcorrCodigoPaisServico := 0;
+
+  TagTomador := 'TomadorServico';
+
+  GerarIDRps := True;
 end;
 
 end.

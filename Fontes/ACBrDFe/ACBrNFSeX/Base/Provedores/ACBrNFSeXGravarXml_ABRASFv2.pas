@@ -37,9 +37,6 @@ unit ACBrNFSeXGravarXml_ABRASFv2;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -93,7 +90,6 @@ type
     FNrOcorrOptanteSimplesNacional: Integer;
     FNrOcorrIncentCultural: Integer;
     FGerarIDDeclaracao: Boolean;
-    FTagTomador: String;
     FNrOcorrInscEstInter: Integer;
     FNrOcorrCompetencia: Integer;
     FNrOcorrEndereco: Integer;
@@ -119,6 +115,7 @@ type
     FNrOcorrNIFTomador: Integer;
     FGerarEnderecoExterior: Boolean;
     FNrOcorrID: Integer;
+    FNrOcorrToken: Integer;
     FNrOcorrValorCsll: Integer;
     FNrOcorrValorPis: Integer;
     FNrOcorrValorCofins: Integer;
@@ -128,10 +125,11 @@ type
     FNrOcorrCodigoPaisTomador: Integer;
     FNrOcorrInscMunTomador: Integer;
 
+    FTagTomador: String;
+    FTagIntermediario: String;
+
   protected
     procedure Configuracao; override;
-
-    procedure DefinirIDRps; override;
 
     function DefinirNameSpaceDeclaracao: string; virtual;
 
@@ -236,9 +234,11 @@ type
     property NrOcorrProducao: Integer     read FNrOcorrProducao     write FNrOcorrProducao;
     property NrOcorrNIFTomador: Integer   read FNrOcorrNIFTomador   write FNrOcorrNIFTomador;
     property NrOcorrID: Integer           read FNrOcorrID           write FNrOcorrID;
+    property NrOcorrToken: Integer        read FNrOcorrToken        write FNrOcorrToken;
 
     property NrOcorrCodigoPaisServico: Integer read FNrOcorrCodigoPaisServico write FNrOcorrCodigoPaisServico;
     property NrOcorrCodigoPaisTomador: Integer read FNrOcorrCodigoPaisTomador write FNrOcorrCodigoPaisTomador;
+
 
     property GerarTagServicos: Boolean  read FGerarTagServicos  write FGerarTagServicos;
     property GerarIDDeclaracao: Boolean read FGerarIDDeclaracao write FGerarIDDeclaracao;
@@ -247,6 +247,7 @@ type
     property GerarEnderecoExterior: Boolean     read FGerarEnderecoExterior     write FGerarEnderecoExterior;
 
     property TagTomador: String read FTagTomador write FTagTomador;
+    property TagIntermediario: String read FTagIntermediario write FTagIntermediario;
   end;
 
 implementation
@@ -287,12 +288,13 @@ begin
   FNrOcorrCodTribMun_1 := 0;
   FNrOcorrNumProcesso := 0;
   FNrOcorrInscMunTomador := 0;
+  FNrOcorrCodigoPaisServico := 0;
+  FNrOcorrRespRetencao := 0;
 
   // Por padrão as tags abaixo são obrigatórias
   FNrOcorrIssRetido := 1;
   FNrOcorrOptanteSimplesNacional := 1;
   FNrOcorrIncentCultural := 1;
-  FNrOcorrCodigoPaisServico := 1;
   FNrOcorrCompetencia := 1;
   FNrOcorrSerieRPS := 1;
   FNrOcorrTipoRPS := 1;
@@ -325,7 +327,6 @@ begin
   FNrOcorrValorCargaTribEst := -1;
   FNrOcorrInformacoesComplemetares := -1;
   FNrOcorrValTotTrib := -1;
-  FNrOcorrRespRetencao := -1;
   FNrOcorrTipoLogradouro := -1;
   FNrOcorrLogradouro := -1;
   FNrOcorrDDD := -1;
@@ -336,6 +337,7 @@ begin
   FNrOcorrCodigoMunic_2 := -1;
   FNrOcorrNIFTomador := -1;
   FNrOcorrID := -1;
+  FNrOcorrToken := -1;
 
   FGerarTagServicos := True;
   FGerarIDDeclaracao := True;
@@ -347,6 +349,7 @@ begin
   FormatoCompetencia := tcDat;
 
   FTagTomador := 'Tomador';
+  FTagIntermediario := 'Intermediario';
 end;
 
 function TNFSeW_ABRASFv2.GerarXml: Boolean;
@@ -370,15 +373,7 @@ begin
   xmlNode := GerarInfDeclaracaoPrestacaoServico;
   NFSeNode.AppendChild(xmlNode);
 
-  // Define a tag raiz que vai conter o XML da NFS-e
-//  DefinirRetornoNFSe;
-
   Result := True;
-end;
-
-procedure TNFSeW_ABRASFv2.DefinirIDRps;
-begin
-  NFSe.InfID.ID := '';
 end;
 
 function TNFSeW_ABRASFv2.DefinirNameSpaceDeclaracao: string;
@@ -418,11 +413,10 @@ begin
   Result.AppendChild(GerarIntermediarioServico);
   Result.AppendChild(GerarConstrucaoCivil);
 
-  if (NFSe.RegimeEspecialTributacao <> retNenhum) then
-    Result.AppendChild(AddNode(tcStr, '#6', 'RegimeEspecialTributacao', 1, 1, NrOcorrRegimeEspecialTributacao,
-   RegimeEspecialTributacaoToStr(NFSe.RegimeEspecialTributacao), DSC_REGISSQN));
+  Result.AppendChild(AddNode(tcStr, '#6', 'RegimeEspecialTributacao', 1, 2, NrOcorrRegimeEspecialTributacao,
+   RegimeEspecialTributacaoToStr(NFSe.RegimeEspecialTributacao, Provedor), DSC_REGISSQN));
 
-  Result.AppendChild(AddNode(tcStr, '#7', 'NaturezaOperacao', 1, 1, NrOcorrNaturezaOperacao,
+  Result.AppendChild(AddNode(tcStr, '#7', 'NaturezaOperacao', 1, 3, NrOcorrNaturezaOperacao,
                    NaturezaOperacaoToStr(NFSe.NaturezaOperacao), DSC_INDNATOP));
 
   Result.AppendChild(AddNode(tcStr, '#7', 'OptanteSimplesNacional', 1, 1, NrOcorrOptanteSimplesNacional,
@@ -556,24 +550,10 @@ begin
     Result.AppendChild(AddNode(tcStr, '#21', 'ResponsavelRetencao', 1, 1, NrOcorrRespRetencao,
      ResponsavelRetencaoToStr(NFSe.Servico.ResponsavelRetencao), DSC_INDRESPRET));
 
-    item := PadronizarItemServico(NFSe.Servico.ItemListaServico);
+    item := FormatarItemServico(NFSe.Servico.ItemListaServico, FormatoItemListaServico);
 
-    case FormatoItemListaServico of
-      filsSemFormatacao:
-        Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 4, NrOcorrItemListaServico,
-                              StringReplace(item, '.', '', []), DSC_CLISTSERV));
-
-      filsComFormatacaoSemZeroEsquerda:
-        if Copy(NFSe.Servico.ItemListaServico, 1, 1) = '0' then
-          Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
-                                               Copy(item, 2, 4), DSC_CLISTSERV))
-        else
-          Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
+    Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
                                                           item, DSC_CLISTSERV));
-    else
-      Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, NrOcorrItemListaServico,
-                                                          item, DSC_CLISTSERV));
-    end;
 
     Result.AppendChild(AddNode(tcStr, '#30', 'CodigoCnae', 1, 7, NrOcorrCodigoCNAE,
                                 OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE));
@@ -583,8 +563,7 @@ begin
 
     Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, NrOcorrDiscriminacao_1,
       StringReplace(NFSe.Servico.Discriminacao, ';', FAOwner.ConfigGeral.QuebradeLinha,
-                                       [rfReplaceAll, rfIgnoreCase]), DSC_DISCR,
-                (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
+                                     [rfReplaceAll, rfIgnoreCase]), DSC_DISCR));
 
     Result.AppendChild(AddNode(tcStr, '#33', 'CodigoMunicipio', 1, 7, NrOcorrCodigoMunic_1,
                            OnlyNumber(NFSe.Servico.CodigoMunicipio), DSC_CMUN));
@@ -594,8 +573,7 @@ begin
 
     Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, NrOcorrDiscriminacao_2,
       StringReplace(NFSe.Servico.Discriminacao, ';', FAOwner.ConfigGeral.QuebradeLinha,
-                                       [rfReplaceAll, rfIgnoreCase]), DSC_DISCR,
-                (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
+                                     [rfReplaceAll, rfIgnoreCase]), DSC_DISCR));
 
 //    Result.AppendChild(AddNode(tcStr, '#33', 'CodigoNbs', 1, 7, NrOcorrCodigoNBS,
 //                             OnlyNumber(NFSe.Servico.CodigoNBS), DSC_CMUN));
@@ -695,13 +673,16 @@ function TNFSeW_ABRASFv2.GerarPrestador: TACBrXmlNode;
 begin
   Result := CreateElement('Prestador');
 
-  Result.AppendChild(GerarCPFCNPJ(NFSe.Prestador.IdentificacaoPrestador.Cnpj));
+  Result.AppendChild(GerarCPFCNPJ(NFSe.Prestador.IdentificacaoPrestador.CpfCnpj));
 
   Result.AppendChild(AddNode(tcStr, '#48', 'RazaoSocial', 1, 115, NrOcorrRazaoSocialPrest,
                            NFSe.Prestador.RazaoSocial, DSC_XNOME));
 
   Result.AppendChild(AddNode(tcStr, '#35', 'InscricaoMunicipal', 1, 15, 0,
              NFSe.Prestador.IdentificacaoPrestador.InscricaoMunicipal, DSC_IM));
+
+  Result.AppendChild(AddNode(tcStr, '#35', 'Token', 1, 255, NrOcorrToken,
+                                             ChaveAutoriz, DSC_CHAVESEGURANCA));
 
   if GerarTagSenhaFraseSecreta then
   begin
@@ -873,7 +854,7 @@ begin
   if (NFSe.IntermediarioServico.RazaoSocial <> '') or
      (NFSe.IntermediarioServico.CpfCnpj <> '') then
   begin
-    Result := CreateElement('IntermediarioServico');
+    Result := CreateElement(FTagIntermediario);
 
     Result.AppendChild(GerarIdentificacaoIntermediarioServico);
 

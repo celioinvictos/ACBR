@@ -37,16 +37,13 @@ unit Centi.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_Centi }
+  { TNFSeR_Centi202 }
 
-  TNFSeR_Centi = class(TNFSeR_ABRASFv2)
+  TNFSeR_Centi202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

@@ -37,9 +37,6 @@ unit Giap.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -117,8 +114,7 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'numeroRps', 1, 11, 1,
                                              NFSe.IdentificacaoRps.Numero, ''));
 
-  if Trim(NFSe.Numero) <> EmptyStr then
-    Result.AppendChild(AddNode(tcStr, '#1', 'numeroNota', 1, 11, 1,
+  Result.AppendChild(AddNode(tcStr, '#1', 'numeroNota', 1, 11, 0,
                                                               NFSe.Numero, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'codigoVerificacao', 1, 11, 0,
@@ -135,7 +131,7 @@ begin
                                            NFSe.Prestador.Endereco.Bairro, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'cep', 1, 9, 1,
-                                  OnlyNumber(NFSe.Prestador.Endereco.CEP), ''));
+                                              NFSe.Prestador.Endereco.CEP, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'cidade', 1, 30, 1,
                                        NFSe.Prestador.Endereco.xMunicipio, ''));
@@ -164,7 +160,7 @@ begin
                                              NFSe.Tomador.Endereco.Bairro, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'cep', 1, 9, 1,
-                                    OnlyNumber(NFSe.Tomador.Endereco.CEP), ''));
+                                                NFSe.Tomador.Endereco.CEP, ''));
 
   if NFSe.Tomador.Endereco.CodigoMunicipio = '9999999' then
     Result.AppendChild(AddNode(tcStr, '#1', 'cidade', 1, 50, 1,
@@ -250,7 +246,7 @@ begin
   Result.AppendChild(AddNode(tcDe2, '#1', 'aliquota', 1, 15, 1,
                                             NFSe.Servico.Valores.Aliquota, ''));
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'cnae', 1, 8, 1,
+  Result.AppendChild(AddNode(tcStr, '#1', 'cnae', 1, 8, 0,
                                       OnlyNumber(NFSe.Servico.CodigoCnae), ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'codigo', 1, 4, 1,

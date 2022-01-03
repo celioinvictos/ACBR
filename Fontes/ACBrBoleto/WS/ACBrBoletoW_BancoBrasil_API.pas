@@ -38,7 +38,12 @@ interface
 
 uses
   Classes, SysUtils, ACBrBoletoWS, pcnConversao, ACBrBoletoConversao,
-  Jsons, ACBrUtil;
+//  {$IfDef USE_JSONDATAOBJECTS_UNIT}
+//    JsonDataObjects_ACBr,
+//  {$Else}
+    Jsons,
+//  {$EndIf}
+  ACBrUtil;
 
 type
 
@@ -316,8 +321,8 @@ begin
       Json.Add('codigoTipoTitulo').Value.AsInteger                      := codigoTipoTitulo(Titulos.EspecieDoc);
       Json.Add('descricaoTipoTitulo').Value.AsString                    := Titulos.EspecieDoc;
       //Json.Add('indicadorPermissaoRecebimentoParcial').Value.AsString := 'N';
-      Json.Add('numeroTituloBeneficiario').Value.AsString               := UpperCase(copy(Titulos.NumeroDocumento,0,15));
-      Json.Add('campoUtilizacaoBeneficiario').Value.AsString            := UpperCase(Copy(Titulos.Mensagem.Text,0,30));
+      Json.Add('numeroTituloBeneficiario').Value.AsString               := Copy(Trim(UpperCase(Titulos.NumeroDocumento)),0,15);
+      Json.Add('campoUtilizacaoBeneficiario').Value.AsString            := Copy(Trim(StringReplace(UpperCase(Titulos.Mensagem.Text),'\r\n',' ',[rfReplaceAll])),0,30);
       Json.Add('numeroTituloCliente').Value.AsString                    := Boleto.Banco.MontarCampoNossoNumero(Titulos);
       Json.Add('mensagemBloquetoOcorrencia').Value.AsString             := UpperCase(Copy(Trim(Titulos.Instrucao1 +' '+Titulos.Instrucao2+' '+Titulos.Instrucao3),0,165));
       GerarDesconto(Json);
@@ -620,7 +625,7 @@ begin
           JsonMulta.Add('tipo').Value.AsInteger             := ACodMulta;
           JsonMulta.Add('data').Value.AsString              := FormatDateBr(Titulos.DataMulta, 'DD.MM.YYYY');
           case ACodMulta of
-            1 : JsonMulta.Add('valor').Value.AsNumber       := Titulos.ValorMoraJuros;
+            1 : JsonMulta.Add('valor').Value.AsNumber       := Titulos.PercentualMulta;
             2 : JsonMulta.Add('porcentagem').Value.AsNumber := Titulos.PercentualMulta;
           end;
 
@@ -642,7 +647,6 @@ end;
 procedure TBoletoW_BancoBrasil_API.GerarDesconto(AJson: TJsonObject);
 var
   JsonDesconto: TJsonObject;
-  JsonArrGrupoDesconto: TJsonArray;
   JsonPairDesconto: TJsonPair;
 begin
   if Assigned(Titulos) then
@@ -650,7 +654,6 @@ begin
     if Assigned(AJson) then
     begin
       JsonDesconto := TJSONObject.Create;
-      JsonArrGrupoDesconto := TJsonArray.Create;
       try
 
         if (Titulos.DataDesconto > 0) then
@@ -662,22 +665,19 @@ begin
             2 : JsonDesconto.Add('porcentagem').Value.AsNumber := Titulos.ValorDesconto;
           end;
 
-          JsonArrGrupoDesconto.Add.AsObject := JsonDesconto;
           JsonPairDesconto := TJsonPair.Create(AJson, 'desconto');
           try
-            JsonPairDesconto.Value.AsArray := JsonArrGrupoDesconto;
+            JsonPairDesconto.Value.AsObject := JsonDesconto;
             AJson.Add('desconto').Assign(JsonPairDesconto);
           finally
             JsonPairDesconto.Free;
           end;
         end;
       finally
-        JsonArrGrupoDesconto.Free;
         JsonDesconto.Free;
       end;
 
       JsonDesconto := TJSONObject.Create;
-      JsonArrGrupoDesconto := TJsonArray.Create;
       try
         JsonDesconto.Add('tipo').Value.AsInteger := integer(Titulos.TipoDesconto);
         if Titulos.DataDesconto2 > 0 then
@@ -688,17 +688,15 @@ begin
             2 : JsonDesconto.Add('porcentagem').Value.AsNumber := Titulos.ValorDesconto2;
           end;
 
-          JsonArrGrupoDesconto.Add.AsObject := JsonDesconto;
           JsonPairDesconto                  := TJsonPair.Create(AJson, 'segundoDesconto');
           try
-            JsonPairDesconto.Value.AsArray  := JsonArrGrupoDesconto;
+            JsonPairDesconto.Value.AsObject := JsonDesconto;
             AJson.Add('segundoDesconto').Assign(JsonPairDesconto);
           finally
             JsonPairDesconto.Free;
           end;
         end;
       finally
-        JsonArrGrupoDesconto.Free;
         JsonDesconto.Free;
       end;
 

@@ -55,7 +55,6 @@
     <Compile Include="..\Shared\DANFeNFeConfig.cs" Link="DANFeNFeConfig.cs" />
     <Compile Include="..\Shared\FonteDANFCeConfig.cs" Link="FonteDANFCeConfig.cs" />
     <Compile Include="..\Shared\NotaFiscal\ArmaNFe.cs" Link="NotaFiscal\ArmaNFe.cs" />
-    <Compile Include="..\Shared\NotaFiscal\AutXML.cs" Link="NotaFiscal\AutXML.cs" />
     <Compile Include="..\Shared\NotaFiscal\AvulsaNFe.cs" Link="NotaFiscal\AvulsaNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\BandeiraCartao.cs" Link="NotaFiscal\BandeiraCartao.cs" />
     <Compile Include="..\Shared\NotaFiscal\CanaNFe.cs" Link="NotaFiscal\CanaNFe.cs" />
@@ -80,7 +79,6 @@
     <Compile Include="..\Shared\NotaFiscal\EncerranteNFe.cs" Link="NotaFiscal\EncerranteNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventDEST.cs" Link="NotaFiscal\EventDEST.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventoAtorIntNFe.cs" Link="NotaFiscal\EventoAtorIntNFe.cs" />
-    <Compile Include="..\Shared\NotaFiscal\EventoBase.cs" Link="NotaFiscal\EventoBase.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventoCancelamento.cs" Link="NotaFiscal\EventoCancelamento.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventoCancSubstituicao.cs" Link="NotaFiscal\EventoCancSubstituicao.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventoCCe.cs" Link="NotaFiscal\EventoCCe.cs" />
@@ -89,6 +87,7 @@
     <Compile Include="..\Shared\NotaFiscal\EventoManifDestConfirmacao.cs" Link="NotaFiscal\EventoManifDestConfirmacao.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventoManifDestDesconhecimento.cs" Link="NotaFiscal\EventoManifDestDesconhecimento.cs" />
     <Compile Include="..\Shared\NotaFiscal\EventoManifDestOperNaoRealizada.cs" Link="NotaFiscal\EventoManifDestOperNaoRealizada.cs" />
+    <Compile Include="..\Shared\NotaFiscal\EventoNFeBase.cs" Link="NotaFiscal\EventoNFeBase.cs" />
     <Compile Include="..\Shared\NotaFiscal\ExportaNFe.cs" Link="NotaFiscal\ExportaNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\FaturaNFe.cs" Link="NotaFiscal\FaturaNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\FinalidadeNFe.cs" Link="NotaFiscal\FinalidadeNFe.cs" />
@@ -103,13 +102,11 @@
     <Compile Include="..\Shared\NotaFiscal\IndicadorPagamento.cs" Link="NotaFiscal\IndicadorPagamento.cs" />
     <Compile Include="..\Shared\NotaFiscal\IndicadorProcesso.cs" Link="NotaFiscal\IndicadorProcesso.cs" />
     <Compile Include="..\Shared\NotaFiscal\IndicadorTotal.cs" Link="NotaFiscal\IndicadorTotal.cs" />
-    <Compile Include="..\Shared\NotaFiscal\IndIEDest.cs" Link="NotaFiscal\IndIEDest.cs" />
     <Compile Include="..\Shared\NotaFiscal\IndIntermed.cs" Link="NotaFiscal\IndIntermed.cs" />
     <Compile Include="..\Shared\NotaFiscal\IndISS.cs" Link="NotaFiscal\IndISS.cs" />
     <Compile Include="..\Shared\NotaFiscal\InfIntermedNFe.cs" Link="NotaFiscal\InfIntermedNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\InfNFe.cs" Link="NotaFiscal\InfNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\InfoAdicionalNfe.cs" Link="NotaFiscal\InfoAdicionalNfe.cs" />
-    <Compile Include="..\Shared\NotaFiscal\InfRespTecNFe.cs" Link="NotaFiscal\InfRespTecNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\IPIProdutoNFe.cs" Link="NotaFiscal\IPIProdutoNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\ISSQNcSitTrib.cs" Link="NotaFiscal\ISSQNcSitTrib.cs" />
     <Compile Include="..\Shared\NotaFiscal\ISSQNtotNFe.cs" Link="NotaFiscal\ISSQNtotNFe.cs" />
@@ -137,6 +134,7 @@
     <Compile Include="..\Shared\NotaFiscal\TipoArma.cs" Link="NotaFiscal\TipoArma.cs" />
     <Compile Include="..\Shared\NotaFiscal\TipoAutor.cs" Link="NotaFiscal\TipoAutor.cs" />
     <Compile Include="..\Shared\NotaFiscal\TipoAutorizacao.cs" Link="NotaFiscal\TipoAutorizacao.cs" />
+    <Compile Include="..\Shared\NotaFiscal\TipoEventoNFe.cs" Link="NotaFiscal\TipoEventoNFe.cs" />
     <Compile Include="..\Shared\NotaFiscal\TipoOperacao.cs" Link="NotaFiscal\TipoOperacao.cs" />
     <Compile Include="..\Shared\NotaFiscal\TipoRef.cs" Link="NotaFiscal\TipoRef.cs" />
     <Compile Include="..\Shared\NotaFiscal\TipoViaTransp.cs" Link="NotaFiscal\TipoViaTransp.cs" />
@@ -151,13 +149,9 @@
     <Compile Include="..\Shared\Respostas\ConsultaNFeItemPedidoResposta.cs" Link="Respostas\ConsultaNFeItemPedidoResposta.cs" />
     <Compile Include="..\Shared\Respostas\ConsultaNFeProcEventoResposta.cs" Link="Respostas\ConsultaNFeProcEventoResposta.cs" />
     <Compile Include="..\Shared\Respostas\ConsultaNFeResposta.cs" Link="Respostas\ConsultaNFeResposta.cs" />
-    <Compile Include="..\Shared\Respostas\EnvioResposta.cs" Link="Respostas\EnvioResposta.cs" />
-    <Compile Include="..\Shared\Respostas\EnvioRetornoResposta.cs" Link="Respostas\EnvioRetornoResposta.cs" />
     <Compile Include="..\Shared\Respostas\EventoItemResposta.cs" Link="Respostas\EventoItemResposta.cs" />
     <Compile Include="..\Shared\Respostas\EventoResposta.cs" Link="Respostas\EventoResposta.cs" />
     <Compile Include="..\Shared\Respostas\InutilizarNFeResposta.cs" Link="Respostas\InutilizarNFeResposta.cs" />
-    <Compile Include="..\Shared\Respostas\LibNFeResposta.cs" Link="Respostas\LibNFeResposta.cs" />
-    <Compile Include="..\Shared\Respostas\StatusServicoResposta.cs" Link="Respostas\StatusServicoResposta.cs" />
   </ItemGroup>
 
   <ItemGroup>

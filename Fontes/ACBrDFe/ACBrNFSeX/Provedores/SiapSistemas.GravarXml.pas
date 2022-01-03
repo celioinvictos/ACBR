@@ -37,17 +37,14 @@ unit SiapSistemas.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_SiapSistemas }
+  { TNFSeW_SiapSistemas203 }
 
-  TNFSeW_SiapSistemas = class(TNFSeW_ABRASFv2)
+  TNFSeW_SiapSistemas203 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -62,9 +59,9 @@ implementation
 //     SiapSistemas
 //==============================================================================
 
-{ TNFSeW_SiapSistemas }
+{ TNFSeW_SiapSistemas203 }
 
-procedure TNFSeW_SiapSistemas.Configuracao;
+procedure TNFSeW_SiapSistemas203.Configuracao;
 begin
   inherited Configuracao;
 

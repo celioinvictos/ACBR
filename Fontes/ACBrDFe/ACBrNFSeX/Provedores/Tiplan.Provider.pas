@@ -64,7 +64,7 @@ type
 
   end;
 
-  TACBrNFSeXWebserviceTiplanv2 = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceTiplan203 = class(TACBrNFSeXWebserviceSoap11)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -79,7 +79,7 @@ type
 
   end;
 
-  TACBrNFSeProviderTiplanv2 = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderTiplan203 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -132,7 +132,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceTiplan.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 { TACBrNFSeXWebserviceTiplan }
@@ -151,7 +156,7 @@ begin
   Result := Executar('http://www.nfe.com.br/RecepcionarLoteRps',
                      Request,
                      ['outputXML', 'EnviarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarSituacao(ACabecalho,
@@ -168,7 +173,7 @@ begin
   Result := Executar('http://www.nfe.com.br/ConsultarSituacaoLoteRps',
                      Request,
                      ['outputXML', 'ConsultarSituacaoLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarLote(ACabecalho,
@@ -185,7 +190,7 @@ begin
   Result := Executar('http://www.nfe.com.br/ConsultarLoteRps',
                      Request,
                      ['outputXML', 'ConsultarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarNFSePorRps(ACabecalho,
@@ -202,7 +207,7 @@ begin
   Result := Executar('http://www.nfe.com.br/ConsultarNfsePorRps',
                      Request,
                      ['outputXML', 'ConsultarNfseRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarNFSe(ACabecalho,
@@ -219,7 +224,7 @@ begin
   Result := Executar('http://www.nfe.com.br/ConsultarNfse',
                      Request,
                      ['outputXML', 'ConsultarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.Cancelar(ACabecalho,
@@ -236,12 +241,12 @@ begin
   Result := Executar('http://www.nfe.com.br/CancelarNfse',
                      Request,
                      ['outputXML', 'CancelarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
-{ TACBrNFSeProviderTiplanv2 }
+{ TACBrNFSeProviderTiplan203 }
 
-procedure TACBrNFSeProviderTiplanv2.Configuracao;
+procedure TACBrNFSeProviderTiplan203.Configuracao;
 begin
   inherited Configuracao;
 
@@ -263,21 +268,21 @@ begin
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 end;
 
-function TACBrNFSeProviderTiplanv2.CriarGeradorXml(
+function TACBrNFSeProviderTiplan203.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_Tiplanv2.Create(Self);
+  Result := TNFSeW_Tiplan203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderTiplanv2.CriarLeitorXml(
+function TACBrNFSeProviderTiplan203.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_Tiplanv2.Create(Self);
+  Result := TNFSeR_Tiplan203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderTiplanv2.CriarServiceClient(
+function TACBrNFSeProviderTiplan203.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -285,14 +290,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceTiplanv2.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceTiplan203.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceTiplanv2 }
+{ TACBrNFSeXWebserviceTiplan203 }
 
-function TACBrNFSeXWebserviceTiplanv2.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -309,7 +319,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -326,7 +336,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -343,7 +353,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -360,7 +370,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -377,7 +387,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -394,7 +404,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.ConsultarNFSeServicoPrestado(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.ConsultarNFSeServicoPrestado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -411,7 +421,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.ConsultarNFSeServicoTomado(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.ConsultarNFSeServicoTomado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -428,7 +438,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceTiplan203.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -444,7 +454,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
 end;
 
-function TACBrNFSeXWebserviceTiplanv2.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceTiplan203.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;

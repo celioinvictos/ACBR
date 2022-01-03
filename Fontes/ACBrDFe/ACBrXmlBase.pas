@@ -47,8 +47,8 @@ type
                         taSomenteParaNaoAssinada);
 
   TACBrTipoCampo = (tcStr, tcInt, tcDat, tcDatHor, tcEsp, tcDe2, tcDe3, tcDe4,
-                    tcDe6, tcDe8, tcDe10, tcHor, tcDatCFe, tcHorCFe, tcDatVcto,
-                    tcDatHorCFe, tcBoolStr, tcStrOrig, tcNumStr);
+                    tcDe5, tcDe6, tcDe7, tcDe8, tcDe10, tcHor, tcDatCFe,
+                    tcHorCFe, tcDatVcto, tcDatHorCFe, tcBool, tcStrOrig, tcNumStr);
 
 const
   LineBreak = #13#10;
@@ -67,16 +67,21 @@ function XmlToStr(const AXML: string): string;
 function StrToXml(const AXML: string): string;
 function IncluirCDATA(const aXML: string): string;
 function RemoverCDATA(const aXML: string): string;
+function ConverterUnicode(const aXML: string): string;
 function TratarXmlRetorno(const aXML: string): string;
+function RemoverPrefixos(const aXML: string; APrefixo: array of string): string;
+function RemoverPrefixosDesnecessarios(const aXML: string): string;
 
-function ProcessarConteudoXml(const ANode: TACBrXmlNode; const Tipo: TACBrTipoCampo): variant;
+function ObterConteudoTag(const AAtt: TACBrXmlAttribute): string; overload;
+function ObterConteudoTag(const ANode: TACBrXmlNode; const Tipo: TACBrTipoCampo): variant; overload;
 
+function LerDatas(const DataStr: string): TDateTime;
 //procedure ApplyNamespacePrefix(const ANode: TACBrXmlNode; nsPrefix: string; excludeElements: array of string);
 
 implementation
 
 uses
-  StrUtilsEx, ACBrUtil;
+  StrUtilsEx, ACBrUtil, DateUtils;
 
 function FiltrarTextoXML(const RetirarEspacos: boolean; aTexto: String;
   RetirarAcentos: boolean; SubstituirQuebrasLinha: Boolean; const QuebraLinha: String): String;
@@ -89,7 +94,7 @@ begin
   if RetirarEspacos then
   begin
     while pos('  ', aTexto) > 0 do
-      aTexto := StringReplace(aTexto, '  ', ' ', [rfReplaceAll]);
+      aTexto := FaststringReplace(aTexto, '  ', ' ', [rfReplaceAll]);
   end;
 
   if SubstituirQuebrasLinha then
@@ -157,6 +162,9 @@ begin
   Result := FaststringReplace(Result, '&quot;', '"', [rfReplaceAll]);
   Result := FaststringReplace(Result, ''#$A'', '', [rfReplaceAll]);
   Result := FaststringReplace(Result, ''#$A#$A'', '', [rfReplaceAll]);
+  Result := FaststringReplace(Result, '<br >', ';', [rfReplaceAll]);
+  Result := FaststringReplace(Result, '<br>', ';', [rfReplaceAll]);
+  Result := FaststringReplace(Result, #9, '', [rfReplaceAll]);
 end;
 
 function IncluirCDATA(const aXML: string): string;
@@ -166,8 +174,29 @@ end;
 
 function RemoverCDATA(const aXML: string): string;
 begin
-  Result := StringReplace(aXML, '<![CDATA[', '', [rfReplaceAll]);
-  Result := StringReplace(Result, ']]>', '', [rfReplaceAll]);
+  Result := FaststringReplace(aXML, '<![CDATA[', '', [rfReplaceAll]);
+  Result := FaststringReplace(Result, ']]>', '', [rfReplaceAll]);
+end;
+
+function ConverterUnicode(const aXML: string): string;
+var
+  Xml: string;
+  p: Integer;
+begin
+  Xml := aXML;
+  p := Pos('&#', Xml);
+
+  while p > 0 do
+  begin
+    if Xml[p+5] = ';' then
+      Xml := FaststringReplace(Xml, Copy(Xml, p, 6), '\' + Copy(Xml, p+2, 3), [rfReplaceAll])
+    else
+      Xml := FaststringReplace(Xml, Copy(Xml, p, 5), '\' + Copy(Xml, p+2, 3), [rfReplaceAll]);
+
+    p := Pos('&#', Xml);
+  end;
+
+  Result := StringToBinaryString(Xml);
 end;
 
 function TratarXmlRetorno(const aXML: string): string;
@@ -175,106 +204,269 @@ begin
   Result := StrToXml(aXML);
   Result := RemoverCDATA(Result);
   Result := RemoverDeclaracaoXML(Result);
-  Result := ConverteXMLtoUTF8(Result);
-  Result := RemoverDeclaracaoXML(Result);
   Result := RemoverIdentacao(Result);
+//  Result := ConverterUnicode(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
 end;
 
-function ProcessarConteudoXml(const ANode: TACBrXmlNode; const Tipo: TACBrTipoCampo): variant;
+function RemoverPrefixos(const aXML: string; APrefixo: array of string): string;
+var
+  i: Integer;
+begin
+  Result := aXML;
+
+  if (Result = '') or (Length(APrefixo) = 0) then
+    exit ;
+
+  for i := Low(APrefixo) to High(APrefixo) do
+    Result := FaststringReplace(FaststringReplace(Result, '<' + APrefixo[i], '<', [rfReplaceAll]),
+                          '</' + APrefixo[i], '</', [rfReplaceAll]);
+end;
+
+function RemoverPrefixosDesnecessarios(const aXML: string): string;
+begin
+  Result := RemoverPrefixos(aXML, ['ns1:', 'ns2:', 'ns3:', 'ns4:', 'ns5:', 'tc:',
+              'ii:', 'p1:']);
+end;
+
+function ObterConteudoTag(const AAtt: TACBrXmlAttribute): string; overload;
+begin
+  if not Assigned(AAtt) or (AAtt = nil) then
+    Result := ''
+  else
+    Result := Trim(AAtt.Content);
+end;
+
+function ObterConteudoTag(const ANode: TACBrXmlNode; const Tipo: TACBrTipoCampo): variant;
 var
   ConteudoTag: string;
+  iDecimais: Integer;
+  aFloatIsIntString: Boolean;
 begin
   if not Assigned(ANode) or (ANode = nil) then
-    ConteudoTag := ''
+  begin
+    ConteudoTag := '';
+    aFloatIsIntString := False;
+  end
   else
+  begin
     ConteudoTag := Trim(ANode.Content);
+    aFloatIsIntString := ANode.FloatIsIntString;
+  end;
 
   case Tipo of
-    tcStr:
+    tcStr,
+    tcEsp:
       result := ConteudoTag;
-
+{
     tcDat:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 01, 4)), StrToInt(copy(ConteudoTag, 06, 2)), StrToInt(copy(ConteudoTag, 09, 2)))
+        if length(ConteudoTag) > 0 then
+          result := EncodeDate(StrToInt(copy(ConteudoTag, 1, 4)), StrToInt(copy(ConteudoTag, 6, 2)), StrToInt(copy(ConteudoTag, 9, 2)))
         else
           result := 0;
       end;
 
     tcDatVcto:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 07, 4)), StrToInt(copy(ConteudoTag, 04, 2)), StrToInt(copy(ConteudoTag, 01, 2)))
+        if length(ConteudoTag) > 0 then
+          result := EncodeDate(StrToInt(copy(ConteudoTag, 7, 4)), StrToInt(copy(ConteudoTag, 4, 2)), StrToInt(copy(ConteudoTag, 1, 2)))
         else
           Result := 0;
       end;
 
-    tcDatCFe:
+    tcDatHor:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 01, 4)), StrToInt(copy(ConteudoTag, 05, 2)), StrToInt(copy(ConteudoTag, 07, 2)))
+        if length(ConteudoTag) > 0 then
+          result := EncodeDate(StrToInt(copy(ConteudoTag, 1, 4)), StrToInt(copy(ConteudoTag, 6, 2)), StrToInt(copy(ConteudoTag, 9, 2))) +
+                    EncodeTime(StrToIntDef(copy(ConteudoTag, 12, 2), 0),
+                               StrToIntDef(copy(ConteudoTag, 15, 2), 0),
+                               StrToIntDef(copy(ConteudoTag, 18, 2), 0), 0)
         else
           result := 0;
       end;
-
-    tcDatHor:
+}
+    tcDat,
+    tcDatHor,
+    tcDatVcto:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 01, 4)), StrToInt(copy(ConteudoTag, 06, 2)), StrToInt(copy(ConteudoTag, 09, 2))) +
-                    EncodeTime(StrToInt(copy(ConteudoTag, 12, 2)), StrToInt(copy(ConteudoTag, 15, 2)), StrToIntDef(copy(ConteudoTag, 18, 2), 0), 0)
+        if length(ConteudoTag) > 0 then
+          result := LerDatas(ConteudoTag)
         else
           result := 0;
       end;
 
     tcHor:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeTime(StrToInt(copy(ConteudoTag, 1, 2)), StrToInt(copy(ConteudoTag, 4, 2)), StrToInt(copy(ConteudoTag, 7, 2)), 0)
+        if length(ConteudoTag) > 0 then
+          result := EncodeTime(StrToInt(copy(ConteudoTag, 1, 2)),
+                               StrToInt(copy(ConteudoTag, 4, 2)),
+                               StrToInt(copy(ConteudoTag, 7, 2)), 0)
+        else
+          result := 0;
+      end;
+
+    tcDatCFe:
+      begin
+        if length(ConteudoTag) > 0 then
+          result := EncodeDate(StrToInt(copy(ConteudoTag, 1, 4)),
+                               StrToInt(copy(ConteudoTag, 5, 2)),
+                               StrToInt(copy(ConteudoTag, 7, 2)))
         else
           result := 0;
       end;
 
     tcHorCFe:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeTime(StrToInt(copy(ConteudoTag, 1, 2)), StrToInt(copy(ConteudoTag, 3, 2)), StrToInt(copy(ConteudoTag, 5, 2)), 0)
+        if length(ConteudoTag) > 0 then
+          result := EncodeTime(StrToInt(copy(ConteudoTag, 1, 2)),
+                               StrToInt(copy(ConteudoTag, 3, 2)),
+                               StrToInt(copy(ConteudoTag, 5, 2)), 0)
         else
           result := 0;
       end;
 
     tcDatHorCFe:
       begin
-        if length(ConteudoTag)>0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 01, 4)), StrToInt(copy(ConteudoTag, 05, 2)), StrToInt(copy(ConteudoTag, 07, 2)))+
-                    EncodeTime(StrToInt(copy(ConteudoTag, 09, 2)), StrToInt(copy(ConteudoTag, 11, 2)), StrToInt(copy(ConteudoTag, 13, 2)), 0)
+        if length(ConteudoTag) > 0 then
+          result := EncodeDate(StrToInt(copy(ConteudoTag, 1, 4)),
+                               StrToInt(copy(ConteudoTag, 05, 2)),
+                               StrToInt(copy(ConteudoTag, 07, 2))) +
+                    EncodeTime(StrToInt(copy(ConteudoTag, 9, 2)),
+                               StrToInt(copy(ConteudoTag, 11, 2)),
+                               StrToInt(copy(ConteudoTag, 13, 2)), 0)
         else
           result := 0;
       end;
 
-    tcDe2, tcDe3, tcDe4, tcDe6, tcDe10:
+    tcDe2, tcDe3, tcDe4, tcDe5, tcDe6, tcDe7, tcDe8, tcDe10:
       begin
-        if length(ConteudoTag)>0 then
-          result := StringToFloatDef(ConteudoTag, 0)
-        else
-          result := 0;
-      end;
+        if aFloatIsIntString then
+        begin
+          case Tipo of
+            tcDe2:  iDecimais := 2;
+            tcDe3:  iDecimais := 3;
+            tcDe4:  iDecimais := 4;
+            tcDe5:  iDecimais := 5;
+            tcDe6:  iDecimais := 6;
+            tcDe7:  iDecimais := 7;
+            tcDe8:  iDecimais := 8;
+            tcDe10: iDecimais := 10;
+          else
+            iDecimais := 2;
+          end;
 
-    tcEsp:
-      result := ConteudoTag;
+          Result := StringDecimalToFloat(ConteudoTag, iDecimais);
+        end
+        else
+          Result := StringToFloatDef(ConteudoTag, 0);
+      end;
 
     tcInt:
       begin
-        if length(ConteudoTag)>0 then
-          result := StrToIntDef(Trim(OnlyNumber(ConteudoTag)),0)
+        if length(ConteudoTag) > 0 then
+          result := StrToIntDef(OnlyNumber(ConteudoTag), 0)
         else
           result := 0;
       end;
 
+    tcBool:
+      begin
+        if length(ConteudoTag) > 0 then
+          result := StrToBool(ConteudoTag)
+        else
+          result := False;
+      end;
+
+    tcStrOrig:
+      begin
+        // Falta implementar
+        Result := '';
+      end;
+
+    tcNumStr:
+      begin
+        // Falta implementar
+        Result := '';
+      end
+
   else
-    raise Exception.Create('Node <' + ANode.Name + '> com conteúdo inválido. '+ ConteudoTag);
+    raise Exception.Create('Node <' + ANode.Name + '> com conteúdo inválido. ' +
+                           ConteudoTag);
   end;
 end;
 
+function LerDatas(const DataStr: string): TDateTime;
+var
+  xData: string;
+begin
+  xData := Trim(DataStr);
+
+  if xData = '' then
+    Result := 0
+  else
+  begin
+    xData := StringReplace(xData, '-', '/', [rfReplaceAll]);
+
+    // Alguns provedores retorna a data de competencia só com o mês e ano e
+    // sem a barra exemplo <Competencia>202111</Competencia>
+    // Correção: Inclusão da barra "/"
+    if (Pos('/', xData) = 0) and (Length(xData) = 6) then
+    begin
+      if Copy(xData, 1, 2) = Copy(IntToStr(YearOf(Date)), 1, 2) then
+        xData := copy(xData, 1, 4) + '/' + copy(xData, 5, 2)
+      else
+        xData := copy(xData, 1, 2) + '/' + copy(xData, 3, 4);
+    end;
+
+    // Alguns provedores retorna a data de competencia só com o mês e ano
+    // Correção: Inclusão do dia na data
+    if Length(xData) = 7 then
+    begin
+      if Pos('/', xData) = 3 then
+        xData := '01/' + xData
+      else
+        xData := xData + '/01';
+    end;
+
+    if (Length(xData) >= 16) and CharInSet(xData[11], ['T', ' ']) then
+    begin
+      if Pos('/', xData) = 5 then
+        // Le a data/hora no formato YYYY/MM/DDTHH:MM:SS
+        Result := EncodeDate(StrToInt(copy(xData, 1, 4)),
+                             StrToInt(copy(xData, 6, 2)),
+                             StrToInt(copy(xData, 9, 2))) +
+                  EncodeTime(StrToIntDef(copy(xData, 12, 2), 0),
+                             StrToIntDef(copy(xData, 15, 2), 0),
+                             StrToIntDef(copy(xData, 18, 2), 0),
+                             0)
+      else
+        // Le a data/hora no formato DD/MM/YYYYTHH:MM:SS
+        Result := EncodeDate(StrToInt(copy(xData, 7, 4)),
+                             StrToInt(copy(xData, 4, 2)),
+                             StrToInt(copy(xData, 1, 2))) +
+                  EncodeTime(StrToIntDef(copy(xData, 12, 2), 0),
+                             StrToIntDef(copy(xData, 15, 2), 0),
+                             StrToIntDef(copy(xData, 18, 2), 0),
+                             0)
+    end
+    else
+    begin
+      if Pos('/', xData) = 5 then
+        // Le a data no formato YYYY/MM/DD
+        Result := EncodeDate(StrToInt(copy(xData, 1, 4)),
+                             StrToInt(copy(xData, 6, 2)),
+                             StrToInt(copy(xData, 9, 2)))
+      else
+        // Le a data no formato DD/MM/YYYY
+        Result := EncodeDate(StrToInt(copy(xData, 7, 4)),
+                             StrToInt(copy(xData, 4, 2)),
+                             StrToInt(copy(xData, 1, 2)));
+    end;
+  end;
+end;
+
+{
 procedure ApplyNamespacePrefix(const ANode: TACBrXmlNode; nsPrefix : string; excludeElements: array of string);
 var
   i: Integer;
@@ -297,5 +489,5 @@ begin
   for i := 0 to ANode.Childrens.Count -1 do
     ApplyNamespacePrefix(ANode.Childrens[i], nsPrefix, excludeElements);
 end;
-
+}
 end.

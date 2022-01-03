@@ -37,9 +37,6 @@ unit GeisWeb.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -51,6 +48,8 @@ type
 
   TNFSeW_GeisWeb = class(TNFSeWClass)
   protected
+    function RegimeToStr(const t: TnfseRegimeEspecialTributacao): string;
+
     function GerarIdentificacaoRps: TACBrXmlNode;
     function GerarServico: TACBrXmlNode;
     function GerarValores: TACBrXmlNode;
@@ -74,6 +73,15 @@ implementation
 //==============================================================================
 
 { TNFSeW_GeisWeb }
+
+function TNFSeW_GeisWeb.RegimeToStr(
+  const t: TnfseRegimeEspecialTributacao): string;
+begin
+  Result := EnumeradoToStr(t,
+                           ['1', '2', '4', '6'],
+                           [retSimplesNacional, retMicroempresarioIndividual,
+                            retImune, retOutros]);
+end;
 
 function TNFSeW_GeisWeb.GerarXml: Boolean;
 var
@@ -143,13 +151,13 @@ begin
   Result := CreateElement('IdentificacaoPrestador');
 
   Result.AppendChild(AddNode(tcStr, '#1', 'CnpjCpf', 1, 14, 1,
-                               NFSe.Prestador.IdentificacaoPrestador.Cnpj, ''));
+                            NFSe.Prestador.IdentificacaoPrestador.CpfCnpj, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'InscricaoMunicipal', 1, 16, 1,
                  NFSe.Prestador.IdentificacaoPrestador.InscricaoMunicipal, ''));
 
-  {revisar - está fixado como auto-alocado, conforme consta no manual}
-  Result.AppendChild(AddNode(tcInt, '#1', 'Regime', 1, 1, 1, 6, ''));
+  Result.AppendChild(AddNode(tcStr, '#1', 'Regime', 1, 1, 1,
+                               RegimeToStr(NFSe.RegimeEspecialTributacao), ''));
 end;
 
 function TNFSeW_GeisWeb.GerarIdentificacaoRps: TACBrXmlNode;

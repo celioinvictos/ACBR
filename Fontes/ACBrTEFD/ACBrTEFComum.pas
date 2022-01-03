@@ -49,7 +49,8 @@ uses
 
 type
 
-  TACBrTEFTipoCartao = ( teftcCredito,
+  TACBrTEFTipoCartao = ( teftcNaoDefinido,
+                         teftcCredito,
                          teftcDebito,
                          teftcVoucher,
                          teftcFrota,
@@ -76,8 +77,44 @@ type
                               tefstsErroDispesador,
                               tefstsErroDiverso );
 
+  TACBrTEFOperacao = ( tefopNenhuma,
+                       tefopPagamento,
+                       tefopAdministrativo,
+                       tefopTesteComunicacao,
+                       tefopVersao,
+                       tefopFechamento,
+                       tefopCancelamento,
+                       tefopReimpressao,
+                       tefopPrePago,
+                       tefopPreAutorizacao,
+                       tefopConsultaSaldo,
+                       tefopConsultaCheque,
+                       tefopPagamentoConta,
+                       tefopRelatResumido,
+                       tefopRelatSintetico,
+                       tefopRelatDetalhado );
+
+  TACBrTEFTratamentoTransacaoPendente = ( tefpenConfirmar,
+                                          tefpenEstornar,
+                                          tefpenPerguntar );
+
+  TACBrTEFTratamentoTransacaoInicializacao = ( tefopiNenhum,
+                                               tefopiProcessarPendentes,
+                                               tefopiCancelarOuEstornar);
+
   EACBrTEFErro = class(Exception);
   EACBrTEFArquivo = class(EACBrTEFErro);
+
+  { TACBrTEFParametros }
+
+  TACBrTEFParametros = class(TStringList)
+  private
+    function GetValueInfo(AInfo: Word): string;
+    procedure SetValueInfo(AInfo: Word; const AValue: string);
+  public
+    property ValueInfo[AInfo: Word]: string read GetValueInfo write SetValueInfo;
+  end;
+
 
   { TACBrTEFLinha }
 
@@ -334,6 +371,8 @@ type
     fpCodigoPSP : String; // Código do PSP - PIX
     fpNSU_TEF : String; // NSU interno, do Gerenciador TEF
 
+    fpSucesso: Boolean;       // Se True a Transação ocorreu com sucesso
+
     procedure SetCNFEnviado(const AValue: Boolean);
     procedure SetArqBackup(const AValue: String);
 
@@ -442,14 +481,13 @@ type
     property IdRespostaFiscal: Integer read fpIdRespostaFiscal write fpIdRespostaFiscal;
     property SerialPOS: String read fpSerialPOS write fpSerialPOS;
     property Estabelecimento: String read fpEstabelecimento write fpEstabelecimento;
+
+    property Sucesso: Boolean read fpSucesso write fpSucesso;
   end;
 
-  { TACBrTEFRespostasPendentes }
+  { TACBrTEFRespostas }
 
-  TACBrTEFRespostasPendentes = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TObject>{$EndIf})
-  private
-    function GetTotalPago: Double;
-    function GetTotalDesconto: Double;
+  TACBrTEFRespostas = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TObject>{$EndIf})
   protected
     procedure SetObject(Index: Integer; Item: TACBrTEFResp);
     function GetObject(Index: Integer): TACBrTEFResp;
@@ -457,10 +495,20 @@ type
     function Add(Obj: TACBrTEFResp): Integer;
     procedure Insert(Index: Integer; Obj: TACBrTEFResp);
     property Objects[Index: Integer]: TACBrTEFResp read GetObject write SetObject; default;
+  end;
 
+  { TACBrTEFRespostasPendentes }
+
+  TACBrTEFRespostasPendentes = class(TACBrTEFRespostas)
+  private
+    function GetTotalPago: Double;
+    function GetTotalDesconto: Double;
+  public
     property TotalPago: Double read GetTotalPago;
     property TotalDesconto: Double read GetTotalDesconto;
   end;
+
+  TACBrTEFRespClass = class of TACBrTEFResp;
 
 function NomeCampo(const Identificacao: Integer; const Sequencia: Integer): String;
 
@@ -476,6 +524,18 @@ var
 begin
   Casas := max(Length(IntToStr(Identificacao)), 3);
   Result := IntToStrZero(Identificacao, Casas) + '-' + IntToStrZero(Sequencia, 3);
+end;
+
+{ TACBrTEFParametros }
+
+function TACBrTEFParametros.GetValueInfo(AInfo: Word): string;
+begin
+  Result := Values[IntToStr(AInfo)];
+end;
+
+procedure TACBrTEFParametros.SetValueInfo(AInfo: Word; const AValue: string);
+begin
+  Values[IntToStr(AInfo)] := AValue;
 end;
 
 { TACBrTEFLinha }
@@ -961,6 +1021,7 @@ begin
   fpNomeCarteiraDigital := Source.NomeCarteiraDigital;
   fpCodigoPSP := Source.CodigoPSP;
   fpNSU_TEF := Source.NSU_TEF;
+  fpSucesso := Source.Sucesso;
 
   fpImagemComprovante1aVia.Text := Source.ImagemComprovante1aVia.Text;
   fpImagemComprovante2aVia.Text := Source.ImagemComprovante2aVia.Text;
@@ -1068,6 +1129,7 @@ begin
   fpModalidadePagtoDescrita := '';
   fpModalidadePagtoExtenso := '';
   fpCodigoRedeAutorizada := '';
+  fpSucesso := False;
 end;
 
 procedure TACBrTEFResp.LeArquivo(const NomeArquivo: String);
@@ -1091,7 +1153,7 @@ end;
 
 function TACBrTEFResp.GetTransacaoAprovada: Boolean;
 begin
-  Result := True;   { Abstrata }
+  Result := Self.Sucesso;   { Abstrata }
 end;
 
 procedure TACBrTEFResp.ProcessarTipoInterno(ALinha: TACBrTEFLinha);
@@ -1116,6 +1178,28 @@ end;
 function TACBrTEFResp.LeInformacao(const Identificacao: Integer; const Sequencia: Integer): TACBrInformacao;
 begin
   Result := Conteudo.LeInformacao(Identificacao, Sequencia);
+end;
+
+{ TACBrTEFRespostas }
+
+function TACBrTEFRespostas.Add(Obj: TACBrTEFResp): Integer;
+begin
+  Result := inherited Add(Obj);
+end;
+
+procedure TACBrTEFRespostas.Insert(Index: Integer; Obj: TACBrTEFResp);
+begin
+  inherited Insert(Index, Obj);
+end;
+
+function TACBrTEFRespostas.GetObject(Index: Integer): TACBrTEFResp;
+begin
+  Result := TACBrTEFResp(inherited Items[Index]);
+end;
+
+procedure TACBrTEFRespostas.SetObject(Index: Integer; Item: TACBrTEFResp);
+begin
+  inherited Items[Index] := Item;
 end;
 
 { TACBrTEFRespostasPendentes }
@@ -1150,26 +1234,6 @@ begin
   end;
 
   Result := RoundTo(Result, -2) * -1;
-end;
-
-procedure TACBrTEFRespostasPendentes.SetObject(Index: Integer; Item: TACBrTEFResp);
-begin
-  inherited Items[Index] := Item;
-end;
-
-function TACBrTEFRespostasPendentes.GetObject(Index: Integer): TACBrTEFResp;
-begin
-  Result := TACBrTEFResp(inherited Items[Index]);
-end;
-
-function TACBrTEFRespostasPendentes.Add(Obj: TACBrTEFResp): Integer;
-begin
-  Result := inherited Add(Obj);
-end;
-
-procedure TACBrTEFRespostasPendentes.Insert(Index: Integer; Obj: TACBrTEFResp);
-begin
-  inherited Insert(Index, Obj);
 end;
 
 end.

@@ -46,6 +46,208 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+18/18/21
+-- ACBrTEFDCliSiTef, ACBrTEFAPICliSiTef --
+[-] Ajuste para permitir interromper a leitura do QRCode exibido no PinPad,
+    pela interface da aplicação
+    https://www.projetoacbr.com.br/forum/topic/65237-interromper-qrcode-no-pin-pad/
+
+17/12/21
+-- ACBrTEFAPIPayGoWeb --
+[-] Ajuste em "TACBrTEFAPIClassPayGoWeb.FinalizarTransacao", para processar
+    transações onde o NSU não está presente.
+    (por: DSA)
+
+15/10/20
+-- ACBrTEFPayGoComum --
+[-] Correção para mensagem indevida no TEF PayGoWeb, "Favor anotar no verso do Cheque"
+    Bug acidentalmente introduzido em 08/10
+    (por: DSA)
+
+08/10/21
+-- ACBrTEFComum --
+[+] Adicionado o enumerado TACBrTEFOperacao.tefopNenhuma
+
+-- ACBrTEFAPIComum --
+[+] Adicionado método: TACBrTEFAPIComum.AbortarTransacaoEmAndamento
+
+-- ACBrTEFAPI --
+[*] Removendo Tipos não utilizados, TACBrTEFAPIComandoAplicacao, TACBrTEFAPIRecibo
+    TACBrTEFTipoIdCarteiraDigital
+
+-- ACBrTEFAPIPayGoWeb --
+[+] Implementado o método: AbortarTransacaoEmAndamento
+
+-- ACBrTEFAPICliSiTef --
+[*] Removendo método não utilzado: InicializarChamadaAPI
+[+] Implementado o método: AbortarTransacaoEmAndamento
+[-] Correção em ContinuarRequisicaoSiTef, para correta sinalização de Cancelamento
+
+-- ACBrTEFPayGoComum --
+[+] Adicionado métodos auxiliares:
+    function DadoStrToCurrency(ADadosDaTransacao: TACBrTEFParametros; iINFO: Word): Currency;
+    function DadoStrToDateTime(ADado: String): TDateTime;
+[+] Método ConteudoToPropertyPayGoWeb, adicionado os mapeamentos:
+    PWINFO_AUTRESPCODE -> Autenticacao
+    PWINFO_POSID -> SerialPOS
+
+-- ACBrTEFPayGoWebComum --
+[+] Adicionado o Enumerado: TACBrTEFPGWebAPITerminalMensagem.tmTodas
+    Agora método "ExibirMensagem" pode chamar evento com parâmetro:
+    Terminal = tmTodas, quando a mensagem deve ir para Tela do Cliente e Operador
+    (por: DSA)
+
+17/09/21
+-- ACBrTEFComum --
+[*] Tipo "TACBrTEFTipoCartao", adicionado o item: "teftcNaoDefinido"
+[*] Tipo "TACBrTEFOperacaoAdmin" renomeado para "TACBrTEFOperacao".
+    Enumeradores renomeados de tefadm* para tefop*
+    Adicionado "tefopPagamento"
+
+-- ACBrTEFAPI --
+[*] Tipo "TACBrTEFAPITela", adicionado o item: "telaTodas"
+[+] Adicionado os Tipos: "TACBrTEFAPIComandoAplicacao", "TACBrTEFAPIRecibo",
+    "TACBrTEFTipoIdCarteiraDigital"
+
+-- ACBrTEFAPIComum --
+[*] Tipo "TACBrTEFAPIOperacao", renomeado para "TACBrTEFAPIMetodo"
+    Enumeradores renomeados de tefop* para tefmt*
+
+-- ACBrTEFAndroidPayGo, ACBrTEFAPICliSiTef,, ACBrTEFAPIPayGoWeb, ACBrTEFPayGoComum --
+[*] Ajustes devido a mudanças de Tipos em ACBrTEFComum e ACBrTEFAPIComum
+
+-- ACBrTEFAPIPayGoWeb --
+[-] Correção em EfetuarPagamento, para não iformar PWINFO_FINTYPE inválido
+    (por: DSA)
+
+24/08/21
+-- ACBrTEFAPIComum --
+[*] Módificado os métodos "CancelarOuEstornarTransacoesDiretorioTrabalho" e
+    "FinalizarTransacoesPendentes", para a Finalização apenas para Transaçoes
+    que realmente necessitem da 3a perna
+
+-- ACBrTEFAPIPayGoWeb --
+[*] Método "QuandoAguardaPinPadAPI" modificado para suportar ação "ppLerQRCode"
+
+-- ACBrTEFPayGoWebComum --
+[*] Tipo enumerado "TACBrTEFPGWebAPIOperacaoPinPad", adicionada a açao:
+    "ppLerQRCode", que sinaliza para a aplicação, que a PayGoWeb está aguardando
+    a leitura do QRCode, pelo Cliente Final
+[*] Método "AbortarTransacao", renomeado para "EstornarTransacaoEmAndamento"
+[+] Adicionado o método: "ChamarOnAguardaPinPad", para centralizar as chamadas ao
+    evento "OnAguardaPinPad"
+[+] Adicionado o método "AbortarTransacao", que permite sinalizar para a PayGoWeb
+    que o Loop da transação TEF, deve ser interrompido
+[-] Método "ObterDados", modificado, para invocar "ChamarOnAguardaPinPad", quando
+    ocorrer bTipoDeDado for PWDAT_DSPCHECKOUT ou PWDAT_DSPQRCODE
+    (por: DSA)
+
+19/08/21
+-- ACBrTEFComum --
+[+] Adicionada a Classe: "TACBrTEFParametros", derivada de TStringList,
+    e que permite o uso de Indices numéricos em ValueInfo[n]
+
+-- ACBrTEFAPIComum --
+[+] Adicionado novas constantes de Texto.
+[+] Adicionada a propriedade "TACBrTEFAPIDadosTerminal.EnderecoServidor: String"
+[+] Adicionado método, "TACBrTEFAPIComumClass.VerificarIdentificadorVendaInformado"
+[*] Métodos de "TACBrTEFAPIComumClass"; EfetuarPagamento e EfetuarAdministrativa,
+    modificados para não receber como parâmetro "IdentificadorVenda".
+[*] Correção de Grafia na propriedade de "TACBrTEFAPIComum":
+    "TratamentoTransacaoInicalizacao" para "TratamentoTransacaoInicializacao"
+
+-- ACBrTEFAPIComum, ACBrTEFAndroidPayGo, ACBrTEFAPIPayGoWeb --
+[*] Modificado para usar Método da classe pai,
+    "TACBrTEFAPIComumClass.VerificarIdentificadorVendaInformado"
+[*] Métodos "EfetuarPagamento" e "EfetuarAdministrativa",
+    modificados para ficar correspondente a classe Pai, "TACBrTEFAPIComumClass"
+
+-- ACBrTEFAPI --
+[+] Adicionado o suporte a classe "TACBrTEFAPIClassCliSiTef"
+
+-- ACBrTEFAPICliSiTef --
+[+] Adicionada nova Unit, com a primeira implementação da CliSiTef, para o ACBrTEFAPI
+
+-- ACBrTEFAPIPayGoWeb --
+[*] Método: "TACBrTEFAPIClassPayGoWeb.Inicializar", modificado transmitir a API da
+    PayGoWeb, o valor da propriedade TACBrTEFAPIDadosTerminal.EnderecoServidor"
+
+-- ACBrTEFCliSiTefComum --
+[*] Método "ConteudoToPropertyCliSiTef", modificado para mapear o TipoCampo 584
+    para a propriedade "TACBrTEFResp.QrCode"
+[+] Adicionado o método: "TraduzirErroInicializacao"
+[*] Método "TraduzirErroTransacao", atualizado, com novos Erros
+
+-- ACBrTEFDCliSiTef --
+[*] Modificado para usar "TraduzirErroInicializacao" e "TraduzirErroTransacao"
+
+-- ACBrTEFPayGoComum, ACBrTEFPayGoWebComum, ACBrPOS, ACBrPOSPGWebAPI,
+   ACBrTEFAndroidPayGo, ACBrTEFPayGoAndroidAPI,
+   ACBrTEFAPIPayGoWeb, ACBrTEFDPayGoWeb,  --
+[*] Modificado para usar "TACBrTEFParametros" no lugar de "TACBrTEFPGWebAPIParametros"
+    (por: DSA)
+
+11/08/21
+-- ACBrTEFAPIComum --
+[+] Adicionada nova Unit, que define as classes básicas, para a criação dos
+    componentes "TACBrTEFAPI" e "TACBRTEFAndroid"
+
+-- ACBrTEFAPI --
+[+] Adicionada nova Unit, com a definição do NOVO componente "TACBrTEFAPI".
+[+] Criação da classe "TACBrTEFAPIClass", que é a base para todos os modelos de
+    Classe de TEF, que serão suportados por TACBrTEFAPI.
+
+-- ACBrTEFAPIPayGoWeb --
+[+] Adicionada nova Unit, com a definição de Classe de TEF "TACBrTEFAPIClassPayGoWeb"
+    instanciada quanddo TACBrTEFAPI.Modelo = tefApiPayGoWeb
+
+-- ACBrTEFAPIClass --
+[+] Unit removida, código susbtituto está em ACBrTEFAPI.pas
+
+-- ACBrTEFAndroid --
+[*] Ampla refatoração, movendo boa parte do código, para ACBrTEFAPIComum.pas
+
+-- ACBrTEFAndroidPayGo --
+[*] Métodos da Classe "TACBrTEFAndroidPayGoClass" ajustados para novas assinaturas
+    dos métodos definidos na classe pai, "TACBrTEFAPIComumClass"
+
+-- ACBrTEFDReg, ACBr_TEFD.dpk, ACBr_TEFD.lpk   --
+[*] Ajustados para registrar na IDE, o novo componente, TACBrTEFAPI
+    (por: DSA)
+
+11/08/21
+-- ACBrTEFComum --
+[+] Adicionado novos Enumerados, para uso em ACBrTEFAPI e derivados
+    TACBrTEFOperacaoAdmin, TACBrTEFTratamentoTransacaoPendente,
+    TACBrTEFTratamentoTransacaoInicalizacao
+[+] Classe "TACBrTEFResp" adicionada a propriedade "Sucesso: Boolean", que deve
+    sinalizar, se a Resposta do TEF, ocorreu com sucesso.
+[+] Classe "TACBrTEFRespostasPendentes", dividida, criando a classe ancestral
+    "TACBrTEFRespostas"
+[+] Criado novo Tipo: TACBrTEFRespClass = class of TACBrTEFResp;
+
+-- ACBrTEFDClass, ACBrTEFCliSiTefComum, ACBrTEFPayGoComum --
+[*] Ajustadas para interepretar a nova propriedade: TACBrTEFResp.Sucesso"
+
+-- ACBrTEFPayGoComum, ACBrTEFPayGoWebComum --
+[*] Tipo "EACBrTEFPayGoWeb", movido de ACBrTEFPayGoWebComum.pas para
+    ACBrTEFPayGoComum.pas
+[*] Método "DadosDaTransacaoToTEFResp", movido de ACBrTEFPayGoWebComum.pas para
+    ACBrTEFPayGoComum.pas
+[*] Otimização de vários métodos, usando "const" na passagem de parâmetros String
+
+-- ACBrTEFPayGoWebComum --
+[-] Correção em "TACBrTEFPGWebAPI.ExecutarTransacao", para atribuir corretamente
+    ao Log de Respostas, o valor do retorno da última transação "PWINFO_RET"
+
+-- ACBrTEFPayGoComum --
+[+] Criado novo tipo "TACBrTEFRespPayGoWeb". Uma especialização da "TACBrTEFResp",
+    para processar corretamente as respostas do Log da PayGo.
+[+] Adicionado novos métodos de Conversão:
+    function StatusTransacaoToPWCNF_( AStatus: TACBrTEFStatusTransacao): LongWord;
+    function OperacaoAdminToPWOPER_( AOperacao: TACBrTEFOperacaoAdmin): Byte;
+    (por: DSA)
+
 21/08/21
 -- ACBrTEFPayGoWebComum --
 [+] Adicionado o método "DadosDaTransacaoToTEFResp", para mapear o Log de

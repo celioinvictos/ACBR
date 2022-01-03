@@ -1,14 +1,14 @@
 VERSION 5.00
-Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomct2.ocx"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "tabctl32.ocx"
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
+Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form FrmMain 
    BorderStyle     =   3  'Fixed Dialog
-   Caption         =   "ACBrLibGNRe Demo"
+   Caption         =   "ACBrLibGNReMT Demo"
    ClientHeight    =   7800
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   11220
+   ClientWidth     =   9705
    BeginProperty Font 
       Name            =   "Tahoma"
       Size            =   8.25
@@ -21,7 +21,7 @@ Begin VB.Form FrmMain
    LinkTopic       =   "FrmMain"
    MaxButton       =   0   'False
    ScaleHeight     =   7800
-   ScaleWidth      =   11220
+   ScaleWidth      =   9705
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton btnCarregarConfiguracoes 
       Caption         =   "Carregar Configurações"
@@ -36,8 +36,8 @@ Begin VB.Form FrmMain
       Left            =   5160
       TabIndex        =   4
       Top             =   120
-      Width           =   5895
-      _ExtentX        =   10398
+      Width           =   4335
+      _ExtentX        =   7646
       _ExtentY        =   5318
       _Version        =   393216
       Style           =   1
@@ -78,15 +78,15 @@ Begin VB.Form FrmMain
       Tab(1).Control(0)=   "cmdConsultaConfiguração"
       Tab(1).ControlCount=   1
       Begin VB.CommandButton btnLimparLista 
-         Caption         =   "Limpar Lista NFe"
+         Caption         =   "Limpar Lista GNRe"
          Height          =   360
-         Left            =   3720
+         Left            =   1920
          TabIndex        =   108
-         Top             =   960
+         Top             =   1920
          Width           =   1710
       End
       Begin VB.CommandButton btnImprimirPDF 
-         Caption         =   "Imprimir PDF DANFe"
+         Caption         =   "Imprimir PDF GNRe"
          Height          =   360
          Left            =   1920
          TabIndex        =   107
@@ -96,7 +96,7 @@ Begin VB.Form FrmMain
       Begin VB.CommandButton btnCarregarXml 
          Caption         =   "Carregar Xml GNRe"
          Height          =   360
-         Left            =   1920
+         Left            =   1950
          TabIndex        =   106
          Top             =   960
          Width           =   1710
@@ -110,7 +110,7 @@ Begin VB.Form FrmMain
          Width           =   1710
       End
       Begin VB.CommandButton btnImprimir 
-         Caption         =   "Imprimir DANFe"
+         Caption         =   "Imprimir GNRe"
          Height          =   360
          Left            =   120
          TabIndex        =   104
@@ -118,7 +118,7 @@ Begin VB.Form FrmMain
          Width           =   1710
       End
       Begin VB.CommandButton btnCarregarIni 
-         Caption         =   "Carregar INI NFe"
+         Caption         =   "Carregar INI GNRe"
          Height          =   360
          Left            =   120
          TabIndex        =   103
@@ -172,16 +172,15 @@ Begin VB.Form FrmMain
       Left            =   5160
       TabIndex        =   2
       Top             =   3240
-      Width           =   5895
+      Width           =   4335
       Begin VB.TextBox rtbRespostas 
          Height          =   3735
          Left            =   120
-         Locked          =   -1  'True
          MultiLine       =   -1  'True
          ScrollBars      =   3  'Both
          TabIndex        =   3
          Top             =   360
-         Width           =   5655
+         Width           =   4095
       End
    End
    Begin VB.CommandButton cmdSalvar 
@@ -224,11 +223,11 @@ Begin VB.Form FrmMain
       TabCaption(1)   =   "Email"
       TabPicture(1)   =   "FrmMain.frx":0054
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "FraConfigurações"
-      Tab(1).Control(1)=   "txtEmailAssunto"
+      Tab(1).Control(0)=   "lblMensagem"
+      Tab(1).Control(1)=   "lblAssunto"
       Tab(1).Control(2)=   "txtEmailMensagem"
-      Tab(1).Control(3)=   "lblAssunto"
-      Tab(1).Control(4)=   "lblMensagem"
+      Tab(1).Control(3)=   "txtEmailAssunto"
+      Tab(1).Control(4)=   "FraConfigurações"
       Tab(1).ControlCount=   5
       Begin VB.Frame FraConfigurações 
          Caption         =   "Configurações"
@@ -292,7 +291,7 @@ Begin VB.Form FrmMain
             Height          =   285
             Left            =   120
             TabIndex        =   11
-            Text            =   "5000"
+            Text            =   "0"
             Top             =   2280
             Width           =   825
          End
@@ -525,7 +524,7 @@ Begin VB.Form FrmMain
          Tab(0).Control(9).Enabled=   0   'False
          Tab(0).Control(10)=   "cmdLogs"
          Tab(0).Control(10).Enabled=   0   'False
-         Tab(0).Control(11)=   "txtSchemas"
+         Tab(0).Control(11)=   "txtSchemaPath"
          Tab(0).Control(11).Enabled=   0   'False
          Tab(0).Control(12)=   "cmdSchemas"
          Tab(0).Control(12).Enabled=   0   'False
@@ -545,7 +544,7 @@ Begin VB.Form FrmMain
          Tab(1).Control(5)=   "txtTimeOut"
          Tab(1).Control(6)=   "FraAmbiente"
          Tab(1).Control(7)=   "FraProxy"
-         Tab(1).Control(8)=   "nudTimeout"
+         Tab(1).Control(8)=   "nudTimeOut"
          Tab(1).Control(9)=   "lblUfDestino"
          Tab(1).Control(10)=   "lblSSLType"
          Tab(1).Control(11)=   "lblTimeOut"
@@ -565,15 +564,15 @@ Begin VB.Form FrmMain
          TabCaption(3)   =   "Arquivo"
          TabPicture(3)   =   "FrmMain.frx":00C4
          Tab(3).ControlEnabled=   0   'False
-         Tab(3).Control(0)=   "txtArquivos"
-         Tab(3).Control(1)=   "cmdArquivos"
-         Tab(3).Control(2)=   "chkSepararDoc"
-         Tab(3).Control(3)=   "chkSepararCNPJ"
+         Tab(3).Control(0)=   "lblPastaArquivos"
+         Tab(3).Control(1)=   "chkSalvarPasta"
+         Tab(3).Control(2)=   "chkSalvarMensal"
+         Tab(3).Control(3)=   "chkAdicionarLiteral"
          Tab(3).Control(4)=   "chkEmissaoPath"
-         Tab(3).Control(5)=   "chkAdicionarLiteral"
-         Tab(3).Control(6)=   "chkSalvarMensal"
-         Tab(3).Control(7)=   "chkSalvarPasta"
-         Tab(3).Control(8)=   "lblPastaArquivos"
+         Tab(3).Control(5)=   "chkSepararCNPJ"
+         Tab(3).Control(6)=   "chkSepararDoc"
+         Tab(3).Control(7)=   "cmdArquivos"
+         Tab(3).Control(8)=   "txtArquivos"
          Tab(3).ControlCount=   9
          Begin VB.CommandButton btnObterCertificados 
             Caption         =   "Obter Certificados"
@@ -589,7 +588,7 @@ Begin VB.Form FrmMain
             Height          =   360
             Left            =   -74880
             TabIndex        =   102
-            Top             =   4560
+            Top             =   5160
             Width           =   1710
          End
          Begin VB.CheckBox ckbSalvarSOAP 
@@ -624,32 +623,32 @@ Begin VB.Form FrmMain
             TabIndex        =   88
             Top             =   2640
             Width           =   4455
-            Begin VB.TextBox Text3 
+            Begin VB.TextBox txtAguardar 
                Alignment       =   1  'Right Justify
                Height          =   285
                Left            =   120
                TabIndex        =   100
-               Text            =   "5000"
+               Text            =   "0"
                Top             =   960
-               Width           =   930
+               Width           =   675
             End
-            Begin VB.TextBox Text2 
+            Begin VB.TextBox txtTentativas 
                Alignment       =   1  'Right Justify
                Height          =   285
                Left            =   1680
                TabIndex        =   99
-               Text            =   "5000"
+               Text            =   "0"
                Top             =   960
-               Width           =   930
+               Width           =   675
             End
-            Begin VB.TextBox Text1 
+            Begin VB.TextBox txtIntervalo 
                Alignment       =   1  'Right Justify
                Height          =   285
                Left            =   3120
                TabIndex        =   98
-               Text            =   "5000"
+               Text            =   "0"
                Top             =   960
-               Width           =   930
+               Width           =   675
             End
             Begin VB.CheckBox ckbAjustarAut 
                Caption         =   "Ajustar Automaticamente prop. ""Aguardar"""
@@ -659,9 +658,9 @@ Begin VB.Form FrmMain
                Top             =   240
                Width           =   3735
             End
-            Begin MSComCtl2.UpDown UpDown1 
+            Begin MSComCtl2.UpDown nudAguardar 
                Height          =   285
-               Left            =   1080
+               Left            =   796
                TabIndex        =   92
                Top             =   960
                Width           =   255
@@ -669,8 +668,8 @@ Begin VB.Form FrmMain
                _ExtentY        =   503
                _Version        =   393216
                Value           =   5000
-               BuddyControl    =   "txtTimeOut"
-               BuddyDispid     =   196671
+               BuddyControl    =   "txtAguardar"
+               BuddyDispid     =   196643
                OrigLeft        =   3960
                OrigTop         =   720
                OrigRight       =   4215
@@ -680,9 +679,9 @@ Begin VB.Form FrmMain
                BuddyProperty   =   0
                Enabled         =   -1  'True
             End
-            Begin MSComCtl2.UpDown UpDown2 
+            Begin MSComCtl2.UpDown nudTentativas 
                Height          =   285
-               Left            =   2640
+               Left            =   2356
                TabIndex        =   93
                Top             =   960
                Width           =   255
@@ -690,8 +689,8 @@ Begin VB.Form FrmMain
                _ExtentY        =   503
                _Version        =   393216
                Value           =   5000
-               BuddyControl    =   "txtTimeOut"
-               BuddyDispid     =   196671
+               BuddyControl    =   "txtTentativas"
+               BuddyDispid     =   196644
                OrigLeft        =   3960
                OrigTop         =   720
                OrigRight       =   4215
@@ -701,9 +700,9 @@ Begin VB.Form FrmMain
                BuddyProperty   =   0
                Enabled         =   -1  'True
             End
-            Begin MSComCtl2.UpDown UpDown3 
+            Begin MSComCtl2.UpDown nudIntervalo 
                Height          =   285
-               Left            =   4080
+               Left            =   3796
                TabIndex        =   94
                Top             =   960
                Width           =   255
@@ -711,8 +710,8 @@ Begin VB.Form FrmMain
                _ExtentY        =   503
                _Version        =   393216
                Value           =   5000
-               BuddyControl    =   "txtTimeOut"
-               BuddyDispid     =   196671
+               BuddyControl    =   "txtIntervalo"
+               BuddyDispid     =   196645
                OrigLeft        =   3960
                OrigTop         =   720
                OrigRight       =   4215
@@ -915,16 +914,31 @@ Begin VB.Form FrmMain
                Italic          =   0   'False
                Strikethrough   =   0   'False
             EndProperty
-            Height          =   2175
+            Height          =   2775
             Left            =   -74880
             TabIndex        =   69
             Top             =   2280
             Width           =   4455
+            Begin VB.CommandButton cmdDadosPFX 
+               Caption         =   "..."
+               Height          =   255
+               Left            =   3960
+               TabIndex        =   111
+               Top             =   1080
+               Width           =   390
+            End
+            Begin VB.TextBox txtDadosPFX 
+               Height          =   285
+               Left            =   120
+               TabIndex        =   110
+               Top             =   1080
+               Width           =   3795
+            End
             Begin VB.TextBox txtCertNumero 
                Height          =   285
                Left            =   120
                TabIndex        =   73
-               Top             =   1680
+               Top             =   2280
                Width           =   4275
             End
             Begin VB.TextBox txtCertPassword 
@@ -933,7 +947,7 @@ Begin VB.Form FrmMain
                Left            =   120
                PasswordChar    =   "*"
                TabIndex        =   72
-               Top             =   1080
+               Top             =   1680
                Width           =   4275
             End
             Begin VB.TextBox txtCertPath 
@@ -943,13 +957,33 @@ Begin VB.Form FrmMain
                Top             =   480
                Width           =   3795
             End
-            Begin VB.CommandButton cmd 
+            Begin VB.CommandButton cmdCertPath 
                Caption         =   "..."
                Height          =   255
                Left            =   3960
                TabIndex        =   70
                Top             =   480
                Width           =   390
+            End
+            Begin VB.Label lblDadosPFX 
+               AutoSize        =   -1  'True
+               BackStyle       =   0  'Transparent
+               Caption         =   "Dados PFX"
+               BeginProperty Font 
+                  Name            =   "Tahoma"
+                  Size            =   8.25
+                  Charset         =   0
+                  Weight          =   700
+                  Underline       =   0   'False
+                  Italic          =   0   'False
+                  Strikethrough   =   0   'False
+               EndProperty
+               Height          =   195
+               Index           =   3
+               Left            =   120
+               TabIndex        =   109
+               Top             =   840
+               Width           =   870
             End
             Begin VB.Label lblNúmeroDe 
                AutoSize        =   -1  'True
@@ -967,7 +1001,7 @@ Begin VB.Form FrmMain
                Height          =   195
                Left            =   120
                TabIndex        =   76
-               Top             =   1440
+               Top             =   2040
                Width           =   1395
             End
             Begin VB.Label lblSenha 
@@ -987,7 +1021,7 @@ Begin VB.Form FrmMain
                Index           =   0
                Left            =   120
                TabIndex        =   75
-               Top             =   840
+               Top             =   1440
                Width           =   525
             End
             Begin VB.Label lblCaminho 
@@ -1065,9 +1099,9 @@ Begin VB.Form FrmMain
             Height          =   285
             Left            =   -71400
             TabIndex        =   56
-            Text            =   "5000"
+            Text            =   "0"
             Top             =   720
-            Width           =   735
+            Width           =   705
          End
          Begin VB.Frame FraAmbiente 
             Caption         =   "Ambiente"
@@ -1158,7 +1192,7 @@ Begin VB.Form FrmMain
                Height          =   285
                Left            =   3120
                TabIndex        =   45
-               Text            =   "5000"
+               Text            =   "0"
                Top             =   480
                Width           =   930
             End
@@ -1180,7 +1214,7 @@ Begin VB.Form FrmMain
                _Version        =   393216
                Value           =   5000
                BuddyControl    =   "txtProxyPorta"
-               BuddyDispid     =   196678
+               BuddyDispid     =   196681
                OrigLeft        =   3960
                OrigTop         =   720
                OrigRight       =   4215
@@ -1295,7 +1329,7 @@ Begin VB.Form FrmMain
             Top             =   4410
             Width           =   390
          End
-         Begin VB.TextBox txtSchemas 
+         Begin VB.TextBox txtSchemaPath 
             Height          =   285
             Left            =   120
             TabIndex        =   37
@@ -1371,7 +1405,7 @@ Begin VB.Form FrmMain
             Top             =   1680
             Width           =   4455
          End
-         Begin MSComCtl2.UpDown nudTimeout 
+         Begin MSComCtl2.UpDown nudTimeOut 
             Height          =   285
             Left            =   -70665
             TabIndex        =   62
@@ -1382,7 +1416,7 @@ Begin VB.Form FrmMain
             _Version        =   393216
             Value           =   5000
             BuddyControl    =   "txtTimeOut"
-            BuddyDispid     =   196671
+            BuddyDispid     =   196674
             OrigLeft        =   3960
             OrigTop         =   720
             OrigRight       =   4215
@@ -1687,134 +1721,279 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim gnre As ACBrGNRe
 
-Private Sub CheckGNReLista()
-    Dim xml As Boolean
+Public Function validacao() As Boolean
+
+    If txtSchemaPath.Text = "" Then
+    MsgBox ("Informe o Path com o Schemas")
+    validacao = False
     
-    If answer = vbYes Then
-    gnre.LimparLista
+    ElseIf txtCertPath.Text = "" Then
+    MsgBox ("Informe o Certificado")
+    validacao = False
+    
+    ElseIf txtCertPassword.Text = "" Then
+    MsgBox ("Informe a senha do Certificado")
+    validacao = False
+    
+    ElseIf txtCertNumero.Text = "" Then
+    MsgBox ("Informe o número de série")
+    validacao = False
+    
+    ElseIf cmbCrypt.Text = "cryNone" Then
+    MsgBox ("Informe Criptografia")
+    validacao = False
+    
+    ElseIf cmbHttp.Text = "httpNone" Then
+    MsgBox ("Informe o tipo SSL")
+    validacao = False
+
+    ElseIf cmbXmlSign.Text = "xsNone" Then
+    MsgBox ("Informe assinatura do XML")
+    validacao = False
+
+    ElseIf cmbSSlType.Text = "LT_all" Then
+    MsgBox ("Informe o tipo SSL")
+    validacao = False
+    
     End If
     
-    If xml Then
-    gnre.CarregarXML
-    Else
-    gnre.CarregarINI
+    validacao = True
+
+End Function
+
+Public Function validacaoEmail() As Boolean
     
+    If txtHost.Text = "" Then
+    MsgBox ("Informe Host SMTP")
+    validacaoEmail = False
+    
+    ElseIf txtUsuario.Text = "" Then
+    MsgBox ("Informe Usuário")
+    validacaoEmail = False
+    
+    ElseIf txtSenha.Text = "" Then
+    MsgBox ("Informe Senha")
+    validacaoEmail = False
+    
+    ElseIf txtNome.Text = "" Then
+    MsgBox ("Informe Nome do Proprietario do e-mail")
+    validacaoEmail = False
+    
+    ElseIf txtEmail.Text = "" Then
+    MsgBox ("Informe e-mail do Proprietario")
+    validacaoEmail = False
+    
+    ElseIf txtnudPorta.Text = "" Then
+    MsgBox ("Informe porta de conexão")
+    validacaoEmail = False
+    
+    ElseIf ckbSSL.Value = False And ckbTLS.Value = False Then
+    MsgBox ("Informe o certificado SSL")
+    MsgBox ("Informe o certificado TLS")
+    validacaoEmail = False
+    
+    End If
+
+    validacaoEmail = True
+    
+End Function
+
+Private Function CheckGNReLista(Optional ByVal xml As Boolean = False) As Boolean
+
+    CheckGNReLista = False
+
+    Dim answer As VbMsgBoxResult
+  
+    answer = MsgBox("Limpar lista ?", vbQuestion + vbYesNo, "Limpar lista")
+      
+    If answer = vbYes Then
+        gnre.LimparLista
+    End If
+ 
+    CommonDialog1.InitDir = App.Path
+    CommonDialog1.FileName = vbNullString
+    
+    If xml Then
+        CommonDialog1.DialogTitle = "Selecione o arquivo xml"
+        CommonDialog1.Filter = "Arquivo Xml GNRe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*"
+    Else
+        CommonDialog1.DialogTitle = "Selecione o arquivo ini"
+        CommonDialog1.Filter = "Arquivo INI do GNRe (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*"
+    End If
+    
+    CommonDialog1.ShowOpen
+    
+    If CommonDialog1.FileName = vbNullString Then Exit Function
+
+    If xml Then
+        gnre.CarregarXML CommonDialog1.FileName
+    Else
+        gnre.CarregarINI CommonDialog1.FileName
+    End If
+    
+    CheckGNReLista = True
+End Function
+
+Private Sub btnCarregarConfiguracoes_Click()
+    LoadConfig
 End Sub
 
 Private Sub btnCarregarIni_Click()
     On Error GoTo Erro:
     CheckGNReLista
-    
 Erro:
     MsgBox Err.Description
 End Sub
 
 Private Sub btnCarregarXml_Click()
     On Error GoTo Erro:
-    
-    CheckGNReLista True
-    SetResposta gnre.Enviar
+         
+     CheckGNReLista
 Erro:
     MsgBox Err.Description
-    Exit Sub
 End Sub
 
 Private Sub btnEnviar_Click()
+        
+    If Not validacao Then
+        MsgBox ("Verifique as configurações do certificado")
+        Exit Sub
+    End If
+    
     On Error GoTo Erro:
     
-    CheckGNReLista
     SetResposta gnre.Enviar
 Erro:
     MsgBox Err.Description
-    Exit Sub
     
 End Sub
 
 Private Sub btnImprimir_Click()
 
     On Error GoTo Erro:
-    
+
     CommonDialog1.DialogTitle = "Selecione o arquivo xml"
     CommonDialog1.InitDir = App.Path
     CommonDialog1.Filter = "Arquivo Xml GNRe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*"
     CommonDialog1.FileName = vbNullString
     CommonDialog1.ShowOpen
-            
+    
     If CommonDialog1.FileName = vbNullString Then Exit Sub
     
-    gnre.LimparLista
-    gnre.CarregarXML CommonDialog1.FileName
-    gnre.Imprimir
+    gnre.LimparListaGuiaRetorno
+    gnre.CarregarGuiaRetorno CommonDialog1.FileName
+    gnre.Imprimir "", True
+    
 Erro:
     MsgBox Err.Description
-
+    
 End Sub
 
 Private Sub btnImprimirPDF_Click()
 
     On Error GoTo Erro:
-    
+
     CommonDialog1.DialogTitle = "Selecione o arquivo xml"
     CommonDialog1.InitDir = App.Path
     CommonDialog1.Filter = "Arquivo Xml GNRe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*"
     CommonDialog1.FileName = vbNullString
     CommonDialog1.ShowOpen
-            
+    
     If CommonDialog1.FileName = vbNullString Then Exit Sub
     
-    gnre.LimparLista
-    gnre.CarregarXML CommonDialog1.FileName
-    gnre.Imprimir
+    gnre.LimparListaGuiaRetorno
+    gnre.CarregarGuiaRetorno CommonDialog1.FileName
+    gnre.ImprimirPDF
+    
 Erro:
     MsgBox Err.Description
-
+    
 End Sub
 
 Private Sub btnLimparLista_Click()
 
     On Error GoTo Erro:
-    answer = MsgBox("Limpar Lista ?", vbExclamation + vbYesNo, "Add Confirm")
+    Dim answer As VbMsgBoxResult
+  
+    answer = MsgBox("Limpar lista ?", vbQuestion + vbYesNo, "Limpar lista")
+
     If answer = vbYes Then
-    gnre.LimparLista
+        gnre.LimparLista
     End If
 
 Erro:
     MsgBox Err.Description
-
 End Sub
 
-Private Sub cmdConsultaConfiguração_Click()
+Private Sub btnObterCertificados_Click()
+    
     On Error GoTo Erro:
-    
-    Dim uf As String
-    uf = InputBox("Digite a UF", "Envio email", vbNullString)
-    
-    Dim receita As String
-    uf = InputBox("Digite o número da Receita", vbNullString)
-    
-    If uf = vbNullString Then Exit Sub
-    If receita = vbNullString Then Exit Sub
-    
-    SetResposta gnre.Consultar(uf, CLong(receita))
+    gnre.ObterCertificados
 Erro:
     MsgBox Err.Description
 
 End Sub
 
-Private Sub cmdEnviarEmail_Click()
-    On Error GoTo Erro:
-    
-    CommonDialog1.DialogTitle = "Selecione o arquivo xml"
+Private Sub cmdArquivos_Click()
+    txtArquivos.Text = BrowseFolder("Selecione a pasta Arquivos GNRe")
+End Sub
+
+Private Sub cmdCertPath_Click()
+    On Error Resume Next
+    CommonDialog1.DialogTitle = "Selecione o certificado"
     CommonDialog1.InitDir = App.Path
-    CommonDialog1.Filter = "Arquivo Xml GNRe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*"
-    CommonDialog1.FileName = vbNullString
+    CommonDialog1.Filter = "Arquivos PFX (*.pfx)|*.pfx|Todos os Arquivos (*.*)|*.*"
     CommonDialog1.ShowOpen
-            
-    If CommonDialog1.FileName = vbNullString Then Exit Sub
     
+    If Err Then Exit Sub
+    
+    txtCertPath.Text = CommonDialog1.FileName
+End Sub
+
+Private Sub cmdConsultaConfiguração_Click()
+    On Error GoTo Erro:
+
+    Dim uf As String
+    uf = InputBox("Digite a UF", "Envio email", vbNullString)
+
+    Dim receita As String
+    uf = InputBox("Digite o número da Receita", vbNullString)
+
+    If uf = vbNullString Then Exit Sub
+    If receita = vbNullString Then Exit Sub
+
+    SetResposta gnre.Consultar(uf, CLng(receita))
+Erro:
+    MsgBox Err.Description
+End Sub
+
+Private Sub cmdDadosPFX_Click()
+    On Error Resume Next
+    CommonDialog1.DialogTitle = "Selecione o certificado"
+    CommonDialog1.InitDir = App.Path
+    CommonDialog1.Filter = "Arquivos PFX (*.pfx)|*.pfx|Todos os Arquivos (*.*)|*.*"
+    CommonDialog1.ShowOpen
+    
+    If Err Then Exit Sub
+    
+    txtDadosPFX.Text = CommonDialog1.FileName
+
+End Sub
+
+Private Sub cmdEnviarEmail_Click()
+    
+    If Not validacaoEmail Then
+        MsgBox ("Verifique as configurações de E-mail")
+        Exit Sub
+    End If
+    
+    On Error GoTo Erro:
+
+    If Not CheckGNReLista(True) Then Exit Sub
+
     Dim destinatario As String
     destinatario = InputBox("Digite o email do destinatario", "Envio email", vbNullString)
-    
+
     If destinatario = vbNullString Then Exit Sub
     gnre.EnviarEmail destinatario, CommonDialog1.FileName, True, txtAssunto.Text, txtMensagem.Text
 Erro:
@@ -1823,22 +2002,11 @@ End Sub
 
 Private Sub cmdGerarGNRe_Click()
     On Error GoTo Erro:
+
+    If Not CheckGNReLista(True) Then Exit Sub
     
-     On Error GoTo Erro:
-    
-    CommonDialog1.DialogTitle = "Selecione o arquivo INI"
-    CommonDialog1.InitDir = App.Path
-    CommonDialog1.Filter = "Arquivo INI GNRe (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*"
-    CommonDialog1.FileName = vbNullString
-    CommonDialog1.ShowOpen
-    
-    If CommonDialog1.FileName = vbNullString Then Exit Sub
-    
-    Dim ret As String
-    gnre.LimparLista
-    gnre.CarregarINI CommonDialog1.FileName
     gnre.Assinar
-    ret = gnre.ObterXml
+    ret = gnre.ObterXml(0)
     rtbRespostas.Text = ret
 Erro:
     MsgBox Err.Description
@@ -1865,29 +2033,29 @@ Private Sub Form_Load()
     cmbCrypt.ListIndex = 0
     cmbHttp.ListIndex = 0
     cmbXmlSign.ListIndex = 0
-    
+
     Dim LogPath As String
     Dim IniPath As String
-    
+
     LogPath = App.Path & "\Logs\"
     IniPath = App.Path & "\ACBrLib.ini"
-    
+
     If Not DirExists(LogPath) Then
         MkDir LogPath
     End If
-    
+
     Set gnre = CreateGNRe(IniPath)
-    
+
     gnre.ConfigGravarValor SESSAO_PRINCIPAL, "LogNivel", NivelLog.logParanoico
     gnre.ConfigGravarValor SESSAO_PRINCIPAL, "LogPath", LogPath
     gnre.ConfigGravar
-    
+
     LoadConfig
 End Sub
 
 Private Sub LoadConfig()
     gnre.ConfigLer
-    
+
     'Geral
     chkExibirErro.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "ExibirErroSchema"))
     txtFormatoAlerta.Text = gnre.ConfigLerValor(SESSAO_GNRE, "FormatoAlerta")
@@ -1896,40 +2064,48 @@ Private Sub LoadConfig()
     chkRetirarAcentos.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "RetirarAcentos"))
     chkSalvarEnvio.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SalvarGer"))
     txtLogs.Text = gnre.ConfigLerValor(SESSAO_GNRE, "PathSalvar")
-    txtSchemas.Text = gnre.ConfigLerValor(SESSAO_GNRE, "PathSchemas")
-    
+    txtSchemaPath.Text = gnre.ConfigLerValor(SESSAO_GNRE, "PathSchemas")
+
     'Webservice
     cmbUfDestino.Text = gnre.ConfigLerValor(SESSAO_DFE, "UF")
     cmbSSlType.ListIndex = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SSLType"))
-    nudTimeout.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "Timeout"))
-    
+    nudTimeOut.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "Timeout"))
+
     Dim ambiente As String
     ambiente = gnre.ConfigLerValor(SESSAO_GNRE, "Ambiente")
-    
+
     rdbHomologacao.Value = CBool(ambiente)
     rdbProducao.Value = Not CBool(ambiente)
-    
+
+    ckbVisualizar.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "Visualizar"))
+    ckbSalvarSOAP.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SalvarWS"))
+    ckbAjustarAut.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "AjustaAguardaConsultaRet"))
+    nudAguardar.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "AguardarConsultaRet"))
+    nudTentativas.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "Tentativas"))
+    nudIntervalo.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "IntervaloTentativas"))
+
     'Proxy
     txtProxyServidor.Text = gnre.ConfigLerValor(SESSAO_PROXY, "Servidor")
-    
+
     Dim porta As String
     porta = gnre.ConfigLerValor(SESSAO_PROXY, "Porta")
-    
+
     If IsNumeric(porta) Then
-      nudProxyPorta.Value = CLng(porta)
+        nudProxyPorta.Value = CLng(porta)
     End If
-    
+
     txtProxyUsuario.Text = gnre.ConfigLerValor(SESSAO_PROXY, "Usuario")
     txtProxySenha.Text = gnre.ConfigLerValor(SESSAO_PROXY, "Senha")
-    
+
     'Certificado
     cmbCrypt.ListIndex = CLng(gnre.ConfigLerValor(SESSAO_DFE, "SSLCryptLib"))
     cmbHttp.ListIndex = CLng(gnre.ConfigLerValor(SESSAO_DFE, "SSLHttpLib"))
     cmbXmlSign.ListIndex = CLng(gnre.ConfigLerValor(SESSAO_DFE, "SSLXmlSignLib"))
     txtCertPath.Text = gnre.ConfigLerValor(SESSAO_DFE, "ArquivoPFX")
+    txtDadosPFX.Text = gnre.ConfigLerValor(SESSAO_DFE, "DadosPFX")
     txtCertPassword.Text = gnre.ConfigLerValor(SESSAO_DFE, "Senha")
     txtCertNumero.Text = gnre.ConfigLerValor(SESSAO_DFE, "NumeroSerie")
-    
+
     'Arquivos
     chkSalvarPasta.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SalvarArq"))
     chkSalvarMensal.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SepararPorMes"))
@@ -1938,8 +2114,8 @@ Private Sub LoadConfig()
     chkSepararCNPJ.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SepararPorCNPJ"))
     chkSepararDoc.Value = CLng(gnre.ConfigLerValor(SESSAO_GNRE, "SepararPorModelo"))
     txtArquivos.Text = gnre.ConfigLerValor(SESSAO_GNRE, "PathGNRE")
-    
-    
+
+
     'Email
     txtEmailNome.Text = gnre.ConfigLerValor(SESSAO_EMAIL, "Nome")
     txtEmail.Text = gnre.ConfigLerValor(SESSAO_EMAIL, "Conta")
@@ -1949,7 +2125,7 @@ Private Sub LoadConfig()
     nudEmailPorta.Value = CLng(gnre.ConfigLerValor(SESSAO_EMAIL, "Porta"))
     chkEmailSSL.Value = CLng(gnre.ConfigLerValor(SESSAO_EMAIL, "SSL"))
     chkEmailTLS.Value = CLng(gnre.ConfigLerValor(SESSAO_EMAIL, "TLS"))
-    
+
 End Sub
 
 Private Sub SaveConfig()
@@ -1962,28 +2138,35 @@ Private Sub SaveConfig()
     gnre.ConfigGravarValor SESSAO_GNRE, "RetirarAcentos", CStr(chkRetirarAcentos.Value)
     gnre.ConfigGravarValor SESSAO_GNRE, "SalvarGer", CStr(chkSalvarEnvio.Value)
     gnre.ConfigGravarValor SESSAO_GNRE, "PathSalvar", txtLogs.Text
-    gnre.ConfigGravarValor SESSAO_GNRE, "PathSchemas", txtSchemas.Text
-    
+    gnre.ConfigGravarValor SESSAO_GNRE, "PathSchemas", txtSchemaPath.Text
+
     'Webservice
     gnre.ConfigGravarValor SESSAO_DFE, "UF", cmbUfDestino.Text
     gnre.ConfigGravarValor SESSAO_GNRE, "SSLType", CStr(cmbSSlType.ListIndex)
-    gnre.ConfigGravarValor SESSAO_GNRE, "Timeout", CStr(nudTimeout.Value)
+    gnre.ConfigGravarValor SESSAO_GNRE, "Timeout", CStr(nudTimeOut.Value)
     gnre.ConfigGravarValor SESSAO_GNRE, "Ambiente", CStr(rdbHomologacao.Value)
-        
+    gnre.ConfigGravarValor SESSAO_GNRE, "Visualizar", CStr(ckbVisualizar.Value)
+    gnre.ConfigGravarValor SESSAO_GNRE, "SalvarWS", CStr(ckbSalvarSOAP.Value)
+    gnre.ConfigGravarValor SESSAO_GNRE, "AjustaAguardaConsultaRet", CStr(ckbAjustarAut.Value)
+    gnre.ConfigGravarValor SESSAO_GNRE, "AguardarConsultaRet", CStr(nudAguardar.Value)
+    gnre.ConfigGravarValor SESSAO_GNRE, "Tentativas", CStr(nudTentativas.Value)
+    gnre.ConfigGravarValor SESSAO_GNRE, "IntervaloTentativas", CStr(nudIntervalo.Value)
+
     'Proxy
     gnre.ConfigGravarValor SESSAO_PROXY, "Servidor", txtProxyServidor.Text
     gnre.ConfigGravarValor SESSAO_PROXY, "Porta", CStr(nudProxyPorta.Value)
     gnre.ConfigGravarValor SESSAO_PROXY, "Usuario", txtProxyUsuario.Text
     gnre.ConfigGravarValor SESSAO_PROXY, "Senha", txtProxySenha.Text
-    
+
     'Certificado
     gnre.ConfigGravarValor SESSAO_DFE, "SSLCryptLib", CStr(cmbCrypt.ListIndex)
     gnre.ConfigGravarValor SESSAO_DFE, "SSLHttpLib", CStr(cmbHttp.ListIndex)
     gnre.ConfigGravarValor SESSAO_DFE, "SSLXmlSignLib", CStr(cmbXmlSign.ListIndex)
     gnre.ConfigGravarValor SESSAO_DFE, "ArquivoPFX", txtCertPath.Text
+    gnre.ConfigGravarValor SESSAO_DFE, "DadosPFX", txtDadosPFX.Text
     gnre.ConfigGravarValor SESSAO_DFE, "Senha", txtCertPassword.Text
     gnre.ConfigGravarValor SESSAO_DFE, "NumeroSerie", txtCertNumero.Text
-    
+
     'Arquivos
     gnre.ConfigGravarValor SESSAO_GNRE, "SalvarArq", CStr(chkSalvarPasta.Value)
     gnre.ConfigGravarValor SESSAO_GNRE, "SepararPorMes", CStr(chkSalvarMensal.Value)
@@ -1992,7 +2175,7 @@ Private Sub SaveConfig()
     gnre.ConfigGravarValor SESSAO_GNRE, "SepararPorCNPJ", CStr(chkSepararCNPJ.Value)
     gnre.ConfigGravarValor SESSAO_GNRE, "SepararPorModelo", CStr(chkSepararDoc.Value)
     gnre.ConfigGravarValor SESSAO_GNRE, "PathGNRE", txtArquivos.Text
-    
+
     'Email
     gnre.ConfigGravarValor SESSAO_EMAIL, "Nome", txtEmailNome.Text
     gnre.ConfigGravarValor SESSAO_EMAIL, "Conta", txtEmail.Text
@@ -2002,7 +2185,7 @@ Private Sub SaveConfig()
     gnre.ConfigGravarValor SESSAO_EMAIL, "Porta", CStr(nudEmailPorta.Value)
     gnre.ConfigGravarValor SESSAO_EMAIL, "SSL", CStr(chkEmailSSL.Value)
     gnre.ConfigGravarValor SESSAO_EMAIL, "TLS", CStr(chkEmailTLS.Value)
-    
+
     gnre.ConfigGravar
 
 End Sub

@@ -37,9 +37,6 @@ unit Tecnos.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -48,16 +45,15 @@ uses
   ACBrNFSeXConsts;
 
 type
-  { TNFSeW_Tecnos }
+  { TNFSeW_Tecnos201 }
 
-  TNFSeW_Tecnos = class(TNFSeW_ABRASFv2)
+  TNFSeW_Tecnos201 = class(TNFSeW_ABRASFv2)
   protected
-    function DefinirNameSpaceDeclaracao: string; override;
-
     function GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode; override;
     function GerarValores: TACBrXmlNode; override;
 
     procedure Configuracao; override;
+    procedure DefinirIDDeclaracao; override;
 
   end;
 
@@ -68,9 +64,9 @@ implementation
 //     Tecnos
 //==============================================================================
 
-{ TNFSeW_Tecnos }
+{ TNFSeW_Tecnos201 }
 
-procedure TNFSeW_Tecnos.Configuracao;
+procedure TNFSeW_Tecnos201.Configuracao;
 begin
   inherited Configuracao;
 
@@ -98,6 +94,7 @@ begin
   NrOcorrCodigoPaisTomador := 1;
   NrOcorrDescIncond := 1;
   NrOcorrDescCond := 1;
+  NrOcorrComplTomador := 1;
 
   NrOcorrNaturezaOperacao := 1;
   NrOcorrBaseCalcCRS := 1;
@@ -117,23 +114,31 @@ begin
   NrOcorrOutrasInformacoes := 1;
 
   NrOcorrRegimeEspecialTributacao := 1;
+  NrOcorrRazaoSocialInterm := 1;
+  NrOcorrInscEstInter := 1;
 
+  NrOcorrInscMunTomador := 1;
+
+  NrOcorrRespRetencao := 1;
+  
   GerarTagServicos := False;
 end;
 
-function TNFSeW_Tecnos.DefinirNameSpaceDeclaracao: string;
+procedure TNFSeW_Tecnos201.DefinirIDDeclaracao;
 begin
-  Result := 'http://www.abrasf.org.br/nfse.xsd';
+  NFSe.InfID.ID := '1' + // Tipo de operação, no caso envio
+                   OnlyNumber(NFSe.Prestador.IdentificacaoPrestador.CpfCnpj) +
+                   Poem_Zeros(OnlyNumber(NFSe.IdentificacaoRps.Numero), 16);
 end;
 
-function TNFSeW_Tecnos.GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode;
+function TNFSeW_Tecnos201.GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode;
 begin
   Result := CreateElement('tcDeclaracaoPrestacaoServico');
 
   Result.AppendChild(inherited GerarInfDeclaracaoPrestacaoServico);
 end;
 
-function TNFSeW_Tecnos.GerarValores: TACBrXmlNode;
+function TNFSeW_Tecnos201.GerarValores: TACBrXmlNode;
 begin
   Result := CreateElement('tcDadosServico');
 
@@ -143,7 +148,7 @@ begin
        SituacaoTributariaToStr(NFSe.Servico.Valores.IssRetido), DSC_INDISSRET));
 
   Result.AppendChild(AddNode(tcStr, '#21', 'ResponsavelRetencao', 1, 1, NrOcorrRespRetencao,
-   ResponsavelRetencaoToStr(NFSe.Servico.ResponsavelRetencao), DSC_INDRESPRET));
+   ResponsavelRetencaoToStr(NFSe.Servico.ResponsavelRetencao, proTecnos), DSC_INDRESPRET));
 
   Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, 1,
                                  NFSe.Servico.ItemListaServico, DSC_CLISTSERV));

@@ -44,6 +44,55 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+16/12/2021
+--- ACBrMonior1, ACBrMonitorConfig, ACBrMonitorConsts ---
+[*] Adicionado Novas propriedades do boleto em tela e realizados ajustes de mensagens em tela
+
+16/12/2021
+--- DoACBrBoletoUnit ---
+[*] Adicionado parametros de Impressora e preview no método de impressão nos métodos de Impressão.
+
+25/11/2021
+--- ACBrMonior1 ---
+[*] Ajuste em tela na leitura dos dados TipoPessoa no ACBrBoleto 
+
+15/10/2021
+--- DoACBrSAT--
+[*] Ajuste na função EnviarCFe.
+
+11/10/2021
+--- DoACBrBoleto--
+[*] Atualização no retorno da função EnviarBoleto baseado nas alterações da ACBLibBoletoRespostas
+
+30/09/2021
+--- ACBrMonior1, ACBrMonitorConfig--
+[+] Adicionado configuração de impressão de cupom sem os itens em DFe / Impressão / NFCe
+
+28/09/2021
+--- ACBrMonior1--
+[*] Ajustes de campos em tela  
+
+13/09/2021
+--DoACBrBoleto--
+[*] Adicionado parâmetro no Método EnviarBoleto para definir o Tipo de Operação.
+
+13/09/2021
+--DoACBrReinfUnit--
+[*] Atualização dos parâmetros no método ConsultarReciboReinf.
+
+06/09/2021
+--DoACBrBoleto--
+[*] Adicionado método setOperacaoWS para alterar o serviço a ser utilizado no webservice boleto.
+
+19/08/2021
+--DoACBreSocialUnit--
+[*] Ajuste método setVersaoDF, para alteração do layout simplificado.
+
+05/08/2021
+--DoACBreSocialUnit--
+[+] Adicionado método setVersaoDF, para alterar a versão do layout e-social.
+contribuicao: https://www.projetoacbr.com.br/forum/topic/63380-comando-esocialsetversaodf/
+
 05/07/2021
 --- ACBrMonior1, ACBrMonitorConfig, ACBrMonitorConsts, DoBoletoUnit--
 [+] Adicionado Funcionalidade para integração WebService de Registro de Boleto

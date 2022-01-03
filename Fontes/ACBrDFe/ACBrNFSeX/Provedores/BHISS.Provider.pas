@@ -250,7 +250,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceBHISS.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 procedure TACBrNFSeProviderBHISS.PrepararConsultaNFSe(
@@ -260,7 +265,7 @@ var
   Emitente: TEmitenteConfNFSe;
   XmlConsulta, NameSpace, Prefixo: string;
 begin
-  if Response.InfConsultaNFSe.tpConsulta in [tcPorFaixa, tcServicoTomado, tcPorNumeroURLRetornado] then
+  if Response.InfConsultaNFSe.tpConsulta in [tcPorFaixa, tcServicoTomado] then
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod001;
@@ -272,15 +277,14 @@ begin
 
   Response.Metodo := tmConsultarNFSe;
 
-  XmlConsulta := XmlConsulta +
-                   '<Faixa>' +
-                     '<NumeroNfseInicial>' +
-                        OnlyNumber(Response.InfConsultaNFSe.NumeroIniNFSe) +
-                     '</NumeroNfseInicial>' +
-                     '<NumeroNfseFinal>' +
-                        OnlyNumber(Response.InfConsultaNFSe.NumeroFinNFSe) +
-                     '</NumeroNfseFinal>' +
-                   '</Faixa>';
+  XmlConsulta := '<Faixa>' +
+                   '<NumeroNfseInicial>' +
+                      OnlyNumber(Response.InfConsultaNFSe.NumeroIniNFSe) +
+                   '</NumeroNfseInicial>' +
+                   '<NumeroNfseFinal>' +
+                      OnlyNumber(Response.InfConsultaNFSe.NumeroFinNFSe) +
+                   '</NumeroNfseFinal>' +
+                 '</Faixa>';
 
   if EstaVazio(ConfigMsgDados.ConsultarNFSe.xmlns) then
     NameSpace := ''
@@ -356,9 +360,14 @@ begin
     if EstaVazio(Nota.XMLAssinado) then
     begin
       Nota.GerarXML;
+
+      Nota.XMLOriginal := ConverteXMLtoUTF8(Nota.XMLOriginal);
+      Nota.XMLOriginal := ChangeLineBreak(Nota.XMLOriginal, '');
+
       if ConfigAssinar.RpsGerarNFSe then
       begin
-        Nota.XMLOriginal := FAOwner.SSL.Assinar(ConverteXMLtoUTF8(Nota.XMLOriginal), ConfigMsgDados.XmlRps.DocElemento,
+        Nota.XMLOriginal := FAOwner.SSL.Assinar(Nota.XMLOriginal,
+                                                ConfigMsgDados.XmlRps.DocElemento,
                                                 ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
       end;
     end;
@@ -446,8 +455,9 @@ begin
 
       ANode := Document.Root;
 
-      Response.Data := ProcessarConteudoXml(ANode.Childrens.FindAnyNs('DataRecebimento'), tcDatHor);
-      Response.Protocolo := ProcessarConteudoXml(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
+      Response.Data := ObterConteudoTag(ANode.Childrens.FindAnyNs('DataRecebimento'), tcDatHor);
+      Response.Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
+      Response.CodVerificacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('CodigoVerificacao'), tcStr);
 
       ANode := Document.Root.Childrens.FindAnyNs('ListaNfse');
       if not Assigned(ANode) then
@@ -489,7 +499,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := E.Message;
+        AErro.Descricao := Desc999 + E.Message;
       end;
     end;
   finally

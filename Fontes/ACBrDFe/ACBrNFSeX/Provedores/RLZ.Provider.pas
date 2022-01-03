@@ -37,13 +37,41 @@ unit RLZ.Provider;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, DateUtils,
   ACBrXmlBase, ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
-  ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
-  ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
+  ACBrNFSeXGravarXml, ACBrNFSeXLerXml, ACBrNFSeXConsts,
+  ACBrNFSeXProviderProprio, ACBrNFSeXProviderABRASFv2,
+  ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
+
   TACBrNFSeXWebserviceRLZ = class(TACBrNFSeXWebserviceSoap11)
+  public
+    function GerarNFSe(ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
+  end;
+
+  TACBrNFSeProviderRLZ = class (TACBrNFSeProviderProprio)
+  protected
+    procedure Configuracao; override;
+
+    function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
+    function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
+    function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
+
+    procedure PrepararEmitir(Response: TNFSeEmiteResponse); override;
+    procedure TratarRetornoEmitir(Response: TNFSeEmiteResponse); override;
+
+    procedure PrepararConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
+    procedure TratarRetornoConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
+
+    procedure ProcessarMensagemErros(const RootNode: TACBrXmlNode;
+                                     const Response: TNFSeWebserviceResponse;
+                                     AListTag: string = '';
+                                     AMessageTag: string = 'nota'); override;
+  end;
+
+  TACBrNFSeXWebserviceRLZ203 = class(TACBrNFSeXWebserviceSoap11)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -58,7 +86,7 @@ type
 
   end;
 
-  TACBrNFSeProviderRLZ = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderRLZ203 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -74,9 +102,9 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, RLZ.GravarXml, RLZ.LerXml;
 
-{ TACBrNFSeProviderRLZ }
+{ TACBrNFSeProviderRLZ203 }
 
-procedure TACBrNFSeProviderRLZ.Configuracao;
+procedure TACBrNFSeProviderRLZ203.Configuracao;
 begin
   inherited Configuracao;
 
@@ -91,21 +119,21 @@ begin
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 end;
 
-function TACBrNFSeProviderRLZ.CriarGeradorXml(
+function TACBrNFSeProviderRLZ203.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_RLZ.Create(Self);
+  Result := TNFSeW_RLZ203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderRLZ.CriarLeitorXml(
+function TACBrNFSeProviderRLZ203.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_RLZ.Create(Self);
+  Result := TNFSeR_RLZ203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderRLZ.CriarServiceClient(
+function TACBrNFSeProviderRLZ203.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -113,14 +141,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceRLZ.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceRLZ203.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceRLZ }
+{ TACBrNFSeXWebserviceRLZ203 }
 
-function TACBrNFSeXWebserviceRLZ.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -137,7 +170,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -154,7 +187,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -171,7 +204,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -188,7 +221,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -205,7 +238,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -222,7 +255,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.ConsultarNFSeServicoPrestado(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.ConsultarNFSeServicoPrestado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -239,7 +272,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.ConsultarNFSeServicoTomado(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.ConsultarNFSeServicoTomado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -256,7 +289,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceRLZ203.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -272,7 +305,7 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceRLZ.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceRLZ203.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -287,6 +320,364 @@ begin
   Result := Executar('http://nfse.abrasf.org.br/SubstituirNfse', Request,
                      ['outputXML', 'SubstituirNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
+end;
+
+{ TACBrNFSeProviderRLZ }
+
+procedure TACBrNFSeProviderRLZ.Configuracao;
+begin
+  inherited Configuracao;
+
+  with ConfigGeral do
+  begin
+    Identificador := '';
+    QuebradeLinha := '|';
+    ModoEnvio := meUnitario;
+  end;
+
+  ConfigSchemas.Validar := False;
+end;
+
+function TACBrNFSeProviderRLZ.CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass;
+begin
+  Result := TNFSeW_RLZ.Create(Self);
+  Result.NFSe := ANFSe;
+end;
+
+function TACBrNFSeProviderRLZ.CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass;
+begin
+  Result := TNFSeR_RLZ.Create(Self);
+  Result.NFSe := ANFSe;
+end;
+
+function TACBrNFSeProviderRLZ.CriarServiceClient(
+  const AMetodo: TMetodo): TACBrNFSeXWebservice;
+var
+  URL: string;
+begin
+  URL := GetWebServiceURL(AMetodo);
+
+  if URL <> '' then
+    Result := TACBrNFSeXWebserviceRLZ.Create(FAOwner, AMetodo, URL)
+  else
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
+end;
+
+procedure TACBrNFSeProviderRLZ.ProcessarMensagemErros(
+  const RootNode: TACBrXmlNode; const Response: TNFSeWebserviceResponse;
+  AListTag, AMessageTag: string);
+var
+  I: Integer;
+  ANodeArray: TACBrXmlNodeArray;
+  AErro: TNFSeEventoCollectionItem;
+  Codigo: string;
+begin
+  ANodeArray := RootNode.Childrens.FindAllAnyNs(AMessageTag);
+
+  if not Assigned(ANodeArray) then Exit;
+
+  for I := Low(ANodeArray) to High(ANodeArray) do
+  begin
+    Codigo := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('codigo'), tcStr);
+
+    if Codigo <> '1' then
+    begin
+      AErro := Response.Erros.New;
+      AErro.Codigo := Codigo;
+      AErro.Descricao := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('mensagem'), tcStr);
+      AErro.Correcao := '';
+    end;
+  end;
+end;
+
+procedure TACBrNFSeProviderRLZ.PrepararEmitir(Response: TNFSeEmiteResponse);
+var
+  AErro: TNFSeEventoCollectionItem;
+  Nota: NotaFiscal;
+  IdAttr, ListaRps, xRps: string;
+  I: Integer;
+begin
+  if TACBrNFSeX(FAOwner).NotasFiscais.Count <= 0 then
+  begin
+    AErro := Response.Erros.New;
+    AErro.Codigo := Cod002;
+    AErro.Descricao := Desc002;
+  end;
+
+  if TACBrNFSeX(FAOwner).NotasFiscais.Count > Response.MaxRps then
+  begin
+    AErro := Response.Erros.New;
+    AErro.Codigo := Cod003;
+    AErro.Descricao := 'Conjunto de RPS transmitidos (máximo de ' +
+                       IntToStr(Response.MaxRps) + ' RPS)' +
+                       ' excedido. Quantidade atual: ' +
+                       IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count);
+  end;
+
+  if Response.Erros.Count > 0 then Exit;
+
+  ListaRps := '';
+
+  if ConfigAssinar.IncluirURI then
+    IdAttr := ConfigGeral.Identificador
+  else
+    IdAttr := 'ID';
+
+  for I := 0 to TACBrNFSeX(FAOwner).NotasFiscais.Count -1 do
+  begin
+    Nota := TACBrNFSeX(FAOwner).NotasFiscais.Items[I];
+
+    if EstaVazio(Nota.XMLAssinado) then
+    begin
+      Nota.GerarXML;
+
+      Nota.XMLOriginal := ConverteXMLtoUTF8(Nota.XMLOriginal);
+      Nota.XMLOriginal := ChangeLineBreak(Nota.XMLOriginal, '');
+
+      if ConfigAssinar.Rps or ConfigAssinar.RpsGerarNFSe then
+      begin
+        Nota.XMLOriginal := FAOwner.SSL.Assinar(Nota.XMLOriginal,
+                                                ConfigMsgDados.XmlRps.DocElemento,
+                                                ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
+      end;
+    end;
+
+    if FAOwner.Configuracoes.Arquivos.Salvar then
+    begin
+      if NaoEstaVazio(Nota.NomeArqRps) then
+        TACBrNFSeX(FAOwner).Gravar(Nota.NomeArqRps, Nota.XMLOriginal)
+      else
+      begin
+        Nota.NomeArqRps := Nota.CalcularNomeArquivoCompleto(Nota.NomeArqRps, '');
+        TACBrNFSeX(FAOwner).Gravar(Nota.NomeArqRps, Nota.XMLOriginal);
+      end;
+    end;
+
+    xRps := RemoverDeclaracaoXML(Nota.XMLOriginal);
+
+    ListaRps := ListaRps + xRps;
+  end;
+
+  ListaRps := ChangeLineBreak(ListaRps, '');
+
+  Response.XmlEnvio := ListaRps;
+end;
+
+procedure TACBrNFSeProviderRLZ.TratarRetornoEmitir(
+  Response: TNFSeEmiteResponse);
+var
+  Document: TACBrXmlDocument;
+  AErro: TNFSeEventoCollectionItem;
+  ANode: TACBrXmlNode;
+  NumNfse: String;
+  ANota: NotaFiscal;
+begin
+  Document := TACBrXmlDocument.Create;
+
+  try
+    try
+      if Response.XmlRetorno = '' then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod201;
+        AErro.Descricao := Desc201;
+        Exit
+      end;
+
+      Document.LoadFromXml(Response.XmlRetorno);
+
+      ANode := Document.Root;
+
+      ProcessarMensagemErros(ANode, Response);
+
+      Response.Sucesso := (Response.Erros.Count = 0);
+
+      ANode := ANode.Childrens.FindAnyNs('nota');
+
+      with Response do
+      begin
+        NumeroNota := ObterConteudoTag(ANode.Childrens.FindAnyNs('numero'), tcStr);
+        NumNfse := NumeroNota;
+        Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('guia'), tcStr);
+        CodVerificacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('codigoverificacao'), tcStr);
+        Link := ObterConteudoTag(ANode.Childrens.FindAnyNs('url'), tcStr);
+        Situacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('situacao'), tcStr);
+      end;
+
+      if Response.NumeroNota = '' then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod203;
+        AErro.Descricao := Desc203;
+        Exit;
+      end;
+
+      ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumNfse);
+
+      if Assigned(ANota) then
+        ANota.XML := ANode.OuterXml
+      else
+      begin
+        TACBrNFSeX(FAOwner).NotasFiscais.LoadFromString(ANode.OuterXml, False);
+        ANota := TACBrNFSeX(FAOwner).NotasFiscais.Items[TACBrNFSeX(FAOwner).NotasFiscais.Count-1];
+      end;
+
+      SalvarXmlNfse(ANota);
+    except
+      on E:Exception do
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod999;
+        AErro.Descricao := Desc999 + E.Message;
+      end;
+    end;
+  finally
+    FreeAndNil(Document);
+  end;
+end;
+
+procedure TACBrNFSeProviderRLZ.PrepararConsultaNFSe(
+  Response: TNFSeConsultaNFSeResponse);
+var
+  AErro: TNFSeEventoCollectionItem;
+  Ano, Mes: string;
+  Emitente: TEmitenteConfNFSe;
+begin
+  if Response.InfConsultaNFSe.DataInicial = 0 then
+  begin
+    AErro := Response.Erros.New;
+    AErro.Codigo := Cod108;
+    AErro.Descricao := Desc108;
+    Exit;
+  end;
+
+  Ano := IntToStr(YearOf(Response.InfConsultaNFSe.DataInicial));
+  Mes := IntToStr(MonthOf(Response.InfConsultaNFSe.DataInicial));
+
+  Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
+
+  Response.XmlEnvio := '<notas>' +
+                         '<ano>' + Ano + '</ano>' +
+                         '<mes>' + Mes + '</mes>' +
+                         '<cpfcnpj>' +
+                           OnlyNumber(Emitente.CNPJ) +
+                         '</cpfcnpj>' +
+                         '<inscricao>' +
+                           OnlyNumber(Emitente.InscMun) +
+                         '</inscricao>' +
+                         '<chave>' + Emitente.WSChaveAcesso + '</chave>' +
+                       '</notas>';
+end;
+
+procedure TACBrNFSeProviderRLZ.TratarRetornoConsultaNFSe(
+  Response: TNFSeConsultaNFSeResponse);
+var
+  Document: TACBrXmlDocument;
+  AErro: TNFSeEventoCollectionItem;
+  ANode: TACBrXmlNode;
+  ANodeArray: TACBrXmlNodeArray;
+  NumRps: String;
+  ANota: NotaFiscal;
+  I: Integer;
+begin
+  Document := TACBrXmlDocument.Create;
+
+  try
+    try
+      if Response.XmlRetorno = '' then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod201;
+        AErro.Descricao := Desc201;
+        Exit
+      end;
+
+      Document.LoadFromXml(Response.XmlRetorno);
+
+      ANode := Document.Root.Childrens.FindAnyNs('notas');
+
+      ProcessarMensagemErros(ANode, Response);
+
+      Response.Sucesso := (Response.Erros.Count = 0);
+
+      ANodeArray := ANode.Childrens.FindAllAnyNs('nota');
+      if not Assigned(ANodeArray) and (Response.Sucesso) then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod203;
+        AErro.Descricao := Desc203;
+        Exit;
+      end;
+
+      for I := Low(ANodeArray) to High(ANodeArray) do
+      begin
+        ANode := ANodeArray[I];
+        NumRps := ObterConteudoTag(ANode.Childrens.FindAnyNs('numero'), tcStr);
+
+        if NumRps <> '' then
+        begin
+          ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
+
+          if Assigned(ANota) then
+            ANota.XML := ANode.OuterXml
+          else
+          begin
+            TACBrNFSeX(FAOwner).NotasFiscais.LoadFromString(ANode.OuterXml, False);
+            ANota := TACBrNFSeX(FAOwner).NotasFiscais.Items[TACBrNFSeX(FAOwner).NotasFiscais.Count-1];
+          end;
+
+          SalvarXmlNfse(ANota);
+        end;
+      end;
+    except
+      on E:Exception do
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod999;
+        AErro.Descricao := Desc999 + E.Message;
+      end;
+    end;
+  finally
+    FreeAndNil(Document);
+  end;
+end;
+
+{ TACBrNFSeXWebserviceRLZ }
+
+function TACBrNFSeXWebserviceRLZ.GerarNFSe(ACabecalho, AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<urn:gravaNotaXML>';
+  Request := Request + '<params>' + XmlToStr(AMSG) + '</params>';
+  Request := Request + '</urn:gravaNotaXML>';
+
+  Result := Executar('urn:server.issqn#gravaNotaXML', Request,
+                     ['return'],
+                     ['xmlns:urn="urn:server.issqn"']);
+end;
+
+function TACBrNFSeXWebserviceRLZ.ConsultarNFSe(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<urn:listarNotasXML>';
+  Request := Request + '<params>' + XmlToStr(AMSG) + '</params>';
+  Request := Request + '</urn:listarNotasXML>';
+
+  Result := Executar('urn:server.issqn#listarNotasXML', Request,
+                     ['return'],
+                     ['xmlns:urn="urn:server.issqn"']);
 end;
 
 end.

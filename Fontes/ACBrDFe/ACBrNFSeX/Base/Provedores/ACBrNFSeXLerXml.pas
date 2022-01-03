@@ -37,9 +37,6 @@ unit ACBrNFSeXLerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes,
   ACBrUtil, ACBrDFeException, ACBrXmlReader, ACBrNFSeXInterface,
   ACBrNFSeXParametros, ACBrNFSeXClass, ACBrNFSeXConversao;
@@ -51,20 +48,22 @@ type
   private
     FNFSe: TNFSe;
     FtpXML: TtpXML;
-    FProvedorConf: TNFSeProvedor;
     FProvedor: TnfseProvedor;
 
   protected
     FAOwner: IACBrNFSeXProvider;
 
+    function NormatizaItemListaServico(const Codigo: string): string;
+    function ItemListaServicoDescricao(const Codigo: string): string;
+    function TipodeXMLLeitura(const aArquivo: string): TtpXML;
   public
     constructor Create(AOwner: IACBrNFSeXProvider);
+
     function LerXml: Boolean; Override;
 
-    property NFSe: TNFSe                 read FNFSe         write FNFSe;
-    property Provedor: TnfseProvedor     read FProvedor     write FProvedor;
-    property ProvedorConf: TNFSeProvedor read FProvedorConf write FProvedorConf;
-    property tpXML: TtpXML               read FtpXML        write FtpXML;
+    property NFSe: TNFSe             read FNFSe     write FNFSe;
+    property Provedor: TnfseProvedor read FProvedor write FProvedor;
+    property tpXML: TtpXML           read FtpXML    write FtpXML;
   end;
 
 implementation
@@ -76,10 +75,46 @@ begin
   FAOwner := AOwner;
 end;
 
+function TNFSeRClass.ItemListaServicoDescricao(const Codigo: string): string;
+var
+  xCodigo: string;
+begin
+  xCodigo := OnlyNumber(Codigo);
+
+  if FAOwner.ConfigGeral.TabServicosExt then
+    Result := ObterDescricaoServico(xCodigo)
+  else
+    Result := CodItemServToDesc(xCodigo);
+end;
+
 function TNFSeRClass.LerXml: Boolean;
 begin
   Result := False;
   raise EACBrDFeException.Create(ClassName + '.LerXml, não implementado');
+end;
+
+function TNFSeRClass.NormatizaItemListaServico(const Codigo: string): string;
+var
+  Item: Integer;
+  xCodigo: string;
+begin
+  xCodigo := Codigo;
+
+  Item := StrToIntDef(OnlyNumber(xCodigo), 0);
+  if Item < 100 then
+    Item := Item * 100 + 1;
+
+  xCodigo := FormatFloat('0000', Item);
+
+  Result := Copy(xCodigo, 1, 2) + '.' + Copy(xCodigo, 3, 2);
+end;
+
+function TNFSeRClass.TipodeXMLLeitura(const aArquivo: string): TtpXML;
+begin
+  if (Pos('nfse>', LowerCase(Arquivo)) > 0) then
+    Result := txmlNFSe
+  else
+    Result := txmlRPS;
 end;
 
 end.

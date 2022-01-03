@@ -37,16 +37,13 @@ unit ISSDigital.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_ISSDigital }
+  { TNFSeR_ISSDigital200 }
 
-  TNFSeR_ISSDigital = class(TNFSeR_ABRASFv2)
+  TNFSeR_ISSDigital200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

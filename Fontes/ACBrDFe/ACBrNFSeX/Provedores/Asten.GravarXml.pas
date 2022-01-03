@@ -37,17 +37,17 @@ unit Asten.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_Asten }
+  { TNFSeW_Asten202 }
 
-  TNFSeW_Asten = class(TNFSeW_ABRASFv2)
+  TNFSeW_Asten202 = class(TNFSeW_ABRASFv2)
   protected
+    procedure Configuracao; override;
+
+  public
 
   end;
 
@@ -60,5 +60,14 @@ uses
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
 //     Asten
 //==============================================================================
+
+{ TNFSeW_Asten202 }
+
+procedure TNFSeW_Asten202.Configuracao;
+begin
+  inherited Configuracao;
+
+  NrOcorrToken := 1;
+end;
 
 end.

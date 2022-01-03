@@ -2,13 +2,13 @@
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoCCe : EventoBase
+    public sealed class EventoCCe : EventoNFeBase
     {
         #region Constructor
 
         public EventoCCe()
         {
-            tpEvento = TipoEvento.teCCe;
+            tpEvento = TipoEventoNFe.teCCe;
         }
 
         #endregion Constructor

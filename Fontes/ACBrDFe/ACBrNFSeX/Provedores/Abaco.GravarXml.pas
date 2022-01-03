@@ -37,9 +37,6 @@ unit Abaco.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv1, ACBrNFSeXGravarXml_ABRASFv2,
   ACBrNFSeXConversao;
@@ -53,9 +50,9 @@ type
 
   end;
 
-  { TNFSeW_Abacov204 }
+  { TNFSeW_Abaco204 }
 
-  TNFSeW_Abacov204 = class(TNFSeW_ABRASFv2)
+  TNFSeW_Abaco204 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -74,16 +71,18 @@ procedure TNFSeW_Abaco.Configuracao;
 begin
   inherited Configuracao;
 
+  FormatoItemListaServico := filsSemFormatacao;
+  DivAliq100 := True;
   NrOcorrCodPaisTomador := -1;
 end;
 
-{ TNFSeW_Abacov204 }
+{ TNFSeW_Abaco204 }
 
-procedure TNFSeW_Abacov204.Configuracao;
+procedure TNFSeW_Abaco204.Configuracao;
 begin
   inherited Configuracao;
 
-  NrOcorrCodigoPaisServico := 0;
+  NrOcorrCodigoPaisTomador := -1;
 
   TagTomador := 'TomadorServico';
 end;

@@ -77,8 +77,8 @@ type
   TeSocialSchema          = (schErro, schConsultaLoteEventos, schEnvioLoteEventos,
                              schevtAdesao, schevtAdmissao, schevtAdmPrelim,
                              schevtAfastTemp, schevtAltCadastral, schevtAltContratual,
-                             schevtAqProd, schevtAvPrevio, schevtBasesTrab, schevtBenPrRP,
-                             schevtCadInicial, schevtCAT, schevtCdBenPrRP,
+                             schevtAqProd, schevtAvPrevio, schevtBasesTrab, schevtCdBenefIn,
+                             schevtCadInicial, schevtCAT, schevtBenPrRP,
                              schevtComProd, schevtContratAvNP, schevtContrSindPatr,
                              schevtConvInterm, schevtCS, schevtDeslig, schevtExclusao,
                              schevtExpRisco, schevtFechaEvPer, schevtInfoComplPer,
@@ -89,8 +89,10 @@ type
                              schevtTabFuncao, schevtTabHorTur, schevtTabLotacao, schevtTabOperPort,
                              schevtTabProcesso, schevtTabRubrica, schevtTotConting, schevtTSVAltContr,
                              schevtTSVInicio, schevtTSVTermino, schRetornoEnvioLoteEventos,
-                             schRetornoEvento, schRetornoProcessamentoLote,
-                             schConsultaIdentEventos, schDownloadEventos, schEvtToxic, schEvtTreiCap);
+                             schRetornoEvento, schRetornoProcessamentoLote, schConsultaIdentEventos, 
+                             schDownloadEventos, schEvtToxic, schEvtTreiCap,schevtCdBenefAlt, 
+                             schevtCdBenIn, schevtCessao, schevtCdBenAlt, schevtReativBen,
+                             schevtCdBenTerm);
 
   TLayOut                 = (LayEnvioLoteEventos, LayConsultaLoteEventos,
                              LayConsultaIdentEventos, LayDownloadEventos);
@@ -104,7 +106,8 @@ type
                              teS1300, teS2190, teS2200, teS2205, teS2206, teS2210, teS2220, teS2230,
                              teS2240, teS2245, teS2250, teS2260, teS2298, teS2299, teS2300, teS2305,
                              teS2306, teS2399, teS2400, teS3000, teS4000, teS4999, teS5001, teS5002,
-                             teS5003, teS5011, teS5012, teS5013, teS2221);
+                             teS5003, teS5011, teS5012, teS5013, teS2221, teS2405, teS2410, teS2231,
+                             teS2416, teS2418, teS2420);
 
   tpSimNao                = (tpSim, tpNao);
 
@@ -173,28 +176,99 @@ type
                              cicIncidExclusivaEmpregadorSalMaternidade,
                              cicIncidExclusivaEmpregadorSalMaternidade13oSalario);
 
-  tpCodIncIRRF            = (ciiNaoeBasedeCalculo, ciiNaoeBasedeCalculoAcordoInternacional,
-                             ciiOutrasVerbasNaoConsideradas,
-                             ciiBasedeCalculoIRRFRemMensal, ciiBasedeCalculoIRRF13oSalario,
-                             ciiBasedeCalculoIRRFFerias, ciiBasedeCalculoIRRFPLR, ciiBasedeCalculoIRRFRRA,
-                             ciiValorIRRFRemMensal, ciiValorIRRF13oSalario, ciiValorIRRFFerias, ciiValorIRRFPLR,
-                             ciiValorIRRFPLRRRA, ciPrevSocialOficialRemMensal, ciPrevSocialOficial13Salario,
-                             ciPrevSocialOficialFerias, ciPrevSocialOficialRRA, ciPrevPrivadaSalarioMensal,
-                             ciPrevPrivada13Salario, ciPensaoAlimenticiaRemMensal, ciPensaoAlimenticia13Salario,
-                             ciPensaoAlimenticiaFerias, ciPensaoAlimenticiaPLR, ciPensaoAlimenticiaRRA,
-                             ciFundoAposentadoriaProgIndFAPIRemMensal,
-                             ciFundoAposentadoriaProgIndFAPI13Salario, ciFundacaoPrevCompServidorPubFederalFunprespRemMensal,
-                             ciFundacaoPrevCompServidorPubFederalFunpresp13Salario, ciParcelaIsenta65AnosRemMensal,
-                             ciParcelaIsenta65Anos13Salario, ciDiaria, ciAjudaDeCusto, ciIndenizacaoRescisaoContratoInclusiveAtituloPDV,
-                             ciAbonoPecuniario, ciPensaoAposOureformaPorMolestiaGraveOuAcidServicoRemMensal,
-                             ciPensaoAposOureformaPorMolestiaGraveOuAcidServico13Salario,
-                             ciValPagosATitOuSocioMicroEmpOuEmpPeqPorteExcProLaboreEAlugueis,
-                             ciOutros, ciDepositoJudicial, ciCompJudicialAnoCalendario, ciCompJudicialAnosAnteriores,
-                             ciiIncidenciasuspensajudicialBCIRRF, ciiIncidenciasuspensajudicialBCIRRF13Salario,
-                             ciiIncidenciasuspensajudicialBCIRRFFerias, ciiIncidenciasuspensajudicialBCIRRFPLR,
-                             ciiIncidenciasuspensajudicialBCIRRFRRA);
+  tpCodIncIRRF            = (ciiNaoeBasedeCalculo,                                               {0}    { Item válido até a versão 2.5 }
+                             ciiNaoeBasedeCalculoAcordoInternacional,                            {1}    { Item válido até a versão 2.5 }
+                             ciiOutrasVerbasNaoConsideradas,                                     {9}
+                             ciiBasedeCalculoIRRFRemMensal,                                      {11}
+                             ciiBasedeCalculoIRRF13oSalario,                                     {12}
+                             ciiBasedeCalculoIRRFFerias,                                         {13}
+                             ciiBasedeCalculoIRRFPLR,                                            {14}
+                             ciiBasedeCalculoIRRFRRA,                                            {15}    { Item válido até a versão 2.5 }
+                             ciiValorIRRFRemMensal,                                              {31}
+                             ciiValorIRRF13oSalario,                                             {32}
+                             ciiValorIRRFFerias,                                                 {33}
+                             ciiValorIRRFPLR,                                                    {34}
+                             ciiValorIRRFPLRRRA,                                                 {35}    { Item válido até a versão 2.5 }
+                             ciPrevSocialOficialRemMensal,                                       {41}
+                             ciPrevSocialOficial13Salario,                                       {42}
+                             ciPrevSocialOficialFerias,                                          {43}
+                             ciPrevSocialOficialRRA,                                             {44}    { Item válido até a versão 2.5 }
+                             ciPrevPrivadaSalarioMensal,                                         {46}
+                             ciPrevPrivada13Salario,                                             {47}
+                             ciPrevPrivadaFerias,                                                {48}    { Item válido a partir da versão simplificada }
+                             ciPensaoAlimenticiaRemMensal,                                       {51}
+                             ciPensaoAlimenticia13Salario,                                       {52}
+                             ciPensaoAlimenticiaFerias,                                          {53}
+                             ciPensaoAlimenticiaPLR,                                             {54}
+                             ciPensaoAlimenticiaRRA,                                             {55}    { Item válido até a versão 2.5 }
+                             ciFundoAposentadoriaProgIndFAPIRemMensal,                           {61}
+                             ciFundoAposentadoriaProgIndFAPI13Salario,                           {62}
+                             ciFundacaoPrevCompServidorPubFederalFunprespRemMensal,              {63}
+                             ciFundacaoPrevCompServidorPubFederalFunpresp13Salario,              {64}
+                             ciFundacaoPrevCompServidorPublicoFerias,                            {65}    { Item válido a partir da versão simplificada }
+                             ciFundoDeAposentadoriaProgramadaIndividualFAPIFerias,               {66}    { Item válido a partir da versão simplificada }
+                             ciPlanoPrivadoColetivoAssistenciaSaude,                             {67}    { Item válido a partir da versão simplificada }
+                             ciParcelaIsenta65AnosRemMensal,                                     {70}
+                             ciParcelaIsenta65Anos13Salario,                                     {71}
+                             ciDiaria,                                                           {72}
+                             ciAjudaDeCusto,                                                     {73}
+                             ciIndenizacaoRescisaoContratoInclusiveAtituloPDV,                   {74}
+                             ciAbonoPecuniario,                                                  {75}
+                             ciPensaoAposOureformaPorMolestiaGraveOuAcidServicoRemMensal,        {76}
+                             ciPensaoAposOureformaPorMolestiaGraveOuAcidServico13Salario,        {77}
+                             ciValPagosATitOuSocioMicroEmpOuEmpPeqPorteExcProLaboreEAlugueis,    {78}    { Item válido até a versão 2.5 }
+                             ciOutros,                                                           {79}
+                             ciDepositoJudicial,                                                 {81}    { Item válido até a versão 2.5 }
+                             ciCompJudicialAnoCalendario,                                        {82}    { Item válido até a versão 2.5 }
+                             ciCompJudicialAnosAnteriores,                                       {83}    { Item válido até a versão 2.5 }
+                             ciiIncidenciasuspensajudicialBCIRRF,                                {91}    { Item válido até a versão 2.5 }
+                             ciiIncidenciasuspensajudicialBCIRRF13Salario,                       {92}    { Item válido até a versão 2.5 }
+                             ciiIncidenciasuspensajudicialBCIRRFFerias,                          {93}    { Item válido até a versão 2.5 }
+                             ciiIncidenciasuspensajudicialBCIRRFPLR,                             {94}    { Item válido até a versão 2.5 }
+                             ciiIncidenciasuspensajudicialBCIRRFRRA,                             {95}    { Item válido até a versão 2.5 }
+                             ciiRendimentoIsentoAuxilioMoradia,                                  {700}   { Item válido a partir da versão simplificada }
+                             ciiRendimentoParteNaoTributavelDoValorDeServicoDeTransporte,        {701}   { Item válido a partir da versão simplificada }
+                             ciiRendimentoTributavelExigibilidadeSuspensaRemuneracaoMensal,      {9011}  { Item válido a partir da versão simplificada }
+                             ciiRendimentoTributavelExigibilidadeSuspensaDecimoTerceiro,         {9012}  { Item válido a partir da versão simplificada }
+                             ciiRendimentoTributavelExigibilidadeSuspensaFerias,                 {9013}  { Item válido a partir da versão simplificada }
+                             ciiRendimentoTributavelExigibilidadeSuspensaPLR,                    {9014}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspensaRetencaoIRRFRemuneracaoMensal,                       {9031}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspensaRetencaoIRRFDecimoTerceiro,                          {9032}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspensaRetencaoIRRFFerias,                                  {9033}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspensaRetencaoIRRFPLR,                                     {9034}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspRetencaoIRRFDepositoJudicialMensal,                      {9831}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspRetencaoIRRFDepositoJudicialDecimoTerceiro,              {9832}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspRetencaoIRRFDepositoJudicialFerias,                      {9833}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspRetencaoIRRFDepositoJudicialPLR,                         {9834}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPSORemuneracaoMensal,                     {9041}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPSODecimoTerceiro,                        {9042}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPSOFerias,                                {9043}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPrevPrivadaSalarioMensal,                 {9046}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPrevPrivadaDecimoTerceiro,                {9047}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPrevPrivadaFerias,                        {9048}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPensaoRemuneracaoMensal,                  {9051}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPensaoDecimoTerceiro,                     {9052}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPensaoFerias,                             {9053}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPensaoPLR,                                {9054}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFFundoAposProgIndFAPIRemuneracaoMensal,    {9061}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFFundoAposProgIndFAPIDecimoTerceiro,       {9062}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFFundoPrevComplServPublRemuneracaoMensal,  {9063}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFFundoPrevComplServPublDecimoTerceiro,     {9064}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFFundoPrevComplServPublFerias,             {9065}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFFundoAposProgIndFAPIFerias,               {9066}  { Item válido a partir da versão simplificada }
+                             ciiExigSuspDeducaoBaseIRRFPlanoPrivadoColetivoDeAssistenciaASaude,  {9067}  { Item válido a partir da versão simplificada }
+                             ciiCompensacaoJudicialAnoCalendario,                                {9082}  { Item válido a partir da versão simplificada }
+                             ciiCompensacaoJudicialAnosAnteriores);                              {9083}  { Item válido a partir da versão simplificada }
 
-  tpCodIncFGTS            = (cdfNaoeBasedeCalculo, cdfBasedeCalculoFGTS, cdfBasedeCalculoFGTS13Sal, cdfBasedeCalculoFGTSRescisorio, cdfIncidenciadecisaojudicial);
+  tpCodIncCPRP            = (cicpNaoeBasedeCalculodeContribuicoesDevidasaoRPPSRegimeMilitar,
+                             cicpBasedeCalculodeContribuicoesDevidasaoRPPSRegimeMilitar,
+                             cicpBasedeCalculodeContribuicoesDevidasaoRPPSRegimeMilitarDecimo,
+                             cicpContribuicaoDescontadadoSeguradoeBeneficiario,
+                             cicpContribuicaoDescontadadoSeguradoeBeneficiarioDecimo,
+                             cicpSuspensaodeIncidenciaemDecorrenciadeDecisaoJudicial,
+                             cicpNenhum);
+
+  tpCodIncFGTS            = (cdfNaoeBasedeCalculo, cdfBasedeCalculoFGTS, cdfBasedeCalculoFGTS13Sal, cdfBasedeCalculoFGTSRescisorio, cdfIncidenciadecisaoJudicialFGTSMensal, cdfIncidenciadecisaoJudicialFGTS13Sal, cdfIncidenciadecisaoJudicial);
 
   tpCodIncSIND            = (cisNaoebasedecalculo, cisBasedecalculo, cisValorlaboraldescontada, cisIncidenciasuspensajudicial);
 
@@ -325,7 +399,7 @@ type
   tpTpRegPrev             = (rpRGPS, rpRPPS, rpRPPE);
 
   tpTpRegPrevFacultativo  = (rpfNenhum, rpfRGPS, rpfRPPS, rpfRPPE2);
-  
+
   tpTpAdmissao            = (taAdmissao,
                              taTransfEmpresaMesmoGrupoEconomico,
                              taTransfEmpresaConsorciadaOuDeConsorcio,
@@ -358,7 +432,7 @@ type
 
   tpUndSalFixo            = (sfPorHora, sfPorDia, sfPorSemana, sfPorQuinzena, sfPorMes, sfPorTarefa, sfNaoaplicavel);
 
-  tpTpContr               = (PrazoIndeterminado, PrazoDeterminado, PrazoDeterminadoVincOcDeUmFato);
+  tpTpContr               = (PrazoIndeterminado, PrazoDeterminado, PrazoDeterminadoVincOcDeUmFato, PrazoNaoAplicavel);
 
   tpTpJornada             = (tjJornadaComHorarioDiarioFolgaFixos,                      { Item válido até a versão 2.5 }
                              tjJornada12x36,
@@ -368,7 +442,7 @@ type
                              tjJornadaComHorarioDiarioFixoEFolhaFixaOutroDiaDaSemana,  { Item válido a partir da versão simplificada }
                              tjTurnoIninterruptoDeRevezamento,                         { Item válido a partir da versão simplificada }
                              tjDemaisTiposJornada);
-                             
+
   tpTpDia                 = (diSegundaFeira, diTercaFeira, diQuartaFeira, diQuintaFeira, diSextaFeira, diSabado, diDomingo, diDiaVariavel);
 
   tpTpExameOcup           = (taAdmissional, taPeriodico, taRetornoAoTrabalho, taMudancaDeFuncao, taMonitoracaoPontual, taDemissional);
@@ -455,7 +529,13 @@ type
 
   tpInclContr             = (icNenhum, icLocaisSemFiliais, icEstudoDeMercado, icContratacaoSuperior3Meses);
 
-  tpPlanRP                = (prpNenhum, prpPlanoPrevidenciarioOuUnico, prpPlanoFinanceiro);
+  tpPlanRP                = (prpNenhum = -1,
+                             prpSemSegregacaoDaMassa,
+                             prpFundoEmCapitalizacao,
+                             prpFundoEmReparticao,
+                             prpMantidoPeloTesouro,
+                             prpPlanoPrevidenciarioOuUnico,
+                             prpPlanoFinanceiro);
 
   tpMtvAlt                = (maPromocao, maReadaptacao, maAproveitamento, maOutros);
 
@@ -473,17 +553,17 @@ type
                              cpaAvisoprevioIndenizadoNaoExigivel);
 
   tpTpAval                = (tpaQuantitativo, tpaQualitativo);
-                        
+
   tpModTreiCap            = (mtcPresencial, mtcEaD, mtcSemipresencial);
-                        
+
   tpTpTreiCap             = (ttcInicial, ttcPeriodico, ttcReciclagem, ttcEventual, ttcOutros);
-                        
+
   tpTpProf                = (ttpProfissionalEmpregado, ttpProfissionalSemVinculo);
-                        
+
   tpNacProf               = (ttpProfissionalBrasileiro, ttpProfissionalEstrangeiro);
-                        
+
   TVersaoeSocial          = (ve02_04_01, ve02_04_02, ve02_05_00, veS01_00_00);
-                        
+
   tpTmpParc               = (tpNaoeTempoParcial,
                              tpLimitado25HorasSemanais,
                              tpLimitado30HorasSemanais,
@@ -499,34 +579,71 @@ type
 
   tpTmpResid              = (ttrNenhum, ttrPrazoIndeterminado, ttrPrazoDeterminado);
 
-  tpCondIng               = (tciNenhum, tciRefugiado, tciSolicitanteDeRefugio, tciPermanenciaNoBrasilReuniaoFamiliar, 
-                             tciBeneficiadopeloAcordoEntrePaisesDoMercosul, tciDependenteDeAgenteDiplomatico, 
+  tpCondIng               = (tciNenhum, tciRefugiado, tciSolicitanteDeRefugio, tciPermanenciaNoBrasilReuniaoFamiliar,
+                             tciBeneficiadopeloAcordoEntrePaisesDoMercosul, tciDependenteDeAgenteDiplomatico,
                              tciBeneficiadoPeloTratadoDeAmizade, tciOutraCondicao);
 
   tpIndApurIR             = (tiaiNenhum, tiaiNormal, tiaiSituacaoEspecialIRRF);
 
+  tpIndSitBenef           = (tpisbNenhum,
+                             tpisbBeneficioConcedidoPeloProprioOrgaoDeclarante,
+                             tpisbBeneficioTransferidoDeOutroOrgao,
+                             tpisbMudandaDeCPFDoBeneficiario);
+ 
+  tpTpPenMorte            = (pmNada, pmVitalicia, pmTemporaria);
+  
+  tpMotCessBenef          = (tmcbNenhum,
+                             tmcbObito, 
+                             tmcbReversao, 
+                             tmcbPorDecisaoJudicial, 
+                             tmcbCassacao, 
+                             tmcbTerminoDoPrazoDoBeneficio,
+                             tmcbExtincaoDeQuota,
+                             tmcbNaoHomologadoPeloTribunalDeContas,
+                             tmcbRenunciaExpressa,
+                             tmcbTransferenciaDeOrgaoAdministrador,
+                             tmcbMudancaDeCPFDoBeneficiario,
+                             tmcbNaoRecadastramento);
+
+  tpMtvTermino            = tpMotCessBenef;
+  
+  tpMtvSuspensao          = (mtvNada,
+                             mtvSuspensaoPorNaoRecadastramento,
+                             mtvOutrosMotivosDeSuspensao);
+  
 const
   PrefixoVersao = '-v';
 
-  TEventoString: array[0..43] of String =('evtInfoEmpregador', 'evtTabEstab',
+  TEventoString: array[0..49] of String =('evtInfoEmpregador', 'evtTabEstab',
                                           'evtTabRubrica', 'evtTabLotacao',
                                           'evtTabCargo', 'evtTabCarreira',
                                           'evtTabFuncao', 'evtTabHorTur',
                                           'evtTabAmbiente', 'evtTabProcesso',
-                                          'evtTabOperPort', 'S-2100', 'evtRemun',
-                                          'evtRmnRPPS', 'evtBenPrRP', 'evtPgtos',
-                                          'S-1220', 'evtAqProd', 'evtComProd',
-                                          'evtContratAvNP', 'evtInfoComplPer',
-                                          'evtTotConting', 'evtReabreEvPer',
-                                          'evtFechaEvPer', 'evtContrSindPatr',
-                                          'evtAdmPrelim', 'evtAdmissao',
-                                          'evtAltCadastral', 'evtAltContratual',
-                                          'evtCAT', 'evtMonit', 'evtAfastTemp',
-                                          'evtExpRisco', 'evtInsApo', 'evtAvPrevio',
-                                          'evtConvInterm', 'evtReintegr',
-                                          'evtDeslig', 'evtTSVInicio', 'S-2305',
+                                          'evtTabOperPort', 'S-2100', 
+                                          'evtRemun', 'evtRmnRPPS', 
+                                          'evtCdBenefIn', 'evtPgtos',
+                                          'S-1220', 'evtAqProd', 
+                                          'evtComProd', 'evtContratAvNP', 
+                                          'evtInfoComplPer', 'evtTotConting', 
+                                          'evtReabreEvPer', 'evtFechaEvPer', 
+                                          'evtContrSindPatr', 'evtAdmPrelim', 
+                                          'evtAdmissao', 'evtAltCadastral', 
+                                          'evtAltContratual', 'evtCAT', 
+                                          'evtMonit', 'evtAfastTemp',
+                                          'evtExpRisco', 'evtInsApo', 
+                                          'evtAvPrevio', 'evtConvInterm', 
+                                          'evtReintegr', 'evtDeslig', 
+                                          'evtTSVInicio', 'S-2305',
                                           'evtTSVAltContr', 'evtTSVTermino',
-                                          'evtCdBenPrRP', 'evtExclusao');
+                                          'evtCdBenPrRP', 'evtExclusao', 
+                                          'evtCdBenefAlt', 'evtCdBenIn', 
+                                          'evtCessao', 'evtCdBenAlt', 
+                                          'evtReativBen','evtCdBenTerm');
+
+  TTrabalhadorSemVinculo: Array[0..27] of integer = (
+                                          201, 202, 304, 305, 308, 311, 313, 401, 410, 501, 
+                                          701, 711, 712, 721, 722, 723, 731, 734, 738, 741, 
+                                          751, 761, 771, 781, 901, 902, 903, 904);
 
 function TipoEventoToStr(const t: TTipoEvento ): string;
 function StrToTipoEvento(out ok: boolean; const s: string): TTipoEvento;
@@ -594,6 +711,9 @@ function eSStrToCodIncFGTS(var ok: boolean; const s: string): TpCodIncFGTS;
 
 function eSCodIncSINDToStr(const t: TpCodIncSIND ): string;
 function eSStrToCodIncSIND(var ok: boolean; const s: string): TpCodIncSIND;
+
+function eSCodIncCPRPToStr(const t: TpCodIncCPRP ): string;
+function eSStrToCodIncCPRP(var ok: boolean; const s: string): TpCodIncCPRP;
 
 function eSIndSuspToStr(const t: tpIndSusp): string;
 function eSStrToIndSusp(var ok: Boolean; const s: string): tpIndSusp;
@@ -867,7 +987,7 @@ function eSStrTotpTpPgto(var ok: Boolean; const s: string): tpTpPgto;
 
 function eSTpOpcConsultToStr(const t: tpOpcConsult): string;
 function eSStrTotpOpcConsult(var ok: Boolean; const s: string): tpOpcConsult;
-  
+
 function eSTpNivelEstagioToStr(const t: tpNivelEstagio): string;
 function eSStrTotpNivelEstagio(var ok: Boolean; const s: string): tpNivelEstagio;
 
@@ -956,13 +1076,27 @@ function StrTotpTmpResid(var ok: boolean; const s: string): tpTmpResid;
 function tpCondIngToStr(const t: tpCondIng ): string;
 function StrTotpCondIng(var ok: boolean; const s: string): tpCondIng;
 
+function eSTpIndSitBenefToStr(const t: tpIndSitBenef): string;
+function eSStrToTpIndSitBenef(var ok: boolean; const s: string): tpIndSitBenef;
+
+function eStpTpPenMorteToStr(const t: tpTpPenMorte): string;
+function eSStrTotpTpPenMorte(var ok: boolean; const s: string): tpTpPenMorte;
+
+function eStpTpMotCessBenefToStr(const t: tpMotCessBenef): string;
+function eSStrToTpMotCessBenef(var ok: boolean; const s: string): tpMotCessBenef;
+
+function eStpTpMtvSuspensaoToStr(const t: tpMtvSuspensao): string;
+function eSStrToTpMtvSuspensao(var ok: boolean; const s: string): tpMtvSuspensao;
+
+function IntToTpProf(codCateg : Integer): tpTpProf;
+
 implementation
 
 uses
   pcnConversao, typinfo;
 
 const
-  TTipoEventoString   : array[0..52] of String =('S-1000', 'S-1005', 'S-1010', 'S-1020', 'S-1030',
+  TTipoEventoString   : array[0..58] of String =('S-1000', 'S-1005', 'S-1010', 'S-1020', 'S-1030',
                                                  'S-1035', 'S-1040', 'S-1050', 'S-1060', 'S-1070',
                                                  'S-1080', 'S-2100', 'S-1200', 'S-1202', 'S-1207',
                                                  'S-1210', 'S-1220', 'S-1250', 'S-1260', 'S-1270',
@@ -972,7 +1106,8 @@ const
                                                  'S-2260', 'S-2298', 'S-2299', 'S-2300', 'S-2305',
                                                  'S-2306', 'S-2399', 'S-2400', 'S-3000', 'S-4000',
                                                  'S-4999', 'S-5001', 'S-5002', 'S-5003', 'S-5011',
-                                                 'S-5012', 'S-5013', 'S-2221');
+                                                 'S-5012', 'S-5013', 'S-2221', 'S-2405', 'S-2410',
+                                                 'S-2231', 'S-2416', 'S-2418', 'S-2420');
 
   TUFString           : array[0..27] of String = ('AC','AL','AP','AM','BA','CE','DF','ES','GO',
                                                   'MA','MT','MS','MG','PA','PB','PR','PE','PI',
@@ -1134,6 +1269,7 @@ begin
      teS2220: Result := schevtMonit;
      teS2221: Result := schevtToxic;
      teS2230: Result := schevtAfastTemp;
+     teS2231: Result := schevtCessao;
      teS2240: Result := schevtExpRisco;
      teS2245: Result := schevtTreiCap;
      teS2250: Result := schevtAvPrevio;
@@ -1143,7 +1279,12 @@ begin
      teS2300: Result := schevtTSVInicio;
      teS2306: Result := schevtTSVAltContr;
      teS2399: Result := schevtTSVTermino;
-     teS2400: Result := schevtCdBenPrRP;
+     teS2400: Result := schevtCdBenefIn;
+     teS2405: Result := schevtCdBenefAlt;
+     teS2410: Result := schevtCdBenIn;
+     teS2416: Result := schevtCdBenAlt;
+     teS2418: Result := schevtReativBen;
+     teS2420: Result := schevtCdBenTerm;
      teS3000: Result := schevtExclusao;
   else
     Result := schErro;
@@ -1245,14 +1386,14 @@ begin
   result := tpInclContr( StrToEnumerado2(ok, s, TGenericosString0_3) );
 end;
 
-function eSTpPlanRPToStr(const t: tpPlanRP): string;
+function eStpPlanRPToStr(const t: tpPlanRP): string;
 begin
-  result := EnumeradoToStr2(t, TGenericosString0_2 );
+  result := EnumeradoToStr2(t, [ '0', '1', '2', '3', '1', '2' ] );
 end;
 
-function eSStrToTpPlanRP(var ok: Boolean; const s: string): tpPlanRP;
+function eSStrTotpPlanRP(var ok: Boolean; const s: string): tpPlanRP;
 begin
-  result := tpPlanRP( StrToEnumerado2(ok, s, TGenericosString0_2) );
+  result := tpPlanRP( StrToEnumerado2(ok, s, [ '0', '1', '2', '3', '1', '2' ]) );
 end;
 
 function eSTpRegTrabToStr(const t: tpTpRegTrab ): string;
@@ -1768,25 +1909,31 @@ end;
 
 function eSCodIncIRRFToStr(const t:tpCodIncIRRF ): string;
 begin
-  result := EnumeradoToStr2(t,[  '00', '01', '09','11', '12', '13', '14', '15', '31', '32', '33', '34',
-                                 '35', '41', '42', '43', '44', '46', '47', '51', '52', '53',
-                                 '54', '55', '61', '62', '63', '64', '70', '71',
-                                 '72', '73', '74', '75', '76', '77', '78', '79', '81', '82',
-                                 '83','91', '92', '93', '94', '95' ] );
+  result := EnumeradoToStr2(t,[    '00',   '01',   '09',   '11',   '12',   '13',   '14',   '15',   '31',   '32',   '33',
+                                   '34',   '35',   '41',   '42',   '43',   '44',   '46',   '47',   '48',   '51',   '52',
+                                   '53',   '54',   '55',   '61',   '62',   '63',   '64',   '65',   '66',   '67',   '70',
+                                   '71',   '72',   '73',   '74',   '75',   '76',   '77',   '78',   '79',   '81',   '82',
+                                   '83',   '91',   '92',   '93',   '94',   '95',  '700',  '701', '9011', '9012', '9013',
+                                 '9014', '9031', '9032', '9033', '9034', '9831', '9832', '9833', '9834', '9041', '9042',
+                                 '9043', '9046', '9047', '9048', '9051', '9052', '9053', '9054', '9061', '9062', '9063',
+                                 '9064', '9065', '9066', '9067', '9082', '9083'  ] );
 end;
 
 function eSStrToCodIncIRRF(var ok: boolean; const s: string): tpCodIncIRRF;
 begin
-  result := tpCodIncIRRF( StrToEnumerado2(ok , s,[  '00', '01', '09','11', '12', '13', '14', '15', '31', '32', '33', '34',
-                                                    '35', '41', '42', '43', '44', '46', '47', '51', '52', '53',
-                                                    '54', '55', '61', '62', '63', '64', '70', '71',
-                                                    '72', '73', '74', '75', '76', '77', '78', '79', '81', '82',
-                                                    '83','91', '92', '93', '94', '95' ] ));
+  result := tpCodIncIRRF( StrToEnumerado2(ok , s,[    '00',   '01',   '09',   '11',   '12',   '13',   '14',   '15',   '31',   '32',   '33',
+                                                      '34',   '35',   '41',   '42',   '43',   '44',   '46',   '47',   '48',   '51',   '52',
+                                                      '53',   '54',   '55',   '61',   '62',   '63',   '64',   '65',   '66',   '67',   '70',   
+                                                      '71',   '72',   '73',   '74',   '75',   '76',   '77',   '78',   '79',   '81',   '82',   
+                                                      '83',   '91',   '92',   '93',   '94',   '95',  '700',  '701', '9011', '9012', '9013',
+                                                    '9014', '9031', '9032', '9033', '9034', '9831', '9832', '9833', '9834', '9041', '9042',
+                                                    '9043', '9046', '9047', '9048', '9051', '9052', '9053', '9054', '9061', '9062', '9063', 
+                                                    '9064', '9065', '9066', '9067', '9082', '9083'  ] ));
 end;
 
 function eSCodIncFGTSToStr(const t:tpCodIncFGTS ): string;
 begin
-  result := EnumeradoToStr2(t,[ '00', '11', '12', '21', '91' ] );
+  result := EnumeradoToStr2(t,[ '00', '11', '12', '21', '91', '92', '93' ] );
 end;
 
 function eSStrToCodIncFGTS(var ok: boolean; const s: string): tpCodIncFGTS;
@@ -1802,6 +1949,16 @@ end;
 function eSStrToCodIncSIND(var ok: boolean; const s: string): tpCodIncSIND;
 begin
   result := tpCodIncSIND( StrToEnumerado2(ok , s,[  '00', '11', '31','91'] ));
+end;
+
+function eSCodIncCPRPToStr(const t:tpCodIncCPRP ): string;
+begin
+  result := EnumeradoToStr2(t,[ '00', '11', '12', '31', '32', '91' ] );
+end;
+
+function eSStrToCodIncCPRP(var ok: boolean; const s: string): tpCodIncCPRP;
+begin
+  result := tpCodIncCPRP( StrToEnumerado2(ok , s,[ '00', '11', '12', '31', '32', '91' ] ));
 end;
 
 function eSIndSuspToStr(const t: tpIndSusp): string;
@@ -2517,10 +2674,10 @@ end;
 
 function StrEventoToTipoEvento(out ok: boolean; const s: string): TTipoEvento;
 const
-  EventoString: array[0..52] of String =('evtInfoEmpregador', 'evtTabEstab',
+  EventoString: array[0..58] of String =('evtInfoEmpregador', 'evtTabEstab',
        'evtTabRubrica', 'evtTabLotacao', 'evtTabCargo', 'evtTabCarreira',
        'evtTabFuncao', 'evtTabHorContratual', 'evtTabAmbiente', 'evtTabProcesso',
-       'evtTabOperPortuario', 'S-2100', 'evtRemun', 'evtRmnRPPS', 'evtBenPrRP',
+       'evtTabOperPortuario', 'S-2100', 'evtRemun', 'evtRmnRPPS', 'evtCdBenefIn',
        'evtPgtos', 'S-1220', 'evtAqProd', 'evtComProd', 'evtContratAvNP',
        'evtInfoComplPer', 'evtTotConting', 'evtReabreEvPer', 'evtFechaEvPer',
        'evtContrSindPatr', 'evtAdmPrelim', 'evtAdmissao', 'evtAltCadastral',
@@ -2528,7 +2685,8 @@ const
        'evtInsApo', 'evtAvPrevio', 'evtConvInterm', 'evtReintegr', 'evtDeslig',
        'evtTSVInicio', 'S-2305', 'evtTSVAltContr', 'evtTSVTermino', 'evtCdBenPrRP',
        'evtExclusao', 'S-4000', 'S-4999', 'S-5001', 'S-5002', 'S-5003', 'S-5011', 'S-5012', 'S-5013',
-       'evtToxic');
+       'evtToxic', 'evtCdBenefAlt', 'evtCdBenIn', 'evtCessao', 'evtCdBenAlt',
+       'evtReativBen', 'evtCdBenTerm');
 begin
   result := TTipoEvento( StrToEnumerado2(ok , s, EventoString ) );
 end;
@@ -2661,5 +2819,61 @@ function StrTotpCondIng(var ok: boolean; const s: string): tpCondIng;
 begin
   result := tpCondIng( StrToEnumerado2(ok, s, TGenericosString1_7) );
 end;
+
+function eSTpIndSitBenefToStr(const t: tpIndSitBenef): string;
+begin
+  result := EnumeradoToStr2(t, TGenericosString0_3);
+end;
+                          
+function eSStrToTpIndSitBenef(var ok: boolean; const s: string): tpIndSitBenef;
+begin
+  result := tpIndSitBenef(StrToEnumerado2(ok, s, TGenericosString0_3) );
+end;
+
+function eStpTpPenMorteToStr(const t: tpTpPenMorte): string;
+begin
+  result := EnumeradoToStr2(t, TGenericosString1_2);
+end;
+
+function eSStrTotpTpPenMorte(var ok: boolean; const s: string): tpTpPenMorte;
+begin
+  result := tpTpPenMorte(StrToEnumerado2(ok, s, TGenericosString1_2) );
+end;
+
+function eStptpMotCessBenefToStr(const t: tpMotCessBenef): string;
+begin
+  result := EnumeradoToStr2(t, TGenericosString01_11);
+end;
+
+function eSStrTotpMotCessBenef(var ok: boolean; const s: string): tpMotCessBenef;
+begin
+  result := tpMotCessBenef(StrToEnumerado2(ok, s, TGenericosString01_11) );
+end;
+
+function eStpTpMtvSuspensaoToStr(const t: tpMtvSuspensao): string;
+begin
+  result := EnumeradoToStr2(t,['00', '01', '99'] );
+end;
+
+function eSStrToTpMtvSuspensao(var ok: boolean; const s: string): tpMtvSuspensao;
+begin
+  result := StrToEnumerado(ok, s, ['00', '01', '99'],
+                           [mtvNada, 
+                            mtvSuspensaoPorNaoRecadastramento,
+                            mtvOutrosMotivosDeSuspensao]);
+end;
+
+function IntToTpProf(codCateg : Integer): tpTpProf;
+var
+        ix : integer;
+Begin
+  result := ttpProfissionalEmpregado;
+  for ix := low(TTrabalhadorSemVinculo) to High(TTrabalhadorSemVinculo) do
+    if TTrabalhadorSemVinculo[ix] = codCateg then
+    Begin
+      result := ttpProfissionalSemVinculo;
+      break;
+    End;
+End;
 
 end.

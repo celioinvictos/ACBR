@@ -76,6 +76,8 @@ const
   DSC_QTDDIAR = 'Quantidade de Diarias';
   DSC_VDIAR = 'Valor da Diaria';
   DSC_INSCMUN = 'Inscrição Municipal';
+  DSC_GENERICOSTITULO = 'Título do campo livre';
+  DESC_GENERICOSDESCRICAO = 'Conteúdo do campo livre.';
 
   // Códigos e Descrições das mensagens
   Cod001 = 'X001';
@@ -121,6 +123,12 @@ const
   Desc117 = 'Código de Verificação/Validação não informado.';
   Cod118 = 'X118';
   Desc118	= 'Chave da NFSe não informada.';
+  Cod119 = 'X119';
+  Desc119	= 'Emitente.WSUser não informado.';
+  Cod120 = 'X120';
+  Desc120	= 'Emitente.WSSenha não informada.';
+  Cod121 = 'X121';
+  Desc121	= 'Cadastro Econômico.';
 
   Cod201 = 'X201';
   Desc201 = 'WebService retornou um XML vazio.';
@@ -138,8 +146,20 @@ const
   Desc207 = 'Nfse Substituidora não encontrada.';
   Cod208 = 'X208';
   Desc208	= 'Não foi retornado nenhum Rps.';
+  Cod209 = 'X209';
+  Desc209 = 'Retorno do Cancelamento não encontrada.';
+  Cod210 = 'X210';
+  Desc210 = 'Nfse do Cancelamento não encontrada.';
+  Cod211 = 'X211';
+  Desc211 = 'Acesso Negado';
+
+  Cod800 = 'X800';
+  Desc800 = 'Erro de Validação: ';
+  Cod801 = 'X801';
+  Desc801 = 'Erro ao Assinar: ';
 
   Cod999 = 'X999';
+  Desc999 = 'Erro de Conexão: ';
 
 implementation
 

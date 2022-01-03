@@ -30,7 +30,7 @@ import java.util.Date;
  *  QUANDO e SE o finalize() será chamado. Já o try-with-resources chama o close() ao finalizar seu escopo.
  */
 
-public final class ACBrMDFe extends ACBrLibBase implements AutoCloseable {
+public final class ACBrMDFe extends ACBrLibBase {
 
     private interface ACBrMDFeLib extends Library {
         
@@ -44,7 +44,11 @@ public final class ACBrMDFe extends ACBrLibBase implements AutoCloseable {
 
             private static String getLibraryName() {
                 if ( library.isEmpty() ) {
-                library = Platform.is64Bit() ? "ACBrMDFe64" : "ACBrMDFe32";
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrMDFe64" : "ACBrMDFe32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrmdfe64" : "acbrmdfe32";
+                    }                    
                 }
                 return library;
             }
@@ -52,7 +56,7 @@ public final class ACBrMDFe extends ACBrLibBase implements AutoCloseable {
             public static ACBrMDFeLib getInstance() {
                 if ( instance == null ) {
                 instance = ( ACBrMDFeLib ) Native.synchronizedLibrary(
-                ( Library ) Native.loadLibrary( JNA_LIBRARY_NAME, ACBrMDFeLib.class ) );
+                ( Library ) Native.load( JNA_LIBRARY_NAME, ACBrMDFeLib.class ) );
                 }
                 return instance;
             }
@@ -175,20 +179,9 @@ public final class ACBrMDFe extends ACBrLibBase implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  protected void dispose() throws Exception {
     int ret = ACBrMDFeLib.INSTANCE.MDFE_Finalizar(getHandle());
     checkResult( ret );
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    try {
-      int ret = ACBrMDFeLib.INSTANCE.MDFE_Finalizar(getHandle());
-      checkResult( ret );
-    }
-    finally {
-      super.finalize();
-    }
   }
 
   public String nome() throws Exception {
@@ -229,6 +222,7 @@ public final class ACBrMDFe extends ACBrLibBase implements AutoCloseable {
     checkResult( ret );
   }
 
+    @Override
   public String configLerValor( ACBrSessao eSessao, String eChave ) throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
     IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
@@ -239,6 +233,7 @@ public final class ACBrMDFe extends ACBrLibBase implements AutoCloseable {
     return processResult( buffer, bufferLen );
   }
 
+    @Override
   public void configGravarValor( ACBrSessao eSessao, String eChave, Object value ) throws Exception {
     int ret = ACBrMDFeLib.INSTANCE.MDFE_ConfigGravarValor( getHandle(), toUTF8( eSessao.name() ), toUTF8( eChave ), toUTF8( value.toString() ) );
     checkResult( ret );

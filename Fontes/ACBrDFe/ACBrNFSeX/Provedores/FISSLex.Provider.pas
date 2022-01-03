@@ -104,7 +104,8 @@ begin
   Request := Request + '</fiss:WS_ConsultaLoteRps.Execute>';
 
   Result := Executar('FISS-LEXaction/AWS_CONSULTALOTERPS.Execute', Request,
-                     ['Consultarloterpsresposta'],
+                     [''],
+//                     ['Consultarloterpsresposta'],
                      ['xmlns:fiss="FISS-LEX"']);
 end;
 
@@ -134,7 +135,8 @@ begin
   Request := Request + '</fiss:WS_ConsultaNfsePorRps.Execute>';
 
   Result := Executar('FISS-LEXaction/AWS_CONSULTANFSEPORRPS.Execute', Request,
-                     ['Consultarnfserpsresposta'],
+                     [''],
+//                     ['Consultarnfserpsresposta'],
                      ['xmlns:fiss="FISS-LEX"']);
 end;
 
@@ -149,7 +151,8 @@ begin
   Request := Request + '</fiss:WS_ConsultaNfse.Execute>';
 
   Result := Executar('FISS-LEXaction/AWS_CONSULTANFSE.Execute', Request,
-                     ['Consultarnfseresposta'],
+                     [''],
+//                     ['Consultarnfseresposta'],
                      ['xmlns:fiss="FISS-LEX"']);
 end;
 
@@ -200,7 +203,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceFISSLex.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 procedure TACBrNFSeProviderFISSLex.ValidarSchema(

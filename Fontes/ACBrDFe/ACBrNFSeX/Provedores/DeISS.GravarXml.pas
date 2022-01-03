@@ -37,17 +37,14 @@ unit DeISS.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
-  { TNFSeW_DeISS }
+  { TNFSeW_DeISS203 }
 
-  TNFSeW_DeISS = class(TNFSeW_ABRASFv2)
+  TNFSeW_DeISS203 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -60,16 +57,25 @@ implementation
 //     DeISS
 //==============================================================================
 
-{ TNFSeW_DeISS }
+{ TNFSeW_DeISS203 }
 
-procedure TNFSeW_DeISS.Configuracao;
+procedure TNFSeW_DeISS203.Configuracao;
 begin
   inherited Configuracao;
 
   FormatoAliq := tcDe2;
-  NrOcorrValTotTrib := 0;
+
+  NrOcorrValTotTrib := 1;
   NrOcorrDescCond := 1;
   NrOcorrDescIncond := 1;
+  NrOcorrValorDeducoes := 1;
+  NrOcorrValorPis := 1;
+  NrOcorrValorCofins := 1;
+  NrOcorrValorIr := 1;
+  NrOcorrValorCsll := 1;
+  NrOcorrValorInss := 1;
+  NrOcorrOutrasRet := 1;
+  NrOcorrValorIss := StrToIntDef(FAOwner.ConfigGeral.Params1, 1);
 end;
 
 end.

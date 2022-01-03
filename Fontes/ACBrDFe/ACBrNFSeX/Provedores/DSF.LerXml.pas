@@ -37,16 +37,13 @@ unit DSF.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_DSF }
+  { TNFSeR_DSF200 }
 
-  TNFSeR_DSF = class(TNFSeR_ABRASFv2)
+  TNFSeR_DSF200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

@@ -37,9 +37,6 @@ unit EL.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -73,9 +70,9 @@ type
 
   end;
 
-  { TNFSeW_ELv2 }
+  { TNFSeW_EL204 }
 
-  TNFSeW_ELv2 = class(TNFSeW_ABRASFv2)
+  TNFSeW_EL204 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -219,7 +216,7 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'NaturezaOperacao', 1, 1, 1,
                              NaturezaOperacaoToStr(NFSe.NaturezaOperacao), ''));
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'RegimeEspecialTributacao', 1, 1, 0,
+  Result.AppendChild(AddNode(tcInt, '#1', 'RegimeEspecialTributacao', 1, 1, 1,
              RegimeEspecialTributacaoToStr(NFSe.RegimeEspecialTributacao), ''));
 
   xmlNode := GerarEnderecoPrestador;
@@ -287,7 +284,7 @@ begin
     Result.AppendChild(AddNode(tcStr, '#1', 'Municipio', 1, 100, 0,
                                        NFSe.Prestador.Endereco.xMunicipio, ''));
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'Uf', 2, 2, 0,
+  Result.AppendChild(AddNode(tcStr, '#1', 'Uf', 2, 2, 1,
                                                NFSe.Prestador.Endereco.UF, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'Cep', 8, 8, 0,
@@ -330,7 +327,7 @@ begin
     Result.AppendChild(AddNode(tcStr, '#1', 'Municipio', 1, 100, 0,
                                 NFSe.Tomador.Endereco.xMunicipio, ''));
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'Uf', 2, 2, 0,
+  Result.AppendChild(AddNode(tcStr, '#1', 'Uf', 2, 2, 1,
                                         NFSe.Tomador.Endereco.UF, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'Cep', 8, 8, 0,
@@ -356,7 +353,7 @@ begin
   Result := CreateElement('IdentificacaoPrestador');
 
   Result.AppendChild(AddNode(tcStr, '#1', 'CpfCnpj', 11, 14, 1,
-                   OnlyNumber(NFSe.Prestador.IdentificacaoPrestador.Cnpj), ''));
+                OnlyNumber(NFSe.Prestador.IdentificacaoPrestador.CpfCnpj), ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'IndicacaoCpfCnpj', 1, 1, 1,
                                                                       '2', ''));
@@ -457,7 +454,7 @@ begin
                                 NFSe.Servico.ItemServico[i].ValorTotal, ''));
 
     Result[i].AppendChild(AddNode(tcDe4, '#', 'ValorIssqn', 1, 15, 1,
-                                     NFSe.Servico.ItemServico[i].ValorIss, ''));
+                                     NFSe.Servico.ItemServico[i].ValorISS, ''));
 
     Result[i].AppendChild(AddNode(tcDe2, '#', 'ValorDesconto', 1, 15, 0,
                                 NFSe.Servico.ItemServico[i].ValorDeducoes, ''));
@@ -466,8 +463,8 @@ begin
                                                                        '', ''));
   end;
 
-  if NFSe.Servico.ItemServico.Count > 10 then
-    wAlerta('#', 'Servico', '', ERR_MSG_MAIOR_MAXIMO + '10');
+  if NFSe.Servico.ItemServico.Count > 50 then
+    wAlerta('#', 'Servico', '', ERR_MSG_MAIOR_MAXIMO + '50');
 end;
 
 function TNFSeW_EL.GerarServicos: TACBrXmlNode;
@@ -528,16 +525,15 @@ begin
                                      NFSe.Servico.Valores.OutrosDescontos, ''));
 end;
 
-{ TNFSeW_ELv2 }
+{ TNFSeW_EL204 }
 
-procedure TNFSeW_ELv2.Configuracao;
+procedure TNFSeW_EL204.Configuracao;
 begin
   inherited Configuracao;
 
   FormatoAliq := tcDe2;
   NrOcorrInformacoesComplemetares := 0;
   NrOcorrCepTomador := 1;
-  NrOcorrCodigoPaisServico := 0;
   NrOcorrCodigoPaisTomador := -1;
 
   TagTomador := 'TomadorServico';

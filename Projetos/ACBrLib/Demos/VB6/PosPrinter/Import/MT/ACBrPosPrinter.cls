@@ -22,7 +22,7 @@ Private Declare Function POS_Inicializar _
                                             ByVal eArqConfig As String, _
                                             ByVal eChaveCrypt As String) As Long
                    
-Private Declare Function POS_Finalizar Lib "ACBrPosPrinter32.dll" (ByRef libHandler As Long) As Long
+Private Declare Function POS_Finalizar Lib "ACBrPosPrinter32.dll" (ByVal libHandler As Long) As Long
 
 Private Declare Function POS_Nome _
                 Lib "ACBrPosPrinter32.dll" (ByVal libHandler As Long, _
@@ -39,11 +39,11 @@ Private Declare Function POS_UltimoRetorno _
                                             ByVal buffer As String, _
                                             ByRef bufferLen As Long) As Long
                                             
-Private Declare Function POS_ImportarConfig _
+Private Declare Function POS_ConfigImportar _
                 Lib "ACBrPosPrinter32.dll" (ByVal libHandler As Long, _
                                             ByVal eArqConfig As String) As Long
                                             
-Private Declare Function POS_ExportarConfig _
+Private Declare Function POS_ConfigExportar _
                 Lib "ACBrPosPrinter32.dll" (ByVal libHandler As Long, _
                                      ByVal buffer As String, _
                                      ByRef bufferLen As Long) As Long
@@ -583,7 +583,7 @@ Public Function LerCMC7(ByVal AguardaCheque As Boolean, _
     retorno = POS_LerCMC7(libHandler, AguardaCheque, SegundosEspera, buffer, bufferLen)
     CheckResult (retorno)
     
-    LeituraCheque = processResult(buffer, bufferLen)
+    LerCMC7 = processResult(buffer, bufferLen)
 End Function
 
 Public Sub EjetarCheque()

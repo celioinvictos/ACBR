@@ -385,20 +385,7 @@ begin
                                                 PAnsiChar(fNumeroTerminal),
                                                 0,
                                                 PAnsiChar(ParamAdic) );
-  Erro := '' ;
-  Case Sts of
-    1 :	Erro := CACBrTEFCliSiTef_Erro1;
-    2 : Erro := CACBrTEFCliSiTef_Erro2;
-    3 : Erro := CACBrTEFCliSiTef_Erro3;
-    6 : Erro := CACBrTEFCliSiTef_Erro6;
-    7 : Erro := CACBrTEFCliSiTef_Erro7;
-    8 : Erro := CACBrTEFCliSiTef_Erro8;
-   10 : Erro := CACBrTEFCliSiTef_Erro10;
-   11 : Erro := CACBrTEFCliSiTef_Erro11;
-   12 : Erro := CACBrTEFCliSiTef_Erro12;
-   13 : Erro := CACBrTEFCliSiTef_Erro13;
-  end;
-
+  Erro := fSiTefAPI.TraduzirErroInicializacao(Sts);
   if Erro <> '' then
      raise EACBrTEFDErro.Create( ACBrStr( Erro ) ) ;
 
@@ -688,7 +675,7 @@ var
   Resposta : AnsiString;
   SL : TStringList ;
   Interromper, Digitado, GerencialAberto, FechaGerencialAberto, ImpressaoOk,
-     HouveImpressao, Voltar, FinalizarTransacaoInterrompida : Boolean ;
+     HouveImpressao, Voltar, FinalizarTransacaoInterrompida, EhCarteiraDigital: Boolean ;
   Est : AnsiChar;
 
   function ProcessaMensagemTela( AMensagem : String ) : String ;
@@ -714,6 +701,7 @@ begin
    fCancelamento     := False ;
    fReimpressao      := False;
    Interromper       := False;
+   EhCarteiraDigital := False;
    fArqBackUp        := '' ;
    Resposta          := '' ;
 
@@ -768,6 +756,7 @@ begin
                         29 : TACBrTEFDRespCliSiTef( Self.Resp ).GravaInformacao( TipoCampo, 'True') ;//Cartão Digitado;
                         {Indica que foi escolhido menu de reimpressão}
                         56,57,58 : fReimpressao := True;
+                        107      : EhCarteiraDigital := True;
                         110      : fCancelamento:= True;
                         121, 122 :
                           if ImprimirComprovantes then
@@ -884,6 +873,17 @@ begin
                      MensagemCliente  := MensagemOperador;
                      DoExibeMsg( opmExibirMsgOperador, MensagemOperador, (TipoCampo=5005) ) ;
                      DoExibeMsg( opmExibirMsgCliente, MensagemCliente, (TipoCampo=5005) ) ;
+
+                     if EhCarteiraDigital then
+                     begin
+                       Interromper := False;
+                       OnAguardaResp('52', 0, Interromper);
+                       if Interromper then
+                       begin
+                         Continua := -1 ;
+                         FinalizarTransacaoInterrompida := True;
+                       end;
+                     end;
                    end ;
 
                  4 : CaptionMenu := ACBrStr( Mensagem ) ;
@@ -1105,8 +1105,8 @@ begin
    if not fExibirErroRetorno then
      Exit;
 
-   Erro := fSiTefAPI.TraduzirErro(Sts);
-   if Erro <> '' then
+   Erro := fSiTefAPI.TraduzirErroTransacao(Sts);
+   if (Erro <> '') then
       TACBrTEFD(Owner).DoExibeMsg( opmOK, Erro );
 end ;
 
@@ -1395,7 +1395,7 @@ begin
 
   if (Ret <> 0) then
   begin
-    Erro := fSiTefAPI.TraduzirErro(Ret);
+    Erro := fSiTefAPI.TraduzirErroTransacao(Ret);
     if (Erro <> '') then
       raise EACBrTEFDErro.Create( ACBrStr(Erro) ) ;
   end;

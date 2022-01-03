@@ -383,7 +383,7 @@ begin
     GerarCabecalho('evtTSVTermino');
     Gerador.wGrupo('evtTSVTermino Id="' + Self.Id + '"');
 
-    GerarIdeEvento2(self.IdeEvento);
+    GerarIdeEvento2(self.IdeEvento, True, True, True);
     GerarIdeEmpregador(self.IdeEmpregador);
     GerarIdeTrabSemVinc(self.IdeTrabSemVInc);
     GerarInfoTSVTermino(Self.InfoTSVTermino);

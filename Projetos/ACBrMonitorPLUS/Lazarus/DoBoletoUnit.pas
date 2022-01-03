@@ -32,15 +32,15 @@
 {                                                                               }
 {*******************************************************************************}
 
-{$mode objfpc}{$H+}
+{$I ACBr.inc}
 
 unit DoBoletoUnit;
 
 interface
 
 uses
-  Classes, SysUtils, CmdUnit, ACBrBoleto,
-  ACBrMonitorConfig, ACBrMonitorConsts, ACBrBoletoConversao, ACBrLibResposta, ACBrLibBoletoRespostas;
+  Classes, TypInfo, SysUtils, strutils, CmdUnit, ACBrUtil, ACBrBoleto,
+  ACBrMonitorConfig, ACBrMonitorConsts, ACBrBoletoConversao ;
 
 type
 
@@ -238,10 +238,17 @@ public
   procedure Executar; override;
 end;
 
+{ TMetodoSetOperacaoWS  }
+
+TMetodoSetOperacaoWS  = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
 implementation
 
-uses ACBrUtil, DoACBrUnit, strutils, typinfo,
-  DoEmailUnit, ACBrBoletoRelatorioRetorno;
+uses DoACBrUnit, DoEmailUnit, ACBrBoletoRelatorioRetorno, ACBrLibComum,
+  ACBrLibResposta, ACBrLibBoletoRespostas, ACBrObjectSerializer;
 
 { TACBrObjetoBoleto }
 
@@ -277,6 +284,8 @@ begin
   ListaDeMetodos.Add(CMetodoGerarPDFBoleto);
   ListaDeMetodos.Add(CMetodoEnviarEmailBoleto);
   ListaDeMetodos.Add(CMetodoEnviarBoleto);
+  ListaDeMetodos.Add(CMetodoSetOperacaoWS);
+
 end;
 
 procedure TACBrObjetoBoleto.Executar(ACmd: TACBrCmd);
@@ -317,6 +326,7 @@ begin
     22 : AMetodoClass := TMetodoGerarPDFBoleto;
     23 : AMetodoClass := TMetodoEnviarEmailBoleto;
     24 : AMetodoClass := TMetodoEnviarBoleto;
+    25 : AMetodoClass := TMetodoSetOperacaoWS;
 
     else
       begin
@@ -340,6 +350,31 @@ begin
       Ametodo.Free;
     end;
 
+  end;
+
+end;
+
+{ TMetodoSetOperacaoWS }
+
+{ Params: 0 - CodOperacao Integer - (0- tpInclui, 1- tpAltera, 2- tpBaixa, 3- tpConsulta, 4- tpConsultaDetalhe)
+}
+procedure TMetodoSetOperacaoWS.Executar;
+var
+   ACodOperacao: Integer;
+begin
+  ACodOperacao := StrToIntDef(fpCmd.Params(0), 1);
+
+  try
+    with TACBrObjetoBoleto(fpObjetoDono) do
+    begin
+      ACBrBoleto.Configuracoes.WebService.Operacao:= TOperacao(ACodOperacao);
+      with MonitorConfig.BOLETO.WS.Config.SSL do
+        Operacao:= Integer(ACBrBoleto.Configuracoes.WebService.Operacao);
+      MonitorConfig.SalvarArquivo;
+    end;
+
+  except
+    raise Exception.Create('Código ou Operação Inválido.');
   end;
 
 end;
@@ -370,6 +405,7 @@ begin
   with TACBrObjetoBoleto(fpObjetoDono) do
   begin
     ACBrBoleto.ListadeBoletos.Clear;
+
   end;
 
 end;
@@ -388,23 +424,34 @@ end;
 { TMetodoImprimir }
 
 { Params: 0 - PrintName = Nome da Impressora
+          1 - Preview = Boolean Mostrar em tela
 }
 procedure TMetodoImprimir.Executar;
 var
   AName: String;
+  APreview: Boolean;
+  AState: Boolean;
 begin
+
   with TACBrObjetoBoleto(fpObjetoDono) do
   begin
     AName := fpCmd.Params(0);
+    APreview := StrToBoolDef( fpCmd.Params(1), False );
 
     if NaoEstaVazio(AName) then
       ACBrBoleto.ACBrBoletoFC.PrinterName := AName;
+
+    AState := ACBrBoleto.ACBrBoletoFC.MostrarPreview;
+
+    if APreview then
+      ACBrBoleto.ACBrBoletoFC.MostrarPreview := APreview;
 
     try
       DoAntesDeImprimir(ACBrBoleto.ACBrBoletoFC.MostrarPreview);
       ACBrBoleto.Imprimir;
     finally
       DoDepoisDeImprimir;
+      ACBrBoleto.ACBrBoletoFC.MostrarPreview := AState;
     end;
 
   end;
@@ -802,22 +849,31 @@ end;
 
 { Params: 0 - Indice do Título a ser impresso
           1 - PrintName = Nome da Impressora
+          2 - Preview = Boolean Mostrar em tela
 }
 procedure TMetodoImprimirBoleto.Executar;
 var
   AIndice: Integer;
   AName: String;
+  APreview: Boolean;
+  AState: Boolean;
 begin
   with TACBrObjetoBoleto(fpObjetoDono) do
   begin
     AIndice := StrToIntDef(fpCmd.Params(0),0);
     AName := fpCmd.Params(1);
+    APreview := StrToBoolDef(fpCmd.Params(2),False);
 
     if NaoEstaVazio(AName) then
       ACBrBoleto.ACBrBoletoFC.PrinterName := AName;
 
+    AState := ACBrBoleto.ACBrBoletoFC.MostrarPreview;
+
+    if APreview then
+      ACBrBoleto.ACBrBoletoFC.MostrarPreview := APreview;
+
     try
-      DoAntesDeImprimir(ACBrBoleto.ACBrBoletoFC.MostrarPreview);
+      DoAntesDeImprimir( ACBrBoleto.ACBrBoletoFC.MostrarPreview );
       try
         ACBrBoleto.ListadeBoletos[AIndice].Imprimir();
       Except
@@ -825,6 +881,7 @@ begin
       end;
     finally
       DoDepoisDeImprimir;
+      ACBrBoleto.ACBrBoletoFC.MostrarPreview := AState;
     end;
 
   end;
@@ -906,28 +963,59 @@ end;
 
 { TMetodoEnviarBoleto }
 
+{ Params: 0 - TipoOperacao: Integer (0-Inclui, 1-Altera, 2-Baixa, 3-Consulta, 4-ConsultaDetalhe)
+}
 procedure TMetodoEnviarBoleto.Executar;
 var
   I : Integer;
-  RespRetornoWeb : TRetornoRegistroWeb;
+  AOperacao: Integer;
+  Titulos: TArray<TRetornoRegistroWeb>;
+  Titulo : TRetornoRegistroWeb;
+
 begin
+  AOperacao := StrToIntDef(fpCmd.Params(0),0);
 
   with TACBrObjetoBoleto(fpObjetoDono) do
   begin
     try
+      ACBrBoleto.Configuracoes.WebService.Operacao:= TOperacao(AOperacao);
       ACBrBoleto.EnviarBoleto;
       if ACBrBoleto.ListaRetornoWeb.Count > 0 then
+      begin
+        SetLength(Titulos, ACBrBoleto.ListaRetornoWeb.Count);
+        try
+          for I:= 0 to ACBrBoleto.ListaRetornoWeb.Count -1 do
+          begin
+            Titulo := TRetornoRegistroWeb.Create(I + 1, TpResp, codUTF8);
+            Titulo.Processar(ACBrBoleto.ListaRetornoWeb[I]);
+            Titulos[I] := Titulo;
+          end;
+
+          fpCmd.Resposta := TACBrObjectSerializer.Gerar<TRetornoRegistroWeb>(Titulos, TpResp, codUTF8);
+        finally
+          for I:= 0 to High(Titulos) do
+          begin
+            Titulo := Titulos[I] as TRetornoRegistroWeb;
+            FreeAndNil(Titulo);
+          end;
+
+          SetLength(Titulos, 0);
+          Titulos := nil;
+        end;
+      end;
+
+      {if ACBrBoleto.ListaRetornoWeb.Count > 0 then
       for I:= 0 to ACBrBoleto.ListaRetornoWeb.Count -1 do
       begin
-        RespRetornoWeb := TRetornoRegistroWeb.Create(I , TpResp, codUTF8);
+        RespRetornoWeb := TRetornoRegistroWeb.Create(I+1 , TpResp, codUTF8);
         try
-          RespRetornoWeb.Processar(ACBrBoleto);
+          RespRetornoWeb.Processar(ACBrBoleto.ListaRetornoWeb[I]);
           fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetornoWeb.Gerar;
         Finally
           RespRetornoWeb.Free;
         end;
 
-      end;
+      end;}
 
     except
       on E: Exception do

@@ -121,7 +121,7 @@ begin
    fpModuloMultiplicadorInicial:= 1;
    fpModuloMultiplicadorFinal:= 2;
    fpModuloMultiplicadorAtual:= 2;
-   fpCodigosMoraAceitos    := '123';
+   fpCodigosMoraAceitos    := '1235';
 end;
 
 function TACBrBancoItau.DefineNumeroDocumentoModulo(
@@ -304,20 +304,22 @@ begin
   with ACBrTitulo do
   begin
     if ((DataProtesto > 0) and (DataProtesto > Vencimento)) then
-      begin
-        case TipoDiasProtesto of
-             diCorridos : Result := '34';
-             diUteis    : Result := '35';
-        else
-          Result := '';
-        end;
-      end
+    begin
+      case TipoDiasProtesto of
+        diCorridos : Result := '34';
+        diUteis    : Result := '35';
       else
         Result := '';
-
-      if (PadLeft(trim(Instrucao1),2,'0') = '00') and (Result <> '')  then
+      end;
+    end else
+    begin
+      if ((DataNegativacao > 0) and (DataNegativacao > Vencimento)) then
+        Result := '66'
+      else
+        Result := '';
+    end;
+      if (PadLeft(trim(Instrucao1),2,'0') = '00') and (Result <> '') then
         Instrucao1:= Result;
-
   end;
 end;
 
@@ -1018,7 +1020,10 @@ begin
   end;
 
   if (Result <> '') then
-  Exit;
+  begin
+    Result := ACBrSTr(Result);
+    Exit;
+  end;
 
   case CodOcorrencia of
     02: Result := '02-Entrada Confirmada';
@@ -1095,6 +1100,8 @@ begin
     92: Result := '92-Tarifa Mensal de Cancelamento de Negativação Expressa';
     93: Result := '93-Tarifa Mensal de Exclusão de Negativação Expressa Por Liquidação';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoItau.CodOcorrenciaToTipo(
@@ -1754,6 +1761,8 @@ begin
    else
       Result:= IntToStrZero(CodMotivo,2) +' - Outros Motivos';
    end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoItau.CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia;

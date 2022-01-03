@@ -761,7 +761,9 @@ begin
                  sTipoDocto                                                            + // 060-060 / Tipo de Documento
                  sTipoCobranca                                                         + // 061-061 / Identificação da Emissão do Bloqueto
                  '2'                                                                   + // 062-062 / Identificação da Distribuição
-                 PadRight(ACBrTitulo.NossoNumero, 15)                                  + // 063-077 / Número do Documento de Cobrança
+                 ifThen(NaoEstaVazio(ACBrTitulo.NumeroDocumento),
+                        PadRight(ACBrTitulo.NumeroDocumento, 15),
+                        PadRight(ACBrTitulo.NossoNumero, 15))                          + // 063-077 / Número do Documento de Cobrança
                  FormatDateTime('ddmmyyyy', ACBrTitulo.Vencimento)                     + // 078-085 / Data de Vencimento do Título
                  IntToStrZero(round(ACBrTitulo.ValorDocumento * 100), 15)              + // 086-100 / Valor Nominal do Título
                  PadRight(Agencia, 5, '0')                                             + // 101-105 / Agência Encarregada da Cobrança
@@ -1057,7 +1059,7 @@ begin
 
             TempData := copy(Linha, 74, 2) + '/'+copy(Linha, 76, 2)+'/'+copy(Linha, 78, 4);
             if TempData<>'00/00/0000' then
-              Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+              Vencimento := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
             ValorDocumento := StrToFloatDef(copy(Linha, 82, 15), 0) / 100;
 
@@ -1092,10 +1094,10 @@ begin
             ValorRecebido       := StrToFloatDef(copy(Linha, 93, 15), 0) / 100;
             TempData := copy(Linha, 138, 2)+'/'+copy(Linha, 140, 2)+'/'+copy(Linha, 142, 4);
             if TempData<>'00/00/0000' then
-              DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+              DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
             TempData := copy(Linha, 146, 2)+'/'+copy(Linha, 148, 2)+'/'+copy(Linha, 150, 4);
             if TempData<>'00/00/0000' then
-              DataCredito := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+              DataCredito := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
           end;
       end;
    end;
@@ -1343,6 +1345,8 @@ begin
     60: Result := '60-EQUALIZACAO VENDOR';
     77: Result := '77-ALT. INSTR. COBR. - JUROS';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 end.

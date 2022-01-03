@@ -90,7 +90,7 @@ begin
 
   Result := Executar('urn:recepcionarLoteRps', Request,
                      ['return', 'EnviarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceThema.RecepcionarSincrono(ACabecalho,
@@ -108,7 +108,7 @@ begin
 
   Result := Executar('urn:recepcionarLoteRpsLimitado', Request,
                      ['return', 'EnviarLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarLote(ACabecalho, AMSG: String): string;
@@ -121,9 +121,7 @@ begin
   Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
   Request := Request + '</consultarLoteRps>';
 
-  Result := Executar('urn:consultarLoteRps', Request,
-                     ['return', 'ConsultarLoteRpsResposta'],
-                     ['']);
+  Result := Executar('urn:consultarLoteRps', Request, ['return'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarSituacao(ACabecalho, AMSG: String): string;
@@ -138,7 +136,7 @@ begin
 
   Result := Executar('urn:consultarSituacaoLoteRps', Request,
                      ['return', 'ConsultarSituacaoLoteRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
@@ -153,7 +151,7 @@ begin
 
   Result := Executar('urn:consultarNfsePorRps', Request,
                      ['return', 'ConsultarNfseRpsResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarNFSe(ACabecalho, AMSG: String): string;
@@ -168,7 +166,7 @@ begin
 
   Result := Executar('urn:consultarNfse', Request,
                      ['return', 'ConsultarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 function TACBrNFSeXWebserviceThema.Cancelar(ACabecalho, AMSG: String): string;
@@ -183,7 +181,7 @@ begin
 
   Result := Executar('urn:cancelarNfse', Request,
                      ['return', 'CancelarNfseResposta'],
-                     ['']);
+                     []);
 end;
 
 { TACBrNFSeProviderThema }
@@ -225,7 +223,12 @@ begin
   if URL <> '' then
     Result := TACBrNFSeXWebserviceThema.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
 procedure TACBrNFSeProviderThema.PrepararEmitir(Response: TNFSeEmiteResponse);
@@ -314,9 +317,13 @@ begin
     if EstaVazio(Nota.XMLAssinado) then
     begin
       Nota.GerarXML;
+
+      Nota.XMLOriginal := ConverteXMLtoUTF8(Nota.XMLOriginal);
+      Nota.XMLOriginal := ChangeLineBreak(Nota.XMLOriginal, '');
+
       if ConfigAssinar.Rps then
       begin
-        Nota.XMLOriginal := FAOwner.SSL.Assinar(ConverteXMLtoUTF8(Nota.XMLOriginal),
+        Nota.XMLOriginal := FAOwner.SSL.Assinar(Nota.XMLOriginal,
                                                 PrefixoTS + ConfigMsgDados.XmlRps.DocElemento,
                                                 ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
       end;
@@ -390,8 +397,8 @@ begin
 
       ANode := Document.Root;
 
-      Response.Data := ProcessarConteudoXml(ANode.Childrens.FindAnyNs('DataRecebimento'), tcDatHor);
-      Response.Protocolo := ProcessarConteudoXml(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
+      Response.Data := ObterConteudoTag(ANode.Childrens.FindAnyNs('DataRecebimento'), tcDatHor);
+      Response.Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
 
       ANode := Document.Root.Childrens.FindAnyNs('ListaNfse');
       if not Assigned(ANode) then
@@ -433,7 +440,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := E.Message;
+        AErro.Descricao := Desc999 + E.Message;
       end;
     end;
   finally

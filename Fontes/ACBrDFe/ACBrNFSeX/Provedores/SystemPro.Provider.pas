@@ -43,7 +43,7 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
 
 type
-  TACBrNFSeXWebserviceSystemPro = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceSystemPro201 = class(TACBrNFSeXWebserviceSoap11)
   public
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
     function GerarNFSe(ACabecalho, AMSG: String): string; override;
@@ -53,7 +53,7 @@ type
 
   end;
 
-  TACBrNFSeProviderSystemPro = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderSystemPro201 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -69,9 +69,9 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, SystemPro.GravarXml, SystemPro.LerXml;
 
-{ TACBrNFSeProviderSystemPro }
+{ TACBrNFSeProviderSystemPro201 }
 
-procedure TACBrNFSeProviderSystemPro.Configuracao;
+procedure TACBrNFSeProviderSystemPro201.Configuracao;
 begin
   inherited Configuracao;
 
@@ -80,6 +80,7 @@ begin
     LoteRps := True;
     CancelarNFSe := True;
     RpsGerarNFSe := True;
+    RpsSubstituirNFSe := True;
   end;
 
   with ConfigWebServices do
@@ -91,21 +92,21 @@ begin
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 end;
 
-function TACBrNFSeProviderSystemPro.CriarGeradorXml(
+function TACBrNFSeProviderSystemPro201.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_SystemPro.Create(Self);
+  Result := TNFSeW_SystemPro201.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSystemPro.CriarLeitorXml(
+function TACBrNFSeProviderSystemPro201.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_SystemPro.Create(Self);
+  Result := TNFSeR_SystemPro201.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSystemPro.CriarServiceClient(
+function TACBrNFSeProviderSystemPro201.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -113,14 +114,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceSystemPro.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceSystemPro201.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceSystemPro }
+{ TACBrNFSeXWebserviceSystemPro201 }
 
-function TACBrNFSeXWebserviceSystemPro.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -137,7 +143,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -154,7 +160,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -171,7 +177,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceSystemPro201.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -187,7 +193,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;

@@ -37,16 +37,13 @@ unit MegaSoft.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_MegaSoft }
+  { TNFSeR_MegaSoft200 }
 
-  TNFSeR_MegaSoft = class(TNFSeR_ABRASFv2)
+  TNFSeR_MegaSoft200 = class(TNFSeR_ABRASFv2)
   protected
 
   public

@@ -1,5 +1,5 @@
 {==============================================================================|
-| Project : Ararat Synapse                                       | 001.003.000 |
+| Project : Ararat Synapse                                       | 001.004.000 |
 |==============================================================================|
 | Content: SSL support by OpenSSL                                              |
 |==============================================================================|
@@ -35,6 +35,7 @@
 | The Initial Developer of the Original Code is Lukas Gebauer (Czech Republic).|
 | Portions created by Lukas Gebauer are Copyright (c)2005-2017.                |
 | Portions created by Petr Fejfar are Copyright (c)2011-2012.                  |
+| Portions created by Pepak are Copyright (c)2018.                             |
 | All Rights Reserved.                                                         |
 |==============================================================================|
 | Contributor(s):                                                              |
@@ -77,12 +78,11 @@ Ad-Hoc key and certificate for each incomming connection by self. It slowdown
 accepting of new connections!
 }
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
+{$INCLUDE 'jedi.inc'}
+
 {$H+}
 
-{$IFDEF POSIX}
+{$IFDEF UNICODE}
   {$WARN IMPLICIT_STRING_CAST OFF}
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 {$ENDIF}
@@ -108,16 +108,20 @@ type
    Instance of this class will be created for each @link(TTCPBlockSocket).
    You not need to create instance of this class, all is done by Synapse itself!}
   TSSLOpenSSL = class(TCustomSSL)
+  private
+    FServer: boolean;
   protected
     FSsl: PSSL;
     Fctx: PSSL_CTX;
+    function NeedSigningCertificate: boolean; virtual;
     function SSLCheck: Boolean;
-    function SetSslKeys: boolean;
-    function Init(server:Boolean): Boolean;
+    function SetSslKeys: boolean; virtual;
+    function Init: Boolean;
     function DeInit: Boolean;
-    function Prepare(server:Boolean): Boolean;
+    function Prepare: Boolean;
     function LoadPFX(pfxdata: ansistring): Boolean;
     function CreateSelfSignedCert(Host: string): Boolean; override;
+    property Server: boolean read FServer;
   public
     {:See @inherited}
     constructor Create(const Value: TTCPBlockSocket); override;
@@ -255,7 +259,7 @@ begin
   pk := EvpPkeynew;
   x := X509New;
   try
-    rsa := RsaGenerateKey(1024, $10001, nil, nil);
+    rsa := RsaGenerateKey(2048, $10001, nil, nil);
     EvpPkeyAssign(pk, EVP_PKEY_RSA, rsa);
     X509SetVersion(x, 2);
     Asn1IntegerSet(X509getSerialNumber(x), 0);
@@ -354,7 +358,7 @@ begin
       finally
         EvpPkeyFree(pkey);
         X509free(cert);
-        //SkX509PopFree(ca,_X509Free); // for ca=nil a new STACK was allocated...
+        SkX509PopFree(ca,_X509Free); // for ca=nil a new STACK was allocated...
       end;
       {/pf}
     finally
@@ -420,7 +424,12 @@ begin
   end;
 end;
 
-function TSSLOpenSSL.Init(server:Boolean): Boolean;
+function TSSLOpenSSL.NeedSigningCertificate: boolean;
+begin
+  Result := (FCertificateFile = '') and (FCertificate = '') and (FPFXfile = '') and (FPFX = '');
+end;
+
+function TSSLOpenSSL.Init: Boolean;
 var
   s: AnsiString;
 begin
@@ -477,8 +486,7 @@ begin
     SslCtxSetDefaultPasswdCbUserdata(FCtx, self);
 {$ENDIF}
 
-    if server and (FCertificateFile = '') and (FCertificate = '')
-      and (FPFXfile = '') and (FPFX = '') then
+    if server and NeedSigningCertificate then
     begin
       CreateSelfSignedcert(FSocket.ResolveIPToName(FSocket.GetRemoteSinIP));
     end;
@@ -514,11 +522,11 @@ begin
   FSSLEnabled := False;
 end;
 
-function TSSLOpenSSL.Prepare(server:Boolean): Boolean;
+function TSSLOpenSSL.Prepare: Boolean;
 begin
   Result := false;
   DeInit;
-  if Init(server) then
+  if Init then
     Result := true
   else
     DeInit;
@@ -533,7 +541,8 @@ begin
   Result := False;
   if FSocket.Socket = INVALID_SOCKET then
     Exit;
-  if Prepare(False) then
+  FServer := False;
+  if Prepare then
   begin
 {$IFDEF CIL}
     if sslsetfd(FSsl, FSocket.Socket.Handle.ToInt32) < 1 then
@@ -591,7 +600,8 @@ begin
   Result := False;
   if FSocket.Socket = INVALID_SOCKET then
     Exit;
-  if Prepare(True) then
+  FServer := True;
+  if Prepare then
   begin
 {$IFDEF CIL}
     if sslsetfd(FSsl, FSocket.Socket.Handle.ToInt32) < 1 then
@@ -734,7 +744,7 @@ begin
   Result := X509NameOneline(X509GetSubjectName(cert), sb, 4096);
 {$ELSE}
   setlength(s, 4096);
-  Result := X509NameOneline(X509GetSubjectName(cert), s, Length(s));
+  Result := String(X509NameOneline(X509GetSubjectName(cert), s, Length(s)));
 {$ENDIF}
   X509Free(cert);
 end;

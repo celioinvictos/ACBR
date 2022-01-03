@@ -10,9 +10,6 @@ import com.sun.jna.ptr.IntByReference;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Implementa AutoCloseable para ser possível usar em try-with-resources
@@ -28,18 +25,10 @@ import java.util.Date;
  *  QUANDO e SE o finalize() será chamado. Já o try-with-resources chama o close() ao finalizar seu escopo.
  */
 
-public final class ACBrGNRe extends ACBrLibBase implements AutoCloseable {
-
-    public int enviar() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
+public final class ACBrGNRe extends ACBrLibBase {    
     private interface ACBrGNReLib extends Library {
         static String JNA_LIBRARY_NAME = LibraryLoader.getLibraryName();
         public final static ACBrGNReLib INSTANCE = LibraryLoader.getInstance();
-
-        
-    
     
         class LibraryLoader {
             private static String library = "";
@@ -47,7 +36,11 @@ public final class ACBrGNRe extends ACBrLibBase implements AutoCloseable {
 
             private static String getLibraryName() {
                 if ( library.isEmpty() ) {
-                library = Platform.is64Bit() ? "ACBrGNRe64" : "ACBrGNRe32";
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrGNRe64" : "ACBrGNRe32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrgnre64" : "acbrgnre32";
+                    }
             }
             return library;
             }
@@ -55,7 +48,7 @@ public final class ACBrGNRe extends ACBrLibBase implements AutoCloseable {
             public static ACBrGNReLib getInstance() {
                 if ( instance == null ) {
                 instance = ( ACBrGNReLib ) Native.synchronizedLibrary(
-                ( Library ) Native.loadLibrary( JNA_LIBRARY_NAME, ACBrGNReLib.class ) );
+                ( Library ) Native.load( JNA_LIBRARY_NAME, ACBrGNReLib.class ) );
             }
             return instance;
         }
@@ -133,20 +126,9 @@ public final class ACBrGNRe extends ACBrLibBase implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  protected void dispose() throws Exception {
     int ret = ACBrGNReLib.INSTANCE.GNRE_Finalizar();
     checkResult( ret );
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    try {
-      int ret = ACBrGNReLib.INSTANCE.GNRE_Finalizar();
-      checkResult( ret );
-    }
-    finally {
-      super.finalize();
-    }
   }
 
   public String nome() throws Exception {
@@ -202,6 +184,7 @@ public final class ACBrGNRe extends ACBrLibBase implements AutoCloseable {
     checkResult( ret );
   }
 
+    @Override
   public String configLerValor( ACBrSessao eSessao, String eChave ) throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate( STR_BUFFER_LEN );
     IntByReference bufferLen = new IntByReference( STR_BUFFER_LEN );
@@ -212,6 +195,7 @@ public final class ACBrGNRe extends ACBrLibBase implements AutoCloseable {
     return processResult( buffer, bufferLen );
   }
 
+    @Override
   public void configGravarValor( ACBrSessao eSessao, String eChave, Object value ) throws Exception {
     int ret = ACBrGNReLib.INSTANCE.GNRE_ConfigGravarValor( toUTF8( eSessao.name() ), toUTF8( eChave ), toUTF8( value.toString() ) );
     checkResult( ret );

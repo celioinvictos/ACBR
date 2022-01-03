@@ -37,9 +37,6 @@ unit Tiplan.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv1, ACBrNFSeXLerXml_ABRASFv2;
 
@@ -53,9 +50,9 @@ type
 
   end;
 
-  { TNFSeR_Tiplanv2 }
+  { TNFSeR_Tiplan203 }
 
-  TNFSeR_Tiplanv2 = class(TNFSeR_ABRASFv2)
+  TNFSeR_Tiplan203 = class(TNFSeR_ABRASFv2)
   protected
 
   public

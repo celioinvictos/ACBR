@@ -397,7 +397,7 @@ var
   wQtdRegNFes, J, I: Integer;
   wLinha, NFeSemDados: String;
   Continua: Boolean;
-begin  // Obrigatorio o envio da linha referente a nota fiscal 
+begin  // Obrigatorio o envio da linha referente a nota fiscal
   NFeSemDados:= StringOfChar(' ',15) + StringOfChar('0', 65);
   wQtdRegNFes:= trunc(ACBrTitulo.ListaDadosNFe.Count / 3);
 
@@ -422,7 +422,7 @@ begin  // Obrigatorio o envio da linha referente a nota fiscal
          Inc(J);
          Continua:= (J mod 3) <> 0 ;
       end;
-	  
+
       wLinha:= PadRight(wLinha,81) + StringOfChar(' ', 313) +  IntToStrZero(aRemessa.Count + 1, 6);
       aRemessa.Add(wLinha);
       Inc(I);
@@ -433,7 +433,7 @@ end;
 procedure TACBrBancoDaycoval.GerarRegistroTransacao400( ACBrTitulo: TACBrTitulo; aRemessa: TStringList);
 var
   ATipoOcorrencia, AEspecieDoc, ACodigoRemessa : String;
-  DiasProtesto, TipoSacado, ATipoAceite: String;
+  DiasProtesto, TipoSacado, ATipoAceite, AComplemento: String;
   wLinha: String;
 begin
   with ACBrTitulo do
@@ -483,23 +483,37 @@ begin
     // Conforme manual o aceite deve ser sempre 'N'
     ATipoAceite := 'N';
 
-    // Código de Remessa Fixo 6
-    ACodigoRemessa := '6';
+    // Código de Remessa Fixo pelo Layout (peculiaridades)
+
+    case fpLayoutVersaoLote of
+      4 : begin
+          ACodigoRemessa := '4';
+          AComplemento   := PadLeft('', 5, '0') + Copy(PadLeft(NossoNumero,TamanhoMaximoNossoNum,'0'), 3, 8);
+        end;
+      6 : begin
+          ACodigoRemessa := '6';
+          AComplemento   := Space(13);
+        end;
+    else
+      begin
+        ACodigoRemessa := '6';
+        AComplemento := Space(13);
+      end;
+    end;
 
     with ACBrBoleto do
     begin
-      wLinha :=
-        '1' +                                                        // 1 - Código do registro: 1 - Transação
-        TipoSacado +                                                 // 2 a 3 - Tipo de inscrição da empresa: 01 = CPF; 02 = CNPJ
+      wLinha := '1' + // 1 - Código do registro: 1 - Transação
+        TipoSacado + // 2 a 3 - Tipo de inscrição da empresa: 01 = CPF; 02 = CNPJ
         PadLeft(OnlyNumber(Cedente.CNPJCPF), 14, '0') +              // 4 a 17 - Número de inscrição
         PadRight(Cedente.CodigoCedente, 20) +                        // 18 a 37 - Código da empresa no banco
         PadRight(SeuNumero, 25) +                                    // 38 a 62 - Identificação do título na empresa
         Copy(PadLeft(NossoNumero,TamanhoMaximoNossoNum,'0'), 3, 8) + // 63 a 70 - Nosso número
-        Space(13) +                                                  // 71 a 83 - Brancos
+        AComplemento +                                               // 71 a 83 - Brancos layout 6 ou zeros layout 4 complemento
         Space(24) +                                                  // 84 a 107 - Brancos
         ACodigoRemessa +                                             // 108 - Código da Remessa
         ATipoOcorrencia +                                            // 109 a 110 - Código da ocorrência
-        PadLeft(RightStr(SeuNumero,10), 10, ' ') +                   // 111 a 120 - Identificação do título na empresa
+        PadRight(SeuNumero, 10, ' ') +                               // 111 a 120 - Identificação do título na empresa
         FormatDateTime('ddmmyy', Vencimento) +                       // 121 a 126 - Data de vencimento do título
         IntToStrZero(Round(ValorDocumento * 100), 13) +              // 127 a 139 - Valor nominal do título
         '707' +                                                      // 140 a 142 - Banco encarregado da cobrança: 707 = Banco Daycoval
@@ -536,7 +550,7 @@ begin
     end;
   end;
 
-  if ACBrTitulo.ListaDadosNFe.Count > 0 then  //Informações da nota fiscal 
+  if ACBrTitulo.ListaDadosNFe.Count > 0 then  //Informações da nota fiscal
     GerarRegistrosNFe(ACBrTitulo, aRemessa);
 end;
 
@@ -578,7 +592,7 @@ begin
     StringToDateTimeDef(
       Copy(ARetorno[0], 95, 2) + '/' +
       Copy(ARetorno[0], 97, 2) + '/' +
-      Copy(ARetorno[0], 99, 2), 0, 'dd/mm/yy');
+      Copy(ARetorno[0], 99, 2), 0, 'DD/MM/YY');
 
   case StrToIntDef(Copy(ARetorno[1], 2, 2), 0) of
     1: rCNPJCPF := Copy(ARetorno[1], 7, 11);
@@ -636,14 +650,14 @@ begin
         StringToDateTimeDef(
           Copy(Linha, 111, 2) + '/' +
           Copy(Linha, 113, 2) + '/'+
-          Copy(Linha, 115, 2), 0, 'dd/mm/yy');
+          Copy(Linha, 115, 2), 0, 'DD/MM/YY');
 
       if Copy(Linha, 147, 2) <> '00' then
         Vencimento :=
           StringToDateTimeDef(
             Copy(Linha, 147, 2) + '/' +
             Copy(Linha, 149, 2) + '/'+
-            Copy(Linha, 151, 2), 0, 'dd/mm/yy');
+            Copy(Linha, 151, 2), 0, 'DD/MM/YY');
 
       ValorDocumento       := StrToFloatDef(Copy(Linha, 153, 13), 0) / 100;
       ValorIOF             := StrToFloatDef(Copy(Linha, 215, 13), 0) / 100;
@@ -693,20 +707,27 @@ begin
   else
     Result := IntToStr(CodOcorrencia)+' Ocorrência desconhecida';
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoDaycoval.CalcularNomeArquivoRemessa: String;
 var
   Sequencia :Integer;
-  NomeFixo, NomeArq: String;
+  NomeFixo, Prefix, NomeArq: String;
 begin
    Sequencia := 0;
+
+   if (ACBrBanco.ACBrBoleto.PrefixArqRemessa <> '') then
+     Prefix := ACBrBanco.ACBrBoleto.PrefixArqRemessa
+   else
+     Prefix := '2HQ';
 
    with ACBrBanco.ACBrBoleto do
    begin
       if NomeArqRemessa = '' then
        begin
-         NomeFixo := DirArqRemessa + PathDelim + '2HQ' + FormatDateTime( 'ddmm', Now );
+         NomeFixo := DirArqRemessa + PathDelim + Prefix + FormatDateTime( 'ddmm', Now );
 
          repeat
             Inc( Sequencia );

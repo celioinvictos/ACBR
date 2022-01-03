@@ -2,13 +2,13 @@
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoCancSubstituicao : EventoBase
+    public sealed class EventoCancSubstituicao : EventoNFeBase
     {
         #region Constructor
 
         public EventoCancSubstituicao()
         {
-            tpEvento = TipoEvento.teCancSubst;
+            tpEvento = TipoEventoNFe.teCancSubst;
             verAplic = "1.0";
         }
 

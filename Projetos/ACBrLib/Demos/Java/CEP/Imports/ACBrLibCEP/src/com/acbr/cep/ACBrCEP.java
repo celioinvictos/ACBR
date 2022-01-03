@@ -10,8 +10,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 
-public final class ACBrCEP extends ACBrLibBase implements AutoCloseable {
-      
+public final class ACBrCEP extends ACBrLibBase {      
     private interface ACBrCEPLib extends Library {
         static String JNA_LIBRARY_NAME = LibraryLoader.getLibraryName();
         public final static ACBrCEPLib INSTANCE = LibraryLoader.getInstance();
@@ -22,14 +21,19 @@ public final class ACBrCEP extends ACBrLibBase implements AutoCloseable {
             
             public static String getLibraryName() {
                 if (library.isEmpty()) {
-                    library = Platform.is64Bit() ? "ACBrCEP64" : "ACBrCEP32";
+                    if(Platform.isWindows()){
+                        library = Platform.is64Bit() ? "ACBrCEP64" : "ACBrCEP32";                        
+                    }else{
+                        library = Platform.is64Bit() ? "acbrcep64" : "acbrcep32";
+                    }
+                    
                 }
                 return library;
             }
             
             public static ACBrCEPLib getInstance() {
                 if (instance == null) {
-                    instance = (ACBrCEPLib) Native.synchronizedLibrary((Library) Native.loadLibrary(JNA_LIBRARY_NAME, ACBrCEPLib.class));
+                    instance = (ACBrCEPLib) Native.synchronizedLibrary((Library) Native.load(JNA_LIBRARY_NAME, ACBrCEPLib.class));
                 }
                 return instance;
             }
@@ -79,19 +83,9 @@ public final class ACBrCEP extends ACBrLibBase implements AutoCloseable {
     }
     
     @Override
-    public void close() throws Exception {
+    protected void dispose() throws Exception {
         int ret = ACBrCEPLib.INSTANCE.CEP_Finalizar();
         checkResult(ret);
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            int ret = ACBrCEPLib.INSTANCE.CEP_Finalizar();
-            checkResult(ret);
-        } finally {
-            super.finalize();
-        }
     }
     
     public String nome() throws Exception {
@@ -132,6 +126,7 @@ public final class ACBrCEP extends ACBrLibBase implements AutoCloseable {
         checkResult(ret);
     }
 
+    @Override
     public String configLerValor(ACBrSessao eSessao, String eChave) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
         IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
@@ -142,6 +137,7 @@ public final class ACBrCEP extends ACBrLibBase implements AutoCloseable {
         return processResult(buffer, bufferLen);
     }
 
+    @Override
     public void configGravarValor(ACBrSessao eSessao, String eChave, Object value) throws Exception {
         int ret = ACBrCEPLib.INSTANCE.CEP_ConfigGravarValor(toUTF8(eSessao.name()), toUTF8(eChave), toUTF8(value.toString()));
         checkResult(ret);

@@ -43,7 +43,7 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
 
 type
-  TACBrNFSeXWebserviceDesenvolve = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceDesenvolve203 = class(TACBrNFSeXWebserviceSoap11)
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
@@ -54,7 +54,7 @@ type
 
   end;
 
-  TACBrNFSeProviderDesenvolve = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderDesenvolve203 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -70,11 +70,17 @@ uses
   ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, Desenvolve.GravarXml, Desenvolve.LerXml;
 
-{ TACBrNFSeProviderDesenvolve }
+{ TACBrNFSeProviderDesenvolve203 }
 
-procedure TACBrNFSeProviderDesenvolve.Configuracao;
+procedure TACBrNFSeProviderDesenvolve203.Configuracao;
 begin
   inherited Configuracao;
+
+  with ConfigGeral do
+  begin
+    UseCertificateHTTP := False;
+    ConsultaNFSe := False;
+  end;
 
   with ConfigAssinar do
   begin
@@ -86,8 +92,6 @@ begin
     RpsGerarNFSe := True;
   end;
 
-  ConfigGeral.UseCertificateHTTP := False;
-
   with ConfigWebServices do
   begin
     VersaoDados := '2.03';
@@ -95,21 +99,21 @@ begin
   end;
 end;
 
-function TACBrNFSeProviderDesenvolve.CriarGeradorXml(
+function TACBrNFSeProviderDesenvolve203.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_Desenvolve.Create(Self);
+  Result := TNFSeW_Desenvolve203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderDesenvolve.CriarLeitorXml(
+function TACBrNFSeProviderDesenvolve203.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_Desenvolve.Create(Self);
+  Result := TNFSeR_Desenvolve203.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderDesenvolve.CriarServiceClient(
+function TACBrNFSeProviderDesenvolve203.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -117,14 +121,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceDesenvolve.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceDesenvolve203.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceDesenvolve }
+{ TACBrNFSeXWebserviceDesenvolve203 }
 
-function TACBrNFSeXWebserviceDesenvolve.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceDesenvolve203.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -140,7 +149,7 @@ begin
                      ['xmlns:tns="http://ws.integracao.nfsd.desenvolve/"']);
 end;
 
-function TACBrNFSeXWebserviceDesenvolve.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceDesenvolve203.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -156,7 +165,7 @@ begin
                      ['xmlns:tns="http://ws.integracao.nfsd.desenvolve/"']);
 end;
 
-function TACBrNFSeXWebserviceDesenvolve.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceDesenvolve203.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -172,7 +181,7 @@ begin
                      ['xmlns:tns="http://ws.integracao.nfsd.desenvolve/"']);
 end;
 
-function TACBrNFSeXWebserviceDesenvolve.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceDesenvolve203.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -188,7 +197,7 @@ begin
                      ['xmlns:tns="http://ws.integracao.nfsd.desenvolve/"']);
 end;
 
-function TACBrNFSeXWebserviceDesenvolve.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceDesenvolve203.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -204,7 +213,7 @@ begin
                      ['xmlns:tns="http://ws.integracao.nfsd.desenvolve/"']);
 end;
 
-function TACBrNFSeXWebserviceDesenvolve.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceDesenvolve203.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin

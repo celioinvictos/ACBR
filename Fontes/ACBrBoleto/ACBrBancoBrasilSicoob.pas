@@ -249,6 +249,8 @@ begin
    97: Result:='97-Despesas de Sustação de Protesto' ;
    98: Result:='98-Débito de Custas Antecipadas' ;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoBrasilSICOOB.CodOcorrenciaToTipo(const CodOcorrencia:
@@ -399,6 +401,8 @@ begin
         90: Result:='90-Baixa automática';
       end;
   end;
+
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoBrasilSICOOB.GerarRegistroHeader240(
@@ -654,7 +658,7 @@ begin
 
            TempData := copy(Linha, 75, 2) + '/'+copy(Linha, 77, 2)+'/'+copy(Linha, 79, 4);
            if TempData<>'00/00/0000' then
-             Vencimento := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+             Vencimento := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
            ValorDocumento := StrToFloatDef(copy(Linha, 83, 15), 0) / 100;
 
@@ -687,12 +691,12 @@ begin
            TempData := copy(Linha, 138, 2)+'/'+copy(Linha, 140, 2)+'/'+copy(Linha, 142, 4);
 
            if TempData<>'00/00/0000' then
-             DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DDMMYY');
+             DataOcorrencia := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
 
            TempData := copy(Linha, 146, 2)+'/'+copy(Linha, 148, 2)+'/'+copy(Linha, 150, 4);
 
            if TempData<>'00/00/0000' then
-             DataCredito := StringToDateTimeDef(TempData, 0, 'DDMMYYYY');
+             DataCredito := StringToDateTimeDef(TempData, 0, 'DD/MM/YYYY');
          end;
       end;
    end;

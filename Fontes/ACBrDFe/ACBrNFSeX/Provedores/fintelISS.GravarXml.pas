@@ -37,9 +37,6 @@ unit fintelISS.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
@@ -48,9 +45,17 @@ uses
   ACBrNFSeXConsts;
 
 type
-  { TNFSeW_fintelISS }
+  { TNFSeW_fintelISS200 }
 
-  TNFSeW_fintelISS = class(TNFSeW_ABRASFv2)
+  TNFSeW_fintelISS200 = class(TNFSeW_ABRASFv2)
+  protected
+    procedure Configuracao; override;
+
+  end;
+
+  { TNFSeW_fintelISS202 }
+
+  TNFSeW_fintelISS202 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -62,17 +67,6 @@ type
     function GerarValoresServico: TACBrXmlNode; override;
   end;
 
-  { TNFSeW_fintelISS_A }
-
-  TNFSeW_fintelISS_A = class(TNFSeW_ABRASFv2)
-  protected
-    procedure Configuracao; override;
-
-    {
-    procedure DefinirIDRps; override;
-    }
-  end;
-
 implementation
 
 //==============================================================================
@@ -80,9 +74,19 @@ implementation
 //     fintelISS
 //==============================================================================
 
-{ TNFSeW_fintelISS }
+{ TNFSeW_fintelISS200 }
 
-procedure TNFSeW_fintelISS.Configuracao;
+procedure TNFSeW_fintelISS200.Configuracao;
+begin
+  inherited Configuracao;
+
+  NrOcorrAliquota := 1;
+  NrOcorrCodigoPaisServico := 1;
+end;
+
+{ TNFSeW_fintelISS202 }
+
+procedure TNFSeW_fintelISS202.Configuracao;
 begin
   inherited Configuracao;
 
@@ -96,7 +100,7 @@ begin
   NrOcorrCodigoPaisServico := 1;
 end;
 
-function TNFSeW_fintelISS.GerarListaServicos: TACBrXmlNode;
+function TNFSeW_fintelISS202.GerarListaServicos: TACBrXmlNode;
 var
   nodeArray: TACBrXmlNodeArray;
   i: Integer;
@@ -116,12 +120,12 @@ begin
   end;
 end;
 
-function TNFSeW_fintelISS.GerarServico: TACBrXmlNode;
+function TNFSeW_fintelISS202.GerarServico: TACBrXmlNode;
 begin
   Result := nil
 end;
 
-function TNFSeW_fintelISS.GerarServicos: TACBrXmlNodeArray;
+function TNFSeW_fintelISS202.GerarServicos: TACBrXmlNodeArray;
 var
   nodeArray: TACBrXmlNodeArray;
   i: integer;
@@ -171,7 +175,7 @@ begin
   end;
 end;
 
-function TNFSeW_fintelISS.GerarValoresServico: TACBrXmlNode;
+function TNFSeW_fintelISS202.GerarValoresServico: TACBrXmlNode;
 begin
   Result := CreateElement('ValoresServico');
 
@@ -200,12 +204,12 @@ begin
                              NFSe.Servico.Valores.ValorServicos, DSC_VSERVICO));
 end;
 
-procedure TNFSeW_fintelISS.DefinirIDRps;
+procedure TNFSeW_fintelISS202.DefinirIDRps;
 begin
   NFSe.InfID.ID := 'rps' + NFSe.IdentificacaoRps.Numero + NFSe.IdentificacaoRps.Serie;
 end;
 
-function TNFSeW_fintelISS.GerarItemValores(i: Integer): TACBrXmlNodeArray;
+function TNFSeW_fintelISS202.GerarItemValores(i: Integer): TACBrXmlNodeArray;
 begin
   Result := nil;
   SetLength(Result, 1);
@@ -219,7 +223,7 @@ begin
                      NFSe.Servico.ItemServico[i].ValorDeducoes, DSC_VDEDUCISS));
 
   Result[0].AppendChild(AddNode(tcDe2, '#21', 'ValorIss     ', 1, 15, 1,
-                               NFSe.Servico.ItemServico[i].ValorIss, DSC_VISS));
+                               NFSe.Servico.ItemServico[i].ValorISS, DSC_VISS));
 
   Result[0].AppendChild(AddNode(FormatoAliq, '#25', 'Aliquota', 1, 05, 1,
                               NFSe.Servico.ItemServico[i].Aliquota, DSC_VALIQ));
@@ -233,16 +237,6 @@ begin
   Result[0].AppendChild(AddNode(tcDe2, '#28', 'DescontoCondicionado  ', 1, 15, NrOcorrDescCond,
               NFSe.Servico.ItemServico[i].DescontoCondicionado, DSC_VDESCCOND));
   }
-end;
-
-{ TNFSeW_fintelISS_A }
-
-procedure TNFSeW_fintelISS_A.Configuracao;
-begin
-  inherited Configuracao;
-
-  NrOcorrAliquota := 1;
-  NrOcorrCodigoPaisServico := 1;
 end;
 
 end.

@@ -54,6 +54,7 @@ type
     class procedure AjustarReport(FReport: TRLReport; AConfig: TACBrDFeReport);
     class procedure AjustarMargem(FReport: TRLReport; AConfig: TACBrDFeReport);
     class procedure AjustarFiltroPDF(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport; const AFile: String);
+    class procedure AjustarFiltroStream(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport);
     class function CarregarLogo(ALogoImage: TRLImage; const ALogo: string): Boolean;
     class procedure DiminuirFonteSeNecessario(ARLMemo: TRLMemo; TamanhoMinimo: Integer);
     class function EspacejarTextoGrafico(const AText: String; AWidth: Integer;
@@ -69,15 +70,22 @@ begin
   FReport.ShowProgress := AConfig.MostraStatus;
   FReport.PrintDialog := AConfig.MostraSetup and (not AConfig.MostraPreview);
 
-  if NaoEstaVazio(AConfig.Impressora) then
-    if RLPrinter.PrinterName <> AConfig.Impressora then
-      RLPrinter.PrinterName := AConfig.Impressora;
+  //NumCopias setado como "0" para gerar PDF sem retornar o erro:
+  //There is no default printer currently selected
+  //https://www.projetoacbr.com.br/forum/topic/52337-gerar-pdf-nfcenfe-danfe-aplica%C3%A7%C3%A3o-isapi-com-fortes-report/
+  //https://www.projetoacbr.com.br/forum/topic/63913-gerar-pdf-danfe-fortesreport-via-iis/  
+  if (AConfig.NumCopias > 0) then
+  begin
+    if NaoEstaVazio(AConfig.Impressora) then
+      if RLPrinter.PrinterName <> AConfig.Impressora then
+        RLPrinter.PrinterName := AConfig.Impressora;
 
-  if RLPrinter.SupportsDuplex Then
-     RLPrinter.Duplex := false;
+    if RLPrinter.SupportsDuplex Then
+       RLPrinter.Duplex := false;
 
-  if (AConfig.NumCopias > 0) and (RLPrinter.Copies <> AConfig.NumCopias) then
-    RLPrinter.Copies := AConfig.NumCopias;
+    if RLPrinter.Copies <> AConfig.NumCopias then
+      RLPrinter.Copies := AConfig.NumCopias;
+  end;
 end;
 
 class procedure TDFeReportFortes.AjustarMargem(FReport: TRLReport; AConfig: TACBrDFeReport);
@@ -112,6 +120,11 @@ begin
 
   PDFFilter.ShowProgress := AConfig.MostraStatus;
   PDFFilter.FileName := NomeArquivoFinal;
+end;
+
+class procedure TDFeReportFortes.AjustarFiltroStream(PDFFilter: TRLPDFFilter; AConfig: TACBrDFeReport);
+begin
+  PDFFilter.ShowProgress := AConfig.MostraStatus;
 end;
 
 class function TDFeReportFortes.CarregarLogo(ALogoImage: TRLImage; const ALogo: string): Boolean;

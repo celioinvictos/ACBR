@@ -43,6 +43,7 @@ uses
 
 type
   { TPrestadorConfig }
+
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
@@ -79,6 +80,7 @@ type
   end;
 
   { TTomadorConfig }
+
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
@@ -103,6 +105,8 @@ type
     property Email: String read FEmail write FEmail;
 
   end;
+
+  { TACBrNFSeXDANFSeClass }
 
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(piacbrAllPlatforms)]
@@ -161,6 +165,7 @@ uses
   ACBrNFSeX, ACBrUtil;
 
 { TPrestadorConfig }
+
 constructor TPrestadorConfig.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -177,6 +182,7 @@ begin
 end;
 
 { TTomadorConfig }
+
 constructor TTomadorConfig.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -247,7 +253,7 @@ begin
   begin
     if Value <> nil then
       if not (Value is TACBrNFSeX) then
-        raise Exception.Create('ACBrDANFSe.NFSe deve ser do tipo TACBrNFSe');
+        raise Exception.Create('ACBrDANFSeX.ACBrNFSe deve ser do tipo TACBrNFSeX');
 
     if Assigned(FACBrNFSe) then
       FACBrNFSe.RemoveFreeNotification(Self);
@@ -293,7 +299,7 @@ begin
 
       Result := TACBrNFSeX(ACBrNFSe).Configuracoes.Arquivos.GetPath(
                 Result, DescricaoModelo,
-                OnlyNumber(ANFSe.Prestador.IdentificacaoPrestador.CNPJ),
+                OnlyNumber(ANFSe.Prestador.IdentificacaoPrestador.CpfCnpj),
                 OnlyNumber(ANFSe.Prestador.IdentificacaoPrestador.InscricaoEstadual),
                 dhEmissao);
     end;

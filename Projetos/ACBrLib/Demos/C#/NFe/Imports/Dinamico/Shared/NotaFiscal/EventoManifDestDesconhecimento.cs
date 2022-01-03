@@ -2,13 +2,13 @@
 
 namespace ACBrLib.NFe
 {
-    public sealed class EventoManifDestDesconhecimento : EventoBase
+    public sealed class EventoManifDestDesconhecimento : EventoNFeBase
     {
         #region Constructors
 
         public EventoManifDestDesconhecimento()
         {
-            tpEvento = TipoEvento.teManifDestDesconhecimento;
+            tpEvento = TipoEventoNFe.teManifDestDesconhecimento;
             cOrgao = 91;
         }
 

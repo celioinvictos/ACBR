@@ -50,7 +50,7 @@ type
                      stNFSeEnvioWebService, stNFSeImprimir);
 
   TLayOutNFSe = (LayNfseRecepcaoLote, LayNfseConsultaLote, LayNfseConsultaNfseRps,
-                 LayNfseConsultaSitLoteRps, LayNfseConsultaNfse, LayNfseConsultaNfseURL,
+                 LayNfseConsultaSitLoteRps, LayNfseConsultaNfse,
                  LayNfseConsultaNfsePorFaixa, LayNfseConsultaNfseServicoPrestado,
                  LayNfseConsultaNfseServicoTomado, LayNfseCancelaNfse,
                  LayNfseGerar, LayNfseRecepcaoLoteSincrono, LayNfseSubstituiNfse,
@@ -59,7 +59,8 @@ type
   TSchemaNFSe = (schErro, schNFSe, schConsNFSe, schCancNFSe, schSubNFSe,
                  schAbrirSessao, schFecharSessao);
 
-  TVersaoNFSe = (ve100, ve110, ve200);
+  TVersaoNFSe = (ve100, ve101, ve103,
+                 ve200, ve201, ve202, ve203, ve204);
 
   TnfseTagAssinatura = (taSempre, taNunca, taSomenteSeAssinada,
                         taSomenteParaNaoAssinada);
@@ -113,42 +114,33 @@ type
   TnfseTipoDeducao = (tdNenhum, tdMateriais, tdSubEmpreitada, tdValor, tdVeiculacao);
 
   TnfseProvedor = (proNenhum,
-                   // provedores com layout ABRASF v1
-                   proAbaco, proAbaco_A, proActcon, proBetha, proBHISS,
-                   proCIGA, proDBSeller, proDSFSJC, proFISSLex, progeNFe,
-                   proGinfes, proGovBR, proISSCuritiba, proISSFortaleza,
-                   proISSIntel, proISSNet, proLexsom, proMetropolisWeb,
-                   proNatal, proNFSeBrasil, proPronim, proPublica, proRecife,
-                   proRJ, proSalvador, proSilTecnologia, proSimplISS, proSJP,
-                   proSpeedGov, proThema, proTinus, proTinus_A, proTiplan,
-                   proWebISS,
-                   // provedores com layout ABRASF v2
-                   proSistemas4R, proAbaco_204, proABase, proActcon_201,
-                   proActcon_202, proADPM, proAdm, proAEG, proAsten,
-                   proBetha_2, proCenti, proCoplan, proDataSmart, proDeISS,
-                   proDesenvolve, proDigifred, proEL_2, proElotech, proeReceita,
-                   profintelISS, profintelISS_A, proFiorilli, proFuturize, proGiss,
-                   proGoiania, proGovDigital, proiiBrasil_2, proInfisc_2,
-                   proISSDigital, proISSe, proISSJoinville, proLink3, proMegaSoft,
-                   proMitra, proModernizacaoPublica, proNEAInformatica,
-                   proNotaInteligente, proProdata, proPronim_202, proPronim_203,
-                   proPVH, proRLZ, proSaatri, proSafeWeb, proSH3, proSiam,
-                   proSiapNet, proSigCorp, proSigep, proSilTecnologia_203,
-                   proSimplISS_2, proSisPMJP, proSmarAPD_204, proSmarAPD_203,
-                   proSystemPro, proTcheInfo_2, proTecnos, proTiplan_2,
-                   proVersaTecnologia_201, proVersaTecnologia_202, proVirtual,
-                   proVitoria, proWebISS_2, proSiapSistemas, proDSF_2,
-                   proTributus,
-                   // Provedores com layout proprio
-                   proAgili, proAgili_2, proAssessorPublico, proConam,
-                   proeGoverneISS, proEL, proEquiplano, proGeisWeb, proGiap,
-                   proGoverna, proInfisc_100, proInfisc_110, proIPM, proIPM_A,
-                   proIPM_110, proISSDSF, proLencois, proSiat, proSigISS,
-                   proSigISS_103, proSmarAPD, proSP, proWebFisco, proFGMaiss);
+                   proAbaco, proABase, proActcon, proAdm, proADPM, proAEG,
+                   proAgili, proAssessorPublico, proAsten, proBetha, proBHISS,
+                   proCenti, proCIGA, proCitta, proConam, proCoplan, proDataSmart,
+                   proDBSeller, proDeISS, proDesenvolve, proDigifred, proDSF,
+                   proDSFSJC, proeGoverneISS, proEL, proEloTech, proEquiplano,
+                   proeReceita, proFGMaiss, profintelISS, proFiorilli, proFisco,
+                   proFISSLex, proFuturize, proGeisWeb, progeNFe, proGiap,
+                   proGinfes, proGiss, proGovBR, proGovDigital, proGoverna,
+                   proiiBrasil, proInfisc, proIPM, proISSCuritiba, proISSDigital,
+                   proISSDSF, proISSe, proISSFortaleza, proISSGoiania, proISSIntel,
+                   proISSJoinville, proISSLencois, proISSNatal, proISSNet,
+                   proISSPortoVelho, proISSRecife, proISSRio, proISSSalvador,
+                   proISSSaoPaulo, proISSSJP, proISSVitoria, proLexsom, proLink3,
+                   proMegaSoft, proMetropolisWeb, proMitra, proModernizacaoPublica,
+                   proNEAInformatica, proNFSeBrasil, proNotaInteligente,
+                   proProdata, proPronim, proPublica, proRLZ, proSaatri,
+                   proSafeWeb, proSH3, proSiam, proSiapNet, proSiapSistemas,
+                   proSiat, proSigCorp, proSigep, proSigISS, proSilTecnologia,
+                   proSimple, proSimplISS, proSintese, proSisPMJP, proSistemas4R,
+                   proSmarAPD, proSpeedGov, proSudoeste, proSystemPro,
+                   proTcheInfo, proTecnos, proThema, proTinus, proTiplan,
+                   proTributus, proVersaTecnologia, proVirtual, proWebFisco,
+                   proWebISS);
 
   TnfseSituacaoTributaria = (stRetencao, stNormal, stSubstituicao);
 
-  TnfseResponsavelRetencao = (ptTomador, rtPrestador, rtIntermediario);
+  TnfseResponsavelRetencao = (rtTomador, rtPrestador, rtIntermediario, rtNenhum);
 
   TTipoEmissao = (teNormalNFSe, teContigenciaNFSe);
 
@@ -199,25 +191,26 @@ type
   TLocalParametros = (ppDentroBody, ppDentroCabecalho, ppDentroDados);
 
   TMetodo = (tmRecepcionar, tmConsultarSituacao, tmConsultarLote,
-             tmConsultarNFSePorRps, tmConsultarNFSe, tmConsultarNFSeURL,
+             tmConsultarNFSePorRps, tmConsultarNFSe,
              tmConsultarNFSePorFaixa, tmConsultarNFSeServicoPrestado,
              tmConsultarNFSeServicoTomado, tmCancelarNFSe,
-             tmGerar, tmRecepcionarSincrono, tmSubstituirNFSe,
+             tmGerar, tmGerarLote, tmRecepcionarSincrono, tmSubstituirNFSe,
              tmAbrirSessao, tmFecharSessao, tmTeste, tmTodos);
 
   TFormatoIDLote = (fidInt, fidStr, fidCNPJIMLote);
 
   TFormatoItemListaServico = (filsComFormatacao, filsSemFormatacao,
-                              filsComFormatacaoSemZeroEsquerda);
+                              filsComFormatacaoSemZeroEsquerda,
+                              filsSemFormatacaoSemZeroEsquerda);
 
   TSituacaoTrib = (tsTributadaNoPrestador, tsTibutadaNoTomador, tsIsenta, tsImune,
                    tsNaoTributada);
 
-  TTipoPessoa = (tpPFNaoIdentificaca, tpPF, tpPJdoMunicipio, tpPJforaMunicipio,
+  TTipoPessoa = (tpPFNaoIdentificada, tpPF, tpPJdoMunicipio, tpPJforaMunicipio,
                  tpPJforaPais);
 
   TtpConsulta = (tcPorNumero, tcPorFaixa, tcPorPeriodo, tcServicoPrestado,
-                 tcServicoTomado, tcPorNumeroURLRetornado);
+                 tcServicoTomado);
 
   TtpPeriodo = (tpEmissao, tpCompetencia);
 
@@ -234,8 +227,6 @@ type
   TConsultarNFSeRpsRequisitos = (rconNumero, rconSerie, rconTipo,
                                  rconCodVerificacao);
 
-  TtpRetorno = (trXML, trURL);
-
   TtpXML = (txmlRPS, txmlNFSe);
 
 function SimNao(const t : Integer): string;
@@ -247,21 +238,18 @@ function StrToStatusNFSe(out ok: boolean; const s: string): TStatusNFSe;
 
 function NaturezaOperacaoToStr(const t: TnfseNaturezaOperacao): string;
 function StrToNaturezaOperacao(out ok: boolean; const s: string): TnfseNaturezaOperacao;
-function NaturezaOperacaoDescricao(const t: TnfseNaturezaOperacao; AProvedor: TnfseProvedor = proNenhum): string;
+function NaturezaOperacaoDescricao(const t: TnfseNaturezaOperacao; aProvedor: TnfseProvedor = proNenhum): string;
 
 function ExigibilidadeISSToStr(const t: TnfseExigibilidadeISS): string;
 function StrToExigibilidadeISS(out ok: boolean; const s: string): TnfseExigibilidadeISS;
 function ExigibilidadeISSDescricao(const t: TnfseExigibilidadeISS): string;
 
-function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string;
-function StrToRegimeEspecialTributacao(out ok: boolean; const s: string): TnfseRegimeEspecialTributacao;
-function nfseRegimeEspecialTributacaoDescricao(const t: TnfseRegimeEspecialTributacao): string;
+function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao; const aProvedor: TnfseProvedor = proNenhum): string;
+function StrToRegimeEspecialTributacao(out ok: boolean; const s: string; const aProvedor: TnfseProvedor = proNenhum): TnfseRegimeEspecialTributacao;
+function nfseRegimeEspecialTributacaoDescricao(const t: TnfseRegimeEspecialTributacao; const aProvedor: TnfseProvedor = proNenhum): string;
 
-function SimNaoToStr(const t: TnfseSimNao): string;
-function StrToSimNao(out ok: boolean; const s: string): TnfseSimNao;
-
-function SimNaoInFiscToStr(const t: TnfseSimNao): string;
-function StrToSimNaoInFisc(out ok: boolean; const s: string): TnfseSimNao;
+function SimNaoToStr(const t: TnfseSimNao; const aProvedor: TnfseProvedor = proNenhum): string;
+function StrToSimNao(out ok: boolean; const s: string; const aProvedor: TnfseProvedor = proNenhum): TnfseSimNao;
 
 function TipoRPSToStr(const t:TTipoRPS): string;
 function StrToTipoRPS(out ok: boolean; const s: string): TTipoRPS;
@@ -281,13 +269,13 @@ function CodIBGEToCidade(const ACodigo: Integer): string;
 function CodIBGEToCodTOM(const ACodigo: Integer): string;
 function CodTOMToCodIBGE(const ACodigo: string): string;
 
-function SituacaoTributariaToStr(const t: TnfseSituacaoTributaria): string;
-function StrToSituacaoTributaria(out ok: boolean; const s: string; const provedor : TnfseProvedor = proNenhum): TnfseSituacaoTributaria;
-function SituacaoTributariaDescricao(const t: TnfseSituacaoTributaria): string;
+function SituacaoTributariaToStr(const t: TnfseSituacaoTributaria; const aProvedor: TnfseProvedor = proNenhum): string;
+function StrToSituacaoTributaria(out ok: boolean; const s: string; const aProvedor: TnfseProvedor = proNenhum): TnfseSituacaoTributaria;
+function SituacaoTributariaDescricao(const t: TnfseSituacaoTributaria; const aProvedor: TnfseProvedor = proNenhum): string;
 
-function ResponsavelRetencaoToStr(const t: TnfseResponsavelRetencao): string;
-function StrToResponsavelRetencao(out ok: boolean; const s: string): TnfseResponsavelRetencao;
-function ResponsavelRetencaoDescricao(const t: TnfseResponsavelRetencao): String;
+function ResponsavelRetencaoToStr(const t: TnfseResponsavelRetencao; const aProvedor: TnfseProvedor = proNenhum): string;
+function StrToResponsavelRetencao(out ok: boolean; const s: string; const aProvedor: TnfseProvedor = proNenhum): TnfseResponsavelRetencao;
+function ResponsavelRetencaoDescricao(const t: TnfseResponsavelRetencao; const aProvedor: TnfseProvedor = proNenhum): String;
 
 function TipoEmissaoToStr(const t: TTipoEmissao): string;
 function StrToTipoEmissao(out ok: boolean; const s: string): TTipoEmissao;
@@ -306,7 +294,7 @@ function ObterDescricaoServico(const cCodigo: string): string;
 function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: string;
                      ASerie:Integer; ANumero, ACodigo: Integer;
                      AModelo: Integer=56): string;
-function RetirarPrefixos(const AXML: string; AProvedor: TnfseProvedor): string;
+function RetirarPrefixos(const AXML: string; aProvedor: TnfseProvedor): string;
 function VersaoXML(const AXML: string): string;
 function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: string;
                                ANumero: Int64; AModelo: Integer = 56): string;
@@ -322,9 +310,6 @@ function StrToSchemaNFSe(const s: string): TSchemaNFSe;
 
 function StrToVersaoNFSe(out ok: Boolean; const s: string): TVersaoNFSe;
 function VersaoNFSeToStr(const t: TVersaoNFSe): string;
-
-function DblToVersaoNFSe(out ok: Boolean; const d: Real): TVersaoNFSe;
-function VersaoNFSeToDbl(const t: TVersaoNFSe): Real;
 
 function ObtemNameSpaceXML(const AXML: string): string;
 function RemoverNameSpace(const AXML: string): string;
@@ -352,7 +337,7 @@ function TributacaoToStr(const t: TTributacao): string;
 function StrToTributacao(out ok: boolean; const s: string): TTributacao;
 function TributacaoDescricao(const t: TTributacao): String;
 
-function RemoverAtributos(const AXML: string; AProvedor: TnfseProvedor): string;
+function RemoverAtributos(const AXML: string; aProvedor: TnfseProvedor): string;
 
 function UnidadeToStr(const t: TUnidade): string;
 function StrToUnidade(out ok: boolean; const s: string): TUnidade;
@@ -471,7 +456,7 @@ end;
 function ExigibilidadeISSToStr(const t: TnfseExigibilidadeISS): string;
 begin
   Result := EnumeradoToStr(t,
-                           ['1','2','3','4','5','6','7','8'],
+                           ['1', '2', '3', '4', '5', '6', '7', '8'],
                            [exiExigivel, exiNaoIncidencia, exiIsencao, exiExportacao,
                             exiImunidade, exiSuspensaDecisaoJudicial,
                             exiSuspensaProcessoAdministrativo, exiISSFixo]);
@@ -480,68 +465,129 @@ end;
 function StrToExigibilidadeISS(out ok: boolean; const s: string): TnfseExigibilidadeISS;
 begin
   Result := StrToEnumerado(ok, s,
-                          ['1','2','3','4','5','6','7','8'],
+                          ['1', '2', '3', '4', '5', '6', '7', '8'],
                           [exiExigivel, exiNaoIncidencia, exiIsencao, exiExportacao,
                            exiImunidade, exiSuspensaDecisaoJudicial,
                            exiSuspensaProcessoAdministrativo,exiISSFixo]);
 end;
 
-function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string;
+function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao;
+  const aProvedor: TnfseProvedor): string;
 begin
-  Result := EnumeradoToStr(t,
-                           ['0','1','2','3','4','5','6','7','8','9','10', '11', '12',
-                            '13', '14'],
+  case aProvedor of
+    proTecnos: Result := EnumeradoToStr(t,
+                           ['0', '1', '2', '3', '4', '5', '6'],
+                           [retNenhum, retMicroempresaMunicipal, retEstimativa,
+                           retSociedadeProfissionais, retCooperativa,
+                           retMicroempresarioIndividual, retMicroempresarioEmpresaPP
+                           ]);
+  else
+    Result := EnumeradoToStr(t,
+                           ['', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                            '10', '11', '12', '13', '14'],
                            [retNenhum, retMicroempresaMunicipal, retEstimativa,
                            retSociedadeProfissionais, retCooperativa,
                            retMicroempresarioIndividual, retMicroempresarioEmpresaPP,
                            retLucroReal, retLucroPresumido, retSimplesNacional,
                            retImune, retEmpresaIndividualRELI, retEmpresaPP,
                            retMicroEmpresario, retOutros]);
+  end;
 end;
 
-function StrToRegimeEspecialTributacao(out ok: boolean; const s: string): TnfseRegimeEspecialTributacao;
+function StrToRegimeEspecialTributacao(out ok: boolean; const s: string;
+  const aProvedor: TnfseProvedor): TnfseRegimeEspecialTributacao;
 begin
-  Result := StrToEnumerado(ok, s,
-                          ['0','1','2','3','4','5','6','7','8','9','10', '11', '12',
-                           '13', '14'],
+  case aProvedor of
+    proTecnos: Result := StrToEnumerado(ok, s,
+                           ['0', '1', '2', '3', '4', '5', '6'],
+                           [retNenhum, retMicroempresaMunicipal, retEstimativa,
+                           retSociedadeProfissionais, retCooperativa,
+                           retMicroempresarioIndividual, retMicroempresarioEmpresaPP
+                           ]);
+  else
+    Result := StrToEnumerado(ok, s,
+                          ['', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                           '10', '11', '12', '13', '14'],
                           [retNenhum, retMicroempresaMunicipal, retEstimativa,
                            retSociedadeProfissionais, retCooperativa,
                            retMicroempresarioIndividual, retMicroempresarioEmpresaPP,
                            retLucroReal, retLucroPresumido, retSimplesNacional,
                            retImune, retEmpresaIndividualRELI, retEmpresaPP,
                            retMicroEmpresario, retOutros]);
+  end;
 end;
 
-function SimNaoToStr(const t: TnfseSimNao): string;
+function nfseRegimeEspecialTributacaoDescricao(const t: TnfseRegimeEspecialTributacao;
+  const aProvedor: TnfseProvedor): string;
 begin
-  Result := EnumeradoToStr(t,
-                           ['1', '2'],
-                           [snSim, snNao]);
+  case aProvedor of
+    proTecnos:
+      case t of
+        retNenhum                    : Result := '0 - Nenhum';
+        retMicroempresaMunicipal     : Result := '1 - Microempresa municipal';
+        retEstimativa                : Result := '2 - Estimativa';
+        retSociedadeProfissionais    : Result := '3 - Sociedade de profissionais';
+        retCooperativa               : Result := '4 - Cooperativa';
+        retMicroempresarioIndividual : Result := '5 - Microempresário Individual (MEI)';
+        retMicroempresarioEmpresaPP  : Result := '6 - Microempresário e Empresa de Pequeno Porte (ME EPP)';
+      else
+        Result := '';
+      end;
+  else
+    case t of
+      retMicroempresaMunicipal     : Result := '1 - Microempresa municipal';
+      retEstimativa                : Result := '2 - Estimativa';
+      retSociedadeProfissionais    : Result := '3 - Sociedade de profissionais';
+      retCooperativa               : Result := '4 - Cooperativa';
+      retMicroempresarioIndividual : Result := '5 - Microempresário Individual (MEI)';
+      retMicroempresarioEmpresaPP  : Result := '6 - Microempresário e Empresa de Pequeno Porte (ME EPP)';
+      retLucroReal                 : Result := '7 - Lucro Real';
+      retLucroPresumido            : Result := '8 - Lucro Presumido';
+      retSimplesNacional           : Result := '9 - Simples Nacional';
+      retImune                     : Result := '10 - Imune';
+      retEmpresaIndividualRELI     : Result := '11 - Empresa Individual de Resp. Limitada (EIRELI)';
+      retEmpresaPP                 : Result := '12 - Empresa de Pequeno Porte (EPP)';
+      retMicroEmpresario           : Result := '13 - Microempresário';
+      retOutros                    : Result := '14 - Outros/Sem Vinculo';
+    else
+      Result := '';
+    end;
+  end;
 end;
 
-function StrToSimNao(out ok: boolean; const s: string): TnfseSimNao;
+function SimNaoToStr(const t: TnfseSimNao; const aProvedor: TnfseProvedor): string;
 begin
-  Result := StrToEnumerado(ok, s,
-                           ['1', '2'],
-                           [snSim, snNao]);
-end;
-
-function SimNaoInFiscToStr(const t: TnfseSimNao): string;
-begin
-// Invertido para que o padrão seja o Nao, pois ao consultar retornava cancelada
-// pois a tag nao existe no XML de retorno
-  Result := EnumeradoToStr(t,
+  case aProvedor of
+    proInfisc: Result := EnumeradoToStr(t,
                            ['N', 'S'],
                            [snNao, snSim]);
+
+    proIPM: Result := EnumeradoToStr(t,
+                           ['0', '1'],
+                           [snNao, snSim]);
+  else
+    Result := EnumeradoToStr(t,
+                             ['1', '2'],
+                             [snSim, snNao]);
+  end;
 end;
 
-function StrToSimNaoInFisc(out ok: boolean; const s: string): TnfseSimNao;
+function StrToSimNao(out ok: boolean; const s: string;
+  const aProvedor: TnfseProvedor): TnfseSimNao;
 begin
-// Invertido para que o padrão seja o Nao, pois ao consultar retornava cancelada
-// pois a tag nao existe no XML de retorno
-  Result := StrToEnumerado(ok, s,
+  case aProvedor of
+    proInfisc: Result := StrToEnumerado(ok, s,
                            ['N', 'S'],
                            [snNao, snSim]);
+
+    proIPM: Result := StrToEnumerado(ok, s,
+                           ['0', '1'],
+                           [snNao, snSim]);
+  else
+    Result := StrToEnumerado(ok, s,
+                             ['1', '2'],
+                             [snSim, snNao]);
+  end;
 end;
 
 function TipoRPSToStr(const t: TTipoRPS): string;
@@ -605,103 +651,99 @@ end;
 function ProvedorToStr(const t: TnfseProvedor): string;
 begin
   Result := EnumeradoToStr(t,
-        ['Nenhum', 'Tiplan', 'ISSNet', 'WebISS', 'WebISS_2', 'Ginfes', 'ISSDSF',
-         'Abaco', 'Abaco_A', 'Betha', 'Equiplano', 'ISSIntel', 'GovBR', 'Recife',
-         'SimplISS', 'Thema', 'RJ', 'Publica', 'fintelISS', 'Digifred',
-         'Saatri', 'FISSLex', 'Goiania', 'ISSCuritiba', 'BHISS', 'Natal',
+        ['Nenhum', 'Tiplan', 'ISSNet', 'WebISS', 'Ginfes', 'ISSDSF',
+         'Abaco', 'Betha', 'Equiplano', 'ISSIntel', 'GovBR', 'ISSRecife',
+         'SimplISS', 'Thema', 'ISSRio', 'Publica', 'fintelISS', 'Digifred',
+         'Saatri', 'FISSLex', 'ISSGoiania', 'ISSCuritiba', 'BHISS', 'ISSNatal',
          'ISSDigital', 'ISSe', 'Sistemas4R', 'GovDigital', 'Fiorilli', 'Coplan',
-         'Prodata', 'Agili', 'Virtual', 'PVH', 'Link3', 'SpeedGov',
-         'Vitoria', 'Mitra', 'Tecnos', 'Pronim', 'Actcon', 'EL', 'eGoverneISS',
-         'SisPMJP', 'SystemPro', 'Infisc_100', 'Salvador', 'DBSeller', 'Lexsom',
-         'NFSeBrasil', 'Tinus', 'Tinus_A', 'SJP', 'Conam',
-         'eReceita', 'Governa', 'NEAInformatica', 'NotaInteligente', 'SP',
-         'Pronim_202', 'Pronim_203', 'ABase', 'VersaTecnologia_201',
-         'VersaTecnologia_202', 'CIGA', 'Siam',
-         'Agili_2', 'Betha_2', 'Actcon_201', 'Actcon_202', 'Adm',
-         'Infisc_110', 'SmarAPD', 'SmarAPD_204', 'SmarAPD_203', 'Sigep', 'SafeWeb',
-         'SH3', 'SiapNet', 'IPM', 'IPM_A', 'ISSJoinville', 'Asten', 'EL_2',
-         'Tiplan_2', 'Giss', 'DeISS', 'TcheInfo_2', 'DataSmart', 'MetropolisWeb',
+         'Prodata', 'Agili', 'Virtual', 'ISSPortoVelho', 'Link3', 'SpeedGov',
+         'ISSVitoria', 'Mitra', 'Tecnos', 'Pronim', 'Actcon', 'EL', 'eGoverneISS',
+         'SisPMJP', 'SystemPro', 'Infisc', 'ISSSalvador', 'DBSeller', 'Lexsom',
+         'NFSeBrasil', 'Tinus', 'ISSSJP', 'Conam',
+         'eReceita', 'Governa', 'NEAInformatica', 'NotaInteligente', 'ISSSaoPaulo',
+         'ABase', 'VersaTecnologia', 'CIGA', 'Siam', 'Adm',
+         'SmarAPD', 'Sigep', 'SafeWeb',
+         'SH3', 'SiapNet', 'IPM', 'ISSJoinville', 'Asten',
+         'Giss', 'DeISS', 'TcheInfo', 'DataSmart', 'MetropolisWeb',
          'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico',
-         'SigISS', 'SigISS_103', 'Elotech', 'SilTecnologia', 'iiBrasil_2', 'WebFisco',
-         'DSFSJC', 'SimplISS_2', 'Lencois', 'geNFe', 'MegaSoft', 'ModernizacaoPublica',
-         'Siat', 'ISSFortaleza', 'Futurize', 'Infisc_2', 'AEG', 'GeisWeb',
-         'SiapSistemas', 'DSF_2', 'Abaco_204', 'Tributus', 'SilTecnologia_203',
-         'ADPM', 'IPM_110', 'FGMaiss', 'fintelISS_A'],
-        [proNenhum, proTiplan, proISSNet, proWebISS, proWebISS_2, proGinfes, proISSDSF,
-         proAbaco, proAbaco_A, proBetha, proEquiplano, proISSIntel,
-         proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
-         profintelISS, proDigifred, proSaatri, proFISSLex, proGoiania,
-         proISSCuritiba, proBHISS, proNatal, proISSDigital, proISSe, proSistemas4R,
+         'SigISS', 'EloTech', 'SilTecnologia', 'iiBrasil', 'WebFisco',
+         'DSFSJC', 'ISSLencois', 'geNFe', 'MegaSoft', 'ModernizacaoPublica',
+         'Siat', 'ISSFortaleza', 'Futurize', 'AEG', 'GeisWeb',
+         'SiapSistemas', 'DSF', 'Tributus',
+         'ADPM', 'FGMaiss', 'Sudoeste', 'Simple',
+         'Sintese', 'Citta', 'Fisco'],
+        [proNenhum, proTiplan, proISSNet, proWebISS, proGinfes, proISSDSF,
+         proAbaco, proBetha, proEquiplano, proISSIntel, proGovBR, proISSRecife,
+         proSimplISS, proThema, proISSRio, proPublica,
+         profintelISS, proDigifred, proSaatri, proFISSLex, proISSGoiania,
+         proISSCuritiba, proBHISS, proISSNatal, proISSDigital, proISSe, proSistemas4R,
          proGovDigital, proFiorilli, proCoplan, proProdata, proAgili, proVirtual,
-         proPVH, proLink3, proSpeedGov, proVitoria, proMitra,
+         proISSPortoVelho, proLink3, proSpeedGov, proISSVitoria, proMitra,
          proTecnos, proPronim, proActcon, proEL, proeGoverneISS, proSisPMJP,
-         proSystemPro, proInfisc_100, proSalvador, proDBSeller, proLexsom,
-         proNFSeBrasil, proTinus, proTinus_A, proSJP,
+         proSystemPro, proInfisc, proISSSalvador, proDBSeller, proLexsom,
+         proNFSeBrasil, proTinus, proISSSJP,
          proConam, proeReceita, proGoverna, proNEAInformatica, proNotaInteligente,
-         proSP, proPronim_202, proPronim_203, proABase, proVersaTecnologia_201,
-         proVersaTecnologia_202, proCIGA,
-         proSiam, proAgili_2, proBetha_2, proActcon_201, proActcon_202, proAdm,
-         proInfisc_110, proSmarAPD, proSmarAPD_204, proSmarAPD_203, proSigep,
-         proSafeWeb, proSH3, proSiapNet, proIPM, proIPM_A, proISSJoinville,
-         proAsten, proEL_2, proTiplan_2, proGiss, proDeISS, proTcheInfo_2,
+         proISSSaoPaulo, proABase, proVersaTecnologia, proCIGA, proSiam, proAdm,
+         proSmarAPD, proSigep,
+         proSafeWeb, proSH3, proSiapNet, proIPM, proISSJoinville,
+         proAsten, proGiss, proDeISS, proTcheInfo,
          proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-         proGiap, proAssessorPublico, proSigISS, proSigISS_103, proElotech,
-         proSilTecnologia, proiiBrasil_2, proWebFisco, proDSFSJC, proSimplISS_2,
-         proLencois, progeNFe, proMegaSoft, proModernizacaoPublica, proSiat,
-         proISSFortaleza, proFuturize, proInfisc_2, proAEG, proGeisWeb,
-         proSiapSistemas, proDSF_2, proAbaco_204, proTributus, proSilTecnologia_203,
-         proADPM, proIPM_110, proFGMaiss, profintelISS_A]);
+         proGiap, proAssessorPublico, proSigISS, proEloTech,
+         proSilTecnologia, proiiBrasil, proWebFisco, proDSFSJC,
+         proISSLencois, progeNFe, proMegaSoft, proModernizacaoPublica, proSiat,
+         proISSFortaleza, proFuturize, proAEG, proGeisWeb,
+         proSiapSistemas, proDSF, proTributus,
+         proADPM, proFGMaiss, proSudoeste, proSimple,
+         proSintese, proCitta, proFisco]);
 end;
 
 function StrToProvedor(out ok: boolean; const s: string): TnfseProvedor;
 begin
   Result := StrToEnumerado(ok, s,
-        ['Nenhum', 'Tiplan', 'ISSNet', 'WebISS', 'WebISS_2', 'Ginfes', 'ISSDSF',
-         'Abaco', 'Abaco_A', 'Betha', 'Equiplano', 'ISSIntel', 'GovBR', 'Recife',
-         'SimplISS', 'Thema', 'RJ', 'Publica', 'fintelISS', 'Digifred',
-         'Saatri', 'FISSLex', 'Goiania', 'ISSCuritiba', 'BHISS', 'Natal',
+        ['Nenhum', 'Tiplan', 'ISSNet', 'WebISS', 'Ginfes', 'ISSDSF',
+         'Abaco', 'Betha', 'Equiplano', 'ISSIntel', 'GovBR', 'ISSRecife',
+         'SimplISS', 'Thema', 'ISSRio', 'Publica', 'fintelISS', 'Digifred',
+         'Saatri', 'FISSLex', 'ISSGoiania', 'ISSCuritiba', 'BHISS', 'ISSNatal',
          'ISSDigital', 'ISSe', 'Sistemas4R', 'GovDigital', 'Fiorilli', 'Coplan',
-         'Prodata', 'Agili', 'Virtual', 'PVH', 'Link3', 'SpeedGov',
-         'Vitoria', 'Mitra', 'Tecnos', 'Pronim', 'Actcon', 'EL', 'eGoverneISS',
-         'SisPMJP', 'SystemPro', 'Infisc_100', 'Salvador', 'DBSeller', 'Lexsom',
-         'NFSeBrasil', 'Tinus', 'Tinus_A', 'SJP', 'Conam',
-         'eReceita', 'Governa', 'NEAInformatica', 'NotaInteligente', 'SP',
-         'Pronim_202', 'Pronim_203', 'ABase', 'VersaTecnologia_201',
-         'VersaTecnologia_202', 'CIGA', 'Siam',
-         'Agili_2', 'Betha_2', 'Actcon_201', 'Actcon_202', 'Adm',
-         'Infisc_110', 'SmarAPD', 'SmarAPD_204', 'SmarAPD_203', 'Sigep', 'SafeWeb',
-         'SH3', 'SiapNet', 'IPM', 'IPM_A', 'ISSJoinville', 'Asten', 'EL_2',
-         'Tiplan_2', 'Giss', 'DeISS', 'TcheInfo_2', 'DataSmart', 'MetropolisWeb',
+         'Prodata', 'Agili', 'Virtual', 'ISSPortoVelho', 'Link3', 'SpeedGov',
+         'ISSVitoria', 'Mitra', 'Tecnos', 'Pronim', 'Actcon', 'EL', 'eGoverneISS',
+         'SisPMJP', 'SystemPro', 'Infisc', 'ISSSalvador', 'DBSeller', 'Lexsom',
+         'NFSeBrasil', 'Tinus', 'ISSSJP', 'Conam',
+         'eReceita', 'Governa', 'NEAInformatica', 'NotaInteligente', 'ISSSaoPaulo',
+         'ABase', 'VersaTecnologia', 'CIGA', 'Siam', 'Adm',
+         'SmarAPD', 'Sigep', 'SafeWeb',
+         'SH3', 'SiapNet', 'IPM', 'ISSJoinville', 'Asten',
+         'Giss', 'DeISS', 'TcheInfo', 'DataSmart', 'MetropolisWeb',
          'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
-         'SigISS', 'SigISS_103', 'Elotech', 'SilTecnologia', 'iiBrasil_2', 'WebFisco',
-         'DSFSJC', 'SimplISS_2', 'Lencois', 'geNFe', 'MegaSoft', 'ModernizacaoPublica',
-         'Siat', 'ISSFortaleza', 'Futurize', 'Infisc_2', 'AEG', 'GeisWeb',
-         'SiapSistemas', 'DSF_2', 'Abaco_204', 'Tributus', 'SilTecnologia_203',
-         'ADPM', 'IPM_110', 'FGMaiss', 'fintelISS_A'],
-        [proNenhum, proTiplan, proISSNet, proWebISS, proWebISS_2, proGinfes, proISSDSF,
-         proAbaco, proAbaco_A, proBetha, proEquiplano, proISSIntel,
-         proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
-         profintelISS, proDigifred, proSaatri, proFISSLex, proGoiania,
-         proISSCuritiba, proBHISS, proNatal, proISSDigital, proISSe, proSistemas4R,
+         'SigISS', 'EloTech', 'SilTecnologia', 'iiBrasil', 'WebFisco',
+         'DSFSJC', 'ISSLencois', 'geNFe', 'MegaSoft', 'ModernizacaoPublica',
+         'Siat', 'ISSFortaleza', 'Futurize', 'AEG', 'GeisWeb',
+         'SiapSistemas', 'DSF', 'Tributus',
+         'ADPM', 'FGMaiss', 'Sudoeste', 'Simple',
+         'Sintese', 'Citta', 'Fisco'],
+        [proNenhum, proTiplan, proISSNet, proWebISS, proGinfes, proISSDSF,
+         proAbaco, proBetha, proEquiplano, proISSIntel, proGovBR, proISSRecife,
+         proSimplISS, proThema, proISSRio, proPublica,
+         profintelISS, proDigifred, proSaatri, proFISSLex, proISSGoiania,
+         proISSCuritiba, proBHISS, proISSNatal, proISSDigital, proISSe, proSistemas4R,
          proGovDigital, proFiorilli, proCoplan, proProdata, proAgili, proVirtual,
-         proPVH, proLink3, proSpeedGov, proVitoria, proMitra,
+         proISSPortoVelho, proLink3, proSpeedGov, proISSVitoria, proMitra,
          proTecnos, proPronim, proActcon, proEL, proeGoverneISS, proSisPMJP,
-         proSystemPro, proInfisc_100, proSalvador, proDBSeller, proLexsom,
-         proNFSeBrasil, proTinus, proTinus_A, proSJP,
+         proSystemPro, proInfisc, proISSSalvador, proDBSeller, proLexsom,
+         proNFSeBrasil, proTinus, proISSSJP,
          proConam, proeReceita, proGoverna, proNEAInformatica, proNotaInteligente,
-         proSP, proPronim_202, proPronim_203, proABase, proVersaTecnologia_201,
-         proVersaTecnologia_202, proCIGA, proSiam, proAgili_2,
-         proBetha_2, proActcon_201, proActcon_202, proAdm, proInfisc_110,
-         proSmarAPD, proSmarAPD_204, proSmarAPD_203, proSigep,
-         proSafeWeb, proSH3, proSiapNet, proIPM, proIPM_A, proISSJoinville,
-         proAsten, proEL_2, proTiplan_2, proGiss, proDeISS, proTcheInfo_2,
-         proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-         proGiap, proAssessorPublico, proSigISS, proSigISS_103, proElotech,
-         proSilTecnologia, proiiBrasil_2, proWebFisco, proDSFSJC, proSimplISS_2,
-         proLencois, progeNFe, proMegaSoft, proModernizacaoPublica, proSiat,
-         proISSFortaleza, proFuturize, proInfisc_2, proAEG, proGeisWeb,
-         proSiapSistemas, proDSF_2, proAbaco_204, proTributus, proSilTecnologia_203,
-         proADPM, proIPM_110, proFGMaiss, profintelISS_A]);
+         proISSSaoPaulo, proABase, proVersaTecnologia, proCIGA, proSiam, proAdm,
+         proSmarAPD, proSigep,
+         proSafeWeb, proSH3, proSiapNet, proIPM, proISSJoinville,
+         proAsten, proGiss, proDeISS, proTcheInfo,
+         proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp,
+         proGiap, proAssessorPublico, proSigISS, proEloTech,
+         proSilTecnologia, proiiBrasil, proWebFisco, proDSFSJC,
+         proISSLencois, progeNFe, proMegaSoft, proModernizacaoPublica, proSiat,
+         proISSFortaleza, proFuturize, proAEG, proGeisWeb,
+         proSiapSistemas, proDSF, proTributus,
+         proADPM, proFGMaiss, proSudoeste, proSimple,
+         proSintese, proCitta, proFisco]);
 end;
 
 function CondicaoToStr(const t: TnfseCondicaoPagamento): string;
@@ -18124,46 +18166,107 @@ begin
   Result := inttostr(CodIBGE);
 end;
 
-// Situacao Tributária *********************************************************
-
-function SituacaoTributariaToStr(const t: TnfseSituacaoTributaria): string;
+function SituacaoTributariaToStr(const t: TnfseSituacaoTributaria;
+  const aProvedor: TnfseProvedor): string;
 begin
-  Result := EnumeradoToStr(t,
-                           ['1', '2', '3'],
-                           [stRetencao, stNormal, stSubstituicao]);
+  case aProvedor of
+    proCenti: Result := EnumeradoToStr(t,
+                             ['0', '1', '2'],
+                             [stRetencao, stNormal, stSubstituicao]);
+  else
+    Result := EnumeradoToStr(t,
+                             ['1', '2', '3'],
+                             [stRetencao, stNormal, stSubstituicao]);
+  end;
 end;
 
-function StrToSituacaoTributaria(out ok: boolean; const s: string; const provedor : TnfseProvedor): TnfseSituacaoTributaria;
+function StrToSituacaoTributaria(out ok: boolean; const s: string;
+  const aProvedor: TnfseProvedor): TnfseSituacaoTributaria;
 begin
-  if provedor = proCenti then
-  begin
-    Result := StrToEnumerado(ok, s,
+  case aProvedor of
+    proCenti: Result := StrToEnumerado(ok, s,
                              ['0', '1', '2'],
                              [stNormal, stRetencao, stSubstituicao]);
-  end
   else
-  begin
     Result := StrToEnumerado(ok, s,
                              ['1', '2', '3'],
                              [stRetencao, stNormal, stSubstituicao]);
   end;
 end;
 
-function ResponsavelRetencaoToStr(const t: TnfseResponsavelRetencao): string;
+function SituacaoTributariaDescricao(const t: TnfseSituacaoTributaria;
+  const aProvedor: TnfseProvedor): string;
 begin
-  Result := EnumeradoToStr(t,
-                           ['1', '2'],
-                           [ptTomador, rtPrestador]);
+  case aProvedor of
+    proCenti:
+      case t of
+        stNormal       : Result := '0 - Não' ;
+        stRetencao     : Result := '1 - Sim' ;
+        stSubstituicao : Result := '2 - Substituição' ;
+      else
+        Result := '';
+      end;
+  else
+    case t of
+      stRetencao     : Result := '1 - Sim' ;
+      stNormal       : Result := '2 - Não' ;
+      stSubstituicao : Result := '3 - Substituição' ;
+    else
+      Result := '';
+    end;
+  end;
 end;
 
-function StrToResponsavelRetencao(out ok: boolean; const s: string): TnfseResponsavelRetencao;
+function ResponsavelRetencaoToStr(const t: TnfseResponsavelRetencao;
+  const aProvedor : TnfseProvedor): string;
 begin
-  Result := StrToEnumerado(ok, s,
-                           ['1', '2', ''],
-                           [ptTomador, rtPrestador, rtPrestador]);
+  case aProvedor of
+    proTecnos: Result := EnumeradoToStr(t,
+                             ['1', '2', '3'],
+                             [rtNenhum, rtTomador, rtIntermediario]);
+  else
+    Result := EnumeradoToStr(t,
+                           ['1', '', '2', ''],
+                           [rtTomador, rtPrestador, rtIntermediario, rtNenhum]);
+  end;
 end;
 
-// Tipo de Emissão *********************************************************
+function StrToResponsavelRetencao(out ok: boolean; const s: string;
+  const aProvedor : TnfseProvedor): TnfseResponsavelRetencao;
+begin
+  case aProvedor of
+    proTecnos: Result := StrToEnumerado(ok, s,
+                             ['1', '2', '3'],
+                             [rtNenhum, rtTomador, rtIntermediario]);
+  else
+    Result := StrToEnumerado(ok, s,
+                           ['1', '', '2', ''],
+                           [rtTomador, rtPrestador, rtIntermediario, rtNenhum]);
+  end;
+end;
+
+function ResponsavelRetencaoDescricao(const t: TnfseResponsavelRetencao;
+  const aProvedor : TnfseProvedor): String;
+begin
+  case aProvedor of
+    proTecnos:
+      case t of
+        rtNenhum        : Result := '1 - Nenhum';
+        rtTomador       : Result := '2 - Tomador';
+        rtIntermediario : Result := '3 - Intermediário';
+      else
+        Result := '';
+      end;
+  else
+    case t of
+      rtTomador       : Result := '1 - Tomador';
+      rtIntermediario : Result := '2 - Intermediário';
+      rtPrestador     : Result := '3 - Prestador';
+    else
+      Result := '';
+    end;
+  end;
+end;
 
 function TipoEmissaoToStr(const t: TTipoEmissao): string;
 begin
@@ -18178,8 +18281,6 @@ begin
                            ['N', 'C'],
                            [teNormalNFSe, teContigenciaNFSe]);
 end;
-
-// Empreitada Global *********************************************************
 
 function EmpreitadaGlobalToStr(const t: TEmpreitadaGlobal): string;
 begin
@@ -18240,7 +18341,7 @@ begin
   Result := vUF + vDataEmissao + ACNPJ + vModelo + vSerie + vNumero + vCodigo;
 end;
 
-function RetirarPrefixos(const AXML: string; AProvedor: TnfseProvedor): string;
+function RetirarPrefixos(const AXML: string; aProvedor: TnfseProvedor): string;
 var
   XML: string;
 
@@ -18271,7 +18372,7 @@ begin
   XML := StrReplace(XML, 's:');
   XML := StrReplace(XML, 'tipos:');
 
-  if AProvedor in [proNFSeBrasil, proSigCorp, proMegaSoft] then
+  if aProvedor in [proNFSeBrasil, proSigCorp, proMegaSoft] then
   begin
     XML := stringReplace(XML, '<![CDATA[', '', [rfReplaceAll]);
     XML := stringReplace(XML, ']]>', '', [rfReplaceAll]);
@@ -18310,13 +18411,13 @@ function LayOutToServico(const t: TLayOutNFSe): string;
 begin
   Result := EnumeradoToStr(t,
     ['NfseRecepcaoLote', 'NfseConsultaLote', 'NfseConsultaNfseRps',
-     'NfseConsultaSitLoteRps', 'NfseConsultaNfse', 'NfseConsultaNfseURL',
+     'NfseConsultaSitLoteRps', 'NfseConsultaNfse',
      'NfseConsultaNfsePorFaixa', 'NfseConsultaNfseServicoPrestado',
      'NfseConsultaNfseServicoTomado', 'NfseCancelaNfse', 'NfseGerar',
      'NfseRecepcaoLoteSincrono', 'NfseSubstituiNfse', 'NfseAbrirSessao',
      'NfseFecharSessao'],
     [LayNfseRecepcaoLote, LayNfseConsultaLote, LayNfseConsultaNfseRps,
-     LayNfseConsultaSitLoteRps, LayNfseConsultaNfse, LayNfseConsultaNfseURL,
+     LayNfseConsultaSitLoteRps, LayNfseConsultaNfse,
      LayNfseConsultaNfsePorFaixa, LayNfseConsultaNfseServicoPrestado,
      LayNfseConsultaNfseServicoTomado, LayNfseCancelaNfse, LayNfseGerar,
      LayNfseRecepcaoLoteSincrono, LayNfseSubstituiNfse, LayNfseAbrirSessao,
@@ -18327,13 +18428,13 @@ function ServicoToLayOut(out ok: Boolean; const s: string): TLayOutNFSe;
 begin
   Result := StrToEnumerado(ok, s,
   ['NfseRecepcaoLote', 'NfseConsultaLote', 'NfseConsultaNfseRps',
-   'NfseConsultaSitLoteRps', 'NfseConsultaNfse', 'NfseConsultaNfseURL',
+   'NfseConsultaSitLoteRps', 'NfseConsultaNfse',
    'NfseConsultaNfsePorFaixa', 'NfseConsultaNfseServicoPrestado',
    'NfseConsultaNfseServicoTomado', 'NfseCancelaNfse', 'NfseGerar',
    'NfseRecepcaoLoteSincrono', 'NfseSubstituiNfse', 'NfseAbrirSessao',
    'NfseFecharSessao'],
   [LayNfseRecepcaoLote, LayNfseConsultaLote, LayNfseConsultaNfseRps,
-   LayNfseConsultaSitLoteRps, LayNfseConsultaNfse, LayNfseConsultaNfseURL,
+   LayNfseConsultaSitLoteRps, LayNfseConsultaNfse,
    LayNfseConsultaNfsePorFaixa, LayNfseConsultaNfseServicoPrestado,
    LayNfseConsultaNfseServicoTomado, LayNfseCancelaNfse, LayNfseGerar,
    LayNfseRecepcaoLoteSincrono, LayNfseSubstituiNfse, LayNfseAbrirSessao,
@@ -18351,7 +18452,6 @@ begin
     LayNfseConsultaNfseRps,
     LayNfseConsultaSitLoteRps,
     LayNfseConsultaNfse,
-    LayNfseConsultaNfseURL,
     LayNfseConsultaNfsePorFaixa,
     LayNfseConsultaNfseServicoPrestado,
     LayNfseConsultaNfseServicoTomado:   Result := schConsNFSe;
@@ -18370,12 +18470,12 @@ begin
   Result := EnumeradoToStr(t,
     ['Enviar Lote', 'Consultar Lote', 'Consultar NFS-e por RPS',
      'Consultar Situação do Lote', 'Consultar NFS-e',
-     'Consultar URL Visualização NFS-e', 'Consultar NFS-e Por Faixa',
+     'Consultar NFS-e Por Faixa',
      'Consultar NFS-e Serviço Prestado', 'Consultar NFS-e Serviço Tomado',
      'Cancelar NFS-e', 'Gerar', 'Enviar Lote - Síncrono', 'Substituir NFS-e',
      'Abrir Sessão', 'Fechar Sessão'],
     [LayNfseRecepcaoLote, LayNfseConsultaLote, LayNfseConsultaNfseRps,
-     LayNfseConsultaSitLoteRps, LayNfseConsultaNfse, LayNfseConsultaNfseURL,
+     LayNfseConsultaSitLoteRps, LayNfseConsultaNfse,
      LayNfseConsultaNfsePorFaixa, LayNfseConsultaNfseServicoPrestado,
      LayNfseConsultaNfseServicoTomado, LayNfseCancelaNfse, LayNfseGerar,
      LayNfseRecepcaoLoteSincrono, LayNfseSubstituiNfse, LayNfseAbrirSessao,
@@ -18415,45 +18515,21 @@ end;
 
 function StrToVersaoNFSe(out ok: Boolean; const s: string): TVersaoNFSe;
 begin
-  Result := StrToEnumerado(ok, s, ['1.00', '1.10', '2.00'],
-                                  [ve100, ve110, ve200]);
+  Result := StrToEnumerado(ok, s, ['1.00', '1.01', '1.03',
+                                   '2.00', '2.01', '2.02', '2.03', '2.04'],
+                                  [ve100, ve101, ve103,
+                                   ve200, ve201, ve202, ve203, ve204]);
 end;
 
 function VersaoNFSeToStr(const t: TVersaoNFSe): string;
 begin
-  Result := EnumeradoToStr(t, ['1.00', '1.10', '2.00'],
-                              [ve100, ve110, ve200]);
+  Result := EnumeradoToStr(t, ['1.00', '1.01', '1.03',
+                               '2.00', '2.01', '2.02', '2.03', '2.04'],
+                              [ve100, ve101, ve103,
+                               ve200, ve201, ve202, ve203, ve204]);
 end;
 
-function DblToVersaoNFSe(out ok: Boolean; const d: Real): TVersaoNFSe;
-begin
-  ok := True;
-
-  if (d = 1.0) then
-    Result := ve100
-  else if (d = 1.1) then
-    Result := ve110
-  else if (d = 2.0) then
-    Result := ve200
-  else
-  begin
-    Result := ve100;
-    ok := False;
-  end;
-end;
-
-function VersaoNFSeToDbl(const t: TVersaoNFSe): Real;
-begin
-  case t of
-    ve100: Result := 1.00;
-    ve110: Result := 1.10;
-    ve200: Result := 2.00;
-  else
-    Result := 0;
-  end;
-end;
-
-function NaturezaOperacaoDescricao(const t: TnfseNaturezaOperacao; AProvedor: TnfseProvedor = proNenhum): string;
+function NaturezaOperacaoDescricao(const t: TnfseNaturezaOperacao; aProvedor: TnfseProvedor = proNenhum): string;
 begin
   case t of
     no1 : Result := '1 - Tributação no município';
@@ -18470,12 +18546,12 @@ begin
     no61 : Result := '6.1 - Tributacao No Municipio Com Retenção de ISS';
     no62 : Result := '6.2 - Tributacao No Municipio Sem Retenção de ISS';
 
-    no63 : if AProvedor = proThema then
+    no63 : if aProvedor = proThema then
              Result := '6.3 - Tributação fora do municipio sem retenção de ISS'
            else
              Result := '6.3 - Tributação fora do municipio com retenção de ISS';
 
-    no64 : if AProvedor = proThema then
+    no64 : if aProvedor = proThema then
              Result := '6.4 - Tributacao fora do municipio com retenção de ISS'
            else
              Result := '6.4 - Tributacao fora do municipio sem retenção de ISS';
@@ -18502,7 +18578,7 @@ begin
     no301 : Result := '301 - Operação imune, isenta ou não tributada';
     no501 : Result := '501 - ISS devido no município (Simples Nacional)';
 
-    no511 : if AProvedor = proPublica then
+    no511 : if aProvedor = proPublica then
               Result := '511 - ISS devido para outro município (Simples Nacional)'
             else
               Result := '511 - Prestação de serviço no município - iss mensal sem retenção na fonte';
@@ -18553,45 +18629,11 @@ begin
   end;
 end;
 
-function ResponsavelRetencaoDescricao(const t: TnfseResponsavelRetencao): String;
-begin
-  case t of
-    ptTomador      : Result := '1 - Tomador';
-    rtPrestador    : Result := '2 - Prestador';
-    rtIntermediario: Result := '3 - Intermediário';
-  else
-    Result := '';
-  end;
-end;
-
 function TipoEmissaoDescricao(const t: TTipoEmissao): String;
 begin
   case t of
     teNormalNFSe     : Result := 'N - Normal';
     teContigenciaNFSe: Result := 'C - Contingência';
-  end;
-end;
-
-function nfseRegimeEspecialTributacaoDescricao(const t: TnfseRegimeEspecialTributacao): string;
-begin
-  case t of
-    retNenhum                    : Result := '0 - Nenhum';
-    retMicroempresaMunicipal     : Result := '1 - Microempresa municipal';
-    retEstimativa                : Result := '2 - Estimativa';
-    retSociedadeProfissionais    : Result := '3 - Sociedade de profissionais';
-    retCooperativa               : Result := '4 - Cooperativa';
-    retMicroempresarioIndividual : Result := '5 - Microempresário Individual (MEI)';
-    retMicroempresarioEmpresaPP  : Result := '6 - Microempresário e Empresa de Pequeno Porte (ME EPP)';
-    retLucroReal                 : Result := '7 - Lucro Real';
-    retLucroPresumido            : Result := '8 - Lucro Presumido';
-    retSimplesNacional           : Result := '9 - Simples Nacional';
-    retImune                     : Result := '10 - Imune';
-    retEmpresaIndividualRELI     : Result := '11 - Empresa Individual de Resp. Limitada (EIRELI)';
-    retEmpresaPP                 : Result := '12 - Empresa de Pequeno Porte (EPP)';
-    retMicroEmpresario           : Result := '13 - Microempresário';
-    retOutros                    : Result := '14 - Outros/Sem Vinculo';
-  else
-    Result := '';
   end;
 end;
 
@@ -18623,17 +18665,6 @@ begin
     exiSuspensaDecisaoJudicial        : Result := '6 - Suspensa Decisao Judicial';
     exiSuspensaProcessoAdministrativo : Result := '7 - Suspensa Processo Administrativo';
     exiISSFixo                        : Result := '8 - ISS Fixo';
-  else
-    Result := '';
-  end;
-end;
-
-function SituacaoTributariaDescricao(const t: TnfseSituacaoTributaria): string;
-begin
-  case t of
-    stRetencao    : Result := '1 - Sim' ;
-    stNormal      : Result := '2 - Não' ;
-    stSubstituicao: Result := '3 - Substituição' ;
   else
     Result := '';
   end;
@@ -18794,7 +18825,7 @@ begin
                             ttTributavelFixo, ttTributavelSN, ttMEI]);
 end;
 
-function RemoverAtributos(const AXML: string; AProvedor: TnfseProvedor): string;
+function RemoverAtributos(const AXML: string; aProvedor: TnfseProvedor): string;
 var
   XML: string;
 begin
@@ -18883,7 +18914,7 @@ function TipoPessoaToStr(const t: TTipoPessoa): string;
 begin
   Result := EnumeradoToStr(t,
                            ['1', '2', '3', '4', '5'],
-                           [tpPFNaoIdentificaca, tpPF, tpPJdoMunicipio,
+                           [tpPFNaoIdentificada, tpPF, tpPJdoMunicipio,
                             tpPJforaMunicipio, tpPJforaPais]);
 end;
 
@@ -18891,26 +18922,24 @@ function StrToTipoPessoa(out ok: boolean; const s: string): TTipoPessoa;
 begin
   Result := StrToEnumerado(ok, s,
                            ['1', '2', '3', '4', '5'],
-                           [tpPFNaoIdentificaca, tpPF, tpPJdoMunicipio,
+                           [tpPFNaoIdentificada, tpPF, tpPJdoMunicipio,
                             tpPJforaMunicipio, tpPJforaPais]);
 end;
 
 function tpConsultaToStr(const t: TtpConsulta): string;
 begin
   Result := EnumeradoToStr(t,
-                           ['1', '2', '3', '4', '5', '6'],
+                           ['1', '2', '3', '4', '5'],
                            [tcPorNumero, tcPorFaixa, tcPorPeriodo,
-                            tcServicoPrestado, tcServicoTomado,
-                            tcPorNumeroURLRetornado]);
+                            tcServicoPrestado, tcServicoTomado]);
 end;
 
 function StrTotpConsulta(out ok: boolean; const s: string): TtpConsulta;
 begin
   Result := StrToEnumerado(ok, s,
-                           ['1', '2', '3', '4', '5', '6'],
+                           ['1', '2', '3', '4', '5'],
                            [tcPorNumero, tcPorFaixa, tcPorPeriodo,
-                            tcServicoPrestado, tcServicoTomado,
-                            tcPorNumeroURLRetornado]);
+                            tcServicoPrestado, tcServicoTomado]);
 end;
 
 function tpPeriodoToStr(const t: TtpPeriodo): string;
@@ -18931,16 +18960,16 @@ function MetodoToStr(const t: TMetodo): string;
 begin
   Result := EnumeradoToStr(t,
                        ['Recepcionar', 'ConsultarSituacao', 'ConsultarLote',
-                        'ConsultarNFSePorRps', 'ConsultarNFSe', 'ConsultarNFSeURL',
+                        'ConsultarNFSePorRps', 'ConsultarNFSe',
                         'ConsultarNFSePorFaixa', 'ConsultarNFSeServicoPrestado',
                         'ConsultarNFSeServicoTomado', 'CancelarNFSe',
-                        'Gerar', 'RecepcionarSincrono', 'SubstituirNFSe',
+                        'Gerar', 'GerarLote', 'RecepcionarSincrono', 'SubstituirNFSe',
                         'AbrirSessao', 'FecharSessao', 'Teste', 'Todos'],
                        [tmRecepcionar, tmConsultarSituacao, tmConsultarLote,
-                        tmConsultarNFSePorRps, tmConsultarNFSe, tmConsultarNFSeURL,
+                        tmConsultarNFSePorRps, tmConsultarNFSe,
                         tmConsultarNFSePorFaixa, tmConsultarNFSeServicoPrestado,
                         tmConsultarNFSeServicoTomado, tmCancelarNFSe,
-                        tmGerar, tmRecepcionarSincrono, tmSubstituirNFSe,
+                        tmGerar, tmGerarLote, tmRecepcionarSincrono, tmSubstituirNFSe,
                         tmAbrirSessao, tmFecharSessao, tmTeste, tmTodos]);
 end;
 

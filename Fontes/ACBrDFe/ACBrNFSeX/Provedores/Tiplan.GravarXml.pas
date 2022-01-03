@@ -37,9 +37,6 @@ unit Tiplan.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv1, ACBrNFSeXGravarXml_ABRASFv2,
   ACBrNFSeXConversao;
@@ -53,9 +50,9 @@ type
 
   end;
 
-  { TNFSeW_Tiplanv2 }
+  { TNFSeW_Tiplan203 }
 
-  TNFSeW_Tiplanv2 = class(TNFSeW_ABRASFv2)
+  TNFSeW_Tiplan203 = class(TNFSeW_ABRASFv2)
   protected
     function DefinirNameSpaceDeclaracao: string; override;
 
@@ -77,9 +74,9 @@ begin
   FormatoItemListaServico := filsSemFormatacao;
 end;
 
-{ TNFSeW_Tiplanv2 }
+{ TNFSeW_Tiplan203 }
 
-function TNFSeW_Tiplanv2.DefinirNameSpaceDeclaracao: string;
+function TNFSeW_Tiplan203.DefinirNameSpaceDeclaracao: string;
 begin
   Result := 'http://www.abrasf.org.br/nfse.xsd';
 end;

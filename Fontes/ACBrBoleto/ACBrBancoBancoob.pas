@@ -269,7 +269,9 @@ begin
          toRemessaCancelarInstrucaoProtestoBaixa : Ocorrencia := '10'; {Desistência do Protesto e Baixar Título}
          toRemessaDispensarJuros                 : Ocorrencia := '11'; {Instrução para Dispensar Juros}
          toRemessaAlterarDadosPagador            : Ocorrencia := '12'; {Alteração de Pagador}
-         toRemessaOutrasOcorrencias              : Ocorrencia := '31'; {Alteração de Outros Dados}
+         toRemessaOutrasOcorrencias,
+           toRemessaAlterarOutrosDados           : Ocorrencia := '31'; {Alteração de Outros Dados}
+
          toRemessaBaixaporPagtoDiretoCedente     : Ocorrencia := '34'; {Baixa - Pagamento Direto ao Beneficiário}
       else
          Ocorrencia := '01';                                          {Remessa}
@@ -460,12 +462,12 @@ begin
      NumeroArquivo := StrToIntDef(Copy(ARetorno[0], 158, 6), 0);
      DataArquivo   := StringToDateTimeDef(Copy(ARetorno[0],144,2)+'/'+
                                           Copy(ARetorno[0],146,2)+'/'+
-                                          Copy(ARetorno[0],148,4),0, 'DD/MM/YY' );
+                                          Copy(ARetorno[0],148,4),0, 'DD/MM/YYYY' );
 
      if StrToIntDef(Copy(ARetorno[1],200,6),0) <> 0 then
         DataCreditoLanc := StringToDateTimeDef(Copy(ARetorno[0],200,2)+'/'+
                                                Copy(ARetorno[0],202,2)+'/'+
-                                               Copy(ARetorno[0],204,4),0, 'DD/MM/YY' );
+                                               Copy(ARetorno[0],204,4),0, 'DD/MM/YYYY' );
      rCNPJCPF := trim( Copy(ARetorno[0],19,14)) ;
 
      if Cedente.TipoInscricao = pJuridica then
@@ -822,7 +824,8 @@ begin
         toRemessaAlterarPrazoLimiteRecebimento : ATipoOcorrencia := '19';
         toRemessaDispensarPrazoLimiteRecebimento:ATipoOcorrencia := '20';
         toRemessaAlterarDadosPagador           : ATipoOcorrencia := '23';
-        toRemessaOutrasOcorrencias             : ATipoOcorrencia := '31';
+        toRemessaOutrasOcorrencias,
+          toRemessaAlterarOutrosDados          : ATipoOcorrencia := '31';
       else
        ATipoOcorrencia := '01';
       end;
@@ -1395,6 +1398,7 @@ begin
       end;
   end;
 
+  Result := ACBrSTr(Result);
 end;
 
 function TACBrBancoob.CodOcorrenciaToTipo(
@@ -1536,6 +1540,7 @@ begin
       98: Result:='98-DESPESAS DE CUSTAS ANTECIPADAS' ;
    end;
 
+   Result := ACBrSTr(Result);
 end;
 
 end.

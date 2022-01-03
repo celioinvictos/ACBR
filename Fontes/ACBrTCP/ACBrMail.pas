@@ -497,8 +497,8 @@ begin
 
   fSMTP := TSMTPSend.Create;
   fMIMEMess := TMimeMess.Create;
-  fAltBody := TStringList.Create;
-  fBody := TStringList.Create;
+  fAltBody := CreateStringList;
+  fBody := CreateStringList;
   fArqMIMe := TMemoryStream.Create;
   fAttachments := TMailAttachments.Create(True); // FreeObjects
   fTimeOut := 0;
@@ -519,13 +519,13 @@ begin
   fFromName := '';
   fSubject := '';
 
-  fReplyTo := TStringList.Create;
+  fReplyTo := CreateStringList;
   {$IfDef HAS_STRICTDELIMITER}
   fReplyTo.StrictDelimiter := True;
   {$EndIf}
   fReplyTo.Delimiter := ';';
 
-  fBCC := TStringList.Create;
+  fBCC := CreateStringList;
   {$IfDef HAS_STRICTDELIMITER}
   fBCC.StrictDelimiter := True;
   {$EndIf}
@@ -726,7 +726,7 @@ begin
       MimePartAttach.Disposition := 'attachment';
     end;
     if fIsHTML and BodyHasImage then
-      MimePartAttach.ContentID := '<' + AAttachment.Description + '>';
+      MimePartAttach.ContentID := AAttachment.Description;
 
     MimePartAttach.FileName    := ExtractFileName(AAttachment.FileName);
     MimePartAttach.EncodingCode:= ME_BASE64;
@@ -790,6 +790,8 @@ begin
       Break;
 
     AddErrorMsg(fSMTP.ResultString);
+    AddErrorMsg(IntToStr(fSMTP.Sock.LastError) + ' - ' + fSMTP.Sock.LastErrorDesc);
+
     if vAttempts >= fAttempts then
       SmtpError('SMTP Error: Unable to Login.' + sLineBreak + ErrorMsgs);
   end;
@@ -1093,4 +1095,5 @@ finalization;
   MailCriticalSection.Free;
 
 end.
+
 

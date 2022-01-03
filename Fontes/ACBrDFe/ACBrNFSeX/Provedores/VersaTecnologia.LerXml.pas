@@ -37,25 +37,31 @@ unit VersaTecnologia.LerXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
-  { TNFSeR_VersaTecnologiav201 }
+  { TNFSeR_VersaTecnologia200 }
 
-  TNFSeR_VersaTecnologiav201 = class(TNFSeR_ABRASFv2)
+  TNFSeR_VersaTecnologia200 = class(TNFSeR_ABRASFv2)
   protected
 
   public
 
   end;
 
-  { TNFSeR_VersaTecnologiav202 }
+  { TNFSeR_VersaTecnologia201 }
 
-  TNFSeR_VersaTecnologiav202 = class(TNFSeR_ABRASFv2)
+  TNFSeR_VersaTecnologia201 = class(TNFSeR_ABRASFv2)
+  protected
+
+  public
+
+  end;
+
+  { TNFSeR_VersaTecnologia202 }
+
+  TNFSeR_VersaTecnologia202 = class(TNFSeR_ABRASFv2)
   protected
 
   public

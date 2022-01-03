@@ -43,7 +43,7 @@ uses
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
 
 type
-  TACBrNFSeXWebserviceSaatri = class(TACBrNFSeXWebserviceSoap11)
+  TACBrNFSeXWebserviceSaatri201 = class(TACBrNFSeXWebserviceSoap11)
   private
     function GetDadosUsuario: string;
   public
@@ -61,7 +61,7 @@ type
     property DadosUsuario: string read GetDadosUsuario;
   end;
 
-  TACBrNFSeProviderSaatri = class (TACBrNFSeProviderABRASFv2)
+  TACBrNFSeProviderSaatri201 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -77,9 +77,9 @@ uses
   ACBrNFSeX, ACBrDFeException,
   Saatri.GravarXml, Saatri.LerXml;
 
-{ TACBrNFSeProviderSaatri }
+{ TACBrNFSeProviderSaatri201 }
 
-procedure TACBrNFSeProviderSaatri.Configuracao;
+procedure TACBrNFSeProviderSaatri201.Configuracao;
 begin
   inherited Configuracao;
 
@@ -103,21 +103,21 @@ begin
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
 end;
 
-function TACBrNFSeProviderSaatri.CriarGeradorXml(
+function TACBrNFSeProviderSaatri201.CriarGeradorXml(
   const ANFSe: TNFSe): TNFSeWClass;
 begin
-  Result := TNFSeW_Saatri.Create(Self);
+  Result := TNFSeW_Saatri201.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSaatri.CriarLeitorXml(
+function TACBrNFSeProviderSaatri201.CriarLeitorXml(
   const ANFSe: TNFSe): TNFSeRClass;
 begin
-  Result := TNFSeR_Saatri.Create(Self);
+  Result := TNFSeR_Saatri201.Create(Self);
   Result.NFSe := ANFSe;
 end;
 
-function TACBrNFSeProviderSaatri.CriarServiceClient(
+function TACBrNFSeProviderSaatri201.CriarServiceClient(
   const AMetodo: TMetodo): TACBrNFSeXWebservice;
 var
   URL: string;
@@ -125,14 +125,19 @@ begin
   URL := GetWebServiceURL(AMetodo);
 
   if URL <> '' then
-    Result := TACBrNFSeXWebserviceSaatri.Create(FAOwner, AMetodo, URL)
+    Result := TACBrNFSeXWebserviceSaatri201.Create(FAOwner, AMetodo, URL)
   else
-    raise EACBrDFeException.Create(ERR_NAO_IMP);
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
 end;
 
-{ TACBrNFSeXWebserviceSaatri }
+{ TACBrNFSeXWebserviceSaatri201 }
 
-function TACBrNFSeXWebserviceSaatri.GetDadosUsuario: string;
+function TACBrNFSeXWebserviceSaatri201.GetDadosUsuario: string;
 begin
   with TACBrNFSeX(FPDFeOwner).Configuracoes.Geral do
   begin
@@ -150,7 +155,7 @@ begin
   end;
 end;
 
-function TACBrNFSeXWebserviceSaatri.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.Recepcionar(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -164,11 +169,11 @@ begin
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/RecepcionarLoteRps', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'EnviarLoteRpsResposta'],
+                     ['outputXML', 'EnviarLoteRpsResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -176,17 +181,17 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:RecepcionarLoteRpsSincronoRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:RecepcionarLoteRpsSincronoRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/RecepcionarLoteRpsSincrono', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'EnviarLoteRpsSincronoResposta'],
+                     ['outputXML', 'EnviarLoteRpsSincronoResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.GerarNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -194,17 +199,17 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:GerarNfseRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:GerarNfseRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/GerarNfse', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'GerarNfseResposta'],
+                     ['outputXML', 'GerarNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.ConsultarLote(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -212,17 +217,17 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:ConsultarLoteRpsRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:ConsultarLoteRpsRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/ConsultarLoteRps', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'ConsultarLoteRpsResposta'],
+                     ['outputXML', 'ConsultarLoteRpsResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.ConsultarNFSePorFaixa(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -230,17 +235,17 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:ConsultarNfsePorFaixaRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:ConsultarNfsePorFaixaRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/ConsultarNfsePorFaixa', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'ConsultarNfsePorFaixaResposta'],
+                     ['outputXML', 'ConsultarNfsePorFaixaResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.ConsultarNFSePorRps(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -248,17 +253,17 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:ConsultarNfsePorRpsRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:ConsultarNfsePorRpsRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/ConsultarNfsePorRps', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'ConsultarNfseRpsResposta'],
+                     ['outputXML', 'ConsultarNfseRpsResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.ConsultarNFSeServicoPrestado(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.ConsultarNFSeServicoPrestado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -266,17 +271,17 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:ConsultarNfseServicoPrestadoRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:ConsultarNfseServicoPrestadoRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/ConsultarNfseServicoPrestado', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'ConsultarNfseServicoPrestadoResposta'],
+                     ['outputXML', 'ConsultarNfseServicoPrestadoResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.ConsultarNFSeServicoTomado(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.ConsultarNFSeServicoTomado(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -284,34 +289,34 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:ConsultarNfseServicoTomadoRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:ConsultarNfseServicoTomadoRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/ConsultarNfseServicoTomado', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'ConsultarNfseServicoTomadoResposta'],
+                     ['outputXML', 'ConsultarNfseServicoTomadoResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceSaatri201.Cancelar(ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:CancelarNfseRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:CancelarNfseRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/CancelarNfse', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'CancelarNfseResposta'],
+                     ['outputXML', 'CancelarNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
-function TACBrNFSeXWebserviceSaatri.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSaatri201.SubstituirNFSe(ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -319,13 +324,13 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<nfse:SubstituirNfseRequest>';
-  Request := Request + '<nfseCabecMsg>' + ACabecalho + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + AMSG + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</nfse:SubstituirNfseRequest>';
 
   Result := Executar('http://nfse.abrasf.org.br/Infse/SubstituirNfse', Request,
                      DadosUsuario,
-                     ['return', 'outputXML', 'SubstituirNfseResposta'],
+                     ['outputXML', 'SubstituirNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 

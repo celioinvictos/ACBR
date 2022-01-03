@@ -40,16 +40,13 @@ unit ModeloV2.GravarXml;
 interface
 
 uses
-{$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
-{$ENDIF}
   SysUtils, Classes, StrUtils,
   ACBrNFSeXGravarXml_ABRASFv2;
 
 type
-  { TNFSeW_ModeloV2 }
+  { TNFSeW_ModeloV2200 }
 
-  TNFSeW_ModeloV2 = class(TNFSeW_ABRASFv2)
+  TNFSeW_ModeloV2200 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -62,9 +59,9 @@ implementation
 //     ModeloV2
 //==============================================================================
 
-{ TNFSeW_ModeloV2 }
+{ TNFSeW_ModeloV2200 }
 
-procedure TNFSeW_ModeloV2.Configuracao;
+procedure TNFSeW_ModeloV2200.Configuracao;
 begin
   // Executa a Configuração Padrão
   inherited Configuracao;
@@ -100,12 +97,16 @@ begin
   NrMaxExigISS := 1;
 
   GerarTagServicos := True;
+
+  // Gera ou não o atributo ID no grupo <Rps> da versão 2 do layout da ABRASF.
   GerarIDRps := False;
+
   GerarIDDeclaracao := True;
   GerarTagSenhaFraseSecreta := False;
   GerarEnderecoExterior := False;
 
   TagTomador := 'Tomador';
+  TagIntermediario := 'Intermediario';
 
   // Numero de Ocorrencias Minimas de uma tag
   // se for  0 só gera a tag se o conteudo for diferente de vazio ou zero
@@ -131,13 +132,14 @@ begin
   NrOcorrCodTribMun_1 := 0;
   NrOcorrNumProcesso := 0;
   NrOcorrInscMunTomador := 0;
+  NrOcorrCodigoPaisServico := 0;
+  NrOcorrRespRetencao := 0;
 
   // Por padrão as tags abaixo são obrigatórias
   NrOcorrIssRetido := 1;
   NrOcorrOptanteSimplesNacional := 1;
   NrOcorrIncentCultural := 1;
   NrOcorrItemListaServico := 1;
-  NrOcorrCodigoPaisServico := 1;
   NrOcorrCompetencia := 1;
   NrOcorrSerieRPS := 1;
   NrOcorrTipoRPS := 1;
@@ -170,7 +172,6 @@ begin
   NrOcorrValorCargaTribEst := -1;
   NrOcorrInformacoesComplemetares := -1;
   NrOcorrValTotTrib := -1;
-  NrOcorrRespRetencao := -1;
   NrOcorrTipoLogradouro := -1;
   NrOcorrLogradouro := -1;
   NrOcorrDDD := -1;
@@ -181,6 +182,7 @@ begin
   NrOcorrCodigoMunic_2 := -1;
   NrOcorrNIFTomador := -1;
   NrOcorrID := -1;
+  NrOcorrToken := -1;
 end;
 
 end.

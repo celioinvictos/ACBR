@@ -70,6 +70,7 @@ uses
 constructor TACBrNFSeDANFSeRL.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+
   FPrintDialog := True;
   FDetalharServico := False;
 end;
@@ -84,8 +85,8 @@ var
   i: Integer;
   Notas: array of TNFSe;
 begin
-//  TfrlDANFSeRLRetrato.QuebradeLinha(TACBrNFSe(ACBrNFSe).Configuracoes.WebServices.QuebradeLinha);
   TfrlDANFSeRLRetrato.QuebradeLinha(TACBrNFSe(ACBrNFSe).Configuracoes.Geral.ConfigGeral.QuebradeLinha);
+
   if (NFSe = nil) then
   begin
     SetLength(Notas, TACBrNFSe(ACBrNFSe).NotasFiscais.Count);
@@ -107,20 +108,28 @@ Var
   i: integer;
 begin
   TfrlDANFSeRLRetrato.QuebradeLinha(TACBrNFSe(ACBrNFSe).Configuracoes.WebServices.QuebradeLinha);
+
   if NFSe = nil then
   begin
     for i := 0 to TACBrNFSe(ACBrNFSe).NotasFiscais.Count - 1 do
     begin
-      FPArquivoPDF := PathWithDelim(Self.PathPDF) +
-        TACBrNFSe(ACBrNFSe).NumID[TACBrNFSe(ACBrNFSe).NotasFiscais.Items[i].NFSe] + '-nfse.pdf';
+      if Trim(self.NomeDocumento) <> ''  then
+        FPArquivoPDF := PathWithDelim(Self.PathPDF) + self.NomeDocumento + '-nfse.pdf'
+      else
+        FPArquivoPDF := PathWithDelim(Self.PathPDF) +
+          TACBrNFSe(ACBrNFSe).NumID[TACBrNFSe(ACBrNFSe).NotasFiscais.Items[i].NFSe] + '-nfse.pdf';
 
       TfrlDANFSeRLRetrato.SalvarPDF(Self, TACBrNFSe(ACBrNFSe).NotasFiscais.Items[i].NFSe, FPArquivoPDF);
     end;
   end
   else
   begin
+    if Trim(self.NomeDocumento) <> ''  then
+      FPArquivoPDF := PathWithDelim(Self.PathPDF) + self.NomeDocumento + '-nfse.pdf'
+    else
       FPArquivoPDF := PathWithDelim(Self.PathPDF) + TACBrNFSe(ACBrNFSe).NumID[NFSe] + '-nfse.pdf';
-      TfrlDANFSeRLRetrato.SalvarPDF(Self, NFSe, FPArquivoPDF);
+
+    TfrlDANFSeRLRetrato.SalvarPDF(Self, NFSe, FPArquivoPDF);
   end;
 end;
 
