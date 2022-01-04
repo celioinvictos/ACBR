@@ -43,7 +43,7 @@ uses
 const
   cURLItauSandbox = 'https://api.itau.com.br/sandbox';
   cURLItauProducao = 'https://secure.api.itau';
-  cURLItauAPIPix = '/pix_recebimentos/v2/';
+  cURLItauAPIPix = '/pix_recebimentos/v2';
   cURLItauAuthTeste = cURLItauSandbox+'/api/oauth/token';
   cURLItauAuthProducao = 'https://sts.itau.com.br/as/token.oauth2';
 
@@ -56,12 +56,12 @@ type
     fSandboxStatusCode: String;
     fxCorrelationID: String;
   protected
-    procedure Autenticar; override;
     function ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String; override;
-    procedure ConfigurarAutenticacao(const Method, EndPoint: String); override;
     procedure ConfigurarQueryParameters(const Method, EndPoint: String); override;
+    procedure ConfigurarHeaders(const Method, AURL: String); override;
   public
     constructor Create(AOwner: TComponent); override;
+    procedure Autenticar; override;
   published
     property ClientID;
     property ClientSecret;
@@ -111,7 +111,6 @@ begin
     qp.Values['client_id'] := ClientID;
     qp.Values['client_secret'] := ClientSecret;
     Body := qp.AsURL;
-    Delete(Body, 1, 1);
     WriteStrToStream(Http.Document, Body);
     Http.MimeType := CContentTypeApplicationWwwFormUrlEncoded;
   finally
@@ -161,21 +160,23 @@ begin
   Result := Result + cURLItauAPIPix;
 end;
 
-procedure TACBrPSPItau.ConfigurarAutenticacao(const Method, EndPoint: String);
-begin
-  inherited;
-end;
-
 procedure TACBrPSPItau.ConfigurarQueryParameters(const Method, EndPoint: String);
 begin
+  inherited ConfigurarQueryParameters(Method, EndPoint);
+
   with QueryParams do
   begin
-    if (fxCorrelationID <> '') then
-      Values['x-correlationID'] := fxCorrelationID;
-
     if (fSandboxStatusCode <> '') then
       Values['status_code'] := fSandboxStatusCode;
   end;
+end;
+
+procedure TACBrPSPItau.ConfigurarHeaders(const Method, AURL: String);
+begin
+  inherited ConfigurarHeaders(Method, AURL);
+
+  if (fxCorrelationID <> '') then
+    Http.Headers.Add('x-correlationID: ' + fxCorrelationID);
 end;
 
 end.
