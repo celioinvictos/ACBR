@@ -70,6 +70,7 @@ type
     HttpClient: TDFeSSLHttpClass;
 
     FPFaultNode: string;
+    FPSoapFaultNode: string;
     FPFaultCodeNode: string;
     FPFaultMsgNode: string;
 
@@ -281,7 +282,8 @@ type
 implementation
 
 uses
-  IniFiles, StrUtils, synautil, ACBrConsts, ACBrUtil, ACBrDFeException,
+  IniFiles, StrUtils, synautil, StrUtilsEx,
+  ACBrConsts, ACBrUtil, ACBrDFeException,
   ACBrNFSeX, ACBrNFSeXParametros;
 
 { TACBrNFSeXWebservice }
@@ -295,6 +297,7 @@ begin
   FUseOuterXml := True;
 
   FPFaultNode := 'Fault';
+  FPSoapFaultNode := 'soap:Fault';
   FPFaultCodeNode := 'faultcode';
   FPFaultMsgNode := 'faultstring';
 
@@ -525,7 +528,7 @@ Var
   ANode: TACBrXmlNode;
   aMsg: string;
 begin
-  if ADocument.Root.Name = FPFaultNode then
+  if ((ADocument.Root.Name = FPFaultNode) or (ADocument.Root.Name = FPSoapFaultNode)) then
     ANode := ADocument.Root
   else
     ANode := ADocument.Root.Childrens.FindAnyNs(FPFaultNode);
@@ -627,7 +630,7 @@ var
   Tentar, Tratado, TemCertificadoConfigurado: Boolean;
   HTTPResultCode, InternalErrorCode: Integer;
   aRetorno: TACBrXmlDocument;
-  CharSet: string;
+//  CharSet: string;
 begin
   FPEnvio := PrepararEnvio(Message, SoapAction, SoapHeader, namespace);
 
@@ -684,25 +687,39 @@ begin
 
             HttpClient.DataResp.Position := 0;
 
+            {
             CharSet := LowerCase(HttpClient.HeaderResp.GetHeaderValue('Content-Type'));
 
-            if (Pos('application/xml', CharSet) > 0) and (Pos('utf-8', CharSet) > 0) then
+            if ((Pos('application/xml', CharSet) > 0) or (Pos('text/xml', CharSet) > 0)) and
+               (Pos('utf-8', CharSet) > 0) then
               FPRetorno := UTF8ToNativeString(ReadStrFromStream(HttpClient.DataResp, HttpClient.DataResp.Size))
             else
               FPRetorno := string(ReadStrFromStream(HttpClient.DataResp, HttpClient.DataResp.Size));
+            }
+
+            FPRetorno := ReadStrFromStream(HttpClient.DataResp, HttpClient.DataResp.Size);
+            FPRetorno := RemoverDeclaracaoXML(FPRetorno);
+            FPRetorno := StrToXml(FPRetorno);
+
+            case TipoEncoding(FPRetorno) of
+              teUTF8:
+                FPRetorno := UTF8ToNativeString(FPRetorno);
+
+              teISO8859_1:
+                FPRetorno := string(TranslateString(AnsiString(FPRetorno), 0, 28591));
+
+              teUNICODE:
+                begin
+                  FPRetorno := FaststringReplace(FPRetorno, '&amp;', '&', [rfReplaceAll]);
+                  FPRetorno := ConverterUnicode(FPRetorno);
+                end
+            else
+              // o XML esta em ASCII
+            end;
 
             // Alsuns provedores retorna uma string apenas com a mensagem de erro
             if Pos('Body', FPRetorno) = 0 then
               FPRetorno := GetSoapBody(FPRetorno);
-
-            if Pos('ISO-8859-1', FPRetorno) > 0 then
-            begin
-              FPRetorno := RemoverDeclaracaoXML(FPRetorno);
-              FPRetorno := string(TranslateString(AnsiString(FPRetorno), 0, 28591));
-            end;
-
-            if Pos('<?xml version="1.0" ?>', FPRetorno) > 0 then
-              FPRetorno := RemoverDeclaracaoXML(FPRetorno);
 
             // Alguns provedores não retornam o XML em UTF-8
             FPRetorno := ConverteXMLtoUTF8(FPRetorno);

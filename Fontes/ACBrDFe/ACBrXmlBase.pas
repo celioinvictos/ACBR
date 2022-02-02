@@ -43,18 +43,24 @@ uses
 type
   TACBrTipoAmbiente = (taProducao, taHomologacao);
 
+  TACBrTipoEmissao = (teNormal, teContingencia, teSCAN, teDPEC, teFSDA, teSVCAN,
+                      teSVCRS, teSVCSP, teOffLine);
+
   TACBrTagAssinatura = (taSempre, taNunca, taSomenteSeAssinada,
                         taSomenteParaNaoAssinada);
 
-  TACBrTipoCampo = (tcStr, tcInt, tcDat, tcDatHor, tcEsp, tcDe2, tcDe3, tcDe4,
-                    tcDe5, tcDe6, tcDe7, tcDe8, tcDe10, tcHor, tcDatCFe,
+  TACBrTipoCampo = (tcStr, tcInt, tcInt64, tcDat, tcDatHor, tcEsp, tcDe2, tcDe3,
+                    tcDe4, tcDe5, tcDe6, tcDe7, tcDe8, tcDe10, tcHor, tcDatCFe,
                     tcHorCFe, tcDatVcto, tcDatHorCFe, tcBool, tcStrOrig, tcNumStr);
+
+  TACBrTipoEncoding = (teASCII, teUTF8, teUNICODE, teISO8859_1);
 
 const
   LineBreak = #13#10;
 
-function FiltrarTextoXML(const RetirarEspacos: boolean; aTexto: String; RetirarAcentos: boolean = True;
-                         SubstituirQuebrasLinha: Boolean = True; const QuebraLinha: String = ';'): String;
+function FiltrarTextoXML(const RetirarEspacos: boolean; aTexto: String;
+  RetirarAcentos: boolean = True; SubstituirQuebrasLinha: Boolean = True;
+  const QuebraLinha: String = ';'): String;
 
 function StrToEnumerado(out ok: boolean; const s: string; const AString: array of string;
   const AEnumerados: array of variant): variant;
@@ -76,7 +82,14 @@ function ObterConteudoTag(const AAtt: TACBrXmlAttribute): string; overload;
 function ObterConteudoTag(const ANode: TACBrXmlNode; const Tipo: TACBrTipoCampo): variant; overload;
 
 function LerDatas(const DataStr: string): TDateTime;
-//procedure ApplyNamespacePrefix(const ANode: TACBrXmlNode; nsPrefix: string; excludeElements: array of string);
+
+function TipoEmissaoToStr(const t: TACBrTipoEmissao): string;
+function StrToTipoEmissao(out ok: boolean; const s: string): TACBrTipoEmissao;
+
+function TipoAmbienteToStr(const t: TACBrTipoAmbiente): string;
+function StrToTipoAmbiente(out ok: boolean; const s: string): TACBrTipoAmbiente;
+
+function TipoEncoding(const aText: string): TACBrTipoEncoding;
 
 implementation
 
@@ -84,7 +97,8 @@ uses
   StrUtilsEx, ACBrUtil, DateUtils;
 
 function FiltrarTextoXML(const RetirarEspacos: boolean; aTexto: String;
-  RetirarAcentos: boolean; SubstituirQuebrasLinha: Boolean; const QuebraLinha: String): String;
+  RetirarAcentos: boolean; SubstituirQuebrasLinha: Boolean;
+  const QuebraLinha: String): String;
 begin
   if RetirarAcentos then
      aTexto := TiraAcentos(aTexto);
@@ -258,34 +272,7 @@ begin
     tcStr,
     tcEsp:
       result := ConteudoTag;
-{
-    tcDat:
-      begin
-        if length(ConteudoTag) > 0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 1, 4)), StrToInt(copy(ConteudoTag, 6, 2)), StrToInt(copy(ConteudoTag, 9, 2)))
-        else
-          result := 0;
-      end;
 
-    tcDatVcto:
-      begin
-        if length(ConteudoTag) > 0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 7, 4)), StrToInt(copy(ConteudoTag, 4, 2)), StrToInt(copy(ConteudoTag, 1, 2)))
-        else
-          Result := 0;
-      end;
-
-    tcDatHor:
-      begin
-        if length(ConteudoTag) > 0 then
-          result := EncodeDate(StrToInt(copy(ConteudoTag, 1, 4)), StrToInt(copy(ConteudoTag, 6, 2)), StrToInt(copy(ConteudoTag, 9, 2))) +
-                    EncodeTime(StrToIntDef(copy(ConteudoTag, 12, 2), 0),
-                               StrToIntDef(copy(ConteudoTag, 15, 2), 0),
-                               StrToIntDef(copy(ConteudoTag, 18, 2), 0), 0)
-        else
-          result := 0;
-      end;
-}
     tcDat,
     tcDatHor,
     tcDatVcto:
@@ -370,6 +357,14 @@ begin
           result := 0;
       end;
 
+    tcInt64:
+      begin
+        if length(ConteudoTag) > 0 then
+          result := StrToInt64Def(OnlyNumber(ConteudoTag), 0)
+        else
+          result := 0;
+      end;
+
     tcBool:
       begin
         if length(ConteudoTag) > 0 then
@@ -408,12 +403,24 @@ begin
   begin
     xData := StringReplace(xData, '-', '/', [rfReplaceAll]);
 
-    // Alguns provedores retorna a data de competencia só com o mês e ano e
+    // Alguns provedores retorna a data de competencia com o ano, mês e dia e
+    // sem a barra exemplo <Competencia>20220121</Competencia>
+    // Correção: Inclusão da barra "/"
+    if (Pos('/', xData) = 0) and (Length(xData) = 8) then
+    begin
+      if Copy(xData, 1, 4) = IntToStr(YearOf(Date)) then
+        xData := copy(xData, 1, 4) + '/' + copy(xData, 5, 2) + '/' + copy(xData, 7, 2)
+      else
+        xData := copy(xData, 1, 2) + '/' + copy(xData, 3, 2) + '/' + copy(xData, 5, 4);
+    end;
+
+    // Alguns provedores retorna a data de competencia só com o ano e mês e
     // sem a barra exemplo <Competencia>202111</Competencia>
     // Correção: Inclusão da barra "/"
     if (Pos('/', xData) = 0) and (Length(xData) = 6) then
     begin
-      if Copy(xData, 1, 2) = Copy(IntToStr(YearOf(Date)), 1, 2) then
+      if Copy(xData, 1, 4) = IntToStr(YearOf(Date)) then
+//      if Copy(xData, 1, 2) = Copy(IntToStr(YearOf(Date)), 1, 2) then
         xData := copy(xData, 1, 4) + '/' + copy(xData, 5, 2)
       else
         xData := copy(xData, 1, 2) + '/' + copy(xData, 3, 4);
@@ -466,28 +473,74 @@ begin
   end;
 end;
 
-{
-procedure ApplyNamespacePrefix(const ANode: TACBrXmlNode; nsPrefix : string; excludeElements: array of string);
-var
-  i: Integer;
-
-  function StringInArray(const Value: string; aStrings: array of string): Boolean;
-  var
-    I: Integer;
-  begin
-    Result := True;
-    for I := Low(aStrings) to High(aStrings) do
-      if aStrings[i] = Value then Exit;
-    Result := False;
-  end;
+function TipoEmissaoToStr(const t: TACBrTipoEmissao): string;
 begin
-  if (ANode = nil) then Exit;
-
-  if not StringInArray(ANode.LocalName, excludeElements) then
-      ANode.Name :=  nsPrefix + ':' + ANode.Name;
-
-  for i := 0 to ANode.Childrens.Count -1 do
-    ApplyNamespacePrefix(ANode.Childrens[i], nsPrefix, excludeElements);
+  result := EnumeradoToStr(t, ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                              [teNormal, teContingencia, teSCAN, teDPEC, teFSDA,
+                               teSVCAN, teSVCRS, teSVCSP, teOffLine]);
 end;
-}
+
+function StrToTipoEmissao(out ok: boolean; const s: string): TACBrTipoEmissao;
+begin
+  result := StrToEnumerado(ok, s, ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                              [teNormal, teContingencia, teSCAN, teDPEC, teFSDA,
+                               teSVCAN, teSVCRS, teSVCSP, teOffLine]);
+end;
+
+function TipoAmbienteToStr(const t: TACBrTipoAmbiente): string;
+begin
+  result := EnumeradoToStr(t, ['1', '2'], [taProducao, taHomologacao]);
+end;
+
+function StrToTipoAmbiente(out ok: boolean; const s: string): TACBrTipoAmbiente;
+begin
+  result := StrToEnumerado(ok, s, ['1', '2'], [taProducao, taHomologacao]);
+end;
+
+function TipoEncoding(const aText: string): TACBrTipoEncoding;
+var
+  i, j, FChar1, FChar2: Integer;
+begin
+  Result := teASCII;
+  i := 0;
+  j := Length(aText);
+
+  while i < j do
+  begin
+    Inc(i);
+
+    FChar1 := Ord(aText[i]);
+    FChar2 := Ord(aText[i+1]);
+
+    if Pos('&amp;#', aText) > 0 then
+    begin
+      Result := teUNICODE;
+      Exit
+    end;
+
+    if (FChar1 >= $C3) and (FChar1 <= $C3) then
+    begin
+      if (FChar2 >= $80) and (FChar2 <= $BF) then
+      begin
+        Result := teUTF8;
+        Exit
+      end;
+    end;
+
+    if FChar1 >= $80 then
+    begin
+      Result := teASCII;
+      Exit
+    end;
+    {
+       Como identificar um arquivo com um encoding ISO-8859-1 ?
+    if FChar1 >= ???? then
+    begin
+      Result := teISO8859_1;
+      Exit
+    end;
+    }
+  end;
+end;
+
 end.

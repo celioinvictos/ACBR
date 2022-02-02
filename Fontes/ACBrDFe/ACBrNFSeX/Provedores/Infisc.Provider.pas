@@ -81,6 +81,10 @@ type
                                      const Response: TNFSeWebserviceResponse;
                                      AListTag: string = '';
                                      AMessageTag: string = 'Erro'); override;
+
+  public
+    function SimNaoToStr(const t: TnfseSimNao): string; override;
+    function StrToSimNao(out ok: boolean; const s: string): TnfseSimNao; override;
   end;
 
   TACBrNFSeProviderInfisc101 = class (TACBrNFSeProviderInfisc)
@@ -198,7 +202,7 @@ begin
     Versao := ' ' + ConfigWebServices.AtribVerLote + '="' +
               ConfigWebServices.VersaoAtrib + '"';
 
-    Response.XmlEnvio := '<envioLote' + Versao + '>' +
+    Response.ArquivoEnvio := '<envioLote' + Versao + '>' +
                            '<CNPJ>' +
                               OnlyNumber(Emitente.CNPJ) +
                            '</CNPJ>' +
@@ -222,7 +226,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -230,7 +234,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'mot');
 
@@ -337,7 +341,7 @@ begin
   Versao := ' ' + ConfigWebServices.AtribVerLote + '="' +
             ConfigWebServices.VersaoAtrib + '"';
 
-  Response.XmlEnvio := '<pedidoStatusLote' + Versao + '>' +
+  Response.ArquivoEnvio := '<pedidoStatusLote' + Versao + '>' +
                          '<CNPJ>' +
                             OnlyNumber(Emitente.CNPJ) +
                          '</CNPJ>' +
@@ -364,7 +368,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -372,7 +376,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'mot');
 
@@ -471,7 +475,7 @@ begin
   Versao := ' ' + ConfigWebServices.AtribVerLote + '="' +
             ConfigWebServices.VersaoAtrib + '"';
 
-  Response.XmlEnvio := '<pedidoLoteNFSe' + Versao + '>' +
+  Response.ArquivoEnvio := '<pedidoLoteNFSe' + Versao + '>' +
                          '<CNPJ>' +
                             OnlyNumber(Emitente.CNPJ) +
                          '</CNPJ>' +
@@ -496,7 +500,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -504,7 +508,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'mot');
 
@@ -591,7 +595,7 @@ begin
   Versao := ' ' + ConfigWebServices.AtribVerLote + '="' +
             ConfigWebServices.VersaoAtrib + '"';
 
-  Response.XmlEnvio := '<pedCancelaNFSe' + Versao + '>' +
+  Response.ArquivoEnvio := '<pedCancelaNFSe' + Versao + '>' +
                          '<CNPJ>' +
                             OnlyNumber(Emitente.CNPJ) +
                          '</CNPJ>' +
@@ -615,7 +619,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -623,7 +627,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'mot');
 
@@ -683,6 +687,17 @@ begin
 
     AErro.Correcao := '';
   end;
+end;
+
+function TACBrNFSeProviderInfisc.SimNaoToStr(const t: TnfseSimNao): string;
+begin
+  Result := EnumeradoToStr(t, ['N', 'S'], [snNao, snSim]);
+end;
+
+function TACBrNFSeProviderInfisc.StrToSimNao(out ok: boolean;
+  const s: string): TnfseSimNao;
+begin
+  Result := StrToEnumerado(ok, s, ['N', 'S'], [snNao, snSim]);
 end;
 
 { TACBrNFSeProviderInfisc101 }
@@ -801,7 +816,7 @@ procedure TACBrNFSeProviderInfisc201.ValidarSchema(
 begin
   inherited ValidarSchema(Response, aMetodo);
 
-  Response.XmlEnvio := StringReplace(Response.XmlEnvio,
+  Response.ArquivoEnvio := StringReplace(Response.ArquivoEnvio,
          ' xmlns="http://www.abrasf.org.br/nfse.xsd"', '', [rfReplaceAll]);
 end;
 

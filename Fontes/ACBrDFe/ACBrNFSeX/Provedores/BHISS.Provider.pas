@@ -299,7 +299,7 @@ begin
     end;
   end;
 
-  Response.XmlEnvio := '<' + Prefixo + 'ConsultarNfseFaixaEnvio' +
+  Response.ArquivoEnvio := '<' + Prefixo + 'ConsultarNfseFaixaEnvio' +
                                 NameSpace + '>' +
                          '<Prestador>' +
                            '<Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</Cnpj>' +
@@ -318,7 +318,7 @@ procedure TACBrNFSeProviderBHISS.PrepararEmitir(Response: TNFSeEmiteResponse);
 var
   AErro: TNFSeEventoCollectionItem;
   Emitente: TEmitenteConfNFSe;
-  Nota: NotaFiscal;
+  Nota: TNotaFiscal;
   Versao, IdAttr, NameSpace, NameSpaceLote, xRps, ListaRps, Prefixo: string;
   I: Integer;
 begin
@@ -414,7 +414,7 @@ begin
 
   ListaRps := ChangeLineBreak(ListaRps, '');
 
-  Response.XmlEnvio := '<' + Prefixo + 'GerarNfseEnvio' + NameSpace + '>' +
+  Response.ArquivoEnvio := '<' + Prefixo + 'GerarNfseEnvio' + NameSpace + '>' +
                          '<LoteRps' + NameSpaceLote + IdAttr  + Versao + '>' +
                            '<NumeroLote>' + Response.Lote + '</NumeroLote>' +
                            '<Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</Cnpj>' +
@@ -435,7 +435,7 @@ var
   AErro: TNFSeEventoCollectionItem;
   ANode, AuxNode: TACBrXmlNode;
   ANodeArray: TACBrXmlNodeArray;
-  ANota: NotaFiscal;
+  ANota: TNotaFiscal;
   NumRps: String;
   I: Integer;
 begin
@@ -448,7 +448,7 @@ begin
   Document := TACBrXmlDocument.Create;
   try
     try
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response);
       ProcessarMensagemErros(Document.Root, Response, 'ListaMensagemRetornoLote');

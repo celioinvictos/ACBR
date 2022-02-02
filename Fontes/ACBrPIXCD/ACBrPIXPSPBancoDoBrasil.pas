@@ -1,34 +1,41 @@
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
-{  Biblioteca multiplataforma de componentes Delphi para intera√ß√£o com equipa- }
-{ mentos de Automa√ß√£o Comercial utilizados no Brasil                           }
+{  Biblioteca multiplataforma de componentes Delphi para interaÁ„o com equipa- }
+{ mentos de AutomaÁ„o Comercial utilizados no Brasil                           }
 {                                                                              }
 { Direitos Autorais Reservados (c) 2022 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
-{  Voc√™ pode obter a √∫ltima vers√£o desse arquivo na pagina do  Projeto ACBr    }
+{  VocÍ pode obter a ˙ltima vers„o desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
 {                                                                              }
-{  Esta biblioteca √© software livre; voc√™ pode redistribu√≠-la e/ou modific√°-la }
-{ sob os termos da Licen√ßa P√∫blica Geral Menor do GNU conforme publicada pela  }
-{ Free Software Foundation; tanto a vers√£o 2.1 da Licen√ßa, ou (a seu crit√©rio) }
-{ qualquer vers√£o posterior.                                                   }
+{  Esta biblioteca È software livre; vocÍ pode redistribuÌ-la e/ou modific·-la }
+{ sob os termos da LicenÁa P˙blica Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a vers„o 2.1 da LicenÁa, ou (a seu critÈrio) }
+{ qualquer vers„o posterior.                                                   }
 {                                                                              }
-{  Esta biblioteca √© distribu√≠da na expectativa de que seja √∫til, por√©m, SEM   }
-{ NENHUMA GARANTIA; nem mesmo a garantia impl√≠cita de COMERCIABILIDADE OU      }
-{ ADEQUA√á√ÉO A UMA FINALIDADE ESPEC√çFICA. Consulte a Licen√ßa P√∫blica Geral Menor}
-{ do GNU para mais detalhes. (Arquivo LICEN√áA.TXT ou LICENSE.TXT)              }
+{  Esta biblioteca È distribuÌda na expectativa de que seja ˙til, porÈm, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implÌcita de COMERCIABILIDADE OU      }
+{ ADEQUA«√O A UMA FINALIDADE ESPECÕFICA. Consulte a LicenÁa P˙blica Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICEN«A.TXT ou LICENSE.TXT)              }
 {                                                                              }
-{  Voc√™ deve ter recebido uma c√≥pia da Licen√ßa P√∫blica Geral Menor do GNU junto}
-{ com esta biblioteca; se n√£o, escreva para a Free Software Foundation, Inc.,  }
-{ no endere√ßo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
-{ Voc√™ tamb√©m pode obter uma copia da licen√ßa em:                              }
+{  VocÍ deve ter recebido uma cÛpia da LicenÁa P˙blica Geral Menor do GNU junto}
+{ com esta biblioteca; se n„o, escreva para a Free Software Foundation, Inc.,  }
+{ no endereÁo 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ VocÍ tambÈm pode obter uma copia da licenÁa em:                              }
 { http://www.opensource.org/licenses/lgpl-license.php                          }
 {                                                                              }
-{ Daniel Sim√µes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
-{       Rua Coronel Aureliano de Camargo, 963 - Tatu√≠ - SP - 18270-170         }
+{ Daniel Simıes de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - TatuÌ - SP - 18270-170         }
 {******************************************************************************}
+
+(*
+
+  DocumentaÁ„o
+  https://developers.bb.com.br/
+
+*)
 
 {$I ACBr.inc}
 
@@ -57,7 +64,7 @@ type
   protected
     function ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String; override;
     procedure ConfigurarQueryParameters(const Method, EndPoint: String); override;
-    procedure TratarRetornoComErro(ResultCode: Integer; const RespostaHttp: String;
+    procedure TratarRetornoComErro(ResultCode: Integer; const RespostaHttp: AnsiString;
       Problema: TACBrPIXProblema); override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -91,7 +98,8 @@ end;
 
 procedure TACBrPSPBancoDoBrasil.Autenticar;
 var
-  AURL, RespostaHttp, Body, BasicAutentication: String;
+  AURL, Body, BasicAutentication: String;
+  RespostaHttp: AnsiString;
   ResultCode, sec: Integer;
   js: TJsonObject;
   qp: TACBrQueryParams;
@@ -161,7 +169,7 @@ procedure TACBrPSPBancoDoBrasil.ConfigurarQueryParameters(const Method, EndPoint
 begin
   inherited ConfigurarQueryParameters(Method, EndPoint);
 
-  with QueryParams do
+  with URLQueryParams do
   begin
     if (fDeveloperApplicationKey <> '') then
       Values['gw-dev-app-key'] := fDeveloperApplicationKey;
@@ -169,19 +177,19 @@ begin
 end;
 
 procedure TACBrPSPBancoDoBrasil.TratarRetornoComErro(ResultCode: Integer;
-  const RespostaHttp: String; Problema: TACBrPIXProblema);
+  const RespostaHttp: AnsiString; Problema: TACBrPIXProblema);
 var
   js, ej: TJsonObject;
   ae: TJsonArray;
 begin
-  if (pos('"ocorrencia"', RespostaHttp) > 0) then   // Erro no formato pr√≥prio do B.B.
+  if (pos('"ocorrencia"', RespostaHttp) > 0) then   // Erro no formato prÛprio do B.B.
   begin
      (* Exemplo de Retorno
        {
 	    "erros": [{
 		    "codigo": "4769515",
 		    "versao": "1",
-		    "mensagem": "N√£o h√° informa√ß√µes para os dados informados.",
+		    "mensagem": "N„o h· informaÁıes para os dados informados.",
 		    "ocorrencia": "CHOM00000062715498140101"
 	    }]
        }
@@ -229,7 +237,7 @@ begin
      js := TJsonObject.Parse(RespostaHttp) as TJsonObject;
      try
        Problema.title := js.S['error'];
-       Problema.status := js.S['statusCode'];
+       Problema.status := js.I['statusCode'];
        Problema.detail := js.S['message'];
      finally
        js.Free;

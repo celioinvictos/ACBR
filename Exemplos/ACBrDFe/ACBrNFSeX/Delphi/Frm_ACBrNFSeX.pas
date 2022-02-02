@@ -406,7 +406,7 @@ end;
 
 procedure TfrmACBrNFSe.AlimentarNFSe(NumDFe, NumLote: String);
 var
-  ValorISS: Double;
+  vValorISS: Double;
   i: Integer;
 begin
   with ACBrNFSeX1 do
@@ -534,7 +534,7 @@ begin
         Producao := snNao;
 
       // TnfseStatusRPS = ( srNormal, srCancelado );
-      Status := srNormal;
+      StatusRps := srNormal;
 
       // Somente Os provedores Betha, FISSLex e SimplISS permitem incluir no RPS
       // a TAG: OutrasInformacoes os demais essa TAG é gerada e preenchida pelo
@@ -559,6 +559,16 @@ begin
       Servico.Valores.ValorIr := 0.00;
       Servico.Valores.ValorCsll := 0.00;
 
+      // Provedor Elotech
+      Servico.Valores.RetidoPis := snNao;
+      Servico.Valores.RetidoCofins := snNao;
+      Servico.Valores.AliquotaInss := 0;
+      Servico.Valores.RetidoInss := snNao;
+      Servico.Valores.AliquotaIr := 0;
+      Servico.Valores.RetidoIr := snNao;
+      Servico.Valores.AliquotaCsll := 0;
+      Servico.Valores.RetidoCsll := snNao;
+
       // TnfseSituacaoTributaria = ( stRetencao, stNormal, stSubstituicao );
       // stRetencao = snSim
       // stNormal   = snNao
@@ -577,7 +587,7 @@ begin
 
       Servico.Valores.Aliquota := 2;
 
-      ValorISS := Servico.Valores.BaseCalculo * Servico.Valores.Aliquota / 100;
+      vValorISS := Servico.Valores.BaseCalculo * Servico.Valores.Aliquota / 100;
 
       // A função RoundTo5 é usada para arredondar valores, sendo que o segundo
       // parametro se refere ao numero de casas decimais.
@@ -585,7 +595,7 @@ begin
       // exemplos: RoundTo5(50.535, -2) ==> 50.54
       // exemplos: RoundTo5(50.536, -2) ==> 50.54
 
-      Servico.Valores.ValorISS := RoundTo5(ValorISS, -2);
+      Servico.Valores.ValorISS := RoundTo5(vValorISS, -2);
 
       Servico.Valores.ValorLiquidoNfse := Servico.Valores.ValorServicos -
         Servico.Valores.ValorPis - Servico.Valores.ValorCofins -
@@ -706,6 +716,7 @@ begin
 
         // Provedor EloTech
         Tributavel := snNao;
+        CodigoCnae := '6203100';
 
         // Provedor IPM
         { define se o tributo é no municipio do prestador ou não }
@@ -1284,7 +1295,7 @@ begin
             tpConsulta := tcPorNumero;
 
             NumeroIniNFSe := NumeroNFSe;
-            SerNFSe := SerNFSe;
+            SerieNFSe := SerNFSe;
             CadEconomico := edtEmitIM.Text;
           end;
 
@@ -3169,6 +3180,7 @@ begin
     ACBrNFSeX1.DANFSe.MargemEsquerda := 5;
     ACBrNFSeX1.DANFSe.MargemSuperior := 5;
     ACBrNFSeX1.DANFSe.MargemInferior := 5;
+    ACBrNFSeX1.DANFSE.Cancelada := True;
   end;
 
   with ACBrNFSeX1.MAIL do

@@ -47,8 +47,9 @@ type
   { TNFSeR_IPM }
 
   TNFSeR_IPM = class(TNFSeRClass)
-  protected
+  private
 
+  protected
     procedure LerRps(const ANode: TACBrXmlNode);
     procedure LerNota(const ANode: TACBrXmlNode);
     procedure LerPrestador(const ANode: TACBrXmlNode);
@@ -67,8 +68,6 @@ type
   end;
 
 implementation
-
-uses ACBrNFSeXClass;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva ler o XML do provedor:
@@ -105,7 +104,7 @@ begin
         ItemServico.New;
         with ItemServico[i] do
         begin
-          TribMunPrestador := StrToSimNao(Ok, ObterConteudo(ANodes[i].Childrens.FindAnyNs('tributa_municipio_prestador'), tcStr));
+          TribMunPrestador := FpAOwner.StrToSimNao(Ok, ObterConteudo(ANodes[i].Childrens.FindAnyNs('tributa_municipio_prestador'), tcStr));
           CodMunPrestacao := CodTOMToCodIBGE(ObterConteudo(ANodes[i].Childrens.FindAnyNs('codigo_local_prestacao_servico'), tcStr));
 
           aValor := ObterConteudo(ANodes[i].Childrens.FindAnyNs('codigo_item_lista_servico'), tcStr);

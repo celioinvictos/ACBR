@@ -51,6 +51,7 @@ type
   private
     function GetNameSpace: string;
     function GetSoapAction: string;
+    function GetAliasCidade: string;
   public
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
     function ConsultarLote(ACabecalho, AMSG: String): string; override;
@@ -59,6 +60,7 @@ type
 
     property NameSpace: string read GetNameSpace;
     property SoapAction: string read GetSoapAction;
+    property AliasCidade: string read GetAliasCidade;
   end;
 
   TACBrNFSeProviderGeisWeb = class (TACBrNFSeProviderProprio)
@@ -209,7 +211,7 @@ begin
 
   with Params do
   begin
-    Response.XmlEnvio := '<EnviaLoteRps' + NameSpace + '>' +
+    Response.ArquivoEnvio := '<EnviaLoteRps' + NameSpace + '>' +
                            '<CnpjCpf>' +
                              OnlyNumber(Emitente.CNPJ) +
                            '</CnpjCpf>' +
@@ -229,13 +231,13 @@ var
   ANode, AuxNode: TACBrXmlNode;
   i: Integer;
   NumRps: String;
-  ANota: NotaFiscal;
+  ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -243,7 +245,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'Msg');
 
@@ -309,7 +311,7 @@ begin
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
-  Response.XmlEnvio := '<ConsultaLoteRps>' +
+  Response.ArquivoEnvio := '<ConsultaLoteRps>' +
                          '<CnpjCpf>' +
                            OnlyNumber(Emitente.CNPJ) +
                          '</CnpjCpf>' +
@@ -333,13 +335,13 @@ var
   ANode, AuxNode: TACBrXmlNode;
   i: Integer;
   NumRps: String;
-  ANota: NotaFiscal;
+  ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -347,7 +349,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'Msg');
 
@@ -462,7 +464,7 @@ begin
                    '<NumeroInicial/>' +
                    '<NumeroFinal/>';
 
-  Response.XmlEnvio := '<ConsultaNfse>' +
+  Response.ArquivoEnvio := '<ConsultaNfse>' +
                          '<CnpjCpf>' +
                             OnlyNumber(Emitente.CNPJ) +
                          '</CnpjCpf>' +
@@ -487,13 +489,13 @@ var
   ANode, AuxNode: TACBrXmlNode;
   i: Integer;
   NumRps: String;
-  ANota: NotaFiscal;
+  ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -501,7 +503,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'Msg');
 
@@ -567,7 +569,7 @@ begin
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
-  Response.XmlEnvio := '<CancelaNfse>' +
+  Response.ArquivoEnvio := '<CancelaNfse>' +
                          '<CnpjCpf>' +
                             OnlyNumber(Emitente.CNPJ) +
                          '</CnpjCpf>' +
@@ -591,13 +593,13 @@ var
   ANodeArray: TACBrXmlNodeArray;
   I: Integer;
   NumRps: String;
-  ANota: NotaFiscal;
+  ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -605,7 +607,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ProcessarMensagemErros(Document.Root, Response, '', 'Msg');
 
@@ -659,12 +661,17 @@ end;
 
 { TACBrNFSeXWebserviceGeisWeb }
 
+function TACBrNFSeXWebserviceGeisWeb.GetAliasCidade: string;
+begin
+  Result := TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.Params.ValorParametro('AliasCidade');
+end;
+
 function TACBrNFSeXWebserviceGeisWeb.GetNameSpace: string;
 var
   ambiente: string;
 begin
   if TACBrNFSeX(FPDFeOwner).Configuracoes.WebServices.AmbienteCodigo = 1 then
-    ambiente := 'producao/' + TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.Params1
+    ambiente := 'producao/' + AliasCidade
   else
     ambiente := 'homologacao/modelo';
 
@@ -677,9 +684,9 @@ var
   ambiente: string;
 begin
   if TACBrNFSeX(FPDFeOwner).Configuracoes.WebServices.AmbienteCodigo = 1 then
-    ambiente := 'producao/' + TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.Params1
+    ambiente := 'producao/' + AliasCidade
   else
-    Result := 'homologacao/modelo';
+    ambiente := 'homologacao/modelo';
 
   Result := 'urn:https://www.geisweb.net.br/' + ambiente +
             '/webservice/GeisWebServiceImpl.php#';

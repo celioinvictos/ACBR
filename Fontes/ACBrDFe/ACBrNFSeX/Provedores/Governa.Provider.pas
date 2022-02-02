@@ -55,6 +55,8 @@ type
   end;
 
   TACBrNFSeProviderGoverna = class (TACBrNFSeProviderProprio)
+  private
+    FpVersaoArquivo: string;
   protected
     procedure Configuracao; override;
 
@@ -101,6 +103,8 @@ begin
     ModoEnvio := meLoteAssincrono;
     ConsultaLote := False;
     ConsultaNFSe := False;
+
+    FpVersaoArquivo := Params.ValorParametro('VersaoArquivo');
   end;
 
   SetXmlNameSpace('http://tempuri.org/');
@@ -185,15 +189,15 @@ begin
 
   with Params do
   begin
-    Response.XmlEnvio := '<tcLoteRps>' +
+    Response.ArquivoEnvio := '<tcLoteRps>' +
                             '<tsCodCadBic>' +
-                              OnlyNumber(Emitente.InscMun) +
+                               OnlyNumber(Emitente.InscMun) +
                             '</tsCodCadBic>' +
                             '<tsVrsArq>' +
-                              ConfigGeral.Params1 +
+                               FpVersaoArquivo +
                             '</tsVrsArq>' +
                             '<tsChvAcs>' +
-                              OnlyNumber(Emitente.WSChaveAcesso) +
+                               OnlyNumber(Emitente.WSChaveAcesso) +
                             '</tsChvAcs>' +
                             Xml +
                          '</tcLoteRps>';
@@ -211,7 +215,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -219,7 +223,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ANode := Document.Root;
 
@@ -316,15 +320,15 @@ begin
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
-  Response.XmlEnvio := '<tcConsultaRPS>' +
+  Response.ArquivoEnvio := '<tcConsultaRPS>' +
                           '<tsCodCadBic>' +
-                            OnlyNumber(Emitente.InscMun) +
+                             OnlyNumber(Emitente.InscMun) +
                           '</tsCodCadBic>' +
                           '<tsVrsArq>' +
-                            ConfigGeral.Params1 +
+                             FpVersaoArquivo +
                           '</tsVrsArq>' +
                           '<tsChvAcs>' +
-                            OnlyNumber(Emitente.WSChaveAcesso) +
+                             OnlyNumber(Emitente.WSChaveAcesso) +
                           '</tsChvAcs>' +
                           '<tcInfConsultaRPS>' +
                             '<tsNumRPS>' + Response.NumRPS + '</tsNumRPS>' +
@@ -348,7 +352,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -356,7 +360,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ANode := Document.Root;
 
@@ -452,15 +456,15 @@ begin
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
-  Response.XmlEnvio := '<tcLoteCancelamento>' +
+  Response.ArquivoEnvio := '<tcLoteCancelamento>' +
                           '<tsCodCadBic>' +
-                            OnlyNumber(Emitente.InscMun) +
+                             OnlyNumber(Emitente.InscMun) +
                           '</tsCodCadBic>' +
                           '<tsVrsArq>' +
-                            ConfigGeral.Params1 +
+                             FpVersaoArquivo +
                           '</tsVrsArq>' +
                           '<tsChvAcs>' +
-                            OnlyNumber(Emitente.WSChaveAcesso) +
+                             OnlyNumber(Emitente.WSChaveAcesso) +
                           '</tsChvAcs>' +
                           '<tcNotCan>' +
                             '<tcInfNotCan>' +
@@ -468,10 +472,10 @@ begin
                                 Response.InfCancelamento.NumeroNFSe +
                               '</tsNumNot>' +
                               '<tsCodVer>' +
-                                Response.InfCancelamento.CodVerificacao +
+                                 Response.InfCancelamento.CodVerificacao +
                               '</tsCodVer>' +
                               '<tsDesMotCan>' +
-                                Response.InfCancelamento.MotCancelamento +
+                                 Response.InfCancelamento.MotCancelamento +
                               '</tsDesMotCan>' +
                             '</tcInfNotCan>' +
                           '</tcNotCan>' +
@@ -489,7 +493,7 @@ begin
 
   try
     try
-      if Response.XmlRetorno = '' then
+      if Response.ArquivoRetorno = '' then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
@@ -497,7 +501,7 @@ begin
         Exit
       end;
 
-      Document.LoadFromXml(Response.XmlRetorno);
+      Document.LoadFromXml(Response.ArquivoRetorno);
 
       ANode := Document.Root;
 
