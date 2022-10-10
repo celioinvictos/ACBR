@@ -49,7 +49,6 @@ const
   CURL_REFER = 'http://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao_CS.asp';
   CURL_POST = 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/valida.asp';
   
-
 type
   EACBrConsultaCNPJException = class ( Exception );
 
