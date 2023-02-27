@@ -35,7 +35,7 @@ unit ACBrLibConsultaCNPJRespostas;
 interface
 
 uses
-  SysUtils, Classes, ACBrLibResposta;
+  SysUtils, Classes, ACBrLibResposta, ACBrConsultaCNPJ, ACBrLibConsultaCNPJConsts;
 
 type
 
@@ -56,10 +56,14 @@ type
     FCEP: String;
     FSituacao: String;
     FCNAE1: String;
-    FCNAE2: TStringList;
+    FCNAE2: String;
     FNaturezaJuridica: String;
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+    destructor Destroy; override;
+
+    procedure Clear;
+    procedure Processar(const aACBrConsultaCNPJ: TACBrConsultaCNPJ);
 
   published
     property EmpresaTipo: String read FEmpresaTipo write FEmpresaTipo;     
@@ -75,23 +79,63 @@ type
     property CEP: String read FCEP write FCEP;
     property Situacao: String read FSituacao write FSituacao;
     property CNAE1: String read FCNAE1 write FCNAE1;
-    property CNAE2: TStringList read FCNAE2 write FCNAE2;
+    property CNAE2: String read FCNAE2 write FCNAE2;
     property NaturezaJuridica: String read FNaturezaJuridica write FNaturezaJuridica;
 	
   end;
 
 implementation
 
-uses
-  ACBrLibConsultaCNPJConsts;
-
 { TLibConsultaCNPJConsulta }
 
 constructor TLibConsultaCNPJConsulta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespConsulta, ATipo, AFormato);
+  Clear;
 end;
 
+destructor TLibConsultaCNPJConsulta.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TLibConsultaCNPJConsulta.Clear;
+begin
+    fEmpresaTipo:= EmptyStr;
+    fRazaoSocial:=EmptyStr;
+    fAbertura:= 0;
+    fFantasia:= EmptyStr;
+    fEndereco:= EmptyStr;
+    fNumero:= EmptyStr;
+    fComplemento:= EmptyStr;
+    fBairro:= EmptyStr;
+    fCidade:= EmptyStr;
+    fUF:= EmptyStr;
+    fCEP:= EmptyStr;
+    fSituacao:= EmptyStr;
+    fCNAE1:= EmptyStr;
+    fCNAE2:= EmptyStr;
+    fNaturezaJuridica:= EmptyStr;
+end;
+
+procedure TLibConsultaCNPJConsulta.Processar(const aACBrConsultaCNPJ: TACBrConsultaCNPJ);
+begin
+    Self.EmpresaTipo   := aACBrConsultaCNPJ.EmpresaTipo;
+    Self.RazaoSocial   := aACBrConsultaCNPJ.RazaoSocial;
+    Self.Abertura      := aACBrConsultaCNPJ.Abertura;
+    Self.Fantasia      := aACBrConsultaCNPJ.Fantasia;
+    Self.Endereco      := aACBrConsultaCNPJ.Endereco;
+    Self.Numero        := aACBrConsultaCNPJ.Numero;
+    Self.Complemento   := aACBrConsultaCNPJ.Complemento;
+    Self.Bairro        := aACBrConsultaCNPJ.Bairro;
+    Self.Cidade        := aACBrConsultaCNPJ.Cidade;
+    Self.UF            := aACBrConsultaCNPJ.UF;
+    Self.CEP           := aACBrConsultaCNPJ.CEP;
+    Self.Situacao      := aACBrConsultaCNPJ.Situacao;
+    Self.CNAE1         := aACBrConsultaCNPJ.CNAE1;
+    Self.CNAE2         := aACBrConsultaCNPJ.CNAE2.Text;
+    Self.NaturezaJuridica:= aACBrConsultaCNPJ.NaturezaJuridica;
+end;
 
 end.
 

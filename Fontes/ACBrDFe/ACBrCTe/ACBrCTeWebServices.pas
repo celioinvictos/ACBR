@@ -576,7 +576,12 @@ implementation
 
 uses
   StrUtils, Math,
-  ACBrUtil, ACBrCompress, ACBrCTe,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.DateTime,
+  ACBrUtil.XMLHTML,
+  ACBrUtil.FilesIO,
+  ACBrCompress, ACBrCTe,
   pcnGerador, pcnLeitor, pcnConsCad, pcnConsStatServ, pcnRetConsStatServ,
   pcteConsSitCTe, pcteInutCTe, pcteRetInutCTe, pcnConsReciDFe;
 
@@ -2029,7 +2034,7 @@ function TCTeConsulta.TratarResposta: Boolean;
 
 procedure SalvarEventos(Retorno: TRetConsSitCTe);
 var
-  aEvento, aProcEvento, aIDEvento, sPathEvento, sCNPJ: string;
+  aIDEvento, sPathEvento, sCNPJ: string;
   i, Inicio, Fim: Integer;
   TipoEvento: TpcnTpEvento;
   Ok: Boolean;
@@ -3485,7 +3490,8 @@ begin
                      '-resEventoCTe.xml';
         *)
         schprocCTe,
-        schprocCTeOS:
+        schprocCTeOS,
+        schprocGTVe:
           FNomeArq := FretDistDFeInt.docZip.Items[I].resDFe.chDFe + '-cte.xml';
 
         schprocEventoCTe:
@@ -3504,7 +3510,7 @@ begin
         if (FretDistDFeInt.docZip.Items[I].schema in [schprocEventoCTe]) then
           FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
 
-        if (FretDistDFeInt.docZip.Items[I].schema in [schprocCTe, schprocCTeOS]) then
+        if (FretDistDFeInt.docZip.Items[I].schema in [schprocCTe, schprocCTeOS, schprocGTVe]) then
           FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
       end;
     end;
@@ -3569,7 +3575,8 @@ begin
                                                           Data);
 
     schprocCTe,
-    schprocCTeOS:
+    schprocCTeOS,
+    schprocGTVe:
       Result := FPConfiguracoesCTe.Arquivos.GetPathDownload(AItem.resDFe.xNome,
                                                         AItem.resDFe.CNPJCPF,
                                                         AItem.resDFe.IE,

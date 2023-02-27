@@ -119,7 +119,8 @@ implementation
 
 Uses
   {$IFDEF MSWINDOWS} Windows, {$ENDIF MSWINDOWS}
-  ACBrUtil, ACBrConsts ;
+  ACBrUtil.Base,
+  ACBrConsts, ACBrUtil.Strings, ACBrUtil.FilesIO ;
 
 (* TACBrTXTClass *)
 

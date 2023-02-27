@@ -36,7 +36,7 @@ interface
 
 uses
   IniFiles, LCLIntf, LCLType, SysUtils, Variants, Classes,
-  {$IFDEF WINDOWS}ActiveX,{$ENDIF}
+  {$IFDEF WINDOWS}ShellApi,{$ENDIF}
   Graphics, Controls, Forms, Dialogs, ComCtrls, StdCtrls, Spin, Buttons, ExtCtrls,
   SynEdit, SynHighlighterXML,
   ACBrUtil, ACBrBase, ACBrDFe,
@@ -485,18 +485,7 @@ begin
               email := 'teste@teste.com';
             end;
 
-            with infoComplementares do
-            begin
-              with situacaoPJ do
-              begin
-                indSitPJ := tpIndSitPJ(0);
-              end;
 
-              with situacaoPF do
-              begin
-                indSitPF := tpIndSitPF(0);
-              end;
-            end;
           end;
         end;
 
@@ -581,13 +570,11 @@ begin
 
           with infoTrab do
           begin
-            if VersaoDFx <= ve02_05_00 then
-              regPt := tpRegPt(3);
+
 
             with infoApr do
             begin
-              if VersaoDFx <= ve02_05_00 then
-                contApr := tpContApr(2);
+
 {
               nrProcJud := '20150612';
 }
@@ -661,10 +648,8 @@ begin
           codIncIRRF := tpCodIncIRRF(1);
           codIncFGTS := tpCodIncFGTS(1);
 
-          if VersaoDFx <= ve02_05_00 then
-            codIncSIND := tpCodIncSIND(1)
-          else
-            codIncCPRP := cicpNaoeBasedeCalculodeContribuicoesDevidasaoRPPSRegimeMilitar;
+
+          codIncCPRP := cicpNaoeBasedeCalculodeContribuicoesDevidasaoRPPSRegimeMilitar;
 
           observacao := 'Rubrica Teste';
  {
@@ -836,7 +821,7 @@ begin
 
             leiCargo.nrLei := '11111';
             leiCargo.dtLei := Now;
-            leiCargo.sitCargo := tpSitCargo(0);
+
           end;
         end;
 
@@ -874,7 +859,7 @@ begin
         dadosCarreira.dscCarreira := 'Juiz';
         dadosCarreira.leiCarr := 'lei89489/77';
         dadosCarreira.dtLeiCarr := Now;
-        dadosCarreira.sitCarr := tpSitCarr(0);
+
 
         NovaValidade.IniValid := '2015-05';
         NovaValidade.FimValid := '2099-12';
@@ -952,7 +937,6 @@ begin
 
           with horarioIntervalo.New do
           begin
-            tpInterv := tptpIntervalo(0);
             durInterv := 90;
             iniInterv := '1200';
             termInterv := '1330';
@@ -960,7 +944,6 @@ begin
 
           with horarioIntervalo.New do
           begin
-            tpInterv := tptpIntervalo(1);
             durInterv := 15;
             iniInterv := '1645';
             termInterv := '1700';
@@ -1316,19 +1299,19 @@ begin
       with ideTrabalhador do
       begin
         CpfTrab := '01234567890';
-        NisTrab := '09876543210';
-        qtdDepFP := 0;
+//        NisTrab := '09876543210';
+//        qtdDepFP := 0;
 
         // os dados abaixo só devem ser informados em caso do processo existir
         // e houver decisão que incida sobre as  contribuições
-        procJudTrab.Clear;
-
-        with procJudTrab.New do
-        begin
-          tpTrib := tptPrevidenciaria;
-          nrProcJud := '95135703320156150258';
-          codSusp := '123456789';
-        end;
+//        procJudTrab.Clear;
+//
+//        with procJudTrab.New do
+//        begin
+//          tpTrib := tptPrevidenciaria;
+//          nrProcJud := '95135703320156150258';
+//          codSusp := '123456789';
+//        end;
       end;
 
       dmDev.Clear;
@@ -1385,49 +1368,49 @@ begin
           end;
         end;
 
-        infoPerAnt.ideADC.Clear;
-
-        with infoPerAnt.ideADC.New do
-        begin
-          dtLei := Now;
-          nrLei := '321321/2017';
-          dtEf := Now;
-
-          idePeriodo.Clear;
-
-          with IdePeriodo.New do
-          begin
-            perRef := '2015-03';
-
-            ideEstab.Clear;
-
-            with IdeEstab.New do
-            begin
-              TpInsc := tiCNPJ;
-              NrInsc := '01234567898765';
-
-              remunPerAnt.Clear;
-
-              with remunPerAnt.New do
-              begin
-                Matricula := 'A1234';
-                CodCateg := 101;
-
-                itensRemun.Clear;
-
-                with itensRemun.New do
-                begin
-                  CodRubr := '987654';
-                  ideTabRubr := 'E380';
-                  qtdRubr := 100;
-                  fatorRubr := 50;
-                  vrUnit := 3296.35;
-                  vrRubr := 3330.30;
-                end;
-              end;
-            end;
-          end;
-        end;
+//        infoPerAnt.ideADC.Clear;
+//
+//        with infoPerAnt.ideADC.New do
+//        begin
+//          dtLei := Now;
+//          nrLei := '321321/2017';
+//          dtEf := Now;
+//
+//          idePeriodo.Clear;
+//
+//          with IdePeriodo.New do
+//          begin
+//            perRef := '2015-03';
+//
+//            ideEstab.Clear;
+//
+//            with IdeEstab.New do
+//            begin
+//              TpInsc := tiCNPJ;
+//              NrInsc := '01234567898765';
+//
+//              remunPerAnt.Clear;
+//
+//              with remunPerAnt.New do
+//              begin
+//                Matricula := 'A1234';
+//                CodCateg := 101;
+//
+//                itensRemun.Clear;
+//
+//                with itensRemun.New do
+//                begin
+//                  CodRubr := '987654';
+//                  ideTabRubr := 'E380';
+//                  qtdRubr := 100;
+//                  fatorRubr := 50;
+//                  vrUnit := 3296.35;
+//                  vrRubr := 3330.30;
+//                end;
+//              end;
+//            end;
+//          end;
+//        end;
       end;
     end;
   end;
@@ -1460,25 +1443,25 @@ begin
 
       with dmDev.New do
       begin
-        tpBenef := 01;
-        nrBenefic := '3132132';
+//        tpBenef := 01;
+//        nrBenefic := '3132132';
         ideDmDev := '1';
 
-        itens.Clear;
-
-        with itens.New do
-        begin
-          CodRubr := '1';
-          ideTabRubr := 'E07';
-          vrRubr := 110.53;
-        end;
-
-        with itens.New do
-        begin
-          CodRubr := '2';
-          ideTabRubr := 'E08';
-          vrRubr := 2568.89;
-        end;
+//        itens.Clear;
+//
+//        with itens.New do
+//        begin
+//          CodRubr := '1';
+//          ideTabRubr := 'E07';
+//          vrRubr := 110.53;
+//        end;
+//
+//        with itens.New do
+//        begin
+//          CodRubr := '2';
+//          ideTabRubr := 'E08';
+//          vrRubr := 2568.89;
+//        end;
       end;
     end;
   end;
@@ -2261,7 +2244,7 @@ begin
       IdeEmpregador.TpInsc := tiCNPJ;
       IdeEmpregador.NrInsc := edtIdEmpregador.Text;
 
-      InfoSubstPatr.indSubstPatr := tpIndSubstPatrOpPort(0);
+      InfoSubstPatr.indSubstPatr := tpIndSubstPatr(0);
       InfoSubstPatr.percRedContrib := 500.20;
 
       InfoSubstPatrOpPort.Clear;
@@ -2292,8 +2275,8 @@ begin
 
       with IdeEvento do
       begin
-        indRetif := tpIndRetificacao(0);
-        NrRecibo := '65.5454.987798798798';
+//        indRetif := tpIndRetificacao(0);
+//        NrRecibo := '65.5454.987798798798';
         IndApuracao := iapuMensal;
         perApur := '2015-06';
         ProcEmi := TpProcEmi(0);
@@ -2346,8 +2329,8 @@ begin
 
       with IdeEvento do
       begin
-        indRetif := tpIndRetificacao(0);
-        NrRecibo := '65.5454.987798798798';
+//        indRetif := tpIndRetificacao(0);
+//        NrRecibo := '65.5454.987798798798';
         IndApuracao := iapuMensal;
         perApur := '2015-06';
         ProcEmi := TpProcEmi(0);
@@ -2405,7 +2388,6 @@ begin
       with ContribSind.New do
       begin
         cnpjSindic := '01234567891111';
-        tpContribSind := tpTpContribSind(0);
         vlrContribSind := 1500.50;
       end;
     end;
@@ -2613,7 +2595,7 @@ begin
             begin
               hipLeg := 1;
               justContr := 'teste';
-              tpinclContr := icLocaisSemFiliais;
+
 
               with IdeTomadorServ do
               begin
@@ -3563,13 +3545,11 @@ begin
         begin
           DetAvPrevio.dtAvPrv := Now;
           DetAvPrevio.dtPrevDeslig := Now + 30;
-          DetAvPrevio.tpAvPrevio := tpTpAvPrevio(0);
           DetAvPrevio.observacao := 'Observacao aviso previo';
         end
         else // cancelamento aviso
         begin
           CancAvPrevio.dtCancAvPrv := Now;
-          CancAvPrevio.mtvCancAvPrevio := tpMtvCancAvPrevio(0);
           CancAvPrevio.observacao := 'Observacao cancelamento aviso previo';
         end;
       end;

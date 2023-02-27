@@ -33,8 +33,6 @@
 
 {$I ACBr.inc}
 
-{$I ACBr.inc}
-
 unit ACBrNFeNotasFiscais;
 
 interface
@@ -190,7 +188,10 @@ implementation
 uses
   dateutils, IniFiles,
   synautil,
-  ACBrNFe, ACBrUtil, ACBrDFeUtil, pcnConversaoNFe;
+  ACBrNFe,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.XMLHTML, ACBrUtil.FilesIO,
+  ACBrUtil.DateTime, ACBrUtil.Math,
+  ACBrDFeUtil, pcnConversaoNFe;
 
 { NotaFiscal }
 
@@ -449,7 +450,7 @@ var
   end;
 
 begin
-  Inicio := Now;
+  Inicio := DataHoraTimeZoneModoDeteccao( TACBrNFe(TNotasFiscais(Collection).ACBrNFe ));   //Converte o DateTime do Sistema para o TimeZone configurado, para evitar divergência de Fuso Horário.
   Agora := IncMinute(Inicio, 5);  //Aceita uma tolerância de até 5 minutos, devido ao sincronismo de horário do servidor da Empresa e o servidor da SEFAZ.
   GravaLog('Inicio da Validação');
 
@@ -1263,7 +1264,14 @@ begin
           for J:=0 to Prod.med.Count-1 do
           begin
             GravaLog('Validar: 873-Se informado Grupo de Medicamentos (tag:med) obrigatório preenchimento do grupo rastro (id: I80) [nItem: '+IntToStr(Prod.nItem)+']');
-            if NaoEstaVazio(Prod.med[J].cProdANVISA) and (Prod.rastro.Count<=0) then
+            if NaoEstaVazio(Prod.med[J].cProdANVISA)
+               and (Prod.rastro.Count<=0)
+               and (not (NFe.Ide.finNFe in [fnDevolucao,fnAjuste,fnComplementar])) // exceção 1
+               and (not (NFe.Ide.indPres in [pcInternet, pcTeleatendimento]))      // exceção 2
+               and (AnsiIndexStr(Prod.CFOP,['5922','6922','5118','6118',               // exceção 3 CFOP's excluidos da validação
+                                        '5119','6119','5120','6120'  ]) = -1)
+               and (NFe.Ide.tpNF = tnSaida)                                        // exceção 4
+            then
               AdicionaErro('873-Rejeição: Operação com medicamentos e não informado os campos de rastreabilidade [nItem: '+IntToStr(Prod.nItem)+']');
           end;
 
@@ -1329,10 +1337,11 @@ begin
 
     if not UFCons then
     begin
-      GravaLog('Validar: 772-Op.Interstadual e UF igual');
+      GravaLog('Validar: 772-Op.Interestadual e UF igual');
       if (nfe.Ide.idDest = doInterestadual) and
          (NFe.Dest.EnderDest.UF = NFe.Emit.EnderEmit.UF) and
-         (NFe.Dest.CNPJCPF <> NFe.Emit.CNPJCPF) then
+         (NFe.Dest.CNPJCPF <> NFe.Emit.CNPJCPF) and
+         (NFe.Entrega.UF = NFe.Emit.EnderEmit.UF) then
         AdicionaErro('772-Rejeição: Operação Interestadual e UF de destino igual à UF do emitente');
     end;
 
@@ -1362,7 +1371,7 @@ begin
       AdicionaErro('534-Rejeição: Total do ICMS-ST difere do somatório dos itens');
 
     GravaLog('Validar: 564-Total Produto/Serviço');
-    if (NFe.Total.ICMSTot.vProd <> fsvProd) then
+    if (ComparaValor(NFe.Total.ICMSTot.vProd, fsvProd, 0.009) <> 0) then
       AdicionaErro('564-Rejeição: Total do Produto / Serviço difere do somatório dos itens');
 
     GravaLog('Validar: 535-Total Frete');
@@ -1428,7 +1437,7 @@ begin
     if not NFImportacao and
        (NFe.Total.ICMSTot.vNF <> fsvNF) then
     begin
-      if (NFe.Total.ICMSTot.vNF <> (fsvNF+fsvICMSDeson)) then
+      if (ComparaValor(NFe.Total.ICMSTot.vNF, (fsvNF + fsvICMSDeson), 0.009) <> 0) then
         AdicionaErro('610-Rejeição: Total da NF difere do somatório dos Valores compõe o valor Total da NF.');
     end;
 
@@ -1605,6 +1614,7 @@ begin
       Ide.verProc  := INIRec.ReadString(  sSecao, 'verProc' ,'ACBrNFe');
       Ide.dhCont   := StringToDateTime(INIRec.ReadString( sSecao,'dhCont'  ,'0'));
       Ide.xJust    := INIRec.ReadString(  sSecao,'xJust' ,'' );
+      Ide.cMunFG   := INIRec.ReadInteger( sSecao,'cMunFG', 0);
 
       I := 1;
       while true do
@@ -1615,7 +1625,8 @@ begin
 
         if (sFim = 'FIM') or (Length(sFim) <= 0) then
         begin
-          if INIRec.ReadString(sSecao,'refNFe','') <> '' then
+          if (INIRec.ReadString(sSecao,'refNFe','') <> '') or
+             (INIRec.ReadString(sSecao,'refNFeSig','') <> '') then
             sType := 'NFE'
           else if INIRec.ReadString(  sSecao,'refCTe'  ,'') <> '' then
             sType := 'CTE'
@@ -1632,8 +1643,10 @@ begin
         with Ide.NFref.New do
         begin
           if sType = 'NFE' then
-            refNFe :=  INIRec.ReadString(sSecao,'refNFe','')
-
+          begin
+            refNFe :=  INIRec.ReadString(sSecao,'refNFe','');
+            refNFeSig :=  INIRec.ReadString(sSecao,'refNFeSig','');
+          end
           else if sType = 'NF' then
           begin
             RefNF.cUF    := INIRec.ReadInteger( sSecao,'cUF'   ,0);
@@ -1696,7 +1709,8 @@ begin
       Emit.EnderEmit.fone    := INIRec.ReadString(  sSecao,'Fone'    ,'');
 
       Ide.cUF    := INIRec.ReadInteger( sSecao,'cUF'       ,UFparaCodigo(Emit.EnderEmit.UF));
-      Ide.cMunFG := INIRec.ReadInteger( sSecao,'cMunFG' ,INIRec.ReadInteger( sSecao,'CidadeCod' ,Emit.EnderEmit.cMun));
+      if (Ide.cMunFG = 0) then
+        Ide.cMunFG := INIRec.ReadInteger( sSecao,'cMunFG' ,INIRec.ReadInteger( sSecao,'CidadeCod' ,Emit.EnderEmit.cMun));
 
       if INIRec.ReadString( 'Avulsa', 'CNPJ', '') <> '' then
       begin
@@ -2326,6 +2340,15 @@ begin
               end;
             end;
           end;
+
+
+          sSecao := 'obsContItem' + IntToStrZero(I, 3);
+          obsCont.xCampo := INIRec.ReadString(sSecao,'xCampo', '');
+          obsCont.xTexto := INIRec.ReadString(sSecao,'xTexto', '');
+
+          sSecao := 'obsFiscoItem' + IntToStrZero(I, 3);
+          obsFisco.xCampo := INIRec.ReadString(sSecao,'xCampo', '');
+          obsFisco.xTexto := INIRec.ReadString(sSecao,'xTexto', '');
         end;
 
         Inc( I );
@@ -2570,7 +2593,8 @@ begin
         with InfAdic.procRef.New do
         begin
           nProc := sAdittionalField;
-          indProc := StrToindProc(OK,INIRec.ReadString( sSecao,'indProc','0'));
+          indProc := StrToindProc(OK, INIRec.ReadString( sSecao, 'indProc', '0'));
+          tpAto := StrTotpAto(OK, INIRec.ReadString( sSecao, 'tpAto', ''));
         end;
 
         Inc(I);
@@ -2678,14 +2702,14 @@ begin
       INIRec.WriteString('infNFe', 'ID', infNFe.ID);
       INIRec.WriteString('infNFe', 'Versao', FloatToStr(infNFe.Versao));
       INIRec.WriteInteger('Identificacao', 'cUF', Ide.cUF);
-      INIRec.WriteInteger('Identificacao', 'Codigo', Ide.cNF);
+      INIRec.WriteInteger('Identificacao', 'cNF', Ide.cNF);
       INIRec.WriteString('Identificacao', 'natOp', Ide.natOp);
       INIRec.WriteString('Identificacao', 'indPag', IndpagToStr(Ide.indPag));
       INIRec.WriteInteger('Identificacao', 'Modelo', Ide.modelo);
       INIRec.WriteInteger('Identificacao', 'Serie', Ide.serie);
       INIRec.WriteInteger('Identificacao', 'nNF', Ide.nNF);
-      INIRec.WriteString('Identificacao', 'dEmi', DateTimeToStr(Ide.dEmi));
-      INIRec.WriteString('Identificacao', 'dSaiEnt', DateTimeToStr(Ide.dSaiEnt));
+      INIRec.WriteString('Identificacao', 'dhEmi', DateTimeToStr(Ide.dEmi));
+      INIRec.WriteString('Identificacao', 'dhSaiEnt', DateTimeToStr(Ide.dSaiEnt));
       INIRec.WriteString('Identificacao', 'tpNF', tpNFToStr(Ide.tpNF));
       INIRec.WriteString('Identificacao', 'idDest',
         DestinoOperacaoToStr(TpcnDestinoOperacao(Ide.idDest)));
@@ -2714,6 +2738,11 @@ begin
           begin
             INIRec.WriteString(sSecao, 'Tipo', 'NFe');
             INIRec.WriteString(sSecao, 'refNFe', refNFe);
+          end
+          else if trim(refNFeSig) <> '' then
+          begin
+            INIRec.WriteString(sSecao, 'Tipo', 'NFe');
+            INIRec.WriteString(sSecao, 'refNFeSig', refNFeSig);
           end
           else if trim(RefNF.CNPJ) <> '' then
           begin
@@ -3278,6 +3307,20 @@ begin
               end;
             end;
           end;
+
+          if (obsCont.xTexto <> '') then
+          begin
+            sSecao := 'obsContItem' + IntToStrZero(I + 1, 3);
+            INIRec.WriteString(sSecao, 'xCampo', obsCont.xCampo);
+            INIRec.WriteString(sSecao, 'xTexto', obsCont.xTexto);
+          end;
+
+          if (obsFisco.xTexto <> '') then
+          begin
+            sSecao := 'obsFiscoItem' + IntToStrZero(I + 1, 3);
+            INIRec.WriteString(sSecao, 'xCampo', obsFisco.xCampo);
+            INIRec.WriteString(sSecao, 'xTexto', obsFisco.xTexto);
+          end;
         end;
       end;
 
@@ -3346,6 +3389,15 @@ begin
       INIRec.WriteString('Transportador', 'RNTC', Transp.veicTransp.RNTC);
       INIRec.WriteString('Transportador', 'vagao', Transp.vagao);
       INIRec.WriteString('Transportador', 'balsa', Transp.balsa);
+
+      for J := 0 to autXML.Count - 1 do
+      begin
+        sSecao := 'autXML' + IntToStrZero(J + 1, 2);
+        with autXML.Items[J] do
+        begin
+          INIRec.WriteString(sSecao, 'CNPJCPF', CNPJCPF);
+        end;
+      end;
 
       for J := 0 to Transp.Reboque.Count - 1 do
       begin
@@ -3444,6 +3496,7 @@ begin
         begin
           INIRec.WriteString(sSecao, 'nProc', nProc);
           INIRec.WriteString(sSecao, 'indProc', indProcToStr(indProc));
+          INIRec.WriteString(sSecao, 'tpAto', tpAtoToStr(tpAto));
         end;
       end;
 
@@ -3607,6 +3660,7 @@ begin
     FNFeW.Opcoes.PathArquivoMunicipios := Configuracoes.Arquivos.PathArquivoMunicipios;
     FNFeW.Opcoes.CamposFatObrigatorios := Configuracoes.Geral.CamposFatObrigatorios;
     FNFeW.Opcoes.ForcarGerarTagRejeicao938 := Configuracoes.Geral.ForcarGerarTagRejeicao938;
+    FNFeW.Opcoes.ForcarGerarTagRejeicao906 := Configuracoes.Geral.ForcarGerarTagRejeicao906;
 {$Else}
     FNFeW.Gerador.Opcoes.FormatoAlerta  := Configuracoes.Geral.FormatoAlerta;
     FNFeW.Gerador.Opcoes.RetirarAcentos := Configuracoes.Geral.RetirarAcentos;
@@ -3616,6 +3670,7 @@ begin
     FNFeW.Opcoes.PathArquivoMunicipios := Configuracoes.Arquivos.PathArquivoMunicipios;
     FNFeW.Opcoes.CamposFatObrigatorios := Configuracoes.Geral.CamposFatObrigatorios;
     FNFeW.Opcoes.ForcarGerarTagRejeicao938 := Configuracoes.Geral.ForcarGerarTagRejeicao938;
+    FNFeW.Opcoes.ForcarGerarTagRejeicao906 := Configuracoes.Geral.ForcarGerarTagRejeicao906;
 {$EndIf}
 
     pcnAuxiliar.TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
@@ -3669,6 +3724,7 @@ begin
     FNFeW.Opcoes.PathArquivoMunicipios     := Configuracoes.Arquivos.PathArquivoMunicipios;
     FNFeW.Opcoes.CamposFatObrigatorios     := Configuracoes.Geral.CamposFatObrigatorios;
     FNFeW.Opcoes.ForcarGerarTagRejeicao938 := Configuracoes.Geral.ForcarGerarTagRejeicao938;
+    FNFeW.Opcoes.ForcarGerarTagRejeicao906 := Configuracoes.Geral.ForcarGerarTagRejeicao906;
   end;
 
   FNFeW.Opcoes.GerarTXTSimultaneamente := True;
@@ -3957,16 +4013,21 @@ end;
 function TNotasFiscais.ValidarRegrasdeNegocios(out Erros: String): Boolean;
 var
   i: integer;
+  msg: String;
 begin
   Result := True;
   Erros := '';
+  msg := '';
 
   for i := 0 to Self.Count - 1 do
   begin
     if not Self.Items[i].ValidarRegrasdeNegocios then
     begin
       Result := False;
-      Erros := Erros + Self.Items[i].ErroRegrasdeNegocios + sLineBreak;
+      msg := Self.Items[i].ErroRegrasdeNegocios;
+
+      if Pos(msg, Erros) <= 0 then
+        Erros := Erros + Self.Items[i].ErroRegrasdeNegocios + sLineBreak;
     end;
   end;
 end;
@@ -3987,7 +4048,8 @@ begin
   end;
 
   l := Self.Count; // Indice da última nota já existente
-  Result := LoadFromString(String(XMLUTF8), AGerarNFe);
+  //Result := LoadFromString(String(XMLUTF8), AGerarNFe);
+  Result := LoadFromString(String(InserirDeclaracaoXMLSeNecessario(XMLUTF8)), AGerarNFe);
 
   if Result then
   begin

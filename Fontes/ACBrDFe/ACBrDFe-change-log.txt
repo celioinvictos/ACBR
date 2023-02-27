@@ -39,6 +39,127 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+15/02/2023
+-- ACBrDFeSSL --
+[*] Revertido a alteração, pois poderia gerar um efeito colateral nos demais
+    componentes.
+  Por: Italo Giurizzato Junior
+
+01/02/2023
+-- ACBrDFeSSL/ACBrDFeWebService --
+[*] Alterações visando atender o consumo de API Rest.
+  Por: Italo Giurizzato Junior
+-- Diversos --
+[+] Incluído o parâmetro sBCC (com cópia oculta) no método EnviarEmail em diversos
+    componentes.
+  Por: Alex Heinen
+
+30/12/2022
+-- ACBrDFeXsLibXml2 --
+[*] Remoção de Warnings e Hints.
+  Por: Italo Giurizzato Junior
+
+13/12/2022
+[*] TK-3390 ACBrDFE - Remoção Create / Default LT_ALL - LT_TLSv1_2
+  por : Victor H Gonzales - Pandaaa
+
+30/11/2022
+-- ACBrXmlDocument --
+[*] Incluído uma diretiva de compilação para tratar o LocalName para quando
+    for Delphi ou Lazarus.
+  Por: Italo Giurizzato Junior
+
+09/11/2022
+-- ACBrXmlBase --
+[*] Incluído o prefixo "nfse:" na lista de prefixos a serem removidos do XML.
+  Por: Italo Giurizzato Junior
+
+07/11/2022
+-- ACBrDFeUtil --
+[*] Incluído um novo parâmetro que determina se deve ou não gerar uma exception,
+    e também antes de buscar a cidade por código é validado a UF presente no código.
+  Por: Italo Giurizzato Junior/Victor H Gonzales
+
+05/09/2022
+-- ACBrXmlBase --
+[*] Alterado a leitura de Horário, para ler corretamente HH:MM (sem os segundos)
+  Por: Italo Giurizzato Junior
+
+10/08/2022
+-- ACBrDFeUtil --
+[+] Adicionado função DataHoraTimeZoneModoDeteccao - Converte o DateTime do Sistema para o TimeZone configurado, para evitar divergência de Fuso Horário em comparação de datas de DFes.
+   por: José M S Junior
+
+05/07/2022
+-- ACBrDFeUtil --
+[*] Inclui um segundo parâmetro na função GerarCodigoDFe visando atender a
+    NF3e e na função GerarChaveAcesso também. 
+  Por: Italo Giurizzato Junior
+
+31/05/2022
+-- ACBrNFeNotasFiscais --
+[*] Adicionado tag cMunFG na seção Identificação da leitura do .INI, compatibilizando com a estrutura Sefaz, porém mantendo compatibilidade.
+   Por: José M S Junior
+
+25/05/2022
+-- ACBrXmlBase --
+[*] Incluida o enumerado tcDatUSA para ler datas no formato
+    MM/DD/YYYY.
+   Por: Italo Giurizzato Junior
+
+29/03/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+25/03/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+23/03/2022
+-- ACBrXmlBase --
+[*] Incluida a remoção do caracter "T" na função:
+    EncodeDataHora.
+   Por: Renato Rubinho
+
+16/03/2022
+-- ACBrXmlBase --
+[*] Incluida a remoção dos caracteres #10 e #13 na função:
+    RemoverCaracteresDesnecessarios.
+   Por: Italo Giurizzato Junior
+
+15/03/2022
+-- ACBrXmlBase --
+[+] Inclusão da função EncodeDataHora que tem por finalidade converter uma 
+    data/hora em string em TDateTime.
+   Por: Italo Giurizzato Junior
+
+10/03/2022
+-- ACBrXmlBase --
+[-] Correção na leitura de horário que retorna hora com apenas 1 digito em vez de 2.
+   Por: Italo Giurizzato Junior
+
+04/03/2022
+-- ACBrXmlWrite --
+[*] Especificado um valor padrão para a quebra de linha.
+   Por: Italo Giurizzato Junior
+-- ACBrXmlBase --
+[*] Melhorias na leitura de datas e checagem de horarios no formato 24h e 12h (PM/AM).
+   Por: Italo Giurizzato Junior
+
+02/03/2022
+-- ACBrXmlBase --
+[-] Correção na leitura de uma data no formato AAAA/MM/DD estava lento /D em 
+    vez de DD.
+   Por: Italo Giurizzato Junior
+
+28/02/2022
+-- ACBrXmlBase --
+[*] Incluido mais sequencia de Escape a serem removidos do XML na função:
+    RemoverCaracteresDesnecessarios.
+   Por: Italo Giurizzato Junior
+
 28/01/2022
 -- ACBrXmlBase --
 [+] Criado o tipo TACBrTipoEncoding e a função TipoEncoding com

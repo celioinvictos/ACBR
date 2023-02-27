@@ -1,3 +1,4 @@
+
 {******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
@@ -37,7 +38,7 @@ unit ACBrBancoBancoob;
 interface
 
 uses
-  Classes, SysUtils, ACBrBoleto, ACBrBoletoConversao;
+  Classes, SysUtils, ACBrBoleto, ACBrBoletoConversao, ACBrUtil.Base;
 
 type
 
@@ -74,7 +75,7 @@ implementation
 
 uses  StrUtils, Variants, math,
       {$IFDEF COMPILER6_UP} DateUtils {$ELSE} ACBrD5, FileCtrl {$ENDIF},
-      ACBrUtil;
+      ACBrUtil.FilesIO, ACBrUtil.Strings, ACBrUtil.DateTime;
 
 constructor TACBrBancoob.create(AOwner: TACBrBanco);
 begin
@@ -565,11 +566,11 @@ begin
 
             for I := 0 to 4 do
             begin
-              CodMotivo := StrToIntDef(IfThen(Copy(Linha, MotivoLinha, 2) = Poem_Zeros('0', 2), '00', Copy(Linha, MotivoLinha, 2)), 0); 
+              CodMotivo := StrToIntDef(IfThen(Copy(Linha, MotivoLinha, 2) = ACBrUtil.Strings.Poem_Zeros('0', 2), '00', Copy(Linha, MotivoLinha, 2)), 0);
 
               if CodMotivo <> 0 then
               begin
-                MotivoRejeicaoComando.Add(Poem_Zeros(CodMotivo,2)); 
+                MotivoRejeicaoComando.Add(ACBrUtil.Strings.Poem_Zeros(CodMotivo,2));
                 DescricaoMotivoRejeicaoComando.Add(CodMotivoRejeicaoToDescricao(OcorrenciaOriginal.Tipo, CodMotivo));
               end;
 
@@ -643,7 +644,8 @@ begin
    begin
       if LeCedenteRetorno then
       begin
-        Cedente.Nome          := rCedente;
+        Cedente.CodigoCedente := rCedente;
+        Cedente.Nome          := trim(Copy(ARetorno[0],47,30));
         Cedente.CNPJCPF       := rCNPJCPF;
         Cedente.Agencia       := trim(copy(ARetorno[1], 18, 4));
         Cedente.AgenciaDigito := trim(copy(ARetorno[1], 22, 1));
@@ -731,7 +733,7 @@ begin
                PadRight(AgenciaDigito, 1, '0')          + // 58 - Digito agência do cedente
                PadLeft(OnlyNumber(Conta), 12, '0')      + // 59 a 70 - Número da conta do cedente
                PadRight(ContaDigito, 1, '0')            + // 71 - Digito conta do cedente
-               PadRight(DigitoVerificadorAgenciaConta, 1, ' ')+ // 72 - Dígito verificador Ag/Conta (zero)
+               PadRight(DigitoVerificadorAgenciaConta, 1, '0')+ // 72 - Dígito verificador Ag/Conta (zero)
                PadRight(Nome, 30, ' ')                  + // 73 a 102 - Nome do cedente
                PadRight('SICOOB', 30, ' ')              + // 103 a 132 - Nome do banco
                space(10)                                + // 133 A 142 - Brancos

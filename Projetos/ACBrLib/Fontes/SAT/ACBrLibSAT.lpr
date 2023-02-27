@@ -72,6 +72,7 @@ exports
   SAT_ConsultarSAT,
   SAT_ConsultarStatusOperacional,
   SAT_ConsultarNumeroSessao,
+  SAT_SetNumeroSessao,
   SAT_AtualizarSoftwareSAT,
   SAT_ComunicarCertificadoICPBRASIL,
   SAT_ExtrairLogs,
@@ -80,6 +81,7 @@ exports
 
   SAT_CriarCFe,
   SAT_CriarEnviarCFe,
+  SAT_ValidarCFe,
   SAT_EnviarCFe,
   SAT_CancelarCFe,
 

@@ -53,7 +53,7 @@ uses
    System.Contnrs,
   {$IfEnd}
   ACBrBase,
-  pcnConversao, pcnGerador, ACBrUtil, pcnConsts,
+  pcnConversao, pcnGerador, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -294,6 +294,9 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
+  ACBrUtil.DateTime,
   ACBreSocial;
 
 { TS2230Collection }
@@ -533,13 +536,16 @@ begin
       Gerador.wCampo(tcStr, '', 'indRemunCargo',  1,   1, 0, eSSimNaoToStr(objInfoAfast.iniAfastamento.infoMandElet.indRemunCargo));
       Gerador.wGrupo('/infoMandElet');
     end;
-        
-    // Critério de geração: F (Se {codMotAfast} = [01, 03, 35]); N (Nos demais casos)
-    if ((objInfoAfast.iniAfastamento.infoAtestadoInst) and
-        (objInfoAfast.iniAfastamento.codMotAfast in [mtvAcidenteDoencaTrabalho,
-                                                     mtvAcidenteDoencaNaoTrabalho,
-                                                     mtvLicencaMaternidadeAntecipacaoProrrogacao])) then
-      GerarInfoAtestado(objInfoAfast.iniAfastamento.infoAtestado);
+
+    if (VersaoDF <= ve02_05_00) then
+    begin
+      // Critério de geração: F (Se {codMotAfast} = [01, 03, 35]); N (Nos demais casos)
+      if ((objInfoAfast.iniAfastamento.infoAtestadoInst) and
+          (objInfoAfast.iniAfastamento.codMotAfast in [mtvAcidenteDoencaTrabalho,
+                                                       mtvAcidenteDoencaNaoTrabalho,
+                                                       mtvLicencaMaternidadeAntecipacaoProrrogacao])) then
+        GerarInfoAtestado(objInfoAfast.iniAfastamento.infoAtestado);
+    end;
 
     if Assigned(objInfoAfast.iniAfastamento.infoCessao) then
       GerarInfoCessao(objInfoAfast.iniAfastamento.infoCessao);
@@ -609,6 +615,7 @@ end;
 function TEvtAfastTemp.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
@@ -770,7 +777,7 @@ begin
 
           sSecao := 'emitente' + IntToStrZero(I, 1);
           emitente.nmEmit := INIRec.ReadString(sSecao, 'nmEmit', EmptyStr);
-          emitente.ideOC  := eSStrToIdeOC(Ok, INIRec.ReadString(sSecao, 'ideOC', '1'));
+          emitente.ideOC  := eSStrToIdeOCEX(INIRec.ReadString(sSecao, 'ideOC', '1'));
           emitente.nrOc   := INIRec.ReadString(sSecao, 'nrOc', EmptyStr);
           emitente.ufOC   := INIRec.ReadString(sSecao, 'ufOC', 'SP');
         end;

@@ -6,7 +6,7 @@
 { Direitos Autorais Reservados (c) 2022 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: Victor Hugo Gonzales - Panda, Douglas Tybel,    }
-{   Rodrigo Cardilo, WindSoft                                                  }
+{   Rodrigo Cardilo, WindSoft, Aggille Sistema de Gestão, Zoobre               }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -72,7 +72,7 @@ implementation
 
 uses
   {$ifdef COMPILER6_UP} DateUtils {$else} ACBrD5 {$endif}, StrUtils, Variants,
-  ACBrValidador, ACBrUtil ;
+  ACBrValidador, ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime ;
 
 constructor TACBrBancoInter.Create(AOwner: TACBrBanco);
 begin
@@ -143,7 +143,7 @@ begin
   Result := ACBrTitulo.ACBrBoleto.Cedente.Agencia
             + ACBrTitulo.ACBrBoleto.Cedente.AgenciaDigito
             + '/'
-            + ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente;
+            + ACBrTitulo.ACBrBoleto.Cedente.Conta;
 
 end;
 
@@ -184,8 +184,9 @@ end;
 procedure TACBrBancoInter.GerarRegistroTransacao400(ACBrTitulo: TACBrTitulo; ARemessa: TStringList);
 var
   ACodigoMoraJuros, ATipoCedente, ATipoSacado, ADataMoraJuros, ADataDesconto, wLinha,
-  wCarteira, ValorMora, EspecieDoc: string;
+  wCarteira, ValorMora, EspecieDoc, ADesconto, AMensagem : string;
   Boleto : TACBrBoleto;
+  ADataLimitePagamento : Byte;
 begin
   Boleto := ACBrTitulo.ACBrBoleto;
 
@@ -201,10 +202,27 @@ begin
   end;
 
   // descontos
-  if (ACBrTitulo.ValorDesconto > 0) and (ACBrTitulo.DataDesconto <> Null) then
-    ADataDesconto := FormatDateTime('ddmmyy', ACBrTitulo.DataDesconto)
-  else
-    ADataDesconto := PadLeft('', 6, '0');
+  case ACBrTitulo.TipoDesconto of
+     tdNaoConcederDesconto:
+       ADesconto := '0';
+     tdValorFixoAteDataInformada:
+       ADesconto := '1';
+     tdValorAntecipacaoDiaCorrido:
+       ADesconto := '2';
+     tdValorAntecipacaoDiaUtil:
+       ADesconto := '3';
+     tdPercentualAteDataInformada:
+       ADesconto := '4';
+     tdPercentualSobreValorNominalDiaCorrido:
+       ADesconto := '5';
+     tdPercentualSobreValorNominalDiaUtil:
+       ADesconto := '6';
+   else
+     ADesconto := '0';
+   end;
+
+   if (ACBrTitulo.ValorDesconto > 0) and (ACBrTitulo.DataDesconto <> Null) then
+    ADataDesconto := FormatDateTime('ddmmyy', ACBrTitulo.DataDesconto);
 
   // tipo cedente
   case ACBrTitulo.ACBrBoleto.Cedente.TipoInscricao of
@@ -225,6 +243,12 @@ begin
   if EspecieDoc = 'DM' then
     EspecieDoc := '99';
 
+  ADataLimitePagamento := Round(ACBrTitulo.DataLimitePagto - ACBrTitulo.Vencimento);
+
+  if not (ADataLimitePagamento in [30,60]) then
+    ADataLimitePagamento := 0;
+
+  AMensagem := Copy(stringreplace(ACBrTitulo.Mensagem.Text,sLineBreak,' ',[rfReplaceAll]), 1, 70) ;
   wCarteira := Trim(ACBrTitulo.Carteira);
 
   wLinha := '1'                                                                                                                                          + // 1 a 1 Identificação do registro de transação
@@ -242,21 +266,21 @@ begin
             PadRight(ACBrTitulo.NumeroDocumento, 10, ' ')                                                                                                + // 111 a 120 Nº do documento (Seu número)
             FormatDateTime('ddmmyy', ACBrTitulo.Vencimento)                                                                                              + // 121 a 126 Data do vencimento do título
             IntToStrZero(Round(ACBrTitulo.ValorDocumento * 100), 13)                                                                                     + // 127 a 139 Valor do título
-            IntToStrZero(Round(ACBrTitulo.DataLimitePagto - ACBrTitulo.Vencimento), 2)                                                                   + // 140 a 141 Data limite de pagamento
+            IntToStrZero(ADataLimitePagamento, 2)                                                                                                        + // 140 a 141 Data limite de pagamento
             Space(6)                                                                                                                                     + // 142 a 147 Branco
             PadLeft(EspecieDoc, 2, ' ')                                                                                                                  + // 148 a 149 Espécie do título
             'N'                                                                                                                                          + // 150 a 150 Identificação
             Space(6)                                                                                                                                     + // 151 a 156 Data da emissão do título
             Space(3)                                                                                                                                     + // 157 a 159 Branco
             ACodigoMoraJuros                                                                                                                             + // 160 a 160 Campo de Tipo de Mora/juros (Utilizar Percentual)
-            PadLeft(IfThen(ACodigoMoraJuros = '1',ValorMora,'0'), 13, '0')                                                                           + // 161 a 173 (Valor zerado para utilizar percentual)
-            PadLeft(ifThen(ACodigoMoraJuros = '2',ValorMora,'0'), 4, '0')                                                                            + // 174 a 177 Percentual a ser cobrado juros/mora
-            ADataMoraJuros                                                                                                                               + // 178 a 183 Data da mora
-            '0'                                                                                                                                          + // 184 a 184 Campo de descontos
-            PadLeft('', 13, '0')                                                                                                                         + // 185 a 197 Valor do desconto 1
+            PadLeft(IfThen(ACodigoMoraJuros = '1',ValorMora,'0'), 13, '0')                                                                               + // 161 a 173 (Valor zerado para utilizar percentual)
+            PadLeft(ifThen(ACodigoMoraJuros = '2',ValorMora,'0'), 4, '0')                                                                                + // 174 a 177 Percentual a ser cobrado juros/mora
+            PadLeft(ADataMoraJuros, 6, '0')                                                                                                              + // 178 a 183 Data da mora
+            ADesconto                                                                                                                                    + // 184 a 184 Campo de descontos
+            IntToStrZero(Round(ACBrTitulo.ValorDesconto * 100), 13)                                                                                      + // 185 a 197 Valor do desconto 1
             PadLeft('', 4, '0')                                                                                                                          + // 198 a 201 Percentual de desconto 1
-            PadLeft('', 6, '0')                                                                                                                          + // 202 a 207 Data limite para concessão dodesconto 1
-            PadLeft('', 13, '0')                                                                                                                         + // 208 a 220 Valor do abatimento a ser concedido
+            PadLeft(ADataDesconto, 6, '0')                                                                                                               + // 202 a 207 Data limite para concessão dodesconto 1
+            IntToStrZero(Round(ACBrTitulo.ValorAbatimento * 100), 13)                                                                                    + // 208 a 220 Valor do abatimento a ser concedido
             ATipoSacado                                                                                                                                  + // 221 a 222 Identificação do tipo de inscrição do pagador
             PadLeft(OnlyNumber(ACBrTitulo.Sacado.CNPJCPF), 14, '0')                                                                                      + // 223 a 236 Nº Inscrição do pagador
             PadRight(TiraAcentos(ACBrTitulo.Sacado.NomeSacado), 40, ' ')                                                                                 + // 237 a 276 Nome do pagador
@@ -273,7 +297,7 @@ begin
                                                          + ' '
                                                          + ACBrTitulo.Sacado.UF ) ), 40, ' ')                                                            + // 277 a 316 Endereço completo
             PadLeft(OnlyNumber(ACBrTitulo.Sacado.CEP), 8, '0')                                                                                           + // 317 a 321 CEP || 322 a 324 Sufixo do CEP
-            Space(70)                                                                                                                                    + // 325 a 394 1ª Mensagem
+            PadRight(AMensagem, 70, ' ')                                                                                                                 + // 325 a 394 1ª Mensagem
             IntToStrZero(ARemessa.Count + 1, 6);                                                                                                           // 395 a 400 Nº sequencial do registro
 
   ARemessa.Text := ARemessa.Text + UpperCase(wLinha);
@@ -335,10 +359,23 @@ begin
 
     Titulo := ACBrBanco.ACBrBoleto.CriarTituloNaLista;
 
+    if ACBrBanco.ACBrBoleto.LeCedenteRetorno then
+    begin
+      ACBrBanco.ACBrBoleto.Cedente.Nome    := rCedente;
+      Titulo.Carteira                      := copy(Linha, 21, 3);
+      ACBrBanco.ACBrBoleto.Cedente.Agencia := copy(Linha, 24, 4);
+      ACBrBanco.ACBrBoleto.Cedente.Conta   := copy(Linha, 28,10);
+    end;
+
+
     Titulo.SeuNumero               := copy(Linha, 38, 25);
     Titulo.NumeroDocumento         := copy(Linha, 98, 10);
     Titulo.Carteira                := copy(Linha, 87, 3);
     Titulo.OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(StrToIntDef(copy(Linha, 90, 2), 0));
+
+    if Titulo.OcorrenciaOriginal.Tipo = toRetornoRegistroRecusado then
+      Titulo.DescricaoMotivoRejeicaoComando.Add(copy(Linha, 241, 140));
+
     Titulo.Sacado.NomeSacado       := copy(Linha, 325, 30);
     Titulo.DataOcorrencia          := StringToDateTimeDef(Copy(Linha, 92, 2) + '/' + Copy(Linha, 94, 2) + '/' + Copy(Linha, 96, 2), 0, 'DD/MM/YY');
     Titulo.EspecieDoc              := 'DM';
@@ -423,7 +460,7 @@ begin
     toRetornoAlteracaoDadosBaixa                                       : Result := '05';
     toRetornoLiquidado                                                 : Result := '06';
     toRetornoLiquidadoEmCartorio                                       : Result := '08';
-    toRetornoBaixaSimples                                              : Result := '09';
+    toRetornoBaixaSimples                                              : Result := '07';
     toRetornoBaixaPorTerSidoLiquidado                                  : Result := '10';
     toRetornoTituloEmSer                                               : Result := '11';
     toRetornoAbatimentoConcedido                                       : Result := '12';

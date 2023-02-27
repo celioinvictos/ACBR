@@ -54,7 +54,7 @@ uses
   {$ELSE}
    Contnrs,
   {$IFEND}
-  ACBrBase, pcnConversao, ACBrUtil, pcnConsts,
+  ACBrBase, pcnConversao, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -116,6 +116,7 @@ type
     FcompSemMovto : string;
     FindExcApur1250: tpSimNaoFacultativo;
     FtransDCTFWeb: tpSimNaoFacultativo;
+    FNaoValid: TpSimNaoFacultativo;
   public
     constructor create;
     destructor Destroy; override;
@@ -129,12 +130,14 @@ type
     property compSemMovto : string read FcompSemMovto write FcompSemMovto;
     property indExcApur1250: tpSimNaoFacultativo read FindExcApur1250 write FindExcApur1250;
     property transDCTFWeb: tpSimNaoFacultativo read FtransDCTFWeb write FtransDCTFWeb;
+    property naoValid: TpSimNaoFacultativo read FNaoValid write FNaoValid;
   end;
 
 implementation
 
 uses
   IniFiles,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TS1299Collection }
@@ -202,11 +205,11 @@ begin
 
   Gerador.wCampo(tcStr, '', 'evtRemun',        1, 1, 1, eSSimNaoToStr(self.InfoFech.evtRemun));
 
-  if VersaoDF <= ve02_05_00 then
-  begin
+  if VersaoDF >= veS01_01_00 then
     Gerador.wCampo(tcStr, '', 'evtPgtos',      1, 1, 1, eSSimNaoToStr(self.InfoFech.evtPgtos));
+
+  if VersaoDF <= ve02_05_00 then
     Gerador.wCampo(tcStr, '', 'evtAqProd',     1, 1, 1, eSSimNaoToStr(self.InfoFech.evtAqProd));
-  end;
   
   Gerador.wCampo(tcStr, '', 'evtComProd',      1, 1, 1, eSSimNaoToStr(self.InfoFech.evtComProd));
   Gerador.wCampo(tcStr, '', 'evtContratAvNP',  1, 1, 1, eSSimNaoToStr(self.InfoFech.evtContratAvNP));
@@ -230,13 +233,14 @@ begin
   then
     Gerador.wCampo(tcStr, '', 'indExcApur1250', 1, 1, 1, eSSimNaoFacultativoToStr(self.InfoFech.indExcApur1250));
 
-  { De acordo com a NT S-1.0 de 03/2021 a tag "transDCTFWeb" só poderá ser 
-    preenchida com "S" a partir da competência 10/2021 e a data de envio ao ambiente nacional
-    a partir de 21/11/2021 }
+  if VersaoDF >= veS01_00_00 then
+  begin
+    if Self.infoFech.transDCTFWeb = snfSim then
+      Gerador.wCampo(tcStr, '', 'transDCTFWeb', 1, 1, 1, eSSimNaoFacultativoToStr(self.infoFech.transDCTFWeb));
 
-  if (VersaoDF >= veS01_00_00) and
-     (Self.infoFech.transDCTFWeb = snfSim) then
-    Gerador.wCampo(tcStr, '', 'transDCTFWeb', 1, 1, 1, eSSimNaoFacultativoToStr(self.infoFech.transDCTFWeb));
+    if Self.infoFech.naoValid = snfSim then
+      Gerador.wCampo(tcStr, '', 'naoValid',     1, 1, 1, eSSimNaoFacultativoToStr(self.infoFech.naoValid));
+  end;
 
   Gerador.wGrupo('/infoFech');
 end;
@@ -244,6 +248,7 @@ end;
 function TEvtFechaEvPer.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
 
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
@@ -333,6 +338,7 @@ begin
       infoFech.compSemMovto    := INIRec.ReadString(sSecao, 'compSemMovto', '');
       infoFech.indExcApur1250  := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indExcApur1250', 'S'));
       infoFech.transDCTFWeb    := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'transDCTFWeb', 'N'));
+      infoFech.naoValid        := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'naoValid', 'S'));
     end;
 
     GerarXML;

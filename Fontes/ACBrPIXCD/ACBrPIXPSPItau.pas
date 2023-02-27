@@ -45,36 +45,38 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrPIXCD, ACBrOpenSSLUtils;
+  ACBrPIXCD, ACBrBase, ACBrOpenSSLUtils;
 
 const
-  cURLItauSandbox = 'https://api.itau.com.br/sandbox';
-  cURLItauProducao = 'https://secure.api.itau';
-  cURLPathItauAPIPix = '/pix_recebimentos/v2';
-  cURLItauAuthTeste = cURLItauSandbox+'/api/oauth/token';
-  cURLItauAuthProducao = 'https://sts.itau.com.br';
-  cURLPathItauAuthToken = '/as/token.oauth2';
-  CURLPathCertificado = '/seguranca/v1/certificado';
-  CURLPathCertificadoSolicitacao = '/solicitacao';
-  CURLPathCertificadoRenovacao = '/renovacao';
+  cItauURLSandbox = 'https://devportal.itau.com.br/sandboxapi';
+  cItauURLProducao = 'https://secure.api.itau';
+  cItauPathAPIPix = '/pix_recebimentos/v2';
+  cItauPathAPIPixSandbox = '/pix_recebimentos_ext_v2/v2';
+  cItauURLAuthTeste = 'https://devportal.itau.com.br/api/jwt';
+  cItauURLAuthProducao = 'https://sts.itau.com.br';
+  cItauPathAuthToken = '/as/token.oauth2';
+  cItauPathCertificado = '/seguranca/v1/certificado';
+  cItauPathCertificadoSolicitacao = '/solicitacao';
+  cItauPathCertificadoRenovacao = '/renovacao';
 
 type
 
   { TACBrPSPItau }
-
-  TACBrPSPItau = class(TACBrPSP)
+  
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
+  TACBrPSPItau = class(TACBrPSPCertificate)
   private
     fSandboxStatusCode: String;
     fxCorrelationID: String;
     fSSLUtils: TACBrOpenSSLUtils;
-    fArquivoCertificado: String;
-    fArquivoChavePrivada: String;
     fQuandoNecessitarCredenciais: TACBrQuandoNecessitarCredencial;
 
     function ObterChavePrivada: String;
-    procedure SetArquivoCertificado(AValue: String);
-    procedure SetArquivoChavePrivada(AValue: String);
   protected
+    function VerificarSeIncluiCertificado(const Method, AURL: String): Boolean; override;
+    function VerificarSeIncluiChavePrivada(const Method, AURL: String): Boolean; override;
     function ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String; override;
     procedure ConfigurarQueryParameters(const Method, EndPoint: String); override;
     procedure ConfigurarHeaders(const Method, AURL: String); override;
@@ -83,13 +85,12 @@ type
     procedure Autenticar; override;
 
     function SolicitarCertificado(const TokenTemporario: String): String;
+    function RenovarCertificado: String;
     function GerarCertificadoCSR: String;
   published
+    property APIVersion;
     property ClientID;
     property ClientSecret;
-
-    property ArquivoChavePrivada: String read fArquivoChavePrivada write SetArquivoChavePrivada;
-    property ArquivoCertificado: String read fArquivoCertificado write SetArquivoCertificado;
 
     property QuandoNecessitarCredenciais: TACBrQuandoNecessitarCredencial
       read fQuandoNecessitarCredenciais write fQuandoNecessitarCredenciais;
@@ -101,14 +102,8 @@ type
 implementation
 
 uses
-  synautil,
-  ACBrUtil,
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   JsonDataObjects_ACBr
-  {$Else}
-   Jsons
-  {$EndIf},
-  DateUtils;
+  synautil, DateUtils,
+  ACBrUtil.Strings, ACBrUtil.Base, ACBrJSON;
 
 { TACBrPSPItau }
 
@@ -118,8 +113,6 @@ begin
 
   fSandboxStatusCode := '';
   fxCorrelationID := '';
-  fArquivoCertificado := '';
-  fArquivoChavePrivada := '';
   fQuandoNecessitarCredenciais := Nil;
   fSSLUtils := TACBrOpenSSLUtils.Create(Self);  // Self irá destruir ele...
 end;
@@ -129,15 +122,15 @@ var
   AURL, Body: String;
   RespostaHttp: AnsiString;
   ResultCode, sec: Integer;
-  js: TJsonObject;
+  js: TACBrJSONObject;
   qp: TACBrQueryParams;
 begin
   LimparHTTP;
 
   if (ACBrPixCD.Ambiente = ambProducao) then
-    AURL := cURLItauAuthProducao + cURLPathItauAuthToken
+    AURL := cItauURLAuthProducao + cItauPathAuthToken
   else
-    AURL := cURLItauAuthTeste;
+    AURL := cItauURLAuthTeste;
 
   qp := TACBrQueryParams.Create;
   try
@@ -155,33 +148,23 @@ begin
 
   if (ResultCode = HTTP_OK) then
   begin
-   {$IfDef USE_JSONDATAOBJECTS_UNIT}
-    js := TJsonObject.Parse(RespostaHttp) as TJsonObject;
+    js := TACBrJSONObject.Parse(RespostaHttp);
     try
-      fpToken := js.S['access_token'];
-      sec := js.I['expires_in'];
-      fpRefereshToken := js.S['refresh_token'];
+      fpToken := js.AsString['access_token'];
+      sec := js.AsInteger['expires_in'];
+      fpRefreshToken := js.AsString['refresh_token'];
     finally
       js.Free;
     end;
-   {$Else}
-    js := TJsonObject.Create;
-    try
-      js.Parse(RespostaHttp);
-      fpToken := js['access_token'].AsString;
-      sec := js['expires_in'].AsInteger;
-      fpRefereshToken := js['refresh_token'].AsString;
-    finally
-      js.Free;
-    end;
-   {$EndIf}
 
-   fpValidadeToken := IncSecond(Now, sec);
-   fpAutenticado := True;
+    if (Trim(fpToken) = '') then
+      DispararExcecao(EACBrPixHttpException.Create(ACBrStr(sErroAutenticacao)));
+
+    fpValidadeToken := IncSecond(Now, sec);
+    fpAutenticado := True;
   end
   else
-    ACBrPixCD.DispararExcecao(EACBrPixHttpException.CreateFmt(
-      sErroHttp,[Http.ResultCode, ChttpMethodPOST, AURL]));
+    DispararExcecao(EACBrPixHttpException.CreateFmt(sErroHttp, [Http.ResultCode, ChttpMethodPOST, AURL]));
 end;
 
 function TACBrPSPItau.SolicitarCertificado(const TokenTemporario: String): String;
@@ -193,11 +176,11 @@ begin
   VerificarPIXCDAtribuido;
 
   if (ACBrPixCD.Ambiente = ambProducao) then
-    AURL := cURLItauAuthProducao + CURLPathCertificado + CURLPathCertificadoSolicitacao
+    AURL := cItauURLAuthProducao + cItauPathCertificado + cItauPathCertificadoSolicitacao
   else
   begin
     VerificarAutenticacao;
-    AURL := cURLItauSandbox + CURLPathCertificado + CURLPathCertificadoSolicitacao;
+    AURL := cItauURLSandbox + cItauPathCertificado + cItauPathCertificadoSolicitacao;
   end;
 
   Body := GerarCertificadoCSR;
@@ -205,7 +188,7 @@ begin
   LimparHTTP;
   Token := IfEmptyThen(TokenTemporario, fpToken);
   if (Token <> '') then
-    Http.Headers.Insert(0, ChttpHeaderAuthorization + 'Bearer '+Token);
+    Http.Headers.Insert(0, ChttpHeaderAuthorization + ChttpAuthorizationBearer+' '+Token);
 
   WriteStrToStream(Http.Document, Body);
   Http.MimeType := CContentTypeTextPlain;
@@ -214,13 +197,44 @@ begin
 
   Result := '';
   if (ResultCode = HTTP_OK) then
-  begin
-    Http.Document.Position := 0;
-    Result := ReadStrFromStream(Http.Document, Http.Document.Size);
-  end
+    Result := StreamToAnsiString(Http.OutputStream)
   else
-    ACBrPixCD.DispararExcecao(EACBrPixHttpException.CreateFmt(
-      sErroHttp,[Http.ResultCode, ChttpMethodPOST, AURL]));
+    DispararExcecao(EACBrPixHttpException.CreateFmt( sErroHttp,
+      [Http.ResultCode, ChttpMethodPOST, AURL]));
+end;
+
+function TACBrPSPItau.RenovarCertificado: String;
+var
+  Body, AURL: String;
+  RespostaHttp: AnsiString;
+  ResultCode: Integer;
+begin
+  Result := EmptyStr;
+  VerificarPIXCDAtribuido;
+
+  if (ACBrPixCD.Ambiente = ambProducao) then
+    AURL := cItauURLAuthProducao + cItauPathCertificado + cItauPathCertificadoRenovacao
+  else
+  begin
+    VerificarAutenticacao;
+    AURL := cItauURLSandbox + cItauPathCertificado + cItauPathCertificadoRenovacao;
+  end;
+
+  Body := GerarCertificadoCSR;
+
+  LimparHTTP;
+  PrepararHTTP;
+  ConfigurarAutenticacao(ChttpMethodPOST, cItauPathCertificadoRenovacao);
+
+  WriteStrToStream(Http.Document, Body);
+  Http.MimeType := CContentTypeTextPlain;
+
+  TransmitirHttp(ChttpMethodPOST, AURL, ResultCode, RespostaHttp);
+
+  if (ResultCode = HTTP_OK) then
+    Result := StreamToAnsiString(Http.OutputStream)
+  else
+    DispararExcecao(EACBrPixHttpException.CreateFmt(sErroHttp, [Http.ResultCode, ChttpMethodPOST, AURL]));
 end;
 
 function TACBrPSPItau.GerarCertificadoCSR: String;
@@ -256,8 +270,10 @@ function TACBrPSPItau.ObterChavePrivada: String;
 var
   Resposta: AnsiString;
 begin
-  if (fArquivoChavePrivada <> '') and FileExists(fArquivoChavePrivada) then
-    fSSLUtils.LoadPrivateKeyFromFile(fArquivoChavePrivada)
+  if NaoEstaVazio(ArquivoChavePrivada) and FileExists(ArquivoChavePrivada) then
+    fSSLUtils.LoadPrivateKeyFromFile(ArquivoChavePrivada)
+  else if NaoEstaVazio(ChavePrivada) then
+    fSSLUtils.LoadPrivateKeyFromString(ChavePrivada)
   else
   begin
     Resposta := '';
@@ -271,26 +287,24 @@ begin
   Result := fSSLUtils.PrivateKeyAsString;
 end;
 
-procedure TACBrPSPItau.SetArquivoCertificado(AValue: String);
+function TACBrPSPItau.VerificarSeIncluiCertificado(const Method, AURL: String): Boolean;
 begin
-  if fArquivoCertificado = AValue then Exit;
-  fArquivoCertificado := Trim(AValue);
+  Result := inherited VerificarSeIncluiCertificado(Method, AURL) and
+    (ACBrPixCD.Ambiente = ambProducao) and (Pos(cItauPathCertificadoSolicitacao, AURL) <= 0);
 end;
 
-procedure TACBrPSPItau.SetArquivoChavePrivada(AValue: String);
+function TACBrPSPItau.VerificarSeIncluiChavePrivada(const Method, AURL: String): Boolean;
 begin
-  if fArquivoChavePrivada = AValue then Exit;
-  fArquivoChavePrivada := (AValue);
+  Result := inherited VerificarSeIncluiChavePrivada(Method, AURL) and
+    (ACBrPixCD.Ambiente = ambProducao) and (Pos(cItauPathCertificadoSolicitacao, AURL) <= 0);
 end;
 
 function TACBrPSPItau.ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String;
 begin
   if (Ambiente = ambProducao) then
-    Result := cURLItauProducao
+    Result := cItauURLProducao + cItauPathAPIPix
   else
-    Result := cURLItauSandbox;
-
-  Result := Result + cURLPathItauAPIPix;
+    Result := cItauURLSandbox + cItauPathAPIPixSandbox;
 end;
 
 procedure TACBrPSPItau.ConfigurarQueryParameters(const Method, EndPoint: String);
@@ -299,7 +313,7 @@ begin
 
   with URLQueryParams do
   begin
-    if (fSandboxStatusCode <> '') then
+    if NaoEstaVazio(fSandboxStatusCode) then
       Values['status_code'] := fSandboxStatusCode;
   end;
 end;
@@ -312,14 +326,17 @@ begin
   inherited ConfigurarHeaders(Method, AURL);
 
   s := Trim(fxCorrelationID);
-  if (s = '') then
+  if EstaVazio(s) then
   begin
     if (CreateGUID(guid) = 0) then
       s := GUIDToString(guid);
   end;
 
-  if (s <> '') then
+  if NaoEstaVazio(s) then
     Http.Headers.Add('x-correlationID: ' + s);
+
+  if (ACBrPixCD.Ambiente = ambTeste) and (fpToken <> '') then
+    Http.Headers.Add('x-sandbox-token: ' + fpToken);
 end;
 
 end.

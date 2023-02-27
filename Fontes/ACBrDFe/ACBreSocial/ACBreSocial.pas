@@ -46,7 +46,7 @@ unit ACBreSocial;
 interface
 
 uses
-  Classes, SysUtils, ACBrUtil,
+  Classes, SysUtils,
   ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes, ACBrBase,
   ACBreSocialConfiguracoes, ACBreSocialWebServices, ACBreSocialEventos,
   pcnConversao, pcesConversaoeSocial;
@@ -140,6 +140,8 @@ implementation
 { TACBreSocial }
 
 uses
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
   ACBrDFeSSL;
 
 constructor TACBreSocial.Create(AOwner: TComponent);
@@ -282,7 +284,7 @@ begin
     Sessao := 'eSocial_P';
 
   LerServicoChaveDeParams(Sessao, LayOuteSocialToServico(LayOutServico), Versao, URL);
-  Versao := VersaoeSocialToDbl(Configuracoes.Geral.VersaoDF);
+  Versao := VersaoeSocialToDblEX(Configuracoes.Geral.VersaoDF);
 end;
 
 function TACBreSocial.LerVersaoDeParams(LayOutServico: TLayOut): String;
@@ -291,7 +293,7 @@ var
 begin
   Versao := LerVersaoDeParams(GetNomeModeloDFe, Configuracoes.WebServices.UF,
     Configuracoes.WebServices.Ambiente, LayOuteSocialToServico(LayOutServico),
-    VersaoeSocialToDbl(Configuracoes.Geral.VersaoDF));
+    VersaoeSocialToDblEX(Configuracoes.Geral.VersaoDF));
 
   Result := FloatToString(Versao, '.', '0.00');
 end;

@@ -54,7 +54,7 @@ uses
   {$ELSE}
    Contnrs,
   {$IFEND}
-  ACBrBase, pcnConversao, ACBrUtil, pcnConsts,
+  ACBrBase, pcnConversao, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -157,6 +157,9 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
+  ACBrUtil.DateTime,
   ACBreSocial;
 
 { TS2206Collection }
@@ -269,23 +272,20 @@ end;
 
 procedure TEvtAltContratual.GerarInfoEstatutario(pInfoEstatutario: TInfoEstatutario);
 begin
-  if eSTpPlanRPToStr(pInfoEstatutario.tpPlanRP) <> '0' then
+  Gerador.wGrupo('infoEstatutario');
+
+  Gerador.wCampo(tcInt, '', 'tpPlanRP', 1, 1, 1, eSTpPlanRPToStr(pInfoEstatutario.tpPlanRP));
+
+  if VersaoDF > ve02_05_00 then
   begin
-    Gerador.wGrupo('infoEstatutario');
+    if pInfoEstatutario.indTetoRGPS <> snfNada then
+      Gerador.wCampo(tcStr, '', 'indTetoRGPS', 0, 1, 0,  eSSimNaoFacultativoToStr(pInfoEstatutario.indTetoRGPS));
 
-    Gerador.wCampo(tcInt, '', 'tpPlanRP', 1, 1, 1, eSTpPlanRPToStr(pInfoEstatutario.tpPlanRP));
-
-    if VersaoDF > ve02_05_00 then
-    begin
-      if pInfoEstatutario.indTetoRGPS <> snfNada then
-        Gerador.wCampo(tcStr, '', 'indTetoRGPS', 0, 1, 0,  eSSimNaoFacultativoToStr(pInfoEstatutario.indTetoRGPS));
-        
-      if pInfoEstatutario.indAbonoPerm <> snfNada then
-        Gerador.wCampo(tcStr, '', 'indAbonoPerm', 0, 1, 0,  eSSimNaoFacultativoToStr(pInfoEstatutario.indAbonoPerm));
-    end;
-
-    Gerador.wGrupo('/infoEstatutario');
+    if pInfoEstatutario.indAbonoPerm <> snfNada then
+      Gerador.wCampo(tcStr, '', 'indAbonoPerm', 0, 1, 0,  eSSimNaoFacultativoToStr(pInfoEstatutario.indAbonoPerm));
   end;
+
+  Gerador.wGrupo('/infoEstatutario');
 end;
 
 procedure TEvtAltContratual.GerarAltContratual(objAltContratual: TAltContratual);
@@ -310,7 +310,8 @@ begin
   if objAltContratual.infoRegimeTrab.InfoCeletista.cnpjSindCategProf <> '' then
     GerarInfoCeletista(objAltContratual.infoRegimeTrab.InfoCeletista)
   else
-    GerarInfoEstatutario(objAltContratual.infoRegimeTrab.InfoEstatutario);
+    if(objAltContratual.FVinculo.tpRegPrev = rpRPPS)then
+      GerarInfoEstatutario(objAltContratual.infoRegimeTrab.InfoEstatutario);
   
   Gerador.wGrupo('/infoRegimeTrab');
  
@@ -387,16 +388,21 @@ begin
     Gerador.wCampo(tcStr, '', 'codCarreira',  1, 30, 0, objInfoContrato.codCarreira);
     Gerador.wCampo(tcDat, '', 'dtIngrCarr',  10, 10, 0, objInfoContrato.dtIngrCarr);
   end;
-
-  GerarRemuneracao(objInfoContrato.Remuneracao);
-  GerarDuracao(objInfoContrato.Duracao, pTipo);
+  if(NaoEstaVazio(pInfoCeletista.cnpjSindCategProf))then
+  begin
+    GerarRemuneracao(objInfoContrato.Remuneracao);
+    GerarDuracao(objInfoContrato.Duracao, pTipo);
+  end;
   GerarLocalTrabalho(objInfoContrato.LocalTrabalho);
 
-  // Informações do Horário Contratual do Trabalhador. O preenchimento é obrigatório se {tpRegJor} = [1]
-  if (pInfoCeletista.TpRegJor = rjSubmetidosHorarioTrabalho) then
-    GerarHorContratual(objInfoContrato.HorContratual);
-
-  GerarFiliacaoSindical(objInfoContrato.FiliacaoSindical);
+//  Informações do Horário Contratual do Trabalhador. O preenchimento é obrigatório se {tpRegJor} = [1]
+  if(NaoEstaVazio(pInfoCeletista.cnpjSindCategProf))then
+  begin
+    if (pInfoCeletista.TpRegJor = rjSubmetidosHorarioTrabalho) then
+      GerarHorContratual(objInfoContrato.HorContratual);
+  end;
+  if VersaoDF < veS01_00_00 then
+     GerarFiliacaoSindical(objInfoContrato.FiliacaoSindical);
   GerarAlvaraJudicial(objInfoContrato.AlvaraJudicial);
   GerarObservacoes(objInfoContrato.observacoes);
 
@@ -413,6 +419,7 @@ end;
 function TEvtAltContratual.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
@@ -423,7 +430,7 @@ begin
 
     GerarIdeEvento2(self.IdeEvento);
     GerarIdeEmpregador(self.IdeEmpregador);
-    GerarIdeVinculo(Self.IdeVinculo, False);
+    GerarIdeVinculo2206(Self.IdeVinculo, False);
     GerarAltContratual(FAltContratual);
 
     Gerador.wGrupo('/evtAltContratual');
@@ -567,6 +574,7 @@ begin
         altContratual.infoContrato.horContratual.DscTpJorn := INIRec.ReadString(sSecao, 'dscTpJorn', '');
         altContratual.infoContrato.horContratual.dscJorn   := INIRec.ReadString(sSecao, 'dscJorn', '');
         altContratual.infoContrato.horContratual.tmpParc   := StrTotpTmpParc(Ok, INIRec.ReadString(sSecao, 'tmpParc', '0'));
+        altContratual.infoContrato.horContratual.horNoturno:= eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'horNoturno', 'S'));  //26/01/2022
       end;
 
       I := 1;

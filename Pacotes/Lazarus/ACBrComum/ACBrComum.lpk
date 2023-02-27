@@ -10,7 +10,7 @@
       <PathDelim Value="\"/>
       <SearchPaths>
         <IncludeFiles Value="..\..\..\Fontes\ACBrComum"/>
-        <OtherUnitFiles Value="..\..\..\Fontes\ACBrComum;..\..\..\Fontes\Terceiros\GZIPUtils;..\..\..\Fontes\Terceiros\FastStringReplace;..\..\..\Fontes\Terceiros\DelphiZXingQRCode"/>
+        <OtherUnitFiles Value="..\..\..\Fontes\ACBrComum;..\..\..\Fontes\Terceiros\GZIPUtils;..\..\..\Fontes\Terceiros\FastStringReplace;..\..\..\Fontes\Terceiros\DelphiZXingQRCode;..\..\..\Fontes\Terceiros\json4delphi\src"/>
         <UnitOutputDirectory Value="..\..\..\Lib\Lazarus\ACBrComum\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
@@ -19,13 +19,21 @@
           <UseAnsiStrings Value="False"/>
         </SyntaxOptions>
       </Parsing>
+      <Linking>
+        <Debugging>
+          <DebugInfoType Value="dsDwarf3"/>
+          <UseHeaptrc Value="True"/>
+          <TrashVariables Value="True"/>
+          <UseExternalDbgSyms Value="True"/>
+        </Debugging>
+      </Linking>
     </CompilerOptions>
     <Description Value="ACBr - Biblioteca Comum, Consts, Util, AAC  - (http://www.projetoacbr.com.br/)
 "/>
     <License Value="LGPL
 "/>
     <Version Major="1"/>
-    <Files Count="12">
+    <Files Count="21">
       <Item1>
         <Filename Value="..\..\..\Fontes\ACBrComum\ACBr.inc"/>
         <Type Value="Include"/>
@@ -76,6 +84,42 @@
         <Filename Value="..\..\..\Fontes\Terceiros\DelphiZXingQRCode\ACBrDelphiZXingQRCode.pas"/>
         <UnitName Value="ACBrDelphiZXingQRCode"/>
       </Item12>
+      <Item13>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.FilesIO.pas"/>
+        <UnitName Value="ACBrUtil.FilesIO"/>
+      </Item13>
+      <Item14>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.Math.pas"/>
+        <UnitName Value="ACBrUtil.Math"/>
+      </Item14>
+      <Item15>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.Strings.pas"/>
+        <UnitName Value="ACBrUtil.Strings"/>
+      </Item15>
+      <Item16>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.XMLHTML.pas"/>
+        <UnitName Value="ACBrUtil.XMLHTML"/>
+      </Item16>
+      <Item17>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.DateTime.pas"/>
+        <UnitName Value="ACBrUtil.DateTime"/>
+      </Item17>
+      <Item18>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.Compatibilidade.pas"/>
+        <UnitName Value="ACBrUtil.Compatibilidade"/>
+      </Item18>
+      <Item19>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrUtil.Base.pas"/>
+        <UnitName Value="ACBrUtil.Base"/>
+      </Item19>
+      <Item20>
+        <Filename Value="..\..\..\Fontes\Terceiros\json4delphi\src\Jsons.pas"/>
+        <UnitName Value="Jsons"/>
+      </Item20>
+      <Item21>
+        <Filename Value="..\..\..\Fontes\ACBrComum\ACBrJSON.pas"/>
+        <UnitName Value="ACBrJSON"/>
+      </Item21>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="2">

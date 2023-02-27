@@ -44,6 +44,75 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+22/12/2022
+-- ACBrEFDBloco_C, ACBrEFDBloco_C_Class --
+[*] Alteração nos campos que passaram a poder ser nulos dos 
+    Registros: C181, C330, C380, C430, C480, C815, C880 e C185
+	Por: Elias César
+
+22/12/2022
+-- ACBrEFDBloco_0, ACBrEFDBloco_0_Class --
+[+] Inclusão do Registro 0221
+    Por: Diego Folieni
+
+-- ACBrEFDBloco_K, ACBrEFDBloco_K_Class --
+[+] Inclusão do Registro K010
+    Por: Diego Folieni
+
+-- ACBrEFDBloco_C, ACBrEFDBloco_C_Class --
+[+] Inclusão dos Registros C855, C857, C895 e C897
+
+-- ACBrEFDBloco_D, ACBrEFDBloco_D_Class --
+[+] Inclusão dos Registros D700, D730, D731, D735, D737, D750, D760 e D761
+    Por: Elias César
+
+26/10/2022
+-- ACBrEPCBlocos --
+[+] Incluídos novos tipos enumerados: TACBrIdentBemImob, TACBrIndUtilBemImob e TACBrIndNrParc;
+[+] Inclusão de funções para conversão dos novos enumerados para String.
+    https://www.projetoacbr.com.br/forum/topic/69420-efdcontribuições-f100-f120-f130-e-f150/
+	Por: Renato Rubinho
+
+-- ACBrEPCBloco_F_Class --
+[*] Alteração para utilizar funções de conversão de enumerados para String;
+
+-- ACBrEPCBloco_F --
+[*] Alteração dos tipos das propriedades de String para os novos tipos enumerados.
+
+-- ACBrEPCBloco_F_Importar --
+[*] Ajuste para utilizar as funções de conversão de String para enumerados.
+    Por: Elias César
+
+02/09/2022
+-- ACBrECFBloco_X_Class --
+[-] Correção no Registro X450 para envio da propriedade correta ao campo VL_DIVID_PJ.
+    https://www.projetoacbr.com.br/forum/topic/68444-ajuste-unit-sped-ecf-registro-x450
+    Por: Dalvan
+
+04/08/2022
+-- ACBrEFDBloco_C, ACBrEPCBloco_C_Class --
+[*] Alteração do tipo de alguns campos para Variant(Registro C185)
+    https://www.projetoacbr.com.br/forum/topic/66454-sped-fiscal-registros-c185-e-c181-campos-de-valores-unitarios-e-ultimos-4-campos-rest-e-compl-em-branco/
+    Por: simons
+
+04/07/2022
+-- ACBrEPCBloco_C_Class --
+[*] Alteração para não preencher o campo NCM com zeros
+    https://www.projetoacbr.com.br/forum/topic/67492-envio-de-ncm-vazio-para-os-registros-c180-e-c190-sendo-preenchido-com-zeros
+    Por: Gustavohq
+
+Data 09/06/2022
+-- ACBrEFDBloco_C_Class --
+[*] Alteração nos registros 180, 181, 185 e 186 para corrigir campos que possuem 6 casas decimais
+    https://www.projetoacbr.com.br/forum/topic/67373-formatacao-dos-campos-do-registro-c180-sped-fiscal
+    https://www.projetoacbr.com.br/forum/topic/67506-sped-fiscal-registro-c180-e-c186-troca-de-lfill-por-dfill/	
+    Por: simons
+	
+-- ACBrEPCBloco_F, ACBrEPCBloco_F_Importar --
+[*] Correção do tipo do campo EST_IMP no Registro F150 de inteiro para decimal
+    https://www.projetoacbr.com.br/forum/topic/66973-tipo-errado-no-bloco-f150/
+    Por: n3rv0u5
+
 Data 17/02/2020
 -- ACBrSPEDContabil --
 [*] Alterações nos registros I051 para deixar em conformidade com a versão 8. 

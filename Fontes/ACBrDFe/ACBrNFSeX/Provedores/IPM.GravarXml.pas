@@ -38,10 +38,10 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
-  pcnAuxiliar, pcnConsts,
-  ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXConversao, ACBrNFSeXConsts;
+  pcnConsts,
+  ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXGravarXml_ABRASFv2,
+  ACBrNFSeXConversao, ACBrNFSeXConsts;
 
 type
   { TNFSeW_IPM }
@@ -50,10 +50,12 @@ type
   private
     FpGerarID: Boolean;
     FpNrOcorrTagsTomador: Integer;
+    FpNrOcorrCodigoAtividade: Integer;
 
   protected
     procedure Configuracao; override;
 
+    function GerarGrupoRPS: Boolean;
     function GerarIdentificacaoRPS: TACBrXmlNode;
     function GerarValoresServico: TACBrXmlNode;
     function GerarPrestador: TACBrXmlNode;
@@ -78,9 +80,19 @@ type
 
   end;
 
+  { TNFSeW_IPM204 }
+
+  TNFSeW_IPM204 = class(TNFSeW_ABRASFv2)
+  protected
+    procedure Configuracao; override;
+
+  end;
+
 implementation
 
 uses
+  ACBrUtil.Strings,
+  ACBrUtil.DateTime,
   ACBrNFSeX;
 
 //==============================================================================
@@ -112,11 +124,11 @@ begin
 
   FDocument.Root := NFSeNode;
 
-  NFSeNode.AppendChild(AddNode(tcStr, '#2', 'identificador', 1, 80, 0,
-    'nfse_' + NFSe.IdentificacaoRps.Numero + '.' + NFSe.IdentificacaoRps.Serie, ''));
-
   if (VersaoNFSe = ve100) and (Ambiente = taHomologacao) then
     NFSeNode.AppendChild(AddNode(tcStr, '#3', 'nfse_teste', 1, 1, 1, '1', ''));
+
+  NFSeNode.AppendChild(AddNode(tcStr, '#2', 'identificador', 1, 80, 0,
+    'nfse_' + NFSe.IdentificacaoRps.Numero + '.' + NFSe.IdentificacaoRps.Serie, ''));
 
   xmlNode := GerarIdentificacaoRPS;
   NFSeNode.AppendChild(xmlNode);
@@ -153,7 +165,8 @@ begin
   inherited Configuracao;
 
   FpGerarID := False;
-  FpNrOcorrTagsTomador := 0;
+  FpNrOcorrTagsTomador := 1;
+  FpNrOcorrCodigoAtividade := -1;
 end;
 
 function TNFSeW_IPM.GerarFormaPagamento: TACBrXmlNode;
@@ -199,11 +212,25 @@ begin
   end;
 end;
 
+function TNFSeW_IPM.GerarGrupoRPS: Boolean;
+var
+  NaoGerar: Boolean;
+begin
+  {
+    Se no arquivo ACBrNFSeXServicos.ini existe o campo: NaoGerarGrupoRps na
+    definição da cidade o valor de NaoGerar é True
+  }
+  NaoGerar := FpAOwner.ConfigGeral.Params.TemParametro('NaoGerarGrupoRps');
+
+  // Na condição abaixo se faz necessário o "not".
+  Result := (StrToIntDef(NFSe.IdentificacaoRps.Numero, 0) > 0) and (not NaoGerar);
+end;
+
 function TNFSeW_IPM.GerarIdentificacaoRPS: TACBrXmlNode;
 begin
   Result :=  nil;
 
-  if( StrToIntDef( NFSe.IdentificacaoRps.Numero, 0 ) > 0 ) then
+  if GerarGrupoRPS then
   begin
     Result := CreateElement('rps');
 
@@ -291,6 +318,9 @@ begin
     Result[i].AppendChild(AddNode(tcStr, '#', 'codigo_item_lista_servico', 1, 9, 1,
                  OnlyNumber(NFSe.Servico.ItemServico[I].ItemListaServico), ''));
 
+    Result[i].AppendChild(AddNode(tcStr, '#', 'codigo_atividade', 1, 9, FpNrOcorrCodigoAtividade,
+                       OnlyNumber(NFSe.Servico.ItemServico[I].CodigoCnae), ''));
+
     Result[i].AppendChild(AddNode(tcStr, '#', 'descritivo', 1, 1000, 1,
       IfThen(NFSe.Servico.ItemServico[I].Descricao = '',
        NFSe.Servico.Discriminacao, NFSe.Servico.ItemServico[I].Descricao), ''));
@@ -305,7 +335,7 @@ begin
     Result[i].AppendChild(AddNode(tcInt, '#', 'situacao_tributaria', 1, 4, 1,
                            NFSe.Servico.ItemServico[I].SituacaoTributaria, ''));
 
-    Result[i].AppendChild(AddNode(tcDe2, '#', 'valor_tributavel', 1, 15, 1,
+    Result[i].AppendChild(AddNode(tcDe2, '#', 'valor_tributavel', 1, 15, 0,
                                    NFSe.Servico.ItemServico[I].ValorTotal, ''));
 
     Result[i].AppendChild(AddNode(tcDe2, '#', 'valor_deducao', 1, 15, 0,
@@ -330,7 +360,7 @@ begin
   begin
     Result[i] := CreateElement('parcela');
 
-    Result[i].AppendChild(AddNode(tcInt, '#', 'numero', 1, 2, 1,
+    Result[i].AppendChild(AddNode(tcStr, '#', 'numero', 1, 2, 1,
                          NFSe.CondicaoPagamento.Parcelas.Items[i].Parcela, ''));
 
     Result[i].AppendChild(AddNode(tcDe2, '#', 'valor', 1, 15, 1,
@@ -380,12 +410,12 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'endereco_informado', 1, 1, 0,
                             Trim(NFSe.Tomador.Endereco.EnderecoInformado), ''));
 
-  if Trim(NFSe.Tomador.IdentificacaoTomador.DocTomadorEstrangeiro) <> '' then
+  if Trim(NFSe.Tomador.IdentificacaoTomador.DocEstrangeiro) <> '' then
   begin
     Result.AppendChild(AddNode(tcStr, '#1', 'tipo', 1, 1, 1, 'E', ''));
 
     Result.AppendChild(AddNode(tcStr, '#1', 'identificador', 1, 20, 1,
-            Trim(NFSe.Tomador.IdentificacaoTomador.DocTomadorEstrangeiro), ''));
+                   Trim(NFSe.Tomador.IdentificacaoTomador.DocEstrangeiro), ''));
 
     Result.AppendChild(AddNode(tcStr, '#1', 'estado', 1, 100, 1,
                                                  NFSe.Tomador.Endereco.UF, ''));
@@ -395,7 +425,8 @@ begin
   end
   else
   begin
-    if NFSe.Tomador.IdentificacaoTomador.Tipo in [tpPFNaoIdentificada, tpPF] then
+    if (NFSe.Tomador.IdentificacaoTomador.Tipo in [tpPFNaoIdentificada, tpPF]) and
+       (Length(OnlyNumber(NFSe.Tomador.IdentificacaoTomador.CpfCnpj)) < 14) then
       Result.AppendChild(AddNode(tcStr, '#1', 'tipo', 1, 1, 1, 'F', ''))
     else
       Result.AppendChild(AddNode(tcStr, '#1', 'tipo', 1, 1, 1, 'J', ''));
@@ -507,6 +538,23 @@ begin
 
   FpGerarID := True;
   FpNrOcorrTagsTomador := 1;
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('GerarTag', 'codigo_atividade') then
+    FpNrOcorrCodigoAtividade := 1;
+end;
+
+{ TNFSeW_IPM204 }
+
+procedure TNFSeW_IPM204.Configuracao;
+begin
+  inherited Configuracao;
+
+  FormatoAliq := tcDe2;
+
+  NrOcorrInformacoesComplemetares := 0;
+  NrOcorrCodigoPaisTomador := -1;
+
+  TagTomador := 'TomadorServico';
 end;
 
 end.

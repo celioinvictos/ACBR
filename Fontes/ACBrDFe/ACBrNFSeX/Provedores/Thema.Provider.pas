@@ -38,9 +38,10 @@ interface
 
 uses
   SysUtils, Classes,
-  ACBrXmlBase, ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
-  ACBrNFSeXGravarXml, ACBrNFSeXLerXml, ACBrNFSeXWebservicesResponse,
-  ACBrNFSeXProviderABRASFv1, ACBrNFSeXWebserviceBase;
+  ACBrXmlBase, ACBrXmlDocument,
+  ACBrNFSeXClass, ACBrNFSeXConversao,
+  ACBrNFSeXProviderABRASFv1, ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
+  ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
   TACBrNFSeXWebserviceThema = class(TACBrNFSeXWebserviceSoap11)
@@ -53,6 +54,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderThema = class (TACBrNFSeProviderABRASFv1)
@@ -73,45 +75,56 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException,
-  ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
-  ACBrNFSeXNotasFiscais, Thema.GravarXml, Thema.LerXml;
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrDFeException,
+  ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts, ACBrNFSeXNotasFiscais,
+  Thema.GravarXml, Thema.LerXml;
 
 { TACBrNFSeXWebserviceThema }
 
 function TACBrNFSeXWebserviceThema.Recepcionar(ACabecalho, AMSG: String): string;
 var
-  Request: string;
+  Request, Servico: string;
 begin
   // Para o provedor Thema devemos utilizar esse serviço caso a quantidade
   // de RPS no lote seja superior a 3, ou seja, 4 ou mais
+
+  Servico := 'recepcionarLoteRps';
+
+  if TACBrNFSeX(FPDFeOwner).NotasFiscais.Count <= 3 then
+    Servico := 'recepcionarLoteRpsLimitado';
+
   FPMsgOrig := AMSG;
 
-  Request := '<recepcionarLoteRps xmlns="http://server.nfse.thema.inf.br">';
+  Request := '<' + Servico + ' xmlns="http://server.nfse.thema.inf.br">';
   Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
-  Request := Request + '</recepcionarLoteRps>';
+  Request := Request + '</' + Servico + '>';
 
-  Result := Executar('urn:recepcionarLoteRps', Request,
-                     ['return', 'EnviarLoteRpsResposta'],
-                     []);
+  Result := Executar('urn:' + Servico, Request,
+                     ['return', 'EnviarLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.RecepcionarSincrono(ACabecalho,
   AMSG: String): string;
 var
-  Request: string;
+  Request, Servico: string;
 begin
   // Para o provedor Thema devemos utilizar esse serviço caso a quantidade
   // de RPS no lote seja inferior a 4.
+
+  Servico := 'recepcionarLoteRpsLimitado';
+
+  if TACBrNFSeX(FPDFeOwner).NotasFiscais.Count >= 4 then
+    Servico := 'recepcionarLoteRps';
+
   FPMsgOrig := AMSG;
 
-  Request := '<recepcionarLoteRpsLimitado xmlns="http://server.nfse.thema.inf.br">';
+  Request := '<' + Servico + ' xmlns="http://server.nfse.thema.inf.br">';
   Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
-  Request := Request + '</recepcionarLoteRpsLimitado>';
+  Request := Request + '</' + Servico + '>';
 
-  Result := Executar('urn:recepcionarLoteRpsLimitado', Request,
-                     ['return', 'EnviarLoteRpsResposta'],
-                     []);
+  Result := Executar('urn:' + Servico, Request,
+                     ['return', 'EnviarLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarLote(ACabecalho, AMSG: String): string;
@@ -124,7 +137,8 @@ begin
   Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
   Request := Request + '</consultarLoteRps>';
 
-  Result := Executar('urn:consultarLoteRps', Request, ['return'], []);
+  Result := Executar('urn:consultarLoteRps', Request,
+                     ['return', 'ConsultarLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarSituacao(ACabecalho, AMSG: String): string;
@@ -138,8 +152,7 @@ begin
   Request := Request + '</consultarSituacaoLoteRps>';
 
   Result := Executar('urn:consultarSituacaoLoteRps', Request,
-                     ['return', 'ConsultarSituacaoLoteRpsResposta'],
-                     []);
+                     ['return', 'ConsultarSituacaoLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarNFSePorRps(ACabecalho, AMSG: String): string;
@@ -153,8 +166,7 @@ begin
   Request := Request + '</consultarNfsePorRps>';
 
   Result := Executar('urn:consultarNfsePorRps', Request,
-                     ['return', 'ConsultarNfseRpsResposta'],
-                     []);
+                     ['return', 'ConsultarNfseRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.ConsultarNFSe(ACabecalho, AMSG: String): string;
@@ -168,8 +180,7 @@ begin
   Request := Request + '</consultarNfse>';
 
   Result := Executar('urn:consultarNfse', Request,
-                     ['return', 'ConsultarNfseResposta'],
-                     []);
+                     ['return', 'ConsultarNfseResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceThema.Cancelar(ACabecalho, AMSG: String): string;
@@ -183,8 +194,18 @@ begin
   Request := Request + '</cancelarNfse>';
 
   Result := Executar('urn:cancelarNfse', Request,
-                     ['return', 'CancelarNfseResposta'],
-                     []);
+                     ['return', 'CancelarNfseResposta'], []);
+end;
+
+function TACBrNFSeXWebserviceThema.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverIdentacao(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
 end;
 
 { TACBrNFSeProviderThema }
@@ -264,20 +285,20 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod002;
-    AErro.Descricao := Desc002;
+    AErro.Descricao := ACBrStr(Desc002);
+    Exit;
   end;
 
   if TACBrNFSeX(FAOwner).NotasFiscais.Count > Response.MaxRps then
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod003;
-    AErro.Descricao := 'Conjunto de RPS transmitidos (máximo de ' +
+    AErro.Descricao := ACBrStr('Conjunto de RPS transmitidos (máximo de ' +
                        IntToStr(Response.MaxRps) + ' RPS)' +
                        ' excedido. Quantidade atual: ' +
-                       IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count);
+                       IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count));
+    Exit;
   end;
-
-  if Response.Erros.Count > 0 then Exit;
 
   if ConfigAssinar.IncluirURI then
     IdAttr := ConfigGeral.Identificador
@@ -328,24 +349,21 @@ begin
   begin
     Nota := TACBrNFSeX(FAOwner).NotasFiscais.Items[I];
 
-    if EstaVazio(Nota.XMLAssinado) then
+    Nota.GerarXML;
+
+    Nota.XmlRps := ConverteXMLtoUTF8(Nota.XmlRps);
+    Nota.XmlRps := ChangeLineBreak(Nota.XmlRps, '');
+
+    if ConfigAssinar.Rps then
     begin
-      Nota.GerarXML;
-
-      Nota.XMLOriginal := ConverteXMLtoUTF8(Nota.XMLOriginal);
-      Nota.XMLOriginal := ChangeLineBreak(Nota.XMLOriginal, '');
-
-      if ConfigAssinar.Rps then
-      begin
-        Nota.XMLOriginal := FAOwner.SSL.Assinar(Nota.XMLOriginal,
-                                                PrefixoTS + ConfigMsgDados.XmlRps.DocElemento,
-                                                ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
-      end;
+      Nota.XmlRps := FAOwner.SSL.Assinar(Nota.XmlRps,
+                                         PrefixoTS + ConfigMsgDados.XmlRps.DocElemento,
+                                         ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
     end;
 
     SalvarXmlRps(Nota);
 
-    xRps := RemoverDeclaracaoXML(Nota.XMLOriginal);
+    xRps := RemoverDeclaracaoXML(Nota.XmlRps);
     xRps := PrepararRpsParaLote(xRps);
 
     ListaRps := ListaRps + xRps;
@@ -367,13 +385,13 @@ begin
     Versao := '';
 
   if ConfigGeral.Identificador <> '' then
-    IdAttr := ' ' + ConfigGeral.Identificador + '="Lote_' + Response.Lote + '"'
+    IdAttr := ' ' + ConfigGeral.Identificador + '="Lote_' + Response.NumeroLote + '"'
   else
     IdAttr := '';
 
   Response.ArquivoEnvio := '<' + Prefixo + TagEnvio + NameSpace + '>' +
                          '<' + Prefixo + 'LoteRps' + NameSpaceLote + IdAttr  + Versao + '>' +
-                           '<' + PrefixoTS + 'NumeroLote>' + Response.Lote + '</' + PrefixoTS + 'NumeroLote>' +
+                           '<' + PrefixoTS + 'NumeroLote>' + Response.NumeroLote + '</' + PrefixoTS + 'NumeroLote>' +
                            '<' + PrefixoTS + 'Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</' + PrefixoTS + 'Cnpj>' +
                            GetInscMunic(Emitente.InscMun, PrefixoTS) +
                            '<' + PrefixoTS + 'QuantidadeRps>' +
@@ -415,20 +433,22 @@ begin
       Response.Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
 
       ANode := Document.Root.Childrens.FindAnyNs('ListaNfse');
+
       if not Assigned(ANode) then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod202;
-        AErro.Descricao := Desc202;
+        AErro.Descricao := ACBrStr(Desc202);
         Exit;
       end;
 
       ANodeArray := ANode.Childrens.FindAllAnyNs('CompNfse');
+
       if not Assigned(ANode) then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod203;
-        AErro.Descricao := Desc203;
+        AErro.Descricao := ACBrStr(Desc203);
         Exit;
       end;
 
@@ -442,19 +462,18 @@ begin
         NumRps := AuxNode.AsString;
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
-        if Assigned(ANota) then
-          ANota.XML := ANode.AsString
-        else
-          TACBrNFSeX(FAOwner).NotasFiscais.LoadFromString(ANode.AsString);
+
+        ANota := CarregarXmlNfse(ANota, ANode.OuterXml);
+        SalvarXmlNfse(ANota);
       end;
 
-      Response.Sucesso := (Response.Erros.Count > 0);
+      Response.Sucesso := (Response.Erros.Count = 0);
     except
       on E:Exception do
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally

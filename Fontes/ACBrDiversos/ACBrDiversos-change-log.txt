@@ -39,6 +39,48 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/01/2023
+[*] TK-3522 ACBrValidador - IE para o estado de GO agora pode começar com 20
+  Por : Victor H Gonzales - Pandaaa / Cleiver
+
+07/10/2022
+-- ACBrValidador --
+[-] Correção na validação do prefixo do GTIN quando documento continha algum
+    caractere da lista a ignorar.
+  Por: BigWings
+
+20/07/2022
+-- ACBrFala --
+[-] Correção para que as palavras 'Real/Centavos' sejam colocadas no texto, 
+    após alterações do ACBrExtenso para alteração de idiomas
+    Por: Elias César
+
+21/06/2022
+-- ACBrExtenso --
+[-] Correção de MemoryLeak ao utilizar o ACBrExtenso
+
+20/06/2022
+-- ACBrExtenso --
+[*] Refatoração no componente para facilitar a inclusão de novos idiomas
+[+] Inclusão de novos idiomas (Inglês e Espanhol)
+[+] Inclusão de novo formato 'extQuilo' para escrita de peso em Kgs;
+    Por: Grupo FS e Elias César
+
+29/03/2022
+-- ACBrValidador --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+27/03/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Waldir Paim
+
+25/03/2022
+-- ACBrValidador --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
 08/06/2020
 -- ACBrValidador --
 [+] Incluída validação para o Cartão Nacional do SUS (tdCNS).

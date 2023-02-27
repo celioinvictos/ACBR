@@ -35,8 +35,8 @@ unit DoETQUnit;
 interface
 
 uses
-  Classes, TypInfo, SysUtils, CmdUnit, ACBrUtil, ACBrETQ, ACBrDevice, math,
-  ACBrMonitorConsts, ACBrMonitorConfig;
+  Classes, TypInfo, SysUtils, CmdUnit, ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings,
+  ACBrETQ, ACBrDevice, ACBrMonitorConsts, ACBrMonitorConfig, ACBrETQClass;
 
 type
 
@@ -796,12 +796,20 @@ end;
           2 - Inteiro - Flipped ( 0 = False, 1 = True )
 }
 procedure TMetodoCarregarImagem.Executar;
+var
+  APath: String;
+  ANomeImg: String;
+  AFlipped: Boolean;
 begin
+  APath:= fpCmd.Params(0);
+  ANomeImg:= fpCmd.Params(1);
+  AFlipped:= StrToBoolDef(Trim(fpCmd.Params(2)), true);
+
   with TACBrObjetoETQ(fpObjetoDono) do
   begin
-    ACBrETQ.CarregarImagem(fpCmd.Params(0),
-                   fpCmd.Params(1),
-                   StrToBoolDef(Trim(fpCmd.Params(2)), true));
+    ACBrETQ.CarregarImagem(APath,
+                   ANomeImg,
+                   AFlipped);
   end;
 end;
 

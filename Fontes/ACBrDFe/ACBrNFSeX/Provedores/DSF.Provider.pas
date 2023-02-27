@@ -55,6 +55,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
     function AlterarNameSpace(aMsg: string): string;
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderDSF = class (TACBrNFSeProviderABRASFv1)
@@ -80,6 +81,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderDSF200 = class (TACBrNFSeProviderABRASFv2)
@@ -102,6 +104,7 @@ type
 implementation
 
 uses
+  ACBrUtil.Strings, ACBrUtil.XMLHTML,
   ACBrDFeException,
   DSF.GravarXml, DSF.LerXml;
 
@@ -207,6 +210,14 @@ begin
   Result := Executar('', Request,
                      ['return', 'CancelarNfseResposta'],
                      ['xmlns:nfse="http://www.abrasf.org.br/nfse.xsd"']);
+end;
+
+function TACBrNFSeXWebserviceDSF.TratarXmlRetornado(const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := string(NativeStringToUTF8(RemoverDeclaracaoXML(Result)));
 end;
 
 { TACBrNFSeProviderDSF }
@@ -420,11 +431,22 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
+function TACBrNFSeXWebserviceDSF200.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := StringReplace(Result, '&', '&amp;', [rfReplaceAll]);
+end;
+
 { TACBrNFSeProviderDSF200 }
 
 procedure TACBrNFSeProviderDSF200.Configuracao;
 begin
   inherited Configuracao;
+
+  ConfigGeral.QuebradeLinha := '&#xD;&#xA;';
 
   with ConfigAssinar do
   begin
@@ -483,6 +505,11 @@ begin
   with ConfigAssinar do
   begin
     Rps := False;
+    ConsultarLote := True;
+    ConsultarNFSeRps := True;
+    ConsultarNFSePorFaixa := True;
+    ConsultarNFSeServicoPrestado := True;
+    ConsultarNFSeServicoTomado := True;
     CancelarNFSe := True;
     RpsGerarNFSe := True;
     RpsSubstituirNFSe := True;

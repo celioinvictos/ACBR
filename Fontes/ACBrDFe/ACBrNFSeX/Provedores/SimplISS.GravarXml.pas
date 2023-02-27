@@ -38,7 +38,6 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
   pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv1, ACBrNFSeXGravarXml_ABRASFv2,
@@ -100,7 +99,7 @@ begin
     Result[i].AppendChild(AddNode(tcDe2, '#34', 'Quantidade   ', 1, 015, 1,
                              NFSe.Servico.ItemServico[i].Quantidade, DSC_QTDE));
 
-    Result[i].AppendChild(AddNode(tcDe4, '#35', 'ValorUnitario', 1, 015, 1,
+    Result[i].AppendChild(AddNode(tcDe2, '#35', 'ValorUnitario', 1, 015, 1,
                          NFSe.Servico.ItemServico[i].ValorUnitario, DSC_VUNIT));
   end;
 
@@ -129,6 +128,7 @@ begin
   NrOcorrDescIncond := 1;
   NrOcorrDescCond := 1;
   NrOcorrCodigoPaisServico := 1;
+  NrOcorrNIFTomador := 1;
 
   GerarIDRps := True;
 end;

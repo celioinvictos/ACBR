@@ -60,6 +60,8 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property URL: string read GetURL;
     property NameSpace: string read GetNameSpace;
     property SoapAction: string read GetSoapAction;
@@ -83,9 +85,10 @@ type
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
 
-    function GetSchemaPath: string; override;
     procedure GerarMsgDadosCancelaNFSe(Response: TNFSeCancelaNFSeResponse;
       Params: TNFSeParamsResponse); override;
+  public
+    function GetSchemaPath: string; override;
   end;
 
   TACBrNFSeProviderVersaTecnologia202 = class (TACBrNFSeProviderVersaTecnologia200)
@@ -94,14 +97,16 @@ type
 
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
-
+  public
     function GetSchemaPath: string; override;
   end;
 
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais,
   VersaTecnologia.GravarXml, VersaTecnologia.LerXml;
 
@@ -468,6 +473,15 @@ begin
                      [NameSpace]);
 end;
 
+function TACBrNFSeXWebserviceVersaTecnologia200.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result));
+  Result := string(NativeStringToUTF8(RemoverDeclaracaoXML(Result)));
+end;
+
 { TACBrNFSeProviderVersaTecnologia201 }
 
 procedure TACBrNFSeProviderVersaTecnologia201.Configuracao;
@@ -534,7 +548,7 @@ begin
                                  '<' + Prefixo2 + 'CodigoMunicipio>' +
                                     IntToStr(TACBrNFSeX(FAOwner).Configuracoes.Geral.CodigoMunicipio) +
                                  '</' + Prefixo2 + 'CodigoMunicipio>' +
-                                 CodVerif +
+                                 CodigoVerificacao +
                                '</' + Prefixo2 + 'IdentificacaoNfse>' +
                                '<' + Prefixo2 + 'CodigoCancelamento>' +
                                   InfoCanc.CodCancelamento +

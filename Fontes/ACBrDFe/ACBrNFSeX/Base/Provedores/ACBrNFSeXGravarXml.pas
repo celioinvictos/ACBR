@@ -38,10 +38,8 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
-  ACBrDFeException,
-  ACBrXmlBase, ACBrXmlDocument, ACBrXmlWriter, ACBrNFSeXInterface,
-  ACBrNFSeXParametros, ACBrNFSeXClass, ACBrNFSeXConversao;
+  ACBrXmlBase, ACBrXmlDocument, ACBrXmlWriter,
+  ACBrNFSeXInterface, ACBrNFSeXClass, ACBrNFSeXConversao;
 
 type
 
@@ -101,6 +99,8 @@ type
   protected
     FpAOwner: IACBrNFSeXProvider;
 
+    FConteudoTxt: TStringList;
+
     function CreateOptions: TACBrXmlWriterOptions; override;
 
     procedure Configuracao; virtual;
@@ -111,15 +111,17 @@ type
 
     function GerarCNPJ(const CNPJ: string): TACBrXmlNode; virtual;
     function GerarCPFCNPJ(const CPFCNPJ: string): TACBrXmlNode; virtual;
-    function PadronizarItemServico(const Codigo: string): string;
+    function NormatizarItemServico(const Codigo: string): string;
     function FormatarItemServico(const Codigo: string; Formato: TFormatoItemListaServico): string;
-    function AjustarAliquota(const Aliquota: Double; DivPor100: Boolean = False): Double;
+    function NormatizarAliquota(const Aliquota: Double; DivPor100: Boolean = False): Double;
 
  public
     constructor Create(AOwner: IACBrNFSeXProvider); virtual;
+    destructor Destroy; override;
 
     function ObterNomeArquivo: String; Override;
     function GerarXml: Boolean; Override;
+    function ConteudoTxt: String;
 
     property Opcoes: TACBrXmlWriterOptions read GetOpcoes write SetOpcoes;
 
@@ -153,6 +155,10 @@ type
 
 implementation
 
+uses
+  ACBrUtil.Strings,
+  ACBrDFeException;
+
 { TNFSeWClass }
 
 constructor TNFSeWClass.Create(AOwner: IACBrNFSeXProvider);
@@ -166,6 +172,9 @@ begin
   TXmlWriterOptions(Opcoes).PathArquivoMunicipios := '';
   TXmlWriterOptions(Opcoes).ValidarInscricoes := False;
   TXmlWriterOptions(Opcoes).ValidarListaServicos := False;
+
+  FConteudoTxt := TStringList.Create;
+  FConteudoTxt.Clear;
 
   Configuracao;
 end;
@@ -276,10 +285,22 @@ begin
   end;
 end;
 
+function TNFSeWClass.ConteudoTxt: String;
+begin
+  Result := FConteudoTxt.Text;
+end;
+
 procedure TNFSeWClass.DefinirIDRps;
 begin
   FNFSe.InfID.ID := 'Rps_' + OnlyNumber(FNFSe.IdentificacaoRps.Numero) +
                     FNFSe.IdentificacaoRps.Serie;
+end;
+
+destructor TNFSeWClass.Destroy;
+begin
+  FConteudoTxt.Free;
+
+  inherited Destroy;
 end;
 
 function TNFSeWClass.FormatarItemServico(const Codigo: string;
@@ -287,7 +308,10 @@ function TNFSeWClass.FormatarItemServico(const Codigo: string;
 var
   item: string;
 begin
-  item := PadronizarItemServico(Codigo);
+  item := Codigo;
+
+  if Formato <> filsNaoSeAplica then
+    item := NormatizarItemServico(item);
 
   case Formato of
     filsSemFormatacao:
@@ -327,7 +351,7 @@ begin
   Result := OnlyNumber(NFSe.infID.ID) + '.xml';
 end;
 
-function TNFSeWClass.AjustarAliquota(const Aliquota: Double; DivPor100: Boolean = False): Double;
+function TNFSeWClass.NormatizarAliquota(const Aliquota: Double; DivPor100: Boolean = False): Double;
 var
   Aliq: Double;
 begin
@@ -342,16 +366,22 @@ begin
     Result := Aliq;
 end;
 
-function TNFSeWClass.PadronizarItemServico(const Codigo: string): string;
+function TNFSeWClass.NormatizarItemServico(const Codigo: string): string;
 var
   i: Integer;
   item: string;
 begin
-  item := OnlyNumber(Codigo);
-  i := StrToIntDef(item, 0);
-  item := Poem_Zeros(i, 4);
+  if Length(Codigo) <= 5 then
+  begin
+    item := OnlyNumber(Codigo);
 
-  Result := Copy(item, 1, 2) + '.' + Copy(item, 3, 2);
+    i := StrToIntDef(item, 0);
+    item := Poem_Zeros(i, 4);
+
+    Result := Copy(item, 1, 2) + '.' + Copy(item, 3, 2);
+  end
+  else
+    Result := Codigo;
 end;
 
 function TNFSeWClass.GetOpcoes: TACBrXmlWriterOptions;

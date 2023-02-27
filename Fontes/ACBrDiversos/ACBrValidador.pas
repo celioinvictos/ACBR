@@ -35,8 +35,10 @@
 unit ACBrValidador;
 
 interface
-uses SysUtils, Classes,
-  ACBrBase;
+
+uses
+ SysUtils, Classes,
+ ACBrBase;
 
 const
   cIgnorarChar = './-' ;
@@ -201,9 +203,12 @@ function Modulo11(const Documento: string; const Peso: Integer = 2; const Base: 
 function MascaraIE(const AValue : String; UF : String) : String;
 
 implementation
+
 uses
  {$IfDef COMPILER6_UP} Variants , Math, StrUtils, {$EndIf}
-  ACBrUtil;
+  ACBrUtil.Base,
+  ACBrUtil.Compatibilidade,
+  ACBrUtil.Strings;
 
 function ValidarCPF(const Documento : String) : String ;
 begin
@@ -1118,7 +1123,8 @@ Var
    Tamanho, FatorF, FatorG, I, xMD, xTP, yMD, yTP, DV, DVX, DVY : Integer ;
    SOMA, SOMAq, nD, M : Integer ;
    OK : Boolean ;
-   Passo, D : Char ;
+   Passo, D : Char;
+   LPrefixo : String;
 
 begin
   if UpperCase( Trim(fsDocto) ) = 'ISENTO' then
@@ -1250,7 +1256,11 @@ begin
   begin
     Tamanho  := 9 ;
     vDigitos := VarArrayOf(
-       [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'0,1,5','1','','','','',''] ) ;
+       [ 'DVX',c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,c0_9,'1,2','','','','',''] ) ;
+    LPrefixo := fsDocto[1] + fsDocto[2];
+
+    if not (StrToIntDef(LPrefixo,0) in [10,11,20..29]) then
+      fsMsgErro := ACBrStr('Prefixo IE Inválido 10 ou 11 / 20 a 29');
 
     if (fsDocto >= '101031050') and (fsDocto <= '101199979') then
        FatorG := 1 ;
@@ -1827,7 +1837,7 @@ begin
   if NaoEstaVazio(fsMsgErro) then
     Exit;
 
-  CodigoNormalizado := PadLeft(Trim(Documento), 14, '0');
+  CodigoNormalizado := PadLeft(Trim(fsDocto), 14, '0');
 
   if (StrToInt(Copy(CodigoNormalizado, 1, 6)) = 0) then //gtin8
     sPrefixo := copy(CodigoNormalizado, 7, 3)

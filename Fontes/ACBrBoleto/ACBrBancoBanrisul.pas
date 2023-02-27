@@ -48,6 +48,7 @@ type
   private
     FiQtdSegmentoR: integer;
   Protected
+    procedure EhObrigatorioAgenciaDV; override;
   Public
     constructor create(AOwner: TACBrBanco);
     function MontarCodigoBarras(const ACBrTitulo: TACBrTitulo): string; Override;
@@ -76,7 +77,8 @@ implementation
 
 uses
   {$IFDEF COMPILER6_UP}dateutils{$ELSE}ACBrD5{$ENDIF},
-  StrUtils, ACBrUtil;
+  StrUtils, ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings, ACBrUtil.DateTime,
+  ACBrUtil.Math;
 
 var
   aTotal: Extended;
@@ -100,6 +102,11 @@ begin
   fpOrientacoesBanco.Add(ACBrStr('SAC       BANRISUL - 0800 646 1515'+sLineBreak+
                                  'OUVIDORIA BANRISUL - 0800 644 2200'));
   FiQtdSegmentoR := 0;
+end;
+
+procedure TACBrBanrisul.EhObrigatorioAgenciaDV;
+begin
+  //sem validação
 end;
 
 function Modulo11(const Valor: string; Base: Integer=9; Resto: boolean=false): string;
@@ -201,7 +208,7 @@ end;
 
 function TACBrBanrisul.MontarCodigoBarras(const ACBrTitulo: TACBrTitulo): string;
 var
-  CodigoBarras, FatorVencimento, DigitoCodBarras, CampoLivre, Modalidade,digitoVerificador: string;
+  CodigoBarras, FatorVencimento, DigitoCodBarras, CampoLivre, Modalidade,digitoVerificador, LCedente: string;
   DigitoNum: Integer;
 begin
   with ACBrTitulo do
@@ -213,9 +220,14 @@ begin
 
      FatorVencimento:=CalcularFatorVencimento(ACBrTitulo.Vencimento);
 
+    if ((fpLayoutVersaoArquivo >= 103) and (Length(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente) = 13)) then
+      LCedente := copy(ACBrBoleto.Cedente.CodigoCedente,5,13)
+    else
+      LCedente := ACBrBoleto.Cedente.CodigoCedente;
+
      CampoLivre:= Modalidade +'1'+
                   PadLeft(copy(trim(ACBrBoleto.Cedente.Agencia),1,4), 4, '0')+{ Código agência (cooperativa) }
-                  PadLeft(OnlyNumber(ACBrBoleto.Cedente.CodigoCedente), 7, '0')+{ Código cedente = codigoCedente }
+                  PadLeft(OnlyNumber(LCedente), 7, '0')+{ Código cedente = codigoCedente }
                   PadLeft(NossoNumero, 8, '0')+{ Nosso número }
                   '40';
 
@@ -265,6 +277,13 @@ begin
   Result := Result + Copy(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente,1,6) + '.';
   Result := Result + Copy(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente,7,1) + '.';
   Result := Result + Copy(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente,8,2);
+
+  if(fpLayoutVersaoArquivo >= 103) then
+    Result := IfThen(Length(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente) <> 13,
+                     ACBrTitulo.ACBrBoleto.Cedente.Agencia
+                     + ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente,
+                     ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente);
+
 end;
 
 procedure TACBrBanrisul.GerarRegistroHeader400(NumeroRemessa: Integer; aRemessa: TStringList);
@@ -811,9 +830,10 @@ begin
                    DupeString('0', 1)  +                                                                                                              //  42-42  CODIGO DESCONTO 3
                    DupeString('0', 8)  +                                                                                                              //  43-50  DATA DESCONTO 3
                    DupeString('0', 15) +                                                                                                              //  51-65  VALOR DESCONTO 3
-                   '1'    +                                                                                                                           //  66-66  CODIGO DA MULTA
-                   FormatDateTime('ddmmyyyy', DataMulta) +                                                                                            //  67-74  DATA DA MULTA
-                   PadLeft(StringReplace(FormatFloat('#####0.00', TruncTo(((PercentualMulta * ValorDocumento) / 100),2)), ',', '', []), 15, '0') +    //  75-89  VALOR/PERCENTUAL MULTA
+                   ifthen(MultaValorFixo, '1', '2') +                                                                                                 //  66-66  CODIGO DA MULTA
+                   FormatDateTime('ddmmyyyy', DataMulta) +                                                                                                   //  67-74  DATA DA MULTA
+                     PadLeft(StringReplace(ifthen(MultaValorFixo, FormatFloat('#####0.00', TruncTo(((PercentualMulta * ValorDocumento) / 100), 2)),
+                     FormatFloat('#####0.00', PercentualMulta)), ',', '', []), 15, '0') +                                                                      //  75-89  VALOR/PERCENTUAL MULTA
                    DupeString(' ', 10) +                                                                                                              //  90-99  INFORMAÇÃO DO BANCO PAGADOR
                    DupeString(' ', 40) +                                                                                                              // 100-139 MENSAGEM 3
                    DupeString(' ', 40);                                                                                                               // 140-179 MENSAGEM 4
@@ -944,7 +964,11 @@ begin
             Sacado.NomeSacado := Trim(Copy(FSegT, 149, 40));
 
             NumeroDocumento      := Trim(Copy(FSegT, 59, 15));
-            SeuNumero            := NumeroDocumento;
+            if trim(Copy(FSegT,106, 25)) <> '' then
+               SeuNumero            := Copy(FSegT,106, 25)
+            else
+               SeuNumero            := NumeroDocumento;
+
             Carteira             := Copy(FSegT, 58, 1);
             NossoNumero          := Trim(Copy(FSegT, 38, TamanhoMaximoNossoNum));
 //            NossoNumero          := Trim(Copy(FSegT, 38, 20));

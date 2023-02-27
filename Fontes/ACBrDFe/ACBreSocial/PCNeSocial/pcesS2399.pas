@@ -55,7 +55,7 @@ uses
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IfEnd}
-  ACBrBase, pcnConversao, pcnGerador, ACBrUtil, pcnConsts,
+  ACBrBase, pcnConversao, pcnGerador, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -65,6 +65,7 @@ type
   TVerbasRescS2399 = class;
   TDmDevCollectionItem = class;
   TDmDevCollection = class;
+  TRemunAposTerm = class;
 
   TS2399Collection = class(TeSocialCollection)
   private
@@ -98,6 +99,7 @@ type
     procedure GerarVerbasResc(obj: TVerbasRescS2399);
     procedure GerarIdeTrabSemVinc(obj: TIdeTrabSemVinc);
     procedure GerarDmDev(pDmDev: TDmDevCollection);
+    procedure GerarRemunAposTerm(obj: TRemunAposTerm);
    public
     constructor Create(AACBreSocial: TObject); override;
     destructor Destroy; override;
@@ -121,6 +123,8 @@ type
     FpercAliment: Double;
     FVrAlim: Double;
     FmudancaCPF: TMudancaCPF3;
+    FnrProcTrab: String;
+    FRemunAposTerm: TRemunAposTerm;
   public
     constructor Create;
     destructor  Destroy; override;
@@ -133,6 +137,8 @@ type
     property percAliment : Double read FpercAliment write FpercAliment;
     property vrAlim: Double read FVrAlim write FVrAlim;
     property pensAlim: tpPensaoAlim read FPensAlim write FPensAlim;
+    property nrProcTrab : String read FnrProcTrab write FnrProcTrab;
+    property RemunAposTerm: TRemunAposTerm read FRemunAposTerm write FRemunAposTerm;
   end;
 
   TDmDevCollection = class(TACBrObjectList)
@@ -149,10 +155,19 @@ type
   private
     FIdeDmDev: string;
     FIdeEstabLot: TideEstabLotCollection;
+    FindRRA: tpSimNaoFacultativo;
+    FinfoRRA: TinfoRRA;
+
+    function getInfoRRA: TInfoRRA;
   public
     constructor Create;
+    destructor Destroy; override;
+
+    function infoRRAInst: boolean;
 
     property ideDmDev: string read FIdeDmDev write FIdeDmDev;
+    property indRRA: tpSimNaoFacultativo read FindRRA write FindRRA;
+    property infoRRA: TinfoRRA read getInfoRRA write FinfoRRA;
     property ideEstabLot: TideEstabLotCollection read FIdeEstabLot write FIdeEstabLot;
   end;
 
@@ -165,10 +180,22 @@ type
     property dmDev: TDmDevCollection read FDmDev write FDmDev;
   end;
 
+  TRemunAposTerm = class
+  private
+   FindRemun: TpIndRemun;
+   FdtFimRemun: TDateTime;
+  public
+   property indRemun: TpIndRemun read FindRemun write FindRemun;
+   property dtFimRemun: TDateTime read FdtFimRemun write FdtFimRemun;
+  end;
+
 implementation
 
 uses
   IniFiles,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
+  ACBrUtil.DateTime,
   ACBreSocial;
 
 { TS2399Collection }
@@ -216,9 +243,10 @@ constructor TinfoTSVTermino.Create;
 begin
   inherited;
 
-  FverbasResc := TVerbasRescS2399.Create;
-  FmudancaCPF := TMudancaCPF3.Create;
-  Fquarentena := TQuarentena.Create;
+  FverbasResc    := TVerbasRescS2399.Create;
+  FmudancaCPF    := TMudancaCPF3.Create;
+  Fquarentena    := TQuarentena.Create;
+  FRemunAposTerm := TRemunAposTerm.Create;
 end;
 
 destructor TinfoTSVTermino.Destroy;
@@ -226,6 +254,8 @@ begin
   FverbasResc.Free;
   FmudancaCPF.Free;
   Fquarentena.Free;
+  FreeAndNil(FRemunAposTerm);
+
   inherited;
 end;
 
@@ -257,7 +287,31 @@ end;
 constructor TDMDevCollectionItem.Create;
 begin
   inherited Create;
+
   FIdeEstabLot := TideEstabLotCollection.Create;
+  FInfoRRA     := nil;
+end;
+
+destructor TDMDevCollectionItem.Destroy;
+begin
+  FreeAndNil(FIdeEstabLot);
+
+  if infoRRAInst then
+    FreeAndNil(FinfoRRA);
+
+  inherited;
+end;
+
+function TDMDevCollectionItem.getInfoRRA: TInfoRRA;
+begin
+  if not(Assigned(FInfoRRA)) then
+    FInfoRRA := TInfoRRA.Create;
+  Result := FInfoRRA;
+end;
+
+function TDMDevCollectionItem.infoRRAInst: boolean;
+begin
+  Result := Assigned(FInfoRRA);
 end;
 
 { TVerbasRescS2399 }
@@ -309,6 +363,19 @@ begin
   Gerador.wGrupo('/ideTrabSemVinculo');
 end;
 
+procedure TEvtTSVTermino.GerarRemunAposTerm(obj: TRemunAposTerm);
+begin
+  if (VersaoDF >= veS01_01_00) and (obj.indRemun <> ireNaoInformado) then
+  begin
+    Gerador.wGrupo('remunAposTerm');
+
+    Gerador.wCampo(tcStr, '', 'indRemun',         1,  1, 1, TpIndRemunToStr(Obj.indRemun));
+    Gerador.wCampo(tcDat, '', 'dtFimRemun',      10, 10, 1, Obj.dtFimRemun);
+
+    Gerador.wGrupo('/remunAposTerm');
+  end;
+end;
+
 procedure TEvtTSVTermino.GerarInfoTSVTermino(obj: TInfoTSVTermino);
 begin
   Gerador.wGrupo('infoTSVTermino');
@@ -325,6 +392,7 @@ begin
     Gerador.wCampo(tcStr, '', 'pensAlim',    1,  1, 1, obj.pensAlim);
     Gerador.wCampo(tcDe2, '', 'percAliment', 1,  5, 0, obj.percAliment);
     Gerador.wCampo(tcDe2, '', 'vrAlim',      1, 14, 0, obj.vrAlim);
+    Gerador.wCampo(tcStr, '', 'nrProcTrab', 1, 20, 0, obj.nrProcTrab);
   end;
 
   if obj.mtvDesligTSV <> '07' then
@@ -332,8 +400,9 @@ begin
 
   if (VersaoDF >= ve02_05_00) and (obj.mtvDesligTSV = '07') then
      GerarMudancaCPF3(obj.mudancaCPF);
-	 
+	
   GerarQuarentena(obj.quarentena);
+  GerarRemunAposTerm(obj.RemunAposTerm);
 
   Gerador.wGrupo('/infoTSVTermino');
 end;
@@ -347,6 +416,17 @@ begin
     Gerador.wGrupo('dmDev');
 
     Gerador.wCampo(tcStr, '', 'ideDmDev', 1, 30, 1, pDmDev[i].ideDmDev);
+
+    if VersaoDF >= veS01_01_00 then
+    begin
+      if (pDmDev[i].indRRA = snfSim) and (pDmDev[i].infoRRAInst()) then
+      begin
+        Gerador.wCampo(tcStr, '', 'indRRA', 1,  1, 1, eSSimNaoFacultativoToStr(pDmDev[i].indRRA));
+
+        if (pDmDev[i].infoRRAInst()) then
+          GerarInfoRRA(pDmDev[i].infoRRA);
+      end;
+    end;
 
     GerarIdeEstabLot(pDmDev[i].ideEstabLot);
 
@@ -376,6 +456,7 @@ end;
 function TEvtTSVTermino.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
 
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
@@ -459,6 +540,8 @@ begin
           infoTSVTermino.vrAlim      := StringToFloatDef(INIRec.ReadString(sSecao, 'vrAlim', ''), 0);
         end;
       end;
+      if  (VersaoDF > ve02_05_00) then
+        infoTSVTermino.nrProcTrab   := INIRec.ReadString(sSecao, 'nrProcTrab', EmptyStr);
 
       I := 1;
       while true do

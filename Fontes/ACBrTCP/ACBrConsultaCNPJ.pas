@@ -37,18 +37,9 @@ unit ACBrConsultaCNPJ;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, types, IniFiles,
   ACBrBase, ACBrSocket, ACBrIBGE;
 
-const
-//  CURL_CAPTCH = 'https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/captcha/gerarCaptcha.asp';
-//  CURL_REFER = 'http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao_CS.asp';
-//  CURL_POST = 'https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/valida.asp';
-
-  CURL_CAPTCH = 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/captcha/gerarCaptcha.asp';
-  CURL_REFER = 'http://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao_CS.asp';
-  CURL_POST = 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/valida.asp';
-  
 type
   EACBrConsultaCNPJException = class ( Exception );
 
@@ -76,19 +67,28 @@ type
     FCidade: String;
     FUF: String;
     FSituacao: String;
+    FSituacaoEspecial : String;
     FCNPJ: String;
     FDataSituacao: TDateTime;
+    FDataSituacaoEspecial : TDateTime;
     FEndEletronico: String;
     FTelefone: String;
     FEFR: string;  //ENTE FEDERATIVO RESPONSÁVEL (EFR)
     FMotivoSituacaoCad: string;
     FPesquisarIBGE: Boolean;
     FCodigoIBGE: String;
+    FIniServicos: string;
+    FResourceName: String;
+    FParams: TStrings;
     //Function GetCaptchaURL: String;
     function GetIBGE_UF : String ;
-
     function VerificarErros(const Str: String): String;
     function LerCampo(Texto: TStringList; NomeCampo: String): String;
+    function GetIniServicos: String;
+    procedure LerParams;
+    function LerSessaoChaveIni(const Sessao, Chave : String):String;
+    function LerParamsIniServicos: AnsiString;
+    function LerParamsInterno: AnsiString;
   public
     procedure Captcha(Stream: TStream);
     function Consulta(const ACNPJ, ACaptcha: String;
@@ -113,7 +113,9 @@ type
     property Cidade: String Read FCidade;
     property UF: String Read FUF;
     property Situacao: String Read FSituacao;
+    property SituacaoEspecial: String Read FSituacaoEspecial;
     property DataSituacao: TDateTime Read FDataSituacao;
+    property DataSituacaoEspecial : TDatetime Read FDataSituacaoEspecial;
     property NaturezaJuridica: String Read FNaturezaJuridica;
     property EndEletronico: string read FEndEletronico;
     property Telefone: String read FTelefone;
@@ -122,6 +124,7 @@ type
     property IBGE_Municipio  : String read FCodigoIBGE;
     property IBGE_UF         : String read GetIBGE_UF ;
     property PesquisarIBGE: Boolean read FPesquisarIBGE write FPesquisarIBGE;
+    property IniServicos : string read GetIniServicos write FIniServicos;
   end;
 
 implementation
@@ -129,8 +132,17 @@ implementation
 uses
   strutils,
   blcksock, synautil,
-  ACBrUtil, ACBrValidador;
+  ACBrUtil.Strings,
+  ACBrUtil.DateTime,
+  ACBrUtil.XMLHTML,
+  ACBrValidador,
+  ACBrUtil.FilesIO;
 
+{$IFDEF FPC}
+ {$R ACBrConsultaCNPJServicos.rc}
+{$ELSE}
+ {$R ACBrConsultaCNPJServicos.res}
+{$ENDIF}
 (*function TACBrConsultaCNPJ.GetCaptchaURL : String ;
 var
   AURL, Html: String;
@@ -155,7 +167,7 @@ end;*)
 procedure TACBrConsultaCNPJ.Captcha(Stream: TStream);
 begin
   try
-    HTTPGet(CURL_CAPTCH);  // GetCaptchaURL
+    HTTPGet(LerSessaoChaveIni('ENDERECOS','CAPTCH'));  // GetCaptchaURL
     if HttpSend.ResultCode = 200 then
     begin
       HTTPSend.Document.Position := 0;
@@ -213,6 +225,59 @@ begin
   end
 end;
 
+procedure TACBrConsultaCNPJ.LerParams;
+var
+  ConteudoParams: AnsiString;
+begin
+  ConteudoParams := LerParamsIniServicos;
+
+  if ConteudoParams = '' then
+    ConteudoParams := LerParamsInterno;
+
+  FParams.Text := ConteudoParams;
+end;
+
+function TACBrConsultaCNPJ.LerParamsIniServicos: AnsiString;
+var
+  ArqIni: String;
+  FS: TFileStream;
+begin
+  Result := '';
+  ArqIni := Trim(IniServicos);
+  if (ArqIni <> '') and FileExists(ArqIni) then
+  begin
+    FS := TFileStream.Create(ArqIni, fmOpenRead or fmShareDenyNone);
+    try
+      FS.Position := 0;
+      Result := ReadStrFromStream(FS, FS.Size);
+    finally
+      FS.Free;
+    end;
+  end;
+end;
+
+function TACBrConsultaCNPJ.LerParamsInterno: AnsiString;
+var
+  RS: TResourceStream;
+begin
+  Result := '';
+
+  RS := TResourceStream.Create(HInstance, FResourceName, RT_RCDATA);
+  try
+    RS.Position := 0;
+    Result := ReadStrFromStream(RS, RS.Size);
+  finally
+    RS.Free;
+  end;
+
+end;
+
+function TACBrConsultaCNPJ.LerSessaoChaveIni(const Sessao,
+  Chave: String): String;
+begin
+  Result := FParams.Values[Chave];
+end;
+
 function TACBrConsultaCNPJ.Consulta(const ACNPJ, ACaptcha: String;
   ARemoverEspacosDuplos: Boolean): Boolean;
 var
@@ -228,6 +293,7 @@ begin
   Clear;
   Retentar := True;
   Tentativas := 0;
+
   while Retentar do
   begin
     HTTPSend.Clear;
@@ -239,8 +305,8 @@ begin
     WriteStrToStream( HTTPSend.Document, PostStr );
     HTTPSend.MimeType := 'application/x-www-form-urlencoded';
     HTTPSend.Cookies.Add('flag=1');
-    HTTPSend.Headers.Add('Referer: '+CURL_REFER);
-    HTTPPost(CURL_POST);
+    HTTPSend.Headers.Add('Referer: '+LerSessaoChaveIni('ENDERECOS','REFER'));
+    HTTPPost(LerSessaoChaveIni('ENDERECOS','POST'));
 
     //DEBUG:
     //RespHTTP.SaveToFile('c:\temp\cnpj1.txt');
@@ -281,11 +347,14 @@ begin
     FCEP          := OnlyNumber( LerCampo(Resposta,'CEP') ) ;
     if FCEP <> '' then
       FCEP        := copy(FCEP,1,5)+'-'+copy(FCEP,6,3) ;
+
     FBairro       := LerCampo(Resposta,'BAIRRO/DISTRITO');
     FCidade       := LerCampo(Resposta,ACBrStr('MUNICÍPIO'));
     FUF           := LerCampo(Resposta,'UF');
     FSituacao     := LerCampo(Resposta,ACBrStr('SITUAÇÃO CADASTRAL'));
+    FSituacaoEspecial     := LerCampo(Resposta,ACBrStr('SITUAÇÃO ESPECIAL'));
     FDataSituacao := StringToDateTimeDef(LerCampo(Resposta,ACBrStr('DATA DA SITUAÇÃO CADASTRAL')),0);
+    FDataSituacaoEspecial := StringToDateTimeDef(LerCampo(Resposta,ACBrStr('DATA DA SITUAÇÃO ESPECIAL')),0);
     FNaturezaJuridica := LerCampo(Resposta,ACBrStr('CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA'));
     FEndEletronico:= LerCampo(Resposta, ACBrStr('ENDEREÇO ELETRÔNICO'));
     if Trim(FEndEletronico) = 'TELEFONE' then
@@ -300,14 +369,14 @@ begin
       if trim(StrAux) = '' then
         Break;
 
-      FCNAE2.Add(ACBrUtil.RemoverEspacosDuplos(StrAux));
+      FCNAE2.Add(RemoverEspacosDuplos(StrAux));
 
       repeat
         StrAux := LerCampo(Resposta, StrAux);
         if trim(StrAux) = '' then
           Break;
 
-        FCNAE2.Add(ACBrUtil.RemoverEspacosDuplos(StrAux));
+        FCNAE2.Add(RemoverEspacosDuplos(StrAux));
       until False;
     until False;
   finally
@@ -363,14 +432,17 @@ begin
   FPesquisarIBGE := False;
   fACBrIBGE := TACBrIBGE.Create(nil);
   FACBrIBGE.IgnorarCaixaEAcentos := True;
-
   HTTPSend.Sock.SSL.SSLType := LT_TLSv1;
+  FResourceName := 'ACBrConsultaCNPJServicos';
+  FParams := TStringList.Create;
+  LerParams;
 end;
 
 destructor TACBrConsultaCNPJ.Destroy;
 begin
   fACBrIBGE.Free;
   FCNAE2.Free;
+  FParams.Free;
   inherited;
 end;
 
@@ -391,8 +463,10 @@ begin
   FCidade           := '';
   FUF               := '';
   FSituacao         := '';
+  FSituacaoEspecial := '';
   FCNPJ             := '';
   FDataSituacao     := 0;
+  FDataSituacaoEspecial     := 0;
   FEndEletronico    := '';
   FTelefone         := '';
   FEFR              := '';
@@ -405,6 +479,13 @@ end;
 function TACBrConsultaCNPJ.GetIBGE_UF: String;
 begin
   Result := copy(fCodigoIBGE,1,2) ;
+end;
+
+function TACBrConsultaCNPJ.GetIniServicos: String;
+begin
+  if FIniServicos = '' then
+    FIniServicos := ApplicationPath + FResourceName +'.ini';
+  Result := FIniServicos;
 end;
 
 end.

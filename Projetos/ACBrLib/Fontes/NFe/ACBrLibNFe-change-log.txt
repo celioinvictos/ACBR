@@ -42,6 +42,51 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+26/01/2023
+--- ACBrLibNFeBase ---
+[*] Realizado ajuste no método ImprimirPDF - #TK-271
+Por: Antonio Carlos Junior / Juliomar Marchetti
+
+22/12/2022
+--- ACBrLibNFeConsts, ACBrLibNFeConfig ---
+[+] Adicionado propriedade ImprimeXPedNItemPed - #TK-3373-2
+Por: Antonio Carlos Junior 
+
+21/12/2022
+--- ACBrLibNFeConsts, ACBrLibNFeConfig --- 
+[+] Adicionado propriedade ImprimeInscSuframa - #TK-2947-3
+    Por: Antonio Carlos Junior
+
+06/02/2022
+--- ACBrLibNFeBase ---
+[-] Correção para conversão das respostas com Erros, em ANSI, se assim estiver
+    configurado
+    (por: DSA)
+
+30/11/2022
+--- ACBrLibNFeBase ---
+[*] Concatenação E.Message junto ao xMotivo para saber real motivo do Exception - #TK-3293
+	Por: Antonio Carlos Junior
+
+31/10/2022
+--- ACBrLibNFeBase ---
+[*] Limpar as propriedades do componente referente a consultas anteriores
+    Por: Renato Rubinho
+
+24/10/2022
+--- ACBrLibNFe ---
+[*] Leitura de arquivo de Distribuição DFe #TK-3182
+    Por: Renato Rubinho
+
+20/07/2022
+--- ACBrLibNFe ---
+[*] Remoção de Warning @deprecated ref. ACBrUtils
+
+05/07/2022
+--- ACBrLibNFeDataModule ---
+[*] Ajuste na validação de uso do Integrador Fiscal para não obrigar o Uso do Integrador para a UF: CE
+    (por: José M S Junior)
+
 22/12/2021
 --- ACBrLibNFeDataModule ---
 [-] Correção para herença visual em Lazarus de "TLibDataModule"

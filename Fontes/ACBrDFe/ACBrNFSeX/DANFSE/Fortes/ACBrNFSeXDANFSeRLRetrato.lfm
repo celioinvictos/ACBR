@@ -1,10 +1,10 @@
 inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
-  Left = 267
-  Top = 115
-  Caption = 'frlDANFSeRLRetrato'
+  Left = 264
+  Top = 116
+  Caption = 'frlXDANFSeRLRetrato'
   inherited RLNFSe: TRLReport
-    Left = 8
-    Top = 2
+    Left = 32
+    Top = 0
     Margins.LeftMargin = 6
     Margins.TopMargin = 8
     Margins.RightMargin = 5.1
@@ -46,7 +46,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 140
         Alignment = taCenter
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -16
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -60,7 +60,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 90
         Alignment = taCenter
         Caption = 'Número da Nota'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -74,7 +74,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 130
         Alignment = taCenter
         Caption = 'Data e Hora de Emissão'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -96,7 +96,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 140
         Alignment = taCenter
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -109,7 +109,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 122
         Alignment = taCenter
         Caption = 'Código de Verificação'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -122,7 +122,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 156
         Width = 249
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -149,7 +149,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 139
         Width = 77
         Caption = 'Competência:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -157,12 +157,12 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllCompetencia: TRLLabel
-        Left = 10
+        Left = 13
         Height = 15
         Top = 157
-        Width = 94
+        Width = 88
         Alignment = taCenter
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -182,8 +182,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 15
         Top = 139
         Width = 94
-        Caption = 'Número do RPS:'
-        Font.Color = clWindowText
+        Caption = 'Num. RPS/Ser.:'
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -197,7 +197,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 94
         Alignment = taCenter
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -218,7 +218,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 96
         Width = 147
         Caption = 'Número NFSe substituída:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -229,8 +229,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Left = 605
         Height = 15
         Top = 117
-        Width = 137
-        Font.Color = clWindowText
+        Width = 135
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -244,7 +244,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taCenter
         AutoSize = False
         Behavior = [beSiteExpander]
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -16
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -257,7 +257,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 111
         Width = 347
         Caption = 'Nota Fiscal de Serviço Eletrônica - NFS-e'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -19
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -329,7 +329,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 139
         Width = 193
         Caption = 'Município de Prestação do Serviço:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -342,7 +342,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 157
         Width = 196
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -361,37 +361,13 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       Borders.DrawRight = True
       Borders.DrawBottom = True
       BeforePrint = rlbPrestadorBeforePrint
-      object RLLabel29: TRLLabel
-        Left = 135
-        Height = 14
-        Top = 83
-        Width = 53
-        Caption = 'Município:'
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
-      end
       object RLLabel30: TRLLabel
-        Left = 430
+        Left = 351
         Height = 14
-        Top = 35
-        Width = 97
-        Caption = 'Inscrição Municipal:'
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
-      end
-      object RLLabel31: TRLLabel
-        Left = 135
-        Height = 14
-        Top = 51
-        Width = 49
-        Caption = 'Endereço:'
-        Font.Color = clWindowText
+        Top = 36
+        Width = 20
+        Caption = 'IM:'
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -403,41 +379,32 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 35
         Width = 55
         Caption = 'CPF/CNPJ:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
-      object rllPrestMunicipio: TRLLabel
-        Left = 190
-        Height = 13
-        Top = 83
-        Width = 96
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
       object rllPrestInscMunicipal: TRLLabel
-        Left = 534
+        Left = 379
         Height = 13
         Top = 35
         Width = 117
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
         ParentFont = False
         Transparent = False
       end
-      object rllPrestEndereco: TRLLabel
-        Left = 186
-        Height = 13
+      object rllPrestEndereco: TRLMemo
+        Left = 134
+        Height = 47
         Top = 51
-        Width = 90
-        Font.Color = clWindowText
+        Width = 525
+        AutoSize = False
+        Behavior = [beSiteExpander]
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -448,8 +415,9 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Left = 194
         Height = 13
         Top = 35
-        Width = 73
-        Font.Color = clWindowText
+        Width = 127
+        AutoSize = False
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -471,7 +439,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 166
         Alignment = taCenter
         Caption = 'PRESTADOR DE SERVIÇOS'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -484,7 +452,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 19
         Width = 95
         Caption = 'Nome/Razão Social:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -495,102 +463,31 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 19
         Width = 73
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
         ParentFont = False
         Transparent = False
       end
-      object RLLabel9: TRLLabel
-        Left = 374
+      object RLLabel69: TRLLabel
+        Left = 507
         Height = 14
-        Top = 83
-        Width = 20
-        Caption = 'UF:'
-        Font.Color = clWindowText
+        Top = 34
+        Width = 17
+        Caption = 'IE:'
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
-      object rllPrestUF: TRLLabel
-        Left = 398
+      object rllPrestInscEstadual: TRLLabel
+        Left = 529
         Height = 13
-        Top = 83
-        Width = 57
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = False
-      end
-      object RLLabel22: TRLLabel
-        Left = 135
-        Height = 14
-        Top = 67
-        Width = 72
-        Caption = 'Complemento:'
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
-      end
-      object rllPrestComplemento: TRLLabel
-        Left = 214
-        Height = 13
-        Top = 67
-        Width = 117
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object RLLabel23: TRLLabel
-        Left = 430
-        Height = 14
-        Top = 67
-        Width = 48
-        Caption = 'Telefone:'
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
-      end
-      object rllPrestTelefone: TRLLabel
-        Left = 486
-        Height = 13
-        Top = 67
-        Width = 88
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Transparent = False
-      end
-      object RLLabel24: TRLLabel
-        Left = 462
-        Height = 14
-        Top = 83
-        Width = 35
-        Caption = 'e-mail:'
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
-      end
-      object rllPrestEmail: TRLLabel
-        Left = 502
-        Height = 13
-        Top = 83
-        Width = 73
-        Font.Color = clWindowText
+        Top = 34
+        Width = 108
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -617,20 +514,22 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 156
         Alignment = taCenter
         Caption = 'TOMADOR DE SERVIÇOS'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
         ParentFont = False
         Transparent = False
       end
-      object RLLabel5: TRLLabel
+      object lbIdentificacao: TRLLabel
         Left = 15
         Height = 14
         Top = 35
         Width = 55
-        Caption = 'CPF/CNPJ:'
-        Font.Color = clWindowText
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = 'CPFCNPJ:'
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -641,7 +540,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 35
         Width = 74
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -654,7 +553,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 35
         Width = 97
         Caption = 'Inscrição Municipal:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -665,7 +564,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 35
         Width = 118
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -678,7 +577,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 19
         Width = 95
         Caption = 'Nome/Razão Social:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -689,7 +588,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 19
         Width = 74
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -702,7 +601,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 51
         Width = 49
         Caption = 'Endereço:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -713,7 +612,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 51
         Width = 91
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -726,7 +625,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 83
         Width = 53
         Caption = 'Município:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -737,7 +636,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 83
         Width = 97
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -749,7 +648,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 83
         Width = 20
         Caption = 'UF:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -760,7 +659,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 83
         Width = 58
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -773,7 +672,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 83
         Width = 35
         Caption = 'e-mail:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -784,7 +683,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 83
         Width = 74
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -797,7 +696,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 67
         Width = 72
         Caption = 'Complemento:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -808,7 +707,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 67
         Width = 118
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -820,7 +719,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 67
         Width = 48
         Caption = 'Telefone:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -831,7 +730,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 67
         Width = 89
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -844,7 +743,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 35
         Width = 89
         Caption = 'Inscrição Estadual:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -855,7 +754,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 13
         Top = 35
         Width = 109
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -881,7 +780,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 204
         Alignment = taCenter
         Caption = 'DISCRIMINAÇÃO DOS SERVIÇOS'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -891,15 +790,14 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     end
     object rlbItens: TRLBand[4]
       Left = 23
-      Height = 24
-      Top = 453
+      Height = 21
+      Top = 457
       Width = 752
       Borders.Sides = sdCustom
       Borders.DrawLeft = True
       Borders.DrawTop = False
       Borders.DrawRight = True
       Borders.DrawBottom = True
-      IntegralHeight = False
       BeforePrint = rlbItensBeforePrint
       object rlmDescricao: TRLMemo
         Left = 10
@@ -907,7 +805,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 6
         Width = 737
         Behavior = [beSiteExpander]
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -916,8 +814,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     end
     object rlbISSQN: TRLBand[5]
       Left = 23
-      Height = 317
-      Top = 495
+      Height = 318
+      Top = 496
       Width = 752
       BandType = btSummary
       Borders.Sides = sdCustom
@@ -929,7 +827,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       object RLDraw52: TRLDraw
         Left = 1
         Height = 1
-        Top = 72
+        Top = 76
         Width = 751
         DrawKind = dkLine
       end
@@ -965,7 +863,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taCenter
         AutoSize = False
         Caption = 'Natureza da Operação'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -978,7 +876,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = '(=) Base de Cálculo'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -991,7 +889,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = '(=) Valor ISS'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1005,7 +903,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 97
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1018,7 +916,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 97
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1039,7 +937,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 150
         Alignment = taCenter
         Caption = 'VALOR TOTAL DA NOTA = '
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1052,7 +950,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 4
         Width = 89
         Caption = 'Código do Serviço:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1065,7 +963,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 645
         AutoSize = False
         Behavior = [beSiteExpander]
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1079,7 +977,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = '(x) Alíquota (%)'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1092,7 +990,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 97
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1110,29 +1008,29 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       object rlsLinhaH1: TRLDraw
         Left = 0
         Height = 1
-        Top = 38
+        Top = 56
         Width = 752
         Brush.Style = bsClear
         DrawKind = dkLine
       end
       object rllCodigoObra: TRLLabel
-        Left = 12
+        Left = 432
         Height = 14
-        Top = 56
+        Top = 61
         Width = 76
         Caption = 'Código da Obra:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
       object rllCodObra: TRLLabel
-        Left = 92
+        Left = 512
         Height = 13
-        Top = 56
+        Top = 61
         Width = 64
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1140,13 +1038,13 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllTituloConstCivil: TRLLabel
-        Left = 205
+        Left = 6
         Height = 15
-        Top = 40
+        Top = 60
         Width = 334
         Alignment = taCenter
         Caption = 'DETALHAMENTO ESPECIFICO DA CONSTRUÇÃO CIVIL'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1154,23 +1052,23 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Transparent = False
       end
       object rllCodigoArt: TRLLabel
-        Left = 404
+        Left = 595
         Height = 14
-        Top = 56
+        Top = 61
         Width = 64
         Caption = 'Código ART:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
       object rllCodART: TRLLabel
-        Left = 484
+        Left = 663
         Height = 13
-        Top = 56
+        Top = 61
         Width = 59
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1185,7 +1083,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'PIS (R$)'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1198,7 +1096,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 130
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1212,7 +1110,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'COFINS (R$)'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1225,7 +1123,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 130
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1239,7 +1137,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'IR (R$)'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1252,7 +1150,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 130
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1266,7 +1164,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'INSS (R$)'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1279,7 +1177,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 130
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1293,7 +1191,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'CSLL (R$)'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1306,7 +1204,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 130
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1315,11 +1213,11 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       object RLLabel44: TRLLabel
         Left = 311
         Height = 15
-        Top = 75
+        Top = 79
         Width = 130
         Alignment = taCenter
         Caption = 'TRIBUTOS FEDERAIS'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1343,13 +1241,13 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         DrawKind = dkLine
       end
       object RLLabel35: TRLLabel
-        Left = 11
+        Left = 6
         Height = 15
         Top = 139
         Width = 274
         Alignment = taCenter
         Caption = 'Detalhamento de Valores - Prestador dos Serviços'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1364,7 +1262,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taCenter
         AutoSize = False
         Caption = 'Cálculo do ISSQN devido no Município'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1379,7 +1277,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Alignment = taCenter
         AutoSize = False
         Caption = 'Outras Informações'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1393,7 +1291,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = 'Valor dos Serviços'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1406,7 +1304,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = '(-) Deduções permitidas em Lei'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1419,7 +1317,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = '(-) Desconto Incondicionado'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1432,7 +1330,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 153
         AutoSize = False
         Caption = 'ISS a reter:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1445,7 +1343,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 146
         AutoSize = False
         Caption = 'Valor dos Serviços'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1458,7 +1356,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 146
         AutoSize = False
         Caption = '(-) Desconto Incondicionado'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1471,7 +1369,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 146
         AutoSize = False
         Caption = '(-) Desconto Condicionado'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1484,7 +1382,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 146
         AutoSize = False
         Caption = '(-) Retenções Federais'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1497,7 +1395,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 146
         AutoSize = False
         Caption = '(-) Outras Retenções'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1510,7 +1408,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 146
         AutoSize = False
         Caption = '(-) ISS Retido'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1523,7 +1421,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 145
         AutoSize = False
         Caption = '(=) Valor Líquido'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1533,12 +1431,12 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       object RLLabel54: TRLLabel
         Left = 297
         Height = 15
-        Top = 210
+        Top = 218
         Width = 176
         Alignment = taCenter
         AutoSize = False
         Caption = 'Regime Especial de Tributação'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1551,7 +1449,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 120
         AutoSize = False
         Caption = 'Opção Simples Nacional'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1564,7 +1462,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 104
         AutoSize = False
         Caption = 'Incentivador Cultural'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1595,7 +1493,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 129
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1608,7 +1506,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 97
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1621,7 +1519,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 129
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1634,7 +1532,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 97
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1647,7 +1545,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 129
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1660,7 +1558,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 129
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1673,7 +1571,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 129
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1686,7 +1584,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 129
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1699,7 +1597,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 121
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -16
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1721,20 +1619,21 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 49
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
-      object rllNatOperacao: TRLLabel
+      object rllNatOperacao: TRLMemo
         Left = 297
-        Height = 30
+        Height = 38
         Top = 178
         Width = 176
         Alignment = taCenter
         AutoSize = False
-        Font.Color = clWindowText
+        Behavior = [beSiteExpander]
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1747,7 +1646,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 97
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1755,12 +1654,12 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       end
       object rllRegimeEspecial: TRLLabel
         Left = 297
-        Height = 30
-        Top = 226
+        Height = 23
+        Top = 235
         Width = 176
         Alignment = taCenter
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1773,7 +1672,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 49
         Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1784,22 +1683,22 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Height = 15
         Top = 242
         Width = 98
-        Alignment = taCenter
+        Alignment = taRightJustify
         AutoSize = False
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
       object rllMsgTeste: TRLLabel
-        Left = 15
+        Left = 13
         Height = 31
-        Top = 57
+        Top = 45
         Width = 724
         Alignment = taCenter
         Caption = 'AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL'
-        Font.Color = clGray
+        Font.Color = clBlack
         Font.Height = -27
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1811,7 +1710,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Top = 22
         Width = 168
         Caption = 'Código de Tributação do Município:'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -1824,7 +1723,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 565
         AutoSize = False
         Behavior = [beSiteExpander]
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1834,8 +1733,8 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     end
     object rbOutrasInformacoes: TRLBand[6]
       Left = 23
-      Height = 103
-      Top = 812
+      Height = 40
+      Top = 814
       Width = 752
       BandType = btSummary
       Borders.Sides = sdCustom
@@ -1846,42 +1745,17 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       BeforePrint = rbOutrasInformacoesBeforePrint
       object rlmDadosAdicionais: TRLMemo
         Left = 5
-        Height = 64
+        Height = 14
         Top = 21
         Width = 743
-        AutoSize = False
         Behavior = [beSiteExpander]
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         Lines.Strings = (
           'Dados Adicionais....'
         )
         ParentFont = False
-      end
-      object rllDataHoraImpressao: TRLLabel
-        Left = 2
-        Height = 10
-        Top = 91
-        Width = 77
-        Font.Color = clWindowText
-        Font.Height = -8
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
-      end
-      object rllSistema: TRLLabel
-        Left = 356
-        Height = 11
-        Top = 91
-        Width = 392
-        Alignment = taRightJustify
-        AutoSize = False
-        Font.Color = clWindowText
-        Font.Height = -8
-        Font.Name = 'Times New Roman'
-        ParentFont = False
-        Transparent = False
       end
       object RLLabel6: TRLLabel
         Left = 299
@@ -1890,7 +1764,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 152
         Alignment = taCenter
         Caption = 'OUTRAS INFORMAÇÕES'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -13
         Font.Name = 'Times New Roman'
         Font.Style = [fsBold]
@@ -1901,7 +1775,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     object rlbCanhoto: TRLBand[7]
       Left = 23
       Height = 73
-      Top = 915
+      Top = 872
       Width = 752
       BandType = btSummary
       Borders.Sides = sdCustom
@@ -2047,7 +1921,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     end
     object rlbHeaderItensDetalhado: TRLBand[8]
       Left = 23
-      Height = 16
+      Height = 20
       Top = 437
       Width = 752
       BandType = btColumnHeader
@@ -2057,24 +1931,24 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
       Borders.DrawRight = True
       Borders.DrawBottom = True
       object RLLabel65: TRLLabel
-        Left = 5
+        Left = 460
         Height = 14
         Top = 1
         Width = 25
         Caption = 'Qtde'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
       object RLLabel66: TRLLabel
-        Left = 57
+        Left = 4
         Height = 14
         Top = 1
         Width = 48
         Caption = 'Descrição'
-        Font.Color = clWindowText
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -2084,21 +1958,45 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Left = 710
         Height = 14
         Top = 1
-        Width = 29
-        Caption = 'Total'
-        Font.Color = clWindowText
+        Width = 17
+        Caption = 'ISS'
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
         Transparent = False
       end
       object RLLabel68: TRLLabel
-        Left = 640
+        Left = 384
         Height = 14
         Top = 1
-        Width = 28
-        Caption = 'Valor'
-        Font.Color = clWindowText
+        Width = 70
+        Caption = 'Valor Unitário'
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'Times New Roman'
+        ParentFont = False
+        Transparent = False
+      end
+      object RLLabel5: TRLLabel
+        Left = 505
+        Height = 14
+        Top = 1
+        Width = 79
+        Caption = 'Valor do Serviço'
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'Times New Roman'
+        ParentFont = False
+        Transparent = False
+      end
+      object RLLabel9: TRLLabel
+        Left = 601
+        Height = 14
+        Top = 1
+        Width = 94
+        Caption = 'Base de Cálculo (%)'
+        Font.Color = clBlack
         Font.Height = -11
         Font.Name = 'Times New Roman'
         ParentFont = False
@@ -2108,7 +2006,7 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
     object subItens: TRLSubDetail[9]
       Left = 23
       Height = 18
-      Top = 477
+      Top = 478
       Width = 752
       Borders.Sides = sdCustom
       Borders.DrawLeft = True
@@ -2123,51 +2021,77 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         Width = 750
         BeforePrint = rlbItensServicoBeforePrint
         object txtServicoQtde: TRLLabel
-          Left = 5
+          Left = 459
           Height = 14
-          Top = 2
-          Width = 46
+          Top = 1
+          Width = 36
           Alignment = taCenter
           AutoSize = False
-          Font.Color = clWindowText
+          Font.Color = clBlack
           Font.Height = -11
           Font.Name = 'Times New Roman'
           ParentFont = False
           Transparent = False
         end
         object rlmServicoDescricao: TRLMemo
-          Left = 57
+          Left = 4
           Height = 14
-          Top = 2
-          Width = 549
+          Top = 1
+          Width = 373
           Behavior = [beSiteExpander]
-          Font.Color = clWindowText
+          Font.Color = clBlack
           Font.Height = -11
           Font.Name = 'Times New Roman'
           ParentFont = False
           Transparent = False
         end
         object txtServicoUnitario: TRLLabel
-          Left = 611
+          Left = 383
           Height = 14
-          Top = 2
-          Width = 54
+          Top = 1
+          Width = 70
           Alignment = taRightJustify
           AutoSize = False
-          Font.Color = clWindowText
+          Font.Color = clBlack
           Font.Height = -11
           Font.Name = 'Times New Roman'
           ParentFont = False
           Transparent = False
         end
         object txtServicoTotal: TRLLabel
-          Left = 670
+          Left = 506
           Height = 14
-          Top = 2
+          Top = 1
           Width = 76
           Alignment = taRightJustify
           AutoSize = False
-          Font.Color = clWindowText
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Times New Roman'
+          ParentFont = False
+          Transparent = False
+        end
+        object txtBaseCalculo: TRLLabel
+          Left = 601
+          Height = 14
+          Top = 1
+          Width = 93
+          Alignment = taRightJustify
+          AutoSize = False
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Times New Roman'
+          ParentFont = False
+          Transparent = False
+        end
+        object txtISS: TRLLabel
+          Left = 709
+          Height = 14
+          Top = 1
+          Width = 35
+          Alignment = taRightJustify
+          AutoSize = False
+          Font.Color = clBlack
           Font.Height = -11
           Font.Name = 'Times New Roman'
           ParentFont = False
@@ -2175,8 +2099,40 @@ inherited frlXDANFSeRLRetrato: TfrlXDANFSeRLRetrato
         end
       end
     end
+    object RLBand1: TRLBand[10]
+      Left = 23
+      Height = 18
+      Top = 854
+      Width = 752
+      BandType = btSummary
+      object rllDataHoraImpressao: TRLLabel
+        Left = 2
+        Height = 10
+        Top = 3
+        Width = 76
+        Font.Color = clBlack
+        Font.Height = -8
+        Font.Name = 'Times New Roman'
+        ParentFont = False
+        Transparent = False
+      end
+      object rllSistema: TRLLabel
+        Left = 356
+        Height = 11
+        Top = 2
+        Width = 392
+        Alignment = taRightJustify
+        AutoSize = False
+        Font.Color = clBlack
+        Font.Height = -8
+        Font.Name = 'Times New Roman'
+        ParentFont = False
+        Transparent = False
+      end
+    end
   end
   inherited RLPDFFilter1: TRLPDFFilter
-    Top = 72
+    Left = 192
+    Top = 136
   end
 end

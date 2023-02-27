@@ -38,7 +38,6 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
 
 type
@@ -54,6 +53,9 @@ type
 
 implementation
 
+uses
+  ACBrUtil.Strings;
+
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
 //     ModernizacaoPublica
@@ -65,7 +67,11 @@ procedure TNFSeW_ModernizacaoPublica202.Configuracao;
 begin
   inherited Configuracao;
 
-  NrOcorrAliquota := 1;
+  // a linha abaixo foi comentada para atender a cidade de Belford Roxo/RJ
+  // se outra cidade atendida pelo mesmo provedor exigir a presença da tag
+  // vai ser necessário mudar a forma de configurar.
+
+//  NrOcorrAliquota := 1;
 
   GerarIDRps := True;
 end;
@@ -74,7 +80,7 @@ procedure TNFSeW_ModernizacaoPublica202.DefinirIDRps;
 begin
   NFSe.InfID.ID := 'rps' + OnlyNumber(NFSe.IdentificacaoRps.Numero) +
                     NFSe.IdentificacaoRps.Serie +
-                    TipoRPSToStr(NFSe.IdentificacaoRps.Tipo);
+                    FpAOwner.TipoRPSToStr(NFSe.IdentificacaoRps.Tipo);
 end;
 
 end.

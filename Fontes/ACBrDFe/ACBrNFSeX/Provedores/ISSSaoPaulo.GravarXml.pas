@@ -38,7 +38,6 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
   ACBrNFSeXConversao, ACBrNFSeXConsts, ACBrNFSeXGravarXml;
 
@@ -57,6 +56,9 @@ type
   end;
 
 implementation
+
+uses
+  ACBrUtil.Strings;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -83,12 +85,12 @@ function TNFSeW_ISSSaoPaulo.GerarCPFCNPJIntermediario: TACBrXmlNode;
 begin
   Result := nil;
 
-  if OnlyNumber(NFSe.IntermediarioServico.CpfCnpj) <> '' then
+  if OnlyNumber(NFSe.Intermediario.Identificacao.CpfCnpj) <> '' then
   begin
     Result := CreateElement('CPFCNPJIntermediario');
 
     Result.AppendChild(AddNodeCNPJCPF('#1', '#2',
-                                OnlyNumber(NFSe.IntermediarioServico.CpfCnpj)));
+                         OnlyNumber(NFSe.Intermediario.Identificacao.CpfCnpj)));
   end;
 end;
 
@@ -236,22 +238,22 @@ begin
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'EmailTomador', 1, 75, 0,
                                                NFSe.Tomador.Contato.Email, ''));
 
-  if OnlyNumber(NFSe.IntermediarioServico.CpfCnpj) <> '' then
+  if OnlyNumber(NFSe.Intermediario.Identificacao.CpfCnpj) <> '' then
   begin
     xmlNode := GerarCPFCNPJIntermediario;
     NFSeNode.AppendChild(xmlNode);
 
     NFSeNode.AppendChild(AddNode(tcStr, '#1', 'InscricaoMunicipalIntermediario', 1, 8, 0,
-                 OnlyNumber(NFSe.IntermediarioServico.InscricaoMunicipal), ''));
+          OnlyNumber(NFSe.Intermediario.Identificacao.InscricaoMunicipal), ''));
 
-    sISSRetidoInter := EnumeradoToStr( NFSe.IntermediarioServico.IssRetido,
+    sISSRetidoInter := EnumeradoToStr( NFSe.Intermediario.IssRetido,
                                      ['false', 'true'], [stNormal, stRetencao]);
 
     NFSeNode.AppendChild(AddNode(tcStr, '#1', 'ISSRetidoIntermediario', 1, 5, 0,
                                                           sISSRetidoInter, ''));
 
     NFSeNode.AppendChild(AddNode(tcStr, '#1', 'EmailIntermediario', 1, 75, 0,
-                                          NFSe.IntermediarioServico.EMail, ''));
+                                         NFSe.Intermediario.Contato.EMail, ''));
   end;
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'Discriminacao', 1, 2000, 1,
@@ -276,7 +278,8 @@ begin
                                NFSe.ConstrucaoCivil.nNumeroEncapsulamento, ''));
 
   if (NFSe.TipoTributacaoRPS  <> ttTribnoMun) and
-     (NFSe.TipoTributacaoRPS  <> ttTribnoMunIsento) then
+     (NFSe.TipoTributacaoRPS  <> ttTribnoMunIsento) and
+     (NFSe.TipoTributacaoRPS  <> ttTribnoMunImune) then
     NFSeNode.AppendChild(AddNode(tcInt, '#1', 'MunicipioPrestacao', 1, 7, 0,
                                          NFSe.Servico.MunicipioIncidencia, ''));
 

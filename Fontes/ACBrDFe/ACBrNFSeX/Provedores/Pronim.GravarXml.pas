@@ -56,6 +56,8 @@ type
   protected
     procedure Configuracao; override;
 
+  public
+    function GerarXml: Boolean; Override;
   end;
 
 implementation
@@ -93,6 +95,26 @@ begin
   NrOcorrAliquota := 0;
 
   Opcoes.SuprimirDecimais := True;
+end;
+
+function TNFSeW_Pronim202.GerarXml: Boolean;
+const
+  CODIGOMUNICIPIO_EXTERIOR = '9999999';
+begin
+  if NFSe.OptanteSimplesNacional = snSim then
+    NrOcorrAliquota := 1;
+
+  // Solução para o erro "Responsável/Retentor informado indevido. (E282)"
+  // quando ISSQN não é retido na fonte
+  if NFSe.Servico.Valores.IssRetido <> stRetencao then
+    NrOcorrRespRetencao := -1;
+
+  // Solução para o erro "País do tomador do serviço indevido. (E292)"
+  // quando tomador não é estrangeiro
+  if NFSe.Tomador.Endereco.CodigoMunicipio <> CODIGOMUNICIPIO_EXTERIOR then
+    NrOcorrCodigoPaisTomador := -1;
+
+  Result := inherited GerarXml;
 end;
 
 end.

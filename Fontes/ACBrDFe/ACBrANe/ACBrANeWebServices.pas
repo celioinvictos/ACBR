@@ -175,7 +175,11 @@ implementation
 
 uses
   StrUtils, Math,
-  ACBrUtil, ACBrANe,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML,
+  ACBrUtil.DateTime,
+  ACBrANe,
   pcnGerador, pcnLeitor;
 
 { TANeWebService }
@@ -423,9 +427,14 @@ var
   IniGrupo, FimGrupo: Integer;
 begin
   IniGrupo := Pos('<' + Grupo + '>', XML);
-  FimGrupo := Pos('</' + Grupo + '>', XML) + Length(Grupo) + 3;
+  if IniGrupo > 0 then
+  begin
+    FimGrupo := Pos('</' + Grupo + '>', XML) + Length(Grupo) + 3;
 
-  Result := Copy(XML, 1, IniGrupo -1) + Copy(XML, FimGrupo, Length(XML));
+    Result := Copy(XML, 1, IniGrupo -1) + Copy(XML, FimGrupo, Length(XML));
+  end
+  else
+    Result := XML;
 end;
 
 begin

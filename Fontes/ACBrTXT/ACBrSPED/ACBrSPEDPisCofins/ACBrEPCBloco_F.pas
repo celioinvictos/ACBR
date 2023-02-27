@@ -206,7 +206,7 @@ type
   TRegistroF120 = class
   private
     fNAT_BC_CRED                   : TACBrBaseCalculoCredito;          //Código da Base de Cálculo do Crédito sobre Bens Incorporados ao Ativo Imobilizado, conforme a Tabela indicada no item 4.3.7: 09 = Crédito com Base nos Encargos de Depreciação; 11 = Crédito com Base nos Encargos de Amortização
-    fIDENT_BEM_IMOB                : string;                           //Identificação dos Bens/Grupo de Bens Incorporados ao Ativo Imobilizado:
+    fIDENT_BEM_IMOB                : TACBrIdentBemImob;                //Identificação dos Bens/Grupo de Bens Incorporados ao Ativo Imobilizado:
                                                                          //01 = Edificações e Benfeitorias em Imóveis Próprios;
                                                                          //02 = Edificações e Benfeitorias em Imóveis de Terceiros;
                                                                          //03 = Instalações;
@@ -214,8 +214,8 @@ type
                                                                          //05 = Equipamentos;
                                                                          //06 = Veículos;
                                                                          //99 = Outros Bens Incorporados ao Ativo Imobilizado.
-    fIND_ORIG_CRED                 : string;                           //Indicador da origem do bem incorporado ao ativo imobilizado, gerador de crédito: 0 - Aquisição no Mercado Interno 1 - Aquisição no Mercado Externo (Importação)
-    fIND_UTIL_BEM_IMOB             : string;                           //Indicador da Utilização dos Bens Incorporados ao Ativo Imobilizado:
+    fIND_ORIG_CRED                 : TACBrOrigemCredito;               //Indicador da origem do bem incorporado ao ativo imobilizado, gerador de crédito: 0 - Aquisição no Mercado Interno 1 - Aquisição no Mercado Externo (Importação)
+    fIND_UTIL_BEM_IMOB             : TACBrIndUtilBemImob;              //Indicador da Utilização dos Bens Incorporados ao Ativo Imobilizado:
                                                                          //1 - Produção de Bens Destinados a Venda;
                                                                          //2 - Prestação de Serviços;
                                                                          //3 - Locação a Terceiros;
@@ -240,9 +240,9 @@ type
     destructor Destroy; override;                                      /// Destroy
 
     property NAT_BC_CRED           : TACBrBaseCalculoCredito read FNAT_BC_CRED           write FNAT_BC_CRED;
-    property IDENT_BEM_IMOB        : string                  read fIDENT_BEM_IMOB        write fIDENT_BEM_IMOB;
-    property IND_ORIG_CRED         : string                  read fIND_ORIG_CRED         write fIND_ORIG_CRED;
-    property IND_UTIL_BEM_IMOB     : string                  read fIND_UTIL_BEM_IMOB     write fIND_UTIL_BEM_IMOB;
+    property IDENT_BEM_IMOB        : TACBrIdentBemImob       read fIDENT_BEM_IMOB        write fIDENT_BEM_IMOB;
+    property IND_ORIG_CRED         : TACBrOrigemCredito      read fIND_ORIG_CRED         write fIND_ORIG_CRED;
+    property IND_UTIL_BEM_IMOB     : TACBrIndUtilBemImob     read fIND_UTIL_BEM_IMOB     write fIND_UTIL_BEM_IMOB;
     property VL_OPER_DEP           : currency                read fVL_OPER_DEP           write fVL_OPER_DEP;
     property PARC_OPER_NAO_BC_CRED : currency                read fPARC_OPER_NAO_BC_CRED write fPARC_OPER_NAO_BC_CRED;
     property CST_PIS               : TACBrCstPis             read fCST_PIS               write fCST_PIS;
@@ -294,7 +294,7 @@ type
   TRegistroF130 = class
   private
     fNAT_BC_CRED                   : TACBrBaseCalculoCredito;          //Código da Base de Cálculo do Crédito sobre Bens Incorporados ao Ativo Imobilizado, conforme a Tabela indicada no item 4.3.7: 09 = Crédito com Base nos Encargos de Depreciação; 11 = Crédito com Base nos Encargos de Amortização
-    fIDENT_BEM_IMOB                : string;                           //Identificação dos Bens/Grupo de Bens Incorporados ao Ativo Imobilizado:
+    fIDENT_BEM_IMOB                : TACBrIdentBemImob;                //Identificação dos Bens/Grupo de Bens Incorporados ao Ativo Imobilizado:
                                                                          //01 = Edificações e Benfeitorias em Imóveis Próprios;
                                                                          //02 = Edificações e Benfeitorias em Imóveis de Terceiros;
                                                                          //03 = Instalações;
@@ -302,8 +302,8 @@ type
                                                                          //05 = Equipamentos;
                                                                          //06 = Veículos;
                                                                          //99 = Outros Bens Incorporados ao Ativo Imobilizado.
-    fIND_ORIG_CRED                 : string;                           //Indicador da origem do bem incorporado ao ativo imobilizado, gerador de crédito: 0 - Aquisição no Mercado Interno 1 - Aquisição no Mercado Externo (Importação)
-    fIND_UTIL_BEM_IMOB             : string;                           //Indicador da Utilização dos Bens Incorporados ao Ativo Imobilizado:
+    fIND_ORIG_CRED                 : TACBrOrigemCredito;               //Indicador da origem do bem incorporado ao ativo imobilizado, gerador de crédito: 0 - Aquisição no Mercado Interno 1 - Aquisição no Mercado Externo (Importação)
+    fIND_UTIL_BEM_IMOB             : TACBrIndUtilBemImob;              //Indicador da Utilização dos Bens Incorporados ao Ativo Imobilizado:
                                                                          //1 - Produção de Bens Destinados a Venda;
                                                                          //2 - Prestação de Serviços;
                                                                          //3 - Locação a Terceiros;
@@ -312,7 +312,7 @@ type
     fVL_OPER_AQUIS                 : currency;                         //Valor de Aquisição dos Bens Incorporados ao Ativo Imobilizado - Crédito com base no valor de aquisição.
     fPARC_OPER_NAO_BC_CRED         : currency;                         //Parcela do Valor de Aquisição a excluir da base de cálculo de Crédito
     fVL_BC_CRED                    : currency;                         //Valor da Base de Cálculo do Crédito sobre Bens Incorporados ao Ativo Imobilizado (07 - 08)
-    fIND_NR_PARC                   : integer;                          //Indicador do Numero de Parcelas a serem apropriadas (Crédito sobre Valor de Aquisição):
+    fIND_NR_PARC                   : TACBrIndNrParc;                   //Indicador do Numero de Parcelas a serem apropriadas (Crédito sobre Valor de Aquisição):
                                                                          //1 - Integral (Mês de Aquisição);
                                                                          //2 - 12 Meses;
                                                                          //3 - 24 Meses;
@@ -337,14 +337,14 @@ type
     destructor  Destroy; override;                                     /// Destroy
 
     property NAT_BC_CRED           : TACBrBaseCalculoCredito read FNAT_BC_CRED           write FNAT_BC_CRED;
-    property IDENT_BEM_IMOB        : string                  read fIDENT_BEM_IMOB        write fIDENT_BEM_IMOB;
-    property IND_ORIG_CRED         : string                  read fIND_ORIG_CRED         write fIND_ORIG_CRED;
-    property IND_UTIL_BEM_IMOB     : string                  read fIND_UTIL_BEM_IMOB     write fIND_UTIL_BEM_IMOB;
+    property IDENT_BEM_IMOB        : TACBrIdentBemImob       read fIDENT_BEM_IMOB        write fIDENT_BEM_IMOB;
+    property IND_ORIG_CRED         : TACBrOrigemCredito      read fIND_ORIG_CRED         write fIND_ORIG_CRED;
+    property IND_UTIL_BEM_IMOB     : TACBrIndUtilBemImob     read fIND_UTIL_BEM_IMOB     write fIND_UTIL_BEM_IMOB;
     property MES_OPER_AQUIS        : string                  read fMES_OPER_AQUIS        write fMES_OPER_AQUIS;
     property VL_OPER_AQUIS         : currency                read fVL_OPER_AQUIS         write fVL_OPER_AQUIS;
     property PARC_OPER_NAO_BC_CRED : currency                read fPARC_OPER_NAO_BC_CRED write fPARC_OPER_NAO_BC_CRED;
     property VL_BC_CRED            : currency                read fVL_BC_CRED            write fVL_BC_CRED;
-    property IND_NR_PARC           : integer                 read fIND_NR_PARC           write fIND_NR_PARC;
+    property IND_NR_PARC           : TACBrIndNrParc          read fIND_NR_PARC           write fIND_NR_PARC;
     property CST_PIS               : TACBrCstPis             read fCST_PIS               write fCST_PIS;
     property VL_BC_PIS             : currency                read fVL_BC_PIS             write fVL_BC_PIS;
     property ALIQ_PIS              : currency                read fALIQ_PIS              write fALIQ_PIS;
@@ -395,7 +395,7 @@ type
   private
     FNAT_BC_CRED            : TACBrBaseCalculoCredito;          //Texto fixo contendo "18" Código da Base de Cálculo do Crédito sobre Estoque de Abertura, conforme a Tabela indicada no item 4.3.7.
     FVL_TOT_EST             : currency;                         //Valor Total do Estoque de Abertura
-    FEST_IMP                : integer;                          //Parcela do estoque de abertura referente a bens, produtos e mercadorias importados, ou adquiridas no mercado interno sem direito ao crédito
+    FEST_IMP                : currency;                          //Parcela do estoque de abertura referente a bens, produtos e mercadorias importados, ou adquiridas no mercado interno sem direito ao crédito
     FVL_BC_EST              : currency;                         //Valor da Base de Cálculo do Crédito sobre o Estoque de Abertura (03 - 04)
     FVL_BC_MEN_EST          : currency;                         //Valor da Base de Cálculo Mensal do Crédito sobre o Estoque de Abertura (1/12 avos do campo 05)
     FCST_PIS                : TACBrCstPis;                      //Código da Situação Tributária referente ao PIS/PASEP, conforme a Tabela indicada no item 4.3.3.
@@ -409,7 +409,7 @@ type
   public
     property NAT_BC_CRED    : TACBrBaseCalculoCredito read FNAT_BC_CRED    write FNAT_BC_CRED;
     property VL_TOT_EST     : currency                read FVL_TOT_EST     write FVL_TOT_EST;
-    property EST_IMP        : integer                 read FEST_IMP        write FEST_IMP;
+    property EST_IMP        : currency                read FEST_IMP        write FEST_IMP;
     property VL_BC_EST      : currency                read FVL_BC_EST      write FVL_BC_EST;
     property VL_BC_MEN_EST  : currency                read FVL_BC_MEN_EST  write FVL_BC_MEN_EST;
     property CST_PIS        : TACBrCstPis             read FCST_PIS        write FCST_PIS;

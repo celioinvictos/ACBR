@@ -54,6 +54,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeXWebserviceAbaco204 = class(TACBrNFSeXWebserviceSoap11)
@@ -68,6 +69,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderAbaco = class (TACBrNFSeProviderABRASFv1)
@@ -78,6 +80,7 @@ type
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
+    function DefinirIDLote(const ID: string): string; override;
   end;
 
   TACBrNFSeProviderAbaco101 = class(TACBrNFSeProviderAbaco)
@@ -98,6 +101,7 @@ type
 implementation
 
 uses
+  ACBrUtil.XMLHTML,
   ACBrDFeException, Abaco.GravarXml, Abaco.LerXml;
 
 { TACBrNFSeXWebserviceAbaco }
@@ -198,6 +202,15 @@ begin
                      ['xmlns:e="http://www.e-nfs.com.br"']);
 end;
 
+function TACBrNFSeXWebserviceAbaco.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverIdentacao(Result);
+end;
+
 { TACBrNFSeProviderAbaco }
 
 procedure TACBrNFSeProviderAbaco.Configuracao;
@@ -211,6 +224,7 @@ begin
   with ConfigAssinar do
   begin
     LoteRps := True;
+    IncluirURI := False;
   end;
 
   with ConfigWebServices do
@@ -251,6 +265,14 @@ begin
     else
       raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
   end;
+end;
+
+function TACBrNFSeProviderAbaco.DefinirIDLote(const ID: string): string;
+begin
+  if ConfigGeral.Identificador <> '' then
+    Result := ' ' + ConfigGeral.Identificador + '="L' + ID + '"'
+  else
+    Result := '';
 end;
 
 { TACBrNFSeProviderAbaco101 }
@@ -458,6 +480,16 @@ begin
   Result := Executar('http://www.e-nfs.com.braction/AA24_SUBSTITUIRNFSE.Execute', Request,
                      ['Outputxml', 'SubstituirNfseResposta'],
                      ['xmlns:e="http://www.e-nfs.com.br"']);
+end;
+
+function TACBrNFSeXWebserviceAbaco204.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverIdentacao(Result);
 end;
 
 end.

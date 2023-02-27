@@ -42,7 +42,9 @@ uses
   Variants,
 {$ENDIF}
   pcnAuxiliar, pcnConversao, pcnLeitor,
-  pmdfeConversaoMDFe, pmdfeMDFe, ACBrUtil;
+  pmdfeConversaoMDFe, pmdfeMDFe,
+  ACBrUtil.Strings,
+  ACBrUtil.Base;
 
 type
 
@@ -232,6 +234,9 @@ begin
             if MDFe.rodo.infANTT.infContratante[i01].idEstrangeiro = '' then
               MDFe.Rodo.infANTT.infContratante[i01].CNPJCPF := Leitor.rCampoCNPJCPF;
 
+            MDFe.rodo.infANTT.infContratante[i01].infContrato.NroContrato := Leitor.rCampo(tcStr, 'NroContrato');
+            MDFe.Rodo.infANTT.infContratante[i01].infContrato.vContratoGlobal := Leitor.rCampo(tcDe2, 'vContratoGlobal');
+
             inc(i01);
           end;
 
@@ -249,6 +254,9 @@ begin
             MDFe.rodo.infANTT.infPag[i01].indAltoDesemp := StrToindAltoDesemp(ok, Leitor.rCampo(tcStr, 'indAltoDesemp'));
             MDFe.rodo.infANTT.infPag[i01].indPag        := StrToTIndPag(ok, Leitor.rCampo(tcStr, 'indPag'));
             MDFe.rodo.infANTT.infPag[i01].vAdiant       := Leitor.rCampo(tcDe2, 'vAdiant');
+
+            MDFe.rodo.infANTT.infPag[i01].indAntecipaAdiant := StrToTIndicador(ok, Leitor.rCampo(tcStr, 'indAntecipaAdiant'));
+            MDFe.rodo.infANTT.infPag[i01].tpAntecip := StrTotpAntecip(ok, Leitor.rCampo(tcStr, 'tpAntecip'));
 
             i02 := 0;
             while Leitor.rExtrai(5, 'Comp', '', i02 + 1) <> '' do

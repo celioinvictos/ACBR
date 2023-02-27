@@ -38,13 +38,23 @@ interface
 
 uses
 {$IFDEF FPC}
-  LResources, Controls, Graphics, Dialogs,
+  LResources, 
+  Controls, 
 {$ELSE}
 
 {$ENDIF}
-  SysUtils, Classes, StrUtils,
-  ACBrConsts, pcnAuxiliar, pcnConsts, pcnConversao, pcnGerador,
-  pnfsNFSe, pnfsNFSeW, pnfsConversao, pnfsConsts;
+  SysUtils, 
+  Classes, 
+  StrUtils,
+  ACBrConsts, 
+  pcnAuxiliar, 
+  pcnConsts, 
+  pcnConversao, 
+  pcnGerador,
+  pnfsNFSe, 
+  pnfsNFSeW, 
+  pnfsConversao, 
+  pnfsConsts;
 
 type
   { TNFSeW_ABRASFv2 }
@@ -81,7 +91,7 @@ type
 implementation
 
 uses
-  ACBrUtil;
+  ACBrUtil.Strings;
 
 {==============================================================================}
 { Essa unit tem por finalidade exclusiva de gerar o XML do RPS segundo o       }
@@ -507,11 +517,21 @@ begin
 
     proGoiania:
       if NFSe.OptanteSimplesNacional = snSim then
-        Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
+        Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ)
+      else
+        Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
 
     proModernizacaoPublica:
       if NFSe.OptanteSimplesNacional = snSim then
-        Gerador.wCampo(tcDe2, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
+        Gerador.wCampo(tcDe2, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ)
+      else
+        Gerador.wCampo(tcDe2, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
+
+    proPronimv2:
+      if NFSe.OptanteSimplesNacional = snSim then
+        Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 1, NFSe.Servico.Valores.Aliquota, DSC_VALIQ)
+      else
+        Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
   else
     Gerador.wCampo(tcDe4, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
   end;

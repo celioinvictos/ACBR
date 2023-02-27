@@ -28,6 +28,8 @@
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
 
+{$I ACBr.inc}
+
 unit BalancaTeste1;
 
 interface
@@ -45,6 +47,8 @@ type
     btnConectar: TButton;
     btnDesconectar: TButton;
     btnLerPeso: TButton;
+    btEnviarPrecoKg: TButton;
+    edPrecoKg: TEdit;
     edLog: TEdit;
     Label12: TLabel;
     SbArqLog: TSpeedButton;
@@ -72,18 +76,23 @@ type
     cmbParity: TComboBox;
     Label11: TLabel;
     cmbStopBits: TComboBox;
+    btSearchPorts: TSpeedButton;
     procedure btnConectarClick(Sender: TObject);
-    procedure btnLerPesoClick(Sender: TObject);
     procedure btnDesconectarClick(Sender: TObject);
+    procedure btnLerPesoClick(Sender: TObject);
+    procedure btEnviarPrecoKgClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure edtTimeOutKeyPress(Sender: TObject; var Key: Char);
     procedure chbMonitorarClick(Sender: TObject);
+    procedure ACBrBAL1LePeso(Peso: Double; Resposta: AnsiString);
     procedure FormCreate(Sender : TObject) ;
     procedure SbArqLogClick(Sender: TObject);
-    procedure ACBrBAL1LePeso(Peso: Double; Resposta: String);
+    procedure btSearchPortsClick(Sender: TObject);
   private
     { private declarations }
-    Function Converte( cmd : String) : String;
+    function Converte(cmd: String): String;
+
+    procedure InicializarBalanca(Ativar: Boolean);
   public
     { public declarations }
   end; 
@@ -95,9 +104,10 @@ implementation
 
 {$R *.dfm}
 
-Uses
-  typinfo,
-  ACBrUtil, ACBrDeviceSerial;
+uses
+  typinfo, ACBrDeviceSerial,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO;
 
 function TForm1.Converte(cmd: String): String;
 var A : Integer ;
@@ -115,7 +125,109 @@ begin
   end ;
 end;
 
-procedure TForm1.ACBrBAL1LePeso(Peso: Double; Resposta: String);
+procedure TForm1.InicializarBalanca(Ativar: Boolean);
+begin
+  ACBrBAL1.Desativar;
+
+  if Ativar then
+  begin
+    // configura porta de comunicação
+    ACBrBAL1.Modelo           := TACBrBALModelo( cmbBalanca.ItemIndex );
+    ACBrBAL1.Device.HandShake := TACBrHandShake( cmbHandShaking.ItemIndex );
+    ACBrBAL1.Device.Parity    := TACBrSerialParity( cmbParity.ItemIndex );
+    ACBrBAL1.Device.Stop      := TACBrSerialStop( cmbStopBits.ItemIndex );
+    ACBrBAL1.Device.Data      := StrToInt( cmbDataBits.text );
+    ACBrBAL1.Device.Baud      := StrToInt( cmbBaudRate.Text );
+    ACBrBAL1.Device.Porta     := cmbPortaSerial.Text;
+    ACBrBAL1.ArqLOG           := edLog.Text;
+
+    // Conecta com a balança
+    ACBrBAL1.Ativar;
+  end;
+
+  btnLerPeso.Enabled := Ativar;
+  edPrecoKg.Enabled := Ativar;
+  btEnviarPrecoKg.Enabled := Ativar;
+  Panel1.Enabled := (not Ativar);
+
+  btnConectar.Enabled    := (not Ativar);
+  btnConectar.Visible    := (not Ativar);
+  btnDesconectar.Enabled := Ativar;
+  btnDesconectar.Visible := Ativar;
+end;
+
+procedure TForm1.btnConectarClick(Sender: TObject);
+begin
+  InicializarBalanca(True);
+end;
+
+procedure TForm1.btnDesconectarClick(Sender: TObject);
+begin
+  InicializarBalanca(False);
+end;
+
+procedure TForm1.btnLerPesoClick(Sender: TObject);
+Var TimeOut : Integer ;
+begin
+   try
+      TimeOut := StrToInt( edtTimeOut.Text ) ;
+   except
+      TimeOut := 2000 ;
+   end ;
+
+   ACBrBAL1.LePeso( TimeOut );
+end;
+
+procedure TForm1.btSearchPortsClick(Sender: TObject);
+var
+  K: Integer;
+begin
+  cmbPortaSerial.Items.Clear;
+  ACBrBAL1.Device.AcharPortasSeriais( cmbPortaSerial.Items );
+  {$IfDef MSWINDOWS}
+   ACBrBAL1.Device.AcharPortasUSB( cmbPortaSerial.Items );
+  {$EndIf}
+  {$IfDef HAS_BLUETOOTH}
+   ACBrBAL1.Device.AcharPortasBlueTooth( cmbPortaSerial.Items, True );
+  {$EndIf}
+
+  cmbPortaSerial.Items.Add('LPT1') ;
+  cmbPortaSerial.Items.Add('TCP:192.168.0.31:9100') ;
+
+  {$IfNDef MSWINDOWS}
+   cmbPortaSerial.Items.Add('/dev/ttyS0') ;
+   cmbPortaSerial.Items.Add('/dev/ttyUSB0') ;
+  {$EndIf}
+end;
+
+procedure TForm1.btEnviarPrecoKgClick(Sender: TObject);
+var
+  wTimeOut: Integer;
+begin
+  try
+    wTimeOut := StrToInt(edtTimeOut.Text);
+  except
+    wTimeOut := 2000;
+  end;
+
+  if ACBrBAL1.EnviarPrecoKg(StringToFloatDef(edPrecoKg.Text, 0), wTimeOut) then
+    Memo1.Lines.Add('Preço/Kg enviado com sucesso')
+  else
+    Memo1.Lines.Add('Erro ao enviar Preço/Kg');
+end;
+
+procedure TForm1.edtTimeOutKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9',#13,#8]) then
+     Key := #0 ;
+end;
+
+procedure TForm1.chbMonitorarClick(Sender: TObject);
+begin
+   ACBrBAL1.MonitorarBalanca := chbMonitorar.Checked ;
+end;
+
+procedure TForm1.ACBrBAL1LePeso(Peso: Double; Resposta: AnsiString);
 var valid : integer;
 begin
    sttPeso.Caption     := formatFloat('##0.000', Peso );
@@ -135,65 +247,6 @@ begin
        -10 : Memo1.Lines.Text := 'Sobrepeso !' ;
       end;
     end ;
-end;
-
-procedure TForm1.btnConectarClick(Sender: TObject);
-begin
-   // se houver conexão aberta, Fecha a conexão
-   if acbrBal1.Ativo then
-      ACBrBAL1.Desativar;
-
-   // configura porta de comunicação
-   ACBrBAL1.Modelo           := TACBrBALModelo( cmbBalanca.ItemIndex );
-   ACBrBAL1.Device.HandShake := TACBrHandShake( cmbHandShaking.ItemIndex );
-   ACBrBAL1.Device.Parity    := TACBrSerialParity( cmbParity.ItemIndex );
-   ACBrBAL1.Device.Stop      := TACBrSerialStop( cmbStopBits.ItemIndex );
-   ACBrBAL1.Device.Data      := StrToInt( cmbDataBits.text );
-   ACBrBAL1.Device.Baud      := StrToInt( cmbBaudRate.Text );
-   ACBrBAL1.Device.Porta     := cmbPortaSerial.Text;
-   ACBrBAL1.ArqLOG           := edLog.Text;
-
-   // Conecta com a balança
-   ACBrBAL1.Ativar;
-
-   btnConectar.Enabled    := false;
-   Panel1.Enabled         := false;
-   btnDesconectar.Enabled := true;
-   btnLerPeso.Enabled     := true;
-end;
-
-procedure TForm1.btnLerPesoClick(Sender: TObject);
-Var TimeOut : Integer ;
-begin
-   try
-      TimeOut := StrToInt( edtTimeOut.Text ) ;
-   except
-      TimeOut := 2000 ;
-   end ;
-
-   ACBrBAL1.LePeso( TimeOut );
-end;
-
-procedure TForm1.btnDesconectarClick(Sender: TObject);
-begin
-  ACBrBAL1.Desativar;
-
-  btnConectar.Enabled    := True;
-  Panel1.Enabled         := True;
-  btnDesconectar.Enabled := False;
-  btnLerPeso.Enabled     := False;
-end;
-
-
-procedure TForm1.edtTimeOutKeyPress(Sender: TObject; var Key: Char);
-begin
-  if not (Key in ['0'..'9',#13,#8]) then
-     Key := #0 ;
-end;
-
-procedure TForm1.chbMonitorarClick(Sender: TObject);
-begin
-   ACBrBAL1.MonitorarBalanca := chbMonitorar.Checked ;
 end;
 
 procedure TForm1.FormCreate(Sender : TObject) ;

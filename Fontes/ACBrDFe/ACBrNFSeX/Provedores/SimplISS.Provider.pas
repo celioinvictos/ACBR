@@ -56,6 +56,8 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property DadosUsuario: string read GetDadosUsuario;
   end;
 
@@ -82,6 +84,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderSimplISS203 = class (TACBrNFSeProviderABRASFv2)
@@ -93,13 +96,21 @@ type
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
     function PrepararRpsParaLote(const aXml: string): string; override;
+  public
+    function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string; override;
+    function StrToRegimeEspecialTributacao(out ok: boolean; const s: string): TnfseRegimeEspecialTributacao; override;
+    function RegimeEspecialTributacaoDescricao(const t: TnfseRegimeEspecialTributacao): string; override;
   end;
 
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrXmlWriter, ACBrNFSeX, ACBrNFSeXConfiguracoes,
-  ACBrNFSeXNotasFiscais, SimplISS.GravarXml, SimplISS.LerXml;
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrXmlWriter,
+  ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrNFSeXNotasFiscais,
+  SimplISS.GravarXml, SimplISS.LerXml;
 
 { TACBrNFSeProviderSimplISS }
 
@@ -111,6 +122,7 @@ begin
   begin
     identificador := 'id';
     UseCertificateHTTP := False;
+    DetalharServico := True;
   end;
 
   SetXmlNameSpace('http://www.sistema.com.br/Nfse/arquivos/nfse_3.xsd');
@@ -361,6 +373,14 @@ begin
             'xmlns:nfse="http://www.sistema.com.br/Nfse/arquivos/nfse_3.xsd"']);
 end;
 
+function TACBrNFSeXWebserviceSimplISS.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverPrefixosDesnecessarios(Result);
+end;
+
 { TACBrNFSeProviderSimplISS203 }
 
 procedure TACBrNFSeProviderSimplISS203.Configuracao;
@@ -422,6 +442,55 @@ function TACBrNFSeProviderSimplISS203.PrepararRpsParaLote(
   const aXml: string): string;
 begin
   Result := aXml;
+end;
+
+function TACBrNFSeProviderSimplISS203.RegimeEspecialTributacaoDescricao(
+  const t: TnfseRegimeEspecialTributacao): string;
+begin
+  case t of
+    retMicroempresaMunicipal     : Result := '1 - Microempresa municipal';
+    retEstimativa                : Result := '2 - Estimativa';
+    retSociedadeProfissionais    : Result := '3 - Sociedade de profissionais';
+    retCooperativa               : Result := '4 - Cooperativa';
+    retMicroempresarioIndividual : Result := '5 - Microempresário Individual (MEI)';
+    retMicroempresarioEmpresaPP  : Result := '6 - Microempresário e Empresa de Pequeno Porte (ME EPP)';
+    retTribFaturamentoVariavel   : Result := '7 - Tributação por Faturamento (Variável)';
+    retFixo                      : Result := '8 - Fixo';
+    retIsencao                   : Result := '9 - Isenção';
+    retImune                     : Result := '10 - Imune';
+    retExigibSuspensaJudicial    : Result := '11 - Exigibilidade suspensa por decisão judicial';
+    retExigibSuspensaAdm         : Result := '12 - Exigibilidade suspensa por procedimento administrativo';
+  else
+    Result := '';
+  end;
+end;
+
+function TACBrNFSeProviderSimplISS203.RegimeEspecialTributacaoToStr(
+  const t: TnfseRegimeEspecialTributacao): string;
+begin
+  Result := EnumeradoToStr(t,
+                         ['', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                          '10', '11', '12'],
+                         [retNenhum, retMicroempresaMunicipal, retEstimativa,
+                         retSociedadeProfissionais, retCooperativa,
+                         retMicroempresarioIndividual, retMicroempresarioEmpresaPP,
+                         retTribFaturamentoVariavel, retFixo, retIsencao,
+                         retImune, retExigibSuspensaJudicial,
+                         retExigibSuspensaAdm]);
+end;
+
+function TACBrNFSeProviderSimplISS203.StrToRegimeEspecialTributacao(
+  out ok: boolean; const s: string): TnfseRegimeEspecialTributacao;
+begin
+  Result := StrToEnumerado(ok, s,
+                        ['', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                         '10', '11', '12'],
+                        [retNenhum, retMicroempresaMunicipal, retEstimativa,
+                         retSociedadeProfissionais, retCooperativa,
+                         retMicroempresarioIndividual, retMicroempresarioEmpresaPP,
+                         retTribFaturamentoVariavel, retFixo, retIsencao,
+                         retImune, retExigibSuspensaJudicial,
+                         retExigibSuspensaAdm]);
 end;
 
 { TACBrNFSeXWebserviceSimplISS203 }
@@ -576,6 +645,18 @@ begin
   Result := Executar('http://nfse.abrasf.org.br/INfseService/SubstituirNfse', Request,
                      ['outputXML', 'SubstituirNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
+end;
+
+function TACBrNFSeXWebserviceSimplISS203.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverIdentacao(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
 end;
 
 {

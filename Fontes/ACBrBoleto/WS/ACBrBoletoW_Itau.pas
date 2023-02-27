@@ -37,13 +37,15 @@ unit ACBrBoletoW_Itau;
 interface
 
 uses
-  Classes, SysUtils, ACBrBoletoWS, pcnConversao, ACBrBoletoConversao,
-//  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-//    JsonDataObjects_ACBr,
-//  {$Else}
-    Jsons,
-//  {$EndIf}
-  ACBrUtil;
+  Classes,
+  SysUtils,
+  ACBrBoletoWS,
+  pcnConversao,
+  ACBrBoletoConversao,
+  ACBrBoleto,
+  Jsons,
+  ACBrUtil.Base,
+  ACBrBoletoWS.Rest;
 
 type
 
@@ -92,7 +94,7 @@ const
 implementation
 
 uses
-  synacode, strutils;
+  strutils, ACBrUtil.Strings;
 
 { TBoletoW_Itau }
 
@@ -119,8 +121,8 @@ end;
 
 procedure TBoletoW_Itau.GerarDados;
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       case Boleto.Configuracoes.WebService.Operacao of
         tpInclui: RequisicaoJson;
@@ -147,15 +149,14 @@ end;
 
 procedure TBoletoW_Itau.DefinirKeyUser;
 begin
-  if Assigned(Titulos) then
-    FPKeyUser := 'itau-chave: ' + Titulos.ACBrBoleto.Cedente.CedenteWS.KeyUser;
+    FPKeyUser := 'itau-chave: ' + Boleto.Cedente.CedenteWS.KeyUser;
 end;
 
 procedure TBoletoW_Itau.DefinirIdentificador;
 begin
-  if Assigned(Titulos) then
+  if Assigned(ATitulo) then
     FPIdentificador := 'identificador: ' + OnlyNumber(
-      Titulos.ACBrBoleto.Cedente.CNPJCPF);
+      ATitulo.ACBrBoleto.Cedente.CNPJCPF);
 end;
 
 procedure TBoletoW_Itau.DefinirAutenticacao;
@@ -176,8 +177,8 @@ var
   Data, AEspecieDoc: string;
   Json: TJSONObject;
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if AnsiSameText(EspecieDoc,'DM') then
          AEspecieDoc:= '01'
@@ -214,7 +215,7 @@ begin
         GerarDebito(Json);
 
         Json.Add('identificador_titulo_empresa').Value.AsString := NumeroDocumento;
-        //Json.Add('uso_banco').Value.AsString := '';
+        Json.Add('uso_banco').Value.AsString := '';
         Json.Add('titulo_aceite').Value.AsString := 'S';
 
         GerarPagador(Json);
@@ -225,7 +226,7 @@ begin
 
         Json.Add('nosso_numero').Value.AsString := NossoNumero;
         Json.Add('digito_verificador_nosso_numero').Value.AsString :=
-          ACBrBoleto.Banco.CalcularDigitoVerificador(Titulos);
+          ACBrBoleto.Banco.CalcularDigitoVerificador(ATitulo);
         //Json.Add('codigo_barras').Value.AsString := '';
         Json.Add('data_vencimento').Value.AsString :=
           FormatDateTime('yyyy-mm-dd', Vencimento);
@@ -286,8 +287,8 @@ var
   JsonConta: TJsonObject;
   JsonPairBeneficiario: TJsonPair;
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
@@ -297,7 +298,7 @@ begin
             OnlyNumber(ACBrBoleto.Cedente.CNPJCPF);
           JsonConta.Add('agencia_beneficiario').Value.AsString :=
             ACBrBoleto.Cedente.Agencia;
-          JsonConta.Add('conta_beneficiario').Value.AsString := ACBrUtil.PadLeft(ACBrBoleto.Cedente.Conta, 7, '0');
+          JsonConta.Add('conta_beneficiario').Value.AsString := ACBrUtil.Strings.PadLeft(ACBrBoleto.Cedente.Conta, 7, '0');
           JsonConta.Add('digito_verificador_conta_beneficiario').Value.AsString :=
             ACBrBoleto.Cedente.ContaDigito;
 
@@ -323,8 +324,8 @@ var
   JsonConta: TJsonObject;
   JsonPairDebito: TJsonPair;
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Liquidacao.Agencia = EmptyStr then
         Exit;
@@ -359,8 +360,8 @@ var
   JsonPairPagador: TJsonPair;
 
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
@@ -373,7 +374,7 @@ begin
           JsonDadosPagador.Add('bairro_pagador').Value.AsString := Copy(Sacado.Bairro, 1, 15);
           JsonDadosPagador.Add('cidade_pagador').Value.AsString := Copy(Sacado.Cidade, 1, 20);
           JsonDadosPagador.Add('uf_pagador').Value.AsString := Sacado.UF;
-          JsonDadosPagador.Add('cep_pagador').Value.AsString := ACBrUtil.PadLeft(OnlyNumber(Sacado.CEP), 8, '0');
+          JsonDadosPagador.Add('cep_pagador').Value.AsString := ACBrUtil.Strings.PadLeft(OnlyNumber(Sacado.CEP), 8, '0');
           if (Sacado.Email <> '') then
             GerarEmailPagador(JsonDadosPagador);
 
@@ -399,16 +400,16 @@ var
   JsonArrMailPagador: TJsonArray;
   JsonPairMail: TJsonPair;
 begin
-  if Assigned(Titulos) then
+  if Assigned(ATitulo) then
   begin
-    with Titulos do
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
         JsonMailPagador := TJSONObject.Create;
         JsonArrMailPagador := TJsonArray.Create;
         try
-          JsonMailPagador.Add('email_pagador').Value.AsString := Titulos.Sacado.Email;
+          JsonMailPagador.Add('email_pagador').Value.AsString := Sacado.Email;
 
           //JsonArrMailPagador.Insert(0).AsObject := JsonMailPagador;
           JsonArrMailPagador.Add.AsObject := JsonMailPagador;
@@ -438,8 +439,8 @@ var
   JsonPairSacadorAvalista: TJsonPair;
 
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Sacado.SacadoAvalista.CNPJCPF = EmptyStr then
         Exit;
@@ -485,8 +486,8 @@ var
   JsonPairMoeda: TJsonPair;
 
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
@@ -517,8 +518,8 @@ var
   JsonPairJuros: TJsonPair;
 
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
@@ -572,8 +573,8 @@ var
   JsonPairMulta: TJsonPair;
   ACodMulta: integer;
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
@@ -622,9 +623,9 @@ var
   JsonArrGrupoDesconto: TJsonArray;
   JsonPairDesconto: TJsonPair;
 begin
-  if Assigned(Titulos) then
+  if Assigned(ATitulo) then
   begin
-    with Titulos do
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin
@@ -689,8 +690,8 @@ var
   JsonPairRecDivergente: TJsonPair;
 
 begin
-  if Assigned(Titulos) then
-    with Titulos do
+  if Assigned(ATitulo) then
+    with ATitulo do
     begin
       if Assigned(AJson) then
       begin

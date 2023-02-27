@@ -38,7 +38,6 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
   pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao,
@@ -69,6 +68,9 @@ type
 
 implementation
 
+uses
+  ACBrUtil.Strings;
+
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
 //     fintelISS
@@ -90,14 +92,22 @@ procedure TNFSeW_fintelISS202.Configuracao;
 begin
   inherited Configuracao;
 
-  FormatoEmissao     := tcDatHor;
+  FormatoEmissao := tcDatHor;
   FormatoCompetencia := tcDatHor;
-  TagTomador         := 'TomadorServico';
-  GerarIDDeclaracao  := False;
-  GerarIDRps         := True;
+  TagTomador := 'TomadorServico';
+  GerarIDDeclaracao := False;
+  GerarIDRps := True;
 
   NrOcorrAliquota := 1;
   NrOcorrCodigoPaisServico := 1;
+  NrOcorrValorPis := 1;
+  NrOcorrValorCofins := 1;
+  NrOcorrValorInss := 1;
+  NrOcorrValorIr := 1;
+  NrOcorrValorCsll := 1;
+  NrOcorrValorISS := 1;
+
+  NrOcorrOutrasInformacoes := 0;
 end;
 
 function TNFSeW_fintelISS202.GerarListaServicos: TACBrXmlNode;
@@ -165,7 +175,7 @@ begin
 
     Result[i].AppendChild(AddNode(tcInt, '#35', 'ExigibilidadeISS',
                                NrMinExigISS, NrMaxExigISS, NrOcorrExigibilidadeISS,
-    StrToInt(ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS)), DSC_INDISS));
+    StrToInt(FpAOwner.ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS)), DSC_INDISS));
 
     Result[i].AppendChild(AddNode(tcInt, '#36', 'MunicipioIncidencia', 7, 07, NrOcorrMunIncid,
                                   NFSe.Servico.MunicipioIncidencia, DSC_MUNINCI));

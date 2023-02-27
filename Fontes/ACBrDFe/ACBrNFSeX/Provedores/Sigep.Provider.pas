@@ -52,6 +52,7 @@ type
     function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderSigep200 = class (TACBrNFSeProviderABRASFv2)
@@ -68,7 +69,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrUtil.Strings, ACBrUtil.XMLHTML, ACBrUtil.Base,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ACBrNFSeXNotasFiscais, Sigep.GravarXml, Sigep.LerXml;
 
 { TACBrNFSeProviderSigep200 }
@@ -131,6 +133,7 @@ end;
 procedure TACBrNFSeProviderSigep200.ValidarSchema(
   Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
 var
+  AErro: TNFSeEventoCollectionItem;
   xXml, credenciais: string;
   i, j: Integer;
 begin
@@ -138,6 +141,22 @@ begin
 
   with TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente do
   begin
+    if EstaVazio(WSUser) then
+    begin
+      AErro := Response.Erros.New;
+      AErro.Codigo := Cod119;
+      AErro.Descricao := ACBrStr(Desc119);
+      Exit;
+    end;
+
+    if EstaVazio(WSSenha) then
+    begin
+      AErro := Response.Erros.New;
+      AErro.Codigo := Cod120;
+      AErro.Descricao := ACBrStr(Desc120);
+      Exit;
+    end;
+
     credenciais := '<credenciais>' +
                      '<usuario>' + WSUser + '</usuario>' +
                      '<senha>' + WSSenha + '</senha>' +
@@ -298,6 +317,19 @@ begin
   Result := Executar('', Request,
                      ['CancelarNfseResposta', 'CancelarNfseResposta'],
                      ['xmlns:ws="http://ws.integration.pm.bsit.com.br/"']);
+end;
+
+function TACBrNFSeXWebserviceSigep200.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := StrToXml(Result);
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverIdentacao(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
+  Result := string(NativeStringToUTF8(Result));
 end;
 
 end.

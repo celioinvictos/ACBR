@@ -37,6 +37,183 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+04/01/2023
+-- ACBrJSON --
+[*] Possível solução para evitar um AV ao executar a funcion CreateJsonObject
+    Por: Arimateia
+
+05/12/22
+-- ACBrUtil.DateTime --
+[-] Ajuste em "Iso8601ToDateTime", para processar Strings onde hora, minutos ou
+    segundos não são informados.. Exemplo: '2022-12-05T00:00Z'
+
+-- ACBrUtil.Strings --
+[-] Ajuste em 'TiraAcentos' e 'NativeStringToAnsi', para funcionamento correto
+    em Android FMX
+    (por: DSA)
+
+30/11/2022
+-- ACBrUtil.DateTime --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+11/11/2022
+-- ACBrJSON --
+[+] Implementado a leitura para datas no formato Brasil.
+    Por: Italo Giurizzato Junior
+
+08/11/2022
+-- ACBrUtil.DateTime --
+[*] Alteração visando a leitura de datas com somente ano e mês.
+   Por: Italo Giurizzato Junior
+
+27/10/2022
+-- ACBrJSON --
+[-] Correção de problema no Lazarus com objetos com valor Null
+    https://www.projetoacbr.com.br/forum/topic/69458-acbrpixcd-sicredi-mensagem-erro-no-demo-duplicate-object-member-retirada/
+    Por: Elias César
+
+25/10/2022
+-- ACBrUtil.DateTime --
+[*] Possível solução para a leitura correta de data/hora cujo segundo tem fração.
+   Por: Italo Giurizzato Junior
+
+21/10/2022
+-- ACBrUtil.XMLHTML --
+[*] Incluído no ParseText o caracter HTML (&#45;) na lista de conversão.
+   Por: Italo Giurizzato Junior
+
+20/10/2022
+-- ACBrJSON --
+[-] Correção ao adicionar par utilizando um TACBrJsonObject
+[+] Adicionando possibilidade de incluir elementos do tipo TACBrJsonObject em um TACBrJsonArray
+    Por: Elias César
+
+19/10/2022
+-- ACBrUtil.DateTime --
+[*] Ajustes para retornar o valor zero quando a data lida for: 0000/00/00 ou
+    00/00/0000.
+   Por: Italo Giurizzato Junior
+
+04/10/2022
+-- ACBrUtil.DateTime --
+[*] Correção na verificação de presença de TimeZone na data/hora
+   Por: Italo Giurizzato Junior
+
+18/08/2022
+-- ACBrUtil.DateTime --
+[*] Criadas funções para testar se uma String é ou possui TimeZone.
+    (Exemplos de TimeZones: 'Z', '-03:00', '+01:00')
+	Por: Elias César
+
+18/08/2022
+-- ACBrUtil.DateTime --
+[*] Alteração para remover o TimeZone do parâmetro enviado para a função 'StringToDateTime()'.
+[*] Modificada função 'ParseDataHora()' para também tratar TimeZones positivos (Exemplo: '+01:00').
+    Por: Elias César
+
+10/08/2022
+-- ACBrUtil.DateTime --
+[+] Adicionado função DateTimeUniversal - Retorna ADateTime com hora convertida para TimeZone Universal, baseado no
+  TimeZone passado por parâmetro ou no TimeZone Local.
+   por: José M S Junior
+
+10/08/2022
+-- ACBrJSON --
+[*] Alterações para compatibilizar unit com fpjsons(Lazarus).
+[*] Movidas units Jsons e JsonDataObjects_ACBr do pacote ACBrDiversos para ACBrComum
+[+] Inclusão da unit ACBrJSON no pacote ACBrComum.
+    Por: Elias César
+
+08/08/2022
+-- ACBrUtil.FilesIO --
+[+] Implementado a procedure ParseNomeArquivo e alterado o nome da função 
+    DefinirNomePDF para DefinirNomeArquivo e ajustado a assinatura da mesma.
+   Por: Italo Giurizzato Junior
+-- ACBrUtil.DateTime --
+[*] Correção para ler corretamente datas no formato AAAA-MM.
+   Por: Cleverton Martins
+
+02/08/2022
+-- ACBrUtil.FilesIO --
+[+] Acrescentado a função DefinirNomePDF recebendo como parâmetro:
+    Path, NomePadrao, Sufixo e NomeOpcional (opcional), se NomeOpcional for
+    informado será considerado ele em vez de NomePadrao.
+   Por: Pandaaa/Italo Giurizzato Junior
+
+11/07/2022
+-- ACBrUtil.DateTime --
+[-] Correção de AV ao enviar uma string vazia para função 'TimezoneToBias()'
+[*] Remoção de warning
+
+11/07/2022
+-- ACBrUtil.DateTime --
+[+] Inclusão de funções para conversões entre a string em Timezone e Bias 
+    (Bias = minutos de diferença entre UTC e o horário local)
+	Por: Elias César
+
+29/06/2022
+-- ACBrUtil.DateTime --
+[*] Possível correção para datas que estejam no formato: "2022-06-27-03:00".
+   Por: Gil Spider
+
+24/06/2022
+-- ACBrUtil.DateTime --
+[*] Incluida a função AjustarData com o objetivo de detectar datas que tem
+    apenas 1 digito no dia e ou no mês e mudar para 2 digitos.
+   Por: Italo Giurizzato Junior
+
+20/06/2022
+-- ACBrUtil.DateTime --
+[*] Incluida a função ParseDataHora com o objetivo de formatar a data/hora
+    no seguinte formato: YYYY/MM/DD HH:NN:SS-HH:NN.
+   Por: Italo Giurizzato Junior
+
+26/04/2022
+-- ACBrUtil.XMLHTML --
+[*] Incluído o parâmetro: aTodas na função RemoverDeclaracaoXML.
+    por padrão o valor é False, se for True vai remover todas as
+    Declarações que existam no XML.
+   Por: Italo Giurizzato Junior
+
+13/04/2022
+-- ACBrUtil.DateTime --
+[*] Incluida a remoção do caracter "Z" na função:
+    EncodeDataHora.
+   Por: Victor H. Gonzales - Panda
+
+27/03/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Waldir Paim
+
+25/03/2022
+-- ACBrUtil --
+[*] Correção a função StrIsHexa estava apontando para outro método.
+   Por: Waldir Paim
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+21/03/2022
+-- ACBrImage --
+[+] Adiciondo o método "PNGInfoIHDR", para obter informações da Imagem PNG, por Stream
+  procedure PNGInfoIHDR(S: TStream; out Width: LongWord; out Height: LongWord;
+                       out BitDepth: Byte; out ColorType: Byte; out CompressionMethod: Byte;
+                       out FilterMethod: Byte; out InterlaceMethod: Byte);
+  (por: DSA)
+
+16/03/2022
+-- ACBrUtil --
+[+] Adicionado o método:
+    function StringCrcCCITT(const s: AnsiString; initial:Word=$1D0F; polynomial:Word=$1021): Word;
+    Calulo de CRC do PIX, Zebra e outros
+
+-- ACBrImage --
+[+] Adiciondo o método:
+    function IsPNG(S: TStream; CheckIsMono: Boolean = True): Boolean;
+    Verifica se o conteúdo do Stream é um PNG e Monocromático
+
 12/11/2022
 -- ACBrUtil --
 [*] Ajuste em "Iso8601ToDateTime", para considerar os Milisegundos, caso eles

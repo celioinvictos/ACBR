@@ -38,7 +38,6 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
   ACBrNFSeXLerXml_ABRASFv2, ACBrNFSeXConversao, ACBrNFSeXLerXml;
 
@@ -65,6 +64,9 @@ type
   end;
 
 implementation
+
+uses
+  ACBrUtil.Base, ACBrDFeUtil;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva ler o XML do provedor:
@@ -108,6 +110,7 @@ end;
 procedure TNFSeR_RLZ.LerPrestador(const ANode: TACBrXmlNode);
 var
   AuxNode: TACBrXmlNode;
+  xUF: string;
 begin
   if not Assigned(ANode) or (ANode = nil) then Exit;
 
@@ -126,6 +129,10 @@ begin
         CEP := ObterConteudo(AuxNode.Childrens.FindAnyNs('cep'), tcStr);
         CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('cidade'), tcStr);
         UF := ObterConteudo(AuxNode.Childrens.FindAnyNs('uf'), tcStr);
+        xMunicipio := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
+
+        if UF = '' then
+          UF := xUF;
       end;
 
       RazaoSocial := ObterConteudo(AuxNode.Childrens.FindAnyNs('nome'), tcStr);
@@ -142,6 +149,7 @@ end;
 procedure TNFSeR_RLZ.LerTomador(const ANode: TACBrXmlNode);
 var
   AuxNode: TACBrXmlNode;
+  xUF: string;
 begin
   if not Assigned(ANode) or (ANode = nil) then Exit;
 
@@ -160,6 +168,10 @@ begin
         CEP := ObterConteudo(AuxNode.Childrens.FindAnyNs('cep'), tcStr);
         CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('cidade'), tcStr);
         UF := ObterConteudo(AuxNode.Childrens.FindAnyNs('uf'), tcStr);
+        xMunicipio := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
+
+        if UF = '' then
+          UF := xUF;
       end;
 
       RazaoSocial := ObterConteudo(AuxNode.Childrens.FindAnyNs('nome'), tcStr);
@@ -176,18 +188,17 @@ end;
 function TNFSeR_RLZ.LerXml: Boolean;
 var
   XmlNode: TACBrXmlNode;
-  xRetorno: string;
 begin
-  xRetorno := TratarXmlRetorno(Arquivo);
-
-  if EstaVazio(xRetorno) then
+  if EstaVazio(Arquivo) then
     raise Exception.Create('Arquivo xml não carregado.');
+
+  Arquivo := NormatizarXml(Arquivo);
 
   if FDocument = nil then
     FDocument := TACBrXmlDocument.Create();
 
   Document.Clear();
-  Document.LoadFromXml(xRetorno);
+  Document.LoadFromXml(Arquivo);
 
   XmlNode := Document.Root;
 
@@ -228,6 +239,7 @@ begin
     // <retido>?</ retido >
     // <incidencia>?</incidencia>
     Link := ObterConteudo(ANode.Childrens.FindAnyNs('url'), tcStr);
+    Link := StringReplace(Link, '&amp;', '&', [rfReplaceAll]);
 
     LerServicos(ANode);
     LerPrestador(ANode);

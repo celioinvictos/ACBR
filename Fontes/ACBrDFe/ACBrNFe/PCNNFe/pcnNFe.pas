@@ -318,6 +318,7 @@ type
   TNFrefCollectionItem = class(TObject)
   private
     FrefNFe: String;
+    FrefNFeSig: String;
     FrefCTe: String;
     FRefNF: TRefNF;
     FRefECF: TRefECF;
@@ -328,6 +329,7 @@ type
 
     procedure Assign(Source: TNFrefCollectionItem);
     property refNFe: String read FrefNFe write FrefNFe;
+    property refNFeSig: String read FrefNFeSig write FrefNFeSig;
     property refCTe: String read FrefCTe write FrefCTe;
     property RefNF: TRefNF read FRefNF write FRefNF;
     property RefNFP: TRefNFP read FRefNFP write FRefNFP;
@@ -600,9 +602,21 @@ type
     function GetItem(Index: Integer): TDetCollectionItem;
     procedure SetItem(Index: Integer; Value: TDetCollectionItem);
   public
+    procedure Assign(Source: TDetCollection);
     function Add: TDetCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
     function New: TDetCollectionItem;
     property Items[Index: Integer]: TDetCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TobsItem = class(TObject)
+  private
+    FxCampo: String;
+    FxTexto: String;
+  public
+    procedure Assign(Source: TobsItem);
+
+    property xCampo: String read FxCampo write FxCampo;
+    property xTexto: String read FxTexto write FxTexto;
   end;
 
   TDetCollectionItem = class(TObject)
@@ -612,16 +626,21 @@ type
     FpDevol: Currency;
     FvIPIDevol: Currency;
     FinfAdProd: String;
+    FobsCont: TobsItem;
+    FobsFisco: TobsItem;
   public
     constructor Create;
     destructor Destroy; override;
 
     procedure Assign(Source: TDetCollectionItem);
+
     property Prod: TProd read FProd write FProd;
     property Imposto: TImposto read FImposto write FImposto;
     property pDevol: Currency read FpDevol write FpDevol;
     property vIPIDevol: Currency read FvIPIDevol write FvIPIDevol;
     property infAdProd: String read FinfAdProd write FinfAdProd;
+    property obsCont: TobsItem read FobsCont write FobsCont;
+    property obsFisco: TobsItem read FobsFisco write FobsFisco;
   end;
 
   { TProd }
@@ -1855,10 +1874,13 @@ type
   private
     FnProc: String;
     FindProc: TpcnIndicadorProcesso;
+    FtpAto: TtpAto;
   public
     procedure Assign(Source: TprocRefCollectionItem);
+
     property nProc: String read FnProc write FnProc;
     property indProc: TpcnIndicadorProcesso read FindProc write FindProc default ipSEFAZ;
+    property tpAto: TtpAto read FtpAto write FtpAto;
   end;
 
   TExporta = class(TObject)
@@ -2007,7 +2029,7 @@ const
 implementation
 
 uses
-  ACBrUtil, pcnNFeR;
+  ACBrUtil.Base, pcnNFeR;
 
 { TNFe }
 
@@ -2135,6 +2157,15 @@ begin
   Result := Self.New;
 end;
 
+procedure TDetCollection.Assign(Source: TDetCollection);
+var
+  I: Integer;
+begin
+  Self.Clear;
+  for I := 0 to Source.Count - 1 do
+    Self.New.Assign(Source.Items[I]);
+end;
+
 function TDetCollection.GetItem(Index: Integer): TDetCollectionItem;
 begin
   Result := TDetCollectionItem(inherited Items[Index]);
@@ -2157,22 +2188,30 @@ procedure TDetCollectionItem.Assign(Source: TDetCollectionItem);
 begin
   Prod.Assign(Source.Prod);
   Imposto.Assign(Source.Imposto);
-  pDevol    := Source.pDevol;
+
+  pDevol := Source.pDevol;
   vIPIDevol := Source.vIPIDevol;
   infAdProd := Source.infAdProd;
+
+  obsCont.Assign(Source.obsCont);
+  obsFisco.Assign(Source.obsFisco);
 end;
 
 constructor TDetCollectionItem.Create;
 begin
   inherited Create;
-  FProd := TProd.Create();
+  FProd := TProd.Create;
   FImposto := TImposto.Create;
+  FobsCont := TobsItem.Create;
+  FobsFisco := TobsItem.Create;
 end;
 
 destructor TDetCollectionItem.Destroy;
 begin
   FProd.Free;
   FImposto.Free;
+  FobsCont.Free;
+  FobsFisco.Free;
   inherited;
 end;
 
@@ -2253,6 +2292,7 @@ end;
 procedure TNFrefCollectionItem.Assign(Source: TNFrefCollectionItem);
 begin
   refNFe := Source.refNFe;
+  refNFeSig := Source.refNFeSig;
   refCTe := Source.refCTe;
   RefNF.Assign(Source.RefNF);
   RefNFP.Assign(Source.RefNFP);
@@ -2515,6 +2555,10 @@ procedure TComb.Assign(Source: TComb);
 begin
   cProdANP := Source.cProdANP;
   descANP  := Source.descANP;
+  pGLP     := Source.pGLP;
+  pGNn     := Source.pGNn;
+  pGNi     := Source.pGNi;
+  vPart    := Source.vPart;
   pMixGN   := Source.pMixGN;
   CODIF    := Source.CODIF;
   qTemp    := Source.qTemp;
@@ -3850,8 +3894,9 @@ end;
 
 procedure TprocRefCollectionItem.Assign(Source: TprocRefCollectionItem);
 begin
-  nProc   := Source.nProc;
+  nProc := Source.nProc;
   indProc := Source.indProc;
+  tpAto := Source.tpAto;
 end;
 
 { TExporta }
@@ -3943,6 +3988,14 @@ procedure TinfIntermed.Assign(Source: TinfIntermed);
 begin
   CNPJ     := Source.CNPJ;
   idCadIntTran := Source.idCadIntTran;
+end;
+
+{ TobsItem }
+
+procedure TobsItem.Assign(Source: TobsItem);
+begin
+  xCampo := Source.xCampo;
+  xTexto := Source.xTexto;
 end;
 
 end.

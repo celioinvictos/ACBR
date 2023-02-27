@@ -65,7 +65,7 @@ implementation
 
 uses
   SysUtils,
-  ACBrConsts, ACBrUtil,
+  ACBrConsts, ACBrUtil.Compatibilidade, ACBrUtil.Math, ACBrUtil.Strings,
   {$IFDEF COMPILER6_UP}
    DateUtils, StrUtils
   {$ELSE}
@@ -161,7 +161,7 @@ end;
 
 procedure TACBrBALMagellan.SolicitarPeso;
 begin
-  GravaLog(' - ' + FormatDateTime('hh:nn:ss:zzz', Now) + ' TX -> ' + #87);
+  GravarLog(' - ' + FormatDateTime('hh:nn:ss:zzz', Now) + ' TX -> ' + #87);
   fpDevice.Limpar;
   fpDevice.EnviaString(#87);
 end;

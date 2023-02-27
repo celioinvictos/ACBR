@@ -38,10 +38,8 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
-  ACBrXmlBase, ACBrXmlDocument,
-  pcnConsts,
-  ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXConversao, ACBrNFSeXConsts;
+  ACBrXmlDocument,
+  ACBrNFSeXGravarXml;
 
 type
   { TNFSeW_ABRASFv1 }
@@ -151,6 +149,12 @@ type
   end;
 
 implementation
+
+uses
+  pcnConsts,
+  ACBrUtil.Strings,
+  ACBrXmlBase,
+  ACBrNFSeXConversao, ACBrNFSeXConsts;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS dos provedores:
@@ -305,7 +309,7 @@ begin
                                     NFSe.IdentificacaoRps.Serie, DSC_SERIERPS));
 
   Result.AppendChild(AddNode(tcStr, '#3', 'Tipo', 1, 1, 1,
-                        TipoRPSToStr(NFSe.IdentificacaoRps.Tipo), DSC_TIPORPS));
+               FpAOwner.TipoRPSToStr(NFSe.IdentificacaoRps.Tipo), DSC_TIPORPS));
 end;
 
 function TNFSeW_ABRASFv1.GerarRPSSubstituido: TACBrXmlNode;
@@ -324,7 +328,7 @@ begin
                                    NFSe.RpsSubstituido.Serie, DSC_SERIERPSSUB));
 
     Result.AppendChild(AddNode(tcStr, '#3', 'Tipo', 1, 1, 1,
-                       TipoRPSToStr(NFSe.RpsSubstituido.Tipo), DSC_TIPORPSSUB));
+              FpAOwner.TipoRPSToStr(NFSe.RpsSubstituido.Tipo), DSC_TIPORPSSUB));
   end;
 end;
 
@@ -353,14 +357,9 @@ begin
   Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, 1,
     StringReplace(NFSe.Servico.Discriminacao, ';', FpAOwner.ConfigGeral.QuebradeLinha,
                                      [rfReplaceAll, rfIgnoreCase]), DSC_DISCR));
-{
-  Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, 1,
-    StringReplace(NFSe.Servico.Discriminacao, ';', FAOwner.ConfigGeral.QuebradeLinha,
-                                       [rfReplaceAll, rfIgnoreCase]), DSC_DISCR,
-                       (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
-}
+
   Result.AppendChild(AddNode(tcStr, '#', 'InformacoesComplementares', 1, 255, NrOcorrInformacoesComplemetares,
-                                                   NFSe.OutrasInformacoes, ''));
+                                           NFSe.InformacoesComplementares, ''));
 
   Result.AppendChild(GerarServicoCodigoMunicipio);
 
@@ -420,7 +419,7 @@ begin
   Result.AppendChild(AddNode(tcDe2, '#24', 'BaseCalculo', 1, 15, NrOcorrBaseCalc,
                                  NFSe.Servico.Valores.BaseCalculo, DSC_VBCISS));
 
-  Aliquota := AjustarAliquota(NFSe.Servico.Valores.Aliquota, DivAliq100);
+  Aliquota := NormatizarAliquota(NFSe.Servico.Valores.Aliquota, DivAliq100);
 
   Result.AppendChild(AddNode(FormatoAliq, '#25', 'Aliquota', 1, 5, NrOcorrAliquota,
                                                           Aliquota, DSC_VALIQ));
@@ -583,18 +582,18 @@ begin
   // Em conformidade com a versão 1 do layout da ABRASF não deve ser alterado
   Result := nil;
 
-  if (NFSe.IntermediarioServico.RazaoSocial <> '') or
-     (NFSe.IntermediarioServico.CpfCnpj <> '') then
+  if (NFSe.Intermediario.RazaoSocial <> '') or
+     (NFSe.Intermediario.Identificacao.CpfCnpj <> '') then
   begin
     Result := CreateElement('IntermediarioServico');
 
     Result.AppendChild(AddNode(tcStr, '#48', 'RazaoSocial', 1, 115, 1,
-                             NFSe.IntermediarioServico.RazaoSocial, DSC_XNOME));
+                                    NFSe.Intermediario.RazaoSocial, DSC_XNOME));
 
-    Result.AppendChild(GerarCPFCNPJ(NFSe.IntermediarioServico.CpfCnpj));
+    Result.AppendChild(GerarCPFCNPJ(NFSe.Intermediario.Identificacao.CpfCnpj));
 
     Result.AppendChild(AddNode(tcStr, '#50', 'InscricaoMunicipal', 1, 15, 0,
-                         NFSe.IntermediarioServico.InscricaoMunicipal, DSC_IM));
+                  NFSe.Intermediario.Identificacao.InscricaoMunicipal, DSC_IM));
   end;
 end;
 

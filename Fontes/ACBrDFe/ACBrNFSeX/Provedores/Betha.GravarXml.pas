@@ -59,11 +59,16 @@ type
   TNFSeW_Betha202 = class(TNFSeW_ABRASFv2)
   protected
     procedure Configuracao; override;
+
+    procedure DefinirIDDeclaracao; override;
   public
     function GerarXml: Boolean; override;
   end;
 
 implementation
+
+uses
+  ACBrUtil.Strings;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -125,7 +130,7 @@ begin
   begin
     Result[i] := CreateElement('Parcelas');
 
-    Result[i].AppendChild(AddNode(tcInt, '#55', 'Parcela', 1, 03, 1,
+    Result[i].AppendChild(AddNode(tcStr, '#55', 'Parcela', 1, 03, 1,
                   NFSe.CondicaoPagamento.Parcelas.Items[i].Parcela, DSC_NPARC));
 
     Result[i].AppendChild(AddNode(tcDatVcto, '#56', 'DataVencimento', 10, 10, 1,
@@ -150,12 +155,22 @@ begin
   NrOcorrCodigoPaisServico := -1;
 end;
 
+procedure TNFSeW_Betha202.DefinirIDDeclaracao;
+begin
+  NFSe.InfID.ID := 'rps' + OnlyNumber(NFSe.IdentificacaoRps.Numero)
+end;
+
 function TNFSeW_Betha202.GerarXml: Boolean;
 begin
   if NFSe.Servico.Valores.IssRetido <> stNormal then
     NrOcorrRespRetencao := 0   // se tem a retenção a tag deve ser gerada
   else
     NrOcorrRespRetencao := -1; // se não tem a retenção a tag não deve ser gerada
+
+  if NFSe.Tomador.Endereco.CodigoMunicipio = '9999999' then
+    NrOcorrCodigoPaisTomador := 1
+  else
+    NrOcorrCodigoPaisTomador := -1;
 
   Result := inherited GerarXml;
 end;

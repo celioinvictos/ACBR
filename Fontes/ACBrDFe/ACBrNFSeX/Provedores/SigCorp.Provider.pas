@@ -40,7 +40,8 @@ uses
   SysUtils, Classes,
   ACBrXmlBase, ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
   ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
-  ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
+  ACBrNFSeXProviderABRASFv2,
+  ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
 type
   TACBrNFSeXWebserviceSigCorp203 = class(TACBrNFSeXWebserviceSoap11)
@@ -56,9 +57,45 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderSigCorp203 = class (TACBrNFSeProviderABRASFv2)
+  protected
+    procedure Configuracao; override;
+
+    function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
+    function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
+    function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
+
+    procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
+  end;
+
+  TACBrNFSeXWebserviceSigCorp204 = class(TACBrNFSeXWebserviceSoap11)
+  private
+    function GetNameSpace: string;
+    function GetSoapAction: string;
+    function GetURL: string;
+  public
+    function Recepcionar(ACabecalho, AMSG: String): string; override;
+    function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
+    function GerarNFSe(ACabecalho, AMSG: String): string; override;
+    function ConsultarLote(ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSePorFaixa(ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSeServicoPrestado(ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSeServicoTomado(ACabecalho, AMSG: String): string; override;
+    function Cancelar(ACabecalho, AMSG: String): string; override;
+    function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
+
+    function TratarXmlRetornado(const aXML: string): string; override;
+
+    property URL: string read GetURL;
+    property NameSpace: string read GetNameSpace;
+    property SoapAction: string read GetSoapAction;
+  end;
+
+  TACBrNFSeProviderSigCorp204 = class (TACBrNFSeProviderABRASFv2)
   protected
     procedure Configuracao; override;
 
@@ -71,7 +108,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrUtil.XMLHTML, ACBrUtil.DateTime, ACBrUtil.Strings,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ACBrNFSeXNotasFiscais, SigCorp.GravarXml, SigCorp.LerXml;
 
 { TACBrNFSeProviderSigCorp203 }
@@ -80,7 +118,30 @@ procedure TACBrNFSeProviderSigCorp203.Configuracao;
 begin
   inherited Configuracao;
 
-  ConfigGeral.UseCertificateHTTP := False;
+  // Usado na leitura do envio
+  FpFormatoDataRecebimento := tcDatUSA;
+  // Usado na leitura das informações de cancelamento
+  FpFormatoDataHora := tcDatHor;
+  // Usado na leitura da data de emissão da NFS-e
+  FpFormatoDataEmissao := tcDatHor;
+
+  if ConfigGeral.Params.ParamTemValor('FormatoData', 'CancDDMMAAAA') then
+    FpFormatoDataHora := tcDatVcto;
+
+  if ConfigGeral.Params.ParamTemValor('FormatoData', 'CancMMDDAAAA') then
+    FpFormatoDataHora := tcDatUSA;
+
+  if ConfigGeral.Params.ParamTemValor('FormatoData', 'NFSeDDMMAAAA') then
+    FpFormatoDataEmissao := tcDatVcto;
+
+  if ConfigGeral.Params.ParamTemValor('FormatoData', 'NFSeMMDDAAAA') then
+    FpFormatoDataEmissao := tcDatUSA;
+
+  with ConfigGeral do
+  begin
+    UseCertificateHTTP := False;
+    QuebradeLinha := '|';
+  end;
 
   with ConfigAssinar do
   begin
@@ -130,6 +191,109 @@ begin
   end;
 end;
 
+procedure TACBrNFSeProviderSigCorp203.TratarRetornoCancelaNFSe(
+  Response: TNFSeCancelaNFSeResponse);
+var
+  Document: TACBrXmlDocument;
+  ANode: TACBrXmlNode;
+  Ret: TRetCancelamento;
+  IdAttr, xDataHora, xFormato: string;
+  AErro: TNFSeEventoCollectionItem;
+begin
+  Document := TACBrXmlDocument.Create;
+
+  try
+    try
+      if Response.ArquivoRetorno = '' then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod201;
+        AErro.Descricao := ACBrStr(Desc201);
+        Exit
+      end;
+
+      Document.LoadFromXml(Response.ArquivoRetorno);
+
+      ProcessarMensagemErros(Document.Root, Response);
+
+      Response.Sucesso := (Response.Erros.Count = 0);
+
+      ANode := Document.Root.Childrens.FindAnyNs('RetCancelamento');
+
+      if not Assigned(ANode) then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod209;
+        AErro.Descricao := ACBrStr(Desc209);
+        Exit;
+      end;
+
+      ANode := ANode.Childrens.FindAnyNs('NfseCancelamento');
+      if not Assigned(ANode) then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod210;
+        AErro.Descricao := ACBrStr(Desc210);
+        Exit;
+      end;
+
+      ANode := ANode.Childrens.FindAnyNs('Cancelamento');
+
+      ANode := ANode.Childrens.FindAnyNs('Confirmacao');
+      if not Assigned(ANode) then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod204;
+        AErro.Descricao := ACBrStr(Desc204);
+        Exit;
+      end;
+
+      Ret :=  Response.RetCancelamento;
+
+      xDataHora := ObterConteudoTag(ANode.Childrens.FindAnyNs('DataHoraCancelamento'), tcStr);
+      xFormato := 'YYYY/MM/DD';
+
+      if ConfigGeral.Params.ParamTemValor('FormatoData', 'CancDDMMAAAA') then
+        xFormato := 'DD/MM/YYYY';
+
+      if ConfigGeral.Params.ParamTemValor('FormatoData', 'CancMMDDAAAA') then
+        xFormato := 'MM/DD/YYYY';
+
+      Ret.DataHora := EncodeDataHora(xDataHora, xFormato);
+
+      if ConfigAssinar.IncluirURI then
+        IdAttr := ConfigGeral.Identificador
+      else
+        IdAttr := 'ID';
+
+      ANode := ANode.Childrens.FindAnyNs('Pedido');
+      ANode := ANode.Childrens.FindAnyNs('InfPedidoCancelamento');
+
+      Ret.Pedido.InfID.ID := ObterConteudoTag(ANode.Attributes.Items[IdAttr]);
+      Ret.Pedido.CodigoCancelamento := ObterConteudoTag(ANode.Childrens.FindAnyNs('CodigoCancelamento'), tcStr);
+
+      ANode := ANode.Childrens.FindAnyNs('IdentificacaoNfse');
+
+      with Ret.Pedido.IdentificacaoNfse do
+      begin
+        Numero := ObterConteudoTag(ANode.Childrens.FindAnyNs('Numero'), tcStr);
+        Cnpj := ObterConteudoTag(ANode.Childrens.FindAnyNs('Cnpj'), tcStr);
+        InscricaoMunicipal := ObterConteudoTag(ANode.Childrens.FindAnyNs('InscricaoMunicipal'), tcStr);
+        CodigoMunicipio := ObterConteudoTag(ANode.Childrens.FindAnyNs('CodigoMunicipio'), tcStr);
+      end;
+    except
+      on E:Exception do
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod999;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
+      end;
+    end;
+  finally
+    FreeAndNil(Document);
+  end;
+end;
+
 { TACBrNFSeXWebserviceSigCorp203 }
 
 function TACBrNFSeXWebserviceSigCorp203.Recepcionar(ACabecalho,
@@ -145,7 +309,7 @@ begin
   Request := Request + '</tem:RecepcionarLoteRps>';
 
   Result := Executar('http://tempuri.org/RecepcionarLoteRps', Request,
-                     ['RecepcionarLoteRpsResult', 'RecepcionarLoteRps'],
+                     ['RecepcionarLoteRpsResult', 'EnviarLoteRpsResposta'],
                      ['xmlns:tem="http://tempuri.org/"']);
 end;
 
@@ -299,6 +463,279 @@ begin
   Result := Executar('http://tempuri.org/SubstituirNfse', Request,
                      ['SubstituirNfseResult', 'SubstituirNfseResposta'],
                      ['xmlns:tem="http://tempuri.org/"']);
+end;
+
+function TACBrNFSeXWebserviceSigCorp203.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
+end;
+
+{ TACBrNFSeProviderSigCorp204 }
+
+procedure TACBrNFSeProviderSigCorp204.Configuracao;
+begin
+  inherited Configuracao;
+  {
+  // Usado na leitura do envio
+  FpFormatoDataRecebimento := tcDatUSA;
+  // Usado na leitura das informações de cancelamento
+  FpFormatoDataHora := tcDatHor;
+  // Usado na leitura da data de emissão da NFS-e
+  FpFormatoDataEmissao := tcDatHor;
+  }
+  with ConfigGeral do
+  begin
+    QuebradeLinha := '|';
+    ConsultaPorFaixaPreencherNumNfseFinal := True;
+  end;
+
+  with ConfigAssinar do
+  begin
+    Rps := True;
+    LoteRps := True;
+    CancelarNFSe := True;
+    RpsGerarNFSe := True;
+    SubstituirNFSe := True;
+  end;
+
+  with ConfigWebServices do
+  begin
+    VersaoDados := '2.04';
+    VersaoAtrib := '2.04';
+  end;
+
+  with ConfigMsgDados do
+  begin
+    GerarPrestadorLoteRps := True;
+    DadosCabecalho := GetCabecalho('');
+  end;
+end;
+
+function TACBrNFSeProviderSigCorp204.CriarGeradorXml(
+  const ANFSe: TNFSe): TNFSeWClass;
+begin
+  Result := TNFSeW_SigCorp204.Create(Self);
+  Result.NFSe := ANFSe;
+end;
+
+function TACBrNFSeProviderSigCorp204.CriarLeitorXml(
+  const ANFSe: TNFSe): TNFSeRClass;
+begin
+  Result := TNFSeR_SigCorp204.Create(Self);
+  Result.NFSe := ANFSe;
+end;
+
+function TACBrNFSeProviderSigCorp204.CriarServiceClient(
+  const AMetodo: TMetodo): TACBrNFSeXWebservice;
+var
+  URL: string;
+begin
+  URL := GetWebServiceURL(AMetodo);
+
+  if URL <> '' then
+    Result := TACBrNFSeXWebserviceSigCorp204.Create(FAOwner, AMetodo, URL)
+  else
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
+end;
+
+{ TACBrNFSeXWebserviceSigCorp204 }
+
+function TACBrNFSeXWebserviceSigCorp204.GetURL: string;
+begin
+  if TACBrNFSeX(FPDFeOwner).Configuracoes.WebServices.AmbienteCodigo = 1 then
+    Result := TACBrNFSeX(FPDFeOwner).Provider.ConfigWebServices.Producao.NameSpace
+  else
+    Result := TACBrNFSeX(FPDFeOwner).Provider.ConfigWebServices.Homologacao.NameSpace;
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.GetNameSpace: string;
+begin
+  Result := 'xmlns:ws="' + URL + '"';
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.GetSoapAction: string;
+begin
+  Result := URL + '#';
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.Recepcionar(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:RecepcionarLoteRps>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:RecepcionarLoteRps>';
+
+  Result := Executar(SoapAction + 'RecepcionarLoteRps', Request,
+                     ['RecepcionarLoteRpsResult', 'EnviarLoteRpsResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.RecepcionarSincrono(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:RecepcionarLoteRpsSincrono>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:RecepcionarLoteRpsSincrono>';
+
+  Result := Executar(SoapAction + 'RecepcionarLoteRpsSincrono', Request,
+                     ['RecepcionarLoteRpsSincronoResult', 'EnviarLoteRpsSincronoResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.GerarNFSe(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:GerarNfse>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:GerarNfse>';
+
+  Result := Executar(SoapAction + 'GerarNfse', Request,
+                     ['GerarNfseResult', 'GerarNfseResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.ConsultarLote(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:ConsultarLoteRps>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:ConsultarLoteRps>';
+
+  Result := Executar(SoapAction + 'ConsultarLoteRps', Request,
+                     ['ConsultarLoteRpsResult', 'ConsultarLoteRpsResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.ConsultarNFSePorRps(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:ConsultarNfsePorRps>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:ConsultarNfsePorRps>';
+
+  Result := Executar(SoapAction + 'ConsultarNfsePorRps', Request,
+                     ['ConsultarNfsePorRpsResult', 'ConsultarNfseRpsResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.ConsultarNFSePorFaixa(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:ConsultarNfseFaixa>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:ConsultarNfseFaixa>';
+
+  Result := Executar(SoapAction + 'ConsultarNfseFaixa', Request,
+                     ['ConsultarNfseFaixaResult', 'ConsultarNfseFaixaResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.ConsultarNFSeServicoPrestado(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:ConsultarNfseServicoPrestado>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:ConsultarNfseServicoPrestado>';
+
+  Result := Executar(SoapAction + 'ConsultarNfseServicoPrestado', Request,
+                     ['ConsultarNfseServicoPrestadoResult', 'ConsultarNfseServicoPrestadoResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.ConsultarNFSeServicoTomado(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:ConsultarNfseServicoTomado>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:ConsultarNfseServicoTomado>';
+
+  Result := Executar(SoapAction + 'ConsultarNfseServicoTomado', Request,
+                     ['ConsultarNfseServicoTomadoResult', 'ConsultarNfseServicoTomadoResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.Cancelar(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:CancelarNfse>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:CancelarNfse>';
+
+  Result := Executar(SoapAction + 'CancelarNfse', Request,
+                     ['CancelarNfseResult', 'CancelarNfseResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.SubstituirNFSe(ACabecalho,
+  AMSG: String): string;
+var
+  Request: string;
+begin
+  FPMsgOrig := AMSG;
+
+  Request := '<ws:SubstituirNfse>';
+  Request := Request + '<xml>' + XmlToStr(AMSG) + '</xml>';
+  Request := Request + '</ws:SubstituirNfse>';
+
+  Result := Executar(SoapAction + 'SubstituirNfse', Request,
+                     ['SubstituirNfseResult', 'SubstituirNfseResposta'],
+                     [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceSigCorp204.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
 end;
 
 end.

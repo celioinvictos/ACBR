@@ -39,7 +39,13 @@ interface
 uses
   SysUtils, Classes,
   ACBrBase, ACBrNFSeX, ACBrNFSeXDANFSeClass, ACBrNFSeXClass, frxClass,
-  DB, DBClient, frxDBSet, frxExportPDF, frxBarcode, ACBrValidador;
+  DB, frxDBSet, frxExportPDF, frxBarcode, ACBrValidador
+  {$IFDEF FPC}
+    ,BufDataset
+    ,ACBrUtil.FR.FCP
+  {$ELSE}
+    ,DBClient
+  {$ENDIF};
 
 type
   EACBrNFSeXDANFSeFR = class(Exception);
@@ -63,6 +69,8 @@ type
     procedure CarregaServicos(ANFSe: TNFSe);
     procedure CarregaTomador(ANFSe: TNFSe);
     procedure CarregaTransortadora(ANFSe: TNFSe);
+    procedure CarregaCondicaoPagamento(ANFSe: TNFSe);
+    procedure CarregaCondicaoPagamentoParcelas(ANFSe: TNFSe);
     procedure CarregaLogoPrefeitura;
     procedure CarregaImagemPrestadora;
 
@@ -78,13 +86,15 @@ type
     frxReport: TfrxReport; // Está como public, pois quando declarado em datamodule, tem acesso externo, e pode ser que alguem esteja usando.
     frxPDFExport: TfrxPDFExport;
     // CDSs
-    cdsIdentificacao: TClientDataSet;
-    cdsPrestador: TClientDataSet;
-    cdsServicos: TClientDataSet;
-    cdsParametros: TClientDataSet;
-    cdsTomador: TClientDataSet;
-    cdsTransportadora: TClientDataSet;
-    cdsItensServico: TClientDataSet;
+    cdsIdentificacao: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsPrestador: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsServicos: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsParametros: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsTomador: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsTransportadora: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsItensServico: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsCondicaoPagamento: {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
+    cdsCondicaoPagamentoParcelas : {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF};
 
     // FrxDBs
     frxIdentificacao: TfrxDBDataset;
@@ -94,24 +104,33 @@ type
     frxServicos: TfrxDBDataset;
     frxParametros: TfrxDBDataset;
     frxItensServico: TfrxDBDataset;
+    frxCondicaoPagamento: TfrxDBDataset;
+    frxCondicaoPagamentoParcelas: TfrxDBDataset;
+
+		FIncorporarFontesPdf: Boolean;
+		FIncorporarBackgroundPdf:Boolean;
 
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure ImprimirDANFSe(NFSe: TNFSe = nil); override;
-    procedure ImprimirDANFSePDF(NFSe: TNFSe = nil); override;
+    procedure ImprimirDANFSePDF(NFSe: TNFSe = nil); overload; override;
+    procedure ImprimirDANFSePDF(AStream: TStream; NFSe: TNFSe = nil); overload; override;
     property PreparedReport: TfrxReport read GetPreparedReport;
     property DANFSeXClassOwner: TACBrNFSeXDANFSeClass read FDANFSeXClassOwner;
   published
     property FastFile: String read FFastFile write FFastFile;
     property EspessuraBorda: Integer read FEspessuraBorda write FEspessuraBorda;
+		property IncorporarFontesPdf : boolean read FIncorporarFontesPdf write FIncorporarFontesPdf;
+		property IncorporarBackgroundPdf : boolean read FIncorporarBackgroundPdf write FIncorporarBackgroundPdf;
   end;
 
 implementation
 
 uses
   StrUtils, Math,
-  ACBrUtil, ACBrDFeUtil,
-  ACBrNFSeXConversao, ACBrNFSeXInterface;
+  ACBrUtil.Strings, ACBrDFeUtil,
+  ACBrUtil.Math, ACBrUtil.FilesIO, ACBrUtil.Base, ACBrUtil.DateTime, ACBrUtil.XMLHTML,
+  ACBrNFSeXConversao, ACBrNFSeXInterface, ACBrImage,ACBrDelphiZXingQRCode ;
 
 constructor TACBrNFSeXDANFSeFR.Create(AOwner: TComponent);
 begin
@@ -120,6 +139,8 @@ begin
   FFastFile := '';
   FEspessuraBorda := 1;
   CriarDataSetsFrx;
+  FIncorporarFontesPdf := false;
+  FIncorporarBackgroundPdf := false;
 end;
 
 destructor TACBrNFSeXDANFSeFR.Destroy;
@@ -131,6 +152,8 @@ begin
   frxServicos.Free;
   frxParametros.Free;
   frxItensServico.Free;
+  frxCondicaoPagamento.Free;
+  frxCondicaoPagamentoParcelas.Free;
 
   cdsIdentificacao.Free;
   cdsPrestador.Free;
@@ -139,6 +162,8 @@ begin
   cdsTomador.Free;
   cdsTransportadora.Free;
   cdsItensServico.Free;
+  cdsCondicaoPagamento.Free;
+  cdsCondicaoPagamentoParcelas.Free;
 
   frxReport.Free;
   frxPDFExport.Free;
@@ -175,6 +200,35 @@ begin
   end;
 end;
 
+procedure TACBrNFSeXDANFSeFR.ImprimirDANFSePDF(AStream: TStream; NFSe: TNFSe);
+const
+  TITULO_PDF = 'Nota Fiscal de Serviço Eletrônica';
+var
+  I: Integer;
+  LArquivoPDF: string;
+  OldShowDialog: Boolean;
+begin
+  if PrepareReport(NFSe) then
+  begin
+    frxPDFExport.Author := Sistema;
+    frxPDFExport.Creator := Sistema;
+    frxPDFExport.Subject := TITULO_PDF;
+    frxPDFExport.EmbeddedFonts := False;
+    frxPDFExport.Background := IncorporarBackgroundPdf;
+    frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
+
+    OldShowDialog := frxPDFExport.ShowDialog;
+    try
+      frxPDFExport.ShowDialog := False;
+
+      frxPDFExport.Stream := AStream;
+      frxReport.Export(frxPDFExport);
+    finally
+      frxPDFExport.ShowDialog := OldShowDialog;
+    end;
+  end;
+end;
+
 procedure TACBrNFSeXDANFSeFR.ImprimirDANFSePDF(NFSe: TNFSe);
 const
   TITULO_PDF = 'Nota Fiscal de Serviço Eletrônica';
@@ -189,7 +243,8 @@ begin
     frxPDFExport.Creator := Sistema;
     frxPDFExport.Subject := TITULO_PDF;
     frxPDFExport.EmbeddedFonts := False;
-    frxPDFExport.Background := False;
+    frxPDFExport.Background := IncorporarBackgroundPdf;
+    frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
 
     OldShowDialog := frxPDFExport.ShowDialog;
     try
@@ -246,6 +301,8 @@ begin
   frxReport.EnabledDataSets.Add(frxServicos);
   frxReport.EnabledDataSets.Add(frxParametros);
   frxReport.EnabledDataSets.Add(frxItensServico);
+  frxReport.EnabledDataSets.Add(frxCondicaoPagamento);
+  frxReport.EnabledDataSets.Add(frxCondicaoPagamentoParcelas);
 end;
 
 function TACBrNFSeXDANFSeFR.PrepareReport(ANFSe: TNFSe): Boolean;
@@ -357,7 +414,7 @@ begin
 
   RttiSetProp(frxPDFExport, 'Transparency', 'False');
 
-  cdsIdentificacao := TClientDataSet.Create(nil);
+  cdsIdentificacao := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsIdentificacao do
   begin
     Close;
@@ -376,10 +433,14 @@ begin
       Add('LinkNFSe', ftString, 500);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
-  cdsPrestador := TClientDataSet.Create(nil);
+  cdsPrestador := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsPrestador do
   begin
     Close;
@@ -404,10 +465,14 @@ begin
       Add('Email', ftString, 60);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
-  cdsServicos := TClientDataSet.Create(nil);
+  cdsServicos := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsServicos do
   begin
     Close;
@@ -452,18 +517,24 @@ begin
       Add('FonteCargaTributaria', ftString, 10);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
-  cdsParametros := TClientDataSet.Create(nil);
+  cdsParametros := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsParametros do
   begin
     Close;
     with FieldDefs do
     begin
+      Clear;
       Add('ExigibilidadeISS', ftString, 60);
       Add('CodigoMunicipio', ftString, 60);
       Add('MunicipioIncidencia', ftString, 60);
+      Add('MunicipioPrestacao', ftString, 60);
       Add('OutrasInformacoes', ftString, 1000);
       Add('InformacoesComplementares', ftString, 1000);
       Add('CodigoObra', ftString, 60);
@@ -475,7 +546,7 @@ begin
       Add('LogoPrefExpandido', ftString, 1);
       Add('LogoPrefCarregado', ftBlob);
       Add('Nome_Prefeitura', ftString, 256);
-      Add('Mensagem0', ftString, 50);
+      Add('Mensagem0', ftString, 60);
       Add('Sistema', ftString, 150);
       Add('Usuario', ftString, 50);
       Add('Site', ftString, 50);
@@ -484,14 +555,19 @@ begin
       Add('OptanteSimplesNacional', ftString, 30);
       Add('IncentivadorCultural', ftString, 10);
       Add('TipoRecolhimento', ftString, 15);
+      Add('id_sis_legado', ftInteger);
       //
       Add('ValorCredito', ftCurrency);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
-  cdsTomador := TClientDataSet.Create(nil);
+  cdsTomador := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsTomador do
   begin
     Close;
@@ -516,10 +592,14 @@ begin
       Add('Email', ftString, 60);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
-  cdsTransportadora := TClientDataSet.Create(nil);
+  cdsTransportadora := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsTransportadora do
   begin
     Close;
@@ -539,17 +619,21 @@ begin
       Add('TipoFrete', ftInteger);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
-  cdsItensServico := TClientDataSet.Create(nil);
+  cdsItensServico := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
   with cdsItensServico do
   begin
     Close;
     with FieldDefs do
     begin
       Clear;
-      Add('DiscriminacaoServico', ftString, 256);
+      Add('DiscriminacaoServico', ftString, 2000);
       Add('Quantidade', ftString, 10);
       Add('ValorUnitario', ftString, 30);
       Add('ValorTotal', ftString, 30);
@@ -561,7 +645,51 @@ begin
       Add('DescontoIncondicionado', ftString, 30);
     end;
     CreateDataSet;
-    LogChanges := False;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
+  end;
+
+  cdsCondicaoPagamento := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
+  with cdsCondicaoPagamento do
+  begin
+    Close;
+    with FieldDefs do
+    begin
+      Clear;
+
+      Add('Condicao', ftString, 30);
+      Add('Parcela', ftString, 10);
+    end;
+    CreateDataSet;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
+  end;
+
+  cdsCondicaoPagamentoParcelas := {$IFDEF FPC}TBufDataset{$ELSE}TClientDataSet{$ENDIF}.Create(nil);
+  with cdsCondicaoPagamentoParcelas do
+  begin
+    Close;
+    with FieldDefs do
+    begin
+      Clear;
+
+      Add('Condicao', ftString, 30);
+      Add('Parcela', ftString, 10);
+      Add('DataVencimento', ftString, 19);
+      Add('Valor', ftCurrency);
+    end;
+    CreateDataSet;
+    {$IFNDEF FPC}
+      LogChanges := False;
+    {$ELSE}
+      Open;
+    {$ENDIF}
   end;
 
   frxIdentificacao := TfrxDBDataset.Create(Self);
@@ -586,6 +714,42 @@ begin
       Add('LinkNFSe=LinkNFSe');
     end;
     DataSet := cdsIdentificacao;
+    BCDToCurrency := False;
+  end;
+
+  frxCondicaoPagamento := TfrxDBDataset.Create(Self);
+  with frxCondicaoPagamento do
+  begin
+    UserName := 'CondicaoPagamento';
+    Enabled := False;
+    CloseDataSource := False;
+    OpenDataSource := False;
+    with FieldAliases do
+    begin
+      Clear;
+      Add('Condicao=Condicao');
+      Add('Parcela=Parcela');
+    end;
+    DataSet := cdsCondicaoPagamento;
+    BCDToCurrency := False;
+  end;
+
+  frxCondicaoPagamentoParcelas := TfrxDBDataset.Create(Self);
+  with frxCondicaoPagamentoParcelas do
+  begin
+    UserName := 'CondicaoPagamentoParcelas';
+    Enabled := False;
+    CloseDataSource := False;
+    OpenDataSource := False;
+    with FieldAliases do
+    begin
+      Clear;
+      Add('Condicao=Condicao');
+      Add('Parcela=Parcela');
+      Add('DataVencimento=DataVencimento');
+      Add('Valor=Valor');
+    end;
+    DataSet := cdsCondicaoPagamentoParcelas;
     BCDToCurrency := False;
   end;
 
@@ -740,6 +904,7 @@ begin
         Add('ExigibilidadeISS=ExigibilidadeISS');
         Add('CodigoMunicipio=CodigoMunicipio');
         Add('MunicipioIncidencia=MunicipioIncidencia');
+        Add('MunicipioPrestacao=MunicipioPrestacao');
         Add('OutrasInformacoes=OutrasInformacoes');
         Add('InformacoesComplementares=InformacoesComplementares');
         Add('CodigoObra=CodigoObra');
@@ -761,6 +926,7 @@ begin
         Add('NaturezaOperacao=NaturezaOperacao');
         Add('TipoRecolhimento=TipoRecolhimento');
         Add('ValorCredito=ValorCredito');
+        Add('id_sis_legado=id_sis_legado');
       end;
       DataSet := cdsParametros;
       BCDToCurrency := False;
@@ -793,6 +959,41 @@ begin
   end;
 end;
 
+procedure TACBrNFSeXDANFSeFR.CarregaCondicaoPagamento(ANFSe: TNFSe);
+begin
+  With cdsCondicaoPagamento do
+    begin
+      EmptyDataSet;
+      Append;
+      FieldByName('Condicao').AsString         := CondicaoToStr(ANFSe.CondicaoPagamento.Condicao);
+      FieldByName('Parcela').AsString          := IntToStr(ANFSe.CondicaoPagamento.QtdParcela);
+      Post;
+    end;
+
+end;
+
+procedure TACBrNFSeXDANFSeFR.CarregaCondicaoPagamentoParcelas(ANFSe: TNFSe);
+var
+  i : Integer;
+begin
+  With cdsCondicaoPagamentoParcelas do
+    begin
+      EmptyDataSet;
+
+      for i := 0 to Pred(ANFSe.CondicaoPagamento.Parcelas.Count) do
+        begin
+          Append;
+          FieldByName('Condicao').AsString         := CondicaoToStr(ANFSe.CondicaoPagamento.Parcelas[i].Condicao);
+          FieldByName('Parcela').AsString          := ANFSe.CondicaoPagamento.Parcelas[i].Parcela;
+          FieldByName('DataVencimento').AsString   := FormatDateBr(ANFSe.CondicaoPagamento.Parcelas[i].DataVencimento);
+          FieldByName('Valor').AsFloat             := ANFSe.CondicaoPagamento.Parcelas[i].Valor;
+        end;
+
+      if State in [dsInsert, dsEdit] then
+        Post;
+    end;
+end;
+
 procedure TACBrNFSeXDANFSeFR.CarregaDados(ANFSe: TNFSe);
 begin
   CarregaIdentificacao(ANFSe);
@@ -802,6 +1003,8 @@ begin
   CarregaItensServico(ANFSe);
   CarregaParametros(ANFSe);
   CarregaTransortadora(ANFSe);
+  CarregaCondicaoPagamento(ANFSe);
+  CarregaCondicaoPagamentoParcelas(ANFSe);
 end;
 
 procedure TACBrNFSeXDANFSeFR.CarregaIdentificacao(ANFSe: TNFSe);
@@ -879,6 +1082,8 @@ end;
 procedure TACBrNFSeXDANFSeFR.CarregaParametros(ANFSe: TNFSe);
 var
   FProvider: IACBrNFSeXProvider;
+  CodigoIBGE: Integer;
+  xMunicipio, xUF: string;
 begin
   FProvider := TACBrNFSeX(FACBrNFSe).Provider;
 
@@ -889,6 +1094,8 @@ begin
 
     with ANFSe do
     begin
+      FieldByName('id_sis_legado').AsInteger := id_sis_legado;
+
       FieldByName('OutrasInformacoes').AsString := OutrasInformacoes;
       FieldByName('NaturezaOperacao').AsString := FProvider.NaturezaOperacaoDescricao(NaturezaOperacao);
 
@@ -908,8 +1115,20 @@ begin
 
         with Servico do
         begin
-          FieldByName('CodigoMunicipio').AsString := CodIBGEToCidade(StrToIntDef(IfThen(CodigoMunicipio <> '', CodigoMunicipio, ''), 0));
-          FieldByName('ExigibilidadeISS').AsString := ExigibilidadeISSDescricao(ExigibilidadeISS);
+          CodigoIBGE := StrToIntDef(CodigoMunicipio, 0);
+
+          try
+            xMunicipio := ObterNomeMunicipio(CodigoIBGE, xUF);
+          except
+            on E:Exception do
+            begin
+              xMunicipio := '';
+              xUF := '';
+            end;
+          end;
+
+          FieldByName('CodigoMunicipio').AsString := xMunicipio;
+          FieldByName('ExigibilidadeISS').AsString := FProvider.ExigibilidadeISSDescricao(ExigibilidadeISS);
 
           if NaturezaOperacao = no2 then
             FieldByName('MunicipioIncidencia').AsString := 'Fora do Município'
@@ -940,20 +1159,42 @@ begin
 
         with Servico do
         begin
-          FieldByName('ExigibilidadeISS').AsString := ExigibilidadeISSDescricao(ExigibilidadeISS);
+          FieldByName('ExigibilidadeISS').AsString := FProvider.ExigibilidadeISSDescricao(ExigibilidadeISS);
           FieldByName('TipoRecolhimento').AsString := TipoRecolhimento;
 
-          if Provedor = proAdm then
+          FieldByName('CodigoMunicipio').AsString := CodigoMunicipio;
+
+          try
+            xMunicipio := ObterNomeMunicipio(MunicipioIncidencia, xUF);
+            if estaVazio(xMunicipio) then
+            begin
+              xUF        := OrgaoGerador.Uf;
+              xMunicipio := ObterNomeMunicipio(StrToInt(OrgaoGerador.CodigoMunicipio),
+                                               xUF);
+            end;
+            xMunicipio := xMunicipio + '/' + xUF;
+          except
+            on E:Exception do
+            begin
+              xMunicipio := '';
+              xUF := '';
+            end;
+          end;
+
+          FieldByName('MunicipioIncidencia').AsString := xMunicipio;
+        end;
+
+        try
+          xMunicipio := ObterNomeMunicipio(strToIntDef(Servico.CodigoMunicipio,0), xUF);
+          xMunicipio := xMunicipio + '/' + xUF;
+        except
+          on E:Exception do
           begin
-            FieldByName('CodigoMunicipio').AsString := CodigoMunicipio;
-            FieldByName('MunicipioIncidencia').AsString := CodIBGEToCidade(MunicipioIncidencia);
-          end
-          else
-          begin
-            FieldByName('CodigoMunicipio').AsString := CodIBGEToCidade(StrToIntDef(IfThen(CodigoMunicipio <> '', CodigoMunicipio, ''), 0));
-            FieldByName('MunicipioIncidencia').AsString := CodIBGEToCidade(StrToIntDef(CodigoMunicipio, 0)); // Antes:
+            xMunicipio := '';
+            xUF := '';
           end;
         end;
+        FieldByName('MunicipioPrestacao').AsString := xMunicipio;
       end;
 
       with ConstrucaoCivil do
@@ -1085,7 +1326,7 @@ begin
       FieldByName('NumeroProcesso').AsString := NumeroProcesso;
       FieldByName('Descricao').AsString := Descricao;
       FieldByName('ResponsavelRetencao').AsString := FProvider.ResponsavelRetencaoToStr(ResponsavelRetencao);
-      FieldByName('Tributacao').AsString := TributacaoToStr(Tributacao);
+      FieldByName('Tributacao').AsString := FProvider.TributacaoToStr(Tributacao);
 
       with Valores do
       begin
@@ -1129,7 +1370,7 @@ begin
     begin
       if ValorIss > 0 then
       begin
-        FieldByName('ValorServicos').AsFloat          := BaseCalculo;
+        FieldByName('ValorServicos').AsFloat          := ANFSe.Servico.Valores.ValorServicos;
         FieldByName('ValorIss').AsFloat               := ValorIss;
         FieldByName('BaseCalculo').AsFloat            := BaseCalculo;
         FieldByName('Aliquota').AsFloat               := Aliquota;
@@ -1287,6 +1528,9 @@ begin
 end;
 
 procedure TACBrNFSeXDANFSeFR.frxReportBeforePrint(Sender: TfrxReportComponent);
+var LQrCode,LOutrasInformacoes: String;
+    LOutrasInformacoesLength : Integer;
+    LDiscriminacao, LNomeArqFr3 : string;
 begin
   if Provedor <> proEL then
   begin
@@ -1305,6 +1549,28 @@ begin
         FindObject('Memo73').Visible := DANFSeXClassOwner.ImprimeCanhoto;
     end;
   end;
+
+  frxReport.FindObject('Memo13').Visible := (not ((cdsItensServico.RecordCount > 0) and (frxReport.FindObject('Page2') <> nil))
+                                            or (frxReport.FindObject('Page2') = nil));
+
+  LOutrasInformacoes       := LowerCase(cdsParametros.FieldByName('outrasinformacoes').Value);
+  LOutrasInformacoesLength := Length(LOutrasInformacoes);
+
+  if pos('http://', LOutrasInformacoes) > 0 then
+     LQrCode := Trim(MidStr(LOutrasInformacoes, pos('http://', LOutrasInformacoes), LOutrasInformacoesLength))
+  else if pos('https://', LowerCase(LOutrasInformacoes)) > 0 then
+     LQrCode := Trim(MidStr(LOutrasInformacoes, pos('https://', LOutrasInformacoes), LOutrasInformacoesLength));
+
+  if cdsIdentificacao.FieldByName('LinkNFSe').Value <> '' then
+     LQrCode :=cdsIdentificacao.FieldByName('LinkNFSe').Value;
+
+  if Assigned(Sender) and (Sender.Name = 'imgQrCode') then
+  begin
+    TfrxPictureView(Sender).Visible := not (LQrCode = '');
+    if (LQrCode <> '') then
+      PintarQRCode(LQrCode, TfrxPictureView(Sender).Picture.Bitmap, qrAuto);
+  end;
+
 end;
 
 end.

@@ -10,10 +10,8 @@ object frmACBrCTe: TfrmACBrCTe
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object pnlMenus: TPanel
     Left = 0
@@ -1654,14 +1652,32 @@ object frmACBrCTe: TfrmACBrCTe
       object tsDistribuicao: TTabSheet
         Caption = 'Distribui'#231#227'o DFe'
         ImageIndex = 5
-        object btnDistribuicaoDFe: TButton
+        object btnDistrDFePorUltNSU: TButton
           Left = 8
           Top = 9
           Width = 178
           Height = 25
-          Caption = 'Distribui'#231#227'o Documentos Fiscais'
+          Caption = 'Distribui'#231#227'o DF-e por '#250'ltimo NSU'
           TabOrder = 0
-          OnClick = btnDistribuicaoDFeClick
+          OnClick = btnDistrDFePorUltNSUClick
+        end
+        object btnDistrDFePorNSU: TButton
+          Left = 192
+          Top = 9
+          Width = 178
+          Height = 25
+          Caption = 'Distribui'#231#227'o DF-e por NSU'
+          TabOrder = 1
+          OnClick = btnDistrDFePorNSUClick
+        end
+        object btnDistrDFePorChave: TButton
+          Left = 376
+          Top = 9
+          Width = 178
+          Height = 25
+          Caption = 'Distribui'#231#227'o DF-e por Chave'
+          TabOrder = 2
+          OnClick = btnDistrDFePorChaveClick
         end
       end
     end
@@ -1799,6 +1815,7 @@ object frmACBrCTe: TfrmACBrCTe
   end
   object ACBrCTeDACTeRL1: TACBrCTeDACTeRL
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
+    Usuario = 'ACBr'
     MargemInferior = 8.000000000000000000
     MargemSuperior = 8.000000000000000000
     MargemEsquerda = 6.000000000000000000
@@ -1815,7 +1832,7 @@ object frmACBrCTe: TfrmACBrCTe
     CasasDecimais.MaskqCom = ',0.00'
     CasasDecimais.MaskvUnCom = ',0.00'
     ACBrCTE = ACBrCTe1
-    ImprimirHoraSaida = False
+    ImprimirHoraSaida = True
     TipoDACTE = tiSemGeracao
     TamanhoPapel = tpA4
     Cancelada = False

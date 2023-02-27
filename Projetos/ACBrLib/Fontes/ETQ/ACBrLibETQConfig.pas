@@ -38,7 +38,7 @@ interface
 
 uses
   Classes, SysUtils, IniFiles, SynaChar,
-  ACBrLibConfig, ACBrDeviceConfig, ACBrDevice, ACBrETQ;
+  ACBrLibConfig, ACBrDeviceConfig, ACBrDevice, ACBrETQ, ACBrETQClass;
 
 type
 
@@ -109,7 +109,7 @@ implementation
 
 uses
   ACBrLibConsts, ACBrLibETQConsts,
-  ACBrLibETQBase, ACBrUtil;
+  ACBrLibETQBase, ACBrUtil.FilesIO, ACBrUtil.Strings;
 
 { TETQConfig }
 

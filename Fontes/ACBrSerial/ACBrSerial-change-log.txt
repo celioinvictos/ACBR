@@ -38,6 +38,277 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+22/02/2023
+-- ACBrBAL* --
+[+] Adicionado o evento OnGravarLog
+    (por: DSA)
+
+27/01/2023
+[*] TK-3548 Alterar Exceção do ACBrDevice Bluetooth quando não há dispositivo
+  por : Victor H Gonzales - Pandaaa
+
+19/01/2023
+-- ACBrDevice --
+[+] Adicionado o método:
+    procedure AcharPortas(const AStringList: TStrings);
+    que procura por Portas: USB, Serial, RAW e Bluetooth (conforme plataforma)
+
+[+] Adicionado os métodos:
+   function PedirPermissoes: Boolean;
+     (que chama as permissões do Dispositivo ativo)
+   function PedirPermissoesBlueTooth: Boolean;
+     (que chama as permissões do Dispositivo Bluetooth (usado em Android))
+
+-- ACBrDeviceClass --
+[+] Adicionado o método:
+    function PedirPermissoes: Boolean; virtual;
+    (que pode ser sobreescrito nas classes filhas, se necessário)
+
+-- ACBrDeviceBlueTooth --
+[*] Método "PedirPermissoes", modificado para ser sobrecarga da classe mãe.
+[*] Método "PedirPermissoes", modificado para lembrar da última resposta de
+    sucesso, e evitar pedir permissões de forma repetitiva.
+[*] Método "PedirPermissoes", modificado para ficar compatível com Android 12
+    http://www.projetoacbr.com.br/forum/index.php?showtopic=70435
+    (por: DSA e Andrei Ricardo)
+
+03/01/2023
+-- ACBrBAL, ACBrBALUranoUDC --
+[+] Inclusão do novo modelo ACBrBALUranoUDC; 
+    Por: -=MarcoS=-
+
+14/10/2022
+-- ACBrPosPrinterAndroidHelper, ACBrPosPrinterGEDI, ACBrPosPrinterElginE1Lib --
+[*] Refactoring para reaproveitamento de códigos em comum
+
+-- ACBrPosPrinterTecToySunmiLib --
+[+] Adição de nova Classe Externa para ACBrPosPrinter. Compatibilizando o
+    Serviço de impressão da Sunmi com as Tags do ACBrPosPrinter
+(por: DSA)
+
+13/10/2022
+-- ACBrPosPrinter, ACBrEscPosEpson, ACBrEscBematech, ACBrEscDaruma,
+   ACBrEscCustomPos, ACBrEscDatecs, ACBrEscDiebold, ACBrEscElgin,
+   ACBrEscPosStar, ACBrEscSunmi --
+[*] Refactoring e Padronização na rotina "LerInfo"
+
+-- ACBrPosPrinter --
+[*] Ajuste na criação para definição de um tempo padrão para:
+    ACBrPosPrinter.Device.TimeOutMilissegundos em 300
+[*] Ajuste no metodo "TACBrPosPrinter.TxRx", para usar o TimeOut definido em:
+    "ACBrPosPrinter.Device.TimeOutMilissegundos"
+[*] Método "TxRx", modificado, para receber como Default o parâmetro "TimeOut=0",
+    situação onde será utilizado o valor de "Device.TimeOutMilissegundos"
+[*] Método "TACBrPosPrinter.Zerar", modificado para desligar Flag de "FonteB"
+
+-- ACBrEscPosStar --
+[-] Método "ComandoImprimirImagemRasterStr", modificado para gerar imagens sem a
+    quebra de linha
+[+] Adicionada sobrecarga nos métodos:
+    - procedure LerStatus(var AStatus: TACBrPosPrinterStatus);
+    - function LerInfo: String;
+
+-- ACBrEscSunmi --
+[-] Comando "Zera", modificado, para resetar letra em "Fonte A"
+[-] Remoção de Tags não suportadas "cTagLigaCondensado", "cTagDesligaCondensado"
+[-] Remoção de método "Configurar", que forçava CodePage em UTF8.
+    ( Use sunmi-cloud-printer-setup.exe, para ajustar CodePage )
+[*] Método "TACBrEscSunmi.ComandoFonte", ajustado para processar Tag "FonteB"
+[-] Método "TACBrEscSunmi.ComandoPaginaCodigo", modificado para desligar
+    Caracteres chineses e informar a Pagina de Código
+(por: DSA)
+
+12/10/2022
+-- ACBrPosPrinter --
+[*] Ajuste em "TACBrPosPrinter.TxRx", para permitir leitura de Dados sem o envio
+    de algo
+
+-- ACBrPosPrinterElginE1Lib, ACBrPosPrinterElginE1Service, ACBrPosPrinterGEDI --
+[*] Correção de quebras de linhas nos fontes
+
+-- ACBrPosPrinterElginE1Lib --
+[-] Correção de A.V. em "TE1LibPrinter.FinalizarImpressao", quando não havia uso
+    da classe
+
+-- ACBrWinUSBDevice --
+[*] Ajuste no método "TACBrUSBWinDevice.GetDeviceName", para sempre preferir o
+    Nome definido em "ACBrUSBID.ini", ao invez do "FrendlyName do dispositivo USB
+
+-- ACBrUSBID --
+[*] Ajuste no modelo "Sunmi, NT210", para deixar a escolha do protocolo livre
+(por: DSA)
+
+12/09/2022
+-- ACBrBAL, ACBrBALClass, ACBrBALToledo --
+[+] Inclusão de função para envio do preço/kg para balança.
+    (Utilizado para mostrar no visor da balança o Total do Produto pesado)
+    Por: Athos Desenvolvimento
+
+01/08/2022
+-- ACBrETQZplII --
+[*] Alteração para corrigir o carregamento de imagem
+    https://www.projetoacbr.com.br/forum/topic/68234-problema-ao-carregar-imagem-no-acbretq/
+	Por: Elias César
+
+21/07/2022
+-- ACBrLCB --
+[+] TK-2908 Adicionado a propriedade de prefixo
+    Por: Pedro E. Braga
+
+13/07/2022
+-- ACBrEscSunmi --
+[+] Adicionada informação de Tags não suportadas pela impressora, como Impressão
+    em modo Condensado e Programação de Logotipo
+[*] Melhoria na leitura de Informações para funcionamento por TCP
+    (por: DSA)
+
+08/07/2022
+-- ACBrPosPrinter --
+[+] Adicionado o modelo "ppEscSunmi"
+[*] Ajuste em "TACBrPosPrinter.Imprimir", para não adicionar uma quebra de Linha
+    após a última linha do relatório, pois isso pode atrapalhar a detecção de
+    Fim de relatório em alguns equipamentos
+
+-- ACBrEscSunmi --
+[+] Novo protocolo de Impressão, para a linha de impressoras da Sunmi
+
+-- ACBrUSBID.ini --
+[+] Adicionado fabricante 324f=Sunmi
+[+] Adicionada a Impressora 00d2=NT312, da Sunmi
+
+-- ACBrEscPosEpson --
+[*] Remoção de variável não utilizada "FInfo"
+
+-- ACBrEscPosStar --
+[+] Adicionado suporte ao comando de Abertura de Gaveta
+
+05/05/2022
+-- ACBrWinUSBDevice --
+[+] Adicionado o método "Purge", para limpar dados enviados e recebidos da USB
+
+-- ACBrDeviceWinUSB --
+[+] Implementado o método "TACBrDeviceWinUSB.Limpar"
+
+-- ACBrPosPrinter --
+[*] Método "TACBrPosPrinter.TxRx", TimeOut default, diminuido de 500 para 300
+[*] Método "TACBrPosPrinter.ConfigurarRegiaoModoPagina": Adicionado Parâmetro
+    para permitir definir a direção do texto:
+    function ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura, ALargura: Integer;
+      ADirecao: TACBrPosDirecao = dirEsquerdaParaDireita
+
+-- ACBrUSBID.ini --
+[+] Adicionada identificação (VID/PID) de Impressora da Sunmi NT210
+
+-- ACBrDeviceBlueTooth --
+[-] Corrigido problema de vazamento de memória, caso a chamada ao método
+    BlueToothSocket.Connect falhe
+    (por: DSA)
+
+22/04/2022
+-- ACBrETQEpl2 --
+[*] Correçao em "AjustarNomeArquivoImagem", para calcular nomes com no máximo 8
+    caracteres, conforme o Manual
+    (por: DSA)
+
+20/04/2022
+-- ACBrETQZplII --
+[*] Ajustes nos métodos de Carregamento e impressão de Imagem, para considerar
+    a propriedade "LimparMemoria", e carregar a imagem em uma área volátil ou não
+
+-- ACBRETQ, ACBrPosPrinterElginE1Lib, ACBrPosPrinterGEDI --
+[*] Ajustes para usar novas Units de ACBrUtil
+    (por: DSA)
+
+31/03/2022
+-- ACBrETQ, ACBrETQClass --
+[*] Metodo "ConverterUnidade" modificado para ser Publico na Unit e independente
+    da Classe
+
+-- ACBrETQ, ACBrETQClass, ACBrETQEpl2, ACBrETQEscLabel, ACBrETQPpla, ACBrETQZplII --
+[*] Remoção de Hints
+[+] Implementado o método: "ApagarImagem(const NomeImagem: String = '*');"
+    Se NomeImagem for '*', apaga todas as Imagens
+    (por: DSA)
+
+27/03/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Waldir Paim
+
+25/03/2022
+-- ACBrWinUSBDevice --
+[*] Remoção de Warnings e Hints.
+   Por: Waldir Paim
+
+Data: 21/03/2022
+-- ACBrDevice, ACBrETQClass --
+[*] Os tipos abaixo, foram movidos de "ACBrDevice.pas" para "ACBrETQClass.pas"
+    TACBrETQUnidade, TACBrETQDPI, TACBrETQOrientacao, TACBrETQBarraExibeCodigo,
+    TACBrETQBackFeed, TACBrETQOrigem
+
+-- ACBrETQ, ACBrETQClass --
+[+] Adicionado os métodos:
+    procedure DefinirCor(FrenteCor: Cardinal; FrenteOpacidade: Byte;
+      FundoCor: Cardinal; FundoOpacidade: Byte); overload;
+    procedure DefinirCor(FrenteR, FrenteG, FrenteB, FrenteOpacidade: Byte;
+      FundoR, FundoG, FundoB, FundoOpacidade: Byte); overload;
+    procedure DefinirCorPadrao;
+    - Para permitir mudar a Cor de Impressão de Frente e Fundo de Objetos como
+      Texto, Caixa, Linhas, Códigos, etc
+      Usado apenas no modelo: "EscLabel"
+[+] Adicionado o método:
+    procedure DefinirDimensoes(Largura, Altura: Integer;
+      EspacoEntreEtiquetas: Integer = -1; EspacoEsquerda: Integer = -1);
+    - Para permitir definir as Dimensões de uma Etiqueta, em um formulário sem
+      Cortes, Gaps ou BlackMark
+      Usado apenas no modelo: "EscLabel"
+[+] Adicionada a propriedade: "Guilhotina: Boolean default False;"
+    Se for True, acionará a guilhotina da Impressora, após o término da Impressão,
+    (quando disponível)
+[+] Adicionada a propriedade: "DeteccaoEtiqueta: TACBrETQDeteccaoEtiqueta"
+    (mdeNone, mdeGap, mdeBlackMark), default mdeNone.
+
+-- ACBrETQClass --
+[+] Adicionados novos Métodos Protegidos (Protected)
+    function ComandoDeteccao: AnsiString; virtual;
+    function ComandoGuilhotina: AnsiString; virtual;
+    function ComandoDimensoes: AnsiString; virtual;
+[*] Método "ComandosIniciarEtiqueta", modificado para adicionar a lista de
+    comandos, chamadas para: ComandoDeteccao, ComandoGuilhotina, ComandoDimensoes
+
+-- ACBrETQEpl2, ACBrETQPpla, ACBrETQZplII --
+[+] Adicionado suporte ao comando "ComandoGuilhotina"
+
+-- ACBrETQEscLabel --
+[+] Adicionado suporte aos comandos: "ComandoCor", "ComandoDeteccao" e "ComandoDimensoes"
+
+-- ACBrETQZplII --
+[*] Adicionada sobrecarga de alguns métodos, movendo-os em Protected, para
+    permitir a sobrecarga em TACBrETQEscLabel
+    (por: DSA)
+
+Data: 16/03/2022
+-- ACBrETQ, ACBrETQClass --
+[+] Adicionado o modelo "etqEscLabel", que implementa a comunicação do Protocolo
+    Esc/Label da Epson, baseado do Zpl2 da Zebra
+[*] Método "ImprimirCaixa", modificado para permitir informar Parâmetro com o
+    angulo dos Cantos. Canto: Integer = 0.
+    Suporta Valores 0 a 8 (0 sem arredondamento).
+    Suportado apenas em ZPL2 e EscLabel
+[*] Método "CarregarImagem", modificado para retornar por referência, o Nome do
+    arquivo da Imagem, como armazenado na memória da Impressora
+
+-- ACBrETQZplII --
+[*] Método "ComandoImprimirCaixa", modificado para processar o parâmeto recebido
+    em "Canto", para permitir caixas arredondadas
+[*] Métodos "ComandoImprimirImagem" e "ComandoCarregarImagem" refatorados,
+    para melhor detecção do Tipo e suportar arquivos "PNG" mono
+
+-- ACBrETQEscLabel --
+[+] Nova Unit com a implementação das diferenças de EscLabel e Zpl2
+    Suporte às Impressoras "Epson ColorWorks"
+    (por: DSA)
+
 -- ACBrDeviceLPT --
 [-] Correção para envio de Dados em Linux, Delphi FMX, por Stream
     (por: DSA)

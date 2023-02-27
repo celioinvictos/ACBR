@@ -55,6 +55,8 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property NameSpace: string read GetNameSpace;
   end;
 
@@ -73,7 +75,10 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrXmlDocument,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrXmlDocument,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ISSFortaleza.GravarXml, ISSFortaleza.LerXml;
 
@@ -123,6 +128,8 @@ begin
     ConsultarNFSe := True;
     CancelarNFSe := True;
   end;
+
+  SetNomeXSD('***');
 
   with ConfigSchemas do
   begin
@@ -176,7 +183,7 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod108;
-    AErro.Descricao := Desc108;
+    AErro.Descricao := ACBrStr(Desc108);
     Exit;
   end;
 
@@ -257,7 +264,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -277,7 +284,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -390,6 +397,19 @@ begin
   Result := Executar('', Request,
                      ['CancelarNfseResposta', 'CancelarNfseResposta'],
                      []);
+end;
+
+function TACBrNFSeXWebserviceISSFortaleza.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+//  Result := inherited TratarXmlRetornado(UTF8Decode(aXML));
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverIdentacao(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
 end;
 
 end.

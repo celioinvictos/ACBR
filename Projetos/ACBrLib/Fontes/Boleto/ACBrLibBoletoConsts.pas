@@ -95,6 +95,8 @@ const
   CChaveDigitoVerificadorAgenciaConta= 'DigitoVerificadorAgenciaConta';
   CChaveIdentDistribuicao= 'IdentDistribuicao';
   CChaveOperacao= 'Operacao';
+  CChavePIX = 'ChavePIX';
+  CTipoChavePix = 'TipoChavePIX';
 
   CSessaoBoletoFCFortesConfig = 'BoletoBancoFCFortesConfig';
   CChaveDirLogo= 'DirLogo';
@@ -117,12 +119,14 @@ const
   CChaveScope= 'Scope';
   CChaveIndicadorPix= 'IndicadorPix';
 
-  CSessaoBoletoWebSevice = 'BoletoWebSevice';
+  CSessaoBoletoWebService = 'BoletoWebSevice';
   CChaveLogRegistro = 'LogRegistro';
   CChavePathGravarRegistro = 'PathGravarRegistro';
   CChaveAmbiente = 'Ambiente';
   CChaveVersaoDF = 'VersaoDF';
   CChaveUseCertificateHTTP = 'UseCertificateHTTP';
+  CChaveSSLType = 'SSLType';
+  CChaveTimeout = 'Timeout';
 
   CSessaoBolConfig = 'BoletoConfig';
   CChaveemailAssuntoBoleto= 'emailAssuntoBoleto';

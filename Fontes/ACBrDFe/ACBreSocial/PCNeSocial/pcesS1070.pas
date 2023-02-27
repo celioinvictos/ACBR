@@ -55,7 +55,7 @@ uses
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IfEnd}
-  ACBrBase, ACBrUtil,
+  ACBrBase,
   pcnConversao, pcnGerador, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -68,7 +68,6 @@ type
   TDadosProc = class;
   TInfoProcesso = class;
   TIdeProcesso = class;
-
 
   TS1070Collection = class(TeSocialCollection)
   private
@@ -212,6 +211,9 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.Base,
+  ACBrUtil.DateTime,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TS1070Collection }
@@ -405,9 +407,7 @@ procedure TEvtTabProcesso.GerarDadosProc;
 begin
   Gerador.wGrupo('dadosProc');
 
-  if self.InfoProcesso.ideProcesso.tpProc = tpJudicial then
-    Gerador.wCampo(tcInt, '', 'indAutoria', 1, 1, 1, eSindAutoriaToStr(InfoProcesso.dadosProc.indAutoria));
-
+  Gerador.wCampo(tcInt, '', 'indAutoria', 1, 1, 1, eSindAutoriaToStr(InfoProcesso.dadosProc.indAutoria));
   Gerador.wCampo(tcInt, '', 'indMatProc', 1, 2, 1, eSTpIndMatProcToStr(InfoProcesso.dadosProc.indMatProc));
 
   if VersaoDF >= ve02_04_02 then
@@ -448,6 +448,7 @@ end;
 function TEvtTabProcesso.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);

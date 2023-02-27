@@ -44,6 +44,27 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+14/12/2022
+--ACBrNFeDANFEFRDM--
+[+] TK-3373 ACBrNFe - Impressão do xPed e nItemPed no DANFeFR - CDS apenas
+  por : Alex Heinen
+
+03/10/2022
+-- ACBrNFeDANFEFRDM --
+[*] TK-3097 ACBrNFe - Ocultar info De Olho no Imposto do quadro do calculo dos tributos ImprimeTributos <> trbNormal
+  por : Pandaaa / infocity
+
+30/09/2022
+-- ACBrNFeDANFEFRDM--
+[+] TK-3087 xPed adicionar somente ao datamodule NFeDANFeFR 
+  possibilita personalização de fr3
+  por : cdsistema
+
+26/05/2022
+-- ACBrNFeDANFER ACBrNFeDANFERDM --
+[+] TK-2693 ACBrNFe - Geração do DANFe em stream com FastReport
+    Por Pandaaa / renato.pavan
+
 17/05/2021
 -- ACBrNFeDANFERDM --
 [*] Impressão da tag "xPag" como descrição da forma de pagamento.

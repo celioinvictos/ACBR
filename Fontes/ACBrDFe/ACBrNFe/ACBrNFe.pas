@@ -44,7 +44,7 @@ uses
   ACBrDFeDANFeReport,
   pcnNFe, pcnConversao, pcnConversaoNFe,
   pcnEnvEventoNFe, pcnInutNFe, 
-  ACBrUtil;
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.Math, ACBrUtil.FilesIO;
 
 const
   ACBRNFE_NAMESPACE = 'http://www.portalfiscal.inf.br/nfe';
@@ -97,7 +97,7 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
-      StreamNFe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil); override;
+      StreamNFe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil; sBCC: TStrings = nil); override;
 
     function Enviar(ALote: Int64; Imprimir: Boolean = True;
       Sincrono: Boolean = False; Zipado: Boolean = False): Boolean; overload;
@@ -214,13 +214,13 @@ end;
 
 procedure TACBrNFe.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
   sCC: TStrings; Anexos: TStrings; StreamNFe: TStream; const NomeArq: String;
-  sReplyTo: TStrings);
+  sReplyTo: TStrings; sBCC: TStrings);
 begin
   SetStatus( stNFeEmail );
 
   try
     inherited EnviarEmail(sPara, sAssunto, sMensagem, sCC, Anexos, StreamNFe, NomeArq,
-      sReplyTo);
+      sReplyTo, sBCC);
   finally
     SetStatus( stIdle );
   end;
@@ -446,9 +446,9 @@ begin
 
   //CNPJ OU CPF
   if (FNFe.Dest.EnderDest.UF = 'EX') then
-    wchave := wchave + Poem_Zeros('0', 14)
+    wchave := wchave + ACBrUtil.Strings.Poem_Zeros('0', 14)
   else
-    wchave := wchave + Poem_Zeros(FNFe.Dest.CNPJCPF, 14);
+    wchave := wchave + ACBrUtil.Strings.Poem_Zeros(FNFe.Dest.CNPJCPF, 14);
 
   //VALOR DA NF
   wchave := wchave + IntToStrZero(Round(FNFe.Total.ICMSTot.vNF * 100), 14);
@@ -459,7 +459,7 @@ begin
   wchave := wchave + wicms_p + wicms_s;
 
   //DIA DA EMISSAO
-  wchave := wchave + Poem_Zeros(DayOf(FNFe.Ide.dEmi), 2);
+  wchave := wchave + ACBrUtil.Strings.Poem_Zeros(DayOf(FNFe.Ide.dEmi), 2);
 
   //DIGITO VERIFICADOR
   GerarDigito_Contigencia(Digito, wchave);

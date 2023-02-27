@@ -38,8 +38,8 @@ interface
 
 uses
   SysUtils, Classes,
-  ACBrUtil, ACBrDFeException, ACBrXmlReader, ACBrNFSeXInterface,
-  ACBrNFSeXParametros, ACBrNFSeXClass, ACBrNFSeXConversao;
+  ACBrXmlBase, ACBrXmlReader,
+  ACBrNFSeXInterface, ACBrNFSeXClass, ACBrNFSeXConversao;
 
 type
   { TNFSeRClass }
@@ -47,15 +47,18 @@ type
   TNFSeRClass = class(TACBrXmlReader)
   private
     FNFSe: TNFSe;
-    FtpXML: TtpXML;
     FProvedor: TnfseProvedor;
+    FtpXML: TtpXML;
+    FAmbiente: TACBrTipoAmbiente;
 
   protected
     FpAOwner: IACBrNFSeXProvider;
 
-    function NormatizaItemListaServico(const Codigo: string): string;
+    function NormatizarItemListaServico(const Codigo: string): string;
     function ItemListaServicoDescricao(const Codigo: string): string;
-    function TipodeXMLLeitura(const aArquivo: string): TtpXML;
+    function TipodeXMLLeitura(const aArquivo: string): TtpXML; virtual;
+    function NormatizarXml(const aXml: string): string; virtual;
+    function NormatizarAliquota(const Aliquota: Double): Double;
   public
     constructor Create(AOwner: IACBrNFSeXProvider);
 
@@ -64,9 +67,15 @@ type
     property NFSe: TNFSe             read FNFSe     write FNFSe;
     property Provedor: TnfseProvedor read FProvedor write FProvedor;
     property tpXML: TtpXML           read FtpXML    write FtpXML;
+    property Ambiente: TACBrTipoAmbiente read FAmbiente write FAmbiente default taHomologacao;
   end;
 
 implementation
+
+uses
+  StrUtilsEx,
+  ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrDFeException;
 
 { TNFSeRClass }
 
@@ -93,7 +102,15 @@ begin
   raise EACBrDFeException.Create(ClassName + '.LerXml, não implementado');
 end;
 
-function TNFSeRClass.NormatizaItemListaServico(const Codigo: string): string;
+function TNFSeRClass.NormatizarAliquota(const Aliquota: Double): Double;
+begin
+  if Aliquota < 1 then
+    Result := Aliquota * 100
+  else
+    Result := Aliquota;
+end;
+
+function TNFSeRClass.NormatizarItemListaServico(const Codigo: string): string;
 var
   Item: Integer;
   xCodigo: string;
@@ -109,9 +126,23 @@ begin
   Result := Copy(xCodigo, 1, 2) + '.' + Copy(xCodigo, 3, 2);
 end;
 
-function TNFSeRClass.TipodeXMLLeitura(const aArquivo: string): TtpXML;
+function TNFSeRClass.NormatizarXml(const aXml: string): string;
 begin
-  if (Pos('/infnfse>', LowerCase(Arquivo)) > 0) then
+{$IfDef FPC}
+  Result := aXml;
+{$Else}
+  Result := ParseText(aXml, True, False);
+  Result := FastStringReplace(Result, '&', '&amp;', [rfReplaceAll]);
+{$EndIf}
+end;
+
+function TNFSeRClass.TipodeXMLLeitura(const aArquivo: string): TtpXML;
+var
+  aXML: string;
+begin
+  aXML := RemoverPrefixosDesnecessarios(aArquivo);
+
+  if (Pos('/infnfse>', LowerCase(aXML)) > 0) then
     Result := txmlNFSe
   else
     Result := txmlRPS;

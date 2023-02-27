@@ -55,6 +55,8 @@ type
     function ConsultarNFSeServicoTomado(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
+
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderEloTech203 = class (TACBrNFSeProviderABRASFv2)
@@ -91,7 +93,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
+  ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ACBrNFSeXNotasFiscais, EloTech.GravarXml, EloTech.LerXml;
 
 { TACBrNFSeProviderEloTech203 }
@@ -105,6 +108,7 @@ begin
     UseCertificateHTTP := False;
     Identificador := '';
     CancPreencherCodVerificacao := True;
+    DetalharServico := True;
   end;
 
   with ConfigWebServices do
@@ -188,7 +192,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -204,7 +208,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod209;
-        AErro.Descricao := Desc209;
+        AErro.Descricao := ACBrStr(Desc209);
         Exit;
       end;
 
@@ -214,7 +218,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod210;
-        AErro.Descricao := Desc210;
+        AErro.Descricao := ACBrStr(Desc210);
         Exit;
       end;
 
@@ -224,7 +228,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod204;
-        AErro.Descricao := Desc204;
+        AErro.Descricao := ACBrStr(Desc204);
         Exit;
       end;
 
@@ -266,7 +270,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -297,7 +301,7 @@ begin
                              Requerente +
                              '<' + Prefixo + 'LoteRps' + NameSpace2 + IdAttr  + Versao + '>' +
                                '<' + Prefixo2 + 'NumeroLote>' +
-                                  Response.Lote +
+                                  Response.NumeroLote +
                                '</' + Prefixo2 + 'NumeroLote>' +
                                  Prestador +
                                '<' + Prefixo2 + 'QuantidadeRps>' +
@@ -331,7 +335,7 @@ begin
     Response.ArquivoEnvio := '<' + Prefixo + TagEnvio + NameSpace + '>' +
                            Requerente +
                            '<' + Prefixo + 'NumeroLote>' +
-                             Response.Lote +
+                             Response.NumeroLote +
                            '</' + Prefixo + 'NumeroLote>' +
                          '</' + Prefixo + TagEnvio + '>';
   end;
@@ -352,13 +356,13 @@ begin
     Response.ArquivoEnvio := '<' + Prefixo + TagEnvio + NameSpace + '>' +
                            '<' + Prefixo + 'IdentificacaoRps>' +
                              '<' + Prefixo2 + 'Numero>' +
-                               Response.NumRPS +
+                               Response.NumeroRps +
                              '</' + Prefixo2 + 'Numero>' +
                              '<' + Prefixo2 + 'Serie>' +
-                               Response.Serie +
+                               Response.SerieRps +
                              '</' + Prefixo2 + 'Serie>' +
                              '<' + Prefixo2 + 'Tipo>' +
-                               Response.Tipo +
+                               Response.TipoRps +
                              '</' + Prefixo2 + 'Tipo>' +
                            '</' + Prefixo + 'IdentificacaoRps>' +
                            Requerente +
@@ -447,7 +451,7 @@ begin
     Requerente := GerarRequerente(Emitente.CNPJ, Emitente.InscMun, Emitente.WSSenha);
 
     ChavedeAcesso := '<ChaveAcesso>' +
-                        Trim(InfoCanc.CodVerificacao) +
+                        Trim(InfoCanc.ChaveNFSe) +
                      '</ChaveAcesso>';
 
     Response.ArquivoEnvio := '<' + Prefixo + 'CancelarNfseEnvio' + NameSpace + '>' +
@@ -509,9 +513,7 @@ function TACBrNFSeXWebserviceEloTech203.Recepcionar(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'EnviarLoteRpsResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -520,9 +522,7 @@ function TACBrNFSeXWebserviceEloTech203.RecepcionarSincrono(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'EnviarLoteRpsSincronoResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -531,9 +531,7 @@ function TACBrNFSeXWebserviceEloTech203.ConsultarLote(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'ConsultarLoteRpsResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -542,9 +540,7 @@ function TACBrNFSeXWebserviceEloTech203.ConsultarNFSePorFaixa(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'ConsultarNfsePorFaixaResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -553,9 +549,7 @@ function TACBrNFSeXWebserviceEloTech203.ConsultarNFSePorRps(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'ConsultarNfseRpsResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -564,9 +558,7 @@ function TACBrNFSeXWebserviceEloTech203.ConsultarNFSeServicoPrestado(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'ConsultarNfseServicoPrestadoResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -575,9 +567,7 @@ function TACBrNFSeXWebserviceEloTech203.ConsultarNFSeServicoTomado(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'ConsultarNfseServicoTomadoResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -585,9 +575,7 @@ function TACBrNFSeXWebserviceEloTech203.Cancelar(ACabecalho, AMSG: String): stri
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'CancelarNfseResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
 end;
 
@@ -596,10 +584,20 @@ function TACBrNFSeXWebserviceEloTech203.SubstituirNFSe(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG,
-//                     ['return', 'outputXML', 'SubstituirNfseResposta'],
-                     [''],
+  Result := Executar('', AMSG, [],
         ['xmlns:nfse="http://shad.elotech.com.br/schemas/iss/nfse_v2_03.xsd"']);
+end;
+
+function TACBrNFSeXWebserviceEloTech203.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverIdentacao(Result);
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
 end;
 
 end.

@@ -13,9 +13,9 @@ package ACBr_Comum;
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION OFF}
-{$OVERFLOWCHECKS OFF}
-{$RANGECHECKS OFF}
-{$REFERENCEINFO ON}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$DEFINITIONINFO ON}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
@@ -38,13 +38,21 @@ contains
   ACBrBase in '..\..\..\Fontes\ACBrComum\ACBrBase.pas',
   ACBrConsts in '..\..\..\Fontes\ACBrComum\ACBrConsts.pas',
   ACBrUtil in '..\..\..\Fontes\ACBrComum\ACBrUtil.pas',
+  ACBrUtil.Compatibilidade in '..\..\..\Fontes\ACBrComum\ACBrUtil.Compatibilidade.pas',
+  ACBrUtil.Base in '..\..\..\Fontes\ACBrComum\ACBrUtil.Base.pas',
+  ACBrUtil.DateTime in '..\..\..\Fontes\ACBrComum\ACBrUtil.DateTime.pas',
+  ACBrUtil.FilesIO in '..\..\..\Fontes\ACBrComum\ACBrUtil.FilesIO.pas',
+  ACBrUtil.Math in '..\..\..\Fontes\ACBrComum\ACBrUtil.Math.pas',
+  ACBrUtil.Strings in '..\..\..\Fontes\ACBrComum\ACBrUtil.Strings.pas',
+  ACBrUtil.XMLHTML in '..\..\..\Fontes\ACBrComum\ACBrUtil.XMLHTML.pas',
   ACBrAAC in '..\..\..\Fontes\ACBrComum\ACBrAAC.pas',
   ACBrCompress in '..\..\..\Fontes\ACBrComum\ACBrCompress.pas',
   ACBrImage in '..\..\..\Fontes\ACBrComum\ACBrImage.pas',
   ACBrPAFClass in '..\..\..\Fontes\ACBrComum\ACBrPAFClass.pas',
   StrUtilsEx in '..\..\..\Fontes\Terceiros\FastStringReplace\StrUtilsEx.pas',
-  ACBrDelphiZXingQRCode in '..\..\..\Fontes\Terceiros\DelphiZXingQRCode\ACBrDelphiZXingQRCode.pas';
-
+  ACBrDelphiZXingQRCode in '..\..\..\Fontes\Terceiros\DelphiZXingQRCode\ACBrDelphiZXingQRCode.pas',
+  Jsons in '..\..\..\Fontes\Terceiros\json4delphi\src\Jsons.pas',
+  ACBrJSON in '..\..\..\Fontes\ACBrComum\ACBrJSON.pas';
 
 //  {$IfNDef USE_ZLibExGZ}
 //   ACBrZLibExGZ,

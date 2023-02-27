@@ -118,6 +118,7 @@ type
   TIdeFolhaPagto = class;
   TEmitente = class;
   TEndExt = class;
+  TEndExtV110 = class;
   TIdePais = class;
   TInfoAgNocivo = class;
   TRubricaCollectionItem = class;
@@ -127,6 +128,7 @@ type
   TInfoASO = class;
   TLocalTrabGeral = class;
   TLocalTrabDom = class;
+  TLocalTempDom = class;
   TInfoCeletista = class;
   TInfoEstatutario = class;
   TInfoRegimeTrab = class;
@@ -173,6 +175,11 @@ type
   TtreiCapCollection = class;
   TtreiCapCollectionItem = class;
   Tcessao = class;
+  TInfoRRA = class;
+  TDespProcJud = class;
+  TIdeAdvCollection = class;
+  TIdeAdvCollectionItem = class;
+
   IEventoeSocial = Interface;
 
   TeSocial = class(TObject)
@@ -315,9 +322,9 @@ type
     FnmFuncao: string;
     FCBOFuncao: string;
     FacumCargo: tpSimNaoFacultativo;
-    
+
     FCodCateg: integer;
-    
+
     FRemuneracao: TRemuneracao;
     FDuracao: TDuracao;
     FLocalTrabalho: TLocalTrabalho;
@@ -327,7 +334,7 @@ type
     FAlvaraJudicial: TAlvaraJudicial;
     Fobservacoes: TobservacoesCollection;
     FtreiCap: TtreiCapCollection;
-    
+
     function getTreiCap: TtreiCapCollection;
   public
     constructor Create;
@@ -538,12 +545,10 @@ type
 
   THorarioIntervaloCollectionItem = class(TObject)
   private
-    FTpInterv : tpTpIntervalo;
     FDurInterv: integer;
     FIniInterv: string;
     FTermInterv : string;
   public
-    property tpInterv: tpTpIntervalo read FTpInterv write FTpInterv;
     property durInterv: integer read FDurInterv write FDurInterv;
     property iniInterv: string read FIniInterv write FIniInterv;
     property termInterv: string read FTermInterv write FTermInterv;
@@ -603,7 +608,7 @@ type
   +----------+--------+-----------+-------+-----------------------------------------------------------------------+
   |IdeEvento4|        |     X     |   X   |1295, 1298, 1299                                                       |
   +----------+--------+-----------+-------+-----------------------------------------------------------------------+
-  
+
   +--------------------------------------------------------+
   |       Valores padrão nas procedures de geração         |
   +---------------+------------+---------------+-----------+
@@ -618,7 +623,7 @@ type
   //O campo indRetif é gerado se: (GeraIndRetif = True).
   //O campo indApuracao é gerado se: (GeraIndApuracao = True).
   //O campo indGuia é gerado se: (GeraIndGuia = True) e (Leiaute >= S1.0) e (indGuia <> '').
-  
+
   +-----------------------------------------------------------------------------------------------------------+
   |                                  Campos informados na geração dos eventos                                 |
   +-----------------------+-------------+-------+---------------+--------+--------+-----------+-------+-------+
@@ -829,16 +834,39 @@ type
     property Uf: string read FUf write FUf;
   end;
 
+  TLocalTempDom = class
+  private
+    FTpLograd: String;
+    FDscLograd: string;
+    FNrLograd: string;
+    FComplemento: string;
+    FBairro: string;
+    FCep: string;
+    FCodMunic: integer;
+    FUf: string;
+  public
+    property TpLograd: String read FTpLograd write FTpLograd;
+    property DscLograd: string read FDscLograd write FDscLograd;
+    property NrLograd: string read FNrLograd write FNrLograd;
+    property Complemento: string read FComplemento write FComplemento;
+    property Bairro: string read FBairro write FBairro;
+    property Cep: string read FCep write FCep;
+    property CodMunic: integer read FCodMunic write FCodMunic;
+    property Uf: string read FUf write FUf;
+  end;
+
   TLocalTrabalho = class
   private
     FLocalTrabGeral: TLocalTrabGeral;
     FLocalTrabDom: TLocalTrabDom;
+    FLocalTempDom: TLocalTempDom;
   public
     constructor Create;
     destructor Destroy; override;
 
     property LocalTrabGeral: TLocalTrabGeral read FLocalTrabGeral write FLocalTrabGeral;
     property LocalTrabDom: TLocalTrabDom read FLocalTrabDom write FLocalTrabDom;
+    property LocalTempDom: TLocalTempDom read FLocalTempDom write FLocalTempDom;
   end;
 
   TNascimento = class
@@ -1034,9 +1062,8 @@ type
   private
     FHipLeg: integer;
     FJustContr: string;
-    FTpInclContr: tpInclContr;
     FJustProrr: string;
-
+    FIdeEstabVinc: TIdeEstabVinc;
     FIdeTomadorServ: TIdeTomadorServ;
     FIdeTrabSubstituido: TIdeTrabSubstituidoCollection;
   public
@@ -1045,10 +1072,10 @@ type
 
     property hipLeg: integer read FHipLeg write FHipLeg;
     property justContr: string read FJustContr write FJustContr;
-    property tpinclContr: tpinclContr read FTpInclContr write FTpInclContr;
     property justProrr: string read FJustProrr write FJustProrr;
     property IdeTomadorServ: TIdeTomadorServ read FIdeTomadorServ write FIdeTomadorServ;
     property IdeTrabSubstituido: TIdeTrabSubstituidoCollection read FIdeTrabSubstituido write FIdeTrabSubstituido;
+    property IdeEstabVinc: TIdeEstabVinc read FIdeEstabVinc write FIdeEstabVinc;
   end;
 
   TAprend = class(TInscricao)
@@ -1258,7 +1285,7 @@ type
     property nisTrab: string read FNisTrab write FNisTrab;
   end;
 
-  TideTrabalhador3 = class(TideTrabalhador) 
+  TideTrabalhador3 = class(TideTrabalhador)
   private
     FprocJudTrab: TprocJudTrabCollection;
   public
@@ -1305,6 +1332,27 @@ type
     property bairro: string read FBairro write FBairro;
     property nmCid: string read FNmCid write FNmCid;
     property codPostal: string read FCodPostal write FCodPostal;
+  end;
+
+  TEndExtV110 = class
+  private
+    FEndDscLograd: string;
+    FEndNrLograd: string;
+    FEndComplem: string;
+    FEndBairro: string;
+    FEndCidade: string;
+    FEndEstado: string;
+    FEndCodPostal: string;
+    Ftelef: string;
+  public
+    property endDscLograd: string read FEndDscLograd write FEndDscLograd;
+    property endNrLograd: string read FEndNrLograd write FEndNrLograd;
+    property endComplem: string read FEndComplem write FEndComplem;
+    property endBairro: string read FEndBairro write FEndBairro;
+    property endCidade: string read FEndCidade write FEndCidade;
+    property endEstado: string read FEndEstado write FEndEstado;
+    property endCodPostal: string read FEndCodPostal write FEndCodPostal;
+    property telef: string read Ftelef write Ftelef;
   end;
 
   TIdePais = class(TObject)
@@ -1647,7 +1695,7 @@ type
     property Items[Index: Integer]: TInfoProcJItem read GetItem write SetItem; default;
   end;
 
-  TInfoProcJItem=class(TObject)
+  TInfoProcJItem = class(TObject)
   private
     FnrProcJud: string;
     FCodSusp: Integer;
@@ -1906,6 +1954,60 @@ type
    property dtIniCessao: TDate read FdtIniCessao write FdtIniCessao;
   end;
 
+  TInfoRRA = class(TObject)
+  private
+    FtpProcRRA: tpTpProcRRA;
+    FnrProcRRA: string;
+    FdescRRA: string;
+    FqtdMesesRRA: Double;
+    FDespProcJud: TDespProcJud;
+    FIdeAdv: TIdeAdvCollection;
+  public
+    constructor Create;
+    destructor  Destroy; override;
+
+    function getIdeAdv(): TIdeAdvCollection;
+    function instIdeAdv(): boolean;
+    function getDespProcJud(): TDespProcJud;
+    function instDespProcJud(): boolean;
+
+    property tpProcRRA: tpTpProcRRA read FtpProcRRA write FtpProcRRA;
+    property nrProcRRA: string read FnrProcRRA write FnrProcRRA;
+    property descRRA: string read FdescRRA write FdescRRA;
+    property qtdMesesRRA: Double read FqtdMesesRRA write FqtdMesesRRA;
+    property despProcJud: TDespProcJud read getDespProcJud write FDespProcJud;
+    property ideAdv: TIdeAdvCollection read getIdeAdv write FideAdv;
+  end;
+
+  TDespProcJud = class(TObject)
+  private
+    FvlrDespCustas: Double;
+    FvlrDespAdvogados: Double;
+  public
+    property vlrDespCustas: Double read FvlrDespCustas write FvlrDespCustas;
+    property vlrDespAdvogados: Double read FvlrDespAdvogados write FvlrDespAdvogados;
+  end;
+
+  TIdeAdvCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TIdeAdvCollectionItem;
+    procedure SetItem(Index: Integer; Value: TIdeAdvCollectionItem);
+  public
+    function New: TIdeAdvCollectionItem;
+    property Items[Index: Integer]: TIdeAdvCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TIdeAdvCollectionItem = class(TObject)
+  private
+    FTpInsc: tpTpInsc;
+    FNrInsc: string;
+    FvlrAdv: Double;
+  public
+    property tpInsc: tpTpInsc read FTpInsc write FTpInsc;
+    property nrInsc: string read FNrInsc write FNrInsc;
+    property vlrAdv: Double read FvlrAdv write FvlrAdv;
+  end;
+
   IEventoeSocial = Interface(IInterface)
     ['{93160D81-FE11-454A-ACA7-DA357D618F82}']
     function GetXml : string;
@@ -2045,7 +2147,7 @@ begin
   FAposentadoria.Free;
   FContato.Free;
   FtrabImig.Free;
-  
+
   inherited;
 end;
 
@@ -2055,12 +2157,14 @@ begin
   inherited;
   FIdeTomadorServ     := TIdeTomadorServ.Create;
   FIdeTrabSubstituido := TIdeTrabSubstituidoCollection.Create;
+  FIdeEstabVinc       := TIdeEstabVinc.Create;;
 end;
 
 destructor TTrabTemporario.Destroy;
 begin
   FIdeTomadorServ.Free;
   FIdeTrabSubstituido.Free;
+  FIdeEstabVinc.Free;
   inherited;
 end;
 
@@ -2199,7 +2303,7 @@ begin
   FAlvaraJudicial.Free;
   Fobservacoes.Free;
   FreeAndNil(FtreiCap);
-  
+
   inherited;
 end;
 
@@ -2219,8 +2323,8 @@ end;
 constructor TVinculo.Create;
 begin
   FInfoRegimeTrab := TInfoRegimeTrab.Create;
-  FInfoContrato:= TInfoContrato.Create;
-  FSucessaoVinc:= TSucessaoVinc.Create;
+  FInfoContrato := TInfoContrato.Create;
+  FSucessaoVinc := TSucessaoVinc.Create;
   ftransfDom := TtransfDom.Create;
   FMudancaCPF := TMudancaCPF.Create;
   FAfastamento := TAfastamento.Create;
@@ -2337,12 +2441,14 @@ constructor TLocalTrabalho.Create;
 begin
   FLocalTrabGeral := TLocalTrabGeral.Create;
   FLocalTrabDom := TLocalTrabDom.Create;
+  FLocalTempDom := TLocalTempDom.Create;
 end;
 
 destructor TLocalTrabalho.Destroy;
 begin
   FLocalTrabGeral.Free;
   FLocalTrabDom.Free;
+  FLocalTempDom.Free;
   inherited;
 end;
 
@@ -2754,6 +2860,7 @@ begin
 end;
 
 { TRemunOutrEmprCollection }
+
 function TRemunOutrEmprCollection.Add: TRemunOutrEmprCollectionItem;
 begin
   Result := Self.New;
@@ -2778,6 +2885,7 @@ begin
 end;
 
 { TInfoMV }
+
 constructor TInfoMV.Create;
 begin
   inherited Create;
@@ -2828,6 +2936,7 @@ end;
 constructor TideTrabalhador3.Create;
 begin
   inherited Create;
+
   FprocJudTrab := TprocJudTrabCollection.create;
 end;
 
@@ -2889,6 +2998,69 @@ end;
 function TtreiCapCollection.New: TtreiCapCollectionItem;
 begin
   Result := TtreiCapCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TInfoRRA }
+
+constructor TInfoRRA.Create;
+begin
+  inherited Create;
+
+  FDespProcJud := nil;
+  FIdeAdv := nil;
+end;
+
+destructor TInfoRRA.Destroy;
+begin
+  if instDespProcJud () then
+    FreeAndNil(FDespProcJud);
+
+  if Assigned(FIdeAdv) then
+    FreeAndNil(FIdeAdv);
+
+  inherited;
+end;
+
+function TInfoRRA.getIdeAdv: TIdeAdvCollection;
+begin
+  if not Assigned(FIdeAdv) then
+    FIdeAdv := TIdeAdvCollection.Create;
+  Result := FIdeAdv;
+end;
+
+function TInfoRRA.instIdeAdv: boolean;
+begin
+  Result := Assigned(FideAdv);
+end;
+
+function TInfoRRA.getDespProcJud: TDespProcJud;
+begin
+  if not Assigned(FDespProcJud) then
+    FDespProcJud := TDespProcJud.Create;
+  Result := FDespProcJud;
+end;
+
+function TInfoRRA.InstDespProcJud: boolean;
+begin
+  Result := Assigned(FDespProcJud);
+end;
+
+{ TIdeAdvCollection }
+
+function TIdeAdvCollection.GetItem(Index: Integer): TIdeAdvCollectionItem;
+begin
+  Result := TIdeAdvCollectionItem(inherited Items[Index]);
+end;
+
+procedure TIdeAdvCollection.SetItem(Index: Integer; Value: TIdeAdvCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+function TIdeAdvCollection.New: TIdeAdvCollectionItem;
+begin
+  Result := TIdeAdvCollectionItem.Create;
   Self.Add(Result);
 end;
 

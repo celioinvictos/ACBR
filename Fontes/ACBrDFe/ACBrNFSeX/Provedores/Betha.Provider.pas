@@ -54,6 +54,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderBetha = class (TACBrNFSeProviderABRASFv1)
@@ -87,6 +88,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderBetha202 = class (TACBrNFSeProviderABRASFv2)
@@ -97,16 +99,27 @@ type
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
+    function DefinirIDLote(const ID: string): string; override;
   end;
 
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException,
+  ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrDFeException,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ACBrNFSeXNotasFiscais, Betha.GravarXml, Betha.LerXml;
 
 { TACBrNFSeXWebserviceBetha }
+
+function TACBrNFSeXWebserviceBetha.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverPrefixosDesnecessarios(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
+end;
 
 function TACBrNFSeXWebserviceBetha.Recepcionar(ACabecalho, AMSG: String): string;
 begin
@@ -156,6 +169,8 @@ procedure TACBrNFSeProviderBetha.Configuracao;
 begin
   inherited Configuracao;
 
+  ConfigGeral.DetalharServico := True;
+
   with ConfigAssinar do
   begin
     Rps := True;
@@ -170,6 +185,8 @@ begin
     ConsultarNFSeRps.DocElemento := 'ConsultarNfsePorRpsEnvio';
     XmlRps.xmlns := '';
   end;
+
+  SetNomeXSD('***');
 
   with ConfigSchemas do
   begin
@@ -375,6 +392,12 @@ begin
   end;
 end;
 
+function TACBrNFSeProviderBetha202.DefinirIDLote(const ID: string): string;
+begin
+  if ConfigGeral.Identificador <> '' then
+    Result := ' ' + ConfigGeral.Identificador + '="lote' + ID + '"';
+end;
+
 { TACBrNFSeXWebserviceBetha202 }
 
 function TACBrNFSeXWebserviceBetha202.Recepcionar(ACabecalho,
@@ -548,6 +571,17 @@ begin
   Result := Executar('SubstituirNfseEnvio', Request,
                      ['return', 'SubstutuirNfseResposta'],
                 ['xmlns:tns="http://www.betha.com.br/e-nota-contribuinte-ws"']);
+end;
+
+function TACBrNFSeXWebserviceBetha202.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverIdentacao(Result);
 end;
 
 end.

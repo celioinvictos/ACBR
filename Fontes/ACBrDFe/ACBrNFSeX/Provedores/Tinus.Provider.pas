@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  ACBrXmlBase, ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrXmlBase, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, Tinus.GravarXml, Tinus.LerXml;
 
 { TACBrNFSeXWebserviceTinus }
@@ -195,6 +195,7 @@ begin
   begin
     Rps := True;
     LoteRps := True;
+    CancelarNFSe := True;
   end;
 
   SetXmlNameSpace('http://www.tinus.com.br');

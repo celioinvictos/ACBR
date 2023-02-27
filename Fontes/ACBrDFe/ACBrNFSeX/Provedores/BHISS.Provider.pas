@@ -54,6 +54,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderBHISS = class (TACBrNFSeProviderABRASFv1)
@@ -73,7 +74,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrDFeException,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXNotasFiscais, ACBrNFSeXConsts,
   BHISS.GravarXml, BHISS.LerXml;
 
@@ -86,8 +88,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:RecepcionarLoteRpsRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:RecepcionarLoteRpsRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/RecepcionarLoteRps', Request,
@@ -102,8 +104,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:GerarNfseRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:GerarNfseRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/GerarNfse', Request,
@@ -118,8 +120,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:ConsultarLoteRpsRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:ConsultarLoteRpsRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/ConsultarLoteRps', Request,
@@ -134,8 +136,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:ConsultarSituacaoLoteRpsRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:ConsultarSituacaoLoteRpsRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/ConsultarSituacaoLoteRps', Request,
@@ -150,8 +152,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:ConsultarNfsePorRpsRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:ConsultarNfsePorRpsRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/ConsultarNfsePorRps', Request,
@@ -166,8 +168,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:ConsultarNfsePorFaixaRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:ConsultarNfsePorFaixaRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/ConsultarNfse', Request,
@@ -182,13 +184,23 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ws:CancelarNfseRequest>';
-  Request := Request + '<nfseCabecMsg><![CDATA[' + ACabecalho + ']]></nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg><![CDATA[' + AMSG + ']]></nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ws:CancelarNfseRequest>';
 
   Result := Executar('http://ws.bhiss.pbh.gov.br/CancelarNfse', Request,
                      ['outputXML', 'CancelarNfseResposta'],
                      ['xmlns:ws="http://ws.bhiss.pbh.gov.br"']);
+end;
+
+function TACBrNFSeXWebserviceBHISS.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
 end;
 
 { TACBrNFSeProviderBHISS }
@@ -269,7 +281,7 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod001;
-    AErro.Descricao := Desc101;
+    AErro.Descricao := ACBrStr(Desc101);
     Exit;
   end;
 
@@ -301,17 +313,17 @@ begin
 
   Response.ArquivoEnvio := '<' + Prefixo + 'ConsultarNfseFaixaEnvio' +
                                 NameSpace + '>' +
-                         '<Prestador>' +
-                           '<Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</Cnpj>' +
-                           '<InscricaoMunicipal>' +
-                              OnlyNumber(Emitente.InscMun) +
-                           '</InscricaoMunicipal>' +
-                         '</Prestador>' +
-                         XmlConsulta +
-                         '<Pagina>' +
-                            IntToStr(Response.InfConsultaNFSe.Pagina) +
-                         '</Pagina>' +
-                       '</' + Prefixo + 'ConsultarNfseFaixaEnvio>';
+                             '<Prestador>' +
+                               '<Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</Cnpj>' +
+                               '<InscricaoMunicipal>' +
+                                  OnlyNumber(Emitente.InscMun) +
+                               '</InscricaoMunicipal>' +
+                             '</Prestador>' +
+                             XmlConsulta +
+                             '<Pagina>' +
+                                IntToStr(Response.InfConsultaNFSe.Pagina) +
+                             '</Pagina>' +
+                           '</' + Prefixo + 'ConsultarNfseFaixaEnvio>';
 end;
 
 procedure TACBrNFSeProviderBHISS.PrepararEmitir(Response: TNFSeEmiteResponse);
@@ -332,17 +344,17 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod002;
-    AErro.Descricao := Desc002;
+    AErro.Descricao := ACBrStr(Desc002);
   end;
 
   if TACBrNFSeX(FAOwner).NotasFiscais.Count > Response.MaxRps then
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod003;
-    AErro.Descricao := 'Conjunto de RPS transmitidos (máximo de ' +
+    AErro.Descricao := ACBrStr('Conjunto de RPS transmitidos (máximo de ' +
                        IntToStr(Response.MaxRps) + ' RPS)' +
                        ' excedido. Quantidade atual: ' +
-                       IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count);
+                       IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count));
   end;
 
   if Response.Erros.Count > 0 then Exit;
@@ -357,33 +369,21 @@ begin
   begin
     Nota := TACBrNFSeX(FAOwner).NotasFiscais.Items[I];
 
-    if EstaVazio(Nota.XMLAssinado) then
+    Nota.GerarXML;
+
+    Nota.XmlRps := ConverteXMLtoUTF8(Nota.XmlRps);
+    Nota.XmlRps := ChangeLineBreak(Nota.XmlRps, '');
+
+    if ConfigAssinar.RpsGerarNFSe then
     begin
-      Nota.GerarXML;
-
-      Nota.XMLOriginal := ConverteXMLtoUTF8(Nota.XMLOriginal);
-      Nota.XMLOriginal := ChangeLineBreak(Nota.XMLOriginal, '');
-
-      if ConfigAssinar.RpsGerarNFSe then
-      begin
-        Nota.XMLOriginal := FAOwner.SSL.Assinar(Nota.XMLOriginal,
-                                                ConfigMsgDados.XmlRps.DocElemento,
-                                                ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
-      end;
+      Nota.XmlRps := FAOwner.SSL.Assinar(Nota.XmlRps,
+                                         ConfigMsgDados.XmlRps.DocElemento,
+                                         ConfigMsgDados.XmlRps.InfElemento, '', '', '', IdAttr);
     end;
 
-    if FAOwner.Configuracoes.Arquivos.Salvar then
-    begin
-      if NaoEstaVazio(Nota.NomeArqRps) then
-        TACBrNFSeX(FAOwner).Gravar(Nota.NomeArqRps, Nota.XMLOriginal)
-      else
-      begin
-        Nota.NomeArqRps := Nota.CalcularNomeArquivoCompleto(Nota.NomeArqRps, '');
-        TACBrNFSeX(FAOwner).Gravar(Nota.NomeArqRps, Nota.XMLOriginal);
-      end;
-    end;
+    SalvarXmlRps(Nota);
 
-    xRps := RemoverDeclaracaoXML(Nota.XMLOriginal);
+    xRps := RemoverDeclaracaoXML(Nota.XmlRps);
     xRps := PrepararRpsParaLote(xRps);
 
     ListaRps := ListaRps + xRps;
@@ -408,25 +408,25 @@ begin
     Versao := '';
 
   if ConfigAssinar.IncluirURI then
-    IdAttr := ' ' + ConfigGeral.Identificador + '="Lote_' + Response.Lote + '"'
+    IdAttr := ' ' + ConfigGeral.Identificador + '="Lote_' + Response.NumeroLote + '"'
   else
     IdAttr := '';
 
   ListaRps := ChangeLineBreak(ListaRps, '');
 
   Response.ArquivoEnvio := '<' + Prefixo + 'GerarNfseEnvio' + NameSpace + '>' +
-                         '<LoteRps' + NameSpaceLote + IdAttr  + Versao + '>' +
-                           '<NumeroLote>' + Response.Lote + '</NumeroLote>' +
-                           '<Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</Cnpj>' +
-                           '<InscricaoMunicipal>' +
-                              OnlyNumber(Emitente.InscMun) +
-                           '</InscricaoMunicipal>' +
-                           '<QuantidadeRps>' +
-                              IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count) +
-                           '</QuantidadeRps>' +
-                           '<ListaRps>' + ListaRps + '</ListaRps>' +
-                         '</LoteRps>' +
-                       '</' + Prefixo + 'GerarNfseEnvio>';
+                             '<LoteRps' + NameSpaceLote + IdAttr  + Versao + '>' +
+                               '<NumeroLote>' + Response.NumeroLote + '</NumeroLote>' +
+                               '<Cnpj>' + OnlyNumber(Emitente.CNPJ) + '</Cnpj>' +
+                               '<InscricaoMunicipal>' +
+                                  OnlyNumber(Emitente.InscMun) +
+                               '</InscricaoMunicipal>' +
+                               '<QuantidadeRps>' +
+                                  IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count) +
+                               '</QuantidadeRps>' +
+                               '<ListaRps>' + ListaRps + '</ListaRps>' +
+                             '</LoteRps>' +
+                           '</' + Prefixo + 'GerarNfseEnvio>';
 end;
 
 procedure TACBrNFSeProviderBHISS.TratarRetornoEmitir(Response: TNFSeEmiteResponse);
@@ -457,14 +457,14 @@ begin
 
       Response.Data := ObterConteudoTag(ANode.Childrens.FindAnyNs('DataRecebimento'), tcDatHor);
       Response.Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
-      Response.CodVerificacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('CodigoVerificacao'), tcStr);
+      Response.CodigoVerificacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('CodigoVerificacao'), tcStr);
 
       ANode := Document.Root.Childrens.FindAnyNs('ListaNfse');
       if not Assigned(ANode) then
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod202;
-        AErro.Descricao := Desc202;
+        AErro.Descricao := ACBrStr(Desc202);
         Exit;
       end;
 
@@ -473,7 +473,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod203;
-        AErro.Descricao := Desc203;
+        AErro.Descricao := ACBrStr(Desc203);
         Exit;
       end;
 
@@ -487,19 +487,18 @@ begin
         NumRps := AuxNode.AsString;
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
-        if Assigned(ANota) then
-          ANota.XML := ANode.AsString
-        else
-          TACBrNFSeX(FAOwner).NotasFiscais.LoadFromString(ANode.AsString);
+
+        ANota := CarregarXmlNfse(ANota, ANode.OuterXml);
+        SalvarXmlNfse(ANota);
       end;
 
-      Response.Sucesso := (Response.Erros.Count > 0);
+      Response.Sucesso := (Response.Erros.Count = 0);
     except
       on E:Exception do
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally

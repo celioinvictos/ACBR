@@ -44,7 +44,7 @@ uses
    System.Contnrs,
   {$IFEND}
   ACBrBase,
-  pcnConversao, pcnGerador, ACBrUtil,
+  pcnConversao, pcnGerador, ACBrUtil.FilesIO,
   pcnCommonReinf, pcnConversaoReinf, pcnGeradorReinf;
 
 type
@@ -232,7 +232,8 @@ begin
   if VersaoDF >= v1_05_00 then
      Gerador.wCampo(tcStr, '', 'evtAquis',      1, 1, 1, SimNaoToStr(FinfoFech.evtAquis));
 
-  if (FIdeEvento.perApur <= '2018-10') then
+  // Excluídos na Versão 2.01
+  if ((FIdeEvento.perApur <= '2018-10') and (VersaoDF <= v1_05_00)) then
   begin
     Gerador.wCampo(tcStr, '', 'evtPgtos',     1, 1, 1, SimNaoToStr(FinfoFech.evtPgtos));
     Gerador.wCampo(tcStr, '', 'compSemMovto', 1, 7, 0, FinfoFech.compSemMovto);

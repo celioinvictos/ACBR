@@ -38,16 +38,17 @@ interface
 
 uses
   Classes, StrUtils, SysUtils, synacode, synautil,
-  {IniFiles,} ACBrDFeSSL, ACBrIBGE, pcnAuxiliar;
+  {IniFiles,} ACBrDFeSSL, ACBrIBGE, pcnAuxiliar, ACBrDFe;
 
 function FormatarNumeroDocumentoFiscal(AValue: String): String;
 function FormatarNumeroDocumentoFiscalNFSe(AValue: String): String;
 
 function GerarCodigoNumerico(numero: integer): integer;
-function GerarCodigoDFe(AnDF: Integer): integer;
+function GerarCodigoDFe(AnDF: Integer; ADigitos: Integer = 8): integer;
 
 function GerarChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ:String;
-                          ASerie, ANumero, AtpEmi, ACodigo: Integer; AModelo: Integer = 55): String;
+                          ASerie, ANumero, AtpEmi, ACodigo: Integer;
+                          AModelo: Integer = 55; ASiteAutorizador: Integer = -1): String;
 function FormatarChaveAcesso(AValue: String): String;
 
 function ValidaUFCidade(const UF, Cidade: integer): Boolean; overload;
@@ -64,15 +65,18 @@ function XmlEstaAssinado(const AXML: String): Boolean;
 function SignatureElement(const URI: String; AddX509Data: Boolean;
     const IdSignature: String = ''; const Digest: TSSLDgst = dgstSHA1): String;
 function EncontrarURI(const AXML: String; docElement: String = ''; IdAttr: String = ''): String;
-function ObterNomeMunicipio(const AxUF: String; const AcMun: Integer;
-                              const APathArqMun: String): String;
-function ObterCodigoMunicipio(const AxMun, AxUF, APathArqMun: String ): Integer;
+function ObterNomeMunicipio(const AcMun: Integer; var AxUF: String;
+  const APathArqMun: String = ''; const AGerarException : Boolean = True): String;
+function ObterCodigoMunicipio(const AxMun, AxUF: String;
+                              const APathArqMun: String = ''): Integer;
+function ObterCodigoUF(const AUF: String; APathArqMun: String = ''): Integer;
 
 function CalcularHashCSRT(const ACSRT, AChave: String): string;
 function CalcularHashDados(const ADados: TStream; AChave: String): string;
 function CalcularHashArquivo(const APathArquivo: String; AChave: String): string;
 
 function ObterDFeXML(const AXML, Grupo, NameSpace: String): String;
+function DataHoraTimeZoneModoDeteccao(const AComponente : TACBrDFe): TDateTime;
 
 var
   ACBrIBGE1: TACBrIBGE;
@@ -81,17 +85,23 @@ implementation
 
 uses
   Variants, DateUtils,
-  ACBrDFeException, ACBrUtil, ACBrValidador;
+  ACBrDFeException,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.FilesIO,
+  ACBrUtil.XMLHTML,
+  ACBrUtil.DateTime,
+  ACBrValidador;
 
 function FormatarNumeroDocumentoFiscal(AValue: String): String;
 begin
-  AValue := Poem_Zeros(AValue, 9);
+  AValue := ACBrUtil.Strings.Poem_Zeros(AValue, 9);
   Result := copy(AValue, 1, 3) + '.' + copy(AValue, 4, 3) + '.' + copy(AValue, 7, 3);
 end;
 
 function FormatarNumeroDocumentoFiscalNFSe(AValue: String): String;
 begin
-  AValue := Poem_Zeros(AValue, 15);
+  AValue := ACBrUtil.Strings.Poem_Zeros(AValue, 15);
   Result := copy(AValue, 1, 4) + '.' + copy(AValue, 5, 12);
 end;
 
@@ -125,21 +135,24 @@ begin
   Result := StrToInt(copy(s, 1, 8));
 end;
 
-function GerarCodigoDFe(AnDF: Integer): integer;
+function GerarCodigoDFe(AnDF: Integer; ADigitos: Integer = 8): integer;
 var
- ACodigo: Integer;
+ ACodigo, ARange: Integer;
 begin
   Repeat
-    ACodigo := Random(99999999);
-  Until ValidarCodigoDFe(ACodigo, AnDF);
+    ARange := StrToInt(ACBrUtil.Strings.PadRight('9', ADigitos, '9'));
+    ACodigo := Random(ARange);
+  Until ValidarCodigoDFe(ACodigo, AnDF, ADigitos);
 
   Result := ACodigo;
 end;
 
 function GerarChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
-                          ASerie, ANumero, AtpEmi, ACodigo: Integer; AModelo: Integer): String;
+   ASerie, ANumero, AtpEmi, ACodigo: Integer; AModelo: Integer;
+   ASiteAutorizador: Integer): String;
 var
-  vUF, vDataEmissao, vSerie, vNumero, vCodigo, vModelo, vCNPJ, vtpEmi: String;
+  vUF, vDataEmissao, vSerie, vNumero, vCodigo, vModelo, vCNPJ, vtpEmi,
+  vSiteAutorizador: String;
 begin
   // Se o usuario informar 0 ou -1; o código numerico sera gerado de maneira aleatória //
   if ACodigo = -1 then
@@ -153,16 +166,27 @@ begin
   if ACodigo <= -2 then
     ACodigo := 0;
 
-  vUF          := Poem_Zeros(AUF, 2);
+  vUF          := ACBrUtil.Strings.Poem_Zeros(AUF, 2);
   vDataEmissao := FormatDateTime('YYMM', ADataEmissao);
   vCNPJ        := PadLeft(OnlyNumber(ACNPJ), 14, '0');
-  vModelo      := Poem_Zeros(AModelo, 2);
-  vSerie       := Poem_Zeros(ASerie, 3);
-  vNumero      := Poem_Zeros(ANumero, 9);
-  vtpEmi       := Poem_Zeros(AtpEmi, 1);
-  vCodigo      := Poem_Zeros(ACodigo, 8);
+  vModelo      := ACBrUtil.Strings.Poem_Zeros(AModelo, 2);
+  vSerie       := ACBrUtil.Strings.Poem_Zeros(ASerie, 3);
+  vNumero      := ACBrUtil.Strings.Poem_Zeros(ANumero, 9);
+  vtpEmi       := ACBrUtil.Strings.Poem_Zeros(AtpEmi, 1);
 
-  Result := vUF + vDataEmissao + vCNPJ + vModelo + vSerie + vNumero + vtpEmi + vCodigo;
+  if ASiteAutorizador = -1 then
+  begin
+    vSiteAutorizador := '';
+    vCodigo := ACBrUtil.Strings.Poem_Zeros(ACodigo, 8);
+  end
+  else
+  begin
+    vSiteAutorizador := ACBrUtil.Strings.Poem_Zeros(ASiteAutorizador, 1);
+    vCodigo := ACBrUtil.Strings.Poem_Zeros(ACodigo, 7);
+  end;
+
+  Result := vUF + vDataEmissao + vCNPJ + vModelo + vSerie + vNumero + vtpEmi +
+            vSiteAutorizador + vCodigo;
   Result := Result + Modulo11(Result);
 end;
 
@@ -440,25 +464,63 @@ begin
   Result.CacheArquivo := PathWithDelim(PathArqMun) + AfileName ;
 end;
 
-function ObterNomeMunicipio(const AxUF: String; const AcMun: Integer;
-  const APathArqMun: String): String;
+function ObterNomeMunicipio(const AcMun: Integer; var AxUF: String;
+  const APathArqMun: String = ''; const AGerarException : Boolean = True): String;
+var
+  p: String;
 begin
   result := '';
-  if (GetACBrIBGE(APathArqMun) = Nil) then
+  AxUF := '';
+
+  if not ValidarCodigoUF( StrToInt(Copy(IntToStr(AcMun), 1, 2)) ) then
     Exit;
 
-  if (ACBrIBGE1.BuscarPorCodigo(AcMun) > 0) then
-    Result := ACBrIBGE1.Cidades[0].Municipio;
+  p := IfEmptyThen(APathArqMun, ApplicationPath);
+  if (GetACBrIBGE(p) = Nil) then
+    Exit;
+
+  try
+    if (ACBrIBGE1.BuscarPorCodigo(AcMun) > 0) then
+    begin
+      AxUF := ACBrIBGE1.Cidades[0].UF;
+      Result := ACBrIBGE1.Cidades[0].Municipio;
+    end;
+  except on E: Exception do
+    begin
+      // Exception controlada, exibição somente em tempo de Debug.
+      if (AGerarException) then
+        raise EACBrDFeException.Create(ACBrStr(E.Message));
+    end;
+  end;
 end;
 
-function ObterCodigoMunicipio(const AxMun, AxUF, APathArqMun: String): Integer;
+function ObterCodigoMunicipio(const AxMun, AxUF: String;
+  const APathArqMun: String): Integer;
+var
+  p: String;
 begin
   result := 0;
-  if (GetACBrIBGE(APathArqMun) = Nil) then
+  p := IfEmptyThen(APathArqMun, ApplicationPath);
+  if (GetACBrIBGE(p) = Nil) then
     Exit;
 
   if (ACBrIBGE1.BuscarPorNome(AxMun, AxUF) > 0) then
     Result := ACBrIBGE1.Cidades[0].CodMunicipio;
+end;
+
+function ObterCodigoUF(const AUF: String; APathArqMun: String = ''): Integer;
+var
+  LPath: String;
+begin
+  Result := 0;
+  LPath := IfEmptyThen(APathArqMun, ApplicationPath);
+  if(GetACBrIBGE(LPath)= Nil)then
+    Exit;
+
+  Result := ACBrIBGE1.UFToCodUF(AUF);
+
+  if(Result < 0)then
+    Result := 0;
 end;
 
 function CalcularHashCSRT(const ACSRT, AChave: String): string;
@@ -519,6 +581,27 @@ begin
 
   if not EstaVazio(Result) then
     Result := DeclaracaoXML + Result;
+end;
+
+function DataHoraTimeZoneModoDeteccao(const AComponente: TACBrDFe): TDateTime;
+var
+  Bias: Integer;
+  UTC: String;
+  DT: TDateTime;
+begin
+  DT := now;
+  UTC := '';
+
+  if (AComponente.Configuracoes.WebServices.TimeZoneConf.ModoDeteccao <> tzSistema) then
+  begin
+    pcnAuxiliar.TimeZoneConf.Assign( AComponente.Configuracoes.WebServices.TimeZoneConf );
+    UTC := GetUTC( AComponente.Configuracoes.WebServices.UF, DT);
+    Bias := TimeZoneToBias(DateTimeToStr(DT) + UTC );
+    Result := IncMinute( DateTimeUniversal( GetUTCSistema , DT ), Bias *(-1)) ;
+  end
+  else
+    Result := DT;
+
 end;
 
 initialization

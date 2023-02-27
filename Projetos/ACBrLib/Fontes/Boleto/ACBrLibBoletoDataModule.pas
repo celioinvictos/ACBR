@@ -67,7 +67,7 @@ type
 implementation
 
 uses
-  ACBrUtil, FileUtil, ACBrLibBoletoConfig;
+  ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings, FileUtil, ACBrLibBoletoConfig;
 
 {$R *.lfm}
 
@@ -82,6 +82,7 @@ end;
 procedure TLibBoletoDM.AplicarConfiguracoes;
 var
   LibConfig: TLibBoletoConfig;
+  wVersaoLote, wVersaoArquivo, wNumeroCorrespondente: Integer;
 begin
   LibConfig := TLibBoletoConfig(Lib.Config);
 
@@ -109,12 +110,27 @@ begin
     TipoCobranca := LibConfig.BoletoBancoConfig.TipoCobranca;
     OrientacoesBanco.Text := LibConfig.BoletoBancoConfig.OrientacaoBanco;
     LocalPagamento := LibConfig.BoletoBancoConfig.LocalPagamento;
-    NumeroCorrespondente := LibConfig.BoletoBancoConfig.NumeroCorrespondente;
-    LayoutVersaoArquivo := LibConfig.BoletoBancoConfig.LayoutVersaoArquivo;
-    LayoutVersaoLote := LibConfig.BoletoBancoConfig.LayoutVersaoLote;
+    wNumeroCorrespondente := LibConfig.BoletoBancoConfig.NumeroCorrespondente;
+    wVersaoArquivo := LibConfig.BoletoBancoConfig.LayoutVersaoArquivo;
+    wVersaoLote := LibConfig.BoletoBancoConfig.LayoutVersaoLote;
     CasasDecimaisMoraJuros := LibConfig.BoletoBancoConfig.CasasDecimaisMoraJuros;
     //DensidadeGravacao := LibConfig.BoletoBancoConfig.DensidadeGravacao;
     CIP := LibConfig.BoletoBancoConfig.CIP;
+  end;
+
+  if (wNumeroCorrespondente > 0) then
+  begin
+    ACBrBoleto1.Banco.NumeroCorrespondente:= wNumeroCorrespondente;
+  end;
+
+  if (wVersaoArquivo > 0) then
+  begin
+    ACBrBoleto1.Banco.LayoutVersaoArquivo:= wVersaoArquivo;
+  end;
+
+  if (wVersaoLote > 0) then
+  begin
+    ACBrBoleto1.Banco.LayoutVersaoLote:= wVersaoLote;
   end;
 
   with ACBrBoleto1.Cedente do
@@ -145,6 +161,8 @@ begin
     DigitoVerificadorAgenciaConta := LibConfig.BoletoCedenteConfig.DigitoVerificadorAgenciaConta;
     IdentDistribuicao := LibConfig.BoletoCedenteConfig.IdentDistribuicao;
     Operacao := LibConfig.BoletoCedenteConfig.Operacao;
+    PIX.Chave := LibConfig.BoletoCedenteConfig.PIXChave;
+    PIX.TipoChavePIX := LibConfig.BoletoCedenteConfig.PIXTipoChave;
   end;
 
   with ACBrBoleto1.Cedente.CedenteWS do
@@ -160,7 +178,7 @@ begin
   begin
     Arquivos.LogRegistro := LibConfig.BoletoConfigWS.LogRegistro;
     Arquivos.PathGravarRegistro := LibConfig.BoletoConfigWS.PathGravarRegistro;
-    WebService.Ambiente := LibConfig.BoletoConfigWS.Ambiente;
+    WebService.Ambiente := LibConfig.BoletoDFeConfigWS.WebServices.Ambiente;
     WebService.Operacao := LibConfig.BoletoConfigWS.Operacao;
     WebService.VersaoDF := LibConfig.BoletoConfigWS.VersaoDF;
 
@@ -202,6 +220,7 @@ begin
      PrinterName := LibConfig.BoletoFCFortesConfig.PrinterName;
      AlterarEscalaPadrao := LibConfig.BoletoFCFortesConfig.AlterarEscalaPadrao;
      NovaEscala := LibConfig.BoletoFCFortesConfig.NovaEscala;
+     CalcularNomeArquivoPDFIndividual := LibConfig.BoletoFCFortesConfig.CalcularNomeArquivoPDFIndividual;
 {$IFDEF Demo}
      SoftwareHouse := Lib.Nome + ' v' + Lib.Versao;
 {$ELSE}

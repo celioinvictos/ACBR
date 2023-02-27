@@ -78,6 +78,8 @@ const
   DSC_INSCMUN = 'Inscrição Municipal';
   DSC_GENERICOSTITULO = 'Título do campo livre';
   DESC_GENERICOSDESCRICAO = 'Conteúdo do campo livre.';
+  DSC_VTTS = 'Valor Taxa Turismo';
+  DSC_QDiaria = 'Quantidade Diaria';
 
   // Códigos e Descrições das mensagens
   Cod001 = 'X001';
@@ -86,6 +88,8 @@ const
   Desc002 = 'Nenhum RPS adicionado ao componente.';
   Cod003 = 'X003';
   Desc003 = 'Conjunto de RPS transmitidos (máximo de xxx RPS) excedido. Quantidade atual: yyy';
+  Cod004 = 'X004';
+  Desc004 = 'Nenhum Evento adicionado ao componente';
 
   Cod101 = 'X101';
   Desc101 = 'Número do Protocolo não informado.';
@@ -128,7 +132,21 @@ const
   Cod120 = 'X120';
   Desc120	= 'Emitente.WSSenha não informada.';
   Cod121 = 'X121';
-  Desc121	= 'Cadastro Econômico.';
+  Desc121	= 'Cadastro Econômico não informado.';
+  Cod122 = 'X122';
+  Desc122 = 'Data Emissão da NFSe não informada.';
+  Cod123 = 'X123';
+  Desc123 = 'Código do Serviço não informado.';
+  Cod124 = 'X124';
+  Desc124	= 'Emitente.WSChaveAcesso não informada.';
+  Cod125 = 'X125';
+  Desc125	= 'Emitente.WSChaveAutoriz não informada.';
+  Cod126 = 'X126';
+  Desc126	= 'Chave da DPS não informada.';
+  Cod127 = 'X127';
+  Desc127	= 'CNPJ do Tomador não informado.';
+  Cod128 = 'X128';
+  Desc128	= 'NSU não informado.';
 
   Cod201 = 'X201';
   Desc201 = 'WebService retornou um XML vazio.';
@@ -151,7 +169,9 @@ const
   Cod210 = 'X210';
   Desc210 = 'Nfse do Cancelamento não encontrada.';
   Cod211 = 'X211';
-  Desc211 = 'Acesso Negado';
+  Desc211 = 'Não foi retornado nenhum Evento.';
+  Cod212 = 'X212';
+  Desc212 = 'Não foi retornado nenhum JSON.';
 
   Cod800 = 'X800';
   Desc800 = 'Erro de Validação: ';

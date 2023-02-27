@@ -37,8 +37,15 @@ unit ACBrBoletoRet_BancoBrasil;
 interface
 
 uses
-  Classes, SysUtils, ACBrBoleto, ACBrBoletoWS, ACBrBoletoRetorno,
-  ACBrUtil, DateUtils, pcnConversao;
+  Classes,
+  SysUtils,
+  ACBrBoleto,
+  ACBrBoletoWS,
+  ACBrBoletoRetorno,
+  ACBrUtil,
+  DateUtils,
+  pcnConversao,
+  ACBrBoletoWS.SOAP;
 
 type
 
@@ -50,8 +57,8 @@ type
   public
     constructor Create(ABoletoWS: TACBrBoleto); override;
     destructor  Destroy; Override;
-    function LerRetorno: Boolean;override;
-    function RetornoEnvio: Boolean; override;
+    function LerRetorno(const ARetornoWS: TACBrBoletoRetornoWS): Boolean;override;
+    function RetornoEnvio(const AIndex: Integer): Boolean; override;
 
   end;
 
@@ -61,7 +68,7 @@ type
 implementation
 
 uses
-  ACBrBoletoConversao;
+  ACBrBoletoConversao, ACBrUtil.XMLHTML;
 
 { TRetornoEnvio_BancoBrasil }
 
@@ -75,9 +82,9 @@ begin
   inherited Destroy;
 end;
 
-function TRetornoEnvio_BancoBrasil.LerRetorno: Boolean;
+function TRetornoEnvio_BancoBrasil.LerRetorno(const ARetornoWS: TACBrBoletoRetornoWS): Boolean;
 var
-    RetornoBB: TRetEnvio;
+    //RetornoBB: TACBrBoletoRetornoWS;
     lXML: String;
 begin
     Result := True;
@@ -87,9 +94,9 @@ begin
     Leitor.Arquivo := lXML;
     Leitor.Grupo := Leitor.Arquivo;
 
-    RetornoBB:= ACBrBoleto.CriarRetornoWebNaLista;
+    //RetornoBB:= ACBrBoleto.CriarRetornoWebNaLista;
     try
-      with RetornoBB do
+      with ARetornoWS do
       begin
         if leitor.rExtrai(1, 'resposta') <> '' then
         begin
@@ -123,7 +130,7 @@ begin
 
   end;
 
-function TRetornoEnvio_BancoBrasil.RetornoEnvio: Boolean;
+function TRetornoEnvio_BancoBrasil.RetornoEnvio(const AIndex: Integer): Boolean;
 var
   lRetornoWS: String;
 begin
@@ -131,7 +138,7 @@ begin
   lRetornoWS := RetWS;
   RetWS := SeparaDados(lRetornoWS, 'SOAP-ENV:Body');
 
-  Result:=inherited RetornoEnvio;
+  Result:=inherited RetornoEnvio(AIndex);
 
 end;
 

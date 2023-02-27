@@ -38,10 +38,17 @@ unit ACBrGNREGuias;
 interface
 
 uses
-  Classes, SysUtils, Dialogs, StrUtils,
-  ACBrDFeUtil, pcnConversao, pcnAuxiliar, pcnLeitor,
+  Classes, 
+  SysUtils, 
+  StrUtils,
+  ACBrDFeUtil, 
+  pcnConversao, 
+  pcnAuxiliar, 
+  pcnLeitor,
   ACBrGNREConfiguracoes,
-  pgnreGNRE, pgnreGNRER, pgnreGNREW;
+  pgnreGNRE, 
+  pgnreGNRER, 
+  pgnreGNREW;
 
 type
 
@@ -152,7 +159,10 @@ type
 implementation
 
 uses
-  ACBrGNRE2, ACBrUtil, pgnreConversao, synautil, IniFiles;
+  ACBrGNRE2,
+  ACBrUtil.XMLHTML, ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.FilesIO,
+  ACBrUtil.DateTime,
+  pgnreConversao, synautil, IniFiles;
 
 { Guia }
 

@@ -206,7 +206,8 @@ type
 implementation
 
 uses
-  StrUtils, ACBrValidador, ACBrUtil;
+  StrUtils, ACBrValidador, ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings,
+  ACBrUtil.DateTime, ACBrUtil.XMLHTML;
 
 function TabelaToString(const ATabela: TACBrIBPTaxTabela): String;
 begin
@@ -321,11 +322,14 @@ begin
     // proximas linhas contem os registros
     for I := 1 to Arquivo.Count - 1 do
     begin
-      QuebrarLinha(Arquivo.Strings[I], Item);
+      QuebrarLinha(Trim(Arquivo.Strings[I]), Item);
 
       // ajustes para erros conhecidos nos arquivos
       if Item.Count <> COUNT_COLUN then
         QuebrarLinha(StringReplace(Arquivo.Strings[I], '"Ex"', 'Ex', []), Item);
+
+      if(Item.Count <= 0)then
+        break;
 
       if Trim(Item.Strings[2]) <> '' then
       begin
@@ -802,7 +806,7 @@ begin
         '<aliqFedImp>' + FloatToString(Itens[I].FederalImportado) + '</aliqFedImp>' +
         '<aliqEst>' + FloatToString(Itens[I].Estadual) + '</aliqEst>' +
         '<aliqMun>' + FloatToString(Itens[I].Municipal) + '</aliqMun>' +
-        '<descricao>' + ACBrUtil.ParseText( AnsiString( Itens[I].Descricao ), False, False) + '</descricao>' +
+        '<descricao>' + ACBrUtil.XMLHTML.ParseText( AnsiString( Itens[I].Descricao ), False, False) + '</descricao>' +
       '</imposto>';
   end;
   Texto := Texto + '</IBPTax>';
@@ -854,7 +858,7 @@ begin
         '<td>' + FloatToStr(Itens[I].FederalImportado) + '</td>' + slineBreak +
         '<td>' + FloatToStr(Itens[I].Estadual) + '</td>' + slineBreak +
         '<td>' + FloatToStr(Itens[I].Municipal) + '</td>' + slineBreak +
-        '<td>' + ACBrUtil.ParseText( AnsiString( Itens[I].Descricao ), False, False) + '</td>' + slineBreak +
+        '<td>' + ACBrUtil.XMLHTML.ParseText( AnsiString( Itens[I].Descricao ), False, False) + '</td>' + slineBreak +
       '</tr>' + slineBreak;
   end;
 

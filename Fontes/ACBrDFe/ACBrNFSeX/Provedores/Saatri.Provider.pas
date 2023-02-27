@@ -58,6 +58,8 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property DadosUsuario: string read GetDadosUsuario;
   end;
 
@@ -74,7 +76,8 @@ type
 implementation
 
 uses
-  ACBrNFSeX, ACBrDFeException,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX,
   Saatri.GravarXml, Saatri.LerXml;
 
 { TACBrNFSeProviderSaatri201 }
@@ -83,7 +86,10 @@ procedure TACBrNFSeProviderSaatri201.Configuracao;
 begin
   inherited Configuracao;
 
-  ConfigGeral.UseCertificateHTTP := False;
+  with ConfigGeral do
+  begin
+    UseCertificateHTTP := False;
+  end;
 
   with ConfigAssinar do
   begin
@@ -332,6 +338,14 @@ begin
                      DadosUsuario,
                      ['outputXML', 'SubstituirNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
+end;
+
+function TACBrNFSeXWebserviceSaatri201.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
 end;
 
 end.

@@ -61,6 +61,7 @@ type
   { TfrlDANFeRLPaisagem }
 
   TfrlDANFeRLPaisagem = class(TfrlDANFeRL)
+    RLAngleLabel10: TRLAngleLabel;
     rlbCabecalhoItens: TRLBand;
     rlbDadosAdicionais: TRLBand;
     RLDraw50: TRLDraw;
@@ -643,9 +644,10 @@ implementation
 
 uses
   DateUtils, StrUtils, Math,
-  pcnNFe, pcnConversao, pcnConversaoNFe,
+  ACBrNFe, pcnNFe, pcnConversao, pcnConversaoNFe,
   ACBrNFeDANFeRLClass, ACBrDFeUtil, ACBrValidador,
-  ACBrDFeDANFeReport, ACBrDFeReportFortes, ACBrUtil, ACBrNFe;
+  ACBrDFeDANFeReport, ACBrDFeReportFortes,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime;
 
 {$IfNDef FPC}
   {$R *.dfm}
@@ -996,6 +998,18 @@ begin
     rlmDadosAdicionais.AutoSize := True;
     RLDraw50.Height := (rlmDadosAdicionais.Top + rlmDadosAdicionais.Height) - RLLabel77.Top + 2;
     RLDraw51.Height := RLDraw50.Height;
+    RLDraw5.Height := RLDraw50.Height;
+
+    RLAngleLabel9.Caption:= 'DADOS';
+    RLAngleLabel9.Alignment:= taCenter;
+    RLAngleLabel9.Top:= RLDraw50.Top + 2;
+    RLAngleLabel9.Height:= RLDraw50.Height -4;
+
+    RLAngleLabel10.Caption:='ADIC.';
+    RLAngleLabel10.Alignment:= taCenter;
+    RLAngleLabel10.Top:= RLDraw50.Top + 2;
+    RLAngleLabel10.Height:= RLDraw50.Height -4;
+
     rllSistema.Top  := RLDraw50.Top + RLDraw50.Height;
     rllUsuario.Top  := rllSistema.Top;
   end;
@@ -1110,8 +1124,7 @@ begin
       sTemp := sTemp + ' CEP:' + FormatarCEP(CEP) + ' - ' + XMun + ' - ' + UF;
       rlmEndereco.Lines.add(sTemp);
 
-      sTemp := 'TEL: ' + FormatarFone(Fone) +
-        IfThen(NaoEstaVazio(fpDANFe.Fax), ' - FAX: ' + FormatarFone(fpDANFe.Fax), '');
+      sTemp := 'TEL: ' + FormatarFone(Fone);
       rlmEndereco.Lines.add(sTemp);
     end;
   end;
@@ -1169,7 +1182,7 @@ begin
 
     // Exibe o Valor total dos tributos se vTotTrib for informado
     // e ajusta a posição dos outros campos para "abrir espaço" para ele.
-    if (vTotTrib > 0) then
+    if (vTotTrib > 0) and (fpDANFe.ImprimeTributos = trbNormal) then
     begin
       rllTotalTributos.Caption := FormatFloatBr(vTotTrib);
       rliDivImposto4.Visible := True;

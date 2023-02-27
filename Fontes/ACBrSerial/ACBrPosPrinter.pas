@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2022 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -58,12 +58,18 @@ const
   CACBrPosChequeINI = 'ACBrPosCheque.ini';
   CACBrPosChequeResource = 'ACBrPosCheque';
   cKeyFabricante = 'Fabricante';
+  cKeySerial = 'Serial';
   cKeyFirmware = 'Firmware';
   cKeyModelo = 'Modelo';
   cKeyGuilhotina = 'Guilhotina';
+  cKeyColunas = 'Colunas';
+  cKeyCodPage = 'CodPage';
   cKeyCheque = 'Cheque';
   cKeyAutenticacao = 'Autenticacao';
   cKeyMICR = ' MICR';
+
+  cTimeOutTxRx = 300;
+  cTimeOutTxRxTCP = 1500;
 
 type
 
@@ -182,7 +188,7 @@ type
   TACBrPosPrinterModelo = (ppTexto, ppEscPosEpson, ppEscBematech, ppEscDaruma,
                            ppEscVox, ppEscDiebold, ppEscEpsonP2, ppCustomPos,
                            ppEscPosStar, ppEscZJiang, ppEscGPrinter, ppEscDatecs,
-                           ppExterno);
+                           ppEscSunmi, ppExterno);
 
   { TACBrPosPrinterClass }
 
@@ -191,11 +197,14 @@ type
     FCmd: TACBrPosComandos;
     FRazaoColunaFonte: TACBrPosRazaoColunaFonte;
     FTagsNaoSuportadas: TStringList;
+    FInfo: TStringList;
 
   protected
     fpModeloStr: String;
     fpPosPrinter: TACBrPosPrinter;
 
+    procedure AddInfo(const ATitulo: String; const AStr: AnsiString); overload;
+    procedure AddInfo(const ATitulo: String; const ABool: Boolean); overload;
   public
     procedure AntesDecodificar(var ABinaryString: AnsiString); virtual;
     procedure AdicionarBlocoResposta(const ConteudoBloco: AnsiString); virtual;
@@ -244,6 +253,7 @@ type
     property RazaoColunaFonte: TACBrPosRazaoColunaFonte read FRazaoColunaFonte;
     property Cmd: TACBrPosComandos read FCmd;
     property ModeloStr: String read fpModeloStr;
+    property Info: TStringList read FInfo;
     property PosPrinter: TACBrPosPrinter read fpPosPrinter;
 
     property TagsNaoSuportadas: TStringList read FTagsNaoSuportadas;
@@ -536,7 +546,7 @@ type
     procedure LerCMC7(AguardaCheque: Boolean = False; SegundosEspera: Integer = 5);
 
     function TxRx(const ACmd: AnsiString; BytesToRead: Byte = 1;
-      ATimeOut: Integer = 500; WaitForTerminator: Boolean = False): AnsiString;
+      ATimeOut: Integer = 0; WaitForTerminator: Boolean = False): AnsiString;
 
     property TagProcessor: TACBrTagProcessor read FTagProcessor;
     property TagsNaoSuportadas: TStringList read GetTagsNaoSuportadas;
@@ -569,7 +579,8 @@ type
     function CalcularAlturaTexto(ALinhas: Integer): Integer;
     function CalcularLinhasAltura(AAltura: Integer): Integer;
     function CalcularAlturaQRCodeAlfaNumM(const QRCodeData: String): Integer;
-    function ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura, ALargura: Integer): String;
+    function ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura, ALargura: Integer;
+      ADirecao: TACBrPosDirecao = dirEsquerdaParaDireita): String;
 
     function AjustarCodBarras(const ABarCode, ABarCodeTag: AnsiString): AnsiString;
 
@@ -644,11 +655,15 @@ uses
       Graphics,
     {$EndIf}
   {$EndIf}
-  ACBrUtil, ACBrImage, ACBrConsts, ACBrExtenso, ACBrCMC7,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.FilesIO,
+  ACBrUtil.Compatibilidade,
+  ACBrImage, ACBrConsts, ACBrExtenso, ACBrCMC7,
   synacode, synautil,
   ACBrEscPosEpson, ACBrEscEpsonP2, ACBrEscBematech, ACBrEscDaruma,
   ACBrEscElgin, ACBrEscDiebold, ACBrEscCustomPos, ACBrEscPosStar,
-  ACBrEscZJiang, ACBrEscGPrinter, ACBrEscDatecs
+  ACBrEscZJiang, ACBrEscGPrinter, ACBrEscDatecs, ACBrEscSunmi
   {$IfDef MSWINDOWS}
   ,ACBrEscPosHookElginDLL, ACBrEscPosHookEpsonDLL
   {$EndIf};
@@ -1021,6 +1036,7 @@ begin
   FCmd := TACBrPosComandos.Create;
   FRazaoColunaFonte := TACBrPosRazaoColunaFonte.Create;
   FTagsNaoSuportadas := TStringList.Create;
+  FInfo := TStringList.Create;
 end;
 
 destructor TACBrPosPrinterClass.Destroy;
@@ -1028,8 +1044,35 @@ begin
   FCmd.Free;
   FRazaoColunaFonte.Free;
   FTagsNaoSuportadas.Free;
+  FInfo.Free;
 
   inherited;
+end;
+
+Procedure TACBrPosPrinterClass.AddInfo(const ATitulo: String; const AStr: AnsiString);
+var
+  InfoStr: String;
+begin
+  InfoStr := Trim(AStr);
+  if (InfoStr = '') then
+    Exit;
+
+  if CharInSet(InfoStr[1], ['_',':']) then
+    Delete(InfoStr, 1, 1);
+
+  FInfo.Values[ATitulo] := InfoStr;
+end;
+
+procedure TACBrPosPrinterClass.AddInfo(const ATitulo: String; const ABool: Boolean);
+var
+  c: AnsiChar;
+begin
+  if ABool then
+    c := '1'
+  else
+    c := '0';
+
+  AddInfo(ATitulo, c);
 end;
 
 procedure TACBrPosPrinterClass.AntesDecodificar(var ABinaryString: AnsiString);
@@ -1327,6 +1370,7 @@ begin
 
   FDevice := TACBrDevice.Create(Self);
   FDevice.Name := 'ACBrDevice' ;      { Apenas para aparecer no Object Inspector}
+  FDevice.TimeOutMilissegundos := cTimeOutTxRx;
   {$IFDEF COMPILER6_UP}
   FDevice.SetSubComponent( true );{ para gravar no DFM/XFM }
   {$ENDIF}
@@ -1610,7 +1654,7 @@ begin
   GravarLog(AnsiString(sLineBreak + StringOfChar('-', 80) + sLineBreak +
             'ATIVAR - ' + FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now) + sLineBreak +
             '  - Modelo.: ' + FPosPrinterClass.ModeloStr + sLineBreak +
-            '  - TimeOut: ' + IntToStr(FDevice.TimeOut) + sLineBreak +
+            '  - TimeOut: ' + IntToStr(FDevice.TimeOutMilissegundos) + ' milissegundos' + sLineBreak +
             DadosDevice + sLineBreak +
             StringOfChar('-', 80) + sLineBreak),
             False, False);
@@ -1689,6 +1733,7 @@ begin
     ppEscZJiang: FPosPrinterClass := TACBrEscZJiang.Create(Self);
     ppEscGPrinter: FPosPrinterClass := TACBrEscGPrinter.Create(Self);
     ppEscDatecs: FPosPrinterClass := TACBrEscDatecs.Create(Self);
+    ppEscSunmi:  FPosPrinterClass := TACBrEscSunmi.Create(Self);
     ppExterno: FPosPrinterClass := FModeloExterno;
   else
     FPosPrinterClass := TACBrPosPrinterClass.Create(Self);
@@ -2628,15 +2673,24 @@ begin
   FDevice.Limpar;
 
   GravarLog('TX -> '+ACmd, True);
+  if (ATimeOut = 0) then
+  begin
+    ATimeOut := FDevice.TimeOutMilissegundos;
+    if FDevice.IsTCPPort then
+      ATimeOut := max(ATimeOut, cTimeOutTxRxTCP);
+  end;
 
   OldTimeOut := FDevice.TimeOutMilissegundos;
   OldSendBytesInterval := FDevice.SendBytesInterval;
   try
     FDevice.TimeOutMilissegundos := ATimeOut;
-    FDevice.SendBytesInterval := 0;
-    FDevice.EnviaString( ACmd );
 
-    Sleep(10);  // Aguarda equipamento ficar pronto para responder
+    if (Length(ACmd) > 0) then
+    begin
+      FDevice.SendBytesInterval := 0;
+      FDevice.EnviaString( ACmd );
+      Sleep(10);  // Aguarda equipamento ficar pronto para responder
+    end;
 
     if WaitForTerminator then
       Result := FDevice.LeString(ATimeOut, 0, chr(BytesToRead))
@@ -2969,7 +3023,7 @@ begin
 end;
 
 function TACBrPosPrinter.ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura,
-  ALargura: Integer): String;
+  ALargura: Integer; ADirecao: TACBrPosDirecao): String;
 
   Function MontarTag(const ATag, AConteudo: String): String;
   begin
@@ -2977,7 +3031,8 @@ function TACBrPosPrinter.ConfigurarRegiaoModoPagina(AEsquerda, ATopo, AAltura,
   end;
 
 begin
-  Result := MontarTag( cTagModoPaginaPosEsquerda, IntToStr(AEsquerda) ) +
+  Result := MontarTag( cTagModoPaginaDirecao, IntToStr(Integer(ADirecao)) ) +
+            MontarTag( cTagModoPaginaPosEsquerda, IntToStr(AEsquerda) ) +
             MontarTag( cTagModoPaginaPosTopo, IntToStr(ATopo) ) +
             MontarTag( cTagModoPaginaAltura, IntToStr(AAltura) ) +
             MontarTag( cTagModoPaginaLargura, IntToStr(ALargura) ) +
@@ -3058,7 +3113,11 @@ begin
     if (FBuffer.Count > 0) then
     begin
       For i := 0 to FBuffer.Count-1 do
-        StrToPrint := StrToPrint + FBuffer[i] + FPosPrinterClass.Cmd.PuloDeLinha;
+      begin
+        StrToPrint := StrToPrint + FBuffer[i];
+        if (i < FBuffer.Count-1) then
+          StrToPrint := StrToPrint + FPosPrinterClass.Cmd.PuloDeLinha;
+      end;
     end;
   finally
     FBuffer.Clear;
@@ -3121,7 +3180,7 @@ begin
 
   FInicializada := False;
   FFonteStatus := FFonteStatus - [ftCondensado, ftExpandido, ftAlturaDupla,
-      ftNegrito, ftSublinhado, ftItalico, ftInvertido];
+      ftNegrito, ftSublinhado, ftItalico, ftInvertido, ftFonteB];
 
   Inicializar;
 end;

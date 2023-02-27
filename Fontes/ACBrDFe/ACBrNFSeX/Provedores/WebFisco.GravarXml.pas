@@ -84,55 +84,40 @@ begin
 
   FDocument.Root := NFSeNode;
 
+  NFSeNode.AppendChild(AddNode(tcStr, '#', 'usuario', 1, 6, 1,
+                                                    Usuario, '', True, xAtrib));
+
+  NFSeNode.AppendChild(AddNode(tcStr, '#', 'pass', 1, 6, 1,
+                                                      Senha, '', True, xAtrib));
+
   // as Tags abaixo só devem ser geradas em ambinte de produção
   if Ambiente = taProducao then
   begin
-    NFSeNode.AppendChild(AddNode(tcStr, '#', 'usuario', 1, 6, 1,
-                                                    Usuario, '', True, xAtrib));
-    NFSeNode.AppendChild(AddNode(tcStr, '#', 'pass', 1, 6, 1,
-                                                      Senha, '', True, xAtrib));
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'prf', 1, 18, 1,
                                              CNPJPrefeitura, '', True, xAtrib));
+
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'usr', 1, 18, 1,
               NFSe.Prestador.IdentificacaoPrestador.CpfCnpj, '', True, xAtrib));
   end
   else
   begin
+    // No campo prf, usar 00.000.000/0000-00 para a fase de Homologação.
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'prf', 1, 18, 1,
+                                       '00.000.000/0000-00', '', True, xAtrib));
+
     {
       TESTE PARA PRESTADOR DO SIMPLES NACIONAL
-      No campo usuario, usar 142826 para a fase de Homologação.
-      No campo pass, usar 123456 para a fase de Homologação.
-      No campo prf, usar 00.000.000/0000-00 para a fase de Homologação.
       No campo usr, usar 44.232.272/0001-92 para a fase de Homologação.
 
       TESTE PARA PRESTADOR NÃO OPTANTE DO SIMPLES NACIONAL
-      No campo usuario, usar 901567 para a fase de Homologação.
-      No campo pass, usar 123456 para a fase de Homologação.
-      No campo prf, usar 00.000.000/0000-00 para a fase de Homologação.
       No campo usr, usar 57.657.017/0001-33 para a fase de Homologação.
     }
     if cSimples then
-    begin
-      NFSeNode.AppendChild(AddNode(tcStr, '#', 'usuario', 1, 6, 1,
-                                                   '142826', '', True, xAtrib));
-      NFSeNode.AppendChild(AddNode(tcStr, '#', 'pass', 1, 6, 1,
-                                                   '123456', '', True, xAtrib));
-      NFSeNode.AppendChild(AddNode(tcStr, '#', 'prf', 1, 18, 1,
-                                       '00.000.000/0000-00', '', True, xAtrib));
       NFSeNode.AppendChild(AddNode(tcStr, '#', 'usr', 1, 18, 1,
-                                       '44.232.272/0001-92', '', True, xAtrib));
-    end
+                                       '44.232.272/0001-92', '', True, xAtrib))
     else
-    begin
-      NFSeNode.AppendChild(AddNode(tcInt, '#', 'usuario', 1, 6, 1,
-                                                     901567, '', True, xAtrib));
-      NFSeNode.AppendChild(AddNode(tcInt, '#', 'pass', 1, 6, 1,
-                                                     123456, '', True, xAtrib));
-      NFSeNode.AppendChild(AddNode(tcStr, '#', 'prf', 1, 18, 1,
-                                       '00.000.000/0000-00', '', True, xAtrib));
       NFSeNode.AppendChild(AddNode(tcStr, '#', 'usr', 1, 18, 1,
                                        '57.657.017/0001-33', '', True, xAtrib));
-    end;
   end;
 
   NFSeNode.AppendChild(AddNode(tcStr, '#', 'ctr', 1, 8, 1,
@@ -173,21 +158,39 @@ begin
                                                          '', '', True, xAtrib));
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'f' + IntToStr(i) + 'd', 1, 10, 1,
                                                          '', '', True, xAtrib));
-    NFSeNode.AppendChild(AddNode(tcDe2, '#', 'f' + IntToStr(i) + 'v', 1, 12, 1,
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'f' + IntToStr(i) + 'v', 1, 12, 1,
+                                                         '', '', True, xAtrib));
+  end;
+
+  for i := 0 to 2 do
+  begin
+    if i <= NFSe.Servico.ItemServico.Count -1 then
+      NFSeNode.AppendChild(AddNode(tcStr, '#', 'item' + IntToStr(i+1), 1, 5, 1,
+        NFSe.Servico.ItemServico.Items[i].ItemListaServico, '', True, xAtrib))
+    else
+      NFSeNode.AppendChild(AddNode(tcStr, '#', 'item' + IntToStr(i+1), 1, 5, 1,
+                                                         '', '', True, xAtrib));
+  end;
+
+  for i := 0 to 2 do
+  begin
+    if i <= NFSe.Servico.ItemServico.Count -1 then
+      NFSeNode.AppendChild(AddNode(tcDe2, '#', 'aliq' + IntToStr(i+1), 1, 5, 1,
+                NFSe.Servico.ItemServico.Items[i].Aliquota, '', True, xAtrib))
+    else
+      NFSeNode.AppendChild(AddNode(tcDe2, '#', 'aliq' + IntToStr(i+1), 1, 5, 1,
                                                           0, '', True, xAtrib));
   end;
 
-  for i := 1 to NFSe.Servico.ItemServico.Count do
-    NFSeNode.AppendChild(AddNode(tcStr, '#', 'item' + IntToStr(i), 1, 5, 1,
-         NFSe.Servico.ItemServico.Items[i-1].ItemListaServico, '', True, xAtrib));
-
-  for i := 1 to NFSe.Servico.ItemServico.Count do
-    NFSeNode.AppendChild(AddNode(tcDe2, '#', 'aliq' + IntToStr(i), 1, 5, 1,
-                 NFSe.Servico.ItemServico.Items[i-1].Aliquota, '', True, xAtrib));
-
-  for i := 1 to NFSe.Servico.ItemServico.Count do
-    NFSeNode.AppendChild(AddNode(tcDe2, '#', 'val' + IntToStr(i), 1, 12, 1,
-            NFSe.Servico.ItemServico.Items[i-1].ValorUnitario, '', True, xAtrib));
+  for i := 0 to 2 do
+  begin
+    if i <= NFSe.Servico.ItemServico.Count -1 then
+      NFSeNode.AppendChild(AddNode(tcDe2, '#', 'val' + IntToStr(i+1), 1, 12, 1,
+           NFSe.Servico.ItemServico.Items[i].ValorUnitario, '', True, xAtrib))
+    else
+      NFSeNode.AppendChild(AddNode(tcDe2, '#', 'val' + IntToStr(i+1), 1, 12, 1,
+                                                          0, '', True, xAtrib));
+  end;
 
   // Código da localidade de execução do serviço, se no local do estabelecimento
   // do prestador, deixar como 0000...
@@ -230,8 +233,6 @@ begin
                                                           0, '', True, xAtrib));
   NFSeNode.AppendChild(AddNode(tcDe2, '#', 'bcofins', 1, 12, 1,
                                                           0, '', True, xAtrib));
-  NFSeNode.AppendChild(AddNode(tcDe2, '#', 'bcofins', 1, 12, 1,
-                                                          0, '', True, xAtrib));
   NFSeNode.AppendChild(AddNode(tcDe2, '#', 'ainss', 1, 6, 1,
                                                           0, '', True, xAtrib));
   NFSeNode.AppendChild(AddNode(tcDe2, '#', 'airrf', 1, 6, 1,
@@ -267,7 +268,7 @@ begin
 
   for i := 1 to 8 do
   begin
-    if i = 1 then
+    if (i = 1) and cSimples then
       NFSeNode.AppendChild(AddNode(tcStr, '#', 'iteser' + IntToStr(i), 1, 5, 1,
                                NFSe.Servico.ItemListaServico, '', True, xAtrib))
     else
@@ -277,7 +278,7 @@ begin
 
   for i := 1 to 8 do
   begin
-    if i = 1 then
+    if (i = 1) and cSimples then
       NFSeNode.AppendChild(AddNode(tcDe2, '#', 'alqser' + IntToStr(i), 1, 5, 1,
                                NFSe.Servico.Valores.Aliquota, '', True, xAtrib))
     else
@@ -287,7 +288,7 @@ begin
 
   for i := 1 to 8 do
   begin
-    if i = 1 then
+    if (i = 1) and cSimples then
       NFSeNode.AppendChild(AddNode(tcDe2, '#', 'valser' + IntToStr(i), 1, 12, 1,
                           NFSe.Servico.Valores.ValorServicos, '', True, xAtrib))
     else
@@ -295,15 +296,14 @@ begin
                                                           0, '', True, xAtrib));
   end;
 
-
   NFSeNode.AppendChild(AddNode(tcStr, '#', 'paisest', 1, 60, 1,
                                                          '', '', True, xAtrib));
 
-  NFSeNode.AppendChild(AddNode(tcDe2, '#', 'sssrecbr', 1, 12, 1,
+  NFSeNode.AppendChild(AddNode(tcDe2, '#', 'ssrecbr', 1, 12, 1,
    IIf(cSimples = True, NFSe.Prestador.ValorReceitaBruta, 0.00), '', True, xAtrib));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#', 'ssanexo', 1, 15, 1,
-                                                         '', '', True, xAtrib));
+             IIf(cSimples = True, NFSe.Prestador.Anexo, ''), '', True, xAtrib));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#', 'ssdtini', 1, 10, 1,
    IIf(cSimples = True,
@@ -319,6 +319,32 @@ begin
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'itemsaq' + IntToStr(i), 1, 60, 1,
                                                          '', '', True, xAtrib));
     NFSeNode.AppendChild(AddNode(tcStr, '#', 'itemsav' + IntToStr(i), 1, 60, 1,
+                                                         '', '', True, xAtrib));
+    // A tag abaixo foi incluida para atender o provedor FGMaiss
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'itemsat' + IntToStr(i), 1, 60, 1,
+                                                         '', '', True, xAtrib));
+  end;
+
+  // A tag abaixo foi incluida para atender o provedor FGMaiss
+  NFSeNode.AppendChild(AddNode(tcStr, '#', 'sslimite', 1, 6, 1,
+                                                      'NAO', '', True, xAtrib));
+
+  // A tag abaixo foi incluida para atender o provedor FGMaiss
+  if NFSe.Servico.Valores.OutrosDescontos > 0 then
+    NFSeNode.AppendChild(AddNode(tcDe2, '#', 'descoutros', 1, 12, 1,
+                        NFSe.Servico.Valores.OutrosDescontos, '', True, xAtrib))
+  else
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'descoutros', 1, 12, 1,
+                                                         '', '', True, xAtrib));
+
+  // As tag abaixo foram incluidas para atender o provedor FGMaiss
+  for i := 7 to 12 do
+  begin
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'f' + IntToStr(i) + 'n', 1, 15, 1,
+                                                         '', '', True, xAtrib));
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'f' + IntToStr(i) + 'd', 1, 10, 1,
+                                                         '', '', True, xAtrib));
+    NFSeNode.AppendChild(AddNode(tcStr, '#', 'f' + IntToStr(i) + 'v', 1, 12, 1,
                                                          '', '', True, xAtrib));
   end;
 

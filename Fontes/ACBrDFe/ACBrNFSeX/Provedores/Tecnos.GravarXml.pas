@@ -38,7 +38,6 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
   pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao,
@@ -49,6 +48,8 @@ type
 
   TNFSeW_Tecnos201 = class(TNFSeW_ABRASFv2)
   protected
+    function DefinirNameSpaceDeclaracao: string; override;
+
     function GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode; override;
     function GerarValores: TACBrXmlNode; override;
 
@@ -58,6 +59,9 @@ type
   end;
 
 implementation
+
+uses
+  ACBrUtil.Strings;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -131,6 +135,11 @@ begin
                    Poem_Zeros(OnlyNumber(NFSe.IdentificacaoRps.Numero), 16);
 end;
 
+function TNFSeW_Tecnos201.DefinirNameSpaceDeclaracao: string;
+begin
+  Result := 'http://www.abrasf.org.br/nfse.xsd';
+end;
+
 function TNFSeW_Tecnos201.GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode;
 begin
   Result := CreateElement('tcDeclaracaoPrestacaoServico');
@@ -139,6 +148,8 @@ begin
 end;
 
 function TNFSeW_Tecnos201.GerarValores: TACBrXmlNode;
+var
+  item: string;
 begin
   Result := CreateElement('tcDadosServico');
 
@@ -150,8 +161,10 @@ begin
   Result.AppendChild(AddNode(tcStr, '#21', 'ResponsavelRetencao', 1, 1, NrOcorrRespRetencao,
    FpAOwner.ResponsavelRetencaoToStr(NFSe.Servico.ResponsavelRetencao), DSC_INDRESPRET));
 
+  item := FormatarItemServico(NFSe.Servico.ItemListaServico, FormatoItemListaServico);
+
   Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 5, 1,
-                                 NFSe.Servico.ItemListaServico, DSC_CLISTSERV));
+                                                          item, DSC_CLISTSERV));
 
   Result.AppendChild(AddNode(tcStr, '#30', 'CodigoCnae', 1, 7, 1,
                                 OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE));
@@ -162,7 +175,7 @@ begin
   Result.AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, 1,
     StringReplace(NFSe.Servico.Discriminacao, ';', FpAOwner.ConfigGeral.QuebradeLinha,
                                        [rfReplaceAll, rfIgnoreCase]), DSC_DISCR,
-                (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
+                       (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
 
   Result.AppendChild(AddNode(tcStr, '#33', 'CodigoMunicipio', 1, 7, 1,
                            OnlyNumber(NFSe.Servico.CodigoMunicipio), DSC_CMUN));
@@ -171,7 +184,7 @@ begin
                                            NFSe.Servico.CodigoPais, DSC_CPAIS));
 
   Result.AppendChild(AddNode(tcStr, '#35', 'ExigibilidadeISS', 1, 01, 1,
-             ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS), DSC_INDISS));
+    FpAOwner.ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS), DSC_INDISS));
 
   Result.AppendChild(AddNode(tcInt, '#36', 'MunicipioIncidencia', 7, 07, NrOcorrMunIncid,
                                 NFSe.Servico.MunicipioIncidencia, DSC_MUNINCI));

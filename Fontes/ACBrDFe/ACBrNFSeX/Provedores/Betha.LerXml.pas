@@ -47,6 +47,7 @@ type
   protected
 
   public
+    function LerXml: Boolean; override;
 
   end;
 
@@ -65,5 +66,63 @@ implementation
 // Essa unit tem por finalidade exclusiva ler o XML do provedor:
 //     Betha
 //==============================================================================
+
+{ TNFSeR_Betha }
+
+function TNFSeR_Betha.LerXml: Boolean;
+var
+  xDiscriminacao, xDescricao, xItemServico: string;
+  fQuantidade, fValorUnitario, fValorServico, fValorBC, fAliquota: Double;
+  i, j: Integer;
+
+  function ExtraiValorCampo(aCampo: string; aCampoNumerico: Boolean): string;
+  begin
+    i := PosEx(aCampo, xDiscriminacao, j) + Length(aCampo) + 1;
+
+    if i = Length(aCampo) + 1 then
+      Result := ''
+    else
+    begin
+      j := PosEx(']', xDiscriminacao, i);
+      Result := Copy(xDiscriminacao, i, j-i);
+
+      if aCampoNumerico then
+        Result := StringReplace(Result, '.', ',', [rfReplaceAll])
+    end;
+  end;
+begin
+  Result := inherited LerXml;
+
+  // Tratar a Discriminacao do serviço
+  xDiscriminacao := NFSe.Servico.Discriminacao;
+  J := 1;
+
+  while true do
+  begin
+    xDescricao := ExtraiValorCampo('Descricao', False);
+
+    if xDescricao = '' then
+      Break;
+
+    xItemServico := ExtraiValorCampo('ItemServico', False);
+    fQuantidade := StrToFloatDef(ExtraiValorCampo('Quantidade', True), 0);
+    fValorUnitario := StrToFloatDef(ExtraiValorCampo('ValorUnitario', True), 0);
+    fValorServico := StrToFloatDef(ExtraiValorCampo('ValorServico', True), 0);
+    fValorBC := StrToFloatDef(ExtraiValorCampo('ValorBaseCalculo', True), 0);
+    fAliquota := StrToFloatDef(ExtraiValorCampo('Aliquota', True), 0);
+
+    with NFSe.Servico.ItemServico.New do
+    begin
+      Descricao := xDescricao;
+      ItemListaServico := xItemServico;
+      Quantidade := fQuantidade;
+      ValorUnitario := fValorUnitario;
+      ValorTotal := fValorServico;
+      ValorBCINSS := fValorBC;
+      BaseCalculo := fValorBC;
+      Aliquota := fAliquota;
+    end;
+  end;
+end;
 
 end.

@@ -57,6 +57,8 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property SoapAction: string read GetSoapAction;
     property NameSpace: string read GetNameSpace;
   end;
@@ -74,7 +76,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, eReceita.GravarXml, eReceita.LerXml;
 
 { TACBrNFSeProvidereReceita202 }
@@ -85,6 +88,8 @@ begin
 
   with ConfigAssinar do
   begin
+    Rps := True;
+    LoteRps := True;
     CancelarNFSe := True;
     RpsGerarNFSe := True;
   end;
@@ -275,6 +280,15 @@ begin
 
   Result := Executar(SoapAction + 'SubstituirNfse', Request,
                      ['outputXML', 'SubstituirNfseResposta'], [NameSpace]);
+end;
+
+function TACBrNFSeXWebserviceeReceita202.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
 end;
 
 end.

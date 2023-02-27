@@ -37,9 +37,16 @@ unit ACBrCIOTContratos;
 interface
 
 uses
-  Classes, SysUtils, Dialogs, Forms,
-  ACBrCIOTConfiguracoes, ACBrDFeUtil,
-  pcnCIOT, pcnCIOTR, pcnCIOTW, pcnConversao, pcnAuxiliar, pcnLeitor;
+  Classes, 
+  SysUtils,
+  ACBrCIOTConfiguracoes, 
+  ACBrDFeUtil,
+  pcnCIOT, 
+  pcnCIOTR, 
+  pcnCIOTW, 
+  pcnConversao, 
+  pcnAuxiliar, 
+  pcnLeitor;
 
 type
 
@@ -133,7 +140,12 @@ type
 implementation
 
 uses
-  ACBrCIOT, ACBrUtil, synautil;
+  ACBrCIOT,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML,
+  ACBrUtil.FilesIO,
+  synautil;
 
 { Documento }
 

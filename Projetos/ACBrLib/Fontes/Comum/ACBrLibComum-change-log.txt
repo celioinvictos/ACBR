@@ -42,6 +42,20 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+06/02/2022
+--- ACBrLibComum ---
+[+] Adicionado o método 'ConverterUTF8ParaAnsi', converter a resposta de UTF8
+    para ANSI, se assim estiver configurado na Lib
+    (por: DSA)
+
+20/07/2022
+--- ACBrLibComum ---
+[*] Remoção de Warning @deprecated ref. ACBrUtils
+
+14/06/2022
+---DFeReportConfig---
+[-] Remoção do campo FAX da classe DFeReportConfig da lib, compatibilizando com o componente DFeReport
+
 21/12/2021
 --- ACBrLibComum ---
 [*] Melhoria em "LIB_Inicializar", e para evitar A.V. em "LiberarLib" caso a Lib

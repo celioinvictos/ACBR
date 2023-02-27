@@ -44,6 +44,114 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+17/01/2023
+-- ACbrMonitor1, DoACBreSocial --
+[*] Corrige problema de número de parâmetros incorretos nas novas funções StrToVersaoeSocialEx
+   Por: DiegoAF
+
+21/12/2022
+--- ACBrMonitorConsts, ACBrMonitorConfig --- 
+[+] Adicionado propriedade ImprimeInscSuframa - #TK-2947-2
+    Por: Antonio Carlos Junior
+
+21/12/2022
+--- ACBrMonitorConsts, ACBrMonitorConfig, ACBrMonitor1 ---
+[+] Nova Propriedade para impressão do xPed e nItemPed na DANFE
+    Por: Daniel Morais / Victor H Gonzales - Pandaaa
+	
+29/11/2022
+--- ACBrMonitorConsts, DoACBreSocialUnit ---
+[+] Novos métodos ObterCertificados e ValidarXML para o eSocial
+    Por: Antonio Carlos Junior
+
+25/11/2022
+---ACBrMonitorConfig, ACBrMonitorConsts, DoBoletoUnit---
+[*] Criação campos para leitura de novas propriedades do PIX (Y03) Santander CNAB240 - TK3201
+    Por: Daniel Infocotidiano
+
+04/10/2022
+-- ACBrMonitorPLUS.iss --
+[-] Correção para incluir os arquivos de Schemas do GTIN no instalador
+    por: Elias César
+
+03/10/2022
+-- ACBrMonitor1 --
+[*] Inclusão campos Versão Arquivo e Versão Lote na tela de configuração do Boleto
+    Por: Antonio Carlos
+
+03/10/2022
+-- ACBrMonitor1 --
+[-] Correção de caminhos dos fontes libGTIN para compilação em release
+    Por: Elias César
+
+29/09/2022
+-- ACBrMonitor1 --
+[+] Inclusão da consulta de códigos GTIN na aba "DFe > Testes > GTIN"
+    Por: Elias César
+
+28/09/2022
+-- ACBrMonitor1 --
+[*] Alterações para funcionamento da consulta de GTIN por INI e TCP/IP
+
+-- DoACBrGTIN --
+[+] Inclusão do GTIN no ACBrMonitor
+    Por: Elias César
+
+06/09/2022
+-- ACBrMonitor1 --
+[*] Inclusão de checkbox para possibilitar atualização do cache local da lista de NCMs.
+
+17/08/2022
+--- DoBoletoUnit ---
+[*] Atualização das chamadas de envio por API e atualização das classes resposta baseado no refactory do componente boleto
+
+17/08/2022
+---DoACBreSocialUnit---
+[*] Refatoração das Respostas baseado na classe da ACBrLibeSocial
+
+11/07/2022
+[*] Remoção de Warning @deprecated ref. ACBrUtils do ACBrLib
+
+28/06/2022
+--- ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts---
+[+] Adicionado propriedade ExibirMunicipioDescarregamento para impressão do DAMDFe
+
+20/06/2022
+--- DoCNPJUnit---
+[*] Ajustes de leitura do retorno usando métodos unificados da ACBrLib.
+
+15/06/2022
+--- ACBrMonior1 ---
+[*] Remoção do campo FAX por estar em desuso.
+
+13/06/2022
+--- ACBrMoniorConfig ---
+[*] Alterado a versão do layout padrão do e-social
+
+02/05/2022
+--- ACBrMonior1 ---
+[+] Reincluída aba de NCMs, possibilitando consultar um código NCM e salvar a lista de arquivos.
+
+--- DoNcmUnit, ACBrMonitorConsts ---
+[*] Ajuste para voltarem a funcionar os comandos referentes ao NCM;
+[+] Inclusão dos novos comandos 'BuscarPorCodigo' e 'BuscarPorDescricao', retornando uma 
+    lista os NCMs filtrados.
+	
+--- Sobre ---
+[-] Correção da URL chamada ao clicar no botão de ajuda.
+
+06/04/2022
+---DoACBrBoletoUnit, ACBrMonitorConsts---
+[+] Adicionado metodo ConsultarTitulosPorPeriodo para consulta API Banco do Brasil
+
+05/04/2022
+---DoACBrNFeUnit---
+[*] Ajustes na geração da tag autXML a partir das configurações em tela
+
+22/03/2022
+--- ACBrMonior1, DoETQUnit---
+[*] Ajustes de enumerados, atualização de uses da classe ACBrETQClass
+
 26/01/2022
 --- ACBrMonior1---
 [+] Ajustes nas mensagens de interações em tela ref Terminal Consulta e Balança 

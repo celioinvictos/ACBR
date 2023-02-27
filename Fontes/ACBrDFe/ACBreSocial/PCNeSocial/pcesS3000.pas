@@ -54,7 +54,7 @@ uses
   {$ELSE}
    Contnrs,
   {$IFEND}
-  ACBrBase, pcnConversao, ACBrUtil, pcnConsts,
+  ACBrBase, pcnConversao, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -102,7 +102,7 @@ type
     property InfoExclusao: TInfoExclusao read FInfoExclusao write FInfoExclusao;
   end;
 
-  TInfoExclusao = class
+  TInfoExclusao = class(TObject)
   private
     FtpEvento: TTipoEvento;
     FnrRecEvt: string;
@@ -122,6 +122,7 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TS3000Collection }
@@ -205,8 +206,9 @@ end;
 function TEvtExclusao.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
-     
+
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtExclusao');
@@ -220,31 +222,13 @@ begin
     Gerador.wCampo(tcStr, '', 'tpEvento', 1,  6, 1, TipoEventoToStr(self.InfoExclusao.tpEvento));
     Gerador.wCampo(tcStr, '', 'nrRecEvt', 1, 40, 1, self.InfoExclusao.nrRecEvt);
 
-    if ( self.InfoExclusao.tpEvento In [teS1200, teS1202,teS2299] ) then
-      begin
-        GerarIdeTrabalhador2(self.InfoExclusao.IdeTrabalhador, True);
-        GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto);
-      end
-    else if ( self.InfoExclusao.tpEvento In [teS1210] ) then
-      begin
-        GerarIdeTrabalhador2(self.InfoExclusao.IdeTrabalhador, True);
-        if VersaoDF <= ve02_05_00 then
-          GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto)
-        else
-          GerarIdeFolhaPagto2(self.InfoExclusao.IdeFolhaPagto);
-      end
-    else if ( self.InfoExclusao.tpEvento In [teS1280] ) then  //Fazendo isso, irá atender o layout novo e o antigo.
-       GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto)
-    else
-      begin
-        if ( self.InfoExclusao.IdeFolhaPagto.perApur = '' ) then
-           GerarIdeTrabalhador2(self.InfoExclusao.IdeTrabalhador, True)
-        else if VersaoDF <= ve02_05_00 then
-           GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto)
-        else
-           GerarIdeFolhaPagto2(self.InfoExclusao.IdeFolhaPagto)
-      end;
-    
+    if(self.InfoExclusao.tpEvento In [teS1200..teS1210, teS2190..teS2420, teS8299])then
+      GerarIdeTrabalhador(self.InfoExclusao.IdeTrabalhador, True);
+
+    if(self.InfoExclusao.tpEvento In [teS1200, teS1202, teS1207, teS1280, teS1300])then
+      GerarIdeFolhaPagto(self.InfoExclusao.IdeFolhaPagto)
+    else if(self.InfoExclusao.tpEvento In [teS1200..teS1280,teS1300])then
+      GerarIdeFolhaPagto2(self.InfoExclusao.IdeFolhaPagto);
 
     Gerador.wGrupo('/infoExclusao');
     Gerador.wGrupo('/evtExclusao');
@@ -259,7 +243,7 @@ begin
     raise Exception.Create('ID: ' + Self.Id + sLineBreak + ' ' + e.Message);
   end;
 
-  Result := (Gerador.ArquivoFormatoXML <> '')
+  Result := (Gerador.ArquivoFormatoXML <> '');
 end;
 
 function TEvtExclusao.LerArqIni(const AIniString: String): Boolean;

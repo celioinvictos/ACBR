@@ -30,6 +30,9 @@
 
 {$I ACBr.inc}
 
+// Para testar um modelo externo com Elgin E1 Service, descomente a linha abaixo
+//{$DEFINE ELGIN_E1}
+
 unit Unit1;
 
 interface
@@ -37,7 +40,11 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
   strutils, ExtCtrls, Buttons, Spin, ComCtrls, ExtDlgs, ACBrPosPrinter,
-  ACBrBase, ACBrDevice, ACBrCMC7, ACBrPosPrinterElginE1Service;
+  ACBrBase, ACBrDevice, ACBrCMC7
+  {$IFDEF ELGIN_E1}
+  , ACBrPosPrinterElginE1Service
+  {$ENDIF}
+  ;
 
 type
 
@@ -216,7 +223,9 @@ type
     procedure FormDestroy(Sender: TObject);
   private
     { private declarations }
+    {$IFDEF ELGIN_E1}
     fE1Printer: TACBrPosPrinterElginE1Service;
+    {$ENDIF}
 
     Procedure GravarINI;
     Procedure LerINI;
@@ -258,6 +267,7 @@ begin
   btSearchPortsClick(Sender);
   PageControl1.ActivePageIndex := 0;
 
+  {$IFDEF ELGIN_E1}
   fE1Printer := TACBrPosPrinterElginE1Service.Create(ACBrPosPrinter1);
   fE1Printer.Modelo := prnI9;
   // Usar por TXT
@@ -265,13 +275,16 @@ begin
   fE1Printer.PastaSaidaE1 := 'c:\E1\pathOUT';
   // Usar por TCP
   //fE1Printer.IPePortaE1 := '192.168.56.1:89';
+  {$ENDIF}
 
   LerINI;
 end;
 
 procedure TFrPosPrinterTeste.FormDestroy(Sender: TObject);
 begin
+  {$IFDEF ELGIN_E1}
   fE1Printer.Free;
+  {$ENDIF}
 end;
 
 procedure TFrPosPrinterTeste.FormClose(Sender: TObject;
@@ -635,6 +648,7 @@ end;
 procedure TFrPosPrinterTeste.cbxModeloChange(Sender: TObject);
 begin
   try
+    {$IFDEF ELGIN_E1}
     if cbxModelo.ItemIndex = Integer(ppExterno) then
     begin
       ACBrPosPrinter1.ModeloExterno := fE1Printer;
@@ -644,15 +658,20 @@ begin
     end
     else
     begin
+    {$ENDIF}
       ACBrPosPrinter1.Modelo := TACBrPosPrinterModelo(cbxModelo.ItemIndex);
-      if (cbxPorta.Text = 'NULL') then
+    {$IFDEF ELGIN_E1}
+    if (cbxPorta.Text = 'NULL') then
         cbxPorta.Text := '';
 
       cbxPorta.Enabled := True;
     end;
+    {$ENDIF}
   except
      cbxModelo.ItemIndex := Integer( ACBrPosPrinter1.Modelo ) ;
+     {$IFDEF ELGIN_E1}
      cbxPorta.Enabled := True;
+     {$ENDIF}
      raise ;
   end ;
 end;

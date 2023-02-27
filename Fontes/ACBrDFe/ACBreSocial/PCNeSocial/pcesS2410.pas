@@ -54,7 +54,7 @@ uses
   {$ELSE}
    Contnrs,
   {$IFEND}
-  ACBrBase, pcnConversao, ACBrUtil, pcnConsts,
+  ACBrBase, pcnConversao, ACBrUtil.Strings, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -458,7 +458,7 @@ begin
 
   Gerador.wCampo(tcStr, '', 'cpfBenef',   11, 11, 1, pBeneficiario.cpfBenef);
   Gerador.wCampo(tcStr, '', 'matricula',   0, 30, 0, pBeneficiario.matricula);
-  Gerador.wCampo(tcStr, '', 'cnpjOrigem', 14, 14, 1, pBeneficiario.cnpjOrigem);
+  Gerador.wCampo(tcStr, '', 'cnpjOrigem', 14, 14, 0, pBeneficiario.cnpjOrigem);
 
   Gerador.wGrupo('/beneficiario');
 end;
@@ -513,7 +513,7 @@ begin
     
   Gerador.wGrupo('infoPenMorte');
 
-  Gerador.wCampo(tcStr, '', 'tpPenMorte',  1,  1, 1, eStpTpPenMorteToStr(pInfoPenMorte.tpPenMorte));
+  Gerador.wCampo(tcStr, '', 'tpPenMorte',  1,  1, 1, eStpTpPenMorteToStrEX(pInfoPenMorte.tpPenMorte));
 
   GerarInstPenMorte(pInfoPenMorte.instPenMorte);
     
@@ -530,7 +530,7 @@ begin
   Gerador.wGrupo('infoBenTermino');
 
   Gerador.wCampo(tcDat, '', 'dtTermBeneficio', 10, 10, 1, pInfoBenTermino.dtTermBeneficio);
-  Gerador.wCampo(tcInt, '', 'mtvTermino',       2,  2, 1, eStpTpMotCessBenefToStr(pInfoBenTermino.mtvTermino));
+  Gerador.wCampo(tcInt, '', 'mtvTermino',       2,  2, 1, eStpTpMotCessBenefToStrEX(pInfoBenTermino.mtvTermino));
 
   Gerador.wGrupo('/infoBenTermino');
 end;
@@ -565,6 +565,7 @@ end;
 function TEvtCdBenIn.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);

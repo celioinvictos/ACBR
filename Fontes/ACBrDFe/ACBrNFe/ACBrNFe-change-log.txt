@@ -44,6 +44,164 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+27/01/2023
+-- Diversos --
+[*] Alterações visando atender a NT 2022/003 onde foi alterado a quantidade de
+    ocorrências de 500 para 999 do grupo NFref e a inclusão da tag refNFeSig que 
+    poderá conter a chave da nota referenciada, mas com o código numérico zerado.
+    Observação: Essas alterações só vão ser validadas no ambiente de homologação 
+                a partir de 07/02/2023 e no de produção: 03/04/2023.
+    por: Italo Giurizzato Junior
+
+25/01/2023
+-- ACBrDFeDANFeReport --
+[-] Correção para o parâmetro "Separar arqs pelo Modelo(NFe/NFCe)" não depender do 
+    parâmetro "Adicionar Literal no nome das pastas".
+    por: Elias César
+
+24/01/2023
+--Diversos--
+[*] TK-3485 ACBrNFe - Verificar a possibilidade de tirar dos impressos(Fast/Fortes) a mensagem fixa AREÁ DA MENSAGEM FISCAL
+ por : Victor H Gonzales - Pandaaa
+
+23/01/2023
+-- Diversos --
+[+] Incluido a propriedade de configuração: ForcarGerarTagRejeicao906 para definir se
+    vai gerar as tags do ICMS Efetivo ou não.
+    Valores aceitos pela nova propriedade: fgtNunca, fgtSomenteProducao, 
+    fgtSomenteHomologacao e fgtSempre. Valor padrão: fgtNunca
+  por : prevedello_sistemas
+
+21/12/2022
+--ACBrDFeDANFeReport--
+[*] TK-3373-1 Opção para impressão do xPED e nTemPed no Danfe (RL e FR) quadro de produtos
+    Removido do grupo informação adicional, criado a função separada para o parametro de
+    dados adicionais não inferir nessa opção. (ExibeInforAdicProduto)
+  por : Victor H Gonzales - Pandaaa
+
+20/12/2022
+--ACBrDFeDANFeReport--
+[+] TK-3373-1 Opção para impressão do xPED e nTemPed no Danfe (RL e FR) quadro de produtos
+  por : Victor H Gonzales - Pandaaa
+
+15/12/2022
+-- ACBrNFeServicos --
+[*] Revertido a URL de Consulta via QR-Code de MG Produção.
+   Por: Italo Giurizzato Junior
+[*] Revertido as URLs de Consulta via QR-Code de MG Produção e Homologação.
+    Pois no Portal contem uma informação que mudou as URLs, mas o Webservice
+    não aceita essas novas URLs.
+   Por: Victor H Gonzales - Pandaaa
+
+29/11/2022
+-- ACBrNFeXmlWriter --
+[*] Ao gerar a chave estava passando o valor zero em vez de pegar o valor do
+    campo cNF.
+   Por: Italo Giurizzato Junior
+
+10/11/2022
+[*] Adição de informações relacionadas ao grupo comb no método Assign da classe respectiva.
+  por: Eduardo Eng. Costa
+
+04/10/2022
+[-] TK-3125 ACBrNFE verificação para correção no LOAD falta de Declação UTF-8 no XML
+  por : Victor H Gonzales - Pandaaa
+
+28/09/2022
+-- ACBrNFeServicos --
+[*] Revertido as URLs de Consulta via QR-Code de MG Produção e Homologação.
+    Pois no Portal contem uma informação que mudou as URLs, mas o Webservice
+    não aceita essas novas URLs.
+   Por: Italo Giurizzato Junior
+
+21/09/2022
+-- ACBrNFeServicos --
+[*] Correção na URL de Consulta via QR-Code de MG (Homologação).
+   Por: Italo Giurizzato Junior
+-- ACBrNFeNotasFiscais --
+[-] TK-3082 K01-20 REGRA DE VALIDAÇÃO DE NEGOCIOS NT2021.004 1.34
+  Por : Pandaaa
+
+19/09/2022
+-- ACBrNFeServicos --
+[*] Correção nas URLs de Consulta via QR-Code de MG.
+   Por: Italo Giurizzato Junior
+
+09/09/2022
+-- ACBrNFeServicos --
+[*] Remoção das URLs de Consulta ao Cadastro da SEFAZ-ES, pois agora ela usa as
+    URLs da SVRS
+   Por: Douglas Miiller
+
+10/08/2022
+-- ACBrNFeNotasFiscais --
+[*] Atualizado função ValidarRegrasdeNegocios, utilizando a função DataHoraTimeZoneModoDeteccao para validar a DataHora com TimeZone informado no XML
+   por: José M S Junior
+
+04/08/2022
+-- ACBrNFeNotasFiscais --
+[*] Ajustes na geração da seção autXML na função GerarNFeINI.
+   Por : Emerson Teixeira
+
+01/07/2022
+-- ACBrDFeDANFeReport --
+[*] Alterado o valor padrão para False da propriedade de configuração: ImprimeTotalLiquido
+    Aconselhamos a não alterar para True uma vez que no manual do DANFE não diz nada que 
+    podemos imprimir o valor liquido no lugar do valor Bruto.
+   Por: Italo Giurizzato Junior
+
+17/06/2022
+-- ACBrNFeNotasFiscais --
+[*] Ajuste na regra de validação 772 incluindo a exceção "UF entrega x UF emit".
+   Por : mscorteganha
+
+01/06/2022
+--ACBrNFeDANFEClass.pas--
+[-]TK-2725 ACBrNFe - Correção erro "divisão operação por zero"
+  por : Innovae Brasil
+
+30/05/2022
+-- ACBrNFeDANFEFRDM --
+[*] Alteração do campo 'DescricaoProduto' para suportar preenchimento das tags de ARMA.
+    Por: thi4182 
+
+19/05/2022
+-- ACBrNFeServicos --
+[+] Inclusão das URLs de produção e homologação versão 4.00 para emissão da NFC-e - SEFAZ-CE
+   Por: Italo Giurizzato Junior
+
+18/05/2022
+-- ACBrNFeNotasFiscais --
+[*] Utilização da função ComparaValor ao validar as rejeições 564 e 610.
+   Por: Vilmondes Cândido Rosa
+-- ACBrNFeNotasFiscais --
+[*] Melhorias na geração da string que contem os erros ao executar o ValidarRegrasdeNegocios
+   Por: Adilson Duarte
+
+12/05/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+04/05/2022
+-- ACBrDANFCeFortesFr --
+[-] Ajuste no DANFE NFCe para que o valor total dos produtos não fiquem fora da margem 
+
+27/03/2022
+-- Diversos --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+11/03/2022
+-- Diversos --
+[*] Alterações nos fontes do componente visando atender a NT 2021/004
+   Por: Italo Giurizzato Junior
+
+18/02/2022
+-- ACBrNFeServicos --
+[*] Atualização da URL do QR-Code da SEFAZ-MG
+   Por: Italo Giurizzato Junior
+
 12/01/2021
 -- ACBrNFeWebServices --
 [-] Ajustes para evitar a rejeição

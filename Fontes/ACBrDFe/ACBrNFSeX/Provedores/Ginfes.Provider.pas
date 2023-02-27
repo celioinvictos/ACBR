@@ -59,6 +59,8 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property NameSpace: string read GetNameSpace;
   end;
 
@@ -79,7 +81,9 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrXmlDocument,
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrXmlDocument,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   Ginfes.GravarXml, Ginfes.LerXml;
 
@@ -129,6 +133,8 @@ begin
     ConsultarNFSe     := True;
     CancelarNFSe      := True;
   end;
+
+  SetNomeXSD('***');
 
   with ConfigSchemas do
   begin
@@ -213,7 +219,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -233,7 +239,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -347,6 +353,17 @@ begin
   Result := Executar('', Request,
                      ['return', 'CancelarNfseResposta'],
                      []);
+end;
+
+function TACBrNFSeXWebserviceGinfes.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
 end;
 
 end.

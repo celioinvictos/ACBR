@@ -60,7 +60,8 @@ uses
   DoNcmUnit, DoLCBUnit, DoDISUnit, DoSedexUnit, DoETQUnit, DoACBrGNReUnit,
   DoPosPrinterUnit, DoECFUnit, DoECFObserver, DoECFBemafi32, DoSATUnit,
   DoACBreSocialUnit, DoACBrBPeUnit, ACBrLibResposta, DoACBrUnit, DoCNPJUnit,
-  DoCPFUnit, ACBrBoletoConversao, FormConsultaCNPJ, ACBrMonitorMenu, ACBrDFeReport;
+  DoCPFUnit, ACBrBoletoConversao, FormConsultaCNPJ, ACBrMonitorMenu,
+  ACBrDFeReport, ACBrGTIN, DoACBrGTINUnit,ACBrPIXBase;
 
 const
   CEstados: array[TACBrECFEstado] of string =
@@ -122,6 +123,7 @@ type
     ACBrGIF1: TACBrGIF;
     ACBrGNRE1: TACBrGNRE;
     ACBrGNREGuiaRL1: TACBrGNREGuiaRL;
+    ACBrGTIN1: TACBrGTIN;
     ACBrIBGE1: TACBrIBGE;
     ACBrIntegrador1: TACBrIntegrador;
     ACBrMail1: TACBrMail;
@@ -186,6 +188,9 @@ type
     btnCancMDFe: TButton;
     btnCancNF: TButton;
     btnCancNFeSubs: TButton;
+    btNCMConsultar: TBitBtn;
+    btNCMSalvarArquivo: TBitBtn;
+    btNCMValidadeHelp: TBitBtn;
     btnConsultar: TButton;
     btnConsultarCTe: TButton;
     btnConsultarMDFe: TButton;
@@ -207,7 +212,7 @@ type
     btnSATEMAIL: TPanel;
     btnBalanca: TPanel;
     btnBoleto: TPanel;
-    btnBoletoCedente: TPanel;
+    btnBoletoBeneficiario: TPanel;
     btnBoletoCont: TPanel;
     btnBoletoConta: TPanel;
     btnBoletoEmail: TPanel;
@@ -252,6 +257,7 @@ type
     btnStatusServ: TButton;
     btnStatusServCTe: TButton;
     btnStatusServMDFe: TButton;
+    btnConsultarGTIN: TButton;
     btnTC: TPanel;
     btnUser: TPanel;
     btnValidarXML: TButton;
@@ -357,6 +363,7 @@ type
     cbxBOLF_J: TComboBox;
     cbxBOLImpressora: TComboBox;
     cbxBOLLayout: TComboBox;
+    cbxBOLTipoChavePix: TComboBox;
     cbxBOLUF: TComboBox;
     cbxCNAB: TComboBox;
     cbxEmissaoPathNFe: TCheckBox;
@@ -373,6 +380,7 @@ type
     cbxImpDescPorc: TCheckBox;
     cbxImpDetEspNFe: TCheckBox;
     cbxImpDocsReferenciados: TCheckBox;
+    cbxImprimeXPedNitemPed: TCheckBox;
     cbxImpressora: TComboBox;
     cbxImpressoraNFCe: TComboBox;
     cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina: TCheckBox;
@@ -382,6 +390,7 @@ type
     cbxImprimirDescAcresItemSAT: TCheckBox;
     cbxImprimirItem1LinhaNFCe: TCheckBox;
     cbxImprimirItem1LinhaSAT: TCheckBox;
+    cbxMostrarStatusSAT: TCheckBox;
     cbxImprimirLogoLateralNFCe: TCheckBox;
     cbxImprimeItens: TCheckBox;
     cbxImprimirNomeFantasiaNFCe: TCheckBox;
@@ -439,11 +448,14 @@ type
     chECFDescrGrande: TCheckBox;
     chECFIgnorarTagsFormatacao: TCheckBox;
     chECFSinalGavetaInvertido: TCheckBox;
+    cbNCMForcarDownload: TCheckBox;
+    cbxImprimeInscSuframa: TCheckBox;
+    ckbExibirMunicipioDescarregamento: TCheckBox;
     ChkPix: TCheckBox;
     chgDescricaoPagamento: TCheckGroup;
     chkBOLRelMostraPreview: TCheckBox;
     chkExibeRazaoSocial: TCheckBox;
-    chkLerCedenteRetorno: TCheckBox;
+    chkLerBeneficiarioRetorno: TCheckBox;
     cbxBOLEmailMensagemHTML: TCheckBox;
     chkMostraLogNaTela: TCheckBox;
     ChkLogBoletoWeb: TCheckBox;
@@ -487,7 +499,14 @@ type
     edEmailUsuario: TEdit;
     edEntTXT: TEdit;
     edIBGECodNome: TEdit;
-    edtOperacaoCedente: TEdit;
+    edConsultarGTIN: TEdit;
+    edtBOLChavePix: TEdit;
+    edtVersaoArquivo: TEdit;
+    edtVersaoLote: TEdit;
+    edNCMCodigo: TEdit;
+    edNCMDiasValidade: TSpinEdit;
+    edNCMDiretorio: TDirectoryEdit;
+    edtOperacaoBeneficiario: TEdit;
     edLCBPreExcluir: TEdit;
     edLogArq: TEdit;
     edLogComp: TEdit;
@@ -577,7 +596,6 @@ type
     edtEmitCNPJ: TEdit;
     edtEmitIE: TEdit;
     edtEmitIM: TEdit;
-    edtFaxEmpresa: TEdit;
     edtIDContribuinte: TEdit;
     edtIdCSRT: TEdit;
     edtIDEmpregador: TEdit;
@@ -666,6 +684,8 @@ type
     gbLog: TGroupBox;
     gbLogComp: TGroupBox;
     gbLogotipo: TGroupBox;
+    gbNCMConsultar: TGroupBox;
+    gbNCMSalvarArquivo: TGroupBox;
     gbPPPoE: TGroupBox;
     gbProxy: TGroupBox;
     gbQRCode: TGroupBox;
@@ -693,7 +713,7 @@ type
     GroupBox12: TGroupBox;
     GroupBox13: TGroupBox;
     GrbVersaoDFe: TGroupBox;
-    GrbDadosCedenteBoletoWeb: TGroupBox;
+    GrbDadosBeneficiarioBoletoWeb: TGroupBox;
     grbWsConfig: TGroupBox;
     GroupBox2: TGroupBox;
     GroupBox3: TGroupBox;
@@ -769,7 +789,12 @@ type
     Label109: TLabel;
     Label114: TLabel;
     Label118: TLabel;
+    Label152: TLabel;
+    Label260: TLabel;
+    lbConsultarGTIN: TLabel;
     Label254: TLabel;
+    lblBOLChavePix: TLabel;
+    lblBOLTipoChavePix: TLabel;
     lblPrefixRemessa: TLabel;
     Label255: TLabel;
     Label256: TLabel;
@@ -778,6 +803,9 @@ type
     Label259: TLabel;
     lblPathLogBoleto: TLabel;
     labelbolcep: TLabel;
+    lbNCMCarregando: TLabel;
+    lbNCMDiasValidade: TLabel;
+    lbNCMDiretorio: TLabel;
     lBolUF: TLabel;
     lBOLLogradouro: TLabel;
     Label11: TLabel;
@@ -825,7 +853,6 @@ type
     Label15: TLabel;
     Label150: TLabel;
     Label151: TLabel;
-    Label152: TLabel;
     Label153: TLabel;
     Label154: TLabel;
     Label155: TLabel;
@@ -1118,8 +1145,8 @@ type
     mRFDINI: TMemo;
     mRSAKey: TMemo;
     mTCConexoes: TMemo;
-    Panel1: TPanel;
-    Panel2: TPanel;
+    pnTestesDFe: TPanel;
+    pnTestesResposta: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
     pnlPesquisa: TPanel;
@@ -1144,6 +1171,7 @@ type
     pgTestes: TPageControl;
     pgTipoWebService: TPageControl;
     pnLogoBanco: TPanel;
+    pnNCMCarregando: TPanel;
     pRespostas: TPanel;
     pTopCmd: TPanel;
     pTopRespostas: TPanel;
@@ -1306,6 +1334,9 @@ type
     SynXMLSyn1: TSynXMLSyn;
     TabControl1: TTabControl;
     TabSheet1: TTabSheet;
+    tsTesteGTIN: TTabSheet;
+    tsImpMDFe: TTabSheet;
+    tsNCM: TTabSheet;
     tsWebBoleto: TTabSheet;
     TrayIcon1: TTrayIcon;
     bCancelar: TBitBtn;
@@ -1327,7 +1358,7 @@ type
     tsCadSwDados: TTabSheet;
     tsCadSwH: TTabSheet;
     tsCadUsuario: TTabSheet;
-    tsCedente: TTabSheet;
+    tsBeneficiario: TTabSheet;
     tsCertificadoDFe: TTabSheet;
     tsCHQ: TTabSheet;
     tsConfiguracaoDFe: TTabSheet;
@@ -1408,7 +1439,7 @@ type
     procedure btCertInfoClick(Sender: TObject);
     procedure btConsultarStatusOPSATClick(Sender: TObject);
     procedure btnBalancaClick(Sender: TObject);
-    procedure btnBoletoCedenteClick(Sender: TObject);
+    procedure btnBoletoBeneficiarioClick(Sender: TObject);
     procedure btnBoletoClick(Sender: TObject);
     procedure btnBoletoContaClick(Sender: TObject);
     procedure btnBoletoEmailClick(Sender: TObject);
@@ -1420,8 +1451,12 @@ type
     procedure btnCancMDFeClick(Sender: TObject);
     procedure btnCancNFClick(Sender: TObject);
     procedure btnCancNFeSubsClick(Sender: TObject);
+    procedure btNCMConsultarClick(Sender: TObject);
+    procedure btNCMSalvarArquivoClick(Sender: TObject);
+    procedure btNCMValidadeHelpClick(Sender: TObject);
     procedure btnConsultarClick(Sender: TObject);
     procedure btnConsultarCTeClick(Sender: TObject);
+    procedure btnConsultarGTINClick(Sender: TObject);
     procedure btnConsultarMDFeClick(Sender: TObject);
     procedure btnConsultasClick(Sender: TObject);
     procedure btnDFeCertificadosClick(Sender: TObject);
@@ -1821,6 +1856,7 @@ type
     FDoBPe: TACBrObjetoBPe;
     FDoCNPJ: TACBrObjetoConsultaCNPJ;
     FDoCPF: TACBrObjetoConsultaCPF;
+    FDoGTIN: TACBrObjetoGTIN;
 
     FMenuTreeView: TMenu;
 
@@ -1864,6 +1900,7 @@ type
     function VerificarErrosConfiguracaoBoleto: String;
 
     procedure CarregarListaDeCidades(cUF: Integer);
+    procedure VerificarInterfaceNCM(Carregando: Boolean = True);
 
     procedure LeDadosRedeSAT;
     procedure ConfiguraRedeSAT;
@@ -1933,8 +1970,6 @@ type
     procedure OnMensagemCanhotoNFe;
     procedure OnSATManual;
 
-
-
     property MonitorConfig: TMonitorConfig read FMonitorConfig;
   end;
 
@@ -1949,11 +1984,13 @@ uses
   UtilUnit, pcnAuxiliar,
   {$IFDEF MSWINDOWS} sndkey32, {$ENDIF}
   {$IFDEF LINUX} unix, baseunix, termio, {$ENDIF}
-  ACBrECFNaoFiscal, ACBrUtil, ACBrConsts, Math, Sobre, DateUtils,
+  ACBrECFNaoFiscal, ACBrConsts, Math, Sobre, DateUtils,
   ConfiguraSerial, SelecionarCertificado, ACBrSATExtratoClass,
   ACBrNFeConfiguracoes, ACBrNFeDANFEClass, ACBrCTeConfiguracoes,
   ACBrMDFeConfiguracoes, ACBrGNREConfiguracoes, ACBreSocialConfiguracoes,
-  ACBrReinfConfiguracoes, ACBrDFeDANFeReport, ACBrBPeConfiguracoes;
+  ACBrReinfConfiguracoes, ACBrGTINConfiguracoes, ACBrBPeConfiguracoes,
+  ACBrDFeDANFeReport, ACBrETQClass, ACBrUtil.Base, ACBrUtil.FilesIO,
+  ACBrUtil.Strings, ACBrUtil.DateTime, ACBrUtil.Math;
 
 {$R *.lfm}
 
@@ -1987,7 +2024,10 @@ var
   iNFe: TpcnVersaoDF;
   IPosReciboLayout: TPosReciboLayout;
   SPosReciboLayout: String;
+
   IBanco: TACBrTipoCobranca;
+  ITipoChavePix: TACBrPIXTipoChave;
+
   iSAT: TACBrSATModelo;
   iTipo: TpcnTipoAmbiente;
   iRegISSQN: TpcnRegTribISSQN;
@@ -2102,6 +2142,8 @@ begin
   FDoBPe.OnAntesDeImprimir := @AntesDeImprimir;
   FDoBPe.OnDepoisDeImprimir := @DepoisDeImprimir;
 
+  FDoGTIN := TACBrObjetoGTIN.Create(MonitorConfig, ACBrGTIN1);
+
 // Seta as definições iniciais para navegação
   SetColorButtons(btnMonitor);
   SetFontLabels(pgConfig);
@@ -2171,6 +2213,18 @@ begin
     cbxBOLBanco.Items.Add(GetEnumName(TypeInfo(TACBrTipoCobranca), integer(IBanco)));
     Inc(IBanco);
   end;
+
+  { Criando lista de chave pix disponiveis }
+  cbxBOLTipoChavePix.Items.Clear;
+  ITipoChavePix := Low(TACBrPIXTipoChave);
+  while ITipoChavePix <= High(TACBrPIXTipoChave) do
+  begin
+    cbxBOLTipoChavePix.Items.Add(GetEnumName(TypeInfo(TACBrPIXTipoChave), integer(ITipoChavePix)));
+    Inc(ITipoChavePix);
+  end;
+  cbxBOLTipoChavePix.ItemIndex:=0;
+
+
 
   { Criando lista de Layouts de Boleto disponiveis }
   cbxBOLLayout.Items.Clear;
@@ -2808,26 +2862,6 @@ begin
   end;
 end;
 
-{procedure TFrmACBrMonitor.bDownloadListaClick(Sender: TObject);
-var
-  DirNcmSalvar: string;
-begin
-  if (deNcmSalvar.Text = '') then
-    DirNcmSalvar := ExtractFilePath(Application.ExeName)
-  else
-    DirNcmSalvar := PathWithoutDelim(deNcmSalvar.Text);
-
-  DirNcmSalvar := DirNcmSalvar + PathDelim + 'ListaNCM.csv';
-
-  with ACBrNCMs1 do
-  begin
-    ListarNcms();
-    NCMS.SaveToFile(DirNcmSalvar);
-  end;
-
-  AddLinesLog('Arquivo salvo em: ' + DirNcmSalvar);
-end; }
-
 procedure TFrmACBrMonitor.bEmailTestarConfClick(Sender: TObject);
 var
   Teste: string;
@@ -2965,25 +2999,6 @@ begin
     bInicializar.Caption := 'Inicializar' ;
 
 end;
-
-{procedure TFrmACBrMonitor.bNcmConsultarClick(Sender: TObject);
-var
-  AMsg: string;
-begin
-  AMsg := '';
-  with ACBrNCMs1 do
-  begin
-    if (Length(OnlyNumber(edtNcmNumero.Text)) <> 8) then
-      raise Exception.Create('O codigo do NCM deve conter 8 Caracteres');
-
-    if validar(OnlyNumber(edtNcmNumero.Text)) then
-      AMsg := 'OK: NCM Valido'
-    else
-      AMsg := 'Erro: NCM Invalido';
-  end;
-
-  AddLinesLog(AMsg);
-end;}
 
 procedure TFrmACBrMonitor.bRSAeECFcClick(Sender: TObject);
 var
@@ -3182,10 +3197,10 @@ begin
   pgConfig.ActivePage := tsBAL;
 end;
 
-procedure TFrmACBrMonitor.btnBoletoCedenteClick(Sender: TObject);
+procedure TFrmACBrMonitor.btnBoletoBeneficiarioClick(Sender: TObject);
 begin
   SetColorSubButtons(Sender);
-  pgBoleto.ActivePage := tsCedente;
+  pgBoleto.ActivePage := tsBeneficiario;
 end;
 
 procedure TFrmACBrMonitor.btnBoletoClick(Sender: TObject);
@@ -3195,7 +3210,7 @@ begin
   pgConfig.ActivePage := tsACBrBoleto;
     SetScroll(TPanel(Sender).Parent);
   // Ativa a 1a página do pegecontrol
-  btnBoletoCedenteClick(btnBoletoCedente);
+  btnBoletoBeneficiarioClick(btnBoletoBeneficiario);
 end;
 
 procedure TFrmACBrMonitor.btnBoletoContaClick(Sender: TObject);
@@ -3390,6 +3405,68 @@ begin
   end;
 end;
 
+procedure TFrmACBrMonitor.btNCMConsultarClick(Sender: TObject);
+var
+  aMsg: String;
+begin
+  aMsg := EmptyStr;
+
+  if (Length(edNCMCodigo.Text) <> 8) then
+  begin
+    MessageDlg('O Codigo NCM deve conter 8 caracteres', mtInformation, [mbOK], 0);
+    Exit;
+  end;
+
+  VerificarInterfaceNCM;
+  try
+    if ACBrNCMs1.Validar(edNCMCodigo.Text) then
+      aMsg := 'OK: NCM Valido'
+    else
+      aMsg := 'Erro: NCM Invalido';
+  finally
+    VerificarInterfaceNCM(False);
+  end;
+
+  AddLinesLog(aMsg);
+  MessageDlg(aMsg, mtInformation, [mbOK], 0);
+end;
+
+procedure TFrmACBrMonitor.btNCMSalvarArquivoClick(Sender: TObject);
+var
+  aMsg, aDiretorio: String;
+begin
+  if (edNCMDiretorio.Text = EmptyStr) then
+    aDiretorio := PathWithoutDelim(ExtractFilePath(Application.ExeName))
+  else
+    aDiretorio := PathWithoutDelim(edNCMDiretorio.Text);
+
+  aDiretorio := aDiretorio + PathDelim + 'ListaNCM.csv';
+
+  VerificarInterfaceNCM;
+  try
+    with ACBrNCMs1 do
+    begin
+      CacheDiasValidade := edNCMDiasValidade.Value;
+      ObterNCMs(cbNCMForcarDownload.Checked);
+      NCMS.SaveToFile(aDiretorio);
+    end;
+  finally
+    VerificarInterfaceNCM(False);
+  end;
+
+  aMsg := 'Arquivo com a lista de NCMs salvo em: ' + aDiretorio;
+  AddLinesLog(aMsg);
+  MessageDlg(aMsg, mtInformation, [mbOK], 0);
+end;
+
+procedure TFrmACBrMonitor.btNCMValidadeHelpClick(Sender: TObject);
+begin
+  MessageDlg('Número de dias que o arquivo de NCMs baixado será válido' +
+    sLineBreak + 'Após a validade o Download será feito novamente ' +
+    sLineBreak + '(Zero para sempre ler NCMs do Cache local)',
+    mtInformation, [mbOK], 0);
+end;
+
 procedure TFrmACBrMonitor.btnConsultarClick(Sender: TObject);
 begin
   LimparResp;
@@ -3422,6 +3499,25 @@ begin
     ACBrCTe1.Consultar;
     ExibeResp(ACBrCTe1.WebServices.Consulta.RetWS);
   end;
+end;
+
+procedure TFrmACBrMonitor.btnConsultarGTINClick(Sender: TObject);
+var
+  wGTIN: String;
+begin
+  wGTIN := Trim(edConsultarGTIN.Text);
+  ACBrGTIN1.Consultar(wGTIN);
+
+  mResposta.Lines.Clear;
+  mResposta.Lines.Add('GTIN Consultado: ' + wGTIN);
+  mResposta.Lines.Add('--- Retorno ---');
+  mResposta.Lines.Add('Retorno..: ' + DateTimeToStr(ACBrGTIN1.WebServices.Consulta.dhResp));
+  mResposta.Lines.Add('Status...: ' + IntToStr(ACBrGTIN1.WebServices.Consulta.cStat));
+  mResposta.Lines.Add('Motivo...: ' + ACBrGTIN1.WebServices.Consulta.xMotivo);
+  mResposta.Lines.Add('Tipo GTIN: ' + IntToStr(ACBrGTIN1.WebServices.Consulta.tpGTIN));
+  mResposta.Lines.Add('Produto..: ' + ACBrGTIN1.WebServices.Consulta.xProd);
+  mResposta.Lines.Add('NCM......: ' + ACBrGTIN1.WebServices.Consulta.NCM);
+  mResposta.Lines.Add('CEST.....: ' + ACBrGTIN1.WebServices.Consulta.CEST);
 end;
 
 procedure TFrmACBrMonitor.btnConsultarMDFeClick(Sender: TObject);
@@ -3911,8 +4007,8 @@ end;
 
 procedure TFrmACBrMonitor.btnNCMClick(Sender: TObject);
 begin
-  //SetColorButtons(Sender);
-  //pgConfig.ActivePage := tsNcm;
+  SetColorButtons(Sender);
+  pgConfig.ActivePage := tsNCM;
 end;
 
 procedure TFrmACBrMonitor.btnPosPrinterClick(Sender: TObject);
@@ -4241,6 +4337,7 @@ begin
       ACBreSocial1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
       ACBrBPe1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
+      ACBrGTIN1.Configuracoes.Geral.SSLXmlSignLib := TSSLXmlSignLib(cbXmlSignLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -4371,6 +4468,7 @@ begin
   ACBreSocial1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
   ACBrReinf1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
   ACBrBPe1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
+  ACBrGTIN1.Configuracoes.WebServices.TimeZoneConf.Assign( ACBrNFe1.Configuracoes.WebServices.TimeZoneConf );
 end;
 
 procedure TFrmACBrMonitor.cbxUTF8Change(Sender: TObject);
@@ -4878,6 +4976,7 @@ begin
   FDoGNRe.Free;
   FDoPosPrinter.Free;
   FDoBPe.Free;
+  FDoGTIN.Free;
 
   FMenuTreeView.Free;
 
@@ -5467,7 +5566,7 @@ begin
       edtBOLDigitoAgConta.Text         := DigitoAgenciaConta;
       edtCodCliente.Text               := CodCedente;
       edtBOLLocalPagamento.Text        := LocalPagamento;
-      edtOperacaoCedente.Text          := CodigoOperacao;
+      edtOperacaoBeneficiario.Text     := CodigoOperacao;
     end;
 
     with RemessaRetorno do
@@ -5476,9 +5575,11 @@ begin
       deBolDirRetorno.Text             := DirArquivoRetorno;
       edtCodTransmissao.Text           := CodTransmissao;
       cbxCNAB.ItemIndex                := StrToInt(IfThen(CNAB = 0, '1', '0'));
-      chkLerCedenteRetorno.Checked     := LerCedenteRetorno;
+      chkLerBeneficiarioRetorno.Checked     := LerCedenteRetorno;
       chkRemoveAcentos.Checked         := RemoveAcentos;
       edtPrefixRemessa.Text            := PrefixArqRemessa;
+      edtVersaoArquivo.Text            := VersaoArquivo;
+      edtVersaoLote.Text               := VersaoLote;
     end;
 
     with Layout do
@@ -5494,6 +5595,13 @@ begin
       edNomeArquivo.Text               := NomeArquivoBoleto;
       cbxBOLImpressora.ItemIndex       := cbxBOLImpressora.Items.IndexOf(Impressora);
     end;
+
+    with PIX do
+    begin
+      cbxBOLTipoChavePix.ItemIndex     := pix.TipoChavePix;
+      edtBOLChavePix.text              := pix.ChavePix;
+    end;
+
 
     with Relatorio do
     begin
@@ -5563,9 +5671,11 @@ begin
   end;
 
   {Parametro NCM}
-  //with FMonitorConfig.NCM do
-    //deNcmSalvar.Text                   := DirNCMSalvar;
-
+  with FMonitorConfig.NCM do
+  begin
+    edNCMDiretorio.Text := DirNCMSalvar;
+    edNCMDiasValidade.Value := DiasValidadeCache;
+  end;
 
   {Parametro DFe}
   with FMonitorConfig.DFE do
@@ -5745,7 +5855,6 @@ begin
       rgModeloDanfe.ItemIndex             := Modelo;
       edtSiteEmpresa.Text                 := Site;
       edtEmailEmpresa.Text                := Email;
-      edtFaxEmpresa.Text                  := Fax;
       cbxImpDescPorc.Checked              := ImpDescPorc;
       cbxMostrarPreview.Checked           := MostrarPreview;
       edtNumCopia.Value                   := Copias;
@@ -5783,15 +5892,22 @@ begin
       cbxImpDocsReferenciados.Checked     := ImprimirDadosDocReferenciados;
       rgInfAdicProduto.ItemIndex          := ExibirBandInforAdicProduto;
       cbxExibirLogoEmCima.Checked         := LogoEmCima;
+      cbxImprimeInscSuframa.Checked       := ImprimeInscSuframa;
       cbxExpandirDadosAdicionaisAuto.Checked:= ExpandirDadosAdicionaisAuto;
       cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina.Checked:= ImprimeContinuacaoDadosAdicionaisPrimeiraPagina;
       rgImprimeDescAcrescItemNFe.ItemIndex:= ImprimeDescAcrescItemNFe;
       rgInfFormaPagNFe.ItemIndex          := ImprimirCampoFormaPagamento;
+      cbxImprimeXPedNitemPed.Checked      := ImprimeXPedNitemPed;
     end;
 
     with Impressao.DACTE do
     begin
       rgTamanhoPapelDacte.ItemIndex := TamanhoPapel;
+    end;
+
+    with Impressao.DAMFE do
+    begin
+      ckbExibirMunicipioDescarregamento.Checked := ExibirMunicipioDescarregamento;
     end;
 
     with Diretorios do
@@ -5828,6 +5944,7 @@ begin
     SetComumConfig(ACBreSocial1.Configuracoes);
     SetComumConfig(ACBrReinf1.Configuracoes);
     SetComumConfig(ACBrBPe1.Configuracoes);
+    SetComumConfig(ACBrGTIN1.Configuracoes);
 
     AtualizaSSLLibsCombo;
 
@@ -5866,7 +5983,6 @@ begin
     ACBrCTe1.DACTe.Sistema          := edSH_RazaoSocial.Text;
     ACBrCTe1.DACTe.Site             := edtSiteEmpresa.Text;
     ACBrCTe1.DACTe.Email            := edtEmailEmpresa.Text;
-    ACBrCTe1.DACTe.Fax              := edtFaxEmpresa.Text;
     ACBrCTe1.DACTe.ImprimeDescPorc  := cbxImpDescPorc.Checked;
     ACBrCTe1.DACTe.MostraPreview    := cbxMostrarPreview.Checked;
     ACBrCTe1.DACTe.Impressora       := cbxImpressora.Text;
@@ -5886,7 +6002,6 @@ begin
     ACBrMDFe1.DAMDFe.Sistema           := edSH_RazaoSocial.Text;
     ACBrMDFe1.DAMDFe.Site              := edtSiteEmpresa.Text;
     ACBrMDFe1.DAMDFe.Email             := edtEmailEmpresa.Text;
-    ACBrMDFe1.DAMDFe.Fax               := edtFaxEmpresa.Text;
     ACBrMDFe1.DAMDFe.MostraPreview     := cbxMostrarPreview.Checked;
     ACBrMDFe1.DAMDFe.Impressora        := cbxImpressora.Text;
     ACBrMDFe1.DAMDFe.NumCopias         := edtNumCopia.Value;
@@ -5898,11 +6013,11 @@ begin
     ACBrMDFe1.DAMDFe.MostraStatus      := cbxMostraStatus.Checked;
     ACBrMDFe1.DAMDFe.ExpandeLogoMarca  := cbxExpandirLogo.Checked;
     ACBrMDFe1.DAMDFe.UsaSeparadorPathPDF := cbxUsarSeparadorPathPDF.Checked;
+    ACBrMDFe1.DAMDFE.ExibirMunicipioDescarregamento:= ckbExibirMunicipioDescarregamento.Checked;
 
     ACBrGNRE1.GNREGuia.Sistema         := edSH_RazaoSocial.Text;
     ACBrGNRE1.GNREGuia.Site            := edtSiteEmpresa.Text;
     ACBrGNRE1.GNREGuia.Email           := edtEmailEmpresa.Text;
-    ACBrGNRE1.GNREGuia.Fax             := edtFaxEmpresa.Text;
     ACBrGNRE1.GNREGuia.MostrarPreview  := cbxMostrarPreview.Checked;
     ACBrGNRE1.GNREGuia.Impressora      := cbxImpressora.Text;
     ACBrGNRE1.GNREGuia.NumCopias       := edtNumCopia.Value;
@@ -5918,7 +6033,6 @@ begin
     ACBrBPe1.DABPe.Sistema           := edSH_RazaoSocial.Text;
     ACBrBPe1.DABPe.Site              := edtSiteEmpresa.Text;
     ACBrBPe1.DABPe.Email             := edtEmailEmpresa.Text;
-    ACBrBPe1.DABPe.Fax               := edtFaxEmpresa.Text;
     ACBrBPe1.DABPe.MostraPreview     := cbxMostrarPreview.Checked;
     ACBrBPe1.DABPe.Impressora        := cbxImpressora.Text;
     ACBrBPe1.DABPe.NumCopias         := edtNumCopia.Value;
@@ -6346,7 +6460,9 @@ begin
     Cedente.ContaDigito := edtBOLDigitoConta.Text;
     Cedente.DigitoVerificadorAgenciaConta := edtBOLDigitoAgConta.Text;
     Cedente.Modalidade := edtModalidade.Text;
-    Cedente.Operacao := edtOperacaoCedente.Text;
+    Cedente.Operacao := edtOperacaoBeneficiario.Text;
+    Cedente.PIX.Chave :=edtBOLChavePix.Text;
+    Cedente.PIX.TipoChavePIX :=  TACBrPIXTipoChave(cbxBOLTipoChavePix.ItemIndex);
 
     case cbxBOLEmissao.ItemIndex of
       0: Cedente.ResponEmissao := tbCliEmite;
@@ -6362,7 +6478,7 @@ begin
 
     DirArqRemessa   := PathWithDelim(deBolDirRemessa.Text);
     DirArqRetorno   := PathWithDelim(deBolDirRetorno.Text);
-    LeCedenteRetorno:= chkLerCedenteRetorno.Checked;
+    LeCedenteRetorno:= chkLerBeneficiarioRetorno.Checked;
     RemoveAcentosArqRemessa:= chkRemoveAcentos.Checked;
     PrefixArqRemessa:= edtPrefixRemessa.Text;
 
@@ -6536,15 +6652,15 @@ begin
       'para proteger sua Chave Privada');
   end;
 
-  {if Trim(deNcmSalvar.Text) <> '' then
+  if (Trim(edNCMDiretorio.Text) <> EmptyStr) then
   begin
-    if not DirectoryExists(deNcmSalvar.Text) then
+    if (not DirectoryExists(edNCMDiretorio.Text)) then
     begin
       btnNCMClick(btnNCM); //pgConfig.ActivePageIndex := 15;
-      deNcmSalvar.SetFocus;
-      raise Exception.Create('Diretorio para salvar arquivo de NCM nao encontrado.');
+      edNCMDiretorio.SetFocus;
+      raise Exception.Create('Diretorio para salvar arquivo de NCM nao encontrado');
     end;
-  end; }
+  end;
 
   SalvarSW;
 
@@ -6784,8 +6900,11 @@ begin
     end;
 
     { Parametros NCM }
-    //with FMonitorConfig.NCM do
-      //DirNCMSalvar            := PathWithoutDelim(deNcmSalvar.Text);
+    with FMonitorConfig.NCM do
+    begin
+      DirNCMSalvar := edNCMDiretorio.Text;
+      DiasValidadeCache := edNCMDiasValidade.Value;
+    end;
 
     { Parametros DFe }
     with FMonitorConfig.DFE do
@@ -6953,7 +7072,6 @@ begin
         Modelo                     := rgModeloDanfe.ItemIndex;
         Site                       := edtSiteEmpresa.Text;
         Email                      := edtEmailEmpresa.Text;
-        Fax                        := edtFaxEmpresa.Text;
         ImpDescPorc                := cbxImpDescPorc.Checked;
         MostrarPreview             := cbxMostrarPreview.Checked;
         Copias                     := edtNumCopia.Value;
@@ -6990,15 +7108,22 @@ begin
         ImprimirDadosDocReferenciados  := cbxImpDocsReferenciados.Checked;
         ExibirBandInforAdicProduto     := rgInfAdicProduto.ItemIndex;
         LogoEmCima                     := cbxExibirLogoEmCima.Checked;
+        ImprimeInscSuframa             := cbxImprimeInscSuframa.Checked;
         ExpandirDadosAdicionaisAuto    := cbxExpandirDadosAdicionaisAuto.Checked;
         ImprimeContinuacaoDadosAdicionaisPrimeiraPagina := cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina.Checked;
         ImprimeDescAcrescItemNFe   := rgImprimeDescAcrescItemNFe.ItemIndex;
         ImprimirCampoFormaPagamento:= rgInfFormaPagNFe.ItemIndex;
+        ImprimeXPedNitemPed        := cbxImprimeXPedNitemPed.Checked;
       end;
 
       with Impressao.DACTE do
       begin
         TamanhoPapel                   := rgTamanhoPapelDacte.ItemIndex;
+      end;
+
+      with Impressao.DAMFE do
+      begin
+        ExibirMunicipioDescarregamento := ckbExibirMunicipioDescarregamento.Checked;
       end;
 
       with Diretorios do
@@ -7062,6 +7187,7 @@ begin
 
       with SATImpressao.SATExtrato do
       begin
+        MostrarStatus                  := cbxMostrarStatusSAT.Checked;
         ParamsString                   := ACBrSATExtratoESCPOS1.PosPrinter.Device.ParamsString;
         ImprimeDescAcrescItem          := cbxImprimirDescAcresItemSAT.Checked;
         ImprimeEmUmaLinha              := cbxImprimirItem1LinhaSAT.Checked;
@@ -7236,7 +7362,7 @@ begin
          Validar;
        except
          btnBoletoClick(btnBoleto);
-         btnBoletoCedenteClick(btnBoletoCedente);
+         btnBoletoBeneficiarioClick(btnBoletoBeneficiario);
          edtBOLCNPJ.SetFocus;
          raise;
        end;
@@ -7272,7 +7398,13 @@ begin
        Pessoa                   := cbxBOLF_J.ItemIndex;
        Modalidade               := edtModalidade.Text;
        Convenio                 := edtConvenio.Text;
-       CodigoOperacao           := edtOperacaoCedente.Text;
+       CodigoOperacao           := edtOperacaoBeneficiario.Text;
+     end;
+
+     with PIX do
+     begin
+       TipoChavePix             := cbxBOLTipoChavePix.ItemIndex;
+       ChavePix                 := edtBOLChavePix.Text;
      end;
 
      with Layout do
@@ -7294,10 +7426,12 @@ begin
        DirArquivoRemessa        := PathWithoutDelim(deBolDirRemessa.Text);
        DirArquivoRetorno        := PathWithoutDelim(deBolDirRetorno.Text);
        CNAB                     := StrToInt(IfThen(cbxCNAB.ItemIndex = 0, '1', '0'));
-       LerCedenteRetorno        := chkLerCedenteRetorno.Checked;
+       LerCedenteRetorno        := chkLerBeneficiarioRetorno.Checked;
        CodTransmissao           := edtCodTransmissao.Text;
        RemoveAcentos            := chkRemoveAcentos.Checked;
        PrefixArqRemessa         := edtPrefixRemessa.Text;
+       VersaoArquivo            := edtVersaoArquivo.Text;
+       VersaoLote               := edtVersaoLote.Text;
      end;
 
      with Email do
@@ -7595,7 +7729,9 @@ begin
         else if fsCmd.Objeto = 'BPE' then
           FDoBPe.Executar(fsCmd)
         else if fsCmd.Objeto = 'ESCPOS' then
-          FDoPosPrinter.Executar(fsCmd);
+          FDoPosPrinter.Executar(fsCmd)
+        else if fsCmd.Objeto = 'GTIN' then
+          FDoGTIN.Executar(fsCmd);
 
         // Atualiza Memo de Entrada //
         mCmd.Lines.Assign(fsProcessar);
@@ -9871,7 +10007,8 @@ begin
      or (AfsCmd.Objeto = 'ESOCIAL')
      or (AfsCmd.Objeto = 'REINF')
      or (AfsCmd.Objeto = 'GNRE')
-     or (AfsCmd.Objeto = 'BPE') then
+     or (AfsCmd.Objeto = 'BPE')
+     or (AfsCmd.Objeto = 'GTIN') then
        MsgErro :=  VerificarErrosConfiguracaoDFe;
 
   if (AfsCmd.Objeto = 'SAT') then
@@ -9986,6 +10123,17 @@ begin
   except
     AddLinesLog( 'ERRO: Erro ao carregar cidades! Verifique a configuração de CONSULTA IBGE.'  );
   end;
+end;
+
+procedure TFrmACBrMonitor.VerificarInterfaceNCM(Carregando: Boolean);
+begin
+  if Carregando and (ACBrNCMs1.NCMs.Count > 0) then  // Já carregou os itens?
+    Exit;
+
+  pnNCMCarregando.Visible := Carregando;
+  gbNCMConsultar.Enabled := (not Carregando);
+  gbNCMSalvarArquivo.Enabled := (not Carregando);
+  Application.ProcessMessages;
 end;
 
 procedure TFrmACBrMonitor.LeDadosRedeSAT;
@@ -10581,7 +10729,6 @@ begin
     ACBrNFe1.DANFE.TipoDANFE            := StrToTpImp(OK, IntToStr(rgTipoDanfe.ItemIndex + 1));
     ACBrNFe1.DANFE.Logo                 := edtLogoMarca.Text;
     ACBrNFe1.DANFE.Email                := edtEmailEmpresa.Text;
-    ACBrNFe1.DANFE.Fax                  := edtFaxEmpresa.Text;
     ACBrNFe1.DANFE.NumCopias            := edtNumCopia.Value;
     ACBrNFe1.DANFE.MargemInferior       := fspeMargemInf.Value;
     ACBrNFe1.DANFE.MargemSuperior       := fspeMargemSup.Value;
@@ -10635,12 +10782,13 @@ begin
       ACBrNFeDANFeRL1.ExibeDadosDocReferenciados := cbxImpDocsReferenciados.Checked;
       ACBrNFeDANFeRL1.ExibeInforAdicProduto := TinfAdcProd(rgInfAdicProduto.ItemIndex);
       ACBrNFeDANFeRL1.LogoemCima := cbxExibirLogoEmCima.Checked;
+      ACBrNFeDANFeRL1.ExibeDadosInscricaoSuframa := cbxImprimeInscSuframa.Checked;
       ACBrNFeDANFeRL1.ExpandirDadosAdicionaisAuto:= cbxExpandirDadosAdicionaisAuto.Checked;
       ACBrNFeDANFeRL1.ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina.Checked;
       ACBrNFeDANFeRL1.ImprimeDescAcrescItem:= TpcnImprimeDescAcrescItem(rgImprimeDescAcrescItemNFe.ItemIndex);
       ACBrNFeDANFeRL1.ExibeCampoDePagamento:= TpcnInformacoesDePagamento(rgInfFormaPagNFe.ItemIndex);
       ACBrNFeDANFeRL1.ExibeTotalTributosItem:= cbxExibeTotalTributosItem.Checked;
-
+      ACBrNFeDANFeRL1.ImprimeXPedNItemPed := cbxImprimeXPedNitemPed.Checked;
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortesA4_1 then
     begin
@@ -10768,7 +10916,6 @@ begin
     ACBrCTe1.DACTE.TipoDACTE := StrToTpImp(OK, IntToStr(rgTipoDanfe.ItemIndex + 1));
     ACBrCTe1.DACTE.Logo := edtLogoMarca.Text;
     ACBrCTe1.DACTE.Email := edtEmailEmpresa.Text;
-    ACBrCTe1.DACTE.Fax := edtFaxEmpresa.Text;
     ACBrCTe1.DACTE.ImprimeDescPorc := cbxImpDescPorc.Checked;
     ACBrCTe1.DACTE.NumCopias := edtNumCopia.Value;
     ACBrCTe1.DACTE.MargemInferior := fspeMargemInf.Value;
@@ -11439,7 +11586,7 @@ begin
     TConfiguracoeseSocial(Configuracoes).Arquivos.IniServicos       := edtArquivoWebServiceseSocial.Text;
     TConfiguracoeseSocial(Configuracoes).Arquivos.PatheSocial       := edtPathNFe.Text;
     TConfiguracoeseSocial(Configuracoes).Arquivos.EmissaoPatheSocial:= cbxEmissaoPathNFe.Checked;
-    TConfiguracoeseSocial(Configuracoes).Geral.VersaoDF             := StrToVersaoeSocial(ok, cbVersaoWSeSocial.Text);
+    TConfiguracoeseSocial(Configuracoes).Geral.VersaoDF             := StrToVersaoeSocialEX(cbVersaoWSeSocial.Text);
     TConfiguracoeseSocial(Configuracoes).Geral.TipoEmpregador       := TEmpregador(cbTipoEmpregador.ItemIndex);
     TConfiguracoeseSocial(Configuracoes).Geral.IdEmpregador         := edtIDEmpregador.Text;
     TConfiguracoeseSocial(Configuracoes).Geral.IdTransmissor        := edtIDTransmissor.Text;
@@ -11461,8 +11608,14 @@ begin
 
     PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'Reinf';
     if DirectoryExists(PathSchemaDFe) then
-      TConfiguracoesReinf(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe ;
+      TConfiguracoesReinf(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe;
   end
+  else if Configuracoes is TConfiguracoesGTIN then
+  begin
+    PathSchemaDFe := edtPathSchemasDFe.Text + PathDelim + 'GTIN';
+    if DirectoryExists(PathSchemaDFe) then
+      TConfiguracoesReinf(Configuracoes).Arquivos.PathSchemas:= PathSchemaDFe;
+  end;
 
 end;
 
@@ -11689,6 +11842,7 @@ begin
       ACBreSocial1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
       ACBrBPe1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
+      ACBrGTIN1.Configuracoes.Geral.SSLCryptLib := TSSLCryptLib(cbCryptLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -11708,6 +11862,7 @@ begin
       ACBreSocial1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
       ACBrBPe1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
+      ACBrGTIN1.Configuracoes.Geral.SSLHttpLib := TSSLHttpLib(cbHttpLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -11787,7 +11942,8 @@ begin
       ACBrBlocoX1.Configuracoes.Geral.SSLLib := TSSLLib(cbSSLLib.ItemIndex);
       ACBreSocial1.Configuracoes.Geral.SSLLib:= TSSLLib(cbSSLLib.ItemIndex);
       ACBrReinf1.Configuracoes.Geral.SSLLib  := TSSLLib(cbSSLLib.ItemIndex);
-      ACBrBPe1.Configuracoes.Geral.SSLLib  := TSSLLib(cbSSLLib.ItemIndex);
+      ACBrBPe1.Configuracoes.Geral.SSLLib  := TSSLLib(cbSSLLib.ItemIndex);  
+      ACBrGTIN1.Configuracoes.Geral.SSLLib  := TSSLLib(cbSSLLib.ItemIndex);
     end;
   finally
     AtualizaSSLLibsCombo;
@@ -12145,7 +12301,8 @@ begin
   ACBrBlocoX1.SSL.SSLType := TSSLType( cbSSLType.ItemIndex );
   ACBreSocial1.SSL.SSLType:= TSSLType( cbSSLType.ItemIndex );
   ACBrReinf1.SSL.SSLType  := TSSLType( cbSSLType.ItemIndex );
-  ACBrBPe1.SSL.SSLType  := TSSLType( cbSSLType.ItemIndex );
+  ACBrBPe1.SSL.SSLType    := TSSLType( cbSSLType.ItemIndex );
+  ACBrGTIN1.SSL.SSLType   := TSSLType( cbSSLType.ItemIndex );
 end;
 
 procedure TFrmACBrMonitor.SetColorSubButtons(Sender: TObject);

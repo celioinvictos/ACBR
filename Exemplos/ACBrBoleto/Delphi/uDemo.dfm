@@ -11,7 +11,6 @@ object frmDemo: TfrmDemo
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     AlignWithMargins = True
@@ -721,7 +720,7 @@ object frmDemo: TfrmDemo
           Height = 25
           Caption = 'Gerar PDF Individual'
           TabOrder = 5
-          OnClick = btnImpressaoPDFClick
+          OnClick = btnImpressaoPDFIndividualClick
         end
       end
     end
@@ -1239,11 +1238,18 @@ object frmDemo: TfrmDemo
           Caption = 'KeyUser'
         end
         object Label70: TLabel
-          Left = 146
+          Left = 351
           Top = 57
           Width = 37
           Height = 13
           Caption = 'SSL Lib'
+        end
+        object Label71: TLabel
+          Left = 11
+          Top = 57
+          Width = 31
+          Height = 13
+          Caption = 'Scope'
         end
         object edtClientID: TEdit
           Left = 11
@@ -1267,20 +1273,27 @@ object frmDemo: TfrmDemo
           TabOrder = 2
         end
         object chkIndicadorPix: TCheckBox
-          Left = 12
-          Top = 60
+          Left = 181
+          Top = 76
           Width = 151
           Height = 17
           Caption = 'Indicador de Pix'
-          TabOrder = 3
+          TabOrder = 5
         end
         object cbxSSLLib: TComboBox
-          Left = 146
+          Left = 351
           Top = 73
-          Width = 135
+          Width = 164
           Height = 21
           Style = csDropDownList
           TabOrder = 4
+        end
+        object edtScope: TEdit
+          Left = 11
+          Top = 73
+          Width = 164
+          Height = 21
+          TabOrder = 3
         end
       end
       object edtPathRemessa: TEdit
@@ -1421,17 +1434,8 @@ object frmDemo: TfrmDemo
       OnClick = btnConfigGravarClick
     end
   end
-  object flpndlgRetorno: TFileOpenDialog
-    FavoriteLinks = <>
-    FileTypes = <
-      item
-        DisplayName = ''
-        FileMask = '*.txt'
-      end
-      item
-        DisplayName = ''
-        FileMask = '*.ret'
-      end>
+  object flpndlgRetorno: TOpenDialog
+    Filter = '*.txt|*.txt|*.ret|*.ret|*.*|*.*'
     Options = []
     Left = 879
     Top = 459

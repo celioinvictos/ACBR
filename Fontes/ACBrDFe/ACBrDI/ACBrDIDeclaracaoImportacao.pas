@@ -79,7 +79,7 @@ type
   public
     function New: TDeclaracaoImportacao;
 
-    property Items[Index: Integer]: TDeclaracaoImportacao read GetItem write SetItem;
+    property Items[Index: Integer]: TDeclaracaoImportacao read GetItem write SetItem; default;
 
     function LoadFromFile(const CaminhoArquivo: String): Boolean;
     function LoadFromStream(AStream: TStringStream): Boolean;
@@ -89,7 +89,7 @@ type
 implementation
 
 uses
-  synautil, ACBrUtil;
+  synautil, ACBrUtil.XMLHTML;
 
 { TDeclaracaoImportacao }
 

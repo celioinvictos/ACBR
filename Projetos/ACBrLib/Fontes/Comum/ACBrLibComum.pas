@@ -99,6 +99,7 @@ type
 
     function SetRetorno(const ACodigo: Integer; const AMensagem: String = ''): Integer;
     function ConverterAnsiParaUTF8(AData: AnsiString): AnsiString;
+    function ConverterUTF8ParaAnsi(AData: AnsiString): AnsiString;
 
     function ObterNome(const sNome: PChar; var esTamanho: longint): longint;
     function ObterVersao(const sVersao: PChar; var esTamanho: longint): longint;
@@ -183,7 +184,7 @@ implementation
 uses
   strutils, strings,
   synacode, synautil,
-  ACBrConsts, ACBrUtil,
+  ACBrConsts, ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.DateTime, ACBrUtil.Strings,
   ACBrLibConsts, ACBrLibResposta;
 
 { EACBrLibException }
@@ -286,7 +287,7 @@ begin
   FreeAndNil(fpConfig);
 end;
 
-procedure TACBrLib.CriarConfiguracao(ArqConfig: Ansistring; ChaveCrypt: AnsiString);
+procedure TACBrLib.CriarConfiguracao(ArqConfig: String; ChaveCrypt: AnsiString);
 begin
   fpConfig := TLibConfig.Create(Self, ConverterAnsiParaUTF8(ArqConfig), ConverterAnsiParaUTF8(ChaveCrypt));
 end;
@@ -340,6 +341,8 @@ begin
 {$ENDIF}
 
   AStringLen := Length(AString);
+  if Config.Log.Nivel >= logParanoico then
+    GravarLog('   MoverStringParaPChar. StrLen:'+IntToStr(AStringLen)+', BufLen:'+IntToStr(esTamanho), logParanoico);
 
   if (esTamanho <= 0) then
     esTamanho := AStringLen
@@ -365,6 +368,14 @@ function TACBrLib.ConverterAnsiParaUTF8(AData: AnsiString): AnsiString;
 begin
   if (Config.CodResposta = codANSI) then
     Result := ACBrAnsiToUTF8(AData)
+  else
+    Result := AData;
+end;
+
+function TACBrLib.ConverterUTF8ParaAnsi(AData: AnsiString): AnsiString;
+begin
+  if (Config.CodResposta = codAnsi) then
+    Result := ACBrUTF8ToAnsi(AData)
   else
     Result := AData;
 end;

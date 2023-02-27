@@ -1,20 +1,21 @@
 program AcbrBoletoDemo;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 
 uses
-  {$IFDEF UNIX}{$IFDEF UseCThreads}
-  cthreads,
-  {$ENDIF}{$ENDIF}
-  Interfaces, // this includes the LCL widgetset
-  Forms, lazreport, ACBr_Boleto, uDemo,
-  ACBr_BoletoFC_Fortes;
+{$IFnDEF FPC}
+{$ELSE}
+  Interfaces,
+{$ENDIF}
+  Forms,
+  uDemo, uDMForte;
 
 {$R *.res}
-
 begin
   Application.Initialize;
-   Application.CreateForm ( TfrmDemo, frmDemo ) ;
+  Application.CreateForm(TdmForte, dmForte);
+  Application.CreateForm(TfrmDemo, frmDemo);
   Application.Run;
 end.
-

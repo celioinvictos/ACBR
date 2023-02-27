@@ -38,9 +38,8 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, synacode,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
-  pcnAuxiliar, pcnConsts,
+  pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXConversao;
 
 type
@@ -61,6 +60,10 @@ type
   end;
 
 implementation
+
+uses
+  ACBrUtil.Strings, ACBrUtil.Math,
+  ACBrDFeUtil;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -225,7 +228,7 @@ begin
   SerieRPS          := PadRight( NFSe.IdentificacaoRps.Serie, 5 , ' ');
   NumeroRPS         := Poem_Zeros(NFSe.IdentificacaoRps.Numero, 12);
   sDataEmis         := FormatDateTime('yyyymmdd',NFse.DataEmissaoRps);
-  sTributacao       := TributacaoToStr(NFSe.Servico.Tributacao) + ' ';
+  sTributacao       := FpAOwner.TributacaoToStr(NFSe.Servico.Tributacao) + ' ';
   sSituacaoRPS      := FPSituacao;
   sTipoRecolhimento := EnumeradoToStr( NFSe.Servico.Valores.IssRetido, ['N','S'], [stNormal, stRetencao]);
 
@@ -233,8 +236,9 @@ begin
                                 (NFSe.Servico.Valores.ValorServicos -
                                  NFSe.Servico.Valores.ValorDeducoes) ) ), 15);
   sValorDeducao   := Poem_Zeros( OnlyNumber( FormatFloat('#0.00',
-                                 NFSe.Servico.Valores.ValorDeducoes)), 15 );
-  sCodAtividade   := Poem_Zeros( OnlyNumber( NFSe.Servico.CodigoCnae ), 10 );
+                                 NFSe.Servico.Valores.ValorDeducoes)), 15);
+  sCodAtividade   := PadRight(NFSe.Servico.CodigoCnae, 9, '0');
+  sCodAtividade   := Poem_Zeros( OnlyNumber( sCodAtividade ), 10);
   sCPFCNPJTomador := Poem_Zeros( OnlyNumber( NFSe.Tomador.IdentificacaoTomador.CpfCnpj), 14);
 
 
@@ -303,6 +307,9 @@ begin
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'RazaoSocialTomador', 1, 120, 1,
                                                  NFSe.Tomador.RazaoSocial, ''));
 
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'DocTomadorEstrangeiro', 0, 20, 0,
+                         NFSe.Tomador.IdentificacaoTomador.DocEstrangeiro, ''));
+
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'TipoLogradouroTomador', 0, 10, 1,
                                      NFSe.Tomador.Endereco.TipoLogradouro, ''));
 
@@ -321,15 +328,11 @@ begin
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'BairroTomador', 1, 50, 1,
                                              NFSe.Tomador.Endereco.Bairro, ''));
 
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CidadeTomador', 1, 10, 1,
-   CodIBGEToCodTOM(strtoint64(NFSe.Tomador.Endereco.CodigoMunicipio)), ''));
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CidadeTomador', 1, 10, 0,
+   CodIBGEToCodTOM(StrToInt64Def(NFSe.Tomador.Endereco.CodigoMunicipio, 0)), ''));
 
-  if (Trim(NFSe.Tomador.Endereco.xMunicipio) <> '') then
-    NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CidadeTomadorDescricao', 1, 50, 1,
-                                          NFSe.Tomador.Endereco.xMunicipio, ''))
-  else
-    NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CidadeTomadorDescricao', 1, 50, 1,
-     CodIBGEToCidade(strtoint64(NFSe.Tomador.Endereco.CodigoMunicipio)), ''));
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CidadeTomadorDescricao', 1, 50, 1,
+                                         NFSe.Tomador.Endereco.xMunicipio, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CEPTomador', 1, 8, 1,
                                     OnlyNumber(NFSe.Tomador.Endereco.CEP), ''));
@@ -337,14 +340,18 @@ begin
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'EmailTomador', 1, 60, 1,
                                                NFSe.Tomador.Contato.Email, ''));
 
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'DocTomadorEstrangeiro', 0, 20, 0,
-                  NFSe.Tomador.IdentificacaoTomador.DocTomadorEstrangeiro, ''));
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'InscricaoMunicipalObra', 1, 11, 0,
+                            NFSe.ConstrucaoCivil.Endereco.CodigoMunicipio, ''));
+
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'ServicoObra', 1, 2, 0,
+                                          NFSe.ConstrucaoCivil.CodigoObra, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CodigoAtividade', 1, 9, 1,
-                                                  NFSe.Servico.CodigoCnae, ''));
+                                PadRight(NFSe.Servico.CodigoCnae, 9, '0'), ''));
 
-//  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CodigoServico', 4, 5, 0,
-//                                OnlyNumber(NFSe.Servico.ItemListaServico), ''));
+  if VersaoNFSe = ve101 then
+    NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CodigoServico', 4, 5, 0,
+                                OnlyNumber(NFSe.Servico.ItemListaServico), ''));
 
   NFSeNode.AppendChild(AddNode(tcDe4, '#1', 'AliquotaAtividade', 1, 11, 1,
                                             NFSe.Servico.Valores.Aliquota, ''));
@@ -357,16 +364,16 @@ begin
                                                        FPTipoRecolhimento, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'MunicipioPrestacao', 1, 10, 1,
-            CodIBGEToCodTOM(strtoint64(NFSe.Servico.CodigoMunicipio)), ''));
+          CodIBGEToCodTOM(strtoint64Def(NFSe.Servico.CodigoMunicipio, 0)), ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'MunicipioPrestacaoDescricao', 1, 30, 1,
-              CodIBGEToCidade(strtoint64(NFSe.Servico.CodigoMunicipio)), ''));
+                                       NFSe.Prestador.Endereco.xMunicipio, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'Operacao', 1, 1, 1,
                                      OperacaoToStr(NFSe.Servico.Operacao), ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'Tributacao', 1, 1, 1,
-                                 TributacaoToStr(NFSe.Servico.Tributacao), ''));
+                        FpAOwner.TributacaoToStr(NFSe.Servico.Tributacao), ''));
 
   NFSeNode.AppendChild(AddNode(tcDe2, '#1', 'ValorPIS', 1, 15, 1,
                                             NFSe.Servico.Valores.ValorPis, ''));
@@ -435,7 +442,7 @@ begin
                                                   NFSE.MotivoCancelamento, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'CPFCNPJIntermediario', 0, 14, 0,
-                            OnlyNumber(NFSe.IntermediarioServico.CpfCnpj), ''));
+    OnlyNumber(NFSe.Intermediario.Identificacao.CpfCnpj), ''));
 
   xmlNode := GerarDeducoes;
   NFSeNode.AppendChild(xmlNode);

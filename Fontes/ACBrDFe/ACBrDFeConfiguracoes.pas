@@ -166,7 +166,7 @@ type
     property TimeOutPorThread: Boolean read FTimeOutPorThread write SetTimeOutPorThread default False;
     property QuebradeLinha: String read FQuebradeLinha write FQuebradeLinha;
     property TimeZoneConf: TTimeZoneConf read FTimeZoneConf write FTimeZoneConf;
-    property SSLType: TSSLType read FSSLType write SetSSLType default LT_all;
+    property SSLType: TSSLType read FSSLType write SetSSLType default LT_TLSv1_2;
   end;
 
   TOrdenacaoPathItem = class;
@@ -363,7 +363,9 @@ type
 
   public
     constructor Create(AOwner: TComponent); override;
+    constructor CreateNomearSessao(AOwner: TComponent; aSessaoIni: String);
     destructor Destroy; override;
+
     procedure Assign(DeConfiguracoes: TConfiguracoes); reintroduce; virtual;
     procedure GravarIni( const AIni: TCustomIniFile ); virtual;
     procedure LerIni( const AIni: TCustomIniFile ); virtual;
@@ -384,7 +386,10 @@ implementation
 uses
   Math, strutils, DateUtils,
   synautil, synacode,
-  ACBrDFe, ACBrDFeException, ACBrUtil;
+  ACBrDFe, ACBrDFeException,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
+  ACBrUtil.Strings;
 
 { TConfiguracoes }
 
@@ -427,6 +432,13 @@ begin
   {$IFDEF COMPILER6_UP}
   FPRespTec.SetSubComponent(True);{ para gravar no DFM/XFM }
   {$ENDIF}
+end;
+
+constructor TConfiguracoes.CreateNomearSessao(AOwner: TComponent;
+  aSessaoIni: String);
+begin
+  Create(AOwner);
+  FPSessaoIni:= aSessaoIni;
 end;
 
 procedure TConfiguracoes.CreateGeralConf;
@@ -768,7 +780,7 @@ begin
   FTimeOutPorThread := False;
   FResourceName := 'ACBrServicos';
   FQuebradeLinha := '|';
-  FSSLType := LT_all;
+  FSSLType := LT_TLSv1_2;
 end;
 
 destructor TWebServicesConf.Destroy;

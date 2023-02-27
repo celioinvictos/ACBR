@@ -44,20 +44,7 @@ unit ACBrPIXBase;
 interface
 
 uses
-  Classes, SysUtils,
-  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
-   System.Generics.Collections, System.Generics.Defaults,
-  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
-   System.Contnrs,
-  {$Else}
-   Contnrs,
-  {$IfEnd}
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   JsonDataObjects_ACBr
-  {$Else}
-   Jsons
-  {$EndIf},
-  ACBrBase;
+  Classes, SysUtils, ACBrJSON, ACBrBase;
 
 resourcestring
   sErroMetodoNaoImplementado = 'Método %s não implementado para Classe %s';
@@ -67,6 +54,14 @@ const
   cMPMValueNotInformed = '***';
 
 type
+  TACBrPIXAPIVersion = ( verNenhuma, verPropria,
+                         ver200,
+                         ver210, ver211, ver212,
+                         ver220, ver221, ver222,
+                         ver230,
+                         ver250,
+                         ver260, ver261, ver262 );
+
   TACBrPIXTipoChave = ( tchNenhuma,
                         tchEmail,
                         tchCPF,
@@ -108,20 +103,20 @@ type
     function GetAsJSON: String; virtual;
     procedure SetAsJSON(AValue: String); virtual;
 
-    function GetJSONContext(AJSon: TJsonObject): TJsonObject;
+    function GetJSONContext(AJSon: TACBrJSONObject): TACBrJSONObject;
   protected
     fpObjectName: String;
 
     procedure AssignSchema(ASource: TACBrPIXSchema); virtual;
-    procedure DoWriteToJSon(AJSon: TJsonObject); virtual;
-    procedure DoReadFromJSon(AJSon: TJsonObject); virtual;
+    procedure DoWriteToJSon(AJSon: TACBrJSONObject); virtual;
+    procedure DoReadFromJSon(AJSon: TACBrJSONObject); virtual;
 
   public
     constructor Create(const ObjectName: String = ''); virtual;
     procedure Clear; virtual;
     function IsEmpty: Boolean; virtual;
-    procedure WriteToJSon(AJSon: TJsonObject);
-    procedure ReadFromJSon(AJSon: TJsonObject);
+    procedure WriteToJSon(AJSon: TACBrJSONObject);
+    procedure ReadFromJSon(AJSon: TACBrJSONObject);
 
     property AsJSON: String read GetAsJSON write SetAsJSON;
   end;
@@ -141,8 +136,8 @@ type
     function IsEmpty: Boolean; virtual;
     procedure Assign(Source: TACBrObjectList); virtual;
 
-    procedure WriteToJSon(AJSon: TJsonObject); virtual;
-    procedure ReadFromJSon(AJSon: TJsonObject); virtual;
+    procedure WriteToJSon(AJSon: TACBrJSONObject); virtual;
+    procedure ReadFromJSon(AJSon: TACBrJSONObject); virtual;
 
     property AsJSON: String read GetAsJSON write SetAsJSON;
   end;
@@ -169,7 +164,7 @@ type
 implementation
 
 uses
-  ACBrUtil;
+  ACBrUtil.Strings;
 
 function PIXStatusCobrancaToString(AStatus: TACBrPIXStatusCobranca): String;
 begin
@@ -184,14 +179,17 @@ begin
 end;
 
 function StringToPIXStatusCobranca(const AString: String): TACBrPIXStatusCobranca;
+var
+  s: String;
 begin
-  if (AString = 'ATIVA') then
+  s := UpperCase(Trim(AString));
+  if (s = 'ATIVA') then
     Result := stcATIVA
-  else if (AString = 'CONCLUIDA') then
+  else if (s = 'CONCLUIDA') then
     Result := stcCONCLUIDA
-  else if (AString = 'REMOVIDA_PELO_USUARIO_RECEBEDOR') then
+  else if (s = 'REMOVIDA_PELO_USUARIO_RECEBEDOR') then
     Result := stcREMOVIDA_PELO_USUARIO_RECEBEDOR
-  else if (AString = 'REMOVIDA_PELO_PSP') then
+  else if (s = 'REMOVIDA_PELO_PSP') then
     Result := stcREMOVIDA_PELO_PSP
   else
     Result := stcNENHUM;
@@ -208,14 +206,16 @@ begin
   end;
 end;
 
-function StringToPIXModalidadeAgente(const AString: String
-  ): TACBrPIXModalidadeAgente;
+function StringToPIXModalidadeAgente(const AString: String): TACBrPIXModalidadeAgente;
+var
+  s: String;
 begin
-  if (AString = 'AGTEC') then
+  s := UpperCase(Trim(AString));
+  if (s = 'AGTEC') then
     Result := maAGTEC
-  else if (AString = 'AGTOT') then
+  else if (s = 'AGTOT') then
     Result := maAGTOT
-  else if (AString = 'AGPSS') then
+  else if (s = 'AGPSS') then
     Result := maAGPSS
   else
     Result := maNENHUM;
@@ -232,14 +232,16 @@ begin
   end;
 end;
 
-function StringToPIXStatusDevolucao(const AString: String
-  ): TACBrPIXStatusDevolucao;
+function StringToPIXStatusDevolucao(const AString: String): TACBrPIXStatusDevolucao;
+var
+  s: String;
 begin
-  if (AString = 'EM_PROCESSAMENTO') then
+  s := UpperCase(Trim(AString));
+  if (s = 'EM_PROCESSAMENTO') then
     Result := stdEM_PROCESSAMENTO
-  else if (AString = 'DEVOLVIDO') then
+  else if (s = 'DEVOLVIDO') then
     Result := stdDEVOLVIDO
-  else if (AString = 'NAO_REALIZADO') then
+  else if (s = 'NAO_REALIZADO') then
     Result := stdNAO_REALIZADO
   else
     Result := stdNENHUM;
@@ -255,12 +257,14 @@ begin
   end;
 end;
 
-function StringToPIXNaturezaDevolucao(const AString: String
-  ): TACBrPIXNaturezaDevolucao;
+function StringToPIXNaturezaDevolucao(const AString: String): TACBrPIXNaturezaDevolucao;
+var
+  s: String;
 begin
-  if (AString = 'ORIGINAL') then
+  s := UpperCase(Trim(AString));
+  if (s = 'ORIGINAL') then
     Result := ndORIGINAL
-  else if (AString = 'RETIRADA') then
+  else if (s = 'RETIRADA') then
     Result := ndRETIRADA
   else
     Result := ndNENHUMA;
@@ -277,10 +281,13 @@ begin
 end;
 
 function StringToPIXTipoCobranca(const AString: String): TACBrPIXTipoCobranca;
+var
+  s: String;
 begin
-  if (AString = 'cobv') then
+  s := UpperCase(Trim(AString));
+  if (s = 'COBV') then
     Result := tcoCobV
-  else if (AString = 'cob') then
+  else if (s = 'COB') then
     Result := tcoCob
   else
     Result := tcoNenhuma;
@@ -298,12 +305,15 @@ begin
 end;
 
 function StringToPIXStatusLoteCobranca(const AString: String): TACBrPIXStatusLoteCobranca;
+var
+  s: String;
 begin
-  if (AString = 'EM_PROCESSAMENTO') then
+  s := UpperCase(Trim(AString));
+  if (s = 'EM_PROCESSAMENTO') then
     Result := stlEM_PROCESSAMENTO
-  else if (AString = 'CRIADA') then
+  else if (s = 'CRIADA') then
     Result := stlCRIADA
-  else if (AString = 'NEGADA') then
+  else if (s = 'NEGADA') then
     Result := stlNEGADA
   else
     Result := stlNENHUM;
@@ -334,16 +344,12 @@ end;
 
 function TACBrPIXSchema.GetAsJSON: String;
 var
-  js: TJsonObject;
+  js: TACBrJSONObject;
 begin
-  js := TJsonObject.Create;
+  js := TACBrJSONObject.Create;
   try
     WriteToJSon(js);
-    {$IfDef USE_JSONDATAOBJECTS_UNIT}
-     Result := js.ToJSON();
-    {$Else}
-     Result := js.Stringify;
-    {$EndIf}
+    Result := js.ToJSON;
   finally
     js.Free;
   end;
@@ -351,61 +357,53 @@ end;
 
 procedure TACBrPIXSchema.SetAsJSON(AValue: String);
 var
-  js: TJsonObject;
+  js: TACBrJSONObject;
 begin
   Clear;
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   js := TJsonObject.Parse(AValue) as TJsonObject;
-   try
-     ReadFromJSon(js);
-   finally
-     js.Free;
-   end;
-  {$Else}
-   js := TJsonObject.Create;
-   try
-     js.Parse(AValue);
-     ReadFromJSon(js);
-   finally
-     js.Free;
-   end;
-  {$EndIf}
+  js := TACBrJSONObject.Parse(AValue) as TACBrJSONObject;
+  try
+    ReadFromJSon(js);
+  finally
+    js.Free;
+  end;
 end;
 
-function TACBrPIXSchema.GetJSONContext(AJSon: TJsonObject): TJsonObject;
+function TACBrPIXSchema.GetJSONContext(AJSon: TACBrJSONObject): TACBrJSONObject;
 begin
   if (fpObjectName <> '') then
   begin
-    {$IfDef USE_JSONDATAOBJECTS_UNIT}
-     Result := AJSon.O[fpObjectName];
-    {$Else}
-     Result := AJSon[fpObjectName].AsObject;
-    {$EndIf}
+    Result := AJSon.AsJSONObject[fpObjectName];
+    if (not Assigned(Result)) then
+    begin
+      AJSon.AddPairJSONObject(fpObjectName, EmptyStr);
+      Result := AJSon.AsJSONObject[fpObjectName];
+    end;
   end
   else
     Result := AJSon;
 end;
 
-procedure TACBrPIXSchema.WriteToJSon(AJSon: TJsonObject);
+procedure TACBrPIXSchema.WriteToJSon(AJSon: TACBrJSONObject);
 begin
   if IsEmpty then
     Exit;
 
-  DoWriteToJSon(GetJSONContext(AJSon));
+  if Assigned(GetJSONContext(AJSon)) then
+    DoWriteToJSon(GetJSONContext(AJSon));
 end;
 
-procedure TACBrPIXSchema.DoWriteToJSon(AJSon: TJsonObject);
+procedure TACBrPIXSchema.DoWriteToJSon(AJSon: TACBrJSONObject);
 begin
   raise EACBrPixException.CreateFmt(ACBrStr(sErroMetodoNaoImplementado), ['DoWriteToJSon', ClassName]);
 end;
 
-procedure TACBrPIXSchema.ReadFromJSon(AJSon: TJsonObject);
+procedure TACBrPIXSchema.ReadFromJSon(AJSon: TACBrJSONObject);
 begin
   Clear;
   DoReadFromJSon(GetJSONContext(AJSon));
 end;
 
-procedure TACBrPIXSchema.DoReadFromJSon(AJSon: TJsonObject);
+procedure TACBrPIXSchema.DoReadFromJSon(AJSon: TACBrJSONObject);
 begin
   raise EACBrPixException.CreateFmt(ACBrStr(sErroMetodoNaoImplementado), ['DoReadFromJSon', ClassName]);
 end;
@@ -443,56 +441,46 @@ begin
     NewSchema.AssignSchema(TACBrPIXSchema(Source[i]));
 end;
 
-procedure TACBrPIXSchemaArray.WriteToJSon(AJSon: TJsonObject);
+procedure TACBrPIXSchemaArray.WriteToJSon(AJSon: TACBrJSONObject);
 var
   i: Integer;
-  ja: TJsonArray;
+  ja: TACBrJsonArray;
 begin
   if IsEmpty then
     Exit;
-    
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   ja := AJSon.A[fpArrayName];
-   ja.Clear;
-   for i := 0 to Count-1 do
-     TACBrPIXSchema(Items[i]).WriteToJSon(ja.AddObject);
-  {$Else}
-   ja := AJSon[fpArrayName].AsArray;
-   ja.Clear;
-   for i := 0 to Count-1 do
-     TACBrPIXSchema(Items[i]).WriteToJSon(ja.Add.AsObject);
-  {$EndIf}
+
+  ja := TACBrJSONArray.Create;
+  try
+    for i := 0 to Count - 1 do
+      ja.AddElementJSONString(TACBrPIXSchema(Items[i]).AsJSON);
+
+    AJSon.AddPair(fpArrayName, ja);
+  except
+    ja.Free;
+    raise;
+  end;
 end;
 
-procedure TACBrPIXSchemaArray.ReadFromJSon(AJSon: TJsonObject);
+procedure TACBrPIXSchemaArray.ReadFromJSon(AJSon: TACBrJSONObject);
 var
   i: Integer;
-  ja: TJsonArray;
+  ja: TACBrJsonArray;
 begin
   Clear;
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   ja := AJSon.A[fpArrayName];
-   for i := 0 to ja.Count-1 do
-     NewSchema.ReadFromJSon(ja.O[i]);
-  {$Else}
-   ja := AJSon[fpArrayName].AsArray;
-   for i := 0 to ja.Count-1 do
-     NewSchema.ReadFromJSon(ja[i].AsObject);
-  {$EndIf}
+
+  ja := AJSon.AsJSONArray[fpArrayName];
+  for i := 0 to ja.Count - 1 do
+    NewSchema.ReadFromJSon(ja.ItemAsJSONObject[i]);
 end;
 
 function TACBrPIXSchemaArray.GetAsJSON: String;
 var
-  js: TJsonObject;
+  js: TACBrJSONObject;
 begin
-  js := TJsonObject.Create;
+  js := TACBrJSONObject.Create;
   try
     WriteToJSon(js);
-    {$IfDef USE_JSONDATAOBJECTS_UNIT}
-     Result := js.ToJSON();
-    {$Else}
-     Result := js.Stringify;
-    {$EndIf}
+    Result := js.ToJSON;
   finally
     js.Free;
   end;
@@ -500,25 +488,15 @@ end;
 
 procedure TACBrPIXSchemaArray.SetAsJSON(AValue: String);
 var
-  js: TJsonObject;
+  js: TACBrJSONObject;
 begin
   Clear;
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   js := TJsonObject.Parse(AValue) as TJsonObject;
-   try
-     ReadFromJSon(js);
-   finally
-     js.Free;
-   end;
-  {$Else}
-   js := TJsonObject.Create;
-   try
-     js.Parse(AValue);
-     ReadFromJSon(js);
-   finally
-     js.Free;
-   end;
-  {$EndIf}
+  js := TACBrJSONObject.Parse(AValue) as TACBrJSONObject;
+  try
+    ReadFromJSon(js);
+  finally
+    js.Free;
+  end;
 end;
 
 end.

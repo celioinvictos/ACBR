@@ -12,6 +12,12 @@ namespace ACBrLib.NFe
     {
         #region Properties
 
+        /// <sumary> 
+        /// Código da UF do emitente do Documento Fiscal 
+        /// </sumary>
+
+        public int cUF { get; set; }
+
         /// <summary>
         /// Código Numérico que compõe a Chave de Acesso
         /// </summary>
@@ -53,7 +59,7 @@ namespace ACBrLib.NFe
         /// <summary>
         /// Data e hora de Saída ou da Entrada da Mercadoria/Produto
         /// </summary>
-        public DateTime dhSaiEnt { get; set; }
+        public DateTime? dhSaiEnt { get; set; }
 
         /// <summary>
         /// Tipo de Operação

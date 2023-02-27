@@ -5,133 +5,13 @@ unit ACBrUtilTest;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, Math,
   {$ifdef FPC}
   LConvEncoding,
   {$endif}
   ACBrTests.Util;
 
 type
-
-  { WorkingDaysBetweenTest }
-
-  WorkingDaysBetweenTest = class(TTestCase)
-  published
-    procedure WorkingDaysBetween_DataMesmaSemana;
-    procedure WorkingDaysBetween_DataPosSemana;
-    procedure WorkingDaysBetween_DataInicioSabado;
-    procedure WorkingDaysBetween_DataInicioDomingo;
-    procedure WorkingDaysBetween_DataFinalSabado;
-    procedure WorkingDaysBetween_DataFinalDomingo;
-    procedure WorkingDaysBetween_DataFinalMenor;
-    procedure WorkingDaysBetween_DataZero;
-    procedure WorkingDaysBetween_DataInicialZero;
-    procedure WorkingDaysBetween_DataFinalZero;
-  end;
-
-   { IncWorkingDayTest }
-
-  IncWorkingDayTest = class(TTestCase)
-  private
-  published
-    procedure IncWorkingDayTest_DataInicioSabado;
-    procedure IncWorkingDayTest_DataInicioDomingo;
-    procedure IncWorkingDayTest_PosSemana;
-    procedure IncWorkingDayTest_DiaFinalSabado;
-    procedure IncWorkingDayTest_DiaFinalDomingo;
-    procedure IncWorkingDayTest_ZeroDiaSabado;
-    procedure IncWorkingDayTest_ZeroDiaDomingo;
-    procedure IncWorkingDayTest_ZeroDiaSemana;
-    procedure IncWorkingDayTest_DiaNegativo;
-    procedure IncWorkingDayTest_DiaNegativoInicioSabado;
-    procedure IncWorkingDayTest_DiaNegativoInicioDomingo;
-  end;
-
-  { FindDelimiterInTextTest }
-
-  FindDelimiterInTextTest = class(TTestCase)
-  private
-  published
-    procedure FindDelimiterInTextTest_SemDelimitador;
-    procedure FindDelimiterInTextTest_DelimitadorPipe;
-    procedure FindDelimiterInTextTest_DelimitadorVirgula;
-    procedure FindDelimiterInTextTest_DelimitadorPontoEVirgula;
-    procedure FindDelimiterInTextTest_DelimitadorCustomizado;
-  end;
-
-  { FindDelimiterInTextTest }
-
-  { ChangeLineBreakTest }
-
-  ChangeLineBreakTest = class(TTestCase)
-  private
-    FCRLFText: String;
-    FLFText: String;
-    FCRText: String;
-    FPipeText: String;
-  protected
-    procedure SetUp; override;
-  published
-    procedure CRLFParaPipe;
-    procedure LFParaPipe;
-    procedure CRParaPipe;
-    procedure CRLFParaLF;
-    procedure LFParaLF;
-    procedure CRParaLF;
-    procedure CRLFParaCR;
-    procedure LFParaCR;
-    procedure CRParaCR;
-    procedure CRLFParaCRLF;
-    procedure LFParaCRLF;
-    procedure CRParaCRLF;
-  end;
-
-  { AddDelimitedTextToListTeste }
-
-  AddDelimitedTextToListTeste = class(TTestCase)
-  private
-    FSL: TStringList;
-  protected
-    procedure SetUp; override;
-    procedure TearDown; override;
-  published
-    procedure AddDelimitedTextToListTeste_StringVazia;
-    procedure AddDelimitedTextToListTeste_DoisItens;
-    procedure AddDelimitedTextToListTeste_SemDelimitador;
-    procedure AddDelimitedTextToListTeste_DelimitadorEspaco;
-    procedure AddDelimitedTextToListTeste_ComUmaAspasSimples;
-    procedure AddDelimitedTextToListTeste_ComDuasAspasSimplesQuoteAspasDuplas;
-    procedure AddDelimitedTextToListTeste_ComUmaAspasDuplasComQuote;
-    procedure AddDelimitedTextToListTeste_ComUmaAspasDuplasSemQuote;
-    procedure AddDelimitedTextToListTeste_ComDuasAspasDuplaComQuote;
-    procedure AddDelimitedTextToListTeste_ComDuasAspasDuplaSemQuote;
-    procedure AddDelimitedTextToListTeste_ComDelimitadorEntreAspasSimplesQuoteAspasSimples;
-    procedure AddDelimitedTextToListTeste_ComDelimitadorEntreAspasDuplasComQuoteInvalido;
-    procedure AddDelimitedTextToListTeste_ComDelimitadorEntreAspasDuplasSemQuote;
-    procedure AddDelimitedTextToListTeste_ComDelimitadoresVazios;
-  end;
-
-  { Split }
-
-  SplitTeste = class(TTestCase)
-  published
-    procedure Split_StringVazia;
-    procedure Split_DoisItens;
-    procedure Split_SemDelimitador;
-    procedure Split_DelimitadorEspaco;
-  end;
-
-  { TiraPontosTest }
-
-  TiraPontosTest = class(TTestCase)
-  published
-    procedure TiraPontos_StringInvalida_RetornaVazio;
-    procedure TiraPontos_StringInicioInvalido_RetornaFinal;
-    procedure TiraPontos_StringFimInvalido_RetornaInicio;
-    procedure TiraPontos_StringMeioInvalido_RetornaExtremos;
-    procedure TiraPontos_StringExtremosInvalidos_RetornaMeio;
-    procedure TiraPontos_StringComEspacos_RetornaMeioSemEspacos;
-  end;
 
   { ParseTextTest }
 
@@ -162,14 +42,6 @@ type
     procedure ApenasXML10;
   end;
 
-  { DecodeToStringTest }
-
-  DecodeToStringTest = class(TTestCase)
-  published
-    procedure DecodeToString_TesteUTF8;
-    procedure DecodeToString_TesteAnsi;
-  end;
-
   { SepararDadosTest }
 
   SepararDadosTest = class(TTestCase)
@@ -183,22 +55,6 @@ type
     procedure ComPrefixo;
     procedure MostrarChaveComPrefixo;
     procedure QuandoImitacaoChaveEstaNoMeio;
-  end;
-
-  { QuebrarLinhaTest }
-
-  QuebrarLinhaTest = class(TTestCase)
-  published
-    procedure TresCampos;
-    procedure PipeDelimiter;
-  end;
-
-  { ACBrStrToAnsiTest }
-
-  ACBrStrToAnsiTest = class(TTestCase)
-  published
-    procedure ACBrStrToAnsi_TesteUTF8;
-    procedure ACBrStrToAnsi_TesteReverso;
   end;
 
   { TruncFixTest }
@@ -244,6 +100,7 @@ type
 
   { RoundABNTTest }
 
+  {Veja coment·rio na parte "initialization"}
   RoundABNTTest = class(TTestCase)
   published
     procedure AsIntegerImpar;
@@ -260,74 +117,37 @@ type
     procedure DoctoABNTRegra2_4;
   end;
 
-  { padRightTest }
+  { RoundABNTMudancasDeArredondamentoPara_rmUpTest }
 
-  padRightTest = class(TTestCase)
-  published
-    procedure CompletarStringComAcentos;
-    procedure CortarStringComAcentos;
-    procedure CompletarString;
-    procedure ManterString;
-    procedure TruncarString;
-  end;
-
-  { padLeftTest }
-
-  padLeftTest = class(TTestCase)
-  published
-   procedure CompletarString;
-   procedure CompletarStringAcentosAnsi;
-   procedure CortarStringAcentosAnsi;
-   procedure CompletarStringAcentosUTF8;
-   procedure CortarStringAcentosUTF8;
-   procedure ManterString;
-   procedure TruncarString;
-  end;
-
-  { padCenterTest }
-
-  padCenterTest = class(TTestCase)
-  published
-   procedure PreencherString;
-   procedure TruncarString;
-  end;
-
-  { padSpaceTest }
-
-  padSpaceTest = class(TTestCase)
-  published
-   procedure CompletarString;
-   procedure TruncarString;
-   procedure SubstituirSeparadorPorEspacos;
-   procedure SubstituirSeparadorPorCaracter;
-   procedure NaoRemoverEspacos;
-  end;
-
-  { RemoverEspacosDuplosTest }
-
-  RemoverEspacosDuplosTest = class(TTestCase)
-  published
-   procedure RemoverApenasEspacosDuplos;
-   procedure RemoverMaisQueDoisEspacos;
-  end;
-
-  { RemoveStringTest }
-
-  RemoveStringTest = class(TTestCase)
-  published
-   procedure Remover;
-  end;
-
-  { RemoveStringsTest }
-
-  RemoveStringsTest = class(TTestCase)
+  {Veja coment·rio na parte "initialization"}
+  RoundABNTMudancasDeArredondamentoPara_rmUpTest = class(RoundABNTTest)
   private
-    StringsToRemove: array [1..5] of AnsiString;
+    OldRM: TFPURoundingMode;
   protected
-    procedure SetUp; override;
-  published
-   procedure TextoSimples;
-   procedure TextoLongo;
+     procedure SetUp; override;
+     procedure TearDown; override;
+  end;
+
+  { RoundABNTMudancasDeArredondamentoPara_rmDownTest }
+
+  {Veja coment·rio na parte "initialization"}
+  RoundABNTMudancasDeArredondamentoPara_rmDownTest = class(RoundABNTTest)
+  private
+    OldRM: TFPURoundingMode;
+  protected
+     procedure SetUp; override;
+     procedure TearDown; override;
+  end;
+
+  { RoundABNTMudancasDeArredondamentoPara_rmTruncateTest }
+
+  {Veja coment·rio na parte "initialization"}
+  RoundABNTMudancasDeArredondamentoPara_rmTruncateTest = class(RoundABNTTest)
+  private
+    OldRM: TFPURoundingMode;
+  protected
+     procedure SetUp; override;
+     procedure TearDown; override;
   end;
 
   { StripHTMLTest }
@@ -338,28 +158,6 @@ type
    procedure TesteCompleto;
    procedure TesteTagsInvalidas;
    procedure TesteTagsInvertidas;
-  end;
-
-  { RemoveEmptyLinesTest }
-
-  RemoveEmptyLinesTest = class(TTestCase)
-  private
-    SL: TStringList;
-  protected
-    procedure SetUp; override;
-    procedure TearDown; override;
-  published
-   procedure VerificarLinhas;
-   procedure VerificarConteudo;
-  end;
-
-  { RandomNameTest }
-
-  RandomNameTest = class(TTestCase)
-  published
-   procedure TamanhoDois;
-   procedure TamanhoQuatro;
-   procedure TamanhoOito;
   end;
 
   { CompareVersionsTest }
@@ -499,65 +297,6 @@ type
     procedure Reverso;
   end;
 
-  { IfEmptyThenTest }
-
-  IfEmptyThenTest = class(TTestCase)
-  published
-   procedure RetornarValorNormal;
-   procedure SeVazioRetornaValorPadrao;
-   procedure RealizarDoTrim;
-   procedure NaoRealizarDoTrim;
-  end;
-
-  { PosAtTest }
-
-  PosAtTest = class(TTestCase)
-  private
-    AStr: String;
-  protected
-    procedure SetUp; override;
-  published
-   procedure AchaPrimeiraOcorrencia;
-   procedure AchaSegundaOcorrencia;
-   procedure AchaTerceiraOcorrencia;
-   procedure NaoAchaOcorrencia;
-  end;
-
-  { PosLastTest }
-
-  PosLastTest = class(TTestCase)
-  private
-    AStr: String;
-  protected
-    procedure SetUp; override;
-  published
-   procedure AchaOcorrencia;
-   procedure NaoAchaOcorrencia;
-  end;
-
-  { PosLastTest }
-
-  { CountStrTest }
-
-  CountStrTest = class(TTestCase)
-  private
-    AStr: String;
-  protected
-    procedure SetUp; override;
-  published
-   procedure AchaOcorrencia;
-   procedure NaoAchaOcorrencia;
-  end;
-
-  { Poem_ZerosTest }
-
-  Poem_ZerosTest = class(TTestCase)
-  published
-    procedure ParamString;
-    procedure Truncando;
-    procedure ParamInt64;
-  end;
-
   { IntToStrZeroTest }
 
   IntToStrZeroTest = class(TTestCase)
@@ -634,197 +373,6 @@ type
    procedure ValorDefault;
   end;
 
-  { FormatDateBrTest }
-
-  FormatDateBrTest = class(TTestCase)
-  published
-   procedure Normal;
-   procedure Bissesto;
-   procedure ComMascara;
-  end;
-
-  { FormatDateTimeBrTest }
-
-  FormatDateTimeBrTest = class(TTestCase)
-  published
-   procedure Normal;
-   procedure BissestoMeiaNoite;
-   procedure ComMascara;
-  end;
-
-  { StringToDateTimeTest }
-
-  StringToDateTimeTest = class(TTestCase)
-  published
-   procedure DataAno4Digitos;
-   procedure DataAno2Digitos;
-   procedure Hora;
-   procedure DataEHora;
-   procedure ComFormatSettingsDiferente;
-  end;
-
-  { StringToDateTimeDefTest }
-
-  StringToDateTimeDefTest = class(TTestCase)
-  published
-   procedure Data;
-   procedure Hora;
-   procedure DataEHora;
-   procedure ValorDefault;
-  end;
-
-  { StoDTest }
-
-  StoDTest = class(TTestCase)
-  published
-   procedure Normal;
-   procedure DataSemHora;
-   procedure DataInvalida;
-  end;
-
-  { DtoSTest }
-
-  DtoSTest = class(TTestCase)
-  published
-   procedure Data;
-  end;
-
-  { DTtoSTest }
-
-  DTtoSTest = class(TTestCase)
-  published
-   procedure DataEHora;
-   procedure DataSemHora;
-  end;
-
-  { StrIsAlphaTest }
-
-  StrIsAlphaTest = class(TTestCase)
-  published
-   procedure Texto;
-   procedure TextoComNumeros;
-   procedure TextoComCaractersEspeciais;
-   procedure TextoComCaractersAcentuados;
-  end;
-
-  { StrIsAlphaNumTest }
-
-  StrIsAlphaNumTest = class(TTestCase)
-  published
-    procedure Texto;
-    procedure TextoComNumeros;
-    procedure TextoComCaractersEspeciais;
-    procedure TextoComCaractersAcentuados;
-  end;
-
-  { StrIsNumberTest }
-
-  StrIsNumberTest = class(TTestCase)
-  published
-    procedure Texto;
-    procedure Numeros;
-    procedure TextoComNumeros;
-    procedure TextoComSeparadores;
-    procedure TextoComCaractersEspeciais;
-  end;
-
-  { StrIsHexaTest }
-
-  StrIsHexaTest = class(TTestCase)
-  published
-    procedure TextoVazio;
-    procedure TextoEmHexaMaiusculo;
-    procedure TextoEmHexaMinusculo;
-    procedure TextoEmHexaComEspacos;
-    procedure TextoNaoHexa;
-    procedure TextoComCaractersEspeciais;
-  end;
-
-  { StrIsBinaryTest }
-
-  StrIsBinaryTest = class(TTestCase)
-  published
-    procedure TextoVazio;
-    procedure TextoEmBinario;
-    procedure TextoEmBinarioComEspacos;
-    procedure TextoNaoBinario;
-    procedure TextoComCaractersEspeciais;
-  end;
-
-  { StrIsBase64Test }
-
-  StrIsBase64Test = class(TTestCase)
-  published
-    procedure TextoVazio;
-    procedure TextoEmBase64SemPad;
-    procedure TextoEmBase64ComUmPad;
-    procedure TextoEmBase64ComDoisPads;
-    procedure TextoEmBase64TamanhoErrado;
-    procedure TextoEmBase64ComExcessoDePad;
-    procedure TextoEmBase64ComEspacos;
-    procedure TextoNaoBase64;
-    procedure TextoComCaractersEspeciais;
-  end;
-
-  { CharIsAlphaTest }
-
-  CharIsAlphaTest = class(TTestCase)
-  published
-    procedure Caracter;
-    procedure Numero;
-    procedure CaracterEspecial;
-  end;
-
-  { CharIsAlphaNumTest }
-
-  CharIsAlphaNumTest = class(TTestCase)
-  published
-    procedure Caracter;
-    procedure Numero;
-    procedure CaracterEspecial;
-  end;
-
-  { CharIsNumTest }
-
-  CharIsNumTest = class(TTestCase)
-  published
-    procedure Caracter;
-    procedure Numero;
-    procedure CaracterEspecial;
-  end;
-
-  { OnlyNumberTest }
-
-  OnlyNumberTest = class(TTestCase)
-  private
-  published
-    procedure Texto;
-    procedure Numeros;
-    procedure TextoComNumeros;
-    procedure TextoComSeparadores;
-    procedure TextoComCaractersEspeciais;
-  end;
-
-  { OnlyAlphaTest }
-
-  OnlyAlphaTest = class(TTestCase)
-  published
-    procedure Texto;
-    procedure Numeros;
-    procedure TextoComNumeros;
-    procedure TextoComCaractersEspeciais;
-  end;
-
-  { OnlyAlphaNumTest }
-
-  OnlyAlphaNumTest = class(TTestCase)
-  published
-    procedure Texto;
-    procedure Numeros;
-    procedure TextoComNumeros;
-    procedure TextoComCaractersEspeciais;
-  end;
-
   { StrIsIPTest }
 
   StrIsIPTest = class(TTestCase)
@@ -869,55 +417,6 @@ type
     procedure Menor;
     procedure Maior;
     procedure Igual;
-  end;
-
-  { TiraAcentosTest }
-
-  TiraAcentosTest = class(TTestCase)
-  published
-    procedure Normal;
-    procedure ComQuebrasDeLinha;
-  end;
-
-  { TiraAcentoTest }
-
-  TiraAcentoTest = class(TTestCase)
-  published
-    procedure Normal;
-  end;
-
-  { AjustaLinhasTest }
-
-  AjustaLinhasTest = class(TTestCase)
-  private
-    AStr1, AStr2: String;
-  protected
-    procedure SetUp; override;
-  published
-    procedure QuebraEmQuarentaColunas;
-    procedure QuebraEmTrintaColunasSemPad;
-    procedure QuebraEmTrintaColunasComPad;
-    procedure QuebraEmSeteColunas;
-    procedure ComLimiteDeLinhasSemPad;
-    procedure ComLimiteDeLinhasComPad;
-  end;
-
-  { QuebraLinhasTest }
-
-  QuebraLinhasTest = class(TTestCase)
-  private
-    AStr: String;
-    FTexto: String;
-  protected
-    procedure SetUp; override;
-  published
-    procedure QuebraEmNoventaColunas;
-    procedure QuebraEmQuarentaColunas;
-    procedure QuebraEmCinquentaComSeparadorE;
-    procedure QuebraStrComLineBreakEm32cols;
-    procedure QuebraDuasLinhasNoLimiteColuna;
-    procedure QuebraLinhaComVariosCRLFEm12;
-    procedure QuebraLinhaComVariosCRLFEm24;
   end;
 
   { TraduzComandoTest }
@@ -1063,27 +562,13 @@ type
   end;
 
 
-  { RemoverQuebraLinhaFinal }
-  RemoverQuebraLinhaFinalTest = class(TTestCase)
-  private
-  published
-    procedure UmaLinhaComQuebraPadrao;
-    procedure UmaLinhaSemQuebraPadrao;
-    procedure UmaLinhaComQuebraDiferenciada;
-    procedure UmaLinhaSemQuebraDiferenciada;
-    procedure DuasLinhasComQuebraPadrao;
-    procedure DuasLinhasSemQuebraPadrao;
-    procedure DuasLinhasComQuebraDiferenciada;
-    procedure DuasLinhasSemQuebraDiferenciada;
-  end;
-
 
 implementation
 
 uses
-  Math, dateutils,
   synacode,
-  ACBrUtil, ACBrCompress, ACBrConsts;
+  ACBrCompress, ACBrConsts, ACBrUtil.Compatibilidade, ACBrUtil.Base, ACBrUtil.FilesIO,
+  ACBrUtil.Math, ACBrUtil.XMLHTML, ACBrUtil.Strings;
 
 { TestePutBit }
 
@@ -1250,568 +735,6 @@ begin
   CheckEquals(AByte, 255);
 end;
 
-{ StrIsBase64Test }
-
-procedure StrIsBase64Test.TextoVazio;
-begin
-  CheckFalse(StrIsBase64(''));
-end;
-
-procedure StrIsBase64Test.TextoEmBase64SemPad;
-begin
-  CheckTrue(StrIsBase64('UHJvamV0byBBQ0Jy'));
-end;
-
-procedure StrIsBase64Test.TextoEmBase64ComUmPad;
-begin
-  CheckTrue(StrIsBase64('UHJvamV0b0FDQnI='));
-end;
-
-procedure StrIsBase64Test.TextoEmBase64ComDoisPads;
-begin
-  CheckTrue(StrIsBase64('UHJvamV0b0FDQg=='));
-end;
-
-procedure StrIsBase64Test.TextoEmBase64TamanhoErrado;
-begin
-  CheckFalse(StrIsBase64('UHJvamV0byBBQ0J'));
-  CheckFalse(StrIsBase64('UHJvamV0byBBQ0Jy='));
-end;
-
-procedure StrIsBase64Test.TextoEmBase64ComExcessoDePad;
-begin
-  CheckFalse(StrIsBase64('UHJvamV0b0FDQ==='));
-end;
-
-procedure StrIsBase64Test.TextoEmBase64ComEspacos;
-begin
-  CheckFalse(StrIsBase64('UHJv amV0 byBB Q0Jy'));
-end;
-
-procedure StrIsBase64Test.TextoNaoBase64;
-begin
-  CheckFalse(StrIsBase64('Projeto ACBr'));
-end;
-
-procedure StrIsBase64Test.TextoComCaractersEspeciais;
-begin
-  CheckFalse(StrIsBase64('Projeto@ACBR#123.90'));
-end;
-
-{ StrIsBinaryTest }
-
-procedure StrIsBinaryTest.TextoVazio;
-begin
-  CheckTrue(StrIsBinary(''));
-end;
-
-procedure StrIsBinaryTest.TextoEmBinario;
-begin
-  CheckTrue(StrIsBinary('0001110111110000'));
-end;
-
-procedure StrIsBinaryTest.TextoEmBinarioComEspacos;
-begin
-  CheckFalse(StrIsBinary('00011 1011 1110 000'));
-end;
-
-procedure StrIsBinaryTest.TextoNaoBinario;
-begin
-  CheckFalse(StrIsBinary('ProjetoACBR'));
-end;
-
-procedure StrIsBinaryTest.TextoComCaractersEspeciais;
-begin
-  CheckFalse(StrIsBinary('Projeto@ACBR#123.90'));
-end;
-
-{ StrIsHexaTest }
-
-procedure StrIsHexaTest.TextoVazio;
-begin
-  CheckTrue(StrIsHexa(''));
-end;
-
-procedure StrIsHexaTest.TextoEmHexaMaiusculo;
-begin
-  CheckTrue(StrIsHexa('1234567890ABCDEF'));
-end;
-
-procedure StrIsHexaTest.TextoEmHexaMinusculo;
-begin
-  CheckTrue(StrIsHexa('1234567890abcdef'));
-end;
-
-procedure StrIsHexaTest.TextoEmHexaComEspacos;
-begin
-  CheckFalse(StrIsHexa('0A 12 13 A6 DF FF'));
-end;
-
-procedure StrIsHexaTest.TextoNaoHexa;
-begin
-  CheckFalse(StrIsHexa('ProjetoACBR'));
-end;
-
-procedure StrIsHexaTest.TextoComCaractersEspeciais;
-begin
-  CheckFalse(StrIsHexa('Projeto@ACBR#123.90'));
-end;
-
-{ ChangeLineBreakTest }
-
-procedure ChangeLineBreakTest.SetUp;
-begin
-  inherited SetUp;
-  FLFText := 'LINHA1'+LF+LF+'LINHA3'+LF+'LINHA4'+LF+LF+'LINHA6'+LF;
-  FCRText := 'LINHA1'+CR+CR+'LINHA3'+CR+'LINHA4'+CR+CR+'LINHA6'+CR;
-  FCRLFText := 'LINHA1'+CR+LF+CR+LF+'LINHA3'+CR+LF+'LINHA4'+CR+LF+CR+LF+'LINHA6'+CR+LF;
-  FPipeText := 'LINHA1||LINHA3|LINHA4||LINHA6|';
-end;
-
-procedure ChangeLineBreakTest.CRLFParaPipe;
-begin
-  CheckEquals(ChangeLineBreak(FCRLFText,'|'), FPipeText);
-end;
-
-procedure ChangeLineBreakTest.LFParaPipe;
-begin
-  CheckEquals(ChangeLineBreak(FLFText,'|'), FPipeText);
-end;
-
-procedure ChangeLineBreakTest.CRParaPipe;
-begin
-  CheckEquals(ChangeLineBreak(FCRText,'|'), FPipeText);
-end;
-
-procedure ChangeLineBreakTest.CRLFParaLF;
-begin
-  CheckEquals(ChangeLineBreak(FCRLFText,LF), FLFText);
-end;
-
-procedure ChangeLineBreakTest.LFParaLF;
-begin
-  CheckEquals(ChangeLineBreak(FLFText,LF), FLFText);
-end;
-
-procedure ChangeLineBreakTest.CRParaLF;
-begin
-  CheckEquals(ChangeLineBreak(FCRText,LF), FLFText);
-end;
-
-procedure ChangeLineBreakTest.CRLFParaCR;
-begin
-  CheckEquals(ChangeLineBreak(FCRLFText,CR), FCRText);
-end;
-
-procedure ChangeLineBreakTest.LFParaCR;
-begin
-  CheckEquals(ChangeLineBreak(FLFText,CR), FCRText);
-end;
-
-procedure ChangeLineBreakTest.CRParaCR;
-begin
-  CheckEquals(ChangeLineBreak(FCRText,CR), FCRText);
-end;
-
-procedure ChangeLineBreakTest.CRLFParaCRLF;
-begin
-  CheckEquals(ChangeLineBreak(FCRLFText,CRLF), FCRLFText);
-end;
-
-procedure ChangeLineBreakTest.LFParaCRLF;
-begin
-  CheckEquals(ChangeLineBreak(FLFText,CRLF), FCRLFText);
-end;
-
-procedure ChangeLineBreakTest.CRParaCRLF;
-begin
-  CheckEquals(ChangeLineBreak(FCRText,CRLF), FCRLFText);
-end;
-
-{ AddDelimitedTextToListTeste }
-
-procedure AddDelimitedTextToListTeste.SetUp;
-begin
-  inherited SetUp;
-  FSL := TStringList.Create;
-end;
-
-procedure AddDelimitedTextToListTeste.TearDown;
-begin
-  FSL.Free;
-  inherited TearDown;
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_StringVazia;
-begin
-  CheckEquals(0, AddDelimitedTextToList('',';',FSL));
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_DoisItens;
-begin
-  CheckEquals(2, AddDelimitedTextToList('comercial@djpdv.com.br;financeiro@djpdv.com.br',';',FSL));
-  CheckEquals('comercial@djpdv.com.br', FSL[0]);
-  CheckEquals('financeiro@djpdv.com.br', FSL[1]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_SemDelimitador;
-begin
-  CheckEquals(1, AddDelimitedTextToList('comercial@djpdv.com.br',';',FSL));
-  CheckEquals('comercial@djpdv.com.br', FSL[0]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_DelimitadorEspaco;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO ACBR www.projetoacbr.com.br',' ',FSL));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('ACBR', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComUmaAspasSimples;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO|AC''BR|www.projetoacbr.com.br','|',FSL));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('AC''BR', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDuasAspasSimplesQuoteAspasDuplas;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO|''ACBR''|www.projetoacbr.com.br','|',FSL));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('''ACBR''', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComUmaAspasDuplasComQuote;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO|AC"BR|www.projetoacbr.com.br','|',FSL));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('AC"BR', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComUmaAspasDuplasSemQuote;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO|AC"BR|www.projetoacbr.com.br','|',FSL, #0 ));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('AC"BR', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDuasAspasDuplaComQuote;
-begin
-  CheckEquals(4, AddDelimitedTextToList('PROJETO|"A|C"|"B|R"|www.projetoacbr.com.br','|',FSL));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('A|C', FSL[1]);
-  CheckEquals('B|R', FSL[2]);
-  CheckEquals('www.projetoacbr.com.br', FSL[3]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDuasAspasDuplaSemQuote;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO|"ACBR"|www.projetoacbr.com.br','|',FSL, #0 ));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('"ACBR"', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDelimitadorEntreAspasSimplesQuoteAspasSimples;
-begin
-  CheckEquals(3, AddDelimitedTextToList('PROJETO ''A C B R'' www.projetoacbr.com.br',' ',FSL, ''''));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('A C B R', FSL[1]);
-  CheckEquals('www.projetoacbr.com.br', FSL[2]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDelimitadorEntreAspasDuplasComQuoteInvalido;
-begin
-  CheckEquals(6, AddDelimitedTextToList('PROJETO|A"A|C|B|R"|www.projetoacbr.com.br','|',FSL));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('A"A', FSL[1]);
-  CheckEquals('C', FSL[2]);
-  CheckEquals('B', FSL[3]);
-  CheckEquals('R"', FSL[4]);
-  CheckEquals('www.projetoacbr.com.br', FSL[5]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDelimitadorEntreAspasDuplasSemQuote;
-begin
-  CheckEquals(6, AddDelimitedTextToList('PROJETO A"A C B R" www.projetoacbr.com.br',' ',FSL, #0));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('A"A', FSL[1]);
-  CheckEquals('C', FSL[2]);
-  CheckEquals('B', FSL[3]);
-  CheckEquals('R"', FSL[4]);
-  CheckEquals('www.projetoacbr.com.br', FSL[5]);
-end;
-
-procedure AddDelimitedTextToListTeste.AddDelimitedTextToListTeste_ComDelimitadoresVazios;
-begin
-  CheckEquals(7, AddDelimitedTextToList('PROJETO||||ACBR||www.projetoacbr.com.br','|',FSL, #0));
-  CheckEquals('PROJETO', FSL[0]);
-  CheckEquals('', FSL[1]);
-  CheckEquals('', FSL[2]);
-  CheckEquals('', FSL[3]);
-  CheckEquals('ACBR', FSL[4]);
-  CheckEquals('', FSL[5]);
-  CheckEquals('www.projetoacbr.com.br', FSL[6]);
-end;
-
-{ FindDelimiterInTextTest }
-
-procedure FindDelimiterInTextTest.FindDelimiterInTextTest_SemDelimitador;
-begin
-  CheckEquals(' ',FindDelimiterInText('comercial@djpdv.com.br'));
-end;
-
-procedure FindDelimiterInTextTest.FindDelimiterInTextTest_DelimitadorPipe;
-begin
-  CheckEquals('|',FindDelimiterInText('comercial@djpdv.com.br|financeiro@djpdv.com.br'));
-end;
-
-procedure FindDelimiterInTextTest.FindDelimiterInTextTest_DelimitadorVirgula;
-begin
-  CheckEquals(',',FindDelimiterInText('comercial@djpdv.com.br,financeiro@djpdv.com.br'));
-end;
-
-procedure FindDelimiterInTextTest.FindDelimiterInTextTest_DelimitadorPontoEVirgula;
-begin
-  CheckEquals(';',FindDelimiterInText('comercial@djpdv.com.br;financeiro@djpdv.com.br'));
-end;
-
-procedure FindDelimiterInTextTest.FindDelimiterInTextTest_DelimitadorCustomizado;
-begin
-  CheckEquals('&',FindDelimiterInText('comercial@djpdv.com.br&financeiro@djpdv.com.br','&'));
-end;
-
-{ IncWorkingDayTest }
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DataInicioSabado;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,17);
-  WorkingDays  := 11;
-  ADateResult  := EncodeDate(2017,07,03);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DataInicioDomingo;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,18);
-  WorkingDays  := 11;
-  ADateResult  := EncodeDate(2017,07,03);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_PosSemana;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,23);
-  WorkingDays  := 10;
-  ADateResult  := EncodeDate(2017,07,07);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DiaFinalSabado;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,22);
-  WorkingDays  := 2;
-  ADateResult  := EncodeDate(2017,06,26);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DiaFinalDomingo;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,23);
-  WorkingDays  := 1;
-  ADateResult  := EncodeDate(2017,06,26);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_ZeroDiaSabado;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,24);
-  WorkingDays  := 0;
-  ADateResult  := EncodeDate(2017,06,26);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_ZeroDiaDomingo;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,25);
-  WorkingDays  := 0;
-  ADateResult  := EncodeDate(2017,06,26);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_ZeroDiaSemana;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,26);
-  WorkingDays  := 0;
-  ADateResult  := EncodeDate(2017,06,26);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DiaNegativo;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,19);
-  WorkingDays  := -3;
-  ADateResult  := EncodeDate(2017,06,14);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DiaNegativoInicioSabado;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,24);
-  WorkingDays  := -6;
-  ADateResult  := EncodeDate(2017,06,16);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-procedure IncWorkingDayTest.IncWorkingDayTest_DiaNegativoInicioDomingo;
-var
-  ADateIni, ADateResult: TDateTime;
-  WorkingDays: Integer;
-begin
-  ADateIni     := EncodeDate(2017,06,25);
-  WorkingDays  := -6;
-  ADateResult  := EncodeDate(2017,06,16);
-
-  CheckEquals(ADateResult,ACBrUtil.IncWorkingDay(ADateIni,WorkingDays));
-end;
-
-{ WorkingDaysBetweenTest }
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataMesmaSemana;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,06,26);
-  ADateEnd := EncodeDate(2017,06,30);
-  CheckEquals(4,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataPosSemana;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,06,26);
-  ADateEnd := EncodeDate(2017,07,07);
-  CheckEquals(9,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataInicioSabado;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,06,24);
-  ADateEnd := EncodeDate(2017,07,03);
-  CheckEquals(6,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataInicioDomingo;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,06,25);
-  ADateEnd := EncodeDate(2017,07,03);
-  CheckEquals(6,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataFinalSabado;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,06,25);
-  ADateEnd := EncodeDate(2017,07,08);
-  CheckEquals(10,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataFinalDomingo;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,06,25);
-  ADateEnd := EncodeDate(2017,07,09);
-  CheckEquals(10,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataFinalMenor;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,07,10);
-  ADateEnd := EncodeDate(2017,07,09);
-  CheckEquals(0,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataZero;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := 0;
-  ADateEnd := 0;
-  CheckEquals(0,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataInicialZero;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := 0;
-  ADateEnd := EncodeDate(2017,07,09);
-  CheckEquals(0,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
-procedure WorkingDaysBetweenTest.WorkingDaysBetween_DataFinalZero;
-var
-  ADateIni, ADateEnd: TDateTime;
-begin
-  ADateIni := EncodeDate(2017,07,09);
-  ADateEnd := 0;
-  CheckEquals(0,ACBrUtil.WorkingDaysBetween(ADateIni,ADateEnd));
-end;
-
 { ZipUnzip }
 
 procedure ZipUnzip.SetUp;
@@ -1819,6 +742,7 @@ var
   I: Integer;
   Linha: AnsiString;
 begin
+  Linha := '';
   fTituloACBr := 'Projeto ACBr - A MAIOR COMUNIDADE DE AUTOMACAO COMERCIAL DO BRASIL - http://www.projetoacbr.com.br/';
 
   // Valores obtidos em: http://www.txtwizard.net/compression
@@ -1827,7 +751,7 @@ begin
   fTituloCompressGZipAndEncoded64 := 'H4sIAAAAAAAA/yWMQQqAIBQFr/IvkO7bPbWFkP2wPEBFEEEoInj9jGBWAzNzjvdZIkGrTB2BHCx70uzCZA3MQA2ElR00+POD1xYjGSblsdixVVcpqZey1irS/9uOPYsjPmLP8gVzteS/YwAAAA==';
   {$Else}
   fTituloCompressGZipAndEncoded64 := 'H4sIAAAAAAAAACWMQQqAIBQFr/IvkO7bPbWFkP2wPEBFEEEoInj9jGBWAzNzjvdZIkGrTB2BHCx70uzCZA3MQA2ElR00+POD1xYjGSblsdixVVcpqZey1irS/9uOPYsjPmLP8gVzteS/YwAAAA==';
-  {$EndIf} 
+  {$EndIf}
 
   For I := 0 to 255 do
     Linha := Linha + AnsiChr(i);
@@ -1972,41 +896,6 @@ begin
   CheckEquals( 1, ComparaValor(100.0002, 100, 0.0001));
 end;
 
-{ TiraPontosTest }
-
-procedure TiraPontosTest.TiraPontos_StringComEspacos_RetornaMeioSemEspacos;
-begin
-  CheckEquals('AaBbCcDdÁ123', ACBrUtil.TiraPontos('/-.) (,/-. )AaBbCc DdÁ 1 23 (,,( ).-/'));
-
-end;
-
-procedure TiraPontosTest.TiraPontos_StringExtremosInvalidos_RetornaMeio;
-begin
-  CheckEquals('AaBbCcDdÁ123', ACBrUtil.TiraPontos('/-.)(,/-.)AaBbCcDdÁ123(,,().-/'));
-
-end;
-
-procedure TiraPontosTest.TiraPontos_StringFimInvalido_RetornaInicio;
-begin
-  CheckEquals('AaBbCcDdÁ123', ACBrUtil.TiraPontos('AaBbCcDdÁ123/-.)(,/-.)(,,().-/'));
-
-end;
-
-procedure TiraPontosTest.TiraPontos_StringInicioInvalido_RetornaFinal;
-begin
-  CheckEquals('AaBbCcDdÁ123', ACBrUtil.TiraPontos('/-.)(,/-.)(,,().-/AaBbCcDdÁ123'));
-end;
-
-procedure TiraPontosTest.TiraPontos_StringInvalida_RetornaVazio;
-begin
-  CheckEquals('', ACBrUtil.TiraPontos('/-.)(,/-.)(,,().-/'));
-end;
-
-procedure TiraPontosTest.TiraPontos_StringMeioInvalido_RetornaExtremos;
-begin
-  CheckEquals('AaBbCcDdÁ123', ACBrUtil.TiraPontos('AaBbCc/-.)(,/-.)(,,().-/DdÁ123'));
-end;
-
 { EAN13Test }
 
 procedure EAN13Test.Valido;
@@ -2014,146 +903,146 @@ begin
   CheckEquals( '8', EAN13_DV('123456789012'));
   CheckEquals( '5', EAN13_DV('789835741001'));
 
-  CheckTrue( EAN13Valido('2004700001341') );
-  CheckTrue( EAN13Valido('1234567890128') );
-  CheckTrue( EAN13Valido('7898357410015') );
+  CheckTrue(EAN13Valido('2004700001341') );
+  CheckTrue(EAN13Valido('1234567890128') );
+  CheckTrue(EAN13Valido('7898357410015') );
 end;
 
 procedure EAN13Test.TamanhoMaior;
 begin
-   CheckFalse( EAN13Valido('78983574100156'));
+   CheckFalse(EAN13Valido('78983574100156'));
 end;
 
 procedure EAN13Test.TamanhoMenor;
 begin
-  CheckFalse( EAN13Valido('789835741001'));
+  CheckFalse(EAN13Valido('789835741001'));
 end;
 
 procedure EAN13Test.DigitoInvalido;
 begin
-  CheckFalse( EAN13Valido('7898357410010'));
-  CheckFalse( EAN13Valido('1234567890129'));
+  CheckFalse(EAN13Valido('7898357410010'));
+  CheckFalse(EAN13Valido('1234567890129'));
 end;
 
 procedure EAN13Test.ComLetras;
 begin
-  CheckFalse( EAN13Valido('A89835741001D'));
+  CheckFalse(EAN13Valido('A89835741001D'));
 end;
 
 procedure EAN13Test.EAN13Valido_String0000000000000_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('0000000000000'));
+  CheckTrue(EAN13Valido('0000000000000'));
 end;
 
 procedure EAN13Test.EAN13Valido_String2000100002629_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('2000100002629'));
+  CheckTrue(EAN13Valido('2000100002629'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7506195185568_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7506195185568'));
+  CheckTrue(EAN13Valido('7506195185568'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7891060886139_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7891060886139'));
+  CheckTrue(EAN13Valido('7891060886139'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7893946087173_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7893946087173'));
+  CheckTrue(EAN13Valido('7893946087173'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7896232517828_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7896232517828'));
+  CheckTrue(EAN13Valido('7896232517828'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7896645900026_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7896645900026'));
+  CheckTrue(EAN13Valido('7896645900026'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7897186015095_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7897186015095'));
+  CheckTrue(EAN13Valido('7897186015095'));
 end;
 
 procedure EAN13Test.EAN13Valido_String7898132132019_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7898132132019'));
+  CheckTrue(EAN13Valido('7898132132019'));
 
 end;
 
 procedure EAN13Test.EAN13Valido_String7898908141016_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('7898908141016'));
+  CheckTrue(EAN13Valido('7898908141016'));
 end;
 
 procedure EAN13Test.EAN13Valido_StringInvalida_RetornaFalso;
 begin
-  CheckFalse(ACBrUtil.EAN13Valido('abcdefghijklm'));
+  CheckFalse(EAN13Valido('abcdefghijklm'));
 end;
 
 procedure EAN13Test.EAN13Valido_StringValida_RetornaTrue;
 begin
-  CheckTrue(ACBrUtil.EAN13Valido('1234567890128'));
+  CheckTrue(EAN13Valido('1234567890128'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo000000000000_Retorna0;
 begin
-  CheckEquals('0', ACBrUtil.EAN13_DV('000000000000'));
+  CheckEquals('0', EAN13_DV('000000000000'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo200010000262_Retorna9;
 begin
-  CheckEquals('9', ACBrUtil.EAN13_DV('200010000262'));
+  CheckEquals('9', EAN13_DV('200010000262'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo750619518556_Retorna8;
 begin
-  CheckEquals('8', ACBrUtil.EAN13_DV('750619518556'));
+  CheckEquals('8', EAN13_DV('750619518556'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789106088613_Retorna9;
 begin
-  CheckEquals('9', ACBrUtil.EAN13_DV('789106088613'));
+  CheckEquals('9', EAN13_DV('789106088613'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789394608717_Retorna3;
 begin
-  CheckEquals('3', ACBrUtil.EAN13_DV('789394608717'));
+  CheckEquals('3', EAN13_DV('789394608717'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789623251782_Retorna8;
 begin
-  CheckEquals('8', ACBrUtil.EAN13_DV('789623251782'));
+  CheckEquals('8', EAN13_DV('789623251782'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789664590002_Retorna6;
 begin
-  CheckEquals('6', ACBrUtil.EAN13_DV('789664590002'));
+  CheckEquals('6', EAN13_DV('789664590002'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789718601509_Retorna5;
 begin
-  CheckEquals('5', ACBrUtil.EAN13_DV('789718601509'));
+  CheckEquals('5', EAN13_DV('789718601509'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789813213201_Retorna9;
 begin
-  CheckEquals('9', ACBrUtil.EAN13_DV('789813213201'));
+  CheckEquals('9', EAN13_DV('789813213201'));
 end;
 
 procedure EAN13Test.EAN13_DV_Codigo789890814101_Retorna6;
 begin
-  CheckEquals('6', ACBrUtil.EAN13_DV('789890814101'));
+  CheckEquals('6', EAN13_DV('789890814101'));
 end;
 
 procedure EAN13Test.EAN13_DV_StringAlphanumerica_RetornaVazio;
 begin
-  CheckEquals('', ACBrUtil.EAN13_DV('1234567890ab'));
+  CheckEquals('', EAN13_DV('1234567890ab'));
 end;
 
 { TranslateUnprintableTest }
@@ -2327,185 +1216,6 @@ begin
   CheckEquals(chr(13)+'v'+chr(10), Resp );
 end;
 
-{ QuebraLinhasTest }
-
-procedure QuebraLinhasTest.SetUp;
-begin
-  // Nota Essa Unit est· em CP1252
-  //              0....+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8....
-  AStr := ACBrStr('Dez Milhıes e Duzentos e Cinquenta e Cinco Mil e Quatrocentos e Trinta e Cinco Reais');
-  FTexto := 'Projeto ACBr'+sLineBreak+sLineBreak+
-            'www.projetoacbr.com.br'+sLineBreak+sLineBreak+sLineBreak+sLineBreak+
-            '123456 123456789 1234567890';
-end;
-
-procedure QuebraLinhasTest.QuebraEmNoventaColunas;
-begin
-  CheckEquals(AStr, QuebraLinhas(AStr,90));
-end;
-
-procedure QuebraLinhasTest.QuebraEmQuarentaColunas;
-var
-  Resp: String;
-begin
-  Resp := QuebraLinhas(AStr,40);
-                 //   0....+....1....+....2....+....3....+....4
-  CheckEquals(ACBrStr('Dez Milhıes e Duzentos e Cinquenta e ')+sLineBreak+
-              ACBrStr('Cinco Mil e Quatrocentos e Trinta e ')+sLineBreak+
-              ACBrStr('Cinco Reais') ,Resp );
-end;
-
-procedure QuebraLinhasTest.QuebraEmCinquentaComSeparadorE;
-var
-  Resp: String;
-begin
-  Resp := QuebraLinhas(AStr,50,'e');
-                //   0....+....1....+....2....+....3....+....4....+....5
-  CheckEquals(ACBrStr('Dez Milhıes e Duzentos e Cinquenta e Cinco Mil e')+sLineBreak+
-              ACBrStr(' Quatrocentos e Trinta e Cinco Reais'), Resp );
-end;
-
-procedure QuebraLinhasTest.QuebraStrComLineBreakEm32cols;
-var
-  Resp: String;
-  AMsg1, AMsg2: String;
-begin
-  AMsg1 := 'Erro ao enviar Dados da Venda:'+sLineBreak+
-           '539-RejeiÁ„o: Duplicidade de NF-e com diferenÁa na Chave de Acesso'+sLineBreak+
-           '[chNFe:35150705481336000137650220000000031000000626]'+sLineBreak+
-           '[nRec:351000006395525]'+sLineBreak+
-           'Tentar novamente ?';
-
-      //   0....+....1....+....2....+....3....+....4....+....5
-  AMsg2 := 'Erro ao enviar Dados da Venda:'+sLineBreak+
-           '539-RejeiÁ„o: Duplicidade de '+sLineBreak+
-           'NF-e com diferenÁa na Chave de '+sLineBreak+
-           'Acesso'+sLineBreak+
-           '[chNFe:3515070548133600013765022'+sLineBreak+
-           '0000000031000000626]'+sLineBreak+
-           '[nRec:351000006395525]'+sLineBreak+
-           'Tentar novamente ?';
-
-  Resp := QuebraLinhas( ACBrStr(AMsg1), 32);
-
-  CheckEquals( ACBrStr(AMsg2), Resp );
-end;
-
-procedure QuebraLinhasTest.QuebraDuasLinhasNoLimiteColuna;
-var
-  Resp: String;
-  AMsg1: String;
-begin
-  AMsg1 := 'EndereÁo de Entrega sem Cod.IBGE'+sLineBreak+
-           'Tentar novamente ?';
-
-      //   0....+....1....+....2....+....3....+....4....+....5
-
-  Resp := QuebraLinhas( ACBrStr(AMsg1), 32);
-
-  CheckEquals( ACBrStr(AMsg1), Resp );
-end;
-
-procedure QuebraLinhasTest.QuebraLinhaComVariosCRLFEm12;
-var
-  Texto12: String;
-begin
-           // 123456789012
-  Texto12 := 'Projeto ACBr'+sLineBreak+sLineBreak+
-             'www.projetoa'+sLineBreak+
-             'cbr.com.br'+sLineBreak+sLineBreak+sLineBreak+sLineBreak+
-             '123456 '+sLineBreak+
-             '123456789 '+sLineBreak+
-             '1234567890';
-
-  CheckEquals(Texto12, QuebraLinhas(FTexto,12));
-end;
-
-procedure QuebraLinhasTest.QuebraLinhaComVariosCRLFEm24;
-var
-  Texto24: String;
-begin
-           // 123456789012345678901234
-  Texto24 := 'Projeto ACBr'+sLineBreak+sLineBreak+
-             'www.projetoacbr.com.br'+sLineBreak+sLineBreak+sLineBreak+sLineBreak+
-             '123456 123456789 '+sLineBreak+
-             '1234567890';
-
-  CheckEquals(Texto24, QuebraLinhas(FTexto,24));
-end;
-
-
-{ AjustaLinhasTest }
-
-procedure AjustaLinhasTest.SetUp;
-begin
-  AStr1 := '....+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8';
-  AStr2 := 'Linha1'+sLineBreak+'   Linha2'+sLineBreak+sLineBreak+'Linha 4'+sLineBreak;
-end;
-
-procedure AjustaLinhasTest.QuebraEmQuarentaColunas;
-begin
-  CheckEquals( copy(AStr1,1,40) + #10 + copy(AStr1,41,80) + #10,
-               AjustaLinhas(AStr1,40));
-  CheckEquals( StringReplace(AStr2, sLineBreak, #10, [rfReplaceAll]),
-               AjustaLinhas(AStr2,40));
-end;
-
-procedure AjustaLinhasTest.QuebraEmTrintaColunasSemPad;
-begin
-  CheckEquals( copy(AStr1,1,30) + #10 + copy(AStr1,31,30) + #10 + copy(AStr1,61,80) + #10,
-               AjustaLinhas(AStr1,30));
-  CheckEquals( StringReplace(AStr2, sLineBreak, #10, [rfReplaceAll]),
-               AjustaLinhas(AStr2,40));
-end;
-
-procedure AjustaLinhasTest.QuebraEmTrintaColunasComPad;
-var
-  Resp: String;
-begin
-  Resp := AjustaLinhas(AStr1,30,0,True);
-  CheckEquals( copy(AStr1,1,30) + #10 + copy(AStr1,31,30) + #10 + PadRight(copy(AStr1,61,80),30) + #10,
-               Resp );
-
-  Resp := AjustaLinhas(AStr2,30,0,True);
-  CheckEquals('Linha1                        '#10+
-              '   Linha2                     '#10+
-              '                              '#10+
-              'Linha 4                       '#10, Resp );
-end;
-
-procedure AjustaLinhasTest.QuebraEmSeteColunas;
-var
-  Resp: String;
-begin
-  Resp := AjustaLinhas(AStr2,7);
-  CheckEquals('Linha1'#10'   Linh'#10'a2'#10#10'Linha 4'#10, Resp);
-end;
-
-procedure AjustaLinhasTest.ComLimiteDeLinhasSemPad;
-var
-  Resp: String;
-begin
-  Resp := AjustaLinhas(AStr1,30,2);
-  CheckEquals( copy(AStr1,1,30) + #10 + copy(AStr1,31,30) + #10, Resp );
-
-  Resp := AjustaLinhas(AStr2,30,2);
-  CheckEquals( 'Linha1'#10'   Linha2'#10, Resp );
-end;
-
-procedure AjustaLinhasTest.ComLimiteDeLinhasComPad;
-var
-  Resp: String;
-begin
-  Resp := AjustaLinhas(AStr1,30,3,True);
-  CheckEquals( copy(AStr1,1,30) + #10 + copy(AStr1,31,30) + #10 + PadRight(copy(AStr1,61,80),30) + #10,
-               Resp );
-
-  Resp := AjustaLinhas(AStr2,30,3,True);
-  CheckEquals( 'Linha1                        '#10+
-               '   Linha2                     '#10+
-               '                              '#10, Resp);
-end;
 
 { TamanhoMenorTest }
 
@@ -2620,60 +1330,6 @@ begin
   CheckTrue( NaoEstaVazio(AStr) );
 end;
 
-{ FormatDateTimeBrTest }
-
-procedure FormatDateTimeBrTest.Normal;
-Var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(1971,08,14,12,13,14,0);
-  CheckEquals('14/08/1971 12:13:14', FormatDateTimeBr(ADateTime));
-end;
-
-procedure FormatDateTimeBrTest.BissestoMeiaNoite;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(2012,02,29,23,59,59,0);
-  CheckEquals('29/02/2012 23:59:59', FormatDateTimeBr(ADateTime));
-end;
-
-procedure FormatDateTimeBrTest.ComMascara;
-Var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(1971,08,14,12,3,4,0);
-  CheckEquals('08/14/1971 12:03', FormatDateTimeBr(ADateTime, 'MM/DD/YYYY hh:nn'));
-  CheckEquals('14/08/71 12:3:4', FormatDateTimeBr(ADateTime, 'DD/MM/YY h:n:s'));
-end;
-
-{ FormatDateBrTest }
-
-procedure FormatDateBrTest.Normal;
-Var
-  ADate: TDateTime;
-begin
-  ADate := EncodeDate(1971,08,14);
-  CheckEquals('14/08/1971', FormatDateBr(ADate));
-end;
-
-procedure FormatDateBrTest.Bissesto;
-var
-  ADate: TDateTime;
-begin
-  ADate := EncodeDate(2012,02,29);
-  CheckEquals('29/02/2012', FormatDateBr(ADate));
-end;
-
-procedure FormatDateBrTest.ComMascara;
-Var
-  ADate: TDateTime;
-begin
-  ADate := EncodeDate(1971,08,14);
-  CheckEquals('08/14/1971', FormatDateBr(ADate, 'MM/DD/YYYY'));
-  CheckEquals('14/08/71', FormatDateBr(ADate, 'DD/MM/YY'));
-end;
-
 { FloatMaskTest }
 
 procedure FloatMaskTest.Inteiro;
@@ -2757,148 +1413,6 @@ procedure FormatFloatBrTest.ComMascaraDisplayFormat027x2;
 begin
   CheckEquals('0,27', FormatFloatBr(0.266, Mascara(2)));
 end;
-
-{ CountStrTest }
-
-procedure CountStrTest.SetUp;
-begin
-  // 0....+....1....+....2....+....3....+....
-  AStr := 'Projeto ACBr, Teste Unit·rio ACBr. ACBr' ;
-end;
-
-procedure CountStrTest.AchaOcorrencia;
-begin
-  CheckEquals(3, CountStr(AStr, 'e'));
-  CheckEquals(3, CountStr(AStr, 'ACBr'));
-  CheckEquals(1, CountStr(AStr, '.'));
-end;
-
-procedure CountStrTest.NaoAchaOcorrencia;
-begin
-  CheckEquals(0, CountStr('z', AStr));
-  CheckEquals(0, CountStr('ACBR', AStr));
-end;
-
-{ PosLastTest }
-
-procedure PosLastTest.SetUp;
-begin
-  // 0....+....1....+....2....+....3....+....
-  AStr := 'Projeto ACBr, Teste Unit·rio ACBr. ACBr' ;
-end;
-
-procedure PosLastTest.AchaOcorrencia;
-begin
-  CheckEquals(19, PosLast('e', AStr));
-  CheckEquals(36, PosLast('ACBr', AStr));
-  CheckEquals(1, PosLast('Projeto', AStr));
-end;
-
-procedure PosLastTest.NaoAchaOcorrencia;
-begin
-  CheckEquals(0, PosLast('z', AStr));
-  CheckEquals(0, PosLast('ACBR', AStr));
-end;
-
-{ PosAtTest }
-
-procedure PosAtTest.SetUp;
-begin
-       // 0....+....1....+....2....+....3....+....
-  AStr := 'Projeto ACBr, Teste Unit·rio ACBr. ACBr' ;
-end;
-
-procedure PosAtTest.AchaPrimeiraOcorrencia;
-begin
-  CheckEquals(5, PosAt('e', AStr));
-  CheckEquals(9, PosAt('ACBr', AStr));
-end;
-
-procedure PosAtTest.AchaSegundaOcorrencia;
-begin
-  CheckEquals(16, PosAt('e', AStr, 2));
-  CheckEquals(30, PosAt('ACBr', AStr, 2));
-end;
-
-procedure PosAtTest.AchaTerceiraOcorrencia;
-begin
-  CheckEquals(19, PosAt('e', AStr, 3));
-  CheckEquals(36, PosAt('ACBr', AStr, 3));
-end;
-
-procedure PosAtTest.NaoAchaOcorrencia;
-begin
-  CheckEquals(0, PosAt('z', AStr));
-  CheckEquals(0, PosAt('ACBR', AStr));
-  CheckEquals(0, PosAt('e', AStr, 4));
-  CheckEquals(0, PosAt('ACBr', AStr, 4));
-end;
-
-{ RandomNameTest }
-
-procedure RandomNameTest.TamanhoDois;
-var
-  AName: String;
-begin
-  AName := RandomName(2);
-  CheckEquals(2, Length(AName));
-  CheckTrue( StrIsAlpha(AName) );
-end;
-
-procedure RandomNameTest.TamanhoQuatro;
-var
-  AName: String;
-begin
-  AName := RandomName(4);
-  CheckEquals(4, Length(AName));
-  CheckTrue( StrIsAlpha(AName) );
-end;
-
-procedure RandomNameTest.TamanhoOito;
-var
-  AName: String;
-begin
-  AName := RandomName(8);
-  CheckEquals(8, Length(AName));
-  CheckTrue( StrIsAlpha(AName) );
-end;
-
-{ RemoveEmptyLinesTest }
-
-procedure RemoveEmptyLinesTest.SetUp;
-begin
-  SL := TStringList.Create;
-  SL.Add('');
-  SL.Add('');
-  SL.Add('Linha1');
-  SL.Add('');
-  SL.Add('Linha2');
-  SL.Add('');
-  SL.Add('');
-  SL.Add('Linha3');
-  SL.Add('');
-  SL.Add('');
-
-  RemoveEmptyLines( SL );
-end;
-
-procedure RemoveEmptyLinesTest.TearDown;
-begin
-  SL.Free;
-end;
-
-procedure RemoveEmptyLinesTest.VerificarLinhas;
-begin
-  CheckEquals( 3, SL.Count);
-end;
-
-procedure RemoveEmptyLinesTest.VerificarConteudo;
-var
-  Texto: String;
-begin
-  Texto := SL.Text;
-  CheckEquals('Linha1'+sLineBreak+'Linha2'+sLineBreak+'Linha3'+sLineBreak, Texto );
- end;
 
 { StringToBinaryStringTest }
 
@@ -3316,7 +1830,12 @@ begin
   currTotal := currValorUnit * currQtde;
 
   // 0.99 x 0.995 = 0,98505, porÈm "currTotal" È um currency, que somente usa 4 casas decimais, portanto ser·: 0,9850
-  currVal := 0.98;
+  // PorÈm, se GetRoundMode for "rmUp", ocorrer· arredondamento, quando o valor È atribuido ao Currency, ficando 0,9851
+
+  if (GetRoundMode = rmUp) then
+    currVal := 0.99
+  else
+    currVal := 0.98;
   CheckEquals(currVal , RoundABNT(currTotal, 2), 0.00001);
 
   //----------- casts implÌcitos...
@@ -3498,127 +2017,6 @@ begin
   CheckEquals( 99999999, TruncFix( ADouble ) );
 end;
 
-{ ACBrStrToAnsiTest }
-
-procedure ACBrStrToAnsiTest.ACBrStrToAnsi_TesteUTF8;
-Var
-  UTF8Str : AnsiString;
-begin
-  {$IfDef FPC}
-  UTF8Str := CP1252ToUTF8('¡…Õ”⁄');  // Nota: essa Unit usa CP1252
-  {$Else}
-   {$ifdef UNICODE}
-    UTF8Str := UTF8Encode('¡…Õ”⁄');
-   {$Else}
-    UTF8Str := '¡…Õ”⁄';
-   {$endif}
-  {$EndIf}
-
-  CheckEquals( '¡…Õ”⁄', ACBrStrToAnsi(UTF8Str) );
-end;
-
-procedure ACBrStrToAnsiTest.ACBrStrToAnsi_TesteReverso;
-begin
-  CheckEquals( '¡…Õ”⁄', ACBrStrToAnsi(ACBrStr('¡…Õ”⁄')) );
-end;
-
-{ DecodeToStringTest }
-
-procedure DecodeToStringTest.DecodeToString_TesteUTF8;
-Var
-  UTF8Str : AnsiString;
-begin
-  {$IfDef FPC}
-  UTF8Str := CP1252ToUTF8('¡…Õ”⁄');  // Nota: essa Unit usa CP1252
-  {$Else}
-  UTF8Str := UTF8Encode('¡…Õ”⁄');
-  {$EndIf}
-
-  CheckEquals(ACBrStr('¡…Õ”⁄'), DecodeToString(UTF8Str, True));
-end;
-
-procedure DecodeToStringTest.DecodeToString_TesteAnsi;
-Var
-  AnsiStr : AnsiString;
-begin
-  AnsiStr := '¡…Õ”⁄';  // Nota: essa Unit usa CP1252
-  CheckEquals(ACBrStr('¡…Õ”⁄'), DecodeToString(AnsiStr, False));
-end;
-
-{ TiraAcentoTest }
-
-procedure TiraAcentoTest.Normal;
-begin
-   // Nota: essa Unit usa CP1252
-   CheckEquals('a', TiraAcento('·'));
-   CheckEquals('a', TiraAcento('‡'));
-   CheckEquals('a', TiraAcento('„'));
-   CheckEquals('a', TiraAcento('‰'));
-   CheckEquals('a', TiraAcento('‚'));
-   CheckEquals('A', TiraAcento('¿'));
-   CheckEquals('A', TiraAcento('¡'));
-   CheckEquals('A', TiraAcento('√'));
-   CheckEquals('A', TiraAcento('ƒ'));
-   CheckEquals('A', TiraAcento('¬'));
-   CheckEquals('e', TiraAcento('Ë'));
-   CheckEquals('e', TiraAcento('È'));
-   CheckEquals('e', TiraAcento('Î'));
-   CheckEquals('e', TiraAcento('Í'));
-   CheckEquals('E', TiraAcento('»'));
-   CheckEquals('E', TiraAcento('…'));
-   CheckEquals('E', TiraAcento('À'));
-   CheckEquals('E', TiraAcento(' '));
-   CheckEquals('i', TiraAcento('Ï'));
-   CheckEquals('i', TiraAcento('Ì'));
-   CheckEquals('i', TiraAcento('Ô'));
-   CheckEquals('i', TiraAcento('Ó'));
-   CheckEquals('I', TiraAcento('Ã'));
-   CheckEquals('I', TiraAcento('Õ'));
-   CheckEquals('I', TiraAcento('œ'));
-   CheckEquals('I', TiraAcento('Œ'));
-   CheckEquals('o', TiraAcento('Ú'));
-   CheckEquals('o', TiraAcento('Û'));
-   CheckEquals('o', TiraAcento('ı'));
-   CheckEquals('o', TiraAcento('ˆ'));
-   CheckEquals('o', TiraAcento('Ù'));
-   CheckEquals('O', TiraAcento('“'));
-   CheckEquals('O', TiraAcento('”'));
-   CheckEquals('O', TiraAcento('’'));
-   CheckEquals('O', TiraAcento('÷'));
-   CheckEquals('O', TiraAcento('‘'));
-   CheckEquals('u', TiraAcento('˘'));
-   CheckEquals('u', TiraAcento('˙'));
-   CheckEquals('u', TiraAcento('¸'));
-   CheckEquals('u', TiraAcento('˚'));
-   CheckEquals('U', TiraAcento('Ÿ'));
-   CheckEquals('U', TiraAcento('⁄'));
-   CheckEquals('U', TiraAcento('‹'));
-   CheckEquals('U', TiraAcento('€'));
-   CheckEquals('c', TiraAcento('Á'));
-   CheckEquals('C', TiraAcento('«'));
-   CheckEquals('n', TiraAcento('Ò'));
-   CheckEquals('N', TiraAcento('—'));
-end;
-
-{ TiraAcentosTest }
-
-procedure TiraAcentosTest.Normal;
-begin
-  CheckEquals('TesteACBrUtil', TiraAcentos( ACBrStr('TÍstÈ√CBr‹tÏl')) );
-end;
-
-procedure TiraAcentosTest.ComQuebrasDeLinha;
-var
-  AStr: String;
-begin
-  AStr := 'idLote=1'#13#10'[EVENTO001]'#13#10'tpAmb=2'#13#10+
-          'chNFe=35170205481336000137550040000001361002146742'#13#10+
-          'CNPJ=05481336000137'#13#10'dhEvento=15/02/2017 17:42:11'#13#10+
-          'tpEvento=110110'#13#10'nSeqEvento=1'#13#10'versaoEvento=1.00'#13#10+
-          'xCorrecao=012345678901234567890123456789012345678901234567890123456789abcde'#13#10;
-  CheckEquals(Astr, TiraAcentos(AStr) );
-end;
-
 { StrIsIPTest }
 
 procedure StrIsIPTest.Normal;
@@ -3644,346 +2042,6 @@ begin
   CheckFalse(StrIsIP('192.168'));
 end;
 
-{ OnlyAlphaNumTest }
-
-procedure OnlyAlphaNumTest.Texto;
-begin
-  CheckEquals('TesteACBr', OnlyAlphaNum('TesteACBr'));
-end;
-
-procedure OnlyAlphaNumTest.Numeros;
-begin
-  CheckEquals('12345', OnlyAlphaNum('12345'));
-end;
-
-procedure OnlyAlphaNumTest.TextoComNumeros;
-begin
-  CheckEquals('TesteACBr12345', OnlyAlphaNum('TesteACBr12345'));
-end;
-
-procedure OnlyAlphaNumTest.TextoComCaractersEspeciais;
-begin
-  CheckEquals('TesteACBr12345', OnlyAlphaNum('T!e@s#t$e%A&C*B(r)1_2-3=4+5"'));
-end;
-
-{ OnlyAlphaTest }
-
-procedure OnlyAlphaTest.Texto;
-begin
-  CheckEquals('TesteACBr', OnlyAlpha('TesteACBr'));
-end;
-
-procedure OnlyAlphaTest.Numeros;
-begin
-  CheckEquals('', OnlyAlpha('12345'));
-end;
-
-procedure OnlyAlphaTest.TextoComNumeros;
-begin
-   CheckEquals('TesteACBr', OnlyAlpha('TesteACBr12345'));
-end;
-
-procedure OnlyAlphaTest.TextoComCaractersEspeciais;
-begin
-   CheckEquals('TesteACBr', OnlyAlpha('T!e@s#t$e%A&C*B(r)'));
-end;
-
-{ OnlyNumberTest }
-
-procedure OnlyNumberTest.Texto;
-begin
-   CheckEquals('', OnlyNumber('TesteACBr'));
-end;
-
-procedure OnlyNumberTest.Numeros;
-begin
-   CheckEquals('12345', OnlyNumber('12345'));
-end;
-
-procedure OnlyNumberTest.TextoComNumeros;
-begin
-   CheckEquals('12345', OnlyNumber('TesteACBr12345'));
-end;
-
-procedure OnlyNumberTest.TextoComSeparadores;
-begin
-   CheckEquals('1234500', OnlyNumber('1.2345,00'));
-end;
-
-procedure OnlyNumberTest.TextoComCaractersEspeciais;
-begin
-  CheckEquals('12345', OnlyNumber('!1@2#34$5%'));
-end;
-
-{ CharIsNumTest }
-
-procedure CharIsNumTest.Caracter;
-begin
-  CheckFalse(CharIsNum('A'));
-end;
-
-procedure CharIsNumTest.Numero;
-begin
-  CheckTrue(CharIsNum('1'));
-end;
-
-procedure CharIsNumTest.CaracterEspecial;
-begin
-  CheckFalse(CharIsNum('#'));
-end;
-
-{ CharIsAlphaNumTest }
-
-procedure CharIsAlphaNumTest.Caracter;
-begin
-  CheckTrue(CharIsAlphaNum('A'));
-end;
-
-procedure CharIsAlphaNumTest.Numero;
-begin
-  CheckTrue(CharIsAlphaNum('1'));
-end;
-
-procedure CharIsAlphaNumTest.CaracterEspecial;
-begin
-  CheckFalse(CharIsAlphaNum('#'));
-end;
-
-{ CharIsAlphaTest }
-
-procedure CharIsAlphaTest.Caracter;
-begin
-  CheckTrue(CharIsAlpha('A'));
-end;
-
-procedure CharIsAlphaTest.Numero;
-begin
-  CheckFalse(CharIsAlpha('1'));
-end;
-
-procedure CharIsAlphaTest.CaracterEspecial;
-begin
-  CheckFalse(CharIsAlpha('#'));
-end;
-
-{ StrIsNumberTest }
-
-procedure StrIsNumberTest.Texto;
-begin
-  CheckFalse(StrIsNumber('TesteACBrUtil'));
-end;
-
-procedure StrIsNumberTest.Numeros;
-begin
-  CheckTrue(StrIsNumber('0123456789'));
-end;
-
-procedure StrIsNumberTest.TextoComSeparadores;
-begin
-   CheckFalse(StrIsNumber('1.2345,00'));
-end;
-
-procedure StrIsNumberTest.TextoComNumeros;
-begin
-   CheckFalse(StrIsNumber('TesteACBrUtil1234'));
-end;
-
-procedure StrIsNumberTest.TextoComCaractersEspeciais;
-begin
-   CheckFalse(StrIsNumber('_%#$@$*&!""'));
-end;
-
-{ StrIsAlphaNumTest }
-
-procedure StrIsAlphaNumTest.Texto;
-begin
-  CheckTrue(StrIsAlphaNum('TesteACBrUtil'));
-end;
-
-procedure StrIsAlphaNumTest.TextoComNumeros;
-begin
-  CheckTrue(StrIsAlphaNum('TesteACBrUtil1234'));
-end;
-
-procedure StrIsAlphaNumTest.TextoComCaractersEspeciais;
-begin
-  CheckFalse(StrIsAlphaNum('_%#$@$*&!""'));
-end;
-
-procedure StrIsAlphaNumTest.TextoComCaractersAcentuados;
-begin
-  CheckFalse(StrIsAlphaNum('TesteACBr√ötil'));
-end;
-
-{ StrIsAlphaTest }
-
-procedure StrIsAlphaTest.Texto;
-begin
-  CheckTrue(StrIsAlpha('TesteACBrUtil'));
-end;
-
-procedure StrIsAlphaTest.TextoComNumeros;
-begin
-  CheckFalse(StrIsAlpha('TesteACBrUtil1234'));
-end;
-
-procedure StrIsAlphaTest.TextoComCaractersEspeciais;
-begin
-  CheckFalse(StrIsAlpha('_%#$@$*&!""'));
-end;
-
-procedure StrIsAlphaTest.TextoComCaractersAcentuados;
-begin
-  CheckFalse(StrIsAlpha('TesteACBr√ötil'));
-end;
-
-{ DTtoSTest }
-
-procedure DTtoSTest.DataEHora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(2015,01,14,12,51,49,0);
-  CheckEquals('20150114125149', DTtoS(ADateTime));;
-end;
-
-procedure DTtoSTest.DataSemHora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDate(2015,01,14);
-  CheckEquals('20150114000000', DTtoS(ADateTime));
-end;
-
-{ DtoSTest }
-
-procedure DtoSTest.Data;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDate(2015,01,14);
-  CheckEquals('20150114', DtoS(ADateTime));
-end;
-
-{ StoDTest }
-
-procedure StoDTest.Normal;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(2015,01,14,16,28,12,0);
-  CheckEquals(ADateTime, StoD('20150114162812'));
-end;
-
-procedure StoDTest.DataSemHora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDate(2015,01,14);
-  CheckEquals(ADateTime, StoD('20150114'));
-end;
-
-procedure StoDTest.DataInvalida;
-begin
-  CheckEquals(0, StoD('DataInvalida'));
-end;
-
-{ StringToDateTimeDefTest }
-
-procedure StringToDateTimeDefTest.Data;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDate(2015,01,02);
-  CheckEquals(ADateTime, StringToDateTimeDef('02/01/2015', Now, 'd/m/yyyy'));
-end;
-
-procedure StringToDateTimeDefTest.Hora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeTime(12,45,12,0);
-  CheckEquals(ADateTime, StringToDateTimeDef('12:45:12', Now, 'h:n:s'));
-end;
-
-procedure StringToDateTimeDefTest.DataEHora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(2015,01,14,12,45,12,0);
-  CheckEquals(ADateTime, StringToDateTimeDef('14/01/2015 12:45:12', Now, 'd/m/yyyy h:n:s'));
-end;
-
-procedure StringToDateTimeDefTest.ValorDefault;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(2015,01,14,12,45,12,0);
-  // Data Errada
-  CheckEquals(ADateTime, StringToDateTimeDef('30/02/2001 00:01:12', ADateTime));
-  // Hora Errada
-  CheckEquals(ADateTime, StringToDateTimeDef('03/02/2001 10:61:12', ADateTime));
-  // Tudo Errado
-  CheckEquals(ADateTime, StringToDateTimeDef('Erro', ADateTime));
-end;
-
-{ StringToDateTimeTest }
-
-procedure StringToDateTimeTest.DataAno4Digitos;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDate(2015,02,03);
-  CheckEquals(ADateTime, StringToDateTime('03/02/2015', 'd/m/yyyy'));
-  CheckEquals(ADateTime, StringToDateTime('03/02/2015', 'dd/mm/yyyy'));
-  CheckEquals(ADateTime, StringToDateTime('03/02/2015', 'dd-mm-yyyy'));
-end;
-
-procedure StringToDateTimeTest.DataAno2Digitos;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDate(2015,02,28);
-  CheckEquals(ADateTime, StringToDateTime('28/02/15', 'd/m/yyyy'));
-  CheckEquals(ADateTime, StringToDateTime('28/02/15', 'dd/mm/yy'));
-  CheckEquals(ADateTime, StringToDateTime('28/02/15', 'dd-mm-yy'));
-end;
-
-procedure StringToDateTimeTest.Hora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeTime(12,45,12,0);
-  CheckEquals(ADateTime, StringToDateTime('12:45:12'));
-end;
-
-procedure StringToDateTimeTest.DataEHora;
-var
-  ADateTime: TDateTime;
-begin
-  ADateTime := EncodeDateTime(2015,01,14,12,45,12,0);
-  CheckEquals(ADateTime, StringToDateTime('14/01/2015 12:45:12', 'd/m/yyyy h:n:s'));
-end;
-
-procedure StringToDateTimeTest.ComFormatSettingsDiferente;
-var
-  OldDateSeprator, OldTimeSeparator: Char ;
-  ADateTime: TDateTime;
-begin
-  OldDateSeprator := DateSeparator ;
-  OldTimeSeparator := TimeSeparator;
-  try
-    DateSeparator := '-';
-    TimeSeparator := ';';
-
-    ADateTime := EncodeDateTime(2015,01,14,12,45,12,0);
-    CheckEquals(ADateTime, StringToDateTime('14-01-2015 12;45;12', 'd/m/yyyy h:n:s'));
-    CheckEquals(ADateTime, StringToDateTime('14/01/2015 12:45:12', 'd/m/yyyy h:n:s'));
-  finally
-    DateSeparator := OldDateSeprator;
-    TimeSeparator := OldTimeSeparator;
-  end ;
-end;
 
 { StringToFloatDefTest }
 
@@ -4123,50 +2181,6 @@ begin
   CheckEquals('98', IntToStrZero(987, 2));
 end;
 
-{ Poem_ZerosTest }
-
-procedure Poem_ZerosTest.ParamString;
-begin
-  CheckEquals('001', Poem_Zeros('1', 3));
-  CheckEquals('000000TesteACBr', Poem_Zeros('TesteACBr', 15));
-  CheckEquals('000000000000000', Poem_Zeros('', 15));
-end;
-
-procedure Poem_ZerosTest.Truncando;
-begin
-  CheckEquals('123', Poem_Zeros('12345', 3));
-end;
-
-procedure Poem_ZerosTest.ParamInt64;
-begin
-  CheckEquals('001', Poem_Zeros(1, 3));
-  CheckEquals('123', Poem_Zeros(12345, 3));
-  CheckEquals('000000000000000', Poem_Zeros(0, 15));
-end;
-
-{ IfEmptyThenTest }
-
-procedure IfEmptyThenTest.RetornarValorNormal;
-begin
-  CheckEquals('ACBrTeste', IfEmptyThen('ACBrTeste', 'ValorPadrao'));
-end;
-
-procedure IfEmptyThenTest.SeVazioRetornaValorPadrao;
-begin
-  CheckEquals('ValorPadrao', IfEmptyThen('', 'ValorPadrao'));
-end;
-
-procedure IfEmptyThenTest.RealizarDoTrim;
-begin
-  CheckEquals('ValorPadrao', IfEmptyThen('      ', 'ValorPadrao', true));
-  CheckEquals('ValorPadrao', IfEmptyThen('      ', 'ValorPadrao'));
-end;
-
-procedure IfEmptyThenTest.NaoRealizarDoTrim;
-begin
-  CheckEquals('ACBrTeste  ', IfEmptyThen('ACBrTeste  ', 'ValorPadrao', false));
-end;
-
 { CompareVersionsTest }
 
 procedure CompareVersionsTest.VersaoIgual;
@@ -4256,197 +2270,6 @@ begin
   CheckEquals(AStr, StripHTML(AStr));
 end;
 
-{ RemoveStringsTest }
-
-procedure RemoveStringsTest.SetUp;
-begin
-  StringsToRemove[1] := 'a';
-  StringsToRemove[2] := 'b';
-  StringsToRemove[3] := 'c';
-  StringsToRemove[4] := 'te';
-  StringsToRemove[5] := 'AC';
-end;
-
-procedure RemoveStringsTest.TextoSimples;
-begin
-  CheckEquals('s', RemoveStrings('testeabc', StringsToRemove));
-end;
-
-procedure RemoveStringsTest.TextoLongo;
-begin
-  CheckEquals('Tes Unitrio BrUtil ', RemoveStrings('Teste Unitario ACBrUtil ', StringsToRemove));
-end;
-
-{ RemoveStringTest }
-
-procedure RemoveStringTest.Remover;
-begin
-  CheckEquals('TstACBr', RemoveString('e', 'TesteACBr'));
-  CheckEquals('#####', RemoveString('ACBr', '#ACBr#ACBr#ACBr#ACBr#'));
-end;
-
-{ RemoverEspacosDuplosTest }
-
-procedure RemoverEspacosDuplosTest.RemoverApenasEspacosDuplos;
-begin
-  CheckEquals('Teste ACBr', RemoverEspacosDuplos('  Teste  ACBr  '));
-end;
-
-procedure RemoverEspacosDuplosTest.RemoverMaisQueDoisEspacos;
-begin
-  CheckEquals('Teste ACBr Com FPCUnit', RemoverEspacosDuplos('Teste    ACBr Com  FPCUnit     '));
-end;
-
-{ padSpaceTest }
-
-procedure padSpaceTest.CompletarString;
-begin
-  CheckEquals('TesteACBrZZZZZZ', PadSpace('TesteACBr', 15, '|', 'Z'));
-  CheckEquals('TesteACBr      ', PadSpace('TesteACBr', 15, '|'));
-end;
-
-procedure padSpaceTest.TruncarString;
-begin
-  CheckEquals('TesteACBr', PadSpace('TesteACBrZZZZZZ', 9, '|'));
-end;
-
-procedure padSpaceTest.SubstituirSeparadorPorEspacos;
-begin
-  CheckEquals(' Teste Unitario ACBr ', PadSpace('|Teste|Unitario|ACBr|', 21, '|'));
-  CheckEquals('   Teste   Unitario   ACBr    ', PadSpace('|Teste|Unitario|ACBr|', 30, '|'));
-end;
-
-procedure padSpaceTest.NaoRemoverEspacos;
-begin
-  CheckEquals('      190,25      KG', PadSpace('      190,25|KG', 20, '|', ' ', False));
-end;
-
-procedure padSpaceTest.SubstituirSeparadorPorCaracter;
-begin
-  CheckEquals('ZTesteZUnitarioZACBrZ', PadSpace('|Teste|Unitario|ACBr|', 21, '|', 'Z'));
-  CheckEquals('ZZZTesteZZZUnitarioZZZACBrZZZZ', PadSpace('|Teste|Unitario|ACBr|', 30, '|', 'Z'));
-end;
-
-{ padCenterTest }
-
-procedure padCenterTest.PreencherString;
-begin
-  CheckEquals('ZZZTESTEZZZZ', PadCenter('TESTE', 12, 'Z'));
-  CheckEquals('ZZZZTESTEZZZZ', PadCenter('TESTE', 13, 'Z'));
-  CheckEquals('    TESTE    ', PadCenter('TESTE', 13));
-end;
-
-procedure padCenterTest.TruncarString;
-begin
-  CheckEquals('TesteACBr', PadCenter('TesteACBrUtil', 9));
-end;
-
-{ padLeftTest }
-
-procedure padLeftTest.CompletarString;
-begin
-  CheckEquals('ZZZACBrCompletaString', PadLeft('ACBrCompletaString', 21, 'Z'));
-  CheckEquals('   ACBrCompletaString', PadLeft('ACBrCompletaString', 21));
-end;
-
-procedure padLeftTest.CompletarStringAcentosAnsi;
-var
-  AcentosStr: String;
-begin
-  AcentosStr := ACBrStr('¡…Õ”⁄');
-
-  CheckEquals('     '+AcentosStr, PadLeft(AcentosStr, 10));
-end;
-
-procedure padLeftTest.CortarStringAcentosAnsi;
-var
-  Str1, Str2: String;
-begin
-  Str1 := ACBrStr('¡…Õ”⁄«');
-  Str2 := ACBrStr('¡…Õ');
-
-  CheckEquals(Str2, PadLeft(Str1, 3));
-end;
-
-procedure padLeftTest.CompletarStringAcentosUTF8;
-Var
-  UTF8Str: String;
-begin
-  {$IfDef FPC}
-  UTF8Str := CP1252ToUTF8('¡…Õ”⁄');  // Nota: essa Unit usa CP1252
-  {$Else}
-   UTF8Str := UTF8Encode('¡…Õ”⁄');
-  {$EndIf}
-
-  //D7 ir· falhar
-  CheckEquals('     '+UTF8Str, PadLeft(UTF8Str, 10));
-end;
-
-procedure padLeftTest.CortarStringAcentosUTF8;
-Var
-  UTF8Str1, UTF8Str2: String;
-begin
-  {$IfDef FPC}
-  UTF8Str1 := CP1252ToUTF8('¡…Õ”⁄');  // Nota: essa Unit usa CP1252
-  UTF8Str2 := CP1252ToUTF8('¡…Õ');  // Nota: essa Unit usa CP1252
-  {$Else}
-   UTF8Str1 := UTF8Encode('¡…Õ”⁄');
-   UTF8Str2 := UTF8Encode('¡…Õ');
-  {$EndIf}
-
-  //D7 ir· falhar
-  CheckEquals(UTF8Str2, PadLeft(UTF8Str1, 3));
-end;
-
-procedure padLeftTest.ManterString;
-begin
-  CheckEquals('ACBrMantemString', PadLeft('ACBrMantemString', 16, 'Z'));
-end;
-
-procedure padLeftTest.TruncarString;
-begin
-  CheckEquals('ACBrTruncaSt', PadLeft('ACBrTruncaString', 12, 'Z'));
-// CheckEquals('TruncaString', PadLeft('ACBrTruncaString', 12, 'Z'));
-end;
-
-{ padRightTest }
-
-procedure padRightTest.CompletarStringComAcentos;
-var
-  StrAcentos: String;
-begin
-  StrAcentos := ACBrStr('ACBr¡…Õ”⁄«');
-
-  CheckEquals(StrAcentos+'ZZZZZ', PadRight(StrAcentos, 15, 'Z'));
-  CheckEquals(StrAcentos+'     ', PadRight(StrAcentos, 15));
-end;
-
-procedure padRightTest.CortarStringComAcentos;
-var
-  Str1, Str2: String;
-begin
-  Str1 := ACBrStr('¡…Õ”⁄«');
-  Str2 := ACBrStr('¡…Õ');
-
-  CheckEquals(Str2, PadRight(Str1, 3));
-end;
-
-procedure padRightTest.CompletarString;
-begin
-  CheckEquals('ACBrCompletaStringZZZ', PadRight('ACBrCompletaString', 21, 'Z'));
-  CheckEquals('ACBrCompletaString   ', PadRight('ACBrCompletaString', 21));
-end;
-
-procedure padRightTest.ManterString;
-begin
-  CheckEquals('ACBrMantemString', PadRight('ACBrMantemString', 16, 'Z'));
-end;
-
-procedure padRightTest.TruncarString;
-begin
-  CheckEquals('ACBrTrunca', PadRight('ACBrTruncaString', 10, 'Z'));
-end;
-
 { SepararDadosTest }
 
 procedure SepararDadosTest.Simples;
@@ -4509,53 +2332,29 @@ begin
   CheckEquals('', SeparaDados('Teste com texto longo <b>ACBr Util</b> realizado por FPCUnit</ACBrUtil>', 'ACBrUtil'));
 end;
 
-procedure QuebrarLinhaTest.TresCampos;
-Var
-  SL: TStringList;
-begin
-  SL := TStringList.Create;
-  try
-    QuebrarLinha('"CAMPO1";"CAMPO2";"CAMPO3"',SL);
-    CheckEquals( 'CAMPO1', SL[0]);
-    CheckEquals( 'CAMPO2', SL[1]);
-    CheckEquals( 'CAMPO3', SL[2]);
-  finally
-    SL.Free;
-  end;
-end;
-
-procedure QuebrarLinhaTest.PipeDelimiter;
-Var
-  SL: TStringList;
-begin
-  SL := TStringList.Create;
-  try
-    QuebrarLinha('CAMPO1|CAMPO2|CAMPO3',SL, ' ', '|');
-    CheckEquals( 'CAMPO1', SL[0] );
-    CheckEquals( 'CAMPO2', SL[1] );
-    CheckEquals( 'CAMPO3', SL[2] );
-  finally
-    SL.Free;
-  end;
-end;
-
 { LerTagXMLTest }
 
 procedure LerTagXMLTest.Simples;
 begin
-  CheckEquals('Teste Simples', LerTagXML('<ACBr>Teste Simples</ACBr>', 'acbr'));
+  {$warnings off}
+    CheckEquals('Teste Simples', LerTagXML('<ACBr>Teste Simples</ACBr>', 'acbr'));
+  {$warnings on}
 end;
 
 procedure LerTagXMLTest.SemIgnorarCase;
 begin
-  CheckEquals('Teste sem ignorar case', LerTagXML('<ACBr>Teste sem ignorar case</ACBr>', 'ACBr', false));
-  CheckEquals('', LerTagXML('<ACBr>Teste sem ignorar case</ACBr>', 'acbr', false));
-  CheckEquals('Ler Aqui', LerTagXML('<ACBr>Teste sem <acbr>Ler Aqui</acbr> ignorar case</ACBr>', 'acbr', false));
+  {$warnings off}
+    CheckEquals('Teste sem ignorar case', LerTagXML('<ACBr>Teste sem ignorar case</ACBr>', 'ACBr', false));
+    CheckEquals('', LerTagXML('<ACBr>Teste sem ignorar case</ACBr>', 'acbr', false));
+    CheckEquals('Ler Aqui', LerTagXML('<ACBr>Teste sem <acbr>Ler Aqui</acbr> ignorar case</ACBr>', 'acbr', false));
+  {$warnings on}
 end;
 
 procedure LerTagXMLTest.ComVariasTags;
 begin
-  CheckEquals('mais um teste', LerTagXML('<ACBr> teste <br> outro teste </br> <b>mais um teste</b> </ACBr>', 'b'));
+  {$warnings off}
+    CheckEquals('mais um teste', LerTagXML('<ACBr> teste <br> outro teste </br> <b>mais um teste</b> </ACBr>', 'b'));
+  {$warnings on}
 end;
 
 { TestXmlEhUTF8 }
@@ -4810,126 +2609,73 @@ begin
   CheckEquals(-430000.8001, TruncTo(-430000.80016 , 4 ), 0.0001);
 end;
 
-{ SplitTeste }
 
-procedure SplitTeste.Split_DelimitadorEspaco;
-var
-  SR: TSplitResult;
+{ RoundABNTMudancasDeArredondamentoTest }
+
+procedure RoundABNTMudancasDeArredondamentoPara_rmUpTest.SetUp;
 begin
-  SR := Split(' ', 'PROJETO ACBR www.projetoacbr.com.br');
-  CheckEquals(3, Length(SR));
-  CheckEquals('PROJETO', SR[0]);
-  CheckEquals('ACBR', SR[1]);
-  CheckEquals('www.projetoacbr.com.br', SR[2]);
+  inherited;
+  //Isso simula que a aplicaÁ„o esteja num modo de arredondamento diferente do esperado
+  // pelo mÈtodo ACBrUtil.RoundABNT
+  OldRM := GetRoundMode;
+  SetRoundMode(rmUP);
 end;
 
-procedure SplitTeste.Split_DoisItens;
-var
-  SR: TSplitResult;
+procedure RoundABNTMudancasDeArredondamentoPara_rmUpTest.TearDown;
 begin
-  SR := Split(';', 'comercial@djpdv.com.br;financeiro@djpdv.com.br');
-  CheckEquals(2, Length(SR));
-  CheckEquals('comercial@djpdv.com.br', SR[0]);
-  CheckEquals('financeiro@djpdv.com.br', SR[1]);
+  SetRoundMode(OldRM);
+  inherited;
 end;
 
-procedure SplitTeste.Split_SemDelimitador;
-var
-  SR: TSplitResult;
+{ RoundABNTMudancasDeArredondamentoPara_rmDownTest }
+
+procedure RoundABNTMudancasDeArredondamentoPara_rmDownTest.SetUp;
 begin
-  SR := Split(';', 'comercial@djpdv.com.br');
-  CheckEquals(1, Length(SR));
-  CheckEquals('comercial@djpdv.com.br', SR[0]);
+  inherited;
+  //Isso simula que a aplicaÁ„o esteja num modo de arredondamento diferente do esperado
+  // pelo mÈtodo ACBrUtil.RoundABNT
+  OldRM := GetRoundMode;
+  SetRoundMode(rmDown);
 end;
 
-procedure SplitTeste.Split_StringVazia;
+procedure RoundABNTMudancasDeArredondamentoPara_rmDownTest.TearDown;
 begin
-  CheckEquals(0, Length(Split(';','')));
+  SetRoundMode(OldRM);
+  inherited;
 end;
 
-{ RemoverQuebraLinhaFinalTest }
+{ RoundABNTMudancasDeArredondamentoPara_rmTruncateTest }
 
-procedure RemoverQuebraLinhaFinalTest.DuasLinhasComQuebraDiferenciada;
-const
-  S = 'Projeto ACBr;www.projetoacbr.com.br;';
+procedure RoundABNTMudancasDeArredondamentoPara_rmTruncateTest.SetUp;
 begin
-  CheckEquals('Projeto ACBr;www.projetoacbr.com.br', RemoverQuebraLinhaFinal(S, ';'));
+  inherited;
+  //Isso simula que a aplicaÁ„o esteja num modo de arredondamento diferente do esperado
+  // pelo mÈtodo ACBrUtil.RoundABNT
+  OldRM := GetRoundMode;
+  SetRoundMode(rmTruncate);
 end;
 
-procedure RemoverQuebraLinhaFinalTest.DuasLinhasComQuebraPadrao;
-var
-  SL: TStringList;
+procedure RoundABNTMudancasDeArredondamentoPara_rmTruncateTest.TearDown;
 begin
-  SL := TStringList.Create;
-  try
-    SL.Add('Projeto ACBr');
-    SL.Add('www.projetoacbr.com.br');
-    CheckEquals('Projeto ACBr' + sLineBreak + 'www.projetoacbr.com.br', RemoverQuebraLinhaFinal(SL.Text));
-  finally
-    SL.Free;
-  end;
-end;
-
-procedure RemoverQuebraLinhaFinalTest.DuasLinhasSemQuebraDiferenciada;
-const
-  S = 'Projeto ACBr;www.projetoacbr.com.br';
-begin
-  CheckEquals('Projeto ACBr;www.projetoacbr.com.br', RemoverQuebraLinhaFinal(S, ';'));
-end;
-
-procedure RemoverQuebraLinhaFinalTest.DuasLinhasSemQuebraPadrao;
-const
-  S = 'Projeto ACBr' + sLineBreak + 'www.projetoacbr.com.br';
-begin
-  CheckEquals('Projeto ACBr' + sLineBreak + 'www.projetoacbr.com.br', RemoverQuebraLinhaFinal(S));
-end;
-
-procedure RemoverQuebraLinhaFinalTest.UmaLinhaComQuebraDiferenciada;
-const
-  S = 'Projeto ACBr;';
-begin
-  CheckEquals('Projeto ACBr', RemoverQuebraLinhaFinal(S, ';'));
-end;
-
-procedure RemoverQuebraLinhaFinalTest.UmaLinhaComQuebraPadrao;
-const
-  S = 'Projeto ACBr' + sLineBreak;
-begin
-  CheckEquals('Projeto ACBr', RemoverQuebraLinhaFinal(S));
-end;
-
-procedure RemoverQuebraLinhaFinalTest.UmaLinhaSemQuebraDiferenciada;
-const
-  S = 'Projeto ACBr';
-begin
-  CheckEquals('Projeto ACBr', RemoverQuebraLinhaFinal(S, ';'));
-end;
-
-procedure RemoverQuebraLinhaFinalTest.UmaLinhaSemQuebraPadrao;
-const
-  S = 'Projeto ACBr';
-begin
-  CheckEquals('Projeto ACBr', RemoverQuebraLinhaFinal(S));
+  inherited;
+  SetRoundMode(OldRM);
 end;
 
 initialization
-  _RegisterTest('ACBrComum.ACBrUtil', AddDelimitedTextToListTeste);
-  _RegisterTest('ACBrComum.ACBrUtil', SplitTeste);
-  _RegisterTest('ACBrComum.ACBrUtil', FindDelimiterInTextTest);
-  _RegisterTest('ACBrComum.ACBrUtil', ChangeLineBreakTest);
-  _RegisterTest('ACBrComum.ACBrUtil', WorkingDaysBetweenTest);
-  _RegisterTest('ACBrComum.ACBrUtil', IncWorkingDayTest);
-  _RegisterTest('ACBrComum.ACBrUtil', TiraPontosTest);
   _RegisterTest('ACBrComum.ACBrUtil', ParseTextTest);
   _RegisterTest('ACBrComum.ACBrUtil', LerTagXMLTest);
   _RegisterTest('ACBrComum.ACBrUtil', TestXmlEhUTF8);
-  _RegisterTest('ACBrComum.ACBrUtil', DecodeToStringTest);
   _RegisterTest('ACBrComum.ACBrUtil', SepararDadosTest);
-  _RegisterTest('ACBrComum.ACBrUtil', QuebrarLinhaTest);
-  _RegisterTest('ACBrComum.ACBrUtil', ACBrStrToAnsiTest);
   _RegisterTest('ACBrComum.ACBrUtil', TruncFixTest);
   _RegisterTest('ACBrComum.ACBrUtil', TruncToTest);
+
+  {Temos 4 classes de testes da RoundABNT. No entanto, apenas uma delas pode ser executada por vez.
+   Quando mais de uma È adicionada, podem causar efeitos colaterais ao modificar o RoundingMode.
+   Mesmo assim, as outras podem ser adicionadas bastando descomentar as linhas abaixo}
   _RegisterTest('ACBrComum.ACBrUtil', RoundABNTTest);
+  _RegisterTest('ACBrComum.ACBrUtil', RoundABNTMudancasDeArredondamentoPara_rmUpTest);
+  _RegisterTest('ACBrComum.ACBrUtil', RoundABNTMudancasDeArredondamentoPara_rmDownTest);
+  _RegisterTest('ACBrComum.ACBrUtil', RoundABNTMudancasDeArredondamentoPara_rmTruncateTest);
   _RegisterTest('ACBrComum.ACBrUtil', CompareVersionsTest);
   _RegisterTest('ACBrComum.ACBrUtil', TestBitTest);
   _RegisterTest('ACBrComum.ACBrUtil', TesteSetBit);
@@ -4945,21 +2691,7 @@ initialization
   _RegisterTest('ACBrComum.ACBrUtil', AsciiToHexTest);
   _RegisterTest('ACBrComum.ACBrUtil', BinaryStringToStringTest);
   _RegisterTest('ACBrComum.ACBrUtil', StringToBinaryStringTest);
-  _RegisterTest('ACBrComum.ACBrUtil', padRightTest);
-  _RegisterTest('ACBrComum.ACBrUtil', padLeftTest);
-  _RegisterTest('ACBrComum.ACBrUtil', padCenterTest);
-  _RegisterTest('ACBrComum.ACBrUtil', padSpaceTest);
-  _RegisterTest('ACBrComum.ACBrUtil', RemoveStringTest);
-  _RegisterTest('ACBrComum.ACBrUtil', RemoveStringsTest);
-  _RegisterTest('ACBrComum.ACBrUtil', RemoverEspacosDuplosTest);
   _RegisterTest('ACBrComum.ACBrUtil', StripHTMLTest);
-  _RegisterTest('ACBrComum.ACBrUtil', RemoveEmptyLinesTest);
-  _RegisterTest('ACBrComum.ACBrUtil', RandomNameTest);
-  _RegisterTest('ACBrComum.ACBrUtil', IfEmptyThenTest);
-  _RegisterTest('ACBrComum.ACBrUtil', PosAtTest);
-  _RegisterTest('ACBrComum.ACBrUtil', PosLastTest);
-  _RegisterTest('ACBrComum.ACBrUtil', CountStrTest);
-  _RegisterTest('ACBrComum.ACBrUtil', Poem_ZerosTest);
   _RegisterTest('ACBrComum.ACBrUtil', IntToStrZeroTest);
   _RegisterTest('ACBrComum.ACBrUtil', FloatToIntStrTest);
   _RegisterTest('ACBrComum.ACBrUtil', FloatToStringTest);
@@ -4967,34 +2699,11 @@ initialization
   _RegisterTest('ACBrComum.ACBrUtil', FloatMaskTest);
   _RegisterTest('ACBrComum.ACBrUtil', StringToFloatTest);
   _RegisterTest('ACBrComum.ACBrUtil', StringToFloatDefTest);
-  _RegisterTest('ACBrComum.ACBrUtil', FormatDateBrTest);
-  _RegisterTest('ACBrComum.ACBrUtil', FormatDateTimeBrTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StringToDateTimeTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StringToDateTimeDefTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StoDTest);
-  _RegisterTest('ACBrComum.ACBrUtil', DtoSTest);
-  _RegisterTest('ACBrComum.ACBrUtil', DTtoSTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StrIsAlphaTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StrIsAlphaNumTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StrIsNumberTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StrIsHexaTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StrIsBinaryTest);
-  _RegisterTest('ACBrComum.ACBrUtil', StrIsBase64Test);
-  _RegisterTest('ACBrComum.ACBrUtil', CharIsAlphaTest);
-  _RegisterTest('ACBrComum.ACBrUtil', CharIsAlphaNumTest);
-  _RegisterTest('ACBrComum.ACBrUtil', CharIsNumTest);
-  _RegisterTest('ACBrComum.ACBrUtil', OnlyNumberTest);
-  _RegisterTest('ACBrComum.ACBrUtil', OnlyAlphaTest);
-  _RegisterTest('ACBrComum.ACBrUtil', OnlyAlphaNumTest);
   _RegisterTest('ACBrComum.ACBrUtil', StrIsIPTest);
   _RegisterTest('ACBrComum.ACBrUtil', EstaVazio_NaoEstaVazioTest);
   _RegisterTest('ACBrComum.ACBrUtil', EstaZerado_NaoEstaZeradoTest);
   _RegisterTest('ACBrComum.ACBrUtil', TamanhoIgualTest);
   _RegisterTest('ACBrComum.ACBrUtil', TamanhoMenorTest);
-  _RegisterTest('ACBrComum.ACBrUtil', TiraAcentosTest);
-  _RegisterTest('ACBrComum.ACBrUtil', TiraAcentoTest);
-  _RegisterTest('ACBrComum.ACBrUtil', AjustaLinhasTest);
-  _RegisterTest('ACBrComum.ACBrUtil', QuebraLinhasTest);
   _RegisterTest('ACBrComum.ACBrUtil', TraduzComandoTest);
   _RegisterTest('ACBrComum.ACBrUtil', StringToAscTest);
   _RegisterTest('ACBrComum.ACBrUtil', AscToStringTest);
@@ -5007,7 +2716,6 @@ initialization
   _RegisterTest('ACBrComum.ACBrUtil', EAN13Test);
   _RegisterTest('ACBrComum.ACBrUtil', ComparaValorTest);
   _RegisterTest('ACBrComum.ACBrUtil', ZipUnzip);
-  _RegisterTest('ACBrComum.ACBrUtil', RemoverQuebraLinhaFinalTest);
   //TODO: WriteToTXT, WriteLog,
 end.
 

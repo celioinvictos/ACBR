@@ -107,7 +107,7 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrImage, ACBrBancoBanestes, ACBrDelphiZXingQRCode;
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrImage, ACBrBancoBanestes, ACBrDelphiZXingQRCode;
 
 { TdmACBrBoletoFCFR }
 
@@ -392,13 +392,19 @@ begin
           FfrxPDFExport.Background    := IncorporarBackgroundPdf;//False diminui 70% do tamanho do pdf
           FfrxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
 
-          if EstaVazio(FfrxPDFExport.UserPassword) then
+          
+
+          if NaoEstaVazio(PdfSenha) then
           begin
             FfrxPDFExport.UserPassword    := PdfSenha;
-            if NaoEstaVazio(FfrxPDFExport.UserPassword) then
-              FfrxPDFExport.ProtectionFlags := [ePrint];
+            FfrxPDFExport.ProtectionFlags := [ePrint];
+          end else
+          begin
+            FfrxPDFExport.UserPassword    := '';
+            FfrxPDFExport.ProtectionFlags := [];
           end;
 
+          FfrxPDFExport.OwnerPassword   := FfrxPDFExport.UserPassword;
 
           if Filtro = fiNenhum then
           begin

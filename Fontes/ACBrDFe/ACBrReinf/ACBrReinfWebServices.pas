@@ -38,11 +38,12 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrUtil, ACBrDFe, ACBrDFeWebService,
+  ACBrUtil.XMLHTML, ACBrUtil.Strings, ACBrUtil.Base,
+  ACBrDFe, ACBrDFeWebService,
   pcnLeitor, pcnConsts,
   ACBrReinfLoteEventos, ACBrReinfConfiguracoes,
   pcnConversaoReinf, pcnCommonReinf, pcnReinfRetEventos, pcnReinfConsulta,
-  pcnReinfRetConsulta;
+  pcnReinfRetConsulta, pcnReinfRetConsulta_R9011, pcnReinfRetConsulta_R9015;
 
 type
   { TReinfWebService }
@@ -102,8 +103,16 @@ type
   TConsultar = class(TReinfWebService)
   private
     FProtocolo: string;
-    FRetConsulta: TRetConsulta;
+    FRetConsulta_R5011: TRetConsulta_R5011;
+    FRetConsulta_R9011: TRetConsulta_R9011;
+    FRetConsulta_R9015: TRetConsulta_R9015;
     FVersaoDF: TVersaoReinf;
+    FRetEnvioLote: TRetEnvioLote;
+
+    function GetRetConsulta: TRetConsulta; // Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011
+    function GetRetConsulta_R5011: TRetConsulta_R5011;
+    function GetRetConsulta_R9011: TRetConsulta_R9011;
+    function GetRetConsulta_R9015: TRetConsulta_R9015;
   protected
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
@@ -120,7 +129,12 @@ type
     procedure BeforeDestruction; override;
 
     property Protocolo: string read FProtocolo write FProtocolo;
-    property RetConsulta: TRetConsulta read FRetConsulta;
+    property RetConsulta: TRetConsulta read GetRetConsulta; // Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011
+    property RetConsulta_R5011: TRetConsulta_R5011 read GetRetConsulta_R5011;
+    property RetConsulta_R9011: TRetConsulta_R9011 read GetRetConsulta_R9011;
+    property RetConsulta_R9015: TRetConsulta_R9015 read GetRetConsulta_R9015;
+    // Versão 2.1.1
+    property RetEnvioLote: TRetEnvioLote read FRetEnvioLote;
   end;
 
   { TConsultarReciboEvento }
@@ -134,9 +148,20 @@ type
     FcnpjPrestador: string;
     FnrInscTomador: string;
     FdtApur: TDateTime;
+    FcpfCnpjBenef: String;
+    FcnpjFonte: String;
 
-    FRetConsulta: TRetConsulta;
+    FRetConsulta_R5011: TRetConsulta_R5011;
+    FRetConsulta_R9011: TRetConsulta_R9011;
+    FRetConsulta_R9015: TRetConsulta_R9015;
     FVersaoDF: TVersaoReinf;
+    FConsulta: TReinfConsulta;
+    FRetEnvioLote: TRetEnvioLote;
+
+    function GetRetConsulta: TRetConsulta; // Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011
+    function GetRetConsulta_R5011: TRetConsulta_R5011;
+    function GetRetConsulta_R9011: TRetConsulta_R9011;
+    function GetRetConsulta_R9015: TRetConsulta_R9015;
   protected
     procedure DefinirURL; override;
     procedure DefinirServicoEAction; override;
@@ -159,8 +184,16 @@ type
     property cnpjPrestador: string   read FcnpjPrestador write FcnpjPrestador;
     property nrInscTomador: string   read FnrInscTomador write FnrInscTomador;
     property dtApur: TDateTime       read FdtApur        write FdtApur;
+    property cpfCnpjBenef: String    read FcpfCnpjBenef  write FcpfCnpjBenef;
+    property cnpjFonte: String       read FcnpjFonte     write FcnpjFonte;
 
-    property RetConsulta: TRetConsulta read FRetConsulta;
+    property RetConsulta: TRetConsulta read GetRetConsulta; // Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011
+    property RetConsulta_R5011: TRetConsulta_R5011 read GetRetConsulta_R5011;
+    property RetConsulta_R9011: TRetConsulta_R9011 read GetRetConsulta_R9011;
+    property RetConsulta_R9015: TRetConsulta_R9015 read GetRetConsulta_R9015;
+    // Versão 2.1.1
+    property Consulta: TReinfConsulta read FConsulta write FConsulta;
+    property RetEnvioLote: TRetEnvioLote read FRetEnvioLote;
   end;
 
   { TWebServices }
@@ -182,7 +215,9 @@ type
                                   const AnrInscEstab: String = '';
                                   const AcnpjPrestador: string = '';
                                   const AnrInscTomador: string = '';
-                                  AdtApur: TDateTime = 0): Boolean;
+                                  AdtApur: TDateTime = 0;
+                                  const AcpfCnpjBenef: string = '';
+                                  const AcnpjFonte: string = ''): Boolean;
 
     property ACBrReinf: TACBrDFe read FACBrReinf write FACBrReinf;
     property EnvioLote: TEnvioLote read FEnvioLote write FEnvioLote;
@@ -214,7 +249,7 @@ begin
     ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ' +
     ' xmlns:v1="http://sped.fazenda.gov.br/"';
 
-  FPMimeType := 'text/xml'; // Vazio, usará por default: 'application/soap+xml'
+  FPMimeType := 'text/xml';
 end;
 
 procedure TReinfWebService.DefinirURL;
@@ -231,7 +266,7 @@ end;
 
 function TReinfWebService.GerarPrefixoArquivo: String;
 begin
-  Result := 'Reinf';
+  Result := FormatDateTime('yyyymmddhhnnss', Now);
 end;
 
 function TReinfWebService.GerarVersaoDadosSoap: String;
@@ -242,7 +277,7 @@ begin
     FPVersaoServico := 'v1.03.0';
    TACBrReinf(FPDFeOwner).LerVersaoDeParams(FPLayout);
 
-  Result := ''; // '<versaoDados>' + FPVersaoServico + '</versaoDados>';
+  Result := '';
 end;
 
 procedure TReinfWebService.Clear;
@@ -336,24 +371,32 @@ var
 begin
   { Sobrescrever apenas se necessário }
 
-{$IFDEF FPC}
-  Texto := '<' + ENCODING_UTF8 + '>'; // Envelope já está sendo montado em UTF8
-{$ELSE}
-  Texto := ''; // Isso forçará a conversão para UTF8, antes do envio
-{$ENDIF}
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+  begin
+  {$IFDEF FPC}
+    Texto := '<' + ENCODING_UTF8 + '>'; // Envelope já está sendo montado em UTF8
+  {$ELSE}
+    Texto := ''; // Isso forçará a conversão para UTF8, antes do envio
+  {$ENDIF}
 
-  Texto := Texto + '<' + FPSoapVersion + ':Envelope ' +
-    FPSoapEnvelopeAtributtes + '>';
-  Texto := Texto + '<' + FPSoapVersion + ':Body>';
-  Texto := Texto + '<' + 'v1:ReceberLoteEventos>';
-  Texto := Texto + '<' + 'v1:loteEventos>';
-  Texto := Texto + DadosMsg;
-  Texto := Texto + '<' + '/v1:loteEventos>';
-  Texto := Texto + '<' + '/v1:ReceberLoteEventos>';
-  Texto := Texto + '</' + FPSoapVersion + ':Body>';
-  Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
+    Texto := Texto + '<' + FPSoapVersion + ':Envelope ' +
+      FPSoapEnvelopeAtributtes + '>';
+    Texto := Texto + '<' + FPSoapVersion + ':Body>';
+    Texto := Texto + '<' + 'v1:ReceberLoteEventos>';
+    Texto := Texto + '<' + 'v1:loteEventos>';
+    Texto := Texto + DadosMsg;
+    Texto := Texto + '<' + '/v1:loteEventos>';
+    Texto := Texto + '<' + '/v1:ReceberLoteEventos>';
+    Texto := Texto + '</' + FPSoapVersion + ':Body>';
+    Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
 
-  FPEnvelopeSoap := Texto;
+    FPEnvelopeSoap := Texto;
+  end
+  else
+  begin
+    FPMimeType := 'application/xml';
+    FPEnvelopeSoap := InserirDeclaracaoXMLSeNecessario(DadosMsg);
+  end;
 end;
 
 function TEnvioLote.TratarResposta: Boolean;
@@ -361,7 +404,10 @@ var
   i: Integer;
   AXML, NomeArq: String;
 begin
-  FPRetWS := SeparaDados(FPRetornoWS, 'ReceberLoteEventosResult');
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+    FPRetWS := SeparaDados(FPRetornoWS, 'ReceberLoteEventosResult')
+  else
+    FPRetWS := SeparaDados(FPRetornoWS, 'Reinf');
 
   FRetEnvioLote.Leitor.Arquivo := ParseText(FPRetWS);
   FRetEnvioLote.LerXml;
@@ -382,7 +428,7 @@ begin
   if Assigned(TACBrReinf(FPDFeOwner).OnTransmissaoEventos) then
     TACBrReinf(FPDFeOwner).OnTransmissaoEventos(FPRetWS, erRetornoLote);
 
-  Result := True; //(FRetEnvioLote.cdResposta in [201, 202]);
+  Result := True;
 end;
 
 function TEnvioLote.GerarMsgErro(E: Exception): String;
@@ -397,18 +443,12 @@ var
 begin
   aMsg := Format(ACBrStr('Versão Layout: %s ' + LineBreak +
                          'Ambiente: %s ' + LineBreak +
-//                         'Versão Aplicativo: %s ' + LineBreak +
                          'Status Código: %s ' + LineBreak +
                          'Status Descrição: %s ' + LineBreak),
                  [VersaoReinfToStr(FVersaoDF),
                   TpAmbToStr(TACBrReinf(FPDFeOwner).Configuracoes.WebServices.Ambiente),
-//                  FRetEnvioLote.dadosRecLote.versaoAplicRecepcao,
                   IntToStr(FRetEnvioLote.Status.cdStatus),
                   FRetEnvioLote.Status.descRetorno]);
-
-//    aMsg := aMsg + Format(ACBrStr('Recebimento: %s ' + LineBreak),
-//       [IfThen(FRetEnvioLote.dadosRecLote.dhRecepcao = 0, '',
-//               FormatDateTimeBr(FRetEnvioLote.dadosRecLote.dhRecepcao))]);
 
   Result := aMsg;
 end;
@@ -420,7 +460,7 @@ end;
 
 function TEnvioLote.GerarVersaoDadosSoap: String;
 begin
-  Result := ''; // '<versaoDados>' + FVersao + '</versaoDados>';
+  Result := '';
 end;
 
 procedure TEnvioLote.InicializarServico;
@@ -446,17 +486,34 @@ begin
   FPArqEnv := 'ped-sit';
   FPArqResp := 'sit';
 
-  if Assigned(FRetConsulta) then
-    FRetConsulta.Free;
+  if Assigned(FRetEnvioLote) then
+    FRetEnvioLote.Free;
 
-  FRetConsulta := TRetConsulta.Create;
+  FRetEnvioLote := TRetEnvioLote.Create;
+
+  if Assigned(FRetConsulta_R5011) then
+    FRetConsulta_R5011.Free;
+
+  if Assigned(FRetConsulta_R9011) then
+    FRetConsulta_R9011.Free;
+
+  if Assigned(FRetConsulta_R9015) then
+    FRetConsulta_R9015.Free;
+
+  FRetConsulta_R5011 := TRetConsulta_R5011.Create;
+  FRetConsulta_R9011 := TRetConsulta_R9011.Create;
+  FRetConsulta_R9015 := TRetConsulta_R9015.Create;
 end;
 
 procedure TConsultar.BeforeDestruction;
 begin
   inherited;
 
-  FRetConsulta.Free;
+  FRetEnvioLote.Free;
+
+  FRetConsulta_R5011.Free;
+  FRetConsulta_R9011.Free;
+  FRetConsulta_R9015.Free;
 end;
 
 procedure TConsultar.DefinirDadosMsg;
@@ -473,7 +530,7 @@ begin
   else
     tpInsc := '2';
 
-  if FPConfiguracoesReinf.Geral.VersaoDF = v1_05_01 then
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v1_05_01 then
     FPDadosMsg :=
             '<consultar' + FPSoapEnvelopeAtributtes + '>' +
             '<v1:tpInsc>' + tpInsc + '</v1:tpInsc>' +
@@ -497,31 +554,40 @@ var
   Texto: String;
   xTag: string;
 begin
-  {$IFDEF FPC}
-   Texto := '<' + ENCODING_UTF8 + '>';    // Envelope já está sendo montado em UTF8
-  {$ELSE}
-   Texto := '';  // Isso forçará a conversão para UTF8, antes do envio
-  {$ENDIF}
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+  begin
+    {$IFDEF FPC}
+     Texto := '<' + ENCODING_UTF8 + '>';    // Envelope já está sendo montado em UTF8
+    {$ELSE}
+     Texto := '';  // Isso forçará a conversão para UTF8, antes do envio
+    {$ENDIF}
 
-  if FPConfiguracoesReinf.Geral.VersaoDF = v1_05_01 then
-    xTag := 'ConsultaResultadoFechamento2099'
+    if FPConfiguracoesReinf.Geral.VersaoDF >= v1_05_01 then
+      xTag := 'ConsultaResultadoFechamento2099'
+    else
+      xTag := 'ConsultaInformacoesConsolidadas';
+
+    Texto := Texto + '<' + FPSoapVersion + ':Envelope ' + FPSoapEnvelopeAtributtes + '>';
+    Texto := Texto + '<' + FPSoapVersion + ':Body>';
+    Texto := Texto + '<' + 'v1:' + xTag + '>';
+    Texto := Texto + SeparaDados(DadosMsg, 'consultar');
+    Texto := Texto + '<' + '/v1:' + xTag + '>';
+    Texto := Texto + '</' + FPSoapVersion + ':Body>';
+    Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
+
+    FPEnvelopeSoap := Texto;
+  end
   else
-    xTag := 'ConsultaInformacoesConsolidadas';
-
-  Texto := Texto + '<' + FPSoapVersion + ':Envelope ' + FPSoapEnvelopeAtributtes + '>';
-  Texto := Texto + '<' + FPSoapVersion + ':Body>';
-  Texto := Texto + '<' + 'v1:' + xTag + '>';
-  Texto := Texto + SeparaDados(DadosMsg, 'consultar');
-  Texto := Texto + '<' + '/v1:' + xTag + '>';
-  Texto := Texto + '</' + FPSoapVersion + ':Body>';
-  Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
-
-  FPEnvelopeSoap := Texto;
+  begin
+    FPMimeType := 'application/xml';
+    FPURL := FPURL + '/' + FProtocolo;
+    FPEnvelopeSoap := '';
+  end;
 end;
 
 procedure TConsultar.DefinirServicoEAction;
 begin
-  if FPConfiguracoesReinf.Geral.VersaoDF = v1_05_01 then
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v1_05_01 then
     FPServico := ACBRREINF_NAMESPACE_CON +
                  '/ConsultaResultadoFechamento2099'
   else
@@ -541,6 +607,9 @@ begin
 
   TACBrReinf(FPDFeOwner).LerServicoDeParams(FPLayout, Versao, FPURL);
   FPVersaoServico := FloatToString(Versao, '.', '0.00');
+
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v2_01_01 then
+    FPURL := FPURL + '/lotes';
 end;
 
 function TConsultar.GerarMsgLog: String;
@@ -549,13 +618,11 @@ var
 begin
   aMsg := Format(ACBrStr('Versão Layout: %s ' + LineBreak +
                          'Ambiente: %s ' + LineBreak
-//                         'Versão Aplicativo: %s ' + LineBreak +
 //                         'Status Código: %s ' + LineBreak +
 //                         'Status Descrição: %s ' + LineBreak
                         ),
                  [VersaoReinfToStr(FVersaoDF),
                   TpAmbToStr(TACBrReinf(FPDFeOwner).Configuracoes.WebServices.Ambiente)
-//                  FRetEnvioLote.dadosRecLote.versaoAplicRecepcao,
 //                  IntToStr(FRetConsulta.Status.cdStatus),
 //                  FRetConsulta.Status.descRetorno
                   ]);
@@ -573,22 +640,67 @@ end;
 function TConsultar.TratarResposta: Boolean;
 var
   AXML, NomeArq: String;
+  i: Integer;
 begin
-  FPRetWS := SeparaDadosArray(['ConsultaInformacoesConsolidadasResult',
-                               'ConsultaResultadoFechamento2099Response'],
-                               FPRetornoWS);
-
-  FRetConsulta.Leitor.Arquivo := ParseText(FPRetWS);
-  FRetConsulta.LerXml;
-
-  AXML := FRetConsulta.XML;
-
-  if AXML <> '' then
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
   begin
-    NomeArq := FRetConsulta.evtTotalContrib.Id + '-R5011.xml';
+    FPRetWS := SeparaDadosArray(['ConsultaInformacoesConsolidadasResult',
+                                 'ConsultaResultadoFechamento2099Response'],
+                                 FPRetornoWS);
 
-    if (FPConfiguracoesReinf.Arquivos.Salvar) and NaoEstaVazio(NomeArq) then
-      FPDFeOwner.Gravar(NomeArq, AXML, '',False);
+    FRetConsulta_R5011.Leitor.Arquivo := ParseText(FPRetWS);
+    FRetConsulta_R5011.LerXml;
+
+    AXML := FRetConsulta_R5011.XML;
+
+    if AXML <> '' then
+      NomeArq := FRetConsulta_R5011.evtTotalContrib.Id + '-R5011.xml';
+
+    if AXML <> '' then
+    begin
+      if (FPConfiguracoesReinf.Arquivos.Salvar) and NaoEstaVazio(NomeArq) then
+        FPDFeOwner.Gravar(NomeArq, AXML, '',False);
+    end;
+  end
+  else
+  begin
+    FPRetWS := SeparaDados(FPRetornoWS, 'retornoLoteEventosAssincrono');
+
+    if FPRetWS <> '' then
+      FPRetWS := '<retornoLoteEventosAssincrono>' + FPRetWS + '</retornoLoteEventosAssincrono>';
+
+    FRetEnvioLote.Leitor.Arquivo := ParseText(FPRetWS);
+    FRetEnvioLote.LerXml;
+
+    for i := 0 to FRetEnvioLote.evento.Count - 1 do
+    begin
+      AXML := FRetEnvioLote.evento.Items[i].ArquivoReinf;
+
+      if AXML <> '' then
+      begin
+        if Pos('</evtRetCons>', AXML) > 0 then
+        begin
+          FRetConsulta_R9015.Leitor.Arquivo := ParseText(AXML);
+          FRetConsulta_R9015.LerXml;
+
+          NomeArq := FRetEnvioLote.evento.Items[i].Id + '-R9015.xml';
+        end
+        else if Pos('</evtTotalContrib>', AXML) > 0 then
+        begin
+          FRetConsulta_R9011.Leitor.Arquivo := ParseText(AXML);
+          FRetConsulta_R9011.LerXml;
+
+          NomeArq := FRetEnvioLote.evento.Items[i].Id + '-R9011.xml';
+        end
+        else if Pos('</evtRet>', AXML) > 0 then
+          NomeArq := FRetEnvioLote.evento.Items[i].Id + '-R9005.xml'
+        else
+          NomeArq := FRetEnvioLote.evento.Items[i].Id + '-R9001.xml';
+
+        if (FPConfiguracoesReinf.Arquivos.Salvar) and NaoEstaVazio(NomeArq) then
+          FPDFeOwner.Gravar(NomeArq, AXML, '',False);
+      end;
+    end;
   end;
 
   if Assigned(TACBrReinf(FPDFeOwner).OnTransmissaoEventos) then
@@ -597,13 +709,50 @@ begin
   Result := True;
 end;
 
+// Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011
+function TConsultar.GetRetConsulta: TRetConsulta;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v2_01_01 then
+    GerarException('Propriedade RetConsulta disponível apenas até a versão 1_05_01, utilize a RetConsulta_R9011 para versões posteriores');
+
+  Result := TRetConsulta(FRetConsulta_R5011);
+end;
+
+function TConsultar.GetRetConsulta_R5011: TRetConsulta_R5011;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v2_01_01 then
+    GerarException('Propriedade RetConsulta_R5011 disponível apenas até a versão 1_05_01, utilize a RetConsulta_R9011 para versões posteriores');
+
+  Result := FRetConsulta_R5011;
+end;
+
+function TConsultar.GetRetConsulta_R9011: TRetConsulta_R9011;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+    GerarException('Propriedade RetConsulta_R9011 disponível a partir da versão 2_01_01, utilize a RetConsulta_R5011 para versões anteriores');
+
+  Result := FRetConsulta_R9011;
+end;
+
+function TConsultar.GetRetConsulta_R9015: TRetConsulta_R9015;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+    GerarException('Propriedade RetConsulta_R9015 disponível a partir da versão 2_01_01, registro indexistente em versões anteriores');
+
+  Result := FRetConsulta_R9015;
+end;
+
 { TConsultarReciboEvento }
 
 procedure TConsultarReciboEvento.BeforeDestruction;
 begin
   inherited;
-
-  FRetConsulta.Free;
+  
+  FRetConsulta_R5011.Free;
+  FRetConsulta_R9011.Free;
+  FRetConsulta_R9015.Free;
+  FRetEnvioLote.Free;
+  FConsulta.Free;
 end;
 
 procedure TConsultarReciboEvento.Clear;
@@ -615,15 +764,32 @@ begin
   FPArqEnv := 'ped-con';
   FPArqResp := 'con';
 
-  if Assigned(FRetConsulta) then
-    FRetConsulta.Free;
+  if Assigned(FRetConsulta_R5011) then
+    FRetConsulta_R5011.Free;
 
-  FRetConsulta := TRetConsulta.Create;
+  if Assigned(FRetConsulta_R9011) then
+    FRetConsulta_R9011.Free;
+
+  if Assigned(FRetConsulta_R9015) then
+    FRetConsulta_R9015.Free;
+
+  FRetConsulta_R5011 := TRetConsulta_R5011.Create;
+  FRetConsulta_R9011 := TRetConsulta_R9011.Create;
+  FRetConsulta_R9015 := TRetConsulta_R9015.Create;
 end;
 
 constructor TConsultarReciboEvento.Create(AOwner: TACBrDFe);
 begin
   Inherited Create(AOwner);
+
+  if Assigned(FRetEnvioLote) then
+    FRetEnvioLote.Free;
+  FRetEnvioLote := TRetEnvioLote.Create;
+
+  if Assigned(FConsulta) then
+    FConsulta.Free;
+  FConsulta := TReinfConsulta.Create;
+
   FtipoEvento := teR1000;
   tpEventoStr := '1000';
   FperApur := '';
@@ -634,28 +800,23 @@ begin
 end;
 
 procedure TConsultarReciboEvento.DefinirDadosMsg;
-var
-  Consulta: TReinfConsulta;
 begin
-  Consulta := TReinfConsulta.Create;
-  try
-    Consulta.SoapEnvelope  := FPSoapEnvelopeAtributtes;
-    Consulta.TipoEvento    := TipoEvento;
-    Consulta.nrInscContrib := TACBrReinf(FPDFeOwner).Configuracoes.Geral.IdContribuinte;
-    Consulta.nrInscEstab   := nrInscEstab;
-    Consulta.perApur       := perApur;
-    Consulta.cnpjPrestador := cnpjPrestador;
-    Consulta.nrInscTomador := nrInscTomador;
-    Consulta.dtApur        := dtApur;
+  Consulta.SoapEnvelope  := FPSoapEnvelopeAtributtes;
+  Consulta.TipoEvento    := TipoEvento;
+  Consulta.nrInscContrib := TACBrReinf(FPDFeOwner).Configuracoes.Geral.IdContribuinte;
+  Consulta.nrInscEstab   := nrInscEstab;
+  Consulta.perApur       := perApur;
+  Consulta.cnpjPrestador := cnpjPrestador;
+  Consulta.nrInscTomador := nrInscTomador;
+  Consulta.dtApur        := dtApur;
+  Consulta.cpfCnpjBenef  := cpfCnpjBenef;
+  Consulta.cnpjFonte     := cnpjFonte;
 
-    AjustarOpcoes( Consulta.Gerador.Opcoes );
-    Consulta.GerarXML;
+  AjustarOpcoes( Consulta.Gerador.Opcoes );
+  Consulta.GerarXML;
 
-    // Atribuindo o XML para propriedade interna //
-    FPDadosMsg := Consulta.Gerador.ArquivoFormatoXML;
-  finally
-    Consulta.Free;
-  end;
+  // Atribuindo o XML para propriedade interna //
+  FPDadosMsg := Consulta.Gerador.ArquivoFormatoXML;
 
   if Assigned(TACBrReinf(FPDFeOwner).OnTransmissaoEventos) then
     TACBrReinf(FPDFeOwner).OnTransmissaoEventos(FPDadosMsg, erEnvioConsulta);
@@ -665,20 +826,29 @@ procedure TConsultarReciboEvento.DefinirEnvelopeSoap;
 var
   Texto: String;
 begin
-  {$IFDEF FPC}
-   Texto := '<' + ENCODING_UTF8 + '>';    // Envelope já está sendo montado em UTF8
-  {$ELSE}
-   Texto := '';  // Isso forçará a conversão para UTF8, antes do envio
-  {$ENDIF}
-  Texto := Texto + '<' + FPSoapVersion + ':Envelope ' + FPSoapEnvelopeAtributtes + '>';
-  Texto := Texto + '<' + FPSoapVersion + ':Body>';
-  Texto := Texto + '<' + 'v1:ConsultaReciboEvento' + tpEventoStr + '>';
-  Texto := Texto + SeparaDados(DadosMsg, 'consultar');
-  Texto := Texto + '<' +  '/v1:ConsultaReciboEvento' + tpEventoStr + '>';
-  Texto := Texto + '</' + FPSoapVersion + ':Body>';
-  Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+  begin
+    {$IFDEF FPC}
+     Texto := '<' + ENCODING_UTF8 + '>';    // Envelope já está sendo montado em UTF8
+    {$ELSE}
+     Texto := '';  // Isso forçará a conversão para UTF8, antes do envio
+    {$ENDIF}
+    Texto := Texto + '<' + FPSoapVersion + ':Envelope ' + FPSoapEnvelopeAtributtes + '>';
+    Texto := Texto + '<' + FPSoapVersion + ':Body>';
+    Texto := Texto + '<' + 'v1:ConsultaReciboEvento' + tpEventoStr + '>';
+    Texto := Texto + SeparaDados(DadosMsg, 'consultar');
+    Texto := Texto + '<' +  '/v1:ConsultaReciboEvento' + tpEventoStr + '>';
+    Texto := Texto + '</' + FPSoapVersion + ':Body>';
+    Texto := Texto + '</' + FPSoapVersion + ':Envelope>';
 
-  FPEnvelopeSoap := Texto;
+    FPEnvelopeSoap := Texto;
+  end
+  else
+  begin
+    FPMimeType := 'application/xml';
+    Consulta.DefinirParametros(FPURL);
+    FPEnvelopeSoap := '';
+  end;
 end;
 
 procedure TConsultarReciboEvento.DefinirServicoEAction;
@@ -698,6 +868,9 @@ begin
 
   TACBrReinf(FPDFeOwner).LerServicoDeParams(FPLayout, Versao, FPURL);
   FPVersaoServico := FloatToString(Versao, '.', '0.00');
+
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v2_01_01 then
+    FPURL := FPURL + '/reciboevento';
 end;
 
 function TConsultarReciboEvento.GerarMsgLog: String;
@@ -722,7 +895,40 @@ end;
 
 function TConsultarReciboEvento.GerarPrefixoArquivo: String;
 begin
-  Result := tpEventoStr;
+  Result := FormatDateTime('yyyymmddhhnnss', Now) + '-' + tpEventoStr;
+end;
+
+// Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011
+function TConsultarReciboEvento.GetRetConsulta: TRetConsulta;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v2_01_01 then
+    GerarException('Propriedade RetConsulta disponível apenas até a versão 1_05_01, utilize a RetConsulta_R9011 para versões posteriores');
+
+  Result := TRetConsulta(FRetConsulta_R5011);
+end;
+
+function TConsultarReciboEvento.GetRetConsulta_R5011: TRetConsulta_R5011;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF >= v2_01_01 then
+    GerarException('Propriedade RetConsulta_R5011 disponível apenas até a versão 1_05_01, utilize a RetConsulta_R9011 para versões posteriores');
+
+  Result := FRetConsulta_R5011;
+end;
+
+function TConsultarReciboEvento.GetRetConsulta_R9011: TRetConsulta_R9011;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+    GerarException('Propriedade RetConsulta_R9011 disponível a partir da versão 2_01_01, utilize a RetConsulta_R5011 para versões anteriores');
+
+  Result := FRetConsulta_R9011;
+end;
+
+function TConsultarReciboEvento.GetRetConsulta_R9015: TRetConsulta_R9015;
+begin
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+    GerarException('Propriedade RetConsulta_R9015 disponível a partir da versão 2_01_01, registro inexistente em versões anteriores');
+
+  Result := FRetConsulta_R9015;
 end;
 
 procedure TConsultarReciboEvento.InicializarServico;
@@ -736,15 +942,26 @@ function TConsultarReciboEvento.TratarResposta: Boolean;
 var
   AXML: String;
 begin
-  //aqui nao esta pronto
-  FPRetWS := SeparaDadosArray(['ConsultaReciboEvento' + tpEventoStr + 'Result',
-                               'ConsultaReciboEvento' + tpEventoStr + 'Response'],
-                               FPRetornoWS);
+  if FPConfiguracoesReinf.Geral.VersaoDF < v2_01_01 then
+  begin
+    FPRetWS := SeparaDadosArray(['ConsultaReciboEvento' + tpEventoStr + 'Result',
+                                 'ConsultaReciboEvento' + tpEventoStr + 'Response'],
+                                 FPRetornoWS);
 
-  FRetConsulta.Leitor.Arquivo := ParseText(FPRetWS);
-  FRetConsulta.LerXml;
+    FRetConsulta_R5011.Leitor.Arquivo := ParseText(FPRetWS);
+    FRetConsulta_R5011.LerXml;
 
-  AXML := FRetConsulta.XML;
+    AXML := FRetConsulta_R5011.XML;
+  end
+  else
+  begin
+    FPRetWS := FPRetornoWS;
+
+    FRetConsulta_R9011.Leitor.Arquivo := ParseText(FPRetWS);
+    FRetConsulta_R9011.LerXml;
+
+    AXML := FRetConsulta_R9011.XML;
+  end;
 
   if Assigned(TACBrReinf(FPDFeOwner).OnTransmissaoEventos) then
     TACBrReinf(FPDFeOwner).OnTransmissaoEventos(FPRetWS, erRetornoConsulta);
@@ -805,7 +1022,9 @@ function TWebServices.ConsultaReciboEvento(const APerApur: String;
                                   const AnrInscEstab: String;
                                   const AcnpjPrestador: string;
                                   const AnrInscTomador: string;
-                                  AdtApur: TDateTime): Boolean;
+                                  AdtApur: TDateTime;
+                                  const AcpfCnpjBenef: string;
+                                  const AcnpjFonte: string): Boolean;
 begin
 {$IFDEF FPC}
   Result := False;
@@ -818,6 +1037,8 @@ begin
   FConsultarReciboEvento.cnpjPrestador := AcnpjPrestador;
   FConsultarReciboEvento.nrInscTomador := AnrInscTomador;
   FConsultarReciboEvento.dtApur        := AdtApur;
+  FConsultarReciboEvento.cpfCnpjBenef  := AcpfCnpjBenef;
+  FConsultarReciboEvento.cnpjFonte     := AcnpjFonte;
 
   if not FConsultarReciboEvento.Executar then
     FConsultarReciboEvento.GerarException(FConsultarReciboEvento.Msg);

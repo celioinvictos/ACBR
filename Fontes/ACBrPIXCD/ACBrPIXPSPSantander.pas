@@ -45,17 +45,17 @@ interface
 
 uses
   Classes, SysUtils,
-  ACBrPIXCD;
+  ACBrPIXCD, ACBrBase;
 
 const
-  cURLSantanderApiPIX = '/api/v1';
-  cURLSantanderSandbox = 'https://pix.santander.com.br'+cURLSantanderApiPIX+'/sandbox';
-  cURLSantanderPreProducao = 'https://trust-pix-h.santander.com.br'+cURLSantanderApiPIX;
-  cURLSantanderProducao = 'https://trust-pix.santander.com.br'+cURLSantanderApiPIX;
+  cSantanderPathApiPIX = '/api/v1';
+  cSantanderURLSandbox = 'https://pix.santander.com.br'+cSantanderPathApiPIX+'/sandbox';
+  cSantanderURLPreProducao = 'https://trust-pix-h.santander.com.br'+cSantanderPathApiPIX;
+  cSantanderURLProducao = 'https://trust-pix.santander.com.br'+cSantanderPathApiPIX;
 
-  cURLSantanderAuthTeste = 'https://pix.santander.com.br/sandbox/oauth/token';
-  cURLSantanderAuthPreProducao = 'https://trust-pix-h.santander.com.br/oauth/token';
-  cURLSantanderAuthProducao = 'https://trust-pix.santander.com.br/oauth/token';
+  cSantanderURLAuthTeste = 'https://pix.santander.com.br/sandbox/oauth/token';
+  cSantanderURLAuthPreProducao = 'https://trust-pix-h.santander.com.br/oauth/token';
+  cSantanderURLAuthProducao = 'https://trust-pix.santander.com.br/oauth/token';
 
 resourcestring
   sErroClienteIdDiferente = 'Cliente_Id diferente do Informado';
@@ -63,21 +63,29 @@ resourcestring
 type
 
   { TACBrPSPSantander }
-
-  TACBrPSPSantander = class(TACBrPSP)
+  
+  {$IFDEF RTL230_UP}
+  [ComponentPlatformsAttribute(piacbrAllPlatforms)]
+  {$ENDIF RTL230_UP}
+  TACBrPSPSantander = class(TACBrPSPCertificate)
   private
     fRefreshURL: String;
     function GetConsumerKey: String;
     function GetConsumerSecret: String;
     procedure SetConsumerKey(AValue: String);
     procedure SetConsumerSecret(AValue: String);
+    procedure QuandoReceberRespostaEndPoint(const aEndPoint, aURL, aMethod: String;
+      var aResultCode: Integer; var aRespostaHttp: AnsiString);
+    procedure QuandoAcessarEndPoint(const aEndPoint: String; var aURL: String; var aMethod: String);
   protected
-    function ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String; override;
+    function ObterURLAmbiente(const aAmbiente: TACBrPixCDAmbiente): String; override;
+    function VerificarSeIncluiPFX(const Method, AURL: String): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure Autenticar; override;
     procedure RenovarToken; override;
   published
+    property APIVersion;
     property ConsumerKey: String read GetConsumerKey write SetConsumerKey;
     property ConsumerSecret: String read GetConsumerSecret write SetConsumerSecret;
   end;
@@ -85,21 +93,19 @@ type
 implementation
 
 uses
-  synautil,
-  ACBrUtil,
-  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-   JsonDataObjects_ACBr
-  {$Else}
-   Jsons
-  {$EndIf},
-  DateUtils;
+  synautil, DateUtils,
+  ACBrJSON, ACBrPIXUtil,
+  ACBrUtil.FilesIO,
+  ACBrUtil.Strings;
 
 { TACBrPSPSantander }
 
 constructor TACBrPSPSantander.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fRefreshURL := '';
+  fpQuandoReceberRespostaEndPoint := QuandoReceberRespostaEndPoint;
+  fpQuandoAcessarEndPoint := QuandoAcessarEndPoint;
+  fRefreshURL := EmptyStr;
 end;
 
 procedure TACBrPSPSantander.Autenticar;
@@ -107,16 +113,16 @@ var
   AURL, Body, client_id: String;
   RespostaHttp: AnsiString;
   ResultCode, sec: Integer;
-  js: TJsonObject;
+  js: TACBrJSONObject;
   qp: TACBrQueryParams;
 begin
   LimparHTTP;
 
   case ACBrPixCD.Ambiente of
-    ambProducao: AURL := cURLSantanderAuthProducao;
-    ambPreProducao: AURL := cURLSantanderAuthPreProducao;
+    ambProducao: AURL := cSantanderURLAuthProducao;
+    ambPreProducao: AURL := cSantanderURLAuthPreProducao;
   else
-    AURL := cURLSantanderAuthTeste;
+    AURL := cSantanderURLAuthTeste;
   end;
 
   AURL := AURL + '?grant_type=client_credentials';
@@ -136,39 +142,27 @@ begin
 
   if (ResultCode = HTTP_OK) then
   begin
-   {$IfDef USE_JSONDATAOBJECTS_UNIT}
-    js := TJsonObject.Parse(RespostaHttp) as TJsonObject;
+    js := TACBrJSONObject.Parse(RespostaHttp);
     try
-      client_id := Trim(js.S['client_id']);
+      client_id := Trim(js.AsString['client_id']);
       if (client_id <> ClientID) then
         raise EACBrPixHttpException.Create(ACBrStr(sErroClienteIdDiferente));
-      fpToken := js.S['access_token'];
-      sec := js.I['expires_in'];
-      fRefreshURL := js.S['refresh_token'];
+      fpToken := js.AsString['access_token'];
+      sec := js.AsInteger['expires_in'];
+      fRefreshURL := js.AsString['refresh_token'];
     finally
       js.Free;
     end;
-   {$Else}
-    js := TJsonObject.Create;
-    try
-      js.Parse(RespostaHttp);
-      client_id := Trim(js['client_id'].AsString);
-      if (client_id <> ClientID) then
-        raise EACBrPixHttpException.Create(ACBrStr(sErroClienteIdDiferente));
-      fpToken := js['access_token'].AsString;
-      sec := js['expires_in'].AsInteger;
-      fRefreshURL := js['refresh_token'].AsString;
-    finally
-      js.Free;
-    end;
-   {$EndIf}
 
-   fpValidadeToken := IncSecond(Now, sec);
-   fpAutenticado := True;
+    if (Trim(fpToken) = '') then
+      DispararExcecao(EACBrPixHttpException.Create(ACBrStr(sErroAutenticacao)));
+
+    fpValidadeToken := IncSecond(Now, sec);
+    fpAutenticado := True;
   end
   else
-    ACBrPixCD.DispararExcecao(EACBrPixHttpException.CreateFmt(
-      sErroHttp,[Http.ResultCode, ChttpMethodPOST, AURL]));
+    DispararExcecao(EACBrPixHttpException.CreateFmt( sErroHttp,
+       [Http.ResultCode, ChttpMethodPOST, AURL]));
 end;
 
 procedure TACBrPSPSantander.RenovarToken;
@@ -197,14 +191,38 @@ begin
   ClientSecret := AValue;
 end;
 
-function TACBrPSPSantander.ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String;
+procedure TACBrPSPSantander.QuandoReceberRespostaEndPoint(const aEndPoint,
+  aURL, aMethod: String; var aResultCode: Integer; var aRespostaHttp: AnsiString);
 begin
-  case ACBrPixCD.Ambiente of
-    ambProducao: Result := cURLSantanderProducao;
-    ambPreProducao: Result := cURLSantanderPreProducao;
-  else
-    Result := cURLSantanderSandbox;
+  // Santander responde OK a esse EndPoint, de forma diferente da especificada
+  if (UpperCase(AMethod) = ChttpMethodPOST) and (AEndPoint = cEndPointCob) and (AResultCode = HTTP_OK) then
+    AResultCode := HTTP_CREATED;
+end;
+
+procedure TACBrPSPSantander.QuandoAcessarEndPoint(const aEndPoint: String;
+  var aURL: String; var aMethod: String);
+begin
+  // Santander não possui POST para endpoint /cob
+   if (LowerCase(aEndPoint) = cEndPointCob) and (UpperCase(aMethod) = ChttpMethodPOST) then
+  begin
+    aMethod := ChttpMethodPUT;
+    aURL := URLComDelimitador(aURL) + CriarTxId;
   end;
+end;
+
+function TACBrPSPSantander.ObterURLAmbiente(const aAmbiente: TACBrPixCDAmbiente): String;
+begin
+  case aAmbiente of
+    ambProducao: Result := cSantanderURLProducao;
+    ambPreProducao: Result := cSantanderURLPreProducao;
+  else
+    Result := cSantanderURLSandbox;
+  end;
+end;
+
+function TACBrPSPSantander.VerificarSeIncluiPFX(const Method, AURL: String): Boolean;
+begin
+  Result := (inherited VerificarSeIncluiPFX(Method, AURL)) and (ACBrPixCD.Ambiente = ambProducao);
 end;
 
 end.

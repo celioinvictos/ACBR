@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Rafael Teno Dias                                }
+{ Colaboradores nesse arquivo: Antonio Carlos Junior                           }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -40,10 +40,16 @@ uses
   Classes, SysUtils;
 
 const
+  CLibNFSeNome = 'ACBrLibNFSe';
+  CLibNFSeVersao = '0.0.0.1';
 
   CSessaoRespEnvio = 'Envio';
   CSessaoRespSituacao = 'Situacao';
   CSessaoRespConsultaLote = 'ConsultaLote';
+  CSessaoRespConsultaLoteRps = 'ConsultaLoteRps';
+  CSessaoRespConsultaNFSePorRps = 'ConsultaNFSePorRps';
+  CSessaoRespSubstituirNFSe = 'SubstituirNFSe';
+  CSessaoRespGerarToken = 'GerarToken';
   CSessaoRespErro = 'Erro';
   CSessaoRespAlerta = 'Alerta';
 

@@ -752,15 +752,18 @@ type
     FxNome     : String;
     FxFant     : String;
     FEnderEmit : TEnderEmit;
+    FCRT: TCRT;
   public
     constructor Create;
     destructor Destroy; override;
+
     property CNPJ: String          read FCNPJ      write FCNPJ;
     property IE: String            read FIE        write FIE;
     property IEST: String          read FIEST      write FIEST;
     property xNome: String         read FxNome     write FxNome;
     property xFant: String         read FxFant     write FxFant;
     property enderEmit: TEnderEmit read FEnderEmit write FEnderEmit;
+    property CRT: TCRT             read FCRT       write FCRT;
   end;
 
   TEnderEmit = class(TObject)
@@ -1073,10 +1076,14 @@ type
     property vICMSOutraUF: Currency  read FvICMSOutraUF  write FvICMSOutraUF;
   end;
 
+  { TICMSSN }
+
   TICMSSN = class(TObject)
   private
+    FCST: TpcnCSTIcms;
     FindSN : Integer;
   public
+    property CST: TpcnCSTIcms        read FCST           write FCST default cst90;
     property indSN: Integer read FindSN write FindSN default 1;
   end;
 
@@ -2568,7 +2575,7 @@ const
 implementation
 
 uses
-  ACBrUtil;
+  ACBrUtil.Base;
 
 { TCTe }
 

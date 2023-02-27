@@ -44,7 +44,9 @@ uses
    System.Contnrs,
   {$IFEND}
   ACBrBase,
-  pcnConversao, pcnGerador, ACBrUtil, pcnConsts,
+  pcnConversao, pcnGerador,
+  ACBrUtil.Strings, ACBrUtil.FilesIO, ACBrUtil.Base, ACBrUtil.DateTime,
+  pcnConsts,
   pcnCommonReinf, pcnConversaoReinf, pcnGeradorReinf;
 
 type
@@ -318,7 +320,7 @@ begin
 
   if (Self.ModoLancamento <> toExclusao) then
   begin
-    Gerador.wCampo(tcStr, '', 'indAutoria', 1, 21, 1, indAutoriaToStr(pEmp.indAutoria));
+    Gerador.wCampo(tcStr, '', 'indAutoria', 1, 1, 0, indAutoriaToStr(pEmp.indAutoria));
 
     GerarinfoSusp;
 
@@ -442,7 +444,7 @@ begin
       infoProcesso.ideProcesso.nrProc     := INIRec.ReadString(sSecao, 'nrProc', EmptyStr);
       infoProcesso.ideProcesso.IniValid   := INIRec.ReadString(sSecao, 'iniValid', EmptyStr);
       infoProcesso.ideProcesso.FimValid   := INIRec.ReadString(sSecao, 'fimValid', EmptyStr);
-      infoProcesso.ideProcesso.indAutoria := StrToindAutoria(Ok, INIRec.ReadString(sSecao, 'indAutoria', '1'));
+      infoProcesso.ideProcesso.indAutoria := StrToindAutoria(Ok, INIRec.ReadString(sSecao, 'indAutoria', ''));
 
       if (ModoLancamento <> toExclusao) then
       begin

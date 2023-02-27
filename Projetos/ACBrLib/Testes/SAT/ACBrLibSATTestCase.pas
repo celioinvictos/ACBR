@@ -62,12 +62,14 @@ type
     procedure Test_SAT_ConfigGravarValor;
     procedure Test_SAT_CriarCFe;
     procedure Test_SAT_EnviarCFe;
+    procedure Test_SAT_ValidarCFe;
     procedure Test_SAT_CriarEnviarCFe;
     procedure Test_SAT_ImpressaoExtratoFortes;
     procedure Test_SAT_ImpressaoExtratoEscPOS;
     procedure Test_SAT_ImpressaoExtratoPDF_Sem_NomeArquivo;
     procedure Test_SAT_ImpressaoExtratoPDF_Com_NomeArquivo;
     procedure Test_SAT_ImpressaoExtratoPDF_Com_PathPDF;
+    procedure Test_SAT_SetNumeroSessao;
   end;
 
 implementation
@@ -304,6 +306,29 @@ begin
   AssertEquals(ErrOK, SAT_Finalizar(Handle));
 end;
 
+procedure TTestACBrSATLib.Test_SAT_ValidarCFe;
+var
+  Handle: THandle;
+begin
+  AssertEquals(ErrOk, SAT_Inicializar(Handle, '',''));
+
+  //AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoPrincipal, CChaveLogNivel, '4'));
+  //AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoPrincipal, CChaveLogPath, PChar(ApplicationPath)));
+  //AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoSAT, CChaveNomeDLL, 'C:\SAT\SAT.dll'));
+  //AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoSAT, CChaveCodigoDeAtivacao, 'sefaz1234'));
+  //AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoSAT, CChaveSignAC, '111111111111122222222222222111111111111112222222222222211111111111111222222222222221111111111111122222222222222111111111111112222222222222211111111111111222222222222221111111111111122222222222222111111111111112222222222222211111111111111222222222222221111'));
+  //AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoSATConfig, CChaveArqSchema, '..\ACBr\Exemplos\ACBrSAT\Schemas\Schemas\CfeDadosVendaAPL_0008.xsd'));
+  //AssertEquals(ErrOk, SAT_ConfigGravarValor(Handle, CSessaoSATConfig, CChaveSSLXmlSignLib, '4'));
+  //AssertEquals(ErrOk, SAT_ConfigGravarValor(Handle, CSessaoDFe, CChaveSSLCryptLib, '1'));
+
+  AssertEquals(ErrOK, SAT_ConfigGravar(Handle, ''));
+
+  AssertEquals('Erro ao tentar validar o CFe', ErrOK, SAT_ValidarCFe(Handle, '..\001-000000-satcfe.xml'));
+
+  AssertEquals(ErrOK, SAT_Finalizar(Handle));
+
+end;
+
 procedure TTestACBrSATLib.Test_SAT_CriarEnviarCFe;
 var
   Handle: THandle;
@@ -509,6 +534,15 @@ begin
   AssertEquals(ErrOK, SAT_ConfigGravarValor(Handle, CSessaoExtrato, CChavePathPDF, ''));
   AssertEquals(ErrOK, SAT_Finalizar(Handle));
   AssertTrue(FileExists(PDFFile));
+end;
+
+procedure TTestACBrSATLib.Test_SAT_SetNumeroSessao;
+var
+  Handle: THandle;
+begin
+  AssertEquals(ErrOk, SAT_Inicializar(Handle,'',''));
+  AssertEquals(ErrOK, SAT_SetNumeroSessao(Handle,'92238'));
+  AssertEquals(ErrOk, SAT_Finalizar(Handle));
 end;
 
 initialization

@@ -59,7 +59,7 @@ type
   {$IFDEF RTL230_UP}
   [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
-  TACBrSATExtratoFortes = class( TACBrSATExtratoReportClass )
+  TACBrSATExtratoFortes = class(TACBrSATExtratoReportClass)
   private
   protected
     procedure Imprimir;
@@ -67,10 +67,13 @@ type
     procedure ImprimirExtrato(ACFe: TCFe = nil); override;
     procedure ImprimirExtratoResumido(ACFe : TCFe = nil); override;
     procedure ImprimirExtratoCancelamento(ACFe : TCFe = nil; ACFeCanc: TCFeCanc = nil); override;
+
+    procedure ImprimirExtrato(AStream: TStream; ACFe: TCFe = nil); override;
+    procedure ImprimirExtratoResumido(AStream: TStream; ACFe : TCFe = nil); override;
+    procedure ImprimirExtratoCancelamento(AStream: TStream; ACFe : TCFe = nil; ACFeCanc: TCFeCanc = nil); override;
   end ;
 
   { TACBrSATExtratoFortesFr }
-
   TACBrSATExtratoFortesFr = class(TForm)
     bcChaveAcesso2: TRLBarcode;
     bcChaveAcessoCan1: TRLBarcode;
@@ -366,7 +369,9 @@ implementation
 uses
   math, RLTypes,
   ACBrDFeUtil, ACBrDFeReport, ACBrDFeReportFortes,
-  ACBrValidador, ACBrUtil, ACBrImage, ACBrDelphiZXingQRCode,
+  ACBrValidador, ACBrUtil.Strings, 
+  ACBrUtil.Math, ACBrUtil.FilesIO, ACBrUtil.Base, ACBrUtil.DateTime, ACBrUtil.XMLHTML,
+  ACBrImage, ACBrDelphiZXingQRCode,
   RLUtils;
 
 {$ifdef FPC}
@@ -377,7 +382,6 @@ uses
 {$ENDIF}
 
 { TACBrSATExtratoFortesFr }
-
 procedure TACBrSATExtratoFortesFr.FormCreate(Sender: TObject);
 var
   TemLogo: Boolean;
@@ -894,7 +898,6 @@ begin
   end;
 end;
 
-
 procedure TACBrSATExtratoFortesFr.rlbDescontosBeforePrint(Sender: TObject;
   var PrintIt: boolean);
 begin
@@ -1301,7 +1304,6 @@ begin
 end;
 
 { TACBrSATExtratoFortes }
-
 procedure TACBrSATExtratoFortes.Imprimir;
 var
   frACBrSATExtratoFortesFr: TACBrSATExtratoFortesFr;
@@ -1336,11 +1338,7 @@ begin
         RLPrinter.Copies := NumCopias;
       end;
 
-      RLLayout.PrintDialog := MostraSetup;
-      RLLayout.ShowProgress:= False ;
-
-      if (Filtro = fiNenhum) and (Impressora <> '') then
-        RLPrinter.PrinterName := Impressora;
+      RLLayout.ShowProgress := MostraStatus;
 
       //Para impressoras sem guilhotina não cortar no QrCorde
       pEspacoFinal.Height := EspacoFinal;
@@ -1366,6 +1364,11 @@ begin
 
       if Filtro = fiNenhum then
       begin
+        RLLayout.PrintDialog := MostraSetup;
+
+        if (Impressora <> '') then
+          RLPrinter.PrinterName := Impressora;
+
         if MostraPreview then
           RLLayout.PreviewModal
         else
@@ -1387,32 +1390,40 @@ begin
                 FileExt := '.html';
               end
           else
-            exit ;
-          end ;
+            exit;
+          end;
 
-          if (NomeDocumento = '') then
-            RLFiltro.FileName := RLLayout.Title
+          if Assigned(FStream) then
+          begin
+            RLPDFFilter1.ShowProgress := RLLayout.ShowProgress;
+            RLPDFFilter1.FilterPages(RLLayout.Pages, FStream);
+          end
           else
-            RLFiltro.FileName := NomeDocumento ;
+          begin
+            if (NomeDocumento = '') then
+              RLFiltro.FileName := RLLayout.Title
+            else
+              RLFiltro.FileName := NomeDocumento;
 
-          DirPDF := ExtractFilePath(RLFiltro.FileName);
-          if (DirPDF = '') then
-            RLFiltro.FileName := PathPDF + RLFiltro.FileName;
+            DirPDF := ExtractFilePath(RLFiltro.FileName);
+            if (DirPDF = '') then
+              RLFiltro.FileName := PathPDF + RLFiltro.FileName;
 
-          DirPDF := ExtractFilePath(RLFiltro.FileName);
-          if not DirectoryExists(DirPDF) then
-            ForceDirectories(DirPDF);
+            DirPDF := ExtractFilePath(RLFiltro.FileName);
+            if not DirectoryExists(DirPDF) then
+              ForceDirectories(DirPDF);
 
-          RLFiltro.FileName := ChangeFileExt(RLFiltro.FileName, FileExt);
-          RLFiltro.ShowProgress := RLLayout.ShowProgress;
-          RLFiltro.FilterPages( RLLayout.Pages );
-
-          FPArquivoPDF := RLFiltro.FileName;
+            RLFiltro.FileName := ChangeFileExt(RLFiltro.FileName, FileExt);
+            RLFiltro.ShowProgress := RLLayout.ShowProgress;
+            RLFiltro.FilterPages(RLLayout.Pages);
+            FPArquivoPDF := RLFiltro.FileName;
+          end;
         end;
       end;
     end;
   finally
-    frACBrSATExtratoFortesFr.Free ;
+    frACBrSATExtratoFortesFr.Free;
+    FStream := nil;
   end;
 end;
 
@@ -1433,6 +1444,55 @@ procedure TACBrSATExtratoFortes.ImprimirExtratoResumido(ACFe: TCFe);
 begin
   inherited;
   Imprimir;
+end;
+
+procedure TACBrSATExtratoFortes.ImprimirExtrato(AStream: TStream; ACFe: TCFe);
+Var
+  AOldFIltro: TACBrSATExtratoFiltro;
+begin
+  inherited;
+
+  AOldFIltro := Filtro;
+
+  try
+    Filtro := fiPDF;
+    Imprimir;
+  finally
+    Filtro := AOldFIltro;
+  end;
+end;
+
+procedure TACBrSATExtratoFortes.ImprimirExtratoCancelamento(AStream: TStream; ACFe: TCFe;
+  ACFeCanc: TCFeCanc);
+Var
+  AOldFIltro: TACBrSATExtratoFiltro;
+begin
+  inherited;
+
+  AOldFIltro := Filtro;
+
+  try
+    Filtro := fiPDF;
+    Imprimir;
+  finally
+    Filtro := AOldFIltro;
+  end;
+end;
+
+procedure TACBrSATExtratoFortes.ImprimirExtratoResumido(AStream: TStream; ACFe: TCFe);
+Var
+  AOldFIltro: TACBrSATExtratoFiltro;
+begin
+  inherited;
+
+  AOldFIltro := Filtro;
+
+  try
+    Filtro := fiPDF;
+    Imprimir;
+  finally
+    Filtro := AOldFIltro;
+  end;
 end;
 
 {$ifdef FPC}

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Drawing.Printing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using ACBrLib.Core;
 using ACBrLib.Core.DFe;
 using ACBrLib.Core.PosPrinter;
 using ACBrLib.Core.Sat;
+using ACBrLib.Core.Extensions;
 
 namespace ACBrLib.Sat.Demo
 {
@@ -26,10 +28,14 @@ namespace ACBrLib.Sat.Demo
 
             // Inicializando a dll
             acbrSat = new ACBrSat();
+            //acbrSat = new ACBrSat("[Memory]");
         }
 
         private void FrmMain_Shown(object sender, EventArgs e)
         {
+            cmbXmlSign.EnumDataSource(SSLXmlSignLib.xsLibXml2);
+            cmbCrypt.EnumDataSource(SSLCryptLib.cryOpenSSL);
+
             cbbPortas.Items.Add("LPT1");
             cbbPortas.Items.Add("LPT2");
             cbbPortas.Items.Add(@"\\localhost\Epson");
@@ -75,6 +81,11 @@ namespace ACBrLib.Sat.Demo
         private void btnSelDll_Click(object sender, EventArgs e)
         {
             txtDllPath.Text = Helpers.OpenFile("Biblioteca SAT (*.dll)|*.dll|Todo os Arquivos (*.*)|*.*");
+        }
+
+        private void btnSelectSchema_Click(object sender, EventArgs e)
+        {
+            txtSchemaPath.Text = Helpers.OpenFile("Arquivo XSD (*.xsd)|*.xsd|Todo os Arquivos (*.*)|*.*");
         }
 
         private void btnIniDesini_Click(object sender, EventArgs e)
@@ -215,6 +226,28 @@ namespace ACBrLib.Sat.Demo
             acbrSat.EnviarEmail(xmlPath, destinatario, eAssunto, eNomeArquivo, eMenssagem, "", "");
         }
 
+        private void btnValidarCFe_Click(object sender, EventArgs e)
+        {
+            var xmlPath = Helpers.OpenFile("Arquivo Xml CFe (*.xml)|*.xml|Todo os Arquivos (*.*)|*.*");
+            if (string.IsNullOrEmpty(xmlPath)) return;
+
+            acbrSat.validarCFe(xmlPath);
+        }
+
+        private void btnClasseAltoNivel_Click(object sender, EventArgs e)
+        {
+            var CFeSAT = AlimentarDados();
+
+            var ret = acbrSat.CriarEnviarCFe(CFeSAT);
+            rtbRespostas.AppendLine(ret.Resposta);
+
+            if (ret.CodigoDeRetorno == 6000)
+            {
+                acbrSat.ImprimirExtratoVenda(ret.Arquivo);
+                rtbRespostas.AppendLine("Impressão efetuada com sucesso.");
+            } 
+        }
+
         private void LoadConfig()
         {
             acbrSat.ConfigLer();
@@ -224,6 +257,9 @@ namespace ACBrLib.Sat.Demo
             txtAtivacao.Text = acbrSat.Config.CodigoDeAtivacao;
             nunVersaoCFe.Value = acbrSat.Config.SatConfig.infCFe_versaoDadosEnt;
             nunPaginaCodigo.Value = acbrSat.Config.SatConfig.PaginaDeCodigo;
+            txtSchemaPath.Text = acbrSat.Config.SatConfig.ArqSchema;
+            cmbXmlSign.SetSelectedValue(acbrSat.Config.SatConfig.SSLXmlSignLib);
+            cmbCrypt.SetSelectedValue(acbrSat.Config.DFe.SSLCryptLib);
             txtSignAc.Text = acbrSat.Config.SignAC;
             chkSaveCFe.Checked = acbrSat.Config.Arquivos.SalvarCFe;
             chkSaveEnvio.Checked = acbrSat.Config.Arquivos.SalvarEnvio;
@@ -275,6 +311,8 @@ namespace ACBrLib.Sat.Demo
             acbrSat.Config.CodigoDeAtivacao = txtAtivacao.Text;
             acbrSat.Config.SatConfig.infCFe_versaoDadosEnt = nunVersaoCFe.Value;
             acbrSat.Config.SatConfig.PaginaDeCodigo = (ushort)nunPaginaCodigo.Value;
+            acbrSat.Config.SatConfig.ArqSchema = txtSchemaPath.Text;
+            acbrSat.Config.SatConfig.SSLXmlSignLib = cmbXmlSign.GetSelectedValue<SSLXmlSignLib>();
             acbrSat.Config.SignAC = txtSignAc.Text;
             acbrSat.Config.Arquivos.SalvarCFe = chkSaveCFe.Checked;
             acbrSat.Config.Arquivos.SalvarEnvio = chkSaveEnvio.Checked;
@@ -321,6 +359,77 @@ namespace ACBrLib.Sat.Demo
             acbrSat.ConfigGravar();
         }
 
+        private string AlimentarDados()
+        {
+            var CFe = new CupomFiscal();
+
+            //infCFe
+            CFe.InfCFe.versao = "0.08";
+
+            //Identificação
+            CFe.Identificacao.CNPJ = "16716114000172";
+            CFe.Identificacao.signAC = "SGR-SAT SISTEMA DE GESTAO E RETAGUARDA DO SAT";
+            CFe.Identificacao.numeroCaixa = "01";
+
+            //Emitente
+            CFe.Emitente.CNPJ = "14200166000166";
+            CFe.Emitente.IE = "111111111111";
+            CFe.Emitente.IM = "111111";
+
+            //Destinatário
+            CFe.Destinatario.CNPJCPF = "18760540000139";
+            CFe.Destinatario.xNome = "Projeto ACBr";
+
+            //Entrega
+            CFe.Entrega.xLgr = "Rua Cel. Aureliano de Camargo";
+            CFe.Entrega.nro = "973";
+            CFe.Entrega.xBairro = "Centro";
+            CFe.Entrega.xMun = "Tatui";
+            CFe.Entrega.UF = "SP";
+
+            //Produto
+            var produto = new ProdutoSat
+            {
+                cProd = "1189",
+                infAdProd = "Teste de Produto",
+                xProd = "OVO VERMELHO",
+                NCM = "04072100",
+                CFOP = "5102",
+                uCom = "DZ",
+                Combustivel = false,
+                qCom = Convert.ToInt32(510),
+                vUnCom = Convert.ToInt32(1.00), 
+                indRegra = IndRegra.irArredondamento,
+                vDesc = 0,
+                vOutro = 0,
+                vItem12741 = Convert.ToInt32(137.00),
+            };
+
+            produto.ICMS.orig = OrigemMercadoria.oeNacional;
+            produto.ICMS.CSOSN = CSOSNIcms.csosn500;
+            produto.PIS.CST = CSTPIS.pis01;
+            produto.COFINS.CST = CSTCofins.cof01;
+
+            CFe.Total.vCFeLei12741 = Convert.ToInt32(1.00);
+
+            CFe.Total.vDescSubtot = Convert.ToInt32(1.00);
+
+            CFe.Produtos.Add(produto);
+
+            var pagamento = new PagamentoSat
+            {
+                cMP = CodigoMP.mpDinheiro,
+                vMP = 1400,
+            };
+
+            CFe.Pagamentos.Add(pagamento);
+
+            CFe.DadosAdicionais.infCpl = "Exemplo Preenchimento Classe Alto Nível";
+
+            return CFe.ToString();
+        }
+
         #endregion Methods
+
     }
 }

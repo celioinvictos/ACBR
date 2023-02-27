@@ -41,12 +41,16 @@ interface
 
 uses
   SysUtils, Classes,
-  {$IFDEF CLX}
-  QGraphics, QControls, QForms, QDialogs, QExtCtrls, Qt,
-  {$ELSE}
-      Graphics, Controls, Forms, Dialogs, ExtCtrls,
+  {$IFNDEF NOGUI}
+	{$IFDEF CLX}
+	  QGraphics, QControls, QForms, QDialogs, QExtCtrls, Qt,
+	{$ELSE}
+	  Graphics, Controls, Forms, Dialogs, ExtCtrls,
+	{$ENDIF}
   {$ENDIF}
-  pcnNFe, pcnInutNFe, ACBrUtil, ACBrNFeDANFeRLClass, ACBrDFeReportFortes,
+  pcnNFe, pcnInutNFe,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime,
+  ACBrNFeDANFeRLClass, ACBrDFeReportFortes,
   RLReport, RLFilters, RLPDFFilter;
 
 type

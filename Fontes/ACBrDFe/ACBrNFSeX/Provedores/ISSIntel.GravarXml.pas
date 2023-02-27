@@ -45,14 +45,39 @@ type
 
   TNFSeW_ISSIntel = class(TNFSeW_ABRASFv1)
   protected
+    procedure Configuracao; override;
 
+  public
+    function GerarXml: Boolean; Override;
   end;
 
 implementation
+
+uses
+  ACBrNFSeXConversao;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
 //     ISSIntel
 //==============================================================================
+
+{ TNFSeW_ISSIntel }
+
+procedure TNFSeW_ISSIntel.Configuracao;
+begin
+  inherited Configuracao;
+
+  DivAliq100  := True;
+
+  FormatoItemListaServico := filsComFormatacaoSemZeroEsquerda;
+end;
+
+function TNFSeW_ISSIntel.GerarXml: Boolean;
+begin
+  if NFSe.OptanteSimplesNacional = snSim then
+    NrOcorrAliquota := 1;
+
+  Result := inherited GerarXml;
+end;
 
 end.

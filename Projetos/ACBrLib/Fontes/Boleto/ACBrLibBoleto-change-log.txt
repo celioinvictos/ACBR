@@ -42,6 +42,34 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+11/01/2023
+--- ACBrLibBoletoBase ---
+[-] Correção para conversão das respostas com Erros, em ANSI, se assim estiver configurado
+	Por: Antonio Carlos Junior
+
+25/11/2022
+---ACBrLibBoletoConfig, ACBrLibBoletoConsts, ACBrLibBoletoDataModule---
+[*] Criação campos para leitura de novas propriedades do PIX (Y03) Santander CNAB240 - TK3201
+	Por: Antonio Carlos Junior
+
+17/08/2022
+--- ACBrLibBoleto, ACBrLibBoletoBase ---
+[*] Atualização das chamadas de envio por API e atualização das classes resposta baseado no refactory do componente boleto
+
+20/07/2022
+--- ACBrLibBoleto ---
+[*] Remoção de Warning @deprecated ref. ACBrUtils
+
+27/05/2022
+--- ACBrLibDataModule, ACBrLibConsts, ACBrLibConfig --
+[+] Adicionado propriedade de configuração de Impressão: CalcularNomeArquivoPDFIndividual
+    Por: José M S Junior
+
+04/04/2022
+--- ACBrLibBoletoBase, ACBrLibBoletoMT, ACBrLibBoletoST, ACBrLibBoletoStaticImportsMT,ACBrLibBoletoStaticImports, ACBrLibBoleto.dpr --
+[+] Adicionado método Boleto_ConsultarTitulosPorPeriodo utilizado na consulta por API BB
+    Por: José M S Junior
+
 27/01/2022
 --- ACBrLibBoletoBase, ACBrLibBoletoDataModule --
 [-] Correção de erro na troca de layout de impressão.

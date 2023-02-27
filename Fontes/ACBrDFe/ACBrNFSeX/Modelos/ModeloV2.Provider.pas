@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2022 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                                                                              }
@@ -60,6 +60,11 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    {
+      Descomente a linha abaixo para definir um tratamento para o XML
+      retornado caso seja necessário.
+    }
+//    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderModeloV2200 = class (TACBrNFSeProviderABRASFv2)
@@ -135,6 +140,9 @@ begin
   // Inicializa os parâmetros de configuração: Mensagem de Dados
   with ConfigMsgDados do
   begin
+    // Usado para gerar ou não o grupo <Prestador>
+    GerarPrestadorLoteRps := False;
+
     // Usado na tag raiz dos XML de envio do Lote, Consultas, etc.
     Prefixo := '';
 
@@ -499,4 +507,18 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
+    {
+      Descomente a definição da function abaixo para definir um tratamento para
+      o XML retornado caso seja necessário.
+    }
+
+{
+function TACBrNFSeXWebserviceModeloV2200.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  // Reescrever se necessário;
+end;
+}
 end.

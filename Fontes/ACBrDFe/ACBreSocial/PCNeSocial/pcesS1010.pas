@@ -55,7 +55,7 @@ uses
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IfEnd}
-  ACBrBase, ACBrUtil,
+  ACBrBase,
   pcnConversao, pcnGerador, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
@@ -156,7 +156,6 @@ type
     FCodIncCP: tpCodIncCP;
     FCodIncIRRF : tpCodIncIRRF;
     FCodIncFGTS : tpCodIncFGTS;
-    FCodIncSIND: tpCodIncSIND;
     FCodIncCPRP: tpCodIncCPRP;
     FTetoRemun: tpSimNaoFacultativo;
     FObservacao: string;
@@ -184,7 +183,6 @@ type
     property codIncCP: tpCodIncCP read FCodIncCP write FCodIncCP;
     property codIncIRRF: tpCodIncIRRF read FCodIncIRRF write FCodIncIRRF;
     property codIncFGTS: tpCodIncFGTS read FCodIncFGTS write FCodIncFGTS;
-    property codIncSIND: tpCodIncSIND read FCodIncSIND write FCodIncSIND;
     property codIncCPRP: tpCodIncCPRP read FCodIncCPRP write FCodIncCPRP;
     property tetoRemun: tpSimNaoFacultativo read FTetoRemun write FTetoRemun;
     property observacao: string read FObservacao write FObservacao;
@@ -239,6 +237,8 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TS1010Collection }
@@ -313,20 +313,18 @@ begin
   if VersaoDF <= ve02_05_00 then
     Gerador.wCampo(tcStr, '', 'codIncIRRF', 2,   2, 1, eSCodIncIRRFToStr(InfoRubrica.dadosRubrica.codIncIRRF))
   else
-    Gerador.wCampo(tcStr, '', 'codIncIRRF', 1,   4, 1, eSCodIncIRRFToStr(InfoRubrica.dadosRubrica.codIncIRRF));
+    Gerador.wCampo(tcInt, '', 'codIncIRRF', 1,   4, 1, StrToInt(eSCodIncIRRFToStr(InfoRubrica.dadosRubrica.codIncIRRF)));
 
   Gerador.wCampo(tcStr, '', 'codIncFGTS', 2,   2, 1, eSCodIncFGTSToStr(InfoRubrica.dadosRubrica.codIncFGTS));
 
-  if VersaoDF <= ve02_05_00 then
-     Gerador.wCampo(tcStr, '', 'codIncSIND', 2,   2, 1, eSCodIncSINDToStr(InfoRubrica.dadosRubrica.codIncSIND));
-
   if VersaoDF >= veS01_00_00 then
-  Begin
-     if InfoRubrica.dadosRubrica.codIncCPRP <> cicpNenhum then
-        Gerador.wCampo(tcStr, '', 'codIncCPRP', 2, 2, 0, eSCodIncCPRPToStr(InfoRubrica.dadosRubrica.codIncCPRP));
-     if InfoRubrica.dadosRubrica.tetoRemun <> snfNada then
-        Gerador.wCampo(tcStr, '', 'tetoRemun', 0, 2, 0, eSSimNaoFacultativoToStr(InfoRubrica.dadosRubrica.tetoRemun));
-  End;
+  begin
+    if InfoRubrica.dadosRubrica.codIncCPRP <> cicpNenhum then
+      Gerador.wCampo(tcStr, '', 'codIncCPRP', 2, 2, 1, eSCodIncCPRPToStr(InfoRubrica.dadosRubrica.codIncCPRP));
+
+    if InfoRubrica.dadosRubrica.tetoRemun <> snfNada then
+      Gerador.wCampo(tcStr, '', 'tetoRemun', 1, 1, 1, eSSimNaoFacultativoToStr(InfoRubrica.dadosRubrica.tetoRemun));
+  end;
 
   Gerador.wCampo(tcStr, '', 'observacao', 0, 255, 0, InfoRubrica.dadosRubrica.observacao);
 
@@ -404,8 +402,9 @@ end;
 function TEvtTabRubrica.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
-     
+
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
 
     GerarCabecalho('evtTabRubrica');
@@ -488,10 +487,14 @@ begin
         infoRubrica.dadosRubrica.natRubr    := INIRec.ReadInteger(sSecao, 'natRubr', 0);
         infoRubrica.dadosRubrica.tpRubr     := eSStrToTpRubr(Ok, INIRec.ReadString(sSecao, 'tpRubr', '1'));
         infoRubrica.dadosRubrica.codIncCP   := eSStrToCodIncCP(Ok, INIRec.ReadString(sSecao, 'codIncCP', '00'));
-        infoRubrica.dadosRubrica.codIncIRRF := eSStrToCodIncIRRF(Ok, INIRec.ReadString(sSecao, 'codIncIRRF', '00'));
+
+        if VersaoDF <= ve02_05_00 then
+          infoRubrica.dadosRubrica.codIncIRRF := eSStrToCodIncIRRF(Ok, INIRec.ReadString(sSecao, 'codIncIRRF', '00'))
+        else
+          infoRubrica.dadosRubrica.codIncIRRF := eSStrToCodIncIRRF(Ok, INIRec.ReadString(sSecao, 'codIncIRRF', '09'));
+
         infoRubrica.dadosRubrica.codIncFGTS := eSStrToCodIncFGTS(Ok, INIRec.ReadString(sSecao, 'codIncFGTS', '00'));
-        infoRubrica.dadosRubrica.codIncSIND := eSStrToCodIncSIND(Ok, INIRec.ReadString(sSecao, 'codIncSIND', '00'));
-        infoRubrica.dadosRubrica.codIncCPRP := eSStrToCodIncCPRP(Ok, INIRec.ReadString(sSecao, 'codIncCPRP', '00'));
+        infoRubrica.dadosRubrica.codIncCPRP := eSStrToCodIncCPRP(Ok, INIRec.ReadString(sSecao, 'codIncCPRP', '99'));
         infoRubrica.dadosRubrica.observacao := INIRec.ReadString(sSecao, 'observacao', EmptyStr);
         infoRubrica.dadosRubrica.tetoRemun  := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'tetoRemun', EmptyStr));
 

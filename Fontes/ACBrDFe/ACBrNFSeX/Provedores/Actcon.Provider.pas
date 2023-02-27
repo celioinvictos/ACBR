@@ -61,6 +61,8 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property Namespace: string read GetNamespace;
     property SoapAction: string read GetSoapAction;
   end;
@@ -72,7 +74,7 @@ type
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
-
+  public
     function GetSchemaPath: string; override;
   end;
 
@@ -88,7 +90,9 @@ type
 implementation
 
 uses
-  ACBrDFeException, ACBrNFSeX, Actcon.GravarXml, Actcon.LerXml;
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX,
+  Actcon.GravarXml, Actcon.LerXml;
 
 { TACBrNFSeXWebserviceActcon200 }
 
@@ -284,6 +288,16 @@ begin
   Result := Executar(SoapAction + 'SubstituirNfse',
                      Request,
                      ['outputXML', 'SubstituirNfseResposta'], []);
+end;
+
+function TACBrNFSeXWebserviceActcon200.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := InserirDeclaracaoXMLSeNecessario(Result);
 end;
 
 { TACBrNFSeProviderActcon201 }

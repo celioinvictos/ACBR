@@ -54,7 +54,7 @@ uses
   {$ELSE}
    Contnrs,
   {$IFEND}
-  ACBrBase, ACBrUtil,
+  ACBrBase,
   pcnConversao, pcnGerador, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador,
   pcnLeitor;
@@ -161,6 +161,7 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TS1060Collection }
@@ -293,6 +294,7 @@ end;
 function TEvtTabAmbiente.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);

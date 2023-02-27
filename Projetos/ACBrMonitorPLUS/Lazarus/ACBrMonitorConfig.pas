@@ -35,7 +35,7 @@ unit ACBrMonitorConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, ACBrMonitorConsts, ACBrUtil, Graphics;
+  Classes, SysUtils, IniFiles, ACBrMonitorConsts, Graphics;
 
 type
 
@@ -177,6 +177,7 @@ type
 
   TNCM = record
     DirNCMSalvar      : String;
+    DiasValidadeCache : Integer;
   end;
 
   TEmail = record
@@ -346,13 +347,19 @@ type
     ExibirBandInforAdicProduto       : Integer;
     ImprimeDescAcrescItemNFe         : Integer;
     LogoEmCima                       : Boolean;
+    ImprimeInscSuframa               : Boolean;
     ExpandirDadosAdicionaisAuto      : Boolean;
     ImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean;
     ImprimirCampoFormaPagamento      : Integer;
+    ImprimeXPedNitemPed              : boolean;
   end;
 
   TDACTE = record
     TamanhoPapel                     : Integer;
+  end;
+
+  TDAMFE = record
+    ExibirMunicipioDescarregamento   : Boolean;
   end;
 
   TDFeDiretorios = record
@@ -399,6 +406,7 @@ type
     DANFE       : TDANFE;
     NFCe        : TNFCe;
     DACTE       : TDACTE;
+    DAMFE       : TDAMFe;
   end;
 
   TeSocial = record
@@ -441,6 +449,7 @@ type
   end;
 
   TSATExtrato = record
+    MostrarStatus               : Boolean;
     ParamsString                : String;
     ImprimeDescAcrescItem       : Boolean;
     ImprimeEmUmaLinha           : Boolean;
@@ -613,7 +622,7 @@ type
     DigitoAgenciaConta         : String ;
     CodCedente                 : String ;
     LocalPagamento             : String ;
-    CodigoOperacao             : String;
+    CodigoOperacao             : String ;
   end;
 
   TBoletoLayout = record
@@ -639,6 +648,8 @@ type
     CodTransmissao             : String ;
     RemoveAcentos              : Boolean;
     PrefixArqRemessa           : String;
+    VersaoArquivo              : String;
+    VersaoLote                 : String;
   end;
 
   TBoletoRelatorio = record
@@ -652,13 +663,18 @@ type
     EmailFormatoHTML           : Boolean;
   end;
 
+  TBoletoPIX = record
+    TipoChavePix               : integer;
+    ChavePix                   : String ;
+  end;
+
+
   TBoletoCedenteWS = record
     ClientID                   : String;
     ClientSecret               : String;
     KeyUser                    : String;
     Scope                      : String;
     IndicadorPix               : Boolean;
-
   end;
 
   TBoletoSSL = record
@@ -675,7 +691,6 @@ type
     SSLType                    : Integer;
     TimeOut                    : Integer;
     CertificadoHTTP            : Boolean;
-
   end;
 
   TBoletoConfig = record
@@ -706,6 +721,7 @@ type
     Relatorio                  : TBoletoRelatorio;
     Email                      : TBoletoEmail;
     WS                         : TBoletoWS;
+    PIX                        : TBoletoPIX;
   end;
 
 
@@ -959,6 +975,7 @@ begin
     with NCM do
     begin
       Ini.WriteString( CSecNCM, CKeyDirNCMSalvar, DirNCMSalvar );
+      Ini.WriteInteger( CSecNCM, CKeyDiasValidadeCache, DiasValidadeCache );
     end;
 
      with Email do
@@ -1192,15 +1209,22 @@ begin
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto  , ExibirBandInforAdicProduto );
       Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe     , ImprimeDescAcrescItemNFe);
       Ini.WriteBool( CSecDANFE,  CKeyDANFELogoEmCima                     , LogoEmCima );
+      Ini.WriteBool( CSecDANFE, CKeyDANFEImprimeInscSuframa              , ImprimeInscSuframa);
       Ini.WriteBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto , ExpandirDadosAdicionaisAuto );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina, ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
       Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimirCampoFormaPagamento, ImprimirCampoFormaPagamento);
+      Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimeXPedNitemPed  , ImprimeXPedNitemPed );
 
     end;
 
     with DFe.Impressao.DACTE do
     begin
       Ini.WriteInteger( CSecDACTE,  CKeyDACTETamanhoPapel           , TamanhoPapel );
+    end;
+
+    with DFe.Impressao.DAMFE do
+    begin
+      Ini.WriteBool( CSecDAMFE,  CKeyDAMFEExibirMunicipioDescar, ExibirMunicipioDescarregamento );
     end;
 
     with DFe.Diretorios do
@@ -1257,6 +1281,7 @@ begin
 
     with SAT.SATImpressao.SATExtrato do
     begin
+      ini.WriteBool(    CSecSATExtrato, CKeySATExtMostrarStatus           , MostrarStatus        );
       ini.WriteString(  CSecSATExtrato, CKeySATExtParamsString           , ParamsString          );
       ini.WriteBool(    CSecSATExtrato, CKeySATExtImprimeDescAcrescItem  , ImprimeDescAcrescItem );
       ini.WriteBool(    CSecSATExtrato, CKeySATExtImprimeEmUmaLinha      , ImprimeEmUmaLinha     );
@@ -1415,6 +1440,13 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBOLETOCodigoOperacao,CodigoOperacao );
     end;
 
+    with BOLETO.PIX do
+    begin
+      ini.WriteString(CSecBOLETO,CKeyBOLETOChavePIX,ChavePix);
+      ini.WriteInteger(CSecBOLETO,CKeyBOLETOTipoChavePix,TipoChavePix);
+    end;
+
+
     with BOLETO.Layout do
     begin
       ini.WriteString( CSecBOLETO, CKeyBOLETODirLogos,      DirLogos      );
@@ -1440,7 +1472,10 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBOLETOCodTransmissao,CodTransmissao);
       Ini.WriteBool(   CSecBOLETO, CKeyBOLETORemoveAcentos, RemoveAcentos      );
       ini.WriteString( CSecBOLETO, CKeyBoletoPrefixArqRemessa, PrefixArqRemessa );
+      ini.WriteString( CSecBOLETO, CKeyBOLETOVersaoArquivo, VersaoArquivo);
+      ini.WriteString( CSecBOLETO, CKeyBOLETOVersaoLote, VersaoLote);
     end;
+
 
     with BOLETO.Relatorio do
     begin
@@ -1688,6 +1723,7 @@ begin
     with NCM do
     begin
       DirNCMSalvar              := Ini.ReadString( CSecNCM, CKeyDirNCMSalvar, DirNCMSalvar );
+      DiasValidadeCache         := Ini.ReadInteger( CSecNCM, CKeyDiasValidadeCache, DiasValidadeCache );
     end;
 
     with Email do
@@ -1906,16 +1942,23 @@ begin
       ExibirBandInforAdicProduto := Ini.ReadInteger( CSecDANFE,  CKeyDANFEExibirBandInforAdicProduto     , ExibirBandInforAdicProduto );
       ImprimeDescAcrescItemNFe   := Ini.ReadInteger( CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe        , ImprimeDescAcrescItemNFe );
       LogoEmCima                 := Ini.ReadBool( CSecDANFE,  CKeyDANFELogoEmCima                        , LogoEmCima );
+      ImprimeInscSuframa         := Ini.ReadBool( CSecDANFE, CKeyDANFEImprimeInscSuframa                 , ImprimeInscSuframa);
       ExpandirDadosAdicionaisAuto:= Ini.ReadBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto      , ExpandirDadosAdicionaisAuto );
       ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina,
                                                         ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
       ImprimirCampoFormaPagamento   := Ini.ReadInteger( CSecDANFE, CKeyDANFEImprimirCampoFormaPagamento  , ImprimirCampoFormaPagamento );
+      ImprimeXPedNitemPed           := Ini.ReadBool( CSecDANFE, CKeyDANFEImprimeXPedNitemPed  , ImprimeXPedNitemPed );
 
     end;
 
     with DFe.Impressao.DACTE do
     begin
       TamanhoPapel              :=  Ini.ReadInteger( CSecDACTE,  CKeyDACTETamanhoPapel , TamanhoPapel );
+    end;
+
+    with DFe.Impressao.DAMFE do
+    begin
+      ExibirMunicipioDescarregamento := Ini.ReadBool( CSecDAMFE,  CKeyDAMFEExibirMunicipioDescar, ExibirMunicipioDescarregamento );
     end;
 
     with DFe.Diretorios do
@@ -1993,6 +2036,7 @@ begin
 
     with SAT.SATImpressao.SATExtrato do
     begin
+      MostrarStatus          := ini.ReadBool(  CSecSATExtrato, CKeySATExtMostrarStatus          , MostrarStatus         );
       ParamsString           := ini.ReadString(  CSecSATExtrato, CKeySATExtParamsString           , ParamsString          );
       ImprimeDescAcrescItem  := ini.ReadBool(    CSecSATExtrato, CKeySATExtImprimeDescAcrescItem  , ImprimeDescAcrescItem );
       ImprimeEmUmaLinha      := ini.ReadBool(    CSecSATExtrato, CKeySATExtImprimeEmUmaLinha      , ImprimeEmUmaLinha     );
@@ -2152,6 +2196,12 @@ begin
       CodigoOperacao         :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCodigoOperacao,   CodigoOperacao         );
     end;
 
+    with BOLETO.PIX do
+      begin
+        ChavePix                := ini.ReadString(CSecBOLETO,CKeyBOLETOChavePix, '');
+        TipoChavePix         := ini.ReadInteger(CSecBOLETO,CKeyBOLETOTipoChavePix, 0);
+      end;
+
     with BOLETO.Layout do
     begin
       DirLogos               :=  ini.ReadString( CSecBOLETO, CKeyBOLETODirLogos,         DirLogos               );
@@ -2166,7 +2216,6 @@ begin
       DirArquivoBoleto       :=  ini.ReadString( CSecBOLETO, CKeyBOLETODirArquivoBoleto, DirArquivoBoleto       );
       Impressora             :=  Ini.ReadString( CSecBOLETO, CKeyBOLETOImpressora,       Impressora             );
       NomeArquivoBoleto      :=  Ini.ReadString( CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivoBoleto);
-      
     end;
 
     with BOLETO.RemessaRetorno do
@@ -2178,6 +2227,8 @@ begin
       CodTransmissao         :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCodTransmissao,     ini.ReadString( CSecBOLETO,CKeyBOLETOCedenteCodTransmissao,'') );
       RemoveAcentos          :=  Ini.ReadBool(   CSecBOLETO, CKeyBOLETORemoveAcentos,      RemoveAcentos      );
       PrefixArqRemessa       :=  Ini.ReadString( CSecBOLETO, CKeyBoletoPrefixArqRemessa,   PrefixArqRemessa );
+      VersaoArquivo          :=  ini.ReadString( CSecBOLETO, CKeyBOLETOVersaoArquivo,       VersaoArquivo);
+      VersaoLote             :=  Ini.ReadString( CSecBOLETO, CKeyBOLETOVersaoLote,          VersaoLote);
     end;
 
     with BOLETO.Relatorio do
@@ -2475,7 +2526,7 @@ begin
     Versao                    := '4.00';
     VersaoCTe                 := '3.00';
     VersaoMDFe                := '3.00';
-    VersaoeSocial             := '02_04_02';
+    VersaoeSocial             := 'S01_00_00';
     VersaoReinf               := '1_03_02';
     VersaoQRCode              := '0';
     VersaoBPe                 := '1.00';
@@ -2615,13 +2666,20 @@ begin
     ImprimeDescAcrescItemNFe   := 0;
     ImprimirCampoFormaPagamento:= 0;
     LogoEmCima                 := False;
+    ImprimeInscSuframa         := True;
     ExpandirDadosAdicionaisAuto := False;
     ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= False;
+    ImprimeXPedNitemPed        := False;
   end;
 
   with DFe.Impressao.DACTE do
   begin
     TamanhoPapel              :=  0;
+  end;
+
+  with DFe.Impressao.DAMFE do
+  begin
+    ExibirMunicipioDescarregamento :=  False;
   end;
 
   with DFe.Diretorios do
@@ -2698,6 +2756,7 @@ begin
 
   with SAT.SATImpressao.SATExtrato do
   begin
+    MostrarStatus          := False;
     ParamsString           := '';
     ImprimeDescAcrescItem  := True;
     ImprimeEmUmaLinha      := False;
@@ -2855,6 +2914,13 @@ begin
     LocalPagamento         :=  '';
     CodigoOperacao         :=  '';
   end;
+
+  with BOLETO.PIX do
+  begin
+    ChavePix               :=  '';
+    TipoChavePix           :=  0;
+  end;
+
 
   with BOLETO.Layout do
   begin

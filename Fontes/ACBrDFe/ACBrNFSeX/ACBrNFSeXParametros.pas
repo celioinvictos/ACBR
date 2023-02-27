@@ -108,6 +108,11 @@ type
     FAmbiente: TACBrTipoAmbiente;
     // Código IBGE da Cidade lido do arquivo ACBrNFSeXServicos
     FCodIBGE: string;
+    // define se deve imprimir o conteudo do campo Discriminação ou a lista de
+    // serviços
+    FDetalharServico: Boolean;
+    // Layout setando ao ler o provedor
+    FLayout: TLayout;
 
   public
     constructor Create;
@@ -139,6 +144,8 @@ type
     property Versao: TVersaoNFSe read FVersao write FVersao;
     property Ambiente: TACBrTipoAmbiente read FAmbiente write FAmbiente;
     property CodIBGE: string read FCodIBGE write FCodIBGE;
+    property DetalharServico: Boolean read FDetalharServico write FDetalharServico;
+    property Layout: TLayout read FLayout write FLayout;
   end;
 
   { TWebserviceInfo }
@@ -182,6 +189,16 @@ type
     FTesteEnvio: string;
     // URL de homologação ou produção do SoapAction
     FSoapAction: string;
+    // URL de homologação ou produção para o serviço GerarToken
+    FGerarToken: string;
+    // URL de homologação ou produção para o serviço EnviarEvento
+    FEnviarEvento: string;
+    // URL de homologação ou produção para o serviço ConsultarEvento
+    FConsultarEvento: string;
+    // URL de homologação ou produção para o serviço ConsultarDFe
+    FConsultarDFe: string;
+    // URL de homologação ou produção para o serviço ConsultarParam
+    FConsultarParam: string;
 
   public
     property LinkURL: string read FLinkURL;
@@ -203,6 +220,11 @@ type
     property FecharSessao: string read FFecharSessao;
     property TesteEnvio: string read FTesteEnvio;
     property SoapAction: string read FSoapAction;
+    property GerarToken: string read FGerarToken;
+    property EnviarEvento: string read FEnviarEvento;
+    property ConsultarEvento: string read FConsultarEvento;
+    property ConsultarDFe: string read FConsultarDFe;
+    property ConsultarParam: string read FConsultarParam;
 
   end;
 
@@ -299,6 +321,16 @@ type
     FAbrirSessao: TDocElement;
     // Contem a definição dos campos TDocElement para o XML do Fechar Sessão
     FFecharSessao: TDocElement;
+    // Contem a definição dos campos TDocElement para o XML de Gerar o Token
+    FGerarToken: TDocElement;
+    // Contem a definição dos campos TDocElement para o XML de Enviar Evento
+    FEnviarEvento: TDocElement;
+    // Contem a definição dos campos TDocElement para o XML de Consultar Evento
+    FConsultarEvento: TDocElement;
+    // Contem a definição dos campos TDocElement para o XML de Consultar DFe
+    FConsultarDFe: TDocElement;
+    // Contem a definição dos campos TDocElement para o XML de Consultar Param
+    FConsultarParam: TDocElement;
 
     // Se True gera o namespace no Lote de Rps
     FGerarNSLoteRps: Boolean;
@@ -330,6 +362,11 @@ type
     property SubstituirNFSe: TDocElement read FSubstituirNFSe;
     property AbrirSessao: TDocElement read FAbrirSessao;
     property FecharSessao: TDocElement read FFecharSessao;
+    property GerarToken: TDocElement read FGerarToken;
+    property EnviarEvento: TDocElement read FEnviarEvento;
+    property ConsultarEvento: TDocElement read FConsultarEvento;
+    property ConsultarDFe: TDocElement read FConsultarDFe;
+    property ConsultarParam: TDocElement read FConsultarParam;
 
     property GerarNSLoteRps: Boolean read FGerarNSLoteRps write FGerarNSLoteRps;
     property GerarPrestadorLoteRps: Boolean read FGerarPrestadorLoteRps write FGerarPrestadorLoteRps;
@@ -371,6 +408,17 @@ type
     FAbrirSessao: boolean;
     // Se True assina o Fechar Sessão
     FFecharSessao: boolean;
+    // Se True assina a Geração do Token
+    FGerarToken: boolean;
+    // Se True assina o Enviar Evento
+    FEnviarEvento: boolean;
+    // Se True assina o Consultar Evento
+    FConsultarEvento: boolean;
+    // Se True assina o Consultar DFe
+    FConsultarDFe: boolean;
+    // Se True assina o Consultar Param
+    FConsultarParam: boolean;
+
     // Se True Incluir o valor de ID na URI da assinatura
     FIncluirURI: boolean;
     // Se True gera uma assinatura adicional
@@ -393,9 +441,14 @@ type
     property SubstituirNFSe: boolean read FSubstituirNFSe write FSubstituirNFSe;
     property AbrirSessao: boolean read FAbrirSessao write FAbrirSessao;
     property FecharSessao: boolean read FFecharSessao write FFecharSessao;
+    property GerarToken: boolean read FGerarToken write FGerarToken;
+    property EnviarEvento: boolean read FEnviarEvento write FEnviarEvento;
+    property ConsultarEvento: boolean read FConsultarEvento write FConsultarEvento;
+    property ConsultarDFe: boolean read FConsultarDFe write FConsultarDFe;
+    property ConsultarParam: boolean read FConsultarParam write FConsultarParam;
+
     property IncluirURI: boolean read FIncluirURI write FIncluirURI;
     property AssinaturaAdicional: boolean read FAssinaturaAdicional write FAssinaturaAdicional;
-
   end;
 
   { TConfigSchemas }
@@ -431,9 +484,19 @@ type
     FFecharSessao: string;
     // Nome do arquivo XSD para validar o Teste de Envio
     FTeste: string;
+    // Nome do arquivo XSD para validar a Geração do Token
+    FGerarToken: string;
+    // Nome do arquivo XSD para validar o Enviar Evento
+    FEnviarEvento: string;
+    // Nome do arquivo XSD para validar o Consultar Evento
+    FConsultarEvento: string;
+    // Nome do arquivo XSD para validar o Consultar DFe
+    FConsultarDFe: string;
+    // Nome do arquivo XSD para validar o Consultar Param
+    FConsultarParam: string;
+
     // Se True realiza a validação do XML com os Schemas
     FValidar: boolean;
-
   public
     property Recepcionar: string read FRecepcionar write FRecepcionar;
     property ConsultarSituacao: string read FConsultarSituacao write FConsultarSituacao;
@@ -450,14 +513,19 @@ type
     property AbrirSessao: string read FAbrirSessao write FAbrirSessao;
     property FecharSessao: string read FFecharSessao write FFecharSessao;
     property Teste: string read FTeste write FTeste;
-    property Validar: boolean read FValidar write FValidar;
+    property GerarToken: string read FGerarToken write FGerarToken;
+    property EnviarEvento: string read FEnviarEvento write FEnviarEvento;
+    property ConsultarEvento: string read FConsultarEvento write FConsultarEvento;
+    property ConsultarDFe: string read FConsultarDFe write FConsultarDFe;
+    property ConsultarParam: string read FConsultarParam write FConsultarParam;
 
+    property Validar: boolean read FValidar write FValidar;
   end;
 
 implementation
 
 uses
-  ACBrUtil;
+  ACBrUtil.Strings;
 
 { TACBrNFSeXConfigParams }
 
@@ -584,6 +652,11 @@ begin
     FSubstituirNFSe      := AINI.ReadString(ASession, 'HomSubstituirNFSe'     , FRecepcionar);
     FAbrirSessao         := AINI.ReadString(ASession, 'HomAbrirSessao'        , FRecepcionar);
     FFecharSessao        := AINI.ReadString(ASession, 'HomFecharSessao'       , FRecepcionar);
+    FGerarToken          := AINI.ReadString(ASession, 'HomGerarToken'         , FRecepcionar);
+    FEnviarEvento        := AINI.ReadString(ASession, 'HomEnviarEvento'       , FRecepcionar);
+    FConsultarEvento     := AINI.ReadString(ASession, 'HomConsultarEvento'    , FRecepcionar);
+    FConsultarDFe        := AINI.ReadString(ASession, 'HomConsultarDFe'       , FRecepcionar);
+    FConsultarParam      := AINI.ReadString(ASession, 'HomConsultarParam'     , FRecepcionar);
 
     FConsultarNFSePorFaixa        := AINI.ReadString(ASession, 'HomConsultarNFSePorFaixa'       , FRecepcionar);
     FConsultarNFSeServicoPrestado := AINI.ReadString(ASession, 'HomConsultarNFSeServicoPrestado', FRecepcionar);
@@ -606,6 +679,11 @@ begin
     FSubstituirNFSe      := AINI.ReadString(ASession, 'ProSubstituirNFSe'     , FRecepcionar);
     FAbrirSessao         := AINI.ReadString(ASession, 'ProAbrirSessao'        , FRecepcionar);
     FFecharSessao        := AINI.ReadString(ASession, 'ProFecharSessao'       , FRecepcionar);
+    FGerarToken          := AINI.ReadString(ASession, 'ProGerarToken'         , FRecepcionar);
+    FEnviarEvento        := AINI.ReadString(ASession, 'ProEnviarEvento'       , FRecepcionar);
+    FConsultarEvento     := AINI.ReadString(ASession, 'ProConsultarEvento'    , FRecepcionar);
+    FConsultarDFe        := AINI.ReadString(ASession, 'ProConsultarDFe'       , FRecepcionar);
+    FConsultarParam      := AINI.ReadString(ASession, 'ProConsultarParam'     , FRecepcionar);
 
     FConsultarNFSePorFaixa        := AINI.ReadString(ASession, 'ProConsultarNFSePorFaixa'       , FRecepcionar);
     FConsultarNFSeServicoPrestado := AINI.ReadString(ASession, 'ProConsultarNFSeServicoPrestado', FRecepcionar);
@@ -632,6 +710,11 @@ begin
   FSubstituirNFSe := TDocElement.Create;
   FAbrirSessao := TDocElement.Create;
   FFecharSessao := TDocElement.Create;
+  FGerarToken := TDocElement.Create;
+  FEnviarEvento := TDocElement.Create;
+  FConsultarEvento := TDocElement.Create;
+  FConsultarDFe := TDocElement.Create;
+  FConsultarParam := TDocElement.Create;
 end;
 
 destructor TConfigMsgDados.Destroy;
@@ -651,6 +734,11 @@ begin
   FSubstituirNFSe.Free;
   FAbrirSessao.Free;
   FFecharSessao.Free;
+  FGerarToken.Free;
+  FEnviarEvento.Free;
+  FConsultarEvento.Free;
+  FConsultarDFe.Free;
+  FConsultarParam.Free;
 
   inherited Destroy;
 end;

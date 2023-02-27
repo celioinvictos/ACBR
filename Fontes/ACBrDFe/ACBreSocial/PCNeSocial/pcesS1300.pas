@@ -53,7 +53,7 @@ uses
    System.Contnrs,
   {$IfEnd}
   ACBrBase,
-  pcnConversao, pcnGerador, ACBrUtil, pcnConsts,
+  pcnConversao, pcnGerador, pcnConsts,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -105,11 +105,9 @@ type
   TContribSindItem = class(TObject)
   private
     FcnpjSindic: string;
-    FtpContribSind: tpTpContribSind;
     FvlrContribSind: Double;
   public
     property cnpjSindic: string read FcnpjSindic write FcnpjSindic;
-    property tpContribSind: tpTpContribSind read FtpContribSind write FtpContribSind;
     property vlrContribSind: Double read FvlrContribSind write FvlrContribSind;
   end;
 
@@ -127,6 +125,8 @@ implementation
 
 uses
   IniFiles,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TS1300Collection }
@@ -196,7 +196,6 @@ begin
     Gerador.wGrupo('contribSind');
 
     Gerador.wCampo(tcStr, '', 'cnpjSindic',     14, 14, 1, ContribSind.Items[i].cnpjSindic);
-    Gerador.wCampo(tcStr, '', 'tpContribSind',   1,  1, 1, eSTpContribSindToStr(ContribSind.Items[i].tpContribSind));
     Gerador.wCampo(tcDe2, '', 'vlrContribSind',  1, 14, 1, ContribSind.Items[i].vlrContribSind);
 
     Gerador.wGrupo('/contribSind');
@@ -209,6 +208,7 @@ end;
 function TEvtContrSindPatr.GerarXML: boolean;
 begin
   try
+    inherited GerarXML;
     Self.VersaoDF := TACBreSocial(FACBreSocial).Configuracoes.Geral.VersaoDF;
      
     Self.Id := GerarChaveEsocial(now, self.ideEmpregador.NrInsc, self.Sequencial);
@@ -295,7 +295,6 @@ begin
         with contribSind.New do
         begin
           cnpjSindic     := sFim;
-          tpContribSind  := eSStrToTpContribSind(Ok, INIRec.ReadString(sSecao, 'tpTpContribSind', '1'));
           vlrContribSind := StringToFloatDef(INIRec.ReadString(sSecao, 'vlrContribSind', ''), 0);
         end;
 

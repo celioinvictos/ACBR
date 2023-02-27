@@ -68,7 +68,9 @@ implementation
 
 uses
   strutils,
-  ACBrUtil, ACBrDFeUtil, ACBrDFeException,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrDFeUtil, ACBrDFeException,
   ACBr_WinCrypt, ACBrDFeWinCrypt;
 
 { TDFeSSLXmlSignMsXml }

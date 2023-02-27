@@ -42,6 +42,25 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+10/01/2023
+--- ACBrLibMDFeBase ---
+[-] Correção para conversão das respostas com Erros, em ANSI, se assim estiver configurado
+	Por: Antonio Carlos Junior
+
+30/11/2022
+--- ACBrLibMDFeBase ---
+[*] Concatenação E.Message junto ao xMotivo para saber real motivo do Exception - #TK-3293
+	Por: Antonio Carlos Junior
+
+20/07/2022
+--- ACBrLibMDFe ---
+[*] Remoção de Warning @deprecated ref. ACBrUtils
+
+28/06/2022
+--- ACBrLibMDFeConfig, ACBrLibMDFeConsts---
+[+] Adicionado propriedade ExibirMunicipioDescarregamento para impressão do DAMDFe
+	Por: José M S Junior
+
 21/12/2021
 --- ACBrLibMDFeDataModule ---
 [-] Correção para herença visual em Lazarus de "TLibDataModule"

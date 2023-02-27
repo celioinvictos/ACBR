@@ -61,6 +61,8 @@ resourcestring
 function DetectarTipoChave(const AChave: String): TACBrPIXTipoChave;
 function ValidarChave(const AChave: String): String;
 function ValidarChaveAleatoria(const AChave: String): Boolean;
+function CriarTxId: String;
+function FormatarGUID(const AString: String): String;
 function ValidarTxId(const ATxId: String; MaiorTamanho: Integer; MenorTamanho: Integer = 0): String;
 function ValidarPSS(const AValue: Integer): String;
 function ValidarEndToEndId(const AValue: String): String;
@@ -70,7 +72,11 @@ function Crc16BRCode(const AString: String): String;
 implementation
 
 uses
-  ACBrValidador, ACBrUtil, ACBrConsts;
+  ACBrValidador,
+  ACBrUtil.Strings,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO,
+  ACBrConsts;
 
 function DetectarTipoChave(const AChave: String): TACBrPIXTipoChave;
 var
@@ -138,6 +144,29 @@ begin
             StrIsAlphaNum(StringReplace(s,'-','',[rfReplaceAll]));
 end;
 
+function CriarTxId: String;
+var
+  guid: TGUID;
+begin
+  if (CreateGUID(guid) = 0) then
+  begin
+    Result := GUIDToString(guid);
+    Result := StringReplace(Result, '-', '', [rfReplaceAll]);
+    Result := copy(Result, 2, Length(Result)-2);
+  end
+  else
+    Result := '';
+end;
+
+function FormatarGUID(const AString: String): String;
+begin
+  Result := AString;
+  Insert('-', Result, 9);
+  Insert('-', Result, 14);
+  Insert('-', Result, 19);
+  Insert('-', Result, 24);
+end;
+
 function ValidarTxId(const ATxId: String; MaiorTamanho: Integer;
   MenorTamanho: Integer): String;
 var
@@ -187,34 +216,14 @@ var
   s: String;
 begin
   s := FormatFloatBr(AValor, FloatMask(2,False));
-  Result := StringReplace(s, DecimalSeparator, '.', []);
+  Result := StringReplace(s, ',', '.', []);
 end;
 
-// Fonte: https://github.com/bacen/pix-api/issues/189#issuecomment-783712221
 function Crc16BRCode(const AString: String): String;
-const
-  polynomial = $1021;
 var
-  crc: WORD;
-  i, j: Integer;
-  b: Byte;
-  bit, c15: Boolean;
+  crc: Word;
 begin
-  crc := $FFFF;
-  for i := 1 to length(AString) do
-  begin
-    b := Byte(AString[i]);
-    for j := 0 to 7 do
-    begin
-      bit := (((b shr (7 - j)) and 1) = 1);
-      c15 := (((crc shr 15) and 1) = 1);
-      crc := crc shl 1;
-      if (c15 xor bit) then
-        crc := crc xor polynomial;
-    end;
-  end;
-  crc := crc and $FFFF;
-
+  crc := StringCrcCCITT(AString, $FFFF);
   Result := IntToHex(crc, 4);
 end;
 

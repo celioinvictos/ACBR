@@ -172,11 +172,12 @@ type
 
     procedure ImprimirDANFE(ANFE: TNFe = nil);
     procedure ImprimirDANFEResumido(ANFE: TNFe = nil);
-    procedure ImprimirDANFEPDF(ANFE: TNFe = nil);
+    procedure ImprimirDANFEPDF(ANFE: TNFe = nil; AStream: TStream = nil);
     procedure ImprimirEVENTO(ANFE: TNFe = nil);
-    procedure ImprimirEVENTOPDF(ANFE: TNFe = nil);
+    procedure ImprimirEVENTOPDF(ANFE: TNFe = nil; AStream: TStream = nil);
     procedure ImprimirINUTILIZACAO(ANFE: TNFe = nil);
-    procedure ImprimirINUTILIZACAOPDF(ANFE: TNFe = nil);
+    procedure ImprimirINUTILIZACAOPDF(ANFE: TNFe = nil; AStream: TStream = nil);
+
   end;
 
 implementation
@@ -184,7 +185,9 @@ implementation
 uses
   StrUtils, Math, DateUtils,
   ACBrNFe, ACBrNFeDANFEFR, ACBrDFeUtil,
-  ACBrUtil, ACBrValidador, ACBrImage, ACBrDelphiZXingQRCode,
+  ACBrUtil.Strings, 
+  ACBrUtil.Math, ACBrUtil.FilesIO, ACBrUtil.Base, ACBrUtil.DateTime, ACBrUtil.XMLHTML,
+  ACBrValidador, ACBrImage, ACBrDelphiZXingQRCode,
   pcnConversaoNFe;
 
 { TACBrNFeFRClass }
@@ -273,6 +276,7 @@ begin
         FieldDefs.Add('HoraSaida', ftString, 10);
         FieldDefs.Add('MensagemFiscal', ftString, 200);
         FieldDefs.Add('URL', ftString, 1000);
+        FieldDefs.Add('xPed', ftString, 20);
         CreateDataSet;
      end;
    end;
@@ -401,13 +405,15 @@ begin
         FieldDefs.Add('pMVAST'    , ftString, 18);
         FieldDefs.Add('pICMSST'   , ftString, 18);
         FieldDefs.Add('vICMSST'   , ftString, 18);
-        FieldDefs.Add('DescricaoProduto', ftString, 2000);
+        FieldDefs.Add('DescricaoProduto', ftString, 10000);
         FieldDefs.Add('Unidade'   , ftString, 14);
         FieldDefs.Add('Quantidade', ftString, 50);
         FieldDefs.Add('ValorUnitario'   , ftString, 50);
         FieldDefs.Add('ValorLiquido'    , ftString, 18);
         FieldDefs.Add('ValorAcrescimos' , ftString, 18);
         FieldDefs.Add('ValorDescontos'  , ftString, 18);
+        FieldDefs.Add('xPed'            , ftString, 15);
+        FieldDefs.Add('nItemPed'        , ftInteger);
 
         CreateDataSet;
      end;
@@ -434,7 +440,6 @@ begin
         FieldDefs.Add('Imagem', ftString, 256);
         FieldDefs.Add('Sistema', ftString, 300);
         FieldDefs.Add('Usuario', ftString, 60);
-        FieldDefs.Add('Fax', ftString, 60);
         FieldDefs.Add('Site', ftString, 60);
         FieldDefs.Add('Email', ftString, 60);
         FieldDefs.Add('Desconto', ftString, 60);
@@ -933,12 +938,16 @@ begin
       FieldByName('VCOFINS').AsFloat      := VCOFINS;
       FieldByName('VOutro').AsFloat       := VOutro;
       FieldByName('VNF').AsFloat          := VNF;
-      FieldByName('VTotTrib').AsFloat     := VTotTrib;
+
+      if (FDANFEClassOwner.ImprimeTributos = trbNormal) or (FNFe.Ide.Modelo = 65)  then
+        FieldByName('VTotTrib').AsFloat     := VTotTrib;
+
       FieldByName('ValorApagar').AsFloat  := VNF;
       FieldByName('VFCP').AsFloat         := VFCP;
       FieldByName('VFCPST').AsFloat       := VFCPST;
       FieldByName('VFCPSTRet').AsFloat    := vFCPSTRet;
       FieldByName('VIPIDevol').AsFloat    := vIPIDevol;
+
       if (FDANFEClassOwner is TACBrNFeDANFEClass) then
         FieldByName('VTribPerc').AsFloat := TACBrNFeDANFEClass(FDANFEClassOwner).ManterVTribPerc(VTotTrib, VProd, VNF);
 
@@ -1091,6 +1100,8 @@ begin
           FieldByName('ValorLiquido').AsString    := FormatFloatBr( Prod.vProd - Prod.vDesc + Prod.vOutro + Prod.vFrete + Prod.vSeg, ',0.00');
         end;
         FieldByName('ValorAcrescimos').AsString   := FormatFloatBr( Prod.vOutro + Prod.vFrete + Prod.vSeg, ',0.00');
+        FieldByName('xPed').AsString              := Prod.xPed;
+        FieldByName('nItemPed').AsInteger         := Prod.nItem;
         Post;
       end;
     end;
@@ -1241,8 +1252,7 @@ begin
                                                                 Trim(FieldByName('XMun').AsString) + ' - ' +
                                                                 Trim(FieldByName('UF').AsString) +
                                                                 ' - CEP: ' + Trim(FieldByName('CEP').AsString) + #13 +
-		  	  				  				                                    ' Fone: ' + Trim(FieldByName('Fone').AsString) +
-                                                                IfThen(trim(FDANFEClassOwner.Fax) <> '', ' - FAX: ' + FormatarFone(Trim(FDANFEClassOwner.Fax)),'');
+		  	  				  				                                    ' Fone: ' + Trim(FieldByName('Fone').AsString);
       if NaoEstaVazio(Trim(FDANFEClassOwner.Site)) then
         cdsEmitente.FieldByName('DADOS_ENDERECO').AsString  := cdsEmitente.FieldByName('DADOS_ENDERECO').AsString + #13 +
                                                                 trim(FDANFEClassOwner.Site);
@@ -1376,6 +1386,7 @@ begin
     FieldByName('FinNFe').AsString  := FinNFeToStr( FNFe.Ide.FinNFe );
     FieldByName('ProcEmi').AsString := procEmiToStr( FNFe.Ide.ProcEmi );
     FieldByName('VerProc').AsString := FNFe.Ide.VerProc;
+
     if FNFe.infNFe.versao = 2.00 then
       FieldByName('HoraSaida').AsString := ifthen(FNFe.ide.hSaiEnt = 0, '', TimeToStr(FNFe.ide.hSaiEnt))
     else
@@ -1391,8 +1402,8 @@ begin
       if FNFe.Ide.TpAmb = taHomologacao then
         FieldByName('MensagemFiscal').AsString := FieldByName('MensagemFiscal').AsString+LineBreak+LineBreak+ACBrStr('EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
 
-      if EstaVazio(FieldByName('MensagemFiscal').AsString) then
-        FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
+      //if EstaVazio(FieldByName('MensagemFiscal').AsString) then
+      //  FieldByName('MensagemFiscal').AsString := ACBrStr('ÁREA DE MENSAGEM FISCAL');
 
       if EstaVazio(FNFe.infNFeSupl.urlChave) then
         FieldByName('URL').AsString := TACBrNFe(DANFEClassOwner.ACBrNFe).GetURLConsultaNFCe(FNFe.Ide.cUF, FNFe.Ide.tpAmb, FNFe.infNFe.Versao)
@@ -1405,7 +1416,9 @@ begin
     begin
       FieldByName('MensagemFiscal').AsString := '';
       FieldByName('URL').AsString            := '';
+      FieldByName('xPed').AsString           := FNFe.Compra.xPed;
     end;
+
     Post;
   end;
 end;
@@ -1428,6 +1441,7 @@ begin
     begin
       wObs := TACBrNFeDANFEClass(FDANFEClassOwner).ManterDocreferenciados(FNFe) +
               TACBrNFeDANFEClass(FDANFEClassOwner).ManterPagamentos(FNFe) +
+              TACBrNFeDANFEClass(FDANFEClassOwner).ManterSuframa(FNFe) +
               FDANFEClassOwner.ManterInfAdFisco(FNFe) +
               FDANFEClassOwner.ManterObsFisco(FNFe) +
               FDANFEClassOwner.ManterProcreferenciado(FNFe) +
@@ -1729,7 +1743,6 @@ begin
     FieldByName('LogoExpandido').AsString               := IfThen( FDANFEClassOwner.ExpandeLogoMarca, '1' , '0' );
     FieldByName('Sistema').AsString                     := IfThen( FDANFEClassOwner.Sistema <> '' , FDANFEClassOwner.Sistema, 'Projeto ACBr - http://acbr.sf.net');
     FieldByName('Usuario').AsString                     := IfThen( FDANFEClassOwner.Usuario <> '' , ' - ' + FDANFEClassOwner.Usuario , '' );
-    FieldByName('Fax').AsString                         := IfThen( FDANFEClassOwner.Fax     <> '' , ' - FAX ' + FDANFEClassOwner.Fax , '');
     FieldByName('Site').AsString                        := FDANFEClassOwner.Site;
     FieldByName('Email').AsString                       := FDANFEClassOwner.Email;
     FieldByName('Desconto').AsString                    := IfThen( (FDANFEClassOwner is TACBrNFeDANFEClass) and TACBrNFeDANFEClass(FDANFEClassOwner).ImprimeDescPorPercentual , '%' , 'VALOR');
@@ -2074,10 +2087,7 @@ begin
         NFe := TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais.Items[i].NFe;
         CarregaDadosNFe;
 
-        if (i > 0) then
-          Result := frxReport.PrepareReport(False)
-        else
-          Result := frxReport.PrepareReport;
+        Result := frxReport.PrepareReport( not (i > 0) );
       end;
     end
     else
@@ -2358,7 +2368,7 @@ begin
   end;
 end;
 
-procedure TACBrNFeFRClass.ImprimirDANFEPDF(ANFE: TNFe);
+procedure TACBrNFeFRClass.ImprimirDANFEPDF(ANFE: TNFe = nil; AStream: TStream = nil);
 const
   TITULO_PDF = 'Nota Fiscal Eletrônica';
 var
@@ -2367,6 +2377,9 @@ var
 begin
   if PrepareReport(ANFE) then
   begin
+    if (AStream <> nil) then
+      frxPDFExport.Stream := AStream;
+
     frxPDFExport.Author        := DANFEClassOwner.Sistema;
     frxPDFExport.Creator       := DANFEClassOwner.Sistema;
     frxPDFExport.Producer      := DANFEClassOwner.Sistema;
@@ -2420,7 +2433,7 @@ begin
   end;
 end;
 
-procedure TACBrNFeFRClass.ImprimirEVENTOPDF(ANFE: TNFe);
+procedure TACBrNFeFRClass.ImprimirEVENTOPDF(ANFE: TNFe = nil; AStream: TStream = nil);
 const
   TITULO_PDF = 'Eventos Nota Fiscal Eletrônica';
 var
@@ -2429,6 +2442,8 @@ var
 begin
   if PrepareReportEvento(ANFE) then
   begin
+    if (AStream <> nil) then
+      frxPDFExport.Stream := AStream;
     frxPDFExport.Author        := DANFEClassOwner.Sistema;
     frxPDFExport.Creator       := DANFEClassOwner.Sistema;
     frxPDFExport.Producer      := DANFEClassOwner.Sistema;
@@ -2471,7 +2486,7 @@ begin
   end;
 end;
 
-procedure TACBrNFeFRClass.ImprimirINUTILIZACAOPDF(ANFE: TNFe);
+procedure TACBrNFeFRClass.ImprimirINUTILIZACAOPDF(ANFE: TNFe = nil; AStream: TStream = nil);
 const
   TITULO_PDF = 'Inutilização de Numeração';
 var
@@ -2480,6 +2495,8 @@ var
 begin
   if PrepareReportInutilizacao then
   begin
+    if (AStream <> nil) then
+      frxPDFExport.Stream := AStream;
     frxPDFExport.Author        := DANFEClassOwner.Sistema;
     frxPDFExport.Creator       := DANFEClassOwner.Sistema;
     frxPDFExport.Producer      := DANFEClassOwner.Sistema;

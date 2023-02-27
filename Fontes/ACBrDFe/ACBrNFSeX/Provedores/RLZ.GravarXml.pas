@@ -38,8 +38,8 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
-  ACBrXmlBase, ACBrXmlDocument, pcnConsts,
+  ACBrXmlBase, ACBrXmlDocument,
+  pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXGravarXml_ABRASFv2,
   ACBrNFSeXConversao;
 
@@ -65,6 +65,9 @@ type
   end;
 
 implementation
+
+uses
+  ACBrUtil.Strings;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -222,8 +225,8 @@ begin
 //  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'tipo', 1, 10, 1,
 //                                                                  'Valor', ''));
 
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'fatura', 1, 10, 1, '', ''));
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'orcamento', 1, 10, 1, '', ''));
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'fatura', 1, 10, 0, '', ''));
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'orcamento', 1, 10, 0, '', ''));
 
   NFSeNode.AppendChild(AddNode(tcDat, '#1', 'vencimento', 1, 10, 1,
                                                          NFse.DataEmissao, ''));

@@ -69,6 +69,7 @@ begin
 
   FormatoEmissao := tcDatHor;
   FormatoCompetencia := tcDatHor;
+  FormatoItemListaServico := filsComFormatacaoSemZeroEsquerda;
 
   NrMinExigISS := 2;
   NrMaxExigISS := 2;
@@ -77,7 +78,7 @@ begin
   NrOcorrLogradouro := 0;
   NrOcorrDDD := 0;
   NrOcorrTipoTelefone := 0;
-  NrOcorrInscEstTomador := 0;
+  NrOcorrInscEstTomador_1 := 0;
 
   NrOcorrCompetencia := -1;
   NrOcorrEndereco := -1;

@@ -49,20 +49,29 @@ unit pcesS5012;
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, 
+  Classes,
   {$IF DEFINED(HAS_SYSTEM_GENERICS)}
-   System.Generics.Collections, System.Generics.Defaults,
+		System.Generics.Collections, 
+		System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
-   System.Contnrs,
+		System.Contnrs,
   {$IfEnd}
-  ACBrBase, pcnConversao, pcnLeitor, ACBrUtil,
-  pcesCommon, pcesConversaoeSocial, Dialogs;
+  ACBrBase, 
+	pcnConversao, 
+	pcnLeitor,
+  pcesCommon, 
+	pcesConversaoeSocial;
 
 type
   TS5012 = class;
   TInfoIRRF = class;
   TInfoCRContribCollection = class;
   TInfoCRContribCollectionItem = class;
+  TInfoCRMenCollection = class;
+  TInfoCRMenCollectionItem = class;
+  TInfoCRDiaCollection = class;
+  TInfoCRDiaCollectionItem = class;
 
   TEvtIrrf = class;
 
@@ -109,13 +118,23 @@ type
     FnrRecArqBase: String;
     FindExistInfo: Integer;
     FInfoCRContrib: TInfoCRContribCollection;
+    FInfoCRMen: TInfoCRMenCollection;
+    FInfoCRDia: TInfoCRDiaCollection;
+
+    function getInfoCRMen(): TInfoCRMenCollection;
+    function getInfoCRDia(): TInfoCRDiaCollection;
   public
     constructor Create;
     destructor Destroy; override;
 
+    function InfoCRMenInst(): Boolean;
+    function InfoCRDiaInst(): Boolean;
+
     property nrRecArqBase: String read FnrRecArqBase;
     property indExistInfo: Integer read FindExistInfo;
-    property InfoCRContrib: TInfoCRContribCollection read FInfoCRContrib write FInfoCRContrib;
+    property InfoCRContrib: TInfoCRContribCollection read FInfoCRContrib;
+    property InfoCRMen: TInfoCRMenCollection read getInfoCRMen;
+    property InfoCRDia: TInfoCRDiaCollection read getInfoCRDia;
   end;
 
   TEvtIrrf = class(TObject)
@@ -123,7 +142,7 @@ type
     FLeitor: TLeitor;
     FId: String;
     FXML: String;
-
+    FVersaoDF: TVersaoeSocial;
     FIdeEvento: TIdeEvento5;
     FIdeEmpregador: TIdeEmpregador;
     FInfoIRRF: TInfoIRRF;
@@ -137,14 +156,58 @@ type
     property IdeEmpregador: TIdeEmpregador read FIdeEmpregador write FIdeEmpregador;
     property InfoIRRF: TInfoIRRF read FInfoIRRF write FInfoIRRF;
     property Leitor: TLeitor read FLeitor write FLeitor;
-    property Id: String      read FId;
-    property XML: String     read FXML;
+    property Id: String read FId;
+    property XML: String read FXML;
+    property VersaoDF: TVersaoeSocial read FVersaoDF write FVersaoDF;
+  end;
+
+  TInfoCRMenCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TInfoCRMenCollectionItem;
+    procedure SetItem(Index: Integer; Value: TInfoCRMenCollectionItem);
+  public
+    function New: TInfoCRMenCollectionItem;
+    property Items[Index: Integer]: TInfoCRMenCollectionItem read GetItem write SetItem;
+  end;
+
+  TInfoCRMenCollectionItem = class
+  private
+   FCRMen: string;
+   FVrCRMen: Double;
+   FVrCRMenSusp: Double;
+  public
+   property CRMen: string read FCRMen;
+   property vrCRMen: Double read FVrCRMen;
+   property vrCRMenSusp: Double read FVrCRMenSusp;
+  end;
+
+  TInfoCRDiaCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TInfoCRDiaCollectionItem;
+    procedure SetItem(Index: Integer; Value: TInfoCRDiaCollectionItem);
+  public
+    function New: TInfoCRDiaCollectionItem;
+    property Items[Index: Integer]: TInfoCRDiaCollectionItem read GetItem write SetItem;
+  end;
+
+  TInfoCRDiaCollectionItem = class
+  private
+   FPerApurDia: Integer;
+   FCRDia: string;
+   FVrCRDia: Double;
+   FVrCRDiaSusp: Double;
+  public
+   property perApurDia: Integer read FPerApurDia;
+   property CRDia: string read FCRDia;
+   property vrCRDia: Double read FVrCRDia;
+   property vrCRDiaSusp: Double read FVrCRDiaSusp;
   end;
 
 implementation
 
 uses
-  IniFiles;
+  IniFiles,
+  ACBrUtil.Base;
 
 { TS5012 }
 
@@ -212,10 +275,16 @@ function TEvtIrrf.LerXML: Boolean;
 var
   ok: Boolean;
   i: Integer;
+  s: String;
 begin
   Result := False;
   try
     FXML := Leitor.Arquivo;
+
+    // Capturar a versão do evento
+    s := Copy(FXML, Pos('/evt/evtIrrf/', FXML)+18, 16);
+    s := Copy(s, 1, Pos('"', s)-1);
+    Self.VersaoDF := StrToVersaoeSocialSchemas(s);
 
     if leitor.rExtrai(1, 'evtIrrf') <> '' then
     begin
@@ -235,16 +304,45 @@ begin
         infoIRRF.FnrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
         infoIRRF.FindExistInfo := leitor.rCampo(tcInt, 'indExistInfo');
 
-        i := 0;
-        while Leitor.rExtrai(3, 'infoCRContrib', '', i + 1) <> '' do
+        if VersaoDF <= ve02_05_00 then
         begin
-          infoIRRF.infoCRContrib.New;
-          infoIRRF.infoCRContrib.Items[i].FtpCR := leitor.rCampo(tcStr, 'tpCR');
-          infoIRRF.infoCRContrib.Items[i].FvrCR := leitor.rCampo(tcDe2, 'vrCR');
-          inc(i);
+          i := 0;
+          while Leitor.rExtrai(3, 'infoCRContrib', '', i + 1) <> '' do
+          begin
+            infoIRRF.infoCRContrib.New;
+            infoIRRF.infoCRContrib.Items[i].FtpCR := leitor.rCampo(tcStr, 'tpCR');
+            infoIRRF.infoCRContrib.Items[i].FvrCR := leitor.rCampo(tcDe2, 'vrCR');
+            inc(i);
+          end;
+        end
+        else if VersaoDF >= veS01_01_00 then
+        begin
+          i := 0;
+          while Leitor.rExtrai(3, 'infoCRMen', '', i + 1) <> '' do
+          begin
+            InfoIRRF.InfoCRMen.New;
+            InfoIRRF.InfoCRMen.Items[i].FCRMen       := leitor.rCampo(tcStr, 'CRMen');
+            InfoIRRF.InfoCRMen.Items[i].FvrCRMen     := leitor.rCampo(tcDe2, 'vrCRMen');
+            InfoIRRF.InfoCRMen.Items[i].FvrCRMenSusp := leitor.rCampo(tcDe2, 'vrCRMenSusp');
+
+            inc(i);
+          end;
+
+          i := 0;
+          while Leitor.rExtrai(3, 'infoCRDia', '', i + 1) <> '' do
+          begin
+            InfoIRRF.InfoCRDia.New;
+            InfoIRRF.InfoCRDia.Items[i].FperApurDia  := leitor.rCampo(tcInt, 'perApurDia');
+            InfoIRRF.InfoCRDia.Items[i].FCRDia       := leitor.rCampo(tcStr, 'CRDia');
+            InfoIRRF.InfoCRDia.Items[i].FvrCRDia     := leitor.rCampo(tcDe2, 'vrCRDia');
+            InfoIRRF.InfoCRDia.Items[i].FvrCRDiaSusp := leitor.rCampo(tcDe2, 'vrCRDiaSusp');
+
+            inc(i);
+          end;
         end;
       end;
     end;
+
     Result := True;
   except
     Result := False;
@@ -323,14 +421,85 @@ end;
 constructor TInfoIRRF.Create;
 begin
   inherited Create;
+
   FInfoCRContrib := TInfoCRContribCollection.Create;
+  FInfoCRMen     := nil;
+  FInfoCRDia     := nil;
 end;
 
 destructor TInfoIRRF.Destroy;
 begin
   FInfoCRContrib.Free;
 
+  if InfoCRMenInst() then
+    FreeAndNil(FInfoCRMen);
+  if InfoCRDiaInst() then
+    FreeAndNil(FInfoCRDia);
+
   inherited;
+end;
+
+function TInfoIRRF.InfoCRMenInst(): Boolean;
+begin
+  Result := Assigned(FInfoCRMen);
+end;
+
+function TInfoIRRF.getInfoCRMen: TInfoCRMenCollection;
+begin
+  if not(Assigned(FInfoCRMen)) then
+    FInfoCRMen := TInfoCRMenCollection.Create;
+  Result := FInfoCRMen;
+end;
+
+function TInfoIRRF.InfoCRDiaInst(): Boolean;
+begin
+  Result := Assigned(FInfoCRDia);
+end;
+
+function TInfoIRRF.getInfoCRDia: TInfoCRDiaCollection;
+begin
+  if not(Assigned(FInfoCRDia)) then
+    FInfoCRDia := TInfoCRDiaCollection.Create;
+  Result := FInfoCRDia;
+end;
+
+{ TInfoCRMenCollection }
+
+function TInfoCRMenCollection.GetItem(
+  Index: Integer): TInfoCRMenCollectionItem;
+begin
+  Result := TInfoCRMenCollectionItem(inherited Items[Index]);
+end;
+
+procedure TInfoCRMenCollection.SetItem(Index: Integer; Value: TInfoCRMenCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+function TInfoCRMenCollection.New: TInfoCRMenCollectionItem;
+begin
+  Result := TInfoCRMenCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+{ TInfoCRDiaCollection }
+
+function TInfoCRDiaCollection.GetItem(
+  Index: Integer): TInfoCRDiaCollectionItem;
+begin
+  Result := TInfoCRDiaCollectionItem(inherited Items[Index]);
+end;
+
+procedure TInfoCRDiaCollection.SetItem(Index: Integer;
+  Value: TInfoCRDiaCollectionItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+function TInfoCRDiaCollection.New: TInfoCRDiaCollectionItem;
+begin
+  Result := TInfoCRDiaCollectionItem.Create;
+  Self.Add(Result);
 end;
 
 end.

@@ -456,7 +456,7 @@ type
       default httpNone;
     property SSLXmlSignLib: TSSLXmlSignLib read FSSLXmlSignLib write SetSSLXmlSignLib
       default xsNone;
-    property SSLType: TSSLType read FSSLType write FSSLType default LT_all;
+    property SSLType: TSSLType read FSSLType write FSSLType default LT_TLSv1_2;
     property SSLDgst: TSSLDgst read FSSLDgst write FSSLDgst default dgstSHA1;
 
     property StoreLocation: TSSLStoreLocation read FStoreLocation
@@ -489,7 +489,13 @@ implementation
 uses
   strutils, dateutils,
   synacode, synautil,
-  ACBrDFeUtil, ACBrValidador, ACBrUtil, ACBrDFeException, ACBrConsts
+  ACBrDFeUtil, ACBrValidador,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.FilesIO,
+  ACBrUtil.XMLHTML,
+  ACBrUtil.Math,
+  ACBrDFeException, ACBrConsts
   {$IfNDef DFE_SEM_OPENSSL}
    ,ACBrDFeOpenSSL, ACBrDFeHttpOpenSSL
    {$IfNDef DFE_SEM_XMLSEC}
@@ -1058,8 +1064,6 @@ begin
     if not (FpHTTPResultCode in [200..202]) then
       raise EACBrDFeException.Create('');
   except
-//    on E:EACBrDFeException do
-//      raise;
     on E:Exception do
     begin
       raise EACBrDFeException.CreateDef( Format(ACBrStr(cACBrDFeSSLEnviarException),
@@ -1290,7 +1294,7 @@ begin
   FTimeOutPorThread := False;
   FNameSpaceURI:= '';
 
-  FSSLType       := LT_all;
+  FSSLType       := LT_TLSv1_2;
   FSSLDgst       := dgstSHA1;
   FStoreLocation := slCurrentUser;
   FStoreName     := CDEFAULT_STORE_NAME;

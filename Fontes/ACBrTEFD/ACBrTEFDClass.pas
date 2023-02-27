@@ -494,7 +494,9 @@ Uses
   dateutils, StrUtils, Math, {$IFDEF FMX} System.Types {$ELSE} types{$ENDIF},
   ACBrTEFD, ACBrTEFDCliSiTef, ACBrTEFCliSiTefComum, ACBrTEFDVeSPague,
   ACBrTEFDPayGo, ACBrTEFDPayGoWeb,
-  ACBrUtil;
+  ACBrUtil.Strings,
+  ACBrUtil.Base,
+  ACBrUtil.FilesIO;
 
 { TACBrTEFDRespostasPendentes }
 
@@ -792,6 +794,7 @@ begin
          begin
            case Linha.Sequencia of
              0 : fpRede := Linha.Informacao.AsString;
+             1 : fpNFCeSAT.CNPJCredenciadora := Linha.Informacao.AsString;
              4 : fpBin := Linha.Informacao.AsString; //Seis primeiros digitos do cartão
              5 : fpNFCeSAT.UltimosQuatroDigitos := Linha.Informacao.AsString;
            end;

@@ -47,7 +47,7 @@ interface
 
 uses
   SysUtils, Classes, synautil,
-  ACBrUtil, pcesConversaoeSocial,
+  pcesConversaoeSocial,
   pcesS1010, pcesS1020, pcesS1030, pcesS1035, pcesS1040,
   pcesS1050, pcesS1070, pcesS1080, pcesS1060;
 
@@ -105,6 +105,8 @@ type
 implementation
 
 uses
+  ACBrUtil.Strings,
+  ACBrUtil.FilesIO,
   ACBreSocial;
 
 { TTabelas }
@@ -469,8 +471,11 @@ end;
 function TTabelas.LoadFromString(const AXMLString: String): Boolean;
 var
   Ok: Boolean;
+  typVersaoDF : TVersaoeSocial;
 begin
-  case StringXMLToTipoEvento(Ok, AXMLString) of
+  typVersaoDF := TACBreSocial(Self.Owner).Configuracoes.Geral.VersaoDF;
+
+  case StringXMLToTipoEvento(Ok, AXMLString, typVersaoDF) of
     teS1010: Self.S1010.New.EvtTabRubrica.XML := AXMLString;
     teS1020: Self.S1020.New.EvtTabLotacao.XML := AXMLString;
     teS1030: Self.S1030.New.EvtTabCargo.XML := AXMLString;
@@ -495,8 +500,11 @@ end;
 function TTabelas.LoadFromIni(const AIniString: String): Boolean;
 var
   Ok: Boolean;
+  typVersaoDF : TVersaoeSocial;
 begin
-  case StringINIToTipoEvento(Ok, AIniString) of
+  typVersaoDF := TACBreSocial(Self.Owner).Configuracoes.Geral.VersaoDF;
+  
+  case StringINIToTipoEvento(Ok, AIniString, typVersaoDF) of
     teS1010: Self.S1010.New.EvtTabRubrica.LerArqIni(AIniString);
     teS1020: Self.S1020.New.EvtTabLotacao.LerArqIni(AIniString);
     teS1030: Self.S1030.New.EvtTabCargo.LerArqIni(AIniString);

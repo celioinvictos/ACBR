@@ -38,9 +38,10 @@ interface
 
 uses
   SysUtils, Classes,
-  ACBrXmlBase, ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
-  ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
-  ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase;
+  ACBrXmlBase,
+  ACBrNFSeXClass, ACBrNFSeXConversao,
+  ACBrNFSeXGravarXml, ACBrNFSeXLerXml, ACBrNFSeXProviderABRASFv2,
+  ACBrNFSeXWebserviceBase;
 
 type
   TACBrNFSeXWebserviceSystemPro201 = class(TACBrNFSeXWebserviceSoap11)
@@ -51,6 +52,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderSystemPro201 = class (TACBrNFSeProviderABRASFv2)
@@ -66,8 +68,9 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
-  ACBrNFSeXNotasFiscais, SystemPro.GravarXml, SystemPro.LerXml;
+  ACBrUtil.XMLHTML,
+  ACBrDFeException,
+  SystemPro.GravarXml, SystemPro.LerXml;
 
 { TACBrNFSeProviderSystemPro201 }
 
@@ -134,8 +137,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ns2:EnviarLoteRpsSincrono>';
-  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + IncluirCDATA(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + IncluirCDATA(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ns2:EnviarLoteRpsSincrono>';
 
   Result := Executar('', Request,
@@ -151,8 +154,8 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ns2:GerarNfse>';
-  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + IncluirCDATA(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + IncluirCDATA(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ns2:GerarNfse>';
 
   Result := Executar('', Request,
@@ -201,13 +204,23 @@ begin
   FPMsgOrig := AMSG;
 
   Request := '<ns2:SubstituirNfse>';
-  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
+  Request := Request + '<nfseCabecMsg>' + IncluirCDATA(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + IncluirCDATA(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ns2:SubstituirNfse>';
 
   Result := Executar('', Request,
                      ['return', 'SubstituirNfseResposta'],
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
+end;
+
+function TACBrNFSeXWebserviceSystemPro201.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
 end;
 
 end.

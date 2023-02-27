@@ -10,6 +10,7 @@ interface
 uses
   ACBrPIXCDReg, ACBrPIXBase, ACBrPIXUtil, ACBrPIXCD, ACBrPIXBRCode, 
   ACBrPIXPSPItau, ACBrPIXPSPBancoDoBrasil, ACBrPIXPSPSantander, 
+  ACBrPIXPSPShipay, ACBrPIXPSPSicredi, ACBrPIXPSPSicoob, 
   ACBrPIXSchemasProblema, ACBrPIXSchemasCalendario, ACBrPIXSchemasDevedor, 
   ACBrPIXSchemasLocation, ACBrPIXSchemasPaginacao, ACBrPIXSchemasDevolucao, 
   ACBrPIXSchemasPix, ACBrPIXSchemasParametrosConsultaPix, 
@@ -17,7 +18,8 @@ uses
   ACBrPIXSchemasParametrosConsultaCob, ACBrPIXSchemasCobsConsultadas, 
   ACBrPIXSchemasCobV, ACBrPIXSchemasCobsVConsultadas, ACBrPIXSchemasLoteCobV, 
   ACBrPIXSchemasParametrosConsultaLote, ACBrPIXSchemasLotesCobVConsultadas, 
-  LazarusPackageIntf;
+  ACBrShipaySchemas, ACBrPIXPSPPagSeguro, ACBrPIXPSPGerenciaNet, 
+  ACBrPIXPSPBradesco, ACBrPIXPSPPixPDV, LazarusPackageIntf;
 
 implementation
 

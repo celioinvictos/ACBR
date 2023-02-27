@@ -52,6 +52,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderTiplan = class (TACBrNFSeProviderABRASFv1)
@@ -77,6 +78,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderTiplan203 = class (TACBrNFSeProviderABRASFv2)
@@ -92,8 +94,10 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
-  ACBrNFSeXNotasFiscais, Tiplan.GravarXml, Tiplan.LerXml;
+  ACBrUtil.XMLHTML,
+  ACBrDFeException,
+  ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXNotasFiscais,
+  Tiplan.GravarXml, Tiplan.LerXml;
 
 { TACBrNFSeProviderTiplan }
 
@@ -153,10 +157,8 @@ begin
   Request := Request + '<inputXML>' + XmlToStr(AMSG) + '</inputXML>';
   Request := Request + '</RecepcionarLoteRpsRequest>';
 
-  Result := Executar('http://www.nfe.com.br/RecepcionarLoteRps',
-                     Request,
-                     ['outputXML', 'EnviarLoteRpsResposta'],
-                     []);
+  Result := Executar('http://www.nfe.com.br/RecepcionarLoteRps', Request,
+                     ['outputXML', 'EnviarLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarSituacao(ACabecalho,
@@ -170,10 +172,8 @@ begin
   Request := Request + '<inputXML>' + XmlToStr(AMSG) + '</inputXML>';
   Request := Request + '</ConsultarSituacaoLoteRpsRequest>';
 
-  Result := Executar('http://www.nfe.com.br/ConsultarSituacaoLoteRps',
-                     Request,
-                     ['outputXML', 'ConsultarSituacaoLoteRpsResposta'],
-                     []);
+  Result := Executar('http://www.nfe.com.br/ConsultarSituacaoLoteRps', Request,
+                     ['outputXML', 'ConsultarSituacaoLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarLote(ACabecalho,
@@ -187,10 +187,8 @@ begin
   Request := Request + '<inputXML>' + XmlToStr(AMSG) + '</inputXML>';
   Request := Request + '</ConsultarLoteRpsRequest>';
 
-  Result := Executar('http://www.nfe.com.br/ConsultarLoteRps',
-                     Request,
-                     ['outputXML', 'ConsultarLoteRpsResposta'],
-                     []);
+  Result := Executar('http://www.nfe.com.br/ConsultarLoteRps', Request,
+                     ['outputXML', 'ConsultarLoteRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarNFSePorRps(ACabecalho,
@@ -204,10 +202,8 @@ begin
   Request := Request + '<inputXML>' + XmlToStr(AMSG) + '</inputXML>';
   Request := Request + '</ConsultarNfsePorRpsRequest>';
 
-  Result := Executar('http://www.nfe.com.br/ConsultarNfsePorRps',
-                     Request,
-                     ['outputXML', 'ConsultarNfseRpsResposta'],
-                     []);
+  Result := Executar('http://www.nfe.com.br/ConsultarNfsePorRps', Request,
+                     ['outputXML', 'ConsultarNfseRpsResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.ConsultarNFSe(ACabecalho,
@@ -221,10 +217,8 @@ begin
   Request := Request + '<inputXML>' + XmlToStr(AMSG) + '</inputXML>';
   Request := Request + '</ConsultarNfseRequest>';
 
-  Result := Executar('http://www.nfe.com.br/ConsultarNfse',
-                     Request,
-                     ['outputXML', 'ConsultarNfseResposta'],
-                     []);
+  Result := Executar('http://www.nfe.com.br/ConsultarNfse', Request,
+                     ['outputXML', 'ConsultarNfseResposta'], []);
 end;
 
 function TACBrNFSeXWebserviceTiplan.Cancelar(ACabecalho,
@@ -238,10 +232,16 @@ begin
   Request := Request + '<inputXML>' + XmlToStr(AMSG) + '</inputXML>';
   Request := Request + '</CancelarNfseRequest>';
 
-  Result := Executar('http://www.nfe.com.br/CancelarNfse',
-                     Request,
-                     ['outputXML', 'CancelarNfseResposta'],
-                     []);
+  Result := Executar('http://www.nfe.com.br/CancelarNfse', Request,
+                     ['outputXML', 'CancelarNfseResposta'], []);
+end;
+
+function TACBrNFSeXWebserviceTiplan.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
 end;
 
 { TACBrNFSeProviderTiplan203 }
@@ -250,7 +250,11 @@ procedure TACBrNFSeProviderTiplan203.Configuracao;
 begin
   inherited Configuracao;
 
-  ConfigGeral.NumMaxRpsGerar := 3;
+  with ConfigGeral do
+  begin
+    NumMaxRpsGerar := 3;
+    QuebradeLinha := '\s\n';
+  end;
 
   with ConfigAssinar do
   begin
@@ -469,6 +473,15 @@ begin
   Result := Executar('http://nfse.abrasf.org.br/SubstituirNfse', Request,
                      ['outputXML', 'SubstituirNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br/"']);
+end;
+
+function TACBrNFSeXWebserviceTiplan203.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
 end;
 
 end.

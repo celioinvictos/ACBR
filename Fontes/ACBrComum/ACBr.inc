@@ -116,9 +116,14 @@
   {$DEFINE BORLAND}
 {$ENDIF}
 
+// utilizar para facilitar a manutenção do ACBr.inc, já que ele era uma cópia
+// da jedi, essa mudança permite uma evolução melhor do arquivo.
+//------------------------------------------------------------------------------
+{$I ACBr_jedi.inc}
+
 {$IFNDEF DELPHIXE2_UP}
   {$IFDEF BORLAND}
-   	{$UNDEF REMOVE_CAST_WARN}
+    {$UNDEF REMOVE_CAST_WARN}
   {$ENDIF}
 {$ENDIF}
 
@@ -148,11 +153,6 @@
 {$IFDEF DFE_SEM_LIBXML2}
   {$UNDEF DFE_ACBR_LIBXML2}
 {$ENDIF}
-
-// utilizar para facilitar a manutenção do ACBr.inc, já que ele era uma cópia
-// da jedi, essa mudança permite uma evolução melhor do arquivo.
-//------------------------------------------------------------------------------
-{$I ACBr_jedi.inc}
 
 {$IFNDEF SUPPORTS_DELAYED_LOADING}
  {$UNDEF USE_DELAYED}
@@ -289,6 +289,11 @@
 // Verificando se a compilação deve sem em modo texto "NOGUI"
 // Nota: FPC no Linux sempre liga a diretiva "CONSOLE", por isso criamos a NOGUI
 {$IFDEF FRAMEWORK}
+  {$DEFINE NOGUI}
+{$ENDIF}
+
+//  lazrus Android com LAMW, não suporta Dialogs, Forms,
+{$IFDEF LAMW}
   {$DEFINE NOGUI}
 {$ENDIF}
 

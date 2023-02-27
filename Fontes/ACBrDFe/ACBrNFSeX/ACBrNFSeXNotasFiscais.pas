@@ -45,9 +45,7 @@ uses
   {$Else}
    Contnrs,
   {$IfEnd}
-  pcnConversao, pcnAuxiliar,
-  ACBrBase, ACBrDFe, ACBrNFSeXConfiguracoes,
-  ACBrDFeUtil, ACBrNFSeXClass, ACBrNFSeXConversao;
+  ACBrBase, ACBrDFe, ACBrNFSeXConfiguracoes, ACBrNFSeXClass, ACBrNFSeXConversao;
 
 type
 
@@ -58,21 +56,17 @@ type
     FNFSe: TNFSe;
     FACBrNFSe: TACBrDFe;
 
-    FXMLNFSe: String;
-    FXMLAssinado: String;
-    FXMLOriginal: String;
     FAlertas: String;
     FNomeArq: String;
     FNomeArqRps: String;
     FConfirmada: Boolean;
+    FXmlRps: String;
+    FXmlNfse: String;
+    FXmlEspelho: String;
 
     function CalcularNomeArquivo: String;
     function CalcularPathArquivo: String;
-
-    function GetXMLAssinado: String;
-    procedure SetXML(const Value: String);
-    procedure SetXMLOriginal(const Value: String);
-
+    procedure SetXmlNfse(const Value: String);
   public
     constructor Create(AOwner: TACBrDFe);
     destructor Destroy; override;
@@ -85,7 +79,7 @@ type
 
     function GerarXML: String;
     function GravarXML(const NomeArquivo: String = '';
-      const PathArquivo: String = ''): Boolean;
+      const PathArquivo: String = ''; aTipo: TtpXML = txmlNFSe): Boolean;
 
     function GravarStream(AStream: TStream): Boolean;
 
@@ -101,13 +95,11 @@ type
 
     property NFSe: TNFSe read FNFSe;
 
-    // Atribuir a "XML", faz o componente transferir os dados lido para as propriedades internas e "XMLAssinado"
-    property XML: String         read FXMLOriginal   write SetXML;
-    // Atribuir a "XMLOriginal", reflete em XMLAssinado, se existir a tag de assinatura
-    property XMLOriginal: String read FXMLOriginal   write SetXMLOriginal;
-    property XMLAssinado: String read GetXMLAssinado write FXMLAssinado;
-    property XMLNFSe: String     read FXMLNFSe       write FXMLNFSe;
-    property Confirmada: Boolean read FConfirmada    write FConfirmada;
+    property XmlRps: String read FXmlRps write FXmlRps;
+    property XmlNfse: String read FXmlNfse write SetXmlNfse;
+    property XmlEspelho: String read FXmlEspelho write FXmlEspelho;
+
+    property Confirmada: Boolean read FConfirmada write FConfirmada;
     property Alertas: String     read FAlertas;
 
   end;
@@ -172,8 +164,11 @@ type
 implementation
 
 uses
-  ACBrUtil, synautil, IniFiles, StrUtilsEx,
-  ACBrNFSeX, ACBrNFSeXInterface, ACBrNFSeXProviderBase;
+  synautil, IniFiles, StrUtilsEx,
+  pcnAuxiliar,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.FilesIO,
+  ACBrDFeUtil,
+  ACBrNFSeX, ACBrNFSeXInterface;
 
 function CompRpsPorNumero(const Item1,
   Item2: {$IfDef HAS_SYSTEM_GENERICS}TObject{$Else}Pointer{$EndIf}): Integer;
@@ -289,7 +284,7 @@ begin
 
       sSecao := 'IdentificacaoRps';
 
-      SituacaoTrib := StrToSituacaoTrib(Ok, INIRec.ReadString(sSecao, 'SituacaoTrib', 'tp'));
+      SituacaoTrib := FProvider.StrToSituacaoTrib(Ok, INIRec.ReadString(sSecao, 'SituacaoTrib', 'tp'));
 
       // Provedor AssessorPublico
       Situacao := INIRec.ReadInteger(sSecao, 'Situacao', 0);
@@ -303,7 +298,7 @@ begin
 
       IdentificacaoRps.Numero := INIRec.ReadString(sSecao, 'Numero', '0');
       IdentificacaoRps.Serie := INIRec.ReadString(sSecao, 'Serie', '0');
-      IdentificacaoRps.Tipo := StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+      IdentificacaoRps.Tipo := FProvider.StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
 
       DataEmissao := INIRec.ReadDate(sSecao, 'DataEmissao', Now);
       Competencia := INIRec.ReadDate(sSecao, 'Competencia', Now);
@@ -322,7 +317,7 @@ begin
 
       RpsSubstituido.Numero := INIRec.ReadString(sSecao, 'Numero', '0');
       RpsSubstituido.Serie := INIRec.ReadString(sSecao, 'Serie', '0');
-      RpsSubstituido.Tipo := StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+      RpsSubstituido.Tipo := FProvider.StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
 
       sSecao := 'Prestador';
 
@@ -347,7 +342,7 @@ begin
           Numero := INIRec.ReadString(sSecao, 'Numero', '');
           Bairro := INIRec.ReadString(sSecao, 'Bairro', '');
           CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
-          xMunicipio := CodIBGEToCidade(StrToIntDef(CodigoMunicipio, 0));
+          xMunicipio := INIRec.ReadString(sSecao, 'xMunicipio', '');
           UF := INIRec.ReadString(sSecao, 'UF', '');
           CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 0);
           xPais := INIRec.ReadString(sSecao, 'xPais', '');
@@ -367,7 +362,7 @@ begin
       begin
         with IdentificacaoTomador do
         begin
-          Tipo := StrToTipoPessoa(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+          Tipo := FProvider.StrToTipoPessoa(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
           CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
           InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
           InscricaoEstadual := INIRec.ReadString(sSecao, 'InscricaoEstadual', '');
@@ -383,7 +378,7 @@ begin
           Complemento := INIRec.ReadString(sSecao, 'Complemento', '');
           Bairro := INIRec.ReadString(sSecao, 'Bairro', '');
           CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
-          xMunicipio := CodIBGEToCidade(StrToIntDef(CodigoMunicipio, 0));
+          xMunicipio := INIRec.ReadString(sSecao, 'xMunicipio', '');
           UF := INIRec.ReadString(sSecao, 'UF', '');
           CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 0);
           CEP := INIRec.ReadString(sSecao, 'CEP', '');
@@ -403,10 +398,10 @@ begin
 
       sSecao := 'Intermediario';
 
-      with IntermediarioServico do
+      with Intermediario do
       begin
-        CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
-        InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
+        Identificacao.CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
+        Identificacao.InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
         RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
       end;
 
@@ -428,10 +423,11 @@ begin
         Discriminacao := INIRec.ReadString(sSecao, 'Discriminacao', '');
         CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
         CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 1058);
-        ExigibilidadeISS := StrToExigibilidadeISS(Ok, INIRec.ReadString(sSecao, 'ExigibilidadeISS', '1'));
+        ExigibilidadeISS := FProvider.StrToExigibilidadeISS(Ok, INIRec.ReadString(sSecao, 'ExigibilidadeISS', '1'));
         MunicipioIncidencia := INIRec.ReadInteger(sSecao, 'MunicipioIncidencia', 0);
         UFPrestacao := INIRec.ReadString(sSecao, 'UFPrestacao', '');
         ResponsavelRetencao := FProvider.StrToResponsavelRetencao(Ok, INIRec.ReadString(sSecao, 'ResponsavelRetencao', '1'));
+        TipoLancamento := StrToTipoLancamento(Ok, INIRec.ReadString(sSecao, 'TipoLancamento', 'P'));
 
         i := 1;
         while true do
@@ -551,7 +547,7 @@ begin
 
           with Parcelas.New do
           begin
-            Parcela := StrToIntDef(sFim, 1);
+            Parcela := sFim;
             DataVencimento := INIRec.ReadDate(sSecao, 'DataVencimento', Now);
             Valor := StringToFloatDef(INIRec.ReadString(sSecao, 'Valor', ''), 0);
           end;
@@ -560,12 +556,6 @@ begin
         end;
       end;
     end;
-
-    {
-      Verificar a necessidade de gerar o Xml logo após ler o arquivo ini,
-      ou deixar para gerar pelo método Emitir.
-    }
-//    GerarXML; // ?????
 
     Result := True;
   finally
@@ -576,32 +566,73 @@ end;
 function TNotaFiscal.LerXML(const AXML: String): Boolean;
 var
   FProvider: IACBrNFSeXProvider;
+  TipoXml: TtpXML;
+  XmlTratado: string;
 begin
   FProvider := TACBrNFSeX(FACBrNFSe).Provider;
 
   if not Assigned(FProvider) then
     raise EACBrNFSeException.Create(ERR_SEM_PROVEDOR);
 
-  Result := FProvider.LerXML(AXml, FNFSe);
-  FXMLOriginal := String(AXML);
+  Result := FProvider.LerXML(AXML, FNFSe, TipoXml, XmlTratado);
+
+  if TipoXml = txmlNFSe then
+    FXmlNfse := XmlTratado
+  else
+    if TipoXml = txmlEspelho then
+      FXmlEspelho := XmlTratado
+    else
+      FXmlRps := XmlTratado;
 end;
 
-function TNotaFiscal.GravarXML(const NomeArquivo: String; const PathArquivo: String): Boolean;
+procedure TNotaFiscal.SetXmlNfse(const Value: String);
 begin
-  if EstaVazio(FXMLOriginal) then
+  LerXML(Value);
+  FXmlNfse := Value;
+end;
+
+function TNotaFiscal.GravarXML(const NomeArquivo: String;
+  const PathArquivo: String; aTipo: TtpXML): Boolean;
+var
+  ConteudoEhXml: Boolean;
+begin
+  if EstaVazio(FXmlRps) then
     GerarXML;
 
-  FNomeArqRps := CalcularNomeArquivoCompleto(NomeArquivo, PathArquivo);
-  Result := TACBrNFSeX(FACBrNFSe).Gravar(FNomeArqRps, FXMLOriginal);
+  {
+    Tem provedor que é gerando um JSON em vez de XML e o método Gravar acaba
+    incluindo na primeira linha do arquivo o encoding do XML.
+    Para contornar isso a variável ConteudoEhXml recebe o valor false quando é
+    um JSON e o método Gravar não inclui o encoding.
+  }
+  ConteudoEhXml := StringIsXML(FXmlRps);
+
+  if aTipo = txmlNFSe then
+  begin
+    if EstaVazio(NomeArquivo) then
+      FNomeArq := TACBrNFSeX(FACBrNFSe).GetNumID(NFSe) + '-nfse.xml'
+    else
+      FNomeArq := NomeArquivo + '-nfse.xml';
+
+    Result := TACBrNFSeX(FACBrNFSe).Gravar(FNomeArq, FXmlNfse, PathArquivo, ConteudoEhXml);
+  end
+  else
+  begin
+    FNomeArqRps := CalcularNomeArquivoCompleto(NomeArquivo, PathArquivo);
+    Result := TACBrNFSeX(FACBrNFSe).Gravar(FNomeArqRps, FXmlRps, '', ConteudoEhXml);
+  end;
 end;
 
 function TNotaFiscal.GravarStream(AStream: TStream): Boolean;
 begin
-  if EstaVazio(FXMLOriginal) then
+  if EstaVazio(FXmlRps) then
     GerarXML;
 
+  if EstaVazio(FXmlNfse) then
+    FXmlNfse := FXmlRps;
+
   AStream.Size := 0;
-  WriteStrToStream(AStream, AnsiString(FXMLOriginal));
+  WriteStrToStream(AStream, AnsiString(FXmlNfse));
   Result := True;
 end;
 
@@ -659,8 +690,8 @@ begin
   if not Assigned(FProvider) then
     raise EACBrNFSeException.Create(ERR_SEM_PROVEDOR);
 
-  FProvider.GerarXml(NFSe, FXMLOriginal, FAlertas);
-  Result := XMLOriginal;
+  FProvider.GerarXml(NFSe, FXmlRps, FAlertas);
+  Result := FXmlRps;
 end;
 
 function TNotaFiscal.CalcularNomeArquivo: String;
@@ -704,26 +735,6 @@ begin
     PathArquivo := PathWithDelim(PathArquivo);
 
   Result := PathArquivo + NomeArquivo;
-end;
-
-function TNotaFiscal.GetXMLAssinado: String;
-begin
-  Result := FXMLAssinado;
-end;
-
-procedure TNotaFiscal.SetXML(const Value: String);
-begin
-  LerXML(Value);
-end;
-
-procedure TNotaFiscal.SetXMLOriginal(const Value: String);
-begin
-  FXMLOriginal := Value;
-
-  if XmlEstaAssinado(FXMLOriginal) then
-    FXMLAssinado := FXMLOriginal
-  else
-    FXMLAssinado := '';
 end;
 
 { TNotasFiscais }
@@ -869,24 +880,22 @@ end;
 function TNotasFiscais.LoadFromFile(const CaminhoArquivo: String;
   AGerarNFSe: Boolean = True): Boolean;
 var
-  XMLStr: String;
-  XMLUTF8: AnsiString;
+  XmlUTF8: AnsiString;
   i, l: integer;
   MS: TMemoryStream;
 begin
   MS := TMemoryStream.Create;
   try
     MS.LoadFromFile(CaminhoArquivo);
-    XMLUTF8 := ReadStrFromStream(MS, MS.Size);
+
+    XmlUTF8 := ReadStrFromStream(MS, MS.Size);
   finally
     MS.Free;
   end;
 
   l := Self.Count; // Indice da última nota já existente
 
-  // Converte de UTF8 para a String nativa da IDE //
-  XMLStr := DecodeToString(XMLUTF8, True);
-  Result := LoadFromString(XMLStr, AGerarNFSe);
+  Result := LoadFromString(XmlUTF8, AGerarNFSe);
 
   if Result then
   begin
@@ -918,6 +927,8 @@ var
   P, N, TamTag, j: Integer;
   aXml, aXmlLote: string;
   TagF: Array[1..14] of String;
+  SL: TStringStream;
+  IsFile: Boolean;
 
   function PrimeiraNFSe: Integer;
   begin
@@ -979,7 +990,17 @@ var
 begin
   MS := TMemoryStream.Create;
   try
-    MS.LoadFromFile(CaminhoArquivo);
+    IsFile := FilesExists(CaminhoArquivo);
+
+    if (IsFile) then
+      MS.LoadFromFile(CaminhoArquivo)
+    else
+    begin
+      SL := TStringStream.Create(CaminhoArquivo);
+      MS.LoadFromStream(SL);
+      SL.Free;
+    end;
+
     XMLUTF8 := ReadStrFromStream(MS, MS.Size);
   finally
     MS.Free;
@@ -1015,7 +1036,12 @@ begin
       if Pos('-rps.xml', CaminhoArquivo) > 0 then
         Self.Items[i].NomeArqRps := CaminhoArquivo
       else
-        Self.Items[i].NomeArq := CaminhoArquivo;
+      begin
+        if IsFile then
+          Self.Items[i].NomeArq := CaminhoArquivo
+        else
+          Self.Items[i].NomeArq := TACBrNFSeX(FACBrNFSe).GetNumID(Items[i].NFSe) + '-nfse.xml';
+      end;
     end;
   end;
 end;

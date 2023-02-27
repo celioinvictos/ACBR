@@ -49,7 +49,7 @@ uses
     {$IFEND}
 //    {$IFDEF CLX} QForms, {$ELSE} Forms, {$ENDIF}
    {$ENDIF}
-   ACBrTXTClass, ACBrUtil, ACBrEAD, ACBrAAC,
+   ACBrTXTClass, ACBrUtil.Strings, ACBrUtil.FilesIO, ACBrUtil.Base, ACBrEAD, ACBrAAC,
    ACBrPAFRegistros,
    ACBrPAF_A_Class,
    ACBrPAF_B_Class,
@@ -547,7 +547,7 @@ begin
     Conteudo.Clear;
     NomeArquivo := Arquivo;
 
-    WriteRegistroV1;
+    WriteRegistroV1(Layout);
     WriteBuffer;
 
     // Assinatura EAD
@@ -773,7 +773,7 @@ begin
 
   if FPAF_P.RegistroP2.Count > 0 then
   begin
-    FPAF_P.WriteRegistroP2;
+    FPAF_P.WriteRegistroP2(Layout);
     FPAF_P.WriteBuffer;
   end;
 
@@ -793,15 +793,15 @@ begin
     FPAF_D.WriteBuffer;
   end;
 
-  if (FPAF_B.RegistroB2.Count > 0) and (Layout = lpPAFECF) then
+  if (FPAF_B.RegistroB2.Count > 0) then
   begin
-    FPAF_B.WriteRegistroB2;
+    FPAF_B.WriteRegistroB2(Layout);
     FPAF_B.WriteBuffer;
   end;
 
-  if (FPAF_C.RegistroC2.Count > 0) and (Layout = lpPAFECF) then
+  if (FPAF_C.RegistroC2.Count > 0)  then
   begin
-    FPAF_C.WriteRegistroC2;
+    FPAF_C.WriteRegistroC2(Layout);
     FPAF_C.WriteBuffer;
   end;
 

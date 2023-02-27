@@ -58,6 +58,8 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
+
     property DadosUsuario: string read GetDadosUsuario;
   end;
 
@@ -75,7 +77,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrDFeException, ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, Fiorilli.GravarXml, Fiorilli.LerXml;
 
 { TACBrNFSeProviderFiorilli200 }
@@ -85,15 +88,19 @@ begin
   inherited Configuracao;
 
   ConfigGeral.QuebradeLinha := '\s\n';
-
-  with ConfigAssinar do
+  ConfigGeral.ConsultaPorFaixaPreencherNumNfseFinal := true;
+  
+  if ConfigGeral.Ambiente = taProducao then
   begin
-    Rps := True;
-    LoteRps := True;
-    CancelarNFSe := True;
-    RpsGerarNFSe := True;
-    RpsSubstituirNFSe := True;
-    SubstituirNFSe := True;
+    with ConfigAssinar do
+    begin
+      Rps := True;
+      LoteRps := True;
+      CancelarNFSe := True;
+      RpsGerarNFSe := True;
+      RpsSubstituirNFSe := True;
+      SubstituirNFSe := True;
+    end;
   end;
 end;
 
@@ -132,9 +139,9 @@ end;
 procedure TACBrNFSeProviderFiorilli200.PrepararEmitir(
   Response: TNFSeEmiteResponse);
 begin
-  // O provedor Fiorilli existe que o numero do lote seja numerico e que não
+  // O provedor Fiorilli exige que o numero do lote seja numerico e que não
   // não tenha zeros a esquerda.
-  Response.Lote := IntToStr(StrToIntDef(Trim(Response.Lote), 0));
+  Response.NumeroLote := IntToStr(StrToIntDef(Trim(Response.NumeroLote), 0));
 
   inherited PrepararEmitir(Response);
 end;
@@ -162,7 +169,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:recepcionarLoteRps>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/recepcionarLoteRps', Request,
+  Result := Executar('recepcionarLoteRps', Request,
                      ['EnviarLoteRpsResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -179,7 +186,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:recepcionarLoteRpsSincrono>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/recepcionarLoteRpsSincrono', Request,
+  Result := Executar('recepcionarLoteRpsSincrono', Request,
                      ['EnviarLoteRpsSincronoResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -196,7 +203,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:gerarNfse>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/gerarNfse', Request,
+  Result := Executar('gerarNfse', Request,
                      ['GerarNfseResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -213,7 +220,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:consultarLoteRps>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/consultarLoteRps', Request,
+  Result := Executar('consultarLoteRps', Request,
                      ['ConsultarLoteRpsResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -230,7 +237,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:consultarNfsePorFaixa>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/consultarNfsePorFaixa', Request,
+  Result := Executar('consultarNfsePorFaixa', Request,
                      ['ConsultarNfseFaixaResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -247,7 +254,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:consultarNfsePorRps>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/consultarNfsePorRps', Request,
+  Result := Executar('consultarNfsePorRps', Request,
                      ['ConsultarNfseRpsResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -264,7 +271,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:consultarNfseServicoPrestado>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/consultarNfseServicoPrestado', Request,
+  Result := Executar('consultarNfseServicoPrestado', Request,
                      ['ConsultarNfseServicoPrestadoResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -281,7 +288,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:consultarNfseServicoTomado>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/consultarNfseServicoTomado', Request,
+  Result := Executar('consultarNfseServicoTomado', Request,
                      ['ConsultarNfseServicoTomadoResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -297,7 +304,7 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:cancelarNfse>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/cancelarNfse', Request,
+  Result := Executar('cancelarNfse', Request,
                      ['CancelarNfseResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
 end;
@@ -314,9 +321,25 @@ begin
   Request := Request + DadosUsuario;
   Request := Request + '</ws:substituirNfse>';
 
-  Result := Executar('http://ws.issweb.fiorilli.com.br/substituirNfse', Request,
+  Result := Executar('substituirNfse', Request,
                      ['SubstituirNfseResposta'],
                      ['xmlns:ws="http://ws.issweb.fiorilli.com.br/"']);
+end;
+
+function TACBrNFSeXWebserviceFiorilli200.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  if UTF8Decode(Result) = '' then
+    Result := NativeStringToUTF8(Result);
+
+  Result := StringReplace(Result, '&#xd;', '\s\n', [rfReplaceAll]);
+  Result := StringReplace(Result, ''#$A'', '\s\n', [rfReplaceAll]);
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverPrefixosDesnecessarios(Result);
+  Result := RemoverCaracteresDesnecessarios(Result);
+  Result := StringReplace(Result, '&', '&amp;', [rfReplaceAll]);
 end;
 
 end.

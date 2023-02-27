@@ -45,5 +45,9 @@
         GNRe,
         Guia,
         Sedex,
+        eSocial,
+        GTIN,
+        ConsultaCNPJ,
+        NCM,
     }
 }

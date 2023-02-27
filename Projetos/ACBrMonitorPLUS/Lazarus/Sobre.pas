@@ -79,7 +79,7 @@ var
   frmSobre: TfrmSobre;
 
 implementation
-Uses LCLType, ACBrUtil ;
+Uses LCLType, ACBrUtil.FilesIO, ACBrUtil.Strings;
 
 {$R *.lfm}
 
@@ -153,7 +153,7 @@ end;
 
 procedure TfrmSobre.bAjudaClick(Sender: TObject);
 begin
- ShowHelpOrErrorForKeyword('','ACBrMonitor/Apresentacao.htm');
+ ShowHelpOrErrorForKeyword('','ACBrMonitor/Apresentacao.html');
 end;
 
 procedure TfrmSobre.FormShortCut(Key: Integer; Shift: TShiftState;

@@ -37,13 +37,15 @@ unit ACBrBoletoRet_Itau;
 interface
 
 uses
-  Classes, SysUtils, ACBrBoleto,ACBrBoletoWS, ACBrBoletoRetorno,
-//  {$IfDef USE_JSONDATAOBJECTS_UNIT}
-//    JsonDataObjects_ACBr,
-//  {$Else}
-    Jsons,
-//  {$EndIf}
-  ACBrUtil, DateUtils, pcnConversao;
+  Classes,
+  SysUtils,
+  ACBrBoleto,
+  ACBrBoletoWS,
+  ACBrBoletoRetorno,
+  Jsons,
+  DateUtils,
+  ACBrBoletoWS.Rest,
+  pcnConversao;
 
 type
 
@@ -55,15 +57,15 @@ type
   public
     constructor Create(ABoletoWS: TACBrBoleto); override;
     destructor  Destroy; Override;
-    function LerRetorno: Boolean;override;
-    function RetornoEnvio: Boolean; override;
+    function LerRetorno(const ARetornoWS: TACBrBoletoRetornoWS): Boolean;override;
+    function RetornoEnvio(const AIndex: Integer): Boolean; override;
 
   end;
 
 implementation
 
 uses
-  ACBrBoletoConversao;
+ ACBrUtil.Strings, ACBrUtil.DateTime;
 
 { TRetornoEnvio }
 
@@ -78,12 +80,11 @@ begin
   inherited Destroy;
 end;
 
-function TRetornoEnvio_Itau.LerRetorno: Boolean;
+function TRetornoEnvio_Itau.LerRetorno(const ARetornoWS: TACBrBoletoRetornoWS): Boolean;
 var
-  RetornoItau: TRetEnvio;
   AJson: TJson;
   AJSonRejeicao: TJsonObject;
-  ARejeicao: TRejeicao;
+  ARejeicao: TACBrBoletoRejeicao;
   AJSonResp: TJsonArray;
   I: Integer;
 begin
@@ -91,9 +92,8 @@ begin
 
   if RetWS <> '' then
   begin
-    RetornoItau:= ACBrBoleto.CriarRetornoWebNaLista;
     try
-      with RetornoItau do
+      with ARetornoWS do
       begin
 
         AJSon := TJson.Create;
@@ -177,10 +177,10 @@ begin
 
 end;
 
-function TRetornoEnvio_Itau.RetornoEnvio: Boolean;
+function TRetornoEnvio_Itau.RetornoEnvio(const AIndex: Integer): Boolean;
 begin
 
-  Result:=inherited RetornoEnvio;
+  Result:=inherited RetornoEnvio(AIndex);
 
 end;
 

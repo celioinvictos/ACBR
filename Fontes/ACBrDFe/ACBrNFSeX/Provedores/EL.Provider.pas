@@ -55,6 +55,8 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function AbrirSessao(ACabecalho, AMSG: String): string; override;
     function FecharSessao(ACabecalho, AMSG: String): string; override;
+
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderEL = class (TACBrNFSeProviderProprio)
@@ -68,8 +70,8 @@ type
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
-    function AbreSessao(const aLote: String): TNFSeAbreSessaoResponse;
-    function FechaSessao(const aLote: String): TNFSeFechaSessaoResponse;
+    function AbreSessao(const aLote: String): Boolean;
+    function FechaSessao(const aLote: String): Boolean;
 
     function PrepararRpsParaLote(const aXml: string): string; override;
 
@@ -98,13 +100,20 @@ type
     procedure PrepararCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
     procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
 
-    procedure ProcessarMensagemErros(const RootNode: TACBrXmlNode;
-                                     const Response: TNFSeWebserviceResponse;
-                                     AListTag: string = '';
-                                     AMessageTag: string = ''); override;
+    procedure ProcessarMensagemErros(RootNode: TACBrXmlNode;
+                                     Response: TNFSeWebserviceResponse;
+                                     const AListTag: string = '';
+                                     const AMessageTag: string = ''); override;
 
   public
     procedure Emite; override;
+
+    function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string; override;
+    function StrToRegimeEspecialTributacao(out ok: boolean; const s: string): TnfseRegimeEspecialTributacao; override;
+
+    function SituacaoTributariaToStr(const t: TnfseSituacaoTributaria): string; override;
+    function StrToSituacaoTributaria(out ok: boolean; const s: string): TnfseSituacaoTributaria; override;
+    function SituacaoTributariaDescricao(const t: TnfseSituacaoTributaria): string; override;
 
   end;
 
@@ -121,6 +130,7 @@ type
     function Cancelar(ACabecalho, AMSG: String): string; override;
     function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderEL204 = class (TACBrNFSeProviderABRASFv2)
@@ -136,7 +146,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.XMLHTML,
+  ACBrDFeException,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ACBrNFSeXNotasFiscais, EL.GravarXml, EL.LerXml;
 
@@ -382,119 +393,152 @@ begin
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
+function TACBrNFSeXWebserviceEL204.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+end;
+
 { TACBrNFSeProviderEL }
 
 function TACBrNFSeProviderEL.AbreSessao(
-  const aLote: String): TNFSeAbreSessaoResponse;
+  const aLote: String): Boolean;
 var
   AService: TACBrNFSeXWebservice;
   AErro: TNFSeEventoCollectionItem;
+  AAbreSessao: TNFSeAbreSessaoResponse;
 begin
+  Result := False;
   TACBrNFSeX(FAOwner).SetStatus(stNFSeAbrirSessao);
 
-  Result := TNFSeAbreSessaoResponse.Create;
-  Result.Lote := aLote;
-
-  PrepararAbrirSessao(Result);
-  if (Result.Erros.Count > 0) then
-  begin
-    TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
-    Exit;
-  end;
+  AAbreSessao := TNFSeAbreSessaoResponse.Create;
 
   try
-    try
-      TACBrNFSeX(FAOwner).SetStatus(stNFSeEnvioWebService);
+    AAbreSessao.NumeroLote := aLote;
 
-      AService := CriarServiceClient(tmAbrirSessao);
-      AService.Prefixo := Result.Lote;
-      Result.ArquivoRetorno := AService.AbrirSessao(ConfigMsgDados.DadosCabecalho, Result.ArquivoEnvio);
+    PrepararAbrirSessao(AAbreSessao);
 
-      Result.Sucesso := True;
-      Result.EnvelopeEnvio := AService.Envio;
-      Result.EnvelopeRetorno := AService.Retorno;
-    except
-      on E:Exception do
-      begin
-        AErro := Result.Erros.New;
-        AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
-      end;
+    if (AAbreSessao.Erros.Count > 0) then
+    begin
+      TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+      Exit;
     end;
-  finally
-    FreeAndNil(AService);
-  end;
 
-  if not Result.Sucesso then
-  begin
+    AService := nil;
+
+    try
+      try
+        TACBrNFSeX(FAOwner).SetStatus(stNFSeEnvioWebService);
+
+        AService := CriarServiceClient(tmAbrirSessao);
+        AService.Prefixo := AAbreSessao.NumeroLote;
+        AAbreSessao.ArquivoRetorno := AService.AbrirSessao(ConfigMsgDados.DadosCabecalho, AAbreSessao.ArquivoEnvio);
+
+        AAbreSessao.Sucesso := True;
+        AAbreSessao.EnvelopeEnvio := AService.Envio;
+        AAbreSessao.EnvelopeRetorno := AService.Retorno;
+      except
+        on E:Exception do
+        begin
+          AErro := EmiteResponse.Erros.New;
+          AErro.Codigo := Cod999;
+          AErro.Descricao := ACBrStr(Desc999 + E.Message);
+        end;
+      end;
+    finally
+      FreeAndNil(AService);
+    end;
+
+    if not AAbreSessao.Sucesso then
+    begin
+      TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+      Exit;
+    end;
+
+    TACBrNFSeX(FAOwner).SetStatus(stNFSeAguardaProcesso);
+    TratarRetornoAbrirSessao(AAbreSessao);
     TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
-    Exit;
-  end;
 
-  TACBrNFSeX(FAOwner).SetStatus(stNFSeAguardaProcesso);
-  TratarRetornoAbrirSessao(Result);
-  TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+    Result := AAbreSessao.Sucesso;
+  finally
+    AAbreSessao.Free;
+  end;
 end;
 
-function TACBrNFSeProviderEL.FechaSessao(const aLote: String): TNFSeFechaSessaoResponse;
+function TACBrNFSeProviderEL.FechaSessao(const aLote: String): Boolean;
 var
   AService: TACBrNFSeXWebservice;
   AErro: TNFSeEventoCollectionItem;
+  AFechaSessao: TNFSeFechaSessaoResponse;
 begin
+  Result := False;
   TACBrNFSeX(FAOwner).SetStatus(stNFSeFecharSessao);
 
-  Result := TNFSeFechaSessaoResponse.Create;
-  Result.Lote := aLote;
-  Result.HashIdent := FPHash;
-
-  PrepararFecharSessao(Result);
-  if (Result.Erros.Count > 0) then
-  begin
-    TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
-    Exit;
-  end;
+  AFechaSessao := TNFSeFechaSessaoResponse.Create;
 
   try
-    try
-      TACBrNFSeX(FAOwner).SetStatus(stNFSeEnvioWebService);
+    AFechaSessao.NumeroLote := aLote;
+    AFechaSessao.HashIdent := FPHash;
 
-      AService := CriarServiceClient(tmFecharSessao);
-      AService.Prefixo := Result.Lote;
-      Result.ArquivoRetorno := AService.FecharSessao(ConfigMsgDados.DadosCabecalho, Result.ArquivoEnvio);
+    PrepararFecharSessao(AFechaSessao);
 
-      Result.Sucesso := True;
-      Result.EnvelopeEnvio := AService.Envio;
-      Result.EnvelopeRetorno := AService.Retorno;
-    except
-      on E:Exception do
-      begin
-        AErro := Result.Erros.New;
-        AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
-      end;
+    if (AFechaSessao.Erros.Count > 0) then
+    begin
+      TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+      Exit;
     end;
-  finally
-    FreeAndNil(AService);
-  end;
 
-  if not Result.Sucesso then
-  begin
+    AService := nil;
+
+    try
+      try
+        TACBrNFSeX(FAOwner).SetStatus(stNFSeEnvioWebService);
+
+        AService := CriarServiceClient(tmFecharSessao);
+        AService.Prefixo := AFechaSessao.NumeroLote;
+        AFechaSessao.ArquivoRetorno := AService.FecharSessao(ConfigMsgDados.DadosCabecalho, AFechaSessao.ArquivoEnvio);
+
+        AFechaSessao.Sucesso := True;
+        AFechaSessao.EnvelopeEnvio := AService.Envio;
+        AFechaSessao.EnvelopeRetorno := AService.Retorno;
+      except
+        on E:Exception do
+        begin
+          AErro := EmiteResponse.Erros.New;
+          AErro.Codigo := Cod999;
+          AErro.Descricao := ACBrStr(Desc999 + E.Message);
+        end;
+      end;
+    finally
+      FreeAndNil(AService);
+    end;
+
+    if not AFechaSessao.Sucesso then
+    begin
+      TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+      Exit;
+    end;
+
+    TACBrNFSeX(FAOwner).SetStatus(stNFSeAguardaProcesso);
+    TratarRetornoFecharSessao(AFechaSessao);
     TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
-    Exit;
-  end;
 
-  TACBrNFSeX(FAOwner).SetStatus(stNFSeAguardaProcesso);
-  TratarRetornoFecharSessao(Result);
-  TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+    Result := AFechaSessao.Sucesso;
+  finally
+    AFechaSessao.Free;
+  end;
 end;
 
 procedure TACBrNFSeProviderEL.Emite;
 begin
-  AbreSessao(EmiteResponse.Lote);
+  AbreSessao(EmiteResponse.NumeroLote);
 
   inherited Emite;
 
-  FechaSessao(EmiteResponse.Lote);
+  FechaSessao(EmiteResponse.NumeroLote);
 end;
 
 function TACBrNFSeProviderEL.PrepararRpsParaLote(const aXml: string): string;
@@ -503,8 +547,8 @@ begin
 end;
 
 procedure TACBrNFSeProviderEL.ProcessarMensagemErros(
-  const RootNode: TACBrXmlNode; const Response: TNFSeWebserviceResponse;
-  AListTag, AMessageTag: string);
+  RootNode: TACBrXmlNode; Response: TNFSeWebserviceResponse;
+  const AListTag, AMessageTag: string);
 var
   I: Integer;
   ANode: TACBrXmlNode;
@@ -524,13 +568,61 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := '';
-    AErro.Descricao := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('mensagens'), tcStr);
+    AErro.Descricao := ACBrStr(ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('mensagens'), tcStr));
 
     if AErro.Descricao = '' then
-      AErro.Descricao := ANodeArray[I].AsString;
+      AErro.Descricao := ACBrStr(ANodeArray[I].AsString);
 
     AErro.Correcao := '';
   end;
+end;
+
+function TACBrNFSeProviderEL.RegimeEspecialTributacaoToStr(
+  const t: TnfseRegimeEspecialTributacao): string;
+begin
+  Result := EnumeradoToStr(t,
+                       ['0', '1', '2', '3', '4', '5', '6'],
+                       [retNenhum, retMicroempresaMunicipal, retEstimativa,
+                       retSociedadeProfissionais, retCooperativa,
+                       retMicroempresarioIndividual, retMicroempresarioEmpresaPP
+                       ]);
+end;
+
+function TACBrNFSeProviderEL.SituacaoTributariaDescricao(
+  const t: TnfseSituacaoTributaria): string;
+begin
+  case t of
+    stNormal   : Result := 'Não Retido' ;
+    stRetencao : Result := 'Retido' ;
+  else
+    Result := '';
+  end;
+end;
+
+function TACBrNFSeProviderEL.SituacaoTributariaToStr(
+  const t: TnfseSituacaoTributaria): string;
+begin
+  Result := EnumeradoToStr(t,['1', '2'],
+                             [stNormal, stRetencao]);
+end;
+
+function TACBrNFSeProviderEL.StrToSituacaoTributaria(out ok: boolean;
+  const s: string): TnfseSituacaoTributaria;
+begin
+  Result := StrToEnumerado(ok, s,
+                             ['1', '2'],
+                             [stNormal, stRetencao]);
+end;
+
+function TACBrNFSeProviderEL.StrToRegimeEspecialTributacao(out ok: boolean;
+  const s: string): TnfseRegimeEspecialTributacao;
+begin
+  Result := StrToEnumerado(ok, s,
+                       ['0', '1', '2', '3', '4', '5', '6'],
+                       [retNenhum, retMicroempresaMunicipal, retEstimativa,
+                       retSociedadeProfissionais, retCooperativa,
+                       retMicroempresarioIndividual, retMicroempresarioEmpresaPP
+                       ]);
 end;
 
 procedure TACBrNFSeProviderEL.PrepararAbrirSessao(
@@ -539,24 +631,24 @@ var
   AErro: TNFSeEventoCollectionItem;
   Emitente: TEmitenteConfNFSe;
 begin
-  if EstaVazio(Response.Lote) then
+  if EstaVazio(Response.NumeroLote) then
   begin
-    AErro := Response.Erros.New;
+    AErro := EmiteResponse.Erros.New;
     AErro.Codigo := Cod111;
-    AErro.Descricao := Desc111;
+    AErro.Descricao := ACBrStr(Desc111);
     Exit;
   end;
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
   Response.ArquivoEnvio := '<el:autenticarContribuinte>' +
-                         '<identificacaoPrestador>' +
-                            OnlyNumber(Emitente.CNPJ) +
-                         '</identificacaoPrestador>' +
-                         '<senha>' +
-                            Emitente.WSSenha +
-                         '</senha>' +
-                       '</el:autenticarContribuinte>';
+                             '<identificacaoPrestador>' +
+                                OnlyNumber(Emitente.CNPJ) +
+                             '</identificacaoPrestador>' +
+                             '<senha>' +
+                                Emitente.WSSenha +
+                             '</senha>' +
+                           '</el:autenticarContribuinte>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoAbrirSessao(
@@ -571,9 +663,9 @@ begin
     try
       if Response.ArquivoRetorno = '' then
       begin
-        AErro := Response.Erros.New;
+        AErro := EmiteResponse.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -589,7 +681,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -601,10 +693,10 @@ procedure TACBrNFSeProviderEL.PrepararFecharSessao(
   Response: TNFSeFechaSessaoResponse);
 begin
   Response.ArquivoEnvio := '<el:finalizarSessao>' +
-                         '<hashIdentificador>' +
-                            FPHash +
-                         '</hashIdentificador>' +
-                       '</el:finalizarSessao>';
+                             '<hashIdentificador>' +
+                                FPHash +
+                             '</hashIdentificador>' +
+                           '</el:finalizarSessao>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoFecharSessao(
@@ -619,9 +711,9 @@ begin
     try
       if Response.ArquivoRetorno = '' then
       begin
-        AErro := Response.Erros.New;
+        AErro := EmiteResponse.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -633,9 +725,9 @@ begin
     except
       on E:Exception do
       begin
-        AErro := Response.Erros.New;
+        AErro := EmiteResponse.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -659,10 +751,10 @@ begin
     else
       xTipoDoc := '1';
 
-    if Length(Response.Lote) < 13 then
-      lote := PadLeft(Response.Lote, 13, '0')
+    if Length(Response.NumeroLote) < 13 then
+      lote := PadLeft(Response.NumeroLote, 13, '0')
     else
-      lote := Response.Lote;
+      lote := Response.NumeroLote;
 
 
     Arquivo := '<LoteRps xmlns="http://www.el.com.br/nfse/xsd/el-nfse.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.el.com.br/nfse/xsd/el-nfse.xsd el-nfse.xsd ">' +
@@ -670,7 +762,7 @@ begin
                       lote+
                  '</Id>' +
                  '<NumeroLote>' +
-                    Response.Lote +
+                    Response.NumeroLote +
                  '</NumeroLote>' +
                  '<QuantidadeRps>' +
                     IntToStr(TACBrNFSeX(FAOwner).NotasFiscais.Count) +
@@ -692,16 +784,16 @@ begin
                '</LoteRps>';
 
     Response.ArquivoEnvio := '<el:EnviarLoteRpsEnvio>' +
-                           '<identificacaoPrestador>' +
-                              OnlyNumber(Emitente.CNPJ) +
-                           '</identificacaoPrestador>' +
-                           '<hashIdentificador>' +
-                              FPHash +
-                           '</hashIdentificador>' +
-                           '<arquivo>' +
-                              IncluirCDATA(Arquivo) +
-                           '</arquivo>' +
-                         '</el:EnviarLoteRpsEnvio>';
+                               '<identificacaoPrestador>' +
+                                  OnlyNumber(Emitente.CNPJ) +
+                               '</identificacaoPrestador>' +
+                               '<hashIdentificador>' +
+                                  FPHash +
+                               '</hashIdentificador>' +
+                               '<arquivo>' +
+                                  IncluirCDATA(Arquivo) +
+                               '</arquivo>' +
+                             '</el:EnviarLoteRpsEnvio>';
   end;
 end;
 
@@ -720,7 +812,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -739,7 +831,7 @@ begin
         with Response do
         begin
           Data := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dataRecebimento'), tcDatHor);
-          Lote := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numeroLote'), tcStr);
+          NumeroLote := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numeroLote'), tcStr);
           Protocolo := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numeroProtocolo'), tcStr);
         end;
       end;
@@ -748,7 +840,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -766,20 +858,20 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod101;
-    AErro.Descricao := Desc101;
+    AErro.Descricao := ACBrStr(Desc101);
     Exit;
   end;
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
   Response.ArquivoEnvio := '<el:ConsultarSituacaoLoteRpsEnvio>' +
-                         '<identificacaoPrestador>' +
-                            OnlyNumber(Emitente.CNPJ) +
-                         '</identificacaoPrestador>' +
-                         '<numeroProtocolo>' +
-                            Response.Protocolo +
-                         '</numeroProtocolo>' +
-                       '</el:ConsultarSituacaoLoteRpsEnvio>';
+                             '<identificacaoPrestador>' +
+                                OnlyNumber(Emitente.CNPJ) +
+                             '</identificacaoPrestador>' +
+                             '<numeroProtocolo>' +
+                                Response.Protocolo +
+                             '</numeroProtocolo>' +
+                           '</el:ConsultarSituacaoLoteRpsEnvio>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoConsultaSituacao(
@@ -798,7 +890,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -816,7 +908,7 @@ begin
       begin
         with Response do
         begin
-          Lote := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numeroLote'), tcStr);
+          NumeroLote := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numeroLote'), tcStr);
           Situacao := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('situacaoLoteRps'), tcStr);
         end;
       end;
@@ -825,7 +917,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -843,20 +935,20 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod101;
-    AErro.Descricao := Desc101;
+    AErro.Descricao := ACBrStr(Desc101);
     Exit;
   end;
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
   Response.ArquivoEnvio := '<el:ConsultarLoteRpsEnvio>' +
-                         '<identificacaoPrestador>' +
-                            OnlyNumber(Emitente.CNPJ) +
-                         '</identificacaoPrestador>' +
-                         '<numeroProtocolo>' +
-                            Response.Protocolo +
-                         '</numeroProtocolo>' +
-                       '</el:ConsultarLoteRpsEnvio>';
+                             '<identificacaoPrestador>' +
+                                OnlyNumber(Emitente.CNPJ) +
+                             '</identificacaoPrestador>' +
+                             '<numeroProtocolo>' +
+                                Response.Protocolo +
+                             '</numeroProtocolo>' +
+                           '</el:ConsultarLoteRpsEnvio>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoConsultaLoteRps(
@@ -875,7 +967,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -888,6 +980,9 @@ begin
       Response.Sucesso := (Response.Erros.Count = 0);
 
       AuxNode := ANode.Childrens.FindAnyNs('return');
+
+      if (AuxNode <> nil) and (Pos('<notasFiscais>', AuxNode.OuterXml) > 0) then
+        AuxNode := AuxNode.Childrens.FindAnyNs('notasFiscais');
 
       if AuxNode <> nil then
       begin
@@ -904,7 +999,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -918,24 +1013,24 @@ var
   AErro: TNFSeEventoCollectionItem;
   Emitente: TEmitenteConfNFSe;
 begin
-  if EstaVazio(Response.NumRPS) then
+  if EstaVazio(Response.NumeroRps) then
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod102;
-    AErro.Descricao := Desc102;
+    AErro.Descricao := ACBrStr(Desc102);
     Exit;
   end;
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
   Response.ArquivoEnvio := '<el:ConsultarNfseRpsEnvio>' +
-                         '<identificacaoRps>' +
-                            Response.NumRPS +
-                         '</identificacaoRps>' +
-                         '<identificacaoPrestador>' +
-                            OnlyNumber(Emitente.CNPJ) +
-                         '</identificacaoPrestador>' +
-                       '</el:ConsultarNfseRpsEnvio>';
+                             '<identificacaoRps>' +
+                                Response.NumeroRps +
+                             '</identificacaoRps>' +
+                             '<identificacaoPrestador>' +
+                                OnlyNumber(Emitente.CNPJ) +
+                             '</identificacaoPrestador>' +
+                           '</el:ConsultarNfseRpsEnvio>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoConsultaNFSeporRps(
@@ -954,7 +1049,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -967,6 +1062,9 @@ begin
       Response.Sucesso := (Response.Erros.Count = 0);
 
       AuxNode := ANode.Childrens.FindAnyNs('return');
+
+      if (AuxNode <> nil) and (Pos('<nfeRpsNotaFiscal>', AuxNode.OuterXml) > 0) then
+        AuxNode := AuxNode.Childrens.FindAnyNs('nfeRpsNotaFiscal');
 
       if AuxNode <> nil then
       begin
@@ -984,7 +1082,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -1002,7 +1100,7 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod108;
-    AErro.Descricao := Desc108;
+    AErro.Descricao := ACBrStr(Desc108);
     Exit;
   end;
 
@@ -1011,13 +1109,13 @@ begin
   Response.Metodo := tmConsultarNFSe;
 
   Response.ArquivoEnvio := '<el:ConsultarNfseEnvio>' +
-                         '<identificacaoPrestador>' +
-                            OnlyNumber(Emitente.CNPJ) +
-                         '</identificacaoPrestador>' +
-                         '<numeroNfse>' +
-                            Response.InfConsultaNFSe.NumeroIniNFSe +
-                         '</numeroNfse>' +
-                       '</el:ConsultarNfseEnvio>';
+                             '<identificacaoPrestador>' +
+                                OnlyNumber(Emitente.CNPJ) +
+                             '</identificacaoPrestador>' +
+                             '<numeroNfse>' +
+                                Response.InfConsultaNFSe.NumeroIniNFSe +
+                             '</numeroNfse>' +
+                           '</el:ConsultarNfseEnvio>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoConsultaNFSe(
@@ -1036,7 +1134,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -1066,7 +1164,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -1084,20 +1182,20 @@ begin
   begin
     AErro := Response.Erros.New;
     AErro.Codigo := Cod108;
-    AErro.Descricao := Desc108;
+    AErro.Descricao := ACBrStr(Desc108);
     Exit;
   end;
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
 
   Response.ArquivoEnvio := '<el:CancelarNfseEnvio>' +
-                         '<identificacaoPrestador>' +
-                            OnlyNumber(Emitente.CNPJ) +
-                         '</identificacaoPrestador>' +
-                         '<numeroNfse>' +
-                            Response.InfCancelamento.NumeroNFSe +
-                         '</numeroNfse>' +
-                       '</el:CancelarNfseEnvio>';
+                             '<identificacaoPrestador>' +
+                                OnlyNumber(Emitente.CNPJ) +
+                             '</identificacaoPrestador>' +
+                             '<numeroNfse>' +
+                                Response.InfCancelamento.NumeroNFSe +
+                             '</numeroNfse>' +
+                           '</el:CancelarNfseEnvio>';
 end;
 
 procedure TACBrNFSeProviderEL.TratarRetornoCancelaNFSe(
@@ -1116,7 +1214,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod201;
-        AErro.Descricao := Desc201;
+        AErro.Descricao := ACBrStr(Desc201);
         Exit
       end;
 
@@ -1129,6 +1227,9 @@ begin
       Response.Sucesso := (Response.Erros.Count = 0);
 
       AuxNode := ANode.Childrens.FindAnyNs('return');
+
+      if (AuxNode <> nil) and (Pos('<nfeRpsNotaFiscal>', AuxNode.OuterXml) > 0) then
+        AuxNode := AuxNode.Childrens.FindAnyNs('nfeRpsNotaFiscal');
 
       if AuxNode <> nil then
       begin
@@ -1146,7 +1247,7 @@ begin
       begin
         AErro := Response.Erros.New;
         AErro.Codigo := Cod999;
-        AErro.Descricao := Desc999 + E.Message;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
       end;
     end;
   finally
@@ -1163,6 +1264,7 @@ begin
     UseCertificateHTTP := False;
     ModoEnvio := meLoteAssincrono;
     NumMaxRpsEnviar := 5;
+    DetalharServico := True;
   end;
 
   SetXmlNameSpace('http://www.el.com.br/nfse/xsd/el-nfse.xsd');
@@ -1207,11 +1309,19 @@ end;
 
 { TACBrNFSeXWebserviceEL }
 
+function TACBrNFSeXWebserviceEL.TratarXmlRetornado(const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+end;
+
 function TACBrNFSeXWebserviceEL.Recepcionar(ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1219,7 +1329,7 @@ function TACBrNFSeXWebserviceEL.AbrirSessao(ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1227,7 +1337,7 @@ function TACBrNFSeXWebserviceEL.FecharSessao(ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1236,7 +1346,7 @@ function TACBrNFSeXWebserviceEL.ConsultarSituacao(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1244,7 +1354,7 @@ function TACBrNFSeXWebserviceEL.ConsultarLote(ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1253,7 +1363,7 @@ function TACBrNFSeXWebserviceEL.ConsultarNFSePorRps(ACabecalho,
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1261,7 +1371,7 @@ function TACBrNFSeXWebserviceEL.ConsultarNFSe(ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 
@@ -1269,7 +1379,7 @@ function TACBrNFSeXWebserviceEL.Cancelar(ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
-  Result := Executar('', AMSG, [''],
+  Result := Executar('', AMSG, [],
                      ['xmlns:el="http://des36.el.com.br:8080/el-issonline/"']);
 end;
 

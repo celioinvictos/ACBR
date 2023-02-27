@@ -52,6 +52,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderISSSJP = class (TACBrNFSeProviderABRASFv1)
@@ -67,7 +68,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, ISSSJP.GravarXml, ISSSJP.LerXml;
 
 { TACBrNFSeXWebserviceISSSJP }
@@ -168,6 +170,17 @@ begin
                      ['xmlns:nfe="http://nfe.sjp.pr.gov.br"']);
 end;
 
+function TACBrNFSeXWebserviceISSSJP.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverIdentacao(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
+end;
+
 { TACBrNFSeProviderISSSJP }
 
 procedure TACBrNFSeProviderISSSJP.Configuracao;
@@ -205,6 +218,8 @@ begin
                       '<versaoDados>3</versaoDados>' +
                       '</ns2:cabecalho>';
   end;
+
+  SetNomeXSD('***');
 
   with ConfigSchemas do
   begin

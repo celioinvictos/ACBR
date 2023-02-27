@@ -38,12 +38,25 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
+  ACBrXmlDocument,
   ACBrNFSeXLerXml_ABRASFv2;
 
 type
   { TNFSeR_SigCorp203 }
 
   TNFSeR_SigCorp203 = class(TNFSeR_ABRASFv2)
+  protected
+    function LerDataHoraCancelamento(const ANode: TACBrXmlNode): TDateTime; override;
+    function LerDataEmissao(const ANode: TACBrXmlNode): TDateTime; override;
+    function LerDataEmissaoRps(const ANode: TACBrXmlNode): TDateTime; override;
+
+  public
+
+  end;
+
+  { TNFSeR_SigCorp204 }
+
+  TNFSeR_SigCorp204 = class(TNFSeR_ABRASFv2)
   protected
 
   public
@@ -52,9 +65,65 @@ type
 
 implementation
 
+uses
+  ACBrXmlBase,
+  ACBrUtil.Strings, ACBrUtil.DateTime;
+
 //==============================================================================
 // Essa unit tem por finalidade exclusiva ler o XML do provedor:
 //     SigCorp
 //==============================================================================
+
+{ TNFSeR_SigCorp203 }
+
+function TNFSeR_SigCorp203.LerDataEmissao(const ANode: TACBrXmlNode): TDateTime;
+var
+  xDataHora, xFormato: string;
+begin
+  xDataHora := ObterConteudo(ANode.Childrens.FindAnyNs('DataEmissao'), tcStr);
+  xFormato := 'YYYY/MM/DD';
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('FormatoData', 'NFSeDDMMAAAA') then
+    xFormato := 'DD/MM/YYYY';
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('FormatoData', 'NFSeMMDDAAAA') then
+    xFormato := 'MM/DD/YYYY';
+
+  result := EncodeDataHora(xDataHora, xFormato);
+end;
+
+function TNFSeR_SigCorp203.LerDataEmissaoRps(
+  const ANode: TACBrXmlNode): TDateTime;
+var
+  xDataHora, xFormato: string;
+begin
+  xDataHora := ObterConteudo(ANode.Childrens.FindAnyNs('DataEmissao'), tcStr);
+  xFormato := 'YYYY/MM/DD';
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('FormatoData', 'RpsDDMMAAAA') then
+    xFormato := 'DD/MM/YYYY';
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('FormatoData', 'RpsMMDDAAAA') then
+    xFormato := 'MM/DD/YYYY';
+
+  result := EncodeDataHora(xDataHora, xFormato);
+end;
+
+function TNFSeR_SigCorp203.LerDataHoraCancelamento(
+  const ANode: TACBrXmlNode): TDateTime;
+var
+  xDataHora, xFormato: string;
+begin
+  xDataHora := ObterConteudo(ANode.Childrens.FindAnyNs('DataHoraCancelamento'), tcStr);
+  xFormato := 'YYYY/MM/DD';
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('FormatoData', 'CancDDMMAAAA') then
+    xFormato := 'DD/MM/YYYY';
+
+  if FpAOwner.ConfigGeral.Params.ParamTemValor('FormatoData', 'CancMMDDAAAA') then
+    xFormato := 'MM/DD/YYYY';
+
+  result := EncodeDataHora(xDataHora, xFormato);
+end;
 
 end.

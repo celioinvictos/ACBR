@@ -38,7 +38,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, variants,
-  ACBrUtil,
+  ACBrUtil.Base, ACBrUtil.XMLHTML, ACBrUtil.Strings,
   pcnGerador, pcnLeitor, pcnConversao, pcnAuxiliar, pcnConsts,
   pcnCommonReinf, pcnConversaoReinf;
 
@@ -435,6 +435,13 @@ begin
       Gerador.wCampo(tcStr, '', 'nrInsc', 11, 11, 1, pEmp.NrInsc)
     else
       Gerador.wCampo(tcStr, '', 'nrInsc', 8, 8, 1, Copy(pEmp.NrInsc, 1, 8));
+  end;
+
+  if pEmp.infoComplContri.NatJur <> '' then
+  begin
+    Gerador.wGrupo('infoComplContri');
+    Gerador.wCampo(tcStr, '', 'natJur', 1, 4, 0, pEmp.infoComplContri.NatJur);
+    Gerador.wGrupo('/infoComplContri');
   end;
 
   if GeraGrupo then

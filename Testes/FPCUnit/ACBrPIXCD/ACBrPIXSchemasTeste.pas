@@ -102,6 +102,20 @@ type
     procedure AtribuirLerReatribuirEComparar;
   end;
 
+  { TTestCobrancaImediataComSaquePIX1 }
+
+  TTestCobrancaImediataComSaquePIX1 = class(TTestCase)
+  private
+    fJSON: String;
+    fACBrPixCob: TACBrPIXCobSolicitada;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure AtribuirELerValores;
+    procedure AtribuirLerReatribuirEComparar;
+  end;
+
   { TTestCobrancaImediataComSaquePIX2 }
 
   TTestCobrancaImediataComSaquePIX2 = class(TTestCase)
@@ -322,7 +336,79 @@ implementation
 
 uses
   DateUtils,
-  ACBrUtil;
+  ACBrUtil.Strings;
+
+{ TTestCobrancaImediataComSaquePIX1 }
+
+procedure TTestCobrancaImediataComSaquePIX1.SetUp;
+begin
+  inherited;
+  fACBrPixCob := TACBrPIXCobSolicitada.Create('');
+
+  // Nota, os Fontes dessa Unit estão em CP1252, por isso usamos ACBrStr()
+  fJSON := ACBrStr(
+           '{'+
+            '"devedor": {'+
+              '"cnpj": "12345678000195",'+
+              '"nome": "Empresa de Serviços SA"'+
+            '},'+
+            '"valor": {'+
+              '"original": "0.00",'+
+              '"retirada": {'+
+                '"saque": {'+
+                  '"valor": "5.00",'+
+                  '"modalidadeAgente": "AGPSS",'+
+                  '"prestadorDoServicoDeSaque": "12345678"'+
+                '}'+
+              '}'+
+            '},'+
+            '"chave": "7d9f0335-8dcc-4054-9bf9-0dbd61d36906"'+
+           '}');
+end;
+
+procedure TTestCobrancaImediataComSaquePIX1.TearDown;
+begin
+  fACBrPixCob.Free;
+  inherited TearDown;
+end;
+
+procedure TTestCobrancaImediataComSaquePIX1.AtribuirELerValores;
+begin
+  fACBrPixCob.AsJSON := fJSON;
+  CheckEquals(fACBrPixCob.devedor.cnpj, '12345678000195');
+  CheckEquals(fACBrPixCob.devedor.nome, ACBrStr('Empresa de Serviços SA'));
+  CheckEquals(fACBrPixCob.valor.original, 0);
+  CheckEquals(fACBrPixCob.valor.modalidadeAlteracao, False);
+  CheckEquals(fACBrPixCob.valor.retirada.saque.valor, 5);
+  CheckEquals(fACBrPixCob.valor.retirada.saque.modalidadeAlteracao, False);
+  CheckTrue(fACBrPixCob.valor.retirada.saque.modalidadeAgente = maAGPSS);
+  CheckEquals(fACBrPixCob.valor.retirada.saque.prestadorDoServicoDeSaque, 12345678);
+  CheckEquals(fACBrPixCob.chave, '7d9f0335-8dcc-4054-9bf9-0dbd61d36906');
+end;
+
+procedure TTestCobrancaImediataComSaquePIX1.AtribuirLerReatribuirEComparar;
+var
+  pc: TACBrPIXCobSolicitada;
+  s: String;
+begin
+  fACBrPixCob.AsJSON := fJSON;
+  s := fACBrPixCob.AsJSON;
+  pc := TACBrPIXCobSolicitada.Create('');
+  try
+    pc.AsJSON := s;
+    CheckEquals(fACBrPixCob.devedor.cnpj, pc.devedor.cnpj);
+    CheckEquals(fACBrPixCob.devedor.nome, pc.devedor.nome);
+    CheckEquals(fACBrPixCob.valor.original, pc.valor.original);
+    CheckEquals(fACBrPixCob.valor.modalidadeAlteracao, pc.valor.modalidadeAlteracao);
+    CheckEquals(fACBrPixCob.valor.retirada.saque.valor, pc.valor.retirada.saque.valor);
+    CheckEquals(fACBrPixCob.valor.retirada.saque.modalidadeAlteracao, pc.valor.retirada.saque.modalidadeAlteracao);
+    CheckTrue(fACBrPixCob.valor.retirada.saque.modalidadeAgente = pc.valor.retirada.saque.modalidadeAgente);
+    CheckEquals(fACBrPixCob.valor.retirada.saque.prestadorDoServicoDeSaque, pc.valor.retirada.saque.prestadorDoServicoDeSaque);
+    CheckEquals(fACBrPixCob.chave, pc.chave);
+  finally
+    pc.Free;
+  end;
+end;
 
 { TTestQRCodeEstatico }
 
@@ -722,7 +808,7 @@ begin
   fJSON := ACBrStr(
   '{'+
     '"calendario": {'+
-      '"criacao": "2020-09-09T20:15:00.358Z",'+
+      '"criacao": "2022-06-11T00:09:30.82-04:00",'+
       '"expiracao": 3600'+
     '},'+
     '"txid": "33beb661beda44a8928fef47dbeb2dc5",'+
@@ -763,7 +849,8 @@ end;
 procedure TTestCobrancaGerada.AtribuirELerValores;
 begin
   fACBrPixCobGerada.AsJSON := fJSON;
-  CheckEquals(fACBrPixCobGerada.calendario.criacao, EncodeDateTime(2020,09,09,20,15,0,358));
+  CheckEquals(fACBrPixCobGerada.calendario.criacao, EncodeDateTime(2022,06,11,00,09,30,82));
+  CheckEquals(fACBrPixCobGerada.calendario.criacao_Bias, 240);
   CheckEquals(fACBrPixCobGerada.calendario.expiracao, 3600);
   CheckEquals(fACBrPixCobGerada.txId, '33beb661beda44a8928fef47dbeb2dc5');
   CheckEquals(fACBrPixCobGerada.revisao, 0);
@@ -792,9 +879,9 @@ begin
   s := fACBrPixCobGerada.AsJSON;
   cg := TACBrPIXCobGerada.Create('');
   try
-    //cg.AsJSON := s;
-    cg.Assign(fACBrPixCobGerada);
+    cg.AsJSON := s;
     CheckEquals(fACBrPixCobGerada.calendario.criacao, cg.calendario.criacao);
+    CheckEquals(fACBrPixCobGerada.calendario.criacao_Bias, cg.calendario.criacao_Bias);
     CheckEquals(fACBrPixCobGerada.calendario.expiracao, cg.calendario.expiracao);
     CheckEquals(fACBrPixCobGerada.txId, cg.txId);
     CheckEquals(fACBrPixCobGerada.revisao, cg.revisao);
@@ -1083,7 +1170,7 @@ begin
   		'},'+
   		'{'+
   			'"calendario": {'+
-  				'"criacao": "2020-09-09T20:15:00.358Z",'+
+  				'"criacao": "2020-09-09T20:15:00.358-04:00",'+
   				'"expiracao": 3600'+
   			'},'+
   			'"txid": "655dfdb1a4514b8fbb58254b958913fb",'+
@@ -1127,7 +1214,7 @@ begin
   		'},'+
   		'{'+
   			'"calendario": {'+
-  				'"criacao": "2020-09-09T20:15:00.358Z",'+
+  				'"criacao": "2020-09-09T20:15:00.358-03:00",'+
   				'"expiracao": 3600'+
   			'},'+
   			'"txid": "33beb661beda44a8928fef47dbeb2dc5",'+
@@ -1159,7 +1246,7 @@ begin
   		'},'+
   		'{'+
   			'"calendario": {'+
-  				'"criacao": "2020-09-09T20:15:00.358Z",'+
+  				'"criacao": "2020-09-09T20:15:00.358+01:00",'+
   				'"expiracao": 3600'+
   			'},'+
   			'"txid": "33beb661beda44a8928fef47dbeb2dc5",'+
@@ -1243,6 +1330,7 @@ begin
   CheckEquals(fACBrPixCobsConsultadas.parametros.paginacao.quantidadeTotalDeItens, 2);
 
   CheckEquals(fACBrPixCobsConsultadas.cobs[0].calendario.criacao, EncodeDateTime(2020,09,09,20,15,00,358));
+  CheckEquals(fACBrPixCobsConsultadas.cobs[0].calendario.criacao_Bias, 0);
   CheckEquals(fACBrPixCobsConsultadas.cobs[0].calendario.expiracao, 3600);
   CheckEquals(fACBrPixCobsConsultadas.cobs[0].txId, '7978c0c97ea847e78e8849634473c1f1');
   CheckEquals(fACBrPixCobsConsultadas.cobs[0].revisao, 0);
@@ -1263,6 +1351,7 @@ begin
   CheckEquals(fACBrPixCobsConsultadas.cobs[0].infoAdicionais[1].valor, ACBrStr('Informação Adicional2 do PSP-Recebedor'));
 
   CheckEquals(fACBrPixCobsConsultadas.cobs[1].calendario.criacao, EncodeDateTime(2020,09,09,20,15,00,358));
+  CheckEquals(fACBrPixCobsConsultadas.cobs[1].calendario.criacao_Bias, 240);
   CheckEquals(fACBrPixCobsConsultadas.cobs[1].calendario.expiracao, 3600);
   CheckEquals(fACBrPixCobsConsultadas.cobs[1].txId, '655dfdb1a4514b8fbb58254b958913fb');
   CheckEquals(fACBrPixCobsConsultadas.cobs[1].revisao, 1);
@@ -1288,6 +1377,7 @@ begin
   CheckTrue(fACBrPixCobsConsultadas.cobs[1].pix[0].devolucoes[0].status = stdEM_PROCESSAMENTO);
 
   CheckEquals(fACBrPixCobsConsultadas.cobs[2].calendario.criacao, EncodeDateTime(2020,09,09,20,15,00,358));
+  CheckEquals(fACBrPixCobsConsultadas.cobs[2].calendario.criacao_Bias, 180);
   CheckEquals(fACBrPixCobsConsultadas.cobs[2].calendario.expiracao, 3600);
   CheckEquals(fACBrPixCobsConsultadas.cobs[2].txId, '33beb661beda44a8928fef47dbeb2dc5');
   CheckEquals(fACBrPixCobsConsultadas.cobs[2].revisao, 0);
@@ -1307,6 +1397,7 @@ begin
   CheckEquals(fACBrPixCobsConsultadas.cobs[2].chave, '7d9f0335-8dcc-4054-9bf9-0dbd61d36906');
 
   CheckEquals(fACBrPixCobsConsultadas.cobs[3].calendario.criacao, EncodeDateTime(2020,09,09,20,15,00,358));
+  CheckEquals(fACBrPixCobsConsultadas.cobs[3].calendario.criacao_Bias, -60);
   CheckEquals(fACBrPixCobsConsultadas.cobs[3].calendario.expiracao, 3600);
   CheckEquals(fACBrPixCobsConsultadas.cobs[3].txId, '33beb661beda44a8928fef47dbeb2dc5');
   CheckEquals(fACBrPixCobsConsultadas.cobs[3].revisao, 0);
@@ -1326,6 +1417,7 @@ begin
   CheckEquals(fACBrPixCobsConsultadas.cobs[3].chave, '7d9f0335-8dcc-4054-9bf9-0dbd61d36906');
 
   CheckEquals(fACBrPixCobsConsultadas.cobs[4].calendario.criacao, EncodeDateTime(2020,09,09,20,15,00,358));
+  CheckEquals(fACBrPixCobsConsultadas.cobs[4].calendario.criacao_Bias, 0);
   CheckEquals(fACBrPixCobsConsultadas.cobs[4].calendario.expiracao, 3600);
   CheckEquals(fACBrPixCobsConsultadas.cobs[4].txId, '33beb661beda44a8928fef47dbeb2dc5');
   CheckEquals(fACBrPixCobsConsultadas.cobs[4].revisao, 0);
@@ -1363,6 +1455,7 @@ begin
     CheckEquals(fACBrPixCobsConsultadas.parametros.paginacao.quantidadeTotalDeItens, cc.parametros.paginacao.quantidadeTotalDeItens);
 
     CheckEquals(fACBrPixCobsConsultadas.cobs[0].calendario.criacao, cc.cobs[0].calendario.criacao);
+    CheckEquals(fACBrPixCobsConsultadas.cobs[0].calendario.criacao_Bias, cc.cobs[0].calendario.criacao_Bias);
     CheckEquals(fACBrPixCobsConsultadas.cobs[0].calendario.expiracao, cc.cobs[0].calendario.expiracao);
     CheckEquals(fACBrPixCobsConsultadas.cobs[0].txId, cc.cobs[0].txId);
     CheckEquals(fACBrPixCobsConsultadas.cobs[0].revisao, cc.cobs[0].revisao);
@@ -1383,6 +1476,7 @@ begin
     CheckEquals(fACBrPixCobsConsultadas.cobs[0].infoAdicionais[1].valor, cc.cobs[0].infoAdicionais[1].valor);
 
     CheckEquals(fACBrPixCobsConsultadas.cobs[1].calendario.criacao, cc.cobs[1].calendario.criacao);
+    CheckEquals(fACBrPixCobsConsultadas.cobs[1].calendario.criacao_Bias, cc.cobs[1].calendario.criacao_Bias);
     CheckEquals(fACBrPixCobsConsultadas.cobs[1].calendario.expiracao, cc.cobs[1].calendario.expiracao);
     CheckEquals(fACBrPixCobsConsultadas.cobs[1].txId, cc.cobs[1].txId);
     CheckEquals(fACBrPixCobsConsultadas.cobs[1].revisao, cc.cobs[1].revisao);
@@ -1408,6 +1502,7 @@ begin
     CheckTrue(fACBrPixCobsConsultadas.cobs[1].pix[0].devolucoes[0].status = cc.cobs[1].pix[0].devolucoes[0].status);
 
     CheckEquals(fACBrPixCobsConsultadas.cobs[2].calendario.criacao, cc.cobs[2].calendario.criacao);
+    CheckEquals(fACBrPixCobsConsultadas.cobs[2].calendario.criacao_Bias, cc.cobs[2].calendario.criacao_Bias);
     CheckEquals(fACBrPixCobsConsultadas.cobs[2].calendario.expiracao, cc.cobs[2].calendario.expiracao);
     CheckEquals(fACBrPixCobsConsultadas.cobs[2].txId, cc.cobs[2].txId);
     CheckEquals(fACBrPixCobsConsultadas.cobs[2].revisao, cc.cobs[2].revisao);
@@ -1427,6 +1522,7 @@ begin
     CheckEquals(fACBrPixCobsConsultadas.cobs[2].chave, cc.cobs[2].chave);
 
     CheckEquals(fACBrPixCobsConsultadas.cobs[3].calendario.criacao, cc.cobs[3].calendario.criacao);
+    CheckEquals(fACBrPixCobsConsultadas.cobs[3].calendario.criacao_Bias, cc.cobs[3].calendario.criacao_Bias);
     CheckEquals(fACBrPixCobsConsultadas.cobs[3].calendario.expiracao, cc.cobs[3].calendario.expiracao);
     CheckEquals(fACBrPixCobsConsultadas.cobs[3].txId, cc.cobs[3].txId);
     CheckEquals(fACBrPixCobsConsultadas.cobs[3].revisao, cc.cobs[3].revisao);
@@ -1446,6 +1542,7 @@ begin
     CheckEquals(fACBrPixCobsConsultadas.cobs[3].chave, cc.cobs[3].chave);
 
     CheckEquals(fACBrPixCobsConsultadas.cobs[4].calendario.criacao, cc.cobs[4].calendario.criacao);
+    CheckEquals(fACBrPixCobsConsultadas.cobs[4].calendario.criacao_Bias, cc.cobs[4].calendario.criacao_Bias);
     CheckEquals(fACBrPixCobsConsultadas.cobs[4].calendario.expiracao, cc.cobs[4].calendario.expiracao);
     CheckEquals(fACBrPixCobsConsultadas.cobs[4].txId, cc.cobs[4].txId);
     CheckEquals(fACBrPixCobsConsultadas.cobs[4].revisao, cc.cobs[4].revisao);
@@ -1597,13 +1694,13 @@ begin
   CheckEquals(fACBrPixCobVSolicitada.devedor.cpf, '12345678909');
   CheckEquals(fACBrPixCobVSolicitada.devedor.nome, 'Francisco da Silva');
   CheckEquals(fACBrPixCobVSolicitada.valor.original, 123.45);
-  CheckEquals(fACBrPixCobVSolicitada.valor.multa.modalidade, 2);
+  CheckEquals(Ord(fACBrPixCobVSolicitada.valor.multa.modalidade), 2);
   CheckEquals(fACBrPixCobVSolicitada.valor.multa.valorPerc, 15);
-  CheckEquals(fACBrPixCobVSolicitada.valor.juros.modalidade, 2);
+  CheckEquals(Ord(fACBrPixCobVSolicitada.valor.juros.modalidade), 2);
   CheckEquals(fACBrPixCobVSolicitada.valor.juros.valorPerc, 2);
-  CheckEquals(fACBrPixCobVSolicitada.valor.desconto.modalidade, 1);
-  CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontoDataFixa[0].data, EncodeDate(2020,11,30));
-  CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontoDataFixa[0].valorPerc, 30);
+  CheckEquals(Ord(fACBrPixCobVSolicitada.valor.desconto.modalidade), 1);
+  CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontosDataFixa[0].data, EncodeDate(2020,11,30));
+  CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontosDataFixa[0].valorPerc, 30);
   CheckEquals(fACBrPixCobVSolicitada.chave, '5f84a4c5-c5cb-4599-9f13-7eb4d419dacc');
   CheckEquals(fACBrPixCobVSolicitada.solicitacaoPagador, ACBrStr('Cobrança dos serviços prestados.'));
 end;
@@ -1629,13 +1726,13 @@ begin
     CheckEquals(fACBrPixCobVSolicitada.devedor.cpf, cs.devedor.cpf);
     CheckEquals(fACBrPixCobVSolicitada.devedor.nome, cs.devedor.nome);
     CheckEquals(fACBrPixCobVSolicitada.valor.original, cs.valor.original);
-    CheckEquals(fACBrPixCobVSolicitada.valor.multa.modalidade, cs.valor.multa.modalidade);
+    CheckEquals(Ord(fACBrPixCobVSolicitada.valor.multa.modalidade), Ord(cs.valor.multa.modalidade));
     CheckEquals(fACBrPixCobVSolicitada.valor.multa.valorPerc, cs.valor.multa.valorPerc);
-    CheckEquals(fACBrPixCobVSolicitada.valor.juros.modalidade, cs.valor.juros.modalidade);
+    CheckEquals(Ord(fACBrPixCobVSolicitada.valor.juros.modalidade), Ord(cs.valor.juros.modalidade));
     CheckEquals(fACBrPixCobVSolicitada.valor.juros.valorPerc, cs.valor.juros.valorPerc);
-    CheckEquals(fACBrPixCobVSolicitada.valor.desconto.modalidade, cs.valor.desconto.modalidade);
-    CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontoDataFixa[0].data, cs.valor.desconto.descontoDataFixa[0].data);
-    CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontoDataFixa[0].valorPerc, cs.valor.desconto.descontoDataFixa[0].valorPerc);
+    CheckEquals(Ord(fACBrPixCobVSolicitada.valor.desconto.modalidade), Ord(cs.valor.desconto.modalidade));
+    CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontosDataFixa[0].data, cs.valor.desconto.descontosDataFixa[0].data);
+    CheckEquals(fACBrPixCobVSolicitada.valor.desconto.descontosDataFixa[0].valorPerc, cs.valor.desconto.descontosDataFixa[0].valorPerc);
     CheckEquals(fACBrPixCobVSolicitada.chave, cs.chave);
     CheckEquals(fACBrPixCobVSolicitada.solicitacaoPagador, cs.solicitacaoPagador);
   finally
@@ -2501,6 +2598,7 @@ initialization
   _RegisterTest('ACBrPIXCD.QRCode', TTestQRCodeDinamico);
   _RegisterTest('ACBrPIXCD.Schemas.Cob', TTestCobrancaImediataExemplo1);
   _RegisterTest('ACBrPIXCD.Schemas.Pix', TTestCobrancaImediataComSaquePIX);
+  _RegisterTest('ACBrPIXCD.Schemas.Pix', TTestCobrancaImediataComSaquePIX1);
   _RegisterTest('ACBrPIXCD.Schemas.Pix', TTestCobrancaImediataComSaquePIX2);
   _RegisterTest('ACBrPIXCD.Schemas.Pix', TTestCobrancaImediataComSaquePIX3);
   _RegisterTest('ACBrPIXCD.Schemas.Pix', TTestCobrancaGerada);

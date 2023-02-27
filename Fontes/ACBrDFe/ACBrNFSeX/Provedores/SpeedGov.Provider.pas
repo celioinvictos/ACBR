@@ -52,6 +52,7 @@ type
     function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
     function Cancelar(ACabecalho, AMSG: String): string; override;
 
+    function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
   TACBrNFSeProviderSpeedGov = class (TACBrNFSeProviderABRASFv1)
@@ -67,7 +68,8 @@ type
 implementation
 
 uses
-  ACBrUtil, ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrUtil.XMLHTML,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais, SpeedGov.GravarXml, SpeedGov.LerXml;
 
 { TACBrNFSeXWebserviceSpeedGov }
@@ -168,6 +170,16 @@ begin
                      ['xmlns:nfse="http://www.abrasf.org.br/ABRASF/arquivos/nfse.xsd"']);
 end;
 
+function TACBrNFSeXWebserviceSpeedGov.TratarXmlRetornado(
+  const aXML: string): string;
+begin
+  Result := inherited TratarXmlRetornado(aXML);
+
+  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
+end;
+
 { TACBrNFSeProviderSpeedGov }
 
 procedure TACBrNFSeProviderSpeedGov.Configuracao;
@@ -199,6 +211,8 @@ begin
                       '<versaoDados>1</versaoDados>' +
                       '</p:cabecalho>';
   end;
+
+  SetNomeXSD('***');
 
   with ConfigSchemas do
   begin

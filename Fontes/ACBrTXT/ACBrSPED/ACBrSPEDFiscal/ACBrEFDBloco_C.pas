@@ -118,9 +118,13 @@ type
   TRegistroC800List = class;
   TRegistroC810List = class;
   TRegistroC850List = class;
+  TRegistroC855List = class;
+  TRegistroC857List = class;
   TRegistroC860List = class;
   TRegistroC870List = class;
   TRegistroC890List = class;
+  TRegistroC895List = class;
+  TRegistroC897List = class;
 
   /// Registro C001 - ABERTURA DO BLOCO C
 
@@ -1131,24 +1135,24 @@ type
   TRegistroC180 = class
   private
    fCOD_RESP_RET: String;               /// Código que indica o responsável pela retenção do ICMS-ST: 1-Remetente Direto / 2-Remetente Indireto / 3-Próprio declarante.
-   fQUANT_CONV: currency;              /// Quantidade do item convertida na unidade de controle de estoque informada no registro 0200 ou a unidade de comercialização, a critério de cada UF.
+   fQUANT_CONV: Double;              /// Quantidade do item convertida na unidade de controle de estoque informada no registro 0200 ou a unidade de comercialização, a critério de cada UF.
    fUNID: String;                    /// Unidade adotada para informar o campo QUANT_CONV.
-   fVL_UNIT_CONV: currency;            /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_OP_CONV: currency;    /// Valor unitário do ICMS operação própria que o informante teria direito ao crédito caso a mercadoria estivesse sob o regime comum de tributação, considerando unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_BC_ICMS_ST_CONV: currency; /// Valor unitário da base de cálculo do imposto pago ou retido anteriormente por substituição, considerando a unidade utilizada para informar o campo “QUANT_CONV”, aplicando-se redução, se houver.
-   fVL_UNIT_ICMS_ST_CONV: currency;    /// Valor unitário do imposto pago ou retido anteriormente por substituição, inclusive FCP se devido, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV: currency;     /// Valor unitário do FCP_ST agregado ao valor informado no campo “VL_UNIT_ICMS_ST_CONV”.
+   fVL_UNIT_CONV: Double;            /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_OP_CONV: Double;    /// Valor unitário do ICMS operação própria que o informante teria direito ao crédito caso a mercadoria estivesse sob o regime comum de tributação, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_BC_ICMS_ST_CONV: Double; /// Valor unitário da base de cálculo do imposto pago ou retido anteriormente por substituição, considerando a unidade utilizada para informar o campo “QUANT_CONV”, aplicando-se redução, se houver.
+   fVL_UNIT_ICMS_ST_CONV: Double;    /// Valor unitário do imposto pago ou retido anteriormente por substituição, inclusive FCP se devido, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV: Double;     /// Valor unitário do FCP_ST agregado ao valor informado no campo “VL_UNIT_ICMS_ST_CONV”.
    fCOD_DA: String;                    /// Código do modelo do documento de arrecadação: 0 – Documento estadual de arrecadação / 1 – GNRE.
    fNUM_DA: String;                    /// Número do documento de arrecadação estadual, se houver.
   public
     property COD_RESP_RET: String read fCOD_RESP_RET write fCOD_RESP_RET;
-    property QUANT_CONV: currency read fQUANT_CONV write fQUANT_CONV;
+    property QUANT_CONV: Double read fQUANT_CONV write fQUANT_CONV;
     property UNID: String read fUNID write fUNID;
-    property VL_UNIT_CONV: currency read fVL_UNIT_CONV write fVL_UNIT_CONV;
-    property VL_UNIT_ICMS_OP_CONV: currency read fVL_UNIT_ICMS_OP_CONV write fVL_UNIT_ICMS_OP_CONV;
-    property VL_UNIT_BC_ICMS_ST_CONV: currency read fVL_UNIT_BC_ICMS_ST_CONV write fVL_UNIT_BC_ICMS_ST_CONV;
-    property VL_UNIT_ICMS_ST_CONV: currency read fVL_UNIT_ICMS_ST_CONV write fVL_UNIT_ICMS_ST_CONV;
-    property VL_UNIT_FCP_ST_CONV: currency read fVL_UNIT_FCP_ST_CONV write fVL_UNIT_FCP_ST_CONV;
+    property VL_UNIT_CONV: Double read fVL_UNIT_CONV write fVL_UNIT_CONV;
+    property VL_UNIT_ICMS_OP_CONV: Double read fVL_UNIT_ICMS_OP_CONV write fVL_UNIT_ICMS_OP_CONV;
+    property VL_UNIT_BC_ICMS_ST_CONV: Double read fVL_UNIT_BC_ICMS_ST_CONV write fVL_UNIT_BC_ICMS_ST_CONV;
+    property VL_UNIT_ICMS_ST_CONV: Double read fVL_UNIT_ICMS_ST_CONV write fVL_UNIT_ICMS_ST_CONV;
+    property VL_UNIT_FCP_ST_CONV: Double read fVL_UNIT_FCP_ST_CONV write fVL_UNIT_FCP_ST_CONV;
     property COD_DA: String read fCOD_DA write fCOD_DA;
     property NUM_DA: String read fNUM_DA write fNUM_DA;
   end;
@@ -1168,7 +1172,7 @@ type
   TRegistroC181 = class
   private
    fCOD_MOT_REST_COMPL : String;   /// Código do motivo da restituição ou complementação conforme Tabela 5.7
-   fQUANT_CONV : currency ;  /// Quantidade do item
+   fQUANT_CONV : Double ;  /// Quantidade do item
    fUNID : String;   /// Unidade adotada para informar o campoQUANT_CONV.
    fCOD_MOD_SAIDA : String;   /// Código do modelo do documento fiscal de saída, conforme a tabela indicada no item 4.1.1
    fSERIE_SAIDA : String;   /// Número de série do documento de saída em papel
@@ -1177,19 +1181,19 @@ type
    fCHV_DFE_SAIDA : String;   /// Chave do documento fiscal eletrônico de saída
    fDT_DOC_SAIDA : TDateTime;   /// Data da emissão do documento fiscal de saída
    fNUM_ITEM_SAIDA : String;   /// Número do item em que foi escriturada a saída em um registro C185, C380, C480 ou C815 quando o contribuinte informar a saída em um arquivo de perfil A.
-   fVL_UNIT_CONV_SAIDA : currency;   /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”, correspondente ao valor do campo VL_UNIT_CONV, preenchido na ocasião da saída
-   fVL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA : currency;   /// Valor médio unitário do ICMS OP, das mercadorias em estoque, correspondente ao valor do campo VL_UNIT_ICMS_OP_ESTOQUE_CONV, preenchido na ocasião da saída
-   fVL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA : currency;   /// Valor médio unitário do ICMS ST, incluindo FCP ST, das mercadorias em estoque, correspondente ao valor do campo VL_UNIT_ICMS_ST_ESTOQUE_CONV, preenchido na ocasião da saída
-   fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA : currency;   /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, correspondente ao valor do campo VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV, preenchido na ocasião da saída
-   fVL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA : currency;   /// Valor unitário para o ICMS na operação, correspondente ao valor do campo VL_UNIT_ICMS_NA_OPERACAO_CONV, preenchido na ocasião da saída
-   fVL_UNIT_ICMS_OP_CONV_SAIDA : currency;   /// Valor unitário do ICMS correspondente ao valor do campo VL_UNIT_ICMS_OP_CONV, preenchido na ocasião da saída
-   fVL_UNIT_ICMS_ST_CONV_REST : currency;   /// Valor unitário do total do ICMS ST, incluindo FCP ST, a ser restituído/ressarcido, correspondente ao estorno do complemento apurado na operação de saída.
-   fVL_UNIT_FCP_ST_CONV_REST : currency;   /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_COMPL : currency;   /// Valor unitário do estorno do ressarcimento/restituição, incluindo FCP ST, apurado na operação de saída.
-   fVL_UNIT_FCP_ST_CONV_COMPL : currency;   /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_CONV_SAIDA : Double;   /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”, correspondente ao valor do campo VL_UNIT_CONV, preenchido na ocasião da saída
+   fVL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA : Double;   /// Valor médio unitário do ICMS OP, das mercadorias em estoque, correspondente ao valor do campo VL_UNIT_ICMS_OP_ESTOQUE_CONV, preenchido na ocasião da saída
+   fVL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA : Double;   /// Valor médio unitário do ICMS ST, incluindo FCP ST, das mercadorias em estoque, correspondente ao valor do campo VL_UNIT_ICMS_ST_ESTOQUE_CONV, preenchido na ocasião da saída
+   fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA : Double;   /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, correspondente ao valor do campo VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV, preenchido na ocasião da saída
+   fVL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA : Variant;   /// Valor unitário para o ICMS na operação, correspondente ao valor do campo VL_UNIT_ICMS_NA_OPERACAO_CONV, preenchido na ocasião da saída
+   fVL_UNIT_ICMS_OP_CONV_SAIDA : Variant;   /// Valor unitário do ICMS correspondente ao valor do campo VL_UNIT_ICMS_OP_CONV, preenchido na ocasião da saída
+   fVL_UNIT_ICMS_ST_CONV_REST : Variant;   /// Valor unitário do total do ICMS ST, incluindo FCP ST, a ser restituído/ressarcido, correspondente ao estorno do complemento apurado na operação de saída.
+   fVL_UNIT_FCP_ST_CONV_REST : Variant;   /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_COMPL : Variant;   /// Valor unitário do estorno do ressarcimento/restituição, incluindo FCP ST, apurado na operação de saída.
+   fVL_UNIT_FCP_ST_CONV_COMPL : Variant;   /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
   public
    property COD_MOT_REST_COMPL: String read fCOD_MOT_REST_COMPL  write fCOD_MOT_REST_COMPL ;
-   property QUANT_CONV: currency read fQUANT_CONV  write fQUANT_CONV ;
+   property QUANT_CONV: Double read fQUANT_CONV  write fQUANT_CONV ;
    property UNID: String read fUNID  write fUNID ;
    property COD_MOD_SAIDA: String read fCOD_MOD_SAIDA  write fCOD_MOD_SAIDA ;
    property SERIE_SAIDA: String read fSERIE_SAIDA  write fSERIE_SAIDA ;
@@ -1198,18 +1202,18 @@ type
    property CHV_DFE_SAIDA: String read fCHV_DFE_SAIDA  write fCHV_DFE_SAIDA ;
    property DT_DOC_SAIDA: TDateTime read fDT_DOC_SAIDA  write fDT_DOC_SAIDA ;
    property NUM_ITEM_SAIDA: String read fNUM_ITEM_SAIDA  write fNUM_ITEM_SAIDA ;
-   property VL_UNIT_CONV_SAIDA: currency read fVL_UNIT_CONV_SAIDA  write fVL_UNIT_CONV_SAIDA ;
-   property VL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA: currency read fVL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA  write fVL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA ;
-   property VL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA: currency read fVL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA  write fVL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA ;
-   property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA: currency read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA  write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA ;
-   property VL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA: currency read fVL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA  write fVL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA ;
-   property VL_UNIT_ICMS_OP_CONV_SAIDA: currency read fVL_UNIT_ICMS_OP_CONV_SAIDA  write fVL_UNIT_ICMS_OP_CONV_SAIDA ;
-   property VL_UNIT_ICMS_ST_CONV_REST: currency read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST ;
-   property VL_UNIT_FCP_ST_CONV_REST: currency read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST ;
-   property VL_UNIT_ICMS_ST_CONV_COMPL: currency read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL ;
-   property VL_UNIT_FCP_ST_CONV_COMPL: currency read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL ;
-
+   property VL_UNIT_CONV_SAIDA: Double read fVL_UNIT_CONV_SAIDA  write fVL_UNIT_CONV_SAIDA ;
+   property VL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA: Double read fVL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA  write fVL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA ;
+   property VL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA: Double read fVL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA  write fVL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA ;
+   property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA: Double read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA  write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA ;
+   property VL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA: Variant read fVL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA  write fVL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA ;
+   property VL_UNIT_ICMS_OP_CONV_SAIDA: Variant read fVL_UNIT_ICMS_OP_CONV_SAIDA  write fVL_UNIT_ICMS_OP_CONV_SAIDA ;
+   property VL_UNIT_ICMS_ST_CONV_REST: Variant read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST ;
+   property VL_UNIT_FCP_ST_CONV_REST: Variant read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST ;
+   property VL_UNIT_ICMS_ST_CONV_COMPL: Variant read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL ;
+   property VL_UNIT_FCP_ST_CONV_COMPL: Variant read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL ;
   end;
+
 
   /// Registro C181 - Lista
 
@@ -1231,36 +1235,36 @@ type
    fCST_ICMS: String; /// Código da Situação Tributária referente ao ICMS.
    fCFOP:String ; /// Código Fiscal de Operação e Prestação.
    fCOD_MOT_REST_COMPL:String ; /// Código do motivo da restituição ou complementação conforme Tabela 5.7.
-   fQUANT_CONV: currency ; /// Quantidade do item.
+   fQUANT_CONV: Double ; /// Quantidade do item.
    fUNID: String; /// Unidade adotada para informar o campo QUANT_CONV.
-   fVL_UNIT_CONV: currency; /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_NA_OPERACAO_CONV: currency; /// Valor unitário para o ICMS na operação, caso não houvesse a ST, considerando unidade utilizada para informar o campo “QUANT_CONV”, considerando redução da base de cálculo do ICMS ST na tributação, se houver.
-   fVL_UNIT_ICMS_OP_CONV: currency; /// Valor unitário do ICMS que o contribuinte teria se creditado, ou pode se creditar, referente à operação de entrada da mercadoria, caso estivesse submetida ao regime comum de tributação, no desfazimento da substituição tributária, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_OP_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS que o contribuinte teria se creditado referente à operação de entrada das mercadorias em estoque caso estivesse submetida ao regime comum de tributação, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_REST: currency; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_REST: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_COMPL: currency; ///  Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_COMPL: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_CONV: Double; /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_NA_OPERACAO_CONV: Variant; /// Valor unitário para o ICMS na operação, caso não houvesse a ST, considerando unidade utilizada para informar o campo “QUANT_CONV”, considerando redução da base de cálculo do ICMS ST na tributação, se houver.
+   fVL_UNIT_ICMS_OP_CONV: Variant; /// Valor unitário do ICMS que o contribuinte teria se creditado, ou pode se creditar, referente à operação de entrada da mercadoria, caso estivesse submetida ao regime comum de tributação, no desfazimento da substituição tributária, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_OP_ESTOQUE_CONV: Variant; /// Valor médio unitário do ICMS que o contribuinte teria se creditado referente à operação de entrada das mercadorias em estoque caso estivesse submetida ao regime comum de tributação, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_ESTOQUE_CONV: Variant; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: Variant; /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_REST: Variant; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_REST: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_COMPL: Variant; ///  Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_COMPL: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
  public
    property NUM_ITEM: String read fNUM_ITEM write fNUM_ITEM;
    property COD_ITEM: String read fCOD_ITEM write fCOD_ITEM;
    property CST_ICMS: String read fCST_ICMS write fCST_ICMS;
    property CFOP:String  read fCFOP write fCFOP;
    property COD_MOT_REST_COMPL:String  read fCOD_MOT_REST_COMPL write fCOD_MOT_REST_COMPL;
-   property QUANT_CONV: currency  read fQUANT_CONV write fQUANT_CONV;
+   property QUANT_CONV: Double  read fQUANT_CONV write fQUANT_CONV;
    property UNID: String read fUNID write fUNID;
-   property VL_UNIT_CONV: currency read fVL_UNIT_CONV write fVL_UNIT_CONV;
-   property VL_UNIT_ICMS_NA_OPERACAO_CONV: currency read fVL_UNIT_ICMS_NA_OPERACAO_CONV write fVL_UNIT_ICMS_NA_OPERACAO_CONV;
-   property VL_UNIT_ICMS_OP_CONV: currency read fVL_UNIT_ICMS_OP_CONV write fVL_UNIT_ICMS_OP_CONV;
-   property VL_UNIT_ICMS_OP_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_OP_ESTOQUE_CONV write fVL_UNIT_ICMS_OP_ESTOQUE_CONV;
-   property VL_UNIT_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_ST_ESTOQUE_CONV write fVL_UNIT_ICMS_ST_ESTOQUE_CONV;
-   property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV;
-   property VL_UNIT_ICMS_ST_CONV_REST: currency read fVL_UNIT_ICMS_ST_CONV_REST write fVL_UNIT_ICMS_ST_CONV_REST;
-   property VL_UNIT_FCP_ST_CONV_REST: currency read fVL_UNIT_FCP_ST_CONV_REST write fVL_UNIT_FCP_ST_CONV_REST;
-   property VL_UNIT_ICMS_ST_CONV_COMPL: currency read fVL_UNIT_ICMS_ST_CONV_COMPL write fVL_UNIT_ICMS_ST_CONV_COMPL;
-   property VL_UNIT_FCP_ST_CONV_COMPL: currency read fVL_UNIT_FCP_ST_CONV_COMPL write fVL_UNIT_FCP_ST_CONV_COMPL;
+   property VL_UNIT_CONV: Double read fVL_UNIT_CONV write fVL_UNIT_CONV;
+   property VL_UNIT_ICMS_NA_OPERACAO_CONV: Variant read fVL_UNIT_ICMS_NA_OPERACAO_CONV write fVL_UNIT_ICMS_NA_OPERACAO_CONV;
+   property VL_UNIT_ICMS_OP_CONV: Variant read fVL_UNIT_ICMS_OP_CONV write fVL_UNIT_ICMS_OP_CONV;
+   property VL_UNIT_ICMS_OP_ESTOQUE_CONV: Variant read fVL_UNIT_ICMS_OP_ESTOQUE_CONV write fVL_UNIT_ICMS_OP_ESTOQUE_CONV;
+   property VL_UNIT_ICMS_ST_ESTOQUE_CONV: Variant read fVL_UNIT_ICMS_ST_ESTOQUE_CONV write fVL_UNIT_ICMS_ST_ESTOQUE_CONV;
+   property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: Variant read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV;
+   property VL_UNIT_ICMS_ST_CONV_REST: Variant read fVL_UNIT_ICMS_ST_CONV_REST write fVL_UNIT_ICMS_ST_CONV_REST;
+   property VL_UNIT_FCP_ST_CONV_REST: Variant read fVL_UNIT_FCP_ST_CONV_REST write fVL_UNIT_FCP_ST_CONV_REST;
+   property VL_UNIT_ICMS_ST_CONV_COMPL: Variant read fVL_UNIT_ICMS_ST_CONV_COMPL write fVL_UNIT_ICMS_ST_CONV_COMPL;
+   property VL_UNIT_FCP_ST_CONV_COMPL: Variant read fVL_UNIT_FCP_ST_CONV_COMPL write fVL_UNIT_FCP_ST_CONV_COMPL;
   end;
 
     /// Registro C185 - Lista
@@ -1284,7 +1288,7 @@ type
    fCST_ICMS: String; /// Código da Situação Tributária referente ao ICMS.
    fCFOP:String ; /// Código Fiscal de Operação e Prestação.
    fCOD_MOT_REST_COMPL:String ; /// Código do motivo da restituição ou complementação conforme Tabela 5.7.
-   fQUANT_CONV: currency ; /// Quantidade do item.
+   fQUANT_CONV: Double ; /// Quantidade do item.
    fUNID: String; /// Unidade adotada para informar o campo QUANT_CONV.
    fCOD_MOD_ENTRADA: String; /// Código do modelo do documento fiscal de entrada, conforme a tabela indicada no item 4.1.1
    fSERIE_ENTRADA: String;  ///  Número de série do documento de entrada em papel
@@ -1292,11 +1296,11 @@ type
    fCHV_DFE_ENTRADA: String; /// Chave do documento fiscal eletrônico de entrada
    fDT_DOC_ENTRADA: TDateTime; /// Data da emissão do documento fiscal de entrada
    fNUM_ITEM_ENTRADA: String; /// Item do documento fiscal de entrada
-   fVL_UNIT_CONV_ENTRADA: currency; /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”, correspondente ao valor do campo VL_UNIT_CONV, preenchido na ocasião da entrada
-   fVL_UNIT_ICMS_OP_CONV_ENTRADA: currency; /// Valor unitário do ICMS correspondente ao valor do campo VL_UNIT_ICMS_OP_CONV, preenchido na ocasião da entrada
-   fVL_UNIT_BC_ICMS_ST_CONV_ENTRADA: currency; /// Valor unitário da base de cálculo do imposto pago ou retido anteriormente por substituição, correspondente ao valor do campo VL_UNIT_BC_ICMS_ST_CONV, preenchido na ocasião da entrada
-   fVL_UNIT_ICMS_ST_CONV_ENTRADA: currency; ///  Valor unitário do imposto pago ou retido anteriormente por substituição, inclusive FCP se devido, correspondente ao valor do campo VL_UNIT_ICMS_ST_CONV, preenchido na ocasião da entrada
-   fVL_UNIT_FCP_ST_CONV_ENTRADA: currency; /// Valor unitário do FCP_ST, correspondente ao valor do campo VL_UNIT_FCP_ST_CONV, preenchido na ocasião da entrada
+   fVL_UNIT_CONV_ENTRADA: Double; /// Valor unitário da mercadoria, considerando a unidade utilizada para informar o campo “QUANT_CONV”, correspondente ao valor do campo VL_UNIT_CONV, preenchido na ocasião da entrada
+   fVL_UNIT_ICMS_OP_CONV_ENTRADA: Double; /// Valor unitário do ICMS correspondente ao valor do campo VL_UNIT_ICMS_OP_CONV, preenchido na ocasião da entrada
+   fVL_UNIT_BC_ICMS_ST_CONV_ENTRADA: Double; /// Valor unitário da base de cálculo do imposto pago ou retido anteriormente por substituição, correspondente ao valor do campo VL_UNIT_BC_ICMS_ST_CONV, preenchido na ocasião da entrada
+   fVL_UNIT_ICMS_ST_CONV_ENTRADA: Double; ///  Valor unitário do imposto pago ou retido anteriormente por substituição, inclusive FCP se devido, correspondente ao valor do campo VL_UNIT_ICMS_ST_CONV, preenchido na ocasião da entrada
+   fVL_UNIT_FCP_ST_CONV_ENTRADA: Double; /// Valor unitário do FCP_ST, correspondente ao valor do campo VL_UNIT_FCP_ST_CONV, preenchido na ocasião da entrada
 
  public
    property NUM_ITEM: String read fNUM_ITEM write fNUM_ITEM;
@@ -1304,7 +1308,7 @@ type
    property CST_ICMS: String read fCST_ICMS write fCST_ICMS;
    property CFOP:String  read fCFOP write fCFOP;
    property COD_MOT_REST_COMPL:String  read fCOD_MOT_REST_COMPL write fCOD_MOT_REST_COMPL;
-   property QUANT_CONV: currency  read fQUANT_CONV write fQUANT_CONV;
+   property QUANT_CONV: Double  read fQUANT_CONV write fQUANT_CONV;
    property UNID: String read fUNID write fUNID;
    property COD_MOD_ENTRADA: String read fCOD_MOD_ENTRADA write fCOD_MOD_ENTRADA;
    property SERIE_ENTRADA: String read fSERIE_ENTRADA write fSERIE_ENTRADA;
@@ -1312,11 +1316,11 @@ type
    property CHV_DFE_ENTRADA: String read fCHV_DFE_ENTRADA write fCHV_DFE_ENTRADA;
    property DT_DOC_ENTRADA: TDateTime read fDT_DOC_ENTRADA write fDT_DOC_ENTRADA;
    property NUM_ITEM_ENTRADA: String read fNUM_ITEM_ENTRADA write fNUM_ITEM_ENTRADA;
-   property VL_UNIT_CONV_ENTRADA: currency read fVL_UNIT_CONV_ENTRADA write fVL_UNIT_CONV_ENTRADA;
-   property VL_UNIT_ICMS_OP_CONV_ENTRADA: currency read fVL_UNIT_ICMS_OP_CONV_ENTRADA write fVL_UNIT_ICMS_OP_CONV_ENTRADA;
-   property VL_UNIT_BC_ICMS_ST_CONV_ENTRADA: currency read fVL_UNIT_BC_ICMS_ST_CONV_ENTRADA write fVL_UNIT_BC_ICMS_ST_CONV_ENTRADA;
-   property VL_UNIT_ICMS_ST_CONV_ENTRADA: currency read fVL_UNIT_ICMS_ST_CONV_ENTRADA write fVL_UNIT_ICMS_ST_CONV_ENTRADA;
-   property VL_UNIT_FCP_ST_CONV_ENTRADA: currency read fVL_UNIT_FCP_ST_CONV_ENTRADA write fVL_UNIT_FCP_ST_CONV_ENTRADA;
+   property VL_UNIT_CONV_ENTRADA: Double read fVL_UNIT_CONV_ENTRADA write fVL_UNIT_CONV_ENTRADA;
+   property VL_UNIT_ICMS_OP_CONV_ENTRADA: Double read fVL_UNIT_ICMS_OP_CONV_ENTRADA write fVL_UNIT_ICMS_OP_CONV_ENTRADA;
+   property VL_UNIT_BC_ICMS_ST_CONV_ENTRADA: Double read fVL_UNIT_BC_ICMS_ST_CONV_ENTRADA write fVL_UNIT_BC_ICMS_ST_CONV_ENTRADA;
+   property VL_UNIT_ICMS_ST_CONV_ENTRADA: Double read fVL_UNIT_ICMS_ST_CONV_ENTRADA write fVL_UNIT_ICMS_ST_CONV_ENTRADA;
+   property VL_UNIT_FCP_ST_CONV_ENTRADA: Double read fVL_UNIT_FCP_ST_CONV_ENTRADA write fVL_UNIT_FCP_ST_CONV_ENTRADA;
   end;
 
     /// Registro C186 - Lista
@@ -1341,7 +1345,7 @@ type
     fVL_BC_ICMS: currency;     /// Parcela correspondente ao "Valor da base de cálculo do ICMS" referente à combinação de CST_ICMS, CFOP e alíquota do ICMS.
     fVL_ICMS: currency;        /// Parcela correspondente ao "Valor do ICMS", incluindo o FCP, quando aplicável, referente à combinação de CST_ICMS, CFOP e alíquota do ICMS
     fVL_BC_ICMS_ST: currency;  /// Parcela correspondente ao "Valor da base de cálculo do ICMS" da substituição tributária referente à combinação de CST_ICMS, CFOP e alíquota do ICMS.
-    fVL_ICMS_ST: currency;     /// Parcela correspondente ao valor creditado/debitado do ICMS da substituição tributária, incluindo o FCP_ ST, quando aplicável, referente à combinação de CST_ICMS, CFOP, e alíquota do ICMS	
+    fVL_ICMS_ST: currency;     /// Parcela correspondente ao valor creditado/debitado do ICMS da substituição tributária, incluindo o FCP_ ST, quando aplicável, referente à combinação de CST_ICMS, CFOP, e alíquota do ICMS
     fVL_RED_BC: currency;      /// Valor não tributado em função da redução da base de cálculo do ICMS, referente à combinação de CST_ICMS, CFOP e alíquota do ICMS.
     fVL_IPI: currency;         /// Parcela correspondente ao "Valor do IPI" referente à combinação CST_ICMS, CFOP e alíquota do ICMS.
     fCOD_OBS: String;          /// Código da observação do lançamento fiscal (campo 02 do Registro 0460
@@ -1621,10 +1625,10 @@ type
    fVL_UNIT_ICMS_OP_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS que o contribuinte teria se creditado referente à operação de entrada das mercadorias em estoque caso estivesse submetida ao regime comum de tributação, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
    fVL_UNIT_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
    fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_REST: currency; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_REST: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_COMPL: currency; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_COMPL: currency ; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_REST: Variant; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_REST: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_COMPL: Variant; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_COMPL: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
   public
    property COD_MOT_REST_COMPL: string read fCOD_MOT_REST_COMPL  write fCOD_MOT_REST_COMPL;
    property QUANT_CONV: currency read fQUANT_CONV  write fQUANT_CONV;
@@ -1635,10 +1639,10 @@ type
    property VL_UNIT_ICMS_OP_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_OP_ESTOQUE_CONV  write fVL_UNIT_ICMS_OP_ESTOQUE_CONV;
    property VL_UNIT_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_ICMS_ST_ESTOQUE_CONV;
    property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV;
-   property VL_UNIT_ICMS_ST_CONV_REST: currency read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
-   property VL_UNIT_FCP_ST_CONV_REST: currency read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
-   property VL_UNIT_ICMS_ST_CONV_COMPL: currency read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
-   property VL_UNIT_FCP_ST_CONV_COMPL: currency  read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
+   property VL_UNIT_ICMS_ST_CONV_REST: Variant read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
+   property VL_UNIT_FCP_ST_CONV_REST: Variant read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
+   property VL_UNIT_ICMS_ST_CONV_COMPL: Variant read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
+   property VL_UNIT_FCP_ST_CONV_COMPL: Variant read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
   end;
 
    /// Registro C330 - Lista
@@ -1749,10 +1753,10 @@ type
    fVL_UNIT_ICMS_OP_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS que o contribuinte teria se creditado referente à operação de entrada das mercadorias em estoque caso estivesse submetida ao regime comum de tributação, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
    fVL_UNIT_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
    fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_REST: currency; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_REST: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_COMPL: currency; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_COMPL: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_REST: Variant; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_REST: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_COMPL: Variant; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_COMPL: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
    fCST_ICMS: string; ///Código da Situação Tributária referente ao ICMS.
    fCFOP: string; /// Código Fiscal de Operação e Prestação.
   public
@@ -1765,10 +1769,10 @@ type
    property VL_UNIT_ICMS_OP_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_OP_ESTOQUE_CONV  write fVL_UNIT_ICMS_OP_ESTOQUE_CONV;
    property VL_UNIT_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_ICMS_ST_ESTOQUE_CONV;
    property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV;
-   property VL_UNIT_ICMS_ST_CONV_REST: currency read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
-   property VL_UNIT_FCP_ST_CONV_REST: currency read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
-   property VL_UNIT_ICMS_ST_CONV_COMPL: currency read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
-   property VL_UNIT_FCP_ST_CONV_COMPL: currency read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
+   property VL_UNIT_ICMS_ST_CONV_REST: Variant read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
+   property VL_UNIT_FCP_ST_CONV_REST: Variant read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
+   property VL_UNIT_ICMS_ST_CONV_COMPL: Variant read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
+   property VL_UNIT_FCP_ST_CONV_COMPL: Variant read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
    property CST_ICMS: string read fCST_ICMS  write fCST_ICMS;
    property CFOP: string read fCFOP  write fCFOP;
   end;
@@ -1997,10 +2001,10 @@ type
    fVL_UNIT_ICMS_OP_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS que o contribuinte teria se creditado referente à operação de entrada das mercadorias em estoque caso estivesse submetida ao regime comum de tributação, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
    fVL_UNIT_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
    fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency; /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_REST: currency; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_REST: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_ICMS_ST_CONV_COMPL: currency; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-   fVL_UNIT_FCP_ST_CONV_COMPL: currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_REST: Variant; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_REST: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_ICMS_ST_CONV_COMPL: Variant; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+   fVL_UNIT_FCP_ST_CONV_COMPL: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
    fCST_ICMS: string; /// Código da Situação Tributária referente ao ICMS.
    fCFOP: string;/// Código Fiscal de Operação e Prestação
   public
@@ -2013,10 +2017,10 @@ type
    property VL_UNIT_ICMS_OP_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_OP_ESTOQUE_CONV  write fVL_UNIT_ICMS_OP_ESTOQUE_CONV;
    property VL_UNIT_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_ICMS_ST_ESTOQUE_CONV;
    property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: currency read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV;
-   property VL_UNIT_ICMS_ST_CONV_REST: currency read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
-   property VL_UNIT_FCP_ST_CONV_REST: currency read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
-   property VL_UNIT_ICMS_ST_CONV_COMPL: currency read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
-   property VL_UNIT_FCP_ST_CONV_COMPL: currency read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
+   property VL_UNIT_ICMS_ST_CONV_REST: Variant read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
+   property VL_UNIT_FCP_ST_CONV_REST: Variant read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
+   property VL_UNIT_ICMS_ST_CONV_COMPL: Variant read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
+   property VL_UNIT_FCP_ST_CONV_COMPL: Variant read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
    property CST_ICMS: string read fCST_ICMS  write fCST_ICMS;
    property CFOP: string read fCFOP  write fCFOP;
   end;
@@ -2154,10 +2158,10 @@ type
   fVL_UNIT_ICMS_OP_ESTOQUE_CONV: Currency; /// Valor médio unitário do ICMS que o contribuinte teria se creditado referente à operação de entrada das mercadorias em estoque caso estivesse submetida ao regime comum de tributação, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
   fVL_UNIT_ICMS_ST_ESTOQUE_CONV: Currency; /// Valor médio unitário do ICMS/ST, incluindo FCP ST, das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
   fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: Currency; /// Valor médio unitário do FCP ST agregado ao ICMS das mercadorias em estoque, considerando unidade utilizada para informar o campo “QUANT_CONV”.
-  fVL_UNIT_ICMS_ST_CONV_REST: Currency; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-  fVL_UNIT_FCP_ST_CONV_REST: Currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-  fVL_UNIT_ICMS_ST_CONV_COMPL: Currency; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
-  fVL_UNIT_FCP_ST_CONV_COMPL: Currency; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
+  fVL_UNIT_ICMS_ST_CONV_REST: Variant; /// Valor unitário do total do ICMS/ST, incluindo FCP ST, a ser restituído/ressarcido, calculado conforme a legislação de cada UF, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+  fVL_UNIT_FCP_ST_CONV_REST: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_REST”, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+  fVL_UNIT_ICMS_ST_CONV_COMPL: Variant; /// Valor unitário do complemento do ICMS, incluindo FCP ST, considerando a unidade utilizada para informar o campo “QUANT_CONV”.
+  fVL_UNIT_FCP_ST_CONV_COMPL: Variant; /// Valor unitário correspondente à parcela de ICMS FCP ST que compõe o campo “VL_UNIT_ICMS_ST_CONV_COMPL”, considerando unidade utilizada para informar o campo “QUANT_CONV”.
   fCST_ICMS: string; /// Código da Situação Tributária referente ao ICMS.
   fCFOP: string; /// Código Fiscal de Operação e Prestação.
  public
@@ -2170,10 +2174,10 @@ type
    property VL_UNIT_ICMS_OP_ESTOQUE_CONV: Currency read fVL_UNIT_ICMS_OP_ESTOQUE_CONV  write fVL_UNIT_ICMS_OP_ESTOQUE_CONV;
    property VL_UNIT_ICMS_ST_ESTOQUE_CONV: Currency read fVL_UNIT_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_ICMS_ST_ESTOQUE_CONV;
    property VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV: Currency read fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV  write fVL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV;
-   property VL_UNIT_ICMS_ST_CONV_REST: Currency read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
-   property VL_UNIT_FCP_ST_CONV_REST: Currency read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
-   property VL_UNIT_ICMS_ST_CONV_COMPL: Currency read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
-   property VL_UNIT_FCP_ST_CONV_COMPL: Currency read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
+   property VL_UNIT_ICMS_ST_CONV_REST: Variant read fVL_UNIT_ICMS_ST_CONV_REST  write fVL_UNIT_ICMS_ST_CONV_REST;
+   property VL_UNIT_FCP_ST_CONV_REST: Variant read fVL_UNIT_FCP_ST_CONV_REST  write fVL_UNIT_FCP_ST_CONV_REST;
+   property VL_UNIT_ICMS_ST_CONV_COMPL: Variant read fVL_UNIT_ICMS_ST_CONV_COMPL  write fVL_UNIT_ICMS_ST_CONV_COMPL;
+   property VL_UNIT_FCP_ST_CONV_COMPL: Variant read fVL_UNIT_FCP_ST_CONV_COMPL  write fVL_UNIT_FCP_ST_CONV_COMPL;
    property CST_ICMS: string read fCST_ICMS  write fCST_ICMS;
    property CFOP: string read fCFOP  write fCFOP;
   end;
@@ -2845,7 +2849,7 @@ type
     property Items[Index: Integer]: TRegistroC791 read GetItem write SetItem;
   end;
 
-  /// Registro C800 - CUPOM FISCAL ELETRÔNICO (CÓDIGO 59) (somente notas de saída)
+  { TRegistroC800 - CUPOM FISCAL ELETRÔNICO (CÓDIGO 59) (somente notas de saída) }
 
   TRegistroC800 = class
   private
@@ -2868,6 +2872,7 @@ type
 
     FRegistroC810: TRegistroC810List;
     FRegistroC850: TRegistroC850List;   /// BLOCO C - Lista de RegistroC850 (FILHO)
+    FRegistroC855: TRegistroC855List;
   public
     constructor Create; virtual;  /// Create
     destructor Destroy; override; /// Destroy
@@ -2891,6 +2896,7 @@ type
     /// Registros FILHOS
     property RegistroC810: TRegistroC810List read FRegistroC810 write FRegistroC810;
     property RegistroC850: TRegistroC850List read FRegistroC850 write FRegistroC850;
+    property RegistroC855: TRegistroC855List read FRegistroC855 write FRegistroC855;
   end;
 
   /// Registro C800 - Lista
@@ -3005,6 +3011,67 @@ type
     property Items[Index: Integer]: TRegistroC850 read GetItem write SetItem;
   end;
 
+  { TRegistroC855 - OBSERVAÇÕES DO LANÇAMENTO FISCAL (CÓDIGO 59) }
+
+  TRegistroC855 = class
+  private
+    fCOD_OBS: String;    // Código da observação do lançamento fiscal (campo 02 do Registro 0460)
+    fTXT_COMPL: String;  // Descrição complementar do código de observação.
+
+    FRegistroC857: TRegistroC857List;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    property COD_OBS: String read fCOD_OBS write fCOD_OBS;
+    property TXT_COMPL: String read fTXT_COMPL write fTXT_COMPL;
+
+    property RegistroC857: TRegistroC857List read FRegistroC857 write FRegistroC857;
+  end;
+
+  { TRegistroC855List }
+
+  TRegistroC855List = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TRegistroC855;
+    procedure SetItem(Index: Integer; const Value: TRegistroC855);
+  public
+    function New: TRegistroC855;
+    property Items[Index: Integer]: TRegistroC855 read GetItem write SetItem;
+  end;
+
+  { TRegistroC857 - OUTRAS OBRIGAÇÕES TRIBUTÁRIAS, AJUSTES E INFORMAÇÕES DE VALORES PROVENIENTES DE DOCUMENTO FISCAL }
+
+  TRegistroC857 = class
+  private
+    fALIQ_ICMS: Currency;     // Alíquota do ICMS
+    fCOD_AJ: String;          // Código do ajustes/benefício/incentivo
+    fCOD_ITEM: String;        // Código do item
+    fDESCR_COMPL_AJ: String;  // Descrição complementar do ajuste do documento fiscal
+    fVL_BC_ICMS: Currency;    // Base de cálculo do ICMS
+    fVL_ICMS: Currency;       // Valor do ICMS
+    fVL_OUTROS: Currency;     // Outros valores
+  public
+    property COD_AJ: String read fCOD_AJ write fCOD_AJ;
+    property DESCR_COMPL_AJ: String read fDESCR_COMPL_AJ write fDESCR_COMPL_AJ;
+    property COD_ITEM: String read fCOD_ITEM write fCOD_ITEM;
+    property VL_BC_ICMS: Currency read fVL_BC_ICMS write fVL_BC_ICMS;
+    property ALIQ_ICMS: Currency read fALIQ_ICMS write fALIQ_ICMS;
+    property VL_ICMS: Currency read fVL_ICMS write fVL_ICMS;
+    property VL_OUTROS: Currency read fVL_OUTROS write fVL_OUTROS;
+  end;
+
+  { TRegistroC857List }
+
+  TRegistroC857List = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TRegistroC857;
+    procedure SetItem(Index: Integer; const Value: TRegistroC857);
+  public
+    function New: TRegistroC857;
+    property Items[Index: Integer]: TRegistroC857 read GetItem write SetItem;
+  end;
+
   /// Registro C860 - IDENTIFICAÇÃO DO EQUIPAMENTO SAT-CF-E
 
   TRegistroC860 = class
@@ -3016,6 +3083,7 @@ type
     fDOC_FIN: String;                   /// Número do documento final
     FRegistroC870: TRegistroC870List;
     FRegistroC890: TRegistroC890List;   /// BLOCO C - Lista de RegistroC890 (FILHO)
+    FRegistroC895: TRegistroC895List;
   public
     constructor Create; virtual; /// Create
     destructor Destroy; override; /// Destroy
@@ -3028,6 +3096,7 @@ type
     /// Registros FILHOS
     property RegistroC870: TRegistroC870List read FRegistroC870 write FRegistroC870;
     property RegistroC890: TRegistroC890List read FRegistroC890 write FRegistroC890;
+    property RegistroC895: TRegistroC895List read FRegistroC895 write FRegistroC895;
   end;
 
   /// Registro C860 - Lista
@@ -3105,7 +3174,6 @@ type
     function New: TRegistroC870;
     property Items[Index: Integer]: TRegistroC870 read GetItem write SetItem;
   end;
-  
 
   /// Registro C890 - RESUMO DIÁRIO DO CF-E (CÓDIGO 59) POR EQUIPAMENTO SAT-CF-E
 
@@ -3140,6 +3208,67 @@ type
     property Items[Index: Integer]: TRegistroC890 read GetItem write SetItem;
   end;
 
+  { TRegistroC895 - OBSERVAÇÕES DO LANÇAMENTO FISCAL (CÓDIGO 59) }
+
+  TRegistroC895 = class
+  private
+    fCOD_OBS: String;    // Código da observação do lançamento fiscal (campo 02 do Registro 0460)
+    fTXT_COMPL: String;  // Descrição complementar do código de observação.
+
+    FRegistroC897: TRegistroC897List;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    property COD_OBS: String read fCOD_OBS write fCOD_OBS;
+    property TXT_COMPL: String read fTXT_COMPL write fTXT_COMPL;
+
+    property RegistroC897: TRegistroC897List read FRegistroC897 write FRegistroC897;
+  end;
+
+  { TRegistroC895List }
+
+  TRegistroC895List = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TRegistroC895;
+    procedure SetItem(Index: Integer; const Value: TRegistroC895);
+  public
+    function New: TRegistroC895;
+    property Items[Index: Integer]: TRegistroC895 read GetItem write SetItem;
+  end;
+
+  { TRegistroC897 - OUTRAS OBRIGAÇÕES TRIBUTÁRIAS, AJUSTES E INFORMAÇÕES DE VALORES PROVENIENTES DE DOCUMENTO FISCAL }
+
+  TRegistroC897 = class
+  private
+    fALIQ_ICMS: Currency;     // Alíquota do ICMS
+    fCOD_AJ: String;          // Código do ajustes/benefício/incentivo
+    fCOD_ITEM: String;        // Código do item
+    fDESCR_COMPL_AJ: String;  // Descrição complementar do ajuste do documento fiscal
+    fVL_BC_ICMS: Currency;    // Base de cálculo do ICMS
+    fVL_ICMS: Currency;       // Valor do ICMS
+    fVL_OUTROS: Currency;     // Outros valores
+  public
+    property COD_AJ: String read fCOD_AJ write fCOD_AJ;
+    property DESCR_COMPL_AJ: String read fDESCR_COMPL_AJ write fDESCR_COMPL_AJ;
+    property COD_ITEM: String read fCOD_ITEM write fCOD_ITEM;
+    property VL_BC_ICMS: Currency read fVL_BC_ICMS write fVL_BC_ICMS;
+    property ALIQ_ICMS: Currency read fALIQ_ICMS write fALIQ_ICMS;
+    property VL_ICMS: Currency read fVL_ICMS write fVL_ICMS;
+    property VL_OUTROS: Currency read fVL_OUTROS write fVL_OUTROS;
+  end;
+
+  { TRegistroC897List }
+
+  TRegistroC897List = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TRegistroC897;
+    procedure SetItem(Index: Integer; const Value: TRegistroC897);
+  public
+    function New: TRegistroC897;
+    property Items[Index: Integer]: TRegistroC897 read GetItem write SetItem;
+  end;
+
   /// Registro C990 - ENCERRAMENTO DO BLOCO C
 
   TRegistroC990 = class
@@ -3150,8 +3279,6 @@ type
   end;
 
 implementation
-
-{ TRegistroC100 }
 
 { TRegistroC100List }
 
@@ -3207,7 +3334,6 @@ procedure TRegistroC105List.SetItem(Index: Integer; const Value: TRegistroC105);
 begin
   Put(Index, Value);
 end;
-
 
 { TRegistroC110List }
 
@@ -4233,6 +4359,55 @@ begin
   Put(Index, Value);
 end;
 
+{ TRegistroC855 }
+
+constructor TRegistroC855.Create;
+begin
+  FRegistroC857 := TRegistroC857List.Create;
+end;
+
+destructor TRegistroC855.Destroy;
+begin
+  FRegistroC857.Free;
+  inherited Destroy;
+end;
+
+{ TRegistroC855List }
+
+function TRegistroC855List.GetItem(Index: Integer): TRegistroC855;
+begin
+  Result := TRegistroC855(inherited Items[Index]);
+end;
+
+procedure TRegistroC855List.SetItem(Index: Integer; const Value: TRegistroC855);
+begin
+  Put(Index, Value);
+end;
+
+function TRegistroC855List.New: TRegistroC855;
+begin
+  Result := TRegistroC855.Create;
+  Add(Result);
+end;
+
+{ TRegistroC857List }
+
+function TRegistroC857List.GetItem(Index: Integer): TRegistroC857;
+begin
+  Result := TRegistroC857(inherited Items[Index]);
+end;
+
+procedure TRegistroC857List.SetItem(Index: Integer; const Value: TRegistroC857);
+begin
+  Put(Index, Value);
+end;
+
+function TRegistroC857List.New: TRegistroC857;
+begin
+  Result := TRegistroC857.Create;
+  Add(Result);
+end;
+
 { TRegistroC860List }
 
 function TRegistroC860List.GetItem(Index: Integer): TRegistroC860;
@@ -4267,6 +4442,55 @@ end;
 procedure TRegistroC890List.SetItem(Index: Integer; const Value: TRegistroC890);
 begin
   Put(Index, Value);
+end;
+
+{ TRegistroC895 }
+
+constructor TRegistroC895.Create;
+begin
+  FRegistroC897 := TRegistroC897List.Create;
+end;
+
+destructor TRegistroC895.Destroy;
+begin
+  FRegistroC897.Free;
+  inherited Destroy;
+end;
+
+{ TRegistroC895List }
+
+function TRegistroC895List.GetItem(Index: Integer): TRegistroC895;
+begin
+  Result := TRegistroC895(Inherited Items[Index]);
+end;
+
+procedure TRegistroC895List.SetItem(Index: Integer; const Value: TRegistroC895);
+begin
+  Put(Index, Value);
+end;
+
+function TRegistroC895List.New: TRegistroC895;
+begin 
+  Result := TRegistroC895.Create;
+  Add(Result);
+end;
+
+{ TRegistroC897List }
+
+function TRegistroC897List.GetItem(Index: Integer): TRegistroC897;
+begin
+  Result := TRegistroC897(Inherited Items[Index]);
+end;
+
+procedure TRegistroC897List.SetItem(Index: Integer; const Value: TRegistroC897);
+begin 
+  Put(Index, Value);
+end;
+
+function TRegistroC897List.New: TRegistroC897;
+begin 
+  Result := TRegistroC897.Create;
+  Add(Result);
 end;
 
 { TRegistroC100 }
@@ -4598,12 +4822,14 @@ begin
   inherited Create;
   FRegistroC810 := TRegistroC810List.Create;
   FRegistroC850 := TRegistroC850List.Create;
+  FRegistroC855 := TRegistroC855List.Create;
 end;
 
 destructor TRegistroC800.Destroy;
 begin
   FRegistroC810.Free;
   FRegistroC850.Free;
+  FRegistroC855.Free;
   inherited;
 end;
 
@@ -4614,12 +4840,14 @@ begin
   inherited Create;
   FRegistroC870 := TRegistroC870List.Create;
   FRegistroC890 := TRegistroC890List.Create;
+  FRegistroC895 := TRegistroC895List.Create;
 end;
 
 destructor TRegistroC860.Destroy;
 begin
   FRegistroC870.Free;
   FRegistroC890.Free;
+  FRegistroC895.Free;
   inherited;
 end;
 

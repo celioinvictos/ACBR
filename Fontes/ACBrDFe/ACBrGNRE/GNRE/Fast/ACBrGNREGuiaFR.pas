@@ -38,9 +38,16 @@ unit ACBrGNREGuiaFR;
 interface
 
 uses
-  Forms, SysUtils, Classes, Graphics,
-  ACBrBase, ACBrGNREGuiaClass, ACBrGNREGuiaFRDM,
-  pcnConversao, frxClass, pgnreGNRERetorno;
+  Forms, 
+  SysUtils, 
+  Classes, 
+  Graphics,
+  ACBrBase, 
+  ACBrGNREGuiaClass, 
+  ACBrGNREGuiaFRDM,
+  pcnConversao, 
+  frxClass, 
+  pgnreGNRERetorno;
 
 type
   EACBrGNREGuiaFR = class(Exception);
@@ -61,17 +68,26 @@ type
     destructor Destroy; override;
     procedure ImprimirGuia(GNRE: TGNRERetorno = nil); override;
     procedure ImprimirGuiaPDF(GNRE: TGNRERetorno = nil); override;
+    property PreparedReport: TfrxReport read GetPreparedReport;
   published
     property FastFile      : String read FFastFile write FFastFile;
     property dmGuia        : TdmACBrGNREFR read FdmGuia write FdmGuia;
     property EspessuraBorda: Integer read FEspessuraBorda write FEspessuraBorda;
-    property PreparedReport: TfrxReport read GetPreparedReport;
     property ShowDialog    : boolean read FShowDialog write FShowDialog default true;
   end;
 
 implementation
 
-uses ACBrGNRE2, ACBrUtil, StrUtils, Dialogs, ACBrGNREGuiasRetorno;
+uses 
+  ACBrGNRE2, 
+  ACBrUtil.Strings,
+  ACBrUtil.Math, 
+  ACBrUtil.FilesIO, 
+  ACBrUtil.Base, 
+  ACBrUtil.DateTime, 
+  ACBrUtil.XMLHTML, 
+  StrUtils, 
+  ACBrGNREGuiasRetorno;
 
 constructor TACBrGNREGuiaFR.Create(AOwner: TComponent);
 begin

@@ -45,7 +45,7 @@ uses
   ACBrCTeDACTEClass, ACBrDFeException,
   pcteCTe, pcnConversao, pcteConversaoCTe,
   pcteEnvEventoCTe, pcteInutCTe, 
-  ACBrDFeUtil, ACBrUtil;
+  ACBrDFeUtil;
 
 const
   ACBRCTE_NAMESPACE = 'http://www.portalfiscal.inf.br/cte';
@@ -124,6 +124,8 @@ type
     function EnviarEvento(idLote: Int64): Boolean;
     function Inutilizar(const ACNPJ, AJustificativa: String;
       AAno, ASerie, ANumInicial, ANumFinal: Integer): Boolean;
+    function DistribuicaoDFe(AcUFAutor: integer; const ACNPJCPF, AultNSU,
+      ANSU: String; const AchNFe: String = ''): Boolean;
     function DistribuicaoDFePorUltNSU(AcUFAutor: integer;
       const ACNPJCPF, AultNSU: String): Boolean;
     function DistribuicaoDFePorNSU(AcUFAutor: integer;
@@ -132,7 +134,7 @@ type
       const ACNPJCPF, AchCTe: String): Boolean;
     procedure EnviarEmail(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
-      StreamCTe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil); override;
+      StreamCTe: TStream = nil; const NomeArq: String = ''; sReplyTo: TStrings = nil; sBCC: TStrings = nil); override;
 
     procedure EnviarEmailEvento(const sPara, sAssunto: String;
       sMensagem: TStrings = nil; sCC: TStrings = nil; Anexos: TStrings = nil;
@@ -160,7 +162,11 @@ implementation
 
 uses
   dateutils,
-  pcnAuxiliar, ACBrDFeSSL;
+  pcnAuxiliar,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.FilesIO,
+  ACBrDFeSSL;
 
 {$IFDEF FPC}
  {$R ACBrCTeServicos.rc}
@@ -920,6 +926,19 @@ begin
     GerarException( WebServices.DistribuicaoDFe.Msg );
 end;
 
+function TACBrCTe.DistribuicaoDFe(AcUFAutor: integer; const ACNPJCPF, AultNSU,
+  ANSU: String; const AchNFe: String): Boolean;
+begin
+  // Aguardando a SEFAZ implementar esse recurso já existente para a NF-e.
+  if AchNFe <> '' then
+  begin
+    Result := False;
+    GerarException('Aguardando a SEFAZ implementar consulta pela chave, já existente para a NF-e.');
+  end
+  else
+    Result := Distribuicao(AcUFAutor, ACNPJCPF, AultNSU, ANSU, AchNFe);
+end;
+
 function TACBrCTe.DistribuicaoDFePorUltNSU(AcUFAutor: integer; const ACNPJCPF,
   AultNSU: String): Boolean;
 begin
@@ -944,13 +963,13 @@ end;
 
 procedure TACBrCTe.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
   sCC: TStrings; Anexos: TStrings; StreamCTe: TStream; const NomeArq: String;
-  sReplyTo: TStrings);
+  sReplyTo: TStrings; sBCC: TStrings);
 begin
   SetStatus( stCTeEmail );
 
   try
     inherited EnviarEmail(sPara, sAssunto, sMensagem, sCC, Anexos, StreamCTe, NomeArq,
-     sReplyTo);
+     sReplyTo, sBCC);
   finally
     SetStatus( stCTeIdle );
   end;

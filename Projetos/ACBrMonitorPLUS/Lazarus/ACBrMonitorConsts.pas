@@ -542,6 +542,7 @@ const
   CMetodoConsultaIdentEventosTabela =  'ConsultaIdentificadoresEventosTabela';
   CMetodoConsultaIdentEventosTrab =    'ConsultaIdentificadoresEventosTrabalhador';
   CMetodoDownloadEventos =             'DownloadEventos';
+  CMetodoValidareSocial =              'validaresocial';
 
   CMetodoCriarEventoReinf =          'criareventoreinf';
   CMetodoCriarEnviarReinf =          'criarenviarreinf';
@@ -578,6 +579,7 @@ const
   CMetodoEnviarEmailBoleto =         'enviaremailboleto';
   CMetodoEnviarBoleto =              'enviarboleto';
   CMetodoSetOperacaoWS =             'setoperacaows';
+  CMetodoConsultarTitulosPorPeriodo= 'consultartitulosporperiodo';
 
   CMetodoAtivar =               'ativar';
   CMetodoDesativar =            'desativar';
@@ -639,10 +641,12 @@ const
   CMetodoSetAberturaIntervalo = 'setaberturaintervalo';
   CMetodoAberturaAntecipada   = 'aberturaantecipada';
 
-  CMetodoBuscarPorCodigo = 'buscarporcodigo';
-  CMetodoBuscarPorNome   = 'buscarpornome';
+  CMetodoBuscarPorCodigo    = 'buscarporcodigo';
+  CMetodoBuscarPorNome      = 'buscarpornome';
+  CMetodoBuscarPorDescricao = 'buscarpordescricao';
 
   CMetodoValidar      = 'validar';
+  CMetodoObterNCMs    = 'obterncms';
   CMetodoBaixarLista  = 'baixarlista';
   CMetodoDescricaoNCM = 'descricaoncm';
 
@@ -892,6 +896,7 @@ const
 
   CSecNCM =                          'NCM';
   CKeyDirNCMSalvar =                 'DirNCMSalvar';
+  CKeyDiasValidadeCache =            'DiasValidadeCache';
 
   CSecCertificado =                  'Certificado';
   CKeySSLLib =                       'SSLLib';
@@ -1063,10 +1068,13 @@ const
   CKeyDANFEImprimirDadosDocReferenciados = 'ImprimirDadosDocReferenciados';
   CKeyDANFEExibirBandInforAdicProduto =    'ExibirBandInforAdicProduto';
   CKeyDANFELogoEmCima =                    'LogoEmCima';
-  CKeyDANFEExpandirDadosAdicionaisAuto = 'ExpandirDadosAdicionaisAuto';
+  CKeyDANFEImprimeInscSuframa =            'ImprimeInscSuframa';
+  CKeyDANFEExpandirDadosAdicionaisAuto =   'ExpandirDadosAdicionaisAuto';
   CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina = 'ImprimeContinuacaoDadosAdicionaisPrimeiraPagina';
-  CKeyDANFEImprimeDescAcrescItemNFe = 'ImprimeDescAcrescItemNFe';
-  CKeyDANFEImprimirCampoFormaPagamento = 'ImprimirCampoFormaPagamento';
+  CKeyDANFEImprimeDescAcrescItemNFe =      'ImprimeDescAcrescItemNFe';
+  CKeyDANFEImprimirCampoFormaPagamento =   'ImprimirCampoFormaPagamento';
+  CKeyDANFEImprimeXPedNitemPed =           'ImprimeXPedNitemPed';
+
 
   CSecDANFCe =                         'DANFCe';
   CKeyDANFCeMargemInf =                'MargemInf';
@@ -1091,6 +1099,9 @@ const
 
   CSecDACTE =                          'DACTE';
   CKeyDACTETamanhoPapel =              'TamanhoPapel';
+
+  CSecDAMFE =                          'DAMFE';
+  CKeyDAMFEExibirMunicipioDescar =     'ExibirMunicipioDescarregamento';
 
   CSecArquivos =                            'Arquivos';
   CKeyArquivosSalvar =                      'Salvar';
@@ -1160,6 +1171,7 @@ const
   //CKeySATHashLib =                          'Hash';
 
   CSecSATExtrato =                          'SATExtrato';
+  CKeySATExtMostrarStatus =                 'MostrarStatus';
   CKeySATExtParamsString =                  'ParamsString';
   CKeySATExtImprimeDescAcrescItem =         'ImprimeDescAcrescItem';
   CKeySATExtImprimeEmUmaLinha =             'ImprimeEmUmaLinha';
@@ -1304,6 +1316,8 @@ const
   CKeyBOLETOMostraPreviewRelRetorno =       'MostraPreviewRelRetorno';
   CKeyBOLETORemoveAcentos =                 'RemoveAcentos';
   CKeyBoletoPrefixArqRemessa =              'PrefixArqRemessa';
+  CKeyBOLETOVersaoArquivo =                 'VersaoArquivo';
+  CKeyBOLETOVersaoLote =                    'VersaoLote';
   CKeyBOLETOLogoEmpresa =                   'LogoEmpresa';
   CKeyBOLETOEmailAssuntoBoleto =            'EmailAssuntoBoleto';
   CKeyBOLETOEmailMensagemBoleto =           'EmailMensagemBoleto';
@@ -1326,6 +1340,8 @@ const
   CKeyBOLETOCedenteModalidade =             'Cedente.Modalidade';
   CKeyBOLETOCedenteConvenio =               'Cedente.Convenio';
 
+  CKeyBOLETOChavePix =                      'ChavePix';
+  CKeyBOLETOTipoChavePix =                  'TipoChavePix';
   CKeyBOLETOClientID =                      'ClientID';
   CKeyBOLETOClientSecret =                  'ClientSecret';
   CKeyBOLETOKeyUser =                       'KeyUser';

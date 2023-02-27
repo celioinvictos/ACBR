@@ -33,6 +33,7 @@
 {$I ACBr.inc}
 
 unit ACBrBancoCecred;
+//Banco passou por reestruturação de marca agora chama Ailos
 
 interface
 
@@ -55,6 +56,8 @@ type
     fCountRegR:Integer;
     procedure DefineDataProtestoNegativacao(const ACBrTitulo: TACBrTitulo);
     function DefineCodigoProtesto(const ACBrTitulo: TACBrTitulo): String; override;
+    procedure EhObrigatorioContaDV; override;
+    function GetLocalPagamento: String; override;
   public
     Constructor create(AOwner: TACBrBanco);
     function CalcularDigitoVerificador(const ACBrTitulo: TACBrTitulo ): String; override;
@@ -91,8 +94,7 @@ implementation
 
 uses
   {$IFDEF COMPILER6_UP} DateUtils {$ELSE} ACBrD5, FileCtrl {$ENDIF},
-  StrUtils, Variants,
-  ACBrValidador, ACBrUtil, math;
+  StrUtils, Variants, ACBrValidador, ACBrUtil.Base, Math, ACBrUtil.Strings, ACBrUtil.DateTime;
 
 constructor TACBrBancoCecred.create(AOwner: TACBrBanco);
 begin
@@ -186,6 +188,11 @@ begin
 
   end;
 
+end;
+
+procedure TACBrBancoCecred.EhObrigatorioContaDV;
+begin
+  //validação
 end;
 
 function TACBrBancoCecred.DefineCodigoProtesto(const ACBrTitulo: TACBrTitulo): String;
@@ -736,7 +743,7 @@ begin
                   ATipoAceite +                                                 // 150 a 150 - Aceite
                   FormatDateTime( 'ddmmyy', DataDocumento ) +                   // 151 a 156 - Data de Emissão
                   PadLeft(AInstrucao, 2, '0') +                                 // 157 a 158 - Instrução codificada (cód. Protesto)
-                  '  ' +                                                        // 159 a 160 - Brancos
+                  '00' +                                                        // 159 a 160 - Zeros
                   IntToStrZero( round(ValorMoraJuros * 100 ), 13) +             // 161 a 173 - Juros de mora por dia
                   IntToStrZero(0,6) +                                           // 174 a 179 - Zeros
                   IntToStrZero( round( ValorDesconto * 100), 13) +              // 180 a 192 - Valor do desconto
@@ -774,6 +781,11 @@ begin
          aRemessa.Text := aRemessa.Text + UpperCase(wLinha);
       end;
    end;
+end;
+
+function TACBrBancoCecred.GetLocalPagamento: String;
+begin
+  Result := ACBrStr('Pagar preferencialmente nas cooperativas do Sistema Ailos.');
 end;
 
 function TACBrBancoCecred.GerarRegistroTrailler240(ARemessa: TStringList): String;
@@ -844,6 +856,10 @@ begin
       toRetornoAlteracaoOutrosDadosRejeitada                   : Result := '30';
       toRetornoRecebimentoInstrucaoAlterarNomeSacado           : Result := '42';
       toRetornoProtestoOuSustacaoEstornado                     : Result := '46';
+      toRetornoEntradaNegativacaoRejeitada                     : Result := '92';
+      toRetornoInclusaoNegativacao                             : Result := '93';
+      toRetornoExclusaoNegativacao                             : Result := '94';
+      toRetornoExcluirProtestoCartaAnuencia                    : Result := '98';
     end;
   end
   else
@@ -911,6 +927,10 @@ begin
       30: Result := '30-Alteração de Dados Rejeitada';
       42: Result := '42-Confirmação da Alteração dos dados do Sacado';
       46: Result := '46-Instrução para Cancelar Protesto Confirmada';
+      92: Result := '92-Entrada Negativação Rejeitada';
+      93: Result := '93-Inclusão Negativação';
+      94: Result := '94-Exclusão Negativação';
+      98: Result := '98-Excluir Protesto com Carta de Anuência';
     end;
   end
   else
@@ -979,6 +999,10 @@ begin
       30: Result := toRetornoAlteracaoOutrosDadosRejeitada;
       42: Result := toRetornoRecebimentoInstrucaoAlterarNomeSacado;
       46: Result := toRetornoProtestoOuSustacaoEstornado;
+      92: Result := toRetornoEntradaNegativacaoRejeitada;
+      93: Result := toRetornoInclusaoNegativacao;
+      94: Result := toRetornoExclusaoNegativacao;
+      98: Result := toRetornoExcluirProtestoCartaAnuencia;
     end;
   end
   else

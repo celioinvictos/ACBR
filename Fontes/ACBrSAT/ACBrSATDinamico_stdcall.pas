@@ -76,6 +76,8 @@ type
      xSAT_TrocarCodigoDeAtivacao : function ( numeroSessao : LongInt;
         codigoDeAtivacao : PAnsiChar; opcao : LongInt; novoCodigo,
         confNovoCodigo : PAnsiChar ) : PAnsiChar ; stdcall;
+     xSAT_ConsultarUltimaSessaoFiscal : function ( numeroSessao : LongInt;
+        codigoDeAtivacao : PAnsiChar) : PAnsiChar ; stdcall;
 
    protected
      procedure LoadDLLFunctions ; override;
@@ -106,11 +108,10 @@ type
      function TesteFimAFim( dadosVenda : AnsiString) : String ; override;
      function TrocarCodigoDeAtivacao( codigoDeAtivacaoOuEmergencia: AnsiString;
        opcao : Integer; novoCodigo: AnsiString ) : String ; override;
+     function ConsultarUltimaSessaoFiscal : String ; override;       
    end;
 
 implementation
-
-Uses ACBrUtil;
 
 constructor TACBrSATDinamico_stdcall.Create(AOwner : TComponent) ;
 begin
@@ -213,6 +214,17 @@ begin
   Result := String( Resp );
 end ;
 
+function TACBrSATDinamico_stdcall.ConsultarUltimaSessaoFiscal: String;
+Var
+  Resp : PAnsiChar;
+begin
+  if not Assigned(xSAT_ConsultarUltimaSessaoFiscal) then
+    raise EACBrSATErro.Create( Format(cACBrSATFuncaoNaoEncontrada, ['ConsultarUltimaSessaoFiscal', NomeDLL]) ) ;
+
+  Resp := xSAT_ConsultarUltimaSessaoFiscal( numeroSessao, PAnsiChar(codigoDeAtivacao) );
+  Result := String( Resp );
+end;
+
 function TACBrSATDinamico_stdcall.DesbloquearSAT : String ;
 Var
   Resp : PAnsiChar;
@@ -243,7 +255,7 @@ Var
   Resp : PAnsiChar;
 begin
   Resp := xSAT_TesteFimAFim( numeroSessao, PAnsiChar(codigoDeAtivacao),
-                               PAnsiChar(dadosVenda) );
+                             PAnsiChar(dadosVenda) );
   Result := String( Resp );
 end ;
 
@@ -281,6 +293,11 @@ begin
   FunctionDetectLibSAT( 'ExtrairLogs', @xSAT_ExtrairLogs);
   FunctionDetectLibSAT( 'TesteFimAFim', @xSAT_TesteFimAFim) ;
   FunctionDetectLibSAT( 'TrocarCodigoDeAtivacao', @xSAT_TrocarCodigoDeAtivacao);
+  // Função é nova, e pode não estar disponível nas DLLs antigas
+  try
+    FunctionDetectLibSAT( 'ConsultarUltimaSessaoFiscal', @xSAT_ConsultarUltimaSessaoFiscal);
+  except
+  end;
 end;
 
 procedure TACBrSATDinamico_stdcall.UnLoadDLLFunctions;
@@ -302,6 +319,7 @@ begin
   xSAT_ExtrairLogs                    := Nil;
   xSAT_TesteFimAFim                   := Nil;
   xSAT_TrocarCodigoDeAtivacao         := Nil;
+  xSAT_ConsultarUltimaSessaoFiscal    := Nil;
 end;
 
 end.

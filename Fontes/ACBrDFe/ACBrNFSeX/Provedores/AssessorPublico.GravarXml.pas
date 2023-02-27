@@ -38,9 +38,8 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrUtil,
   ACBrXmlBase, ACBrXmlDocument,
-  pcnAuxiliar, pcnConsts,
+  pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXConversao;
 
 type
@@ -114,8 +113,8 @@ begin
   else
     NFSeNode.AppendChild(AddNode(tcStr, '#1', 'RETIDO', 1, 1, 1, 'N', ''));
 
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'ATIVIDADE', 1, 1, 1,
-                                            NFSe.Servico.ItemListaServico, ''));
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'ATIVIDADE', 1, 10, 1,
+                                            NFSe.Servico.CodigoCnae, ''));
 
   NFSeNode.AppendChild(AddNode(tcDe2, '#1', 'ALIQUOTAAPLICADA', 1, 5, 1,
                                             NFSe.Servico.Valores.Aliquota, ''));
@@ -159,7 +158,7 @@ begin
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'LOGRADOURO', 1, 60, 1,
                                            NFSe.Tomador.Endereco.Endereco, ''));
 
-  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'COMPLEMENTO', 1, 60, 0,
+  NFSeNode.AppendChild(AddNode(tcStr, '#1', 'COMPLEMENTO', 1, 60, 1,
                                         NFSe.Tomador.Endereco.Complemento, ''));
 
   NFSeNode.AppendChild(AddNode(tcStr, '#1', 'NUMERO', 1, 10, 1,

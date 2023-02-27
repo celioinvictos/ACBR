@@ -57,7 +57,9 @@ uses
    System.Contnrs,
   {$IfEnd}
   pcnConversao, pcnLeitor, pcnEventoNFe, pcnSignature,
-  ACBrBase, ACBrUtil;
+  ACBrBase,
+  ACBrUtil.Strings,
+  ACBrUtil.XMLHTML;
 
 type
   TRetInfEventoCollectionItem = class;
@@ -118,7 +120,8 @@ type
 
 implementation
 
-Uses pcnConversaoNFe;
+uses
+  pcnConversaoNFe;
 
 { TRetInfEventoCollection }
 

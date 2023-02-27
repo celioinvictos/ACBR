@@ -348,7 +348,7 @@ implementation
 uses
   TypInfo, strutils,
   ACBrLibConsts, ACBrLibComum,
-  ACBrLibHelpers, ACBrUtil;
+  ACBrLibHelpers, ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings;
 
 { TSistemaConfig }
 
@@ -1016,12 +1016,20 @@ end;
 
 function TLibConfig.PrecisaCriptografar(ASessao, AChave: String): Boolean;
 begin
+  with TACBrLib(FOwner) do
+  begin
+    if (Config.Log.Nivel > logCompleto) then
+      GravarLog(ClassName + '.PrecisaCriptografar(' + ASessao + ',' + AChave + ')', logParanoico);
 
-  TACBrLib(FOwner).GravarLog(ClassName + '.PrecisaCriptografar(' + ASessao + ',' + AChave + ')', logParanoico);
+    Result := (AChave = CChaveSenha) and
+              ( (ASessao = CSessaoProxy) or
+                (ASessao = CSessaoEmail) or
+                (ASessao = CSessaoDFe)
+              );
 
-  Result := (AChave = CChaveSenha) and ((ASessao = CSessaoProxy) or (ASessao = CSessaoEmail) or (ASessao = CSessaoDFe));
-
-  TACBrLib(FOwner).GravarLog(ClassName + '.PrecisaCriptografar - Feito Result: ' + BoolToStr(Result, True), logParanoico);
+    if (Config.Log.Nivel > logCompleto) then
+      GravarLog(ClassName + '.PrecisaCriptografar - Feito Result: ' + BoolToStr(Result, True), logParanoico);
+  end;
 end;
 
 function TLibConfig.AjustarValor(Tipo: TTipoFuncao; ASessao, AChave, AValor: Ansistring): Ansistring;
