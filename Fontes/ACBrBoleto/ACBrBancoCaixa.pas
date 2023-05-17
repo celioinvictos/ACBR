@@ -97,8 +97,8 @@ begin
    fpTamanhoCarteira       := 2;
    fValorTotalDocs         := 0;
    fQtRegLote              := 0;
-   fpLayoutVersaoArquivo := 50;
-   fpLayoutVersaoLote    := 30;
+   fpLayoutVersaoArquivo := 101;
+   fpLayoutVersaoLote    := 60;
    fpCodigosMoraAceitos    := '123';
 
    fpOrientacoesBanco.Clear;
