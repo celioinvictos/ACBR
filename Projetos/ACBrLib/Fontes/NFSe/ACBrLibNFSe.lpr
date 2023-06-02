@@ -66,14 +66,18 @@ exports
   NFSE_CarregarINI,
   NFSE_ObterXml,
   NFSE_GravarXml,
+  NFSE_ObterIni,
+  NFSE_GravarIni,
   NFSE_LimparLista,
   NFSE_ObterCertificados,
 
   // Servicos
   NFSE_Emitir,
+  NFSE_Cancelar,
   NFSE_SubstituirNFSe,
   NFSE_LinkNFSe,
   NFSE_GerarLote,
+  NFSE_GerarToken,
   NFSE_ConsultarSituacao,
   NFSE_ConsultarLoteRps,
   NFSE_ConsultarNFSePorRps,

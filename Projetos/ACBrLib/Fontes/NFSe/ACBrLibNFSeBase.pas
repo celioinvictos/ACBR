@@ -64,9 +64,12 @@ type
     function CarregarINI(const eArquivoOuINI: PChar): longint;
     function ObterXml(aIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
     function GravarXml(aIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+    function ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint):longint;
+    function GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar):longint;
     function LimparLista: longint;
     function ObterCertificados(const sResposta: PChar; var esTamanho: longint): longint;
     function Emitir(const aLote:PChar; aModoEnvio: longint;  aImprimir: Boolean; const sResposta: PChar; var esTamanho: longint): longint;
+    function Cancelar(aInfCancelamentoNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
     function SubstituirNFSe(const aNumeroNFSe, aSerieNFSe, aCodigoCancelamento, aMotivoCancelamento, aNumeroLote, aCodigoVerificacao, sResposta: PChar; var esTamanho: longint): longint;
     function LinkNFSe(aNumeroNFSe: PChar; const aCodigoVerificacao, aChaveAcesso, aValorServico, sResposta: PChar; var esTamanho: longint): longint;
     function GerarLote(const aLote: PChar; aQtdMaximaRps, aModoEnvio: longint; const sResposta: PChar; var esTamanho: longint): longint;
@@ -90,17 +93,15 @@ type
     function ConsultarNFSeServicoTomadoPorTomador(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
     function ConsultarNFSeServicoTomadoPorPeriodo(aDataInicial, aDataFinal: TDateTime; aPagina: longint; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
     function ConsultarNFSeServicoTomadoPorIntermediario(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
-
   end;
 
 implementation
 
 uses
   StrUtils, ACBrLibResposta, ACBrLibHelpers,
-  ACBrLibConsts, ACBrUtil.Base, ACBrUtil.Strings, ACBrLibCertUtils,
-  ACBrLibNFSeConsts, ACBrLibConfig, ACBrNFSeLibConfig,
-  ACBrNFSeXConversao, ACBrNFSeXWebservicesResponse,
-  ACBrLibNFSeRespostas;
+  ACBrLibConsts, ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.FilesIO, ACBrLibCertUtils,
+  ACBrLibNFSeConsts, ACBrLibConfig, ACBrNFSeLibConfig, ACBrNFSeXConversao,
+  ACBrLibNFSeRespostas, ACBrNFSeXWebserviceBase;
 
 { TACBrLibNFSe }
 
@@ -108,7 +109,7 @@ constructor TACBrLibNFSe.Create(ArqConfig: string; ChaveCrypt: ansistring);
 begin
   inherited Create(ArqConfig, ChaveCrypt);
   FNFSeDM := TLibNFSeDM.Create(nil);
-  FNFSeDM.Lib := self;
+  FNFSeDM.Lib := Self;
 end;
 
 destructor TACBrLibNFSe.Destroy;
@@ -280,6 +281,90 @@ begin
   end;
 end;
 
+function TACBrLibNFSe.ObterIni(AIndex: longint; const sResposta: PChar; var esTamanho: longint): longint;
+var
+  Resposta: AnsiString;
+begin
+  try
+    if Config.Log.Nivel > logNormal then
+      GravarLog('NFSE_ObterIni(' + IntToStr(AIndex) + ' )', logCompleto, True)
+    else
+      GravarLog('NFSE_ObterIni', logNormal);
+
+    NFSeDM.Travar;
+    try
+      if (NFSeDM.ACBrNFSeX1.NotasFiscais.Count < 1) or (AIndex < 0) or (AIndex >= NFSeDM.ACBrNFSeX1.NotasFiscais.Count) then
+        raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+      if EstaVazio(NFSeDM.ACBrNFSeX1.NotasFiscais.Items[AIndex].XmlNfse) then
+        NFSeDM.ACBrNFSeX1.NotasFiscais.Items[AIndex].GerarXML;
+
+      Resposta := NFSeDM.ACBrNFSeX1.NotasFiscais.Items[AIndex].GerarNFSeIni;
+      Resposta := ConverterUTF8ParaAnsi(Resposta);
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result := SetRetorno(ErrOK, Resposta);
+    finally
+      NFSeDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+  end;
+end;
+
+function TACBrLibNFSe.GravarIni(AIndex: longint; const eNomeArquivo, ePathArquivo: PChar): longint;
+var
+  ANFSeIni, ANomeArquivo, APathArquivo: string;
+begin
+  try
+    ANomeArquivo:= ConverterAnsiParaUTF8(eNomeArquivo);
+    APathArquivo:= ConverterAnsiParaUTF8(ePathArquivo);
+
+    if Config.Log.Nivel > logNormal then
+      GravarLog('NFSE_GravarIni(' + IntToStr(AIndex) + ',' + ANomeArquivo + ',' + APathArquivo + ' )', logCompleto, True)
+    else
+      GravarLog('NFSE_GravarIni', logNormal);
+
+    NFSeDM.Travar;
+    try
+      if (NFSeDM.ACBrNFSeX1.NotasFiscais.Count < 1) or (AIndex < 0) or (AIndex >= NFSeDM.ACBrNFSeX1.NotasFiscais.Count) then
+        raise EACBrLibException.Create(ErrIndex, Format(SErrIndex, [AIndex]));
+
+      ANomeArquivo := ExtractFileName(ANomeArquivo);
+
+      if EstaVazio(ANomeArquivo) then
+        raise EACBrLibException.Create(ErrExecutandoMetodo, 'Nome de arquivo não informado');
+
+      if EstaVazio(APathArquivo) then
+        APathArquivo := ExtractFilePath(ANomeArquivo);
+      if EstaVazio(APathArquivo) then
+        APathArquivo := NFSeDM.ACBrNFSeX1.Configuracoes.Arquivos.PathSalvar;
+
+      APathArquivo := PathWithDelim(APathArquivo);
+
+      if EstaVazio(NFSeDM.ACBrNFSeX1.NotasFiscais.Items[AIndex].XmlNfse) then
+        NFSeDM.ACBrNFSeX1.NotasFiscais.Items[AIndex].GerarXML;
+
+      ANFSeIni := NFSeDM.ACBrNFSeX1.NotasFiscais.Items[AIndex].GerarNFSeIni;
+      if not DirectoryExists(APathArquivo) then
+        ForceDirectories(APathArquivo);
+
+      WriteToTXT(APathArquivo + ANomeArquivo, ANFSeIni, False, False);
+    finally
+      NFSeDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+  end;
+end;
+
 function TACBrLibNFSe.LimparLista: longint;
 begin
   try
@@ -331,7 +416,6 @@ end;
 function TACBrLibNFSe.Emitir(const aLote: PChar; aModoEnvio: longint; aImprimir: Boolean; const sResposta: PChar; var esTamanho: longint): longint;
 var
   Resp: TEmiteResposta;
-  Response: TNFSeEmiteResponse;
   Resposta: Ansistring;
   ModoEnvio: TmodoEnvio;
 begin
@@ -346,19 +430,66 @@ begin
       GravarLog('NFSE_Emitir', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.Emitir(aLote, ModoEnvio, aImprimir);
       Resp := TEmiteResposta.Create(Config.TipoResposta, Config.CodResposta);
-      Resp.Processar(Response);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.Emite);
 
-      Resposta := Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
-      Response.Free;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+  end;
+end;
+
+function TACBrLibNFSe.Cancelar(aInfCancelamentoNFSe: PChar; const sResposta: PChar; var esTamanho: longint):longint;
+var
+  Resp: TCancelarNFSeResposta;
+  InfCancelamentoNFSe: TInfCancelamento;
+  Resposta: AnsiString;
+begin
+  try
+    if Config.Log.Nivel > logNormal then
+      GravarLog('NFSE_Cancelar (' + aInfCancelamentoNFSe + ')', logCompleto, True)
+    else
+      GravarLog('NFSE_Cancelar', logNormal);
+
+    if StringEhArquivo(aInfCancelamentoNFSe) then
+      VerificarArquivoExiste(aInfCancelamentoNFSe);
+
+    NFSeDM.Travar;
+    try
+      InfCancelamentoNFSe:= TInfCancelamento.Create;
+       try
+         InfCancelamentoNFSe.LerFromIni(aInfCancelamentoNFSe);
+         NFSeDM.ACBrNFSeX1.CancelarNFSe(InfCancelamentoNFSe);
+         Resp := TCancelarNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+         try
+           Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.CancelaNFSe);
+
+           Resposta:= Resp.Gerar;
+           MoverStringParaPChar(Resposta, sResposta, esTamanho);
+           Result := SetRetorno(ErrOK, Resposta);
+         finally
+           Resp.Free;
+         end;
+       finally
+         InfCancelamentoNFSe.Free;
+      end;
+    finally
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -372,7 +503,6 @@ end;
 function TACBrLibNFSe.SubstituirNFSe(const aNumeroNFSe, aSerieNFSe, aCodigoCancelamento, aMotivoCancelamento, aNumeroLote, aCodigoVerificacao, sResposta: PChar; var esTamanho: longint):longint;
 var
   Resp: TSubstituirNFSeResposta;
-  Response: TNFSeSubstituiNFSeResponse;
   NumeroNFSe, SerieNFSe, CodigoCancelamento, MotivoCancelamento, NumeroLote, CodigoVerificacao: String;
   Resposta: AnsiString;
 begin
@@ -381,7 +511,7 @@ begin
     SerieNFSe := ConverterAnsiParaUTF8(aSerieNFSe);
     CodigoCancelamento := ConverterAnsiParaUTF8(aCodigoCancelamento);
     MotivoCancelamento := ConverterAnsiParaUTF8(aMotivoCancelamento);
-    NumeroLote := ConverterAnsiParaUTF8(NumeroLote);
+    NumeroLote := ConverterAnsiParaUTF8(aNumeroLote);
     CodigoVerificacao := ConverterAnsiParaUTF8(aCodigoVerificacao);
 
     if Config.Log.Nivel > logNormal then
@@ -390,18 +520,20 @@ begin
       GravarLog('NFSE_SubstituirNFSe', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.SubstituirNFSe(NumeroNFSe, SerieNFSe, CodigoCancelamento, MotivoCancelamento, NumeroLote, CodigoCancelamento);
       Resp := TSubstituirNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
-      Resp.Processar(Response);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.SubstituiNFSe);
 
-      Resposta := Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
     end;
   except
     on E: EACBrLibException do
@@ -414,7 +546,7 @@ end;
 
 function TACBrLibNFSe.LinkNFSe(aNumeroNFSe: PChar; const aCodigoVerificacao, aChaveAcesso, aValorServico, sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TLinkNFSeResposta;
   NumeroNFSe, CodigoVerificacao, ChaveAcesso, ValorServico: String;
   Resposta: AnsiString;
 begin
@@ -430,17 +562,12 @@ begin
       GravarLog('NFSE_LinkNFSe', logNormal);
 
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.LinkNFSe(NumeroNFSe, CodigoVerificacao, ChaveAcesso, ValorServico);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
-
-      Resposta := Resp.Gerar;
+      Resposta := 'LinkNFSe: '+ NFSeDM.ACBrNFSeX1.LinkNFSe(NumeroNFSe, CodigoVerificacao, ChaveAcesso, ValorServico);
       MoverStringParaPChar(Resposta, sResposta, esTamanho);
       Result := SetRetorno(ErrOK, Resposta);
     finally
       NFSeDM.Destravar;
-      Resp.Free;
     end;
   except
     on E: EACBrLibException do
@@ -453,28 +580,30 @@ end;
 
 function TACBrLibNFSe.GerarLote(const aLote: PChar; aQtdMaximaRps, aModoEnvio: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TGerarLoteResposta;
   Resposta: Ansistring;
   ModoEnvio: TmodoEnvio;
 begin
   try
     if Config.Log.Nivel > logNormal then
-      GravarLog('NFSE_GerarLote(' + aLote + ',' + IntToStr(aQtdMaximaRps) + ',' + ModoEnvioToStr(ModoEnvio) + ' )', logCompleto, True)
+      GravarLog('NFSE_GerarLote(' + aLote + ',' + IntToStr(aQtdMaximaRps) + ',' + IntToStr(aModoEnvio) + ' )', logCompleto, True)
       else
       GravarLog('NFSE_GerarLote', logNormal);
 
+    ModoEnvio:= TmodoEnvio(aModoEnvio);
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.GerarLote(aLote, aQtdMaximaRps, ModoEnvio);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
-
-      Resposta := Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+      Resp := TGerarLoteResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
     end;
   except
     on E: EACBrLibException do
@@ -488,26 +617,26 @@ end;
 function TACBrLibNFSe.GerarToken(const sResposta: PChar; var esTamanho: longint): longint;
 var
   Resp: TGerarTokenResposta;
-  Response: TNFSeGerarTokenResponse;
   Resposta: Ansistring;
 begin
   try
     GravarLog('NFSE_GerarToken', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.GerarToken;
       Resp:= TGerarTokenResposta.Create(Config.TipoResposta, Config.CodResposta);
-      Resp.Processar(Response);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.GerarToken);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
-      Response.Free;
     end;
   except
     on E: EACBrLibException do
@@ -521,7 +650,6 @@ end;
 function TACBrLibNFSe.ConsultarSituacao(const aProtocolo, aNumLote, sResposta: PChar; var esTamanho: longint): longint;
 var
   Resp: TConsultaSituacaoResposta;
-  Response: TNFSeConsultaSituacaoResponse;
   Protocolo, NumLote: string;
   Resposta: Ansistring;
 begin
@@ -535,19 +663,20 @@ begin
       GravarLog('NFSE_ConsultarSituacao', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.ConsultarSituacao(Protocolo, NumLote);
       Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
-      Resp.Processar(Response);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaSituacao);
 
-      Resposta := Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
-      Response.Free;
     end;
   except
     on E: EACBrLibException do
@@ -561,7 +690,6 @@ end;
 function TACBrLibNFSe.ConsultarLoteRps(const aProtocolo, aNumLote, sResposta: PChar; var esTamanho: longint): longint;
 var
   Resp: TConsultaLoteRpsResposta;
-  Response: TNFSeConsultaLoteRpsResponse;
   Protocolo, NumLote: string;
   Resposta: Ansistring;
 begin
@@ -575,19 +703,20 @@ begin
       GravarLog('NFSE_ConsultarLoteRps', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.ConsultarLoteRps(Protocolo, NumLote);
       Resp := TConsultaLoteRpsResposta.Create(Config.TipoResposta, Config.CodResposta);
-      Resp.Processar(Response);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaLoteRps);
 
-      Resposta := Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
-      Response.Free;
     end;
   except
     on E: EACBrLibException do
@@ -601,7 +730,6 @@ end;
 function TACBrLibNFSe.ConsultarNFSePorRps(const aNumeroRps, aSerie, aTipo, aCodigoVerificacao, sResposta: PChar; var esTamanho: longint): longint;
 var
   Resp: TConsultaNFSePorRpsResposta;
-  Response: TNFSeConsultaNFSeporRpsResponse;
   NumeroRps, Serie, Tipo, CodigoVerificacao: String;
   Resposta: AnsiString;
 begin
@@ -617,19 +745,20 @@ begin
         GravarLog('NFSE_ConsultarNFSePorRps', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.ConsultarNFSePorRps(NumeroRps, Serie, Tipo, CodigoVerificacao);
       Resp := TConsultaNFSePorRpsResposta.Create(Config.TipoResposta, Config.CodResposta);
-      Resp.Processar(Response);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSeporRps);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
       NFSeDM.Destravar;
-      Resp.Free;
-      Response.Free;
     end;
   except
     on E: EACBrLibException do
@@ -642,7 +771,7 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSePorNumero(const aNumero:PChar; aPagina: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   Numero: String;
   Resposta: AnsiString;
 begin
@@ -655,17 +784,20 @@ begin
       GravarLog('NFSE_ConsultarNFSePorNumero', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.ConsultarNFSePorNumero(Numero, aPagina);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -678,9 +810,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSePorPeriodo(aDataInicial, aDataFinal: TDateTime; aPagina: longint; aNumeroLote: PChar; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   NumeroLote: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     NumeroLote:= ConverterAnsiParaUTF8(aNumeroLote);
@@ -690,18 +823,22 @@ begin
       else
         GravarLog('NFSE_ConsultarNFSePorPeriodo', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSePorPeriodo(aDataInicial, aDataFinal, aPagina, NumeroLote, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSePorPeriodo(aDataInicial, aDataFinal, aPagina, NumeroLote, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -714,7 +851,7 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSePorFaixa(const aNumeroInicial, aNumeroFinal: PChar; aPagina: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   NumeroInicial, NumeroFinal: String;
   Resposta: AnsiString;
 begin
@@ -728,17 +865,20 @@ begin
         GravarLog('NFSE_ConsultarNFSePorFaixa', logNormal);
 
     NFSeDM.Travar;
-
     try
       NFSeDM.ACBrNFSeX1.ConsultarNFSePorFaixa(NumeroInicial, NumeroFinal, aPagina);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -750,8 +890,50 @@ begin
 end;
 
 function TACBrLibNFSe.ConsultarNFSeGenerico(aInfConsultaNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+var
+  Resp: TConsultaNFSeResposta;
+  InfConsultaNFSe: TInfConsultaNFSe;
+  Resposta: AnsiString;
 begin
+  try
+    if Config.Log.Nivel > logNormal then
+      GravarLog('NFSE_ConsultarNFSeGenerico (' + aInfConsultaNFSe + ')', logCompleto, True)
+    else
+      GravarLog('NFSE_ConsultarNFSeGenerico', logNormal);
 
+    if StringEhArquivo(aInfConsultaNFSe) then
+      VerificarArquivoExiste(aInfConsultaNFSe);
+
+    NFSeDM.Travar;
+    try
+      InfConsultaNFSe:= TInfConsultaNFSe.Create;
+      try
+        InfConsultaNFSe.LerFromIni(aInfConsultaNFSe);
+        NFSeDM.ACBrNFSeX1.ConsultarNFSeGenerico(InfConsultaNFSe);
+        Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
+
+          Resposta:= Resp.Gerar;
+          MoverStringParaPChar(Resposta, sResposta, esTamanho);
+
+          Result := SetRetorno(ErrOK, Resposta);
+        finally
+          Resp.Free;
+        end;
+    finally
+      InfConsultaNFSe.Free;
+    end;
+    finally
+      NFSeDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+  end;
 end;
 
 function TACBrLibNFSe.EnviarEmail(const ePara, eXmlNFSe: PChar; const AEnviaPDF: boolean; const eAssunto, eCC, eAnexos, eMensagem: PChar):longint;
@@ -776,7 +958,6 @@ begin
       GravarLog('NFe_EnviarEmail', logNormal);
 
     NFSeDM.Travar;
-
     try
       with NFSeDM do
       begin
@@ -797,9 +978,7 @@ begin
             slMensagemEmail := TStringList.Create;
             slCC := TStringList.Create;
             slAnexos := TStringList.Create;
-
             Resp := TLibNFSeResposta.Create('EnviarEmail', Config.TipoResposta, Config.CodResposta);
-
             try
               with ACBrNFSeX1 do
               begin
@@ -920,9 +1099,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoPrestadoPorNumero(const aNumero: PChar; aPagina: longint; aDataInicial: TDateTime; aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   Numero: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     Numero:= ConverterAnsiParaUTF8(aNumero);
@@ -932,18 +1112,22 @@ begin
       else
         GravarLog('NFSE_ConsultarNFSeServicoPrestadoPorNumero', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoPrestadoPorNumero(aNumero, aPagina, aDataFinal, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoPrestadoPorNumero(aNumero, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -956,8 +1140,9 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoPrestadoPorPeriodo(aDataInicial, aDataFinal: TDateTime; aPagina: longint; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     if Config.Log.Nivel > logNormal then
@@ -965,18 +1150,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoPrestadoPorPeriodo', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoPrestadoPorPeriodo(aDataInicial, aDataFinal, aPagina, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoPrestadoPorPeriodo(aDataInicial, aDataFinal, aPagina, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -989,9 +1178,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoPrestadoPorTomador(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   CNPJ, InscMunicipal: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     CNPJ:= ConverterAnsiParaUTF8(aCNPJ);
@@ -1002,18 +1192,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoPrestadoPorTomador', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoPrestadoPorTomador(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoPrestadoPorTomador(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1026,9 +1220,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoPrestadoPorIntermediario(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   CNPJ, InscMunicipal: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     CNPJ:= ConverterAnsiParaUTF8(aCNPJ);
@@ -1039,18 +1234,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoPrestadoPorIntermediario', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorIntermediario(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorIntermediario(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1063,9 +1262,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoTomadoPorNumero(const aNumero: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint):longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   Numero: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     Numero:= ConverterAnsiParaUTF8(aNumero);
@@ -1075,18 +1275,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoTomadoPorNumero', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorNumero(Numero, aPagina, aDataInicial, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorNumero(Numero, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1099,9 +1303,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoTomadoPorPrestador(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   CNPJ, InscMunicipal: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     CNPJ:= ConverterAnsiParaUTF8(aCNPJ);
@@ -1112,18 +1317,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoTomadoPorPrestador ', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorPrestador(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorPrestador(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1136,9 +1345,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoTomadoPorTomador(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   CNPJ, InscMunicipal: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     CNPJ:= ConverterAnsiParaUTF8(aCNPJ);
@@ -1149,18 +1359,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoTomadoPorTomador ', logNormal);
 
+    TipoPeriodo:=TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorTomador(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorTomador(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1173,8 +1387,9 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoTomadoPorPeriodo(aDataInicial, aDataFinal: TDateTime; aPagina: longint; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint):longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     if Config.Log.Nivel > logNormal then
@@ -1182,18 +1397,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoTomadoPorPeriodo', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorPeriodo(aDataFinal, aDataFinal, aPagina, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorPeriodo(aDataInicial, aDataFinal, aPagina, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do
@@ -1206,9 +1425,10 @@ end;
 
 function TACBrLibNFSe.ConsultarNFSeServicoTomadoPorIntermediario(const aCNPJ, aInscMun: PChar; aPagina: longint; aDataInicial, aDataFinal: TDateTime; aTipoPeriodo: longint; const sResposta: PChar; var esTamanho: longint): longint;
 var
-  Resp: TConsultaSituacaoResposta;
+  Resp: TConsultaNFSeResposta;
   CNPJ, InscMunicipal: String;
   Resposta: AnsiString;
+  TipoPeriodo: TtpPeriodo;
 begin
   try
     CNPJ:= ConverterAnsiParaUTF8(aCNPJ);
@@ -1219,18 +1439,22 @@ begin
       else
       GravarLog('NFSE_ConsultarNFSeServicoTomadoPorIntermediario', logNormal);
 
+    TipoPeriodo:= TtpPeriodo(aTipoPeriodo);
     NFSeDM.Travar;
-
     try
-      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorIntermediario(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TtpPeriodo.tpEmissao);
-      Resp := TConsultaSituacaoResposta.Create(Config.TipoResposta, config.CodResposta);
+      NFSeDM.ACBrNFSeX1.ConsultarNFSeServicoTomadoPorIntermediario(CNPJ, InscMunicipal, aPagina, aDataInicial, aDataFinal, TipoPeriodo);
+      Resp := TConsultaNFSeResposta.Create(Config.TipoResposta, config.CodResposta);
+      try
+        Resp.Processar(NFSeDM.ACBrNFSeX1.WebService.ConsultaNFSe);
 
-      Resposta:= Resp.Gerar;
-      MoverStringParaPChar(Resposta, sResposta, esTamanho);
-      Result := SetRetorno(ErrOK, Resposta);
+        Resposta:= Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
     finally
-    NFSeDM.Destravar;
-    Resp.Free;
+      NFSeDM.Destravar;
     end;
   except
     on E: EACBrLibException do

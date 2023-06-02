@@ -383,7 +383,7 @@ var
   ANode, AuxNode: TACBrXmlNode;
   ANodeArray: TACBrXmlNodeArray;
   i: Integer;
-  NumNFSe: String;
+  NumNFSe, NumRPS: String;
   ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
@@ -427,10 +427,10 @@ begin
         if AuxNode <> nil then
         begin
           NumNFSe := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('NumeroNota'), tcStr);
-
           Response.NumeroNota := NumNFSe;
 
-          ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByNFSe(NumNFSe);
+          NumRPS := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('NumeroRps'), tcStr);
+          ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRPS);
 
           ANota := CarregarXmlNfse(ANota, ANode.OuterXml);
           SalvarXmlNfse(ANota);
@@ -547,7 +547,7 @@ begin
   begin
     Result := '<cpfUsuario>' + Emitente.WSUser + '</cpfUsuario>' +
               '<hashSenha>' +
-                string(EncodeBase64(SHA1(AnsiString(Emitente.WSSenha)))) +
+                string(EncodeBase64(SHA1(AnsiString(UpperCase(Emitente.WSSenha))))) +
               '</hashSenha>';
   end;
 end;
@@ -621,11 +621,16 @@ begin
 
   with ConfigAssinar do
   begin
-    Rps := True;
+    {
+      Comentado a linha abaixo para atender a cidade de Cubatão/SP
+      14/03/2023
+    }
+//    Rps := True;
     LoteRps := True;
     CancelarNFSe := True;
     RpsGerarNFSe := True;
     RpsSubstituirNFSe := True;
+    ConsultarNFSeRps := True;
 
     IncluirURI := False;
   end;

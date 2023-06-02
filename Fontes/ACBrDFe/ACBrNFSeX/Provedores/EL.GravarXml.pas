@@ -524,11 +524,17 @@ begin
 
   FormatoAliq := tcDe2;
 
+  GerarEnderecoExterior := True;
+
+  NrOcorrNIFTomador := 0;
   NrOcorrInformacoesComplemetares := 0;
   NrOcorrCepTomador := 1;
   NrOcorrCodigoPaisTomador := -1;
 
   TagTomador := 'TomadorServico';
+
+  GerarIDDeclaracao := False;
+  GerarIDRps := True;
 end;
 
 end.

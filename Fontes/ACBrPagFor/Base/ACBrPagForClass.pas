@@ -1523,6 +1523,7 @@ type
 
   TSegmentoO = class(TObject)
   private
+    FTipoMovimento: TTipoMovimento; // Tamanho 1
     FCodMovimento: TInstrucaoMovimento; // Tamanho 2
     FCodigoBarras      : string; // Tamanho 44
     FNomeConcessionaria: string; // Tamanho 30
@@ -1548,6 +1549,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    property TipoMovimento: TTipoMovimento read FTipoMovimento write FTipoMovimento;
     property CodMovimento: TInstrucaoMovimento read FCodMovimento write FCodMovimento;
     property CodigoBarras: string read FCodigoBarras write FCodigoBarras;
     property NomeConcessionaria: string read FNomeConcessionaria write FNomeConcessionaria;

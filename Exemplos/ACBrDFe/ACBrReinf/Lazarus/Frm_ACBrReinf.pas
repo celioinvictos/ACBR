@@ -482,7 +482,7 @@ begin
   cbSSLLib.Items.Clear;
   for T := Low(TSSLLib) to High(TSSLLib) do
     cbSSLLib.Items.Add( GetEnumName(TypeInfo(TSSLLib), integer(T) ) );
-  cbSSLLib.ItemIndex := 0;
+  cbSSLLib.ItemIndex := 4;
 
   cbCryptLib.Items.Clear;
   for U := Low(TSSLCryptLib) to High(TSSLCryptLib) do
@@ -502,7 +502,7 @@ begin
   cbSSLType.Items.Clear;
   for Y := Low(TSSLType) to High(TSSLType) do
     cbSSLType.Items.Add( GetEnumName(TypeInfo(TSSLType), integer(Y) ) );
-  cbSSLType.ItemIndex := 0;
+  cbSSLType.ItemIndex := 5;
 
   cbFormaEmissao.Items.Clear;
   for I := Low(TpcnTipoEmissao) to High(TpcnTipoEmissao) do
@@ -628,10 +628,11 @@ begin
 
   Ini := TIniFile.Create(IniFile);
   try
-    cbSSLLib.ItemIndex     := Ini.ReadInteger('Certificado', 'SSLLib',     0);
+    cbSSLLib.ItemIndex     := Ini.ReadInteger('Certificado', 'SSLLib',     4);
     cbCryptLib.ItemIndex   := Ini.ReadInteger('Certificado', 'CryptLib',   0);
     cbHttpLib.ItemIndex    := Ini.ReadInteger('Certificado', 'HttpLib',    0);
     cbXmlSignLib.ItemIndex := Ini.ReadInteger('Certificado', 'XmlSignLib', 0);
+    cbSSLLibChange(cbSSLLib);
     edtCaminho.Text        := Ini.ReadString( 'Certificado', 'Caminho',    '');
     edtSenha.Text          := Ini.ReadString( 'Certificado', 'Senha',      '');
     edtNumSerie.Text       := Ini.ReadString( 'Certificado', 'NumSerie',   '');
@@ -657,7 +658,7 @@ begin
     edtTentativas.Text    := Ini.ReadString( 'WebService', 'Tentativas', '5');
     edtIntervalo.Text     := Ini.ReadString( 'WebService', 'Intervalo',  '0');
     seTimeOut.Value       := Ini.ReadInteger('WebService', 'TimeOut',    5000);
-    cbSSLType.ItemIndex   := Ini.ReadInteger('WebService', 'SSLType',    0);
+    cbSSLType.ItemIndex   := Ini.ReadInteger('WebService', 'SSLType',    5);
 
     edtProxyHost.Text  := Ini.ReadString('Proxy', 'Host',  '');
     edtProxyPorta.Text := Ini.ReadString('Proxy', 'Porta', '');
@@ -1261,6 +1262,7 @@ begin
 
                   with InfoRecEv do
                   begin
+                    Add('   Nro Recibo..........................: ' + nrRecArqBase);
                     Add('   Num. Protocolo de Entrega do Evento.: ' + nrProtLote);
                     Add('   Data/Hora do Processamento do Evento: ' + DateTimeToStr(dhProcess));
                     Add('   Tipo do Evento......................: ' + tpEv);
@@ -2061,6 +2063,13 @@ begin
         with recursosRec.New do
         begin
           cnpjOrigRecurso := '12345678000123';
+
+          if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+          begin
+            recEmprExt := ''; // Preencher "S" para empresa do exterior
+            nmEmprExt := ''; // Preencher nome da empresa quando recEmprExt = S
+          end;
+
           vlrTotalRec     := 100.00;
           vlrTotalRet     := 0;
           vlrTotalNRet    := 0;
@@ -2645,6 +2654,8 @@ begin
         begin
           cpfBenef := '12345678909';
           nmBenef  := 'Beneficiario';
+          if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+            ideEvtAdic := '12345678';
 
           ideDep.Clear;
           with ideDep.New do
@@ -2676,6 +2687,12 @@ begin
               percSCP      := 12.3;
               indJud       := 'N';
               paisResidExt := '063';
+
+              if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+              begin
+                //dtEscrCont := Date; // preencher quando natRend = 12052
+                observ     := 'Observações';
+              end;
 
               with detDed.New do
               begin
@@ -2861,7 +2878,9 @@ begin
         begin
           cnpjBenef := '12345678000123';
           nmBenef   := 'Beneficiario';
-          isenImun  := tiiTributacaoNormal;
+          isenImun  := tiiEducacao;
+          if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+            ideEvtAdic:= '12345678';
 
           idePgto.Clear;
           with idePgto.New do
@@ -2879,6 +2898,12 @@ begin
               percSCP      := 12.3;
               indJud       := 'N';
               paisResidExt := '063';
+
+              if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+              begin
+                //dtEscrCont := Date; // preencher quando natRend = 12052
+                observ     := 'Observações';
+              end;
 
               with retencoes do
               begin
@@ -2989,6 +3014,8 @@ begin
       begin
         tpInscEstab := tiCNPJ;
         nrInscEstab := '12345678000123';
+        if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+          ideEvtAdic := '12345678';
 
         ideNat.Clear;
         with ideNat.New do
@@ -3002,6 +3029,10 @@ begin
             vlrLiq    := 10;
             vlrBaseIR := 100;
             vlrIR     := 10;
+
+            //if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+            //  dtEscrCont := Date; // preencher quando natRend = 12052
+
             descr     := 'Descrição';
 
             with infoProcRet.New do
@@ -3071,6 +3102,8 @@ begin
               vlrBruto  := 100;
               vlrBaseIR := 100;
               vlrIR     := 10;
+              if ACBrReinf1.Configuracoes.Geral.VersaoDF >= v2_01_02 then
+                observ := 'Observações';
 
               with infoProcRet.New do
               begin

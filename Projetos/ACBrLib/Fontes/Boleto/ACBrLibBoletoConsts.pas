@@ -50,6 +50,7 @@ const
   CChaveImprimirMensagemPadrao = 'ImprimirMensagemPadrao';
   CChaveLayoutRemessa = 'LayoutRemessa';
   CChaveLeCedenteRetorno = 'LeCedenteRetorno';
+  CChaveLerNossoNumeroCompleto = 'LerNossoNumeroCompleto';
   CChaveNomeArqRemessa = 'NomeArqRemessa';
   CChaveNomeArqRetorno = 'NomeArqRetorno';
   CChaveNumeroArquivo = 'NumeroArquivo';
@@ -123,6 +124,8 @@ const
   CChaveLogRegistro = 'LogRegistro';
   CChavePathGravarRegistro = 'PathGravarRegistro';
   CChaveAmbiente = 'Ambiente';
+  CChaveArquivoCRT = 'ArquivoCRT';
+  CChaveArquivoKEY = 'ArquivoKEY';
   CChaveVersaoDF = 'VersaoDF';
   CChaveUseCertificateHTTP = 'UseCertificateHTTP';
   CChaveSSLType = 'SSLType';

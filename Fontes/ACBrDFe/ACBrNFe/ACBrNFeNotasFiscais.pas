@@ -2078,6 +2078,25 @@ begin
               CODIF    := INIRec.ReadString(  sSecao,'CODIF'   ,'');
               qTemp    := StringToFloatDef(INIRec.ReadString( sSecao,'qTemp',''),0);
               UFcons   := INIRec.ReadString( sSecao,'UFCons','');
+              pBio     := StringToFloatDef(INIRec.ReadString( sSecao,'pBio',''),0);
+
+              J := 1;
+              while true do
+              begin
+                sSecao := 'origComb' + IntToStrZero(I,3) + IntToStrZero(J,2);
+                sFim   := INIRec.ReadString(sSecao,'cUFOrig','FIM');
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                with origComb.New do
+                begin
+                  indImport := StrToindImport(OK, INIRec.ReadString( sSecao,'indImport', '0'));
+                  cUFOrig := StrToIntDef(sFim, 0);
+                  pOrig  := StringToFloatDef(INIRec.ReadString( sSecao,'pOrig',''),0);
+                end;
+
+                Inc(J)
+              end;
 
               sSecao := 'CIDE'+IntToStrZero(I,3);
               CIDE.qBCprod   := StringToFloatDef(INIRec.ReadString( sSecao,'qBCprod'  ,''),0);
@@ -2179,6 +2198,21 @@ begin
                 ICMS.pFCPDif      := StringToFloatDef( INIRec.ReadString(sSecao,'pFCPDif','') ,0);
                 ICMS.vFCPDif      := StringToFloatDef( INIRec.ReadString(sSecao,'vFCPDif','') ,0);
                 ICMS.vFCPEfet     := StringToFloatDef( INIRec.ReadString(sSecao,'vFCPEfet','') ,0);
+
+                ICMS.adRemICMS := StringToFloatDef( INIRec.ReadString(sSecao,'adRemICMS','') ,0);
+                ICMS.vICMSMono := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSMono','') ,0);
+                ICMS.adRemICMSReten := StringToFloatDef( INIRec.ReadString(sSecao,'adRemICMSReten','') ,0);
+                ICMS.vICMSMonoReten := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSMonoReten','') ,0);
+                ICMS.vICMSMonoDif := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSMonoDif','') ,0);
+                ICMS.adRemICMSRet := StringToFloatDef( INIRec.ReadString(sSecao,'adRemICMSRet','') ,0);
+                ICMS.vICMSMonoRet := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSMonoRet','') ,0);
+
+                ICMS.qBCMono := StringToFloatDef( INIRec.ReadString(sSecao,'qBCMono','') ,0);
+                ICMS.qBCMonoReten := StringToFloatDef( INIRec.ReadString(sSecao,'qBCMonoReten','') ,0);
+                ICMS.pRedAdRem := StringToFloatDef( INIRec.ReadString(sSecao,'pRedAdRem','') ,0);
+                ICMS.motRedAdRem := StrTomotRedAdRem(OK, INIRec.ReadString(sSecao,'motRedAdRem','0'));
+                ICMS.qBCMonoRet := StringToFloatDef( INIRec.ReadString(sSecao,'qBCMonoRet','') ,0);
+                ICMS.vICMSMonoOp := StringToFloatDef( INIRec.ReadString(sSecao,'vICMSMonoOp','') ,0);
               end;
             end;
 
@@ -2362,6 +2396,14 @@ begin
       Total.ICMSTot.vST     := StringToFloatDef( INIRec.ReadString('Total','vST'       ,INIRec.ReadString('Total','ValorICMSSubstituicao'  ,'')) ,0);
       Total.ICMSTot.vFCPST  := StringToFloatDef( INIRec.ReadString('Total','vFCPST'    ,INIRec.ReadString('Total','ValorFCPST' ,'')) ,0);
       Total.ICMSTot.vFCPSTRet:= StringToFloatDef( INIRec.ReadString('Total','vFCPSTRet',INIRec.ReadString('Total','ValorFCPSTRet' ,'')) ,0);
+
+      Total.ICMSTot.qBCMono := StringToFloatDef( INIRec.ReadString('Total','qBCMono', '') , 0);
+      Total.ICMSTot.vICMSMono := StringToFloatDef( INIRec.ReadString('Total','vICMSMono', '') , 0);
+      Total.ICMSTot.qBCMonoReten := StringToFloatDef( INIRec.ReadString('Total','qBCMonoReten', '') , 0);
+      Total.ICMSTot.vICMSMonoReten := StringToFloatDef( INIRec.ReadString('Total','vICMSMonoReten' ,''), 0);
+      Total.ICMSTot.qBCMonoRet := StringToFloatDef( INIRec.ReadString('Total','qBCMonoRet', '') , 0);
+      Total.ICMSTot.vICMSMonoRet := StringToFloatDef( INIRec.ReadString('Total','vICMSMonoRet', ''), 0);
+
       Total.ICMSTot.vProd   := StringToFloatDef( INIRec.ReadString('Total','vProd'     ,INIRec.ReadString('Total','ValorProduto' ,'')) ,0);
       Total.ICMSTot.vFrete  := StringToFloatDef( INIRec.ReadString('Total','vFrete'    ,INIRec.ReadString('Total','ValorFrete' ,'')) ,0);
       Total.ICMSTot.vSeg    := StringToFloatDef( INIRec.ReadString('Total','vSeg'      ,INIRec.ReadString('Total','ValorSeguro' ,'')) ,0);
@@ -3076,16 +3118,31 @@ begin
               INIRec.WriteString(sSecao, 'CODIF', CODIF);
               INIRec.WriteFloat(sSecao, 'qTemp', qTemp);
               INIRec.WriteString(sSecao, 'UFCons', UFcons);
+              INIRec.WriteFloat(sSecao, 'pBio', pBio);
+
+              for J := 0 to origComb.Count - 1 do
+              begin
+                sSecao := 'origComb' + IntToStrZero(I + 1 , 3) + IntToStrZero(J + 1, 2);
+                with origComb.Items[J] do
+                begin
+                  INIRec.WriteString(sSecao, 'indImport', indImportToStr(indImport));
+                  INIRec.WriteInteger(sSecao, 'cUFOrig', cUFOrig);
+                  INIRec.WriteFloat(sSecao, 'pOrig', pOrig);
+                end;
+              end;
+
               sSecao := 'CIDE' + IntToStrZero(I + 1, 3);
               INIRec.WriteFloat(sSecao, 'qBCprod', CIDE.qBCprod);
               INIRec.WriteFloat(sSecao, 'vAliqProd', CIDE.vAliqProd);
               INIRec.WriteFloat(sSecao, 'vCIDE', CIDE.vCIDE);
-              sSecao := 'encerrante' + IntToStrZero(I, 3);
+
+              sSecao := 'encerrante' + IntToStrZero(I + 1, 3);
               INIRec.WriteInteger(sSecao, 'nBico', encerrante.nBico);
               INIRec.WriteInteger(sSecao, 'nBomba', encerrante.nBomba);
               INIRec.WriteInteger(sSecao, 'nTanque', encerrante.nTanque);
               INIRec.WriteFloat(sSecao, 'vEncIni', encerrante.vEncIni);
               INIRec.WriteFloat(sSecao, 'vEncFin', encerrante.vEncFin);
+
               sSecao := 'ICMSComb' + IntToStrZero(I + 1, 3);
               INIRec.WriteFloat(sSecao, 'vBCICMS', ICMS.vBCICMS);
               INIRec.WriteFloat(sSecao, 'vICMS', ICMS.vICMS);
@@ -3162,6 +3219,21 @@ begin
               INIRec.WriteFloat(sSecao, 'pFCPDif', ICMS.pFCPDif);
               INIRec.WriteFloat(sSecao, 'vFCPDif', ICMS.vFCPDif);
               INIRec.WriteFloat(sSecao, 'vFCPEfet', ICMS.vFCPEfet);
+
+              INIRec.WriteFloat(sSecao, 'adRemICMS', ICMS.adRemICMS);
+              INIRec.WriteFloat(sSecao, 'vICMSMono', ICMS.vICMSMono);
+              INIRec.WriteFloat(sSecao, 'adRemICMSReten', ICMS.adRemICMSReten);
+              INIRec.WriteFloat(sSecao, 'vICMSMonoReten', ICMS.vICMSMonoReten);
+              INIRec.WriteFloat(sSecao, 'vICMSMonoDif', ICMS.vICMSMonoDif);
+              INIRec.WriteFloat(sSecao, 'adRemICMSRet', ICMS.adRemICMSRet);
+              INIRec.WriteFloat(sSecao, 'vICMSMonoRet', ICMS.vICMSMonoRet);
+
+              INIRec.WriteFloat(sSecao, 'qBCMono', ICMS.qBCMono);
+              INIRec.WriteFloat(sSecao, 'qBCMonoReten', ICMS.qBCMonoReten);
+              INIRec.WriteFloat(sSecao, 'pRedAdRem', ICMS.pRedAdRem);
+              INIRec.WriteString(sSecao, 'motRedAdRem', motRedAdRemToStr(ICMS.motRedAdRem));
+              INIRec.WriteFloat(sSecao, 'qBCMonoRet', ICMS.qBCMonoRet);
+              INIRec.WriteFloat(sSecao, 'vICMSMonoOp', ICMS.vICMSMonoOp);
             end;
             sSecao := 'ICMSUFDEST' + IntToStrZero(I + 1, 3);
             with ICMSUFDest do
@@ -3335,6 +3407,12 @@ begin
       INIRec.WriteFloat('Total', 'vST', Total.ICMSTot.vST);
       INIRec.WriteFloat('Total', 'vFCPST', Total.ICMSTot.vFCPST);
       INIRec.WriteFloat('Total', 'vFCPSTRet', Total.ICMSTot.vFCPSTRet);
+      INIRec.WriteFloat('Total', 'qBCMono', Total.ICMSTot.qBCMono);
+      INIRec.WriteFloat('Total', 'vICMSMono', Total.ICMSTot.vICMSMono);
+      INIRec.WriteFloat('Total', 'qBCMonoReten', Total.ICMSTot.qBCMonoReten);
+      INIRec.WriteFloat('Total', 'vICMSMonoReten', Total.ICMSTot.vICMSMonoReten);
+      INIRec.WriteFloat('Total', 'qBCMonoRet', Total.ICMSTot.qBCMonoRet);
+      INIRec.WriteFloat('Total', 'vICMSMonoRet', Total.ICMSTot.vICMSMonoRet);
       INIRec.WriteFloat('Total', 'vProd', Total.ICMSTot.vProd);
       INIRec.WriteFloat('Total', 'vFrete', Total.ICMSTot.vFrete);
       INIRec.WriteFloat('Total', 'vSeg', Total.ICMSTot.vSeg);

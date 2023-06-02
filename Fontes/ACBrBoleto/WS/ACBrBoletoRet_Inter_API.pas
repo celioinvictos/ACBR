@@ -176,6 +176,8 @@ begin
             ARetornoWS.DadosRet.TituloRet.LinhaDig      := ARetornoWS.DadosRet.IDBoleto.LinhaDig;
             ARetornoWS.DadosRet.TituloRet.NossoNumero   := ARetornoWS.DadosRet.IDBoleto.NossoNum;
 
+            ARetornoWS.DadosRet.TituloRet.SeuNumero       := AJson.Values['seuNumero'].AsString;
+
           end else
           if (TipoOperacao = tpConsultaDetalhe) then
           begin
@@ -218,8 +220,8 @@ begin
                ( AJSonObject.Values['situacao'].asString = C_PAGO ) or
                ( AJSonObject.Values['situacao'].asString = C_EXPIRADO ) then
                begin
-                    ARetornoWS.DadosRet.TituloRet.ValorPago                   := AJSonObject.Values['valorNominal'].AsNumber;
-                    ARetornoWS.DadosRet.TituloRet.DataBaixa                   := DateIntertoDateTime( AJSonObject.Values['dataHoraSituacao'].asString )
+                 //   ARetornoWS.DadosRet.TituloRet.ValorPago                   := AJSonObject.Values['valorNominal'].AsNumber;
+                 ARetornoWS.DadosRet.TituloRet.DataBaixa                   := DateIntertoDateTime( AJSonObject.Values['dataHoraSituacao'].asString )
                end;
 
 

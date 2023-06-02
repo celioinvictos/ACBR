@@ -79,6 +79,7 @@ type
     procedure QuandoAcessarEndPoint(const aEndPoint: String; var aURL: String; var aMethod: String);
   protected
     function ObterURLAmbiente(const aAmbiente: TACBrPixCDAmbiente): String; override;
+    procedure ConfigurarQueryParameters(const Method, EndPoint: String); override;
     function VerificarSeIncluiPFX(const Method, AURL: String): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -96,7 +97,8 @@ uses
   synautil, DateUtils,
   ACBrJSON, ACBrPIXUtil,
   ACBrUtil.FilesIO,
-  ACBrUtil.Strings;
+  ACBrUtil.Strings,
+  ACBrUtil.DateTime;
 
 { TACBrPSPSantander }
 
@@ -207,6 +209,19 @@ begin
   begin
     aMethod := ChttpMethodPUT;
     aURL := URLComDelimitador(aURL) + CriarTxId;
+  end;
+end;
+
+procedure TACBrPSPSantander.ConfigurarQueryParameters(const Method,
+  EndPoint: String);
+const
+  cDtFormat: string = 'yyyy''-''mm''-''dd''T''hh'':''nn'':''ss''Z''';
+begin
+  // Santander só aceita parâmetros de data SEM milissegundos
+  if (EndPoint = cEndPointPix) and (Method = ChttpMethodGET) and (URLQueryParams.Count > 0) then
+  begin
+    URLQueryParams.Values['inicio'] := FormatDateTime(cDtFormat, Iso8601ToDateTime(URLQueryParams.Values['inicio']));
+    URLQueryParams.Values['fim'] := FormatDateTime(cDtFormat, Iso8601ToDateTime(URLQueryParams.Values['fim']));
   end;
 end;
 

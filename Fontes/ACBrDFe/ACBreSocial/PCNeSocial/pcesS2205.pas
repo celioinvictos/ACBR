@@ -358,6 +358,10 @@ begin
         trabalhador.Endereco.Exterior.CodPostal   := INIRec.ReadString(sSecao, 'codPostal', '');
       end;
 
+      sSecao := 'trabImig';
+      trabalhador.trabImig.tmpResid   := StrTotpTmpResid(Ok, INIRec.ReadString(sSecao, 'tmpResid', '0'));
+      trabalhador.trabImig.condIng    := StrTotpCondIng(Ok, INIRec.ReadString(sSecao, 'condIng', '0'));
+
       sSecao := 'trabEstrangeiro';
       if INIRec.ReadString(sSecao, 'dtChegada', '') <> '' then
       begin
@@ -376,7 +380,7 @@ begin
         trabalhador.infoDeficiencia.DefMental      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defMental', 'S'));
         trabalhador.infoDeficiencia.DefIntelectual := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defIntelectual', 'S'));
         trabalhador.infoDeficiencia.ReabReadap     := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'reabReadap', 'S'));
-        trabalhador.infoDeficiencia.infoCota       := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'infoCota', 'S'));
+        trabalhador.infoDeficiencia.infoCota       := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'infoCota', 'S'));
         trabalhador.infoDeficiencia.Observacao     := INIRec.ReadString(sSecao, 'observacao', '');
       end;
 

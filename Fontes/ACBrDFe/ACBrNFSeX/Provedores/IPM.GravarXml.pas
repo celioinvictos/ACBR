@@ -551,6 +551,9 @@ begin
 
   FormatoAliq := tcDe2;
 
+  GerarEnderecoExterior := True;
+
+  NrOcorrNIFTomador := 0;
   NrOcorrInformacoesComplemetares := 0;
   NrOcorrCodigoPaisTomador := -1;
 

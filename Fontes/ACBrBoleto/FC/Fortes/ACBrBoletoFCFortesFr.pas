@@ -287,7 +287,6 @@ type
     txtNumeroDocto: TRLLabel;
     txtValorCarne: TRLLabel;
     RLDraw30: TRLDraw;
-    RLDraw31: TRLDraw;
     RLDraw32: TRLDraw;
     RLDraw51: TRLDraw;
     RLDraw52: TRLDraw;
@@ -1257,9 +1256,7 @@ type
     lblCopiaeCola: TRLLabel;
     RLDraw302: TRLDraw;
     RLDraw303: TRLDraw;
-    lblCopiaeColaCarne: TRLLabel;
     RLDraw298: TRLDraw;
-    RLLabel339: TRLLabel;
     procedure BoletoCarneBeforePrint ( Sender: TObject; var PrintIt: boolean ) ;
     procedure BoletoCarneDataCount ( Sender: TObject; var DataCount: integer ) ;
     procedure BoletoCarneDataRecord ( Sender: TObject; RecNo: integer;
@@ -1918,8 +1915,9 @@ begin
       txtEndSacado.Caption            := Titulo.Sacado.Logradouro + ' '+
                                          Titulo.Sacado.Numero + ' ' + Titulo.Sacado.Complemento +
                                          ' ' + Titulo.Sacado.Bairro;
-      txtCidadeSacado.Caption         := Titulo.Sacado.CEP + ' '+Titulo.Sacado.Cidade +
-                                         ' '+Titulo.Sacado.UF;
+      txtCidadeSacado.Caption         := Titulo.Sacado.Cidade +
+                                         ' '+Titulo.Sacado.UF +
+                                         ' '+Titulo.Sacado.CEP;
       txtCPF.Caption                  := 'CPF/CNPJ: '+ FormatarCNPJouCPF(Titulo.Sacado.CNPJCPF);
       txtCPFCarne2.Caption            := FormatarCNPJouCPF(Titulo.Sacado.CNPJCPF);
       mIntrucoes.Lines.Text           := MensagemPadrao.Text;
@@ -1934,13 +1932,10 @@ begin
     begin
       imgQRCodePixCarne.Visible := True;
       PintarQRCode( Titulo.QrCode.emv, imgQRCodePixCarne.Picture.Bitmap, qrAuto );
-      lblCopiaeColaCarne.Visible := True;
-      lblCopiaeColaCarne.Caption := Titulo.QrCode.emv;
     end
     else
     begin
       imgQRCodePixCarne.Visible := False;
-      lblCopiaeColaCarne.Visible := False;
     end;
 
 
@@ -2219,8 +2214,8 @@ begin
       end;
 
       lTertxtLinhaDigitavel.Caption   := LinhaDigitavel;
-      lTertxtCodBarras.AutoSize       := False;
-      lTertxtCodBarras.Width          := 432;
+      lTertxtCodBarras.AutoSize       := false;
+      lTertxtCodBarras.Width          := 641;
       lTertxtCodBarras.Caption        := CodBarras;
 
       MensagemPadrao.Clear;
@@ -2698,7 +2693,12 @@ begin
     txtCidadeSacadoServicos.Caption              := 'CEP: '+ Titulo.Sacado.CEP + ', ' + Titulo.Sacado.Bairro + ', ' + Titulo.Sacado.Cidade + ' ' + Titulo.Sacado.UF;
     txtCpfCnpjSacadoServicos.Caption             := FormatarCNPJouCPF(Titulo.Sacado.CNPJCPF);
     txtInstrucoesServicos.Lines.Text             := MensagemPadrao.Text;
-
+    if (Titulo.Instrucao1 <> '') then
+      txtInstrucoesServicos.Lines.Add(Titulo.Instrucao1);
+    if (Titulo.Instrucao2 <> '') then
+      txtInstrucoesServicos.Lines.Add(Titulo.Instrucao2);
+    if (Titulo.Instrucao3 <> '') then
+      txtInstrucoesServicos.Lines.Add(Titulo.Instrucao3);
     //txtOrientacoesBanco.Lines.Text        := Banco.OrientacoesBanco.Text;
     //txtSacadorAvalistaDet.Caption           := Titulo.Sacado.Avalista;
 

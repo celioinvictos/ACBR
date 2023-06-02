@@ -106,7 +106,7 @@ begin
 
   if (ACBrTitulo.ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite) then
   begin
-    if (ACBrTitulo.NossoNumero = '') or (ACBrTitulo.NossoNumero = PadLeft(ACBrTitulo.NossoNumero,ACBrBanco.TamanhoMaximoNossoNum,'0')) then
+    if (ACBrTitulo.NossoNumero = '') or (ACBrTitulo.NossoNumero = PadLeft('0',ACBrBanco.TamanhoMaximoNossoNum,'0')) then
     begin
       ANossoNumero := StringOfChar('0', CalcularTamMaximoNossoNumero(ACBrTitulo.Carteira, ACBrTitulo.NossoNumero) );
       ADigVerificador := '0';
@@ -159,7 +159,6 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 7;
    fpCodParametroMovimento:= 'MX';
-   fpCodigosMoraAceitos:='123';
 end;
 
 function TACBrBancoBradesco.MontaInstrucoesCNAB400(
@@ -294,6 +293,7 @@ begin
     with ACBrTitulo do
     begin
       {REGISTRO P}
+      inc(fpQtdRegsLote);
       ListTransacao.Add(IntToStrZero(ACBrBanco.Numero, 3)    + //1 a 3 - Código do banco
         '0001'                                               + //4 a 7 - Lote de serviço
         '3'                                                  + //8 - Tipo do registro: Registro detalhe
@@ -350,6 +350,7 @@ begin
         ' ');                                                 //240 - Uso exclusivo FEBRABAN/CNAB
 
       {SEGMENTO Q}
+      inc(fpQtdRegsLote);
       ListTransacao.Add(IntToStrZero(ACBrBanco.Numero, 3) + //Código do Banco na Compensação 1 3 3 - Num G001
         '0001'                                              + //Lote Lote de Serviço 4 7 4 - Num *G002
         '3'                                                 + //Tipo de Registro 8 8 1 - Num ‘3’ *G003
@@ -381,6 +382,7 @@ begin
          (TipoDesconto3<>tdNaoConcederDesconto) or
          (PercentualMulta > 0) then
       begin
+        inc(fpQtdRegsLote);
         ListTransacao.Add(IntToStrZero(ACBrBanco.Numero, 3)    + //Código do Banco na Compensação 1 3 3 - Num G001
           '0001'                                               + //Lote de Serviço 4 7 4 - Num *G002
           '3'                                                  + //Tipo de Registro 8 8 1 - Num ‘3’ *G003

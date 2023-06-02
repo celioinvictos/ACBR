@@ -204,12 +204,17 @@ begin
       Complemento     := ObterConteudo(AuxNode.Childrens.FindAnyNs('xCpl'), tcStr);
       Bairro          := ObterConteudo(AuxNode.Childrens.FindAnyNs('xBairro'), tcStr);
       CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('cMun'), tcStr);
+      xMunicipio      := ObterConteudo(AuxNode.Childrens.FindAnyNs('xMun'), tcStr);
       UF              := ObterConteudo(AuxNode.Childrens.FindAnyNs('UF'), tcStr);
       CEP             := ObterConteudo(AuxNode.Childrens.FindAnyNs('CEP'), tcStr);
-      xMunicipio      := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
 
-      if UF = '' then
-        UF := xUF;
+      if xMunicipio = '' then
+      begin
+        xMunicipio := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
+
+        if UF = '' then
+          UF := xUF;
+      end;
 
       // versão 1.1
       CodigoPais := ObterConteudo(AuxNode.Childrens.FindAnyNs('cPais'), tcInt);
@@ -240,12 +245,17 @@ begin
       Complemento     := ObterConteudo(AuxNode.Childrens.FindAnyNs('xCpl'), tcStr);
       Bairro          := ObterConteudo(AuxNode.Childrens.FindAnyNs('xBairro'), tcStr);
       CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('cMun'), tcStr);
+      xMunicipio      := ObterConteudo(AuxNode.Childrens.FindAnyNs('xMun'), tcStr);
       UF              := ObterConteudo(AuxNode.Childrens.FindAnyNs('UF'), tcStr);
       CEP             := ObterConteudo(AuxNode.Childrens.FindAnyNs('CEP'), tcStr);
-      xMunicipio      := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
 
-      if UF = '' then
-        UF := xUF;
+      if xMunicipio = '' then
+      begin
+        xMunicipio := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
+
+        if UF = '' then
+          UF := xUF;
+      end;
 
       // versão 1.1
       CodigoPais := ObterConteudo(AuxNode.Childrens.FindAnyNs('cPais'), tcInt);
@@ -322,8 +332,8 @@ begin
       InfID.ID := OnlyNumber(CodigoVerificacao);
 
       hEmi   := ObterConteudo(AuxNode.Childrens.FindAnyNs('hEmi'), tcStr);
-      Hora   := strToInt(Copy(hEmi, 1 , 2));
-      Minuto := strToInt(copy(hEmi, 4 , 2));
+      Hora   := strToIntDef(Copy(hEmi, 1 , 2), 0);
+      Minuto := strToIntDef(copy(hEmi, 4 , 2), 0);
 
       Ano := YearOf(Competencia);
       Mes := MonthOf(Competencia);
@@ -342,7 +352,10 @@ begin
       ModeloNFSe := ObterConteudo(AuxNode.Childrens.FindAnyNs('mod'), tcStr);
 
       aValor := ObterConteudo(AuxNode.Childrens.FindAnyNs('cancelada'), tcStr);
-      SituacaoNfse := StrToStatusNFSe(Ok, aValor);
+
+      SituacaoNfse := snNormal;
+      if aValor = 'S' then
+        SituacaoNfse := snCancelado;
 
       MotivoCancelamento := ObterConteudo(AuxNode.Childrens.FindAnyNs('motCanc'), tcStr);
 

@@ -221,16 +221,18 @@ uses
   ACBrBoletoRet_Itau,
   ACBrBoletoW_Credisis,
   ACBrBoletoRet_Credisis,
-  ACBrBoletoW_Sicredi_API,
-  ACBrBoletoRet_Sicredi_API,
+  ACBrBoletoW_Sicredi_APIECOMM,
+  ACBrBoletoRet_Sicredi_APIECOMM,
+  ACBrBoletoW_Sicredi_APIV2,
+  ACBrBoletoRet_Sicredi_APIV2,
   ACBrBoletoW_PenseBank_API,
   ACBrBoletoRet_PenseBank_API,
   ACBrBoletoW_Santander,
   ACBrBoletoRet_Santander,
   ACBrBoletoW_Inter_API,
-  ACBrBoletoRet_Inter_API;
-  //ACBrBoletoW_Bancoob,
-  //ACBrBoletoRet_Bancoob;
+  ACBrBoletoRet_Inter_API,
+  ACBrBoletoW_Bancoob,
+  ACBrBoletoRet_Bancoob;
 
 { TRetornoEnvioClass }
 
@@ -285,12 +287,7 @@ begin
     FDFeSSL := TDFeSSL(ABoletoWS.FBoleto.Configuracoes.WebService);
 
   FOAuth := TOAuth.Create(FHTTPSend,
-                          FBoletoWS.FBoleto.Configuracoes.WebService.Ambiente,
-                          FBoletoWS.FBoleto.Cedente.CedenteWS.ClientID,
-                          FBoletoWS.FBoleto.Cedente.CedenteWS.ClientSecret,
-                          FBoletoWS.FBoleto.Cedente.CedenteWS.Scope,
-                          FBoletoWS.FBoleto.Configuracoes.WebService.ArquivoCRT,
-                          FBoletoWS.FBoleto.Configuracoes.WebService.ArquivoKEY);
+                          ABoletoWS.FBoleto);
 
 end;
 
@@ -330,8 +327,15 @@ begin
   case ABanco of
     cobSicred:
       begin
-        FBoletoWSClass := TBoletoW_Sicredi_API.Create(Self);
-        FRetornoBanco  := TRetornoEnvio_Sicredi_API.Create(FBoleto);
+        if UpperCase(FBoleto.Configuracoes.WebService.VersaoDF) = 'V2' then
+        begin //API V2 (NOVA 2022)
+          FBoletoWSClass := TBoletoW_Sicredi_APIV2.Create(Self);
+          FRetornoBanco  := TRetornoEnvio_Sicredi_APIV2.Create(FBoleto);
+        end else
+        begin //API ECOMM
+          FBoletoWSClass := TBoletoW_Sicredi_APIECOMM.Create(Self);
+          FRetornoBanco  := TRetornoEnvio_Sicredi_APIECOMM.Create(FBoleto);
+        end;
       end;
     cobCaixaEconomica:
       begin
@@ -373,11 +377,11 @@ begin
         FBoletoWSClass := TBoletoW_Inter_API.Create(Self);
         FRetornoBanco  := TRetornoEnvio_Inter_API.Create(FBoleto);
       end;
-    {cobBancoob :
+    cobBancoob :
       begin
         FBoletoWSClass := TBoletoW_Bancoob.Create(Self);
         FRetornoBanco  := TRetornoEnvio_Bancoob.Create(FBoleto);
-      end}
+      end;
   else
     FBoletoWSClass := TBoletoWSClass.Create(Self);
     FRetornoBanco := TRetornoEnvioClass.Create(FBoleto);
@@ -423,7 +427,7 @@ begin
   if Assigned( FBoleto.Configuracoes.Arquivos.OnGravarLog ) then
     FBoleto.Configuracoes.Arquivos.OnGravarLog( AString, Tratado );
 
-  if not Tratado then
+  if Tratado or FBoleto.Configuracoes.Arquivos.LogRegistro then
     GravaLog( AString );
 
 end;

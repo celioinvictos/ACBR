@@ -47,6 +47,33 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+02/06/2023
+-- ACBrPIXPSPAilos --
+[+] Inclusão do novo PSP Ailos
+    Por: MaagraowaR
+
+22/05/2023
+-- ACBrPIXPSPShipay --
+[+] Inclusão de propriedades para possibilitar a definição das URLs de produção e 
+    sandbox para o PSP Shipay.
+    Por: Elias César
+
+24/04/2023
+-- ACBrPIXPSPShipay --
+[-] Correção no carregamento das carteiras ao utilizar o PSP Shipay controlando o Token manualmente
+    Por: Elias César
+
+06/04/2023
+-- ACBrPIXPSPInter --
+[+] Inclusão do novo PSP Inter
+    Por: Cristian Carvalho e Sidney Alves
+
+08/03/2023
+-- ACBrPIXPSPSantander --
+[*] Ajuste na consulta de Pix Recebidos por Período para formatar os parâmetros de inicio e fim
+    sem os milissegundos, pois o PSP estava retornando erro.
+    por: Elias César
+
 22/02/2023
 -- ACBrPIXPSPBancoDoBrasil --
 [-] Correção para não disparar exception indevidamente quando ocorrerem erros na resposta do método GET

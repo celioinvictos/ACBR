@@ -131,6 +131,8 @@
             this.btnAtivarSAT = new System.Windows.Forms.Button();
             this.btnClasseAltoNivel = new System.Windows.Forms.Button();
             this.btnValidarCFe = new System.Windows.Forms.Button();
+            this.btnGerarPDF = new System.Windows.Forms.Button();
+            this.btnConsultarUltimaSessaoFiscal = new System.Windows.Forms.Button();
             this.groupBox4.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -1269,11 +1271,33 @@
             this.btnValidarCFe.UseVisualStyleBackColor = true;
             this.btnValidarCFe.Click += new System.EventHandler(this.btnValidarCFe_Click);
             // 
+            // btnGerarPDF
+            // 
+            this.btnGerarPDF.Location = new System.Drawing.Point(12, 469);
+            this.btnGerarPDF.Name = "btnGerarPDF";
+            this.btnGerarPDF.Size = new System.Drawing.Size(112, 23);
+            this.btnGerarPDF.TabIndex = 46;
+            this.btnGerarPDF.Text = "Gerar PDF CFe-SAT";
+            this.btnGerarPDF.UseVisualStyleBackColor = true;
+            this.btnGerarPDF.Click += new System.EventHandler(this.btnGerarPDF_Click);
+            // 
+            // btnConsultarUltimaSessaoFiscal
+            // 
+            this.btnConsultarUltimaSessaoFiscal.Location = new System.Drawing.Point(130, 469);
+            this.btnConsultarUltimaSessaoFiscal.Name = "btnConsultarUltimaSessaoFiscal";
+            this.btnConsultarUltimaSessaoFiscal.Size = new System.Drawing.Size(112, 23);
+            this.btnConsultarUltimaSessaoFiscal.TabIndex = 47;
+            this.btnConsultarUltimaSessaoFiscal.Text = "Cons. Sessão Fiscal";
+            this.btnConsultarUltimaSessaoFiscal.UseVisualStyleBackColor = true;
+            this.btnConsultarUltimaSessaoFiscal.Click += new System.EventHandler(this.btnConsultarUltimaSessaoFiscal_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(742, 487);
+            this.ClientSize = new System.Drawing.Size(742, 502);
+            this.Controls.Add(this.btnConsultarUltimaSessaoFiscal);
+            this.Controls.Add(this.btnGerarPDF);
             this.Controls.Add(this.btnValidarCFe);
             this.Controls.Add(this.btnClasseAltoNivel);
             this.Controls.Add(this.btnAtivarSAT);
@@ -1428,6 +1452,8 @@
         private System.Windows.Forms.TextBox txtSchemaPath;
         private System.Windows.Forms.Label label33;
         private System.Windows.Forms.Button btnSelectSchema;
+        private System.Windows.Forms.Button btnGerarPDF;
+        private System.Windows.Forms.Button btnConsultarUltimaSessaoFiscal;
     }
 }
 

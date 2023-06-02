@@ -54,6 +54,7 @@ type
     FImprimirMensagemPadrao: Boolean;
     FLayoutRemessa: TACBrLayoutRemessa;
     FLeCedenteRetorno: Boolean;
+    FLerNossoNumeroCompleto: Boolean;
     FNomeArqRemessa: String;
     FNomeArqRetorno: String;
     FNumeroArquivo: Integer;
@@ -74,6 +75,7 @@ type
     property ImprimirMensagemPadrao: Boolean read FImprimirMensagemPadrao write FImprimirMensagemPadrao;
     property LayoutRemessa: TACBrLayoutRemessa read FLayoutRemessa write FLayoutRemessa;
     property LeCedenteRetorno: Boolean read FLeCedenteRetorno write FLeCedenteRetorno;
+    property LerNossoNumeroCompleto: Boolean read FLerNossoNumeroCompleto write FLerNossoNumeroCompleto;
     property NomeArqRemessa: String read FNomeArqRemessa write FNomeArqRemessa;
     property NomeArqRetorno: String read FNomeArqRetorno write FNomeArqRetorno;
     property NumeroArquivo: Integer read FNumeroArquivo write FNumeroArquivo;
@@ -255,6 +257,8 @@ type
     FOperacao: TOperacao;
     FVersaoDF: String;
     FUseCertificateHTTP: Boolean;
+    FArquivoCRT: String;
+    FArquivoKEY: String;
 
   public
     constructor Create;
@@ -267,6 +271,8 @@ type
     property Operacao: TOperacao read FOperacao write FOperacao;
     property VersaoDF: String read FVersaoDF write FVersaoDF;
     property UseCertificateHTTP: Boolean read FUseCertificateHTTP write FUseCertificateHTTP;
+    property ArquivoCRT: String read FArquivoCRT write FArquivoCRT;
+    property ArquivoKEY: String read FArquivoKEY write FArquivoKEY;
 
   end;
 
@@ -341,6 +347,8 @@ begin
   FOperacao:= tpInclui;
   FVersaoDF:= '1.2';
   FUseCertificateHTTP:= False;
+  FArquivoCRT:= '';
+  FArquivoKEY:= '';
 
 end;
 
@@ -351,6 +359,8 @@ begin
   Operacao:= TOperacao( AIni.ReadInteger(CSessaoBoletoWebService, CChaveOperacao, integer(Operacao) ) );
   VersaoDF:= AIni.ReadString(CSessaoBoletoWebService, CChaveVersaoDF, VersaoDF );
   UseCertificateHTTP:= AIni.ReadBool(CSessaoBoletoWebService, CChaveUseCertificateHTTP, UseCertificateHTTP );
+  ArquivoCRT:= AIni.ReadString(CSessaoBoletoWebService, CChaveArquivoCRT, ArquivoCRT);
+  ArquivoKEY:= AIni.ReadString(CSessaoBoletoWebService, CChaveArquivoKEY, ArquivoKEY);
 end;
 
 procedure TBoletoConfigWS.GravarIni(const AIni: TCustomIniFile);
@@ -360,6 +370,8 @@ begin
   AIni.WriteInteger(CSessaoBoletoWebService, CChaveOperacao, integer(Operacao) );
   AIni.WriteString(CSessaoBoletoWebService, CChaveVersaoDF, VersaoDF );
   AIni.WriteBool(CSessaoBoletoWebService, CChaveUseCertificateHTTP, UseCertificateHTTP );
+  AIni.WriteString(CSessaoBoletoWebService, CChaveArquivoCRT, ArquivoCRT);
+  AIni.WriteString(CSessaoBoletoWebService, CChaveArquivoKEY, ArquivoKEY);
 end;
 
 { TBoletoCedenteWS }
@@ -729,6 +741,7 @@ begin
     LayoutRemessa:= c400;
   end;
   LeCedenteRetorno := AIni.ReadBool(CSessaoBoletoDiretorioConfig, CChaveLeCedenteRetorno, LeCedenteRetorno);
+  LerNossoNumeroCompleto:= AIni.ReadBool(CSessaoBoletoDiretorioConfig, CChaveLerNossoNumeroCompleto, LerNossoNumeroCompleto);
   NomeArqRemessa := AIni.ReadString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRemessa, NomeArqRemessa);
   NomeArqRetorno := AIni.ReadString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRetorno, NomeArqRetorno);
   NumeroArquivo := AIni.ReadInteger(CSessaoBoletoDiretorioConfig, CChaveNumeroArquivo, NumeroArquivo);
@@ -751,6 +764,7 @@ begin
     AIni.WriteInteger(CSessaoBoletoDiretorioConfig, CChaveLayoutRemessa, 0 );
   end;
   AIni.WriteBool(CSessaoBoletoDiretorioConfig, CChaveLeCedenteRetorno, LeCedenteRetorno);
+  Aini.WriteBool(CSessaoBoletoDiretorioConfig, CChaveLerNossoNumeroCompleto, LerNossoNumeroCompleto);
   AIni.WriteString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRemessa, NomeArqRemessa);
   AIni.WriteString(CSessaoBoletoDiretorioConfig, CChaveNomeArqRetorno, NomeArqRetorno);
   AIni.WriteInteger(CSessaoBoletoDiretorioConfig, CChaveNumeroArquivo, NumeroArquivo);

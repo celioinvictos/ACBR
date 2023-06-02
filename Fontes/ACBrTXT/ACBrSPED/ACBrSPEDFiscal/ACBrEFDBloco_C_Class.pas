@@ -2347,9 +2347,9 @@ begin
                LFill( DT_DOC_SAIDA, 'ddmmyyyy' ) +
                LFill( NUM_ITEM_SAIDA) +
                DFill( VL_UNIT_CONV_SAIDA,6,True ) +
-               DFill( VL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA,6,True ) +
-               DFill( VL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA,6,True ) +
-               DFill( VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA,6,True ) +
+               VDFill( VL_UNIT_ICMS_OP_ESTOQUE_CONV_SAIDA, 6) +
+               VDFill( VL_UNIT_ICMS_ST_ESTOQUE_CONV_SAIDA, 6) +
+               VDFill( VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV_SAIDA, 6) +
                VDFill( VL_UNIT_ICMS_NA_OPERACAO_CONV_SAIDA, 6) +
                VDFill( VL_UNIT_ICMS_OP_CONV_SAIDA, 6) +
                VDFill( VL_UNIT_ICMS_ST_CONV_REST, 6) +
@@ -2387,9 +2387,9 @@ begin
                DFill( VL_UNIT_CONV,6, False ) +
                VDFill(VL_UNIT_ICMS_NA_OPERACAO_CONV, 6) +
                VDFill(VL_UNIT_ICMS_OP_CONV,6) +
-               DFill( VL_UNIT_ICMS_OP_ESTOQUE_CONV,6, VarIsNull(VL_UNIT_ICMS_OP_ESTOQUE_CONV) ) +
-               DFill( VL_UNIT_ICMS_ST_ESTOQUE_CONV,6,VarIsNull(VL_UNIT_ICMS_ST_ESTOQUE_CONV) ) +
-               DFill( VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV,6, VarIsNull(VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV) ) +
+               VDFill( VL_UNIT_ICMS_OP_ESTOQUE_CONV, 6) +
+               VDFill( VL_UNIT_ICMS_ST_ESTOQUE_CONV, 6) +
+               VDFill( VL_UNIT_FCP_ICMS_ST_ESTOQUE_CONV, 6) +
                VDFill(VL_UNIT_ICMS_ST_CONV_REST, 6) +
                VDFill(VL_UNIT_FCP_ST_CONV_REST, 6) +
                VDFill(VL_UNIT_ICMS_ST_CONV_COMPL, 6) +
@@ -3300,8 +3300,8 @@ begin
     begin
       UmRegC500 := RegC001.RegistroC500.Items[intFor];
       // COD_MOD
-      Check(MatchText(UmRegC500.COD_MOD, ['06', '28', '29']), 'Registro C500 : O código do modelo "%s" não está na lista de valores válidos "%s" !',
-                                                   [UmRegC500.COD_MOD, '[06, 28, 29]']);
+      Check(MatchText(UmRegC500.COD_MOD, ['06', '28', '29', '66']), 'Registro C500 : O código do modelo "%s" não está na lista de valores válidos "%s" !',
+                                                   [UmRegC500.COD_MOD, '[06, 28, 29, 66]']);
       // COD_CONS
       Check(funChecaCOD_CONS(UmRegC500.COD_MOD, UmRegC500.COD_CONS), 'Registro C500 : Se o modelo for 06 (energia elétrica) ou 28 (gás canalizado), ' +
                                                 'os valores válidos são "%s". Se o modelo for 29 (água canalizada), o valor deve ' +

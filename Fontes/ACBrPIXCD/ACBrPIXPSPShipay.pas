@@ -89,8 +89,12 @@ type
     fOrderInfo: TShipayOrderInfo;
     fOrderList: TShipayOrdersList;
     fQuandoEnviarOrder: TShipayQuandoEnviarOrder;
+    fURLProducao: String;
+    fURLSandBox: String;
     fWallets: TShipayWalletArray;
     function GetSecretKey: String;
+    function GetURLProducao: String;
+    function GetURLSandBox: String;
     procedure SetSecretKey(AValue: String);
 
     procedure DoPostOrder(aEndPoint: String; IsEOrder: Boolean);
@@ -125,10 +129,10 @@ type
 
     procedure Autenticar; override;
     procedure RenovarToken; override;
-    procedure GetWallets;
 
     procedure PostOrder(IsEOrder: Boolean = False);
     procedure PostOrderV(IsEOrder: Boolean = False);
+    procedure GetWallets;
 
     function DeleteOrder(const order_id: String): Boolean;
     function RefundOrder(const order_id: String; ValorReembolso: Currency): Boolean;
@@ -153,6 +157,8 @@ type
     property ClientID;
     property SecretKey: String read GetSecretKey write SetSecretKey;
     property AccessKey: String read fAccessKey write fAccessKey;
+    property URLSandBox: String read GetURLSandBox write fURLSandBox;
+    property URLProducao: String read GetURLProducao write fURLProducao;
 
     property QuandoEnviarOrder: TShipayQuandoEnviarOrder read fQuandoEnviarOrder
       write fQuandoEnviarOrder;
@@ -177,7 +183,9 @@ begin
   fOrderInfo := TShipayOrderInfo.Create;
   fOrderList := TShipayOrdersList.Create;
   fOrderError := TShipayOrderError.Create;
-  fAccessKey := '';
+  fAccessKey := EmptyStr;
+  fURLSandBox := EmptyStr;
+  fURLProducao := EmptyStr;
   fQuandoEnviarOrder := Nil;
   fpQuandoAcessarEndPoint := QuandoAcessarEndPoint;
   fpQuandoReceberRespostaEndPoint := QuandoReceberRespostaEndPoint;
@@ -204,11 +212,26 @@ begin
   fOrderInfo.Clear;
   fOrderList.Clear;
   fOrderError.Clear;
+  fWallets.Clear;
 end;
 
 function TACBrPSPShipay.GetSecretKey: String;
 begin
    Result := ClientSecret;
+end;
+
+function TACBrPSPShipay.GetURLProducao: String;
+begin
+  Result := fURLProducao;
+  if EstaVazio(fURLProducao) then
+    Result := cShipayURLProducao;
+end;
+
+function TACBrPSPShipay.GetURLSandBox: String;
+begin
+  Result := fURLSandBox;
+  if EstaVazio(fURLSandBox) then
+    Result := cShipayURLStaging;
 end;
 
 procedure TACBrPSPShipay.SetSecretKey(AValue: String);
@@ -318,6 +341,19 @@ begin
   ProcessarAutenticacao(AURL, ResultCode, RespostaHttp);
 end;
 
+procedure TACBrPSPShipay.PostOrder(IsEOrder: Boolean);
+begin
+  DoPostOrder(cShipayEndPointOrder, IsEOrder);
+end;
+
+procedure TACBrPSPShipay.PostOrderV(IsEOrder: Boolean);
+begin
+  if (fOrder.expiration <= 0) then
+    DispararExcecao(EACBrPixException.CreateFmt(ACBrStr(sErroPropriedadeNaoDefinida),['expiration']));
+
+  DoPostOrder(cShipayEndPointOrderV, IsEOrder);
+end;
+
 procedure TACBrPSPShipay.GetWallets;
 var
   RespostaHttp: AnsiString;
@@ -333,7 +369,10 @@ begin
   if Ok then
   begin
     RespostaHttp := '{"wallets":'+RespostaHttp+'}';   // Transforma Array em Object
-    fWallets.AsJSON := String(RespostaHttp)
+    fWallets.AsJSON := String(RespostaHttp);
+
+    if (fWallets.Count < 1) then
+      DispararExcecao(EACBrPixHttpException.Create(sErrNoWallet));
   end
   else
   begin
@@ -341,19 +380,6 @@ begin
     DispararExcecao(EACBrPixHttpException.CreateFmt( sErroHttp,
        [Http.ResultCode, ChttpMethodPOST, AURL]));
   end;
-end;
-
-procedure TACBrPSPShipay.PostOrder(IsEOrder: Boolean);
-begin
-  DoPostOrder(cShipayEndPointOrder, IsEOrder);
-end;
-
-procedure TACBrPSPShipay.PostOrderV(IsEOrder: Boolean);
-begin
-  if (fOrder.expiration <= 0) then
-    DispararExcecao(EACBrPixException.CreateFmt(ACBrStr(sErroPropriedadeNaoDefinida),['expiration']));
-
-  DoPostOrder(cShipayEndPointOrderV, IsEOrder);
 end;
 
 // Retorna Verdadeiro se a Order foi cancelada com sucesso //
@@ -583,7 +609,6 @@ procedure TACBrPSPShipay.ProcessarAutenticacao(const AURL: String;
 var
   js: TACBrJSONObject;
 begin
-  Wallets.Clear;
   if (ResultCode = HTTP_OK) then
   begin
     js := TACBrJSONObject.Parse(RespostaHttp);
@@ -599,10 +624,6 @@ begin
 
     fpValidadeToken := IncHour(Now, 24);
     fpAutenticado := True;
-
-    GetWallets;
-    if (fWallets.Count < 1) then
-      DispararExcecao(EACBrPixHttpException.Create(sErrNoWallet));
   end
   else
     DispararExcecao(EACBrPixHttpException.CreateFmt( sErroHttp,
@@ -722,21 +743,27 @@ begin
 
     if (Trim(fOrder.wallet) = '') then
     begin
+      if (Wallets.Count <= 0) then
+      begin
+        GetWallets;
+        LimparHTTP;
+      end;
+
       // Não especificou Wallet, usando a única Wallet retornada ou "pix"
-      if (fWallets.Count = 1) then
-        fOrder.wallet := fWallets[0].wallet
+      if (Wallets.Count = 1) then
+        fOrder.wallet := Wallets[0].wallet
       else
       begin
-        for i := 0 to fWallets.Count-1 do
+        for i := 0 to Wallets.Count-1 do
         begin
-          if (fWallets[i].wallet = cShipayWalletPix) then  // Tem Pix ?
+          if (Wallets[i].wallet = cShipayWalletPix) then  // Tem Pix ?
           begin
             fOrder.wallet := cShipayWalletPix;
             Break;
           end;
         end;
         if (Trim(fOrder.wallet) = '') then  // Não tem PIX, pegue a primeira da Lista
-          fOrder.wallet := fWallets[0].wallet;
+          fOrder.wallet := Wallets[0].wallet;
       end;
     end;
 
@@ -963,9 +990,9 @@ end;
 function TACBrPSPShipay.ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String;
 begin
   if (Ambiente = ambProducao) then
-    Result := cShipayURLProducao
+    Result := URLProducao
   else
-    Result := cShipayURLStaging;
+    Result := URLSandBox;
 end;
 
 procedure TACBrPSPShipay.ConfigurarBody(const aMethod, aEndPoint: String;

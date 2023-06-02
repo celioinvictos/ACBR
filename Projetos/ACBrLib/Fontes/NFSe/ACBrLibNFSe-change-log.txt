@@ -42,8 +42,65 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+31/05/2023
+--- ACBrLibNFSeBase, ACBrLibNFSeResposta ---
+[*] Ajuste no método NFSE_LinkNFSe para retornar um LinkNFSe
+[*] Novos campos para retornar Erros e Alertas TLibNFSeServiceResposta
+    Contribuição: Emerson Teixeira / Revisão: Diego Foliene, Antonio Carlos Junior
+
+30/02/2023
+--- ACBrLibNFSeDataModule ---
+[*] Correção nas Procedures ConfigurarImpressao e FinalizarImpressao para evitar de ocorrer Access Violation
+    Por: Antonio Carlos Junior
+
+25/05/2023
+--- ACBrLibNFSeRespostas ---
+[*] Novos campos na resposta para o método Emitir
+    https://www.projetoacbr.com.br/forum/topic/72328-ajuste-no-retorno-da-resposta-ao-emitir-uma-nfse-pela-lib-acbrlibnfse/
+    Contribuição: Emerson Teixeira / Revisão: Antonio Carlos Junior
+
+24/05/2023
+--- ACBrLibNFSeBase ---
+[*] Correção dos métodos ConsultarNFSeServicoPrestadoPorNumero e ConsultarNFSeServicoTomadoPorPeriodo
+    Por: Antonio Carlos Junior
+
+02/05/2023
+--- ACBrLibNFSeDemo.lpi ---
+[+] Criação versão Demonstração ACBrLibNFSe
+    Por: Antonio Carlos Junior
+
+25/04/2023
+--- ACBrLibNFSeBase ---
+[*] Correção parametro TipoPeriodo dos métodos de Consulta ACBrLibNFSe.
+    Por: Antonio Carlos Junior
+
+18/04/2023
+--- ACBrLibNFSeBase ---
+[*] Correção variaveis que não estavam sendo utilizadas.
+    Por: Antonio Carlos Junior
+
+17/04/2023
+--- ACBrLibNFSeBase ---
+[*] Remoção da variavel Response dos métodos para correção de A.V
+    Por: Antonio Carlos Junior e Elton Barbosa
+
+12/04/2023
+--- ACBrLibNFSe, ACBrLibNFSeConsts, ACBrLibNFSeStaticImport, ACBrLibNFSeStaticImportMT ---
+[*] Inclusão métodos que estavam faltando na unit ACBrLibNFSe, ACBrLibNFSeStaticImport e ACBrLibNFSeStaticImportMT
+    Por: Antonio Carlos Junior
+
+23/03/2023
+--- ACBrLibNFSeBase, ACBrLibNFSeConsts, ACBrLibNFSeStaticImport, ACBrLibNFSeStaticImportMT ---
+[*] Ajustes para realização dos testes unitários
+    Por: Antonio Carlos Junior 
+
+03/03/2023
+--- ACBrLibNFSeBase, ACBrLibNFSeResposta, ACBrLibNFSeConsts, ACBrLibNFSeST, ACBrLibNFSeMT, ACBrLibNFSeStaticImport, ACBrLibNFSeStaticImportMT ---
+[*] Novos métodos implementados e correções na unit ACBrLibNFSeBase
+    Por: Antonio Carlos Junior
+
 10/02/2023
----ACBrLibNFSeBase, ACBrLibNFSeRespostas---
+--- ACBrLibNFSeBase, ACBrLibNFSeRespostas ---
 [*] Novos métodos implementados e adicionado classes bases de Resposta para métodos NFSe.
     Por: Antonio Carlos Junior
 

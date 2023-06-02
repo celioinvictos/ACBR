@@ -266,7 +266,6 @@ var
   i, j, k, Nivel, cProd, codIBGE: Integer;
   xInfo, xUF, xCodUF: string;
   Leitor: TLeitor;
-  ValorTotal: Double;
 begin
   Result := False;
   Leitor := TLeitor.Create;
@@ -283,7 +282,7 @@ begin
       GNRERetorno.SituacaoGuia          := Leitor.rCampo(tcStr, 'situacaoGuia');
       GNRERetorno.UFFavorecida          := Leitor.rCampo(tcStr, 'ufFavorecida');
       GNRERetorno.tipoGnre              := Leitor.rCampo(tcStr, 'tipoGnre');
-      ValorTotal                        := Leitor.rCampo(tcDe2, 'valorGNRE');
+      GNRERetorno.valorGNRE             := Leitor.rCampo(tcDe2, 'valorGNRE');
       GNRERetorno.DataLimitePagamento   := DateToStr(Leitor.rCampo(tcDat, 'dataLimitePagamento'));
       GNRERetorno.IdentificadorGuia     := Leitor.rCampo(tcInt, 'identificadorGuia');
       GNRERetorno.NumeroControle        := Leitor.rCampo(tcStr, 'nossoNumero');
@@ -393,16 +392,8 @@ begin
             if Leitor.rAtributo('tipo=', 'valor') = '11' then
               GNRERetorno.ValorPrincICMS := Leitor.rCampo(tcDe2, 'valor');
 
-            if GNRERetorno.ValorPrincICMS <> 0 then
-              GNRERetorno.ValorPrincipal := GNRERetorno.ValorPrincICMS
-            else
-              GNRERetorno.ValorPrincipal := ValorTotal;
-
             if Leitor.rAtributo('tipo=', 'valor') = '12' then
-            begin
               GNRERetorno.ValorFECP := Leitor.rCampo(tcDe2, 'valor');
-              GNRERetorno.ValorPrincipal := GNRERetorno.ValorPrincipal - GNRERetorno.ValorFECP;
-            end;
 
             if Leitor.rAtributo('tipo=', 'valor') = '21' then
               GNRERetorno.ValorICMS := Leitor.rCampo(tcDe2, 'valor');
@@ -430,6 +421,9 @@ begin
 
             Inc(k);
           end;
+
+          GNRERetorno.ValorPrincipal := GNRERetorno.ValorPrincICMS +
+                                        GNRERetorno.ValorFECP;
 
           if Leitor.rExtrai(Nivel, 'contribuinteDestinatario') <> '' then
           begin

@@ -67,7 +67,8 @@ type
     Tps85480AEROGRAMA, Tps10030CARTASIMPLES, Tps10014CARTAREGISTRADA,
     Tps16012CARTAOPOSTAL, Tps20010IMPRESSO, Tps14010MALADIRETA,
     Tps04014SEDEXVarejo, Tps40045SEDEXaCobrarVarejo, Tps40215SEDEX10Varejo,
-    Tps40290SEDEXHojeVarejo, Tps04510PACVarejo, Tps04669PACContrato, Tps04162SEDEXContrato, Tps20150IMPRESSOContrato);
+    Tps40290SEDEXHojeVarejo, Tps04510PACVarejo, Tps04669PACContrato, Tps04162SEDEXContrato, Tps20150IMPRESSOContrato,
+    Tps03220SEDEXContrato,Tps03298PACContrato);
 
   TACBrTpFormato = (TpfCaixaPacote, TpfRoloPrisma, TpfEnvelope);
 
@@ -326,7 +327,11 @@ begin
     Tps04162SEDEXContrato:
       TpServico := '04162';
     Tps20150IMPRESSOContrato:
-      TpServico := '20150'
+      TpServico := '20150';
+    Tps03220SEDEXContrato:
+      TpServico := '03220';
+    Tps03298PACContrato:
+      TpServico := '03298';
     else
       raise EACBrSedexException.CreateACBrStr('Tipo de Serviço Inválido');
   end;
@@ -482,7 +487,7 @@ procedure TACBrSedex.Rastrear(const CodRastreio: String);
 var
   SL: TStringList;
   I: integer;
-  vObs, Erro, vData, vLocal, infoLinha: String;
+  vObs, Erro, vData, vHora, vLocal, infoLinha: String;
   vCriar: Boolean;
 begin
   retRastreio.Clear;
@@ -523,17 +528,18 @@ begin
     for I := 0 to Pred(SL.Count) do
     begin
       infoLinha := Trim(SL.Strings[I]);
-      if Pos('<li>Data', infoLinha) > 0 then
-        vData :=  Copy(infoLinha, 13, 10) + ' ' + Copy(infoLinha, 32, 5) + ':00';
+      if Pos('>Data', infoLinha) > 0 then
+      begin
+        vData :=(RetornarConteudoEntre(infoLinha, '>Data: </span>', ' às '));
+        vHora :=(RetornarConteudoEntre(infoLinha, ' às ', '<br/>'));
+        vData := VData + ' ' + vHora;
+      end;
 
-      if Pos('<li>Local', infoLinha) > 0 then
-        vLocal :=(RetornarConteudoEntre(infoLinha, '<li>Local:', '</li>')) + ' -> ' + vObs;
+      if Pos('>Local', infoLinha) > 0 then
+        vLocal :=(RetornarConteudoEntre(infoLinha, '</span>', '<a class="btn-floating track-fab waves-effect waves-light white">')) + ' -> ' + vObs;
 
-      if Pos('<li>Status', infoLinha) > 0 then
-        vObs := RetornarConteudoEntre(infoLinha, '<b>', '</b>');
-
-      if Pos('<li>Origem', infoLinha) > 0 then
-        vLocal := (RetornarConteudoEntre(infoLinha, '<li>', '</li>')) + ' - ' + (RetornarConteudoEntre(infoLinha, '<li>', '</li>'))+ ' -> ' + vObs;
+      if Pos('eventoStatus', infoLinha) > 0 then
+        vObs := RetornarConteudoEntre(infoLinha, 'eventoStatus">', '</span>');
 
       vCriar := Trim(vLocal) <> '';
       if vCriar then

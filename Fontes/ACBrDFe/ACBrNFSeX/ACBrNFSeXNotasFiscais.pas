@@ -51,7 +51,7 @@ type
 
   { TNotaFiscal }
 
-  TNotaFiscal = class
+  TNotaFiscal = class(TCollectionItem)
   private
     FNFSe: TNFSe;
     FACBrNFSe: TACBrDFe;
@@ -76,6 +76,7 @@ type
 
     function LerXML(const AXML: String): Boolean;
     function LerArqIni(const AIniString: String): Boolean;
+    function GerarNFSeIni: String;
 
     function GerarXML: String;
     function GravarXML(const NomeArquivo: String = '';
@@ -145,6 +146,7 @@ type
     function LoadFromIni(const AIniString: String): Boolean;
     function LoadFromLoteNfse(const CaminhoArquivo: String): Boolean;
 
+    function GerarIni: String;
     function GravarXML(const PathNomeArquivo: String = ''): Boolean;
 
     property XMLLoteOriginal: String read FXMLLoteOriginal write FXMLLoteOriginal;
@@ -278,157 +280,173 @@ begin
     begin
       // Provedor Infisc - Layout Proprio
       sSecao := 'IdentificacaoNFSe';
-
-      Numero := INIRec.ReadString(sSecao, 'Numero', '');
-      cNFSe := GerarCodigoDFe(StrToIntDef(Numero, 0));
+      if INIRec.SectionExists(sSecao) then
+      begin
+        Numero := INIRec.ReadString(sSecao, 'Numero', '');
+        cNFSe := GerarCodigoDFe(StrToIntDef(Numero, 0));
+      end;
 
       sSecao := 'IdentificacaoRps';
+      if INIRec.SectionExists(sSecao) then
+      begin
+        SituacaoTrib := FProvider.StrToSituacaoTrib(Ok, INIRec.ReadString(sSecao, 'SituacaoTrib', 'tp'));
 
-      SituacaoTrib := FProvider.StrToSituacaoTrib(Ok, INIRec.ReadString(sSecao, 'SituacaoTrib', 'tp'));
+        // Provedor AssessorPublico
+        Situacao := INIRec.ReadInteger(sSecao, 'Situacao', 0);
 
-      // Provedor AssessorPublico
-      Situacao := INIRec.ReadInteger(sSecao, 'Situacao', 0);
+        Producao := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'Producao', '1'));
+        StatusRps := StrToStatusRPS(Ok, INIRec.ReadString(sSecao, 'Status', '1'));
+        OutrasInformacoes := INIRec.ReadString(sSecao, 'OutrasInformacoes', '');
 
-      Producao := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'Producao', '1'));
-      StatusRps := StrToStatusRPS(Ok, INIRec.ReadString(sSecao, 'Status', '1'));
-      OutrasInformacoes := INIRec.ReadString(sSecao, 'OutrasInformacoes', '');
+        // Provedor ISSDSF e Siat
+        SeriePrestacao := INIRec.ReadString(sSecao, 'SeriePrestacao', '');
 
-      // Provedor ISSDSF e Siat
-      SeriePrestacao := INIRec.ReadString(sSecao, 'SeriePrestacao', '');
+        IdentificacaoRps.Numero := INIRec.ReadString(sSecao, 'Numero', '0');
+        IdentificacaoRps.Serie := INIRec.ReadString(sSecao, 'Serie', '0');
+        IdentificacaoRps.Tipo := FProvider.StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
 
-      IdentificacaoRps.Numero := INIRec.ReadString(sSecao, 'Numero', '0');
-      IdentificacaoRps.Serie := INIRec.ReadString(sSecao, 'Serie', '0');
-      IdentificacaoRps.Tipo := FProvider.StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+        DataEmissao := INIRec.ReadDate(sSecao, 'DataEmissao', Now);
+        Competencia := INIRec.ReadDate(sSecao, 'Competencia', Now);
+        DataEmissaoRPS := INIRec.ReadDate(sSecao, 'DataEmissao', Now);
+        Vencimento := INIRec.ReadDate(sSecao, 'Vencimento', Now);
+        NaturezaOperacao := StrToNaturezaOperacao(Ok, INIRec.ReadString(sSecao, 'NaturezaOperacao', '0'));
 
-      DataEmissao := INIRec.ReadDate(sSecao, 'DataEmissao', Now);
-      Competencia := INIRec.ReadDate(sSecao, 'Competencia', Now);
-      DataEmissaoRPS := INIRec.ReadDate(sSecao, 'DataEmissao', Now);
-      NaturezaOperacao := StrToNaturezaOperacao(Ok, INIRec.ReadString(sSecao, 'NaturezaOperacao', '0'));
-
-      // Provedor Tecnos
-      PercentualCargaTributaria := StringToFloatDef(INIRec.ReadString(sSecao, 'PercentualCargaTributaria', ''), 0);
-      ValorCargaTributaria := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCargaTributaria', ''), 0);
-      PercentualCargaTributariaMunicipal := StringToFloatDef(INIRec.ReadString(sSecao, 'PercentualCargaTributariaMunicipal', ''), 0);
-      ValorCargaTributariaMunicipal := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCargaTributariaMunicipal', ''), 0);
-      PercentualCargaTributariaEstadual := StringToFloatDef(INIRec.ReadString(sSecao, 'PercentualCargaTributariaEstadual', ''), 0);
-      ValorCargaTributariaEstadual := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCargaTributariaEstadual', ''), 0);
+        // Provedor Tecnos
+        PercentualCargaTributaria := StringToFloatDef(INIRec.ReadString(sSecao, 'PercentualCargaTributaria', ''), 0);
+        ValorCargaTributaria := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCargaTributaria', ''), 0);
+        PercentualCargaTributariaMunicipal := StringToFloatDef(INIRec.ReadString(sSecao, 'PercentualCargaTributariaMunicipal', ''), 0);
+        ValorCargaTributariaMunicipal := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCargaTributariaMunicipal', ''), 0);
+        PercentualCargaTributariaEstadual := StringToFloatDef(INIRec.ReadString(sSecao, 'PercentualCargaTributariaEstadual', ''), 0);
+        ValorCargaTributariaEstadual := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCargaTributariaEstadual', ''), 0);
+      end;
 
       sSecao := 'RpsSubstituido';
-
-      RpsSubstituido.Numero := INIRec.ReadString(sSecao, 'Numero', '0');
-      RpsSubstituido.Serie := INIRec.ReadString(sSecao, 'Serie', '0');
-      RpsSubstituido.Tipo := FProvider.StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+      if INIRec.SectionExists(sSecao) then
+      begin
+        RpsSubstituido.Numero := INIRec.ReadString(sSecao, 'Numero', '');
+        RpsSubstituido.Serie := INIRec.ReadString(sSecao, 'Serie', '');
+        RpsSubstituido.Tipo := FProvider.StrToTipoRPS(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+      end;
 
       sSecao := 'Prestador';
-
-      RegimeEspecialTributacao := FProvider.StrToRegimeEspecialTributacao(Ok, INIRec.ReadString(sSecao, 'Regime', '0'));
-      OptanteSimplesNacional := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'OptanteSN', '1'));
-      IncentivadorCultural := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'IncentivadorCultural', '1'));
-
-      with Prestador do
+      if INIRec.SectionExists(sSecao) then
       begin
-        IdentificacaoPrestador.CpfCnpj := INIRec.ReadString(sSecao, 'CNPJ', '');
-        IdentificacaoPrestador.InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
+        RegimeEspecialTributacao := FProvider.StrToRegimeEspecialTributacao(Ok, INIRec.ReadString(sSecao, 'Regime', '0'));
+        OptanteSimplesNacional := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'OptanteSN', '1'));
+        IncentivadorCultural := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'IncentivadorCultural', '1'));
 
-        // Para o provedor ISSDigital deve-se informar também:
-        cUF := UFparaCodigo(INIRec.ReadString(sSecao, 'UF', 'SP'));
-
-        RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
-        NomeFantasia := INIRec.ReadString(sSecao, 'NomeFantasia', '');
-
-        with Endereco do
+        with Prestador do
         begin
-          Endereco := INIRec.ReadString(sSecao, 'Logradouro', '');
-          Numero := INIRec.ReadString(sSecao, 'Numero', '');
-          Bairro := INIRec.ReadString(sSecao, 'Bairro', '');
-          CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
-          xMunicipio := INIRec.ReadString(sSecao, 'xMunicipio', '');
-          UF := INIRec.ReadString(sSecao, 'UF', '');
-          CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 0);
-          xPais := INIRec.ReadString(sSecao, 'xPais', '');
-          CEP := INIRec.ReadString(sSecao, 'CEP', '');
-        end;
+          IdentificacaoPrestador.CpfCnpj := INIRec.ReadString(sSecao, 'CNPJ', '');
+          IdentificacaoPrestador.InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
 
-        with Contato do
-        begin
-          Telefone := INIRec.ReadString(sSecao, 'Telefone', '');
-          Email := INIRec.ReadString(sSecao, 'Email', '');
+          // Para o provedor ISSDigital deve-se informar também:
+          cUF := UFparaCodigo(INIRec.ReadString(sSecao, 'UF', 'SP'));
+
+          RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
+          NomeFantasia := INIRec.ReadString(sSecao, 'NomeFantasia', '');
+
+          with Endereco do
+          begin
+            Endereco := INIRec.ReadString(sSecao, 'Logradouro', '');
+            Numero := INIRec.ReadString(sSecao, 'Numero', '');
+            Bairro := INIRec.ReadString(sSecao, 'Bairro', '');
+            CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
+            xMunicipio := INIRec.ReadString(sSecao, 'xMunicipio', '');
+            UF := INIRec.ReadString(sSecao, 'UF', '');
+            CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 0);
+            xPais := INIRec.ReadString(sSecao, 'xPais', '');
+            CEP := INIRec.ReadString(sSecao, 'CEP', '');
+          end;
+
+          with Contato do
+          begin
+            Telefone := INIRec.ReadString(sSecao, 'Telefone', '');
+            Email := INIRec.ReadString(sSecao, 'Email', '');
+          end;
         end;
       end;
 
       sSecao := 'Tomador';
-
-      with Tomador do
+      if INIRec.SectionExists(sSecao) then
       begin
-        with IdentificacaoTomador do
+        with Tomador do
         begin
-          Tipo := FProvider.StrToTipoPessoa(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
-          CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
-          InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
-          InscricaoEstadual := INIRec.ReadString(sSecao, 'InscricaoEstadual', '');
+          with IdentificacaoTomador do
+          begin
+            Tipo := FProvider.StrToTipoPessoa(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
+            CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
+            InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
+            InscricaoEstadual := INIRec.ReadString(sSecao, 'InscricaoEstadual', '');
+          end;
+
+          RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
+
+          with Endereco do
+          begin
+            TipoLogradouro := INIRec.ReadString(sSecao, 'TipoLogradouro', '');
+            Endereco := INIRec.ReadString(sSecao, 'Logradouro', '');
+            Numero := INIRec.ReadString(sSecao, 'Numero', '');
+            Complemento := INIRec.ReadString(sSecao, 'Complemento', '');
+            Bairro := INIRec.ReadString(sSecao, 'Bairro', '');
+            CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
+            xMunicipio := INIRec.ReadString(sSecao, 'xMunicipio', '');
+            UF := INIRec.ReadString(sSecao, 'UF', '');
+            CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 0);
+            CEP := INIRec.ReadString(sSecao, 'CEP', '');
+            // Provedor Equiplano é obrigatório o pais e IE
+            xPais := INIRec.ReadString(sSecao, 'xPais', '');
+          end;
+
+          with Contato do
+          begin
+            Telefone := INIRec.ReadString(sSecao, 'Telefone', '');
+            Email := INIRec.ReadString(sSecao, 'Email', '');
+          end;
+
+          AtualizaTomador := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'AtualizaTomador', '1'));
+          TomadorExterior := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'TomadorExterior', '1'));
         end;
-
-        RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
-
-        with Endereco do
-        begin
-          TipoLogradouro := INIRec.ReadString(sSecao, 'TipoLogradouro', '');
-          Endereco := INIRec.ReadString(sSecao, 'Logradouro', '');
-          Numero := INIRec.ReadString(sSecao, 'Numero', '');
-          Complemento := INIRec.ReadString(sSecao, 'Complemento', '');
-          Bairro := INIRec.ReadString(sSecao, 'Bairro', '');
-          CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
-          xMunicipio := INIRec.ReadString(sSecao, 'xMunicipio', '');
-          UF := INIRec.ReadString(sSecao, 'UF', '');
-          CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 0);
-          CEP := INIRec.ReadString(sSecao, 'CEP', '');
-          // Provedor Equiplano é obrigatório o pais e IE
-          xPais := INIRec.ReadString(sSecao, 'xPais', '');
-        end;
-
-        with Contato do
-        begin
-          Telefone := INIRec.ReadString(sSecao, 'Telefone', '');
-          Email := INIRec.ReadString(sSecao, 'Email', '');
-        end;
-
-        AtualizaTomador := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'AtualizaTomador', '1'));
-        TomadorExterior := FProvider.StrToSimNao(Ok, INIRec.ReadString(sSecao, 'TomadorExterior', '1'));
       end;
 
       sSecao := 'Intermediario';
-
-      with Intermediario do
+      if INIRec.SectionExists(sSecao)then
       begin
-        Identificacao.CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
-        Identificacao.InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
-        RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
+        with Intermediario do
+        begin
+          Identificacao.CpfCnpj := INIRec.ReadString(sSecao, 'CNPJCPF', '');
+          Identificacao.InscricaoMunicipal := INIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
+          RazaoSocial := INIRec.ReadString(sSecao, 'RazaoSocial', '');
+        end;
       end;
 
       sSecao := 'ConstrucaoCivil';
-
-      with ConstrucaoCivil do
+      if INIRec.SectionExists(sSecao) then
       begin
-        CodigoObra := INIRec.ReadString(sSecao, 'CodigoObra', '');
-        Art := INIRec.ReadString(sSecao, 'Art', '');
+        with ConstrucaoCivil do
+        begin
+          CodigoObra := INIRec.ReadString(sSecao, 'CodigoObra', '');
+          Art := INIRec.ReadString(sSecao, 'Art', '');
+        end;
       end;
 
       with Servico do
       begin
         sSecao := 'Servico';
-
-        ItemListaServico := INIRec.ReadString(sSecao, 'ItemListaServico', '');
-        CodigoCnae := INIRec.ReadString(sSecao, 'CodigoCnae', '');
-        CodigoTributacaoMunicipio := INIRec.ReadString(sSecao, 'CodigoTributacaoMunicipio', '');
-        Discriminacao := INIRec.ReadString(sSecao, 'Discriminacao', '');
-        CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
-        CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 1058);
-        ExigibilidadeISS := FProvider.StrToExigibilidadeISS(Ok, INIRec.ReadString(sSecao, 'ExigibilidadeISS', '1'));
-        MunicipioIncidencia := INIRec.ReadInteger(sSecao, 'MunicipioIncidencia', 0);
-        UFPrestacao := INIRec.ReadString(sSecao, 'UFPrestacao', '');
-        ResponsavelRetencao := FProvider.StrToResponsavelRetencao(Ok, INIRec.ReadString(sSecao, 'ResponsavelRetencao', '1'));
-        TipoLancamento := StrToTipoLancamento(Ok, INIRec.ReadString(sSecao, 'TipoLancamento', 'P'));
-
+        if INIRec.SectionExists(sSecao) then
+        begin
+          ItemListaServico := INIRec.ReadString(sSecao, 'ItemListaServico', '');
+          CodigoCnae := INIRec.ReadString(sSecao, 'CodigoCnae', '');
+          CodigoTributacaoMunicipio := INIRec.ReadString(sSecao, 'CodigoTributacaoMunicipio', '');
+          Discriminacao := INIRec.ReadString(sSecao, 'Discriminacao', '');
+          CodigoMunicipio := INIRec.ReadString(sSecao, 'CodigoMunicipio', '');
+          CodigoPais := INIRec.ReadInteger(sSecao, 'CodigoPais', 1058);
+          ExigibilidadeISS := FProvider.StrToExigibilidadeISS(Ok, INIRec.ReadString(sSecao, 'ExigibilidadeISS', '1'));
+          MunicipioIncidencia := INIRec.ReadInteger(sSecao, 'MunicipioIncidencia', 0);
+          UFPrestacao := INIRec.ReadString(sSecao, 'UFPrestacao', '');
+          ResponsavelRetencao := FProvider.StrToResponsavelRetencao(Ok, INIRec.ReadString(sSecao, 'ResponsavelRetencao', '1'));
+          TipoLancamento := StrToTipoLancamento(Ok, INIRec.ReadString(sSecao, 'TipoLancamento', 'P'));
+        end;
         i := 1;
         while true do
         begin
@@ -499,32 +517,34 @@ begin
         with Valores do
         begin
           sSecao := 'Valores';
+          if INIRec.SectionExists(sSecao) then
+          begin
+            ValorServicos := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorServicos', ''), 0);
+            ValorDeducoes := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorDeducoes', ''), 0);
 
-          ValorServicos := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorServicos', ''), 0);
-          ValorDeducoes := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorDeducoes', ''), 0);
+            ValorPis := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorPis', ''), 0);
+            AliquotaPis := StringToFloatDef(INIRec.ReadString(sSecao, 'AliquotaPis', ''), 0);
 
-          ValorPis := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorPis', ''), 0);
-          AliquotaPis := StringToFloatDef(INIRec.ReadString(sSecao, 'AliquotaPis', ''), 0);
+            ValorCofins := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCofins', ''), 0);
+            AliquotaCofins := StringToFloatDef(INIRec.ReadString(sSecao, 'AliquotaCofins', ''), 0);
 
-          ValorCofins := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCofins', ''), 0);
-          AliquotaCofins := StringToFloatDef(INIRec.ReadString(sSecao, 'AliquotaCofins', ''), 0);
+            ValorInss := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorInss', ''), 0);
+            ValorIr := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorIr', ''), 0);
+            ValorCsll := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCsll', ''), 0);
 
-          ValorInss := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorInss', ''), 0);
-          ValorIr := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorIr', ''), 0);
-          ValorCsll := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorCsll', ''), 0);
+            ISSRetido := FProvider.StrToSituacaoTributaria(Ok, INIRec.ReadString(sSecao, 'ISSRetido', '0'));
 
-          ISSRetido := FProvider.StrToSituacaoTributaria(Ok, INIRec.ReadString(sSecao, 'ISSRetido', '0'));
+            OutrasRetencoes := StringToFloatDef(INIRec.ReadString(sSecao, 'OutrasRetencoes', ''), 0);
+            DescontoIncondicionado := StringToFloatDef(INIRec.ReadString(sSecao, 'DescontoIncondicionado', ''), 0);
+            DescontoCondicionado := StringToFloatDef(INIRec.ReadString(sSecao, 'DescontoCondicionado', ''), 0);
 
-          OutrasRetencoes := StringToFloatDef(INIRec.ReadString(sSecao, 'OutrasRetencoes', ''), 0);
-          DescontoIncondicionado := StringToFloatDef(INIRec.ReadString(sSecao, 'DescontoIncondicionado', ''), 0);
-          DescontoCondicionado := StringToFloatDef(INIRec.ReadString(sSecao, 'DescontoCondicionado', ''), 0);
+            BaseCalculo := StringToFloatDef(INIRec.ReadString(sSecao, 'BaseCalculo', ''), 0);
+            Aliquota := StringToFloatDef(INIRec.ReadString(sSecao, 'Aliquota', ''), 0);
+            ValorIss := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorIss', ''), 0);
+            ValorIssRetido := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorIssRetido', ''), 0);
 
-          BaseCalculo := StringToFloatDef(INIRec.ReadString(sSecao, 'BaseCalculo', ''), 0);
-          Aliquota := StringToFloatDef(INIRec.ReadString(sSecao, 'Aliquota', ''), 0);
-          ValorIss := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorIss', ''), 0);
-          ValorIssRetido := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorIssRetido', ''), 0);
-
-          ValorLiquidoNfse := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorLiquidoNfse', ''), 0);
+            ValorLiquidoNfse := StringToFloatDef(INIRec.ReadString(sSecao, 'ValorLiquidoNfse', ''), 0);
+          end;
         end;
       end;
 
@@ -533,9 +553,11 @@ begin
 
       with CondicaoPagamento do
       begin
-        QtdParcela := INIRec.ReadInteger(sSecao, 'QtdParcela', 0);
-        Condicao := StrToCondicao(Ok, INIRec.ReadString(sSecao, 'Condicao', 'A_VISTA'));
-
+        if INIRec.SectionExists(sSecao) then
+        begin
+          QtdParcela := INIRec.ReadInteger(sSecao, 'QtdParcela', 0);
+          Condicao := StrToCondicao(Ok, INIRec.ReadString(sSecao, 'Condicao', 'A_VISTA'));
+        end;
         i := 1;
         while true do
         begin
@@ -560,6 +582,201 @@ begin
     Result := True;
   finally
     INIRec.Free;
+  end;
+end;
+
+function TNotaFiscal.GerarNFSeIni: String;
+var
+  I: integer;
+  sSecao: String;
+  INIRec: TMemIniFile;
+  IniNFSe: TStringList;
+  FProvider: IACBrNFSeXProvider;
+begin
+  Result:= '';
+  FProvider := TACBrNFSeX(FACBrNFSe).Provider;
+
+  INIRec := TMemIniFile.Create('');
+  try
+    with FNFSe do
+    begin
+      //Provedor Infisc - Layout Proprio
+      sSecao:= 'IdentificacaoNFSe';
+      INIRec.WriteString(sSecao, 'Numero', Numero);
+
+      sSecao:= 'IdentificacaoRps';
+      INIRec.WriteString(sSecao, 'SituacaoTrib', FProvider.SituacaoTribToStr(SituacaoTrib));
+      INIRec.WriteString(sSecao, 'Producao', FProvider.SimNaoToStr(Producao));
+      INIRec.WriteString(sSecao, 'Status', StatusRPSToStr(StatusRps));
+      INIRec.WriteString(sSecao, 'OutrasInformacoes', OutrasInformacoes);
+
+      // Provedores ISSDSF e Siat
+      INIRec.WriteString(sSecao, 'SeriePrestacao', SeriePrestacao);
+      INIRec.WriteString(sSecao, 'Numero', IdentificacaoRps.Numero);
+      INIRec.WriteString(sSecao, 'Serie', IdentificacaoRps.Serie);
+      INIRec.WriteString(sSecao, 'Tipo', FProvider.TipoRPSToStr(IdentificacaoRps.Tipo));
+      INIRec.WriteDate(sSecao, 'DataEmissao', Now);
+      INIRec.WriteDate(sSecao, 'Competencia', Now);
+      INIRec.WriteString(sSecao, 'NaturezaOperacao', NaturezaOperacaoToStr(NaturezaOperacao));
+
+      // Provedor Tecnos
+      INIRec.WriteFloat(sSecao, 'PercentualCargaTributaria', PercentualCargaTributaria);
+      INIRec.WriteFloat(sSecao, 'ValorCargaTributaria', ValorCargaTributaria);
+      INIRec.WriteFloat(sSecao, 'PercentualCargaTributariaMunicipal', PercentualCargaTributariaMunicipal);
+      INIRec.WriteFloat(sSecao, 'ValorCargaTributariaMunicipal', ValorCargaTributariaMunicipal);
+      INIRec.WriteFloat(sSecao, 'PercentualCargaTributariaEstadual', PercentualCargaTributariaEstadual);
+      INIRec.WriteFloat(sSecao, 'ValorCargaTributariaEstadual', ValorCargaTributariaEstadual);
+
+      if RpsSubstituido.Numero <> '' then
+      begin
+        sSecao:= 'RpsSubstituido';
+        INIRec.WriteString(sSecao, 'Numero', RpsSubstituido.Numero);
+        INIRec.WriteString(sSecao, 'Serie', RpsSubstituido.Serie);
+        INIRec.WriteString(sSecao, 'Tipo', FProvider.TipoRPSToStr(RpsSubstituido.Tipo));
+      end;
+
+      sSecao:= 'Prestador';
+      INIRec.WriteString(sSecao, 'Regime', FProvider.RegimeEspecialTributacaoToStr(RegimeEspecialTributacao));
+      INIRec.WriteString(sSecao, 'OptanteSN', FProvider.SimNaoToStr(OptanteSimplesNacional));
+      INIRec.WriteString(sSecao, 'IncentivadorCultural', FProvider.SimNaoToStr(IncentivadorCultural));
+      INIRec.WriteString(sSecao, 'CNPJ', Prestador.IdentificacaoPrestador.CpfCnpj);
+      INIRec.WriteString(sSecao, 'InscricaoMunicipal', Prestador.IdentificacaoPrestador.InscricaoMunicipal);
+
+      // Para o provedor ISSDigital deve-se informar tambem:
+      INIRec.WriteString(sSecao, 'RazaoSocial', Prestador.RazaoSocial);
+      INIRec.WriteString(sSecao, 'NomeFantasia', Prestador.NomeFantasia);
+      INIRec.WriteString(sSecao, 'Logradouro', Prestador.Endereco.Endereco);
+      INIRec.WriteString(sSecao, 'Numero', Prestador.Endereco.Numero);
+      INIRec.WriteString(sSecao, 'Bairro', Prestador.Endereco.Bairro);
+      INIRec.WriteString(sSecao, 'CodigoMunicipio', Prestador.Endereco.CodigoMunicipio);
+      INIRec.WriteString(sSecao, 'UF',  Prestador.Endereco.UF);
+      INIRec.WriteInteger(sSecao, 'CodigoPais', Prestador.Endereco.CodigoPais);
+      INIRec.WriteString(sSecao, 'xPais', Prestador.Endereco.xPais);
+      INIRec.WriteString(sSecao, 'CEP', Prestador.Endereco.CEP);
+      INIRec.WriteString(sSecao, 'Telefone', Prestador.Contato.Telefone);
+      INIRec.WriteString(sSecao, 'Email', Prestador.Contato.Email);
+
+      sSecao:= 'Tomador';
+      INIRec.WriteString(sSecao, 'Tipo', FProvider.TipoPessoaToStr(Tomador.IdentificacaoTomador.Tipo));
+      INIRec.WriteString(sSecao, 'CNPJCPF', Tomador.IdentificacaoTomador.CpfCnpj);
+      INIRec.WriteString(sSecao, 'InscricaoMunicipal', Tomador.IdentificacaoTomador.InscricaoMunicipal);
+      //Exigido pelo provedor Equiplano
+      INIRec.WriteString(sSecao, 'InscricaoEstadual', Tomador.IdentificacaoTomador.InscricaoEstadual);
+      INIRec.WriteString(sSecao, 'RazaoSocial', Tomador.RazaoSocial);
+      INIRec.WriteString(sSecao, 'TipoLogradouro', Tomador.Endereco.TipoLogradouro);
+      INIRec.WriteString(sSecao, 'Logradouro', Tomador.Endereco.Endereco);
+      INIRec.WriteString(sSecao, 'Numero', Tomador.Endereco.Numero);
+      INIRec.WriteString(sSecao, 'Complemento', Tomador.Endereco.Complemento);
+      INIRec.WriteString(sSecao, 'Bairro', Tomador.Endereco.Bairro);
+      INIRec.WriteString(sSecao, 'CodigoMunicipio', Tomador.Endereco.CodigoMunicipio);
+      INIRec.WriteString(sSecao, 'UF', Tomador.Endereco.UF);
+      INIRec.WriteInteger(sSecao, 'CodigoPais', Tomador.Endereco.CodigoPais);
+      INIRec.WriteString(sSecao, 'CEP', Tomador.Endereco.CEP);
+      //Exigido pelo provedor Equiplano
+      INIRec.WriteString(sSecao, 'xPais', Tomador.Endereco.xPais);
+      INIRec.WriteString(sSecao, 'Telefone', Tomador.Contato.Telefone);
+      INIRec.WriteString(sSecao, 'Email', Tomador.Contato.Email);
+      INIRec.WriteString(sSecao, 'AtualizaTomador', FProvider.SimNaoToStr(Tomador.AtualizaTomador));
+      INIRec.WriteString(sSecao, 'TomadorExterior', FProvider.SimNaoToStr(Tomador.TomadorExterior));
+
+      if Intermediario.Identificacao.CpfCnpj <> '' then
+      begin
+        sSecao:= 'Intermediario';
+        INIRec.WriteString(sSecao, 'CNPJCPF', Intermediario.Identificacao.CpfCnpj);
+        INIRec.WriteString(sSecao, 'InscricaoMunicipal', Intermediario.Identificacao.InscricaoMunicipal);
+        INIRec.WriteString(sSecao, 'RazaoSocial', Intermediario.RazaoSocial);
+      end;
+
+      if ConstrucaoCivil.CodigoObra <> '' then
+      begin
+        sSecao:= 'ConstrucaoCivil';
+        INIRec.WriteString(sSecao, 'CodigoObra', ConstrucaoCivil.CodigoObra);
+        INIRec.WriteString(sSecao, 'Art', ConstrucaoCivil.Art);
+      end;
+
+      sSecao:= 'Servico';
+      INIRec.WriteString(sSecao, 'ItemListaServico', Servico.ItemListaServico);
+      INIRec.WriteString(sSecao, 'CodigoCnae', Servico.CodigoCnae);
+      INIRec.WriteString(sSecao, 'CodigoTributacaoMunicipio', Servico.CodigoTributacaoMunicipio);
+      INIRec.WriteString(sSecao, 'Discriminacao', Servico.Discriminacao);
+      INIRec.WriteString(sSecao, 'CodigoMunicipio', Servico.CodigoMunicipio);
+      INIRec.WriteInteger(sSecao, 'CodigoPais', Servico.CodigoPais);
+      INIRec.WriteString(sSecao, 'ExigibilidadeISS', FProvider.ExigibilidadeISSToStr(Servico.ExigibilidadeISS));
+      INIRec.WriteInteger(sSecao, 'MunicipioIncidencia', Servico.MunicipioIncidencia);
+      INIRec.WriteString(sSecao, 'UFPrestacao', Servico.UFPrestacao);
+      INIRec.WriteString(sSecao, 'ResponsavelRetencao', FProvider.ResponsavelRetencaoToStr(Servico.ResponsavelRetencao));
+
+      //Lista de Itens, xxx pode variar de 001-999
+      for I := 0 to Servico.ItemServico.Count - 1 do
+      begin
+        sSecao:= 'Itens' + IntToStrZero(I + 1, 3);
+        with Servico.ItemServico.Items[I] do
+        begin
+          INIRec.WriteString(sSecao, 'Descricao', Descricao);
+          INIRec.WriteString(sSecao, 'CodServico', CodServ);
+          INIRec.WriteString(sSecao, 'codLCServico', CodLCServ);
+          INIRec.WriteString(sSecao, 'ItemListaServico', ItemListaServico);
+          INIRec.WriteFloat(sSecao, 'Quantidade', Quantidade);
+          INIRec.WriteFloat(sSecao, 'ValorUnitario', ValorUnitario);
+          INIRec.WriteFloat(sSecao, 'ValorDeducoes', ValorDeducoes);
+          INIRec.WriteFloat(sSecao, 'ValorIss', ValorISS);
+          INIRec.WriteFloat(sSecao, 'Aliquota', Aliquota);
+          INIRec.WriteFloat(sSecao, 'BaseCalculo', BaseCalculo);
+          INIRec.WriteFloat(sSecao, 'DescontoIncondicionado', DescontoIncondicionado);
+          INIRec.WriteFloat(sSecao, 'ValorTotal', ValorTotal);
+          INIRec.WriteString(sSecao, 'Tributavel', FProvider.SimNaoToStr(Tributavel));
+        end;
+      end;
+
+      sSecao:= 'Valores';
+      INIRec.WriteFloat(sSecao, 'ValorServicos', Servico.Valores.ValorServicos);
+      INIRec.WriteFloat(sSecao, 'ValorDeducoes', Servico.Valores.ValorDeducoes);
+      INIRec.WriteFloat(sSecao, 'ValorPis', Servico.Valores.ValorPis);
+      INIRec.WriteFloat(sSecao, 'AliquotaPis', Servico.Valores.AliquotaPis);
+      INIRec.WriteFloat(sSecao, 'ValorCofins', Servico.Valores.ValorCofins);
+      INIRec.WriteFloat(sSecao, 'AliquotaCofins', Servico.Valores.AliquotaCofins);
+      INIRec.WriteFloat(sSecao, 'ValorInss', Servico.Valores.ValorInss);
+      INIRec.WriteFloat(sSecao, 'ValorIr', Servico.Valores.ValorIr);
+      INIRec.WriteFloat(sSecao, 'ValorCsll', Servico.Valores.ValorCsll);
+      INIRec.WriteString(sSecao, 'ISSRetido', FProvider.SituacaoTributariaToStr(Servico.Valores.IssRetido));
+      INIRec.WriteFloat(sSecao, 'OutrasRetencoes', Servico.Valores.OutrasRetencoes);
+      INIRec.WriteFloat(sSecao, 'DescontoIncondicionado', Servico.Valores.DescontoIncondicionado);
+      INIRec.WriteFloat(sSecao, 'DescontoCondicionado', Servico.Valores.DescontoCondicionado);
+      INIRec.WriteFloat(sSecao, 'BaseCalculo', Servico.Valores.BaseCalculo);
+      INIRec.WriteFloat(sSecao, 'Aliquota', Servico.Valores.Aliquota);
+      INIRec.WriteFloat(sSecao, 'ValorIss', Servico.Valores.ValorIss);
+      INIRec.WriteFloat(sSecao, 'ValorIssRetido', Servico.Valores.ValorIssRetido);
+      INIRec.WriteFloat(sSecao, 'ValorLiquidoNfse', Servico.Valores.ValorLiquidoNfse);
+
+      //Condição de Pagamento usado pelo provedor Betha versão 1 do Layout da ABRASF
+      if CondicaoPagamento.QtdParcela > 0 then
+      begin
+        sSecao:= 'CondicaoPagamento';
+        INIRec.WriteInteger(sSecao, 'QtdParcela', CondicaoPagamento.QtdParcela);
+        INIRec.WriteString(sSecao, 'Condicao', CondicaoToStr(CondicaoPagamento.Condicao));
+
+        //Lista de parcelas, xx pode variar de 01-99 (provedor Betha versão 1 do Layout da ABRASF)
+        for I := 0 to CondicaoPagamento.Parcelas.Count - 1 do
+        begin
+          sSecao:= 'Parcelas' + IntToStrZero(I + 1, 2);
+          with CondicaoPagamento.Parcelas.Items[I] do
+          begin
+            INIRec.WriteString(sSecao, 'Parcela', Parcela);
+            INIRec.WriteDate(sSecao, 'DataVencimento', DataVencimento);
+            INIRec.WriteFloat(sSecao, 'Valor', Valor);
+          end;
+        end;
+      end;
+    end;
+  finally
+    IniNFSe := TStringList.Create;
+    try
+      INIRec.GetStrings(IniNFSe);
+      INIRec.Free;
+      Result := StringReplace(IniNFSe.Text, sLineBreak + sLineBreak, sLineBreak, [rfReplaceAll]);
+    finally
+      IniNFSe.Free;
+    end;
   end;
 end;
 
@@ -612,7 +829,12 @@ begin
     if EstaVazio(NomeArquivo) then
       FNomeArq := TACBrNFSeX(FACBrNFSe).GetNumID(NFSe) + '-nfse.xml'
     else
-      FNomeArq := NomeArquivo + '-nfse.xml';
+    begin
+      FNomeArq := NomeArquivo;
+
+      if ExtractFileExt(FNomeArq) = '' then
+        FNomeArq := FNomeArq + '.xml';
+    end;
 
     Result := TACBrNFSeX(FACBrNFSe).Gravar(FNomeArq, FXmlNfse, PathArquivo, ConteudoEhXml);
   end
@@ -759,6 +981,14 @@ end;
 function TNotasFiscais.Add(ANota: TNotaFiscal): Integer;
 begin
   Result := inherited Add(ANota);
+end;
+
+function TNotasFiscais.GerarIni: String;
+begin
+  Result := '';
+
+  if (Self.Count > 0) then
+    Result := Self.Items[0].GerarNFSeIni;
 end;
 
 procedure TNotasFiscais.GerarNFSe;
@@ -1008,9 +1238,7 @@ begin
 
   l := Self.Count; // Indice da última nota já existente
 
-  // Converte de UTF8 para a String nativa da IDE //
-  XMLStr := DecodeToString(XMLUTF8, True);
-  XMLStr := LimparXml(XMLStr);
+  XMLStr := LimparXml(XMLUTF8);
 
   aXmlLote := XMLStr;
   Result := False;

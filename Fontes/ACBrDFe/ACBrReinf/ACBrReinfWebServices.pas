@@ -122,6 +122,7 @@ type
 
     function TratarResposta: Boolean; override;
     function GerarMsgLog: String; override;
+    function GerarPrefixoArquivo: String; override;
   public
     constructor Create(AOwner: TACBrDFe); override;
 
@@ -395,6 +396,7 @@ begin
   else
   begin
     FPMimeType := 'application/xml';
+    FPValidateReturnCode := False;
     FPEnvelopeSoap := InserirDeclaracaoXMLSeNecessario(DadosMsg);
   end;
 end;
@@ -580,6 +582,7 @@ begin
   else
   begin
     FPMimeType := 'application/xml';
+    FPValidateReturnCode := False;
     FPURL := FPURL + '/' + FProtocolo;
     FPEnvelopeSoap := '';
   end;
@@ -706,6 +709,20 @@ begin
   if Assigned(TACBrReinf(FPDFeOwner).OnTransmissaoEventos) then
     TACBrReinf(FPDFeOwner).OnTransmissaoEventos(FPRetWS, erRetornoConsulta);
 
+  // Remover mensagem quando o leiaute 2_01_02 for implementado na Produção Retrita
+  // Controle para exibir mensagem clara ao usuário caso tente utilizar o leiaute ainda não implementado pela Receita
+  if FPConfiguracoesReinf.Geral.VersaoDF = v2_01_02 then
+  begin
+    if (Pos('<codResp>MS0030</codResp>',FPRetornoWS) > 0) and
+       (Pos('v2_01_02 informado no documento XML',FPRetornoWS) > 0) then
+    begin
+      if TACBrReinf(FPDFeOwner).Configuracoes.Geral.ExibirErroSchema then
+        FazerLog('Atenção: Os schemas da versão 2_01_02 ainda não estão diponíveis no ambiente utilizado',True)
+      else
+        GerarException('Atenção: Os schemas da versão 2_01_02 ainda não estão diponíveis no ambiente utilizado');
+    end;
+  end;
+
   Result := True;
 end;
 
@@ -740,6 +757,11 @@ begin
     GerarException('Propriedade RetConsulta_R9015 disponível a partir da versão 2_01_01, registro indexistente em versões anteriores');
 
   Result := FRetConsulta_R9015;
+end;
+
+function TConsultar.GerarPrefixoArquivo: String;
+begin
+  Result := FProtocolo;
 end;
 
 { TConsultarReciboEvento }
@@ -846,6 +868,7 @@ begin
   else
   begin
     FPMimeType := 'application/xml';
+    FPValidateReturnCode := False;
     Consulta.DefinirParametros(FPURL);
     FPEnvelopeSoap := '';
   end;
@@ -895,7 +918,7 @@ end;
 
 function TConsultarReciboEvento.GerarPrefixoArquivo: String;
 begin
-  Result := FormatDateTime('yyyymmddhhnnss', Now) + '-' + tpEventoStr;
+  Result := FperApur + '-R' + tpEventoStr;
 end;
 
 // Remover após entrar em vigor a versão 2_01_01 ou colocar exceção alertanto para usar a RetConsulta_R5011

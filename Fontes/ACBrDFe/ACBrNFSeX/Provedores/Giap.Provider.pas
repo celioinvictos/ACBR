@@ -236,6 +236,7 @@ var
   ANode: TACBrXmlNode;
   i: Integer;
   ANota: TNotaFiscal;
+  aNumeroNota, aCodigoVerificacao, aSituacao, aLink, aNumeroRps: string;
 begin
   Document := TACBrXmlDocument.Create;
 
@@ -270,21 +271,30 @@ begin
       begin
         ANode := ANodeArray[I];
 
+        aNumeroNota := ObterConteudoTag(ANode.Childrens.FindAnyNs('numeroNota'), tcStr);
+        aCodigoVerificacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('codigoVerificacao'), tcStr);
+        aSituacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('statusEmissao'), tcStr);
+        aLink := ObterConteudoTag(ANode.Childrens.FindAnyNs('link'), tcStr);
+        aLink := StringReplace(aLink, '&amp;', '&', [rfReplaceAll]);
+        aNumeroRps := ObterConteudoTag(ANode.Childrens.FindAnyNs('numeroRps'), tcStr);
+
         with Response do
         begin
-          NumeroNota := ObterConteudoTag(ANode.Childrens.FindAnyNs('numeroNota'), tcStr);
-          CodigoVerificacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('codigoVerificacao'), tcStr);
-          Situacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('statusEmissao'), tcStr);
-          Link := ObterConteudoTag(ANode.Childrens.FindAnyNs('link'), tcStr);
-          Link := StringReplace(Link, '&amp;', '&', [rfReplaceAll]);
-          NumeroRps := ObterConteudoTag(ANode.Childrens.FindAnyNs('numeroRps'), tcStr);
+          if ModoEnvio <> meLoteAssincrono then
+          begin
+            NumeroNota := aNumeroNota;
+            CodigoVerificacao := aCodigoVerificacao;
+            Situacao := aSituacao;
+            Link := aLink;
+            NumeroRps := aNumeroRps;
+          end;
 
           AResumo := Response.Resumos.New;
-          AResumo.NumeroNota := NumeroNota;
-          AResumo.CodigoVerificacao := CodigoVerificacao;
-          AResumo.NumeroRps := NumeroRps;
-          AResumo.Link := Link;
-          AResumo.Situacao := Situacao;
+          AResumo.NumeroNota := aNumeroNota;
+          AResumo.CodigoVerificacao := aCodigoVerificacao;
+          AResumo.NumeroRps := aNumeroRps;
+          AResumo.Link := aLink;
+          AResumo.Situacao := aSituacao;
         end;
 
         // GIAP Não retorna o XML da Nota sendo necessário imprimir a Nota já
@@ -293,6 +303,20 @@ begin
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(Response.NumeroRps);
         ANota := CarregarXmlNfse(ANota, Response.XmlEnvio);
+
+        {
+         Carregando dados da NFS-e emitida que não constam no XML de envio e
+         só retornam no Response
+        }
+        with ANota.NFSe do
+        begin
+           Numero := AResumo.NumeroNota;
+           CodigoVerificacao := AResumo.CodigoVerificacao;
+           Link := AResumo.Link;
+           IdentificacaoRps.Numero := AResumo.NumeroRps;
+           ANota.LerXML(ANota.GerarXML);
+        end;
+
         SalvarXmlNfse(ANota);
       end;
     except
@@ -369,7 +393,11 @@ begin
           Response.DescSituacao := 'Nota Autorizada'
         else
         if ObterConteudoTag(ANode.Childrens.FindAnyNs('notaExiste'), tcStr) = 'Cancelada' then
-          Response.DescSituacao := 'Nota Cancelada'
+        begin
+          Response.DescSituacao := 'Nota Cancelada';
+          Response.Cancelamento.DataHora := ObterConteudoTag(ANode.Childrens.FindAnyNs('dataCancelamento'), tcDatVcto);
+          Response.Cancelamento.Motivo := 'Nota Cancelada';
+        end
         else
           Response.DescSituacao := 'Nota não Encontrada';
 

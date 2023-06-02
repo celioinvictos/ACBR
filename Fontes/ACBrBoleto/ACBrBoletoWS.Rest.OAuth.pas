@@ -5,8 +5,10 @@ interface
 uses
   pcnConversao,
   httpsend,
-  ACBrBoletoConversao;
+  ACBrBoletoConversao,
+  ACBrBoleto;
 type
+  TpAuthorizationType = (atNoAuth,atBearer);
   { TOAuth }
   TOAuth = class
   private
@@ -23,7 +25,9 @@ type
     FPayload         : Boolean;
     FHTTPSend        : THTTPSend;
     FParamsOAuth : string;
-
+    FAuthorizationType: TpAuthorizationType;
+    FHeaderParamsList : Array of TParams;
+    FACBrBoleto       : TACBrBoleto;
     procedure setURL(const AValue: String);
     procedure setContentType(const AValue: String);
     procedure setGrantType(const AValue: String);
@@ -39,14 +43,18 @@ type
 
     procedure ProcessarRespostaOAuth(const ARetorno: AnsiString);
     function Executar(const AAuthBase64: String): Boolean;
+    procedure SetAuthorizationType(const Value: TpAuthorizationType);
   protected
 
   public
-    constructor Create(ASSL: THTTPSend; ATipoAmbiente: TpcnTipoAmbiente; AClientID, AClientSecret, AScope: String; ACertificateCRT : string = ''; ACertificateKEY : String = ''  );
+    constructor Create(ASSL: THTTPSend; AACBrBoleto : TACBrBoleto = nil );
     destructor  Destroy; Override;
     property URL             : String           read getURL         write setURL;
     function GerarToken      : Boolean;
     property ParamsOAuth     : String           read FParamsOAuth   write FParamsOAuth;
+    function AddHeaderParam(AParamName, AParamValue : String) : TOAuth;
+
+    function ClearHeaderParams() : TOAuth;
     property ContentType     : String           read getContentType write setContentType;
     property GrantType       : String           read getGrantType   write setGrantType;
     property Scope           : String           read getScope;
@@ -57,7 +65,7 @@ type
     property ErroComunicacao : String           read FErroComunicacao;
     property Token           : String           read FToken;
     property Payload         : Boolean          read FPayLoad       write setPayload;
-
+    property AuthorizationType : TpAuthorizationType read FAuthorizationType write SetAuthorizationType;
   end;
 
 implementation
@@ -187,9 +195,15 @@ begin
   end;
 end;
 
+procedure TOAuth.SetAuthorizationType(const Value: TpAuthorizationType);
+begin
+  FAuthorizationType := Value;
+end;
+
 function TOAuth.Executar(const AAuthBase64: String): Boolean;
 var
   LHeaders : TStringList;
+  I : Integer;
 begin
   FErroComunicacao := '';
 
@@ -201,8 +215,11 @@ begin
   LHeaders := TStringList.Create;
   try
     //LHeaders.Add(C_CONTENT_TYPE  + ': ' + ContentType);
-    LHeaders.Add(C_AUTHORIZATION + ': ' + AAuthBase64);
-    LHeaders.Add(C_CACHE_CONTROL + ': ' + C_NO_CACHE);
+    if Self.AuthorizationType = atBearer then
+      LHeaders.Add(C_AUTHORIZATION + ': ' + AAuthBase64);
+    //LHeaders.Add(C_CACHE_CONTROL + ': ' + C_NO_CACHE);
+    for I := 0  to Length(FHeaderParamsList) -1 do
+      LHeaders.Add(FHeaderParamsList[I].prName+': '+FHeaderParamsList[I].prValue);
     FHTTPSend.Headers.AddStrings(LHeaders);
   finally
     LHeaders.Free;
@@ -212,6 +229,7 @@ begin
 
   try
     //Utiliza HTTPMethod para envio
+
     if FPayload then
     begin
       FHTTPSend.Document.Position:= 0;
@@ -234,21 +252,37 @@ begin
   end;
 end;
 
-constructor TOAuth.Create(ASSL: THTTPSend; ATipoAmbiente: TpcnTipoAmbiente; AClientID, AClientSecret, AScope: String; ACertificateCRT : string = ''; ACertificateKEY : String = '' );
+function TOAuth.AddHeaderParam(AParamName, AParamValue: String): TOAuth;
+begin
+  Result := Self;
+  SetLength(FHeaderParamsList,Length(FHeaderParamsList)+1);
+  FHeaderParamsList[Length(FHeaderParamsList)-1].prName := AParamName;
+  FHeaderParamsList[Length(FHeaderParamsList)-1].prValue := AParamValue;
+end;
+
+function TOAuth.ClearHeaderParams: TOAuth;
+begin
+  SetLength(FHeaderParamsList,0);
+end;
+
+constructor TOAuth.Create(ASSL: THTTPSend; AACBrBoleto : TACBrBoleto = nil );
 begin
   if Assigned(ASSL) then
     FHTTPSend := ASSL;
 
-  // Adicionando o Certificado
-  if NaoEstaVazio(ACertificateCRT) then
-    FHTTPSend.Sock.SSL.CertificateFile := ACertificateCRT;
+  FACBrBoleto      := AACBrBoleto;
 
-  if NaoEstaVazio(ACertificateKEY) then
-    FHTTPSend.Sock.SSL.PrivateKeyFile := ACertificateKEY;
-  FAmbiente        := ATipoAmbiente;
-  FClientID        := AClientID;
-  FClientSecret    := AClientSecret;
-  FScope           := AScope;
+  // Adicionando o Certificado
+  if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ArquivoCRT) then
+    FHTTPSend.Sock.SSL.CertificateFile := AACBrBoleto.Configuracoes.WebService.ArquivoCRT;
+
+  if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ArquivoKEY) then
+    FHTTPSend.Sock.SSL.PrivateKeyFile := AACBrBoleto.Configuracoes.WebService.ArquivoKEY;
+
+  FAmbiente        := AACBrBoleto.Configuracoes.WebService.Ambiente;
+  FClientID        := AACBrBoleto.Cedente.CedenteWS.ClientID;
+  FClientSecret    := AACBrBoleto.Cedente.CedenteWS.ClientSecret;
+  FScope           := AACBrBoleto.Cedente.CedenteWS.Scope;
   FURL             := '';
   FContentType     := '';
   FGrantType       := '';
@@ -256,7 +290,7 @@ begin
   FExpire          := 0;
   FErroComunicacao := '';
   FPayload         := False;
-
+  FAuthorizationType := atBearer;
 end;
 
 destructor TOAuth.Destroy;
@@ -265,12 +299,23 @@ begin
 end;
 
 function TOAuth.GerarToken: Boolean;
+var LToken : String;
+  LExpire : TDateTime;
 begin
+
+  if(Assigned(FACBrBoleto.OnAntesAutenticar)) then
+  begin
+    FACBrBoleto.OnAntesAutenticar( LToken, LExpire);
+    fToken  := LToken;
+    fExpire := LExpire;
+  end;
 
   if ( Token <> '' ) and ( CompareDateTime( Expire, Now ) = 1 ) then                                        //Token ja gerado e ainda válido
     Result := True
   else                                                                                                      //Converte Basic da Autenticação em Base64
     Result := Executar( 'Basic ' + String(EncodeBase64(AnsiString(ClientID + ':' + ClientSecret))) );
 
+  if(Assigned(FACBrBoleto.OnDepoisAutenticar)) then
+    FACBrBoleto.OnDepoisAutenticar( Token, Expire);
 end;
 end.

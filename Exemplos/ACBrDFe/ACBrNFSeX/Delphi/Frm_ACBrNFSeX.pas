@@ -579,6 +579,8 @@ begin
       DataEmissao := Now;
       Competencia := Now;
       DataEmissaoRPS := Now;
+      // Provedor RLZ
+      Vencimento := Now + 1;
 
       (*
         TnfseNaturezaOperacao = ( no1, no2, no3, no4, no5, no6, no7,
@@ -656,9 +658,9 @@ begin
       if (ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAgili, proAssessorPublico,
            proCTA, proCTAConsult, proEloTech, proEquiplano, proFacundo, proFGMaiss,
            profintelISS, proGoverna, proInfisc, proIPM, proISSDSF, proPriMax,
-           proRLZ, proSimple, proSimplISS, proSmarAPD, proWebFisco, proBauhaus,
+           proRLZ, proSimple, proSmarAPD, proWebFisco, proBauhaus,
            proSoftPlan]) or
-         ((ACBrNFSeX1.Configuracoes.Geral.Provedor in [proEL]) and
+         ((ACBrNFSeX1.Configuracoes.Geral.Provedor in [proEL, proSimplISS]) and
           (ACBrNFSeX1.Configuracoes.Geral.Versao = ve100)) then
       begin
         // Provedor Elotech
@@ -839,6 +841,13 @@ begin
           Servico.Valores.ValorCsll - Servico.Valores.OutrasRetencoes -
           Servico.Valores.ValorIssRetido - Servico.Valores.DescontoIncondicionado
           - Servico.Valores.DescontoCondicionado;
+      end;
+
+      DeducaoMateriais := snSim;
+      with Servico.Deducao.New do
+      begin
+        TipoDeducao := tdMateriais;
+        ValorDeduzir := 10.00;
       end;
 
       case ACBrNFSeX1.Configuracoes.Geral.Provedor of
@@ -1196,7 +1205,7 @@ begin
     // Os Provedores da lista requerem que seja informado o motivo do cancelamento
     if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAgili, proAssessorPublico,
       proConam, proEquiplano, proFGMaiss, proGoverna, proIPM, proISSBarueri,
-      proISSDSF, proISSLencois, proModernizacaoPublica, proPriMax, proPublica,
+      proISSDSF, proISSLencois, proModernizacaoPublica, proPrescon, proPriMax, proPublica,
       proSiat, proSigISS, proSigep, proSimple, proSmarAPD, proSudoeste, proTecnos,
       proWebFisco, proCenti, proCTA, proBauhaus] then
     begin
@@ -1394,19 +1403,26 @@ procedure TfrmACBrNFSe.btnConsultarNFSeFaixaClick(Sender: TObject);
 var
   xTitulo, NumNFSeIni, NumNFSeFin, NumPagina: String;
 begin
-  xTitulo := 'Consultar NFSe Por Faixa';
+  if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proPrescon] then
+  begin
+    NumPagina := '1';
+  end
+  else
+  begin
+    xTitulo := 'Consultar NFSe Por Faixa';
 
-  NumNFSeIni := '';
-  if not(InputQuery(xTitulo, 'Numero da NFSe Inicial:', NumNFSeIni)) then
-    exit;
+    NumNFSeIni := '';
+    if not(InputQuery(xTitulo, 'Numero da NFSe Inicial:', NumNFSeIni)) then
+      exit;
 
-  NumNFSeFin := NumNFSeIni;
-  if not(InputQuery(xTitulo, 'Numero da NFSe Final:', NumNFSeFin)) then
-    exit;
+    NumNFSeFin := NumNFSeIni;
+    if not(InputQuery(xTitulo, 'Numero da NFSe Final:', NumNFSeFin)) then
+      exit;
 
-  NumPagina := '1';
-  if not(InputQuery(xTitulo, 'Pagina:', NumPagina)) then
-    exit;
+    NumPagina := '1';
+    if not(InputQuery(xTitulo, 'Pagina:', NumPagina)) then
+      exit;
+  end;
 
   ACBrNFSeX1.ConsultarNFSePorFaixa(NumNFSeIni, NumNFSeFin, StrToIntDef(NumPagina, 1));
 
@@ -1815,7 +1831,7 @@ begin
     end;
   end;
 
-  if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proGiap, proGoverna] then
+  if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proGiap, proGoverna, proPrescon] then
   begin
     CodVerificacao := '123';
     if not (InputQuery('Consultar NFSe por RPS', 'Codigo Verificação:', CodVerificacao)) then
@@ -3219,7 +3235,7 @@ begin
   cbSSLLib.Items.Clear;
   for T := Low(TSSLLib) to High(TSSLLib) do
     cbSSLLib.Items.Add(GetEnumName(TypeInfo(TSSLLib), integer(T)));
-  cbSSLLib.ItemIndex := 0;
+  cbSSLLib.ItemIndex := 4;
 
   cbCryptLib.Items.Clear;
   for U := Low(TSSLCryptLib) to High(TSSLCryptLib) do
@@ -3239,7 +3255,7 @@ begin
   cbSSLType.Items.Clear;
   for Y := Low(TSSLType) to High(TSSLType) do
     cbSSLType.Items.Add(GetEnumName(TypeInfo(TSSLType), integer(Y)));
-  cbSSLType.ItemIndex := 0;
+  cbSSLType.ItemIndex := 5;
 
   cbFormaEmissao.Items.Clear;
   for I := Low(TpcnTipoEmissao) to High(TpcnTipoEmissao) do
@@ -3402,10 +3418,12 @@ begin
 
   Ini := TIniFile.Create(IniFile);
   try
-    cbSSLLib.ItemIndex     := Ini.ReadInteger('Certificado', 'SSLLib',     0);
+    cbSSLLib.ItemIndex     := Ini.ReadInteger('Certificado', 'SSLLib',     4);
     cbCryptLib.ItemIndex   := Ini.ReadInteger('Certificado', 'CryptLib',   0);
     cbHttpLib.ItemIndex    := Ini.ReadInteger('Certificado', 'HttpLib',    0);
     cbXmlSignLib.ItemIndex := Ini.ReadInteger('Certificado', 'XmlSignLib', 0);
+    if cbSSLLib.ItemIndex <> 5 then
+      cbSSLLibChange(cbSSLLib);
     edtCaminho.Text        := Ini.ReadString( 'Certificado', 'Caminho',    '');
     edtSenha.Text          := Ini.ReadString( 'Certificado', 'Senha',      '');
     edtNumSerie.Text       := Ini.ReadString( 'Certificado', 'NumSerie',   '');
@@ -3437,7 +3455,7 @@ begin
     edtTentativas.Text      := Ini.ReadString( 'WebService', 'Tentativas',   '5');
     edtIntervalo.Text       := Ini.ReadString( 'WebService', 'Intervalo',    '0');
     seTimeOut.Value         := Ini.ReadInteger('WebService', 'TimeOut',      5000);
-    cbSSLType.ItemIndex     := Ini.ReadInteger('WebService', 'SSLType',      0);
+    cbSSLType.ItemIndex     := Ini.ReadInteger('WebService', 'SSLType',      5);
     edtSenhaWeb.Text        := Ini.ReadString( 'WebService', 'SenhaWeb',     '');
     edtUserWeb.Text         := Ini.ReadString( 'WebService', 'UserWeb',      '');
     edtFraseSecWeb.Text     := Ini.ReadString( 'WebService', 'FraseSecWeb',  '');
@@ -3899,6 +3917,9 @@ begin
             memoLog.Lines.Add(' ');
             memoLog.Lines.Add('Parâmetros de Retorno');
             memoLog.Lines.Add('Sucesso       : ' + BoolToStr(Sucesso, True));
+
+            if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proPrescon] then
+              memoLog.Lines.Add('Número NFSe   : ' + NumeroNota);
 
             LoadXML(XmlEnvio, WBXmlEnvio, 'temp1.xml');
             LoadXML(XmlRetorno, WBXmlRetorno, 'temp2.xml');

@@ -156,6 +156,7 @@ end;
 
 procedure TBoletoWSREST.DefinirParamOAuth;
 begin
+  DefinirCertificado;
   FParamsOAuth := C_GRANT_TYPE
                  + '=' + OAuth.GrantType
                  + '&' + C_SCOPE
@@ -325,7 +326,7 @@ begin
   try
     Executar;
   finally
-    Result := (BoletoWS.RetornoBanco.HTTPResultCode in [200, 201, 202]);
+    Result := (BoletoWS.RetornoBanco.HTTPResultCode in [200..207]);
 
     if Result then //Grava retorno
       BoletoWS.DoLog('Retorno Envio: ' + FRetornoWS)

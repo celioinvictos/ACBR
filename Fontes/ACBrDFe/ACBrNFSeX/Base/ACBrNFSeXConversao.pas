@@ -112,7 +112,7 @@ type
   TDeducaoPor = (dpNenhum, dpPercentual, dpValor);
 
   TTipoDeducao = (tdNenhum, tdMateriais, tdSubEmpreitada, tdValor, tdVeiculacao,
-                  tdPercentual, tdPercMateriais, tdIntermediacao);
+                  tdPercentual, tdPercMateriais, tdIntermediacao, tdEquipamento);
 
   TnfseProvedor = (proNenhum,
                    proPadraoNacional,
@@ -123,25 +123,26 @@ type
                    proDeISS, proDesenvolve, proDigifred, proDSF, proeGoverneISS,
                    proEL, proEloTech, proEquiplano, proeReceita, proEtherium,
                    proFacundo, proFGMaiss, profintelISS, proFiorilli, proFisco,
-                   proFISSLex, proFuturize, proGeisWeb, progeNFe, proGiap,
-                   proGinfes, proGiss, proGovBR, proGovDigital, proGoverna,
+                   proFISSLex, proFuturize, proGeisWeb, progeNFe, proGestaoISS,
+                   proGiap, proGinfes, proGiss, proGovBR, proGovDigital, proGoverna,
                    proHorus, proiiBrasil, proInfisc, proIPM, proISSBarueri,
-                   proISSCambe, proISSCuritiba, proISSDigital, proISSDSF,
-                   proISSe, proISSFortaleza, proISSGoiania, proISSIntel,
+                   proISSCamacari, proISSCambe, proISSCuritiba, proISSDigital,
+                   proISSDSF, proISSe, proISSFortaleza, proISSGoiania, proISSIntel,
                    proISSJoinville, proISSLencois, proISSNatal, proISSNet,
                    proISSPortoVelho, proISSRecife, proISSRio, proISSSalvador,
-                   proISSSaoPaulo, proISSSJP, proISSVitoria, proLexsom, proLink3,
-                   proMegaSoft, proMetropolisWeb, proMitra, proModernizacaoPublica,
-                   proNEAInformatica, proNFSeBrasil, proNotaInteligente, proPriMax,
-                   proProdata, proPronim, proPublica, proPublicSoft, proRLZ,
-                   proSaatri, proSafeWeb, proSH3, proSiam, proSiapNet, proSiappa,
+                   proISSSaoPaulo, proISSSJP, proISSVitoria, proLexsom, proLibre,
+                   proLink3, proMegaSoft, proMetropolisWeb, proMitra,
+                   proModernizacaoPublica, proNEAInformatica, proNFSeBrasil,
+                   proNotaInteligente, proPrescon, proPriMax, proProdata,
+                   proPronim, proPublica, proPublicSoft, proRLZ, proSaatri,
+                   proSafeWeb, proSH3, proSiam, proSiapNet, proSiappa,
                    proSiapSistemas, proSiat, proSigCorp, proSigep, proSigISS,
                    proSigISSWeb, proSilTecnologia, proSimple, proSimplISS,
                    proSintese, proSisPMJP, proSistemas4R, proSmarAPD,
                    proSoftPlan, proSpeedGov, proSSInformatica, proSudoeste,
-                   proSystemPro, proTcheInfo, proTecnos, proThema, proTinus,
-                   proTiplan, proTributus, proVersaTecnologia, proVirtual,
-                   proWebFisco, proWebISS, proGestaoISS, proLibre);
+                   proSysISS, proSystemPro, proTcheInfo, proTecnos, proThema,
+                   proTinus, proTiplan, proTributus, proVersaTecnologia,
+                   proVirtual, proWebFisco, proWebISS);
 
   TnfseSituacaoTributaria = (stRetencao, stNormal, stSubstituicao, stNenhum);
 
@@ -471,9 +472,6 @@ function StrToprocEmi(out ok: Boolean; const s: string): TprocEmi;
 function tpEventoToStr(const t: TtpEvento): string;
 function StrTotpEvento(out ok: Boolean; const s: string): TtpEvento;
 function tpEventoToDesc(const t: TtpEvento): string;
-
-function TipoDeducaoToStr(const t: TTipoDeducao): string;
-function StrToTipoDeducao(out ok: Boolean; const s: string): TTipoDeducao;
 
 function ParamMunicToStr(const t: TParamMunic): string;
 function StrToParamMunic(out ok: Boolean; const s: string): TParamMunic;
@@ -13179,22 +13177,6 @@ begin
                     teRejeicaoIntermediario, teAnulacaoRejeicao,
                     teCancelamentoPorOficio, teBloqueioPorOficio,
                     teDesbloqueioPorOficio]);
-end;
-
-function TipoDeducaoToStr(const t: TTipoDeducao): string;
-begin
-  result := EnumeradoToStr(t,
-                           ['1', '2', '3', '4', '5', '6', '7'],
-                 [tdNenhum, tdMateriais, tdPercentual, tdValor, tdPercMateriais,
-                  tdVeiculacao, tdIntermediacao]);
-end;
-
-function StrToTipoDeducao(out ok: Boolean; const s: string): TTipoDeducao;
-begin
-  result := StrToEnumerado(ok, s,
-                           ['1', '2', '3', '4', '5', '6', '7'],
-                 [tdNenhum, tdMateriais, tdPercentual, tdValor, tdPercMateriais,
-                  tdVeiculacao, tdIntermediacao]);
 end;
 
 function ParamMunicToStr(const t: TParamMunic): string;

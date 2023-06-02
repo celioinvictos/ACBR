@@ -90,17 +90,14 @@ begin
   ConfigGeral.QuebradeLinha := '\s\n';
   ConfigGeral.ConsultaPorFaixaPreencherNumNfseFinal := true;
   
-  if ConfigGeral.Ambiente = taProducao then
+  with ConfigAssinar do
   begin
-    with ConfigAssinar do
-    begin
-      Rps := True;
-      LoteRps := True;
-      CancelarNFSe := True;
-      RpsGerarNFSe := True;
-      RpsSubstituirNFSe := True;
-      SubstituirNFSe := True;
-    end;
+    Rps := True;
+    LoteRps := True;
+    CancelarNFSe := True;
+    RpsGerarNFSe := True;
+    RpsSubstituirNFSe := True;
+    SubstituirNFSe := True;
   end;
 end;
 
@@ -331,7 +328,7 @@ function TACBrNFSeXWebserviceFiorilli200.TratarXmlRetornado(
 begin
   Result := inherited TratarXmlRetornado(aXML);
 
-  if UTF8Decode(Result) = '' then
+//  if UTF8Decode(Result) = '' then
     Result := NativeStringToUTF8(Result);
 
   Result := StringReplace(Result, '&#xd;', '\s\n', [rfReplaceAll]);

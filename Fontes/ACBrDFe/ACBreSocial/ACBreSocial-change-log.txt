@@ -52,6 +52,72 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+31/05/2023
+-- pcesS1200 --
+[*] Altera valor padrão da propriedade IndApurIR na rotina de leitura do INI para que não gere caso não seja informado.
+  Por: Alexandre de Paula / Rev: Diego F
+-- pcesSConversaoeSocial --
+[+] Adiciona a opção Estabalizados no enumerado e funções de conversão correspondentes de tpTpProv para que fique de acordo com S1.1
+  Por: Andergoncalves / Rev: Alexandre de Paula
+
+26/05/2023
+-- Diversos --
+[*] Revisa as rotinas de leitura de ini visando maior compatibilidade com o layout da versão Simplificada 1.1
+  Por: Alexandre de Paula / Rev: Diego F
+-- pcesS2206 --
+[*] Altera a tag trabTemp para trabTemporario de forma a ficar de acordo com os leiautes de versão simplificada do eSocial.
+  Por: Diego F
+-- pcesS2231 --
+[*] Adiciona validação na função que gera os grupos iniCessao e fimCessao para que não crie o grupo caso não tenha dados preenchidos.
+  Por: Diego F
+
+15/05/2023
+-- pcesConversaoeSocial, pcesS2299, pcesS2399 --
+[*] Adiciona opção paNenhum no enumerado tpPensaoAlim para que a tag não seja gerada caso defina este valor.
+  Por: Diego F
+
+09/05/2023
+-- pcesS3500 --
+[*] Altera para que a geração da cpfTrab e perApurPgto respeitem regra de geração por tipo de evento imposta no leiaute.
+  Por: Paulo Alves N Junior / Revisão: Alexandre de Paula
+
+27/04/2023
+-- pcesS5012 --
+[*] Alteração visando pegar corretamente a versão do evento.
+  Por: CarlosSolla/Diego F
+
+24/04/2023
+-- Diversos --
+[*] Altera o tipo da propriedade infoCota de tpSimNao para tpSimNaoFacultativo para que a responsabilidade de geração da tag passe a ser da aplicação.
+   Por: Diego F
+
+17/04/2023
+-- Diversos --
+[*] Ajusta nas funções de leitura de INI dos eventos periódicos.
+   Por: Alexandre de Paula
+
+31/03/2023
+-- pcesS3500 --
+[*] Ajuste do número de ocorrências das tags cpftrab e PerApurPgto. 
+   Por: Sandro Felipe Adad - Conferido: Daniel Morais
+
+29/03/2023
+-- pcesS1200 --
+[*] Ajustada quantidade de digitos do contador da seção remunOutrEmpr
+[*] Removidos campos não existentes na seção ideTrabalhador.infoComplem
+[*] Adicionada carga de dados do INI para o bloco infoRRA
+   Por: Alexandre de Paula
+
+06/03/2023
+-- pcsS1200 --
+[*] Adiciona leitura do IndApurIR dentro do bloco ItensRemun do idePeriodo.
+   Por: emarcolongo 
+
+03/03/2023
+-- pcesS2501 --
+[*] Corrige a geração do evento que estava gerando parâmetros como se fossem campos.
+   Por: Marcelo Pontes Melim / Diego F
+
 09/02/2023
 -- pcesConversaoeSocial --
 [*] Declara alguns arrays específicos para alguns tipos e altera as funções de conversão respectivas para que use os novos arrays ao invés de manter o conteúdo chumbado na função.

@@ -44,6 +44,57 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+12/05/2023
+[-]TK-3928 Tratamento de exception quando ler meio de pagamento no danfce
+  por: Victor H Gonzales - Pandaaa
+
+19/04/2023
+-- Diversos --
+[*] Alterações visando atender a versão 1.20 da NT 2023/001 onde foi incluído novos campos.
+    Observação: Essas alterações só vão ser validadas no ambiente de homologação 
+                a partir de 20/04/2023 e no de produção: 01/05/2023.
+    por: Italo Giurizzato Junior
+
+29/03/2023
+-- ACBrNFeXmlReader, ACBrNFeXmlWriter --
+[-] Alterações visando atender a NT 2020/006 versão 1.20.
+  Por: BigWings
+
+28/03/2023
+-- ACBrNFeDANFeReport, ACBrNFeDANFEFRDM, ACBrNFeDANFeRL, ACBrNFeDANFeLazReport --
+[*] Ajustes para impressão do CST no DANFE, no regime Simples Nacional.
+  Por: BigWings
+
+23/03/2023
+-- ACBrNFeXmlWriter, pcnNFeW --
+[*] Ajustes para atender a versão 1.10 da NT 2023/001, permitindo informar CST's monofásicos no regime Simples Nacional e ajustando as casas decimais das tags "pBio" e "pOrig", de acordo com o valor da tag, para atender ao Schema.
+  Por: BigWings
+
+15/03/2023
+-- Diversos --
+[*] Alterações visando atender a versão 1.10 da NT 2023/001 onde foi incluído novos campos.
+    Observação: Essas alterações só vão ser validadas no ambiente de homologação 
+                a partir de 03/03/2023 e no de produção: 30/03/2023.
+    por: Italo Giurizzato Junior
+
+07/03/2023
+-- Diversos --
+[*] Correção na implementação dos novos campos, foram implementados dentro do 
+    grupo <encerrante> sendo que o correto é no mesmo nível do grupo <encerrante>.
+    por: Italo Giurizzato Junior
+
+03/03/2023
+-- ACBrNFeServicos --
+[*] Atualização das URL de Consulta via QR-Code de MG Produção e Homologação.
+   Por: Italo Giurizzato Junior
+
+01/03/2023
+-- Diversos --
+[*] Alterações visando atender a NT 2023/001 onde foi incluído novos campos.
+    Observação: Essas alterações só vão ser validadas no ambiente de homologação 
+                a partir de 03/03/2023 e no de produção: 30/03/2023.
+    por: Italo Giurizzato Junior
+
 27/01/2023
 -- Diversos --
 [*] Alterações visando atender a NT 2022/003 onde foi alterado a quantidade de

@@ -171,8 +171,10 @@ var
   NumNFSe, CodVerif, NumRps, SerieRps: String;
   ANota: TNotaFiscal;
   AResumo: TNFSeResumoCollectionItem;
+  NumeroRps: Integer;
 begin
   Result := False;
+  NumeroRps := 0;
 
   if Node <> nil then
   begin
@@ -190,6 +192,7 @@ begin
     if Node <> nil then
     begin
       NumRps := ObterConteudoTag(Node.Childrens.FindAnyNs('Numero'), tcStr);
+      NumeroRps := StrToIntDef(NumRps, 0);
       SerieRps := ObterConteudoTag(Node.Childrens.FindAnyNs('Serie'), tcStr);
     end;
 
@@ -199,7 +202,15 @@ begin
     AResumo.NumeroRps := NumRps;
     AResumo.SerieRps := SerieRps;
 
-    if NumRps <> '' then
+    with Response do
+    begin
+      NumeroNota := NumNFSe;
+      CodigoVerificacao := CodVerif;
+      NumeroRps := NumRps;
+      SerieRps := SerieRps;
+    end;
+
+    if NumeroRps > 0 then
       ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps)
     else
       ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByNFSe(NumNFSe);
@@ -216,8 +227,10 @@ var
   NumNFSe, CodVerif, NumRps, SerieRps: String;
   ANota: TNotaFiscal;
   AResumo: TNFSeResumoCollectionItem;
+  NumeroRps: Integer;
 begin
   Result := False;
+  NumeroRps := 0;
 
   if Node <> nil then
   begin
@@ -235,6 +248,7 @@ begin
     if Node <> nil then
     begin
       NumRps := ObterConteudoTag(Node.Childrens.FindAnyNs('Numero'), tcStr);
+      NumeroRps := StrToIntDef(NumRps, 0);
       SerieRps := ObterConteudoTag(Node.Childrens.FindAnyNs('Serie'), tcStr);
     end;
 
@@ -244,7 +258,15 @@ begin
     AResumo.NumeroRps := NumRps;
     AResumo.SerieRps := SerieRps;
 
-    if NumRps <> '' then
+    with Response do
+    begin
+      NumeroNota := NumNFSe;
+      CodigoVerificacao := CodVerif;
+      NumeroRps := NumRps;
+      SerieRps := SerieRps;
+    end;
+
+    if NumeroRps > 0 then
       ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps)
     else
       ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByNFSe(NumNFSe);

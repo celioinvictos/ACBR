@@ -41,7 +41,7 @@ uses
 
 const
   CLibNFSeNome = 'ACBrLibNFSe';
-  CLibNFSeVersao = '0.0.0.1';
+  CLibNFSeVersao = '1.0.0.9';
 
   CSessaoRespEnvio = 'Envio';
   CSessaoRespSituacao = 'Situacao';
@@ -50,6 +50,11 @@ const
   CSessaoRespConsultaNFSePorRps = 'ConsultaNFSePorRps';
   CSessaoRespSubstituirNFSe = 'SubstituirNFSe';
   CSessaoRespGerarToken = 'GerarToken';
+  CSessaoRespConsultaNFSe = 'ConsultaNFSe';
+  CSessaoRespCancelarNFSe = 'CancelarNFSe';
+  CSessaoRespLinkNFSe = 'LinkNFSe';
+  CSessaoRespGerarLote = 'GerarLote';
+  CSessaoRespConsultaNFSePorNumero = 'ConsultaNFSePorNumero';
   CSessaoRespErro = 'Erro';
   CSessaoRespAlerta = 'Alerta';
 

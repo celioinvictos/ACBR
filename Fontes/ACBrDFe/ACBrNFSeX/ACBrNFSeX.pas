@@ -60,7 +60,7 @@ type
     FDANFSE: TACBrNFSeXDANFSeClass;
     FNotasFiscais: TNotasFiscais;
     FStatus: TStatusACBrNFSe;
-    fpCidadesJaCarregadas: Boolean;
+//    fpCidadesJaCarregadas: Boolean; //Não precisa desse campo. Já existe o FPIniParamsCarregado.
     FWebService: TWebServices;
 
     function GetConfiguracoes: TConfiguracoesNFSe;
@@ -232,7 +232,7 @@ begin
   FNotasFiscais := TNotasFiscais.Create(Self);
   FWebService := TWebservices.Create;
 
-  fpCidadesJaCarregadas := False;
+  //fpCidadesJaCarregadas := False;
 end;
 
 destructor TACBrNFSeX.Destroy;
@@ -371,11 +371,11 @@ end;
 
 procedure TACBrNFSeX.LerCidades;
 begin
-  if not fpCidadesJaCarregadas then
-  begin
+  //if not fpCidadesJaCarregadas then
+  //begin
     LerParamsIni(True);
-    fpCidadesJaCarregadas := True;
-  end;
+  //  fpCidadesJaCarregadas := True;
+  //end;
 end;
 
 procedure TACBrNFSeX.SetStatus(const stNewStatus: TStatusACBrNFSe);
@@ -1080,7 +1080,7 @@ end;
 function TACBrNFSeX.LinkNFSe(ANumNFSe: String; const ACodVerificacao,
   AChaveAcesso, AValorServico: String): String;
 var
-  Texto, xNumeroNFSe, xNomeMunic: String;
+  Texto: String;
 begin
   if not Assigned(FProvider) then
     raise EACBrNFSeException.Create(ERR_SEM_PROVEDOR);
@@ -1090,21 +1090,19 @@ begin
   else
     Texto := Provider.ConfigWebServices.Homologacao.LinkURL;
 
-  // %CodVerif%      : Representa o Código de Verificação da NFS-e
-  // %NumeroNFSe%    : Representa o Numero da NFS-e
-  // %NomeMunicipio% : Representa o Nome do Municipio
-  // %InscMunic%     : Representa a Inscrição Municipal do Emitente
-  // %Cnpj%          : Representa o CNPJ do Emitente
-
-  xNumeroNFSe := ANumNFSe;
+  // %CodVerif%     : Representa o Código de Verificação da NFS-e
+  // %NumeroNFSe%   : Representa o Numero da NFS-e
+  // %ChaveAcesso%  : Representa a Chave de Acesso
+  // %ValorServico% : Representa o Valor do Serviço
+  // %Cnpj%         : Representa o CNPJ do Emitente - Configuração
+  // %InscMunic%    : Representa a Inscrição Municipal do Emitente - Configuração
 
   Texto := StringReplace(Texto, '%CodVerif%', ACodVerificacao, [rfReplaceAll]);
-  Texto := StringReplace(Texto, '%NumeroNFSe%', xNumeroNFSe, [rfReplaceAll]);
-  Texto := StringReplace(Texto, '%NomeMunicipio%', xNomeMunic, [rfReplaceAll]);
-  Texto := StringReplace(Texto, '%InscMunic%', Configuracoes.Geral.Emitente.InscMun, [rfReplaceAll]);
+  Texto := StringReplace(Texto, '%NumeroNFSe%', ANumNFSe, [rfReplaceAll]);
   Texto := StringReplace(Texto, '%ChaveAcesso%', AChaveAcesso, [rfReplaceAll]);
-  Texto := StringReplace(Texto, '%Cnpj%', Configuracoes.Geral.Emitente.CNPJ, [rfReplaceAll]);
   Texto := StringReplace(Texto, '%ValorServico%', AValorServico, [rfReplaceAll]);
+  Texto := StringReplace(Texto, '%Cnpj%', Configuracoes.Geral.Emitente.CNPJ, [rfReplaceAll]);
+  Texto := StringReplace(Texto, '%InscMunic%', Configuracoes.Geral.Emitente.InscMun, [rfReplaceAll]);
 
   Result := Texto;
 end;

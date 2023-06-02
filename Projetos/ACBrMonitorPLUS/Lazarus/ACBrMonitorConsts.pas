@@ -140,6 +140,7 @@ const
   CMetodoGerarAssinaturaSAT =          'gerarassinaturasat';
   CMetodoEnviarEmailCFe =              'enviaremailcfe';
   CMetodoConsultarModeloSAT =          'consultarmodelosat';
+  CMetodoConsultarUltimaSessaoFiscal=  'consultarultimasessaofiscal';
 
   CMetodoECFachar =                                      'achar';
   CMetodoECFativar =                                     'ativar';
@@ -1362,6 +1363,8 @@ const
   CKeyBOLETOTimeOut =                       'TimeOut';
   CKeyBOLETOCertificadoHTTP =               'CertificadoHTTP';
   CKeyBOLETOVersaoDF =                      'VersaoDF';
+  CKeyBOLETOArquivoCRT =                    'ArquivoCRT';
+  CKeyBOLETOArquivoKEY =                    'ArquivoKEY';
 
   CValueTipoEmpregador =                    'tePessoaJuridica';
   CValueTipoContribuinte =                  'tcPessoaJuridica';

@@ -201,8 +201,6 @@ begin
       if UF = '' then
         UF := xUF;
     end;
-
-    NFSe.Servico.CodigoMunicipio := NFSe.Tomador.Endereco.CodigoMunicipio;
   end;
 end;
 
@@ -261,7 +259,10 @@ begin
   aValor := ObterConteudo(AuxNode.Childrens.FindAnyNs('StatusNFe'), tcStr);
 
   if aValor = 'C' then
+  begin
     NFSe.SituacaoNfse := snCancelado;
+    NFSe.NfseCancelamento.DataHora := ObterConteudo(AuxNode.Childrens.FindAnyNs('DataCancelamento'), tcDat);
+  end;
 
   NFSe.TipoTributacaoRPS := StrToTipoTributacaoRPS(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('TributacaoNFe'), tcStr));
 
@@ -325,6 +326,24 @@ begin
   LerEnderecoPrestador(AuxNode);
   LerCPFCNPJTomador(AuxNode);
   LerEnderecoTomador(AuxNode);
+
+  {
+   TipoTributacaoRPS = ttTribnoMun, ttTribforaMun, ttTribnoMunIsento,
+                       ttTribforaMunIsento, ttTribnoMunImune, ttTribforaMunImune,
+                       ttTribnoMunSuspensa, ttTribforaMunSuspensa, ttExpServicos,
+                       ttSimplesNacional, ttRetidonoMun
+  }
+
+  if NFSe.TipoTributacaoRPS in [ttTribnoMun, ttTribnoMunIsento,
+                                ttTribnoMunImune, ttTribnoMunSuspensa] then
+    NFSe.Servico.MunicipioIncidencia := StrToIntDef(NFSe.Prestador.Endereco.CodigoMunicipio, 0)
+  else
+    NFSe.Servico.MunicipioIncidencia := StrToIntDef(NFSe.Tomador.Endereco.CodigoMunicipio, 0);
+
+  NFSe.Servico.CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('MunicipioPrestacao'), tcStr);
+
+  if NFSe.Servico.CodigoMunicipio = '' then
+    NFSe.Servico.CodigoMunicipio := NFSe.Prestador.Endereco.CodigoMunicipio;
 end;
 
 function TNFSeR_ISSSaoPaulo.LerXmlRps(const ANode: TACBrXmlNode): Boolean;

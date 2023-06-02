@@ -59,7 +59,7 @@ type
     procedure LerValoresNfse(const ANode: TACBrXmlNode);
 
     procedure LerPrestadorServico(const ANode: TACBrXmlNode);
-    procedure LerEnderecoPrestadorServico(const ANode: TACBrXmlNode; aTag: string);
+    procedure LerEnderecoPrestadorServico(const ANode: TACBrXmlNode; aTag: string); virtual;
     procedure LerContatoPrestadorServico(const ANode: TACBrXmlNode);
     procedure LerContatoPrestador(const ANode: TACBrXmlNode);
 
@@ -71,8 +71,8 @@ type
     procedure LerIdentificacaoRps(const ANode: TACBrXmlNode);
     procedure LerRpsSubstituido(const ANode: TACBrXmlNode);
 
-    procedure LerListaServicos(const ANode: TACBrXmlNode);
-    procedure LerServicos(const ANode: TACBrXmlNode);
+    procedure LerListaServicos(const ANode: TACBrXmlNode); virtual;
+    procedure LerServicos(const ANode: TACBrXmlNode); virtual;
     procedure LerServico(const ANode: TACBrXmlNode);
     procedure LerValores(const ANode: TACBrXmlNode);
 
@@ -81,7 +81,7 @@ type
 
     procedure LerTomadorServico(const ANode: TACBrXmlNode);
     procedure LerIdentificacaoTomador(const ANode: TACBrXmlNode);
-    procedure LerEnderecoTomador(const ANode: TACBrXmlNode);
+    procedure LerEnderecoTomador(const ANode: TACBrXmlNode); virtual;
     procedure LerContatoTomador(const ANode: TACBrXmlNode);
 
     procedure LerIntermediarioServico(const ANode: TACBrXmlNode);
@@ -101,7 +101,7 @@ type
   public
     function LerXml: Boolean; override;
     function LerXmlRps(const ANode: TACBrXmlNode): Boolean;
-    function LerXmlNfse(const ANode: TACBrXmlNode): Boolean;
+    function LerXmlNfse(const ANode: TACBrXmlNode): Boolean; virtual;
   end;
 
 implementation
@@ -270,7 +270,11 @@ begin
   begin
     with NFSe.Prestador.Endereco do
     begin
-      Endereco        := ObterConteudo(AuxNode.Childrens.FindAnyNs('Endereco'), tcStr);
+      Endereco := ObterConteudo(AuxNode.Childrens.FindAnyNs('Endereco'), tcStr);
+
+      if Endereco = '' then
+        Endereco := ObterConteudo(AuxNode.Childrens.FindAnyNs('Logradouro'), tcStr);
+
       Numero          := ObterConteudo(AuxNode.Childrens.FindAnyNs('Numero'), tcStr);
       Complemento     := ObterConteudo(AuxNode.Childrens.FindAnyNs('Complemento'), tcStr);
       Bairro          := ObterConteudo(AuxNode.Childrens.FindAnyNs('Bairro'), tcStr);
@@ -289,7 +293,7 @@ end;
 procedure TNFSeR_ABRASFv2.LerEnderecoTomador(const ANode: TACBrXmlNode);
 var
   AuxNode: TACBrXmlNode;
-  xUF: string;
+  xUF, xEndereco: string;
 begin
   if not Assigned(ANode) or (ANode = nil) then Exit;
 
@@ -299,7 +303,11 @@ begin
   begin
     with NFSe.Tomador.Endereco do
     begin
-      Endereco        := ObterConteudo(AuxNode.Childrens.FindAnyNs('Endereco'), tcStr);
+      Endereco := ObterConteudo(AuxNode.Childrens.FindAnyNs('Endereco'), tcStr);
+
+      if Endereco = '' then
+        Endereco := ObterConteudo(AuxNode.Childrens.FindAnyNs('Logradouro'), tcStr);
+
       Numero          := ObterConteudo(AuxNode.Childrens.FindAnyNs('Numero'), tcStr);
       Complemento     := ObterConteudo(AuxNode.Childrens.FindAnyNs('Complemento'), tcStr);
       Bairro          := ObterConteudo(AuxNode.Childrens.FindAnyNs('Bairro'), tcStr);
@@ -312,18 +320,24 @@ begin
         UF := xUF;
     end;
   end;
+
   AuxNode := ANode.Childrens.FindAnyNs('EnderecoExterior');
 
   if AuxNode <> nil then
   begin
     with NFSe.Tomador.Endereco do
     begin
-      Endereco        := ObterConteudo(AuxNode.Childrens.FindAnyNs('EnderecoCompletoExterior'), tcStr);
-      CodigoPais      := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoPais'), tcStr);
-      UF := 'EX';
+      xEndereco := ObterConteudo(AuxNode.Childrens.FindAnyNs('EnderecoCompletoExterior'), tcStr);
+
+      if xEndereco <> '' then
+        Endereco := xEndereco;
+
+      CodigoPais := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoPais'), tcInt);
+
+      if (CodigoPais <> 1058) and (CodigoPais > 0) then
+        UF := 'EX';
     end;
   end;
-
 end;
 
 procedure TNFSeR_ABRASFv2.LerIdentificacaoNfse(const ANode: TACBrXmlNode);
@@ -531,6 +545,7 @@ begin
     NFSe.RegimeEspecialTributacao := FpAOwner.StrToRegimeEspecialTributacao(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('RegimeEspecialTributacao'), tcStr));
     NFSe.OptanteSimplesNacional   := FpAOwner.StrToSimNao(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('OptanteSimplesNacional'), tcStr));
     NFSe.IncentivadorCultural     := FpAOwner.StrToSimNao(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('IncentivoFiscal'), tcStr));
+    NFSe.DataPagamento            := ObterConteudo(AuxNode.Childrens.FindAnyNs('DataPagamento'), tcDat);
 
     if NFSe.InformacoesComplementares = '' then
     begin
@@ -539,7 +554,10 @@ begin
     end;
 
     if NFSe.OutrasInformacoes = '' then
+    begin
       NFSe.OutrasInformacoes := ObterConteudo(AuxNode.Childrens.FindAnyNs('OutrasInformacoes'), tcStr);
+      NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, '&lt;br&gt;', ';', [rfReplaceAll]);
+    end;
   end;
 end;
 
@@ -888,7 +906,7 @@ procedure TNFSeR_ABRASFv2.LerServico(const ANode: TACBrXmlNode);
 var
   AuxNode, AuxNode2: TACBrXmlNode;
   Ok: Boolean;
-  CodigoItemServico, Responsavel: string;
+  CodigoItemServico, Responsavel, xUF: string;
   ValorLiq: Double;
 begin
   if not Assigned(ANode) or (ANode = nil) then Exit;
@@ -925,10 +943,16 @@ begin
       CodigoTributacaoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoTributacaoMunicipio'), tcStr);
       CodigoNBS                 := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoNbs'), tcStr);
       Discriminacao             := ObterConteudo(AuxNode.Childrens.FindAnyNs('Discriminacao'), tcStr);
-      CodigoMunicipio           := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoMunicipio'), tcStr);
+
+      VerificarSeConteudoEhLista(Discriminacao);
+
+      CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoMunicipio'), tcStr);
 
       if CodigoMunicipio = '' then
         CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('MunicipioPrestacaoServico'), tcStr);
+
+      MunicipioPrestacaoServico := ObterNomeMunicipio(StrToIntDef(CodigoMunicipio, 0), xUF, '', False);
+      MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
 
       CodigoPais          := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoPais'), tcInt);
       ExigibilidadeISS    := FpAOwner.StrToExigibilidadeISS(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('ExigibilidadeISS'), tcStr));
@@ -1163,6 +1187,10 @@ begin
     Result := LerXmlNfse(XmlNode)
   else
     Result := LerXmlRps(XmlNode);
+
+  {==== Implementação Futura ====}
+//  if NFSe.Link = '' then
+//    NFSe.Link := LerLinkURL;
 
   FreeAndNil(FDocument);
 end;

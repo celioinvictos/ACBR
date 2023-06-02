@@ -453,6 +453,7 @@ type
                              tpRemocao,                                                { Item válido a partir da versão simplificada }
                              tpDesignacao,                                             { Item válido a partir da versão simplificada }
                              tpMudancaDeCpf,                                           { Item válido a partir da versão simplificada }
+                             tpEstabilizados,                                          { Item válido a partir da versão simplificada }
                              tpOutros);
 
   tpUndSalFixo            = (sfPorHora, sfPorDia, sfPorSemana, sfPorQuinzena, sfPorMes, sfPorTarefa, sfNaoaplicavel);
@@ -551,7 +552,12 @@ type
   tpPensaoAlim            = (paNaoExistePensaoAlimenticia,
                              paPercentualDePensaoAlimenticia,
                              paValorDePensaoAlimenticia,
-                             paPercentualeValordePensaoAlimenticia);
+                             paPercentualeValordePensaoAlimenticia,
+                             paNenhum);
+
+  const
+  tpPensaoAlimArrayStrings: array[tpPensaoAlim] of string = ('0', '1', '2', '3', '');
+  type
 
   tpCumprParcialAviso     = (cpaCumprimentoTotal,
                              cpaCumprimentoParcialNovoEmprego,
@@ -1106,8 +1112,10 @@ function eSStrToTpMtvAlt(var ok: boolean; const s: string): tpMtvAlt;
 function eSTpOrigemAltAfastToStr(const t: tpOrigemAltAfast): string;
 function eSStrToTpOrigemAltAfast(var ok: boolean; const s: string): tpOrigemAltAfast;
 
-function eSTpPensaoAlimToStr(const t: tpPensaoAlim): string;
-function eSStrToTpPensaoAlim(var ok: boolean; const s: string): tpPensaoAlim;
+function eSTpPensaoAlimToStr(const t: tpPensaoAlim): string; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use a função eSTpPensaoAlimToStrEx.' {$EndIf};
+function eSStrToTpPensaoAlim(var ok: boolean; const s: string): tpPensaoAlim; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS}'Use a função eSStrToTpPensaoAlimEx.' {$EndIf};
+function eSTpPensaoAlimToStrEx(const t: tpPensaoAlim): String;
+function eSStrToTpPensaoAlimEx(const s: string): tpPensaoAlim;
 
 function eSTpCumprParcialAvisoToStr(const t: tpCumprParcialAviso): string;
 function eSStrToTpCumprParcialAviso(var ok: boolean; const s: string): tpCumprParcialAviso;
@@ -1548,12 +1556,12 @@ end;
 
 function eSTpProvToStr(const t: tpTpProv ): string;
 begin
-  result := EnumeradoToStr2(t,[ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '99' ] );
+  result := EnumeradoToStr2(t,[ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '99' ] );
 end;
 
 function eSStrToTpProv(var ok: boolean; const s: string): tpTpProv;
 begin
-  result := tpTpProv( StrToEnumerado2(ok , s, [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '99' ] ) );
+  result := tpTpProv( StrToEnumerado2(ok , s, [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '99' ] ) );
 end;
 
 function eSTpIndMatProcToStr(const t: tpIndMatProc): string;
@@ -2342,6 +2350,26 @@ end;
 function eSStrToTpPensaoAlim(var ok: boolean; const s: string): tpPensaoAlim;
 begin
   result := tpPensaoAlim(StrToEnumerado2(ok, s, TGenericosString0_3));
+end;
+
+function eSTpPensaoAlimToStrEx(const t: tpPensaoAlim): String;
+begin
+  Result := tpPensaoAlimArrayStrings[t];
+end;
+
+function eSStrToTpPensaoAlimEx(const s: string): tpPensaoAlim;
+var
+  idx: tpPensaoAlim;
+begin
+  for idx := Low(tpPensaoAlimArrayStrings) to High(tpPensaoAlimArrayStrings)do
+  begin
+    if tpPensaoAlimArrayStrings[idx] = s then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para tpPensaoAlim: %s', [s]);
 end;
 
 function eSTpCumprParcialAvisoToStr(const t: tpCumprParcialAviso): string;

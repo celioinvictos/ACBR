@@ -140,6 +140,8 @@ type
     FNrOcorrValorTTS: Integer;
     FNrOcorrQuantDiarias: Integer;
     FNrOcorrCodigoNBS: Integer;
+    FGerarTagRps: Boolean;
+    FNrOcorrDataPagamento: Integer;
 
   protected
     procedure Configuracao; override;
@@ -267,9 +269,11 @@ type
     property NrOcorrValorTTS: Integer read FNrOcorrValorTTS write FNrOcorrValorTTS;
     property NrOcorrQuantDiarias: Integer read FNrOcorrQuantDiarias write FNrOcorrQuantDiarias;
     property NrOcorrCodigoNBS: Integer read FNrOcorrCodigoNBS write FNrOcorrCodigoNBS;
+    property NrOcorrDataPagamento: Integer read FNrOcorrDataPagamento write FNrOcorrDataPagamento;
 
-    property GerarTagServicos: Boolean  read FGerarTagServicos  write FGerarTagServicos;
+    property GerarTagServicos: Boolean read FGerarTagServicos write FGerarTagServicos;
     property GerarIDDeclaracao: Boolean read FGerarIDDeclaracao write FGerarIDDeclaracao;
+    property GerarTagRps: Boolean read FGerarTagRps write FGerarTagRps;
 
     property GerarEnderecoExterior: Boolean read FGerarEnderecoExterior write FGerarEnderecoExterior;
 
@@ -387,13 +391,15 @@ begin
   FNrOcorrValorTTS := -1;
   FNrOcorrQuantDiarias := -1;
   FNrOcorrCodigoNBS := -1;
+  FNrOcorrDataPagamento := -1;
 
   FGerarTagServicos := True;
   FGerarIDDeclaracao := True;
   FGerarEnderecoExterior := False;
+  FGerarTagRps := True;
 
   // Propriedades de Formatação de informações
-  FormatoEmissao     := tcDat;
+  FormatoEmissao := tcDat;
   FormatoCompetencia := tcDat;
 
   FTagTomador := 'Tomador';
@@ -449,7 +455,8 @@ begin
   Result.AppendChild(AddNode(tcStr, '#4', 'Id', 1, 15, NrOcorrID,
                                                             NFSe.infID.ID, ''));
 
-  Result.AppendChild(GerarRps);
+  if (NFSe.IdentificacaoRps.Numero <> '') and GerarTagRps then
+    Result.AppendChild(GerarRps);
 
   Result.AppendChild(GerarListaServicos);
 
@@ -525,6 +532,9 @@ begin
 
   Result.AppendChild(AddNode(tcStr, '#9', 'Producao', 1, 1, NrOcorrProducao,
                                FpAOwner.SimNaoToStr(NFSe.Producao), DSC_TPAMB));
+
+  Result.AppendChild(AddNode(tcDat, '#9', 'DataPagamento', 10, 10, NrOcorrDataPagamento,
+                                                       NFSe.DataPagamento, ''));
 
   Result.AppendChild(GerarValoresServico);
 
@@ -808,16 +818,14 @@ begin
   begin
     Result := CreateElement(FTagTomador);
 
+    if (NFSe.Tomador.IdentificacaoTomador.CpfCnpj <> '') or
+       (NFSe.Tomador.IdentificacaoTomador.InscricaoMunicipal <> '') then
+      Result.AppendChild(GerarIdentificacaoTomador);
+
     if (NFSe.Tomador.Endereco.UF = 'EX') and
        (NFSe.Tomador.IdentificacaoTomador.Nif <> '') then
       Result.AppendChild(AddNode(tcStr, '#38', 'NifTomador', 1, 40, NrOcorrNIFTomador,
-                                         NFSe.Tomador.IdentificacaoTomador.Nif))
-    else
-    begin
-      if (NFSe.Tomador.IdentificacaoTomador.CpfCnpj <> '') or
-         (NFSe.Tomador.IdentificacaoTomador.InscricaoMunicipal <> '') then
-        Result.AppendChild(GerarIdentificacaoTomador);
-    end;
+                                        NFSe.Tomador.IdentificacaoTomador.Nif));
 
     Result.AppendChild(AddNode(tcStr, '#38', 'RazaoSocial', 1, 115, 0,
                                           NFSe.Tomador.RazaoSocial, DSC_XNOME));

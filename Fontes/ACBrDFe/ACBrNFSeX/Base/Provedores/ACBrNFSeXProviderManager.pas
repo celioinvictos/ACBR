@@ -107,6 +107,7 @@ uses
   Giss.Provider,
   GovDigital.Provider,
   iiBrasil.Provider,
+  ISSCamacari.Provider,
   ISSDigital.Provider,
   ISSe.Provider,
   ISSGoiania.Provider,
@@ -137,6 +138,7 @@ uses
   SSInformatica.Provider,
   Sudoeste.Provider,
   SystemPro.Provider,
+  SysISS.Provider,
   TcheInfo.Provider,
   Tecnos.Provider,
   Tributus.Provider,
@@ -180,6 +182,7 @@ uses
   ISSDSF.Provider,
   ISSLencois.Provider,
   ISSSaoPaulo.Provider,
+  Prescon.Provider,
   PriMax.Provider,
   Siappa.Provider,
   Siat.Provider,
@@ -304,7 +307,17 @@ begin
         Result := TACBrNFSeProviderEquiplano.Create(ACBrNFSe);
 
       proeReceita: Result := TACBrNFSeProvidereReceita202.Create(ACBrNFSe);
-      proEtherium: Result := TACBrNFSeProviderEtherium203.Create(ACBrNFSe);
+
+      proEtherium:
+        begin
+          case Versao of
+            ve203: Result := TACBrNFSeProviderEtherium203.Create(ACBrNFSe);
+            ve204: Result := TACBrNFSeProviderEtherium204.Create(ACBrNFSe);
+          else
+            Result := nil;
+          end;
+        end;
+
       proFacundo:  Result :=TACBrNFSeProviderFacundo.Create(ACBrNFSe);
       proFGMaiss:  Result :=TACBrNFSeProviderFGMaiss.Create(ACBrNFSe);
 
@@ -363,8 +376,10 @@ begin
 
       proISSBarueri: Result := TACBrNFSeProviderISSBarueri.Create(ACBrNFSe);
 
-      proISSCambe:
-        Result := TACBrNFSeProviderISSCambe.Create(ACBrNFSe);
+      proISSCamacari:
+        Result := TACBrNFSeProviderISSCamacari201.Create(ACBrNFSe);
+
+      proISSCambe: Result := TACBrNFSeProviderISSCambe.Create(ACBrNFSe);
 
       proISSCuritiba:
         Result := TACBrNFSeProviderISSCuritiba.Create(ACBrNFSe);
@@ -430,6 +445,7 @@ begin
       proPadraoNacional:
         Result := TACBrNFSeProviderPadraoNacional.Create(ACBrNFSe);
 
+      proPrescon: Result := TACBrNFSeProviderPrescon.Create(ACBrNFSe);
       proPriMax:  Result := TACBrNFSeProviderPriMax.Create(ACBrNFSe);
       proProdata: Result := TACBrNFSeProviderProdata201.Create(ACBrNFSe);
 
@@ -539,6 +555,7 @@ begin
 
       proSudoeste:  Result := TACBrNFSeProviderSudoeste202.Create(ACBrNFSe);
       proSystemPro: Result := TACBrNFSeProviderSystemPro201.Create(ACBrNFSe);
+      proSysISS:    Result := TACBrNFSeProviderSysISS202.Create(ACBrNFSe);
       proTcheInfo:  Result := TACBrNFSeProviderTcheInfo204.Create(ACBrNFSe);
       proTecnos:    Result := TACBrNFSeProviderTecnos201.Create(ACBrNFSe);
       proThema:     Result := TACBrNFSeProviderThema.Create(ACBrNFSe);
