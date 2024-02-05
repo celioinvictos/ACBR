@@ -40,7 +40,7 @@ type
 
     function TipoOcorrenciaToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia): string; override;
     function CodOcorrenciaToTipo(const CodOcorrencia: integer): TACBrTipoOcorrencia; override;
-    function TipoOCorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): string; override;
+    function TipoOcorrenciaToCod(const TipoOcorrencia: TACBrTipoOcorrencia): string; override;
     function CodMotivoRejeicaoToDescricao(const TipoOcorrencia: TACBrTipoOcorrencia; CodMotivo: integer): string; override;
 
     function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
@@ -561,7 +561,7 @@ function TACBrBancoVotorantim.MontarCodigoBarras(const ACBrTitulo: TACBrTitulo):
 var
   CodigoBarras, FatorVencimento, DigitoCodBarras ,
   valorDocumento, agencia, convenio,
-  ContaDigito, NossoNumero: string;
+   NossoNumero: string;
 begin
   with ACBrTitulo.ACBrBoleto do
   begin
@@ -582,7 +582,7 @@ begin
 
 end;
 
-function TACBrBancoVotorantim.TipoOCorrenciaToCod(
+function TACBrBancoVotorantim.TipoOcorrenciaToCod(
   const TipoOcorrencia: TACBrTipoOcorrencia): string;
 begin
   case TipoOcorrencia of

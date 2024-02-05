@@ -155,14 +155,15 @@ end;
 procedure TACBrPIXLocationBase.DoWriteToJSon(AJSon: TACBrJSONObject);
 begin
   if (fid <> 0) then
-    AJSon.AddPair('id', fid);
+    AJSon.AddPair('id', fid, False);
   if (ftipoCob <> tcoNenhuma) then
     AJSon.AddPair('tipoCob', PIXTipoCobrancaToString(ftipoCob));
+  if (fcriacao > 0) then
+    AJSon.AddPair('criacao', DateTimeToIso8601(fcriacao, BiasToTimeZone(fcriacao_Bias)));
 
   AJSon
     .AddPair('txid', ftxId, False)
-    .AddPair('location', flocation, False)
-    .AddPair('criacao', DateTimeToIso8601(fcriacao, BiasToTimeZone(fcriacao_Bias)));
+    .AddPair('location', flocation, False);
 end;
 
 procedure TACBrPIXLocationBase.DoReadFromJSon(AJSon: TACBrJSONObject);
@@ -198,7 +199,7 @@ begin
     Exit;
 
   s := Trim(AValue);
-  if (s <> '') then
+  if (s <> '') and fIsBacen then
   begin
     e := ValidarTxId(s, 35, 26);
     if (e <> '') then

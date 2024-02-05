@@ -42,6 +42,8 @@ namespace ACBrLibNFSe.Demo
             SplashScreenManager.Show<FrmWait>();
             SplashScreenManager.ShowInfo(SplashInfo.Message, "Carregando...");
 
+            
+
             try
             {
                 cmbCidadeEmitente.EnumDataSource(CodigoMunicipio.NenhumaCidadeSelecionada);
@@ -52,6 +54,7 @@ namespace ACBrLibNFSe.Demo
                 cmbCrypt.EnumDataSource(SSLCryptLib.cryWinCrypt);
                 cmbHttp.EnumDataSource(SSLHttpLib.httpWinHttp);
                 cmbXmlSign.EnumDataSource(SSLXmlSignLib.xsLibXml2);
+                ACBrNFSe.Config.IniServicos = "";
 
                 // Altera as config de log
                 ACBrNFSe.Config.Principal.LogNivel = NivelLog.logParanoico;
@@ -109,6 +112,7 @@ namespace ACBrLibNFSe.Demo
                 ACBrNFSe.Config.PathSalvar = txtArqNFSe.Text;
                 ACBrNFSe.Config.MontarPathSchema = ckbMontarPathSchemas.Checked;
                 ACBrNFSe.Config.PathSchemas = txtSchemaPath.Text;
+                ACBrNFSe.Config.IniServicos = txtServicosIni.Text;
                 ACBrNFSe.Config.ConsultaLoteAposEnvio = ckbConsultarLoteAposEnvio.Checked;
                 ACBrNFSe.Config.ConsultaAposCancelar = ckbConsultarAposCancelar.Checked;
                 ACBrNFSe.Config.LayoutNFSe = cmbLayoutNFSe.GetSelectedValue<LayoutNFSe>();
@@ -209,6 +213,7 @@ namespace ACBrLibNFSe.Demo
             txtArqNFSe.Text = ACBrNFSe.Config.PathSalvar;
             ckbMontarPathSchemas.Checked = ACBrNFSe.Config.MontarPathSchema;
             txtSchemaPath.Text = ACBrNFSe.Config.PathSchemas;
+            txtServicosIni.Text = ACBrNFSe.Config.IniServicos;
             ckbConsultarLoteAposEnvio.Checked = ACBrNFSe.Config.ConsultaLoteAposEnvio;
             ckbConsultarAposCancelar.Checked = ACBrNFSe.Config.ConsultaAposCancelar;
             cmbLayoutNFSe.SetSelectedValue(ACBrNFSe.Config.LayoutNFSe);
@@ -351,7 +356,12 @@ namespace ACBrLibNFSe.Demo
             txtDadosPFX.Text = Convert.ToBase64String(dados);
         }
 
-        private void btnArqGTIN_Click(object sender, EventArgs e)
+        private void btnServicosIni_Click(object sender, EventArgs e)
+        {
+            txtServicosIni.Text = Helpers.OpenFile("Arquivos INI (*.ini)|*.pfx|Todos os Arquivos (*.*)|*.*");
+        }
+
+        private void btnArqNFSe_Click(object sender, EventArgs e)
         {
             txtArqNFSe.Text = Helpers.SelectFolder();
         }
@@ -564,11 +574,13 @@ namespace ACBrLibNFSe.Demo
         {
             try
             {
+                CheckNFSeLista();
+
                 var aLote = "1";
-                if (InputBox.Show("Gerar Lote EPS", "Número do Lote", ref aLote) != DialogResult.OK) return;
+                if (InputBox.Show("Gerar Lote RPS", "Número do Lote", ref aLote) != DialogResult.OK) return;
 
                 var qtdNaximaRPS = 1;
-                if (InputBox.Show("Gerar Lote EPS", "Quantidade Máxima RPS", ref qtdNaximaRPS) != DialogResult.OK) return;
+                if (InputBox.Show("Gerar Lote RPS", "Quantidade Máxima RPS", ref qtdNaximaRPS) != DialogResult.OK) return;
 
                 var ret = ACBrNFSe.GerarLote(aLote, qtdNaximaRPS, 0);
                 rtbRespostas.AppendText(ret);
@@ -638,7 +650,7 @@ namespace ACBrLibNFSe.Demo
                 var aLote = "";
                 if (InputBox.Show("Consultar Situação", "Número do Lote", ref aLote) != DialogResult.OK) return;
 
-                var ret = ACBrNFSe.ConsultarSitucao(protocolo, aLote);
+                var ret = ACBrNFSe.ConsultarSituacao(protocolo, aLote);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception exception)
@@ -1055,6 +1067,167 @@ namespace ACBrLibNFSe.Demo
 
                 var ret = ACBrNFSe.Cancelar(arquivoINI);
                 rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnEnviarEvento_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ACBrNFSe.LimparLista();
+
+                var arquivoINI = Helpers.OpenFile("Arquivo Ini NFSe (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
+                if (string.IsNullOrEmpty(arquivoINI)) return;
+
+                ACBrNFSe.CarregarINI(arquivoINI);
+
+                var ret = ACBrNFSe.EnviarEvento(arquivoINI);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnConsultarDPSPorChave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var chaveDPS = "";
+                if (InputBox.Show("Consultar DPS Por Chave", "Informe a Chave DPS", ref chaveDPS) != DialogResult.OK) return;
+
+                var ret = ACBrNFSe.ConsultarDPSPorChave(chaveDPS);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnConsultarNFSePorChave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var chaveNFSe = "";
+                if (InputBox.Show("Consultar NFSe Por Chave", "Informe a Chave NFSe", ref chaveNFSe) != DialogResult.OK) return;
+
+                var ret = ACBrNFSe.ConsultarNFSePorChave(chaveNFSe);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnConsultarEvento_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var chave = "";
+                if (InputBox.Show("Consultar Evento", "Informe a Chave", ref chave) != DialogResult.OK) return;
+
+                var tipoEvento = 0;
+                if (InputBox.Show("Consultar Evento", "Informe o Tipo do Evento", ref tipoEvento) != DialogResult.OK) return;
+
+                var numeroSequencia = 0;
+                if (InputBox.Show("Consultar Evento", "Informe o Número Sequencia", ref numeroSequencia) != DialogResult.OK) return;
+
+                var ret = ACBrNFSe.ConsultarEvento(chave, tipoEvento, numeroSequencia);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnConsultarDFe_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var nsu = 0;
+                if (InputBox.Show("Consultar DFe", "Informe o NSU", ref nsu) != DialogResult.OK) return;
+
+                var ret = ACBrNFSe.ConsultarDFe(nsu);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnObterDANFSe_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var chaveNFSe = "";
+                if (InputBox.Show("Obter DANFSe", "Informe a Chave NFSe", ref chaveNFSe) != DialogResult.OK) return;
+
+                var ret = ACBrNFSe.ObterDANFSE(chaveNFSe);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnConsultarParametros_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var tipoParametroMunicipio = 0;
+                if (InputBox.Show("Consultar Parametros", "Informe o Parametro do Municipio", ref tipoParametroMunicipio) != DialogResult.OK) return;
+
+                var codigoServico = "";
+                if (InputBox.Show("Consultar Parametros", "Informe o Código de Serviço", ref codigoServico) != DialogResult.OK) return;
+
+                var competencia = "dd/MM/yyyy";
+                if (InputBox.Show("Consultar Parametros", "Informe a Competencia", ref competencia) != DialogResult.OK) return;
+
+                var numeroBeneficio = "";
+                if (InputBox.Show("Consultar Parametros", "Informe o Numero do Beneficio", ref numeroBeneficio) != DialogResult.OK) return;
+
+                var ret = ACBrNFSe.ConsultarParametros(tipoParametroMunicipio, codigoServico, DateTime.Parse(competencia), numeroBeneficio);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void btnSalvarPDFStream_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var arquivoXml = Helpers.OpenFile("Arquivo Xml NFSe (*.xml)|*.xml|Todos os Arquivos (*.*)|*.*");
+                if (string.IsNullOrEmpty(arquivoXml)) return;
+
+                ACBrNFSe.LimparLista();
+                ACBrNFSe.CarregarXML(arquivoXml);
+
+                var nomeArquivo = Helpers.SaveFile("Salvar em PDF (*.pdf)|*.pdf|Todos os Arquivos (*.*)|*.*");
+
+                using (FileStream aStream = File.Create(nomeArquivo))
+                {
+                    ACBrNFSe.ImprimirPDF(aStream);
+                    byte[] buffer = new Byte[aStream.Length];
+                    await aStream.ReadAsync(buffer, 0, buffer.Length);
+                    await aStream.FlushAsync();
+                    aStream.Seek(0, SeekOrigin.End);
+                    await aStream.WriteAsync(buffer, 0, buffer.Length);
+                }
+                rtbRespostas.AppendLine($"PDF Salvo em: {nomeArquivo}");
+
             }
             catch (Exception exception)
             {

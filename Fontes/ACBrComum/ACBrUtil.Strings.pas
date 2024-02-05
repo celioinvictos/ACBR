@@ -188,8 +188,6 @@ function AddDelimitedTextToList( const AText: String; const ADelimiter: Char;
 
 function ChangeLineBreak(const AText: String; const NewLineBreak: String = ';'): String;
 
-//function UTF8Decode(const S: String): String;
-
 implementation
 
 uses
@@ -1420,7 +1418,7 @@ begin
   Count := 0;
   for i := 1 to Length(str) do
   begin
-    if not CharInSet(str[i], [ '/',',','-','.',')','(',' ' ]) then
+    if not CharInSet(str[i], [ '/', ',', '-', '.', ')', '(', ' ']) then
     begin
       inc(Count);
       Result[Count] := str[i];
@@ -1596,15 +1594,6 @@ begin
       Result := StringReplace(Result, LF, NewLineBreak, [rfReplaceAll]);
   end
 end;
-
-//function UTF8Decode(const S: String): String;
-//begin
-//  {$IfDef COMPILER6_UP}
-//    Result := System.UTF8ToString(S);
-//  {$Else}
-//   Result := System.UTF8Decode(S);
-//  {$EndIf}
-//end;
 
 initialization
 {$IfDef FPC}

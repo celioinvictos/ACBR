@@ -51,7 +51,8 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, variants,
-  pcnGerador, pcnLeitor, pcnConversao, pcnAuxiliar, pcnConsts,
+  pcnGerador, pcnLeitor, pcnConversao, pcnAuxiliar,
+  ACBrDFeConsts,
   pcesCommon, pcesConversaoeSocial;
 
 type
@@ -559,7 +560,7 @@ begin
     Gerador.wCampo(tcDat, '', 'dtNascto', 10, 10, 1, pDependente.Items[i].DtNascto);
     Gerador.wCampo(tcStr, '', 'cpfDep',   11, 11, 0, pDependente.Items[i].CpfDep);
 
-    if (VersaoDF > ve02_05_00) then
+    if (VersaoDF >= ve02_05_00) then
       if (pDependente.Items[i].sexoDep = 'F') or (pDependente.Items[i].sexoDep = 'M') then
         Gerador.wCampo(tcStr, '', 'sexoDep',   1,  1, 0, pDependente.Items[i].sexoDep);
 
@@ -573,6 +574,9 @@ begin
     else
       Gerador.wCampo(tcStr, '', 'incTrab',   1,  1, 1, eSSimNaoToStr(pDependente.Items[i].incTrab));
 
+    if VersaoDF >= veS01_02_00 then
+      Gerador.wCampo(tcStr, '', 'descrDep',  0, 100, 0, pDependente.Items[i].descrDep);
+    
     Gerador.wGrupo('/dependente');
   end;
 
@@ -1421,12 +1425,24 @@ end;
 
 procedure TeSocialEvento.GerarInfoAprend(pAprend: TAprend);
 begin
-  if (pAprend.NrInsc <> EmptyStr) then
+  if (pAprend.NrInsc <> EmptyStr) or (pAprend.cnpjEntQual <> EmptyStr) then
   begin
     Gerador.wGrupo('aprend');
 
-    Gerador.wCampo(tcStr, '', 'tpInsc', 1,  1, 1, eSTpInscricaoToStr(pAprend.TpInsc));
-    Gerador.wCampo(tcStr, '', 'nrInsc', 1, 15, 1, pAprend.NrInsc);
+    if VersaoDF >= veS01_02_00 then
+    begin
+      Gerador.wCampo(tcStr, '', 'indAprend',   1,  1, 1, eStpIndAprendToStr(pAprend.indAprend));
+      Gerador.wCampo(tcStr, '', 'cnpjEntQual', 0, 15, 0, pAprend.cnpjEntQual);
+    end;
+
+    if pAprend.NrInsc <> EmptyStr then
+    begin
+      Gerador.wCampo(tcStr, '', 'tpInsc', 1,  1, 1, eSTpInscricaoToStr(pAprend.TpInsc));
+      Gerador.wCampo(tcStr, '', 'nrInsc', 1, 15, 1, pAprend.NrInsc);
+    end;
+
+    if VersaoDF >= veS01_02_00 then
+      Gerador.wCampo(tcStr, '', 'cnpjPrat', 0, 15, 0, pAprend.cnpjPrat);
 
     Gerador.wGrupo('/aprend');
   end;
@@ -1451,6 +1467,9 @@ begin
 
     Gerador.wCampo(tcStr, '', 'cnpjSindCategProf', 14, 14, 1, pInfoCeletista.cnpjSindCategProf);
 
+    if (VersaoDF >= veS01_02_00) and (pInfoCeletista.matAnotJud <> '') then
+      Gerador.wCampo(tcStr, '', 'matAnotJud',  1, 30, 1, pInfoCeletista.matAnotJud);
+    
     if (pInfoCeletista.FGTS.DtOpcFGTS > 0) then
       GerarFGTS(pInfoCeletista.FGTS);
 

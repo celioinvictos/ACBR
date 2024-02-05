@@ -38,6 +38,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+01/08/2023
+-- ACBrBALToledo --
+[*] Correção de AV em retorno vazio no ProtocoloP03
+https://www.projetoacbr.com.br/forum/topic/72812-access-violation-acbrmter-balan%C3%A7a-prix-fit-3/
+  Por: William F. L. / Renato Rubinho
+
+25/07/2023
+-- ACBrWinUSBDevice --
+[*] Melhoria para usar FrendlyName, quando Fabricante for igual, ao usado na Tabela
+    VID/PID interna do ACBr
+    (por: DSA)
+
+07/07/2023
+[*]TK-3919 ACBrCHQBematech- Removido verificação em linha devido a incompatibilicade com a impressora "DP20 – Plus Document Printer"
+https://www.projetoacbr.com.br/forum/topic/72010-teste-acbrchq/
+Por : Sistema Auditor Verificado: Daniel Morais
+
 27/02/2023
 -- ACBrBALSelfCheckout --
 [+] Incluída nova classe para modelos de balança utilizarem caso também possuam os novos comandos

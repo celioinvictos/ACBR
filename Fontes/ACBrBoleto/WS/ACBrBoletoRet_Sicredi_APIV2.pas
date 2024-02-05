@@ -54,6 +54,7 @@ type
  TRetornoEnvio_Sicredi_APIV2 = class(TRetornoEnvioREST)
  private
    function DateSicreditoDateTime(Const AValue : String) : TDateTime;
+   function TimeSicreditoDateTime(Const AValue : String) : String;
  public
    constructor Create(ABoletoWS: TACBrBoleto); override;
    destructor  Destroy; Override;
@@ -78,16 +79,13 @@ end;
 
 function TRetornoEnvio_Sicredi_APIV2.DateSicreditoDateTime(const AValue: String): TDateTime;
 var
-  data,
-  ano,
-  mes,
-  dia : String;
+  data, ano, mes, dia : String;
 begin
-  ano := Copy( aValue, 0,4 );
-  mes := Copy( aValue, 6,2 );
-  dia := Copy( aValue, 9,2 );
-  data := Format( '%s-%s-%s' , [dia,mes,ano]);
-  Result := StrToDateDef( data ,0 );
+    ano := Copy( aValue, 0,4 );
+    mes := Copy( aValue, 6,2 );
+    dia := Copy( aValue, 9,2 );
+    data := Format( '%s/%s/%s' , [dia,mes,ano]);
+    Result := StrToDateDef( data ,0 );
 end;
 
 destructor TRetornoEnvio_Sicredi_APIV2.Destroy;
@@ -101,6 +99,8 @@ var
   AJSonRejeicao: TJsonObject;
   ARejeicao: TACBrBoletoRejeicao;
   AJSonResp: TJsonArray;
+  Descontos: TJSONArray;
+  Desconto: TJSONObject;
   I: Integer;
   TipoOperacao : TOperacao;
   Var_File : TFileStream;
@@ -108,8 +108,9 @@ begin
   Result := True;
   TipoOperacao := ACBrBoleto.Configuracoes.WebService.Operacao;
 
-  ARetornoWs.JSONEnvio      := EnvWs;
-  ARetornoWS.HTTPResultCode := HTTPResultCode;
+  ARetornoWs.JSONEnvio       := EnvWs;
+  ARetornoWS.HTTPResultCode  := HTTPResultCode;
+  ARetornoWS.Header.Operacao := TipoOperacao;
 
   if RetWS <> '' then
   begin
@@ -129,6 +130,7 @@ begin
               case HTTPResultCode of
                 400,
                 403,
+                422,
                 500,
                 401 :
                   begin
@@ -145,35 +147,108 @@ begin
             end;
           tpBaixa,
           tpAltera,
-          tpConsultaDetalhe :
-            begin
-              case HTTPResultCode of
-                400,
-                403,
-                500 :
+          tpConsultaDetalhe : begin
+            case HTTPResultCode of
+              200 : begin
+                ARetornoWS.DadosRet.TituloRet.CodBarras      := aJson.Values['codigoBarras'].AsString;
+                ARetornoWS.DadosRet.TituloRet.LinhaDig       := aJson.Values['linhaDigitavel'].AsString;
+                ARetornoWS.DadosRet.TituloRet.Carteira       := aJson.Values['carteira'].AsString;
+                ARetornoWS.DadosRet.TituloRet.SeuNumero      := aJson.Values['seuNumero'].asString;
+                ARetornoWS.DadosRet.TituloRet.NossoNumero    := aJson.Values['nossoNumero'].AsString;
+                //Pagador
+                //ARetornoWS.DadosRet.TituloRet.Sacado.codigo         := aJson.Values['pagador'].asObject.Values['codigo'].asString;
+                ARetornoWS.DadosRet.TituloRet.Sacado.NomeSacado      := aJson.Values['pagador'].asObject.Values['nome'].asString;
+                ARetornoWS.DadosRet.TituloRet.Sacado.CNPJCPF         := aJson.Values['pagador'].asObject.Values['documento'].asString;
+                //Datas
+                ARetornoWS.DadosRet.TituloRet.DataRegistro           := DateSicreditoDateTime( aJson.Values['dataEmissao'].asString );
+                ARetornoWS.DadosRet.TituloRet.Vencimento             := DateSicreditoDateTime( aJson.Values['dataVencimento'].asString );
+                ARetornoWS.DadosRet.TituloRet.DataBaixa              := DateSicreditoDateTime(aJson.Values['dataPagamento'].AsString);
+                ARetornoWS.DadosRet.TituloRet.HoraBaixa              := timeSicreditoDateTime(AJson.Values['dataPagamento'].AsString);
+                //Valores
+                ARetornoWS.DadosRet.TituloRet.ValorDocumento         := aJson.Values['valorNominal'].AsNumber;
+                //Situação/Código da situação.
+                ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca    := UpperCase(aJson.Values['situacao'].asString);
+                if (Pos('EM CARTEIRA',UpperCase(ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca)) > 0) or
+                   (Pos('VENCIDO',UpperCase(ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca)) > 0) then
+                  ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca := '1';
+                if (Pos('BAIXADO POR SOLICITACAO',UpperCase(ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca)) > 0) then
                   begin
-                    AJSonResp := AJson.Values['errors'].AsArray;
-                    for I := 0 to Pred(AJSonResp.Count) do
-                    begin
-                      AJSonRejeicao        := AJSonResp[I].AsObject;
-                      ARejeicao            := ARetornoWS.CriarRejeicaoLista;
-                      ARejeicao.Codigo     := AJSonRejeicao.Values['status'].AsString;
-                      ARejeicao.Mensagem   := AJSonRejeicao.Values['message'].AsString;
-                    end;
+                    ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca := '7';
+                    ARetornoWS.DadosRet.TituloRet.DataBaixa                  := DateSicreditoDateTime(aJson.Values['dataBaixa'].AsString);
+                    ARetornoWS.DadosRet.TituloRet.HoraBaixa                  := TimeSicreditoDateTime(aJson.Values['dataBaixa'].AsString);
+
                   end;
-                401 :
+                if (Pos('LIQUIDADO',UpperCase(ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca)) > 0) then
+                  ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca := '6';
+                //Multa/Juros
+                ARetornoWS.DadosRet.TituloRet.PercentualMulta        := aJson.Values['valorMulta'].AsNumber;
+                ARetornoWS.DadosRet.TituloRet.ValorAbatimento        := aJson.Values['abatimento'].AsNumber;
+                ARetornoWS.DadosRet.TituloRet.ValorMoraJuros         := aJson.Values['juros'].AsNumber;
+                ARetornoWS.DadosRet.TituloRet.DiasDeProtesto         := aJson.Values['diasProtesto'].AsInteger;
+                ARetornoWS.DadosRet.TituloRet.TxId                   := aJson.Values['txId'].AsString;
+                ARetornoWS.DadosRet.TituloRet.EMV                    := aJson.Values['codigoQrCode'].AsString;
+                ARetornoWS.DadosRet.TituloRet.PercentualMulta        := aJson.Values['valorMulta'].AsNumber;
+                if ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca = '6' then
+                begin
+                   ARetornoWS.DadosRet.TituloRet.ValorPago              := AJson.Values['dadosLiquidacao'].AsObject.Values['valor'].AsNumber;
+                   ARetornoWS.DadosRet.TituloRet.ValorMoraJuros         := AJson.Values['dadosLiquidacao'].AsObject.Values['juros'].AsNumber;
+                   ARetornoWS.DadosRet.TituloRet.ValorAbatimento        := AJson.Values['dadosLiquidacao'].AsObject.Values['abatimento'].AsNumber;
+                   ARetornoWS.DadosRet.TituloRet.DataBaixa              := DateSicreditoDateTime(AJson.Values['dadosLiquidacao'].AsObject.Values['data'].AsString);
+                   ARetornoWS.DadosRet.TituloRet.HoraBaixa              := TimeSicreditoDateTime(AJson.Values['dadosLiquidacao'].AsObject.Values['data'].AsString);
+                   ARetornoWS.DadosRet.TituloRet.ValorDesconto          := AJson.Values['dadosLiquidacao'].AsObject.Values['desconto'].AsNumber;
+                end;
+                Descontos := AJson.Values['descontos'].AsArray;
+                if Assigned(Descontos) then
+                begin
+                  for I := 0 to Descontos.Count - 1 do
                   begin
-                    if (AJson.Values['error'].AsString <> '') then
+                    if I = 0 then
                     begin
-                      ARejeicao            := ARetornoWS.CriarRejeicaoLista;
-                      ARejeicao.Codigo     := AJson.Values['status'].AsString;
-                      ARejeicao.Versao     := AJson.Values['error'].AsString;
-                      ARejeicao.Mensagem   := AJson.Values['message'].AsString;
+                      ARetornoWS.DadosRet.TituloRet.ValorDesconto:= Descontos[i].AsObject.values['ValorDesconto'].asnumber;
+                      ARetornoWS.DadosRet.TituloRet.DataDesconto := DateSicreditoDateTime(Descontos[i].AsObject.Values['dataLimite'].AsString);
                     end;
+                    if I = 1 then
+                    begin
+                      ARetornoWS.DadosRet.TituloRet.ValorDesconto2:= Descontos[i].AsObject.Values['valorDesconto'].AsNumber;
+                      ARetornoWS.DadosRet.TituloRet.DataDesconto2 := DateSicreditoDateTime(Descontos[i].AsObject.Values['dataLimite'].AsString);
+                    end;
+                    if I = 2 then
+                    begin
+                      ARetornoWS.DadosRet.TituloRet.ValorDesconto3:= Descontos[i].AsObject.Values['valorDesconto'].AsNumber;
+                      ARetornoWS.DadosRet.TituloRet.DataDesconto3 := DateSicreditoDateTime(Descontos[i].AsObject.Values['dataLimite'].AsString);
+                    end;
+
                   end;
 
+                end;
+
+              end;
+              400,
+              403,
+              500 :
+              begin
+                AJSonResp := AJson.Values['errors'].AsArray;
+                for I := 0 to Pred(AJSonResp.Count) do
+                begin
+                  AJSonRejeicao        := AJSonResp[I].AsObject;
+                  ARejeicao            := ARetornoWS.CriarRejeicaoLista;
+                  ARejeicao.Codigo     := AJSonRejeicao.Values['status'].AsString;
+                  ARejeicao.Mensagem   := AJSonRejeicao.Values['message'].AsString;
+                end;
+              end;
+              422,
+              401 :
+              begin
+                if (AJson.Values['error'].AsString <> '') then
+                begin
+                  ARejeicao            := ARetornoWS.CriarRejeicaoLista;
+                  ARejeicao.Codigo     := AJson.Values['status'].AsString;
+                  ARejeicao.Versao     := AJson.Values['error'].AsString;
+                  ARejeicao.Mensagem   := AJson.Values['message'].AsString;
+                end;
               end;
             end;
+          end;
         end;
 
         //retorna quando tiver sucesso
@@ -187,7 +262,7 @@ begin
             ARetornoWS.DadosRet.IDBoleto.NossoNum       := AJson.Values['nossoNumero'].AsString;
             ARetornoWS.DadosRet.TituloRet.UrlPix        := '';//AJson.Values['url'].AsString;
             ARetornoWS.DadosRet.TituloRet.TxId          := AJson.Values['txid'].AsString;
-            ARetornoWS.DadosRet.TituloRet.EMV           := AJson.Values['qrCode'].AsString;
+            ARetornoWS.DadosRet.TituloRet.EMV           := AJson.Values['QrCode'].AsString;
 
             ARetornoWS.DadosRet.TituloRet.CodBarras     := ARetornoWS.DadosRet.IDBoleto.CodBarras;
             ARetornoWS.DadosRet.TituloRet.LinhaDig      := ARetornoWS.DadosRet.IDBoleto.LinhaDig;
@@ -195,9 +270,9 @@ begin
           end else
           if (TipoOperacao = tpBaixa) then
           begin
-            ARetornoWS.DadosRet.TituloRet.NossoNumero      := AJson.Values['nossoNumero'].AsString;
-            ARetornoWS.DadosRet.TituloRet.DataBaixa     := DateSicreditoDateTime( AJson.Values['dataMovimento'].AsString);
-
+            ARetornoWS.DadosRet.TituloRet.NossoNumero   := AJson.Values['nossoNumero'].AsString;
+            ARetornoWS.DadosRet.TituloRet.DataBaixa     := StrToDateDef(AJson.Values['dataMovimento'].AsString,0);
+            ARetornoWS.DadosRet.TituloRet.HoraBaixa     := timeSicreditoDateTime(AJson.Values['dataMovimento'].AsString);
           end else
           if (TipoOperacao in [tpAltera]) then//,tpAlteraSeuNumero
           begin
@@ -329,6 +404,7 @@ begin
 
             ListaRetorno.DadosRet.TituloRet.NossoNumero                := ListaRetorno.DadosRet.IDBoleto.NossoNum;
             ListaRetorno.DadosRet.TituloRet.DataBaixa                  := DateSicreditoDateTime(AJSonObject.Values['dataPagamento'].AsString);
+            ListaRetorno.DadosRet.TituloRet.HoraBaixa                  := TimeSicreditoDateTime(AJSonObject.Values['dataPagamento'].AsString);
             ListaRetorno.DadosRet.TituloRet.SeuNumero                  := AJSonObject.Values['seuNumero'].AsString;
             ListaRetorno.DadosRet.TituloRet.ValorDocumento             := AJSonObject.Values['valor'].AsNumber;
             ListaRetorno.DadosRet.TituloRet.ValorRecebido              := AJSonObject.Values['valorLiquidado'].AsNumber;
@@ -382,6 +458,17 @@ begin
 
   Result:=inherited RetornoEnvio(AIndex);
 
+end;
+
+function TRetornoEnvio_Sicredi_APIV2.TimeSicreditoDateTime(
+  const AValue: String): String;
+var
+  hora, minuto, segundos : String;
+begin
+  hora     := Copy( aValue, 12,2 );
+  minuto   := Copy( aValue, 15,2 );
+  segundos := Copy( aValue, 18,2 );
+  Result   := Format( '%s:%s:%s' , [hora,minuto,segundos]);
 end;
 
 end.

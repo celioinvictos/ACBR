@@ -53,7 +53,8 @@ uses
    System.Contnrs,
   {$IfEnd}
   ACBrBase,
-  pcnConversao, pcnGerador, pcnConsts,
+  ACBrDFeConsts,
+  pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -244,24 +245,28 @@ end;
 
 procedure TEvtInfoComplPer.GerarInfoAtivConcom;
 begin
-  Gerador.wGrupo('infoAtivConcom');
+  if InfoAtivConcom.fatorMes <> 0 then
+  begin
+    Gerador.wGrupo('infoAtivConcom');
 
-  Gerador.wCampo(tcDe2, '', 'fatorMes', 1, 5, 1, InfoAtivConcom.fatorMes);
-  Gerador.wCampo(tcDe2, '', 'fator13',  1, 5, 1, InfoAtivConcom.fator13);
+    Gerador.wCampo(tcDe2, '', 'fatorMes', 1, 5, 1, InfoAtivConcom.fatorMes);
+    Gerador.wCampo(tcDe2, '', 'fator13',  1, 5, 1, InfoAtivConcom.fator13);
 
-  Gerador.wGrupo('/infoAtivConcom');
+    Gerador.wGrupo('/infoAtivConcom');
+  end;
 end;
 
 procedure TEvtInfoComplPer.GerarinfoPercTransf11096;
 begin
   if VersaoDF > ve02_05_00 then
-  begin
-     Gerador.wGrupo('infoPercTransf11096');
+    if infoPercTransf11096.percTransf > 0 then
+    begin
+      Gerador.wGrupo('infoPercTransf11096');
 
-     Gerador.wCampo(tcStr, '', 'percTransf', 1, 1, 1, infoPercTransf11096.percTransf);
+      Gerador.wCampo(tcStr, '', 'percTransf', 1, 1, 1, infoPercTransf11096.percTransf);
 
-     Gerador.wGrupo('/infoPercTransf11096');
-  end;
+      Gerador.wGrupo('/infoPercTransf11096');
+    end;
 
 end;
 
@@ -467,8 +472,8 @@ begin
       InfoAtivConcom.fator13  := StringToFloatDef(INIRec.ReadString(sSecao, 'fator13', ''), 0);
 
       sSecao := 'infoPercTransf11096';
-      infoPercTransf11096.percTransf  := StrToIntDef(INIRec.ReadString(sSecao, 'percTrans', ''), 0);
-
+      if INIRec.ReadString(sSecao, 'percTrans', '') <> '' then
+        infoPercTransf11096.percTransf  := StrToIntDef(INIRec.ReadString(sSecao, 'percTrans', ''), 0);
     end;
 
     GerarXML;

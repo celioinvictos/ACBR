@@ -39,10 +39,11 @@ interface
 uses
   Classes, SysUtils, synacode,
   ACBrDFe, ACBrDFeWebService,
+  ACBrDFeConsts,
   pcteCTe, pcnRetConsReciDFe, pcnRetConsCad, pcnAuxiliar, pcnConversao,
   pcteConversaoCTe, pcteProcCte, pcteEnvEventoCTe, pcteRetEnvEventoCTe,
   pcteRetConsSitCTe, pcteRetEnvCTe, pcnDistDFeInt, pcnRetDistDFeInt,
-  ACBrCteConhecimentos, ACBrCTeConfiguracoes, pcnConsts, pcteConsts;
+  ACBrCteConhecimentos, ACBrCTeConfiguracoes, pcteConsts;
 
 type
 
@@ -677,7 +678,7 @@ end;
 
 procedure TCTeStatusServico.DefinirServicoEAction;
 begin
-  if FPConfiguracoesCTe.Geral.VersaoDF <= ve300 then
+  if (FPConfiguracoesCTe.Geral.VersaoDF <= ve300) then
     FPServico := GetUrlWsd + 'CteStatusServico'
   else
     FPServico := GetUrlWsd + 'CTeStatusServicoV4';
@@ -732,11 +733,9 @@ var
   CTeRetorno: TRetConsStatServ;
 begin
   FPRetWS := SeparaDados(FPRetornoWS, 'cteStatusServicoCTResult');
+  FPRetWS := StringReplace(FPRetWS, 'retConsStatServCte', 'retConsStatServCTe', [rfReplaceAll]);
 
-  if FPConfiguracoesCTe.Geral.VersaoDF >= ve400 then
-    CTeRetorno := TRetConsStatServ.Create('CTe')
-  else
-    CTeRetorno := TRetConsStatServ.Create('Cte');
+  CTeRetorno := TRetConsStatServ.Create('CTe');
 
   try
     CTeRetorno.Leitor.Arquivo := ParseText(FPRetWS);
@@ -860,6 +859,10 @@ procedure TCTeRecepcao.InicializarServico;
 var
   ok: Boolean;
 begin
+
+  if FPConfiguracoesCTe.Geral.VersaoDF >= ve400 then
+    Sincrono := True;
+
   if FConhecimentos.Count > 0 then    // Tem CTe ? Se SIM, use as informações do XML
     FVersaoDF := DblToVersaoCTe(ok, FConhecimentos.Items[0].CTe.infCTe.Versao)
   else
@@ -987,7 +990,7 @@ begin
 
   else
     begin
-      if FPConfiguracoesCTe.Geral.VersaoDF <= ve300 then
+      if (FPConfiguracoesCTe.Geral.VersaoDF <= ve300) then
         FPServico := GetUrlWsd + 'CTeRecepcaoGTVe'
       else
         FPServico := GetUrlWsd + 'CTeRecepcaoGTVeV4';
@@ -2081,7 +2084,7 @@ end;
 
 procedure TCTeConsulta.DefinirServicoEAction;
 begin
-  if FPConfiguracoesCTe.Geral.VersaoDF <= ve300 then
+  if (FPConfiguracoesCTe.Geral.VersaoDF <= ve300) then
     FPServico := GetUrlWsd + 'CteConsulta'
   else
     FPServico := GetUrlWsd + 'CTeConsultaV4';
@@ -2574,6 +2577,9 @@ procedure TCTeInutilizacao.DefinirDadosMsg;
 var
   InutCTe: TinutCTe;
 begin
+  if FPConfiguracoesCTe.Geral.VersaoDF >= ve400 then
+    raise EACBrCTeException.Create('A partir da versão 4.00 o serviço de Inutilizadação foi descontinuado.');
+
   InutCTe := TinutCTe.Create;
   try
     InutCTe.tpAmb := FPConfiguracoesCTe.WebServices.Ambiente;
@@ -2990,7 +2996,7 @@ end;
 
 procedure TCTeEnvEvento.DefinirServicoEAction;
 begin
-  if FPConfiguracoesCTe.Geral.VersaoDF <= ve300 then
+  if (FPConfiguracoesCTe.Geral.VersaoDF <= ve300) then
     FPServico := GetUrlWsd + 'CteRecepcaoEvento'
   else
     FPServico := GetUrlWsd + 'CTeRecepcaoEventoV4';
@@ -3250,6 +3256,13 @@ begin
           AXMLEvento := '<evPrestDesacordo xmlns="' + ACBRCTE_NAMESPACE + '">' +
                           Trim(RetornarConteudoEntre(AXMLEvento, '<evPrestDesacordo>', '</evPrestDesacordo>')) +
                         '</evPrestDesacordo>';
+        end;
+
+      schevCancPrestDesacordo:
+        begin
+          AXMLEvento := '<evCancPrestDesacordo xmlns="' + ACBRCTE_NAMESPACE + '">' +
+                          Trim(RetornarConteudoEntre(AXMLEvento, '<evCancPrestDesacordo>', '</evCancPrestDesacordo>')) +
+                        '</evCancPrestDesacordo>';
         end;
 
       schevGTV:
@@ -3820,7 +3833,7 @@ begin
   if not Enviar.Executar then
     Enviar.GerarException( Enviar.Msg );
 
-  if not ASincrono or ((FEnviar.Recibo <> '') and (FEnviar.cStat = 103)) then
+  if not FEnviar.Sincrono or ((FEnviar.Recibo <> '') and (FEnviar.cStat = 103)) then
   begin
     FRetorno.Recibo := FEnviar.Recibo;
 

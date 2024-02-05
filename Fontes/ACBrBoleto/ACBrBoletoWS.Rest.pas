@@ -36,6 +36,7 @@ unit ACBrBoletoWS.Rest;
 interface
 
 uses
+  ACBrOpenSSLUtils,
   httpsend,
   ACBrJSON,
   SysUtils,
@@ -44,7 +45,7 @@ uses
   ACBrBoletoConversao,
   pcnConversao,
   ACBrBoletoWS,
-  ACBrBoleto;
+  ACBrBoleto, ACBrBase;
 
 type
 { TBoletoWSREST }   //Implementar Bancos que utilizam JSON
@@ -111,7 +112,9 @@ uses
   ACBrUtil.Base,
   synautil,
   synacode,
-  StrUtils;
+  StrUtils,
+  ACBrCompress,
+  ACBrUtil.FilesIO;
 
 { TRetornoEnvioREST }
 
@@ -140,12 +143,26 @@ begin
   BoletoWS.ArquivoCRT := Boleto.Configuracoes.WebService.ArquivoCRT;
   BoletoWS.ArquivoKEY := Boleto.Configuracoes.WebService.ArquivoKEY;
 
-  // Adicionando o Certificado
-  if NaoEstaVazio(BoletoWS.ArquivoCRT) then
-    HTTPSend.Sock.SSL.CertificateFile := BoletoWS.ArquivoCRT;
+  // Adicionando o chave privada
+  if NaoEstaVazio(BoletoWS.ChavePrivada) then
+  begin
+    if StringIsPEM(BoletoWS.ChavePrivada) then
+      HTTPSend.Sock.SSL.PrivateKey := ConvertPEMToASN1(BoletoWS.ChavePrivada)
+    else
+      HTTPSend.Sock.SSL.PrivateKey := BoletoWS.ChavePrivada;
+  end
+  else if NaoEstaVazio(BoletoWS.ArquivoKEY) then
+    HttpSend.Sock.SSL.PrivateKeyFile := BoletoWS.ArquivoKEY;
 
-  if NaoEstaVazio(BoletoWS.ArquivoKEY) then
-    HTTPSend.Sock.SSL.PrivateKeyFile := BoletoWS.ArquivoKEY;
+  if NaoEstaVazio(BoletoWS.Certificado) then
+  begin
+    if StringIsPEM(BoletoWS.Certificado) then
+      HTTPSend.Sock.SSL.Certificate := ConvertPEMToASN1(BoletoWS.Certificado)
+    else
+      HTTPSend.Sock.SSL.Certificate := BoletoWS.Certificado;
+  end
+  else if NaoEstaVazio(BoletoWS.ArquivoCRT) then
+    HTTPSend.Sock.SSL.CertificateFile := BoletoWS.ArquivoCRT;
 end;
 
 procedure TBoletoWSREST.DefinirContentType;
@@ -230,6 +247,7 @@ procedure TBoletoWSREST.Executar;
 var
   LHeaders : TStringList;
   LStream : TStringStream;
+  LCT : TCompressType;
 begin
   LStream  := TStringStream.Create('');
   LHeaders := TStringList.Create;
@@ -269,12 +287,27 @@ begin
     HTTPSend.HTTPMethod(MetodoHTTPToStr(FMetodoHTTP), FPURL );
   finally
     HTTPSend.Document.Position:= 0;
-    FRetornoWS:= String(UTF8Decode(LStream.DataString));
+    
+   try
+      LCT := DetectCompressType(LStream);
+      if (LCT = ctUnknown) then  // Not compressed...
+      begin
+        LStream.Position := 0;
+        FRetornoWS := ReadStrFromStream(LStream, LStream.Size);
+      end
+      else
+        FRetornoWS := UnZip(LStream);
+   except
+      LStream.Position := 0;
+      FRetornoWS := ReadStrFromStream(LStream, LStream.Size);
+   end;
+
+    FRetornoWS:= String(UTF8Decode(FRetornoWS));
     BoletoWS.RetornoBanco.CodRetorno     := HTTPSend.Sock.LastError;
 
     try
 //      LStream.CopyFrom(HTTPSend.Document,0);
-      BoletoWS.RetornoBanco.Msg            := Trim('HTTP_Code='+ IntToStr(HTTPSend.ResultCode)+' '+ HTTPSend.ResultString+' '+LStream.DataString);
+      BoletoWS.RetornoBanco.Msg            := Trim('HTTP_Code='+ IntToStr(HTTPSend.ResultCode)+' '+ HTTPSend.ResultString +' '+ FRetornoWS);
       BoletoWS.RetornoBanco.HTTPResultCode := HTTPSend.ResultCode;
     finally
       LStream.Free;

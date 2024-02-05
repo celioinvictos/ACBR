@@ -43,6 +43,78 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+15/12/2023
+--- ACBrDANFCeFortesFr,ACBrDANFCeFortesFrA4  ---
+[*]TK-4814 Substituida a função para formatação de DataHora do NFCe, deixado como no modelo NFe
+https://www.projetoacbr.com.br/forum/topic/75361-mascara-de-impress%C3%A3o-da-data-na-nfc-e-na-acbrlib-usando-em-api-com-iis-em-projeto-c/?_rid=127195
+Por: Daniel Morais
+
+
+11/12/2023
+-- ACBrNFeNotasFiscais --
+[*] Ajustes no método "ValidarRegrasdeNegocios"
+  - Adicionadas validações para as rejeições 629 e 630 que trata da multiplicação do valor unitário pela quantidade de itens
+  - Correção para a validação da rejeição 610, para considerar como válido o valor total da nota abatendo ou não o ICMS desonerado
+  Por: BigWings
+
+08/12/2023
+-- ACBrNFeNotasFiscais --
+[*] Ajuste no ValidarRegrasdeNegocios, para a rejeição 425, incluido o CFOP: 5949.
+    por: Suporte Anexo tecnologia
+
+30/11/2023
+-- ACBrNFeDANFeRLSimplificado --
+[*] Adiciona nova banda visando evitar que a descrição dos produtos sobreponham a linha de baixo.
+   Por: Victor H Gonzales - Pandaaa / Diego Folieni 
+
+16/11/2023
+-- Diversos --
+[*] Altera a lógica da aplicação da propriedade ExibeICMSDesoneradoComoDesconto e adiciona em outros impressos da NFC-e além do Fast.
+    Por: Victor H Gonzales - Pandaaa / Diego Folieni
+
+31/10/2023
+-- ACBrNFeNotasFiscais --
+[*] Ajuste no ValidarRegrasdeNegocios, para as rejeições 383 e 766 para o modelo 65.
+    por: Alan Lucas
+
+18/10/2023
+-- ACBrNFeDANFeRLPaisagem, ACBrNFeDANFeRLRetrao --
+[*] Altera a forma como é formatado o Nº da NFe visando padronização com o Fast e o MOC.
+    Por: Diego Folieni
+
+06/10/2023
+-- ACBrNFeNotasFiscais --
+[*] Ajuste no ValidarRegrasdeNegocios, pois estava gerando indevidadmente um alerta
+    ao checar o valor da nota (vNT).
+    por: Italo Giurizzato Junior
+
+03/10/2023
+-- ACBrNFeNotasFiscais --
+[*] Ajuste para entender o Tipo SAT no grupo NFRef no arquivo INI para poder referenciar SAT.
+   Por: Diego Folieni
+
+12/09/2023
+-- ACBrNFeNotasFiscais --
+[*] Melhorias na função ValidarRegrasdeNegocios, pois estava gerando indevidamente um
+    alerta de erro ao comparar a UF da Retirada ou Entrega com o código do municipio,
+    quando a UF era 'EX'.
+    por: Italo Giurizzato Junior
+-- ACBrNFeWebServices --
+[*] Alterações visando atender a versão 1.00 da NT 2023/002 que elimina o envio
+    em lote de NFC-e a partir de 04/09/2023 em produção.
+    por: Italo Giurizzato Junior
+
+06/09/2023
+[*] Altera a validação para geração do grupo IPI no arquivo INI.
+  Por: Diego Folieni
+
+30/06/2023
+[*] TK-4041 Aumenta o tamanho maximo do campo pDif visando evitar problemas com valores longos.
+  Por: Altamogiana / Rev: Alexandre de Paula
+
+14/06/2023
+[*]TK-4064 Remoção da obrigação do card e cAut e modificação da forma que os meios de pagamento são impressos, utilizando agora o paramento DescricaoPagamento e o conteudo do XML
+  por : Victor H Gonzales - Pandaaa
 
 12/05/2023
 [-]TK-3928 Tratamento de exception quando ler meio de pagamento no danfce

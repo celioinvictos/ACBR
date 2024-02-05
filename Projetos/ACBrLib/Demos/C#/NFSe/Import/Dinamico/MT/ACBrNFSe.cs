@@ -7,6 +7,7 @@ using System.Text;
 using ACBrLib.Core;
 using ACBrLib.Core.DFe;
 using ACBrLib.NFSe;
+using System.IO;
 
 namespace ACBrLib.NFSe
 {
@@ -291,7 +292,7 @@ namespace ACBrLib.NFSe
             CheckResult(ret);
         }
 
-        public string ConsultarSitucao(string aProtocolo, string aNumeroLote)
+        public string ConsultarSituacao(string aProtocolo, string aNumeroLote)
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
@@ -409,6 +410,22 @@ namespace ACBrLib.NFSe
             CheckResult(ret);
         }
 
+        public void ImprimirPDF(Stream aStream)
+        {
+            if (aStream == null) throw new ArgumentNullException(nameof(aStream));
+
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_SalvarPDF>();
+            var ret = ExecuteMethod(() => method(libHandle, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            var pdf = ProcessResult(buffer, bufferLen);
+            Base64ToStream(pdf, aStream);
+        }
+
         public string ConsultarNFSeServicoPrestadoPorNumero(string aNumero, int aPagina, DateTime aDataInicial, DateTime aDataFinal, int aTipoPeriodo)
         {
             var bufferLen = BUFFER_LEN;
@@ -522,6 +539,83 @@ namespace ACBrLib.NFSe
             var ret = ExecuteMethod(() => method(libHandle, ToUTF8(aCNPJ), ToUTF8(aInscMun), aPagina, aDataInicial, aDataFinal, aTipoPeriodo, buffer, ref bufferLen));
 
             CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string EnviarEvento(string aInfEvento)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_EnviarEvento>();
+            var ret = ExecuteMethod(() => method(libHandle, ToUTF8(aInfEvento), buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultarDPSPorChave(string aChaveDPS)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ConsultarDPSPorChave>();
+            var ret = ExecuteMethod(() => method(libHandle, ToUTF8(aChaveDPS), buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultarNFSePorChave(string aChaveNFSe)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ConsultarNFSePorChave>();
+            var ret = ExecuteMethod(() => method(libHandle, ToUTF8(aChaveNFSe), buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultarEvento(string aChave, int aTipoEvento, int aNumSeq)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ConsultarEvento>();
+            var ret = ExecuteMethod(() => method(libHandle, ToUTF8(aChave), aTipoEvento, aNumSeq, buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultarDFe(int aNSU)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ConsultarDFe>();
+            var ret = ExecuteMethod(() => method(libHandle, aNSU, buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ObterDANFSE(string aChaveNFSe)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ObterDANFSE>();
+            var ret = ExecuteMethod(() => method(libHandle, ToUTF8(aChaveNFSe), buffer, ref bufferLen));
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
+        public string ConsultarParametros(int aTipoParametroMunicipio, string aCodigoServico, DateTime aCompetencia, string aNumeroBeneficio)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ConsultarParametros>();
+            var ret = ExecuteMethod(() => method(libHandle, aTipoParametroMunicipio, ToUTF8(aCodigoServico), aCompetencia, ToUTF8(aNumeroBeneficio), buffer, ref bufferLen));
 
             return ProcessResult(buffer, bufferLen);
         }

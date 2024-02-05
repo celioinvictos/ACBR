@@ -144,6 +144,7 @@ type
 
     procedure ImprimirEvento;
     procedure ImprimirEventoPDF;
+
     procedure ImprimirInutilizacao;
     procedure ImprimirInutilizacaoPDF;
 
@@ -729,9 +730,6 @@ begin
   if Conhecimentos.Count <= 0 then
     GerarException(ACBrStr('ERRO: Nenhum CT-e adicionado ao Lote'));
 
-  if Configuracoes.Geral.VersaoDF >= ve400 then
-    ASincrono := True;
-
   if ASincrono then
   begin
     if Conhecimentos.Count > 1 then
@@ -902,9 +900,6 @@ end;
 function TACBrCTe.Inutilizar(const ACNPJ, AJustificativa: String; AAno, ASerie,
   ANumInicial, ANumFinal: Integer): Boolean;
 begin
-  if Configuracoes.Geral.VersaoDF >= ve400 then
-    GerarException('A partir da versão 4.00 o serviço de Inutilizadação foi descontinuado.');
-
   Result := True;
   WebServices.Inutiliza(ACNPJ, AJustificativa, AAno,
                         Configuracoes.Geral.ModeloDFCodigo,
@@ -1017,7 +1012,7 @@ begin
   if not Assigned(DACTE) then
     raise EACBrCTeException.Create('Componente DACTE não associado.')
   else
-    DACTE.ImprimirEVENTOPDF(nil);
+    DACTE.ImprimirEVENTOPDF;
 end;
 
 procedure TACBrCTe.ImprimirInutilizacao;

@@ -40,7 +40,7 @@ interface
 uses
   SysUtils, Classes, contnrs, ACBrLibResposta, ACBrNFSeXNotasFiscais,
   ACBrNFSeX, ACBrNFSeXWebservicesResponse, ACBrNFSeXWebserviceBase,
-  ACBrNFSeXConversao;
+  ACBrNFSeXConversao, ACBrNFSeXConfiguracoes, ACBrBase;
 
 type
 
@@ -74,13 +74,22 @@ type
 
   end;
 
+  { TNFSeArquivoItem }
+
+  TNFSeArquivoItem = class(TACBrLibArquivosResposta)
+  private
+  public
+    procedure Processar(const Resumo: TNFSeResumoCollectionItem);
+  end;
+
   { TLibNFSeServiceResposta }
-  TLibNFSeServiceResposta = class abstract(TACBrLibRespostaBase)
+  TLibNFSeServiceResposta = class abstract(TACBrLibRespostaEnvio)
   private
     FXmlEnvio: string;
     FXmlRetorno: string;
-    FErros: TObjectList;
-    FAlertas: TObjectList;
+    FErros: TACBrObjectList;
+    FAlertas: TACBrObjectList;
+    FResumos: TACBrObjectList;
 
   public
     constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
@@ -91,8 +100,9 @@ type
   published
     property XmlEnvio: String read FXmlEnvio write FXmlEnvio;
     property XmlRetorno: String read FXmlRetorno write FXmlRetorno;
-    property Erros: TObjectList read FErros write FErros;
-    property Alertas: TObjectList read FAlertas write FAlertas;
+    property Erros: TACBrObjectList read FErros write FErros;
+    property Alertas: TACBrObjectList read FAlertas write FAlertas;
+    property Resumos: TACBrObjectList read FResumos write FResumos;
 
   end;
 
@@ -296,23 +306,228 @@ type
     FLote: string;
     FQtdMaxRps: integer;
     FModoEnvio: TmodoEnvio;
+    FNomeArq: string;
 
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
 
-    procedure Processar(const GerarLote: string); reintroduce;
+    procedure Processar(const Response: TNFSeEmiteResponse); reintroduce;
 
   published
     property Lote: string read FLote write FLote;
     property MaxRps: integer read FQtdMaxRps write FQtdMaxRps;
     property ModoEnvio: TmodoEnvio read FModoEnvio write FModoEnvio;
+    property NomeArq: string read FNomeArq write FNomeArq;
+  end;
+
+  { TEnviarEventoResposta }
+  TEnviarEventoResposta = class(TLibNFSeServiceResposta)
+    private
+      FToken: string;
+      FDataExpiracao: TDateTime;
+      FInfEvento: TInfEvento;
+
+    public
+      constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+      destructor Destroy; override;
+
+      procedure Processar(const Response: TNFSeEnviarEventoResponse); reintroduce;
+
+    published
+      property Token: string read FToken write FToken;
+      property DataExpiracao: TDateTime read FDataExpiracao write FDataExpiracao;
+      property InfEvento: TInfEvento read FInfEvento write FInfEvento;
+  end;
+
+  { TConsultaEventoResposta }
+  TConsultaEventoResposta = class(TLibNFSeServiceResposta)
+    private
+      FChaveNFSe: string;
+
+    public
+      constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+      destructor Destroy; override;
+
+      procedure Processar(const Response: TNFSeConsultarEventoResponse); reintroduce;
+
+    published
+      property ChaveNFSe: string read FChaveNFSe write FChaveNFSe;
+  end;
+
+  { TConsultaDFeResposta }
+  TConsultaDFeResposta = class(TLibNFSeServiceResposta)
+    private
+      FNSU: Integer;
+      FChaveNFSe: string;
+
+    public
+      constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+      destructor Destroy; override;
+
+      procedure Processar(const Response: TNFSeConsultarDFeResponse); reintroduce;
+
+    published
+      property NSU: Integer read FNSU write FNSU;
+      property ChaveNFSe: string read FChaveNFSe write FChaveNFSe;
+  end;
+
+  { TConsultaParametrosResposta }
+  TConsultaParametrosResposta = class(TLibNFSeServiceResposta)
+    private
+      FtpParamMunic: TParamMunic;
+      FCodigoMunicipio: Integer;
+      FCodigoServico: string;
+      FCompetencia: TDateTime;
+      FNumeroBeneficio: string;
+      FParametros: TStrings;
+
+    public
+      constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+      destructor Destroy; override;
+
+      procedure Processar(const Response: TNFSeConsultarParamResponse); reintroduce;
+
+    published
+      property tpParamMunic: TParamMunic read FtpParamMunic write FtpParamMunic;
+      property CodigoMunicipio: Integer read FCodigoMunicipio write FCodigoMunicipio;
+      property CodigoServico: string read FCodigoServico write FCodigoServico;
+      property Competencia: TDateTime read FCompetencia write FCompetencia;
+      property NumeroBeneficio: string read FNumeroBeneficio write FNumeroBeneficio;
+      property Parametros: TStrings read FParametros write FParametros;
+  end;
+
+  { TObterInformacoesProvedorResposta }
+
+  TObterInformacoesProvedorResposta = class(TACBrLibRespostaBase)
+  private
+    FIdentificacaoProvedor: string;
+    FAutenticacoesRequeridas: string;
+    FServicosDisponibilizados: string;
+  public
+    constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
+    destructor Destroy; override;
+
+    procedure Processar(const Response: TGeralConfNFSe); reintroduce;
+
+  published
+    property IdentificacaoProvedor: String read FIdentificacaoProvedor;
+    property AutenticacoesRequeridas: String read FAutenticacoesRequeridas;
+    property ServicosDisponibilizados: String read FServicosDisponibilizados;
   end;
 
 implementation
 
 uses
-  pcnAuxiliar, pcnConversao, {ACBrUtil,} ACBrLibNFSeConsts;
+  pcnAuxiliar, pcnConversao, ACBrUtil, ACBrLibNFSeConsts, ACBrLibConsts;
+
+{ TObterInformacoesProvedorResposta }
+
+constructor TObterInformacoesProvedorResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
+begin
+  FIdentificacaoProvedor := '';
+  FAutenticacoesRequeridas := '';
+  FServicosDisponibilizados := '';
+
+  inherited Create(CSessaoObterInformacoesProvedor, ATipo, AFormato);
+end;
+
+destructor TObterInformacoesProvedorResposta.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TObterInformacoesProvedorResposta.Processar(const Response: TGeralConfNFSe);
+begin
+  FIdentificacaoProvedor := 'Nome:'+ Response.xProvedor + '|Versão:' + VersaoNFSeToStr(Response.Versao);
+
+  if Response.Autenticacao.RequerCertificado then
+    FAutenticacoesRequeridas := FAutenticacoesRequeridas + 'RequerCertificado|';
+
+  if Response.Autenticacao.RequerLogin then
+    FAutenticacoesRequeridas := FAutenticacoesRequeridas + 'RequerLogin|';
+
+  if Response.Autenticacao.RequerChaveAcesso then
+    FAutenticacoesRequeridas := FAutenticacoesRequeridas + 'RequerChaveAcesso|';
+
+  if Response.Autenticacao.RequerChaveAutorizacao then
+    FAutenticacoesRequeridas := FAutenticacoesRequeridas + 'RequerChaveAutorizacao|';
+
+  if Response.Autenticacao.RequerFraseSecreta then
+    FAutenticacoesRequeridas := FAutenticacoesRequeridas + 'RequerFraseSecreta|';
+
+  if Response.ServicosDisponibilizados.EnviarLoteAssincrono then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'EnviarLoteAssincrono|';
+
+  if Response.ServicosDisponibilizados.EnviarLoteSincrono then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'EnviarLoteSincrono|';
+
+  if Response.ServicosDisponibilizados.EnviarUnitario then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'EnviarUnitario|';
+
+  if Response.ServicosDisponibilizados.ConsultarSituacao then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarSituacao|';
+
+  if Response.ServicosDisponibilizados.ConsultarLote then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarLote|';
+
+  if Response.ServicosDisponibilizados.ConsultarRps then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarRps|';
+
+  if Response.ServicosDisponibilizados.ConsultarNfse then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarNfse|';
+
+  if Response.ServicosDisponibilizados.ConsultarFaixaNfse then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarFaixaNfse|';
+
+  if Response.ServicosDisponibilizados.ConsultarServicoPrestado then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarServicoPrestado|';
+
+  if Response.ServicosDisponibilizados.ConsultarServicoTomado then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarServicoTomado|';
+
+  if Response.ServicosDisponibilizados.CancelarNfse then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'CancelarNfse|';
+
+  if Response.ServicosDisponibilizados.SubstituirNfse then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'SubstituirNfse|';
+
+  if Response.ServicosDisponibilizados.GerarToken then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'GerarToken|';
+
+  if Response.ServicosDisponibilizados.EnviarEvento then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'EnviarEvento|';
+
+  if Response.ServicosDisponibilizados.ConsultarEvento then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarEvento|';
+
+  if Response.ServicosDisponibilizados.ConsultarDFe then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarDFe|';
+
+  if Response.ServicosDisponibilizados.ConsultarParam then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarParam|';
+
+  if Response.ServicosDisponibilizados.ConsultarSeqRps then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarSeqRps|';
+
+  if Response.ServicosDisponibilizados.ConsultarLinkNfse then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarLinkNfse|';
+
+  if Response.ServicosDisponibilizados.ConsultarNfseChave then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'ConsultarNfseChave|';
+
+  if Response.ServicosDisponibilizados.TestarEnvio then
+    FServicosDisponibilizados := FServicosDisponibilizados + 'TestarEnvio|';
+
+end;
+
+{ TNFSeArquivoItem }
+
+procedure TNFSeArquivoItem.Processar(const Resumo: TNFSeResumoCollectionItem);
+begin
+  Self.NomeArquivo := ExtractFileName(Resumo.NomeArq);
+  Self.CaminhoCompleto := Resumo.NomeArq;
+end;
 
 { TNFSeEventoItem }
 procedure TNFSeEventoItem.Processar(const Evento: TNFSeEventoCollectionItem);
@@ -330,20 +545,20 @@ begin
 end;
 
 { TLibNFSeServiceResposta }
-constructor TLibNFSeServiceResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo;
-  const AFormato: TACBrLibCodificacao);
+constructor TLibNFSeServiceResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(ASessao, ATipo, AFormato);
 
-  FErros := TObjectList.Create(True);
-  FAlertas := TObjectList.Create(True);
+  FErros := TACBrObjectList.Create(True);
+  FAlertas := TACBrObjectList.Create(True);
+  FResumos := TACBrObjectList.Create(True);
 end;
 
 destructor TLibNFSeServiceResposta.Destroy;
 begin
-
   FErros.Destroy;
   FAlertas.Destroy;
+  FResumos.Destroy;
   inherited Destroy;
 end;
 
@@ -351,6 +566,7 @@ procedure TLibNFSeServiceResposta.Processar(const Response: TNFSeWebserviceRespo
 var
   i: Integer;
   Item: TNFSeEventoItem;
+  Arq: TNFSeArquivoItem;
 begin
   XmlEnvio := Response.XmlEnvio;
   XmlRetorno := Response.XmlRetorno;
@@ -372,6 +588,16 @@ begin
       Item := TNFSeEventoItem.Create(CSessaoRespAlerta + IntToStr(i + 1), Tipo, Formato);
       Item.Processar(Response.Alertas.Items[i]);
       FAlertas.Add(Item);
+    end;
+  end;
+
+  if Response.Resumos.Count > 0 then
+  begin
+    for i := 0 to Response.Resumos.Count - 1 do
+    begin
+      Arq := TNFSeArquivoItem.Create(CSessaoRespArquivo + IntToStr(i + 1), Tipo, Formato);
+      Arq.Processar(Response.Resumos.Items[i]);
+      InformacoesArquivo.Add(Arq);
     end;
   end;
 end;
@@ -576,11 +802,92 @@ begin
   inherited Destroy;
 end;
 
-procedure TGerarLoteResposta.Processar(const GerarLote: string);
+procedure TGerarLoteResposta.Processar(const Response: TNFSeEmiteResponse);
 begin
-  FLote:= Lote;
-  FQtdMaxRps:= MaxRps;
-  FModoEnvio:= ModoEnvio;
+  FLote:= Response.NumeroLote;
+  FQtdMaxRps:= Response.MaxRps;
+  FModoEnvio:= Response.ModoEnvio;
+  FNomeArq:= Response.NomeArq;
+end;
+
+{ TEnviarEventoResposta }
+constructor TEnviarEventoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
+begin
+  inherited Create(CSessaoRespEnviarEvento, ATipo, AFormato);
+end;
+
+destructor TEnviarEventoResposta.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TEnviarEventoResposta.Processar(const Response: TNFSeEnviarEventoResponse);
+begin
+  inherited Processar(Response);
+
+  Token:= Response.Token;
+  DataExpiracao:= Response.DataExpiracao;
+  InfEvento:= Response.InfEvento;
+end;
+
+{ TConsultaEventoResposta }
+constructor TConsultaEventoResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
+begin
+  inherited Create(CSessaoRespConsultarEvento, ATipo, AFormato);
+end;
+
+destructor TConsultaEventoResposta.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TConsultaEventoResposta.Processar(const Response: TNFSeConsultarEventoResponse);
+begin
+  inherited Processar(Response);
+
+  ChaveNFSe:= Response.ChaveNFSe;
+end;
+
+{ TConsultaDFeResposta }
+constructor TConsultaDFeResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
+begin
+  inherited Create(CSessaoRespConsultarDFe, ATipo, AFormato);
+end;
+
+destructor TConsultaDFeResposta.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TConsultaDFeResposta.Processar(const Response: TNFSeConsultarDFeResponse);
+begin
+  inherited Processar(Response);
+
+  NSU:= Response.NSU;
+  ChaveNFSe:= Response.ChaveNFSe;
+end;
+
+{ TConsultaParametrosResposta }
+constructor TConsultaParametrosResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
+begin
+  inherited Create(CSessaoRespConsultarParametros, ATipo, AFormato);
+end;
+
+destructor TConsultaParametrosResposta.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TConsultaParametrosResposta.Processar(const Response: TNFSeConsultarParamResponse);
+begin
+  inherited Processar(Response);
+
+  tpParamMunic:= Response.tpParamMunic;
+  CodigoMunicipio:= Response.CodigoMunicipio;
+  CodigoServico:= Response.CodigoServico;
+  Competencia:= Response.Competencia;
+  NumeroBeneficio:= Response.NumeroBeneficio;
+  Parametros:= Response.Parametros;
 end;
 
 end.

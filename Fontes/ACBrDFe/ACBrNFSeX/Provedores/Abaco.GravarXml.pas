@@ -77,7 +77,7 @@ begin
 
   FormatoItemListaServico := filsSemFormatacaoSemZeroEsquerda;
   DivAliq100 := True;
-  NrOcorrCodPaisTomador := -1;
+  NrOcorrCodigoPaisTomador := -1;
 end;
 
 procedure TNFSeW_Abaco.DefinirIDRps;
@@ -92,9 +92,6 @@ procedure TNFSeW_Abaco204.Configuracao;
 begin
   inherited Configuracao;
 
-  GerarEnderecoExterior := True;
-
-  NrOcorrNIFTomador := 0;
   NrOcorrCodigoPaisTomador := -1;
 
   TagTomador := 'TomadorServico';

@@ -56,7 +56,8 @@ uses
    System.Contnrs,
   {$IfEnd}
   ACBrBase,
-  pcnConversao, pcnGerador, pcnConsts,
+  ACBrDFeConsts,
+  pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -561,7 +562,10 @@ begin
 
     if (Self.ModoLancamento <> mlExclusao) then
     begin
-      GerarInfoCadastro;
+      if ((VersaoDF <= veS01_01_00) or
+          (Self.infoEmpregador.infoCadastro.ClassTrib <> ct00) or
+          (Self.ideEvento.ProcEmi <> peAplicGovEvtJud)) then
+        GerarInfoCadastro;
       if ModoLancamento = mlAlteracao then
         if (InfoEmpregador.novaValidadeInst()) then
           GerarIdePeriodo(InfoEmpregador.novaValidade, 'novaValidade');
@@ -634,7 +638,7 @@ begin
         infoEmpregador.infoCadastro.IndEtt                := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indEtt', 'S'));
         infoEmpregador.infoCadastro.nrRegEtt              := INIRec.ReadString(sSecao, 'nrRegEtt', EmptyStr);
         infoEmpregador.infoCadastro.cnpjEFR               := INIRec.ReadString(sSecao, 'cnpjEFR', EmptyStr);
-        infoEmpregador.infoCadastro.indTribFolhaPisCofins := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indTribFolhaPisCofins', 'S'));
+        infoEmpregador.infoCadastro.indTribFolhaPisCofins := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indTribFolhaPisCofins', ''));
 
         sSecao := 'dadosIsencao';
         if INIRec.ReadString(sSecao, 'ideMinLei', '') <> '' then

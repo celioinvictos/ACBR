@@ -202,6 +202,19 @@ type
       BarHeight: double = 0; BarWidth: double = 0);
   end;
 
+  { TFPDFScriptTransform }
+  { http://www.fpdf.org/en/script/script79.php - Moritz Wagner & Andreas Würmser }
+  TTransformationMatrix = array[0..5] of double;
+
+  TFPDFScriptTransform = class(TFPDFScripts)
+  private
+  public
+    procedure StartTransform;
+    procedure StopTransform;
+    procedure Translate(t_x, t_y: double);
+    procedure Transform(tm: TTransformationMatrix);
+  end;
+
   TFPDFLayer =  record
     Name: String;
     Visible: Boolean;
@@ -221,6 +234,9 @@ type
     fProxyPort: string;
     fProxyUser: string;
 
+    fHREF: String;
+    fFontStyle: String;
+
     {$IfDef HAS_HTTP}
      procedure GetImageFromURL(const aURL: string; const aResponse: TStream);
     {$EndIf}
@@ -230,13 +246,18 @@ type
     procedure _generateencryptionkey(const UserPass: AnsiString;
       const OwnerPass: AnsiString; protection: Integer);
     function _md5_16(AStr: AnsiString): AnsiString;
-    function packVXxx(vn: Integer): AnsiString;
     function _objectkey(vn: Integer): AnsiString;
     function _Ovalue(const UserPass: AnsiString; const OwnerPass: AnsiString
       ): AnsiString;
     function _Uvalue: AnsiString;
     function RC4(const AKey: AnsiString; const AData: AnsiString): AnsiString;
     {$EndIf}
+
+    function FindNextTagPos(const AHtml: String; out ATag: String; OffSet: Integer): Integer;
+    procedure OpenTag(const ATag: String);
+    procedure CloseTag(const ATag: String);
+    procedure SetStyle(const ATag: String; Enable: Boolean);
+    procedure PutLink(const AURL, AText: String);
   protected
     angle: Double;
     layers: array of TFPDFLayer;
@@ -253,8 +274,7 @@ type
     last_key: AnsiString;
     last_state: array[0..255] of Byte;
 
-    procedure Header; override;
-    procedure Footer; override;
+
     procedure _endpage; override;
     procedure _putstream(const Adata: AnsiString); override;
     function _textstring(const AString: String): String; override;
@@ -269,6 +289,9 @@ type
 
     procedure _Arc(vX1, vY1, vX2, vY2, vX3, vY3: Double);
   public
+    procedure Header; override;
+    procedure Footer; override;
+
     procedure InternalCreate; override;
 
     procedure Rotate(NewAngle: Double = 0; vX: Double = -1; vY: Double = -1);
@@ -281,6 +304,8 @@ type
     procedure BeginLayer(const LayerName: String); overload;
     procedure EndLayer;
     procedure OpenLayerPane;
+
+    procedure WriteHTML(const AHtml: String);
 
     {$IfDef HAS_PROTECTION}
     procedure SetProtection(Permissions: TFPDFPermissions;
@@ -305,11 +330,28 @@ type
       BarHeight: double = 0; BarWidth: double = 0);
 
     {$IfDef DelphiZXingQRCode}
-    procedure QRCode(vX: double; vY: double; const QRCodeData: String;
-      DotSize: Double = 0; AEncoding: TQRCodeEncoding = qrAuto);
+    function QRCode(vX: double; vY: double; const QRCodeData: String;
+      DotSize: Double = 0; AEncoding: TQRCodeEncoding = qrAuto): double; overload;
+    procedure QRCode(vX: double; vY: double; vQRCodeSize: double;
+      const QRCodeData: String; AEncoding: TQRCodeEncoding = qrAuto); overload;
     {$EndIf}
     procedure Draw2DMatrix(AMatrix: TFPDF2DMatrix; vX: double; vY: double;
       DotSize: Double = 0);
+
+    procedure SetDash(ABlack, AWhite: double); overload;
+    procedure SetDash(AWidth: double); overload;
+    procedure DashedLine(vX1, vY1, vX2, vY2: Double; ADashWidth: double = 1);
+    procedure DashedRect(vX, vY, vWidht, vHeight: Double; const vStyle: String = ''; ADashWidth: double = 1);
+
+    function WordWrap(var AText: string; AMaxWidth: Double; AIndent: double = 0): integer;
+    function GetNumLines(const AText: string; AWidth: Double; AIndent: double = 0): integer;
+    function GetStringHeight(const AText: string; AWidth: double;
+      ALineSpacing: double = 0; AIndent: double = 0): double;
+
+    function TextBox(vX, vY, vWidth, vHeight: double; const AText: string;
+      const vAlign: char = 'T'; const hAlign: char = 'L';
+      ABorder: boolean = True; AWordWrap: boolean = True;
+      AScale: boolean = False; ALineSpacing: double = 0): double;
 
     property OnHeader: TFPDFEvent read fOnHeader write fOnHeader;
     property OnFooter: TFPDFEvent read fOnFooter write fOnFooter;
@@ -1135,6 +1177,120 @@ begin
   Self.open_layer_pane := true;
 end;
 
+function TFPDFExt.WordWrap(var AText: string; AMaxWidth,
+  AIndent: double): integer;
+{ http://www.fpdf.org/en/script/script49.php - Ron Korving }
+var
+  Space, Width, WordWidth: Double;
+  Lines, Words: TStringArray;
+  ALine, Word: string;
+  i, j, L: integer;
+begin
+  AText := Trim(AText);
+  Result := 0;
+  if AText = '' then
+    Exit;
+  
+  Space := Self.GetStringWidth(' ');
+  Lines := Split(AText, sLineBreak);
+  AText := '';
+  AMaxWidth := AMaxWidth - AIndent;
+  Result := 0;
+  for i := 0 to Length(Lines) - 1 do
+  begin
+    ALine := Lines[i];
+    Words := Split(ALine, ' ');
+    Width := 0;
+    for j := 0 to Length(Words) - 1 do
+    begin
+      Word := Words[j];
+      if Trim(Word) = '' then
+        Continue;
+      WordWidth := Self.GetStringWidth(Word);
+      if WordWidth > AMaxWidth then
+      begin
+        // Word is too long, we cut it
+        for L := 1 to Length(Word) do
+        begin
+          WordWidth := Self.GetStringWidth(Copy(Word, L, 1));
+          if (Width + WordWidth <= AMaxWidth) then
+          begin
+            Width := Width + WordWidth;
+            AText := AText + Copy(Word, L, 1);
+          end
+          else
+          begin
+            Width := WordWidth;
+            AText := TrimRight(AText) + sLineBreak + Copy(Word, L, 1);
+            Inc(Result);
+            AMaxWidth := AMaxWidth + AIndent;
+          end;
+        end;
+      end
+      else
+        if (Width + WordWidth <= AMaxWidth) then
+        begin
+          Width := Width + WordWidth + Space;
+          AText := AText + Word + ' ';
+        end
+        else
+        begin
+          Width := WordWidth + Space;
+          AText := TrimRight(AText) + sLineBreak + Word + ' ';
+          Inc(Result);
+          AMaxWidth := AMaxWidth + AIndent;
+        end;
+    end;
+    AText := TrimRight(AText) + sLineBreak;
+    Inc(Result);
+    AMaxWidth := AMaxWidth + AIndent;
+  end;
+  AText := TrimRight(AText);
+end;
+
+procedure TFPDFExt.WriteHTML(const AHtml: String);
+var
+  s, ATag, AText: String;
+  l, lt, p1, p2: Integer;
+begin
+  // HTML parser
+  s := StringReplace(AHtml, #13+#10, ' ', [rfReplaceAll]);
+  s := StringReplace(s, #10, ' ', [rfReplaceAll]);
+  l := Length(s);
+  p1 := 1;
+  while p1 <= l do
+  begin
+    p2 := FindNextTagPos(AHtml, ATag, p1);
+    if (p2 = 0) then
+      p2 := l+1;
+
+    AText := copy(AHtml, p1, p2-p1);
+    if (AText <> '') then
+    begin
+      if (Self.fHREF <> '') then
+        PutLink(Self.fHREF, AText)
+      else
+        Write(Self.FontSize + 0.5, AText);
+    end;
+
+    if (ATag <> '') then
+    begin
+      lt := Length(ATag);
+      if ATag[1] = '/' then
+      begin
+        Delete(ATag, 1, 1);
+        CloseTag(ATag);
+      end
+      else
+        OpenTag(ATag);
+
+      Inc(p2, lt+2);
+    end;
+
+    p1 := p2;
+  end;
+end;
+
 {$IfDef HAS_PROTECTION}
 procedure TFPDFExt.SetProtection(Permissions: TFPDFPermissions;
   const UserPass: AnsiString; const OwnerPass: AnsiString);
@@ -1199,17 +1355,16 @@ begin
   result := md5(AStr);
 end;
 
-function TFPDFExt.packVXxx(vn: Integer): AnsiString;
-begin
-  // https://gist.github.com/pifantastic/290042/548987bc88501ad48cf3efdc71ef65e77b9d85eb
-  Result := chr(vn and $000000FF);
-  Result := Result + chr((vn shr 8) and $000000ff);
-  Result := Result + chr((vn shr 16) and $000000ff);
-  Result := Result + chr(0) + chr(0);
-end;
-
 // Compute key depending on object number where the encrypted data is stored
 function TFPDFExt._objectkey(vn: Integer): AnsiString;
+  function packVXxx(vn: Integer): AnsiString;
+  begin
+    // https://gist.github.com/pifantastic/290042/548987bc88501ad48cf3efdc71ef65e77b9d85eb
+    Result := chr(vn and $000000FF);
+    Result := Result + chr((vn shr 8) and $000000ff);
+    Result := Result + chr((vn shr 16) and $000000ff);
+    Result := Result + chr(0) + chr(0);
+  end;
 begin
   Result := Copy(_md5_16( Self.encryption_key + packVXxx(vn)), 1, 10);
 end;
@@ -1290,6 +1445,195 @@ begin
   end;
 end;
 {$EndIf}
+
+function TFPDFExt.FindNextTagPos(const AHtml: String; out ATag: String;
+  OffSet: Integer): Integer;
+var
+  p1, p2: Integer;
+begin
+  ATag := '';
+  p1 := PosEx('<', AHtml, OffSet);
+  if (p1 > 0) then
+  begin
+     p2 := PosEx('>', AHtml, p1);
+     if (p2 > 0) then
+       ATag := copy(AHtml, p1+1, p2-p1-1) ;
+  end;
+
+  Result := p1;
+end;
+
+procedure TFPDFExt.OpenTag(const ATag: String);
+var
+  s: String;
+  p1, p2: Integer;
+begin
+  // Opening tag
+  s := UpperCase(ATag);
+  if ((s = 'B') or (s = 'I') or (s = 'U')) then
+    SetStyle(s, true)
+  else if (s = 'BR') then
+    Ln(5)
+  else if (s[1] = 'A') then
+  begin
+    p1 := Pos('href="', ATag);
+    if (p1 > 0) then
+    begin
+      Inc(p1, 6);
+      p2 := PosEx('"', ATag+'"', p1+1);
+      Self.fHREF := copy(ATag, p1, p2-p1);
+    end;
+  end;
+end;
+
+procedure TFPDFExt.CloseTag(const ATag: String);
+var
+  s: String;
+begin
+  // Closing tag
+  s := UpperCase(ATag);
+  if ((s = 'B') or (s = 'I') or (s = 'U')) then
+    SetStyle(s, False)
+  else if (s = 'A') then
+    Self.fHREF := '';
+end;
+
+procedure TFPDFExt.SetDash(ABlack, AWhite: double);
+{ http://www.fpdf.org/en/script/script33.php - yukihiro_o }
+begin
+  if (ABlack > 0) and (AWhite > 0) then
+    _out(Format('[%.3f %.3f] 0 d', [ABlack * Self.k, AWhite * Self.k], FPDFFormatSetings))
+  else
+    _out('[] 0 d');
+end;
+
+procedure TFPDFExt.SetDash(AWidth: double);
+begin
+  SetDash(AWidth, AWidth);
+end;
+
+procedure TFPDFExt.SetStyle(const ATag: String; Enable: Boolean);
+var
+  p: Integer;
+begin
+  p := pos(ATag, Self.fFontStyle);
+  if Enable and (p = 0) then
+    Self.fFontStyle := Self.fFontStyle + ATag
+  else if (not Enable) and (p > 0) then
+    Delete(Self.fFontStyle, P, Length(ATag));
+
+  SetFont('',Self.fFontStyle);
+end;
+
+function TFPDFExt.TextBox(vX, vY, vWidth, vHeight: double; const AText: string; const vAlign,
+  hAlign: char; ABorder, AWordWrap, AScale: boolean; ALineSpacing: double): double;
+var
+  wText, wLine: string;
+  IncY, OldFontSize, AltText: double;
+  x1, y1, Comp, MaxHeight, Indent: double;
+  wN, I: integer;
+  Lines: TStringArray;
+begin
+  MaxHeight := vHeight;
+  wText := AText;
+  OldFontSize := Self.FontSizePt;
+  Result := vY;
+  Indent := 0;
+  if vWidth < 0 then
+    Exit;
+  wText := Trim(AText);
+  if ABorder then
+    Self.RoundedRect(vX, vY, vWidth, vHeight, 0.8, '', 'D');
+  IncY := Self.FontSize;
+  if AWordWrap and (wText <> '') then
+  begin
+    while AScale and (GetStringHeight(wText, vWidth, ALineSpacing, Indent) > MaxHeight) do
+    begin
+      if Self.FontSizePt > 8 then
+        Self.SetFont(Self.FontFamily, Self.FontStyle, Self.FontSizePt - 0.5)
+      else
+        Self.SetFont(Self.FontFamily, Self.FontStyle, Self.FontSizePt - 0.1);
+      IncY := Self.FontSize;
+    end;
+    wN := Self.WordWrap(wText, vWidth, Indent);
+  end
+  else
+    wN := Length(Split(wText, sLineBreak));
+
+  AltText := (IncY * wN) + ((wN - 1) * ALineSpacing);
+
+  Lines := Split(wText, sLineBreak);
+
+  case vAlign of
+    'C': y1 := vY + IncY + ((vHeight - AltText) / 2) - 1;
+    'B': y1 := (vY + vHeight + IncY) - AltText - 1;
+  else
+    // Default: 'T' (top)
+    y1 := vY + IncY;
+  end;
+
+  for I := 0 to Length(Lines) - 1 do
+  begin
+    wLine := Lines[I];
+    wText := Trim(wLine);
+    Comp  := Self.GetStringWidth(wText);
+    if Comp > vWidth then
+    begin
+      if AScale then
+      begin
+        while Comp > vWidth do
+        begin
+          if Self.FontSizePt > 8 then
+            Self.SetFont(Self.FontFamily, Self.FontStyle, Self.FontSizePt - 0.5)
+          else
+            Self.SetFont(Self.FontFamily, Self.FontStyle, Self.FontSizePt - 0.1);
+          Comp := Self.GetStringWidth(wText);
+        end;
+      end
+      else
+        repeat
+          wText := Copy(wText, 1, Length(wText) - 1);
+          Comp := Self.GetStringWidth(wText);
+        until Comp <= vWidth;
+    end;
+
+    case hAlign of
+      'C': x1 := vX + ((vWidth - Comp) / 2);
+      'R': x1 := vX + vWidth - (Comp + 0.5);
+    else
+      // Default: 'L' (left)
+      x1 := vX + 0.5;
+    end;
+
+    x1 := x1 + Indent;
+    Self.Text(x1, y1, wText);
+
+    if not AWordWrap and (Self.FontSizePt <> OldFontSize) then
+      Self.SetFont(Self.FontFamily, Self.FontStyle, OldFontSize);
+
+//    if Indent > 0 then
+//    begin
+//      x1 := x1 - Indent;
+//      Indent := 0;
+//    end;
+
+    y1 := y1 + IncY + ALineSpacing;
+    if ((MaxHeight > 0) and (y1 > (vY + (MaxHeight)))) then
+      break;
+  end;
+  Self.SetFont(Self.FontFamily, Self.FontStyle, OldFontSize);
+  Result := (y1 - vY) - IncY - ALineSpacing;
+end;
+
+procedure TFPDFExt.PutLink(const AURL, AText: String);
+begin
+  // Put a hyperlink
+  SetTextColor(0, 0, 255);
+  SetStyle('U', true);
+  Write(5, AText, AURL);
+  SetStyle('U', false);
+  SetTextColor(0);
+end;
 
 {$IfDef HAS_HTTP}
 procedure TFPDFExt.Image(const vFileOrURL: string; vX: double; vY: double;
@@ -1399,8 +1743,27 @@ begin
 end;
 
 {$IfDef DelphiZXingQRCode}
-procedure TFPDFExt.QRCode(vX: double; vY: double; const QRCodeData: String;
-  DotSize: Double; AEncoding: TQRCodeEncoding);
+procedure TFPDFExt.QRCode(vX, vY, vQRCodeSize: double; const QRCodeData: String;
+  AEncoding: TQRCodeEncoding);
+var
+  qr: TDelphiZXingQRCode;
+  DotSize: double;
+begin
+  qr := TDelphiZXingQRCode.Create;
+  try
+    qr.Encoding  := AEncoding;
+    qr.QuietZone := 1;
+    qr.Data := widestring(QRCodeData);
+    DotSize := vQRCodeSize / qr.Rows;
+  finally
+    qr.Free;
+  end;
+
+  QRCode(vX, vY, QRCodeData, DotSize, AEncoding);
+end;
+
+function TFPDFExt.QRCode(vX: double; vY: double; const QRCodeData: String;
+  DotSize: Double; AEncoding: TQRCodeEncoding): double;
 var
   qr: TDelphiZXingQRCode;
   PDF2DMatrix: TFPDF2DMatrix;
@@ -1424,6 +1787,8 @@ begin
           PDF2DMatrix[r][c] := 0;
       end;
     end;
+
+    Result := qr.Rows * DotSize;
   finally
     qr.Free;
   end;
@@ -1431,6 +1796,27 @@ begin
   Draw2DMatrix(PDF2DMatrix, vX, vY, DotSize);
 end;
 {$EndIf}
+
+procedure TFPDFExt.DashedLine(vX1, vY1, vX2, vY2, ADashWidth: double);
+begin
+  SetDash(ADashWidth);
+  try
+    Line(vX1, vY1, vX2, vY2);
+  finally
+    SetDash(0);
+  end;
+end;
+
+procedure TFPDFExt.DashedRect(vX, vY, vWidht, vHeight: Double;
+  const vStyle: String; ADashWidth: double);
+begin
+  SetDash(ADashWidth);
+  try
+    Rect(vX, vY, vWidht, vHeight, vStyle);
+  finally
+    SetDash(0);
+  end;
+end;
 
 procedure TFPDFExt.Draw2DMatrix(AMatrix: TFPDF2DMatrix; vX: double; vY: double;
   DotSize: Double);
@@ -1473,6 +1859,25 @@ procedure TFPDFExt.Footer;
 begin
   if Assigned(fOnFooter) then
     fOnFooter(Self);
+end;
+
+function TFPDFExt.GetNumLines(const AText: string; AWidth,
+  AIndent: double): integer;
+var
+  LocalText: string;
+begin
+  LocalText := Trim(AText);
+  Result := WordWrap(LocalText, AWidth - 0.2, AIndent);
+end;
+
+function TFPDFExt.GetStringHeight(const AText: string; AWidth, ALineSpacing,
+  AIndent: double): double;
+var
+  NumLines: integer;
+begin
+  NumLines := GetNumLines(AText, AWidth, AIndent);
+  Result := RoundTo((NumLines * FontSize) + IfThen(NumLines > 1, (NumLines - 1) * ALineSpacing), -2);
+  Result := Result + 0.5;
 end;
 
 {$IfDef HAS_HTTP}
@@ -1678,6 +2083,40 @@ begin
     Self.PDFVersion := 1.5;
 
   inherited _enddoc;
+end;
+
+{ TFPDFScriptTransform }
+
+procedure TFPDFScriptTransform.StartTransform;
+begin
+  // save the current graphic state
+  fpFPDF._out('q');
+end;
+
+procedure TFPDFScriptTransform.StopTransform;
+begin
+  // restore previous graphic state
+  fpFPDF._out('Q');
+end;
+
+procedure TFPDFScriptTransform.Transform(tm: TTransformationMatrix);
+begin
+  fpFPDF._out(Format('%.3f %.3f %.3f %.3f %.3f %.3f cm',[tm[0],tm[1],tm[2],tm[3],tm[4],tm[5]]));
+end;
+
+procedure TFPDFScriptTransform.Translate(t_x, t_y: double);
+var
+  tm: TTransformationMatrix;
+begin
+  //calculate elements of transformation matrix
+  tm[0]:=1;
+  tm[1]:=0;
+  tm[2]:=0;
+  tm[3]:=1;
+  tm[4]:=t_x*fpFPDF.k;
+  tm[5]:=-t_y*fpFPDF.k;
+  //translate the coordinate system
+  Transform(tm);
 end;
 
 end.

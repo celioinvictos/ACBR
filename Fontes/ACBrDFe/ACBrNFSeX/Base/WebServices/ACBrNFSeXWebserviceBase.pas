@@ -133,9 +133,11 @@ type
     function ConsultarSituacao(ACabecalho, AMSG: string): string; virtual;
     function ConsultarNFSePorRps(ACabecalho, AMSG: string): string; virtual;
     function ConsultarNFSe(ACabecalho, AMSG: string): string; virtual;
+    function ConsultarNFSePorChave(ACabecalho, AMSG: string): string; virtual;
     function ConsultarNFSePorFaixa(ACabecalho, AMSG: string): string; virtual;
     function ConsultarNFSeServicoPrestado(ACabecalho, AMSG: string): string; virtual;
     function ConsultarNFSeServicoTomado(ACabecalho, AMSG: string): string; virtual;
+    function ConsultarLinkNFSe(ACabecalho, AMSG: string): string; virtual;
     function Cancelar(ACabecalho, AMSG: string): string; virtual;
     function GerarNFSe(ACabecalho, AMSG: string): string; virtual;
     function RecepcionarSincrono(ACabecalho, AMSG: string): string; virtual;
@@ -148,6 +150,7 @@ type
     function ConsultarEvento(ACabecalho, AMSG: string): string; virtual;
     function ConsultarDFe(ACabecalho, AMSG: string): string; virtual;
     function ConsultarParam(ACabecalho, AMSG: string): string; virtual;
+    function ConsultarSeqRps(ACabecalho, AMSG: string): string; virtual;
 
     property URL: string read FPURL;
     property BaseURL: string read GetBaseUrl;
@@ -242,8 +245,12 @@ type
 
   TInfConsultaNFSe = class
  private
+   FtpConsulta: TtpConsulta;
+   FtpPeriodo: TtpPeriodo;
+   FtpRetorno: TtpRetorno;
    FNumeroIniNFSe: string;
    FNumeroFinNFSe: string;
+   FSerieNFSe: string;
    FNumeroLote: string;
    FDataInicial: TDateTime;
    FDataFinal: TDateTime;
@@ -255,24 +262,23 @@ type
    FCNPJInter: string;
    FIMInter: string;
    FRazaoInter: string;
-
-   FPagina: Integer;
-   FtpConsulta: TtpConsulta;
-   FtpPeriodo: TtpPeriodo;
-   FtpDocumento: TtpDocumento;
    FCadEconomico: string;
-   FSerieNFSe: string;
    FCodServ: string;
    FCodVerificacao: string;
-   FtpRetorno: TtpRetorno;
+   FChaveNFSe: string;
+   FPagina: Integer;
 
  public
    constructor Create;
 
    function LerFromIni(const AIniStr: string): Boolean;
 
+   property tpConsulta: TtpConsulta read FtpConsulta    write FtpConsulta;
+   property tpPeriodo: TtpPeriodo   read FtpPeriodo     write FtpPeriodo;
+   property tpRetorno: TtpRetorno   read FtpRetorno     write FtpRetorno;
    property NumeroIniNFSe: string   read FNumeroIniNFSe write FNumeroIniNFSe;
    property NumeroFinNFSe: string   read FNumeroFinNFSe write FNumeroFinNFSe;
+   property SerieNFSe: string       read FSerieNFSe     write FSerieNFSe;
    property NumeroLote: string      read FNumeroLote    write FNumeroLote;
    property DataInicial: TDateTime  read FDataInicial   write FDataInicial;
    property DataFinal: TDateTime    read FDataFinal     write FDataFinal;
@@ -283,16 +289,37 @@ type
    property CNPJInter: string       read FCNPJInter     write FCNPJInter;
    property IMInter: string         read FIMInter       write FIMInter;
    property RazaoInter: string      read FRazaoInter    write FRazaoInter;
-   property Pagina: Integer         read FPagina        write FPagina;
-   property tpConsulta: TtpConsulta read FtpConsulta    write FtpConsulta;
-   property tpPeriodo: TtpPeriodo   read FtpPeriodo     write FtpPeriodo;
-   property tpDocumento: TtpDocumento read FtpDocumento write FtpDocumento;
    property CadEconomico: string    read FCadEconomico  write FCadEconomico;
-   property SerieNFSe: string       read FSerieNFSe     write FSerieNFSe;
    property CodServ: string         read FCodServ       write FCodServ;
    property CodVerificacao: string  read FCodVerificacao write FCodVerificacao;
-   property tpRetorno: TtpRetorno   read FtpRetorno     write FtpRetorno;
+   property ChaveNFSe: string       read FChaveNFSe     write FChaveNFSe;
+   property Pagina: Integer         read FPagina        write FPagina;
  end;
+
+  TInfConsultaLinkNFSe = class
+  private
+    FCompetencia: TDateTime;
+    FDtEmissao: TDateTime;
+    FNumeroNFSe: string;
+    FSerieNFSe: string;
+    FNumeroRps: Integer;
+    FSerieRps: string;
+    FTipoRps: string;
+    FPagina: Integer;
+  public
+    constructor Create;
+
+    function LerFromIni(const AIniStr: string): Boolean;
+
+    property Competencia: TDateTime read FCompetencia write FCompetencia;
+    property DtEmissao: TDateTime read FDtEmissao write FDtEmissao;
+    property NumeroNFSe: string read FNumeroNFSe write FNumeroNFSe;
+    property SerieNFSe: string read FSerieNFSe write FSerieNFSe;
+    property NumeroRps: Integer read FNumeroRps write FNumeroRps;
+    property SerieRps: string read FSerieRps write FSerieRps;
+    property TipoRps: string read FTipoRps write FTipoRps;
+    property Pagina: Integer read FPagina write FPagina;
+  end;
 
   TInfCancelamento = class
   private
@@ -311,7 +338,6 @@ type
     FNumeroNFSeSubst: string;
     FSerieNFSeSubst: string;
     FCodServ: string;
-    FtpDocumento: TtpDocumento;
 
   public
     constructor Create;
@@ -333,8 +359,6 @@ type
     property NumeroNFSeSubst: string read FNumeroNFSeSubst write FNumeroNFSeSubst;
     property SerieNFSeSubst: string  read FSerieNFSeSubst  write FSerieNFSeSubst;
     property CodServ: string         read FCodServ         write FCodServ;
-    property tpDocumento: TtpDocumento read FtpDocumento   write FtpDocumento;
-
   end;
 
    TpedRegEvento = class
@@ -450,6 +474,12 @@ begin
         FPArqResp := 'lista-nfse-con';
       end;
 
+    tmConsultarNFSePorChave:
+      begin
+        FPArqEnv := 'con-nfse-chv';
+        FPArqResp := 'lista-nfse-chv';
+      end;
+
     tmConsultarNFSePorFaixa:
       begin
         FPArqEnv := 'con-nfse-fai';
@@ -532,6 +562,18 @@ begin
       begin
         FPArqEnv := 'con-param';
         FPArqResp := 'param';
+      end;
+
+    tmConsultarSeqRps:
+      begin
+        FPArqEnv := 'con-seqrps';
+        FPArqResp := 'seqrps';
+      end;
+
+    tmConsultarLinkNFSe:
+      begin
+        FPArqEnv := 'con-link';
+        FPArqResp := 'link';
       end;
   end;
 
@@ -626,7 +668,7 @@ end;
 
 procedure TACBrNFSeXWebservice.SalvarEnvio(ADadosSoap, ADadosMsg: string);
 var
-  Prefixo, ArqEnv: string;
+  Prefixo, ArqEnv, Extensao, ExtensaoSoap: string;
   ConteudoEhXml: Boolean;
 begin
   { Sobrescrever apenas se necessário }
@@ -639,7 +681,31 @@ begin
     Para contornar isso a variável ConteudoEhXml recebe o valor false quando é
     um JSON e o método Gravar não inclui o encoding.
   }
-  ConteudoEhXml := StringIsXML(ADadosMsg);
+  case TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqEnvio of
+    tfaJson:
+      Extensao := '.json';
+    tfaTxt:
+      Extensao := '.txt';
+  else
+    Extensao := '.xml';
+  end;
+
+  case TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqEnvioSoap of
+    tfaJson:
+      ExtensaoSoap := '.json';
+    tfaTxt:
+      ExtensaoSoap := '.txt';
+  else
+    ExtensaoSoap := '.xml';
+  end;
+
+  if TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqEnvio <> tfaXml then
+  begin
+    ADadosMsg := RemoverDeclaracaoXML(ADadosMsg);
+    ConteudoEhXml := False;
+  end
+  else
+    ConteudoEhXml := True;
 
   Prefixo := GerarPrefixoArquivo;
 
@@ -652,10 +718,10 @@ begin
       if not XmlEhUTF8(ADadosMsg) then
         ADadosMsg := RemoverDeclaracaoXML(ADadosMsg);
 
-      FPDFeOwner.Gravar(ArqEnv + '.xml', ADadosMsg, Path);
+      FPDFeOwner.Gravar(ArqEnv + Extensao, ADadosMsg, Path);
     end
     else
-      GravarJSON(ArqEnv + '.json', ADadosMsg, Path);
+      GravarJSON(ArqEnv + Extensao, ADadosMsg, Path);
   end;
 
   if FPConfiguracoes.WebServices.Salvar then
@@ -667,16 +733,16 @@ begin
       if not XmlEhUTF8(ADadosSoap) then
         ADadosSoap := RemoverDeclaracaoXML(ADadosSoap);
 
-      FPDFeOwner.Gravar(ArqEnv + '-soap.xml', ADadosSoap, Path);
+      FPDFeOwner.Gravar(ArqEnv + '-soap' + ExtensaoSoap, ADadosSoap, Path);
     end
     else
-      GravarJSON(ArqEnv + '-soap.json', ADadosSoap, Path);
+      GravarJSON(ArqEnv + '-soap' + ExtensaoSoap, ADadosSoap, Path);
   end;
 end;
 
 procedure TACBrNFSeXWebservice.SalvarRetornoDadosMsg(ADadosMsg: string);
 var
-  Prefixo, ArqEnv: string;
+  Prefixo, ArqEnv, Extensao: string;
   ConteudoEhXml: Boolean;
 begin
   { Sobrescrever apenas se necessário }
@@ -689,7 +755,24 @@ begin
     Para contornar isso a variável ConteudoEhXml recebe o valor false quando é
     um JSON e o método Gravar não inclui o encoding.
   }
-  ConteudoEhXml := StringIsXML(ADadosMsg);
+  case TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqRetorno of
+    tfaJson:
+      Extensao := '.json';
+    tfaTxt:
+      Extensao := '.txt';
+  else
+    Extensao := '.xml';
+  end;
+
+  if TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqRetorno <> tfaXml then
+  begin
+    if not StringIsPDF(ADadosMsg) then
+      ADadosMsg := RemoverDeclaracaoXML(ADadosMsg);
+
+    ConteudoEhXml := False;
+  end
+  else
+    ConteudoEhXml := True;
 
   Prefixo := GerarPrefixoArquivo;
 
@@ -702,16 +785,16 @@ begin
       if not XmlEhUTF8(ADadosMsg) then
         ADadosMsg := RemoverDeclaracaoXML(ADadosMsg);
 
-      FPDFeOwner.Gravar(ArqEnv + '.xml', ADadosMsg, Path);
+      FPDFeOwner.Gravar(ArqEnv + Extensao, ADadosMsg, Path);
     end
     else
-      GravarJSON(ArqEnv + '.json', ADadosMsg, Path);
+      GravarJSON(ArqEnv + Extensao, ADadosMsg, Path);
   end;
 end;
 
 procedure TACBrNFSeXWebservice.SalvarRetornoWebService(ADadosSoap: string);
 var
-  Prefixo, ArqEnv: string;
+  Prefixo, ArqEnv, Extensao: string;
   ConteudoEhXml: Boolean;
 begin
   { Sobrescrever apenas se necessário }
@@ -724,7 +807,24 @@ begin
     Para contornar isso a variável ConteudoEhXml recebe o valor false quando é
     um JSON e o método Gravar não inclui o encoding.
   }
-  ConteudoEhXml := StringIsXML(ADadosSoap);
+  case TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqRetornoSoap of
+    tfaJson:
+      Extensao := '.json';
+    tfaTxt:
+      Extensao := '.txt';
+  else
+    Extensao := '.xml';
+  end;
+
+  if TACBrNFSeX(FPDFeOwner).Provider.ConfigGeral.FormatoArqRetornoSoap <> tfaXml then
+  begin
+    if TACBrNFSeX(FPDFeOwner).WebService.ConsultaNFSe.InfConsultaNFSe.tpRetorno <> trPDF then
+      ADadosSoap := RemoverDeclaracaoXML(ADadosSoap);
+
+    ConteudoEhXml := False;
+  end
+  else
+    ConteudoEhXml := True;
 
   Prefixo := GerarPrefixoArquivo;
 
@@ -737,10 +837,10 @@ begin
       if not XmlEhUTF8(ADadosSoap) then
         ADadosSoap := RemoverDeclaracaoXML(ADadosSoap);
 
-      FPDFeOwner.Gravar(ArqEnv + '-soap.xml', ADadosSoap, Path);
+      FPDFeOwner.Gravar(ArqEnv + '-soap' + Extensao, ADadosSoap, Path);
     end
     else
-      GravarJSON(ArqEnv + '-soap.json', ADadosSoap, Path);
+      GravarJSON(ArqEnv + '-soap' + Extensao, ADadosSoap, Path);
   end;
 end;
 
@@ -981,6 +1081,8 @@ begin
 end;
 
 procedure TACBrNFSeXWebservice.EnvioInterno(var CodigoErro, CodigoInterno: Integer);
+const
+  UTF_8 = #$C3;
 begin
   ConfigurarHttpClient;
 
@@ -998,6 +1100,30 @@ begin
 
     if FPRetorno = '' then
       raise EACBrDFeException.Create('WebService retornou um XML vazio.');
+
+    {
+      Se o retorno for um XML mas o seu encoding for iso-8859-1 ou se não constar
+      a declaração do encoding logo no inicio do XML assume que o mesmo não
+      esta no formato URF-8
+    }
+    if ((Pos('iso-8859-1', LowerCase(FPRetorno)) > 0) or
+        (Pos('encoding', LowerCase(FPRetorno)) = 0) or
+        (Pos('encoding', LowerCase(FPRetorno)) > 40)
+       ) and StringIsXML(FPRetorno) then
+    begin
+      {
+        Se não encontrar o caracter que diz que uma vogal acentuada ou cedilha
+        esta no formato UTF-8, converte o XML para UTF-8
+      }
+      if Pos(UTF_8, FPRetorno) = 0 then
+      begin
+        FPRetorno := RemoverDeclaracaoXML(FPRetorno);
+        FPRetorno := AnsiToNativeString(FPRetorno);
+        FPRetorno := NativeStringToUTF8(FPRetorno);
+      end;
+
+      FPRetorno := '<?xml version="1.0" encoding="UTF-8"?>' + FPRetorno;
+    end;
 
     if StringIsXML(FPRetorno) then
       LevantarExcecaoHttp;
@@ -1052,6 +1178,12 @@ begin
   raise EACBrDFeException.Create(ERR_NAO_IMP);
 end;
 
+function TACBrNFSeXWebservice.ConsultarSeqRps(ACabecalho, AMSG: string): string;
+begin
+  Result := '';
+  raise EACBrDFeException.Create(ERR_NAO_IMP);
+end;
+
 function TACBrNFSeXWebservice.ConsultarSituacao(ACabecalho, AMSG: string): string;
 begin
   Result := '';
@@ -1065,6 +1197,13 @@ begin
 end;
 
 function TACBrNFSeXWebservice.ConsultarNFSe(ACabecalho, AMSG: string): string;
+begin
+  Result := '';
+  raise EACBrDFeException.Create(ERR_NAO_IMP);
+end;
+
+function TACBrNFSeXWebservice.ConsultarNFSePorChave(ACabecalho,
+  AMSG: string): string;
 begin
   Result := '';
   raise EACBrDFeException.Create(ERR_NAO_IMP);
@@ -1089,6 +1228,13 @@ begin
 end;
 
 function TACBrNFSeXWebservice.ConsultarParam(ACabecalho, AMSG: string): string;
+begin
+  Result := '';
+  raise EACBrDFeException.Create(ERR_NAO_IMP);
+end;
+
+function TACBrNFSeXWebservice.ConsultarLinkNFSe(ACabecalho,
+  AMSG: string): string;
 begin
   Result := '';
   raise EACBrDFeException.Create(ERR_NAO_IMP);
@@ -1417,8 +1563,10 @@ constructor TInfConsultaNFSe.Create;
 begin
   tpConsulta    := tcPorNumero;
   tpPeriodo     := tpEmissao;
+  tpRetorno     := trXml;
   NumeroIniNFSe := '';
   NumeroFinNFSe := '';
+  SerieNFSe     := '';
   NumeroLote    := '';
   DataInicial   := 0;
   DataFinal     := 0;
@@ -1430,12 +1578,10 @@ begin
   IMInter       := '';
   RazaoInter    := '';
   CadEconomico  := '';
-  SerieNFSe     := '';
   CodServ       := '';
   CodVerificacao:= '';
+  ChaveNFSe     := '';
   Pagina        := 1;
-  tpDocumento   := tdNFSe;
-  tpRetorno     := trXml;
 end;
 
 function TInfConsultaNFSe.LerFromIni(const AIniStr: string): Boolean;
@@ -1460,6 +1606,7 @@ begin
 
     NumeroIniNFSe := INIRec.ReadString(sSecao, 'NumeroIniNFSe', '');
     NumeroFinNFSe := INIRec.ReadString(sSecao, 'NumeroFinNFSe', '');
+    SerieNFSe     := INIRec.ReadString(sSecao, 'SerieNFSe', '');
     NumeroLote    := INIRec.ReadString(sSecao, 'NumeroLote', '');
     DataInicial   := StringToDateTime(INIRec.ReadString(sSecao, 'DataInicial', '0'));
     DataFinal     := StringToDateTime(INIRec.ReadString(sSecao, 'DataFinal', '0'));
@@ -1471,12 +1618,10 @@ begin
     CNPJInter     := INIRec.ReadString(sSecao, 'CNPJInter', '');
     IMInter       := INIRec.ReadString(sSecao, 'IMInter', '');
     RazaoInter    := INIRec.ReadString(sSecao, 'RazaoInter', '');
-    tpDocumento   := StrTotpDocumento(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
     CadEconomico  := INIRec.ReadString(sSecao, 'CadEconomico', '');
-    SerieNFSe     := INIRec.ReadString(sSecao, 'SerieNFSe', '');
     CodServ       := INIRec.ReadString(sSecao, 'CodServ', '');
-    CodVerificacao:= INIRec.ReadString(sSecao, 'CodVerificacao', '');
-
+    CodVerificacao := INIRec.ReadString(sSecao, 'CodVerificacao', '');
+    ChaveNFSe     := INIRec.ReadString(sSecao, 'ChaveNFSe', '');
     Pagina        := INIRec.ReadInteger(sSecao, 'Pagina', 1);
 
     Result := True;
@@ -1504,14 +1649,12 @@ begin
   FNumeroNFSeSubst := '';
   FSerieNFSeSubst := '';
   FCodServ := '';
-  FtpDocumento := tdNFSe;
 end;
 
 function TInfCancelamento.LerFromIni(const AIniStr: string): Boolean;
 var
   sSecao: string;
   INIRec: TMemIniFile;
-  Ok: Boolean;
 begin
 {$IFNDEF COMPILER23_UP}
   Result := False;
@@ -1538,7 +1681,6 @@ begin
     NumeroNFSeSubst := INIRec.ReadString(sSecao, 'NumeroNFSeSubst', '');
     SerieNFSeSubst  := INIRec.ReadString(sSecao, 'SerieNFSeSubst', '');
     CodServ         := INIRec.ReadString(sSecao, 'CodServ', '');
-    tpDocumento     := StrTotpDocumento(Ok, INIRec.ReadString(sSecao, 'Tipo', '1'));
 
     Result := True;
   finally
@@ -1613,6 +1755,51 @@ begin
   FcMotivo := 0;
   FxMotivo := '';
   FchSubstituta := '';
+end;
+
+{ TInfConsultaLinkNFSe }
+
+constructor TInfConsultaLinkNFSe.Create;
+begin
+  FNumeroNFSe := '';
+  FSerieNFSe := '';
+  FNumeroRps := 0;
+  FSerieRps := '';
+  FCompetencia := 0;
+  FDtEmissao := 0;
+  FTipoRps := '';
+  FPagina := 0;
+end;
+
+function TInfConsultaLinkNFSe.LerFromIni(const AIniStr: string): Boolean;
+var
+  sSecao: string;
+  INIRec: TMemIniFile;
+begin
+{$IFNDEF COMPILER23_UP}
+  Result := False;
+{$ENDIF}
+
+  INIRec := TMemIniFile.Create('');
+  try
+    LerIniArquivoOuString(AIniStr, INIRec);
+
+    sSecao := 'ConsultarLinkNFSe';
+
+    Competencia := INIRec.ReadDateTime(sSecao, 'Competencia', 0);
+    DtEmissao := INIRec.ReadDateTime(sSecao, 'DtEmissao', 0);
+    NumeroRps := INIRec.ReadInteger(sSecao, 'NumeroRps', 0);
+    NumeroNFSe := INIRec.ReadString(sSecao, 'NumeroNFSe', '');
+    SerieNFSe := INIRec.ReadString(sSecao, 'SerieNFSe', '');
+    NumeroRps := INIRec.ReadInteger(sSecao, 'NumeroRps', 0);
+    SerieRps := INIRec.ReadString(sSecao, 'SerieRps', '');
+    TipoRps := INIRec.ReadString(sSecao, 'TipoRps', '');
+    Pagina := INIRec.ReadInteger(sSecao, 'Pagina', 0);
+
+    Result := True;
+  finally
+    INIRec.Free;
+  end;
 end;
 
 end.

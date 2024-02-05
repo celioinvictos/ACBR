@@ -70,6 +70,8 @@ type
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
     function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
+    function GerarXmlNota(const aXmlRps, aXmlRetorno: string): string;
+
     function AbreSessao(const aLote: String): Boolean;
     function FechaSessao(const aLote: String): Boolean;
 
@@ -94,8 +96,8 @@ type
     procedure PrepararConsultaNFSeporRps(Response: TNFSeConsultaNFSeporRpsResponse); override;
     procedure TratarRetornoConsultaNFSeporRps(Response: TNFSeConsultaNFSeporRpsResponse); override;
 
-    procedure PrepararConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
-    procedure TratarRetornoConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
+    procedure PrepararConsultaNFSeporNumero(Response: TNFSeConsultaNFSeResponse); override;
+    procedure TratarRetornoConsultaNFSeporNumero(Response: TNFSeConsultaNFSeResponse); override;
 
     procedure PrepararCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
     procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
@@ -107,6 +109,10 @@ type
 
   public
     procedure Emite; override;
+
+    function SituacaoLoteRpsToStr(const t: TSituacaoLoteRps): string; override;
+    function StrToSituacaoLoteRps(out ok: boolean; const s: string): TSituacaoLoteRps; override;
+    function SituacaoLoteRpsToDescr(const t: TSituacaoLoteRps): string; override;
 
     function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string; override;
     function StrToRegimeEspecialTributacao(out ok: boolean; const s: string): TnfseRegimeEspecialTributacao; override;
@@ -158,6 +164,9 @@ begin
   inherited Configuracao;
 
   ConfigGeral.ConsultaPorFaixaPreencherNumNfseFinal := True;
+
+  ConfigAssinar.Rps := True;
+  ConfigAssinar.LoteRps := True;
 
   with ConfigWebServices do
   begin
@@ -579,6 +588,31 @@ begin
   end;
 end;
 
+function TACBrNFSeProviderEL.SituacaoLoteRpsToStr(const t: TSituacaoLoteRps): string;
+begin
+  Result := EnumeradoToStr(t,
+                           ['1', '2', '3', '4'],
+                           [sLoteNaoProcessado, sLoteProcessadoErro,
+                            sLoteProcessadoAviso, sLoteProcessadoSucesso]);
+end;
+
+function TACBrNFSeProviderEL.StrToSituacaoLoteRps(out ok: boolean; const s: string): TSituacaoLoteRps;
+begin
+  Result := StrToEnumerado(ok, s,
+                           ['1', '2', '3', '4'],
+                           [sLoteNaoProcessado, sLoteProcessadoErro,
+                            sLoteProcessadoAviso, sLoteProcessadoSucesso]);
+end;
+
+function TACBrNFSeProviderEL.SituacaoLoteRpsToDescr(const t: TSituacaoLoteRps): string;
+begin
+  Result := EnumeradoToStr(t,
+                           ['Lote Não Processado', 'Lote Processado com Erro',
+                            'Lote Processado com Aviso', 'Lote Processado com Sucesso'],
+                           [sLoteNaoProcessado, sLoteProcessadoErro,
+                            sLoteProcessadoAviso, sLoteProcessadoSucesso]);
+end;
+
 function TACBrNFSeProviderEL.RegimeEspecialTributacaoToStr(
   const t: TnfseRegimeEspecialTributacao): string;
 begin
@@ -642,6 +676,22 @@ begin
   end;
 
   Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
+
+  if EstaVazio(Emitente.CNPJ) then
+  begin
+    AErro := EmiteResponse.Erros.New;
+    AErro.Codigo := Cod130;
+    AErro.Descricao := ACBrStr(Desc130);
+    Exit;
+  end;
+
+  if EstaVazio(Emitente.WSSenha) then
+  begin
+    AErro := EmiteResponse.Erros.New;
+    AErro.Codigo := Cod120;
+    AErro.Descricao := ACBrStr(Desc120);
+    Exit;
+  end;
 
   Response.ArquivoEnvio := '<el:autenticarContribuinte>' +
                              '<identificacaoPrestador>' +
@@ -883,6 +933,8 @@ var
   AErro: TNFSeEventoCollectionItem;
   ANode: TACBrXmlNode;
   AuxNode: TACBrXmlNode;
+  Ok: Boolean;
+  Situacao: TSituacaoLoteRps;
 begin
   Document := TACBrXmlDocument.Create;
 
@@ -913,6 +965,9 @@ begin
           NumeroLote := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numeroLote'), tcStr);
           Situacao := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('situacaoLoteRps'), tcStr);
         end;
+
+        Situacao := TACBrNFSeX(FAOwner).Provider.StrToSituacaoLoteRps(Ok, Response.Situacao);
+        Response.DescSituacao := TACBrNFSeX(FAOwner).Provider.SituacaoLoteRpsToDescr(Situacao);
       end;
     except
       on E:Exception do
@@ -960,6 +1015,12 @@ var
   AErro: TNFSeEventoCollectionItem;
   ANode: TACBrXmlNode;
   AuxNode: TACBrXmlNode;
+  ANodeArray: TACBrXmlNodeArray;
+  AResumo: TNFSeResumoCollectionItem;
+  i, j, k: Integer;
+  ANumRps, ANumNfse, ASituacao, AidNota, aXmlNota, aXmlRetorno: string;
+  ADataHora: TDateTime;
+  ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
 
@@ -986,6 +1047,8 @@ begin
       if (AuxNode <> nil) and (Pos('<notasFiscais>', AuxNode.OuterXml) > 0) then
         AuxNode := AuxNode.Childrens.FindAnyNs('notasFiscais');
 
+      j := TACBrNFSeX(FAOwner).NotasFiscais.Count;
+
       if AuxNode <> nil then
       begin
         with Response do
@@ -994,6 +1057,78 @@ begin
           idNota := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('idNota'), tcStr);
           NumeroNota := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numero'), tcStr);
           Situacao := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('situacao'), tcStr);
+          NumeroRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('rpsNumero'), tcStr);
+        end;
+
+        if j > 0 then
+        begin
+          if AuxNode <> nil then
+          begin
+            ANodeArray := AuxNode.Childrens.FindAllAnyNs('nfeRpsNotaFiscal');
+
+            if not Assigned(ANodeArray) then
+            begin
+              // O retorno muitas vezes é apresentado sem o a tag <nfeRpsNotaFiscal>
+
+              if Response.NumeroNota <> '' then
+              begin
+                AResumo := Response.Resumos.New;
+                AResumo.idNota := Response.idNota;
+                AResumo.NumeroNota := Response.NumeroNota;
+                AResumo.Data := Response.Data;
+                AResumo.Situacao :=  Response.Situacao;
+                AResumo.NumeroRps := Response.NumeroRps;
+              end
+              else
+              begin
+              AErro := Response.Erros.New;
+              AErro.Codigo := Cod203;
+              AErro.Descricao := ACBrStr(Desc203);
+              end;
+              Exit;
+            end;
+
+            for i := Low(ANodeArray) to High(ANodeArray) do
+            begin
+              AuxNode := ANodeArray[i];
+
+              if j > 0 then
+              begin
+                AidNota := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('idNota'), tcStr);
+                ANumNfse := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('numero'), tcStr);
+                ADataHora := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dataProcessamento'), tcDatHor);
+                ASituacao := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('situacao'), tcStr);
+                ANumRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('rpsNumero'), tcStr);
+
+                AResumo := Response.Resumos.New;
+                AResumo.idNota := AidNota;
+                AResumo.NumeroNota := ANumNfse;
+                AResumo.Data := ADataHora;
+                AResumo.Situacao := ASituacao;
+                AResumo.NumeroRps := ANumRps;
+
+                aXmlRetorno := AuxNode.OuterXml;
+
+                for k := 0 to j-1 do
+                begin
+                  ANota := TACBrNFSeX(FAOwner).NotasFiscais.Items[k];
+
+                  if ANota.NFSe.IdentificacaoRps.Numero = ANumRps  then
+                  begin
+                    if ANota.XmlRps = '' then
+                      aXmlNota := GerarXmlNota(ANota.XmlNfse, aXmlRetorno)
+                    else
+                      aXmlNota := GerarXmlNota(ANota.XmlRps, aXmlRetorno);
+
+                    ANota.XmlNfse := aXmlNota;
+
+                    SalvarXmlNfse(ANota);
+                    Exit;
+                  end;
+                end;
+              end;
+            end;
+          end;
         end;
       end;
     except
@@ -1092,7 +1227,7 @@ begin
   end;
 end;
 
-procedure TACBrNFSeProviderEL.PrepararConsultaNFSe(
+procedure TACBrNFSeProviderEL.PrepararConsultaNFSeporNumero(
   Response: TNFSeConsultaNFSeResponse);
 var
   AErro: TNFSeEventoCollectionItem;
@@ -1120,7 +1255,7 @@ begin
                            '</el:ConsultarNfseEnvio>';
 end;
 
-procedure TACBrNFSeProviderEL.TratarRetornoConsultaNFSe(
+procedure TACBrNFSeProviderEL.TratarRetornoConsultaNFSeporNumero(
   Response: TNFSeConsultaNFSeResponse);
 var
   Document: TACBrXmlDocument;
@@ -1267,6 +1402,19 @@ begin
     ModoEnvio := meLoteAssincrono;
     NumMaxRpsEnviar := 5;
     DetalharServico := True;
+
+    Autenticacao.RequerCertificado := False;
+    Autenticacao.RequerLogin := True;
+
+    with ServicosDisponibilizados do
+    begin
+      EnviarLoteAssincrono := True;
+      ConsultarSituacao := True;
+      ConsultarLote := True;
+      ConsultarRps := True;
+      ConsultarNfse := True;
+      CancelarNfse := True;
+    end;
   end;
 
   SetXmlNameSpace('http://www.el.com.br/nfse/xsd/el-nfse.xsd');
@@ -1307,6 +1455,44 @@ begin
     else
       raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
   end;
+end;
+
+function TACBrNFSeProviderEL.GerarXmlNota(const aXmlRps,
+  aXmlRetorno: string): string;
+var
+  aRPS, aRPSp1, aRPSp2, IDNota, Numero, NumeroRPS, Tipo: string;
+begin
+  aRPS := SeparaDados(aXmlRps, 'Rps', False);
+
+  aRPSp1 := SeparaDados(aRPS, 'LocalPrestacao', True) +
+            SeparaDados(aRPS, 'IssRetido', True) +
+            SeparaDados(aRPS, 'DataEmissao', True);
+
+  aRPSp2 := SeparaDados(aRPS, 'DadosPrestador', True) +
+            SeparaDados(aRPS, 'DadosTomador', True) +
+            SeparaDados(aRPS, 'Servicos', True) +
+            SeparaDados(aRPS, 'Valores', True) +
+            SeparaDados(aRPS, 'Status', True);
+
+  Tipo := SeparaDados(aRPS, 'Tipo', True);
+
+  IDNota := SeparaDados(aXmlRetorno, 'idNota', False);
+  Numero := SeparaDados(aXmlRetorno, 'numero', False);
+  NumeroRPS := SeparaDados(aXmlRetorno, 'rpsnumero', False);
+
+  Result := '<notasFiscais xmlns="http://www.el.com.br/nfse/xsd/el-nfse.xsd">' +
+              '<Nfse>' +
+                '<Id>' + IDNota + '</Id>' +
+                aRPSp1 +
+                '<IdentificacaoNfse>' +
+                  '<Numero>' + Numero + '</Numero>' +
+                  '<NumeroRps>' + NumeroRPS + '</NumeroRps>' +
+                  '<Serie>NFS-e</Serie>' +
+                  Tipo +
+                '</IdentificacaoNfse>' +
+                aRPSp2 +
+              '</Nfse>' +
+            '</notasFiscais>';
 end;
 
 { TACBrNFSeXWebserviceEL }

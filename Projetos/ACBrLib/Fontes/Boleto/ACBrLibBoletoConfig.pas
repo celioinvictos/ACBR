@@ -217,6 +217,10 @@ type
     FDirLogo: String;
     FFiltro: TACBrBoletoFCFiltro;
     FLayout: TACBrBolLayOut;
+    FMargemDireita: double;
+    FMargemEsquerda: double;
+    FMargemInferior: double;
+    FMargemSuperior: double;
     FMostrarPreview: Boolean;
     FMostrarProgresso: Boolean;
     FMostrarSetup: Boolean;
@@ -246,6 +250,10 @@ type
     property AlterarEscalaPadrao: Boolean read FAlterarEscalaPadrao write FAlterarEscalaPadrao;
     property NovaEscala: Integer read FNovaEscala write FNovaEscala;
     property CalcularNomeArquivoPDFIndividual: Boolean read FCalcularNomeArquivoPDFIndividual write FCalcularNomeArquivoPDFIndividual;
+    property MargemInferior  : double read FMargemInferior   write FMargemInferior;
+    property MargemSuperior  : double read FMargemSuperior   write FMargemSuperior;
+    property MargemEsquerda  : double read FMargemEsquerda   write FMargemEsquerda;
+    property MargemDireita   : double read FMargemDireita    write FMargemDireita;
 
   end;
 
@@ -529,6 +537,10 @@ begin
   FAlterarEscalaPadrao:= False;
   FNovaEscala:= 96;
   FCalcularNomeArquivoPDFIndividual:= False;
+  FMargemInferior:=5;
+  FMargemSuperior:=5;
+  FMargemEsquerda:=4;
+  FMargemDireita:=3;
 end;
 
 procedure TBoletoFCFortesConfig.LerIni(const AIni: TCustomIniFile);
@@ -546,6 +558,11 @@ begin
   AlterarEscalaPadrao:= AIni.ReadBool(CSessaoBoletoFCFortesConfig, CChaveAlterarEscalaPadrao, AlterarEscalaPadrao );
   NovaEscala:= AIni.ReadInteger(CSessaoBoletoFCFortesConfig, CChaveNovaEscala, NovaEscala);
   CalcularNomeArquivoPDFIndividual := AIni.ReadBool(CSessaoBoletoFCFortesConfig, CChaveCalcularNomeArquivoPDFIndividual, CalcularNomeArquivoPDFIndividual);
+  MargemInferior:= AIni.ReadFloat(CSessaoBoletoFCFortesConfig, CChaveMargemInferior, MargemInferior );
+  MargemSuperior:= AIni.ReadFloat(CSessaoBoletoFCFortesConfig, CChaveMargemSuperior, MargemSuperior );
+  MargemEsquerda:= AIni.ReadFloat(CSessaoBoletoFCFortesConfig, CChaveMargemEsquerda, MargemEsquerda );
+  MargemDireita := AIni.ReadFloat(CSessaoBoletoFCFortesConfig, CChaveMargemDireita,  MargemDireita );
+
 
 end;
 
@@ -564,6 +581,10 @@ begin
   AIni.WriteBool(CSessaoBoletoFCFortesConfig, CChaveAlterarEscalaPadrao, AlterarEscalaPadrao);
   AIni.WriteInteger(CSessaoBoletoFCFortesConfig, CChaveNovaEscala, NovaEscala );
   AIni.WriteBool(CSessaoBoletoFCFortesConfig, CChaveCalcularNomeArquivoPDFIndividual, CalcularNomeArquivoPDFIndividual );
+  AIni.WriteFloat(CSessaoBoletoFCFortesConfig, CChaveMargemInferior, MargemInferior  );
+  AIni.WriteFloat(CSessaoBoletoFCFortesConfig, CChaveMargemSuperior, MargemSuperior  );
+  AIni.WriteFloat(CSessaoBoletoFCFortesConfig, CChaveMargemEsquerda, MargemEsquerda  );
+  AIni.WriteFloat(CSessaoBoletoFCFortesConfig, CChaveMargemDireita,  MargemDireita  );
 
 end;
 
@@ -601,14 +622,25 @@ begin
 end;
 
 procedure TBoletoCedenteConfig.LerIni(const AIni: TCustomIniFile);
+var
+  LTipoInscricao: integer;
 begin
+
+  CNPJCPF:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveCNPJCPF, CNPJCPF );
+
+  LTipoInscricao:= AIni.ReadInteger(CSessaoBoletoCedenteConfig, CChaveTipoInscricao, 1);
+
+  if (TACBrPessoaCedente(LTipoInscricao) >= Low(TACBrPessoaCedente)) and (TACBrPessoaCedente(LTipoInscricao) <= High(TACBrPessoaCedente)) then
+     TipoInscricao := TACBrPessoaCedente( LTipoInscricao )
+  else
+    TipoInscricao := pJuridica;
+
   Agencia:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveAgencia, Agencia);
   AgenciaDigito:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveAgenciaDigito, AgenciaDigito );
   Bairro:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveBairro, Bairro );
   CaracTitulo:= TACBrCaracTitulo( AIni.ReadInteger(CSessaoBoletoCedenteConfig, CChaveCaracTitulo, integer(CaracTitulo) ));
   CEP:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveCEP, CEP );
   Cidade:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveCidade, Cidade );
-  CNPJCPF:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveCNPJCPF, CNPJCPF );
   CodigoCedente:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveCodigoCedente, CodigoCedente );
   CodigoTransmissao:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveCodigoTransmissao, CodigoTransmissao );
   Complemento:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveComplemento, Complemento );
@@ -623,7 +655,6 @@ begin
   Telefone:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveTelefone, Telefone);
   TipoCarteira:= TACBrTipoCarteira( AIni.ReadInteger(CSessaoBoletoCedenteConfig, CChaveTipoCarteira, integer(TipoCarteira) ));
   TipoDocumento:= TACBrTipoDocumento( AIni.ReadInteger(CSessaoBoletoCedenteConfig, CChaveTipoDocumento, integer(TipoDocumento) ));
-  TipoInscricao:= TACBrPessoaCedente( AIni.ReadInteger(CSessaoBoletoCedenteConfig, CChaveTipoInscricao, integer(TipoInscricao) ));
   UF:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveUF, UF );
   DigitoVerificadorAgenciaConta:= AIni.ReadString(CSessaoBoletoCedenteConfig, CChaveDigitoVerificadorAgenciaConta, DigitoVerificadorAgenciaConta);
   IdentDistribuicao:= TACBrIdentDistribuicao(AIni.ReadInteger(CSessaoBoletoCedenteConfig, CChaveIdentDistribuicao, integer(FIdentDistribuicao)));

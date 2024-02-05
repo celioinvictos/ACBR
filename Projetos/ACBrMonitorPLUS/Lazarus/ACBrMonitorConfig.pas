@@ -195,6 +195,8 @@ type
     HTML              : Boolean;
     AttemptsMail      : Integer;
     TimeOutMail       : Integer;
+    SSLType           : Integer;
+
   end;
 
   TCertificado = record
@@ -299,6 +301,7 @@ type
     FormaEmissao       : Integer;
     Logomarca          : String;
     LogoMarcaNFCeSAT   : String;
+    LogoMarcaPrefeitura: String;
     Salvar             : Boolean;
     PathSalvar         : String;
     Impressora         : String;
@@ -390,10 +393,12 @@ type
     MensagemNFe       : String;
     MensagemMDFe      : String;
     MensagemBPe       : String;
+    MensagemNFSe      : String;
     AssuntoCTe        : String;
     AssuntoNFe        : String;
     AssuntoMDFe       : String;
     AssuntoBPe        : String;
+    AssuntoNFSe       : String;
   end;
 
   TDFeRespTecnico = record
@@ -436,6 +441,7 @@ type
     ArquivoWebServiceseSocial: String;
     ArquivoWebServicesReinf: String;
     ArquivoWebServicesBPe: String;
+    ArquivoWebServicesNFSe: String;
     ValidarDigest      : Boolean;
     TimeoutWebService  : Integer;
     Certificado        : TCertificado;
@@ -638,6 +644,11 @@ type
     DirArquivoBoleto           : String ;
     Impressora                 : String ;
     NomeArquivoBoleto          : String;
+    TipoMotorRelatorio         : integer;
+    MargemInferior             : double;
+    MargemSuperior             : double;
+    MargemEsquerda             : double;
+    MargemDireita              : double;
   end;
 
   TBoletoRemessaRetorno = record
@@ -726,6 +737,30 @@ type
     PIX                        : TBoletoPIX;
   end;
 
+  TNFSe = record
+    LayoutProvedor: Integer;
+    CodigoMunicipio: Integer;
+    NomeMunicipio: string;
+    UFMunicipio: string;
+    Usuario: string;
+    Senha: string;
+    ChaveAcesso: string;
+    ChaveAutenticacao: string;
+    FraseSecreta: string;
+    CNPJEmitente: string;
+    IMEmitente: string;
+    NomeEmitente: string;
+    MontarAutoPathSchema: Boolean;
+    ConsultarLoteAposEnvio: Boolean;
+    ConsultarAposCancelar: Boolean;
+    NomePrefeitura: string;
+    CNPJPrefeitura: string;
+  end;
+
+  TConsultaCNPJ = record
+    ProvedorCnpjWS: integer;
+  end;
+
 
   EDFeException = class(Exception);
   EDFeConfigException = class(EDFeException);
@@ -758,6 +793,8 @@ type
     FPosPrinter : TPosPrinter;
     FBoleto : TBOLETO;
     FFonteLinha: TFont;
+    FNFSE: TNFSe;
+    FConsultaCNPJ :TConsultaCNPJ;
 
     FOnGravarConfig: TACBrOnGravarConfig;
     procedure DefinirValoresPadrao;
@@ -797,12 +834,15 @@ type
     property PosPrinter : TPosPrinter        read FPosPrinter;
     property BOLETO : TBOLETO                read FBoleto;
     property FonteLinha: TFont               read FFonteLinha;
+    property NFSE: TNFSe                     read FNFSE;
+    property ConsultaCNPJ :TConsultaCNPJ     read FConsultaCNPJ;
 
     property OnGravarConfig: TACBrOnGravarConfig read FOnGravarConfig write FOnGravarConfig;
   end;
 
 
 implementation
+
 uses
   UtilUnit;
 
@@ -996,6 +1036,7 @@ begin
       Ini.WriteBool( CSecEmail, CKeyEmailHTML, HTML );
       Ini.WriteInteger( CSecEmail, CKeyAttemptsMail, AttemptsMail );
       Ini.WriteInteger( CSecEmail, CKeyTimeoutMail, TimeOutMail );
+      ini.WriteInteger( CSecEmail, CKeyEmailSSLType, SSLType);
     end;
 
     with DFe do
@@ -1014,6 +1055,7 @@ begin
       Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServiceseSocial, ArquivoWebServiceseSocial );
       Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServicesReinf, ArquivoWebServicesReinf );
       Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServicesBPe, ArquivoWebServicesBPe );
+      Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServicesNFSe, ArquivoWebServicesNFSe );
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest );
       Ini.WriteInteger( CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeoutWebService );
     end;
@@ -1039,6 +1081,7 @@ begin
       Ini.WriteInteger( CSecGeral, CKeyFormaEmissao, FormaEmissao );
       Ini.WriteString( CSecGeral, CKeyLogomarca, Logomarca );
       Ini.WriteString( CSecGeral, CKeyLogoMarcaNFCeSAT, LogoMarcaNFCeSAT );
+      Ini.WriteString( CSecGeral, CKeyLogoMarcaPrefeitura, LogoMarcaPrefeitura );
       Ini.WriteBool( CSecGeral, CKeySalvar, Salvar );
       Ini.WriteString( CSecGeral, CKeyPathSalvar, PathSalvar );
       Ini.WriteString( CSecGeral, CKeyImpressora, Impressora );
@@ -1117,6 +1160,8 @@ begin
       Ini.WriteString( CSecEmail, CKeyAssuntoMDFe, AssuntoMDFe );
       Ini.WriteString( CSecEmail, CKeyMensagemBPe, MensagemBPe );
       Ini.WriteString( CSecEmail, CKeyAssuntoBPe, AssuntoBPe );
+      Ini.WriteString( CSecEmail, CKeyMensagemNFSe, MensagemNFSe );
+      Ini.WriteString( CSecEmail, CKeyAssuntoNFSe, AssuntoNFSe );
     end;
 
     with DFe.WebService.NFe do
@@ -1463,6 +1508,12 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBOLETODirArquivoBoleto,  DirArquivoBoleto       );
       Ini.WriteString( CSecBOLETO, CKeyBOLETOImpressora,                Impressora             );
       Ini.WriteString( CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivoBoleto);
+      ini.WriteInteger(CSecBOLETO, CKeyBOLETOTipoMotorRelatorio,TipoMotorRelatorio);
+      ini.WriteFloat(CSecBOLETO,   CKeyBOLETOMargemInferior,MargemInferior);
+      ini.WriteFloat(CSecBOLETO,   CKeyBOLETOMargemSuperior,MargemSuperior);
+      ini.WriteFloat(CSecBOLETO,   CKeyBOLETOMargemEsquerda,MargemEsquerda);
+      ini.WriteFloat(CSecBOLETO,   CKeyBOLETOMargemDireita ,MargemDireita);
+
     end;
 
     with BOLETO.RemessaRetorno do
@@ -1524,6 +1575,32 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBOLETOVersaoDF, VersaoDF);
       ini.WriteString( CSecBOLETO, CKeyBOLETOArquivoCRT, ArquivoCRT);
       ini.WriteString( CSecBOLETO, CKeyBOLETOArquivoKEY, ArquivoKEY);
+    end;
+
+    with NFSE do
+    begin
+      Ini.WriteInteger( CSecNFSE, CKeyNFSELayoutProvedor, LayoutProvedor );
+      Ini.WriteInteger( CSecNFSE, CKeyNFSECodigoMunicipio, CodigoMunicipio );
+      Ini.WriteString( CSecNFSE, CKeyNFSENomeMunicipio, NomeMunicipio );
+      Ini.WriteString( CSecNFSE, CKeyNFSEUFMunicipio, UFMunicipio );
+      Ini.WriteString( CSecNFSE, CKeyNFSeUsuario, Usuario );
+      Ini.WriteString( CSecNFSE, CKeyNFSeSenha, Senha );
+      Ini.WriteString( CSecNFSE, CKeyNFSeChaveAcesso, ChaveAcesso );
+      Ini.WriteString( CSecNFSE, CKeyNFSeChaveAutenticacao, ChaveAutenticacao );
+      Ini.WriteString( CSecNFSE, CKeyNFSeFraseSecreta, FraseSecreta );
+      Ini.WriteString( CSecNFSE, CKeyNFSeCNPJEmitente, CNPJEmitente );
+      Ini.WriteString( CSecNFSE, CKeyNFSeIMEmitente, IMEmitente );
+      Ini.WriteString( CSecNFSE, CKeyNFSeNomeEmitente, NomeEmitente );
+      Ini.WriteBool( CSecNFSE, CKeyNFSeMontarAutoPathSchema, MontarAutoPathSchema );
+      Ini.WriteBool( CSecNFSE, CKeyNFSeConsultarLoteAposEnvio, ConsultarLoteAposEnvio );
+      Ini.WriteBool( CSecNFSE, CKeyNFSeConsultarAposCancelar, ConsultarAposCancelar );
+      Ini.WriteString( CSecNFSE, CKeyNFSeNomePrefeitura, NomePrefeitura );
+      Ini.WriteString( CSecNFSE, CKeyNFSeCNPJPrefeitura, CNPJPrefeitura );
+    end;
+
+    with ConsultaCNPJ do
+    begin
+       Ini.WriteInteger( CSecProvedorCNPJ, CKeyProvedorCNPJProvedor, ProvedorCnpjWS );
     end;
 
     SL := TStringList.Create;
@@ -1746,6 +1823,7 @@ begin
       HTML                      := Ini.ReadBool( CSecEmail, CKeyEmailHTML, HTML );
       AttemptsMail              := Ini.ReadInteger( CSecEmail, CKeyAttemptsMail, AttemptsMail );
       TimeOutMail               := Ini.ReadInteger( CSecEmail, CKeyTimeoutMail, TimeOutMail );
+      SSLType                   := Ini.ReadInteger( CSecEmail, CKeyEmailSSLType, SSLType );
     end;
 
     with DFe do
@@ -1764,6 +1842,7 @@ begin
       ArquivoWebServiceseSocial := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServiceseSocial, AcertaPath( CACBreSocialServicosIni ) );
       ArquivoWebServicesReinf   := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesReinf, AcertaPath( CACBrReinfServicosIni ) );
       ArquivoWebServicesBPe     := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesBPe, AcertaPath( CACBrBPeServicosIni ) );
+      ArquivoWebServicesNFSe    := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesNFSe, AcertaPath( CACBrNFSeServicosIni ) );
       ValidarDigest             := Ini.ReadBool( CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest );
       TimeoutWebService         := Ini.ReadInteger( CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeoutWebService );
     end;
@@ -1789,6 +1868,7 @@ begin
       FormaEmissao              := Ini.ReadInteger( CSecGeral, CKeyFormaEmissao, 0 );
       Logomarca                 := Ini.ReadString( CSecGeral, CKeyLogomarca, Logomarca );
       LogoMarcaNFCeSAT          := Ini.ReadString( CSecGeral, CKeyLogoMarcaNFCeSAT, LogoMarcaNFCeSAT );
+      LogoMarcaPrefeitura       := Ini.ReadString( CSecGeral, CKeyLogoMarcaPrefeitura, LogoMarcaPrefeitura );
       Salvar                    := Ini.ReadBool( CSecGeral, ckeysalvar, Salvar );
       PathSalvar                := Ini.ReadString( CSecGeral, CKeyPathSalvar, PathSalvar );
       Impressora                := Ini.ReadString( CSecGeral, CKeyImpressora, Impressora );
@@ -1847,6 +1927,8 @@ begin
       AssuntoMDFe               := Ini.ReadString( CSecEmail, CKeyAssuntoMDFe, AssuntoMDFe);
       MensagemBPe               := Ini.ReadString( CSecEmail, CKeyMensagemBPe, MensagemBPe );
       AssuntoBPe                := Ini.ReadString( CSecEmail, CKeyAssuntoBPe, AssuntoBPe);
+      MensagemNFSe              := Ini.ReadString( CSecEmail, CKeyMensagemNFSe, MensagemNFSe );
+      AssuntoNFSe               := Ini.ReadString( CSecEmail, CKeyAssuntoNFSe, AssuntoNFSe);
     end;
 
     with DFe.WebService.NFe do
@@ -2219,7 +2301,12 @@ begin
       Filtro                 :=  ini.ReadInteger(CSecBOLETO, CKeyBOLETOFiltro,           Filtro                 );
       DirArquivoBoleto       :=  ini.ReadString( CSecBOLETO, CKeyBOLETODirArquivoBoleto, DirArquivoBoleto       );
       Impressora             :=  Ini.ReadString( CSecBOLETO, CKeyBOLETOImpressora,       Impressora             );
-      NomeArquivoBoleto      :=  Ini.ReadString( CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivoBoleto);
+      NomeArquivoBoleto      :=  Ini.ReadString( CSecBOLETO, CKeyBOLETONomeArquivoBoleto, NomeArquivoBoleto     );
+      TipoMotorRelatorio     :=  ini.ReadInteger(CSecBOLETO, CKeyBOLETOTipoMotorRelatorio,TipoMotorRelatorio    );
+      MargemInferior         :=  ini.ReadFloat(CSecBOLETO,   CKeyBOLETOMargemInferior,    MargemInferior        );
+      MargemSuperior         :=  ini.ReadFloat(CSecBOLETO,   CKeyBOLETOMargemSuperior,    MargemSuperior        );
+      MargemEsquerda         :=  ini.ReadFloat(CSecBOLETO,   CKeyBOLETOMargemEsquerda,    MargemEsquerda        );
+      MargemDireita          :=  ini.ReadFloat(CSecBOLETO,   CKeyBOLETOMargemDireita,     MargemDireita        );
     end;
 
     with BOLETO.RemessaRetorno do
@@ -2281,6 +2368,33 @@ begin
       ArquivoKEY := ini.ReadString( CSecBOLETO, CKeyBOLETOArquivoKEY, ArquivoKEY);
       ArquivoCRT := ini.ReadString( CSecBOLETO, CKeyBOLETOArquivoCRT, ArquivoCRT);
     end;
+
+    with NFSE do
+    begin
+      LayoutProvedor := ini.ReadInteger( CSecNFSE, CKeyNFSELayoutProvedor, LayoutProvedor);
+      CodigoMunicipio := ini.ReadInteger( CSecNFSE, CKeyNFSECodigoMunicipio, CodigoMunicipio);
+      NomeMunicipio := ini.ReadString( CSecNFSE, CKeyNFSENomeMunicipio, NomeMunicipio);
+      UFMunicipio := ini.ReadString( CSecNFSE, CKeyNFSEUFMunicipio, UFMunicipio);
+      Usuario := ini.ReadString( CSecNFSE, CKeyNFSeUsuario, Usuario);
+      Senha := ini.ReadString( CSecNFSE, CKeyNFSeSenha, Senha);
+      ChaveAcesso := ini.ReadString( CSecNFSE, CKeyNFSeChaveAcesso, ChaveAcesso);
+      ChaveAutenticacao := ini.ReadString( CSecNFSE, CKeyNFSeChaveAutenticacao, ChaveAutenticacao);
+      FraseSecreta := ini.ReadString( CSecNFSE, CKeyNFSeFraseSecreta, FraseSecreta);
+      CNPJEmitente := ini.ReadString( CSecNFSE, CKeyNFSeCNPJEmitente, CNPJEmitente);
+      IMEmitente := ini.ReadString( CSecNFSE, CKeyNFSeIMEmitente, IMEmitente);
+      NomeEmitente := ini.ReadString( CSecNFSE, CKeyNFSeNomeEmitente, NomeEmitente);
+      MontarAutoPathSchema := ini.ReadBool( CSecBOLETO, CKeyNFSeMontarAutoPathSchema, MontarAutoPathSchema);
+      ConsultarLoteAposEnvio := ini.ReadBool( CSecBOLETO, CKeyNFSeConsultarLoteAposEnvio, ConsultarLoteAposEnvio);
+      ConsultarAposCancelar := ini.ReadBool( CSecBOLETO, CKeyNFSeConsultarAposCancelar, ConsultarAposCancelar);
+      NomePrefeitura := ini.ReadString( CSecNFSE, CKeyNFSeNomePrefeitura, NomePrefeitura);
+      CNPJPrefeitura := ini.ReadString( CSecNFSE, CKeyNFSeCNPJPrefeitura, CNPJPrefeitura);
+    end;
+
+    with ConsultaCNPJ do
+    begin
+      ProvedorCnpjWS := ini.ReadInteger( CSecProvedorCNPJ, CKeyProvedorCNPJProvedor, ProvedorCnpjWS);
+    end;
+
 
   finally
     Ini.Free;
@@ -2479,6 +2593,7 @@ begin
     HTML                      := False;
     AttemptsMail              := 3;
     TimeOutMail               := 0;
+    SSLType                   := 0;
   end;
 
   with DFe do
@@ -2497,6 +2612,7 @@ begin
     ArquivoWebServiceseSocial := AcertaPath( 'ACBreSocialServicos.ini' );
     ArquivoWebServicesReinf   := AcertaPath( 'ACBrReinfServicos.ini' );
     ArquivoWebServicesBPe     := AcertaPath( 'ACBrBPeServicos.ini' );
+    ArquivoWebServicesNFSe    := AcertaPath( 'ACBrNFSeXServicos.ini' );
     ValidarDigest             := True;
     TimeoutWebService         := 15;
   end;
@@ -2580,6 +2696,8 @@ begin
     AssuntoMDFe               := '';
     MensagemBPe               := '';
     AssuntoBPe                := '';
+    MensagemNFSe              := '';
+    AssuntoNFSe               := '';
   end;
 
   with DFe.WebService.NFe do
@@ -2942,6 +3060,11 @@ begin
     DirArquivoBoleto       :=  '';
     NomeArquivoBoleto      :=  '';
     Impressora             :=  '';
+    TipoMotorRelatorio     :=  0;
+    MargemInferior         :=  5;
+    MargemSuperior         :=  5;
+    MargemEsquerda         :=  4;
+    MargemDireita          :=  3;
   end;
 
   with BOLETO.RemessaRetorno do
@@ -3002,6 +3125,32 @@ begin
     ArquivoCRT := '';
   end;
 
+  with NFSE do
+  begin
+    LayoutProvedor := 0;
+    CodigoMunicipio := 0;
+    NomeMunicipio := '';
+    UFMunicipio := '';
+    Usuario := '';
+    Senha := '';
+    ChaveAcesso := '';
+    ChaveAutenticacao := '';
+    FraseSecreta := '';
+    CNPJEmitente := '';
+    IMEmitente := '';
+    NomeEmitente := '';
+    MontarAutoPathSchema := True;
+    ConsultarLoteAposEnvio := True;
+    ConsultarAposCancelar := True;
+    NomePrefeitura := '';
+    CNPJPrefeitura := '';
+  end;
+
+
+  with ConsultaCNPJ do
+  begin
+    ProvedorCnpjWS := 0;
+  end;
 
 end;
 

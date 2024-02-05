@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace ACBrLib.NFSe
 {
-    //MT
     public sealed partial class ACBrNFSe
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -116,6 +115,9 @@ namespace ACBrLib.NFSe
         public delegate int NFSE_ImprimirPDF(IntPtr handle);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_SalvarPDF(IntPtr handle, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_ConsultarNFSeServicoPrestadoPorNumero(IntPtr handle, string aNumero, int aPagina, DateTime aDataInicial, DateTime aDataFinal, int aTipoPeriodo, StringBuilder buffer, ref int bufferSize);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -141,6 +143,27 @@ namespace ACBrLib.NFSe
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_ConsultarNFSeServicoTomadoPorIntermediario(IntPtr handle, string aCNPJ, string aInscMun, int aPagina, DateTime aDataInicial, DateTime aDataFinal, int aTipoPeriodo, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_EnviarEvento(IntPtr handle, string aInfEvento, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ConsultarDPSPorChave(IntPtr handle, string aChaveDPS, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ConsultarNFSePorChave(IntPtr handle, string aChaveNFSe, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ConsultarEvento(IntPtr handle, string aChave, int aTipoEvento, int aNumSeq, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ConsultarDFe(IntPtr handle, int aNSU, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ObterDANFSE(IntPtr handle, string aChaveNFSe, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ConsultarParametros(IntPtr handle, int aTipoParametroMunicipio, string aCodigoServico, DateTime aCompetencia, string aNumeroBeneficio, StringBuilder buffer, ref int bufferSize);
 
         protected override void InitializeMethods()
         {
@@ -179,6 +202,7 @@ namespace ACBrLib.NFSe
             AddMethod<NFSE_EnviarEmail>("NFSE_EnviarEmail");
             AddMethod<NFSE_Imprimir>("NFSE_Imprimir");
             AddMethod<NFSE_ImprimirPDF>("NFSE_ImprimirPDF");
+            AddMethod<NFSE_SalvarPDF>("NFSE_SalvarPDF");
             AddMethod<NFSE_ConsultarNFSeServicoPrestadoPorNumero>("NFSE_ConsultarNFSeServicoPrestadoPorNumero");
             AddMethod<NFSE_ConsultarNFSeServicoPrestadoPorPeriodo>("NFSE_ConsultarNFSeServicoPrestadoPorPeriodo");
             AddMethod<NFSE_ConsultarNFSeServicoPrestadoPorTomador>("NFSE_ConsultarNFSeServicoPrestadoPorTomador");
@@ -188,6 +212,13 @@ namespace ACBrLib.NFSe
             AddMethod<NFSE_ConsultarNFSeServicoTomadoPorTomador>("NFSE_ConsultarNFSeServicoTomadoPorTomador");
             AddMethod<NFSE_ConsultarNFSeServicoTomadoPorPeriodo>("NFSE_ConsultarNFSeServicoTomadoPorPeriodo");
             AddMethod<NFSE_ConsultarNFSeServicoTomadoPorIntermediario>("NFSE_ConsultarNFSeServicoTomadoPorIntermediario");
+            AddMethod<NFSE_EnviarEvento>("NFSE_EnviarEvento");
+            AddMethod<NFSE_ConsultarDPSPorChave>("NFSE_ConsultarDPSPorChave");
+            AddMethod<NFSE_ConsultarNFSePorChave>("NFSE_ConsultarNFSePorChave");
+            AddMethod<NFSE_ConsultarEvento>("NFSE_ConsultarEvento");
+            AddMethod<NFSE_ConsultarDFe>("NFSE_ConsultarDFe");
+            AddMethod<NFSE_ObterDANFSE>("NFSE_ObterDANFSE");
+            AddMethod<NFSE_ConsultarParametros>("NFSE_ConsultarParametros");
         }
     }
 }

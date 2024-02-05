@@ -47,7 +47,6 @@ type
   public
     function Recepcionar(ACabecalho, AMSG: String): string; override;
     function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
-//    function GerarNFSe(ACabecalho, AMSG: String): string; override;
     function ConsultarLote(ACabecalho, AMSG: String): string; override;
     function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
     function ConsultarNFSePorFaixa(ACabecalho, AMSG: String): string; override;
@@ -69,6 +68,8 @@ type
     function DefinirIDLote(const ID: string): string; override;
     function DefinirIDCancelamento(const CNPJ: string; const InscMunic: string;
                                    const NumNfse: string): string; override;
+
+    procedure TratarRetornoEmitir(Response: TNFSeEmiteResponse); override;
 
     procedure GerarMsgDadosCancelaNFSe(Response: TNFSeCancelaNFSeResponse;
       Params: TNFSeParamsResponse); override;
@@ -97,7 +98,7 @@ uses
   DateUtils,
   ACBrUtil.Strings,
   ACBrUtil.XMLHTML,
-  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
+  ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
   ACBrNFSeXNotasFiscais, Tecnos.GravarXml, Tecnos.LerXml;
 
 { TACBrNFSeProviderTecnos201 }
@@ -152,6 +153,12 @@ begin
   begin
     CancPreencherMotivo := True;
     ConsultaPorFaixaPreencherNumNfseFinal := True;
+
+    with ServicosDisponibilizados do
+    begin
+      EnviarUnitario := False;
+      SubstituirNfse := False;
+    end;
   end;
 
   with ConfigAssinar do
@@ -248,6 +255,140 @@ begin
             IntToStr(YearOf(Date)) + // ano do lote enviado no formato AAAA
             OnlyNumber(Cnpj) +
             Poem_Zeros(OnlyNumber(ID), 16) + '"';
+end;
+
+procedure TACBrNFSeProviderTecnos201.TratarRetornoEmitir(
+  Response: TNFSeEmiteResponse);
+var
+  NumNFSe, CodVerif, NumRps, SerieRps: string;
+  DataAut: TDateTime;
+  Document: TACBrXmlDocument;
+  AErro: TNFSeEventoCollectionItem;
+  AResumo: TNFSeResumoCollectionItem;
+  ANode, AuxNode: TACBrXmlNode;
+  ANodeArray: TACBrXmlNodeArray;
+  ANota: TNotaFiscal;
+  I: Integer;
+begin
+  Document := TACBrXmlDocument.Create;
+  NumRps := '';
+
+  try
+    try
+      if Response.ArquivoRetorno = '' then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod201;
+        AErro.Descricao := ACBrStr(Desc201);
+        Exit
+      end;
+
+      Document.LoadFromXml(Response.ArquivoRetorno);
+
+      ANode := Document.Root;
+
+      ProcessarMensagemErros(ANode, Response);
+
+      with Response do
+      begin
+        Data := ObterConteudoTag(ANode.Childrens.FindAnyNs('DataRecebimento'), FpFormatoDataRecebimento);
+        Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('Protocolo'), tcStr);
+      end;
+
+      if Response.ModoEnvio in [meLoteSincrono, meUnitario] then
+      begin
+        // Retorno do EnviarLoteRpsSincrono e GerarNfse
+        ANode := ANode.Childrens.FindAnyNs('ListaNfse');
+
+        if not Assigned(ANode) then
+        begin
+          AErro := Response.Erros.New;
+          AErro.Codigo := Cod202;
+          AErro.Descricao := ACBrStr(Desc202);
+          Exit;
+        end;
+
+        ProcessarMensagemErros(ANode, Response);
+
+        ANodeArray := ANode.Childrens.FindAllAnyNs('CompNfse');
+
+        if not Assigned(ANodeArray) then
+        begin
+          AErro := Response.Erros.New;
+          AErro.Codigo := Cod203;
+          AErro.Descricao := ACBrStr(Desc203);
+          Exit;
+        end;
+
+        for I := Low(ANodeArray) to High(ANodeArray) do
+        begin
+          ANode := ANodeArray[I];
+          AuxNode := ANode.Childrens.FindAnyNs('tcCompNfse');
+          if not Assigned(AuxNode) or (AuxNode = nil) then Exit;
+
+          AuxNode := AuxNode.Childrens.FindAnyNs('Nfse');
+          if not Assigned(AuxNode) or (AuxNode = nil) then Exit;
+
+          AuxNode := AuxNode.Childrens.FindAnyNs('InfNfse');
+
+          NumNFSe := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('Numero'), tcStr);
+          CodVerif := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CodigoVerificacao'), tcStr);
+          DataAut := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('DataEmissao'), tcDatHor);
+
+          with Response do
+          begin
+            NumeroNota := NumNFSe;
+            CodigoVerificacao := CodVerif;
+            Data := DataAut;
+          end;
+
+          AuxNode := AuxNode.Childrens.FindAnyNs('DeclaracaoPrestacaoServico');
+          if not Assigned(AuxNode) or (AuxNode = nil) then Exit;
+
+          AuxNode := AuxNode.Childrens.FindAnyNs('InfDeclaracaoPrestacaoServico');
+          if not Assigned(AuxNode) or (AuxNode = nil) then Exit;
+
+          AuxNode := AuxNode.Childrens.FindAnyNs('Rps');
+
+          if AuxNode <> nil then
+          begin
+            AuxNode := AuxNode.Childrens.FindAnyNs('IdentificacaoRps');
+            if not Assigned(AuxNode) or (AuxNode = nil) then Exit;
+
+            NumRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('Numero'), tcStr);
+            SerieRps := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('Serie'), tcStr);
+          end;
+
+          if NumRps <> '' then
+            ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps)
+          else
+            ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByNFSe(Response.NumeroNota);
+
+          AResumo := Response.Resumos.New;
+          AResumo.NumeroNota := NumNFSe;
+          AResumo.CodigoVerificacao := CodVerif;
+          AResumo.NumeroRps := NumRps;
+          AResumo.SerieRps := SerieRps;
+
+          ANota := CarregarXmlNfse(ANota, ANode.OuterXml);
+          SalvarXmlNfse(ANota);
+
+          AResumo.NomeArq := ANota.NomeArq;
+        end;
+      end;
+
+      Response.Sucesso := (Response.Erros.Count = 0);
+    except
+      on E:Exception do
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod999;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
+      end;
+    end;
+  finally
+    FreeAndNil(Document);
+  end;
 end;
 
 procedure TACBrNFSeProviderTecnos201.GerarMsgDadosCancelaNFSe(
@@ -484,7 +625,7 @@ var
   Request: string;
 begin
   FPMsgOrig := AMSG;
-
+  {
   Request := '<mEnvioLoteRPSSincrono xmlns="http://tempuri.org/">';
   Request := Request + '<remessa>' + XmlToStr(AMSG) + '</remessa>';
   Request := Request + '</mEnvioLoteRPSSincrono>';
@@ -492,24 +633,17 @@ begin
   Result := Executar('http://tempuri.org/mEnvioLoteRPSSincrono', Request,
                      ['mEnvioLoteRPSSincronoResult', 'EnviarLoteRpsSincronoResposta'],
                      []);
-end;
-
-{
-function TACBrNFSeXWebserviceTecnos201.GerarNFSe(ACabecalho, AMSG: String): string;
-var
-  Request: string;
-begin
-  FPMsgOrig := AMSG;
-
-  Request := '<mGerarNfse xmlns="http://tempuri.org/">';
+  }
+  Request := '<mEnvioLoteRPSSincronoComRetornoLista xmlns="http://tempuri.org/">';
   Request := Request + '<remessa>' + XmlToStr(AMSG) + '</remessa>';
-  Request := Request + '</mGerarNfse>';
+  Request := Request + '</mEnvioLoteRPSSincronoComRetornoLista>';
 
-  Result := Executar('http://tempuri.org/mGerarNfse', Request,
-                     ['mGerarNfseResult', 'GerarNfseResposta'],
+  Result := Executar('http://tempuri.org/mEnvioLoteRPSSincronoComRetornoLista', Request,
+                     ['mEnvioLoteRPSSincronoComRetornoListaResult',
+                     'EnviarLoteRpsSincronoComDadosResposta'],
                      []);
 end;
-}
+
 function TACBrNFSeXWebserviceTecnos201.ConsultarLote(ACabecalho,
   AMSG: String): string;
 var
@@ -612,6 +746,8 @@ begin
 
   Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
   Result := RemoverDeclaracaoXML(Result);
+  Result := StringReplace(Result, 'EnviarLoteRpsSincronoResposta',
+                'EnviarLoteRpsSincronoComDadosResposta', [rfReplaceAll]);
 end;
 
 end.

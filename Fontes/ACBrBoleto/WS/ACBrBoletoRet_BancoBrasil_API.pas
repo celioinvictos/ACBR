@@ -98,9 +98,9 @@ var
 begin
   Result := True;
   TipoOperacao := ACBrBoleto.Configuracoes.WebService.Operacao;
-  
-  ARetornoWs.JSONEnvio      := EnvWs;
-  ARetornoWS.HTTPResultCode := HTTPResultCode;
+  ARetornoWS.HTTPResultCode  := HTTPResultCode;
+  ARetornoWS.JSONEnvio       := EnvWs;
+  ARetornoWS.Header.Operacao := TipoOperacao;
   
   if RetWS <> '' then
   begin
@@ -108,75 +108,44 @@ begin
       AJSon := TJson.Create;
       try
         AJSon.Parse(RetWS);
-        ARetornoWS.JSON           := AJson.Stringify;
-		
-        //retorna quando houver erro
-        case TipoOperacao of
-          tpInclui,
-          tpPIXCriar,
-          tpPIXCancelar:
-            begin
-              case HTTPResultCode of
-                400,
-                403,
-                500 :
-                  begin
-                    AJSonResp := AJson.Values['erros'].AsArray;
-                    for I := 0 to Pred(AJSonResp.Count) do
-                    begin
-                      AJSonRejeicao        := AJSonResp[I].AsObject;
-                      ARejeicao            := ARetornoWS.CriarRejeicaoLista;
-                      ARejeicao.Codigo     := AJSonRejeicao.Values['codigo'].AsString;
-                      ARejeicao.Versao     := AJSonRejeicao.Values['versao'].AsString;
-                      ARejeicao.Mensagem   := AJSonRejeicao.Values['mensagem'].AsString;
-                      ARejeicao.Ocorrencia := AJSonRejeicao.Values['ocorrencia'].AsString;
-                    end;
-                  end;
-                401 :
-                  begin
-                    if (AJson.Values['error'].AsString <> '') then
-                    begin
-                      ARejeicao            := ARetornoWS.CriarRejeicaoLista;
-                      ARejeicao.Codigo     := AJson.Values['statusCode'].AsString;
-                      ARejeicao.Versao     := AJson.Values['error'].AsString;
-                      ARejeicao.Mensagem   := AJson.Values['message'].AsString;
-                    end;
-                  end;
+        ARetornoWS.JSON := AJson.Stringify;
 
+        if HTTPResultCode >= 400 then
+        begin
+          AJSonResp := AJson.Values['erros'].AsArray;
+
+          if AJSonResp.Count > 0 then
+          begin
+            for I := 0 to Pred(AJSonResp.Count) do
+            begin
+              AJSonRejeicao        := AJSonResp[I].AsObject;
+              ARejeicao            := ARetornoWS.CriarRejeicaoLista;
+
+              if (AJSonRejeicao.Values['codigo'].AsString <> '') or
+                 (AJSonRejeicao.Values['mensagem'].AsString <> '') or
+                 (AJSonRejeicao.Values['ocorrencia'].AsString <> '') then
+              begin
+                ARejeicao.Codigo     := AJSonRejeicao.Values['codigo'].AsString;
+                ARejeicao.Versao     := AJSonRejeicao.Values['versao'].AsString;
+                ARejeicao.Mensagem   := AJSonRejeicao.Values['mensagem'].AsString;
+                ARejeicao.Ocorrencia := AJSonRejeicao.Values['ocorrencia'].AsString;
+              end
+              else
+              begin
+                ARejeicao.Codigo     := AJSonRejeicao.Values['codigoMensagem'].AsString;
+                ARejeicao.Versao     := AJSonRejeicao.Values['versaoMensagem'].AsString;
+                ARejeicao.Mensagem   := AJSonRejeicao.Values['textoMensagem'].AsString;
               end;
             end;
-          tpBaixa,
-          tpAltera,
-          tpConsultaDetalhe :
-            begin
-              case HTTPResultCode of
-                400,
-                403,
-                500 :
-                  begin
-                    AJSonResp := AJson.Values['errors'].AsArray;
-                    for I := 0 to Pred(AJSonResp.Count) do
-                    begin
-                      AJSonRejeicao        := AJSonResp[I].AsObject;
-                      ARejeicao            := ARetornoWS.CriarRejeicaoLista;
-                      ARejeicao.Codigo     := AJSonRejeicao.Values['code'].AsString;
-                      ARejeicao.Mensagem   := AJSonRejeicao.Values['message'].AsString;
-                    end;
-                  end;
-                401 :
-                  begin
-                    if (AJson.Values['error'].AsString <> '') then
-                    begin
-                      ARejeicao            := ARetornoWS.CriarRejeicaoLista;
-                      ARejeicao.Codigo     := AJson.Values['statusCode'].AsString;
-                      ARejeicao.Versao     := AJson.Values['error'].AsString;
-                      ARejeicao.Mensagem   := AJson.Values['message'].AsString;
-                    end;
-                  end;
-
-              end;
-            end;
-        end;
+          end
+          else if AJson.Values['error'].AsString <> '' then
+          begin
+            ARejeicao            := ARetornoWS.CriarRejeicaoLista;
+            ARejeicao.Codigo     := AJson.Values['statusCode'].AsString;
+            ARejeicao.Versao     := AJson.Values['error'].AsString;
+            ARejeicao.Mensagem   := AJson.Values['message'].AsString;
+          end;
+        end;  
 
         //retorna quando tiver sucesso
         if (ARetornoWS.ListaRejeicao.Count = 0) then
@@ -229,6 +198,7 @@ begin
             ARetornoWS.DadosRet.TituloRet.Carteira                   := AJson.Values['numeroCarteiraCobranca'].AsString;
             ARetornoWS.DadosRet.TituloRet.Modalidade                 := StrToIntDef( AJson.Values['numeroVariacaoCarteiraCobranca'].asString ,0 );
             ARetornoWS.DadosRet.TituloRet.codigoEstadoTituloCobranca := AJson.Values['codigoEstadoTituloCobranca'].AsString;
+            ARetornoWS.DadosRet.TituloRet.CodigoCanalTituloCobranca  := AJson.Values['codigoCanalPagamento'].AsString;
             ARetornoWS.DadosRet.TituloRet.contrato                   := AJson.Values['numeroContratoCobranca'].AsString;
             ARetornoWS.DadosRet.TituloRet.DataMovimento              := DateBBtoDateTime(AJson.Values['dataRegistroTituloCobranca'].AsString);
             ARetornoWS.DadosRet.TituloRet.Vencimento                 := DateBBtoDateTime(AJson.Values['dataVencimentoTituloCobranca'].AsString);
@@ -246,6 +216,22 @@ begin
             ARetornoWS.DadosRet.TituloRet.ValorAbatimento            := AJson.Values['valorAbatimentoTotal'].AsNumber;
             ARetornoWS.DadosRet.TituloRet.MultaValorFixo             := true;
             ARetornoWS.DadosRet.TituloRet.PercentualMulta            := AJson.Values['valorMultaRecebido'].AsNumber;
+            //ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca := IntToStr(AJson.Values['codigoTipoBaixaTitulo'].AsInteger);
+            case AJson.Values['codigoTipoBaixaTitulo'].AsInteger of
+              1  : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'BAIXADO POR SOLICITACAO';
+              2  : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'ENTREGA FRANCO PAGAMENTO';
+              9  : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'COMANDADA BANCO';
+              10 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'COMANDADA CLIENTE - ARQUIVO';
+              11 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'COMANDADA CLIENTE - ON-LINE';
+              12 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'DECURSO PRAZO - CLIENTE';
+              13 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'DECURSO PRAZO - BANCO';
+              15 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'PROTESTADO';
+              31 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'LIQUIDADO ANTERIORMENTE';
+              32 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'HABILITADO EM PROCESSO';
+              35 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'TRANSFERIDO PARA PERDAS';
+              51 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'REGISTRADO INDEVIDAMENTE';
+              90 : ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca := 'BAIXA AUTOMATICA';
+            end;
 
             ARetornoWS.DadosRet.TituloRet.CodigoOcorrenciaCartorio   := IntToStr(AJson.Values['codigoOcorrenciaCartorio'].AsInteger);
 

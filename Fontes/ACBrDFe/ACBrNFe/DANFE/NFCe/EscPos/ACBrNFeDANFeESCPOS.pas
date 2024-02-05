@@ -39,7 +39,7 @@ interface
 uses
   Classes, SysUtils, {$IFDEF FPC} LResources, {$ENDIF}
   ACBrBase, ACBrNFeDANFEClass, ACBrPosPrinter,
-  pcnNFe, pcnEnvEventoNFe, pcnInutNFe;
+  pcnNFe, pcnEnvEventoNFe, pcnInutNFe, ACBrDFeDANFeReport;
 
 const
   CLarguraRegiaoEsquerda = 270;
@@ -88,7 +88,6 @@ type
     procedure GerarObservacoesEvento;
 
     function CalcularDadosQRCode: String;
-    function ValidaLogoBmp(const APathLogo:string):Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -118,7 +117,6 @@ uses
   ACBrUtil.DateTime,
   ACBrDFeUtil,
   ACBrConsts,
-  ACBrDFeDANFeReport,
   pcnConversao,
   pcnAuxiliar,
   ACBrImage;
@@ -128,8 +126,7 @@ uses
 constructor TACBrNFeDANFeESCPOS.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-
-  FPosPrinter := Nil;
+  FPosPrinter        := Nil;
   FSuportaCondensado := True;
 end;
 
@@ -226,7 +223,7 @@ begin
     FPosPrinter.Buffer.Add('</zera><mp>' +
                           FPosPrinter.ConfigurarRegiaoModoPagina(0,0,Altura,CLarguraRegiaoEsquerda));
 
-    FPosPrinter.Buffer.Add(IfThen(ValidaLogoBmp(logo),'<bmp>'+Logo+'</bmp>','</logo>'));
+    FPosPrinter.Buffer.Add(IfThen(FPosPrinter.ValidaLogoBmp(logo),'<bmp>'+Logo+'</bmp>','</lf></logo>'));
 
     FPosPrinter.Buffer.Add(FPosPrinter.ConfigurarRegiaoModoPagina(CLarguraRegiaoEsquerda,0,Altura,325) +
                           TextoLateral +
@@ -234,8 +231,7 @@ begin
   end
   else
   begin
-
-    FPosPrinter.Buffer.Add('</zera></ce>'+ IfThen(FileExists(Logo),'<bmp>'+Logo+'</bmp>','</logo>') );
+    FPosPrinter.Buffer.Add('</zera></ce>'+ IfThen(FPosPrinter.ValidaLogoBmp(logo),'<bmp>'+Logo+'</bmp>','</lf></logo>'));
 
     if (Trim(FpNFe.Emit.xFant) <> '') and ImprimeNomeFantasia then
        FPosPrinter.Buffer.Add('</ce>'+TagLigaCondensado+'<n>' +  FpNFe.Emit.xFant + '</n>');
@@ -279,7 +275,7 @@ procedure TACBrNFeDANFeESCPOS.GerarDetalhesProdutosServicos;
 var
   i: Integer;
   nTamDescricao: Integer;
-  VlrAcrescimo, VlrLiquido: Double;
+  VlrAcrescimo, VlrLiquido, LDesconto: Double;
   sItem, sCodigo, sDescricao, sQuantidade, sUnidade, sVlrUnitario, sVlrProduto,
     LinhaCmd: String;
   sDescricaoAd: String;
@@ -353,13 +349,13 @@ begin
         if ImprimeDescAcrescItem then
         begin
           VlrAcrescimo := Prod.vSeg + Prod.vOutro;
-          VlrLiquido   := (Prod.qCom * Prod.vUnCom) + (VlrAcrescimo + Prod.vFrete) - Prod.vDesc;
-
+          VlrLiquido   := CalcularValorLiquidoItem(FpNFe, i);
+          LDesconto    := CalcularValorDescontoItem(FpNFe, i);
           // desconto
-          if Prod.vDesc > 0 then
+          if LDesconto > 0 then
           begin
             LinhaCmd := '</ae>'+TagLigaCondensado + padSpace(
-                'Desconto ' + padLeft(FormatFloatBr(Prod.vDesc, '-,0.00'), 15, ' ')
+                'Desconto ' + padLeft(FormatFloatBr(LDesconto, '-,0.00'), 15, ' ')
                 +IIf((VlrAcrescimo+Prod.vFrete > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
                 ColunasCondensado, '|');
             FPosPrinter.Buffer.Add('</ae>'+TagLigaCondensado + LinhaCmd);
@@ -403,6 +399,7 @@ var
   SufixoTitulo, TagLigaExpandido, TagDesligaExpandido: String;
   FatorExp: Integer;
   ImprimeTotalNoFinal: Boolean;
+  LValorDesconto : Double;
 begin
   if (ColunasCondensado >= 46) then
   begin
@@ -438,9 +435,11 @@ begin
        FormatFloatBr(FpNFe.Total.ICMSTot.vProd + FpNFe.Total.ISSQNtot.vServ),
        ColunasCondensado div FatorExp, '|') + TagDesligaExpandido);
 
-  if (FpNFe.Total.ICMSTot.vDesc > 0) then
+  LValorDesconto := CalcularValorDescontoTotal(FpNFe);
+
+  if (LValorDesconto > 0) then
     FPosPrinter.Buffer.Add(TagLigaCondensado + PadSpace('Desconto'+SufixoTitulo+'|' +
-       FormatFloatBr(FpNFe.Total.ICMSTot.vDesc, '-,0.00'),
+       FormatFloatBr(LValorDesconto, '-,0.00'),
        ColunasCondensado, '|'));
 
   if (FpNFe.Total.ICMSTot.vOutro+FpNFe.Total.ICMSTot.vSeg) > 0 then
@@ -970,27 +969,6 @@ begin
     Result := FpNFe.infNFeSupl.qrCode;
 end;
 
-function TACBrNFeDANFeESCPOS.ValidaLogoBmp(const APathLogo: string): Boolean;
-var
-  LFileStream : TFileStream;
-begin
-   Result := False;
-
-   if not FileExists(APathLogo) then
-     Exit;
-
-   LFileStream := TFileStream.Create(APathLogo, fmOpenRead or fmShareDenyWrite);
-   try
-     if not IsBMP(LFileStream, True) then
-       Exit;
-
-     //if LFileStream.Size <= 5000 then // Menor ou igual a 5 KB -- se necessário validar, ficar para futuro
-       Result := True;
-
-   finally
-     LFileStream.Free;
-   end;
-end;
 
 function TACBrNFeDANFeESCPOS.ColunasCondensado: Integer;
 begin

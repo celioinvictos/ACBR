@@ -4,7 +4,6 @@ inherited frlXDANFSeRLISSnet: TfrlXDANFSeRLISSnet
   Caption = 'frlXDANFSeRLISSNet'
   ClientHeight = 750
   ClientWidth = 933
-  PixelsPerInch = 96
   TextHeight = 13
   inherited RLNFSe: TRLReport
     Left = 32
@@ -504,6 +503,20 @@ inherited frlXDANFSeRLISSnet: TfrlXDANFSeRLISSnet
         Font.Style = [fsBold]
         ParentFont = False
         Transparent = False
+      end
+      object rllRespRetencao: TRLLabel
+        Left = 490
+        Top = 135
+        Width = 122
+        Height = 16
+        Alignment = taCenter
+        AutoSize = False
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
       end
     end
     object rlbTomador: TRLBand

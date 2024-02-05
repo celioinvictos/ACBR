@@ -39,8 +39,8 @@ interface
 uses
   SysUtils, Classes, StrUtils,
   ACBrXmlBase, ACBrXmlDocument,
-  pcnConsts, ACBrUtil.Strings,
-  ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2, ACBrNFSeXConversao;
+  ACBrUtil.Strings,
+  ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2;
 
 type
   { TNFSeW_Elotech203 }
@@ -55,6 +55,10 @@ type
   end;
 
 implementation
+
+uses
+  ACBrNFSeXConsts,
+  ACBrNFSeXConversao;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -93,6 +97,9 @@ begin
   NrOcorrAliquotaCsll := 1;
   NrOcorrRetidoCsll := 1;
   NrOcorrInscEstTomador_2 := 0;
+  NrOcorrValorCpp := 0;
+  NrOcorrAliquotaCpp := 0;
+  NrOcorrRetidoCpp := 0;
 
   GerarIDDeclaracao := False;
 end;

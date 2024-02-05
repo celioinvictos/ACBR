@@ -56,7 +56,8 @@ uses
    System.Contnrs,
   {$IfEnd}
   ACBrBase,
-  pcnConversao, pcnGerador, pcnConsts,
+  ACBrDFeConsts,
+  pcnConversao, pcnGerador,
   pcesCommon, pcesConversaoeSocial, pcesGerador;
 
 type
@@ -148,6 +149,7 @@ type
     FVrAlim : Double;
     FnrCertObito : String;
     FnrProcTrab : String;
+    FindPDV: tpSimNaoFacultativo;
     FIndCumprParc: tpCumprParcialAviso;
     FObservacao : String; // Descontinuado na versão 2.4.02
     Fobservacoes: TobservacoesCollection;
@@ -182,6 +184,7 @@ type
     property pensAlim: tpPensaoAlim read FPensAlim write FPensAlim;
     property nrCertObito : String read FnrCertObito write FnrCertObito;
     property nrProcTrab : String read FnrProcTrab write FnrProcTrab;
+    property indPDV: tpSimNaoFacultativo read FindPDV write FindPDV;
     property indCumprParc: tpCumprParcialAviso read FIndCumprParc write FIndCumprParc;
     property Observacao : String read FObservacao write FObservacao;
     property observacoes: TobservacoesCollection read Fobservacoes write Fobservacoes;
@@ -833,6 +836,11 @@ begin
   if (obj.mtvDeslig='17') then
     Gerador.wCampo(tcStr, '', 'nrProcTrab', 1, 20, 0, obj.nrProcTrab);
 
+  if VersaoDF >= veS01_02_00 then
+    if not (StrToIntDef(obj.mtvDeslig,0) in [10, 11, 12, 13, 28, 29, 30, 34, 36, 37, 40, 43, 44]) then
+      if obj.indPDV = snfSim then
+        Gerador.wCampo(tcStr, '', 'indPDV',  1,  1, 1, eSSimNaoFacultativoToStr(obj.indPDV));
+
   //O campo é sempre obrigatório para a categoria 111 (Intermitente)
   if (VersaoDF <= ve02_05_00) then
   begin
@@ -1188,11 +1196,12 @@ begin
       infoDeslig.dtDeslig     := StringToDateTime(INIRec.ReadString(sSecao, 'dtDeslig', '0'));
       infoDeslig.indPagtoAPI  := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indPagtoAPI', 'S'));
       infoDeslig.dtProjFimAPI := StringToDateTime(INIRec.ReadString(sSecao, 'dtProjFimAPI', '0'));
-      infoDeslig.pensAlim     := eSStrToTpPensaoAlimEx(INIRec.ReadString(sSecao, 'pensAlim', '0'));
+      infoDeslig.pensAlim     := eSStrToTpPensaoAlimEx(INIRec.ReadString(sSecao, 'pensAlim', ''));
       infoDeslig.percAliment  := StringToFloatDef(INIRec.ReadString(sSecao, 'percAliment', ''), 0);
       infoDeslig.vrAlim       := StringToFloatDef(INIRec.ReadString(sSecao, 'vrAlim', ''), 0);
       infoDeslig.nrCertObito  := INIRec.ReadString(sSecao, 'nrCertObito', EmptyStr);
       infoDeslig.nrProcTrab   := INIRec.ReadString(sSecao, 'nrProcTrab', EmptyStr);
+      infoDeslig.indPDV       := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indPDV', '1'));
       infoDeslig.indCumprParc := eSStrToTpCumprParcialAviso(Ok, INIRec.ReadString(sSecao, 'indCumprParc', '0'));
       infoDeslig.qtdDiasInterm := INIRec.ReadInteger(sSecao, 'qtdDiasInterm', -1);
       infoDeslig.Observacao   := INIRec.ReadString(sSecao, 'observacao', EmptyStr);
@@ -1553,7 +1562,7 @@ begin
         while true do
         begin
           // de 01 até 10
-          sSecao := 'remunOutrEmpr' + IntToStrZero(I, 3);
+          sSecao := 'remunOutrEmpr' + IntToStrZero(I, 2);
           sFim   := INIRec.ReadString(sSecao, 'tpInsc', 'FIM');
 
           if (sFim = 'FIM') or (Length(sFim) <= 0) then

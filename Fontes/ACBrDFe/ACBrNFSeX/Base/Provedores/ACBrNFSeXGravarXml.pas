@@ -37,7 +37,7 @@ unit ACBrNFSeXGravarXml;
 interface
 
 uses
-  SysUtils, Classes, StrUtils,
+  SysUtils, Classes, StrUtils, IniFiles,
   ACBrXmlBase, ACBrXmlDocument, ACBrXmlWriter,
   ACBrNFSeXInterface, ACBrNFSeXClass, ACBrNFSeXConversao;
 
@@ -92,6 +92,7 @@ type
     FGerarIDRps: Boolean;
     // Gera ou não o NameSpace no grupo <Rps> da versão 2 do layout da ABRASF.
     FGerarNSRps: Boolean;
+    FIniParams: TMemIniFile;
 
     function GetOpcoes: TACBrXmlWriterOptions;
     procedure SetOpcoes(AValue: TACBrXmlWriterOptions);
@@ -114,6 +115,7 @@ type
     function NormatizarItemServico(const Codigo: string): string;
     function FormatarItemServico(const Codigo: string; Formato: TFormatoItemListaServico): string;
     function NormatizarAliquota(const Aliquota: Double; DivPor100: Boolean = False): Double;
+    function ObterNomeMunicipioUF(ACodigoMunicipio: Integer; var xUF: string): string;
 
  public
     constructor Create(AOwner: IACBrNFSeXProvider); virtual;
@@ -151,6 +153,7 @@ type
 
     property GerarIDRps: Boolean read FGerarIDRps write FGerarIDRps;
     property GerarNSRps: Boolean read FGerarNSRps write FGerarNSRps;
+    property IniParams: TMemIniFile read FIniParams write FIniParams;
   end;
 
 implementation
@@ -186,8 +189,30 @@ begin
   FFormatoCompetencia := tcDatHor;
   FFormItemLServico := filsComFormatacao;
 
+  // Os 4 IF abaixo vão configurar o componente conforme a presença do
+  // parâmetro no arquivo ACBrNFSeXServicos.ini
+  // Ou seja, configuração a nível de cidade.
+  if FpAOwner.ConfigGeral.Params.TemParametro('NaoFormatarItemServico') then
+    FFormItemLServico := filsSemFormatacao;
+
+  if FpAOwner.ConfigGeral.Params.TemParametro('NaoFormatarItemServicoSemZeroEsquerda') then
+    FFormItemLServico := filsSemFormatacaoSemZeroEsquerda;
+
+  if FpAOwner.ConfigGeral.Params.TemParametro('FormatarItemServicoSemZeroEsquerda') then
+    FFormItemLServico := filsComFormatacaoSemZeroEsquerda;
+
+  if FpAOwner.ConfigGeral.Params.TemParametro('FormatarItemServicoNaoSeAplica') then
+    FFormItemLServico := filsNaoSeAplica;
+
   FFormatoAliq := tcDe4;
+
+  if FpAOwner.ConfigGeral.Params.TemParametro('Aliquota2Casas') then
+    FFormatoAliq := tcDe2;
+
   FDivAliq100  := False;
+
+  if FpAOwner.ConfigGeral.Params.TemParametro('Dividir100') then
+    FDivAliq100 := True;
 
   FNrMinExigISS := 1;
   FNrMaxExigISS := 1;
@@ -349,6 +374,17 @@ end;
 function TNFSeWClass.ObterNomeArquivo: String;
 begin
   Result := OnlyNumber(NFSe.infID.ID) + '.xml';
+end;
+
+function TNFSeWClass.ObterNomeMunicipioUF(ACodigoMunicipio: Integer;
+  var xUF: string): string;
+var
+  CodIBGE: string;
+begin
+  CodIBGE := IntToStr(ACodigoMunicipio);
+
+  xUF := IniParams.ReadString(CodIBGE, 'UF', '');
+  Result := IniParams.ReadString(CodIBGE, 'Nome', '');
 end;
 
 function TNFSeWClass.NormatizarAliquota(const Aliquota: Double; DivPor100: Boolean = False): Double;

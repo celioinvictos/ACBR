@@ -44,8 +44,9 @@ unit ACBrPIXPSPShipay;
 interface
 
 uses
-  Classes, SysUtils,
-  ACBrPIXCD, ACBrShipaySchemas, ACBrBase, ACBrPIXBase, ACBrPIXSchemasProblema;
+  Classes, SysUtils, 
+  {$IFDEF RTL230_UP}ACBrBase,{$ENDIF RTL230_UP}
+  ACBrPIXCD, ACBrShipaySchemas, ACBrPIXBase, ACBrPIXSchemasProblema;
 
 const
   cShipayURLStaging = 'https://api-staging.shipay.com.br';
@@ -63,6 +64,8 @@ const
   cShipayHeaderOrderType = 'x-shipay-order-type';
   cShipayEOrder = 'e-order';
   cItemTitleNotInformed = 'Item Vendido';
+  cShipayEndPointPix = '/reconciliation/v2/pix-any-bank';
+  
 
 resourcestring
   sErrOrderIdDifferent = 'order_id diferente do informado';
@@ -169,7 +172,8 @@ implementation
 uses
   StrUtils, synautil, DateUtils, ACBrJSON,
   ACBrUtil.DateTime, ACBrUtil.Strings, ACBrUtil.Base, ACBrUtil.FilesIO,
-  ACBrPIXUtil, ACBrPIXSchemasCob, ACBrPIXBRCode, ACBrPIXSchemasCobsConsultadas;
+  ACBrPIXUtil, ACBrPIXSchemasCob, ACBrPIXBRCode, ACBrPIXSchemasCobsConsultadas,
+  ACBrPIXSchemasPix;
 
 { TACBrPSPShipay }
 
@@ -622,7 +626,7 @@ begin
     if (Trim(fpToken) = '') then
       DispararExcecao(EACBrPixHttpException.Create(ACBrStr(sErroAutenticacao)));
 
-    fpValidadeToken := IncHour(Now, 24);
+    fpValidadeToken := IncHour(Now, 4);
     fpAutenticado := True;
   end
   else
@@ -871,6 +875,7 @@ function TACBrPSPShipay.ConverterJSONOrderInfoParaCobCompleta(
   const OrderInfoJSON: String): String;
 var
   Cob: TACBrPIXCobCompleta;
+  pix: TACBrPIX;
 begin
   fOrderInfo.AsJSON := OrderInfoJSON;
   Cob := TACBrPIXCobCompleta.Create('');
@@ -907,6 +912,17 @@ begin
         nome := 'pix_psp';
         valor := fOrderInfo.pix_psp;
       end;
+    end;
+
+    // Cria objeto pix com as informação de pagamento, caso existam
+    if NaoEstaVazio(fOrderInfo.wallet_payment_id) then
+    with cob.pix.New do
+    begin
+      endToEndId := fOrderInfo.wallet_payment_id;
+      txid := fOrderInfo.order_id;
+      componentesValor.original.valor := fOrderInfo.total_order;
+      valor := fOrderInfo.paid_amount;
+      horario := fOrderInfo.payment_date;
     end;
 
     Result := Cob.AsJSON;
@@ -984,7 +1000,9 @@ begin
       Result := cShipayEndPointOrder
     else
       Result := cShipayEndPointOrderV;
-  end;
+  end
+  else if (aEndPoint = cEndPointPix) then
+    Result := cShipayEndPointPix;
 end;
 
 function TACBrPSPShipay.ObterURLAmbiente(const Ambiente: TACBrPixCDAmbiente): String;
@@ -1085,13 +1103,13 @@ begin
         Continue;
 
       if (wName = 'inicio') then
-        wSL.Values['start_date'] := FormatDateTime(SDateFormat, Iso8601ToDateTime(wValue))
+        wSL.Values['inicio'] := FormatDateTime(SDateFormat, Iso8601ToDateTime(wValue))
       else if (wName = 'fim') then
-        wSL.Values['end_date'] := FormatDateTime(SDateFormat, Iso8601ToDateTime(wValue))
+        wSL.Values['fim'] := FormatDateTime(SDateFormat, Iso8601ToDateTime(wValue))
       else if (wName = 'paginacao.paginaatual') then
-        wSL.Values['offset'] := wValue
+        wSL.Values['paginacao.paginaAtual'] := wValue
       else if (wName = 'paginacao.itensporpagina') then
-        wSL.Values['limit'] := wValue
+        wSL.Values['paginacao.itensPorPagina'] := wValue
       else
         Continue;
 

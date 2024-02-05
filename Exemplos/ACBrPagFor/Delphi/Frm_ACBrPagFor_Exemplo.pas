@@ -481,6 +481,9 @@ begin
       Registro0.ReservadoBanco := '';
       Registro0.ReservadoEmpresa := '';
 
+      // Usado pelo Banco do Brasil (True = Teste, False = Produção)
+      Registro0.RemessaTeste := True;
+
       with Lote.New do
       begin
         ////////////////////////////////////////////////////////////////////////
@@ -893,6 +896,7 @@ begin
 
           with SegmentoJ52.New do
           begin
+            TipoMovimento := tmInclusao;
             CodMovimento := imInclusaoRegistroDetalheLiberado;
 
             with Pagador do

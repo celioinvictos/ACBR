@@ -107,6 +107,7 @@ begin
   TipoOperacao := ACBrBoleto.Configuracoes.WebService.Operacao;
   ARetornoWS.HTTPResultCode := HTTPResultCode;
   ARetornoWS.JSONEnvio      := EnvWs;
+  ARetornoWS.Header.Operacao := TipoOperacao;
   if RetWS <> '' then
   begin
     //Retorno := ACBrBoleto.CriarRetornoWebNaLista;
@@ -167,11 +168,12 @@ begin
                 ARetornoWS.DadosRet.TituloRet.Vencimento                 := DateSicrediToDateTime(AJSonObject.Values['dataVencimento'].AsString);
                 ARetornoWS.DadosRet.TituloRet.ValorDocumento             := AJSonObject.Values['valor'].AsNumber;
                 ARetornoWS.DadosRet.TituloRet.ValorAtual                 := AJSonObject.Values['valor'].AsNumber;
+                ARetornoWS.DadosRet.TituloRet.EstadoTituloCobranca       := AJSonObject.Values['situacao'].AsString;
 
                 if( AJSonObject.Values['situacao'].asString = C_LIQUIDADO ) or
                    ( AJSonObject.Values['situacao'].asString = C_BAIXADO_POS_SOLICITACAO ) then
                 begin
-                  ARetornoWS.DadosRet.TituloRet.ValorPago                  := AJSonObject.Values['valor'].AsNumber;
+                  ARetornoWS.DadosRet.TituloRet.ValorPago                  := AJSonObject.Values['valorLiquidado'].AsNumber;
                   ARetornoWS.DadosRet.TituloRet.DataCredito                := DateSicrediToDateTime(AJSonObject.Values['dataliquidacao'].AsString);
                 end;
 

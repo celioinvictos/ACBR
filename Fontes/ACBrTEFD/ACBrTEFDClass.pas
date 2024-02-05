@@ -92,7 +92,8 @@ type
   TACBrTEFDTipo = ( gpNenhum, gpTefDial, gpTefDisc, gpHiperTef, gpCliSiTef,
                     gpTefGpu, gpVeSPague, gpBanese, gpTefAuttar, gpGoodCard,
                     gpFoxWin, gpCliDTEF, gpPetrocard, gpCrediShop, gpTicketCar,
-                    gpConvCard, gpCappta, gpPayGo, gpPayGoWeb, gpCliSiTefModular, gpTefDirecao) ;
+                    gpConvCard, gpCappta, gpPayGo, gpPayGoWeb, gpCliSiTefModular, gpTefDirecao,
+                    gpTefDialScopeGetcard) ;
 
   TACBrTEFDReqEstado = ( reqNenhum,             // Nennhuma Requisição em andamento
                          reqIniciando,          // Iniciando uma nova Requisicao
@@ -374,7 +375,7 @@ type
      procedure ConfirmarESolicitarImpressaoTransacoesPendentes ; virtual ;
 
      Procedure VerificarTransacaoPagamento(Valor : Double); virtual;
-     Function TransacaoEPagamento( AHeader: String ): Boolean;
+     Function TransacaoEPagamento( AHeader: String ): Boolean; virtual;
 
    protected
      property EsperaSTS : Integer read fEsperaSTS write fEsperaSTS
@@ -491,7 +492,7 @@ implementation
 Uses
   dateutils, StrUtils, Math, {$IFDEF FMX} System.Types {$ELSE} types{$ENDIF},
   ACBrTEFD, ACBrTEFDCliSiTef, ACBrTEFCliSiTefComum, ACBrTEFDVeSPague,
-  ACBrTEFDPayGo, ACBrTEFDPayGoWeb,
+  ACBrTEFDPayGo, ACBrTEFDPayGoWeb, ACBrTEFDDialScopeGetcard,
   ACBrUtil.Strings,
   ACBrUtil.Base,
   ACBrUtil.FilesIO;
@@ -763,7 +764,7 @@ end;
 procedure TACBrTEFDRespTXT.ConteudoToProperty;
 var
    Linha: TACBrTEFLinha ;
-   I: Integer;
+   I, L: Integer;
    Parc: TACBrTEFRespParcela;
    TemParcelas: Boolean ;
    LinhaComprovante: String;
@@ -849,7 +850,14 @@ begin
        601 : fpNFCeSAT.Bandeira := Linha.Informacao.AsString;
        602 : fpNFCeSAT.Autorizacao := Linha.Informacao.AsString;
        603 : fpNFCeSAT.CodCredenciadora := Linha.Informacao.AsString;
-
+       565 :
+        case Linha.Sequencia of
+           10 :
+           begin
+             L := StrToIntDef(copy(Linha.Informacao.AsString,3,2),2);
+             fpDocumentoPessoa := copy(Linha.Informacao.AsString, 5, L);
+           end;
+        end;
        999 : fpTrailer := Linha.Informacao.AsString ;
      else
         ProcessarTipoInterno(Linha);
@@ -2277,6 +2285,7 @@ begin
     gpVeSPague: Result := TACBrTEFDRespVeSPague.Create;
     gpPayGo: Result := TACBrTEFDRespPayGo.Create;
     gpPayGoWeb: Result := TACBrTEFDRespPayGoWeb.Create;
+    gpTefDialScopeGetcard: Result := TACBrTEFDRespScopeGetcard.Create;
   else
     Result := TACBrTEFDRespTXT.Create;
   end;

@@ -86,8 +86,8 @@ type
     procedure PrepararConsultaNFSeporRps(Response: TNFSeConsultaNFSeporRpsResponse); override;
     procedure TratarRetornoConsultaNFSeporRps(Response: TNFSeConsultaNFSeporRpsResponse); override;
 
-    procedure PrepararConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
-    procedure TratarRetornoConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
+    procedure PrepararConsultaNFSeporNumero(Response: TNFSeConsultaNFSeResponse); override;
+    procedure TratarRetornoConsultaNFSeporNumero(Response: TNFSeConsultaNFSeResponse); override;
 
     procedure PrepararCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
     procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
@@ -96,7 +96,10 @@ type
                                      Response: TNFSeWebserviceResponse;
                                      const AListTag: string = 'listaErros';
                                      const AMessageTag: string = 'erro'); override;
-
+  public
+    function SituacaoLoteRpsToStr(const t: TSituacaoLoteRps): string; override;
+    function StrToSituacaoLoteRps(out ok: boolean; const s: string): TSituacaoLoteRps; override;
+    function SituacaoLoteRpsToDescr(const t: TSituacaoLoteRps): string; override;
   end;
 
 implementation
@@ -118,6 +121,16 @@ begin
     ModoEnvio := meLoteAssincrono;
     FpCodigoCidade := Params.ValorParametro('CodigoCidade');
     DetalharServico := True;
+
+    with ServicosDisponibilizados do
+    begin
+      EnviarLoteAssincrono := True;
+      ConsultarSituacao := True;
+      ConsultarLote := True;
+      ConsultarRps := True;
+      ConsultarNfse := True;
+      CancelarNfse := True;
+    end;
   end;
 
   with ConfigAssinar do
@@ -246,6 +259,31 @@ begin
     AErro.Descricao := ACBrStr(ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('dsMensagem'), tcStr));
     AErro.Correcao := '';
   end;
+end;
+
+function TACBrNFSeProviderEquiplano.SituacaoLoteRpsToStr(const t: TSituacaoLoteRps): string;
+begin
+  Result := EnumeradoToStr(t,
+                           ['1', '2', '3', '4'],
+                           [sLoteNaoProcessado, sLoteProcessadoErro,
+                            sLoteProcessadoSucesso, sLoteProcessadoAviso]);
+end;
+
+function TACBrNFSeProviderEquiplano.StrToSituacaoLoteRps(out ok: boolean; const s: string): TSituacaoLoteRps;
+begin
+  Result := StrToEnumerado(ok, s,
+                           ['1', '2', '3', '4'],
+                           [sLoteNaoProcessado, sLoteProcessadoErro,
+                            sLoteProcessadoSucesso, sLoteProcessadoAviso]);
+end;
+
+function TACBrNFSeProviderEquiplano.SituacaoLoteRpsToDescr(const t: TSituacaoLoteRps): string;
+begin
+  Result := EnumeradoToStr(t,
+                           ['Lote Não Processado', 'Lote Processado com Erro',
+                            'Lote Processado com Aviso', 'Lote Processado com Sucesso'],
+                           [sLoteNaoProcessado, sLoteProcessadoErro,
+                            sLoteProcessadoSucesso, sLoteProcessadoAviso]);
 end;
 
 function TACBrNFSeProviderEquiplano.PrepararRpsParaLote(
@@ -437,6 +475,8 @@ var
   Document: TACBrXmlDocument;
   AErro: TNFSeEventoCollectionItem;
   ANode, AuxNode: TACBrXmlNode;
+  Ok: Boolean;
+  Situacao: TSituacaoLoteRps;
 begin
   Document := TACBrXmlDocument.Create;
 
@@ -466,6 +506,9 @@ begin
         NumeroLote := ObterConteudoTag(ANode.Childrens.FindAnyNs('nrLoteRps'), tcStr);
         Situacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('stLote'), tcStr);
       end;
+
+      Situacao := TACBrNFSeX(FAOwner).Provider.StrToSituacaoLoteRps(Ok, Response.Situacao);
+      Response.DescSituacao := TACBrNFSeX(FAOwner).Provider.SituacaoLoteRpsToDescr(Situacao);
     except
       on E:Exception do
       begin
@@ -790,7 +833,7 @@ begin
   end;
 end;
 
-procedure TACBrNFSeProviderEquiplano.PrepararConsultaNFSe(
+procedure TACBrNFSeProviderEquiplano.PrepararConsultaNFSeporNumero(
   Response: TNFSeConsultaNFSeResponse);
 var
   AErro: TNFSeEventoCollectionItem;
@@ -829,7 +872,7 @@ begin
                            '</es:esConsultarNfseEnvio>';
 end;
 
-procedure TACBrNFSeProviderEquiplano.TratarRetornoConsultaNFSe(
+procedure TACBrNFSeProviderEquiplano.TratarRetornoConsultaNFSeporNumero(
   Response: TNFSeConsultaNFSeResponse);
 var
   Document: TACBrXmlDocument;
@@ -1109,10 +1152,10 @@ function TACBrNFSeXWebserviceEquiplano.TratarXmlRetornado(
 begin
   Result := inherited TratarXmlRetornado(aXML);
 
+  Result := RemoverCaracteresDesnecessarios(Result);
   Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
   Result := RemoverDeclaracaoXML(Result);
   Result := RemoverIdentacao(Result);
-  Result := RemoverCaracteresDesnecessarios(Result);
   Result := RemoverPrefixosDesnecessarios(Result);
 end;
 

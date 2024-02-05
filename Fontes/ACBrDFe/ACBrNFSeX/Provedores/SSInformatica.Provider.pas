@@ -81,26 +81,20 @@ uses
   ACBrNFSeX,
   SSInformatica.GravarXml, SSInformatica.LerXml;
 
+{
+  Ainda não é possível remover o pcnAuxiliar, pois utiliza a função:
+  GetUTC.
+}
+
 { TACBrNFSeProviderSSInformatica203 }
 
 procedure TACBrNFSeProviderSSInformatica203.Configuracao;
 begin
   inherited Configuracao;
 
-  with ConfigAssinar do
-  begin
-    Rps               := True;
-    LoteRps           := False;
-    ConsultarSituacao := False;
-    ConsultarLote     := False;
-    ConsultarNFSeRps  := False;
-    ConsultarNFSe     := False;
-    CancelarNFSe      := False;
-    RpsGerarNFSe      := False;
-    LoteGerarNFSe     := False;
-    RpsSubstituirNFSe := False;
-    SubstituirNFSe    := False;
-  end;
+  ConfigGeral.Autenticacao.RequerLogin := True;
+
+  ConfigAssinar.Rps := True;
 
   with ConfigWebServices do
   begin

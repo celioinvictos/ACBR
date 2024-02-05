@@ -4,6 +4,7 @@ interface
 
 uses
   pcnConversao,
+  ACBrOpenSSLUtils,
   httpsend,
   ACBrBoletoConversao,
   ACBrBoleto;
@@ -160,12 +161,13 @@ end;
 procedure TOAuth.ProcessarRespostaOAuth(const ARetorno: AnsiString);
 var
   LJson: TACBrJSONObject;
+  LErrorMessage : String;
 begin
   FToken           := '';
   FExpire          := 0;
   FErroComunicacao := '';
   try
-    LJson := TACBrJSONObject.Parse(ARetorno);
+    LJson := TACBrJSONObject.Parse(UTF8ToNativeString(ARetorno));
     try
       if (FHTTPSend.ResultCode in [200..205]) then
       begin
@@ -180,9 +182,14 @@ begin
       begin
         FErroComunicacao := 'HTTP_Code='+ IntToStr(FHTTPSend.ResultCode);
         if Assigned(LJson) then
+        begin
+          LErrorMessage := LJson.AsString['error_description'];
+          if LErrorMessage = '' then
+            LErrorMessage := LJson.AsString['error_title'];
           FErroComunicacao := FErroComunicacao
                               + ' Erro='
-                              + LJson.AsString['error_description'];
+                              + LErrorMessage;
+        end;
       end;
     finally
       LJson.Free;
@@ -226,29 +233,30 @@ begin
   end;
 
   FHTTPSend.MimeType := ContentType;
-
   try
-    //Utiliza HTTPMethod para envio
-
-    if FPayload then
-    begin
+    try
+      //Utiliza HTTPMethod para envio
+      if FPayload then
+      begin
+        FHTTPSend.Document.Position:= 0;
+        WriteStrToStream(FHTTPSend.Document, AnsiString(FParamsOAuth));
+        FHTTPSend.HTTPMethod(MetodoHTTPToStr(htPOST), URL);
+      end
+      else
+        FHTTPSend.HTTPMethod(MetodoHTTPToStr(htPOST), URL + '?' + FParamsOAuth);
       FHTTPSend.Document.Position:= 0;
-      WriteStrToStream(FHTTPSend.Document, AnsiString(FParamsOAuth));
-      FHTTPSend.HTTPMethod(MetodoHTTPToStr(htPOST), URL);
-    end
-    else
-      FHTTPSend.HTTPMethod(MetodoHTTPToStr(htPOST), URL + '?' + FParamsOAuth);
-
-    FHTTPSend.Document.Position:= 0;
-    ProcessarRespostaOAuth( ReadStrFromStream(FHTTPSend.Document, FHTTPSend.Document.Size ) );
-    Result := true;
-  except
-    on E: Exception do
-    begin
-      Result := False;
-      FErroComunicacao := E.Message;
-      raise EACBrBoletoWSException.Create(ACBrStr('Falha na Autenticação: '+ E.Message));
+      ProcessarRespostaOAuth( ReadStrFromStream(FHTTPSend.Document, FHTTPSend.Document.Size ) );
+      Result := true;
+    except
+      on E: Exception do
+      begin
+        Result := False;
+        FErroComunicacao := E.Message;
+      end;
     end;
+  finally
+    if FErroComunicacao <> '' then
+      raise EACBrBoletoWSException.Create(ACBrStr('Falha na Autenticação: '+ FErroComunicacao));
   end;
 end;
 
@@ -256,7 +264,7 @@ function TOAuth.AddHeaderParam(AParamName, AParamValue: String): TOAuth;
 begin
   Result := Self;
   SetLength(FHeaderParamsList,Length(FHeaderParamsList)+1);
-  FHeaderParamsList[Length(FHeaderParamsList)-1].prName := AParamName;
+  FHeaderParamsList[Length(FHeaderParamsList)-1].prName  := AParamName;
   FHeaderParamsList[Length(FHeaderParamsList)-1].prValue := AParamValue;
 end;
 
@@ -272,12 +280,28 @@ begin
 
   FACBrBoleto      := AACBrBoleto;
 
-  // Adicionando o Certificado
-  if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ArquivoCRT) then
+  // adiciona a chave privada
+  if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ChavePrivada) then
+  begin
+    if StringIsPEM(AACBrBoleto.Configuracoes.WebService.ChavePrivada) then
+      FHTTPSend.Sock.SSL.PrivateKey := ConvertPEMToASN1(AACBrBoleto.Configuracoes.WebService.ChavePrivada)
+    else
+      FHTTPSend.Sock.SSL.PrivateKey := AACBrBoleto.Configuracoes.WebService.ChavePrivada;
+  end
+  else if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ArquivoKEY) then
+    FHTTPSend.Sock.SSL.PrivateKeyFile := AACBrBoleto.Configuracoes.WebService.ArquivoKEY;
+
+  // adiciona o certificado
+  if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.Certificado) then
+  begin
+    if StringIsPEM(AACBrBoleto.Configuracoes.WebService.Certificado) then
+      FHTTPSend.Sock.SSL.Certificate := ConvertPEMToASN1(AACBrBoleto.Configuracoes.WebService.Certificado)
+    else
+      FHTTPSend.Sock.SSL.Certificate := AACBrBoleto.Configuracoes.WebService.Certificado;
+  end
+  else if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ArquivoCRT) then
     FHTTPSend.Sock.SSL.CertificateFile := AACBrBoleto.Configuracoes.WebService.ArquivoCRT;
 
-  if NaoEstaVazio(AACBrBoleto.Configuracoes.WebService.ArquivoKEY) then
-    FHTTPSend.Sock.SSL.PrivateKeyFile := AACBrBoleto.Configuracoes.WebService.ArquivoKEY;
 
   FAmbiente        := AACBrBoleto.Configuracoes.WebService.Ambiente;
   FClientID        := AACBrBoleto.Cedente.CedenteWS.ClientID;

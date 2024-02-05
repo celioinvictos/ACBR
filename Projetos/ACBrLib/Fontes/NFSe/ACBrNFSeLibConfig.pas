@@ -160,7 +160,7 @@ begin
   FTomadorInscEstadual := AIni.ReadString(CSessaoDANFSE, CChaveTIE, FTomadorInscEstadual);
   FTomadorInscMunicipal := AIni.ReadString(CSessaoDANFSE, CChaveTIM, FTomadorInscMunicipal);
   FTomadorFone := AIni.ReadString(CSessaoDANFSE, CChaveTFone, FTomadorFone);
-  FTomadorEndereco := AIni.ReadString(CSessaoDANFSE, CChavePUF, CChaveTEndereco);
+  FTomadorEndereco := AIni.ReadString(CSessaoDANFSE, CChaveTEndereco, FTomadorEndereco);
   FTomadorComplemento := AIni.ReadString(CSessaoDANFSE, CChaveTComplemento, FTomadorComplemento);
   FTomadorEmail:= AIni.ReadString(CSessaoDANFSE, CChaveTEMail, FTomadorEmail);
 
@@ -190,7 +190,7 @@ begin
   AIni.WriteString(CSessaoDANFSE, CChaveTIE, FTomadorInscEstadual);
   AIni.WriteString(CSessaoDANFSE, CChaveTIM, FTomadorInscMunicipal);
   AIni.WriteString(CSessaoDANFSE, CChaveTFone, FTomadorFone);
-  AIni.WriteString(CSessaoDANFSE, CChavePUF, CChaveTEndereco);
+  AIni.WriteString(CSessaoDANFSE, CChaveTEndereco, FTomadorEndereco );
   AIni.WriteString(CSessaoDANFSE, CChaveTComplemento, FTomadorComplemento);
   AIni.WriteString(CSessaoDANFSE, CChaveTEMail, FTomadorEmail);
 
@@ -274,7 +274,6 @@ begin
   FNFSeConfig.ChaveCryptINI := AChaveCrypt;
 
   FDANFSeConfig := TDANFSeReportConfig.Create;
-  FNFSeConfig.WebServices.LerParams;
 end;
 
 destructor TLibNFSeConfig.Destroy;

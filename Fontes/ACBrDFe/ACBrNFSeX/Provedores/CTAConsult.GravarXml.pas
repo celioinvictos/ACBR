@@ -39,7 +39,6 @@ interface
 uses
   SysUtils, Classes, StrUtils,
   ACBrXmlBase, ACBrXmlDocument,
-  pcnConsts,
   ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXConversao;
 
 type
@@ -78,7 +77,7 @@ implementation
 
 uses
   ACBrUtil.Strings,
-  ACBrDFeUtil;
+  ACBrNFSeXConsts;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -385,9 +384,6 @@ begin
 end;
 
 function TNFSeW_CTAConsult.GerarLocalPrestacao: TACBrXmlNode;
-var
-  CodigoIBGE: Integer;
-  xMunicipio, xUF: string;
 begin
   Result := CreateElement('localPrestacao');
 
@@ -400,22 +396,8 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'codigoMunipio', 1, 5, 1,
             CodIBGEToCodTOM(StrToIntDef(NFSe.Servico.CodigoMunicipio, 0)), ''));
 
-  CodigoIBGE := StrToIntDef(NFSe.Servico.CodigoMunicipio, 0);
-  xMunicipio := '';
-  xUF := '';
-
-  try
-    xMunicipio := ObterNomeMunicipio(CodigoIBGE, xUF);
-  except
-    on E:Exception do
-    begin
-      xMunicipio := '';
-      xUF := '';
-    end;
-  end;
-
   Result.AppendChild(AddNode(tcStr, '#1', 'descricaoMunicipio', 1, 60, 1,
-                                                               xMunicipio, ''));
+                                   NFSe.Servico.MunicipioPrestacaoServico, ''));
 end;
 
 function TNFSeW_CTAConsult.GerarDeducoes: TACBrXmlNode;

@@ -63,21 +63,6 @@ type
   TRComlCollection = class;
   TRComlCollectionItem = class;
 
-  TInfoRecEv = class(TObject)
-  private
-    FnrProtEntr: String;
-    FdhProcess: TDateTime;
-    FtpEv: String;
-    FidEv: String;
-    Fhash: String;
-  public
-    property nrProtEntr: String read FnrProtEntr;
-    property dhProcess: TDateTime read FdhProcess;
-    property tpEv: String read FtpEv;
-    property idEv: String read FidEv;
-    property hash: String read Fhash;
-  end;
-
   TRTom = class(TObject)
   private
     FcnpjPrestador: String;
@@ -756,11 +741,13 @@ begin
 
             if leitor.rExtrai(5, 'infoRecEv') <> '' then
             begin
-              infoRecEv.FnrProtEntr := leitor.rCampo(tcStr, 'nrProtEntr');
-              infoRecEv.FdhProcess  := leitor.rCampo(tcDatHor, 'dhProcess');
-              infoRecEv.FtpEv       := leitor.rCampo(tcStr, 'tpEv');
-              infoRecEv.FidEv       := leitor.rCampo(tcStr, 'idEv');
-              infoRecEv.Fhash       := leitor.rCampo(tcStr, 'hash');
+              infoRecEv.nrRecArqBase := leitor.rCampo(tcStr, 'nrRecArqBase');
+              infoRecEv.nrProtEntr := leitor.rCampo(tcStr, 'nrProtEntr');
+              infoRecEv.dhProcess  := leitor.rCampo(tcDatHor, 'dhProcess');
+              infoRecEv.dhRecepcao := leitor.rCampo(tcDatHor, 'dhRecepcao');
+              infoRecEv.tpEv       := leitor.rCampo(tcStr, 'tpEv');
+              infoRecEv.idEv       := leitor.rCampo(tcStr, 'idEv');
+              infoRecEv.hash       := leitor.rCampo(tcStr, 'hash');
             end;
 
             if leitor.rExtrai(5, 'infoTotal') <> '' then
@@ -1046,8 +1033,10 @@ begin
         end;
 
         sSecao := 'infoRecEv';
+        AIni.WriteString(sSecao, 'nrRecArqBase', infoRecEv.nrRecArqBase);
         AIni.WriteString(sSecao, 'nrProtEntr', infoRecEv.nrProtEntr);
         AIni.WriteString(sSecao, 'dhProcess',  DateToStr(infoRecEv.dhProcess));
+        AIni.WriteString(sSecao, 'dhRecepcao', DateToStr(infoRecEv.dhRecepcao));
         AIni.WriteString(sSecao, 'tpEv',       infoRecEv.tpEv);
         AIni.WriteString(sSecao, 'idEv',       infoRecEv.idEv);
         AIni.WriteString(sSecao, 'hash',       infoRecEv.hash);

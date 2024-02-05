@@ -145,7 +145,7 @@ begin
   Request := Request + '</e:RecepcionarLoteRps>';
 
   Result := Executar('', Request,
-                     ['return'], [Namespace]);
+                     ['return', 'EnviarLoteRpsResposta'], [Namespace]);
 end;
 
 function TACBrNFSeXWebserviceDBSeller.ConsultarLote(ACabecalho, AMSG: String): string;
@@ -225,6 +225,7 @@ begin
 
   Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
   Result := RemoverDeclaracaoXML(Result);
+  Result := RemoverPrefixosDesnecessarios(Result);
 end;
 
 { TACBrNFSeProviderDBSeller }

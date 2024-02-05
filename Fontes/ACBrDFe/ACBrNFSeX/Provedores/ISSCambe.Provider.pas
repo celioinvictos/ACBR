@@ -71,7 +71,7 @@ type
     procedure TratarRetornoEmitir(Response: TNFSeEmiteResponse); override;
 
     procedure PrepararConsultaNFSeporFaixa(Response: TNFSeConsultaNFSeResponse); override;
-    procedure TratarRetornoConsultaNFSe(Response: TNFSeConsultaNFSeResponse); override;
+    procedure TratarRetornoConsultaNFSeporFaixa(Response: TNFSeConsultaNFSeResponse); override;
 
     procedure ProcessarMensagemErros(RootNode: TACBrXmlNode;
                                      Response: TNFSeWebserviceResponse;
@@ -164,6 +164,15 @@ begin
     UseCertificateHTTP := False;
     ModoEnvio := meUnitario;
     ConsultaNFSe := False;
+
+    Autenticacao.RequerCertificado := False;
+    Autenticacao.RequerLogin := True;
+
+    with ServicosDisponibilizados do
+    begin
+      EnviarUnitario := True;
+      ConsultarFaixaNfse := True;
+    end;
   end;
 
   SetNomeXSD('nfse-cambe-schema-v1_0.xsd');
@@ -365,7 +374,7 @@ begin
   end;
 end;
 
-procedure TACBrNFSeProviderISSCambe.TratarRetornoConsultaNFSe(
+procedure TACBrNFSeProviderISSCambe.TratarRetornoConsultaNFSeporFaixa(
   Response: TNFSeConsultaNFSeResponse);
 var
   Document: TACBrXmlDocument;

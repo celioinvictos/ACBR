@@ -44,7 +44,7 @@ uses
   pmdfeProcMDFe, pmdfeEnvEventoMDFe, pmdfeRetEnvEventoMDFe,
   pmdfeRetConsSitMDFe, pmdfeRetConsMDFeNaoEnc, pmdfeRetEnvMDFe,
   pcnDistDFeInt, pcnRetDistDFeInt,
-  ACBrMDFeManifestos, ACBrMDFeConfiguracoes;
+  ACBrMDFeManifestos, ACBrMDFeConfiguracoes, pmdfeProcInfraSA;
 
 type
 
@@ -282,6 +282,7 @@ type
 
     FprotMDFe: TProcMDFe;
     FprocEventoMDFe: TRetEventoMDFeCollection;
+    FprocInfraSA: TProcInfraSA;
 
     procedure SetMDFeChave(const AValue: String);
   protected
@@ -313,6 +314,7 @@ type
 
     property protMDFe: TProcMDFe read FprotMDFe;
     property procEventoMDFe: TRetEventoMDFeCollection read FprocEventoMDFe;
+    property procInfraSA: TProcInfraSA read FprocInfraSA;
   end;
 
   { TMDFeEnvEvento }
@@ -494,12 +496,13 @@ implementation
 
 uses
   StrUtils, Math,
+  ACBrDFeConsts,
   ACBrUtil.Base,
   ACBrUtil.XMLHTML,
   ACBrUtil.Strings,
   ACBrUtil.DateTime,
   ACBrUtil.FilesIO,
-  ACBrCompress, ACBrMDFe, pmdfeConsts, pcnConsts,
+  ACBrCompress, ACBrMDFe, pmdfeConsts,
   pcnGerador, pcnLeitor, pcnConsStatServ, pcnRetConsStatServ,
   pmdfeConsSitMDFe, pcnConsReciDFe, pmdfeConsMDFeNaoEnc;
 
@@ -874,6 +877,7 @@ begin
 
     FcUF := FMDFeRetornoSincrono.cUF;
     chMDFe := FMDFeRetornoSincrono.ProtMDFe.chMDFe;
+    FdhRecbto := FMDFeRetornoSincrono.ProtMDFe.dhRecbto;
 
     if (FMDFeRetornoSincrono.protMDFe.cStat > 0) then
       FcStat := FMDFeRetornoSincrono.protMDFe.cStat
@@ -1563,6 +1567,7 @@ destructor TMDFeConsulta.Destroy;
 begin
   FprotMDFe.Free;
   FprocEventoMDFe.Free;
+  FprocInfraSA.Free;
 
   inherited Destroy;
 end;
@@ -1598,6 +1603,8 @@ begin
 
   FprotMDFe       := TProcMDFe.Create;
   FprocEventoMDFe := TRetEventoMDFeCollection.Create;
+
+  FprocInfraSA := TProcInfraSA.Create;
 end;
 
 procedure TMDFeConsulta.SetMDFeChave(const AValue: String);
@@ -1741,6 +1748,9 @@ begin
     FcUF := MDFeRetorno.cUF;
 //    FMDFeChave := MDFeRetorno.chMDFe;
     FPMsg := FXMotivo;
+
+    FprocInfraSA.nProtDTe := MDFeRetorno.procInfraSA.nProtDTe;
+    FprocInfraSA.dhProt := MDFeRetorno.procInfraSA.dhProt;
 
     // <protMDFe> - Retorno dos dados do ENVIO da NF-e
     // Considerá-los apenas se não existir nenhum evento de cancelamento (110111)

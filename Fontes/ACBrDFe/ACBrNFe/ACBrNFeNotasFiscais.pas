@@ -323,7 +323,7 @@ begin
       begin
         NFe.infNFeSupl.qrCode := GetURLQRCode(NFe.Ide.cUF, NFe.Ide.tpAmb,
                                   onlyNumber(NFe.infNFe.ID),
-                                  trim(IfThen(NFe.Dest.idEstrangeiro <> '', NFe.Dest.idEstrangeiro, NFe.Dest.CNPJCPF)),
+                                  trim(IfThen(NFe.Dest.idEstrangeiro <> '', NFe.Dest.idEstrangeiro, OnlyNumber(NFe.Dest.CNPJCPF))),
                                   NFe.Ide.dEmi, NFe.Total.ICMSTot.vNF,
                                   NFe.Total.ICMSTot.vICMS, NFe.signature.DigestValue,
                                   NFe.infNFe.Versao);
@@ -431,11 +431,12 @@ const
   SEM_GTIN = 'SEM GTIN';
 var
   Erros: String;
-  I, J: Integer;
+  I, J, CodigoUF: Integer;
   Inicio, Agora, UltVencto: TDateTime;
-  fsvTotTrib, fsvBC, fsvICMS, fsvICMSDeson, fsvBCST, fsvST, fsvProd, fsvFrete : Currency;
-  fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF, fsvTotPag, fsvPISST, fsvCOFINSST : Currency;
-  fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol, fsvDup, fsvPISServico, fsvCOFINSServico : Currency;
+  fsvTotTrib, fsvBC, fsvICMS, fsvICMSDeson, fsvBCST, fsvST, fsvProd, fsvFrete,
+  fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF,
+  fsvTotPag, fsvPISST, fsvCOFINSST, fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol,
+  fsvDup, fsvPISServico, fsvCOFINSServico : Currency;
   FaturamentoDireto, NFImportacao, UFCons, bServico : Boolean;
 
   procedure GravaLog(AString: String);
@@ -587,11 +588,16 @@ begin
       AdicionaErro('276-Rejeição: Código Município do Local de Retirada: dígito inválido');
 
     GravaLog('Validar: 277-Cod Município Retirada diferente UF');
-    if NaoEstaVazio(NFe.Retirada.UF) and
-     (NFe.Retirada.cMun > 0)then
-    if (UFparaCodigo(NFe.Retirada.UF) <> StrToIntDef(
-      copy(IntToStr(NFe.Retirada.cMun), 1, 2), 0)) then
-      AdicionaErro('277-Rejeição: Código Município do Local de Retirada: difere da UF do Local de Retirada');
+    if NaoEstaVazio(NFe.Retirada.UF) and (NFe.Retirada.cMun > 0) then
+    begin
+      if NFe.Retirada.UF = 'EX' then
+        CodigoUF := 99
+      else
+        CodigoUF := UFparaCodigo(NFe.Retirada.UF);
+
+      if (CodigoUF <> StrToIntDef(Copy(IntToStr(NFe.Retirada.cMun), 1, 2), 0)) then
+        AdicionaErro('277-Rejeição: Código Município do Local de Retirada: difere da UF do Local de Retirada');
+    end;
 
     GravaLog('Validar: 515-Cod Município Entrega EX');
     if (NFe.Entrega.UF = 'EX') and
@@ -605,11 +611,16 @@ begin
       AdicionaErro('278-Rejeição: Código Município do Local de Entrega: dígito inválido');
 
     GravaLog('Validar: 279-Cod Município Entrega diferente UF');
-    if NaoEstaVazio(NFe.Entrega.UF)and
-      (NFe.Entrega.cMun > 0) then
-    if (UFparaCodigo(NFe.Entrega.UF) <> StrToIntDef(
-      copy(IntToStr(NFe.Entrega.cMun), 1, 2), 0)) then
-      AdicionaErro('279-Rejeição: Código Município do Local de Entrega: difere da UF do Local de Entrega');
+    if NaoEstaVazio(NFe.Entrega.UF) and (NFe.Entrega.cMun > 0) then
+    begin
+      if NFe.Entrega.UF = 'EX' then
+        CodigoUF := 99
+      else
+        CodigoUF := UFparaCodigo(NFe.Entrega.UF);
+
+      if (CodigoUF <> StrToIntDef(Copy(IntToStr(NFe.Entrega.cMun), 1, 2), 0)) then
+        AdicionaErro('279-Rejeição: Código Município do Local de Entrega: difere da UF do Local de Entrega');
+    end;
 
     GravaLog('Validar: 542-CNPJ Transportador');
     if NaoEstaVazio(Trim(NFe.Transp.Transporta.CNPJCPF)) and
@@ -1039,8 +1050,16 @@ begin
 
         if (NFe.Ide.modelo = 65) then
         begin
+          GravaLog('Validar: 383-NFCe Item com CSOSN indevido [nItem: '+IntToStr(Prod.nItem)+']');
+          if Imposto.ICMS.CSOSN in [csosn101, csosn201, csosn202, csosn203]  then
+            AdicionaErro('383-Rejeição: NFC-e Item com CSOSN indevido [nItem: '+IntToStr(Prod.nItem)+']');
+
+          GravaLog('Validar: 766-NFCe Item com CST indevido [nItem: '+IntToStr(Prod.nItem)+']');
+          if Imposto.ICMS.CST in [cst10, cst30, cst50, cst51, cst70]  then
+            AdicionaErro('766-Rejeição: NFC-e Item com CST indevido [nItem: '+IntToStr(Prod.nItem)+']');
+
           GravaLog('Validar: 725-NFCe CFOP invalido [nItem: '+IntToStr(Prod.nItem)+']');
-          if (pos(OnlyNumber(Prod.CFOP), 'XXXX,5101,5102,5103,5104,5115,5405,5656,5667,5933') <= 0)  then
+          if (pos(OnlyNumber(Prod.CFOP), 'XXXX,5101,5102,5103,5104,5115,5405,5656,5667,5933,5949') <= 0)  then
             AdicionaErro('725-Rejeição: NFC-e com CFOP inválido [nItem: '+IntToStr(Prod.nItem)+']');
 
           GravaLog('Validar: 774-NFCe indicador Total [nItem: '+IntToStr(Prod.nItem)+']');
@@ -1062,10 +1081,6 @@ begin
           GravaLog('Validar: 348-NFCe grupo RECOPI [nItem: '+IntToStr(Prod.nItem)+']');
           if (NaoEstaVazio(Prod.nRECOPI)) then
             AdicionaErro('348-Rejeição: NFC-e com grupo RECOPI [nItem: '+IntToStr(Prod.nItem)+']');
-
-          GravaLog('Validar: 766-NFCe CST 50 [nItem: '+IntToStr(Prod.nItem)+']');
-          if (Imposto.ICMS.CST = cst50) then
-            AdicionaErro('766-Rejeição: NFC-e com CST 50-Suspensão [nItem: '+IntToStr(Prod.nItem)+']');
 
           GravaLog('Validar: 740-NFCe CST 51 [nItem: '+IntToStr(Prod.nItem)+']');
           if (Imposto.ICMS.CST = cst51) then
@@ -1154,6 +1169,14 @@ begin
 
           end;
         end;
+
+        GravaLog('Validar: 629-Produto do valor unitário e quantidade comercializada [nItem: ' + IntToStr(Prod.nItem) + ']');
+        if (NFe.ide.finNFe = fnNormal) and (ComparaValor(Prod.vProd, Prod.vUnCom * Prod.qCom, 0.01) <> 0) then
+          AdicionaErro('629-Rejeição: Valor do Produto difere do produto Valor Unitário de Comercialização e Quantidade Comercial [nItem: ' + IntToStr(Prod.nItem) + ']');
+
+        GravaLog('Validar: 630-Produto do valor unitário e quantidade tributável [nItem: ' + IntToStr(Prod.nItem) + ']');
+        if (NFe.ide.finNFe = fnNormal) and (ComparaValor(Prod.vProd, Prod.vUnTrib * Prod.qTrib, 0.01) <> 0) then
+          AdicionaErro('630-Rejeição: Valor do Produto difere do produto Valor Unitário de Tributação e Quantidade Tributável [nItem: ' + IntToStr(Prod.nItem) + ']');
 
         GravaLog('Validar: 528-ICMS BC e Aliq [nItem: '+IntToStr(Prod.nItem)+']');
         if (Imposto.ICMS.CST in [cst00,cst10,cst20,cst70]) and
@@ -1437,7 +1460,7 @@ begin
     if not NFImportacao and
        (NFe.Total.ICMSTot.vNF <> fsvNF) then
     begin
-      if (ComparaValor(NFe.Total.ICMSTot.vNF, (fsvNF + fsvICMSDeson), 0.009) <> 0) then
+      if (ComparaValor(NFe.Total.ICMSTot.vNF, fsvNF, 0.009) <> 0) and (ComparaValor(NFe.Total.ICMSTot.vNF, fsvNF + fsvICMSDeson, 0.009) <> 0) then
         AdicionaErro('610-Rejeição: Total da NF difere do somatório dos Valores compõe o valor Total da NF.');
     end;
 
@@ -1642,7 +1665,7 @@ begin
 
         with Ide.NFref.New do
         begin
-          if sType = 'NFE' then
+          if (sType = 'NFE') or (sType = 'SAT') then
           begin
             refNFe :=  INIRec.ReadString(sSecao,'refNFe','');
             refNFeSig :=  INIRec.ReadString(sSecao,'refNFeSig','');
@@ -3248,8 +3271,7 @@ begin
               INIRec.WriteFloat(sSecao, 'pFCPUFDest', pFCPUFDest);
               INIRec.WriteFloat(sSecao, 'vFCPUFDest', vFCPUFDest);
             end;
-            if (IPI.vBC > 0) or (IPI.qUnid > 0) or
-              (IPI.vIPI > 0) or (IPI.cEnq = '999') then
+            if (IPI.cEnq <> '') then
             begin
               sSecao := 'IPI' + IntToStrZero(I + 1, 3);
               with IPI do
@@ -3877,18 +3899,18 @@ var
 begin
   DecodeDate(nfe.ide.dEmi, wAno, wMes, wDia);
 
-  chaveNFe := 'NFe'+OnlyNumber(NFe.infNFe.ID);
+  chaveNFe := OnlyNumber(NFe.infNFe.ID);
   {(*}
   Result := not
-    ((Copy(chaveNFe, 4, 2) <> IntToStrZero(NFe.Ide.cUF, 2)) or
-    (Copy(chaveNFe, 6, 2)  <> Copy(FormatFloat('0000', wAno), 3, 2)) or
-    (Copy(chaveNFe, 8, 2)  <> FormatFloat('00', wMes)) or
-    (Copy(chaveNFe, 10, 14)<> PadLeft(OnlyNumber(NFe.Emit.CNPJCPF), 14, '0')) or
-    (Copy(chaveNFe, 24, 2) <> IntToStrZero(NFe.Ide.modelo, 2)) or
-    (Copy(chaveNFe, 26, 3) <> IntToStrZero(NFe.Ide.serie, 3)) or
-    (Copy(chaveNFe, 29, 9) <> IntToStrZero(NFe.Ide.nNF, 9)) or
-    (Copy(chaveNFe, 38, 1) <> TpEmisToStr(NFe.Ide.tpEmis)) or
-    (Copy(chaveNFe, 39, 8) <> IntToStrZero(NFe.Ide.cNF, 8)));
+    ((Copy(chaveNFe, 1, 2) <> IntToStrZero(NFe.Ide.cUF, 2)) or
+    (Copy(chaveNFe, 3, 2)  <> Copy(FormatFloat('0000', wAno), 3, 2)) or
+    (Copy(chaveNFe, 5, 2)  <> FormatFloat('00', wMes)) or
+    (Copy(chaveNFe, 7, 14) <> PadLeft(OnlyNumber(NFe.Emit.CNPJCPF), 14, '0')) or
+    (Copy(chaveNFe, 21, 2) <> IntToStrZero(NFe.Ide.modelo, 2)) or
+    (Copy(chaveNFe, 23, 3) <> IntToStrZero(NFe.Ide.serie, 3)) or
+    (Copy(chaveNFe, 26, 9) <> IntToStrZero(NFe.Ide.nNF, 9)) or
+    (Copy(chaveNFe, 35, 1) <> TpEmisToStr(NFe.Ide.tpEmis)) or
+    (Copy(chaveNFe, 36, 8) <> IntToStrZero(NFe.Ide.cNF, 8)));
   {*)}
 end;
 
