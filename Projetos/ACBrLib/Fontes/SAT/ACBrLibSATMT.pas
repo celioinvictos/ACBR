@@ -49,6 +49,8 @@ function SAT_Nome(const libHandle: PLibHandle; const sNome: PChar; var esTamanho
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function SAT_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
     {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_ConfigImportar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
@@ -109,6 +111,8 @@ function SAT_CriarCFe(const libHandle: PLibHandle; eArquivoIni: PChar; const sRe
 function SAT_CriarEnviarCFe(const libHandle: PLibHandle; eArquivoIni: PChar; const sResposta: PChar;
   var esTamanho: longint): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_ValidarCFe(const libHandle: PLibHandle; eArquivoXml: PChar): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function SAT_CarregarXML(const libHandle: PLibHandle; eArquivoXml: PChar): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function SAT_ObterIni(const libHandle: PLibHandle; const sResposta: PChar; var esTamanho: longint): longint; {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_EnviarCFe(const libHandle: PLibHandle; eArquivoXml: PChar; const sResposta: PChar;
   var esTamanho: longint): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_CancelarCFe(const libHandle: PLibHandle; eArquivoXml: PChar; const sResposta: PChar;
@@ -122,6 +126,8 @@ function SAT_ImprimirExtratoResumido(const libHandle: PLibHandle; eArqXMLVenda, 
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_ImprimirExtratoCancelamento(const libHandle: PLibHandle; eArqXMLVenda, eArqXMLCancelamento,
   eNomeImpressora: PChar): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function SAT_SalvarPDF(const libHandle: PLibHandle; const sResposta: PChar; var esTamanho: longint)
+  : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_GerarImpressaoFiscalMFe(const libHandle: PLibHandle; eArqXMLVenda: PChar; const sResposta: PChar;
   var esTamanho: longint): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function SAT_GerarPDFExtratoVenda(const libHandle: PLibHandle; eArqXMLVenda, eNomeArquivo: PChar;
@@ -164,6 +170,12 @@ function SAT_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTam
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Versao(libHandle, sVersao, esTamanho);
+end;
+
+function SAT_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_OpenSSLInfo(libHandle, sOpenSSLInfo, esTamanho);
 end;
 
 function SAT_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
@@ -518,6 +530,36 @@ begin
   end;
 end;
 
+function SAT_CarregarXML(const libHandle: PLibHandle; eArquivoXml: PChar):longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibSAT(libHandle^.Lib).CarregarXML(eArquivoXml);
+  except
+    on E: EACBrLibException do
+       Result := E.Erro;
+
+    on E: Exception do
+       Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function SAT_ObterIni(const libHandle: PLibHandle; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibSAT(libHandle^.Lib).ObterIni(sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+       Result := E.Erro;
+
+    on E: Exception do
+       Result := ErrExecutandoMetodo;
+  end;
+end;
+
 function SAT_EnviarCFe(const libHandle: PLibHandle; eArquivoXml: PChar; const sResposta: PChar;
   var esTamanho: longint): longint; {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
@@ -588,6 +630,21 @@ begin
   try
     VerificarLibInicializada(libHandle);
     Result := TACBrLibSAT(libHandle^.Lib).ImprimirExtratoCancelamento(eArqXMLVenda, eArqXMLCancelamento, eNomeImpressora);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function SAT_SalvarPDF(const libHandle: PLibHandle; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibSAT(libHandle^.Lib).SalvarPDF(sResposta, esTamanho);
   except
     on E: EACBrLibException do
       Result := E.Erro;

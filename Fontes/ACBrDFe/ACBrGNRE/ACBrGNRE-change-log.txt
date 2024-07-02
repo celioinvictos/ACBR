@@ -45,6 +45,23 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+24/05/2024
+-- Diversos --
+[+] Adiciona suporte ao PIX, conforme versão 2.10 do Manual do GNRe
+Por: Diego Folieni
+-- ACBrGNREGuias --
+[*] Correção para a validação não alterar o xml quando não for de lote
+Por: Renato Rubinho
+
+21/03/2024
+-- ACBrGNReWebServices --
+[*] Adiciona chamada a UTF8ToNativeString quando usa ParseText para corrigir problemas de conversão de acentuação
+Por: Diego Folieni
+
+09/02/2024
+-- Diversos --
+[*] Refactoring visando deixar de usar a unit pcnAuxiliar.
+  Por: Italo Giurizzato Junior
 
 01/02/2024
 -- Diversos --

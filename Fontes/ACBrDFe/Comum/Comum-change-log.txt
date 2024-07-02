@@ -42,6 +42,68 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+17/06/2024
+-- ACBrDFeComum.RetConsCad --
+[*] Remoção de Warnings e Hints.
+   Por: Italo Giurizzato Junior
+
+07/05/2024
+-- Diversos --
+[*] Incluido nas units de leitura de retorno a verificação se o XML a ser lido
+    esta vazio ou não.
+  Por: Italo Giurizzato Junior
+
+02/04/2024
+-- Diversos --
+[*] Melhorias no código usando o FixInsight (ainda não ficou 100%).
+  Por: Italo Giurizzato Junior
+
+25/03/2024
+-- ACBrDFeComum.RetConsReciDFe --
+[*] Corrigido da tag a ser lida que contem a chave do DFe.
+-- ACBrDFeComum.RetDistDFeInt --
+[*] Alteração realizada com base no Fix Insight.
+-- ACBrDFeComum.SignatureClass --
+[+] Implementado a function GerarXml visando gerar o grupo Signature.
+  Por: Italo Giurizzato Junior
+
+27/02/2024
+-- Diversos --
+[*] Removido o uso da função ACBrStr ao ler uma mensagem.
+  Por: Italo Giurizzato Junior
+
+14/02/2024
+-- ACBrDFeComum.RetEnvio --
+[*] Removido o parâmentro do Create, pois não se faz necessário.
+  Por: Italo Giurizzato Junior
+
+13/02/2024
+-- ACBrDFeComum.RetEnvio --
+[+] Nova Unit para ler o retorno do Envio do DFe em modo Assíncrono.
+  Por: Italo Giurizzato Junior
+-- ACBrDFeComum.RetConsCad --
+[*] Removido uma variável que estava definida mas sem utilização.
+  Por: Italo Giurizzato Junior
+
+12/02/2024
+-- ACBrDFeComum.SignatureClass --
+[+] Incluído na classe TSignature os campos IdSignature e IdSignatureValue.
+-- ACBrDFeComum.RetConsCad --
+[*] Ajustes para a leitura correta do endereço do contribuinte.
+  Por: Italo Giurizzato Junior
+
+09/02/2024
+-- ACBrDFeComum.DistDFeInt --
+[+] Nova Unit para Distribuição DFe.
+-- ACBrDFeComum.RetDistDFeInt --
+[+] Nova Unit para ler o retorno do Distribuição DFe.
+-- ACBrDFeComum.SignatureClass --
+[+] Nova Unit com a classe TSignature.
+  Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Refactoring visando deixar de usar a unit pcnAuxiliar.
+  Por: Italo Giurizzato Junior
+
 02/02/2024
 -- ACBrDFeComum.Proc --
 [+] Nova Unit para montagem do grupo de informações do protocolo.

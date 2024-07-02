@@ -80,6 +80,7 @@ public class FrmMain extends javax.swing.JFrame {
         ckbConsultarAposCancelar = new javax.swing.JCheckBox();
         jLabel8 = new javax.swing.JLabel();
         cmbLayoutNFSe = new javax.swing.JComboBox<>();
+        btnInformacoesProvedor = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         jLabel32 = new javax.swing.JLabel();
         cmbUfDestino = new javax.swing.JComboBox<>();
@@ -234,6 +235,7 @@ public class FrmMain extends javax.swing.JFrame {
         btnConsultarNFSePorPeriodo = new javax.swing.JButton();
         btnConsultarNFSePorRPS = new javax.swing.JButton();
         btnConsultarNFSePorFaixa = new javax.swing.JButton();
+        btnConsultarLinkNFSe = new javax.swing.JButton();
         jPanel16 = new javax.swing.JPanel();
         btnConsultarNFSeServicoPrestadoPorNumero = new javax.swing.JButton();
         btnConsultarNFSeServicoPrestadoPorTomador = new javax.swing.JButton();
@@ -326,6 +328,14 @@ public class FrmMain extends javax.swing.JFrame {
         cmbLayoutNFSe.setSelectedItem("");
         cmbLayoutNFSe.setToolTipText("");
 
+        btnInformacoesProvedor.setText("Informações sobre o Provedor");
+        btnInformacoesProvedor.setName("btnInformacoesProvedor"); // NOI18N
+        btnInformacoesProvedor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInformacoesProvedorActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout ckbAtualizarXMLLayout = new javax.swing.GroupLayout(ckbAtualizarXML);
         ckbAtualizarXML.setLayout(ckbAtualizarXMLLayout);
         ckbAtualizarXMLLayout.setHorizontalGroup(
@@ -354,7 +364,8 @@ public class FrmMain extends javax.swing.JFrame {
                         .addComponent(txtLogs, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSelectLog, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(cmbLayoutNFSe, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbLayoutNFSe, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnInformacoesProvedor, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(45, Short.MAX_VALUE))
         );
         ckbAtualizarXMLLayout.setVerticalGroup(
@@ -396,8 +407,12 @@ public class FrmMain extends javax.swing.JFrame {
                 .addComponent(jLabel8)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cmbLayoutNFSe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(26, 26, 26)
+                .addComponent(btnInformacoesProvedor)
+                .addContainerGap(223, Short.MAX_VALUE))
         );
+
+        btnInformacoesProvedor.getAccessibleContext().setAccessibleName("btnInformacoesProvedor");
 
         jTabbedPane3.addTab("Geral", ckbAtualizarXML);
 
@@ -1467,7 +1482,7 @@ public class FrmMain extends javax.swing.JFrame {
                     .addComponent(btnImprimirDANFSe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnLimparListaNFSe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnGerarLotaRPS, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnCarregarXMLNFse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnCarregarXMLNFse, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                     .addComponent(btnGravarXMLNFSe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -1572,6 +1587,13 @@ public class FrmMain extends javax.swing.JFrame {
             }
         });
 
+        btnConsultarLinkNFSe.setText("Consultar Link NFSe");
+        btnConsultarLinkNFSe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConsultarLinkNFSeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel15Layout = new javax.swing.GroupLayout(jPanel15);
         jPanel15.setLayout(jPanel15Layout);
         jPanel15Layout.setHorizontalGroup(
@@ -1579,7 +1601,7 @@ public class FrmMain extends javax.swing.JFrame {
             .addGroup(jPanel15Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnConsultarSituacaoLote, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnConsultarSituacaoLote, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSePorNumero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSeGenerico, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarLoteRPS, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1587,8 +1609,9 @@ public class FrmMain extends javax.swing.JFrame {
                 .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btnConsultarNFSePorPeriodo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSePorRPS, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnConsultarNFSePorFaixa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(130, Short.MAX_VALUE))
+                    .addComponent(btnConsultarNFSePorFaixa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnConsultarLinkNFSe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(138, Short.MAX_VALUE))
         );
         jPanel15Layout.setVerticalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1606,8 +1629,10 @@ public class FrmMain extends javax.swing.JFrame {
                     .addComponent(btnConsultarNFSeGenerico)
                     .addComponent(btnConsultarNFSePorFaixa))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnConsultarLoteRPS)
-                .addContainerGap(145, Short.MAX_VALUE))
+                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnConsultarLoteRPS)
+                    .addComponent(btnConsultarLinkNFSe))
+                .addContainerGap(149, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Consultas", jPanel15);
@@ -1650,7 +1675,7 @@ public class FrmMain extends javax.swing.JFrame {
                     .addComponent(btnConsultarNFSeServicoPrestadoPorNumero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSeServicoPrestadoPorTomador, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSeServicoPrestadoPorPeriodo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnConsultarNFSeServicoPrestadoPorIntermediario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnConsultarNFSeServicoPrestadoPorIntermediario, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap(199, Short.MAX_VALUE))
         );
         jPanel16Layout.setVerticalGroup(
@@ -1715,7 +1740,7 @@ public class FrmMain extends javax.swing.JFrame {
                     .addComponent(btnConsultarNFSeServicoTomadoPorPrestador, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSeServicoTomadoPorTomador, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConsultarNFSeServicoTomadoPorPeriodo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnConsultarNFSeServicoTomadoPorIntermediario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnConsultarNFSeServicoTomadoPorIntermediario, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
                 .addContainerGap(201, Short.MAX_VALUE))
         );
         jPanel17Layout.setVerticalGroup(
@@ -2844,6 +2869,36 @@ public class FrmMain extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnSalvarPDFActionPerformed
 
+    private void btnConsultarLinkNFSeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultarLinkNFSeActionPerformed
+        try 
+        {
+            acbrNFSe.limparLista();
+            JFileChooser chooser = new JFileChooser();
+                OpenFileFilter filter = new OpenFileFilter("ini", "Arquivo ini (*.ini)");
+                chooser.addChoosableFileFilter(filter);
+                chooser.setFileFilter(filter);
+                
+                if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+                acbrNFSe.carregarIni(chooser.getSelectedFile().getAbsolutePath());
+                
+                String ret = acbrNFSe.consultarLinkNFSe(chooser.getSelectedFile().getAbsolutePath());
+                rtbRespostas.append(ret);
+        }
+        catch (Exception ex)
+        {
+            Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnConsultarLinkNFSeActionPerformed
+
+    private void btnInformacoesProvedorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInformacoesProvedorActionPerformed
+        try {                       
+            String infoProvedor = acbrNFSe.obterInformacoesProvedor();
+            rtbRespostas.append(infoProvedor);
+        } catch (Exception ex) {
+            Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnInformacoesProvedorActionPerformed
+
     private void loadConfig() {
         try {
             
@@ -3051,6 +3106,7 @@ public class FrmMain extends javax.swing.JFrame {
     private javax.swing.JButton btnConsultarDFe;
     private javax.swing.JButton btnConsultarDPSPorChave;
     private javax.swing.JButton btnConsultarEvento;
+    private javax.swing.JButton btnConsultarLinkNFSe;
     private javax.swing.JButton btnConsultarLoteRPS;
     private javax.swing.JButton btnConsultarNFSeGenerico;
     private javax.swing.JButton btnConsultarNFSePorChave;
@@ -3080,6 +3136,7 @@ public class FrmMain extends javax.swing.JFrame {
     private javax.swing.JButton btnGravarXMLNFSe;
     private javax.swing.JButton btnImprimirDANFSe;
     private javax.swing.JButton btnImprimirNFSe;
+    private javax.swing.JButton btnInformacoesProvedor;
     private javax.swing.JButton btnLimparListaNFSe;
     private javax.swing.JButton btnLinkNFSe;
     private javax.swing.JButton btnLogoMarcaPrestadorServico;

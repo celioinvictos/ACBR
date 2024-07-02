@@ -83,6 +83,8 @@ Uses
 type
   TFindFileSortType = (fstNone, fstDateTime, fstFileName);
   TFindFileSortDirection = (fsdNone, fsdAscending, fsdDescending);
+    //               0           1          2           3             4
+  TNivelLog = (logNenhum, logSimples, logNormal, logCompleto, logParanoico);
 
 function CompareVersions( const VersionStr1, VersionStr2 : String;
   Delimiter: char = '.' ) : Extended;
@@ -1583,11 +1585,11 @@ begin
   end;
 
   { Update Current Process Environment Variable }
-  SetEnvironmentVariable(PChar(AName), PChar(AValue));
+   SetEnvironmentVariable(PChar(AName), PChar(AValue));
 
   { Send Message To All Top Windows for Refresh }
   //SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, LPARAM(PChar('Environment')));
-  SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, LPARAM(PChar('Environment')), SMTO_ABORTIFHUNG, 5000, dwReturnValue);
+  //SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, LPARAM(PChar('Environment')), SMTO_ABORTIFHUNG, 5000, dwReturnValue);  // Removido por causar lentidão
 end;
 {$ELSE}
 begin

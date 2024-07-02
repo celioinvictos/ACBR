@@ -79,7 +79,7 @@ resourcestring
   DSC_GENERICOSTITULO = 'Título do campo livre';
   DESC_GENERICOSDESCRICAO = 'Conteúdo do campo livre.';
   DSC_VTTS = 'Valor Taxa Turismo';
-  DSC_QDiaria = 'Quantidade Diaria';
+  DSC_QDIARIA = 'Quantidade Diaria';
   DSC_REGTRIB = 'Código de Regime Tributário';
   DSC_CLISTSERV = 'Código do Item da Lista Prestação de Serviços';
   DSC_VISS = 'Valor do Imposto sobre Serviço';
@@ -106,6 +106,7 @@ resourcestring
   DSC_NPROCESSO = 'Número do Processo';
   DSC_TPAG = 'Forma de Pagamento';
   DSC_DVENC = 'Data de vencimento';
+  DSC_INFADICIONAL = 'Informação Adicional';
 
   // Descrição de Documentos - Futuramente vai para ACBrDFeConst
   DSC_CNPJ = 'CNPJ(MF)';

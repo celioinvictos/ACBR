@@ -39,7 +39,7 @@ interface
 uses
   Classes, SysUtils,
   ACBrBase, ACBrDFeReport,
-  pcnNFe, pcnConversao, pcnAuxiliar;
+  pcnNFe, pcnConversao;
 
 type
   TpcnTributos = (trbNenhum, trbNormal, trbSeparadamente);
@@ -78,12 +78,15 @@ type
     procedure ErroAbstract(const NomeProcedure: String);
 
   protected
+
+
     function GetSeparadorPathPDF(const aInitialPath: String): String; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
     procedure SetTipoDANFE(AValue: TpcnTipoImpressao); virtual;
 
   public
+    FIndexImpressaoIndividual : Integer;
     constructor Create(AOwner: TComponent); override;
 
     procedure ImprimirDANFE(ANFe: TNFe = nil); virtual;
@@ -269,7 +272,8 @@ begin
   begin
     if TACBrNFe(ACBrNFe).NotasFiscais.Count > 0 then  // Se tem alguma Nota carregada
     begin
-      ANFe := TACBrNFe(ACBrNFe).NotasFiscais.Items[0].NFe;   // Pegue informações da Primeira Nota
+
+      ANFe := TACBrNFe(ACBrNFe).NotasFiscais[FIndexImpressaoIndividual].NFe;   // Pegue informações da Primeira Nota
 
       if TACBrNFe(ACBrNFe).Configuracoes.Arquivos.EmissaoPathNFe then
         dhEmissao := ANFe.Ide.dEmi
@@ -437,7 +441,7 @@ begin
   if infAdFisco > '' then
   begin
     if ANFe.InfAdic.infCpl > '' then
-      Result := infAdFisco + IIf(Copy(infAdFisco, Length(infAdFisco), 1) = ';', '', '; ')
+      Result := infAdFisco + IfThen(Copy(infAdFisco, Length(infAdFisco), 1) = ';', '', '; ')
     else
       Result := infAdFisco;
   end;
@@ -587,7 +591,7 @@ end;
 
 function TACBrDFeDANFeReport.ManterCst(dCRT: TpcnCRT; dCSOSN: TpcnCSOSNIcms; dCST: TpcnCSTIcms): String;
 begin
-  if (dCRT = crtSimplesNacional) and not (dCST in [cst02, cst15, cst53, cst61]) then
+  if (dCRT in [crtSimplesNacional, crtMEI]) and not (dCST in [cst02, cst15, cst53, cst61]) then
     Result := CSOSNIcmsToStr(dCSOSN)
   else
     Result := CSTICMSToStr(dCST);

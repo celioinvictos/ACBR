@@ -144,6 +144,14 @@ namespace ACBrLib.NFSe
             CheckResult(ret);
         }
 
+        public void CarregarLoteXML(string eArquivoOuXml)
+        {
+            var method = GetMethod<NFSE_CarregarLoteXML>();
+            var ret = ExecuteMethod(() => method(ToUTF8(eArquivoOuXml)));
+
+            CheckResult(ret);
+        }
+
         public void CarregarINI(string eArquivoOuIni)
         {
             var method = GetMethod<NFSE_CarregarINI>();
@@ -214,6 +222,18 @@ namespace ACBrLib.NFSe
 
             var certificados = ProcessResult(buffer, bufferLen).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
+        }
+        public string OpenSSLInfo()
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_OpenSSLInfo>();
+            var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
         }
 
         public string Emitir(string aLote, int aModoEnvio, bool aImprimir)
@@ -383,6 +403,18 @@ namespace ACBrLib.NFSe
             return ProcessResult(buffer, bufferLen);
         }
 
+        public string ConsultarLinkNFSe(string aInfConsultaLinkNFSe)
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<NFSE_ConsultarLinkNFSe>();
+            var ret = ExecuteMethod(() => method(ToUTF8(aInfConsultaLinkNFSe), buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
         public void EnviarEmail(string ePara, string eXmlNFSe, bool aEnviaPDF, string eAssunto, string eCc, string eAnexos, string eMensagem)
         {
             var method = GetMethod<NFSE_EnviarEmail>();

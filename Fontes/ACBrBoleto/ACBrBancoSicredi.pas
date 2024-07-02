@@ -59,6 +59,9 @@ type
     procedure GerarRegistroTransacao400(ACBrTitulo : TACBrTitulo; aRemessa: TStringList); override;
     procedure GerarRegistroTrailler400(ARemessa:TStringList);  override;
     procedure LerRetorno400(ARetorno: TStringList); override;
+    function DefinePosicaoNossoNumeroRetorno: Integer; override;
+    function DefineNossoNumeroRetorno(const Retorno: String): String; override;
+
     function DefineDataDesconto(const ACBrTitulo: TACBrTitulo; AFormat: String = 'ddmmyyyy'): String; override;
 
     function GerarRegistroHeader240(NumeroRemessa : Integer): String; override;
@@ -101,7 +104,7 @@ begin
    fpTamanhoConta          := 5;
    fpTamanhoCarteira       := 1;
    fpCodigosMoraAceitos    := 'AB0123';
-   fpCodigosGeracaoAceitos := '23456789';
+   fpCodigosGeracaoAceitos := '023456789';
    fpLayoutVersaoArquivo   := 81;
    fpLayoutVersaoLote      := 40;
 end;
@@ -111,9 +114,19 @@ begin
    Modulo.CalculoPadrao;
    Modulo.Documento := ACBrTitulo.ACBrBoleto.Cedente.Agencia +
                        PadLeft(ACBrTitulo.ACBrBoleto.Cedente.AgenciaDigito, 2, '0') +
-                       PadLeft(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente, 5, '0') +
+                       PadLeft(ACBrTitulo.ACBrBoleto.Cedente.CodigoCedente, 5, '0');
+
+  if ( (ACBrBanco.ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite) and (Length(ACBrTitulo.CodigoGeracao) = 3)) then
+    Modulo.Documento := Modulo.Documento +
+                        copy(ACBrTitulo.CodigoGeracao,1,2) + //60    AA
+                        copy(ACBrTitulo.CodigoGeracao,3,1) + //0     B
+                        RightStr(ACBrTitulo.NossoNumero,5)   //00000 NNNNN
+  else
+    Modulo.Documento := Modulo.Documento +
                        FormatDateTime('yy',ACBrTitulo.DataDocumento) +
                        ACBrTitulo.CodigoGeracao + RightStr(ACBrTitulo.NossoNumero,5);
+
+
    Modulo.Calcular;
 
    if (Modulo.DigitoFinal > 9) then
@@ -173,6 +186,14 @@ function TACBrBancoSicredi.MontarCampoNossoNumero (const ACBrTitulo: TACBrTitulo
 begin
   if ( (ACBrBanco.ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite) and ( (Trim(ACBrTitulo.NossoNumero) = '') or (Trim(ACBrTitulo.NossoNumero) = '00000') ) ) then
     Result := ''
+  else
+  if ( (ACBrBanco.ACBrBoleto.Cedente.ResponEmissao = tbBancoEmite) and (Length(ACBrTitulo.CodigoGeracao) = 3)) then
+    Result:= copy(ACBrTitulo.CodigoGeracao,1,2) + //60    AA
+             '/'+
+             copy(ACBrTitulo.CodigoGeracao,3,1) + //0     B
+             RightStr(ACBrTitulo.NossoNumero,5) +  //00000 NNNNN
+             '-' +
+             CalcularDigitoVerificador(ACBrTitulo)
   else
     Result:= FormatDateTime('yy',ACBrTitulo.DataDocumento) + '/' +
              ACBrTitulo.CodigoGeracao + RightStr(ACBrTitulo.NossoNumero,5) + '-' +
@@ -706,7 +727,9 @@ begin
         Carteira             := Copy(Linha,14,1);
         if (Carteira = '1') or (Carteira = 'A') then //Cobrança com Registro
         begin
-          NossoNumero          := Copy(Linha,48,15);
+
+          NossoNumero          := DefineNossoNumeroRetorno(Linha);
+
           Vencimento     := StringToDateTimeDef(Copy(Linha,147,2)+'/'+
                                                 Copy(Linha,149,2)+'/'+
                                                 Copy(Linha,151,2),0, 'DD/MM/YY' );
@@ -838,6 +861,19 @@ begin
 
   end;
 
+end;
+
+function TACBrBancoSicredi.DefineNossoNumeroRetorno(const Retorno: String): String;
+begin
+  if ACBrBanco.ACBrBoleto.LerNossoNumeroCompleto then
+    Result := Copy(Retorno,DefinePosicaoNossoNumeroRetorno,TamanhoMaximoNossoNum)
+  else
+    Result := Copy(Retorno,DefinePosicaoNossoNumeroRetorno,Pred(TamanhoMaximoNossoNum));
+end;
+
+function TACBrBancoSicredi.DefinePosicaoNossoNumeroRetorno: Integer;
+begin
+  Result := 48;
 end;
 
 function TACBrBancoSicredi.CodMotivoRejeicaoToDescricao(
@@ -1866,7 +1902,6 @@ var
     TipoAvalista: Char;
     lDataDesconto: String;
     LCodigoMoraJuros : String;
-    LTitulo: TACBrTitulo;
 begin
   with ACBrBanco.ACBrBoleto.Cedente, ACBrTitulo do
   begin

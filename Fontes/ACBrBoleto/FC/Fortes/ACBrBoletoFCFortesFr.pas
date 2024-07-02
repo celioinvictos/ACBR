@@ -1259,6 +1259,7 @@ type
     txtCA5Sw: TRLAngleLabel;
     txtCodigoBaixa2: TRLLabel;
     RLLabel98: TRLLabel;
+    txtCarteiraRecPagDet2: TRLLabel;
     procedure BoletoCarneBeforePrint ( Sender: TObject; var PrintIt: boolean ) ;
     procedure BoletoCarneDataCount ( Sender: TObject; var DataCount: integer ) ;
     procedure BoletoCarneDataRecord ( Sender: TObject; RecNo: integer;
@@ -1404,7 +1405,7 @@ begin
         RLLayout.ShowProgress := MostrarProgresso;
         RLLayout.Title        := TituloRelatorio;
 
-        RLLayout.JobTitle := 'boleto ' + ACBrBoleto.Banco.nome;
+        RLLayout.JobTitle     := 'boleto ' + ACBrBoleto.Banco.nome;
 
         if TituloPreview <> '' then
         begin
@@ -1422,6 +1423,8 @@ begin
            if MostrarPreview then
            begin
               RLLayout.Title := '';
+              RLPDFFilter1.FileName := NomeArquivo;
+              RLLayout.DefaultFilter := RLPDFFilter1;
               RLLayout.PreviewModal;
            end
            else
@@ -2182,6 +2185,7 @@ begin
     txtEspecieDocRecPagDet.Caption     := Titulo.EspecieDoc;
     txtNossoNumeroRecPagDet.Caption    := NossoNum;
     txtCarteiraRecPagDet.Caption       := Titulo.Carteira;
+    txtCarteiraRecPagDet2.Caption      := txtCarteiraRecPagDet.Caption;
     txtValorDocumentoRecPagDet.Caption := IfThen(Titulo.ValorDocumento > 0, FormatFloatBr( Titulo.ValorDocumento, '###,###,##0.00'));
     //Pagador
     txtNomePagadorRecPagDet.Caption    := Titulo.Sacado.NomeSacado + '  ' +

@@ -21,6 +21,7 @@ type
     ACBrAbecsPinPad1: TACBrAbecsPinPad;
     ApplicationProperties1: TApplicationProperties;
     btActivate: TBitBtn;
+    btDetectPinPad: TBitBtn;
     btCancel: TButton;
     btCEX: TButton;
     btCLO: TButton;
@@ -187,6 +188,7 @@ type
     procedure btDEXClearClick(Sender: TObject);
     procedure btDSPClearClick(Sender: TObject);
     procedure btDSPClick(Sender: TObject);
+    procedure btDetectPinPadClick(Sender: TObject);
     procedure btGCDClick(Sender: TObject);
     procedure btGINClick(Sender: TObject);
     procedure btGIXClick(Sender: TObject);
@@ -588,13 +590,18 @@ end;
 
 procedure TfrMain.btActivateClick(Sender: TObject);
 begin
-  SaveParams;
-  ConfigACBrAbecsPinPad;
+  if not ACBrAbecsPinPad1.IsEnabled then
+  begin
+    SaveParams;
+    ConfigACBrAbecsPinPad;
+  end;
+
   ACBrAbecsPinPad1.IsEnabled := (btActivate.Tag = 0);
   ConfigPanelsCommands(ACBrAbecsPinPad1.IsEnabled);
   if ACBrAbecsPinPad1.IsEnabled then
   begin
-    LoadMediaNames;
+    if (ACBrAbecsPinPad1.PinPadCapabilities.DisplayGraphicPixels.Rows > 0) then
+      LoadMediaNames;
     pgcCommands.ActivePageIndex := 1;
   end;
 end;
@@ -806,6 +813,48 @@ begin
   ACBrAbecsPinPad1.DSP(edtDSPMsg1.Text, edtDSPMsg2.Text);
 end;
 
+procedure TfrMain.btDetectPinPadClick(Sender: TObject);
+var
+  sl: TStringList;
+  PortFound: String;
+  i: Integer;
+begin
+  sl := TStringList.Create;
+  try
+    ACBrAbecsPinPad1.Device.AcharPortasSeriais( sl );
+    i := 0;
+    PortFound := '';
+    while (i < sl.Count) and (PortFound = '') do
+    begin
+      try
+        ACBrAbecsPinPad1.Disable;
+        ACBrAbecsPinPad1.Port := sl[i];
+        ACBrAbecsPinPad1.Enable;
+        try
+          ACBrAbecsPinPad1.OPN;
+          ACBrAbecsPinPad1.CLO;
+          PortFound := ACBrAbecsPinPad1.Port;
+        finally
+          ACBrAbecsPinPad1.Disable;
+        end;
+      except
+      end;
+      Inc(i);
+    end;
+
+    if (PortFound <> '') then
+    begin
+      ShowMessage('PinPad Found on '+PortFound);
+      cbxPort.Items.Assign(sl);
+      cbxPort.Text := PortFound;
+    end
+    else
+      ShowMessage('PinPad not Found');
+  finally
+    sl.Free;
+  end;
+end;
+
 procedure TfrMain.btGCDClick(Sender: TObject);
 var
   s: String;
@@ -982,6 +1031,7 @@ end;
 
 procedure TfrMain.btSendQRCodeClick(Sender: TObject);
 var
+  r: TRect;
   ms: TMemoryStream;
   tini, tfim: TDateTime;
   png: TPortableNetworkGraphic;
@@ -992,9 +1042,13 @@ begin
   try
     qrsize := Trunc(min( ACBrAbecsPinPad1.PinPadCapabilities.DisplayGraphicPixels.Cols,
                          ACBrAbecsPinPad1.PinPadCapabilities.DisplayGraphicPixels.Rows)) - 20;
+    r.Top := 0;
+    r.Left := 0;
+    r.Height := qrsize;
+    r.Width := qrsize;
     png.Width := qrsize;
     png.Height := qrsize;
-    png.Canvas.StretchDraw(png.Canvas.ClipRect, imgQRCode.Picture.Bitmap);
+    png.Canvas.StretchDraw(r, imgQRCode.Picture.Bitmap);
     //png.SaveToFile('c:\temp\qrcode.png');
     png.SaveToStream(ms);
     imgQRCode.Picture.Assign(png);

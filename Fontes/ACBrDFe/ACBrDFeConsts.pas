@@ -59,6 +59,9 @@ resourcestring
   ERR_MSG_MAIOR_MAXIMO = 'Número de ocorrências maior que o máximo permitido - Máximo ';
   ERR_MSG_MENOR_MINIMO = 'Número de ocorrências menor que o mínimo permitido - Mínimo ';
 
+  // Descrição de Lotes
+  DSC_IDLOTE = 'Numero do Lote';
+
   // Descrição de Documentos
   DSC_CNPJ = 'CNPJ(MF)';
   DSC_CPF = 'CPF';
@@ -92,6 +95,8 @@ resourcestring
   DSC_NNFINI = 'Numero inicial';
   DSC_NNFFIN = 'Numero final';
   DSC_XJUST = 'Justificativa';
+  DSC_QRCODE = 'Assinatura Digital para uso em QRCODE';
+  DSC_QRCODDFe = 'Texto do QR-Code para consulta';
 
   // Descrição de Dados da Pessoa Física ou Jurídica
   DSC_CRT = 'Código de Regime Tributário';

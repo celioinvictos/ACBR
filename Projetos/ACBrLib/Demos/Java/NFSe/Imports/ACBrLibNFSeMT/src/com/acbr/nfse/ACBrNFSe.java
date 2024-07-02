@@ -76,6 +76,8 @@ public final class ACBrNFSe extends ACBrLibBase {
         int NFSE_ConfigGravarValor(Pointer libHandler, String eArquivoOuXML);
         
         int NFSE_CarregarXML(Pointer libHandler, String eArquivoOuXml);
+        
+        int NFSE_CarregarLoteXML(Pointer libHandler, String eArquivoOuXml);
 
         int NFSE_CarregarINI(Pointer libHandler, String eArquivoOuINI);
 
@@ -117,6 +119,8 @@ public final class ACBrNFSe extends ACBrLibBase {
         
         int NFSE_ConsultarNFSeGenerico(Pointer libHandler, String aInfConsultaNFSe, ByteBuffer buffer, IntByReference bufferSize);
         
+        int NFSE_ConsultarLinkNFSe(Pointer libHandler, String aInfConsultaLinkNFSe, ByteBuffer buffer, IntByReference bufferSize);
+
         int NFSE_EnviarEmail(Pointer libHandler, String ePara, String eXmlNFSe, boolean aEnviaPDF, String eAssunto, String eCc, String eAnexos, String eMensagem);
         
         int NFSE_Imprimir(Pointer libHandler, String cImpressora, Integer nNumCopias, String bGerarPDF, String bMostrarPreview, String cCancelada);
@@ -156,6 +160,8 @@ public final class ACBrNFSe extends ACBrLibBase {
         int NFSE_ObterDANFSE(Pointer libHandler, String aChaveNFSe, ByteBuffer buffer, IntByReference bufferSize);
         
         int NFSE_ConsultarParametros(Pointer libHandler, Integer aTipoParametroMunicipio, String aCodigoServico, Date aCompetencia, String aNumeroBeneficio, ByteBuffer buffer, IntByReference bufferSize);
+        
+        int NFSE_ObterInformacoesProvedor(Pointer libHandler, ByteBuffer buffer, IntByReference bufferSize);        
         
     }
 
@@ -243,6 +249,11 @@ public final class ACBrNFSe extends ACBrLibBase {
         int ret = ACBrNFSeLib.INSTANCE.NFSE_CarregarXML(getHandle(), toUTF8(eArquivoOuXML));
         checkResult(ret);
     }
+    
+    public void carregarLoteXml(String eArquivoOuXML) throws Exception {
+        int ret = ACBrNFSeLib.INSTANCE.NFSE_CarregarLoteXML(getHandle(), toUTF8(eArquivoOuXML));
+        checkResult(ret);
+    }    
 
     public String obterXml(int AIndex) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
@@ -424,6 +435,14 @@ public final class ACBrNFSe extends ACBrLibBase {
         return processResult(buffer, bufferLen);
     }
         
+    public String consultarLinkNFSe(String aInfConsultaLinkNFSe) throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(8192);
+        IntByReference bufferLen = new IntByReference(8192);
+        
+        int ret = ACBrNFSeLib.INSTANCE.NFSE_ConsultarLinkNFSe(getHandle(), toUTF8(aInfConsultaLinkNFSe), buffer, bufferLen);
+        checkResult(ret);
+        return processResult(buffer, bufferLen);
+    }
     public void enviarEmail(String ePara, String eXmlNFSe, boolean aEnviaPDF, String eAssunto) throws Exception {
         enviarEmail(ePara, eXmlNFSe, aEnviaPDF, eAssunto, "", "", "");
     }
@@ -603,6 +622,17 @@ public final class ACBrNFSe extends ACBrLibBase {
         checkResult(ret);
         return processResult(buffer, bufferLen);
     }
+    
+    public String obterInformacoesProvedor() throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
+        IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
+        int ret = ACBrNFSeLib.INSTANCE.NFSE_ObterInformacoesProvedor(getHandle(), buffer, bufferLen);
+        checkResult(ret);
+
+        return processResult(buffer, bufferLen);
+    }    
+    
+    
     
     public void ConfigImportar(String eArqConfig) throws Exception {
 

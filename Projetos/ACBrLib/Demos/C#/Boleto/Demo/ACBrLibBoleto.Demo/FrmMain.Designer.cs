@@ -121,6 +121,8 @@
             this.txtHost = new System.Windows.Forms.TextBox();
             this.label23 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label50 = new System.Windows.Forms.Label();
+            this.txtNomeArquivoLog = new System.Windows.Forms.TextBox();
             this.btnArquivoKEY = new System.Windows.Forms.Button();
             this.btnArquivoCRT = new System.Windows.Forms.Button();
             this.label48 = new System.Windows.Forms.Label();
@@ -143,7 +145,6 @@
             this.label42 = new System.Windows.Forms.Label();
             this.txtPathLog = new System.Windows.Forms.TextBox();
             this.btnPathLog = new System.Windows.Forms.Button();
-            this.chkGravarLog = new System.Windows.Forms.CheckBox();
             this.chkIndicadorPix = new System.Windows.Forms.CheckBox();
             this.label41 = new System.Windows.Forms.Label();
             this.txtScope = new System.Windows.Forms.TextBox();
@@ -187,6 +188,7 @@
             this.btnBaixaTitulo = new System.Windows.Forms.Button();
             this.btnConsultaDetalhe = new System.Windows.Forms.Button();
             this.btnArray = new System.Windows.Forms.Button();
+            this.btnGerarRemessaStream = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tbpCedente.SuspendLayout();
             this.tbpLayout.SuspendLayout();
@@ -1161,6 +1163,8 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.label50);
+            this.tabPage1.Controls.Add(this.txtNomeArquivoLog);
             this.tabPage1.Controls.Add(this.btnArquivoKEY);
             this.tabPage1.Controls.Add(this.btnArquivoCRT);
             this.tabPage1.Controls.Add(this.label48);
@@ -1181,7 +1185,6 @@
             this.tabPage1.Controls.Add(this.label42);
             this.tabPage1.Controls.Add(this.txtPathLog);
             this.tabPage1.Controls.Add(this.btnPathLog);
-            this.tabPage1.Controls.Add(this.chkGravarLog);
             this.tabPage1.Controls.Add(this.chkIndicadorPix);
             this.tabPage1.Controls.Add(this.label41);
             this.tabPage1.Controls.Add(this.txtScope);
@@ -1198,6 +1201,23 @@
             this.tabPage1.TabIndex = 5;
             this.tabPage1.Text = "WebService";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label50
+            // 
+            this.label50.AutoSize = true;
+            this.label50.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label50.Location = new System.Drawing.Point(324, 151);
+            this.label50.Name = "label50";
+            this.label50.Size = new System.Drawing.Size(64, 13);
+            this.label50.TabIndex = 60;
+            this.label50.Text = "Nome Log";
+            // 
+            // txtNomeArquivoLog
+            // 
+            this.txtNomeArquivoLog.Location = new System.Drawing.Point(327, 167);
+            this.txtNomeArquivoLog.Name = "txtNomeArquivoLog";
+            this.txtNomeArquivoLog.Size = new System.Drawing.Size(244, 20);
+            this.txtNomeArquivoLog.TabIndex = 59;
             // 
             // btnArquivoKEY
             // 
@@ -1446,17 +1466,6 @@
             this.btnPathLog.UseVisualStyleBackColor = true;
             this.btnPathLog.Click += new System.EventHandler(this.btnPathLog_Click);
             // 
-            // chkGravarLog
-            // 
-            this.chkGravarLog.AutoSize = true;
-            this.chkGravarLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
-            this.chkGravarLog.Location = new System.Drawing.Point(197, 150);
-            this.chkGravarLog.Name = "chkGravarLog";
-            this.chkGravarLog.Size = new System.Drawing.Size(89, 17);
-            this.chkGravarLog.TabIndex = 38;
-            this.chkGravarLog.Text = "Gravar Log";
-            this.chkGravarLog.UseVisualStyleBackColor = true;
-            // 
             // chkIndicadorPix
             // 
             this.chkIndicadorPix.AutoSize = true;
@@ -1668,7 +1677,7 @@
             // 
             // btnListaBancos
             // 
-            this.btnListaBancos.Location = new System.Drawing.Point(144, 386);
+            this.btnListaBancos.Location = new System.Drawing.Point(12, 709);
             this.btnListaBancos.Name = "btnListaBancos";
             this.btnListaBancos.Size = new System.Drawing.Size(126, 23);
             this.btnListaBancos.TabIndex = 11;
@@ -1876,11 +1885,22 @@
             this.btnArray.UseVisualStyleBackColor = true;
             this.btnArray.Click += new System.EventHandler(this.btnArray_Click);
             // 
+            // btnGerarRemessaStream
+            // 
+            this.btnGerarRemessaStream.Location = new System.Drawing.Point(144, 386);
+            this.btnGerarRemessaStream.Name = "btnGerarRemessaStream";
+            this.btnGerarRemessaStream.Size = new System.Drawing.Size(126, 23);
+            this.btnGerarRemessaStream.TabIndex = 32;
+            this.btnGerarRemessaStream.Text = "Gerar Remessa Stream";
+            this.btnGerarRemessaStream.UseVisualStyleBackColor = true;
+            this.btnGerarRemessaStream.Click += new System.EventHandler(this.btnGerarRemessaStream_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 716);
+            this.ClientSize = new System.Drawing.Size(800, 747);
+            this.Controls.Add(this.btnGerarRemessaStream);
             this.Controls.Add(this.btnArray);
             this.Controls.Add(this.btnConsultaDetalhe);
             this.Controls.Add(this.btnBaixaTitulo);
@@ -2080,7 +2100,6 @@
         private System.Windows.Forms.Label label42;
         private System.Windows.Forms.TextBox txtPathLog;
         private System.Windows.Forms.Button btnPathLog;
-        private System.Windows.Forms.CheckBox chkGravarLog;
         private System.Windows.Forms.CheckBox chkIndicadorPix;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.RadioButton rdbHomologacao;
@@ -2106,6 +2125,9 @@
         private System.Windows.Forms.Button btnBaixaTitulo;
         private System.Windows.Forms.Button btnConsultaDetalhe;
         private System.Windows.Forms.Button btnArray;
+        private System.Windows.Forms.Label label50;
+        private System.Windows.Forms.TextBox txtNomeArquivoLog;
+        private System.Windows.Forms.Button btnGerarRemessaStream;
     }
 }
 

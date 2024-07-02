@@ -46,10 +46,10 @@ uses
   ACBrBase,
   ACBrXmlBase,
 //  ACBrDFeConversao,
+//  ACBrDFeComum.SignatureClass,
+  pcnSignature,
   ACBrNFComConversao,
-  ACBrNFComProc,
-//  ACBrDFeComum.Signature,
-  pcnSignature;
+  ACBrNFComProc;
 
 type
   { TinfNFCom }
@@ -57,17 +57,17 @@ type
   TinfNFCom = class(TObject)
   private
     FID: string;
-    FVersao: Real;
+    FVersao: Double;
 
-    function GetVersaoStr: string;
-    function GetVersao: Real;
+//    function GetVersaoStr: string;
+//    function GetVersao: Real;
     function GetID: string;
   public
     procedure Assign(Source: TinfNFCom);
 
     property ID: string read GetID write FID;
-    property Versao: Real read GetVersao write FVersao;
-    property VersaoStr: string read GetVersaoStr;
+    property Versao: Double read FVersao write FVersao;
+//    property VersaoStr: string read GetVersaoStr;
   end;
 
   { TIde }
@@ -298,10 +298,15 @@ type
   TgCofat = class(TObject)
   private
     FchNFComLocal: string;
+    FgNF: TgNF;
   public
+    constructor Create;
+    destructor Destroy; override;
+
     procedure Assign(Source: TgCofat);
 
     property chNFComLocal: string read FchNFComLocal write FchNFComLocal;
+    property gNF: TgNF read FgNF write FgNF;
   end;
 
   { TProd }
@@ -352,6 +357,7 @@ type
     FpRedBC: Double;
     FvICMSDeson: Double;
     FcBenef: string;
+    FindSN: TIndicador;
   public
     procedure Assign(Source: TICMS);
 
@@ -364,6 +370,7 @@ type
     property pRedBC: Double read FpRedBC write FpRedBC;
     property vICMSDeson: Double read FvICMSDeson write FvICMSDeson;
     property cBenef: string read FcBenef write FcBenef;
+    property indSN: TIndicador read FindSN write FindSN;
   end;
 
    { TICMSUFDestCollectionItem }
@@ -493,11 +500,13 @@ type
   private
     FICMS: TICMS;
     FICMSUFDest: TICMSUFDestCollection;
+    FindSemCST: TIndicador;
     FPIS: TPIS;
     FCOFINS: TCOFINS;
     FFUST: TFUST;
     FFUNTTEL: TFUNTTEL;
     FretTrib: TretTrib;
+
     procedure SetICMSUFDest(const Value: TICMSUFDestCollection);
   public
     constructor Create;
@@ -507,6 +516,7 @@ type
 
     property ICMS: TICMS read FICMS write FICMS;
     property ICMSUFDest: TICMSUFDestCollection read FICMSUFDest write SetICMSUFDest;
+    property indSemCST: TIndicador read FindSemCST write FindSemCST;
     property PIS: TPIS read FPIS write FPIS;
     property COFINS: TCOFINS read FCOFINS write FCOFINS;
     property FUST: TFUST read FFUST write FFUST;
@@ -608,6 +618,7 @@ type
     FgProcRef: TgProcRef;
     FgRessarc: TgRessarc;
     FinfAdProd: string;
+    FindNFComAntPapelFatCentral: TIndicador;
   public
     constructor Create;
     destructor Destroy; override;
@@ -622,6 +633,7 @@ type
     property gProcRef: TgProcRef read FgProcRef write FgProcRef;
     property gRessarc: TgRessarc read FgRessarc write FgRessarc;
     property infAdProd: string read FinfAdProd write FinfAdProd;
+    property indNFComAntPapelFatCentral: TIndicador read FindNFComAntPapelFatCentral write FindNFComAntPapelFatCentral default tiNao;
   end;
 
   { TDetCollection }
@@ -888,6 +900,7 @@ begin
   pRedBC := Source.pRedBC;
   vICMSDeson := Source.vICMSDeson;
   cBenef := Source.cBenef;
+  indSN := Source.indSN;
 end;
 
 { TPIS }
@@ -934,6 +947,7 @@ procedure TImposto.Assign(Source: TImposto);
 begin
   ICMS.Assign(Source.ICMS);
   ICMSUFDest.Assign(Source.ICMSUFDest);
+  indSemCST := Source.indSemCST;
   PIS.Assign(Source.PIS);
   COFINS.Assign(Source.COFINS);
   FUST.Assign(Source.FUST);
@@ -999,6 +1013,7 @@ begin
   chNFComAnt := Source.chNFComAnt;
   nItemAnt := Source.nItemAnt;
   infAdProd := Source.infAdProd;
+  indNFComAntPapelFatCentral := Source.indNFComAntPapelFatCentral;
 
   Prod.Assign(Source.Prod);
   Imposto.Assign(Source.Imposto);
@@ -1049,6 +1064,22 @@ end;
 procedure TgCofat.Assign(Source: TgCofat);
 begin
   chNFComLocal := Source.chNFComLocal;
+
+  gNF.Assign(Source.gNF);
+end;
+
+constructor TgCofat.Create;
+begin
+  inherited Create;
+
+  FgNF := TgNF.Create;
+end;
+
+destructor TgCofat.Destroy;
+begin
+  FgNF.Free;
+
+  inherited;
 end;
 
 { TgSub }
@@ -1219,11 +1250,11 @@ function TinfNFCom.GetID: string;
 begin
   Result := Copy(FID, 6, 44);
 end;
-
+{
 function TinfNFCom.GetVersao: Real;
 begin
   if FVersao <= 0 then
-     Result := 2
+     Result := 1
   else
      Result := FVersao;
 end;
@@ -1231,11 +1262,11 @@ end;
 function TinfNFCom.GetVersaoStr: string;
 begin
   if FVersao <= 0 then
-    FVersao := 2;
+    FVersao := 1;
 
   Result := 'versao="' + FloatToString(FVersao, '.', '#0.00') + '"';
 end;
-
+}
 { TNFCom }
 
 procedure TNFCom.Assign(Source: TNFCom);
@@ -1283,7 +1314,7 @@ begin
   FSignature := TSignature.Create;
   FprocNFCom := TProcNFCom.Create;
 
-  FinfNFCom.Versao := 0;
+//  FinfNFCom.Versao := 0;
   FIde.nSiteAutoriz := sa0;
 end;
 

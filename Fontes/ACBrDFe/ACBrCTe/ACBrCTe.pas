@@ -163,7 +163,6 @@ implementation
 
 uses
   dateutils,
-  pcnAuxiliar,
   ACBrUtil.Base,
   ACBrUtil.Strings,
   ACBrUtil.FilesIO,
@@ -542,7 +541,7 @@ end;
 function TACBrCTe.GerarNomeArqSchemaModal(const AXML: String;
   VersaoServico: Double): String;
 begin
-  if VersaoServico = 0.0 then
+  if VersaoServico = 0 then
     Result := ''
   else
     Result := PathWithDelim( Configuracoes.Arquivos.PathSchemas ) +
@@ -553,7 +552,7 @@ end;
 function TACBrCTe.GerarNomeArqSchemaEvento(ASchemaEventoCTe: TSchemaCTe;
   VersaoServico: Double): String;
 begin
-  if VersaoServico = 0.0 then
+  if VersaoServico = 0 then
     Result := ''
   else
     Result := PathWithDelim( Configuracoes.Arquivos.PathSchemas ) +

@@ -61,7 +61,6 @@ type
     Label2: TLabel;
     edtDirDestino: TEdit;
     Label6: TLabel;
-    imgLogomarca: TImage;
     lstMsgInstalacao: TListBox;
     pnlTopo: TPanel;
     Label9: TLabel;
@@ -82,7 +81,6 @@ type
     pnlInfoCompilador: TPanel;
     wizPgPacotes: TJvWizardInteriorPage;
     lbInfo: TListBox;
-    Label22: TLabel;
     framePacotes1: TframePacotes;
     wizPgSelectIDEs: TJvWizardInteriorPage;
     grpCompilacao: TGroupBox;
@@ -105,11 +103,19 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label11: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
     Label14: TLabel;
     scrlbxDelphiVersion: TScrollBox;
     chkSobrescreverDLLs: TCheckBox;
+    GroupBox1: TGroupBox;
+    chkExportadorFastPNG: TCheckBox;
+    chkExportadorFastSVG: TCheckBox;
+    imgLogomarca: TImage;
+    pnlLogo: TPanel;
+    imgOK: TImage;
+    lblNotaDelphiAntigo: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    lblSombra: TLabel;
     procedure btnDesmarcarTodasClick(Sender: TObject);
     procedure imgPropaganda1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -495,6 +501,7 @@ begin
   OpcoesInstall.DeveCopiarOutrasDLLs      := ckbCopiarTodasDll.Checked;
   OpcoesInstall.UsarCpp                   := ckbBCB.Checked;
   OpcoesInstall.UsarUsarArquivoConfig     := ckbUsarArquivoConfig.Checked;
+
   case rdgdll.ItemIndex of
     0 : OpcoesInstall.sDestinoDLLs := tdSystem;
     1 : OpcoesInstall.sDestinoDLLs := tdDelphi;
@@ -509,6 +516,8 @@ begin
   OpcoesCompilacao.DeveInstalarXMLSec        := not ckbRemoveXMLSec.Checked;
   OpcoesCompilacao.UsarCargaTardiaDLL        := ckbCargaDllTardia.Checked;
   OpcoesCompilacao.RemoverStringCastWarnings := ckbRemoverCastWarnings.Checked;
+  OpcoesCompilacao.UsarExportadorFRSVG    := chkExportadorFastSVG.Checked;
+  OpcoesCompilacao.UsarExportadorFRPNG    := chkExportadorFastPNG.Checked;
 end;
 
 procedure TfrmPrincipal.AjustaTelaConformeConfiguracoes(OpcoesInstall: TACBrInstallOpcoes; OpcoesCompilacao: TACBrCompilerOpcoes);
@@ -518,6 +527,7 @@ begin
   ckbCopiarTodasDll.Checked         := OpcoesInstall.DeveCopiarOutrasDLLs;
   ckbBCB.Checked                    := OpcoesInstall.UsarCpp;
   ckbUsarArquivoConfig.Checked      := OpcoesInstall.UsarUsarArquivoConfig;
+
   case OpcoesInstall.sDestinoDLLs of
     tdSystem: rdgdll.ItemIndex := 0;
     tdDelphi: rdgdll.ItemIndex := 1;
@@ -530,6 +540,8 @@ begin
   ckbRemoveXMLSec.Checked           := not OpcoesCompilacao.DeveInstalarXMLSec;
   ckbCargaDllTardia.Checked         := OpcoesCompilacao.UsarCargaTardiaDLL;
   ckbRemoverCastWarnings.Checked    := OpcoesCompilacao.RemoverStringCastWarnings;
+  chkExportadorFastSVG.Checked      := OpcoesCompilacao.UsarExportadorFRSVG;
+  chkExportadorFastPNG.Checked      := OpcoesCompilacao.UsarExportadorFRPNG;
 end;
 
 procedure TfrmPrincipal.btnDesmarcarTodasClick(Sender: TObject);

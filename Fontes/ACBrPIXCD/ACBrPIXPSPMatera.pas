@@ -100,11 +100,11 @@ type
     fDevolucaoResposta: TMateraDevolucaoResponse;
     fMotivosDevolucoes: TMateraReturnCodesQueryResponse;
     fTransacoesResposta: TMateraTransactionResponseArray;
-    fAliasResposta: TMateraAliasResponse;
+    fAliasResposta: TMateraAliasResponseV2;
     fExtratoECResposta: TMaterastatementResponse;
     fSaldoECResposta: TMateraBalanceResponse;
     fSecretKey: String;
-    function GetAliasResposta: TMateraAliasResponse;
+    function GetAliasResposta: TMateraAliasResponseV2;
     function GetChavePIXResposta: TMateraRegisterAliasResponse;
     function GetChavePIXSolicitacao: TMateraAliasRequest;
     function GetChavesPIXResposta: TMateraAliasArray;
@@ -189,7 +189,7 @@ type
       aEnding: TDateTime = 0);
     procedure ConsultarSaldoEC(aAccountId: String);
 
-    property AliasRetiradaResposta: TMateraAliasResponse read GetAliasResposta;
+    property AliasRetiradaResposta: TMateraAliasResponseV2 read GetAliasResposta;
     procedure ConsultarAliasRetirada(aAccountId, aAlias: String);
 
     property DevolucaoMotivos: TMateraReturnCodesQueryResponse read GetReturnCodesQueryResponse;
@@ -289,7 +289,12 @@ begin
   if (ContaSolicitacao.accountType = matNone) then
     ContaSolicitacao.accountType := matUnlimitedOrdinary;
 
+  {$IFNDEF FPC}
+  wBody := Trim(ACBrAnsiToUTF8(ContaSolicitacao.AsJSON));
+  {$ELSE}
   wBody := Trim(ContaSolicitacao.AsJSON);
+  {$ENDIF}
+
   ContaResposta.Clear;
   PrepararHTTP;
   WriteStrToStream(Http.Document, wBody);
@@ -692,7 +697,7 @@ begin
   AliasRetiradaResposta.Clear;
   PrepararHTTP;
 
-  wOk := AcessarEndPoint(ChttpMethodGET, cMateraEndPointAccounts + '/' +
+  wOk := AcessarEndPoint(ChttpMethodGET, cMateraEndPointAccountsv2 + '/' +
               aAccountId +
               cMateraEndPointAliases + '/' +
               cMateraEndPointCountry + '/' +
@@ -885,10 +890,10 @@ begin
   Result := fChavePIXResposta;
 end;
 
-function TACBrPSPMatera.GetAliasResposta: TMateraAliasResponse;
+function TACBrPSPMatera.GetAliasResposta: TMateraAliasResponseV2;
 begin
   if (not Assigned(fAliasResposta)) then
-    fAliasResposta := TMateraAliasResponse.Create('data');
+    fAliasResposta := TMateraAliasResponseV2.Create('data');
   Result := fAliasResposta;
 end;
 

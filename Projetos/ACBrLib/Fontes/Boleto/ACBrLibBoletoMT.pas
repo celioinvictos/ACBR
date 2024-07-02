@@ -44,10 +44,13 @@ uses
 
 function Boleto_Inicializar(var libHandle: PLibHandle; const eArqConfig, eChaveCrypt: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
-function Boleto_Finalizar(libHandle: PLibHandle): longint; {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function Boleto_Finalizar(libHandle: PLibHandle): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function Boleto_Nome(const libHandle: PLibHandle; const sNome: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function Boleto_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function Boleto_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function Boleto_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
@@ -88,6 +91,8 @@ function Boleto_SalvarPDFBoleto(const libHandle: PLibHandle; eIndice: longint; c
 function Boleto_GerarHTML(const libHandle: PLibHandle): longint; {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function Boleto_GerarRemessa(const libHandle: PLibHandle; eDir: PChar; eNumArquivo: longInt; eNomeArq: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+function Boleto_GerarRemessaStream(const libHandle: PLibHandle; eNumArquivo: longInt; const sResposta: PChar; var esTamanho: longint): longint;
+    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function Boleto_LerRetorno(const libHandle: PLibHandle; eDir, eNomeArq: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 function Boleto_ObterRetorno(const libHandle: PLibHandle; eDir, eNomeArq: PChar; const sResposta: PChar; var esTamanho: longint): longint;
@@ -154,6 +159,12 @@ function Boleto_Versao(const libHandle: PLibHandle; const sVersao: PChar; var es
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Versao(libHandle, sVersao, esTamanho);
+end;
+
+function Boleto_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_OpenSSLInfo(libHandle, sOpenSSLInfo, esTamanho);
 end;
 
 function Boleto_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
@@ -373,6 +384,20 @@ begin
   try
     VerificarLibInicializada(libHandle);
     Result := TACBrLibBoleto(libHandle^.Lib).GerarRemessa(eDir, eNumArquivo, eNomeArq);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function Boleto_GerarRemessaStream(const libHandle: PLibHandle; eNumArquivo: longInt; const sResposta: PChar; var esTamanho: longint): longint;
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibBoleto(libHandle^.Lib).GerarRemessaStream(eNumArquivo, sResposta, esTamanho);
   except
     on E: EACBrLibException do
       Result := E.Erro;

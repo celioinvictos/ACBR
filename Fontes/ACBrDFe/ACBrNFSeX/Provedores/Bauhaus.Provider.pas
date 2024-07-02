@@ -53,11 +53,11 @@ type
     procedure SetHeaders(aHeaderReq: THTTPHeader); override;
 
   public
-    function GerarNFSe(ACabecalho, AMSG: String): string; override;
-    function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
-    function ConsultarNFSe(ACabecalho, AMSG: String): string; override;
-    function Cancelar(ACabecalho, AMSG: String): string; override;
-    function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
+    function GerarNFSe(const ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSePorRps(const ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSe(const ACabecalho, AMSG: String): string; override;
+    function Cancelar(const ACabecalho, AMSG: String): string; override;
+    function SubstituirNFSe(const ACabecalho, AMSG: String): string; override;
 
     function TratarXmlRetornado(const aXML: string): string; override;
   end;
@@ -92,8 +92,7 @@ type
     procedure TratarRetornoSubstituiNFSe(Response: TNFSeSubstituiNFSeResponse); override;
 
     procedure ProcessarMensagemDeErros(LJson: TACBrJSONObject;
-                                     Response: TNFSeWebserviceResponse;
-                                     const AListTag: string = 'erros');
+                                     Response: TNFSeWebserviceResponse);
   end;
 
 implementation
@@ -126,14 +125,11 @@ begin
     Autenticacao.RequerCertificado := False;
     Autenticacao.RequerChaveAutorizacao := True;
 
-    with ServicosDisponibilizados do
-    begin
-      EnviarUnitario := True;
-      ConsultarRps := True;
-      ConsultarNfse := True;
-      CancelarNfse := True;
-      SubstituirNFSe := True;
-    end;
+    ServicosDisponibilizados.EnviarUnitario := True;
+    ServicosDisponibilizados.ConsultarRps := True;
+    ServicosDisponibilizados.ConsultarNfse := True;
+    ServicosDisponibilizados.CancelarNfse := True;
+    ServicosDisponibilizados.SubstituirNFSe := True;
   end;
 
   SetXmlNameSpace('');
@@ -177,8 +173,7 @@ begin
 end;
 
 procedure TACBrNFSeProviderBauhaus.ProcessarMensagemDeErros(
-  LJson: TACBrJSONObject; Response: TNFSeWebserviceResponse;
-  const AListTag: string);
+  LJson: TACBrJSONObject; Response: TNFSeWebserviceResponse);
 var
   JSonErro: TACBrJSONObject;
   AErro: TNFSeEventoCollectionItem;
@@ -194,11 +189,11 @@ begin
 
   AErro := Response.Erros.New;
   AErro.Codigo := Trim(Copy(JSonErro.AsString['Code'], 6, 3));
-  AErro.Descricao := ACBrStr(TrimRight(JSonErro.AsString['Message'] + #13 +
-                               JSonErro.AsString['MessageDev']));
-  AErro.Correcao :=  ACBrStr(TrimRight(JSonErro.AsString['Detail'] + #13 +
+  AErro.Descricao := TrimRight(JSonErro.AsString['Message'] + #13 +
+                               JSonErro.AsString['MessageDev']);
+  AErro.Correcao :=  TrimRight(JSonErro.AsString['Detail'] + #13 +
                                JSonErro.AsString['DetailDev'] + #13 +
-                               xDetailError));
+                               xDetailError);
 end;
 
 function TACBrNFSeProviderBauhaus.PrepararRpsParaLote(const aXml: string): string;
@@ -583,14 +578,14 @@ begin
              TConfiguracoesNFSe(FPConfiguracoes).Geral.Emitente.WSChaveAutoriz);
 end;
 
-function TACBrNFSeXWebserviceBauhaus.GerarNFSe(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceBauhaus.GerarNFSe(const ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
   Result := Executar('', AMSG, [], []);
 end;
 
-function TACBrNFSeXWebserviceBauhaus.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceBauhaus.ConsultarNFSePorRps(const ACabecalho,
   AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
@@ -598,7 +593,7 @@ begin
   Result := Executar('', AMSG, [], []);
 end;
 
-function TACBrNFSeXWebserviceBauhaus.ConsultarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceBauhaus.ConsultarNFSe(const ACabecalho,
   AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
@@ -606,14 +601,14 @@ begin
   Result := Executar('', AMSG, [], []);
 end;
 
-function TACBrNFSeXWebserviceBauhaus.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceBauhaus.Cancelar(const ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 
   Result := Executar('', AMSG, [], []);
 end;
 
-function TACBrNFSeXWebserviceBauhaus.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceBauhaus.SubstituirNFSe(const ACabecalho,
   AMSG: String): string;
 begin
   FPMsgOrig := AMSG;

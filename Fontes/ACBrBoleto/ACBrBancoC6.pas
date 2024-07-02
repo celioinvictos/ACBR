@@ -80,7 +80,7 @@ type
 implementation
 
 uses {$IFDEF COMPILER6_UP} dateutils {$ELSE} ACBrD5 {$ENDIF},
-  StrUtils, ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime, ACBrUtil ;
+  StrUtils, ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime, ACBrUtil.Math;
 
 { TACBrBancoC6 }
 function TACBrBancoC6.ConverterDigitoModuloFinal(): String;
@@ -146,7 +146,7 @@ begin
    fpNumero                     := 336;
    fpTamanhoMaximoNossoNum      := 10;
    fpTamanhoAgencia             := 4;
-   fpTamanhoConta               := 7;
+   fpTamanhoConta               := 11;
    fpTamanhoCarteira            := 2;
    fpLayoutVersaoArquivo        := 22;
    fpLayoutVersaoLote           := 0;

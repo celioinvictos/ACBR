@@ -42,6 +42,34 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+31/05/2024
+-- ACBrLibNFSeRespostas --
+[*] Melhora a resposta do Cancelamento e do ObterInformacoesProvedor.
+    Por: Diego Folieni
+
+21/05/2024
+--- ACBrLibNFSeConfig ---
+[+] Implementado conversor para visar a correção da propriedade Produção na seção DANFSE - #TK-5453 
+    Por: Antonio Carlos Junior, Diego Folieni
+
+13/03/2024
+--- Diversos ---
+[+] Implementa o método NFSE_CarregarLoteXML
+    Por: Diego Folieni
+
+06/03/2024
+--- Diversos ---
+[+] Implementado método NFSE_ConsultarLinkNFSe e configurada chamada nos programas de exemplo em c# e java.
+    Por: Renato Rubinho
+--- ACBrLib.NFSeMT.csproj, ACBrLib.NFSe.csproj ---
+[*] Publicados novos pacotes nugets.
+    Por: Renato Rubinho
+
+07/02/2024
+--- ACBrLibNFSeStaticImport ---
+[*] Correção nome do método NFSE_ConsultaNFSePorFaixa para NFSE_ConsultarNFSePorFaixa
+    Por: Antonio Carlos Junior
+
 15/12/2023
 -- Diversos --
 [+] Adiciona o método NFSe_ObterInformacoesProvedor

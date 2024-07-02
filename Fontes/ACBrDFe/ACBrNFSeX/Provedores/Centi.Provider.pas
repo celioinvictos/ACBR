@@ -49,9 +49,9 @@ type
     function GetOperacao: string;
 
   public
-    function GerarNFSe(ACabecalho, AMSG: String): string; override;
-    function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
-    function Cancelar(ACabecalho, AMSG: String): string; override;
+    function GerarNFSe(const ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSePorRps(const ACabecalho, AMSG: String): string; override;
+    function Cancelar(const ACabecalho, AMSG: String): string; override;
 
     property Operacao: string read GetOperacao;
   end;
@@ -96,12 +96,9 @@ begin
     ConsultaNFSe := False;
     CancPreencherCodVerificacao := True;
 
-    with ServicosDisponibilizados do
-    begin
-      EnviarUnitario := True;
-      ConsultarRps := True;
-      CancelarNfse := True;
-    end;
+    ServicosDisponibilizados.EnviarUnitario := True;
+    ServicosDisponibilizados.ConsultarRps := True;
+    ServicosDisponibilizados.CancelarNfse := True;
   end;
 
   with ConfigAssinar do
@@ -363,10 +360,10 @@ begin
       end;
 
       ANode := ANode.Childrens.FindAnyNs('Nfse');
-      if not Assigned(ANode) or (ANode = nil) then Exit;
+      if not Assigned(ANode) then Exit;
 
       ANode := ANode.Childrens.FindAnyNs('InfNfse');
-      if not Assigned(ANode) or (ANode = nil) then Exit;
+      if not Assigned(ANode) then Exit;
 
       Status := ObterConteudoTag(ANode.Childrens.FindAnyNs('Status'), tcStr);
 
@@ -520,7 +517,7 @@ begin
     Result := '';
 end;
 
-function TACBrNFSeXWebserviceCenti202.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceCenti202.GerarNFSe(const ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -533,7 +530,7 @@ begin
                      Request, ['GerarNfseResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceCenti202.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceCenti202.ConsultarNFSePorRps(const ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -546,7 +543,7 @@ begin
                      Request, ['ConsultarNfseRpsResposta'], []);
 end;
 
-function TACBrNFSeXWebserviceCenti202.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceCenti202.Cancelar(const ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin

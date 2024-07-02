@@ -285,9 +285,9 @@ uses
   IniFiles, Printers,
   ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.XMLHTML, ACBrUtil.DateTime,
   ACBrUtil.Strings,
-  ACBrDFeUtil, ACBrDFeSSL, ACBrDFeOpenSSL, ACBrDFeConversao,
+  ACBrDFeUtil, ACBrDFeSSL, ACBrDFeOpenSSL,
   ACBrXmlBase,
-  pcnAuxiliar, pcnConversao,
+  pcnConversao,
   ACBrNFComConversao,
   Frm_Status, Frm_SelecionarCertificado, Frm_ConfiguraSerial;
 
@@ -424,6 +424,13 @@ begin
 
     // Grupo de Informações do Cofaturamento
     gCofat.chNFComLocal := '';
+    // ou
+    gCofat.gNF.CNPJ := '';
+    gCofat.gNF.Modelo := 21; // 21 ou 22
+    gCofat.gNF.serie := '';
+    gCofat.gNF.nNF := 0;
+    gCofat.gNF.CompetEmis := StrToDate('01/01/2024');
+    gCofat.gNF.hash115 := '';
 
     // Detalhamento de Produtos e Servicos
     with Det.New do
@@ -431,6 +438,7 @@ begin
       nItem := 1;
       chNFComAnt := '';
       nItemAnt := 0;
+      indNFComAntPapelFatCentral := tiNao;
 
       with Prod do
       begin
@@ -453,12 +461,19 @@ begin
 
       with Imposto do
       begin
+        // Indicador de Sem CST para ICMS
+        // se Sim, não vai ser gerado as informações do ICMS
+        indSemCST := tiNao;
+
         with ICMS do
         begin
           CST   := cst00;
           vBC   := 100;
           pICMS := 18;
           vICMS := vBC * pICMS / 100;
+
+          // Indicador de Simples Nacional
+          indSN := tiNao;
         end;
 
         with PIS do
@@ -787,19 +802,19 @@ begin
 
 //    MemoResp.Lines.Text := ACBrNFCom1.WebServices.Retorno.RetWS;
 //    memoRespWS.Lines.Text := ACBrNFCom1.WebServices.Retorno.RetornoWS;
-    LoadXML(ACBrNFCom1.WebServices.Retorno.RetornoWS, wbXmlRetorno);
+    LoadXML(ACBrNFCom1.WebServices.Enviar.RetWS, wbXmlRetorno);
 
     memoLog.Lines.Add('');
     memoLog.Lines.Add('Envio NFCom');
-    memoLog.Lines.Add('tpAmb: '+ TipoAmbienteToStr(ACBrNFCom1.WebServices.Retorno.TpAmb));
-    memoLog.Lines.Add('verAplic: '+ ACBrNFCom1.WebServices.Retorno.verAplic);
-    memoLog.Lines.Add('cStat: '+ IntToStr(ACBrNFCom1.WebServices.Retorno.cStat));
-    memoLog.Lines.Add('cUF: '+ IntToStr(ACBrNFCom1.WebServices.Retorno.cUF));
-    memoLog.Lines.Add('xMotivo: '+ ACBrNFCom1.WebServices.Retorno.xMotivo);
-    memoLog.Lines.Add('cMsg: '+ IntToStr(ACBrNFCom1.WebServices.Retorno.cMsg));
-    memoLog.Lines.Add('xMsg: '+ ACBrNFCom1.WebServices.Retorno.xMsg);
-    memoLog.Lines.Add('Recibo: '+ ACBrNFCom1.WebServices.Retorno.Recibo);
-    memoLog.Lines.Add('Protocolo: '+ ACBrNFCom1.WebServices.Retorno.Protocolo);
+    memoLog.Lines.Add('tpAmb: '+ TipoAmbienteToStr(ACBrNFCom1.WebServices.Enviar.TpAmb));
+    memoLog.Lines.Add('verAplic: '+ ACBrNFCom1.WebServices.Enviar.verAplic);
+    memoLog.Lines.Add('cStat: '+ IntToStr(ACBrNFCom1.WebServices.Enviar.cStat));
+    memoLog.Lines.Add('cUF: '+ IntToStr(ACBrNFCom1.WebServices.Enviar.cUF));
+    memoLog.Lines.Add('xMotivo: '+ ACBrNFCom1.WebServices.Enviar.xMotivo);
+//    memoLog.Lines.Add('cMsg: '+ IntToStr(ACBrNFCom1.WebServices.Enviar.cMsg));
+//    memoLog.Lines.Add('xMsg: '+ ACBrNFCom1.WebServices.Enviar.xMsg);
+    memoLog.Lines.Add('Recibo: '+ ACBrNFCom1.WebServices.Enviar.Recibo);
+//    memoLog.Lines.Add('Protocolo: '+ ACBrNFCom1.WebServices.Enviar.Protocolo);
   end;
 end;
 
@@ -1239,7 +1254,7 @@ begin
       if ACBrNFCom1.NotasFiscais.Items[0].Alertas <> '' then
         memoLog.Lines.Add('Alertas: ' + ACBrNFCom1.NotasFiscais.Items[0].Alertas);
 
-      ShowMessage('Nota Fiscal Eletrônica Valida');
+      ShowMessage('Nota Fiscal de Comunicação Valida');
     except
       on E: Exception do
       begin
@@ -1668,7 +1683,7 @@ end;
 procedure TfrmACBrNFCom.LoadXML(RetWS: String; MyWebBrowser: TWebBrowser);
 begin
   WriteToTXT(PathWithDelim(ExtractFileDir(application.ExeName)) + 'temp.xml',
-                      ConverteXMLtoUTF8(RetWS), False, False);
+                      RetWS, False, False);
 
   MyWebBrowser.Navigate(PathWithDelim(ExtractFileDir(application.ExeName)) + 'temp.xml');
 

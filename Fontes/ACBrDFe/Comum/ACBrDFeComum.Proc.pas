@@ -51,6 +51,8 @@ type
     FPathDFe: string;
     FPathRetConsReciDFe: string;
     FPathRetConsSitDFe: string;
+
+    FId: string;
     FtpAmb: TACBrTipoAmbiente;
     FverAplic: string;
     FchDFe: string;
@@ -75,29 +77,32 @@ type
     property PathDFe: string            read FPathDFe            write FPathDFe;
     property PathRetConsReciDFe: string read FPathRetConsReciDFe write FPathRetConsReciDFe;
     property PathRetConsSitDFe: string  read FPathRetConsSitDFe  write FPathRetConsSitDFe;
-    property tpAmb: TACBrTipoAmbiente   read FtpAmb              write FtpAmb;
-    property verAplic: string           read FverAplic           write FverAplic;
-    property chDFe: string              read FchDFe              write FchDFe;
-    property dhRecbto: TDateTime        read FdhRecbto           write FdhRecbto;
-    property nProt: string              read FnProt              write FnProt;
-    property digVal: string             read FdigVal             write FdigVal;
-    property cStat: Integer             read FcStat              write FcStat;
-    property xMotivo: string            read FxMotivo            write FxMotivo;
-    property cMsg: Integer              read FcMsg               write FcMsg;
-    property xMsg: string               read FxMsg               write FxMsg;
+
+    property Id: string               read FId       write FId;
+    property tpAmb: TACBrTipoAmbiente read FtpAmb    write FtpAmb;
+    property verAplic: string         read FverAplic write FverAplic;
+    property chDFe: string            read FchDFe    write FchDFe;
+    property dhRecbto: TDateTime      read FdhRecbto write FdhRecbto;
+    property nProt: string            read FnProt    write FnProt;
+    property digVal: string           read FdigVal   write FdigVal;
+    property cStat: Integer           read FcStat    write FcStat;
+    property xMotivo: string          read FxMotivo  write FxMotivo;
+    property cMsg: Integer            read FcMsg     write FcMsg;
+    property xMsg: string             read FxMsg     write FxMsg;
 
     // Usando na Montagem do DFeProc
-    property XML_DFe: string            read FXML_DFe            write FXML_DFe;
-    property XML_prot: string           read FXML_prot           write FXML_prot;
+    property XML_DFe: string  read FXML_DFe  write FXML_DFe;
+    property XML_prot: string read FXML_prot write FXML_prot;
   end;
 
 implementation
 
 uses
   ACBrDFeConsts,
+  ACBrUtil.Base,
   ACBrUtil.Strings,
-  ACBrXmlDocument,
-  pcnAuxiliar;
+  ACBrUtil.DateTime,
+  ACBrXmlDocument;
 
 { TProcDFe }
 
@@ -136,7 +141,7 @@ var
   i: Integer;
   ProtLido: Boolean; //Protocolo lido do arquivo
   Document: TACBrXmlDocument;
-  ANode, AnodeAux: TACBrXmlNode;
+  ANode: TACBrXmlNode;
   ANodes: TACBrXmlNodeArray;
 begin
   XMLDFe := TStringList.Create;
@@ -252,7 +257,7 @@ begin
       if ProtLido then
       begin
         if Copy(verAplic, 1, 2) = 'SV' then
-          xUF := CodigoParaUF(StrToIntDef(Copy(chDFe, 1, 2), 0))
+          xUF := CodigoUFparaUF(StrToIntDef(Copy(chDFe, 1, 2), 0))
         else
           xUF := Copy(verAplic, 1, 2);
 
@@ -281,7 +286,7 @@ begin
     // Gerar arquivo
     if (XML_DFe <> '') and (XML_prot <> '') then
       Result := '<' + LowerCase(FptagGrupo) + 'Proc ' + FpNameSpace + ' versao="' + FpVersao + '">' +
-                  '<' + FptagGrupo + ' xmlns>' +
+                  '<' + FptagGrupo + ' xmlns' +
                     RetornarConteudoEntre(FXML_DFe, '<' + FptagGrupo + ' xmlns',
                                                     '</' + FptagGrupo + '>') +
                   '</' + FptagGrupo + '>' +
@@ -301,18 +306,20 @@ begin
   PathDFe            := Source.PathDFe;
   PathRetConsReciDFe := Source.PathRetConsReciDFe;
   PathRetConsSitDFe  := Source.PathRetConsSitDFe;
-  tpAmb              := Source.tpAmb;
-  verAplic           := Source.verAplic;
-  chDFe              := Source.chDFe;
-  dhRecbto           := Source.dhRecbto;
-  nProt              := Source.nProt;
-  digVal             := Source.digVal;
-  cStat              := Source.cStat;
-  xMotivo            := Source.xMotivo;
-  cMsg               := Source.cMsg;
-  xMsg               := Source.xMsg;
 
-  XML_DFe := Source.XML_DFe;
+  Id       := Source.Id;
+  tpAmb    := Source.tpAmb;
+  verAplic := Source.verAplic;
+  chDFe    := Source.chDFe;
+  dhRecbto := Source.dhRecbto;
+  nProt    := Source.nProt;
+  digVal   := Source.digVal;
+  cStat    := Source.cStat;
+  xMotivo  := Source.xMotivo;
+  cMsg     := Source.cMsg;
+  xMsg     := Source.xMsg;
+
+  XML_DFe  := Source.XML_DFe;
   XML_prot := Source.XML_prot;
 end;
 

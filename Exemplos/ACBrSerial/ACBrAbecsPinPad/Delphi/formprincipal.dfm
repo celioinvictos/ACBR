@@ -2,8 +2,8 @@ object frMain: TfrMain
   Left = 522
   Top = 227
   Caption = 'Teste ABECS PinPad'
-  ClientHeight = 586
-  ClientWidth = 938
+  ClientHeight = 588
+  ClientWidth = 936
   Color = clBtnFace
   Constraints.MinWidth = 640
   Font.Charset = DEFAULT_CHARSET
@@ -11,15 +11,13 @@ object frMain: TfrMain
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
-  OldCreateOrder = True
   Visible = True
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 15
   object Splitter2: TSplitter
     Left = 0
     Top = 332
-    Width = 938
+    Width = 936
     Height = 8
     Cursor = crVSplit
     Align = alTop
@@ -27,15 +25,15 @@ object frMain: TfrMain
   object pLogs: TPanel
     Left = 0
     Top = 340
-    Width = 938
-    Height = 246
+    Width = 936
+    Height = 248
     Align = alClient
     TabOrder = 0
     object sbCleanMemoLog: TSpeedButton
-      Left = 914
+      Left = 912
       Top = 58
       Width = 23
-      Height = 159
+      Height = 161
       Align = alRight
       Glyph.Data = {
         36030000424D3603000000000000360000002800000010000000100000000100
@@ -65,26 +63,22 @@ object frMain: TfrMain
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
       OnClick = sbCleanMemoLogClick
-      ExplicitLeft = 913
-      ExplicitHeight = 158
     end
     object mLog: TMemo
       Left = 1
       Top = 58
-      Width = 913
-      Height = 159
+      Width = 911
+      Height = 161
       Align = alClient
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 0
       WordWrap = False
-      ExplicitWidth = 912
-      ExplicitHeight = 158
     end
     object sbResponse: TStatusBar
       Left = 1
-      Top = 217
-      Width = 936
+      Top = 219
+      Width = 934
       Height = 28
       Panels = <
         item
@@ -99,16 +93,16 @@ object frMain: TfrMain
     object pCancelar: TPanel
       Left = 1
       Top = 1
-      Width = 936
+      Width = 934
       Height = 57
       Align = alTop
       TabOrder = 2
       Visible = False
       DesignSize = (
-        936
+        934
         57)
       object btCancel: TButton
-        Left = 2
+        Left = 1
         Top = 1
         Width = 933
         Height = 55
@@ -122,7 +116,7 @@ object frMain: TfrMain
   object pCommands: TPanel
     Left = 0
     Top = 0
-    Width = 938
+    Width = 936
     Height = 332
     Align = alTop
     BevelOuter = bvNone
@@ -131,30 +125,30 @@ object frMain: TfrMain
     object pgcCommands: TPageControl
       Left = 0
       Top = 0
-      Width = 938
+      Width = 936
       Height = 332
-      ActivePage = tsAskEvent
+      ActivePage = tsGIX
       Align = alClient
       Images = ImageList1
       TabOrder = 0
       object tsConfig: TTabSheet
         Caption = 'Config'
         DesignSize = (
-          930
+          928
           302)
         object gbConfig: TGroupBox
           Left = 0
           Top = 0
-          Width = 930
+          Width = 928
           Height = 70
           Align = alTop
           Caption = 'Serial Port'
           TabOrder = 0
           DesignSize = (
-            930
+            928
             70)
           object btSerial: TSpeedButton
-            Left = 549
+            Left = 547
             Top = 27
             Width = 25
             Height = 22
@@ -189,7 +183,7 @@ object frMain: TfrMain
             OnClick = btSerialClick
           end
           object btSearchSerialPorts: TSpeedButton
-            Left = 580
+            Left = 578
             Top = 27
             Width = 25
             Height = 22
@@ -226,7 +220,7 @@ object frMain: TfrMain
           object cbxPort: TComboBox
             Left = 19
             Top = 27
-            Width = 521
+            Width = 519
             Height = 23
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 0
@@ -235,7 +229,7 @@ object frMain: TfrMain
         object pConfigLogMsg: TPanel
           Left = 0
           Top = 70
-          Width = 930
+          Width = 928
           Height = 77
           Align = alTop
           BevelOuter = bvNone
@@ -243,13 +237,13 @@ object frMain: TfrMain
           object gbConfig1: TGroupBox
             Left = 0
             Top = 0
-            Width = 675
+            Width = 673
             Height = 77
             Align = alClient
             Caption = 'Log'
             TabOrder = 0
             DesignSize = (
-              675
+              673
               77)
             object Label13: TLabel
               Left = 19
@@ -262,7 +256,7 @@ object frMain: TfrMain
               ParentColor = False
             end
             object sbShowLogFile: TSpeedButton
-              Left = 551
+              Left = 549
               Top = 40
               Width = 25
               Height = 22
@@ -277,7 +271,7 @@ object frMain: TfrMain
               OnClick = sbShowLogFileClick
             end
             object Label14: TLabel
-              Left = 599
+              Left = 597
               Top = 21
               Width = 50
               Height = 15
@@ -290,14 +284,14 @@ object frMain: TfrMain
             object edLogFile: TEdit
               Left = 19
               Top = 40
-              Width = 522
+              Width = 520
               Height = 23
               Cursor = crIBeam
               Anchors = [akLeft, akTop, akRight]
               TabOrder = 0
             end
             object seLogLevel: TSpinEdit
-              Left = 599
+              Left = 597
               Top = 40
               Width = 50
               Height = 24
@@ -309,7 +303,7 @@ object frMain: TfrMain
             end
           end
           object GroupBox2: TGroupBox
-            Left = 675
+            Left = 673
             Top = 0
             Width = 255
             Height = 77
@@ -408,7 +402,7 @@ object frMain: TfrMain
           OnClick = btReadParmsClick
         end
         object btActivate: TBitBtn
-          Left = 775
+          Left = 773
           Top = 173
           Width = 109
           Height = 45
@@ -444,6 +438,43 @@ object frMain: TfrMain
           TabOrder = 4
           OnClick = btActivateClick
         end
+        object btDetectPinPad: TBitBtn
+          Left = 614
+          Top = 173
+          Width = 109
+          Height = 45
+          Anchors = [akTop, akRight]
+          Caption = 'Detect PinPad'
+          Glyph.Data = {
+            36030000424D3603000000000000360000002800000010000000100000000100
+            18000000000000030000C30E0000C30E00000000000000000000FFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFEFE9A9A
+            9AEBEBEBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFEFEFE7C7C7C090909ABABABFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9F9F97777770808089494
+            94FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAFAFAB4B4B46969695757577E
+            7E7ED9D9D98989890C0C0C8E8E8EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            F7F7F76767670B0B0B3F3F3F4E4E4E222222161616303030999999FCFCFCFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF929292060606B3B3B3F8F8F8FDFDFDEC
+            ECEC5E5E5E1A1A1ADDDDDDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5F5F5
+            3030306A6A6AFFFFFFFFFFFFFFFFFFFFFFFFEDEDED212121888888FFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFE5E5E51D1D1DA2A2A2FFFFFFFFFFFFFFFFFFFF
+            FFFFFBFBFB474747656565FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEEEEEE
+            272727898989FFFFFFFFFFFFFFFFFFFFFFFFF2F2F22B2B2B7A7A7AFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6B6B6B1D1D1DE6E6E6FFFFFFFFFFFFFF
+            FFFF9898980C0C0CC4C4C4FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            E8E8E83434341515157676769797975E5E5E0808087C7C7CFDFDFDFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE9E9E97272722E2E2E2525253C
+            3C3CA5A5A5FBFBFBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFF4F4F4ECECECFAFAFAFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+          TabOrder = 5
+          OnClick = btDetectPinPadClick
+        end
       end
       object tsOpen: TTabSheet
         Caption = 'Open'
@@ -468,7 +499,7 @@ object frMain: TfrMain
         object pKeys: TPanel
           Left = 160
           Top = 0
-          Width = 770
+          Width = 768
           Height = 302
           Align = alRight
           Anchors = [akLeft, akTop, akRight, akBottom]
@@ -512,7 +543,7 @@ object frMain: TfrMain
             OnClick = sbGenerateKeysClick
           end
           object gbExponent: TGroupBox
-            Left = 669
+            Left = 667
             Top = 0
             Width = 101
             Height = 302
@@ -534,17 +565,15 @@ object frMain: TfrMain
           object gbModulus: TGroupBox
             Left = 23
             Top = 0
-            Width = 646
+            Width = 644
             Height = 302
             Align = alClient
             Caption = 'Modulus'
             TabOrder = 1
-            ExplicitLeft = 24
-            ExplicitWidth = 645
             object mModulus: TMemo
               Left = 2
               Top = 17
-              Width = 642
+              Width = 640
               Height = 283
               Align = alClient
               Lines.Strings = (
@@ -572,8 +601,6 @@ object frMain: TfrMain
                 'D')
               ScrollBars = ssVertical
               TabOrder = 0
-              ExplicitLeft = 3
-              ExplicitWidth = 641
             end
           end
         end
@@ -582,21 +609,21 @@ object frMain: TfrMain
         Caption = 'Information'
         ImageIndex = 15
         object Splitter1: TSplitter
-          Left = 462
+          Left = 460
           Top = 0
           Width = 5
           Height = 302
           Align = alRight
         end
         object Splitter3: TSplitter
-          Left = 731
+          Left = 729
           Top = 0
           Width = 5
           Height = 302
           Align = alRight
         end
         object gbGIN: TGroupBox
-          Left = 736
+          Left = 734
           Top = 0
           Width = 194
           Height = 302
@@ -652,7 +679,7 @@ object frMain: TfrMain
         object gbGIX: TGroupBox
           Left = 0
           Top = 0
-          Width = 462
+          Width = 460
           Height = 302
           Align = alClient
           Caption = 'GIX'
@@ -674,7 +701,6 @@ object frMain: TfrMain
               Caption = 'GIX'
               TabOrder = 0
               OnClick = btGIXClick
-              ExplicitTop = 258
             end
             object lbGIXParams: TListBox
               Left = 1
@@ -750,8 +776,6 @@ object frMain: TfrMain
                 'PP_TABVER63   ')
               MultiSelect = True
               TabOrder = 1
-              ExplicitTop = 19
-              ExplicitHeight = 197
             end
             object edGIXValue: TEdit
               Left = 1
@@ -760,8 +784,6 @@ object frMain: TfrMain
               Height = 23
               Align = alBottom
               TabOrder = 2
-              ExplicitLeft = 0
-              ExplicitTop = 220
             end
             object cbGIXAll: TCheckBox
               Left = 1
@@ -777,7 +799,7 @@ object frMain: TfrMain
           object mGIXResponse: TMemo
             Left = 113
             Top = 17
-            Width = 347
+            Width = 345
             Height = 283
             Align = alClient
             ReadOnly = True
@@ -786,7 +808,7 @@ object frMain: TfrMain
           end
         end
         object gbACBrPinPadCapabilities: TGroupBox
-          Left = 467
+          Left = 465
           Top = 0
           Width = 264
           Height = 302
@@ -812,8 +834,6 @@ object frMain: TfrMain
             ReadOnly = True
             ScrollBars = ssVertical
             TabOrder = 1
-            ExplicitTop = 51
-            ExplicitHeight = 247
           end
         end
       end
@@ -901,13 +921,13 @@ object frMain: TfrMain
         object gbDSX: TGroupBox
           Left = 235
           Top = 0
-          Width = 695
+          Width = 693
           Height = 302
           Align = alClient
           Caption = 'DEX'
           TabOrder = 1
           DesignSize = (
-            695
+            693
             302)
           object Label6: TLabel
             Left = 19
@@ -919,7 +939,7 @@ object frMain: TfrMain
           object mDEX: TMemo
             Left = 19
             Top = 46
-            Width = 646
+            Width = 644
             Height = 110
             Anchors = [akLeft, akTop, akRight]
             Font.Charset = DEFAULT_CHARSET
@@ -947,7 +967,7 @@ object frMain: TfrMain
             OnClick = btDEXClick
           end
           object btDEXClear: TButton
-            Left = 368
+            Left = 367
             Top = 180
             Width = 96
             Height = 31
@@ -1033,7 +1053,7 @@ object frMain: TfrMain
         object pgMedia: TPageControl
           Left = 298
           Top = 0
-          Width = 632
+          Width = 630
           Height = 302
           ActivePage = tsQRCode
           Align = alClient
@@ -1043,21 +1063,21 @@ object frMain: TfrMain
             object pMedia: TPanel
               Left = 0
               Top = 0
-              Width = 624
+              Width = 622
               Height = 272
               Align = alClient
               TabOrder = 0
               object sbMedia: TScrollBox
                 Left = 1
                 Top = 1
-                Width = 622
+                Width = 620
                 Height = 223
                 Align = alClient
                 TabOrder = 0
                 object imgMedia: TImage
                   Left = 0
                   Top = 0
-                  Width = 618
+                  Width = 616
                   Height = 219
                   Align = alClient
                   AutoSize = True
@@ -1536,22 +1556,20 @@ object frMain: TfrMain
                     018FE96D69582AFBB1A0E67260970C67B0E52D9AB36DB5D32BCEAC7BDE827046
                     F82BA30D1B26C226808D931A36016C9CD4B00960E3A4C6FF0384944656961706
                     650000000049454E44AE426082}
-                  ExplicitWidth = 192
-                  ExplicitHeight = 192
                 end
               end
               object pMediaLoad: TPanel
                 Left = 1
                 Top = 224
-                Width = 622
+                Width = 620
                 Height = 47
                 Align = alBottom
                 TabOrder = 1
                 DesignSize = (
-                  622
+                  620
                   47)
                 object btSearchSerialPorts1: TSpeedButton
-                  Left = 369
+                  Left = 367
                   Top = 14
                   Width = 25
                   Height = 22
@@ -1586,7 +1604,7 @@ object frMain: TfrMain
                   OnClick = btSearchSerialPorts1Click
                 end
                 object btMediaLoad: TButton
-                  Left = 528
+                  Left = 526
                   Top = 12
                   Width = 75
                   Height = 25
@@ -1598,14 +1616,14 @@ object frMain: TfrMain
                 object edMediaLoad: TEdit
                   Left = 5
                   Top = 13
-                  Width = 358
+                  Width = 356
                   Height = 23
                   Anchors = [akLeft, akTop, akRight]
                   TabOrder = 1
                   Text = 'LOGOACBR'
                 end
                 object pMediaInfo: TPanel
-                  Left = 401
+                  Left = 399
                   Top = 13
                   Width = 112
                   Height = 23
@@ -1622,7 +1640,7 @@ object frMain: TfrMain
             object pQREGerado: TPanel
               Left = 0
               Top = 0
-              Width = 624
+              Width = 622
               Height = 272
               Align = alClient
               TabOrder = 0
@@ -1639,7 +1657,7 @@ object frMain: TfrMain
               object pQREMemo: TPanel
                 Left = 256
                 Top = 1
-                Width = 367
+                Width = 365
                 Height = 231
                 Align = alClient
                 BevelOuter = bvNone
@@ -1647,17 +1665,11 @@ object frMain: TfrMain
                 object mQRCode: TMemo
                   Left = 0
                   Top = 0
-                  Width = 367
+                  Width = 365
                   Height = 231
                   Align = alClient
                   Alignment = taCenter
-                  Lines.Strings = (
-                    '00020126360014br.gov.bcb.pix0114187605400'
-                    '00139520400005303986540510.005802BR5912P'
-                    'ROJETO '
-                    'ACBR6005Tatui61081827017062070503***6304'
-                    '0B2D')
-                  ScrollBars = ssVertical
+                  ScrollBars = ssBoth
                   TabOrder = 0
                   WantReturns = False
                 end
@@ -1674,7 +1686,7 @@ object frMain: TfrMain
               object Panel1: TPanel
                 Left = 1
                 Top = 232
-                Width = 622
+                Width = 620
                 Height = 39
                 Align = alBottom
                 TabOrder = 1
@@ -1726,7 +1738,6 @@ object frMain: TfrMain
               'ssage'#13'shall be selected among those available in a fixed table d' +
               'efined by ABECS specification'
             WordWrap = True
-            ExplicitWidth = 211
           end
           object Label9: TLabel
             Left = 10
@@ -1894,7 +1905,7 @@ object frMain: TfrMain
         object gbCEX: TGroupBox
           Left = 602
           Top = 0
-          Width = 328
+          Width = 326
           Height = 302
           Align = alClient
           Caption = 'CEX (Wait for event)'
@@ -1971,7 +1982,7 @@ object frMain: TfrMain
           object mCEXResponse: TMemo
             Left = 2
             Top = 170
-            Width = 324
+            Width = 322
             Height = 130
             Align = alBottom
             Anchors = [akLeft, akTop, akRight, akBottom]
@@ -2023,7 +2034,6 @@ object frMain: TfrMain
               Alignment = taCenter
               Caption = 'Obsolete. This command does not return numeric keys'
               WordWrap = True
-              ExplicitWidth = 135
             end
             object btGKY: TButton
               Left = 32
@@ -2175,16 +2185,16 @@ object frMain: TfrMain
         object gbCLX: TGroupBox
           Left = 235
           Top = 0
-          Width = 695
+          Width = 693
           Height = 302
           Align = alClient
           Caption = 'CLX'
           TabOrder = 1
           DesignSize = (
-            695
+            693
             302)
           object btCLX: TButton
-            Left = 304
+            Left = 303
             Top = 243
             Width = 88
             Height = 38
@@ -2196,7 +2206,7 @@ object frMain: TfrMain
           object pgCLX: TPageControl
             Left = 2
             Top = 17
-            Width = 691
+            Width = 689
             Height = 204
             ActivePage = tsCLOMedia
             Align = alTop
@@ -2206,7 +2216,7 @@ object frMain: TfrMain
               object mCLX: TMemo
                 Left = 0
                 Top = 0
-                Width = 683
+                Width = 681
                 Height = 174
                 Align = alClient
                 Anchors = [akLeft, akTop, akRight]
@@ -2232,7 +2242,7 @@ object frMain: TfrMain
               object lbCLXMedias: TListBox
                 Left = 0
                 Top = 31
-                Width = 683
+                Width = 681
                 Height = 143
                 Align = alClient
                 Columns = 2
@@ -2242,7 +2252,7 @@ object frMain: TfrMain
               object pCLXMediaTitle: TPanel
                 Left = 0
                 Top = 0
-                Width = 683
+                Width = 681
                 Height = 31
                 Align = alTop
                 Caption = 'Media Files'

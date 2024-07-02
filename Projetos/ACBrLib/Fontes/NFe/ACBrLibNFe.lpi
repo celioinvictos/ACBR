@@ -22,7 +22,7 @@
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="4"/>
       <RevisionNr Value="6"/>
-      <BuildNr Value="269"/>
+      <BuildNr Value="293"/>
       <Language Value="0416"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrNFe - BIblioteca para emissão e impressão de nota fiscal eletrônica" InternalName="ACBrLibNFE" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductName="ACBrNFe " ProductVersion="0.4.6.0"/>
@@ -505,6 +505,7 @@
           </CodeGeneration>
           <Linking>
             <Debugging>
+              <DebugInfoType Value="dsDwarf3"/>
               <UseHeaptrc Value="True"/>
               <TrashVariables Value="True"/>
             </Debugging>
@@ -513,9 +514,7 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dMT 
--dNOGUI
--dMT"/>
+            <CustomOptions Value="-dMT -dDEBUG -dNOGUI"/>
           </Other>
         </CompilerOptions>
       </Item13>
@@ -525,13 +524,13 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <HostApplicationFilename Value="C:\Pascal\Comp\ACBr\trunk2\Projetos\ACBrLib\Testes\NFe\bin\ACBrLibNFeTest.exe"/>
+        <HostApplicationFilename Value="C:\ProjetoACBr\ACBr\Projetos\ACBrLib\Testes\NFe\bin\ACBrLibNFeTest.exe"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
-            <HostApplicationFilename Value="C:\Pascal\Comp\ACBr\trunk2\Projetos\ACBrLib\Testes\NFe\bin\ACBrLibNFeTest.exe"/>
+            <HostApplicationFilename Value="C:\ProjetoACBr\ACBr\Projetos\ACBrLib\Testes\NFe\bin\ACBrLibNFeTest.exe"/>
           </local>
         </Mode0>
       </Modes>
@@ -680,6 +679,7 @@
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="False"/>
+        <DebugInfoType Value="dsDwarf3"/>
         <UseLineInfoUnit Value="False"/>
         <StripSymbols Value="True"/>
       </Debugging>

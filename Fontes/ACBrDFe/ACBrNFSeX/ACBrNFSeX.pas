@@ -110,7 +110,7 @@ type
 
     // Usado pelos provedores que seguem a versão 2 do layout da ABRASF.
     procedure ConsultarNFSePorPeriodo(aDataInicial, aDataFinal: TDateTime;
-      aPagina: Integer = 1; aNumeroLote: string = '';
+      aPagina: Integer = 1; const aNumeroLote: string = '';
       aTipoPeriodo: TtpPeriodo = tpEmissao);
 
     // Usado pelos provedores que seguem a versão 2 do layout da ABRASF.
@@ -169,8 +169,9 @@ type
       const ACodCancelamento: string; const AMotCancelamento: String = '';
       const ANumLote: String = ''; const ACodVerificacao: String = '');
 
-    function LinkNFSe(ANumNFSe: String; const ACodVerificacao: String;
-      const AChaveAcesso: String = ''; const AValorServico: String = ''): String;
+    function LinkNFSe(const ANumNFSe: String; const ACodVerificacao: String;
+      const AChaveAcesso: String = ''; const AValorServico: String = '';
+      const AID: string = ''): String;
 
     // Usado pelos provedores que geram token por WebService
     procedure GerarToken;
@@ -353,6 +354,9 @@ begin
   Configuracoes.Geral.ServicosDisponibilizados.ConsultarLinkNfse := FProvider.ConfigGeral.ServicosDisponibilizados.ConsultarLinkNfse;
   Configuracoes.Geral.ServicosDisponibilizados.ConsultarNfseChave := FProvider.ConfigGeral.ServicosDisponibilizados.ConsultarNfseChave;
   Configuracoes.Geral.ServicosDisponibilizados.TestarEnvio := FProvider.ConfigGeral.ServicosDisponibilizados.TestarEnvio;
+
+  Configuracoes.Geral.Particularidades.PermiteTagOutrasInformacoes := FProvider.ConfigGeral.Particularidades.PermiteTagOutrasInformacoes;
+  Configuracoes.Geral.Particularidades.PermiteMaisDeUmServico := FProvider.ConfigGeral.Particularidades.PermiteMaisDeUmServico;
 end;
 
 function TACBrNFSeX.GetNomeModeloDFe: String;
@@ -653,6 +657,7 @@ begin
   InfConsulta.SerieRps := AInfConsultaLinkNFSe.SerieRps;
   InfConsulta.TipoRps := AInfConsultaLinkNFSe.TipoRps;
   InfConsulta.Pagina := AInfConsultaLinkNFSe.Pagina;
+  InfConsulta.CnpjCpfToma := AInfConsultaLinkNFSe.CnpjCpfToma;
 
   FProvider.ConsultaLinkNFSe;
 end;
@@ -759,7 +764,7 @@ begin
 end;
 
 procedure TACBrNFSeX.ConsultarNFSePorPeriodo(aDataInicial, aDataFinal: TDateTime;
-  aPagina: Integer; aNumeroLote: string; aTipoPeriodo: TtpPeriodo);
+  aPagina: Integer; const aNumeroLote: string; aTipoPeriodo: TtpPeriodo);
 begin
   FWebService.ConsultaNFSe.Clear;
 
@@ -1164,8 +1169,8 @@ begin
   FProvider.EnviarEvento;
 end;
 
-function TACBrNFSeX.LinkNFSe(ANumNFSe: String; const ACodVerificacao,
-  AChaveAcesso, AValorServico: String): String;
+function TACBrNFSeX.LinkNFSe(const ANumNFSe: String; const ACodVerificacao,
+  AChaveAcesso, AValorServico, AID: String): String;
 var
   NFSe: TNFSe;
   NFSeTemp: Boolean;
@@ -1189,6 +1194,7 @@ begin
     LinkNFSeParam.CodVerificacao := ACodVerificacao;
     LinkNFSeParam.ChaveAcesso := AChaveAcesso;
     LinkNFSeParam.ValorServico := AValorServico;
+    LinkNFSeParam.ID := AID;
     LinkNFSeParam.CNPJ := Configuracoes.Geral.Emitente.CNPJ;
     LinkNFSeParam.InscMun := Configuracoes.Geral.Emitente.InscMun;
     LinkNFSeParam.xMunicipio := Configuracoes.Geral.xMunicipio;

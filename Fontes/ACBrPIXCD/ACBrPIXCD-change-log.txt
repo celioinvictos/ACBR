@@ -47,6 +47,66 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+14/06/2024
+--- ACBrSchemasMatera --
+[*] Incluído novo status da conta: REJECTED
+    por: Elias César
+
+06/06/2024
+-- ACBrPIXCD --
+[*] Adicionada rotinas de redirecionamento de URL no método:
+
+23/05/2024
+-- ACBrPIXCD --
+[+] Inclusão do novo PSP Banrisul
+    por: Elias César Vieira
+
+14/05/2024
+-- ACBrSchemasMatera --
+[*] Inclusão de novo status no enumerado TMateraAccountStatus
+    por: MatheusHenrique9
+
+19/04/2024
+-- ACBrSchemasMatera --
+[*] Correção de problema ao converter String para tipo TMateraWithdrawType
+    por: MatheusHenrique9
+
+26/03/2024
+-- ACBrSchemasMatera --
+[*] Correção no método NewSchema de algumas classes.
+    por: MatheusHenrique9
+
+22/03/2024
+-- ACBrPIXPSPMatera --
+[*] Alteração para corrigir problema de acentuação ao criar uma conta
+    por: Elias César
+
+08/03/2024
+-- ACBrSchemasMatera --
+[-] Correção do schema de leitura de saldo.
+    por: nazarenoneto / Rev.: Alexandre de Paula
+
+23/02/2024
+-- ACBrPIXPSPGate2All --
+[-] Correção na conversão do Valor do Pix para Gate2All, que considera o valor
+    inteiro, sem decimais
+    (por: DSA)
+
+21/02/2024
+-- ACBrPIXPSPShipay --
+[*] Alteração para Renovar o Token quando necessário.
+    por: Robert Marx
+
+15/02/2024
+-- ACBrPIXPSPMatera, ACBrSchemasMatera --
+[+] Adição da consulta de Alias V2
+    por: Alexandre de Paula
+
+08/02/2024
+-- ACBrPIXPSPGate2All --
+[+] Inclusão do novo PSP Gate2All
+    por: Elias César
+
 26/01/2024
 -- ACBrPIXPSP --
 [-] Correção para forçar a autenticação novamente após alterar as credenciais.

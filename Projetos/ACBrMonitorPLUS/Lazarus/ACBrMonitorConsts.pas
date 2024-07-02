@@ -486,6 +486,7 @@ const
   CMetodoConsultarNFSeporPeriodo =     'ConsultarNFSeporPeriodo';
   CMetodoConsultarNFSeporFaixa =       'ConsultarNFSeporFaixa';
   CMetodoConsultarNFSeGenerico =       'ConsultarNFSeGenerico';
+  CMetodoConsultarLinkNFSe =           'ConsultarLinkNFSe';
   CMetodoConsultarNFSeServicoPrestadoPorNumero = 'ConsultarNFSeServicoPrestadoPorNumero';
   CMetodoConsultarNFSeServicoPrestadoPorTomador = 'ConsultarNFSeServicoPrestadoPorTomador';
   CMetodoConsultarNFSeServicoPrestadoPorIntermediario = 'ConsultarNFSeServicoPrestadoPorIntermediario';
@@ -718,6 +719,7 @@ const
   CMetodoConsultar = 'consultar';
   CMetodoRastrear  = 'rastrear';
   CMetodoConsultarCaptcha = 'consultarcaptcha';
+  CMetodoSetProvedor       = 'setprovedor';
 
   CMetodoSetPorta          = 'setporta';
   CMetodoTemperatura       = 'temperatura';
@@ -746,6 +748,7 @@ const
   CMetodoLimparMemoria     = 'limparmemoria';
   CMetodoSetLimparMemoria  = 'setlimparmemoria';
   CMetodoImprimirQRCode    = 'imprimirqrcode';
+  CMetodoGerarStreamBase64 = 'GerarStreamBase64';
 
   CMetodoConsultaConfig  = 'consultaconfig';
   CMetodoImprimirGNRe    = 'imprimirgnre';
@@ -913,6 +916,11 @@ const
   CKeyCEPProxy_Pass =                'Proxy_Pass';
   CKeyCEPIBGEAcentos =               'IBGEAcentos';
   CKeyCEPIBGEUTF8 =                  'IBGEUTF8';
+
+  CSecConsultaCNPJ =                 'ConsultaCNPJ';
+  CKeyConsultaCNPJProvedor =         'Provedor';
+  CKeyConsultaCNPJUsuario =          'Usuario';
+  CKeyConsultaCNPJSenha =            'Senha';
 
   CSecTC =                           'TC';
   CKeyTCModelo =                     'Modelo';
@@ -1389,8 +1397,9 @@ const
   CKeyBOLETOKeyUser =                       'KeyUser';
   CKeyBOLETOScope =                         'Scope';
   CKeyBOLETOIndicadorPix =                  'IndicadorPix';
-  CKeyBOLETOLogRegistro =                   'LogRegistro';
+  CKeyBOLETOLogNivel =                      'LogNivel';
   CKeyBOLETOPathGravarRegistro =            'PathGravarRegistro';
+  CKeyBOLETONomeArquivoLog =                'NomeArquivoLog';
   CKeyBOLETOAmbiente =                      'Ambiente';
   CKeyBOLETOOperacao =                      'Operacao';
   CKeyBOLETOProxyHost =                     'ProxyHost';
@@ -1435,9 +1444,7 @@ const
   CKeyNFSeConsultarAposCancelar =           'ConsultarAposCancelar';
   CKeyNFSeNomePrefeitura =                  'NomePrefeitura';
   CKeyNFSeCNPJPrefeitura =                  'CNPJPrefeitura';
-
-  CSecProvedorCNPJ =                        'ProvedorCNPJ';
-  CKeyProvedorCNPJProvedor =                'Provedor';
+  CKeyNFSeNomeLongoNFSe =                   'NomeLongoNFSe';
 
 
 implementation

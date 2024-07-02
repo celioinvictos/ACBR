@@ -39,7 +39,10 @@ interface
 uses
   Classes, SysUtils, {$IFDEF FPC} LResources, {$ENDIF}
   ACBrBase, ACBrNFeDANFEClass, ACBrPosPrinter,
-  pcnNFe, pcnEnvEventoNFe, pcnInutNFe, ACBrDFeDANFeReport;
+  pcnNFe,
+  ACBrNFe.EnvEvento,
+  ACBrNFe.Inut,
+  ACBrDFeDANFeReport;
 
 const
   CLarguraRegiaoEsquerda = 270;
@@ -118,7 +121,6 @@ uses
   ACBrDFeUtil,
   ACBrConsts,
   pcnConversao,
-  pcnAuxiliar,
   ACBrImage;
 
 { TACBrNFeDANFeESCPOS }
@@ -356,7 +358,7 @@ begin
           begin
             LinhaCmd := '</ae>'+TagLigaCondensado + padSpace(
                 'Desconto ' + padLeft(FormatFloatBr(LDesconto, '-,0.00'), 15, ' ')
-                +IIf((VlrAcrescimo+Prod.vFrete > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
+                +IfThen((VlrAcrescimo+Prod.vFrete > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
                 ColunasCondensado, '|');
             FPosPrinter.Buffer.Add('</ae>'+TagLigaCondensado + LinhaCmd);
           end;
@@ -366,7 +368,7 @@ begin
           begin
             LinhaCmd := '</ae>'+TagLigaCondensado + padSpace(
                 'Frete ' + padLeft(FormatFloatBr(Prod.vFrete, '+,0.00'), 15, ' ')
-                +IIf((VlrAcrescimo > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
+                +IfThen((VlrAcrescimo > 0),'','|' + FormatFloatBr(VlrLiquido)) ,
                 ColunasCondensado, '|');
             FPosPrinter.Buffer.Add('</ae>'+TagLigaCondensado + LinhaCmd);
           end;
@@ -478,7 +480,7 @@ begin
     end;
   end;
 
-  Troco := IIf(FpNFe.pag.vTroco > 0,FpNFe.pag.vTroco,vTroco);
+  Troco := IfThen(FpNFe.pag.vTroco > 0,FpNFe.pag.vTroco,vTroco);
 
   if Troco > 0 then
     FPosPrinter.Buffer.Add(TagLigaCondensado + PadSpace('Troco R$|' +
@@ -656,7 +658,7 @@ end;
 function TACBrNFeDANFeESCPOS.GerarInformacoesIdentificacaoNFCe(Lateral: Boolean
   ): String;
 var
-  InfoNFCe, InfoAut: String;
+  InfoNFCe, InfoAut, LNNF: String;
   Colunas: Integer;
 
   function ReplaceSoftBreak( ALine: String): String;
@@ -670,7 +672,13 @@ begin
     Colunas := Trunc(Colunas/2);
 
   Result := '</ce>'+TagLigaCondensado+'<n>';
-  InfoNFCe := ACBrStr('NFC-e nº ') + IntToStrZero(FpNFe.Ide.nNF, 9) +
+
+  if FormatarNumeroDocumento then
+    LNNF := IntToStrZero(FpNFe.Ide.nNF, 9)
+  else
+    LNNF := IntToStr(FpNFe.Ide.nNF);
+
+  InfoNFCe := ACBrStr('NFC-e nº ') + LNNF +
               ACBrStr(' Série ') + IntToStrZero(FpNFe.Ide.serie, 3) + '|' +
               DateTimeToStr(FpNFe.ide.dEmi) + '</n>';
 
@@ -886,13 +894,19 @@ end;
 procedure TACBrNFeDANFeESCPOS.GerarDadosEvento;
 const
   TAMCOLDESCR = 11;
+var
+  LNNF : string;
 begin
   if FpEvento.Evento.Count < 1 then
     Exit;
 
   // dados da nota eletrônica
+  if FormatarNumeroDocumento then
+    LNNF := IntToStrZero(FpNFe.ide.nNF, 9)
+  else
+    LNNF := IntToStr(FpNFe.Ide.nNF);
   FPosPrinter.Buffer.Add('</fn></ce><n>Nota Fiscal para Consumidor Final</n>');
-  FPosPrinter.Buffer.Add(ACBrStr('Número: ' + IntToStrZero(FpNFe.ide.nNF, 9) +
+  FPosPrinter.Buffer.Add(ACBrStr('Número: ' + LNNF +
                                  ' Série: ' + IntToStrZero(FpNFe.ide.serie, 3)));
   FPosPrinter.Buffer.Add(ACBrStr('Emissão: ' + DateTimeToStr(FpNFe.ide.dEmi)) + '</n>');
 

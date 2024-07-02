@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static ACBrLib.NFSe.ACBrNFSe;
 
 namespace ACBrLib.NFSe
 {
@@ -20,6 +21,9 @@ namespace ACBrLib.NFSe
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_Versao(StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_OpenSSLInfo(StringBuilder buffer, ref int bufferSize);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_UltimoRetorno(StringBuilder buffer, ref int bufferSize);
@@ -44,6 +48,9 @@ namespace ACBrLib.NFSe
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_CarregarXML(string eArquivoOuXml);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_CarregarLoteXML(string eArquivoOuXml);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_CarregarINI(string eArquivoOuIni);
@@ -104,6 +111,9 @@ namespace ACBrLib.NFSe
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_ConsultarNFSeGenerico(string aInfConsultaNFSe, StringBuilder buffer, ref int bufferSize);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int NFSE_ConsultarLinkNFSe(string aInfConsultaLinkNFSe, StringBuilder buffer, ref int bufferSize);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int NFSE_EnviarEmail(string ePara, string eXmlNFSe, bool aEnviaPDF, string eAssunto, string eCc, string eAnexos, string eMensagem);
@@ -174,6 +184,7 @@ namespace ACBrLib.NFSe
             AddMethod<NFSE_Finalizar>("NFSE_Finalizar");
             AddMethod<NFSE_Nome>("NFSE_Nome");
             AddMethod<NFSE_Versao>("NFSE_Versao");
+            AddMethod<NFSE_OpenSSLInfo>("NFSE_OpenSSLInfo");
             AddMethod<NFSE_UltimoRetorno>("NFSE_UltimoRetorno");
             AddMethod<NFSE_ConfigImportar>("NFSE_ConfigImportar");
             AddMethod<NFSE_ConfigExportar>("NFSE_ConfigExportar");
@@ -182,6 +193,7 @@ namespace ACBrLib.NFSe
             AddMethod<NFSE_ConfigLerValor>("NFSE_ConfigLerValor");
             AddMethod<NFSE_ConfigGravarValor>("NFSE_ConfigGravarValor");
             AddMethod<NFSE_CarregarXML>("NFSE_CarregarXML");
+            AddMethod<NFSE_CarregarLoteXML>("NFSE_CarregarLoteXML");
             AddMethod<NFSE_CarregarINI>("NFSE_CarregarINI");
             AddMethod<NFSE_ObterXml>("NFSE_ObterXml");
             AddMethod<NFSE_GravarXml>("NFSE_GravarXml");
@@ -202,6 +214,7 @@ namespace ACBrLib.NFSe
             AddMethod<NFSE_ConsultarNFSePorPeriodo>("NFSE_ConsultarNFSePorPeriodo");
             AddMethod<NFSE_ConsultarNFSePorFaixa>("NFSE_ConsultarNFSePorFaixa");
             AddMethod<NFSE_ConsultarNFSeGenerico>("NFSE_ConsultarNFSeGenerico");
+            AddMethod<NFSE_ConsultarLinkNFSe>("NFSE_ConsultarLinkNFSe");
             AddMethod<NFSE_EnviarEmail>("NFSE_EnviarEmail");
             AddMethod<NFSE_Imprimir>("NFSE_Imprimir");
             AddMethod<NFSE_ImprimirPDF>("NFSE_ImprimirPDF");

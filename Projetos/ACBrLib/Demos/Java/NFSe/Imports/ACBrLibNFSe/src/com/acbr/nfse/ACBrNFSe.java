@@ -72,6 +72,8 @@ public final class ACBrNFSe extends ACBrLibBase {
         int NFSE_ConfigGravarValor(String eArquivoOuXML);
         
         int NFSE_CarregarXML(String eArquivoOuXml);
+        
+        int NFSE_CarregarLoteXML(String eArquivoOuXml);
 
         int NFSE_CarregarINI(String eArquivoOuINI);
 
@@ -113,6 +115,8 @@ public final class ACBrNFSe extends ACBrLibBase {
         
         int NFSE_ConsultarNFSeGenerico(String aInfConsultaNFSe, ByteBuffer buffer, IntByReference bufferSize);
         
+        int NFSE_ConsultarLinkNFSe(String aInfConsultaLinkNFSe, ByteBuffer buffer, IntByReference bufferSize);
+        
         int NFSE_EnviarEmail(String ePara, String eXmlNFSe, boolean aEnviaPDF, String eAssunto, String eCc, String eAnexos, String eMensagem);
         
         int NFSE_Imprimir(String cImpressora, Integer nNumCopias, String bGerarPDF, String bMostrarPreview, String cCancelada);
@@ -152,6 +156,8 @@ public final class ACBrNFSe extends ACBrLibBase {
         int NFSE_ObterDANFSE(String aChaveNFSe, ByteBuffer buffer, IntByReference bufferSize);
         
         int NFSE_ConsultarParametros(Integer aTipoParametroMunicipio, String aCodigoServico, Date aCompetencia, String aNumeroBeneficio, ByteBuffer buffer, IntByReference bufferSize);
+        
+        int NFSE_ObterInformacoesProvedor(ByteBuffer buffer, IntByReference buffSize);
         
     }
 
@@ -235,6 +241,11 @@ public final class ACBrNFSe extends ACBrLibBase {
         int ret = ACBrNFSeLib.INSTANCE.NFSE_CarregarXML(toUTF8(eArquivoOuXML));
         checkResult(ret);
     }
+    
+    public void carregarLoteXml(String eArquivoOuXML) throws Exception {
+        int ret = ACBrNFSeLib.INSTANCE.NFSE_CarregarLoteXML(toUTF8(eArquivoOuXML));
+        checkResult(ret);
+    }    
 
     public String obterXml(int AIndex) throws Exception {
         ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
@@ -412,6 +423,15 @@ public final class ACBrNFSe extends ACBrLibBase {
         IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
         
         int ret = ACBrNFSeLib.INSTANCE.NFSE_ConsultarNFSeGenerico(toUTF8(aInfConsultaNFSe), buffer, bufferLen);
+        checkResult(ret);
+        return processResult(buffer, bufferLen);
+    }
+    
+    public String consultarLinkNFSe(String aInfConsultaLinkNFSe) throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(8192);
+        IntByReference bufferLen = new IntByReference(8192);
+        
+        int ret = ACBrNFSeLib.INSTANCE.NFSE_ConsultarLinkNFSe(toUTF8(aInfConsultaLinkNFSe), buffer, bufferLen);
         checkResult(ret);
         return processResult(buffer, bufferLen);
     }
@@ -594,6 +614,15 @@ public final class ACBrNFSe extends ACBrLibBase {
         int ret = ACBrNFSeLib.INSTANCE.NFSE_ConsultarParametros(aTipoParametroMunicipio, toUTF8(aCodigoServico), aCompetencia, toUTF8(aNumeroBeneficio), buffer, bufferLen);
         checkResult(ret);
         return processResult(buffer, bufferLen);
+    }
+    
+    public String obterInformacoesProvedor() throws Exception {
+        ByteBuffer buffer = ByteBuffer.allocate(STR_BUFFER_LEN);
+        IntByReference bufferLen = new IntByReference(STR_BUFFER_LEN);
+        int ret = ACBrNFSeLib.INSTANCE.NFSE_ObterInformacoesProvedor(buffer, bufferLen);
+        checkResult(ret);
+
+        return processResult(buffer, bufferLen);       
     }
     
     public void ConfigImportar(String eArqConfig) throws Exception {

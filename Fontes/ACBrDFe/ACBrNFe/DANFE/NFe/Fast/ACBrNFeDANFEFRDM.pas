@@ -40,7 +40,8 @@ interface
 
 uses
   SysUtils, Classes, Forms, DB, DBClient, Graphics,
-  pcnEnvEventoNFe, pcnRetInutNFe, pcnNFe, pcnConversao,
+  ACBrNFe.EnvEvento,
+  ACBrNFe.RetInut, pcnNFe, pcnConversao,
   ACBrDFeReport, ACBrDFeDANFeReport, ACBrNFeDANFEClass,
   frxClass, frxExportPDF, frxDBSet, frxBarcode;
 
@@ -1243,7 +1244,7 @@ begin
       FieldByName('CRT').AsString       := CRTToStr(CRT);
 
       case CRT of
-        crtSimplesNacional: FieldByName('DESCR_CST').AsString := 'CSOSN / CST';
+        crtSimplesNacional, crtMEI: FieldByName('DESCR_CST').AsString := 'CSOSN / CST';
         crtRegimeNormal, crtSimplesExcessoReceita: FieldByName('DESCR_CST').AsString := 'CST';
       end;
 
@@ -1380,7 +1381,12 @@ begin
     FieldByName('IndPag').AsString  := IndpagToStr(FNFe.Ide.IndPag );
     FieldByName('Mod_').AsString    := IntToStr(FNFe.Ide.Modelo);
     FieldByName('Serie').AsString   := IntToStr(FNFe.Ide.Serie);
-    FieldByName('NNF').AsString     := FormatarNumeroDocumentoFiscal(IntToStr(FNFe.Ide.NNF));
+
+    if TACBrNFeDANFEClass(FDANFEClassOwner).FormatarNumeroDocumento then
+      FieldByName('NNF').AsString     := FormatarNumeroDocumentoFiscal(IntToStr(FNFe.Ide.NNF))
+    else
+      FieldByName('NNF').AsString     := IntToStr(FNFe.Ide.NNF);
+
     FieldByName('DEmi').AsString    := FormatDateBr(FNFe.Ide.DEmi);
     FieldByName('DSaiEnt').AsString := IfThen(FNFe.Ide.DSaiEnt <> 0, FormatDateBr(FNFe.Ide.DSaiEnt));
     FieldByName('TpNF').AsString    := tpNFToStr( FNFe.Ide.TpNF );
@@ -1499,6 +1505,10 @@ begin
       FieldByName('OBS').AsString        := BufferInfCpl;
       FieldByName('LinhasOBS').AsInteger := wLinhasObs;
       FieldByName('MensagemSEFAZ').AsString := FNFe.procNFe.xMsg;
+
+      if (FDANFEClassOwner is TACBrNFeDANFCEFR) and (FNFe.Ide.tpEmis = teOffLine) and (FNFe.procNFe.nProt = '') then
+        FieldByName('MensagemSEFAZ').AsString := FieldByName('MensagemSEFAZ').AsString + #13#10+'<b>EMITIDA EM CONTINGÊNCIA</b>'+#13#10+'Pendente de Autorização';
+
       Post;
     end;
 
@@ -1955,6 +1965,8 @@ begin
         if InfEvento.tpEvento <> teCCe then
         begin
           FieldByName('xJust').AsString := InfEvento.detEvento.xJust;
+          if InfEvento.tpEvento = teInsucessoEntregaNFe then
+            FieldByName('xJust').AsString := InfEvento.detEvento.xJustMotivo;
         end
         else
         begin
@@ -2099,12 +2111,21 @@ begin
   begin
     if Assigned(DANFEClassOwner.ACBrNFe) then
     begin
-      for i := 0 to (TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais.Count - 1) do
+      if DANFEClassOwner.FIndexImpressaoIndividual >= 0  then
       begin
-        NFe := TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais.Items[i].NFe;
+        NFe := TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais[DANFEClassOwner.FIndexImpressaoIndividual].NFe;
         CarregaDadosNFe;
+        Result := frxReport.PrepareReport( DANFEClassOwner.FIndexImpressaoIndividual > 0 );
+      end else
+      begin
+        for i := 0 to (TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais.Count - 1) do
+        begin
+          NFe := TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais[I].NFe;
+          CarregaDadosNFe;
 
-        Result := frxReport.PrepareReport( not (i > 0) );
+          //Result := frxReport.PrepareReport( not (i > 0) );
+          Result := frxReport.PrepareReport( not (i > 0) );
+        end;
       end;
     end
     else
@@ -2376,6 +2397,7 @@ end;
 
 procedure TACBrNFeFRClass.ImprimirDANFE(ANFE: TNFe);
 begin
+  DANFEClassOwner.FIndexImpressaoIndividual := -1;
   if PrepareReport(ANFE) then
   begin
     if DANFEClassOwner.MostraPreview then
@@ -2391,41 +2413,51 @@ const
 var
   fsShowDialog : Boolean;
   NomeArq: String;
+  I : Integer;
 begin
-  if PrepareReport(ANFE) then
+  for I := 0 to TACBrNFe(DANFEClassOwner.ACBrNFe).NotasFiscais.Count -1 do
   begin
-    if (AStream <> nil) then
-      frxPDFExport.Stream := AStream;
+    DANFEClassOwner.FIndexImpressaoIndividual := I;
+    if PrepareReport(ANFE) then
+    begin
+      if (AStream <> nil) then
+        frxPDFExport.Stream := AStream;
 
-    frxPDFExport.Author        := DANFEClassOwner.Sistema;
-    frxPDFExport.Creator       := DANFEClassOwner.Sistema;
-    frxPDFExport.Producer      := DANFEClassOwner.Sistema;
-    frxPDFExport.Title         := TITULO_PDF;
-    frxPDFExport.Subject       := TITULO_PDF;
-    frxPDFExport.Keywords      := TITULO_PDF;
-    frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
-    frxPDFExport.Background    := IncorporarBackgroundPdf;
-    frxPDFExport.PrintOptimized := OtimizaImpressaoPdf;
+      frxPDFExport.Author        := DANFEClassOwner.Sistema;
+      frxPDFExport.Creator       := DANFEClassOwner.Sistema;
+      frxPDFExport.Producer      := DANFEClassOwner.Sistema;
+      frxPDFExport.Title         := TITULO_PDF;
+      frxPDFExport.Subject       := TITULO_PDF;
+      frxPDFExport.Keywords      := TITULO_PDF;
+      frxPDFExport.EmbeddedFonts := IncorporarFontesPdf;
+      frxPDFExport.Background    := IncorporarBackgroundPdf;
+      frxPDFExport.PrintOptimized := OtimizaImpressaoPdf;
 
-    fsShowDialog := frxPDFExport.ShowDialog;
-    try
-      frxPDFExport.ShowDialog := False;
-      NomeArq := Trim(DANFEClassOwner.NomeDocumento);
-      if EstaVazio(NomeArq) then
-        NomeArq := OnlyNumber(NFe.infNFe.ID) + '-nfe.pdf';
-      frxPDFExport.FileName := PathWithDelim(DANFEClassOwner.PathPDF) +	NomeArq;
+      fsShowDialog := frxPDFExport.ShowDialog;
+      try
+        frxPDFExport.ShowDialog := False;
 
-      if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
-        ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
+        //NomeArq := Trim(DANFEClassOwner.NomeDocumento);
+        //if EstaVazio(NomeArq) then
+        //  NomeArq := OnlyNumber(NFe.infNFe.ID) + '-nfe.pdf';
+        //frxPDFExport.FileName := PathWithDelim(DANFEClassOwner.PathPDF) +	NomeArq;
 
-      frxReport.Export(frxPDFExport);
-    finally
-      frxPDFExport.ShowDialog := fsShowDialog;
-    end;
-  end
-  else
-    frxPDFExport.FileName := '';
 
+        frxPDFExport.FileName := DefinirNomeArquivo(DANFEClassOwner.PathPDF,
+                                 OnlyNumber(NFe.infNFe.ID) + '-nfe.pdf',
+                                 DANFEClassOwner.NomeDocumento);
+
+        if not DirectoryExists(ExtractFileDir(frxPDFExport.FileName)) then
+          ForceDirectories(ExtractFileDir(frxPDFExport.FileName));
+
+        frxReport.Export(frxPDFExport);
+      finally
+        frxPDFExport.ShowDialog := fsShowDialog;
+      end;
+    end
+    else
+      frxPDFExport.FileName := '';
+  end;
 end;
 
 procedure TACBrNFeFRClass.ImprimirDANFEResumido(ANFE: TNFe);

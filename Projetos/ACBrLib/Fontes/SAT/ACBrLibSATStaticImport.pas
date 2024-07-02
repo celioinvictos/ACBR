@@ -76,6 +76,9 @@ function SAT_Nome(const sNome: PChar; var esTamanho: longint): longint;
 function SAT_Versao(const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
+function SAT_OpenSSLInfo(const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
 function SAT_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 {%endregion}
@@ -157,6 +160,12 @@ function SAT_CriarEnviarCFe(eArquivoIni: PChar; const sResposta: PChar;
 function SAT_ValidarCFe(eArquivoXml: PChar): longint;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
+function SAT_CarregarXML(eArquivo: PChar): longint;
+{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
+function SAT_ObterIni(const sResposta: PChar; var esTamanho: longint): longint;
+{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
 function SAT_EnviarCFe(eArquivoXml: PChar; const sResposta: PChar;
   var esTamanho: longint): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
@@ -172,6 +181,9 @@ function SAT_ImprimirExtratoResumido(eArqXMLVenda, eNomeImpressora: PChar)
   : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
 function SAT_ImprimirExtratoCancelamento(eArqXMLVenda, eArqXMLCancelamento, eNomeImpressora: PChar)
+  : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
+function SAT_SalvarPDF(const sResposta: PChar; var esTamanho: longint)
   : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
 function SAT_GerarImpressaoFiscalMFe(eArqXMLVenda, eNomeImpressora: PChar; const sResposta: PChar;

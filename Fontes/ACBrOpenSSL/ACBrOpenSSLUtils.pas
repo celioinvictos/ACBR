@@ -72,6 +72,8 @@ const
   CEndCertificate = 'END CERTIFICATE';
   CBeginRSA = 'BEGIN RSA';
   CEndRSA = 'END RSA';
+  CBeginPK = 'BEGIN PRIVATE';
+  CEndPK = 'END PRIVATE';
 
 type
   TACBrOpenSSLAlgorithm = ( algMD2, algMD4, algMD5, algRMD160, algSHA, algSHA1,
@@ -194,6 +196,7 @@ type
     procedure LoadPublicKeyFromString(const APublicKey: AnsiString);
     procedure LoadPublicKeyFromModulusAndExponent(const Modulus, Exponent: String);
     function ExtractModulusAndExponentFromPublicKey(out Modulus: String; out Exponent: String): Boolean;
+    function ExtractModulusAndExponentFromPrivateKey(out Modulus: String; out Exponent: String): Boolean;
     function GeneratePublicKeyFromPrivateKey: String;
 
     function CreateCertificateSignRequest(const CN_CommonName: String;
@@ -435,7 +438,7 @@ begin
       ul := UpperCase(l);
       if b64 then
       begin
-        if ((Pos(CEndCertificate, ul) > 0) or (Pos(CEndRSA, ul) > 0)) then
+        if ((Pos(CEndCertificate, ul) > 0) or (Pos(CEndRSA, ul) > 0) or (Pos(CEndPK, ul) > 0)) then
           Break;
 
         if (Trim(l) = '') then    // 3.x insere informações da Chave no inicio, após o -- BEGIN --
@@ -444,7 +447,7 @@ begin
           Result := Result + l;
       end
       else
-        b64 := (Pos(CBeginCertificate, ul) > 0) or (Pos(CBeginRSA, ul) > 0);
+        b64 := (Pos(CBeginCertificate, ul) > 0) or (Pos(CBeginRSA, ul) > 0) or (Pos(CBeginPK, ul) > 0);
     end;
 
     Result := DecodeBase64(Result);
@@ -1378,6 +1381,13 @@ function TACBrOpenSSLUtils.ExtractModulusAndExponentFromPublicKey(out
 begin
   CheckPublicKeyIsLoaded;
   Result := ExtractModulusAndExponentFromKey(fEVP_PublicKey, Modulus, Exponent);
+end;
+
+function TACBrOpenSSLUtils.ExtractModulusAndExponentFromPrivateKey(out
+  Modulus: String; out Exponent: String): Boolean;
+begin
+  CheckPrivateKeyIsLoaded;
+  Result := ExtractModulusAndExponentFromKey(fEVP_PrivateKey, Modulus, Exponent);
 end;
 
 function TACBrOpenSSLUtils.GeneratePublicKeyFromPrivateKey: String;

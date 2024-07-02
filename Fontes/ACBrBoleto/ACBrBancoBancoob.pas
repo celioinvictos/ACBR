@@ -86,7 +86,7 @@ begin
    fpTamanhoMaximoNossoNum := 7;
    fpTamanhoCarteira   := 1;
    fpTamanhoConta      := 12;
-   fpCodigosMoraAceitos:= '012';
+   fpCodigosMoraAceitos:= '0123'; {0 isento CNAB, 3 IsentoAPI}
    fpLayoutVersaoArquivo := 81;
    fpLayoutVersaoLote    := 40;
    fpValorTotalDocs := 0;
@@ -1484,6 +1484,7 @@ begin
       toRetornoAbatimentoCancelado                          : Result :='13';
       toRetornoVencimentoAlterado                           : Result :='14';
       toRetornoLiquidadoEmCartorio                          : Result :='15';
+      toRetornoLiquidadoAposBaixaOuNaoRegistro              : Result :='17';
       toRetornoRecebimentoInstrucaoProtestar                : Result :='19';
       toRetornoDebitoEmConta                                : Result :='20';
       toRetornoNomeSacadoAlterado                           : Result :='21';

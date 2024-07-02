@@ -96,6 +96,7 @@ uses
   Desenvolve.Provider,
   Digifred.Provider,
   DSF.Provider,
+  Elmar.Provider,
   EloTech.Provider,
   eReceita.Provider,
   Etherium.Provider,
@@ -189,6 +190,7 @@ uses
   ISSSaoPaulo.Provider,
   Prescon.Provider,
   PriMax.Provider,
+  Sam.Provider,
   Siappa.Provider,
   Siat.Provider,
   SigISS.Provider,
@@ -307,6 +309,8 @@ begin
             Result := nil;
           end;
         end;
+
+      proElmar:  Result := TACBrNFSeProviderElmar202.Create(ACBrNFSe);
 
       proEloTech:  Result := TACBrNFSeProviderEloTech203.Create(ACBrNFSe);
 
@@ -496,6 +500,8 @@ begin
           end;
         end;
 
+      proSam:    Result := TACBrNFSeProviderSam.Create(ACBrNFSe);
+
       proSaatri:
         begin
           case Versao of
@@ -533,6 +539,7 @@ begin
         begin
           case Versao of
             ve100: Result := TACBrNFSeProviderSigISS.Create(ACBrNFSe);
+            ve101: Result := TACBrNFSeProviderSigISS101.Create(ACBrNFSe);
             ve103: Result := TACBrNFSeProviderSigISS103.Create(ACBrNFSe);
           else
             Result := nil;

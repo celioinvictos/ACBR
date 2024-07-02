@@ -46,6 +46,111 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+25/06/2024
+-- ACBrTEFPayGoComum --
+[*] Workaround, para situações onde a VERO / BANRICOMPRAS não retorna o 
+    CodigoAutorizacaoTransacao ou PWINFO_AUTHCODE (0x46), para considerar
+    CodigoAutorizacaoTransacao = NSU
+    (por: DSA)
+  
+27/05/2024
+-- ACBrTEFAPI --
+[*] Modificada a assintura do método "ObterDadoPinPad" para permitir informar
+    o Tamanho Mínimo e Máximo do Campo
+    function ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad;
+      TimeOut: SmallInt = 30000; MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String;
+[*] Novos enumerados adicionados em TACBrTEFAPIDadoPinPad
+[+] Adicionado o método Protected
+    procedure CalcularTamanhosCampoDadoPinPad( TipoDado: TACBrTEFAPIDadoPinPad;
+      out MinLen: SmallInt; out MaxLen: SmallInt);
+   (por: DSA)
+
+-- ACBrTEFAPIPayGoWeb --
+[*] Refatoração do método "ObterDadoPinPad" para processar os novos parâmetros
+
+-- ACBrTEFAPICliSiTef --
+[*] Nova Implememtação do método "ObterDadoPinPad", baseado nas sugestões da
+    nova versão da CliSiTef
+    https://www.projetoacbr.com.br/forum/topic/73829-problema-em-obter-dados-pinpad/
+    (por: DataCamp)
+
+26/05/2024
+-- ACBrTEFAPICliSiTef --
+[*] Adicionada Restrição em "RestricoesParcela", para não exibir o Menu de
+    Parcelamento pela Administradora/Crediário
+    https://www.projetoacbr.com.br/forum/index.php?showtopic=77855
+    (por: DataCamp)
+
+21/05/2024
+-- ACBrTEFAPI, ACBrTEFAPIElgin, ACBrTEFAPIElginComum --
+[+] Adicionado suporte novo TEF por API (DLL) TED Elgin
+    https://www.projetoacbr.com.br/forum/index.php?showtopic=74662
+    (por: MuriloS.A e Fernando Pasqueto e DSA)
+
+-- ACBrTEFAPIComum, ACBrTEFAPICliSiTef --
+[*] Removendo propriedade "PathDLL" que passou para a classe mãe "TACBrTEFAPIComumClass"
+    (por: DSA)
+
+--ACBrTEFPayGoWebComum --
+[*] Adicionado Log em "LibFullName", para informar qual Path será considerado na carga da DLL
+    (por: DSA)
+
+26/02/2024
+-- ACBrTEFPayGoWebComum --
+[*] Ajuste para que a Carga da DLL não use o valor definido na variável de ambiente
+    "PathPGWebLib", caso o valor dessa varável, aponte para uma DLL inexistente
+    (por: DSA)
+
+25/02/2024
+-- ACBrTEFPayGoWebComum --
+[*] Reversão da Modificação aplicada em 08/03/24
+    TACBrTEFPGWebAPI.ObterDadoPinPad, chamar  xPW_iPPAbort, antes de chamar xPW_iPPGetUserData
+    (por: DSA)
+
+17/04/2024
+-- ACBrTEFPayGoWebComum --
+[*] Ajuste para que propriedade IsDebug, mude o valor da váriável de ambiente,
+    "PathPGWebLib" que aponta para a PGWebLib, para o Path com a DLL a ser
+    carregada.
+    https://www.projetoacbr.com.br/forum/index.php?showtopic=77321
+    (por: DSA)
+
+21/03/2024
+-- ACBrTEFAPICliSiTef --
+[*] Ajuste para permitir Voltar e Interromper o fluxo de perguntas, baseado em
+    Conteúdo da "Resposta": Interromper := (Resposta = '-1')
+                            Voltar      := (Resposta = '-2')
+    https://www.projetoacbr.com.br/forum/index.php?showtopic=74988
+    (por: joão vitor de fraga venancio)
+
+20/03/2024
+-- ACBrTEFPayGoWebComum --
+[*] Applicado workaround para quando Transações de PIX é recebida, sem o flag de
+    confirmação PWINFO_CNFREQ = 0
+    (por: DSA)
+
+08/03/2024
+-- ACBrTEFPayGoWebComum --
+[+] Adicionada a propriedade "IsDebug: Boolean".
+    Se for modificada para True, a TACBrTEFPGWebAPI tentará carregar a DLL de
+    versão DEBUG, para evitar erros com a Proteção ativa do Warsaw
+[-] Correção na acentuação de Msg em Log na chamada de TACBrTEFPGWebAPI.Inicializar
+[*] Modificação em TACBrTEFPGWebAPI.ObterDadoPinPad, após sugestão da Setis, para
+    chamar  xPW_iPPAbort, antes de chamar xPW_iPPGetUserData
+    (por: DSA)
+
+22/02/2024
+-- ACBrTEFPayGoWebComum --
+[*] Tratamento de Mensagens de retorno, e Opções de Menu, para converter de ANSI
+    para a String Nativa da IDE (AnsiToNativeString)
+    (por: DSA)
+
+20/02/2024
+-- ACBrTEFPayGoWebComum --
+[*] TACBrTEFPGWebAPI.AjustarTempoOcioso, melhoria para evitar "Range Error",
+    quando PWINFO_IDLEPROCTIME contém um valor inválido
+    (por: DSA)
+
 25/01/2024
 -- ACBrTEFPayGoWebComum --
 [*] Modificações para suportar nova DLL 4.1.25.3, PayGo Windows no modo atualizador da

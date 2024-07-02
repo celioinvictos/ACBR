@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing.Printing;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using ACBrLib;
 using ACBrLib.Boleto;
@@ -58,6 +59,8 @@ namespace ACBrLibBoleto.Demo
                 cmbImpressora.SelectedIndex = 0;
 
             // Altera as config de log
+            boleto.Config.Webservice.LogNivel = NivelLog.logParanoico;
+
             boleto.Config.Principal.LogNivel = NivelLog.logParanoico;
 
             var logPath = Path.Combine(Application.StartupPath, "Logs");
@@ -132,9 +135,8 @@ namespace ACBrLibBoleto.Demo
             txtScope.Text = boleto.Config.CedenteWebservice.Scope;
             chkIndicadorPix.Checked = boleto.Config.CedenteWebservice.IndicadorPix;
 
-            chkGravarLog.Checked = boleto.Config.Webservice.LogRegistro;
             txtPathLog.Text = boleto.Config.Webservice.PathGravarRegistro;
-
+            txtNomeArquivoLog.Text = boleto.Config.Webservice.NomeArquivoLog;
             var ambiente = boleto.Config.Webservice.Ambiente;
             rdbProducao.Checked = ambiente == AmbienteWebservice.Homologaçao;
             rdbHomologacao.Checked = ambiente == AmbienteWebservice.Producao;
@@ -205,8 +207,8 @@ namespace ACBrLibBoleto.Demo
             boleto.Config.CedenteWebservice.Scope = txtScope.Text;
             boleto.Config.CedenteWebservice.IndicadorPix = chkIndicadorPix.Checked;
 
-            boleto.Config.Webservice.LogRegistro = chkGravarLog.Checked;
             boleto.Config.Webservice.PathGravarRegistro = txtPathLog.Text;
+            boleto.Config.Webservice.NomeArquivoLog = txtNomeArquivoLog.Text;
             boleto.Config.Webservice.Ambiente = rdbProducao.Checked ? AmbienteWebservice.Homologaçao : AmbienteWebservice.Producao;
             boleto.Config.Webservice.Operacao = cmbOperacao.GetSelectedValue<OperacaoBoleto>();
             boleto.Config.Webservice.SSLType = cmbSSlType.GetSelectedValue<SSLType>();
@@ -477,6 +479,26 @@ namespace ACBrLibBoleto.Demo
             rtbRespostas.AppendLine("Remessa Gerada.");
         }
 
+        private async void btnGerarRemessaStream_Click(object sender, EventArgs e)
+        {
+            MemoryStream aStream = new MemoryStream();
+            boleto.GerarRemessaStream(1, aStream);
+
+            aStream.Position = 0;
+            string base64String = Convert.ToBase64String(aStream.ToArray());
+
+            rtbRespostas.AppendLine("Remessa Gerada Base64:");
+            rtbRespostas.AppendLine(base64String);
+
+            byte[] convBase64 = Convert.FromBase64String(base64String);
+
+            // Converter o array de bytes para uma string comum (UTF-8)
+            string remessa = Encoding.UTF8.GetString(convBase64);
+
+            rtbRespostas.AppendLine("Remessa Gerada Texto:");
+            rtbRespostas.AppendLine(remessa);
+        }
+
         private void BtnTotalTitulo_Click(object sender, EventArgs e)
         {
             var ret = boleto.TotalTitulosLista();
@@ -670,8 +692,6 @@ namespace ACBrLibBoleto.Demo
                 rtbRespostas.AppendLine(ex.Message);
             }
         }
-
-
 
         private void btnClasseTitulo_Click(object sender, EventArgs e)
         {

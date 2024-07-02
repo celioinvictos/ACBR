@@ -620,7 +620,7 @@ begin
   xmlNode := GerarTomador;
   Result.AppendChild(xmlNode);
 
-  if EmpreitadaGlobalToStr(NFSe.EmpreitadaGlobal) = '1' then
+  if NFSe.ConstrucaoCivil.Endereco.Endereco <> '' then
   begin
     xmlNode := GerarDadosdaObra;
     Result.AppendChild(xmlNode);
@@ -1171,6 +1171,10 @@ end;
 procedure TNFSeW_Infisc203.Configuracao;
 begin
   inherited Configuracao;
+
+  FormatoAliq := tcDe2;
+
+  NrOcorrCodigoPaisTomador := 1;
 
   GerarNSRps := True;
 end;

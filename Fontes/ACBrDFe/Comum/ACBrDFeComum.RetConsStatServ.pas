@@ -37,7 +37,7 @@ unit ACBrDFeComum.RetConsStatServ;
 interface
 
 uses
-  SysUtils, Classes, DateUtils,
+  SysUtils, Classes,
   {$IF DEFINED(HAS_SYSTEM_GENERICS)}
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
@@ -112,28 +112,35 @@ begin
   Document := TACBrXmlDocument.Create;
 
   try
-    Document.LoadFromXml(XmlRetorno);
+    try
+      Result := False;
 
-    ANode := Document.Root;
+      if XmlRetorno = '' then Exit;
 
-    if ANode <> nil then
-    begin
-      versao := ObterConteudoTag(ANode.Attributes.Items['versao']);
-      tpAmb := StrToTipoAmbiente(ok, ObterConteudoTag(Anode.Childrens.FindAnyNs('tpAmb'), tcStr));
-      verAplic := ObterConteudoTag(ANode.Childrens.FindAnyNs('verAplic'), tcStr);
-      cStat := ObterConteudoTag(ANode.Childrens.FindAnyNs('cStat'), tcInt);
-      xMotivo := ACBrStr(ObterConteudoTag(ANode.Childrens.FindAnyNs('xMotivo'), tcStr));
-      cUF := ObterConteudoTag(Anode.Childrens.FindAnyNs('cUF'), tcInt);
-      dhRecbto := ObterConteudoTag(Anode.Childrens.FindAnyNs('dhRecbto'), tcDatHor);
-      tMed := ObterConteudoTag(ANode.Childrens.FindAnyNs('tMed'), tcInt);
-      dhRetorno := ObterConteudoTag(Anode.Childrens.FindAnyNs('dhRetorno'), tcDatHor);
-      xObs := ACBrStr(ObterConteudoTag(ANode.Childrens.FindAnyNs('xObs'), tcStr));
+      Document.LoadFromXml(XmlRetorno);
+
+      ANode := Document.Root;
+
+      if ANode <> nil then
+      begin
+        versao := ObterConteudoTag(ANode.Attributes.Items['versao']);
+        tpAmb := StrToTipoAmbiente(ok, ObterConteudoTag(ANode.Childrens.FindAnyNs('tpAmb'), tcStr));
+        verAplic := ObterConteudoTag(ANode.Childrens.FindAnyNs('verAplic'), tcStr);
+        cStat := ObterConteudoTag(ANode.Childrens.FindAnyNs('cStat'), tcInt);
+        xMotivo := ObterConteudoTag(ANode.Childrens.FindAnyNs('xMotivo'), tcStr);
+        cUF := ObterConteudoTag(ANode.Childrens.FindAnyNs('cUF'), tcInt);
+        dhRecbto := ObterConteudoTag(ANode.Childrens.FindAnyNs('dhRecbto'), tcDatHor);
+        tMed := ObterConteudoTag(ANode.Childrens.FindAnyNs('tMed'), tcInt);
+        dhRetorno := ObterConteudoTag(ANode.Childrens.FindAnyNs('dhRetorno'), tcDatHor);
+        xObs := ObterConteudoTag(ANode.Childrens.FindAnyNs('xObs'), tcStr);
+      end;
+
+      Result := True;
+    except
+      Result := False;
     end;
-
+  finally
     FreeAndNil(Document);
-    Result := True;
-  except
-    Result := False;
   end;
 end;
 

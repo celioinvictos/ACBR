@@ -43,7 +43,6 @@ uses
   StrUtils,
   ACBrDFeUtil, 
   pcnConversao, 
-  pcnAuxiliar, 
   pcnLeitor,
   ACBrGNREConfiguracoes,
   pgnreGNRE, 
@@ -260,7 +259,8 @@ begin
     ALayout := LayGNRERecepcao;
 
     // Extraindo apenas os dados da GNRE (sem GNREProc)
-    AXML := '<GNRE xmlns' + RetornarConteudoEntre(AXML, '<GNRE xmlns', '</GNRE>') + '</GNRE>';
+    if Pos('<GNRE xmlns',AXML) > 0 then
+      AXML := '<GNRE xmlns' + RetornarConteudoEntre(AXML, '<GNRE xmlns', '</GNRE>') + '</GNRE>';
 
     NotaEhValida := SSL.Validar(AXML, GerarNomeArqSchema(ALayout, VerServ), Erro);
 
@@ -598,7 +598,7 @@ begin
 
     FGNREW.Versao := Configuracoes.Geral.VersaoDF;
 
-    pcnAuxiliar.TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
+    TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
   end;
 
   FGNREW.GerarXml;

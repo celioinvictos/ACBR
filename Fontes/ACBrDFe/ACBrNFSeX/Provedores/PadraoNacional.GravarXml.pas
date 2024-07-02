@@ -48,7 +48,7 @@ type
   private
     FpVersao: string;
 
-    function GerarChaveDPS(AcMun, ACNPJCPF, ASerie, ANumero: string): string;
+    function GerarChaveDPS(const AcMun, ACNPJCPF, ASerie, ANumero: string): string;
 
   protected
     function GerarInfDps: TACBrXmlNode;
@@ -116,15 +116,10 @@ type
 implementation
 
 uses
+  ACBrUtil.DateTime,
   ACBrUtil.Strings,
   ACBrNFSeXConsts,
-  ACBrNFSeXConversao,
-  pcnAuxiliar;
-
-{
-  Ainda não é possível remover o pcnAuxiliar, pois utiliza as funções:
-  DateTimeTodh e GetUTC.
-}
+  ACBrNFSeXConversao;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -133,7 +128,7 @@ uses
 
 { TNFSeW_PadraoNacional }
 
-function TNFSeW_PadraoNacional.GerarChaveDPS(AcMun, ACNPJCPF, ASerie,
+function TNFSeW_PadraoNacional.GerarChaveDPS(const AcMun, ACNPJCPF, ASerie,
   ANumero: string): string;
 var
   cMun, vSerie, vNumero, vCNPJ, tpInsc: string;
@@ -1242,7 +1237,6 @@ begin
         Result.AppendChild(AddNode(tcStr, '#1', 'indTotTrib', 1, 1, 1,
                   indTotTribToStr(NFSe.Servico.Valores.totTrib.indTotTrib), ''))
       else
-      if NFSe.Servico.Valores.totTrib.pTotTribSN > 0 then
         Result.AppendChild(AddNode(tcDe2, '#1', 'pTotTribSN', 1, 5, 1,
                                   NFSe.Servico.Valores.totTrib.pTotTribSN, ''));
     end;

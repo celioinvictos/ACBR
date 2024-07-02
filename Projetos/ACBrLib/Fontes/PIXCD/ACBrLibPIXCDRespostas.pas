@@ -38,9 +38,24 @@ uses
   Classes, SysUtils, ACBrBase, ACBrLibPIXCDConsts, ACBrLibResposta, ACBrPIXCD, ACBrPIXBase,
   ACBrPIXSchemasCob, ACBrPIXSchemasCalendario, ACBrPIXSchemasDevedor, ACBrPIXSchemasLocation,
   ACBrPIXSchemasPix, ACBrPixSchemasDevolucao, ACBrPIXSchemasPixConsultados,
-  ACBrPixSchemasPaginacao, ACBrPixSchemasCobV, ACBrPIXSchemasProblema;
+  ACBrPixSchemasPaginacao, ACBrPixSchemasCobV, ACBrPIXSchemasProblema, ACBrUtil.Base;
 
 type
+
+  { TLibPIXCDProblemaRespostaViolacao }
+
+  TLibPIXCDProblemaRespostaViolacao = class(TACBrLibRespostaBase)
+  private
+    fPropriedade: String;
+    fRazao: String;
+    fValor: String;
+  public
+    procedure Processar(const Violacao: TACBrPIXViolacao);
+  published
+    property Propriedade: String read fPropriedade;
+    property Razao: String read fRazao;
+    property Valor: String read fValor;
+  end;
 
   { TLibPIXCDProblemaResposta }
   TLibPIXCDProblemaResposta = class (TACBrLibRespostaBase)
@@ -48,6 +63,7 @@ type
     fDetail: String;
     fStatus: integer;
     fTitle: String;
+    fViolacoes: TACBrObjectList;
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
@@ -58,6 +74,7 @@ type
     property Status: integer read fStatus write fStatus;
     property Title: String read fTitle write fTitle;
     property Detail: String read fDetail write fDetail;
+    property Violacoes: TACBrObjectList read fViolacoes;
   end;
 
   { TLibPixCDValorVInfo }
@@ -149,9 +166,9 @@ type
     fCep: String;
   public
     procedure Clear;
-    procedure Processar(const Devedor: TACBrPIXDevedor); overload;
-    procedure Processar(const Devedor: TACBrPIXDadosDevedor); overload;
-    procedure Processar(const Recebedor: TACBrPIXDadosRecebedor); overload;
+    procedure Processar(const Devedor: TACBrPIXDevedor);
+    procedure ProcessarDadosDevedor(const Devedor: TACBrPIXDadosDevedor);
+    procedure ProcessarDadosRecebedor(const Recebedor: TACBrPIXDadosRecebedor);
   published
     property cpf: String read fCpf write fCpf;
     property cnpj: String read fCnpj write fCnpj;
@@ -195,8 +212,8 @@ type
     destructor Destroy; override;
 
     procedure Clear;
-    procedure Processar(const CobVGerada: TACBrPIXCobVGerada); overload;
-    procedure Processar(const CobVCompleta: TACBrPIXCobVCompleta); overload;
+    procedure ProcessarCobVGerada(const CobVGerada: TACBrPIXCobVGerada);
+    procedure ProcessarCobVCompleta(const CobVCompleta: TACBrPIXCobVCompleta);
 
   published
     property calendario: TLibPIXCDCalendarioVInfo read fcalendario;
@@ -226,8 +243,8 @@ type
     destructor Destroy; override;
 
     procedure Clear;
-    procedure Processar(const CobGerada: TACBrPIXCobGerada); overload;
-    procedure Processar(const CobCompleta: TACBrPIXCobCompleta); overload;
+    procedure ProcessarCobGerada(const CobGerada: TACBrPIXCobGerada);
+    procedure ProcessarCobCompleta(const CobCompleta: TACBrPIXCobCompleta);
   published
     property txId: String read fTxId write fTxId;
     property revisao: Integer read fRevisao write fRevisao;
@@ -398,16 +415,27 @@ type
 
 implementation
 
+{ TLibPIXCDProblemaRespostaViolacao }
+
+procedure TLibPIXCDProblemaRespostaViolacao.Processar(const Violacao: TACBrPIXViolacao);
+begin
+  fPropriedade := Violacao.propriedade;
+  fRazao := Violacao.razao;
+  fValor := Violacao.valor;
+end;
+
 { TLibPIXCDProblemaResposta }
 constructor TLibPIXCDProblemaResposta.Create(const ATipo: TACBrLibRespostaTipo;
   const AFormato: TACBrLibCodificacao);
 begin
   inherited Create(CSessaoRespProblema, ATipo, AFormato);
+  fViolacoes := TACBrObjectList.Create;
   Clear;
 end;
 
 destructor TLibPIXCDProblemaResposta.Destroy;
 begin
+  fViolacoes.Free;
   inherited Destroy;
 end;
 
@@ -416,13 +444,24 @@ begin
   fStatus := 0;
   fTitle := EmptyStr;
   fDetail := EmptyStr;
+  fViolacoes.Clear;
 end;
 
 procedure TLibPIXCDProblemaResposta.Processar(const Problema: TACBrPIXProblema);
+var
+  LViolacao: TLibPIXCDProblemaRespostaViolacao;
+  i: Integer;
 begin
   fStatus := Problema.status;
   fTitle := Problema.title;
   fDetail := Problema.detail;
+
+  for i:=0 to Pred(Problema.violacoes.Count) do
+  begin
+    LViolacao := TLibPIXCDProblemaRespostaViolacao.Create('Violacoes'+IntToStrZero(i+1, 3), Tipo, Formato);
+    LViolacao.Processar(Problema.violacoes.Items[i]);
+    fViolacoes.Add(LViolacao);
+  end;
 end;
 
 { TLibPixCDValorVInfo }
@@ -516,7 +555,7 @@ begin
   nome := Devedor.nome;
 end;
 
-procedure TLibPIXCDDevedorInfo.Processar(const Devedor: TACBrPIXDadosDevedor);
+procedure TLibPIXCDDevedorInfo.ProcessarDadosDevedor(const Devedor: TACBrPIXDadosDevedor);
 begin
   Processar(Devedor);
   email := Devedor.email;
@@ -526,7 +565,7 @@ begin
   Cep := Devedor.Cep;
 end;
 
-procedure TLibPIXCDDevedorInfo.Processar(const Recebedor: TACBrPIXDadosRecebedor);
+procedure TLibPIXCDDevedorInfo.ProcessarDadosRecebedor(const Recebedor: TACBrPIXDadosRecebedor);
 begin
   Processar(Recebedor);
   nome := Recebedor.nomeFantasia;
@@ -587,24 +626,24 @@ begin
   fvalor.Clear;
 end;
 
-procedure TLibPIXCDCobVResposta.Processar(const CobVGerada: TACBrPIXCobVGerada);
+procedure TLibPIXCDCobVResposta.ProcessarCobVGerada(const CobVGerada: TACBrPIXCobVGerada);
 begin
   fcalendario.Processar(CobVGerada.calendario);
-  fdevedor.Processar(CobVGerada.devedor);
+  fdevedor.ProcessarDadosDevedor(CobVGerada.devedor);
   floc.Processar(CobVGerada.loc);
-  frecebedor.Processar(CobVGerada.recebedor);
+  frecebedor.ProcessarDadosRecebedor(CobVGerada.recebedor);
   frevisao := CobVGerada.revisao;
   fstatus := CobVGerada.status;
   ftxId := CobVGerada.txId;
   fvalor.Processar(CobVGerada.valor);
 end;
 
-procedure TLibPIXCDCobVResposta.Processar(const CobVCompleta: TACBrPIXCobVCompleta);
+procedure TLibPIXCDCobVResposta.ProcessarCobVCompleta(const CobVCompleta: TACBrPIXCobVCompleta);
 var
   i: Integer;
   PixInfo: TLibPIXCDConsultarPixResposta;
 begin
-  Processar(TACBrPIXCobVGerada(CobVCompleta));
+  ProcessarCobVGerada(CobVCompleta);
   for i:=0 to CobVCompleta.pix.Count-1 do
   begin
     PixInfo := TLibPIXCDConsultarPixResposta.Create(CSessaoRespPixInfo+IntToStr(i), Tipo, Formato);
@@ -649,7 +688,7 @@ begin
   fPix.Clear;
 end;
 
-procedure TLibPIXCDCobResposta.Processar(const CobGerada: TACBrPIXCobGerada);
+procedure TLibPIXCDCobResposta.ProcessarCobGerada(const CobGerada: TACBrPIXCobGerada);
 var
   i: Integer;
 begin
@@ -664,12 +703,12 @@ begin
   Valor.Processar(CobGerada.Valor);
 end;
 
-procedure TLibPIXCDCobResposta.Processar(const CobCompleta: TACBrPIXCobCompleta);
+procedure TLibPIXCDCobResposta.ProcessarCobCompleta(const CobCompleta: TACBrPIXCobCompleta);
 var
   i: Integer;
   PixInfo: TLibPIXCDConsultarPixResposta;
 begin
-  Processar(TACBrPIXCobGerada(CobCompleta));
+  ProcessarCobGerada(CobCompleta);
   for i:=0 to CobCompleta.pix.Count-1 do
   begin
     PixInfo := TLibPIXCDConsultarPixResposta.Create(CSessaoRespPixInfo+IntToStr(i), Tipo, Formato);

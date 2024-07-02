@@ -103,8 +103,9 @@ type
   TpcnCstCofins = (cof01, cof02, cof03, cof04, cof05, cof06, cof07, cof08, cof09, cof49, cof50, cof51, cof52, cof53,
                    cof54, cof55, cof56, cof60, cof61, cof62, cof63, cof64, cof65, cof66, cof67, cof70, cof71, cof72,
                    cof73, cof74, cof75, cof98, cof99);
-  TpcnIndicadorProcesso = (ipSEFAZ, ipJusticaFederal, ipJusticaEstadual, ipSecexRFB, ipOutros);
-  TpcnCRT = (crtSimplesNacional, crtSimplesExcessoReceita, crtRegimeNormal);
+  TpcnIndicadorProcesso = (ipSEFAZ, ipJusticaFederal, ipJusticaEstadual,
+                           ipSecexRFB, ipCONFAZ, ipOutros);
+  TpcnCRT = (crtSimplesNacional, crtSimplesExcessoReceita, crtRegimeNormal, crtMEI);
   TpcnIndicadorTotal = (itSomaTotalNFe, itNaoSomaTotalNFe );
 
   TpcnECFModRef = (ECFModRefVazio, ECFModRef2B,ECFModRef2C,ECFModRef2D);
@@ -145,7 +146,8 @@ type
                   teAtorInteressadoNFe, teComprEntregaCTe, teCancComprEntregaCTe,
                   teConfirmaServMDFe, teAlteracaoPagtoServMDFe,
                   teCancPrestDesacordo, teInsucessoEntregaCTe,
-                  teCancInsucessoEntregaCTe);
+                  teCancInsucessoEntregaCTe, teInsucessoEntregaNFe,
+                  teCancInsucessoEntregaNFe, teConcFinanceira, teCancConcFinanceira);
 
   TpcnIndicadorEmissor = (ieTodos, ieRaizCNPJDiferente);
   TpcnIndicadorContinuacao = (icNaoPossuiMaisDocumentos, icPossuiMaisDocumentos);
@@ -159,8 +161,8 @@ type
                         fpValeAlimentacao, fpValeRefeicao, fpValePresente, fpValeCombustivel,
                         fpDuplicataMercantil, fpBoletoBancario, fpDepositoBancario,
                         fpPagamentoInstantaneo, fpTransfBancario, fpProgramaFidelidade,
-                        fpSemPagamento, fpRegimeEspecial, fpOutro);
-
+                        fpSemPagamento, fpRegimeEspecial, fpOutro, fpPagamentoInstantaneoEstatico,
+                        fpCreditoEmLojaPorDevolucao, fpFalhaHardware);
   TpcnBandeiraCartao = (bcVisa, bcMasterCard, bcAmericanExpress, bcSorocred, bcDinersClub,
                         bcElo, bcHipercard, bcAura, bcCabal, bcAlelo, bcBanesCard,
                         bcCalCard, bcCredz, bcDiscover, bcGoodCard, bcGreenCard,
@@ -201,6 +203,7 @@ type
   TtpIntegra = (tiNaoInformado, tiPagIntegrado, tiPagNaoIntegrado);
 
   TIndicador = (tiSim, tiNao);
+  TIndicadorEx = (tieNenhum, tieSim, tieNao);
 
   TpcnTipoNFe = (tnEntrada, tnSaida);
 
@@ -223,7 +226,7 @@ type
   end;
 
 const
-  TpcnTpEventoString : array[0..73] of String =('-99999', '110110', '110111',
+  TpcnTpEventoString : array[0..77] of String =('-99999', '110110', '110111',
                                                 '210200', '210210', '210220',
                                                 '210240', '110112', '110113',
                                                 '110114', '110160', '310620',
@@ -247,7 +250,8 @@ const
                                                 '310112', '110130', '110131',
                                                 '110150', '610130', '610131',
                                                 '110117', '110118', '610111',
-                                                '110190', '110191');
+                                                '110190', '110191', '110192',
+                                                '110193', '110750', '110751');
 
   DFeUF: array[0..26] of String =
   ('AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
@@ -424,6 +428,9 @@ function StrTotpIntegra(out ok: boolean; const s: string): TtpIntegra;
 
 function TIndicadorToStr(const t: TIndicador): string;
 function StrToTIndicador(out ok: boolean; const s: string): TIndicador;
+
+function TIndicadorExToStr(const t: TIndicadorEx): string;
+function StrToTIndicadorEx(out ok: boolean; const s: string): TIndicadorEx;
 
 function tpNFToStr(const t: TpcnTipoNFe): String;
 function StrToTpNF(out ok: Boolean; const s: String): TpcnTipoNFe;
@@ -1023,7 +1030,8 @@ end;
 // 401i - Indicador da origem do processo **************************************
 function indProcToStr(const t: TpcnIndicadorProcesso): string;
 begin
-  result := EnumeradoToStr(t, ['0', '1', '2', '3', '9'], [ipSEFAZ, ipJusticaFederal, ipJusticaEstadual, ipSecexRFB, ipOutros]);
+  result := EnumeradoToStr(t, ['0', '1', '2', '3', '4', '9'],
+  [ipSEFAZ, ipJusticaFederal, ipJusticaEstadual, ipSecexRFB, ipCONFAZ, ipOutros]);
 end;
 
 function indProcToDescrStr(const t: TpcnIndicadorProcesso): string;
@@ -1033,24 +1041,30 @@ begin
     ipJusticaFederal  : result  := 'JUSTIÇA FEDERAL';
     ipJusticaEstadual : result  := 'JUSTIÇA ESTADUAL';
     ipSecexRFB        : result  := 'SECEX / RFB';
+    ipCONFAZ          : Result  := 'CONFAZ';
     ipOutros          : result  := 'OUTROS';
   end;
 end;
 
 function StrToindProc(out ok: boolean; const s: string): TpcnIndicadorProcesso;
 begin
-  result := StrToEnumerado(ok, s, ['0', '1', '2', '3', '9'], [ipSEFAZ, ipJusticaFederal, ipJusticaEstadual, ipSecexRFB, ipOutros]);
+  result := StrToEnumerado(ok, s, ['0', '1', '2', '3', '4', '9'],
+  [ipSEFAZ, ipJusticaFederal, ipJusticaEstadual, ipSecexRFB, ipCONFAZ, ipOutros]);
 end;
 
 // 49a - Código do Regime Tributário **************************************
 function CRTToStr(const t: TpcnCRT): string;
 begin
-  result := EnumeradoToStr(t, ['','1', '2', '3'], [crtRegimeNormal,crtSimplesNacional, crtSimplesExcessoReceita, crtRegimeNormal]);
+  result := EnumeradoToStr(t, ['','1', '2', '3', '4'],
+    [crtRegimeNormal, crtSimplesNacional, crtSimplesExcessoReceita,
+     crtRegimeNormal, crtMEI]);
 end;
 
 function StrToCRT(out ok: boolean; const s: string): TpcnCRT;
 begin
-  result := StrToEnumerado(ok, s, ['','1', '2', '3'],[crtRegimeNormal,crtSimplesNacional,crtSimplesExcessoReceita, crtRegimeNormal]);
+  result := StrToEnumerado(ok, s, ['','1', '2', '3', '4'],
+    [crtRegimeNormal, crtSimplesNacional, crtSimplesExcessoReceita,
+     crtRegimeNormal, crtMEI]);
 end;
 
 function CRTTocRegTrib(const t: TpcnCRT): TpcnRegTrib;
@@ -1163,7 +1177,8 @@ begin
               'AlteracaoPoltrona', 'ExcessoBagagem', 'EncerramentoFisco',
               'ComprEntregaNFe', 'CancComprEntregaNFe',
               'AtorInteressadoNFe', 'ComprEntregaCTe', 'CancComprEntregaCTe',
-              'CancPrestDesacordo', 'InsucessoEntregaCTe', 'CancInsucessoEntregaCTe'],
+              'CancPrestDesacordo', 'InsucessoEntregaCTe', 'CancInsucessoEntregaCTe',
+              'ConcFinanceira', 'CancConcFinanceira'],
              [teNaoMapeado, teCCe, teCancelamento, teManifDestConfirmacao, teManifDestCiencia,
               teManifDestDesconhecimento, teManifDestOperNaoRealizada,
               teEncerramento, teEPEC, teInclusaoCondutor, teMultiModal,
@@ -1185,7 +1200,7 @@ begin
               teExcessoBagagem, teEncerramentoFisco, teComprEntregaNFe,
               teCancComprEntregaNFe, teAtorInteressadoNFe, teComprEntregaCTe,
               teCancComprEntregaCTe, teCancPrestDesacordo, teInsucessoEntregaCTe,
-              teCancInsucessoEntregaCTe]);
+              teCancInsucessoEntregaCTe, teConcFinanceira, teCancConcFinanceira]);
 end;
 
 
@@ -1294,14 +1309,15 @@ function FormaPagamentoToStr(const t: TpcnFormaPagamento): string;
 begin
   result := EnumeradoToStr(t, ['01', '02', '03', '04', '05', '10', '11', '12',
                                '13', '14', '15', '16', '17', '18', '19', '90',
-                               '98', '99'],
+                               '98', '99', '20', '21', '22'],
                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito,
                                fpCreditoLoja, fpValeAlimentacao, fpValeRefeicao,
                                fpValePresente, fpValeCombustivel, fpDuplicataMercantil,
                                fpBoletoBancario, fpDepositoBancario,
                                fpPagamentoInstantaneo, fpTransfBancario,
                                fpProgramaFidelidade, fpSemPagamento, fpRegimeEspecial,
-                               fpOutro]);
+                               fpOutro, fpPagamentoInstantaneoEstatico,
+                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware]);
 end;
 
 function FormaPagamentoToDescricao(const t: TpcnFormaPagamento): string; overload;
@@ -1315,20 +1331,22 @@ begin
     result := xPag
   else
     result := EnumeradoToStr(t,  ['Dinheiro', 'Cheque', 'Cartão de Crédito',
-                                'Cartão de Débito', 'Crédito Loja',
+                                'Cartão de Débito', 'Cartão da Loja (Private Label)',
                                 'Vale Alimentação', 'Vale Refeição', 'Vale Presente',
                                 'Vale Combustível', 'Duplicata Mercantil',
                                 'Boleto Bancário', 'Deposito Bancário',
-                                'Pagamento Instantâneo (PIX)', 'Transferência Bancária',
+                                'Pagamento Instantâneo (PIX) - Dinâmico', 'Transferência Bancária',
                                 'Programa Fidelidade', 'Sem Pagamento',
-                                'Regime Especial NFF', 'Outro'],
+                                'Regime Especial NFF', 'Outro', 'Pagamento Instantâneo (PIX) - Estático',
+                                'Crédito em Loja', 'Falha de hardware do sistema emissor'],
                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito,
                                fpCreditoLoja, fpValeAlimentacao, fpValeRefeicao,
                                fpValePresente, fpValeCombustivel, fpDuplicataMercantil,
                                fpBoletoBancario, fpDepositoBancario,
                                fpPagamentoInstantaneo, fpTransfBancario,
                                fpProgramaFidelidade, fpSemPagamento, fpRegimeEspecial,
-                               fpOutro]);
+                               fpOutro, fpPagamentoInstantaneoEstatico,
+                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware]);
 end;
 
 
@@ -1336,14 +1354,15 @@ function StrToFormaPagamento(out ok: boolean; const s: string): TpcnFormaPagamen
 begin
   result := StrToEnumerado(ok, s, ['01', '02', '03', '04', '05', '10', '11', '12',
                                    '13', '14', '15', '16', '17', '18', '19', '90',
-                                   '98', '99'],
+                                   '98', '99', '20', '21', '22'],
                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito,
                                fpCreditoLoja, fpValeAlimentacao, fpValeRefeicao,
                                fpValePresente, fpValeCombustivel, fpDuplicataMercantil,
                                fpBoletoBancario, fpDepositoBancario,
                                fpPagamentoInstantaneo, fpTransfBancario,
                                fpProgramaFidelidade, fpSemPagamento, fpRegimeEspecial,
-                               fpOutro]);
+                               fpOutro,fpPagamentoInstantaneoEstatico,
+                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware]);
 end;
 
 function BandeiraCartaoToDescStr(const t: TpcnBandeiraCartao): string;
@@ -1479,11 +1498,12 @@ end;
 
 function CodigoMPToDescricao(const t: TpcnCodigoMP ): string;
 begin
+
   result := EnumeradoToStr(t, ['Dinheiro', 'Cheque', 'Cartão de Crédito',
                                'Cartão de Débito', 'Crédito Loja', 'Vale Alimentação',
                                'Vale Refeição', 'Vale Presente', 'Vale Combustível',
                                'Boleto Bancário', 'Depósito Bancário',
-                               'Pagamento Instantâneo', 'Transferência Bancária',
+                               'Pagamento Instantâneo (PIX)', 'Transferência Bancária',
                                'Programa de Fidelidade', 'Sem Pagamento', 'Outros'],
                                [MPDinheiro, MPCheque, MPCartaodeCredito,
                                MPCartaodeDebito, MPCreditoLoja, MPValeAlimentacao,
@@ -1491,6 +1511,7 @@ begin
                                MPBoletoBancario, MPDepositoBancario,
                                MPPagamentoInstantaneo, MPTransfBancario,
                                MPProgramaFidelidade, MPSemPagamento, MPOutros]);
+
 end;
 
 // Tipo da Unidade de Transporte ***********************************************
@@ -1756,6 +1777,16 @@ end;
 function StrToTIndicador(out ok: boolean; const s: string): TIndicador;
 begin
   Result := StrToEnumerado(ok, s, ['1', '0'], [tiSim, tiNao]);
+end;
+
+function TIndicadorExToStr(const t: TIndicadorEx): string;
+begin
+  Result := EnumeradoToStr(t, ['', '1', '0'], [tieNenhum, tieSim, tieNao]);
+end;
+
+function StrToTIndicadorEx(out ok: boolean; const s: string): TIndicadorEx;
+begin
+  Result := StrToEnumerado(ok, s, ['', '1', '0'], [tieNenhum, tieSim, tieNao]);
 end;
 
 function tpNFToStr(const t: TpcnTipoNFe): String;

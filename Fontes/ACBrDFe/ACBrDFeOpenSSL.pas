@@ -65,7 +65,6 @@ type
     FOldVersion: Boolean;
 
     procedure GetCertInfo(cert: pX509);
-
     procedure DestroyKey;
     procedure DestroyCert;
   protected
@@ -119,8 +118,8 @@ uses
   ACBrUtil.Strings,
   ACBrUtil.Math,
   ACBrUtil.DateTime,
-  ACBrDFeException,
-  pcnAuxiliar;
+  ACBrUtil.Base,
+  ACBrDFeException;
 
 function CertToDERBase64(cert: pX509): AnsiString;
 var
@@ -463,9 +462,9 @@ begin
       Exit;
 
     try
+      ca := nil;
       DestroyCert;
       DestroyKey;
-      ca := nil;
       if (PKCS12parse(p12, FpDFeSSL.Senha, FPrivKey, FCert, ca) > 0) then
       begin
         if (FCert <> nil) then
@@ -476,6 +475,7 @@ begin
       end;
     finally
       PKCS12free(p12);
+      OPENSSL_sk_pop_free(ca, @X509free);
     end;
   finally
     BioFreeAll(b);

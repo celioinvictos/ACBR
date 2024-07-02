@@ -76,6 +76,9 @@ const
  function CNPJ_Versao(const sVersao: PChar; var esTamanho: longint): longint;
    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrConsultaCNPJLIBName;
 
+ function CNPJ_OpenSSLInfo(const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrConsultaCNPJLIBName;
+
  function CNPJ_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
    {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrConsultaCNPJLIBName;
  {%endregion}
@@ -98,7 +101,7 @@ const
  function CNPJ_ConsultarCaptcha(ePathDownload: PChar; const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrConsultaCNPJLIBName;
 
- function CNPJ_Consultar(eCNPJ: PChar; eCaptcha: PChar; const sResposta: PChar; var esTamanho: longint):longint;
+ function CNPJ_Consultar(eCNPJ: PChar; const sResposta: PChar; var esTamanho: longint):longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrConsultaCNPJLIBName;
 
  {%endregion}

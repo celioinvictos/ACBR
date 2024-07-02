@@ -76,6 +76,9 @@ function NFSE_Nome(const libHandle: TLibHandle; const sNome: PChar; var esTamanh
 function NFSE_Versao(const libHandle: TLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
 
+function NFSE_OpenSSLInfo(const libHandle: TLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
+
 function NFSE_UltimoRetorno(const libHandle: TLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
 {%endregion}
@@ -96,6 +99,9 @@ function NFSE_ConfigGravarValor(const libHandle: TLibHandle; const eSessao, eCha
 
 {%region NFSe}
 function NFSE_CarregarXML(const libHandle: TLibHandle; const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
+
+function NFSE_CarregarLoteXML(const libHandle: TLibHandle; const eArquivoOuXML: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
 
 function NFSE_CarregarINI(const libHandle: TLibHandle; const eArquivoOuINI: PChar): longint;
@@ -156,6 +162,9 @@ function NFSE_ConsultarNFSePorFaixa(const libHandle: TLibHandle; const aNumeroIn
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
 
 function NFSE_ConsultarNFSeGenerico(const libHandle: TLibHandle; aInfConsultaNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
+
+function NFSE_ConsultarLinkNFSe(const libHandle: TLibHandle; aInfConsultaLinkNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrNFSeLIBName;
 
 function NFSE_EnviarEmail(const libHandle: TLibHandle; const ePara, eXmlNFSe: PChar; const AEnviaPDF: boolean; const eAssunto, eCC, eAnexos, eMensagem: PChar):longint;

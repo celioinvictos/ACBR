@@ -146,6 +146,7 @@ type
     FNrOcorrCodigoNBS: Integer;
     FGerarTagRps: Boolean;
     FNrOcorrDataPagamento: Integer;
+    FNrOcorrInfAdicional: Integer;
 
   protected
     procedure Configuracao; override;
@@ -277,6 +278,7 @@ type
     property NrOcorrQuantDiarias: Integer read FNrOcorrQuantDiarias write FNrOcorrQuantDiarias;
     property NrOcorrCodigoNBS: Integer read FNrOcorrCodigoNBS write FNrOcorrCodigoNBS;
     property NrOcorrDataPagamento: Integer read FNrOcorrDataPagamento write FNrOcorrDataPagamento;
+    property NrOcorrInfAdicional: Integer read FNrOcorrInfAdicional write FNrOcorrInfAdicional;
 
     property GerarTagServicos: Boolean read FGerarTagServicos write FGerarTagServicos;
     property GerarIDDeclaracao: Boolean read FGerarIDDeclaracao write FGerarIDDeclaracao;
@@ -292,15 +294,10 @@ type
 implementation
 
 uses
-  pcnAuxiliar,
+  ACBrUtil.DateTime,
   ACBrUtil.Strings,
   ACBrXmlBase,
   ACBrNFSeXConversao, ACBrNFSeXConsts;
-
-  {
-    Ainda não é possível remover a unit pcnAuxiliar, pois é utilizado a função:
-    AjustarDataHoraParaUf.
-  }
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS dos provedores
@@ -408,6 +405,7 @@ begin
   FNrOcorrValorCpp := -1;
   FNrOcorrAliquotaCpp := -1;
   FNrOcorrRetidoCpp := -1;
+  FNrOcorrInfAdicional := -1;
 
   FGerarTagServicos := True;
   FGerarIDDeclaracao := True;
@@ -462,6 +460,9 @@ begin
 
   FDocument.Root := NFSeNode;
 
+  if FormatoDiscriminacao <> fdNenhum then
+    ConsolidarVariosItensServicosEmUmSo;
+
   xmlNode := GerarInfDeclaracaoPrestacaoServico;
   NFSeNode.AppendChild(xmlNode);
 
@@ -476,6 +477,8 @@ end;
 function TNFSeW_ABRASFv2.GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode;
 var
   aNameSpace: string;
+  nodeArray: TACBrXmlNodeArray;
+  i: Integer;
 begin
   aNameSpace := DefinirNameSpaceDeclaracao;
 
@@ -501,6 +504,16 @@ begin
                                                   NFSe.Competencia, DSC_DHEMI));
 
   Result.AppendChild(GerarServico);
+
+  nodeArray := GerarServicos;
+  if nodeArray <> nil then
+  begin
+    for i := 0 to Length(nodeArray) - 1 do
+    begin
+      Result.AppendChild(nodeArray[i]);
+    end;
+  end;
+
   Result.AppendChild(GerarPrestador);
   Result.AppendChild(GerarTomador);
   Result.AppendChild(GerarIntermediarioServico);
@@ -683,7 +696,7 @@ begin
     Result.AppendChild(AddNode(tcInt, '#35', 'CodigoPais', 4, 4, NrOcorrCodigoPaisServico,
                                            NFSe.Servico.CodigoPais, DSC_CPAIS));
 
-    Result.AppendChild(AddNode(tcStr, '#36', 'ExigibilidadeISS',
+    Result.AppendChild(AddNode(tcInt, '#36', 'ExigibilidadeISS',
                                NrMinExigISS, NrMaxExigISS, NrOcorrExigibilidadeISS,
     StrToInt(FpAOwner.ExigibilidadeISSToStr(NFSe.Servico.ExigibilidadeISS)), DSC_INDISS));
 
@@ -692,6 +705,9 @@ begin
 
     Result.AppendChild(AddNode(tcStr, '#38', 'NumeroProcesso', 1, 30, NrOcorrNumProcesso,
                                    NFSe.Servico.NumeroProcesso, DSC_NPROCESSO));
+
+    Result.AppendChild(AddNode(tcStr, '#39', 'InfAdicional', 1, 255, NrOcorrInfAdicional,
+                                  NFSe.Servico.InfAdicional, DSC_INFADICIONAL));
 
     Result.AppendChild(GerarListaItensServico);
   end;
@@ -706,7 +722,7 @@ end;
 function TNFSeW_ABRASFv2.GerarStatus: TACBrXmlNode;
 begin
   Result := AddNode(tcStr, '#9', 'Status', 1, 1, 1,
-                                 StatusRPSToStr(NFSe.StatusRps), DSC_INDSTATUS);
+                        FpAOwner.StatusRPSToStr(NFSe.StatusRps), DSC_INDSTATUS);
 end;
 
 function TNFSeW_ABRASFv2.GerarValores: TACBrXmlNode;

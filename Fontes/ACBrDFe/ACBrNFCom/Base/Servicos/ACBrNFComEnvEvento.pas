@@ -46,7 +46,7 @@ uses
   ACBrBase,
 //  ACBrDFeConversao,
   pcnConversao,
-  pcnSignature,
+  ACBrDFeComum.SignatureClass,
   ACBrNFComEventoClass,
   ACBrNFComConsts;
 
@@ -94,7 +94,7 @@ type
     function LerXML(const CaminhoArquivo: string): Boolean;
     function LerXMLFromString(const AXML: string): Boolean;
     function ObterNomeArquivo(tpEvento: TpcnTpEvento): string;
-    function LerFromIni(const AIniString: string; CCe: Boolean = True): Boolean;
+    function LerFromIni(const AIniString: string): Boolean;
 
     property idLote: Int64 read FidLote write FidLote;
     property Evento: TInfEventoCollection read FEvento write SetEvento;
@@ -109,7 +109,6 @@ uses
   ACBrDFeUtil, ACBrXmlBase,
   ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.FilesIO, ACBrUtil.DateTime,
   ACBrNFComRetEnvEvento,
-  pcnAuxiliar,
   ACBrNFComConversao;
 
 { TInfEventoCollection }
@@ -195,7 +194,7 @@ begin
   sDoc := OnlyNumber(Evento.Items[i].InfEvento.CNPJ);
 
   if EstaVazio(sDoc) then
-    sDoc := ExtrairCNPJChaveAcesso(Evento.Items[i].InfEvento.chNFCom);
+    sDoc := ExtrairCNPJCPFChaveAcesso(Evento.Items[i].InfEvento.chNFCom);
 
   case Length( sDoc ) of
     14: begin
@@ -243,7 +242,7 @@ begin
              '<dhEvento>' +
                 FormatDateTime('yyyy-mm-dd"T"hh:nn:ss',
                                Evento.Items[i].InfEvento.dhEvento) +
-                            GetUTC(CodigoParaUF(Evento.Items[i].InfEvento.cOrgao),
+                            GetUTC(CodigoUFparaUF(Evento.Items[i].InfEvento.cOrgao),
                                    Evento.Items[i].InfEvento.dhEvento) +
              '</dhEvento>' +
              '<tpEvento>' + Evento.Items[i].InfEvento.TipoEvento + '</tpEvento>' +
@@ -258,8 +257,8 @@ begin
 
   if Evento.Items[i].signature.URI <> '' then
   begin
-    Evento.Items[i].signature.GerarXML;
-    Xml := Xml + Evento.Items[i].signature.Gerador.ArquivoFormatoXML;
+    Xml := Xml + Evento.Items[i].signature.GerarXML;
+//    Xml := Xml + Evento.Items[i].signature.Gerador.ArquivoFormatoXML;
   end;
 
   Result := Xml;
@@ -334,7 +333,7 @@ begin
   end;
 end;
 
-function TEventoNFCom.LerFromIni(const AIniString: string; CCe: Boolean): Boolean;
+function TEventoNFCom.LerFromIni(const AIniString: string): Boolean;
 var
   I: Integer;
   sSecao, sFim: string;

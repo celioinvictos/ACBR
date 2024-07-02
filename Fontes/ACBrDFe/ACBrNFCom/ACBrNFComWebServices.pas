@@ -39,16 +39,15 @@ interface
 uses
   Classes, SysUtils, dateutils,
   blcksock, synacode,
-  ACBrDFe, ACBrDFeWebService,
-//  ACBrDFeConversao,
   ACBrXmlBase,
+  ACBrDFe, ACBrDFeWebService,
+  ACBrDFeUtil,
+  ACBrDFeComum.Proc,
+//  ACBrDFeConversao,
   ACBrNFComNotasFiscais, ACBrNFComConfiguracoes,
   ACBrNFComClass, ACBrNFComConversao,
-//  ACBrNFComProc,
-  ACBrDFeComum.Proc,
   ACBrNFComRetConsSit,
   ACBrNFComEnvEvento, ACBrNFComRetEnvEvento,
-  pcnAuxiliar,
   pcnConversao;
 
 type
@@ -165,6 +164,7 @@ type
     property NFComRetornoSincrono: TRetConsSitNFCom read FNFComRetornoSincrono;
   end;
 
+  (*
   { TNFComRetRecepcao }
 
   TNFComRetRecepcao = class(TNFComWebService)
@@ -219,7 +219,7 @@ type
 
 //    property NFComRetorno: TRetConsReciDFe read FNFComRetorno;
   end;
-
+  *)
   { TNFComConsulta }
 
   TNFComConsulta = class(TNFComWebService)
@@ -344,7 +344,7 @@ type
     FACBrNFCom: TACBrDFe;
     FStatusServico: TNFComStatusServico;
     FEnviar: TNFComRecepcao;
-    FRetorno: TNFComRetRecepcao;
+//    FRetorno: TNFComRetRecepcao;
     FConsulta: TNFComConsulta;
     FEnvEvento: TNFComEnvEvento;
     FEnvioWebService: TNFComEnvioWebService;
@@ -358,7 +358,7 @@ type
     property StatusServico: TNFComStatusServico read FStatusServico
       write FStatusServico;
     property Enviar: TNFComRecepcao read FEnviar write FEnviar;
-    property Retorno: TNFComRetRecepcao read FRetorno write FRetorno;
+//    property Retorno: TNFComRetRecepcao read FRetorno write FRetorno;
     property Consulta: TNFComConsulta read FConsulta write FConsulta;
     property EnvEvento: TNFComEnvEvento read FEnvEvento write FEnvEvento;
     property EnvioWebService: TNFComEnvioWebService read FEnvioWebService
@@ -369,14 +369,14 @@ implementation
 
 uses
   StrUtils, Math,
-//  ACBrDFeConsts,
   ACBrUtil.Base, ACBrUtil.XMLHTML, ACBrUtil.Strings, ACBrUtil.DateTime,
   ACBrUtil.FilesIO,
-  ACBrCompress, ACBrNFCom, ACBrIntegrador,
+  ACBrCompress, ACBrIntegrador,
+  ACBrDFeComum.ConsStatServ,
+  ACBrDFeComum.RetConsStatServ,
+  ACBrNFCom,
   ACBrNFComConsts,
-  ACBrNFComConsSit,
-  ACBrDFeComum.ConsStatServ, ACBrDFeComum.RetConsStatServ,
-  pcnConsReciDFe;
+  ACBrNFComConsSit;
 
 { TNFComWebService }
 
@@ -519,7 +519,7 @@ begin
 
   NFComRetorno := TRetConsStatServ.Create('NFCom');
   try
-    NFComRetorno.XmlRetorno := ParseText(FPRetWS, True, False);
+    NFComRetorno.XmlRetorno := ParseText(FPRetWS);
     NFComRetorno.LerXml;
 
     Fversao := NFComRetorno.versao;
@@ -570,7 +570,7 @@ begin
                            'Retorno: %s' + LineBreak +
                            'Observação: %s' + LineBreak),
                    [Fversao, TipoAmbienteToStr(FtpAmb), FverAplic, IntToStr(FcStat),
-                    FxMotivo, CodigoParaUF(FcUF),
+                    FxMotivo, CodigoUFparaUF(FcUF),
                     IfThen(FdhRecbto = 0, '', FormatDateTimeBr(FdhRecbto)),
                     IntToStr(FTMed),
                     IfThen(FdhRetorno = 0, '', FormatDateTimeBr(FdhRetorno)),
@@ -641,12 +641,10 @@ begin
 end;
 
 procedure TNFComRecepcao.InicializarServico;
-var
-  ok: Boolean;
 begin
   // Tem NFCom ? Se SIM, use as informações do XML
   if FNotasFiscais.Count > 0 then
-    FVersaoDF := DblToVersaoNFCom(ok, FNotasFiscais.Items[0].NFCom.infNFCom.Versao)
+    FVersaoDF := DblToVersaoNFCom(FNotasFiscais.Items[0].NFCom.infNFCom.Versao)
   else
     FVersaoDF := FPConfiguracoesNFCom.Geral.VersaoDF;
 
@@ -756,7 +754,7 @@ begin
   else
     AXML := FPRetWS;
 
-  FNFComRetornoSincrono.XmlRetorno := ParseText(AXML, True, False);
+  FNFComRetornoSincrono.XmlRetorno := ParseText(AXML);
   FNFComRetornoSincrono.LerXml;
 
   Fversao := FNFComRetornoSincrono.versao;
@@ -862,7 +860,7 @@ begin
                     FNFComRetornoSincrono.verAplic,
                     IntToStr(FNFComRetornoSincrono.protNFCom.cStat),
                     FNFComRetornoSincrono.protNFCom.xMotivo,
-                    CodigoParaUF(FNFComRetornoSincrono.cUF),
+                    CodigoUFparaUF(FNFComRetornoSincrono.cUF),
                     FormatDateTimeBr(FNFComRetornoSincrono.dhRecbto),
                     FNFComRetornoSincrono.chNFCom]);
 end;
@@ -882,6 +880,7 @@ begin
   end;
 end;
 
+(*
 { TNFComRetRecepcao }
 
 constructor TNFComRetRecepcao.Create(AOwner: TACBrDFe; ANotasFiscais: TNotasFiscais);
@@ -1085,7 +1084,7 @@ begin
 
   RemoverNameSpace;
   {
-  FNFComRetorno.Leitor.Arquivo := ParseText(FPRetWS, True, False);
+  FNFComRetorno.Leitor.Arquivo := ParseText(FPRetWS);
   FNFComRetorno.LerXML;
 
   Fversao := FNFComRetorno.versao;
@@ -1261,7 +1260,7 @@ function TNFComRetRecepcao.GerarPrefixoArquivo: string;
 begin
   Result := Recibo;
 end;
-
+*)
 { TNFComConsulta }
 
 constructor TNFComConsulta.Create(AOwner: TACBrDFe; ANotasFiscais: TNotasFiscais);
@@ -1453,7 +1452,7 @@ begin
 
     RemoverNameSpace;
 
-    NFComRetorno.XmlRetorno := ParseText(FPRetWS, True, False);
+    NFComRetorno.XmlRetorno := ParseText(FPRetWS);
     NFComRetorno.LerXML;
 
     NFCancelada := False;
@@ -1767,7 +1766,7 @@ begin
                            'Protocolo: %s ' + LineBreak +
                            'Digest Value: %s ' + LineBreak),
                    [Fversao, FNFComChave, TipoAmbienteToStr(FtpAmb), FverAplic,
-                    IntToStr(FcStat), FXMotivo, CodigoParaUF(FcUF), FNFComChave,
+                    IntToStr(FcStat), FXMotivo, CodigoUFparaUF(FcUF), FNFComChave,
                     FormatDateTimeBr(FDhRecbto), FProtocolo, FprotNFCom.digVal]);
   {*)}
 end;
@@ -1925,6 +1924,8 @@ begin
                           Trim(RetornarConteudoEntre(AXMLEvento, '<evCancNFCom>', '</evCancNFCom>')) +
                         '</evCancNFCom>';
         end;
+    else
+      AXMLEvento := '';
     end;
 
     AXMLEvento := '<' + ENCODING_UTF8 + '>' + AXMLEvento;
@@ -1970,7 +1971,7 @@ begin
 
   RemoverNameSpace;
 
-  EventoRetorno.XmlRetorno := ParseText(FPRetWS, True, False);
+  EventoRetorno.XmlRetorno := ParseText(FPRetWS);
   EventoRetorno.LerXml;
 
   FcStat := EventoRetorno.retInfEvento.cStat;
@@ -2034,7 +2035,7 @@ begin
               end;
 
               { Converte de UTF8 para a String nativa e Decodificar caracteres HTML Entity }
-              Texto := ParseText(Texto, True, False);
+              Texto := ParseText(Texto);
             end;
 
             // Se o evento for rejeitado a propriedade XML conterá uma string vazia

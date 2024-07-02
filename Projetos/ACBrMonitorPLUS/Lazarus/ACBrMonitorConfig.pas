@@ -35,7 +35,7 @@ unit ACBrMonitorConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, ACBrMonitorConsts, Graphics;
+  Classes, SysUtils, IniFiles, ACBrMonitorConsts, Graphics, ACBrUtil.FilesIO;
 
 type
 
@@ -160,6 +160,16 @@ type
     Proxy_Pass        : String;
     IBGEAcentos       : Boolean;
     IBGEUTF8          : Boolean;
+  end;
+
+  TConsultaCNPJ = record
+    Provedor          : integer;
+    Usuario           : string;
+    Senha             : string;
+    Proxy_Host        : String;
+    Proxy_Port        : String;
+    Proxy_User        : String;
+    Proxy_Pass        : String;
   end;
 
   TTC = record
@@ -707,8 +717,9 @@ type
   end;
 
   TBoletoConfig = record
-    LogRegistro                : Boolean;
+    LogNivel                   : TNivelLog;
     PathGravarRegistro         : String;
+    NomeArquivoLog             : String;
     SSL                        : TBoletoSSL;
   end;
 
@@ -755,11 +766,10 @@ type
     ConsultarAposCancelar: Boolean;
     NomePrefeitura: string;
     CNPJPrefeitura: string;
+    NomeLongoNFSe : boolean;
   end;
 
-  TConsultaCNPJ = record
-    ProvedorCnpjWS: integer;
-  end;
+
 
 
   EDFeException = class(Exception);
@@ -998,6 +1008,18 @@ begin
       Ini.WriteBool( CSecCEP, CKeyCEPIBGEAcentos, IBGEAcentos );
       Ini.WriteBool( CSecCEP, CKeyCEPIBGEUTF8, IBGEUTF8 );
       GravaINICrypt(Ini, CSecCEP, CKeyCEPProxy_Pass, Proxy_Pass, _C);
+    end;
+
+    with ConsultaCNPJ do
+    begin
+      ini.WriteInteger( CSecConsultaCNPJ,CKeyConsultaCNPJProvedor, Provedor);
+      GravaINICrypt(Ini,CSecConsultaCNPJ,CKeyConsultaCNPJUsuario , Usuario, _C);
+      GravaINICrypt(Ini,CSecConsultaCNPJ,CKeyConsultaCNPJSenha   , Senha  , _C);
+      Ini.WriteString( CSecConsultaCNPJ, CKeyCEPProxy_Host, Proxy_Host);
+      Ini.WriteString( CSecConsultaCNPJ, CKeyCEPProxy_Port, Proxy_Port );
+      Ini.WriteString( CSecConsultaCNPJ, CKeyCEPProxy_User, Proxy_User );
+      GravaINICrypt(Ini, CSecConsultaCNPJ, CKeyCEPProxy_Pass, Proxy_Pass, _C);
+
     end;
 
     with TC do
@@ -1554,8 +1576,9 @@ begin
 
     with BOLETO.WS.Config do
     begin
-      ini.WriteBool( CSecBOLETO, CKeyBOLETOLogRegistro, LogRegistro);
+      ini.WriteInteger( CSecBOLETO, CKeyBOLETOLogNivel, Integer(LogNivel));
       ini.WriteString( CSecBOLETO, CKeyBOLETOPathGravarRegistro, PathGravarRegistro);
+      ini.WriteString( CSecBOLETO, CKeyBOLETONomeArquivoLog, NomeArquivoLog);
     end;
 
     with BOLETO.WS.Config.SSL do
@@ -1596,11 +1619,8 @@ begin
       Ini.WriteBool( CSecNFSE, CKeyNFSeConsultarAposCancelar, ConsultarAposCancelar );
       Ini.WriteString( CSecNFSE, CKeyNFSeNomePrefeitura, NomePrefeitura );
       Ini.WriteString( CSecNFSE, CKeyNFSeCNPJPrefeitura, CNPJPrefeitura );
-    end;
+      Ini.WriteBool( CSecNFSE, CKeyNFSeNomeLongoNFSe, NomeLongoNFSe );
 
-    with ConsultaCNPJ do
-    begin
-       Ini.WriteInteger( CSecProvedorCNPJ, CKeyProvedorCNPJProvedor, ProvedorCnpjWS );
     end;
 
     SL := TStringList.Create;
@@ -1786,6 +1806,18 @@ begin
       IBGEUTF8                  := Ini.ReadBool( CSecCEP, CKeyCEPIBGEUTF8, IBGEUTF8 );
       Proxy_Pass                := LeINICrypt(Ini, CSecCEP, CKeyCEPProxy_Pass, _C);
     end;
+
+    with ConsultaCNPJ do
+    begin
+      Provedor                  := Ini.ReadInteger( CSecConsultaCNPJ, CKeyConsultaCNPJProvedor, Provedor );
+      Usuario                   := LeINICrypt(Ini, CSecConsultaCNPJ, CKeyConsultaCNPJUsuario, _C );
+      Senha                     := LeINICrypt(Ini, CSecConsultaCNPJ, CKeyConsultaCNPJSenha, _C );
+      Proxy_Host                := Ini.ReadString( CSecCEP, CKeyCEPProxy_Host, Proxy_Host );
+      Proxy_Port                := Ini.ReadString( CSecCEP, CKeyCEPProxy_Port, Proxy_Port );
+      Proxy_User                := Ini.ReadString( CSecCEP, CKeyCEPProxy_User, Proxy_User );
+      Proxy_Pass                := LeINICrypt(Ini, CSecCEP, CKeyCEPProxy_Pass, _C);
+    end;
+
 
     with TC do
     begin
@@ -2346,8 +2378,9 @@ begin
 
     with BOLETO.WS.Config do
     begin
-      LogRegistro := ini.ReadBool( CSecBOLETO, CKeyBOLETOLogRegistro, LogRegistro);
+      LogNivel := TNivelLog(ini.ReadInteger( CSecBOLETO, CKeyBOLETOLogNivel, Integer(LogNivel)));
       PathGravarRegistro := ini.ReadString( CSecBOLETO, CKeyBOLETOPathGravarRegistro, PathGravarRegistro);
+      NomeArquivoLog := ini.ReadString( CSecBOLETO, CKeyBOLETONomeArquivoLog, NomeArquivoLog);
     end;
 
     with BOLETO.WS.Config.SSL do
@@ -2388,13 +2421,8 @@ begin
       ConsultarAposCancelar := ini.ReadBool( CSecBOLETO, CKeyNFSeConsultarAposCancelar, ConsultarAposCancelar);
       NomePrefeitura := ini.ReadString( CSecNFSE, CKeyNFSeNomePrefeitura, NomePrefeitura);
       CNPJPrefeitura := ini.ReadString( CSecNFSE, CKeyNFSeCNPJPrefeitura, CNPJPrefeitura);
+      NomeLongoNFSe  := ini.ReadBool( CSecNFSE, CKeyNFSeNomeLongoNFSe, NomeLongoNFSe);
     end;
-
-    with ConsultaCNPJ do
-    begin
-      ProvedorCnpjWS := ini.ReadInteger( CSecProvedorCNPJ, CKeyProvedorCNPJProvedor, ProvedorCnpjWS);
-    end;
-
 
   finally
     Ini.Free;
@@ -2556,6 +2584,17 @@ begin
     Proxy_Pass                := '';
     IBGEAcentos               := False;
     IBGEUTF8                  := False;
+  end;
+
+  with ConsultaCNPJ do
+  begin
+    Provedor := 0;
+    Usuario:='';
+    Senha:='';
+    Proxy_Host                := '';
+    Proxy_Port                := '';
+    Proxy_User                := '';
+    Proxy_Pass                := '';
   end;
 
   with TC do
@@ -3102,8 +3141,9 @@ begin
 
   with BOLETO.WS.Config do
   begin
-    LogRegistro := True;
+    LogNivel:= logNenhum;
     PathGravarRegistro := '';
+    NomeArquivoLog := '';
   end;
 
   with BOLETO.WS.Config.SSL do
@@ -3144,14 +3184,8 @@ begin
     ConsultarAposCancelar := True;
     NomePrefeitura := '';
     CNPJPrefeitura := '';
+    NomeLongoNFSe := True;
   end;
-
-
-  with ConsultaCNPJ do
-  begin
-    ProvedorCnpjWS := 0;
-  end;
-
 end;
 
 procedure TMonitorConfig.ValidarNomeCaminho(Salvar: Boolean);

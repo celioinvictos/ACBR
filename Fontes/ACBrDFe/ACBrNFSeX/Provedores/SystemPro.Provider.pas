@@ -46,11 +46,11 @@ uses
 type
   TACBrNFSeXWebserviceSystemPro201 = class(TACBrNFSeXWebserviceSoap11)
   public
-    function RecepcionarSincrono(ACabecalho, AMSG: String): string; override;
-    function GerarNFSe(ACabecalho, AMSG: String): string; override;
-    function ConsultarNFSePorFaixa(ACabecalho, AMSG: String): string; override;
-    function Cancelar(ACabecalho, AMSG: String): string; override;
-    function SubstituirNFSe(ACabecalho, AMSG: String): string; override;
+    function RecepcionarSincrono(const ACabecalho, AMSG: String): string; override;
+    function GerarNFSe(const ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSePorFaixa(const ACabecalho, AMSG: String): string; override;
+    function Cancelar(const ACabecalho, AMSG: String): string; override;
+    function SubstituirNFSe(const ACabecalho, AMSG: String): string; override;
 
     function TratarXmlRetornado(const aXML: string): string; override;
   end;
@@ -100,10 +100,12 @@ begin
   with ConfigWebServices do
   begin
     VersaoDados := '2.01';
-    VersaoAtrib := '2.01';
+    VersaoAtrib := '0.01';
   end;
 
   ConfigMsgDados.DadosCabecalho := GetCabecalho('');
+
+  ConfigSchemas.Validar := False;
 end;
 
 function TACBrNFSeProviderSystemPro201.CriarGeradorXml(
@@ -140,24 +142,24 @@ end;
 
 { TACBrNFSeXWebserviceSystemPro201 }
 
-function TACBrNFSeXWebserviceSystemPro201.RecepcionarSincrono(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.RecepcionarSincrono(const ACabecalho,
   AMSG: String): string;
 var
   Request: string;
 begin
   FPMsgOrig := AMSG;
 
-  Request := '<ns2:EnviarLoteRpsSincrono>';
-  Request := Request + '<nfseCabecMsg>' + IncluirCDATA(ACabecalho) + '</nfseCabecMsg>';
-  Request := Request + '<nfseDadosMsg>' + IncluirCDATA(AMSG) + '</nfseDadosMsg>';
+  Request := '<ns2:EnviarLoteRpsSincrono xmlns:ns2="http://NFSe.wsservices.systempro.com.br/">';
+  Request := Request + '<nfseCabecMsg>' + XmlToStr(ACabecalho) + '</nfseCabecMsg>';
+  Request := Request + '<nfseDadosMsg>' + XmlToStr(AMSG) + '</nfseDadosMsg>';
   Request := Request + '</ns2:EnviarLoteRpsSincrono>';
 
   Result := Executar('', Request,
                      ['return', 'EnviarLoteRpsSincronoResposta'],
-                     ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
+                     []);
 end;
 
-function TACBrNFSeXWebserviceSystemPro201.GerarNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.GerarNFSe(const ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -174,7 +176,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro201.ConsultarNFSePorFaixa(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.ConsultarNFSePorFaixa(const ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -191,7 +193,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro201.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceSystemPro201.Cancelar(const ACabecalho, AMSG: String): string;
 var
   Request: string;
 begin
@@ -207,7 +209,7 @@ begin
                      ['xmlns:ns2="http://NFSe.wsservices.systempro.com.br/"']);
 end;
 
-function TACBrNFSeXWebserviceSystemPro201.SubstituirNFSe(ACabecalho,
+function TACBrNFSeXWebserviceSystemPro201.SubstituirNFSe(const ACabecalho,
   AMSG: String): string;
 var
   Request: string;
@@ -230,7 +232,7 @@ begin
   Result := inherited TratarXmlRetornado(aXML);
 
   Result := RemoverCaracteresDesnecessarios(Result);
-  Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+  Result := ParseText(Result);
   Result := RemoverDeclaracaoXML(Result);
 end;
 

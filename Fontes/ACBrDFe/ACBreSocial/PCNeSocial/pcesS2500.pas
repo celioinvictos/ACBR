@@ -1518,9 +1518,8 @@ begin
      (obj.natAtividade <> navNaoInformar) or
      (obj.instRemuneracao()) or
      (obj.InfoVinc.tpRegTrab <> trNenhum) or
-     (obj.InfoVinc.FtpRegPrev <> rpNenhum) or
-     (obj.InfoVinc.FdtAdm > 0) or
-     (obj.InfoVinc.FtmpParc <> tpNenhum) or
+     (obj.InfoVinc.tpRegPrev <> rpNenhum) or
+     (obj.InfoVinc.tmpParc <> tpNenhum) or
      (obj.infoVinc.instDuracao()) or
      (obj.infoVinc.instObservacoes()) or
      (obj.infoVinc.instSucessaoVinc()) or
@@ -1707,7 +1706,7 @@ procedure TEvtProcTrab.GerarBaseCalculo(obj: TbaseCalculo);
 var
   NrOcorrBcCp: Integer;
 begin
-  if ( (VersaoDF >= veS01_02_00) and (obj.vrBcCpMensal = 0) ) then
+  if ( (VersaoDF >= veS01_02_00) and (obj.vrBcCpMensal = 0) and (obj.vrBcCp13 = 0)) then
     exit;
 
   if (VersaoDF >= veS01_02_00) then

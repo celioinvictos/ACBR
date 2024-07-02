@@ -37,15 +37,14 @@ unit ACBrDCeDeclaracoes;
 interface
 
 uses
-  Classes, 
+  Classes,
 	SysUtils, 
 	StrUtils,
   ACBrDCeConfiguracoes,
-  ACBrDCeClass, 
-	ACBrDCeXmlReader,
-	ACBrDCeXmlWriter,
-	pcnConversao, 
-	pcnAuxiliar;
+  ACBrDCe.Classes,
+	ACBrDCe.XmlReader,
+	ACBrDCe.XmlWriter,
+	pcnConversao;
 
 type
 
@@ -180,11 +179,12 @@ uses
   ACBrUtil.Strings,
   ACBrUtil.XMLHTML,
   ACBrUtil.FilesIO,
-//  ACBrUtil.DateTime,
+  ACBrUtil.DateTime,
 	ACBrXmlBase,
+  ACBrXmlDocument,
   ACBrDCe,
 	ACBrDFeUtil,
-	ACBrDCeConversao;
+	ACBrDCe.Conversao;
 
 { Declaracao }
 
@@ -197,12 +197,12 @@ begin
   FDCeR := TDCeXmlReader.Create(FDCe);
   FConfiguracoes := TACBrDCe(TDeclaracoes(Collection).ACBrDCe).Configuracoes;
 
+  FDCe.Ide.verProc := 'ACBrDCe';
+  FDCe.Ide.modelo := 99;
+
   with TACBrDCe(TDeclaracoes(Collection).ACBrDCe) do
   begin
-    FDCe.Ide.modelo := 99;
     FDCe.infDCe.Versao := VersaoDCeToDbl(Configuracoes.Geral.VersaoDF);
-
-    FDCe.Ide.verProc := 'ACBrDCe';
     FDCe.Ide.tpAmb := TACBrTipoAmbiente(Integer(Configuracoes.WebServices.Ambiente));
     FDCe.Ide.tpEmis := TACBrTipoEmissao(Integer(Configuracoes.Geral.FormaEmissao));
   end;
@@ -243,7 +243,8 @@ procedure Declaracao.Assinar;
 var
   XMLStr: String;
   XMLUTF8: AnsiString;
-//  Leitor: TLeitor;
+  Document: TACBrXmlDocument;
+  ANode: TACBrXmlNode;
 begin
   with TACBrDCe(TDeclaracoes(Collection).ACBrDCe) do
   begin
@@ -262,18 +263,16 @@ begin
     FXMLAssinado := SSL.Assinar(String(XMLUTF8), 'DCe', 'infDCe');
     // SSL.Assinar() sempre responde em UTF8...
     FXMLOriginal := FXMLAssinado;
-    {
-    Leitor := TLeitor.Create;
+
+    Document := TACBrXmlDocument.Create;
     try
-      leitor.Grupo := FXMLAssinado;
-      DCe.signature.URI := Leitor.rAtributo('Reference URI=');
-      DCe.signature.DigestValue := Leitor.rCampo(tcStr, 'DigestValue');
-      DCe.signature.SignatureValue := Leitor.rCampo(tcStr, 'SignatureValue');
-      DCe.signature.X509Certificate := Leitor.rCampo(tcStr, 'X509Certificate');
+      Document.LoadFromXml(FXMLOriginal);
+      ANode := Document.Root;
+
+      LerSignature(ANode.Childrens.FindAnyNs('Signature'), DCe.signature);
     finally
-      Leitor.Free;
+      FreeAndNil(Document);
     end;
-    }
 
     // Gera o QR-Code para adicionar no XML após ter a
     // assinatura, e antes de ser salvo.
@@ -281,20 +280,26 @@ begin
     with TACBrDCe(TDeclaracoes(Collection).ACBrDCe) do
     begin
       if DCe.emit.idOutros <> '' then
-        DCe.infDCeSupl.qrCode := GetURLQRCode(DCe.Ide.cUF, TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)),
-                              TpcnTipoEmissao(Integer(DCe.ide.tpEmis)), DCe.infDCe.ID, DCe.emit.idOutros,
-                              'O', DCe.infDCe.Versao)
+        DCe.infDCeSupl.qrCode := GetURLQRCode(DCe.Ide.cUF,
+          TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)),
+          TpcnTipoEmissao(Integer(DCe.ide.tpEmis)), DCe.infDCe.ID, DCe.emit.idOutros,
+          'O', DCe.infDCe.Versao)
       else
       begin
         if Length(DCe.emit.CNPJCPF) = 14 then
-          DCe.infDCeSupl.qrCode := GetURLQRCode(DCe.Ide.cUF, TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)),
-                              TpcnTipoEmissao(Integer(DCe.ide.tpEmis)), DCe.infDCe.ID, DCe.emit.CNPJCPF,
-                              'J', DCe.infDCe.Versao)
+          DCe.infDCeSupl.qrCode := GetURLQRCode(DCe.Ide.cUF,
+            TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)),
+            TpcnTipoEmissao(Integer(DCe.ide.tpEmis)), DCe.infDCe.ID, DCe.emit.CNPJCPF,
+            'J', DCe.infDCe.Versao)
         else
-          DCe.infDCeSupl.qrCode := GetURLQRCode(DCe.Ide.cUF, TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)),
-                              TpcnTipoEmissao(Integer(DCe.ide.tpEmis)), DCe.infDCe.ID, DCe.emit.CNPJCPF,
-                              'F', DCe.infDCe.Versao);
+          DCe.infDCeSupl.qrCode := GetURLQRCode(DCe.Ide.cUF,
+            TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)),
+            TpcnTipoEmissao(Integer(DCe.ide.tpEmis)), DCe.infDCe.ID, DCe.emit.CNPJCPF,
+            'F', DCe.infDCe.Versao);
       end;
+
+      DCe.infDCeSupl.urlChave := GetURLConsulta(DCe.Ide.cUF,
+                   TpcnTipoAmbiente(Integer(DCe.Ide.tpAmb)), DCe.infDCe.Versao);
 
       GerarXML;
     end;
@@ -323,7 +328,7 @@ begin
 
   with TACBrDCe(TDeclaracoes(Collection).ACBrDCe) do
   begin
-    ALayout := LayDCeRecepcao;
+    ALayout := LayDCeAutorizacao;
 
     // Extraindo apenas os dados da DCe (sem DCeProc)
     AXML := ObterDFeXML(AXML, 'DCe', ACBRDCe_NAMESPACE);
@@ -1191,7 +1196,12 @@ begin
     FDCeW.Opcoes.NormatizarMunicipios  := Configuracoes.Arquivos.NormatizarMunicipios;
     FDCeW.Opcoes.PathArquivoMunicipios := Configuracoes.Arquivos.PathArquivoMunicipios;
 
-    pcnAuxiliar.TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
+    TimeZoneConf.Assign( Configuracoes.WebServices.TimeZoneConf );
+
+    FDCeW.ModeloDF := 99;
+    FDCeW.VersaoDF := Configuracoes.Geral.VersaoDF;
+    FDCeW.tpAmb := TACBrTipoAmbiente(Integer(Configuracoes.WebServices.Ambiente));
+//    FDCeW.tpEmis := TACBrTipoEmissao(Integer(Configuracoes.Geral.FormaEmissao));
   end;
 
   FDCeW.GerarXml;

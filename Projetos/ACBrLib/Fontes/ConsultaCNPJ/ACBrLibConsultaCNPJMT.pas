@@ -52,6 +52,9 @@ function CNPJ_Nome (const libHandle : PLibHandle; const sNome: PChar; var esTama
 function CNPJ_Versao (const libHandle : PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
+function CNPJ_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
 function CNPJ_UltimoRetorno (const libHandle : PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
@@ -77,7 +80,7 @@ function CNPJ_ConfigGravarValor (const libHandle : PLibHandle; const eSessao, eC
 function CNPJ_ConsultarCaptcha (const libHandle : PLibHandle; ePathDownload: PChar; const sResposta: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function CNPJ_Consultar (const libHandle : PLibHandle; eCNPJ: PChar; eServico: LongInt; const sResposta: PChar; var esTamanho: longint): longint;
+function CNPJ_Consultar (const libHandle : PLibHandle; eCNPJ: PChar; const sResposta: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 implementation
@@ -108,6 +111,12 @@ function CNPJ_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTa
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Versao(libHandle, sVersao, esTamanho);
+end;
+
+function CNPJ_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_OpenSSLInfo(libHandle, sOpenSSLInfo, esTamanho);
 end;
 
 function CNPJ_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
@@ -169,12 +178,12 @@ begin
   end;
 end;
 
-function CNPJ_Consultar(const libHandle: PLibHandle; eCNPJ: PChar; eServico: LongInt; const sResposta: PChar; var esTamanho: longint): longint;
+function CNPJ_Consultar(const libHandle: PLibHandle; eCNPJ: PChar; const sResposta: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
     VerificarLibInicializada(libHandle);
-    Result := TACBrLibConsultaCNPJ(libHandle^.Lib).Consultar(eCNPJ, eServico, sResposta, esTamanho);
+    Result := TACBrLibConsultaCNPJ(libHandle^.Lib).Consultar(eCNPJ, sResposta, esTamanho);
   except
      on E: EACBrLibException do
      Result := E.Erro;

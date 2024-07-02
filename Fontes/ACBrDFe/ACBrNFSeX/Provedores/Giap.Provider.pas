@@ -51,9 +51,9 @@ type
   protected
     procedure SetHeaders(aHeaderReq: THTTPHeader); override;
   public
-    function Recepcionar(ACabecalho, AMSG: String): string; override;
-    function ConsultarNFSePorRps(ACabecalho, AMSG: String): string; override;
-    function Cancelar(ACabecalho, AMSG: String): string; override;
+    function Recepcionar(const ACabecalho, AMSG: String): string; override;
+    function ConsultarNFSePorRps(const ACabecalho, AMSG: String): string; override;
+    function Cancelar(const ACabecalho, AMSG: String): string; override;
 
     function TratarXmlRetornado(const aXML: string): string; override;
   end;
@@ -109,7 +109,7 @@ begin
   with ConfigGeral do
   begin
     Identificador := '';
-    QuebradeLinha := '\\';
+    QuebradeLinha := sLineBreak;
     UseCertificateHTTP := False;
     UseAuthorizationHeader := True;
     ModoEnvio := meLoteAssincrono;
@@ -119,29 +119,22 @@ begin
     Autenticacao.RequerCertificado := False;
     Autenticacao.RequerChaveAutorizacao := True;
 
-    with ServicosDisponibilizados do
-    begin
-      EnviarLoteAssincrono := True;
-      ConsultarRps := True;
-      CancelarNfse := True;
-    end;
+    ServicosDisponibilizados.EnviarLoteAssincrono := True;
+    ServicosDisponibilizados.ConsultarRps := True;
+    ServicosDisponibilizados.CancelarNfse := True;
+
+    Particularidades.PermiteTagOutrasInformacoes := True;
   end;
 
   SetXmlNameSpace('');
 
   with ConfigMsgDados do
   begin
-    with XmlRps do
-    begin
-      InfElemento := 'notaFiscal';
-      DocElemento := 'nfe';
-    end;
+    XmlRps.InfElemento := 'notaFiscal';
+    XmlRps.DocElemento := 'nfe';
 
-    with LoteRps do
-    begin
-      InfElemento := 'notaFiscal';
-      DocElemento := 'nfe';
-    end;
+    LoteRps.InfElemento := 'notaFiscal';
+    LoteRps.DocElemento := 'nfe';
   end;
 
   ConfigSchemas.Validar := False;
@@ -182,6 +175,25 @@ end;
 procedure TACBrNFSeProviderGiap.ProcessarMensagemErros(
   RootNode: TACBrXmlNode; Response: TNFSeWebserviceResponse;
   const AListTag, AMessageTag: string);
+
+  function ObterValor(ANode: TACBrXmlNode; const ATag: string): string;
+  var
+    Node: TACBrXmlNode;
+    Attr: TACBrXmlAttribute;
+  begin
+    Attr := ANode.Attributes.Items[ATag];
+    if Attr <> nil then
+      Result := ObterConteudoTag(Attr)
+    else
+    begin
+      Node := ANode.Childrens.FindAnyNs(ATag);
+      if Node <> nil then
+        Result := ObterConteudoTag(Node, tcStr)
+      else
+        Result := '';
+    end;
+  end;
+
 var
   I: Integer;
   ANode: TACBrXmlNode;
@@ -198,9 +210,11 @@ begin
 
     for I := Low(ANodeArray) to High(ANodeArray) do
     begin
+      ANode := ANodeArray[I];
+
       AErro := Response.Erros.New;
-      AErro.Codigo := ObterConteudoTag(ANodeArray[I].Attributes.Items['code']);
-      AErro.Descricao := ACBrStr(ObterConteudoTag(ANodeArray[I].Attributes.Items['message']));
+      AErro.Codigo := ObterValor(ANode, 'code');
+      AErro.Descricao := ObterValor(ANode, 'message');
       AErro.Correcao := '';
     end;
   end;
@@ -552,8 +566,8 @@ begin
   begin
     Result := inherited TratarXmlRetornado(aXML);
 
-    Result := String(NativeStringToUTF8(Result));
-    Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
+//    Result := String(NativeStringToUTF8(Result));
+    Result := ParseText(Result);
     Result := RemoverDeclaracaoXML(Result);
     Result := RemoverIdentacao(Result);
     Result := RemoverCaracteresDesnecessarios(Result);
@@ -571,12 +585,12 @@ begin
                 '</notaFiscal>' +
               '</nfeReposta>';
 
-    Result := ParseText(AnsiString(Result), True, {$IfDef FPC}True{$Else}False{$EndIf});
-    Result := String(NativeStringToUTF8(Result));
+    Result := ParseText(Result);
+//    Result := String(NativeStringToUTF8(Result));
   end;
 end;
 
-function TACBrNFSeXWebserviceGiap.Recepcionar(ACabecalho,
+function TACBrNFSeXWebserviceGiap.Recepcionar(const ACabecalho,
   AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
@@ -584,7 +598,7 @@ begin
   Result := Executar('', AMSG, [], []);
 end;
 
-function TACBrNFSeXWebserviceGiap.ConsultarNFSePorRps(ACabecalho,
+function TACBrNFSeXWebserviceGiap.ConsultarNFSePorRps(const ACabecalho,
   AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
@@ -592,7 +606,7 @@ begin
   Result := Executar('', AMSG, [], []);
 end;
 
-function TACBrNFSeXWebserviceGiap.Cancelar(ACabecalho, AMSG: String): string;
+function TACBrNFSeXWebserviceGiap.Cancelar(const ACabecalho, AMSG: String): string;
 begin
   FPMsgOrig := AMSG;
 

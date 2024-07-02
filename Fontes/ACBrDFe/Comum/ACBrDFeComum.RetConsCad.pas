@@ -43,7 +43,9 @@ uses
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IfEnd}
-  ACBrBase, ACBrXmlBase;
+  ACBrBase,
+  ACBrXmlBase,
+  ACBrXmlDocument;
 
 type
 
@@ -123,6 +125,9 @@ type
     FXmlRetorno: string;
 
     procedure SetInfCad(const Value: TInfCadCollection);
+
+    procedure Ler_InfCad(ANode: TACBrXmlNode);
+    procedure Ler_Endereco(ANode: TACBrXmlNode; Item: TInfCadCollectionItem);
   public
     constructor Create;
     destructor Destroy; override;
@@ -147,8 +152,7 @@ type
 implementation
 
 uses
-  ACBrUtil.Strings,
-  ACBrXmlDocument;
+  ACBrUtil.Strings;
 
 { TInfCadCollection }
 
@@ -193,101 +197,119 @@ function TRetConsCad.LerXML: Boolean;
 var
   Document: TACBrXmlDocument;
   ANode, AuxNode: TACBrXmlNode;
-  ANodes: TACBrXmlNodeArray;
-  ok: Boolean;
-  i: Integer;
 begin
   Document := TACBrXmlDocument.Create;
 
   try
-    Document.LoadFromXml(XmlRetorno);
+    try
+      Result := False;
+      if XmlRetorno = '' then Exit;
 
-    ANode := Document.Root;
+      Document.LoadFromXml(XmlRetorno);
 
-    if ANode <> nil then
-    begin
-      versao := ObterConteudoTag(ANode.Attributes.Items['versao']);
+      ANode := Document.Root;
 
-      AuxNode := ANode.Childrens.FindAnyNs('infCons');
-
-      if AuxNode <> nil then
+      if ANode <> nil then
       begin
-        // tratamento para quando o webservice não retorna os zeros a esquerda
-        // na consulta
-        CNPJ := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CNPJ'), tcStr);
+        versao := ObterConteudoTag(ANode.Attributes.Items['versao']);
 
-        if (CNPJ <> '') and (length(CNPJ) < 14) then
-          CNPJ := PadLeft(CNPJ, 14, '0');
+        AuxNode := ANode.Childrens.FindAnyNs('infCons');
 
-        CPF := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CPF'), tcStr);
-
-        if (CPF <> '') and (length(CPF) < 11) then
-          CPF := PadLeft(CPF, 11, '0');
-
-        verAplic := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('verAplic'), tcStr);
-        cStat := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cStat'), tcInt);
-        xMotivo := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xMotivo'), tcStr));
-        UF := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('UF'), tcStr));
-        IE := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('IE'), tcStr));
-        dhCons := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dhCons'), tcDatHor);
-        cUF := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cUF'), tcInt);
-
-        ANodes := AuxNode.Childrens.FindAllAnyNs('infCad');
-
-        InfCad.Clear;
-
-        for i := 0 to Length(ANodes) - 1 do
+        if AuxNode <> nil then
         begin
-          InfCad.New;
-          with InfCad[i] do
-          begin
-            AuxNode := ANodes[i].Childrens.FindAnyNs('infProt');
+          // tratamento para quando o webservice não retorna os zeros a esquerda
+          // na consulta
+          CNPJ := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CNPJ'), tcStr);
 
-            if AuxNode <> nil then
-            begin
-              // tratamento para quando o webservice não retorna os zeros a esquerda
-              // na consulta
-              CNPJ := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CNPJ'), tcStr);
+          if (CNPJ <> '') and (length(CNPJ) < 14) then
+            CNPJ := PadLeft(CNPJ, 14, '0');
 
-              if (CNPJ <> '') and (length(CNPJ) < 14) then
-                CNPJ := PadLeft(CNPJ, 14, '0');
+          CPF := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CPF'), tcStr);
 
-              CPF := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CPF'), tcStr);
+          if (CPF <> '') and (length(CPF) < 11) then
+            CPF := PadLeft(CPF, 11, '0');
 
-              if (CPF <> '') and (length(CPF) < 11) then
-                CPF := PadLeft(CPF, 11, '0');
+          verAplic := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('verAplic'), tcStr);
+          cStat := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cStat'), tcInt);
+          xMotivo := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xMotivo'), tcStr);
+          UF := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('UF'), tcStr);
+          IE := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('IE'), tcStr);
+          dhCons := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dhCons'), tcDatHor);
+          cUF := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cUF'), tcInt);
 
-              IE := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('IE'), tcStr));
-              UF := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('UF'), tcStr));
-              cSit := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cSit'), tcInt);
-              indCredNFe := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('indCredNFe'), tcInt);
-              indCredCTe := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('indCredCTe'), tcInt);
-              xNome := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xNome'), tcStr));
-              xFant := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xFant'), tcStr));
-              xRegApur := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xRegApur'), tcStr));
-              CNAE := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CNAE'), tcInt);
-              dIniAtiv := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dIniAtiv'), tcDat);
-              dUltSit := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dUltSit'), tcDat);
-              dBaixa := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('dBaixa'), tcDat);
-              IEUnica := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('IEUnica'), tcStr));
-              IEAtual := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('IEAtual'), tcStr));
-              xLgr := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xLgr'), tcStr));
-              nro := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('nro'), tcStr));
-              xCpl := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xCpl'), tcStr));
-              xBairro := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xBairro'), tcStr));
-              cMun := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cMun'), tcInt);
-              xMun := ACBrStr(ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xMun'), tcStr));
-              CEP := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CEP'), tcInt);
-            end;
-          end;
+          Ler_InfCad(AuxNode);
         end;
       end;
-    end;
 
+      Result := True;
+    except
+      Result := False;
+    end;
+  finally
     FreeAndNil(Document);
-    Result := True;
-  except
-    Result := False;
+  end;
+end;
+
+procedure TRetConsCad.Ler_InfCad(ANode: TACBrXmlNode);
+var
+  ANodes: TACBrXmlNodeArray;
+  i: Integer;
+  Item: TInfCadCollectionItem;
+begin
+  ANodes := ANode.Childrens.FindAllAnyNs('infCad');
+
+  InfCad.Clear;
+
+  for i := 0 to Length(ANodes) - 1 do
+  begin
+    Item := InfCad.New;
+
+    // tratamento para quando o webservice não retorna os zeros a esquerda
+    // na consulta
+    Item.CNPJ := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('CNPJ'), tcStr);
+
+    if (Item.CNPJ <> '') and (length(Item.CNPJ) < 14) then
+      Item.CNPJ := PadLeft(Item.CNPJ, 14, '0');
+
+    Item.CPF := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('CPF'), tcStr);
+
+    if (Item.CPF <> '') and (length(Item.CPF) < 11) then
+      Item.CPF := PadLeft(Item.CPF, 11, '0');
+
+    Item.IE := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('IE'), tcStr);
+    Item.UF := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('UF'), tcStr);
+    Item.cSit := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('cSit'), tcInt);
+    Item.indCredNFe := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('indCredNFe'), tcInt);
+    Item.indCredCTe := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('indCredCTe'), tcInt);
+    Item.xNome := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('xNome'), tcStr);
+    Item.xFant := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('xFant'), tcStr);
+    Item.xRegApur := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('xRegApur'), tcStr);
+    Item.CNAE := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('CNAE'), tcInt);
+    Item.dIniAtiv := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('dIniAtiv'), tcDat);
+    Item.dUltSit := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('dUltSit'), tcDat);
+    Item.dBaixa := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('dBaixa'), tcDat);
+    Item.IEUnica := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('IEUnica'), tcStr);
+    Item.IEAtual := ObterConteudoTag(ANodes[i].Childrens.FindAnyNs('IEAtual'), tcStr);
+
+    Ler_Endereco(ANodes[i], Item);
+  end;
+end;
+
+procedure TRetConsCad.Ler_Endereco(ANode: TACBrXmlNode; Item: TInfCadCollectionItem);
+var
+  AuxNode: TACBrXmlNode;
+begin
+  AuxNode := ANode.Childrens.FindAnyNs('ender');
+
+  if AuxNode <> nil then
+  begin
+    Item.xLgr := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xLgr'), tcStr);
+    Item.nro := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('nro'), tcStr);
+    Item.xCpl := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xCpl'), tcStr);
+    Item.xBairro := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xBairro'), tcStr);
+    Item.cMun := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('cMun'), tcInt);
+    Item.xMun := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('xMun'), tcStr);
+    Item.CEP := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CEP'), tcInt);
   end;
 end;
 

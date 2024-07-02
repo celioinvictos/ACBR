@@ -51,6 +51,7 @@ type
     Document: string;
     Description: string;
     Name: string;
+    RefNum : string;
   end;
 
 type
@@ -92,6 +93,10 @@ CONST
   FILE_NOT_FOUND = 'Arquivo não encontrado!';
 
 implementation
+
+uses
+  ACBrUtil.Base,
+  ACBrUtil.Strings;
 
 { TACBrOFX }
 
@@ -214,6 +219,9 @@ begin
     oFile.LoadFromFile(FOFXFile);
     i := 0;
 
+    if (Pos('ENCODING:UTF-8',oFile.Text) > 0) then
+      oFile.Text := UTF8ToNativeString(oFile.Text);
+
     while i < oFile.Count do
     begin
       sLine := oFile.Strings[i];
@@ -284,17 +292,21 @@ begin
               oItem.ID := InfLine(sLine);
             if FindString('<CHKNUM>', sLine) or FindString('<CHECKNUM>', sLine) then
               oItem.Document := InfLine(sLine);
+
+            if FindString('<REFNUM>', sLine) then
+              oItem.RefNum := InfLine(sLine);
+
             if FindString('<MEMO>', sLine) then
             begin
               LDescricaoMemo := LDescricaoMemo + ifthen(LDescricaoMemo='','',', ')+trim(InfLine(sLine));
-              if bOFX then                
+              if bOFX then
                 oItem.Description := Trim(LDescricaoMemo);
             end;
             if FindString('<TRNAMT>', sLine) then
             begin
               Amount := InfLine(sLine);
               Amount := StringReplace(Amount,'.',',',[rfReplaceAll]);
-              oItem.Value := StrToFloat(Amount);
+              oItem.Value := StringToFloat(Amount);
             end;
             if FindString('<NAME>', sLine) then
               oItem.Name := InfLine(sLine);

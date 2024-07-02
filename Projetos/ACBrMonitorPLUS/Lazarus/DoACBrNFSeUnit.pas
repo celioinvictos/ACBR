@@ -148,6 +148,12 @@ public
    procedure Executar; override;
 end;
 
+{TMetodoConsultarLinkNFSe}
+TMetodoConsultarLinkNFSe = class(TACBrMetodo)
+public
+   procedure Executar; override;
+end;
+
 {TMetodoConsultarNFSeServicoPrestadoPorNumero}
 TMetodoConsultarNFSeServicoPrestadoPorNumero = class(TACBrMetodo)
 public
@@ -512,10 +518,9 @@ begin
     try
       ACBrNFSeX.NotasFiscais.ImprimirPDF;
 
-      if ACBrNFSeX.NotasFiscais.Items[0].NomeArqRps <> '' then
-        fpCmd.Resposta := fpCmd.Resposta + ACBrNFSeX.NotasFiscais.Items[0].NomeArqRps
-      else
-        fpCmd.Resposta :=  fpCmd.Resposta + ACBrNFSeX.NotasFiscais.Items[0].NomeArq;
+      if Assigned(ACBrNFSeX.DANFSe)then
+        fpCmd.Resposta := fpCmd.Resposta + ACBrNFSeX.DANFSE.ArquivoPDF;
+
     finally
       CargaDFe.Free;
     end;
@@ -1059,6 +1064,37 @@ begin
 
     Finally
       InfConsultaNFSe.Free;
+    end;
+  end;
+end;
+
+{ TMetodoConsultarLinkNFSe }
+
+{ Params: 0 - Path_ini: String  Path com os parametros de consulta link NFSe}
+procedure TMetodoConsultarLinkNFSe.Executar;
+var
+  APathIni: String;
+  InfConsultaLinkNFSe: TInfConsultaLinkNFSe;
+  RespConsultaLinkNFSe: TConsultarLinkNFSeResposta;
+begin
+  APathIni := fpCmd.Params(0);
+
+  with TACBrObjetoNFSe(fpObjetoDono) do
+  begin
+    InfConsultaLinkNFSe := TInfConsultaLinkNFSe.Create;
+    try
+      InfConsultaLinkNFSe.LerFromIni(APathIni);
+      ACBrNFSeX.ConsultarLinkNFSe(InfConsultaLinkNFSe);
+
+      RespConsultaLinkNFSe := TConsultarLinkNFSeResposta.Create(TpResp, codUTF8);
+      try
+        RespConsultaLinkNFSe.Processar(ACBrNFSeX.WebService.ConsultaLinkNFSe);
+        fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespConsultaLinkNFSe.Gerar;
+      finally
+        RespConsultaLinkNFSe.Free;
+      end;
+    finally
+      InfConsultaLinkNFSe.Free;
     end;
   end;
 end;
@@ -1772,6 +1808,7 @@ begin
   ListaDeMetodos.Add(CMetodoSetCodigoMunicipio);
   ListaDeMetodos.Add(CMetodoSetEmitente);
   ListaDeMetodos.Add(CMetodoSetAutenticacaoNFSe);
+  ListaDeMetodos.Add(CMetodoConsultarLinkNFSe);
 
   // DoACBrUnit
   ListaDeMetodos.Add(CMetodoSavetofile);
@@ -1847,6 +1884,7 @@ begin
     39  : AMetodoClass := TMetodoSetCodigoMunicipio;
     40  : AMetodoClass := TMetodoSetEmitente;
     41  : AMetodoClass := TMetodoSetAutenticacaoNFSe;
+    42  : AMetodoClass := TMetodoConsultarLinkNFSe;
 
     else
     begin

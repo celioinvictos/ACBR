@@ -56,7 +56,8 @@ uses
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
   {$IfEnd}
-  pcnConversao, pcnGerador, pcnEventoNFe, pcnConsts, pcnNFeConsts, pcnSignature,
+  ACBrDFeConsts,
+  pcnConversao, pcnGerador, pcnEventoNFe, pcnNFeConsts, pcnSignature,
   ACBrBase;
 
 type
@@ -122,7 +123,7 @@ implementation
 
 uses
   IniFiles,
-  pcnRetEnvEventoNFe, pcnAuxiliar, pcnConversaoNFe,
+  pcnRetEnvEventoNFe, pcnConversaoNFe,
   ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime, ACBrUtil.FilesIO,
   ACBrDFeUtil;
 
@@ -219,7 +220,7 @@ begin
       Gerador.wAlerta('HP12', 'chNFe', '', 'Chave de NFe inválida');
 
     Gerador.wCampo(tcStr,    'HP13', 'dhEvento', 001, 050,   1, FormatDateTime('yyyy-mm-dd"T"hh:nn:ss',Evento.Items[i].InfEvento.dhEvento)+
-                                                                GetUTC(CodigoParaUF(Evento.Items[i].InfEvento.cOrgao), Evento.Items[i].InfEvento.dhEvento));
+                                                                GetUTC(CodigoUFparaUF(Evento.Items[i].InfEvento.cOrgao), Evento.Items[i].InfEvento.dhEvento));
     Gerador.wCampo(tcInt,    'HP14', 'tpEvento', 006, 006,   1, Evento.Items[i].InfEvento.TipoEvento);
     Gerador.wCampo(tcInt,    'HP15', 'nSeqEvento', 001, 002, 1, Evento.Items[i].InfEvento.nSeqEvento);
     // Alterado por Italo em 21/11/2017
@@ -264,7 +265,7 @@ begin
           Gerador.wCampo(tcStr, 'P21', 'tpAutor',     01, 01, 1, TipoAutorToStr(Evento.Items[i].InfEvento.detEvento.tpAutor));
           Gerador.wCampo(tcStr, 'P22', 'verAplic',    01, 20, 1, Evento.Items[i].InfEvento.detEvento.verAplic);
           Gerador.wCampo(tcStr, 'P23', 'dhEmi',       01, 50, 1, FormatDateTime('yyyy-mm-dd"T"hh:nn:ss',Evento.Items[i].InfEvento.detEvento.dhEmi)+
-                                                                 GetUTC(CodigoParaUF(Evento.Items[i].InfEvento.detEvento.cOrgaoAutor), Evento.Items[i].InfEvento.detEvento.dhEmi));
+                                                                 GetUTC(CodigoUFparaUF(Evento.Items[i].InfEvento.detEvento.cOrgaoAutor), Evento.Items[i].InfEvento.detEvento.dhEmi));
 //            Gerador.wCampo(tcStr, 'P23', 'dhEmi',       01, 50, 1, FormatDateTime('yyyy-mm-dd"T"hh:nn:ss',Evento.Items[i].InfEvento.detEvento.dhEmi)+
 //                                                                   GetUTC(CodigoParaUF(Evento.Items[i].InfEvento.cOrgao), Evento.Items[i].InfEvento.detEvento.dhEmi));
           Gerador.wCampo(tcStr, 'P24', 'tpNF',        01, 01, 1, tpNFToStr(Evento.Items[i].InfEvento.detEvento.tpNF));
@@ -276,7 +277,7 @@ begin
             GerarDestNFCe(Evento.Items[i]);
             // No EPEC da NFC-e segundo o schema as TAGs vNF e vICMS estão fora do grupo dest e não
             // tem a TAG vST.
-            Gerador.wCampo(tcDe2, 'P32', 'vNF',   01, 15, 1, Evento.Items[i].InfEvento.detEvento.vNF, DSC_VNF);
+            Gerador.wCampo(tcDe2, 'P32', 'vNF',   01, 15, 1, Evento.Items[i].InfEvento.detEvento.vNF, DSC_VDF);
             Gerador.wCampo(tcDe2, 'P33', 'vICMS', 01, 15, 1, Evento.Items[i].InfEvento.detEvento.vICMS, DSC_VICMS);
           end;
         end;
@@ -308,7 +309,7 @@ begin
           Gerador.wCampo(tcStr, 'P21', 'tpAutor',     01, 01, 1, TipoAutorToStr(Evento.Items[i].InfEvento.detEvento.tpAutor));
           Gerador.wCampo(tcStr, 'P22', 'verAplic',    01, 20, 1, Evento.Items[i].InfEvento.detEvento.verAplic);
           Gerador.wCampo(tcStr, 'P30', 'dhEntrega',   25, 25, 1, DateTimeTodh(Evento.Items[i].InfEvento.detEvento.dhEntrega) +
-                                    GetUTC(CodigoParaUF(Evento.Items[i].InfEvento.detEvento.cOrgaoAutor),
+                                    GetUTC(CodigoUFparaUF(Evento.Items[i].InfEvento.detEvento.cOrgaoAutor),
                                     Evento.Items[i].InfEvento.detEvento.dhEntrega), DSC_DEMI);
 
           Gerador.wCampo(tcStr, 'P31', 'nDoc   ', 02, 20, 1, Evento.Items[i].InfEvento.detEvento.nDoc);
@@ -318,7 +319,7 @@ begin
 
           Gerador.wCampo(tcStr, 'P35', 'hashComprovante  ', 28, 28, 1, Evento.Items[i].InfEvento.detEvento.hashComprovante);
           Gerador.wCampo(tcStr, 'P36', 'dhHashComprovante', 25, 25, 1, DateTimeTodh(Evento.Items[i].InfEvento.detEvento.dhHashComprovante) +
-                                    GetUTC(CodigoParaUF(Evento.Items[i].InfEvento.detEvento.cOrgaoAutor),
+                                    GetUTC(CodigoUFparaUF(Evento.Items[i].InfEvento.detEvento.cOrgaoAutor),
                                     Evento.Items[i].InfEvento.detEvento.dhHashComprovante), DSC_DEMI);
         end;
 
@@ -350,6 +351,36 @@ begin
               'O emitente ou destinatário da NF-e, declara que permite o transportador ' +
               'declarado no campo CNPJ/CPF deste evento a autorizar os transportadores ' +
               'subcontratados ou redespachados a terem acesso ao download da NF-e');
+        end;
+
+      teInsucessoEntregaNFe:
+        begin
+          Gerador.wCampo(tcInt, 'P20', 'cOrgaoAutor', 01, 02, 1, FEvento[i].FInfEvento.detEvento.cOrgaoAutor);
+          Gerador.wCampo(tcStr, 'P21', 'verAplic',    01, 20, 1, Evento[i].InfEvento.detEvento.verAplic);
+          Gerador.wCampo(tcStr, 'P30', 'dhTentativaEntrega', 25, 25, 1, DateTimeTodh(Evento[i].InfEvento.detEvento.dhTentativaEntrega) +
+                                     GetUTC(Evento[i].InfEvento.detEvento.UF,
+                                     Evento[i].InfEvento.detEvento.dhTentativaEntrega), DSC_DEMI);
+          Gerador.wCampo(tcInt, 'P31', 'nTentativa ', 3, 3, 0, Evento[i].InfEvento.detEvento.nTentativa);
+          Gerador.wCampo(tcStr, 'P32', 'tpMotivo   ', 1, 1, 1, tpMotivoToStr(Evento[i].InfEvento.detEvento.tpMotivo));
+
+          if Evento[i].InfEvento.detEvento.tpMotivo = tmOutro then
+            Gerador.wCampo(tcStr, 'P33', 'xJustMotivo', 25, 250, 0, Evento[i].InfEvento.detEvento.xJustMotivo);
+
+          Gerador.wCampo(tcDe6, 'P34', 'latGPS    ', 01, 10, 0, Evento[i].InfEvento.detEvento.latGPS);
+          Gerador.wCampo(tcDe6, 'P35', 'longGPS   ', 01, 11, 0, Evento[i].InfEvento.detEvento.longGPS);
+
+          Gerador.wCampo(tcStr, 'P36', 'hashTentativaEntrega  ', 20, 20, 1, Evento[i].InfEvento.detEvento.hashTentativaEntrega);
+          Gerador.wCampo(tcStr, 'P37', 'dhHashTentativaEntrega', 25, 25, 0, DateTimeTodh(Evento[i].InfEvento.detEvento.dhHashTentativaEntrega) +
+                                     GetUTC(Evento[i].InfEvento.detEvento.UF,
+                                     Evento[i].InfEvento.detEvento.dhHashTentativaEntrega), DSC_DEMI);
+        end;
+
+      teCancInsucessoEntregaNFe:
+        begin
+          Gerador.wCampo(tcInt, 'P20', 'cOrgaoAutor', 01, 02, 1, FEvento[i].FInfEvento.detEvento.cOrgaoAutor);
+          Gerador.wCampo(tcStr, 'P21', 'verAplic',    01, 20, 1, Evento[i].InfEvento.detEvento.verAplic);
+
+          Gerador.wCampo(tcStr, 'P22', 'nProtEvento', 15, 15, 1, Evento[i].InfEvento.detEvento.nProtEvento);
         end;
     end;
     Gerador.wGrupo('/detEvento');
@@ -400,7 +431,7 @@ begin
 
   // No EPEC da NF-e segundo o schema as TAGs vNF, vICMS e vST estão dentro do grupo dest.
 
-  Gerador.wCampo(tcDe2, 'P32', 'vNF',   01, 15, 1, EventoItem.InfEvento.detEvento.vNF, DSC_VNF);
+  Gerador.wCampo(tcDe2, 'P32', 'vNF',   01, 15, 1, EventoItem.InfEvento.detEvento.vNF, DSC_VDF);
   Gerador.wCampo(tcDe2, 'P33', 'vICMS', 01, 15, 1, EventoItem.InfEvento.detEvento.vICMS, DSC_VICMS);
   Gerador.wCampo(tcDe2, 'P34', 'vST',   01, 15, 1, EventoItem.InfEvento.detEvento.vST, DSC_VST);
 
@@ -518,8 +549,17 @@ begin
 
         if RetEventoNFe.InfEvento.detEvento.autXML.Count > 0 then
         begin
-          InfEvento.detEvento.autXML[0].CNPJCPF := RetEventoNFe.InfEvento.detEvento.autXML[0].CNPJCPF;
+          InfEvento.detEvento.autXML.New.CNPJCPF := RetEventoNFe.InfEvento.detEvento.autXML[0].CNPJCPF;
         end;
+
+        // Insucesso na Entrega
+        infEvento.detEvento.dhTentativaEntrega := RetEventoNFe.InfEvento.detEvento.dhTentativaEntrega;
+        infEvento.detEvento.nTentativa := RetEventoNFe.InfEvento.detEvento.nTentativa;
+        infEvento.detEvento.tpMotivo := RetEventoNFe.InfEvento.detEvento.tpMotivo;
+        infEvento.detEvento.xJustMotivo := RetEventoNFe.InfEvento.detEvento.xJustMotivo;
+        infEvento.detEvento.hashTentativaEntrega := RetEventoNFe.InfEvento.detEvento.hashTentativaEntrega;
+        infEvento.detEvento.dhHashTentativaEntrega := RetEventoNFe.InfEvento.detEvento.dhHashTentativaEntrega;
+        infEvento.detEvento.UF := RetEventoNFe.InfEvento.detEvento.UF;
 
         signature.URI             := RetEventoNFe.signature.URI;
         signature.DigestValue     := RetEventoNFe.signature.DigestValue;
@@ -663,6 +703,26 @@ begin
 
             Inc(J);
           end;
+        end;
+
+        if (infEvento.tpEvento = teInsucessoEntregaNFe) then
+        begin
+          infEvento.detEvento.cOrgaoAutor := INIRec.ReadInteger(sSecao, 'cOrgaoAutor', 92);
+          infEvento.detEvento.verAplic := INIRec.ReadString(sSecao, 'verAplic', '1.0');
+          infEvento.detEvento.dhTentativaEntrega := StringToDateTime(INIRec.ReadString(sSecao, 'dhTentativaEntrega', ''));
+          infEvento.detEvento.nTentativa := INIRec.ReadInteger(sSecao, 'nTentativa', 1);
+          infEvento.detEvento.tpMotivo := StrTotpMotivo(ok, INIRec.ReadString(sSecao, 'tpMotivo', '1'));
+          infEvento.detEvento.xJustMotivo := INIRec.ReadString(sSecao, 'xJustMotivo', '');
+          infEvento.detEvento.hashTentativaEntrega := INIRec.ReadString(sSecao, 'hashTentativaEntrega', '');
+          infEvento.detEvento.dhHashTentativaEntrega := StringToDateTime(INIRec.ReadString(sSecao, 'dhHashTentativaEntrega', ''));
+          infEvento.detEvento.UF := INIRec.ReadString(sSecao, 'UF', '');
+        end;
+
+        if (infEvento.tpEvento = teCancInsucessoEntregaNFe) then
+        begin
+          infEvento.detEvento.cOrgaoAutor := INIRec.ReadInteger(sSecao, 'cOrgaoAutor', 92);
+          infEvento.detEvento.verAplic := INIRec.ReadString(sSecao, 'verAplic', '1.0');
+          infEvento.detEvento.nProtEvento := INIRec.ReadString(sSecao, 'nProtEvento', '');
         end;
       end;
 

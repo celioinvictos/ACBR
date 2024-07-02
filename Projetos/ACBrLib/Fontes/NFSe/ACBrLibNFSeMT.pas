@@ -55,6 +55,9 @@ function NFSE_Nome(const libHandle: PLibHandle; const sNome: PChar; var esTamanh
 function NFSE_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
+function NFSE_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
 function NFSE_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
@@ -79,6 +82,9 @@ function NFSE_ConfigGravarValor(const libHandle: PLibHandle; const eSessao, eCha
 
 {%region NFSe}
 function NFSE_CarregarXML(const libHandle: PLibHandle; const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function NFSE_CarregarLoteXML(const libHandle: PLibHandle; const eArquivoOuXML: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 function NFSE_CarregarINI(const libHandle: PLibHandle; const eArquivoOuINI: PChar): longint;
@@ -139,6 +145,9 @@ function NFSE_ConsultarNFSePorFaixa(const libHandle: PLibHandle; const aNumeroIn
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 function NFSE_ConsultarNFSeGenerico(const libHandle: PLibHandle; aInfConsultaNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function NFSE_ConsultarLinkNFSe(const libHandle: PLibHandle; aInfConsultaLinkNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 function NFSE_EnviarEmail(const libHandle: PLibHandle; const ePara, eXmlNFSe: PChar; const AEnviaPDF: boolean; const eAssunto, eCC, eAnexos, eMensagem: PChar):longint;
@@ -242,6 +251,12 @@ begin
   Result := LIB_Versao(libHandle,sVersao, esTamanho);
 end;
 
+function NFSE_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_OpenSSLInfo(libHandle, sOpenSSLInfo, esTamanho);
+end;
+
 function NFSE_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
@@ -293,6 +308,21 @@ begin
   try
     VerificarLibInicializada(libHandle);
     Result := TACBrLibNFSe(libHandle^.Lib).CarregarXML(eArquivoOuXML);
+  except
+    on E: EACBrLibException do
+      Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function NFSE_CarregarLoteXML(const libHandle: PLibHandle; const eArquivoOuXML: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibNFSe(libHandle^.Lib).CarregarLoteXML(eArquivoOuXML);
   except
     on E: EACBrLibException do
       Result := E.Erro;
@@ -593,6 +623,21 @@ begin
   try
     VerificarLibInicializada(libHandle);
     Result := TACBrLibNFSe(libHandle^.Lib).ConsultarNFSeGenerico(aInfConsultaNFSe, sResposta, esTamanho);
+  except
+      on E: EACBrLibException do
+       Result := E.Erro;
+
+      on E: Exception do
+        Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function NFSE_ConsultarLinkNFSe(const libHandle: PLibHandle; aInfConsultaLinkNFSe: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibNFSe(libHandle^.Lib).ConsultarLinkNFSe(aInfConsultaLinkNFSe, sResposta, esTamanho);
   except
       on E: EACBrLibException do
        Result := E.Erro;

@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
@@ -37,14 +37,17 @@ unit ACBrLibConfig;
 interface
 
 uses
-  Classes, SysUtils, IniFiles,
-  synachar, mimemess,
-  ACBrLibResposta, ACBrDeviceConfig, blcksock;
+  Classes,
+  SysUtils,
+  IniFiles,
+  synachar,
+  mimemess,
+  ACBrLibResposta,
+  ACBrDeviceConfig,
+  blcksock,
+  ACBrUtil.FilesIO;
 
 type
-  //               0           1          2           3             4
-  TNivelLog = (logNenhum, logSimples, logNormal, logCompleto, logParanoico);
-
   //                 0       1
   TTipoFuncao = (tfGravar, tfLer);
 
@@ -350,7 +353,7 @@ implementation
 uses
   TypInfo, strutils,
   ACBrLibConsts, ACBrLibComum,
-  ACBrLibHelpers, ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings;
+  ACBrLibHelpers, ACBrUtil.Base, ACBrUtil.Strings;
 
 { TSistemaConfig }
 
@@ -1031,6 +1034,9 @@ begin
               ( (ASessao = CSessaoProxy) or
                 (ASessao = CSessaoEmail) or
                 (ASessao = CSessaoDFe)
+
+              ) or (
+              (ASessao = CSessaoConsultaCNPJ) and ((AChave = CChaveSenha) or (AChave = CChaveUsuario))
               );
 
     if (Config.Log.Nivel > logCompleto) then
@@ -1047,7 +1053,6 @@ begin
   TACBrLib(FOwner).GravarLog(ClassName + '.AjustarValor(' + GetEnumName(TypeInfo(TTipoFuncao), Integer(Tipo)) + ','
                                                           + ASessao + ',' + AChave + ',' + IfThen(Criptografar,
                                                           StringOfChar('*', Length(AValor)), AValor) +')', logParanoico);
-
   Result := AValor;
   if Criptografar then
   begin

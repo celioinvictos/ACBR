@@ -332,7 +332,7 @@ begin
                            NFSe.Servico.ItemServico[I].SituacaoTributaria, ''));
 
     Result[i].AppendChild(AddNode(tcDe2, '#', 'valor_tributavel', 1, 15, 0,
-                                   NFSe.Servico.ItemServico[I].ValorTotal, ''));
+                              NFSe.Servico.ItemServico[I].ValorTributavel, ''));
 
     Result[i].AppendChild(AddNode(tcDe2, '#', 'valor_deducao', 1, 15, 0,
                                 NFSe.Servico.ItemServico[I].ValorDeducoes, ''));
@@ -411,7 +411,7 @@ begin
   Result := CreateElement('tomador');
 
   Result.AppendChild(AddNode(tcStr, '#1', 'endereco_informado', 1, 1, 0,
-                            Trim(NFSe.Tomador.Endereco.EnderecoInformado), ''));
+            FpAOwner.SimNaoOpcToStr(NFSe.Tomador.Endereco.EnderecoInformado), ''));
 
   if Trim(NFSe.Tomador.IdentificacaoTomador.DocEstrangeiro) <> '' then
   begin
@@ -460,13 +460,17 @@ begin
                                   NFSe.Tomador.Endereco.Complemento, DSC_XCPL));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'ponto_referencia', 1, 100, FpNrOcorrTagsTomador,
-                                                                       '', ''));
+                                    NFSe.Tomador.Endereco.PontoReferencia, ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'bairro', 1, 30, FpNrOcorrTagsTomador,
                                     NFSe.Tomador.Endereco.Bairro, DSC_XBAIRRO));
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'cidade', 1, 9, FpNrOcorrTagsTomador,
-    CodIBGEToCodTOM(StrToIntDef(NFSe.Tomador.Endereco.CodigoMunicipio, 0)), ''));
+  if Trim(NFSe.Tomador.IdentificacaoTomador.DocEstrangeiro) <> '' then
+    Result.AppendChild(AddNode(tcStr, '#1', 'cidade', 1, 100, FpNrOcorrTagsTomador,
+                                          NFSe.Tomador.Endereco.xMunicipio, ''))
+  else
+    Result.AppendChild(AddNode(tcStr, '#1', 'cidade', 1, 9, FpNrOcorrTagsTomador,
+   CodIBGEToCodTOM(StrToIntDef(NFSe.Tomador.Endereco.CodigoMunicipio, 0)), ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'cep', 1, 8, FpNrOcorrTagsTomador,
                                     OnlyNumber(NFSe.Tomador.Endereco.CEP), ''));

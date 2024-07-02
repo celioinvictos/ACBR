@@ -457,7 +457,7 @@ begin
   cdsPrestador.FieldDefs.Clear;
   cdsPrestador.FieldDefs.Add('Cnpj', ftString, 18);
   cdsPrestador.FieldDefs.Add('InscricaoMunicipal', ftString, 15);
-  cdsPrestador.FieldDefs.Add('InscricaoEstadual', ftString, 15);
+  cdsPrestador.FieldDefs.Add('InscricaoEstadual', ftString, 20);
   cdsPrestador.FieldDefs.Add('RazaoSocial', ftString, 60);
   cdsPrestador.FieldDefs.Add('NomeFantasia', ftString, 60);
   cdsPrestador.FieldDefs.Add('Endereco', ftString, 60);
@@ -489,6 +489,9 @@ begin
   cdsServicos.FieldDefs.Add('CodigoNbs', ftString, 9);
   cdsServicos.FieldDefs.Add('CodigoTributacaoMunicipio', ftString, 20);
   cdsServicos.FieldDefs.Add('Discriminacao', ftString, 4000);
+  cdsServicos.FieldDefs.Add('ExigibilidadeISS', ftString, 60);
+  cdsServicos.FieldDefs.Add('CodigoMunicipio', ftString, 60);
+  cdsServicos.FieldDefs.Add('MunicipioIncidencia', ftString, 60);
   cdsServicos.FieldDefs.Add('CodigoPais', ftString, 4);
   cdsServicos.FieldDefs.Add('NumeroProcesso', ftString, 10);
   cdsServicos.FieldDefs.Add('xItemListaServico', ftString, 300);
@@ -516,6 +519,7 @@ begin
   cdsServicos.FieldDefs.Add('OutrosDescontos', ftCurrency);
   cdsServicos.FieldDefs.Add('DescricaoTotalRetDemo', ftString, 19);
   cdsServicos.FieldDefs.Add('DescriçãoTributosFederais', ftString, 35);
+  cdsServicos.FieldDefs.Add('ValorTotalNotaFiscal', ftCurrency);
 
     // Provedor SP
   cdsServicos.FieldDefs.Add('ValorCargaTributaria', ftCurrency);
@@ -574,7 +578,7 @@ begin
   cdsTomador.FieldDefs.Clear;
   cdsTomador.FieldDefs.Add('CpfCnpj', ftString, 18);
   cdsTomador.FieldDefs.Add('InscricaoMunicipal', ftString, 15);
-  cdsTomador.FieldDefs.Add('InscricaoEstadual', ftString, 15);
+  cdsTomador.FieldDefs.Add('InscricaoEstadual', ftString, 20);
   cdsTomador.FieldDefs.Add('RazaoSocial', ftString, 60);
   cdsTomador.FieldDefs.Add('NomeFantasia', ftString, 60);
   cdsTomador.FieldDefs.Add('Endereco', ftString, 60);
@@ -791,7 +795,6 @@ begin
   frxIntermediario := TfrxDBDataset.Create(Self);
 
   frxIntermediario.UserName := 'Intermediario';
-  frxIntermediario.Enabled         := false;
   frxIntermediario.CloseDataSource := false;
   frxIntermediario.OpenDataSource  := false;
 
@@ -865,6 +868,7 @@ begin
   frxServicos.FieldAliases.Add('OutrosDescontos=OutrosDescontos');
   frxServicos.FieldAliases.Add('DescricaoTotalRetDemo=DescricaoTotalRetDemo');
   frxServicos.FieldAliases.Add('DescriçãoTributosFederais=DescriçãoTributosFederais');
+  frxServicos.FieldAliases.Add('ValorTotalNotaFiscal=ValorTotalNotaFiscal');
     // Provedor SP
   frxServicos.FieldAliases.Add('ValorCargaTributaria=ValorCargaTributaria');
   frxServicos.FieldAliases.Add('PercentualCargaTributaria=PercentualCargaTributaria');
@@ -1167,10 +1171,8 @@ begin
 
     try
       LMunicipio := LDadosServico.xMunicipioIncidencia;
-
       if LMunicipio = '' then
         LMunicipio := 'SEM INCIDENCIA DE ISS';
-
       LCDS.FieldByName('MunicipioIncidencia').AsString := LMunicipio;
     except
       on E: Exception do
@@ -1179,8 +1181,8 @@ begin
         LUF        := '';
       end;
     end;
-
   end;
+
   LCDS.FieldByName('MunicipioPrestacao').AsString := LDadosServico.MunicipioPrestacaoServico;
   LCDS.FieldByName('CodigoObra').AsString         := ANFSe.ConstrucaoCivil.CodigoObra;
   LCDS.FieldByName('Art').AsString                := ANFSe.ConstrucaoCivil.Art;
@@ -1195,10 +1197,13 @@ begin
   LCDS.FieldByName('Usuario').AsString := DANFSeXClassOwner.Usuario;
   LCDS.FieldByName('Site').AsString    := DANFSeXClassOwner.Site;
 
-  if Provedor = proEL then
-    LCDS.FieldByName('Mensagem0').AsString := IfThen(ANFSe.SituacaoNfse = snCancelado, 'CANCELADA', '')
-  else
-    LCDS.FieldByName('Mensagem0').AsString := IfThen(ANFSe.SituacaoNfse = snCancelado, 'NFSe CANCELADA', '');
+  if FDANFSeXClassOwner.Cancelada
+    or (ANFSe.NfseCancelamento.DataHora <> 0)
+    or (ANFSe.SituacaoNfse = snCancelado)
+    or (ANFSe.StatusRps = srCancelado) then
+  begin
+    LCDS.FieldByName('Mensagem0').AsString := 'NFSe CANCELADA';
+  end;
 
   if (ACBrNFSe.Configuracoes.WebServices.AmbienteCodigo = 2) then
     LCDS.FieldByName('Mensagem0').AsString := Trim(LCDS.FieldByName('Mensagem0').AsString + sLineBreak + ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL'));
@@ -1326,6 +1331,7 @@ begin
   LCDS.FieldByName('DescontoCondicionado').AsFloat   := LValores.DescontoCondicionado;
   LCDS.FieldByName('DescontoIncondicionado').AsFloat := LValores.DescontoIncondicionado;
   LCDS.FieldByName('OutrosDescontos').AsCurrency     := LValores.OutrosDescontos;
+  LCDS.FieldByName('ValorTotalNotaFiscal').AsCurrency := LValores.ValorTotalNotaFiscal;
 
   if LValores.IssRetido = stRetencao then
   begin
@@ -1351,8 +1357,11 @@ begin
     if LValoresNFSe.Aliquota <> 0 then
       LCDS.FieldByName('Aliquota').AsFloat      := LValoresNFSe.Aliquota;
 
-    if LValoresNFSe.ValorLiquidoNfse = 0 then
-      LValoresNFSe.ValorLiquidoNfse := LValoresNFSe.BaseCalculo;
+    if (LValoresNFSe.ValorLiquidoNfse = 0) and (LValores.ValorLiquidoNfse = 0) then
+      LValoresNFSe.ValorLiquidoNfse := LValoresNFSe.BaseCalculo
+    else
+    if (LValoresNFSe.ValorLiquidoNfse = 0) and (LValores.ValorLiquidoNfse > 0) then
+      LValoresNFSe.ValorLiquidoNfse := LValores.ValorLiquidoNfse;
 
     LCDS.FieldByName('ValorLiquidoNfse').AsFloat := LValoresNFSe.ValorLiquidoNfse;
   end;
@@ -1430,7 +1439,7 @@ var
   vStringStream: TStringStream;
 begin
   cdsParametros.FieldByName('LogoPrefExpandido').AsString := IfThen(ExpandeLogoMarca, '0', '1'); // Prefeitura
-  cdsParametros.FieldByName('Nome_Prefeitura').AsString   := Prefeitura;
+  cdsParametros.FieldByName('Nome_Prefeitura').AsString := Prefeitura;
   if NaoEstaVazio(DANFSeXClassOwner.Logo) then
   begin
     cdsParametros.FieldByName('imgPrefeitura').AsString := Logo;

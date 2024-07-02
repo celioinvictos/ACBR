@@ -76,6 +76,9 @@ function SAT_Nome(const libHandle: TLibHandle; const sNome: PChar; var esTamanho
 function SAT_Versao(const libHandle: TLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
+function SAT_OpenSSLInfo(const libHandle: TLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
 function SAT_UltimoRetorno(const libHandle: TLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 {%endregion}
@@ -160,6 +163,12 @@ function SAT_CriarEnviarCFe(const libHandle: TLibHandle; eArquivoIni: PChar; con
 function SAT_ValidarCFe(const libHandle: TLibHandle; eArquivoXml: PChar): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
+function SAT_CarregarXml(const libHandle: TLibHandle; eArquivoXml: PChar): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
+function SAT_ObterIni(const libHandle: TLibHandle; const sResposta: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
 function SAT_EnviarCFe(const libHandle: TLibHandle; eArquivoXml: PChar; const sResposta: PChar;
   var esTamanho: longint): longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
@@ -175,6 +184,9 @@ function SAT_ImprimirExtratoResumido(const libHandle: TLibHandle; eArqXMLVenda, 
   : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
 function SAT_ImprimirExtratoCancelamento(const libHandle: TLibHandle; eArqXMLVenda, eArqXMLCancelamento, eNomeImpressora: PChar)
+  : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
+
+function SAT_SalvarPDF(const libHandle: TLibHandle; const sResposta: PChar; var esTamanho: longint)
   : longint;{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf}; external CACBrSATLIBName;
 
 function SAT_GerarImpressaoFiscalMFe(const libHandle: TLibHandle; eArqXMLVenda, eNomeImpressora: PChar; const sResposta: PChar;

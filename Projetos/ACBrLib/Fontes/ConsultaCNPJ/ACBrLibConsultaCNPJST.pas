@@ -52,6 +52,9 @@ function CNPJ_Nome (const sNome: PChar; var esTamanho: longint): longint;
 function CNPJ_Versao (const sVersao: PChar; var esTamanho: longint): longint;
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
+function CNPJ_OpenSSLInfo(const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
 function CNPJ_UltimoRetorno (const sMensagem: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
@@ -77,7 +80,7 @@ function CNPJ_ConfigGravarValor (const eSessao, eChave, eValor: PChar): longint;
 function CNPJ_ConsultarCaptcha (ePathDownload: PChar; const sResposta: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function CNPJ_Consultar (eCNPJ: PChar; eServico: LongInt; const sResposta: PChar; var esTamanho: longint): longint;
+function CNPJ_Consultar (eCNPJ: PChar; const sResposta: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 implementation
@@ -108,6 +111,12 @@ function CNPJ_Versao(const sVersao: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Versao(pLib, sVersao, esTamanho);
+end;
+
+function CNPJ_OpenSSLInfo(const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  Result := LIB_OpenSSLInfo(pLib, sOpenSSLInfo, esTamanho);
 end;
 
 function CNPJ_UltimoRetorno(const sMensagem: PChar; var esTamanho: longint): longint;
@@ -169,12 +178,12 @@ begin
   end;
 end;
 
-function CNPJ_Consultar(eCNPJ: PChar; eServico: LongInt; const sResposta: PChar; var esTamanho: longint): longint;
+function CNPJ_Consultar(eCNPJ: PChar; const sResposta: PChar; var esTamanho: longint): longint;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
     VerificarLibInicializada(pLib);
-    Result := TACBrLibConsultaCNPJ(pLib^.Lib).Consultar(eCNPJ, eServico ,sResposta, esTamanho);
+    Result := TACBrLibConsultaCNPJ(pLib^.Lib).Consultar(eCNPJ, sResposta, esTamanho);
   except
      on E: EACBrLibException do
      Result := E.Erro;
