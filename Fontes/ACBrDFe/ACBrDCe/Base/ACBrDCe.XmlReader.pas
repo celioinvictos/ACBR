@@ -55,7 +55,7 @@ type
     procedure Ler_Fisco(const ANode: TACBrXmlNode);
     procedure Ler_Marketplace(const ANode: TACBrXmlNode);
     procedure Ler_Transportadora(const ANode: TACBrXmlNode);
-    procedure Ler_EmpEmisProp(const ANode: TACBrXmlNode);
+    procedure Ler_ECT(const ANode: TACBrXmlNode);
     procedure Ler_Dest(const ANode: TACBrXmlNode);
     procedure Ler_DestEnderDest(const ANode: TACBrXmlNode);
     procedure Ler_Det(const ANode: TACBrXmlNode);
@@ -93,8 +93,6 @@ begin
 end;
 
 procedure TDCeXmlReader.Ler_Dest(const ANode: TACBrXmlNode);
-var
-  ok: Boolean;
 begin
   if not Assigned(ANode) then Exit;
 
@@ -137,7 +135,6 @@ end;
 procedure TDCeXmlReader.Ler_Det(const ANode: TACBrXmlNode);
 var
   Item: TDetCollectionItem;
-  AuxNode: TACBrXmlNode;
 begin
   if not Assigned(ANode) then Exit;
 
@@ -150,10 +147,6 @@ end;
 
 procedure TDCeXmlReader.Ler_DetProd(const Item: TDetCollectionItem;
   const ANode: TACBrXmlNode);
-var
-  ok: Boolean;
-  i: Integer;
-  ANodes: TACBrXmlNodeArray;
 begin
   if not Assigned(Item) then Exit;
   if not Assigned(ANode) then Exit;
@@ -166,8 +159,6 @@ begin
 end;
 
 procedure TDCeXmlReader.Ler_Emit(const ANode: TACBrXmlNode);
-var
-  ok: Boolean;
 begin
   if not Assigned(ANode) then Exit;
 
@@ -206,12 +197,12 @@ begin
   DCe.Emit.enderEmit.fone := ObterConteudo(ANode.Childrens.Find('fone'), tcStr);
 end;
 
-procedure TDCeXmlReader.Ler_EmpEmisProp(const ANode: TACBrXmlNode);
+procedure TDCeXmlReader.Ler_ECT(const ANode: TACBrXmlNode);
 begin
   if not Assigned(ANode) then Exit;
 
-  DCe.EmpEmisProp.CNPJ := ObterConteudo(ANode.Childrens.Find('CNPJ'), tcStr);
-  DCe.EmpEmisProp.xNome := ObterConteudo(ANode.Childrens.Find('xNome'), tcStr);
+  DCe.ECT.CNPJ := ObterConteudo(ANode.Childrens.Find('CNPJ'), tcStr);
+  DCe.ECT.xNome := ObterConteudo(ANode.Childrens.Find('xNome'), tcStr);
 end;
 
 procedure TDCeXmlReader.Ler_Fisco(const ANode: TACBrXmlNode);
@@ -226,8 +217,6 @@ end;
 procedure TDCeXmlReader.Ler_Ide(const ANode: TACBrXmlNode);
 var
   ok: Boolean;
-  i: Integer;
-  ANodes: TACBrXmlNodeArray;
 begin
   if not Assigned(ANode) then Exit;
 
@@ -246,10 +235,6 @@ begin
 end;
 
 procedure TDCeXmlReader.Ler_InfAdic(const ANode: TACBrXmlNode);
-var
-  ok: Boolean;
-  i: Integer;
-  ANodes: TACBrXmlNodeArray;
 begin
   if not Assigned(ANode) then Exit;
 
@@ -257,24 +242,7 @@ begin
   DCe.InfAdic.infCpl := ObterConteudo(ANode.Childrens.Find('infCpl'), tcStr);
   DCe.InfAdic.infAdMarketplace := ObterConteudo(ANode.Childrens.Find('infAdMarketplace'), tcStr);
   DCe.InfAdic.infAdTransp := ObterConteudo(ANode.Childrens.Find('infAdTransp'), tcStr);
-
-  DCe.InfAdic.obsCont.Clear;
-  ANodes := ANode.Childrens.FindAll('obsCont');
-  for i := 0 to Length(ANodes) - 1 do
-    begin
-      DCe.InfAdic.obsCont.New;
-      DCe.InfAdic.obsCont[i].xCampo := ANodes[i].Attributes.Items['xCampo'].Content;
-      DCe.InfAdic.obsCont[i].xTexto := ObterConteudo(ANodes[i].Childrens.Find('xTexto'), tcStr);
-    end;
-
-  DCe.InfAdic.obsMarketplace.Clear;
-  ANodes := ANode.Childrens.FindAll('obsMarketplace');
-  for i := 0 to Length(ANodes) - 1 do
-  begin
-    DCe.InfAdic.obsMarketplace.New;
-    DCe.InfAdic.obsMarketplace[i].xCampo := ANodes[i].Attributes.Items['xCampo'].Content;
-    DCe.InfAdic.obsMarketplace[i].xTexto := ObterConteudo(ANodes[i].Childrens.Find('xTexto'), tcStr);
-  end;
+  DCe.InfAdic.infAdECT := ObterConteudo(ANode.Childrens.Find('infAdECT'), tcStr);
 end;
 
 procedure TDCeXmlReader.Ler_InfDCe(const ANode: TACBrXmlNode);
@@ -289,7 +257,7 @@ begin
   Ler_Fisco(ANode.Childrens.Find('Fisco'));
   Ler_Marketplace(ANode.Childrens.Find('Marketplace'));
   Ler_Transportadora(ANode.Childrens.Find('Transportadora'));
-  Ler_EmpEmisProp(ANode.Childrens.Find('EmpEmisProp'));
+  Ler_ECT(ANode.Childrens.Find('ECT'));
   Ler_Dest(ANode.Childrens.Find('dest'));
 
   ANodes := ANode.Childrens.FindAll('autXML');
@@ -308,6 +276,43 @@ begin
   Ler_Total(ANode.Childrens.Find('total'));
   Ler_Transp(ANode.Childrens.Find('transp'));
   Ler_InfAdic(ANode.Childrens.Find('infAdic'));
+
+  DCe.obsEmit.Clear;
+  ANodes := ANode.Childrens.FindAll('obsEmit');
+  for i := 0 to Length(ANodes) - 1 do
+  begin
+    DCe.obsEmit.New;
+    DCe.obsEmit[i].xCampo := ANodes[i].Attributes.Items['xCampo'].Content;
+    DCe.obsEmit[i].xTexto := ObterConteudo(ANodes[i].Childrens.Find('xTexto'), tcStr);
+  end;
+
+  DCe.obsFisco.Clear;
+  ANodes := ANode.Childrens.FindAll('obsFisco');
+  for i := 0 to Length(ANodes) - 1 do
+  begin
+    DCe.obsFisco.New;
+    DCe.obsFisco[i].xCampo := ANodes[i].Attributes.Items['xCampo'].Content;
+    DCe.obsFisco[i].xTexto := ObterConteudo(ANodes[i].Childrens.Find('xTexto'), tcStr);
+  end;
+
+  DCe.obsMarketplace.Clear;
+  ANodes := ANode.Childrens.FindAll('obsMarketplace');
+  for i := 0 to Length(ANodes) - 1 do
+  begin
+    DCe.obsMarketplace.New;
+    DCe.obsMarketplace[i].xCampo := ANodes[i].Attributes.Items['xCampo'].Content;
+    DCe.obsMarketplace[i].xTexto := ObterConteudo(ANodes[i].Childrens.Find('xTexto'), tcStr);
+  end;
+
+  DCe.obsECT.Clear;
+  ANodes := ANode.Childrens.FindAll('obsECT');
+  for i := 0 to Length(ANodes) - 1 do
+  begin
+    DCe.obsECT.New;
+    DCe.obsECT[i].xCampo := ANodes[i].Attributes.Items['xCampo'].Content;
+    DCe.obsECT[i].xTexto := ObterConteudo(ANodes[i].Childrens.Find('xTexto'), tcStr);
+  end;
+
   Ler_InfDec(ANode.Childrens.Find('infDec'));
   Ler_InfSolicDCe(ANode.Childrens.Find('infSolicDCe'));
 end;
@@ -348,30 +353,32 @@ end;
 
 procedure TDCeXmlReader.Ler_ProtDCe(const ANode: TACBrXmlNode);
 var
+  AuxNode: TACBrXmlNode;
   ok: Boolean;
 begin
   if not Assigned(ANode) then Exit;
 
-  DCe.procDCe.tpAmb    := StrToTipoAmbiente(ok, ObterConteudo(ANode.Childrens.Find('tpAmb'), tcStr));
-  DCe.procDCe.verAplic := ObterConteudo(ANode.Childrens.Find('verAplic'), tcStr);
-  DCe.procDCe.chDFe    := ObterConteudo(ANode.Childrens.Find('chDCe'), tcStr);
-  DCe.procDCe.dhRecbto := ObterConteudo(ANode.Childrens.Find('dhRecbto'), tcDatHor);
-  DCe.procDCe.nProt    := ObterConteudo(ANode.Childrens.Find('nProt'), tcStr);
-  DCe.procDCe.digVal   := ObterConteudo(ANode.Childrens.Find('digVal'), tcStr);
-  DCe.procDCe.cStat    := ObterConteudo(ANode.Childrens.Find('cStat'), tcInt);
-  DCe.procDCe.xMotivo  := ObterConteudo(ANode.Childrens.Find('xMotivo'), tcStr);
-  DCe.procDCe.cMsg     := ObterConteudo(ANode.Childrens.Find('cMsg'), tcInt);
-  DCe.procDCe.xMsg     := ObterConteudo(ANode.Childrens.Find('xMsg'), tcStr);
+  AuxNode := ANode.Childrens.Find('infProt');
+
+  if not Assigned(AuxNode) then Exit;
+
+  DCe.procDCe.tpAmb    := StrToTipoAmbiente(ok, ObterConteudo(AuxNode.Childrens.Find('tpAmb'), tcStr));
+  DCe.procDCe.verAplic := ObterConteudo(AuxNode.Childrens.Find('verAplic'), tcStr);
+  DCe.procDCe.chDFe    := ObterConteudo(AuxNode.Childrens.Find('chDCe'), tcStr);
+  DCe.procDCe.dhRecbto := ObterConteudo(AuxNode.Childrens.Find('dhRecbto'), tcDatHor);
+  DCe.procDCe.nProt    := ObterConteudo(AuxNode.Childrens.Find('nProt'), tcStr);
+  DCe.procDCe.digVal   := ObterConteudo(AuxNode.Childrens.Find('digVal'), tcStr);
+  DCe.procDCe.cStat    := ObterConteudo(AuxNode.Childrens.Find('cStat'), tcInt);
+  DCe.procDCe.xMotivo  := ObterConteudo(AuxNode.Childrens.Find('xMotivo'), tcStr);
+  DCe.procDCe.cMsg     := ObterConteudo(AuxNode.Childrens.Find('cMsg'), tcInt);
+  DCe.procDCe.xMsg     := ObterConteudo(AuxNode.Childrens.Find('xMsg'), tcStr);
 end;
 
 procedure TDCeXmlReader.Ler_Total(const ANode: TACBrXmlNode);
-var
-  ok: Boolean;
-  AuxNode: TACBrXmlNode;
 begin
   if not Assigned(ANode) then Exit;
 
-  DCe.Total.vDC := ObterConteudo(AuxNode.Childrens.Find('vDC'), tcDe2);
+  DCe.Total.vDC := ObterConteudo(ANode.Childrens.Find('vDC'), tcDe2);
 end;
 
 procedure TDCeXmlReader.Ler_Transp(const ANode: TACBrXmlNode);
@@ -379,7 +386,7 @@ begin
   if not Assigned(ANode) then Exit;
 
   DCe.Transp.modTrans := StrToModTrans(ObterConteudo(ANode.Childrens.Find('modTrans'), tcStr));
-  DCe.Transp.CNPJTrans := ObterConteudo(ANode.Childrens.Find('CNPJTrans'), tcStr);
+  DCe.Transp.CNPJTransp := ObterConteudo(ANode.Childrens.Find('CNPJTransp'), tcStr);
 end;
 
 procedure TDCeXmlReader.Ler_Transportadora(const ANode: TACBrXmlNode);
@@ -401,12 +408,11 @@ begin
   if EstaVazio(Arquivo) then
     raise Exception.Create('Arquivo xml da DCe não carregado.');
 
-  Result := False;
   infDCeNode := nil;
   Document.Clear();
   Document.LoadFromXml(Arquivo);
 
-  if Document.Root.Name = 'DCeProc' then
+  if Document.Root.Name = 'dceProc' then
   begin
     Ler_ProtDCe(Document.Root.Childrens.Find('protDCe'));
     DCeNode := Document.Root.Childrens.Find('DCe');

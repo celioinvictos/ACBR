@@ -94,6 +94,8 @@ begin
   if XmlNode = nil then
     raise Exception.Create('Arquivo xml vazio.');
 
+  NFSe.tpXML := tpXml;
+
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)
   else
@@ -169,11 +171,11 @@ begin
     SeriePrestacao := ObterConteudo(ANode.Childrens.FindAnyNs('serie'), tcStr);
 
     DataEmissao := ObterConteudo(ANode.Childrens.FindAnyNs('data_emissao'), tcDatVcto);
-//    <forma_de_pagamento></forma_de_pagamento>
 
+    Servico.xFormaPagamento := ObterConteudo(ANode.Childrens.FindAnyNs('forma_de_pagamento'), tcStr);
     Servico.Discriminacao := ObterConteudo(ANode.Childrens.FindAnyNs('descricao'), tcStr);
     Servico.Discriminacao := StringReplace(Servico.Discriminacao, FpQuebradeLinha,
-                                    sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
     VerificarSeConteudoEhLista(Servico.Discriminacao);
 
@@ -297,7 +299,7 @@ begin
 
     Servico.Discriminacao := ObterConteudo(ANode.Childrens.FindAnyNs('descricao'), tcStr);
     Servico.Discriminacao := StringReplace(Servico.Discriminacao, FpQuebradeLinha,
-                                    sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
     Servico.ItemListaServico := ObterConteudo(ANode.Childrens.FindAnyNs('id_codigo_servico'), tcStr);
 
     Servico.Valores.ValorServicos := ObterConteudo(ANode.Childrens.FindAnyNs('valor_nf'), tcDe2);

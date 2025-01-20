@@ -218,9 +218,10 @@ begin
     begin
       CodigoCnae       := ObterConteudo(AuxNode.Childrens.FindAnyNs('cnae'), tcStr);
       ItemListaServico := ObterConteudo(AuxNode.Childrens.FindAnyNs('codigo'), tcStr);
+      xItemListaServico := ObterDescricaoServico(ItemListaServico);
       Discriminacao    := ObterConteudo(AuxNode.Childrens.FindAnyNs('descricao'), tcStr);
       Discriminacao := StringReplace(Discriminacao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
       VerificarSeConteudoEhLista(Discriminacao);
 
@@ -258,6 +259,8 @@ begin
 
   if XmlNode = nil then
     raise Exception.Create('Arquivo xml vazio.');
+
+  NFSe.tpXML := tpXml;
 
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)

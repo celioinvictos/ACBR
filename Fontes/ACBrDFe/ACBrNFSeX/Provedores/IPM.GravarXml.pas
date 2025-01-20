@@ -38,9 +38,12 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXParametros, ACBrNFSeXGravarXml, ACBrNFSeXGravarXml_ABRASFv2,
-  ACBrNFSeXConversao, ACBrNFSeXConsts;
+  ACBrXmlBase,
+  ACBrXmlDocument,
+  ACBrNFSeXGravarXml,
+  ACBrNFSeXGravarXml_ABRASFv2,
+  ACBrNFSeXConversao,
+  ACBrNFSeXConsts;
 
 type
   { TNFSeW_IPM }
@@ -91,8 +94,7 @@ implementation
 
 uses
   ACBrUtil.Strings,
-  ACBrUtil.DateTime,
-  ACBrNFSeX;
+  ACBrUtil.DateTime;
 
 //==============================================================================
 // Essa unit tem por finalidade exclusiva gerar o XML do RPS do provedor:
@@ -109,7 +111,6 @@ begin
 
   ListaDeAlertas.Clear;
 
-  Opcoes.QuebraLinha := FpAOwner.ConfigGeral.QuebradeLinha;
   Opcoes.DecimalChar := ',';
   {
     Se no arquivo ACBrNFSeXServicos.ini existe o campo: NaoGerarGrupoRps na
@@ -134,7 +135,15 @@ begin
       NFSeNode.AppendChild(AddNode(tcStr, '#2', 'identificador', 1, 80, 0,
         'nfseh_' + NFSe.IdentificacaoRps.Numero + '.' + NFSe.IdentificacaoRps.Serie, ''));
 
-    NFSeNode.AppendChild(AddNode(tcStr, '#3', 'nfse_teste', 1, 1, 1, '1', ''));
+    {
+     Na versão 1.01 (que é a que estou testando), a tag <nfse_teste> deve ser
+     preenchida quando o usuário quer validar o seu XML.
+     Quando a tag está no XML e o XML está válido, no lugar de simplesmente
+     aceitar a NFS-e (vai entender), o provedor retorna o seguinte "erro":
+     NFS-e válida para emissão.
+     }
+    if  VersaoNFSe = ve100 then
+        NFSeNode.AppendChild(AddNode(tcStr, '#3', 'nfse_teste', 1, 1, 1, '1', ''));
   end
   else
   begin

@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -845,7 +845,7 @@ begin
   Ftotal       := Ttotal.Create;
 
   FSignature   := TSignature.create;
-  FProcBPe    := TProcDFe.Create('1.00', NAME_SPACE_BPe, 'BPe');
+  FProcBPe    := TProcDFe.Create('1.00', NAME_SPACE_BPe, 'bpeProc', 'BPe');
 
 //  FinfBPe.Versao := 0;
 end;

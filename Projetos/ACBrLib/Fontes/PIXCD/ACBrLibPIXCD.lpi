@@ -17,10 +17,10 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
-      <MajorVersionNr Value="1"/>
-      <BuildNr Value="26"/>
+      <MajorVersionNr Value="2"/>
+      <RevisionNr Value="1"/>
+      <BuildNr Value="66"/>
       <Language Value="0416"/>
-      <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Projeto ACBr" FileDescription="ACBrPIXCD - Biblioteca para gerar cobrança e pagamento PIX" InternalName="ACBrLibPIXCD" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="13">
@@ -434,7 +434,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="bin\MT\Linux\acbrlibpixcd64"/>
+            <Filename Value="bin\MT\Linux\acbrpixcd64"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
@@ -475,7 +475,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="bin\MT\Linux\acbrlibpixcd32"/>
+            <Filename Value="bin\MT\Linux\acbrpixcd32"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
@@ -524,7 +524,7 @@
         <PackageName Value="ACBr_PIXCD"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="13">
+    <Units Count="14">
       <Unit0>
         <Filename Value="ACBrLibPIXCD.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -580,6 +580,10 @@
         <Filename Value="ACBrLibPIXCDStaticImportMT.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
+      <Unit13>
+        <Filename Value="ACBrLibPIXCDMateraRespostas.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit13>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

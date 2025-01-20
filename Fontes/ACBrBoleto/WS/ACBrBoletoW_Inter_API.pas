@@ -100,10 +100,11 @@ const
   C_URL_HOM         = 'https://cdpj.partners.bancointer.com.br/cobranca/v2';
 
   C_URLPIX          = 'https://cdpj.partners.bancointer.com.br/cobranca/v3';
-  C_URL_HOMPIX      = 'https://cdpj.partners.bancointer.com.br/cobranca/v3';
+  C_URL_HOMPIX      = 'https://cdpj-sandbox.partners.uatinter.co/cobranca/v3';
 
-  C_URL_OAUTH_PROD  = 'https://cdpj.partners.bancointer.com.br/oauth/v2/token';
-  C_URL_OAUTH_HOM   = 'https://cdpj.partners.bancointer.com.br/oauth/v2/token';
+  C_URL_OAUTH_PROD  = 'https://cdpj.partners.bancointer.com.br/oauth/v2/token';  
+  C_URL_OAUTH_HOM   = 'https://cdpj-sandbox.partners.uatinter.co/oauth/v2/token';  
+    
 
   C_CONTENT_TYPE    = 'application/json';
   C_ACCEPT          = 'application/json';
@@ -138,7 +139,7 @@ begin
     end;
 
 
-  if Boleto.Configuracoes.WebService.Ambiente = taProducao then
+  if Boleto.Configuracoes.WebService.Ambiente = tawsProducao then
    FPURL := IfThen(Boleto.Cedente.CedenteWS.IndicadorPix, C_URLPIX, C_URL)
   else
    FPURL := IfThen(Boleto.Cedente.CedenteWS.IndicadorPix, C_URL_HOMPIX, C_URL_HOM);
@@ -263,22 +264,41 @@ function TBoletoW_Inter_API.DefinirParametros: String;
 var
   LConsulta: TStringList;
   LDocumento, LSituacaoAbertos, LSituacaoBaixados, LSituacaoVencidos, LSituacaoCancelados: String;
+  LFiltroDataVencimento,LFiltroDataEmissao, LFiltroDataPagamento : string;
+  LOrdenarDataEmissao, LOrdenarDataVencimento, LOrdenarDataSituacao : string;
+  LPaginacaoQuantidade, LPaginacaoAtual: string;
 begin
   if Assigned(Boleto.Configuracoes.WebService.Filtro) then
   begin
     if Boleto.Cedente.CedenteWS.IndicadorPix then
     begin
-      LSituacaoBaixados:= 'RECEBIDO';
-      LSituacaoVencidos:= 'ATRASADO';
-      LSituacaoAbertos := 'A_RECEBER';
+      LSituacaoBaixados   := 'RECEBIDO';
+      LSituacaoVencidos   := 'ATRASADO';
+      LSituacaoAbertos    := 'A_RECEBER';
       LSituacaoCancelados := 'CANCELADO';
+      LFiltroDataVencimento := 'VENCIMENTO';
+      LFiltroDataEmissao    := 'EMISSAO';
+      LFiltroDataPagamento  := 'PAGAMENTO';
+      LOrdenarDataEmissao   := 'DATA_EMISSAO';
+      LOrdenarDataVencimento:= 'DATA_VENCIMENTO';
+      LOrdenarDataSituacao  := 'DATA_VENCIMENTO';
+      LPaginacaoQuantidade  := 'paginacao.itensPorPagina';
+      LPaginacaoAtual       := 'paginacao.paginaAtual';
     end
     else
     begin
-      LSituacaoBaixados:= 'PAGO,CANCELADO';
-      LSituacaoAbertos:=  'EMABERTO,VENCIDO';
-      LSituacaoVencidos:= 'VENCIDO';
+      LSituacaoBaixados   := 'PAGO,CANCELADO';
+      LSituacaoAbertos    := 'EMABERTO,VENCIDO';
+      LSituacaoVencidos   := 'VENCIDO';
       LSituacaoCancelados := 'CANCELADO';
+      LFiltroDataVencimento := 'VENCIMENTO';
+      LFiltroDataEmissao    := 'EMISSAO';
+      LFiltroDataPagamento  := 'SITUACAO';
+      LOrdenarDataEmissao   := 'DATASITUACAO';
+      LOrdenarDataVencimento:= 'DATAVENCIMENTO';
+      LOrdenarDataSituacao  := 'DATASITUACAO';
+      LPaginacaoQuantidade  := 'itensPorPagina';
+      LPaginacaoAtual       := 'paginaAtual';
     end;
 
     LDocumento := OnlyNumber
@@ -288,33 +308,33 @@ begin
     LConsulta.Delimiter := '&';
     try
 
-      LConsulta.Add( 'itensPorPagina=1000' );
+      LConsulta.Add( LPaginacaoQuantidade+'=1000' );
 
       if Boleto.Configuracoes.WebService.Filtro.indiceContinuidade > 0 then
-        LConsulta.Add('paginaAtual='+ FloatToStr(Boleto.Configuracoes.WebService.Filtro.indiceContinuidade));
+        LConsulta.Add(LPaginacaoAtual+'='+ FloatToStr(Boleto.Configuracoes.WebService.Filtro.indiceContinuidade));
 
       case Boleto.Configuracoes.WebService.Filtro.indicadorSituacao of
         isbBaixado:
           begin
-            LConsulta.Add('filtrarDataPor=SITUACAO' );
+            LConsulta.Add('filtrarDataPor='+LFiltroDataPagamento );
             LConsulta.Add('situacao='+LSituacaoBaixados);
             LConsulta.Add('dataInicial=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataMovimento.DataInicio));
             LConsulta.Add('dataFinal=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataMovimento.DataFinal));
-            LConsulta.Add( 'ordenarPor=DATASITUACAO' );
+            LConsulta.Add( 'ordenarPor='+LOrdenarDataSituacao );
           end;
         isbCancelado:
           begin
-            LConsulta.Add('filtrarDataPor=SITUACAO' );
+            LConsulta.Add('filtrarDataPor='+LFiltroDataPagamento );
             LConsulta.Add('situacao='+LSituacaoCancelados);
             LConsulta.Add('dataInicial=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataMovimento.DataInicio));
             LConsulta.Add('dataFinal=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataMovimento.DataFinal));
-            LConsulta.Add( 'ordenarPor=DATASITUACAO' );
+            LConsulta.Add( 'ordenarPor='+LOrdenarDataSituacao);
           end;
         isbAberto:
           begin
             if Boleto.Configuracoes.WebService.Filtro.dataVencimento.DataInicio > 0 then
             begin
-              LConsulta.Add('filtrarDataPor=VENCIMENTO' );
+              LConsulta.Add('filtrarDataPor='+LFiltroDataVencimento );
               case Boleto.Configuracoes.WebService.Filtro.boletoVencido of
                 ibvSim: LConsulta.Add('situacao='+LSituacaoVencidos);
               else
@@ -322,17 +342,17 @@ begin
               end;
               LConsulta.Add('dataInicial=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataVencimento.DataInicio));
               LConsulta.Add('dataFinal=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataVencimento.DataFinal));
-              LConsulta.Add( 'ordenarPor=DATAVENCIMENTO' );
+              LConsulta.Add( 'ordenarPor='+LOrdenarDataVencimento );
             end;
 
-            if Boleto.Configuracoes.WebService.Filtro.dataRegistro.DataInicio > 0
-            then
+            if Boleto.Configuracoes.WebService.Filtro.dataRegistro.DataInicio > 0 then
+            {por data de registro, devolve qq status, pois o boleto pode ter sido pago ou baixado}
             begin
-              LConsulta.Add( 'filtrarDataPor=EMISSAO' );
+              LConsulta.Add( 'filtrarDataPor='+LFiltroDataEmissao );
               LConsulta.Add('situacao='+LSituacaoAbertos);
               LConsulta.Add('dataInicial=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataRegistro.DataInicio));
               LConsulta.Add('dataFinal=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.DataRegistro.DataFinal));
-              LConsulta.Add( 'ordenarPor=DATASITUACAO' );
+              LConsulta.Add( 'ordenarPor='+LOrdenarDataSituacao);
             end;
           end;
       end;
@@ -372,7 +392,7 @@ end;
 
 function TBoletoW_Inter_API.ValidaAmbiente: Integer;
 begin
-  result := StrToIntDef(IfThen(Boleto.Configuracoes.WebService.Ambiente = taProducao, '1','2'), 2);
+  result := StrToIntDef(IfThen(Boleto.Configuracoes.WebService.Ambiente = tawsProducao, '1','2'), 2);
 end;
 
 procedure TBoletoW_Inter_API.RequisicaoJson;
@@ -524,14 +544,14 @@ begin
         1:
           begin
             LJsonJuros.AddPair('codigoMora','VALORDIA');
-            LJsonJuros.AddPair('data', DateTimeToDateInter(ATitulo.DataMulta));
+            LJsonJuros.AddPair('data', DateTimeToDateInter(ATitulo.DataMoraJuros));
             LJsonJuros.AddPair('valor', ATitulo.ValorMoraJuros);
             LJsonJuros.AddPair('taxa', 0);
           end;
         2:
           begin
             LJsonJuros.AddPair('codigoMora', 'TAXAMENSAL');
-            LJsonJuros.AddPair('data', DateTimeToDateInter(ATitulo.DataMulta));
+            LJsonJuros.AddPair('data', DateTimeToDateInter(ATitulo.DataMoraJuros));
             LJsonJuros.AddPair('taxa', ATitulo.ValorMoraJuros);
             LJsonJuros.AddPair('valor', 0);
           end;
@@ -803,12 +823,12 @@ begin
 
   if Assigned(OAuth) then
   begin
-    if OAuth.Ambiente = taHomologacao then
-      OAuth.URL := C_URL_OAUTH_HOM
+    if OAuth.Ambiente = tawsProducao then
+      OAuth.URL := C_URL_OAUTH_PROD
     else
-      OAuth.URL := C_URL_OAUTH_PROD;
+      OAuth.URL := C_URL_OAUTH_HOM;
 
-    OAuth.Payload := OAuth.Ambiente = taHomologacao;
+    OAuth.Payload := not (OAuth.Ambiente = tawsProducao);
   end;
 end;
 

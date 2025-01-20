@@ -52,7 +52,7 @@ uses
   RLReport,
   ACBrDelphiZXingQRCode,
   ACBrNFSeXConversao,
-  ACBrNFSeXDANFSeRL, ACBrBase, ACBrDFe, ACBrNFSeX, Types;
+  ACBrNFSeXDANFSeRL, ACBrBase, ACBrDFe, ACBrNFSeX, Types, ACBrNFSeXInterface;
 
 type
 
@@ -267,6 +267,7 @@ type
   private
     { Private declarations }
     FNumItem: Integer;
+    FProvider: IACBrNFSeXProvider;
   public
     { Public declarations }
     class procedure QuebradeLinha(const sQuebradeLinha: String); override;
@@ -279,9 +280,9 @@ implementation
 
 uses
   StrUtils, DateUtils,
-  ACBrUtil.Base, ACBrUtil.Strings,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime,
   ACBrDFeUtil,
-  ACBrNFSeXClass, ACBrNFSeXInterface,
+  ACBrNFSeXClass,
   ACBrValidador, ACBrDFeReportFortes;
 
 {$IFNDEF FPC}
@@ -336,25 +337,25 @@ begin
   rlmDadosAdicionais.Lines.Clear;
 
   if fpDANFSe.OutrasInformacaoesImp <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpDANFSe.OutrasInformacaoesImp, ';', #13#10, [rfReplaceAll]))
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpDANFSe.OutrasInformacaoesImp,
+                                        FQuebradeLinha, #13#10, [rfReplaceAll]))
   else
     if fpNFSe.OutrasInformacoes <> '' then
-      rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.OutrasInformacoes, FQuebradeLinha, #13#10, [rfReplaceAll]));
+      rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.OutrasInformacoes,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   if fpNFSe.InformacoesComplementares <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.InformacoesComplementares, FQuebradeLinha, #13#10, [rfReplaceAll]));
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.InformacoesComplementares,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   rlmDadosAdicionais.Lines.EndUpdate;
-  rllDataHoraImpressao.Caption := Format(ACBrStr('DATA E HORA DA IMPRESSÃO: %s'), [FormatDateTime('dd/mm/yyyy hh:nn', Now)]);
 
-  if fpDANFSe.Usuario <> '' then
-    rllDataHoraImpressao.Caption := Format(ACBrStr('%s   USUÁRIO: %s'), [rllDataHoraImpressao.Caption, fpDANFSe.Usuario]);
+  rllDataHoraImpressao.Visible := NaoEstaVazio(fpDANFSe.Usuario);
+  rllDataHoraImpressao.Caption := ACBrStr('DATA / HORA DA IMPRESSÃO: ') +
+                               FormatDateTimeBr(Now) + ' - ' + fpDANFSe.Usuario;
 
-  // imprime sistema
-  if fpDANFSe.Sistema <> '' then
-    rllSistema.Caption := Format('Desenvolvido por %s', [fpDANFSe.Sistema])
-  else
-    rllSistema.Caption := '';
+  rllSistema.Visible := NaoEstaVazio(fpDANFSe.Sistema);
+  rllSistema.Caption := Format('Desenvolvido por %s', [fpDANFSe.Sistema]);
 
   // Exibe canhoto
   rlbCanhoto.Visible := fpDANFSe.ImprimeCanhoto;
@@ -396,21 +397,17 @@ end;
 
 procedure TfrlXDANFSeRLISSnet.rlbDadosNotaBeforePrint(Sender: TObject;
   var PrintIt: Boolean);
-var
-  FProvider: IACBrNFSeXProvider;
 begin
   inherited;
 
-  FProvider := ACBrNFSe.Provider;
-
   With fpNFSe do
   begin
-    rllNatOperacao.Caption := ACBrStr(FProvider.NaturezaOperacaoDescricao(NaturezaOperacao));
+//    rllNatOperacao.Caption := ACBrStr(FProvider.NaturezaOperacaoDescricao(NaturezaOperacao));
+    rllNatOperacao.Caption := ACBrStr(FProvider.ExigibilidadeISSDescricao(Servico.ExigibilidadeISS));
     rllNumeroRPS.Caption := IdentificacaoRps.Numero;
     rllDataRPS.Caption := FormatDateTime('dd/mm/yyyy', DataEmissaoRps);
     rllLocalServico.Caption := Servico.MunicipioPrestacaoServico;
     rllMunicipioIncidencia.Caption := Servico.xMunicipioIncidencia;
-    rllRespRetencao.Caption := ACBrStr(FProvider.ResponsavelRetencaoDescricao(Servico.ResponsavelRetencao));
   end;
 end;
 
@@ -431,12 +428,8 @@ begin
 end;
 
 procedure TfrlXDANFSeRLISSnet.rlbISSQNBeforePrint(Sender: TObject; var PrintIt: Boolean);
-var
-  FProvider: IACBrNFSeXProvider;
 begin
   inherited;
-
-  FProvider := ACBrNFSe.Provider;
 
   with fpNFSe do
   begin
@@ -484,15 +477,16 @@ begin
   inherited;
 
   if FileExists(fpDANFSe.Prestador.Logo) then
-     TDFeReportFortes.CarregarLogo(rliPrestLogo, fpDANFSe.Prestador.Logo)
+    TDFeReportFortes.CarregarLogo(rliPrestLogo, fpDANFSe.Prestador.Logo)
   else
-     rliPrestLogo.Visible:=False;
+    rliPrestLogo.Visible:=False;
 
   with fpNFSe do
   begin
     rllEmissao.Caption := FormatDateTime('dd/mm/yyyy hh:nn:ss', DataEmissao);
     rllCompetencia.Caption := IfThen(Competencia > 0, FormatDateTime('dd/mm/yyyy', Competencia), '');
     rllCodVerificacao.Caption := CodigoVerificacao;
+    rllRespRetencao.Caption := ACBrStr(FProvider.ResponsavelRetencaoDescricao(Servico.ResponsavelRetencao));
   end;
 
   if not rliPrestLogo.Visible then
@@ -587,7 +581,6 @@ begin
     '-Tomador:' + fpNFSe.Tomador.RazaoSocial +
     '-Total:' +
     FormatFloat(',0.00', fpNFSe.Servico.Valores.ValorLiquidoNfse);
-
 end;
 
 procedure TfrlXDANFSeRLISSnet.rlbTomadorBeforePrint(Sender: TObject;
@@ -654,6 +647,8 @@ var
   Detalhar: Boolean;
 begin
   inherited;
+
+  FProvider := ACBrNFSe.Provider;
 
   Detalhar := ACBrNFSe.Provider.ConfigGeral.DetalharServico;
 

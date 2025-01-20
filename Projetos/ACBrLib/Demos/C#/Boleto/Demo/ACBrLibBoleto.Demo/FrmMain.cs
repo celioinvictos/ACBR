@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing.Printing;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Windows.Forms;
 using ACBrLib;
@@ -137,9 +139,11 @@ namespace ACBrLibBoleto.Demo
 
             txtPathLog.Text = boleto.Config.Webservice.PathGravarRegistro;
             txtNomeArquivoLog.Text = boleto.Config.Webservice.NomeArquivoLog;
+
             var ambiente = boleto.Config.Webservice.Ambiente;
-            rdbProducao.Checked = ambiente == AmbienteWebservice.Homologaçao;
-            rdbHomologacao.Checked = ambiente == AmbienteWebservice.Producao;
+            rdbProducao.Checked = ambiente == AmbienteWebservice.Producao;
+            rdbHomologacao.Checked = ambiente == AmbienteWebservice.Homologaçao;
+            rdbSandBox.Checked = ambiente == AmbienteWebservice.SandBox;
 
             cmbOperacao.SetSelectedValue(boleto.Config.Webservice.Operacao);
             cmbSSlType.SetSelectedValue(boleto.Config.Webservice.SSLType);
@@ -209,7 +213,18 @@ namespace ACBrLibBoleto.Demo
 
             boleto.Config.Webservice.PathGravarRegistro = txtPathLog.Text;
             boleto.Config.Webservice.NomeArquivoLog = txtNomeArquivoLog.Text;
-            boleto.Config.Webservice.Ambiente = rdbProducao.Checked ? AmbienteWebservice.Homologaçao : AmbienteWebservice.Producao;
+            if (rdbProducao.Checked)
+            {
+                boleto.Config.Webservice.Ambiente = AmbienteWebservice.Producao;
+            }
+            else if (rdbHomologacao.Checked)
+            {
+                boleto.Config.Webservice.Ambiente = AmbienteWebservice.Homologaçao;
+            }
+            else if (rdbSandBox.Checked)
+            {
+                boleto.Config.Webservice.Ambiente = AmbienteWebservice.SandBox;
+            }
             boleto.Config.Webservice.Operacao = cmbOperacao.GetSelectedValue<OperacaoBoleto>();
             boleto.Config.Webservice.SSLType = cmbSSlType.GetSelectedValue<SSLType>();
             boleto.Config.DFe.SSLHttpLib = cmbHttp.GetSelectedValue<SSLHttpLib>();
@@ -569,6 +584,43 @@ namespace ACBrLibBoleto.Demo
             rtbRespostas.AppendLine(ret.Retorno);
         }
 
+        private void btnLerRetornoStream_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog
+            {
+                Filter = "Arquivos RET (*.ret)|*.ret|Todos os Arquivos (*.*)|*.*",
+                Title = "Selecione um arquivo de retorno"
+            };
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string file = ofd.FileName;
+
+                try
+                {
+                    using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read))
+                    {
+                        using (StreamReader reader = new StreamReader(fileStream))
+                        {
+                            string retString = reader.ReadToEnd();
+                            byte[] retByte = Encoding.UTF8.GetBytes(retString);
+                            var retBase64 = System.Convert.ToBase64String(retByte);
+                            var ret = boleto.LerRetornoStream(retBase64);
+                            rtbRespostas.AppendLine(ret);
+                        }
+                    }
+                }
+                catch (Exception ex) 
+                {
+                    MessageBox.Show($"Ocorreu um erro ao ler o arquivo: {ex.Message}");
+                }
+            }  
+            else
+            {
+                MessageBox.Show("Nenhum arquivo foi selecionado.");
+            }
+        }
+
         private void BtnListarOcorrencias_Click(object sender, EventArgs e)
         {
             var ret = boleto.ListaOcorrencias();
@@ -792,6 +844,11 @@ namespace ACBrLibBoleto.Demo
             {
                 rtbRespostas.AppendLine(ex.Message);
             }
+        }
+
+        private void btnLimparResposta_Click(object sender, EventArgs e)
+        {
+            rtbRespostas.Clear(); 
         }
     }
 }

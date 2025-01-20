@@ -296,11 +296,19 @@ public
   procedure Executar; override;
 end;
 
+{ TMetodoObterIniCFe }
+
+TMetodoObterIniCFe = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
 
 implementation
 
 uses
-  DoACBrUnit,IniFiles, forms, pcnAuxiliar, typinfo,
+  IniFiles, forms, typinfo,
+  pcnAuxiliar,
+  DoACBrUnit, ACBrLibConfig,
   ACBrSATExtratoClass, UtilUnit;
 
 { TMetodoGerarPDFExtratoCancelamento }
@@ -389,6 +397,35 @@ begin
   finally
     SL.Free;
     Ini.Free;
+  end;
+end;
+
+{ TMetodoObterIniCFe }
+
+{ Params: 0 - LCFe: String com caminho do Arquivo ou XML}
+
+procedure TMetodoObterIniCFe.Executar;
+var
+  LCFeXML: TStringList;
+  LCFe: String;
+begin
+  LCFeXML := TStringList.Create;
+  try
+    LCFe := fpCmd.Params(0);
+
+    if StringIsXML(LCFe) then
+      LCFeXML.Text := LCFe
+    else
+      LCFeXML.LoadFromFile(LCFe);
+
+    with TACBrObjetoSAT(fpObjetoDono).ACBrSAT do
+    begin
+      CFe.SetXMLString(LCFeXML.Text);
+      fpCmd.Resposta := fpCmd.Resposta + sLineBreak + GerarCFeIni;
+    end;
+
+  finally
+    LCFeXML.Free;
   end;
 end;
 
@@ -1277,6 +1314,7 @@ begin
   ListaDeMetodos.Add(CMetodoConsultarModeloSAT);
   ListaDeMetodos.Add(CMetodoGerarPDFExtratoCancelamento);
   ListaDeMetodos.Add(CMetodoConsultarUltimaSessaoFiscal);
+  ListaDeMetodos.Add(CMetodoObterIniCFe);
 
 
   // DoACBr
@@ -1346,6 +1384,7 @@ begin
     32 : AMetodoClass := TMetodoConsultarModeloSAT;
     33 : AMetodoClass := TMetodoGerarPDFExtratoCancelamento;
     34 : AMetodoClass := TMetodoConsultarUltimaSessaoFiscal;
+    35 : AMetodoClass := TMetodoObterIniCFe;
 
 
     else

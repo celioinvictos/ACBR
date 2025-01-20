@@ -72,8 +72,6 @@ var
 begin
   Configuracao;
 
-  Opcoes.QuebraLinha := FpAOwner.ConfigGeral.QuebradeLinha;
-
   ListaDeAlertas.Clear;
 
   FDocument.Clear();
@@ -228,7 +226,7 @@ begin
     Result[i].AppendChild(AddNode(tcDe2, '#1', 'VALORUNIT', 1, 15, 1,
                           NFSe.Servico.ItemServico.Items[i].ValorUnitario, ''));
 
-    Result[i].AppendChild(AddNode(tcDe4, '#1', 'QUANTIDADE', 1, 10, 1,
+    Result[i].AppendChild(AddNode(tcDe2, '#1', 'QUANTIDADE', 1, 10, 1,
                              NFSe.Servico.ItemServico.Items[i].Quantidade, ''));
 
     Result[i].AppendChild(AddNode(tcDe2, '#1', 'DESCONTO', 1, 10, 1,

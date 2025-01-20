@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
 { mentos de Automação Comercial utilizados no Brasil                            }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida                }
 {                                                                               }
 { Colaboradores nesse arquivo: José M S Junior                                  }
 {                                                                               }
@@ -38,8 +38,9 @@ unit ACBrLibBoletoRespostas;
 interface
 
 uses
-  SysUtils, Classes,
-  ACBrLibResposta, ACBrBoleto, ACBrBoletoRetorno, ACBrBoletoConversao, contnrs;
+  SysUtils, Classes, contnrs,
+  ACBrLibResposta, ACBrLibConfig,
+  ACBrBoleto, ACBrBoletoRetorno, ACBrBoletoConversao, ACBrUtil.Base;
 
 type
 
@@ -79,6 +80,7 @@ type
     FNomeArqRetorno: String;
     FDensidadeGravacao: String;
     FCIP: String;
+    FKeySoftwareHouse: String;
 
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
@@ -95,6 +97,7 @@ type
     property NomeArqRetorno: String read FNomeArqRetorno write FNomeArqRetorno;
     property DensidadeGravacao: String read FDensidadeGravacao write FDensidadeGravacao;
     property CIP: String read FCIP write FCIP;
+    property KeySoftwareHouse: String read FKeySoftwareHouse write FKeySoftwareHouse;
 
   end;
 
@@ -127,6 +130,7 @@ type
     FID : Integer;
     FIDRej : Integer;
     FMotivoRejeicao : String;
+    FMotivoRejeicaoComando: string;
 
   public
     constructor Create( const AIDRej: Integer; const AID: Integer; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
@@ -134,6 +138,7 @@ type
 
   published
     property MotivoRejeicao : String read FMotivoRejeicao write FMotivoRejeicao;
+    property MotivoRejeicaoComando: string read FMotivoRejeicaoComando write FMotivoRejeicaoComando;
 
   end;
 
@@ -171,7 +176,7 @@ type
     FRejeicoes: TObjectList;
     FHoraBaixa: String;
     FEstadoTituloCobranca : String;
-
+    FLiquidadoBanco:integer;
 
 
   public
@@ -210,10 +215,7 @@ type
     property Rejeicoes: TObjectList read FRejeicoes write FRejeicoes;
     property EstadoTituloCobranca: String read FEstadoTituloCobranca write FEstadoTituloCobranca;
     property HoraBaixa: String read FHoraBaixa write FHoraBaixa;
-   
-
-
-
+    property LiquidadoBanco: integer read FLiquidadoBanco write FLiquidadoBanco;
   end;
 
   { TRetornoBoleto }
@@ -367,6 +369,7 @@ type
     FCodigoCanalTituloCobranca: String;
     FCodigoEstadoTituloCobranca: string;
     FEstadoTituloCobranca: String;
+    FLiquidadoBanco : integer;
 
   public
     constructor Create( AID: Integer; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
@@ -444,9 +447,7 @@ type
     property CodigoCanalTituloCobranca: String read FCodigoCanalTituloCobranca write FCodigoCanalTituloCobranca;
     property EstadoTituloCobranca: String read FEstadoTituloCobranca write FEstadoTituloCobranca;
     property CodigoEstadoTituloCobranca: String read FCodigoEstadoTituloCobranca write FCodigoEstadoTituloCobranca;
-
-
-
+    property LiquidadoBanco: integer read FLiquidadoBanco write FLiquidadoBanco;
   end;
 
   { TRetornoRejeicoesWeb }
@@ -729,9 +730,10 @@ begin
     CodigoCanalTituloCobranca:=DadosRet.TituloRet.CodigoCanalTituloCobranca;
     EstadoTituloCobranca:=DadosRet.TituloRet.EstadoTituloCobranca;;
     CodigoEstadoTituloCobranca:=DadosRet.TituloRet.CodigoEstadoTituloCobranca;
+    LiquidadoBanco:=DadosRet.TituloRet.Liquidacao.Banco;
 
 
-    if ( DadosRet.TituloRet.EMV  <> EmptyStr) then
+    if (NaoEstaVazio(DadosRet.TituloRet.EMV)) then
     begin
       emv:= DadosRet.TituloRet.EMV;
       url_Pix:= DadosRet.TituloRet.UrlPix;
@@ -807,16 +809,14 @@ begin
   IDNossoNum:= RetEnvio.DadosRet.IDBoleto.NossoNum;
   IDURL:= RetEnvio.DadosRet.IDBoleto.URL;
 
-
-
   for J:= 0 to  RetEnvio.ListaRejeicao.Count -1 do
   begin
-    Rejeicao := TRetornoRejeicoesWeb.Create(FID, J+1, Tipo, Formato);
+    Rejeicao := TRetornoRejeicoesWeb.Create(FID, J+1, Tipo, Codificacao);
     Rejeicao.Processar(RetEnvio.ListaRejeicao[J]);
     Rejeicoes.Add(Rejeicao);
   end;
 
-  TituloRetorno := TRetornoTituloWeb.Create(FID, Tipo, Formato);
+  TituloRetorno := TRetornoTituloWeb.Create(FID, Tipo, Codificacao);
   TituloRetorno.Processar(RetEnvio.DadosRet);
 end;
 
@@ -836,6 +836,7 @@ end;
 procedure TRetornoRejeicoesTitulo.Processar(const ACBrBoleto: TACBrBoleto);
 begin
   MotivoRejeicao := ACBrBoleto.ListadeBoletos[FID].DescricaoMotivoRejeicaoComando[FIDRej];
+  MotivoRejeicaoComando := ACBrBoleto.ListadeBoletos[FID].MotivoRejeicaoComando[FIDRej];
 end;
 
 { TRetornoBoleto }
@@ -867,19 +868,19 @@ var
   I: Integer;
   Item: TRetornoDadosTitulo;
 begin
-  Cedente := TRetornoDadosCedente.Create(Tipo, Formato);
+  Cedente := TRetornoDadosCedente.Create(Tipo, Codificacao);
   Cedente.Processar(ACBrBoleto);
 
-  Banco := TRetornoDadosBanco.Create(Tipo, Formato);
+  Banco := TRetornoDadosBanco.Create(Tipo, Codificacao);
   Banco.Processar(ACBrBoleto);
 
-  Conta := TRetornoDadosConta.Create(Tipo, Formato);
+  Conta := TRetornoDadosConta.Create(Tipo, Codificacao);
   Conta.Processar(ACBrBoleto);
 
   FTitulo.Clear;
   for I:= 0 to  ACBrBoleto.ListadeBoletos.Count-1 do
   begin
-    Item := TRetornoDadosTitulo.Create(I, Tipo, Formato);
+    Item := TRetornoDadosTitulo.Create(I, Tipo, Codificacao);
     Item.Processar(ACBrBoleto);
     FTitulo.Add(Item);
   end;
@@ -936,11 +937,12 @@ begin
     SeuNumero := ACBrBoleto.ListadeBoletos[FID].SeuNumero;
     CodTipoOcorrencia := GetEnumName( TypeInfo(TACBrTipoOcorrencia),
                                              Integer(ACBrBoleto.ListadeBoletos[FID].OcorrenciaOriginal.Tipo));
+    LiquidadoBanco := ACBrBoleto.ListadeBoletos[FID].Liquidacao.Banco;
     DescricaoTipoOcorrencia := ACBrBoleto.ListadeBoletos[FID].OcorrenciaOriginal.Descricao;
 
     for I:= 0 to  ACBrBoleto.ListadeBoletos[FID].DescricaoMotivoRejeicaoComando.Count-1 do
     begin
-      Item := TRetornoRejeicoesTitulo.Create( I, FID , Tipo, Formato);
+      Item := TRetornoRejeicoesTitulo.Create( I, FID , Tipo, Codificacao);
       Item.Processar(ACBrBoleto);
       Rejeicoes.Add(Item);
     end;
@@ -997,6 +999,7 @@ begin
     NomeArqRetorno := ACBrBoleto.NomeArqRetorno;
     DensidadeGravacao := ACBrBoleto.Banco.DensidadeGravacao;
     CIP := ACBrBoleto.Banco.CIP;
+    KeySoftwareHouse:= ACBrBoleto.KeySoftwareHouse;
   end;
 end;
 

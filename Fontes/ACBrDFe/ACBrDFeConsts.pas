@@ -65,6 +65,7 @@ resourcestring
   // Descrição de Documentos
   DSC_CNPJ = 'CNPJ(MF)';
   DSC_CPF = 'CPF';
+  DSC_IDOUTROS = 'Identificação de Extrangeiro';
   DSC_IE = 'Inscrição Estadual';
   DSC_IM = 'Inscrição Municipal';
 
@@ -144,6 +145,7 @@ resourcestring
   // Descrição de dados do DistribuicaoDFe
   DSC_ULTNSU = 'Último NSU recebido pela Empresa';
   DSC_NSU = 'NSU específico';
+
 
 implementation
 

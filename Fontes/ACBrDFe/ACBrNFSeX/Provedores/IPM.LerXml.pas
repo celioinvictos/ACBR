@@ -120,7 +120,7 @@ var
   AuxNode: TACBrXmlNode;
   ANodes: TACBrXmlNodeArray;
   i: Integer;
-  aValor: string;
+  aValor, xUF: string;
   Ok: Boolean;
 begin
   AuxNode := ANode.Childrens.FindAnyNs('itens');
@@ -163,7 +163,7 @@ begin
         ItemServico[i].ValorUnitario := ObterConteudo(ANodes[i].Childrens.FindAnyNs('unidade_valor_unitario'), tcDe2);
         ItemServico[i].Descricao := ObterConteudo(ANodes[i].Childrens.FindAnyNs('descritivo'), tcStr);
         ItemServico[i].Descricao := StringReplace(ItemServico[i].Descricao, FpQuebradeLinha,
-                                    sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
         ItemServico[i].Aliquota := ObterConteudo(ANodes[i].Childrens.FindAnyNs('aliquota_item_lista_servico'), tcDe2);
 
         ItemServico[i].SituacaoTributaria := ObterConteudo(ANodes[i].Childrens.FindAnyNs('situacao_tributaria'), tcInt);
@@ -190,6 +190,37 @@ begin
             ObterConteudo(ANodes[i].Childrens.FindAnyNs('valor_inss'), tcDe2);
 
         ItemServico[i].CodCNO := ObterConteudo(ANodes[i].Childrens.FindAnyNs('cno'), tcStr);
+      end;
+
+      if Valores.ValorIssRetido > 0 then
+        Valores.IssRetido := stRetencao;
+
+      if ItemServico.Count > 0 then
+      begin
+        CodigoMunicipio := ItemServico[0].CodMunPrestacao;
+
+        if CodigoMunicipio <> '' then
+        begin
+          xUF := '';
+          MunicipioPrestacaoServico := ObterNomeMunicipioUF(StrToIntDef(CodigoMunicipio, 0), xUF);
+          MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
+        end;
+
+        if ItemServico[0].TribMunPrestador = snSim then
+          MunicipioIncidencia := StrToIntDef(CodigoMunicipio, 0)
+        else
+          MunicipioIncidencia := StrToIntDef(NFSe.Tomador.Endereco.CodigoMunicipio, 0);
+
+        MunicipioPrestacaoServico := '';
+        xMunicipioIncidencia := '';
+
+        if MunicipioIncidencia > 0 then
+        begin
+          MunicipioPrestacaoServico := ObterNomeMunicipioUF(MunicipioIncidencia, xUF);
+          MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
+
+          xMunicipioIncidencia := MunicipioPrestacaoServico;
+        end;
       end;
     end;
   end;
@@ -248,7 +279,7 @@ begin
 
       OutrasInformacoes := ObterConteudo(AuxNode.Childrens.FindAnyNs('observacao'), tcStr);
       OutrasInformacoes := StringReplace(OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
       Servico.Valores.ValorServicos := ObterConteudo(AuxNode.Childrens.FindAnyNs('valor_total'), tcDe2);
       Servico.Valores.ValorIr       := ObterConteudo(AuxNode.Childrens.FindAnyNs('valor_ir'), tcDe2);
@@ -426,6 +457,8 @@ begin
   if XmlNode = nil then
     raise Exception.Create('Arquivo xml vazio.');
 
+  NFSe.tpXML := tpXml;
+
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)
   else
@@ -448,10 +481,11 @@ begin
     AuxNode := ANode;
 
   LerRps(AuxNode);
+  LerTomador(AuxNode);
+  LerPrestador(AuxNode);
   LerItens(AuxNode);
   LerNota(AuxNode);
-  LerPrestador(AuxNode);
-  LerTomador(AuxNode);
+
   LerFormaPagamento(AuxNode);
 end;
 

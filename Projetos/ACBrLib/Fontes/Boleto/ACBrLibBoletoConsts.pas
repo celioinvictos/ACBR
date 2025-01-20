@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: José M. S. Junior                               }
 {                                                                              }
@@ -67,7 +67,9 @@ const
   CChaveOrientacaoBanco = 'OrientacaoBanco';
   CChaveTipoCobranca = 'TipoCobranca';
   CChaveCasasDecimaisMoraJuros = 'CasasDecimaisMoraJuros';
+  CChaveDensidadeGravacao = 'DensidadeGravacao';
   CChaveCIP = 'CIP';
+  CChaveKeySoftwareHouse = 'KeySoftwareHouse';
 
   CSessaoBoletoCedenteConfig = 'BoletoCedenteConfig';
   CChaveAgencia= 'Agencia';
@@ -96,6 +98,7 @@ const
   CChaveDigitoVerificadorAgenciaConta= 'DigitoVerificadorAgenciaConta';
   CChaveIdentDistribuicao= 'IdentDistribuicao';
   CChaveOperacao= 'Operacao';
+  CChaveCodigoFlash= 'CodigoFlash';
   CChavePIX = 'ChavePIX';
   CTipoChavePix = 'TipoChavePIX';
 

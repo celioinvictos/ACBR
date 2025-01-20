@@ -37,14 +37,20 @@ unit ACBrTEFAPI;
 interface
 
 uses
-  Classes, SysUtils,
-  ACBrBase, ACBrTEFAPIComum;
+  Classes,
+  SysUtils,
+  ACBrBase,
+  ACBrTEFAPIComum;
 
 type
   TACBrTEFAPITipo = ( tefApiNenhum,
                       tefApiPayGoWeb,
                       tefApiCliSiTEF,
-                      tefApiElgin );
+                      tefApiElgin,
+                      tefStoneAutoTEF,
+                      tefAditumAPI,
+                      tefScopeAPI,
+                      tefDestaxaAPI);
 
   TACBrTEFAPIExibicaoQRCode = ( qrapiNaoSuportado,
                                 qrapiAuto,
@@ -81,7 +87,8 @@ type
                                  valdDuplaDigitacao,
                                  valdSenhaGerente,
                                  valdSenhaLojista,
-                                 valdSenhaTecnica);
+                                 valdSenhaTecnica,
+                                 valdQuantidadeParcelas);
 
     TACBrTEFAPITipoBarras = ( tbQualquer,
                               tbDigitado,
@@ -127,7 +134,7 @@ type
     MsgErroDadoMenor: String;
     MsgConfirmacaoDuplaDigitacao: String;
     TipoEntradaCodigoBarras: TACBrTEFAPITipoBarras;
-    TipoCampo: integer;
+    TipoCampo: Integer;
   end;
 
   TACBrTEFAPIQuandoEsperarFluxoAPI = procedure(
@@ -167,7 +174,8 @@ type
   public
     procedure ExibirMensagemPinPad(const MsgPinPad: String); virtual;
     function ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad;
-      TimeOut: SmallInt = 30000; MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String; virtual;
+      TimeOut: Integer = 30000; MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String; virtual;
+    function MenuPinPad(const Titulo: String; Opcoes: TStrings; TimeOut: Integer = 30000): Integer; virtual;
     function VerificarPresencaPinPad: Byte; virtual;
   end;
 
@@ -201,7 +209,8 @@ type
 
     procedure ExibirMensagemPinPad(const MsgPinPad: String);
     function ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad;
-      TimeOut: SmallInt = 30000; MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String;
+      TimeOut: Integer = 30000; MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String;
+    function MenuPinPad(const Titulo: String; Opcoes: TStrings; TimeOut: Integer = 30000): Integer;
     function VerificarPresencaPinPad: Byte;
 
     property TEF: TACBrTEFAPIClass read GetTEFAPIClass;
@@ -230,7 +239,13 @@ implementation
 
 uses
   TypInfo,
-  ACBrTEFAPIPayGoWeb, ACBrTEFAPICliSiTef, ACBrTEFAPIElgin;
+  ACBrTEFAPIPayGoWeb,
+  ACBrTEFAPICliSiTef,
+  ACBrTEFAPIElgin,
+  ACBrTEFAPIStoneAutoTEF,
+  ACBrTEFAPIAditum,
+  ACBrTEFAPIScope,
+  ACBrTEFAPIDestaxa;
 
 { TACBrTEFAPIClass }
 
@@ -309,10 +324,17 @@ begin
 end;
 
 function TACBrTEFAPIClass.ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad;
-  TimeOut: SmallInt; MinLen: SmallInt; MaxLen: SmallInt): String;
+  TimeOut: Integer; MinLen: SmallInt; MaxLen: SmallInt): String;
 begin
   Result := '';
   ErroAbstract('ObterDadoPinPad');
+end;
+
+function TACBrTEFAPIClass.MenuPinPad(const Titulo: String; Opcoes: TStrings;
+  TimeOut: Integer): Integer;
+begin
+  Result := 0;
+  ErroAbstract('MenuPinPad');
 end;
 
 function TACBrTEFAPIClass.VerificarPresencaPinPad: Byte;
@@ -365,13 +387,21 @@ begin
 end;
 
 function TACBrTEFAPI.ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad;
-  TimeOut: SmallInt; MinLen: SmallInt; MaxLen: SmallInt): String;
+  TimeOut: Integer; MinLen: SmallInt; MaxLen: SmallInt): String;
 begin
   GravarLog('ObterDadoPinPad( '+
             GetEnumName(TypeInfo(TACBrTEFAPIDadoPinPad), integer(TipoDado) )+', '+
             IntToStr(TimeOut)+', '+IntToStr(MinLen)+', '+IntToStr(MaxLen)+' )');
   Result := TEF.ObterDadoPinPad(TipoDado, TimeOut, MinLen, MaxLen);
   GravarLog('   '+Result);
+end;
+
+function TACBrTEFAPI.MenuPinPad(const Titulo: String; Opcoes: TStrings;
+  TimeOut: Integer): Integer;
+begin
+  GravarLog('MenuPinPad( '+Titulo + sLineBreak + Opcoes.Text+' )');
+  Result := TEF.MenuPinPad(Titulo, Opcoes, TimeOut);
+  GravarLog('   '+IntToStr(Result));
 end;
 
 function TACBrTEFAPI.VerificarPresencaPinPad: Byte;
@@ -397,7 +427,11 @@ begin
   case AValue of
     tefApiPayGoWeb : fpTEFAPIClass := TACBrTEFAPIClassPayGoWeb.Create( Self );
     tefApiCliSiTEF : fpTEFAPIClass := TACBrTEFAPIClassCliSiTef.Create( Self );
-    tefApiElgin    : fpTEFAPIClass := TACBrTEFAPIClassElgin.Create( Self )
+    tefApiElgin    : fpTEFAPIClass := TACBrTEFAPIClassElgin.Create( Self );
+    tefStoneAutoTEF: fpTEFAPIClass := TACBrTEFAPIClassStoneAutoTEF.Create( Self );
+    tefAditumAPI   : fpTEFAPIClass := TACBrTEFAPIClassAditum.Create( Self );
+    tefScopeAPI    : fpTEFAPIClass := TACBrTEFAPIClassScope.Create( Self );
+    tefDestaxaAPI  : fpTEFAPIClass := TACBrTEFAPIClassDestaxa.Create( Self );
   else
     fpTEFAPIClass := TACBrTEFAPIClass.Create( Self );
   end;

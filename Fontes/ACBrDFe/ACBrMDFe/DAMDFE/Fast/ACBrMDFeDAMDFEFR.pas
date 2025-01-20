@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -38,7 +38,9 @@ interface
 
 uses
   SysUtils, Classes, DB, DBClient, ACBrBase, ACBrMDFeDAMDFeClass, pcnConversao,
-  pmdfeMDFe, frxClass, ACBrDFeUtil, pmdfeEnvEventoMDFe, frxDBSet,
+  ACBrMDFe.Classes, frxClass, ACBrDFeUtil,
+  ACBrMDFe.EnvEvento,
+  frxDBSet,
   frxExportPDF, frxBarcode;
 
 type
@@ -142,6 +144,7 @@ type
     procedure ImprimirDAMDFePDF(AStream: TStream; AMDFe: TMDFe = nil); override;
     procedure ImprimirEVENTO(AMDFe: TMDFe = nil); override;
     procedure ImprimirEVENTOPDF(AMDFe: TMDFe = nil); override;
+    procedure ImprimirEVENTOPDF(AStream: TStream; AMDFe: TMDFe = nil); override;
 
     procedure CarregaDados;
     procedure LimpaDados;
@@ -931,6 +934,33 @@ begin
   end;
 end;
 
+procedure TACBrMDFeDAMDFEFR.ImprimirEVENTOPDF(AStream: TStream; AMDFe: TMDFe);
+const
+  TITULO_PDF = 'Manifesto de Documento Eletrônico - Evento';
+var
+  OldShowDialog: Boolean;
+begin
+  if PrepareReportEvento then
+  begin
+    frxPDFExport.Author   := Sistema;
+    frxPDFExport.Creator  := Sistema;
+    frxPDFExport.Producer := Sistema;
+    frxPDFExport.Title    := TITULO_PDF;
+    frxPDFExport.Subject  := TITULO_PDF;
+    frxPDFExport.Keywords := TITULO_PDF;
+
+    frxPDFExport.Stream := AStream;
+    OldShowDialog := frxPDFExport.ShowDialog;
+
+    try
+      frxPDFExport.ShowDialog := False;
+      frxReport.Export(frxPDFExport);
+    finally
+      frxPDFExport.ShowDialog := OldShowDialog;
+    end;
+  end;
+end;
+
 function TACBrMDFeDAMDFEFR.PrepareReport(AMDFe: TMDFe): Boolean;
 var
   i: Integer;
@@ -1228,11 +1258,7 @@ end;
 
 procedure TACBrMDFeDAMDFEFR.CarregaIdentificacao;
 var
-  vTemp:TStringList;
   wObs:String;
-  Campos:TSplitResult;
-  IndexCampo:Integer;
-  TmpStr:String;
   BufferObs:String;
   I:integer;
 begin
@@ -1293,22 +1319,12 @@ begin
 
     // Incluido por Paulo Hostert em 18/11/2014.
     wObs := FMDFe.infAdic.infCpl;
-    vTemp := TStringList.Create;
-    try
-      if Trim(wObs) <> '' then
-      begin
-        Campos := Split(';', wObs);
-        for IndexCampo := 0 to Length(Campos) - 1 do
-          vTemp.Add(Trim(Campos[IndexCampo]));
 
-        TmpStr := vTemp.Text;
-        BufferObs := TmpStr;
-      end
-      else
-        BufferObs := '';
-    finally
-      vTemp.Free;
-    end;
+    if Trim(wObs) <> '' then
+      BufferObs := StringReplace(wObs, FDAMDFEClassOwner.CaractereQuebraDeLinha, sLineBreak, [rfReplaceAll, rfIgnoreCase])
+    else
+      BufferObs := '';
+
     FieldByName('OBS').AsString := BufferObs;
     FieldByName('dhIniViagem').AsDateTime := FMDFe.Ide.dhIniViagem;
 

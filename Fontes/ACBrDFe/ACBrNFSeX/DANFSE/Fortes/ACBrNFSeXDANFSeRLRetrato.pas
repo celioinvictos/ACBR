@@ -122,12 +122,9 @@ type
     rllValorISS: TRLLabel;
     RLDraw4: TRLDraw;
     rllValorTotal: TRLLabel;
-    RLLabel16: TRLLabel;
-    rlmCodServico: TRLMemo;
     RLLabel3: TRLLabel;
     rllAliquota: TRLLabel;
     RLDraw6: TRLDraw;
-    rlsLinhaH1: TRLDraw;
     rllCodigoObra: TRLLabel;
     rllCodObra: TRLLabel;
     rllTituloConstCivil: TRLLabel;
@@ -181,7 +178,6 @@ type
     rllRegimeEspecial: TRLLabel;
     rllOpcaoSimples: TRLLabel;
     rllISSReter: TRLLabel;
-    rllMsgTeste: TRLLabel;
     rbOutrasInformacoes: TRLBand;
     rlmDadosAdicionais: TRLMemo;
     RLLabel6: TRLLabel;
@@ -220,8 +216,6 @@ type
     rlmServicoDescricao: TRLMemo;
     txtServicoUnitario: TRLLabel;
     txtServicoTotal: TRLLabel;
-    rllCodTributacaoMunicipio: TRLLabel;
-    rlmDescCodTributacaoMunicipio: TRLMemo;
     RLLabel69: TRLLabel;
     rllPrestInscEstadual: TRLLabel;
     RLBand1: TRLBand;
@@ -232,6 +226,9 @@ type
     txtBaseCalculo: TRLLabel;
     txtISS: TRLLabel;
     RLDraw12: TRLDraw;
+    rbCodServico: TRLBand;
+    rlmCodServico: TRLMemo;
+    rllMsgTeste: TRLLabel;
 
     procedure rlbCabecalhoBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rlbItensServicoBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -244,6 +241,7 @@ type
     procedure RLNFSeBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure subItensDataRecord(Sender: TObject; RecNo: Integer;
       CopyNo: Integer; var Eof: Boolean; var RecordAction: TRLRecordAction);
+    procedure rbCodServicoBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     { Private declarations }
     FNumItem: Integer;
@@ -259,7 +257,7 @@ implementation
 
 uses
   StrUtils, DateUtils,
-  ACBrUtil.Base, ACBrUtil.Strings,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime,
   ACBrDFeUtil,
   ACBrNFSeX, ACBrNFSeXClass, ACBrNFSeXInterface,
   ACBrValidador, ACBrDFeReportFortes;
@@ -301,16 +299,20 @@ begin
       fpNFSe.Servico.xMunicipioIncidencia);
 
   if fpDANFSe.OutrasInformacaoesImp <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpDANFSe.OutrasInformacaoesImp, ';', #13#10, [rfReplaceAll]))
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpDANFSe.OutrasInformacaoesImp,
+                                        FQuebradeLinha, #13#10, [rfReplaceAll]))
   else
     if fpNFSe.OutrasInformacoes <> '' then
-      rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.OutrasInformacoes, FQuebradeLinha, #13#10, [rfReplaceAll]));
+      rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.OutrasInformacoes,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   if fpNFSe.InformacoesComplementares <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.InformacoesComplementares, FQuebradeLinha, #13#10, [rfReplaceAll]));
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.InformacoesComplementares,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   if fpNFSe.Servico.infoCompl.xInfComp <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.Servico.infoCompl.xInfComp, FQuebradeLinha, #13#10, [rfReplaceAll]));
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.Servico.infoCompl.xInfComp,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   if fpNFSe.Link <> '' then
   begin
@@ -355,16 +357,13 @@ begin
   end;
 
   rlmDadosAdicionais.Lines.EndUpdate;
-  rllDataHoraImpressao.Caption := Format(ACBrStr('DATA E HORA DA IMPRESSÃO: %s'), [FormatDateTime('dd/mm/yyyy hh:nn', Now)]);
 
-  if fpDANFSe.Usuario <> '' then
-    rllDataHoraImpressao.Caption := Format(ACBrStr('%s   USUÁRIO: %s'), [rllDataHoraImpressao.Caption, fpDANFSe.Usuario]);
+  rllDataHoraImpressao.Visible := NaoEstaVazio(fpDANFSe.Usuario);
+  rllDataHoraImpressao.Caption := ACBrStr('DATA / HORA DA IMPRESSÃO: ') +
+                               FormatDateTimeBr(Now) + ' - ' + fpDANFSe.Usuario;
 
-  // imprime sistema
-  if fpDANFSe.Sistema <> '' then
-    rllSistema.Caption := Format('Desenvolvido por %s', [fpDANFSe.Sistema])
-  else
-    rllSistema.Caption := '';
+  rllSistema.Visible := NaoEstaVazio(fpDANFSe.Sistema);
+  rllSistema.Caption := Format('Desenvolvido por %s', [fpDANFSe.Sistema]);
 
   // Exibe canhoto
   rlbCanhoto.Visible := fpDANFSe.ImprimeCanhoto;
@@ -377,7 +376,8 @@ begin
   TDFeReportFortes.CarregarLogo(rliLogo, fpDANFSe.Logo);
 
   rlmPrefeitura.Lines.Clear;
-  rlmPrefeitura.Lines.Add(StringReplace(fpDANFSe.Prefeitura, ';', #13#10, [rfReplaceAll]));
+  rlmPrefeitura.Lines.Add(StringReplace(fpDANFSe.Prefeitura,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   With fpNFSe do
   begin
@@ -426,10 +426,55 @@ begin
     txtServicoTotal.Caption := FormatFloatBr(ValorTotal);
     txtBaseCalculo.Caption := FormatFloatBr(BaseCalculo);
 
-//    if ValorISS = 0.0 then
-//      ValorISS := BaseCalculo * Aliquota/100;
-
     txtISS.Caption := FormatFloatBr(ValorISS);
+  end;
+end;
+
+procedure TfrlXDANFSeRLRetrato.rbCodServicoBeforePrint(Sender: TObject;
+  var PrintIt: Boolean);
+var
+  i: Integer;
+  xItemLista: string;
+begin
+  inherited;
+
+  With fpNFSe do
+  begin
+    rlmCodServico.Lines.Clear;
+    xItemLista := '';
+
+    if Servico.ItemServico.Count > 0 then
+    begin
+      rlmCodServico.Lines.Append(ACBrStr('Código Serviço:'));
+
+      for i := 0 to Servico.ItemServico.Count -1 do
+      begin
+        if Pos(Servico.ItemServico.Items[i].ItemListaServico, xItemLista) = 0 then
+        begin
+          rlmCodServico.Lines.Append('   ' + Servico.ItemServico.Items[i].ItemListaServico +
+            ' - ' + ACBrStr(Servico.ItemServico.Items[i].xItemListaServico));
+
+          xItemLista := xItemLista + Servico.ItemServico.Items[i].ItemListaServico + '/';
+        end;
+      end;
+    end;
+
+    if (Servico.xItemListaServico <> '') and (Servico.ItemServico.Count = 0) then
+    begin
+      rlmCodServico.Lines.Append(ACBrStr('Código Serviço:'));
+
+      rlmCodServico.Lines.Append('   ' + Servico.ItemListaServico + ' - ' +
+      ACBrStr(Servico.xItemListaServico));
+    end;
+
+    if fpDANFSe.Atividade <> '' then
+      rlmCodServico.Lines.Append('Atividade: ' + fpDANFSe.Atividade);
+
+    if (Servico.xCodigoTributacaoMunicipio <> '') then
+      rlmCodServico.Lines.Append('Cod. Tributacao Municipio: ' + Servico.xCodigoTributacaoMunicipio);
+
+    if Servico.CodigoCnae <> '' then
+      rlmCodServico.Lines.Append(ACBrStr('Código CNAE: ') + Servico.CodigoCnae);
   end;
 end;
 
@@ -437,13 +482,8 @@ procedure TfrlXDANFSeRLRetrato.rlbISSQNBeforePrint(Sender: TObject; var PrintIt:
 var
   MostrarObra, MostrarNaturezaOperacao: Boolean;
   FProvider: IACBrNFSeXProvider;
-  i: Integer;
 begin
   inherited;
-
-  RLLabel16.Visible := False;
-  rllCodTributacaoMunicipio.Visible := False;
-  rlmDescCodTributacaoMunicipio.Visible := False;
 
   FProvider := ACBrNFSe.Provider;
 
@@ -472,7 +512,7 @@ begin
     rllCodObra.Caption := ConstrucaoCivil.CodigoObra;
     rllCodART.Caption := ConstrucaoCivil.Art;
     MostrarObra := (rllCodObra.Caption <> '') or (rllCodART.Caption <> '');
-    rlsLinhaH1.Visible := MostrarObra;
+//    rlsLinhaH1.Visible := MostrarObra;
     rllTituloConstCivil.Visible := MostrarObra;
     rllCodigoObra.Visible := MostrarObra;
     rllCodObra.Visible := MostrarObra;
@@ -486,47 +526,6 @@ begin
     else
       rllValorTotal.Caption := 'VALOR TOTAL DA NOTA = R$ ' +
                              FormatFloat(',0.00', Servico.Valores.ValorTotalNotaFiscal);
-
-    rlmCodServico.Lines.Clear;
-
-    if (Servico.xItemListaServico = '') and (Servico.ItemServico.Count > 0) then
-    begin
-      RLLabel16.Visible := True;
-
-      for i := 0 to Servico.ItemServico.Count -1 do
-      begin
-        rlmCodServico.Lines.Append(Servico.ItemServico.Items[i].ItemListaServico +
-          ' - ' + Servico.ItemServico.Items[i].xItemListaServico);
-      end;
-    end;
-
-    if Servico.xItemListaServico <> '' then
-    begin
-      RLLabel16.Visible := True;
-
-      if fpDANFSe.Atividade <> '' then
-        rlmCodServico.Lines.Append('Atividade: ' + fpDANFSe.Atividade);
-
-      rlmCodServico.Lines.Append(Servico.ItemListaServico + ' - ' + Servico.xItemListaServico);
-
-      if (Servico.xCodigoTributacaoMunicipio <> '') then
-      begin
-        rllCodTributacaoMunicipio.Visible := True;
-        rlmDescCodTributacaoMunicipio.Visible := True;
-        rlmDescCodTributacaoMunicipio.Lines.Append(Servico.xCodigoTributacaoMunicipio);
-      end
-      else
-        rlmCodServico.Height := Trunc(rlmCodServico.Height * 2.5);
-    end
-    else
-    begin
-      if fpDANFSe.Atividade <> '' then
-      begin
-        RLLabel16.Visible := True;
-        RLLabel16.Caption := 'Atividade:';
-        rlmCodServico.Lines.Append(fpDANFSe.Atividade);
-      end
-    end;
 
     rllValorPIS.Caption := FormatFloat(',0.00', Servico.Valores.ValorPis);
     rllValorCOFINS.Caption := FormatFloat(',0.00', Servico.Valores.ValorCofins);

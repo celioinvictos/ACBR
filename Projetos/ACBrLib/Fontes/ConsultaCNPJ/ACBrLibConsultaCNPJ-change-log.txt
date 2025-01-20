@@ -42,6 +42,39 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+09/01/2025
+--- Diversos ---
+[+] TK-6388 Refatorado o programa de exemplo em PHP com a ACBrComum.php, métodos centralizados e página principal unificada entre MT e ST
+    Por: Renato Rubinho
+
+30/12/2024
+--- ACBrLibConsultaCNPJBase ---
+[-] Correção no retorno do método Consultar
+    Por: Júlio Cavalcanti
+
+27/12/2024
+--- ACBrLibConsultaCNPJConsoleMTDemo.lpi ---
+[+] Adicionado novo Projeto, 100% CONSOLE e MT versão Demonstração.
+[+] Compatível com compilação em Linux 64 e Android 32 e 64
+    Por: Antonio Carlos Junior
+
+10/12/2024
+-- ACBrLibConsultaCNPJ.lpi, ACBrLibConsultaCNPJDemo.lpi --
+[*] Correção nome para compilação Linux.
+    Por: Renato Rubinho, Antonio Carlos Junior
+
+13/08/2024
+--- ACBrLibConsultaCNPJConsoleMT.lpi ---
+[+] Adicionado novo Projeto, 100% CONSOLE e MT
+[+] Compatível com compilação em Linux 64 e Android 32 e 64
+
+--- ACBrLibConsultaCNPJBase, ACBrLibConsultaCNPJST, ACBrLibConsultaCNPJMT,
+    ACBrLibConsultaCNPJStaticImportST, ACBrLibConsultaCNPJStaticImportMT, ACBrLibConsultaCNPJRespostas ---
+[*] Ajustes para usar 'PAnsiChar' no lugar de 'PChar' e 'Integer' ao inves de 'LongInt'
+[*] Ajustes para usar 'ConverterStringEntrada' e 'ConverterStringSaida'
+[*] Remoção de Units não utilizadas
+    Por: Antonio Carlos Junior
+
 11/03/2024
 --- ACBrLibConsultaCNPJDataModule 	---
 [-] adicionado no uses ACBrUtil.FilesIO para o TNivelLog

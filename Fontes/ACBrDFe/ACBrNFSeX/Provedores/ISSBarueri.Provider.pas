@@ -101,9 +101,6 @@ type
     procedure PrepararCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
     procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
 
-    function AplicarXMLtoUTF8(const AXMLRps: String): String; override;
-    function AplicarLineBreak(const AXMLRps: String; const ABreak: String): String; override;
-
     procedure ProcessarMensagemErros(RootNode: TACBrXmlNode;
                                      Response: TNFSeWebserviceResponse;
                                      const AListTag: string = 'ListaMensagemRetorno';
@@ -355,6 +352,7 @@ begin
 
   with ConfigGeral do
   begin
+    QuebradeLinha := '|';
     Identificador := '';
     UseCertificateHTTP := True;
     ModoEnvio := meLoteAssincrono;
@@ -637,8 +635,7 @@ begin
   Nota.NFSe.CodigoCancelamento := Response.InfCancelamento.CodCancelamento;
   Nota.GerarXML;
 
-  Nota.XmlRps := AplicarXMLtoUTF8(Nota.XmlRps);
-  Nota.XmlRps := AplicarLineBreak(Nota.XmlRps, '');
+  Nota.XmlRps := string(NativeStringToUTF8(Nota.XmlRps));
 
   SalvarXmlRps(Nota);
 
@@ -824,11 +821,11 @@ begin
 
         if NaoEstaVazio(Trim(Copy(Dados[1], 22, 6))) then
         begin
-          Response.Data := EncodeDataHora(Trim(Copy(Dados[1], 13, 8)), 'YYYYMMDD');
+          Response.Data := StringToDateTime(Trim(Copy(Dados[1], 13, 8)), 'YYYYMMDD');
           Response.Data := Response.Data + StrToTime(Format('%S:%S:%S', [Trim(Copy(Dados[1], 21, 2)), Trim(Copy(Dados[1], 23, 2)), Trim(Copy(Dados[1], 25, 2))]));
         end
         else
-          Response.Data := EncodeDataHora(Trim(Copy(Dados[1], 13, 8)), 'YYYYMMDD');
+          Response.Data := StringToDateTime(Trim(Copy(Dados[1], 13, 8)), 'YYYYMMDD');
 
         if (FAOwner.Configuracoes.WebServices.AmbienteCodigo = 1) then
           Response.Link := 'https://www.barueri.sp.gov.br/nfe/xmlNFe.ashx'
@@ -1031,17 +1028,6 @@ begin
   }
 end;
 
-function TACBrNFSeProviderISSBarueri.AplicarXMLtoUTF8(const AXMLRps: String): String;
-begin
-  Result := string(NativeStringToUTF8(AXMLRps));
-end;
-
-function TACBrNFSeProviderISSBarueri.AplicarLineBreak(const AXMLRps: String;
-  const ABreak: String): String;
-begin
-  Result := AXMLRps;
-end;
-
 function TACBrNFSeProviderISSBarueri.SituacaoLoteRpsToStr(const t: TSituacaoLoteRps): string;
 begin
   Result := EnumeradoToStr(t,
@@ -1155,7 +1141,7 @@ var
 begin
   FPMsgOrig := AMSG;
 
-  Request := '<nfe:ConsultaNFeRecebidaPeriodo  xmlns="http://www.barueri.sp.gov.br/nfe">';
+  Request := '<nfe:ConsultaNFeRecebidaPeriodo>';
   Request := Request + '<nfe:VersaoSchema>1</nfe:VersaoSchema>';
   Request := Request + '<nfe:MensagemXML>';
   Request := Request + IncluirCDATA(AMSG);

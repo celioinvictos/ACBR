@@ -123,12 +123,12 @@ type
   protected
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
+    function CriarServiceClient(const AMetodo: TMetodo): TACBrNFSeXWebservice; override;
 
     procedure PrepararConsultaNFSeporNumero(Response: TNFSeConsultaNFSeResponse); override;
     procedure TratarRetornoConsultaNFSeporNumero(Response: TNFSeConsultaNFSeResponse); override;
 
     procedure PrepararCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
-//    procedure TratarRetornoCancelaNFSe(Response: TNFSeCancelaNFSeResponse); override;
 
   end;
 
@@ -206,6 +206,19 @@ var
   ANodeArray: TACBrXmlNodeArray;
   AErro, AAlerta: TNFSeEventoCollectionItem;
   aID, aCorrecao, aMensagem: string;
+
+  function EhAvisoNotaEmitida: Boolean;
+  begin
+    Result := ((aCorrecao = '') or
+              (aCorrecao = 'Sem erros') or
+              (Pos('sucesso', aCorrecao) > 0) or
+              (Copy(aID, 1, 1) = 'A'))
+              or
+              ((aMensagem = '') or
+              (aMensagem = 'Sem erros') or
+              (Pos('sucesso', aMensagem) > 0) or
+              (Copy(aID, 1, 1) = 'A'));
+  end;
 begin
   ANode := RootNode.Childrens.FindAnyNs(AListTag);
 
@@ -225,7 +238,7 @@ begin
     aCorrecao := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('DescricaoErro'), tcStr);
     aMensagem := ObterConteudoTag(ANodeArray[I].Childrens.FindAnyNs('DescricaoProcesso'), tcStr);
 
-    if (aCorrecao = '') or (aCorrecao = 'Sem erros') then
+    if EhAvisoNotaEmitida then
     begin
       if aMensagem <> '' then
       begin
@@ -573,9 +586,11 @@ end;
 function TACBrNFSeXWebserviceSigISS.TratarXmlRetornado(
   const aXML: string): string;
 begin
-  Result := inherited TratarXmlRetornado(aXML);
+  Result := ConverteANSIparaUTF8(aXml);
+  Result := RemoverDeclaracaoXML(Result);
 
-  Result := ConverteXMLtoUTF8(Result);
+  Result := inherited TratarXmlRetornado(Result);
+
   Result := ParseText(Result);
   Result := RemoverPrefixosDesnecessarios(Result);
   Result := RemoverDeclaracaoXML(Result);
@@ -672,6 +687,24 @@ begin
   Result.NFSe := ANFSe;
 end;
 
+function TACBrNFSeProviderSigISS103.CriarServiceClient(
+  const AMetodo: TMetodo): TACBrNFSeXWebservice;
+var
+  URL: string;
+begin
+  URL := GetWebServiceURL(AMetodo);
+
+  if URL <> '' then
+    Result := TACBrNFSeXWebserviceSigISS103.Create(FAOwner, AMetodo, URL)
+  else
+  begin
+    if ConfigGeral.Ambiente = taProducao then
+      raise EACBrDFeException.Create(ERR_SEM_URL_PRO)
+    else
+      raise EACBrDFeException.Create(ERR_SEM_URL_HOM);
+  end;
+end;
+
 procedure TACBrNFSeProviderSigISS103.PrepararConsultaNFSeporNumero(
   Response: TNFSeConsultaNFSeResponse);
 var
@@ -725,7 +758,7 @@ var
   Document: TACBrXmlDocument;
   AErro: TNFSeEventoCollectionItem;
   ANode, AuxNode, ANodeNFSe: TACBrXmlNode;
-  NumRps: String;
+  NumRps, aXml: String;
   ANota: TNotaFiscal;
 begin
   Document := TACBrXmlDocument.Create;
@@ -786,7 +819,9 @@ begin
 
               ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumRps);
 
-              ANota := CarregarXmlNfse(ANota, ANode.OuterXml);
+              aXml := SeparaDados(ANode.OuterXml, 'RetornoNota');
+
+              ANota := CarregarXmlNfse(ANota, aXml);
               SalvarXmlNfse(ANota);
             end;
           end;

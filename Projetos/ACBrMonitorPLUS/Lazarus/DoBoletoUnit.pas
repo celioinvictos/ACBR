@@ -285,7 +285,7 @@ end;
 
 implementation
 
-uses DoACBrUnit, DoEmailUnit, ACBrBoletoRelatorioRetorno, ACBrLibComum,
+uses DoACBrUnit, DoEmailUnit, ACBrBoletoRelatorioRetorno, ACBrLibComum, ACBrLibConfig,
   ACBrLibResposta, ACBrLibBoletoRespostas, ACBrObjectSerializer;
 
 { TACBrObjetoBoleto }
@@ -433,7 +433,7 @@ begin
             Titulos[I] := Titulo;
           end;
 
-          fpCmd.Resposta := TACBrObjectSerializer.Gerar<TRetornoRegistroWeb>(Titulos, TpResp, codUTF8);
+          fpCmd.Resposta := GerarResposta<TRetornoRegistroWeb>(Titulos);
         finally
           for I:= 0 to High(Titulos) do
           begin
@@ -1183,6 +1183,7 @@ var
   AParamIndice: Integer;
   ASenha, AParamDest, AParamAssunto ,AParamMensagem : String;
   LMensagem: TStringList;
+  LCalcularNomeIndividual : boolean;
   FACBrBoletoFPDF   : TACBrBoletoFPDF;
 begin
   AParamIndice  := StrToIntDef(fpCmd.Params(0),0);
@@ -1190,7 +1191,6 @@ begin
   AParamAssunto := Trim(fpCmd.Params(2));
   AParamMensagem:= Trim(fpCmd.Params(3));
   ASenha        := Trim(fpCmd.Params(4));
-
 
   with TACBrObjetoBoleto(fpObjetoDono) do
   begin
@@ -1206,16 +1206,17 @@ begin
        begin
          FACBrBoletoFPDF   := TACBrBoletoFPDF.Create(ACBrBoleto);
          if ACBrBoleto.ACBrBoletoFC.ClassName <> FACBrBoletoFPDF.ClassName then
-            raise Exception.Create('A Função GerarPDFComSenha() não funciona com o motor selecionado !');
+            raise Exception.Create('O Metodo EnviarEmailBoleto Com Senha não funciona com o motor selecionado !');
        end;
 
 
     with MonitorConfig.BOLETO.Email do
     begin
       LMensagem := TStringList.Create;
+      LCalcularNomeIndividual:=ACBrBoleto.ACBrBoletoFC.CalcularNomeArquivoPDFIndividual;
       AParamAssunto := IfThen(NaoEstaVazio(AParamAssunto), AParamAssunto, EmailAssuntoBoleto);
-
       try
+        ACBrBoleto.ACBrBoletoFC.CalcularNomeArquivoPDFIndividual:=true;
         LMensagem.Text:= StringToBinaryString(IfThen(NaoEstaVazio(AParamMensagem), AParamMensagem, EmailMensagemBoleto));
 
         try
@@ -1235,8 +1236,8 @@ begin
           on E: Exception do
             raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);
         end;
-
       finally
+        ACBrBoleto.ACBrBoletoFC.CalcularNomeArquivoPDFIndividual:=LCalcularNomeIndividual;
         LMensagem.Free;
       end;
     end;
@@ -1275,7 +1276,7 @@ begin
             Titulos[I] := Titulo;
           end;
 
-          fpCmd.Resposta := TACBrObjectSerializer.Gerar<TRetornoRegistroWeb>(Titulos, TpResp, codUTF8);
+          fpCmd.Resposta := GerarResposta<TRetornoRegistroWeb>(Titulos);
         finally
           for I:= 0 to High(Titulos) do
           begin
@@ -1328,6 +1329,7 @@ begin
     CEP                := fACBrBoleto.Cedente.CEP;
     Complemento        := fACBrBoleto.Cedente.Complemento;
     UF                 := fACBrBoleto.Cedente.UF;
+    CodigoFlash        := fACBrBoleto.Cedente.CodigoFlash;
     with Conta do
     begin
       CodCedente       := fACBrBoleto.Cedente.CodigoCedente;
@@ -1355,6 +1357,7 @@ begin
       begin
         ArquivoKEY := fACBrBoleto.Configuracoes.WebService.ArquivoKEY;
         ArquivoCRT := fACBrBoleto.Configuracoes.WebService.ArquivoCRT;
+        CertificadoHTTP:= fACBrBoleto.Configuracoes.WebService.UseCertificateHTTP;;
       end;
 
     with RemessaRetorno do
@@ -1369,7 +1372,10 @@ begin
     Banco := Integer(fACBrBoleto.Banco.TipoCobranca);
   with MonitorConfig.BOLETO.RemessaRetorno do
     CNAB := Integer(fACBrBoleto.LayoutRemessa);
-
+  with MonitorConfig.BOLETO.RemessaRetorno do
+    KeySoftwareHouse := fACBrBoleto.KeySoftwareHouse;
+  with MonitorConfig.BOLETO.RemessaRetorno do
+    VersaoArquivo := inttostr(fACBrBoleto.banco.LayoutVersaoArquivo);
 
   {Parametros da Conta}
   with MonitorConfig.BOLETO.Conta do

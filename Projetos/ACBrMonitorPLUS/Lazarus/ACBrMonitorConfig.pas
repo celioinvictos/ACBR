@@ -159,7 +159,6 @@ type
     Proxy_User        : String;
     Proxy_Pass        : String;
     IBGEAcentos       : Boolean;
-    IBGEUTF8          : Boolean;
   end;
 
   TConsultaCNPJ = record
@@ -243,6 +242,7 @@ type
     MargemDir         : Double;
     MargemEsq         : Double;
     LarguraBobina     : Double;
+    ImprimeNNFFormatadoNFCe : Boolean;
   end;
 
   TDANFCeTipoPagto = record
@@ -365,6 +365,7 @@ type
     ImprimeContinuacaoDadosAdicionaisPrimeiraPagina: Boolean;
     ImprimirCampoFormaPagamento      : Integer;
     ImprimeXPedNitemPed              : boolean;
+    ImprimeNNFFormatadoNFe           : boolean;
   end;
 
   TDACTE = record
@@ -462,6 +463,7 @@ type
     ESocial            : TeSocial;
     Reinf              : TReinf;
     RespTecnico        : TDFeRespTecnico;
+    QuebraDeLinha      : String;
   end;
 
   TSATExtrato = record
@@ -671,6 +673,7 @@ type
     PrefixArqRemessa           : String;
     VersaoArquivo              : String;
     VersaoLote                 : String;
+    KeySoftwareHouse           : String;
   end;
 
   TBoletoRelatorio = record
@@ -739,6 +742,7 @@ type
     CEP                        : String ;
     Complemento                : String ;
     UF                         : String ;
+    CodigoFlash                : String;
     Conta                      : TBoletoConta;
     Layout                     : TBoletoLayout;
     RemessaRetorno             : TBoletoRemessaRetorno;
@@ -854,7 +858,7 @@ type
 implementation
 
 uses
-  UtilUnit;
+  UtilUnit, StrUtils;
 
 { TMonitorConfig }
 
@@ -876,6 +880,7 @@ procedure TMonitorConfig.SalvarArquivoMemoria(AStream: TStream);
 var
   Ini: TMemIniFile;
   SL: TStringList;
+  QuebraDeLinhaDefault: String;
 begin
   Ini := TMemIniFile.Create('');
   try
@@ -1006,7 +1011,6 @@ begin
       Ini.WriteString( CSecCEP, CKeyCEPProxy_Port, Proxy_Port );
       Ini.WriteString( CSecCEP, CKeyCEPProxy_User, Proxy_User );
       Ini.WriteBool( CSecCEP, CKeyCEPIBGEAcentos, IBGEAcentos );
-      Ini.WriteBool( CSecCEP, CKeyCEPIBGEUTF8, IBGEUTF8 );
       GravaINICrypt(Ini, CSecCEP, CKeyCEPProxy_Pass, Proxy_Pass, _C);
     end;
 
@@ -1080,6 +1084,8 @@ begin
       Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServicesNFSe, ArquivoWebServicesNFSe );
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest );
       Ini.WriteInteger( CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeoutWebService );
+      QuebraDeLinhaDefault := IfThen(Trim(QuebraDeLinha)<>'', QuebraDeLinha, '|');
+      Ini.WriteString( CSecACBrNFeMonitor, CKeyQuebraDeLinha, QuebraDeLinhaDefault);
     end;
 
     with DFE.Certificado do
@@ -1214,6 +1220,7 @@ begin
       Ini.WriteFloat( CSecDANFCe,   CKeyDANFCeMargemDir      , MargemDir );
       Ini.WriteFloat( CSecDANFCe,   CKeyDANFCeMargemEsq      , MargemEsq );
       Ini.WriteFloat( CSecDANFCe,   CKeyDANFCeLarguraBobina  , LarguraBobina );
+      Ini.WriteBool(  CSecDANFCe,   CKeyDANFCEImprimeNNFFormatadoNFCe   , ImprimeNNFFormatadoNFCe );
     end;
 
     with DFE.Impressao.NFCe.Emissao.DANFCeTipoPagto do
@@ -1279,6 +1286,7 @@ begin
       Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe     , ImprimeDescAcrescItemNFe);
       Ini.WriteBool( CSecDANFE,  CKeyDANFELogoEmCima                     , LogoEmCima );
       Ini.WriteBool( CSecDANFE, CKeyDANFEImprimeInscSuframa              , ImprimeInscSuframa);
+      Ini.WriteBool( CSecDANFE, CKeyDANFEImprimeNNFFormatadoNFe          , ImprimeNNFFormatadoNFe);
       Ini.WriteBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto , ExpandirDadosAdicionaisAuto );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina, ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
       Ini.WriteInteger (CSecDANFE, CKeyDANFEImprimirCampoFormaPagamento, ImprimirCampoFormaPagamento);
@@ -1490,6 +1498,7 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBOLETOCEP,           CEP           );
       ini.WriteString( CSecBOLETO, CKeyBOLETOComplemento,   Complemento   );
       ini.WriteString( CSecBOLETO, CKeyBOLETOUF,            UF            );
+      ini.WriteString( CSecBOLETO, CKeyBOLETOCodigoFlash,   CodigoFlash   );
     end;
 
     with Boleto.Conta do
@@ -1549,6 +1558,7 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBoletoPrefixArqRemessa, PrefixArqRemessa );
       ini.WriteString( CSecBOLETO, CKeyBOLETOVersaoArquivo, VersaoArquivo);
       ini.WriteString( CSecBOLETO, CKeyBOLETOVersaoLote, VersaoLote);
+      ini.WriteString( CSecBOLETO, CKeyBOLETOKeySoftwareHouse, KeySoftwareHouse);
     end;
 
 
@@ -1658,6 +1668,7 @@ procedure TMonitorConfig.CarregarArquivoMemoria(AStream: TStream);
 var
   Ini: TMemIniFile;
    SL: TStringList;
+   QuebraDeLinhaDefault: String;
 begin
   Ini := TMemIniFile.Create('');
   try
@@ -1803,7 +1814,6 @@ begin
       Proxy_Port                := Ini.ReadString( CSecCEP, CKeyCEPProxy_Port, Proxy_Port );
       Proxy_User                := Ini.ReadString( CSecCEP, CKeyCEPProxy_User, Proxy_User );
       IBGEAcentos               := Ini.ReadBool( CSecCEP, CKeyCEPIBGEAcentos, IBGEAcentos);
-      IBGEUTF8                  := Ini.ReadBool( CSecCEP, CKeyCEPIBGEUTF8, IBGEUTF8 );
       Proxy_Pass                := LeINICrypt(Ini, CSecCEP, CKeyCEPProxy_Pass, _C);
     end;
 
@@ -1877,6 +1887,8 @@ begin
       ArquivoWebServicesNFSe    := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesNFSe, AcertaPath( CACBrNFSeServicosIni ) );
       ValidarDigest             := Ini.ReadBool( CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest );
       TimeoutWebService         := Ini.ReadInteger( CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeoutWebService );
+      QuebraDeLinhaDefault      :=  IfThen(Trim(QuebraDeLinha)<>'', QuebraDeLinha, '|');
+      QuebraDeLinha             := Ini.ReadString( CSecACBrNFeMonitor, CKeyQuebraDeLinha, QuebraDeLinhaDefault);
     end;
 
     with DFe.Certificado do
@@ -1991,6 +2003,7 @@ begin
       MargemDir                 :=  Ini.ReadFloat( CSecDANFCe,   CKeyDANFCEMargemDir,     MargemDir     );
       MargemEsq                 :=  Ini.ReadFloat( CSecDANFCe,   CKeyDANFCEMargemEsq,     MargemEsq     );
       LarguraBobina             :=  Ini.ReadFloat( CSecDANFCe,   CKeyDANFCeLarguraBobina, LarguraBobina );
+      ImprimeNNFFormatadoNFCe   :=  Ini.ReadBool( CSecDANFCE, CKeyDANFCEImprimeNNFFormatadoNFCe          , ImprimeNNFFormatadoNFCe);
     end;
 
     with DFE.Impressao.NFCe.Emissao.DANFCeTipoPagto do
@@ -2061,6 +2074,7 @@ begin
       ImprimeDescAcrescItemNFe   := Ini.ReadInteger( CSecDANFE, CKeyDANFEImprimeDescAcrescItemNFe        , ImprimeDescAcrescItemNFe );
       LogoEmCima                 := Ini.ReadBool( CSecDANFE,  CKeyDANFELogoEmCima                        , LogoEmCima );
       ImprimeInscSuframa         := Ini.ReadBool( CSecDANFE, CKeyDANFEImprimeInscSuframa                 , ImprimeInscSuframa);
+      ImprimeNNFFormatadoNFe     := Ini.ReadBool( CSecDANFE, CKeyDANFEImprimeNNFFormatadoNFe             , ImprimeNNFFormatadoNFe);
       ExpandirDadosAdicionaisAuto:= Ini.ReadBool( CSecDANFE,  CKeyDANFEExpandirDadosAdicionaisAuto      , ExpandirDadosAdicionaisAuto );
       ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= Ini.ReadBool( CSecDANFE,  CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina,
                                                         ImprimeContinuacaoDadosAdicionaisPrimeiraPagina );
@@ -2295,6 +2309,7 @@ begin
       CEP                    :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCEP,         ini.ReadString( CSecBOLETO,CKeyBOLETOCedenteCEP, '') );
       Complemento            :=  ini.ReadString( CSecBOLETO, CKeyBOLETOComplemento, ini.ReadString( CSecBOLETO,CKeyBOLETOCedenteComplemento, '') );
       UF                     :=  ini.ReadString( CSecBOLETO, CKeyBOLETOUF,          ini.ReadString( CSecBOLETO,CKeyBOLETOCedenteUF, '') );
+      CodigoFlash            :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCodigoFlash,   CodigoFlash);
     end;
 
     with Boleto.Conta do
@@ -2352,6 +2367,7 @@ begin
       PrefixArqRemessa       :=  Ini.ReadString( CSecBOLETO, CKeyBoletoPrefixArqRemessa,   PrefixArqRemessa );
       VersaoArquivo          :=  ini.ReadString( CSecBOLETO, CKeyBOLETOVersaoArquivo,       VersaoArquivo);
       VersaoLote             :=  Ini.ReadString( CSecBOLETO, CKeyBOLETOVersaoLote,          VersaoLote);
+      KeySoftwareHouse       :=  Ini.ReadString( CSecBOLETO, CKeyBOLETOKeySoftwareHouse,   KeySoftwareHouse);
     end;
 
     with BOLETO.Relatorio do
@@ -2583,7 +2599,6 @@ begin
     Proxy_User                := '';
     Proxy_Pass                := '';
     IBGEAcentos               := False;
-    IBGEUTF8                  := False;
   end;
 
   with ConsultaCNPJ do
@@ -2685,7 +2700,7 @@ begin
   with DFe.WebService do
   begin
     Versao                    := '4.00';
-    VersaoCTe                 := '3.00';
+    VersaoCTe                 := '4.00';
     VersaoMDFe                := '3.00';
     VersaoeSocial             := 'S01_00_00';
     VersaoReinf               := '1_03_02';
@@ -2767,6 +2782,7 @@ begin
     MargemDir                 :=  0.51;
     MargemEsq                 :=  0.6;
     LarguraBobina             :=  302;
+    ImprimeNNFFormatadoNFCe    := True;
   end;
 
   with DFE.Impressao.NFCe.Emissao.DANFCeTipoPagto do
@@ -2830,6 +2846,7 @@ begin
     ImprimirCampoFormaPagamento:= 0;
     LogoEmCima                 := False;
     ImprimeInscSuframa         := True;
+    ImprimeNNFFormatadoNFe     := True;
     ExpandirDadosAdicionaisAuto := False;
     ImprimeContinuacaoDadosAdicionaisPrimeiraPagina:= False;
     ImprimeXPedNitemPed        := False;
@@ -3115,6 +3132,8 @@ begin
     CodTransmissao         :=  '';
     RemoveAcentos          :=  False;
     PrefixArqRemessa       := '';
+    KeySoftwareHouse       := '';
+    VersaoArquivo          := '';
   end;
 
   with BOLETO.Relatorio do

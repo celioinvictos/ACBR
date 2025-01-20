@@ -147,8 +147,8 @@ type
     procedure GerarMsgDadosConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); override;
     procedure TratarRetornoConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); override;
 
-    function VerificarAlerta(const ACodigo, AMensagem: string): Boolean; virtual;
-    function VerificarErro(const ACodigo, AMensagem: string): Boolean; virtual;
+    function VerificarAlerta(const ACodigo, AMensagem, ACorrecao: string): Boolean; virtual;
+    function VerificarErro(const ACodigo, AMensagem, ACorrecao: string): Boolean; virtual;
 
     procedure ProcessarMensagemErros(RootNode: TACBrXmlNode;
                                      Response: TNFSeWebserviceResponse;
@@ -323,7 +323,7 @@ begin
 
     NumNFSe := ObterConteudoTag(Node.Childrens.FindAnyNs('Numero'), tcStr);
     CodVerif := ObterConteudoTag(Node.Childrens.FindAnyNs('CodigoVerificacao'), tcStr);
-    DataAut := ObterConteudoTag(Node.Childrens.FindAnyNs('DataEmissao'), tcDatHor);
+    DataAut := ObterConteudoTag(Node.Childrens.FindAnyNs('DataEmissao'), FpFormatoDataEmissao);
 
     Node2 := Node.Childrens.FindAnyNs('DeclaracaoPrestacaoServico');
 
@@ -700,7 +700,7 @@ begin
 
           NumNFSe := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('Numero'), tcStr);
           CodVerif := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('CodigoVerificacao'), tcStr);
-          DataAut := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('DataEmissao'), tcDatHor);
+          DataAut := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('DataEmissao'), FpFormatoDataEmissao);
 
           with Response do
           begin
@@ -1996,9 +1996,9 @@ begin
       ANode := ANode.Childrens.FindAnyNs('ListaNfse');
 
       if ANode = nil then
-        ANode := Document.Root;
-
-      ProcessarMensagemErros(ANode, Response);
+        ANode := Document.Root
+      else
+        ProcessarMensagemErros(ANode, Response);
 
       ANodeArray := ANode.Childrens.FindAllAnyNs('CompNfse');
 
@@ -2221,11 +2221,12 @@ begin
                                  '</' + Prefixo2 + 'Numero>' +
                                  Serie +
                                  '<' + Prefixo2 + 'CpfCnpj>' +
-                                   GetCpfCnpj(Emitente.CNPJ, Prefixo2) +
+                                    GetCpfCnpj(Emitente.CNPJ, Prefixo2) +
                                  '</' + Prefixo2 + 'CpfCnpj>' +
                                  GetInscMunic(Emitente.InscMun, Prefixo2) +
                                  '<' + Prefixo2 + 'CodigoMunicipio>' +
-                                    IntToStr(TACBrNFSeX(FAOwner).Configuracoes.Geral.CodigoMunicipio) +
+                                    IntToStr(InfoCanc.CodMunicipio) +
+//                                    IntToStr(TACBrNFSeX(FAOwner).Configuracoes.Geral.CodigoMunicipio) +
                                  '</' + Prefixo2 + 'CodigoMunicipio>' +
                                  CodigoVerificacao +
                                '</' + Prefixo2 + 'IdentificacaoNfse>' +
@@ -2244,8 +2245,9 @@ var
   Document: TACBrXmlDocument;
   ANode, AuxNode: TACBrXmlNode;
   Ret: TRetCancelamento;
-  IdAttr: string;
+  IdAttr, xCancelamento, xXMLNS: string;
   AErro: TNFSeEventoCollectionItem;
+  Inicio, Fim: Integer;
 begin
   Document := TACBrXmlDocument.Create;
 
@@ -2276,6 +2278,8 @@ begin
         Exit;
       end;
 
+      ProcessarMensagemErros(ANode, Response);
+
       ANode := ANode.Childrens.FindAnyNs('NfseCancelamento');
 
       if not Assigned(ANode) then
@@ -2304,17 +2308,6 @@ begin
 
       Ret := Response.RetCancelamento;
       Ret.DataHora := ObterConteudoTag(ANode.Childrens.FindAnyNs('DataHora'), FpFormatoDataHora);
-
-      if Ret.DataHora > 0 then
-      begin
-        Ret.Sucesso := 'Sim';
-        Ret.Situacao := 'Cancelado';
-      end
-      else
-      begin
-        Ret.Sucesso := '';
-        Ret.Situacao := '';
-      end;
 
       if ConfigAssinar.IncluirURI then
         IdAttr := ConfigGeral.Identificador
@@ -2356,6 +2349,32 @@ begin
 
         InscricaoMunicipal := ObterConteudoTag(ANode.Childrens.FindAnyNs('InscricaoMunicipal'), tcStr);
         CodigoMunicipio := ObterConteudoTag(ANode.Childrens.FindAnyNs('CodigoMunicipio'), tcStr);
+      end;
+
+      if Ret.DataHora > 0 then
+      begin
+        Ret.Sucesso := 'Sim';
+        Ret.Situacao := 'Cancelado';
+
+        Inicio := Pos('CancelarNfseEnvio', Response.ArquivoEnvio) + 16;
+        Fim := Pos('>', Response.ArquivoEnvio) - 1;
+
+        if Inicio = Fim then
+          xXMLNS := ''
+        else
+          xXMLNS := ' ' + Copy(Response.ArquivoEnvio, Inicio + 1, Fim - (Inicio + 1));
+
+        xCancelamento := '<Cancelamento' + xXMLNS + '>' +
+                            SeparaDados(Response.ArquivoEnvio, 'Pedido', True) +
+                            SepararDados(Response.ArquivoRetorno, 'DataHora', True) +
+                         '</Cancelamento>';
+
+        SalvarXmlCancelamento(Ret.Pedido.InfID.ID + '-procCancNFSe', xCancelamento);
+      end
+      else
+      begin
+        Ret.Sucesso := '';
+        Ret.Situacao := '';
       end;
     except
       on E:Exception do
@@ -2851,15 +2870,15 @@ begin
 end;
 
 function TACBrNFSeProviderABRASFv2.VerificarAlerta(const ACodigo,
-  AMensagem: string): Boolean;
+  AMensagem, ACorrecao: string): Boolean;
 begin
-  Result := (AMensagem <> '') and (Pos('L000', ACodigo) > 0);
+  Result := ((AMensagem <> '') or (ACorrecao <> '')) and (Pos('L000', ACodigo) > 0);
 end;
 
 function TACBrNFSeProviderABRASFv2.VerificarErro(const ACodigo,
-  AMensagem: string): Boolean;
+  AMensagem, ACorrecao: string): Boolean;
 begin
-  Result := (AMensagem <> '') and (Pos('L000', ACodigo) = 0);
+  Result := ((AMensagem <> '') or (ACorrecao <> '')) and (Pos('L000', ACodigo) = 0);
 end;
 
 procedure TACBrNFSeProviderABRASFv2.ProcessarMensagemErros(RootNode: TACBrXmlNode;
@@ -2874,20 +2893,23 @@ var
 procedure ProcessarErro(ErrorNode: TACBrXmlNode; const ACodigo, AMensagem: string);
 var
   Item: TNFSeEventoCollectionItem;
+  Correcao: string;
 begin
-  if AMensagem = '' then
+  Correcao := ObterConteudoTag(ErrorNode.Childrens.FindAnyNs('Correcao'), tcStr);
+
+  if (ACodigo = '') and (AMensagem = '') then
     Exit;
 
-  if VerificarAlerta(ACodigo, AMensagem) then
+  if VerificarAlerta(ACodigo, AMensagem, Correcao) then
     Item := Response.Alertas.New
-  else if VerificarErro(ACodigo, AMensagem) then
+  else if VerificarErro(ACodigo, AMensagem, Correcao) then
     Item := Response.Erros.New
   else
     Exit;
 
   Item.Codigo := ACodigo;
   Item.Descricao := AMensagem;
-  Item.Correcao := ObterConteudoTag(ErrorNode.Childrens.FindAnyNs('Correcao'), tcStr);
+  Item.Correcao := Correcao;
 end;
 
 procedure ProcessarErros;

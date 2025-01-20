@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -244,6 +244,9 @@ begin
       trabalhador.GrauInstr  := INIRec.ReadString(sSecao, 'grauInstr', '01');
       Trabalhador.IndPriEmpr := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'indPriEmpr', 'S'));
       trabalhador.nmSoc      := INIRec.ReadString(sSecao, 'nmSoc', EmptyStr);
+      sFim := INIRec.ReadString(sSecao, 'ExtrangeiroSN', '');
+      if Trim(sFim) <> '' then
+        trabalhador.ExtrangeiroSN := StrToBoolDef(sFim, Trabalhador.ExtrangeiroSN);
 
       sSecao := 'nascimento';
       trabalhador.Nascimento.dtNascto   := StringToDateTime(INIRec.ReadString(sSecao, 'dtNascto', '0'));
@@ -350,13 +353,13 @@ begin
       sSecao := 'infoDeficiencia';
       if INIRec.ReadString(sSecao, 'defFisica', '') <> '' then
       begin
-        trabalhador.infoDeficiencia.DefFisica      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defFisica', 'S'));
-        trabalhador.infoDeficiencia.DefVisual      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defVisual', 'S'));
-        trabalhador.infoDeficiencia.DefAuditiva    := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defAuditiva', 'S'));
-        trabalhador.infoDeficiencia.DefMental      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defMental', 'S'));
-        trabalhador.infoDeficiencia.DefIntelectual := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defIntelectual', 'S'));
-        trabalhador.infoDeficiencia.ReabReadap     := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'reabReadap', 'S'));
-        trabalhador.infoDeficiencia.infoCota       := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'infoCota', 'S'));
+        trabalhador.infoDeficiencia.DefFisica      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defFisica', 'N'));
+        trabalhador.infoDeficiencia.DefVisual      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defVisual', 'N'));
+        trabalhador.infoDeficiencia.DefAuditiva    := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defAuditiva', 'N'));
+        trabalhador.infoDeficiencia.DefMental      := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defMental', 'N'));
+        trabalhador.infoDeficiencia.DefIntelectual := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'defIntelectual', 'N'));
+        trabalhador.infoDeficiencia.ReabReadap     := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'reabReadap', 'N'));
+        trabalhador.infoDeficiencia.infoCota       := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'infoCota', ''));
         trabalhador.infoDeficiencia.Observacao     := INIRec.ReadString(sSecao, 'observacao', '');
       end;
 
@@ -395,7 +398,7 @@ begin
       begin
         trabalhador.contato.FonePrinc     := INIRec.ReadString(sSecao, 'fonePrinc', '');
         trabalhador.contato.FoneAlternat  := INIRec.ReadString(sSecao, 'foneAlternat', 'S');
-        trabalhador.contato.EmailPrinc    := INIRec.ReadString(sSecao, 'emailPrinc', 'S');
+        trabalhador.contato.EmailPrinc    := INIRec.ReadString(sSecao, 'emailPrinc', '');
         trabalhador.contato.EmailAlternat := INIRec.ReadString(sSecao, 'emailAlternat', 'S');
       end;
 
@@ -491,7 +494,7 @@ begin
         vinculo.InfoRegimeTrab.infoEstatutario.DtNomeacao  := StringToDateTime(INIRec.ReadString(sSecao, 'dtNomeacao', '0'));
         vinculo.InfoRegimeTrab.infoEstatutario.DtPosse     := StringToDateTime(INIRec.ReadString(sSecao, 'dtPosse', '0'));
         vinculo.InfoRegimeTrab.infoEstatutario.DtExercicio := StringToDateTime(INIRec.ReadString(sSecao, 'dtExercicio', '0'));
-        vinculo.InfoRegimeTrab.infoEstatutario.tpPlanRP    := eSStrToTpPlanRP(Ok, INIRec.ReadString(sSecao, 'tpPlanRP', '1'));
+        vinculo.InfoRegimeTrab.infoEstatutario.tpPlanRP    := eSStrToTpPlanRP(Ok, INIRec.ReadString(sSecao, 'tpPlanRP', '-1'));
         vinculo.InfoRegimeTrab.infoEstatutario.infoDecJud.nrProcJud := INIRec.ReadString(sSecao, 'nrProcJud', '');
         vinculo.InfoRegimeTrab.infoEstatutario.indTetoRGPS := eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indTetoRGPS', ''));
         vinculo.InfoRegimeTrab.infoEstatutario.indAbonoPerm:= eSStrToSimNaoFacultativo(Ok, INIRec.ReadString(sSecao, 'indAbonoPerm', ''));
@@ -518,9 +521,9 @@ begin
       vinculo.infoContrato.remuneracao.DscSalVar  := INIRec.ReadString(sSecao, 'dscSalVar', '');
 
       sSecao := 'duracao';
-      if INIRec.ReadString(sSecao, 'tpContr', '1') <> '3' then
+      if INIRec.ReadString(sSecao, 'tpContr', '4') <> '4' then
       begin
-      vinculo.infoContrato.duracao.TpContr   := eSStrToTpContr(Ok, INIRec.ReadString(sSecao, 'tpContr', '1'));
+      vinculo.infoContrato.duracao.TpContr   := eSStrToTpContr(Ok, INIRec.ReadString(sSecao, 'tpContr', '4'));
       vinculo.infoContrato.duracao.dtTerm    := StringToDateTime(INIRec.ReadString(sSecao, 'dtTerm', '0'));
       vinculo.infoContrato.duracao.clauAssec := eSStrToSimNao(Ok, INIRec.ReadString(sSecao, 'clauAssec', 'S'));
       vinculo.infoContrato.duracao.objDet    := INIRec.ReadString(sSecao, 'objDet', '');
@@ -723,8 +726,7 @@ begin
 
     if Leitor.rExtrai(1, 'evtAdmissao') <> '' then
     begin
-      if Self.Id = '' then
-        Self.Id := Leitor.rAtributo('Id=');
+      Id := Leitor.rAtributo('Id=');
 
       if Leitor.rExtrai(2, 'ideEvento') <> '' then
       begin

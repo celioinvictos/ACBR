@@ -43,6 +43,58 @@ Símbolo : Significado
 [-]     : Correção de Bug (assim esperamos)
 
 
+13/01/2025
+-- ACBrNFComServicos --
+[+] Incluído as URLs de homologação da SEFAZ-MS.
+[*] Alteração na URL de consulta da NFCom da SEFAZ-MG.
+   Por: Italo Giurizzato Junior
+
+08/01/2025
+-- Diversos --
+[*] Ajustes na geração do XML de eventos para usar o ACBrXmlDocument.
+   Por: Italo Giurizzato Junior
+
+03/01/2025
+-- ACBrNFComNotasFiscais/ACBrNFComWebServices/ACBrNFComXmlReader/ACBrNFCom.DANFComRLRetrato --
+[-] Ajustes na montagem do XML protocolado e na leitura do mesmo.
+   Por: Italo Giurizzato Junior
+
+18/11/2024
+-- ACBrNFComXmlWriter --
+[-] Quando o ICMS for SN (Simples Nacional) gerar com o valor 90 para o CST.
+   Por: Italo Giurizzato Junior
+
+08/10/2024
+-- ACBrNFComServicos --
+[+] Incluído as URLs de homologação da SEFAZ-MG
+   Por: Italo Giurizzato Junior
+
+01/10/2024
+-- Diversos --
+[*] Ajustes necessários para utilizar a unit: ACBrDFeComum.Proc
+   Por: Italo Giurizzato Junior
+
+26/09/2024
+-- ACBrNFComWebServices --
+[*] Correção nos códigos dos status na leitura dos retornos da recepção e Eventos.
+   Por: Cleverton Martins
+
+12/09/2024
+-- ACBrNFComWebServices --
+[*] Ajustes na montagem do XML *-ProcEventoNFCom.xml
+   Por: Italo Giurizzato Junior
+
+12/07/2024
+-- ACBrNFComXmlWriter --
+[*] Possível solução para a geração correta da string do QR-Code.
+   Por: Diego Folieni/Italo Giurizzato Junior
+
+11/07/2024
+-- ACBrNFComNotasFiscais/ACBrNFComWebServices/ACBrNFComClass/ACBrNFComXmlReader/
+   ACBrNFComXmlWriter --
+[*] Alteração visando a leitura correta do XML.
+   Por: Italo Giurizzato Junior
+
 27/06/2024
 -- ACBrNFComXmlWriter --
 [*] Alteração na assinatura da função: ObterNomeArquivo.

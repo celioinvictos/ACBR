@@ -47,7 +47,7 @@ uses
   ACBr_fpdf,
   ACBr_fpdf_ext,
   ACBr_fpdf_report,
-  pcnNFe,
+  ACBrNFe.Classes,
   pcnConversao,
   pcnConversaoNFe,
   ACBrValidador,
@@ -1931,7 +1931,7 @@ begin
   if FPaperWidth < 70 then
     PDF.SetFont(5, '');
 
-  texto := StringReplace(NFe.InfAdic.infCpl, ';', sLineBreak, [rfReplaceAll]);
+  texto := StringReplace(NFe.InfAdic.infCpl, FDANFEClassOwner.CaractereQuebraDeLinha, sLineBreak, [rfReplaceAll]);
   h := PDF.GetStringHeight(texto, Args.Band.Width);
   PDF.TextBox(0, y+3, Args.Band.Width, h, texto, 'T', 'L', 0, '', false);
 end;
@@ -2266,7 +2266,7 @@ begin
   LFormatSettings.DecimalSeparator  := ',';
   LFormatSettings.ThousandSeparator := '.';
   FNFeUtils.FormatSettings := LFormatSettings;
-
+  SetUTF8(false);
   FFontFamily := 'Arial';
   FDashWidth := 1;
   FVia := 'Via Consumidor';

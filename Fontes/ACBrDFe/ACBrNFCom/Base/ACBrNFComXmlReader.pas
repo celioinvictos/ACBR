@@ -114,7 +114,7 @@ begin
   Document.Clear();
   Document.LoadFromXml(Arquivo);
 
-  if Document.Root.Name = 'NFComProc' then
+  if Document.Root.Name = 'nfcomProc' then
   begin
     Ler_ProtNFCom(Document.Root.Childrens.FindAnyNs('protNFCom'));
     NFComNode := Document.Root.Childrens.FindAnyNs('NFCom');
@@ -158,19 +158,24 @@ end;
 procedure TNFComXmlReader.Ler_ProtNFCom(const ANode: TACBrXmlNode);
 var
   ok: Boolean;
+  ANodeAux: TACBrXmlNode;
 begin
   if not Assigned(ANode) then Exit;
 
-  NFCom.procNFCom.tpAmb := StrToTipoAmbiente(ok, ObterConteudo(ANode.Childrens.FindAnyNs('tpAmb'), tcStr));
-  NFCom.procNFCom.verAplic := ObterConteudo(ANode.Childrens.FindAnyNs('verAplic'), tcStr);
-  NFCom.procNFCom.chNFCom := ObterConteudo(ANode.Childrens.FindAnyNs('chNFCom'), tcStr);
-  NFCom.procNFCom.dhRecbto := ObterConteudo(ANode.Childrens.FindAnyNs('dhRecbto'), tcDatHor);
-  NFCom.procNFCom.nProt := ObterConteudo(ANode.Childrens.FindAnyNs('nProt'), tcStr);
-  NFCom.procNFCom.digVal := ObterConteudo(ANode.Childrens.FindAnyNs('digVal'), tcStr);
-  NFCom.procNFCom.cStat := ObterConteudo(ANode.Childrens.FindAnyNs('cStat'), tcInt);
-  NFCom.procNFCom.xMotivo := ObterConteudo(ANode.Childrens.FindAnyNs('xMotivo'), tcStr);
-  NFCom.procNFCom.cMsg := ObterConteudo(ANode.Childrens.FindAnyNs('cMsg'), tcInt);
-  NFCom.procNFCom.xMsg := ObterConteudo(ANode.Childrens.FindAnyNs('xMsg'), tcStr);
+  ANodeAux := ANode.Childrens.FindAnyNs('infProt');
+
+  if not Assigned(ANodeAux) then Exit;
+
+  NFCom.procNFCom.tpAmb := StrToTipoAmbiente(ok, ObterConteudo(ANodeAux.Childrens.FindAnyNs('tpAmb'), tcStr));
+  NFCom.procNFCom.verAplic := ObterConteudo(ANodeAux.Childrens.FindAnyNs('verAplic'), tcStr);
+  NFCom.procNFCom.chDFe := ObterConteudo(ANodeAux.Childrens.FindAnyNs('chNFCom'), tcStr);
+  NFCom.procNFCom.dhRecbto := ObterConteudo(ANodeAux.Childrens.FindAnyNs('dhRecbto'), tcDatHor);
+  NFCom.procNFCom.nProt := ObterConteudo(ANodeAux.Childrens.FindAnyNs('nProt'), tcStr);
+  NFCom.procNFCom.digVal := ObterConteudo(ANodeAux.Childrens.FindAnyNs('digVal'), tcStr);
+  NFCom.procNFCom.cStat := ObterConteudo(ANodeAux.Childrens.FindAnyNs('cStat'), tcInt);
+  NFCom.procNFCom.xMotivo := ObterConteudo(ANodeAux.Childrens.FindAnyNs('xMotivo'), tcStr);
+  NFCom.procNFCom.cMsg := ObterConteudo(ANodeAux.Childrens.FindAnyNs('cMsg'), tcInt);
+  NFCom.procNFCom.xMsg := ObterConteudo(ANodeAux.Childrens.FindAnyNs('xMsg'), tcStr);
 end;
 
 procedure TNFComXmlReader.Ler_InfNFCom(const ANode: TACBrXmlNode);
@@ -407,6 +412,7 @@ end;
 procedure TNFComXmlReader.Ler_Det(const ANode: TACBrXmlNode);
 var
   Item: TDetCollectionItem;
+  sAux: string;
 begin
   if not Assigned(ANode) then Exit;
 
@@ -415,7 +421,12 @@ begin
   Item.nItem := StrToInt(ObterConteudoTag(ANode.Attributes.Items['nItem']));
   Item.chNFComAnt := ObterConteudoTag(ANode.Attributes.Items['chNFComAnt']);
   Item.nItemAnt := StrToIntDef(ObterConteudoTag(ANode.Attributes.Items['nItemAnt']), 0);
-  Item.indNFComAntPapelFatCentral := StrToTIndicador(ObterConteudoTag(ANode.Attributes.Items['indNFComAntPapelFatCentral']));
+
+  sAux := ObterConteudoTag(ANode.Attributes.Items['indNFComAntPapelFatCentral']);
+  Item.indNFComAntPapelFatCentral := tiNao;
+
+  if sAux <> '' then
+    Item.indNFComAntPapelFatCentral := StrToTIndicador(sAux);
 
   Item.infAdProd := ObterConteudo(ANode.Childrens.FindAnyNs('infAdProd'), tcStr);
 

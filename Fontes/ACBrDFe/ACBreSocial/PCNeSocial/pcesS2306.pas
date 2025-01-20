@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -318,6 +318,7 @@ end;
 procedure TEvtTSVAltContr.GerarcargoFuncao(obj: TcargoFuncao);
 begin
   if (obj.codCargo <> EmptyStr) or
+  	 (obj.codFuncao <> EmptyStr) or
      (obj.nmCargo <> EmptyStr) or 
      (obj.CBOCargo <> EmptyStr) or 
      (obj.nmFuncao <> EmptyStr) or 
@@ -362,9 +363,14 @@ end;
 procedure TEvtTSVAltContr.GerarinfoComplementares(obj: TinfoComplementares);
 begin
   if (obj.cargoFuncao.codCargo <> EmptyStr) or
+  	 (obj.cargoFuncao.codFuncao <> EmptyStr) or
      (obj.Remuneracao.VrSalFx > 0) or
      (obj.infoEstagiario.dtPrevTerm > 0) or
-     (obj.localTrabGeral.nrInsc <> '') then
+     (obj.localTrabGeral.nrInsc <> '')or
+     (obj.cargoFuncao.nmCargo <> EmptyStr) or
+     (obj.cargoFuncao.CBOCargo <> EmptyStr) or
+     (obj.cargoFuncao.nmFuncao <> EmptyStr) or
+     (obj.cargoFuncao.CBOFuncao <> EmptyStr) then
   begin
     Gerador.wGrupo('infoComplementares');
 

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
 { mentos de Automação Comercial utilizados no Brasil                            }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida                }
 {                                                                               }
 { Colaboradores nesse arquivo: Rafael Teno Dias                                 }
 {                                                                               }
@@ -36,6 +36,12 @@
 library ACBrLibSat;
 
 uses
+  {$IFDEF MT}
+   {$IFDEF UNIX}
+    cthreads,
+    cmem, // the c memory manager is on some systems much faster for multi-threading
+   {$ENDIF}
+  {$ENDIF}
   Interfaces, sysutils, Classes, Forms,
   {$IFDEF MT}ACBrLibSATMT{$ELSE}ACBrLibSATST{$ENDIF},
   ACBrLibComum;

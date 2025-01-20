@@ -281,7 +281,7 @@ implementation
 
 uses
   StrUtils, DateUtils,
-  ACBrUtil.Base, ACBrUtil.Strings,
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime,
   ACBrNFSeX, ACBrNFSeXClass, ACBrNFSeXInterface,
   ACBrValidador, ACBrDFeReportFortes;
 
@@ -316,13 +316,16 @@ begin
   rlmDadosAdicionais.Lines.Clear;
 
   if fpNFSe.OutrasInformacoes <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.OutrasInformacoes, FQuebradeLinha, #13#10, [rfReplaceAll]))
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.OutrasInformacoes,
+                                        FQuebradeLinha, #13#10, [rfReplaceAll]))
   else
     if fpDANFSe.OutrasInformacaoesImp <> '' then
-      rlmDadosAdicionais.Lines.Add(StringReplace(fpDANFSe.OutrasInformacaoesImp, ';', #13#10, [rfReplaceAll]));
+      rlmDadosAdicionais.Lines.Add(StringReplace(fpDANFSe.OutrasInformacaoesImp,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   if fpNFSe.InformacoesComplementares <> '' then
-    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.InformacoesComplementares, FQuebradeLinha, #13#10, [rfReplaceAll]));
+    rlmDadosAdicionais.Lines.Add(StringReplace(fpNFSe.InformacoesComplementares,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   if fpNFSe.Link <> '' then
   begin
@@ -366,18 +369,15 @@ begin
   end;
 
   rlmDadosAdicionais.Lines.EndUpdate;
-//  //rllDataHoraImpressao.Caption := Format(ACBrStr('DATA E HORA DA IMPRESSÃO: %s') , [FormatDateTime('dd/mm/yyyy hh:nn',Now)]);
-//  rllDataHoraImpressao.Caption := FormatDateTime('dd/mm/yyyy hh:nn',Now);
-//
-//  if fpDANFSe.Usuario <> '' then
-//    rllDataHoraImpressao.Caption := Format(ACBrStr('%s   USUÁRIO: %s'), [rllDataHoraImpressao.Caption, fpDANFSe.Usuario]);
-//
-//  // imprime sistema
-//  if fpDANFSe.Sistema <> '' then
-//    rllSistema.Caption := Format('Desenvolvido por %s %s' , [fpDANFSe.Sistema, fpDANFSe.Site])
-//  else
-//    rllSistema.Caption := '';
 
+  {
+  rllDataHoraImpressao.Visible := NaoEstaVazio(fpDANFSe.Usuario);
+  rllDataHoraImpressao.Caption := ACBrStr('DATA / HORA DA IMPRESSÃO: ') +
+                               FormatDateTimeBr(Now) + ' - ' + fpDANFSe.Usuario;
+
+  rllSistema.Visible := NaoEstaVazio(fpDANFSe.Sistema);
+  rllSistema.Caption := Format('Desenvolvido por %s', [fpDANFSe.Sistema]);
+  }
   //Exibe canhoto
   rlbCanhoto.Visible := fpDANFSe.ImprimeCanhoto;
 end;
@@ -389,7 +389,8 @@ begin
   TDFeReportFortes.CarregarLogo(rliLogo, fpDANFSe.Logo);
 
   rlmPrefeitura.Lines.Clear;
-  rlmPrefeitura.Lines.Add(StringReplace(fpDANFSe.Prefeitura, ';', #13#10, [rfReplaceAll,rfIgnoreCase]));
+  rlmPrefeitura.Lines.Add(StringReplace(fpDANFSe.Prefeitura,
+                                       FQuebradeLinha, #13#10, [rfReplaceAll]));
 
   With fpNFSe do
   begin

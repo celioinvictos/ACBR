@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:          Rafael Teno Dias                       }
 {                                                                              }
@@ -35,10 +35,15 @@
 library ACBrLibBoleto;
 
 uses
-  Interfaces, Forms,
-  sysutils, Classes, ACBrLibBoletoDataModule,
+  {$IFDEF MT}
+   {$IFDEF UNIX}
+    cthreads,
+   {$ENDIF}
+  {$ENDIF}
+  Interfaces, sysutils, Classes, Forms,
+  ACBrLibBoletoDataModule,
   ACBrLibConfig, ACBrLibResposta,
-  ACBrLibComum, ACBrLibConsts, ACBrLibDataModule,
+  ACBrLibComum, ACBrLibConsts,
   {$IFDEF MT}ACBrLibBoletoMT{$ELSE}ACBrLibBoletoST{$ENDIF},
   ACBrLibBoletoConsts, ACBrLibBoletoConfig, ACBrLibBoletoRespostas;
 
@@ -77,6 +82,7 @@ exports
   Boleto_GerarRemessa,
   Boleto_GerarRemessaStream,
   Boleto_LerRetorno,
+  Boleto_LerRetornoStream,
   Boleto_ObterRetorno,
   Boleto_EnviarEmail,
   Boleto_EnviarEmailBoleto,

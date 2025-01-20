@@ -341,6 +341,8 @@ type
     FNumeroNFSeSubst: string;
     FSerieNFSeSubst: string;
     FCodServ: string;
+    FCodMunicipio: Integer;
+    FCNPJCPFTomador: string;
 
   public
     constructor Create;
@@ -362,6 +364,8 @@ type
     property NumeroNFSeSubst: string read FNumeroNFSeSubst write FNumeroNFSeSubst;
     property SerieNFSeSubst: string  read FSerieNFSeSubst  write FSerieNFSeSubst;
     property CodServ: string         read FCodServ         write FCodServ;
+    property CodMunicipio: Integer   read FCodMunicipio    write FCodMunicipio;
+    property CNPJCPFTomador: string  read FCNPJCPFTomador  write FCNPJCPFTomador;
   end;
 
    TpedRegEvento = class
@@ -1271,59 +1275,14 @@ end;
 
 function TACBrNFSeXWebservice.ConverteANSIparaUTF8(
   const Retorno: string): string;
-const
-  UTF_8 = #$C3;
 begin
   Result := RemoverDeclaracaoXML(Retorno);
 
-  if Pos(UTF_8, Result) = 0 then
-  begin
-    Result := AnsiToNativeString(Result);
-    Result := NativeStringToUTF8(Result);
-  end;
+  Result := AnsiToNativeString(Result);
+  Result := NativeStringToUTF8(Result);
 
   if StringIsXML(Result) then
     Result := '<?xml version="1.0" encoding="UTF-8"?>' + Result;
-(*
-    {
-      Se o retorno for um XML mas o seu encoding for iso-8859-1 ou se não constar
-      a declaração do encoding logo no inicio do XML assume que o mesmo não
-      esta no formato URF-8
-    }
-    if ((Pos('iso-8859-1', LowerCase(Retorno)) > 0) or
-        (Pos('encoding', LowerCase(Retorno)) = 0) or
-        (Pos('encoding', LowerCase(Retorno)) > 40)) then
-    begin
-      if StringIsXML(Retorno) then
-      begin
-        {
-          Se não encontrar o caracter que diz que uma vogal acentuada ou cedilha
-          esta no formato UTF-8, converte o XML para UTF-8
-        }
-        Retorno := RemoverDeclaracaoXML(Retorno);
-
-        if Pos(UTF_8, Retorno) = 0 then
-        begin
-          Retorno := AnsiToNativeString(Retorno);
-          Retorno := NativeStringToUTF8(Retorno);
-        end;
-
-        Retorno := '<?xml version="1.0" encoding="UTF-8"?>' + Retorno;
-      end
-      else
-      begin
-        {
-          Se não encontrar o caracter que diz que uma vogal acentuada ou cedilha
-          esta no formato UTF-8, converte o XML para UTF-8
-        }
-        if Pos(UTF_8, Retorno) = 0 then
-        begin
-          Retorno := AnsiToNativeString(Retorno);
-          Retorno := NativeStringToUTF8(Retorno);
-        end;
-      end;
-    end;
-*)
 end;
 
 function TACBrNFSeXWebservice.SubstituirNFSe(const ACabecalho, AMSG: string): string;
@@ -1700,6 +1659,8 @@ begin
   FNumeroNFSeSubst := '';
   FSerieNFSeSubst := '';
   FCodServ := '';
+  FCodMunicipio := 0;
+  FCNPJCPFTomador := '';
 end;
 
 function TInfCancelamento.LerFromIni(const AIniStr: string): Boolean;
@@ -1732,6 +1693,8 @@ begin
     NumeroNFSeSubst := INIRec.ReadString(sSecao, 'NumeroNFSeSubst', '');
     SerieNFSeSubst  := INIRec.ReadString(sSecao, 'SerieNFSeSubst', '');
     CodServ         := INIRec.ReadString(sSecao, 'CodServ', '');
+    CodMunicipio    := INIRec.ReadInteger(sSecao, 'CodMunicipio', 0);
+    CNPJCPFTomador  := INIRec.ReadString(sSecao, 'CNPJCPFTomador', '');
 
     Result := True;
   finally

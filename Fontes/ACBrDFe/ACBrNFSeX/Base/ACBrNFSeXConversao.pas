@@ -128,23 +128,24 @@ type
                    proGestaoISS, proGiap, proGinfes, proGiss, proGovBR,
                    proGovDigital, proGoverna, proHorus, proiiBrasil, proInfisc,
                    proIntertec, proIPM, proIsaneto, proISSBarueri, proISSCamacari,
-                   proISSCambe, proISSCuritiba, proISSDigital, proISSDSF, proISSe,
-                   proISSFortaleza, proISSGoiania, proISSIntel, proISSJoinville,
-                   proISSLegal, proISSLencois, proISSNatal, proISSNet,
-                   proISSPortoVelho, proISSRecife, proISSRio, proISSSalvador,
-                   proISSSaoPaulo, proISSSJP, proISSVitoria, proLexsom, proLibre,
-                   proLink3, proMegaSoft, proMetropolisWeb, proMitra,
-                   proModernizacaoPublica, proNEAInformatica, proNFSeBrasil,
+                   proISSCambe, proISSCampinas, proISSCuritiba, proISSDigital,
+                   proISSDSF, proISSe, proISSFortaleza, proISSGoiania, proISSIntel,
+                   proISSJoinville, proISSLegal, proISSLencois, proISSMap, proISSNatal,
+                   proISSNet, proISSPortoVelho, proISSRecife, proISSRio,
+                   proISSSalvador, proISSSaoPaulo, proISSSJP, proISSVitoria,
+                   proKalana, proLexsom, proLibre, proLink3, proMegaSoft,
+                   proMetropolisWeb, proMitra, proModernizacaoPublica,
+                   proNEAInformatica, proNFEletronica, proNFSeBrasil,
                    proNotaInteligente, proPrescon, proPriMax, proProdata,
                    proPRODAUB, proPronim, proPublica, proPublicSoft, proRLZ,
                    proSam, proSaatri, proSafeWeb, proSH3, proSiam, proSiapNet,
                    proSiappa, proSiapSistemas, proSiat, proSigCorp, proSigep,
                    proSigISS, proSigISSWeb, proSilTecnologia, proSimple,
-                   proSimplISS, proSintese, proSisPMJP, proSistemas4R, proSmarAPD,
-                   proSoftPlan, proSpeedGov, proSSInformatica, proSudoeste,
-                   proSysISS, proSystemPro, proTcheInfo, proTecnos, proThema,
-                   proTinus, proTiplan, proTributus, proVersaTecnologia,
-                   proVirtual, proWebFisco, proWebISS);
+                   proSimplISS, proSintese, proSisPMJP, proSistemas4R,
+                   proSmarAPD, proSoftPlan, proSpeedGov, proSSInformatica,
+                   proSudoeste, proSysISS, proSystemPro, proTcheInfo, proTecnos,
+                   proThema, proTinus, proTiplan, proTributus, proVersaTecnologia,
+                   proVirtual, proWebFisco, proWebISS, proXTRTecnologia);
 
   TnfseSituacaoTributaria = (stRetencao, stNormal, stSubstituicao, stNenhum,
                              stRetidoForaMunicipio, stDevidoForaMunicipioNaoRetido);
@@ -166,8 +167,6 @@ type
                               filsComFormatacaoSemZeroEsquerda,
                               filsSemFormatacaoSemZeroEsquerda,
                               filsNaoSeAplica);
-
-  TFormatoDiscriminacao = (fdNenhum, fdConsolidado, fdTabulado, fdJson);
 
   TSituacaoTrib = (tsTributadaNoPrestador, tsTibutadaNoTomador, tsIsenta, tsImune,
                    tsNaoTributada, tsFixo, tsOutroMunicipio);
@@ -208,6 +207,13 @@ const
     'Teste de Envio de Lote');
 
 type
+  TFormatoDiscriminacao = (fdNenhum, fdConsolidado, fdTabulado, fdJson);
+
+const
+  TmodoEnvioArrayStringsArrayStrings: array[TFormatoDiscriminacao] of string =
+    ('0', '1', '2', '3');
+
+type
   TStatusNFSe = (snNormal, snCancelado, snSubstituido);
 
 const
@@ -223,6 +229,7 @@ type
                            no91,
                            no101, no102, no103, no104, no105, no106, no107, no108, no109,
                            no110, no111, no112, no113, no114, no115, no116, no117, no118,
+                           no119,
                            no121,
                            no200, no201,
                            no300, no301,
@@ -246,7 +253,7 @@ const
     '91',
     '101', '102', '103', '104', '105', '106', '107', '108',
     '109', '110', '111', '112', '113', '114', '115', '116',
-    '117', '118', '121', '200', '201', '300', '301', '400',
+    '117', '118', '119', '121', '200', '201', '300', '301', '400',
     '501', '511', '512', '515', '521', '522', '539', '541',
     '549', '551', '601', '611', '612', '613', '615', '616',
     '621', '622', '701', '711', '712', '901', '902', '911',
@@ -600,6 +607,12 @@ type
 const
   TNaoNIFArrayStrings: array[TNaoNIF] of string = ('0', '1', '2');
 
+type
+  TLocalPrestacao = (lpMunicipio, lpForaMunicipio);
+
+const
+  TLocalPrestacaoArrayStrings: array[TLocalPrestacao] of string = ('1', '2');
+
 {
   Declaração das funções de conversão
 }
@@ -626,6 +639,9 @@ function StrToProvedor(const s: string): TnfseProvedor;
 function MetodoToStr(const t: TMetodo): string;
 
 function ModoEnvioToStr(const t: TmodoEnvio): string;
+
+function FormatoDiscriminacaoToStr(const t: TFormatoDiscriminacao): string;
+function StrToFormatoDiscriminacao(out ok: boolean; const s: string): TFormatoDiscriminacao;
 
 function StatusNFSeToStr(const t: TStatusNFSe): string;
 function StrToStatusNFSe(out ok: boolean; const s: string): TStatusNFSe;
@@ -768,6 +784,9 @@ function NaoNIFToStr(const t: TNaoNIF): string;
 
 function CodIBGEPaisToSiglaISO2(t: Integer): string;
 function SiglaISO2ToCodIBGEPais(const t: string): Integer;
+
+function LocalPrestacaoToStr(t: TLocalPrestacao): string;
+function StrToLocalPrestacao(out ok: boolean; const s: string): TLocalPrestacao;
 
 const
   SiglaISO2Pais: array[0..247] of string = ('AF', 'AL', 'CW', 'DE', 'BF', 'AD',
@@ -6610,7 +6629,7 @@ function CodTOMToCodIBGE(const ACodigo: string): string;
 var
   CodTOM, CodIBGE: integer;
 begin
-  CodTOM := strtoint64(ACodigo);
+  CodTOM := StrToInt64Def(ACodigo, 0);
 
   case CodTOM of
     0033: CodIBGE := 1100015; // Alta Floresta D Oeste/RO
@@ -12358,6 +12377,21 @@ begin
                         meUnitario, meTeste]);
 end;
 
+function FormatoDiscriminacaoToStr(const t: TFormatoDiscriminacao): string;
+begin
+  Result := EnumeradoToStr(t,
+                           ['0', '1', '2', '3'],
+                           [fdNenhum, fdConsolidado, fdTabulado, fdJson]);
+end;
+
+function StrToFormatoDiscriminacao(out ok: boolean; const s: string): TFormatoDiscriminacao;
+begin
+  Result := StrToEnumerado(ok, s,
+                           ['0', '1', '2', '3'],
+                           [fdNenhum, fdConsolidado, fdTabulado, fdJson]);
+end;
+
+
 function StatusNFSeToStr(const t: TStatusNFSe): string;
 begin
   Result := EnumeradoToStr(t,
@@ -12384,7 +12418,7 @@ begin
                             '91',
                             '101', '102', '103', '104', '105', '106', '107', '108',
                             '109', '110', '111', '112', '113', '114', '115', '116',
-                            '117', '118', '121', '200', '201', '300', '301', '400',
+                            '117', '118', '119', '121', '200', '201', '300', '301', '400',
                             '501', '511', '512', '515', '521', '522', '539', '541',
                             '549', '551', '601', '611', '612', '613', '615', '616',
                             '621', '622', '701', '711', '712', '901', '902', '911',
@@ -12399,7 +12433,7 @@ begin
                             no91,
                             no101, no102, no103, no104, no105, no106, no107, no108,
                             no109, no110, no111, no112, no113, no114, no115, no116,
-                            no117, no118, no121, no200, no201, no300, no301, no400,
+                            no117, no118, no119, no121, no200, no201, no300, no301, no400,
                             no501, no511, no512, no515, no521, no522, no539, no541,
                             no549, no551, no601, no611, no612, no613, no615, no616,
                             no621, no622, no701, no711, no712, no901, no902, no911,
@@ -12418,7 +12452,7 @@ begin
                             '91',
                             '101', '102', '103', '104', '105', '106', '107', '108',
                             '109', '110', '111', '112', '113', '114', '115', '116',
-                            '117', '118', '121', '200', '201', '300', '301', '400',
+                            '117', '118', '119', '121', '200', '201', '300', '301', '400',
                             '501', '511', '512', '515', '521', '522', '539', '541',
                             '549', '551', '601', '611', '612', '613', '615', '616',
                             '621', '622', '701', '711', '712', '901', '902', '911',
@@ -12433,7 +12467,7 @@ begin
                             no91,
                             no101, no102, no103, no104, no105, no106, no107, no108,
                             no109, no110, no111, no112, no113, no114, no115, no116,
-                            no117, no118, no121, no200, no201, no300, no301, no400,
+                            no117, no118, no119, no121, no200, no201, no300, no301, no400,
                             no501, no511, no512, no515, no521, no522, no539, no541,
                             no549, no551, no601, no611, no612, no613, no615, no616,
                             no621, no622, no701, no711, no712, no901, no902, no911,
@@ -13207,4 +13241,16 @@ begin
   end;
 end;
 
+function LocalPrestacaoToStr(t: TLocalPrestacao): string;
+begin
+  Result := EnumeradoToStr(t, ['1', '2'],
+                           [lpMunicipio, lpForaMunicipio]);
+end;
+
+function StrToLocalPrestacao(out ok: boolean; const s: string): TLocalPrestacao;
+begin
+  Result := StrToEnumerado(ok, s,
+                           ['1', '2'],
+                           [lpMunicipio, lpForaMunicipio]);
+end;
 end.

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: Antonio Carlos Junior                           }
 {                                                                              }
@@ -40,79 +40,128 @@ uses
   Classes, SysUtils, Forms,
   ACBrLibComum, ACBrPIXBase;
 
-function PIXCD_Inicializar(var libHandle: PLibHandle; const eArqConfig, eChaveCrypt: Pchar): longint;
+function PIXCD_Inicializar(var libHandle: PLibHandle; const eArqConfig, eChaveCrypt: PAnsiChar): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_Finalizar(libHandle: PLibHandle): longint;
+function PIXCD_Finalizar(libHandle: PLibHandle): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_Nome(const libHandle : PLibHandle; const sNome: PChar; var esTamanho: longint): longint;
+function PIXCD_Nome(const libHandle : PLibHandle; const sNome: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+function PIXCD_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_Versao(const libHandle : PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
+function PIXCD_Versao(const libHandle : PLibHandle; const sVersao: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_UltimoRetorno(const libHandle : PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+function PIXCD_UltimoRetorno(const libHandle : PLibHandle; const sMensagem: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConfigImportar(const libHandle : PLibHandle; const eArqConfig: PChar): longint;
+function PIXCD_ConfigImportar(const libHandle : PLibHandle; const eArqConfig: PAnsiChar): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConfigExportar(const libHandle : PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+function PIXCD_ConfigExportar(const libHandle : PLibHandle; const sMensagem: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConfigLer(const libHandle : PLibHandle; const eArqConfig: PChar): longint;
+function PIXCD_ConfigLer(const libHandle : PLibHandle; const eArqConfig: PAnsiChar): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConfigGravar(const libHandle : PLibHandle; const eArqConfig: PChar): longint;
+function PIXCD_ConfigGravar(const libHandle : PLibHandle; const eArqConfig: PAnsiChar): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConfigLerValor(const libHandle : PLibHandle; const eSessao, eChave: PChar; sValor: PChar; var esTamanho: longint): longint;
+function PIXCD_ConfigLerValor(const libHandle : PLibHandle; const eSessao, eChave: PAnsiChar; sValor: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConfigGravarValor(const libHandle : PLibHandle; const eSessao, eChave, eValor: PChar): longint;
+function PIXCD_ConfigGravarValor(const libHandle : PLibHandle; const eSessao, eChave, eValor: PAnsiChar): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_GerarQRCodeEstatico(const libHandle: PLibHandle; AValor: Double; const AinfoAdicional: PChar; const ATxID: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_GerarQRCodeEstatico(const libHandle: PLibHandle; AValor: Double; const AinfoAdicional: PAnsiChar; const ATxID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConsultarPix(const libHandle: PLibHandle; const Ae2eid: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarPix(const libHandle: PLibHandle; const Ae2eid: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConsultarPixRecebidos(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PChar; const ACpfCnpj: PChar; PagAtual: longint; ItensPorPagina: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarPixRecebidos(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PAnsiChar; const ACpfCnpj: PAnsiChar; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_SolicitarDevolucaoPix(const libHandle: PLibHandle; AInfDevolucao: PChar; const Ae2eid: PChar; AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_SolicitarDevolucaoPix(const libHandle: PLibHandle; AInfDevolucao: PAnsiChar; const Ae2eid: PAnsiChar; AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConsultarDevolucaoPix(const libHandle: PLibHandle; const Ae2eid, AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint):longint;
+function PIXCD_ConsultarDevolucaoPix(const libHandle: PLibHandle; const Ae2eid, AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer):integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_CriarCobrancaImediata(const libHandle: PLibHandle; AInfCobSolicitada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CriarCobrancaImediata(const libHandle: PLibHandle; AInfCobSolicitada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConsultarCobrancaImediata(const libHandle: PLibHandle; const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobrancaImediata(const libHandle: PLibHandle; const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_RevisarCobrancaImediata(const libHandle: PLibHandle; AInfCobRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobrancasCob(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_CancelarCobrancaImediata(const libHandle: PLibHandle; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_RevisarCobrancaImediata(const libHandle: PLibHandle; AInfCobRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_CriarCobranca(const libHandle: PLibHandle; AInfCobVSolicitada: PChar; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CancelarCobrancaImediata(const libHandle: PLibHandle; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_ConsultarCobranca(const libHandle: PLibHandle; const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CriarCobranca(const libHandle: PLibHandle; AInfCobVSolicitada: PAnsiChar; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_RevisarCobranca(const libHandle: PLibHandle; AInfCobVRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobranca(const libHandle: PLibHandle; const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
-function PIXCD_CancelarCobranca(const libHandle: PLibHandle; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobrancasCobV(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_RevisarCobranca(const libHandle: PLibHandle; AInfCobVRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_CancelarCobranca(const libHandle: PLibHandle; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+//Matera
+function PIXCD_Matera_IncluirConta(const libHandle: PLibHandle; aInfIncluirConta: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarConta(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_InativarConta(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_IncluirChavePix(const libHandle: PLibHandle; aAccountId, aExternalID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarChavePix(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ExcluirChavePix(const libHandle: PLibHandle; aAccountId, aChavePIX: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_GerarQRCode(const libHandle: PLibHandle; aInfQRCode: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarTransacao(const libHandle: PLibHandle; aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarSaldoEC(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarExtratoEC(const libHandle: PLibHandle; aAccountId: PAnsiChar; aInicio: TDateTime; aFim: TDateTime; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarMotivosDevolucao(const libHandle: PLibHandle; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_SolicitarDevolucao(const libHandle: PLibHandle; aInfSolicitarDevolucao: PAnsiChar; aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_ConsultarAliasRetirada(const libHandle: PLibHandle; aAccountId, aAlias: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+
+function PIXCD_Matera_SolicitarRetirada(const libHandle: PLibHandle; aInfSolicitarRetirada: PAnsiChar; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
  {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 
 implementation
@@ -120,80 +169,80 @@ implementation
 Uses
   ACBrLibConsts, ACBrLibPIXCDBase;
 
-function PIXCD_Inicializar(var libHandle: PLibHandle; const eArqConfig, eChaveCrypt: Pchar): longint;
+function PIXCD_Inicializar(var libHandle: PLibHandle; const eArqConfig, eChaveCrypt: PAnsiChar): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Inicializar(libHandle, TACBrLibPIXCD, eArqConfig, eChaveCrypt);
 end;
 
-function PIXCD_Finalizar (libHandle: PLibHandle): longint;
+function PIXCD_Finalizar (libHandle: PLibHandle): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Finalizar(libHandle);
   libHandle := Nil;
 end;
 
-function PIXCD_Nome(const libHandle: PLibHandle; const sNome: PChar; var esTamanho: longint): longint;
+function PIXCD_Nome(const libHandle: PLibHandle; const sNome: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Nome(libHandle, sNome, esTamanho);
 end;
 
-function PIXCD_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PChar; var esTamanho: longint): longint;
+function PIXCD_OpenSSLInfo(const libHandle: PLibHandle; const sOpenSSLInfo: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_OpenSSLInfo(libHandle, sOpenSSLInfo, esTamanho);
 end;
 
-function PIXCD_Versao(const libHandle: PLibHandle; const sVersao: PChar; var esTamanho: longint): longint;
+function PIXCD_Versao(const libHandle: PLibHandle; const sVersao: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_Versao(libHandle, sVersao, esTamanho);
 end;
 
-function PIXCD_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+function PIXCD_UltimoRetorno(const libHandle: PLibHandle; const sMensagem: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_UltimoRetorno(libHandle, sMensagem, esTamanho);
 end;
 
-function PIXCD_ConfigImportar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+function PIXCD_ConfigImportar(const libHandle: PLibHandle; const eArqConfig: PAnsiChar): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigImportar(libHandle, eArqConfig);
 end;
 
-function PIXCD_ConfigExportar(const libHandle: PLibHandle; const sMensagem: PChar; var esTamanho: longint): longint;
+function PIXCD_ConfigExportar(const libHandle: PLibHandle; const sMensagem: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigExportar(libHandle, sMensagem, esTamanho);
 end;
 
-function PIXCD_ConfigLer(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+function PIXCD_ConfigLer(const libHandle: PLibHandle; const eArqConfig: PAnsiChar): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigLer(libHandle, eArqConfig);
 end;
 
-function PIXCD_ConfigGravar(const libHandle: PLibHandle; const eArqConfig: PChar): longint;
+function PIXCD_ConfigGravar(const libHandle: PLibHandle; const eArqConfig: PAnsiChar): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigGravar(libHandle, eArqConfig);
 end;
 
-function PIXCD_ConfigLerValor(const libHandle: PLibHandle; const eSessao, eChave: PChar; sValor: PChar; var esTamanho: longint): longint;
+function PIXCD_ConfigLerValor(const libHandle: PLibHandle; const eSessao, eChave: PAnsiChar; sValor: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigLerValor(libHandle, eSessao, eChave, sValor, esTamanho);
 end;
 
-function PIXCD_ConfigGravarValor(const libHandle: PLibHandle; const eSessao, eChave, eValor: PChar): longint;
+function PIXCD_ConfigGravarValor(const libHandle: PLibHandle; const eSessao, eChave, eValor: PAnsiChar): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   Result := LIB_ConfigGravarValor(libHandle, eSessao, eChave, eValor);
 end;
 
-function PIXCD_GerarQRCodeEstatico(const libHandle: PLibHandle; AValor: Double; const AinfoAdicional: PChar; const ATxID: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_GerarQRCodeEstatico(const libHandle: PLibHandle; AValor: Double; const AinfoAdicional: PAnsiChar; const ATxID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -208,7 +257,7 @@ begin
   end;
 end;
 
-function PIXCD_ConsultarPix(const libHandle: PLibHandle; const Ae2eid: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarPix(const libHandle: PLibHandle; const Ae2eid: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -223,7 +272,7 @@ begin
   end;
 end;
 
-function PIXCD_ConsultarPixRecebidos(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PChar; const ACpfCnpj: PChar; PagAtual: longint; ItensPorPagina: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarPixRecebidos(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PAnsiChar; const ACpfCnpj: PAnsiChar; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -238,7 +287,7 @@ begin
   end;
 end;
 
-function PIXCD_SolicitarDevolucaoPix(const libHandle: PLibHandle; AInfDevolucao: PChar; const Ae2eid: PChar; AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_SolicitarDevolucaoPix(const libHandle: PLibHandle; AInfDevolucao: PAnsiChar; const Ae2eid: PAnsiChar; AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -253,7 +302,7 @@ begin
   end;
 end;
 
-function PIXCD_ConsultarDevolucaoPix(const libHandle: PLibHandle; const Ae2eid, AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarDevolucaoPix(const libHandle: PLibHandle; const Ae2eid, AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -268,7 +317,7 @@ begin
   end;
 end;
 
-function PIXCD_CriarCobrancaImediata(const libHandle: PLibHandle; AInfCobSolicitada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CriarCobrancaImediata(const libHandle: PLibHandle; AInfCobSolicitada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -283,7 +332,7 @@ begin
   end;
 end;
 
-function PIXCD_ConsultarCobrancaImediata(const libHandle: PLibHandle; const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobrancaImediata(const libHandle: PLibHandle; const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -298,7 +347,22 @@ begin
   end;
 end;
 
-function PIXCD_RevisarCobrancaImediata(const libHandle: PLibHandle; AInfCobRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobrancasCob(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+{$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result:= TACBrLibPIXCD(libHandle^.Lib).ConsultarCobrancasCob(ADataInicio, ADataFim, ACpfCnpj, ALocationPresente, AStatus, PagAtual, ItensPorPagina, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_RevisarCobrancaImediata(const libHandle: PLibHandle; AInfCobRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -313,7 +377,7 @@ begin
   end;
 end;
 
-function PIXCD_CancelarCobrancaImediata(const libHandle: PLibHandle; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CancelarCobrancaImediata(const libHandle: PLibHandle; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -328,7 +392,7 @@ begin
   end;
 end;
 
-function PIXCD_CriarCobranca(const libHandle: PLibHandle; AInfCobVSolicitada: PChar; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CriarCobranca(const libHandle: PLibHandle; AInfCobVSolicitada: PAnsiChar; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -343,7 +407,7 @@ begin
   end;
 end;
 
-function PIXCD_ConsultarCobranca(const libHandle: PLibHandle; const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobranca(const libHandle: PLibHandle; const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -358,7 +422,22 @@ begin
   end;
 end;
 
-function PIXCD_RevisarCobranca(const libHandle: PLibHandle; AInfCobVRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_ConsultarCobrancasCobV(const libHandle: PLibHandle; ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result:= TACBrLibPIXCD(libHandle^.Lib).ConsultarCobrancasCobV(ADataInicio, ADataFim, ACpfCnpj, ALocationPresente, AStatus, PagAtual, ItensPorPagina, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_RevisarCobranca(const libHandle: PLibHandle; AInfCobVRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
@@ -373,12 +452,222 @@ begin
   end;
 end;
 
-function PIXCD_CancelarCobranca(const libHandle: PLibHandle; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function PIXCD_CancelarCobranca(const libHandle: PLibHandle; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 begin
   try
     VerificarLibInicializada(libHandle);
     Result := TACBrLibPIXCD(libHandle^.Lib).CancelarCobranca(ATxId, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_IncluirConta(const libHandle: PLibHandle; aInfIncluirConta: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraIncluirConta(aInfIncluirConta, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarConta(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarConta(aAccountId, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_InativarConta(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraInativarConta(aAccountId, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_IncluirChavePix(const libHandle: PLibHandle; aAccountId, aExternalID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraIncluirChavePix(aAccountId, aExternalID, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarChavePix(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarChavePix(aAccountId, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ExcluirChavePix(const libHandle: PLibHandle; aAccountId, aChavePIX: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraExcluirChavePix(aAccountId, aChavePIX, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_GerarQRCode(const libHandle: PLibHandle; aInfQRCode: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraGerarQRCode(aInfQRCode, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarTransacao(const libHandle: PLibHandle; aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarTransacao(aAccountId, aTransactionID, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarSaldoEC(const libHandle: PLibHandle; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarSaldoEC(aAccountId, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarExtratoEC(const libHandle: PLibHandle; aAccountId: PAnsiChar; aInicio: TDateTime; aFim: TDateTime; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarExtratoEC(aAccountId, aInicio, aFim, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarMotivosDevolucao(const libHandle: PLibHandle; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarMotivosDevolucao(sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_SolicitarDevolucao(const libHandle: PLibHandle; aInfSolicitarDevolucao: PAnsiChar; aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraSolicitarDevolucao(aInfSolicitarDevolucao, aAccountId, aTransactionID, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_ConsultarAliasRetirada(const libHandle: PLibHandle; aAccountId, aAlias: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraConsultarAliasRetirada(aAccountId, aAlias, sResposta, esTamanho);
+  except
+    on E: EACBrLibException do
+     Result := E.Erro;
+
+    on E: Exception do
+      Result := ErrExecutandoMetodo;
+  end;
+end;
+
+function PIXCD_Matera_SolicitarRetirada(const libHandle: PLibHandle; aInfSolicitarRetirada: PAnsiChar; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+ {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
+begin
+  try
+    VerificarLibInicializada(libHandle);
+    Result := TACBrLibPIXCD(libHandle^.Lib).MateraSolicitarRetirada(aInfSolicitarRetirada, aAccountId, sResposta, esTamanho);
   except
     on E: EACBrLibException do
      Result := E.Erro;

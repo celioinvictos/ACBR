@@ -38,8 +38,9 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXParametros, ACBrNFSeXGravarXml_ABRASFv2;
+  ACBrXmlBase,
+  ACBrXmlDocument,
+  ACBrNFSeXGravarXml_ABRASFv2;
 
 type
   { TNFSeW_fintelISS200 }
@@ -58,7 +59,7 @@ type
 
     procedure DefinirIDRps; override;
     function GerarListaServicos: TACBrXmlNode; override;
-    function GerarServicos: TACBrXmlNodeArray; override;
+    function GerarItemServicos: TACBrXmlNodeArray;
     function GerarItemValores(i: Integer): TACBrXmlNodeArray; override;
     function GerarServico: TACBrXmlNode; override;
     function GerarValoresServico: TACBrXmlNode; override;
@@ -68,7 +69,6 @@ implementation
 
 uses
   ACBrUtil.Strings,
-  ACBrNFSeXConversao,
   ACBrNFSeXConsts;
 
 //==============================================================================
@@ -120,7 +120,7 @@ begin
 
   if (NFSe.Servico.ItemServico.Count > 0) then
   begin
-    nodeArray := GerarServicos;
+    nodeArray := GerarItemServicos;
     if nodeArray <> nil then
     begin
       for i := 0 to Length(nodeArray) - 1 do
@@ -136,7 +136,7 @@ begin
   Result := nil
 end;
 
-function TNFSeW_fintelISS202.GerarServicos: TACBrXmlNodeArray;
+function TNFSeW_fintelISS202.GerarItemServicos: TACBrXmlNodeArray;
 var
   nodeArray: TACBrXmlNodeArray;
   i: integer;
@@ -164,9 +164,8 @@ begin
                        NFSe.Servico.CodigoTributacaoMunicipio, DSC_CSERVTRIBMUN));
 
     Result[i].AppendChild(AddNode(tcStr, '#32', 'Discriminacao', 1, 2000, NrOcorrDiscriminacao_1,
-      StringReplace(NFSe.Servico.ItemServico[i].Descricao, ';', FpAOwner.ConfigGeral.QuebradeLinha,
-                                       [rfReplaceAll, rfIgnoreCase]), DSC_DISCR,
-                (NFSe.Prestador.Endereco.CodigoMunicipio <> '3304557')));
+      StringReplace(NFSe.Servico.ItemServico[i].Descricao, Opcoes.QuebraLinha,
+               FpAOwner.ConfigGeral.QuebradeLinha, [rfReplaceAll]), DSC_DISCR));
 
     Result[i].AppendChild(AddNode(tcStr, '#33', 'CodigoMunicipio', 1, 7, 1,
                              OnlyNumber(NFSe.Servico.CodigoMunicipio), DSC_CMUN));

@@ -285,9 +285,15 @@ end;
   TACBrHTTP = class(TACBrComponent)
   private
     fArqLOG: String;
+    fArquivoCertificado: String;
+    fArquivoChavePrivada: String;
+    fArquivoPFX: String;
+    fCertificado: AnsiString;
+    fChavePrivada: AnsiString;
     fHTTPResultCode: Integer;
     fNivelLog: Byte;
     FIsUTF8: Boolean;
+    fPFX: AnsiString;
     FTimeOut: Integer;
     fHTTPSend: THTTPSend;
     fHTTPResponse: AnsiString;
@@ -297,19 +303,40 @@ end;
     fURLQueryParams: TACBrHTTPQueryParams;
     fOnAntesAbrirHTTP: TACBrOnAntesAbrirHTTP;
     fContenstEncodingCompress: THttpContentsEncodingCompress;
+    fSenhaPFX: String;
+    fK: String;
     fURL: String;
     function GetProxyHost: String;
     function GetProxyPass: String;
     function GetProxyPort: String;
     function GetProxyUser: String;
-    function GetRespIsUTF8: Boolean;
+    function GetSenhaPFX: AnsiString;
+    procedure SetArquivoCertificado(aValue: String);
+    procedure SetArquivoChavePrivada(aValue: String);
+    procedure SetArquivoPFX(aValue: String);
+    procedure SetCertificado(aValue: AnsiString);
+    procedure SetChavePrivada(aValue: AnsiString);
+    procedure SetPFX(aValue: AnsiString);
     procedure SetProxyHost(const AValue: String);
     procedure SetProxyPass(const AValue: String);
     procedure SetProxyPort(const AValue: String);
     procedure SetProxyUser(const AValue: String);
+    procedure SetSenhaPFX(aValue: AnsiString);
+    procedure ConfigurarAutenticacao_mTLS(const aMethod, aURL: String);
   protected
     function GetHeaderValue(aHeader: String): String;
-    procedure RegistrarLog(const aLinha: String);
+    function VerificarSeIncluiPFX(const Method, AURL: String): Boolean; virtual;
+    function VerificarSeIncluiCertificado(const Method, AURL: String): Boolean; virtual;
+    function VerificarSeIncluiChavePrivada(const Method, AURL: String): Boolean; virtual;
+
+    procedure RegistrarLog(const aLinha: String; aNivelMin: Byte = 0);
+    function GetRespIsUTF8: Boolean; virtual;
+
+    procedure OnHookSocketStatus(Sender: TObject; Reason: THookSocketReason; const Value: String);
+    procedure OnHookCreateSocket(Sender: TObject);
+    procedure OnHookAfterConnect(Sender: TObject);
+    procedure OnHookMonitor(Sender: TObject; Writing: Boolean; const Buffer: TMemory; Len: Integer);
+
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -340,6 +367,15 @@ end;
     property RespIsUTF8: Boolean read GetRespIsUTF8;
     property TimeOut: Integer read FTimeOut write FTimeOut default 90000;
     property ContentsEncodingCompress: THttpContentsEncodingCompress read fContenstEncodingCompress write fContenstEncodingCompress;
+
+    property ArquivoCertificado: String read fArquivoCertificado write SetArquivoCertificado;
+    property ArquivoChavePrivada: String read fArquivoChavePrivada write SetArquivoChavePrivada;
+    property ArquivoPFX: String read fArquivoPFX write SetArquivoPFX;
+
+    property Certificado: AnsiString read fCertificado write SetCertificado;
+    property ChavePrivada: AnsiString read fChavePrivada write SetChavePrivada;
+    property PFX: AnsiString read fPFX write SetPFX;
+    property SenhaPFX: AnsiString read GetSenhaPFX write SetSenhaPFX;
                 
     property ArqLOG: String read fArqLOG write fArqLOG;
     property NivelLog: Byte read fNivelLog write fNivelLog default 1;
@@ -348,11 +384,20 @@ end;
 end;
 
 function GetURLBasePath(const URL: String): String;
-function IsAbsoluteURL(const URL: String): Boolean;
+function GetURLRoot(const URL: String): String;
+
+// Tipos de Location: https://en.wikipedia.org/wiki/HTTP_location
+function LocationIsAbsoluteURL(const ALocation: String): Boolean;
+function LocationIsRelativeURLAbsolutePath(const ALocation: String): Boolean;
+function LocationIsRelativeURLRelativePath(const ALocation: String): Boolean;
+
 function URLWithDelim(aURL: String): String;
 function URLWithoutDelim(aURL: String): String;
+
 function GetHeaderValue(const aValue: String; aStringList: TStringList): String;
+
 function ContentIsCompressed(aHeader: TStringList): Boolean;
+function StreamToAnsiString(aStream: TStream): AnsiString;
 function DecompressStream(aStream: TStream): AnsiString;
 function ContentEncodingCompressToString(aValue: THttpContentEncodingCompress): String;
 function StringToContentEncodingCompress(aValue: String): THttpContentEncodingCompress;
@@ -360,13 +405,14 @@ function StringToContentEncodingCompress(aValue: String): THttpContentEncodingCo
 implementation
 
 uses
-  math, StrUtils, synacode,
+  Math, StrUtils, TypInfo,
+  synacode, synautil,
+  ACBrOpenSSLUtils,
   ACBrCompress,
   ACBrUtil.Base,
   ACBrUtil.FilesIO,
   ACBrUtil.Strings,
-  ACBrUtil.XMLHTML,
-  synautil
+  ACBrUtil.XMLHTML
   {$IFDEF UPDATE_SCREEN_CURSOR}
     ,Controls, Forms
   {$ENDIF};
@@ -376,21 +422,36 @@ begin
   Result := Copy(URL, 1, PosLast('/',URL) );
 end;
 
-function IsAbsoluteURL(const URL: String): Boolean;
+function GetURLRoot(const URL: String): String;
+var
+  i: Integer;
+begin
+  i := Pos('//',URL);
+  if (i > 0) then
+    i := PosEx('/', URL, i+2)
+  else
+    i := Pos('/',URL);
+
+  if (i = 0) then
+    i := Length(URL);
+
+  Result := URLWithoutDelim( Copy(URL, 1, i) );
+end;
+
+function LocationIsAbsoluteURL(const ALocation: String): Boolean;
 var
  i: Integer;
 begin
   Result := False;
 
   //Testa se é um tipo absoluto relativo ao protocolo
-  if Pos('//', URL) = 1 then
+  if Pos('//', ALocation) = 1 then
   begin
     Result := True;
     Exit;
   end;
 
-  //Testa se é um tipo relativo
-  if Pos('/', URL) = 1 then
+  if LocationIsRelativeURLAbsolutePath(ALocation) then
   begin
     Result := False;
     Exit;
@@ -399,7 +460,7 @@ begin
   //Testa se inicia por protocolos...
   for I := 0 to High(cHTTPProtocols) do
   begin
-    if Pos(UpperCase(cHTTPProtocols[i])+'://', UpperCase(URL)) = 1 then
+    if Pos(UpperCase(cHTTPProtocols[i])+'://', UpperCase(ALocation)) = 1 then
     begin
       Result := True;
       Break;
@@ -409,11 +470,23 @@ begin
   if Result then Exit;
 
   //Começa com "www."
-  if Pos('www.', URL) = 1 then
+  if Pos('www.', ALocation) = 1 then
   begin
     Result := True;
     Exit;
   end;
+end;
+
+function LocationIsRelativeURLAbsolutePath(const ALocation: String): Boolean;
+begin
+  Result := (copy(ALocation,1,1) =  '/') and
+            (copy(ALocation,2,1) <> '/');
+end;
+
+function LocationIsRelativeURLRelativePath(const ALocation: String): Boolean;
+begin
+  Result := (not LocationIsAbsoluteURL(ALocation)) and
+            (not LocationIsRelativeURLAbsolutePath(ALocation));
 end;
 
 function URLWithDelim(aURL: String): String;
@@ -464,6 +537,12 @@ begin
     if Result then
       Exit;
   end;
+end;
+
+function StreamToAnsiString(aStream: TStream): AnsiString;
+begin
+  aStream.Position := 0;
+  Result := ReadStrFromStream(aStream, aStream.Size);
 end;
 
 function DecompressStream(aStream: TStream): AnsiString;
@@ -1044,14 +1123,29 @@ begin
   fURLQueryParams := TACBrHTTPQueryParams.Create;
   fURLPathParams := TStringList.Create;
   fHttpRespStream := TMemoryStream.Create;
+
   fHttpSend := THTTPSend.Create;
   fHttpSend.OutputStream := fHttpRespStream;
+  fHTTPSend.Sock.OnAfterConnect := OnHookAfterConnect;
+  fHTTPSend.Sock.OnCreateSocket := OnHookCreateSocket;
+  fHTTPSend.Sock.OnStatus := OnHookSocketStatus;
+  fHTTPSend.Sock.OnMonitor := OnHookMonitor;
+
   fOnAntesAbrirHTTP := Nil;
   fHTTPResultCode := 0;
   fURL := EmptyStr;
   FIsUTF8 := False;
   FTimeOut := cHTTPTimeOutDef;
   fContenstEncodingCompress := [];
+
+  fArquivoCertificado := EmptyStr;
+  fArquivoChavePrivada := EmptyStr;
+  fChavePrivada := EmptyStr;
+  fCertificado := EmptyStr;
+  fArquivoPFX := EmptyStr;
+  fSenhaPFX := EmptyStr;
+  fPFX := EmptyStr;
+  fK := EmptyStr;
 end;
 
 destructor TACBrHTTP.Destroy;
@@ -1103,8 +1197,7 @@ var
   {$IFDEF UPDATE_SCREEN_CURSOR}
    OldCursor: TCursor;
   {$ENDIF}
-   HeadersOld, qp, Location, wErro: String;
-   //wCEC: String;
+   HeadersOld, qp, Location, wCEC, wErro: String;
    i, ContaRedirecionamentos: Integer;
    ce: THttpContentEncodingCompress;
    AddUTF8InHeader: Boolean;
@@ -1124,15 +1217,18 @@ begin
      AddUTF8InHeader := FIsUTF8;
     {$EndIf}
 
-    {wCEC := EmptyStr;
-    for ce in fContenstEncodingCompress do
-      if EstaVazio(wCEC) then
-        wCEC := cHTTPHeaderAcceptEncoding + ContentEncodingCompressToString(ce)
-      else
-        wCEC := wCEC + ',' + ContentEncodingCompressToString(ce);
+    wCEC := EmptyStr;
+    for ce := Low(THttpContentEncodingCompress) to High(THttpContentEncodingCompress) do
+      if ce in fContenstEncodingCompress then
+      begin
+        if EstaVazio(wCEC) then
+          wCEC := cHTTPHeaderAcceptEncoding + ContentEncodingCompressToString(ce)
+        else
+          wCEC := wCEC + ', ' + ContentEncodingCompressToString(ce);
+      end;
 
     if NaoEstaVazio(wCEC) then
-      fHttpSend.Headers.Add(wCEC);}
+      fHttpSend.Headers.Add(wCEC);
 
     if NaoEstaZerado(fURLPathParams.Count) then
       for i := 0 to fURLPathParams.Count - 1 do
@@ -1151,7 +1247,7 @@ begin
     // DEBUG //
     //HTTPSend.Document.SaveToFile( '_HttpSend.txt' );
     RegistrarLog('HTTPMethod( ' + Method + ', URL: ' + fURL + ' )');
-    RegistrarLog(' - Req.Headers: ' + HTTPSend.Headers.Text);
+    RegistrarLog(' - Req.Headers: ' + HTTPSend.Headers.Text, 3);
 
     if (FTimeOut > 0) then
     begin
@@ -1165,6 +1261,13 @@ begin
         HTTPTunnelTimeout := FTimeOut;
       end;
     end;
+           
+    ConfigurarAutenticacao_mTLS(Method, fURL);
+    RegistrarLog(sLineBreak +
+      'Http.Sock.SSL.Certificate: ' + HTTPSend.Sock.SSL.Certificate + sLineBreak +
+      'Http.Sock.SSL.PrivateKey: ' + HTTPSend.Sock.SSL.PrivateKey + sLineBreak +
+      'Http.Sock.SSL.CertificateFile: ' + HTTPSend.Sock.SSL.CertificateFile + sLineBreak +
+      'Http.Sock.SSL.PrivateKeyFile: ' + HTTPSend.Sock.SSL.PrivateKeyFile + sLineBreak, 4);
 
     HeadersOld := HTTPSend.Headers.Text;
     HTTPSend.HTTPMethod(Method, fURL);
@@ -1185,9 +1288,10 @@ begin
           Location := GetHeaderValue('Location:');
           Location := Trim(SeparateLeft( Location, ';' ));
 
-          //Location pode ser relativa ou absoluta http://stackoverflow.com/a/25643550/460775
-          if IsAbsoluteURL(Location) then
+          if LocationIsAbsoluteURL(Location) then
             fURL := Location
+          else if LocationIsRelativeURLAbsolutePath(Location) then
+            fURL := GetURLRoot(fURL) + Location
           else
             fURL := GetURLBasePath(fURL) + Location;
 
@@ -1211,28 +1315,25 @@ begin
     end;
 
     fHTTPResultCode := fHttpSend.ResultCode;
-    if (NivelLog > 1) then
-      RegistrarLog('  ResultCode: ' + IntToStr(fHTTPResultCode));
-    if (NivelLog > 2) then
-      RegistrarLog('  ResultString: ' + fHttpSend.ResultString);
-    if (NivelLog > 3) then
-      RegistrarLog('  Sock.LastError: ' + IntToStr(fHttpSend.Sock.LastError));
+    RegistrarLog('  ResultCode: ' + IntToStr(fHTTPResultCode)+' - '+ HTTPSend.ResultString, 2);
+    if (fHttpSend.Sock.LastError > 0) then
+      RegistrarLog('  Sock.LastError: ' + IntToStr(fHttpSend.Sock.LastError)+' - '+ HTTPSend.Sock.LastErrorDesc, 4);
 
     if ContentIsCompressed(fHttpSend.Headers) then
     begin
-      if (NivelLog > 2) then
-        RegistrarLog('    Decompress Content');
-
-      fHTTPResponse := DecompressStream(fHttpSend.OutputStream)
+      RegistrarLog('    Decompress Content', 3);
+      fHTTPResponse := DecompressStream(fHttpSend.OutputStream);
     end
     else
+    begin
       fHttpSend.OutputStream.Position := 0;
       fHTTPResponse := ReadStrFromStream(fHttpSend.OutputStream, fHttpSend.OutputStream.Size);
+    end;
 
-    if (NivelLog > 2) then
-      RegistrarLog('Resp.Body: ' + sLineBreak + fHTTPResponse);
+    RegistrarLog('  Resp.Body: ' + sLineBreak + fHTTPResponse, 3);
 
-    if (not (fHTTPResultCode in [HTTP_OK, HTTP_CREATED, HTTP_ACCEPTED])) then
+    //if (not (fHTTPResultCode in [HTTP_OK, HTTP_CREATED, HTTP_ACCEPTED])) then
+    if (fHTTPResultCode < 200) or (fHTTPResultCode > 299) then
     begin
       wErro :=
         'Erro HTTP: ' + IntToStr(fHTTPResultCode) +' '+ HTTPSend.ResultString + sLineBreak +
@@ -1252,8 +1353,7 @@ end;
 
 procedure TACBrHTTP.LimparHTTP;
 begin
-  if (NivelLog > 2) then
-    RegistrarLog('LimparHTTP');
+  RegistrarLog('LimparHTTP', 3);
 
   fHTTPSend.Clear;
   fURLPathParams.Clear;
@@ -1433,6 +1533,11 @@ begin
   end;
 end;
 
+function TACBrHTTP.VerificarSeIncluiPFX(const Method, AURL: String): Boolean;
+begin
+  Result := NaoEstaVazio(fPFX) or NaoEstaVazio(fArquivoPFX);
+end;
+
 function TACBrHTTP.GetProxyPass: String;
 begin
   Result := fHTTPSend.ProxyPass;
@@ -1446,6 +1551,47 @@ end;
 function TACBrHTTP.GetProxyUser: String;
 begin
   Result := fHTTPSend.ProxyUser;
+end;
+
+function TACBrHTTP.GetSenhaPFX: AnsiString;
+begin
+  Result := StrCrypt(fSenhaPFX, fK)  // Descritografa a Senha
+end;
+
+procedure TACBrHTTP.SetArquivoCertificado(aValue: String);
+begin
+  fArquivoCertificado := Trim(aValue);
+  fCertificado := EmptyStr;
+end;
+
+procedure TACBrHTTP.SetArquivoChavePrivada(aValue: String);
+begin
+  fArquivoChavePrivada := Trim(aValue);
+  fChavePrivada := EmptyStr;
+end;
+
+procedure TACBrHTTP.SetArquivoPFX(aValue: String);
+begin
+  fArquivoPFX := Trim(AValue);
+  fPFX := EmptyStr;
+end;
+
+procedure TACBrHTTP.SetCertificado(aValue: AnsiString);
+begin
+  fCertificado := aValue;
+  fArquivoCertificado := EmptyStr;
+end;
+
+procedure TACBrHTTP.SetChavePrivada(aValue: AnsiString);
+begin
+  fChavePrivada := aValue;
+  fArquivoChavePrivada := EmptyStr;
+end;
+
+procedure TACBrHTTP.SetPFX(aValue: AnsiString);
+begin
+  fPFX := aValue;
+  fArquivoPFX := EmptyStr;
 end;
 
 procedure TACBrHTTP.SetProxyHost(const AValue: String);
@@ -1468,16 +1614,106 @@ begin
   fHTTPSend.ProxyUser := AValue;
 end;
 
-procedure TACBrHTTP.RegistrarLog(const aLinha: String);
+procedure TACBrHTTP.SetSenhaPFX(aValue: AnsiString);
+begin
+  if NaoEstaVazio(fK) and (fSenhaPFX = StrCrypt(AValue, fK)) then
+    Exit;
+
+  fK := FormatDateTime('hhnnsszzz', Now);
+  fSenhaPFX := StrCrypt(AValue, fK);  // Salva Senha de forma Criptografada, para evitar "Inspect"
+end;
+
+procedure TACBrHTTP.ConfigurarAutenticacao_mTLS(const aMethod, aURL: String);
+begin
+  // Adicionando PFX
+  if VerificarSeIncluiPFX(aMethod, aURL) then
+  begin
+    if NaoEstaVazio(PFX) then
+      HTTPSend.Sock.SSL.PFX := PFX
+    else if NaoEstaVazio(ArquivoPFX) then
+      HTTPSend.Sock.SSL.PFXfile := ArquivoPFX;
+
+    if NaoEstaVazio(SenhaPFX) then
+      HTTPSend.Sock.SSL.KeyPassword := SenhaPFX;
+  end
+  else
+  begin
+    // Adicionando o Certificado
+    if VerificarSeIncluiCertificado(aMethod, aURL) then
+    begin
+      if NaoEstaVazio(Certificado) then
+      begin
+        if StringIsPEM(Certificado) then
+          HTTPSend.Sock.SSL.Certificate := ConvertPEMToASN1(Certificado)
+        else
+          HTTPSend.Sock.SSL.Certificate := Certificado;
+      end
+      else if NaoEstaVazio(ArquivoCertificado) then
+        HTTPSend.Sock.SSL.CertificateFile := ArquivoCertificado;
+    end;
+
+    // Adicionando a Chave Privada
+    if VerificarSeIncluiChavePrivada(aMethod, aURL) then
+    begin
+      if NaoEstaVazio(ChavePrivada) then
+      begin
+        if StringIsPEM(ChavePrivada) then
+          HTTPSend.Sock.SSL.PrivateKey := ConvertPEMToASN1(ChavePrivada)
+        else
+          HTTPSend.Sock.SSL.PrivateKey := ChavePrivada;
+      end
+      else if NaoEstaVazio(ArquivoChavePrivada) then
+        HTTPSend.Sock.SSL.PrivateKeyFile := ArquivoChavePrivada;
+
+      if NaoEstaVazio(SenhaPFX) then
+        HTTPSend.Sock.SSL.KeyPassword := SenhaPFX;
+    end;
+  end;
+end;
+
+function TACBrHTTP.VerificarSeIncluiCertificado(const Method, AURL: String): Boolean;
+begin
+  Result := NaoEstaVazio(fCertificado) or NaoEstaVazio(fArquivoCertificado);
+end;
+
+function TACBrHTTP.VerificarSeIncluiChavePrivada(const Method, AURL: String): Boolean;
+begin
+  Result := NaoEstaVazio(fChavePrivada) or NaoEstaVazio(fArquivoChavePrivada);
+end;
+
+procedure TACBrHTTP.RegistrarLog(const aLinha: String; aNivelMin: Byte);
 var
   wTratado: Boolean;
 begin
+  if (NivelLog < aNivelMin) then
+    Exit;
+
   wTratado := False;
   if Assigned(fOnQuandoGravarLog) then
     fOnQuandoGravarLog(aLinha, wTratado);
 
   if (not wTratado) and NaoEstaVazio(fArqLOG) then
     WriteLog(fArqLOG, FormatDateTime('dd/mm/yy hh:nn:ss:zzz', Now) + ' - ' + aLinha);
+end;
+
+procedure TACBrHTTP.OnHookSocketStatus(Sender: TObject; Reason: THookSocketReason; const Value: String);
+begin
+  RegistrarLog('  Socket Status: '+GetEnumName(TypeInfo(THookSocketReason), integer(Reason) )+' - '+Value, 4);
+end;
+
+procedure TACBrHTTP.OnHookCreateSocket(Sender: TObject);
+begin
+  RegistrarLog('  Socket Created', 4);
+end;
+
+procedure TACBrHTTP.OnHookAfterConnect(Sender: TObject);
+begin
+  RegistrarLog('  Socket Connected', 4);
+end;
+
+procedure TACBrHTTP.OnHookMonitor(Sender: TObject; Writing: Boolean; const Buffer: TMemory; Len: Integer);
+begin
+  RegistrarLog('  Socket Monitor, Writing:'+IfThen(Writing,'Yes','No')+', Len:'+IntToStr(Len), 4);
 end;
 
 end.

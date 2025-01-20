@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa-  }
 { mentos de Automação Comercial utilizados no Brasil                            }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida                }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida                }
 {                                                                               }
 { Colaboradores nesse arquivo: Antonio Carlos Junior                            }
 {                                                                               }
@@ -40,7 +40,7 @@ interface
 uses
   SysUtils, Classes, contnrs, ACBrLibResposta, ACBrNFSeXNotasFiscais,
   ACBrNFSeX, ACBrNFSeXWebservicesResponse, ACBrNFSeXWebserviceBase,
-  ACBrNFSeXConversao, ACBrNFSeXConfiguracoes, ACBrBase;
+  ACBrNFSeXConversao, ACBrNFSeXConfiguracoes, ACBrBase, ACBrLibConfig;
 
 type
 
@@ -78,8 +78,17 @@ type
 
   TNFSeArquivoItem = class(TACBrLibArquivosResposta)
   private
+    FNumeroNota: String;
+    FCodigoVerificacao: String;
+    FNumeroRPS: String;
+    FSerieRPS: String;
   public
     procedure Processar(const Resumo: TNFSeResumoCollectionItem);
+  published
+    property NumeroNota: String read FNumeroNota write FNumeroNota;
+    property CodigoVerificacao: String read FCodigoVerificacao write FCodigoVerificacao;
+    property NumeroRPS: String read FNumeroRPS write FNumeroRPS;
+    property SerieRPS: String read FSerieRPS write FSerieRPS;
   end;
 
   { TLibNFSeServiceResposta }
@@ -618,6 +627,10 @@ procedure TNFSeArquivoItem.Processar(const Resumo: TNFSeResumoCollectionItem);
 begin
   Self.NomeArquivo := ExtractFileName(Resumo.NomeArq);
   Self.CaminhoCompleto := Resumo.NomeArq;
+  Self.NumeroNota := Resumo.NumeroNota;
+  Self.CodigoVerificacao := Resumo.CodigoVerificacao;
+  Self.NumeroRPS := Resumo.NumeroRps;
+  Self.SerieRPS := Resumo.SerieRps;
 end;
 
 { TNFSeEventoItem }
@@ -666,7 +679,7 @@ begin
   begin
     for i := 0 to Response.Erros.Count -1 do
     begin
-      Item := TNFSeEventoItem.Create(CSessaoRespErro + IntToStr(i + 1), Tipo, Formato);
+      Item := TNFSeEventoItem.Create(CSessaoRespErro + IntToStr(i + 1), Tipo, Codificacao);
       Item.Processar(Response.Erros.Items[i]);
       FErros.Add(Item);
     end;
@@ -676,7 +689,7 @@ begin
   begin
     for i := 0 to Response.Alertas.Count -1 do
     begin
-      Item := TNFSeEventoItem.Create(CSessaoRespAlerta + IntToStr(i + 1), Tipo, Formato);
+      Item := TNFSeEventoItem.Create(CSessaoRespAlerta + IntToStr(i + 1), Tipo, Codificacao);
       Item.Processar(Response.Alertas.Items[i]);
       FAlertas.Add(Item);
     end;
@@ -686,7 +699,7 @@ begin
   begin
     for i := 0 to Response.Resumos.Count - 1 do
     begin
-      Arq := TNFSeArquivoItem.Create(CSessaoRespArquivo + IntToStr(i + 1), Tipo, Formato);
+      Arq := TNFSeArquivoItem.Create(CSessaoRespArquivo + IntToStr(i + 1), Tipo, Codificacao);
       Arq.Processar(Response.Resumos.Items[i]);
       InformacoesArquivo.Add(Arq);
     end;
@@ -712,7 +725,7 @@ begin
   Data := Response.Data;
   Protocolo := Response.Protocolo;
   MaxRps := Response.MaxRps;
-  ModoEnvio := ModoEnvioToStr(Response.ModoEnvio);
+  ModoEnvio := ACBrStr(ModoEnvioToStr(Response.ModoEnvio));
   Sucesso := Response.Sucesso;
   NumeroNota := Response.NumeroNota;
   CodigoVerificacao := Response.CodigoVerificacao;

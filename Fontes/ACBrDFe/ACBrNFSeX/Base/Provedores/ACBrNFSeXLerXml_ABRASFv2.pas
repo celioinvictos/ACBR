@@ -164,6 +164,8 @@ begin
 
   if AuxNode <> nil then
   begin
+    NFSe.NfseCancelamento.ID := ObterConteudoTag(AuxNode.Attributes.Items['Id']);
+
     LerPedido(AuxNode);
     LerInfConfirmacaoCancelamento(AuxNode);
 
@@ -568,17 +570,19 @@ begin
     if NFSe.InformacoesComplementares = '' then
     begin
       NFSe.InformacoesComplementares := ObterConteudo(AuxNode.Childrens.FindAnyNs('InformacoesComplementares'), tcStr);
-      NFSe.InformacoesComplementares := StringReplace(NFSe.InformacoesComplementares, '&lt;br&gt;', ';', [rfReplaceAll]);
-      NFSe.InformacoesComplementares := StringReplace(NFSe.InformacoesComplementares, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+      NFSe.InformacoesComplementares := StringReplace(NFSe.InformacoesComplementares,
+                                 '&lt;br&gt;', FpQuebradeLinha, [rfReplaceAll]);
+      NFSe.InformacoesComplementares := StringReplace(NFSe.InformacoesComplementares,
+                                   FpQuebradeLinha, sLineBreak, [rfReplaceAll]);
     end;
 
     if NFSe.OutrasInformacoes = '' then
     begin
       NFSe.OutrasInformacoes := ObterConteudo(AuxNode.Childrens.FindAnyNs('OutrasInformacoes'), tcStr);
-      NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, '&lt;br&gt;', ';', [rfReplaceAll]);
+      NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, '&lt;br&gt;',
+                                               FpQuebradeLinha, [rfReplaceAll]);
       NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
     end;
   end;
 end;
@@ -605,10 +609,10 @@ begin
 
     NFSe.OutrasInformacoes := ObterConteudo(AuxNode.Childrens.FindAnyNs('OutrasInformacoes'), tcStr);
     NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
     NFSe.InformacoesComplementares := ObterConteudo(AuxNode.Childrens.FindAnyNs('InformacoesComplementares'), tcStr);
     NFSe.InformacoesComplementares := StringReplace(NFSe.InformacoesComplementares, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
     NFSe.Link := ObterConteudo(AuxNode.Childrens.FindAnyNs('UrlNfse'), tcStr);
     NFSe.Competencia := LerCompetencia(AuxNode);
 
@@ -896,7 +900,7 @@ begin
       CodigoCnae := ObterConteudo(ANodes[i].Childrens.FindAnyNs('CodigoCnae'), tcStr);
       Descricao := ObterConteudo(ANodes[i].Childrens.FindAnyNs('Discriminacao'), tcStr);
       Descricao := StringReplace(Descricao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
     end;
 
     with NFSe.Servico do
@@ -913,8 +917,14 @@ begin
 
       Valores.IssRetido := FpAOwner.StrToSituacaoTributaria(Ok, ObterConteudo(ANodes[i].Childrens.FindAnyNs('IssRetido'), tcStr));
 
+      // Na versão 2 do layout da ABRASF o valor do ISS retido ou não é retornado
+      // na tag ValorIss, sendo assim se faz necessário checar o valor da tag IssRetido
+      // para saber quais dos dois campos vai receber a informação.
       if Valores.IssRetido = stRetencao then
-        Valores.ValorIssRetido := Valores.ValorIss
+      begin
+        Valores.ValorIssRetido := Valores.ValorIss;
+        Valores.ValorIss := 0;
+      end
       else
         Valores.ValorIssRetido := 0;
 
@@ -978,7 +988,7 @@ begin
       CodigoNBS                 := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoNbs'), tcStr);
       Discriminacao             := ObterConteudo(AuxNode.Childrens.FindAnyNs('Discriminacao'), tcStr);
       Discriminacao := StringReplace(Discriminacao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
       VerificarSeConteudoEhLista(Discriminacao);
 
@@ -987,25 +997,40 @@ begin
       if CodigoMunicipio = '' then
         CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('MunicipioPrestacaoServico'), tcStr);
 
-      MunicipioPrestacaoServico := ObterNomeMunicipioUF(StrToIntDef(CodigoMunicipio, 0), xUF);
-      MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
+      MunicipioPrestacaoServico := '';
+
+      if CodigoMunicipio <> '' then
+      begin
+        MunicipioPrestacaoServico := ObterNomeMunicipioUF(StrToIntDef(CodigoMunicipio, 0), xUF);
+        MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
+      end;
 
       CodigoPais          := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoPais'), tcInt);
       ExigibilidadeISS    := FpAOwner.StrToExigibilidadeISS(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('ExigibilidadeISS'), tcStr));
       IdentifNaoExigibilidade := ObterConteudo(AuxNode.Childrens.FindAnyNs('IdentifNaoExigibilidade'), tcStr);
 
       MunicipioIncidencia := ObterConteudo(AuxNode.Childrens.FindAnyNs('MunicipioIncidencia'), tcInt);
-      xMunicipioIncidencia := ObterNomeMunicipioUF(MunicipioIncidencia, xUF);
+      xMunicipioIncidencia := '';
 
-      xMunicipioIncidencia := xMunicipioIncidencia + '/' + xUF;
+      if MunicipioIncidencia > 0 then
+      begin
+        xMunicipioIncidencia := ObterNomeMunicipioUF(MunicipioIncidencia, xUF);
+        xMunicipioIncidencia := xMunicipioIncidencia + '/' + xUF;
+      end;
 
       NumeroProcesso := ObterConteudo(AuxNode.Childrens.FindAnyNs('NumeroProcesso'), tcStr);
 
       if Valores.IssRetido = stNenhum then
         Valores.IssRetido := FpAOwner.StrToSituacaoTributaria(Ok, ObterConteudo(AuxNode.Childrens.FindAnyNs('IssRetido'), tcStr));
 
+      // Na versão 2 do layout da ABRASF o valor do ISS retido ou não é retornado
+      // na tag ValorIss, sendo assim se faz necessário checar o valor da tag IssRetido
+      // para saber quais dos dois campos vai receber a informação.
       if Valores.IssRetido = stRetencao then
-        Valores.ValorIssRetido := Valores.ValorIss
+      begin
+        Valores.ValorIssRetido := Valores.ValorIss;
+        Valores.ValorIss := 0;
+      end
       else
         Valores.ValorIssRetido := 0;
 
@@ -1025,6 +1050,8 @@ begin
                                       Valores.DescontoIncondicionado +
                                       Valores.ValorTaxaTurismo;
     end;
+
+    NFSe.TipoRecolhimento := FpAOwner.SituacaoTributariaDescricao(NFSe.Servico.Valores.IssRetido);
   end;
 end;
 
@@ -1243,6 +1270,7 @@ begin
     raise Exception.Create('Arquivo xml vazio.');
 
   NFSe.Clear;
+  NFSe.tpXML := tpXml;
 
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)

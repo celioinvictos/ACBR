@@ -224,6 +224,8 @@ namespace ACBrLibPIXCD.Demo
                 ACBrPIXCD.Config.Cielo.ChavePIX = txtChavePIXCielo.Text;
                 ACBrPIXCD.Config.Cielo.ClientID = txtClientIDCielo.Text;
                 ACBrPIXCD.Config.Cielo.ClientSecret = txtClientSecretCielo.Text;
+                ACBrPIXCD.Config.Cielo.ArqChavePrivada = txtArquivoChavePrivadaCielo.Text;
+                ACBrPIXCD.Config.Cielo.ArqCertificado = txtArquivoCertificadoCielo.Text;
                 ACBrPIXCD.Config.Cielo.Scopes = txtScopesCielo.Text;
 
                 //MercadoPago
@@ -380,6 +382,8 @@ namespace ACBrLibPIXCD.Demo
             txtChavePIXCielo.Text = ACBrPIXCD.Config.Cielo.ChavePIX;
             txtClientIDCielo.Text = ACBrPIXCD.Config.Cielo.ClientID;
             txtClientSecretCielo.Text = ACBrPIXCD.Config.Cielo.ClientSecret;
+            txtArquivoChavePrivadaCielo.Text = ACBrPIXCD.Config.Cielo.ArqChavePrivada;
+            txtArquivoCertificadoCielo.Text = ACBrPIXCD.Config.Cielo.ArqCertificado;
             txtScopesCielo.Text = ACBrPIXCD.Config.Cielo.Scopes;
 
             //MercadoPago
@@ -492,16 +496,20 @@ namespace ACBrLibPIXCD.Demo
         {
             txtArquivoCertificadoMatera.Text = Helpers.OpenFile("Arquivos PEM (*.pem)|*.pem|Todos os Arquivos (*.*)|*.*");
         }
+        private void btnArquivoChavePrivadaCielo_Click(object sender, EventArgs e)
+        {
+            txtArquivoChavePrivadaCielo.Text = Helpers.OpenFile("Arquivos KEY (*.key)|*.key|Todos os Arquivos (*.*)|*.*");
+        }
 
+        private void btnArquivoCertificadoCielo_Click(object sender, EventArgs e)
+        {
+            txtArquivoCertificadoCielo.Text = Helpers.OpenFile("Arquivos CER (*.cer)|*.cer|Todos os Arquivos (*.*)|*.*");
+        }
         private void btnGerarQRCodeEstatico_Click(object sender, EventArgs e)
         {
             try
             {
-                var valor = 1;
-
-                if (InputBox.Show("QRCode Estático", "Informe o valor:", ref valor) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.GerarQRCodeEstatico(valor, "", "");
+                var ret = ACBrPIXCD.GerarQRCodeEstatico(double.Parse(txtValor.Text), txtInformacoesAdicionais.Text, txtTxIdQRCodeEstatico.Text);
                 rtbRespostas.AppendText(ret);
             } 
             catch (Exception ex)
@@ -514,10 +522,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var e2eid = "";
-                if (InputBox.Show("Consultar Pix", "Informe o e2eid:", ref e2eid) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.ConsultarPix(e2eid);
+                var ret = ACBrPIXCD.ConsultarPix(txte2eidConsultarPIX.Text);
                 rtbRespostas.AppendText(ret);
             } 
             catch (Exception ex)
@@ -529,20 +534,8 @@ namespace ACBrLibPIXCD.Demo
         private void btnConsultarPixRecebidos_Click(object sender, EventArgs e)
         {
             try
-            {
-                var dataInicial = "dd/MM/yyyy";
-                if (InputBox.Show("Consultar Pix Recebidos", "Informe a Data Inicial", ref dataInicial) != DialogResult.OK) return;
-
-                var dataFinal = "dd/MM/yyyy";
-                if (InputBox.Show("Consultar Pix Recebidos", "Informe a Data Final", ref dataFinal) != DialogResult.OK) return;
-
-                var TxId = "";
-                if (InputBox.Show("Consultar Pix Recebidos", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var cpfcnpj = "";
-                if (InputBox.Show("Consultar Pix Recebidos", "Informe CPF ou CNPJ:", ref cpfcnpj) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.ConsultarPixRecebidos(DateTime.Parse(dataInicial), DateTime.Parse(dataFinal), TxId, cpfcnpj, 1, 15);
+            { 
+                var ret = ACBrPIXCD.ConsultarPixRecebidos(DateTime.Parse(txtDataInicialConsultarPIXRecebidos.Text), DateTime.Parse(txtDataFinalConsultarPIXRecebidos.Text), txtTxIdConsultarPIXRecebidos.Text, txtCPFCNPJConsultarPIXRecebidos.Text, (int)nudPagAtualConsultarPIXRecebidos.Value, (int)nudItensPorPaginaConsultarPIXRecebidos.Value);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -555,16 +548,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var arquivoINI = Helpers.OpenFile("Arquivo Ini Devolução (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
-                if (string.IsNullOrEmpty(arquivoINI)) return;
-
-                var e2eid = "";
-                if (InputBox.Show("Solicitar Devolução Pix", "Informe o e2eid:", ref e2eid) != DialogResult.OK) return;
-
-                var idDevolucao = "";
-                if (InputBox.Show("Solicitar Devolução Pix", "Informe o ID Devolução:", ref idDevolucao) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.SolicitarDevolucaoPix(arquivoINI, e2eid, idDevolucao);
+                var ret = ACBrPIXCD.SolicitarDevolucaoPix(rtbSolicitarDevolucaoPIX.Text, txte2eidSolicitarDevolucaoPIX.Text, txtIdDevolucaoSolicitarDevolucaoPIX.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -577,13 +561,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var e2eid = "";
-                if (InputBox.Show("Solicitar Devolução Pix", "Informe o e2eid:", ref e2eid) != DialogResult.OK) return;
-
-                var idDevolucao = "";
-                if (InputBox.Show("Solicitar Devolução Pix", "Informe o ID Devolução:", ref idDevolucao) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.ConsultarDevolucaoPix(e2eid, idDevolucao);
+                var ret = ACBrPIXCD.ConsultarDevolucaoPix(txte2eidConsultarDevolucaoPIX.Text, txtIdDevolucaoConsultarDevolucaoPIX.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -596,13 +574,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var arquivoINI = Helpers.OpenFile("Arquivo Ini Cobrança Imediata (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
-                if (string.IsNullOrEmpty(arquivoINI)) return;
-
-                var TxId = "";
-                if (InputBox.Show("Criar Cobrança Imediata", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.CriarCobrancaImediata(arquivoINI, TxId);
+                var ret = ACBrPIXCD.CriarCobrancaImediata(rtbCriarCobrancaImediata.Text, txtTxIdCriarCobrancaImediata.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -615,13 +587,33 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var TxId = "";
-                if (InputBox.Show("Consultar Cobrança Imediata", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-                
-                var revisao = 0;
-                if (InputBox.Show("Consultar Cobrança Imediata", "Informe Revisão:", ref revisao) != DialogResult.OK) return;
+                var ret = ACBrPIXCD.ConsultarCobrancaImediata(txtTxIdConsultarCobrancaImediata.Text, int.Parse(txtRevisaoConsultarCobrancaImediata.Text));
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-                var ret = ACBrPIXCD.ConsultarCobrancaImediata(TxId, revisao);
+        private void btnConsultarCobrancasCob_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var ret = ACBrPIXCD.ConsultarCobrancasCob(DateTime.Parse(txtDataInicialConsultarCobrancasCob.Text), DateTime.Parse(txtDataFinalConsultarCobrancasCob.Text), txtCPFCNPJConsultarCobrancasCob.Text, ckbLocationConsultarCobrancasCob.Checked, cmbStatusConsultarCobrancasCob.SelectedIndex, (int)nudPagAtualConsultarCobrancasCob.Value, (int)nudItensPorPaginaConsultarCobrancasCob.Value);
+                rtbRespostas.AppendText(ret);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, @"Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnConsultarCobrancasCobV_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var ret = ACBrPIXCD.ConsultarCobrancasCobV(DateTime.Parse(txtDataInicialConsultarCobrancasCobV.Text), DateTime.Parse(txtDataFinalConsultarCobrancasCobV.Text), txtCPFCNPJConsultarCobrancasCobV.Text, ckbLocationConsultarCobrancasCobV.Checked, cmbStatusConsultarCobrancasCobV.SelectedIndex, (int)nudPagAtualConsultarCobrancasCobV.Value, (int)nudItensPorPaginaConsultarCobrancasCobV.Value);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -634,13 +626,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var arquivoINI = Helpers.OpenFile("Arquivo Ini Revisar Cobrança Imediata (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
-                if (string.IsNullOrEmpty(arquivoINI)) return;
-
-                var TxId = "";
-                if (InputBox.Show("Revisar Cobrança Imediata", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.RevisarCobrancaImediata(arquivoINI, TxId);
+                var ret = ACBrPIXCD.RevisarCobrancaImediata(rtbRevisarCobrancaImediata.Text, txtTxIdRevisarCobrancaImediata.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -653,10 +639,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var TxId = "";
-                if (InputBox.Show("Cancelar Cobrança Imediata", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.CancelarCobrancaImediata(TxId);
+                var ret = ACBrPIXCD.CancelarCobrancaImediata(txtTxIdCancelarCobrancaImediata.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -667,16 +650,9 @@ namespace ACBrLibPIXCD.Demo
 
         private void btnCriarCobranca_Click(object sender, EventArgs e)
         {
-            
             try
             {
-                var arquivoINI = Helpers.OpenFile("Arquivo Ini Cobrança (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
-                if (string.IsNullOrEmpty(arquivoINI)) return;
-
-                var TxId = "";
-                if (InputBox.Show("Criar Cobrança", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.CriarCobranca(arquivoINI, TxId);
+                var ret = ACBrPIXCD.CriarCobrancaImediata(rtbCriarCobranca.Text, txtTxIdCriarCobranca.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -689,13 +665,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var TxId = "";
-                if (InputBox.Show("Consultar Cobrança", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var revisao = 0;
-                if (InputBox.Show("Consultar Cobrança", "Informe Revisão:", ref revisao) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.ConsultarCobranca(TxId, revisao);
+                var ret = ACBrPIXCD.ConsultarCobranca(txtTxIdConsultarCobranca.Text, int.Parse(txtRevisaoConsultarCobranca.Text));
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -708,13 +678,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var arquivoINI = Helpers.OpenFile("Arquivo Ini Revisar Cobrança (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*");
-                if (string.IsNullOrEmpty(arquivoINI)) return;
-
-                var TxId = "";
-                if (InputBox.Show("Revisar Cobrança", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.RevisarCobranca(arquivoINI, TxId);
+                var ret = ACBrPIXCD.RevisarCobranca(rtbRevisarCobranca.Text, txtTxIdRevisarCobranca.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -727,10 +691,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var TxId = "";
-                if (InputBox.Show("Cancelar Cobrança", "Informe o TxId:", ref TxId) != DialogResult.OK) return;
-
-                var ret = ACBrPIXCD.CancelarCobranca(TxId);
+                var ret = ACBrPIXCD.CancelarCobranca(txtTxIdCancelarCobranca.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)
@@ -743,6 +704,11 @@ namespace ACBrLibPIXCD.Demo
         {
             var ret = ACBrPIXCD.OpenSSLInfo();
             rtbRespostas.AppendText(ret);
+        }
+
+        private void btnLimparRespostas_Click(object sender, EventArgs e)
+        {
+            rtbRespostas.Clear();
         }
     }
 }

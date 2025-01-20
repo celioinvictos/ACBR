@@ -62,7 +62,8 @@ uses
   DoECFObserver, DoECFBemafi32, DoSATUnit, DoACBreSocialUnit, DoACBrBPeUnit,
   ACBrLibResposta, DoACBrUnit, DoCNPJUnit, DoCPFUnit, ACBrBoletoConversao,
   ACBrBoletoFPDF, FormConsultaCNPJ, ACBrMonitorMenu, ACBrDFeReport, ACBrNFSeX,
-  ACBrNFSeXDANFSeRLClass, DoACBrNFSeUnit, ACBrGTIN, DoACBrGTINUnit, ACBrPIXBase;
+  ACBrNFSeXDANFSeRLClass, DoACBrNFSeUnit, ACBrGTIN, DoACBrGTINUnit, ACBrPIXBase,
+  ACBrLibConfig;
 
 const
   CEstados: array[TACBrECFEstado] of string =
@@ -366,6 +367,8 @@ type
     cbxAdicionaLiteral: TCheckBox;
     cbxAjustarAut: TCheckBox;
     cbxBolMotorRelatorio: TComboBox;
+    cbxImprimeNNFFormatadoNFCe: TCheckBox;
+    cbxImprimeNNFFormatadoNFe: TCheckBox;
     cbxNomeLongoNFSe: TCheckBox;
     cbxMontarPathSchemas: TCheckBox;
     cbxAmbiente: TComboBox;
@@ -465,6 +468,7 @@ type
     chECFSinalGavetaInvertido: TCheckBox;
     cbNCMForcarDownload: TCheckBox;
     cbxImprimeInscSuframa: TCheckBox;
+    ChkBoletoUseCertificadoHTTP: TCheckBox;
     ckbExibirMunicipioDescarregamento: TCheckBox;
     ChkPix: TCheckBox;
     chgDescricaoPagamento: TCheckGroup;
@@ -481,7 +485,6 @@ type
     ckCamposFatObrigatorio: TCheckBox;
     ckgBOLMostrar: TCheckGroup;
     ckIBGEAcentos: TCheckBox;
-    ckIBGEUTF8: TCheckBox;
     ckMemoria: TCheckBox;
     ckNFCeUsarIntegrador: TCheckBox;
     //ckNFCeUsarIntegrador: TCheckBox;
@@ -517,6 +520,8 @@ type
     edEntTXT: TEdit;
     edIBGECodNome: TEdit;
     edConsultarGTIN: TEdit;
+    edtBoletoKeySoftwareHouse: TEdit;
+    edtQuebraDeLinha: TEdit;
     edtConsCNPJ: TEdit;
     edtBolMargemInferior: TEdit;
     edtArquivoWebServicesNFSe: TEdit;
@@ -690,6 +695,7 @@ type
     edtTimeoutWebServicesBoleto: TSpinEdit;
     edtToken: TEdit;
     edtURLPFX: TEdit;
+    edtBoletoCodigoFlash: TEdit;
     edUSUCNPJ: TEdit;
     edUSUEndereco: TEdit;
     edUSUIE: TEdit;
@@ -838,6 +844,7 @@ type
     Label114: TLabel;
     Label118: TLabel;
     Label152: TLabel;
+    Label189: TLabel;
     Label260: TLabel;
     Label261: TLabel;
     Label262: TLabel;
@@ -866,6 +873,8 @@ type
     Label285: TLabel;
     Label286: TLabel;
     Label287: TLabel;
+    Label288: TLabel;
+    Label289: TLabel;
     lblConsCNPJ: TLabel;
     lblConsCNPJProvedor: TLabel;
     lblConCNPJSenha: TLabel;
@@ -2208,6 +2217,7 @@ begin
   FDoMDFe := TACBrObjetoMDFe.Create(MonitorConfig, ACBrMDFe1);
   FDoMDFe.OnAntesDeImprimir := @AntesDeImprimir;
   FDoMDFe.OnDepoisDeImprimir := @DepoisDeImprimir;
+  FDoMDFe.OnSubstituirVariaveis := @SubstituirVariaveis;
   
   FDoBoleto := TACBrObjetoBoleto.Create(MonitorConfig, ACBrBoleto1);
   FDoBoleto.OnAntesDeImprimir := @AntesDeImprimir;
@@ -5731,7 +5741,6 @@ begin
     edCONProxyUser.Text               := Proxy_User;
     edCONProxyPass.Text               := Proxy_Pass;
     ckIBGEAcentos.Checked             := IBGEAcentos;
-    ckIBGEUTF8.Checked                := IBGEUTF8;
   end;
 
   { Parametros da Consulta CNPJ }
@@ -5754,7 +5763,6 @@ begin
       ProxyUser := edCONProxyUser.Text;
       ProxyPass := edCONProxyPass.Text;
       IgnorarCaixaEAcentos:= ckIBGEAcentos.Checked;
-      IsUTF8    :=  ckIBGEUTF8.Checked;
     end;
 
   {Parametros do Boleto}
@@ -5767,14 +5775,16 @@ begin
     edtBOLNumero.Text                 := Numero;
     edtBOLBairro.Text                 := Bairro;
     edtBOLCEP.Text                    := CEP;
+    edtBoletoCodigoFlash.Text         := CodigoFlash;
 
     CarregarListaDeCidades(UFtoCUF(UF));
     cbxBOLUF.ItemIndex                := cbxBOLUF.Items.IndexOf(UF);
     edtBOLCodCidade.Caption           := IntToStr(CodCidade);
+    cbxEmitCidade.Text                := cidade;
     if ( CodCidade = 0 ) then
     begin
-      if ( cbxEmitCidade.Items.IndexOf(Cidade) > 0 ) and (fcMunList.IndexOf(IntToStr(CodCidade)) > 0 ) then
-        cbxEmitCidade.ItemIndex           := FcMunList.IndexOf(IntToStr(CodCidade))
+      if ( cbxEmitCidade.Items.IndexOf(Cidade) > 0 ) and (fcMunList.IndexOf(Cidade) > 0 ) then
+         cbxEmitCidade.ItemIndex  := FcMunList.IndexOf(IntToStr(cbxEmitCidade.Items.IndexOf(Cidade)))
       else
       begin
         cbxEmitCidade.Items.Add(Cidade);
@@ -5784,7 +5794,7 @@ begin
       end;
     end
     else
-      cbxEmitCidade.ItemIndex           := FcMunList.IndexOf(IntToStr(CodCidade));
+      cbxEmitCidade.ItemIndex := cbxEmitCidade.Items.IndexOf(Cidade);
 
     edtBOLComplemento.Text            := Complemento;
 
@@ -5792,7 +5802,6 @@ begin
     with Conta do
     begin
       cbxBOLEmissao.ItemIndex          := RespEmis;
-
       edtModalidade.Text               := Modalidade;
       edtConvenio.Text                 := Convenio;
       cbxBOLBanco.ItemIndex            := Banco;
@@ -5817,6 +5826,7 @@ begin
       edtPrefixRemessa.Text            := PrefixArqRemessa;
       edtVersaoArquivo.Text            := VersaoArquivo;
       edtVersaoLote.Text               := VersaoLote;
+      edtBoletoKeySoftwareHouse.Text   := KeySoftwareHouse;
     end;
 
     with Layout do
@@ -5886,6 +5896,7 @@ begin
        cbSSLTypeBoleto.ItemIndex := SSLType;
        edtBolArquivoKey.Text := ArquivoKEY;
        edtBolArquivoCRT.Text := ArquivoCRT;
+       ChkBoletoUseCertificadoHTTP.Checked := CertificadoHTTP;
      end;
 
   end;
@@ -5970,6 +5981,7 @@ begin
     cbValidarDigest.Checked            := ValidarDigest;
     edtTimeoutWebServices.Value        := TimeoutWebService;
     cbModoEmissao.Checked              := IgnorarComandoModoEmissao;
+    edtQuebraDeLinha.Text              := QuebraDeLinha;
 
     with Certificado do
     begin
@@ -6105,6 +6117,7 @@ begin
       fspeNFCeMargemDir.Value             := MargemDir;
       fspeNFCeMargemEsq.Value             := MargemEsq ;
       fspeLarguraNFCe.Value               := LarguraBobina;
+      cbxImprimeNNFFormatadoNFCe.Checked  := ImprimeNNFFormatadoNFCe;
     end;
 
     with Impressao.NFCe.Emissao.DANFCeTipoPagto do
@@ -6165,6 +6178,7 @@ begin
       rgInfAdicProduto.ItemIndex          := ExibirBandInforAdicProduto;
       cbxExibirLogoEmCima.Checked         := LogoEmCima;
       cbxImprimeInscSuframa.Checked       := ImprimeInscSuframa;
+      cbxImprimeNNFFormatadoNFe.Checked   := ImprimeNNFFormatadoNFe;
       cbxExpandirDadosAdicionaisAuto.Checked:= ExpandirDadosAdicionaisAuto;
       cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina.Checked:= ImprimeContinuacaoDadosAdicionaisPrimeiraPagina;
       rgImprimeDescAcrescItemNFe.ItemIndex:= ImprimeDescAcrescItemNFe;
@@ -6769,7 +6783,8 @@ begin
       LayoutRemessa := c240
     else
       LayoutRemessa := c400;
-
+    Banco.LayoutVersaoArquivo := StrToIntDef(edtVersaoArquivo.text,0);
+    KeySoftwareHouse:= edtBoletoKeySoftwareHouse.text;
     DirArqRemessa   := PathWithDelim(deBolDirRemessa.Text);
     DirArqRetorno   := PathWithDelim(deBolDirRetorno.Text);
     LeCedenteRetorno:= chkLerBeneficiarioRetorno.Checked;
@@ -6790,7 +6805,7 @@ begin
     Configuracoes.Arquivos.PathGravarRegistro := PathWithoutDelim(edtPathLogBoleto.Text);
     Configuracoes.Arquivos.NomeArquivoLog     := ExtractFileName(edtArquivoLogBoleto.Text);
 
-    Configuracoes.WebService.Ambiente := TpcnTipoAmbiente( rgTipoAmbBoleto.ItemIndex );
+    Configuracoes.WebService.Ambiente := TTipoAmbienteWS( rgTipoAmbBoleto.ItemIndex );
     Configuracoes.WebService.Operacao := TOperacao( cbOperacaoBoleto.ItemIndex );
     Configuracoes.WebService.VersaoDF := edtVersaoBoleto.Text;
     Configuracoes.WebService.SSLHttpLib := TSSLHttpLib( cbHttpLibBoleto.ItemIndex );
@@ -6798,6 +6813,8 @@ begin
     Configuracoes.WebService.SSLType := TSSLType( cbSSLTypeBoleto.ItemIndex );
     Configuracoes.WebService.ArquivoKEY:=edtBolArquivoKey.Text;
     Configuracoes.WebService.ArquivoCRT:=edtBolArquivoCRT.Text;
+    Configuracoes.WebService.UseCertificateHTTP:=ChkBoletoUseCertificadoHTTP.Checked;
+
 
   end;
 
@@ -7164,7 +7181,6 @@ begin
       Proxy_User                  := edCONProxyUser.Text;
       Proxy_Pass                  := edCONProxyPass.Text;
       IBGEAcentos                 := ckIBGEAcentos.Checked;
-      IBGEUTF8                    := ckIBGEUTF8.Checked;
     end;
 
     with FMonitorConfig.ConsultaCNPJ do
@@ -7259,6 +7275,7 @@ begin
       ArquivoWebServicesReinf   := edtArquivoWebServicesReinf.Text;
       ValidarDigest             := cbValidarDigest.Checked;
       TimeoutWebService         := edtTimeoutWebServices.Value;
+      QuebraDeLinha             := edtQuebraDeLinha.Text;
 
       with Certificado do
       begin
@@ -7387,6 +7404,7 @@ begin
         MargemDir                  := fspeNFCeMargemDir.Value;
         MargemEsq                  := fspeNFCeMargemEsq.Value;
         LarguraBobina              := fspeLarguraNFCe.Value;
+        ImprimeNNFFormatadoNFCe    := cbxImprimeNNFFormatadoNFCe.Checked;
       end;
 
       with Impressao.NFCe.Emissao.DANFCeTipoPagto do
@@ -7446,6 +7464,7 @@ begin
         ExibirBandInforAdicProduto     := rgInfAdicProduto.ItemIndex;
         LogoEmCima                     := cbxExibirLogoEmCima.Checked;
         ImprimeInscSuframa             := cbxImprimeInscSuframa.Checked;
+        ImprimeNNFFormatadoNFe         := cbxImprimeNNFFormatadoNFe.Checked;
         ExpandirDadosAdicionaisAuto    := cbxExpandirDadosAdicionaisAuto.Checked;
         ImprimeContinuacaoDadosAdicionaisPrimeiraPagina := cbxImprimeContinuacaoDadosAdicionaisPrimeiraPagina.Checked;
         ImprimeDescAcrescItemNFe   := rgImprimeDescAcrescItemNFe.ItemIndex;
@@ -7711,6 +7730,7 @@ begin
      Cidade             := cbxEmitCidade.Text ;
      CEP                := ifthen(TrimedCEP = '', '', edtBOLCEP.Text);
      Complemento        := edtBOLComplemento.Text;
+     CodigoFlash        := edtBoletoCodigoFlash.Text;
      UF                 := cbxBOLUF.Text;
 
      with Conta do
@@ -7766,6 +7786,7 @@ begin
        PrefixArqRemessa         := edtPrefixRemessa.Text;
        VersaoArquivo            := edtVersaoArquivo.Text;
        VersaoLote               := edtVersaoLote.Text;
+       KeySoftwareHouse         := edtBoletoKeySoftwareHouse.Text;
      end;
 
      with Email do
@@ -7807,6 +7828,7 @@ begin
        SSLType := cbSSLTypeBoleto.ItemIndex;
        ArquivoKEY:=edtBolArquivoKey.Text;
        ArquivoCRT:=edtBolArquivoCRT.Text;
+       CertificadoHTTP:=ChkBoletoUseCertificadoHTTP.Checked;
      end;
 
    end;
@@ -11230,6 +11252,7 @@ begin
 
     if ACBrNFe1.DANFE = ACBrNFeDANFeRL1 then
     begin
+      ACBrNFeDANFeRL1.FormatarNumeroDocumento := cbxImprimeNNFFormatadoNFe.Checked;
       ACBrNFeDANFeRL1.Fonte.Nome := TNomeFonte(rgTipoFonte.ItemIndex);
       ACBrNFeDANFeRL1.Fonte.TamanhoFonteDemaisCampos := speFonteCampos.Value;
       ACBrNFeDANFeRL1.Fonte.TamanhoFonteEndereco     := speFonteEndereco.Value;
@@ -11258,6 +11281,7 @@ begin
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortesA4_1 then
     begin
+      ACBrNFeDANFCeFortesA4_1.FormatarNumeroDocumento := cbxImprimeNNFFormatadoNFCe.Checked;
       ACBrNFeDANFCeFortesA4_1.ExibeInforAdicProduto := TinfAdcProd(rgInfAdicProduto.ItemIndex);
       ACBrNFeDANFCeFortesA4_1.ImprimeDescAcrescItem := cbxImprimirDescAcresItemNFCe.Checked;
       ACBrNFeDANFCeFortesA4_1.ImprimeTotalLiquido   := cbxImprimirDescAcresItemNFCe.Checked;
@@ -11279,6 +11303,7 @@ begin
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFCeFortes1 then
     begin
+      ACBrNFeDANFCeFortes1.FormatarNumeroDocumento := cbxImprimeNNFFormatadoNFCe.Checked;
       ACBrNFeDANFCeFortes1.ImprimeDescAcrescItem := cbxImprimirDescAcresItemNFCe.Checked;
       ACBrNFeDANFCeFortes1.ImprimeTotalLiquido   := cbxImprimirDescAcresItemNFCe.Checked;
       ACBrNFeDANFCeFortes1.MargemInferior        := fspeNFCeMargemInf.Value;
@@ -11313,6 +11338,7 @@ begin
     end
     else if ACBrNFe1.DANFE = ACBrNFeDANFeESCPOS1 then
     begin
+      ACBrNFeDANFeESCPOS1.FormatarNumeroDocumento:= cbxImprimeNNFFormatadoNFe.Checked;
       ACBrNFeDANFeESCPOS1.PosPrinter.Modelo := TACBrPosPrinterModelo(cbxModelo.ItemIndex);
       ACBrNFeDANFeESCPOS1.PosPrinter.Device.Porta := cbxPorta.Text;
       ACBrNFeDANFeESCPOS1.ImprimeEmUmaLinha := cbxImprimirItem1LinhaNFCe.Checked;
@@ -11948,6 +11974,7 @@ begin
       TimeOut  := edtTimeoutWebServices.Value * 1000;
       AjustaAguardaConsultaRet  := cbxAjustarAut.Checked;
       TimeZoneConf.ModoDeteccao := TTimeZoneModoDeteccao( cbxTimeZoneMode.ItemIndex );
+      QuebradeLinha := edtQuebraDeLinha.Text;
 
       try
         TimeZoneConf.TimeZoneStr := edTimeZoneStr.Caption;

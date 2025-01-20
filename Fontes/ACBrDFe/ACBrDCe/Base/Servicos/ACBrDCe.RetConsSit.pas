@@ -152,7 +152,7 @@ constructor TRetConsSitDCe.Create;
 begin
   inherited Create;
 
-  FprotDCe := TProcDFe.Create('', '', '');
+  FprotDCe := TProcDFe.Create('', '', '', '');
 end;
 
 destructor TRetConsSitDCe.Destroy;
@@ -177,6 +177,8 @@ begin
 
   try
     try
+      Result := False;
+
       if XmlRetorno = '' then Exit;
 
       Document.LoadFromXml(XmlRetorno);
@@ -258,8 +260,6 @@ begin
           Result := True;
         end;
       end;
-
-      Result := True;
     except
       Result := False;
     end;

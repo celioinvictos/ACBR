@@ -39,6 +39,9 @@ namespace ACBrLib.Boleto
 
         public string CodigoCedente { get; set; }
 
+        public string CodigoFlash { get; set; }
+
+
         [IniKey("MODALIDADE")]
         public string Modalidade { get; set; }
 
@@ -65,9 +68,12 @@ namespace ACBrLib.Boleto
 
         public IdentDistribuicao IdentDistribuicao { get; set; }
 
+        [IniKey("PIX.Chave")]
         public string ChavePIX { get; set; }
 
+        [IniKey("PIX.TipoChavePIX")]
         public TipoChavePIX TipoChavePIX { get; set; }
+
 
         #endregion Properties
 

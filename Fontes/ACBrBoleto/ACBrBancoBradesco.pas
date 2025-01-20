@@ -47,6 +47,7 @@ type
   TACBrBancoBradesco = class(TACBrBancoClass)
   private
     function ConverterMultaPercentual(const ACBrTitulo: TACBrTitulo): Double;
+    function ConverterJurosValorDiario(const ACBrTitulo: TACBrTitulo): Double;
   protected
     function ConverterDigitoModuloFinal(): String; override;
     function DefineCampoLivreCodigoBarras(const ACBrTitulo: TACBrTitulo): String; override;
@@ -54,6 +55,7 @@ type
               const ACBrTitulo: TACBrTitulo); override;
     function MontaInstrucoesCNAB400(const ACBrTitulo :TACBrTitulo; const nRegistro: Integer ): String; override;
     function GerarLinhaRegistroTransacao400(ACBrTitulo : TACBrTitulo; aRemessa: TStringList): String;
+    procedure LerRetorno400(ARetorno:TStringList); override;
   public
     Constructor create(AOwner: TACBrBanco);
     function MontarCampoNossoNumero(const ACBrTitulo :TACBrTitulo): String; override;
@@ -131,6 +133,21 @@ begin
 
 end;
 
+function TACBrBancoBradesco.ConverterJurosValorDiario(
+  const ACBrTitulo: TACBrTitulo): Double;
+begin
+  with ACBrTitulo do
+  begin
+    case CodigoMoraJuros of
+      cjValorDia: Result := ValorMoraJuros;
+      cjTaxaMensal: Result := (ValorMoraJuros * ValorDocumento / 100 / 30);
+      cjIsento: Result := 0;
+      cjValorMensal: Result := (ValorMoraJuros / 30);
+      cjTaxaDiaria: Result := (ValorMoraJuros * ValorDocumento / 100);
+    end;
+  end;
+end;
+
 function TACBrBancoBradesco.ConverterMultaPercentual(
   const ACBrTitulo: TACBrTitulo): Double;
 begin
@@ -153,7 +170,7 @@ begin
    fpDigito                 := 2;
    fpNome                   := 'BRADESCO';
    fpNumero                 := 237;
-   fpTamanhoMaximoNossoNum  := 11;   
+   fpTamanhoMaximoNossoNum  := 11;
    fpTamanhoAgencia         := 4;
    fpTamanhoConta           := 7;
    fpTamanhoCarteira        := 2;
@@ -163,7 +180,7 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 7;
    fpCodParametroMovimento:= 'MX';
-   fpCodigosMoraAceitos:='123';
+   fpCodigosMoraAceitos    := '123';
 end;
 
 function TACBrBancoBradesco.MontaInstrucoesCNAB400(
@@ -175,7 +192,7 @@ begin
   ValidaNossoNumeroResponsavel(sNossoNumero, sDigitoNossoNumero, ACBrTitulo);
 
   With ACBrTitulo, ACBrBoleto do begin
-
+    Mensagem.Text := TiraAcentos(AnsiUpperCase(Mensagem.Text));
     {Primeira instrução vai no registro 1}
     if Mensagem.Count <= 1 then begin
        Result := '';
@@ -434,7 +451,7 @@ var
   sOcorrencia, sEspecie, aAgencia: String;
   sProtesto, sTipoSacado, MensagemCedente, aConta, aDigitoConta: String;
   aCarteira, wLinha, sNossoNumero, sDigitoNossoNumero, sTipoBoleto: String;
-  aPercMulta: Double;
+  aPercMulta, LValorMoraJuros: Double;
   LChaveNFE : String;
 begin
    Result := '';
@@ -464,6 +481,9 @@ begin
 
      { Converte valor em moeda para percentual, pois o arquivo só permite % }
      aPercMulta := ConverterMultaPercentual(ACBrTitulo);
+
+     { Converte valor em moeda para valor diário, pois o arquivo só permite juros em R$ diário }
+     LValorMoraJuros := ConverterJurosValorDiario(ACBrTitulo);
 
      {Chave da NFe}
      if ACBrTitulo.ListaDadosNFe.Count>0 then
@@ -503,7 +523,7 @@ begin
        StringOfChar('0',8) + PadRight(sEspecie,2) + 'N'         +  // 140 a 150 - Zeros + Especie do documento + Idntificação(valor fixo N)
        FormatDateTime( 'ddmmyy', DataDocumento )                +  // 151 a 156 - Data de Emissão
        sProtesto                                                +  // 157 a 160 - Intruções de Protesto
-       IntToStrZero( round(ValorMoraJuros * 100 ), 13)          +  // 161 a 173 - Valor a ser cobrado por dia de atraso
+       IntToStrZero( round(LValorMoraJuros * 100 ), 13)          +  // 161 a 173 - Valor a ser cobrado por dia de atraso
        IfThen(DataDesconto < EncodeDate(2000,01,01),'000000',
               FormatDateTime( 'ddmmyy', DataDesconto))          +  // 174 a 179 - Data limite para concessão desconto
        IntToStrZero( round( ValorDesconto * 100 ), 13)          +  // 180 a 192 - Valor Desconto
@@ -556,6 +576,19 @@ begin
     IntToStrZero( ARemessa.Count + 1, 6);                                          // 395 a 400 - Número sequencial do registro
 
     ARemessa.Add(UpperCase(LLinha));
+  end;
+end;
+
+procedure TACBrBancoBradesco.LerRetorno400(ARetorno: TStringList);
+var LTamanhoMaximoNossoNum : Integer;
+begin
+  LTamanhoMaximoNossoNum := TamanhoMaximoNossoNum;
+  try
+    if ACBrBanco.ACBrBoleto.LerNossoNumeroCompleto then
+      fpTamanhoMaximoNossoNum := LTamanhoMaximoNossoNum+1;
+    inherited;
+  finally
+    fpTamanhoMaximoNossoNum := LTamanhoMaximoNossoNum;
   end;
 end;
 

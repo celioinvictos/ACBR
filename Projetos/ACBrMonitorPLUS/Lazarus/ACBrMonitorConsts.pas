@@ -144,6 +144,7 @@ const
   CMetodoEnviarEmailCFe =              'enviaremailcfe';
   CMetodoConsultarModeloSAT =          'consultarmodelosat';
   CMetodoConsultarUltimaSessaoFiscal=  'consultarultimasessaofiscal';
+  CMetodoObterIniCFe = 'obterinicfe';
 
   CMetodoECFachar =                                      'achar';
   CMetodoECFativar =                                     'ativar';
@@ -782,6 +783,7 @@ const
   CMetodoAcharPortasSeriais     = 'acharportasseriais';
   CMetodoAcharPortasUSB         = 'acharportasusb';
   CMetodoAcharPortasRAW         = 'acharportasraw';
+  CMetodoLerStatusImpressoraFormatado    = 'lerstatusimpressoraformatado';
 
   CExtensaoXML =                     '.xml';
 
@@ -915,7 +917,6 @@ const
   CKeyCEPProxy_User =                'Proxy_User';
   CKeyCEPProxy_Pass =                'Proxy_Pass';
   CKeyCEPIBGEAcentos =               'IBGEAcentos';
-  CKeyCEPIBGEUTF8 =                  'IBGEUTF8';
 
   CSecConsultaCNPJ =                 'ConsultaCNPJ';
   CKeyConsultaCNPJProvedor =         'Provedor';
@@ -968,6 +969,7 @@ const
   CKeyArquivoWebServicesNFSe =        'ArquivoWebServicesNFSe';
   CKeyValidarDigest =                 'ValidarDigest';
   CKeyTimeoutWebService =             'TimeoutWebService';
+  CKeyQuebraDeLinha =                 'QuebraDeLinha';
 
   CSecGeral =                        'Geral';
   CKeyDANFE =                        'DANFE';
@@ -1113,6 +1115,7 @@ const
   CKeyDANFEExibirBandInforAdicProduto =    'ExibirBandInforAdicProduto';
   CKeyDANFELogoEmCima =                    'LogoEmCima';
   CKeyDANFEImprimeInscSuframa =            'ImprimeInscSuframa';
+  CKeyDANFEImprimeNNFFormatadoNFe =        'ImprimeNNFFormatadoNFe';
   CKeyDANFEExpandirDadosAdicionaisAuto =   'ExpandirDadosAdicionaisAuto';
   CKeyDANFEImprimeContinuacaoDadosAdicionaisPrimeiraPagina = 'ImprimeContinuacaoDadosAdicionaisPrimeiraPagina';
   CKeyDANFEImprimeDescAcrescItemNFe =      'ImprimeDescAcrescItemNFe';
@@ -1131,7 +1134,7 @@ const
   CKeyDANFCeTipoPagtoTipo =            'Tipo';
   CKeyDANFCeTipoPagtoBandeira =        'Bandeira';
   CKeyDANFCeTipoPagtoAutorizacao =     'Autorizacao';
-
+  CKeyDANFCeImprimeNNFFormatadoNFCe =  'ImprimeNNFFormatadoNFCe';
   CSecFonte =                          'FonteLinhaItem';
   CKeyFonteName =                      'Name';
   CKeyFonteColor =                     'Color';
@@ -1329,6 +1332,8 @@ const
   CKeyBOLETOCEP =                           'CEP';
   CKeyBOLETOComplemento =                   'Complemento';
   CKeyBOLETOUF =                            'UF';
+  CKeyBOLETOCodigoFlash =                   'CodigoFlash';
+  CKeyBOLETOKeySoftwareHouse =              'KeySoftwareHouse';
   CKeyBOLETORespEmis =                      'RespEmis';
   CKeyBOLETOPessoa =                        'Pessoa';
   CKeyBOLETOCodTransmissao =                'CodTransmissao';

@@ -202,7 +202,7 @@ uses
   StrUtils, DateUtils,
   ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime,
   ACBrValidador, ACBrDFeUtil,
-  ACBrDFeReportFortes, pcnNFe, pcnConversao;
+  ACBrDFeReportFortes, ACBrNFe.Classes, pcnConversao, pcnConversaoNFe;
 
 {$IfNDef FPC}
   {$R *.dfm}
@@ -413,7 +413,8 @@ procedure TfrlDANFeRLSimplificado.AdicionarFatura;
 var
   x, iQuantDup: Integer;
 begin
-  rlbFatura.Visible := (fpNFe.Cobr.Dup.Count > 0) and not fpDANFe.Etiqueta;
+  rlbFatura.Visible := (fpNFe.Cobr.Dup.Count > 0) and not fpDANFe.Etiqueta
+                       and fpDANFe.ExibeCampoDuplicata;;
 
   if (fpNFe.Cobr.Dup.Count > 0) then
   begin
@@ -588,10 +589,13 @@ end;
 procedure TfrlDANFeRLSimplificado.rlb05b_Desc_ItensBeforePrint(Sender: TObject; var PrintIt: Boolean);
 
   function ManterinfAdProd(sXProd: String; sinfAdProd: String): String;
+  var
+    LDados : String;
   begin
     Result := sXProd;
-    if NaoEstaVazio(sinfAdProd) then
-      Result := Result + sLineBreak  + sLineBreak + ' InfAd: ' + sinfAdProd;
+    LDados:= fpDANFe.ManterinfAdProd(fpNFe, FNumItem);
+    if NaoEstaVazio(LDados) then
+      Result := Result + sLineBreak  + sLineBreak + ' InfAd: ' + LDados;
   end;
 
 begin

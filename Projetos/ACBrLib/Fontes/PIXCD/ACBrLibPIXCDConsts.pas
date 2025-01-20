@@ -1,6 +1,6 @@
 { criar uma interface de comunicação com equipamentos de automacao comercial.   }
 {                                                                               }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida                }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida                }
 {                                                                               }
 { Colaboradores nesse arquivo: Antonio Carlos Junior                            }
 {                                                                               }
@@ -54,7 +54,136 @@ const
   CSessaoRespDevolucao = 'Devolucao';
   CSessaoRespConsultarPixRecebidos = 'ConsultarPIXRecebidos';
 
+  CSessaoRespCobsConsultadas = 'CobsConsultadas';
+  CSessaoRespParametrosConsultaCob = 'Parametros';
+  CSessaoRespPaginacaoCob = 'Paginacao';
+  CSessaoRespCobCompleta = 'CobCompleta';
+  CSessaoRespCobsInfo = 'CobsInfo';
+  CSessaoRespCobs = 'Cobs';
+
+  CSessaoRespCobsVConsultadas = 'CobsVConsultadas';
+  CSessaoRespParametrosConsultaCobV = 'Parametros';
+  CSessaoRespPaginacaoCobV = 'Paginacao';
+  CSessaoRespCobVCompleta = 'CobVCompleta';
+  CSessaoRespCobsVInfo = 'CobsVInfo';
+  CSessaoRespCobsV = 'CobsV';
+
+  CSessaoRespIncluirContaMatera = 'IncluirContaMatera';
+  CSessaoRespConsultarContaMatera = 'ConsultarContaMatera';
+  CSessaoRespInativarContaMatera = 'InativarContaMatera';
+
+  CSessaoRespAccountMatera = 'Account';
+  CSessaoRespRepresentativeMatera = 'Representative';
+  CSessaoRespDocumentsMatera = 'Documents';
+  CSessaoRespBillingAddressMatera = 'BillingAddress';
+  CSessaoRespAdditionalDetailsCorporateMatera = 'AdditionalDetailsCorporate';
+
+  CSessaoRespMateraClient = 'MateraClient';
+  CSessaoRespMateraClientMailAddress = 'MailAddress';
+  CSessaoRespMateraClientMobilePhone = 'MobilePhone';
+  CSessaoRespMateraClientTaxIdentifier = 'TaxIdentifier';
+
+  CSessapRespMateraAccount = 'MateraAccount';
+  CSessaoRespAliasMatera = 'Alias';
+
+  CSessaoRespConsultarTransacao = 'ConsultarTransacao';
+  CSessaoRespTransactionResponse = 'TransactionResponse';
+  CSessaoRespTransactionResponseMobilePhone = 'mobilePhone';
+  CSessaoRespTransactionResponseUtilities = 'Utilities';
+  CSessaoRespBankTransfer = 'bankTransfer';
+  CSessaoRespBoletoPayment = 'Boleto';
+  CSessaoRespCancelPaymentTransactionResponse = 'cancelPaymentTransaction';
+  CSessaoRespAccountHolderResponse = 'counterPart';
+  CSessaoRespAccountHolderResponseBillingAddress = 'billingAddress';
+  CSessaoRespMateraCoupon = 'Coupon';
+  CSessaoRespMateraDrawee = 'Drawee';
+  CSessaoRespMateraInstantPaymentTransactionResponse  = 'instantPayment';
+  CSessaoRespMateraInstantPaymentTransactionResponseInstantPaymentCashValue = 'instantPaymentCashValue';
+  CSessaoRespMateraInstantPaymentTransactionResponseRecipient = 'Recipient';
+  CSessaoRespMateraInstantPaymentTransactionResponseRejectionReason = 'rejectionReason';
+  CSessaoRespMateraInstantPaymentTransactionResponseReturnInfo = 'returnInfo';
+  CSessaoRespMateraInstantPaymentTransactionResponseOriginDepositTransaction = 'originDepositTransaction';
+  CSessaoRespMateraParticipantInstantPaymentAccount = 'Account';
+  CSessaoRespMateraParticipantInstantPaymentPsp = 'Psp';
+  CSessaoRespMateraParticipantInstantPaymentTaxIdentifier = 'taxIdentifier';
+  CSessaoRespMateraCashValue = 'instantPaymentCashValue';
+  CSessaoRespMateraCashValueWithdrawProviders = 'withdrawProviders';
+  CSessaoRespMateraInstantPaymentTransactionReturnInfo = 'returnInfo';
+  CSessaoRespMateraInstantPaymentTransactionReturnInfoReturnReasonInformation = 'returnReasonInformation';
+  CSessaoRespMateraOriginDepositTransactionResponse = 'originDepositTransaction';
+  CSessaoRespMateraOriginInstantPaymentTransactionResponse = 'originInstantPaymentTransaction';
+  CSessaoRespMateraPaymentReceived = 'paymentReceived';
+  CSessaoRespMateraPaymentReceivedSender = 'Sender';
+
+  CSessaoRespSaldoECResposta = 'SaldoECResposta';
+
+  CSessaoRespExtratoECResposta = 'ExtratoECResposta';
+  CSessaoRespMaterastatementEntry = 'statementEntry';
+  CSessaoRespMateraCounterpart = 'counterpart';
+  CSessaoRespMateraStatementInstantPaymentCashValue = 'statementInstantPaymentCashValue';
+  CSessaoRespMateraStatementInstantPaymentCashValueData = 'statementInstantPaymentCashValueData';
+
+  CSessaoRespMotivosDevolucaoResposta = 'MotivosDevolucaoResposta';
+  CSessaoRespMateraReturnCode = 'ReturnCode';
+
+  CSessaoRespAliasRetiradaResposta = 'AliasRetiradaResposta';
+  CSessaoRespAliasRetiradaRespostaAccountDestination = 'accountDestination';
+  CSessaoRespAliasRetiradaRespostaAccountHolder = 'accountHolder';
+  CSessaoRespAliasRetiradaRespostaAntiFraudClearingInfo = 'antiFraudClearingInfo';
+  CSessaoRespAliasRetiradaRespostaPsp = 'Psp';
+
+  CSessaoRespAliasAccountHolder = 'accountHolder';
+  CSessaoRespAliasAccountHolderTaxIdentifier = 'TaxIdentifier';
+
+  CSessaoRespAntiFraudClearingInfo = 'antiFraudClearingInfo';
+
+  CSessaoRespMateraCounter = 'MateraCounter';
+
+  CSessaoRespAliasResponseV2 = 'AliasResponseV2';
+  CSessaoRespAliasResponseV2AliasHolderAddress = 'aliasHolderAddress';
+  CSessaoRespAliasResponseV2AliasStatistics = 'aliasStatistics';
+  CSessaoRespAliasResponseV2PersonStatistics = 'personStatistics';
+
+  CSessaoRespMateraaliasStatistics = 'aliasStatistics';
+  CSessaoRespMateraaliasStatisticsEntries = 'entries';
+  CSessaoRespMateraaliasStatisticsFraudMarkers = 'fraudMarkers';
+  CSessaoRespMateraaliasStatisticsInfractionReports = 'infractionReports';
+  CSessaoRespMateraaliasStatisticsSpi = 'spi';
+
+  CSessaoRespMateraFraudMarkers = 'fraudMarkers';
+  CSessaoRespMateraFraudMarkersApplicationFrauds = 'applicationFrauds';
+  CSessaoRespMateraFraudMarkersDistinctFraudReporters = 'distinctFraudReporters';
+  CSessaoRespMateraFraudMarkersMuleAccounts = 'muleAccounts';
+  CSessaoRespMateraFraudMarkersOtherFrauds = 'otherFrauds';
+  CSessaoRespMateraFraudMarkersScammerAccounts = 'scammerAccounts';
+  CSessaoRespMateraFraudMarkersTotalFrauds = 'totalFrauds';
+  CSessaoRespMateraFraudMarkersTotalFraudTransactionAmount = 'totalFraudTransactionAmount';
+
+  CSessaoRespMaterainfractionReports = 'infractionReports';
+  CSessaoRespMaterainfractionReportsRejectedReports = 'rejectedReports';
+
+  CSessaoRespMateraSpi = 'spi';
+  CSessaoRespMateraSpiSettlements = 'settlements';
+
+  CSessaoRespMaterapersonStatistics = 'personStatistics';
+  CSessaoRespMaterapersonStatisticsEntries = 'entries';
+  CSessaoRespMaterapersonStatisticsFraudMarkers = 'fraudMarkers';
+  CSessaoRespMaterapersonStatisticsInfractionReports = 'infractionReports';
+  CSessaoRespMaterapersonStatisticsspi = 'spi';
+
+  CSessaoRespSolicitarDevolucaoResposta = 'SolicitarDevolucaoResposta';
+
+  CSessaoRespSolicitarRetiradaResposta = 'SolicitarRetiradaResposta';
+
+  CSessaoRespQRCodeResposta = 'QRCodeResposta';
+  CSessaoRespMateraFinancialStatement = 'FinancialStatement';
+  CSessaoRespMateraInstantPaymentQRCodeResponse = 'InstantPaymentQRCodeResponse';
+
+  CSessaoRespChavePIX = 'ChavePIX';
+  CSessaoRespExcluirChavePIX = 'ExcluirChavePIX';
+
   CSessaoRespProblema = 'Problema';
+  CSessaoRespProblemaMatera = 'ProblemaMatera';
 
   CSessaoPIXCDConfig = 'PIXCD';
   CChaveAmbiente = 'Ambiente';
@@ -181,10 +310,30 @@ const
   CChavePIXCielo = 'ChavePIX';
   CChaveClientIDCielo = 'ClientID';
   CChaveClientSecretCielo = 'ClientSecret';
+  CChaveArqChavePrivadaCielo = 'ArqChavePrivada';
+  CChaveArqCertificadoCielo = 'ArqCertificado';
 
   CSessaoPIXCDMercadoPagoConfig = 'MercadoPago';
   CChavePIXMercadoPago = 'ChavePIX';
   CChaveAccesTokenMercadoPago = 'AccessToken';
+
+  CSessaoPIXCDGate2AllConfig = 'Gate2All';
+  CChaveAuthenticationApiGate2All = 'AuthenticationApi';
+  CChaveAuthenticationKeyGate2All = 'AuthenticationKey';
+
+  CSessaoPIXCDBanrisulConfig = 'Banrisul';
+  CChavePIXBanrisul = 'ChavePIX';
+  CChaveClientIDBanrisul = 'ClientID';
+  CChaveClientSecretBanrisul = 'ClientSecret';
+  CChaveArquivoCertificadoBanrisul = 'ArquivoCertificado';
+  CChaveSenhaPFXBanrisul = 'SenhaPFX';
+
+  CSessaoPIXCDC6BankConfig = 'C6Bank';
+  CChavePIXC6Bank = 'ChavePIX';
+  CChaveClientIDC6Bank = 'ClientID';
+  CChaveClientSecretC6Bank = 'ClientSecret';
+  CChaveArqChavePrivadaC6Bank = 'ArqChavePrivada';
+  CChaveArqCertificadoC6Bank = 'ArqCertificado';
 
 implementation
 

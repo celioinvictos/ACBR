@@ -42,6 +42,34 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+16/10/2024
+-- Diversos --
+[+] #TK-4956-2: Implementados programas de exemplo em PHP da NFSe ST e MT.
+-- ACBrComum.php --
+[*] Implementadas funcões para identificar se arquivo é xml ou ini, conversão de Data de texto para double e setar path das dependências 
+-- ACBrLibNFSeBase --
+[*] #TK-4956-2: Codificado em base64 o retorno do método ObterDANFSE do padrão nacional
+   Por: Renato Rubinho 
+
+23/09/2024
+-- ACBrLibNFSeRespostas --
+[*] #TK-4228: Adiciona chamada ao ACBrStr para mostrar corretamente o modo envio na resposta.
+   Por: Diego Folieni 
+
+14/08/2024
+--- ACBrLibNFSeBase, ACBrLibNFSeST, ACBrLibNFSeMT,
+    ACBrLibNFSeStaticImportST, ACBrLibNFSeStaticImportMT, ACBrLibNFSeRespostas ---
+[*] Ajustes para usar 'PAnsiChar' no lugar de 'PChar' e 'Integer' ao inves de 'LongInt'
+[*] Ajustes para usar 'ConverterStringEntrada' e 'ConverterStringSaida'
+    Por: Antonio Carlos Junior
+
+15/07/2024
+-- ACBrLibNFSeRespostas --
+[*] Remove a Data das informações de identificação que foram adicionadas.
+    Por: Diego Folieni
+[*] Adiciona Numero da nota e mais algumas informações de identificação na resposta que recebe as informações do resumo.
+    Por: Diego Folieni
+
 31/05/2024
 -- ACBrLibNFSeRespostas --
 [*] Melhora a resposta do Cancelamento e do ObterInformacoesProvedor.

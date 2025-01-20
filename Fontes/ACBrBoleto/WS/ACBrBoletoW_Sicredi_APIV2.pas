@@ -38,6 +38,7 @@ unit ACBrBoletoW_Sicredi_APIV2;
 interface
 
 uses
+  ACBrBase,
   ACBrJSON,
   ACBrBoleto,
   ACBrBoletoWS,
@@ -121,7 +122,7 @@ procedure TBoletoW_Sicredi_APIV2.DefinirURL;
 var
   LId: String;
 begin
-  FPURL     := IfThen(Boleto.Configuracoes.WebService.Ambiente = taProducao,C_URL, C_URL_HOM);
+  FPURL     := IfThen(Boleto.Configuracoes.WebService.Ambiente = tawsProducao,C_URL, C_URL_HOM);
 
   if ATitulo <> nil then
 		LId      := DefinirNossoNumero;
@@ -158,7 +159,7 @@ end;
 
 procedure TBoletoW_Sicredi_APIV2.DefinirCodigoBeneficiario;
 begin
-  FPHeaders.Add( Format('codigoBeneficiario: %s',[Boleto.Cedente.CodigoCedente]) );
+  AddHeaderParam('codigoBeneficiario',Boleto.Cedente.CodigoCedente);
 end;
 
 procedure TBoletoW_Sicredi_APIV2.DefinirContentType;
@@ -170,12 +171,12 @@ end;
 
 procedure TBoletoW_Sicredi_APIV2.DefinirCooperativa;
 begin
-  FPHeaders.Add( Format('cooperativa: %s',[OnlyNumber(Boleto.Cedente.Agencia)]) );
+  AddHeaderParam('cooperativa',OnlyNumber(Boleto.Cedente.Agencia) );
 end;
 
 procedure TBoletoW_Sicredi_APIV2.GerarHeader;
 begin
-	FPHeaders.Clear;
+  ClearHeaderParams;
   DefinirContentType;
   DefinirKeyUser;
   DefinirPosto;
@@ -327,7 +328,9 @@ end;
 
 procedure TBoletoW_Sicredi_APIV2.DefinirPosto;
 begin
-  FPHeaders.Add( Format('posto: %s', [OnlyNumber(Boleto.Cedente.AgenciaDigito)]) );
+  if Length(Boleto.Cedente.AgenciaDigito) <> 2 then
+     raise EACBrException.Create('Agência necessidade de dois digitos!');
+  AddHeaderParam('posto',Boleto.Cedente.AgenciaDigito );
 end;
 
 procedure TBoletoW_Sicredi_APIV2.DefinirAutenticacao;
@@ -337,7 +340,7 @@ end;
 
 function TBoletoW_Sicredi_APIV2.ValidaAmbiente: Integer;
 begin
-  Result := StrToIntDef(IfThen(Boleto.Configuracoes.WebService.Ambiente = taProducao, '1', '2'), 2);
+  Result := StrToIntDef(IfThen(Boleto.Configuracoes.WebService.Ambiente = tawsProducao, '1', '2'), 2);
 end;
 
 procedure TBoletoW_Sicredi_APIV2.RequisicaoJson;
@@ -507,8 +510,7 @@ begin
   begin
     LJsonObject := TACBrJSONObject.Create;
     try
-      LJsonObject.AddPair('valorouPercentual', ATitulo.ValorMoraJuros);
-
+      LJsonObject.AddPair('valorOuPercentual', ATitulo.ValorMoraJuros);
       FPDadosMsg := LJsonObject.ToJSON;
     finally
       LJsonObject.Free;
@@ -690,10 +692,10 @@ begin
 
   if Assigned(OAuth) then
   begin
-    if OAuth.Ambiente = taHomologacao then
-      OAuth.URL := C_URL_OAUTH_HOM
+    if OAuth.Ambiente = tawsProducao then
+      OAuth.URL := C_URL_OAUTH_PROD
     else
-      OAuth.URL := C_URL_OAUTH_PROD;
+      OAuth.URL := C_URL_OAUTH_HOM;
 
     OAuth.Payload := True;
   end;

@@ -103,9 +103,6 @@ type
       var Code: Integer; var Texto: String);
   published
     property APIVersion;
-    property ClientID;
-    property ClientSecret;
-
     property BBAPIVersao: TACBrBBAPIVersao read fBBAPIVersao write fBBAPIVersao default apiVersao1;
     property DeveloperApplicationKey: String read fDeveloperApplicationKey write fDeveloperApplicationKey;
   end;
@@ -116,6 +113,7 @@ uses
   synautil, synacode,
   ACBrUtil.Strings,
   ACBrUtil.Base,
+  ACBrUtil.DateTime,
   ACBrJSON,
   ACBrPIXBase,
   DateUtils;
@@ -313,6 +311,12 @@ end;
 procedure TACBrPSPBancoDoBrasil.ConfigurarQueryParameters(const Method, EndPoint: String);
 begin
   inherited ConfigurarQueryParameters(Method, EndPoint);
+
+  if (Method = ChttpMethodGET) and (EndPoint = cEndPointPix) and (URLQueryParams.Values['inicio'] <> EmptyStr) then
+  begin
+    URLQueryParams.Values['inicio'] := DateTimeToIso8601(DateTimeUniversal(GetUTCSistema,Iso8601ToDateTime(URLQueryParams.Values['inicio'])));
+    URLQueryParams.Values['fim'] := DateTimeToIso8601(DateTimeUniversal(GetUTCSistema,Iso8601ToDateTime(URLQueryParams.Values['fim'])));
+  end;
 
   if (fDeveloperApplicationKey <> '') then
     URLQueryParams.Values[cBBParamDevAppKey] := fDeveloperApplicationKey;

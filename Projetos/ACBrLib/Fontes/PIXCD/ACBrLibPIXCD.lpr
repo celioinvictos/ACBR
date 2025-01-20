@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo: Antonio Carlos Junior                           }
 {                                                                              }
@@ -35,10 +35,17 @@
 library ACBrLibPIXCD;
 
 uses
+  {$IFDEF MT}
+   {$IFDEF UNIX}
+    cthreads,
+    cmem, // the c memory manager is on some systems much faster for multi-threading
+   {$ENDIF}
+  {$ENDIF}
   Interfaces, Forms, sysutils, Classes,
   {$IFDEF MT} ACBrLibPIXCDMT{$ELSE}ACBrLibPIXCDST{$ENDIF},
-  ACBrLibPIXCDDataModule, ACBrLibPIXCDConfig, ACBrLibPIXCDBase, ACBrLibConfig,
-  ACBrLibResposta, ACBrLibComum, ACBrLibConsts, ACBrLibDataModule;
+  ACBrLibPIXCDDataModule, ACBrLibPIXCDConfig, ACBrLibPIXCDBase,
+  ACBrLibPIXCDMateraRespostas, ACBrLibConfig, ACBrLibResposta, ACBrLibComum,
+  ACBrLibConsts, ACBrLibDataModule;
 
 {$R *.res}
 
@@ -74,14 +81,33 @@ exports
   //EndPoint /cob
   PIXCD_CriarCobrancaImediata,
   PIXCD_ConsultarCobrancaImediata,
+  PIXCD_ConsultarCobrancasCob,
   PIXCD_RevisarCobrancaImediata,
   PIXCD_CancelarCobrancaImediata,
 
   //EndPoint /cobv
   PIXCD_CriarCobranca,
   PIXCD_ConsultarCobranca,
+  PIXCD_ConsultarCobrancasCobV,
   PIXCD_RevisarCobranca,
-  PIXCD_CancelarCobranca;
+  PIXCD_CancelarCobranca,
+
+  //PSP Matera
+  PIXCD_Matera_IncluirConta,
+  PIXCD_Matera_ConsultarConta,
+  PIXCD_Matera_InativarConta,
+  PIXCD_Matera_IncluirChavePix,
+  PIXCD_Matera_ConsultarChavePix,
+  PIXCD_Matera_ExcluirChavePix,
+
+  PIXCD_Matera_GerarQRCode,
+  PIXCD_Matera_ConsultarTransacao,
+  PIXCD_Matera_ConsultarSaldoEC,
+  PIXCD_Matera_ConsultarExtratoEC,
+  PIXCD_Matera_ConsultarMotivosDevolucao,
+  PIXCD_Matera_SolicitarDevolucao,
+  PIXCD_Matera_ConsultarAliasRetirada,
+  PIXCD_Matera_SolicitarRetirada;
 
 begin
   {$IFDEF DEBUG}

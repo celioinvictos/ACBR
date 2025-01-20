@@ -43,6 +43,106 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+14/01/2025
+-- ACBrMonitor1.pas, DoBoletoUnit.pas, ACBrMonitorConfig.pas  --
+[*] #TK-6479 Ajustado para Ler o INI VersaoArquivo utilizado no Boleto.
+    Por: Daniel de Morais InfoCotidiano
+
+07/01/2025
+-- ACBrMonitor1.lfm, ACBrMonitor1.pas, DoBoletoUnit.pas  --
+[-] #TK-6452-1 Adicionado a propriedade para config. UseCertificateHTTP para autenticação nas APIs de Boleto.
+    Por: Daniel de Morais InfoCotidiano
+
+07/01/2025
+-- DoACBrNFeUnit --
+[*] #TK-6415: Realizado a substituição da unit de classes de: pcnNFe
+    por: ACBrNFe.Classes 
+   Por: Italo Giurizzato Junior
+-- DoACBrMDFeUnit --
+[*] #TK-6409: Realizado a substituição da unit de classes de: pmdfeMDFe
+    por: ACBrMDFe.Classes 
+   Por: Italo Giurizzato Junior
+-- DoACBrCTeUnit --
+[*] #TK-6403: Realizado a substituição da unit de classes de: pcteCTe
+    por: ACBrCTe.Classes 
+   Por: Italo Giurizzato Junior
+
+30/12/2024
+-- ACBrMonitorConfig.pas, DoBoletoUnit.pas, ACBrMonitor1.pas, ACBrMonitor1.lfm, ACBrMonitorConsts.pas  --
+[*] #TK-6431 Criado a propriedade KeySoftwareHouse para uso parceria BB API
+    Por: Daniel de Morais InfoCotidiano
+
+09/12/204
+[*] Realizado ajuste na função CTE.SetModeloDF para atender os modelos GTVe e CTe Simplificado.
+    #TK-6313 - ACBrMonitor - SetModeloDF não está considerando CteSimplificado e GTVe
+    https://www.projetoacbr.com.br/forum/topic/80888-erro-nenhum-elemento-encontrado-cte-simplificado/
+    Por: Antonio Carlos Junior / Diego Folieni.
+
+13/11/2024
+-- ACBrMonitor1.lfm, ACBrMonitor1.pas, ACBrMonitorConfig.pas, ACBrMonitorConsts.pas, DoBoletoUnit.pas --
+[*] #TK-6052-2 Inclussão da propriedade CodigoFlash utilizado Boleto Itau Segmento de Mensagem 
+    Por: Daniel de Morais InfoCotidiano
+
+13/11/2024
+[*] Alteração Domínio Ambiente WebServices.
+    #TK-6212 - https://www.projetoacbr.com.br/forum/topic/80514-acbrboleto-altera%C3%A7%C3%A3o-dom%C3%ADnio-ambiente-webservices/
+    Por: Victor Panda / Antonio Carlos Junior
+
+01/11/2024
+-- DoACBrNFeUnit --
+[*] #TK-6145: Ajuste visando a correta exibição da resposta em formato INI para o EnviarNFe.
+   Por: Diego Folieni 
+
+16/10/2024
+-- DoACBrNFSeUnit --
+[*] #TK-4956-2: Codificado em base64 o retorno do método ObterDANFSE do padrão nacional
+   Por: Renato Rubinho 
+
+11/09/2024
+-- DoACBrNFeUnit --
+[*] #TK-5770: Refatora as rotinas do EnviarLoteNFe e do CriarEnviarNFeSefaz eu faltavam
+  Por: Diego Folieni
+
+10/09/2024
+-- DoACBrNFeUnit --
+[*] #TK-5770: Refatora rotina para que a geração de PDF não seja dependente do parâmetro de impressão.
+  Por: Diego Folieni
+-- DoACBrCTeUnit, DoACBrMDFeUnit --
+[*] #TK-5794: Altera o valor default do parâmetro modo de envio nos comandos para que seja síncrono.
+  Por: Diego Folieni.
+[*] #TK-5699: Padroniza a forma como o nome do arquivo é devolvido para o CTe e para o MDFe.
+  Por: Diego Folieni
+
+02/09/2024
+-- ACBrMonitor1.pas, ACBrMonitor1.lfm, ACBrMonitorConfig, ACBrMonitorConsts --
+[*] #TK-5866-1: Adiciona config no ACBrMonitorPLUS para configurar o caractere de quebra de linha.
+  Por: Diego Folieni
+
+29/07/2024
+-- DoBoletoUnit.pas  --
+[+] TK-5795 ajustado para calcular o nome do arquivo individual da lista de boletos antes de gerar o pdf para email.
+   Por: Daniel Morais InfoCotidiano
+
+26/07/2024
+-- DoSATUnit, ACBrMonitorConsts  --
+[+] Adiciona o método ObterIniCFe
+   Por: Diego Folieni
+
+24/07/2024
+-- ACBrMonitor1 --
+[*] Alteração para atualizar a cidade do cedente nos metodos de configuraçãoCedente
+#TK-5641 https://www.projetoacbr.com.br/forum/topic/78380-n%C3%A3o-esta-alterando-cidade-e-c%C3%B3digo-cidade-em-benefici%C3%A1rio-boleto/
+    Por: Daniel Morais Infocotidiano / Panda
+
+15/07/2024
+-- DoACBrCTeUnit, ACBrMonitorConfig --
+[*] Alteração VersaoCTe para 4.00 #TK-5740
+    Por: Antonio Carlos Junior
+
+02/07/2024
+-- DoACBrMDFeUnit, ACBrMonitor1, ACBrMonitorConsts --
+[*] Adiciona o comando MDFe.EnviarEmailEvento e remove o parâmetro IsUTF8 do IBGE que foi removido em refactoring.
+Por: Diego Folieni
 
 18/06/2024
 -- DoACBrBPeUnit/DoACBrCTeUnit/DoACBrNFeUnit --

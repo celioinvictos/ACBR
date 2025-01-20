@@ -155,6 +155,18 @@ begin
                                                   +' Valor :'
                                                   + LJsonArray.ItemAsJSONObject[X].AsString['valor'];
             end;
+          end
+          else
+          begin
+            if NaoEstaVazio(LJsonObject.asString['title']) or
+               NaoEstaVazio(LJsonObject.asString['detail']) then
+            begin
+              LRejeicaoMensagem            := ARetornoWS.CriarRejeicaoLista;
+              LRejeicaoMensagem.Codigo     := LJsonObject.AsString['title'];
+              LRejeicaoMensagem.Versao     := ''; // LJsonObject.AsString['parametro'];
+              LRejeicaoMensagem.Mensagem   := LJsonObject.AsString['detail'] +
+                                               ' Data e Hora: '+ LJsonObject.AsString['timestamp'];
+            end;
           end;
         end;
 
@@ -516,9 +528,6 @@ var
 begin
   Result := True;
 
-  LListaRetorno := ACBrBoleto.CriarRetornoWebNaLista;
-  LListaRetorno.HTTPResultCode := HTTPResultCode;
-  LListaRetorno.JSONEnvio      := EnvWs;
   if RetWS <> '' then
   begin
     if ACBrBoleto.Cedente.CedenteWS.IndicadorPix then
@@ -526,6 +535,11 @@ begin
       LerListaRetornoPix;
       Exit;
     end;
+
+
+  LListaRetorno := ACBrBoleto.CriarRetornoWebNaLista;
+  LListaRetorno.HTTPResultCode := HTTPResultCode;
+  LListaRetorno.JSONEnvio      := EnvWs;
 
     try
       LJsonObject := TACBrJSONObject.Parse(RetWS);

@@ -189,6 +189,9 @@
             this.btnConsultaDetalhe = new System.Windows.Forms.Button();
             this.btnArray = new System.Windows.Forms.Button();
             this.btnGerarRemessaStream = new System.Windows.Forms.Button();
+            this.btnLerRetornoStream = new System.Windows.Forms.Button();
+            this.btnLimparResposta = new System.Windows.Forms.Button();
+            this.rdbSandBox = new System.Windows.Forms.RadioButton();
             this.tabControl1.SuspendLayout();
             this.tbpCedente.SuspendLayout();
             this.tbpLayout.SuspendLayout();
@@ -666,9 +669,6 @@
             // cmbImpressora
             // 
             this.cmbImpressora.FormattingEnabled = true;
-            this.cmbImpressora.Items.AddRange(new object[] {
-            "pFisica",
-            "pJuridica"});
             this.cmbImpressora.Location = new System.Drawing.Point(6, 26);
             this.cmbImpressora.Name = "cmbImpressora";
             this.cmbImpressora.Size = new System.Drawing.Size(171, 21);
@@ -1405,6 +1405,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.rdbSandBox);
             this.groupBox3.Controls.Add(this.rdbHomologacao);
             this.groupBox3.Controls.Add(this.rdbProducao);
             this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1419,7 +1420,7 @@
             // 
             this.rdbHomologacao.AutoSize = true;
             this.rdbHomologacao.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdbHomologacao.Location = new System.Drawing.Point(6, 19);
+            this.rdbHomologacao.Location = new System.Drawing.Point(106, 19);
             this.rdbHomologacao.Name = "rdbHomologacao";
             this.rdbHomologacao.Size = new System.Drawing.Size(91, 17);
             this.rdbHomologacao.TabIndex = 1;
@@ -1431,7 +1432,7 @@
             this.rdbProducao.AutoSize = true;
             this.rdbProducao.Checked = true;
             this.rdbProducao.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdbProducao.Location = new System.Drawing.Point(211, 19);
+            this.rdbProducao.Location = new System.Drawing.Point(29, 19);
             this.rdbProducao.Name = "rdbProducao";
             this.rdbProducao.Size = new System.Drawing.Size(71, 17);
             this.rdbProducao.TabIndex = 0;
@@ -1587,7 +1588,7 @@
             // 
             // btnLimparLista
             // 
-            this.btnLimparLista.Location = new System.Drawing.Point(12, 476);
+            this.btnLimparLista.Location = new System.Drawing.Point(144, 709);
             this.btnLimparLista.Name = "btnLimparLista";
             this.btnLimparLista.Size = new System.Drawing.Size(126, 23);
             this.btnLimparLista.TabIndex = 4;
@@ -1895,11 +1896,45 @@
             this.btnGerarRemessaStream.UseVisualStyleBackColor = true;
             this.btnGerarRemessaStream.Click += new System.EventHandler(this.btnGerarRemessaStream_Click);
             // 
+            // btnLerRetornoStream
+            // 
+            this.btnLerRetornoStream.Location = new System.Drawing.Point(12, 475);
+            this.btnLerRetornoStream.Margin = new System.Windows.Forms.Padding(2);
+            this.btnLerRetornoStream.Name = "btnLerRetornoStream";
+            this.btnLerRetornoStream.Size = new System.Drawing.Size(126, 24);
+            this.btnLerRetornoStream.TabIndex = 34;
+            this.btnLerRetornoStream.Text = "Ler Retorno (Stream)";
+            this.btnLerRetornoStream.UseVisualStyleBackColor = true;
+            this.btnLerRetornoStream.Click += new System.EventHandler(this.btnLerRetornoStream_Click);
+            // 
+            // btnLimparResposta
+            // 
+            this.btnLimparResposta.Location = new System.Drawing.Point(277, 709);
+            this.btnLimparResposta.Name = "btnLimparResposta";
+            this.btnLimparResposta.Size = new System.Drawing.Size(119, 23);
+            this.btnLimparResposta.TabIndex = 35;
+            this.btnLimparResposta.Text = "Limpar Respostas";
+            this.btnLimparResposta.UseVisualStyleBackColor = true;
+            this.btnLimparResposta.Click += new System.EventHandler(this.btnLimparResposta_Click);
+            // 
+            // rdbSandBox
+            // 
+            this.rdbSandBox.AutoSize = true;
+            this.rdbSandBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdbSandBox.Location = new System.Drawing.Point(203, 19);
+            this.rdbSandBox.Name = "rdbSandBox";
+            this.rdbSandBox.Size = new System.Drawing.Size(68, 17);
+            this.rdbSandBox.TabIndex = 2;
+            this.rdbSandBox.Text = "SandBox";
+            this.rdbSandBox.UseVisualStyleBackColor = true;
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 747);
+            this.Controls.Add(this.btnLimparResposta);
+            this.Controls.Add(this.btnLerRetornoStream);
             this.Controls.Add(this.btnGerarRemessaStream);
             this.Controls.Add(this.btnArray);
             this.Controls.Add(this.btnConsultaDetalhe);
@@ -2128,6 +2163,9 @@
         private System.Windows.Forms.Label label50;
         private System.Windows.Forms.TextBox txtNomeArquivoLog;
         private System.Windows.Forms.Button btnGerarRemessaStream;
+        private System.Windows.Forms.Button btnLerRetornoStream;
+        private System.Windows.Forms.Button btnLimparResposta;
+        private System.Windows.Forms.RadioButton rdbSandBox;
     }
 }
 

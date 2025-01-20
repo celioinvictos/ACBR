@@ -47,10 +47,10 @@ uses
   ACBr_fpdf,
   ACBr_fpdf_ext,
   ACBr_fpdf_report,
-  pcnNFe,
+  ACBrNFe.Classes,
   pcnConversao,
   pcnConversaoNFe,
-  pcnEventoNFe,
+  ACBrNFe.EventoClass,
   ACBrNFe.EnvEvento,
   pcnRetDistDFeInt,
   ACBrValidador,
@@ -303,6 +303,7 @@ type
     FFormatSettings: TFormatSettings;
     FInitialized: boolean;
     FMensagemRodape: string;
+    FCaractereQuebraDeLinha: string;
     procedure SetFontBoxHeader(PDF: IFPDF);
     procedure SetFontBoxContent(PDF: IFPDF);
     procedure SetFontBoxContentBold(PDF: IFPDF);
@@ -322,6 +323,7 @@ type
   public
     constructor Create(ANFe: TNFe; AProcEvento: TInfEventoCollectionItem); reintroduce;
     property MensagemRodape: string read FMensagemRodape write FMensagemRodape;
+    property CaractereQuebraDeLinha: string read FCaractereQuebraDeLinha write FCaractereQuebraDeLinha;
   end;
 
 
@@ -1413,82 +1415,85 @@ begin
     y := y + myH + 1;
   end;
 
-  w := (Width - 6) / FDuplicatasQtdMax;
-
-  OldY := y;
-  linha := 1;
-  for I := 0 to NFe.Cobr.Dup.Count - 1 do
+  if (TACBrNFeDANFEClass(FNFeUtils.DANFEClassOwner).ExibeCampoDuplicata) then
   begin
+    w := (Width - 6) / FDuplicatasQtdMax;
+
+    OldY := y;
+    linha := 1;
+    for I := 0 to NFe.Cobr.Dup.Count - 1 do
+    begin
+      y := OldY;
+      h := 8;
+
+      Inc(DupCont);
+
+      if DupCont mod FDuplicatasQtdMax = 1 then
+      begin
+        PDF.SetDash(0);
+        PDF.Line(x, y, x + 6, y);
+        PDF.Line(x, y, x, y + h);
+        PDF.Line(x + 6, y, x + 6, y + h);
+        PDF.Line(x + 6 + (w * FDuplicatasQtdMax), y, x + 6 + (w * FDuplicatasQtdMax), y + h);
+
+        if Linha mod FDuplicatasMaxLinhas <> 1 then
+          PDF.SetDash(cDashBlack, cDashWhite);
+        PDF.Line(x + 6, y, x + 6 + (w * FDuplicatasQtdMax), y);
+
+        PDF.SetFont(6, '');
+        PDF.TextBox(x, y, 6, h, 'Num.', 'T', 'L', 0, '');
+        y := y + 2.5;
+        PDF.TextBox(x, y, 6, h, 'Venc.', 'T', 'L', 0, '');
+        y := y + 2.5;
+        PDF.TextBox(x, y, 6, h, 'Valor', 'T', 'L', 0, '');
+        x := x + 6;
+        y := OldY;
+      end;
+
+      DupItem := NFe.Cobr.Dup[I];
+      texto := '';
+
+      if DupCont mod FDuplicatasQtdMax > 0 then
+      begin
+        PDF.SetDash(cDashBlack, cDashWhite);
+        PDF.Line(x + w, y, x + w, y + h);
+      end;
+
+      PDF.SetFont(7, '');
+      if StrToIntDef(DupItem.nDup, 0) > 0 then
+        PDF.TextBox(x, y, w, h, DupItem.nDup, 'T', 'R', False, False, False)
+      else
+        PDF.TextBox(x, y, w, h, FormatFloat('000', DupCont), 'T', 'L', 1, '');
+
+      y := y + 2.5;
+      PDF.TextBox(x, y, w, h, FormatDateBr(DupItem.dVenc), 'T', 'R', 0, '');
+
+      y := y + 2.5;
+      PDF.TextBox(x, y, w, h, FormatFloat('#,0.00', DupItem.vDup, FNFeUtils.FormatSettings), 'T', 'R', 0, '');
+      x := x + w;
+
+      if DupCont >= FDuplicatasQtdMax then
+      begin
+        OldY := OldY + h;
+        x := OldX;
+        DupCont := 0;
+        Inc(linha);
+      end;
+      if linha > FDuplicatasMaxLinhas then
+        break;
+    end;
     y := OldY;
-    h := 8;
 
-    Inc(DupCont);
+    if DupCont = 0 then
+    begin
+      y := y - h;
+    end;
 
-    if DupCont mod FDuplicatasQtdMax = 1 then
+    if NFe.Cobr.Dup.Count > 0 then
     begin
       PDF.SetDash(0);
-      PDF.Line(x, y, x + 6, y);
-      PDF.Line(x, y, x, y + h);
-      PDF.Line(x + 6, y, x + 6, y + h);
-      PDF.Line(x + 6 + (w * FDuplicatasQtdMax), y, x + 6 + (w * FDuplicatasQtdMax), y + h);
-
-      if Linha mod FDuplicatasMaxLinhas <> 1 then
-        PDF.SetDash(cDashBlack, cDashWhite);
-      PDF.Line(x + 6, y, x + 6 + (w * FDuplicatasQtdMax), y);
-
-      PDF.SetFont(6, '');
-      PDF.TextBox(x, y, 6, h, 'Num.', 'T', 'L', 0, '');
-      y := y + 2.5;
-      PDF.TextBox(x, y, 6, h, 'Venc.', 'T', 'L', 0, '');
-      y := y + 2.5;
-      PDF.TextBox(x, y, 6, h, 'Valor', 'T', 'L', 0, '');
-      x := x + 6;
-      y := OldY;
+      PDF.Line(OldX, y + h, OldX + 6 + (w * FDuplicatasQtdMax), y + h);
     end;
-
-    DupItem := NFe.Cobr.Dup[I];
-    texto := '';
-
-    if DupCont mod FDuplicatasQtdMax > 0 then
-    begin
-      PDF.SetDash(cDashBlack, cDashWhite);
-      PDF.Line(x + w, y, x + w, y + h);
-    end;
-
-    PDF.SetFont(7, '');
-    if StrToIntDef(DupItem.nDup, 0) > 0 then
-      PDF.TextBox(x, y, w, h, DupItem.nDup, 'T', 'R', False, False, False)
-    else
-      PDF.TextBox(x, y, w, h, FormatFloat('000', DupCont), 'T', 'L', 1, '');
-
-    y := y + 2.5;
-    PDF.TextBox(x, y, w, h, FormatDateBr(DupItem.dVenc), 'T', 'R', 0, '');
-
-    y := y + 2.5;
-    PDF.TextBox(x, y, w, h, FormatFloat('#,0.00', DupItem.vDup, FNFeUtils.FormatSettings), 'T', 'R', 0, '');
-    x := x + w;
-
-    if DupCont >= FDuplicatasQtdMax then
-    begin
-      OldY := OldY + h;
-      x := OldX;
-      DupCont := 0;
-      Inc(linha);
-    end;
-    if linha > FDuplicatasMaxLinhas then
-      break;
-  end;
-  y := OldY;
-
-  if DupCont = 0 then
-  begin
-    y := y - h;
-  end;
-
-  if NFe.Cobr.Dup.Count > 0 then
-  begin
-    PDF.SetDash(0);
-    PDF.Line(OldX, y + h, OldX + 6 + (w * FDuplicatasQtdMax), y + h);
   end;
 end;
 
@@ -1510,6 +1515,11 @@ begin
   FDuplicatasQtdMax := IfThen(Args.Orientation = poPortrait, 15, 20);
   FDuplicatasMaxLinhas := IfThen(Args.Orientation = poPortrait, 8, 6);
 
+  if not (TACBrNFeDANFEClass(FNFeUtils.DANFEClassOwner).ExibeCampoDuplicata) then
+  begin
+    Height := SizeExtraTextoFatura + 4;
+    Exit;
+  end;
   // Calculate Height
   QtdPagamentos := 0;
   if NFe.Cobr.Dup.Count > 0 then
@@ -2807,6 +2817,7 @@ begin
     FIndexImpressaoIndividual := I;
 
     TNFeDANFeEventoFPDF(Report).MensagemRodape := Self.Sistema;
+    TNFeDANFeEventoFPDF(Report).CaractereQuebraDeLinha := CaractereQuebraDeLinha;
 
     try
       Engine := TFPDFEngine.Create(Report, False);
@@ -2875,7 +2886,7 @@ begin
 
   PDF.Rect(x, y, MaxW, Args.Band.Height - y);
 
-  texto := StringReplace(AConteudo, ';', sLineBreak, [rfReplaceAll]);
+  texto := StringReplace(AConteudo, FCaractereQuebraDeLinha, sLineBreak, [rfReplaceAll]);
   SetFontBoxContent(PDF);
   PDF.TextBox(x + 2, y + 2, MaxW - 4, Args.Band.Height - y, texto, 'T', 'L', 0, '', false);
 end;
@@ -2923,11 +2934,11 @@ begin
   PDF := Args.PDF;
 
   InfEvento := FProcEvento;
-  EvCCe := pcnEventoNFe.TDetEvento(FProcEvento.InfEvento.detEvento);
+  EvCCe := TDetEvento(FProcEvento.InfEvento.detEvento);
 
   CondicoesUso := EvCCe.xCondUso;
   CondicoesUso := StringReplace(CondicoesUso, 'com: I', 'com:' + sLineBreak + 'I', [rfReplaceAll]);
-  CondicoesUso := StringReplace(CondicoesUso, ';', ';' + sLineBreak, [rfReplaceAll]);
+  CondicoesUso := StringReplace(CondicoesUso, FCaractereQuebraDeLinha, FCaractereQuebraDeLinha + sLineBreak, [rfReplaceAll]);
 
   BlocoTexto(Args, 'CONDIÇÕES DE USO', CondicoesUso);
 end;

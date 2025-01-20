@@ -1817,7 +1817,7 @@ object frmACBrNFe: TfrmACBrNFe
         end
         object btnImprimirEvento: TButton
           Left = 8
-          Top = 100
+          Top = 141
           Width = 177
           Height = 25
           Caption = 'Imprimir Evento'
@@ -1826,7 +1826,7 @@ object frmACBrNFe: TfrmACBrNFe
         end
         object btnEnviarEventoEmail: TButton
           Left = 191
-          Top = 100
+          Top = 141
           Width = 177
           Height = 25
           Caption = 'Enviar Evento Email'
@@ -1868,6 +1868,24 @@ object frmACBrNFe: TfrmACBrNFe
           Caption = 'Canc. Insucesso na Entrega'
           TabOrder = 8
           OnClick = btnCancInsucessoEntregaClick
+        end
+        object btnEventoECONF: TButton
+          Left = 8
+          Top = 100
+          Width = 177
+          Height = 25
+          Caption = 'ECONF'
+          TabOrder = 9
+          OnClick = btnEventoECONFClick
+        end
+        object btnEventoCancECONF: TButton
+          Left = 191
+          Top = 100
+          Width = 177
+          Height = 25
+          Caption = 'Cancelar ECONF'
+          TabOrder = 10
+          OnClick = btnEventoCancECONFClick
         end
       end
       object tsInutilizacao: TTabSheet
@@ -1965,7 +1983,7 @@ object frmACBrNFe: TfrmACBrNFe
       Top = 198
       Width = 567
       Height = 413
-      ActivePage = TabSheet5
+      ActivePage = Dados
       Align = alClient
       TabOrder = 1
       object TabSheet5: TTabSheet
@@ -2046,8 +2064,14 @@ object frmACBrNFe: TfrmACBrNFe
           Width = 559
           Height = 385
           Align = alClient
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Lucida Console'
+          Font.Style = []
           Lines.Strings = (
             '')
+          ParentFont = False
           ScrollBars = ssVertical
           TabOrder = 0
           WordWrap = False
@@ -2100,6 +2124,8 @@ object frmACBrNFe: TfrmACBrNFe
     CasasDecimais.Aliquota = 2
     CasasDecimais.MaskAliquota = ',0.00'
     ACBrNFe = ACBrNFe1
+    ExibeInforAdicProduto = infNenhum
+    ImprimeDetalhamentoEspecifico = False
     ExibeResumoCanhoto = False
     ExibeCampoFatura = False
     Left = 427
@@ -2194,12 +2220,6 @@ object frmACBrNFe: TfrmACBrNFe
     Title = 'Selecione a NFe'
     Left = 427
     Top = 351
-  end
-  object ACBrIntegrador1: TACBrIntegrador
-    PastaInput = 'C:\Integrador\Input\'
-    PastaOutput = 'C:\Integrador\Output\'
-    Left = 334
-    Top = 350
   end
   object ACBrNFeDANFCeFortesA41: TACBrNFeDANFCeFortesA4
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'

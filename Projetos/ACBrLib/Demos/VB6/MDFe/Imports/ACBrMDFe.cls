@@ -221,13 +221,13 @@ Private Declare Function MDFE_ImprimirEventoPDF _
                 Lib "ACBrMDFE32.dll" (ByVal eArquivoXmlNFe As String, _
                                      ByVal eArquivoXmlEvento As String) As Long
 
-Private Declare Function MDFE_ConsultaMDFENaoEnc _
+Private Declare Function MDFE_ConsultaMDFeNaoEnc _
                 Lib "ACBrMDFE32.dll" (ByVal nCNPJ As String, _
                                       ByVal buffer As String, _
                                       ByRef bufferSize As Long) As Long
 
-Private Declare Function MDFE_EncerrarMDFE _
-                Lib "ABCrMDFE32.dll" (ByVal eChaveouMDFe As String, _
+Private Declare Function MDFE_EncerrarMDFe _
+                Lib "ACBrMDFE32.dll" (ByVal eChaveouMDFe As String, _
                                       ByVal eDtEnc As String, _
                                       ByVal cMunicipioDescarga As String, _
                                       ByVal nCNPJ As String, _
@@ -255,10 +255,10 @@ Public Sub FinalizarLib()
     CheckResult retorno
 End Sub
 
-Public Sub EncerrarMDFE(ByVal eChaveouMDFe As String, ByVal eDtEnc As String, _
+Public Function EncerrarMDFe(ByVal eChaveouMDFe As String, ByVal eDtEnc As String, _
                         ByVal cMunicipioDescarga As String, _
                         Optional ByVal nCNPJ As String = "", _
-                        Optional ByVal nProtocolo As String = "")
+                        Optional ByVal nProtocolo As String = "") As String
 
     Dim retorno As Long
     Dim buffer As String
@@ -268,10 +268,12 @@ Public Sub EncerrarMDFE(ByVal eChaveouMDFe As String, ByVal eDtEnc As String, _
     buffer = String$(bufferLen, " ")
     
     
-    retorno = MDFE_EncerrarMDFE(eChaveouMDFe, eDtEnc, cMunicipioDescarga, nCNPJ, nProtocolo, buffer, bufferLen)
+    retorno = MDFE_EncerrarMDFe(eChaveouMDFe, eDtEnc, cMunicipioDescarga, nCNPJ, nProtocolo, buffer, bufferLen)
     CheckResult retorno
+    
+    EncerrarMDFe = buffer
 
-End Sub
+End Function
 
 Public Sub EnviarEmailEvento(ByVal ePara As String, ByVal eChaveNFe As String, ByVal aEnviaPDF As Boolean, _
                        ByVal eAssunto As String, ByVal eMensagem As String, _
@@ -300,7 +302,7 @@ Public Function ConsultaMDFeNaoEnc(ByVal nCNPJ As String) As String
     bufferLen = BUFFER_LENGTH
     buffer = String$(bufferLen, " ")
     
-    retorno = MDFE_ConsultaMDFENaoEnc(nCNPJ, buffer, bufferLen)
+    retorno = MDFE_ConsultaMDFeNaoEnc(nCNPJ, buffer, bufferLen)
     CheckResult retorno
     
     ConsultaMDFeNaoEnc = processResult(buffer, bufferLen)

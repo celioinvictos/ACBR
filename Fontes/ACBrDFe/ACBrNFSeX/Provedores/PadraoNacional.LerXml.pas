@@ -176,11 +176,16 @@ begin
     with NFSe.Servico do
     begin
       ItemListaServico := ObterConteudo(AuxNode.Childrens.FindAnyNs('cTribNac'), tcStr);
-      xItemListaServico := ItemListaServicoDescricao(ItemListaServico);
+
+      if NFSe.infNFSe.xTribNac = '' then
+        xItemListaServico := ItemListaServicoDescricao(ItemListaServico)
+      else
+        xItemListaServico := NFSe.infNFSe.xTribNac;
+
       CodigoTributacaoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('cTribMun'), tcStr);
       Discriminacao := ObterConteudo(AuxNode.Childrens.FindAnyNs('xDescServ'), tcStr);
       Discriminacao := StringReplace(Discriminacao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
       VerificarSeConteudoEhLista(Discriminacao);
 
@@ -1347,7 +1352,7 @@ begin
 
     NFSe.OutrasInformacoes := ObterConteudo(AuxNode.Childrens.FindAnyNs('xOutInf'), tcStr);
     NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
     NFSe.Servico.Valores.Aliquota := NFSe.infNFSe.valores.Aliquota;
     NFSe.Servico.Valores.ValorIss := NFSe.infNFSe.valores.ValorIss;
   end;
@@ -1384,6 +1389,8 @@ begin
 
   Arquivo := NormatizarXml(Arquivo);
 
+  Arquivo := RemoverCaracteresDesnecessarios(Arquivo);
+
   if FDocument = nil then
     FDocument := TACBrXmlDocument.Create();
 
@@ -1401,6 +1408,8 @@ begin
 
   if XmlNode = nil then
     raise Exception.Create('Arquivo xml vazio.');
+
+  NFSe.tpXML := tpXml;
 
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)

@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2021 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -101,7 +101,8 @@ type
       CartoesAceitos: TACBrTEFTiposCartao = [];
       Financiamento: TACBrTEFModalidadeFinanciamento = tefmfNaoDefinido;
       Parcelas: Byte = 0;
-      DataPreDatado: TDateTime = 0): Boolean; override;
+      DataPreDatado: TDateTime = 0;
+      DadosAdicionais: String = ''): Boolean; override;
 
     function EfetuarAdministrativa(
       OperacaoAdm: TACBrTEFOperacao = tefopAdministrativo): Boolean; overload; override;
@@ -124,7 +125,7 @@ type
     procedure AbortarTransacaoEmAndamento; override;
 
     procedure ExibirMensagemPinPad(const MsgPinPad: String); override;
-    function ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad; TimeOut: SmallInt = 30000;
+    function ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad; TimeOut: integer = 30000;
       MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String; override;
     function VerificarPresencaPinPad: Byte; override;
 
@@ -191,7 +192,7 @@ begin
 
   IpStr := fpACBrTEFAPI.DadosTerminal.EnderecoServidor;
   PortaStr := '';
-  p := pos(IpStr, ':');
+  p := pos(':', IpStr);
   if (p > 0) then
   begin
     PortaStr := copy(IpStr, p+1, Length(IpStr));
@@ -289,6 +290,7 @@ begin
     pgvDuplaDigitacao: DefCampo.ValidacaoDado := valdDuplaDigitacao;
     pgvSenhaLojista: DefCampo.ValidacaoDado := valdSenhaLojista;
     pgvSenhaTecnica: DefCampo.ValidacaoDado := valdSenhaTecnica;
+    pgvQuantidadeParcelas: DefCampo.ValidacaoDado := valdQuantidadeParcelas;
   else
     DefCampo.ValidacaoDado := valdNenhuma;
   end;
@@ -420,11 +422,10 @@ begin
   end;
 end;
 
-function TACBrTEFAPIClassPayGoWeb.EfetuarPagamento(
-  ValorPagto: Currency;
+function TACBrTEFAPIClassPayGoWeb.EfetuarPagamento(ValorPagto: Currency;
   Modalidade: TACBrTEFModalidadePagamento; CartoesAceitos: TACBrTEFTiposCartao;
   Financiamento: TACBrTEFModalidadeFinanciamento; Parcelas: Byte;
-  DataPreDatado: TDateTime): Boolean;
+  DataPreDatado: TDateTime; DadosAdicionais: String): Boolean;
 var
   PA: TACBrTEFParametros;
   SomaCartoes, ModalidadeInt, FinanciamentoInt: Integer;
@@ -436,6 +437,8 @@ begin
 
   PA := TACBrTEFParametros.Create;
   try
+    PA.Text := DadosAdicionais;
+
     ValDbl := ValorPagto * 100;
     PA.ValueInfo[PWINFO_FISCALREF] := fpACBrTEFAPI.RespostasTEF.IdentificadorTransacao;
     PA.ValueInfo[PWINFO_CURREXP] := '2'; // centavos
@@ -615,7 +618,7 @@ begin
 end;
 
 function TACBrTEFAPIClassPayGoWeb.ObterDadoPinPad(
-  TipoDado: TACBrTEFAPIDadoPinPad; TimeOut: SmallInt; MinLen: SmallInt;
+  TipoDado: TACBrTEFAPIDadoPinPad; TimeOut: integer; MinLen: SmallInt;
   MaxLen: SmallInt): String;
 var
   TipoMsg: Word;

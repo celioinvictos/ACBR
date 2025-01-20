@@ -45,9 +45,9 @@ uses
   {$IfEnd}
   ACBrDFeConsts,
   pcnConversao,
-  pcteConsts,
   pcteConversaoCTe,
   pcnSignature,
+  ACBrCTe.Consts,
   ACBrCTe.EventoClass,
   ACBrBase,
   ACBrXmlBase,
@@ -67,10 +67,10 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    property InfEvento: TInfEvento       read FInfEvento    write FInfEvento;
-    property signature: Tsignature       read Fsignature    write Fsignature;
+    property InfEvento: TInfEvento read FInfEvento write FInfEvento;
+    property signature: Tsignature read Fsignature write Fsignature;
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
-    property XML: string                 read FXML          write FXML;
+    property XML: string read FXML write FXML;
   end;
 
   TInfEventoCollection = class(TACBrObjectList)
@@ -105,11 +105,14 @@ type
     function Gerar_Evento_CCe(Idx: Integer): TACBrXmlNode;
     function Gerar_InfCorrecao(Idx: Integer): TACBrXmlNodeArray;
     function Gerar_Evento_Cancelamento(Idx: Integer): TACBrXmlNode;
+
     function Gerar_Evento_EPEC(Idx: Integer): TACBrXmlNode;
     function Gerar_EPECTomador(const EventoItem: TInfEventoCollectionItem): TACBrXmlNode;
+
     function Gerar_Evento_MultiModal(Idx: Integer): TACBrXmlNode;
     function Gerar_Evento_PrestacaoDesacordo(Idx: Integer): TACBrXmlNode;
     function Gerar_Evento_CancPrestacaoDesacordo(Idx: Integer): TACBrXmlNode;
+
     function Gerar_Evento_GTV(Idx: Integer): TACBrXmlNode;
     function Gerar_InfGTV(Idx: Integer): TACBrXmlNodeArray;
     function Gerar_InfEspecie(IdxEv, IdxEs: Integer): TACBrXmlNodeArray;
@@ -118,6 +121,7 @@ type
 
     function Gerar_Evento_ComprEntrega(Idx: Integer): TACBrXmlNode;
     function Gerar_InfEntrega(Idx: Integer): TACBrXmlNodeArray;
+
     function Gerar_Evento_CancComprEntrega(Idx: Integer): TACBrXmlNode;
     function Gerar_Evento_InsucessoEntrega(Idx: Integer): TACBrXmlNode;
     function Gerar_Evento_CancInsucessoEntrega(Idx: Integer): TACBrXmlNode;
@@ -132,11 +136,14 @@ type
     function ObterNomeArquivo(tpEvento: TpcnTpEvento): string;
     function LerFromIni(const AIniString: string; CCe: Boolean = True): Boolean;
 
-    property idLote: Int64                read FidLote   write FidLote;
-    property Evento: TInfEventoCollection read FEvento   write SetEvento;
-    property Versao: string               read FVersao   write FVersao;
-    property XmlEnvio: string             read FXmlEnvio write FXmlEnvio;
-    property VersaoDF: TVersaoCTe         read FVersaoDF write FVersaoDF;
+    property idLote: Int64 read FidLote write FidLote;
+    property Evento: TInfEventoCollection read FEvento write SetEvento;
+    property Versao: string read FVersao write FVersao;
+    property VersaoDF: TVersaoCTe read FVersaoDF write FVersaoDF;
+
+    property Opcoes: TACBrXmlWriterOptions read GetOpcoes write SetOpcoes;
+
+    property XmlEnvio: string read FXmlEnvio write FXmlEnvio;
   end;
 
 implementation
@@ -144,7 +151,10 @@ implementation
 uses
   IniFiles,
   ACBrDFeUtil,
-  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime, ACBrUtil.FilesIO,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.DateTime,
+  ACBrUtil.FilesIO,
   ACBrCTe.RetEnvEvento;
 
 { TEventoCTe }
@@ -200,7 +210,9 @@ end;
 function TEventoCTe.GerarXML: Boolean;
 var
   EventoNode: TACBrXmlNode;
+  Ok: Boolean;
 begin
+  VersaoDF := StrToVersaoCTe(Ok, Versao);
   ListaDeAlertas.Clear;
 
   FDocument.Clear();
@@ -217,8 +229,8 @@ begin
   if Evento[0].signature.URI <> '' then
     EventoNode.AppendChild(GerarSignature(Evento[0].signature));
 
-  Result := True;
   XmlEnvio := ChangeLineBreak(Document.Xml, '');
+  Result := True;
 end;
 
 function TEventoCTe.Gerar_Evento_CCe(Idx: Integer): TACBrXmlNode;
@@ -720,7 +732,7 @@ var
 begin
   Evento[Idx].InfEvento.id := 'ID' + Evento[Idx].InfEvento.TipoEvento +
                              OnlyNumber(Evento[Idx].InfEvento.chCTe) +
-                             Format('%.2d', [Evento[Idx].InfEvento.nSeqEvento]);
+                             Format('%.3d', [Evento[Idx].InfEvento.nSeqEvento]);
 
   if Length(Evento[Idx].InfEvento.id) < 54 then
     wAlerta('HP07', 'ID', '', 'ID de Evento inválido');
@@ -770,7 +782,7 @@ begin
                                       Evento[Idx].FInfEvento.chCTe, DSC_CHAVE));
 
   if not ValidarChave(Evento[Idx].InfEvento.chCTe) then
-    wAlerta('HP12', 'chCTe', '', 'Chave de CTe inválida');
+    wAlerta('HP12', 'chCTe', '', 'Chave de CT-e inválida');
 
   Result.AppendChild(AddNode(tcStr, 'HP13', 'dhEvento', 1, 50, 1,
     FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', Evento[Idx].InfEvento.dhEvento)+
@@ -789,7 +801,7 @@ end;
 function TEventoCTe.Gerar_DetEvento(Idx: Integer): TACBrXmlNode;
 begin
   Result := CreateElement('detEvento');
-  Result.SetAttribute('versao', Versao);
+  Result.SetAttribute('versaoEvento', Versao);
 
   case Evento[Idx].InfEvento.tpEvento of
     teCCe: Result.AppendChild(Gerar_Evento_CCe(Idx));
@@ -806,7 +818,7 @@ begin
 
     teGTV: Result.AppendChild(Gerar_Evento_GTV(Idx));
 
-    teComprEntregaCTe: Result.AppendChild(Gerar_Evento_ComprEntrega(Idx));
+    teComprEntrega: Result.AppendChild(Gerar_Evento_ComprEntrega(Idx));
 
     teCancComprEntrega: Result.AppendChild(Gerar_Evento_CancComprEntrega(Idx));
 
@@ -1008,7 +1020,7 @@ begin
 
       with Self.Evento.New do
       begin
-        infEvento.chCTe := INIRec.ReadString(sSecao, 'chCTe', '');
+        infEvento.chCTe := sFim;
         infEvento.cOrgao := INIRec.ReadInteger(sSecao, 'cOrgao', 0);
         infEvento.CNPJ := INIRec.ReadString(sSecao, 'CNPJ', '');
         infEvento.dhEvento := StringToDateTime(INIRec.ReadString(sSecao, 'dhEvento', ''));

@@ -507,7 +507,7 @@ begin
     NFSe.NfseSubstituida := ObterConteudo(AuxNode.Childrens.FindAnyNs('NfseSubstituida'), tcStr);
     NFSe.OutrasInformacoes := ObterConteudo(AuxNode.Childrens.FindAnyNs('OutrasInformacoes'), tcStr);
     NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
     LerServico(AuxNode);
 
@@ -709,7 +709,7 @@ begin
       CodigoTributacaoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('CodigoTributacaoMunicipio'), tcStr);
       Discriminacao             := ObterConteudo(AuxNode.Childrens.FindAnyNs('Discriminacao'), tcStr);
       Discriminacao := StringReplace(Discriminacao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
       VerificarSeConteudoEhLista(Discriminacao);
 
@@ -718,13 +718,22 @@ begin
       if CodigoMunicipio = '' then
         CodigoMunicipio := ObterConteudo(AuxNode.Childrens.FindAnyNs('MunicipioPrestacaoServico'), tcStr);
 
-      MunicipioPrestacaoServico := ObterNomeMunicipioUF(StrToIntDef(CodigoMunicipio, 0), xUF);
-      MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
-
       MunicipioIncidencia := StrToIntDef(CodigoMunicipio, 0);
-      xMunicipioIncidencia := ObterNomeMunicipioUF(MunicipioIncidencia, xUF);
-      xMunicipioIncidencia := xMunicipioIncidencia + '/' + xUF;
+      MunicipioPrestacaoServico := '';
+      xMunicipioIncidencia := '';
+
+      if MunicipioIncidencia > 0 then
+      begin
+        MunicipioPrestacaoServico := ObterNomeMunicipioUF(MunicipioIncidencia, xUF);
+        MunicipioPrestacaoServico := MunicipioPrestacaoServico + '/' + xUF;
+
+        xMunicipioIncidencia := MunicipioPrestacaoServico;
+      end;
     end;
+
+    NFSe.InformacoesComplementares := ObterConteudo(AuxNode.Childrens.FindAnyNs('InformacoesComplementares'), tcStr);
+    NFSe.InformacoesComplementares := StringReplace(NFSe.InformacoesComplementares,
+                                   FpQuebradeLinha, sLineBreak, [rfReplaceAll]);
 
     LerItensServico(AuxNode);
   end;
@@ -840,6 +849,8 @@ begin
       ValorTotalNotaFiscal := ValorServicos - DescontoCondicionado -
                               DescontoIncondicionado;
     end;
+
+    NFSe.TipoRecolhimento := FpAOwner.SituacaoTributariaDescricao(NFSe.Servico.Valores.IssRetido);
   end;
 end;
 
@@ -870,6 +881,7 @@ begin
     raise Exception.Create('Arquivo xml vazio.');
 
   NFSe.Clear;
+  NFSe.tpXML := tpXml;
 
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)

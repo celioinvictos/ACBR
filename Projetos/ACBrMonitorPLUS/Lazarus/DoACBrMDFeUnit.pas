@@ -206,6 +206,12 @@ public
   procedure Executar; override;
 end;
 
+{ TMetodoEnviaremailEvento}
+TMetodoEnviaremailEvento = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
 { TMetodoInutilizarMDFe}
 TMetodoInutilizarMDFe = class(TACBrMetodo)
 public
@@ -339,10 +345,10 @@ end;
 implementation
 
 uses IniFiles, DateUtils, Forms, strutils,
-  ACBrDFeConfiguracoes,
+  ACBrDFeConfiguracoes, ACBrLibConfig,
   ACBrLibConsReciDFe, ACBrLibDistribuicaoDFe,
   pcnConversao, pmdfeConversaoMDFe,
-  pcnAuxiliar, pmdfeMDFeR, DoACBrUnit, pmdfeMDFe;
+  pcnAuxiliar, pmdfeMDFeR, DoACBrUnit, ACBrMDFe.Classes;
 
 { TMetodoGetPathEvento }
 
@@ -460,6 +466,7 @@ begin
   ListaDeMetodos.Add(CMetodoGetPathMDFe);
   ListaDeMetodos.Add(CMetodoGetPathCan);
   ListaDeMetodos.Add(CMetodoGetPathEvento);
+  ListaDeMetodos.Add(CMetodoEnviaremailEvento);
 
   ListaDeMetodos.Add(CMetodoSavetofile);
   ListaDeMetodos.Add(CMetodoLoadfromfile);
@@ -530,6 +537,8 @@ begin
     35 : AMetodoClass := TMetodoGetPathMDFe;
     36 : AMetodoClass := TMetodoGetPathCan;
     37 : AMetodoClass := TMetodoGetPathEvento;
+    38 : AMetodoClass := TMetodoEnviaremailEvento;
+
 
     else
       begin
@@ -1368,6 +1377,123 @@ begin
   end;
 end;
 
+{ TMetodoEnviarEmailEvento }
+{ Params: 0 - Email: String com email Destinatário
+          1 - XML: String com path do XML Evento
+          2 - XML: String com path do XML MDFe
+          3 - Boolean 1 : Envia PDF
+          4 - Assunto: String com Assunto do e-mail
+          5 - Copia: String com e-mails copia (Separados ;)
+          6 - Anexo: String com Path de Anexos (Separados ;)
+          7 - Replay: String com Replay (Separados ;)
+}
+procedure TMetodoEnviarEmailEvento.Executar;
+var
+  sAssunto, ADestinatario, APathXMLEvento, APathXML, AAssunto, AEmailCopias,
+  AAnexos, ArqPDF, ArqEvento, AReplay: string;
+  slMensagemEmail, slCC, slAnexos, slReplay: TStringList;
+  CargaDFeEvento: TACBrCarregarMDFeEvento;
+  CargaDFe: TACBrCarregarMDFe;
+  AEnviaPDF: Boolean;
+  TipoEvento: TpcnTpEvento;
+begin
+  ADestinatario := fpCmd.Params(0);
+  APathXMLEvento := fpCmd.Params(1);
+  APathXML := fpCmd.Params(2);
+  AEnviaPDF := StrToBoolDef(fpCmd.Params(3), False);
+  AAssunto := fpCmd.Params(4);
+  AEmailCopias := fpCmd.Params(5);
+  AAnexos := fpCmd.Params(6);
+  AReplay := fpCmd.Params(7);
+  ArqEvento := '';
+
+  with TACBrObjetoMDFe(fpObjetoDono) do
+  begin
+    ACBrMDFe.EventoMDFe.Evento.Clear;
+    ACBrMDFe.Manifestos.Clear;
+
+    slMensagemEmail := TStringList.Create;
+    slCC := TStringList.Create;
+    slAnexos := TStringList.Create;
+    slReplay := TStringList.Create;
+    try
+      CargaDFeEvento := TACBrCarregarMDFeEvento.Create(ACBrMDFe, APathXMLEvento);
+      if NaoEstaVazio(APathXML) then
+        CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, APathXML);
+      try
+  //      DoConfiguraDANFe(True, '');
+
+        if AEnviaPDF then
+        begin
+          try
+            ACBrMDFe.ImprimirEventoPDF;
+            ArqPDF := ACBrMDFe.DAMDFE.ArquivoPDF;
+            if not FileExists(ArqPDF) then
+               raise Exception.Create('Arquivo ' + ArqPDF + ' não encontrado.');
+          except
+            on E: Exception do
+              raise Exception.Create('Erro ao criar o arquivo PDF. ' + sLineBreak + E.Message);
+          end;
+        end;
+
+        with MonitorConfig.DFE.Email do
+        begin
+          slMensagemEmail.Text := DoSubstituirVariaveis( StringToBinaryString(MensagemMDFe) );
+          sAssunto := AssuntoMDFe;
+        end;
+
+        QuebrarLinha(AEmailCopias, slCC);
+        QuebrarLinha(AAnexos, slAnexos);
+        QuebrarLinha(AReplay, slReplay);
+
+        // Se carregou evento usando XML como parâmetro, salva XML para poder anexar
+        if  StringIsXML( APathXMLEvento ) then
+        begin
+          tipoEvento := ACBrMDFe.EventoMDFe.Evento[0].InfEvento.tpEvento;
+          ArqEvento  := ACBrMDFe.EventoMDFe.ObterNomeArquivo(tipoEvento);
+          ArqEvento  := PathWithDelim(ACBrMDFe.Configuracoes.Arquivos.GetPathEvento(tipoEvento))+ArqEvento;
+          WriteToTxt(ArqEvento, ACBrMDFe.EventoMDFe.Evento[0].RetInfEvento.XML, False, False);
+          slAnexos.Add(ArqEvento)
+        end
+        else
+          slAnexos.Add(APathXMLEvento);
+
+        if AEnviaPDF then
+          slAnexos.Add(ArqPDF);
+
+        try
+          ACBrMDFe.EnviarEmail(ADestinatario,
+            DoSubstituirVariaveis( IfThen(NaoEstaVazio(AAssunto), AAssunto, sAssunto) ),
+            slMensagemEmail,
+            slCC,      // Lista com emails que serão enviado cópias - TStrings
+            slAnexos,  // Lista de slAnexos - TStrings
+            Nil,
+            '',
+            slReplay); // Lista com Endereços Replay - TStrings
+
+          if not(MonitorConfig.Email.SegundoPlano) then
+            fpCmd.Resposta := 'E-mail enviado com sucesso!'
+          else
+            fpCmd.Resposta := 'Enviando e-mail em segundo plano...';
+
+        except
+          on E: Exception do
+            raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);
+        end;
+      finally
+        if NaoEstaVazio(APathXML) then
+          CargaDFe.Free;
+        CargaDFeEvento.Free;
+      end;
+    finally
+      slCC.Free;
+      slAnexos.Free;
+      slMensagemEmail.Free;
+      slReplay.Free;
+    end;
+  end;
+end;
+
 { TMetodoReciboMDFe }
 
 { Params: 0 - Recibo - String com Numero Recibo para consulta
@@ -1787,74 +1913,75 @@ var
   ACopias: Integer;
   APDF: Boolean;
   AEncerrado: Boolean;
+  LMDFeObject: TACBrObjetoMDFe;
+  LMDFe: TACBrMDFe;
 begin
 
   AIni := fpCmd.Params(0);
   ALote := StrToIntDef(fpCmd.Params(1), 0);
   AImprime := StrToBoolDef(fpCmd.Params(2), False);
   AImpressora := fpCmd.Params(3);
-  Assincrono := StrToBoolDef( fpCmd.Params(4), True);
+  Assincrono := StrToBoolDef( fpCmd.Params(4), False);
   APreview := fpCmd.Params(5);
   ACopias := StrToIntDef(fpCmd.Params(6), 0);
   APDF := StrToBoolDef(fpCmd.Params(7), False);
   AEncerrado := StrToBoolDef(fpCmd.Params(8), False);
 
-  with TACBrObjetoMDFe(fpObjetoDono) do
+  LMDFeObject := TACBrObjetoMDFe(fpObjetoDono);
+  LMDFe := LMDFeObject.ACBrMDFe;
+
+  LMDFe.Manifestos.Clear;
+  LMDFe.Manifestos.LoadFromIni(AIni);
+
+  Salva := LMDFe.Configuracoes.Geral.Salvar;
+  if not Salva then
   begin
-    ACBrMDFe.Manifestos.Clear;
-    ACBrMDFe.Manifestos.LoadFromIni(AIni);
+    ForceDirectories(PathWithDelim(ExtractFilePath(Application.ExeName)) + 'Logs');
+    LMDFe.Configuracoes.Arquivos.PathSalvar :=
+      PathWithDelim(ExtractFilePath(Application.ExeName)) + 'Logs';
+  end;
 
-    Salva := ACBrMDFe.Configuracoes.Geral.Salvar;
-    if not Salva then
-    begin
-      ForceDirectories(PathWithDelim(ExtractFilePath(Application.ExeName)) + 'Logs');
-      ACBrMDFe.Configuracoes.Arquivos.PathSalvar :=
-        PathWithDelim(ExtractFilePath(Application.ExeName)) + 'Logs';
-    end;
+  LMDFe.Manifestos.GerarMDFe;
+  Alertas := LMDFe.Manifestos.Items[0].Alertas;
 
-    ACBrMDFe.Manifestos.GerarMDFe;
-    Alertas := ACBrMDFe.Manifestos.Items[0].Alertas;
+  LMDFe.Manifestos.Assinar;
+  LMDFe.Manifestos.Validar;
 
-    ACBrMDFe.Manifestos.Assinar;
-    ACBrMDFe.Manifestos.Validar;
+  ArqMDFe := PathWithDelim(LMDFe.Configuracoes.Arquivos.PathSalvar) +
+    OnlyNumber(LMDFe.Manifestos.Items[0].MDFe.infMDFe.ID) + '-mdfe.xml';
+  LMDFe.Manifestos.GravarXML(ArqMDFe);
 
-    ArqMDFe := PathWithDelim(ACBrMDFe.Configuracoes.Arquivos.PathSalvar) +
-      OnlyNumber(ACBrMDFe.Manifestos.Items[0].MDFe.infMDFe.ID) + '-mdfe.xml';
-    ACBrMDFe.Manifestos.GravarXML(ArqMDFe);
+  if not FileExists(ArqMDFe) then
+    raise Exception.Create('Não foi possível criar o arquivo ' + ArqMDFe);
 
-    if not FileExists(ArqMDFe) then
-      raise Exception.Create('Não foi possível criar o arquivo ' + ArqMDFe);
+  Resp := ArqMDFe;
+  if (Alertas <> '') then
+    Resp := Resp + sLineBreak + 'Alertas:' + Alertas;
 
-    Resp := ArqMDFe;
-    if (Alertas <> '') then
-      Resp := Resp + sLineBreak + 'Alertas:' + Alertas;
+  fpCmd.Resposta := Resp + sLineBreak;
 
-    fpCmd.Resposta := Resp + sLineBreak;
+  if (ALote = 0) then
+    LMDFe.WebServices.Enviar.Lote := '1'
+  else
+    LMDFe.WebServices.Enviar.Lote := IntToStr(ALote);
 
-    if (ALote = 0) then
-      ACBrMDFe.WebServices.Enviar.Lote := '1'
-    else
-      ACBrMDFe.WebServices.Enviar.Lote := IntToStr(ALote);
+  LMDFe.WebServices.Enviar.Sincrono:= not(Assincrono);
 
-    ACBrMDFe.WebServices.Enviar.Sincrono:= not(Assincrono);
+  LMDFe.WebServices.Enviar.Executar;
+  LMDFeObject.RespostaEnvio;
+  if (LMDFeObject.ACBrMDFe.WebServices.Enviar.Recibo <> '') then //Assincrono
+  begin
+    LMDFe.WebServices.Retorno.Recibo := LMDFeObject.ACBrMDFe.WebServices.Enviar.Recibo;
+    LMDFe.WebServices.Retorno.Executar;
 
-    ACBrMDFe.WebServices.Enviar.Executar;
-    RespostaEnvio;
-    if (ACBrMDFe.WebServices.Enviar.Recibo <> '') then //Assincrono
-    begin
-      ACBrMDFe.WebServices.Retorno.Recibo := ACBrMDFe.WebServices.Enviar.Recibo;
-      ACBrMDFe.WebServices.Retorno.Executar;
+    LMDFeObject.RespostaRetorno;
+    LMDFeObject.RespostaManifesto(AImprime, AImpressora, APreview, ACopias, APDF, AEncerrado);
 
-      RespostaRetorno;
-      RespostaManifesto(AImprime, AImpressora, APreview, ACopias, APDF, AEncerrado);
-
-    end
-    else
-    begin
-      if AImprime then //Sincrono
-        ImprimirMDFe(AImpressora, APreview, ACopias, APDF, AEncerrado);
-    end;
-
+  end
+  else
+  begin
+    if AImprime then //Sincrono
+      LMDFeObject.ImprimirMDFe(AImpressora, APreview, ACopias, APDF, AEncerrado);
   end;
 end;
 
@@ -1999,55 +2126,57 @@ var
   APathorXML, AImpressora: String;
   ALote: Integer;
   AAssina, AImprime, Assincrono, AEncerrado : Boolean;
+  LMDFeObject: TACBrObjetoMDFe;
+  LMDFe: TACBrMDFe;
 begin
   APathorXML := fpCmd.Params(0);
   ALote := StrToIntDef(fpCmd.Params(1), 0);
   AAssina := StrToBoolDef(fpCmd.Params(2), False);
   AImprime := StrToBoolDef(fpCmd.Params(3), False);
   AImpressora := fpCmd.Params(4);
-  Assincrono := StrToBoolDef( fpCmd.Params(5), True);
+  Assincrono := StrToBoolDef( fpCmd.Params(5), False);
   AEncerrado := StrToBoolDef( fpCmd.Params(6), False);
 
-  with TACBrObjetoMDFe(fpObjetoDono) do
-  begin
-    ACBrMDFe.Manifestos.Clear;
-    CargaDFe := TACBrCarregarMDFe.Create(ACBrMDFe, APathorXML);
-    try
-      ACBrMDFe.Manifestos.GerarMDFe;
+  LMDFeObject := TACBrObjetoMDFe(fpObjetoDono);
+  LMDFe := LMDFeOBject.ACBrMDFe;
 
-      if (AAssina) then
-        ACBrMDFe.Manifestos.Assinar;
+  LMDFe.Manifestos.Clear;
+  CargaDFe := TACBrCarregarMDFe.Create(LMDFe, APathorXML);
+  try
+    LMDFe.Manifestos.GerarMDFe;
 
-      ACBrMDFe.Manifestos.Validar;
+    if (AAssina) then
+      LMDFe.Manifestos.Assinar;
 
-      if (ALote = 0) then
-        ACBrMDFe.WebServices.Enviar.Lote := '1'
-      else
-        ACBrMDFe.WebServices.Enviar.Lote := IntToStr(ALote);
+    LMDFe.Manifestos.Validar;
 
-      ACBrMDFe.WebServices.Enviar.Sincrono:= not(Assincrono);
+    if (ALote = 0) then
+      LMDFe.WebServices.Enviar.Lote := '1'
+    else
+      LMDFe.WebServices.Enviar.Lote := IntToStr(ALote);
 
-      ACBrMDFe.WebServices.Enviar.Executar;
-      RespostaEnvio;
-      if (ACBrMDFe.WebServices.Enviar.Recibo <> '') then //Assincrono
-      begin
-        ACBrMDFe.WebServices.Retorno.Recibo := ACBrMDFe.WebServices.Enviar.Recibo;
-        ACBrMDFe.WebServices.Retorno.Executar;
+    LMDFe.WebServices.Enviar.Sincrono:= not(Assincrono);
 
-        RespostaRetorno;
-        RespostaManifesto(AImprime, AImpressora, '' , 0, False, AEncerrado);
+    LMDFe.WebServices.Enviar.Executar;
+    LMDFeObject.RespostaEnvio;
+    if (LMDFe.WebServices.Enviar.Recibo <> '') then //Assincrono
+    begin
+      LMDFe.WebServices.Retorno.Recibo := LMDFe.WebServices.Enviar.Recibo;
+      LMDFe.WebServices.Retorno.Executar;
 
-      end
-      else
-      begin
-        if AImprime then //Sincrono
-          ImprimirMDFe(AImpressora, '', 0, False, AEncerrado);
-      end;
+      LMDFeObject.RespostaRetorno;
+      LMDFeObject.RespostaManifesto(AImprime, AImpressora, '' , 0, False, AEncerrado);
 
-
-    finally
-      CargaDFe.Free;
+    end
+    else
+    begin
+      if AImprime then //Sincrono
+        LMDFeObject.ImprimirMDFe(AImpressora, '', 0, False, AEncerrado);
     end;
+
+
+  finally
+    CargaDFe.Free;
   end;
 end;
 

@@ -56,7 +56,7 @@ geNFe                1.00
 GestaoISS            2.02  31/03/2023
 Giap                 1.00  02/08/2022
 Ginfes               1.00  19/09/2022
-Giss                 2.04
+Giss                 2.04             (GissOnline)
 GovBr                1.00
 GovDigital           2.00
 GovDigital           2.01
@@ -75,6 +75,8 @@ Isaneto              2.03
 ISSBarueri           1.00  19/09/2022
 ISSCamacari          2.01
 ISSCambe             1.00
+ISSCampinas          1.00
+ISSCampinas          2.03
 ISSCuritiba          1.00
 ISSDigital           2.00
 ISSDSF               1.00
@@ -85,9 +87,10 @@ ISSIntel             1.00
 ISSJoinville         2.04  10/08/2022
 ISSLegal             2.03
 ISSLencois           1.00
+ISSMap               1.00
 ISSNatal             1.00
-ISSNet               1.00  04/08/2022
-ISSNet               2.04
+ISSNet               1.00  04/08/2022 (NotaControl)
+ISSNet               2.04             (NotaControl)
 ISSPortoVelho        2.00
 ISSRecife            1.00
 ISSRio               1.00
@@ -95,6 +98,7 @@ ISSSalvador          1.00
 ISSSaoPaulo          1.00
 ISSSJP               1.00
 ISSVitoria           2.00
+Kalana               1.00
 Lexsom               1.00
 Libre                2.04
 Link3                2.00
@@ -103,7 +107,8 @@ MetropolisWeb        1.00
 Mitra                2.00
 ModernizacaoPublica  2.02
 NEAInformatica       2.00
-NFSeBrasil           1.00
+NFEletronica         1.00
+NFSeBrasil           1.00             (Memory)
 NotaInteligente      2.00
 PadraoNacional       1.00
 Prescon              1.00  14/03/2023
@@ -166,3 +171,4 @@ Virtual              2.02
 WebFisco             1.00  20/09/2022
 WebISS               1.00
 WebISS               2.02
+XTRTecnologia        1.00

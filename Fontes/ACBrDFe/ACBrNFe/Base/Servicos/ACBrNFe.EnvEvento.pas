@@ -45,8 +45,8 @@ uses
   {$IfEnd}
   ACBrDFeConsts,
   pcnConversao,
-  pcnNFeConsts,
   pcnSignature,
+  ACBrNFe.Consts,
   ACBrNFe.EventoClass,
   ACBrBase,
   ACBrXmlBase,
@@ -64,10 +64,10 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    property InfEvento: TInfEvento       read FInfEvento    write FInfEvento;
-    property signature: Tsignature       read Fsignature    write Fsignature;
+    property InfEvento: TInfEvento read FInfEvento write FInfEvento;
+    property signature: Tsignature read Fsignature write Fsignature;
     property RetInfEvento: TRetInfEvento read FRetInfEvento write FRetInfEvento;
-    property XML: string                 read FXML          write FXML;
+    property XML: string read FXML write FXML;
   end;
 
   TInfEventoCollection = class(TACBrObjectList)
@@ -120,7 +120,6 @@ type
     function Gerar_Evento_ConciliacaoFinanceira(Idx: Integer): TACBrXmlNode;
     function Gerar_DetalhePagamento(Idx: Integer): TACBrXmlNodeArray;
     function Gerar_Evento_CancConciliacaoFinanceira(Idx: Integer): TACBrXmlNode;
-
   public
     constructor Create;
     destructor Destroy; override;
@@ -132,12 +131,10 @@ type
     function ObterNomeArquivo(tpEvento: TpcnTpEvento): string; overload;
     function LerFromIni(const AIniString: string; CCe: Boolean = True): Boolean;
 
-    property idLote: Int64                read FidLote write FidLote;
+    property idLote: Int64 read FidLote write FidLote;
     property Evento: TInfEventoCollection read FEvento write SetEvento;
-    property Versao: string               read FVersao write FVersao;
-
+    property Versao: string read FVersao write FVersao;
     property Opcoes: TACBrXmlWriterOptions read GetOpcoes write SetOpcoes;
-
     property XmlEnvio: string read FXmlEnvio write FXmlEnvio;
   end;
 
@@ -146,7 +143,10 @@ implementation
 uses
   IniFiles,
   ACBrDFeUtil,
-  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime, ACBrUtil.FilesIO,
+  ACBrUtil.Base,
+  ACBrUtil.Strings,
+  ACBrUtil.DateTime,
+  ACBrUtil.FilesIO,
   ACBrNFe.RetEnvEvento,
   pcnConversaoNFe;
 
@@ -230,8 +230,8 @@ begin
     end;
   end;
 
-  Result := True;
   XmlEnvio := ChangeLineBreak(Document.Xml, '');
+  Result := True;
 end;
 
 function TEventoNFe.Gerar_Evento: TACBrXmlNodeArray;
@@ -398,7 +398,8 @@ begin
   Result.AppendChild(AddNode(tcInt, 'HP20', 'cOrgaoAutor', 1, 2, 1,
                                  Evento[Idx].FInfEvento.detEvento.cOrgaoAutor));
 
-  Result.AppendChild(AddNode(tcStr, 'HP21', 'tpAutor', 1, 1, 1, '1'));
+  Result.AppendChild(AddNode(tcStr, 'HP21', 'tpAutor', 1, 1, 1,
+                     TipoAutorToStr(Evento[Idx].FInfEvento.detEvento.tpAutor)));
 
   Result.AppendChild(AddNode(tcStr, 'HP22', 'verAplic', 1, 20, 1,
                                     Evento[Idx].FInfEvento.detEvento.verAplic));
@@ -412,14 +413,14 @@ begin
     end;
   end;
 
-  Result.AppendChild(AddNode(tcStr, 'HP27', 'tpAutorizacao', 1, 1, 1,
+  Result.AppendChild(AddNode(tcStr, 'HP27', 'tpAutorizacao', 1, 1, 0,
               AutorizacaoToStr(Evento[Idx].InfEvento.detEvento.tpAutorizacao)));
 
   if Evento[Idx].InfEvento.detEvento.tpAutorizacao = taPermite then
     Result.AppendChild(AddNode(tcStr, 'HP28', 'xCondUso', 1, 255, 1,
-      'O emitente ou destinatário da NF-e, declara que permite o transportador ' +
+      ACBrStr('O emitente ou destinatário da NF-e, declara que permite o transportador ' +
       'declarado no campo CNPJ/CPF deste evento a autorizar os transportadores ' +
-      'subcontratados ou redespachados a terem acesso ao download da NF-e'));
+      'subcontratados ou redespachados a terem acesso ao download da NF-e')));
 end;
 
 function TEventoNFe.Gerar_Evento_CancComprEntrega(Idx: Integer): TACBrXmlNode;
@@ -433,6 +434,7 @@ begin
   Result.AppendChild(AddNode(tcInt, 'HP20', 'cOrgaoAutor', 1, 2, 1,
                                  Evento[Idx].FInfEvento.detEvento.cOrgaoAutor));
 
+  // Conforme o Schema o unico valor aceita é 1
   Result.AppendChild(AddNode(tcStr, 'HP21', 'tpAutor', 1, 1, 1, '1'));
 
   Result.AppendChild(AddNode(tcStr, 'HP22', 'verAplic', 1, 20, 1,
@@ -483,6 +485,7 @@ begin
   Result.AppendChild(AddNode(tcInt, 'HP20', 'cOrgaoAutor', 1, 2, 1,
                                  Evento[Idx].FInfEvento.detEvento.cOrgaoAutor));
 
+  // Conforme o Schema o unico valor aceita é 1
   Result.AppendChild(AddNode(tcStr, 'HP21', 'tpAutor', 1, 1, 1, '1'));
 
   Result.AppendChild(AddNode(tcStr, 'HP22', 'verAplic', 1, 20, 1,
@@ -498,7 +501,7 @@ begin
                          Evento[Idx].FInfEvento.detEvento.chNFeRef, DSC_CHAVE));
 
   if not ValidarChave(Evento[Idx].InfEvento.detEvento.chNFeRef) then
-    wAlerta('HP31', 'chNFeRef', '', 'Chave de NFe Refenciada inválida');
+    wAlerta('HP31', 'chNFeRef', '', 'Chave de NF-e Refenciada inválida');
 end;
 
 function TEventoNFe.Gerar_Evento_CCe(Idx: Integer): TACBrXmlNode;
@@ -527,6 +530,7 @@ begin
   Result.AppendChild(AddNode(tcInt, 'HP20', 'cOrgaoAutor', 1, 2, 1,
                                  Evento[Idx].FInfEvento.detEvento.cOrgaoAutor));
 
+  // Conforme o Schema o unico valor aceita é 1
   Result.AppendChild(AddNode(tcStr, 'HP21', 'tpAutor', 1, 1, 1, '1'));
 
   Result.AppendChild(AddNode(tcStr, 'HP22', 'verAplic', 1, 20, 1,
@@ -573,6 +577,7 @@ begin
   Result.AppendChild(AddNode(tcInt, 'HP20', 'cOrgaoAutor', 1, 2, 1,
                                  Evento[Idx].FInfEvento.detEvento.cOrgaoAutor));
 
+  // Conforme o Schema o unico valor aceita é 1
   Result.AppendChild(AddNode(tcStr, 'HP21', 'tpAutor', 1, 1, 1, '1'));
 
   Result.AppendChild(AddNode(tcStr, 'HP22', 'verAplic', 1, 20, 1,
@@ -768,7 +773,7 @@ begin
 
   for i := 0 to Evento[Idx].FInfEvento.detEvento.detPag.Count - 1 do
   begin
-    Result[i] := CreateElement('dePag');
+    Result[i] := CreateElement('detPag');
 
     Result[i].AppendChild(AddNode(tcStr, 'P22', 'indPag', 01, 01, 0,
       IndpagToStr(Evento[Idx].InfEvento.detEvento.detPag[i].indPag), DSC_INDPAG));
@@ -793,15 +798,16 @@ begin
 
       Result[i].AppendChild(AddNode(tcStr, 'P29', 'UFPag', 2, 2, 1,
                    Evento[Idx].InfEvento.detEvento.detPag[i].UFPag, DSC_UFPAG));
-    end;
 
-    Result[i].AppendChild(AddNode(tcStr, 'P30', 'CNPJIF', 14, 14, 0,
+      Result[i].AppendChild(AddNode(tcStr, 'P30', 'CNPJIF', 14, 14, 0,
                  Evento[Idx].InfEvento.detEvento.detPag[i].CNPJIF, DSC_CNPJIF));
 
-    Result[i].AppendChild(AddNode(tcStr, 'P31', 'tBand', 02, 02, 0,
-      BandeiraCartaoToStr(Evento[Idx].InfEvento.detEvento.detPag[i].tBand), DSC_TBAND));
-    Result[i].AppendChild(AddNode(tcStr, 'P32', 'cAut', 01, 128, 0,
+      Result[i].AppendChild(AddNode(tcStr, 'P31', 'tBand', 02, 02, 0,
+        BandeiraCartaoToStr(Evento[Idx].InfEvento.detEvento.detPag[i].tBand), DSC_TBAND));
+
+      Result[i].AppendChild(AddNode(tcStr, 'P32', 'cAut', 01, 128, 0,
                      Evento[Idx].InfEvento.detEvento.detPag[i].cAut, DSC_CAUT));
+    end;
 
     if (Evento[Idx].InfEvento.detEvento.detPag[i].CNPJReceb <> '') or
        (Evento[Idx].InfEvento.detEvento.detPag[i].UFReceb <> '') then
@@ -884,7 +890,7 @@ begin
                                       Evento[Idx].FInfEvento.chNFe, DSC_CHAVE));
 
   if not ValidarChave(Evento[Idx].InfEvento.chNFe) then
-    wAlerta('HP12', 'chNFe', '', 'Chave de NFe inválida');
+    wAlerta('HP12', 'chNFe', '', 'Chave de NF-e inválida');
 
   Result.AppendChild(AddNode(tcStr, 'HP13', 'dhEvento', 1, 50, 1,
     FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', Evento[Idx].InfEvento.dhEvento)+
@@ -899,7 +905,8 @@ begin
 
   Result.AppendChild(AddNode(tcStr, 'HP16', 'verEvento', 1, 4, 1, Versao));
 
-  if Evento[Idx].InfEvento.tpEvento = teAtorInteressadoNFe then
+
+  if Evento[Idx].InfEvento.tpEvento in [teAtorInteressadoNFe, teCancConcFinanceira] then
     FOpcoes.RetirarAcentos := False;  // Não funciona sem acentos
 
   case Evento[Idx].InfEvento.tpEvento of
@@ -1004,39 +1011,39 @@ begin
 
     with FEvento.New do
     begin
-      XML                    := AXML;
-      infEvento.ID           := RetEventoNFe.InfEvento.id;
-      infEvento.cOrgao       := RetEventoNFe.InfEvento.cOrgao;
-      infEvento.tpAmb        := RetEventoNFe.InfEvento.tpAmb;
-      infEvento.CNPJ         := RetEventoNFe.InfEvento.CNPJ;
-      infEvento.chNFe        := RetEventoNFe.InfEvento.chNFe;
-      infEvento.dhEvento     := RetEventoNFe.InfEvento.dhEvento;
-      infEvento.tpEvento     := RetEventoNFe.InfEvento.tpEvento;
-      infEvento.nSeqEvento   := RetEventoNFe.InfEvento.nSeqEvento;
+      XML := AXML;
+
+      infEvento.ID := RetEventoNFe.InfEvento.id;
+      infEvento.cOrgao := RetEventoNFe.InfEvento.cOrgao;
+      infEvento.tpAmb := RetEventoNFe.InfEvento.tpAmb;
+      infEvento.CNPJ := RetEventoNFe.InfEvento.CNPJ;
+      infEvento.chNFe := RetEventoNFe.InfEvento.chNFe;
+      infEvento.dhEvento := RetEventoNFe.InfEvento.dhEvento;
+      infEvento.tpEvento := RetEventoNFe.InfEvento.tpEvento;
+      infEvento.nSeqEvento := RetEventoNFe.InfEvento.nSeqEvento;
       infEvento.VersaoEvento := RetEventoNFe.InfEvento.VersaoEvento;
 
       infEvento.DetEvento.descEvento := RetEventoNFe.InfEvento.DetEvento.descEvento;
-      infEvento.DetEvento.xCorrecao  := RetEventoNFe.InfEvento.DetEvento.xCorrecao;
-      infEvento.DetEvento.xCondUso   := RetEventoNFe.InfEvento.DetEvento.xCondUso;
-      infEvento.DetEvento.nProt      := RetEventoNFe.InfEvento.DetEvento.nProt;
-      infEvento.DetEvento.xJust      := RetEventoNFe.InfEvento.DetEvento.xJust;
-      infEvento.DetEvento.chNFeRef   := RetEventoNFe.InfEvento.DetEvento.chNFeRef;
-
+      infEvento.DetEvento.xCorrecao := RetEventoNFe.InfEvento.DetEvento.xCorrecao;
+      infEvento.DetEvento.xCondUso := RetEventoNFe.InfEvento.DetEvento.xCondUso;
+      infEvento.DetEvento.nProt := RetEventoNFe.InfEvento.DetEvento.nProt;
+      infEvento.DetEvento.xJust := RetEventoNFe.InfEvento.DetEvento.xJust;
+      infEvento.DetEvento.chNFeRef := RetEventoNFe.InfEvento.DetEvento.chNFeRef;
       infEvento.detEvento.cOrgaoAutor := RetEventoNFe.InfEvento.detEvento.cOrgaoAutor;
-      infEvento.detEvento.tpAutor     := RetEventoNFe.InfEvento.detEvento.tpAutor;
-      infEvento.detEvento.verAplic    := RetEventoNFe.InfEvento.detEvento.verAplic;
-      infEvento.detEvento.dhEmi       := RetEventoNFe.InfEvento.detEvento.dhEmi;
-      infEvento.detEvento.tpNF        := RetEventoNFe.InfEvento.detEvento.tpNF;
-      infEvento.detEvento.IE          := RetEventoNFe.InfEvento.detEvento.IE;
+      infEvento.detEvento.tpAutor := RetEventoNFe.InfEvento.detEvento.tpAutor;
+      infEvento.detEvento.verAplic := RetEventoNFe.InfEvento.detEvento.verAplic;
+      infEvento.detEvento.dhEmi := RetEventoNFe.InfEvento.detEvento.dhEmi;
+      infEvento.detEvento.tpNF := RetEventoNFe.InfEvento.detEvento.tpNF;
+      infEvento.detEvento.IE := RetEventoNFe.InfEvento.detEvento.IE;
 
-      infEvento.detEvento.dest.UF            := RetEventoNFe.InfEvento.detEvento.dest.UF;
-      infEvento.detEvento.dest.CNPJCPF       := RetEventoNFe.InfEvento.detEvento.dest.CNPJCPF;
+      infEvento.detEvento.dest.UF := RetEventoNFe.InfEvento.detEvento.dest.UF;
+      infEvento.detEvento.dest.CNPJCPF := RetEventoNFe.InfEvento.detEvento.dest.CNPJCPF;
       infEvento.detEvento.dest.idEstrangeiro := RetEventoNFe.InfEvento.detEvento.dest.idEstrangeiro;
-      infEvento.detEvento.dest.IE            := RetEventoNFe.InfEvento.detEvento.dest.IE;
+      infEvento.detEvento.dest.IE := RetEventoNFe.InfEvento.detEvento.dest.IE;
 
-      infEvento.detEvento.vNF   := RetEventoNFe.InfEvento.detEvento.vNF;
+      infEvento.detEvento.vNF := RetEventoNFe.InfEvento.detEvento.vNF;
       infEvento.detEvento.vICMS := RetEventoNFe.InfEvento.detEvento.vICMS;
-      infEvento.detEvento.vST   := RetEventoNFe.InfEvento.detEvento.vST;
+      infEvento.detEvento.vST := RetEventoNFe.InfEvento.detEvento.vST;
 
       for i := 0 to RetEventoNFe.InfEvento.detEvento.itemPedido.Count -1 do
       begin
@@ -1047,12 +1054,12 @@ begin
       infEvento.detEvento.idPedidoCancelado := RetEventoNFe.InfEvento.detEvento.idPedidoCancelado;
 
       infEvento.detEvento.dhEntrega := RetEventoNFe.InfEvento.detEvento.dhEntrega;
-      infEvento.detEvento.nDoc      := RetEventoNFe.InfEvento.detEvento.nDoc;
-      infEvento.detEvento.xNome     := RetEventoNFe.InfEvento.detEvento.xNome;
-      infEvento.detEvento.latGPS    := RetEventoNFe.InfEvento.detEvento.latGPS;
-      infEvento.detEvento.longGPS   := RetEventoNFe.InfEvento.detEvento.longGPS;
+      infEvento.detEvento.nDoc := RetEventoNFe.InfEvento.detEvento.nDoc;
+      infEvento.detEvento.xNome := RetEventoNFe.InfEvento.detEvento.xNome;
+      infEvento.detEvento.latGPS := RetEventoNFe.InfEvento.detEvento.latGPS;
+      infEvento.detEvento.longGPS := RetEventoNFe.InfEvento.detEvento.longGPS;
 
-      infEvento.detEvento.hashComprovante   := RetEventoNFe.InfEvento.detEvento.hashComprovante;
+      infEvento.detEvento.hashComprovante := RetEventoNFe.InfEvento.detEvento.hashComprovante;
       infEvento.detEvento.dhHashComprovante := RetEventoNFe.InfEvento.detEvento.dhHashComprovante;
 
       infEvento.detEvento.nProtEvento := RetEventoNFe.InfEvento.detEvento.nProtEvento;
@@ -1073,9 +1080,25 @@ begin
       infEvento.detEvento.dhHashTentativaEntrega := RetEventoNFe.InfEvento.detEvento.dhHashTentativaEntrega;
       infEvento.detEvento.UF := RetEventoNFe.InfEvento.detEvento.UF;
 
-      signature.URI             := RetEventoNFe.signature.URI;
-      signature.DigestValue     := RetEventoNFe.signature.DigestValue;
-      signature.SignatureValue  := RetEventoNFe.signature.SignatureValue;
+      for i := 0 to RetEventoNFe.InfEvento.detEvento.detPag.Count -1 do
+      begin
+        InfEvento.detEvento.detPag[i].indPag := RetEventoNFe.InfEvento.detEvento.detPag[i].indPag;
+        InfEvento.detEvento.detPag[i].tPag := RetEventoNFe.InfEvento.detEvento.detPag[i].tPag;
+        InfEvento.detEvento.detPag[i].xPag := RetEventoNFe.InfEvento.detEvento.detPag[i].xPag;
+        InfEvento.detEvento.detPag[i].vPag := RetEventoNFe.InfEvento.detEvento.detPag[i].vPag;
+        InfEvento.detEvento.detPag[i].dPag := RetEventoNFe.InfEvento.detEvento.detPag[i].dPag;
+        InfEvento.detEvento.detPag[i].CNPJPag := RetEventoNFe.InfEvento.detEvento.detPag[i].CNPJPag;
+        InfEvento.detEvento.detPag[i].UFPag := RetEventoNFe.InfEvento.detEvento.detPag[i].UFPag;
+        InfEvento.detEvento.detPag[i].CNPJIF := RetEventoNFe.InfEvento.detEvento.detPag[i].CNPJIF;
+        InfEvento.detEvento.detPag[i].tBand := RetEventoNFe.InfEvento.detEvento.detPag[i].tBand;
+        InfEvento.detEvento.detPag[i].cAut := RetEventoNFe.InfEvento.detEvento.detPag[i].cAut;
+        InfEvento.detEvento.detPag[i].CNPJReceb := RetEventoNFe.InfEvento.detEvento.detPag[i].CNPJReceb;
+        InfEvento.detEvento.detPag[i].UFReceb := RetEventoNFe.InfEvento.detEvento.detPag[i].UFReceb;
+      end;
+
+      signature.URI := RetEventoNFe.signature.URI;
+      signature.DigestValue := RetEventoNFe.signature.DigestValue;
+      signature.SignatureValue := RetEventoNFe.signature.SignatureValue;
       signature.X509Certificate := RetEventoNFe.signature.X509Certificate;
 
       if RetEventoNFe.retEvento.Count > 0 then
@@ -1106,10 +1129,11 @@ end;
 function TEventoNFe.LerFromIni(const AIniString: string; CCe: Boolean): Boolean;
 var
   I, J: Integer;
-  sSecao, sFim: string;
+  sSecao, sFim, idLoteStr: string;
   INIRec: TMemIniFile;
   ok: Boolean;
   Item: TitemPedidoCollectionItem;
+  ItemDetPag: TdetPagCollectionItem;
 begin
 {$IFNDEF COMPILER23_UP}
   Result := False;
@@ -1119,22 +1143,25 @@ begin
   INIRec := TMemIniFile.Create('');
   try
     LerIniArquivoOuString(AIniString, INIRec);
-    idLote := INIRec.ReadInteger( 'EVENTO', 'idLote',
-                                        INIRec.ReadInteger('CCE', 'idLote', 0));
+    idLoteStr := INIRec.ReadString( 'EVENTO', 'idLote',
+                                        INIRec.ReadString('CCE', 'idLote', '0'));
+
+    idLote := StrToInt64Def(idLoteStr, 0);
 
     I := 1;
     while true do
     begin
       sSecao := 'EVENTO' + IntToStrZero(I, 3);
       sFim := INIRec.ReadString(sSecao, 'chNFe', 'FIM');
+
       if (sFim = 'FIM') or (Length(sFim) <= 0) then
         break ;
 
       with Self.Evento.New do
       begin
         infEvento.cOrgao := INIRec.ReadInteger(sSecao, 'cOrgao', 0);
-        infEvento.CNPJ   := INIRec.ReadString(sSecao, 'CNPJ', '');
-        infEvento.chNFe  := sFim;
+        infEvento.CNPJ := INIRec.ReadString(sSecao, 'CNPJ', '');
+        infEvento.chNFe := sFim;
         infEvento.dhEvento := StringToDateTime(INIRec.ReadString(sSecao, 'dhEvento', ''));
 
         if CCe then
@@ -1222,7 +1249,7 @@ begin
           teAtorInteressadoNFe:
             begin
               infEvento.detEvento.tpAutor := StrToTipoAutor(ok, INIRec.ReadString(sSecao, 'tpAutor', '1'));
-              infEvento.detEvento.tpAutorizacao := StrToAutorizacao(ok, INIRec.ReadString(sSecao, 'tpAutorizacao', '0'));
+              infEvento.detEvento.tpAutorizacao := StrToAutorizacao(ok, INIRec.ReadString(sSecao, 'tpAutorizacao', ''));
 
               J := 1;
               while true do
@@ -1242,11 +1269,12 @@ begin
           teInsucessoEntregaNFe:
             begin
               infEvento.detEvento.cOrgaoAutor := INIRec.ReadInteger(sSecao, 'cOrgaoAutor', 92);
-              infEvento.detEvento.verAplic := INIRec.ReadString(sSecao, 'verAplic', '1.0');
               infEvento.detEvento.dhTentativaEntrega := StringToDateTime(INIRec.ReadString(sSecao, 'dhTentativaEntrega', ''));
               infEvento.detEvento.nTentativa := INIRec.ReadInteger(sSecao, 'nTentativa', 1);
               infEvento.detEvento.tpMotivo := StrTotpMotivo(ok, INIRec.ReadString(sSecao, 'tpMotivo', '1'));
               infEvento.detEvento.xJustMotivo := INIRec.ReadString(sSecao, 'xJustMotivo', '');
+              infEvento.detEvento.latGPS := StringToFloatDef(INIRec.ReadString(sSecao, 'latGPS', ''), 0);
+              infEvento.detEvento.longGPS := StringToFloatDef(INIRec.ReadString(sSecao, 'longGPS', ''), 0);
               infEvento.detEvento.hashTentativaEntrega := INIRec.ReadString(sSecao, 'hashTentativaEntrega', '');
               infEvento.detEvento.dhHashTentativaEntrega := StringToDateTime(INIRec.ReadString(sSecao, 'dhHashTentativaEntrega', ''));
               infEvento.detEvento.UF := INIRec.ReadString(sSecao, 'UF', '');
@@ -1255,7 +1283,41 @@ begin
           teCancInsucessoEntregaNFe:
             begin
               infEvento.detEvento.cOrgaoAutor := INIRec.ReadInteger(sSecao, 'cOrgaoAutor', 92);
-              infEvento.detEvento.verAplic := INIRec.ReadString(sSecao, 'verAplic', '1.0');
+              infEvento.detEvento.nProtEvento := INIRec.ReadString(sSecao, 'nProtEvento', '');
+            end;
+
+          teConcFinanceira:
+            begin
+              J := 1;
+              while true do
+              begin
+                sSecao := 'detPag' + IntToStrZero(J, 3);
+                sFim := OnlyNumber(INIRec.ReadString(sSecao,'vPag', 'FIM'));
+
+                if (sFim = 'FIM') or (Length(sFim) <= 0) then
+                  break;
+
+                ItemDetPag := infEvento.detEvento.detPag.New;
+
+                ItemDetPag.indPag := StrToIndpag(ok, INIRec.ReadString(sSecao, 'indPag', ''));
+                ItemDetPag.tPag := StrToFormaPagamento(ok, INIRec.ReadString(sSecao, 'tPag', '01'));
+                ItemDetPag.xPag := INIRec.ReadString(sSecao, 'xPag', '');
+                ItemDetPag.vPag := StringToFloatDef(sFim, 0);
+                ItemDetPag.dPag := StringToDateTime(INIRec.ReadString(sSecao, 'dPag', ''));
+                ItemDetPag.CNPJPag := INIRec.ReadString(sSecao, 'CNPJPag', '');
+                ItemDetPag.UFPag := INIRec.ReadString(sSecao, 'UFPag', '');
+                ItemDetPag.CNPJIF := INIRec.ReadString(sSecao, 'CNPJIF', '');
+                ItemDetPag.tBand := StrToBandeiraCartao(ok, INIRec.ReadString(sSecao, 'tBand', ''));
+                ItemDetPag.cAut := INIRec.ReadString(sSecao, 'cAut', '');
+                ItemDetPag.CNPJReceb := INIRec.ReadString(sSecao, 'CNPJReceb', '');
+                ItemDetPag.UFReceb := INIRec.ReadString(sSecao, 'UFReceb', '');
+
+                Inc(J);
+              end;
+            end;
+
+          teCancConcFinanceira:
+            begin
               infEvento.detEvento.nProtEvento := INIRec.ReadString(sSecao, 'nProtEvento', '');
             end;
         end;

@@ -58,7 +58,7 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao, pcnLeitor, pcnNFe;
+  pcnConversao, pcnLeitor, ACBrNFe.Classes;
 
 type
 
@@ -1222,6 +1222,22 @@ begin
     NFe.infNFeSupl.qrCode := StringReplace(NFe.infNFeSupl.qrCode, '<![CDATA[', '', []);
     NFe.infNFeSupl.qrCode := StringReplace(NFe.infNFeSupl.qrCode, ']]>', '', []);
     NFe.infNFeSupl.urlChave := Leitor.rCampo(tcStr, 'urlChave');
+  end;
+
+  if Leitor.rExtrai(1, 'agropecuario') <> '' then
+  begin
+    if Leitor.rExtrai(2, 'defensivo') <> '' then
+    begin
+      NFe.agropecuario.defensivo.nReceituario := Leitor.rCampo(tcStr, 'nReceituario');
+      NFe.agropecuario.defensivo.CPFRespTec := Leitor.rCampo(tcStr, 'CPFRespTec');
+    end else
+    if Leitor.rExtrai(2, 'guiaTransito') <> '' then
+    begin
+      NFe.agropecuario.guiaTransito.UFGuia := Leitor.rCampo(tcStr, 'UFGuia');
+      NFe.agropecuario.guiaTransito.tpGuia := StrToTtpGuia(Leitor.rCampo(tcStr, 'tpGuia'));
+      NFe.agropecuario.guiaTransito.serieGuia := Leitor.rCampo(tcStr, 'serieGuia');
+      NFe.agropecuario.guiaTransito.nGuia := Leitor.rCampo(tcInt, 'nGuia');
+    end;
   end;
 
   (* Grupo da TAG <protNFe> ***************************************************)

@@ -101,6 +101,8 @@ begin
   ARetornoWS.HTTPResultCode  := HTTPResultCode;
   ARetornoWS.JSONEnvio       := EnvWs;
   ARetornoWS.Header.Operacao := LTipoOperacao;
+  if Assigned(ACBrTitulo) then
+    ARetornoWS.DadosRet.IDBoleto.NossoNum := ACBrTitulo.NossoNumero;
 
   if RetWS <> '' then
   begin
@@ -169,6 +171,9 @@ begin
             ARetornoWS.DadosRet.IDBoleto.LinhaDig       := LJsonObject.AsString['linhaDigitavel'];
             ARetornoWS.DadosRet.IDBoleto.NossoNum       := LJsonObject.AsString['numero'];
 
+            if ARetornoWS.DadosRet.IDBoleto.NossoNum = '' then
+              ARetornoWS.DadosRet.IDBoleto.NossoNum := ACBrTitulo.NossoNumero;
+
             ARetornoWS.DadosRet.TituloRet.CodBarras     := ARetornoWS.DadosRet.IDBoleto.CodBarras;
             ARetornoWS.DadosRet.TituloRet.LinhaDig      := ARetornoWS.DadosRet.IDBoleto.LinhaDig;
             ARetornoWS.DadosRet.TituloRet.NossoNumero   := ARetornoWS.DadosRet.IDBoleto.NossoNum;
@@ -191,6 +196,11 @@ begin
             ARetornoWS.DadosRet.IDBoleto.LinhaDig       := LJsonObject.AsString['codigoLinhaDigitavel'];
             ARetornoWS.DadosRet.IDBoleto.NossoNum       := LJsonObject.AsString['id'];
 
+            if EstaVazio(ARetornoWS.DadosRet.IDBoleto.NossoNum) and NaoEstaVazio(ARetornoWS.DadosRet.IDBoleto.LinhaDig) then
+              ARetornoWS.DadosRet.IDBoleto.NossoNum := '000'
+                                                      + Copy(ARetornoWS.DadosRet.IDBoleto.LinhaDig,12,7)
+                                                      + Copy(ARetornoWS.DadosRet.IDBoleto.LinhaDig,20,10);
+
             ARetornoWS.DadosRet.TituloRet.CodBarras     := ARetornoWS.DadosRet.IDBoleto.CodBarras;
             ARetornoWS.DadosRet.TituloRet.LinhaDig      := ARetornoWS.DadosRet.IDBoleto.LinhaDig;
             ARetornoWS.DadosRet.TituloRet.NossoNumero   := ARetornoWS.DadosRet.IDBoleto.NossoNum;
@@ -201,7 +211,9 @@ begin
 
             // Dados Adicionais
 
-            ARetornoWS.DadosRet.TituloRet.NumeroDocumento            := LJsonObject.AsString['numeroTituloCedenteCobranca'];
+            ARetornoWS.DadosRet.TituloRet.SeuNumero                  := LJsonObject.AsString['numeroTituloCedenteCobranca'];
+            ARetornoWS.DadosRet.TituloRet.NumeroDocumento            := LJsonObject.AsString['textoCampoUtilizacaoCedente'];
+
             ARetornoWS.DadosRet.TituloRet.DataRegistro               := DateBBtoDateTime( LJsonObject.AsString['dataRegistroTituloCobranca'] );
             ARetornoWS.DadosRet.TituloRet.Vencimento                 := DateBBtoDateTime( LJsonObject.AsString['dataVencimentoTituloCobranca'] );
             ARetornoWS.DadosRet.TituloRet.ValorDocumento             := LJsonObject.AsFloat['valorOriginalTituloCobranca'];
@@ -239,6 +251,12 @@ begin
             ARetornoWS.DadosRet.TituloRet.DataDocumento              := DateBBtoDateTime(LJsonObject.AsString['dataEmissaoTituloCobranca']);
             ARetornoWS.DadosRet.TituloRet.DataCredito                := DateBBtoDateTime(LJsonObject.AsString['dataCreditoLiquidacao']);
             ARetornoWS.DadosRet.TituloRet.DataBaixa                  := DateBBtoDateTime(LJsonObject.AsString['dataRecebimentoTitulo']);
+            ARetornoWS.DadosRet.TituloRet.DataDesconto               := DateBBtoDateTime(LJsonObject.AsString['dataDescontoTitulo']);
+            ARetornoWS.DadosRet.TituloRet.DataDesconto2              := DateBBtoDateTime(LJsonObject.AsString['dataSegundoDescontoTitulo']);
+            ARetornoWS.DadosRet.TituloRet.DataDesconto3              := DateBBtoDateTime(LJsonObject.AsString['dataTerceiroDescontoTitulo']);
+            ARetornoWS.DadosRet.TituloRet.DataMulta                  := DateBBtoDateTime(LJsonObject.AsString['dataMultaTitulo']);
+            ARetornoWS.DadosRet.TituloRet.DataProtesto               := DateBBtoDateTime(LJsonObject.AsString['dataProtestoTituloCobranca']);
+
             ARetornoWS.DadosRet.TituloRet.ValorAtual                 := LJsonObject.AsFloat['valorAtualTituloCobranca'];
             ARetornoWS.DadosRet.TituloRet.ValorPago                  := LJsonObject.AsFloat['valorPagoSacado'];
 
@@ -350,7 +368,8 @@ begin
   LListaRetorno := ACBrBoleto.CriarRetornoWebNaLista;
   LListaRetorno.HTTPResultCode := HTTPResultCode;
   LListaRetorno.JSONEnvio      := EnvWs;
-
+  If Assigned(ACBrTitulo) then
+    LListaRetorno.DadosRet.IDBoleto.NossoNum := ACBrTitulo.NossoNumero;
   if RetWS <> '' then
   begin
     try
@@ -398,13 +417,16 @@ begin
             LListaRetorno.DadosRet.IDBoleto.LinhaDig       := '';
             LListaRetorno.DadosRet.IDBoleto.NossoNum       := LItemObject.AsString['numeroBoletoBB'];
 
+            if LListaRetorno.DadosRet.IDBoleto.NossoNum = '' then
+              LListaRetorno.DadosRet.IDBoleto.NossoNum := ACBrTitulo.NossoNumero;
+
             LListaRetorno.DadosRet.TituloRet.CodBarras      := LListaRetorno.DadosRet.IDBoleto.CodBarras;
             LListaRetorno.DadosRet.TituloRet.LinhaDig       := LListaRetorno.DadosRet.IDBoleto.LinhaDig;
 
 
             LListaRetorno.DadosRet.TituloRet.NossoNumero                := LListaRetorno.DadosRet.IDBoleto.NossoNum;
             LListaRetorno.DadosRet.TituloRet.NossoNumeroCorrespondente  := TrataNossoNumero(LListaRetorno.DadosRet.IDBoleto.NossoNum);
-            LListaRetorno.DadosRet.TituloRet.DataRegistro               := DateBBtoDateTime(LItemObject.AsString['dataRegistro']);
+
             LListaRetorno.DadosRet.TituloRet.Vencimento                 := DateBBtoDateTime(LItemObject.AsString['dataVencimento']);
             LListaRetorno.DadosRet.TituloRet.ValorDocumento             := LItemObject.AsFloat['valorOriginal'];
             LListaRetorno.DadosRet.TituloRet.Carteira                   := OnlyNumber(LItemObject.AsString['carteiraConvenio']);
@@ -412,8 +434,16 @@ begin
             LListaRetorno.DadosRet.TituloRet.codigoEstadoTituloCobranca := OnlyNumber(LItemObject.AsString['codigoEstadoTituloCobranca']);
             LListaRetorno.DadosRet.TituloRet.estadoTituloCobranca       := LItemObject.AsString['estadoTituloCobranca'];
             LListaRetorno.DadosRet.TituloRet.contrato                   := LItemObject.AsString['contrato'];
+            LListaRetorno.DadosRet.TituloRet.DataRegistro               := DateBBtoDateTime(LItemObject.AsString['dataRegistro']);
             LListaRetorno.DadosRet.TituloRet.DataMovimento              := DateBBtoDateTime(LItemObject.AsString['dataMovimento']);
-            LListaRetorno.DadosRet.TituloRet.dataCredito                := DateBBtoDateTime(LItemObject.AsString['dataCredito']);
+            LListaRetorno.DadosRet.TituloRet.DataCredito                := DateBBtoDateTime(LItemObject.AsString['dataCredito']);
+            LListaRetorno.DadosRet.TituloRet.DataBaixa                  := DateBBtoDateTime(LItemObject.AsString['dataRecebimentoTitulo']);
+            LListaRetorno.DadosRet.TituloRet.DataDesconto               := DateBBtoDateTime(LJsonObject.AsString['dataDescontoTitulo']);
+            LListaRetorno.DadosRet.TituloRet.DataDesconto2              := DateBBtoDateTime(LJsonObject.AsString['dataSegundoDescontoTitulo']);
+            LListaRetorno.DadosRet.TituloRet.DataDesconto3              := DateBBtoDateTime(LJsonObject.AsString['dataTerceiroDescontoTitulo']);
+            LListaRetorno.DadosRet.TituloRet.DataMulta                  := DateBBtoDateTime(LJsonObject.AsString['dataMultaTitulo']);
+            LListaRetorno.DadosRet.TituloRet.DataProtesto               := DateBBtoDateTime(LJsonObject.AsString['dataProtestoTituloCobranca']);
+
             LListaRetorno.DadosRet.TituloRet.ValorAtual                 := LItemObject.AsFloat['valorAtual'];
             LListaRetorno.DadosRet.TituloRet.ValorPago                  := LItemObject.AsFloat['valorPago'];
           end;
@@ -447,9 +477,7 @@ end;
 
 function TRetornoEnvio_BancoBrasil_API.RetornoEnvio(const AIndex: Integer): Boolean;
 begin
-
   Result:=inherited RetornoEnvio(AIndex);
-
 end;
 
 function TRetornoEnvio_BancoBrasil_API.TrataNossoNumero(

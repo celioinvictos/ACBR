@@ -901,7 +901,8 @@ begin
       if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAgili, proAssessorPublico,
            proCTA, proCTAConsult, proEquiplano, proFacundo, proFGMaiss, proEL,
            proGoverna, proInfisc, proIPM, proISSDSF, proPriMax, proRLZ, proSimple,
-           proSmarAPD, proWebFisco, proBauhaus, proeISS, proSoftPlan] then
+           proSmarAPD, proWebFisco, proBauhaus, proeISS, proSoftPlan, 
+		   proXTRTecnologia] then
       begin
         with Servico.ItemServico.New do
         begin
@@ -1421,6 +1422,13 @@ begin
 
           // Provedor EloTech
           Tributavel := snNao;
+          // Informações referente a Dedução do Provedor EloTech
+          DadosDeducao.TipoDeducao := tdNenhum;
+          DadosDeducao.CpfCnpj := '';
+          DadosDeducao.NumeroNotaFiscalReferencia := '';
+          DadosDeducao.ValorTotalNotaFiscal := 0;
+          DadosDeducao.PercentualADeduzir := 0;
+          DadosDeducao.ValorADeduzir := 0;
 
           CodigoCnae := '6203100';
         end;
@@ -1705,7 +1713,7 @@ end;
 procedure TfrmACBrNFSe.btnCancNFSeClick(Sender: TObject);
 var
   Titulo, NumNFSe, Codigo, Motivo, NumLote, CodVerif, SerNFSe, NumRps,
-  SerRps, ValNFSe, ChNFSe, eMailTomador, vNumRPS, xCodServ,
+  SerRps, ValNFSe, ChNFSe, eMailTomador, vNumRPS, xCodServ, CodMun,
   xDataEmissao: String;
   DataEmissao: TDateTime;
   CodCanc: Integer;
@@ -1867,6 +1875,13 @@ begin
       if not (InputQuery(Titulo, 'eMail do Tomador', eMailTomador)) then
         exit;
     end;
+
+    if ACBrNFSeX1.Configuracoes.Geral.Provedor = proFiorilli then
+    begin
+      CodMun := '';
+      if not (InputQuery(Titulo, 'Código IBGE do municipio de incidencia', CodMun)) then
+        exit;
+    end;
   end;
 
   if ACBrNFSeX1.Configuracoes.Geral.Provedor = proISSBarueri then
@@ -1897,6 +1912,7 @@ begin
       email           := eMailTomador;
       DataEmissaoNFSe := DataEmissao;
       CodServ         := xCodServ;
+      CodMunicipio    := StrToIntDef(CodMun, 0);
     end;
 
     ACBrNFSeX1.CancelarNFSe(InfCancelamento);
@@ -3810,7 +3826,7 @@ begin
     InfConsultaLinkNFSe.Competencia := StrToDateDef(xCompetencia, 0);
     InfConsultaLinkNFSe.NumeroNFSe := xNumeroNFSe;
     InfConsultaLinkNFSe.SerieNFSe := xSerieNFSe;
-    InfConsultaLinkNFSe.NumeroRps := StrToIntDef(xNumeroRps, 1);
+    InfConsultaLinkNFSe.NumeroRps := StrToIntDef(xNumeroRps, 0);
     InfConsultaLinkNFSe.SerieRps := xSerieRps;
 
     ACBrNFSeX1.ConsultarLinkNFSe(InfConsultaLinkNFSe);

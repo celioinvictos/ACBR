@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 { Projeto: Componentes ACBr                                                    }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
@@ -49,7 +49,6 @@ type
     ACBrMail1: TACBrMail;
     ACBrMDFe1: TACBrMDFe;
   private
-    fpLib: TACBrLib;
     DAMDFe: TACBrMDFeDAMDFeRL;
 
   public
@@ -65,7 +64,7 @@ implementation
 
 uses
   ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.Strings, FileUtil,
-{$IFDEF Demo}ACBrMDFeManifestos, pmdfeEnvEventoMDFe, pcnConversao,{$ENDIF}
+{$IFDEF Demo}ACBrMDFeManifestos, ACBrMDFe.EnvEvento, pcnConversao,{$ENDIF}
   ACBrLibMDFeConfig, ACBrLibMDFeBase;
 
 {$R *.lfm}

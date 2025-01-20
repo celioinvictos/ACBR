@@ -138,6 +138,8 @@ type
     procedure CarregarListaNCMs;
 
     function TratarCampoData(aCampo: string): string;
+  protected
+    function GetRespIsUTF8: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -408,6 +410,11 @@ begin
   Result := fCacheArquivo;
 end;
 
+function TACBrNCMs.GetRespIsUTF8: Boolean;
+begin
+  Result := True;
+end;
+
 function TACBrNCMs.TratarCampoData(aCampo: string): string;
 var
   xData: string;
@@ -457,14 +464,14 @@ var
   Resp: AnsiString;
   zt: TCompressType;
 begin
-  zt := DetectCompressType(HTTPSend.Document);
+  zt := DetectCompressType(HTTPSend.OutputStream);
   if (zt = ctUnknown) then
   begin
-    HTTPSend.Document.Position := 0;
-    Resp := ReadStrFromStream(HTTPSend.Document, HTTPSend.Document.Size);
+    HTTPSend.OutputStream.Position := 0;
+    Resp := ReadStrFromStream(HTTPSend.OutputStream, HTTPSend.OutputStream.Size);
   end
   else
-    Resp := ACBrUtil.FilesIO.UnZip(HTTPSend.Document);
+    Resp := ACBrUtil.FilesIO.UnZip(HTTPSend.OutputStream);
 
   if RespIsUTF8 then
     Result := UTF8ToNativeString(Resp)

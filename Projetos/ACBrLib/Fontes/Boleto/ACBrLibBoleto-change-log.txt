@@ -41,6 +41,83 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+15/01/2025
+-- ACBrLibBoletoRespostas.pas --
+[*] TK-6141 - Retorno INI devolver o banco que foi liquidado, propriedade LiquidadoBanco
+  https://www.projetoacbr.com.br/forum/topic/80275-mapear-campo-banco-cobrador-237-bradesco-carteira-09/
+  Por: Daniel de Morais InfoCotidiano
+
+30/12/2024
+--- ACBrLibBoletoConfig.pas,ACBrLibBoletoRespostas.pas, ACBrLibBoletoDataModule.pas, ACBrLibBoletoConsts.pas ---
+[*] TK-6431 Ajustado a lib para ler a nova propriedade KeySoftwareHouse, utilizado parceria BB
+	por Daniel de Morais InfoCotidiano 
+
+16/12/2024
+--- ACBrLibBoletoDataModule.pas, ACBrLibBoletoConfig.pas ---
+[-] TK-6298-1 Ajustado tratamento como outros campos da seção e retorno foi OK
+    https://www.projetoacbr.com.br/forum/topic/80839-banco-bs2-arquivo-cnab400-erro-na-valida%C3%A7%C3%A3o/page/2/?&_rid=1706#findComment-524987
+	por Daniel de Morais InfoCotidiano 
+
+03/12/2024
+--- ACBrLibBoletoConfig.pas, ACBrLibBoletoConsts.pas, ACBrLibBoletoDataModule.pas ---
+[-] TK-6302 Descomentado a propriedade DensidadeGravacao para ser utilizada com a lib
+    Por: Daniel de Morais InfoCotidiano
+
+02/12/2024
+--- ACBrLibBoletoRespostas.pas ---
+[*] TK-6276 Adicionado na resposta a propriedade MotivoRejeicaoComando.
+	https://www.projetoacbr.com.br/forum/topic/80760-acbrlibboleto-arquivo-de-retorno-cnab-leitura-dos-c%C3%B3digos-de-motivosrejei%C3%A7%C3%A3o/
+    Por: Daniel de Morais InfoCotidiano
+	
+[*] Alteração valor padrão da propriedade UseCertificateHTTP para True.
+    Por: Antonio Carlos Junior / Victor Panda
+
+13/11/2024
+--- ACBrLibBoletoConfig, ACBrLibBoletoDataModule, ACBrLibBoletoConsts ---
+[*] #TK-6052-1 - Adicionado propriedade CodigoFlash utilizado Itau seg Mensagens conf novo manual.
+    Por: Daniel de Morais InfoCotidiano
+
+11/11/2024
+--- ACBrLibBoletoConfig, ACBrLibBoletoDataModule ---
+[*] Alteração Domínio Ambiente WebServices.
+    #TK-6212 - https://www.projetoacbr.com.br/forum/topic/80514-acbrboleto-altera%C3%A7%C3%A3o-dom%C3%ADnio-ambiente-webservices/
+    Por: Victor Panda / Antonio Carlos Junior
+
+24/10/2024
+--- ACBrLibBoletoConfig ---
+[*] Ajuste da propriedade CasasDecimaisMoraJuros para deixar igual ao componente ao criar o ini, valor 2
+    #TK-6162 - https://www.projetoacbr.com.br/forum/topic/80298-sanatander-remessa-data-de-juros-de-mora/
+    Por: Victor pandaaaa / Antonio Carlos / Daniel InfoCotidiano
+
+
+16/10/2024
+--- ACBrLibBoletoRespostas ---
+[*] Ajuste da validação no retorno do emv
+    #TK-6080 - https://www.projetoacbr.com.br/forum/topic/80044-acbrlibboleto-c-classe-t%C3%ADtulo-falta-campo-nossonumerocorrespondente/
+    Por: Júlio Cavalcanti / Antonio Carlos
+
+06/09/2024
+-- Diversos --
+[+] #TK-4956-3: Implementados programas de exemplo do Boleto em PHP, ST e MT.
+  Por: Renato Rubinho
+
+29/08/2024
+--- ACBrLibBoletoConfig ---
+[*] Ajustado a linha que gera o campo OrientacaoBanco no ACBrLib.ini
+    #TK-5863 - https://www.projetoacbr.com.br/forum/topic/79205-chave-s-n%C3%A3o-existe-na-sess%C3%A3o-s-no-arquivo-de-configura%C3%A7%C3%A3o/#comment-512060
+    Por: Júlio Cavalcanti / Victor Panda / Daniel InfoCotidiano
+
+23/08/2024
+--- ACBrLibBoletoConfig ---
+[*] Descomentado a linha que gera o campo OrientacaoBanco no ACBrLib.ini
+    #TK-5863 - https://www.projetoacbr.com.br/forum/topic/79205-chave-s-n%C3%A3o-existe-na-sess%C3%A3o-s-no-arquivo-de-configura%C3%A7%C3%A3o/#comment-512060
+    Por: Júlio Cavalcanti / Victor Panda
+
+17/07/2024
+--- ACBrLibBoleto, ACBrLibBoletoBase, ACBrLibBoletoST, ACBrLibBoletoMT, ACBrLibBoletoStaticImport, ACBrLibBoletoStaticImport ---
+[+] Novo método Boleto_LerRetornoStream
+    #TK-5710 - https://www.projetoacbr.com.br/forum/topic/78649-acbrlibboleto-leitura-do-retorno-em-stream/#comment-508153
+    Por: Júlio Cavalcanti / Victor Panda / Antonio Carlos Junior 
 
 27/06/2024
 --- ACBrLibBoletoBase, ACBrLibBoletoMT, ACBrLibBoletoST ---

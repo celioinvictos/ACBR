@@ -426,7 +426,7 @@ begin
           Response.Cancelamento.Motivo := 'Nota Cancelada';
         end
         else
-          Response.DescSituacao := 'Nota não Encontrada';
+          Response.DescSituacao := ACBrStr('Nota não Encontrada');
 
         Response.NumeroNota := ObterConteudoTag(ANode.Childrens.FindAnyNs('numeroNota'), tcStr);
         Response.Link := ObterConteudoTag(ANode.Childrens.FindAnyNs('wsLink'), tcStr);

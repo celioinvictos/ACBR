@@ -195,8 +195,9 @@ begin
     DetalharServico := True;
     FormatoArqEnvioSoap := tfaTxt;
     ImprimirOptanteSN := False;
+    UseCertificateHTTP := (ConfigAssinar.RpsGerarNFSe) or (ConfigAssinar.CancelarNFSe);
 
-    Autenticacao.RequerCertificado := (ConfigAssinar.RpsGerarNFSe) or (ConfigAssinar.CancelarNFSe);
+    Autenticacao.RequerCertificado := UseCertificateHTTP;
     Autenticacao.RequerLogin := True;
 
     ServicosDisponibilizados.EnviarUnitario := True;
@@ -1386,10 +1387,6 @@ begin
     Result := Copy(Retorno, 1, i -1) + '</retorno>'
   else
   begin
-//    Result := ConverteXMLtoUTF8(Retorno);
-//    Result := RemoverDeclaracaoXML(Result);
-//    Result := ConverteXMLtoNativeString(Retorno);
-
     if Pos('<', Retorno) = 0 then
       Result := '<retorno>' +
                   '<mensagem>' +
@@ -1407,7 +1404,7 @@ var
   jDocument, JSonErro: TACBrJSONObject;
   Codigo, Mensagem, Xml: string;
 begin
-  Xml := ConverteANSIparaUTF8(aXml);
+  Xml := ConverteANSIparaUTF8(aXML);
   Xml := RemoverDeclaracaoXML(Xml);
 
   if (Pos('{"', Xml) > 0) and (Pos('":"', Xml) > 0) then
@@ -1517,7 +1514,6 @@ begin
     Result := Copy(Retorno, 1, i -1) + '</retorno>'
   else
   begin
-//    Result := RemoverDeclaracaoXML(Retorno);
     if Pos('<', Retorno) = 0 then
       Result := '<retorno>' +
                   '<mensagem>' +
@@ -1536,7 +1532,7 @@ var
   jDocument, JSonErro: TACBrJSONObject;
   Codigo, Mensagem, Xml: string;
 begin
-  Xml := ConverteANSIparaUTF8(aXml);
+  Xml := ConverteANSIparaUTF8(aXML);
   Xml := RemoverDeclaracaoXML(Xml);
 
   if (Pos('{"', Xml) > 0) and (Pos('":"', Xml) > 0) then
@@ -1691,7 +1687,6 @@ begin
     Result := Copy(Retorno, 1, i -1) + '</retorno>'
   else
   begin
-//    Result := ConverteXMLtoNativeString(Retorno);
     if Pos('<', Retorno) = 0 then
       Result := '<retorno>' +
                   '<mensagem>' +
@@ -1868,7 +1863,7 @@ var
   jDocument, JSonErro: TACBrJSONObject;
   Codigo, Mensagem, Xml: string;
 begin
-  Xml := ConverteANSIparaUTF8(aXml);
+  Xml := ConverteANSIparaUTF8(aXML);
   Xml := RemoverDeclaracaoXML(Xml);
 
   if (Pos('{"', Xml) > 0) and (Pos('":"', Xml) > 0) then

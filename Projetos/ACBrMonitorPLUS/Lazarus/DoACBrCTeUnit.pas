@@ -409,9 +409,9 @@ implementation
 
 uses
   IniFiles, DateUtils, Forms, strutils,
-  ACBrDFeConfiguracoes,
+  ACBrDFeConfiguracoes, ACBrLibConfig,
   pcnConversao, pcteConversaoCTe,
-  pcnAuxiliar, pcteCTeR, DoACBrUnit, pcteCTe;
+  pcnAuxiliar, pcteCTeR, DoACBrUnit, ACBrCTe.Classes;
 
 { TACBrObjetoCTe }
 
@@ -901,7 +901,7 @@ end;
 
 { TMetodoSetVersaoDF }
 
-{ Params: 0 - Inteiro com numero da Versao CTe valores: 2.00 - 3.00
+{ Params: 0 - Inteiro com numero da Versao CTe valores: 2.00 - 3.00 - 4.00
 }
 procedure TMetodoSetVersaoDF.Executar;
 var
@@ -1523,11 +1523,6 @@ begin
     if {(ACTe.Conhecimentos[0].Confirmado) and }(ACTe.Conhecimentos[0].CTe.Ide.tpAmb = taHomologacao) then
       ACTe.Conhecimentos[0].CTe.dest.xNome := cHOM_MSG;
   end;
-
-  for i:=0 to ACTe.Conhecimentos.Count-1 do
-    fpCmd.Resposta := fpCmd.Resposta + sLineBreak + '[CTe_Arq' + Trim(IntToStr(
-                      ACTe.Conhecimentos[i].CTe.ide.nCT))+']' + sLineBreak +
-                      'Arquivo=' + ACTe.Conhecimentos[i].NomeArq;
 end;
 
 procedure TMetodoCriarEnviarCTe.Imprimir(const ACTe: TACBrCTe; const ACTeObject: TACBrObjetoCTe);
@@ -1604,7 +1599,7 @@ begin
   FPreview    := StrToBoolDef(fpCmd.Params(4), False);
   FCopias     := StrToIntDef(fpCmd.Params(5), 0);
   LPDF        := StrToBoolDef(fpCmd.Params(6), False);
-  FAssincrono := StrToBoolDef( fpCmd.Params(7), True);
+  FAssincrono := StrToBoolDef( fpCmd.Params(7), False);
   LCTeObject  := TACBrObjetoCTe(fpObjetoDono);
   LCTe        := LCTeObject.ACBrCTe;
 
@@ -1848,12 +1843,6 @@ begin
     if (ACTe.Conhecimentos[0].Confirmado) and (ACTe.Conhecimentos[0].CTe.Ide.tpAmb = taHomologacao) then
       ACTe.Conhecimentos[0].CTe.dest.xNome := cHOM_MSG;
   end;
-
-  for i:=0 to ACTe.Conhecimentos.Count-1 do
-    fpCmd.Resposta := fpCmd.Resposta + sLineBreak + '[CTe_Arq' + Trim(IntToStr(
-                      ACTe.Conhecimentos[i].CTe.ide.nCT))+']' + sLineBreak +
-                      'Arquivo=' + ACTe.Conhecimentos[i].NomeArq;
-
 end;
 
 procedure TMetodoEnviarCTe.Imprimir(const ACTe: TACBrCTe; const ACTeObject: TACBrObjetoCTe);
@@ -1903,7 +1892,7 @@ begin
   AAssina := StrToBoolDef(fpCmd.Params(2), False);
   AImprime := StrToBoolDef(fpCmd.Params(3), False);
   FImpressora := fpCmd.Params(4);
-  FAssincrono := StrToBoolDef( fpCmd.Params(5), True);
+  FAssincrono := StrToBoolDef( fpCmd.Params(5), False);
   LCTeObject := TACBrObjetoCTe(fpObjetoDono);
   LCTe := LCTeObject.ACBrCTe;
 
@@ -2118,7 +2107,8 @@ end;
 
 { TMetodoSetModeloDF }
 
-{ Params: 0 - NumAmbiente : Integer 57- CTe / 67- CTe OS
+{ Params: 0 - NumAmbiente : Integer 57- CTe / 64- GTVe / 67- CTe OS.
+                                    57- CTe Simplificado, deve ser informado(tpCTe = 5).
 }
 procedure TMetodoSetModeloDF.Executar;
 var
@@ -2127,7 +2117,7 @@ var
 begin
   NumModelo := StrToIntDef(fpCmd.Params(0), 2);
 
-  if not (NumModelo in [57, 67]) then
+  if not (NumModelo in [57, 64, 67]) then
     raise Exception.Create('Modelo Inválido: '+IntToStr(NumModelo));
 
   with TACBrObjetoCTe(fpObjetoDono) do

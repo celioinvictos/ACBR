@@ -17,6 +17,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
+      <MajorVersionNr Value="1"/>
+      <RevisionNr Value="1"/>
       <Language Value="0416"/>
       <StringTable Comments="Projeto ACBr" CompanyName="ACBrGTIN - Biblioteca para consulta GTIN" FileDescription="ACBrLibGTIN" InternalName="ACBrLibGTIN" LegalCopyright="Projeto ACBr" LegalTrademarks="Projeto ACBr" ProductName="GTIN" ProductVersion="0.0.0.4"/>
     </VersionInfo>
@@ -395,7 +397,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="bin\MT\Linux\acbrlibgtin64"/>
+            <Filename Value="bin\MT\Linux\acbrgtin64"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>
@@ -437,7 +439,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="bin\MT\Linux\acbrlibgtin32"/>
+            <Filename Value="bin\MT\Linux\acbrgtin32"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);..\Comum"/>

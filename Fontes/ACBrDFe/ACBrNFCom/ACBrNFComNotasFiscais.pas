@@ -453,9 +453,8 @@ var
   ItemgProc: TgProcCollectionItem;
   ItemICMSUFDest: TICMSUFDestCollectionItem;
 begin
-  Result := False;
-
   INIRec := TMemIniFile.Create('');
+
   try
     LerIniArquivoOuString(AIniString, INIRec);
 
@@ -1133,7 +1132,7 @@ begin
       sSecao := 'procNFCom';
       INIRec.WriteString(sSecao, 'tpAmb', TipoAmbienteToStr(procNFCom.tpAmb));
       INIRec.WriteString(sSecao, 'verAplic', procNFCom.verAplic);
-      INIRec.WriteString(sSecao, 'chNFCom', procNFCom.chNFCom);
+      INIRec.WriteString(sSecao, 'chNFCom', procNFCom.chDFe);
       INIRec.WriteString(sSecao, 'dhRecbto', DateTimeToStr(procNFCom.dhRecbto));
       INIRec.WriteString(sSecao, 'nProt', procNFCom.nProt);
       INIRec.WriteString(sSecao, 'digVal', procNFCom.digVal);
@@ -1469,7 +1468,7 @@ end;
 procedure TNotasFiscais.ImprimirPDF;
 begin
   VerificarDANFCom;
-  TACBrNFCom(FACBrNFCom).DANFCom.ImprimirDANFComPDF(nil);
+  TACBrNFCom(FACBrNFCom).DANFCom.ImprimirDANFComPDF;
 end;
 
 procedure TNotasFiscais.ImprimirResumidoPDF;
@@ -1594,13 +1593,16 @@ begin
   begin
     P := pos('</NFComProc>', XMLStr);
 
+    if P = 0 then
+      P := pos('</nfcomProc>', XMLStr);
+
     if P <= 0 then
       P := pos('</procNFCom>', XMLStr);  // NFCom obtida pelo Portal da Receita
 
     if P > 0 then
     begin
       ANFComXML := copy(XMLStr, 1, P + 11);
-      XMLStr := Trim(copy(XMLStr, P + 11, length(XMLStr)));
+      XMLStr := Trim(copy(XMLStr, P + 12, length(XMLStr)));
     end
     else
     begin

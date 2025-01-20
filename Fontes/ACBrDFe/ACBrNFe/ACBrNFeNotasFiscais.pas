@@ -39,9 +39,9 @@ interface
 
 uses
   Classes, SysUtils, StrUtils,
-  ACBrNFeConfiguracoes, pcnNFe,
+  ACBrNFeConfiguracoes, ACBrNFe.Classes,
   {$IfDef USE_ACBr_XMLDOCUMENT}
-    ACBrNFeXmlReader, ACBrNFeXmlWriter,
+    ACBrNFe.XmlReader, ACBrNFe.XmlWriter,
   {$Else}
     pcnNFeR, pcnNFeW,
   {$EndIf}
@@ -436,7 +436,7 @@ var
   fsvTotTrib, fsvBC, fsvICMS, fsvICMSDeson, fsvBCST, fsvST, fsvProd, fsvFrete,
   fsvSeg, fsvDesc, fsvII, fsvIPI, fsvPIS, fsvCOFINS, fsvOutro, fsvServ, fsvNF,
   fsvTotPag, fsvPISST, fsvCOFINSST, fsvFCP, fsvFCPST, fsvFCPSTRet, fsvIPIDevol,
-  fsvDup, fsvPISServico, fsvCOFINSServico : Currency;
+  fsvDup, fsvPISServico, fsvCOFINSServico, fsvICMSMonoReten: Currency;
   FaturamentoDireto, NFImportacao, UFCons, bServico : Boolean;
 
   procedure GravaLog(AString: String);
@@ -668,11 +668,6 @@ begin
       if (not (NFe.Ide.tpImp in [tiNFCe, tiMsgEletronica])) then
         //B21-10
         AdicionaErro('709-Rejeição: NFC-e com formato de DANFE inválido');
-
-      GravaLog('Validar: 712-NFCe contingência off-line');
-      if (NFe.Ide.tpEmis = teOffLine) and
-        (AnsiIndexStr(NFe.Emit.EnderEmit.UF, ['SP']) <> -1) then  //B22-20
-        AdicionaErro('712-Rejeição: NF-e com contingência off-line');
 
       GravaLog('Validar: 782-NFCe e SCAN');
       if (NFe.Ide.tpEmis = teSCAN) then //B22-50
@@ -1031,6 +1026,8 @@ begin
     fsvCOFINSServico := 0;
     fsvPISST     := 0;
     fsvCOFINSST  := 0;
+    fsvICMSMonoReten := 0;
+
     FaturamentoDireto := False;
     NFImportacao := False;
     UFCons := False;
@@ -1158,9 +1155,9 @@ begin
                 ((NFe.Emit.CRT <> crtSimplesNacional) and (Imposto.ICMS.CST in [cst10, cst30, cst60, cst70, cst90]))) then
               AdicionaErro('806-Rejeição: Operação com ICMS-ST sem informação do CEST [nItem: '+IntToStr(Prod.nItem)+']');           }
 
-            GravaLog('Validar: 856-Obrigatória a informação do campo vPart (id: LA03d) para produto "210203001 – GLP" (tag:cProdANP) [nItem: '+IntToStr(Prod.nItem)+']');
+{            GravaLog('Validar: 856-Obrigatória a informação do campo vPart (id: LA03d) para produto "210203001 – GLP" (tag:cProdANP) [nItem: '+IntToStr(Prod.nItem)+']');
             if (Prod.comb.cProdANP = 210203001) and (Prod.comb.vPart <= 0) then
-              AdicionaErro('856-Rejeição: Campo valor de partida não preenchido para produto GLP [nItem: '+IntToStr(Prod.nItem)+']');
+              AdicionaErro('856-Rejeição: Campo valor de partida não preenchido para produto GLP [nItem: '+IntToStr(Prod.nItem)+']'); }
 
 {            GravaLog('Validar: 858-Grupo ICMS60 (id:N08) informado indevidamente nas operações com os produtos combustíveis sujeitos a repasse interestadual [nItem: '+IntToStr(Prod.nItem)+']');
             if (Prod.comb.cProdANP = '210203001') and (Imposto.ICMS.CST = cst60 and Imposto.ICMS.vICMSSTDest <= 0) then
@@ -1339,6 +1336,7 @@ begin
           fsvFCP       := fsvFCP + Imposto.ICMS.vFCP;
           fsvFCPST     := fsvFCPST + Imposto.ICMS.vFCPST;
           fsvFCPSTRet  := fsvFCPSTRet + Imposto.ICMS.vFCPSTRet;
+          fsvICMSMonoReten := fsvICMSMonoReten + Imposto.ICMS.vICMSMonoReten;
 
           // Verificar se compõe PIS ST e COFINS ST
           if (Imposto.PISST.indSomaPISST = ispPISSTCompoe) then
@@ -1373,9 +1371,12 @@ begin
     end;
 
     if FaturamentoDireto then
-      fsvNF := (fsvProd+fsvFrete+fsvSeg+fsvOutro+fsvII+fsvIPI+fsvServ+fsvPISST+fsvCOFINSST)-(fsvDesc+fsvICMSDeson)
+      fsvNF := (fsvProd + fsvFrete + fsvSeg + fsvOutro + fsvII + fsvIPI +
+                fsvServ + fsvPISST + fsvCOFINSST) - (fsvDesc + fsvICMSDeson)
     else
-      fsvNF := (fsvProd+fsvST+fsvFrete+fsvSeg+fsvOutro+fsvII+fsvIPI+fsvServ+fsvFCPST+fsvIPIDevol+fsvPISST+fsvCOFINSST)-(fsvDesc+fsvICMSDeson);
+      fsvNF := (fsvProd + fsvST + fsvFrete + fsvSeg + fsvOutro + fsvII + fsvIPI +
+                fsvServ + fsvFCPST + fsvICMSMonoReten + fsvIPIDevol + fsvPISST +
+                fsvCOFINSST) - (fsvDesc + fsvICMSDeson);
 
     GravaLog('Validar: 531-Total BC ICMS');
     if (NFe.Total.ICMSTot.vBC <> fsvBC) then
@@ -1600,7 +1601,7 @@ var
   OK, bVol: boolean;
   I, J, K: Integer;
   sFim, sProdID, sDINumber, sADINumber, sDupNumber, sAdittionalField, sType,
-  sDay, sDeduc, sNVE, sCNPJCPF: String;
+  sDay, sDeduc, sNVE, sLogradouro: string;
   cVTroco: Currency;
 begin
   Result := False;
@@ -1780,12 +1781,12 @@ begin
       Dest.EnderDest.xPais   := INIRec.ReadString(  sSecao,'xPais'       ,INIRec.ReadString( sSecao,'Pais','BRASIL'));
       Dest.EnderDest.Fone    := INIRec.ReadString(  sSecao,'Fone'       ,'');
 
-      sCNPJCPF := INIRec.ReadString( 'Retirada','CNPJ',INIRec.ReadString( 'Retirada','CPF',INIRec.ReadString( 'Retirada','CNPJCPF','')));
-      if sCNPJCPF <> '' then
+      sLogradouro := INIRec.ReadString( 'Retirada','xLgr','');
+      if sLogradouro <> '' then
       begin
-        Retirada.CNPJCPF := sCNPJCPF;
+        Retirada.CNPJCPF := INIRec.ReadString( 'Retirada','CNPJ',INIRec.ReadString('Retirada','CPF',INIRec.ReadString('Retirada','CNPJCPF','')));
         Retirada.xNome   := INIRec.ReadString( 'Retirada','xNome','');
-        Retirada.xLgr    := INIRec.ReadString( 'Retirada','xLgr','');
+        Retirada.xLgr    := sLogradouro;
         Retirada.nro     := INIRec.ReadString( 'Retirada','nro' ,'');
         Retirada.xCpl    := INIRec.ReadString( 'Retirada','xCpl','');
         Retirada.xBairro := INIRec.ReadString( 'Retirada','xBairro','');
@@ -1800,12 +1801,12 @@ begin
         Retirada.IE      := INIRec.ReadString( 'Retirada','IE'  ,'');
       end;
 
-      sCNPJCPF := INIRec.ReadString(  'Entrega','CNPJ',INIRec.ReadString(  'Entrega','CPF',INIRec.ReadString(  'Entrega','CNPJCPF','')));
-      if sCNPJCPF <> '' then
+      sLogradouro := INIRec.ReadString(  'Entrega','xLgr','');
+      if sLogradouro <> '' then
       begin
-        Entrega.CNPJCPF := sCNPJCPF;
+        Entrega.CNPJCPF := INIRec.ReadString(  'Entrega','CNPJ',INIRec.ReadString('Entrega','CPF',INIRec.ReadString('Entrega','CNPJCPF','')));
         Entrega.xNome   := INIRec.ReadString( 'Entrega','xNome','');
-        Entrega.xLgr    := INIRec.ReadString(  'Entrega','xLgr','');
+        Entrega.xLgr    := sLogradouro;
         Entrega.nro     := INIRec.ReadString(  'Entrega','nro' ,'');
         Entrega.xCpl    := INIRec.ReadString(  'Entrega','xCpl','');
         Entrega.xBairro := INIRec.ReadString(  'Entrega','xBairro','');
@@ -2761,6 +2762,16 @@ begin
         Inc(I);
       end;
 
+      sSecao := 'infNFeSupl';
+      if INIRec.SectionExists(sSecao) then
+      begin
+        with infNFeSupl do
+        begin
+          qrCode := INIRec.ReadString(sSecao, 'qrCode','');
+          urlChave := INIRec.ReadString(sSecao, 'urlChave','');
+        end;
+      end;
+
       sSecao := 'infRespTec';
       if INIRec.SectionExists(sSecao) then
       begin
@@ -2771,6 +2782,22 @@ begin
           email    := INIRec.ReadString(sSecao, 'email', '');
           fone     := INIRec.ReadString(sSecao, 'fone', '');
         end;
+      end;
+
+      sSecao := 'defensivo';
+      if INIRec.SectionExists(sSecao) then
+      begin
+        agropecuario.defensivo.nReceituario := INIRec.ReadString(sSecao, 'nReceituario', '');
+        agropecuario.defensivo.CPFRespTec := INIRec.ReadString(sSecao, 'CPFRespTec', '');
+      end;
+
+      sSecao := 'guiaTransito';
+      if INIRec.SectionExists(sSecao) then
+      begin
+        agropecuario.guiaTransito.UFGuia := INIRec.ReadString(sSecao, 'UFGuia', '');
+        agropecuario.guiaTransito.tpGuia := StrToTtpGuia(INIRec.ReadString(sSecao, 'tpGuia', ''));
+        agropecuario.guiaTransito.serieGuia := INIRec.ReadString(sSecao, 'serieGuia', '');
+        agropecuario.guiaTransito.nGuia := INIRec.ReadString(sSecao, 'nGuia', '0');
       end;
     end;
 
@@ -3700,10 +3727,27 @@ begin
         end;
       end;
 
+      INIRec.WriteString('infNFeSupl', 'qrCode', infNFeSupl.qrCode);
+      INIRec.WriteString('infNFeSupl', 'urlChave', infNFeSupl.urlChave);
+
       INIRec.WriteString('infRespTec', 'CNPJ', infRespTec.CNPJ);
       INIRec.WriteString('infRespTec', 'xContato', infRespTec.xContato);
       INIRec.WriteString('infRespTec', 'email', infRespTec.email);
       INIRec.WriteString('infRespTec', 'fone', infRespTec.fone);
+
+      if Trim(agropecuario.defensivo.nReceituario) <> '' then
+      begin
+        INIRec.WriteString('defensivo', 'nReceituario', agropecuario.defensivo.nReceituario);
+        INIRec.WriteString('defensivo', 'CPFRespTec', agropecuario.defensivo.CPFRespTec);
+      end;
+
+      if agropecuario.guiaTransito.tpGuia <> tpgNenhum then
+      begin
+        INIRec.WriteString('guiaTransito', 'UFGuia', agropecuario.guiaTransito.UFGuia);
+        INIRec.WriteString('guiaTransito', 'tpGuia', TtpGuiaToStr(agropecuario.guiaTransito.tpGuia));
+        INIRec.WriteString('guiaTransito', 'serieGuia', agropecuario.guiaTransito.serieGuia);
+        INIRec.WriteString('guiaTransito', 'nGuia', agropecuario.guiaTransito.nGuia);
+      end;
 
       INIRec.WriteString('procNFe', 'tpAmb', TpAmbToStr(procNFe.tpAmb));
       INIRec.WriteString('procNFe', 'verAplic', procNFe.verAplic);
@@ -3815,11 +3859,13 @@ begin
     FNFeW.Opcoes.CamposFatObrigatorios := Configuracoes.Geral.CamposFatObrigatorios;
     FNFeW.Opcoes.ForcarGerarTagRejeicao938 := Configuracoes.Geral.ForcarGerarTagRejeicao938;
     FNFeW.Opcoes.ForcarGerarTagRejeicao906 := Configuracoes.Geral.ForcarGerarTagRejeicao906;
+    FNFeW.Opcoes.QuebraLinha := Configuracoes.WebServices.QuebradeLinha;
 {$Else}
     FNFeW.Gerador.Opcoes.FormatoAlerta  := Configuracoes.Geral.FormatoAlerta;
     FNFeW.Gerador.Opcoes.RetirarAcentos := Configuracoes.Geral.RetirarAcentos;
     FNFeW.Gerador.Opcoes.RetirarEspacos := Configuracoes.Geral.RetirarEspacos;
     FNFeW.Gerador.Opcoes.IdentarXML := Configuracoes.Geral.IdentarXML;
+    FNFeW.Gerador.Opcoes.QuebraLinha := Configuracoes.WebServices.QuebradeLinha;
     FNFeW.Opcoes.NormatizarMunicipios  := Configuracoes.Arquivos.NormatizarMunicipios;
     FNFeW.Opcoes.PathArquivoMunicipios := Configuracoes.Arquivos.PathArquivoMunicipios;
     FNFeW.Opcoes.CamposFatObrigatorios := Configuracoes.Geral.CamposFatObrigatorios;
@@ -4248,7 +4294,14 @@ var
 
 begin
   // Verifica se precisa Converter de UTF8 para a String nativa da IDE //
-  XMLStr := ConverteXMLtoNativeString(AXMLString);
+
+  if (Trim(AXMLString) <> '') and (XmlEhUTF8BOM(AXMLString)) then
+  begin
+    //Se tiver o BOM, eu ignoro os bytes do mesmo.
+    XMLStr := Copy(AXMLString, 4, Length(AXMLString));
+    XMLStr := ConverteXMLtoNativeString(XMLStr);
+  end else
+    XMLStr := ConverteXMLtoNativeString(AXMLString);
 
   N := PosNFe;
   while N > 0 do

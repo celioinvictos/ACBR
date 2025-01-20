@@ -72,6 +72,7 @@ type
     procedure Test_Boleto_GerarRemessa;
     procedure Test_Boleto_GerarRemessaStream;
     procedure Test_Boleto_LerRetorno;
+    procedure Test_Boleto_LerRetornoStream;
     procedure Test_Boleto_SetDiretorioArquivo;
     procedure Test_Boleto_ListaBancos;
     procedure Test_Boleto_ListaCaractTitulo;
@@ -84,13 +85,15 @@ type
     procedure Test_Boleto_RetornaLinhaDigitavel;
     procedure Test_Boleto_RetornaCodigoBarras;
     procedure Test_Boleto_EnviarEmail;
+    procedure Test_Boleto_ConsultaDetalheAPI;
   end;
 
 implementation
 
 uses
   Printers, OSPrinters,
-  ACBrLibBoletoStaticImportMT, ACBrLibConsts, ACBrLibBoletoConsts, ACBrUtil, Dialogs;
+  ACBrLibBoletoStaticImportMT, ACBrLibConsts, ACBrLibBoletoConsts, ACBrUtil, Dialogs
+  ,synacode;
 
 { TACBrLibBoletoTest }
 
@@ -481,6 +484,29 @@ begin
 
 end;
 
+procedure TACBrLibBoletoTest.Test_Boleto_LerRetornoStream;
+var
+  Handle: THandle;
+  Resposta: PChar;
+  Tamanho: Longint;
+  Stream: TStringStream;
+begin
+  AssertEquals(ErrOk, Boleto_Inicializar(Handle,'',''));
+  //Resposta:= '';
+  //Tamanho:= 0;
+  //
+  //Stream := TStringStream.Create;
+  //Stream.LoadFromFile('C:/Temp/CNAB400.ret');
+  //
+  //AssertEquals('Erro ao Ler Retorno Stream', ErrOK,
+  //Boleto_LerRetornoStream(Handle,PChar(EncodeBase64(Stream.DataString)), Resposta, Tamanho));
+  //
+  //AssertEquals('Resposta= ' + AnsiString(Resposta), '', '');
+  //AssertEquals('Tamanho= ' + IntToStr(Tamanho), '', '');
+
+  AssertEquals(ErrOk, Boleto_Finalizar(Handle));
+end;
+
 procedure TACBrLibBoletoTest.Test_Boleto_SetDiretorioArquivo;
 var
   Handle: THandle;
@@ -735,6 +761,22 @@ begin
   AssertEquals(ErrOK, Boleto_Finalizar(Handle));
 end;
 
+procedure TACBrLibBoletoTest.Test_Boleto_ConsultaDetalheAPI;
+var
+  Handle: THandle;
+  Bufflen: Integer;
+  AStr: String;
+begin
+  AssertEquals(ErrOk, Boleto_Inicializar(Handle, '',''));
+
+  Bufflen := 255;
+  AStr := Space(Bufflen);
+
+  AssertEquals('Erro ao tentar Incluir Titulo', ErrOK, Boleto_IncluirTitulos(Handle, '..\TituloAPI.ini',''));
+  AssertEquals('Erro ao ConsultarDetalhe', ErrOk, Boleto_EnviarBoleto(Handle, 4, PChar(AStr), Bufflen));
+
+  AssertEquals(ErrOK, Boleto_Finalizar(Handle));
+end;
 
 initialization
 

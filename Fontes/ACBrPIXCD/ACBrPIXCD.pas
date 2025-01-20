@@ -450,6 +450,9 @@ type
     function VerificarSeIncluiPFX(const Method, AURL: String): Boolean;  virtual;
     function VerificarSeIncluiCertificado(const Method, AURL: String): Boolean; virtual;
     function VerificarSeIncluiChavePrivada(const Method, AURL: String): Boolean;  virtual;
+  published
+    property ClientID;
+    property ClientSecret;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -1917,6 +1920,13 @@ var
       RegistrarLog('  Req.Headers:'+ sLineBreak + vReqHeader);
       RegistrarLog('  Req.Body:'+ sLineBreak + vHttpBody);
     end;
+
+    if (NivelLog > 3) then
+      RegistrarLog(sLineBreak +
+        'Http.Sock.SSL.CertificateFile: ' + Http.Sock.SSL.CertificateFile + sLineBreak +
+        'Http.Sock.SSL.PrivateKeyFile: ' + Http.Sock.SSL.PrivateKeyFile + sLineBreak +
+        'Http.Sock.SSL.Certificate: ' + Http.Sock.SSL.Certificate + sLineBreak +
+        'Http.Sock.SSL.PrivateKey: ' + Http.Sock.SSL.PrivateKey + sLineBreak);
 
     fHttpRespStream.Clear;
     Result := fHttpSend.HTTPMethod(vMethod, vURL);  // HTTP call

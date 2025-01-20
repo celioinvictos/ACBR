@@ -163,6 +163,7 @@ type
     property ItemAsJSONObject[const AIndex: Integer]: TACBrJSONObject read GetItemAsJSONObject;
 
     function AddElement(const AValue: string): TACBrJSONArray; overload;
+    function AddElement(const AValue: Integer): TACBrJSONArray; overload;
     function AddElementJSON(AValue: TACBrJSONObject): TACBrJSONArray; overload;
     function AddElementJSONString(const AValue: string): TACBrJSONArray; overload;
 
@@ -182,6 +183,7 @@ implementation
 
 constructor TACBrJSONObject.Create;
 begin
+  inherited Create;
   FJSON := TJsonObject.Create;
   FOwnerJSON := True;
   FContexts := TList.Create;
@@ -604,6 +606,7 @@ end;
 
 constructor TACBrJSONObject.Create(AJSONObject: TJsonObject);
 begin
+  inherited Create;
   FOwnerJSON := False;
   FJSON := AJSONObject;
   FContexts := TList.Create;
@@ -777,12 +780,25 @@ end;
 
 constructor TACBrJSONArray.Create;
 begin
+  inherited Create;
   FOwnerJSON := True;
   FJSON := TJsonArray.Create;
   FContexts := TList.Create;
 end;
 
 function TACBrJSONArray.AddElement(const AValue: string): TACBrJSONArray;
+begin
+  Result := Self;
+  {$IfDef USE_JSONDATAOBJECTS_UNIT}
+  FJSON.Add(AValue);
+  {$Else}{$IfDef FPC}
+  FJSON.Add(AValue);
+  {$Else}
+  FJSON.Put(AValue);
+  {$EndIf}{$EndIf}
+end;
+
+function TACBrJSONArray.AddElement(const AValue: Integer): TACBrJSONArray;
 begin
   Result := Self;
   {$IfDef USE_JSONDATAOBJECTS_UNIT}
@@ -825,6 +841,7 @@ end;
 
 constructor TACBrJSONArray.Create(AJSONArray: TJsonArray);
 begin
+  inherited Create;
   if (not Assigned(AJSONArray)) then
   begin
     Create;

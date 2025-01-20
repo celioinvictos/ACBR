@@ -674,7 +674,8 @@ var
   Request, AMSGaux: string;
 begin
   FPMsgOrig := AMSG;
-  AMSGaux := StringReplace(AMSG, '&amp;', '&amp;amp;',[rfReplaceAll]);
+//  AMSGaux := StringReplace(AMSG, '&amp;', '&amp;amp;',[rfReplaceAll]);
+  AMSGaux := AMSG;
 
   Request := '<sil:nfdEntrada xmlns:sil="http://webservices.sil.com/">';
   Request := Request + DadosUsuario;
@@ -915,7 +916,7 @@ begin
   Request := Request + '</nfse:consultarNfseServicoPrestado>';
 
   Result := Executar('', Request,
-                     ['return', 'ConsultarNfseServicoPrestadoResposta'],
+                     ['return', 'ConsultarNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 
@@ -931,7 +932,7 @@ begin
   Request := Request + '</nfse:consultarNfseServicoTomado>';
 
   Result := Executar('', Request,
-                     ['return', 'ConsultarNfseServicoTomadoResposta'],
+                     ['return', 'ConsultarNfseResposta'],
                      ['xmlns:nfse="http://nfse.abrasf.org.br"']);
 end;
 

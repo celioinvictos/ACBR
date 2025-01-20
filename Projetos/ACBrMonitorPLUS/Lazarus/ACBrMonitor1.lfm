@@ -20,7 +20,6 @@ object FrmACBrMonitor: TFrmACBrMonitor
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ShowHint = True
-  LCLVersion = '3.2.0.0'
   Visible = True
   object StatusBar1: TStatusBar
     Left = 0
@@ -17382,12 +17381,12 @@ object FrmACBrMonitor: TFrmACBrMonitor
         Height = 549
         Top = 1
         Width = 1129
-        ActivePage = tsSat
+        ActivePage = tsACBrBoleto
         Align = alClient
         Font.Height = -13
         Images = ImageList1
         ParentFont = False
-        TabIndex = 17
+        TabIndex = 11
         TabOrder = 0
         OnChange = pgConfigChange
         object tsMonitor: TTabSheet
@@ -22811,6 +22810,36 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 Width = 80
                 TabOrder = 8
               end
+              object edtBoletoCodigoFlash: TEdit
+                Left = 672
+                Height = 25
+                Top = 122
+                Width = 80
+                TabOrder = 9
+              end
+              object Label288: TLabel
+                Left = 672
+                Height = 17
+                Top = 104
+                Width = 76
+                Caption = 'Código Flash'
+                ParentColor = False
+              end
+              object edtBoletoKeySoftwareHouse: TEdit
+                Left = 760
+                Height = 25
+                Top = 122
+                Width = 112
+                TabOrder = 10
+              end
+              object Label289: TLabel
+                Left = 760
+                Height = 17
+                Top = 104
+                Width = 109
+                Caption = 'KeySoftwareHouse'
+                ParentColor = False
+              end
             end
             object tsRelatorio: TTabSheet
               HelpType = htKeyword
@@ -23470,6 +23499,15 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   ImageIndex = 17
                   OnClick = sbArquivoCRTClick
                 end
+                object ChkBoletoUseCertificadoHTTP: TCheckBox
+                  Left = 755
+                  Height = 21
+                  Top = 128
+                  Width = 146
+                  Anchors = [akRight]
+                  Caption = 'Usar Certificado HTTP'
+                  TabOrder = 7
+                end
               end
               object grbWsConfig: TGroupBox
                 Left = 8
@@ -23554,7 +23592,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 end
                 object rgTipoAmbBoleto: TRadioGroup
                   Left = 8
-                  Height = 44
+                  Height = 56
                   Top = -8
                   Width = 209
                   AutoFill = True
@@ -23566,7 +23604,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   ChildSizing.ShrinkVertical = crsScaleChilds
                   ChildSizing.Layout = cclLeftToRightThenTopToBottom
                   ChildSizing.ControlsPerLine = 2
-                  ClientHeight = 24
+                  ClientHeight = 36
                   ClientWidth = 205
                   Columns = 2
                   Font.CharSet = ANSI_CHARSET
@@ -23580,6 +23618,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   Items.Strings = (
                     'Produção'
                     'Homologação'
+                    'SandBox'
                   )
                   ParentBackground = False
                   ParentFont = False
@@ -23588,7 +23627,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                 object lblPathLogBoleto: TLabel
                   Left = 478
                   Height = 17
-                  Top = 56
+                  Top = 50
                   Width = 51
                   Caption = 'Path Log'
                   Font.Height = -13
@@ -23639,7 +23678,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   AnchorSideTop.Side = asrBottom
                   Left = 96
                   Height = 25
-                  Top = 48
+                  Top = 53
                   Width = 120
                   BorderSpacing.Top = 10
                   Font.Height = -13
@@ -24018,16 +24057,6 @@ object FrmACBrMonitor: TFrmACBrMonitor
               Font.Height = -13
               ParentFont = False
               TabOrder = 2
-            end
-            object ckIBGEUTF8: TCheckBox
-              Left = 158
-              Height = 21
-              Top = 69
-              Width = 47
-              Caption = 'UTF8'
-              Font.Height = -13
-              ParentFont = False
-              TabOrder = 3
             end
           end
           object gbConsCNPJ: TGroupBox
@@ -25337,12 +25366,12 @@ object FrmACBrMonitor: TFrmACBrMonitor
             Height = 519
             Top = 0
             Width = 1121
-            ActivePage = tsCertificadoDFe
+            ActivePage = tsDiretoriosDFe
             Align = alClient
             Font.Height = -13
             Images = ImageList1
             ParentFont = False
-            TabIndex = 0
+            TabIndex = 4
             TabOrder = 0
             OnChange = pgDFeChange
             object tsCertificadoDFe: TTabSheet
@@ -26305,6 +26334,36 @@ object FrmACBrMonitor: TFrmACBrMonitor
                       Width = 16
                       BorderSpacing.Left = 5
                       BorderSpacing.Top = 5
+                    end
+                    object Label189: TLabel
+                      Left = 6
+                      Height = 17
+                      Top = 236
+                      Width = 97
+                      Caption = 'Quebra de Linha'
+                      Font.CharSet = ANSI_CHARSET
+                      Font.Color = clBlack
+                      Font.Height = -13
+                      Font.Name = 'Segoe UI'
+                      Font.Pitch = fpVariable
+                      Font.Quality = fqDraft
+                      ParentColor = False
+                      ParentFont = False
+                    end
+                    object edtQuebraDeLinha: TEdit
+                      Left = 6
+                      Height = 25
+                      Top = 252
+                      Width = 170
+                      Font.CharSet = ANSI_CHARSET
+                      Font.Color = clBlack
+                      Font.Height = -13
+                      Font.Name = 'Segoe UI'
+                      Font.Pitch = fpVariable
+                      Font.Quality = fqDraft
+                      ParentFont = False
+                      TabOrder = 7
+                      Text = '|'
                     end
                   end
                   object gbxProxy: TGroupBox
@@ -29501,6 +29560,16 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     Caption = 'Imprimir Inscrição Suframa'
                     TabOrder = 26
                   end
+                  object cbxImprimeNNFFormatadoNFe: TCheckBox
+                    Left = 8
+                    Height = 21
+                    Top = 320
+                    Width = 271
+                    Caption = 'Imprime número do documento formatado'
+                    Font.Height = -13
+                    ParentFont = False
+                    TabOrder = 27
+                  end
                 end
                 object tsImpNFCe: TTabSheet
                   Caption = 'NFC-e'
@@ -29565,12 +29634,12 @@ object FrmACBrMonitor: TFrmACBrMonitor
                   end
                   object gbDANFeESCPOS: TGroupBox
                     Left = 216
-                    Height = 224
+                    Height = 272
                     Top = 0
                     Width = 873
                     Anchors = [akTop, akLeft, akRight]
                     Caption = 'Impressão dos Itens'
-                    ClientHeight = 202
+                    ClientHeight = 250
                     ClientWidth = 869
                     Font.Height = -13
                     ParentBackground = False
@@ -29662,7 +29731,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                     object btnFonteItens: TButton
                       Left = 804
                       Height = 25
-                      Top = 172
+                      Top = 216
                       Width = 30
                       Anchors = []
                       Caption = '...'
@@ -29679,7 +29748,7 @@ object FrmACBrMonitor: TFrmACBrMonitor
                       AnchorSideBottom.Control = btnFonteItens
                       Left = 646
                       Height = 17
-                      Top = 172
+                      Top = 216
                       Width = 158
                       Alignment = taRightJustify
                       Anchors = [akTop, akRight]
@@ -29746,6 +29815,16 @@ object FrmACBrMonitor: TFrmACBrMonitor
                       Font.Height = -13
                       ParentFont = False
                       TabOrder = 10
+                    end
+                    object cbxImprimeNNFFormatadoNFCe: TCheckBox
+                      Left = 10
+                      Height = 21
+                      Top = 194
+                      Width = 271
+                      Caption = 'Imprime número do documento formatado'
+                      Font.Height = -13
+                      ParentFont = False
+                      TabOrder = 11
                     end
                   end
                   object cbxImpressoraNFCe: TComboBox
@@ -35104,13 +35183,14 @@ object FrmACBrMonitor: TFrmACBrMonitor
     Cedente.TipoInscricao = pJuridica
     Cedente.IdentDistribuicao = tbBancoDistribui
     Cedente.PIX.TipoChavePIX = tchNenhuma
+    Cedente.IntegradoraBoleto = tibNenhum
     NumeroArquivo = 0
     ACBrBoletoFC = ACBrBoletoFCFortes1
     Configuracoes.Arquivos.LogNivel = logNenhum
     Configuracoes.WebService.SSLHttpLib = httpOpenSSL
     Configuracoes.WebService.StoreName = 'My'
     Configuracoes.WebService.UseCertificateHTTP = False
-    Configuracoes.WebService.Ambiente = taHomologacao
+    Configuracoes.WebService.Ambiente = tawsHomologacao
     Configuracoes.WebService.Operacao = tpInclui
     Configuracoes.WebService.VersaoDF = '1.2'
     Left = 724
@@ -35125,12 +35205,16 @@ object FrmACBrMonitor: TFrmACBrMonitor
   end
   object ACBrCEP1: TACBrCEP
     ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
     PesquisarIBGE = True
     Left = 464
     Top = 600
   end
   object ACBrIBGE1: TACBrIBGE
     ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
     CacheArquivo = 'ACBrIBGE.txt'
     Left = 496
     Top = 600
@@ -35160,6 +35244,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
   end
   object ACBrSedex1: TACBrSedex
     ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
     Formato = TpfCaixaPacote
     Servico = Tps04510PAC
     UrlConsulta = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?'
@@ -36034,6 +36120,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
   end
   object ACBrConsultaCPF1: TACBrConsultaCPF
     ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
     IniServicos = 'C:\lazarus\ACBrConsultaCPFServicos.ini'
     Left = 1000
     Top = 448
@@ -36213,6 +36301,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
   end
   object ACBrNCMs1: TACBrNCMs
     ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
     UrlConsulta = 'https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json'
     CacheArquivo = 'ACBrNCM.json'
     Left = 656
@@ -36284,6 +36374,8 @@ object FrmACBrMonitor: TFrmACBrMonitor
   end
   object ACBrConsultaCNPJ1: TACBrConsultaCNPJ
     ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
     PesquisarIBGE = False
     IniServicos = 'D:\lazarus_32\ACBrConsultaCNPJServicos.ini'
     Left = 934

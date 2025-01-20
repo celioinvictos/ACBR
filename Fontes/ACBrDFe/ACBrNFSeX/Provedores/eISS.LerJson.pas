@@ -82,6 +82,8 @@ begin
     Result := LerJsonNfse(TiraAcentos(Arquivo))
   else
     Result := LerJsonRps(TiraAcentos(Arquivo));
+
+  NFSe.tpXML := tpXml;
 end;
 
 function TNFSeR_eISS.LerJsonNfse(const ArquivoRetorno: String): Boolean;
@@ -195,7 +197,7 @@ begin
 
       OutrasInformacoes := aJson.AsString['Observacoes'];
       OutrasInformacoes := StringReplace(OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
       jsAux := aJson.AsJSONObject['Valores'];
 
@@ -391,7 +393,7 @@ begin
         Unidade := jsAux.AsString['Unidade'];
         Descricao := jsAux.AsString['Descricao'];
         Descricao := StringReplace(Descricao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
         Quantidade := jsAux.AsFloat['Quantidade'];
         ValorUnitario := jsAux.AsCurrency['ValorUnitario'];
         ValorTotal := ValorUnitario * Quantidade;

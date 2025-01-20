@@ -42,6 +42,85 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+
+20/12/2024
+-- ACBrLibNFeConsoleMT.lpi, ACBrLibNFeConsoleMTDemo.lpi --
+[*] Adicionado path \Fontes\ACBrDFe\ACBrNFe\Base para uso da unit ACBrNFe.Consts
+   Por: Antonio Carlos Junior
+
+10/12/2024
+-- ACBrLibNFeDataModule --
+[*] #TK-6337: Ajuste para que a config ViaConsumidor definida seja considera caso parâmetro do comando vazio.
+  Por: Diego Folieni 
+
+09/12/2024
+-- ACBrNFeMT.php --
+[*] TK-6219: Aumentado buffer do retorno da Consulta de NFe pela chave para não truncar mais o conteúdo retornado
+  Por: Renato Rubinho
+
+05/12/2024
+-- ACBrLibNFeConsoleMT.lpi, ACBrLibNFeConsoleMTDemo.lpi--
+[*] Por conta do commit 36367, foi realizada a inclusão da nova unit de constants para compilação ACBrLibNFe Android.
+    Por: Antonio Carlos Junior
+
+25/11/2024
+-- ACBrNFeBase.php --
+[*] #TK-6220: Corrigido título do campo de UF para UF do Emitente.
+  Por: Renato Rubinho
+
+23/10/2024
+-- ACBrNFeBase.php, ACBrNFeMT.php, ACBrNFeServicosMT.php, ACBrNFeServicosST.php --
+[+] Sem TK: Adicionado método ObterCertificados nos programas de exemplo ST e MT em php
+  Por: Renato Rubinho
+
+03/10/2024
+-- ACBrLibNFeConsoleMTDemo.lpi --
+[+] Adicionado novo Projeto, 100% CONSOLE e MT versão Demonstração.
+[+] Compatível com compilação em Linux 64 e Android 32 e 64
+   Por: Antonio Carlos Junior
+
+06/09/2024
+-- ACBrNFeBase.php, ACBrNFeServicosMT.php, ACBrNFeServicosST.php --
+[+] #TK-4956-1: Adicionados campos no programa de exemplo em PHP para configuração do LogPath e LogNivel 
+  Por: Renato Rubinho
+
+23/08/2024
+-- Diversos --
+[+] #TK-4956-1: Implementados programas de exemplo em PHP da NFe ST e MT.
+  Por: Renato Rubinho
+
+15/08/2024
+-- ACBrLibNFeRespostas --
+[*] #TK-5833: Adiciona a propriedade NomeArquivo na resposta.
+  Por: Diego Folieni
+
+10/08/2024
+-- ACBrLibNFeConsoleMT.lpi --
+[+] Adicionado novo Projeto, 100% CONSOLE e MT
+[+] Compatível com compilação em Linux 64 e Android 32 e 64
+
+-- ACBrLibNFeBase, ACBrLibNFeMT, ACBrLibNFeST, ACBrLibNFeStaticImportMT,
+   ACBrLibNFeStaticImportST --
+[*] Ajustes para usar 'PAnsiChar' no lugar de 'PChar' e 'Integer' ao inves de 'LongInt'
+[*] Ajustes para usar 'ConverterStringEntrada' e 'ConverterStringSaida'
+[*] Remoção de Units não utilizadas
+
+-- ACBrLibNFeConfig --
+[*] Ajuste para compilação com a diretiva 'NOREPORT', para não incluir o Fortes
+    Report na compilação final
+
+-- ACBrLibNFeRespostas --
+[*] Ajustes para usar nova nomenclatura de 'Codificacao'
+
+-- ACBrLibNFeDataModule --
+[*] Ajustes para compilação em Delphi
+[*] Ajuste para compilação com a diretiva 'NOREPORT', para não incluir o Fortes
+    Report na compilação final
+[+] Criado método 'TLibNFeDM.FreeReports', para liberar todos os DANFEs criados
+[*] Refatoração no método 'LibNFeDM.ConfigurarImpressao', para simplificar
+    código e ficar compatível com a diretiva 'NOREPORT', usando FPDF.
+    Melhorias no Log
+
 11/06/2024
 -- ACBrLibNFeRespostas --
 [*] Substituidas as units pcnEventoNFe, pcnRetEnvEventoNFe e pcnRetConsSitNFe

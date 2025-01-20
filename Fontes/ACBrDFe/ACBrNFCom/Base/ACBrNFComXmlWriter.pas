@@ -258,7 +258,7 @@ begin
 
   if NFCom.procNFCom.nProt <> '' then
   begin
-    xmlNode := FDocument.CreateElement('NFComProc', 'http://www.portalfiscal.inf.br/nfCom');
+    xmlNode := FDocument.CreateElement('nfcomProc', 'http://www.portalfiscal.inf.br/nfCom');
 
     xmlNode.SetAttribute('versao', FloatToString(NFCom.infNFCom.Versao, '.', '#0.00'));
 
@@ -278,7 +278,7 @@ begin
   begin
     xmlNode := NFComNode.AddChild('infNFComSupl');
     xmlNode.AppendChild(AddNode(tcStr, '#318', 'qrCodNFCom', 50, 1000, 1,
-     NFCom.infNFComSupl.qrCodNFCom, DSC_QRCODNFCOM));
+     NFCom.infNFComSupl.qrCodNFCom, DSC_QRCODNFCOM, False));
 //     '<![CDATA[' + NFCom.infNFComSupl.qrCodNFCom + ']]>', DSC_QRCODNFCOM, False));
   end;
 
@@ -865,17 +865,20 @@ function TNFComXmlWriter.Gerar_det_imposto_ICMS(aDet: Integer): TACBrXmlNode;
   end;
 
 var
-  sTagTemp: String;
+  sTagTemp, sCST: String;
 
 begin
   with NFCom.Det[aDet].Imposto.ICMS do
   begin
     sTagTemp := BuscaTag(CST);
+    sCST := CSTICMSTOStr(CST);
+
+    if sCST = 'SN' then
+      sCST := '90';
 
     Result := FDocument.CreateElement('ICMS' + sTagTemp);
 
-    Result.AppendChild(AddNode(tcStr, '#174', 'CST', 2, 2, 1,
-                                                   CSTICMSTOStr(CST), DSC_CST));
+    Result.AppendChild(AddNode(tcStr, '#174', 'CST', 2, 2, 1, sCST, DSC_CST));
 
     case CST of
       cst00:
@@ -1520,7 +1523,7 @@ begin
 
   xmlNode.AddChild('verAplic').Content := NFCom.procNFCom.verAplic;
 
-  xmlNode.AddChild('chNFCom').Content := NFCom.procNFCom.chNFCom;
+  xmlNode.AddChild('chNFCom').Content := NFCom.procNFCom.chDFe;
 
   xmlNode.AddChild('dhRecbto').Content :=
     FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', NFCom.procNFCom.dhRecbto) +

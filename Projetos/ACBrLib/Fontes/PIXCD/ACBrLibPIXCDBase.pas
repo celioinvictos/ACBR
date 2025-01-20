@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 
-{ Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 
 { Colaboradores nesse arquivo: Antonio Carlos Junior                           }
 
@@ -55,26 +55,44 @@ type
 
       property PIXCDDM: TLibPIXCDDM read FPIXCDDM;
 
-      function GerarQRCodeEstatico(AValor: Double; const AinfoAdicional: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function ConsultarPix(const Ae2eid: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function ConsultarPixRecebidos(ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PChar; const ACpfCnpj: PChar; PagAtual: longint; ItensPorPagina: longint; const sResposta: PChar; var esTamanho: longint): longint;
-      function SolicitarDevolucaoPix(AInfDevolucao: PChar; const Ae2eid: PChar; AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function ConsultarDevolucaoPix(const Ae2eid, AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function CriarCobrancaImediata(AInfCobSolicitada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function ConsultarCobrancaImediata(const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
-      function RevisarCobrancaImediata(AInfCobRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function CancelarCobrancaImediata(ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function CriarCobranca(AinfCobVSolicitada: PChar; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function ConsultarCobranca(const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
-      function RevisarCobranca(AInfCobVRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
-      function CancelarCobranca(ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+      function GerarQRCodeEstatico(AValor: Double; const AinfoAdicional: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarPix(const Ae2eid: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarPixRecebidos(ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PAnsiChar; const ACpfCnpj: PAnsiChar; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function SolicitarDevolucaoPix(AInfDevolucao: PAnsiChar; const Ae2eid: PAnsiChar; AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarDevolucaoPix(const Ae2eid, AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function CriarCobrancaImediata(AInfCobSolicitada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarCobrancaImediata(const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarCobrancasCob(ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function RevisarCobrancaImediata(AInfCobRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function CancelarCobrancaImediata(ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function CriarCobranca(AinfCobVSolicitada: PAnsiChar; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarCobranca(const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function ConsultarCobrancasCobV(ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function RevisarCobranca(AInfCobVRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function CancelarCobranca(ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+
+      //Matera
+      function MateraIncluirConta(aInfIncluirConta: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarConta(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraInativarConta(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraIncluirChavePix(aAccountId, aExternalID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarChavePix(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraExcluirChavePix(aAccountId, aChavePIX: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraGerarQRCode(aInfQRCode: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarTransacao(aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarSaldoEC(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarExtratoEC(aAccountId: PAnsiChar; aInicio: TDateTime; aFim: TDateTime; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarMotivosDevolucao(const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraSolicitarDevolucao(aInfSolicitarDevolucao: PAnsiChar; aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraConsultarAliasRetirada(aAccountId, aAlias: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+      function MateraSolicitarRetirada(aInfSolicitarRetirada: PAnsiChar; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
   end;
 
 implementation
 
 Uses
-  ACBrLibConsts, ACBrLibConfig, ACBrLibPIXCDConfig, ACBrPIXCD, ACBrPIXBase, ACBrLibPIXCDRespostas, ACBrLibHelpers,
-  ACBrUtil.Strings, ACBrUtil.Base, ACBrPIXSchemasCob, ACBrPIXSchemasCobV;
+  ACBrLibConsts, ACBrLibConfig, ACBrLibPIXCDConsts, ACBrLibPIXCDConfig, ACBrPIXCD, ACBrPIXBase, ACBrLibPIXCDRespostas, ACBrLibPIXCDMateraRespostas, ACBrLibHelpers,
+  ACBrUtil.Strings, ACBrUtil.Base, ACBrPIXSchemasCob, ACBrPIXSchemasCobV, ACBrSchemasMatera;
 
 { TACBrLibPIXCD }
 
@@ -104,7 +122,7 @@ begin
   FPIXCDDM.AplicarConfiguracoes;
 end;
 
-function TACBrLibPIXCD.GerarQRCodeEstatico(AValor: Double; const AinfoAdicional: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.GerarQRCodeEstatico(AValor: Double; const AinfoAdicional: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   Resposta: AnsiString;
   ValorCurrency: Currency;
@@ -129,14 +147,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.ConsultarPix(const Ae2eid: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.ConsultarPix(const Ae2eid: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   e2id: String;
   Resposta: AnsiString;
@@ -145,7 +163,7 @@ var
   Ok: boolean;
 begin
   try
-    e2id:= ConverterAnsiParaUTF8(Ae2eid);
+    e2id:= ConverterStringEntrada(Ae2eid);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_ConsultarPIX(' + e2id + ' )', logCompleto, True)
@@ -182,14 +200,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.ConsultarPixRecebidos(ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PChar; const ACpfCnpj: PChar; PagAtual: longint; ItensPorPagina: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.ConsultarPixRecebidos(ADataInicio: TDateTime; ADataFim: TDateTime; const ATxId: PAnsiChar; const ACpfCnpj: PAnsiChar; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   TxId, CpfCnpj: String;
   Resposta: AnsiString;
@@ -198,8 +216,8 @@ var
   Ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
-    CpfCnpj:= ConverterAnsiParaUTF8(ACpfCnpj);
+    TxId:= ConverterStringEntrada(ATxId);
+    CpfCnpj:= ConverterStringEntrada(ACpfCnpj);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_ConsultarPixRecebidos(' + DateToStr(ADataInicio) + ',' + DateToStr(ADataFim) + ',' + TxId + ',' + CpfCnpj + ',' + IntToStr(PagAtual) + ',' + IntToStr(ItensPorPagina) + ' )', logCompleto, True)
@@ -236,14 +254,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.SolicitarDevolucaoPix(AInfDevolucao: PChar; const Ae2eid: PChar; AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.SolicitarDevolucaoPix(AInfDevolucao: PAnsiChar; const Ae2eid: PAnsiChar; AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   e2eid, idDevolucao: String;
   Resposta: AnsiString;
@@ -252,8 +270,8 @@ var
   Ok: Boolean;
 begin
   try
-    e2eid:= ConverterAnsiParaUTF8(Ae2eid);
-    idDevolucao:= ConverterAnsiParaUTF8(AidDevolucao);
+    e2eid:= ConverterStringEntrada(Ae2eid);
+    idDevolucao:= ConverterStringEntrada(AidDevolucao);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_SolicitarDevolucaoPix(' + AInfDevolucao + ',' + e2eid + ',' + idDevolucao + ' )', logCompleto, True)
@@ -294,14 +312,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.ConsultarDevolucaoPix(const Ae2eid, AidDevolucao: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.ConsultarDevolucaoPix(const Ae2eid, AidDevolucao: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   e2eid, idDevolucao: String;
   Resposta: AnsiString;
@@ -310,8 +328,8 @@ var
   Ok: Boolean;
 begin
   try
-    e2eid:= ConverterAnsiParaUTF8(Ae2eid);
-    idDevolucao:= ConverterAnsiParaUTF8(AidDevolucao);
+    e2eid:= ConverterStringEntrada(Ae2eid);
+    idDevolucao:= ConverterStringEntrada(AidDevolucao);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_ConsultarDevolucaoPix(' + e2eid + ',' + idDevolucao + ' )', logCompleto, True)
@@ -348,14 +366,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.CriarCobrancaImediata(AInfCobSolicitada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.CriarCobrancaImediata(AInfCobSolicitada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   Resposta: AnsiString;
   Resp: TLibPIXCDCobResposta;
@@ -364,7 +382,7 @@ var
   Ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
+    TxId:= ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_CriarCobrancaImediata(' + AInfCobSolicitada + ',' + TxId + ' )', logCompleto, True)
@@ -381,7 +399,7 @@ begin
 
       if Ok then
       begin
-        Resp := TLibPIXCDCobResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobResposta.Create(CSessaoRespCobGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobGerada(PIXCDDM.ACBrPixCD1.PSP.epCob.CobGerada);
           Resposta := Resp.Gerar;
@@ -405,14 +423,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.ConsultarCobrancaImediata(const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.ConsultarCobrancaImediata(const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   TxId: String;
   Resposta: AnsiString;
@@ -421,7 +439,7 @@ var
   ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
+    TxId:= ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_ConsultarCobrancaImediata(' + TxId + ',' + IntToStr(ARevisao) + ' )', logCompleto, True)
@@ -434,7 +452,7 @@ begin
 
       if Ok then
       begin
-        Resp := TLibPIXCDCobResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobResposta.Create(CSessaoRespCobGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobCompleta(PIXCDDM.ACBrPixCD1.PSP.epCob.CobCompleta);
           Resposta := Resp.Gerar;
@@ -458,14 +476,71 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.RevisarCobrancaImediata(AInfCobRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint):longint;
+function TACBrLibPIXCD.ConsultarCobrancasCob(ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  CpfCnpj: String;
+  Resposta: AnsiString;
+  status: TACBrPIXStatusCobranca;
+  Resp: TLibPIXCDCobsConsultadas;
+  RespProb: TLibPIXCDProblemaResposta;
+  Ok: Boolean;
+begin
+  try
+    CpfCnpj := ConverterStringEntrada(ACpfCnpj);
+
+    if not (TEnum.TryParse<TACBrPIXStatusCobranca>(AStatus, status)) then
+       status := TACBrPIXStatusCobranca.stcNENHUM;
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_ConsultarCobrancasCob(' + DateToStr(ADataInicio) + ',' + DateToStr(ADataFim) + ',' + CpfCnpj + ',' + BoolToStr(ALocationPresente) + ',' + PIXStatusCobrancaToString(status) + ',' + IntToStr(PagAtual) + ',' + IntToStr(ItensPorPagina) + ' )', logCompleto, True)
+    else
+       GravarLog('PIXCD_ConsultarCobrancasCob', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      Ok := PIXCDDM.ACBrPixCD1.PSP.epCob.ConsultarCobrancas(ADataInicio, ADataFim, CpfCnpj, ALocationPresente, status, PagAtual, ItensPorPagina);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDCobsConsultadas.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPixCD1.PSP.epCob.CobsConsultadas);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPixCD1.PSP.epCob.Problema);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result := SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.RevisarCobrancaImediata(AInfCobRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer):integer;
 var
   TxId: String;
   Resposta: AnsiString;
@@ -474,7 +549,7 @@ var
   Ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
+    TxId:= ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_RevisarCobrancaImediata(' + AInfCobRevisada + ',' + TxId + ' )', logCompleto, True)
@@ -491,7 +566,7 @@ begin
 
       if Ok then
       begin
-        Resp := TLibPIXCDCobResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobResposta.Create(CSessaoRespCobGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobGerada(PIXCDDM.ACBrPixCD1.PSP.epCob.CobGerada);
           Resposta := Resp.Gerar;
@@ -515,14 +590,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.CancelarCobrancaImediata(ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.CancelarCobrancaImediata(ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   TxId: String;
   Resposta: AnsiString;
@@ -531,7 +606,7 @@ var
   Ok: boolean;
 begin
   try
-    TxId := ConverterAnsiParaUTF8(ATxId);
+    TxId := ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_CancelarCobrancaImediata(' + TxId + ' )', logCompleto, True)
@@ -550,7 +625,7 @@ begin
 
       if Ok then
       begin
-        Resp := TLibPIXCDCobResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobResposta.Create(CSessaoRespCobGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobGerada(PIXCDDM.ACBrPixCD1.PSP.epCob.CobGerada);
           Resposta := Resp.Gerar;
@@ -562,7 +637,7 @@ begin
         RespProb := TLibPIXCDProblemaResposta.Create(Config.TipoResposta, Config.CodResposta);
         try
           RespProb.Processar(PIXCDDM.ACBrPixCD1.PSP.epCob.Problema);
-          Resposta := Resp.Gerar;
+          Resposta := RespProb.Gerar;
         finally
           RespProb.Free;
         end;
@@ -574,14 +649,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.CriarCobranca(AinfCobVSolicitada: PChar; ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.CriarCobranca(AinfCobVSolicitada: PAnsiChar; ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   Resposta: AnsiString;
   Resp: TLibPIXCDCobVResposta;
@@ -590,7 +665,7 @@ var
   Ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
+    TxId:= ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_CriarCobranca(' + AinfCobVSolicitada + ',' + TxId + ' )', logCompleto, True)
@@ -607,7 +682,7 @@ begin
 
       if Ok then
       begin
-        Resp := TLibPIXCDCobVResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobVResposta.Create(CSessaoRespCobVGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobVGerada(PIXCDDM.ACBrPixCD1.PSP.epCobV.CobVGerada);
           Resposta := Resp.Gerar;
@@ -631,14 +706,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.ConsultarCobranca(const ATxId: PChar; ARevisao: longint; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.ConsultarCobranca(const ATxId: PAnsiChar; ARevisao: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   TxId: String;
   Resposta: AnsiString;
@@ -647,7 +722,7 @@ var
   Ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
+    TxId:= ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_ConsultarCobranca(' + TxId + ',' + IntToStr(ARevisao) + ' )', logCompleto, True)
@@ -660,7 +735,7 @@ begin
 
       if Ok then
       begin
-        Resp := TLibPIXCDCobVResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobVResposta.Create(CSessaoRespCobVGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobVCompleta(PIXCDDM.ACBrPixCD1.PSP.epCobV.CobVCompleta);
           Resposta := Resp.Gerar;
@@ -684,14 +759,71 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.RevisarCobranca(AInfCobVRevisada: PChar; const ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.ConsultarCobrancasCobV(ADataInicio: TDateTime; ADataFim: TDateTime; ACpfCnpj: PAnsiChar; ALocationPresente: Boolean; AStatus: integer; PagAtual: integer; ItensPorPagina: integer; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  CpfCnpj: String;
+  Resposta: AnsiString;
+  status: TACBrPIXStatusCobranca;
+  Resp: TLibPIXCDCobsVConsultadas;
+  RespProb: TLibPIXCDProblemaResposta;
+  Ok: Boolean;
+begin
+  try
+    CpfCnpj := ConverterStringEntrada(ACpfCnpj);
+
+    if not (TEnum.TryParse<TACBrPIXStatusCobranca>(AStatus, status)) then
+       status := TACBrPIXStatusCobranca.stcNENHUM;
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_ConsultarCobrancasCobV(' + DateToStr(ADataInicio) + ',' + DateToStr(ADataFim) + ',' + CpfCnpj + ',' + BoolToStr(ALocationPresente) + ',' + PIXStatusCobrancaToString(status) + ',' + IntToStr(PagAtual) + ',' + IntToStr(ItensPorPagina) + ' )', logCompleto, True)
+    else
+       GravarLog('PIXCD_ConsultarCobrancasCobV', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      Ok := PIXCDDM.ACBrPixCD1.PSP.epCobV.ConsultarCobrancas(ADataInicio, ADataFim, CpfCnpj, ALocationPresente, status, PagAtual, ItensPorPagina);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDCobsVConsultadas.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPixCD1.PSP.epCobV.CobsVConsultadas);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPixCD1.PSP.epCobV.Problema);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result := SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.RevisarCobranca(AInfCobVRevisada: PAnsiChar; const ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   TxId: String;
   Resposta: AnsiString;
@@ -700,7 +832,7 @@ var
   Ok: Boolean;
 begin
   try
-    TxId:= ConverterAnsiParaUTF8(ATxId);
+    TxId:= ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_RevisarCobranca(' + AInfCobVRevisada + ',' + TxId + ' )', logCompleto, True)
@@ -717,7 +849,7 @@ begin
 
       If Ok Then
       begin
-        Resp := TLibPIXCDCobVResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobVResposta.Create(CSessaoRespCobVGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobVGerada(PIXCDDM.ACBrPixCD1.PSP.epCobV.CobVGerada);
           Resposta := Resp.Gerar;
@@ -741,14 +873,14 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 
-function TACBrLibPIXCD.CancelarCobranca(ATxId: PChar; const sResposta: PChar; var esTamanho: longint): longint;
+function TACBrLibPIXCD.CancelarCobranca(ATxId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
 var
   TxId: String;
   Resposta: AnsiString;
@@ -757,7 +889,7 @@ var
   Ok: boolean;
 begin
   try
-    TxId := ConverterAnsiParaUTF8(ATxId);
+    TxId := ConverterStringEntrada(ATxId);
 
     if Config.Log.Nivel > logNormal then
        GravarLog('PIXCD_CancelarCobranca(' + TxId + ' )', logCompleto, True)
@@ -776,7 +908,7 @@ begin
 
       If Ok Then
       begin
-        Resp := TLibPIXCDCobVResposta.Create(Config.TipoResposta, Config.CodResposta);
+        Resp := TLibPIXCDCobVResposta.Create(CSessaoRespCobVGerada, Config.TipoResposta, Config.CodResposta);
         try
           Resp.ProcessarCobVGerada(PIXCDDM.ACBrPixCD1.PSP.epCobV.CobVGerada);
           Resposta := Resp.Gerar;
@@ -788,7 +920,7 @@ begin
         RespProb := TLibPIXCDProblemaResposta.Create(Config.TipoResposta, Config.CodResposta);
         try
           RespProb.Processar(PIXCDDM.ACBrPixCD1.PSP.epCobV.Problema);
-          Resposta := Resp.Gerar;
+          Resposta := RespProb.Gerar;
         finally
           RespProb.Free;
         end;
@@ -800,10 +932,683 @@ begin
     end;
   except
     on E: EACBrLibException do
-      Result := SetRetorno(E.Erro, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
 
     on E: Exception do
-      Result := SetRetorno(ErrExecutandoMetodo, ConverterUTF8ParaAnsi(E.Message));
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraIncluirConta(aInfIncluirConta: PAnsiChar;
+  const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  Resposta: AnsiString;
+  Resp: TLibPIXCDIncluirContaResposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_IncluirConta(' + aInfIncluirConta + ' )', logCompleto, True)
+    else
+       GravarLog('PIXCD_Matera_IncluirConta', logNormal);
+
+    if StringEhArquivo(aInfIncluirConta) then
+    VerificarArquivoExiste(aInfIncluirConta);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ContaSolicitacao.LoadFromIni(aInfIncluirConta);
+      Ok := PIXCDDM.ACBrPSPMatera1.ContaIncluir;
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDIncluirContaResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+           Resp.Processar(PIXCDDM.ACBrPSPMatera1.ContaResposta);
+           Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarConta(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDConsultarContaReposta;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ConsultarConta(' + accountid + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ConsultarConta', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ContaConsultar(accountid);
+      Resp := TLibPIXCDConsultarContaReposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.ContaResposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraInativarConta(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDInativarContaReposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_InativarConta(' + accountid + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_InativarConta', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      Ok := PIXCDDM.ACBrPSPMatera1.ContaInativar(accountid);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDInativarContaReposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPSPMatera1);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraIncluirChavePix(aAccountId, aExternalID: PAnsiChar;
+  const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid, externalid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDChavePIXResposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+    externalid := ConverterStringEntrada(aExternalID);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_IncluirChavePix(' + accountid + ',' + externalid +' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_IncluirChavePix', logNormal);
+
+    PIXCDDM.Travar;
+    try
+
+      with PIXCDDM.ACBrPSPMatera1 do
+      begin
+        ChavePIXSolicitacao.externalIdentifier := externalid;
+        ChavePIXSolicitacao.alias_.type_ := malEVP
+      end;
+
+      Ok := PIXCDDM.ACBrPSPMatera1.ChavePIXIncluir(accountid);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDChavePIXResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPSPMatera1.ChavePIXResposta);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: EACBrPixHttpException do
+      Result := SetRetorno(ErrHttp, ConverterStringSaida(E.Message + sLineBreak + 'Resposta HTTP: ' + PIXCDDM.ACBrPSPMatera1.ErroResposta.AsJSON));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarChavePix(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDChavePIXResposta;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ConsultarChavePix(' + accountid + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ConsultarChavePix', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ChavesPIXConsultar(accountid);
+      Resp := TLibPIXCDChavePIXResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.ChavesPIXResposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraExcluirChavePix(aAccountId, aChavePIX: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid, chavepix: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDExcluirChavePIXResposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+    chavepix := ConverterStringEntrada(aChavePIX);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ExcluirChavePix(' + accountid + ',' + chavepix + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ExcluirChavePix', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      Ok := PIXCDDM.ACBrPSPMatera1.ChavePIXExcluir(accountid, chavepix);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDExcluirChavePIXResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPSPMatera1);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraGerarQRCode(aInfQRCode: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  Resposta: AnsiString;
+  Resp: TLibPIXCDQRCodeResposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_GerarQRCode(' + aInfQRCode + ' )', logCompleto, True)
+    else
+       GravarLog('PIXCD_Matera_GerarQRCode', logNormal);
+
+    if StringEhArquivo(aInfQRCode) then
+    VerificarArquivoExiste(aInfQRCode);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.QRCodeSolicitacao.LoadFromIni(aInfQRCode);
+      Ok := PIXCDDM.ACBrPSPMatera1.GerarQRCode;
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDQRCodeResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPSPMatera1.QRCodeResposta);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarTransacao(aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid, transactionID: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDConsultarTransacaoResposta;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+    transactionID := ConverterStringEntrada(aTransactionID);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ConsultarTransacao(' + accountid + ',' + transactionID + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ConsultarTransacao', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ConsultarTransacao(accountid, transactionID);
+      Resp := TLibPIXCDConsultarTransacaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.TransacoesResposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarSaldoEC(aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDSaldoECResposta;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ConsultarSaldoEC(' + accountid + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ConsultarSaldoEC', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ConsultarSaldoEC(accountid);
+      Resp := TLibPIXCDSaldoECResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.SaldoECResposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      except
+        Resp.Free;
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarExtratoEC(aAccountId: PAnsiChar; aInicio: TDateTime; aFim: TDateTime; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDExtratoECResposta;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ConsultarExtratoEC(' + accountid + ',' + DateToStr(aInicio) + ',' + DateToStr(aFim) + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ConsultarExtratoEC', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ConsultarExtratoEC(accountid, aInicio, aFim);
+      Resp := TLibPIXCDExtratoECResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.ExtratoECResposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      except
+        Resp.Free;
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: EACBrPixHttpException do
+      Result := SetRetorno(ErrHttp, ConverterStringSaida(E.Message + sLineBreak + 'Resposta HTTP: ' + PIXCDDM.ACBrPSPMatera1.ErroResposta.AsJSON));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarMotivosDevolucao(const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  Resposta: AnsiString;
+  Resp: TLibPIXCDMotivosDevolucaoResposta;
+begin
+  try
+    GravarLog('PIXCD_Matera_ConsultarMotivosDevolucao', logCompleto);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.DevolucaoConsultarMotivos;
+      Resp := TLibPIXCDMotivosDevolucaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.DevolucaoMotivos.returnCodes);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      except
+        Resp.Free;
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: EACBrPixHttpException do
+      Result := SetRetorno(ErrHttp, ConverterStringSaida(E.Message + sLineBreak + 'Resposta HTTP: ' + PIXCDDM.ACBrPSPMatera1.ErroResposta.AsJSON));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraSolicitarDevolucao(aInfSolicitarDevolucao: PAnsiChar; aAccountId, aTransactionID: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid, transactionid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDSolicitarDevolucaoResposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+    transactionid := ConverterStringEntrada(aTransactionID);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_SolicitarDevolucao(' + aInfSolicitarDevolucao + ',' + accountid + ',' + transactionid + ' )', logCompleto, True)
+    else
+       GravarLog('PIXCD_Matera_SolicitarDevolucao', logNormal);
+
+    if StringEhArquivo(aInfSolicitarDevolucao) then
+    VerificarArquivoExiste(aInfSolicitarDevolucao);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.DevolucaoSolicitacao.LoadFromIni(aInfSolicitarDevolucao);
+      Ok := PIXCDDM.ACBrPSPMatera1.DevolucaoSolicitar(accountid, transactionid);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDSolicitarDevolucaoResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPSPMatera1.DevolucaoResposta);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: EACBrPixHttpException do
+      Result := SetRetorno(ErrHttp, ConverterStringSaida(E.Message + sLineBreak + 'Resposta HTTP: ' + PIXCDDM.ACBrPSPMatera1.ErroResposta.AsJSON));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraConsultarAliasRetirada(aAccountId, aAlias: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid, alias: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDAliasRetiradaResposta;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+    alias := ConverterStringEntrada(aAlias);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_ConsultarAliasRetirada(' + accountid + ',' + alias + ' )', logCompleto, True)
+       else
+       GravarLog('PIXCD_Matera_ConsultarAliasRetirada', logNormal);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.ConsultarAliasRetirada(accountid, alias);
+      Resp := TLibPIXCDAliasRetiradaResposta.Create(Config.TipoResposta, Config.CodResposta);
+      try
+        Resp.Processar(PIXCDDM.ACBrPSPMatera1.AliasRetiradaResposta);
+        Resposta := Resp.Gerar;
+        MoverStringParaPChar(Resposta, sResposta, esTamanho);
+        Result := SetRetorno(ErrOK, Resposta);
+      finally
+        Resp.Free;
+      end;
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: EACBrPixHttpException do
+      Result := SetRetorno(ErrHttp, ConverterStringSaida(E.Message + sLineBreak + 'Resposta HTTP: ' + PIXCDDM.ACBrPSPMatera1.ErroResposta.AsJSON));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
+  end;
+end;
+
+function TACBrLibPIXCD.MateraSolicitarRetirada(aInfSolicitarRetirada: PAnsiChar; aAccountId: PAnsiChar; const sResposta: PAnsiChar; var esTamanho: integer): integer;
+var
+  accountid: String;
+  Resposta: AnsiString;
+  Resp: TLibPIXCDSolicitarRetiradaResposta;
+  RespProb: TLibPIXCDProblemaRespostaMatera;
+  Ok: Boolean;
+begin
+  try
+    accountid := ConverterStringEntrada(aAccountId);
+
+    if Config.Log.Nivel > logNormal then
+       GravarLog('PIXCD_Matera_SolicitarRetirada(' + aInfSolicitarRetirada + ',' + accountid + ' )', logCompleto, True)
+    else
+       GravarLog('PIXCD_Matera_SolicitarRetirada', logNormal);
+
+    if StringEhArquivo(aInfSolicitarRetirada) then
+    VerificarArquivoExiste(aInfSolicitarRetirada);
+
+    PIXCDDM.Travar;
+    try
+      PIXCDDM.ACBrPSPMatera1.RetiradaSolicitacao.LoadFromIni(aInfSolicitarRetirada);
+      Ok := PIXCDDM.ACBrPSPMatera1.RetiradaSolicitar(accountid);
+
+      if Ok then
+      begin
+        Resp := TLibPIXCDSolicitarRetiradaResposta.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          Resp.Processar(PIXCDDM.ACBrPSPMatera1.RetiradaResposta);
+          Resposta := Resp.Gerar;
+        finally
+          Resp.Free;
+        end;
+      end else
+      begin
+        RespProb := TLibPIXCDProblemaRespostaMatera.Create(Config.TipoResposta, Config.CodResposta);
+        try
+          RespProb.Processar(PIXCDDM.ACBrPSPMatera1.ErroResposta);
+          Resposta := RespProb.Gerar;
+        finally
+          RespProb.Free;
+        end;
+      end;
+      MoverStringParaPChar(Resposta, sResposta, esTamanho);
+      Result:= SetRetorno(ErrOK, Resposta);
+    finally
+      PIXCDDM.Destravar;
+    end;
+  except
+    on E: EACBrLibException do
+      Result := SetRetorno(E.Erro, ConverterStringSaida(E.Message));
+
+    on E: EACBrPixHttpException do
+      Result := SetRetorno(ErrHttp, ConverterStringSaida(E.Message + sLineBreak + 'Resposta HTTP: ' + PIXCDDM.ACBrPSPMatera1.ErroResposta.AsJSON));
+
+    on E: Exception do
+      Result := SetRetorno(ErrExecutandoMetodo, ConverterStringSaida(E.Message));
   end;
 end;
 

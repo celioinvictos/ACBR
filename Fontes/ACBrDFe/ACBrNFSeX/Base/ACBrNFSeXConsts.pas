@@ -107,6 +107,8 @@ resourcestring
   DSC_TPAG = 'Forma de Pagamento';
   DSC_DVENC = 'Data de vencimento';
   DSC_INFADICIONAL = 'Informação Adicional';
+  DSC_INSTPAG = 'Instrução de Pagamento';
+  DSC_CODVENV = 'Código de Vencimento';
 
   // Descrição de Documentos - Futuramente vai para ACBrDFeConst
   DSC_CNPJ = 'CNPJ(MF)';
@@ -237,6 +239,8 @@ resourcestring
   Desc133	= 'Geral.CNPJPrefeitura não informado.';
   Cod134 = 'X134';
   Desc134 = 'Número da NFSe ou RPS não informado.';
+  Cod135 = 'X135';
+  Desc135 = 'Número da NFSe Substituta não informado.';
 
   Cod201 = 'X201';
   Desc201 = 'WebService retornou um XML vazio.';

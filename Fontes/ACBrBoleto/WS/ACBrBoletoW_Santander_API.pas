@@ -89,19 +89,13 @@ const
   C_URL = 'https://trust-open.api.santander.com.br/collection_bill_management/v2';
   C_URL_OAUTH_PROD = 'https://trust-open.api.santander.com.br/auth/oauth/v2/token';
 
-  {Para homologacao existe 2 end points SandBox e Open-h }
+  {URL Sandbox - nao devolve todas as informações necessárias no retorno}
+  C_URL_HOM = 'https://trust-sandbox.api.santander.com.br/collection_bill_management/v2';
+  C_URL_OAUTH_HOM = 'https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token';
 
-  {URL SandBOX - nao devolve todas as informações necessárias no retorno}
-  //C_URL_HOM = 'https://trust-sandbox.api.santander.com.br/collection_bill_management/v2';
-  //C_URL_OAUTH_HOM = 'https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token';
-
-
-  {URL Homologação open-h
-  Atenção !
-  Para habilitar este endpoint contatar o banco, pois este endpoint retorna completo as respostas e qrcode.
-  (SandBox não faz isso segundo banco.  }
-  C_URL_HOM = 'https://trust-open-h.api.santander.com.br/collection_bill_management/v2';
-  C_URL_OAUTH_HOM = 'https://trust-open-h.api.santander.com.br/auth/oauth/v2/token';
+  {URL Homologação open-h removido no manual 2.6 do banco santander}
+  //C_URL_HOM = 'https://trust-open-h.api.santander.com.br/collection_bill_management/v2';
+  //C_URL_OAUTH_HOM = 'https://trust-open-h.api.santander.com.br/auth/oauth/v2/token';
 
 
 implementation
@@ -119,7 +113,7 @@ uses
 
 procedure TBoletoW_Santander_API.DefinirURL;
 begin
-  FPURL := IfThen(Boleto.Configuracoes.WebService.Ambiente = taProducao, C_URL, C_URL_HOM);
+  FPURL := IfThen(Boleto.Configuracoes.WebService.Ambiente = tawsProducao, C_URL, C_URL_HOM);
   case Boleto.Configuracoes.WebService.Operacao of
      tpInclui         : FPURL := FPURL + '/workspaces/' + Boleto.Cedente.CedenteWS.KeyUser + '/bank_slips';
      tpAltera         : FPURL := FPURL + '/workspaces/' + Boleto.Cedente.CedenteWS.KeyUser + '/bank_slips';
@@ -142,8 +136,8 @@ end;
 
 procedure TBoletoW_Santander_API.GerarHeader;
 begin
-  Self.FPHeaders.Clear;
-  Self.FPHeaders.Add('Accept-Encoding: gzip, deflate, compress');
+  ClearHeaderParams;
+  AddHeaderParam('Accept-Encoding', 'gzip, deflate, compress');
   DefinirContentType;
   DefinirIdentificador;
 end;
@@ -467,7 +461,7 @@ begin
       tdValorAntecipacaoDiaCorrido:
         Result := 'VALOR_DIA_CORRIDO';
       tdValorAntecipacaoDiaUtil:
-        Result := 'VALOR_DIA_UTIL ';
+        Result := 'VALOR_DIA_UTIL';
       else
         raise Exception.Create('Modalidade de desconto não permitida');
     end;
@@ -607,7 +601,7 @@ begin
         AJson.AddPair('fineQuantityDays', '0');
     end else
     begin
-      AJson.AddPair('finePercentage', '0');
+      AJson.AddPair('finePercentage', '0.00');
       AJson.AddPair('fineQuantityDays', '0');
     end;
   end;
@@ -700,33 +694,16 @@ begin
 
     if ATitulo.DataDesconto > 0 then
     begin
-      case ATitulo.OcorrenciaOriginal.Tipo of
-        toRemessaCancelarDesconto,
-        toRemessaNaoConcederDesconto :
-          begin
-            LValorDesconto1:='0.00';
-            LValorDesconto2:='0.00';
-            LValorDesconto3:='0.00';
-            LTipo1 :=  'ISENTO';
-            //LTipo2 :=  'ISENTO';
-            //LTipo3 :=  'ISENTO';
-          end;
-        toRemessaConcederDesconto,
-        toRemessaAlterarDesconto :
-          begin
-           LValorDesconto1 := IfThen(ATitulo.TipoDesconto=tdNaoConcederDesconto,'0.00',
+
+      LValorDesconto1 := IfThen(ATitulo.TipoDesconto=tdNaoConcederDesconto,'0.00',
                                      StringReplace(FormatFloat('0.00', ATitulo.ValorDesconto), ',', '.', [rfReplaceAll]));
-           LValorDesconto2 := IfThen(ATitulo.TipoDesconto2=tdNaoConcederDesconto,'0.00',
-                                     StringReplace(FormatFloat('0.00', ATitulo.ValorDesconto2), ',', '.', [rfReplaceAll]));
-           LValorDesconto3 := IfThen(ATitulo.TipoDesconto3=tdNaoConcederDesconto,'0.00',
-                                     StringReplace(FormatFloat('0.00', ATitulo.ValorDesconto3), ',', '.', [rfReplaceAll]));
-           LTipo1 := retornaTipoDesconto(ATitulo.TipoDesconto);
-           //LTipo2 := retornaTipoDesconto(ATitulo.TipoDesconto2);
-           //LTipo3 := retornaTipoDesconto(ATitulo.TipoDesconto3);
-          end;
-      end;
+      LValorDesconto2 := IfThen(ATitulo.TipoDesconto2=tdNaoConcederDesconto,'0.00',
+                               StringReplace(FormatFloat('0.00', ATitulo.ValorDesconto2), ',', '.', [rfReplaceAll]));
+      LValorDesconto3 := IfThen(ATitulo.TipoDesconto3=tdNaoConcederDesconto,'0.00',
+                               StringReplace(FormatFloat('0.00', ATitulo.ValorDesconto3), ',', '.', [rfReplaceAll]));
+      LTipo1 := retornaTipoDesconto(ATitulo.TipoDesconto);
       LJsonObjectDesconto.AddPair('type',LTipo1);
-      LJsonObjectDesconto.AddPair('disconuntOne',
+      LJsonObjectDesconto.AddPair('discountOne',
                                                  TACBrJSONObject.Create
                                                                 .AddPair('value', LValorDesconto1)
                                                                 .AddPair('limitDate', FormatDateTime('yyyy-mm-dd', ATitulo.DataDesconto))
@@ -798,10 +775,10 @@ begin
 
   if Assigned(OAuth) then
   begin
-    if OAuth.Ambiente = taHomologacao then
-      OAuth.URL := C_URL_OAUTH_HOM
+    if OAuth.Ambiente = tawsProducao then
+      OAuth.URL := C_URL_OAUTH_PROD
     else
-      OAuth.URL := C_URL_OAUTH_PROD;
+      OAuth.URL := C_URL_OAUTH_HOM;
 
     OAuth.Payload := True;
   end;

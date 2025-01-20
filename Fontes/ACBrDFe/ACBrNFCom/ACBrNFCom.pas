@@ -422,11 +422,11 @@ end;
 
 function TACBrNFCom.GravarStream(AStream: TStream): Boolean;
 begin
-  if EstaVazio(FEventoNFCom.Xml) then
+  if EstaVazio(FEventoNFCom.XmlEnvio) then
     FEventoNFCom.GerarXML;
 
   AStream.Size := 0;
-  WriteStrToStream(AStream, AnsiString(FEventoNFCom.Xml));
+  WriteStrToStream(AStream, AnsiString(FEventoNFCom.XmlEnvio));
   Result := True;
 end;
 
@@ -630,7 +630,7 @@ begin
   if not Assigned(DANFCom) then
     GerarException('Componente DANFCom não associado.')
   else
-    DANFCom.ImprimirEVENTOPDF(nil);
+    DANFCom.ImprimirEVENTOPDF;
 end;
 
 procedure TACBrNFCom.EnviarEmailEvento(const sPara, sAssunto: string;

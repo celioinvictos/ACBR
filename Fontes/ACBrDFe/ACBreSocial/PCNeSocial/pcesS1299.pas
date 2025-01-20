@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -238,8 +238,8 @@ begin
     if Self.infoFech.transDCTFWeb = snfSim then
       Gerador.wCampo(tcStr, '', 'transDCTFWeb', 1, 1, 1, eSSimNaoFacultativoToStr(self.infoFech.transDCTFWeb));
 
-    if Self.infoFech.naoValid = snfSim then
-      Gerador.wCampo(tcStr, '', 'naoValid',     1, 1, 1, eSSimNaoFacultativoToStr(self.infoFech.naoValid));
+    if ((VersaoDF >= veS01_03_00) or (Self.infoFech.naoValid = snfSim)) then
+      Gerador.wCampo(tcStr, '', 'naoValid', 1, 1, 0, eSSimNaoFacultativoToStr(self.infoFech.naoValid));
   end;
 
   Gerador.wGrupo('/infoFech');

@@ -90,12 +90,14 @@ type
     function Gerar_Total: TACBrXmlNode;
     function Gerar_Transp: TACBrXmlNode;
     function Gerar_InfAdic: TACBrXmlNode;
-    function Gerar_InfAdicObsCont: TACBrXmlNodeArray;
-    function Gerar_InfAdicObsMarketplace: TACBrXmlNodeArray;
+    function Gerar_ObsEmit: TACBrXmlNodeArray;
+    function Gerar_ObsFisco: TACBrXmlNodeArray;
+    function Gerar_ObsMarketplace: TACBrXmlNodeArray;
+    function Gerar_ObsECT: TACBrXmlNodeArray;
     function Gerar_InfDec: TACBrXmlNode;
-    {
+
     function GerarProtDCe: TACBrXmlNode;
-    }
+
     function GetOpcoes: TDCeXmlWriterOptions;
     procedure SetOpcoes(AValue: TDCeXmlWriterOptions);
 
@@ -270,6 +272,34 @@ begin
   Result.AppendChild(Gerar_Total);
   Result.AppendChild(Gerar_Transp);
   Result.AppendChild(Gerar_InfAdic);
+
+  nodeArray := Gerar_ObsEmit;
+
+  for i := 0 to DCe.obsEmit.Count - 1 do
+  begin
+    Result.AppendChild(nodeArray[i]);
+  end;
+
+  nodeArray := Gerar_ObsFisco;
+
+  for i := 0 to DCe.obsFisco.Count - 1 do
+  begin
+    Result.AppendChild(nodeArray[i]);
+  end;
+
+  nodeArray := Gerar_ObsMarketplace;
+  for i := 0 to DCe.obsMarketplace.Count - 1 do
+  begin
+    Result.AppendChild(nodeArray[i]);
+  end;
+
+  nodeArray := Gerar_ObsECT;
+
+  for i := 0 to DCe.obsECT.Count - 1 do
+  begin
+    Result.AppendChild(nodeArray[i]);
+  end;
+
   Result.AppendChild(Gerar_InfDec);
 end;
 
@@ -300,7 +330,7 @@ begin
                                  TipoEmissaoToStr(DCe.Ide.tpEmis), DSC_TPEMIS));
 
   Result.AppendChild(AddNode(tcStr, 'B09', 'tpEmit', 1, 1, 1,
-                                 EmitenteDCeToStr(DCe.Ide.tpEmit), DSC_TPEMIS));
+                                 EmitenteDCeToStr(DCe.Ide.tpEmit), DSC_TPEMIT));
 
   Result.AppendChild(AddNode(tcInt, 'B10', 'nSiteAutoriz', 1, 1, 1,
                                                 DCe.ide.nSiteAutoriz, DSC_NDF));
@@ -439,19 +469,21 @@ function TDCeXmlWriter.Gerar_EmpEmisProp: TACBrXmlNode;
 begin
   Result := nil;
 
-  if DCe.EmpEmisProp.CNPJ <> '' then
+  if DCe.ECT.CNPJ <> '' then
   begin
-    Result := FDocument.CreateElement('EmpEmisProp');
+    Result := FDocument.CreateElement('ECT');
 
     Result.AppendChild(AddNode(tcStr, 'D16', 'CNPJ', 14, 14, 1,
-                                               DCe.EmpEmisProp.CNPJ, DSC_CNPJ));
+                                               DCe.ECT.CNPJ, DSC_CNPJ));
 
     Result.AppendChild(AddNode(tcStr, 'D17', 'xNome', 1, 60, 1,
-                                             DCe.EmpEmisProp.xNome, DSC_XNOME));
+                                             DCe.ECT.xNome, DSC_XNOME));
   end;
 end;
 
 function TDCeXmlWriter.Gerar_Dest: TACBrXmlNode;
+const
+  HOM_NOME_DEST = 'DCE EMITIDA EM AMBIENTE DE HOMOLOGACAO';
 begin
   Result := FDocument.CreateElement('dest');
 
@@ -461,8 +493,12 @@ begin
     Result.AppendChild(AddNode(tcStr, 'E03a', 'idOutros', 2, 60, 1,
                                                  DCe.dest.idOutros, DSC_XNOME));
 
-  Result.AppendChild(AddNode(tcStr, 'E04', 'xNome', 2, 60, 1,
-                                                    DCe.dest.xNome, DSC_XNOME));
+  if DCe.Ide.tpAmb = taProducao then
+    Result.AppendChild(AddNode(tcStr, 'E04', 'xNome', 2, 60, 1,
+                                                     DCe.dest.xNome, DSC_XNOME))
+  else
+    Result.AppendChild(AddNode(tcStr, 'E04', 'xNome', 2, 60, 1,
+                                                     HOM_NOME_DEST, DSC_XNOME));
 
   Result.AppendChild(Gerar_EnderDest);
 end;
@@ -505,14 +541,14 @@ begin
   Result.AppendChild(AddNode(tcInt, 'E13', 'CEP', 8, 8, 1,
                                               DCe.dest.enderDest.CEP, DSC_CEP));
 
-  Result.AppendChild(AddNode(tcInt, 'E14', 'cPais', 4, 4, 0,
+  Result.AppendChild(AddNode(tcInt, 'E14', 'cPais', 4, 4, 1,
                                           DCe.dest.enderDest.cPais, DSC_CPAIS));
 
   if DCe.Dest.enderDest.cPais > 0 then
     if ValidarCodigoPais(DCe.Dest.enderDest.cPais) <> 1 then
       wAlerta('E14', 'cPais', DSC_CPAIS, ERR_MSG_INVALIDO);
 
-  Result.AppendChild(AddNode(tcStr, 'E15', 'xPais', 1, 60, 0,
+  Result.AppendChild(AddNode(tcStr, 'E15', 'xPais', 1, 60, 1,
                                           DCe.dest.enderDest.xPais, DSC_XPAIS));
 
   Result.AppendChild(AddNode(tcStr, 'E16', 'fone', 6, 14, 0,
@@ -566,14 +602,14 @@ const
 begin
   Result := FDocument.CreateElement('prod');
 
-  if (DCe.Det[i].Prod.nItem = 1) and (DCe.Ide.tpAmb = TACBrTipoAmbiente.taHomologacao) then
+  if (DCe.Det[i].Prod.nItem = 1) and (TACBrTipoAmbiente(DCe.Ide.tpAmb) = taHomologacao) then
     Result.AppendChild(AddNode(tcStr, 'I02', 'xProd', 1, 120, 1,
                                                           HOM_XPROD, DSC_XPROD))
   else
     Result.AppendChild(AddNode(tcStr, 'I02', 'xProd', 1, 120, 1,
                                              DCe.Det[i].Prod.xProd, DSC_XPROD));
 
-  Result.AppendChild(AddNode(tcStr, 'I03', 'NCM', 2, 8, 0,
+  Result.AppendChild(AddNode(tcStr, 'I03', 'NCM', 2, 8, 1,
                                                  DCe.Det[i].Prod.NCM, DSC_NCM));
 
   Result.AppendChild(AddNode(tcDe4, 'I04', 'qCom', 0, 15, 1,
@@ -602,13 +638,10 @@ begin
                                        ModTransToStr(DCe.Transp.modTrans), ''));
 
   Result.AppendChild(AddNode(tcStr, 'X03','CNPJTransp', 14, 14, 0,
-                                               DCe.Transp.CNPJTrans, DSC_CNPJ));
+                                               DCe.Transp.CNPJTransp, DSC_CNPJ));
 end;
 
 function TDCeXmlWriter.Gerar_InfAdic: TACBrXmlNode;
-var
-  i: Integer;
-  nodeArray: TACBrXmlNodeArray;
 begin
   Result := nil;
 
@@ -616,8 +649,7 @@ begin
      (trim(DCe.InfAdic.infCpl) <> '') or
      (trim(DCe.InfAdic.infadMarketplace) <> '') or
      (trim(DCe.InfAdic.infadTransp) <> '') or
-     (DCe.InfAdic.obsCont.Count > 0) or
-     (DCe.InfAdic.obsMarketplace.Count > 0)  then
+     (trim(DCe.InfAdic.infAdECT) <> '') then
   begin
     Result := FDocument.CreateElement('infAdic');
 
@@ -627,79 +659,123 @@ begin
     Result.AppendChild(AddNode(tcStr, 'Z03', 'infCpl', 01, 5000, 0,
                                                DCe.InfAdic.infCpl, DSC_INFCPL));
 
-    Result.AppendChild(AddNode(tcStr, 'Z04', 'infadMarketplace', 01, 5000, 0,
+    Result.AppendChild(AddNode(tcStr, 'Z04', 'infAdMarketplace', 01, 5000, 0,
                                      DCe.InfAdic.infadMarketplace, DSC_INFCPL));
 
-    Result.AppendChild(AddNode(tcStr, 'Z04a', 'infadTransp', 01, 5000, 0,
-                                          DCe.InfAdic.infadTransp, DSC_INFCPL));
+//    Result.AppendChild(AddNode(tcStr, 'Z04a', 'infAdTransp', 01, 5000, 0,
+//                                          DCe.InfAdic.infadTransp, DSC_INFCPL));
 
-    nodeArray := Gerar_InfAdicObsCont;
-
-    for i := 0 to DCe.InfAdic.obsCont.Count - 1 do
-    begin
-      Result.AppendChild(nodeArray[i]);
-    end;
-
-    nodeArray := Gerar_InfAdicObsMarketplace;
-    for i := 0 to DCe.InfAdic.obsMarketplace.Count - 1 do
-    begin
-      Result.AppendChild(nodeArray[i]);
-    end;
+    Result.AppendChild(AddNode(tcStr, 'Z04b', 'infAdECT', 01, 5000, 0,
+                                             DCe.InfAdic.infadECT, DSC_INFCPL));
   end;
 end;
 
-function TDCeXmlWriter.Gerar_InfAdicObsCont: TACBrXmlNodeArray;
+function TDCeXmlWriter.Gerar_ObsEmit: TACBrXmlNodeArray;
 var
   i: Integer;
 begin
   Result := nil;
-  SetLength(Result, DCe.InfAdic.obsCont.Count);
+  SetLength(Result, DCe.obsEmit.Count);
 
-  for i := 0 to DCe.InfAdic.obsCont.Count - 1 do
+  for i := 0 to DCe.obsEmit.Count - 1 do
   begin
-    Result[i] := FDocument.CreateElement('obsCont');
+    Result[i] := FDocument.CreateElement('obsEmit');
 
-    Result[i].SetAttribute('xCampo', DCe.InfAdic.obsCont[i].xCampo);
+    Result[i].SetAttribute('xCampo', DCe.obsEmit[i].xCampo);
 
-    if length(trim(DCe.InfAdic.obsCont[i].xCampo)) > 20 then
+    if length(trim(DCe.obsEmit[i].xCampo)) > 20 then
       wAlerta('Z06', 'xCampo', DSC_XCAMPO, ERR_MSG_MAIOR);
 
-    if length(trim(DCe.InfAdic.obsCont[i].xCampo)) = 0 then
+    if length(trim(DCe.obsEmit[i].xCampo)) = 0 then
       wAlerta('Z06', 'xCampo', DSC_XCAMPO, ERR_MSG_VAZIO);
 
     Result[i].AppendChild(AddNode(tcStr, 'Z06', 'xTexto', 01, 60, 1,
-                                    DCe.InfAdic.obsCont[i].xTexto, DSC_XTEXTO));
+                                    DCe.obsEmit[i].xTexto, DSC_XTEXTO));
   end;
 
-  if DCe.InfAdic.obsCont.Count > 10 then
-    wAlerta('Z05', 'obsCont', DSC_OBSCONT, ERR_MSG_MAIOR_MAXIMO + '10');
+  if DCe.obsEmit.Count > 10 then
+    wAlerta('Z05', 'obsEmit', DSC_OBSCONT, ERR_MSG_MAIOR_MAXIMO + '10');
 end;
 
-function TDCeXmlWriter.Gerar_InfAdicObsMarketplace: TACBrXmlNodeArray;
+function TDCeXmlWriter.Gerar_ObsFisco: TACBrXmlNodeArray;
 var
   i: Integer;
 begin
   Result := nil;
-  SetLength(Result, DCe.InfAdic.obsMarketplace.Count);
+  SetLength(Result, DCe.obsFisco.Count);
 
-  for i := 0 to DCe.InfAdic.obsMarketplace.Count - 1 do
+  for i := 0 to DCe.obsFisco.Count - 1 do
   begin
-    Result[i] := FDocument.CreateElement('obsMarketplace');
+    Result[i] := FDocument.CreateElement('obsFisco');
 
-    Result[i].SetAttribute('xCampo', DCe.InfAdic.obsMarketplace[i].xCampo);
+    Result[i].SetAttribute('xCampo', DCe.obsFisco[i].xCampo);
 
-    if length(trim(DCe.InfAdic.obsMarketplace[i].xCampo)) > 20 then
+    if length(trim(DCe.obsFisco[i].xCampo)) > 20 then
       wAlerta('Z08', 'xCampo', DSC_XCAMPO, ERR_MSG_MAIOR);
 
-    if length(trim(DCe.InfAdic.obsMarketplace[i].xCampo)) = 0 then
+    if length(trim(DCe.obsFisco[i].xCampo)) = 0 then
       wAlerta('Z08', 'xCampo', DSC_XCAMPO, ERR_MSG_VAZIO);
 
     Result[i].AppendChild(AddNode(tcStr, 'Z09', 'xTexto', 01, 60, 1,
-                                    DCe.InfAdic.obsMarketplace[i].xTexto, DSC_XTEXTO));
+                                    DCe.obsFisco[i].xTexto, DSC_XTEXTO));
   end;
 
-  if DCe.InfAdic.obsMarketplace.Count > 10 then
+  if DCe.obsFisco.Count > 10 then
+    wAlerta('Z07', 'obsFisco', DSC_OBSCONT, ERR_MSG_MAIOR_MAXIMO + '10');
+end;
+
+function TDCeXmlWriter.Gerar_ObsMarketplace: TACBrXmlNodeArray;
+var
+  i: Integer;
+begin
+  Result := nil;
+  SetLength(Result, DCe.obsMarketplace.Count);
+
+  for i := 0 to DCe.obsMarketplace.Count - 1 do
+  begin
+    Result[i] := FDocument.CreateElement('obsMarketplace');
+
+    Result[i].SetAttribute('xCampo', DCe.obsMarketplace[i].xCampo);
+
+    if length(trim(DCe.obsMarketplace[i].xCampo)) > 20 then
+      wAlerta('Z08', 'xCampo', DSC_XCAMPO, ERR_MSG_MAIOR);
+
+    if length(trim(DCe.obsMarketplace[i].xCampo)) = 0 then
+      wAlerta('Z08', 'xCampo', DSC_XCAMPO, ERR_MSG_VAZIO);
+
+    Result[i].AppendChild(AddNode(tcStr, 'Z09', 'xTexto', 01, 60, 1,
+                                    DCe.obsMarketplace[i].xTexto, DSC_XTEXTO));
+  end;
+
+  if DCe.obsMarketplace.Count > 10 then
     wAlerta('Z07', 'obsMarketplace', DSC_OBSCONT, ERR_MSG_MAIOR_MAXIMO + '10');
+end;
+
+function TDCeXmlWriter.Gerar_ObsECT: TACBrXmlNodeArray;
+var
+  i: Integer;
+begin
+  Result := nil;
+  SetLength(Result, DCe.obsECT.Count);
+
+  for i := 0 to DCe.obsECT.Count - 1 do
+  begin
+    Result[i] := FDocument.CreateElement('obsECT');
+
+    Result[i].SetAttribute('xCampo', DCe.obsECT[i].xCampo);
+
+    if length(trim(DCe.obsECT[i].xCampo)) > 20 then
+      wAlerta('Z08', 'xCampo', DSC_XCAMPO, ERR_MSG_MAIOR);
+
+    if length(trim(DCe.obsECT[i].xCampo)) = 0 then
+      wAlerta('Z08', 'xCampo', DSC_XCAMPO, ERR_MSG_VAZIO);
+
+    Result[i].AppendChild(AddNode(tcStr, 'Z09', 'xTexto', 01, 60, 1,
+                                    DCe.obsECT[i].xTexto, DSC_XTEXTO));
+  end;
+
+  if DCe.obsECT.Count > 10 then
+    wAlerta('Z07', 'obsECT', DSC_OBSCONT, ERR_MSG_MAIOR_MAXIMO + '10');
 end;
 
 function TDCeXmlWriter.Gerar_InfDec: TACBrXmlNode;
@@ -722,11 +798,43 @@ begin
            'legislação. Sob pena de reclusão de 2 (dois) e 5 (cinco) anos, e ' +
            'multa (Lei 8.137/90, Art 1a, V)';
 
+  DCe.infDec.xObs1 := xObs1;
+  DCe.infDec.xObs2 := xObs2;
+
   Result := FDocument.CreateElement('infDec');
 
   Result.AppendChild(AddNode(tcStr, 'ZA02', 'xObs1', 1, 2000, 1, xObs1, ''));
 
   Result.AppendChild(AddNode(tcStr, 'ZA03', 'xObs2', 1, 2000, 1, xObs2, ''));
+end;
+
+function TDCeXmlWriter.GerarProtDCe: TACBrXmlNode;
+var
+  xmlNode: TACBrXmlNode;
+begin
+  Result := FDocument.CreateElement('protDCe');
+
+  Result.SetAttribute('versao', FloatToString(DCe.infDCe.Versao, '.', '#0.00'));
+
+  xmlNode := Result.AddChild('infProt');
+
+  xmlNode.AddChild('tpAmb').Content := TipoAmbienteToStr(DCe.procDCe.tpAmb);
+
+  xmlNode.AddChild('verAplic').Content := DCe.procDCe.verAplic;
+
+  xmlNode.AddChild('chBPe').Content := DCe.procDCe.chDFe;
+
+  xmlNode.AddChild('dhRecbto').Content :=
+    FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', DCe.procDCe.dhRecbto) +
+    GetUTC(CodigoUFparaUF(DCe.Ide.cUF), DCe.procDCe.dhRecbto);
+
+  xmlNode.AddChild('nProt').Content := DCe.procDCe.nProt;
+
+  xmlNode.AddChild('digVal').Content := DCe.procDCe.digVal;
+
+  xmlNode.AddChild('cStat').Content := IntToStr(DCe.procDCe.cStat);
+
+  xmlNode.AddChild('xMotivo').Content := DCe.procDCe.xMotivo;
 end;
 
 function TDCeXmlWriter.GerarXml: boolean;
@@ -747,6 +855,7 @@ begin
   DCe.Ide.tpAmb := tpAmb;
 //  DCe.ide.tpEmis := tpEmis;
 
+  {
   case DCe.Ide.tpEmit of
     teFisco:
       xCNPJCPF := DCe.Fisco.CNPJ;
@@ -760,12 +869,15 @@ begin
   else
     xCNPJCPF := DCe.Transportadora.CNPJ;
   end;
+  }
+  xCNPJCPF := DCe.emit.CNPJCPF;
 
   DCe.Ide.modelo := 99;
 
   ChaveDCe := GerarChaveAcesso(DCe.ide.cUF, DCe.ide.dhEmi, xCNPJCPF,
       DCe.ide.serie, DCe.ide.nDC, StrToInt(TipoEmissaoToStr(DCe.ide.tpEmis)),
-      StrToInt(EmitenteDCeToStr(DCe.Ide.tpEmit)), DCe.Ide.nSiteAutoriz,
+      StrToInt(EmitenteDCeToStr(DCe.Ide.tpEmit)),
+      StrToInt(SiteAutorizadorToStr(DCe.Ide.nSiteAutoriz)),
       DCe.ide.cDC, DCe.Ide.modelo);
 
   DCe.infDCe.ID := 'DCe' + ChaveDCe;
@@ -784,7 +896,7 @@ begin
   else
     FDocument.Root := DCeNode;
 
-  xmlNode := Gerar_InfDCe();
+  xmlNode := Gerar_InfDCe;
   DCeNode.AppendChild(xmlNode);
 
   if DCe.infDCeSupl.qrCode <> '' then
@@ -820,7 +932,7 @@ begin
 
   if DCe.procDCe.nProt <> '' then
   begin
-//    xmlNode := GerarProtDCe;
+    xmlNode := GerarProtDCe;
     FDocument.Root.AppendChild(xmlNode);
   end;
 end;

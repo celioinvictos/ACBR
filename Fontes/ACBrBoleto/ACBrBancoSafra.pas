@@ -328,7 +328,7 @@ begin
               Space(9)                                          + // 009-017 / Campo sem Preenchimento
               IfThen(TipoInscricao = pFisica, '1', '2')         + // 018-018 / Tipo de Inscrição da Empresa
               PadLeft(Trim(OnlyNumber(CNPJCPF)), 14, '0')       + // 019-032 / Número de Inscrição da Empresa
-              PadLeft(CodigoCedente, 20, '0')                   + // 033-052 / Código do Convênio no Banco
+              PadLeft(CodigoCedente, 20, ' ')                   + // 033-052 / Código do Convênio no Banco
               PadRight(Agencia, 5, '0')                         + // 053-057 / Agência Mantenedora da Conta
               PadLeft(AgenciaDigito, 1)                         + // 058-058 / Dígito Verificador da Agência
               PadLeft(Conta, 12, '0')                           + // 059-070 / Número da Conta Corrente
@@ -358,7 +358,7 @@ begin
                ' '                                                              + // 017-017 / Campo sem preenchimento
                IfThen(TipoInscricao = pFisica, '1', '2')                        + // 018-018 / Tipo de Inscrição da Empresa
                PadLeft(Trim(OnlyNumber(CNPJCPF)), 15, '0')                      + // 019-033 / Número de Inscrição da Empresa
-               PadLeft(CodigoCedente, 20, '0')                                  + // 034-053 / Código do Convênio no Banco
+               PadLeft(CodigoCedente, 20, ' ')                                  + // 034-053 / Código do Convênio no Banco
                PadRight(Agencia, 5, '0')                                        + // 054-058 / Agência Mantenedora da Conta
                PadLeft(AgenciaDigito, 1)                                        + // 059-059 / Dígito Verificador da Agência
                PadLeft(Conta, 12, '0')                                          + // 060-071 / Número da Conta Corrente
@@ -484,7 +484,9 @@ var
   sTipoDesconto,
   sDataDesconto,
   sDiasProtesto,
-  sDiasBaixaDevol : String;
+  sDiasBaixaDevol,
+  LRespEmissao,
+  LRespDistribuicao : String;
   ACodProtesto: Char;
   function MontarInstrucoes1: string;
   begin
@@ -672,6 +674,20 @@ begin
        sTipoCarteira := '2';
     end;
 
+    {Responsavel pela emissao VersaoLayout 60}
+    case ACBrBoleto.Cedente.ResponEmissao of
+      tbBancoEmite : LRespEmissao := '1'
+    else
+      LRespEmissao := '2';
+    end;
+
+    {Distribuição Layout 60}
+    case ACBrBoleto.Cedente.IdentDistribuicao of
+      tbBancoDistribui : LRespDistribuicao := '1'
+    else
+      LRespDistribuicao := '2';
+    end;
+
     case ACBrBoleto.Cedente.TipoDocumento of
       Tradicional: sTipoDocto := '1';
       Escritural: sTipoDocto := '2';
@@ -761,8 +777,8 @@ begin
                  PadLeft(ACBrTitulo.Carteira, 1)                                       + // 058-058 / Código da Carteira
                  sTipoCarteira                                                         + // 059-059 / Forma de Cadastro do título no banco
                  sTipoDocto                                                            + // 060-060 / Tipo de Documento
-                 sTipoCobranca                                                         + // 061-061 / Identificação da Emissão do Bloqueto
-                 '2'                                                                   + // 062-062 / Identificação da Distribuição
+                 IfThen(LayoutVersaoLote=60,LRespEmissao,sTipoCobranca)                + // 061-061 / Identificação da Emissão do Bloqueto
+                 IfThen(LayoutVersaoLote=60,LRespDistribuicao,'2')                     + // 062-062 / Identificação da Distribuição
                  ifThen(NaoEstaVazio(ACBrTitulo.NumeroDocumento),
                         PadRight(ACBrTitulo.NumeroDocumento, 15),
                         PadRight(ACBrTitulo.NossoNumero, 15))                          + // 063-077 / Número do Documento de Cobrança

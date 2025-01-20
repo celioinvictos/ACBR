@@ -39,7 +39,7 @@ interface
 uses
   SysUtils, Classes, StrUtils,
   ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXParametros, ACBrNFSeXGravarXml;
+  ACBrNFSeXGravarXml;
 
 type
   { TNFSeW_SigISS }
@@ -292,7 +292,6 @@ var
 begin
   Configuracao;
 
-  Opcoes.QuebraLinha := FpAOwner.ConfigGeral.QuebradeLinha;
   Opcoes.DecimalChar := ',';
 
   ListaDeAlertas.Clear;
@@ -488,7 +487,6 @@ var
 begin
   Configuracao;
 
-  Opcoes.QuebraLinha := FpAOwner.ConfigGeral.QuebradeLinha;
   Opcoes.DecimalChar := ',';
 
   ListaDeAlertas.Clear;

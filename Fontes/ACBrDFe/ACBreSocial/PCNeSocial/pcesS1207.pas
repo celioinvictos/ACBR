@@ -5,7 +5,7 @@
 {                                                                              }
 { Direitos Autorais Reservados (c) 2020 Daniel Simoes de Almeida               }
 {                                                                              }
-{ Colaboradores nesse arquivo: Italo Jurisato Junior                           }
+{ Colaboradores nesse arquivo: Italo Giurizzato Junior                         }
 {                              Jean Carlo Cantu                                }
 {                              Tiago Ravache                                   }
 {                              Guilherme Costa                                 }
@@ -588,6 +588,17 @@ begin
             itemRemun.fatorRubr  := StrToFloatDef(INIRec.ReadString(sSecao, 'fatorRubr', '0'), 0);
             ItemRemun.vrRubr     := StrToFloatDef(INIRec.ReadString(sSecao, 'vrRubr', '0'), 0);
             ItemRemun.indApurIR  := eSStrToTpindApurIR(Ok, INIRec.ReadString(sSecao, 'indApurIR', '0'));
+
+            sSecao := 'descFolha' + IntToStrZero(I, 3) + IntToStrZero(J, 3) + IntToStrZero(K, 3);
+            sFim := INIRec.ReadString(sSecao, 'tpDesc', '');
+
+            if(Trim(sFim) <> '') then
+            begin
+              itemRemun.descFolha.tpDesc := eSStrToTtpDesc(sFim);
+              itemRemun.descFolha.instFinanc := INIRec.ReadString(sSecao, 'instFinanc', '');
+              itemRemun.descFolha.nrDoc := INIRec.ReadString(sSecao, 'nrDoc', '');
+              itemRemun.descFolha.observacao := INIRec.ReadString(sSecao, 'observacao', '');
+            end;
 
             Inc(K);
           end;

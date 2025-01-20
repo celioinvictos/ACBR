@@ -43,8 +43,8 @@ uses
   ACBrDFe, ACBrDFeConfiguracoes, ACBrBase,
   ACBrCTeConfiguracoes, ACBrCTeWebServices, ACBrCTeConhecimentos,
   ACBrCTeDACTEClass, ACBrDFeException,
-  pcteCTe, pcnConversao, pcteConversaoCTe,
-  pcteEnvEventoCTe, pcteInutCTe, 
+  ACBrCTe.Classes, pcnConversao, pcteConversaoCTe,
+  ACBrCTe.EnvEvento, pcteInutCTe,
   ACBrDFeUtil;
 
 const
@@ -316,15 +316,8 @@ var
 begin
 //  VersaoDFe := DblToVersaoCTe(ok, Versao);  // Deixado para usu futuro
 
-  if TipoAmbiente = taHomologacao then
-  begin
-    if ( (TipoEmissao in [teSVCSP]) and (CUF in [41, 50, 51]) ) then
-      urlUF := LerURLDeParams('CTe', GetUFFormaEmissao, TipoAmbiente, 'URL-QRCode', 0)
-    else
-      urlUF := LerURLDeParams('CTe', CUFtoUF(CUF), TipoAmbiente, 'URL-QRCode', 0);
-  end
-  else
-    urlUF := LerURLDeParams('CTe', CUFtoUF(CUF), TipoAmbiente, 'URL-QRCode', 0);
+
+  urlUF := LerURLDeParams('CTe', CUFtoUF(CUF), TipoAmbiente, 'URL-QRCode', 0);
 
   if Pos('?', urlUF) <= 0 then
     urlUF := urlUF + '?';
@@ -350,11 +343,11 @@ end;
 
 function TACBrCTe.GravarStream(AStream: TStream): Boolean;
 begin
-  if EstaVazio(FEventoCTe.Gerador.ArquivoFormatoXML) then
+  if EstaVazio(FEventoCTe.XmlEnvio) then
     FEventoCTe.GerarXML;
 
   AStream.Size := 0;
-  WriteStrToStream(AStream, AnsiString(FEventoCTe.Gerador.ArquivoFormatoXML));
+  WriteStrToStream(AStream, AnsiString(FEventoCTe.XmlEnvio));
   Result := True;
 end;
 
@@ -367,17 +360,17 @@ function TACBrCTe.cStatConfirmado(AValue: Integer): Boolean;
 begin
   case AValue of
     100, 150: Result := True;
-    else
-      Result := False;
+  else
+    Result := False;
   end;
 end;
 
 function TACBrCTe.cStatProcessado(AValue: Integer): Boolean;
 begin
   case AValue of
-    100, 110, 150, 301, 302: Result := True;
-    else
-      Result := False;
+    100, 150: Result := True;
+  else
+    Result := False;
   end;
 end;
 
@@ -385,8 +378,8 @@ function TACBrCTe.cStatCancelado(AValue: integer): Boolean;
 begin
   case AValue of
     101, 151, 155: Result := True;
-    else
-      Result := False;
+  else
+    Result := False;
   end;
 end;
 
@@ -432,6 +425,7 @@ begin
   case Configuracoes.Geral.ModeloDF of
     moCTeOS: Result := schCTeOS;
     moGTVe: Result := schGTVe;
+    moCTeSimp: Result := schCTeSimp;
   else
     Result := schCTe;
   end;

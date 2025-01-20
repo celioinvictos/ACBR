@@ -87,7 +87,7 @@ begin
       ValorUnitario := ObterConteudo(ANodes[i].Childrens.FindAnyNs('nValorServico'), tcDe2);
       Descricao := ObterConteudo(ANodes[i].Childrens.FindAnyNs('sDescricao'), tcStr);
       Descricao := StringReplace(Descricao, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
       Aliquota := ObterConteudo(ANodes[i].Childrens.FindAnyNs('nAliquota'), tcDe2);
       ValorISS := ObterConteudo(ANodes[i].Childrens.FindAnyNs('nValorIss'), tcDe2);
       ValorTotal := ObterConteudo(ANodes[i].Childrens.FindAnyNs('nValorTotal'), tcDe2);
@@ -113,6 +113,7 @@ end;
 procedure TNFSeR_Simple.LerTomador(const ANode: TACBrXmlNode);
 var
   AuxNode: TACBrXmlNode;
+  aValor: string;
 begin
   AuxNode := ANode.Childrens.FindAnyNs('tTomador');
 
@@ -128,6 +129,13 @@ begin
       Endereco.UF := ObterConteudo(AuxNode.Childrens.FindAnyNs('sUfTomador'), tcStr);
 
       Contato.Email := ObterConteudo(AuxNode.Childrens.FindAnyNs('sEmailTomador'), tcStr);
+
+      aValor := ObterConteudo(AuxNode.Childrens.FindAnyNs('sTipoTomador'), tcStr);
+
+      TomadorExterior := snNao;
+
+      if aValor = 'E' then
+        TomadorExterior := snSim;
     end;
   end;
 end;
@@ -160,6 +168,8 @@ begin
 
   if XmlNode = nil then
     raise Exception.Create('Arquivo xml vazio.');
+
+  NFSe.tpXML := tpXml;
 
   if tpXML = txmlNFSe then
     Result := LerXmlNfse(XmlNode)
@@ -222,12 +232,11 @@ begin
 
   for i := 1 to 10 do
     aValor := aValor +
-      ObterConteudo(ANode.Childrens.FindAnyNs('sObservacao' + IntToStr(i)), tcStr){ +
-      ';'};
+      ObterConteudo(ANode.Childrens.FindAnyNs('sObservacao' + IntToStr(i)), tcStr);
 
   NFSe.OutrasInformacoes := aValor;
   NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, FpQuebradeLinha,
-                                      sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+                                                    sLineBreak, [rfReplaceAll]);
 
   LerCampoLink;
 end;
@@ -236,9 +245,10 @@ function TNFSeR_Simple.LerXmlRps(const ANode: TACBrXmlNode): Boolean;
 //var
 //  aValor: string;
 begin
+  Result := True;
+
   if not Assigned(ANode) then Exit;
 
-  Result := True;
   (*
   with NFSe do
   begin

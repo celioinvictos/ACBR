@@ -56,11 +56,11 @@ type
 
   TinfDCe = class(TObject)
   private
-    FId: String;
+    FId: string;
     FVersao: Double;
 
   public
-    property Id: String read FId write FId;
+    property Id: string read FId write FId;
     property versao: Double read FVersao write FVersao;
   end;
 
@@ -74,10 +74,10 @@ type
     FdhEmi: TDateTime;
     FtpEmis: TACBrTipoEmissao;
     FtpEmit: TEmitenteDCe;
-    FnSiteAutoriz: Integer;
+    FnSiteAutoriz: TSiteAutorizador;
     FcDV: Integer;
     FtpAmb: TACBrTipoAmbiente;
-    FverProc: String;
+    FverProc: string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -90,118 +90,118 @@ type
     property dhEmi: TDateTime read FdhEmi write FdhEmi;
     property tpEmis: TACBrTipoEmissao read FtpEmis write FtpEmis;
     property tpEmit: TEmitenteDCe read FtpEmit write FtpEmit;
-    property nSiteAutoriz: Integer read FnSiteAutoriz write FnSiteAutoriz;
+    property nSiteAutoriz: TSiteAutorizador read FnSiteAutoriz write FnSiteAutoriz;
     property cDV: Integer read FcDV write FcDV;
     property tpAmb: TACBrTipoAmbiente read FtpAmb write FtpAmb;
-    property verProc: String read FverProc write FverProc;
+    property verProc: string read FverProc write FverProc;
   end;
 
   Tendereco = class(TObject)
   private
-    FxLgr: String;
-    Fnro: String;
-    FxCpl: String;
-    FxBairro: String;
+    FxLgr: string;
+    Fnro: string;
+    FxCpl: string;
+    FxBairro: string;
     FcMun: Integer;
-    FxMun: String;
-    FUF: String;
+    FxMun: string;
+    FUF: string;
     FCEP: Integer;
     FcPais: Integer;
     FxPais: string;
-    Ffone: String;
-    Femail: String;
+    Ffone: string;
+    Femail: string;
   public
-    property xLgr: String read FxLgr write FxLgr;
-    property nro: String read Fnro write Fnro;
-    property xCpl: String read FxCpl write FxCpl;
-    property xBairro: String read FxBairro write FxBairro;
+    property xLgr: string read FxLgr write FxLgr;
+    property nro: string read Fnro write Fnro;
+    property xCpl: string read FxCpl write FxCpl;
+    property xBairro: string read FxBairro write FxBairro;
     property cMun: Integer read FcMun write FcMun;
-    property xMun: String read FxMun write FxMun;
-    property UF: String read FUF write FUF;
+    property xMun: string read FxMun write FxMun;
+    property UF: string read FUF write FUF;
     property CEP: Integer read FCEP write FCEP;
     property cPais: Integer read FcPais write FcPais;
-    property xPais: String read FxPais write FxPais;
-    property fone: String read Ffone write Ffone;
-    property email: String read Femail write Femail;
+    property xPais: string read FxPais write FxPais;
+    property fone: string read Ffone write Ffone;
+    property email: string read Femail write Femail;
   end;
 
   Temit = class(TObject)
   private
-    FCNPJCPF: String;
-    FidOutros: String;
-    FxNome: String;
+    FCNPJCPF: string;
+    FidOutros: string;
+    FxNome: string;
     FenderEmit: Tendereco;
   public
     constructor Create;
     destructor Destroy; override;
 
-    property CNPJCPF: String read FCNPJCPF write FCNPJCPF;
-    property idOutros: String read FidOutros write FidOutros;
-    property xNome: String read FxNome write FxNome;
+    property CNPJCPF: string read FCNPJCPF write FCNPJCPF;
+    property idOutros: string read FidOutros write FidOutros;
+    property xNome: string read FxNome write FxNome;
     property enderEmit: Tendereco read FenderEmit write FenderEmit;
   end;
 
   TFisco = class(TObject)
   private
-    FCNPJ: String;
-    FxOrgao: String;
-    FUF: String;
+    FCNPJ: string;
+    FxOrgao: string;
+    FUF: string;
   public
-    property CNPJ: String read FCNPJ write FCNPJ;
-    property xOrgao: String read FxOrgao write FxOrgao;
-    property UF: String read FUF write FUF;
+    property CNPJ: string read FCNPJ write FCNPJ;
+    property xOrgao: string read FxOrgao write FxOrgao;
+    property UF: string read FUF write FUF;
   end;
 
   TMarketplace = class(TObject)
   private
-    FCNPJ: String;
-    FxNome: String;
-    FSite: String;
+    FCNPJ: string;
+    FxNome: string;
+    FSite: string;
   public
-    property CNPJ: String read FCNPJ write FCNPJ;
-    property xNome: String read FxNome write FxNome;
-    property Site: String read FSite write FSite;
+    property CNPJ: string read FCNPJ write FCNPJ;
+    property xNome: string read FxNome write FxNome;
+    property Site: string read FSite write FSite;
   end;
 
   TTransportadora = class(TObject)
   private
-    FCNPJ: String;
-    FxNome: String;
+    FCNPJ: string;
+    FxNome: string;
   public
-    property CNPJ: String read FCNPJ write FCNPJ;
-    property xNome: String read FxNome write FxNome;
+    property CNPJ: string read FCNPJ write FCNPJ;
+    property xNome: string read FxNome write FxNome;
   end;
 
-  TEmpEmisProp = class(TObject)
+  TECT = class(TObject)
   private
-    FCNPJ: String;
-    FxNome: String;
+    FCNPJ: string;
+    FxNome: string;
   public
-    property CNPJ: String read FCNPJ write FCNPJ;
-    property xNome: String read FxNome write FxNome;
+    property CNPJ: string read FCNPJ write FCNPJ;
+    property xNome: string read FxNome write FxNome;
   end;
 
   Tdest = class(TObject)
   private
-    FCNPJCPF: String;
-    FidOutros: String;
-    FxNome: String;
+    FCNPJCPF: string;
+    FidOutros: string;
+    FxNome: string;
     FenderDest: Tendereco;
   public
     constructor Create;
     destructor Destroy; override;
 
-    property CNPJCPF: String read FCNPJCPF write FCNPJCPF;
-    property idOutros: String read FidOutros write FidOutros;
-    property xNome: String read FxNome write FxNome;
+    property CNPJCPF: string read FCNPJCPF write FCNPJCPF;
+    property idOutros: string read FidOutros write FidOutros;
+    property xNome: string read FxNome write FxNome;
     property enderDest: Tendereco read FenderDest write FenderDest;
   end;
 
   TautXMLCollectionItem = class(TObject)
   private
-    FCNPJCPF: String;
+    FCNPJCPF: string;
   public
-    property CNPJCPF: String read FCNPJCPF write FCNPJCPF;
+    property CNPJCPF: string read FCNPJCPF write FCNPJCPF;
   end;
 
   TautXMLCollection = class(TACBrObjectList)
@@ -217,15 +217,15 @@ type
   TProd = class(TObject)
   private
     FnItem: Integer;
-    FxProd: String;
-    FNCM: String;
+    FxProd: string;
+    FNCM: string;
     FqCom: Currency;
     FvUnCom: Double;
     FvProd: Currency;
   public
     property nItem: Integer read FnItem write FnItem;
-    property xProd: String read FxProd write FxProd;
-    property NCM: String read FNCM write FNCM;
+    property xProd: string read FxProd write FxProd;
+    property NCM: string read FNCM write FNCM;
     property qCom: Currency read FqCom write FqCom;
     property vUnCom: Double read FvUnCom write FvUnCom;
     property vProd: Currency read FvProd write FvProd;
@@ -234,13 +234,13 @@ type
   TDetCollectionItem = class(TObject)
   private
     FProd: TProd;
-    FinfAdProd: String;
+    FinfAdProd: string;
   public
     constructor Create;
     destructor Destroy; override;
 
     property Prod: TProd read FProd write FProd;
-    property infAdProd: String read FinfAdProd write FinfAdProd;
+    property infAdProd: string read FinfAdProd write FinfAdProd;
   end;
 
   TDetCollection = class(TACBrObjectList)
@@ -263,80 +263,83 @@ type
   Ttransp = class(TObject)
   private
     FmodTrans: TModTrans;
-    FCNPJTrans: String;
+    FCNPJTransp: string;
   public
     property modTrans: TModTrans read FmodTrans write FmodTrans;
-    property CNPJTrans: String read FCNPJTrans write FCNPJTrans;
+    property CNPJTransp: string read FCNPJTransp write FCNPJTransp;
   end;
 
-  TobsContCollectionItem = class(TObject)
+  TobservacoesCollectionItem = class(TObject)
   private
-    FxCampo: String;
-    FxTexto: String;
+    FxCampo: string;
+    FxTexto: string;
   public
-    property xCampo: String read FxCampo write FxCampo;
-    property xTexto: String read FxTexto write FxTexto;
+    property xCampo: string read FxCampo write FxCampo;
+    property xTexto: string read FxTexto write FxTexto;
   end;
 
-  TobsContCollection = class(TACBrObjectList)
+  TobsEmitCollection = class(TACBrObjectList)
   private
-    function GetItem(Index: Integer): TobsContCollectionItem;
-    procedure SetItem(Index: Integer; Value: TobsContCollectionItem);
+    function GetItem(Index: Integer): TobservacoesCollectionItem;
+    procedure SetItem(Index: Integer; Value: TobservacoesCollectionItem);
   public
-    function Add: TobsContCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
-    function New: TobsContCollectionItem;
-    property Items[Index: Integer]: TobsContCollectionItem read GetItem write SetItem; default;
-  end;
-
-  TobsMarketplaceCollectionItem = class(TObject)
-  private
-    FxCampo: String;
-    FxTexto: String;
-  public
-    property xCampo: String read FxCampo write FxCampo;
-    property xTexto: String read FxTexto write FxTexto;
+    function Add: TobservacoesCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TobservacoesCollectionItem;
+    property Items[Index: Integer]: TobservacoesCollectionItem read GetItem write SetItem; default;
   end;
 
   TobsMarketplaceCollection = class(TACBrObjectList)
   private
-    function GetItem(Index: Integer): TobsMarketplaceCollectionItem;
-    procedure SetItem(Index: Integer; Value: TobsMarketplaceCollectionItem);
+    function GetItem(Index: Integer): TobservacoesCollectionItem;
+    procedure SetItem(Index: Integer; Value: TobservacoesCollectionItem);
   public
-    function Add: TobsMarketplaceCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
-    function New: TobsMarketplaceCollectionItem;
-    property Items[Index: Integer]: TobsMarketplaceCollectionItem read GetItem write SetItem; default;
+    function Add: TobservacoesCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TobservacoesCollectionItem;
+    property Items[Index: Integer]: TobservacoesCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TobsFiscoCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TobservacoesCollectionItem;
+    procedure SetItem(Index: Integer; Value: TobservacoesCollectionItem);
+  public
+    function Add: TobservacoesCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TobservacoesCollectionItem;
+    property Items[Index: Integer]: TobservacoesCollectionItem read GetItem write SetItem; default;
+  end;
+
+  TobsECTCollection = class(TACBrObjectList)
+  private
+    function GetItem(Index: Integer): TobservacoesCollectionItem;
+    procedure SetItem(Index: Integer; Value: TobservacoesCollectionItem);
+  public
+    function Add: TobservacoesCollectionItem; overload; deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Obsoleta: Use a função New'{$EndIf};
+    function New: TobservacoesCollectionItem;
+    property Items[Index: Integer]: TobservacoesCollectionItem read GetItem write SetItem; default;
   end;
 
   TinfAdic = class(TObject)
   private
-    FinfAdFisco: String;
-    FinfCpl: String;
+    FinfAdFisco: string;
+    FinfCpl: string;
     FinfAdMarketplace: string;
     FinfAdTransp: string;
-    FobsCont: TobsContCollection;
-    FobsMarketplace: TobsMarketplaceCollection;
-
-    procedure SetobsCont(Value: TobsContCollection);
-    procedure SetobsMarketplace(Value: TobsMarketplaceCollection);
+    FinfAdECT: string;
   public
-    constructor Create;
-    destructor Destroy; override;
-
-    property infAdFisco: String read FinfAdFisco write FinfAdFisco;
-    property infCpl: String read FinfCpl write FinfCpl;
-    property infAdMarketplace: String read FinfAdMarketplace write FinfAdMarketplace;
-    property infAdTransp: String read FinfAdTransp write FinfAdTransp;
-    property obsCont: TobsContCollection read FobsCont write SetobsCont;
-    property obsMarketplace: TobsMarketplaceCollection read FobsMarketplace write SetobsMarketplace;
+    property infAdFisco: string read FinfAdFisco write FinfAdFisco;
+    property infCpl: string read FinfCpl write FinfCpl;
+    property infAdMarketplace: string read FinfAdMarketplace write FinfAdMarketplace;
+    property infAdTransp: string read FinfAdTransp write FinfAdTransp;
+    property infAdECT: string read FinfAdECT write FinfAdECT;
   end;
 
   TinfDec = class(TObject)
   private
-    FxObs1: String;
-    FxObs2: String;
+    FxObs1: string;
+    FxObs2: string;
   public
-    property xObs1: String read FxObs1 write FxObs1;
-    property xObs2: String read FxObs2 write FxObs2;
+    property xObs1: string read FxObs1 write FxObs1;
+    property xObs2: string read FxObs2 write FxObs2;
   end;
 
   TinfSolicDCe = class(TObject)
@@ -348,11 +351,11 @@ type
 
   TinfDCeSupl = class(TObject)
   private
-    FqrCode: String;
-    FurlChave: String;
+    FqrCode: string;
+    FurlChave: string;
   public
-    property qrCode: String read FqrCode write FqrCode;
-    property urlChave: String read FurlChave write FurlChave;
+    property qrCode: string read FqrCode write FqrCode;
+    property urlChave: string read FurlChave write FurlChave;
   end;
 
   TDCe = class(TObject)
@@ -363,22 +366,30 @@ type
     FFisco: TFisco;
     FMarketplace: TMarketplace;
     FTransportadora: TTransportadora;
-    FEmpEmisProp: TEmpEmisProp;
+    FECT: TECT;
     Fdest: Tdest;
     FautXML: TautXMLCollection;
     Fdet: TDetCollection;
     Ftotal: Ttotal;
     Ftransp: Ttransp;
     FinfAdic: TinfAdic;
+    FobsEmit: TobsEmitCollection;
+    FobsMarketplace: TobsMarketplaceCollection;
     FinfDec: TinfDec;
     FinfSolicDCe: TinfSolicDCe;
     FinfDCeSupl: TinfDCeSupl;
 
     FProcDCe: TProcDFe;
     FSignature: TSignature;
+    FobsFisco: TobsFiscoCollection;
+    FobsECT: TobsECTCollection;
 
     procedure SetautXML(const Value: TautXMLCollection);
     procedure Setdet(Value: TDetCollection);
+    procedure SetobsEmit(Value: TobsEmitCollection);
+    procedure SetobsMarketplace(Value: TobsMarketplaceCollection);
+    procedure SetobsFisco(const Value: TobsFiscoCollection);
+    procedure SetobsECT(const Value: TobsECTCollection);
   public
     constructor Create;
     destructor Destroy; override;
@@ -389,13 +400,17 @@ type
     property Fisco: TFisco read FFisco write FFisco;
     property Marketplace: TMarketplace read FMarketplace write FMarketplace;
     property Transportadora: TTransportadora read FTransportadora write FTransportadora;
-    property EmpEmisProp: TEmpEmisProp read FEmpEmisProp write FEmpEmisProp;
+    property ECT: TECT read FECT write FECT;
     property dest: TDest read Fdest write Fdest;
     property autXML: TautXMLCollection read FautXML write SetautXML;
     property det: TDetCollection read Fdet write Setdet;
     property total: Ttotal read Ftotal write Ftotal;
     property transp: Ttransp read Ftransp write Ftransp;
     property infAdic: TinfAdic read FinfAdic write FinfAdic;
+    property obsEmit: TobsEmitCollection read FobsEmit write SetobsEmit;
+    property obsMarketplace: TobsMarketplaceCollection read FobsMarketplace write SetobsMarketplace;
+    property obsFisco: TobsFiscoCollection read FobsFisco write SetobsFisco;
+    property obsECT: TobsECTCollection read FobsECT write SetobsECT;
     property infDec: TinfDec read FinfDec write FinfDec;
     property infSolicDCe: TinfSolicDCe read FinfSolicDCe write FinfSolicDCe;
     property infDCeSupl: TinfDCeSupl read FinfDCeSupl write FinfDCeSupl;
@@ -420,7 +435,7 @@ begin
 
   FFisco := TFisco.Create;
   FMarketplace := TMarketplace.Create;
-  FEmpEmisProp := TEmpEmisProp.Create;
+  FECT := TECT.Create;
   FTransportadora := TTransportadora.Create;
   Fdest := Tdest.Create;
   FautXML := TautXMLCollection.Create;
@@ -431,7 +446,11 @@ begin
   FinfDec := TinfDec.Create;
   FinfSolicDCe := TinfSolicDCe.Create;
   FinfDCeSupl := TinfDCeSupl.Create;
-  FProcDCe := TProcDFe.Create('', '', '');
+  FobsEmit := TobsEmitCollection.Create;
+  FobsMarketplace := TobsMarketplaceCollection.Create;
+  FobsFisco := TobsFiscoCollection.Create;
+  FobsECT := TobsECTCollection.Create;
+  FProcDCe := TProcDFe.Create('', '', '', '');
   Fsignature := Tsignature.create;
 end;
 
@@ -443,7 +462,7 @@ begin
   FFisco.Free;
   FMarketplace.Free;
   FTransportadora.Free;
-  FEmpEmisProp.Free;
+  FECT.Free;
   Fdest.Free;
   FautXML.Free;
   FDet.Free;
@@ -453,6 +472,10 @@ begin
   FinfDec.Free;
   FinfSolicDCe.Free;
   FinfDCeSupl.Free;
+  FobsEmit.Free;
+  FobsMarketplace.Free;
+  FobsFisco.Free;
+  FobsECT.Free;
   FProcDCe.Free;
   Fsignature.Free;
 
@@ -467,6 +490,26 @@ end;
 procedure TDCe.Setdet(Value: TDetCollection);
 begin
   Fdet.Assign(Value);
+end;
+
+procedure TDCe.SetobsECT(const Value: TobsECTCollection);
+begin
+  FobsECT := Value;
+end;
+
+procedure TDCe.SetobsEmit(Value: TobsEmitCollection);
+begin
+  FobsEmit.Assign(Value);
+end;
+
+procedure TDCe.SetobsFisco(const Value: TobsFiscoCollection);
+begin
+  FobsFisco := Value;
+end;
+
+procedure TDCe.SetobsMarketplace(Value: TobsMarketplaceCollection);
+begin
+  FobsMarketplace.Assign(Value);
 end;
 
 { TIde }
@@ -580,76 +623,97 @@ end;
 
 { TobsContCollection }
 
-function TobsContCollection.Add: TobsContCollectionItem;
+function TobsEmitCollection.Add: TobservacoesCollectionItem;
 begin
   Result := Self.New;
 end;
 
-function TobsContCollection.GetItem(Index: Integer): TobsContCollectionItem;
+function TobsEmitCollection.GetItem(Index: Integer): TobservacoesCollectionItem;
 begin
-  Result := TobsContCollectionItem(inherited Items[Index]);
+  Result := TobservacoesCollectionItem(inherited Items[Index]);
 end;
 
-procedure TobsContCollection.SetItem(Index: Integer; Value: TobsContCollectionItem);
+procedure TobsEmitCollection.SetItem(Index: Integer; Value: TobservacoesCollectionItem);
 begin
   inherited Items[Index] := Value;
 end;
 
-function TobsContCollection.New: TobsContCollectionItem;
+function TobsEmitCollection.New: TobservacoesCollectionItem;
 begin
-  Result := TobsContCollectionItem.Create;
+  Result := TobservacoesCollectionItem.Create;
   Self.Add(Result);
 end;
 
 { TobsContCollection }
 
-function TobsMarketplaceCollection.Add: TobsMarketplaceCollectionItem;
+function TobsMarketplaceCollection.Add: TobservacoesCollectionItem;
 begin
   Result := Self.New;
 end;
 
-function TobsMarketplaceCollection.GetItem(Index: Integer): TobsMarketplaceCollectionItem;
+function TobsMarketplaceCollection.GetItem(Index: Integer): TobservacoesCollectionItem;
 begin
-  Result := TobsMarketplaceCollectionItem(inherited Items[Index]);
+  Result := TobservacoesCollectionItem(inherited Items[Index]);
 end;
 
-procedure TobsMarketplaceCollection.SetItem(Index: Integer; Value: TobsMarketplaceCollectionItem);
+procedure TobsMarketplaceCollection.SetItem(Index: Integer; Value: TobservacoesCollectionItem);
 begin
   inherited Items[Index] := Value;
 end;
 
-function TobsMarketplaceCollection.New: TobsMarketplaceCollectionItem;
+function TobsMarketplaceCollection.New: TobservacoesCollectionItem;
 begin
-  Result := TobsMarketplaceCollectionItem.Create;
+  Result := TobservacoesCollectionItem.Create;
   Self.Add(Result);
 end;
 
-{ TinfAdic }
+{ TobsFiscoCollection }
 
-constructor TinfAdic.Create;
+function TobsFiscoCollection.Add: TobservacoesCollectionItem;
 begin
-  inherited Create;
-
-  FobsCont  := TobsContCollection.Create;
-  FobsMarketplace := TobsMarketplaceCollection.Create;
+  Result := Self.New;
 end;
 
-destructor TinfAdic.Destroy;
+function TobsFiscoCollection.GetItem(
+  Index: Integer): TobservacoesCollectionItem;
 begin
-  FobsCont.Free;
-  FobsMarketplace.Free;
-
-  inherited;
+  Result := TobservacoesCollectionItem(inherited Items[Index]);
 end;
 
-procedure TinfAdic.SetobsCont(Value: TobsContCollection);
+function TobsFiscoCollection.New: TobservacoesCollectionItem;
 begin
-  FobsCont.Assign(Value);
+  Result := TobservacoesCollectionItem.Create;
+  Self.Add(Result);
 end;
 
-procedure TinfAdic.SetobsMarketplace(Value: TobsMarketplaceCollection);
+procedure TobsFiscoCollection.SetItem(Index: Integer;
+  Value: TobservacoesCollectionItem);
 begin
-  FobsMarketplace.Assign(Value);
+  inherited Items[Index] := Value;
+end;
+
+{ TobsECTCollection }
+
+function TobsECTCollection.Add: TobservacoesCollectionItem;
+begin
+  Result := Self.New;
+end;
+
+function TobsECTCollection.GetItem(Index: Integer): TobservacoesCollectionItem;
+begin
+  Result := TobservacoesCollectionItem(inherited Items[Index]);
+end;
+
+function TobsECTCollection.New: TobservacoesCollectionItem;
+begin
+  Result := TobservacoesCollectionItem.Create;
+  Self.Add(Result);
+end;
+
+procedure TobsECTCollection.SetItem(Index: Integer;
+  Value: TobservacoesCollectionItem);
+begin
+  inherited Items[Index] := Value;
 end;
 
 end.

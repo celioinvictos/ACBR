@@ -39,11 +39,11 @@ interface
 uses
   SysUtils, Classes,
   pcnConversao, pcnGerador,
-  pmdfeConversaoMDFe, pmdfeMDFe,
+  pmdfeConversaoMDFe, ACBrMDFe.Classes,
   ACBrUtil.Strings,
   ACBrUtil.Base,
   ACBrUtil.DateTime,
-  pmdfeConsts, ACBrDFeUtil;
+  ACBrMDFe.Consts, ACBrDFeUtil;
 
 type
   TGeradorOpcoes = class(TPersistent)
@@ -145,7 +145,7 @@ begin
   FGerador := TGerador.Create;
 
   FGerador.FIgnorarTagNivel   := '|?xml version|MDFe xmlns|infMDFe versao|';
-  FGerador.Opcoes.QuebraLinha := ';';
+  FGerador.Opcoes.QuebraLinha := '|';
 
   FOpcoes := TGeradorOpcoes.Create;
 
@@ -932,6 +932,7 @@ begin
                Gerador.wCampo(tcStr, '#95', 'qVolTipo ', 01,  60, 0, MDFe.infDoc.infMunDescarga[i].infCTe[j].peri.Items[k].qVolTipo, DSC_QVOLTIPO);
                Gerador.wGrupo('/peri');
              end;
+
              if MDFe.infDoc.infMunDescarga[i].infCTe[j].peri.Count > 990 then
                Gerador.wAlerta('#89', 'peri', '', ERR_MSG_MAIOR_MAXIMO + '990');
 
@@ -945,6 +946,16 @@ begin
                Gerador.wGrupo('/infEntregaParcial');
              end;
 
+             if MDFe.infDoc.infMunDescarga[i].infCTe[j].indPrestacaoParcial = tieSim then
+               Gerador.wCampo(tcStr, '#99', 'indPrestacaoParcial', 1, 1, 1, '1');
+
+             for k := 0 to MDFe.infDoc.infMunDescarga[i].infCTe[j].infNFePrestParcial.Count - 1 do
+             begin
+               Gerador.wGrupo('infNFePrestParcial', '#100');
+               Gerador.wCampo(tcStr, '#101', 'chNFe', 44, 44, 1,
+                MDFe.infDoc.infMunDescarga[i].infCTe[j].infNFePrestParcial[k].chNFe, DSC_CHAVE);
+               Gerador.wGrupo('/infNFePrestParcial');
+             end;
            end;
 
            Gerador.wGrupo('/infCTe');

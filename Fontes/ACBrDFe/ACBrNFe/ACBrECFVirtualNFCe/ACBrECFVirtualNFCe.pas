@@ -39,7 +39,7 @@ interface
 uses Classes, SysUtils,
 {$IFDEF FPC}LResources, {$ENDIF}
   ACBrECFVirtual, ACBrECFVirtualPrinter, ACBrNFe, ACBrECF, ACBrDevice, ACBrBase,
-  pcnNFe, pcnConversao;
+  ACBrNFe.Classes, pcnConversao, pcnConversaoNFe;
 
 const
   ACBrECFVirtualNFCe_VERSAO = '0.1.0a';
@@ -184,7 +184,7 @@ type
 
 implementation
 
-uses pcnConversaoNFe,
+uses
   ACBrConsts, ACBrECFClass, ACBrUtil.Strings, ACBrUtil.Math, ACBrUtil.FilesIO, ACBrUtil.Base, ACBrNFeDANFEClass;
 	
 { TACBrECFVirtualNFCe }
@@ -792,10 +792,8 @@ begin
       if NFCePagto.tPag = fpOutro then
         NFCePagto.xPag := fpFormasPagamentos[Pagto.PosFPG].Descricao;
 
-      if (NFCePagto.tPag in [fpCartaoCredito, fpCartaoDebito]) then
-      begin
+      if (NFCePagto.tPag in [fpCartaoCredito, fpCartaoDebito, fpPagamentoInstantaneo]) then
         NFCePagto.tpIntegra := tiPagNaoIntegrado;
-      end;
 
       if Assigned(fsQuandoEfetuarPagamento) then
         fsQuandoEfetuarPagamento(NFCePagto);

@@ -38,7 +38,8 @@ interface
 
 uses
   SysUtils, Classes,
-  pcnConversao;
+  pcnConversao,
+  pcnConversaoNFe;
 
 type
 
@@ -65,7 +66,7 @@ type
 implementation
 
 uses
-  pcnNFeConsts,
+  ACBrNFe.Consts,
   ACBrUtil.Base;
 
 { TAdmCSCNFCe }

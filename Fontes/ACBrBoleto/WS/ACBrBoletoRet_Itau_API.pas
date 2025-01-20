@@ -41,7 +41,8 @@ interface
 uses
   ACBrBoleto,
   ACBrBoletoRetorno,
-  ACBrBoletoWS.Rest;
+  ACBrBoletoWS.Rest,
+  ACBrUtil.Base;
 
 type
 
@@ -84,7 +85,7 @@ end;
 function TRetornoEnvio_Itau_API.LerRetorno(const ARetornoWS: TACBrBoletoRetornoWS): Boolean;
 var
   LJsonObject, LJsonBoletoObject : TACBrJSONObject;
-  LJsonArray, LJsonBoletoIndividualArray : TACBrJSONArray;
+  LJsonArray, LJsonBoletoIndividualArray, LJsonPagamentoCobrancaArray : TACBrJSONArray;
   LListaRejeicao: TACBrBoletoRejeicao;
   I, J: Integer;
   TipoOperacao : TOperacao;
@@ -94,18 +95,18 @@ begin
   ARetornoWS.HTTPResultCode  := HTTPResultCode;
   ARetornoWS.JSONEnvio       := EnvWs;
   ARetornoWS.Header.Operacao := TipoOperacao;
+  if Assigned(ACBrTitulo) then
+    ARetornoWS.DadosRet.IDBoleto.NossoNum := ACBrTitulo.NossoNumero;
 
   if Trim(RetWS) <> '' then
   begin
     try
+      LJsonObject := TACBrJsonObject.Parse( RetWS );
       try
-        LJsonObject := TACBrJsonObject.Parse( RetWS );
 
         ARetornoWS.JSON := LJsonObject.ToJSON;
-
-        if TipoOperacao = tpInclui then
+        if HTTPResultCode >= 300 then
         begin
-          //retorna quando houver erro
           if (LJsonObject.AsString['codigo'] <> '') or (LJsonObject.AsString['mensagem'] <> '') or
              (LJsonObject.AsString['codigo_erro'] <> '') or (LJsonObject.AsString['mensagem_erro'] <> '') then
           begin
@@ -130,10 +131,12 @@ begin
               LListaRejeicao.Codigo   := LJsonObject.AsString['codigo_erro'];
               LListaRejeicao.Mensagem := LJsonObject.AsString['mensagem_erro'];
             end;
-          end
-          else
-          begin
+          end;
+        end;
 
+
+        if TipoOperacao = tpInclui then
+        begin
             if LJsonObject.ValueExists('data') then
               LJsonBoletoObject  := LJsonObject.AsJSONObject['data'].AsJSONObject['dado_boleto']
             else
@@ -181,8 +184,11 @@ begin
               ARetornoWS.DadosRet.IDBoleto.LinhaDig  := LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['numero_linha_digitavel'];
               ARetornoWS.DadosRet.IDBoleto.NossoNum  := LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['numero_nosso_numero'];
 
+              if Assigned(ACBrTitulo) and EstaVazio(ARetornoWS.DadosRet.IDBoleto.NossoNum) then
+                ARetornoWS.DadosRet.IDBoleto.NossoNum := ACBrTitulo.NossoNumero;
+
               ARetornoWS.DadosRet.TituloRet.Vencimento           := StringToDateTimeDef(LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['data_vencimento'], 0, 'yyyy-mm-dd');
-              ARetornoWS.DadosRet.TituloRet.NossoNumero          := LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['numero_nosso_numero'];
+              ARetornoWS.DadosRet.TituloRet.NossoNumero          := ARetornoWS.DadosRet.IDBoleto.NossoNum;
               ARetornoWS.DadosRet.TituloRet.SeuNumero            := LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['texto_seu_numero'];
               ARetornoWS.DadosRet.TituloRet.CodBarras            := LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['codigo_barras'];
               ARetornoWS.DadosRet.TituloRet.LinhaDig             := LJsonBoletoIndividualArray.ItemAsJSONObject[I].AsString['numero_linha_digitavel'];
@@ -206,25 +212,9 @@ begin
               ARetornoWS.DadosRet.TituloRet.UrlPix := LJsonObject.AsJSONObject['data'].AsJSONObject['dados_qrcode'].AsString['location'];
               ARetornoWS.DadosRet.TituloRet.Url    := LJsonObject.AsJSONObject['data'].AsJSONObject['dados_qrcode'].AsString['location'];
             end;
-
-          end;
         end else
         if TipoOperacao = tpConsultaDetalhe then
         begin
-          if HTTPResultCode > 299 then
-          begin
-            if ( LJsonObject.IsJSONObject('codigo') ) then
-              if (LJsonObject.AsString['codigo'] <> '') or (LJsonObject.AsString['mensagem'] <> '') then
-              begin
-                CodRetorno := strtointdef(LJsonObject.AsString['codigo'], 0);
-                if CodRetorno < 1 then
-                   CodRetorno := StrToIntDef(LJsonObject.AsString['codigo'], 0);
-
-                 LListaRejeicao            := ARetornoWS.CriarRejeicaoLista;
-                 LListaRejeicao.Codigo     := inttostr(CodRetorno);
-                 LListaRejeicao.Mensagem   := LJsonObject.AsString['mensagem'];
-              end;
-          end;
           //retorna quando tiver sucesso
           if (ARetornoWS.ListaRejeicao.Count = 0) then
           begin
@@ -276,10 +266,16 @@ begin
 
               if LJsonBoletoObject.AsJSONObject['dado_boleto'].IsJSONArray('pagamentos_cobranca') then
               begin
-                for j := 0 to Pred(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'].Count) do
+                LJsonPagamentoCobrancaArray := LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'];
+                for j := 0 to Pred(LJsonPagamentoCobrancaArray.Count) do
                 begin
-                  ARetornoWS.DadosRet.TituloRet.DataProcessamento    := StringToDateTimeDef(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'].ItemAsJSONObject[J].AsString['data_inclusao_pagamento'], 0, 'yyyy-mm-dd');
-                  ARetornoWS.DadosRet.TituloRet.ValorPago            := StrToFloatDef( StringReplace(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'].ItemAsJSONObject[J].AsString['valor_pago_total_cobranca'],'.',',',[rfReplaceAll]), 0);
+                  ARetornoWS.DadosRet.TituloRet.DataProcessamento    := Iso8601ToDateTime(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['data_inclusao_pagamento']);
+                  ARetornoWS.DadosRet.TituloRet.DataCredito          := Iso8601ToDateTime(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['data_inclusao_pagamento']);
+                  ARetornoWS.DadosRet.TituloRet.ValorPago            := StrToFloatDef( StringReplace(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['valor_pago_total_cobranca'],'.',',',[rfReplaceAll]), 0);
+                  ARetornoWS.DadosRet.TituloRet.ValorMulta           := StrToFloatDef( StringReplace(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['valor_pago_multa_cobranca'],'.',',',[rfReplaceAll]), 0);
+                  ARetornoWS.DadosRet.TituloRet.ValorMoraJuros       := StrToFloatDef( StringReplace(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['valor_pago_juro_cobranca'],'.',',',[rfReplaceAll]), 0);
+                  ARetornoWS.DadosRet.TituloRet.ValorDesconto        := StrToFloatDef( StringReplace(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['valor_pago_desconto_cobranca'],'.',',',[rfReplaceAll]), 0);
+                  ARetornoWS.DadosRet.TituloRet.ValorAbatimento      := StrToFloatDef( StringReplace(LJsonPagamentoCobrancaArray.ItemAsJSONObject[J].AsString['valor_pago_abatimento_cobranca'],'.',',',[rfReplaceAll]), 0);
                   if ARetornoWS.DadosRet.TituloRet.ValorPago > ARetornoWS.DadosRet.TituloRet.ValorDocumento then
                      ARetornoWS.DadosRet.TituloRet.ValorOutrasDespesas := (ARetornoWS.DadosRet.TituloRet.ValorPago - ARetornoWS.DadosRet.TituloRet.ValorDocumento)
                 end;
@@ -287,7 +283,7 @@ begin
 
               if LJsonBoletoObject.AsJSONObject['dado_boleto'].IsJSONObject('baixa') then
               begin
-                ARetornoWS.DadosRet.TituloRet.DataBaixa              := StringToDateTimeDef(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['data_inclusao_alteracao_baixa'], 0, 'yyyy-mm-dd');
+                ARetornoWS.DadosRet.TituloRet.DataBaixa              := Iso8601ToDateTime(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['data_inclusao_alteracao_baixa']);
                 ARetornoWS.DadosRet.TituloRet.Mensagem.Text          := LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['motivo_baixa'];
                 if (UpperCase(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['motivo_baixa']) = 'BAIXA POR TER SIDO LIQUIDADO') then
                 begin
@@ -398,57 +394,42 @@ begin
 
             for j := 0 to Pred(LJsonBoletosArray.Count) do
             begin
+
               ListaRetorno.DadosRet.TituloRet.EstadoTituloCobranca := LJsonBoletosArray.ItemAsJSONObject[J].AsString['situacao_geral_boleto'];
               ListaRetorno.DadosRet.TituloRet.CodigoEstadoTituloCobranca := RetornaCodigoOcorrencia(UpperCase(LJsonBoletosArray.ItemAsJSONObject[J].AsString['situacao_geral_boleto']));
               ListaRetorno.DadosRet.TituloRet.NossoNumero          := LJsonBoletosArray.ItemAsJSONObject[J].AsString['numero_nosso_numero'];
-              ListaRetorno.DadosRet.IDBoleto.NossoNum              := ListaRetorno.DadosRet.TituloRet.NossoNumero;
               ListaRetorno.DadosRet.TituloRet.Vencimento           := StringToDateTimeDef(LJsonBoletosArray.ItemAsJSONObject[J].AsString['data_vencimento'], 0, 'yyyy-mm-dd');
               ListaRetorno.DadosRet.TituloRet.SeuNumero            := LJsonBoletosArray.ItemAsJSONObject[J].AsString['texto_seu_numero'];
               ListaRetorno.DadosRet.TituloRet.CodBarras            := LJsonBoletosArray.ItemAsJSONObject[J].AsString['codigo_barras'];
-              ListaRetorno.DadosRet.IDBoleto.CodBarras             := ListaRetorno.DadosRet.TituloRet.CodBarras;
               ListaRetorno.DadosRet.TituloRet.LinhaDig             := LJsonBoletosArray.ItemAsJSONObject[J].AsString['numero_linha_digitavel'];
+              ListaRetorno.DadosRet.TituloRet.ValorDocumento       := LJsonBoletosArray.ItemAsJSONObject[J].AsCurrency['valor_titulo'];
+              ListaRetorno.DadosRet.IDBoleto.NossoNum              := ListaRetorno.DadosRet.TituloRet.NossoNumero;
               ListaRetorno.DadosRet.IDBoleto.LinhaDig              := ListaRetorno.DadosRet.TituloRet.LinhaDig;
-              ListaRetorno.DadosRet.TituloRet.ValorDocumento       := LJsonBoletoObject.AsJSONObject['dado_boleto'].AsFloat['valor_titulo'];
+              ListaRetorno.DadosRet.IDBoleto.CodBarras             := ListaRetorno.DadosRet.TituloRet.CodBarras;
+
+              ListaRetorno.DadosRet.TituloRet.DataProcessamento    := StringToDateTimeDef(LJsonBoletosArray.ItemAsJSONObject[J].AsString['data_processamento'], 0, 'yyyy-mm-dd');
+              ListaRetorno.DadosRet.TituloRet.UsoBanco             := LJsonBoletosArray.ItemAsJSONObject[J].AsString['uso_banco'];
+              ListaRetorno.DadosRet.TituloRet.ValorDesconto        := LJsonBoletosArray.ItemAsJSONObject[J].AsCurrency['valor_desconto'];
+              ListaRetorno.DadosRet.TituloRet.ValorDespesaCobranca := LJsonBoletosArray.ItemAsJSONObject[J].AsCurrency['valor_outra_deducao'];
+              ListaRetorno.DadosRet.TituloRet.ValorMoraJuros       := LJsonBoletosArray.ItemAsJSONObject[J].AsCurrency['valor_juro_multa'];
+              ListaRetorno.DadosRet.TituloRet.ValorOutrosCreditos  := LJsonBoletosArray.ItemAsJSONObject[J].AsCurrency['valor_outro_acrescimo'];
+
+              ListaRetorno.DadosRet.TituloRet.Informativo.Add( LJsonBoletosArray.ItemAsJSONObject[J].AsString['texto_informacao_cliente_beneficiario'] );
+              ListaRetorno.DadosRet.TituloRet.Mensagem.Add(LJsonBoletosArray.ItemAsJSONObject[J].AsString['local_pagamento']);
+
             end;
 
             if LJsonBoletoObject.AsJSONObject['dado_boleto'].IsJSONArray('pagamentos_cobranca') then
             begin
-              for J := 0 to Pred(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'].Count) do
+              LJsonBoletosArray := LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'];
+              for J := 0 to Pred(LJsonBoletosArray.Count) do
               begin
-                ListaRetorno.DadosRet.TituloRet.DataProcessamento    := StringToDateTimeDef(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'].ItemAsJSONObject[J].AsString['data_inclusao_pagamento'], 0, 'yyyy-mm-dd');
-                ListaRetorno.DadosRet.TituloRet.ValorPago            := StrToFloatDef( LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['pagamentos_cobranca'].ItemAsJSONObject[J].AsString['valor_pago_total_cobranca'], 0) / 100;
+                ListaRetorno.DadosRet.TituloRet.DataMovimento        := StringToDateTimeDef(LJsonBoletosArray.ItemAsJSONObject[J].AsString['data_inclusao_pagamento'], 0, 'yyyy-mm-dd');
+                ListaRetorno.DadosRet.TituloRet.DataProcessamento    := StringToDateTimeDef(LJsonBoletosArray.ItemAsJSONObject[J].AsString['data_inclusao_pagamento'], 0, 'yyyy-mm-dd');
+                ListaRetorno.DadosRet.TituloRet.ValorPago            := LJsonBoletosArray.ItemAsJSONObject[J].AsCurrency['valor_pago_total_cobranca'];
               end;
             end;
 
-            if LJsonBoletoObject.AsJSONObject['dado_boleto'].IsJSONArray('dados_individuais_boleto') then
-			      begin
-              LJsonBoletoIndividualArray := LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONArray['dados_individuais_boleto'];
-
-              for J := 0 to Pred(LJsonBoletoIndividualArray.Count) do
-              begin
-                ListaRetorno.DadosRet.IDBoleto.IDBoleto  := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['id_boleto_individual'];
-                ListaRetorno.DadosRet.IDBoleto.CodBarras := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['codigo_barras'];
-                ListaRetorno.DadosRet.IDBoleto.LinhaDig  := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['numero_linha_digitavel'];
-                ListaRetorno.DadosRet.IDBoleto.NossoNum  := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['numero_nosso_numero'];
-
-                ListaRetorno.DadosRet.TituloRet.Vencimento           := StringToDateTimeDef(LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['data_vencimento'], 0, 'yyyy-mm-dd');
-                ListaRetorno.DadosRet.TituloRet.NossoNumero          := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['numero_nosso_numero'];
-                ListaRetorno.DadosRet.TituloRet.SeuNumero            := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['texto_seu_numero'];
-                ListaRetorno.DadosRet.TituloRet.CodBarras            := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['codigo_barras'];
-                ListaRetorno.DadosRet.TituloRet.LinhaDig             := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['numero_linha_digitavel'];
-                ListaRetorno.DadosRet.TituloRet.DataProcessamento    := StringToDateTimeDef(LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['data_processamento'], 0, 'yyyy-mm-dd');
-                ListaRetorno.DadosRet.TituloRet.UsoBanco             := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['uso_banco'];
-                ListaRetorno.DadosRet.TituloRet.ValorDesconto        := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsCurrency['valor_desconto'];
-                ListaRetorno.DadosRet.TituloRet.ValorDespesaCobranca := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsCurrency['valor_outra_deducao'];
-                ListaRetorno.DadosRet.TituloRet.ValorMoraJuros       := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsCurrency['valor_juro_multa'];
-                ListaRetorno.DadosRet.TituloRet.ValorOutrosCreditos  := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsCurrency['valor_outro_acrescimo'];
-                ListaRetorno.DadosRet.TituloRet.ValorPago            := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsCurrency['valor_total_cobrado'];
-                ListaRetorno.DadosRet.TituloRet.ValorDocumento       := LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsFloat['valor_titulo'];
-
-                ListaRetorno.DadosRet.TituloRet.Informativo.Add( LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['texto_informacao_cliente_beneficiario'] );
-                ListaRetorno.DadosRet.TituloRet.Mensagem.Add(LJsonBoletoIndividualArray.ItemAsJSONObject[J].AsString['local_pagamento']);
-              end;
-            end;
 
             if LJsonBoletoObject.AsJSONObject['dado_boleto'].IsJSONObject('qrcode_pix') then
             begin
@@ -457,12 +438,12 @@ begin
 
             if LJsonBoletoObject.AsJSONObject['dado_boleto'].IsJSONObject('baixa') then
             begin
-              ListaRetorno.DadosRet.TituloRet.DataBaixa              := StringToDateTimeDef(LJsonBoletoObject.AsJSONObject['baixa'].AsString['data_inclusao_alteracao_baixa'], 0, 'yyyy-mm-dd');
-              ListaRetorno.DadosRet.TituloRet.Mensagem.Text          := LJsonBoletoObject.AsJSONObject['baixa'].AsString['motivo_baixa'];
-              if (UpperCase(LJsonBoletoObject.AsJSONObject['baixa'].AsString['motivo_baixa']) = 'BAIXA POR TER SIDO LIQUIDADO') then
+              ListaRetorno.DadosRet.TituloRet.DataBaixa              := StringToDateTimeDef(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['data_inclusao_alteracao_baixa'], 0, 'yyyy-mm-dd');
+              ListaRetorno.DadosRet.TituloRet.Mensagem.Text          := LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['motivo_baixa'];
+              if (UpperCase(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['motivo_baixa']) = 'BAIXA POR TER SIDO LIQUIDADO') then
               begin
-                ListaRetorno.DadosRet.TituloRet.EstadoTituloCobranca       := UpperCase(LJsonBoletoObject.AsJSONObject['baixa'].AsString['motivo_baixa']);
-                ListaRetorno.DadosRet.TituloRet.CodigoEstadoTituloCobranca := RetornaCodigoOcorrencia(UpperCase(LJsonBoletoObject.AsJSONObject['baixa'].AsString['motivo_baixa']));
+                ListaRetorno.DadosRet.TituloRet.EstadoTituloCobranca       := UpperCase(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['motivo_baixa']);
+                ListaRetorno.DadosRet.TituloRet.CodigoEstadoTituloCobranca := RetornaCodigoOcorrencia(UpperCase(LJsonBoletoObject.AsJSONObject['dado_boleto'].AsJSONObject['baixa'].AsString['motivo_baixa']));
               end;
             end;
           end;

@@ -38,9 +38,15 @@ unit ACBrNFeDANFEClass;
 interface
 
 uses
-  SysUtils, Classes,
-  ACBrBase, ACBrDFeDANFeReport,
-  pcnNFe, pcnConversao, pcnConversaoNFe, StrUtilsEx, TypInfo;
+  SysUtils, 
+  Classes,
+  ACBrBase, 
+  ACBrDFeDANFeReport,
+  ACBrNFe.Classes,
+  pcnConversao, 
+  pcnConversaoNFe, 
+  StrUtilsEx, 
+  TypInfo;
 
 type
   TDetVeiculo = (dv_tpOp, dv_chassi, dv_cCor, dv_xCor, dv_pot, dv_cilin,
@@ -91,6 +97,7 @@ type
     FExibeCampoDePagamento: TpcnInformacoesDePagamento;
     FEtiqueta: Boolean;
     FFormatarNumeroDocumento : Boolean;
+    FExibeCampoDuplicata: Boolean;
 
     procedure SetTributosPercentual(const AValue: TpcnPercentualTributos);
     procedure SetTributosPercentualPersonalizado(const AValue: Double);
@@ -139,6 +146,7 @@ type
     property FormularioContinuo;
     property Etiqueta: Boolean read FEtiqueta write FEtiqueta default False;
     property FormatarNumeroDocumento: Boolean read FFormatarNumeroDocumento write FFormatarNumeroDocumento default True;
+    property ExibeCampoDuplicata: Boolean read FExibeCampoDuplicata write FExibeCampoDuplicata default True;
   end;
 
 
@@ -187,8 +195,11 @@ type
 implementation
 
 uses
-  ACBrDFeUtil, ACBrValidador,
-  ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.DateTime,
+  ACBrDFeUtil, 
+  ACBrValidador,
+  ACBrUtil.Base, 
+  ACBrUtil.Strings, 
+  ACBrUtil.DateTime,
   StrUtils;
 
 { TACBrNFeDANFEClass }
@@ -220,6 +231,7 @@ begin
   FExibeCampoDePagamento           := eipNunca;   	
   FEtiqueta                        := False;
   FFormatarNumeroDocumento         := True;
+  FExibeCampoDuplicata             := True;
 end;
 
 procedure TACBrNFeDANFEClass.SetTributosPercentual(const AValue: TpcnPercentualTributos);
@@ -368,7 +380,7 @@ begin
       for i := 0 to med.Count - 1 do
       begin
         if (aNFE.infNFe.Versao >= 4) then
-          Result := Result + 'C.P. ANVISA ' + med.Items[i].cProdANVISA + sQuebraLinha
+          Result := Result + 'Registro ANVISA ' + med.Items[i].cProdANVISA + sQuebraLinha
         else
         begin
           if (dm_nLote in FDetMedicamentos) then
@@ -499,7 +511,7 @@ begin
           Result := Result + 'LOTE: ' + rastro.Items[i].nLote + sQuebraLinha;
 
         if (dr_qLote in FDetRastros) then
-          Result := Result + 'QTD: ' + FormatFloatBr(rastro.Items[i].qLote) + sQuebraLinha;
+          Result := Result + 'QTD: ' + FormatFloatBr(rastro.Items[i].qLote, FloatMask(3)) + sQuebraLinha;
 
         if (dr_dFab in FDetRastros) then
           Result := Result + 'FAB: ' + FormatDateBr(rastro.Items[i].dFab) + sQuebraLinha;
@@ -617,13 +629,13 @@ begin
 
   case aNFE.Ide.tpEmis of
     teOffLine, teContingencia, teFSDA, teSCAN, teSVCAN, teSVCRS, teSVCSP:
-      Result := ACBrStr('DANFE EM CONTINGÊNCIA, IMPRESSO EM DECORRÊNCIA DE PROBLEMAS TÉCNICOS;');
+      Result := ACBrStr('DANFE EM CONTINGÊNCIA, IMPRESSO EM DECORRÊNCIA DE PROBLEMAS TÉCNICOS' + CaractereQuebraDeLinha);
 
     teDPEC:
       Result :=
-        ACBrStr('DANFE IMPRESSO EM CONTINGÊNCIA - DPEC REGULARMENTE RECEBIDA PELA RECEITA FEDERAL DO BRASIL;') +
-        ACBrStr('DATA/HORA INÍCIO: ') + IfThen(aNFE.ide.dhCont = 0, ' ', DateTimeToStr(aNFE.ide.dhCont)) + ';' +
-        ACBrStr('MOTIVO CONTINGÊNCIA: ') + IfThen(EstaVazio(aNFE.ide.xJust), ' ', aNFE.ide.xJust) + ';';
+        ACBrStr('DANFE IMPRESSO EM CONTINGÊNCIA - DPEC REGULARMENTE RECEBIDA PELA RECEITA FEDERAL DO BRASIL' + CaractereQuebraDeLinha) +
+        ACBrStr('DATA/HORA INÍCIO: ') + IfThen(aNFE.ide.dhCont = 0, ' ', DateTimeToStr(aNFE.ide.dhCont)) + CaractereQuebraDeLinha +
+        ACBrStr('MOTIVO CONTINGÊNCIA: ') + IfThen(EstaVazio(aNFE.ide.xJust), ' ', aNFE.ide.xJust) + CaractereQuebraDeLinha;
   end;
 end;
 
@@ -738,7 +750,7 @@ begin
   if (aNFe.Ide.tpEmis in [teContingencia, teFSDA]) and (aNFe.procNFe.cStat = 100) then
   begin
     Result := ACBrStr('PROTOCOLO DE AUTORIZAÇÃO DE USO: ') +
-      aNFe.procNFe.nProt + ' ' + FormatDateTimeBr(aNFe.procNFe.dhRecbto) + ';';
+      aNFe.procNFe.nProt + ' ' + FormatDateTimeBr(aNFe.procNFe.dhRecbto) + CaractereQuebraDeLinha;
   end
   else
     Result := '';
@@ -749,7 +761,7 @@ begin
   // Inscrição Suframa
   if NaoEstaVazio(aNFe.Dest.ISUF) and (FExibeDadosInscricaoSuframa) then
   begin
-    Result := ACBrStr('INSCRIÇÃO SUFRAMA: ') + aNFe.Dest.ISUF + ';';
+    Result := ACBrStr('INSCRIÇÃO SUFRAMA: ') + aNFe.Dest.ISUF + CaractereQuebraDeLinha;
   end
   else
     Result := '';
@@ -768,7 +780,7 @@ begin
             ManterInfCompl(aNFE) +
             ManterContingencia(aNFE);
 
-  Result := FastStringReplace(Result, ';', sLineBreak, [rfReplaceAll]);
+  Result := FastStringReplace(Result, CaractereQuebraDeLinha, sLineBreak, [rfReplaceAll]);
 end;
 
 function TACBrNFeDANFEClass.ManterPagamentos(aNFE: TNFe): String;

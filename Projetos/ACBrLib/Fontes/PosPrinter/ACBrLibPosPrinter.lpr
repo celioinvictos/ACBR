@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2018 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:          Rafael Teno Dias                       }
 {                                                                              }
@@ -35,6 +35,12 @@
 library ACBrLibPosPrinter;
 
 uses
+  {$IFDEF MT}
+   {$IFDEF UNIX}
+    cthreads,
+    cmem, // the c memory manager is on some systems much faster for multi-threading
+   {$ENDIF}
+  {$ENDIF}
   Interfaces, printer4lazarus, sysutils, Classes,
   ACBrLibConfig, ACBrLibComum,
   {$IFDEF MT}ACBrLibPosPrinterMT{$ELSE}ACBrLibPosPrinterST{$ENDIF},
@@ -87,6 +93,7 @@ exports
   POS_AbrirGaveta,
   POS_LerInfoImpressora,
   POS_LerStatusImpressora,
+  POS_LerStatusImpressoraFormatado,
   POS_RetornarTags,
   POS_AcharPortas,
   POS_GravarLogoArquivo,

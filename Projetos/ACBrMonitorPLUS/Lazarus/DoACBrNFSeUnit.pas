@@ -338,7 +338,9 @@ end;
 implementation
 
 uses
+  synacode,
   Forms, DoACBrUnit, strutils, IniFiles,
+  ACBrLibConfig,
   ACBrNFSeXWebserviceBase;
 
 { TMetodoSetAutenticacaoNFSe }
@@ -1542,6 +1544,7 @@ begin
     RespObterDANFSE := TConsultaNFSeResposta.Create(TpResp, codUTF8);
     try
       RespObterDANFSE.Processar(ACBrNFSeX.WebService.ConsultaNFSe);
+      RespObterDANFSE.XmlRetorno := EncodeBase64(RespObterDANFSE.XmlRetorno);
       fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespObterDANFSE.Gerar;
     finally
       RespObterDANFSE.Free;
