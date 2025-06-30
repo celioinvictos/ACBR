@@ -46,6 +46,9 @@ type
   [ComponentPlatformsAttribute(piacbrAllPlatforms)]
   {$ENDIF RTL230_UP}
   TACBrNFSeXDANFSeRL = class(TACBrNFSeXDANFSeClass)
+  private
+    FTamanhoLogoWidth: Integer;
+    FTamanhoLogoHeight: Integer;
   protected
     FDetalharServico: Boolean;
 
@@ -59,6 +62,8 @@ type
 
   published
     property DetalharServico: Boolean read FDetalharServico write FDetalharServico default False;
+    property TamanhoLogoHeight: Integer read FTamanhoLogoHeight write FTamanhoLogoHeight default 0;
+    property TamanhoLogoWidth: Integer read FTamanhoLogoWidth write FTamanhoLogoWidth default 0;
   end;
 
 implementation
@@ -73,6 +78,8 @@ begin
   inherited Create(AOwner);
 
   FDetalharServico := False;
+  FTamanhoLogoHeight := 0;
+  FTamanhoLogoWidth := 0;
 end;
 
 destructor TACBrNFSeXDANFSeRL.Destroy;
@@ -87,6 +94,7 @@ var
   fqrXDANFSeRLRetrato: TfrlXDANFSeRL;
 begin
   SetDadosPrestador;
+  SetDadosTomador;
   Provedor := TACBrNFSeX(ACBrNFSe).Configuracoes.Geral.Provedor;
 
   case Provedor of
@@ -124,6 +132,7 @@ var
   fqrXDANFSeRLRetrato: TfrlXDANFSeRL;
 begin
   SetDadosPrestador;
+  SetDadosTomador;
   Provedor := TACBrNFSeX(ACBrNFSe).Configuracoes.Geral.Provedor;
 
   case Provedor of
@@ -165,6 +174,7 @@ var
   fqrXDANFSeRLRetrato: TfrlXDANFSeRL;
 begin
   SetDadosPrestador;
+  SetDadosTomador;
   Provedor := TACBrNFSeX(ACBrNFSe).Configuracoes.Geral.Provedor;
 
   case Provedor of

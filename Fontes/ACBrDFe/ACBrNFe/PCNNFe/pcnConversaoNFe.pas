@@ -281,11 +281,12 @@ const
     'URL-ConsultaNFCe');
 
 type
-  TpcnFinalidadeNFe = (fnNormal, fnComplementar, fnAjuste, fnDevolucao);
+  TpcnFinalidadeNFe = (fnNormal, fnComplementar, fnAjuste, fnDevolucao,
+    fnCredito, fnDebito);
 
 const
   TFinalidadeNFeArrayStrings: array[TpcnFinalidadeNFe] of string = ('1', '2', '3',
-    '4');
+    '4', '5', '6');
 
 type
   TpcnModeloDF = (moNFe, moNFCe);
@@ -301,11 +302,13 @@ const
   TIndicadorNFeArrayStrings: array[TpcnIndicadorNFe] of string = ('0', '1', '2');
 
 type
-  TpcnVersaoQrCode = (veqr000, veqr100, veqr200);
+  TpcnVersaoQrCode = (veqr000, veqr100, veqr200, veqr300);
 
 const
-  TVersaoQrCodeArrayStrings: array[TpcnVersaoQrCode] of string = ('0', '1', '2');
-  TVersaoQrCodeArrayDouble: array[TpcnVersaoQrCode] of Double = (0, 1.00, 2.00);
+  TVersaoQrCodeArrayStrings: array[TpcnVersaoQrCode] of string = ('0', '1', '2',
+    '3');
+  TVersaoQrCodeArrayDouble: array[TpcnVersaoQrCode] of Double = (0, 1.00, 2.00,
+    3.00);
 
 type
   TpcnTipoOperacao = (toVendaConcessionaria, toFaturamentoDireto, toVendaDireta,
@@ -394,6 +397,81 @@ type
 const
   TtpGuiaArrayStrings: array[TtpGuia] of string = ('', '1', '2', '3', '4', '5', '6', '7');
 
+// Reforma Tributária
+type
+  TtpNFDebito = (tdNenhum, tdTransferenciaCreditoCooperativa, tdAnulacao,
+                 tdDebitosNaoProcessadas, tdMultaJuros,
+                 tdTransferenciaCreditoSucessao);
+
+const
+  TtpNFDebitoArrayStrings: array[TtpNFDebito] of string = ('', '01', '02', '03',
+    '04', '05');
+
+type
+  TtpNFCredito = (tcNenhum, tc01);
+
+const
+  TtpNFCreditoArrayStrings: array[TtpNFCredito] of string = ('', '01');
+
+type
+  TtpEnteGov  = (tcgUniao, tcgEstados, tcgDistritoFederal, tcgMunicipios);
+
+const
+  TtpEnteGovArrayStrings: array[TtpEnteGov] of string = ('1', '2', '3', '4');
+
+type
+  TCSTIBSCBS  = (cst000, cst010, cst011, cst200, cst210, cst220, cst221, cst400,
+                 cst410, cst510, cst550, cst620, cst800, cst810, cst820);
+
+const
+  TCSTIBSCBSArrayStrings: array[TCSTIBSCBS] of string = ('000', '010', '011',
+    '200', '210', '220', '221', '400', '410', '510', '550', '620', '800', '810',
+    '820');
+
+type
+  TcClassTrib  = (ct000001, ct000002, ct000003, ct000004, ct010001, ct011001,
+                  ct011002, ct011003, ct011004, ct011005, ct200001, ct200002,
+                  ct200003, ct200004, ct200005, ct200006, ct200007, ct200008,
+                  ct200009, ct200010, ct200011, ct200012, ct200013, ct200014,
+                  ct200015, ct200016, ct200017, ct200018, ct200019, ct200020,
+                  ct200021, ct200022, ct200023, ct200024, ct200025, ct200026,
+                  ct200027, ct200028, ct200029, ct200030, ct200031, ct200032,
+                  ct200033, ct200034, ct200035, ct200036, ct200037, ct200038,
+                  ct200039, ct200040, ct200041, ct200042, ct200043, ct200044,
+                  ct200045, ct200046, ct200047, ct200048, ct200049, ct200450,
+                  ct200051, ct200052, ct210001, ct210002, ct210003, ct220001,
+                  ct220002, ct220003, ct221001, ct400001, ct410001, ct410002,
+                  ct410003, ct410004, ct410005, ct410006, ct410007, ct410008,
+                  ct410009, ct410010, ct410011, ct410012, ct410013, ct410014,
+                  ct410015, ct410016, ct410017, ct410018, ct410019, ct410020,
+                  ct510001, ct510002, ct550001, ct550002, ct550003, ct550004,
+                  ct550005, ct550006, ct550007, ct550008, ct550009, ct550010,
+                  ct550011, ct550012, ct550013, ct550014, ct550015, ct550016,
+                  ct550017, ct550018, ct550019, ct550020, ct620001, ct620002,
+                  ct620003, ct620004, ct620005, ct800001, ct800002, ct810001,
+                  ct820001, ct820002, ct820003, ct820004, ct820005);
+
+const
+  TcClassTribArrayStrings: array[TcClassTrib] of string = ('000001', '000002',
+         '000003', '000004', '010001', '011001', '011002', '011003', '011004',
+         '011005', '200001', '200002', '200003', '200004', '200005', '200006',
+         '200007', '200008', '200009', '200010', '200011', '200012', '200013',
+         '200014', '200015', '200016', '200017', '200018', '200019', '200020',
+         '200021', '200022', '200023', '200024', '200025', '200026', '200027',
+         '200028', '200029', '200030', '200031', '200032', '200033', '200034',
+         '200035', '200036', '200037', '200038', '200039', '200040', '200041',
+         '200042', '200043', '200044', '200045', '200046', '200047', '200048',
+         '200049', '200450', '200051', '200052', '210001', '210002', '210003',
+         '220001', '220002', '220003', '221001', '400001', '410001', '410002',
+         '410003', '410004', '410005', '410006', '410007', '410008', '410009',
+         '410010', '410011', '410012', '410013', '410014', '410015', '410016',
+         '410017', '410018', '410019', '410020', '510001', '510002', '550001',
+         '550002', '550003', '550004', '550005', '550006', '550007', '550008',
+         '550009', '550010', '550011', '550012', '550013', '550014', '550015',
+         '550016', '550017', '550018', '550019', '550020', '620001', '620002',
+         '620003', '620004', '620005', '800001', '800002', '810001', '820001',
+         '820002', '820003', '820004', '820005');
+
 {
   Declaração das funções de conversão
 }
@@ -474,6 +552,22 @@ function StrTotpMotivo(out ok: boolean; const s: string): TtpMotivo;
 
 function TtpGuiaToStr(const t: TtpGuia): string;
 function StrToTtpGuia(const s: String): TtpGuia;
+
+// Reforma Tributária
+function tpNFDebitoToStr(const t: TtpNFDebito): string;
+function StrTotpNFDebito(const s: string): TtpNFDebito;
+
+function tpNFCreditoToStr(const t: TtpNFCredito): string;
+function StrTotpNFCredito(const s: string): TtpNFCredito;
+
+function tpEnteGovToStr(const t: TtpEnteGov): string;
+function StrTotpEnteGov(const s: string): TtpEnteGov;
+
+function CSTIBSCBSToStr(const t: TCSTIBSCBS): string;
+function StrToCSTIBSCBS(const s: string): TCSTIBSCBS;
+
+function cClassTribToStr(const t: TcClassTrib): string;
+function StrTocClassTrib(const s: string): TcClassTrib;
 
 implementation
 
@@ -1187,14 +1281,14 @@ end;
 // B25 - Finalidade de emissão da NF-e *****************************************
 function FinNFeToStr(const t: TpcnFinalidadeNFe): String;
 begin
-  Result := EnumeradoToStr(t, ['1', '2', '3', '4'],
-    [fnNormal, fnComplementar, fnAjuste, fnDevolucao]);
+  Result := EnumeradoToStr(t, ['1', '2', '3', '4', '5', '6'],
+    [fnNormal, fnComplementar, fnAjuste, fnDevolucao, fnCredito, fnDebito]);
 end;
 
 function StrToFinNFe(out ok: Boolean; const s: String): TpcnFinalidadeNFe;
 begin
-  Result := StrToEnumerado(ok, s, ['1', '2', '3', '4'],
-    [fnNormal, fnComplementar, fnAjuste, fnDevolucao]);
+  Result := StrToEnumerado(ok, s, ['1', '2', '3', '4', '5', '6'],
+    [fnNormal, fnComplementar, fnAjuste, fnDevolucao, fnCredito, fnDebito]);
 end;
 
 function IndicadorNFeToStr(const t: TpcnIndicadorNFe): String;
@@ -1211,14 +1305,14 @@ end;
 
 function VersaoQrCodeToStr(const t: TpcnVersaoQrCode): String;
 begin
-  Result := EnumeradoToStr(t, ['0', '1', '2'],
-    [veqr000, veqr100, veqr200]);
+  Result := EnumeradoToStr(t, ['0', '1', '2', '3'],
+    [veqr000, veqr100, veqr200, veqr300]);
 end;
 
 function StrToVersaoQrCode(out ok: Boolean; const s: String): TpcnVersaoQrCode;
 begin
-  Result := StrToEnumerado(ok, s, ['0', '1', '2'],
-    [veqr000, veqr100, veqr200]);
+  Result := StrToEnumerado(ok, s, ['0', '1', '2', '3'],
+    [veqr000, veqr100, veqr200, veqr300]);
 end;
 
 function VersaoQrCodeToDbl(const t: TpcnVersaoQrCode): Real;
@@ -1227,6 +1321,7 @@ begin
     veqr000: Result := 0;
     veqr100: Result := 1;
     veqr200: Result := 2;
+    veqr300: Result := 3;
   else
     Result := 0;
   end;
@@ -1637,6 +1732,107 @@ begin
     end;
   end;
   raise EACBrException.CreateFmt('Valor string inválido para TtpGuia: %s', [s]);
+end;
+
+// Reforma Tributária
+function tpNFDebitoToStr(const t: TtpNFDebito): string;
+begin
+  Result := TtpNFDebitoArrayStrings[t];
+end;
+
+function StrTotpNFDebito(const s: string): TtpNFDebito;
+var
+  idx: TtpNFDebito;
+begin
+  for idx:= Low(TtpNFDebitoArrayStrings) to High(TtpNFDebitoArrayStrings)do
+  begin
+    if(TtpNFDebitoArrayStrings[idx] = s)then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TtpNFDebito: %s', [s]);
+end;
+
+function tpNFCreditoToStr(const t: TtpNFCredito): string;
+begin
+  Result := TtpNFCreditoArrayStrings[t];
+end;
+
+function StrTotpNFCredito(const s: string): TtpNFCredito;
+var
+  idx: TtpNFCredito;
+begin
+  for idx:= Low(TtpNFCreditoArrayStrings) to High(TtpNFCreditoArrayStrings)do
+  begin
+    if(TtpNFCreditoArrayStrings[idx] = s)then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TtpNFCredito: %s', [s]);
+end;
+
+function tpEnteGovToStr(const t: TtpEnteGov): string;
+begin
+  Result := TtpEnteGovArrayStrings[t];
+end;
+
+function StrTotpEnteGov(const s: string): TtpEnteGov;
+var
+  idx: TtpEnteGov;
+begin
+  for idx:= Low(TtpEnteGovArrayStrings) to High(TtpEnteGovArrayStrings)do
+  begin
+    if(TtpEnteGovArrayStrings[idx] = s)then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TtpEnteGov: %s', [s]);
+end;
+
+function CSTIBSCBSToStr(const t: TCSTIBSCBS): string;
+begin
+  Result := TCSTIBSCBSArrayStrings[t];
+end;
+
+function StrToCSTIBSCBS(const s: string): TCSTIBSCBS;
+var
+  idx: TCSTIBSCBS;
+begin
+  for idx:= Low(TCSTIBSCBSArrayStrings) to High(TCSTIBSCBSArrayStrings) do
+  begin
+    if(TCSTIBSCBSArrayStrings[idx] = s)then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TCSTIBSCBS: %s', [s]);
+end;
+
+function cClassTribToStr(const t: TcClassTrib): string;
+begin
+  Result := TcClassTribArrayStrings[t];
+end;
+
+function StrTocClassTrib(const s: string): TcClassTrib;
+var
+  idx: TcClassTrib;
+begin
+  for idx:= Low(TcClassTribArrayStrings) to High(TcClassTribArrayStrings) do
+  begin
+    if(TcClassTribArrayStrings[idx] = s)then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TcClassTrib: %s', [s]);
 end;
 
 initialization

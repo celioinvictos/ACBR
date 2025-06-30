@@ -110,7 +110,6 @@ begin
    fpModuloMultiplicadorInicial:= 0;
    fpModuloMultiplicadorFinal:= 9;
    fpModuloMultiplicadorAtual:= 0;
-  fpCodigosMoraAceitos     := '123';
 end;
 
 function TACBrBancoSantander.DefineNossoNumeroRetorno(const Retorno: String): String;
@@ -1311,7 +1310,11 @@ begin
       with Titulo do
       begin
          SeuNumero   := copy(Linha,38,25);
-         NossoNumero := Copy(Linha,63,07);
+         if ACBrBanco.ACBrBoleto.LerNossoNumeroCompleto then
+            NossoNumero := Copy(Linha,63,08)
+         else
+            NossoNumero := Copy(Linha,63,07);
+
          Carteira    := Copy(Linha,108,1);
 
          OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(StrToIntDef(

@@ -45,6 +45,66 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+20/05/2025
+-- ACBrBPeEnvEvento --
+[-] Comentado a chamada a uma unit que ainda não esta disponível.
+  Por: Italo Giurizzato Junior
+[*] Ajustes necessários para deixar em conformidade com a versão 1.02 dos Schemas.
+  Por: Italo Giurizzato Junior
+
+28/04/2025
+[*] Ajustes necessários para deixar em conformidade com a versão 1.01a dos Schemas.
+  Por: Italo Giurizzato Junior
+
+23/04/2025
+-- ACBrBPeWebServices --
+[*] #TK-6785: Adiciona chamada a rotina AjustarOpcoes no envio de eventos do BP-e.
+  Por: Diego Folieni
+
+16/04/2025
+-- Diversos --
+[*] Ajustes necessários para deixar em conformidade com a NT2025/001 versão 1.01.
+-- Diversos --
+[*] #TK-6831: Ajustes necessários para deixar em conformidade com a NT2025/001.
+  Por: Italo Giurizzato Junior
+
+02/04/2025
+-- Diversos --
+[*] #TK-5814: Ajustes nas units: ACBrBPeIniReader e ACBrBPeIniWrite que
+    são ser responsáveis por ler e gerar o arquivo INI para atender a Reforma
+    Tributária.
+    Refatorado a função GetURLQRCode para que a mesma receba a classe TBPe em 
+    vez de diversos parâmetros de entrada.
+    Implementado a propriedade de configuração: SalvarEvento (valor padrão False)
+    agora ao salvar o XML *-procEventoCTe o componente vai checar o valor dessa 
+    propriedade.
+    Alterado a URL do QR-Code de MG.
+  Por: Italo Giurizzato Junior
+
+08/03/2025
+-- ACBrBPeClass/ACBrBPeXmlReader/ACBrBPeXmlWriter --
+[*] #TK-5814: Alteração visando contemplar a Reforma Tributária.
+  Por: Italo Giurizzato Junior
+
+27/02/2025
+-- ACBrBPeIniReader/ACBrBPeIniWriter --
+[*] O conteúdo das funções: GerarBPeIni e LerArqIni foram migrados para units
+    especializadas em gerar e ler o arquivo INI que contem informações do BPe.
+  Por: Italo Giurizzato Junior
+-- ACBrBPeXmlWriter --
+[*] #TK-5814: Alteração visando contemplar a Reforma Tributária.
+  Por: Italo Giurizzato Junior
+
+14/02/2025
+-- ACBrBPeClass/ACBrBPeConsts --
+[+] Inclusão de novas contantes e ajustes nas novas classes para atender a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+10/02/2025
+-- ACBrBPeClass --
+[+] Inclusão das novas classes para atender a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
 08/01/2025
 -- Diversos --
 [*] Ajustes na geração do XML de eventos para usar o ACBrXmlDocument.

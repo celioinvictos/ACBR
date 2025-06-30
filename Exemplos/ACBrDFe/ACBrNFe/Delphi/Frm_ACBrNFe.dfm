@@ -24,7 +24,7 @@ object frmACBrNFe: TfrmACBrNFe
       Left = 1
       Top = 1
       Width = 295
-      Height = 544
+      Height = 553
       ActivePage = TabSheet1
       TabOrder = 0
       object TabSheet1: TTabSheet
@@ -33,7 +33,7 @@ object frmACBrNFe: TfrmACBrNFe
           Left = 0
           Top = 0
           Width = 287
-          Height = 516
+          Height = 525
           ActivePage = TabSheet12
           Align = alClient
           MultiLine = True
@@ -359,7 +359,7 @@ object frmACBrNFe: TfrmACBrNFe
               Left = 3
               Top = 12
               Width = 265
-              Height = 389
+              Height = 464
               Caption = 'Geral'
               TabOrder = 0
               object sbtnPathSalvar: TSpeedButton
@@ -407,9 +407,9 @@ object frmACBrNFe: TfrmACBrNFe
               object Label32: TLabel
                 Left = 8
                 Top = 165
-                Width = 119
+                Width = 59
                 Height = 13
-                Caption = 'Vers'#227'o Documento Fiscal'
+                Caption = 'Vers'#227'o DF-e'
               end
               object Label33: TLabel
                 Left = 8
@@ -452,6 +452,27 @@ object frmACBrNFe: TfrmACBrNFe
                   3BB33773333773333773B333333B3333333B7333333733333337}
                 NumGlyphs = 2
                 OnClick = spPathSchemasClick
+              end
+              object Label41: TLabel
+                Left = 8
+                Top = 378
+                Width = 140
+                Height = 13
+                Caption = 'IdCSRT (Somente SEFAZ-PR)'
+              end
+              object Label46: TLabel
+                Left = 7
+                Top = 418
+                Width = 130
+                Height = 13
+                Caption = 'CSRT (Somente SEFAZ-PR)'
+              end
+              object Label53: TLabel
+                Left = 133
+                Top = 165
+                Width = 80
+                Height = 13
+                Caption = 'Vers'#227'o QR-Code'
               end
               object edtPathLogs: TEdit
                 Left = 8
@@ -516,7 +537,7 @@ object frmACBrNFe: TfrmACBrNFe
               object cbVersaoDF: TComboBox
                 Left = 8
                 Top = 181
-                Width = 248
+                Width = 113
                 Height = 21
                 TabOrder = 8
               end
@@ -540,6 +561,27 @@ object frmACBrNFe: TfrmACBrNFe
                 Width = 228
                 Height = 21
                 TabOrder = 11
+              end
+              object edtIdCSRT: TEdit
+                Left = 8
+                Top = 394
+                Width = 248
+                Height = 21
+                TabOrder = 12
+              end
+              object edtCSRT: TEdit
+                Left = 7
+                Top = 434
+                Width = 248
+                Height = 21
+                TabOrder = 13
+              end
+              object cbVersaoQRCode: TComboBox
+                Left = 133
+                Top = 181
+                Width = 113
+                Height = 21
+                TabOrder = 14
               end
             end
           end
@@ -1975,6 +2017,28 @@ object frmACBrNFe: TfrmACBrNFe
           Caption = 'Manif. Dest. - Oper. N'#227'o Realizada'
           TabOrder = 6
           OnClick = btnManifDestConfirmacaoClick
+        end
+      end
+      object tsOutros: TTabSheet
+        Caption = 'Outros'
+        ImageIndex = 5
+        object btnLerArqINI: TButton
+          Left = 3
+          Top = 3
+          Width = 177
+          Height = 25
+          Caption = 'Ler Arquivo INI/Gerar XML'
+          TabOrder = 0
+          OnClick = btnLerArqINIClick
+        end
+        object btnGerarArqINI: TButton
+          Left = 186
+          Top = 3
+          Width = 177
+          Height = 25
+          Caption = 'Gerar Arquivo INI'
+          TabOrder = 1
+          OnClick = btnGerarArqINIClick
         end
       end
     end

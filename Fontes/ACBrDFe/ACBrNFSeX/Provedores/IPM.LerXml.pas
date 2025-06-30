@@ -46,8 +46,6 @@ type
   { TNFSeR_IPM }
 
   TNFSeR_IPM = class(TNFSeRClass)
-  private
-
   protected
     function RemoverGrupo_conteudohtml(const aXML: string): string;
 
@@ -159,8 +157,8 @@ begin
         aValor := ObterConteudo(ANodes[i].Childrens.FindAnyNs('codigo_atividade'), tcStr);
         ItemServico[i].CodigoCnae := PadLeft(aValor, 9, '0');
 
-        ItemServico[i].Quantidade := ObterConteudo(ANodes[i].Childrens.FindAnyNs('unidade_quantidade'), tcDe3);
-        ItemServico[i].ValorUnitario := ObterConteudo(ANodes[i].Childrens.FindAnyNs('unidade_valor_unitario'), tcDe2);
+        ItemServico[i].Quantidade := ObterConteudo(ANodes[i].Childrens.FindAnyNs('unidade_quantidade'), tcDe10);
+        ItemServico[i].ValorUnitario := ObterConteudo(ANodes[i].Childrens.FindAnyNs('unidade_valor_unitario'), tcDe10);
         ItemServico[i].Descricao := ObterConteudo(ANodes[i].Childrens.FindAnyNs('descritivo'), tcStr);
         ItemServico[i].Descricao := StringReplace(ItemServico[i].Descricao, FpQuebradeLinha,
                                                     sLineBreak, [rfReplaceAll]);
@@ -172,6 +170,7 @@ begin
         ItemServico[i].ValorDeducoes := ObterConteudo(ANodes[i].Childrens.FindAnyNs('valor_deducao'), tcDe2);
         ItemServico[i].BaseCalculo := ObterConteudo(ANodes[i].Childrens.FindAnyNs('valor_tributavel'), tcDe2);
         ItemServico[i].ValorIssRetido := ObterConteudo(ANodes[i].Childrens.FindAnyNs('valor_issrf'), tcDe2);
+        ItemServico[i].DescontoIncondicionado := ObterConteudo(ANodes[i].Childrens.FindAnyNs('ValorDescontoIncondicional'), tcDe2);
 
         if ItemServico[i].ValorTotal = 0 then
           ItemServico[i].ValorTotal := ItemServico[i].Quantidade * ItemServico[i].ValorUnitario;

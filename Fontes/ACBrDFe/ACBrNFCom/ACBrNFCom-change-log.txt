@@ -42,6 +42,72 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+20/05/2025
+[*] Ajustes necessários para deixar em conformidade com a versão 1.02 dos Schemas.
+  Por: Italo Giurizzato Junior
+
+29/04/2025
+-- ACBrNFComWebServices --
+[*] #TK-6785 - Adiciona chamada a rotina AjustarOpcoes no envio de eventos da NFCom.
+  Por: Diego Folieni
+
+28/04/2025
+[*] Ajustes necessários para deixar em conformidade com a versão 1.01a dos Schemas.
+  Por: Italo Giurizzato Junior
+
+16/04/2025
+-- ACBrNFComServicos --
+[*] Alteração na URL do QR-Code da NFCom da SEFAZ-MG.
+   Por: Eduardo Zambiazzi
+
+15/04/2025
+-- Diversos --
+[*] Ajustes necessários para deixar em conformidade com a NT2025/001 versão 1.01.
+  Por: Italo Giurizzato Junior
+
+11/04/2025
+-- Diversos --
+[*] #TK-6836: Ajustes necessários para deixar em conformidade com a NT2025/001.
+  Por: Italo Giurizzato Junior
+
+04/04/2025
+-- Diversos --
+[*] #TK-5814: Implementado as units: ACBrNFComIniReader e ACBrNFComIniWrite que
+    vão ser responsáveis por ler e gerar o arquivo INI.
+    Refatorado a função GetURLQRCode para que a mesma receba a classe TNFCom em 
+    vez de diversos parâmetros de entrada.
+    Implementado a propriedade de configuração: SalvarEvento (valor padrão False)
+    agora ao salvar o XML *-procEventoNFCom o componente vai checar o valor dessa 
+    propriedade.
+  Por: Italo Giurizzato Junior
+
+08/03/2025
+-- ACBrNFComClass/ACBrNFComXmlReader/ACBrNFComXmlWriter --
+[*] #TK-5814: Alteração visando contemplar a Reforma Tributária.
+  Por: Italo Giurizzato Junior
+
+27/02/2025
+-- ACBrNFComXmlWriter --
+[*] #TK-5814: Alteração visando contemplar a Reforma Tributária.
+  Por: Italo Giurizzato Junior
+
+15/02/2025
+-- ACBrNFComClass/ACBrNFComConsts --
+[+] Inclusão de novas contantes e ajustes nas novas classes para atender a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+10/02/2025
+-- ACBrNFComClass --
+[+] Inclusão das novas classes para atender a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- ACBrNFComServicos --
+[+] Incluído as URLs de produção da SEFAZ-MS.
+   Por: Italo Giurizzato Junior
+
+06/02/2025
+-- ACBrNFCom.DAEventoRLRetrato/ACBrNFCom.DANFComRLRetrato --
+[*] Ajustes para compilar/instalar no Delphi 7.
+   Por: Italo Giurizzato Junior
 
 13/01/2025
 -- ACBrNFComServicos --

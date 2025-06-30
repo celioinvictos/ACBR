@@ -117,21 +117,23 @@ procedure TBoletoW_Banrisul.DefinirURL;
 var
    DevAPP, ID, NConvenio: String;
 begin
-   FPURL := IfThen(Boleto.Configuracoes.WebService.Ambiente in [tawsProducao, tawsHomologacao], C_URL, C_URL_HOM);
+   case Boleto.Configuracoes.WebService.Ambiente of
+    tawsProducao    : FPURL.URLProducao    := C_URL;
+    tawsHomologacao : FPURL.URLHomologacao := C_URL;
+    tawsSandBox     : FPURL.URLSandbox     := C_URL_HOM;
+  end;
 
    if ATitulo <> nil then
       ID := OnlyNumber(ATitulo.ACBrBoleto.Banco.MontarCampoNossoNumero(ATitulo));
 
    case Boleto.Configuracoes.WebService.Operacao of
       tpInclui:
-         FPURL := FPURL + '/boletos'; // + DevAPP;
+         FPURL.SetPathURI( '/boletos' );
       // tpConsulta         : FPURL := FPURL + '/boletos'+ '&' + DefinirParametros; //' + DevAPP + '&' + DefinirParametros;
       tpConsultaDetalhe:
-         FPURL := FPURL + '/boletos/' + ID;
-         // + ID + DevAPP + '&numeroConvenio='+ NConvenio;
+         FPURL.SetPathURI( '/boletos/' + ID );
       tpBaixa:
-         FPURL := FPURL + '/boletos/' + ID + '/baixar';
-         // + ID + '/baixar'+DevAPP;
+         FPURL.SetPathURI( '/boletos/' + ID + '/baixar' );
    end;
 
 end;
@@ -474,7 +476,7 @@ begin
 
       end else
       begin
-        LJsonJurosObject.AddPair('valor', 3);
+        LJsonJurosObject.AddPair('codigo', 3);
         AJson.AddPair('juros', LJsonJurosObject);
       end;
    end;
@@ -507,7 +509,7 @@ begin
             LJsonMultaObject.AddPair('data', FormatDateBr(ATitulo.DataMulta, 'YYYY-MM-DD'));
 
          case LCodigoMulta of
-            1: LJsonMultaObject.AddPair('valor', StringReplace(FormatFloat('0.0', ATitulo.PercentualMulta),
+            1: LJsonMultaObject.AddPair('valor', StringReplace(FormatFloat('0.00', ATitulo.PercentualMulta),
                                                                 ',', '.', [rfReplaceAll]) );
             2: LJsonMultaObject.AddPair('taxa', StringReplace(FormatFloat('0.0', ATitulo.PercentualMulta),
                                                                 ',', '.', [rfReplaceAll]) );
@@ -641,15 +643,19 @@ end;
 
 constructor TBoletoW_Banrisul.Create(ABoletoWS: TBoletoWS);
 begin
-   inherited Create(ABoletoWS);
+  inherited Create(ABoletoWS);
 
-   FPAccept := C_ACCEPT;
+  FPAccept := C_ACCEPT;
 
-   if Assigned(OAuth) then
-   begin
-      OAuth.URL := IfThen(OAuth.Ambiente in [tawsProducao,tawsHomologacao], C_URL_OAUTH_PROD, C_URL_OAUTH_HOM);
-      OAuth.Payload := True;
-   end;
+  if Assigned(OAuth) then
+  begin
+    case OAuth.Ambiente of
+      tawsProducao   : OAuth.URL.URLProducao    := C_URL_OAUTH_PROD;
+      tawsHomologacao: OAuth.URL.URLHomologacao := C_URL_OAUTH_PROD;
+      tawsSandBox    : OAuth.URL.URLSandBox     := C_URL_OAUTH_HOM;
+    end;
+    OAuth.Payload := True;
+  end;
 end;
 
 function TBoletoW_Banrisul.GerarRemessa: string;

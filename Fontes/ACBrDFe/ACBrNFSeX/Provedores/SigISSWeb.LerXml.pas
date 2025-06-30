@@ -46,6 +46,8 @@ type
 
   TNFSeR_SigISSWeb = class(TNFSeRClass)
   protected
+    procedure LerDadosObra(const ANode: TACBrXmlNode);
+    procedure LerDadosIntermediario(const ANode: TACBrXmlNode);
 
   public
     function LerXml: Boolean; override;
@@ -180,6 +182,7 @@ begin
     VerificarSeConteudoEhLista(Servico.Discriminacao);
 
     Servico.ItemListaServico := ObterConteudo(ANode.Childrens.FindAnyNs('id_codigo_servico'), tcStr);
+    Servico.xItemListaServico := ItemListaServicoDescricao(Servico.ItemListaServico);
 
     Servico.Valores.ValorServicos := ObterConteudo(ANode.Childrens.FindAnyNs('valor_nf'), tcDe2);
     Servico.Valores.ValorDeducoes := ObterConteudo(ANode.Childrens.FindAnyNs('deducao'), tcDe2);
@@ -204,6 +207,10 @@ begin
 
     Servico.Valores.Aliquota := ObterConteudo(ANode.Childrens.FindAnyNs('aliq_iss'), tcDe2);
     Servico.Valores.ValorIss := ObterConteudo(ANode.Childrens.FindAnyNs('valor_iss'), tcDe2);
+    Servico.Valores.ValorIssRetido := 0;
+
+    if Servico.Valores.IssRetido = stRetencao then
+      Servico.Valores.ValorIssRetido := Servico.Valores.ValorIss;
 
     Servico.Valores.BaseCalculo := ObterConteudo(ANode.Childrens.FindAnyNs('bc_pis'), tcDe2);
     Servico.Valores.AliquotaPis := ObterConteudo(ANode.Childrens.FindAnyNs('aliq_pis'), tcDe2);
@@ -244,6 +251,10 @@ begin
     IdentificacaoRps.Numero := ObterConteudo(ANode.Childrens.FindAnyNs('rps'), tcStr);
 
     CodigoVerificacao := ObterConteudo(ANode.Childrens.FindAnyNs('codigo'), tcStr);
+
+    Servico.CodigoNBS := ObterConteudo(ANode.Childrens.FindAnyNs('codigo_nbs'), tcStr);
+    Servico.MunicipioPrestacaoServico := ObterConteudo(ANode.Childrens.FindAnyNs('cidade_local_prest'), tcStr);
+    Servico.UFPrestacao := ObterConteudo(ANode.Childrens.FindAnyNs('uf_local_prest'), tcStr);
   end;
 
   LerCampoLink;
@@ -344,7 +355,46 @@ begin
 
     IdentificacaoRps.Serie := ObterConteudo(ANode.Childrens.FindAnyNs('serie_rps'), tcStr);
     IdentificacaoRps.Numero := ObterConteudo(ANode.Childrens.FindAnyNs('rps'), tcStr);
+
+    Servico.CodigoNBS := ObterConteudo(ANode.Childrens.FindAnyNs('codigo_nbs'), tcStr);
+
+    Servico.xPais := ObterConteudo(ANode.Childrens.FindAnyNs('pais_local_prest'), tcStr);
+    Servico.MunicipioPrestacaoServico := ObterConteudo(ANode.Childrens.FindAnyNs('cidade_local_prest'), tcStr);
+    Servico.UFPrestacao := ObterConteudo(ANode.Childrens.FindAnyNs('uf_local_prest'), tcStr);
+
+    LerDadosObra(ANode);
+    LerDadosIntermediario(ANode);
   end;
+end;
+
+procedure TNFSeR_SigISSWeb.LerDadosObra(const ANode: TACBrXmlNode);
+begin
+  NFSe.ConstrucaoCivil.Endereco.CEP := ObterConteudo(ANode.Childrens.FindAnyNs('cep_obra'), tcStr);
+  NFSe.ConstrucaoCivil.Endereco.xMunicipio := ObterConteudo(ANode.Childrens.FindAnyNs('cidade_obra'), tcStr);
+  NFSe.ConstrucaoCivil.Endereco.UF := ObterConteudo(ANode.Childrens.FindAnyNs('uf_obra'), tcStr);
+  NFSe.ConstrucaoCivil.Endereco.Bairro := ObterConteudo(ANode.Childrens.FindAnyNs('bairro_obra'), tcStr);
+  NFSe.ConstrucaoCivil.Endereco.Endereco := ObterConteudo(ANode.Childrens.FindAnyNs('logradouro_obra'), tcStr);
+  NFSe.ConstrucaoCivil.Endereco.Numero := ObterConteudo(ANode.Childrens.FindAnyNs('logradouro_numero_obra'), tcStr);
+  NFSe.ConstrucaoCivil.Art := ObterConteudo(ANode.Childrens.FindAnyNs('insc_imobiliaria_fiscal_obra'), tcStr);
+  NFSe.ConstrucaoCivil.CodigoObra := ObterConteudo(ANode.Childrens.FindAnyNs('cno_obra'), tcStr);
+end;
+
+procedure TNFSeR_SigISSWeb.LerDadosIntermediario(const ANode: TACBrXmlNode);
+begin
+  NFSe.Intermediario.Identificacao.CpfCnpj := ObterConteudo(ANode.Childrens.FindAnyNs('cnpj_cpf_intermediario'), tcStr);
+  NFSe.Intermediario.Identificacao.InscricaoEstadual := ObterConteudo(ANode.Childrens.FindAnyNs('ie_intermediario'), tcStr);
+  NFSe.Intermediario.Identificacao.InscricaoMunicipal := ObterConteudo(ANode.Childrens.FindAnyNs('im_intermediario'), tcStr);
+  NFSe.Intermediario.RazaoSocial := ObterConteudo(ANode.Childrens.FindAnyNs('razao_social_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.Endereco := ObterConteudo(ANode.Childrens.FindAnyNs('endereco_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.Numero := ObterConteudo(ANode.Childrens.FindAnyNs('numero_ende_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.Complemento := ObterConteudo(ANode.Childrens.FindAnyNs('complemento_ende_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.Bairro := ObterConteudo(ANode.Childrens.FindAnyNs('bairro_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.CEP := ObterConteudo(ANode.Childrens.FindAnyNs('cep_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.xMunicipio := ObterConteudo(ANode.Childrens.FindAnyNs('cidade_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.UF := ObterConteudo(ANode.Childrens.FindAnyNs('uf_intermediario'), tcStr);
+  NFSe.Intermediario.Endereco.xPais := ObterConteudo(ANode.Childrens.FindAnyNs('pais_intermediario'), tcStr);
+  NFSe.Intermediario.Contato.Telefone := ObterConteudo(ANode.Childrens.FindAnyNs('fone_intermediario'), tcStr);
+  NFSe.Intermediario.Contato.Email := ObterConteudo(ANode.Childrens.FindAnyNs('email_intermediario'), tcStr);
 end;
 
 end.

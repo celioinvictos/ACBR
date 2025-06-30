@@ -215,6 +215,9 @@ type
     function LerXML(const aXML: String; var aNFSe: TNFSe; var ATipo: TtpXML;
       var aXmlTratado: string): Boolean; virtual;
 
+    function GerarIni(const aNFSe: TNFSe): string; virtual;
+    function LerIni(const aINI: String; var aNFSe: TNFSe): Boolean; virtual;
+
     procedure GeraLote; virtual;
     procedure Emite; virtual;
     procedure ConsultaSituacao; virtual;
@@ -1453,6 +1456,46 @@ begin
 
     if aNFSe.Tomador.RazaoSocial = '' then
       aNFSe.Tomador.RazaoSocial := 'Tomador Não Identificado';
+  finally
+    AReader.Destroy;
+  end;
+end;
+
+function TACBrNFSeXProvider.GerarIni(const aNFSe: TNFSe): string;
+var
+  AWriter: TNFSeWClass;
+begin
+  AWriter := CriarGeradorXml(aNFSe);
+
+  try
+    Result := AWriter.GerarIni;
+
+  finally
+    AWriter.Destroy;
+  end;
+end;
+
+function TACBrNFSeXProvider.LerIni(const aINI: String;
+  var aNFSe: TNFSe): Boolean;
+var
+  AReader: TNFSeRClass;
+begin
+  AReader := CriarLeitorXml(aNFSe);
+  AReader.Arquivo := aINI;
+
+  try
+    with TACBrNFSeX(FAOwner) do
+    begin
+      if Configuracoes.WebServices.AmbienteCodigo = 1 then
+        AReader.Ambiente := taProducao
+      else
+        AReader.Ambiente := taHomologacao;
+
+      AReader.Provedor := Configuracoes.Geral.Provedor;
+      AReader.IniParams := Configuracoes.Geral.PIniParams;
+    end;
+
+    Result := AReader.LerIni;
   finally
     AReader.Destroy;
   end;
@@ -2804,6 +2847,7 @@ var
   AService: TACBrNFSeXWebservice;
   AErro: TNFSeEventoCollectionItem;
   Cancelamento: TNFSeCancelaNFSeResponse;
+  i: Integer;
 begin
   SubstituiNFSeResponse.Sucesso := False;
   SubstituiNFSeResponse.Erros.Clear;
@@ -2835,6 +2879,13 @@ begin
     PrepararCancelaNFSe(Cancelamento);
     if (Cancelamento.Erros.Count > 0) then
     begin
+      for i := 0 to Cancelamento.Erros.Count -1 do
+      begin
+        AErro := SubstituiNFSeResponse.Erros.New;
+        AErro.Codigo := Cancelamento.Erros[i].Codigo;
+        AErro.Descricao := Cancelamento.Erros[i].Descricao;
+      end;
+
       TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
       Exit;
     end;
@@ -2842,6 +2893,13 @@ begin
     AssinarCancelaNFSe(Cancelamento);
     if (Cancelamento.Erros.Count > 0) then
     begin
+      for i := 0 to Cancelamento.Erros.Count -1 do
+      begin
+        AErro := SubstituiNFSeResponse.Erros.New;
+        AErro.Codigo := Cancelamento.Erros[i].Codigo;
+        AErro.Descricao := Cancelamento.Erros[i].Descricao;
+      end;
+
       TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
       Exit;
     end;
@@ -3491,6 +3549,22 @@ var
   IdAttr, Prefixo, PrefixoTS, IdAttrSig: string;
   AErro: TNFSeEventoCollectionItem;
 begin
+  if (Response.ModoEnvio = meTeste) and
+     (not GetConfigGeral.ServicosDisponibilizados.TestarEnvio) then
+    Exit;
+
+  if (Response.ModoEnvio = meLoteSincrono) and
+     (not GetConfigGeral.ServicosDisponibilizados.EnviarLoteSincrono) then
+    Exit;
+
+  if (Response.ModoEnvio = meLoteAssincrono) and
+     (not GetConfigGeral.ServicosDisponibilizados.EnviarLoteAssincrono) then
+    Exit;
+
+  if (Response.ModoEnvio = meUnitario) and
+     (not GetConfigGeral.ServicosDisponibilizados.EnviarUnitario) then
+    Exit;
+
   case Response.ModoEnvio of
     meTeste,
     meLoteSincrono,

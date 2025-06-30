@@ -2220,7 +2220,7 @@ begin
 
       XML := StringReplace(XML, 'ds:', '', [rfReplaceAll]);
 
-      if FPConfiguracoesCTe.Arquivos.Salvar then
+      if FPConfiguracoesCTe.Arquivos.SalvarEvento and (XML <> '') then
         FPDFeOwner.Gravar( aIDEvento + '-procEventoCTe.xml', XML, sPathEvento);
     end;
   end;
@@ -2529,7 +2529,7 @@ begin
       else
       begin
         // Salva o XML de eventos retornados ao consultar um CT-e
-        if ExtrairEventos and FPConfiguracoesCTe.Arquivos.Salvar and
+        if ExtrairEventos and FPConfiguracoesCTe.Arquivos.SalvarEvento and
            (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoCTe'))) then
           SalvarEventos(CTeRetorno);
       end;
@@ -3715,7 +3715,8 @@ begin
         *)
         schprocCTe,
         schprocCTeOS,
-        schprocGTVe:
+        schprocGTVe,
+		schprocCTeSimp:
           FNomeArq := FretDistDFeInt.docZip.Items[I].resDFe.chDFe + '-cte.xml';
 
         schprocEventoCTe:
@@ -3735,7 +3736,7 @@ begin
           FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
 
         if (FretDistDFeInt.docZip.Items[I].schema in [schprocCTe, schprocCTeOS,
-             schprocGTVe]) then
+             schprocGTVe, schprocCTeSimp]) then
           FPDFeOwner.Gravar(FNomeArq, AXML, aPath);
       end;
     end;

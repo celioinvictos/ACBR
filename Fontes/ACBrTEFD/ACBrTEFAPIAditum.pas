@@ -46,6 +46,7 @@ uses
 
 const
   CPoolSleep = 1000;
+  CEsperaMsg = 3000;
 
   CAditumAPIVersion = 'v2';
   CAditumAPIURL = 'https://localhost:4090/'+CAditumAPIVersion+'/';
@@ -58,6 +59,7 @@ const
   CInstallmentType_Emissor = 'Issuer';
   CInstallmentType_Estabelecimento = 'Merchant';
 
+
 resourcestring
   sACBrAditumNaoAtivo = CAditumTEF+' não está ativo';
   sACBrAditumSemActivationCode = '"Activation Code" deve ser informado em "DadosTerminal.CodTerminal"';
@@ -69,6 +71,7 @@ resourcestring
   sACBrAditumErroDadoNaoEJSon = 'Dado informado em %s não é um JSON válido';
   sACBrAditumErroEstabelecimentoNaoAtivo = 'Estabelecimento %s não está Ativo';
   sACBrAditumSemNSU = 'NSU não informado';
+  sACBrAditumNaoAprovada = 'Transação %s não aprovada';
   sACBrAditumSemComunicacaoURL = 'Falha na comunicação. Erro: %d, URL: %s';
 
 
@@ -184,6 +187,10 @@ begin
   js := TACBrJSONObject.Parse(s);
   try
     jsCharge := js.AsJSONObject['charge'];
+
+    if not Assigned(jsCharge) then
+      jsCharge := js; // fallback para raiz do JSON
+
     if Assigned(jsCharge) then
     begin
       Rede := jsCharge.AsString['acquirerName'];
@@ -398,6 +405,7 @@ var
   jsErrors: TACBrJSONArray;
   sMsg: String;
   TefAPI: TACBrTEFAPI;
+  Espera: Integer;
 begin
   TefAPI := TACBrTEFAPI(fpACBrTEFAPI);
   Fim := False;
@@ -418,9 +426,14 @@ begin
       if (not Fim) and (sMsg = '') then
         sMsg := ACBrStr(TransactionStatusDescription(js.AsString['status']));
 
+      if Fim then
+        Espera := CEsperaMsg
+      else
+        Espera := -1;
+
       if (sMsg <> '') then
         if Assigned(TefAPI.QuandoExibirMensagem) then
-          TefAPI.QuandoExibirMensagem( sMsg, telaOperador, -1 );
+          TefAPI.QuandoExibirMensagem( sMsg, telaOperador, Espera );
     finally
       js.Free;
     end;
@@ -506,6 +519,11 @@ begin
     Result := 'Encerrando fluxo transacional'
   else if ATransactionStatus = 'FINISHED' then
     Result := 'Fluxo completo'
+  else if ATransactionStatus = 'VALIDATING_NSU' then
+    Result := 'Validando NSU'
+  else if ATransactionStatus = 'WAITING_CARD_EVENT' then
+    Result := 'Aguardando Aproximação do Cartão'
+
   else
     Result := '';
 end;
@@ -586,7 +604,7 @@ begin
   begin
     js := TACBrJSONObject.Parse(FHTTPResponse);
     try
-      if (LowerCase(js.AsString['sucess']) <> 'true') then
+      if (LowerCase(js.AsString['success']) <> 'true') then
         TratarRetornoComErro;
 
       jsmerchantInfo := js.AsJSONObject['merchantInfo'];
@@ -794,7 +812,7 @@ begin
         begin
           if (GetErrorCode(jserrors.ItemAsJSONObject[i]) = 13) then  // OPERAÇÃO (anterior) CANCELADA
           begin
-            Fim := False;
+            Fim := True;
             Break;
           end;
         end;
@@ -840,7 +858,7 @@ begin
     sl := TStringList.Create;
     try
       sl.Add('Teste PinPad');
-      sl.Add('Reimpressão');
+      sl.Add(ACBrStr('Reimpressão'));
       ItemSel := -1;
       TACBrTEFAPI(fpACBrTEFAPI).QuandoPerguntarMenu( 'Menu Administrativo', sl, ItemSel );
       if (ItemSel = 0) then
@@ -887,6 +905,8 @@ var
   sBody, sURL: String;
   jsErrors: TACBrJSONArray;
   i: Integer;
+  jserro: TACBrJSONObject;
+  sMsg : String;
 begin
   LimparRespostaHTTP;
   if (Trim(NSU) = '') then
@@ -915,8 +935,11 @@ begin
         begin
           for i := 0 to jsErrors.Count-1 do
           begin
-            if (GetErrorCode(jserrors.ItemAsJSONObject[i]) = -1950) then  // Transação já cancelada
+            jserro := jserrors.ItemAsJSONObject[i];
+            if Assigned(jserro) and (GetErrorCode(jserro) = -1950) then  // Transação já cancelada
             begin
+              sMsg := UTF8ToNativeString(jserro.AsString['message']);
+              TACBrTEFAPI(fpACBrTEFAPI).QuandoExibirMensagem( sMsg, telaOperador, CEsperaMsg );
               Result := True;
               Break;
             end;
@@ -934,9 +957,9 @@ end;
 
 procedure TACBrTEFAPIClassAditum.RecuperarTransacao(const NSU: String);
 var
-  sURL: String;
+  sURL, s: String;
   js: TACBrJSONObject;
-  Ok: Boolean;
+  OK, sucesso, aprovado: Boolean;
 begin
   LimparRespostaHTTP;
   sURL := 'charge/by-nsu/' + Trim(NSU);
@@ -946,9 +969,15 @@ begin
   begin
     js := TACBrJSONObject.Parse(FHTTPResponse);
     try
-      Ok := (LowerCase(js.AsString['success']) = 'true');
-      if Ok then
+      s := js.AsString['success'];
+      sucesso := (LowerCase(s) = 'true');
+      s := js.AsString['isApproved'];
+      aprovado := (LowerCase(s) = 'true');
+
+      if sucesso and aprovado then
         FinalizarChamadaAPI
+      else if not aprovado then
+        DoException(Format(ACBrStr(sACBrAditumNaoAprovada), [NSU]))
       else
         TratarRetornoComErro;
     finally

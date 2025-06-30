@@ -2213,7 +2213,7 @@ begin
     sCNPJ       := SeparaDados(aEvento, 'CNPJ');
     sPathEvento := PathWithDelim(FPConfiguracoesNFe.Arquivos.GetPathEvento(TipoEvento, sCNPJ));
 
-    if (aProcEvento <> '') then
+    if FPConfiguracoesNFe.Arquivos.SalvarEvento and (aProcEvento <> '') then
       FPDFeOwner.Gravar( aIDEvento + '-procEventoNFe.xml', aProcEvento, sPathEvento);
   end;
 end;
@@ -2554,7 +2554,7 @@ begin
       end
       else
       begin
-        if ExtrairEventos and FPConfiguracoesNFe.Arquivos.Salvar and
+        if ExtrairEventos and FPConfiguracoesNFe.Arquivos.SalvarEvento and
            (NaoEstaVazio(SeparaDados(FPRetWS, 'procEventoNFe'))) then
         begin
           Inicio := Pos('<procEventoNFe', FPRetWS);
@@ -2642,14 +2642,18 @@ end;
 
 function TNFeInutilizacao.GerarPathPorCNPJ: String;
 var
-  CNPJ_Temp: String;
+  CNPJ_Temp, Modelo_Temp: String;
+  Ok: Boolean;
 begin
   if FPConfiguracoesNFe.Arquivos.SepararPorCNPJ then
     CNPJ_Temp := FCNPJ
   else
     CNPJ_Temp := '';
 
-  Result := FPConfiguracoesNFe.Arquivos.GetPathInu(CNPJ_Temp);
+  Modelo_Temp := IntToStr(FModelo);
+  Modelo_Temp := ModeloDFToPrefixo(StrToModeloDF(Ok, Modelo_Temp));
+
+  Result := FPConfiguracoesNFe.Arquivos.GetPathInu(CNPJ_Temp, '', Modelo_Temp);
 end;
 
 procedure TNFeInutilizacao.DefinirURL;
@@ -3108,22 +3112,28 @@ begin
   begin
     if not (FEvento.Evento.Items[0].InfEvento.tpEvento in [teCCe,
             teCancelamento, teCancSubst, tePedProrrog1, tePedProrrog2,
-            teCanPedProrrog1, teCanPedProrrog2{, teComprEntregaNFe,
-            teCancComprEntregaNFe}]) then
+            teCanPedProrrog1, teCanPedProrrog2]) then
     begin
       FPLayout := LayNFeEventoAN;
       UF       := 'AN';
     end;
 
-    {
-      Conforme NT 2023/005 versão 1.02 os dois eventos abaixo são
-      recepcionados pela SVRS - SEFAZ Virtual do RS.
-    }
-    if FEvento.Evento.Items[0].InfEvento.tpEvento in [teInsucessoEntregaNFe,
-            teCancInsucessoEntregaNFe, teConcFinanceira, teCancConcFinanceira] then
-    begin
-      FPLayout := LayNFeEvento;
-      UF       := 'SVRS';
+    case FEvento.Evento.Items[0].InfEvento.tpEvento of
+      teInsucessoEntregaNFe, teCancInsucessoEntregaNFe:
+        begin
+          FPLayout := LayNFeEvento;
+          UF       := 'SVRS';
+        end;
+
+      teConcFinanceira, teCancConcFinanceira:
+        begin
+          FPLayout := LayNFeEvento;
+
+          if (FPConfiguracoesNFe.Geral.ModeloDF = moNFe) then
+            UF := 'SVRS'
+          else
+            UF := CUFtoUF(ExtrairUFChaveAcesso(FEvento.Evento.Items[0].InfEvento.chNFe));
+        end;
     end;
   end;
 
@@ -3578,7 +3588,7 @@ begin
                        Texto +
                      '</procEventoNFe>';
 
-            if FPConfiguracoesNFe.Arquivos.Salvar then
+            if FPConfiguracoesNFe.Arquivos.SalvarEvento then
             begin
               NomeArq := OnlyNumber(FEvento.Evento.Items[i].InfEvento.Id) + '-procEventoNFe.xml';
               PathArq := PathWithDelim(GerarPathEvento(FEvento.Evento.Items[I].InfEvento.CNPJ, FEvento.Evento.Items[I].InfEvento.detEvento.IE));

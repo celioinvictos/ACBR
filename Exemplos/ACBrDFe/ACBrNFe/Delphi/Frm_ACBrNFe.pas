@@ -34,7 +34,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, ExtCtrls, StdCtrls,
+  Controls, Forms, Dialogs, ExtCtrls, StdCtrls, UITypes,
   Spin, Buttons, ComCtrls, OleCtrls, SHDocVw, ACBrMail,
   ACBrPosPrinter, ACBrNFeDANFeESCPOS, ACBrNFeDANFEClass, ACBrDANFCeFortesFr,
   ACBrDFeReport, ACBrDFeDANFeReport, ACBrNFeDANFeRLClass, ACBrBase, ACBrDFe,
@@ -283,6 +283,15 @@ type
     btnCancInsucessoEntrega: TButton;
     btnEventoECONF: TButton;
     btnEventoCancECONF: TButton;
+    Label41: TLabel;
+    edtIdCSRT: TEdit;
+    Label46: TLabel;
+    edtCSRT: TEdit;
+    tsOutros: TTabSheet;
+    btnLerArqINI: TButton;
+    btnGerarArqINI: TButton;
+    Label53: TLabel;
+    cbVersaoQRCode: TComboBox;
 
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
@@ -353,6 +362,8 @@ type
     procedure btnCancInsucessoEntregaClick(Sender: TObject);
     procedure btnEventoECONFClick(Sender: TObject);
     procedure btnEventoCancECONFClick(Sender: TObject);
+    procedure btnLerArqINIClick(Sender: TObject);
+    procedure btnGerarArqINIClick(Sender: TObject);
   private
     { Private declarations }
     procedure GravarConfiguracao;
@@ -379,7 +390,10 @@ uses
   IniFiles, Printers,
   ACBrUtil.Base, ACBrUtil.FilesIO, ACBrUtil.DateTime, ACBrUtil.Strings,
   ACBrUtil.XMLHTML,
-  ACBrNFe.Classes, pcnConversao, pcnConversaoNFe, pcnNFeRTXT, pcnRetConsReciDFe,
+  ACBrNFe.Classes,
+//  ACBrDFeConversao,
+  pcnConversao, pcnConversaoNFe,
+  pcnNFeRTXT,
   ACBrDFeConfiguracoes, ACBrDFeSSL, ACBrDFeOpenSSL, ACBrDFeUtil,
   ACBrNFeNotasFiscais, ACBrNFeConfiguracoes,
   Frm_Status, Frm_SelecionarCertificado, Frm_ConfiguraSerial;
@@ -549,7 +563,7 @@ begin
     Ide.hSaiEnt   := now;
     Ide.tpNF      := tnSaida;
     Ide.tpEmis    := TpcnTipoEmissao(cbFormaEmissao.ItemIndex);
-    Ide.tpAmb     := taHomologacao;  //Lembre-se de trocar esta variavel quando for para ambiente de producao
+    Ide.tpAmb     := ACBrNFe1.Configuracoes.WebServices.Ambiente;
     Ide.cUF       := UFtoCUF(edtEmitUF.Text);
     Ide.cMunFG    := StrToInt(edtEmitCodCidade.Text);
     Ide.finNFe    := fnNormal;
@@ -575,6 +589,14 @@ begin
 //     Ide.dhCont := date;
 //     Ide.xJust  := 'Justificativa Contingencia';
 
+    // Reforma Tributária
+    {
+    Ide.cMunFGIBS := StrToInt(edtEmitCodCidade.Text);
+    Ide.tpNFDebito := tdNenhum;
+    Ide.tpNFCredito := tcNenhum;
+    Ide.gCompraGov.tpEnteGov := tcgEstados;
+    Ide.gCompraGov.pRedutor := 5;
+    }
     Emit.CNPJCPF           := edtEmitCNPJ.Text;
     Emit.IE                := edtEmitIE.Text;
     Emit.xNome             := edtEmitRazao.Text;
@@ -678,6 +700,13 @@ begin
       //  correspondente àquele da menor unidade comercializável identificado por Código de Barras
       // por exemplo: código de barras de catálogo, partnumber, etc
       Prod.cBarraTrib := 'ABC123456';
+
+      // Reforma Tributária
+      {
+      vItem := 100;
+      DFeReferenciado.chaveAcesso := '';
+      DFeReferenciado.nItem := 1;
+      }
 
       // Declaração de Importação. Pode ser adicionada várias através do comando Prod.DI.New
       (*
@@ -876,6 +905,100 @@ begin
           // Indica se o valor da COFINS ST compõe o valor total da NF-e
           indSomaCOFINSST :=  iscNenhum;
         end;
+
+        // Reforma Tributária
+        {
+        ISel.CSTIS := cst000;
+        ISel.cClassTribIS := ct000001;
+
+        ISel.vBCIS := 100;
+        ISel.pIS := 5;
+        ISel.pISEspec := 5;
+        ISel.uTrib := 'UNIDAD';
+        ISel.qTrib := 10;
+        ISel.vIS := 100;
+
+        IBSCBS.CST := cst000;
+        IBSCBS.cClassTrib := ct000001;
+
+        IBSCBS.gIBSCBS.vBC := 100;
+
+        IBSCBS.gIBSCBS.gIBSUF.pIBSUF := 5;
+        IBSCBS.gIBSCBS.gIBSUF.vIBSUF := 100;
+
+        IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
+        IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 100;
+
+        IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 100;
+
+        IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
+        IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
+
+        IBSCBS.gIBSCBS.gIBSMun.pIBSMun := 5;
+        IBSCBS.gIBSCBS.gIBSMun.vIBSMun := 100;
+
+        IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
+        IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 100;
+
+        IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 100;
+
+        IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
+        IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
+
+        IBSCBS.gIBSCBS.gCBS.pCBS := 5;
+        IBSCBS.gIBSCBS.gCBS.vCBS := 100;
+
+        IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
+        IBSCBS.gIBSCBS.gCBS.gDif.vDif := 100;
+
+        IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 100;
+
+        IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
+        IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
+
+        IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
+        IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := ct000001;
+        IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
+        IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
+        IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
+        IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
+        IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
+        IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
+
+        IBSCBS.gIBSCBS.gIBSCredPres.cCredPres := 1;
+        IBSCBS.gIBSCBS.gIBSCredPres.pCredPres := 5;
+        IBSCBS.gIBSCBS.gIBSCredPres.vCredPres := 100;
+        IBSCBS.gIBSCBS.gIBSCredPres.vCredPresCondSus := 100;
+
+        IBSCBS.gIBSCBS.gCBSCredPres.cCredPres := 1;
+        IBSCBS.gIBSCBS.gCBSCredPres.pCredPres := 5;
+        IBSCBS.gIBSCBS.gCBSCredPres.vCredPres := 100;
+        IBSCBS.gIBSCBS.gCBSCredPres.vCredPresCondSus := 100;
+
+        IBSCBS.gIBSCBSMono.qBCMono := 1;
+        IBSCBS.gIBSCBSMono.adRemIBS := 5;
+        IBSCBS.gIBSCBSMono.adRemCBS := 5;
+        IBSCBS.gIBSCBSMono.vIBSMono := 100;
+        IBSCBS.gIBSCBSMono.vCBSMono := 100;
+
+        IBSCBS.gIBSCBSMono.qBCMonoReten := 1;
+        IBSCBS.gIBSCBSMono.adRemIBSReten := 5;
+        IBSCBS.gIBSCBSMono.vIBSMonoReten := 100;
+        IBSCBS.gIBSCBSMono.vCBSMonoReten := 100;
+
+        IBSCBS.gIBSCBSMono.qBCMonoRet := 1;
+        IBSCBS.gIBSCBSMono.adRemIBSRet := 5;
+        IBSCBS.gIBSCBSMono.vIBSMonoRet := 100;
+        IBSCBS.gIBSCBSMono.vCBSMonoRet := 100;
+
+        IBSCBS.gIBSCBSMono.pDifIBS := 5;
+        IBSCBS.gIBSCBSMono.vIBSMonoDif := 100;
+        IBSCBS.gIBSCBSMono.pDifCBS := 5;
+        IBSCBS.gIBSCBSMono.vCBSMonoDif := 100;
+
+        IBSCBS.gIBSCBSMono.vTotIBSMonoItem := 100;
+        IBSCBS.gIBSCBSMono.vTotCBSMonoItem := 100;
+        }
       end;
     end;
 
@@ -913,6 +1036,37 @@ begin
     Total.retTrib.vBCRetPrev := 0;
     Total.retTrib.vRetPrev   := 0;
 
+    // Reforma Tributária
+    {
+    Total.ISTot.vIS := 100;
+
+    Total.IBSCBSTot.vBCIBSCBS := 100;
+
+    Total.IBSCBSTot.gIBS.vIBS := 100;
+    Total.IBSCBSTot.gIBS.vCredPres := 100;
+
+    Total.IBSCBSTot.gIBS.gIBSUFTot.vDif := 100;
+    Total.IBSCBSTot.gIBS.gIBSUFTot.vDevTrib := 100;
+    Total.IBSCBSTot.gIBS.gIBSUFTot.vIBSUF := 100;
+
+    Total.IBSCBSTot.gIBS.gIBSMunTot.vDif := 100;
+    Total.IBSCBSTot.gIBS.gIBSMunTot.vDevTrib := 100;
+    Total.IBSCBSTot.gIBS.gIBSMunTot.vIBSMun := 100;
+
+    Total.IBSCBSTot.gCBS.vDif := 100;
+    Total.IBSCBSTot.gCBS.vDevTrib := 100;
+    Total.IBSCBSTot.gCBS.vCBS := 100;
+    Total.IBSCBSTot.gCBS.vCredPres := 100;
+
+    Total.IBSCBSTot.gMono.vIBSMono := 100;
+    Total.IBSCBSTot.gMono.vCBSMono := 100;
+    Total.IBSCBSTot.gMono.vIBSMonoReten := 100;
+    Total.IBSCBSTot.gMono.vCBSMonoReten := 100;
+    Total.IBSCBSTot.gMono.vIBSMonoRet := 100;
+    Total.IBSCBSTot.gMono.vCBSMonoRet := 100;
+
+    Total.vNFTot := 100;
+    }
     Transp.modFrete := mfSemFrete; // NFC-e não pode ter FRETE
 
     with pag.New do
@@ -958,6 +1112,7 @@ begin
     // (agenciador, plataforma de delivery, marketplace e similar) de serviços e de
     // negócios.
     infIntermed.idCadIntTran := '';
+
   end;
 
   ACBrNFe1.NotasFiscais.GerarNFe;
@@ -982,6 +1137,8 @@ var
 //    Reboque: TreboqueCollectionItem;
 //    Lacre: TLacresCollectionItem;
 //    ProcReferenciado: TprocRefCollectionItem;
+//  Agropecuario: Tagropecuario;
+//  Defensivo: TdefensivoCollectionItem;
   InfoPgto: TpagCollectionItem;
 begin
   NotaF := ACBrNFe1.NotasFiscais.Add;
@@ -996,7 +1153,8 @@ begin
   NotaF.NFe.Ide.hSaiEnt   := Now;
   NotaF.NFe.Ide.tpNF      := tnSaida;
   NotaF.NFe.Ide.tpEmis    := TpcnTipoEmissao(cbFormaEmissao.ItemIndex);
-  NotaF.NFe.Ide.tpAmb     := taHomologacao;  //Lembre-se de trocar esta variável quando for para ambiente de produção
+
+  NotaF.NFe.Ide.tpAmb     := ACBrNFe1.Configuracoes.WebServices.Ambiente;
   NotaF.NFe.Ide.verProc   := '1.0.0.0'; //Versão do seu sistema
   NotaF.NFe.Ide.cUF       := UFtoCUF(edtEmitUF.Text);
   NotaF.NFe.Ide.cMunFG    := StrToInt(edtEmitCodCidade.Text);
@@ -1004,16 +1162,9 @@ begin
   if  Assigned( ACBrNFe1.DANFE ) then
     NotaF.NFe.Ide.tpImp     := ACBrNFe1.DANFE.TipoDANFE;
 
-  // Valores aceitos:
-  // iiSemOperacao, iiOperacaoSemIntermediador, iiOperacaoComIntermediador
-//  NotaF.NFe.Ide.indIntermed := iiSemOperacao;
-
 //  NotaF.NFe.Ide.dhCont := date;
 //  NotaF.NFe.Ide.xJust  := 'Justificativa Contingencia';
 
-  {
-    abaixo o campo incluido no layout a partir da NT 2020/006
-  }
   {
     valores aceitos pelo campo:
     iiSemOperacao, iiOperacaoSemIntermediador, iiOperacaoComIntermediador
@@ -1021,7 +1172,14 @@ begin
   // Indicador de intermediador/marketplace
   NotaF.NFe.Ide.indIntermed := iiSemOperacao;
 
-
+  // Reforma Tributária
+  {
+  NotaF.NFe.Ide.cMunFGIBS := StrToInt(edtEmitCodCidade.Text);
+  NotaF.NFe.Ide.tpNFDebito := tdNenhum;
+  NotaF.NFe.Ide.tpNFCredito := tcNenhum;
+  NotaF.NFe.Ide.gCompraGov.tpEnteGov := tcgEstados;
+  NotaF.NFe.Ide.gCompraGov.pRedutor := 5;
+  }
   //Para NFe referenciada use os campos abaixo
   (*
   Referenciada := NotaF.NFe.Ide.NFref.Add;
@@ -1086,7 +1244,6 @@ begin
   NotaF.NFe.Avulsa.vDAR    := 0;
   NotaF.NFe.Avulsa.repEmi  := '';
   NotaF.NFe.Avulsa.dPag    := now;
-
 
   NotaF.NFe.Dest.CNPJCPF           := '05481336000137';
   NotaF.NFe.Dest.IE                := '687138770110';
@@ -1264,6 +1421,22 @@ begin
   Arma.descr  := '';
   *)
 
+//Campos específicos para agropecuario / defensivo
+// Devemos gerar somente o grupo defensivo ou o grupo guiaTransito
+(*
+  Defensivo := Agropecuario.defensivo.Add;
+  Defensivo.nReceituario := '123';
+  Defensivo.CPFRespTec := '12345678901';
+*)
+
+//Campos específicos para agropecuario / guiaTransito
+(*
+  Agropecuario.guiaTransito.tpGuia := tpgGuiaFlorestal;
+  Agropecuario.guiaTransito.UFGuia := 'SP';
+  Agropecuario.guiaTransito.serieGuia := '1';
+  Agropecuario.guiaTransito.nGuia := '1';
+*)
+
 //Campos específicos para venda de combustível(distribuidoras)
 
   Produto.Prod.comb.cProdANP := 0;
@@ -1287,6 +1460,12 @@ begin
   Produto.Prod.comb.ICMSCons.vICMSSTCons   := 0;
   Produto.Prod.comb.ICMSCons.UFcons        := '';
 
+  // Reforma Tributária
+  {
+  Produto.vItem := 100;
+  Produto.DFeReferenciado.chaveAcesso := '';
+  Produto.DFeReferenciado.nItem := 1;
+  }
 
   with Produto.Imposto do
   begin
@@ -1526,9 +1705,104 @@ begin
       // Indica se o valor da COFINS ST compõe o valor total da NF-e
       indSomaCOFINSST :=  iscNenhum;
     end;
+
+    // Reforma Tributária
+    {
+    ISel.CSTIS := cst000;
+    ISel.cClassTribIS := ct000001;
+
+    ISel.vBCIS := 100;
+    ISel.pIS := 5;
+    ISel.pISEspec := 5;
+    ISel.uTrib := 'UNIDAD';
+    ISel.qTrib := 10;
+    ISel.vIS := 100;
+
+    IBSCBS.CST := cst000;
+    IBSCBS.cClassTrib := ct000001;
+
+    IBSCBS.gIBSCBS.vBC := 100;
+
+    IBSCBS.gIBSCBS.gIBSUF.pIBSUF := 5;
+    IBSCBS.gIBSCBS.gIBSUF.vIBSUF := 100;
+
+    IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
+    IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 100;
+
+    IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 100;
+
+    IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
+    IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
+
+    IBSCBS.gIBSCBS.gIBSMun.pIBSMun := 5;
+    IBSCBS.gIBSCBS.gIBSMun.vIBSMun := 100;
+
+    IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
+    IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 100;
+
+    IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 100;
+
+    IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
+    IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
+
+    IBSCBS.gIBSCBS.gCBS.pCBS := 5;
+    IBSCBS.gIBSCBS.gCBS.vCBS := 100;
+
+    IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
+    IBSCBS.gIBSCBS.gCBS.gDif.vDif := 100;
+
+    IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 100;
+
+    IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
+    IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
+
+    IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
+    IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := ct000001;
+    IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
+    IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
+    IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
+    IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
+    IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
+    IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
+
+    IBSCBS.gIBSCBS.gIBSCredPres.cCredPres := 1;
+    IBSCBS.gIBSCBS.gIBSCredPres.pCredPres := 5;
+    IBSCBS.gIBSCBS.gIBSCredPres.vCredPres := 100;
+    IBSCBS.gIBSCBS.gIBSCredPres.vCredPresCondSus := 100;
+
+    IBSCBS.gIBSCBS.gCBSCredPres.cCredPres := 1;
+    IBSCBS.gIBSCBS.gCBSCredPres.pCredPres := 5;
+    IBSCBS.gIBSCBS.gCBSCredPres.vCredPres := 100;
+    IBSCBS.gIBSCBS.gCBSCredPres.vCredPresCondSus := 100;
+
+    IBSCBS.gIBSCBSMono.qBCMono := 1;
+    IBSCBS.gIBSCBSMono.adRemIBS := 5;
+    IBSCBS.gIBSCBSMono.adRemCBS := 5;
+    IBSCBS.gIBSCBSMono.vIBSMono := 100;
+    IBSCBS.gIBSCBSMono.vCBSMono := 100;
+
+    IBSCBS.gIBSCBSMono.qBCMonoReten := 1;
+    IBSCBS.gIBSCBSMono.adRemIBSReten := 5;
+    IBSCBS.gIBSCBSMono.vIBSMonoReten := 100;
+    IBSCBS.gIBSCBSMono.vCBSMonoReten := 100;
+
+    IBSCBS.gIBSCBSMono.qBCMonoRet := 1;
+    IBSCBS.gIBSCBSMono.adRemIBSRet := 5;
+    IBSCBS.gIBSCBSMono.vIBSMonoRet := 100;
+    IBSCBS.gIBSCBSMono.vCBSMonoRet := 100;
+
+    IBSCBS.gIBSCBSMono.pDifIBS := 5;
+    IBSCBS.gIBSCBSMono.vIBSMonoDif := 100;
+    IBSCBS.gIBSCBSMono.pDifCBS := 5;
+    IBSCBS.gIBSCBSMono.vCBSMonoDif := 100;
+
+    IBSCBS.gIBSCBSMono.vTotIBSMonoItem := 100;
+    IBSCBS.gIBSCBSMono.vTotCBSMonoItem := 100;
+
+    IBSCBS.gTransfCred.vIBS := 100;
+    IBSCBS.gTransfCred.vCBS := 100;
+    }
   end;
-
-
 
   //Adicionando Serviços
   (*
@@ -1618,6 +1892,37 @@ begin
   NotaF.NFe.Total.retTrib.vBCRetPrev := 0;
   NotaF.NFe.Total.retTrib.vRetPrev   := 0;
 
+  // Reforma Tributária
+  {
+  NotaF.NFe.Total.ISTot.vIS := 100;
+
+  NotaF.NFe.Total.IBSCBSTot.vBCIBSCBS := 100;
+
+  NotaF.NFe.Total.IBSCBSTot.gIBS.vIBS := 100;
+  NotaF.NFe.Total.IBSCBSTot.gIBS.vCredPres := 100;
+
+  NotaF.NFe.Total.IBSCBSTot.gIBS.gIBSUFTot.vDif := 100;
+  NotaF.NFe.Total.IBSCBSTot.gIBS.gIBSUFTot.vDevTrib := 100;
+  NotaF.NFe.Total.IBSCBSTot.gIBS.gIBSUFTot.vIBSUF := 100;
+
+  NotaF.NFe.Total.IBSCBSTot.gIBS.gIBSMunTot.vDif := 100;
+  NotaF.NFe.Total.IBSCBSTot.gIBS.gIBSMunTot.vDevTrib := 100;
+  NotaF.NFe.Total.IBSCBSTot.gIBS.gIBSMunTot.vIBSMun := 100;
+
+  NotaF.NFe.Total.IBSCBSTot.gCBS.vDif := 100;
+  NotaF.NFe.Total.IBSCBSTot.gCBS.vDevTrib := 100;
+  NotaF.NFe.Total.IBSCBSTot.gCBS.vCBS := 100;
+  NotaF.NFe.Total.IBSCBSTot.gCBS.vCredPres := 100;
+
+  NotaF.NFe.Total.IBSCBSTot.gMono.vIBSMono := 100;
+  NotaF.NFe.Total.IBSCBSTot.gMono.vCBSMono := 100;
+  NotaF.NFe.Total.IBSCBSTot.gMono.vIBSMonoReten := 100;
+  NotaF.NFe.Total.IBSCBSTot.gMono.vCBSMonoReten := 100;
+  NotaF.NFe.Total.IBSCBSTot.gMono.vIBSMonoRet := 100;
+  NotaF.NFe.Total.IBSCBSTot.gMono.vCBSMonoRet := 100;
+
+  NotaF.NFe.Total.vNFTot := 100;
+  }
   NotaF.NFe.Transp.modFrete := mfContaEmitente;
   NotaF.NFe.Transp.Transporta.CNPJCPF  := '';
   NotaF.NFe.Transp.Transporta.xNome    := '';
@@ -2399,7 +2704,7 @@ begin
     MemoDados.Lines.Add('xBairro: ' + ACBrNFe1.WebServices.ConsultaCadastro.RetConsCad.InfCad[i].xBairro);
     MemoDados.Lines.Add('cMun: ' + IntToStr(ACBrNFe1.WebServices.ConsultaCadastro.RetConsCad.InfCad[i].cMun));
     MemoDados.Lines.Add('xMun: ' + ACBrNFe1.WebServices.ConsultaCadastro.RetConsCad.InfCad[i].xMun);
-    MemoDados.Lines.Add('CEP: ' + IntToStr(ACBrNFe1.WebServices.ConsultaCadastro.RetConsCad.InfCad[i].CEP));
+    MemoDados.Lines.Add('CEP: ' + ACBrNFe1.WebServices.ConsultaCadastro.RetConsCad.InfCad[i].CEP);
   end;
 end;
 
@@ -2496,10 +2801,26 @@ begin
   AlimentarComponente(vAux);
 
   if ACBrNFe1.Configuracoes.Geral.ModeloDF = moNFe then
+  begin
     {
       Envio de NF-e modelo 55
     }
-    ACBrNFe1.Enviar(vNumLote)
+    if ACBrNFe1.NotasFiscais.Count > 1 then
+      {
+        Se o lote tem 2 ou mais notas (até 50) o envio tem que ser no modo
+        assíncrono (terceiro parâmetro tem que valer False)
+      }
+      ACBrNFe1.Enviar(vNumLote, True, False)
+    else
+    begin
+      {
+        Se o lote tem apenas 1 nota o envio tem que ser no modo
+        síncrono (terceiro parâmetro tem que valer True)
+      }
+      Sincrono := True;
+      ACBrNFe1.Enviar(vNumLote, True, True);
+    end;
+  end
   else
   begin
     {
@@ -2508,18 +2829,13 @@ begin
     if (rgDANFCE.ItemIndex = 1) then
       PrepararImpressao;
 
-    if ACBrNFe1.NotasFiscais.Count > 1 then
-      {
-        Se o lote tem 2 ou mais notas (até 50) o envio tem que ser no modo
-        assíncrono (terceiro parâmetro tem que valer False)
-      }
-      ACBrNFe1.Enviar(vNumLote, True, False)
-    else
-      {
-        Se o lote tem apenas 1 nota o envio tem que ser no modo
-        síncrono (terceiro parâmetro tem que valer True)
-      }
-      ACBrNFe1.Enviar(vNumLote, True, True);
+    Sincrono := True;
+    {
+      A NT 2023/002 determina que o envio de NFC-e deve ocorrer de forma unitária,
+      ou seja, o lote deve conter somente uma nota e o modo de envio tem que ser
+      síncrono
+    }
+    ACBrNFe1.Enviar(vNumLote, True, True);
   end;
 
   pgRespostas.ActivePageIndex := 1;
@@ -2556,6 +2872,7 @@ begin
     MemoDados.Lines.Add('cUF: ' + IntToStr(ACBrNFe1.WebServices.Enviar.cUF));
     MemoDados.Lines.Add('xMotivo: ' + ACBrNFe1.WebServices.Enviar.xMotivo);
     MemoDados.Lines.Add('Recibo: '+ ACBrNFe1.WebServices.Enviar.Recibo);
+    MemoDados.Lines.Add('Protocolo: ' + ACBrNFe1.WebServices.Enviar.Protocolo);
   end;
   (*
   ACBrNFe1.WebServices.Retorno.NFeRetorno.ProtNFe.Items[0].tpAmb
@@ -3083,6 +3400,39 @@ begin
   MemoDados.Lines.Add('Protocolo..: '+ ACBrNFe1.WebServices.EnvEvento.EventoRetorno.retEvento[0].RetInfEvento.nProt);
 end;
 
+procedure TfrmACBrNFe.btnGerarArqINIClick(Sender: TObject);
+var
+  vAux: string;
+  SaveDlg: TSaveDialog;
+  ArqINI: TStringList;
+begin
+  vAux := '1';
+  if not(InputQuery('Gerar Arquivo INI', 'Numero da Nota', vAux)) then
+    exit;
+
+  ACBrNFe1.NotasFiscais.Clear;
+  AlimentarComponente(vAux);
+  ACBrNFe1.NotasFiscais.GerarNFe;
+
+  ArqINI := TStringList.Create;
+  SaveDlg := TSaveDialog.Create(nil);
+  try
+    ArqINI.Text := ACBrNFe1.NotasFiscais.GerarIni;
+
+    SaveDlg.Title := 'Escolha o local onde salvar o INI';
+    SaveDlg.DefaultExt := '*.INI';
+    SaveDlg.Filter := 'Arquivo INI(*.INI)|*.INI|Arquivo ini(*.ini)|*.ini|Todos os arquivos(*.*)|*.*';
+
+    if SaveDlg.Execute then
+      ArqINI.SaveToFile(SaveDlg.FileName);
+
+    memoLog.Lines.Add('Arquivo Salvo: ' + SaveDlg.FileName);
+  finally
+    SaveDlg.Free;
+    ArqINI.Free;
+  end;
+end;
+
 procedure TfrmACBrNFe.btnGerarPDFClick(Sender: TObject);
 var
   CarregarMaisXML: Boolean;
@@ -3151,6 +3501,8 @@ begin
 
   ShowMessage('Arquivo gerado em: ' + ACBrNFe1.NotasFiscais.Items[0].NomeArq);
   MemoDados.Lines.Add('Arquivo gerado em: ' + ACBrNFe1.NotasFiscais.Items[0].NomeArq);
+
+  ACBrNFe1.NotasFiscais.Validar;
 
   MemoResp.Lines.LoadFromFile(ACBrNFe1.NotasFiscais.Items[0].NomeArq);
 
@@ -4044,6 +4396,42 @@ begin
   end;
 end;
 
+procedure TfrmACBrNFe.btnLerArqINIClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Selecione o Arquivo INI';
+  OpenDialog1.DefaultExt := '*.ini';
+  OpenDialog1.Filter :=
+    'Arquivos INI (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ACBrNFe1.Configuracoes.Arquivos.PathSalvar;
+
+  if OpenDialog1.Execute then
+  begin
+    ACBrNFe1.NotasFiscais.Clear;
+    ACBrNFe1.NotasFiscais.LoadFromIni(OpenDialog1.FileName);
+    ACBrNFe1.NotasFiscais.Assinar;
+    ACBrNFe1.NotasFiscais.GravarXML();
+
+    memoLog.Lines.Add('Arquivo gerado em: ' + ACBrNFe1.NotasFiscais[0].NomeArq);
+
+    try
+      ACBrNFe1.NotasFiscais.Validar;
+
+      if ACBrNFe1.NotasFiscais[0].Alertas <> '' then
+        MemoDados.Lines.Add('Alertas: '+ACBrNFe1.NotasFiscais[0].Alertas);
+
+      ShowMessage('Nota Fiscal Eletrônica Valida');
+    except
+      on E: Exception do
+      begin
+        pgRespostas.ActivePage := Dados;
+        MemoDados.Lines.Add('Exception: ' + E.Message);
+        MemoDados.Lines.Add('Erro: ' + ACBrNFe1.NotasFiscais[0].ErroValidacao);
+        MemoDados.Lines.Add('Erro Completo: ' + ACBrNFe1.NotasFiscais[0].ErroValidacaoCompleto);
+      end;
+    end;
+  end;
+end;
+
 procedure TfrmACBrNFe.btnManifDestConfirmacaoClick(Sender: TObject);
 var
   Chave, idLote, CNPJ, Titulo: string;
@@ -4351,6 +4739,7 @@ var
   Y: TSSLType;
   N: TACBrPosPrinterModelo;
   O: TACBrPosPaginaCodigo;
+  P: TpcnVersaoQrCode;
 begin
   cbSSLLib.Items.Clear;
   for T := Low(TSSLLib) to High(TSSLLib) do
@@ -4400,6 +4789,11 @@ begin
   for O := Low(TACBrPosPaginaCodigo) to High(TACBrPosPaginaCodigo) do
      cbxPagCodigo.Items.Add( GetEnumName(TypeInfo(TACBrPosPaginaCodigo), integer(O) ) ) ;
 
+  cbVersaoQRCode.Items.Clear;
+  for P := Low(TpcnVersaoQrCode) to High(TpcnVersaoQrCode) do
+     cbVersaoQRCode.Items.Add( GetEnumName(TypeInfo(TpcnVersaoQrCode), integer(P) ) );
+  cbVersaoQRCode.ItemIndex := 0;
+
   cbxPorta.Items.Clear;
   ACBrPosPrinter1.Device.AcharPortasSeriais( cbxPorta.Items );
   ACBrPosPrinter1.Device.AcharPortasRAW( cbxPorta.Items );
@@ -4448,6 +4842,7 @@ begin
     Ini.WriteInteger('Geral', 'FormaEmissao',     cbFormaEmissao.ItemIndex);
     Ini.WriteInteger('Geral', 'ModeloDF',         cbModeloDF.ItemIndex);
     Ini.WriteInteger('Geral', 'VersaoDF',         cbVersaoDF.ItemIndex);
+    Ini.WriteInteger('Geral', 'VersaoQRCode',     cbVersaoQRCode.ItemIndex);
     Ini.WriteString( 'Geral', 'IdToken',          edtIdToken.Text);
     Ini.WriteString( 'Geral', 'Token',            edtToken.Text);
     Ini.WriteBool(   'Geral', 'RetirarAcentos',   cbxRetirarAcentos.Checked);
@@ -4497,6 +4892,10 @@ begin
     Ini.WriteString('Emitente', 'Cidade',      edtEmitCidade.Text);
     Ini.WriteString('Emitente', 'UF',          edtEmitUF.Text);
     Ini.WriteInteger('Emitente', 'CRT',        cbTipoEmpresa.ItemIndex);
+
+    // Responsável Técnico
+    Ini.WriteString('RespTecnico', 'IdCSRT', edtIdCSRT.Text);
+    Ini.WriteString('RespTecnico', 'CSRT', edtCSRT.Text);
 
     Ini.WriteString('Email', 'Host',    edtSmtpHost.Text);
     Ini.WriteString('Email', 'Port',    edtSmtpPort.Text);
@@ -4569,7 +4968,8 @@ begin
     cbFormaEmissao.ItemIndex    := Ini.ReadInteger('Geral', 'FormaEmissao',     0);
     cbModeloDF.ItemIndex        := Ini.ReadInteger('Geral', 'ModeloDF',         0);
 
-    cbVersaoDF.ItemIndex      := Ini.ReadInteger('Geral', 'VersaoDF',       0);
+    cbVersaoDF.ItemIndex      := Ini.ReadInteger('Geral', 'VersaoDF',       3);
+    cbVersaoQRCode.ItemIndex  := Ini.ReadInteger('Geral', 'VersaoQRCode',   2);
     edtIdToken.Text           := Ini.ReadString( 'Geral', 'IdToken',        '');
     edtToken.Text             := Ini.ReadString( 'Geral', 'Token',          '');
     ckSalvar.Checked          := Ini.ReadBool(   'Geral', 'Salvar',         True);
@@ -4621,6 +5021,10 @@ begin
     edtEmitUF.Text         := Ini.ReadString('Emitente', 'UF',          '');
 
     cbTipoEmpresa.ItemIndex := Ini.ReadInteger('Emitente', 'CRT', 2);
+
+    // Responsável Técnico
+    edtIdCSRT.Text := Ini.ReadString('RespTecnico', 'IdCSRT', '');
+    edtCSRT.Text := Ini.ReadString('RespTecnico', 'CSRT', '');
 
     edtSmtpHost.Text     := Ini.ReadString('Email', 'Host',    '');
     edtSmtpPort.Text     := Ini.ReadString('Email', 'Port',    '');
@@ -4699,7 +5103,7 @@ begin
 
     IdCSC            := edtIdToken.Text;
     CSC              := edtToken.Text;
-    VersaoQRCode     := veqr200;
+    VersaoQRCode     := TpcnVersaoQrCode(cbVersaoQRCode.ItemIndex);
   end;
 
   with ACBrNFe1.Configuracoes.WebServices do
@@ -4751,6 +5155,10 @@ begin
     PathMensal       := GetPathNFe(0);
     PathSalvar       := PathMensal;
   end;
+
+  // IdCSRT e CSRT do Responsável Técnico, no momento só a SEFAZ-PR esta exigindo
+  ACBrNFe1.Configuracoes.RespTec.idCSRT := StrToIntDef(edtIdCSRT.Text, 0);
+  ACBrNFe1.Configuracoes.RespTec.CSRT := edtCSRT.Text;
 
   if ACBrNFe1.DANFE <> nil then
   begin

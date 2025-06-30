@@ -399,6 +399,7 @@ implementation
 uses
   strutils, math, TypInfo, DateUtils, blcksock, FileCtrl, Grids, IniFiles, Printers,
   pcnConversao,
+//  ACBrDFeConversao,
   ACBrOpenSSLUtils, OpenSSLExt,
   ACBrDFeConfiguracoes, ACBrDFeSSL,
   ACBrDFeUtil,
@@ -674,6 +675,75 @@ begin
 
 //      ConstrucaoCivil.CodigoObra := '88888';
 //      ConstrucaoCivil.Art        := '433';
+
+      // Reforma Tributária
+      {
+      IBSCBS.dest.CNPJCPF := '12345678901';
+      IBSCBS.dest.Nif := '';
+      IBSCBS.dest.cNaoNIF := tnnNaoInformado;
+      IBSCBS.dest.CAEPF := '';
+      IBSCBS.dest.xNome := 'Nome do Destinatario';
+      IBSCBS.dest.fone := '1622223333';
+      IBSCBS.dest.email := 'nome@provedor.com.br';
+      IBSCBS.dest.ender.endNac.cMun := StrToIntDef(edtCodCidade.Text, 0);
+      IBSCBS.dest.ender.endNac.CEP := '14800000';
+      IBSCBS.dest.ender.xLgr := 'RUA PRINCIPAL';
+      IBSCBS.dest.ender.nro := '100';
+      IBSCBS.dest.ender.xCpl := '';
+      IBSCBS.dest.ender.xBairro := 'CENTRO';
+
+      IBSCBS.adq.CNPJCPF := '12345678901';
+      IBSCBS.adq.Nif := '';
+      IBSCBS.adq.cNaoNIF := tnnNaoInformado;
+      IBSCBS.adq.CAEPF := '';
+      IBSCBS.adq.xNome := 'Nome do Destinatario';
+      IBSCBS.adq.fone := '1622223333';
+      IBSCBS.adq.email := 'nome@provedor.com.br';
+      IBSCBS.adq.ender.endNac.cMun := StrToIntDef(edtCodCidade.Text, 0);
+      IBSCBS.adq.ender.endNac.CEP := '14800000';
+      IBSCBS.adq.ender.xLgr := 'RUA PRINCIPAL';
+      IBSCBS.adq.ender.nro := '100';
+      IBSCBS.adq.ender.xCpl := '';
+      IBSCBS.adq.ender.xBairro := 'CENTRO';
+
+      IBSCBS.serv.modoPrestServ := '1';
+      IBSCBS.serv.clocalPrestServ := StrToIntDef(edtCodCidade.Text, 0);
+      IBSCBS.serv.cPaisPrestServ := 0;
+      IBSCBS.serv.cCIB := '1';
+
+      // icgNenhum, icgSim, icgNao
+      IBSCBS.serv.gCompraGov.indCompGov := icgSim;
+
+      IBSCBS.valores.trib.gIBSCBS.cstIBSCBS := cst000;
+      IBSCBS.valores.trib.gIBSCBS.cClassTribIBSCBS := ct000001;
+
+      IBSCBS.valores.trib.gIBSCBS.gIBSCredPres.cCredPresIBS := 100;
+      IBSCBS.valores.trib.gIBSCBS.gIBSCredPres.pCredPresIBS := 5;
+
+      IBSCBS.valores.trib.gIBSCBS.gIBSUF.pDifUF := 5;
+      IBSCBS.valores.trib.gIBSCBS.gIBSUF.vDevTribUF := 100;
+
+      IBSCBS.valores.trib.gIBSCBS.gIBSUF.cstUFDeson := cst000;
+      IBSCBS.valores.trib.gIBSCBS.gIBSUF.cClassTribUFDeson := ct000001;
+      IBSCBS.valores.trib.gIBSCBS.gIBSUF.pAliqUFDeson := 5;
+
+      IBSCBS.valores.trib.gIBSCBS.gIBSMun.pDifMun := 5;
+      IBSCBS.valores.trib.gIBSCBS.gIBSMun.vDevTribMun := 100;
+
+      IBSCBS.valores.trib.gIBSCBS.gIBSMun.cstMunDeson := cst000;
+      IBSCBS.valores.trib.gIBSCBS.gIBSMun.cClassTribMunDeson := ct000001;
+      IBSCBS.valores.trib.gIBSCBS.gIBSMun.pAliqMunDeson := 5;
+
+      IBSCBS.valores.trib.gIBSCBS.gCBS.cCredPresCBS := 100;
+      IBSCBS.valores.trib.gIBSCBS.gCBS.pCredPresCBS := 5;
+
+      IBSCBS.valores.trib.gIBSCBS.gCBS.pDifCBS := 5;
+      IBSCBS.valores.trib.gIBSCBS.gCBS.vDevTribCBS := 100;
+
+      IBSCBS.valores.trib.gIBSCBS.gCBS.cstCBSDeson := cst000;
+      IBSCBS.valores.trib.gIBSCBS.gCBS.cClassTribCBSDeson := ct000001;
+      IBSCBS.valores.trib.gIBSCBS.gCBS.pAliqCBSDeson := 5;
+      }
     end;
   end;
 end;
@@ -810,6 +880,14 @@ begin
       // TnfseStatusRPS = ( srNormal, srCancelado );
       StatusRps := srNormal;
 
+      // frmNenhum, frmNormal, frmRetidoNaFonte, frmSimplesNacional, frmFixoAnual,
+      // frmSemRecolhimento, frmDevidoOutroMunicipio, frmFixoMensal
+      {
+        O Provedor Prescon se utiliza somente dos valores: frmFixoAnual e frmFixoMensal
+        Já o provedor Governa se utiliza de todos os valores
+      }
+      FrmRec := frmFixoAnual;
+
       {=========================================================================
         Numero, Série e Tipo do Rps que esta sendo substituido por este
       =========================================================================}
@@ -830,7 +908,7 @@ begin
            proCTA, proCTAConsult, proEquiplano, proFacundo, proFGMaiss, proEL,
            proGoverna, proInfisc, proIPM, proISSDSF, proPriMax, proRLZ, proSam,
            proSimple, proSmarAPD, proWebFisco, proBauhaus, proeISS, proISSCampinas,
-           proSoftPlan, proXTRTecnologia] then
+           proSmart4, proSoftPlan, proXTRTecnologia] then
       begin
         Servico.Valores.Aliquota := 4.54;
         Servico.Valores.ValorServicos := 0;
@@ -1548,8 +1626,13 @@ begin
       end;
 
 //      servico.CodigoNBS := '123456789';
-      Servico.Discriminacao := 'discriminacao I; discriminacao II;' +
-                               'discriminacao III; discriminacao IV';
+      Servico.Discriminacao := 'discriminacao I' +
+        ACBrNFSeX1.Configuracoes.WebServices.QuebradeLinha +
+        'discriminacao II' +
+        ACBrNFSeX1.Configuracoes.WebServices.QuebradeLinha +
+       'discriminacao III' +
+        ACBrNFSeX1.Configuracoes.WebServices.QuebradeLinha +
+       'discriminacao IV';
 
       // TnfseResponsavelRetencao = ( rtTomador, rtPrestador, rtIntermediario, rtNenhum )
       //                              '1',       '',          '2',             ''
@@ -1587,7 +1670,7 @@ begin
       // Informar A Exigibilidade ISS para fintelISS [1/2/3/4/5/6/7]
       Servico.ExigibilidadeISS := exiExigivel;
 
-//      Servico.CodigoPais := 1058; // Brasil
+      Servico.CodigoPais := 1058; // Brasil
       Servico.MunicipioIncidencia := StrToIntDef(edtCodCidade.Text, 0);
 
       {=========================================================================
@@ -1644,7 +1727,7 @@ begin
       Tomador.Endereco.CodigoMunicipio := edtCodCidade.Text;
       Tomador.Endereco.xMunicipio := 'Cidade do Tomador';
       Tomador.Endereco.UF := edtEmitUF.Text;
-      Tomador.Endereco.CodigoPais := 0;
+      Tomador.Endereco.CodigoPais := 1058; // Brasil
       Tomador.Endereco.CEP := '14800000';
       Tomador.Endereco.xPais := 'BRASIL';
       Tomador.Contato.Telefone := '1622223333';
@@ -1819,7 +1902,8 @@ begin
         exit;
     end;
 
-    if ACBrNFSeX1.Configuracoes.Geral.Provedor = proAssessorPublico then
+    if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAssessorPublico,
+      proSmart4] then
     begin
       NumRps := '';
       if not (InputQuery(Titulo, 'Numero do RPS', NumRps)) then
@@ -1868,7 +1952,8 @@ begin
         exit;
     end;
 
-    if ACBrNFSeX1.Configuracoes.Geral.Provedor = proAssessorPublico then
+    if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAssessorPublico,
+      proSmart4] then
     begin
       NumLote := '1';
       if not (InputQuery(Titulo, 'Numero do Lote', NumLote)) then
@@ -2113,7 +2198,7 @@ begin
   Lote := '';
   if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAssessorPublico, proElotech,
        proInfisc, proIPM, proISSDSF, proEquiplano, proeGoverneISS, proGeisWeb,
-       proSiat, proISSSaoPaulo, proISSCampinas] then
+       proSiat, proISSSaoPaulo, proISSCampinas, proISSSJP, proSmart4] then
   begin
     if not (InputQuery('Consultar Lote', 'Número do Lote:', Lote)) then
       exit;
@@ -2535,7 +2620,8 @@ end;
 
 procedure TfrmACBrNFSe.btnConsultarNFSeRPSClick(Sender: TObject);
 var
-  Titulo, NumeroRps, SerieRps, TipoRps, CodVerificacao, xCNPJTomador: string;
+  Titulo, NumeroRps, SerieRps, TipoRps, CodVerificacao, xCNPJTomador,
+  xNumLote: string;
   iTipoRps: Integer;
 begin
   Titulo := 'Consultar NFSe por RPS';
@@ -2597,8 +2683,15 @@ begin
       exit;
   end;
 
+  xNumLote := '';
+  if ACBrNFSeX1.Configuracoes.Geral.Provedor = proSmart4 then
+  begin
+    if not (InputQuery(Titulo, 'Numero do Lote:', xNumLote)) then
+      exit;
+  end;
+
   ACBrNFSeX1.ConsultarNFSePorRps(NumeroRps, SerieRps, TipoRps, CodVerificacao,
-    xCNPJTomador);
+    xCNPJTomador, xNumLote);
 
   ChecarResposta(tmConsultarNFSePorRps);
 end;
@@ -3292,7 +3385,7 @@ begin
   try
     ArqINI.Text := ACBrNFSeX1.NotasFiscais.GerarIni;
 
-    SaveDlg.Title := 'Escolha o local onde gerar o INI';
+    SaveDlg.Title := 'Escolha o local onde salvar o INI';
     SaveDlg.DefaultExt := '*.INI';
     SaveDlg.Filter := 'Arquivo INI(*.INI)|*.INI|Arquivo ini(*.ini)|*.ini|Todos os arquivos(*.*)|*.*';
 
@@ -3300,7 +3393,6 @@ begin
       ArqINI.SaveToFile(SaveDlg.FileName);
 
     memoLog.Lines.Add('Arquivo Salvo: ' + SaveDlg.FileName);
-
   finally
     SaveDlg.Free;
     ArqINI.Free;
@@ -3321,7 +3413,7 @@ begin
   try
     ArqINI.Text := ACBrNFSeX1.NotasFiscais.GerarIni;
 
-    SaveDlg.Title := 'Escolha o local onde gerar o INI';
+    SaveDlg.Title := 'Escolha o local onde salvar o INI';
     SaveDlg.DefaultExt := '*.INI';
     SaveDlg.Filter := 'Arquivo INI(*.INI)|*.INI|Arquivo ini(*.ini)|*.ini|Todos os arquivos(*.*)|*.*';
 
@@ -3890,9 +3982,13 @@ begin
     exit;
 
   // Codigo de Cancelamento
-  // 1 - Erro de emissão
-  // 2 - Serviço não concluido
-  // 3 - RPS Cancelado na Emissão
+  // 1 - Erro na emissão
+  // 2 - Serviço não prestado
+  // 3 - Erro de Assinatura (*)
+  // 4 - Duplicidade de nota
+  // 5 - Erro de processamento (*)
+
+  // (*) São de uso restrito da Administração Tributária Municipal
 
   Codigo := '1';
   if not(InputQuery(Titulo, 'Código de Cancelamento', Codigo)) then
@@ -3914,7 +4010,7 @@ begin
   if ACBrNFSeX1.Configuracoes.Geral.Provedor in [proAgili, proConam, proEquiplano,
     proGoverna, proIPM, proISSDSF, proISSLencois, proModernizacaoPublica,
     proPublica, proSiat, proSigISS, proSmarAPD, proWebFisco, proSudoeste,
-    proBauhaus, proISSCampinas] then
+    proBauhaus, proISSCampinas, proSigep] then
   begin
     Motivo := 'Teste de Cancelamento';
     if not (InputQuery(Titulo, 'Motivo de Cancelamento', Motivo)) then
@@ -4620,9 +4716,10 @@ var
 
           tmConsultarDFe:
             begin
-              memoLog.Lines.Add('NSU      : ' + IntToStr(aResumos[i].NSU));
-              memoLog.Lines.Add('Chave DFe: ' + aResumos[i].ChaveDFe);
-              memoLog.Lines.Add('Tipo Doc.: ' + aResumos[i].TipoDoc);
+              memoLog.Lines.Add('NSU        : ' + IntToStr(aResumos[i].NSU));
+              memoLog.Lines.Add('Chave DFe  : ' + aResumos[i].ChaveDFe);
+              memoLog.Lines.Add('Tipo Evento: ' + aResumos[i].TipoEvento);
+              memoLog.Lines.Add('Tipo Doc.  : ' + aResumos[i].TipoDoc);
             end;
         else
           begin
@@ -5103,6 +5200,8 @@ begin
             memoLog.Lines.Add('Num. Seq. Evento: ' + IntToStr(nSeqEvento));
             memoLog.Lines.Add('ID do Evento    : ' + idEvento);
             memoLog.Lines.Add('Sucesso         : ' + BoolToStr(Sucesso, True));
+            memoLog.Lines.Add('Sucesso Canc.   : ' + BoolToStr(SucessoCanc, True));
+            memoLog.Lines.Add('Desc. Situação  : ' + DescSituacao);
 
             LoadXML(XmlEnvio, WBXmlEnvio, 'temp1.xml');
             LoadXML(XmlRetorno, WBXmlRetorno, 'temp2.xml');
@@ -5302,6 +5401,9 @@ begin
 
   with ACBrNFSeX1.Configuracoes.WebServices do
   begin
+    // Redefini a quebra de linha que por padrão é "|'
+    QuebradeLinha := ';';
+
     Ambiente   := StrToTpAmb(Ok,IntToStr(rgTipoAmb.ItemIndex+1));
     Visualizar := cbxVisualizar.Checked;
     Salvar     := chkSalvarSOAP.Checked;

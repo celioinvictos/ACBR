@@ -52,6 +52,57 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+19/05/2025
+-- pcesConversaoeSocial --
+[*] #TK-7067: Corrigida ordem do TTipoEventoString com relação ao TTipoEvento no eSocial - https://www.projetoacbr.com.br/forum/topic/83280-fun%C3%A7%C3%A3o-pcesconversaoesocialtipoeventotostr-retornado-evento-errado
+  Por: Renato Rubinho
+
+28/04/2025
+-- pcesS3500 --
+[*] #TK-6982: Correção no preenchimento do ideSeqProc no evento S3500 - https://www.projetoacbr.com.br/forum/topic/83008-valor-incorreto-no-evento-s-3500/
+  Por: Thiago Augusto da Costa Ataides / Renato Rubinho
+
+14/04/2025
+-- Diversos -
+[*] #TK-6893: Implementada NT 2025/003
+  Por: Renato Rubinho
+
+13/03/2025
+-- pcesRetDownloadRetEvt -
+[*] #TK-6669: Atualizar o schema do S1260 para não validar cnpj
+  Por: Jeihcio Francis / Renato Rubinho
+
+03/03/2025
+-- Diversos --
+[*] Remoção de código que eram usados por versões antigas, ou seja, antes das
+    versões Simplificadas.
+    Remoção realizada nos eventos não periódicos (2190 até 2399).
+Por: Italo Giurizzato Junior
+
+27/02/2025
+-- pcesRetDownloadRetEvt -
+[*] #TK-6455: Alteração visando melhorar a resposta do comando DownloadEventos.
+  Por: Diego Folieni
+
+14/02/2025
+-- Diversos --
+[*] Remoção de código que eram usados por versões antigas, ou seja, antes das
+    versões Simplificadas.
+    Remoção realizada nos eventos não periódicos (2190 até 2399).
+Por: Italo Giurizzato Junior
+
+12/02/2025
+-- Diversos --
+[*] #TK-TK-6608 - Restaurada geração do grupo infoComplCont no S1200
+Por: falcon2000 / Renato Rubinho
+
+07/02/2025
+-- Diversos --
+[*] Remoção de código que eram usados por versões antigas, ou seja, antes das
+    versões Simplificadas.
+    Remoção realizada nos eventos de tabelas e eventos periódicos.
+Por: Italo Giurizzato Junior
+
 10/01/2025
 -- pcesS1210 --
 [*] #TK-6468 - Ajuste das ocorrências do vlrDedPC e vlrDedPC13 conforme leiaute.
