@@ -244,8 +244,6 @@ end;
 
 procedure TBoletoW_Inter_API.RequisicaoBaixa;
 var
-  Stream: TMemoryStream;
-  Str: String;
   LJson: TACBrJSONObject;
 begin
   FPContentType := 'x-www-form-urlencoded';
@@ -331,7 +329,7 @@ begin
           end;
         isbCancelado:
           begin
-            LConsulta.Add('filtrarDataPor='+LFiltroDataPagamento );
+            LConsulta.Add('filtrarDataPor='+LFiltroDataEmissao );
             LConsulta.Add('situacao='+LSituacaoCancelados);
             LConsulta.Add('dataInicial=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataMovimento.DataInicio));
             LConsulta.Add('dataFinal=' +DateTimeToDateInter(Boleto.Configuracoes.WebService.Filtro.dataMovimento.DataFinal));
@@ -655,7 +653,7 @@ end;
 
 procedure TBoletoW_Inter_API.GerarDesconto(AJson: TACBrJSONObject);
 var
-  LJsonDesconto, LJsonDesconto2, LJsonDesconto3: TACBrJSONObject;
+  LJsonDesconto: TACBrJSONObject;
 begin
   if Assigned(ATitulo) and Assigned(AJson) then
   begin
@@ -789,8 +787,8 @@ begin
   *)
   if (Boleto.Cedente.CedenteWS.IndicadorPix) and (Boleto.Configuracoes.WebService.Operacao = tpInclui) then
   begin
+    LJsonObject := TACBrJSONObject.Parse( FRetornoWS );
     try
-      LJsonObject := TACBrJSONObject.Parse( FRetornoWS );
       if NaoEstaVazio(LJsonObject.AsString['codigoSolicitacao']) then
       begin
         ATitulo.NossoNumeroCorrespondente := LJsonObject.AsString['codigoSolicitacao'];

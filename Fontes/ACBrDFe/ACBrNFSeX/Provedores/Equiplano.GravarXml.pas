@@ -63,6 +63,7 @@ type
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Strings,
   ACBrNFSeXConversao,
   ACBrNFSeXConsts;
@@ -129,7 +130,11 @@ begin
   NFSeNode.AppendChild(xmlNode);
 
   if NFSe.Servico.Valores.DescontoIncondicionado > 0 then
-    NFseNode.AppendChild(AddNode(tcDe2, '#1', 'vlDesconto', 1, 15, 1, NFSe.Servico.Valores.DescontoIncondicionado, ''));
+    NFseNode.AppendChild(AddNode(tcDe2, '#1', 'vlDesconto', 1, 15, 1,
+                              NFSe.Servico.Valores.DescontoIncondicionado, ''));
+
+  NFseNode.AppendChild(AddNode(tcStr, '#1', 'dsImpostos', 1, 500, 0,
+                                          NFSe.Servico.Valores.dsImpostos, ''));
 
   Result := True;
 end;
@@ -300,7 +305,8 @@ begin
                                             NFSe.Servico.Valores.ValorIss, ''));
 
     Result.AppendChild(AddNode(tcStr, '#1', 'dsDiscriminacaoServico', 1, 1024, 1,
-                                               NFSe.Servico.Discriminacao, ''));
+    StringReplace(NFSe.Servico.Discriminacao, Opcoes.QuebraLinha,
+                          FpAOwner.ConfigGeral.QuebradeLinha, [rfReplaceAll])));
   end;
 end;
 

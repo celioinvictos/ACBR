@@ -38,7 +38,9 @@ interface
 
 uses
   Classes, SysUtils, StrUtils,
+  ACBrBase,
   ACBrXmlBase,
+  ACBrDFe.Conversao,
   ACBrNF3eConfiguracoes, ACBrNF3eClass,
   ACBrNF3eIniReader, ACBrNF3eIniWriter,
   ACBrNF3eXmlReader, ACBrNF3eXmlWriter;
@@ -100,7 +102,8 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings = nil;
       EnviaPDF: Boolean = True; sCC: TStrings = nil; Anexos: TStrings = nil;
-      sReplyTo: TStrings = nil);
+      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True;
+      sBCC: Tstrings = nil);
 
     property NomeArq: String read FNomeArq write FNomeArq;
     function CalcularNomeArquivoCompleto(NomeArquivo: String = '';
@@ -180,6 +183,7 @@ uses
   ACBrDFeUtil,
   ACBrNF3e, ACBrNF3eConversao,
   ACBrXmlDocument;
+
 { NotaFiscal }
 
 constructor TNotaFiscal.Create(Collection2: TCollection);
@@ -486,11 +490,12 @@ begin
 end;
 
 procedure TNotaFiscal.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
-  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings);
+  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings;
+  ManterPDFSalvo: Boolean; sBCC: Tstrings);
 var
-  NomeArq_temp : String;
-  AnexosEmail:TStrings;
-  StreamNF3e : TMemoryStream;
+  NomeArqTemp: string;
+  AnexosEmail: TStrings;
+  StreamNF3e: TMemoryStream;
 begin
   if not Assigned(TACBrNF3e(TNotasFiscais(Collection).ACBrNF3e).MAIL) then
     raise EACBrNF3eException.Create('Componente ACBrMail não associado');
@@ -512,15 +517,18 @@ begin
         if Assigned(DANF3e) then
         begin
           DANF3e.ImprimirDANF3ePDF(FNF3e);
-          NomeArq_temp := PathWithDelim(DANF3e.PathPDF) + NumID + '-NF3e.pdf';
-          AnexosEmail.Add(NomeArq_temp);
+          NomeArqTemp := PathWithDelim(DANF3e.PathPDF) + NumID + '-nf3e.pdf';
+          AnexosEmail.Add(NomeArqTemp);
         end;
       end;
 
       EnviarEmail( sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamNF3e,
-                   NumID +'-NF3e.xml', sReplyTo);
+                   NumID +'-NF3e.xml', sReplyTo, sBCC);
     end;
   finally
+    if not ManterPDFSalvo then
+      DeleteFile(NomeArqTemp);
+
     AnexosEmail.Free;
     StreamNF3e.Free;
   end;

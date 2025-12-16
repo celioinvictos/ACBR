@@ -50,7 +50,7 @@ uses
   RLFilters,
   ACBrMDFeDAEventoRL, 
   ACBrDFeReportFortes,
-  pcnConversao, 
+  pcnConversao,
   DB;
 
 type
@@ -277,7 +277,7 @@ begin
     begin
       rllLinha1.Caption := ACBrStr('INCLUSÃO DE DOCUMENTOS FISCAIS ELETRÔNICOS');
       rllLinha2.Caption := ACBrStr(
-        'Não possui valor fiscal, simples representação do Pagamento da Operação de Transporte indicada abaixo.');
+        'Não possui valor fiscal, simples representação da Inclusão de DF-e indicada abaixo.');
       rllLinha3.Caption := ACBrStr(
         'CONSULTE A AUTENTICIDADE DA INCLUSÃO DE DF-e NO SITE DA SEFAZ AUTORIZADORA.');
     end;
@@ -350,7 +350,7 @@ begin
 
     rllOrgao.Caption := IntToStr(InfEvento.cOrgao);
 
-    case InfEvento.tpAmb of
+    case TpcnTipoAmbiente(InfEvento.tpAmb) of
       taProducao: rllTipoAmbiente.Caption := ACBrStr('PRODUÇÃO');
       taHomologacao: rllTipoAmbiente.Caption := ACBrStr('HOMOLOGAÇÃO - SEM VALOR FISCAL');
     end;
@@ -409,12 +409,12 @@ begin
             (fpEventoMDFe.InfEvento.tpEvento = teAlteracaoPagtoServMDFe) or
             (fpEventoMDFe.InfEvento.tpEvento = teConfirmaServMDFe);
 
-  printIt := Exibir or (fpEventoMDFe.InfEvento.tpAmb = taHomologacao);
+  printIt := Exibir or (TpcnTipoAmbiente(fpEventoMDFe.InfEvento.tpAmb) = taHomologacao);
 
   rllMsgTeste.Visible := False;
   rllMsgTeste.Enabled := False;
 
-  if fpEventoMDFe.InfEvento.tpAmb = taHomologacao then
+  if TpcnTipoAmbiente(fpEventoMDFe.InfEvento.tpAmb) = taHomologacao then
   begin
     rllMsgTeste.Caption := ACBrStr('AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
     rllMsgTeste.Visible := True;

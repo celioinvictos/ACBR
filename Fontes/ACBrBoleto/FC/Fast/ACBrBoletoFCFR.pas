@@ -107,7 +107,8 @@ type
 implementation
 
 uses
-  ACBrUtil.Base, ACBrUtil.Strings, ACBrImage, ACBrBancoBanestes, ACBrDelphiZXingQRCode;
+  ACBrUtil.Base, ACBrUtil.Strings, ACBrImage, ACBrBancoBanestes, ACBrDelphiZXingQRCode,
+  ACBrUtil.FR;
 
 { TdmACBrBoletoFCFR }
 
@@ -120,7 +121,9 @@ begin
   begin
     TfrxPictureView(Sender).Visible := not (emvQrCode = '');
     if (emvQrCode <> '') then
-      PintarQRCode(emvQrCode, TfrxPictureView(Sender).Picture.Bitmap, qrAuto);
+      PintarQRCode(emvQrCode, TfrxPictureView(Sender).Picture.Bitmap, qrAuto)
+    else
+      TfrxPictureView(Sender).Picture := nil;
   end;
 end;
 
@@ -361,6 +364,7 @@ end;
 
 procedure TACBrBoletoFCFR.Imprimir;
 begin
+  RemoveExportFastReportPDFDuplicate;
   inherited Imprimir; // Verifica se a lista de boletos está vazia
   FcdsBanco.EmptyDataSet;
   FcdsCedente.EmptyDataSet;
@@ -369,13 +373,17 @@ begin
   if PreparaRelatorio then
   begin
     FfrxReport.Preview := CustomPreview;
-    FfrxReport.PrintOptions.ShowDialog := (MostrarSetup) and (not FModoThread);
-    FfrxReport.PrintOptions.Copies := NumCopias;
+
     if TituloPreview <> '' then
       FfrxReport.ReportOptions.Name := TituloPreview;
 
-    if Length(Impressora) > 0 then
+    if EstaVazio(Impressora) then
+      SetDefaultPrinter(FfrxReport)
+    else
       FfrxReport.PrintOptions.Printer := Impressora;
+
+    FfrxReport.PrintOptions.ShowDialog := (MostrarSetup) and (not FModoThread);
+    FfrxReport.PrintOptions.Copies := NumCopias;
 
     case Filtro of
       fiPDF, fiNenhum:
@@ -418,7 +426,7 @@ begin
           if Filtro = fiNenhum then
           begin
             if (MostrarPreview) and (not FModoThread) then
-              FfrxReport.ShowReport(false)
+              FfrxReport.ShowReport(True)
             else
               FfrxReport.Print;
           end else

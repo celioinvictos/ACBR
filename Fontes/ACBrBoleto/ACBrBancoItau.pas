@@ -66,6 +66,7 @@ type
     function ConverteEspecieDoc(const ACodigoEspecie: Integer = 0): String;
     procedure DefineDataProtestoNegativacao(const ACBrTitulo: TACBrTitulo);
     procedure EhObrigatorioAgenciaDV; override;
+    procedure NaoPermiteFiltroWSNenhum; override;
   public
     Constructor create(AOwner: TACBrBanco);
     function MontarCampoNossoNumero ( const ACBrTitulo: TACBrTitulo) : String; override;
@@ -87,6 +88,9 @@ type
     function CodigoLiquidacao_Descricao( CodLiquidacao : String) : String;
 
     function TipoOcorrenciaToCodRemessa(const TipoOcorrencia: TACBrTipoOcorrencia): String; override;
+
+    function DefineNossoNumeroRetorno(const Retorno: String): String; override;
+
 
     property TipoOcorrenciaRemessa: String read fTipoOcorrenciaRemessa write fTipoOcorrenciaRemessa;
     property DataProtestoNegativacao : TDateTime read  fDataProtestoNegativacao ;
@@ -124,6 +128,20 @@ begin
    fpModuloMultiplicadorAtual:= 2;
 
    fpCodigosMoraAceitos    := '123590919305';
+end;
+
+function TACBrBancoItau.DefineNossoNumeroRetorno(const Retorno: String): String;
+begin
+  if ACBrBanco.ACBrBoleto.LerNossoNumeroCompleto then
+  begin
+    ACBrBanco.TamanhoMaximoNossoNum := 9;
+    Result := Copy(Retorno,DefinePosicaoNossoNumeroRetorno,9)
+  end else
+  begin
+    ACBrBanco.TamanhoMaximoNossoNum := 8;
+    Result := Copy(Retorno,DefinePosicaoNossoNumeroRetorno,8);
+  end;
+
 end;
 
 function TACBrBancoItau.DefineNumeroDocumentoModulo(
@@ -313,12 +331,17 @@ begin
   //sem validação
 end;
 
+procedure TACBrBancoItau.NaoPermiteFiltroWSNenhum;
+begin
+  //sem validação
+end;
+
 function TACBrBancoItau.DefinePosicaoNossoNumeroRetorno: Integer;
 begin
   if ACBrBanco.ACBrBoleto.LayoutRemessa = c240 then
     Result := 41
   else
-    Result := 63;
+    Result := 86;
 end;
 
 function TACBrBancoItau.DefinePosicaoCarteiraRetorno: Integer;
@@ -969,7 +992,7 @@ var
   rCNPJCPF,rAgencia,rConta       : String;
   Titulo: TACBrTitulo;
 begin
-
+  Titulo := nil;
   if StrToIntDef(copy(ARetorno.Strings[0],77,3),-1) <> Numero then
     raise Exception.Create(ACBrStr(ACBrBanco.ACBrBoleto.NomeArqRetorno +
                                    'não é um arquivo de retorno do '+ Nome));
@@ -1020,11 +1043,10 @@ begin
     Linha := ARetorno[ContLinha] ;
 
     if Linha[1] = '1' then
+    begin
       Titulo := ACBrBanco.ACBrBoleto.CriarTituloNaLista;
 
-    with Titulo do
-    begin
-      if Linha[1] = '1' then
+      with Titulo do
       begin
         SeuNumero                   := copy(Linha,38,25);
         NumeroDocumento             := copy(Linha,117,10);
@@ -1082,7 +1104,7 @@ begin
         ValorMoraJuros       := StrToFloatDef(Copy(Linha,267,13),0)/100;
         ValorOutrosCreditos  := StrToFloatDef(Copy(Linha,280,13),0)/100;
         ValorRecebido        := StrToFloatDef(Copy(Linha,254,13),0)/100;
-        NossoNumero          := Copy(Linha,63,8);
+        NossoNumero          := DefineNossoNumeroRetorno(Linha);
         Carteira             := Copy(Linha,83,3);
         ValorDespesaCobranca := StrToFloatDef(Copy(Linha,176,13),0)/100;
         CodigoLiquidacao     := Copy(Linha,393,2);
@@ -1103,9 +1125,9 @@ begin
                                           Copy(Linha,115,2),0,'DD/MM/YY');
 
       end;
-      if Linha[1] = '3' then
-        QrCode.emv := trim(copy(Linha,2,390));
-    end;
+    end
+    else if (Linha[1] = '3') and Assigned(Titulo) then
+      Titulo.QrCode.emv := trim(copy(Linha,2,390));
    end;
 end;
 

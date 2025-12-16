@@ -29,10 +29,10 @@
 { Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
 {       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
 {******************************************************************************}
+                            
+{$I ACBr.inc}
 
 unit ACBrLibPIXCDDataModule;
-
-{$mode ObjFPC}{$H+}
 
 interface
 
@@ -89,21 +89,33 @@ type
     ACBrPSPShipay1: TACBrPSPShipay;
     ACBrPSPSicoob1: TACBrPSPSicoob;
     ACBrPSPSicredi1: TACBrPSPSicredi;
+    procedure ACBrPixCD1QuandoAlterarPSP(Sender: TObject);
     procedure ACBrPSPBancoDoBrasil1QuandoReceberRespostaHttp(
       const AURL: String; const AMethod: String; RespHeaders: TStrings;
       var AResultCode: Integer; var RespostaHttp: AnsiString);
     procedure ACBrPSPSicoob1QuandoReceberRespostaHttp(const AURL: String;
       const AMethod: String; RespHeaders: TStrings; var AResultCode: Integer;
       var RespostaHttp: AnsiString);
+  private
+    fToken: String;
+    fValidadeToken: TDateTime;
 
+    procedure DoPrecisaAutenticar(var AToken: String; var AValidadeToken: TDateTime);
+    procedure DoAntesAutenticar(var AToken: String; var AValidadeToken: TDateTime);
+
+  protected
+    procedure DoCreate; override;
   public
     procedure AplicarConfiguracoes; override;
+    procedure InformarToken(const aToken: String; const aValidadeToken: TDateTime);
   end;
 
 implementation
 
 uses
-  ACBrLibPIXCDConfig;
+  ACBrUtil.Base,
+  ACBrLibPIXCDConfig,
+  ACBrUtil.FilesIO;
 
 {$R *.lfm}
 
@@ -155,6 +167,18 @@ begin
   end;
 end;
 
+procedure TLibPIXCDDM.ACBrPixCD1QuandoAlterarPSP(Sender: TObject);
+begin
+  fToken := EmptyStr;
+  fValidadeToken := 0;
+  GravarLog('DoQuandoAlterarPSP | Token: ' + fToken + sLineBreak + ' Validade: '+ DateTimeToStr(fValidadeToken), logCompleto, True);
+  if Assigned(ACBrPixCD1.PSP) then
+  begin
+    ACBrPixCD1.PSP.OnAntesAutenticar := DoAntesAutenticar;
+    ACBrPixCD1.PSP.OnPrecisaAutenticar := Nil;
+  end;
+end;
+
 procedure TLibPIXCDDM.ACBrPSPSicoob1QuandoReceberRespostaHttp(
   const AURL: String; const AMethod: String; RespHeaders: TStrings;
   var AResultCode: Integer; var RespostaHttp: AnsiString);
@@ -199,6 +223,30 @@ begin
       jsRet.Free;
     end;
   end;
+end;
+
+procedure TLibPIXCDDM.DoPrecisaAutenticar(var AToken: String; var AValidadeToken: TDateTime);
+begin
+  // Não implementado, para forçar erro de Autenticação
+  GravarLog('DoPrecisaAutenticar | Não implementado', logCompleto, True);
+end;
+
+procedure TLibPIXCDDM.DoAntesAutenticar(var AToken: String; var AValidadeToken: TDateTime);
+begin
+  if NaoEstaVazio(fToken) then
+  begin
+    aToken := FToken;
+    aValidadeToken := fValidadeToken;
+  end;
+  GravarLog('DoAntesAutenticar | Token: ' + AToken + sLineBreak + ' Validade: '+ DateTimeToStr(AValidadeToken), logCompleto, True);
+end;
+
+procedure TLibPIXCDDM.DoCreate;
+begin
+  inherited DoCreate;
+
+  fToken := EmptyStr;
+  fValidadeToken := 0;
 end;
 
 procedure TLibPIXCDDM.AplicarConfiguracoes;
@@ -269,14 +317,15 @@ begin
 
     with ACBrPSPBradesco1 do
     begin
-      ChavePIX     := pLibPIXCDConfig.PIXCDBradesco.ChavePIX;
-      ClientID     := pLibPIXCDConfig.PIXCDBradesco.ClientID;
-      ClientSecret := pLibPIXCDConfig.PIXCDBradesco.ClientSecret;
-      ArquivoPFX   := pLibPIXCDConfig.PIXCDBradesco.ArqPFX;
-      SenhaPFX     := pLibPIXCDConfig.PIXCDBradesco.SenhaPFX;
+      ChavePIX            := pLibPIXCDConfig.PIXCDBradesco.ChavePIX;
+      ClientID            := pLibPIXCDConfig.PIXCDBradesco.ClientID;
+      ClientSecret        := pLibPIXCDConfig.PIXCDBradesco.ClientSecret;
+      ArquivoPFX          := pLibPIXCDConfig.PIXCDBradesco.ArqPFX;
+      SenhaPFX            := pLibPIXCDConfig.PIXCDBradesco.SenhaPFX;
       ArquivoChavePrivada := pLibPIXCDConfig.PIXCDBradesco.ArqChavePrivada;
-      ArquivoCertificado := pLibPIXCDConfig.PIXCDBradesco.ArqCertificado;
-      Scopes       := pLibPIXCDConfig.PIXCDBradesco.Scopes;
+      ArquivoCertificado  := pLibPIXCDConfig.PIXCDBradesco.ArqCertificado;
+      APIVersao           := pLibPIXCDConfig.PIXCDBradesco.APIVersao;
+      Scopes              := pLibPIXCDConfig.PIXCDBradesco.Scopes;
     end;
 
     with ACBrPSPSicredi1 do
@@ -286,7 +335,6 @@ begin
       ClientSecret        := pLibPIXCDConfig.PIXCDSicredi.ClientSecret;
       ArquivoChavePrivada := pLibPIXCDConfig.PIXCDSicredi.ArqChavePrivada;
       ArquivoCertificado  := pLibPIXCDConfig.PIXCDSicredi.ArqCertificado;
-      APIVersion          := pLibPIXCDConfig.PIXCDSicredi.APIVersion;
       Scopes              := pLibPIXCDConfig.PIXCDSicredi.Scopes;
     end;
 
@@ -297,7 +345,6 @@ begin
       TokenSandbox        := pLibPIXCDConfig.PIXCDSiccob.TokenSandbox;
       ArquivoChavePrivada := pLibPIXCDConfig.PIXCDSiccob.ArqChavePrivada;
       ArquivoCertificado  := pLibPIXCDConfig.PIXCDSiccob.ArqCertificado;
-      APIVersion          := pLibPIXCDConfig.PIXCDSiccob.APIVersion;
       Scopes              := pLibPIXCDConfig.PIXCDSiccob.Scopes;
     end;
 
@@ -316,15 +363,16 @@ begin
       ConsumerSecret     := pLibPIXCDConfig.PIXCDSantander.ConsumerSecret;
       ArquivoPFX         := pLibPIXCDConfig.PIXCDSantander.ArqCertificadoPFX;
       SenhaPFX           := pLibPIXCDConfig.PIXCDSantander.SenhaCertificadoPFX;
-      APIVersion         := pLibPIXCDConfig.PIXCDSantander.APIVersion;
       Scopes             := pLibPIXCDConfig.PIXCDSantander.Scopes;
     end;
 
     with ACBrPSPPixPDV1 do
     begin
-      CNPJ  := pLibPIXCDConfig.PIXCDPixPDV.CNPJ;
-      Token := pLibPIXCDConfig.PIXCDPixPDV.Token;
-      Scopes:= pLibPIXCDConfig.PIXCDPixPDV.Scopes;
+      CNPJ         := pLibPIXCDConfig.PIXCDPixPDV.CNPJ;
+      Token        := pLibPIXCDConfig.PIXCDPixPDV.Token;
+      APIVersao    := pLibPIXCDConfig.PIXCDPixPDV.PixPDVAPIVersao;
+      ClientSecret := pLibPIXCDConfig.PIXCDPixPDV.SecretKey;
+      Scopes       := pLibPIXCDConfig.PIXCDPixPDV.Scopes;
     end;
 
     with ACBrPSPPagSeguro1 do
@@ -344,7 +392,6 @@ begin
       ClientSecret        := pLibPIXCDConfig.PIXCDItau.ClientSecret;
       ArquivoChavePrivada := pLibPIXCDConfig.PIXCDItau.ArqChavePrivada;
       ArquivoCertificado  := pLibPIXCDConfig.PIXCDItau.ArqCertificado;
-      APIVersion          := pLibPIXCDConfig.PIXCDItau.APIVersion;
       Scopes              := pLibPIXCDConfig.PIXCDItau.Scopes;
     end;
 
@@ -378,7 +425,6 @@ begin
       ArquivoPFX              := pLibPIXCDConfig.PIXCDBancoDoBrasil.ArqPFX;
       SenhaPFX                := pLibPIXCDConfig.PIXCDBancoDoBrasil.SenhaPFX;
       BBAPIVersao             := pLibPIXCDConfig.PIXCDBancoDoBrasil.BBAPIVersao;
-      APIVersion              := pLibPIXCDConfig.PIXCDBancoDoBrasil.APIVersion;
       Scopes                  := pLibPIXCDConfig.PIXCDBancoDoBrasil.Scopes;
     end;
 
@@ -460,6 +506,14 @@ begin
     {$IFDEF Demo}
     ACBrPixCD1.Ambiente := ambTeste;
     {$ENDIF}
+end;
+
+procedure TLibPIXCDDM.InformarToken(const aToken: String; const aValidadeToken: TDateTime);
+begin
+  fToken := aToken;
+  fValidadeToken := aValidadeToken;
+  if Assigned(ACBrPixCD1.PSP) then
+    ACBrPixCD1.PSP.OnPrecisaAutenticar := DoPrecisaAutenticar;
 end;
 
 end.

@@ -63,7 +63,7 @@ type
 
   TEmpregador = (tePessoaJuridica, teOrgaoPublico, tePessoaFisica,
                  teOrgaoPublicoExecutivoFederal, teOrgaoPublicoLegislativoFederal,
-                 teOrgaoPublicoJudiciarioFederal, teOrgaoPublicoAutonomoFederal);
+                 teOrgaoPublicoJudiciarioFederal, teOrgaoPublicoAutonomoFederal, teUniao);
 
   TeSocialGrupo = (egIniciais = 1, egNaoPeriodicos = 2, egPeriodicos = 3);
 
@@ -271,6 +271,9 @@ type
                              ciiIncidenciasuspensajudicialBCIRRFRRA,                             {95}    { Item válido até a versão 2.5 }
                              ciiRendimentoIsentoAuxilioMoradia,                                  {700}   { Item válido a partir da versão simplificada }
                              ciiRendimentoParteNaoTributavelDoValorDeServicoDeTransporte,        {701}   { Item válido a partir da versão simplificada }
+                             ciiRendimentoBolsaMedicoResidenteRemuneracaoMensal,                 {702}
+                             ciiRendimentoBolsaMedicoResidenteDecimoTerceiro,                    {703}
+                             ciiRendimentoJurosMoraRecebidosPeloAtrasoNoPagto,                   {704}
                              ciiRendimentoTributavelExigibilidadeSuspensaRemuneracaoMensal,      {9011}  { Item válido a partir da versão simplificada }
                              ciiRendimentoTributavelExigibilidadeSuspensaDecimoTerceiro,         {9012}  { Item válido a partir da versão simplificada }
                              ciiRendimentoTributavelExigibilidadeSuspensaFerias,                 {9013}  { Item válido a partir da versão simplificada }
@@ -307,7 +310,8 @@ type
                                                               '34',   '35',   '41',   '42',   '43',   '44',   '46',   '47',   '48',   '51',   '52',
                                                               '53',   '54',   '55',   '61',   '62',   '63',   '64',   '65',   '66',   '67',   '68',
                                                               '70',   '71',   '72',   '73',   '74',   '75',   '76',   '77',   '78',   '79',   '81',
-                                                              '82',   '83',   '91',   '92',   '93',   '94',   '95',   '700',  '701',  '9011', '9012',
+                                                              '82',   '83',   '91',   '92',   '93',   '94',   '95',   '700',  '701',  '702',  '703',
+                                                              '704',  '9011', '9012',
                                                               '9013', '9014', '9031', '9032', '9033', '9034', '9831', '9832', '9833', '9834', '9041',
                                                               '9042', '9043', '9046', '9047', '9048', '9051', '9052', '9053', '9054', '9061', '9062',
                                                               '9063', '9064', '9065', '9066', '9067', '9082', '9083'  );
@@ -540,7 +544,7 @@ const
 type
 
   tpTpReint               = (trReintegracaoDecisaoJudicial, trReintegracaoAnistiaLegal, trReversaoServidorPublico, trReconducaoServidorPublico,
-                             trReinclusoMilitar, trOutros);
+                             trReinclusoMilitar, trRevisaoReformaMilitar, trOutros);
 
   tpIndSubstPatr          = (spVazio,
                              spIntegralmenteSubstituida,
@@ -594,7 +598,10 @@ type
                               mtvSuspensaoPagamentoServidorNaoRecadastrado,               // 39
                               mtvExercicioOutroOrgaoEmpregadoCedido,                      // 40
                               mtvQualificacaoAfastamentoSuspencaoArt17_MP1116_2022,       // 41
-                              mtvQualificacaoAfastamentoSuspencaoArt19_MP1116_2022);      // 42
+                              mtvQualificacaoAfastamentoSuspencaoArt19_MP1116_2022,       // 42
+                              mtvLicencaMaternidadeProrrogacao60DiasLei15156_2025,        // 43
+                              mtvSuspensaoContratualAjuizamentoRescisaoIndireta,          // 44
+                              mtvSuspensaoContratualAjuizamentoInqueritoFaltaGrave);      // 45
 
   tpTpAcidTransito        = (tpatAtropelamento, tpatColisao, tpatOutros, tpatNao);
 
@@ -644,11 +651,11 @@ type
 
   tpNacProf               = (ttpProfissionalBrasileiro, ttpProfissionalEstrangeiro);
 
-  TVersaoeSocial          = ({ve02_04_01, ve02_04_02, ve02_05_00, }veS01_00_00, veS01_01_00, veS01_02_00, veS01_03_00);
+  TVersaoeSocial          = (ve02_04_01, ve02_04_02, ve02_05_00, veS01_00_00, veS01_01_00, veS01_02_00, veS01_03_00);
 const
-  TVersaoeSocialArrayStrings : array[TVersaoeSocial] of string = ({'02_04_01', '02_04_02', '02_05_00', }'S01_00_00', 'S01_01_00', 'S01_02_00', 'S01_03_00');
-  TVersaoeSocialSchemasArrayStrings : array[TVersaoeSocial] of string = ({'v02_04_01', 'v02_04_02', 'v02_05_00', }'v_S_01_00_00', 'v_S_01_01_00', 'v_S_01_02_00', 'v_S_01_03_00');
-  TVersaoeSocialArrayReals : array[TVersaoeSocial] of Real = ({2.0401, 2.0402, 2.0500, }10.0000, 10.1000, 10.2000, 10.3000);
+  TVersaoeSocialArrayStrings : array[TVersaoeSocial] of string = ('02_04_01', '02_04_02', '02_05_00', 'S01_00_00', 'S01_01_00', 'S01_02_00', 'S01_03_00');
+  TVersaoeSocialSchemasArrayStrings : array[TVersaoeSocial] of string = ('v02_04_01', 'v02_04_02', 'v02_05_00', 'v_S_01_00_00', 'v_S_01_01_00', 'v_S_01_02_00', 'v_S_01_03_00');
+  TVersaoeSocialArrayReals : array[TVersaoeSocial] of Real = (2.0401, 2.0402, 2.0500, 10.0000, 10.1000, 10.2000, 10.3000);
 
 type
 
@@ -702,10 +709,47 @@ type
                              tmcbRenunciaExpressa,
                              tmcbTransferenciaDeOrgaoAdministrador,
                              tmcbMudancaDeCPFDoBeneficiario,
-                             tmcbNaoRecadastramento);
+                             tmcbNaoRecadastramento,
+                             tmcbRevisaoReformaMilitar);
   const
   tpMotCessBenefArrayStrings:array[tpMotCessBenef] of string = (''  ,'01','02','03','04','05',
-                                                                '06','07','08','09','10','11');
+                                                                '06','07','08','09','10','11','12');
+
+  type
+  tpSitHomolog          = (tshNenhum,
+                           tshNaoHomologado,
+                           tshHomologado,
+                           tshNaoRequerHomologacao);
+  const
+  tpSitHomologArrayStrings:array[tpSitHomolog] of string = ('', '0'  ,'1','2');
+
+  type
+  tpTPDepInst           = (tdiNenhum,
+                           tdiConjuge,
+                           tdiCompanheiro,
+                           tdiFilhoAte21Anos,
+                           tdiEnteado,
+                           tdiExCompanheiro,
+                           tdiIrmao,
+                           tdiNeto,
+                           tdiFilhaMaiorSolteira,
+                           tdiPais,
+                           tdiMenorSobGuardaOuTutela,
+                           tdiFilhoMaiorInvalidoOuComDeficiencia,
+                           tdiExConjuge,
+                           tdiAvos,
+                           tdiBisavos,
+                           tdiBisneto,
+                           tdiCuratelado,
+                           tdiDesignado,
+                           tdiAgregadoEOutros);
+  const
+  tpTPDepInstArrayStrings:array[tpTPDepInst] of string = ('', '01'  ,'02','03',
+                                                          '04', '05', '06', '07',
+                                                          '08', '09', '10', '11',
+                                                          '12', '13', '14', '15',
+                                                          '16', '17', '99');
+
   type
 
   tpMtvTermino            = tpMotCessBenef;
@@ -1284,6 +1328,12 @@ function eSStrToTpMotCessBenef(var ok: boolean; const s: string): tpMotCessBenef
 function eStpTpMotCessBenefToStrEX(const t: tpMotCessBenef): string;
 function eSStrToTpMotCessBenefEX(const s: string): tpMotCessBenef;
 
+function eStpTpSitHomologToStr(const t: tpSitHomolog): string;
+function eSStrToTpSitHomolog(const s: string): tpSitHomolog;
+
+function eStpTpDepInstToStr(const t: tpTPDepInst): string;
+function eSStrTotpTpDepInst(const s: string): tpTPDepInst;
+
 function eStpTpMtvSuspensaoToStr(const t: tpMtvSuspensao): string;
 function eSStrToTpMtvSuspensao(var ok: boolean; const s: string): tpMtvSuspensao;
 
@@ -1356,14 +1406,15 @@ const
 
   TMotivoAlteracaoCargoFuncao: array[0..3] of string = ('1', '2', '3', '9');
 
-  TMotivoAfastamento: array[1..38] of string = ('01', '03', '05', '06', '07',
+  TMotivoAfastamento: array[1..41] of string = ('01', '03', '05', '06', '07',
                                                 '08', '10', '11', '12', '13',
                                                 '14', '15', '16', '17', '18',
                                                 '19', '20', '21', '22', '23',
                                                 '24', '25', '26', '27', '28',
                                                 '29', '30', '31', '33', '34',
                                                 '35', '36', '37', '38', '39',
-                                                '40', '41', '42');
+                                                '40', '41', '42', '43', '44',
+                                                '45');
 
   TGenericosString0_1 : array[0..1] of string = ('0','1' );
   TGenericosString0_2 : array[0..2] of string = ('0','1','2' );
@@ -2024,12 +2075,12 @@ end;
 
 function eSTpReintToStr(const t: tpTpReint ): string;
 begin
-  result := EnumeradoToStr2(t,[ '1', '2', '3', '4', '5', '9' ] );
+  result := EnumeradoToStr2(t,[ '1', '2', '3', '4', '5', '6', '9' ] );
 end;
 
 function eSStrToTpReint(var ok: boolean; const s: string): tpTpReint;
 begin
-  result := tpTpReint( StrToEnumerado2(ok , s,[ '1', '2', '3', '4', '5', '9' ] ));
+  result := tpTpReint( StrToEnumerado2(ok , s,[ '1', '2', '3', '4', '5', '6', '9' ] ));
 end;
 
 function eSCodIncIRRFToStr(const t:tpCodIncIRRF ): string;
@@ -2589,7 +2640,7 @@ begin
     veS01_02_00: result := 10.2000;
     veS01_03_00: result := 10.3000;
   else
-    result := 0;
+    result := 10.3000;
   end;
 end;
 
@@ -2613,7 +2664,7 @@ begin
     result := veS01_03_00
   else
   begin
-    result := veS01_02_00;
+    result := veS01_03_00;
     ok := False;
   end;
 end;
@@ -2873,7 +2924,47 @@ end;
 
 function eSStrTotpTpPenMorte(var ok: boolean; const s: string): tpTpPenMorte;
 begin
-  result := tpTpPenMorte(StrToEnumerado2(ok, s, TGenericosString1_2) );
+  result := tpTpPenMorte(StrToEnumerado2(ok, s, TGenericosString0_2) );
+end;
+
+function eStpTpSitHomologToStr(const t: tpSitHomolog): string;
+begin
+  result := tpSitHomologArrayStrings[t];
+end;
+
+function eSStrToTpSitHomolog(const s: string): tpSitHomolog;
+var
+  idx: tpSitHomolog;
+begin
+  for idx := Low(tpSitHomologArrayStrings) to High(tpSitHomologArrayStrings) do
+  begin
+    if tpSitHomologArrayStrings[idx] = s then
+    begin
+      Result := idx;
+      Exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TpSitHomolog: %s', [s]);
+end;
+
+function eStpTpDepInstToStr(const t: tpTPDepInst): string;
+begin
+  result := tpTPDepInstArrayStrings[t];
+end;
+
+function eSStrTotpTpDepInst(const s: string): tpTPDepInst;
+var
+  idx: tpTPDepInst;
+begin
+  for idx := Low(tpTPDepInstArrayStrings) to High(tpTPDepInstArrayStrings)do
+  begin
+    if tpTPDepInstArrayStrings[idx] = s then
+    begin
+      Result := idx;
+      Exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TpDepInst: %s', [s]);
 end;
 
 function eSStrTotpTpPenMorteEX(const s: string): tpTpPenMorte;

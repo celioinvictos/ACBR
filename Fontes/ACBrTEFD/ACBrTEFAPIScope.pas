@@ -141,6 +141,7 @@ type
     procedure ApagarImagemPinPad(const NomeImagem: String); override;
     procedure CarregarImagemPinPad(const NomeImagem: String; AStream: TStream;
       TipoImagem: TACBrTEFAPIImagemPinPad); override;
+    function VersaoAPI: String; override;
 
     property TEFScopeAPI: TACBrTEFScopeAPI read fTEFScopeAPI;
     property DiretorioTrabalho: String read fDiretorioTrabalho write SetDiretorioTrabalho;
@@ -175,7 +176,7 @@ procedure TACBrTEFRespScope.ConteudoToProperty;
     //MASK1_Saldo_Disponivel
 
     if IDCampo = MASK1_Numero_Conta_PAN then
-      NFCeSAT.UltimosQuatroDigitos := RightStr(Linha.Informacao.AsString, 4)
+      PAN := Linha.Informacao.AsString
     else if IDCampo = MASK1_Valor_transacao then
       ValorTotal := Linha.Informacao.AsFloat
     else if IDCampo = MASK1_NSU_transacao then
@@ -440,7 +441,7 @@ end;
 procedure TACBrTEFAPIClassScope.Inicializar;
 var
   P: Integer;
-  ADir, IpStr, PortaStr: String;
+  ADir, IpStr, PortaStr, s: String;
 begin
   if Inicializado then
     Exit;
@@ -467,11 +468,19 @@ begin
   fTEFScopeAPI.Empresa := fpACBrTEFAPI.DadosTerminal.CodEmpresa;
   fTEFScopeAPI.Filial := fpACBrTEFAPI.DadosTerminal.CodFilial;
   fTEFScopeAPI.PDV := fpACBrTEFAPI.DadosTerminal.CodTerminal;
-  fTEFScopeAPI.MsgPinPad := fpACBrTEFAPI.DadosAutomacao.NomeSoftwareHouse + '|' +
-                            fpACBrTEFAPI.DadosAutomacao.NomeAplicacao + ' ' +
-                            fpACBrTEFAPI.DadosAutomacao.VersaoAplicacao;
+  fTEFScopeAPI.GravarLogScope := fpACBrTEFAPI.DadosTerminal.GravarLogTEF;
+
+  s := fpACBrTEFAPI.DadosAutomacao.MensagemPinPad;
+  if (s = '') then
+  begin
+    s := fpACBrTEFAPI.DadosAutomacao.NomeSoftwareHouse + '|' +
+         fpACBrTEFAPI.DadosAutomacao.NomeAplicacao + ' ' +
+         fpACBrTEFAPI.DadosAutomacao.VersaoAplicacao;
+  end;
+
+  fTEFScopeAPI.MsgPinPad := s;
   fTEFScopeAPI.PortaPinPad := fpACBrTEFAPI.DadosTerminal.PortaPinPad;
-  fTEFScopeAPI.GravarLogScope := (fpACBrTEFAPI.ArqLOG <> '');
+  fTEFScopeAPI.GravarLogScope := fTEFScopeAPI.GravarLogScope and (fpACBrTEFAPI.ArqLOG <> '');
 
   fTEFScopeAPI.Inicializar;
 
@@ -865,7 +874,7 @@ begin
       end;
 
     tefopPrePago:
-      OpScope := scoPreAutCredito;     // Valor, Taxa Serviço
+      OpScope := scoRecargaCel;
 
     tefopConsultaSaldo:
       OpScope := scoConsCDC;           // Valor, Taxa Serviço
@@ -1101,6 +1110,11 @@ begin
       DeleteFile(tmpFile);
     end;
   end;
+end;
+
+function TACBrTEFAPIClassScope.VersaoAPI: String;
+begin
+  Result := Trim(fTEFScopeAPI.ObterVersaoScope);
 end;
 
 procedure TACBrTEFAPIClassScope.SetDiretorioTrabalho(const AValue: String);

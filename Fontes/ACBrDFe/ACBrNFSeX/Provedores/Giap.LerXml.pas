@@ -38,8 +38,10 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXConversao, ACBrNFSeXLerXml;
+  ACBrXmlBase,
+  ACBrXmlDocument,
+  ACBrNFSeXConversao, ACBrNFSeXLerXml,
+  ACBrNFSeXLerXml_ABRASFv1;
 
 type
   { Provedor com layout próprio }
@@ -59,9 +61,19 @@ type
     function LerXmlNfse(const ANode: TACBrXmlNode): Boolean;
   end;
 
+  { TNFSeR_Giap101 }
+
+  TNFSeR_Giap101 = class(TNFSeR_ABRASFv1)
+  protected
+
+  public
+
+  end;
+
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Base,
   ACBrUtil.Strings;
 

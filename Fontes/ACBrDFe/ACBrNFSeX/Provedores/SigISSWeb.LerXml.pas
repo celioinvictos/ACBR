@@ -38,8 +38,11 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXConversao, ACBrNFSeXLerXml;
+  ACBrXmlBase,
+  ACBrXmlDocument,
+  ACBrDFe.Conversao,
+  ACBrNFSeXConversao,
+  ACBrNFSeXLerXml;
 
 type
   { TNFSeR_SigISSWeb }
@@ -109,6 +112,7 @@ end;
 function TNFSeR_SigISSWeb.LerXmlNfse(const ANode: TACBrXmlNode): Boolean;
 var
   aValor: string;
+  LRegimeEmpresa: string;
 begin
   Result := True;
 
@@ -187,6 +191,7 @@ begin
     Servico.Valores.ValorServicos := ObterConteudo(ANode.Childrens.FindAnyNs('valor_nf'), tcDe2);
     Servico.Valores.ValorDeducoes := ObterConteudo(ANode.Childrens.FindAnyNs('deducao'), tcDe2);
     Servico.Valores.ValorLiquidoNfse := ObterConteudo(ANode.Childrens.FindAnyNs('valor_servico'), tcDe2);
+
     aValor := ObterConteudo(ANode.Childrens.FindAnyNs('iss_retido'), tcStr);
 
     if aValor = 'S' then
@@ -239,10 +244,29 @@ begin
     Servico.Valores.ValorTotalNotaFiscal := Servico.Valores.ValorServicos -
       Servico.Valores.DescontoCondicionado - Servico.Valores.DescontoIncondicionado;
 
+    Servico.Valores.ValorLiquidoNfse := (Servico.Valores.ValorServicos
+                                         - Servico.Valores.RetencoesFederais
+                                         - Servico.Valores.OutrasRetencoes
+                                         - Servico.Valores.ValorIssRetido
+                                         - Servico.Valores.DescontoIncondicionado
+                                         - Servico.Valores.DescontoCondicionado);
+
     ValoresNfse.ValorLiquidoNfse := Servico.Valores.ValorServicos;
 
-//    <regime>V</regime>
-//    <cancelada>N</cancelada>
+    OptanteSimplesNacional := snNao;
+
+    // tag regime: S - Simples, V - Variável, M - Mei ou L - Especial
+
+    LRegimeEmpresa := ObterConteudo(ANode.Childrens.FindAnyNs('regime'), tcStr);
+    if LRegimeEmpresa = 'S' then
+      OptanteSimplesNacional := snSim;
+
+    SituacaoNfse := snNormal;
+
+    aValor := ObterConteudo(ANode.Childrens.FindAnyNs('cancelada'), tcStr);
+    if aValor = 'S' then
+      SituacaoNfse := snCancelado;
+
 //    <nf_avulsa>N</nf_avulsa>
 
     verAplic := ObterConteudo(ANode.Childrens.FindAnyNs('sistema_gerador'), tcStr);
@@ -305,7 +329,7 @@ begin
     Numero := ObterConteudo(ANode.Childrens.FindAnyNs('numero_nf'), tcStr);
     SeriePrestacao := ObterConteudo(ANode.Childrens.FindAnyNs('serie'), tcStr);
 
-    DataEmissao := ObterConteudo(ANode.Childrens.FindAnyNs('data_emissao'), tcDat);
+    DataEmissao := ObterConteudo(ANode.Childrens.FindAnyNs('data_emissao'), tcDatVcto);
 //    <forma_de_pagamento></forma_de_pagamento>
 
     Servico.Discriminacao := ObterConteudo(ANode.Childrens.FindAnyNs('descricao'), tcStr);

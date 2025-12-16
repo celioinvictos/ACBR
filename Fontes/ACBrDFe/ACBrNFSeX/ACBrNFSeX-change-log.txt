@@ -42,6 +42,1658 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+
+
+09/12/2025
+-- Diversos --
+[*] Ajustes para gerar a tag CodigoNbs para os provedores que usam a versão 2 do layout da ABRASF.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXConversao --
+[*] Acrescentado as Naturezas de Operação: 602 e 603.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXGravarXml/Citta.GravarXml/Citta.Provider --
+-- PadraoNacional.GravarXml/PadraoNacional.Provider --
+[*] Possível solução para atender a API Própria do provedor Citta.
+   Por: Italo Giurizzato Junior
+-- WebISS.LerXml --
+[*] Alteração visando a leitura correta do grupo IBSCBS.
+   Por: Tiago  Tecchio
+
+08/12/2025
+-- EL.GravarXml --
+[-] Correção para evitar erro de validação.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXLerXml --
+[-] Correção para evitar loop infinito.
+   Por: Italo Giurizzato Junior
+-- Pronim.Provider --
+[+] ACBR-8541 - Implementado a Consulta ao DPS por numero e serie do mesmo.
+    Consulta exclusiva para o provedor Pronim - API Própria.
+   Por: Italo Giurizzato Junior
+-- PadraoNacional.GravarXml --
+[*] ACBR-8551 - Alterado a condição para gerar o grupo comExt, pois o valor do serviço pode ser zero.
+   Por: Leonardo Gomes
+-- ISSSaoPaulo.Provider --
+[*] ACBR-8550 - Se não tem Intermediário não é necessário incluir na assinatura adicional.
+   Por: Leonardo Gomes
+-- ACBrNFSeXClass/Tecnos.GravarXml --
+[*] ACBR-8458 - Alterações para atender o provedor Tecnos no que se refere a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] ACBR-8508/8520 - Alterações em diversas units para atender o provedor Publica no 
+    que se refere a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+05/12/2025
+-- ACBrNFSeXLerXml_ABRASFv2/WebISS.GravarXml/WebISS.LerXml --
+[*] ACBR-8538 - Ajustes para gerar a tag CodigoNbs e a leitura do grupo IBSCBS.
+   Por: Tiago Tecchio/Italo Giurizzato Junior
+-- ACBrNFSeXClass/ACBrNFSeXLerXml/SigISSWeb.GravarXml --
+[+] ACBR-8497 - Implementado os novos campos para atender a reforma tributária.
+   Por: Italo Giurizzato Junior
+
+04/12/2025
+-- ACBrNFSeXServicos --
+[*] A cidade Ribeirão Pires/SP mudou de provedor, agora é Giss
+   Por: Raquel Basani
+[*] ACBR-8378 - A cidade Jacareí/SP mudou de provedor, agora é PadraoNacional
+   Por: Raphael Sanini
+
+03/12/2025
+-- WebISS.GravarXml --
+[+] ACBR-8529 - Realizada alterações visando gerar o grupo IBSCBS.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] ACBR-8527 - Alterado a versão da cidade São José do Cedro/SC, o provedor continua o mesmo.
+   Por: C4Dev
+-- ACBrNFSeXConfiguracoes/ACBrNFSeXClass/ACBrNFSeXGravarXml_ABRASFv2 --
+-- ACBrNFSeXLerXml_ABRASFv1/ACBrNFSeXLerXml_ABRASFv2 --
+[-] Correção para não gerar de forma indevida o grupo de Endereço no Exterior.
+   Por: Italo Giurizzato Junior
+-- ISSSaoPaulo.GravarXml/ISSSaoPaulo.Provider --
+[*] ACBR-8525 - Ajustes na geração do campo Assinatura, pois a versão 2 é diferente.
+   Por: Hunes/Italo Giurizzato Junior
+-- Diversos --
+[*] ACBR-8511/8496 - Varias alterações visando atender o provedor: ISSNet no que se refere a 
+    adoção ao layout da NFS-e Padrão Nacional
+   Por: Italo Giurizzato Junior
+-- PadraoNacional.GravarXml --
+[-] Possível solução para a geração do grupo: totTrib.
+   Por: Italo Giurizzato Junior
+
+02/12/2025
+-- fintelISS.GravarXml --
+[*] ACBR-8509 - Ajustes por conta da alteração nos schemas disponibilizado pelo provedor.
+   Por: aslsoftwareltda/Italo Giurizzato Junior
+-- IPM.GravarXml --
+[*] ACBR-8510 - Ajustes por conta da alteração nos schemas disponibilizado pelo provedor.
+   Por: marciost
+-- Diversos --
+[*] Varias alterações visando atender os provedores: Betha, Città, E&L, Pronim, SimplISS,
+    Tiplan, SilTecnologia, RLZ, Infisc no que se refere a adoção ao layout da NFS-e
+    Padrão Nacional
+   Por: Italo Giurizzato Junior
+
+01/12/2025
+-- ACBrNFSeXServicos --
+[*] ACBR-8512 - Alterado a versão e as URLs das cidades Mamborê/PR o provedor continua o mesmo.
+   Por: Arthur Haupt Pacheco
+
+28/11/2025
+-- Infisc.GravarXml --
+[+] ACBR-8493 - Acrescentado os campos opcionais que consta nos schemas, mas não estavam sendo gerados caso alimentados.
+   Por: Fabiano Oliveira de Castro
+-- IPM.GravarXml --
+[*] ACBR-8489 - Alteração visando gerar a tag codigoNBS para a versão 2.04
+   Por: Helius_ERP
+-- PadraoNacional.Provider --
+[*] Melhoria a rotina TratarXMLRetornado para usar classes próprias para criação do JSON.
+  Por: Diego Folieni
+-- ACBrNFSeXWebservicesResponse/PadraoNacional.Provider --
+[+] Incluído o campo XmlRetorno na lista Resumos para conter o XML da NFS-e do Padrão Nacional.
+  Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] ACBR-8502 - Alterado a versão e as URLs das cidades Vitorino/PR e São Domingos/SC o provedor continua o mesmo.
+   Por: C4Dev
+-- PadraoNacional.Provider --
+[*] Melhorias no TrataRetornoEmitir visando atender API própria de outros provedores.
+  Por: Italo Giurizzato Junior
+
+27/11/2025
+-- ACBrNFSeXLerXML --
+[+] ACBR-8477 - Adiciona chamada de rotina que lê os novos campos da Reforma Tributária na leitura do arquivo INI.
+   Por: Diego Folieni
+-- ACBrNFSeXServicos --
+[*] Alterado de http para https as URLs da cidade Sao Sebastiao do Oeste/MG
+   Por: Italo Giurizzato Junior
+-- PadraoNacional.GravarXml --
+[*] Alteração visando gerar as tags: vPis e vCofins que estão dentro do grupo piscofins mesmo com valores zero
+    quando o CST for 04 ou 06.
+  Por: Italo Giurizzato Junior
+-- PadraoNacional.Provider --
+[*] #ACBr-8492 Alteração visando a leitura correta do XML quando este tem vogais acentuadas e cedilha.
+  Por: marcelo.hgv
+[*] #ACBr-8491 Alteração visando obter o XML do evento pela propriedade XmlRetorno para salvar no banco de dados.
+  Por: Diego Reckziegel
+-- ACBrNFSeXServicos --
+[*] #ACBr-8475 A cidade Itapoa/SC mudou de versão e URL, o provedor continua o mesmo.
+   Por: C4Dev
+[*] #ACBr-8490 Criado a seção SimplISSPN que contem a URL base de Homologação da API própria do
+    provedor SimplISS a ser utilizada por todas as cidades atendidas pelo provedor.
+   Por: Denis (JJW)/Italo Giurizzato Junior
+
+26/11/2025
+-- Bauhaus.GravarJson/Bauhaus.LerJson --
+[*] #ACBr-8486 Ajustes na leitura do arquivo INI.
+  Por: Italo Giurizzato Junior
+-- ACBrNFSeXClass/ACBrNFSeXConversao/ACBrNFSeXGravarXml/ACBrNFSeXLerXml --
+[*] #ACBr-8469/8485 Definido um novo tipo para o tpOper para a NFS-e pois possui 
+    mais opções do que o tipo definido para os demais DF-e.
+  Por: Italo Giurizzato Junior
+-- PadraoNacional.Provider --
+[-] #ACBr-8483 Ajuste visando o correto tratamento do retorno para as respostas do PadraoNacional
+  Por: Diego Folieni
+-- Ginfes.GravarXml/Ginfes.LerXml --
+[*] #ACBr-8444 Alterações visando a Reforma Tributária
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXConversao/ACBrNFSeXGravarXml_ABRASFv2/Giss.GravarXml/Giss.LerXml/Infisc.GravarXml --
+[*] Ajustes no CST que se não informando estava sendo considerado o CST01.
+   Por: Italo Giurizzato Junior
+
+25/11/2025
+-- ACBrNFSeXClass/ACBrNFSeXGravarXml_ABRASFv2/ACBrNFSeXLerXml_ABRASFv2/DeISS.GravarXml --
+[*] #ACBr-8459 Implementado o campo TomadorSubstitutoTributario para determinar se o 
+    tomador é ou não é substituto tributário.
+   Por: Vinicius Jung - DSV Bremen/Italo Giurizzato Junior
+-- IPM.GravarXml -
+[*] #ACBr-8461 Alteração visando não gerar o grupo IBSCBS quando os campos não estiverem
+    alimentados.
+   Por: C4Dev
+-- Giss.GravarXml --
+[*] #ACBr-8466 Alteração visando não gerar a tag Alíquota.
+   Por: breno.silva
+-- ACBrNFSeXServicos --
+[*] #ACBr-8454 A cidade Santa Cecilia/SC mudou de versão e URL, o provedor continua o mesmo.
+   Por: lucasatz
+-- ACBrNFSeXConversao/PadraoNacional.GravarXml --
+[-] #ACBr-8465 Ajustes para não gerar Tributação Federal quando for MEI.
+   Por: Felipe baldin/Italo Giurizzato Junior
+-- ISSe.GravarXml --
+[-] #ACBr-8455 Ajustes para não ocorrer mais erro de validação ao gerar o XML com os novos
+    campos.
+   Por: Italo Giurizzato Junior
+-- IPM.GravarXml --
+[*] #ACBr-8454 Ajustes para gerar o XML com os novos campos da reforma tributária no
+    layout versão 2.04 da ABRASF.
+   Por: Italo Giurizzato Junior
+-- Infisc.GravarXml --
+[*] #ACBr-8443/8457 Ajustes para gerar o XML sem os novos campos da Reforma tributária em ambiente
+    de produção, somente em homologação.
+   Por: dna.automacao/TiagoTecchio
+
+24/11/2025
+-- ACBrNFSeXConfiguracoes/ACBrNFSeXProviderBase/ACBrNFSeXProviderManager --
+-- ISSSaoPaulo.Provider/PadraoNacional.GravarXml/PadraoNacional.LerXml/PadraoNacional.Provider -
+[*] Ajustes visando atender os provedores que tem API própria: Betha, EL, Infisc, Pronim, Tiplan.
+    E o provedor ISSSaoPaulo que vai manter o layout usado mas modificado para atender a reforma
+    tributária.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] Ajustes em algumas cidades visando a reforma tributária.
+   Por: Italo Giurizzato Junior
+
+21/11/2025
+-- IPM.GravarXml --
+[*] #ACBr-8387 Incluído linha para gerar o codigo_nbs no XML do RPS.
+   Por: Marcos Villatore
+-- ACBrNFSeXServicos --
+[*] #ACBr-8387 A cidade Telêmaco Borba/PR trocou as URLs, o provedor continua o mesmo.
+   Por: Marcos Villatore
+-- PadraoNacional.GravarXml/PadraoNacional.LerXml/PadraoNacional.Provider --
+[*] #ACBr-8427 Ajustes para gerar as tags das alíquotas do PIS e COFINS mesmo zeradas.
+    Ajustes para atender a API própria do provedor Pronim.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8429 A cidade Navegantes/SC trocou de provedor, agora é IPM.
+   Por: edmilsonvg
+[+] #ACBr-8431 Incluída a cidade São Caitano/PE, o provedor é Tributus.
+   Por: Mauricio Andrade
+[*] #ACBr-8432 A cidade Arroio do Sal/RS trocou de provedor, agora é Pronim.
+   Por: Igor AcertSoft
+-- Diversos --
+[*] Diversos ajustes para atender os provedores Giss e ISSSalvador visando a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+19/11/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8357 A cidade de Jales/SP trocou de provedor, agora é RLZ.
+   Por: mregiani
+[*] #ACBr-8363 A cidade de Renascenca/PR trocou de provedor, agora é EloTech.
+   Por: binotto
+
+18/11/2025
+-- ACBrNFSeXLerXml_ABRASFv2/Tecnos.LerXml --
+[*] #ACBr-8399 O tratamento para a correta leitura do XML de uma NFS-e do provedor Tecnos,
+    agora se encontra na unit do provedor e não mais na unit ACBrNFSeXLerXml_ABRASFv2.
+   Por: thi4182
+-- PadraoNacional.Provider --
+[-] #ACBr-8398 Incluída a função para deixar somente as letras/dígitos do CNPJ/CPF na montagem
+    do XML do evento.
+   Por: marcelo.hgv
+-- PadraoNacional.Provider --
+[-] O código do motivo do cancelamento por substituição tem que ter 2 dígitos em vez de 1.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXGravarXml/ACBrNFSeXProviderManager --
+-- Tinus.GravarXml/Tinus.LerXml/Tinus.Provider --
+[+] Implementado a versão 2.03 do layout da ABRASF alterado para contemplar a Reforma Tributária
+    no provedor Tinus. 
+   Por: Italo Giurizzato Junior
+
+17/11/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8400 A cidade de Foz do Iguaçu/PR mudou as URLs, o provedor continua o mesmo.
+   Por: Edrian
+[*] #ACBr-8405 Atualizado as URLs da seção [Betha].
+   Por: Arthur Haupt Pacheco
+-- IPM.GravarXml --
+[*] #ACBr-8347 Acrescentado a geração das tags do IBSCBS que estão dentro do grupo nfse.
+   Por: andremuriae
+
+15/11/2025
+-- DeISS.Provider --
+[*] Ajuste para gerar na consulta por faixa o Numero Final da NFS-e.
+   Por: Italo Giurizzato Junior
+
+14/11/2025
+-- ISSe.GravarXml/ISSe.LerXml/ISSe.Provider --
+[*] Alterações visando gerar e ler o XML do RPS/NFSe com os novos campos da Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXConfiguracoes/ACBrNFSeXLerXml_ABRASFv2/PadraoNacional.GravarXml/PadraoNacional.Provider --
+[*] Alterações visando os provedores que estão implementando API própria para atender o Padrão Nacional.
+   Por: Italo Giurizzato Junior
+-- ISSSaoPaulo.Provider --
+[-] #ACBr-8290 Ajuste visando correta consulta de NFSe por serviço prestado.
+   Por: Diego Folieni
+
+13/11/2025
+-- ACBrNFSeXProviderABRASFv2/ACBrNFSeXWebservicesResponse --
+[+] #ACBr-8393 Acrescentado o campo Status (Integer) para conter o valor da tag Status
+    que consta no XML da NFS-e versão 2 da ABRASF.
+   Por: Adriano Quintino da Silva
+-- PadraoNacional.GravarXml --
+[-] #ACBr-8375 Alterações visando gerar corretamente o grupo tribFed e o piscofins.
+   Por: marcos villatore
+-- ACBrNFSeXServicos --
+[*] #ACBr-8396 Incluído o Params GerarTag CodigoAtividade para cidade São Bento do Sul/SC.
+   Por: VEXCOM Sistemas - Valtair
+[*] #ACBr-8395 Incluído as URLs da API própria do provedor Tiplan da cidade Americana/SP.
+   Por: NW Software/Italo Giurizzato Junior
+[*] #ACBr-8391 A cidade Itaituba/PA mudou as URLs, o provedor continua o mesmo.
+   Por: Diego Reckziegel
+[*] #ACBr-8390 A cidade Sapezal/MT mudou as URLs, o provedor continua o mesmo.
+   Por: Diego Reckziegel
+
+12/11/2025
+-- ISSBarueri.Provider --
+[-] #ACBr-8376 Correção a totalização de linhas não estava computando os registros 3.
+   Por: samdella/Italo Giurizzato Junior
+
+11/11/2025
+-- PadraoNacional.LerXml --
+[*] #ACBr-8349 A leitura do campo xInfComp esta alimentando agora o campo OutrasInformacoes,
+    para constar na impressão do DANFSE.
+   Por: Wesley Lamb/Italo Giurizzato Junior
+-- ACBrNFSeXClass/PadraoNacional.GravarXml/PadraoNacional.LerXml --
+[*] #ACBr-8365 Implementado a leitura a tag cLocEmi.
+   Por: Daniel - PiraByte/Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8367 A cidade Porto Alegre/RS trocou de provedor, agora é PadraoNacional.
+   Por: Anderson Grolli
+[*] #ACBr-8366 A cidade Ouro Verde de Goias/GO trocou de provedor, agora é MegaSoft.
+   Por: billbarsch
+[*] #ACBr-8364 Correção na URL da cidade Munhuaçu/MG.
+   Por: Heber Germano
+[*] #ACBr-8360 A cidade Curitiba/PR trocou de provedor, agora é PadraoNacional.
+    Incluída a cidade Ivai/PR, o provedor é Equiplano.
+    Corrigido a URL de produção da cidade Campo Ere/SC.
+    A cidade Itapiranga/SC trocou de provedor, agora é PadraoNacional.
+    A cidade Nova Itaberaba/SC trocou de provedor, agora é PadraoNacional.
+   Por: VEXCOM Sistemas - Valtair
+[*] #ACBr-8356 Correção na URL da cidade Virgem da Lapa/MG.
+   Por: Wesley Santos
+[*] #ACBr-8350 A cidade São Bento do Sul/SC trocou as URLs, o provedor continua o mesmo.
+   Por: Maiquel
+
+10/11/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8342 A cidade Osório/RS trocou a URL, o provedor continua o mesmo.
+   Por: IgorAcertSoft
+[*] #ACBr-8340 A cidade Mantenópolis/ES trocou a versão e as URLs, o provedor continua o mesmo.
+   Por: Desenvolvimento Objetiva
+[*] #ACBr-8337 A cidade Paulista/PE trocou de provedor, agora é Giss.
+   Por: billbarsch
+
+03/11/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8333 A cidade Iomere/SC trocou a versão e as URLs, o provedor continua o mesmo.
+   Por: Raianne Gottschalk
+[*] #ACBr-8328 A cidade Rio os Cedros/SC trocou a versão e as URLs, o provedor continua o mesmo.
+   Por: Charlles Lopes
+[*] #ACBr-8327 A cidade Joao Neiva/ES trocou a versão e as URLs, o provedor continua o mesmo.
+   Por: Data Lider
+[*] #ACBr-8238 A cidade Recife/PE trocou de provedor, agora é PadraoNacional.
+   Por: Og1Systems
+
+01/11/2025
+-- Diversos --
+[*] Realizado alterações visando a versão 2.00 dos Schemas do provedor ISSSaoPaulo
+    que contempla a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+30/10/2025
+-- IPM.LerXml --
+[*] #ACBr-8320 Ajuste para ler corretamente a data de competência.
+   Por: Italo Giurizzato Junior
+-- SigISS.LerXml --
+[*] Corrigido a leitura do campo serviço que contem o código do item de serviço.
+   Por: Tiago Tecchio
+-- Infisc.GravarXml/Infisc.LerXml --
+[*] Ajustes visando gerar o XML do RPS segundo o layout próprio do provedor com 
+    os novos campos do IBSCBS.
+   Por: Tiago Tecchio
+-- ACBrNFSeXServicos --
+[*] #ACBr-8310 A cidade Feliz Natal/MT trocou de provedor, agora é Coplan.
+   Por: Ricardo Machado MT
+[*] #ACBr-8309 A cidade Anchieta/SC trocou a versão e as URLs, o provedor continua o mesmo.
+   Por: Wesley Lamb
+-- ACBrNFSeXProviderABRASFv1/ACBrNFSeXProviderABRASFv2 --
+[-] Correção na geração do XML de processamento de cancelamento: *-procCancNFSe.XML
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Ajustes visando adequar o componente para usar a versão 1.01 dos Schemas do
+    Padrão Nacional e a API própria do provedor Infisc.
+   Por: Italo Giurizzato Junior
+
+28/10/2025
+-- ACBrNFSeXGravarXml/IPM.GravarXml/PadraoNacional.GravarXml --
+[*] Ajuste para gerar ou não o grupo IBSCBS uma vez que segundo os Schemas 1.01 o
+    grupo é opcional.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXLerXml_ABRASFv1/ACBrNFSeXLerXml_ABRASFv2 --
+[*] Ajuste para atribuir o valor snSubstituido ao campo NFSe.SituacaoNfse quando a 
+    nota foi substituida por outra.
+   Por: Italo Giurizzato Junior
+
+27/10/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8295 A cidade Crissiumal/RS trocou a URL, o provedor continua o mesmo.
+   Por: Farol TI
+[*] #ACBr-8294 Incluido o Params GerarTag para a cidade Zortea/SC.
+   Por: lucasatz
+[*] #ACBr-8293 A cidade Vargeão/SC trocou a versão e as URLs, o provedor continua o mesmo.
+   Por: christian@adminfo.com.br
+[*] #ACBr-8292 A cidade Ibirite/MG trocou a URL, o provedor continua o mesmo.
+   Por: IMATECH
+
+24/10/2025
+-- ISSSaoPaulo.Provider --
+[-] #ACBr-8290 Ajuste para que a consulta de NFSe por Serviço Prestado considere o CNPJ correto.
+   Por: Diego Folieni
+-- WebISS.Provider --
+[*] #ACBr-8134 Trocado o XmlToStr por IncluirCDATA nos envelopes de envio do RPS.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8285 A cidade Lages/SC trocou a versão e as URLs o provedor continua o mesmo.
+   Por: Wesley Lamb
+[*] #ACBr-8280 A cidade Ronda Alta/RS trocou de provedor, agora é Digifred versaão 2.00
+   Por: Maurício Sareto
+[+] #ACBr-8279 Incluída a cidade Agua Boa/MG, provedor EL versão 2.04
+   Por: Facil Sistemas Ltda
+[*] #ACBr-8278 A cidade Paulo Afonso/BA trocou de provedor, agora é Fisco.
+   Por: jeffersonjunglaus
+[+] #ACBr-8095 Incluída a cidade Victor Graeff/RS, provedor Pronim.
+   Por: Leonardo Rocha
+
+23/10/2025
+-- SigISS.GravarXml --
+[-] #ACBr-8096: Correção, estava pegando o código de serviço de outro campo.
+   Por: Microtecs
+-- Actcon.Provider/fintelISS.Provider/ISSJoinville.Provider/VersaTecnologia.Provider --
+[*] #ACBr-8274: Possível solução para o separador de pastas que é diferente no Linux.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXConsts/ACBrNFSeXWebserviceBase/PadraoNacional.Provider --
+[*] Melhorias ao executar o método ObterDANFSE mostrar mensagens claras no
+    retorno.
+   Por: Italo Giurizzato Junior
+
+22/10/2025
+-- SilTecnologia.Provider --
+[*] #ACBr-8186 Alterado o caracter de Quebra de Linha para \s\n.
+   Por: ArecoDesenv/Italo Giurizzato Junior
+-- PadraoNacional.Provider --
+[-] #ACBr-8255 Correção para poder converter o tipo de evento para enumerado.
+   Por: Sady Martins
+[*] Alterações visando uma possível mudança de versão do layout e de Schemas.
+    Incluido no retorno "XmlRetorno" o XML do evento.
+   Por: Italo Giurizzato Junior
+-- Aspec.GravarJson --
+[*] #ACBr-8259 Ao gerar o codIBGE do local da prestação de serviço não estava
+    levando em consideração se o local era do prestador ou do tomador.
+   Por: Guilherme Araujo
+-- ACBrNFSeXServicos --
+[+] #ACBr-8266 Incluída a cidade Taquarival/SP, provedor Sistemas4R.
+   Por: Beverly
+[*] #ACBr-8265 A cidade Pouso Alegre/MG trocou de provedor, agora é IPM versão 2.04
+   Por: Maiquel
+[*] #ACBr-8261 A cidade Astorga/PR trocou de provedor, agora é EloTech.
+   Por: armando.boza
+[*] #ACBr-8260 A cidade Itapemirim/ES trocou a versão e a URL, o provedor continua o mesmo.
+   Por: João Antônio
+[*] #ACBr-8258 A cidade Canceias/BA trocou as URLs, o provedor continua o mesmo.
+   Por: João Antônio
+[*] #ACBr-8257 A cidade Machado/MG trocou de provedor, agora é ISSIntel.
+   Por: Anderson Grolli
+[*] #ACBr-8256 A cidade Areal/RJ trocou a versão, o provedor continua o mesmo.
+   Por: Bruno Italo
+[*] #ACBr-8254 A cidade Rio Claro/SP trocou as URLs dos Link, o provedor continua o mesmo.
+   Por: RonBrisola
+[*] #ACBr-8253 A cidade Jardim Alegre/PR trocou de provedor, agora é EloTech.
+   Por: armando.boza
+[+] #ACBr-8252 Incluída a cidade Bom Retiro/SC, provedor IPM versão 1.01
+   Por: Lilia Capelin
+[*] #ACBr-8251 A cidade Tucuma/PA trocou a URL, o provedor continua o mesmo.
+   Por: joemil
+[+] #ACBr-8246 Incluída as cidades Florestopolis/PR e Primeiro de Maio/PR, provedor EloTech.
+[+] #ACBr-8246 Incluída a cidade Alvorada do Sul/PR, provedor Equiplano.
+[+] #ACBr-8246 Incluída a cidade Sertaneja/PR, provedor Betha.
+   Por: armando.boza
+[*] #ACBr-8245 A cidade Sertanopolis/PR trocou de provedor, agora é EloTech.
+   Por: armando.boza
+[*] #ACBr-8244 Incluído o campo Params para a cidade Aripuana/MT.
+   Por: Marcos R Weimer
+[*] #ACBr-8243 A cidade Santa Fé do Sul/SP trocou a versão e a URL, o provedor continua o mesmo.
+   Por: Andréa Ascont Sistemas
+[+] #ACBr-8242 Incluída a cidade São Manuel/SP, provedor Sistemas4R.
+   Por: brsamn
+[*] #ACBr-8241 A cidade Foz do Iguaçu/PR trocou de provedor, agora é GestaoISS.
+   Por: Lu_Grandi
+[*] #ACBr-8237 A cidade Baixo Guandu/ES trocou a versão e a URL, o provedor continua o mesmo.
+   Por: C4Dev
+
+20/10/2025
+-- eGoverneISS.GravarXml --
+[-] #ACBr-8228 Corrigido o campo usado para gerar o conteudo da tag Atividade.
+   Por: Microtecs
+-- ACBrNFSeXServicos --
+[*] #ACBr-8227 A cidade Presidente Epitacio/SP trocou de provedor, agora é Pronim versão 2.03
+   Por: sidnei_alves1
+[*] #ACBr-8226 A cidade Açailandia/MA trocou de provedor, agora é SpeedGov versão 1.00
+   Por: PrimeSoftware
+[*] #ACBr-8218 A cidade Conde/PB mudou a URL, o provedor continua o mesmo.
+   Por: Gabriel Herdt
+[*] #ACBr-8189 A cidade Candelaria/RS trocou de provedor, PadraoNacional
+   Por: dna.automacao
+
+16/10/2025
+-- ACBrNFSeXConversao/ACBrNFSeXLerXml/ACBrNFSeXDANFSeRLRetrato --
+[*] #ACBr-8221 Ajustes para imprimir vogais acentuadas e cedilha da descrição do serviço.
+   Por: Italo Giurizzato Junior/Júlio Cavalcanti
+-- ACBrNFSeXServicos --
+[*] #ACBr-8187 A cidade Muriae/MG trocou de provedor, agora é IPM versão 2.04
+   Por: Paulo R G Oliveira
+
+14/10/2025
+-- Diversos --
+[*] Acrescentado a unit ACBrDFe.Conversao visando a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- eGoverneISS.Provider --
+[*] Ajuste para tratar o retorno da consulta da NFS-e por RPS.
+   Por: Italo Giurizzato Junior
+
+13/10/2025
+-- Diversos --
+[*] Acrescentado a unit ACBrDFe.Conversao visando a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+09/10/2025
+-- ACBrNFSeXServicos --
+[*] Correção nos endpoints e Params da cidade Jaragua do Sul/SC.
+   Por: Alexandre de Paula
+
+09/10/2025
+-- Infisc.GravarXml --
+[*] Possível solução para realizar a compilação e instalação.
+   Por: Italo Giurizzato Junior
+-- Libre.LerXml --
+[*] #ACBr-8143 Alterações visando a leitura de todos os dados do prestador.
+   Por: Bruno Italo
+-- Bauhaus.GravarXml --
+[*] #ACBr-8150 Incluido a geração do elemento: CodigoLC116.
+   Por: Juliana G Viana
+-- ACBrNFSeXClass/ACBrNFSeXConversao/PadraoNacional.GravarXml/PadraoNacional.LerXml --
+[*] #ACBr-8132 Ajustes para atender as alterações realizadas nos schemas.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Acrescentado a unit ACBrDFe.Conversao visando a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] Correção da URL para obter o DANFSE em PDF PadraoNacional.
+   Por: dna.automacao
+[*] Correção no Params da cidade Rondonopolis/MT.
+   Por: Italo Giurizzato Junior
+
+08/10/2025
+-- ACBrNFSeXLerXml_ABRASFv1/ACBrNFSeXLerXml_ABRASFv2 --
+[*] Ajustes na leitura de campos numericos do arquivo INI.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[*] Acrescentado a unit ACBrDFe.Conversao visando a Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+07/10/2025
+-- Diversos --
+[*] #ACBr-8142 Ajustes para usar a nova URL do serviço ObterDANFSE do Padrão Nacional.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8153 A cidade Rio das Ostras/RJ trocou a versão e as URLs, o provedor continua 
+    o mesmo.
+   Por: João Antônio
+[*] #ACBr-8152 A cidade Manhuaçu/MG trocou a versão e as URLs, o provedor continua 
+    o mesmo.
+   Por: Wesley Lamb
+[*] #ACBr-8149 A cidade Ubirata/PR trocou de provedor, agora é EloTech.
+   Por: Arthur Haupt Pacheco
+[*] #ACBr-8145 Incluido o Link da URL do QR-Code da cidade Xinguara/PR.
+   Por: Valter Digital
+[*] #ACBr-8144 A cidade Presidente Nereu/SC trocou a URL, o provedor continua o mesmo.
+   Por: Alysson Rengel
+[*] #ACBr-8140 A cidade Jandaia do Sul/PR trocou de provedor, agora é EloTech.
+   Por: Caviuna
+[*] #ACBr-8137 A cidade Goiania/GO alterou as URLs, o provedor continua o mesmo.
+   Por: Neto233/Igor Cibiac/PrimeSoftware/WellingtonMiguel
+[*] #ACBr-8125 A cidade Jaragua do Sul/SC trocou a versão e as URLs, o provedor continua 
+    o mesmo.
+   Por: BluData/TiagoFZ
+
+29/09/2025
+-- Conam.GravarXml/Conam.LerXml/Conam.Provider --
+[*] #ACBr-8105 Ajustes para leitura de um lote de notas no retorno do ConsultarLote.
+   Por: Italo Giurizzato Junior
+
+25/09/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8110 A cidade Cruzeiro do Sul/RS trocou de provedor, agora é Fiorilli.
+   Por: 3R Paulo
+[*] #ACBr-8107 A cidade Goiânia/GO trocou de provedor, agora é ISSNet versão 2.04.
+   Por: Sandro Andre Reghelin
+[*] #ACBr-8100 Alterado as URLs da cidade Belém/PA.
+   Por: VFADev
+
+24/09/2025
+-- Giap.GravarXml --
+[*] #ACBr-8089 Alteração visando respeitar a quebra de linha.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXGravarXml_ABRASFv2/SimplISS.GravarXml/SimplISS.LerXml/SimplISS.Provider --
+[*] #ACBr-8086 Alteração visando gerar o campo OutrasInformações no lugar esperado
+    pelo provedor (infelizmente não segue o padrão).
+   Por: Wesley Lamb/Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8084 A cidade Paranatinga/MT trocou de provedor, agora é Agili.
+   Por: rizzotec
+[*] #ACBr-8087 Alterado as URLs da cidade Boa Esperança/MG, o provedor continua o mesmo.
+   Por: Vinício Rocha
+[*] #ACBr-8090 Alterado o Params da cidade Nobres.
+   Por: Diego Reckziegel
+-- EloTech.LerXml --
+[*] #ACBR-8097 - Substituída procedure LerINISecaoServicos pela LerINISecaoItens, sobrescrevendo o método padrão e corrigindo a geração dos itens de serviços em duplicidade - https://www.projetoacbr.com.br/forum/topic/85962-acbrlibnfse-ponta-grossa/
+    Por: Renato Rubinho
+
+22/09/2025
+-- SigISSWeb.Provider --
+[*] Ajuste para não salvar o XML com 2 encoding.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8074 A cidade Vinhedo/SP trocou de provedor, agora é Intertec.
+   Por: jaidomini
+
+19/09/2025
+-- ACBrNFSeXServicos --
+[+] #ACBr-8066 Incluida a cidade Porto dos Gauchos/MT, o provedor é Agili.
+   Por: Diego Reckziegel
+[*] #ACBr-8067 A cidade Xinguara/PA trocou de provedor, agora é Desenvolve versão 2.03
+   Por: Valter Digital
+[*] #ACBr-8068 A cidade Perdões/MG trocou de provedor, agora é GestaoISS versão 2.02
+   Por: Natanael Sanches
+[*] #ACBr-8072 Alterado as URLs da cidade Junqueiropolis/SP, o provedor continua o mesmo.
+   Por: Weber de Paula
+
+18/09/2025
+-- ACBrNFSeXLerXml/IPM.Provider --
+[*] Incluida a leitura do campo xPais na seção Servico e acrescentado a tag opcinal
+    no provedor IPM versão 2.04 na montagem do Soap para informar se é envio de teste 
+    ou não.
+   Por: Italo Giurizzato Junior
+-- Pronim.GravarXml --
+[*] #ACBr-8063 Alterado o operador lógico de and para or na condição que defini se
+    o valor de NrOcorrAliquota vai ser 1.
+   Por: Italo Giurizzato Junior
+-- IPM.Provider/IPM.GravarXml --
+[*] Alterações visando a geração no XML do RPS (versão 2 layout ABRASF) com o grupo
+    IBSCBS.
+   Por: Italo Giurizzato Junior
+-- IPM.LerXml --
+[*] #ACBr-8060 Alterado a quantidade de digitos do ItemListaServico de 5 para 4.
+   Por: Fabio Tellini
+-- ACBrNFSeXServicos --
+[*] #ACBr-8064 A cidade Belém/PA trocou de provedor, agora é DSF versão 2.03
+   Por: VFADev
+[*] #ACBr-8062 A cidade Tunapolis/SC trocou de provedor, agora é IPM versão 1.00
+   Por: Wesley Lamb/Lux.sistemas
+[*] #ACBr-8059 Alterado o Params das cidades de Sorriso e Nobres.
+[*] #ACBr-8061 Acrescentado o Params para a cidade de Rio Verde/GO.
+   Por: Diego Reckziegel
+-- Agili.GravarXml --
+[*] #ACBr-8059 Removido a linha que defini que a formatação do ItemListaServico,
+    não pode ter formatação, uma vez que cada cidade formata de uma forma diferente.
+   Por: Diego Reckziegel
+
+15/09/2025
+-- Giap.Provider --
+[*] #ACBr-8049 Corrigido a leitura do código de verificação e da data de emissão.
+   Por: Marcos Programador
+-- ACBrNFSeXClass/ACBrNFSeXGravarXml/ACBrNFSeXLerXml --
+[*] Ajustes para gerar e ler corretamente o XML do DPS visando a reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- fintelISS.GravarXml/fintelISS.LerXml/fintelISS.Provider --
+[*] #ACBr-8050 Correção na função GetSchemaPath para sanar um erro no Linux.
+   Por: C4Dev
+-- Giap.GravarXml/Giap.LerXml/Giap.Provider --
+[*] Incluído a geração da tag loteRPS.
+   Por: Dino Rodrigo S. Moreira
+-- DeISS.GravarXml --
+[*] Possível solução para o ValorIss que é calculado pelo webservice.
+   Por: Daniel Afonso-NW Software
+-- RLZ.GravarXml/RLZ.LerXml/RLZ.Provider --
+[*] Ajuste para gerar a tag aliquota com 4 casas decimais.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8047 Incluído o Params Aliquota4Casas para a cidade Barretos/SP.
+   Por: Alexandre Faustinoni
+[*] #ACBr-8044 Alterado as URLs e a versão da cidade Itapetinga/BA, o provedor continua o mesmo.
+   Por: João Antônio
+[*] #ACBr-8043 A cidade Rio Paranaiba/MG trocou de provedor, agora é PadraoNacional.
+   Por: Flavio Realtec
+
+11/09/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8037 A cidade São Pedro do Butia/RS trocou de provedor, agora é ABase versão 2.01
+   Por: Farol TI
+
+10/09/2025
+-- ACBrNFSeXNotasFiscais/ACBrNFSeXGravarXml/ACBrNFSeXLerXml --
+[-] Correção na grafia das tags referente ao CST e cClassTrib da Tributação Regular.
+   Por: Italo Giurizzato Junior
+-- Digifred.GravarXml/Digifred.Provider --
+[*] Ajuste para gerar a tag CodigoPais quando o tomador for do exterior.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-8030 Alterado as URLs de todas as cidades atendidas pelo provedor IPM que
+    possuem a porta 7443 em sua URL.
+   Por: Italo Giurizzato Junior
+[*] #ACBr-8029 Alterado as URLs da cidade Veranopolis/RS, o provedor continua o mesmo.
+   Por: Sandro Felipe Adad
+[*] #ACBr-8027 Alterado as URLs da cidade Indaial/SC, o provedor continua o mesmo.
+   Por: Jhoni Conzatti
+[*] #ACBr-8023 Alterado as URLs da cidade São Lourenço do Sul/RS, o provedor continua o mesmo.
+   Por: C4Dev
+
+08/09/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-8017 Alterado as URLs da cidade Birigui/SP, o provedor continua o mesmo.
+   Por: CONCEPT AUTOMACAO
+[*] #ACBr-8015 Alterado as URLs da cidade Bom Despacho/MG, o provedor continua o mesmo.
+   Por: Pedro A. Araújo
+[*] #ACBr-8019 Alterado as URLs da cidade Colombo/PR, o provedor continua o mesmo.
+   Por: Marcos Villatore/Fabio Mauricio F
+-- eGoverneISS.GravarXml/eGoverneISS.LerXml/eGoverneISS.Provider --
+[+] #ACBr-8000 Implementado o ConsultarNFSePorRps.
+   Por: Microtecs/Italo Giurizzato Junior
+-- ACBrNFSeXGravarXml/ACBrNFSeXLerXml/PadraoNacional.GravarXml/PadraoNacional.LerXml --
+[*] #ACBr-7925 Alterações visando deixar o componente em conformidade com a NT 2025/004 da 
+    Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXLerXml_ABRASFv2/Libre.GravarXml/Libre.LerXml/Libre.Provider --
+[*] #ACBr-8004 O provedor Libre não gera o XML conforme o padrão, ajustes para a 
+    leitura das informações da Identificação do Prestador.
+   Por: Bruno Italo/Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[+] #ACBr-8003 Incluída a cidade Aripuana/MT,o provedor é Agili.
+   Por: Light System Software
+[*] #ACBr-8005 A cidade Raposos/MG trocou de provedor, agora é Betha versão 2.02
+   Por: João Antônio
+[*] #ACBr-8007 Alterado o Params da cidade Rondonopolis/MT, o provedor continua o mesmo.
+   Por: Hetosoft Sistemas/Aécio Soares Ferreira
+[*] #ACBr-8011 A cidade São Gonçalo/RJ trocou de provedor, agora é ISSIntel
+   Por: Gladston
+[+] #ACBR-8002 - Implementado método ImprimirDANFSePDF em stream no DANFSe em FPDF - https://www.projetoacbr.com.br/forum/topic/85437-m%C3%A9todo-nfse_salvarpdf-do-acbrlibnfse-retorna-erro-no-linux-ubuntu/
+   Por: Renato Rubinho
+
+04/09/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-7994 Alterado as URLs da cidade Palhoça/SC, o provedor continua o mesmo.
+   Por: Willian Carminatt
+-- AssessorPublico.LerXml --
+[*] #ACBr-7986 Alteração visando a leitura correta das tagas DATACANCEL e HORACANCEL,
+    se a nota não esta cancelada não temos a data e nem a hora de cancelamento.
+   Por: Fabio Tellini
+-- Bauhaus.LerJson, EloTech.LerXml --
+[*] #ACBR-7998 Corrigido loop infinito na leitura de itens de serviços ao carregar o ini dos provedores Bauhaus e EloTech. - https://www.projetoacbr.com.br/forum/topic/85268-nfse-ponta-grossa
+   Por: Renato Rubinho
+
+02/09/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-7985 Alterado as URLs da cidade Novo Hamburgo/RS, o provedor continua o mesmo.
+   Por: Roberto Krug
+[*] #ACBr-7989 Alterado as URLs da cidade Lapa/PR, o provedor continua o mesmo.
+   Por: Anderson Grolli
+
+29/08/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-7980 Alterado as URLs da cidade Brotas/SP, o provedor continua o mesmo.
+   Por: Fabio Tellini
+
+28/08/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-7972 A cidade Curionopolis/PA trocou de provedor, agora é Aspec
+   Por: Guilherme Araujo
+[*] #ACBr-7970 Alterado as URLs da cidade Morro Agudo/SP, o provedor continua o mesmo.
+   Por: Weber de Paula
+[*] #ACBr-7964 Alterado as URLs e a versão da cidade Barra Velha/SC, o provedor continua o mesmo.
+   Por: Raianne Gottschalk
+[*] #ACBr-7965 Alterado as URLs da cidade Nova Iguaçu/RJ, o provedor continua o mesmo.
+   Por: João Antônio
+[*] #ACBr-7969 Alterado as URLs da cidade Imbituba/SC, o provedor continua o mesmo.
+   Por: PrimeSoftware
+[*] #ACBr-7975 Alterado as URLs da cidade Lontras/SC, o provedor continua o mesmo.
+   Por: C4Dev
+[*] #ACBr-7977 Alterado as URLs da cidade Brusque/SC, o provedor continua o mesmo.
+   Por: Dercide Alvarez
+[*] #ACBr-7978 A cidade Lagamar/MG trocou de provedor, agora é Gorverna versão 1.01
+   Por: João Antônio
+-- SigISSWeb.Provider --
+[+] #ACBr-7950 Implementado o ConsultarNFSePorRps.
+   Por: Soma Soluções em TI
+-- ACBrNFSeXDANFSeRLRetrato --
+[*] #ACBr-7954 Incluída no DANFSE a impressão do NBS se este estiver presente no XML da NFS-e.
+   Por: Soma Soluções em TI
+
+27/08/2025
+-- ACBrNFSeXServicos --
+[*] #ACBr-7956 Incluída a cidade Boa Esperanca do Norte/MT, o provedor é Agili.
+   Por: VEXCOM Sistemas - Valtair
+[*] #ACBr-7955 Alterado o Params da cidade Horizontina/RS, o provedor continua o mesmo.
+   Por: Fabricio Fries
+[*] #ACBr-7953 Alterado as URLs da cidade Ararangua/SC, o provedor continua o mesmo.
+   Por: Mario Inacio
+[*] #ACBr-7952 A cidade Bastos/SP trocou de provedor, agora é Fiorilli.
+   Por: Luiz Eduardo Bodo
+[*] #ACBr-7946 Alterado as URLs da cidade Santa Rosa/RS, o provedor continua o mesmo.
+   Por: maico.smaniotto
+[*] #ACBr-7946 Alterado as URLs da cidade Guaranirin/SC, o provedor continua o mesmo.
+   Por: Diogo Loff
+[*] #ACBr-7946 Alterado as URLs da cidade Cascavel/PR, o provedor continua o mesmo.
+   Por: christian@adminfo.com.br
+[*] #ACBr-7931 Alterado o Params da cidade Rondonopolis/MT, o provedor continua o mesmo.
+   Por: Italo Giurizzato Junior
+
+25/08/2025
+-- SigISSWeb.GravarXml --
+[*] #ACBr-7932: Ajustes visando a emissão de uma nota com ISSRetido com deduções.
+   Por: Anderson Grolli
+-- SigISSWeb.GravarXml --
+[*] #ACBr-7930: Ajustes visando a emissão de uma nota com tomador do exterior.
+   Por: ArecoDesenv
+-- Diversos --
+[*] #ACBr-7925: Ajustes visando a versão 1.1 da NT 2025/004 da Reforma Tributária,
+    implementado a escrita do XML do DPS e a leitura do XML da NFSe do Padrão Nacional.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #ACBr-7947 A cidade Timbo Grande/SC trocou de provedor, agora é Publica.
+   Por: Lux.sistemas
+
+21/08/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7544 Alterado a URL da cidade de Pontal/SP, o provedor continua o mesmo.
+   Por: colmanetti
+[*] #TK-7543 Alterado a URL da cidade de Concordia/SC, o provedor continua o mesmo.
+   Por: Wesley Santos
+[*] #TK-7542 Incluido o Link da cidade de Salvador/BA, o provedor continua o mesmo.
+   Por: tryideas sistemas
+[*] #TK-7541 A cidade Três Barras/SC mudou de provedor, agora é IPM.
+   Por: Raianne Gottschalk
+[*] #TK-7540 A cidade Guarantã do Norte/MT mudou de provedor, agora é Agili.
+   Por: Denise Maria Cotoman
+[*] #TK-7539 Incluido o Params: NaoDividir100 para a cidade Frutal/MG.
+   Por: Diego Reckziegel
+[*] #TK-7538 A cidade Imperatriz/MA trocou de provedor, agora é Bauhaus.
+   Por: Bruno
+[*] #TK-7537 Alterado a URL da cidade Massaranduba/SC, o provedor continua o mesmo.
+   Por: Ramon Valentim
+[*] #TK-7530 Alterado as URLs de Homologação da cidade Varzea Grande/MT, o provedor continua o mesmo.
+   Por: Anderson Grolli
+[*] #TK-7529 A cidade Teresina/PI trocou de provedor, agora é DSF versão 2.03
+   Por: Anderson Grolli
+[*] #TK-7526 Incluido o Params NaoDividir100 para a cidade Coronel Frabiciano/MG.
+   Por: C4Dev
+[*] ACBR-7928 Alterado as URLs da cidade Horizontina/RS, o provedor continua o mesmo.
+   Por: BSSOFT/Maico Smaniotto
+[*] ACBR-7927 A cidade Anchieta/SC trocou de provedor, agora é Betha.
+   Por: Lux.sistemas
+[*] ACBR-7926 A cidade Santana de Parnaiba/SP trocou de provedor, agora é SimplISS.
+   Por: Rodrigo Alvim
+
+20/08/2025
+-- ACBrNFSeXServicos --
+[*] Atualiza URL da cidade de Morro Agudo/SP
+   Por: Weber de Paula
+
+18/08/2025
+-- Diversos --
+[*] #TK-7301: Ajustes visando a versão 1.2 da NT 2025/003 da Reforma Tributária,
+    implementado a leitura do XML do DPS do Padrão Nacional.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7525: Alterado os Links da cidade de Tangara da Serra/MT.
+   Por: acf Batista/Leandro Ledo
+[*] #TK-7521: Alterado as URLs da cidade de Araquari/SC.
+   Por: Desenv. AT Info Sistemas
+[*] #TK-7520: A cidade Juara/MT trocou de provedor, agora é Agili.
+   Por: Leandro Ledo
+
+15/08/2025
+-- ACBrNFSeXWebservicesResponse/PadraoNacional.Provider --
+[*] #TK-7510: Acrescentados novos campos na lista de resumos para trazer informações dados
+    dos eventos baixados pelo ConsultarDFe.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7509: Incluído o Params: FormatarItemServicoSemZeroEsquerda para a cidade Belford Roxo/RJ.
+[*] #TK-7514: A cidade Sao Goncalo do Sapucai/MG trocou de provedor, agora é Bauhaus.
+   Por: João Antônio
+
+14/08/2025
+-- Sistemas4R.GravarXml/Sistemas4R.Provider --
+[*] #TK-7495: Alteração no TratarXmlRetornando para que o XML retornado seja lido 
+    corretamente, a troca do "&amp;" por "&" estava ocorrendo erro de leitura.
+   Por: Sunny
+-- Agili.GravarXml/Agili.LerXml/Agili.Provider --
+[*] #TK-7503: Alteração impondo condições para gerar as tags: CodigoAtividadeEconomica,
+    CodigoCnaeAtividadeEconomica e ItemLei116AtividadeEconomica para atender as diversas
+    cidades que contrataram o provedor Agili.
+   Por: Diego Reckziegel
+-- ACBrNFSeX --
+[*] #TK-7502: Alterado o método Emitir para que não execute o sleep de forma
+    desnecessária. 
+   Por: Gabriel Bonzanini
+-- ACBrNFSeXNotasFiscais/ACBrNFSeXParametros/ACBrNFSeXClass/ACBrNFSeXConversao --
+-- PadraoNacional.GravarXml/PadraoNacional.LerXml --
+[*] #TK-7301: Ajustes visando a versão 1.2 da NT 2025/003 da Reforma Tributária.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7501: Alterado as URLs da cidade Panambi/RS, o provedor continua o mesmo.
+   Por: JLuis
+[*] #TK-7500: Alterado as URLs da cidade Guapiaçu/SP, o provedor continua o mesmo.
+   Por: Tiago Istuque
+
+13/08/2025
+-- ACBrNFSeXProviderABRASFv1/ACBrNFSeXProviderABRASFv2/ACBrNFSeXProviderBase --
+-- PadraoNacional.Provider --
+[*] #TK-7422: Ajustes visando a leitura da propriedade PathNome.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXWebservicesResponse --
+[*] Alteração visando não limpar a propriedade PathNome.
+   Por: Italo Giurizzato Junior
+
+12/08/2025
+-- ACBrNFSeXServicos --
+[*] Alterado de https para http a URL da cidade Jurinu/SP.
+   Por: Italo Giurizzato Junior
+[*] A cidade Teresopolis/RJ trocou de provedor, agora é Fiorilli.
+   Por: MagoSchmidt
+
+11/08/2025
+-- ACBrNFSeXConfiguracoes/AssessorPublico.Provider --
+[*] #TK-7432: Criado a propriedade de configuração CodigoImobiliario dentro de Emitente.
+   Por: João Vitor Bogo/Italo Giurizzato Junior
+-- ACBrNFSeX/ACBrNFSeXConsts/ACBrNFSeXWebserviceBase/ACBrNFSeXWebservicesResponse --
+-- Simple.GravarXml/Simple.LerXml/Simple.Provider --
+[*] #TK-7287: Alterações visando gerar o XML de Consulta da NFS-e Por RPS com o campo
+              dDataRecibo.
+   Por: lucasatz/Italo Giurizzato Junior
+
+08/08/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7480: A cidade Cianorte/PR trocou de URL, o provedor continua o mesmo.
+   Por: Arthur Haupt Pacheco
+-- DeISS.GravarXml --
+[*] #TK-7483: Alterado as condições para definir se a tag ValorIss deve ou não ser
+              gerada no XML.
+   Por: Danilo MSI Soluções
+-- ModernizacaoPublica.GravarXml --
+[*] #TK-7477: Removido a linha que defini o formato da aliquota como sendo um valor
+              inteiro.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXLerXml --
+[*] #TK-7477: Trocado a função StrToFloatDef para StringToFloatDef na leitura de
+              campo que contem valores, essa troca visa aceitar tanto o ponto como 
+              a virgula como separador de decimal em função da configuração.
+   Por: Italo Giurizzato Junior
+-- SigISSWeb.LerXml --
+[*] #TK-7475: Trocado o tipo de campo de tcDat para tcDatVcto do campo DataEmissao
+              ao ler o XML de um RPS.
+   Por: jaidomini
+
+07/08/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7451: Incluído o Params NaoFormatarItemServicoSemZeroEsquerda para a cidade 
+              Jundiaí/SP.
+   Por: Italo Giurizzato Junior
+[*] #TK-7466: A cidade Nova Itaberaba/SC trocou de provedor, agora é IPM versão 1.01
+[+] #TK-7466: Incluída a cidade Gramado dos Loureiros/RS, provedor DataSmart versão 2.02
+   Por: VEXCOM Sistemas - Valtair
+[+] #TK-7474: Incluído diversas cidades de Mato Grosso.
+[+] #TK-7478: Incluído diversas cidades de Goias.
+   Por: Anderson Grolli
+[+] #TK-7473: Incluído diversas cidades de Mato Grosso do Sul.
+[+] #TK-7470: Incluído diversas cidades do Rio Grande do Sul.
+[+] #TK-7467: Incluído diversas cidades do Paraná.
+[+] #TK-7469: Incluído diversas cidades de Santa Catarina.
+   Por: Anderson Grolli
+[*] #TK-7471: A cidade Pedra Preta/MT mudou a URL, o provedor continua o mesmo.
+   Por: Anderson Grolli
+[*] #TK-7466: A cidade Tangara da Serra/MT trocou de provedor, agora é Centi versão 2.02
+   Por: Diego Reckziegel
+
+05/08/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7457: Incluído diversas cidades de São Paulo
+   Por: Anderson Grolli
+[*] #TK-7448: A cidade Rio Paranaiba/MG mudou a URL, o provedor continua o mesmo.
+   Por: Flavio Realtec
+[*] #TK-7461: A cidade Ariranha/SP mudou a URL, o provedor continua o mesmo.
+   Por: Gabriel Leal7
+
+31/07/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7436: Incluído o Params GerarTag para a cidade Coronel Bicaco/RS.
+   Por: Pablo Cerbaro
+[*] #TK-7438: A cidade Confresa/MT trocou a URL, o provedor continua o mesmo.
+   Por: Luiz Eduardo Bodo
+[*] #TK-7436: A cidade Coronel Bicaco/RS trocou a URL, o provedor continua o mesmo.
+   Por: Pablo Cerbaro
+[*] #TK-7415: A cidade Mimoso do Sul/ES trocou a URL e a versão, o provedor continua o mesmo.
+   Por: Heronim Antonio Marçal
+[*] #TK-7414: A cidade Comodoro/MT trocou de provedor, agora é Fiorilli.
+   Por: Diego Reckziegel
+
+29/07/2025
+-- AssessorPublico.LerXml --
+[*] #TK-7431: Alteração visando a leitura correta da Insc. Municipal do prestador.
+   Por: João Vitor Bogo
+-- fintelISS.GravarXml/fintelISS.Provider --
+[*] Ajuste para usar corretamente a pasta com os schemas da versão 2.04
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] Acrescentado o Params para definir apenas 2 casas decimais para a alíquota 
+    para a cidade Criciuma/SC.
+   Por: Desenvolvimento total S
+
+28/07/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7430: Incluído diversas cidades do Espirito Santo.
+[+] #TK-7429: Incluído diversas cidades do Rio de Janeiro.
+[+] #TK-7426: Incluído diversas cidades de Minas Gerais.
+   Por: Anderson Grolli
+-- ACBrNFSeXDANFSeRLRetrato --
+[*] #TK-7423: Alteração visando imprimir o Código Serviço mesmo quando essa informação
+    não existe na lista de serviços dentro da tag Discriminacao.
+   Por: João Vitor Bogo
+-- ACBrNFSeXServicos --
+[*] #TK-7424: A cidade Luiz Alves/SC trocou de provedor, agora IPI versão 1.01
+   Por: C4Dev
+[*] #TK-7407: Acrescentado o Params GerarTag para a cidade Santa Helena/PR.
+   Por: Alex Heinen
+-- ACBrNFSeXProviderABRASFv1/ACBrNFSeXProviderABRASFv2/ACBrNFSeXProviderBase --
+-- ACBrNFSeXWebservicesResponse/PadraoNacional.Provider --
+[+] #TK-7422: Implementado a propriedade PathNome para retornar o caminho o nome
+    do arquivo de processamento do cancelamento.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[+] #TK-7408: Incluída a cidade Cerro Branco/RS, provedor Pronim.
+   Por: diogo.guerra/Nuvem Fiscal
+
+25/07/2025
+-- Betha.Provider --
+[*] Alterações visando atender a cidade Criciuma/SC.
+   Por: Diogo Loff/Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] Acrescentado o Params SubVersao para a cidade Criciuma/SC.
+   Por: Italo Giurizzato Junior
+[*] Alteração das URLs de homologação e produção da cidade Criciuma/SC, provedor
+    Betha versão 1.00
+   Por: Italo Giurizzato Junior
+
+24/07/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7404: Incluído diversas cidades da Bahia.
+[+] #TK-7396: Incluído diversas cidades de Alagoas.
+   Por: Anderson Grolli
+
+23/07/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7394: Cidades incluídas: Aquidaba/SE, Carmopolis/SE, Laranjeiras/SE, 
+    Maruim/SE, Moita Bonita/SE, Monte Alegre de Sergipe/SE, Muribeca/SE, 
+    Nossa Senhora da Gloria/SE, Tobias Barreto/SE
+   Por: Anderson Grolli
+[*] #TK-7379: Corrigido o valor do params CodigoCidade da cidade São João/PR.
+   Por: Desenvolvimento GDL Sistemas
+[*] #TK-7395: Alterado as URLs de homologação e produção da cidade Atibaia/SP.
+   Por: Strategix
+[+] #TK-7400: Incluída a cidade Pitanga/PR, o provedor é EloTech versão 2.03.
+   Por: tryideas sistemas
+[*] Alterado as URLs de homologação e produção da cidade Criciuma/SC, 
+    mudou para versão 2.02.
+   Por: Italo Giurizzato Junior
+[+] #TK-7403: Incluída a cidade Ico/CE, o provedor é SpeedGov.
+   Por: João Antônio
+
+22/07/2025
+-- SimplISS.Provider --
+[*] #TK-7389: Alteração na função TratarXmlRetornado visando corrigir o erro:
+              Erro de Conexão: xmlParseEntityRef: no name.
+   Por: Fernando Batista
+-- SigISSWeb.Provider --
+[*] #TK-7353: Ajustes para salvar o XML na codificação correta.
+   Por: Areco Desenv/Italo Giurizzato Junior
+-- Giap.Provider --
+[*] Possível solução para gerar o XML da NFS-e para Araraquara.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[+] #TK-7388: Cidades incluídas: Afranio/PE, Agrestina/PE, Agua Preta/PE, 
+    Altinho/PE, Amaraji/PE, Arcoverde/PE, Barra de Guabiraba/PE, 
+    Belem de Maria/PE, Belo Jardim/PE, Bom Conselho/PE, Bom Jardim/PE, 
+    Bonito/PE, Brejo da Madre de Deus/PE, Buique/PE, Camocim de Sao Felix/PE, 
+    Camutanga/PE, Canhotinho/PE, Carnaiba/PE, Casinhas/PE, Catende/PE, 
+    Cha Grande/PE, Condado/PE, Cupira/PE, Feira Nova/PE, Ferreiros/PE, 
+    Gloria do Goita/PE, Granito/PE, Gravata/PE, Ibirajuba/PE, Iguaracy/PE, 
+    Ingazeira/PE, Ipubi/PE, Ilha de Itamaraca/PE, Itambe/PE, Itaquitinga/PE, 
+    Jaqueira/PE, Joao Alfredo/PE, Joaquim Nabuco/PE, Jupi/PE, Lagoa do Carro/PE, 
+    Lagoa do Itaenga/PE, Lagoa dos Gatos/PE, Lajedo/PE, Machados/PE, Moreno/PE, 
+    Orobo/PE, Oroco/PE, Ouricuri/PE, Panelas/PE, Paudalho/PE, Pesqueira/PE, 
+    Pocao/PE, Pombos/PE, Primavera/PE, Riacho das Almas/PE, Ribeirao/PE, 
+    Salgadinho/PE, Santa Cruz/PE, Santa Filomena/PE, Sao Joaquim do Monte/PE, 
+    Serra Talhada/PE, Serrita/PE, Sertania/PE, Moreilandia/PE, Tamandare/PE, 
+    Timbauba/PE, Toritama/PE, Tracunhaem/PE, Trindade/PE, Verdejante/PE, 
+    Vertentes/PE, Vicencia/PE, Xexeu/PE
+   Por: Anderson Grolli
+[*] #TK-7390: A cidade Águas Frias/SC trocou de provedor, agora é IPM versão 2.04
+   Por: C4Dev
+[+] #TK-7387: Cidades incluídas: Agua Branca/PB, Aguiar/PB, Alagoa Nova/PB, 
+    Alhandra/PB, Aparecida/PB, Aracagi/PB, Araruna/PB, Barauna/PB, 
+    Barra de Santa Rosa/PB, Belem/PB, Bom Jesus/PB, Borborema/PB, Caapora/PB, 
+    Cachoeira dos Indios/PB, Cacimba de Areia/PB, Cacimba de Dentro/PB, 
+    Cajazeiras/PB, Cajazeirinhas/PB, Carrapateira/PB, Catole do Rocha/PB, 
+    Cruz do Espirito Santo/PB, Cubati/PB, Cuitegi/PB, Cuite de Mamanguape/PB, 
+    Damiao/PB, Esperanca/PB, Frei Martinho/PB, Gurinhem/PB, Gurjao/PB, 
+    Itabaiana/PB, Itapororoca/PB, Itatuba/PB, Jerico/PB, Lagoa/PB, 
+    Lagoa de Dentro/PB, Logradouro/PB, Lucena/PB, Malta/PB, Manaira/PB, Mari/PB, 
+    Mataraca/PB, Monteiro/PB, Nazarezinho/PB, Nova Floresta/PB, Nova Olinda/PB, 
+    Olho D Agua/PB, Ouro Velho/PB, Paulista/PB, Pedra Branca/PB, Pedra Lavrada/PB, 
+    Pedras de Fogo/PB, Picui/PB, Piloezinhos/PB, Pirpirituba/PB, Poco Dantas/PB, 
+    Princesa Isabel/PB, Pedro Regis/PB, Riachao/PB, Riachao do Poco/PB, 
+    Riacho dos Cavalos/PB, Rio Tinto/PB, Santa Cecilia/PB, Santa Cruz/PB, 
+    Santa Helena/PB, Santa Ines/PB, Santana de Mangueira/PB, Sao Domingos/PB, 
+    Sao Francisco/PB, Sao Jose da Lagoa Tapada/PB, Sao Jose dos Ramos/PB, 
+    Sao Jose de Piranhas/PB, Sao Sebastiao do Umbuzeiro/PB, Sape/PB, Serido/PB, 
+    Serra Redonda/PB, Serraria/PB, Sertaozinho/PB, Solanea/PB, Soledade/PB, Sousa/PB, 
+    Tenorio/PB, Triunfo/PB, Uirauna/PB, Umbuzeiro/PB, Vieiropolis/PB
+   Por: Anderson Grolli
+[*] #TK-7386: Alterado as URLs da cidade Tres Corações/MG, o provedor continua o mesmo.
+   Por: Bruno Italo
+[+] #TK-7375: Cidades incluídas: Acari/RN, Acu/RN, Bento Fernandes/RN, 
+    Caicara do Rio do Vento/RN, Campo Redondo/RN, Carnaubais/RN, 
+    Coronel Joao Pessoa/RN, Cruzeta/RN, Currais Novos/RN, Espirito Santo/RN, 
+    Extremoz/RN, Frutuoso Gomes/RN, Goianinha/RN, Itaja/RN, Lagoa de Pedras/RN, 
+    Lagoa Nova/RN, Lucrecia/RN, Luis Gomes/RN, Nisia Floresta/RN, Parana/RN, 
+    Parau/RN, Rio do Fogo/RN, Pau dos Ferros/RN, Pedro Avelino/RN, Pedro Velho/RN, 
+    Portalegre/RN, Presidente Juscelino/RN, Pureza/RN, Riachuelo/RN, 
+    Rodolfo Fernandes/RN, Santana do Serido/RN, Sao Bento do Norte/RN, 
+    Sao Fernando/RN, Sao Francisco do Oeste/RN, Sao Joao do Sabugi/RN, 
+    Sao Miguel do Gostoso/RN, Sao Tome/RN, Sao Vicente/RN, 
+    Senador Georgino Avelino/RN, Serra de Sao Bento/RN, Serra do Mel/RN, 
+    Serra Negra do Norte/RN, Serrinha/RN, Severiano Melo/RN, Tangara/RN, 
+    Tenente Ananias/RN, Timbauba dos Batistas/RN, Touros/RN, Umarizal/RN, Venha-Ver/RN
+   Por: Anderson Grolli
+
+18/07/2025
+-- SigISSWeb.GravarXML --
+[-] Ajuste visando corrigir erro de compilação no Delphi 7
+   Por: Diego Folieni
+-- ACBrNFSeXClass --
+[*] #TK-7322: Inclusão do campo Transacao na Classe: TNFSe.
+   Por: Italo Giurizzato Junior
+-- NFSeBrasil.Provider/NFSeBrasil.GravarXml --
+[*] #TK-7358: Possível solução para o envio correto do RPS.
+   Por: Italo Giurizzato Junior
+-- ISSDSF.Provider/ISSSaoPaulo.Provider --
+[*] #TK-7322: Alteração visando usar o campo Transacao no envio do lote de RPS.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXLerXml/ACBrNFSeXGravarXml --
+[*] #TK-7322: Acrescentado o campo Transacao na seção IdentificacaoNFSe,
+              cujo valor pode ser 1 = True ou 2 = False.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXLerXml_ABRASFv2 --
+[*] #TK-7354: Possível solução para gerar o link da NFS-e.
+   Por: Italo Giurizzato Junior
+-- Agili.GravarXml --
+[*] #TK-7327: Possível solução para gerar as tags corretas com os valores corretos,
+              dos campos CodigoAtividadeEconomica, CodigoCnaeAtividadeEconomica e
+              ItemLei116AtividadeEconomica.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXWebserviceBase --
+[*] #TK-7351: Alteração visando apresentar algumas mensagens de erros mais claras.
+   Por: João Vitor Bogo
+-- SigISSWeb.GravarXml --
+[*] #TK-7314: Alteração visando gerar o XML corretamente para tomador fora do pais.
+   Por: ArecoDesenv
+-- Pronim.GravarXml --
+[*] #TK-7281: Alterado a condição para gerar a tag Aliquota em função se o prestador
+    é optante pelo simples nacional ou não.
+   Por: Maiquel
+-- ACBrNFSeXServicos --
+[*] #TK-7361: Incluída o Params Versao 2.04 para a cidade Congonhas do Norte/MG.
+   Por: Alysson Rengel
+[+] #TK-7365: Cidades incluídas: Acarau/CE, Aiuaba/CE, Altaneira/CE, Amontada/CE, 
+              Araripe/CE, Barroquinha/CE, Bela Cruz/CE, Caninde/CE, Capistrano/CE, 
+              Carius/CE, Cascavel/CE, Chorozinho/CE, Cruz/CE, Deputado Irapuan Pinheiro/CE, 
+              Groairas/CE, Itaicaba/CE, Jaguaretama/CE, Monsenhor Tabosa/CE, Morrinhos/CE, 
+              Mucambo/CE, Ocara/CE, Senador Sa/CE
+   Por: Anderson Grolli
+[*] #TK-7366: Incluída a URL de homologação da cidade Penapolis/SP.
+   Por: João Vitor Bogo
+
+17/07/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7362: Cidades incluídas: Acaua/PI, Agricolandia/PI, Alagoinha do Piaui/PI, 
+              Altos/PI, Baixa Grande do Ribeiro/PI, Bela Vista do Piaui/PI, 
+              Belem do Piaui/PI, Betania do Piaui/PI, Bom Principio do Piaui/PI, 
+              Buriti Dos Lopes/PI, Cajueiro da Praia/PI, Caldeirao Grande do Piaui/PI, 
+              Campo Alegre do Fidalgo/PI, Capitao de Campos/PI, 
+              Capitao Gervasio Oliveira/PI, Caracol/PI, Caraubas do Piaui/PI, Cocal/PI, 
+              Cocal dos Alves/PI, Coronel Jose Dias/PI, Curral Novo do Piaui/PI, 
+              Demerval Lobao/PI, Dirceu Arcoverde/PI, Dom Expedito Lopes/PI, 
+              Elesbao Veloso/PI, Francinopolis/PI, Francisco Ayres/PI, 
+              Francisco Macedo/PI, Gilbues/PI, Ilha Grande/PI, Ipiranga do Piaui/PI, 
+              Jacobina do Piaui/PI, Jardim do Mulato/PI, Joaquim Pires/PI, 
+              Jose de Freitas/PI, Julio Borges/PI, Lagoa do Barro do Piaui/PI, 
+              Lagoa do Sitio/PI, Marcolandia/PI, Miguel Alves/PI, 
+              Novo Oriente do Piaui/PI, Padre Marcos/PI, Parnagua/PI, Pedro II/PI, 
+              Pimenteiras/PI, Porto Alegre do Piaui/PI, Queimada Nova/PI, 
+              Ribeira do Piaui/PI, Santa Filomena/PI, Santa Rosa do Piaui/PI, 
+              Sao Goncalo do Gurgueia/PI, Sao Goncalo do Piaui/PI, 
+              Sao Joao do Piaui/PI, Sao Miguel do Tapuio/PI, Sao Raimundo Nonato/PI, 
+              Uniao/PI, Wall Ferraz/PI.
+   Por: Anderson Grolli
+[*] #TK-7349: A cidade Guatambu/SC mudou para versão 2.04 e a URL, o provedor continua
+    o mesmo IPM.
+   Por: Lucas atz
+
+14/07/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7309: A cidade Rio Fortuna/SC mudou de provedor, agora é Betha versão 1.00
+   Por: João Carlos Gielow
+[+] #TK-7342: Incluída a cidade Virmond/PR, o provedor é Equiplano.
+   Por: Desenvolvimento GDL Sistemas
+
+11/07/2025
+-- IPM.LerXml --
+[-] #TK-7319: Correção na grafia da tag data do fato gerador.
+   Por: Microsys Sistemas
+-- IPM.LerXml --
+[+] #TK-7330: Incluído a leitura das tags referente as parcelas.
+   Por: Alex Leiva
+-- Infisc.LerXml --
+[*] #TK-7334: Alteração visando a leitura do XML do RPS para não alterar as
+    tags localTributacao e infAdicLT.
+   Por: Tiago Tecchio
+-- ACBrNFSeXServicos --
+[*] #TK-7335: A cidade Barra do Garças/MT mudou as URLs de homologação, o provedor
+    continua o mesmo.
+   Por: Márcio Baroni
+
+10/07/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7316: A cidade Itabirito/MG mudou de provedor, agora é IPM versão 2.04
+   Por: DeveloperATS
+[*] #TK-7325: A cidade Garuva/SC mudou as URLs, o provedo continua o mesmo.
+   Por: forbostec
+[+] #TK-7325: Incluída a cidade São João/PE, o provedor é Tributus.
+   Por: João Antônio
+
+08/07/2025
+-- ACBrNFSeXGravarXml_ABRASFv2 --
+[*] #TK-7246: Alterado o tamanho mínimo e máximo dos campos DataEmissao e Competencia
+    de 19 para 10.
+   Por: Fernando Batista
+-- ACBrNFSeXDANFSeClass/ACBrNFSeXDANFSeRLRetrato/ACBrNFSeXDANFSeRLSimplISS --
+[+] Criada a propriedade de configuração DataCompletenciaCompleta do
+    tipo Boolean cujo valor padrão é False.
+    Se False imprime Mês/Ano, se True imprime Dia/Mês/Ano.
+   Por: Italo Giurizzato Junior
+-- ISSNet.GravarXml --
+[*] #TK-7294: Ajuste para emissão de nota para Estrangeiro.
+   Por: nenelvida
+-- DSF.Provider --
+[-] #TK-7296: Possível solução para a leitura correta dos retornos do provedor na
+              versão 2.03
+   Por: Diego Folieni/Italo Giurizzato Junior
+
+07/07/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7305: Cidades incluídas: Alenquer/PA, Anapu/PA, Augusto Correa/PA, 
+              Aveiro/PA, Baiao/PA, Bannach/PA, Brasil Novo/PA, 
+              Brejo Grande do Araguaia/PA, Cachoeira do Arari/PA, 
+              Canaa Dos Carajas/PA, Capanema/PA, Capitao Poco/PA, 
+              Cumaru do Norte/PA, Curionopolis/PA, Curua/PA, Curuca/PA, 
+              Igarape-Miri/PA, Inhangapi/PA, Ipixuna do Para/PA, 
+              Itupiranga/PA, Jacareacanga/PA, Mae do Rio/PA, 
+              Medicilandia/PA, Melgaco/PA, Mocajuba/PA, Moju/PA, 
+              Mojui dos Campos/PA, Monte Alegre/PA, Muana/PA, 
+              Nova Ipixuna/PA, Obidos/PA, Ourilandia do Norte/PA, 
+              Pau D Arco/PA, Placas/PA, Ponta de Pedras/PA, 
+              Porto de Moz/PA, Ruropolis/PA, Salinopolis/PA, 
+              Santa Luzia do Para/PA, Santa Maria das Barreiras/PA, 
+              Sao Domingos do Araguaia/PA, Sao Domingos do Capim/PA, 
+              Sao Geraldo do Araguaia/PA, Sao Joao da Ponta/PA, 
+              Sao Joao de Pirabas/PA, Sao Miguel do Guama/PA, 
+              Sapucaia/PA, Senador Jose Porfirio/PA, Soure/PA, 
+              Terra Santa/PA, Tome-Acu/PA, Trairao/PA, Ulianopolis/PA, 
+              Uruara/PA, Viseu/PA, Vitoria do Xingu/PA
+[+] #TK-7304: Cidades incluídas: Abreulandia/TO, Almas/TO, 
+              Aparecida do Rio Negro/TO, Aragominas/TO, Arraias/TO, 
+              Augustinopolis/TO, Axixa do Tocantins/TO, Barra do Ouro/TO, 
+              Barrolandia/TO, Bom Jesus do Tocantins/TO, Brejinho de Nazare/TO, 
+              Cariri do Tocantins/TO, Caseara/TO, Combinado/TO, 
+              Conceicao do Tocantins/TO, Couto Magalhaes/TO, Cristalandia/TO, 
+              Divinopolis do Tocantins/TO, Dois Irmaos do Tocantins/TO, 
+              Fatima/TO, Filadelfia/TO, Formoso do Araguaia/TO, 
+              Fortaleza do Tabocao/TO, Goianorte/TO, Ipueiras/TO, Itaguatins/TO, 
+              Itapora do Tocantins/TO, Juarina/TO, Lajeado/TO, Lavandeira/TO, 
+              Lizarda/TO, Marianopolis do Tocantins/TO, Mateiros/TO, 
+              Maurilandia do Tocantins/TO, Monte do Carmo/TO, 
+              Monte Santo do Tocantins/TO, Palmeiras do Tocantins/TO, 
+              Muricilandia/TO, Natividade/TO, Novo Acordo/TO, Novo Jardim/TO, 
+              Palmeiropolis/TO, Peixe/TO, Pequizeiro/TO, Pindorama do Tocantins/TO, 
+              Ponte Alta do Tocantins/TO, Porto Alegre do Tocantins/TO, 
+              Praia Norte/TO, Presidente Kennedy/TO, Recursolandia/TO, Riachinho/TO, 
+              Santa Maria do Tocantins/TO, Santa Rita do Tocantins/TO, 
+              Santa Terezinha do Tocantins/TO, Sao Felix do Tocantins/TO, 
+              Sao Salvador do Tocantins/TO, Sao Sebastiao do Tocantins/TO, 
+              Sao Valerio da Natividade/TO, Silvanopolis/TO, Taguatinga/TO, 
+              Taipas do Tocantins/TO, Talisma/TO, Tocantinia/TO, Tupiratins/TO, 
+              Wanderlandia/TO
+[+] #TK-7297: Cidades incluídas: Pedra Branca do Amapari/AP, Cutias/AP, 
+              Mazagao/AP, Santana/AP, Tartarugalzinho/AP, Vitoria do Jari/AP
+[+] #TK-7300: Cidades incluídas: Alcantara/MA, Aldeias Altas/MA, 
+              Alto Alegre do Maranhao/MA, Amarante do Maranhao/MA, Anajatuba/MA, 
+              Arame/MA, Barra do Corda/MA, Bela Vista do Maranhao/MA, Bom Lugar/MA, 
+              Buriti Bravo/MA, Buritirana/MA, Cajapio/MA, Campestre do Maranhao/MA, 
+              Capinzal do Norte/MA, Carolina/MA, Cidelandia/MA, Coelho Neto/MA, 
+              Cururupu/MA, Dom Pedro/MA, Esperantinopolis/MA, Formosa da Serra Negra/MA, 
+              Governador Edison Lobao/MA, Governador Newton Bello/MA, 
+              Humberto de Campos/MA, Igarape do Meio/MA, Itinga do Maranhao/MA, 
+              Matinha/MA, Matoes/MA, Matoes do Norte/MA, Mirador/MA, Montes Altos/MA, 
+              Morros/MA, Olho D Agua das Cunhas/MA, Paco do Lumiar/MA, Parnarama/MA, 
+              Pastos Bons/MA, Penalva/MA, Peritoro/MA, Pio Xii/MA, Pocao de Pedras/MA, 
+              Presidente Dutra/MA, Presidente Juscelino/MA, Presidente Vargas/MA, 
+              Primeira Cruz/MA, Raposa/MA, Rosario/MA, Santa Helena/MA, 
+              Santa Luzia do Parua/MA, Santo Amaro do Maranhao/MA, Sao Bento/MA, 
+              Sao Domingos do Azeitao/MA, Sao Felix de Balsas/MA, Sao Joao do Caru/MA, 
+              Sao Joao do Soter/MA, Sao Joao Dos Patos/MA, Sao Jose de Ribamar/MA, 
+              Sao Luis Gonzaga do Maranhao/MA, Sao Mateus do Maranhao/MA, 
+              Sao Pedro Dos Crentes/MA, Sao Raimundo das Mangabeiras/MA, Sitio Novo/MA, 
+              Tasso Fragoso/MA, Timbiras/MA, Trizidela do Vale/MA, Turiacu/MA, Tutoia/MA, 
+              Viana/MA, Vitoria do Mearim/MA, Ze Doca/MA
+   Por: Anderson Grolli
+[*] #TK-7303: A cidade de Ouro/SC mudou as URLs e a versão, o provedor continua o mesmo.
+   Por: Willian Delan
+[*] #TK-7302: A cidade de Cristalina/Go mudou de provedor, agora é o Centi versão 2.02
+   Por: Flavio Realtec
+
+03/07/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7278: Cidades incluídas: Acrelandia/AC, Assis Brasil/AC, Brasileia/AC,
+              Bujari/AC, Capixaba/AC, Feijo/AC, Jordao/AC, Manoel Urbano/AC, 
+              Marechal Thaumaturgo/AC, Placido de Castro/AC, Porto Walter/AC, 
+              Santa Rosa do Purus/AC, Sena Madureira/AC, Porto Acre/AC o provedor é Betha.
+[+] #TK-7283: Cidades incluídas: Cerejeiras/RO, Corumbiara/RO, Novo Horizonte do Oeste/RO,
+              Cacaulandia/RO, Campo Novo de Rondonia/RO, Chupinguaia/RO,
+              Governador Jorge Teixeira/RO, Nova Uniao/RO, Pimenteiras do Oeste/RO, 
+              Theobroma/RO, Vale do Paraiso/RO o provedor é Fiorilli.
+              Rio Crespo/RO, Sao Miguel do Guapore/RO, Castanheiras/RO, Seringueiras/RO
+              o provedor é EloTech.
+              Santa Luzia D Oeste/RO, Ministro Andreazza/RO o provedor é Agili.
+[+] #TK-7284: Cidades incluídas: Apui/AM, Manaquiri/AM, Presidente Figueiredo/AM, 
+              Rio Preto da Eva/AM o provedor é Fiorilli.
+              Autazes/AM, Manicore/AM o provedor é Betha.
+              Novo Airao/AM o provedor é Betha versão 2.02
+[*] #TK-7284: A Cidade de Tefe/AM trocou de provedor, agora é Fiorilli.
+[+] #TK-7286: Cidades incluídas: Alto Alegre/RR, Caroebe/RR, Pacaraima/RR, 
+              Sao Joao da Baliza/RR, Sao Luiz/RR, Uiramuta/RR o provedor é Saatri 2.03
+   Por: Anderson Grolli
+[+] #TK-7285: Inclusão da cidade de Cantagalo/RJ, o provedor é EL versão 2.04
+   Por: João Antônio
+[+] #TK-7282: Inclusão das cidades de Seritinga/MG e Rio Pomba/MG, o provedor é 
+              Futurize versão 2.02
+[*] #TK-7282: A cidade de Guarani/MG mudou as URLs, o provedor continua o mesmo.
+   Por: ASL Software LTDA
+-- Centi.LerXml --
+[*] #TK-7184: Ajuste para pegar o ID da NFS-e para ser usado na montagem da
+    strig do QR-Code
+   Por: Italo Giurizzato Junior
+
+02/07/2025
+-- ISSSaoPaulo.Provider --
+[*] #TK-7231: Invertida a ordem de pesquisa na lista interna do componente para:
+    primeiro procurar pelo numero da NFS-e e depois pelo numero do RPS.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7277: A cidade de Coromandel/MG aderiu a emissão da NFS-e Padrão Nacional.
+   Por: DanielF
+[*] #TK-7276: A cidade de Colorado do Oeste/RO alterou de http para https, o provedor
+    continua o mesmo.
+   Por: Claudio Visky
+[*] #TK-7275: A cidade de Viana/ES alterou para versão 2.04 bem como as URLs, o provedor
+    continua o mesmo.
+   Por: Caio0203
+[+] #TK-7273: Inclusão da cidade de Ciriaco/RS, o provedor é DataSmart.
+   Por: Doglas Stumpf
+[+] #TK-7268: Inclusão da cidade de Mampituba/RS, o provedor é Betha.
+   Por: Mario Inacio
+[*] #TK-7267: A cidade de Confresa/MT alterou as URLs, o provedor continua o mesmo.
+   Por: Luiz Eduardo Bodo
+[*] #TK-7256: Alterado a URL de homologação do provedor SigISSWeb.
+   Por: ActioSistemas
+
+27/06/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7264: A cidade de Maua/SP, voltou a usar o provedor Ginfes.
+   Por: Dino Rodrigo S. Moreira
+[*] #TK-7261: Alterado a versão e URLs da cidade de Santa Helena/PR, o provedor
+    continua o mesmo.
+   Por: Arthur Haupt Pacheco
+[*] #TK-7266: Incluido a URL do Link da cidade de Indaiatuba/SP.
+   Por: Adilson Pazzini
+-- DeiSS.Provider --
+[*] #TK-7266: Alterado o TratarXmlRetornado, pois não estava retornando em UTF-8.
+   Por: Italo Giurizzato Junior
+
+20/06/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7242: A cidade de Campos de Guajara-Mirim/RO mudou a URL de produção, o provedor continua o mesmo.
+   Por: Desenvolvimento.microline (Luis Fernando)
+
+18/06/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7226: A cidade de Campos de Julio/MT mudou a URL de produção, o provedor continua o mesmo.
+   Por: Diego Reckziegel
+[*] #TK-7229: A cidade de Itaqui/RS mudou a versão para 2.04, o provedor continua o mesmo.
+   Por: Anderson Grolli
+[*] #TK-7232: A cidade de Alvorada/RS mudou a versão e as URLs, o provedor continua o mesmo.
+   Por: Juliano D. Rosa
+[*] #TK-7233: A cidade de Santa Tereza do Oeste/PR mudou de provedor, agora é EloTech versao 2.03
+   Por: Arthur Haupt Pacheco
+-- ACBrNFSeXConversao/ACBrNFSeXLerXml/Conam.LerXml --
+[+] #TK-6995: Implementado a leitura dos arquivos INI do RPS e NFS-e.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXProviderBase --
+[*] #TK-7236: Alteração visando salvar o XML da nota na pasta com base na data de
+    emissão da mesma.
+   Por: Italo Giurizzato Junior
+
+17/06/2025
+-- SigISSWeb.LerXml --
+[*] #TK-7222: Alteração a leitura da tag regime.
+   Por: Soma Soluções em TI
+-- ACBrNFSeXDANFSeClass/ACBrNFSeXDANFSeRL/ACBrNFSeXDANFSeRLClass --
+-- ACBrNFSeXDANFSeRLISSNet/ACBrNFSeXDANFSeRLRetrato/ACBrNFSeXDANFSeRLSimplISS --
+[-] #TK-7224: Alteração visando imprimir corretamente os DANFSE quando é carregado
+    diversos XML de NFS-e.
+   Por: Italo Giurizzato Junior
+
+16/06/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7216: Incluída a cidade de Santo Estevão/BA, o provedor é Fisco.
+   Por: Italo Giurizzato Junior
+[*] #TK-7215: A cidade de Sao Roque/SP mudou de provedor, agora é Pronim versao 2.03
+   Por: Italo Giurizzato Junior
+[*] #TK-7225: Incluído o Params NaoDividir100 para a cidade de Jaguariuna/SP.
+   Por: Quality Automação
+[*] #TK-7178: A cidade de Ivinhema/MS mudou de provedor, agora é Fiorilli.
+   Por: Marcos Pereda
+
+13/06/2025
+-- Giap.Provider --
+[*] Ajustado a procedure Configuracao para a versão 1.01 que é usada por Araraquara/SP
+    para mostrar corretamente os serviços disponibilizados pelo provedor.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] Alterado a URL do LinkURL da cidade de Piracicaba/SP.
+   Por: quartarollo
+
+12/06/2025
+-- ACBrNFSeXServicos --
+[*] #TK-7184: Alterado as URLs do LinkURL da cidade de São Félix do Araguaia/MT.
+   Por: tryideas sistemas
+[*] #TK-7200: Alterado as URLs de produção/homologação da cidade de Nao-Me-Toque/RS.
+   Por: André Lucca
+[+] #TK-7198: Incluída a cidade de Bela Vista de Goias/GO, o provedor é MegaSoft.
+   Por: C4Dev
+[*] #TK-7197: Alterado a URL de produção da cidade de Teixeira de Freitas/BA.
+   Por: Desenvolvimento Objetiva
+-- ACBrNFSeXProviderBase/Bauhaus.Provider --
+[*] Realizado uma alteração visando extrair e salvar o XML da NFS-e que se encontra no 
+    json retornado pelo provedor.
+  Por: Italo Giurizzato Junior
+-- Giap.GravarXml/Giap.Provider --
+[*] R#TK-7194: Realizado uma alteração visando gerar o XML da NFS-e, uma vez que o provedor
+    retorna apenas um resumo em vez de retornar o XML da nota.
+    Requer testes para saber se vai funcionar conforme o esperado.
+  Por: Italo Giurizzato Junior
+
+09/06/2025
+-- ACBrNFSeXServicos --
+[+] #TK-7192: Incluída a cidade de Planalto/PR, o provedor é Equiplano.
+   Por: Desenvolvimento GDL Sistemas
+[*] #TK-7193: Incluído Params NaoDividir100 para a cidade de Araraquara/SP.
+   Por: Soma Soluções em TI
+
+06/06/2025
+-- ACBrNFSeXNotasFiscais --
+[+] Implementado o parâmetro: sBCC no método: EnviarEmail.
+  Por: Italo Giurizzato Junior
+-- Giap.Provider --
+[-] Correções no pedido de consulta, cancelamento e no Processar Mensagem de Erros.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[+] #TK-7181: Incluída a URL para o QR-Code para a cidade de Uberaba/MG.
+   Por: Diego Reckziegel
+-- Giap.Provider --
+[+] Implementado para a versão 1.01 no provedor Giap as procedure que tratam dos serviços de
+    Consulta a NFS-e por RPS, Cancelamento da NFS-e bem como o tratamento do retorno do Emitir.
+   Por: Italo Giurizzato Junior
+
+05/06/2025
+-- Bauhaus.Provider --
+[+] Implementado a gravação do XML da NFSe retornado no elemento: XmlCompactado.
+   Por: Italo Giurizzato Junior
+-- Diversos --
+[+] Implementado a versão 1.01 no provedor Giap para atender a cidade de Araraquara/SP
+    A implementação não esta completa requer mais alguns ajustes.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[+] #TK-7176: Incluída a cidade de Caete/MG, o provedor é Pronim versão 2.02
+   Por: Anadilson
+[+] #TK-7164: Incluída a cidade de Alto Alegre/SP, o provedor é Fiorilli.
+   Por: Light System Software
+[+] #TK-7166: Incluída a cidade de Sud Mennucci/SP, o provedor é Fiorilli.
+   Por: netoap.cardoso
+
+04/06/2025
+-- Giss.Provider/ACBrNFSeXProviderABRASFv2 --
+[*] #TK-7133: Realizado mais algumas alterações visando gerar corretamente os pedidos
+    de Consulta a Serviço Prestado e Tomado para os provedores que disponibilizaram
+    esses tipos de serviços.
+   Por: Italo Giurizzato Junior
+
+02/06/2025
+-- Bauhaus.GravarJson/Bauhaus.LerJson --
+[+] #TK-6995: Implementado a escrita e leitura dos arquivos INI do RPS e NFS-e.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[+] #TK-7166: Incluída a cidade de Sarzedo/MG, o provedor é Betha.
+   Por: Filipe Novaes - Alterdata
+[+] #TK-7162: Incluída a cidade de Rio Bonito do Iguacu/PR, o provedor é Equiplano.
+   Por: Desenvolvimento GDL Sistemas
+[*] #TK-7161: Alterado as URLs de homologação da cidade de Birigui/SP, o provedor continua o mesmo.
+   Por: netoap.cardoso
+[*] #TK-7160: A cidade de Buritama/SP trocou de provedor, agora é Sam.
+   Por: netoap.cardoso
+[+] #TK-7159: Incluída a cidade de Auriflama/SP, o provedor é Fiorilli.
+   Por: netoap.cardoso
+[*] #TK-7158: Alterado as URLs da cidade de Edeia/GO, o provedor continua o mesmo.
+   Por: netoap.cardoso
+[+] #TK-7155: Incluída a cidade de Lagamar/MG, o provedor é NFSeBrasil.
+   Por: João Antônio
+[+] #TK-7152: Incluída a cidade de Nova Ponte/MG, o provedor é Governa versão 1.01
+   Por: João Antônio
+[+] #TK-7151: Incluída a cidade de Maravilhas/MG, o provedor é NFSeBrasil.
+   Por: João Antônio
+[+] #TK-7150: Incluída a cidade de Morada Nova de Minas/MG, o provedor é NFSeBrasil.
+   Por: João Antônio
+[+] #TK-7149: Incluída a cidade de Passa Tempo/MG, o provedor é NFSeBrasil.
+   Por: Italo Giurizzato Junior
+
+30/05/2025
+-- Aspec.GravarJson/Aspec.LerJson --
+[+] #TK-6995: Implementado a escrita e leitura dos arquivos INI do RPS e NFS-e.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7147: Incluído o Parâmetro Versao 1.01 para a cidade de Agrolandia/SC, 
+    o provendor continua o mesmo.
+   Por: Alysson Rengel
+[*] #TK-7142: A cidade de Sapiranga/RS trocou de provedor, agora é o DBSeller
+   Por: MGWare Dev
+[*] #TK-7140: A cidade de Araraquara/SP trocou de provedor, agora é o Giap
+   Por: New Standard Software/Italo Giurizzato Junior
+[*] #TK-6790: A cidade de João Pessoa/PB trocou de provedor, agora é o DSF versão
+    2.03
+   Por: Andre C M Pereira/Eraldo CG
+-- Agili.GravarXml/Agili.LerXml --
+[+] #TK-6995: Implementado a escrita e leitura dos arquivos INI do RPS e NFS-e.
+   Por: Italo Giurizzato Junior
+
+28/05/2025
+-- AssessorPublico.GravarXml/AssessorPublico.LerXml --
+[+] #TK-6995: Implementado a escrita e leitura dos arquivos INI do RPS e NFS-e.
+   Por: Italo Giurizzato Junior
+-- Giss.Provider --
+[*] #TK-7133: Realizado alterações na montagem do pedido de consulta visando 
+    eliminar o erro de validação apontado pelo provedor.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXClass/ACBrNFSeXLerXml/Equiplano.GravarXml/Equiplano.LerXml --
+[*] #TK-7137: Acrescentado o campo dsImpostos para o provedor Equiplano, esse 
+    campo se destina a descrição dos impostos.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7134: Alterado a URL da cidade de Catanduvas/PR, o provedor continua o mesmo.
+   Por: Rafael Luís Acco
+[+] #TK-7138: Incluída a cidade de Mirante/BA, o provedor é Saatri versão 2.03.
+   Por: João Antônio
+[*] #TK-7139: A cidade de Mirante/BA trocou de URLs e versão, o provedor continua o mesmo.
+   Por: João Antônio
+
+27/05/2025
+-- Infisc.GravarXml --
+[*] #TK-7019: Removido a condição imposta para gerar a tag totalAproxTrib.
+   Por: Italo Giurizzato Junior
+-- ACBrNFSeXServicos --
+[*] #TK-7105: Alterado as URLs da cidade de Piranga/MG, o provedor continua o mesmo.
+   Por: Guilherme
+[*] #TK-7116: Incluído as URLs de produção e homologação na cidade de Agrolândia/SC,
+    o provedor continua o mesmo.
+   Por: Alysson Rengel
+[*] #TK-7117: Incluído o Params Dividir100 na cidade de Mauá/SP.
+   Por: Ao3 Tech
+[*] #TK-7106: A cidade de São José do Rio Preto/SP mudou de provedor, agora é Giss.
+   Por: Italo Giurizzato Junior
+-- ISSDSF.Provider --
+[*] #TK-7094: Alteração na procedure AssinaturaAdicional visando atender a cidade de Teresina
+  Por: Luis Claudio Jr
+-- ACBrNFSeXLerXml --
+[*] #TK-7073: Melhorias na rotina VerificarSeConteudoEhLista para extrair parte do Json inserido
+    no campo Discriminacao
+  Por: Guilherme Consolação Dias
+
+26/05/2025
+-- Diversos --
+[*] O campo modoPrestServ que antes era do tipo string passou a ser do tipo TmodoPrestServ,
+    o campo cCredPresIBS que antes era do tipo Integer passou a ser do tipo TcCredPres e
+    o campo cCredPresCBS que antes era do tipo Integer passou a ser do tipo TcCredPres
+  Por: Italo Giurizzato Junior
+-- ACBrNFSeXGravarXml --
+[-] #TK-7119: Ajuste visando a geração do INI a partir de NFS-e carregada na memória quando leiaute próprio.
+   Por: Diego Folieni
+-- ACBrNFSeXServicos --
+[+] #TK-7107: Incluída a cidade de Guariba/SP, o provedor é ISSIntel.
+   Por: Italo Giurizzato Junior
+[*] #TK-7108: Incluída a URL de homologação da cidade de Valinhos/SP, o provedor é SigISSWeb.
+   Por: R.Postal
+[+] #TK-7104: Incluída a cidade de Serro/MG, o provedor é Fiorilli.
+   Por: Willian Delan
+
+22/05/2025
+-- Infisc.GravarXml --
+[*] #TK-7097: Alteração visando gerar a tag tpImp.
+   Por: Daniel Ostoic Programador DNA.
+-- SigISSWeb.LerXml --
+[*] #TK-7098: Ajustes para calcular corretamente o valor liquido da nota ao ler o XML.
+   Por: Guilherme Consolação Dias
+-- ACBrNFSeXServicos --
+[*] #TK-7081: A cidade de Julio de Castilhos/RS mudou a URL, o provedor continua
+    o mesmo.
+   Por: C4Dev
+[*] #TK-7085: A cidade de Alfredo Chaves/ES mudou a URL e versão, o provedor continua
+    o mesmo.
+   Por: claudney.dbmgroup
+[*] #TK-7089: Incluído o parâmetro NaoDividir100 para a cidade de Guaxupe/MG.
+   Por: Milton Campanhã
+[*] #TK-7091: A cidade de Saudades/SC mudou de provedor, agora é IPM versão 2.04
+   Por: santacat
+-- ACBrNFSeX/ACBrNFSeXConfiguracoes/ACBrNFSeXParametros/ACBrNFSeXProviderBase --
+-- PadraoNacional.Provider --
+[+] Implementado o parâmetro AtendeReformaTributaria na classe Particularidades
+    para indicar se o provedor atende a reforma tributária ou não.
+  Por: Italo Giurizzato Junior
+
+21/05/2025
+-- PublicSoft.GravarXml/PublicSoft.Provider --
+[*] Alteração visando atender a nova API do provedor.
+  Por: Mariana Beza Madeira/Italo Giurizzato Junior
+-- Diversos --
+[*] Alteração visando usar a unit ACBrDFe.Conversao que contem os tipos e funções
+    da Reforma Tributária.
+  Por: Italo Giurizzato Junior
+
 20/05/2025
 -- SigISSWeb.LerXml --
 [*] #TK-7072: Alteração visando ajustar o valor do ISS Retido em função de ele estar

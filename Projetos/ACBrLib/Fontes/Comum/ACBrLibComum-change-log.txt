@@ -42,6 +42,25 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+29/09/2025
+-- ACBrLibDistribuicaoDFe --
+[*] Alteração visando usar as novas units do DistribuicaoDFe.
+ Por: Italo Giurizzato Junior
+
+15/09/2025
+-- ACBrLibComum --
+[+] Adiciona funções para obter informações de compilação sobre o sistema operacional e arquitetura (informações relevantes para Log).
+[*] Refatora TACBrLib.GetInformacaoAdicional para mostrar essas informações.
+
+ Por: doszapro
+ 
+25/08/2025
+-- ACBrLibComum --
+[+] Adiciona LIB_FinalizarLiberar para liberar memória do ponteiro handle apontando para NULL
+[+] Adiciona TACBrLib.GetInformacaoAdicional para mostrar no Log informações ST/MT STDCALL/cdecl
+
+  Por: doszapro
+  
 06/05/2025
 -- ACBrLibConfig, ACBrLibConsts --
 [*] #TK-6998: Formata mensagem para exibir chave/seção inexistente de forma explícita.

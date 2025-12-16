@@ -115,6 +115,7 @@ resourcestring
   DSC_CPF = 'CPF';
   DSC_IE = 'Inscrição Estadual';
   DSC_IM = 'Inscrição Municipal';
+  DSC_NIF = 'NIF';
 
   // Descrição de Identificação do Documento Fiscal - Futuramente vai para ACBrDFeConst
   DSC_TPAMB = 'Identificação do Ambiente';
@@ -145,6 +146,9 @@ resourcestring
   DSC_XPAIS = 'Nome do País';
   DSC_FONE = 'Telefone';
   DSC_EMAIL = 'Endereço de E-mail';
+
+  // Reforma Tributária
+  DSC_REFNFSE = 'Chave da NFS-e referenciada';
 
   // Descrição de Mensagens de Erro - Futuramente vai para ACBrDFeConst
   ERR_MSG_MAIOR = 'Tamanho maior que o máximo permitido';
@@ -241,6 +245,10 @@ resourcestring
   Desc134 = 'Número da NFSe ou RPS não informado.';
   Cod135 = 'X135';
   Desc135 = 'Número da NFSe Substituta não informado.';
+  Cod136 = 'X136';
+  Desc136 =	'Data de Recibo não informada.';
+  Cod137 = 'X137';
+  Desc137 = 'CNPJ do Prestador não informado.';
 
   Cod201 = 'X201';
   Desc201 = 'WebService retornou um XML vazio.';
@@ -268,6 +276,8 @@ resourcestring
   Desc212 = 'Não foi retornado nenhum JSON.';
   Cod213 = 'X213';
   Desc213 = 'Não foi retornado nenhum Token.';
+  Cod214 = 'X214';
+  Desc214 = 'Não foi retornado nenhum DANFSE, chave/ambiente pode estar errado.';
 
   Cod800 = 'X800';
   Desc800 = 'Erro de Validação: ';

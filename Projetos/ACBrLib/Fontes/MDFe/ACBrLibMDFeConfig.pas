@@ -38,18 +38,21 @@ interface
 
 uses
   Classes, SysUtils, IniFiles, pcnConversao,
-  ACBrMDFeConfiguracoes, ACBrMDFeDAMDFeRLClass,
+  ACBrMDFeConfiguracoes,
+  {$IfNDef NOREPORT}
+  ACBrMDFeDAMDFeRLClass,
+  {$EndIf}
+  ACBrMDFeDAMDFeFPDF, ACBrDFeReport,
   DFeReportConfig, ACBrLibComum, ACBrLibConfig;
 
 type
 
   { TDAMDFeConfig }
-  TDAMDFeConfig = class(TDFeReportConfig<TACBrMDFeDAMDFeRL>)
+  TDAMDFeConfig = class(TDFeReportConfig<TACBrDFeReport>)
   private
     FImprimeHoraSaida: Boolean;
     FImprimeHoraSaida_Hora: String;
     FTipoDAMDFe: TpcnTipoImpressao;
-    FTamanhoPapel: TpcnTamanhoPapel;
     FProtocolo: String;
     FCancelada: Boolean;
     FEncerrado: Boolean;
@@ -59,7 +62,7 @@ type
     procedure DefinirValoresPadroesChild; override;
     procedure LerIniChild(const AIni: TCustomIniFile); override;
     procedure GravarIniChild(const AIni: TCustomIniFile); override;
-    procedure ApplyChild(const DFeReport: TACBrMDFeDAMDFeRL; const Lib: TACBrLib); override;
+    procedure ApplyChild(const DFeReport: TACBrDFeReport; const Lib: TACBrLib); override;
 
   public
     constructor Create;
@@ -67,7 +70,6 @@ type
     property ImprimeHoraSaida: Boolean read FImprimeHoraSaida write FImprimeHoraSaida;
     property ImprimeHoraSaida_Hora: String read FImprimeHoraSaida_Hora write FImprimeHoraSaida_Hora;
     property TipoDAMDFe: TpcnTipoImpressao read FTipoDAMDFe write FTipoDAMDFe;
-    property TamanhoPapel: TpcnTamanhoPapel read FTamanhoPapel write FTamanhoPapel;
     property Protocolo: String read FProtocolo write FProtocolo;
     property Cancelada: Boolean read FCancelada write FCancelada;
     property Encerrado: Boolean read FEncerrado write FEncerrado;
@@ -117,7 +119,6 @@ begin
   FCancelada := False;
   FEncerrado := False;
   FTipoDAMDFe := tiRetrato;
-  FTamanhoPapel := tpA4;
   FExibirMunicipioDescarregamento := False;
 end;
 
@@ -126,7 +127,6 @@ begin
   FImprimeHoraSaida := AIni.ReadBool(FSessao, CChaveImprimeHoraSaida, FImprimeHoraSaida);
   FImprimeHoraSaida_Hora := AIni.ReadString(FSessao, CChaveImprimeHoraSaida_Hora, FImprimeHoraSaida_Hora);
   FTipoDAMDFe := TpcnTipoImpressao(AIni.ReadInteger(FSessao, CChaveTipoDAMDFe, Integer(FTipoDAMDFe)));
-  FTamanhoPapel := TpcnTamanhoPapel(AIni.ReadInteger(FSessao, CChaveTamanhoPapel, Integer(FTamanhoPapel)));
   FProtocolo := AIni.ReadString(FSessao, CChaveProtocolo, FProtocolo);
   FCancelada := AIni.ReadBool(FSessao, CChaveCancelada, FCancelada);
   FEncerrado := AIni.ReadBool(FSessao, CChaveEncerrado, FEncerrado);
@@ -138,23 +138,35 @@ begin
   AIni.WriteBool(FSessao, CChaveImprimeHoraSaida, FImprimeHoraSaida);
   AIni.WriteString(FSessao, CChaveImprimeHoraSaida_Hora, FImprimeHoraSaida_Hora);
   AIni.WriteInteger(FSessao, CChaveTipoDAMDFe, Integer(FTipoDAMDFe));
-  AIni.WriteInteger(FSessao, CChaveTamanhoPapel, Integer(FTamanhoPapel));
   AIni.WriteString(FSessao, CChaveProtocolo, FProtocolo);
   AIni.WriteBool(FSessao, CChaveCancelada, FCancelada);
   AIni.WriteBool(FSessao, CChaveEncerrado, FEncerrado);
   AIni.WriteBool(FSessao, CChaveExibirMunicipioDescar, FExibirMunicipioDescarregamento);
 end;
 
-procedure TDAMDFeConfig.ApplyChild(const DFeReport: TACBrMDFeDAMDFeRL; const Lib: TACBrLib);
+procedure TDAMDFeConfig.ApplyChild(const DFeReport: TACBrDFeReport; const Lib: TACBrLib);
+var
+   {$ifNDef NOREPORT}
+     LDAMDFe: TACBrMDFeDAMDFeRL;
+   {$Else}
+     LDAMDFe: TACBrMDFeDAMDFeFPDF;
+   {$EndIf}
 begin
-  DFeReport.ImprimeHoraSaida := FImprimeHoraSaida;
-  DFeReport.ImprimeHoraSaida_Hora := FImprimeHoraSaida_Hora;
-  DFeReport.TipoDAMDFe := FTipoDAMDFe;
-  DFeReport.TamanhoPapel := FTamanhoPapel;
-  DFeReport.Protocolo := FProtocolo;
-  DFeReport.Cancelada := FCancelada;
-  DFeReport.Encerrado := FEncerrado;
-  DFeReport.ExibirMunicipioDescarregamento := FExibirMunicipioDescarregamento;
+  {$ifNDef NOREPORT}
+     LDAMDFe := TACBrMDFeDAMDFeRL(DFeReport);
+   {$Else}
+     LDAMDFe := TACBrMDFeDAMDFeFPDF(DFeReport);
+   {$EndIf}
+   with LDAMDFe do
+   begin
+     ImprimeHoraSaida := FImprimeHoraSaida;
+     ImprimeHoraSaida_Hora := FImprimeHoraSaida_Hora;
+     TipoDAMDFe := FTipoDAMDFe;
+     Protocolo := FProtocolo;
+     Cancelada := FCancelada;
+     Encerrado := FEncerrado;
+     ExibirMunicipioDescarregamento := FExibirMunicipioDescarregamento;
+   end;
 end;
 
 { TLibMDFeConfig }

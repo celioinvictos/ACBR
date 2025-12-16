@@ -2,7 +2,7 @@ object frmACBrNFSe: TfrmACBrNFSe
   Left = 282
   Top = 118
   Caption = 'ACBrNFSeX - Programa Exemplo - Vers'#227'o Delphi'
-  ClientHeight = 612
+  ClientHeight = 643
   ClientWidth = 866
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,9 +17,10 @@ object frmACBrNFSe: TfrmACBrNFSe
     Left = 0
     Top = 0
     Width = 297
-    Height = 612
+    Height = 643
     Align = alLeft
     TabOrder = 0
+    ExplicitHeight = 635
     object lblColaborador: TLabel
       Left = 18
       Top = 540
@@ -962,15 +963,15 @@ object frmACBrNFSe: TfrmACBrNFSe
               ParentFont = False
             end
             object Label45: TLabel
-              Left = 150
-              Top = 389
+              Left = 8
+              Top = 408
               Width = 37
               Height = 13
               Caption = 'Vers'#227'o:'
             end
             object lblVersaoSchemas: TLabel
-              Left = 203
-              Top = 390
+              Left = 61
+              Top = 409
               Width = 53
               Height = 13
               Caption = 'lblVersao'
@@ -1382,7 +1383,7 @@ object frmACBrNFSe: TfrmACBrNFSe
               Top = 0
               Width = 210
               Height = 17
-              Caption = 'Salvar Arquivos em Pastas Separadas'
+              Caption = 'Salvar Arquivos'
               TabOrder = 0
             end
             object cbxPastaMensal: TCheckBox
@@ -1710,17 +1711,21 @@ object frmACBrNFSe: TfrmACBrNFSe
     Left = 297
     Top = 0
     Width = 569
-    Height = 612
+    Height = 643
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 567
+    ExplicitHeight = 635
     object pgRespostas: TPageControl
       Left = 1
-      Top = 164
+      Top = 204
       Width = 567
-      Height = 447
+      Height = 438
       ActivePage = TabSheet8
       Align = alClient
       TabOrder = 0
+      ExplicitWidth = 565
+      ExplicitHeight = 430
       object TabSheet8: TTabSheet
         Caption = 'Log'
         ImageIndex = 2
@@ -1728,7 +1733,7 @@ object frmACBrNFSe: TfrmACBrNFSe
           Left = 0
           Top = 0
           Width = 559
-          Height = 419
+          Height = 410
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -1738,6 +1743,8 @@ object frmACBrNFSe: TfrmACBrNFSe
           ParentFont = False
           ScrollBars = ssVertical
           TabOrder = 0
+          ExplicitWidth = 557
+          ExplicitHeight = 402
         end
       end
       object TabSheet9: TTabSheet
@@ -1747,11 +1754,13 @@ object frmACBrNFSe: TfrmACBrNFSe
           Left = 0
           Top = 0
           Width = 559
-          Height = 419
+          Height = 410
           Align = alClient
           TabOrder = 0
+          ExplicitWidth = 699
+          ExplicitHeight = 513
           ControlData = {
-            4C000000C63900004E2B00000000000000000000000000000000000000000000
+            4C000000382E0000E62100000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126200000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -1765,11 +1774,13 @@ object frmACBrNFSe: TfrmACBrNFSe
           Left = 0
           Top = 0
           Width = 559
-          Height = 419
+          Height = 410
           Align = alClient
           TabOrder = 0
+          ExplicitWidth = 699
+          ExplicitHeight = 513
           ControlData = {
-            4C000000C63900004E2B00000000000000000000000000000000000000000000
+            4C000000382E0000E62100000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126200000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -1782,11 +1793,13 @@ object frmACBrNFSe: TfrmACBrNFSe
           Left = 0
           Top = 0
           Width = 559
-          Height = 419
+          Height = 410
           Align = alClient
           TabOrder = 0
+          ExplicitWidth = 699
+          ExplicitHeight = 513
           ControlData = {
-            4C000000C63900004E2B00000000000000000000000000000000000000000000
+            4C000000382E0000E62100000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126200000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -1796,12 +1809,13 @@ object frmACBrNFSe: TfrmACBrNFSe
     end
     object pgcProvedores: TPageControl
       Left = 1
-      Top = 1
+      Top = 41
       Width = 567
       Height = 163
       ActivePage = tsDemais
       Align = alTop
       TabOrder = 1
+      ExplicitWidth = 565
       object tsDemais: TTabSheet
         Caption = 'Demais Provedores'
         object pgcBotoes: TPageControl
@@ -1812,6 +1826,7 @@ object frmACBrNFSe: TfrmACBrNFSe
           ActivePage = tsEnvios
           Align = alClient
           TabOrder = 0
+          ExplicitWidth = 557
           object tsEnvios: TTabSheet
             Caption = 'Envios'
             ImageIndex = 2
@@ -2335,6 +2350,15 @@ object frmACBrNFSe: TfrmACBrNFSe
               TabOrder = 4
               OnClick = btnConsultarDFeClick
             end
+            object btnConsultarDPSporNumeroPN: TButton
+              Left = 369
+              Top = 10
+              Width = 177
+              Height = 25
+              Caption = 'Consultar DPS por Numero'
+              TabOrder = 5
+              OnClick = btnConsultarDPSporNumeroPNClick
+            end
           end
           object tsConsultarParametros: TTabSheet
             Caption = 'Consultar Par'#226'metros Municipais'
@@ -2419,6 +2443,27 @@ object frmACBrNFSe: TfrmACBrNFSe
         end
       end
     end
+    object rgReformaTributaria: TRadioGroup
+      Left = 1
+      Top = 1
+      Width = 567
+      Height = 40
+      Align = alTop
+      Caption = 'Gera os campos da ReformaTributaria (somente Padr'#227'o Nacional)'
+      Columns = 2
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ItemIndex = 1
+      Items.Strings = (
+        'Sim'
+        'N'#227'o')
+      ParentFont = False
+      TabOrder = 2
+      ExplicitWidth = 565
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '*-nfe.XML'
@@ -2426,8 +2471,8 @@ object frmACBrNFSe: TfrmACBrNFSe
       'Arquivos NFE (*-nfe.XML)|*-nfe.XML|Arquivos XML (*.XML)|*.XML|To' +
       'dos os Arquivos (*.*)|*.*'
     Title = 'Selecione a NFe'
-    Left = 336
-    Top = 208
+    Left = 352
+    Top = 248
   end
   object ACBrMail1: TACBrMail
     Host = '127.0.0.1'
@@ -2437,8 +2482,8 @@ object frmACBrNFSe: TfrmACBrNFSe
     Attempts = 3
     DefaultCharset = UTF_8
     IDECharset = CP1252
-    Left = 336
-    Top = 320
+    Left = 352
+    Top = 360
   end
   object ACBrNFSeX1: TACBrNFSeX
     MAIL = ACBrMail1
@@ -2455,12 +2500,13 @@ object frmACBrNFSe: TfrmACBrNFSe
     Configuracoes.Geral.Emitente.DadosEmitente.Email = 'contato@provedor.com.br'
     Configuracoes.Geral.FormatoDiscriminacao = fdTabulado
     Configuracoes.Arquivos.OrdenacaoPath = <>
+    Configuracoes.Arquivos.TabServicosExt = True
     Configuracoes.WebServices.UF = 'SP'
     Configuracoes.WebServices.AguardarConsultaRet = 0
     Configuracoes.WebServices.QuebradeLinha = '|'
     DANFSE = ACBrNFSeXDANFSeRL1
-    Left = 334
-    Top = 265
+    Left = 350
+    Top = 305
   end
   object ACBrNFSeXDANFSeRL1: TACBrNFSeXDANFSeRL
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
@@ -2487,7 +2533,7 @@ object frmACBrNFSe: TfrmACBrNFSe
     FormatarNumeroDocumentoNFSe = True
     Provedor = proNenhum
     Producao = snSim
-    Left = 470
-    Top = 265
+    Left = 486
+    Top = 305
   end
 end

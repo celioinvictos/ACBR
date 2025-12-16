@@ -41,7 +41,8 @@ uses
   ACBrXmlBase,
   ACBrXmlDocument,
   ACBrNFSeXGravarXml_ABRASFv1,
-  ACBrNFSeXGravarXml_ABRASFv2;
+  ACBrNFSeXGravarXml_ABRASFv2,
+  PadraoNacional.GravarXml;
 
 type
   { TNFSeW_ISSNet }
@@ -65,9 +66,19 @@ type
     function GerarXml: Boolean; Override;
   end;
 
+  { TNFSeW_ISSNetAPIPropria }
+
+  TNFSeW_ISSNetAPIPropria = class(TNFSeW_PadraoNacional)
+  protected
+
+  public
+
+  end;
+
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Strings,
   ACBrNFSeXConsts,
   ACBrNFSeXConversao;
@@ -140,7 +151,6 @@ begin
   FormatoAliq := tcDe2;
 
   NrOcorrCodTribMun_1 := 0;
-  NrOcorrCodigoNBS := 0;
   NrOcorrInformacoesComplemetares := 0;
 
   NrOcorrDiscriminacao_2 := 1;
@@ -158,7 +168,8 @@ function TNFSeW_ISSNet204.GerarXml: Boolean;
 begin
   if ((NFSe.Tomador.Endereco.CodigoMunicipio = '9999999') or
       (NFSe.Tomador.Endereco.UF = 'EX')) and
-     (NFSe.Servico.ExigibilidadeISS = exiExportacao)  then
+     ((NFSe.Servico.ExigibilidadeISS = exiExportacao) or
+     (NFSe.Servico.ExigibilidadeISS = exiExigivel)) then
     NrOcorrCodigoPaisServico := 1;
 
   if (NFSe.OptanteSimplesNacional = snSim) or

@@ -46,6 +46,8 @@ namespace ACBrLibPIXCD.Demo
                 cmbPSP.EnumDataSource(PSP.pspBradesco);
                 cmbAmbiente.EnumDataSource(Ambiente.ambTeste);
                 cmbBBAPIVersao.EnumDataSource(BBAPIVersao.apiVersao1);
+                cmbBradescoAPIVersao.EnumDataSource(BradescoAPIVersao.braVersao1);
+                cmbPixPDVAPIVersao.EnumDataSource(PixPDVAPIVersao.apiVersao1);
                 cmbNivelLogPSP.EnumDataSource(NivelLogPSP.logPSPNenhum);
                 cmbTipoChave.EnumDataSource(TipoChave.tchNenhuma);
                 ACBrPIXCD.Config.ProxyPort = 0;
@@ -122,6 +124,7 @@ namespace ACBrLibPIXCD.Demo
                 ACBrPIXCD.Config.Bradesco.Scopes = txtScopesBradesco.Text;
                 ACBrPIXCD.Config.Bradesco.ArqChavePrivada = txtArquivoChavePrivadaBradesco.Text;
                 ACBrPIXCD.Config.Bradesco.ArqCertificado = txtArquivoCertificadoBradesco.Text;
+                ACBrPIXCD.Config.Bradesco.APIVersao = cmbBradescoAPIVersao.GetSelectedValue<BradescoAPIVersao>();
 
                 //Sicredi
                 ACBrPIXCD.Config.Sicredi.ChavePIX = txtChavePIXSicredi.Text;
@@ -157,6 +160,7 @@ namespace ACBrLibPIXCD.Demo
                 ACBrPIXCD.Config.PixPDV.CNPJ = txtCNPJPixPDV.Text;
                 ACBrPIXCD.Config.PixPDV.Token = txtPixPDVToken.Text;
                 ACBrPIXCD.Config.PixPDV.SecretKey = txtSecretKeyPixPDV.Text;
+                ACBrPIXCD.Config.PixPDV.PixPDVAPIVersao = cmbPixPDVAPIVersao.GetSelectedValue<PixPDVAPIVersao>();
                 ACBrPIXCD.Config.PixPDV.Scopes = txtScopesPixPDV.Text;
 
                 //PagSeguro
@@ -288,6 +292,7 @@ namespace ACBrLibPIXCD.Demo
             txtScopesBradesco.Text = ACBrPIXCD.Config.Bradesco.Scopes;
             txtArquivoChavePrivadaBradesco.Text = ACBrPIXCD.Config.Bradesco.ArqChavePrivada;
             txtArquivoCertificadoBradesco.Text = ACBrPIXCD.Config.Bradesco.ArqCertificado;
+            cmbBradescoAPIVersao.SetSelectedValue(ACBrPIXCD.Config.Bradesco.APIVersao);
 
             //Sicredi
             txtChavePIXSicredi.Text = ACBrPIXCD.Config.Sicredi.ChavePIX;
@@ -323,6 +328,7 @@ namespace ACBrLibPIXCD.Demo
             txtCNPJPixPDV.Text = ACBrPIXCD.Config.PixPDV.CNPJ;
             txtPixPDVToken.Text = ACBrPIXCD.Config.PixPDV.Token;
             txtSecretKeyPixPDV.Text = ACBrPIXCD.Config.PixPDV.SecretKey;
+            cmbPixPDVAPIVersao.SetSelectedValue(ACBrPIXCD.Config.PixPDV.PixPDVAPIVersao);
             txtScopesPixPDV.Text = ACBrPIXCD.Config.PixPDV.Scopes;
 
             //PagSeguro
@@ -668,7 +674,7 @@ namespace ACBrLibPIXCD.Demo
         {
             try
             {
-                var ret = ACBrPIXCD.CriarCobrancaImediata(rtbCriarCobranca.Text, txtTxIdCriarCobranca.Text);
+                var ret = ACBrPIXCD.CriarCobranca(rtbCriarCobranca.Text, txtTxIdCriarCobranca.Text);
                 rtbRespostas.AppendText(ret);
             }
             catch (Exception ex)

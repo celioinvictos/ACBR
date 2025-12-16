@@ -734,6 +734,8 @@ var
   Linha, rCedente, rCNPJCPF, rCodCedente, rEspDoc :String;
   CodMotivo_19,CodMotivo: String;
 begin
+  Titulo := nil;
+
   fpTamanhoMaximoNossoNum := 20;
 
   if StrToIntDef(copy(ARetorno[0],77,3),-1) <> Numero then
@@ -907,7 +909,7 @@ begin
       end;
     end;
 
-    if (Copy(Linha,1,1) = '8') then
+    if (Copy(Linha,1,1) = '8') and Assigned(Titulo) then
     begin
       Titulo.QrCode.emv  := Copy(Linha,135,256);   //tem que ser lido por primeiro para aceitar a
       Titulo.QrCode.txId := Copy(Linha,21,35);     //leitura dos outros campos
@@ -1581,7 +1583,7 @@ end;
 function TACBrBancoSicredi.CalcularNomeArquivoRemessa: String;
 var
   Sequencia, wMes :Integer;
-  NomeFixo, NomeArq: String;
+  NomeFixo, NomeArq, Extensao: String;
   codMesSicredi : String;
 begin
 
@@ -1606,21 +1608,22 @@ begin
 
          NomeArq := NomeFixo + '.crm';
 
-         Sequencia := 1;
+         Sequencia := 0;
+
          while FilesExists(NomeArq) do
          begin
            Inc(Sequencia);
 
-           if Sequencia > 9 then
-           begin
-             if Sequencia = 10 then
-               NomeArq := NomeFixo +'.rm0'
-             else
-               raise Exception.Create(ACBrStr('Número máximo de 10 arquivos '+
-                                              'de remessa alcançado'));
-           end
-           else
-             NomeArq := NomeFixo +'.rm'+IntToStr(Sequencia);
+           if (Sequencia >= 1) and (Sequencia < 10) then
+            Extensao := '.rm'
+          else if (Sequencia >= 100) then
+            Extensao := '.'
+          else if (Sequencia >= 10) then
+            Extensao := '.m'
+          else
+            Extensao := '.crm';
+
+           NomeArq := NomeFixo +Extensao+IntToStr(Sequencia);
 
          end;
 
@@ -2380,9 +2383,8 @@ begin
 
         OcorrenciaOriginal.Tipo := CodOcorrenciaToTipo(StrToIntDef(Copy(SegT, 16, 2), 0));
 
-        if Trim(Copy(SegY,82,77))<>'' then
-          QrCode.PIXQRCodeDinamico(Trim(Copy(SegY,82,77)),Trim(Copy(SegY,159,35)), Titulo);
-
+        if (Trim(Copy(SegY,82,77))<>'') and (Trim(Copy(SegY,159,35)) <> '') then
+          Titulo.QrCode.PIXQRCodeDinamico(Trim(Copy(SegY,82,77)),Trim(Copy(SegY,159,35)), Titulo);
 
         IdxMotivo := 214;
         while (IdxMotivo < 223) do

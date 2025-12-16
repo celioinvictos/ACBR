@@ -21,7 +21,7 @@
     <Description Value="ACBr - Boleto - (http://www.projetoacbr.com.br/)"/>
     <License Value="LGPL"/>
     <Version Minor="1"/>
-    <Files Count="101">
+    <Files Count="104">
       <Item1>
         <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBoleto.pas"/>
         <UnitName Value="ACBrBoleto"/>
@@ -288,8 +288,8 @@
         <UnitName Value="ACBrBoletoRet_Inter_API"/>
       </Item66>
       <Item67>
-        <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoRet_Itau.pas"/>
-        <UnitName Value="ACBrBoletoRet_Itau"/>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBancoCredisan.pas"/>
+        <UnitName Value="ACBrBancoCredisan"/>
       </Item67>
       <Item68>
         <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoRet_Sicredi_APIECOMM.pas"/>
@@ -303,9 +303,9 @@
         <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoW_Inter_API.pas"/>
         <UnitName Value="ACBrBoletoW_Inter_API"/>
       </Item70>
-      <Item71>
-        <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoW_Itau.pas"/>
-        <UnitName Value="ACBrBoletoW_Itau"/>
+	  <Item71>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBoletoWS.URL.pas"/>
+        <UnitName Value="ACBrBoletoWS.URL"/>
       </Item71>
       <Item72>
         <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoW_Sicredi_APIECOMM.pas"/>
@@ -420,13 +420,25 @@
         <UnitName Value="ACBrBoletoRet_BTGPactual"/>
       </Item99>
       <Item100>
-        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBancoCredisan.pas"/>
-        <UnitName Value="ACBrBancoCredisan"/>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBancoSofisa.pas"/>
+        <UnitName Value="ACBrBancoSofisa"/>
       </Item100>
-	  <Item101>
-        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBoletoWS.URL.pas"/>
-        <UnitName Value="ACBrBoletoWS.URL"/>
-      </Item101>	  
+      <Item101>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBancoVortx.pas"/>
+        <UnitName Value="ACBrBancoVortx"/>
+      </Item101>
+      <Item102>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoW_Asaas.pas"/>
+        <UnitName Value="ACBrBoletoW_Asaas"/>
+      </Item102>
+      <Item103>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\WS\ACBrBoletoRet_Asaas.pas"/>
+        <UnitName Value="ACBrBoletoRet_Asaas"/>
+      </Item103>
+      <Item104>
+        <Filename Value="..\..\..\Fontes\ACBrBoleto\ACBrBancoAsaas.pas"/>
+        <UnitName Value="ACBrBancoAsaas"/>
+      </Item104>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="2">

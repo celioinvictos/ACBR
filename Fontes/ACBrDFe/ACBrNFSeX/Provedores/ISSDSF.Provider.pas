@@ -38,7 +38,7 @@ interface
 
 uses
   SysUtils, Classes, Variants,
-  ACBrDFeSSL,
+  ACBrBase, ACBrDFeSSL,
   ACBrXmlBase, ACBrXmlDocument,
   ACBrNFSeXNotasFiscais,
   ACBrNFSeXClass, ACBrNFSeXConversao,
@@ -105,6 +105,7 @@ type
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.XMLHTML,
   ACBrDFeException,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts,
@@ -135,7 +136,8 @@ begin
       else
         sIndTomador := '3';
 
-    sTomador := sIndTomador + Poem_Zeros(sCPFCNPJTomador, 14);
+//    sTomador := sIndTomador + Poem_Zeros(sCPFCNPJTomador, 14);
+    sTomador := Poem_Zeros(sCPFCNPJTomador, 14);
 
     // Prestador Intermediario
     sCPFCNPJInter := OnlyNumber(NFSe.Intermediario.Identificacao.CpfCnpj);
@@ -160,7 +162,8 @@ begin
                    PadRight(NFSe.IdentificacaoRps.Serie, 5 , ' ') +
                    Poem_Zeros(NFSe.IdentificacaoRps.Numero, 12) +
                    FormatDateTime('yyyymmdd', NFse.DataEmissao) +
-                   PadRight(TipoTributacaoRPSToStr(NFSe.TipoTributacaoRPS), 2, ' ') +
+//                   PadRight(TipoTributacaoRPSToStr(NFSe.TipoTributacaoRPS), 2, ' ') +
+                   PadRight(TributacaoToStr(NFSe.Servico.Tributacao), 2, ' ') +
                    sSituacao +
                    sISSRetido +
                    Poem_Zeros(OnlyNumber(FormatFloat('#0.00', NFSe.Servico.Valores.ValorServicos)), 15) +
@@ -395,6 +398,7 @@ var
   DataInicial, DataFinal: TDateTime;
   vTotServicos, vTotDeducoes: Double;
   wAno, wMes, wDia: Word;
+  Transacao: Boolean;
 begin
   if TACBrNFSeX(FAOwner).NotasFiscais.Count <= 0 then
   begin
@@ -426,6 +430,7 @@ begin
   DataFinal := 0;
   vTotServicos := 0;
   vTotDeducoes := 0;
+  Transacao := True;
 
   for i := 0 to TACBrNFSeX(FAOwner).NotasFiscais.Count -1 do
   begin
@@ -451,6 +456,8 @@ begin
     begin
       DataInicial := Nota.NFSe.DataEmissao;
       DataFinal := DataInicial;
+
+      Transacao := (Nota.NFSe.Transacao = snSim);
     end;
 
     if Nota.NFSe.DataEmissao < DataInicial then
@@ -512,7 +519,8 @@ begin
                     TiraAcentos(Trim(Emitente.RazSocial)) +
                   '</RazaoSocialRemetente>' +
                   '<transacao>' +
-                     LowerCase(BoolToStr(TACBrNFSeX(FAOwner).NotasFiscais.Transacao, True)) +
+//                     LowerCase(BoolToStr(TACBrNFSeX(FAOwner).NotasFiscais.Transacao, True)) +
+                     LowerCase(BoolToStr(Transacao, True)) +
                   '</transacao>' +
                   '<dtInicio>' + xDataI + '</dtInicio>' +
                   '<dtFim>' + xDataF + '</dtFim>' +

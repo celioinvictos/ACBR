@@ -35,7 +35,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Spin, Buttons, ComCtrls, OleCtrls, SHDocVw,
-  ShellAPI, XMLIntf, XMLDoc, zlib, UITypes,
+  ShellAPI, XMLIntf, XMLDoc, zlib,
   ACBrBase, ACBrMail, ACBrDFe, ACBrDFeReport, ACBrCTe,
   ACBrCTeDACTEClass, ACBrCTeDACTeRLClass;
 
@@ -248,6 +248,8 @@ type
     tsOutros: TTabSheet;
     btnGerarArqINI: TButton;
     btnLerArqINI: TButton;
+    rgReformaTributaria: TRadioGroup;
+
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
     procedure sbPathCTeClick(Sender: TObject);
@@ -346,8 +348,11 @@ uses
   ACBrUtil.FilesIO,
   ACBrUtil.DateTime,
   ACBrUtil.XMLHTML,
-  ACBrCTe.Classes, pcnConversao, pcteConversaoCTe,
-//  ACBrDFeConversao,
+  ACBrCTe.Classes,
+  pcnConversao,
+  ACBrDFe.Conversao,
+  pcteConversaoCTe,
+//  ACBrCTe.Conversao,
   ACBrDFeConfiguracoes, ACBrDFeSSL, ACBrDFeOpenSSL, ACBrDFeUtil,
   ACBrCTeConhecimentos, ACBrCTeConfiguracoes,
   Frm_Status, Frm_SelecionarCertificado;
@@ -492,7 +497,7 @@ begin
       2: infCTe.versao := 4.0;
     end;
 
-    Ide.cUF    := UFtoCUF(edtEmitUF.Text);
+    Ide.cUF    := UFparaCodigoUF(edtEmitUF.Text);
     Ide.CFOP   := 6932;
     Ide.natOp  := 'PRESTACAO SERVICO TRANSPORTE INICIO OUTRA UF FORA DO ESTADO';
     Ide.modelo := 67;
@@ -526,10 +531,12 @@ begin
     Ide.UFFim     := 'BA';
 
     // Reforma Tributária
-    {
-    ide.gCompraGov.tpEnteGov := tcgUniao;
-    ide.gCompraGov.pRedutor := 5;
-    }
+    if rgReformaTributaria.ItemIndex = 0 then
+    begin
+      ide.gCompraGov.tpEnteGov := tcgUniao;
+      ide.gCompraGov.pRedutor := 5;
+    end;
+
     {Dados do Percurso}
     //ide.infPercurso.Add.UFPer := 'PR';
 
@@ -640,56 +647,64 @@ begin
     imp.infTribFed.vCSLL   := 5;
 
     // Reforma Tributária
-    {
-    Imp.vTotDFe := 100;
-    Imp.IBSCBS.CST := cst000;
-    Imp.IBSCBS.cClassTrib := ct000001;
+    if rgReformaTributaria.ItemIndex = 0 then
+    begin
+      Imp.vTotDFe := 100;
+      Imp.IBSCBS.CST := cst000;
+      Imp.IBSCBS.cClassTrib := '000001';
+      Imp.IBSCBS.indDoacao := tieSim; //tieNenhum;
 
-    Imp.IBSCBS.gIBSCBS.vBC := 100;
+      Imp.IBSCBS.gIBSCBS.vBC := 100;
 
-    Imp.IBSCBS.gIBSCBS.gIBSUF.pIBS := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.vIBS := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.pIBS := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.vIBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gIBSMun.pIBS := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.vIBS := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.pIBS := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.vIBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gCBS.pCBS := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.vCBS := 50;
+      // vIBS = vIBS do IBSUF + vIBS do IBSMun
+      Imp.IBSCBS.gIBSCBS.vIBS := 100;
 
-    Imp.IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := ct000001;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.pCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.vCBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.cCredPres := 99;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.pCredPres := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.vCredPres := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.vCredPresCondSus := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := '000001';
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.cCredPres := 99;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.pCredPres := 5;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.vCredPres := 50;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.vCredPresCondSus := 50;
-    }
+      // Tipo Tributação Compra Governamental
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqIBSUF := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribIBSUF := 50;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqIBSMun := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribIBSMun := 50;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribCBS := 50;
+
+      // Estorno de Crédito
+      Imp.IBSCBS.gEstornoCred.vIBSEstCred := 10;
+      Imp.IBSCBS.gEstornoCred.vCBSEstCred := 10;
+    end;
+
     {Carrega as informacoes CTe Normal}
     infCTeNorm.infServico.xDescServ := 'TEJEJRBEFR ERFERF TESTET JFREJ';
     infCTeNorm.infServico.qCarga    := 5000.0000;
@@ -794,7 +809,7 @@ begin
       2: infCTe.versao := 4.0;
     end;
 
-    Ide.cUF    := UFtoCUF(edtEmitUF.Text);
+    Ide.cUF    := UFparaCodigoUF(edtEmitUF.Text);
     Ide.CFOP   := 5353;
     Ide.natOp  := 'PRESTACAO SERVICO';
     Ide.modelo := 57;
@@ -833,10 +848,12 @@ begin
     *)
 
     // Reforma Tributária
-    {
-    ide.gCompraGov.tpEnteGov := tcgUniao;
-    ide.gCompraGov.pRedutor := 5;
-    }
+    if rgReformaTributaria.ItemIndex = 0 then
+    begin
+      ide.gCompraGov.tpEnteGov := tcgUniao;
+      ide.gCompraGov.pRedutor := 5;
+    end;
+
     {Informações Complementares do CTe}
     compl.xCaracAd  := 'Carac Adic';
     compl.xCaracSer := 'Carac Adicionais do Serviço';
@@ -1142,56 +1159,64 @@ begin
     imp.ICMSUFFim.vBCUFFim := 0;
 
     // Reforma Tributária
-    {
-    Imp.vTotDFe := 100;
-    Imp.IBSCBS.CST := cst000;
-    Imp.IBSCBS.cClassTrib := ct000001;
+    if rgReformaTributaria.ItemIndex = 0 then
+    begin
+      Imp.vTotDFe := 100;
+      Imp.IBSCBS.CST := cst000;
+      Imp.IBSCBS.cClassTrib := '000001';
+      Imp.IBSCBS.indDoacao := tieSim; //tieNenhum;
 
-    Imp.IBSCBS.gIBSCBS.vBC := 100;
+      Imp.IBSCBS.gIBSCBS.vBC := 100;
 
-    Imp.IBSCBS.gIBSCBS.gIBSUF.pIBS := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.vIBS := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.pIBS := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.vIBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gIBSMun.pIBS := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.vIBS := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.pIBS := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.vIBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gCBS.pCBS := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.vCBS := 50;
+      // vIBS = vIBS do IBSUF + vIBS do IBSMun
+      Imp.IBSCBS.gIBSCBS.vIBS := 100;
 
-    Imp.IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := ct000001;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.pCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.vCBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.cCredPres := 99;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.pCredPres := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.vCredPres := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.vCredPresCondSus := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := '000001';
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.cCredPres := 99;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.pCredPres := 5;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.vCredPres := 50;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.vCredPresCondSus := 50;
-    }
+      // Tipo Tributação Compra Governamental
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqIBSUF := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribIBSUF := 50;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqIBSMun := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribIBSMun := 50;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribCBS := 50;
+
+      // Estorno de Crédito
+      Imp.IBSCBS.gEstornoCred.vIBSEstCred := 0;
+      Imp.IBSCBS.gEstornoCred.vCBSEstCred := 0;
+    end;
+
     {Informações sobre Total}
     total.vTPrest := 100;
     total.vTRec := 0;
@@ -1224,7 +1249,7 @@ begin
       2: infCTe.versao := 4.0;
     end;
 
-    Ide.cUF    := UFtoCUF(edtEmitUF.Text);
+    Ide.cUF    := UFparaCodigoUF(edtEmitUF.Text);
     Ide.CFOP   := 5353;
     Ide.natOp  := 'PRESTACAO SERVICO';
     ide.forPag := fpAPagar; // fpAPagar ou fpPago
@@ -1265,10 +1290,12 @@ begin
     ide.indGlobalizado := tiNao;
 
     // Reforma Tributária
-    {
-    ide.gCompraGov.tpEnteGov := tcgUniao;
-    ide.gCompraGov.pRedutor := 5;
-    }
+    if rgReformaTributaria.ItemIndex = 0 then
+    begin
+      ide.gCompraGov.tpEnteGov := tcgUniao;
+      ide.gCompraGov.pRedutor := 5;
+    end;
+
     {Dados do Percurso}
     (*
     with ide.infPercurso.New do
@@ -1504,56 +1531,64 @@ begin
     Imp.ICMS.ICMSSN.indSN := 1;}
 
     // Reforma Tributária
-    {
-    Imp.vTotDFe := 100;
-    Imp.IBSCBS.CST := cst000;
-    Imp.IBSCBS.cClassTrib := ct000001;
+    if rgReformaTributaria.ItemIndex = 0 then
+    begin
+      Imp.vTotDFe := 100;
+      Imp.IBSCBS.CST := cst000;
+      Imp.IBSCBS.cClassTrib := '000001';
+      Imp.IBSCBS.indDoacao := tieSim; //tieNenhum;
 
-    Imp.IBSCBS.gIBSCBS.vBC := 100;
+      Imp.IBSCBS.gIBSCBS.vBC := 100;
 
-    Imp.IBSCBS.gIBSCBS.gIBSUF.pIBS := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSUF.vIBS := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.pIBS := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSUF.vIBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gIBSMun.pIBS := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSMun.vIBS := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.pIBS := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gIBSMun.vIBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gCBS.pCBS := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDif.vDif := 50;
-    Imp.IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 50;
-    Imp.IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
-    Imp.IBSCBS.gIBSCBS.gCBS.vCBS := 50;
+      // vIBS = vIBS do IBSUF + vIBS do IBSMun
+      Imp.IBSCBS.gIBSCBS.vIBS := 100;
 
-    Imp.IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := ct000001;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
-    Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.pCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDif.pDif := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDif.vDif := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.gDevTrib.vDevTrib := 50;
+      Imp.IBSCBS.gIBSCBS.gCBS.gRed.pRedAliq := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.gRed.pAliqEfet := 5;
+      Imp.IBSCBS.gIBSCBS.gCBS.vCBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.cCredPres := 99;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.pCredPres := 5;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.vCredPres := 50;
-    Imp.IBSCBS.gIBSCBS.gIBSCredPres.vCredPresCondSus := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.CSTReg := cst000;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.cClassTribReg := '000001';
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSUF := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSUF := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegIBSMun := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegIBSMun := 50;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.pAliqEfetRegCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gTribRegular.vTribRegCBS := 50;
 
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.cCredPres := 99;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.pCredPres := 5;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.vCredPres := 50;
-    Imp.IBSCBS.gIBSCBS.gCBSCredPres.vCredPresCondSus := 50;
-    }
+      // Tipo Tributação Compra Governamental
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqIBSUF := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribIBSUF := 50;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqIBSMun := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribIBSMun := 50;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.pAliqCBS := 5;
+      Imp.IBSCBS.gIBSCBS.gTribCompraGov.vTribCBS := 50;
+
+      // Estorno de Crédito
+      Imp.IBSCBS.gEstornoCred.vIBSEstCred := 10;
+      Imp.IBSCBS.gEstornoCred.vCBSEstCred := 10;
+    end;
+
     Imp.infAdFisco := 'Lei da Transparencia: O valor aproximado de tributos incidentes sobre o preço deste servico é de R$ 17,00 (17,00%) Fonte: IBPT';
     Imp.vTotTrib   := 17.00;
 
@@ -1811,7 +1846,7 @@ begin
       2: infCTe.versao := 4.0;
     end;
     }
-    Ide.cUF    := UFtoCUF(edtEmitUF.Text);
+    Ide.cUF    := UFparaCodigoUF(edtEmitUF.Text);
     Ide.CFOP   := 5353;
     Ide.natOp  := 'PRESTACAO SERVICO';
     ide.forPag := fpAPagar; // fpAPagar ou fpPago
@@ -2255,7 +2290,7 @@ begin
     begin
       Lines.Add('');
       Lines.Add('Envio CTe');
-      Lines.Add('tpAmb: '     + TpAmbToStr(ACBrCTe1.WebServices.Enviar.tpAmb));
+      Lines.Add('tpAmb: '     + TipoAmbienteToStr(ACBrCTe1.WebServices.Enviar.tpAmb));
       Lines.Add('verAplic: '  + ACBrCTe1.WebServices.Enviar.verAplic);
       Lines.Add('cStat: '     + IntToStr(ACBrCTe1.WebServices.Enviar.cStat));
       Lines.Add('xMotivo: '   + ACBrCTe1.WebServices.Enviar.xMotivo);
@@ -2567,7 +2602,7 @@ begin
   begin
     Lines.Add('');
     Lines.Add('Envio CTe');
-    Lines.Add('tpAmb: '     + TpAmbToStr(ACBrCTe1.WebServices.Enviar.tpAmb));
+    Lines.Add('tpAmb: '     + TipoAmbienteToStr(ACBrCTe1.WebServices.Enviar.tpAmb));
     Lines.Add('verAplic: '  + ACBrCTe1.WebServices.Enviar.verAplic);
     Lines.Add('cStat: '     + IntToStr(ACBrCTe1.WebServices.Enviar.cStat));
     Lines.Add('xMotivo: '   + ACBrCTe1.WebServices.Enviar.xMotivo);
@@ -2651,7 +2686,7 @@ begin
   // Lê o arquivo selecionado
   if OpenDialog1.Execute then
   begin
-    ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.Leitor.CarregarArquivo(OpenDialog1.FileName);
+    ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.LerXMLFromFile(OpenDialog1.FileName, 'CTe');
     ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.LerXml;
 
     AultNSU := ACBrCTe1.WebServices.DistribuicaoDFe.retDistDFeInt.ultNSU;
@@ -3055,6 +3090,7 @@ begin
     ACBrCTe1.Conhecimentos.Clear;
     ACBrCTe1.Conhecimentos.LoadFromFile(OpenDialog1.FileName);
     ACBrCTe1.Conhecimentos.Imprimir;
+    ACBrCTe1.Conhecimentos.ImprimirPDF;
   end;
 end;
 
@@ -3296,7 +3332,7 @@ begin
       // Para o Evento: nSeqEvento sempre = 1
       infEvento.nSeqEvento := 1;
       // Devemos informar a UF do Emitente do CT-e
-      InfEvento.cOrgao     := UFtoCUF(xUF);
+      InfEvento.cOrgao     := UFparaCodigoUF(xUF);
       infEvento.chCTe      := Copy(ACBrCTe1.Conhecimentos[0].CTe.infCTe.Id, 4, 44);
       infEvento.CNPJ       := edtEmitCNPJ.Text;
       infEvento.dhEvento   := now;
@@ -3348,7 +3384,7 @@ begin
 
   MemoDados.Lines.Add('');
   MemoDados.Lines.Add('Status Serviço');
-  MemoDados.Lines.Add('tpAmb: '    +TpAmbToStr(ACBrCTe1.WebServices.StatusServico.tpAmb));
+  MemoDados.Lines.Add('tpAmb: '    +TipoAmbienteToStr(ACBrCTe1.WebServices.StatusServico.tpAmb));
   MemoDados.Lines.Add('verAplic: ' +ACBrCTe1.WebServices.StatusServico.verAplic);
   MemoDados.Lines.Add('cStat: '    +IntToStr(ACBrCTe1.WebServices.StatusServico.cStat));
   MemoDados.Lines.Add('xMotivo: '  +ACBrCTe1.WebServices.StatusServico.xMotivo);
@@ -3451,6 +3487,7 @@ begin
     ShowMessage('Inicio: ' + Inicio + #13 + 'Fim: ' + Fim);
 
     try
+      ACBrCTe1.Conhecimentos.Assinar;
       ACBrCTe1.Conhecimentos.Validar;
 
       if ACBrCTe1.Conhecimentos[0].Alertas <> '' then
@@ -3551,7 +3588,7 @@ end;
 procedure TfrmACBrCTe.FormCreate(Sender: TObject);
 var
   T: TSSLLib;
-  I: TpcnTipoEmissao;
+  I: TACBrTipoEmissao;
   J: TModeloCTe;
   K: TVersaoCTe;
   U: TSSLCryptLib;
@@ -3585,8 +3622,8 @@ begin
   cbSSLType.ItemIndex := 5;
 
   cbFormaEmissao.Items.Clear;
-  for I := Low(TpcnTipoEmissao) to High(TpcnTipoEmissao) do
-     cbFormaEmissao.Items.Add( GetEnumName(TypeInfo(TpcnTipoEmissao), integer(I) ) );
+  for I := Low(TACBrTipoEmissao) to High(TACBrTipoEmissao) do
+     cbFormaEmissao.Items.Add( GetEnumName(TypeInfo(TACBrTipoEmissao), integer(I) ) );
   cbFormaEmissao.ItemIndex := 0;
 
   cbModeloDF.Items.Clear;
@@ -3825,7 +3862,6 @@ end;
 
 procedure TfrmACBrCTe.ConfigurarComponente;
 var
-  Ok: Boolean;
   PathMensal: string;
 begin
   ACBrCTe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;
@@ -3847,7 +3883,7 @@ begin
     ExibirErroSchema := cbxExibirErroSchema.Checked;
     RetirarAcentos   := cbxRetirarAcentos.Checked;
     FormatoAlerta    := edtFormatoAlerta.Text;
-    FormaEmissao     := TpcnTipoEmissao(cbFormaEmissao.ItemIndex);
+    FormaEmissao     := TACBrTipoEmissao(cbFormaEmissao.ItemIndex);
     ModeloDF         := TModeloCTe(cbModeloDF.ItemIndex);
     VersaoDF         := TVersaoCTe(cbVersaoDF.ItemIndex);
   end;
@@ -3855,7 +3891,7 @@ begin
   with ACBrCTe1.Configuracoes.WebServices do
   begin
     UF         := cbUF.Text;
-    Ambiente   := StrToTpAmb(Ok,IntToStr(rgTipoAmb.ItemIndex+1));
+    Ambiente   := StrToTipoAmbiente(IntToStr(rgTipoAmb.ItemIndex+1));
     Visualizar := cbxVisualizar.Checked;
     Salvar     := cbxSalvarSOAP.Checked;
 
@@ -3903,7 +3939,7 @@ begin
 
   if ACBrCTe1.DACTe <> nil then
   begin
-    ACBrCTe1.DACTe.TipoDACTe := StrToTpImp(OK, IntToStr(rgTipoDaCTe.ItemIndex + 1));
+    ACBrCTe1.DACTe.TipoDACTe := StrToTpImp(IntToStr(rgTipoDaCTe.ItemIndex + 1));
     ACBrCTe1.DACTe.Logo      := edtLogoMarca.Text;
 
     ACBrCTe1.DACTe.PathPDF      := PathMensal;

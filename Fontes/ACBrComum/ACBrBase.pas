@@ -314,6 +314,30 @@ TACBrThreadTimer = class(TThread)
     property Fields[Index: String]: TAcbrInformacao read GetFields; default;
   end;
 
+  { TACBrURI - http://www.faqs.org/rfcs/rfc2396.html }
+
+  TACBrURI = class
+  private
+    fScheme: String;
+    fAuthority: String;
+    fParams: TACBrInformacoes;
+    fPath: String;
+    function GetURI: String;
+    procedure SetURI(const AValue: String);
+  public
+    constructor Create(const AScheme, AAuthority: String; APath: String = ''); overload;
+    constructor Create; overload;
+    destructor Destroy; override;
+    procedure Clear;
+
+    property Scheme: String read fScheme;
+    property Authority: String read fAuthority;
+    property Params: TACBrInformacoes read fParams;
+    property Path: String read fPath write fPath;
+
+    property URI: String read GetURI write SetURI;
+  end;
+
   { THttpHeader }
 
   THttpHeader = class(TStringList)
@@ -330,9 +354,10 @@ procedure ACBrAboutDialog ;
 implementation
 
 uses
-  DateUtils, Math,
+  DateUtils, Math, StrUtils,
   ACBrUtil.Strings,
-  ACBrUtil.Math;
+  ACBrUtil.Math,
+  synacode;
 
 procedure ACBrAboutDialog ;
   var Msg : String ;
@@ -557,7 +582,10 @@ function TACBrInformacao.GetAsDate : TDateTime;
 var
    DataStr, AnoStr: String;
 begin
+  Result := 0;
   DataStr := OnlyNumber( Trim(fInfo) );
+  if (DataStr = '') then
+    Exit;
 
   if (Length(DataStr) = 6) then // DDMMYY, converte para DDMMYYYY
   begin
@@ -565,13 +593,10 @@ begin
     DataStr := copy(DataStr,1,4) + copy(AnoStr,1,2) + copy(DataStr,5,2);
   end;
 
-  try
-    Result := EncodeDate( StrToInt(copy(DataStr,5,4)),
-                          StrToInt(copy(DataStr,3,2)),
-                          StrToInt(copy(DataStr,1,2)) ) ;
-  except
-    Result := 0 ;
-  end;
+  TryEncodeDate( StrToIntDef(copy(DataStr,5,4), 0),
+                 StrToIntDef(copy(DataStr,3,2), 0),
+                 StrToIntDef(copy(DataStr,1,2), 0),
+                 Result );
 end;
 
 function TACBrInformacao.GetAsBinary: AnsiString;
@@ -616,51 +641,54 @@ function TACBrInformacao.GetAsTime : TDateTime;
 var
   TimeStr : String;
 begin
+  Result := 0;
   TimeStr := OnlyNumber( Trim(fInfo) );
+  if (TimeStr = '') then
+    Exit;
 
-  try
-    Result := EncodeTime( StrToInt(copy(TimeStr,1,2)),
-                          StrToInt(copy(TimeStr,3,2)),
-                          StrToInt(copy(TimeStr,5,2)), 0) ;
-  except
-    Result := 0 ;
-  end;
+  TryEncodeTime( StrToIntDef(copy(TimeStr,1,2), 0),
+                 StrToIntDef(copy(TimeStr,3,2), 0),
+                 StrToIntDef(copy(TimeStr,5,2), 0),
+                 0,
+                 Result );
 end;
 
 function TACBrInformacao.GetAsTimeStamp : TDateTime;
 var
   DateTimeStr : String;
 begin
+  Result := 0;
   DateTimeStr := OnlyNumber( Trim(fInfo) );
+  if (DateTimeStr = '') then
+    Exit;
 
-  try
-    Result := EncodeDateTime( YearOf(now),
-                              StrToInt(copy(DateTimeStr,3,2)),
-                              StrToInt(copy(DateTimeStr,1,2)),
-                              StrToIntDef(copy(DateTimeStr,5,2),0),
-                              StrToIntDef(copy(DateTimeStr,7,2),0),
-                              StrToIntDef(copy(DateTimeStr,9,2),0), 0) ;
-  except
-    Result := 0 ;
-  end;
+  TryEncodeDateTime( YearOf(now),
+                     StrToIntDef(copy(DateTimeStr,3,2), 0),
+                     StrToIntDef(copy(DateTimeStr,1,2), 0),
+                     StrToIntDef(copy(DateTimeStr,5,2), 0),
+                     StrToIntDef(copy(DateTimeStr,7,2), 0),
+                     StrToIntDef(copy(DateTimeStr,9,2), 0),
+                     0,
+                     Result );
 end;
 
 function TACBrInformacao.GetAsTimeStampSQL : TDateTime;
 var
   DateTimeStr : String;
 begin
+  Result := 0;
   DateTimeStr := OnlyNumber( Trim(fInfo) );
+  if (DateTimeStr = '') then
+    Exit;
 
-  try
-    Result := EncodeDateTime( StrToInt(copy(DateTimeStr,1,4)),
-                              StrToInt(copy(DateTimeStr,5,2)),
-                              StrToInt(copy(DateTimeStr,7,2)),
-                              StrToIntDef(copy(DateTimeStr,9,2),0),
-                              StrToIntDef(copy(DateTimeStr,11,2),0),
-                              StrToIntDef(copy(DateTimeStr,13,2),0), 0) ;
-  except
-    Result := 0 ;
-  end;
+  TryEncodeDateTime( StrToIntDef(copy(DateTimeStr, 1,4), 0),
+                     StrToIntDef(copy(DateTimeStr, 5,2), 0),
+                     StrToIntDef(copy(DateTimeStr, 7,2), 0),
+                     StrToIntDef(copy(DateTimeStr, 9,2), 0),
+                     StrToIntDef(copy(DateTimeStr,11,2), 0),
+                     StrToIntDef(copy(DateTimeStr,13,2), 0),
+                     0,
+                     Result );
 end;
 
 procedure TACBrInformacao.SetAsBinary(AValue: AnsiString);
@@ -936,6 +964,133 @@ begin
     Result := Result + GetItem(i);
 end;
 
+{ TACBrURI }
+
+constructor TACBrURI.Create(const AScheme, AAuthority: String; APath: String);
+begin
+  if (AScheme = '') then
+    raise Exception.Create('TACBrURI.Create, "Scheme" não informado');
+
+  if (AAuthority = '') then
+    raise Exception.Create('TACBrURI.Create, "Authority" não informado');
+
+  Create;
+  fScheme := AScheme;
+  fAuthority := AAuthority;
+  fPath := APath;
+end;
+
+constructor TACBrURI.Create;
+begin
+  inherited Create;
+  fParams := TACBrInformacoes.Create;
+
+  Clear;
+end;
+
+destructor TACBrURI.Destroy;
+begin
+  fParams.Free;
+  inherited;
+end;
+
+procedure TACBrURI.Clear;
+begin
+  fParams.Clear;
+  fScheme := '';
+  fAuthority := '';
+  fPath := '';
+end;
+
+function TACBrURI.GetURI: String;
+var
+  AParam: TACBrInformacao;
+  AValue, Params: string;
+  i: Integer;
+begin
+  Result := fScheme + '://' +
+            fAuthority;
+
+  if (fPath <> '') then
+    Result := Result + '/'+ fPath;
+
+  Result := String(EncodeURL(AnsiString(Result)));
+
+  Params := '';
+  if (fParams.Count > 0) then
+  begin
+    for i := 0 to fParams.Count-1 do
+    begin
+      AParam := fParams.Items[i];
+      if AParam.Tipo = tiBoolean then
+        AValue := ifthen(AParam.AsBoolean, 'true', 'false')
+      else
+        AValue := AParam.AsString;
+
+      Params := Params + AParam.Nome+'='+String(EncodeURLElement(AnsiString(AValue))) + '&';
+    end;
+
+    Delete(Params, Length(Params), 1);  // Remove último &
+
+    if (Params <> '') then
+      Params := '?' + Params;
+  end;
+
+  Result := Result + Params;
+end;
+
+procedure TACBrURI.SetURI(const AValue: String);
+var
+  p1, p2, le, i: Integer;
+  UriStr, ParamStr: String;
+  SL: TStringList;
+begin
+// Exemplos:
+// app://payment/input?currencyCode=986&transactionId=1&amount=100&operation=VENDA
+// app://confirmation/confirmation?confirmationTransactionId=0000000000.0000.000000.0000.REDE-SUB&transactionStatus=CONFIRMADO_AUTOMATICO
+
+  Clear;
+  UriStr := AValue;
+
+  le := Length(UriStr);
+  p1 := pos(':', UriStr);  // Achando o Schema
+  if (p1 < 1) then
+    raise Exception.Create('TACBrURI.SetURI, no Scheme definition');
+
+  // Pula separador do Schema
+  fScheme := copy(UriStr, 1, p1-1);
+  while (UriStr[p1] = ':') or (UriStr[p1] = '/') do
+    Inc(p1);
+
+  // Achando os Parâmetros
+  p2 := PosEx('?', UriStr, p1+1);
+  if (p2 < 1) then
+    p2 := le;
+
+  ParamStr := copy(UriStr, p2+1, le );
+
+  // Achando a Authority e Path
+  fAuthority := copy(UriStr, p1, p2-p1);
+  p1 := Pos('/', fAuthority);
+  if (p1 > 0) then
+  begin
+    fPath := copy(fAuthority, p1+1, Length(fAuthority));
+    fAuthority := copy(fAuthority, 1, p1-1);
+  end;
+
+  // Achando todos os Parâmetros
+  if (ParamStr <> '') then
+  begin
+    SL := TStringList.Create;
+    try
+      SL.Text := StringReplace(ParamStr, '&', sLineBreak, [rfReplaceAll]);
+      for i := 0 to SL.Count-1 do
+        Params.AddField(SL.Names[i]).AsString := SL.ValueFromIndex[i];
+    finally
+      SL.Free;
+    end;
+  end;
+end;
 
 { THttpHeader }
 

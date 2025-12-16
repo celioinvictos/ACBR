@@ -100,7 +100,7 @@ type
   private
     FFPDFReport: TNFeDANFeFPDF;
     FDANFEClassOwner: TACBrNFeDANFEClass;
-
+    FStream : TStream;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -414,26 +414,28 @@ begin
   if NFe.Ide.tpNF = tnEntrada then
   begin
     Emitente :=
-      NFe.Dest.xNome + ' - ' +
-      NFe.Dest.EnderDest.xLgr + ', ' +
-      NFe.Dest.EnderDest.nro + ' - ' +
-      IfThen(NFe.Dest.EnderDest.xCpl <> '', NFe.Dest.EnderDest.xCpl + ' - ') +
-      NFe.Dest.EnderDest.xBairro + ' ' +
-      NFe.Dest.EnderDest.xMun + '-' +
-      NFe.Dest.EnderDest.UF;
-    Destinatario := NFe.Emit.xNome + ' ';
+      NativeStringToAnsi(
+        NFe.Dest.xNome + ' - ' +
+        NFe.Dest.EnderDest.xLgr + ', ' +
+        NFe.Dest.EnderDest.nro + ' - ' +
+        IfThen(NFe.Dest.EnderDest.xCpl <> '', NFe.Dest.EnderDest.xCpl + ' - ') +
+        NFe.Dest.EnderDest.xBairro + ' ' +
+        NFe.Dest.EnderDest.xMun + '-' +
+        NFe.Dest.EnderDest.UF);
+    Destinatario := NativeStringToAnsi(NFe.Emit.xNome) + ' ';
   end
   else
   begin
-    Emitente := NFe.Emit.xNome + ' ';
+    Emitente := NativeStringToAnsi(NFe.Emit.xNome) + ' ';
     Destinatario :=
-      NFe.Dest.xNome + ' - ' +
-      NFe.Dest.EnderDest.xLgr + ', ' +
-      NFe.Dest.EnderDest.nro + ' - ' +
-      IfThen(NFe.Dest.EnderDest.xCpl <> '', NFe.Dest.EnderDest.xCpl + ' - ') +
-      NFe.Dest.EnderDest.xBairro + ' ' +
-      NFe.Dest.EnderDest.xMun + '-' +
-      NFe.Dest.EnderDest.UF + ' ';
+      NativeStringToAnsi(
+        NFe.Dest.xNome + ' - ' +
+        NFe.Dest.EnderDest.xLgr + ', ' +
+        NFe.Dest.EnderDest.nro + ' - ' +
+        IfThen(NFe.Dest.EnderDest.xCpl <> '', NFe.Dest.EnderDest.xCpl + ' - ') +
+        NFe.Dest.EnderDest.xBairro + ' ' +
+        NFe.Dest.EnderDest.xMun + '-' +
+        NFe.Dest.EnderDest.UF + ' ');
   end;
   //identificação do sistema emissor
   //linha separadora do canhoto
@@ -718,14 +720,15 @@ begin
   // monta as informações apenas se diferente de full logo
   if (not HasLogo) or (FLogoAlign <> laFull) then
   begin
-    emitente_conteudo1 := NFe.Emit.xNome;
-    emitente_conteudo2 := NFe.Emit.EnderEmit.xLgr + ', ' + NFe.Emit.EnderEmit.nro;
+    emitente_conteudo1 := NativeStringToAnsi(NFe.Emit.xNome);
+    emitente_conteudo2 := NativeStringToAnsi(NFe.Emit.EnderEmit.xLgr + ', ' + NFe.Emit.EnderEmit.nro);
     if NFe.Emit.EnderEmit.xCpl <> '' then
-      emitente_conteudo2 := emitente_conteudo2 + ' - ' + NFe.Emit.EnderEmit.xCpl;
+      emitente_conteudo2 := emitente_conteudo2 + ' - ' + NativeStringToAnsi(NFe.Emit.EnderEmit.xCpl);
     emitente_conteudo2 := emitente_conteudo2 + sLineBreak +
-      NFe.Emit.EnderEmit.xBairro + ' - ' +
-      NFe.Emit.EnderEmit.xMun + ' - ' +
-      NFe.Emit.EnderEmit.UF + sLineBreak +
+      NativeStringToAnsi(
+        NFe.Emit.EnderEmit.xBairro + ' - ' +
+        NFe.Emit.EnderEmit.xMun + ' - ' +
+        NFe.Emit.EnderEmit.UF) + sLineBreak +
       'CEP: ' + IfThen(NFe.Emit.EnderEmit.CEP > 0, FormatarCEP(NFe.Emit.EnderEmit.CEP));
     if NFe.Emit.EnderEmit.fone <> '' then
       emitente_conteudo2 := emitente_conteudo2 + sLineBreak + 'Fone/Fax: ' + NFe.Emit.EnderEmit.fone;
@@ -854,8 +857,7 @@ begin
     PDF.TextBox(x+2, y1, w-2, h, texto, 'T', 'C', 0, '');
     y1 := y+16+bH;
     texto := 'www.nfe.fazenda.gov.br/portal ou no site da Sefaz Autorizadora';
-    PDF.TextBox(x+2, y1, w-2, h, texto, 'T', 'C', 0,
-        'http://www.nfe.fazenda.gov.br/portal ou no site da Sefaz Autorizadora');
+    PDF.TextBox(x+2, y1, w-2, h, texto, 'T', 'C', 0, 'http://www.nfe.fazenda.gov.br/portal');
   end;
 
   //####################################################################################
@@ -868,7 +870,7 @@ begin
   x := oldX;
   h := 7;
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Ide.natOp;
+  texto := NativeStringToAnsi(NFe.Ide.natOp);
   PDF.SetFont(10, 'B');
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
   x := x + w;
@@ -1057,7 +1059,7 @@ begin
   texto := 'NOME / RAZÃO SOCIAL';
   SetFontBoxHeader;
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Dest.xNome;
+  texto := NativeStringToAnsi(NFe.Dest.xNome);
   SetFontBoxContent;
   if PDF.Orientation = poPortrait then
     PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '')
@@ -1096,10 +1098,10 @@ begin
   texto := 'ENDEREÇO';
   SetFontBoxHeader;
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.dest.EnderDest.xLgr;
+  texto := NativeStringToAnsi(NFe.dest.EnderDest.xLgr);
   texto := texto + ', ' + NFe.dest.EnderDest.nro;
   if NFe.dest.EnderDest.xCpl <> '' then
-    texto := texto + ' - ' + NFe.dest.EnderDest.xCpl;
+    texto := texto + ' - ' + NativeStringToAnsi(NFe.dest.EnderDest.xCpl);
   SetFontBoxContent;
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '', true);
   //BAIRRO / DISTRITO
@@ -1109,7 +1111,7 @@ begin
   texto := 'BAIRRO / DISTRITO';
   SetFontBoxHeader;
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.dest.EnderDest.xBairro;
+  texto := NativeStringToAnsi(NFe.dest.EnderDest.xBairro);
   SetFontBoxContent;
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
   //CEP
@@ -1137,9 +1139,9 @@ begin
   texto := 'MUNICÍPIO';
   SetFontBoxHeader;
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.dest.EnderDest.xMun;
+  texto := NativeStringToAnsi(NFe.dest.EnderDest.xMun);
   if (UpperCase(Trim(texto)) = 'EXTERIOR') and (Length(NFe.dest.EnderDest.xPais) > 0) then
-    texto := texto + ' - ' + NFe.dest.EnderDest.xPais;
+    texto := texto + ' - ' + NativeStringToAnsi(NFe.dest.EnderDest.xPais);
   SetFontBoxContent;
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
   //UF
@@ -1197,9 +1199,14 @@ var
 begin
   Entrega := NFeContext.NFe.Entrega;
   DrawLocal(Args, 'INFORMAÇÕES DO LOCAL DE ENTREGA',
-    Entrega.CNPJCPF, Entrega.xNome, Entrega.xLgr, Entrega.nro, Entrega.xCpl,
-    Entrega.xBairro, Entrega.cMun, Entrega.xMun, Entrega.UF, Entrega.CEP,
-    Entrega.cPais, Entrega.xPais, Entrega.fone, Entrega.Email, Entrega.IE);
+    Entrega.CNPJCPF,
+    NativeStringToAnsi(Entrega.xNome),
+    NativeStringToAnsi(Entrega.xLgr), Entrega.nro,
+    NativeStringToAnsi(Entrega.xCpl),
+    NativeStringToAnsi(Entrega.xBairro),
+    Entrega.cMun, NativeStringToAnsi(Entrega.xMun), Entrega.UF, Entrega.CEP,
+    Entrega.cPais, NativeStringToAnsi(Entrega.xPais),
+    Entrega.fone, Entrega.Email, Entrega.IE);
 end;
 
 procedure TBlocoLocalEntrega.OnInit(Args: TFPDFBandInitArgs);
@@ -1216,9 +1223,14 @@ var
 begin
   Retirada := NFeContext.NFe.Retirada;
   DrawLocal(Args, 'INFORMAÇÕES DO LOCAL DE RETIRADA',
-    Retirada.CNPJCPF, Retirada.xNome, Retirada.xLgr, Retirada.nro, Retirada.xCpl,
-    Retirada.xBairro, Retirada.cMun, Retirada.xMun, Retirada.UF, Retirada.CEP,
-    Retirada.cPais, Retirada.xPais, Retirada.fone, Retirada.Email, Retirada.IE);
+    Retirada.CNPJCPF,
+    NativeStringToAnsi(Retirada.xNome),
+    NativeStringToAnsi(Retirada.xLgr), Retirada.nro,
+    NativeStringToAnsi(Retirada.xCpl),
+    NativeStringToAnsi(Retirada.xBairro),
+    Retirada.cMun, NativeStringToAnsi(Retirada.xMun), Retirada.UF, Retirada.CEP,
+    Retirada.cPais, NativeStringToAnsi(Retirada.xPais),
+    Retirada.fone, Retirada.Email, Retirada.IE);
 end;
 
 procedure TBlocoLocalRetirada.OnInit(Args: TFPDFBandInitArgs);
@@ -1797,7 +1809,7 @@ begin
   PDF.SetFont(6, '');
   PDF.TextBox(x, y, w1, h, texto, 'T', 'L', 1, '');
 
-  texto := NFe.Transp.Transporta.xNome;
+  texto := NativeStringToAnsi(NFe.Transp.Transporta.xNome);
   PDF.SetFont(10, '');
   PDF.TextBox(x, y, w1, h, texto, 'B', 'L', 0, '');
   //FRETE POR CONTA
@@ -1859,7 +1871,7 @@ begin
   texto := 'ENDEREÇO';
   PDF.SetFont(6, '');
   PDF.TextBox(x, y, w1, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Transp.Transporta.xEnder;
+  texto := NativeStringToAnsi(NFe.Transp.Transporta.xEnder);
   PDF.SetFont(10, '');
   PDF.TextBox(x, y, w1, h, texto, 'B', 'L', 0, '');
   //MUNICÍPIO
@@ -1868,7 +1880,7 @@ begin
   texto := 'MUNICÍPIO';
   PDF.SetFont(6, '');
   PDF.TextBox(x, y, w2, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Transp.Transporta.xMun;
+  texto := NativeStringToAnsi(NFe.Transp.Transporta.xMun);
   PDF.SetFont(10, '');
   PDF.TextBox(x, y, w2, h, texto, 'B', 'L', 0, '');
   //UF
@@ -2383,7 +2395,7 @@ begin
   begin
     DetItem := NFe.Det[FCurrentItem];
 
-    textoProduto := FNFeUtils.DANFEClassOwner.ManterXProd(NFe, FCurrentItem);
+    textoProduto := NativeStringToAnsi(FNFeUtils.DANFEClassOwner.ManterXProd(NFe, FCurrentItem));
     h := CalculateHeightProduto(PDF, FCurrentItem);
     hUsado := hUsado + h;
 
@@ -2522,7 +2534,7 @@ begin
     y := Watermark(Args, x, Height-130, Width-(2*m), 25, 'NFe USO DENEGADO', 48, 'B');
     Watermark(Args, x, y + 35, Width-(2*m), 5,
       'SEM VALOR FISCAL' + sLineBreak +
-      NFe.procNFe.xMotivo,
+      NativeStringToAnsi(NFe.procNFe.xMotivo),
       48, 'B');
   end;
 
@@ -2706,7 +2718,7 @@ begin
     AddBand(TBlocoCalculoISSQN.Create(FNFeUtils));
     AddBand(TBlocoDadosAdicionais.Create(FNFeUtils));
     AddBand(TBlocoRodape.Create(FMensagemRodape));
-    AddBand(TBlocoMarcaDagua.Create(FNFeUtils, Cancelada));
+    AddBand(TBlocoMarcaDagua.Create(FNFeUtils, FDANFEClassOwner.Cancelada));
 
     FInitialized := True;
   end;
@@ -2734,7 +2746,12 @@ end;
 
 procedure TACBrNFeDANFeFPDF.ImprimirDANFEPDF(AStream: TStream; ANFe: TNFe);
 begin
+  FStream := AStream;
 
+  if not Assigned(FStream) then
+    raise Exception.Create('Stream not initialized');
+
+  ImprimirDANFEPDF(ANFe);
 end;
 
 procedure TACBrNFeDANFeFPDF.ImprimirDANFEResumido(NFE: TNFe);
@@ -2766,19 +2783,21 @@ begin
       try
         Engine.Compressed := True;
 
-       // LPAth := IncludeTrailingPathDelimiter(TACBrNFe(ACBrNFe).DANFE.PathPDF) +
-       //   ExtractFilePath(TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
+        if Assigned(FStream) then
+        begin
+          FPArquivoPDF := OnlyNumber(LNFe.infNFe.ID) + '-nfe.pdf';
+          Engine.SaveToStream(FStream);
+        end else
+        begin
+          LPath := DefinirNomeArquivo(TACBrNFe(ACBrNFe).DANFE.PathPDF,
+                 OnlyNumber(LNFe.infNFe.ID) + '-nfe.pdf',
+                 TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
 
-       // Engine.SaveToFile(LPath + LNFe.infNFe.ID+'.pdf');
+          ForceDirectories(ExtractFilePath(LPath));
 
-       LPath := DefinirNomeArquivo(TACBrNFe(ACBrNFe).DANFE.PathPDF,
-               OnlyNumber(LNFe.infNFe.ID) + '-nfe.pdf',
-               TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
-
-       ForceDirectories(ExtractFilePath(LPath));
-
-       Engine.SaveToFile(LPath);
-       FPArquivoPDF := LPath;
+          Engine.SaveToFile(LPath);
+          FPArquivoPDF := LPath;
+        end;
       finally
         Engine.Free;
       end;
@@ -2795,7 +2814,12 @@ end;
 
 procedure TACBrNFeDANFeFPDF.ImprimirEVENTOPDF(AStream: TStream; ANFe: TNFe);
 begin
-  inherited;
+  FStream := AStream;
+
+  if not Assigned(FStream) then
+    raise Exception.Create('Stream not initialized');
+
+  ImprimirEVENTOPDF(ANFe);
 end;
 
 procedure TACBrNFeDANFeFPDF.ImprimirEVENTOPDF(NFE: TNFe);
@@ -2823,18 +2847,24 @@ begin
       Engine := TFPDFEngine.Create(Report, False);
       try
         Engine.Compressed := True;
+        if Assigned(FStream) then
+        begin
+          FPArquivoPDF := OnlyNumber(LNFe.infNFe.ID) + '-nfe.pdf';
+          Engine.SaveToStream(FStream);
+        end else
+        begin
+          LPAth := IncludeTrailingPathDelimiter(TACBrNFe(ACBrNFe).DANFE.PathPDF) +
+            ExtractFilePath(TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
 
-        LPAth := IncludeTrailingPathDelimiter(TACBrNFe(ACBrNFe).DANFE.PathPDF) +
-          ExtractFilePath(TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
+          LPath := DefinirNomeArquivo(TACBrNFe(ACBrNFe).DANFE.PathPDF,
+                      TpEventoToStr(TACBrNFe(ACBrNFe).EventoNFe.Evento[I].InfEvento.tpEvento)
+                        + OnlyNumber(LNFe.infNFe.ID)
+                        + '-nfe.pdf',
+                    TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
 
-        LPath := DefinirNomeArquivo(TACBrNFe(ACBrNFe).DANFE.PathPDF,
-                    TpEventoToStr(TACBrNFe(ACBrNFe).EventoNFe.Evento[I].InfEvento.tpEvento)
-                      + OnlyNumber(LNFe.infNFe.ID)
-                      + '-nfe.pdf',
-                  TACBrNFe(ACBrNFe).DANFE.NomeDocumento);
-
-        ForceDirectories(ExtractFilePath(LPath));
-        Engine.SaveToFile(LPath);
+          ForceDirectories(ExtractFilePath(LPath));
+          Engine.SaveToFile(LPath);
+        end;
       finally
         Engine.Free;
       end;
@@ -2850,18 +2880,15 @@ begin
 
 end;
 
-procedure TACBrNFeDANFeFPDF.ImprimirINUTILIZACAOPDF(AStream: TStream;
-  ANFe: TNFe);
+procedure TACBrNFeDANFeFPDF.ImprimirINUTILIZACAOPDF(AStream: TStream; ANFe: TNFe);
 begin
-  inherited;
+  inherited ImprimirINUTILIZACAOPDF(AStream, ANFe);
 end;
 
 procedure TACBrNFeDANFeFPDF.ImprimirINUTILIZACAOPDF(NFE: TNFe);
 begin
   inherited;
 end;
-
-
 
 { TNFeDANFeEventoFPDF }
 
@@ -3203,7 +3230,7 @@ begin
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
   texto := '';
   if NFe.Dest <> nil then
-    texto := NFe.Dest.xNome;
+    texto := NativeStringToAnsi(NFe.Dest.xNome);
   SetFontBoxContent(PDF);
   if PDF.Orientation = poPortrait then
     PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '')
@@ -3234,12 +3261,12 @@ begin
   texto := '';
   if NFe.Dest.enderDest <> nil then
   begin
-    texto := NFe.Dest.enderDest.xLgr;
+    texto := NativeStringToAnsi(NFe.Dest.enderDest.xLgr);
     texto := texto + ', ' + NFe.Dest.enderDest.nro;
   end;
   if NFe.Dest.enderDest <> nil then
     if NFe.Dest.enderDest.xCpl <> '' then
-      texto := texto + ' - ' + NFe.Dest.enderDest.xCpl;
+      texto := texto + ' - ' + NativeStringToAnsi(NFe.Dest.enderDest.xCpl);
   SetFontBoxContent(PDF);
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '', true);
   //BAIRRO / DISTRITO
@@ -3251,7 +3278,7 @@ begin
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
   texto := '';
   if NFe.Dest.enderDest <> nil then
-    texto := NFe.Dest.enderDest.xBairro;
+    texto := NativeStringToAnsi(NFe.Dest.enderDest.xBairro);
   SetFontBoxContent(PDF);
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
   //CEP
@@ -3277,9 +3304,9 @@ begin
   texto := '';
   if NFe.Dest.enderDest <> nil then
   begin
-    texto := NFe.Dest.enderDest.xMun;
+    texto := NativeStringToAnsi(NFe.Dest.enderDest.xMun);
     if (UpperCase(Trim(texto)) = 'EXTERIOR') and (Length(NFe.Dest.enderDest.xPais) > 0) then
-      texto := texto + ' - ' + NFe.Dest.enderDest.xPais;
+      texto := texto + ' - ' + NativeStringToAnsi(NFe.Dest.enderDest.xPais);
   end;
   SetFontBoxContent(PDF);
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
@@ -3348,7 +3375,7 @@ begin
   texto := 'NOME / RAZÃO SOCIAL';
   SetFontBoxHeader(PDF);
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Emit.xNome;
+  texto := NativeStringToAnsi(NFe.Emit.xNome);
   SetFontBoxContent(PDF);
   if PDF.Orientation = poPortrait then
     PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '')
@@ -3387,10 +3414,10 @@ begin
   texto := 'ENDEREÇO';
   SetFontBoxHeader(PDF);
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Emit.EnderEmit.xLgr;
+  texto := NativeStringToAnsi(NFe.Emit.EnderEmit.xLgr);
   texto := texto + ', ' + NFe.Emit.EnderEmit.nro;
   if NFe.Emit.EnderEmit.xCpl <> '' then
-    texto := texto + ' - ' + NFe.Emit.EnderEmit.xCpl;
+    texto := texto + ' - ' + NativeStringToAnsi(NFe.Emit.EnderEmit.xCpl);
   SetFontBoxContent(PDF);
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '', true);
   //BAIRRO / DISTRITO
@@ -3400,7 +3427,7 @@ begin
   texto := 'BAIRRO / DISTRITO';
   SetFontBoxHeader(PDF);
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Emit.EnderEmit.xBairro;
+  texto := NativeStringToAnsi(NFe.Emit.EnderEmit.xBairro);
   SetFontBoxContent(PDF);
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
   //CEP
@@ -3430,9 +3457,9 @@ begin
   texto := 'MUNICÍPIO';
   SetFontBoxHeader(PDF);
   PDF.TextBox(x, y, w, h, texto, 'T', 'L', 1, '');
-  texto := NFe.Emit.EnderEmit.xMun;
+  texto := NativeStringToAnsi(NFe.Emit.EnderEmit.xMun);
   if (UpperCase(Trim(texto)) = 'EXTERIOR') and (Length(NFe.Emit.EnderEmit.xPais) > 0) then
-    texto := texto + ' - ' + NFe.Emit.EnderEmit.xPais;
+    texto := texto + ' - ' + NativeStringToAnsi(NFe.Emit.EnderEmit.xPais);
   SetFontBoxContent(PDF);
   PDF.TextBox(x, y, w, h, texto, 'B', 'L', 0, '');
   //UF

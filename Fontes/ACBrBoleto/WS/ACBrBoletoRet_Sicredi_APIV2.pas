@@ -51,6 +51,9 @@ type
  private
    function DateSicreditoDateTime(Const AValue : String) : TDateTime;
    function TimeSicreditoDateTime(Const AValue : String) : String;
+   function RetornaCodigoOcorrencia(pSituacaoGeralBoleto: string): String;
+   function RetornaDescricaoStatusTitulo(AStatus: string): String;
+    function TrataNossoNumero(const ANossoNumero: string): string;
  public
    constructor Create(ABoletoWS: TACBrBoleto); override;
    destructor  Destroy; Override;
@@ -64,7 +67,9 @@ implementation
 
 uses
   ACBrBoletoConversao,
-  ACBrJSON;
+  ACBrJSON,
+  ACBrUtil.Base,
+  ACBrUtil.Strings;
 
 { TRetornoEnvio }
 
@@ -151,6 +156,7 @@ begin
               ARetornoWS.DadosRet.IDBoleto.CodBarras       := ARetornoWS.DadosRet.TituloRet.CodBarras;
               ARetornoWS.DadosRet.IDBoleto.LinhaDig        := ARetornoWS.DadosRet.TituloRet.LinhaDig;
               ARetornoWS.DadosRet.IDBoleto.NossoNum        := ARetornoWS.DadosRet.TituloRet.NossoNumero;
+              ARetornoWS.DadosRet.TituloRet.NossoNumeroCorrespondente  := TrataNossoNumero(ARetornoWS.DadosRet.TituloRet.NossoNumero);
 
               //Pagador
               //ARetornoWS.DadosRet.TituloRet.Sacado.codigo         := LJsonObject.AsJSONObject['pagador'].AsString['codigo'];
@@ -188,18 +194,6 @@ begin
               ARetornoWS.DadosRet.TituloRet.TxId                   := LJsonObject.AsString['txId'];
               ARetornoWS.DadosRet.TituloRet.EMV                    := LJsonObject.AsString['codigoQrCode'];
               ARetornoWS.DadosRet.TituloRet.PercentualMulta        := LJsonObject.AsFloat['valorMulta'];
-              if ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca = '6' then
-              begin
-                 ARetornoWS.DadosRet.TituloRet.ValorPago              := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['valor'];
-                 ARetornoWS.DadosRet.TituloRet.ValorMoraJuros         := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['juros'];
-                 ARetornoWS.DadosRet.TituloRet.ValorAbatimento        := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['abatimento'];
-                 ARetornoWS.DadosRet.TituloRet.DataBaixa              := DateSicreditoDateTime(LJsonObject.AsJSONObject['dadosLiquidacao'].AsString['data']);
-                 ARetornoWS.DadosRet.TituloRet.HoraBaixa              := TimeSicreditoDateTime(LJsonObject.AsJSONObject['dadosLiquidacao'].AsString['data']);
-                 ARetornoWS.DadosRet.TituloRet.ValorDesconto          := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['desconto'];
-                 ARetornoWS.DadosRet.TituloRet.ValorMulta             := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['multa'];
-              end;
-              if LJsonObject.AsString['dataPrevisaoPagamento'] <> '' then
-                ARetornoWS.DadosRet.TituloRet.DataCredito := DateSicreditoDateTime(LJsonObject.AsString['dataPrevisaoPagamento']);
 
               if LJsonObject.IsJSONArray('descontos') then
               begin
@@ -208,7 +202,7 @@ begin
                 begin
                   if I = 0 then
                   begin
-                    ARetornoWS.DadosRet.TituloRet.ValorDesconto:= LJsonArray.ItemAsJSONObject[i].AsFloat['ValorDesconto'];
+                    ARetornoWS.DadosRet.TituloRet.ValorDesconto:= LJsonArray.ItemAsJSONObject[i].AsFloat['valorDesconto'];
                     ARetornoWS.DadosRet.TituloRet.DataDesconto := DateSicreditoDateTime(LJsonArray.ItemAsJSONObject[i].AsString['dataLimite']);
                   end;
                   if I = 1 then
@@ -223,6 +217,19 @@ begin
                   end;
                 end;
               end;
+              if ARetornoWS.DadosRet.TituloRet.CodigoEstadoTituloCobranca = '6' then
+              begin
+                 ARetornoWS.DadosRet.TituloRet.ValorPago              := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['valor'];
+                 ARetornoWS.DadosRet.TituloRet.ValorMoraJuros         := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['juros'];
+                 ARetornoWS.DadosRet.TituloRet.ValorAbatimento        := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['abatimento'];
+                 ARetornoWS.DadosRet.TituloRet.DataBaixa              := DateSicreditoDateTime(LJsonObject.AsJSONObject['dadosLiquidacao'].AsString['data']);
+                 ARetornoWS.DadosRet.TituloRet.HoraBaixa              := TimeSicreditoDateTime(LJsonObject.AsJSONObject['dadosLiquidacao'].AsString['data']);
+                 ARetornoWS.DadosRet.TituloRet.ValorDesconto          := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['desconto'];
+                 ARetornoWS.DadosRet.TituloRet.ValorMulta             := LJsonObject.AsJSONObject['dadosLiquidacao'].AsFloat['multa'];
+              end;
+              if LJsonObject.AsString['dataPrevisaoPagamento'] <> '' then
+                ARetornoWS.DadosRet.TituloRet.DataCredito := DateSicreditoDateTime(LJsonObject.AsString['dataPrevisaoPagamento']);
+
             end;
         end;
 
@@ -241,6 +248,8 @@ begin
             ARetornoWS.DadosRet.TituloRet.CodBarras     := ARetornoWS.DadosRet.IDBoleto.CodBarras;
             ARetornoWS.DadosRet.TituloRet.LinhaDig      := ARetornoWS.DadosRet.IDBoleto.LinhaDig;
             ARetornoWS.DadosRet.TituloRet.NossoNumero   := ARetornoWS.DadosRet.IDBoleto.NossoNum;
+            ARetornoWS.DadosRet.TituloRet.NossoNumeroCorrespondente  := TrataNossoNumero(ARetornoWS.DadosRet.TituloRet.NossoNumero);
+
           end else
           if (LTipoOperacao = tpBaixa) then
           begin
@@ -288,6 +297,7 @@ var
   LJsonArray: TACBrJSONArray;
   LListaRetorno: TACBrBoletoRetornoWS;
   LMensagemRejeicao: TACBrBoletoRejeicao;
+  LTipoLiquidacao : string;
   I: Integer;
 begin
   Result := True;
@@ -346,6 +356,8 @@ begin
 
 
             LListaRetorno.DadosRet.TituloRet.NossoNumero                := LListaRetorno.DadosRet.IDBoleto.NossoNum;
+            LListaRetorno.DadosRet.TituloRet.NossoNumeroCorrespondente  := TrataNossoNumero(LListaRetorno.DadosRet.TituloRet.NossoNumero);
+
             LListaRetorno.DadosRet.TituloRet.DataBaixa                  := DateSicreditoDateTime(LItemObject.AsString['dataPagamento']);
             LListaRetorno.DadosRet.TituloRet.HoraBaixa                  := TimeSicreditoDateTime(LItemObject.AsString['dataPagamento']);
             LListaRetorno.DadosRet.TituloRet.SeuNumero                  := LItemObject.AsString['seuNumero'];
@@ -359,6 +371,9 @@ begin
             LListaRetorno.DadosRet.TituloRet.ValorOutrosCreditos        := LItemObject.AsFloat['multaLiquida'];
             LListaRetorno.DadosRet.TituloRet.ValorAbatimento            := LItemObject.AsFloat['abatimentoLiquido'];
             LListaRetorno.DadosRet.TituloRet.Mensagem.Text              := LItemObject.AsString['tipoLiquidacao'];
+            LTipoLiquidacao := AnsiUpperCase(LItemObject.AsString['tipoLiquidacao']);
+            LListaRetorno.DadosRet.TituloRet.EstadoTituloCobranca       := RetornaDescricaoStatusTitulo(LTipoLiquidacao);
+            LListaRetorno.DadosRet.TituloRet.CodigoEstadoTituloCobranca := RetornaCodigoOcorrencia(LTipoLiquidacao);
 
             LListaRetorno.DadosRet.TituloRet.DataCredito                := DateSicreditoDateTime(LItemObject.AsString['dataPagamento']);
           end;
@@ -396,6 +411,33 @@ begin
   end;
 end;
 
+function TRetornoEnvio_Sicredi_APIV2.RetornaCodigoOcorrencia(
+  pSituacaoGeralBoleto: string): String;
+begin
+  if (pSituacaoGeralBoleto  = 'REDE') or
+     (pSituacaoGeralBoleto  = 'COMPE') then
+    Result := '06'
+  else if pSituacaoGeralBoleto  = 'PIX' then
+    Result := 'PX'
+  else
+    Result := '99';
+
+end;
+
+function TRetornoEnvio_Sicredi_APIV2.RetornaDescricaoStatusTitulo(
+  AStatus: string): String;
+begin
+  if (AStatus = 'REDE') then
+    result := 'Liquidado via rede sicredi'
+  else if (AStatus = 'COMPE') then
+    result := 'Liquidado via compesacao'
+  else if (AStatus = 'PIX') then
+    result := 'Liquidado via pix'
+  else
+    result := AStatus;
+end;
+
+
 function TRetornoEnvio_Sicredi_APIV2.RetornoEnvio(const AIndex: Integer): Boolean;
 begin
 
@@ -412,6 +454,23 @@ begin
   LSegundos := Copy( AValue, 18,2 );
   Result   := Format( '%s:%s:%s' , [LHora,LMinuto,LSegundos]);
 end;
+
+function TRetornoEnvio_Sicredi_APIV2.TrataNossoNumero(
+  const ANossoNumero: string): string;
+var
+  LTamanhoNossoNumero : integer;
+begin
+  LTamanhoNossoNumero := 5;
+  if Assigned(ACBrBoleto) then
+  begin
+    if ACBrBoleto.LerNossoNumeroCompleto then
+       LTamanhoNossoNumero := 6;
+  end;
+
+  if NaoEstaVazio(ANossoNumero) and TamanhoIgual(ANossoNumero,9) then
+    Result := RemoveZerosEsquerda(Copy(ANossoNumero,4,LTamanhoNossoNumero));
+end;
+
 
 end.
 

@@ -38,6 +38,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, synacode,
+  ACBrBase,
   ACBrXmlBase,
   ACBrXmlDocument,
   ACBrNFSeXGravarXml,
@@ -71,6 +72,7 @@ type
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Strings,
   ACBrUtil.Math,
   ACBrNFSeXConsts,

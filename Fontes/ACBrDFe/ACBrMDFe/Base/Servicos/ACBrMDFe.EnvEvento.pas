@@ -44,12 +44,14 @@ uses
    System.Contnrs,
   {$IfEnd}
   ACBrDFeConsts,
+  ACBrXmlBase,
+  ACBrDFe.Conversao,
   pcnConversao,
   pcnSignature,
+//  ACBrDFeComum.SignatureClass,
   ACBrMDFe.Consts,
   ACBrMDFe.EventoClass,
   ACBrBase,
-  ACBrXmlBase,
   ACBrXmlWriter,
   ACBrXmlDocument;
 
@@ -241,7 +243,7 @@ begin
                                                 Evento[Idx].FInfEvento.cOrgao));
 
   Result.AppendChild(AddNode(tcStr, 'HP09', 'tpAmb', 1, 1, 1,
-                           TpAmbToStr(Evento[Idx].InfEvento.tpAmb), DSC_TPAMB));
+                    TipoAmbienteToStr(Evento[Idx].InfEvento.tpAmb), DSC_TPAMB));
 
   sDoc := OnlyNumber(Evento[Idx].InfEvento.CNPJCPF);
 

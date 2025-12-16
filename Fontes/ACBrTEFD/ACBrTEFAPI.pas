@@ -3,7 +3,7 @@
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
-{ Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
+{ Direitos Autorais Reservados (c) 2025 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
 {                                                                              }
@@ -66,7 +66,8 @@ type
                       tefScopeAPI,
                       tefDestaxaAPI,
                       tefTPag,
-                      tefPayKit);
+                      tefEquals,
+                      tefDirectPin );
 
   TACBrTEFAPIExibicaoQRCode = ( qrapiNaoSuportado,
                                 qrapiAuto,
@@ -203,6 +204,7 @@ type
     procedure ApagarImagemPinPad(const NomeImagem: String); virtual;
     procedure CarregarImagemPinPad(const NomeImagem: String; AStream: TStream;
       TipoImagem: TACBrTEFAPIImagemPinPad ); virtual;
+    function VersaoAPI: String; virtual;
   end;
 
   { TACBrTEFAPI }
@@ -238,7 +240,8 @@ type
     procedure ExibirMensagemPinPad(const MsgPinPad: String);
     function ObterDadoPinPad(TipoDado: TACBrTEFAPIDadoPinPad;
       TimeOut: Integer = 30000; MinLen: SmallInt = 0; MaxLen: SmallInt = 0): String;
-    function MenuPinPad(const Titulo: String; Opcoes: TStrings; TimeOut: Integer = 30000): Integer;
+    function MenuPinPad(const Titulo: String; Opcoes: TStrings;
+      TimeOut: Integer = 30000): Integer;  // Retorna Opção selecionada, iniciando com 1
     function VerificarPresencaPinPad: Byte;
 
     procedure ObterListaImagensPinPad(ALista: TStrings);
@@ -251,6 +254,7 @@ type
     procedure CarregarImagemPinPad(const NomeImagem: String; AStream: TStream;
       TipoImagem: TACBrTEFAPIImagemPinPad ); overload;
     procedure CarregarImagemPinPad(const NomeImagem: String; const Arquivo: String); overload;
+    function VersaoAPI: string;
 
     property TEF: TACBrTEFAPIClass read GetTEFAPIClass;
   published
@@ -296,7 +300,8 @@ uses
   ACBrTEFAPIScope,
   ACBrTEFAPIDestaxa,
   ACBrTEFAPITPag,
-  ACBrTEFAPIPayKit;
+  ACBrTEFAPIPayKit,
+  ACBrTEFAPIDirectPin;
 
 { TACBrTEFAPIClass }
 
@@ -394,6 +399,12 @@ begin
   ErroAbstract('VerificarPresencaPinPad');
 end;
 
+function TACBrTEFAPIClass.VersaoAPI: String;
+begin
+  Result := '';
+  ErroAbstract('VersaoAPI');
+end;
+
 procedure TACBrTEFAPIClass.ObterListaImagensPinPad(ALista: TStrings);
 begin
   ErroAbstract('ObterListaImagensPinPad');
@@ -488,6 +499,16 @@ begin
   GravarLog('VerificarPresencaPinPad');
   Result := TEF.VerificarPresencaPinPad;
   GravarLog('   '+IntToStr(Result));
+end;
+
+function TACBrTEFAPI.VersaoAPI: string;
+var
+  lVersaoAPI: string;
+begin
+  GravarLog('VersaoAPI');
+  lVersaoAPI := TEF.VersaoAPI;
+  GravarLog(lVersaoAPI);
+  Result := lVersaoAPI;
 end;
 
 procedure TACBrTEFAPI.ObterListaImagensPinPad(ALista: TStrings);
@@ -657,7 +678,8 @@ begin
     tefScopeAPI    : fpTEFAPIClass := TACBrTEFAPIClassScope.Create( Self );
     tefDestaxaAPI  : fpTEFAPIClass := TACBrTEFAPIClassDestaxa.Create( Self );
     tefTPag        : fpTEFAPIClass := TACBrTEFAPIClassTPag.Create( Self );
-    tefPayKit      : fpTEFAPIClass := TACBrTEFAPIClassPayKit.Create( Self );
+    tefEquals      : fpTEFAPIClass := TACBrTEFAPIClassPayKit.Create( Self );
+    tefDirectPin   : fpTEFAPIClass := TACBrTEFAPIDirectPin.Create( Self );
   else
     fpTEFAPIClass := TACBrTEFAPIClass.Create( Self );
   end;

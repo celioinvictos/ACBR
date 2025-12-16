@@ -38,7 +38,8 @@ interface
 
 uses
   SysUtils, Classes,
-  ACBrDFe,
+  ACBrBase, ACBrDFe,
+  ACBrXmlBase,
   ACBrNFSeXParametros, ACBrNFSeXInterface, ACBrNFSeXClass, ACBrNFSeXConversao,
   ACBrNFSeXLerXml, ACBrNFSeXGravarXml, ACBrNFSeXNotasFiscais,
   ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
@@ -74,6 +75,7 @@ type
     function GetConsultarDFeResponse: TNFSeConsultarDFeResponse;
     function GetConsultarParamResponse: TNFSeConsultarParamResponse;
     function GetConsultarSeqRpsResponse: TNFSeConsultarSeqRpsResponse;
+    function GetObterDANFSEResponse: TNFSeObterDANFSEResponse;
 
   protected
     FAOwner: TACBrDFe;
@@ -85,10 +87,11 @@ type
     procedure SetXmlNameSpace(const aNameSpace: string);
     procedure SetNameSpaceURI(const aMetodo: TMetodo);
     procedure SalvarXmlRps(aNota: TNotaFiscal);
-    procedure SalvarXmlNfse(aNota: TNotaFiscal);
+    procedure SalvarXmlNfse(aNota: TNotaFiscal); overload;
+    procedure SalvarXmlNfse(const NumeroNFSe: string; const aXml: AnsiString); overload;
     procedure SalvarPDFNfse(const aNome: string; const aPDF: AnsiString);
-    procedure SalvarXmlEvento(const aNome: string; const aEvento: AnsiString);
-    procedure SalvarXmlCancelamento(const aNome, aCancelamento: string);
+    procedure SalvarXmlEvento(const aNome: string; const aEvento: AnsiString; out PathNome: string);
+    procedure SalvarXmlCancelamento(const aNome, aCancelamento: string; out PathNome: string);
 
     function CarregarXmlNfse(aNota: TNotaFiscal; const aXml: string): TNotaFiscal;
 
@@ -205,6 +208,11 @@ type
     procedure AssinarConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); virtual;
     procedure TratarRetornoConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); virtual; abstract;
 
+    //método usado para Obter o DANFSE
+    procedure PrepararObterDANFSE(Response: TNFSeObterDANFSEResponse); virtual; abstract;
+    procedure GerarMsgDadosObterDANFSE(Response: TNFSeObterDANFSEResponse); virtual; abstract;
+    procedure AssinarObterDANFSE(Response: TNFSeObterDANFSEResponse); virtual;
+    procedure TratarRetornoObterDANFSE(Response: TNFSeObterDANFSEResponse); virtual; abstract;
   public
     constructor Create(AOwner: TACBrDFe);
     destructor Destroy; override;
@@ -233,6 +241,7 @@ type
     procedure ConsultarDFe; virtual;
     procedure ConsultarParam; virtual;
     procedure ConsultarSeqRps; virtual;
+    procedure ObterDANFSE; virtual;
 
     property ConfigGeral: TConfigGeral read GetConfigGeral;
     property ConfigWebServices: TConfigWebServices read GetConfigWebServices;
@@ -255,6 +264,7 @@ type
     property ConsultarDFeResponse: TNFSeConsultarDFeResponse read GetConsultarDFeResponse;
     property ConsultarParamResponse: TNFSeConsultarParamResponse read GetConsultarParamResponse;
     property ConsultarSeqRpsResponse: TNFSeConsultarSeqRpsResponse read GetConsultarSeqRpsResponse;
+    property ObterDANFSEResponse: TNFSeObterDANFSEResponse read GetObterDANFSEResponse;
 
     function SituacaoLoteRpsToStr(const t: TSituacaoLoteRps): string; virtual;
     function StrToSituacaoLoteRps(out ok: boolean; const s: string): TSituacaoLoteRps; virtual;
@@ -321,7 +331,7 @@ uses
   ACBrConsts,
   ACBrUtil.DateTime,
   ACBrUtil.Base, ACBrUtil.Strings, ACBrUtil.FilesIO, ACBrUtil.XMLHTML,
-  ACBrXmlBase, ACBrDFeException, ACBrDFeUtil,
+  ACBrDFe.Conversao, ACBrDFeException, ACBrDFeUtil,
   ACBrNFSeX, ACBrNFSeXConfiguracoes, ACBrNFSeXConsts;
 
 { TACBrNFSeXProvider }
@@ -457,11 +467,20 @@ begin
   Result := TACBrNFSeX(FAOwner).WebService.ConsultarSeqRps;
 end;
 
+function TACBrNFSeXProvider.GetObterDANFSEResponse: TNFSeObterDANFSEResponse;
+begin
+  Result := TACBrNFSeX(FAOwner).WebService.ObterDANFSE;
+end;
+
 function TACBrNFSeXProvider.GetSchemaPath: string;
 begin
   with TACBrNFSeX(FAOwner).Configuracoes do
   begin
-    Result := PathWithDelim(Arquivos.PathSchemas + Geral.xProvedor);
+    if Geral.APIPropria then
+      Result := PathWithDelim(Arquivos.PathSchemas + 'PadraoNacional')
+    else
+      Result := PathWithDelim(Arquivos.PathSchemas + Geral.xProvedor);
+
     Result := PathWithDelim(Result + VersaoNFSeToStr(Geral.Versao));
   end;
 end;
@@ -527,6 +546,7 @@ begin
         tmConsultarSeqRps: Result := ConsultarSeqRps;
         tmConsultarLinkNFSe: Result := ConsultarLinkNFSe;
         tmConsultarNFSePorChave: Result := ConsultarNFSePorChave;
+        tmObterDANFSE: Result := ObterDANFSE;
       else
         Result := '';
       end;
@@ -565,6 +585,7 @@ begin
         tmConsultarSeqRps: Result := ConsultarSeqRps;
         tmConsultarLinkNFSe: Result := ConsultarLinkNFSe;
         tmConsultarNFSePorChave: Result := ConsultarNFSePorChave;
+        tmObterDANFSE: Result := ObterDANFSE;
       else
         Result := '';
       end;
@@ -672,9 +693,11 @@ begin
     ServicosDisponibilizados.ConsultarLinkNfse := False;
     ServicosDisponibilizados.ConsultarNfseChave := False;
     ServicosDisponibilizados.TestarEnvio := False;
+    ServicosDisponibilizados.ObterDANFSE := False;
 
     Particularidades.PermiteMaisDeUmServico := False;
     Particularidades.PermiteTagOutrasInformacoes := False;
+    Particularidades.AtendeReformaTributaria := False;
 
     Provedor := TACBrNFSeX(FAOwner).Configuracoes.Geral.Provedor;
     Versao := TACBrNFSeX(FAOwner).Configuracoes.Geral.Versao;
@@ -812,6 +835,11 @@ begin
     ConsultarLinkNFSe.xmlns := '';
     ConsultarLinkNFSe.InfElemento := '';
     ConsultarLinkNFSe.DocElemento := '';
+
+    // Usado para geração do Obter DANFSE
+    ObterDANFSE.xmlns := '';
+    ObterDANFSE.InfElemento := '';
+    ObterDANFSE.DocElemento := '';
   end;
 
   // Inicializa os parâmetros de configuração: Assinar
@@ -841,6 +869,7 @@ begin
     ConsultarParam := False;
     ConsultarSeqRps := False;
     ConsultarLinkNFSe := False;
+    ObterDANFSE := False;
 
     IncluirURI := True;
 
@@ -860,6 +889,7 @@ procedure TACBrNFSeXProvider.CarregarURL;
 var
   IniParams: TMemIniFile;
   Sessao: String;
+  APIPropria: Boolean;
 begin
   IniParams := TMemIniFile.Create('');
 
@@ -873,6 +903,9 @@ begin
     begin
       // Primeiro verifica as URLs definidas para a cidade
       Sessao := IntToStr(Configuracoes.Geral.CodigoMunicipio);
+//      APIPropria := IniParams.ReadString(Sessao, 'Params', '') = 'APIPropria:';
+      APIPropria := (Pos('APIPropria:', IniParams.ReadString(Sessao, 'Params', '')) > 0);
+
       ConfigWebServices.LoadUrlProducao(IniParams, Sessao);
       ConfigWebServices.LoadUrlHomologacao(IniParams, Sessao);
       ConfigWebServices.LoadLinkUrlProducao(IniParams, Sessao);
@@ -887,32 +920,65 @@ begin
       ConfigGeral.LoadParams(IniParams, Sessao);
 
       // Depois verifica as URLs definidas para o provedor
-      if (ConfigWebServices.Producao.Recepcionar = '') or
-         (Configuracoes.Geral.Provedor = proPadraoNacional) then
+      if not APIPropria then
       begin
-        Sessao := Configuracoes.Geral.xProvedor;
-        ConfigWebServices.LoadUrlProducao(IniParams, Sessao);
-      end;
+        if (ConfigWebServices.Producao.Recepcionar = '') or
+           (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        begin
+          Sessao := Configuracoes.Geral.xProvedor;
+          ConfigWebServices.LoadUrlProducao(IniParams, Sessao);
+        end;
 
-      if (ConfigWebServices.Homologacao.Recepcionar = '') or
-         (Configuracoes.Geral.Provedor = proPadraoNacional) then
-      begin
-        Sessao := Configuracoes.Geral.xProvedor;
-        ConfigWebServices.LoadUrlHomologacao(IniParams, Sessao);
-      end;
+        if (ConfigWebServices.Homologacao.Recepcionar = '') or
+           (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        begin
+          Sessao := Configuracoes.Geral.xProvedor;
+          ConfigWebServices.LoadUrlHomologacao(IniParams, Sessao);
+        end;
 
-      if (ConfigWebServices.Producao.LinkURL = '') or
-         (Configuracoes.Geral.Provedor = proPadraoNacional) then
-      begin
-        Sessao := Configuracoes.Geral.xProvedor;
-        ConfigWebServices.LoadlinkUrlProducao(IniParams, Sessao);
-      end;
+        if (ConfigWebServices.Producao.LinkURL = '') or
+           (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        begin
+          Sessao := Configuracoes.Geral.xProvedor;
+          ConfigWebServices.LoadlinkUrlProducao(IniParams, Sessao);
+        end;
 
-      if (ConfigWebServices.Homologacao.LinkURL = '') or
-         (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        if (ConfigWebServices.Homologacao.LinkURL = '') or
+           (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        begin
+          Sessao := Configuracoes.Geral.xProvedor;
+          ConfigWebServices.LoadLinkUrlHomologacao(IniParams, Sessao);
+        end;
+      end
+      else
       begin
-        Sessao := Configuracoes.Geral.xProvedor;
-        ConfigWebServices.LoadLinkUrlHomologacao(IniParams, Sessao);
+        if (ConfigWebServices.Producao.Recepcionar = ''){ or
+           (Configuracoes.Geral.Provedor = proPadraoNacional)} then
+        begin
+          Sessao := Configuracoes.Geral.xProvedorOrigem;
+          ConfigWebServices.LoadUrlProducao(IniParams, Sessao);
+        end;
+
+        if (ConfigWebServices.Homologacao.Recepcionar = ''){ or
+           (Configuracoes.Geral.Provedor = proPadraoNacional)} then
+        begin
+          Sessao := Configuracoes.Geral.xProvedorOrigem;
+          ConfigWebServices.LoadUrlHomologacao(IniParams, Sessao);
+        end;
+
+        if (ConfigWebServices.Producao.LinkURL = '') or
+           (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        begin
+          Sessao := Configuracoes.Geral.xProvedorOrigem;
+          ConfigWebServices.LoadlinkUrlProducao(IniParams, Sessao);
+        end;
+
+        if (ConfigWebServices.Homologacao.LinkURL = '') or
+           (Configuracoes.Geral.Provedor = proPadraoNacional) then
+        begin
+          Sessao := Configuracoes.Geral.xProvedorOrigem;
+          ConfigWebServices.LoadLinkUrlHomologacao(IniParams, Sessao);
+        end;
       end;
 
       if ConfigWebServices.Producao.XMLNameSpace = '' then
@@ -1022,10 +1088,16 @@ var
   aPath, aNomeArq, Extensao, aXML: string;
   aConfig: TConfiguracoesNFSe;
   ConteudoEhXml: Boolean;
+  Data: TDateTime;
 begin
   aConfig := TConfiguracoesNFSe(FAOwner.Configuracoes);
 
-  aPath := aConfig.Arquivos.GetPathNFSe(0, aConfig.Geral.Emitente.CNPJ,
+  if aConfig.Arquivos.EmissaoPathNFSe then
+    Data := aNota.NFSe.DataEmissao
+  else
+    Data := Now;
+
+  aPath := aConfig.Arquivos.GetPathNFSe(Data, aConfig.Geral.Emitente.CNPJ,
                         aConfig.Geral.Emitente.DadosEmitente.InscricaoEstadual);
 
   aNomeArq := TACBrNFSeX(FAOwner).GetNumID(aNota.NFSe) + '-nfse.xml';
@@ -1070,6 +1142,54 @@ begin
   end;
 end;
 
+procedure TACBrNFSeXProvider.SalvarXmlNfse(const NumeroNFSe: string;
+  const aXml: AnsiString);
+var
+  aPath, aNomeArq, Extensao, AuxXml: string;
+  aConfig: TConfiguracoesNFSe;
+  ConteudoEhXml: Boolean;
+begin
+  aConfig := TConfiguracoesNFSe(FAOwner.Configuracoes);
+
+  aPath := aConfig.Arquivos.GetPathNFSe(0, aConfig.Geral.Emitente.CNPJ,
+                        aConfig.Geral.Emitente.DadosEmitente.InscricaoEstadual);
+
+  aNomeArq := NumeroNFSe + '-nfse.xml';
+  aNomeArq := PathWithDelim(aPath) + aNomeArq;
+
+  if FAOwner.Configuracoes.Arquivos.Salvar then
+  begin
+    case ConfigGeral.FormatoArqNota of
+      tfaJson:
+        Extensao := '.json';
+      tfaTxt:
+        Extensao := '.txt';
+    else
+      Extensao := '.xml';
+    end;
+
+    if ConfigGeral.FormatoArqNota <> tfaXml then
+    begin
+      AuxXml := RemoverDeclaracaoXML(aXml);
+      ConteudoEhXml := False;
+    end
+    else
+    begin
+      AuxXml := RemoverDeclaracaoXML(aXml);
+      ConteudoEhXml := True;
+    end;
+
+    if not ConteudoEhXml then
+    begin
+      aNomeArq := StringReplace(aNomeArq, '.xml', Extensao, [rfReplaceAll]);
+
+      WriteToTXT(aNomeArq, AuxXml, False, False);
+    end
+    else
+      TACBrNFSeX(FAOwner).Gravar(aNomeArq, AuxXml, '', ConteudoEhXml);
+  end;
+end;
+
 procedure TACBrNFSeXProvider.SalvarPDFNfse(const aNome: string;
   const aPDF: AnsiString);
 var
@@ -1087,7 +1207,7 @@ begin
 end;
 
 procedure TACBrNFSeXProvider.SalvarXmlEvento(const aNome: string;
-  const aEvento: AnsiString);
+  const aEvento: AnsiString; out PathNome: string);
 var
   aPath, aNomeArq, Extensao: string;
   aConfig: TConfiguracoesNFSe;
@@ -1128,10 +1248,12 @@ begin
 
     WriteToTXT(aNomeArq, ArqEvento, False, False);
   end;
+
+  PathNome := aNomeArq;
 end;
 
 procedure TACBrNFSeXProvider.SalvarXmlCancelamento(const aNome,
-  aCancelamento: string);
+  aCancelamento: string; out PathNome: string);
 var
   aPath, aNomeArq, Extensao: string;
   aConfig: TConfiguracoesNFSe;
@@ -1172,6 +1294,8 @@ begin
 
     WriteToTXT(aNomeArq, ArqCancelamento, False, False);
   end;
+
+  PathNome := aNomeArq;
 end;
 
 procedure TACBrNFSeXProvider.SetNameSpaceURI(const aMetodo: TMetodo);
@@ -1201,6 +1325,7 @@ begin
     tmConsultarParam: xNameSpaceURI := ConfigMsgDados.ConsultarParam.xmlns;
     tmConsultarSeqRps: xNameSpaceURI := ConfigMsgDados.ConsultarSeqRps.xmlns;
     tmConsultarLinkNFSe: xNameSpaceURI := ConfigMsgDados.ConsultarLinkNFSe.xmlns;
+    tmObterDANFSE: xNameSpaceURI := ConfigMsgDados.ObterDANFSE.xmlns;
   else
     xNameSpaceURI := FDefaultNameSpaceURI;
   end;
@@ -1234,6 +1359,7 @@ begin
     ConsultarParam := aNome;
     ConsultarSeqRps := aNome;
     ConsultarLinkNFSe := aNome;
+    ObterDANFSE := aNome;
 
     Validar := True;
   end;
@@ -1266,6 +1392,7 @@ begin
     ConsultarParam.xmlns := aNameSpace;
     ConsultarSeqRps.xmlns := aNameSpace;
     ConsultarLinkNFSe.xmlns := aNameSpace;
+    ObterDANFSE.xmlns := aNameSpace;
   end;
 
   FDefaultNameSpaceURI := aNameSpace;
@@ -1893,6 +2020,7 @@ begin
     tmConsultarParam: Schema := ConfigSchemas.ConsultarParam;
     tmConsultarSeqRps: Schema := ConfigSchemas.ConsultarSeqRps;
     tmConsultarLinkNFSe: Schema := ConfigSchemas.ConsultarLinkNFSe;
+    tmObterDANFSE: Schema := ConfigSchemas.ObterDANFSE;
   else
     // tmTeste
     Schema := ConfigSchemas.Teste;
@@ -3211,6 +3339,82 @@ begin
   ConsultarSeqRpsResponse.Sucesso := (ConsultarSeqRpsResponse.Erros.Count = 0);
 end;
 
+procedure TACBrNFSeXProvider.ObterDANFSE;
+var
+  AService: TACBrNFSeXWebservice;
+  AErro: TNFSeEventoCollectionItem;
+begin
+  ObterDANFSEResponse.Sucesso := False;
+  ObterDANFSEResponse.Erros.Clear;
+  ObterDANFSEResponse.Alertas.Clear;
+  ObterDANFSEResponse.Resumos.Clear;
+
+  TACBrNFSeX(FAOwner).SetStatus(stNFSEObterDANFSE);
+
+  PrepararObterDANFSE(ObterDANFSEResponse);
+  if (ObterDANFSEResponse.Erros.Count > 0) then
+  begin
+    TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+    Exit;
+  end;
+
+  AssinarObterDANFSE(ObterDANFSEResponse);
+  if (ObterDANFSEResponse.Erros.Count > 0) then
+  begin
+    TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+    Exit;
+  end;
+
+  ValidarSchema(ObterDANFSEResponse, tmObterDANFSE);
+  if (ObterDANFSEResponse.Erros.Count > 0) then
+  begin
+    TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+    Exit;
+  end;
+
+  AService := nil;
+
+  try
+    try
+      TACBrNFSeX(FAOwner).SetStatus(stNFSeEnvioWebService);
+      AService := CriarServiceClient(tmObterDANFSE);
+
+      ObterDANFSEResponse.ArquivoRetorno := AService.ObterDANFSE(ConfigMsgDados.DadosCabecalho,
+                                                           ObterDANFSEResponse.ArquivoEnvio);
+
+      ObterDANFSEResponse.Sucesso := True;
+      ObterDANFSEResponse.EnvelopeEnvio := AService.Envio;
+      ObterDANFSEResponse.EnvelopeRetorno := AService.Retorno;
+    except
+      on E:Exception do
+      begin
+        if AService <> nil then
+        begin
+          ObterDANFSEResponse.EnvelopeEnvio := AService.Envio;
+          ObterDANFSEResponse.EnvelopeRetorno := AService.Retorno;
+        end;
+
+        AErro := ObterDANFSEResponse.Erros.New;
+        AErro.Codigo := Cod999;
+        AErro.Descricao := ACBrStr(Desc999 + E.Message);
+      end;
+    end;
+  finally
+    FreeAndNil(AService);
+  end;
+
+  if not ObterDANFSEResponse.Sucesso then
+  begin
+    TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+    Exit;
+  end;
+
+  TACBrNFSeX(FAOwner).SetStatus(stNFSeAguardaProcesso);
+  TratarRetornoObterDANFSE(ObterDANFSEResponse);
+  TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+  ObterDANFSEResponse.Sucesso := (ObterDANFSEResponse.Erros.Count = 0);
+end;
+
 procedure TACBrNFSeXProvider.AssinarConsultaLinkNFSe(
   Response: TNFSeConsultaLinkNFSeResponse);
 var
@@ -3798,6 +4002,41 @@ begin
     Response.ArquivoEnvio := FAOwner.SSL.Assinar(Response.ArquivoEnvio,
       Prefixo + ConfigMsgDados.ConsultarParam.DocElemento,
       ConfigMsgDados.ConsultarParam.InfElemento, '', '', '', IdAttr, IdAttrSig);
+  except
+    on E:Exception do
+    begin
+      AErro := Response.Erros.New;
+      AErro.Codigo := Cod801;
+      AErro.Descricao := ACBrStr(Desc801 + E.Message);
+    end;
+  end;
+end;
+
+procedure TACBrNFSeXProvider.AssinarObterDANFSE(
+  Response: TNFSeObterDANFSEResponse);
+var
+  IdAttr, Prefixo, IdAttrSig: string;
+  AErro: TNFSeEventoCollectionItem;
+begin
+  if not ConfigAssinar.ObterDANFSE then Exit;
+
+  if ConfigAssinar.IncluirURI then
+    IdAttr := ConfigGeral.Identificador
+  else
+    IdAttr := 'ID';
+
+  if ConfigMsgDados.Prefixo = '' then
+    Prefixo := ''
+  else
+    Prefixo := ConfigMsgDados.Prefixo + ':';
+
+  try
+    IdAttrSig := SetIdSignatureValue(Response.ArquivoEnvio,
+                            ConfigMsgDados.ObterDANFSE.DocElemento, IdAttr);
+
+    Response.ArquivoEnvio := FAOwner.SSL.Assinar(Response.ArquivoEnvio,
+      Prefixo + ConfigMsgDados.ObterDANFSE.DocElemento,
+      ConfigMsgDados.ObterDANFSE.InfElemento, '', '', '', IdAttr, IdAttrSig);
   except
     on E:Exception do
     begin

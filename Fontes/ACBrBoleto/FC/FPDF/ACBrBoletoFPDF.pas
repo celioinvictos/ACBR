@@ -590,14 +590,15 @@ begin
   begin
     FPDF.SetFont('Arial', '', 5);
     FPDF.Cell(LReducaoCanhoto + (LReducaoCanhoto / 2), LAlturaPadraoBaixo, Copy(LPagador,1,33), '', 0, 'L');
-    FPDF.SetX(0);
+  end;
+  FPDF.SetFont('Arial', 'B', 6);
+  FPDF.Cell(190 - LReducaoCanhoto - (LReducaoCanhoto/2), LAlturaPadraoBaixo, LPagador, 'LR', 1, 'L');
+  if ACanhoto then
+  begin
+    FPDF.SetFont('Arial', '', 5);
     FPDF.Cell(LReducaoCanhoto + (LReducaoCanhoto / 2), LAlturaPadraoAlto, Copy(LPagador,34,33), '', 0, 'L');
   end;
-  FPDF.SetFont('Arial', 'B', 7);
-  FPDF.SetX(LReducaoCanhoto + (LReducaoCanhoto / 2));
-  FPDF.Cell(190 - LReducaoCanhoto - (LReducaoCanhoto/2), LAlturaPadraoBaixo, LPagador, 'LR', 1, 'L');
-  FPDF.SetFont('Arial', '', 7);
-  FPDF.SetX(LReducaoCanhoto + (LReducaoCanhoto / 2));
+  FPDF.SetFont('Arial', '', 6);
   FPDF.Cell(190 - LReducaoCanhoto - (LReducaoCanhoto/2), LAlturaPadraoBaixo, FACBrTitulo.Sacado.Logradouro + ' ' + FACBrTitulo.Sacado.Numero+ ' ' + FACBrTitulo.Sacado.Complemento, 'LR', 1, 'L');
 
 
@@ -607,7 +608,6 @@ begin
     FPDF.Cell(LReducaoCanhoto + (LReducaoCanhoto / 2), LAlturaPadraoBaixo, Copy(FACBrTitulo.Sacado.Logradouro + ' ' + FACBrTitulo.Sacado.Numero+ ' ' + FACBrTitulo.Sacado.Complemento,1,33), '', 0, 'L');
   end;
   FPDF.SetFont('Arial', '', 7);
-  FPDF.SetX(LReducaoCanhoto + (LReducaoCanhoto / 2));
   FPDF.Cell(190 - LReducaoCanhoto - (LReducaoCanhoto/2), LAlturaPadraoBaixo, FACBrTitulo.Sacado.Bairro + ' ' + FACBrTitulo.Sacado.Cidade + ' ' + FACBrTitulo.Sacado.UF + ' ' + FACBrTitulo.Sacado.CEP, 'LR', 1, 'L');
 
   if ACanhoto then
@@ -616,7 +616,7 @@ begin
     FPDF.Cell(LReducaoCanhoto + (LReducaoCanhoto / 2), LAlturaPadraoBaixo, Copy(FACBrTitulo.Sacado.Logradouro + ' ' + FACBrTitulo.Sacado.Numero+ ' ' + FACBrTitulo.Sacado.Complemento,34,33), '', 0, 'L');
   end;
 
-  FPDF.SetX(LReducaoCanhoto + (LReducaoCanhoto / 2));
+  //FPDF.SetX(LReducaoCanhoto + (LReducaoCanhoto / 2));
   FPDF.Cell(190 - LReducaoCanhoto - (LReducaoCanhoto/2), LAlturaPadraoBaixo, BENFICIARIO_FINAL + ': ' + FACBrTitulo.Sacado.SacadoAvalista.NomeAvalista, 'BLR', 1, 'L');
 
   FPDF.SetFont('Arial', 'B', StrToFloat(IfThen(ACanhoto,'4','6')));

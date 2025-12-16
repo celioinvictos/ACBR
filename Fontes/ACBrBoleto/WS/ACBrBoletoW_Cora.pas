@@ -190,7 +190,7 @@ begin
           (ClassName + Format(S_OPERACAO_NAO_IMPLEMENTADO,
           [TipoOperacaoToStr(Boleto.Configuracoes.WebService.Operacao)]));
       end;
-    tpCancelar:
+    tpCancelar, tpBaixa:
       begin
         FMetodoHTTP := htDELETE; // Define Método POST para Baixa
         RequisicaoCancelar;
@@ -554,7 +554,7 @@ begin
         2: LJSON.AddPair('rate', ATitulo.ValorMoraJuros);
       end;
       if LJSON <> nil then
-        AJson.AddPair('Interest', LJSON);
+        AJson.AddPair('interest', LJSON);
     end;
   end;
 end;

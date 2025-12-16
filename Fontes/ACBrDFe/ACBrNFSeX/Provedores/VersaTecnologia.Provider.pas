@@ -38,7 +38,7 @@ interface
 
 uses
   SysUtils, Classes,
-  ACBrXmlBase, ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
+  ACBrBase, ACBrXmlBase, ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
   ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
   ACBrNFSeXProviderABRASFv2, ACBrNFSeXWebserviceBase, ACBrNFSeXWebservicesResponse;
 
@@ -108,8 +108,10 @@ type
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Strings,
   ACBrUtil.XMLHTML,
+  ACBrUtil.FilesIO,
   ACBrDFeException, ACBrNFSeX, ACBrNFSeXConfiguracoes,
   ACBrNFSeXNotasFiscais,
   VersaTecnologia.GravarXml, VersaTecnologia.LerXml;
@@ -595,7 +597,7 @@ function TACBrNFSeProviderVersaTecnologia201.GetSchemaPath: string;
 begin
   Result := inherited GetSchemaPath;
 
-  Result := Result + ConfigGeral.CodIBGE + '\';
+  Result := PathWithDelim(Result + ConfigGeral.CodIBGE);
 end;
 
 { TACBrNFSeProviderVersaTecnologia202 }
@@ -642,7 +644,7 @@ function TACBrNFSeProviderVersaTecnologia202.GetSchemaPath: string;
 begin
   Result := inherited GetSchemaPath;
 
-  Result := Result + ConfigGeral.CodIBGE + '\';
+  Result := PathWithDelim(Result + ConfigGeral.CodIBGE);
 end;
 
 end.

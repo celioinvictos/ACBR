@@ -37,9 +37,8 @@ unit ACBrMDFeManifestos;
 interface
 
 uses
-  Classes, 
-  SysUtils, 
-  StrUtils,
+  Classes, SysUtils, StrUtils,
+  ACBrBase,
   ACBrMDFeConfiguracoes,
   ACBrMDFe.Classes,
   {$IfDef USE_ACBr_XMLDOCUMENT}
@@ -117,7 +116,8 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings = nil;
       EnviaPDF: Boolean = True; sCC: TStrings = nil; Anexos: TStrings = nil;
-      sReplyTo: TStrings = nil);
+      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True;
+      sBCC: TStrings = nil);
 
     function CalcularNomeArquivoCompleto(NomeArquivo: String = '';
       PathArquivo: String = ''): String;
@@ -194,6 +194,7 @@ uses
   IniFiles,
   synautil,
   ACBrMDFe,
+  ACBrMDFe.ValidarRegrasdeNegocio,
   ACBrUtil.Base,
   ACBrUtil.XMLHTML,
   ACBrUtil.Strings,
@@ -435,78 +436,27 @@ end;
 
 function TManifesto.ValidarRegrasdeNegocios: Boolean;
 var
-  Erros{, Log}: String;
   Agora: TDateTime;
-
-  procedure GravaLog(AString: String);
-  begin
-    //DEBUG
-    //Log := Log + FormatDateTime('hh:nn:ss:zzz',Now) + ' - ' + AString + sLineBreak;
-  end;
-
-
-  procedure AdicionaErro(const Erro: String);
-  begin
-    Erros := Erros + Erro + sLineBreak;
-  end;
-
+  FValidarRegras: TMDFeValidarRegras;
 begin
-  Agora := DataHoraTimeZoneModoDeteccao( TACBrMDFe(TManifestos(Collection).ACBrMDFe) );   //Converte o DateTime do Sistema para o TimeZone configurado, para evitar divergência de Fuso Horário.
-  GravaLog('Inicio da Validação');
+  // Converte o DateTime do Sistema para o TimeZone configurado, para evitar
+  // divergência de Fuso Horário.
+  Agora := DataHoraTimeZoneModoDeteccao(TACBrMDFe(TManifestos(Collection).ACBrMDFe));
+
+  FValidarRegras := TMDFeValidarRegras.Create(FMDFe);
 
   with TACBrMDFe(TManifestos(Collection).ACBrMDFe) do
   begin
-    Erros := '';
-
-    GravaLog('Validar: 897-Código do documento: ' + IntToStr(MDFe.Ide.nMDF));
-    if not ValidarCodigoDFe(MDFe.Ide.cMDF, MDFe.Ide.nMDF) then
-      AdicionaErro('897-Rejeição: Código numérico em formato inválido ');
-
-    GravaLog('Regra: G001 - Validar: 252-Ambiente');
-    if (MDFe.Ide.tpAmb <> Configuracoes.WebServices.Ambiente) then
-      AdicionaErro('252-Rejeição: Tipo do ambiente do MDF-e difere do ambiente do Web Service');
-
-    GravaLog('Regra: G002 - Validar 226-UF');
-    if copy(IntToStr(MDFe.Emit.EnderEmit.cMun), 1, 2) <> IntToStr(Configuracoes.WebServices.UFCodigo) then
-      AdicionaErro('226-Rejeição: Código da UF do Emitente diverge da UF autorizadora');
-
-    GravaLog('Regra: G003 - Validar 247-UF');
-    if MDFe.Emit.EnderEmit.UF <> Configuracoes.WebServices.UF then
-      AdicionaErro('247-Rejeição: Sigla da UF do Emitente difere da UF do Web Service');
-
-    GravaLog('Regra: G004 - Validar: 227-Chave de acesso');
-    if not ValidarConcatChave then
-      AdicionaErro('227-Rejeição: Chave de Acesso do Campo Id difere da concatenação dos campos correspondentes');
-
-    GravaLog('Regra: G005 - Validar: 666-Ano da Chave');
-    if Copy(MDFe.infMDFe.ID, 7, 2) < '12' then
-      AdicionaErro('666-Rejeição: Ano da chave de acesso é inferior a 2012');
-
-    GravaLog('Regra: G018 - Validar: 458-Tipo de Transportador');
-    if (Configuracoes.Geral.VersaoDF >= ve300) and (MDFe.Ide.tpTransp <> ttNenhum) and
-        (MDFe.Ide.tpEmit = teTranspCargaPropria) and
-        (MDFe.Ide.modal = moRodoviario) and ((MDFe.Rodo.veicTracao.Prop.CNPJCPF = '') or
-        (MDFe.Rodo.veicTracao.Prop.CNPJCPF = MDFe.emit.CNPJCPF))  then
-      AdicionaErro('458-Rejeição: Tipo de transportador (tpTransp) não deve ser preenchido');
-
-    // *************************************************************************
-    // No total são 93 regras de validação, portanto faltam muitas para serem
-    // acrescentadas nessa rotina.
+    FValidarRegras.VersaoDF := Configuracoes.Geral.VersaoDF;
+    FValidarRegras.Ambiente := Configuracoes.WebServices.Ambiente;
+    FValidarRegras.tpEmis := Configuracoes.Geral.FormaEmissaoCodigo;
+    FValidarRegras.CodigoUF := Configuracoes.WebServices.UFCodigo;
+    FValidarRegras.UF := Configuracoes.WebServices.UF;
   end;
 
-  Result := EstaVazio(Erros);
+  Result := FValidarRegras.Validar(Agora);
 
-  if not Result then
-  begin
-    Erros := ACBrStr('Erro(s) nas Regras de negócios do Manifesto: '+
-                     IntToStr(MDFe.Ide.nMDF) + sLineBreak + Erros);
-  end;
-
-  GravaLog('Fim da Validação. Tempo: ' +
-           FormatDateTime('hh:nn:ss:zzz', Now - Agora) + sLineBreak +
-           'Erros:' + Erros);
-
-  FErroRegrasdeNegocios := Erros;
+  FErroRegrasdeNegocios := FValidarRegras.Erros;
 end;
 
 function TManifesto.LerXML(const AXML: String): Boolean;
@@ -552,11 +502,12 @@ begin
 end;
 
 procedure TManifesto.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
-  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings);
+  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings;
+  ManterPDFSalvo: Boolean; sBCC: TStrings);
 var
-  NomeArqTemp : String;
-  AnexosEmail:TStrings;
-  StreamMDFe : TMemoryStream;
+  NomeArqTemp: string;
+  AnexosEmail: TStrings;
+  StreamMDFe: TMemoryStream;
 begin
   if not Assigned(TACBrMDFe(TManifestos(Collection).ACBrMDFe).MAIL) then
     raise EACBrMDFeException.Create('Componente ACBrMail não associado');
@@ -583,9 +534,12 @@ begin
       end;
 
       EnviarEmail( sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamMDFe,
-                   NumID + '-mdfe.xml', sReplyTo);
+                   NumID + '-mdfe.xml', sReplyTo, sBCC);
     end;
   finally
+    if not ManterPDFSalvo then
+      DeleteFile(NomeArqTemp);
+
     AnexosEmail.Free;
     StreamMDFe.Free;
   end;

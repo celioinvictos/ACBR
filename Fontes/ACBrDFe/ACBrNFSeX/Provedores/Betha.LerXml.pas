@@ -37,10 +37,12 @@ unit Betha.LerXml;
 interface
 
 uses
-  SysUtils, Classes, StrUtils,
-  INIFiles,
-  ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXLerXml_ABRASFv1, ACBrNFSeXLerXml_ABRASFv2;
+  SysUtils, Classes, StrUtils, IniFiles,
+  ACBrXmlBase,
+  ACBrXmlDocument,
+  ACBrNFSeXLerXml_ABRASFv1,
+  ACBrNFSeXLerXml_ABRASFv2,
+  PadraoNacional.LerXml;
 
 type
   { TNFSeR_Betha }
@@ -67,9 +69,19 @@ type
 
   end;
 
+  { TNFSeR_BethaAPIPropria }
+
+  TNFSeR_BethaAPIPropria = class(TNFSeR_PadraoNacional)
+  protected
+
+  public
+
+  end;
+
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Base,
   ACBrNFSeXClass;
 

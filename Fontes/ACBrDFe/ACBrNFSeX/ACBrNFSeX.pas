@@ -198,6 +198,8 @@ type
     procedure ConsultarParametros(ATipoParamMunic: TParamMunic;
       const ACodigoServico: string = ''; ACompetencia: TDateTime = 0;
       const ANumeroBeneficio: string = '');
+    // Usado pelo provedor Pronim (API Propria)
+    procedure ConsultarDPSPorNumero(const aNumero, aSerie: string);
 
     function GetNomeModeloDFe: String; override;
     function GetNameSpaceURI: String; override;
@@ -361,6 +363,7 @@ begin
 
   Configuracoes.Geral.Particularidades.PermiteTagOutrasInformacoes := FProvider.ConfigGeral.Particularidades.PermiteTagOutrasInformacoes;
   Configuracoes.Geral.Particularidades.PermiteMaisDeUmServico := FProvider.ConfigGeral.Particularidades.PermiteMaisDeUmServico;
+  Configuracoes.Geral.Particularidades.AtendeReformaTributaria := FProvider.ConfigGeral.Particularidades.AtendeReformaTributaria;
 end;
 
 function TACBrNFSeX.GetNomeModeloDFe: String;
@@ -496,16 +499,19 @@ begin
           Sleep(AguardarConsultaRet);
 
           qTentativas := 0;
-          Situacao := 0;
           Intervalo := max(IntervaloTentativas, 1000);
 
-          while (Situacao < 3) and (qTentativas < Tentativas) do
+          while True do
           begin
             FProvider.ConsultaSituacao;
 
             Situacao := StrToIntDef(FWebService.ConsultaSituacao.Situacao, 0);
             Inc(qTentativas);
-            sleep(Intervalo);
+
+            if (Situacao < 3) and (qTentativas < Tentativas) then
+              sleep(Intervalo)
+            else
+              break;
           end;
         end;
       end;
@@ -645,6 +651,18 @@ begin
   FProvider.ConsultaNFSeporRps;
 end;
 
+procedure TACBrNFSeX.ConsultarDPSPorNumero(const aNumero, aSerie: string);
+begin
+  if not Assigned(FProvider) then
+    raise EACBrNFSeException.Create(ERR_SEM_PROVEDOR);
+
+  FWebService.ConsultaNFSeporRps.Clear;
+  FWebService.ConsultaNFSeporRps.NumeroRps := aNumero;
+  FWebService.ConsultaNFSeporRps.SerieRps := aSerie;
+
+  FProvider.ConsultaNFSeporRps;
+end;
+
 procedure TACBrNFSeX.ConsultarLinkNFSe(
   AInfConsultaLinkNFSe: TInfConsultaLinkNFSe);
 var
@@ -716,6 +734,8 @@ begin
     tpRetorno := aInfConsultaNFSe.tpRetorno;
     ChaveNFSe := aInfConsultaNFSe.ChaveNFSe;
     Pagina := aInfConsultaNFSe.Pagina;
+    NumeroRps := aInfConsultaNFSe.NumeroRps;
+    DataRecibo := aInfConsultaNFSe.DataRecibo;
   end;
 
   ConsultarNFSe;
@@ -1186,17 +1206,10 @@ begin
   if not Assigned(FProvider) then
     raise EACBrNFSeException.Create(ERR_SEM_PROVEDOR);
 
-  FWebService.ConsultaNFSe.Clear;
+  FWebService.ObterDANFSE.Clear;
+  FWebService.ObterDANFSE.ChaveNFSe := aChave;
 
-  with FWebService.ConsultaNFSe.InfConsultaNFSe do
-  begin
-    tpConsulta := tcPorChave;
-    tpRetorno := trPDF;
-
-    ChaveNFSe := aChave;
-  end;
-
-  ConsultarNFSe;
+  FProvider.ObterDANFSE;
 end;
 
 procedure TACBrNFSeX.EnviarEvento(aInfEvento: TInfEvento);

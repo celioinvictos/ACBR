@@ -214,13 +214,9 @@ begin
     finally
       js.Free;
     end;
-
-    if (code <> 0) then
-      DispararExcecao(EACBrPixHttpException.Create('Code: '+
-        IntToStr(code) +' - '+ UTF8ToNativeString(texto)));
   end
   else
-    DispararExcecao(EACBrPixHttpException.CreateFmt( sErroHttp,
+    DispararExcecao(EACBrPixHttpException.CreateFmt(sErroHttp,
        [Http.ResultCode, ChttpMethodPOST, AURL]));
 end;
 
@@ -257,7 +253,7 @@ begin
      ((AEndPoint = cEndPointCob) or (AEndPoint = cEndPointPix) or (AEndPoint = cEndPointCobV)) then
     AResultCode := HTTP_CREATED;
 
-  if (ACBrPixCD.Ambiente = ambTeste) and (AEndPoint = cEndPointCob) then
+  if (Pos('pixCopiaECola', RespostaHttp) <= 0) and (Pos('textoImagemQRcode', RespostaHttp) > 0) then
     RespostaHttp := StringReplace(RespostaHttp, 'textoImagemQRcode', 'pixCopiaECola', [rfReplaceAll]);
 
   if (UpperCase(AMethod) = ChttpMethodPATCH) and (AEndPoint = cEndPointCob) then

@@ -38,7 +38,13 @@ interface
 uses
   Classes,
   SysUtils,
-  contnrs,
+  {$IF DEFINED(HAS_SYSTEM_GENERICS)}
+   System.Generics.Collections, System.Generics.Defaults,
+  {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
+   System.Contnrs,
+  {$Else}
+   Contnrs,
+  {$IfEnd}
   ACBrBoletoConversao;
 
 type
@@ -256,7 +262,7 @@ type
     FPercentualMinPagamento    : Currency;
     FPercentualMaxPagamento    : Currency;
     FModalidade                : Integer;
-    FCodigoCliente             : Extended;
+    FCodigoCliente             : String;
     FDataRegistro              : TDateTime;
     FValorAtual                : Extended;
     FContrato                  : String;
@@ -345,7 +351,7 @@ type
     property PercentualMinPagamento: Currency read FPercentualMinPagamento write FPercentualMinPagamento;
     property PercentualMaxPagamento: Currency read FPercentualMaxPagamento write FPercentualMaxPagamento;
     property Modalidade: Integer read FModalidade write FModalidade;
-    property CodigoCliente: Extended read FCodigoCliente write FCodigoCliente;
+    property CodigoCliente: String read FCodigoCliente write FCodigoCliente;
     property DataRegistro: TDateTime read FDataRegistro write FDataRegistro;
     property ValorAtual: Extended read FValorAtual write FValorAtual;
     property Contrato: String read FContrato write FContrato;
@@ -407,7 +413,7 @@ type
   end;
 
     { TACBrBoletoListaRejeicao }
-  TACBrBoletoListaRejeicao = class(TObjectList)
+  TACBrBoletoListaRejeicao = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TACBrBoletoRejeicao>{$EndIf})
   protected
     procedure SetObject(Index: Integer; Item: TACBrBoletoRejeicao);
     function GetObject(Index: Integer): TACBrBoletoRejeicao;
@@ -452,7 +458,7 @@ type
   end;
 
     { TListaACBrBoletoRetornoWS }
-  TListaACBrBoletoRetornoWS = class(TObjectList)
+  TListaACBrBoletoRetornoWS = class(TObjectList{$IfDef HAS_SYSTEM_GENERICS}<TACBrBoletoRetornoWS>{$EndIf})
   protected
     procedure SetObject(Index: Integer; Item: TACBrBoletoRetornoWS);
     function GetObject(Index: Integer): TACBrBoletoRetornoWS;
@@ -573,12 +579,12 @@ end;
 
 procedure TACBrBoletoListaRejeicao.SetObject(Index: Integer; Item: TACBrBoletoRejeicao);
 begin
-  inherited SetItem(Index, Item);
+  inherited Items[Index] := Item;
 end;
 
 function TACBrBoletoListaRejeicao.GetObject(Index: Integer): TACBrBoletoRejeicao;
 begin
-  Result := inherited GetItem(Index) as TACBrBoletoRejeicao;
+  Result := inherited Items[Index] as TACBrBoletoRejeicao;
 end;
 
 procedure TACBrBoletoListaRejeicao.Insert(Index: Integer; Obj: TACBrBoletoRejeicao);
@@ -700,12 +706,12 @@ end;
 
 procedure TListaACBrBoletoRetornoWS.SetObject(Index: Integer; Item: TACBrBoletoRetornoWS);
 begin
-  inherited SetItem(Index, Item);
+  inherited Items[Index] := Item;
 end;
 
 function TListaACBrBoletoRetornoWS.GetObject(Index: Integer): TACBrBoletoRetornoWS;
 begin
-  Result := inherited GetItem(Index) as TACBrBoletoRetornoWS;
+  Result := inherited Items[Index] as TACBrBoletoRetornoWS;
 end;
 
 procedure TListaACBrBoletoRetornoWS.Insert(Index: Integer; Obj: TACBrBoletoRetornoWS);

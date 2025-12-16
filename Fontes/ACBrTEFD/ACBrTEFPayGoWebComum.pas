@@ -45,7 +45,9 @@ resourcestring
   sInfoRemovaCartao = 'REMOVER O CARTAO';
   sInfoPGWebLibAtualizaTrue = 'Atualização disponível para PGWebLib';
   sInfoPGWebLibAtualizaFalse = 'PGWebLib sem atualização';
-  sErrLibJaInicializda = 'Biblioteca PGWebLib já foi inicializada';
+  sErrLibJaInicializada = 'Biblioteca PGWebLib já foi inicializada';
+  sErrLibNaoInicializada = 'Biblioteca PGWebLib ainda NÃO foi carregada';
+  sErrLibJaInstalada = 'Biblioteca PGWebLib já foi Instalada';
   sErrLibNaoEncontrada = 'Biblioteca não encontrada: %s';
   sErrVarDef = 'Erro Definindo a valor: %s para variável %s ';
   sErrLibNaoPermiteMudarPath = 'Path da PGWebLib deve ser %s';
@@ -73,6 +75,7 @@ resourcestring
   sErrPWINF_INVALID = 'ParametrosAdicionais: Valor %s é inválido para %s';
 
 const
+  CACBrTEFPGWebMsgPadrao = 'PROJETO ACBr';
   CACBrTEFPGWebAPIName = 'ACBrTEFPGWebAPI';
   CACBrTEFPGWebAPIVersao = '1.0.1';
   CACBrTEFPGWebDir = 'PGWebLib';
@@ -89,6 +92,7 @@ const
   {$ENDIF}
 
   CACBrTEFPGWebLibMinVersion = '0004.0000.0082.0003';
+  CACBrTEFPGWebLibVersionSetEnvironment = '0004.0001.0043.0010';
 
   CSleepNothing = 300;
   CMilissegundosMensagem = 5000;  // 5 seg
@@ -561,6 +565,7 @@ type
     fDadosTransacao: TACBrTEFParametros;
     fDiretorioTrabalho: String;
     fEnderecoIP: String;
+    fAmbiente: SmallInt;
     fExibeMensagemCheckout: Boolean;
     fExibicaoQRCode: TACBrTEFPGWebAPIExibicaoQRCode;
     fImprimeViaClienteReduzida: Boolean;
@@ -568,6 +573,7 @@ type
     fCarregada: Boolean;
     fEmTransacao: Boolean;
     fIsDebug: Boolean;
+    fMensagemPinPad: String;
     fPerguntarCartaoDigitadoAposCancelarLeitura: Boolean;
     fUsouPinPad: Boolean;
     fNomeAplicacao: String;
@@ -594,6 +600,7 @@ type
     fTimerOcioso: TACBrThreadTimer;
     fTempoOcioso: TDateTime;
     fUltimoQRCode: String;
+    fVersaoLib: String;
 
     fTempoTarefasAutomaticas: String;
 
@@ -645,9 +652,6 @@ type
               {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
     xPW_iPPDisplay: function(const pszMsg: PAnsiChar): SmallInt;
               {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
-    xPW_iPPDisplayImage: function(pszImagePath: PAnsiChar; iTimeOut: SmallInt;
-              fWaitKey: SmallInt; var piKey: SmallInt): SmallInt;
-              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
     xPW_iPPGetUserData: function(uiMessageId: Word; bMinLen: Byte; bMaxLen: Byte;
               iToutSec:  SmallInt; pszData: PAnsiChar): SmallInt;
               {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
@@ -666,6 +670,39 @@ type
               pszXmlResponse: PAnsiChar; ulXmlResponseLen: Word): SmallInt;
               {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
     xPW_End: procedure {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+
+
+    xPW_iPPLoadImage: function(const pszImagePath, pszImageName: PAnsiChar): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPListImages: function(pszList: PAnsiChar; iListSize: SmallInt): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPDeleteImage: function(const pszImageName: PAnsiChar): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPDisplayLoadedImage: function(const pszImageName: PAnsiChar;
+              iToutSec: SmallInt; fWaitKey: Boolean): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPKeepDisplayImage: function: SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPEndDisplayImage: function: SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPSetIdleImage: function(const pszIdleMsg, pszIdleImage: PAnsiChar): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+
+    xPW_iPPStartMenu: function(const pszMenuTitle: PAnsiChar; iToutSec: SmallInt): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPAddMenuOption: function(const pszMenuOption: PAnsiChar): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPShowMenu: function(var piSelOption: SmallInt): SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+    xPW_iPPEndMenu : function: SmallInt;
+              {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+
+    xPW_iSetEnvironment: function(iEnv: SmallInt): SmallInt
+       {$IfDef MSWINDOWS}stdcall{$Else}cdecl{$EndIf};
+
+    function GetEstaInstalado: Boolean;
+    function GetVersaoLib: String;
+    function GetTemProtecao: Boolean;
 
     procedure SetCNPJEstabelecimento(const AValue: String);
     procedure SetDiretorioTrabalho(const AValue: String);
@@ -704,6 +741,7 @@ type
     function ObterDadoCodBarra(AGetData: TPW_GetData): SmallInt;
     function ObterDadoCartao(AGetData: TPW_GetData; uiIndex: Word): SmallInt;
     function ObterDadoCartaoDigitado(AGetData: TPW_GetData): SmallInt;
+    procedure DefinirAmbiente(Ambiente: SmallInt);
 
     function RealizarOperacaoPinPad(AGetData: TPW_GetData; uiIndex: Word;
       OperacaoPinPad: TACBrTEFPGWebAPIOperacaoPinPad): SmallInt;
@@ -716,6 +754,7 @@ type
     procedure LogPWGetData(AGetData: TPW_GetData; uiIndex: Word);
 
     function ValidarModulo10(const AString: String): Boolean;
+    procedure VerificarCarregada;
   public
     constructor Create;
     destructor Destroy; override;
@@ -739,15 +778,20 @@ type
     procedure TratarTransacaoPendente;
     function VerificarPresencaPinPad: Byte;
     procedure ExibirMensagemPinPad(const MsgPinPad: String);
-    function ExibirImagemPinPad(const NomeArquivoImagem: String;
-      TimeOutSec: SmallInt = 20; AguardaTecla: Boolean = False): SmallInt;
     function ObterDadoPinPad(iMessageId: Word; MinLen, MaxLen: Byte;
       TimeOutSec: SmallInt): String;
-    function VersaoLib: String;
     procedure ObterOperacoes(TipoOperacao: Byte; Operacoes: TArrPW_OperationsEx);
 
     function ValidarRespostaCampo(var AResposta: String;
       ADefinicaoCampo: TACBrTEFPGWebAPIDefinicaoCampo): String;
+
+    procedure CarregarImagemPinPad(const PathImagem: String; const NomeImagem: String);
+    procedure ObterListaImagensPinPad(ALista: TStrings);
+    procedure ApagarImagemPinPad(const NomeImagem: String);
+    procedure ExibirImagemPinPad(const NomeImagem: String; TimeOutSec: SmallInt = 0;
+      AguardaTecla: Boolean = False);
+    procedure DefinirMensagemPinPad(const AMensagem, NomeImagem: String);
+    function MenuPinPad(const Titulo: String; Opcoes: TStrings; TimeOut: Integer = 30000): Integer;
 
     function GetVarPathPGWebLib: String;
     function GetPathPGWebLib: String;
@@ -776,6 +820,7 @@ type
     property PortaTCP: String read fPortaTCP write SetPortaTCP;
     property PortaPinPad: Integer read fPortaPinPad write fPortaPinPad;
     property ParametrosAdicionais: TACBrTEFParametros read fParametrosAdicionais;
+    property Ambiente: SmallInt read fAmbiente write fAmbiente;
 
     Property SuportaSaque: Boolean read fSuportaSaque write fSuportaSaque;
     Property SuportaDesconto: Boolean read fSuportaDesconto write fSuportaDesconto;
@@ -791,6 +836,7 @@ type
       write fExibeMensagemCheckout;
     property ExibicaoQRCode: TACBrTEFPGWebAPIExibicaoQRCode read fExibicaoQRCode
       write fExibicaoQRCode;
+    property MensagemPinPad: String read fMensagemPinPad write fMensagemPinPad;
 
     property ConfirmarTransacoesPendentesNoHost: Boolean
       read fConfirmarTransacoesPendentesNoHost
@@ -812,6 +858,10 @@ type
       write fOnAguardaPinPad;
     property OnAvaliarTransacaoPendente: TACBrTEFPGWebAPIAvaliarTransacaoPendente
       read fOnAvaliarTransacaoPendente write fOnAvaliarTransacaoPendente;
+
+    property VersaoLib: String read GetVersaoLib;
+    property TemProtecao: Boolean read GetTemProtecao;
+    property EstaInstalado: Boolean read GetEstaInstalado;
   end;
 
 function PWRETToString(iRET: SmallInt): String;
@@ -1133,6 +1183,7 @@ begin
   fUsouPinPad := False;
   fTempoTarefasAutomaticas := '';
   fUltimoQRCode := '';
+  fVersaoAplicacao := '';
   fIsDebug := False;
 
   fPathLib := '';
@@ -1144,6 +1195,7 @@ begin
   fEnderecoIP := '';
   fPortaTCP := '';
   fPortaPinPad := 0;
+  fAmbiente := -1;
   fConfirmarTransacoesPendentesNoHost := True;
   fPerguntarCartaoDigitadoAposCancelarLeitura := False;
 
@@ -1180,7 +1232,7 @@ end;
 procedure TACBrTEFPGWebAPI.Inicializar;
 var
   iRet: SmallInt;
-  MsgError, ver: String;
+  MsgError, msg, img: String;
 begin
   if fInicializada then
     Exit;
@@ -1246,10 +1298,39 @@ begin
   fInicializada := True;
   SetEmTransacao(False);
 
-  ver := VersaoLib;
-  if CompareVersions(ver, CACBrTEFPGWebLibMinVersion) < 0 then
+  fVersaoLib := '';
+  GetVersaoLib;
+  if CompareVersions(VersaoLib, CACBrTEFPGWebLibMinVersion) < 0 then
     DoException(Format( ACBrStr(sErrLibVersaoInvalida),
-                        [LibFullName, ver, CACBrTEFPGWebLibMinVersion]) );
+                        [LibFullName, VersaoLib, CACBrTEFPGWebLibMinVersion]) );
+
+  if (fAmbiente > -1) then
+    if Assigned(xPW_iSetEnvironment) then
+      if not EstaInstalado then
+        DefinirAmbiente(fAmbiente);
+
+  if Assigned(xPW_iPPSetIdleImage) then
+  try
+    img := '';
+    msg := Trim(MensagemPinPad);
+    if (Length(msg) = 8) then
+    begin
+      img := msg;
+      msg := '';
+    end;
+
+    if (msg = '') then
+      msg := PadRight(SoftwareHouse, 16) +
+           PadRight(NomeAplicacao + ' ' + VersaoAplicacao, 16);
+
+    if (msg = '') then
+      msg := PadCenter(CACBrTEFPGWebMsgPadrao, 16) +
+             PadCenter(CACBrTEFPGWebAPIName, 16);
+
+    DefinirMensagemPinPad(msg, img);
+  except
+    { Ignora Exception, pois Pinpad pode ainda não estar pronto }
+  end;
 end;
 
 procedure TACBrTEFPGWebAPI.DesInicializar;
@@ -1261,6 +1342,7 @@ begin
   if Assigned(xPW_End) then
     xPW_End;
 
+  fVersaoLib := '';
   UnLoadLibFunctions;
   SetPGWebLibPermiteAtualiza(fAtualizaPGWebLibAutomaticamente);
   fInicializada := False;
@@ -1290,7 +1372,6 @@ begin
   xPW_iPPDataConfirmation := Nil;
   xPW_iPPTestKey := Nil;
   xPW_iPPDisplay := Nil;
-  xPW_iPPDisplayImage := Nil;
   xPW_iPPGetUserData := Nil;
   xPW_iPPWaitEvent := Nil;
   xPW_iPPRemoveCard := Nil;
@@ -1298,6 +1379,19 @@ begin
   xPW_iPPCommTest := Nil;
   xPW_iTransactionInquiry := Nil;
   xPW_End := Nil;
+
+  xPW_iPPLoadImage := Nil;
+  xPW_iPPListImages := Nil;
+  xPW_iPPDeleteImage := Nil;
+  xPW_iPPDisplayLoadedImage := Nil;
+  xPW_iPPKeepDisplayImage := Nil;
+  xPW_iPPEndDisplayImage := Nil;
+  xPW_iPPSetIdleImage := Nil;
+  xPW_iPPStartMenu := Nil;
+  xPW_iPPAddMenuOption := Nil;
+  xPW_iPPShowMenu := Nil;
+  xPW_iPPEndMenu := Nil;
+  xPW_iSetEnvironment := Nil;
 end;
 
 procedure TACBrTEFPGWebAPI.DoException(const AErrorMsg: String);
@@ -1329,7 +1423,7 @@ var
   iRet: SmallInt;
   MsgError: String;
 begin
-  LoadLibFunctions;
+  VerificarCarregada;
   Result := #0;
   ulDataSize := 10240;   // 10K
   pszData := AllocMem(ulDataSize);
@@ -1437,6 +1531,7 @@ var
   MsgError: String;
   i: Integer;
 begin
+  VerificarCarregada;
   if EmTransacao then
     DoException(ACBrStr(sErrPWRET_TRNINIT));
 
@@ -1484,6 +1579,7 @@ var
   iRet: SmallInt;
   MsgError: String;
 begin
+  VerificarCarregada;
   GravarLog('PW_iAddParam( '+PWINFOToString(iINFO)+', '+AValor+' )');
   iRet := xPW_iAddParam(iINFO, PAnsiChar(AValor));
   GravarLog('  '+PWRETToString(iRet));
@@ -1523,6 +1619,7 @@ var
   MsgError, MsgProcess, MsgPinPad: String;
 begin
   GravarLog('TACBrTEFPGWebAPI.ExecutarTransacao');
+  VerificarCarregada;
   fUltimoQRCode := '';
   fUsouPinPad := False;
   iRet := PWRET_CANCEL;
@@ -1605,6 +1702,7 @@ end;
 
 function TACBrTEFPGWebAPI.AbortarTransacao: SmallInt;
 begin
+  VerificarCarregada;
   GravarLog('PW_iPPAbort');
   Result := xPW_iPPAbort;
   GravarLog('  '+PWRETToString(Result));
@@ -1632,6 +1730,7 @@ var
   AData, InfoStr, TempoOcioso: String;
 begin
   GravarLog('TACBrTEFPGWebAPI.ObterDadosDaTransacao');
+  VerificarCarregada;
   TempoOcioso := '';
   fDadosTransacao.Clear;
   ulDataSize := 10240;   // 10K
@@ -1670,6 +1769,7 @@ var
   MsgError: String;
   iRet: SmallInt;
 begin
+  VerificarCarregada;
   GravarLog('PW_iConfirmation( '+PWCNFToString(Status)+', '+
                                  pszReqNum+', '+
                                  pszLocRef+', '+
@@ -1755,6 +1855,7 @@ var
   pbCommPort: Byte;
   MsgError: String;
 begin
+  VerificarCarregada;
   Result := 0;
   pbCommPort := 0;
   uiMsgSize := 512;
@@ -1799,6 +1900,7 @@ var
   iRetPP: SmallInt;
   MsgError, AMsg: String;
 begin
+  VerificarCarregada;
   AMsg := StringReplace(MsgPinPad, '|', CR, [rfReplaceAll]);
   GravarLog('PW_iPPDisplay( '+AMsg+' )');
   iRetPP := xPW_iPPDisplay( PAnsiChar(AnsiString(AMsg)) );
@@ -1812,54 +1914,6 @@ begin
     DoException(ACBrStr(MsgError));
 end;
 
-function TACBrTEFPGWebAPI.ExibirImagemPinPad(const NomeArquivoImagem: String;
-  TimeOutSec: SmallInt; AguardaTecla: Boolean): SmallInt;
-var
-  iRetPP, fWaitKey, piKey: SmallInt;
-  warq: AnsiString;
-  MsgError: String;
-begin
-  warq := Trim(NomeArquivoImagem);
-  if (warq = '') then
-    Exit;
-
-  if not FileExists(warq) then
-    DoException(Format(sErrArquivoNaoExistente, [warq]));
-
-  warq := StringReplace(warq, '\', '\\', [rfReplaceAll]);
-  if not Assigned(xPW_iPPDisplayImage) then
-    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPDisplayImage']));
-
-  fWaitKey := IfThen(AguardaTecla, 1, 0);
-  piKey := 0;
-  GravarLog('PW_iPPDisplayImage( '+warq+', '+IntToStr(TimeOutSec)+', '+IntToStr(fWaitKey)+' )');
-  iRetPP := xPW_iPPDisplayImage( PAnsiChar(warq), TimeOutSec, fWaitKey, piKey);
-  GravarLog('  '+PWRETToString(iRetPP));
-
-  MsgError := '';
-  if (iRetPP <> PWRET_OK) then
-  begin
-    case iRetPP of
-      PWRET_CANCEL, PWRET_PPS_CANCEL, PWRET_PPS_CANCEL2,
-      PWRET_TIMEOUT, PWRET_PPS_TIMEOUT, PWRET_PPS_TIMEOUT2,
-      PWRET_PPABORT:
-        MsgError := '';
-      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
-      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
-      PWRET_PPCOMERR: MsgError := sErrPWRET_PPCOMERR;
-      PWRET_INVCALL: MsgError := sErrPWRET_INVCALL3;
-      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
-    else
-      MsgError := PWRETToString(iRetPP);
-    end;
-  end;
-
-  if (MsgError <> '') then
-    DoException(ACBrStr(MsgError));
-
-  Result := piKey;
-end;
-
 function TACBrTEFPGWebAPI.ObterDadoPinPad(iMessageId: Word; MinLen,
   MaxLen: Byte; TimeOutSec: SmallInt): String;
 var
@@ -1867,6 +1921,7 @@ var
   MsgError: String;
   pszData: PAnsiChar;
 begin
+  VerificarCarregada;
   Result := '';
   MsgError := '';
   GravarLog('PW_iPPGetUserData( '+PWDPINToString(iMessageId)+', '+
@@ -1903,14 +1958,34 @@ begin
   end;
 end;
 
-function TACBrTEFPGWebAPI.VersaoLib: String;
+function TACBrTEFPGWebAPI.GetVersaoLib: String;
 begin
-  if not fInicializada then
-    Inicializar;
+  if (fVersaoLib = '') then
+  begin
+    if not fInicializada then
+      Inicializar;
 
-  IniciarTransacao(PWOPER_VERSION);
-  ExecutarTransacao;
-  Result := fDadosTransacao.ValueInfo[PWINFO_RESULTMSG];
+    IniciarTransacao(PWOPER_VERSION);
+    ExecutarTransacao;
+    fVersaoLib := fDadosTransacao.ValueInfo[PWINFO_RESULTMSG];
+  end;
+
+  Result := fVersaoLib
+end;
+
+function TACBrTEFPGWebAPI.GetEstaInstalado: Boolean;
+var
+  iRet: SmallInt;
+begin
+  GravarLog('GetEstaInstalado');
+  GravarLog('  PW_iNewTransac( '+PWOPERToString(PWOPER_NULL)+' )');
+  iRet := xPW_iNewTransac(PWOPER_NULL);
+  GravarLog('    '+PWRETToString(iRet));
+  Result := (iRet <> PWRET_NOTINST);
+
+  GravarLog('  PW_iPPAbort');
+  iRet := xPW_iPPAbort;
+  GravarLog('    '+PWRETToString(iRet));
 end;
 
 procedure TACBrTEFPGWebAPI.ObterOperacoes(TipoOperacao: Byte;
@@ -1990,6 +2065,273 @@ begin
     Result := Erro;
 end;
 
+procedure TACBrTEFPGWebAPI.CarregarImagemPinPad(const PathImagem: String;
+  const NomeImagem: String);
+var
+  iRetPP: SmallInt;
+  ImagePath, ImageName: AnsiString;
+  MsgError: String;
+begin
+  GravarLog('TACBrTEFPGWebAPI.CarregarImagemPinPad( '+PathImagem+', '+NomeImagem+' )');
+
+  VerificarCarregada;
+  ImagePath := Trim(PathImagem);
+  ImageName := Trim(NomeImagem);
+  if (ImagePath = '') or (ImageName = '')  then
+    Exit;
+
+  if not FileExists(ImagePath) then
+    DoException(Format(sErrArquivoNaoExistente, [ImagePath]));
+
+  if not Assigned(xPW_iPPLoadImage) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPLoadImage']));
+
+  GravarLog('PW_iPPLoadImage( '+ImagePath+', '+ImageName+' )');
+  iRetPP := xPW_iPPLoadImage( PAnsiChar(ImagePath), PAnsiChar(ImageName));
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
+      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
+      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+end;
+
+procedure TACBrTEFPGWebAPI.ObterListaImagensPinPad(ALista: TStrings);
+var
+  iRetPP, iListSize: SmallInt;
+  MsgError, sLista, s: String;
+  pszList: PAnsiChar;
+  l, p: Integer;
+begin
+  GravarLog('TACBrTEFPGWebAPI.ObterListaImagensPinPad()');
+
+  VerificarCarregada;
+  if not Assigned(xPW_iPPListImages) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPListImages']));
+
+  iListSize := 2048;
+  pszList := AllocMem(iListSize);
+  try
+    GravarLog('PW_iPPListImages( pszList, '+IntToStr(iListSize)+' )');
+    iRetPP := xPW_iPPListImages(pszList, iListSize);
+    sLista := String(pszList);
+    GravarLog('  Ret: '+PWRETToString(iRetPP)+', pszList: '+sLista);
+  finally
+    Freemem(pszList);
+  end;
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
+      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
+      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+
+  ALista.Clear;
+  l := Length(sLista);
+  p := 1;
+  while (p < l) do
+  begin
+    s := copy(sLista, p, 8);
+    ALista.Add(s);
+    Inc(p, 8);
+  end;
+end;
+
+procedure TACBrTEFPGWebAPI.ApagarImagemPinPad(const NomeImagem: String);
+var
+  iRetPP: SmallInt;
+  MsgError: String;
+  ImageName: AnsiString;
+begin
+  GravarLog('TACBrTEFPGWebAPI.ApagarImagemPinPad( '+NomeImagem+' )');
+
+  VerificarCarregada;
+  if not Assigned(xPW_iPPDeleteImage) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPDeleteImage']));
+
+  ImageName := Trim(NomeImagem);
+  GravarLog('xPW_iPPDeleteImage( '+ImageName+' )');
+  iRetPP := xPW_iPPDeleteImage(PAnsiChar(ImageName));
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
+      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
+      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+end;
+
+procedure TACBrTEFPGWebAPI.ExibirImagemPinPad(const NomeImagem: String;
+  TimeOutSec: SmallInt; AguardaTecla: Boolean);
+var
+  iRetPP: SmallInt;
+  MsgError: String;
+  ImageName: AnsiString;
+begin
+  GravarLog('TACBrTEFPGWebAPI.ExibirImagemPinPad( '+NomeImagem+', '+
+            IntToStr(TimeOutSec)+', '+BoolToStr(AguardaTecla, True)+' )');
+
+  VerificarCarregada;
+  if not Assigned(xPW_iPPDisplayLoadedImage) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPDisplayLoadedImage']));
+
+  ImageName := Trim(NomeImagem);
+  GravarLog('PW_iPPDisplayLoadedImage( '+ImageName+', '+IntToStr(TimeOutSec)+', '+BoolToStr(AguardaTecla, True)+' )');
+  iRetPP := xPW_iPPDisplayLoadedImage( PAnsiChar(ImageName), TimeOutSec, AguardaTecla);
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
+      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
+      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+end;
+
+procedure TACBrTEFPGWebAPI.DefinirMensagemPinPad(const AMensagem,
+  NomeImagem: String);
+var
+  iRetPP: SmallInt;
+  MsgError: String;
+  IdleMesage, IdleImage: AnsiString;
+begin
+  GravarLog('TACBrTEFPGWebAPI.DefinirMensagemPinPad( '+AMensagem+', '+NomeImagem+' )');
+
+  VerificarCarregada;
+  if not Assigned(xPW_iPPSetIdleImage) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPSetIdleImage']));
+
+  IdleMesage := Trim(AMensagem);
+  IdleImage := Trim(NomeImagem);
+  GravarLog('PW_iPPSetIdleImage( '+IdleMesage+', '+IdleImage+' )');
+  iRetPP := xPW_iPPSetIdleImage( PAnsiChar(IdleMesage), PAnsiChar(IdleImage) );
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
+      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
+      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+end;
+
+function TACBrTEFPGWebAPI.MenuPinPad(const Titulo: String; Opcoes: TStrings;
+  TimeOut: Integer): Integer;
+var
+  iRetPP, iToutSec, piSelOption, i: SmallInt;
+  MsgError: String;
+  MenuTitle, MenuOption: AnsiString;
+begin
+  GravarLog('TACBrTEFPGWebAPI.MenuPinPad( '+Titulo+' )');
+  Result := -1;
+
+  if (Opcoes.Count < 1) then
+    Exit;
+
+  VerificarCarregada;
+  if not Assigned(xPW_iPPStartMenu) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPStartMenu']));
+  if not Assigned(xPW_iPPAddMenuOption)then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['xPW_iPPAddMenuOption']));
+  if not Assigned(xPW_iPPShowMenu) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPShowMenu']));
+  if not Assigned(xPW_iPPEndMenu) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iPPEndMenu']));
+
+  MenuTitle := Trim(Titulo);
+  iToutSec := Trunc(TimeOut/1000);
+  GravarLog('PW_iPPStartMenu( '+MenuTitle+', '+IntToStr(iToutSec)+' )');
+  iRetPP := xPW_iPPStartMenu( PAnsiChar(MenuTitle), iToutSec );
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  i := 0;
+  while (iRetPP = PWRET_OK)  and (i < Opcoes.Count) do
+  begin
+    MenuOption := Trim(Opcoes[i]);
+    GravarLog('PW_iPPAddMenuOption( '+MenuOption+' )');
+    iRetPP := xPW_iPPAddMenuOption( PAnsiChar(MenuOption) );
+    GravarLog('  '+PWRETToString(iRetPP));
+    Inc(i);
+  end;
+
+  if (iRetPP = PWRET_OK) then
+  begin
+    piSelOption := 0;
+    GravarLog('PW_iPPShowMenu( 0 )');
+    iRetPP := xPW_iPPShowMenu( piSelOption );
+    GravarLog('  '+PWRETToString(iRetPP)+', piSelOption:'+IntToStr(piSelOption));
+
+    if (iRetPP = PWRET_OK) then
+      Result := piSelOption;
+  end;
+
+  GravarLog('PW_iPPEndMenu');
+  iRetPP := xPW_iPPEndMenu;
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_CANCEL, PWRET_PPS_CANCEL, PWRET_PPS_CANCEL2,
+      PWRET_TIMEOUT, PWRET_PPS_TIMEOUT, PWRET_PPS_TIMEOUT2:
+        Result := -1;
+      PWRET_DLLNOTINIT: MsgError := sErrPWRET_DLLNOTINIT;
+      PWRET_NOTINST: MsgError := sErrPWRET_NOTINST;
+      PWRET_INVPARAM: MsgError := sErrPWRET_INVPARAM;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+end;
+
 function TACBrTEFPGWebAPI.ObterDados(ArrGetData: TArrPW_GetData;
   ArrLen: SmallInt): SmallInt;
 var
@@ -2017,6 +2359,8 @@ begin
       j := 1;
       while (iRet = PWRET_OK) and (j <= max(AGetData.bNumeroCapturas,1)) do
       begin
+        GravarLog('   Loop:'+IntToStr(j)+', TipoDeDado:'+PWDATToString(AGetData.bTipoDeDado) );
+
         case AGetData.bTipoDeDado of
           PWDAT_NONE:
             ;  // Registro inválido, ignore...
@@ -2494,6 +2838,33 @@ begin
     Result := PWRET_CANCEL;
 end;
 
+procedure TACBrTEFPGWebAPI.DefinirAmbiente(Ambiente: SmallInt);
+var
+  iRetPP: SmallInt;
+  MsgError: String;
+begin
+  if not Assigned(xPW_iSetEnvironment) then
+    DoException(Format(sErrBibliotecaNaoTemMetodo, ['PW_iSetEnvironment']));
+
+  GravarLog('PW_iSetEnvironment( '+IntToStr(Ambiente)+' )');
+  iRetPP := xPW_iSetEnvironment( Ambiente );
+  GravarLog('  '+PWRETToString(iRetPP));
+
+  MsgError := '';
+  if (iRetPP <> PWRET_OK) then
+  begin
+    case iRetPP of
+      PWRET_INVCALL: MsgError := sErrLibJaInstalada;
+      PWRET_NOTINST, PWRET_DLLNOTINIT : MsgError := sErrPWRET_DLLNOTINIT;
+    else
+      MsgError := PWRETToString(iRetPP);
+    end;
+  end;
+
+  if (MsgError <> '') then
+    DoException(ACBrStr(MsgError));
+end;
+
 procedure TACBrTEFPGWebAPI.ExibirMensagem(const AMsg: String;
   Terminal: TACBrTEFPGWebAPITerminalMensagem; TempoEspera: Integer);
 var
@@ -2649,6 +3020,12 @@ begin
   end;
 end;
 
+procedure TACBrTEFPGWebAPI.VerificarCarregada;
+begin
+  if not fCarregada then
+    DoException(sErrLibNaoInicializada);
+end;
+
 procedure TACBrTEFPGWebAPI.AdicionarDadosObrigatorios;
 begin
   GravarLog('TACBrTEFPGWebAPI.AdicionarDadosObrigatorios');
@@ -2740,7 +3117,7 @@ begin
   GravarLog('TACBrTEFPGWebAPI.SetPathLib( '+AValue+' )');
 
   if fInicializada then
-    DoException(ACBrStr(sErrLibJaInicializda));
+    DoException(ACBrStr(sErrLibJaInicializada));
 
   fPathLib := PathWithDelim(ExtractFilePath(AValue));
 end;
@@ -2840,7 +3217,7 @@ begin
   GravarLog('TACBrTEFPGWebAPI.SetDiretorioTrabalho( '+AValue+' )');
 
   if fInicializada then
-    DoException(ACBrStr(sErrLibJaInicializda));
+    DoException(ACBrStr(sErrLibJaInicializada));
 
   fDiretorioTrabalho := AValue;
 end;
@@ -2867,6 +3244,19 @@ begin
   end;
 
   fCNPJEstabelecimento := ACNPJ;
+end;
+
+function TACBrTEFPGWebAPI.GetTemProtecao: Boolean;
+var
+  s: TSplitResult;
+  l: Integer;
+begin
+  //Versão com proteção – v4.1.47.0
+  //Versão sem proteção – v4.1.47.900
+
+  s := Split('.',VersaoLib);
+  l := Length(s)-1;
+  Result := not (copy(s[l], 2, 1) = '9');
 end;
 
 function TACBrTEFPGWebAPI.GetVarPathPGWebLib: String;
@@ -2962,7 +3352,6 @@ procedure TACBrTEFPGWebAPI.LoadLibFunctions;
    PGWebFunctionDetect(sLibName, 'PW_iPPConfirmData', @xPW_iPPConfirmData);
    PGWebFunctionDetect(sLibName, 'PW_iPPGenericCMD', @xPW_iPPGenericCMD);
    PGWebFunctionDetect(sLibName, 'PW_iPPDisplay', @xPW_iPPDisplay);
-   PGWebFunctionDetect(sLibName, 'PW_iPPDisplayImage', @xPW_iPPDisplayImage, False);
    PGWebFunctionDetect(sLibName, 'PW_iPPGetUserData', @xPW_iPPGetUserData);
    PGWebFunctionDetect(sLibName, 'PW_iPPWaitEvent', @xPW_iPPWaitEvent);
    PGWebFunctionDetect(sLibName, 'PW_iPPRemoveCard', @xPW_iPPRemoveCard);
@@ -2974,6 +3363,19 @@ procedure TACBrTEFPGWebAPI.LoadLibFunctions;
    PGWebFunctionDetect(sLibName, 'PW_iWaitConfirmation', @xPW_iWaitConfirmation, False);
    PGWebFunctionDetect(sLibName, 'PW_iGetOperationsEx', @xPW_iGetOperationsEx, False);
    PGWebFunctionDetect(sLibName, 'PW_End', @xPW_End, False);
+
+   PGWebFunctionDetect(sLibName, 'PW_iPPLoadImage', @xPW_iPPLoadImage, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPListImages', @xPW_iPPListImages, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPDeleteImage', @xPW_iPPDeleteImage, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPDisplayLoadedImage', @xPW_iPPDisplayLoadedImage, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPKeepDisplayImage', @xPW_iPPKeepDisplayImage, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPEndDisplayImage', @xPW_iPPEndDisplayImage, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPSetIdleImage', @xPW_iPPSetIdleImage, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPStartMenu', @xPW_iPPStartMenu, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPAddMenuOption', @xPW_iPPAddMenuOption, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPShowMenu', @xPW_iPPShowMenu, False);
+   PGWebFunctionDetect(sLibName, 'PW_iPPEndMenu', @xPW_iPPEndMenu, False);
+   PGWebFunctionDetect(sLibName, 'PW_iSetEnvironment', @xPW_iSetEnvironment, False);
    fCarregada := True;
 end;
 

@@ -38,8 +38,11 @@ interface
 
 uses
   SysUtils, Classes, StrUtils,
-  ACBrXmlBase, ACBrXmlDocument,
-  ACBrNFSeXConversao, ACBrNFSeXLerXml;
+  ACBrXmlBase,
+  ACBrXmlDocument,
+  ACBrDFe.Conversao,
+  ACBrNFSeXConversao,
+  ACBrNFSeXLerXml;
 
 type
   { TNFSeR_Equiplano }
@@ -511,6 +514,7 @@ begin
     LerRetencoes(ANode);
 
     Servico.Valores.DescontoIncondicionado := ObterConteudo(ANode.Childrens.FindAnyNs('vlDesconto'), tcDe2);
+    Servico.Valores.dsImpostos := ObterConteudo(ANode.Childrens.FindAnyNs('dsImpostos'), tcStr);
 
     if Servico.Valores.ValorLiquidoNfse = 0 then
       Servico.Valores.ValorLiquidoNfse := Servico.Valores.ValorServicos -

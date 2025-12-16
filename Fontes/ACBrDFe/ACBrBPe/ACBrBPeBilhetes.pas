@@ -38,11 +38,14 @@ interface
 
 uses
   Classes, SysUtils, StrUtils,
+  ACBrBase,
+  pcnConversao,
+  ACBrXmlBase,
+  ACBrDFe.Conversao,
   ACBrBPeConfiguracoes,
   ACBrBPeClass,
   ACBrBPeXmlReader, ACBrBPeXmlWriter,
   ACBrBPeIniReader, ACBrBPeIniWriter,
-//  pcnConversao,
   ACBrBPeConversao;
 
 type
@@ -103,7 +106,8 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings = nil;
       EnviaPDF: Boolean = True; sCC: TStrings = nil; Anexos: TStrings = nil;
-      sReplyTo: TStrings = nil);
+      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True;
+      sBCC: Tstrings = nil);
 
     property NomeArq: String read FNomeArq write FNomeArq;
     function CalcularNomeArquivoCompleto(NomeArquivo: String = '';
@@ -179,7 +183,6 @@ implementation
 uses
   dateutils, IniFiles,
   synautil,
-  ACBrXmlBase,
   ACBrBPe,
   ACBrUtil.Base,
   ACBrUtil.Strings,
@@ -188,6 +191,7 @@ uses
   ACBrUtil.DateTime,
   ACBrDFeUtil,
   ACBrXmlDocument;
+
 { Bilhete }
 
 constructor TBilhete.Create(Collection2: TCollection);
@@ -212,7 +216,7 @@ begin
     FBPe.Ide.modelo := StrToInt(ModeloBPeToStr(Configuracoes.Geral.ModeloDF));
     FBPe.infBPe.Versao := VersaoBPeToDbl(Configuracoes.Geral.VersaoDF);
     FBPe.Ide.tpAmb := TACBrTipoAmbiente(Configuracoes.WebServices.Ambiente);
-    FBPe.Ide.tpEmis := TACBrTipoEmissao(Configuracoes.Geral.FormaEmissao);
+    FBPe.Ide.tpEmis := TTipoEmissao(Configuracoes.Geral.FormaEmissao);
   end;
 end;
 
@@ -513,11 +517,12 @@ begin
 end;
 
 procedure TBilhete.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
-  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings);
+  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings;
+  ManterPDFSalvo: Boolean; sBCC: Tstrings);
 var
-  NomeArq_Temp : String;
-  AnexosEmail:TStrings;
-  StreamBPe : TMemoryStream;
+  NomeArqTemp: string;
+  AnexosEmail: TStrings;
+  StreamBPe: TMemoryStream;
 begin
   if not Assigned(TACBrBPe(TBilhetes(Collection).ACBrBPe).MAIL) then
     raise EACBrBPeException.Create('Componente ACBrMail não associado');
@@ -538,15 +543,18 @@ begin
         if Assigned(DABPE) then
         begin
           DABPE.ImprimirDABPEPDF(FBPe);
-          NomeArq_Temp := PathWithDelim(DABPE.PathPDF) + NumID + '-bpe.pdf';
-          AnexosEmail.Add(NomeArq_Temp);
+          NomeArqTemp := PathWithDelim(DABPE.PathPDF) + NumID + '-bpe.pdf';
+          AnexosEmail.Add(NomeArqTemp);
         end;
       end;
 
       EnviarEmail( sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamBPe,
-                   NumID + '-bpe.xml', sReplyTo);
+                   NumID + '-bpe.xml', sReplyTo, sBCC);
     end;
   finally
+    if not ManterPDFSalvo then
+      DeleteFile(NomeArqTemp);
+
     AnexosEmail.Free;
     StreamBPe.Free;
   end;

@@ -50,6 +50,7 @@ uses
      {$ENDIF}
    {$ENDIF}
   {$ENDIF}
+  ACBrBase,
   ACBrDFeConfiguracoes, ACBrIntegrador, ACBrDFe,
   pcnGerador, ACBrXmlWriter;
 
@@ -219,6 +220,9 @@ begin
       EnviarDados;
       try
         Result := TratarResposta;
+
+        if Assigned(FPDFeOwner.OnTransmitted) then
+          FPDFeOwner.OnTransmitted(FPEnvelopeSoap, FPDFeOwner.SSL.HTTPResultCode);
       finally
         FazerLog(GerarMsgLog, True);
         SalvarResposta;

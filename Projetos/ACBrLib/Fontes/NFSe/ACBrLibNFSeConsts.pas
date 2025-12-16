@@ -94,6 +94,7 @@ const
   CChaveNFSeCancelada = 'Cancelada';
   CChaveDetalharServico = 'DetalharServico';
   CChaveProducao = 'Producao';
+  CChaveDataCompetenciaCompleta = 'DataCompetenciaCompleta';
 
   ErrValidacaoNFSe = -11;
   ErrChaveNFSe = -12;
@@ -105,7 +106,8 @@ const
   ErrEnvioEvento = -18;
 
 Resourcestring
-  SInfNFSeCarregadas = '%d NFSe(s)/RPS(s) Carregada(s)';
+  SInfNFSeRPSCarregadas = '%d NFSe(s)/RPS(s) Carregada(s)';
+  SInfNFSeCarregadas = '%d NFSe(s) Carregada(s)';
 
 
 implementation

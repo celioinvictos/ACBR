@@ -36,27 +36,23 @@ unit ACBrBoletoWS;
 interface
 
 uses
-  Classes,
-  SysUtils,
+  Classes, SysUtils, dateutils, strutils,
+  ACBrBase,
   ACBrBoleto,
   pcnGerador,
   pcnLeitor,
-  ACBrUtil.Strings,
   pcnConversao,
-  synacode,
-  synautil,
+  synacode, synautil, httpsend,
   ACBrJSON,
   ACBrBoletoConversao,
   ACBrBoletoRetorno,
   ACBrDFeSSL,
-  dateutils,
-  strutils,
   ACBrUtil.Base,
+  ACBrUtil.Strings,
   ACBrUtil.FilesIO,
   ACBrUtil.XMLHTML,
-  httpsend,
-  ACBrBoletoWS.Rest.OAuth,
   ACBrUtil.DateTime,
+  ACBrBoletoWS.Rest.OAuth,
   ACBrBoletoWS.URL;
 
 type
@@ -90,6 +86,7 @@ type
     function GerarRemessa: String; virtual;
     function Enviar: Boolean; virtual;
 
+
     property DFeSSL: TDFeSSL read FDFeSSL write FDFeSSL;
     property httpsend: THTTPSend read FHTTPSend write FHTTPSend;
     property BoletoWS: TBoletoWS read FBoletoWS;
@@ -98,7 +95,7 @@ type
     property ATitulo: TACBrTitulo read FTitulo;
     property RetornoBanco: TRetornoEnvioClass read FRetornoBanco write FRetornoBanco;
     property OAuth: TOAuth read FOAuth write FOAuth;
-
+    function NovoTokenAutenticacao( var AToken: String; var AValidadeToken: TDateTime; const ANewForceToken: Boolean = False) : Boolean; virtual;
   public
     constructor Create(ABoletoWS: TBoletoWS); virtual;
     destructor Destroy; Override;
@@ -121,18 +118,18 @@ type
     procedure SetBanco(ABanco: TACBrTipoCobranca);
     procedure GravaLog(const AString: AnsiString);
     procedure InstanciarIntegradora;
-    procedure Clear;
+
 
   protected
     property Banco: TACBrTipoCobranca read FBanco write SetBanco;
-
+    procedure Clear;
   public
     constructor Create(AOwner: TComponent); Override;
     destructor Destroy; override;
     procedure DoLog(const AString: String; const ANivelSeveridadeLog : TNivelLog);
     function Enviar: Boolean; override;
+    function NovoTokenAutenticacao( out AToken : String; out AValidadeToken : TDateTime ) : Boolean; virtual;
     property RetornoBanco: TRetornoEnvioClass read FRetornoBanco;
-
   end;
 
     { TRetornoEnvioClass }
@@ -169,7 +166,7 @@ type
     property Msg: String read FMsg write FMsg;
     property CodRetorno: Integer read FCodRetorno write FCodRetorno;
     property HTTPResultCode: Integer read FHTTPResultCode write FHTTPResultCode;
-
+    procedure Clear;
   end;
 
 Const
@@ -220,8 +217,6 @@ uses
   ACBrBoletoRet_BancoBrasil,
   ACBrBoletoW_BancoBrasil_API,
   ACBrBoletoRet_BancoBrasil_API,
-  ACBrBoletoW_Itau,
-  ACBrBoletoRet_Itau,
   ACBrBoletoW_Credisis,
   ACBrBoletoRet_Credisis,
   ACBrBoletoW_Sicredi_APIECOMM,
@@ -257,9 +252,18 @@ uses
   ACBrBoletoW_Kobana,
   ACBrBoletoRet_Kobana,
   ACBrBoletoW_BTGPactual,
-  ACBrBoletoRet_BTGPactual;
+  ACBrBoletoRet_BTGPactual,
+  ACBrBoletoW_Asaas,
+  ACBrBoletoRet_Asaas;
 
   { TRetornoEnvioClass }
+
+procedure TRetornoEnvioClass.Clear;
+begin
+  FRetWS := '';
+  FEnvWs := '';
+  CodRetorno := 0;
+end;
 
 constructor TRetornoEnvioClass.Create(ABoletoWS: TACBrBoleto);
 begin
@@ -312,6 +316,7 @@ begin
   FGerador      := TGerador.Create;
   FHTTPSend     := THTTPSend.Create;
   FHTTPSend.Protocol := '1.1';
+  FHTTPSend.Clear;
   FTitulo       := nil;
 
   if Assigned(ABoletoWS.FBoleto.Configuracoes.WebService) then
@@ -340,6 +345,11 @@ function TBoletoWSClass.GerarRemessa: String;
 begin
   Result := '';
   raise EACBrBoletoWSException.Create(ACBrStr(ClassName + Format(S_METODO_NAO_IMPLEMENTADO, [ C_GERAR_REMESSA ])));
+end;
+
+function TBoletoWSClass.NovoTokenAutenticacao(var AToken: String; var AValidadeToken: TDateTime; const ANewForceToken: Boolean): Boolean;
+begin
+  Result := False;
 end;
 
 function TBoletoWSClass.Enviar: Boolean;
@@ -412,8 +422,7 @@ begin
         end
         else
         begin
-          FBoletoWSClass := TBoletoW_Itau.Create(Self);
-          FRetornoBanco  := TRetornoEnvio_Itau.Create(FBoleto);
+          raise EACBrBoletoWSException.Create(ACBrStr('Versão não implementada ou descontinuada pelo banco, verifique qual utilizar.'));
         end;
 
       end;
@@ -493,6 +502,11 @@ begin
       begin
         FBoletoWSClass := TBoletoW_BTGPactual.Create(Self);
         FRetornoBanco  := TRetornoEnvio_BTGPactual.Create(FBoleto);
+      end;
+    cobBancoAsaas:
+      begin
+        FBoletoWSClass := TBoletoW_Asaas.Create(Self);
+        FRetornoBanco  := TRetornoEnvio_Asaas.Create(FBoleto);
       end;
     else
       FBoletoWSClass := TBoletoWSClass.Create(Self);
@@ -574,6 +588,12 @@ begin
   FBoletoWSClass.FBoleto := FBoleto;
 end;
 
+function TBoletoWS.NovoTokenAutenticacao(out AToken: String; out AValidadeToken: TDateTime): Boolean;
+begin
+  Banco  := FBoleto.Banco.TipoCobranca;
+  Result := FBoletoWSClass.NovoTokenAutenticacao(AToken, AValidadeToken);
+end;
+
 destructor TBoletoWS.Destroy;
 begin
   if Assigned(FBoletoWSClass) then
@@ -595,7 +615,7 @@ begin
   Banco  := FBoleto.Banco.TipoCobranca;
   Result := False;
   FBoletoWSClass.FHTTPSend.Timeout := FBoleto.Configuracoes.WebService.TimeOut;
-
+  LUltimoEnvio := Now;
   try
     if FBoleto.ListadeBoletos.Count > 0 then
     begin
@@ -604,7 +624,8 @@ begin
         FBoletoWSClass.FTitulo := FBoleto.ListadeBoletos[ indice ];
         LJsonEnvio             := FBoletoWSClass.GerarRemessa;
         Result                 := FBoletoWSClass.Enviar;
-        FRetornoWS             := FBoletoWSClass.FRetornoWS;
+        FRetornoWS             := Trim(FBoletoWSClass.FRetornoWS);
+
 
 
         RetornoBanco.RetWS  := FRetornoWS;
@@ -624,17 +645,26 @@ begin
       begin
         FBoletoWSClass.GerarRemessa;
         Result             := FBoletoWSClass.Enviar;
-        FRetornoWS         := FBoletoWSClass.FRetornoWS;
+        FRetornoWS         := Trim(FBoletoWSClass.FRetornoWS);
         RetornoBanco.RetWS := FRetornoWS;
         RetornoBanco.RetornoEnvio(0);
       end;
   except
     on E: Exception do
     begin
+      DoLog('Falha Envio: ' + ClassName, logSimples);
+      DoLog('Header:', logParanoico);
+      DoLog(FBoletoWSClass.httpsend.Headers.Text, logParanoico);
+      DoLog('Cookies:', logParanoico);
+      DoLog(FBoletoWSClass.httpsend.Cookies.Text, logParanoico);
+      DoLog(FBoletoWSClass.httpsend.Sock.SSL.CertificateFile, logParanoico);
+      DoLog(FBoletoWSClass.httpsend.Sock.SSL.PrivateKeyFile, logParanoico);
+      DoLog('Body:', logParanoico);
+      DoLog(ReadStrFromStream(FBoletoWSClass.httpsend.Document, FBoletoWSClass.httpsend.Document.Size), logParanoico);
       if not (Assigned(FBoletoWSClass.RetornoBanco)) or ((FBoletoWSClass.RetornoBanco.CodRetorno = 0) and (Trim(FBoletoWSClass.RetornoBanco.Msg) = '')) then
-        DoLog('Falha Envio: ' + ACBrStr(E.Message), logSimples)
+        DoLog('Mensagem Falha Envio: ' + ACBrStr(E.Message) + ' ' +FBoletoWSClass.httpsend.Sock.GetErrorDescEx, logSimples)
       else
-        DoLog('Erro Envio: ' + ACBrStr(IntToStr(FBoletoWSClass.RetornoBanco.CodRetorno) + sLineBreak + FBoletoWSClass.RetornoBanco.Msg + sLineBreak + E.Message), logSimples);
+        DoLog('Mensagem Falha Envio: ' + ACBrStr(IntToStr(FBoletoWSClass.RetornoBanco.CodRetorno) + sLineBreak + FBoletoWSClass.RetornoBanco.Msg + sLineBreak + E.Message + ' ' +FBoletoWSClass.httpsend.Sock.GetErrorDescEx), logSimples);
       raise;
     end;
   end;

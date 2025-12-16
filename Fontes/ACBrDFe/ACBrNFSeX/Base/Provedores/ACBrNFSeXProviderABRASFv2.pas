@@ -38,6 +38,7 @@ interface
 
 uses
   SysUtils, Classes,
+  ACBrDFe.Conversao,
   ACBrXmlBase, ACBrXmlDocument,
   ACBrNFSeXProviderBase, ACBrNFSeXWebservicesResponse;
 
@@ -148,6 +149,10 @@ type
     procedure PrepararConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); override;
     procedure GerarMsgDadosConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); override;
     procedure TratarRetornoConsultarSeqRps(Response: TNFSeConsultarSeqRpsResponse); override;
+
+    procedure PrepararObterDANFSE(Response: TNFSeObterDANFSEResponse); override;
+    procedure GerarMsgDadosObterDANFSE(Response: TNFSeObterDANFSEResponse); override;
+    procedure TratarRetornoObterDANFSE(Response: TNFSeObterDANFSEResponse); override;
 
     function VerificarAlerta(const ACodigo, AMensagem, ACorrecao: string): Boolean; virtual;
     function VerificarErro(const ACodigo, AMensagem, ACorrecao: string): Boolean; virtual;
@@ -1164,6 +1169,8 @@ begin
 
           if AuxNode <> nil then
           begin
+            Response.Status := ObterConteudoTag(AuxNode.Childrens.FindAnyNs('Status'), tcInt);
+
             AuxNode := AuxNode.Childrens.FindAnyNs('IdentificacaoRps');
             if not Assigned(AuxNode) then Exit;
 
@@ -1532,7 +1539,7 @@ procedure TACBrNFSeProviderABRASFv2.PrepararConsultaNFSeServicoPrestado(
   Response: TNFSeConsultaNFSeResponse);
 var
   aParams: TNFSeParamsResponse;
-  XmlConsulta, NameSpace, Prefixo, PrefixoTS: string;
+  XmlConsulta, NameSpace, Prefixo, PrefixoTS, TagPeriodo: string;
 begin
   Prefixo := '';
   PrefixoTS := '';
@@ -1580,16 +1587,21 @@ begin
   else
     XmlConsulta := '';
 
+  if Response.InfConsultaNFSe.tpPeriodo = tpEmissao then
+    TagPeriodo := 'PeriodoEmissao'
+  else
+    TagPeriodo := 'PeriodoCompetencia';
+
   if (Response.InfConsultaNFSe.DataInicial > 0) and (Response.InfConsultaNFSe.DataFinal > 0) then
     XmlConsulta := XmlConsulta +
-                     '<' + Prefixo + 'PeriodoEmissao>' +
-                       '<' + PrefixoTS + 'DataInicial>' +
+                     '<' + Prefixo + TagPeriodo + '>' +
+                       '<' + Prefixo + 'DataInicial>' +
                           FormatDateTime('yyyy-mm-dd', Response.InfConsultaNFSe.DataInicial) +
-                       '</' + PrefixoTS + 'DataInicial>' +
-                       '<' + PrefixoTS + 'DataFinal>' +
+                       '</' + Prefixo + 'DataInicial>' +
+                       '<' + Prefixo + 'DataFinal>' +
                           FormatDateTime('yyyy-mm-dd', Response.InfConsultaNFSe.DataFinal) +
-                       '</' + PrefixoTS + 'DataFinal>' +
-                     '</' + Prefixo + 'PeriodoEmissao>';
+                       '</' + Prefixo + 'DataFinal>' +
+                     '</' + Prefixo + TagPeriodo + '>';
 
   if NaoEstaVAzio(Response.InfConsultaNFSe.CNPJTomador) then
   begin
@@ -1793,7 +1805,7 @@ procedure TACBrNFSeProviderABRASFv2.PrepararConsultaNFSeServicoTomado(
   Response: TNFSeConsultaNFSeResponse);
 var
   aParams: TNFSeParamsResponse;
-  XmlConsulta, NameSpace, Prefixo, PrefixoTS: string;
+  XmlConsulta, NameSpace, Prefixo, PrefixoTS, TagPeriodo: string;
 begin
   Prefixo := '';
   PrefixoTS := '';
@@ -1841,16 +1853,21 @@ begin
   else
     XmlConsulta := '';
 
+  if Response.InfConsultaNFSe.tpPeriodo = tpEmissao then
+    TagPeriodo := 'PeriodoEmissao'
+  else
+    TagPeriodo := 'PeriodoCompetencia';
+
   if (Response.InfConsultaNFSe.DataInicial > 0) and (Response.InfConsultaNFSe.DataFinal > 0) then
     XmlConsulta := XmlConsulta +
-                     '<' + Prefixo + 'PeriodoEmissao>' +
-                       '<' + PrefixoTS + 'DataInicial>' +
+                     '<' + Prefixo + TagPeriodo + '>' +
+                       '<' + Prefixo + 'DataInicial>' +
                           FormatDateTime('yyyy-mm-dd', Response.InfConsultaNFSe.DataInicial) +
-                       '</' + PrefixoTS + 'DataInicial>' +
-                       '<' + PrefixoTS + 'DataFinal>' +
+                       '</' + Prefixo + 'DataInicial>' +
+                       '<' + Prefixo + 'DataFinal>' +
                           FormatDateTime('yyyy-mm-dd', Response.InfConsultaNFSe.DataFinal) +
-                       '</' + PrefixoTS + 'DataFinal>' +
-                     '</' + Prefixo + 'PeriodoEmissao>';
+                       '</' + Prefixo + 'DataFinal>' +
+                     '</' + Prefixo + TagPeriodo + '>';
 
   if NaoEstaVAzio(Response.InfConsultaNFSe.CNPJPrestador) then
   begin
@@ -2247,7 +2264,7 @@ var
   Document: TACBrXmlDocument;
   ANode, AuxNode: TACBrXmlNode;
   Ret: TRetCancelamento;
-  IdAttr, xCancelamento, xXMLNS: string;
+  IdAttr, xCancelamento, xXMLNS, nomeArq: string;
   AErro: TNFSeEventoCollectionItem;
   Inicio, Fim: Integer;
 begin
@@ -2359,19 +2376,21 @@ begin
         Ret.Situacao := 'Cancelado';
 
         Inicio := Pos('CancelarNfseEnvio', Response.ArquivoEnvio) + 16;
-        Fim := Pos('>', Response.ArquivoEnvio) - 1;
+        Fim := Pos('>', Response.ArquivoEnvio);
 
         if Inicio = Fim then
           xXMLNS := ''
         else
-          xXMLNS := ' ' + Copy(Response.ArquivoEnvio, Inicio + 1, Fim - (Inicio + 1));
+          xXMLNS := trim(Copy(Response.ArquivoEnvio, Inicio + 1, Fim - (Inicio + 1)));
 
-        xCancelamento := '<Cancelamento' + xXMLNS + '>' +
+        xCancelamento := '<Cancelamento ' + xXMLNS + '>' +
                             SeparaDados(Response.ArquivoEnvio, 'Pedido', True) +
                             SepararDados(Response.ArquivoRetorno, 'DataHora', True) +
                          '</Cancelamento>';
 
-        SalvarXmlCancelamento(Ret.Pedido.InfID.ID + '-procCancNFSe', xCancelamento);
+        nomeArq := '';
+        SalvarXmlCancelamento(Ret.Pedido.InfID.ID + '-procCancNFSe', xCancelamento, nomeArq);
+        Response.PathNome := nomeArq;
       end
       else
       begin
@@ -2869,6 +2888,25 @@ end;
 
 procedure TACBrNFSeProviderABRASFv2.TratarRetornoConsultaLinkNFSe(
   Response: TNFSeConsultaLinkNFSeResponse);
+begin
+  // Deve ser implementado para cada provedor que tem o seu próprio layout
+end;
+
+procedure TACBrNFSeProviderABRASFv2.PrepararObterDANFSE(Response: TNFSeObterDANFSEResponse);
+begin
+  // Deve ser implementado para cada provedor que tem o seu próprio layout
+  TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+  raise EACBrDFeException.Create(ERR_NAO_IMP);
+end;
+
+procedure TACBrNFSeProviderABRASFv2.GerarMsgDadosObterDANFSE(Response: TNFSeObterDANFSEResponse);
+begin
+  // Deve ser implementado para cada provedor que tem o seu próprio layout
+  TACBrNFSeX(FAOwner).SetStatus(stNFSeIdle);
+  raise EACBrDFeException.Create(ERR_NAO_IMP);
+end;
+
+procedure TACBrNFSeProviderABRASFv2.TratarRetornoObterDANFSE(Response: TNFSeObterDANFSEResponse);
 begin
   // Deve ser implementado para cada provedor que tem o seu próprio layout
 end;

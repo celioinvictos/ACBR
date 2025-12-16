@@ -31,7 +31,10 @@ namespace ACBrLib.NFe
             COFINS = new COFINSProdutoNFe();
             COFINSST = new COFINSSTProdutoNFe();
             ISSQN = new ISSQNNFe();
-            gCred = new CreditoPresumidoNFe();
+            gCred = new List<CreditoPresumidoNFe>();
+            IS = new ISProdutoNFe();
+            IBSCBS = new IBSCBSProdutoNFe();
+            DFeReferenciado = new DFeReferenciado();
         }
 
         #endregion Constructors
@@ -42,8 +45,6 @@ namespace ACBrLib.NFe
         /// Número do item (1-990)
         /// </summary>
         public int? nItem { get; set; }
-
-
 
         /// <summary>
         /// Código do produto ou serviço
@@ -242,7 +243,7 @@ namespace ACBrLib.NFe
 
         public string cBenef { get; set; }
 
-        public CreditoPresumidoNFe gCred { get; set; }
+        public List<CreditoPresumidoNFe> gCred { get; set; }
 
         public List<NVENFe> NVE { get; }
 
@@ -279,6 +280,28 @@ namespace ACBrLib.NFe
         public COFINSSTProdutoNFe COFINSST { get; }
 
         public ISSQNNFe ISSQN { get; }
+
+        /// <summary>
+        /// Informações do Imposto Seletivo
+        /// </summary>
+        public ISProdutoNFe IS { get; }
+
+        /// <summary>
+        /// Informações do Imposto de Bens e Serviços - IBS e da Contribuição de Bens e Serviços - CBS
+        /// </summary>
+        public IBSCBSProdutoNFe IBSCBS { get; }
+
+        /// <summary>
+        /// Documento Fiscal Eletrônico Referenciado 
+        /// </summary>
+        public DFeReferenciado DFeReferenciado { get; }
+
+        /// <summary>
+        /// Valor Total do Item da NF-e
+        /// </summary>
+        public decimal vItem { get; set; }
+
+        public IndBemMovelUsado IndBemMovelUsado { get; set; }
 
         #endregion Properties
     }

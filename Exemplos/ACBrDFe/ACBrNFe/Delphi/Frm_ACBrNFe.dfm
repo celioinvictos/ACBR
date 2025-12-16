@@ -10,8 +10,10 @@ object frmACBrNFe: TfrmACBrNFe
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  OldCreateOrder = True
   Position = poScreenCenter
   OnCreate = FormCreate
+  PixelsPerInch = 96
   TextHeight = 13
   object pnlMenus: TPanel
     Left = 0
@@ -20,6 +22,7 @@ object frmACBrNFe: TfrmACBrNFe
     Height = 612
     Align = alLeft
     TabOrder = 0
+    ExplicitHeight = 604
     object PageControl1: TPageControl
       Left = 1
       Top = 1
@@ -40,6 +43,10 @@ object frmACBrNFe: TfrmACBrNFe
           TabOrder = 0
           object TabSheet3: TTabSheet
             Caption = 'Certificado'
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object lSSLLib: TLabel
               Left = 39
               Top = 16
@@ -355,6 +362,10 @@ object frmACBrNFe: TfrmACBrNFe
           object TabSheet4: TTabSheet
             Caption = 'Geral'
             ImageIndex = 1
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object GroupBox3: TGroupBox
               Left = 3
               Top = 12
@@ -588,6 +599,10 @@ object frmACBrNFe: TfrmACBrNFe
           object TabSheet7: TTabSheet
             Caption = 'WebService'
             ImageIndex = 2
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object GroupBox4: TGroupBox
               Left = 5
               Top = 4
@@ -1072,6 +1087,10 @@ object frmACBrNFe: TfrmACBrNFe
           object TabSheet13: TTabSheet
             Caption = 'Arquivos'
             ImageIndex = 4
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object sbPathNFe: TSpeedButton
               Left = 247
               Top = 131
@@ -1274,6 +1293,10 @@ object frmACBrNFe: TfrmACBrNFe
       object TabSheet2: TTabSheet
         Caption = 'Documento Auxiliar'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label7: TLabel
           Left = 8
           Top = 8
@@ -1506,6 +1529,10 @@ object frmACBrNFe: TfrmACBrNFe
       object TabSheet14: TTabSheet
         Caption = 'Email'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label3: TLabel
           Left = 8
           Top = 8
@@ -1631,20 +1658,27 @@ object frmACBrNFe: TfrmACBrNFe
     Height = 612
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 567
+    ExplicitHeight = 604
     object pgcBotoes: TPageControl
       Left = 1
-      Top = 1
+      Top = 41
       Width = 567
       Height = 197
-      ActivePage = tsEnvios
+      ActivePage = tsEventos
       Align = alTop
       TabOrder = 0
+      ExplicitWidth = 565
       object tsEnvios: TTabSheet
         Caption = 'Envios'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object btnCriarEnviar: TButton
-          Left = 376
-          Top = 8
+          Left = 375
+          Top = 9
           Width = 177
           Height = 25
           Caption = 'Criar e Enviar'
@@ -1772,6 +1806,10 @@ object frmACBrNFe: TfrmACBrNFe
       object tsConsultas: TTabSheet
         Caption = 'Consultas'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object btnConsultar: TButton
           Left = 191
           Top = 9
@@ -1830,109 +1868,279 @@ object frmACBrNFe: TfrmACBrNFe
       object tsEventos: TTabSheet
         Caption = 'Eventos'
         ImageIndex = 4
-        object btnCancelarXML: TButton
-          Left = 8
-          Top = 9
-          Width = 177
-          Height = 25
-          Caption = 'Cancelamento com XML'
+        object pgcEventos: TPageControl
+          Left = 0
+          Top = 0
+          Width = 559
+          Height = 169
+          ActivePage = tsEventosComuns
+          Align = alClient
           TabOrder = 0
-          OnClick = btnCancelarXMLClick
-        end
-        object btnCancelarChave: TButton
-          Left = 191
-          Top = 9
-          Width = 177
-          Height = 25
-          Caption = 'Cancelamento pela Chave'
-          TabOrder = 1
-          OnClick = btnCancelarChaveClick
-        end
-        object btnCartadeCorrecao: TButton
-          Left = 374
-          Top = 9
-          Width = 177
-          Height = 25
-          Caption = 'Carta de Corre'#231#227'o'
-          TabOrder = 2
-          OnClick = btnCartadeCorrecaoClick
-        end
-        object btnImprimirEvento: TButton
-          Left = 8
-          Top = 141
-          Width = 177
-          Height = 25
-          Caption = 'Imprimir Evento'
-          TabOrder = 4
-          OnClick = btnImprimirEventoClick
-        end
-        object btnEnviarEventoEmail: TButton
-          Left = 191
-          Top = 141
-          Width = 177
-          Height = 25
-          Caption = 'Enviar Evento Email'
-          TabOrder = 5
-          OnClick = btnEnviarEventoEmailClick
-        end
-        object btnAtorInterNFeTransp: TButton
-          Left = 8
-          Top = 40
-          Width = 177
-          Height = 25
-          Caption = 'Ator Interessado na NF-e Transp.'
-          TabOrder = 3
-          OnClick = btnAtorInterNFeTranspClick
-        end
-        object btnEventoEPEC: TButton
-          Left = 191
-          Top = 40
-          Width = 177
-          Height = 25
-          Caption = 'EPEC'
-          TabOrder = 6
-          OnClick = btnEventoEPECClick
-        end
-        object btnInsucessoEntrega: TButton
-          Left = 8
-          Top = 69
-          Width = 177
-          Height = 25
-          Caption = 'Insucesso na Entrega'
-          TabOrder = 7
-          OnClick = btnInsucessoEntregaClick
-        end
-        object btnCancInsucessoEntrega: TButton
-          Left = 191
-          Top = 69
-          Width = 177
-          Height = 25
-          Caption = 'Canc. Insucesso na Entrega'
-          TabOrder = 8
-          OnClick = btnCancInsucessoEntregaClick
-        end
-        object btnEventoECONF: TButton
-          Left = 8
-          Top = 100
-          Width = 177
-          Height = 25
-          Caption = 'ECONF'
-          TabOrder = 9
-          OnClick = btnEventoECONFClick
-        end
-        object btnEventoCancECONF: TButton
-          Left = 191
-          Top = 100
-          Width = 177
-          Height = 25
-          Caption = 'Cancelar ECONF'
-          TabOrder = 10
-          OnClick = btnEventoCancECONFClick
+          object tsEventosComuns: TTabSheet
+            Caption = 'Comuns'
+            object btnAtorInterNFeTransp: TButton
+              Left = 8
+              Top = 40
+              Width = 177
+              Height = 25
+              Caption = 'Ator Interessado na NF-e Transp.'
+              TabOrder = 0
+              OnClick = btnAtorInterNFeTranspClick
+            end
+            object btnCancelarChave: TButton
+              Left = 191
+              Top = 9
+              Width = 177
+              Height = 25
+              Caption = 'Cancelamento pela Chave'
+              TabOrder = 1
+              OnClick = btnCancelarChaveClick
+            end
+            object btnCancelarXML: TButton
+              Left = 8
+              Top = 9
+              Width = 177
+              Height = 25
+              Caption = 'Cancelamento com XML'
+              TabOrder = 2
+              OnClick = btnCancelarXMLClick
+            end
+            object btnCancInsucessoEntrega: TButton
+              Left = 191
+              Top = 69
+              Width = 177
+              Height = 25
+              Caption = 'Canc. Insucesso na Entrega'
+              TabOrder = 3
+              OnClick = btnCancInsucessoEntregaClick
+            end
+            object btnCartadeCorrecao: TButton
+              Left = 374
+              Top = 9
+              Width = 177
+              Height = 25
+              Caption = 'Carta de Corre'#231#227'o'
+              TabOrder = 4
+              OnClick = btnCartadeCorrecaoClick
+            end
+            object btnEnviarEventoEmail: TButton
+              Left = 374
+              Top = 40
+              Width = 177
+              Height = 25
+              Caption = 'Enviar Evento Email'
+              TabOrder = 5
+              OnClick = btnEnviarEventoEmailClick
+            end
+            object btnEventoCancECONF: TButton
+              Left = 191
+              Top = 100
+              Width = 177
+              Height = 25
+              Caption = 'Cancelar ECONF'
+              TabOrder = 6
+              OnClick = btnEventoCancECONFClick
+            end
+            object btnEventoECONF: TButton
+              Left = 8
+              Top = 100
+              Width = 177
+              Height = 25
+              Caption = 'ECONF'
+              TabOrder = 7
+              OnClick = btnEventoECONFClick
+            end
+            object btnEventoEPEC: TButton
+              Left = 191
+              Top = 40
+              Width = 177
+              Height = 25
+              Caption = 'EPEC'
+              TabOrder = 8
+              OnClick = btnEventoEPECClick
+            end
+            object btnImprimirEvento: TButton
+              Left = 374
+              Top = 71
+              Width = 177
+              Height = 25
+              Caption = 'Imprimir Evento'
+              TabOrder = 9
+              OnClick = btnImprimirEventoClick
+            end
+            object btnInsucessoEntrega: TButton
+              Left = 8
+              Top = 69
+              Width = 177
+              Height = 25
+              Caption = 'Insucesso na Entrega'
+              TabOrder = 10
+              OnClick = btnInsucessoEntregaClick
+            end
+          end
+          object tsEventosReformaTributaria: TTabSheet
+            Caption = 'Reforma Tribut'#225'ria'
+            ImageIndex = 1
+            object pgcAutorEvento: TPageControl
+              Left = 0
+              Top = 0
+              Width = 551
+              Height = 141
+              ActivePage = tsTodos
+              Align = alClient
+              TabOrder = 0
+              object tsTodos: TTabSheet
+                Caption = 'Todos'
+                object btnCancelarEventoRT: TButton
+                  Left = 5
+                  Top = 41
+                  Width = 177
+                  Height = 25
+                  Caption = 'Cancelamento de Evento'
+                  TabOrder = 0
+                  OnClick = btnCancelarEventoRTClick
+                end
+                object btnDestItemConsumoPessoal: TButton
+                  Left = 5
+                  Top = 8
+                  Width = 177
+                  Height = 25
+                  Caption = 'Dest. Item consumo pessoal'
+                  TabOrder = 1
+                  OnClick = btnDestItemConsumoPessoalClick
+                end
+              end
+              object tsEmitente: TTabSheet
+                Caption = 'Emitente'
+                ImageIndex = 1
+                object btnImportALCZFM: TButton
+                  Left = 5
+                  Top = 73
+                  Width = 177
+                  Height = 25
+                  Caption = 'Importa'#231#227'o ALC/ZFM'
+                  TabOrder = 0
+                  OnClick = btnImportALCZFMClick
+                end
+                object btnAtualizacaoPrevisaoEntrega: TButton
+                  Left = 189
+                  Top = 8
+                  Width = 177
+                  Height = 25
+                  Caption = 'Atualiza'#231#227'o Previs'#227'o de Entrega'
+                  TabOrder = 1
+                  OnClick = btnAtualizacaoPrevisaoEntregaClick
+                end
+                object btnFornecNaoRealizadoPagAntecip: TButton
+                  Left = 5
+                  Top = 8
+                  Width = 177
+                  Height = 25
+                  Caption = 'Fornec. n'#227'o realizado Pag. Antecip'
+                  TabOrder = 2
+                  OnClick = btnFornecNaoRealizadoPagAntecipClick
+                end
+                object btnPerecPerdaContrFornec: TButton
+                  Left = 5
+                  Top = 40
+                  Width = 177
+                  Height = 25
+                  Caption = 'Perec. Transp. Contratado Fornec'
+                  TabOrder = 3
+                  OnClick = btnPerecPerdaContrFornecClick
+                end
+                object btnPagIntegLibCredPresAq: TButton
+                  Left = 189
+                  Top = 40
+                  Width = 177
+                  Height = 25
+                  Caption = 'Efetivo Pag. Integ. Lib. Cred. Pres.'
+                  TabOrder = 4
+                  OnClick = btnPagIntegLibCredPresAqClick
+                end
+              end
+              object tsDestinatario: TTabSheet
+                Caption = 'Destinatario'
+                ImageIndex = 2
+                object btnAceiteDebApuracaoNotaCredito: TButton
+                  Left = 186
+                  Top = 40
+                  Width = 177
+                  Height = 25
+                  Caption = 'Aceite D'#233'b. Apur. Nota Cr'#233'dito'
+                  TabOrder = 0
+                  OnClick = btnAceiteDebApuracaoNotaCreditoClick
+                end
+                object btnImobilizacaoItem: TButton
+                  Left = 186
+                  Top = 72
+                  Width = 177
+                  Height = 25
+                  Caption = 'Imobiliza'#231#227'o de Item'
+                  TabOrder = 1
+                  OnClick = btnImobilizacaoItemClick
+                end
+                object btnSolicApropriacaoCredPres: TButton
+                  Left = 186
+                  Top = 8
+                  Width = 177
+                  Height = 25
+                  Caption = 'Solic. Apropria. Cr'#233'd. Presumido'
+                  TabOrder = 2
+                  OnClick = btnSolicApropriacaoCredPresClick
+                end
+                object btnSolicitacaoApropCredCombustivel: TButton
+                  Left = 5
+                  Top = 8
+                  Width = 175
+                  Height = 25
+                  Caption = 'Solicit. Aprop. Cr'#233'd. Combust'#237'vel'
+                  TabOrder = 3
+                  OnClick = btnSolicitacaoApropCredCombustivelClick
+                end
+                object btnSolicitacaoAproCredBensServAdiq: TButton
+                  Left = 5
+                  Top = 40
+                  Width = 175
+                  Height = 25
+                  Caption = 'Solicita'#231#227'o Aprop. Cred. Bens Adiq'
+                  TabOrder = 4
+                  OnClick = btnSolicitacaoAproCredBensServAdiqClick
+                end
+                object btnPerecPerdaContrAdiqu: TButton
+                  Left = 5
+                  Top = 72
+                  Width = 175
+                  Height = 25
+                  Caption = 'Perec. Transp. Contratado Adiq.'
+                  TabOrder = 5
+                  OnClick = btnPerecPerdaContrAdiquClick
+                end
+              end
+              object Sucessora: TTabSheet
+                Caption = 'Sucessora'
+                ImageIndex = 3
+                object btnManifestacaoPedidoTransfCredSucessao: TButton
+                  Left = 4
+                  Top = 6
+                  Width = 177
+                  Height = 25
+                  Caption = 'Manfesta'#231#227'o Transf. Cr'#233'd. Sucess.'
+                  TabOrder = 0
+                  OnClick = btnManifestacaoPedidoTransfCredSucessaoClick
+                end
+              end
+            end
+          end
         end
       end
       object tsInutilizacao: TTabSheet
         Caption = 'Inutiliza'#231#227'o'
         ImageIndex = 5
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object btnInutilizar: TButton
           Left = 8
           Top = 9
@@ -1955,6 +2163,10 @@ object frmACBrNFe: TfrmACBrNFe
       object tsDistribuicao: TTabSheet
         Caption = 'Distribui'#231#227'o DFe'
         ImageIndex = 5
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object btnManifDestConfirmacao: TButton
           Left = 8
           Top = 40
@@ -2022,6 +2234,10 @@ object frmACBrNFe: TfrmACBrNFe
       object tsOutros: TTabSheet
         Caption = 'Outros'
         ImageIndex = 5
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object btnLerArqINI: TButton
           Left = 3
           Top = 3
@@ -2040,23 +2256,47 @@ object frmACBrNFe: TfrmACBrNFe
           TabOrder = 1
           OnClick = btnGerarArqINIClick
         end
+        object btnLerArqINIEnviarEvento: TButton
+          Left = 3
+          Top = 41
+          Width = 177
+          Height = 25
+          Caption = 'Ler Arq. INI e Gerar Evento'
+          TabOrder = 2
+          OnClick = btnLerArqINIEnviarEventoClick
+        end
+        object btnLerArqJSONEnviarEvento: TButton
+          Left = 186
+          Top = 41
+          Width = 177
+          Height = 25
+          Caption = 'Ler Arq. JSON e Gerar Evento'
+          TabOrder = 3
+          OnClick = btnLerArqJSONEnviarEventoClick
+        end
       end
     end
     object pgRespostas: TPageControl
       Left = 1
-      Top = 198
+      Top = 238
       Width = 567
-      Height = 413
+      Height = 373
       ActivePage = Dados
       Align = alClient
       TabOrder = 1
+      ExplicitWidth = 565
+      ExplicitHeight = 365
       object TabSheet5: TTabSheet
         Caption = 'Respostas'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object MemoResp: TMemo
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 345
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
@@ -2065,15 +2305,21 @@ object frmACBrNFe: TfrmACBrNFe
       object TabSheet6: TTabSheet
         Caption = 'XML Resposta'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object WBResposta: TWebBrowser
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 345
           Align = alClient
           TabOrder = 0
+          ExplicitWidth = 699
+          ExplicitHeight = 431
           ControlData = {
-            4C000000C6390000CA2700000000000000000000000000000000000000000000
+            4C000000382E0000871C00000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126200000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -2083,11 +2329,15 @@ object frmACBrNFe: TfrmACBrNFe
       object TabSheet8: TTabSheet
         Caption = 'Log'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object memoLog: TMemo
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 345
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
@@ -2096,11 +2346,15 @@ object frmACBrNFe: TfrmACBrNFe
       object TabSheet9: TTabSheet
         Caption = 'Documento'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object trvwDocumento: TTreeView
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 345
           Align = alClient
           Indent = 19
           TabOrder = 0
@@ -2109,11 +2363,15 @@ object frmACBrNFe: TfrmACBrNFe
       object TabSheet10: TTabSheet
         Caption = 'Retorno Completo WS'
         ImageIndex = 4
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object memoRespWS: TMemo
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 345
           Align = alClient
           ScrollBars = ssVertical
           TabOrder = 0
@@ -2126,7 +2384,7 @@ object frmACBrNFe: TfrmACBrNFe
           Left = 0
           Top = 0
           Width = 559
-          Height = 385
+          Height = 345
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -2139,8 +2397,33 @@ object frmACBrNFe: TfrmACBrNFe
           ScrollBars = ssVertical
           TabOrder = 0
           WordWrap = False
+          ExplicitWidth = 557
+          ExplicitHeight = 337
         end
       end
+    end
+    object rgReformaTributaria: TRadioGroup
+      Left = 1
+      Top = 1
+      Width = 567
+      Height = 40
+      Align = alTop
+      Caption = 
+        'Gera os campos da ReformaTributaria (em conformidade com a NT 20' +
+        '25/002 vers'#227'o 1.30)'
+      Columns = 2
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ItemIndex = 1
+      Items.Strings = (
+        'Sim'
+        'N'#227'o')
+      ParentFont = False
+      TabOrder = 2
+      ExplicitWidth = 565
     end
   end
   object ACBrNFe1: TACBrNFe
@@ -2165,7 +2448,7 @@ object frmACBrNFe: TfrmACBrNFe
     Configuracoes.RespTec.IdCSRT = 0
     DANFE = ACBrNFeDANFeRL1
     Left = 330
-    Top = 239
+    Top = 279
   end
   object ACBrNFeDANFeRL1: TACBrNFeDANFeRL
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
@@ -2193,7 +2476,7 @@ object frmACBrNFe: TfrmACBrNFe
     ExibeResumoCanhoto = False
     ExibeCampoFatura = False
     Left = 427
-    Top = 239
+    Top = 279
   end
   object ACBrNFeDANFCeFortes1: TACBrNFeDANFCeFortes
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
@@ -2223,7 +2506,7 @@ object frmACBrNFe: TfrmACBrNFe
     FonteLinhaItem.Name = 'Lucida Console'
     FonteLinhaItem.Style = []
     Left = 562
-    Top = 239
+    Top = 279
   end
   object ACBrNFeDANFeESCPOS1: TACBrNFeDANFeESCPOS
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
@@ -2248,7 +2531,7 @@ object frmACBrNFe: TfrmACBrNFe
     FormularioContinuo = True
     PosPrinter = ACBrPosPrinter1
     Left = 561
-    Top = 295
+    Top = 335
   end
   object ACBrPosPrinter1: TACBrPosPrinter
     Modelo = ppEscPosEpson
@@ -2263,7 +2546,7 @@ object frmACBrNFe: TfrmACBrNFe
     ConfigQRCode.ErrorLevel = 0
     LinhasEntreCupons = 5
     Left = 425
-    Top = 295
+    Top = 335
   end
   object ACBrMail1: TACBrMail
     Host = '127.0.0.1'
@@ -2274,7 +2557,7 @@ object frmACBrNFe: TfrmACBrNFe
     DefaultCharset = UTF_8
     IDECharset = CP1252
     Left = 330
-    Top = 295
+    Top = 335
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '*-nfe.XML'
@@ -2283,7 +2566,7 @@ object frmACBrNFe: TfrmACBrNFe
       'dos os Arquivos (*.*)|*.*'
     Title = 'Selecione a NFe'
     Left = 427
-    Top = 351
+    Top = 391
   end
   object ACBrNFeDANFCeFortesA41: TACBrNFeDANFCeFortesA4
     Sistema = 'Projeto ACBr - www.projetoacbr.com.br'
@@ -2306,6 +2589,6 @@ object frmACBrNFe: TfrmACBrNFe
     CasasDecimais.MaskAliquota = ',0.00'
     FormularioContinuo = True
     Left = 560
-    Top = 352
+    Top = 392
   end
 end

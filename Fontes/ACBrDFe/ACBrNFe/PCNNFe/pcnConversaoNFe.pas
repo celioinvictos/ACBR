@@ -152,7 +152,7 @@ type
                         fpDuplicataMercantil, fpBoletoBancario, fpDepositoBancario,
                         fpPagamentoInstantaneo, fpTransfBancario, fpProgramaFidelidade,
                         fpSemPagamento, fpRegimeEspecial, fpOutro, fpPagamentoInstantaneoEstatico,
-                        fpCreditoEmLojaPorDevolucao, fpFalhaHardware);
+                        fpCreditoEmLojaPorDevolucao, fpFalhaHardware, fpPagamentoPosterior);
   TpcnBandeiraCartao = (bcVisa, bcMasterCard, bcAmericanExpress, bcSorocred, bcDinersClub,
                         bcElo, bcHipercard, bcAura, bcCabal, bcAlelo, bcBanesCard,
                         bcCalCard, bcCredz, bcDiscover, bcGoodCard, bcGreenCard,
@@ -192,7 +192,7 @@ function StrToindISS(out ok: boolean; const s: string): TpcnindISS;
 function indISSToStrTagPosText(const t: TpcnindISS ): string;
 
 type
-  TpcnTipoAutor = (taEmpresaEmitente, taEmpresaDestinataria, taEmpresa, taFisco, taRFB, taOutros);
+  TpcnTipoAutor = (taEmpresaEmitente, taEmpresaDestinataria, taEmpresa, taFisco, taRFB, taOutros, taEmpresaSucessora);
 
 function TipoAutorToStr(const t: TpcnTipoAutor ): string;
 function StrToTipoAutor(out ok: boolean; const s: string): TpcnTipoAutor;
@@ -243,7 +243,14 @@ type
                 schManifDestOperNaoRealizada, schCompEntrega, schCancCompEntrega,
                 schAtorInteressadoNFe, schInsucessoEntregaNFe,
                 schCancInsucessoEntregaNFe, schConcFinanceira,
-                schCancConcFinanceira);
+                schCancConcFinanceira, schCancGenerico, schPagIntegLibCredPresAdq,
+                schImporALCZFM, schPerecPerdaRouboFurtoTranspContratFornec,
+                schFornecNaoRealizPagAntec, schSolicApropCredPres,
+                schDestItemConsPessoal, schPerecPerdaRouboFurtoTranspContratAqu,
+                schAceiteDebitoApuracaoNotaCredito, schImobilizacaoItem,
+                schSolicApropCredCombustivel, schSolicApropCredBensServicos,
+                schManifPedTransfCredIBSSucessao, schManifPedTransfCredCBSSucessao,
+                schAtualizacaoDataPrevisaoEntrega);
 
 const
   TSchemaNFeArrayStrings: array[TSchemaNFe] of string = ('Erro', 'Nfe',
@@ -255,13 +262,22 @@ const
     'ManifDestCiencia', 'ManifDestDesconhecimento', 'ManifDestOperNaoRealizada',
     'CompEntrega', 'CancCompEntrega', 'AtorInteressadoNFe',
     'InsucessoEntrega', 'CancInsucessoEntrega', 'ConcFinanceira',
-    'CancConcFinanceira');
+    'CancConcFinanceira', 'CancGenerico', 'PagIntegLibCredPresAdq',
+    'ImporALCZFM', 'PerecPerdaRouboFurtoTranspContratFornec',
+    'FornecNaoRealizPagAntec', 'SolicApropCredPres', 'DestItemConsPessoal',
+    'PerecPerdaRouboFurtoTranspContratAqu',
+    'AceiteDebitoApuracaoNotaCredito', 'ImobilizacaoItem',
+    'SolicApropCredCombustivel', 'SolicApropCredBensServicos',
+    'ManifPedTransfCredIBSSucessao', 'ManifPedTransfCredCBSSucessao',
+    'AtualizacaoDataPrevisaoEntrega');
 
   TEventoArrayStrings: array[TSchemaNFe] of string = ('', '', 'e110111', '',
     'e110110', '', '', 'e110140', '', '', '', '', '', '', '', '', '', '', '',
     'e110112', 'e111500', 'e111501', 'e111502', 'e111503', 'e210200', 'e210210',
     'e210220', 'e210240', 'e110130', 'e110131', 'e110150', 'e110192', 'e110193',
-    'e110750', 'e110751');
+    'e110750', 'e110751', 'e110001', 'e112110', 'e112120', 'e112130', 'e112140',
+    'e211110', 'e211120', 'e211124', 'e211128', 'e211130', 'e211140', 'e211150',
+    'e212110', 'e212120', 'e112150');
 
 type
   TLayOut = (LayNfeRecepcao, LayNfeRetRecepcao, LayNfeCancelamento,
@@ -401,76 +417,36 @@ const
 type
   TtpNFDebito = (tdNenhum, tdTransferenciaCreditoCooperativa, tdAnulacao,
                  tdDebitosNaoProcessadas, tdMultaJuros,
-                 tdTransferenciaCreditoSucessao);
+                 tdTransferenciaCreditoSucessao, tdPagamentoAntecipado,
+                 tdPerdaEmEstoque, tdDesenquadramentodoSN);
 
 const
   TtpNFDebitoArrayStrings: array[TtpNFDebito] of string = ('', '01', '02', '03',
+    '04', '05', '06', '07', '08');
+
+type
+  TtpNFCredito = (tcNenhum, tcMultaJuros, tcApropriacaoCreditoPresumido, tcRetorno,
+                  tcReducaoValores, tcTransferenciaCreditoSucessao);
+
+const
+  TtpNFCreditoArrayStrings: array[TtpNFCredito] of string = ('', '01', '02', '03',
     '04', '05');
 
 type
-  TtpNFCredito = (tcNenhum, tc01);
+  TCSTIS = (cstisNenhum,
+    cstis000);
 
 const
-  TtpNFCreditoArrayStrings: array[TtpNFCredito] of string = ('', '01');
+  TCSTISArrayStrings: array[TCSTIS] of string = ('',
+    '000');
 
 type
-  TtpEnteGov  = (tcgUniao, tcgEstados, tcgDistritoFederal, tcgMunicipios);
+  TTpCredPresIBSZFM = (tcpNenhum, tcpSemCredito, tcpBensConsumoFinal, tcpBensCapital,
+                       tcpBensIntermediarios, tcpBensInformaticaOutros);
 
 const
-  TtpEnteGovArrayStrings: array[TtpEnteGov] of string = ('1', '2', '3', '4');
-
-type
-  TCSTIBSCBS  = (cst000, cst010, cst011, cst200, cst210, cst220, cst221, cst400,
-                 cst410, cst510, cst550, cst620, cst800, cst810, cst820);
-
-const
-  TCSTIBSCBSArrayStrings: array[TCSTIBSCBS] of string = ('000', '010', '011',
-    '200', '210', '220', '221', '400', '410', '510', '550', '620', '800', '810',
-    '820');
-
-type
-  TcClassTrib  = (ct000001, ct000002, ct000003, ct000004, ct010001, ct011001,
-                  ct011002, ct011003, ct011004, ct011005, ct200001, ct200002,
-                  ct200003, ct200004, ct200005, ct200006, ct200007, ct200008,
-                  ct200009, ct200010, ct200011, ct200012, ct200013, ct200014,
-                  ct200015, ct200016, ct200017, ct200018, ct200019, ct200020,
-                  ct200021, ct200022, ct200023, ct200024, ct200025, ct200026,
-                  ct200027, ct200028, ct200029, ct200030, ct200031, ct200032,
-                  ct200033, ct200034, ct200035, ct200036, ct200037, ct200038,
-                  ct200039, ct200040, ct200041, ct200042, ct200043, ct200044,
-                  ct200045, ct200046, ct200047, ct200048, ct200049, ct200450,
-                  ct200051, ct200052, ct210001, ct210002, ct210003, ct220001,
-                  ct220002, ct220003, ct221001, ct400001, ct410001, ct410002,
-                  ct410003, ct410004, ct410005, ct410006, ct410007, ct410008,
-                  ct410009, ct410010, ct410011, ct410012, ct410013, ct410014,
-                  ct410015, ct410016, ct410017, ct410018, ct410019, ct410020,
-                  ct510001, ct510002, ct550001, ct550002, ct550003, ct550004,
-                  ct550005, ct550006, ct550007, ct550008, ct550009, ct550010,
-                  ct550011, ct550012, ct550013, ct550014, ct550015, ct550016,
-                  ct550017, ct550018, ct550019, ct550020, ct620001, ct620002,
-                  ct620003, ct620004, ct620005, ct800001, ct800002, ct810001,
-                  ct820001, ct820002, ct820003, ct820004, ct820005);
-
-const
-  TcClassTribArrayStrings: array[TcClassTrib] of string = ('000001', '000002',
-         '000003', '000004', '010001', '011001', '011002', '011003', '011004',
-         '011005', '200001', '200002', '200003', '200004', '200005', '200006',
-         '200007', '200008', '200009', '200010', '200011', '200012', '200013',
-         '200014', '200015', '200016', '200017', '200018', '200019', '200020',
-         '200021', '200022', '200023', '200024', '200025', '200026', '200027',
-         '200028', '200029', '200030', '200031', '200032', '200033', '200034',
-         '200035', '200036', '200037', '200038', '200039', '200040', '200041',
-         '200042', '200043', '200044', '200045', '200046', '200047', '200048',
-         '200049', '200450', '200051', '200052', '210001', '210002', '210003',
-         '220001', '220002', '220003', '221001', '400001', '410001', '410002',
-         '410003', '410004', '410005', '410006', '410007', '410008', '410009',
-         '410010', '410011', '410012', '410013', '410014', '410015', '410016',
-         '410017', '410018', '410019', '410020', '510001', '510002', '550001',
-         '550002', '550003', '550004', '550005', '550006', '550007', '550008',
-         '550009', '550010', '550011', '550012', '550013', '550014', '550015',
-         '550016', '550017', '550018', '550019', '550020', '620001', '620002',
-         '620003', '620004', '620005', '800001', '800002', '810001', '820001',
-         '820002', '820003', '820004', '820005');
+  TTpCredPresIBSZFMArrayStrings: array[TTpCredPresIBSZFM] of string = ('', '0',
+    '1', '2', '3', '4');
 
 {
   Declaração das funções de conversão
@@ -560,14 +536,11 @@ function StrTotpNFDebito(const s: string): TtpNFDebito;
 function tpNFCreditoToStr(const t: TtpNFCredito): string;
 function StrTotpNFCredito(const s: string): TtpNFCredito;
 
-function tpEnteGovToStr(const t: TtpEnteGov): string;
-function StrTotpEnteGov(const s: string): TtpEnteGov;
+function CSTISToStr(const t: TCSTIS): string;
+function StrToCSTIS(const s: string): TCSTIS;
 
-function CSTIBSCBSToStr(const t: TCSTIBSCBS): string;
-function StrToCSTIBSCBS(const s: string): TCSTIBSCBS;
-
-function cClassTribToStr(const t: TcClassTrib): string;
-function StrTocClassTrib(const s: string): TcClassTrib;
+function TpCredPresIBSZFMToStr(const t: TTpCredPresIBSZFM): string;
+function StrToTpCredPresIBSZFM(const s: string): TTpCredPresIBSZFM;
 
 implementation
 
@@ -907,7 +880,7 @@ function FormaPagamentoToStr(const t: TpcnFormaPagamento): string;
 begin
   result := EnumeradoToStr(t, ['01', '02', '03', '04', '05', '10', '11', '12',
                                '13', '14', '15', '16', '17', '18', '19', '90',
-                               '98', '99', '20', '21', '22'],
+                               '98', '99', '20', '21', '22', '91'],
                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito,
                                fpCreditoLoja, fpValeAlimentacao, fpValeRefeicao,
                                fpValePresente, fpValeCombustivel, fpDuplicataMercantil,
@@ -915,7 +888,8 @@ begin
                                fpPagamentoInstantaneo, fpTransfBancario,
                                fpProgramaFidelidade, fpSemPagamento, fpRegimeEspecial,
                                fpOutro, fpPagamentoInstantaneoEstatico,
-                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware]);
+                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware,
+                               fpPagamentoPosterior]);
 end;
 
 function FormaPagamentoToDescricao(const t: TpcnFormaPagamento): string; overload;
@@ -936,7 +910,8 @@ begin
                                 'PIX - Dinâmico', 'Transferência Bancária',
                                 'Programa Fidelidade', 'Sem Pagamento',
                                 'Regime Especial NFF', 'Outro', 'PIX - Estático',
-                                'Crédito em Loja', 'Falha de hardware do sistema emissor'],
+                                'Crédito em Loja', 'Falha de hardware do sistema emissor',
+                                'Pagamento Posterior'],
                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito,
                                fpCreditoLoja, fpValeAlimentacao, fpValeRefeicao,
                                fpValePresente, fpValeCombustivel, fpDuplicataMercantil,
@@ -944,14 +919,15 @@ begin
                                fpPagamentoInstantaneo, fpTransfBancario,
                                fpProgramaFidelidade, fpSemPagamento, fpRegimeEspecial,
                                fpOutro, fpPagamentoInstantaneoEstatico,
-                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware]);
+                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware,
+                               fpPagamentoPosterior]);
 end;
 
 function StrToFormaPagamento(out ok: boolean; const s: string): TpcnFormaPagamento;
 begin
   result := StrToEnumerado(ok, s, ['01', '02', '03', '04', '05', '10', '11', '12',
                                    '13', '14', '15', '16', '17', '18', '19', '90',
-                                   '98', '99', '20', '21', '22'],
+                                   '98', '99', '20', '21', '22', '91'],
                               [fpDinheiro, fpCheque, fpCartaoCredito, fpCartaoDebito,
                                fpCreditoLoja, fpValeAlimentacao, fpValeRefeicao,
                                fpValePresente, fpValeCombustivel, fpDuplicataMercantil,
@@ -959,7 +935,8 @@ begin
                                fpPagamentoInstantaneo, fpTransfBancario,
                                fpProgramaFidelidade, fpSemPagamento, fpRegimeEspecial,
                                fpOutro,fpPagamentoInstantaneoEstatico,
-                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware]);
+                               fpCreditoEmLojaPorDevolucao, fpFalhaHardware,
+                               fpPagamentoPosterior]);
 end;
 
 function BandeiraCartaoToDescStr(const t: TpcnBandeiraCartao): string;
@@ -1120,16 +1097,16 @@ end;
 
 function TipoAutorToStr(const t: TpcnTipoAutor ): string;
 begin
-  result := EnumeradoToStr(t, ['1', '2', '3', '5', '6', '9'],
+  result := EnumeradoToStr(t, ['1', '2', '3', '5', '6', '9', '8'],
                               [taEmpresaEmitente, taEmpresaDestinataria,
-                               taEmpresa, taFisco, taRFB, taOutros]);
+                               taEmpresa, taFisco, taRFB, taOutros, taEmpresaSucessora]);
 end;
 
 function StrToTipoAutor(out ok: boolean; const s: string): TpcnTipoAutor;
 begin
-  result := StrToEnumerado(ok, s, ['1', '2', '3', '5', '6', '9'],
+  result := StrToEnumerado(ok, s, ['1', '2', '3', '5', '6', '9', '8'],
                                   [taEmpresaEmitente, taEmpresaDestinataria,
-                                   taEmpresa, taFisco, taRFB, taOutros]);
+                                   taEmpresa, taFisco, taRFB, taOutros, taEmpresaSucessora]);
 end;
 
 function IndOperacaoToStr(const t: TpcnIndOperacao ): string;
@@ -1176,7 +1153,10 @@ begin
              '210240', '610600', '610614', '790700', '990900', '990910',
              '110180', '610554', '610510', '610615', '610610', '110130',
              '110131', '110150', '610130', '610131', '610601', '110192',
-             '110193', '610514', '610500', '110750', '110751', '510630'],
+             '110193', '610514', '610500', '110750', '110751', '510630',
+             '110001', '112110', '112120', '112130', '112140', '211110',
+             '211120', '211124', '211128', '211130', '211140', '211150',
+             '212110', '212120', '112150'],
             [teNaoMapeado, teCCe, teCancelamento, teCancSubst, teEPECNFe,
              tePedProrrog1, tePedProrrog2, teCanPedProrrog1, teCanPedProrrog2,
              teManifDestConfirmacao, teManifDestCiencia,
@@ -1189,7 +1169,15 @@ begin
              teComprEntregaCTe, teCancComprEntregaCTe, teCTeCancelado,
              teInsucessoEntregaNFe, teCancInsucessoEntregaNFe,
              teRegPasNfeProMDFeCte, teRegistroPassagemNFe, teConcFinanceira,
-             teCancConcFinanceira, teRegistroPassagemMDFe]);
+             teCancConcFinanceira, teRegistroPassagemMDFe, teCancGenerico,
+             tePagIntegLibCredPresAdq, teImporALCZFM,
+             tePerecPerdaRouboFurtoTranspContratFornec, teFornecNaoRealizPagAntec,
+             teSolicApropCredPres, teDestItemConsPessoal,
+             tePerecPerdaRouboFurtoTranspContratAqu,
+             teAceiteDebitoApuracaoNotaCredito, teImobilizacaoItem,
+             teSolicApropCredCombustivel, teSolicApropCredBensServicos,
+             teManifPedTransfCredIBSSucessao, teManifPedTransfCredCBSSucessao,
+             teAtualizacaoDataPrevisaoEntrega]);
 end;
 
 function LayOutToServico(const t: TLayOut): String;
@@ -1548,7 +1536,16 @@ begin
     15: result := '15-GÁS NATURAL VEICULAR';
     16: result := '16-ÁLCOOL/GASOLINA';
     17: result := '17-GASOLINA/ÁLCOOL/GNV';
-    18: result := '18-GASOLINA/ELÉTRICO'
+    18: result := '18-GASOLINA/ELÉTRICO';
+    19: result := '19-GASOLINA/ÁLCOOL/ELÉTRICO';
+    20: result := '20-GÁS/NATURAL/LIQUEFEITO';
+    21: result := '21-DIESEL/ELÉTRICO';
+    22: result := '22-HÍBRIDO';
+    23: result := '23-HÍBRIDO PLUG-IN';
+    24: result := '24-ELÉTRICO';
+    25: result := '25-CÉLULA COMBUSTÍVEL';
+    26: result := '26-HÍBRIDO/GÁS NATURAL VEICULAR';
+    27: result := '27-ETANOL/ELÉTRICO';
     else
       result := stpComb +'NÃO DEFINIDO' ;
     end;
@@ -1626,17 +1623,29 @@ end;
 
 function SchemaEventoToStr(const t: TSchemaNFe): String;
 begin
-  result := EnumeradoToStr(t, ['e110110', 'e110111', 'e110112', 'e110140',
+  result := EnumeradoToStr(t, ['e110001',
+                               'e110110', 'e110111', 'e110112', 'e110140',
                                'e111500', 'e111501', 'e111502', 'e111503',
                                'e210200', 'e210210', 'e210220', 'e210240',
                                'e110130', 'e110131', 'e110150', 'e110192',
-                               'e110193', 'e110750', 'e110751'],
-    [schEnvCCe, schcancNFe, schCancSubst, schEnvEPEC,
+                               'e110193', 'e110750', 'e110751', 'e112110',
+                               'e112120', 'e112130', 'e112140', 'e211110',
+                               'e211120', 'e211124', 'e211128', 'e211130',
+                               'e211140', 'e211150', 'e212110', 'e212120',
+                               'e112150'],
+    [schCancGenerico,
+     schEnvCCe, schcancNFe, schCancSubst, schEnvEPEC,
      schPedProrrog1, schPedProrrog2, schCanPedProrrog1, schCanPedProrrog2,
      schManifDestConfirmacao, schManifDestCiencia, schManifDestDesconhecimento,
      schManifDestOperNaoRealizada, schCompEntrega, schCancCompEntrega,
      schAtorInteressadoNFe, schInsucessoEntregaNFe, schCancInsucessoEntregaNFe,
-     schConcFinanceira, schCancConcFinanceira]);
+     schConcFinanceira, schCancConcFinanceira, schPagIntegLibCredPresAdq,
+     schImporALCZFM, schPerecPerdaRouboFurtoTranspContratFornec,
+     schFornecNaoRealizPagAntec, schSolicApropCredPres, schDestItemConsPessoal,
+     schPerecPerdaRouboFurtoTranspContratAqu, schAceiteDebitoApuracaoNotaCredito,
+     schImobilizacaoItem, schSolicApropCredCombustivel, schSolicApropCredBensServicos,
+     schManifPedTransfCredIBSSucessao, schManifPedTransfCredCBSSucessao,
+     schAtualizacaoDataPrevisaoEntrega]);
 end;
 
 function AutorizacaoToStr(const t: TAutorizacao): string;
@@ -1775,64 +1784,44 @@ begin
   raise EACBrException.CreateFmt('Valor string inválido para TtpNFCredito: %s', [s]);
 end;
 
-function tpEnteGovToStr(const t: TtpEnteGov): string;
+function CSTISToStr(const t: TCSTIS): string;
 begin
-  Result := TtpEnteGovArrayStrings[t];
+  Result := TCSTISArrayStrings[t];
 end;
 
-function StrTotpEnteGov(const s: string): TtpEnteGov;
+function StrToCSTIS(const s: string): TCSTIS;
 var
-  idx: TtpEnteGov;
+  idx: TCSTIS;
 begin
-  for idx:= Low(TtpEnteGovArrayStrings) to High(TtpEnteGovArrayStrings)do
+  for idx:= Low(TCSTISArrayStrings) to High(TCSTISArrayStrings) do
   begin
-    if(TtpEnteGovArrayStrings[idx] = s)then
+    if(TCSTISArrayStrings[idx] = s)then
     begin
       Result := idx;
       exit;
     end;
   end;
-  raise EACBrException.CreateFmt('Valor string inválido para TtpEnteGov: %s', [s]);
+  raise EACBrException.CreateFmt('Valor string inválido para TCSTIS: %s', [s]);
 end;
 
-function CSTIBSCBSToStr(const t: TCSTIBSCBS): string;
+function TpCredPresIBSZFMToStr(const t: TTpCredPresIBSZFM): string;
 begin
-  Result := TCSTIBSCBSArrayStrings[t];
+  Result := TTpCredPresIBSZFMArrayStrings[t];
 end;
 
-function StrToCSTIBSCBS(const s: string): TCSTIBSCBS;
+function StrToTpCredPresIBSZFM(const s: string): TTpCredPresIBSZFM;
 var
-  idx: TCSTIBSCBS;
+  idx: TTpCredPresIBSZFM;
 begin
-  for idx:= Low(TCSTIBSCBSArrayStrings) to High(TCSTIBSCBSArrayStrings) do
+  for idx:= Low(TTpCredPresIBSZFMArrayStrings) to High(TTpCredPresIBSZFMArrayStrings) do
   begin
-    if(TCSTIBSCBSArrayStrings[idx] = s)then
+    if(TTpCredPresIBSZFMArrayStrings[idx] = s)then
     begin
       Result := idx;
       exit;
     end;
   end;
-  raise EACBrException.CreateFmt('Valor string inválido para TCSTIBSCBS: %s', [s]);
-end;
-
-function cClassTribToStr(const t: TcClassTrib): string;
-begin
-  Result := TcClassTribArrayStrings[t];
-end;
-
-function StrTocClassTrib(const s: string): TcClassTrib;
-var
-  idx: TcClassTrib;
-begin
-  for idx:= Low(TcClassTribArrayStrings) to High(TcClassTribArrayStrings) do
-  begin
-    if(TcClassTribArrayStrings[idx] = s)then
-    begin
-      Result := idx;
-      exit;
-    end;
-  end;
-  raise EACBrException.CreateFmt('Valor string inválido para TcClassTrib: %s', [s]);
+  raise EACBrException.CreateFmt('Valor string inválido para TTpCredPresIBSZFM: %s', [s]);
 end;
 
 initialization

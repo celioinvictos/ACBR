@@ -89,6 +89,7 @@ type
   TACBrTEFAPIDadosAutomacao = class( TPersistent )
   private
     fAutoAtendimento: Boolean;
+    fMensagemPinPad: String;
     fNomeSoftwareHouse: String;
     fNomeAplicacao: String;
     fVersaoAplicacao: String;
@@ -113,6 +114,7 @@ type
     property CNPJSoftwareHouse: String read fCNPJSoftwareHouse write fCNPJSoftwareHouse;
     property NomeAplicacao: String read fNomeAplicacao write SetNomeAplicacao ;
     property VersaoAplicacao: String read fVersaoAplicacao write SetVersaoAplicacao ;
+    property MensagemPinPad: String read fMensagemPinPad write fMensagemPinPad;
 
     Property SuportaSaque: Boolean read fSuportaSaque write fSuportaSaque default False;
     Property SuportaDesconto: Boolean read fSuportaDesconto write fSuportaDesconto default False;
@@ -143,16 +145,18 @@ type
     property RazaoSocial: String read fRazaoSocial write SetRazaoSocial;
   end;
 
-  { TACBrTEFDadosTerminal }
+  TACBrTEFAPIAmbiente = (ambNaoDefinido, ambHomologacao, ambProducao);
 
   { TACBrTEFAPIDadosTerminal }
 
   TACBrTEFAPIDadosTerminal = class(TPersistent)
   private
+    fAmbiente: TACBrTEFAPIAmbiente;
     fCodEmpresa: String;
     fCodFilial: String;
     fCodTerminal: String;
     fEnderecoServidor: String;
+    fGravarLogTEF: Boolean;
     fOperador: String;
     fParamComunicacao: String;
     fPortaPinPad: String;
@@ -169,6 +173,8 @@ type
     property Operador: String read fOperador write fOperador;
     property PortaPinPad: String read fPortaPinPad write fPortaPinPad;
     property ParamComunicacao: String read fParamComunicacao write fParamComunicacao;
+    property Ambiente: TACBrTEFAPIAmbiente read fAmbiente write fAmbiente;
+    property GravarLogTEF: Boolean read fGravarLogTEF write fGravarLogTEF;
   end;
 
   TACBrTEFAPIMetodo = (tefmtdNenhuma, tefmtdPagamento, tefmtdCancelamento, tefmtdAdministrativa);
@@ -461,6 +467,7 @@ begin
   fNomeSoftwareHouse := '';
   fNomeAplicacao := '';
   fVersaoAplicacao := '';
+  fMensagemPinPad := '';
   fImprimeViaClienteReduzida := False;
   fSuportaDesconto := False;
   fSuportaSaque := False;
@@ -481,6 +488,7 @@ begin
     fNomeSoftwareHouse := DadosSource.NomeSoftwareHouse;
     fNomeAplicacao := DadosSource.NomeAplicacao;
     fVersaoAplicacao := DadosSource.VersaoAplicacao;
+    fMensagemPinPad := DadosSource.MensagemPinPad;
     fImprimeViaClienteReduzida := DadosSource.ImprimeViaClienteReduzida;
     fSuportaDesconto := DadosSource.SuportaDesconto;
     fSuportaSaque := DadosSource.SuportaSaque;
@@ -560,6 +568,8 @@ begin
   fPortaPinPad := '';
   fEnderecoServidor := '';
   fParamComunicacao := '';
+  fAmbiente := ambNaoDefinido;
+  fGravarLogTEF := False;
 end;
 
 procedure TACBrTEFAPIDadosTerminal.Assign(Source: TPersistent);
@@ -577,6 +587,8 @@ begin
     fPortaPinPad := DadosTerminal.PortaPinPad;
     fEnderecoServidor := DadosTerminal.EnderecoServidor;
     fParamComunicacao := DadosTerminal.ParamComunicacao;
+    fAmbiente := DadosTerminal.Ambiente;
+    fGravarLogTEF := DadosTerminal.GravarLogTEF;
   end;
 end;
 
@@ -1570,11 +1582,10 @@ end;
 
 procedure TACBrTEFAPIComum.FinalizarVenda;
 begin
-  GravarLog('FinalizarVenda');
   if (RespostasTEF.Count > 0) then
   begin
+    GravarLog('FinalizarVenda');
     fpTEFAPIClass.FinalizarVenda;
-    LimparRespostasTEF;
   end;
 end;
 

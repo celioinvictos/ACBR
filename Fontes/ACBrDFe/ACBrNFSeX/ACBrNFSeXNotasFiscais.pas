@@ -42,10 +42,9 @@ uses
    System.Generics.Collections, System.Generics.Defaults,
   {$ELSEIF DEFINED(DELPHICOMPILER16_UP)}
    System.Contnrs,
-  {$Else}
-   Contnrs,
   {$IfEnd}
   IniFiles,
+  ACBrXmlBase,
   ACBrBase, ACBrDFe, ACBrNFSeXConfiguracoes, ACBrNFSeXClass, ACBrNFSeXConversao;
 
 type
@@ -90,7 +89,8 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: string; sMensagem: TStrings = nil;
       EnviaPDF: Boolean = True; sCC: TStrings = nil; Anexos: TStrings = nil;
-      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True);
+      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True;
+      sBCC: TStrings = nil);
 
     property NomeArq: string    read FNomeArq    write FNomeArq;
     property NomeArqRps: string read FNomeArqRps write FNomeArqRps;
@@ -412,7 +412,7 @@ end;
 
 procedure TNotaFiscal.EnviarEmail(const sPara, sAssunto: string; sMensagem: TStrings;
   EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings;
-  ManterPDFSalvo: Boolean);
+  ManterPDFSalvo: Boolean; sBCC: TStrings);
 var
   NomeArqTemp: string;
   AnexosEmail: TStrings;
@@ -444,7 +444,7 @@ begin
       end;
 
       EnviarEmail( sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamNFSe,
-                   NumID[FNFSe] +'-nfse.xml', sReplyTo);
+                   NumID[FNFSe] +'-nfse.xml', sReplyTo, sBCC);
     end;
   finally
     if not ManterPDFSalvo then
@@ -827,6 +827,7 @@ var
   begin
     Result := FaststringReplace(XMLStr, ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"', '', [rfReplaceAll]);
     Result := FaststringReplace(Result, ' xmlns:xsd="http://www.w3.org/2001/XMLSchema"', '', [rfReplaceAll]);
+    Result := RemoverPrefixosDesnecessarios(Result);
   end;
 begin
   MS := TMemoryStream.Create;

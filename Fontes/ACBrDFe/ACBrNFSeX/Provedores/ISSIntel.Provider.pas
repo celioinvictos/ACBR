@@ -38,6 +38,7 @@ interface
 
 uses
   SysUtils, Classes,
+  ACBrXmlBase,
   ACBrXmlDocument,
   ACBrNFSeXClass, ACBrNFSeXConversao,
   ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
@@ -79,7 +80,8 @@ type
 implementation
 
 uses
-  ACBrXmlBase, ACBrNFSeX, ACBrDFeException,
+  ACBrNFSeX, ACBrDFeException,
+  ACBrDFe.Conversao,
   ACBrUtil.XMLHTML, ACBrUtil.Strings,
   ISSIntel.GravarXml, ISSIntel.LerXml;
 
@@ -273,6 +275,8 @@ end;
 
 function TACBrNFSeXWebserviceISSIntel.TratarXmlRetornado(
   const aXML: string): string;
+var
+  Mensagem: string;
 begin
   Result := inherited TratarXmlRetornado(aXML);
 
@@ -281,6 +285,18 @@ begin
   Result := RemoverPrefixosDesnecessarios(Result);
   Result := RemoverCaracteresDesnecessarios(Result);
   Result := StringReplace(Result, '&', '&amp;', [rfReplaceAll]);
+
+  if Pos('center', Result) > 0 then
+  begin
+    Mensagem := SepararDados(Result, 'h1');
+    Result := '<a><ListaMensagemRetorno>' +
+                '<MensagemRetorno>' +
+                  '<Codigo>' + '</Codigo>' +
+                  '<Mensagem>' + Mensagem + '</Mensagem>' +
+                  '<Correcao>' + '</Correcao>' +
+                '</MensagemRetorno>' +
+              '</ListaMensagemRetorno></a>';
+  end;
 end;
 
 end.

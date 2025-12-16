@@ -81,6 +81,7 @@ type
     FDensidadeGravacao: String;
     FCIP: String;
     FKeySoftwareHouse: String;
+    FDataArquivo: TDateTime;
 
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
@@ -98,6 +99,7 @@ type
     property DensidadeGravacao: String read FDensidadeGravacao write FDensidadeGravacao;
     property CIP: String read FCIP write FCIP;
     property KeySoftwareHouse: String read FKeySoftwareHouse write FKeySoftwareHouse;
+    property DataArquivo: TDateTime read FDataArquivo write FDataArquivo;
 
   end;
 
@@ -150,6 +152,7 @@ type
     FSacado_CNPJCPF : String;
     FVencimento: TDateTime;
     FDataDocumento: TDateTime;
+    FDataRegistro: TDateTime;
     FNumeroDocumento: String;
     FDataProcessamento: TDateTime;
     FNossoNumero: String;
@@ -180,9 +183,6 @@ type
     FEMV: String;
     FTxID: String;
     FURL: String;
-
-
-
   public
     constructor Create(const AID: Integer; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
@@ -193,6 +193,7 @@ type
     property Sacado_CNPJCPF : String read FSacado_CNPJCPF write FSacado_CNPJCPF;
     property Vencimento: TDateTime read FVencimento write FVencimento;
     property DataDocumento: TDateTime read FDataDocumento write FDataDocumento;
+    property DataRegistro: TDateTime read FDataRegistro write FDataRegistro;
     property NumeroDocumento: String read FNumeroDocumento write FNumeroDocumento;
     property DataProcessamento: TDateTime read FDataProcessamento write FDataProcessamento;
     property NossoNumero: String read FNossoNumero write FNossoNumero;
@@ -318,6 +319,7 @@ type
     FSeuNumero: String;
     FTipoDiasProtesto: TACBrTipoDiasIntrucao;
     FVencimento: TDateTime;
+    FDataRegistro: TDateTime;
     FDataDocumento: TDateTime;
     FNumeroDocumento: String;
     FEspecieDoc: String;
@@ -396,6 +398,7 @@ type
     property SeuNumero: String read FSeuNumero write FSeuNumero ;
     property TipoDiasProtesto: TACBrTipoDiasIntrucao read FTipoDiasProtesto write FTipoDiasProtesto ;
     property Vencimento: TDateTime read FVencimento write FVencimento ;
+    property DataRegistro: TDateTime read FDataRegistro write FDataRegistro ;
     property DataDocumento: TDateTime read FDataDocumento write FDataDocumento ;
     property NumeroDocumento: String read FNumeroDocumento write FNumeroDocumento ;
     property EspecieDoc: String read FEspecieDoc write FEspecieDoc ;
@@ -572,8 +575,19 @@ type
 
     property Rejeicoes: TObjectList               read FRejeicoes                  write FRejeicoes;
     property TituloRetorno: TRetornoTituloWeb     read FTituloRetorno              write FTituloRetorno;
+  end;
 
+  { TRetornoGerarToken }
+  TRetornoGerarToken = class(TACBrLibRespostaBase)
+  private
+    fToken: String;
+    fValidadeToken: TDateTime;
+  public
+    procedure Processar(const aToken: String; const aValidadeToken: TDateTime);
 
+  published
+    property Token: String read fToken write fToken;
+    property ValidadeToken: TDateTime read fValidadeToken write fValidadeToken;
   end;
 
 implementation
@@ -685,6 +699,7 @@ begin
     SeuNumero:= DadosRet.TituloRet.SeuNumero;
     TipoDiasProtesto:= DadosRet.TituloRet.TipoDiasProtesto;
     Vencimento:= DadosRet.TituloRet.Vencimento;
+    DataRegistro:=DadosRet.TituloRet.DataRegistro;
     DataDocumento:= DadosRet.TituloRet.DataDocumento;
     NumeroDocumento:= DadosRet.TituloRet.NumeroDocumento;
     EspecieDoc:= DadosRet.TituloRet.EspecieDoc;
@@ -816,6 +831,7 @@ begin
   IDCodBarras:= RetEnvio.DadosRet.IDBoleto.CodBarras;
   IDLinhaDig:= RetEnvio.DadosRet.IDBoleto.LinhaDig;
   IDNossoNum:= RetEnvio.DadosRet.IDBoleto.NossoNum;
+
   IDURL:= RetEnvio.DadosRet.IDBoleto.URL;
 
   for J:= 0 to  RetEnvio.ListaRejeicao.Count -1 do
@@ -827,6 +843,13 @@ begin
 
   TituloRetorno := TRetornoTituloWeb.Create(FID, Tipo, Codificacao);
   TituloRetorno.Processar(RetEnvio.DadosRet);
+end;
+
+{ TRetornoGerarToken }
+procedure TRetornoGerarToken.Processar(const aToken: String; const aValidadeToken: TDateTime);
+begin
+  fToken := aToken;
+  fValidadeToken := aValidadeToken;
 end;
 
 { TRetornoRejeicoesTitulo }
@@ -923,9 +946,11 @@ var
 begin
   if ACBrBoleto.ListadeBoletos.Count > 0 then
   begin
+
     Sacado_Nome := ACBrBoleto.ListadeBoletos[FID].Sacado.NomeSacado;
     Sacado_CNPJCPF := ACBrBoleto.ListadeBoletos[FID].Sacado.CNPJCPF;
     Vencimento := ACBrBoleto.ListadeBoletos[FID].Vencimento;
+    DataRegistro:=ACBrBoleto.ListadeBoletos[FID].DataRegistro;
     DataDocumento := ACBrBoleto.ListadeBoletos[FID].DataDocumento;
     NumeroDocumento := ACBrBoleto.ListadeBoletos[FID].NumeroDocumento;
     DataProcessamento := ACBrBoleto.ListadeBoletos[FID].DataProcessamento;
@@ -1018,6 +1043,7 @@ begin
     DensidadeGravacao := ACBrBoleto.Banco.DensidadeGravacao;
     CIP := ACBrBoleto.Banco.CIP;
     KeySoftwareHouse:= ACBrBoleto.KeySoftwareHouse;
+    DataArquivo := ACBrBoleto.DataArquivo;
   end;
 end;
 

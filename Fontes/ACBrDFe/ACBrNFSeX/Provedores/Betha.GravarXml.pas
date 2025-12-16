@@ -37,14 +37,14 @@ unit Betha.GravarXml;
 interface
 
 uses
-  SysUtils, Classes,
-  INIFiles,
+  SysUtils, Classes, IniFiles,
   ACBrXmlBase,
   ACBrXmlDocument,
   ACBrNFSeXGravarXml_ABRASFv1,
   ACBrNFSeXGravarXml_ABRASFv2,
   ACBrNFSeXConversao,
-  ACBrNFSeXConsts;
+  ACBrNFSeXConsts,
+  PadraoNacional.GravarXml;
 
 type
   { TNFSeW_Betha }
@@ -75,9 +75,18 @@ type
     function GerarXml: Boolean; override;
   end;
 
+  { TNFSeW_BethaAPIPropria }
+
+  TNFSeW_BethaAPIPropria = class(TNFSeW_PadraoNacional)
+  protected
+    procedure Configuracao; override;
+
+  end;
+
 implementation
 
 uses
+  ACBrDFe.Conversao,
   ACBrUtil.Base,
   ACBrUtil.Strings;
 
@@ -218,6 +227,15 @@ begin
     NrOcorrCodigoPaisTomador := -1;
 
   Result := inherited GerarXml;
+end;
+
+{ TNFSeW_BethaAPIPropria }
+
+procedure TNFSeW_BethaAPIPropria.Configuracao;
+begin
+  inherited Configuracao;
+
+  PrefixoPadrao := 'dps';
 end;
 
 end.

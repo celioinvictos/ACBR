@@ -40,6 +40,7 @@ uses
   Classes,
 	SysUtils, 
 	StrUtils,
+  ACBrBase,
   ACBrDCeConfiguracoes,
   ACBrDCe.Classes,
 	ACBrDCe.XmlReader,
@@ -107,7 +108,8 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings = nil;
       EnviaPDF: Boolean = True; sCC: TStrings = nil; Anexos: TStrings = nil;
-      sReplyTo: TStrings = nil);
+      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True;
+      sBCC: Tstrings = nil);
 
     function CalcularNomeArquivoCompleto(NomeArquivo: String = '';
       PathArquivo: String = ''): String;
@@ -189,6 +191,7 @@ uses
   ACBrUtil.FilesIO,
   ACBrUtil.DateTime,
 	ACBrXmlBase,
+  ACBrDFe.Conversao,
   ACBrXmlDocument,
   ACBrDCe,
 	ACBrDFeUtil,
@@ -480,11 +483,12 @@ begin
 end;
 
 procedure TDeclaracao.EnviarEmail(const sPara, sAssunto: String; sMensagem: TStrings;
-  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings);
+  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings;
+  ManterPDFSalvo: Boolean; sBCC: Tstrings);
 var
-  NomeArqTemp : String;
-  AnexosEmail:TStrings;
-  StreamDCe : TMemoryStream;
+  NomeArqTemp: string;
+  AnexosEmail: TStrings;
+  StreamDCe: TMemoryStream;
 begin
   if not Assigned(TACBrDCe(TDeclaracoes(Collection).ACBrDCe).MAIL) then
     raise EACBrDCeException.Create('Componente ACBrMail não associado');
@@ -505,15 +509,18 @@ begin
         if Assigned(DACE) then
         begin
           DACE.ImprimirDACEPDF(FDCe);
-          NomeArqTemp := PathWithDelim(DACE.PathPDF) + NumID + '-DCe.pdf';
+          NomeArqTemp := PathWithDelim(DACE.PathPDF) + NumID + '-dce.pdf';
           AnexosEmail.Add(NomeArqTemp);
         end;
       end;
 
       EnviarEmail( sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamDCe,
-                   NumID + '-DCe.xml', sReplyTo);
+                   NumID + '-DCe.xml', sReplyTo, sBCC);
     end;
   finally
+    if not ManterPDFSalvo then
+      DeleteFile(NomeArqTemp);
+
     AnexosEmail.Free;
     StreamDCe.Free;
   end;

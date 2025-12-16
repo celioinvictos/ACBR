@@ -38,7 +38,9 @@ interface
 
 uses
   Classes, SysUtils, StrUtils,
+  ACBrBase,
   ACBrXmlBase,
+  ACBrDFe.Conversao,
   ACBrNFComConfiguracoes, ACBrNFComClass,
   ACBrNFComIniReader, ACBrNFComIniWriter,
   ACBrNFComXmlReader, ACBrNFComXmlWriter;
@@ -83,7 +85,8 @@ type
     constructor Create(Collection2: TCollection); override;
     destructor Destroy; override;
     procedure Imprimir;
-    procedure ImprimirPDF;
+    procedure ImprimirPDF; overload;
+    function ImprimirPDF(AStream: TStream): Boolean; overload;
 
     procedure Assinar;
     procedure Validar;
@@ -101,7 +104,8 @@ type
 
     procedure EnviarEmail(const sPara, sAssunto: string; sMensagem: TStrings = nil;
       EnviaPDF: Boolean = True; sCC: TStrings = nil; Anexos: TStrings = nil;
-      sReplyTo: TStrings = nil);
+      sReplyTo: TStrings = nil; ManterPDFSalvo: Boolean = True;
+      sBCC: Tstrings = nil);
 
     property NomeArq: string read FNomeArq write FNomeArq;
     property NomeArqPDF: string read FNomeArqPDF write FNomeArqPDF;
@@ -152,7 +156,8 @@ type
     procedure Imprimir;
     procedure ImprimirCancelado;
     procedure ImprimirResumido;
-    procedure ImprimirPDF;
+    procedure ImprimirPDF; overload;
+    procedure ImprimirPDF(AStream: TStream); overload;
     procedure ImprimirResumidoPDF;
     function Add: TNotaFiscal;
     function Insert(Index: integer): TNotaFiscal;
@@ -244,6 +249,21 @@ begin
       raise EACBrNFComException.Create('Componente DANFCom não associado.')
     else
       DANFCom.ImprimirDANFComPDF(NFCom);
+  end;
+end;
+
+function TNotaFiscal.ImprimirPDF(AStream: TStream): Boolean;
+begin
+  with TACBrNFCom(TNotasFiscais(Collection).ACBrNFCom) do
+  begin
+    if not Assigned(DANFCom) then
+      raise EACBrNFComException.Create('Componente DANFCom não associado.')
+    else
+    begin
+      AStream.Size := 0;
+      DANFCom.ImprimirDANFComPDF(AStream, NFCom);
+      Result := True;
+    end;
   end;
 end;
 
@@ -492,11 +512,12 @@ begin
 end;
 
 procedure TNotaFiscal.EnviarEmail(const sPara, sAssunto: string; sMensagem: TStrings;
-  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings);
+  EnviaPDF: Boolean; sCC: TStrings; Anexos: TStrings; sReplyTo: TStrings;
+  ManterPDFSalvo: Boolean; sBCC: Tstrings);
 var
-  NomeArq_temp : string;
-  AnexosEmail:TStrings;
-  StreamNFCom : TMemoryStream;
+  NomeArqTemp: string;
+  AnexosEmail: TStrings;
+  StreamNFCom: TMemoryStream;
 begin
   if not Assigned(TACBrNFCom(TNotasFiscais(Collection).ACBrNFCom).MAIL) then
     raise EACBrNFComException.Create('Componente ACBrMail não associado');
@@ -518,15 +539,18 @@ begin
         if Assigned(DANFCom) then
         begin
           DANFCom.ImprimirDANFComPDF(FNFCom);
-          NomeArq_temp := PathWithDelim(DANFCom.PathPDF) + NumID + '-NFCom.pdf';
-          AnexosEmail.Add(NomeArq_temp);
+          NomeArqTemp := PathWithDelim(DANFCom.PathPDF) + NumID + '-nfcom.pdf';
+          AnexosEmail.Add(NomeArqTemp);
         end;
       end;
 
       EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamNFCom,
-                   NumID +'-NFCom.xml', sReplyTo);
+                   NumID +'-NFCom.xml', sReplyTo, sBCC);
     end;
   finally
+    if not ManterPDFSalvo then
+      DeleteFile(NomeArqTemp);
+
     AnexosEmail.Free;
     StreamNFCom.Free;
   end;
@@ -788,6 +812,12 @@ procedure TNotasFiscais.ImprimirPDF;
 begin
   VerificarDANFCom;
   TACBrNFCom(FACBrNFCom).DANFCom.ImprimirDANFComPDF;
+end;
+
+procedure TNotasFiscais.ImprimirPDF(AStream: TStream);
+begin
+  VerificarDANFCom;
+  TACBrNFCom(FACBrNFCom).DANFCom.ImprimirDANFComPDF(AStream);
 end;
 
 procedure TNotasFiscais.ImprimirResumidoPDF;

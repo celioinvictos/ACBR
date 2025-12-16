@@ -611,6 +611,8 @@ const
   CMetodoGerarPDFBoletoComSenha =    'gerarpdfboletocomsenha';
   CMetodoSetMotorBoletoRelatorio =   'setmotorboletorelatorio';
   CMetodoSetMargem  =                'setmargem';
+  CMetodoInformarToken =             'informartoken';
+  CMetodoGerarToken =                'gerartoken';
 
   CMetodoAtivar =               'ativar';
   CMetodoDesativar =            'desativar';
@@ -785,6 +787,8 @@ const
   CMetodoAcharPortasUSB         = 'acharportasusb';
   CMetodoAcharPortasRAW         = 'acharportasraw';
   CMetodoLerStatusImpressoraFormatado    = 'lerstatusimpressoraformatado';
+
+  CMetodoConsultarExtrato = 'ConsultarExtrato';
 
   CExtensaoXML =                     '.xml';
 
@@ -1460,8 +1464,28 @@ const
   CKeyNFSeEmailEmitente =                   'EmailEmitente';
   CKeyNFSeFoneEmitente =                    'FoneEmitente';
 
+  CSecExtratoAPIConfig =                    'ExtratoAPI';
+  CSecExtratoLancamento =                   'ExtratoLancamento';
+  CSecExtratoAPIBBConfig =                  'ExtratoAPIBB';
+  CSecExtratoAPIInterConfig =               'ExtratoAPIInter';
+  CSecExtratoAPISicoobConfig =              'ExtratoAPISicoob';
 
+  CSecExtratoAPIRespConsulta =              'Lancamento';
 
+  CKeyExtratoAPIAmbiente =                  'Ambiente';
+  CKeyExtratoAPIArqLog =                    'ArqLog';
+  CKeyExtratoAPINivelLog =                  'NivelLog';
+
+  CKeyExtratoAPIArquivoCertificado =        'ArquivoCertificado';
+  CKeyExtratoAPIArquivoChavePrivada =       'ArquivoChavePrivada';
+  CKeyExtratoAPIClientID =                  'ClientID';
+  CKeyExtratoAPIClientSecret =              'ClientSecret';
+  CKeyExtratoAPIDeveloperApplicationKey =   'DeveloperApplicationKey';
+  CKeyExtratoAPIxMCITeste =                 'xMCITeste';
+
+  CKeyExtratoAPIBancoConsulta =             'BancoConsulta';
+
+  CSessaoRetorno =                          'Retorno';
 
 implementation
 
