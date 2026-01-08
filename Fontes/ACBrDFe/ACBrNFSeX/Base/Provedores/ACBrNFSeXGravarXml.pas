@@ -113,6 +113,9 @@ type
     FTagIBSCBS: string;
     FTagCST: string;
     FTagCSTReg: string;
+    FIDNFSeVazio: Boolean;
+    FIDDPSVazio: Boolean;
+    FGerarIBSCBSNFSe: Boolean;
 
     function GetOpcoes: TACBrXmlWriterOptions;
     procedure SetOpcoes(AValue: TACBrXmlWriterOptions);
@@ -145,7 +148,7 @@ type
     function ObterNomeMunicipioUF(ACodigoMunicipio: Integer; var xUF: string): string;
 
     // Reforma Tributária
-    function GerarXMLIBSCBS(IBSCBS: TIBSCBSDPS): TACBrXmlNode;
+    function GerarXMLIBSCBS(IBSCBS: TIBSCBSDPS): TACBrXmlNode; virtual;
     function GerarXMLgRefNFSe(gRefNFSe: TgRefNFSeCollection): TACBrXmlNode;
 
     function GerarXMLDestinatario(Dest: TDadosdaPessoa): TACBrXmlNode; virtual;
@@ -252,6 +255,9 @@ type
     property GerargReeRepRes: Boolean read FGerargReeRepRes write FGerargReeRepRes;
     property GerarTribRegular: Boolean read FGerarTribRegular write FGerarTribRegular;
     property GerargDif: Boolean read FGerargDif write FGerargDif;
+    property IDNFSeVazio: Boolean read FIDNFSeVazio write FIDNFSeVazio;
+    property IDDPSVazio: Boolean read FIDDPSVazio write FIDDPSVazio;
+    property GerarIBSCBSNFSe: Boolean read FGerarIBSCBSNFSe write FGerarIBSCBSNFSe;
   end;
 
 implementation
@@ -346,6 +352,9 @@ begin
   FGerargReeRepRes := True;
   FGerarTribRegular := True;
   FGerargDif := True;
+  FIDNFSeVazio := False;
+  FIDDPSVazio := False;
+  FGerarIBSCBSNFSe := False;
 end;
 
 procedure TNFSeWClass.ConsolidarVariosItensServicosEmUmSo;
