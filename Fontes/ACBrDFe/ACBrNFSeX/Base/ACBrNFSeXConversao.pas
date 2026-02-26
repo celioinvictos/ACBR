@@ -403,11 +403,11 @@ const
 
 type
   TmdPrestacao = (mpDesconhecido, mpTransfronteirico, mpConsumoBrasil,
-                  mpMovimentoTempPessoasFisicas, mpConsumoExterior);
+                  mpMovimentoTempPessoasFisicas, mpConsumoExterior, mpNenhum);
 
 const
   TmdPrestacaoArrayStrings: array[TmdPrestacao] of string = ('0', '1', '2',
-    '3', '4');
+    '3', '4', '');
 
 type
   TvincPrest = (vpSemVinculo, vpControlada, vpControladora, vpColigada,
@@ -481,11 +481,11 @@ const
 type
   TtpDedRed = (drAlimentacao, drMateriais, drProducaoExt, drReembolso,
                drRepasseConsorciado, drRepassePlanoSaude, drServicos,
-               drSubEmpreitada, drOutrasDeducoes);
+               drSubEmpreitada, drProfissionalParceiro, drOutrasDeducoes);
 
 const
   TtpDedRedArrayStrings: array[TtpDedRed] of string = ('1', '2', '3', '4',
-    '5', '6', '7', '8', '99');
+    '5', '6', '7', '8', '9', '99');
 
 type
   TtribISSQN = (tiOperacaoTributavel, tiImunidade, tiExportacao,
@@ -529,12 +529,23 @@ const
     '05', '06', '07', '08', '09');
 
 type
-  TtpRetPisCofins = (trpcRetido, trpcNaoRetido, trpcPISRetido, trpcCOFINSRetido,
-                     trpcNenhum);
+  TCSTPis = (cstPisVazio, cstPis00, cstPis01, cstPis02, cstPis03, cstPis04,
+             cstPis05, cstPis06, cstPis07, cstPis08, cstPis09);
 
 const
-  TtpRetPisCofinsArrayStrings: array[TtpRetPisCofins] of string = ('1', '2', '3',
-    '4', '');
+  TCSTPisArrayStrings: array[TCSTPis] of string = ('', '00', '01', '02', '03',
+    '04', '05', '06', '07', '08', '09');
+
+type
+  TtpRetPisCofins = (trpiscofinscsllNaoRetido, trpcRetido,
+                     trpcNaoRetido, trpiscofinscsllRetido,
+                     trpiscofinsRetidocsllNaoRetido, trPisRetidoCofinsCsllNaoRetido,
+                     trCofinsRetidoPisCsllNaoRetido, trCofinsCsllRetidoPisNaoRetido,
+                     trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido);
+
+const
+  TtpRetPisCofinsArrayStrings: array[TtpRetPisCofins] of string = ('0', '1', '2',
+    '3', '4', '5', '6', '7', '8', '9');
 
 type
   TindTotTrib = (indNao, indSim);
@@ -636,6 +647,14 @@ const
   TcMotivoEmisTIArrayStrings: array[TcMotivoEmisTI] of string =
     ('', '1', '2', '3', '4');
 
+type
+  TServicoAPIPadraoNacional = (sConsultarNFSeRPS, sConsultarNFSePorChave,
+    sEnviarEvento, sConsultarEvento, sConsultarDFe, sConsultarParam, sObterDANFSE);
+
+const
+  TServicoAPIPadraoNacionalArrayStrings: array[TServicoAPIPadraoNacional] of string =
+    ('ConsultarNFSeRPS', 'ConsultarNFSePorChave', 'EnviarEvento',
+     'ConsultarEvento', 'ConsultarDFe', 'ConsultarParam', 'ObterDANFSE');
 
 // Reforma Tributária
 
@@ -836,6 +855,9 @@ function StrTotpSusp(out ok: Boolean; const s: string): TtpSusp;
 function CSTToStr(const t: TCST): string;
 function StrToCST(out ok: Boolean; const s: string): TCST;
 
+function CSTPisToStr(const t: TCSTPis): string;
+function StrToCSTPis(out ok: Boolean; const s: string): TCSTPis;
+
 function tpRetPisCofinsToStr(const t: TtpRetPisCofins): string;
 function StrTotpRetPisCofins(out ok: Boolean; const s: string): TtpRetPisCofins;
 
@@ -866,6 +888,7 @@ function NaoNIFToStr(const t: TNaoNIF): string;
 
 function CodIBGEPaisToSiglaISO2(t: Integer): string;
 function SiglaISO2ToCodIBGEPais(const t: string): Integer;
+function CodIBGEPaisToDescricao(t: Integer): string;
 
 function CodIBGEPaisToCodISO(t: Integer): Integer;
 function CodISOPaisToCodIBGE(t: Integer): Integer;
@@ -881,6 +904,11 @@ function StrTocMotivoEmisTI(const s: string): TcMotivoEmisTI;
 
 function LayoutToStr(t: TLayout): string;
 function StrToLayout(const s: string): TLayout;
+
+function ServicoAPIPadraoNacionalToStr(t: TServicoAPIPadraoNacional): string;
+function StrToServicoAPIPadraoNacional(const s: string): TServicoAPIPadraoNacional;
+
+function MoedaBACENToMoedaISO(const ACodigoMoedaBACEN: Integer): Integer;
 
 // Reforma Tributária
 function finNFSeToStr(const t: TfinNFSe): string;
@@ -909,6 +937,442 @@ function StrTotpOperGovNFSe(const s: string): TtpOperGovNFSe;
 function modoPrestServToStr(const t: TmodoPrestServ): string;
 function StrTomodoPrestServ(const s: string): TmodoPrestServ;
 *)
+type
+  TPais = record
+    CodPaisIBGE: Integer;
+    DescricaoPaisIBGE: string;
+    ISO2: string;
+    {Comentário utilizado para justificar o mapeamento IBGE x ISO2 nos casos em que a
+     descrição do país não foi suficiente.}
+    Comentario: string;
+  end;
+
+const
+  Paises: array[0..247] of TPais = (
+    (CodPaisIBGE:132; DescricaoPaisIBGE:'AFEGANISTAO'; ISO2:'AF'; Comentario:''),
+    (CodPaisIBGE:175; DescricaoPaisIBGE:'ALBANIA, REPUBLICA DA'; ISO2:'AL'; Comentario:''),
+    (CodPaisIBGE:230; DescricaoPaisIBGE:'ALEMANHA'; ISO2:'DE'; Comentario:''),
+    (CodPaisIBGE:310; DescricaoPaisIBGE:'BURKINA FASO'; ISO2:'BF'; Comentario:''),
+    (CodPaisIBGE:370; DescricaoPaisIBGE:'ANDORRA'; ISO2:'AD'; Comentario:''),
+    (CodPaisIBGE:400; DescricaoPaisIBGE:'ANGOLA'; ISO2:'AO'; Comentario:''),
+    (CodPaisIBGE:418; DescricaoPaisIBGE:'ANGUILLA'; ISO2:'AI'; Comentario:''),
+    (CodPaisIBGE:434; DescricaoPaisIBGE:'ANTIGUA E BARBUDA'; ISO2:'AG'; Comentario:''),
+    (CodPaisIBGE:477; DescricaoPaisIBGE:'ANTILHAS HOLANDESAS'; ISO2:'NL'; Comentario:'Regiao da Holanda.'),
+    (CodPaisIBGE:531; DescricaoPaisIBGE:'ARABIA SAUDITA'; ISO2:'SA'; Comentario:''),
+    (CodPaisIBGE:590; DescricaoPaisIBGE:'ARGELIA'; ISO2:'DZ'; Comentario:''),
+    (CodPaisIBGE:639; DescricaoPaisIBGE:'ARGENTINA'; ISO2:'AR'; Comentario:''),
+    (CodPaisIBGE:647; DescricaoPaisIBGE:'ARMENIA, REPUBLICA DA'; ISO2:'AM'; Comentario:''),
+    (CodPaisIBGE:655; DescricaoPaisIBGE:'ARUBA'; ISO2:'AW'; Comentario:''),
+    (CodPaisIBGE:698; DescricaoPaisIBGE:'AUSTRALIA'; ISO2:'AU'; Comentario:''),
+    (CodPaisIBGE:728; DescricaoPaisIBGE:'AUSTRIA'; ISO2:'AT'; Comentario:''),
+    (CodPaisIBGE:736; DescricaoPaisIBGE:'AZERBAIJAO, REPUBLICA DO'; ISO2:'AZ'; Comentario:''),
+    (CodPaisIBGE:779; DescricaoPaisIBGE:'BAHAMAS, ILHAS'; ISO2:'BS'; Comentario:''),
+    (CodPaisIBGE:809; DescricaoPaisIBGE:'BAHREIN, ILHAS'; ISO2:'BH'; Comentario:''),
+    (CodPaisIBGE:817; DescricaoPaisIBGE:'BANGLADESH'; ISO2:'BD'; Comentario:''),
+    (CodPaisIBGE:833; DescricaoPaisIBGE:'BARBADOS'; ISO2:'BB'; Comentario:''),
+    (CodPaisIBGE:850; DescricaoPaisIBGE:'BELARUS, REPUBLICA DA'; ISO2:'BY'; Comentario:''),
+    (CodPaisIBGE:876; DescricaoPaisIBGE:'BELGICA'; ISO2:'BE'; Comentario:''),
+    (CodPaisIBGE:884; DescricaoPaisIBGE:'BELIZE'; ISO2:'BZ'; Comentario:''),
+    (CodPaisIBGE:906; DescricaoPaisIBGE:'BERMUDAS'; ISO2:'BM'; Comentario:''),
+    (CodPaisIBGE:930; DescricaoPaisIBGE:'MIANMAR (BIRMANIA)'; ISO2:'MM'; Comentario:''),
+    (CodPaisIBGE:973; DescricaoPaisIBGE:'BOLIVIA'; ISO2:'BO'; Comentario:''),
+    (CodPaisIBGE:981; DescricaoPaisIBGE:'BOSNIA-HERZEGOVINA (REPUBLICA DA)'; ISO2:'BA'; Comentario:''),
+    (CodPaisIBGE:1015; DescricaoPaisIBGE:'BOTSUANA'; ISO2:'BW'; Comentario:''),
+    (CodPaisIBGE:1058; DescricaoPaisIBGE:'BRASIL'; ISO2:'BR'; Comentario:''),
+    (CodPaisIBGE:1082; DescricaoPaisIBGE:'BRUNEI'; ISO2:'BN'; Comentario:''),
+    (CodPaisIBGE:1112; DescricaoPaisIBGE:'BULGARIA, REPUBLICA DA'; ISO2:'BG'; Comentario:''),
+    (CodPaisIBGE:1155; DescricaoPaisIBGE:'BURUNDI'; ISO2:'BI'; Comentario:''),
+    (CodPaisIBGE:1198; DescricaoPaisIBGE:'BUTAO'; ISO2:'BT'; Comentario:''),
+    (CodPaisIBGE:1279; DescricaoPaisIBGE:'CABO VERDE, REPUBLICA DE'; ISO2:'CV'; Comentario:''),
+    (CodPaisIBGE:1376; DescricaoPaisIBGE:'CAYMAN, ILHAS'; ISO2:'KY'; Comentario:''),
+    (CodPaisIBGE:1414; DescricaoPaisIBGE:'CAMBOJA'; ISO2:'KH'; Comentario:''),
+    (CodPaisIBGE:1457; DescricaoPaisIBGE:'CAMAROES'; ISO2:'CM'; Comentario:''),
+    (CodPaisIBGE:1490; DescricaoPaisIBGE:'CANADA'; ISO2:'CA'; Comentario:''),
+    (CodPaisIBGE:1504; DescricaoPaisIBGE:'GUERNSEY, ILHA DO CANAL (INCLUI ALDERNEY E SARK)'; ISO2:'GG'; Comentario:''),
+    (CodPaisIBGE:1508; DescricaoPaisIBGE:'JERSEY, ILHA DO CANAL'; ISO2:'JE'; Comentario:''),
+    (CodPaisIBGE:1511; DescricaoPaisIBGE:'CANARIAS, ILHAS'; ISO2:'ES'; Comentario:'Regiao administrativa da Espanha.'),
+    (CodPaisIBGE:1538; DescricaoPaisIBGE:'CAZAQUISTAO, REPUBLICA DO'; ISO2:'KZ'; Comentario:''),
+    (CodPaisIBGE:1546; DescricaoPaisIBGE:'CATAR'; ISO2:'QA'; Comentario:''),
+    (CodPaisIBGE:1589; DescricaoPaisIBGE:'CHILE'; ISO2:'CL'; Comentario:''),
+    (CodPaisIBGE:1600; DescricaoPaisIBGE:'CHINA, REPUBLICA POPULAR'; ISO2:'CN'; Comentario:''),
+    (CodPaisIBGE:1619; DescricaoPaisIBGE:'FORMOSA (TAIWAN)'; ISO2:'TW'; Comentario:''),
+    (CodPaisIBGE:1635; DescricaoPaisIBGE:'CHIPRE'; ISO2:'CY'; Comentario:''),
+    (CodPaisIBGE:1651; DescricaoPaisIBGE:'COCOS(KEELING),ILHAS'; ISO2:'CC'; Comentario:''),
+    (CodPaisIBGE:1694; DescricaoPaisIBGE:'COLOMBIA'; ISO2:'CO'; Comentario:''),
+    (CodPaisIBGE:1732; DescricaoPaisIBGE:'COMORES, ILHAS'; ISO2:'KM'; Comentario:''),
+    (CodPaisIBGE:1775; DescricaoPaisIBGE:'CONGO'; ISO2:'CG'; Comentario:''),
+    (CodPaisIBGE:1830; DescricaoPaisIBGE:'COOK, ILHAS'; ISO2:'CK'; Comentario:''),
+    (CodPaisIBGE:1872; DescricaoPaisIBGE:'COREIA, REP.POP.DEMOCRATICA'; ISO2:'KP'; Comentario:''),
+    (CodPaisIBGE:1902; DescricaoPaisIBGE:'COREIA, REPUBLICA DA'; ISO2:'KR'; Comentario:''),
+    (CodPaisIBGE:1937; DescricaoPaisIBGE:'COSTA DO MARFIM'; ISO2:'CI'; Comentario:''),
+    (CodPaisIBGE:1953; DescricaoPaisIBGE:'CROACIA (REPUBLICA DA)'; ISO2:'HR'; Comentario:''),
+    (CodPaisIBGE:1961; DescricaoPaisIBGE:'COSTA RICA'; ISO2:'CR'; Comentario:''),
+    (CodPaisIBGE:1988; DescricaoPaisIBGE:'COVEITE'; ISO2:'KW'; Comentario:'Nome antigo do pais (Kuwait).'),
+    (CodPaisIBGE:1996; DescricaoPaisIBGE:'CUBA'; ISO2:'CU'; Comentario:''),
+    (CodPaisIBGE:2003; DescricaoPaisIBGE:'CURACAO'; ISO2:'CW'; Comentario:''),
+    (CodPaisIBGE:2291; DescricaoPaisIBGE:'BENIN'; ISO2:'BJ'; Comentario:''),
+    (CodPaisIBGE:2321; DescricaoPaisIBGE:'DINAMARCA'; ISO2:'DK'; Comentario:''),
+    (CodPaisIBGE:2356; DescricaoPaisIBGE:'DOMINICA,ILHA'; ISO2:'DM'; Comentario:''),
+    (CodPaisIBGE:2399; DescricaoPaisIBGE:'EQUADOR'; ISO2:'EC'; Comentario:''),
+    (CodPaisIBGE:2402; DescricaoPaisIBGE:'EGITO'; ISO2:'EG'; Comentario:''),
+    (CodPaisIBGE:2437; DescricaoPaisIBGE:'ERITREIA'; ISO2:'ER'; Comentario:''),
+    (CodPaisIBGE:2445; DescricaoPaisIBGE:'EMIRADOS ARABES UNIDOS'; ISO2:'AE'; Comentario:''),
+    (CodPaisIBGE:2453; DescricaoPaisIBGE:'ESPANHA'; ISO2:'ES'; Comentario:''),
+    (CodPaisIBGE:2461; DescricaoPaisIBGE:'ESLOVENIA, REPUBLICA DA'; ISO2:'SI'; Comentario:''),
+    (CodPaisIBGE:2470; DescricaoPaisIBGE:'ESLOVACA, REPUBLICA'; ISO2:'SK'; Comentario:''),
+    (CodPaisIBGE:2496; DescricaoPaisIBGE:'ESTADOS UNIDOS'; ISO2:'US'; Comentario:''),
+    (CodPaisIBGE:2518; DescricaoPaisIBGE:'ESTONIA, REPUBLICA DA'; ISO2:'EE'; Comentario:''),
+    (CodPaisIBGE:2534; DescricaoPaisIBGE:'ETIOPIA'; ISO2:'ET'; Comentario:''),
+    (CodPaisIBGE:2550; DescricaoPaisIBGE:'FALKLAND (ILHAS MALVINAS)'; ISO2:'FK'; Comentario:''),
+    (CodPaisIBGE:2593; DescricaoPaisIBGE:'FEROE, ILHAS'; ISO2:'FO'; Comentario:''),
+    (CodPaisIBGE:2674; DescricaoPaisIBGE:'FILIPINAS'; ISO2:'PH'; Comentario:''),
+    (CodPaisIBGE:2712; DescricaoPaisIBGE:'FINLANDIA'; ISO2:'FI'; Comentario:''),
+    (CodPaisIBGE:2755; DescricaoPaisIBGE:'FRANCA'; ISO2:'FR'; Comentario:''),
+    (CodPaisIBGE:2810; DescricaoPaisIBGE:'GABAO'; ISO2:'GA'; Comentario:''),
+    (CodPaisIBGE:2852; DescricaoPaisIBGE:'GAMBIA'; ISO2:'GM'; Comentario:''),
+    (CodPaisIBGE:2895; DescricaoPaisIBGE:'GANA'; ISO2:'GH'; Comentario:''),
+    (CodPaisIBGE:2917; DescricaoPaisIBGE:'GEORGIA, REPUBLICA DA'; ISO2:'GE'; Comentario:''),
+    (CodPaisIBGE:2933; DescricaoPaisIBGE:'GIBRALTAR'; ISO2:'GI'; Comentario:''),
+    (CodPaisIBGE:2976; DescricaoPaisIBGE:'GRANADA'; ISO2:'GD'; Comentario:''),
+    (CodPaisIBGE:3018; DescricaoPaisIBGE:'GRECIA'; ISO2:'GR'; Comentario:''),
+    (CodPaisIBGE:3050; DescricaoPaisIBGE:'GROENLANDIA'; ISO2:'GL'; Comentario:''),
+    (CodPaisIBGE:3093; DescricaoPaisIBGE:'GUADALUPE'; ISO2:'GP'; Comentario:''),
+    (CodPaisIBGE:3131; DescricaoPaisIBGE:'GUAM'; ISO2:'GU'; Comentario:''),
+    (CodPaisIBGE:3174; DescricaoPaisIBGE:'GUATEMALA'; ISO2:'GT'; Comentario:''),
+    (CodPaisIBGE:3255; DescricaoPaisIBGE:'GUIANA FRANCESA'; ISO2:'GF'; Comentario:''),
+    (CodPaisIBGE:3298; DescricaoPaisIBGE:'GUINE'; ISO2:'GN'; Comentario:''),
+    (CodPaisIBGE:3310; DescricaoPaisIBGE:'GUINE-EQUATORIAL'; ISO2:'GQ'; Comentario:''),
+    (CodPaisIBGE:3344; DescricaoPaisIBGE:'GUINE-BISSAU'; ISO2:'GW'; Comentario:''),
+    (CodPaisIBGE:3379; DescricaoPaisIBGE:'GUIANA'; ISO2:'GY'; Comentario:''),
+    (CodPaisIBGE:3417; DescricaoPaisIBGE:'HAITI'; ISO2:'HT'; Comentario:''),
+    (CodPaisIBGE:3450; DescricaoPaisIBGE:'HONDURAS'; ISO2:'HN'; Comentario:''),
+    (CodPaisIBGE:3514; DescricaoPaisIBGE:'HONG KONG'; ISO2:'HK'; Comentario:''),
+    (CodPaisIBGE:3557; DescricaoPaisIBGE:'HUNGRIA, REPUBLICA DA'; ISO2:'HU'; Comentario:''),
+    (CodPaisIBGE:3573; DescricaoPaisIBGE:'IEMEN'; ISO2:'YE'; Comentario:''),
+    (CodPaisIBGE:3595; DescricaoPaisIBGE:'MAN, ILHA DE'; ISO2:'IM'; Comentario:''),
+    (CodPaisIBGE:3611; DescricaoPaisIBGE:'INDIA'; ISO2:'IN'; Comentario:''),
+    (CodPaisIBGE:3654; DescricaoPaisIBGE:'INDONESIA'; ISO2:'ID'; Comentario:''),
+    (CodPaisIBGE:3697; DescricaoPaisIBGE:'IRAQUE'; ISO2:'IQ'; Comentario:''),
+    (CodPaisIBGE:3727; DescricaoPaisIBGE:'IRA, REPUBLICA ISLAMICA DO'; ISO2:'IR'; Comentario:''),
+    (CodPaisIBGE:3751; DescricaoPaisIBGE:'IRLANDA'; ISO2:'IE'; Comentario:''),
+    (CodPaisIBGE:3794; DescricaoPaisIBGE:'ISLANDIA'; ISO2:'IS'; Comentario:''),
+    (CodPaisIBGE:3832; DescricaoPaisIBGE:'ISRAEL'; ISO2:'IL'; Comentario:''),
+    (CodPaisIBGE:3867; DescricaoPaisIBGE:'ITALIA'; ISO2:'IT'; Comentario:''),
+    (CodPaisIBGE:3913; DescricaoPaisIBGE:'JAMAICA'; ISO2:'JM'; Comentario:''),
+    (CodPaisIBGE:3964; DescricaoPaisIBGE:'JOHNSTON, ILHAS'; ISO2:'US'; Comentario:'Territorio sob soberania dos EUA.'),
+    (CodPaisIBGE:3999; DescricaoPaisIBGE:'JAPAO'; ISO2:'JP'; Comentario:''),
+    (CodPaisIBGE:4030; DescricaoPaisIBGE:'JORDANIA'; ISO2:'JO'; Comentario:''),
+    (CodPaisIBGE:4111; DescricaoPaisIBGE:'KIRIBATI'; ISO2:'KI'; Comentario:''),
+    (CodPaisIBGE:4200; DescricaoPaisIBGE:'LAOS, REP.POP.DEMOCR.DO'; ISO2:'LA'; Comentario:''),
+    (CodPaisIBGE:4235; DescricaoPaisIBGE:'LEBUAN,ILHAS'; ISO2:'MY'; Comentario:'Regiao administrativa da Malasia.'),
+    (CodPaisIBGE:4260; DescricaoPaisIBGE:'LESOTO'; ISO2:'LS'; Comentario:''),
+    (CodPaisIBGE:4278; DescricaoPaisIBGE:'LETONIA, REPUBLICA DA'; ISO2:'LV'; Comentario:''),
+    (CodPaisIBGE:4316; DescricaoPaisIBGE:'LIBANO'; ISO2:'LB'; Comentario:''),
+    (CodPaisIBGE:4340; DescricaoPaisIBGE:'LIBERIA'; ISO2:'LR'; Comentario:''),
+    (CodPaisIBGE:4383; DescricaoPaisIBGE:'LIBIA'; ISO2:'LY'; Comentario:''),
+    (CodPaisIBGE:4405; DescricaoPaisIBGE:'LIECHTENSTEIN'; ISO2:'LI'; Comentario:''),
+    (CodPaisIBGE:4421; DescricaoPaisIBGE:'LITUANIA, REPUBLICA DA'; ISO2:'LT'; Comentario:''),
+    (CodPaisIBGE:4456; DescricaoPaisIBGE:'LUXEMBURGO'; ISO2:'LU'; Comentario:''),
+    (CodPaisIBGE:4472; DescricaoPaisIBGE:'MACAU'; ISO2:'MO'; Comentario:''),
+    (CodPaisIBGE:4499; DescricaoPaisIBGE:'MACEDONIA, ANT.REP.IUGOSLAVA'; ISO2:'MK'; Comentario:''),
+    (CodPaisIBGE:4502; DescricaoPaisIBGE:'MADAGASCAR'; ISO2:'MG'; Comentario:''),
+    (CodPaisIBGE:4525; DescricaoPaisIBGE:'MADEIRA, ILHA DA'; ISO2:'PT'; Comentario:'Regiao administrativa de Portugal.'),
+    (CodPaisIBGE:4553; DescricaoPaisIBGE:'MALASIA'; ISO2:'MY'; Comentario:''),
+    (CodPaisIBGE:4588; DescricaoPaisIBGE:'MALAVI'; ISO2:'MW'; Comentario:''),
+    (CodPaisIBGE:4618; DescricaoPaisIBGE:'MALDIVAS'; ISO2:'MV'; Comentario:''),
+    (CodPaisIBGE:4642; DescricaoPaisIBGE:'MALI'; ISO2:'ML'; Comentario:''),
+    (CodPaisIBGE:4677; DescricaoPaisIBGE:'MALTA'; ISO2:'MT'; Comentario:''),
+    (CodPaisIBGE:4723; DescricaoPaisIBGE:'MARIANAS DO NORTE'; ISO2:'MP'; Comentario:''),
+    (CodPaisIBGE:4740; DescricaoPaisIBGE:'MARROCOS'; ISO2:'MA'; Comentario:''),
+    (CodPaisIBGE:4766; DescricaoPaisIBGE:'MARSHALL,ILHAS'; ISO2:'MH'; Comentario:''),
+    (CodPaisIBGE:4774; DescricaoPaisIBGE:'MARTINICA'; ISO2:'MQ'; Comentario:''),
+    (CodPaisIBGE:4855; DescricaoPaisIBGE:'MAURICIO'; ISO2:'MU'; Comentario:''),
+    (CodPaisIBGE:4880; DescricaoPaisIBGE:'MAURITANIA'; ISO2:'MR'; Comentario:''),
+    (CodPaisIBGE:4885; DescricaoPaisIBGE:'MAYOTTE (ILHAS FRANCESAS)'; ISO2:'YT'; Comentario:''),
+    (CodPaisIBGE:4901; DescricaoPaisIBGE:'MIDWAY, ILHAS'; ISO2:'US'; Comentario:'Territorio sob soberania dos EUA.'),
+    (CodPaisIBGE:4936; DescricaoPaisIBGE:'MEXICO'; ISO2:'MX'; Comentario:''),
+    (CodPaisIBGE:4944; DescricaoPaisIBGE:'MOLDAVIA, REPUBLICA DA'; ISO2:'MD'; Comentario:''),
+    (CodPaisIBGE:4952; DescricaoPaisIBGE:'MONACO'; ISO2:'MC'; Comentario:''),
+    (CodPaisIBGE:4979; DescricaoPaisIBGE:'MONGOLIA'; ISO2:'MN'; Comentario:''),
+    (CodPaisIBGE:4985; DescricaoPaisIBGE:'MONTENEGRO'; ISO2:'ME'; Comentario:''),
+    (CodPaisIBGE:4995; DescricaoPaisIBGE:'MICRONESIA'; ISO2:'FM'; Comentario:''),
+    (CodPaisIBGE:5010; DescricaoPaisIBGE:'MONTSERRAT,ILHAS'; ISO2:'MS'; Comentario:''),
+    (CodPaisIBGE:5053; DescricaoPaisIBGE:'MOCAMBIQUE'; ISO2:'MZ'; Comentario:''),
+    (CodPaisIBGE:5070; DescricaoPaisIBGE:'NAMIBIA'; ISO2:'NA'; Comentario:''),
+    (CodPaisIBGE:5088; DescricaoPaisIBGE:'NAURU'; ISO2:'NR'; Comentario:''),
+    (CodPaisIBGE:5118; DescricaoPaisIBGE:'CHRISTMAS,ILHA (NAVIDAD)'; ISO2:'CX'; Comentario:''),
+    (CodPaisIBGE:5177; DescricaoPaisIBGE:'NEPAL'; ISO2:'NP'; Comentario:''),
+    (CodPaisIBGE:5215; DescricaoPaisIBGE:'NICARAGUA'; ISO2:'NI'; Comentario:''),
+    (CodPaisIBGE:5258; DescricaoPaisIBGE:'NIGER'; ISO2:'NE'; Comentario:''),
+    (CodPaisIBGE:5282; DescricaoPaisIBGE:'NIGERIA'; ISO2:'NG'; Comentario:''),
+    (CodPaisIBGE:5312; DescricaoPaisIBGE:'NIUE,ILHA'; ISO2:'NU'; Comentario:''),
+    (CodPaisIBGE:5355; DescricaoPaisIBGE:'NORFOLK,ILHA'; ISO2:'NF'; Comentario:''),
+    (CodPaisIBGE:5380; DescricaoPaisIBGE:'NORUEGA'; ISO2:'NO'; Comentario:''),
+    (CodPaisIBGE:5428; DescricaoPaisIBGE:'NOVA CALEDONIA'; ISO2:'NC'; Comentario:''),
+    (CodPaisIBGE:5452; DescricaoPaisIBGE:'PAPUA NOVA GUINE'; ISO2:'PG'; Comentario:''),
+    (CodPaisIBGE:5487; DescricaoPaisIBGE:'NOVA ZELANDIA'; ISO2:'NZ'; Comentario:''),
+    (CodPaisIBGE:5517; DescricaoPaisIBGE:'VANUATU'; ISO2:'VU'; Comentario:''),
+    (CodPaisIBGE:5568; DescricaoPaisIBGE:'OMA'; ISO2:'OM'; Comentario:''),
+    (CodPaisIBGE:5665; DescricaoPaisIBGE:'PACIFICO,ILHAS DO (POSSESSAO DOS EUA)'; ISO2:'UM'; Comentario:''),
+    (CodPaisIBGE:5738; DescricaoPaisIBGE:'PAISES BAIXOS (HOLANDA)'; ISO2:'NL'; Comentario:''),
+    (CodPaisIBGE:5754; DescricaoPaisIBGE:'PALAU'; ISO2:'PW'; Comentario:''),
+    (CodPaisIBGE:5762; DescricaoPaisIBGE:'PAQUISTAO'; ISO2:'PK'; Comentario:''),
+    (CodPaisIBGE:5780; DescricaoPaisIBGE:'PALESTINA'; ISO2:'PS'; Comentario:''),
+    (CodPaisIBGE:5800; DescricaoPaisIBGE:'PANAMA'; ISO2:'PA'; Comentario:''),
+    (CodPaisIBGE:5860; DescricaoPaisIBGE:'PARAGUAI'; ISO2:'PY'; Comentario:''),
+    (CodPaisIBGE:5894; DescricaoPaisIBGE:'PERU'; ISO2:'PE'; Comentario:''),
+    (CodPaisIBGE:5932; DescricaoPaisIBGE:'PITCAIRN,ILHA'; ISO2:'PN'; Comentario:''),
+    (CodPaisIBGE:5991; DescricaoPaisIBGE:'POLINESIA FRANCESA'; ISO2:'PF'; Comentario:''),
+    (CodPaisIBGE:6033; DescricaoPaisIBGE:'POLONIA, REPUBLICA DA'; ISO2:'PL'; Comentario:''),
+    (CodPaisIBGE:6076; DescricaoPaisIBGE:'PORTUGAL'; ISO2:'PT'; Comentario:''),
+    (CodPaisIBGE:6114; DescricaoPaisIBGE:'PORTO RICO'; ISO2:'PR'; Comentario:''),
+    (CodPaisIBGE:6238; DescricaoPaisIBGE:'QUENIA'; ISO2:'KE'; Comentario:''),
+    (CodPaisIBGE:6254; DescricaoPaisIBGE:'QUIRGUIZ, REPUBLICA'; ISO2:'KG'; Comentario:''),
+    (CodPaisIBGE:6289; DescricaoPaisIBGE:'REINO UNIDO'; ISO2:'GB'; Comentario:''),
+    (CodPaisIBGE:6408; DescricaoPaisIBGE:'REPUBLICA CENTRO-AFRICANA'; ISO2:'CF'; Comentario:''),
+    (CodPaisIBGE:6475; DescricaoPaisIBGE:'REPUBLICA DOMINICANA'; ISO2:'DO'; Comentario:''),
+    (CodPaisIBGE:6602; DescricaoPaisIBGE:'REUNIAO, ILHA'; ISO2:'RE'; Comentario:''),
+    (CodPaisIBGE:6653; DescricaoPaisIBGE:'ZIMBABUE'; ISO2:'ZW'; Comentario:''),
+    (CodPaisIBGE:6700; DescricaoPaisIBGE:'ROMENIA'; ISO2:'RO'; Comentario:''),
+    (CodPaisIBGE:6750; DescricaoPaisIBGE:'RUANDA'; ISO2:'RW'; Comentario:''),
+    (CodPaisIBGE:6769; DescricaoPaisIBGE:'RUSSIA, FEDERACAO DA'; ISO2:'RU'; Comentario:''),
+    (CodPaisIBGE:6777; DescricaoPaisIBGE:'SALOMAO, ILHAS'; ISO2:'SB'; Comentario:''),
+    (CodPaisIBGE:6781; DescricaoPaisIBGE:'SAINT KITTS E NEVIS'; ISO2:'KN'; Comentario:'Mesmo pais: SAINT KITTS E NEVIS ou SAO CRISTOVAO E NEVES.'),
+    (CodPaisIBGE:6858; DescricaoPaisIBGE:'SAARA OCIDENTAL'; ISO2:'EH'; Comentario:''),
+    (CodPaisIBGE:6874; DescricaoPaisIBGE:'EL SALVADOR'; ISO2:'SV'; Comentario:''),
+    (CodPaisIBGE:6904; DescricaoPaisIBGE:'SAMOA'; ISO2:'WS'; Comentario:''),
+    (CodPaisIBGE:6912; DescricaoPaisIBGE:'SAMOA AMERICANA'; ISO2:'AS'; Comentario:''),
+    (CodPaisIBGE:6955; DescricaoPaisIBGE:'SAO CRISTOVAO E NEVES,ILHAS'; ISO2:'KN'; Comentario:''),
+    (CodPaisIBGE:6971; DescricaoPaisIBGE:'SAN MARINO'; ISO2:'SM'; Comentario:''),
+    (CodPaisIBGE:6980; DescricaoPaisIBGE:'SAO MARTINHO, ILHA DE (PARTE FRANCESA)'; ISO2:'MF'; Comentario:''),
+    (CodPaisIBGE:6998; DescricaoPaisIBGE:'SAO MARTINHO, ILHA DE (PARTE HOLANDESA)'; ISO2:'SX'; Comentario:''),
+    (CodPaisIBGE:7005; DescricaoPaisIBGE:'SAO PEDRO E MIQUELON'; ISO2:'PM'; Comentario:''),
+    (CodPaisIBGE:7056; DescricaoPaisIBGE:'SAO VICENTE E GRANADINAS'; ISO2:'VC'; Comentario:''),
+    (CodPaisIBGE:7102; DescricaoPaisIBGE:'SANTA HELENA'; ISO2:'SH'; Comentario:''),
+    (CodPaisIBGE:7153; DescricaoPaisIBGE:'SANTA LUCIA'; ISO2:'LC'; Comentario:''),
+    (CodPaisIBGE:7200; DescricaoPaisIBGE:'SAO TOME E PRINCIPE, ILHAS'; ISO2:'ST'; Comentario:''),
+    (CodPaisIBGE:7285; DescricaoPaisIBGE:'SENEGAL'; ISO2:'SN'; Comentario:''),
+    (CodPaisIBGE:7315; DescricaoPaisIBGE:'SEYCHELLES'; ISO2:'SC'; Comentario:''),
+    (CodPaisIBGE:7358; DescricaoPaisIBGE:'SERRA LEOA'; ISO2:'SL'; Comentario:''),
+    (CodPaisIBGE:7370; DescricaoPaisIBGE:'SERVIA'; ISO2:'RS'; Comentario:''),
+    (CodPaisIBGE:7412; DescricaoPaisIBGE:'CINGAPURA'; ISO2:'SG'; Comentario:''),
+    (CodPaisIBGE:7447; DescricaoPaisIBGE:'SIRIA, REPUBLICA ARABE DA'; ISO2:'SY'; Comentario:''),
+    (CodPaisIBGE:7480; DescricaoPaisIBGE:'SOMALIA'; ISO2:'SO'; Comentario:''),
+    (CodPaisIBGE:7501; DescricaoPaisIBGE:'SRI LANKA'; ISO2:'LK'; Comentario:''),
+    (CodPaisIBGE:7544; DescricaoPaisIBGE:'ESWATINI'; ISO2:'SZ'; Comentario:'Pais ISO com nome atualizado (ex-Suazilandia).'),
+    (CodPaisIBGE:7560; DescricaoPaisIBGE:'AFRICA DO SUL'; ISO2:'ZA'; Comentario:''),
+    (CodPaisIBGE:7595; DescricaoPaisIBGE:'SUDAO'; ISO2:'SD'; Comentario:''),
+    (CodPaisIBGE:7600; DescricaoPaisIBGE:'SUDAO DO SUL'; ISO2:'SS'; Comentario:''),
+    (CodPaisIBGE:7641; DescricaoPaisIBGE:'SUECIA'; ISO2:'SE'; Comentario:''),
+    (CodPaisIBGE:7676; DescricaoPaisIBGE:'SUICA'; ISO2:'CH'; Comentario:''),
+    (CodPaisIBGE:7706; DescricaoPaisIBGE:'SURINAME'; ISO2:'SR'; Comentario:''),
+    (CodPaisIBGE:7722; DescricaoPaisIBGE:'TADJIQUISTAO, REPUBLICA DO'; ISO2:'TJ'; Comentario:''),
+    (CodPaisIBGE:7765; DescricaoPaisIBGE:'TAILANDIA'; ISO2:'TH'; Comentario:''),
+    (CodPaisIBGE:7803; DescricaoPaisIBGE:'TANZANIA, REP.UNIDA DA'; ISO2:'TZ'; Comentario:''),
+    (CodPaisIBGE:7820; DescricaoPaisIBGE:'TERRITORIO BRIT.OC.INDICO'; ISO2:'IO'; Comentario:''),
+    (CodPaisIBGE:7838; DescricaoPaisIBGE:'DJIBUTI'; ISO2:'DJ'; Comentario:''),
+    (CodPaisIBGE:7889; DescricaoPaisIBGE:'CHADE'; ISO2:'TD'; Comentario:''),
+    (CodPaisIBGE:7919; DescricaoPaisIBGE:'TCHECA, REPUBLICA'; ISO2:'CZ'; Comentario:''),
+    (CodPaisIBGE:7951; DescricaoPaisIBGE:'TIMOR LESTE'; ISO2:'TL'; Comentario:''),
+    (CodPaisIBGE:8001; DescricaoPaisIBGE:'TOGO'; ISO2:'TG'; Comentario:''),
+    (CodPaisIBGE:8052; DescricaoPaisIBGE:'TOQUELAU,ILHAS'; ISO2:'TK'; Comentario:''),
+    (CodPaisIBGE:8109; DescricaoPaisIBGE:'TONGA'; ISO2:'TO'; Comentario:''),
+    (CodPaisIBGE:8150; DescricaoPaisIBGE:'TRINIDAD E TOBAGO'; ISO2:'TT'; Comentario:''),
+    (CodPaisIBGE:8206; DescricaoPaisIBGE:'TUNISIA'; ISO2:'TN'; Comentario:''),
+    (CodPaisIBGE:8230; DescricaoPaisIBGE:'TURCAS E CAICOS,ILHAS'; ISO2:'TC'; Comentario:''),
+    (CodPaisIBGE:8249; DescricaoPaisIBGE:'TURCOMENISTAO, REPUBLICA DO'; ISO2:'TM'; Comentario:''),
+    (CodPaisIBGE:8273; DescricaoPaisIBGE:'TURQUIA'; ISO2:'TR'; Comentario:''),
+    (CodPaisIBGE:8281; DescricaoPaisIBGE:'TUVALU'; ISO2:'TV'; Comentario:''),
+    (CodPaisIBGE:8311; DescricaoPaisIBGE:'UCRANIA'; ISO2:'UA'; Comentario:''),
+    (CodPaisIBGE:8338; DescricaoPaisIBGE:'UGANDA'; ISO2:'UG'; Comentario:''),
+    (CodPaisIBGE:8451; DescricaoPaisIBGE:'URUGUAI'; ISO2:'UY'; Comentario:''),
+    (CodPaisIBGE:8478; DescricaoPaisIBGE:'UZBEQUISTAO, REPUBLICA DO'; ISO2:'UZ'; Comentario:''),
+    (CodPaisIBGE:8486; DescricaoPaisIBGE:'VATICANO, EST.DA CIDADE DO'; ISO2:'VA'; Comentario:''),
+    (CodPaisIBGE:8508; DescricaoPaisIBGE:'VENEZUELA'; ISO2:'VE'; Comentario:''),
+    (CodPaisIBGE:8583; DescricaoPaisIBGE:'VIETNA'; ISO2:'VN'; Comentario:''),
+    (CodPaisIBGE:8630; DescricaoPaisIBGE:'VIRGENS,ILHAS (BRITANICAS)'; ISO2:'VG'; Comentario:''),
+    (CodPaisIBGE:8664; DescricaoPaisIBGE:'VIRGENS,ILHAS (E.U.A.)'; ISO2:'VI'; Comentario:''),
+    (CodPaisIBGE:8702; DescricaoPaisIBGE:'FIJI'; ISO2:'FJ'; Comentario:''),
+    (CodPaisIBGE:8737; DescricaoPaisIBGE:'WAKE, ILHA'; ISO2:'US'; Comentario:'Territorio sob soberania dos EUA.'),
+    (CodPaisIBGE:8885; DescricaoPaisIBGE:'CONGO, REPUBLICA DEMOCRATICA DO'; ISO2:'CD'; Comentario:''),
+    (CodPaisIBGE:8907; DescricaoPaisIBGE:'ZAMBIA'; ISO2:'ZM'; Comentario:''),
+    (CodPaisIBGE:8958; DescricaoPaisIBGE:'ZONA DO CANAL DO PANAMA'; ISO2:'PA'; Comentario:'Região do Panama.')
+  );
+
+type
+  TMoedaBACENISO = record
+    CodigoMoedaBACEN: Integer;
+    SiglaMoedaBACEN: string;
+    NomePaisMoedaBACEN: string;
+    CodigoMoedaISO: Integer;
+    SiglaMoedaISO: string;
+    NomePaisMoedaISO: string;
+  end;
+
+const
+  Moedas: array[0..157] of TMoedaBACENISO = (
+    (CodigoMoedaBACEN: 005; SiglaMoedaBACEN: 'AFN'; NomePaisMoedaBACEN: 'AFEGANISTAO'; CodigoMoedaISO: 971; SiglaMoedaISO: 'AFN'; NomePaisMoedaISO: 'AFEGANISTÃO'),
+    (CodigoMoedaBACEN: 785; SiglaMoedaBACEN: 'ZAR'; NomePaisMoedaBACEN: 'AFRICA DO SUL'; CodigoMoedaISO: 710; SiglaMoedaISO: 'ZAR'; NomePaisMoedaISO: 'ÁFRICA DO SUL'),
+    (CodigoMoedaBACEN: 490; SiglaMoedaBACEN: 'ALL'; NomePaisMoedaBACEN: 'ALBANIA, REPUBLICA DA'; CodigoMoedaISO: 008; SiglaMoedaISO: 'ALL'; NomePaisMoedaISO: 'ALBANIA'),
+    (CodigoMoedaBACEN: 635; SiglaMoedaBACEN: 'AOA'; NomePaisMoedaBACEN: 'ANGOLA'; CodigoMoedaISO: 973; SiglaMoedaISO: 'AOA'; NomePaisMoedaISO: 'ANGOLA'),
+    (CodigoMoedaBACEN: 820; SiglaMoedaBACEN: 'SAR'; NomePaisMoedaBACEN: 'ARABIA SAUDITA'; CodigoMoedaISO: 682; SiglaMoedaISO: 'SAR'; NomePaisMoedaISO: 'ARÁBIA SAUDITA'),
+    (CodigoMoedaBACEN: 095; SiglaMoedaBACEN: 'DZD'; NomePaisMoedaBACEN: 'ARGELIA'; CodigoMoedaISO: 012; SiglaMoedaISO: 'DZD'; NomePaisMoedaISO: 'ARGÉLIA'),
+    (CodigoMoedaBACEN: 706; SiglaMoedaBACEN: 'ARS'; NomePaisMoedaBACEN: 'ARGENTINA'; CodigoMoedaISO: 032; SiglaMoedaISO: 'ARS'; NomePaisMoedaISO: 'ARGENTINA'),
+    (CodigoMoedaBACEN: 275; SiglaMoedaBACEN: 'AMD'; NomePaisMoedaBACEN: 'ARMENIA, REPUBLICA DA'; CodigoMoedaISO: 051; SiglaMoedaISO: 'AMD'; NomePaisMoedaISO: 'ARMÊNIA'),
+    (CodigoMoedaBACEN: 328; SiglaMoedaBACEN: 'AWG'; NomePaisMoedaBACEN: 'ARUBA'; CodigoMoedaISO: 533; SiglaMoedaISO: 'AWG'; NomePaisMoedaISO: 'ARUBA'),
+    (CodigoMoedaBACEN: 150; SiglaMoedaBACEN: 'AUD'; NomePaisMoedaBACEN: 'AUSTRALIA'; CodigoMoedaISO: 036; SiglaMoedaISO: 'AUD'; NomePaisMoedaISO: 'AUSTRÁLIA'),
+    (CodigoMoedaBACEN: 607; SiglaMoedaBACEN: 'AZN'; NomePaisMoedaBACEN: 'AZERBAIJAO, REPUBLICA DO'; CodigoMoedaISO: 944; SiglaMoedaISO: 'AZN'; NomePaisMoedaISO: 'AZERBAIJÃO'),
+    (CodigoMoedaBACEN: 155; SiglaMoedaBACEN: 'BSD'; NomePaisMoedaBACEN: 'BAHAMAS, ILHAS'; CodigoMoedaISO: 044; SiglaMoedaISO: 'BSD'; NomePaisMoedaISO: 'BAHAMAS (THE)'),
+    (CodigoMoedaBACEN: 105; SiglaMoedaBACEN: 'BHD'; NomePaisMoedaBACEN: 'BAHREIN, ILHAS'; CodigoMoedaISO: 048; SiglaMoedaISO: 'BHD'; NomePaisMoedaISO: 'BAHREIN'),
+    (CodigoMoedaBACEN: 905; SiglaMoedaBACEN: 'BDT'; NomePaisMoedaBACEN: 'BANGLADESH'; CodigoMoedaISO: 050; SiglaMoedaISO: 'BDT'; NomePaisMoedaISO: 'BANGLADESH'),
+    (CodigoMoedaBACEN: 175; SiglaMoedaBACEN: 'BBD'; NomePaisMoedaBACEN: 'BARBADOS'; CodigoMoedaISO: 052; SiglaMoedaISO: 'BBD'; NomePaisMoedaISO: 'BARBADOS'),
+    (CodigoMoedaBACEN: 831; SiglaMoedaBACEN: 'BYN'; NomePaisMoedaBACEN: 'BELARUS, REPUBLICA DA'; CodigoMoedaISO: 974; SiglaMoedaISO: 'BYR'; NomePaisMoedaISO: 'BELARUS'),
+    (CodigoMoedaBACEN: 180; SiglaMoedaBACEN: 'BZD'; NomePaisMoedaBACEN: 'BELIZE'; CodigoMoedaISO: 084; SiglaMoedaISO: 'BZD'; NomePaisMoedaISO: 'BELIZE'),
+    (CodigoMoedaBACEN: 160; SiglaMoedaBACEN: 'BMD'; NomePaisMoedaBACEN: 'BERMUDAS'; CodigoMoedaISO: 060; SiglaMoedaISO: 'BMD'; NomePaisMoedaISO: 'BERMUDA'),
+    (CodigoMoedaBACEN: 030; SiglaMoedaBACEN: 'BOB'; NomePaisMoedaBACEN: 'BOLIVIA'; CodigoMoedaISO: 068; SiglaMoedaISO: 'BOB'; NomePaisMoedaISO: 'BOLÍVIA (ESTADO PLURINACIONAL DA)'),
+    (CodigoMoedaBACEN: 612; SiglaMoedaBACEN: 'BAM'; NomePaisMoedaBACEN: 'BOSNIA-HERZEGOVINA (REPUBLICA DA)'; CodigoMoedaISO: 977; SiglaMoedaISO: 'BAM'; NomePaisMoedaISO: 'BOSNIA E HERZEGOVINA'),
+    (CodigoMoedaBACEN: 755; SiglaMoedaBACEN: 'BWP'; NomePaisMoedaBACEN: 'BOTSUANA'; CodigoMoedaISO: 072; SiglaMoedaISO: 'BWP'; NomePaisMoedaISO: 'BOTSWANA'),
+    (CodigoMoedaBACEN: 790; SiglaMoedaBACEN: 'BRL'; NomePaisMoedaBACEN: 'BRASIL'; CodigoMoedaISO: 986; SiglaMoedaISO: 'BRL'; NomePaisMoedaISO: 'BRASIL'),
+    (CodigoMoedaBACEN: 185; SiglaMoedaBACEN: 'BND'; NomePaisMoedaBACEN: 'BRUNEI'; CodigoMoedaISO: 096; SiglaMoedaISO: 'BND'; NomePaisMoedaISO: 'BRUNEI DARUSSALAM'),
+    (CodigoMoedaBACEN: 365; SiglaMoedaBACEN: 'BIF'; NomePaisMoedaBACEN: 'BURUNDI'; CodigoMoedaISO: 108; SiglaMoedaISO: 'BIF'; NomePaisMoedaISO: 'BURUNDI'),
+    (CodigoMoedaBACEN: 665; SiglaMoedaBACEN: 'BTN'; NomePaisMoedaBACEN: 'BUTAO'; CodigoMoedaISO: 064; SiglaMoedaISO: 'BTN'; NomePaisMoedaISO: 'Butão'),
+    (CodigoMoedaBACEN: 665; SiglaMoedaBACEN: 'BTN'; NomePaisMoedaBACEN: 'BUTAO'; CodigoMoedaISO: 356; SiglaMoedaISO: 'INR'; NomePaisMoedaISO: 'Butão'),
+    (CodigoMoedaBACEN: 295; SiglaMoedaBACEN: 'CVE'; NomePaisMoedaBACEN: 'CABO VERDE, REPUBLICA DE'; CodigoMoedaISO: 132; SiglaMoedaISO: 'CVE'; NomePaisMoedaISO: 'CABO VERDE'),
+    (CodigoMoedaBACEN: 825; SiglaMoedaBACEN: 'KHR'; NomePaisMoedaBACEN: 'CAMBOJA'; CodigoMoedaISO: 116; SiglaMoedaISO: 'KHR'; NomePaisMoedaISO: 'CAMBODIA'),
+    (CodigoMoedaBACEN: 165; SiglaMoedaBACEN: 'CAD'; NomePaisMoedaBACEN: 'CANADA'; CodigoMoedaISO: 124; SiglaMoedaISO: 'CAD'; NomePaisMoedaISO: 'CANADÁ'),
+    (CodigoMoedaBACEN: 800; SiglaMoedaBACEN: 'QAR'; NomePaisMoedaBACEN: 'CATAR'; CodigoMoedaISO: 634; SiglaMoedaISO: 'QAR'; NomePaisMoedaISO: 'QATAR'),
+    (CodigoMoedaBACEN: 190; SiglaMoedaBACEN: 'KYD'; NomePaisMoedaBACEN: 'CAYMAN, ILHAS'; CodigoMoedaISO: 136; SiglaMoedaISO: 'KYD'; NomePaisMoedaISO: 'ILHAS CAYMAN'),
+    (CodigoMoedaBACEN: 913; SiglaMoedaBACEN: 'KZT'; NomePaisMoedaBACEN: 'CAZAQUISTAO, REPUBLICA DO'; CodigoMoedaISO: 398; SiglaMoedaISO: 'KZT'; NomePaisMoedaISO: 'CAZAQUISTÃO'),
+    (CodigoMoedaBACEN: 197; SiglaMoedaBACEN: 'CLF'; NomePaisMoedaBACEN: 'CHILE'; CodigoMoedaISO: 990; SiglaMoedaISO: 'CLF'; NomePaisMoedaISO: 'CHILE'),
+    (CodigoMoedaBACEN: 197; SiglaMoedaBACEN: 'CLF'; NomePaisMoedaBACEN: 'CHILE'; CodigoMoedaISO: 152; SiglaMoedaISO: 'CLP'; NomePaisMoedaISO: 'CHILE'),
+    (CodigoMoedaBACEN: 715; SiglaMoedaBACEN: 'CLP'; NomePaisMoedaBACEN: 'CHILE'; CodigoMoedaISO: 990; SiglaMoedaISO: 'CLF'; NomePaisMoedaISO: 'CHILE'),
+    (CodigoMoedaBACEN: 715; SiglaMoedaBACEN: 'CLP'; NomePaisMoedaBACEN: 'CHILE'; CodigoMoedaISO: 152; SiglaMoedaISO: 'CLP'; NomePaisMoedaISO: 'CHILE'),
+    (CodigoMoedaBACEN: 795; SiglaMoedaBACEN: 'CNY'; NomePaisMoedaBACEN: 'CHINA, REPUBLICA POPULAR'; CodigoMoedaISO: 156; SiglaMoedaISO: 'CNY'; NomePaisMoedaISO: 'CHINA'),
+    (CodigoMoedaBACEN: 195; SiglaMoedaBACEN: 'SGD'; NomePaisMoedaBACEN: 'CINGAPURA'; CodigoMoedaISO: 702; SiglaMoedaISO: 'SGD'; NomePaisMoedaISO: 'CINGAPURA'),
+    (CodigoMoedaBACEN: 720; SiglaMoedaBACEN: 'COP'; NomePaisMoedaBACEN: 'COLOMBIA'; CodigoMoedaISO: 170; SiglaMoedaISO: 'COP'; NomePaisMoedaISO: 'COLÔMBIA'),
+    (CodigoMoedaBACEN: 720; SiglaMoedaBACEN: 'COP'; NomePaisMoedaBACEN: 'COLOMBIA'; CodigoMoedaISO: 970; SiglaMoedaISO: 'COU'; NomePaisMoedaISO: 'COLÔMBIA'),
+    (CodigoMoedaBACEN: 721; SiglaMoedaBACEN: 'COU'; NomePaisMoedaBACEN: 'COLOMBIA'; CodigoMoedaISO: 170; SiglaMoedaISO: 'COP'; NomePaisMoedaISO: 'COLÔMBIA'),
+    (CodigoMoedaBACEN: 721; SiglaMoedaBACEN: 'COU'; NomePaisMoedaBACEN: 'COLOMBIA'; CodigoMoedaISO: 970; SiglaMoedaISO: 'COU'; NomePaisMoedaISO: 'COLÔMBIA'),
+    (CodigoMoedaBACEN: 368; SiglaMoedaBACEN: 'KMF'; NomePaisMoedaBACEN: 'COMORES, ILHAS'; CodigoMoedaISO: 174; SiglaMoedaISO: 'KMF'; NomePaisMoedaISO: 'COMOROS'),
+    (CodigoMoedaBACEN: 363; SiglaMoedaBACEN: 'CDF'; NomePaisMoedaBACEN: 'CONGO, REPUBLICA DEMOCRATICA DO'; CodigoMoedaISO: 976; SiglaMoedaISO: 'CDF'; NomePaisMoedaISO: 'CONGO (REPÚBLICA DEMOCRÁTICA DO)'),
+    (CodigoMoedaBACEN: 925; SiglaMoedaBACEN: 'KPW'; NomePaisMoedaBACEN: 'COREIA, REP.POP.DEMOCRATICA'; CodigoMoedaISO: 408; SiglaMoedaISO: 'KPW'; NomePaisMoedaISO: 'CORÉIA (REPÚLICA POPULAR)'),
+    (CodigoMoedaBACEN: 930; SiglaMoedaBACEN: 'KRW'; NomePaisMoedaBACEN: 'COREIA, REPUBLICA DA'; CodigoMoedaISO: 410; SiglaMoedaISO: 'KRW'; NomePaisMoedaISO: 'CORÉIA (REPÚBLICA DA)'),
+    (CodigoMoedaBACEN: 040; SiglaMoedaBACEN: 'CRC'; NomePaisMoedaBACEN: 'COSTA RICA'; CodigoMoedaISO: 188; SiglaMoedaISO: 'CRC'; NomePaisMoedaISO: 'COSTA RICA'),
+    (CodigoMoedaBACEN: 100; SiglaMoedaBACEN: 'KWD'; NomePaisMoedaBACEN: 'COVEITE'; CodigoMoedaISO: 414; SiglaMoedaISO: 'KWD'; NomePaisMoedaISO: 'O Dinar do Kuwait'),
+    (CodigoMoedaBACEN: 725; SiglaMoedaBACEN: 'CUP'; NomePaisMoedaBACEN: 'CUBA'; CodigoMoedaISO: 931; SiglaMoedaISO: 'CUC'; NomePaisMoedaISO: 'CUBA'),
+    (CodigoMoedaBACEN: 725; SiglaMoedaBACEN: 'CUP'; NomePaisMoedaBACEN: 'CUBA'; CodigoMoedaISO: 192; SiglaMoedaISO: 'CUP'; NomePaisMoedaISO: 'CUBA'),
+    (CodigoMoedaBACEN: 055; SiglaMoedaBACEN: 'DKK'; NomePaisMoedaBACEN: 'DINAMARCA'; CodigoMoedaISO: 208; SiglaMoedaISO: 'DKK'; NomePaisMoedaISO: 'DINAMARCA'),
+    (CodigoMoedaBACEN: 390; SiglaMoedaBACEN: 'DJF'; NomePaisMoedaBACEN: 'DJIBUTI'; CodigoMoedaISO: 262; SiglaMoedaISO: 'DJIBOUTI'; NomePaisMoedaISO: 'Franco do Djibouti'),
+    (CodigoMoedaBACEN: 535; SiglaMoedaBACEN: 'EGP'; NomePaisMoedaBACEN: 'EGITO'; CodigoMoedaISO: 818; SiglaMoedaISO: 'EGP'; NomePaisMoedaISO: 'EGITO'),
+    (CodigoMoedaBACEN: 045; SiglaMoedaBACEN: 'SVC'; NomePaisMoedaBACEN: 'EL SALVADOR'; CodigoMoedaISO: 222; SiglaMoedaISO: 'SVC'; NomePaisMoedaISO: 'EL SALVADOR'),
+    (CodigoMoedaBACEN: 045; SiglaMoedaBACEN: 'SVC'; NomePaisMoedaBACEN: 'EL SALVADOR'; CodigoMoedaISO: 840; SiglaMoedaISO: 'USD'; NomePaisMoedaISO: 'EL SALVADOR'),
+    (CodigoMoedaBACEN: 145; SiglaMoedaBACEN: 'AED'; NomePaisMoedaBACEN: 'EMIRADOS ARABES UNIDOS'; CodigoMoedaISO: 784; SiglaMoedaISO: 'AED'; NomePaisMoedaISO: 'EMIRADOS ÁRABES UNIDOS'),
+    (CodigoMoedaBACEN: 625; SiglaMoedaBACEN: 'ERN'; NomePaisMoedaBACEN: 'ERITREIA'; CodigoMoedaISO: 232; SiglaMoedaISO: 'ERN'; NomePaisMoedaISO: 'ERITREA'),
+    (CodigoMoedaBACEN: 009; SiglaMoedaBACEN: 'ETB'; NomePaisMoedaBACEN: 'ETIOPIA'; CodigoMoedaISO: 230; SiglaMoedaISO: 'ETB'; NomePaisMoedaISO: 'ETIÓPIA'),
+    (CodigoMoedaBACEN: 545; SiglaMoedaBACEN: 'FKP'; NomePaisMoedaBACEN: 'FALKLAND (ILHAS MALVINAS)'; CodigoMoedaISO: 238; SiglaMoedaISO: 'FKP'; NomePaisMoedaISO: 'ILHAS FALKLAND [MALVINAS]'),
+    (CodigoMoedaBACEN: 200; SiglaMoedaBACEN: 'FJD'; NomePaisMoedaBACEN: 'FIJI'; CodigoMoedaISO: 242; SiglaMoedaISO: 'FJD'; NomePaisMoedaISO: 'FIJI'),
+    (CodigoMoedaBACEN: 735; SiglaMoedaBACEN: 'PHP'; NomePaisMoedaBACEN: 'FILIPINAS'; CodigoMoedaISO: 608; SiglaMoedaISO: 'PHP'; NomePaisMoedaISO: 'FILIPINAS'),
+    (CodigoMoedaBACEN: 640; SiglaMoedaBACEN: 'TWD'; NomePaisMoedaBACEN: 'FORMOSA (TAIWAN)'; CodigoMoedaISO: 901; SiglaMoedaISO: 'TWD'; NomePaisMoedaISO: 'TAIWAN, PROVÍNCIA DA CHINA)'),
+    (CodigoMoedaBACEN: 090; SiglaMoedaBACEN: 'GMD'; NomePaisMoedaBACEN: 'GAMBIA'; CodigoMoedaISO: 270; SiglaMoedaISO: 'GMD'; NomePaisMoedaISO: 'GÂMBIA'),
+    (CodigoMoedaBACEN: 035; SiglaMoedaBACEN: 'GHS'; NomePaisMoedaBACEN: 'GANA'; CodigoMoedaISO: 936; SiglaMoedaISO: 'GHS'; NomePaisMoedaISO: 'GANA'),
+    (CodigoMoedaBACEN: 482; SiglaMoedaBACEN: 'GEL'; NomePaisMoedaBACEN: 'GEORGIA, REPUBLICA DA'; CodigoMoedaISO: 981; SiglaMoedaISO: 'GEL'; NomePaisMoedaISO: 'GEÓRGIA'),
+    (CodigoMoedaBACEN: 530; SiglaMoedaBACEN: 'GIP'; NomePaisMoedaBACEN: 'GIBRALTAR'; CodigoMoedaISO: 292; SiglaMoedaISO: 'GIP'; NomePaisMoedaISO: 'GIBRALTAR'),
+    (CodigoMoedaBACEN: 770; SiglaMoedaBACEN: 'GTQ'; NomePaisMoedaBACEN: 'GUATEMALA'; CodigoMoedaISO: 320; SiglaMoedaISO: 'GTQ'; NomePaisMoedaISO: 'GUATEMALA'),
+    (CodigoMoedaBACEN: 170; SiglaMoedaBACEN: 'GYD'; NomePaisMoedaBACEN: 'GUIANA'; CodigoMoedaISO: 328; SiglaMoedaISO: 'GYD'; NomePaisMoedaISO: 'GUIANA'),
+    (CodigoMoedaBACEN: 398; SiglaMoedaBACEN: 'GNF'; NomePaisMoedaBACEN: 'GUINE'; CodigoMoedaISO: 324; SiglaMoedaISO: 'GNF'; NomePaisMoedaISO: 'GUINÉ'),
+    (CodigoMoedaBACEN: 440; SiglaMoedaBACEN: 'HTG'; NomePaisMoedaBACEN: 'HAITI'; CodigoMoedaISO: 332; SiglaMoedaISO: 'HTG'; NomePaisMoedaISO: 'HAITI'),
+    (CodigoMoedaBACEN: 440; SiglaMoedaBACEN: 'HTG'; NomePaisMoedaBACEN: 'HAITI'; CodigoMoedaISO: 840; SiglaMoedaISO: 'USD'; NomePaisMoedaISO: 'HAITI'),
+    (CodigoMoedaBACEN: 495; SiglaMoedaBACEN: 'HNL'; NomePaisMoedaBACEN: 'HONDURAS'; CodigoMoedaISO: 340; SiglaMoedaISO: 'HNL'; NomePaisMoedaISO: 'HONDURAS'),
+    (CodigoMoedaBACEN: 205; SiglaMoedaBACEN: 'HKD'; NomePaisMoedaBACEN: 'HONG KONG'; CodigoMoedaISO: 344; SiglaMoedaISO: 'HKD'; NomePaisMoedaISO: 'HONG KONG'),
+    (CodigoMoedaBACEN: 345; SiglaMoedaBACEN: 'HUF'; NomePaisMoedaBACEN: 'HUNGRIA, REPUBLICA DA'; CodigoMoedaISO: 348; SiglaMoedaISO: 'HUF'; NomePaisMoedaISO: 'HUNGRIA'),
+    (CodigoMoedaBACEN: 810; SiglaMoedaBACEN: 'YER'; NomePaisMoedaBACEN: 'IEMEN'; CodigoMoedaISO: 886; SiglaMoedaISO: 'YER'; NomePaisMoedaISO: 'IÉMEN'),
+    (CodigoMoedaBACEN: 860; SiglaMoedaBACEN: 'INR'; NomePaisMoedaBACEN: 'INDIA'; CodigoMoedaISO: 356; SiglaMoedaISO: 'INR'; NomePaisMoedaISO: 'ÍNDIA'),
+    (CodigoMoedaBACEN: 865; SiglaMoedaBACEN: 'IDR'; NomePaisMoedaBACEN: 'INDONESIA'; CodigoMoedaISO: 360; SiglaMoedaISO: 'IDR'; NomePaisMoedaISO: 'INDONÉSIA'),
+    (CodigoMoedaBACEN: 815; SiglaMoedaBACEN: 'IRR'; NomePaisMoedaBACEN: 'IRA, REPUBLICA ISLAMICA DO'; CodigoMoedaISO: 364; SiglaMoedaISO: 'IRR'; NomePaisMoedaISO: 'IRÃ (REPÚBLICA ISLÂMICA DO)'),
+    (CodigoMoedaBACEN: 115; SiglaMoedaBACEN: 'IQD'; NomePaisMoedaBACEN: 'IRAQUE'; CodigoMoedaISO: 368; SiglaMoedaISO: 'IQD'; NomePaisMoedaISO: 'IRAQUE'),
+    (CodigoMoedaBACEN: 060; SiglaMoedaBACEN: 'ISK'; NomePaisMoedaBACEN: 'ISLANDIA'; CodigoMoedaISO: 352; SiglaMoedaISO: 'ISK'; NomePaisMoedaISO: 'ISLÂNDIA'),
+    (CodigoMoedaBACEN: 880; SiglaMoedaBACEN: 'ILS'; NomePaisMoedaBACEN: 'ISRAEL'; CodigoMoedaISO: 376; SiglaMoedaISO: 'ILS'; NomePaisMoedaISO: 'ISRAEL'),
+    (CodigoMoedaBACEN: 230; SiglaMoedaBACEN: 'JMD'; NomePaisMoedaBACEN: 'JAMAICA'; CodigoMoedaISO: 388; SiglaMoedaISO: 'JMD'; NomePaisMoedaISO: 'JAMAICA'),
+    (CodigoMoedaBACEN: 470; SiglaMoedaBACEN: 'JPY'; NomePaisMoedaBACEN: 'JAPAO'; CodigoMoedaISO: 392; SiglaMoedaISO: 'JPY'; NomePaisMoedaISO: 'JAPÃO'),
+    (CodigoMoedaBACEN: 125; SiglaMoedaBACEN: 'JOD'; NomePaisMoedaBACEN: 'JORDANIA'; CodigoMoedaISO: 400; SiglaMoedaISO: 'JOD'; NomePaisMoedaISO: 'JORDÂNIA'),
+    (CodigoMoedaBACEN: 780; SiglaMoedaBACEN: 'LAK'; NomePaisMoedaBACEN: 'LAOS, REP.POP.DEMOCR.DO'; CodigoMoedaISO: 418; SiglaMoedaISO: 'LAK'; NomePaisMoedaISO: 'LAO'),
+    (CodigoMoedaBACEN: 603; SiglaMoedaBACEN: 'LSL'; NomePaisMoedaBACEN: 'LESOTO'; CodigoMoedaISO: 426; SiglaMoedaISO: 'LSL'; NomePaisMoedaISO: 'LESOTHO'),
+    (CodigoMoedaBACEN: 560; SiglaMoedaBACEN: 'LBP'; NomePaisMoedaBACEN: 'LIBANO'; CodigoMoedaISO: 422; SiglaMoedaISO: 'LBP'; NomePaisMoedaISO: 'LÍBANO'),
+    (CodigoMoedaBACEN: 235; SiglaMoedaBACEN: 'LRD'; NomePaisMoedaBACEN: 'LIBERIA'; CodigoMoedaISO: 430; SiglaMoedaISO: 'LRD'; NomePaisMoedaISO: 'LIBÉRIA'),
+    (CodigoMoedaBACEN: 130; SiglaMoedaBACEN: 'LYD'; NomePaisMoedaBACEN: 'LIBIA'; CodigoMoedaISO: 434; SiglaMoedaISO: 'LYD'; NomePaisMoedaISO: 'LÍBIA'),
+    (CodigoMoedaBACEN: 685; SiglaMoedaBACEN: 'MOP'; NomePaisMoedaBACEN: 'MACAU'; CodigoMoedaISO: 446; SiglaMoedaISO: 'MOP'; NomePaisMoedaISO: 'MACAO'),
+    (CodigoMoedaBACEN: 132; SiglaMoedaBACEN: 'MKD'; NomePaisMoedaBACEN: 'MACEDONIA DO NORTE'; CodigoMoedaISO: 807; SiglaMoedaISO: 'MKD'; NomePaisMoedaISO: 'MACEDÔNIA (ANTIGA REPÚBLICA JUGOSLAVA)'),
+    (CodigoMoedaBACEN: 406; SiglaMoedaBACEN: 'MGA'; NomePaisMoedaBACEN: 'MADAGASCAR'; CodigoMoedaISO: 969; SiglaMoedaISO: 'MGA'; NomePaisMoedaISO: 'MADAGASCAR'),
+    (CodigoMoedaBACEN: 828; SiglaMoedaBACEN: 'MYR'; NomePaisMoedaBACEN: 'MALASIA'; CodigoMoedaISO: 458; SiglaMoedaISO: 'MYR'; NomePaisMoedaISO: 'MALÁSIA'),
+    (CodigoMoedaBACEN: 760; SiglaMoedaBACEN: 'MWK'; NomePaisMoedaBACEN: 'MALAVI'; CodigoMoedaISO: 454; SiglaMoedaISO: 'MWK'; NomePaisMoedaISO: 'MALAWI'),
+    (CodigoMoedaBACEN: 870; SiglaMoedaBACEN: 'MVR'; NomePaisMoedaBACEN: 'MALDIVAS'; CodigoMoedaISO: 462; SiglaMoedaISO: 'MVR'; NomePaisMoedaISO: 'MALDIVAS'),
+    (CodigoMoedaBACEN: 139; SiglaMoedaBACEN: 'MAD'; NomePaisMoedaBACEN: 'MARROCOS'; CodigoMoedaISO: 504; SiglaMoedaISO: 'MAD'; NomePaisMoedaISO: 'MARROCOS'),
+    (CodigoMoedaBACEN: 840; SiglaMoedaBACEN: 'MUR'; NomePaisMoedaBACEN: 'MAURICIO'; CodigoMoedaISO: 480; SiglaMoedaISO: 'MUR'; NomePaisMoedaISO: 'MAURÍCIA'),
+    (CodigoMoedaBACEN: 670; SiglaMoedaBACEN: 'MRO'; NomePaisMoedaBACEN: 'MAURITANIA'; CodigoMoedaISO: 478; SiglaMoedaISO: 'MRO'; NomePaisMoedaISO: 'MAURITÂNIA'),
+    (CodigoMoedaBACEN: 671; SiglaMoedaBACEN: 'MRU'; NomePaisMoedaBACEN: 'MAURITANIA'; CodigoMoedaISO: 478; SiglaMoedaISO: 'MRO'; NomePaisMoedaISO: 'MAURITÂNIA'),
+    (CodigoMoedaBACEN: 741; SiglaMoedaBACEN: 'MXN'; NomePaisMoedaBACEN: 'MEXICO'; CodigoMoedaISO: 979; SiglaMoedaISO: 'MXV'; NomePaisMoedaISO: 'MÉXICO'),
+    (CodigoMoedaBACEN: 741; SiglaMoedaBACEN: 'MXN'; NomePaisMoedaBACEN: 'MEXICO'; CodigoMoedaISO: 484; SiglaMoedaISO: 'MXN'; NomePaisMoedaISO: 'MÉXICO'),
+    (CodigoMoedaBACEN: 775; SiglaMoedaBACEN: 'MMK'; NomePaisMoedaBACEN: 'MIANMAR (BIRMANIA)'; CodigoMoedaISO: 104; SiglaMoedaISO: 'MMK'; NomePaisMoedaISO: 'MYANMAR'),
+    (CodigoMoedaBACEN: 622; SiglaMoedaBACEN: 'MZN'; NomePaisMoedaBACEN: 'MOCAMBIQUE'; CodigoMoedaISO: 943; SiglaMoedaISO: 'MZN'; NomePaisMoedaISO: 'MOÇAMBIQUE'),
+    (CodigoMoedaBACEN: 503; SiglaMoedaBACEN: 'MDL'; NomePaisMoedaBACEN: 'MOLDAVIA, REPUBLICA DA'; CodigoMoedaISO: 498; SiglaMoedaISO: 'MDL'; NomePaisMoedaISO: 'MOLDÁVIA'),
+    (CodigoMoedaBACEN: 915; SiglaMoedaBACEN: 'MNT'; NomePaisMoedaBACEN: 'MONGOLIA'; CodigoMoedaISO: 496; SiglaMoedaISO: 'MNT'; NomePaisMoedaISO: 'MONGÓLIA'),
+    (CodigoMoedaBACEN: 173; SiglaMoedaBACEN: 'NAD'; NomePaisMoedaBACEN: 'NAMIBIA'; CodigoMoedaISO: 516; SiglaMoedaISO: 'NAD'; NomePaisMoedaISO: 'NAMÍBIA'),
+    (CodigoMoedaBACEN: 173; SiglaMoedaBACEN: 'NAD'; NomePaisMoedaBACEN: 'NAMIBIA'; CodigoMoedaISO: 710; SiglaMoedaISO: 'ZAR'; NomePaisMoedaISO: 'NAMÍBIA'),
+    (CodigoMoedaBACEN: 845; SiglaMoedaBACEN: 'NPR'; NomePaisMoedaBACEN: 'NEPAL'; CodigoMoedaISO: 524; SiglaMoedaISO: 'NPR'; NomePaisMoedaISO: 'NEPAL'),
+    (CodigoMoedaBACEN: 051; SiglaMoedaBACEN: 'NIO'; NomePaisMoedaBACEN: 'NICARAGUA'; CodigoMoedaISO: 558; SiglaMoedaISO: 'NIO'; NomePaisMoedaISO: 'NICARÁGUA'),
+    (CodigoMoedaBACEN: 630; SiglaMoedaBACEN: 'NGN'; NomePaisMoedaBACEN: 'NIGERIA'; CodigoMoedaISO: 566; SiglaMoedaISO: 'NGN'; NomePaisMoedaISO: 'NIGÉRIA'),
+    (CodigoMoedaBACEN: 065; SiglaMoedaBACEN: 'NOK'; NomePaisMoedaBACEN: 'NORUEGA'; CodigoMoedaISO: 578; SiglaMoedaISO: 'NOK'; NomePaisMoedaISO: 'NORUEGA'),
+    (CodigoMoedaBACEN: 805; SiglaMoedaBACEN: 'OMR'; NomePaisMoedaBACEN: 'OMA'; CodigoMoedaISO: 512; SiglaMoedaISO: 'OMR'; NomePaisMoedaISO: 'OMAN'),
+    (CodigoMoedaBACEN: 020; SiglaMoedaBACEN: 'PAB'; NomePaisMoedaBACEN: 'PANAMA'; CodigoMoedaISO: 590; SiglaMoedaISO: 'PAB'; NomePaisMoedaISO: 'PANAMÁ'),
+    (CodigoMoedaBACEN: 020; SiglaMoedaBACEN: 'PAB'; NomePaisMoedaBACEN: 'PANAMA'; CodigoMoedaISO: 840; SiglaMoedaISO: 'USD'; NomePaisMoedaISO: 'PANAMÁ'),
+    (CodigoMoedaBACEN: 778; SiglaMoedaBACEN: 'PGK'; NomePaisMoedaBACEN: 'PAPUA NOVA GUINE'; CodigoMoedaISO: 598; SiglaMoedaISO: 'PGK'; NomePaisMoedaISO: 'PAPUA NOVA GUINÉ'),
+    (CodigoMoedaBACEN: 875; SiglaMoedaBACEN: 'PKR'; NomePaisMoedaBACEN: 'PAQUISTAO'; CodigoMoedaISO: 586; SiglaMoedaISO: 'PKR'; NomePaisMoedaISO: 'PAQUISTÃO'),
+    (CodigoMoedaBACEN: 450; SiglaMoedaBACEN: 'PYG'; NomePaisMoedaBACEN: 'PARAGUAI'; CodigoMoedaISO: 600; SiglaMoedaISO: 'PYG'; NomePaisMoedaISO: 'PARAGUAI'),
+    (CodigoMoedaBACEN: 660; SiglaMoedaBACEN: 'PEN'; NomePaisMoedaBACEN: 'PERU'; CodigoMoedaISO: 604; SiglaMoedaISO: 'PEN'; NomePaisMoedaISO: 'PERU'),
+    (CodigoMoedaBACEN: 380; SiglaMoedaBACEN: 'XPF'; NomePaisMoedaBACEN: 'POLINESIA FRANCESA'; CodigoMoedaISO: 953; SiglaMoedaISO: 'XPF'; NomePaisMoedaISO: 'POLINÉSIA FRANCESA'),
+    (CodigoMoedaBACEN: 975; SiglaMoedaBACEN: 'PLN'; NomePaisMoedaBACEN: 'POLONIA, REPUBLICA DA'; CodigoMoedaISO: 985; SiglaMoedaISO: 'PLN'; NomePaisMoedaISO: 'POLÔNIA'),
+    (CodigoMoedaBACEN: 950; SiglaMoedaBACEN: 'KES'; NomePaisMoedaBACEN: 'QUENIA'; CodigoMoedaISO: 404; SiglaMoedaISO: 'KES'; NomePaisMoedaISO: 'QUÊNIA'),
+    (CodigoMoedaBACEN: 892; SiglaMoedaBACEN: 'KGS'; NomePaisMoedaBACEN: 'QUIRGUIZ, REPUBLICA'; CodigoMoedaISO: 417; SiglaMoedaISO: 'KGS'; NomePaisMoedaISO: 'QUIRGUIZISTÃO'),
+    (CodigoMoedaBACEN: 730; SiglaMoedaBACEN: 'DOP'; NomePaisMoedaBACEN: 'REPUBLICA DOMINICANA'; CodigoMoedaISO: 214; SiglaMoedaISO: 'DOP'; NomePaisMoedaISO: 'REPÚBLICA DOMINICANA'),
+    (CodigoMoedaBACEN: 506; SiglaMoedaBACEN: 'RON'; NomePaisMoedaBACEN: 'ROMENIA'; CodigoMoedaISO: 946; SiglaMoedaISO: 'RON'; NomePaisMoedaISO: 'ROMÊNIA'),
+    (CodigoMoedaBACEN: 420; SiglaMoedaBACEN: 'RWF'; NomePaisMoedaBACEN: 'RUANDA'; CodigoMoedaISO: 646; SiglaMoedaISO: 'RWF'; NomePaisMoedaISO: 'RWANDA'),
+    (CodigoMoedaBACEN: 830; SiglaMoedaBACEN: 'RUB'; NomePaisMoedaBACEN: 'RUSSIA, FEDERACAO DA'; CodigoMoedaISO: 643; SiglaMoedaISO: 'RUB'; NomePaisMoedaISO: 'FEDERAÇÃO RUSSA'),
+    (CodigoMoedaBACEN: 250; SiglaMoedaBACEN: 'SBD'; NomePaisMoedaBACEN: 'SALOMAO, ILHAS'; CodigoMoedaISO: 090; SiglaMoedaISO: 'SBD'; NomePaisMoedaISO: 'ILHAS SALOMÃO'),
+    (CodigoMoedaBACEN: 912; SiglaMoedaBACEN: 'WST'; NomePaisMoedaBACEN: 'SAMOA'; CodigoMoedaISO: 882; SiglaMoedaISO: 'WST'; NomePaisMoedaISO: 'SAMOA'),
+    (CodigoMoedaBACEN: 570; SiglaMoedaBACEN: 'SHP'; NomePaisMoedaBACEN: 'SANTA HELENA'; CodigoMoedaISO: 654; SiglaMoedaISO: 'SHP'; NomePaisMoedaISO: 'SAINT HELENA, ASCENSION E TRISTAN DA CUNHA'),
+    //(CodigoMoedaBACEN: 149; SiglaMoedaBACEN: 'STN'; NomePaisMoedaBACEN: 'SAO TOME E PRINCIPE, ILHAS'; CodigoMoedaISO: ; SiglaMoedaISO: ''; NomePaisMoedaISO: ''),
+    (CodigoMoedaBACEN: 500; SiglaMoedaBACEN: 'SLL'; NomePaisMoedaBACEN: 'SERRA LEOA'; CodigoMoedaISO: 694; SiglaMoedaISO: 'SLL'; NomePaisMoedaISO: 'SERRA LEOA'),
+    (CodigoMoedaBACEN: 133; SiglaMoedaBACEN: 'RSD'; NomePaisMoedaBACEN: 'SERVIA'; CodigoMoedaISO: 941; SiglaMoedaISO: 'RSD'; NomePaisMoedaISO: 'SÉRVIA'),
+    (CodigoMoedaBACEN: 850; SiglaMoedaBACEN: 'SCR'; NomePaisMoedaBACEN: 'SEYCHELLES'; CodigoMoedaISO: 690; SiglaMoedaISO: 'SCR'; NomePaisMoedaISO: 'SEYCHELLES'),
+    (CodigoMoedaBACEN: 575; SiglaMoedaBACEN: 'SYP'; NomePaisMoedaBACEN: 'SIRIA, REPUBLICA ARABE DA'; CodigoMoedaISO: 760; SiglaMoedaISO: 'SYP'; NomePaisMoedaISO: 'REPÚBLICA ÁRABE DA SÍRIA'),
+    (CodigoMoedaBACEN: 960; SiglaMoedaBACEN: 'SOS'; NomePaisMoedaBACEN: 'SOMALIA'; CodigoMoedaISO: 706; SiglaMoedaISO: 'SOS'; NomePaisMoedaISO: 'SOMÁLIA'),
+    (CodigoMoedaBACEN: 855; SiglaMoedaBACEN: 'LKR'; NomePaisMoedaBACEN: 'SRI LANKA'; CodigoMoedaISO: 144; SiglaMoedaISO: 'LKR'; NomePaisMoedaISO: 'SRI LANKA'),
+    (CodigoMoedaBACEN: 585; SiglaMoedaBACEN: 'SZL'; NomePaisMoedaBACEN: 'SUAZILANDIA'; CodigoMoedaISO: 748; SiglaMoedaISO: 'SZL'; NomePaisMoedaISO: 'Suazilândia'),
+    (CodigoMoedaBACEN: 134; SiglaMoedaBACEN: 'SDG'; NomePaisMoedaBACEN: 'SUDAO'; CodigoMoedaISO: 938; SiglaMoedaISO: 'SDG'; NomePaisMoedaISO: 'SUDÃO'),
+    (CodigoMoedaBACEN: 136; SiglaMoedaBACEN: 'SSP'; NomePaisMoedaBACEN: 'SUDAO DO SUL'; CodigoMoedaISO: 728; SiglaMoedaISO: 'SSP'; NomePaisMoedaISO: 'SUDÃO DO SUL'),
+    (CodigoMoedaBACEN: 070; SiglaMoedaBACEN: 'SEK'; NomePaisMoedaBACEN: 'SUECIA'; CodigoMoedaISO: 752; SiglaMoedaISO: 'SEK'; NomePaisMoedaISO: 'SUÉCIA'),
+    (CodigoMoedaBACEN: 255; SiglaMoedaBACEN: 'SRD'; NomePaisMoedaBACEN: 'SURINAME'; CodigoMoedaISO: 968; SiglaMoedaISO: 'SRD'; NomePaisMoedaISO: 'SURINAME'),
+    (CodigoMoedaBACEN: 835; SiglaMoedaBACEN: 'TJS'; NomePaisMoedaBACEN: 'TADJIQUISTAO, REPUBLICA DO'; CodigoMoedaISO: 972; SiglaMoedaISO: 'TJS'; NomePaisMoedaISO: 'TAJIQUISTÃO'),
+    (CodigoMoedaBACEN: 015; SiglaMoedaBACEN: 'THB'; NomePaisMoedaBACEN: 'TAILANDIA'; CodigoMoedaISO: 764; SiglaMoedaISO: 'THB'; NomePaisMoedaISO: 'TAILÂNDIA'),
+    (CodigoMoedaBACEN: 946; SiglaMoedaBACEN: 'TZS'; NomePaisMoedaBACEN: 'TANZANIA, REP.UNIDA DA'; CodigoMoedaISO: 834; SiglaMoedaISO: 'TZS'; NomePaisMoedaISO: 'TANZÂNIA, REPÚBLICA UNIDA'),
+    (CodigoMoedaBACEN: 075; SiglaMoedaBACEN: 'CZK'; NomePaisMoedaBACEN: 'TCHECA, REPUBLICA'; CodigoMoedaISO: 203; SiglaMoedaISO: 'CZK'; NomePaisMoedaISO: 'REPÚBLICA CHECA'),
+    (CodigoMoedaBACEN: 680; SiglaMoedaBACEN: 'TOP'; NomePaisMoedaBACEN: 'TONGA'; CodigoMoedaISO: 776; SiglaMoedaISO: 'TOP'; NomePaisMoedaISO: 'TONGA'),
+    (CodigoMoedaBACEN: 210; SiglaMoedaBACEN: 'TTD'; NomePaisMoedaBACEN: 'TRINIDAD E TOBAGO'; CodigoMoedaISO: 780; SiglaMoedaISO: 'TTD'; NomePaisMoedaISO: 'TRINIDAD E TOBAGO'),
+    (CodigoMoedaBACEN: 135; SiglaMoedaBACEN: 'TND'; NomePaisMoedaBACEN: 'TUNISIA'; CodigoMoedaISO: 788; SiglaMoedaISO: 'TND'; NomePaisMoedaISO: 'TUNÍSIA'),
+    (CodigoMoedaBACEN: 608; SiglaMoedaBACEN: 'TMT'; NomePaisMoedaBACEN: 'TURCOMENISTAO, REPUBLICA DO'; CodigoMoedaISO: 934; SiglaMoedaISO: 'TMT'; NomePaisMoedaISO: 'Turquemenistão'),
+    (CodigoMoedaBACEN: 642; SiglaMoedaBACEN: 'TRY'; NomePaisMoedaBACEN: 'TURQUIA'; CodigoMoedaISO: 949; SiglaMoedaISO: 'TRY'; NomePaisMoedaISO: 'TURQUIA'),
+    (CodigoMoedaBACEN: 460; SiglaMoedaBACEN: 'UAH'; NomePaisMoedaBACEN: 'UCRANIA'; CodigoMoedaISO: 980; SiglaMoedaISO: 'UAH'; NomePaisMoedaISO: 'UCRÂNIA'),
+    (CodigoMoedaBACEN: 955; SiglaMoedaBACEN: 'UGX'; NomePaisMoedaBACEN: 'UGANDA'; CodigoMoedaISO: 800; SiglaMoedaISO: 'UGX'; NomePaisMoedaISO: 'UGANDA'),
+    (CodigoMoedaBACEN: 745; SiglaMoedaBACEN: 'UYU'; NomePaisMoedaBACEN: 'URUGUAI'; CodigoMoedaISO: 940; SiglaMoedaISO: 'UYI'; NomePaisMoedaISO: 'URUGUAI'),
+    (CodigoMoedaBACEN: 745; SiglaMoedaBACEN: 'UYU'; NomePaisMoedaBACEN: 'URUGUAI'; CodigoMoedaISO: 858; SiglaMoedaISO: 'UYU'; NomePaisMoedaISO: 'URUGUAI'),
+    (CodigoMoedaBACEN: 893; SiglaMoedaBACEN: 'UZS'; NomePaisMoedaBACEN: 'UZBEQUISTAO, REPUBLICA DO'; CodigoMoedaISO: 860; SiglaMoedaISO: 'UZS'; NomePaisMoedaISO: 'Uzbequistão'),
+    (CodigoMoedaBACEN: 920; SiglaMoedaBACEN: 'VUV'; NomePaisMoedaBACEN: 'VANUATU'; CodigoMoedaISO: 548; SiglaMoedaISO: 'VUV'; NomePaisMoedaISO: 'VANUATU'),
+    //(CodigoMoedaBACEN: 027; SiglaMoedaBACEN: 'VES'; NomePaisMoedaBACEN: 'VENEZUELA'; CodigoMoedaISO: ; SiglaMoedaISO: ''; NomePaisMoedaISO: ''),
+    (CodigoMoedaBACEN: 260; SiglaMoedaBACEN: 'VND'; NomePaisMoedaBACEN: 'VIETNA'; CodigoMoedaISO: 704; SiglaMoedaISO: 'VND'; NomePaisMoedaISO: 'VIET NAM'),
+    (CodigoMoedaBACEN: 766; SiglaMoedaBACEN: 'ZMW'; NomePaisMoedaBACEN: 'ZAMBIA'; CodigoMoedaISO: 967; SiglaMoedaISO: 'ZMW'; NomePaisMoedaISO: 'ZÂMBIA'),
+    (CodigoMoedaBACEN: 218; SiglaMoedaBACEN: 'ZWG'; NomePaisMoedaBACEN: 'ZIMBABUE'; CodigoMoedaISO: 932; SiglaMoedaISO: 'ZWL'; NomePaisMoedaISO: 'ZIMBÁBUE')
+  );
+
 const
   SiglaISO2Pais: array[0..247] of string = ('AF', 'AL', 'CW', 'DE', 'BF', 'AD',
         'AO', 'AI', 'AQ', 'AG', 'SA', 'DZ', 'AR', 'AM', 'AW', 'AU', 'AT', 'AZ',
@@ -12964,17 +13428,17 @@ end;
 function mdPrestacaoToStr(const t: TmdPrestacao): string;
 begin
   result := EnumeradoToStr(t,
-                           ['0', '1', '2', '3', '4'],
+                           ['0', '1', '2', '3', '4', ''],
                            [mpDesconhecido, mpTransfronteirico, mpConsumoBrasil,
-                             mpMovimentoTempPessoasFisicas, mpConsumoExterior]);
+                             mpMovimentoTempPessoasFisicas, mpConsumoExterior, mpNenhum]);
 end;
 
 function StrTomdPrestacao(out ok: Boolean; const s: string): TmdPrestacao;
 begin
   result := StrToEnumerado(ok, s,
-                           ['0', '1', '2', '3', '4'],
+                           ['0', '1', '2', '3', '4', ''],
                            [mpDesconhecido, mpTransfronteirico, mpConsumoBrasil,
-                             mpMovimentoTempPessoasFisicas, mpConsumoExterior]);
+                             mpMovimentoTempPessoasFisicas, mpConsumoExterior, mpNenhum]);
 end;
 
 function vincPrestToStr(const t: TvincPrest): string;
@@ -13130,17 +13594,19 @@ end;
 function tpDedRedToStr(const t: TtpDedRed): string;
 begin
   result := EnumeradoToStr(t,
-                           ['1', '2', '3', '4', '5', '6', '7', '8', '99'],
+                           ['1', '2', '3', '4', '5', '6', '7', '8', '9', '99'],
     [drAlimentacao, drMateriais, drProducaoExt, drReembolso, drRepasseConsorciado,
-     drRepassePlanoSaude, drServicos, drSubEmpreitada, drOutrasDeducoes]);
+     drRepassePlanoSaude, drServicos, drSubEmpreitada, drProfissionalParceiro,
+     drOutrasDeducoes]);
 end;
 
 function StrTotpDedRed(out ok: Boolean; const s: string): TtpDedRed;
 begin
   result := StrToEnumerado(ok, s,
-                           ['1', '2', '3', '4', '5', '6', '7', '8', '99'],
+                           ['1', '2', '3', '4', '5', '6', '7', '8', '9', '99'],
     [drAlimentacao, drMateriais, drProducaoExt, drReembolso, drRepasseConsorciado,
-     drRepassePlanoSaude, drServicos, drSubEmpreitada, drOutrasDeducoes]);
+     drRepassePlanoSaude, drServicos, drSubEmpreitada, drProfissionalParceiro,
+     drOutrasDeducoes]);
 end;
 
 function tribISSQNToStr(const t: TtribISSQN): string;
@@ -13231,20 +13697,42 @@ begin
          cst08, cst09]);
 end;
 
+function CSTPisToStr(const t: TCSTPis): string;
+begin
+  result := EnumeradoToStr(t,
+        ['', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09'],
+        [cstPisVazio, cstPis00, cstPis01, cstPis02, cstPis03, cstPis04,
+         cstPis05, cstPis06, cstPis07, cstPis08, cstPis09]);
+end;
+
+function StrToCSTPis(out ok: Boolean; const s: string): TCSTPis;
+begin
+  result := StrToEnumerado(ok, s,
+        ['', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09'],
+        [cstPisVazio, cstPis00, cstPis01, cstPis02, cstPis03, cstPis04,
+         cstPis05, cstPis06, cstPis07, cstPis08, cstPis09]);
+end;
+
 function tpRetPisCofinsToStr(const t: TtpRetPisCofins): string;
 begin
   result := EnumeradoToStr(t,
-                           ['1', '2', '3', '4', ''],
-                           [trpcRetido, trpcNaoRetido, trpcPISRetido,
-                            trpcCOFINSRetido, trpcNenhum]);
+                           ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+              [trpiscofinscsllNaoRetido, trpcRetido,
+               trpcNaoRetido, trpiscofinscsllRetido,
+               trpiscofinsRetidocsllNaoRetido, trPisRetidoCofinsCsllNaoRetido,
+               trCofinsRetidoPisCsllNaoRetido, trCofinsCsllRetidoPisNaoRetido,
+               trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido]);
 end;
 
 function StrTotpRetPisCofins(out ok: Boolean; const s: string): TtpRetPisCofins;
 begin
   result := StrToEnumerado(ok, s,
-                           ['1', '2', '3', '4', ''],
-                           [trpcRetido, trpcNaoRetido, trpcPISRetido,
-                            trpcCOFINSRetido, trpcNenhum]);
+                           ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+              [trpiscofinscsllNaoRetido, trpcRetido,
+               trpcNaoRetido, trpiscofinscsllRetido,
+               trpiscofinsRetidocsllNaoRetido, trPisRetidoCofinsCsllNaoRetido,
+               trCofinsRetidoPisCsllNaoRetido, trCofinsCsllRetidoPisNaoRetido,
+               trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido]);
 end;
 
 function indTotTribToStr(const t: TindTotTrib): string;
@@ -13341,17 +13829,17 @@ function tpEventoToDesc(const t: TtpEvento): string;
 begin
   result := EnumeradoToStr(t,
                          ['Cancelamento de NFS-e',
-                          'Cancelamento de NFS-e por Substituicao',
-                          'Solicitacao de Analise Fiscal para Cancelamento de NFS-e',
+                          'Cancelamento de NFS-e por Substituição',
+                          'Solicitação de Análise Fiscal para Cancelamento de NFS-e',
                           'Cancelamento de NFS-e Deferido por Análise Fiscal',
                           'Cancelamento de NFS-e Indeferido por Análise Fiscal',
-                          'Confirmação do Prestador',
-                          'Confirmação do Tomador',
-                          'Confirmação do Intermediário',
+                          'Manifestação de NFS-e - Confirmação do Prestador',
+                          'Manifestação de NFS-e - Confirmação do Tomador',
+                          'Manifestação de NFS-e - Confirmação do Intermediário',
                           'Confirmação Tácita',
-                          'Rejeição do Prestador',
-                          'Rejeição do Tomador',
-                          'Rejeição do Intermediário',
+                          'Manifestação de NFS-e - Rejeição do Prestador',
+                          'Manifestação de NFS-e - Rejeição do Tomador',
+                          'Manifestação de NFS-e - Rejeição do Intermediário',
                           'Anulação da Rejeição',
                           'Cancelamento de NFS-e por Ofício',
                           'Bloqueio de NFS-e por Ofício',
@@ -13415,7 +13903,19 @@ end;
 function CodIBGEPaisToSiglaISO2(t: Integer): string;
 var
   i: Integer;
+  SiglaISO2: string;
 begin
+  SiglaISO2 :='';
+
+  for I := Low(Paises) to High(Paises) do
+    if Paises[I].CodPaisIBGE = t then
+    begin
+      SiglaISO2 := Paises[I].ISO2;
+      Break;
+    end;
+
+  Result := SiglaISO2;
+{
   Result := 'ZZ';
 
   for i := Low(CodigoIBGEPais) to High(CodigoIBGEPais) do
@@ -13426,6 +13926,7 @@ begin
       exit;
     end;
   end;
+  }
 end;
 
 function SiglaISO2ToCodIBGEPais(const t: string): Integer;
@@ -13442,6 +13943,23 @@ begin
       exit;
     end;
   end;
+end;
+
+function CodIBGEPaisToDescricao(t: Integer): string;
+var
+  i: Integer;
+  Descricao: string;
+begin
+  Descricao :='';
+
+  for I := Low(Paises) to High(Paises) do
+    if Paises[I].CodPaisIBGE = t then
+    begin
+      Descricao := Paises[I].DescricaoPaisIBGE;
+      Break;
+    end;
+
+  Result := Descricao;
 end;
 
 function CodIBGEPaisToCodISO(t: Integer): Integer;
@@ -13549,6 +14067,43 @@ begin
   raise EACBrException.CreateFmt('Valor string inválido para TLayout: %s', [s]);
 end;
 
+function ServicoAPIPadraoNacionalToStr(t: TServicoAPIPadraoNacional): string;
+begin
+  Result := TServicoAPIPadraoNacionalArrayStrings[t];
+end;
+
+function StrToServicoAPIPadraoNacional(const s: string): TServicoAPIPadraoNacional;
+var
+  idx: TServicoAPIPadraoNacional;
+begin
+  for idx:= Low(TServicoAPIPadraoNacionalArrayStrings) to High(TServicoAPIPadraoNacionalArrayStrings) do
+  begin
+    if (TServicoAPIPadraoNacionalArrayStrings[idx] = s) then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TServicoAPIPadraoNacional: %s', [s]);
+end;
+
+function MoedaBACENToMoedaISO(const ACodigoMoedaBACEN: Integer): Integer;
+var
+  I: Integer;
+  MoedaISO: Integer;
+begin
+  MoedaISO := 0;
+
+  for I := Low(Moedas) to High(Moedas) do
+    if Moedas[I].CodigoMoedaBACEN = ACodigoMoedaBACEN then
+    begin
+      MoedaISO := Moedas[I].CodigoMoedaISO;
+      Break;
+    end;
+
+  Result := MoedaISO;
+end;
+
 // Reforma Tributária
 function finNFSeToStr(const t: TfinNFSe): string;
 begin
@@ -13579,6 +14134,11 @@ function StrToindFinal(const s: string): TindFinal;
 var
   idx: TindFinal;
 begin
+  if (Trim(s)) = '' then
+  begin
+    Result := ifNao;
+    exit;
+  end;
   for idx:= Low(TindFinalArrayStrings) to High(TindFinalArrayStrings) do
   begin
     if (TindFinalArrayStrings[idx] = s) then
@@ -13696,6 +14256,7 @@ begin
   if not TryStrTotpOperGovNFSe(s, Result) then
     raise EACBrException.CreateFmt('Valor string inválido para TtpOperGovNFSe: %s', [s]);
 end;
+
 (*
 function modoPrestServToStr(const t: TmodoPrestServ): string;
 begin

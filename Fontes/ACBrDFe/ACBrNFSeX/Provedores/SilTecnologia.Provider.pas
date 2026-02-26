@@ -38,15 +38,19 @@ interface
 
 uses
   SysUtils, Classes,
+  ACBrJSON,
   ACBrXmlBase,
   ACBrDFe.Conversao,
-  ACBrXmlDocument, ACBrNFSeXClass, ACBrNFSeXConversao,
-  ACBrNFSeXGravarXml, ACBrNFSeXLerXml,
+  ACBrXmlDocument,
+  ACBrNFSeXClass,
+  ACBrNFSeXConversao,
+  ACBrNFSeXGravarXml,
+  ACBrNFSeXLerXml,
   ACBrNFSeXWebserviceBase,
   ACBrNFSeXWebservicesResponse,
   ACBrNFSeXProviderABRASFv1,
   ACBrNFSeXProviderABRASFv2,
-  ACBrNFSeXProviderProprio;
+  PadraoNacional.Provider;
 
 type
   TACBrNFSeXWebserviceSilTecnologia = class(TACBrNFSeXWebserviceSoap11)
@@ -104,19 +108,17 @@ type
   public
     function GerarNFSe(const ACabecalho, AMSG: string): string; override;
     function EnviarEvento(const ACabecalho, AMSG: string): string; override;
-  {
     function ConsultarNFSePorRps(const ACabecalho, AMSG: string): string; override;
     function ConsultarNFSePorChave(const ACabecalho, AMSG: string): string; override;
     function ConsultarEvento(const ACabecalho, AMSG: string): string; override;
     function ConsultarDFe(const ACabecalho, AMSG: string): string; override;
     function ConsultarParam(const ACabecalho, AMSG: string): string; override;
     function ObterDANFSE(const ACabecalho, AMSG: string): string; override;
-    }
 
     function TratarXmlRetornado(const aXML: string): string; override;
   end;
 
-  TACBrNFSeProviderSilTecnologiaAPIPropria = class(TACBrNFSeProviderProprio)
+  TACBrNFSeProviderSilTecnologiaAPIPropria = class(TACBrNFSeProviderPadraoNacional)
   private
 
   protected
@@ -134,52 +136,37 @@ type
                                      const AListTag: string = 'listaMensagens';
                                      const AMessageTag: string = 'mensagem'); override;
 
-    procedure ValidarSchema(Response: TNFSeWebserviceResponse; aMetodo: TMetodo); override;
+    procedure ProcessarMensagemDeErros(LJson: TACBrJSONObject;
+                                     Response: TNFSeWebserviceResponse;
+                                     const AListTag: string = 'Erros'); override;
+
+    function PrepararArquivoEnvio(const aXml: string; aMetodo: TMetodo): string; override;
 
     procedure PrepararEmitir(Response: TNFSeEmiteResponse); override;
     procedure TratarRetornoEmitir(Response: TNFSeEmiteResponse); override;
 
     procedure PrepararEnviarEvento(Response: TNFSeEnviarEventoResponse); override;
+    procedure AssinarEnviarEvento(Response: TNFSeEnviarEventoResponse); override;
     procedure TratarRetornoEnviarEvento(Response: TNFSeEnviarEventoResponse); override;
-
-    {
-    procedure PrepararConsultaNFSeporRps(Response: TNFSeConsultaNFSeporRpsResponse); override;
-    procedure TratarRetornoConsultaNFSeporRps(Response: TNFSeConsultaNFSeporRpsResponse); override;
-
-    procedure PrepararConsultaNFSeporChave(Response: TNFSeConsultaNFSeResponse); override;
-    procedure TratarRetornoConsultaNFSeporChave(Response: TNFSeConsultaNFSeResponse); override;
-
-    procedure PrepararConsultarEvento(Response: TNFSeConsultarEventoResponse); override;
-    procedure TratarRetornoConsultarEvento(Response: TNFSeConsultarEventoResponse); override;
-
-    procedure PrepararConsultarDFe(Response: TNFSeConsultarDFeResponse); override;
-    procedure TratarRetornoConsultarDFe(Response: TNFSeConsultarDFeResponse); override;
-
-    procedure PrepararConsultarParam(Response: TNFSeConsultarParamResponse); override;
-    procedure TratarRetornoConsultarParam(Response: TNFSeConsultarParamResponse); override;
-
-    procedure PrepararObterDANFSE(Response: TNFSeObterDANFSEResponse); override;
-    procedure TratarRetornoObterDANFSE(Response: TNFSeObterDANFSEResponse); override;
-
-    }
   public
-    function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string; override;
-    function StrToRegimeEspecialTributacao(out ok: boolean; const s: string): TnfseRegimeEspecialTributacao; override;
-    function RegimeEspecialTributacaoDescricao(const t: TnfseRegimeEspecialTributacao): string; override;
+
   end;
 
 implementation
 
 uses
+  synacode,
   ACBrUtil.XMLHTML,
   ACBrUtil.Strings,
   ACBrUtil.Base,
   ACBrUtil.DateTime,
+  ACBrCompress,
   ACBrDFeException,
   ACBrNFSeX,
   ACBrNFSeXNotasFiscais,
   ACBrNFSeXConsts,
-  SilTecnologia.GravarXml, SilTecnologia.LerXml;
+  SilTecnologia.GravarXml,
+  SilTecnologia.LerXml;
 
 { TACBrNFSeXWebserviceSilTecnologia }
 
@@ -398,7 +385,7 @@ begin
 
   if not Response.Sucesso then
   begin
-    if Pos(Response.ArquivoRetorno, '<return>') > 0 then
+    if Pos('<return>', Response.ArquivoRetorno) > 0 then
     begin
       AErro := Response.Erros.New;
       AErro.Codigo := '';
@@ -633,7 +620,84 @@ begin
     ['xmlns:nfse="http://webservices.sil.com/"']);
 end;
 
+function TACBrNFSeXWebserviceSilTecnologiaAPIPropria.ConsultarNFSePorRps(
+  const ACabecalho, AMSG: string): string;
+begin
+  FPMsgOrig := AMSG;
+
+  Result := Executar('', FPMsgOrig, [], []);
+end;
+
+function TACBrNFSeXWebserviceSilTecnologiaAPIPropria.ConsultarNFSePorChave(
+  const ACabecalho, AMSG: string): string;
+begin
+  FPMsgOrig := AMSG;
+
+  Result := Executar('', FPMsgOrig, [], []);
+end;
+
+function TACBrNFSeXWebserviceSilTecnologiaAPIPropria.ConsultarDFe(
+  const ACabecalho, AMSG: string): string;
+begin
+  FPMsgOrig := AMSG;
+
+  Result := Executar('', FPMsgOrig, [], []);
+end;
+
+function TACBrNFSeXWebserviceSilTecnologiaAPIPropria.ConsultarEvento(
+  const ACabecalho, AMSG: string): string;
+begin
+  FPMsgOrig := AMSG;
+
+  Result := Executar('', FPMsgOrig, [], []);
+end;
+
+function TACBrNFSeXWebserviceSilTecnologiaAPIPropria.ConsultarParam(
+  const ACabecalho, AMSG: string): string;
+begin
+  FPMsgOrig := AMSG;
+
+  Result := Executar('', FPMsgOrig, [], []);
+end;
+
+function TACBrNFSeXWebserviceSilTecnologiaAPIPropria.ObterDANFSE(
+  const ACabecalho, AMSG: string): string;
+begin
+  FPMsgOrig := AMSG;
+
+  Result := Executar('', FPMsgOrig, [], []);
+end;
+
 { TACBrNFSeProviderSilTecnologiaAPIPropria }
+
+procedure TACBrNFSeProviderSilTecnologiaAPIPropria.AssinarEnviarEvento(
+  Response: TNFSeEnviarEventoResponse);
+var
+  IdAttrEVT, IdAttrSig: String;
+  AErro: TNFSeEventoCollectionItem;
+begin
+  Response.InfEvento.pedRegEvento.ID := Response.InfEvento.pedRegEvento.chNFSe +
+                                        OnlyNumber(tpEventoToStr(Response.InfEvento.pedRegEvento.tpEvento));
+
+  IdAttrEVT := 'Id="' + 'EVT' + Response.InfEvento.pedRegEvento.ID + '"';
+
+  try
+    IdAttrSig := SetIdSignatureValue(Response.ArquivoEnvio,
+                            ConfigMsgDados.EnviarEvento.DocElemento, IdAttrEVT);
+
+    Response.ArquivoEnvio := FAOwner.SSL.Assinar(Response.ArquivoEnvio,
+                                   ConfigMsgDados.EnviarEvento.DocElemento,
+                                   ConfigMsgDados.EnviarEvento.InfElemento,
+                                   '', '', '', IdAttrSig);
+  except
+    on E:Exception do
+    begin
+      AErro := Response.Erros.New;
+      AErro.Codigo := Cod801;
+      AErro.Descricao := ACBrStr(Desc801 + E.Message);
+    end;
+  end;
+end;
 
 procedure TACBrNFSeProviderSilTecnologiaAPIPropria.Configuracao;
 var
@@ -655,14 +719,13 @@ begin
 
     ServicosDisponibilizados.EnviarUnitario := True;
     ServicosDisponibilizados.EnviarEvento := True;
-    {
     ServicosDisponibilizados.ConsultarNfseChave := True;
     ServicosDisponibilizados.ConsultarRps := True;
     ServicosDisponibilizados.ConsultarEvento := True;
     ServicosDisponibilizados.ConsultarDFe := True;
     ServicosDisponibilizados.ConsultarParam := True;
     ServicosDisponibilizados.ObterDANFSE := True;
-    }
+
     Particularidades.AtendeReformaTributaria := True;
   end;
 
@@ -685,8 +748,8 @@ begin
     XmlRps.InfElemento := 'infNFSe';
     XmlRps.DocElemento := 'NFSe';
 
-    EnviarEvento.InfElemento := 'evento ';
-    EnviarEvento.DocElemento := 'evento ';
+    EnviarEvento.InfElemento := 'infEvento';
+    EnviarEvento.DocElemento := 'evento';
   end;
 
   with ConfigAssinar do
@@ -732,8 +795,10 @@ begin
 
   if URL <> '' then
   begin
+    URL := URL + Path;
+
     Result := TACBrNFSeXWebserviceSilTecnologiaAPIPropria.Create(FAOwner, AMetodo,
-      URL);
+      URL, Method);
   end
   else
   begin
@@ -756,6 +821,84 @@ begin
   Result := ((AMensagem <> '') or (ACorrecao <> '')) and (Pos('L000', ACodigo) = 0);
 end;
 
+procedure TACBrNFSeProviderSilTecnologiaAPIPropria.ProcessarMensagemDeErros(
+  LJson: TACBrJSONObject; Response: TNFSeWebserviceResponse;
+  const AListTag: string);
+var
+  JSonLista: TACBrJSONArray;
+  JSon: TACBrJSONObject;
+
+  procedure AdicionaCollectionItem(JSonItem: TACBrJSONObject; Collection: TNFSeEventoCollection);
+  var
+    AItem: TNFSeEventoCollectionItem;
+    Codigo: string;
+  begin
+    Codigo := JSonItem.AsString['Codigo'];
+
+    if Codigo <> '' then
+    begin
+      AItem := Collection.New;
+      AItem.Codigo := Codigo;
+      AItem.Descricao := JSonItem.AsString['Descricao'];
+      AItem.Correcao := JSonItem.AsString['Complemento'];
+    end
+    else
+    begin
+      Codigo := JSonItem.AsString['codigo'];
+
+      if Codigo <> '' then
+      begin
+        AItem := Collection.New;
+        AItem.Codigo := Codigo;
+        AItem.Descricao := JSonItem.AsString['descricao'];
+        AItem.Correcao := JSonItem.AsString['complemento'];
+      end;
+    end;
+  end;
+
+  procedure LerListaErrosAlertas(jsLista: TACBrJSONArray; Collection: TNFSeEventoCollection);
+  var
+    i: Integer;
+  begin
+    for i := 0 to jsLista.Count-1 do
+    begin
+      JSon := jsLista.ItemAsJSONObject[i];
+
+      AdicionaCollectionItem(JSon, Collection);
+    end;
+  end;
+
+  procedure VerificaSeObjetoOuArray(aNome: string; Collection: TNFSeEventoCollection);
+  begin
+    // Verifica se no retorno contem um objeto ou array
+    if LJson.IsJSONArray(aNome) then
+    begin
+      JSonLista := LJson.AsJSONArray[aNome];
+
+      if JSonLista.Count > 0 then
+        LerListaErrosAlertas(JSonLista, Collection);
+    end
+    else
+    begin
+      JSon := LJson.AsJSONObject[aNome];
+
+      if JSon <> nil then
+        AdicionaCollectionItem(JSon, Collection);
+    end;
+  end;
+begin
+  // Verifica se no retorno contem a lista de Erros
+  VerificaSeObjetoOuArray(AListTag, Response.Erros);
+  // Verifica se no retorno contem a lista de erros
+  VerificaSeObjetoOuArray('erros', Response.Erros);
+  // Verifica se no retorno contem a lista de erro
+  VerificaSeObjetoOuArray('erro', Response.Erros);
+  // Verifica se no retorno contem a lista de Alertas
+  VerificaSeObjetoOuArray('Alertas', Response.Alertas);
+  // Verifica se no retorno contem a lista de Alertas
+  VerificaSeObjetoOuArray('alertas', Response.Alertas);
+end;
+
 procedure TACBrNFSeProviderSilTecnologiaAPIPropria.ProcessarMensagemErros(
   RootNode: TACBrXmlNode; Response: TNFSeWebserviceResponse; const AListTag,
   AMessageTag: string);
@@ -763,7 +906,7 @@ var
   I: Integer;
   ANode: TACBrXmlNode;
   ANodeArray: TACBrXmlNodeArray;
-  AAlerta: TNFSeEventoCollectionItem;
+  AAlerta, AErro: TNFSeEventoCollectionItem;
   Codigo, Mensagem: string;
 
 procedure ProcessarErro(ErrorNode: TACBrXmlNode; const ACodigo, AMensagem: string);
@@ -861,23 +1004,30 @@ begin
 
     if Mensagem <> '' then
     begin
-      AAlerta := Response.Alertas.New;
-      AAlerta.Codigo := ObterConteudoTag(RootNode.Childrens.FindAnyNs('codigo'), tcStr);
-      AAlerta.Descricao := Mensagem;
-      AAlerta.Correcao := ObterConteudoTag(RootNode.Childrens.FindAnyNs('correcao'), tcStr);
+      AErro := Response.Erros.New;
+      AErro.Codigo := ObterConteudoTag(RootNode.Childrens.FindAnyNs('codigo'), tcStr);
+      AErro.Descricao := Mensagem;
+      AErro.Correcao := ObterConteudoTag(RootNode.Childrens.FindAnyNs('correcao'), tcStr);
+    end
+    else
+    begin
+      if Pos('<return>', Copy(Response.ArquivoRetorno,1,20)) > 0 then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := Cod201;
+        AErro.Descricao := ACBrStr(SeparaDados(Response.ArquivoRetorno, 'return'));
+      end;
     end;
   end;
 end;
 
-procedure TACBrNFSeProviderSilTecnologiaAPIPropria.ValidarSchema(
-  Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
+function TACBrNFSeProviderSilTecnologiaAPIPropria.PrepararArquivoEnvio(
+  const aXml: string; aMetodo: TMetodo): string;
 begin
-  if aMetodo in [tmGerar, tmEnviarEvento] then
-  begin
-    inherited ValidarSchema(Response, aMetodo);
+  Result := aXml;
 
-    Response.ArquivoEnvio := ChangeLineBreak(Response.ArquivoEnvio, '');
-  end;
+  if aMetodo in [tmGerar, tmEnviarEvento] then
+    Result := ChangeLineBreak(aXml, '');
 end;
 
 procedure TACBrNFSeProviderSilTecnologiaAPIPropria.PrepararEmitir(
@@ -939,6 +1089,8 @@ begin
   end;
 
   Response.ArquivoEnvio := ListaDps;
+  Path := '';
+  Method := 'POST';
 end;
 
 procedure TACBrNFSeProviderSilTecnologiaAPIPropria.TratarRetornoEmitir(
@@ -967,7 +1119,9 @@ begin
 
       Response.Data := ObterConteudoTag(ANode.Childrens.FindAnyNs('dhRecebimento'), tcDatHor);
       Response.Protocolo := ObterConteudoTag(ANode.Childrens.FindAnyNs('protocolo'), tcStr);
-      Response.Situacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('status'), tcStr);
+      Response.Situacao := ObterConteudoTag(ANode.Childrens.FindAnyNs('Status'), tcStr);
+      Response.NumeroNota := ObterConteudoTag(ANode.Childrens.FindAnyNs('nNFSe'), tcStr);
+      Response.Link := ObterConteudoTag(ANode.Childrens.FindAnyNs('chaveAcesso'), tcStr);
     except
       on E:Exception do
       begin
@@ -1015,11 +1169,13 @@ begin
                       '</CNPJAutor>';
     end;
 
-    ID := chNFSe + OnlyNumber(tpEventoToStr(tpEvento)) +
-              FormatFloat('000', nPedRegEvento);
+    ID := chNFSe + OnlyNumber(tpEventoToStr(tpEvento));
+
+    if (nPedRegEvento <= 0) or (nPedRegEvento > 1) then
+      nPedRegEvento := 1;
 
     IdAttrPRE := 'Id="' + 'PRE' + ID + '"';
-    IdAttrEVT := 'Id="' + 'EVT' + ID + '"';
+    IdAttrEVT := 'Id="' + 'EVT' + ID + FormatFloat('000', nPedRegEvento)+ '"';
 
     case tpEvento of
       teCancelamento:
@@ -1086,7 +1242,7 @@ begin
                      FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', dhEvento) +
                      GetUTC(xUF, dhEvento) +
                    '</dhProc>' +
-                   '<nDFSe>' + '0' + '</nDFSe>' +
+                   '<nDFSe>' + '1' + '</nDFSe>' +
                     xEvento +
                  '</infEvento>' +
                '</evento>';
@@ -1094,15 +1250,13 @@ begin
     xEvento := ConverteXMLtoUTF8(xEvento);
     xEvento := ChangeLineBreak(xEvento, '');
 
-    xEvento := FAOwner.SSL.Assinar(xEvento,
-                                   ConfigMsgDados.EnviarEvento.InfElemento,
-                                   ConfigMsgDados.EnviarEvento.DocElemento,
-                                   '', '', '', IdAttrEVT);
     Response.ArquivoEnvio := xEvento;
 
     nomeArq := '';
     SalvarXmlEvento(ID + '-pedRegEvento', Response.ArquivoEnvio, nomeArq);
     Response.PathNome := nomeArq;
+    Path := '';
+    Method := 'POST';
   end;
 end;
 
@@ -1143,42 +1297,6 @@ begin
     end;
   finally
     FreeAndNil(Document);
-  end;
-end;
-
-function TACBrNFSeProviderSilTecnologiaAPIPropria.RegimeEspecialTributacaoToStr(
-  const t: TnfseRegimeEspecialTributacao): string;
-begin
-  Result := EnumeradoToStr(t,
-                         ['0', '1', '2', '3', '4', '5', '6'],
-                         [retNenhum, retCooperativa, retEstimativa,
-                         retMicroempresaMunicipal, retNotarioRegistrador,
-                         retISSQNAutonomos, retSociedadeProfissionais]);
-end;
-
-function TACBrNFSeProviderSilTecnologiaAPIPropria.StrToRegimeEspecialTributacao(
-  out ok: boolean; const s: string): TnfseRegimeEspecialTributacao;
-begin
-  Result := StrToEnumerado(ok, s,
-                        ['0', '1', '2', '3', '4', '5', '6'],
-                        [retNenhum, retCooperativa, retEstimativa,
-                         retMicroempresaMunicipal, retNotarioRegistrador,
-                         retISSQNAutonomos, retSociedadeProfissionais]);
-end;
-
-function TACBrNFSeProviderSilTecnologiaAPIPropria.RegimeEspecialTributacaoDescricao(
-  const t: TnfseRegimeEspecialTributacao): string;
-begin
-  case t of
-    retNenhum:                 Result := '0 - Nenhum';
-    retCooperativa:            Result := '1 - Cooperativa';
-    retEstimativa:             Result := '2 - Estimativa';
-    retMicroempresaMunicipal:  Result := '3 - Microempresa Municipal';
-    retNotarioRegistrador:     Result := '4 - Notário ou Registrador';
-    retISSQNAutonomos:         Result := '5 - Profissional Autônomo';
-    retSociedadeProfissionais: Result := '6 - Sociedade de Profissionais';
-  else
-    Result := '';
   end;
 end;
 

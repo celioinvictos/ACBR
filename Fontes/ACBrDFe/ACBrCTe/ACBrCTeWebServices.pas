@@ -47,7 +47,7 @@ uses
   pcnRetConsReciDFe,
   ACBrDFeComum.RetConsCad,
   ACBrDFeComum.RetEnvio,
-  pcteConversaoCTe, pcteProcCte,
+  pcteConversaoCTe, pcteProcCTe,
   ACBrCTe.EnvEvento,
   ACBrCTe.RetEnvEvento,
   ACBrCTe.RetConsSit,
@@ -3602,10 +3602,11 @@ end;
 
 constructor TDistribuicaoDFe.Create(AOwner: TACBrDFe);
 begin
-  inherited Create(AOwner);
-
   FOwner := AOwner;
   FretDistDFeInt := TretDistDFeInt.Create(AOwner, 'CTe');
+  FlistaArqs := TStringList.Create;
+
+  inherited Create(AOwner);
 end;
 
 destructor TDistribuicaoDFe.Destroy;
@@ -3628,14 +3629,16 @@ begin
   FPHeaderElement := '';
 
   if Assigned(FretDistDFeInt) then
+  begin
     FretDistDFeInt.Free;
-
-  FretDistDFeInt := TRetDistDFeInt.Create(FOwner, 'CTe');
+    FretDistDFeInt := TRetDistDFeInt.Create(FOwner, 'CTe');
+  end;
 
   if Assigned(FlistaArqs) then
+  begin
     FlistaArqs.Free;
-
-  FlistaArqs := TStringList.Create;
+    FlistaArqs := TStringList.Create;
+  end;
 end;
 
 procedure TDistribuicaoDFe.DefinirURL;

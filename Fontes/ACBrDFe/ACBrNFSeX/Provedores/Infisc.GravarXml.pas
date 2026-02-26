@@ -121,6 +121,7 @@ type
 implementation
 
 uses
+  ACBrUtil.Base,
   ACBrUtil.Strings,
   ACBrNFSeXConsts;
 
@@ -473,6 +474,9 @@ begin
 end;
 
 function TNFSeW_Infisc.GerarEnderecoTomador: TACBrXmlNode;
+var
+  xPais: String;
+  cPais: Integer;
 begin
   Result := CreateElement('ender');
 
@@ -500,9 +504,15 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'CEP', 1, 8, 0,
                                                 NFSe.Tomador.Endereco.CEP, ''));
 
-  Result.AppendChild(AddNode(tcInt, '#1', 'cPais', 1, 10, 0, '1058', ''));
+  cPais := NFSe.Tomador.Endereco.CodigoPais;
+  if EstaZerado(cPais) then
+    cPais := 1058;
+  Result.AppendChild(AddNode(tcInt, '#1', 'cPais', 1, 10, 0, IntToStr(cPais), ''));
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'xPais', 1, 100, 0, 'Brasil', ''));
+  xPais := NFSe.Tomador.Endereco.xPais;
+  if EstaVazio(xPais) then
+    xPais := 'Brasil';
+  Result.AppendChild(AddNode(tcStr, '#1', 'xPais', 1, 100, 0, xPais, ''));
 end;
 
 function TNFSeW_Infisc.GerarID: TACBrXmlNode;
@@ -624,16 +634,11 @@ begin
     Result.AppendChild(AddNode(tcStr, '#1', 'chaveAcessoSubstituida', 0, 1, 0,
                                                                        '', ''));
 
-    if ((NFSe.Producao = snSim) and (Now >= EncodeDate(2026, 1, 1))) or
-       (NFSe.Producao <> snSim) then
-    begin
-      if NFSe.Prestador.Endereco.CodigoMunicipio <> '' then
-         Result.AppendChild(AddNode(tcStr, '#1', 'cLocPrestacao', 1, 15, 1,
+    Result.AppendChild(AddNode(tcStr, '#1', 'cLocPrestacao', 1, 15, 1,
                                   NFSe.Prestador.Endereco.CodigoMunicipio, ''));
 
-      Result.AppendChild(AddNode(tcInt, '#1', 'cPaisPrestacao', 1, 4, 1,
+    Result.AppendChild(AddNode(tcInt, '#1', 'cPaisPrestacao', 1, 4, 1,
                                        NFSe.Prestador.Endereco.CodigoPais, ''));
-    end;
   end;
 end;
 
@@ -1056,7 +1061,8 @@ begin
 
   if (FPVersao = ve101) and ((NFSe.Servico.ItemServico[Item].ValorPIS > 0) or
      (NFSe.Servico.ItemServico[Item].ValorCOFINS > 0)) then
-    Result.AppendChild(AddNode(tcStr, '#1', 'tpRetPisCofins', 1, 1, 1, '1', ''));
+    Result.AppendChild(AddNode(tcStr, '#1', 'tpRetPisCofins', 1, 1, 1,
+         tpRetPisCofinsToStr(nfse.Servico.Valores.tribFed.tpRetPisCofins), ''));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'cNBS', 9, 9, 0,
                                                    NFSe.Servico.CodigoNBS, ''));

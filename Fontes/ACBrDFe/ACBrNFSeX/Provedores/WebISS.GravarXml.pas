@@ -44,7 +44,6 @@ uses
   ACBrNFSeXGravarXml_ABRASFv2,
   ACBrXmlDocument;
 
-
 type
   { TNFSeW_WebISS }
 
@@ -61,7 +60,6 @@ type
     procedure Configuracao; override;
 
     function GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode; override;
-
   public
     function GerarXml: Boolean; Override;
   end;
@@ -95,6 +93,22 @@ begin
   inherited Configuracao;
 
   FormatoItemListaServico := filsSemFormatacao;
+
+  NrOcorrCodigoPaisServico := 0;
+
+  NrOcorrCodigoPaisTomador := -1;
+  NrOcorrcCredPres := -1;
+  NrOcorrDiscriminacao_1 := -1;
+  NrOcorrCodigoMunic_1 := -1;
+
+  NrOcorrDiscriminacao_2 := 1;
+  NrOcorrCodigoMunic_2 := 1;
+  NrOcorrExigibilidadeISS := 1;
+
+  GerarDest := False;
+  GerarImovel := False;
+  GerarTribRegular := False;
+  GerargDif := False;
 end;
 
 function TNFSeW_WebISS202.GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode;

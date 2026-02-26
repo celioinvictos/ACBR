@@ -10,14 +10,13 @@ using ACBrLib.Core.PosPrinter;
 using ACBrLib.NFSe;
 using ACBrLib.Core.Config;
 using System.Linq;
-
 namespace ACBrLibNFSe.Demo
 {
     public partial class FrmMain : Form
     {
         #region Fields
 
-        private ACBrNFSe ACBrNFSe;
+        private IACBrLibNFSe ACBrNFSe;
 
         #endregion Fields
 
@@ -180,7 +179,7 @@ namespace ACBrLibNFSe.Demo
                 ACBrNFSe.Config.CodigoMunicipio = cmbCidadeEmitente.GetSelectedValue<CodigoMunicipio>();
                 txtCodCidadeEmitente.Text = ACBrNFSe.Config.CodigoMunicipio.GetEnumValueOrInt<CodigoMunicipio>();
 
-                ACBrNFSe.ConfigGravar();
+                ((IACBrLibBase)ACBrNFSe).ConfigGravar();
 
                 Application.DoEvents();
             }

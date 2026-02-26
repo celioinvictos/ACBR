@@ -64,7 +64,7 @@ type
     function GerarTomador: TACBrXmlNode; override;
     function GerarEnderecoExteriorTomador: TACBrXmlNode;
 
-    function GerarXMLIBSCBSValores(valores: Tvalorestrib): TACBrXmlNode; override;
+    function GerarXMLIBSCBSTribValores(valores: Tvalorestrib): TACBrXmlNode; override;
 
     procedure GerarINISecaoValores(const AINIRec: TMemIniFile); override;
     procedure GerarINIValoresTribFederal(AINIRec: TMemIniFile);
@@ -158,7 +158,7 @@ function TNFSeW_Ginfes.GerarTrib(trib: Ttrib): TACBrXmlNode;
 begin
   Result := CreateElement('trib');
 
-  Result.AppendChild(GerarXMLTributacaoFederal);
+//  Result.AppendChild(GerarXMLTributacaoFederal);
   Result.AppendChild(GerarXMLTotalTributos);
 end;
 
@@ -166,8 +166,7 @@ function TNFSeW_Ginfes.GerarServico: TACBrXmlNode;
 begin
   Result := inherited GerarServico;
 
-  if Now >= EncodeDate(2026, 1, 1) then
-    Result.AppendChild(AddNode(tcStr, '#32', 'CodigoNbs', 1, 9, 0,
+  Result.AppendChild(AddNode(tcStr, '#32', 'CodigoNbs', 1, 9, 0,
                                  OnlyNumber(NFSe.Servico.CodigoNBS), DSC_CMUN));
 
   Result.AppendChild(GerarcomExt);
@@ -242,7 +241,9 @@ begin
   Result := inherited GerarValores;
 
   // Reforma Tributária
-  if NFSe.Servico.Valores.tribFed.CST <> cstVazio then
+  if (NFSe.Servico.Valores.totTrib.pTotTribFed > 0) or
+     (NFSe.Servico.Valores.totTrib.pTotTribEst > 0) or
+     (NFSe.Servico.Valores.totTrib.pTotTribMun > 0) then
     Result.AppendChild(GerarTrib(NFSe.IBSCBS.valores.trib));
 
   if (NFSe.IBSCBS.dest.xNome <> '') or (NFSe.IBSCBS.imovel.cCIB <> '') or
@@ -252,10 +253,10 @@ begin
     Result.AppendChild(GerarXMLIBSCBS(NFSe.IBSCBS));
 end;
 
-function TNFSeW_Ginfes.GerarXMLIBSCBSValores(
+function TNFSeW_Ginfes.GerarXMLIBSCBSTribValores(
   valores: Tvalorestrib): TACBrXmlNode;
 begin
-  Result := inherited GerarXMLIBSCBSValores(valores);
+  Result := inherited GerarXMLIBSCBSTribValores(valores);
 
   Result.AppendChild(AddNode(tcInt, '#1', 'cLocalidadeIncid', 7, 7, 1,
                                      NFSe.infNFSe.IBSCBS.cLocalidadeIncid, ''));

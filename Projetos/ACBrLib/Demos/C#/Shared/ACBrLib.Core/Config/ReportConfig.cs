@@ -1,6 +1,11 @@
 ﻿namespace ACBrLib.Core.Config
 {
-    public abstract class ReportConfig<TLib> : ACBrLibConfigBase<TLib> where TLib : ACBrLibHandle
+    /// <summary>
+    /// Classe base para configurações de relatórios na ACBrLib.
+    /// <para>Permite definir impressora, PDF, casas decimais, logomarca e prestador.</para>
+    /// <para>Veja mais em: https://acbr.sourceforge.io/ACBrLib/Geral.html</para>
+    /// </summary>
+    public abstract class ReportConfig<TLib> : ACBrLibConfigBase<TLib> where TLib : IACBrLibBase
     {
         #region Constructors
 

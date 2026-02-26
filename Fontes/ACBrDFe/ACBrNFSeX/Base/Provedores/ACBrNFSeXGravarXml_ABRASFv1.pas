@@ -85,6 +85,8 @@ type
     FNrOcorrInscMunTomador: Integer;
     FGerarTagTomadorMesmoVazia: Boolean;
 
+    FGerarAtividadeEventoAposConstrucaoCivil : Boolean;
+    FGerarAtividadeEventoAposIncentivoFiscal : Boolean;
   protected
     procedure Configuracao; override;
 
@@ -102,10 +104,14 @@ type
     function GerarContatoTomador: TACBrXmlNode; virtual;
     function GerarIntermediarioServico: TACBrXmlNode; virtual;
     function GerarConstrucaoCivil: TACBrXmlNode; virtual;
+    function GeraAtividadeEvento: TACBrXmlNode; virtual;
+    function GerarEnderecoEvento: TACBrXmlNode; virtual;
+    function GerarEnderecoExteriorEvento: TACBrXmlNode; virtual;
     function GerarCondicaoPagamento: TACBrXmlNode; virtual;
     function GerarParcelas: TACBrXmlNodeArray; virtual;
     function GerarDestinatario: TACBrXmlNode; virtual;
     function GerarImovel: TACBrXmlNode; virtual;
+    function GerarComercioExterior: TACBrXmlNode; virtual;
 
     function GerarServicoCodigoMunicipio: TACBrXmlNode; virtual;
     function GerarCodigoMunicipioUF: TACBrXmlNodeArray; virtual;
@@ -189,6 +195,9 @@ type
     property NrOcorrInformacoesComplemetares: Integer read FNrOcorrInformacoesComplemetares write FNrOcorrInformacoesComplemetares;
 
     property GerarTagTomadorMesmoVazia: Boolean read FGerarTagTomadorMesmoVazia write FGerarTagTomadorMesmoVazia;
+
+    property GerarAtividadeEventoAposConstrucaoCivil: Boolean read FGerarAtividadeEventoAposConstrucaoCivil write FGerarAtividadeEventoAposConstrucaoCivil;
+    property GerarAtividadeEventoAposIncentivoFiscal: Boolean read FGerarAtividadeEventoAposIncentivoFiscal write FGerarAtividadeEventoAposIncentivoFiscal;
   end;
 
 implementation
@@ -264,6 +273,9 @@ begin
   FNrOcorrInformacoesComplemetares := -1;
 
   FGerarTagTomadorMesmoVazia := False;
+
+  FGerarAtividadeEventoAposConstrucaoCivil := False;
+  FGerarAtividadeEventoAposIncentivoFiscal := False;
 end;
 
 function TNFSeW_ABRASFv1.GerarXml: Boolean;
@@ -336,6 +348,11 @@ begin
   Result.AppendChild(GerarImovel);
   Result.AppendChild(GerarCondicaoPagamento);
   Result.AppendChild(GerarConstrucaoCivil);
+
+  if GerarAtividadeEventoAposConstrucaoCivil then
+    Result.AppendChild(GeraAtividadeEvento);
+
+  Result.AppendChild(GerarComercioExterior);
 end;
 
 function TNFSeW_ABRASFv1.GerarIdentificacaoRPS: TACBrXmlNode;
@@ -850,6 +867,7 @@ begin
   FpSecao:= 'Servico';
   AINIRec.WriteString(FpSecao, 'ItemListaServico', NFSe.Servico.ItemListaServico);
   AINIRec.WriteString(FpSecao, 'xItemListaServico', NFSe.Servico.xItemListaServico);
+  AINIRec.WriteString(FpSecao, 'cTribNac', NFSe.Servico.CodigoServicoNacional);
   AINIRec.WriteString(FpSecao, 'CodigoCnae', NFSe.Servico.CodigoCnae);
   AINIRec.WriteString(FpSecao, 'CodigoTributacaoMunicipio', NFSe.Servico.CodigoTributacaoMunicipio);
   AINIRec.WriteString(FpSecao, 'Discriminacao', ChangeLineBreak(NFSe.Servico.Discriminacao, FpAOwner.ConfigGeral.QuebradeLinha));
@@ -858,6 +876,7 @@ begin
   AINIRec.WriteString(FpSecao, 'xMunicipioIncidencia',NFSe.Servico.xMunicipioIncidencia);
   AINIRec.WriteString(FpSecao, 'MunicipioPrestacaoServico', NFSe.Servico.MunicipioPrestacaoServico);
   AINIRec.WriteFloat(FpSecao,'ValorTotalRecebido', NFSe.Servico.ValorTotalRecebido);
+  AINIRec.WriteString(FpSecao, 'CodigoNBS', NFSe.Servico.CodigoNBS);
 end;
 
 procedure TNFSeW_ABRASFv1.GerarINISecaoDeducoes(const AINIRec: TMemIniFile);
@@ -1065,6 +1084,27 @@ begin
       LIniNFSe.Free;
     end;
   end;
+end;
+
+function TNFSeW_ABRASFv1.GeraAtividadeEvento: TACBrXmlNode;
+begin
+  Result := nil;
+end;
+
+function TNFSeW_ABRASFv1.GerarEnderecoEvento: TACBrXmlNode;
+begin
+  Result := nil;
+end;
+
+function TNFSeW_ABRASFv1.GerarEnderecoExteriorEvento: TACBrXmlNode;
+begin
+  Result := nil;
+end;
+
+function TNFSeW_ABRASFv1.GerarComercioExterior: TACBrXmlNode;
+begin
+  // Aqui não fazer nada
+  Result := nil;
 end;
 
 end.

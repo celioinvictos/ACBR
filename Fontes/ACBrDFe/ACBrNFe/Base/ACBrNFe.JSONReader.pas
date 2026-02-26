@@ -1513,6 +1513,7 @@ begin
     Exit;
 
   APag.Clear;
+  APag.vTroco := AJSONObject.AsFloat['vTroco'];
   lDetPagJSONArray := AJSONObject.AsJSONArray['detPag'];
   if Assigned(lDetPagJSONArray) then
   begin
@@ -1790,7 +1791,9 @@ begin
   if not Assigned(AJSONObject) then
     Exit;
 
-  AISel.CSTIS := StrToCSTIS(AJSONObject.AsString['CSTIS']);
+  //Usar string até a publicação de uma tabela de CSTs oficial para o IS
+  //AISel.CSTIS := StrToCSTIS(AJSONObject.AsString['CSTIS']);
+  AISel.CSTIS := AJSONObject.AsString['CSTIS'];
   AISel.cClassTribIS := AJSONObject.AsString['cClassTribIS'];
   AISel.vBCIS := AJSONObject.AsFloat['vBCIS'];
   AISel.pIS := AJSONObject.AsFloat['pIS'];
@@ -1819,7 +1822,8 @@ begin
   if not Assigned(AJSONObject) then
     Exit;
 
-  AGIBSCBS.vBC := AJSONObject.AsFloat['vBC'];
+  AGIBSCBS.vBC  := AJSONObject.AsFloat['vBC'];
+  AGIBSCBS.vIBS := AJSONObject.AsFloat['vIBS'];
 
   Ler_IBSCBS_gIBSCBS_gIBSUF(AJSONObject.AsJSONObject['gIBSUF'], AGIBSCBS.gIBSUF);
   Ler_IBSCBS_gIBSCBS_gIBSMun(AJSONObject.AsJSONObject['gIBSMun'], AGIBSCBS.gIBSMun);

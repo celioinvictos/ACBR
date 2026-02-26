@@ -17,12 +17,16 @@ namespace ACBrLib.Sedex
         public ACBrSedex(string eArqConfig = "", string eChaveCrypt = "") : base(IsWindows ? "ACBrSedex64.dll" : "libacbrsedex64.so",
                                                                                       IsWindows ? "ACBrSedex32.dll" : "libacbrsedex32.so")
         {
+            Inicializar(eArqConfig, eChaveCrypt);
+            Config = new ACBrSedexConfig(this);
+        }
+
+        public override void Inicializar(string eArqConfig, string eChaveCrypt)
+        {
             var inicializar = GetMethod<Sedex_Inicializar>();
             var ret = ExecuteMethod(() => inicializar(ref libHandle, ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
-
             CheckResult(ret);
-
-            Config = new ACBrSedexConfig(this);
+           
         }
 
         #endregion Constructors
@@ -160,15 +164,29 @@ namespace ACBrLib.Sedex
             return ProcessResult(buffer, bufferLen);
         }
 
+        public override string OpenSSLInfo()
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<Sedex_OpenSSLInfo>();
+            var ret = ExecuteMethod(() => method(libHandle, buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
+        }
+
         #endregion Diversos
 
         #region Private Methods
 
-        protected override void FinalizeLib()
+        public override void Finalizar()
         {
-            var finalizar = GetMethod<Sedex_Finalizar>();
-            var codRet = ExecuteMethod(() => finalizar(libHandle));
+            var finalizarLib = GetMethod<Sedex_Finalizar>();
+            var codRet = ExecuteMethod(() => finalizarLib(libHandle));
             CheckResult(codRet);
+            libHandle = IntPtr.Zero;
         }
 
         protected override string GetUltimoRetorno(int iniBufferLen = 0)

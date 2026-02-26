@@ -111,6 +111,9 @@ type
 
     function CriarGeradorXml(const ANFSe: TNFSe): TNFSeWClass; override;
     function CriarLeitorXml(const ANFSe: TNFSe): TNFSeRClass; override;
+
+    procedure GerarMsgDadosCancelaNFSe(Response: TNFSeCancelaNFSeResponse;
+      Params: TNFSeParamsResponse); override;
   public
     function GetSchemaPath: string; override;
   end;
@@ -669,23 +672,37 @@ var
 begin
   inherited Configuracao;
 
-  if FAOwner.Configuracoes.WebServices.AmbienteCodigo = 1 then
-    FpURL := ConfigWebServices.Producao.NameSpace
-  else
-    FpURL := ConfigWebServices.Homologacao.NameSpace;
-
   with ConfigWebServices do
   begin
     VersaoDados := '2.04';
     VersaoAtrib := '204';
   end;
 
-  ConfigMsgDados.DadosCabecalho := GetCabecalho(FpURL);
+  ConfigAssinar.CancelarNFSe := False;
   ConfigMsgDados.GerarPrestadorLoteRps := True;
 
-  SetXmlNameSpace(ConfigWebServices.Producao.XMLNameSpace);
+  if ConfigGeral.Params.TemParametro('GerarGrupoIBSCBS') then
+    FpURL := 'http://www.abrasf.org.br/nfse.xsd'
+  else
+  begin
+    if FAOwner.Configuracoes.WebServices.AmbienteCodigo = 1 then
+      FpURL := ConfigWebServices.Producao.NameSpace
+    else
+      FpURL := ConfigWebServices.Homologacao.NameSpace;
+  end;
 
-  SetNomeXSD('nfse_v204.xsd');
+  ConfigMsgDados.DadosCabecalho := GetCabecalho(FpURL);
+
+  if ConfigGeral.Params.TemParametro('GerarGrupoIBSCBS') then
+  begin
+    SetXmlNameSpace(FpURL);
+    SetNomeXSD('nfse.xsd');
+  end
+  else
+  begin
+    SetXmlNameSpace(ConfigWebServices.Producao.XMLNameSpace);
+    SetNomeXSD('nfse_v204.xsd');
+  end;
 end;
 
 function TACBrNFSeProviderVersaTecnologia204.CriarGeradorXml(
@@ -706,7 +723,47 @@ function TACBrNFSeProviderVersaTecnologia204.GetSchemaPath: string;
 begin
   Result := inherited GetSchemaPath;
 
-  Result := PathWithDelim(Result + ConfigGeral.CodIBGE);
+  if not ConfigGeral.Params.TemParametro('GerarGrupoIBSCBS') then
+    Result := PathWithDelim(Result + ConfigGeral.CodIBGE);
+end;
+
+procedure TACBrNFSeProviderVersaTecnologia204.GerarMsgDadosCancelaNFSe(
+  Response: TNFSeCancelaNFSeResponse; Params: TNFSeParamsResponse);
+var
+  Emitente: TEmitenteConfNFSe;
+  InfoCanc: TInfCancelamento;
+begin
+  Emitente := TACBrNFSeX(FAOwner).Configuracoes.Geral.Emitente;
+  InfoCanc := Response.InfCancelamento;
+
+  with Params do
+  begin
+    Response.ArquivoEnvio :=
+      '<' + Prefixo + 'CancelarNfseEnvio' + NameSpace + '>' +
+        '<' + Prefixo2 + 'Pedido>' +
+          '<' + Prefixo2 + 'InfPedidoCancelamento' + {IdAttr +} '>' +
+            '<' + Prefixo2 + 'IdentificacaoNfse>' +
+              '<' + Prefixo2 + 'Numero>' +
+                 InfoCanc.NumeroNFSe +
+              '</' + Prefixo2 + 'Numero>' +
+              Serie +
+              '<' + Prefixo2 + 'CpfCnpj>' +
+                GetCpfCnpj(Emitente.CNPJ, Prefixo2) +
+              '</' + Prefixo2 + 'CpfCnpj>' +
+              GetInscMunic(Emitente.InscMun, Prefixo2) +
+              '<' + Prefixo2 + 'CodigoMunicipio>' +
+                 IntToStr(TACBrNFSeX(FAOwner).Configuracoes.Geral.CodigoMunicipio) +
+              '</' + Prefixo2 + 'CodigoMunicipio>' +
+              CodigoVerificacao +
+            '</' + Prefixo2 + 'IdentificacaoNfse>' +
+            '<' + Prefixo2 + 'CodigoCancelamento>' +
+               InfoCanc.CodCancelamento +
+            '</' + Prefixo2 + 'CodigoCancelamento>' +
+            Motivo +
+          '</' + Prefixo2 + 'InfPedidoCancelamento>' +
+        '</' + Prefixo2 + 'Pedido>' +
+      '</' + Prefixo + 'CancelarNfseEnvio>';
+  end;
 end;
 
 end.

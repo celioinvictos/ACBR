@@ -107,8 +107,9 @@ type
 
     procedure ProcessarMensagemDeErros(LJson: TACBrJSONObject;
                                      Response: TNFSeWebserviceResponse;
-                                     const AListTag: string = 'Erros');
+                                     const AListTag: string = 'Erros'); virtual;
 
+    function PrepararArquivoEnvio(const aXml: string; aMetodo: TMetodo): string; override;
     procedure ValidarSchema(Response: TNFSeWebserviceResponse; aMetodo: TMetodo); override;
   public
     function RegimeEspecialTributacaoToStr(const t: TnfseRegimeEspecialTributacao): string; override;
@@ -362,7 +363,7 @@ begin
     Nota.XmlRps := ChangeLineBreak(Nota.XmlRps, '');
 
     if (ConfigAssinar.Rps and (Response.ModoEnvio in [meLoteAssincrono, meLoteSincrono])) or
-       (ConfigAssinar.RpsGerarNFSe and (Response.ModoEnvio = meUnitario)) then
+       (ConfigAssinar.RpsGerarNFSe and (Response.ModoEnvio in [meUnitario, meAutomatico])) then
     begin
       Nota.XmlRps := FAOwner.SSL.Assinar(Nota.XmlRps,
                                          ConfigMsgDados.XmlRps.DocElemento,
@@ -417,12 +418,9 @@ var
         ANode := ANode.Childrens.FindAnyNs('infDPS');
         NumDps := ObterConteudoTag(ANode.Childrens.FindAnyNs('nDPS'), tcStr);
 
-        with Response do
-        begin
-          NumeroNota := NumNFSe;
-          Data := DataAut;
-          XmlRetorno := NFSeXml;
-        end;
+        Response.NumeroNota := NumNFSe;
+        Response.Data := DataAut;
+        Response.XmlRetorno := NFSeXml;
 
         ANota := TACBrNFSeX(FAOwner).NotasFiscais.FindByRps(NumDps);
 
@@ -594,7 +592,8 @@ begin
           vogais acentuadas e cedilha.
         }
         if NFSeXml <> '' then
-          NFSeXml := DecodeToString(DeCompress(DecodeBase64(NFSeXml)), True);
+          NFSeXml := DeCompress(DecodeBase64(NFSeXml));
+//          NFSeXml := DecodeToString(DeCompress(DecodeBase64(NFSeXml)), True);
 
         DocumentXml := TACBrXmlDocument.Create;
 
@@ -609,7 +608,7 @@ begin
             end;
 
             DocumentXml.LoadFromXml(NFSeXml);
-
+            Response.XmlRetorno := NFSeXml;
             ANode := DocumentXml.Root.Childrens.FindAnyNs('infNFSe');
 
             NumNFSe := ObterConteudoTag(ANode.Childrens.FindAnyNs('nNFSe'), tcStr);
@@ -702,22 +701,16 @@ begin
                          '<xMotivo>' + xMotivo + '</xMotivo>';
 
       teRejeicaoPrestador:
-        xCamposEvento := '<infRej>' +
-                           '<cMotivo>' + IntToStr(cMotivo) + '</cMotivo>' +
-                           '<xMotivo>' + xMotivo + '</xMotivo>' +
-                         '</infRej>';
+        xCamposEvento := '<cMotivo>' + IntToStr(cMotivo) + '</cMotivo>' +
+                         '<xMotivo>' + xMotivo + '</xMotivo>';
 
       teRejeicaoTomador:
-        xCamposEvento := '<infRej>' +
-                           '<cMotivo>' + IntToStr(cMotivo) + '</cMotivo>' +
-                           '<xMotivo>' + xMotivo + '</xMotivo>' +
-                         '</infRej>';
+        xCamposEvento := '<cMotivo>' + IntToStr(cMotivo) + '</cMotivo>' +
+                         '<xMotivo>' + xMotivo + '</xMotivo>';
 
       teRejeicaoIntermediario:
-        xCamposEvento := '<infRej>' +
-                           '<cMotivo>' + IntToStr(cMotivo) + '</cMotivo>' +
-                           '<xMotivo>' + xMotivo + '</xMotivo>' +
-                         '</infRej>';
+        xCamposEvento := '<cMotivo>' + IntToStr(cMotivo) + '</cMotivo>' +
+                         '<xMotivo>' + xMotivo + '</xMotivo>';
     else
       // teConfirmacaoPrestador, teConfirmacaoTomador,
       // ConfirmacaoIntermediario
@@ -785,7 +778,8 @@ begin
 
       if EventoXml <> '' then
       begin
-        EventoXml := DecodeToString(DeCompress(DecodeBase64(EventoXml)), True);
+//        EventoXml := DecodeToString(DeCompress(DecodeBase64(EventoXml)), True);
+        EventoXml := DeCompress(DecodeBase64(EventoXml));
 
         DocumentXml := TACBrXmlDocument.Create;
 
@@ -904,7 +898,7 @@ var
   i: Integer;
   AErro: TNFSeEventoCollectionItem;
   AResumo: TNFSeResumoCollectionItem;
-  IDEvento, TipoEvento, ArquivoXml, nomeArq: string;
+  IDEvento, ArquivoXml, nomeArq: string;
   DocumentXml: TACBrXmlDocument;
   ANode: TACBrXmlNode;
   Ok: Boolean;
@@ -934,9 +928,9 @@ begin
 
         AResumo := Response.Resumos.New;
         AResumo.ChaveDFe := JSon.AsString['chaveAcesso'];
-        TipoEvento := 'e' + JSon.AsString['tipoEvento'];
+        AResumo.TipoEvento := 'e' + JSon.AsString['tipoEvento'];
         AResumo.TipoDoc := 'Evento de ' +
-                           tpEventoToDesc(StrTotpEvento(Ok, TipoEvento));
+                           tpEventoToDesc(StrTotpEvento(Ok, AResumo.TipoEvento));
 
         ArquivoXml := JSon.AsString['arquivoXml'];
 
@@ -945,7 +939,7 @@ begin
         else
           ArquivoXml := DeCompress(DecodeBase64(ArquivoXml));
 
-        ArquivoXml := DecodeToString(ArquivoXml, True);
+//        ArquivoXml := DecodeToString(ArquivoXml, True);
 
         if ArquivoXml = '' then
         begin
@@ -970,6 +964,8 @@ begin
             Response.idEvento := IDEvento;
             Response.tpEvento := StrTotpEvento(Ok, Copy(IDEvento, 51, 6));
             Response.XmlRetorno := ArquivoXml;
+
+            Response.SucessoCanc := (Response.tpEvento = teCancelamento);
 
             ANode := ANode.Childrens.FindAnyNs('pedRegEvento');
             ANode := ANode.Childrens.FindAnyNs('infPedReg');
@@ -1066,7 +1062,8 @@ begin
           AResumo.TipoEvento := JSon.AsString['TipoEvento'];
 
           ArquivoXml := JSon.AsString['ArquivoXml'];
-          ArquivoXml := DecodeToString(DeCompress(DecodeBase64(ArquivoXml)), True);
+//          ArquivoXml := DecodeToString(DeCompress(DecodeBase64(ArquivoXml)), True);
+          ArquivoXml := DeCompress(DecodeBase64(ArquivoXml));
 
           if ArquivoXml = '' then
           begin
@@ -1484,25 +1481,34 @@ begin
   if aMetodo in [tmGerar, tmEnviarEvento] then
   begin
     inherited ValidarSchema(Response, aMetodo);
+  end;
+end;
 
-    Response.ArquivoEnvio := ChangeLineBreak(Response.ArquivoEnvio, '');
-    Response.ArquivoEnvio := EncodeBase64(GZipCompress(Response.ArquivoEnvio));
+function TACBrNFSeProviderPadraoNacional.PrepararArquivoEnvio(
+  const aXml: string; aMetodo: TMetodo): string;
+begin
+  Result := aXml;
+
+  if aMetodo in [tmGerar, tmEnviarEvento] then
+  begin
+    Result := ChangeLineBreak(aXml, '');
+    Result := EncodeBase64(GZipCompress(Result));
 
     case aMetodo of
       tmGerar:
         begin
-          Response.ArquivoEnvio := '{"dpsXmlGZipB64":"' + Response.ArquivoEnvio + '"}';
+          Result := '{"dpsXmlGZipB64":"' + Result + '"}';
           Path := '/nfse';
         end;
 
       tmEnviarEvento:
         begin
-          Response.ArquivoEnvio := '{"pedidoRegistroEventoXmlGZipB64":"' + Response.ArquivoEnvio + '"}';
+          Result := '{"pedidoRegistroEventoXmlGZipB64":"' + Result + '"}';
           Path := '/nfse/' + Chave + '/eventos';
         end;
     else
       begin
-        Response.ArquivoEnvio := '';
+        Result := '';
         Path := '';
       end;
     end;
@@ -1515,20 +1521,20 @@ function TACBrNFSeProviderPadraoNacional.RegimeEspecialTributacaoToStr(
   const t: TnfseRegimeEspecialTributacao): string;
 begin
   Result := EnumeradoToStr(t,
-                         ['0', '1', '2', '3', '4', '5', '6'],
+                         ['0', '1', '2', '3', '4', '5', '6', '9'],
                          [retNenhum, retCooperativa, retEstimativa,
                          retMicroempresaMunicipal, retNotarioRegistrador,
-                         retISSQNAutonomos, retSociedadeProfissionais]);
+                         retISSQNAutonomos, retSociedadeProfissionais, retOutros]);
 end;
 
 function TACBrNFSeProviderPadraoNacional.StrToRegimeEspecialTributacao(
   out ok: boolean; const s: string): TnfseRegimeEspecialTributacao;
 begin
   Result := StrToEnumerado(ok, s,
-                        ['0', '1', '2', '3', '4', '5', '6'],
+                        ['0', '1', '2', '3', '4', '5', '6', '9'],
                         [retNenhum, retCooperativa, retEstimativa,
                          retMicroempresaMunicipal, retNotarioRegistrador,
-                         retISSQNAutonomos, retSociedadeProfissionais]);
+                         retISSQNAutonomos, retSociedadeProfissionais, retOutros]);
 end;
 
 function TACBrNFSeProviderPadraoNacional.RegimeEspecialTributacaoDescricao(
@@ -1542,6 +1548,7 @@ begin
     retNotarioRegistrador:     Result := '4 - Notário ou Registrador';
     retISSQNAutonomos:         Result := '5 - Profissional Autônomo';
     retSociedadeProfissionais: Result := '6 - Sociedade de Profissionais';
+    retOutros:                 Result := '9 - Outros';
   else
     Result := '';
   end;

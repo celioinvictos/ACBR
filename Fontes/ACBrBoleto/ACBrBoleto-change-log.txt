@@ -48,6 +48,53 @@ Símbolo : Significado
 [+]     : Novo recurso
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
+26/02/2026
+-- ACBrBoletoW_BancoBrasil_API  --
+[*] Remoção dos zeros a esquerda agencia e conta na consulta conforma orientação do banco. evitando erro Contrato de cobrança não localizado.
+   https://discord.com/channels/798697718800318484/809129039159230514/1476317837982175299
+   Por: UpSolucoes
+
+23/02/2026
+-- ACBrBoletoW_Bradesco.pas, ACBrBoletoRet_Bradesco.pas  --
+[*] Implementação de Lista de Boletos Liquido com QR CODE Bradesco via API do site bradesco developers
+   https://www.projetoacbr.com.br/forum/topic/88636-acbr-8655implementa%C3%A7%C3%A3o-de-lista-de-boletos-liquido-com-qr-code-bradesco-via-api-do-site-bradesco-developers
+   Por: Jhonlenon Ribeiro
+
+23/02/2026
+-- ACBrBoletoW_Safra.pas  --
+[*] Ajsutes para Consutas Banco Safra Homologação.
+   https://www.projetoacbr.com.br/forum/topic/85230-problema-na-homologa%C3%A7%C3%A3o-banco-safra
+   Por: João Vitor Bogo / Daniel de Morais InfoCotidano
+
+18/02/2026
+-- ACBrBoletoW_Santander_API  --
+[-] Correção quando o EnvioAuxiliar ou EnvioComplementar receberem um json inválido
+   Por: Renato Rubinho
+
+12/02/2026
+-- ACBrBoletoW_BancoBrasil_API  --
+[*]Permitir enviar um boleto sem o nossoNumero para que o banco possa gerar o NN 
+   ACBR-8930 https://www.projetoacbr.com.br/forum/topic/86064-acbr-8930-acbr-boleto-gera%C3%A7%C3%A3o-de-boleto-do-banco-do-brasil-via-api/
+   Por: Sergio Fuchs
+
+10/02/2026
+-- ACBrBoletoW_Bradesco  --
+[-] Corrigido a propriedade cindcdEconmMoeda conforme manual Hibrido (portal/legado), tbm corrigido ctpoPrzCobr, adicionado validacao no metodo AdicionarDescontoJSON
+   ACBR-8543 https://www.projetoacbr.com.br/forum/topic/88007-boleto-bradesco-api/
+   Por: Fernanda Penteado
+-- ACBrBancoCredisan --
+[+] Implementado número sequencial como sufixo do nome do arquivo do banco 089-Credisan quando houverem mais de um arquivo gerados no mesmo dia
+   https://www.projetoacbr.com.br/forum/topic/90227-remessa-banco-credisan-89-substitui-arquivo-do-mesmo-dia/
+   Por: Renato Rubinho
+
+04/02/2026
+-- ACBrBoletoW_BancoBrasil_API  --
+[*] Criado regras de validação para quantidadeDiasProtesto conforme manual BB
+   ACBR-8768 https://www.projetoacbr.com.br/forum/topic/89184-erro-nos-dias-de-protesto-na-api-banco-brasil/
+   Noticia: https://www.projetoacbr.com.br/forum/topic/90123-implementada-regra-de-valida%C3%A7ao-acbrboleto-banco-do-brasil-api-quantidadediasprotesto/
+   Por: Desenv. AT Info Sistemas / Daniel de Morais InfoCotidiano 
+[-] Ajustado a propriedade indicadorPermissaoRecebimentoParcial para enviar "N" qdo tpNao_Aceita_Valor_Divergente
+   Por: Daniel de Morais InfoCotidiano 
 
 15/12/2025
 -- ACBrBancoVortx --

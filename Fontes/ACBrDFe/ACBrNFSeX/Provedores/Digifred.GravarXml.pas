@@ -90,6 +90,7 @@ var
   NFSeNode: TACBrXmlNode;
 begin
   Configuracao;
+  LerParamsTabIni(True);
 
   {
     Alguns dados merecem atenção para não serem confundidos:
@@ -110,9 +111,10 @@ begin
 
   FDocument.Clear();
 
+  NrOcorrtpAmb := -1;
   IDNFSeVazio := True;
   IDDPSVazio := True;
-  GerarIBSCBSNFSe := True;
+  GerarIBSCBSNFSe := False;
 
   NFSeNode := GerarXMLNFSe;
   FDocument.Root := NFSeNode;

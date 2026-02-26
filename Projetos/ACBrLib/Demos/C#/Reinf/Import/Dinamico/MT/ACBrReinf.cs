@@ -17,12 +17,16 @@ namespace ACBrLib.Reinf
         public ACBrReinf(string eArqConfig = "", string eChaveCrypt = "") : base(IsWindows ? "ACBrReinf64.dll" : "libacbrReinf64.so",
                                                                                       IsWindows ? "ACBrReinf32.dll" : "libacbrReinf32.so")
         {
-            var Inicializar = GetMethod<Reinf_Inicializar>();
-            var ret = ExecuteMethod(() => Inicializar(ref libHandle, ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
-
-            CheckResult(ret);
-
+            Inicializar(eArqConfig, eChaveCrypt);
             Config = new ACBrReinfConfig(this);
+        }
+
+        public override void Inicializar(string eArqConfig, string eChaveCrypt)
+        {
+            var inicializar = GetMethod<Reinf_Inicializar>();
+            var ret = ExecuteMethod(() => inicializar(ref libHandle, ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
+            CheckResult(ret);
+            
         }
 
         #endregion Constructors
@@ -260,7 +264,7 @@ namespace ACBrLib.Reinf
             var certificados = ProcessResult(buffer, bufferLen).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             return certificados.Length == 0 ? new InfoCertificado[0] : certificados.Select(x => new InfoCertificado(x)).ToArray();
         }
-        public string OpenSSLInfo()
+        public override string OpenSSLInfo()
         {
             var bufferLen = BUFFER_LEN;
             var buffer = new StringBuilder(bufferLen);
@@ -277,11 +281,12 @@ namespace ACBrLib.Reinf
 
         #region Private Methods
 
-        protected override void FinalizeLib()
+        public override void Finalizar()
         {
             var Finalizar = GetMethod<Reinf_Finalizar>();
             var codRet = ExecuteMethod(() => Finalizar(libHandle));
             CheckResult(codRet);
+            libHandle = IntPtr.Zero;
         }
 
         protected override string GetUltimoRetorno(int iniBufferLen = 0)

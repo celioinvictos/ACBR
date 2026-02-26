@@ -13,12 +13,15 @@ namespace ACBrLib.GNRe
         public ACBrGNRe(string eArqConfig = "", string eChaveCrypt = "") : base(IsWindows ? "ACBrGNRe64.dll" : "libacbrgnre64.so",
                                                                                 IsWindows ? "ACBrGNRe32.dll" : "libacbrgnre32.so")
         {
-            var inicializar = GetMethod<GNRE_Inicializar>();
-            var ret = ExecuteMethod(() => inicializar(ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
-
-            CheckResult(ret);
-
+            Inicializar(eArqConfig, eChaveCrypt);
             Config = new GNReConfig(this);
+        }
+
+        public override void Inicializar(string eArqConfig = "", string eChaveCrypt = "")
+        {
+            var inicializarLib = GetMethod<GNRE_Inicializar>();
+            var ret = ExecuteMethod<int>(() => inicializarLib(ToUTF8(eArqConfig), ToUTF8(eChaveCrypt)));
+            CheckResult(ret);
         }
 
         #endregion Constructors
@@ -287,10 +290,10 @@ namespace ACBrLib.GNRe
 
         #region Private Methods
 
-        protected override void FinalizeLib()
+        public override void Finalizar()
         {
-            var finalizar = GetMethod<GNRE_Finalizar>();
-            var codRet = ExecuteMethod(() => finalizar());
+            var finalizarLib = GetMethod<GNRE_Finalizar>();
+            var codRet = ExecuteMethod(() => finalizarLib());
             CheckResult(codRet);
         }
 
@@ -310,6 +313,19 @@ namespace ACBrLib.GNRe
 
             ExecuteMethod(() => ultimoRetorno(buffer, ref bufferLen));
             return FromUTF8(buffer);
+        }
+
+        public override string OpenSSLInfo()
+        {
+            var bufferLen = BUFFER_LEN;
+            var buffer = new StringBuilder(bufferLen);
+
+            var method = GetMethod<GNRE_OpenSSLInfo>();
+            var ret = ExecuteMethod(() => method(buffer, ref bufferLen));
+
+            CheckResult(ret);
+
+            return ProcessResult(buffer, bufferLen);
         }
 
         #endregion Private Methods

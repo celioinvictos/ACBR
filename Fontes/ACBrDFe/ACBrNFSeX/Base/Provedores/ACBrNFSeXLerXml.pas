@@ -87,29 +87,29 @@ type
     procedure LerParamsTab;
 
     // Reforma Tributária
-    procedure LerXMLIBSCBSDPS(const ANode: TACBrXmlNode; IBSCBS: TIBSCBSDPS);
-    procedure LerXMLgRefNFSe(const ANode: TACBrXmlNode);
+    procedure LerXMLIBSCBSDPS(const ANode: TACBrXmlNode; IBSCBS: TIBSCBSDPS); virtual;
+    procedure LerXMLgRefNFSe(const ANode: TACBrXmlNode); virtual;
 
-    procedure LerXMLDestinatario(const ANode: TACBrXmlNode; Dest: TDadosdaPessoa);
-    procedure LerXMLEnderecoDestinatario(const ANode: TACBrXmlNode; ender: Tender);
+    procedure LerXMLDestinatario(const ANode: TACBrXmlNode; Dest: TDadosdaPessoa); virtual;
+    procedure LerXMLEnderecoDestinatario(const ANode: TACBrXmlNode; ender: Tender); virtual;
     procedure LerXMLEnderecoNacionalDestinatario(const ANode: TACBrXmlNode; endNac: TendNac);
     procedure LerXMLEnderecoExteriorDestinatario(const ANode: TACBrXmlNode; endExt: TendExt);
 
-    procedure LerXMLImovel(const ANode: TACBrXmlNode; Imovel: TDadosimovel);
-    procedure LerXMLEnderecoNacionalImovel(const ANode: TACBrXmlNode; ender: TenderImovel);
+    procedure LerXMLImovel(const ANode: TACBrXmlNode; Imovel: TDadosimovel); virtual;
+    procedure LerXMLEnderecoNacionalImovel(const ANode: TACBrXmlNode; ender: TenderImovel); virtual;
     procedure LerXMLEnderecoExteriorImovel(const ANode: TACBrXmlNode; endExt: TendExt);
 
-    procedure LerXMLIBSCBSValores(const ANode: TACBrXmlNode; valores: Tvalorestrib);
-    procedure LerXMLgReeRepRes(const ANode: TACBrXmlNode; gReeRepRes: TgReeRepRes);
-    procedure LerXMLdFeNacional(const ANode: TACBrXmlNode; dFeNacional: TdFeNacional);
-    procedure LerXMLdocFiscalOutro(const ANode: TACBrXmlNode; docFiscalOutro: TdocFiscalOutro);
-    procedure LerXMLdocOutro(const ANode: TACBrXmlNode; docOutro: TdocOutro);
-    procedure LerXMLfornec(const ANode: TACBrXmlNode; fornec: Tfornec);
+    procedure LerXMLIBSCBSValores(const ANode: TACBrXmlNode; valores: Tvalorestrib); virtual;
+    procedure LerXMLgReeRepRes(const ANode: TACBrXmlNode; gReeRepRes: TgReeRepRes); virtual;
+    procedure LerXMLdFeNacional(const ANode: TACBrXmlNode; dFeNacional: TdFeNacional); virtual;
+    procedure LerXMLdocFiscalOutro(const ANode: TACBrXmlNode; docFiscalOutro: TdocFiscalOutro); virtual;
+    procedure LerXMLdocOutro(const ANode: TACBrXmlNode; docOutro: TdocOutro); virtual;
+    procedure LerXMLfornec(const ANode: TACBrXmlNode; fornec: Tfornec); virtual;
 
-    procedure LerXMLTributos(const ANode: TACBrXmlNode; trib: Ttrib);
-    procedure LerXMLgIBSCBS(const ANode: TACBrXmlNode; gIBSCBS: TgIBSCBS);
-    procedure LerXMLgTribRegular(const ANode: TACBrXmlNode; gTribRegular: TgTribRegular);
-    procedure LerXMLgDif(const ANode: TACBrXmlNode; gDif: TgDif);
+    procedure LerXMLTributos(const ANode: TACBrXmlNode; trib: Ttrib); virtual;
+    procedure LerXMLgIBSCBS(const ANode: TACBrXmlNode; gIBSCBS: TgIBSCBS); virtual;
+    procedure LerXMLgTribRegular(const ANode: TACBrXmlNode; gTribRegular: TgTribRegular); virtual;
+    procedure LerXMLgDif(const ANode: TACBrXmlNode; gDif: TgDif); virtual;
 
     procedure LerXMLIBSCBSNFSe(const ANode: TACBrXmlNode; IBSCBS: TIBSCBSNfse);
     procedure LerXMLValoresIBSCBSNFSe(const ANode: TACBrXmlNode; valores: TvaloresIBSCBS);
@@ -247,7 +247,7 @@ end;
 function TNFSeRClass.NormatizarItemListaServico(const Codigo: string): string;
 var
   Item: Integer;
-  xCodigo: string;
+  xCodigo, lResultProprio, lResultNacional: string;
 begin
   Result := Codigo;
 
@@ -261,7 +261,15 @@ begin
 
     xCodigo := FormatFloat('0000', Item);
 
-    Result := Copy(xCodigo, 1, 2) + '.' + Copy(xCodigo, 3, 2);
+    lResultProprio := Copy(xCodigo, 1, 2) + '.' + Copy(xCodigo, 3, 2);
+
+    xCodigo := PadLeft(IntToStr(Item), 6, '0');
+    lResultNacional := Copy(xCodigo, 1, 2) + '.' + Copy(xCodigo, 3, 2) + '.' + Copy(xCodigo, 5, 2);
+
+    if ItemListaServicoDescricao(lResultNacional) <> '' then
+      Result := lResultNacional
+    else
+      Result := lResultProprio;
   end;
 end;
 
@@ -297,7 +305,8 @@ var
 begin
   aXML := RemoverPrefixosDesnecessarios(aArquivo);
 
-  if (Pos('/infnfse>', LowerCase(aXML)) > 0) then
+  if (Pos('/infnfse>', LowerCase(aXML)) > 0) or
+     (Pos('/identificacaonfse>', LowerCase(aXML)) > 0) then
     Result := txmlNFSe
   else
     Result := txmlRPS;
@@ -763,10 +772,6 @@ begin
       PercentualCargaTributariaEstadual := StringToFloatDef(AINIRec.ReadString(sSecao, 'PercentualCargaTributariaEstadual', ''), 0);
       ValorCargaTributariaEstadual := StringToFloatDef(AINIRec.ReadString(sSecao, 'ValorCargaTributariaEstadual', ''), 0);
 
-      // Provedor PadraoNacional
-      verAplic := AINIRec.ReadString(sSecao, 'verAplic', 'ACBrNFSeX-1.00');
-      tpEmit := StrTotpEmit(Ok, AINIRec.ReadString(sSecao, 'tpEmit', '1'));
-
       // Provedor Governa
       RegRec := StrToRegRec(Ok, AINIRec.ReadString(sSecao, 'RegRec', ''));
       // Provedor Governa e Prescon
@@ -793,14 +798,6 @@ begin
       RpsSubstituido.Numero := AINIRec.ReadString(sSecao, 'Numero', '');
       RpsSubstituido.Serie := AINIRec.ReadString(sSecao, 'Serie', '');
       RpsSubstituido.Tipo := FpAOwner.StrToTipoRPS(Ok, AINIRec.ReadString(sSecao, 'Tipo', '1'));
-    end;
-
-    sSecao := 'NFSeSubstituicao';
-    if AINIRec.SectionExists(sSecao) then
-    begin
-      subst.chSubstda := AINIRec.ReadString(sSecao, 'chSubstda', '');
-      subst.cMotivo := StrTocMotivo(Ok, AINIRec.ReadString(sSecao, 'cMotivo', ''));
-      subst.xMotivo := AINIRec.ReadString(sSecao, 'xMotivo', '');
     end;
 
     sSecao := 'NFSeCancelamento';
@@ -1017,6 +1014,7 @@ begin
       // Provedor IssNet e Padrão Nacional
       Servico.CodigoNBS := AINIRec.ReadString(sSecao, 'CodigoNBS', '');
       Servico.CodigoInterContr := AINIRec.ReadString(sSecao, 'CodigoInterContr', '');
+      NFSe.infNFSe.xNBS := AINIRec.ReadString(sSecao, 'xNBS', '');
 
       // Provedor SoftPlan
       Servico.CFPS := AINIRec.ReadString(sSecao, 'CFPS', '');
@@ -1312,7 +1310,8 @@ begin
 
       // Provedor IssSaoPaulo
       Servico.Valores.ValorIPI := StringToFloatDef(AINIRec.ReadString(sSecao, 'ValorIPI', ''), 0);
-
+      Servico.Valores.ValorInicialCobrado := StringToFloatDef(AINIRec.ReadString(sSecao, 'ValorInicialCobrado', ''), 0);
+      Servico.Valores.ValorFinalCobrado := StringToFloatDef(AINIRec.ReadString(sSecao, 'ValorFinalCobrado', ''), 0);
     end;
 
     sSecao := 'ValoresNFSe';
@@ -1365,6 +1364,7 @@ begin
     end;
 
     LerINIIBSCBS(AINIRec, IBSCBS);
+    LerINIIBSCBSNFSe(AINIRec, infNFSe.IBSCBS);
   end;
 end;
 
@@ -1375,10 +1375,14 @@ var
   ANodeAux: TACBrXmlNode;
   ANodes: TACBrXmlNodeArray;
   i: Integer;
+  aValor: string;
 begin
   if not Assigned(ANode) then Exit;
 
-  IBSCBS.finNFSe := StrTofinNFSe(ObterConteudo(ANode.Childrens.FindAnyNs('finNFSe'), tcStr));
+  aValor := ObterConteudo(ANode.Childrens.FindAnyNs('finNFSe'), tcStr);
+  if aValor <> '' then
+    IBSCBS.finNFSe := StrTofinNFSe(aValor);
+
   IBSCBS.indFinal := StrToindFinal(ObterConteudo(ANode.Childrens.FindAnyNs('indFinal'), tcStr));
   IBSCBS.cIndOp := ObterConteudo(ANode.Childrens.FindAnyNs('cIndOp'), tcStr);
   IBSCBS.tpOper := StrTotpOperGovNFSe(ObterConteudo(ANode.Childrens.FindAnyNs('tpOper'), tcStr));
@@ -1393,7 +1397,10 @@ begin
   end;
 
   IBSCBS.tpEnteGov := StrTotpEnteGov(ObterConteudo(ANode.Childrens.FindAnyNs('tpEnteGov'), tcStr));
-  IBSCBS.indDest := StrToindDest(ObterConteudo(ANode.Childrens.FindAnyNs('indDest'), tcStr));
+
+  aValor := ObterConteudo(ANode.Childrens.FindAnyNs('indDest'), tcStr);
+  if aValor <> '' then
+    IBSCBS.indDest := StrToindDest(aValor);
 
   LerXMLDestinatario(ANode.Childrens.FindAnyNs('dest'), IBSCBS.dest);
   LerXMLImovel(ANode.Childrens.FindAnyNs('imovel'), IBSCBS.imovel);
@@ -1833,23 +1840,13 @@ begin
     Dest.CNPJCPF := AINIRec.ReadString(sSecao, 'CNPJCPF', '');
     Dest.Nif := AINIRec.ReadString(sSecao, 'NIF', '');
     Dest.cNaoNIF := StrToNaoNIF(Ok, AINIRec.ReadString(sSecao, 'cNaoNIF', '0'));
-    Dest.xNome := AINIRec.ReadString(sSecao, 'xNome', '');
+    Dest.xNome := AINIRec.ReadString(sSecao, 'RazaoSocial', '');
 
-    // Incluido para atender o provedor SigISSWeb
-    Dest.IE := AINIRec.ReadString(sSecao, 'IE', '');
-    Dest.IM := AINIRec.ReadString(sSecao, 'IM', '');
-    Dest.xPais := AINIRec.ReadString(sSecao, 'xPais', '');
-
-    // Incluido para atender o provedor Publica
-    Dest.TipoServico := AINIRec.ReadString(sSecao, 'TipoServico', '');
-
+    Dest.ender.endNac.cMun := AINIRec.ReadInteger(sSecao, 'CodigoMunicipio', 0);
     Dest.ender.endNac.CEP := AINIRec.ReadString(sSecao, 'CEP', '');
-    Dest.ender.endNac.cMun := AINIRec.ReadInteger(sSecao, 'cMun', 0);
-    Dest.ender.endExt.cPais := AINIRec.ReadInteger(sSecao, 'cPais', 0);
-    Dest.ender.endExt.cEndPost := AINIRec.ReadString(sSecao, 'cEndPost', '');
-    Dest.ender.endExt.xCidade := AINIRec.ReadString(sSecao, 'xCidade', '');
-    Dest.ender.endExt.xEstProvReg := AINIRec.ReadString(sSecao, 'xEstProvReg', '');
-
+    Dest.ender.endExt.cPais := AINIRec.ReadInteger(sSecao, 'CodigoPais', 0);
+    Dest.ender.endExt.xCidade := AINIRec.ReadString(sSecao, 'xMunicipio', '');
+    Dest.ender.UF := AINIRec.ReadString(sSecao, 'UF', '');
     Dest.ender.xLgr := AINIRec.ReadString(sSecao, 'Logradouro', '');
     Dest.ender.nro := AINIRec.ReadString(sSecao, 'Numero', '');
     Dest.ender.xCpl := AINIRec.ReadString(sSecao, 'Complemento', '');
@@ -1857,6 +1854,14 @@ begin
 
     Dest.fone := AINIRec.ReadString(sSecao, 'Telefone', '');
     Dest.email := AINIRec.ReadString(sSecao, 'Email', '');
+
+    // Incluido para atender o provedor SigISSWeb
+    Dest.IE := AINIRec.ReadString(sSecao, 'InscricaoEstadual', '');
+    Dest.IM := AINIRec.ReadString(sSecao, 'InscricaoMunicipal', '');
+    Dest.xPais := AINIRec.ReadString(sSecao, 'xPais', '');
+
+    // Incluido para atender o provedor Publica
+    Dest.TipoServico := AINIRec.ReadString(sSecao, 'TipoServico', '');
   end;
 end;
 

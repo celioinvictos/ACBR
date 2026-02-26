@@ -1397,6 +1397,7 @@ begin
 
     // Ler os campos do arquivo INI referente a Reforma Tributária
     LerINIIBSCBS(LINIRec, NFSe.IBSCBS);
+    LerINIIBSCBSNFSe(LINIRec, NFSe.infNFSe.IBSCBS);
 
     Result := True;
   finally
@@ -1626,6 +1627,7 @@ begin
     NFSe.Servico.CodigoCnae := AINIRec.ReadString(LSecao, 'CodigoCnae', '');
     NFSe.Servico.CodigoTributacaoMunicipio := AINIRec.ReadString(LSecao, 'CodigoTributacaoMunicipio', '');
     NFSe.Servico.CodigoServicoNacional := AINIRec.ReadString(LSecao, 'CodigoServicoNacional', '');
+    NFSe.Servico.CodigoTributacaoNacional := AINIRec.ReadString(LSecao, 'CodigoTributacaoNacional', '');
     NFSe.Servico.Discriminacao := ChangeLineBreak(AINIRec.ReadString(LSecao, 'Discriminacao', ''), FpAOwner.ConfigGeral.QuebradeLinha);
     NFSe.Servico.CodigoMunicipio := AINIRec.ReadString(LSecao, 'CodigoMunicipio', '');
     NFSe.Servico.CodigoNBS := AINIRec.ReadString(LSecao, 'CodigoNBS', '');
@@ -1637,7 +1639,11 @@ begin
     NFSe.Servico.InfAdicional := AINIRec.ReadString(LSecao, 'InfAdicional', '');
 
     NFSe.Servico.MunicipioPrestacaoServico := AINIRec.ReadString(LSecao, 'MunicipioPrestacaoServico', '');
+    NFSe.Servico.CodigoMunicipioLocalPrestacao := StrToIntDef(NFSe.Servico.CodigoMunicipio, 0);
     NFSe.Servico.ValorTotalRecebido := StringToFloatDef(AINIRec.ReadString(LSecao, 'ValorTotalRecebido', ''), 0);
+
+    NFSe.Servico.CClassTrib := AINIRec.ReadString(LSecao, 'CClassTribReg', '');
+    NFSe.Servico.INDOP := AINIRec.ReadString(LSecao, 'CIndOp', '');
   end;
 end;
 

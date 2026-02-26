@@ -107,7 +107,7 @@ type
     procedure PrepararEnviarEvento(Response: TNFSeEnviarEventoResponse); override;
     procedure TratarRetornoEnviarEvento(Response: TNFSeEnviarEventoResponse); override;
 
-    procedure ValidarSchema(Response: TNFSeWebserviceResponse; aMetodo: TMetodo); override;
+    function PrepararArquivoEnvio(const aXml: string; aMetodo: TMetodo): string; override;
   end;
 
 implementation
@@ -825,29 +825,27 @@ begin
   end;
 end;
 
-procedure TACBrNFSeProviderCittaAPIPropria.ValidarSchema(
-  Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
+function TACBrNFSeProviderCittaAPIPropria.PrepararArquivoEnvio(
+  const aXml: string; aMetodo: TMetodo): string;
 begin
+  Result := aXml;
+
   if aMetodo in [tmGerar, tmEnviarEvento] then
   begin
-//    inherited ValidarSchema(Response, aMetodo);
-
-    Response.ArquivoEnvio := ChangeLineBreak(Response.ArquivoEnvio, '');
-
     case aMetodo of
       tmGerar:
         begin
-          Response.ArquivoEnvio := '{"LoteXmlGZipB64":["' + Response.ArquivoEnvio + '"]}'
+          Result := '{"LoteXmlGZipB64":["' + aXml + '"]}';
         end;
 
       tmEnviarEvento:
         begin
-          Response.ArquivoEnvio := '{"LoteXmlGZipB64":["' + EncodeBase64(GZipCompress(Response.ArquivoEnvio)) + '"]}';
+          Result := '{"LoteXmlGZipB64":["' + EncodeBase64(GZipCompress(aXml)) + '"]}';
           Path := '/eventos';
         end;
     else
       begin
-        Response.ArquivoEnvio := '';
+        Result := '';
         Path := '';
       end;
     end;

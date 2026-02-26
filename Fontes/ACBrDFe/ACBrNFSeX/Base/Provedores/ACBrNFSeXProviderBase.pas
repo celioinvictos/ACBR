@@ -111,6 +111,8 @@ type
     function DefinirIDCancelamento(const CNPJ: string; const InscMunic: string;
                                    const NumNfse: string): string; virtual;
 
+    function PrepararArquivoEnvio(const aXml: string; aMetodo: TMetodo): string; virtual;
+
     //metodos para geração e tratamento dos dados do metodo emitir
     procedure PrepararEmitir(Response: TNFSeEmiteResponse); virtual; abstract;
     procedure GerarMsgDadosEmitir(Response: TNFSeEmiteResponse;
@@ -902,9 +904,9 @@ begin
     with TACBrNFSeX(FAOwner) do
     begin
       // Primeiro verifica as URLs definidas para a cidade
-      Sessao := IntToStr(Configuracoes.Geral.CodigoMunicipio);
-//      APIPropria := IniParams.ReadString(Sessao, 'Params', '') = 'APIPropria:';
+      Sessao := Configuracoes.Geral.xProvedorOrigem;
       APIPropria := (Pos('APIPropria:', IniParams.ReadString(Sessao, 'Params', '')) > 0);
+      Sessao := IntToStr(Configuracoes.Geral.CodigoMunicipio);
 
       ConfigWebServices.LoadUrlProducao(IniParams, Sessao);
       ConfigWebServices.LoadUrlHomologacao(IniParams, Sessao);
@@ -952,15 +954,13 @@ begin
       end
       else
       begin
-        if (ConfigWebServices.Producao.Recepcionar = ''){ or
-           (Configuracoes.Geral.Provedor = proPadraoNacional)} then
+        if (ConfigWebServices.Producao.Recepcionar = '') then
         begin
           Sessao := Configuracoes.Geral.xProvedorOrigem;
           ConfigWebServices.LoadUrlProducao(IniParams, Sessao);
         end;
 
-        if (ConfigWebServices.Homologacao.Recepcionar = ''){ or
-           (Configuracoes.Geral.Provedor = proPadraoNacional)} then
+        if (ConfigWebServices.Homologacao.Recepcionar = '') then
         begin
           Sessao := Configuracoes.Geral.xProvedorOrigem;
           ConfigWebServices.LoadUrlHomologacao(IniParams, Sessao);
@@ -1970,19 +1970,30 @@ begin
                            [srNormal, srCancelado]);
 end;
 
+function TACBrNFSeXProvider.PrepararArquivoEnvio(const aXml: string;
+  aMetodo: TMetodo): string;
+begin
+  Result := aXml;
+end;
+
 function TACBrNFSeXProvider.PrepararRpsParaLote(const aXml: string): string;
 var
   i: Integer;
   Prefixo: string;
+  PossuiPrefixo: Boolean;
 begin
   i := Pos('>', aXml) + 1;
+  PossuiPrefixo := (Pos('<Rps>', aXml) = 0);
 
   if ConfigMsgDados.PrefixoTS = '' then
     Prefixo := ''
   else
     Prefixo := ConfigMsgDados.PrefixoTS + ':';
 
-  Result := '<' + Prefixo + 'Rps>' + Copy(aXml, i, Length(aXml));
+  if PossuiPrefixo then
+    Result := '<' + Prefixo + 'Rps>' + Copy(aXml, i, Length(aXml))
+  else
+    Result := '<Rps>' + Copy(aXml, i, Length(aXml));
 end;
 
 procedure TACBrNFSeXProvider.ValidarSchema(Response: TNFSeWebserviceResponse; aMetodo: TMetodo);
@@ -2160,6 +2171,18 @@ begin
   end;
 
   AService := nil;
+
+  case EmiteResponse.ModoEnvio of
+    meLoteAssincrono:
+      EmiteResponse.ArquivoEnvio := PrepararArquivoEnvio(EmiteResponse.ArquivoEnvio, tmRecepcionar);
+    meLoteSincrono:
+      EmiteResponse.ArquivoEnvio := PrepararArquivoEnvio(EmiteResponse.ArquivoEnvio, tmRecepcionarSincrono);
+    meTeste:
+      EmiteResponse.ArquivoEnvio := PrepararArquivoEnvio(EmiteResponse.ArquivoEnvio, tmTeste);
+  else
+    // meUnitario
+    EmiteResponse.ArquivoEnvio := PrepararArquivoEnvio(EmiteResponse.ArquivoEnvio, tmGerar);
+  end;
 
   try
     try
@@ -3217,6 +3240,8 @@ begin
   end;
 
   AService := nil;
+
+  EnviarEventoResponse.ArquivoEnvio := PrepararArquivoEnvio(EnviarEventoResponse.ArquivoEnvio, tmEnviarEvento);
 
   try
     try

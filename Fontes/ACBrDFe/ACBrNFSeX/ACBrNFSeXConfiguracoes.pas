@@ -570,19 +570,24 @@ begin
   }
   aValor := FPIniParams.ReadString(FxProvedor, 'Versao', '');
 
-  if aValor = '' then
-    FVersao := StrToVersaoNFSe(Ok, FPIniParams.ReadString(CodIBGE, 'Versao', '1.00'))
+  if aValor <> '' then
+    FVersao := StrToVersaoNFSe(Ok, aValor)
   else
-    FVersao := StrToVersaoNFSe(Ok, aValor);
+  begin
+    aValor := FPIniParams.ReadString(CodIBGE, 'Versao', '');
+
+    if aValor <> '***' then
+      FVersao := StrToVersaoNFSe(Ok, FPIniParams.ReadString(CodIBGE, 'Versao', '1.00'));
+  end;
 
   {
-    Verifica se na seção do Provedor consta o Params,
-    caso contrario usa o Params da seção do município.
+    Verifica se na seção do município consta o Params,
+    caso contrario usa o Params da seção do Provedor.
   }
-  aValor := FPIniParams.ReadString(FxProvedor, 'Params', '');
+  aValor := FPIniParams.ReadString(CodIBGE, 'Params', '');
 
   if aValor = '' then
-    FAPIPropria := (Pos('APIPropria:', FPIniParams.ReadString(CodIBGE, 'Params', '')) > 0)
+    FAPIPropria := (Pos('APIPropria:', FPIniParams.ReadString(FxProvedor, 'Params', '')) > 0)
   else
     FAPIPropria := (Pos('APIPropria:', aValor) > 0);
 

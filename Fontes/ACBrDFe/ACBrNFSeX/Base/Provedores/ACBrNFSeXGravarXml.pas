@@ -116,12 +116,18 @@ type
     FIDNFSeVazio: Boolean;
     FIDDPSVazio: Boolean;
     FGerarIBSCBSNFSe: Boolean;
+    FTamMinimo: Integer;
+
+    FParamsTabW: TStrings;
+    FIniParamsTabW: TMemIniFile;
 
     function GetOpcoes: TACBrXmlWriterOptions;
     procedure SetOpcoes(AValue: TACBrXmlWriterOptions);
+    procedure SetParamsTabW(const Value: TStrings);
   protected
     FpAOwner: IACBrNFSeXProvider;
     LSecao: string;
+    FpIniParamsTabCarregado: Boolean;
 
     FConteudoTxt: TStringList;
 
@@ -148,6 +154,17 @@ type
     function ObterNomeMunicipioUF(ACodigoMunicipio: Integer; var xUF: string): string;
 
     // Reforma Tributária
+    function GerarXMLIBSCBSNFSe: TACBrXmlNode;
+    function GerarXMLIBSCBSValores(Valores: TvaloresIBSCBS): TACBrXmlNode;
+    function GerarXMLIBSCBSValoresUF(ValoresUF: TUF): TACBrXmlNode;
+    function GerarXMLIBSCBSValoresMun(ValoresMun: TMun): TACBrXmlNode;
+    function GerarXMLIBSCBSValoresFed(ValoresFed: TFed): TACBrXmlNode;
+    function GerarXMLIBSCBSTotCIBS(totCIBS: TtotCIBS): TACBrXmlNode;
+    function GerarXMLIBSCBSTotCIBSgIBS(gIBS: TgIBS): TACBrXmlNode;
+    function GerarXMLIBSCBSTotCIBSgIBSUFTot(gIBSUFTot: TgIBSUFTot): TACBrXmlNode;
+    function GerarXMLIBSCBSTotCIBSgIBSMunTot(gIBSMunTot: TgIBSMunTot): TACBrXmlNode;
+    function GerarXMLIBSCBSTotCIBSgCBS(gCBS: TgCBS): TACBrXmlNode;
+
     function GerarXMLIBSCBS(IBSCBS: TIBSCBSDPS): TACBrXmlNode; virtual;
     function GerarXMLgRefNFSe(gRefNFSe: TgRefNFSeCollection): TACBrXmlNode;
 
@@ -160,16 +177,16 @@ type
     function GerarXMLEnderecoNacionalImovel(ender: TenderImovel): TACBrXmlNode;
     function GerarXMLEnderecoExteriorImovel(endExt: TendExt): TACBrXmlNode;
 
-    function GerarXMLIBSCBSValores(valores: Tvalorestrib): TACBrXmlNode; virtual;
+    function GerarXMLIBSCBSTribValores(valores: Tvalorestrib): TACBrXmlNode; virtual;
     function GerarXMLgReeRepRes(gReeRepRes: TgReeRepRes): TACBrXmlNode;
-    function GerarXMLDocumentos: TACBrXmlNodeArray;
+    function GerarXMLDocumentos: TACBrXmlNodeArray; virtual;
     function GerarXMLdFeNacional(dFeNacional: TdFeNacional): TACBrXmlNode;
     function GerarXMLdocFiscalOutro(docFiscalOutro: TdocFiscalOutro): TACBrXmlNode;
     function GerarXMLdocOutro(docOutro: TdocOutro): TACBrXmlNode;
     function GerarXMLfornec(fornec: Tfornec): TACBrXmlNode;
 
     function GerarXMLTributos(trib: Ttrib): TACBrXmlNode;
-    function GerarXMLgIBSCBS(gIBSCBS: TgIBSCBS): TACBrXmlNode;
+    function GerarXMLgIBSCBS(gIBSCBS: TgIBSCBS): TACBrXmlNode; virtual;
     function GerarXMLgTribRegular(gTribRegular: TgTribRegular): TACBrXmlNode;
     function GerarXMLgDif(gDif: TgDif): TACBrXmlNode;
     // Reforma Tributária DPS
@@ -191,6 +208,13 @@ type
     procedure GerarINIgTribCompraGov(AINIRec: TMemIniFile; gTribCompraGov: TgTribCompraGov);
     procedure GerarINITotgIBS(AINIRec: TMemIniFile; TotgIBS: TgIBS);
     procedure GerarINITotgCBS(AINIRec: TMemIniFile; TotgCBS: TgCBS);
+
+    function ItemListaServicoDescricao(const Codigo: string): string;
+    function LerParamsTabIniServicos: AnsiString;
+    function LerParamsTabInterno: AnsiString;
+    function LerDescricaoServico(const ACodigo: string): string;
+    procedure LerParamsTabIni(ApenasSeNaoLido: Boolean);
+    procedure LerParamsTab;
 
     function GerarIniRps: string;
     function GerarIniNfse: string;
@@ -258,11 +282,15 @@ type
     property IDNFSeVazio: Boolean read FIDNFSeVazio write FIDNFSeVazio;
     property IDDPSVazio: Boolean read FIDDPSVazio write FIDDPSVazio;
     property GerarIBSCBSNFSe: Boolean read FGerarIBSCBSNFSe write FGerarIBSCBSNFSe;
+
+    property TamMinimo: Integer read FTamMinimo write FTamMinimo;
+    property ParamsTabW: TStrings read FParamsTabW write SetParamsTabW;
   end;
 
 implementation
 
 uses
+  synautil, types,
   ACBrUtil.Strings,
   ACBrDFeConsts,
   ACBrDFeException,
@@ -285,6 +313,11 @@ begin
 
   FConteudoTxt := TStringList.Create;
   FConteudoTxt.Clear;
+
+  FParamsTabW := TStringList.Create;
+
+  FIniParamsTabW := TMemIniFile.Create('');
+  FpIniParamsTabCarregado := False;
 
   Configuracao;
 end;
@@ -355,6 +388,8 @@ begin
   FIDNFSeVazio := False;
   FIDDPSVazio := False;
   FGerarIBSCBSNFSe := False;
+
+  FTamMinimo := 1;
 end;
 
 procedure TNFSeWClass.ConsolidarVariosItensServicosEmUmSo;
@@ -522,6 +557,8 @@ end;
 destructor TNFSeWClass.Destroy;
 begin
   FConteudoTxt.Free;
+  FParamsTabW.Free;
+  FIniParamsTabW.Free;
 
   inherited Destroy;
 end;
@@ -623,9 +660,92 @@ begin
   Result := TXmlWriterOptions(FOpcoes);
 end;
 
+procedure TNFSeWClass.LerParamsTab;
+var
+  ConteudoParams: AnsiString;
+begin
+  ConteudoParams := LerParamsTabIniServicos;
+
+  if ConteudoParams = '' then
+    ConteudoParams := LerParamsTabInterno;
+
+  FParamsTabW.Text := ConteudoParams;
+end;
+
+function TNFSeWClass.LerParamsTabIniServicos: AnsiString;
+var
+  ArqIni: String;
+  FS: TFileStream;
+begin
+  Result := '';
+  ArqIni := Trim(FpAOwner.ConfigGeral.IniTabServicos);
+
+  if (ArqIni <> '') and FileExists(ArqIni) then
+  begin
+    FS := TFileStream.Create(ArqIni, fmOpenRead or fmShareDenyNone);  // Thread Safe
+    try
+      FS.Position := 0;
+      Result := ReadStrFromStream(FS, FS.Size);
+    finally
+      FS.Free;
+    end;
+  end;
+end;
+
+function TNFSeWClass.LerParamsTabInterno: AnsiString;
+var
+  RS: TResourceStream;
+begin
+  Result := '';
+
+  RS := TResourceStream.Create(HInstance, 'TabServicos', RT_RCDATA);
+  try
+    RS.Position := 0;
+    Result := ReadStrFromStream(RS, RS.Size);
+  finally
+    RS.Free;
+  end;
+end;
+
+procedure TNFSeWClass.LerParamsTabIni(ApenasSeNaoLido: Boolean);
+begin
+  if ApenasSeNaoLido and FpIniParamsTabCarregado then
+    exit;
+
+  if ParamsTabW.Count = 0 then
+    LerParamsTab;
+
+  FIniParamsTabW.SetStrings(ParamsTabW);
+  FpIniParamsTabCarregado := True;
+end;
+
+function TNFSeWClass.ItemListaServicoDescricao(const Codigo: string): string;
+var
+  xCodigo: string;
+begin
+  xCodigo := OnlyNumber(Codigo);
+
+  if FpAOwner.ConfigGeral.TabServicosExt then
+    Result := ObterDescricaoServico(xCodigo)
+  else
+    Result := LerDescricaoServico(xCodigo);
+end;
+
+function TNFSeWClass.LerDescricaoServico(const ACodigo: string): string;
+begin
+  FIniParamsTabW.SetStrings(ParamsTabW);
+
+  Result := ACBrStr(FIniParamsTabW.ReadString(OnlyNumber(ACodigo), 'Descricao', ''));
+end;
+
 procedure TNFSeWClass.SetOpcoes(AValue: TACBrXmlWriterOptions);
 begin
   FOpcoes := AValue;
+end;
+
+procedure TNFSeWClass.SetParamsTabW(const Value: TStrings);
+begin
+  FParamsTabW := Value;
 end;
 
 function TNFSeWClass.GerarCNPJ(const CNPJ: string): TACBrXmlNode;
@@ -1027,6 +1147,7 @@ begin
       //Padrão Nacional e IssNet
       INIRec.WriteString(sSecao, 'CodigoNBS', Servico.CodigoNBS);
       INIRec.WriteString(sSecao, 'CodigoInterContr', Servico.CodigoInterContr);
+      INIRec.WriteString(sSecao, 'xNBS', infNFSe.xNBS);
 
       // Provedor SoftPlan
       INIRec.WriteString(sSecao, 'CFPS', '');
@@ -1290,6 +1411,9 @@ begin
       INIRec.WriteFloat(sSecao, 'ValorRecebido', Servico.Valores.ValorRecebido);
       INIRec.WriteFloat(sSecao, 'IrrfIndenizacao', Servico.Valores.IrrfIndenizacao);
       INIRec.WriteFloat(sSecao, 'RetencoesFederais', Servico.Valores.RetencoesFederais);
+      INIRec.WriteFloat(sSecao, 'ValorIPI', Servico.Valores.ValorIPI);
+      INIRec.WriteFloat(sSecao, 'ValorInicialCobrado', Servico.Valores.ValorInicialCobrado);
+      INIRec.WriteFloat(sSecao, 'ValorFinalCobrado', Servico.Valores.ValorFinalCobrado);
 
       // Provedor Infisc
       INIRec.WriteFloat(sSecao, 'totalAproxTrib', Servico.Valores.totalAproxTrib);
@@ -1425,14 +1549,18 @@ begin
           INIRec.WriteString(sSecao, 'Condicao', FpAOwner.CondicaoPagToStr(CondicaoPagamento.Parcelas.Items[I].Condicao));
 
         end;
-
-        // Reforma Tributária
-        if (NFSe.IBSCBS.dest.xNome <> '') or (NFSe.IBSCBS.imovel.cCIB <> '') or
-           (NFSe.IBSCBS.imovel.ender.CEP <> '') or
-           (NFSe.IBSCBS.imovel.ender.endExt.cEndPost <> '') or
-           (NFSe.IBSCBS.valores.trib.gIBSCBS.CST <> cstNenhum) then
-          GerarINIIBSCBS(INIRec, NFSe.IBSCBS);
       end;
+      // Reforma Tributária
+      if (NFSe.IBSCBS.dest.xNome <> '') or (NFSe.IBSCBS.imovel.cCIB <> '') or
+         (NFSe.IBSCBS.imovel.ender.CEP <> '') or
+         (NFSe.IBSCBS.imovel.ender.endExt.cEndPost <> '') or
+         (NFSe.IBSCBS.valores.trib.gIBSCBS.CST <> cstNenhum) or
+         (NFSe.IBSCBS.valores.trib.gIBSCBS.cClassTrib <> '') then
+        GerarINIIBSCBS(INIRec, NFSe.IBSCBS);
+
+      if (NFSe.infNFSe.IBSCBS.valores.vBC > 0) or (NFSe.infNFSe.IBSCBS.valores.uf.pIBSUF > 0) or
+         (NFSe.infNFSe.IBSCBS.valores.mun.pIBSMun > 0) or (NFSe.infNFSe.IBSCBS.valores.fed.pCBS > 0) then
+        GerarINIIBSCBSNFSe(INIRec, NFSe.infNFSe.IBSCBS);
     end;
   finally
     IniNFSe := TStringList.Create;
@@ -1448,6 +1576,127 @@ begin
 end;
 
 // Reforma Tributária
+function TNFSeWClass.GerarXMLIBSCBSNFSe: TACBrXmlNode;
+begin
+  Result := CreateElement('IBSCBS');
+
+  Result.AppendChild(AddNode(tcInt, '#1', 'cLocalidadeIncid', 7, 7, 1,
+                                     NFSe.infNFSe.IBSCBS.cLocalidadeIncid, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'xLocalidadeIncid', 1, 15, 1,
+                                     NFSe.infNFSe.IBSCBS.xLocalidadeIncid, ''));
+
+  Result.AppendChild(GerarXMLIBSCBSValores(NFSe.infNFSe.IBSCBS.Valores));
+  Result.AppendChild(GerarXMLIBSCBSTotCIBS(NFSe.infNFSe.IBSCBS.totCIBS));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSValores(
+  Valores: TvaloresIBSCBS): TACBrXmlNode;
+begin
+  Result := CreateElement('valores');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'vBC', 1, 15, 1, Valores.vBC, ''));
+
+  Result.AppendChild(GerarXMLIBSCBSValoresUF(Valores.uf));
+  Result.AppendChild(GerarXMLIBSCBSValoresMun(Valores.mun));
+  Result.AppendChild(GerarXMLIBSCBSValoresFed(Valores.fed));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSValoresUF(
+  ValoresUF: TUF): TACBrXmlNode;
+begin
+  Result := CreateElement('uf');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pIBSUF', 1, 7, 1,
+                                                         ValoresUF.pIBSUF, ''));
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqUF', 1, 7, 1,
+                                                     ValoresUF.pRedAliqUF, ''));
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pAliqEfetUF', 1, 7, 1,
+                                                    ValoresUF.pAliqEfetUF, ''));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSValoresMun(
+  ValoresMun: TMun): TACBrXmlNode;
+begin
+  Result := CreateElement('mun');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pIBSMun', 1, 7, 1,
+                                                       ValoresMun.pIBSMun, ''));
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqMun', 1, 7, 1,
+                                                   ValoresMun.pRedAliqMun, ''));
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pAliqEfetMun', 1, 7, 1,
+                                                  ValoresMun.pAliqEfetMun, ''));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSValoresFed(
+  ValoresFed: TFed): TACBrXmlNode;
+begin
+  Result := CreateElement('fed');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pCBS', 1, 7, 1,
+                                                          ValoresFed.pCBS, ''));
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqCBS', 1, 7, 1,
+                                                   ValoresFed.pRedAliqCBS, ''));
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pAliqEfetCBS', 1, 7, 1,
+                                                  ValoresFed.pAliqEfetCBS, ''));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSTotCIBS(
+  totCIBS: TtotCIBS): TACBrXmlNode;
+begin
+  Result := CreateElement('totCIBS');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'vTotNF', 1, 15, 1,
+                                                           totCIBS.vTotNF, ''));
+
+  Result.AppendChild(GerarXMLIBSCBSTotCIBSgIBS(totCIBS.gIBS));
+  Result.AppendChild(GerarXMLIBSCBSTotCIBSgCBS(totCIBS.gCBS));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSTotCIBSgIBS(
+  gIBS: TgIBS): TACBrXmlNode;
+begin
+  Result := CreateElement('gIBS');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'vIBSTot', 1, 15, 1,
+                                                             gIBS.vIBSTot, ''));
+
+  Result.AppendChild(GerarXMLIBSCBSTotCIBSgIBSUFTot(gIBS.gIBSUFTot));
+  Result.AppendChild(GerarXMLIBSCBSTotCIBSgIBSMunTot(gIBS.gIBSMunTot));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSTotCIBSgIBSUFTot(
+  gIBSUFTot: TgIBSUFTot): TACBrXmlNode;
+begin
+  Result := CreateElement('gIBSUFTot');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'vIBSUF', 1, 15, 1,
+                                                         gIBSUFTot.vIBSUF, ''));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSTotCIBSgIBSMunTot(
+  gIBSMunTot: TgIBSMunTot): TACBrXmlNode;
+begin
+  Result := CreateElement('gIBSMunTot');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'vIBSMun', 1, 15, 1,
+                                                       gIBSMunTot.vIBSMun, ''));
+end;
+
+function TNFSeWClass.GerarXMLIBSCBSTotCIBSgCBS(
+  gCBS: TgCBS): TACBrXmlNode;
+begin
+  Result := CreateElement('gCBS');
+
+  Result.AppendChild(AddNode(tcDe2, '#1', 'vCBS', 1, 15, 1, gCBS.vCBS, ''));
+end;
+
 function TNFSeWClass.GerarXMLIBSCBS(IBSCBS: TIBSCBSDPS): TACBrXmlNode;
 begin
   Result := CreateElement(TagIBSCBS);
@@ -1480,7 +1729,7 @@ begin
      GerarImovel then
     Result.AppendChild(GerarXMLImovel(IBSCBS.imovel));
 
-  Result.AppendChild(GerarXMLIBSCBSValores(IBSCBS.valores));
+  Result.AppendChild(GerarXMLIBSCBSTribValores(IBSCBS.valores));
 end;
 
 function TNFSeWClass.GerarXMLgRefNFSe(
@@ -1645,7 +1894,7 @@ begin
                                                        endExt.xEstProvReg, ''));
 end;
 
-function TNFSeWClass.GerarXMLIBSCBSValores(
+function TNFSeWClass.GerarXMLIBSCBSTribValores(
   valores: Tvalorestrib): TACBrXmlNode;
 begin
   Result := CreateElement('valores');
@@ -1799,7 +2048,8 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'cCredPres', 2, 2, NrOcorrcCredPres,
                                         cCredPresToStr(gIBSCBS.cCredPres), ''));
 
-  if (gIBSCBS.gTribRegular.CSTReg <> cstNenhum) and GerarTribRegular then
+  if (gIBSCBS.gTribRegular.CSTReg <> cstNenhum) and
+     (gIBSCBS.gTribRegular.cClassTribReg <> '') and GerarTribRegular then
     Result.AppendChild(GerarXMLgTribRegular(gIBSCBS.gTribRegular));
 
   if ((gIBSCBS.gDif.pDifUF > 0) or (gIBSCBS.gDif.pDifMun > 0) or
@@ -1872,15 +2122,13 @@ begin
   AINIRec.WriteString(LSecao, 'CNPJCPF', Dest.CNPJCPF);
   AINIRec.WriteString(LSecao, 'NIF', Dest.NIF);
   AINIRec.WriteString(LSecao, 'cNaoNIF', NaoNIFToStr(Dest.cNaoNIF));
-  AINIRec.WriteString(LSecao, 'xNome', Dest.xNome);
+  AINIRec.WriteString(LSecao, 'RazaoSocial', Dest.xNome);
 
+  AINIRec.WriteInteger(LSecao, 'CodigoMunicipio', Dest.ender.endNac.cMun);
   AINIRec.WriteString(LSecao, 'CEP', Dest.ender.endNac.CEP);
-  AINIRec.WriteInteger(LSecao, 'cMun', Dest.ender.endNac.cMun);
-  AINIRec.WriteInteger(LSecao, 'cPais', Dest.ender.endExt.cPais);
-  AINIRec.WriteString(LSecao, 'cEndPost', Dest.ender.endExt.cEndPost);
-  AINIRec.WriteString(LSecao, 'xCidade', Dest.ender.endExt.xCidade);
-  AINIRec.WriteString(LSecao, 'xEstProvReg', Dest.ender.endExt.xEstProvReg);
-
+  AINIRec.WriteInteger(LSecao, 'CodigoPais', Dest.ender.endExt.cPais);
+  AINIRec.WriteString(LSecao, 'xMunicipio', Dest.ender.endExt.xCidade);
+  AINIRec.WriteString(LSecao, 'UF', Dest.ender.UF);
   AINIRec.WriteString(LSecao, 'Logradouro', Dest.ender.xLgr);
   AINIRec.WriteString(LSecao, 'Numero', Dest.ender.nro);
   AINIRec.WriteString(LSecao, 'Complemento', Dest.ender.xCpl);
@@ -1888,6 +2136,14 @@ begin
 
   AINIRec.WriteString(LSecao, 'Telefone', Dest.fone);
   AINIRec.WriteString(LSecao, 'Email', Dest.email);
+
+  // Incluido para atender o provedor SigISSWeb
+  AINIRec.WriteString(LSecao, 'InscricaoMunicipal', Dest.IM);
+  AINIRec.WriteString(LSecao, 'InscricaoMunicipal', Dest.IE);
+  AINIRec.WriteString(LSecao, 'xPais', Dest.xPais);
+
+  // Incluido para atender o provedor Publica
+  AINIRec.WriteString(LSecao, 'TipoServico', Dest.TipoServico);
 end;
 
 procedure TNFSeWClass.GerarINIImovel(AINIRec: TMemIniFile;

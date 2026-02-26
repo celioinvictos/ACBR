@@ -272,8 +272,8 @@ begin
         if Boleto.Configuracoes.WebService.Filtro.contaCaucao > 0 then
           LConsulta.Add('contaCaucao='+ IntToStr(Boleto.Configuracoes.WebService.Filtro.contaCaucao));
 
-        LConsulta.Add('agenciaBeneficiario='+OnlyNumber( Boleto.Cedente.Agencia ));
-        LConsulta.Add('contaBeneficiario='+OnlyNumber( Boleto.Cedente.Conta ));
+        LConsulta.Add('agenciaBeneficiario='+RemoveZerosEsquerda(OnlyNumber( Boleto.Cedente.Agencia )));
+        LConsulta.Add('contaBeneficiario='+RemoveZerosEsquerda(OnlyNumber( Boleto.Cedente.Conta )));
 
         if Boleto.Configuracoes.WebService.Filtro.carteira > 0 then
           LConsulta.Add('carteiraConvenio='+IntToStr(Boleto.Configuracoes.WebService.Filtro.carteira));
@@ -340,6 +340,7 @@ procedure TBoletoW_BancoBrasil_API.RequisicaoJson;
 var
   LData: string;
   LJsonObject: TACBrJSONObject;
+  LDias : Integer;
 begin
   if Assigned(ATitulo) then
   begin
@@ -360,7 +361,30 @@ begin
       LJsonObject.AddPair('valorAbatimento', ATitulo.ValorAbatimento);
 
       if (ATitulo.DataProtesto > 0) then
-        LJsonObject.AddPair('quantidadeDiasProtesto', Trunc(ATitulo.DataProtesto - ATitulo.Vencimento))
+      begin
+        LDias := ATitulo.DiasDeProtesto; // ja é calculado na classe principal
+        if (ATitulo.TipoDiasProtesto = diUteis) and (LDias in [3..5]) then
+        begin
+          if not LDias in [3..5] then
+            raise EACBrBoletoWSException.Create(
+              ClassName + ' TipoDiasProtesto ou DataProtesto inválido.'+sLineBreak+
+                          'Para DiasUteis: deve ser entre 3 e 5.'+sLineBreak+
+                          'Para DiasCorridos: deve ser 6..29, 35, 40 ou 45.'+sLineBreak+
+                          'https://apoio.developers.bb.com.br/referency/post/5f4fb7f5b71fb5001268ca44');
+          LJsonObject.AddPair('quantidadeDiasProtesto', LDias);
+        end
+        else
+        begin
+          if not ( (LDias in [6..29]) or (LDias = 35) or
+                   (LDias = 40) or (LDias = 45) ) then
+            raise EACBrBoletoWSException.Create(
+              ClassName + ' TipoDiasProtesto ou DataProtesto inválido.'+sLineBreak+
+                          'Para DiasUteis: deve ser entre 3 e 5.'+sLineBreak+
+                          'Para DiasCorridos: deve ser 6..29, 35, 40 ou 45.'+sLineBreak+
+                          'https://apoio.developers.bb.com.br/referency/post/5f4fb7f5b71fb5001268ca44');
+          LJsonObject.AddPair('quantidadeDiasProtesto', LDias);
+        end;
+      end
       else
         LJsonObject.AddPair('quantidadeDiasProtesto', 0);
 
@@ -375,15 +399,20 @@ begin
       LJsonObject.AddPair('descricaoTipoTitulo', ATitulo.EspecieDoc);
 
       if ATitulo.TipoPagamento = tpAceita_Qualquer_Valor then
-        LJsonObject.AddPair('indicadorPermissaoRecebimentoParcial', 'S');
+        LJsonObject.AddPair('indicadorPermissaoRecebimentoParcial', 'S')
+      else
+        LJsonObject.AddPair('indicadorPermissaoRecebimentoParcial', 'N') ;
 
       //LJsonObject.AddPair('numeroTituloBeneficiario', Copy(Trim(UpperCase(ATitulo.NumeroDocumento)),0,15));
       //LJsonObject.AddPair('campoUtilizacaoBeneficiario', Trim(Copy(OnlyCharsInSet(AnsiUpperCase(ATitulo.Mensagem.Text),CHARS_VALIDOS),0,30)));
       LJsonObject.AddPair('campoUtilizacaoBeneficiario',Trim(Copy(OnlyCharsInSet(AnsiUpperCase(ATitulo.NumeroDocumento),CHARS_VALIDOS),0,30)));
       LJsonObject.AddPair('numeroTituloBeneficiario', Copy(Trim(UpperCase(IfThen(ATitulo.SeuNumero<>'',ATitulo.SeuNumero,ATitulo.NumeroDocumento))),0,15));
-      LJsonObject.AddPair('numeroTituloCliente', Boleto.Banco.MontarCampoNossoNumero(ATitulo));
-      LJsonObject.AddPair('mensagemBloquetoOcorrencia', UpperCase(Copy(Trim(ATitulo.Mensagem.Text),0,30)));
 
+
+      if (StrToInt64Def(ATitulo.NossoNumero,0) > 0)  then
+        LJsonObject.AddPair('numeroTituloCliente', Boleto.Banco.MontarCampoNossoNumero(ATitulo)) ;
+
+      LJsonObject.AddPair('mensagemBloquetoOcorrencia', UpperCase(Copy(Trim(ATitulo.Mensagem.Text),0,30)));
       GerarDesconto( LJsonObject );
       GerarJuros( LJsonObject );
       GerarMulta( LJsonObject );

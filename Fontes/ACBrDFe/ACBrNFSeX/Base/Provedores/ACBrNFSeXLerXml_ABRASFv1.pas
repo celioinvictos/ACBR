@@ -61,14 +61,14 @@ type
     procedure LerIdentificacaoRps(const ANode: TACBrXmlNode);
     procedure LerServico(const ANode: TACBrXmlNode); virtual;
     procedure LerItensServico(const ANode: TACBrXmlNode);
-    procedure LerValores(const ANode: TACBrXmlNode);
+    procedure LerValores(const ANode: TACBrXmlNode); virtual;
 
     procedure LerPrestadorServico(const ANode: TACBrXmlNode);
     procedure LerEnderecoPrestadorServico(const ANode: TACBrXmlNode; const aTag: string);
     procedure LerIdentificacaoPrestador(const ANode: TACBrXmlNode);
     procedure LerContatoPrestador(const ANode: TACBrXmlNode);
 
-    procedure LerTomadorServico(const ANode: TACBrXmlNode);
+    procedure LerTomadorServico(const ANode: TACBrXmlNode); virtual;
     procedure LerIdentificacaoTomador(const ANode: TACBrXmlNode);
     procedure LerEnderecoTomador(const ANode: TACBrXmlNode);
     procedure LerContatoTomador(const ANode: TACBrXmlNode);
@@ -77,6 +77,10 @@ type
 
     procedure LerOrgaoGerador(const ANode: TACBrXmlNode);
     procedure LerConstrucaoCivil(const ANode: TACBrXmlNode); virtual;
+    procedure LerAtividadeEvento(const ANode: TACBrXmlNode); virtual;
+    procedure LerCondicaoPagamento(const ANode: TACBrXmlNode); virtual;
+    procedure LerDestinatario(const ANode: TACBrXmlNode); virtual;
+    procedure LerImovel(const ANode: TACBrXmlNode); virtual;
 
     procedure LerNfseCancelamento(const ANode: TACBrXmlNode);
     procedure LerConfirmacao(const ANode: TACBrXmlNode);
@@ -227,6 +231,26 @@ begin
       Art        := ObterConteudo(AuxNode.Childrens.FindAnyNs('Art'), tcStr);
     end;
   end;
+end;
+
+procedure TNFSeR_ABRASFv1.LerAtividadeEvento(const ANode: TACBrXmlNode);
+begin
+  // Implementar na classe filha, caso necessário
+end;
+
+procedure TNFSeR_ABRASFv1.LerCondicaoPagamento(const ANode: TACBrXmlNode);
+begin 
+  // Implementar na classe filha, caso necessário
+end;
+
+procedure TNFSeR_ABRASFv1.LerDestinatario(const ANode: TACBrXmlNode);
+begin
+  // Implementar na classe filha, caso necessário
+end;
+
+procedure TNFSeR_ABRASFv1.LerImovel(const ANode: TACBrXmlNode);
+begin
+  // Implementar na classe filha, caso necessário
 end;
 
 procedure TNFSeR_ABRASFv1.LerContatoPrestador(const ANode: TACBrXmlNode);
@@ -491,6 +515,8 @@ begin
   if not Assigned(ANode) then Exit;
 
   AuxNode := ANode.Childrens.FindAnyNs('InfNfse');
+  if AuxNode = nil then
+    AuxNode := ANode.Childrens.FindAnyNs('IdentificacaoNfse');
 
   if AuxNode <> nil then
   begin
@@ -530,6 +556,30 @@ begin
     LerIntermediarioServico(AuxNode);
     LerOrgaoGerador(AuxNode);
     LerConstrucaoCivil(AuxNode);
+  end;
+
+  if NFSe.Prestador.IdentificacaoPrestador.CpfCnpj = '' then
+  begin
+    NFSe.DataEmissaoRps := LerDataEmissaoRps(ANode);
+    NFSe.NaturezaOperacao := StrToNaturezaOperacao(Ok, ObterConteudo(ANode.Childrens.FindAnyNs('NaturezaOperacao'), tcStr));
+    NFSe.RegimeEspecialTributacao := FpAOwner.StrToRegimeEspecialTributacao(Ok, ObterConteudo(ANode.Childrens.FindAnyNs('RegimeEspecialTributacao'), tcStr));
+    NFSe.OptanteSimplesNacional := FpAOwner.StrToSimNao(Ok, ObterConteudo(ANode.Childrens.FindAnyNs('OptanteSimplesNacional'), tcStr));
+    NFSe.IncentivadorCultural := FpAOwner.StrToSimNao(Ok, ObterConteudo(ANode.Childrens.FindAnyNs('IncentivadorCultural'), tcStr));
+    NFSe.Competencia := LerCompetencia(ANode);
+    NFSe.NfseSubstituida := ObterConteudo(ANode.Childrens.FindAnyNs('NfseSubstituida'), tcStr);
+    NFSe.OutrasInformacoes := ObterConteudo(ANode.Childrens.FindAnyNs('OutrasInformacoes'), tcStr);
+    NFSe.OutrasInformacoes := StringReplace(NFSe.OutrasInformacoes, FpQuebradeLinha,
+                                                    sLineBreak, [rfReplaceAll]);
+
+    LerServico(ANode);
+
+    NFSe.ValorCredito := ObterConteudo(ANode.Childrens.FindAnyNs('ValorCredito'), tcDe2);
+
+    LerPrestadorServico(ANode);
+    LerTomadorServico(ANode);
+    LerIntermediarioServico(ANode);
+    LerOrgaoGerador(ANode);
+    LerConstrucaoCivil(ANode);
   end;
 end;
 
@@ -966,6 +1016,10 @@ begin
     LerTomadorServico(AuxNode);
     LerIntermediarioServico(AuxNode);
     LerConstrucaoCivil(AuxNode);
+    LerAtividadeEvento(AuxNode);
+    LerCondicaoPagamento(AuxNode);
+    LerDestinatario(AuxNode);
+    LerImovel(AuxNode);
   end;
 end;
 
@@ -1006,6 +1060,7 @@ begin
 
     // Ler os campos do arquivo INI referente a Reforma Tributária
     LerINIIBSCBS(LINIRec, NFSe.IBSCBS);
+    LerINIIBSCBSNFSe(LINIRec, NFSe.infNFSe.IBSCBS);
 
     Result := True;
   finally
@@ -1101,7 +1156,7 @@ end;
 
 procedure TNFSeR_ABRASFv1.LerINISecaoPrestador(const AINIRec: TMemIniFile);
 var
-  LSecao: String;
+  LSecao, lAuxStr: String;
   Ok: Boolean;
 begin
   LSecao := 'Prestador';
@@ -1111,6 +1166,13 @@ begin
     NFSe.RegimeEspecialTributacao := FpAOwner.StrToRegimeEspecialTributacao(Ok, AINIRec.ReadString(LSecao, 'Regime', ''));
     NFSe.OptanteSimplesNacional := FpAOwner.StrToSimNao(Ok, AINIRec.ReadString(LSecao, 'OptanteSN', ''));
     NFSe.IncentivadorCultural := FpAOwner.StrToSimNao(Ok, AINIRec.ReadString(LSecao, 'IncentivadorCultural', ''));
+    lAuxStr := AINIRec.ReadString(LSecao, 'RegimeApuracaoSN', '');
+    if lAuxStr <> '' then
+      NFSe.RegimeApuracaoSN := StrToRegimeApuracaoSN(Ok, lAuxStr);
+
+    lAuxStr := AINIRec.ReadString(LSecao, 'opSimpNac', '');
+    if lAuxStr <> '' then
+      NFSe.OptanteSN := StrToOptanteSN(Ok, lAuxStr);
 
     NFSe.Prestador.IdentificacaoPrestador.CpfCnpj := AINIRec.ReadString(LSecao, 'CNPJ', '');
     NFSe.Prestador.IdentificacaoPrestador.InscricaoMunicipal := AINIRec.ReadString(LSecao, 'InscricaoMunicipal', '');
@@ -1205,10 +1267,12 @@ begin
   begin
     NFSe.Servico.ItemListaServico := AINIRec.ReadString(LSecao, 'ItemListaServico', '');
     NFSe.Servico.xItemListaServico := AINIRec.ReadString(LSecao, 'xItemListaServico', '');
+    NFSe.Servico.CodigoServicoNacional := AINIRec.ReadString(LSecao, 'cTribNac', '');
     NFSe.Servico.CodigoCnae := AINIRec.ReadString(LSecao, 'CodigoCnae', '');
     NFSe.Servico.CodigoTributacaoMunicipio := AINIRec.ReadString(LSecao, 'CodigoTributacaoMunicipio', '');
     NFSe.Servico.Discriminacao := ChangeLineBreak(AINIRec.ReadString(LSecao, 'Discriminacao', ''), FpAOwner.ConfigGeral.QuebradeLinha);
     NFSe.Servico.CodigoMunicipio := AINIRec.ReadString(LSecao, 'CodigoMunicipio', '');
+    NFSe.Servico.CodigoNBS := AINIRec.ReadString(LSecao, 'CodigoNBS', '');
     {
     NFSe.Servico.MunicipioIncidencia := AINIRec.ReadInteger(LSecao, 'MunicipioIncidencia', 0);
     NFSe.Servico.xMunicipioIncidencia := AINIRec.ReadString(LSecao, 'xMunicipioIncidencia', '');

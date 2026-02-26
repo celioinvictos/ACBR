@@ -487,6 +487,7 @@ begin
   with ConfigGeral do
   begin
     QuebradeLinha := '|';
+    CancPreencherMotivo := True;
     ConsultaPorFaixaPreencherNumNfseFinal := True;
   end;
 
@@ -510,6 +511,9 @@ begin
     GerarPrestadorLoteRps := True;
     DadosCabecalho := GetCabecalho('');
   end;
+
+  // Provedor não disponibilizou os novos Schemas.
+  ConfigSchemas.Validar := False;
 end;
 
 function TACBrNFSeProviderSigCorp204.CriarGeradorXml(

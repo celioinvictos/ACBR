@@ -465,12 +465,12 @@ procedure TNFeJSONWriter.GerarRetirada(const ARetirada: TRetirada; AJSONObject: 
 var
   lRetiradaJSONObj: TACBrJSONObject;
 begin
-  if Trim(ARetirada.CNPJCPF) = '' then
+  if (Trim(ARetirada.xLgr) = '') then
     exit;
 
   lRetiradaJSONObj := TACBrJSONObject.Create;
 
-  if Length(ARetirada.CNPJCPF) = 14 then
+  if (Length(ARetirada.CNPJCPF) = 14) or (Length(ARetirada.CNPJCPF) = 0) then
     lRetiradaJSONObj.AddPair('CNPJ', ARetirada.CNPJCPF)
   else if Length(ARetirada.CNPJCPF) = 11 then
     lRetiradaJSONObj.AddPair('CPF', ARetirada.CNPJCPF);
@@ -497,11 +497,11 @@ procedure TNFeJSONWriter.GerarEntrega(const AEntrega: TEntrega; AJSONObject: TAC
 var
   lEntregaJSONObj: TACBrJSONObject;
 begin
-  if (Trim(AEntrega.CNPJCPF) = '') and (Trim(AEntrega.xLgr) = '') then
+  if (Trim(AEntrega.xLgr) = '') then
     exit;
 
   lEntregaJSONObj := TACBrJSONObject.Create;
-  if Length(AEntrega.CNPJCPF) = 14 then
+  if (Length(AEntrega.CNPJCPF) = 14) or (Length(AEntrega.CNPJCPF) = 0) then
     lEntregaJSONObj.AddPair('CNPJ', AEntrega.CNPJCPF)
   else if Length(AEntrega.CNPJCPF) = 11 then
     lEntregaJSONObj.AddPair('CPF', AEntrega.CNPJCPF);
@@ -1674,7 +1674,14 @@ begin
       begin
         lPISJSONObj.AddPair('PISNT', lPISCSTJSONObj);
       end;
-    pis49, pis50, pis51, pis52, pis53, pis54, pis55, pis56,
+    pis50:
+      begin
+        lPISCSTJSONObj.AddPair('vBC', APIS.vBC);
+        lPISCSTJSONObj.AddPair('pPIS', APIS.pPIS);
+        lPISCSTJSONObj.AddPair('vPIS', APIS.vPIS);
+        lPISJSONObj.AddPair('PISOutr', lPISCSTJSONObj);
+      end;
+    pis49, pis51, pis52, pis53, pis54, pis55, pis56,
     pis60, pis61, pis62, pis63, pis64, pis65, pis66, pis67,
     pis70, pis71, pis72, pis73, pis74, pis75,
     pis98, pis99:
@@ -2155,6 +2162,7 @@ begin
     exit;
 
   lPagJSONObj := TACBrJSONObject.Create;
+  lPagJSONObj.AddPair('vTroco', APag.vTroco);
   try
     lDetPagJSONArray := TACBrJSONArray.Create;
     try
@@ -2543,7 +2551,9 @@ begin
     exit;
 
   lISelJSONObj := TACBrJSONObject.Create;
-  lISelJSONObj.AddPair('CSTIS', CSTISToStr(AISel.CSTIS));
+  //Usar string até a publicação de uma tabela de CSTs oficial para o IS
+  //lISelJSONObj.AddPair('CSTIS', CSTISToStr(AISel.CSTIS));
+  lISelJSONObj.AddPair('CSTIS', AISel.CSTIS);
   lISelJSONObj.AddPair('cClassTribIS', AISel.cClassTribIS);
   lISelJSONObj.AddPair('vBCIS', AISel.vBCIS);
   lISelJSONObj.AddPair('pIS', AISel.pIS);
@@ -2597,6 +2607,7 @@ begin
 
   lGIBSCBSJSONObj := TACBrJSONObject.Create;
   lGIBSCBSJSONObj.AddPair('vBC', AGIBSCBS.vBC);
+  lGIBSCBSJSONObj.AddPair('vIBS', AGIBSCBS.vIBS);
   Gerar_IBSCBS_gIBSCBS_gIBSUF(AGIBSCBS.gIBSUF, lGIBSCBSJSONObj);
   Gerar_IBSCBS_gIBSCBS_gIBSMun(AGIBSCBS.gIBSMun, lGIBSCBSJSONObj);
   Gerar_IBSCBS_gIBSCBS_gCBS(AGIBSCBS.gCBS, lGIBSCBSJSONObj);

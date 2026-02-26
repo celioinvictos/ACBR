@@ -39,7 +39,9 @@ interface
 uses
   SysUtils, Classes, StrUtils,
   ACBrXmlDocument,
+  ACBrUtil.Strings,
   ACBrDFe.Conversao,
+  ACBrNFSeXConversao,
   ACBrNFSeXGravarXml_ABRASFv2;
 
 type
@@ -58,6 +60,9 @@ type
 
   TNFSeW_GovDigital201 = class(TNFSeW_GovDigital200)
   protected
+    function GeraAtividadeEvento: TACBrXmlNode; override;
+    function GerarEnderecoEvento: TACBrXmlNode; override;
+    function GerarEnderecoExteriorEvento: TACBrXmlNode; override;
 
   end;
 
@@ -77,6 +82,9 @@ procedure TNFSeW_GovDigital200.Configuracao;
 begin
   inherited Configuracao;
 
+  GerarAtividadeEventoAposConstrucaoCivil := False;
+  GerarAtividadeEventoAposIncentivoFiscal := True;
+
   DivAliq100 := True;
 
   NrOcorrCodigoNBS := -1;
@@ -86,22 +94,119 @@ begin
 end;
 
 function TNFSeW_GovDigital200.GerarServico: TACBrXmlNode;
+var
+  NrOcorrMunPrest: Integer;
 begin
   Result := inherited GerarServico;
 
-  Result.AppendChild(AddNode(tcInt, '#32', 'MunicipioPrestacao', 7, 7, 0,
+  NrOcorrMunPrest := 0;
+  if NFSe.Servico.CodigoPais = 1058 then
+    NrOcorrMunPrest := 1;
+
+  Result.AppendChild(AddNode(tcInt, '#32', 'MunicipioPrestacao', 7, 7, NrOcorrMunPrest,
                                NFSe.Servico.CodigoMunicipioLocalPrestacao, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#41', 'PaisPrestacao', 4, 4, 0,
+                                                  NFSe.Servico.CodigoPais, ''));
 
   Result.AppendChild(AddNode(tcStr, '#32', 'CodigoNBS', 1, 9, 0,
                                                    NFSe.Servico.CodigoNBS, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#32', 'CIndOp', 6, 6, 0,
+                                                       NFSe.Servico.INDOP, ''));
+
+  if NFSe.Servico.CodigoPais = 1058 then
+    Result.AppendChild(AddNode(tcStr, '#32', 'CClassTribReg', 6, 6, 0,
+                                                  NFSe.Servico.CClassTrib, ''));
 end;
 
 function TNFSeW_GovDigital200.GerarValores: TACBrXmlNode;
 begin
   Result := inherited GerarValores;
 
-  Result.AppendChild(AddNode(tcStr, '#1', 'CST', 3, 3, 0,
-                     CSTIBSCBSToStr(NFSe.IBSCBS.valores.trib.gIBSCBS.CST), ''));
+  if (NFSe.Servico.Valores.ValorPis>0) or (NFSe.Servico.Valores.ValorCofins>0) then
+  begin
+    Result.AppendChild(AddNode(tcStr, '#1', 'CST', 2, 2, 0,
+                                 CSTPisToStr(NFSe.Servico.Valores.CSTPis), ''));
+
+    if not (StrToIntDef(CSTPisToStr(NFSe.Servico.Valores.CSTPis),0) in [0,8,9]) then
+      Result.AppendChild(AddNode(tcStr, '#1', 'TpRetPisCofins', 1, 1, 0,
+                 tpRetPisCofinsToStr(NFSe.Servico.Valores.tpRetPisCofins), ''));
+  end;
+end;
+
+{ TNFSeW_GovDigital201 }
+
+function TNFSeW_GovDigital201.GeraAtividadeEvento: TACBrXmlNode;
+begin
+  Result := nil;
+
+  if NFSe.Servico.Evento.xNome <> '' then
+  begin
+    Result := CreateElement('AtvEvento');
+
+    Result.AppendChild(AddNode(tcStr, '#1', 'Nome', 1, 255, 1,
+                                                NFSe.Servico.Evento.xNome, ''));
+
+    Result.AppendChild(AddNode(tcDat, '#1', 'DataInicio', 10, 10, 1,
+                                                NFSe.Servico.Evento.dtIni, ''));
+
+    Result.AppendChild(AddNode(tcDat, '#1', 'DataFim', 10, 10, 1,
+                                                NFSe.Servico.Evento.dtFim, ''));
+
+    if NFSe.Servico.Evento.idAtvEvt <> '' then
+      Result.AppendChild(AddNode(tcStr, '#1', 'IdAtvEv', 1, 30, 1,
+                                              NFSe.Servico.Evento.idAtvEvt, ''))
+    else
+      Result.AppendChild(GerarEnderecoEvento);
+  end;
+end;
+
+function TNFSeW_GovDigital201.GerarEnderecoEvento: TACBrXmlNode;
+begin
+  Result := CreateElement('Endereco');
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'Endereco', 1, 255, 1,
+                                    NFSe.Servico.Evento.Endereco.Endereco, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'Numero', 1, 60, 1,
+                                      NFSe.Servico.Evento.Endereco.Numero, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'Complemento', 1, 60, 0,
+                                 NFSe.Servico.Evento.Endereco.Complemento, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'Bairro', 1, 60, 1,
+                                      NFSe.Servico.Evento.Endereco.Bairro, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'CodigoMunicipio', 1, 7, 1,
+                             NFSe.Servico.Evento.Endereco.CodigoMunicipio, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'Uf', 1, 60, 1,
+                                          NFSe.Servico.Evento.Endereco.UF, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'CodigoPais', 1, 4, 1,
+                                  NFSe.Servico.Evento.Endereco.CodigoPais, ''));
+
+  if (NFSe.Servico.Evento.Endereco.UF = '') then
+    Result.AppendChild(AddNode(tcStr, '#1', 'Cep', 8, 8, 1,
+                                          NFSe.Servico.Evento.Endereco.CEP, ''))
+  else
+    Result.AppendChild(GerarEnderecoExteriorEvento);
+
+end;
+
+function TNFSeW_GovDigital201.GerarEnderecoExteriorEvento: TACBrXmlNode;
+begin
+  Result := CreateElement('EndExt');
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'CodigoEndPost', 1, 11, 1,
+                                         NFSe.Servico.Evento.Endereco.CEP, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'CidadeExterior', 1, 60, 1,
+                                  NFSe.Servico.Evento.Endereco.xMunicipio, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'EstProvRegExterior', 1, 60, 1,
+                                          NFSe.Servico.Evento.Endereco.UF, ''));
 end;
 
 end.

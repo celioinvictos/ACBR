@@ -373,8 +373,25 @@ begin
           end;
         end;
 
-      proFacundo:  Result :=TACBrNFSeProviderFacundo.Create(ACBrNFSe);
-      proFGMaiss:  Result :=TACBrNFSeProviderFGMaiss.Create(ACBrNFSe);
+      proFacundo:
+        begin
+          case Versao of
+            ve100: Result := TACBrNFSeProviderFacundo.Create(ACBrNFSe);
+            ve101: Result := TACBrNFSeProviderFacundo101.Create(ACBrNFSe);
+            else
+              Result := nil;
+          end;
+        end;
+
+      proFGMaiss:
+        begin
+          case Versao of
+            ve100: Result := TACBrNFSeProviderFGMaiss.Create(ACBrNFSe);
+            ve101: Result := TACBrNFSeProviderFGMaiss101.Create(ACBrNFSe);
+            else
+              Result := nil;
+          end;
+        end;
 
       profintelISS:
         begin
@@ -387,7 +404,14 @@ begin
           end;
         end;
 
-      proFiorilli:   Result := TACBrNFSeProviderFiorilli200.Create(ACBrNFSe);
+      proFiorilli:
+        begin
+          if APIPropria then
+            Result := TACBrNFSeProviderFiorilliAPIPropria.Create(ACBrNFSe)
+          else
+            Result := TACBrNFSeProviderFiorilli200.Create(ACBrNFSe);
+        end;
+
       proFisco:      Result := TACBrNFSeProviderFisco203.Create(ACBrNFSe);
       proFISSLex:    Result := TACBrNFSeProviderFISSLex.Create(ACBrNFSe);
       proFuturize:   Result := TACBrNFSeProviderFuturize202.Create(ACBrNFSe);
@@ -480,7 +504,14 @@ begin
       proISSCuritiba:
         Result := TACBrNFSeProviderISSCuritiba.Create(ACBrNFSe);
 
-      proISSDigital: Result := TACBrNFSeProviderISSDigital200.Create(ACBrNFSe);
+      proISSDigital:
+        begin
+          if APIPropria then
+            Result := TACBrNFSeProviderISSDigitalAPIPropria.Create(ACBrNFSe)
+          else
+            Result := TACBrNFSeProviderISSDigital200.Create(ACBrNFSe);
+        end;
+
       proISSDSF:     Result := TACBrNFSeProviderISSDSF.Create(ACBrNFSe);
       proISSe:       Result := TACBrNFSeProviderISSe201.Create(ACBrNFSe);
 
@@ -537,7 +568,12 @@ begin
       proMitra: Result := TACBrNFSeProviderMitra200.Create(ACBrNFSe);
 
       proModernizacaoPublica:
-        Result := TACBrNFSeProviderModernizacaoPublica202.Create(ACBrNFSe);
+        begin
+          if APIPropria then
+            Result := TACBrNFSeProviderModernizacaoPublicaAPIPropria.Create(ACBrNFSe)
+          else
+            Result := TACBrNFSeProviderModernizacaoPublica202.Create(ACBrNFSe);
+        end;
 
       proNEAInformatica:
         Result := TACBrNFSeProviderNEAInformatica200.Create(ACBrNFSe);
@@ -552,7 +588,16 @@ begin
         Result := TACBrNFSeProviderPadraoNacional.Create(ACBrNFSe);
 
       proPrescon: Result := TACBrNFSeProviderPrescon.Create(ACBrNFSe);
-      proPriMax:  Result := TACBrNFSeProviderPriMax.Create(ACBrNFSe);
+      proPriMax:
+      begin
+        case Versao of
+          ve100: Result := TACBrNFSeProviderPriMax.Create(ACBrNFSe);
+          //Layout alterado para Reforma Tributária
+          ve101: Result := TACBrNFSeProviderPriMax101.Create(ACBrNFSe);
+          else
+            Result := nil;
+        end;
+      end;
       proProdata: Result := TACBrNFSeProviderProdata201.Create(ACBrNFSe);
       proPRODAUB: Result := TACBrNFSeProviderPRODAUB204.Create(ACBrNFSe);
 
@@ -590,7 +635,15 @@ begin
           end;
         end;
 
-      proSam:    Result := TACBrNFSeProviderSam.Create(ACBrNFSe);
+      proSam:
+      begin
+        case Versao of
+          ve100: Result := TACBrNFSeProviderSam.Create(ACBrNFSe);
+          ve101: Result := TACBrNFSeProviderSam101.Create(ACBrNFSe);
+          else
+            Result := nil;
+        end;
+      end;
 
       proSaatri:
         begin
@@ -744,8 +797,14 @@ begin
       proVirtual: Result := TACBrNFSeProviderVirtual202.Create(ACBrNFSe);
 
       proWebFisco:
-        Result := TACBrNFSeProviderWebFisco.Create(ACBrNFSe);
-
+      begin
+        case Versao of
+          ve100: Result := TACBrNFSeProviderWebFisco.Create(ACBrNFSe);
+          ve101: Result := TACBrNFSeProviderWebFisco101.Create(ACBrNFSe);
+          else
+            Result := nil;
+        end;
+      end;
       proWebISS:
         begin
           case Versao of
